@@ -1,0 +1,20 @@
+[book]
+title = "How Java Minecraft Works"
+description = "System-level documentation of the current Java Minecraft codebase — names, never code."
+authors = ["Alexander Fraser"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "book"
+
+# Diagrams are mermaid blocks in the pages: `cargo install mdbook-mermaid`
+# then `mdbook-mermaid install .` once to drop the assets in.
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
+
+[output.html]
+default-theme = "light"
+preferred-dark-theme = "navy"
+git-repository-url = "https://github.com/AlexanderjFraser/MinecraftDocs"
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
