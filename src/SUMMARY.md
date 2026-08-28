@@ -14,6 +14,12 @@
 
 - [I · Anatomy](systems/anatomy/anatomy.md)
 - [II · Foundations]()
+  - [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
+  - [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md)
+  - [The resource system](systems/foundations/resource-system.md)
+  - [Tags](systems/foundations/tags.md)
+  - [Data components](systems/foundations/data-components.md)
+  - [Math and primitives](systems/foundations/math-and-primitives.md)
 - [III · The server]()
 - [IV · The world]()
 - [V · Blocks]()

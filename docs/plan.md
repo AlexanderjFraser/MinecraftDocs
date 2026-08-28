@@ -44,12 +44,12 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `anatomy` — processes, threads, the two loops, event loops. *Exists; re-read in the closing session.*
 
 ### Part II — Foundations: the vocabulary (6 pages) `core`, `resources`, `nbt`, `tags`, `server/packs`, `util`
-- [ ] `identifiers-and-registries` — `Identifier`, `ResourceKey`, `Registry`/`Holder`/`HolderSet`, built-in vs dynamic (`BuiltInRegistries`, `RegistryAccess`), freezing. Trace: how `minecraft:diamond_sword` becomes an `Item` at startup and how a data-pack biome becomes a `Holder` at world load.
-- [ ] `codecs-nbt-json` — `Codec`/`MapCodec` (DFU, external), `StreamCodec`, `Tag`/`CompoundTag`, `NbtOps`/`JsonOps`. Trace: one `ItemStack` written to disk, to the wire, and to JSON.
-- [ ] `resource-system` — `PackRepository`, `PackResources`, `ReloadableResourceManager`, `PreparableReloadListener`, `SimpleJsonResourceReloadListener`; resource packs (client) vs data packs (server); the prepare/apply split across threads. Trace: F3+T.
-- [ ] `tags` — `TagKey`, `TagLoader`, tag sync to the client. Trace: `#minecraft:logs` from JSON to a `HolderSet` a block checks.
-- [ ] `data-components` — `DataComponentType`, `DataComponentMap`, `PatchedDataComponentMap`, `DataComponents`; prototype vs patch. Trace: an enchant applied to a stack.
-- [ ] `math-and-primitives` — `BlockPos`/`ChunkPos`/`SectionPos`, `Vec3`, `Direction`, `AABB`, `VoxelShape`, `RandomSource`, `Mth`. The hubs of `src/maps/fanin.md`; short, no trace, a table of who owns which coordinate space.
+- [x] `identifiers-and-registries` — `Identifier`, `ResourceKey`, `Registry`/`Holder`/`HolderSet`, built-in vs dynamic (`BuiltInRegistries`, `RegistryAccess`), freezing. Trace: how `minecraft:diamond_sword` becomes an `Item` at startup and how a data-pack biome becomes a `Holder` at world load.
+- [x] `codecs-nbt-json` — `Codec`/`MapCodec` (DFU, external), `StreamCodec`, `Tag`/`CompoundTag`, `NbtOps`/`JsonOps`. Trace: one `ItemStack` written to disk, to the wire, and to JSON.
+- [x] `resource-system` — `PackRepository`, `PackResources`, `ReloadableResourceManager`, `PreparableReloadListener`, `SimpleJsonResourceReloadListener`; resource packs (client) vs data packs (server); the prepare/apply split across threads. Trace: F3+T.
+- [x] `tags` — `TagKey`, `TagLoader`, tag sync to the client. Trace: `#minecraft:logs` from JSON to a `HolderSet` a block checks.
+- [x] `data-components` — `DataComponentType`, `DataComponentMap`, `PatchedDataComponentMap`, `DataComponents`; prototype vs patch. Trace: an enchant applied to a stack.
+- [x] `math-and-primitives` — `BlockPos`/`ChunkPos`/`SectionPos`, `Vec3`, `Direction`, `AABB`, `VoxelShape`, `RandomSource`, `Mth`. The hubs of `src/maps/fanin.md`; short, no trace, a table of who owns which coordinate space.
 
 ### Part III — The server (4 pages) `server`, `server/level`, `server/players`
 - [ ] `server-tick` — `MinecraftServer.tickServer` → `tickChildren` → each `ServerLevel.tick`; `ServerTickRateManager` (sprint/freeze/`/tick`); `PacketProcessor`; tick-time accounting. Trace: one 50 ms tick.
@@ -222,3 +222,17 @@ and which are three. Pass 3, if it happens, is voice and cuts.
   hand-written `reference/threads.md`, `tools/llms_full.py` in the deploy.
   Draft (unlinked) part entries in `SUMMARY.md` are the visible roadmap; a
   session replaces its part's `[]()` with the real pages. Next: Part II.
+- **2026-08-28, session 2** — Part II Foundations: six pages in
+  `src/systems/foundations/`. `verify_names.py` learned nested classes
+  (`Holder.Reference`), multi-level members (`Holder.Reference.bindValue`),
+  enum constants (`RegistryLayer.STATIC`), `.py`/`.sh` file names, and a few
+  library names (`JsonOps`, `Lifecycle`, JOML). Things later sessions must
+  know: there is **no `TagManager`** and no `Minecraft.reloadResources` (it is
+  `Minecraft.reloadResourcePacks`); `ItemStack` has no `save`/`parse` — saves go
+  through `ValueOutput`/`TagValueOutput` and `ItemStack.CODEC`; `ChunkPos` is a
+  record with `pack`/`unpack`, not `asLong`; item component prototypes bind at
+  reload (`DataComponentInitializers`), so `Item.components` throws before
+  world load; serverbound container clicks carry `HashedStack`, not stacks;
+  `Registries.DIMENSION` and `Registries.LEVEL_STEM` share one identifier;
+  `RegistryLayer` is `STATIC/WORLDGEN/DIMENSIONS/RELOADABLE`. `anatomy` was not
+  touched. Next: Part III The server.

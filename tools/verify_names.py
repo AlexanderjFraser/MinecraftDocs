@@ -37,8 +37,11 @@ ALLOW = {
     "ForkJoinPool", "ThreadLocal", "GLFW", "OpenGL", "Vulkan", "OpenAL", "ChannelPipeline",
     "ChannelInboundHandler", "NioEventLoopGroup", "EpollEventLoopGroup", "LocalAddress",
     "LocalChannel", "LocalServerChannel", "BooleanSupplier", "Supplier", "Consumer", "Function",
+    "Optional", "Set", "Map", "List", "Random",
+    # DFU ops / lifecycle, JOML.
+    "JsonOps", "Lifecycle", "DataFixer", "Vector3f", "Vector3i", "Matrix4f", "Quaternionf",
 }
-FILE_EXT = (".json", ".txt", ".properties", ".mcmeta", ".nbt", ".dat", ".mca", ".png", ".ogg", ".fsh", ".vsh", ".glsl")
+FILE_EXT = (".py", ".sh", ".json", ".txt", ".properties", ".mcmeta", ".nbt", ".dat", ".mca", ".png", ".ogg", ".fsh", ".vsh", ".glsl")
 
 TICK = re.compile(r"`([A-Za-z_][A-Za-z0-9_./$]*)`")
 
@@ -57,6 +60,8 @@ def load_index(root: str):
 
 
 MEMBER = re.compile(r"\b(?:[A-Za-z_][A-Za-z0-9_<>\[\], ?]*\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:\(|=|;)")
+ENUM_CONST = re.compile(r"^([A-Z][A-Z0-9_]*)\s*(?:,|;|\(|\{)")  # enum constants: `Kind.REFERENCE`
+NESTED = re.compile(r"(?:class|interface|enum|record)\s+([A-Za-z_][A-Za-z0-9_]*)")  # `Outer.Inner` counts as a member
 
 
 def members_of(paths: list[str]) -> set[str]:
@@ -69,6 +74,10 @@ def members_of(paths: list[str]) -> set[str]:
                     continue
                 for m in MEMBER.finditer(s):
                     names.add(m.group(1))
+                for m in NESTED.finditer(s):
+                    names.add(m.group(1))
+                if ENUM_CONST.match(s):  # `A, B, C;` on one line: take them all
+                    names.update(re.findall(r"\b[A-Z][A-Z0-9_]*\b", s.split("(")[0]))
     return names
 
 
@@ -116,8 +125,11 @@ def main() -> int:
                 if member:
                     if cls not in member_cache:
                         member_cache[cls] = members_of(classes[cls])
-                    if member.split("(")[0] not in member_cache[cls]:
-                        bad.append(f"{page}: `{name}` (no member {member} on {cls})")
+                    # `Outer.Inner.member`: every segment must be declared somewhere in Outer's file
+                    # (nested classes live in the same file, so one member set covers them all).
+                    missing = [seg for seg in member.split("(")[0].split(".") if seg not in member_cache[cls]]
+                    if missing:
+                        bad.append(f"{page}: `{name}` (no member {missing[0]} on {cls})")
     if bad:
         print("\n".join(bad))
         print(f"\n{len(bad)} unresolved of {checked} names")
