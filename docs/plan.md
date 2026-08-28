@@ -235,4 +235,6 @@ and which are three. Pass 3, if it happens, is voice and cuts.
   world load; serverbound container clicks carry `HashedStack`, not stacks;
   `Registries.DIMENSION` and `Registries.LEVEL_STEM` share one identifier;
   `RegistryLayer` is `STATIC/WORLDGEN/DIMENSIONS/RELOADABLE`. `anatomy` was not
-  touched. Next: Part III The server.
+  touched. Also found and fixed: `verify_names.py --index` had never been
+  implemented (`class-index.md` was a one-line stub since session 1); it now
+  writes the real table on every deploy. Next: Part III The server.
