@@ -2,23 +2,41 @@
 
 [Introduction](introduction.md)
 
+# Maps
+
+- [Maps](maps/README.md)
+  - [Packages](maps/packages.md)
+  - [Biggest classes](maps/biggest.md)
+  - [Hierarchy](maps/hierarchy.md)
+  - [Fan-in](maps/fanin.md)
+
+# Systems
+
+- [I · Anatomy](systems/anatomy/anatomy.md)
+- [II · Foundations]()
+- [III · The server]()
+- [IV · The world]()
+- [V · Blocks]()
+- [VI · Entities]()
+- [VII · Items and inventories]()
+- [VIII · The player]()
+- [IX · Networking]()
+- [X · The client]()
+  - [Sound](systems/client/sound.md)
+- [XI · World generation]()
+- [XII · Commands and data packs]()
+- [XIII · Appendix]()
+
+# Reference
+
+- [Reference](reference/README.md)
+  - [Packets](reference/packets.md)
+  - [Registries](reference/registries.md)
+  - [Data components](reference/components.md)
+  - [Game rules](reference/gamerules.md)
+  - [Threads](reference/threads.md)
+  - [Class index](reference/class-index.md)
+
 # Lectures
 
-- [1. Anatomy]()
-- [2. The tick]()
-- [3. The data-driven core]()
-- [4. Blocks]()
-- [5. The world]()
-- [6. Entities]()
-- [7. Items and inventories]()
-- [8. Movement and combat]()
-- [9. Networking]()
-- [10. Rendering I — the frame]()
-- [11. Rendering II — everything else on screen]()
-- [12. World generation]()
-- [13. Commands and data-pack scripting]()
-- [14. Epilogue — how mods hook in]()
-
-# Appendix
-
-- [Everything else, one sentence each]()
+- [The lecture map](lectures.md)

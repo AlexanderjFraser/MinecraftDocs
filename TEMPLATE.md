@@ -1,6 +1,6 @@
 # <System name>
 
-> Verified against **Minecraft 1.21.11** · Lecture <n> · <one-line scenario this page traces>
+> Verified against **Minecraft 26.2** · Part <N> · <one-line scenario this page traces>
 
 ## Responsibility
 

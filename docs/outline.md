@@ -1,4 +1,4 @@
-# The lecture map
+# The lecture map (archived 2026-08-28 — superseded by plan.md; the order is re-decided in pass 2)
 
 Fourteen lectures, ordered by dependency (each assumes the ones before it)
 and sized to where the code actually is. One page each; every page traces

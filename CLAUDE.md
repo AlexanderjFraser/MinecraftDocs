@@ -8,11 +8,13 @@ swing) with a sequence diagram whose lanes are class names. The site is the
 notes; the video is the lecture. Readers are humans who'd rather watch and
 agents who'd rather fetch the whole corpus at once.
 
-**Owner:** Alexander Fraser (`AlexanderjFraser`). The lectures are the main
-product and the owner has to *learn* each system to record it — so a page is
-drafted by Claude from the decompile, then read against the source and
-corrected by the owner before it is published or recorded. Nothing ships
-that the owner hasn't understood.
+**Owner:** Alexander Fraser (`AlexanderjFraser`). The owner has to *learn*
+each system to record it, so the work is in passes: **pass 1** — Claude
+drafts every page from the decompile (the owner is the "meat proxy": starts
+sessions, approves nothing technical); **pass 2** — the owner reads each
+page against the source, asks questions in the page, and the docs are
+corrected and the lecture order chosen; pass 3 is voice and cuts. Nothing is
+recorded that the owner hasn't understood.
 
 ## The rules
 
@@ -27,34 +29,46 @@ that the owner hasn't understood.
 3. **Newest version only.** Every page states `verified against <version>`
    in its header. No version-difference sections, no "in 1.x this was…".
    When a release lands, re-verify the pages (a re-read, rarely a rewrite).
-   Currently **1.21.11**.
+   Currently **26.2**.
 4. **Trace-driven.** A lecture follows a scenario through the system; the
    trace is the spine and the diagram is the artefact. A package tour is
    the boring version and the one you learn least from.
 5. **Verified names.** `python tools/verify_names.py` checks that every
    backticked identifier on every page exists in the decompile. A page that
-   fails does not publish. "Verified against 1.21.11" is a test, not a claim.
+   fails does not publish. "Verified against 26.2" is a test, not a claim.
 
 ## The source
 
-The McDeob-remapped decompile is **not in this repo** (it can't be — this
-repo is public). It lives at `d:\pvpmod\reference\minecraft` on the owner's
-machine and `MC_SOURCE` points at it; `d:\pvpmod\tools\decompile_mc.py`
-regenerates it from the remapped client on any machine. ~6,600 classes.
+The Mojang-mapped decompile is **not in this repo** (it can't be — this repo
+is public and the EULA/mappings licence forbids redistributing it). It lives
+at `reference/26.2/` (gitignored; the zips it came from are gitignored too)
+and `tools/verify_names.py` / `tools/map_source.py` default to it; `MC_SOURCE`
+overrides. The client jar is a strict superset of the server jar, so
+`reference/26.2/` is the client decompile plus `server-classes.txt`, the list
+of classes the dedicated server also ships — the oracle for "is this class
+server-side or client-only". 7,055 classes, 719k lines, Java 25.
 
-Where the game is (class counts, 1.21.11):
+Where the game is (26.2, from `python tools/map_source.py packages`; the
+full tables are in `src/maps/`):
 
-| package | classes | |
-|---|---|---|
-| `world/level` | 1,291 | blocks, block states, chunks, lighting, world generation |
-| `world/entity` | 698 | the entity hierarchy, AI, attributes, players |
-| `client/renderer` + `client/model` | 859 | the frame, chunk meshing, entity models, shaders |
-| `client/gui` | 429 | screens, HUD |
-| `world/item` + `world/inventory` | 370 | items, containers, data components |
-| `network/protocol` | 288 | the packet catalogue (machinery in `network/`, `server/network`) |
-| `server/commands` + `commands/*` | ~190 | Brigadier, execution |
-| `util/datafix` | 384 | save migration — **out of scope by rule 3** |
-| gametest, telemetry, profiling, jsonrpc, advancements… | ~1,100 | one sentence each in the appendix |
+| package | classes | lines | |
+|---|---:|---:|---|
+| `world/level` | 1,312 | 146k | blocks, block states, chunks, lighting, world generation |
+| `world/entity` | 716 | 109k | the entity hierarchy, AI, attributes, players |
+| `client/gui` | 444 | 59k | screens, HUD |
+| `client/renderer` + `client/model` | 968 | 61k | the frame, section meshing, entity models, render pipelines |
+| `com/mojang/blaze3d` | 211 | 26k | the GPU abstraction — `opengl` **and `vulkan`** backends behind `GpuDevice` |
+| `world/item` + `world/inventory` | 378 | 36k | items, containers, data components |
+| `network/protocol` | 293 | 13k | the packet catalogue (machinery in `network/`, `server/network`) |
+| `server/level` | 42 | 12k | `ServerLevel`, `ChunkMap`, tickets — small package, huge classes |
+| `server/commands` + `commands/*` | ~220 | 26k | Brigadier, execution |
+| `util/datafix` + `util/filefix` | 453 | 30k | save migration — **out of scope by rule 3** |
+| `com/mojang/realmsclient` | 127 | 13k | Realms UI — out of scope |
+| gametest, telemetry, profiling, jsonrpc, advancements… | ~1,000 | | one sentence each in the appendix |
+
+Naming drift a 1.21-era reader will trip on: `ResourceLocation` is now
+`Identifier`; `Util` lives in `net.minecraft.util`; `LightTexture` is
+`Lightmap`; `Timer` is `DeltaTracker`; `Gui` and `Hud` both exist.
 
 ## The page skeleton (`TEMPLATE.md`)
 
@@ -63,18 +77,26 @@ trace (sequence diagram) · interfaces (who calls it, what it calls, what
 crosses the network) · invariants and surprises · where to look (entry-point
 class names only).
 
-## The lecture map
+## The plan
 
-[docs/outline.md](docs/outline.md) — fourteen lectures ordered by
-dependency and sized to the packages. The owner plans each lecture in its own
-session; the outline is the map, not a schedule.
+[docs/plan.md](docs/plan.md) — pass 1: fifty-six system pages in thirteen
+parts, a generated reference layer, sixteen sessions, one part per
+session, the per-session protocol (fact sheets from the decompile → pages →
+verify → deploy) and the session log. **Read it first; tick it last.**
+`docs/outline.md` is the archived fourteen-lecture map; the lecture order
+is decided in pass 2, after the owner has read the pages.
 
 ## Site
 
-mdBook (`book.toml`, `src/SUMMARY.md`), with a mermaid preprocessor for the
-diagrams and a single-file export for agents (`llms.txt` / `llms-full.txt`).
-Hosted on Cloudflare Pages; the domain is the owner's to buy. The prototype
-game's `tools/deploy_site.py` (in `d:\pvpmod`) is the model for the deploy.
+mdBook (`book.toml`, `src/SUMMARY.md`) with `mdbook-mermaid`; both are in
+`~/.cargo/bin` (not on PATH in Git Bash). Layout: `src/maps/` (generated by
+`tools/map_source.py`), `src/reference/` (generated by `tools/gen_reference.py`
+and `verify_names.py --index`), `src/systems/<part>/<page>.md` (the content),
+`src/lectures.md` (the lecture order, decided in pass 2). `tools/deploy.sh` verifies, builds and deploys
+to Cloudflare Pages project `minecraftdocs` (https://minecraftdocs.pages.dev,
+custom domain **minecraftdocs.dev**) using the token at
+`~/.cloudflare/pvpmod.token`, and writes `llms-full.txt` (the whole corpus in
+one file, via `tools/llms_full.py`).
 
 ## Conventions
 

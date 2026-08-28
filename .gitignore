@@ -2,3 +2,7 @@
 mermaid.min.js
 mermaid-init.js
 .DS_Store
+# The decompile never enters the public repo (EULA / mappings licence)
+/reference/
+*.zip
+/.wrangler/

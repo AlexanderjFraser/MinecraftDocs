@@ -1,6 +1,6 @@
 # Introduction
 
-> Verified against **Minecraft 1.21.11**
+> Verified against **Minecraft 26.2**
 
 This is documentation of how Java Minecraft *works* — its systems, the data
 they own, when they run, and how they talk to each other — for the current
