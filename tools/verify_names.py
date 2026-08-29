@@ -40,8 +40,11 @@ ALLOW = {
     "Optional", "Set", "Map", "List", "Random",
     # DFU ops / lifecycle, JOML.
     "JsonOps", "Lifecycle", "DataFixer", "Vector3f", "Vector3i", "Matrix4f", "Quaternionf",
+    # JDK concurrency / IO, and jtracy (Mojang's Tracy binding, outside the game jar).
+    "ConcurrentLinkedQueue", "LinkedHashMap", "LockSupport", "FileChannel", "FileChannel.tryLock",
+    "System.exit", "System.in", "Runtime.halt", "DiscontinuousFrame", "TracyClient",
 }
-FILE_EXT = (".py", ".sh", ".json", ".txt", ".properties", ".mcmeta", ".nbt", ".dat", ".mca", ".png", ".ogg", ".fsh", ".vsh", ".glsl")
+FILE_EXT = (".py", ".sh", ".json", ".txt", ".properties", ".mcmeta", ".nbt", ".dat", ".mca", ".png", ".ogg", ".fsh", ".vsh", ".glsl", ".lock", ".dat_old")
 
 TICK = re.compile(r"`([A-Za-z_][A-Za-z0-9_./$]*)`")
 
@@ -61,6 +64,7 @@ def load_index(root: str):
 
 MEMBER = re.compile(r"\b(?:[A-Za-z_][A-Za-z0-9_<>\[\], ?]*\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*(?:\(|=|;)")
 ENUM_CONST = re.compile(r"^([A-Z][A-Z0-9_]*)\s*(?:,|;|\(|\{)")  # enum constants: `Kind.REFERENCE`
+RECORD = re.compile(r"\brecord\s+[A-Za-z_][A-Za-z0-9_]*\s*\(")  # record components count as members
 NESTED = re.compile(r"(?:class|interface|enum|record)\s+([A-Za-z_][A-Za-z0-9_]*)")  # `Outer.Inner` counts as a member
 
 
@@ -78,6 +82,8 @@ def members_of(paths: list[str]) -> set[str]:
                     names.add(m.group(1))
                 if ENUM_CONST.match(s):  # `A, B, C;` on one line: take them all
                     names.update(re.findall(r"\b[A-Z][A-Z0-9_]*\b", s.split("(")[0]))
+                if RECORD.search(s):  # `record Foo(Bar a, int b)` on one line: a and b are members
+                    names.update(re.findall(r"([A-Za-z_][A-Za-z0-9_]*)\s*[,)]", s.split("(", 1)[1]))
     return names
 
 
