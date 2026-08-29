@@ -64,7 +64,7 @@ refusing to die until the world is on disk.*
   the tick, `/save-all`, the end of `DedicatedServer.initServer`, the pause-when-empty
   transition, and shutdown. The one asynchronous piece is the region-file
   write itself, which the chunk storage hands to `IOWorker`
-  (Part IV, *chunk-storage*); `MinecraftServer.saveEverything` with *flush*
+  (Part IV, [chunk-storage](../world/chunk-storage.md)); `MinecraftServer.saveEverything` with *flush*
   true joins it.
 - **Shutdown:** `/stop` runs `StopCommand` on the Server thread and flips
   `MinecraftServer.running`; the loop exits; `MinecraftServer.stopServer` and

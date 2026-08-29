@@ -39,7 +39,7 @@ and the rain starts — all inside this one method, twenty times a second.*
   *server* — `ServerLevel.getWeatherData` delegates to the `MinecraftServer`
   — and every level that `Level.canHaveWeather` advances the same countdowns; the
   only per-level part is the `Level.rainLevel`/`Level.thunderLevel` fade.
-- `ServerChunkCache` (the level's chunk source; the rest of it is Part IV)
+- `ServerChunkCache` (the level's chunk source; the rest of it is [Part IV](../world/tickets-and-loading.md))
   owns the chunk-ticking half: `ServerChunkCache.spawningChunks`,
   `ServerChunkCache.lastSpawnState` (a `NaturalSpawner.SpawnState`, the mob
   counts the debug screen shows) and `ServerChunkCache.chunkHoldersToBroadcast`
@@ -151,7 +151,7 @@ Narrated:
    then submission order), and calls back `ServerLevel.tickBlock` /
    `ServerLevel.tickFluid` — which check the block is *still* the scheduled
    `Block` before `BlockBehaviour.BlockStateBase.tick` runs. A replaced block's pending tick
-   silently evaporates. Part IV's *block-ticks-and-fluids*
+   silently evaporates. Part IV's [block-ticks-and-fluids](../world/block-ticks-and-fluids.md)
    page has the queue itself.
 4. **Raids**, then **the chunk source.** `ServerChunkCache.tick` first
    purges stale tickets and runs `DistanceManager` updates (chunks change

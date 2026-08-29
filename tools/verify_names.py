@@ -43,6 +43,8 @@ ALLOW = {
     # JDK concurrency / IO, and jtracy (Mojang's Tracy binding, outside the game jar).
     "ConcurrentLinkedQueue", "LinkedHashMap", "LockSupport", "FileChannel", "FileChannel.tryLock",
     "System.exit", "System.in", "Runtime.halt", "DiscontinuousFrame", "TracyClient",
+    # JDK collections / fastutil a page names as concepts (Part IV).
+    "EnumMap", "BitSet", "AtomicReferenceArray", "ShortList", "AtomicLong", "AtomicReference", "CompletableFuture.allOf", "LongSet", "PriorityQueue", "ArrayDeque", "Semaphore", "AtomicBoolean", "AtomicInteger",
 }
 FILE_EXT = (".py", ".sh", ".json", ".txt", ".properties", ".mcmeta", ".nbt", ".dat", ".mca", ".png", ".ogg", ".fsh", ".vsh", ".glsl", ".lock", ".dat_old")
 

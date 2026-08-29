@@ -188,7 +188,7 @@ Narrated:
    `ChunkTrackingView`; chunks inside it are marked pending for the
    `PlayerChunkSender`, which sends them in batches at the end of each
    server tick (`PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`, 10, before
-   it waits for the client). Part IV's *tickets-and-loading*
+   it waits for the client). Part IV's [tickets-and-loading](../world/tickets-and-loading.md)
    page picks up from here.
 9. **Loaded means the client said so.** After boss events, active effects
    and `ServerPlayer.initInventoryMenu`, flushing resumes. The client
