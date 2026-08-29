@@ -52,10 +52,10 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `math-and-primitives` — `BlockPos`/`ChunkPos`/`SectionPos`, `Vec3`, `Direction`, `AABB`, `VoxelShape`, `RandomSource`, `Mth`. The hubs of `src/maps/fanin.md`; short, no trace, a table of who owns which coordinate space.
 
 ### Part III — The server (4 pages) `server`, `server/level`, `server/players`
-- [ ] `server-tick` — `MinecraftServer.tickServer` → `tickChildren` → each `ServerLevel.tick`; `ServerTickRateManager` (sprint/freeze/`/tick`); `PacketProcessor`; tick-time accounting. Trace: one 50 ms tick.
-- [ ] `server-level-tick` — inside `ServerLevel.tick`: weather, time, block ticks (`LevelTicks`), random ticks, raids, entity ticking via `EntityTickList`, chunk ticking, block events. Trace: one tick of one level.
-- [ ] `players-and-sessions` — `PlayerList`, `ServerPlayer` lifecycle (login → placement → respawn → disconnect), dimension travel, player data save. Trace: a player joins.
-- [ ] `server-lifecycle` — startup (`DedicatedServer.initServer`, world load), `LevelStorageSource`, save (`saveAllChunks`), stop; `ServerWatchdog`; RCON/JSON-RPC in one paragraph each. Trace: `/stop`.
+- [x] `server-tick` — `MinecraftServer.tickServer` → `tickChildren` → each `ServerLevel.tick`; `ServerTickRateManager` (sprint/freeze/`/tick`); `PacketProcessor`; tick-time accounting. Trace: one 50 ms tick.
+- [x] `server-level-tick` — inside `ServerLevel.tick`: weather, time, block ticks (`LevelTicks`), random ticks, raids, entity ticking via `EntityTickList`, chunk ticking, block events. Trace: one tick of one level.
+- [x] `players-and-sessions` — `PlayerList`, `ServerPlayer` lifecycle (login → placement → respawn → disconnect), dimension travel, player data save. Trace: a player joins.
+- [x] `server-lifecycle` — startup (`DedicatedServer.initServer`, world load), `LevelStorageSource`, save (`saveAllChunks`), stop; `ServerWatchdog`; RCON/JSON-RPC in one paragraph each. Trace: `/stop`.
 
 ### Part IV — The world (8 pages) `world/level/chunk`, `server/level`, `world/level/lighting`, `world/level/storage`
 - [ ] `chunk-anatomy` — `LevelChunk`, `LevelChunkSection`, `PalettedContainer` (palettes, bit packing), heightmaps, the `ChunkAccess` hierarchy (`ProtoChunk` → `LevelChunk` → `ImposterProtoChunk`). No trace; the data page the next four hang on.
@@ -238,3 +238,30 @@ and which are three. Pass 3, if it happens, is voice and cuts.
   touched. Also found and fixed: `verify_names.py --index` had never been
   implemented (`class-index.md` was a one-line stub since session 1); it now
   writes the real table on every deploy. Next: Part III The server.
+- **2026-08-29, session 3** — Part III The server: four pages in
+  `src/systems/server/`. `verify_names.py` learned record components
+  (`ClientboundRespawnPacket.dataToKeep`) and a few JDK/jtracy names. Things
+  later sessions must know: **day time has left `ServerLevel`** — it is
+  `ServerClockManager` (`world/clock`, server-wide saved data, ticked in
+  `MinecraftServer.tickChildren`, gated on `GameRules.ADVANCE_TIME`);
+  `ServerLevel.tickTime` only bumps `gameTime` in the overworld. **Weather is
+  server-global** (`WeatherData`, `MinecraftServer.getWeatherData`), not
+  per level. `GameRules` lives in `world/level/gamerules` and the 1.21 names
+  are gone (`DO_DAYLIGHT_CYCLE`→`ADVANCE_TIME`, `DO_MOB_SPAWNING`→`SPAWN_MOBS`,
+  `DO_WEATHER_CYCLE`→`ADVANCE_WEATHER`); the naming-drift appendix should
+  list these. The `ServerPlayer` is created in the configuration phase
+  (`PrepareSpawnTask`), not by `PlayerList`; `players-and-sessions` owns
+  that and Part IX's `protocol-phases` should point back rather than repeat
+  it. Player ticking is split (`doTick` from the connection after the
+  levels; `tick` from the level's entity loop) — Part VIII should not
+  contradict that. `ChunkMap.forEachBlockTickingChunk` actually walks the
+  entity-ticking set; Part IV should say so. Dedicated servers pause when
+  empty (`pause-when-empty-seconds`, default 60) and JSON-RPC
+  (`server/jsonrpc`, `ManagementServer`) is new — the appendix tour needs a
+  paragraph. Pages came out at 275–313 lines, over the ~250 guideline;
+  `server-lifecycle` carries startup, `/stop` and the side threads and could
+  split if pass 2 wants it. `anatomy` was not touched but its threads table
+  should gain "Management server IO", "RCON Listener/Client" and "Query
+  Listener" in the closing session. Forward links to unwritten parts are
+  plain text (*chunk-storage*), to be linked when those pages exist. Next:
+  Part IV The world (sessions 4–5).
