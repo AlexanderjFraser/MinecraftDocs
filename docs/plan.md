@@ -58,14 +58,14 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `server-lifecycle` — startup (`DedicatedServer.initServer`, world load), `LevelStorageSource`, save (`saveAllChunks`), stop; `ServerWatchdog`; RCON/JSON-RPC in one paragraph each. Trace: `/stop`.
 
 ### Part IV — The world (8 pages) `world/level/chunk`, `server/level`, `world/level/lighting`, `world/level/storage`
-- [ ] `chunk-anatomy` — `LevelChunk`, `LevelChunkSection`, `PalettedContainer` (palettes, bit packing), heightmaps, the `ChunkAccess` hierarchy (`ProtoChunk` → `LevelChunk` → `ImposterProtoChunk`). No trace; the data page the next four hang on.
-- [ ] `tickets-and-loading` — `DistanceManager`, `Ticket`/`TicketType`, `ChunkHolder`, `ChunkMap`, `ServerChunkCache`; the level/status propagation. Trace: a player walks east and a chunk becomes ticking.
-- [ ] `chunk-generation-pipeline` — `ChunkStatus`, `ChunkPyramid`, `ChunkTaskDispatcher`, `GenerationChunkHolder`, the worker pool, `ChunkGenerator` entry points (details in Part XI). Trace: one chunk from `EMPTY` to `FULL`.
-- [ ] `lighting` — `LevelLightEngine`, `SkyLightEngine`/`BlockLightEngine`, `ThreadedLevelLightEngine`, `DataLayer`. Trace: a torch is placed.
-- [ ] `chunk-storage` — `RegionFile`, `RegionFileStorage`, `IOWorker`, `ChunkStorage`, `SerializableChunkData`, entity storage (`EntityStorage`), POI storage. Trace: a chunk is unloaded and written.
-- [ ] `block-ticks-and-fluids` — `LevelTicks`, `ScheduledTick`, random ticks, `FluidState`/`FlowingFluid`. Trace: water spreads.
-- [ ] `game-events-and-poi` — `GameEvent`/`GameEventDispatcher` (sculk, vibrations), `PoiManager`/`PoiType`. Trace: a villager claims a bed.
-- [ ] `level-data-and-rules` — `LevelData`/`PrimaryLevelData`, `GameRules`, `WorldBorder`, `SavedData` (maps, raids, scoreboard), dimensions (`DimensionType`, `LevelStem`). Short.
+- [x] `chunk-anatomy` — `LevelChunk`, `LevelChunkSection`, `PalettedContainer` (palettes, bit packing), heightmaps, the `ChunkAccess` hierarchy (`ProtoChunk` → `LevelChunk` → `ImposterProtoChunk`). No trace; the data page the next four hang on.
+- [x] `tickets-and-loading` — `DistanceManager`, `Ticket`/`TicketType`, `ChunkHolder`, `ChunkMap`, `ServerChunkCache`; the level/status propagation. Trace: a player walks east and a chunk becomes ticking.
+- [x] `chunk-generation-pipeline` — `ChunkStatus`, `ChunkPyramid`, `ChunkTaskDispatcher`, `GenerationChunkHolder`, the worker pool, `ChunkGenerator` entry points (details in Part XI). Trace: one chunk from `EMPTY` to `FULL`.
+- [x] `lighting` — `LevelLightEngine`, `SkyLightEngine`/`BlockLightEngine`, `ThreadedLevelLightEngine`, `DataLayer`. Trace: a torch is placed.
+- [x] `chunk-storage` — `RegionFile`, `RegionFileStorage`, `IOWorker`, `ChunkStorage`, `SerializableChunkData`, entity storage (`EntityStorage`), POI storage. Trace: a chunk is unloaded and written.
+- [x] `block-ticks-and-fluids` — `LevelTicks`, `ScheduledTick`, random ticks, `FluidState`/`FlowingFluid`. Trace: water spreads.
+- [x] `game-events-and-poi` — `GameEvent`/`GameEventDispatcher` (sculk, vibrations), `PoiManager`/`PoiType`. Trace: a villager claims a bed.
+- [x] `level-data-and-rules` — `LevelData`/`PrimaryLevelData`, `GameRules`, `WorldBorder`, `SavedData` (maps, raids, scoreboard), dimensions (`DimensionType`, `LevelStem`). Short.
 
 ### Part V — Blocks (5 pages) `world/level/block`
 - [ ] `blocks-and-states` — `Block` vs `BlockState`, `StateDefinition`, `Property`, `BlockBehaviour` and its `Properties`; the state table and why it is immutable and interned. Trace: `getStateForPlacement`.
@@ -265,3 +265,51 @@ and which are three. Pass 3, if it happens, is voice and cuts.
   Listener" in the closing session. Forward links to unwritten parts are
   plain text (*chunk-storage*), to be linked when those pages exist. Next:
   Part IV The world (sessions 4–5).
+- **2026-08-29, session 4** — Part IV The world, all eight pages in one
+  session (the schedule's 4–5), in `src/systems/world/`. Things later
+  sessions must know. **Storage:** there is no `ChunkStorage` class —
+  `ChunkMap extends SimpleRegionStorage`; `DimensionDataStorage` is
+  `SavedDataStorage`, and there are two of them (server-global at
+  *data/*, per dimension at *dimensions/<ns>/<path>/data/* — the overworld
+  included; *DIM-1*/*DIM1* are gone); player files are under
+  *players/data/*; `IOWorker` is a lane on `Util.ioPool`, not a thread.
+  **Tickets:** `TicketType` is a registry record with flag bits (nine
+  constants; no `LIGHT`/`PLAYER`/`START`), `TicketStorage` is `SavedData`
+  in `world/level` (replaces the forced-chunks file; `FORCED` and `PORTAL`
+  persist), and there are two level graphs — `LoadingChunkTracker` and
+  `SimulationChunkTracker` — so a holder can be `ENTITY_TICKING` by status
+  and tick nothing; `ChunkLevel.MAX_LEVEL` (44) is derived from the
+  pyramid. **Chunks:** `PalettedContainer.Strategy` is a top-level
+  `Strategy` plus `Configuration`; `LevelChunk.setBlockState` calls
+  `BlockBehaviour.BlockStateBase.onPlace` but neighbour updates belong to
+  `Level.setBlock` (Part V should start there); `Block.UpdateFlags` holds
+  the flag constants. **Lighting:** no light thread (a `ConsecutiveExecutor`
+  on the pool, kicked from `MainThreadExecutor.pollTask`);
+  *getLightBlock* is `BlockBehaviour.BlockStateBase.getLightDampening`;
+  the client lights per frame (`ClientLevel.update`). **Level data:**
+  `level.dat` is a stub — seed/dimensions (`WorldGenSettings`), game rules
+  (`GameRuleMap`), border (`WorldBorder`, per dimension), weather, dragon
+  fight are all `SavedData`; game rules are a registry
+  (`Registries.GAME_RULE`) with a client editor
+  (`ClientboundGameRuleValuesPacket`); `DimensionType` lost its booleans
+  to `EnvironmentAttributeMap` and gained `hasEnderDragonFight`;
+  `LavaFluid.isFastLava` reads `EnvironmentAttributes.FAST_LAVA`, not
+  *ultrawarm*. **For later parts:** Part VI should link the villager/POI
+  half of `game-events-and-poi` and `PersistentEntitySectionManager.updateChunkStatus`
+  / `Visibility` rather than repeat them; Part IX's
+  *what-the-client-is-told* should point at `tickets-and-loading` for
+  `PlayerChunkSender` batching and at `lighting` for
+  `ClientboundLightUpdatePacket`; Part X names `LevelExtractor`,
+  `SectionUpdateTracker`, `SectionCopy`; Part XI's *worldgen-pipeline*
+  should point at `chunk-generation-pipeline` for the conveyor
+  (`ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code). The naming-drift
+  appendix gains: `ChunkStorage` (gone), `DimensionDataStorage`→
+  `SavedDataStorage`, `getLightBlock`→`getLightDampening`,
+  `PalettedContainer.Strategy`→`Strategy`, `ForcedChunksSavedData`→
+  `TicketStorage`, `TicketType<T>`→record. Part III pages were only
+  touched to turn their italic forward references into links. Pages are
+  258–375 lines; `game-events-and-poi` carries two traces and is the
+  obvious split for pass 2. `verify_names.py` ALLOW gained JDK/fastutil
+  collection names; the fix pass this session was ~85 names, almost all
+  bare status constants in prose (write `ChunkStatus.FULL` or *FULL*).
+  Next: Part V Blocks.
