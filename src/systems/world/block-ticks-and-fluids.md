@@ -231,7 +231,7 @@ sequenceDiagram
   pass; `LevelTicks.clearArea` / `LevelTicks.copyAreaFrom` from structure
   placement and `/clone`.
 - **Calls into:** `BlockBehaviour.BlockStateBase.tick` /
-  `BlockBehaviour.BlockStateBase.randomTick` (Part V), `FluidState.tick`,
+  `BlockBehaviour.BlockStateBase.randomTick` ([blocks and states](../blocks/blocks-and-states.md)), `FluidState.tick`,
   `Level.setBlock`; the wall-occlusion test `Shapes.mergedFaceOccludes`,
   memoised per thread in `FlowingFluid.OCCLUSION_CACHE` (200 entries keyed
   by `FlowingFluid.BlockStatePairKey`, identity on both interned states).

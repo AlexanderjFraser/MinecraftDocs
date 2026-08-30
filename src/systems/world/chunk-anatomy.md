@@ -240,7 +240,7 @@ and `LevelLightEngine.checkBlock`; remove the old block entity (with
 create or re-validate the new block entity; `LevelChunk.markUnsaved`. The
 flags are `Block.UpdateFlags` (`Block.UPDATE_ALL`, `Block.UPDATE_NONE`);
 neighbour *updates* are not here — they are `Level.setBlock`'s job, after
-the chunk returns (Part V).
+the chunk returns ([blocks and states](../blocks/blocks-and-states.md)).
 
 Block entities and tickers: `LevelChunk.getBlockEntity` takes a
 `LevelChunk.EntityCreationType` (`LevelChunk.EntityCreationType.IMMEDIATE`,
@@ -307,7 +307,7 @@ A chunk has no tick of its own. Who touches it and on which thread:
   `LevelChunk.getBlockState`, `Level.setBlock` in `LevelChunk.setBlockState`.
 - **Calls into:** `LevelLightEngine` and `ChunkSkyLightSources` (lighting),
   `Heightmap`, `LevelChunkTicks` (block ticks), `BlockBehaviour.BlockStateBase.onPlace` and
-  `EntityBlock.newBlockEntity` (Part V), `GameEventListenerRegistry`.
+  `EntityBlock.newBlockEntity` ([block entities](../blocks/block-entities.md)), `GameEventListenerRegistry`.
 - **Crosses the network as:** `ClientboundLevelChunkWithLightPacket`,
   whose `ClientboundLevelChunkPacketData` holds the heightmaps whose type
   `Heightmap.Types.sendToClient`, a buffer of *every* section's

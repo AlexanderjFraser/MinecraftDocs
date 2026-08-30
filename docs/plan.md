@@ -68,11 +68,11 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `level-data-and-rules` — `LevelData`/`PrimaryLevelData`, `GameRules`, `WorldBorder`, `SavedData` (maps, raids, scoreboard), dimensions (`DimensionType`, `LevelStem`). Short.
 
 ### Part V — Blocks (5 pages) `world/level/block`
-- [ ] `blocks-and-states` — `Block` vs `BlockState`, `StateDefinition`, `Property`, `BlockBehaviour` and its `Properties`; the state table and why it is immutable and interned. Trace: `getStateForPlacement`.
-- [ ] `block-interaction` — right-click and left-click from `ServerPlayerGameMode` into `BlockBehaviour` (`useItemOn`, `useWithoutItem`), neighbour updates, `BlockState.updateShape`. Trace: a door is opened.
-- [ ] `block-breaking` — destroy progress, `ServerPlayerGameMode.handleBlockBreakAction`, drops through loot, the client-side prediction. Trace: mining one stone.
-- [ ] `block-entities` — `BlockEntity`, `BlockEntityType`, `BlockEntityTicker`, save/sync (`getUpdateTag`, `getUpdatePacket`). Trace: a furnace smelts.
-- [ ] `redstone` — `RedStoneWireBlock`, `ExperimentalRedstoneUtils`/`RedstoneWireEvaluator`, signal strength, `NeighborUpdater`, pistons (`PistonMovingBlockEntity`). Trace: a lever powers a piston.
+- [x] `blocks-and-states` — `Block` vs `BlockState`, `StateDefinition`, `Property`, `BlockBehaviour` and its `Properties`; the state table and why it is immutable and interned. Trace: `getStateForPlacement`.
+- [x] `block-interaction` — right-click and left-click from `ServerPlayerGameMode` into `BlockBehaviour` (`useItemOn`, `useWithoutItem`), neighbour updates, `BlockState.updateShape`. Trace: a door is opened.
+- [x] `block-breaking` — destroy progress, `ServerPlayerGameMode.handleBlockBreakAction`, drops through loot, the client-side prediction. Trace: mining one stone.
+- [x] `block-entities` — `BlockEntity`, `BlockEntityType`, `BlockEntityTicker`, save/sync (`getUpdateTag`, `getUpdatePacket`). Trace: a furnace smelts.
+- [x] `redstone` — `RedStoneWireBlock`, `ExperimentalRedstoneUtils`/`RedstoneWireEvaluator`, signal strength, `NeighborUpdater`, pistons (`PistonMovingBlockEntity`). Trace: a lever powers a piston.
 
 ### Part VI — Entities (7 pages) `world/entity`
 - [ ] `entity-anatomy` — `Entity`, `EntityType`, the hierarchy (`LivingEntity` → `Mob` → `PathfinderMob` …), `EntityDimensions`, `Pose`. The map page for the part.
@@ -179,7 +179,7 @@ cross-links don't collide.
 | 2 | Part II Foundations | every later page uses these words |
 | 3 | Part III The server | the tick is the spine |
 | 4–5 | Part IV The world | the biggest server-side system; two sessions (chunks/tickets/generation, then lighting/storage/ticks/events/rules) |
-| 6 | Part V Blocks | |
+| 6 | Part V Blocks | done in session 5 (2026-08-30) |
 | 7–8 | Part VI Entities | anatomy/lifecycle/synched/attributes, then movement/AI/damage |
 | 9 | Part VII Items | |
 | 10 | Part VIII The player | needs blocks, entities, items |
@@ -313,3 +313,66 @@ and which are three. Pass 3, if it happens, is voice and cuts.
   collection names; the fix pass this session was ~85 names, almost all
   bare status constants in prose (write `ChunkStatus.FULL` or *FULL*).
   Next: Part V Blocks.
+- **2026-08-30, session 5** — Part V Blocks: five pages in
+  `src/systems/blocks/`. Things later sessions must know. **Placement and
+  interaction:** the client runs the real `BlockItem.place` / `Level.setBlock`
+  path under `BlockStatePredictionHandler` and the server's block update
+  for a predicted position is *swallowed* until the
+  `ClientboundBlockChangedAckPacket` (one per connection per tick, a
+  high-water mark sent after the level tick); shape updates run on both
+  sides (`Level.neighborShapeChanged`), neighbour updates only on the
+  server (`Level.updateNeighborsAt` is empty on `Level`); the two direction
+  orders differ (`BlockBehaviour.UPDATE_SHAPE_ORDER` W E N S D U vs
+  `NeighborUpdater.UPDATE_ORDER` W E D U N S); `InteractionResult` is a
+  sealed interface (`Success` carries the `SwingSource`;
+  `TryEmptyHandInteraction` replaces `ItemInteractionResult`); there is
+  **no `Level.markAndNotifyBlock`, no `BlockBehaviour.onRemove`** (it is
+  `affectNeighborsAfterRemoval` + `BlockEntity.preRemoveSideEffects`), no
+  `DirectionProperty` (facing is `EnumProperty`), and `Block.UpdateFlags`
+  is a type-use annotation — the constants are on `Block`. The
+  neighbour-update chain limit is **not a game rule**: it is the
+  *max-chained-neighbor-updates* server property (default one million).
+  Reach is `Attributes.BLOCK_INTERACTION_RANGE` and the check is
+  `Player.isWithinBlockInteractionRange` (no `canInteractWithBlock`).
+  **Breaking:** `GameRules.BLOCK_DROPS` (no *doTileDrops*); efficiency is
+  the `Attributes.MINING_EFFICIENCY` modifier, aqua affinity is
+  `Attributes.SUBMERGED_MINING_SPEED`; the loot key is fixed at block
+  construction (`BlockBehaviour.Properties.effectiveDrops`); the server
+  accepts a STOP at ≥ 0.7 progress and *defers* below that
+  (`hasDelayedDestroy`); `BlockDestructionProgress` lives in `server/level`
+  but only the client uses it. **Block entities:** 49 types, 19 override
+  `getUpdatePacket`; `BlockEntity.setChanged` sends nothing;
+  `getUpdatePacket` is called only from `ChunkHolder.broadcastBlockEntity`
+  after a block-state change; the client's block-entity tick is in
+  `Minecraft.tick`, not `ClientLevel.tick`; `Level.getBlockEntity` returns
+  null off-thread on the server; fuel values are code over item tags
+  (`FuelValues.vanillaBurnTimes`), not data. **Redstone:** the experimental
+  evaluator is gated on `FeatureFlags.REDSTONE_EXPERIMENTS` and chosen per
+  call in `RedStoneWireBlock.updatePowerStrength`; quasi-connectivity is
+  in `PistonBaseBlock.getNeighborSignal`; block events are a *set* on
+  `ServerLevel` drained a tick later, and the client simulates the piston
+  from `ClientboundBlockEventPacket`; `PistonMovingBlockEntity` cannot
+  carry a block entity. **For later parts:** Part VI should link
+  `Block.popResource` → `ItemEntity` and `Entity.absSnapTo` rather than
+  repeat; Part VII owns menus (`ServerPlayer.openMenu`,
+  `AbstractContainerMenu.broadcastChanges`, `ContainerSynchronizer`,
+  `RemoteSlot.Synchronized` hashing) and `Tool` / `ToolMaterial` — point
+  at `block-breaking` and `block-entities`; Part VIII's player page
+  should point at `block-interaction` for the prediction ledger rather
+  than re-explain it; Part IX's *what-the-client-is-told* gets
+  `ClientboundBlockChangedAckPacket`, `ClientboundBlockEventPacket`,
+  `ClientboundBlockDestructionPacket` and the "clicked block always
+  comes back" rule; Part X names `LevelExtractor.blockChanged`,
+  `BlockBreakingRenderState`, `ModelBakery.DESTROY_TYPES`,
+  `BlockStateModelSet` (no `BlockModelShaper`), `PistonHeadRenderer`.
+  The naming-drift appendix gains: `ItemInteractionResult` (gone),
+  `DirectionProperty` (gone), `Level.markAndNotifyBlock` (gone),
+  `BlockBehaviour.onRemove`→`affectNeighborsAfterRemoval`,
+  `doTileDrops`→`BLOCK_DROPS`, `BlockModelShaper`→`BlockStateModelSet`,
+  `RenderShape.ENTITYBLOCK_ANIMATED` (gone). Pages are 300–380 lines;
+  `redstone` carries the experimental evaluator as a coda and could
+  split if pass 2 wants it. The fix pass this session was 46 names
+  (bare members in prose, and members cited on a subclass instead of the
+  declaring class — `LevelHeightAccessor.getMaxY`, `LevelWriter.addFreshEntity`,
+  `Entity.absSnapTo`, `TypedInstance.is`); `ImmutableSortedMap` joined
+  ALLOW. Next: Part VI Entities (sessions 7–8).

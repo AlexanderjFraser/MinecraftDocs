@@ -37,7 +37,7 @@ ALLOW = {
     "ForkJoinPool", "ThreadLocal", "GLFW", "OpenGL", "Vulkan", "OpenAL", "ChannelPipeline",
     "ChannelInboundHandler", "NioEventLoopGroup", "EpollEventLoopGroup", "LocalAddress",
     "LocalChannel", "LocalServerChannel", "BooleanSupplier", "Supplier", "Consumer", "Function",
-    "Optional", "Set", "Map", "List", "Random",
+    "Optional", "Set", "Map", "List", "Random", "ImmutableSortedMap",
     # DFU ops / lifecycle, JOML.
     "JsonOps", "Lifecycle", "DataFixer", "Vector3f", "Vector3i", "Matrix4f", "Quaternionf",
     # JDK concurrency / IO, and jtracy (Mojang's Tracy binding, outside the game jar).

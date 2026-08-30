@@ -237,7 +237,7 @@ Narrated:
 - **Calls into:** `LevelTicks` and `BlockBehaviour.BlockStateBase.tick` (Parts IV and V),
   `ServerChunkCache` / `ChunkMap` / `DistanceManager` (Part IV),
   `NaturalSpawner` and `Entity.tick` (Part VI), `TickingBlockEntity`
-  (Part V), `Raids`, `EnderDragonFight`, `ServerClockManager`.
+  ([block entities](../blocks/block-entities.md)), `Raids`, `EnderDragonFight`, `ServerClockManager`.
 - **Crosses the network as:** `ClientboundGameEventPacket` (weather, from
   `ServerLevel.advanceWeatherCycle`); `ClientboundBlockUpdatePacket` /
   `ClientboundSectionBlocksUpdatePacket` / `ClientboundLightUpdatePacket`
