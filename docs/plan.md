@@ -164,6 +164,8 @@ One session = one part (Parts IV, VI and X take two). Each session:
    the pages here, and add a line to *Session log* below with anything
    the next session must know (a class that moved, a page that should
    split, a fact that contradicts an earlier page — fix that page too).
+   Anything for the owner's read or a later part also goes in
+   [pass2.md](pass2.md), the consolidated list.
 6. Production deploy (`tools/deploy.sh`) at the end of every part.
 
 **The owner's part ("meat proxy"):** start the session with "next part";
@@ -199,7 +201,9 @@ GitHub issues if they prefer). A pass-2 session answers each question in
 the prose — if the owner had to ask, the page was wrong or missing it —
 and removes the comment. Pass 2 also decides the lecture order and writes
 `lectures.md`, because by then the owner knows which pages are one lecture
-and which are three. Pass 3, if it happens, is voice and cuts.
+and which are three. Pass 3, if it happens, is voice and cuts. The
+running list of what pass 2 has to look at — split candidates, the
+naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
 
 ## Risks
 
