@@ -83,6 +83,10 @@ class names only).
 parts, a generated reference layer, sixteen sessions, one part per
 session, the per-session protocol (fact sheets from the decompile → pages →
 verify → deploy) and the session log. **Read it first; tick it last.**
+[docs/pass2.md](docs/pass2.md) — the running notes for the owner's read:
+split candidates, the naming-drift table, what each unwritten part must
+link to rather than repeat, closing-session to-dos. **A session that
+leaves something for later appends there, not only to the log.**
 `docs/outline.md` is the archived fourteen-lecture map; the lecture order
 is decided in pass 2, after the owner has read the pages.
 
