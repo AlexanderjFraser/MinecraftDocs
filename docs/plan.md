@@ -104,17 +104,17 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `chat-and-signing` — `Component`, `PlayerChatMessage`, signing, `ChatType`, the client-side report path. Trace: one message.
 
 ### Part X — The client (11 pages) `client/*`, `com/mojang/blaze3d`
-- [ ] `the-frame` — `Minecraft.runTick`, `DeltaTracker`, `GameRenderer.render`, `Camera`, `RenderBuffers`, where the frame time goes. Trace: one frame.
-- [ ] `blaze3d` — `GpuDevice`, `RenderPipeline`, `GpuBuffer`/`GpuTexture`, `RenderPass`, the `opengl` and `vulkan` backends, `RenderSystem`. The abstraction, not the driver.
-- [ ] `level-rendering` — `LevelRenderer`, `SectionRenderDispatcher`, meshing on the worker pool, `RenderType`/`ChunkSectionLayer`, visibility/culling, the render graph (`FrameGraphBuilder`). Trace: a block is placed and its section is rebuilt.
-- [ ] `lightmap-fog-and-sky` — `Lightmap`, `FogRenderer`, `SkyRenderer`, `WeatherEffectRenderer`, `CloudRenderer`.
-- [ ] `models-and-atlases` — `ModelManager`, `BlockStateModelLoader`, `BlockModel`, `BlockStateModel`, `TextureAtlas`/`AtlasManager`, item models (`client/renderer/item`). Trace: a resource pack changes a texture.
-- [ ] `entity-rendering` — `EntityRenderDispatcher`, `EntityRenderer`, `EntityRenderState` (extract then render), `EntityModel`/`ModelPart`, animation, `BlockEntityRenderer`. Trace: a zombie is drawn.
-- [ ] `gui-and-screens` — `Screen`, `GuiGraphics`, `AbstractWidget`, layouts, `GuiRenderer`/`GuiRenderState`, fonts (`Font`, `FontManager`, glyphs). Trace: opening the inventory.
-- [ ] `hud` — `Gui` (hotbar, hearts, chat, boss bars, scoreboard, debug screen). Short.
-- [ ] `particles` — `ParticleEngine`, `Particle`, `ParticleProvider`, `ParticleType`. Trace: a block breaks.
+- [x] `the-frame` — `Minecraft.runTick`, `DeltaTracker`, `GameRenderer.render`, `Camera`, `RenderBuffers`, where the frame time goes. Trace: one frame.
+- [x] `blaze3d` — `GpuDevice`, `RenderPipeline`, `GpuBuffer`/`GpuTexture`, `RenderPass`, the `opengl` and `vulkan` backends, `RenderSystem`. The abstraction, not the driver.
+- [x] `level-rendering` — `LevelRenderer`, `SectionRenderDispatcher`, meshing on the worker pool, `RenderType`/`ChunkSectionLayer`, visibility/culling, the render graph (`FrameGraphBuilder`). Trace: a block is placed and its section is rebuilt.
+- [x] `lightmap-fog-and-sky` — `Lightmap`, `FogRenderer`, `SkyRenderer`, `WeatherEffectRenderer`, `CloudRenderer`.
+- [x] `models-and-atlases` — `ModelManager`, `BlockStateModelLoader`, `BlockModel`, `BlockStateModel`, `TextureAtlas`/`AtlasManager`, item models (`client/renderer/item`). Trace: a resource pack changes a texture.
+- [x] `entity-rendering` — `EntityRenderDispatcher`, `EntityRenderer`, `EntityRenderState` (extract then render), `EntityModel`/`ModelPart`, animation, `BlockEntityRenderer`. Trace: a zombie is drawn.
+- [x] `gui-and-screens` — `Screen`, `GuiGraphics`, `AbstractWidget`, layouts, `GuiRenderer`/`GuiRenderState`, fonts (`Font`, `FontManager`, glyphs). Trace: opening the inventory.
+- [x] `hud` — `Gui` (hotbar, hearts, chat, boss bars, scoreboard, debug screen). Short.
+- [x] `particles` — `ParticleEngine`, `Particle`, `ParticleProvider`, `ParticleType`. Trace: a block breaks.
 - [x] `sound` — *exists.* Moves into this part.
-- [ ] `client-world-and-options` — `ClientLevel` (client-side ticking, prediction), `Options`, `KeyMapping`, `MouseHandler`/`KeyboardHandler`, `Tutorial`. Short.
+- [x] `client-world-and-options` — `ClientLevel` (client-side ticking, prediction), `Options`, `KeyMapping`, `MouseHandler`/`KeyboardHandler`, `Tutorial`. Short.
 
 ### Part XI — World generation (5 pages) `world/level/levelgen`, `world/level/biome`
 - [ ] `worldgen-pipeline` — `NoiseBasedChunkGenerator`, `NoiseGeneratorSettings`, `NoiseChunk`, `Aquifer`, `Beardifier`, surface (`SurfaceRules`), carvers; which `ChunkStatus` runs what. Trace: one chunk's terrain.
@@ -186,7 +186,7 @@ cross-links don't collide.
 | 9 | Part VII Items | done in session 7 (2026-08-31) |
 | 10 | Part VIII The player | done in session 8 (2026-08-31) |
 | 11 | Part IX Networking | done in session 9 (2026-08-31) |
-| 12–13 | Part X The client | frame/blaze3d/level/lightmap/models, then entities/gui/hud/particles/client-world |
+| 12–13 | Part X The client | done in session 10 (2026-08-31), all ten pages in one session |
 | 14 | Part XI World generation | last of the big ones; most data-driven |
 | 15 | Part XII Commands · Part XIII Appendix | |
 | 16 | Closing pass: re-read `anatomy` and `sound` against the finished corpus, glossary, class index, consistency of diagrams, production deploy | |
@@ -655,3 +655,70 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   members and constants in prose (the `ByteBufCodecs` and `HandlerNames`
   constant lists, and bare handler-method names). Next: Part X The client
   (sessions 12–13).
+- **2026-08-31, session 10** — Part X The client: all ten unwritten
+  pages in one session (`the-frame`, `blaze3d`, `level-rendering`,
+  `lightmap-fog-and-sky`, `models-and-atlases`, `entity-rendering`,
+  `gui-and-screens`, `hud`, `particles`, `client-world-and-options`);
+  `sound` already existed and already said Part X. **This is the part
+  where 1.21 memory is most dangerous — nearly every headline name is
+  gone.** The client has been rebuilt around one idea:
+  **extract then render.** `GameRenderer.extract` walks the live game
+  once and fills a `GameRenderState`; `GameRenderer.render` reads only
+  that. The same split runs all the way down — `LevelExtractor` took every
+  dirty flag and every entity walk off `LevelRenderer`; `EntityRenderer`
+  has **no `render` method**, only `extractRenderState` and `submit`;
+  `Gui`/`Hud`/`Screen`/`DebugScreenOverlay`/`ChatComponent` have no
+  `render` method either, only `extract*`. **`MultiBufferSource` does not
+  exist anywhere in the decompile**; geometry is *described* into a
+  `SubmitNodeCollector`/`SubmitNodeStorage` and vertices are written a
+  stage later by `net.minecraft.client.renderer.feature.*`. Big renames a
+  reader must know: **`Gui` is no longer the HUD** (that is `Hud`, held as
+  `Gui.hud`; `Gui` is the screen/overlay manager that used to be fields on
+  `Minecraft`, so `Minecraft.screen`/`setScreen` are gone);
+  **`GuiGraphics` does not exist** (`GuiGraphicsExtractor`);
+  **`LightTexture` → `Lightmap` + `LightCoordsUtil`**;
+  **`DimensionSpecialEffects` is gone entirely**, replaced by the
+  data-driven `EnvironmentAttributes` registry plus `Timeline` keyframes
+  (`Timelines.OVERWORLD_DAY`) and `DimensionType.skybox`;
+  **`BakedModel`/`ModelResourceLocation`/`BlockModelShaper`/`ItemModelShaper`/
+  `BlockRenderDispatcher`/`ItemRenderer`/`BlockElement`/`AtlasSet` all gone**
+  (`BlockStateModel`, `BlockStateModelSet`, `CuboidModel`, `AtlasManager`);
+  **`ShaderInstance`/`RenderStateShard`/`VertexBuffer`/`Tesselator`/
+  `BufferUploader` gone** (declarative `RenderPipeline` + `RenderPipelines`);
+  **`TextureSheetParticle` gone** (`SingleQuadParticle` + its `Layer`), and
+  `ParticleGroup` was *reused* for the per-render-type bucket (the limiter
+  is now `ParticleLimit`). **There is no render thread** — the thread named
+  *Render thread* is the main thread, and `RenderSystem.assertOnRenderThread`
+  is only called from inside Blaze3D's own legacy corners. **The Vulkan
+  backend is real and larger than the OpenGL one** (dynamic rendering, push
+  descriptors, shaderc + spirv-cross + VMA); the backend is chosen in the
+  `Minecraft` constructor from `PreferredGraphicsApi.getBackendsToTry`, and
+  a previous unclean shutdown downgrades a Vulkan preference. Facts other
+  parts must not contradict: ticks the client cannot keep up with are
+  **dropped, not deferred** (`DeltaTracker.Timer.advanceGameTime` removes
+  the whole integer part, then only ten run); the **client lights per
+  frame** (`ClientLevel.update`), and drains the *entire* queue once it
+  passes `ClientLevel.LIGHT_UPDATE_QUEUE_SIZE_THRESHOLD`; **animated
+  textures advance once per frame, not per tick**; `Minecraft.pick` runs
+  **twice** per ticking frame at different partial ticks; the **lightmap
+  ignores partial ticks** and redraws once per tick on the GPU; **only
+  visible sections are re-meshed** and their dirty flag waits indefinitely;
+  there are **three `ChunkSectionLayer`s**, not five; **every block entity
+  ticks on the client** regardless of simulation distance and client-side
+  scheduled ticks are black-holed; the **survival inventory is never
+  opened by the server** (`Player.inventoryMenu` has no `MenuType`);
+  **block-break particles bypass both the distance cull and the particle
+  setting**; and the prediction ledger **replays the server's opinion**
+  rather than rolling back. **For later parts:** Part XI's worldgen pages
+  should note that `Biome.getAttributes` now carries the visual attributes
+  (`BiomeSpecialEffects` keeps only water/foliage/grass colours) and that
+  `CardinalLighting` is per-dimension data; Part XII gets
+  `DebugScreenEntries`/`DebugOptionsScreen` only as a cross-reference;
+  Part XIII's out-of-scope tour gains `com/mojang/blaze3d/audio` (the
+  OpenAL wrapper lives inside blaze3d) and the `client/data/models`
+  datagen package (where the *name* `MultiVariant` survives, runtime-gone).
+  Pages are 250–330 lines. The fix pass was 66 names — the new failure
+  class is **gone names written in backticks in the headline paragraph**
+  (they must be italics, and this part has more of them than any other),
+  plus the usual bare members. Next: Part XI World generation
+  (session 14).

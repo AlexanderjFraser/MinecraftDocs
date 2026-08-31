@@ -28,6 +28,9 @@ read.
 | `items/containers-and-menus` | 320 | the menu/slot model vs the click protocol (state id, `HashedStack`) |
 | `player/player-anatomy` | 404 | the class ladder + `Inventory`/`Abilities` (a data page) vs the two-phase tick trace |
 | `player/input-to-movement` | 305 | the client input chain vs the server's validation and rubber-band |
+| `client/client-world-and-options` | ~300 | **strongest new candidate.** Four subjects: the tick/frame split and the client's own lighting; the prediction ledger (`MultiPlayerGameMode` + `BlockStatePredictionHandler`); options and `ClientInformation`; and input (`KeyMapping`, `MouseHandler`, `KeyboardHandler`). A sibling *input-and-keybinds* page would pair with Part VIII's *input to movement* — the seam is `ClientInput.tick`. The prediction ledger could also be its own page with its own trace; it is currently split across three pages (Part IX names `BlockStatePredictionHandler`, Part V's *block-breaking* has the prediction, this page has the ledger). Decide one owner. (session 10) |
+| `client/gui-and-screens` | ~300 | the two-phase render model + widgets/layouts vs the font and text engine (`Font`, `FontSet`, `GlyphStitcher`, `StringSplitter`, bidi) — the text half is a lecture on its own (session 10) |
+| `client/level-rendering` | ~310 | the meshing pipeline (dirty → compile → upload) vs visibility and the frame graph (session 10) |
 
 Parts III–V all came out at 260–380 lines. The lecture-order decision in
 pass 2 is where "one page, two lectures" gets settled; splitting the
@@ -47,6 +50,17 @@ markdown is optional.
   and IX, *CL* in Part VIII, *G* in Part III; `ClientPacketListener` is
   *CPL*, *CP* and *CL*. Session 9 used *SGPL* / *CPL*; pick one.)
 - Glossary + the naming-drift appendix (list below).
+- Part X diagram lanes use `LX` (`LevelExtractor`), `LR`, `GR`
+  (`GameRenderer`), `SRD`, `ERD`, `FRD`, `PE`, `H`/`G` — fold into the
+  lane-abbreviation decision above (session 10).
+- `sound` was written before the extract/render split was documented;
+  re-read it against `the-frame` and check whether the sound engine's
+  threading paragraph still matches (session 10).
+- `anatomy` predates Part X. Check its claim about the render thread:
+  in 26.2 the thread named *Render thread* **is** the main thread, and
+  the client has no second render thread (session 10).
+- The naming-drift appendix will be dominated by Part X. It is by far
+  the biggest source of gone names in the corpus (session 10).
 
 ## Naming drift for the appendix (1.21-era name → 26.2)
 
@@ -165,6 +179,35 @@ the old name and not finding it.
 | `SignedMessageHeader` / `MessageSigner` | `SignedMessageLink` / `SignedMessageChain.Encoder` | session 9 |
 | `ChatPreview` and its packets | gone | session 9 |
 | `ClientboundSetTimePacket(gameTime, dayTime, …)` | a game time plus a `WorldClock` update map | session 9 |
+| `Gui` (the HUD) | `Hud`, held as `Gui.hud`; the name `Gui` now means the screen/overlay manager | session 10 |
+| `Minecraft.screen` / `Minecraft.setScreen` | `Gui.screen` / `Gui.setScreen` | session 10 |
+| `GuiGraphics` | `GuiGraphicsExtractor` (records states; does not draw) | session 10 |
+| `Screen.render` / every `render*` on `Gui` | `Screen.extractRenderState` / `Hud.extract*` | session 10 |
+| `LayeredDraw` | call order plus `GuiRenderState.nextStratum` | session 10 |
+| `Options.hideGui` | `Hud.isHidden`, published as `GuiRenderState.isHudHidden` | session 10 |
+| `MultiBufferSource` / `BufferSource` | `SubmitNodeCollector` / `SubmitNodeStorage` / `FeatureRenderDispatcher` | session 10 |
+| `ShaderInstance`, `RenderStateShard` | `RenderPipeline` + `RenderPipelines` + `BindGroupLayouts` | session 10 |
+| `VertexBuffer`, `Tesselator`, `BufferUploader` | `GpuBuffer` / `GpuBufferSlice`, `ByteBufferBuilder` → `MeshData`, `UberGpuBuffer` | session 10 |
+| `RenderSystem.setShader` / `enableBlend` / `depthMask` … | fields of a `RenderPipeline` | session 10 |
+| `VertexFormat.Mode`, `VertexFormat.IndexType`, `TextureFormat` | `PrimitiveTopology`, `IndexType`, `GpuFormat` | session 10 |
+| `Window.updateDisplay`, vsync as a swap interval | `GpuSurface.present`, vsync as a `GpuSurface.PresentMode` | session 10 |
+| `LightTexture.pack` and friends | `LightCoordsUtil` | session 10 |
+| `DimensionSpecialEffects` | `DimensionType.skybox` + `EnvironmentAttributes` + `Timeline` | session 10 |
+| `FogParameters`, `RenderSystem.setShaderFogColor` | `FogData`, `RenderSystem.setShaderFog` (a uniform slice) | session 10 |
+| `Level.getSkyColor`, `ClientLevel.getStarBrightness`, `ClientLevel.effects` | `EnvironmentAttributeProbe.getValue` on an `EnvironmentAttribute` | session 10 |
+| `LevelRenderer.renderLevel` / `renderSky` / `renderChunkLayer` | `LevelRenderer.render` and the `addSkyPass` family of frame-graph passes | session 10 |
+| `LevelRenderer.blockChanged` / `setSectionDirty` / `allChanged` | the same names on `LevelExtractor` | session 10 |
+| `ChunkRenderDispatcher`, `RenderChunk`, `CompiledChunk` | `SectionRenderDispatcher`, its `RenderSection`, `CompiledSectionMesh` | session 10 |
+| `RenderType.chunkBufferLayers` (five layers) | `ChunkSectionLayer` — three layers | session 10 |
+| `BakedModel`, `ModelResourceLocation` | `BlockStateModel` / `ItemModel`; block models keyed by `BlockState` | session 10 |
+| `BlockModelShaper`, `ItemModelShaper`, `BlockRenderDispatcher`, `ItemRenderer` | `BlockStateModelSet`, `ItemModelResolver`, `ModelBlockRenderer` | session 10 |
+| `BlockElement` / `BlockElementFace`, `AtlasSet`, `ItemColors` | `CuboidModelElement` / `CuboidFace`, `AtlasManager`, `ItemTintSource` | session 10 |
+| `PlayerRenderer` | `AvatarRenderer` (serves players and mannequins, keyed by skin model) | session 10 |
+| `EntityRenderer.render`, `RenderLayer.render` | `extractRenderState` + `submit` | session 10 |
+| `TextureSheetParticle`, sheet `ParticleRenderType`s | `SingleQuadParticle` + `SingleQuadParticle.Layer` | session 10 |
+| `ParticleGroup` (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket | session 10 |
+| `Minecraft.getPartialTick`, `Timer`, `Camera.setup` | `DeltaTracker.Timer`, `Camera.update` + `Camera.extractRenderState` | session 10 |
+| `ClickType` | `ContainerInput` | session 10 |
 
 ## Cross-part obligations (link, don't repeat)
 
@@ -229,7 +272,7 @@ when the part is written.
   `Abilities.mayBuild` never travels), `CommonPlayerSpawnInfo`,
   `ClientboundSetHealthPacket` (saturation is sent but only its
   zero-ness is change-detected) and `ClientboundSetExperiencePacket`.
-- [ ] **Part X The client** — names to pick up: `LevelExtractor`,
+- [x] **Part X The client** — *written in session 10.* Names picked up: `LevelExtractor`,
   `SectionUpdateTracker`, `SectionCopy` (session 4);
   `LevelExtractor.blockChanged`, `BlockBreakingRenderState`,
   `ModelBakery.DESTROY_TYPES`, `BlockStateModelSet`, `PistonHeadRenderer`,
@@ -357,6 +400,35 @@ Short list of things established by a page and easy to get wrong from
   (enchanting), **not** by spending levels elsewhere — `enchantments`
   (corrected in session 8) / `hunger-xp-and-effects`.
 
+- There is **no render thread**: the thread named *Render thread* is
+  the main thread (`Main` renames it, `Minecraft.gameThread` is it) —
+  `the-frame`. `anatomy` predates this and must be re-checked.
+- Ticks the client cannot keep up with are **dropped, not deferred**;
+  at most ten run per frame — `the-frame`.
+- The client lights **per frame**, not per tick, and drains the whole
+  queue past a threshold — `client-world-and-options`.
+- Animated textures advance **once per frame**, not once per tick, and
+  `Minecraft.pick` runs **twice** per ticking frame — `the-frame`.
+- The lightmap is drawn on the GPU, once per tick, ignoring partial
+  ticks — `lightmap-fog-and-sky`.
+- Every per-dimension and per-biome visual constant is an
+  `EnvironmentAttribute`; `BiomeSpecialEffects` keeps only
+  water/foliage/grass colours — `lightmap-fog-and-sky`. **Part XI must
+  not describe biome fog or sky colours as living on
+  `BiomeSpecialEffects`.**
+- Only **visible** sections are re-meshed, and a dirty flag waits
+  indefinitely; there are **three** chunk layers — `level-rendering`.
+- Every block entity ticks on the client regardless of simulation
+  distance, and client-side scheduled ticks are black-holed —
+  `client-world-and-options`.
+- The survival inventory is opened entirely client-side and
+  `Player.inventoryMenu` has **no `MenuType`** — `gui-and-screens`.
+- Block-break particles bypass both the distance cull and the particle
+  setting; simulation distance is never sent to the server —
+  `particles` / `client-world-and-options`.
+- The client **replays the server's opinion** rather than rolling back:
+  the ledger stores what the server last said and the ack is permission
+  to apply it — `client-world-and-options`.
 ## Catalogue gaps found during pass 1
 
 - **Environment attributes and timelines have no page** (session 6).
@@ -385,6 +457,17 @@ Short list of things established by a page and easy to get wrong from
 - Package names need the `pkg/path` form (`world/attribute`,
   `entity/ai`), never the dotted Java form — the verifier matches
   directories by suffix (session 6).
+- **The headline paragraph is the biggest trap in a rename-heavy part.**
+  Session 10's 66 fixes were mostly gone names written in backticks
+  while *introducing* the rename (*ShaderInstance*, *BakedModel*,
+  *GuiGraphics*, *MultiBufferSource*, *DimensionSpecialEffects*).
+  Italicise a name the moment you say it no longer exists.
+- Java keywords and JDK exception names in backticks fail (`long`,
+  `OutOfMemoryError`); phrase them as prose. So do bare method names
+  used as concepts (`render`, `submit`, `extract`, `get`) — italics.
+- A member cited on the subclass still fails in Part X:
+  `Level.tickBlockEntities` not `ClientLevel.tickBlockEntities`,
+  `Model.setupAnim` not `EntityModel.setupAnim` (session 10).
 
 ## Questions already known to be waiting for the owner
 
