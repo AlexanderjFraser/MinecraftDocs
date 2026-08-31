@@ -75,13 +75,13 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `redstone` — `RedStoneWireBlock`, `ExperimentalRedstoneUtils`/`RedstoneWireEvaluator`, signal strength, `NeighborUpdater`, pistons (`PistonMovingBlockEntity`). Trace: a lever powers a piston.
 
 ### Part VI — Entities (7 pages) `world/entity`
-- [ ] `entity-anatomy` — `Entity`, `EntityType`, the hierarchy (`LivingEntity` → `Mob` → `PathfinderMob` …), `EntityDimensions`, `Pose`. The map page for the part.
-- [ ] `entity-lifecycle` — spawn (`Level.addFreshEntity`, `EntitySpawnReason`), `PersistentEntitySectionManager`, `EntityTickList`, removal reasons, chunk load/unload. Trace: a zombie spawns at night and despawns.
-- [ ] `synched-entity-data` — `SynchedEntityData`, `EntityDataAccessor`, `EntityDataSerializers`; what the client is told vs what it is not. Trace: a sheep is sheared.
-- [ ] `attributes` — `Attribute`, `AttributeInstance`, `AttributeModifier`, `AttributeSupplier`, equipment modifiers. Trace: Strength II changes damage.
-- [ ] `movement-and-collision` — `Entity.move`, collision against `VoxelShape`s, gravity/drag, `LivingEntity.travel`, fluids. Trace: one tick of a falling entity.
-- [ ] `ai-goals-and-brains` — `GoalSelector`/`Goal`, `Brain`/`Behavior`/`Activity`/`MemoryModuleType`, `Sensor`s; `PathNavigation`/`PathFinder`. Trace: a villager's day.
-- [ ] `damage-and-death` — `DamageSource`/`DamageType`, `LivingEntity.hurt`, armour/enchant reduction, i-frames, death, drops, `CombatTracker`. Trace: an arrow hits.
+- [x] `entity-anatomy` — `Entity`, `EntityType`, the hierarchy (`LivingEntity` → `Mob` → `PathfinderMob` …), `EntityDimensions`, `Pose`. The map page for the part.
+- [x] `entity-lifecycle` — spawn (`Level.addFreshEntity`, `EntitySpawnReason`), `PersistentEntitySectionManager`, `EntityTickList`, removal reasons, chunk load/unload. Trace: a zombie spawns at night and despawns.
+- [x] `synched-entity-data` — `SynchedEntityData`, `EntityDataAccessor`, `EntityDataSerializers`; what the client is told vs what it is not. Trace: a sheep is sheared.
+- [x] `attributes` — `Attribute`, `AttributeInstance`, `AttributeModifier`, `AttributeSupplier`, equipment modifiers. Trace: Strength II changes damage.
+- [x] `movement-and-collision` — `Entity.move`, collision against `VoxelShape`s, gravity/drag, `LivingEntity.travel`, fluids. Trace: one tick of a falling entity.
+- [x] `ai-goals-and-brains` — `GoalSelector`/`Goal`, `Brain`/`Behavior`/`Activity`/`MemoryModuleType`, `Sensor`s; `PathNavigation`/`PathFinder`. Trace: a villager's day.
+- [x] `damage-and-death` — `DamageSource`/`DamageType`, `LivingEntity.hurt`, armour/enchant reduction, i-frames, death, drops, `CombatTracker`. Trace: an arrow hits.
 
 ### Part VII — Items and inventories (5 pages) `world/item`, `world/inventory`
 - [ ] `items-and-stacks` — `Item` vs `ItemStack`, `Item.Properties`, the use pipeline (`use`, `useOn`, `finishUsingItem`), `Consumable`. Trace: eating.
@@ -182,7 +182,7 @@ cross-links don't collide.
 | 3 | Part III The server | the tick is the spine |
 | 4–5 | Part IV The world | the biggest server-side system; two sessions (chunks/tickets/generation, then lighting/storage/ticks/events/rules) |
 | 6 | Part V Blocks | done in session 5 (2026-08-30) |
-| 7–8 | Part VI Entities | anatomy/lifecycle/synched/attributes, then movement/AI/damage |
+| 7–8 | Part VI Entities | done in session 6 (2026-08-31), all seven pages |
 | 9 | Part VII Items | |
 | 10 | Part VIII The player | needs blocks, entities, items |
 | 11 | Part IX Networking | needs everything it carries |
@@ -380,3 +380,50 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   declaring class — `LevelHeightAccessor.getMaxY`, `LevelWriter.addFreshEntity`,
   `Entity.absSnapTo`, `TypedInstance.is`); `ImmutableSortedMap` joined
   ALLOW. Next: Part VI Entities (sessions 7–8).
+- **2026-08-31, session 6** — Part VI Entities, all seven pages in one
+  session (the schedule's 7–8), in `src/systems/entities/`. Things later
+  sessions must know. **The hierarchy changed:** `Avatar` is a new abstract
+  class between `LivingEntity` and `Player` (`Player extends Avatar`), and
+  it owns the player-shaped `Avatar.POSES`, the 1.62 eye height and the two
+  skin/handedness synched values; its other subclass is `Mannequin`
+  (`world/entity/decoration`), and on the client `PlayerRenderer` is gone in
+  favour of `AvatarRenderer`. `Player.createAttributes` is still on
+  `Player`, not `Avatar`. **The `EntityType` constants moved**: ids in
+  `EntityTypeIds`, objects in `EntityTypes` (158 each); `EntityType.PIG`
+  does not exist. `BuiltInRegistries.ENTITY_TYPE` is *defaulted to pig*.
+  **Damage split:** `Entity.hurtServer`/`Entity.hurtClient` are the real
+  methods, `Entity.hurt`/`hurtOrSimulate` are deprecated final wrappers, and
+  `LivingEntity` never overrides the client one; shields are gone as a
+  concept (`DataComponents.BLOCKS_ATTACKS` + an angle + a bypass set), and
+  `GameRules.MOB_DROPS` replaces *doMobLoot*. **AI:** `Schedule` no longer
+  exists — a `Brain` holds an `EnvironmentAttribute<Activity>` and asks
+  `Level.environmentAttributes`, with the keyframes in the data-pack
+  `Timelines.VILLAGER_SCHEDULE`; `BlockPathTypes` is `PathType`;
+  `Mob.brainProvider` is now `LivingEntity.makeBrain(Brain.Packed)`; goals
+  are re-evaluated every *other* tick, staggered by entity id.
+  **Movement:** `Entity.moveTo` is `Entity.absSnapTo`/`snapTo`,
+  `Entity.fallDistance` is a double, `LivingEntity.travel` decomposed into
+  `travelInAir`/`travelInFluid`/`travelFallFlying`, fluids moved into
+  `EntityFluidInteraction`, inside-block effects into
+  `InsideBlockEffectApplier`, and bounce is a block property
+  (`Block.getBounceRestitution` + `Attributes.BOUNCINESS`). **Sync:**
+  `SynchedEntityData` ids are class-tree ordinals capped at 254; defaults
+  never travel; a dirty data byte also forces that entity's movement packet
+  that tick; `EntityDataSerializers.OPTIONAL_UUID` and `COMPOUND_TAG` are
+  gone. **For later parts:** Part VII owns `ItemAttributeModifiers` /
+  `EquipmentSlotGroup` (named in `attributes`) and the loot side of
+  `dropAllDeathLoot`; Part VIII must not re-explain `Avatar`, i-frames or
+  `ServerPlayer.die` (which never calls `super.die`); Part IX gets
+  `ClientboundSetEntityDataPacket`, `ClientboundUpdateAttributesPacket`,
+  `ClientboundDamageEventPacket` (**no damage amount on the wire**),
+  `ClientboundHurtAnimationPacket`, `ClientboundEntityPositionSyncPacket`
+  and the pairing bundle from `ServerEntity.sendPairingData`; Part X names
+  `LevelExtractor`, `EntityRenderDispatcher.extractEntity`,
+  `SheepRenderState`, `AvatarRenderer`, `InterpolationHandler`. **A gap in
+  the catalogue:** nothing owns `world/attribute` (environment attributes)
+  or `world/timeline`, and three parts now lean on them — a 57th page is
+  the obvious fix; noted in pass2.md for the owner. Pages are 281–367
+  lines; `entity-anatomy` and `ai-goals-and-brains` are the split
+  candidates. The fix pass this session was only 21 names (bare enum
+  constants, package names needing the `pkg/path` form). Next: Part VII
+  Items.
