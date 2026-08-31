@@ -132,8 +132,8 @@ Narrated:
    sends the brand payload, `ClientboundServerLinksPacket`,
    `ClientboundUpdateEnabledFeaturesPacket` and runs `SynchronizeRegistriesTask`
    (registries and tags — [Part II](../foundations/tags.md)), then the
-   optional tasks (code of conduct, resource pack). Part IX's
-   *protocol-phases* page owns this phase;
+   optional tasks (code of conduct, resource pack). [Protocol
+   phases](../networking/protocol-phases.md) owns this phase;
    what matters here is that two tasks are queued last by
    `ServerConfigurationPacketListenerImpl.returnToWorld`: `PrepareSpawnTask`
    and `JoinWorldTask`.

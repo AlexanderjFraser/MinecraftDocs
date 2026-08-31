@@ -244,7 +244,7 @@ Narrated:
   (from `ChunkHolder.broadcastChanges`); `ClientboundBlockEventPacket`
   (from `ServerLevel.runBlockEvents`); `ClientboundSetTimePacket` (from the clock
   manager, not the level); entity packets from `ChunkMap.TrackedEntity`
-  (Part IX). All of them are queued behind the connection's suspended flush
+  ([what the client is told](../networking/what-the-client-is-told.md)). All of them are queued behind the connection's suspended flush
   and leave at the end of the server tick.
 - **Data-driven by:** the game rules named above (`GameRules` now lives in
   `world/level/gamerules`; there is no *DO_DAYLIGHT_CYCLE* or

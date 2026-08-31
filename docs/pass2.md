@@ -43,7 +43,9 @@ markdown is optional.
 - Re-read `anatomy` and `sound` against the finished corpus.
 - Diagram consistency: lane names are class names everywhere; check that
   the same class is abbreviated the same way across parts
-  (`ServerGamePacketListenerImpl` is *SG* in Part V, check Part IX).
+  (`ServerGamePacketListenerImpl` is *SG* in Part V, *SGPL* in Parts VII
+  and IX, *CL* in Part VIII, *G* in Part III; `ClientPacketListener` is
+  *CPL*, *CP* and *CL*. Session 9 used *SGPL* / *CPL*; pick one.)
 - Glossary + the naming-drift appendix (list below).
 
 ## Naming drift for the appendix (1.21-era name → 26.2)
@@ -139,6 +141,30 @@ the old name and not finding it.
 | `LivingEntity.eat` / `Player.eat` | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` | session 8 |
 | `MobEffect.createModifier` | `MobEffect.createModifiers` (plural) | session 8 |
 | `DataComponents.MENDING` | `EnchantmentEffectComponents.REPAIR_WITH_XP` | session 8 |
+| `Connection.setListener` / `setProtocol` / `getCurrentProtocol` | gone — `Connection.setupInboundProtocol` / `setupOutboundProtocol` | session 9 |
+| `ConnectionProtocol.getById` / packet tables | gone — a bare enum; ids are `addPacket` order in `IdDispatchCodec` | session 9 |
+| `Connection.NETWORK_WORKER_GROUP` etc. | `EventLoopGroupHolder` (in `server/network`) | session 9 |
+| `MemoryConnection` | gone — `Connection.isMemoryConnection` | session 9 |
+| `ensureRunningOnSameThread(…, BlockableEventLoop)` | `PacketUtils.ensureRunningOnSameThread` with a `PacketProcessor` | session 9 |
+| `Packet.write(FriendlyByteBuf)` | gone — a `STREAM_CODEC` field the protocol reads | session 9 |
+| `ClientboundAddPlayerPacket` / `ClientboundAddMobPacket` | gone — `ClientboundAddEntityPacket` | session 9 |
+| `ClientboundUpdateViewPositionPacket` | `ClientboundSetChunkCacheCenterPacket` | session 9 |
+| `ClientboundUpdateViewDistancePacket` | `ClientboundSetChunkCacheRadiusPacket` | session 9 |
+| `ClientboundLevelChunkPacket` | `ClientboundLevelChunkWithLightPacket` | session 9 |
+| routine `ClientboundTeleportEntityPacket` | `ClientboundEntityPositionSyncPacket` | session 9 |
+| `ClientboundGameProfilePacket` | `ClientboundLoginFinishedPacket` (+ a session id) | session 9 |
+| `ServerboundLoginStartPacket` | `ServerboundHelloPacket` | session 9 |
+| `ClientboundEncryptionRequestPacket` / response | `ClientboundHelloPacket` / `ServerboundKeyPacket` | session 9 |
+| `ClientboundSetCompressionPacket` | `ClientboundLoginCompressionPacket` | session 9 |
+| `ClientboundResourcePackPacket` | `ClientboundResourcePackPushPacket` / `…PopPacket` | session 9 |
+| `MinecraftServer.getSessionService` | `MinecraftServer.services` | session 9 |
+| `PlayerChunkSender` in `server/level` | `server/network` | session 9 |
+| `Component.Serializer` (Gson) | `ComponentSerialization` (codecs; NBT on the wire) | session 9 |
+| `TextComponent` / `TranslatableComponent` / … | `network/chat/contents` — `PlainTextContents` etc. | session 9 |
+| `ComponentUtils.updateForEntity` | `ComponentUtils.resolve` with a `ResolutionContext` | session 9 |
+| `SignedMessageHeader` / `MessageSigner` | `SignedMessageLink` / `SignedMessageChain.Encoder` | session 9 |
+| `ChatPreview` and its packets | gone | session 9 |
+| `ClientboundSetTimePacket(gameTime, dayTime, …)` | a game time plus a `WorldClock` update map | session 9 |
 
 ## Cross-part obligations (link, don't repeat)
 
@@ -174,7 +200,7 @@ when the part is written.
   and `FoodConstants` are half-explained in `items-and-stacks`; the
   enchanting seed `Player.enchantmentSeed` is re-rolled by *spending XP*
   (session 7).
-- [ ] **Part IX Networking** — `protocol-phases` points back at
+- [x] **Part IX Networking** (session 9) — `protocol-phases` points back at
   `players-and-sessions` for the configuration phase (session 3);
   *what-the-client-is-told* points at `tickets-and-loading` for
   `PlayerChunkSender` batching, `lighting` for `ClientboundLightUpdatePacket`
@@ -220,7 +246,31 @@ when the part is written.
   `ClientAvatarState`, `KeyMapping.Category` (a record, publicly
   registerable), `ToggleKeyMapping`, `MouseHandler` (which turns the
   player per **frame**, not per tick), and the attack indicator in
-  `Hud` with `AttackIndicatorStatus`.
+  `Hud` with `AttackIndicatorStatus`. From session 9: `ClientChunkCache`
+  and its nested `Storage` (a torus of slots indexed modulo the view
+  range, read off-thread by the render path), `ChunkBatchSizeCalculator`
+  (the chunk-rate control loop, measured on the Netty thread),
+  `InterpolationHandler` again (three client ticks per update), the chat
+  HUD — `ChatComponent`, `ChatListener`, `GuiMessage`, `GuiMessageTag`,
+  `ChatTrustLevel`, `GuiMessageSource`, `ChatAbilities` /
+  `ChatRestriction` — and the render side of `Component`
+  (`FontDescription`, `ObjectContents` with `AtlasSprite` /
+  `PlayerSprite`, `SubStringSource` for bidi). Note `ClientLevel.hasChunk`
+  returns true unconditionally and `ClientLevel.explode` is empty; *what
+  the client is told* owns those, Part X should link rather than repeat.
+- [ ] **Part XII Commands** — from session 9: `SignableCommand`,
+  `SignedArgument` (the only implementation is `MessageArgument`),
+  `ArgumentSignatures` (one signature per argument, each burning a chain
+  index), `CommandSigningContext`, `CommandSourceStack.withSigningContext`
+  and `DebugConfigCommand` (the only vanilla caller of
+  `ServerGamePacketListenerImpl.switchToConfig` and
+  `ServerConfigurationPacketListenerImpl.returnToWorld`). Chat *signing*
+  is owned by *chat-and-signing*; Part XII owns the argument plumbing.
+- [ ] **Part XIII Appendix** — the out-of-scope tour gains
+  `client/multiplayer/chat/report` (`ReportingContext`,
+  `AbuseReportSender`, the report screens) and `LegacyQueryHandler` /
+  `LegacyProtocolUtils` (the pre-1.7 ping still in the pipeline)
+  (session 9).
 - [ ] **Part XI World generation** — *worldgen-pipeline* points at
   `chunk-generation-pipeline` for the conveyor;
   `ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code (session 4).

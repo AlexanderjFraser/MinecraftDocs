@@ -97,11 +97,11 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `hunger-xp-and-effects` — `FoodData`, experience, `MobEffectInstance`, `MobEffects`. Short.
 
 ### Part IX — Networking (5 pages) `network`, `network/protocol`, `server/network`, `client/multiplayer`
-- [ ] `the-connection` — `Connection`, the Netty pipeline (splitter, decoder, decompressor, cipher), `PacketFlow`, `PacketListener`, `EventLoopGroupHolder`, the local channel in singleplayer. Trace: bytes to `handle`.
-- [ ] `protocol-phases` — `ConnectionProtocol`: handshake → status/login → configuration → play; `ProtocolInfo`, authentication with Mojang, encryption, `ServerConfigurationPacketListenerImpl` (registry/tag sync, resource packs). Trace: a login.
-- [ ] `packets-and-stream-codecs` — `Packet`, `PacketType`, `StreamCodec`/`ByteBufCodecs`, `RegistryFriendlyByteBuf`, bundles. Where the catalogue is (`src/reference/packets.md`).
-- [ ] `what-the-client-is-told` — chunk sending (`PlayerChunkSender`), entity tracking (`ChunkMap.TrackedEntity`, `ServerEntity`), block updates, `ClientLevel` as a lossy copy, `ClientPacketListener`. Trace: a creeper walks into view.
-- [ ] `chat-and-signing` — `Component`, `PlayerChatMessage`, signing, `ChatType`, the client-side report path. Trace: one message.
+- [x] `the-connection` — `Connection`, the Netty pipeline (splitter, decoder, decompressor, cipher), `PacketFlow`, `PacketListener`, `EventLoopGroupHolder`, the local channel in singleplayer. Trace: bytes to `handle`.
+- [x] `protocol-phases` — `ConnectionProtocol`: handshake → status/login → configuration → play; `ProtocolInfo`, authentication with Mojang, encryption, `ServerConfigurationPacketListenerImpl` (registry/tag sync, resource packs). Trace: a login.
+- [x] `packets-and-stream-codecs` — `Packet`, `PacketType`, `StreamCodec`/`ByteBufCodecs`, `RegistryFriendlyByteBuf`, bundles. Where the catalogue is (`src/reference/packets.md`).
+- [x] `what-the-client-is-told` — chunk sending (`PlayerChunkSender`), entity tracking (`ChunkMap.TrackedEntity`, `ServerEntity`), block updates, `ClientLevel` as a lossy copy, `ClientPacketListener`. Trace: a creeper walks into view.
+- [x] `chat-and-signing` — `Component`, `PlayerChatMessage`, signing, `ChatType`, the client-side report path. Trace: one message.
 
 ### Part X — The client (11 pages) `client/*`, `com/mojang/blaze3d`
 - [ ] `the-frame` — `Minecraft.runTick`, `DeltaTracker`, `GameRenderer.render`, `Camera`, `RenderBuffers`, where the frame time goes. Trace: one frame.
@@ -185,7 +185,7 @@ cross-links don't collide.
 | 7–8 | Part VI Entities | done in session 6 (2026-08-31), all seven pages |
 | 9 | Part VII Items | done in session 7 (2026-08-31) |
 | 10 | Part VIII The player | done in session 8 (2026-08-31) |
-| 11 | Part IX Networking | needs everything it carries |
+| 11 | Part IX Networking | done in session 9 (2026-08-31) |
 | 12–13 | Part X The client | frame/blaze3d/level/lightmap/models, then entities/gui/hud/particles/client-world |
 | 14 | Part XI World generation | last of the big ones; most data-driven |
 | 15 | Part XII Commands · Part XIII Appendix | |
@@ -579,3 +579,79 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   `super.tick` references (write the declaring class). Part VI's four
   plain-text forward references to Part VIII are now links. Next:
   Part IX Networking.
+- **2026-08-31, session 9** — Part IX Networking: five pages in
+  `src/systems/networking/`. Things later sessions must know.
+  **The thread model changed.** `PacketUtils.ensureRunningOnSameThread` no
+  longer takes a `BlockableEventLoop`: the two overloads take a
+  `ServerLevel` or a **`PacketProcessor`**, and `Minecraft` has one too.
+  It is a separate `ConcurrentLinkedQueue` drained in its own profiler
+  zone (*scheduledPacketProcessing*) **before** `runAllTasks`, on both
+  sides — so packet handling and `execute`-scheduled tasks are two
+  queues at two moments, and a client packet is applied once per client
+  *tick*, not per frame. **The whole handshake/login/status phase runs on
+  the Netty thread** — `ServerLoginPacketListenerImpl`,
+  `ServerHandshakePacketListenerImpl`, `ServerStatusPacketListenerImpl`
+  and `ClientHandshakePacketListenerImpl` contain no hop at all; the
+  login is advanced by `ServerLoginPacketListenerImpl.tick` on the server
+  thread off a volatile state field, and encryption is installed
+  *before* authentication starts. Server chat is the same shape:
+  `ServerGamePacketListenerImpl.handleChat` validates the last-seen
+  window on the Netty thread and only then schedules. **The pipeline is
+  reconfigured by writing a message through it**
+  (`UnconfiguredPipelineHandler`), and the codecs remove *themselves* on
+  a `Packet.isTerminal` packet (`ProtocolSwapHandler`, eight such
+  packets). **A packet's wire id is its index in the
+  `ProtocolInfoBuilder.addPacket` chain** — no id table anywhere, and the
+  same `PacketType` gets a different number per phase.
+  `ClientboundBundlePacket` has a `PacketType` but **no wire id**: only
+  the delimiter is registered, with `StreamCodec.unit`.
+  **Singleplayer still serialises every packet** — the local pipeline
+  only swaps the framing and drops the ciphers. `ConnectionProtocol` is a
+  bare five-constant enum with a string id and nothing else.
+  Names that are gone: `Connection.setListener`/`setProtocol`/`getCurrentProtocol`,
+  `ConnectionProtocol.getById`, `NETWORK_WORKER_GROUP` and friends (now
+  `EventLoopGroupHolder`, in `server/network`, used by client code too),
+  `MemoryConnection`, `ClientboundAddPlayerPacket`,
+  `ClientboundAddMobPacket`, `ClientboundUpdateViewPositionPacket`
+  (→`ClientboundSetChunkCacheCenterPacket`),
+  `ClientboundUpdateViewDistancePacket`
+  (→`ClientboundSetChunkCacheRadiusPacket`), `ClientboundLevelChunkPacket`,
+  `ClientboundGameProfilePacket` (→`ClientboundLoginFinishedPacket`, now
+  carrying a session id), `ClientboundSetCompressionPacket`
+  (→`ClientboundLoginCompressionPacket`), `ClientboundResourcePackPacket`
+  (→ push/pop), `MinecraftServer.getSessionService` (→`Services`),
+  `ComponentUtils.updateForEntity` (→`ComponentUtils.resolve` with a
+  `ResolutionContext`), `Component.Serializer`, every `*Component` text
+  class (contents live in `network/chat/contents`), `SignedMessageHeader`,
+  `MessageSigner`, `ChatPreview`. **Replication facts other parts lean
+  on:** `PlayerChunkSender` moved to `server/network`; the tracking view
+  is a **disc** and the visibility test **ignores Y**; an entity outside
+  simulation range gets *no* `ServerEntity.sendChanges` at all;
+  `ClientboundAddEntityPacket` reports the tracker's *stale baseline*,
+  not the live entity; light broadcasts go only to **border** chunks
+  while block updates go to everyone tracking the chunk; routine movement
+  never uses `ClientboundTeleportEntityPacket` (it is
+  `ClientboundEntityPositionSyncPacket`); `ClientLevel.hasChunk` returns
+  **true unconditionally** and `ClientLevel.explode` has an empty body;
+  the first chunk batch after login is a synchronous round trip
+  (`PlayerChunkSender.maxUnacknowledgedBatches` starts at one).
+  `Entity.setRequiresPrecisePosition` has **no callers** yet gates the
+  absolute-position decision. Vanilla never decorates chat
+  (`ChatDecorator.PLAIN`), never sends `ClientboundDeleteChatPacket` and
+  never sends `ClientboundResetChatPacket`;
+  `ServerLoginPacketListenerImpl.State.NEGOTIATING` is declared and never
+  assigned. **For later parts:** Part X gets `ClientChunkCache.Storage`
+  (a torus), `ChunkBatchSizeCalculator`, `InterpolationHandler`,
+  `ChatComponent` / `ChatListener` / `GuiMessage` / `GuiMessageTag` and
+  the `Component` render side (`FontDescription`, `ObjectContents`
+  sprites); Part XII gets `SignableCommand`, `MessageArgument`,
+  `CommandSigningContext`, `ArgumentSignatures` and `DebugConfigCommand`;
+  Part XIII's out-of-scope tour gets `client/multiplayer/chat/report` and
+  `LegacyQueryHandler`. `players-and-sessions`, `server-tick` and
+  `server-level-tick` had their plain-text Part IX references turned into
+  links. Diagram lanes in this part use `SGPL` and `CPL`; the corpus is
+  inconsistent (`SG`, `SGPL`, `CL`, `G`) and the closing session should
+  settle it. Pages are 293–402 lines. The fix pass was 78 names, all bare
+  members and constants in prose (the `ByteBufCodecs` and `HandlerNames`
+  constant lists, and bare handler-method names). Next: Part X The client
+  (sessions 12–13).
