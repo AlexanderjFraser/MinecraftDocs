@@ -24,6 +24,8 @@ read.
 | `blocks/blocks-and-states` | ~340 | the state table (data page) vs the placement trace + prediction |
 | `entities/entity-anatomy` | 367 | the base class + `EntityType` vs the hierarchy tour |
 | `entities/ai-goals-and-brains` | 357 | goals vs brains vs pathfinding — three lectures in one page |
+| `items/items-and-stacks` | 340 | the stack data model vs the use pipeline + the eating trace |
+| `items/containers-and-menus` | 320 | the menu/slot model vs the click protocol (state id, `HashedStack`) |
 
 Parts III–V all came out at 260–380 lines. The lecture-order decision in
 pass 2 is where "one page, two lectures" gets settled; splitting the
@@ -99,6 +101,31 @@ the old name and not finding it.
 | UUID-keyed `AttributeModifier` | `Identifier`-keyed record | session 6 |
 | `AttributeMap.getDirtyAttributes` | `getAttributesToSync` + `getAttributesToUpdate` | session 6 |
 | `PlayerRenderer` | `AvatarRenderer` | session 6 |
+| `InteractionResultHolder` | gone — `InteractionResult.Success.heldItemTransformedTo` | session 7 |
+| `UseAnim` | `ItemUseAnimation` | session 7 |
+| `Item.getFoodProperties` | `DataComponents.FOOD` on the stack | session 7 |
+| `ItemStack.getTag` / `getOrCreateTag` | gone — components | session 7 |
+| `LivingEntity.triggerItemUseEffects` | `Consumable.emitParticlesAndSounds` | session 7 |
+| `FoodProperties` effects list | `Consumable.onConsumeEffects` | session 7 |
+| `ClickType` | `ContainerInput` | session 7 |
+| `MultiPlayerGameMode.handleInventoryMouseClick` | `handleContainerInput` | session 7 |
+| `ClientboundSetCarriedItemPacket` | split: `ClientboundSetCursorItemPacket` + `ClientboundSetHeldSlotPacket` | session 7 |
+| `ClientboundSetSlotPacket` | `ClientboundContainerSetSlotPacket` | session 7 |
+| `ClientboundHorseScreenOpenPacket` | `ClientboundMountScreenOpenPacket` | session 7 |
+| `Container.startOpen(Player)` | `Container.startOpen(ContainerUser)` | session 7 |
+| `Recipe.getResultItem` / `getIngredients` | gone — `Recipe.assemble` / `PlacementInfo` | session 7 |
+| `Ingredient.EMPTY` | gone — an `Ingredient` cannot be empty | session 7 |
+| `data/<ns>/recipes/` | `data/<ns>/recipe/` (singular) | session 7 |
+| `EnchantmentCategory` | `Enchantment.EnchantmentDefinition` item sets | session 7 |
+| `Enchantment.getDamageBonus`, `EnchantmentHelper.getFireAspect`… | gone — `EnchantmentEffectComponents` | session 7 |
+| `EnchantedBookItem` | gone — `DataComponents.STORED_ENCHANTMENTS` | session 7 |
+| `Item.getEnchantmentValue` | `DataComponents.ENCHANTABLE` | session 7 |
+| `LootContextParam` / `LootContextParamSet` | `ContextKey` / `ContextKeySet` (`util/context`) | session 7 |
+| `LootDataManager` / `LootTables` | `ReloadableServerRegistries` + `BuiltInLootTables` | session 7 |
+| `LootTableReference` | `NestedLootTable` | session 7 |
+| `LootingEnchantFunction` | `EnchantedCountIncreaseFunction` | session 7 |
+| `SetCountFunction` | `SetItemCountFunction` | session 7 |
+| `LootContextParams.KILLER_ENTITY` | `LootContextParams.ATTACKING_ENTITY` | session 7 |
 
 ## Cross-part obligations (link, don't repeat)
 
@@ -109,7 +136,7 @@ when the part is written.
   `PersistentEntitySectionManager.updateChunkStatus` / `Visibility`
   (session 4); `Block.popResource` → `ItemEntity` and `Entity.absSnapTo`
   from `block-breaking` / `blocks-and-states` (session 5).
-- [ ] **Part VII Items** — menus (`ServerPlayer.openMenu`,
+- [x] **Part VII Items** (session 7) — menus (`ServerPlayer.openMenu`,
   `AbstractContainerMenu.broadcastChanges`, `ContainerSynchronizer`,
   `RemoteSlot.Synchronized` hashing) are half-explained in
   `block-entities`; `Tool` / `ToolMaterial` in `block-breaking`; item
@@ -127,7 +154,13 @@ when the part is written.
   ledger (`BlockStatePredictionHandler`) is in `block-interaction`;
   `Avatar`, i-frames, the armour/protection formulas and
   `ServerPlayer.die` (which never calls `super.die`) are in Part VI — link,
-  do not repeat (session 6).
+  do not repeat (session 6). `Player.attack`, `Player.itemAttackInteraction`
+  and `ServerPlayer.getEnchantedDamage` (the base `Player.getEnchantedDamage`
+  returns its argument unchanged) are named but not owned by
+  `enchantments`; attacks arrive as `ServerboundAttackPacket`; `FoodData`
+  and `FoodConstants` are half-explained in `items-and-stacks`; the
+  enchanting seed `Player.enchantmentSeed` is re-rolled by *spending XP*
+  (session 7).
 - [ ] **Part IX Networking** — `protocol-phases` points back at
   `players-and-sessions` for the configuration phase (session 3);
   *what-the-client-is-told* points at `tickets-and-loading` for
@@ -140,7 +173,13 @@ when the part is written.
   `ClientboundSetEquipmentPacket` (which bypasses `ServerEntity`),
   `ClientboundDamageEventPacket` (**no damage amount on the wire**),
   `ClientboundHurtAnimationPacket`, `ClientboundEntityPositionSyncPacket`
-  and the `ServerEntity.sendPairingData` bundle (session 6).
+  and the `ServerEntity.sendPairingData` bundle (session 6). Adds the whole container
+  packet set, `HashedStack` / `HashedPatchMap` (CRC32C over component
+  values, cached per player) and the 15-bit state id from
+  `containers-and-menus`; `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` for
+  inbound stacks; and the registry-sync asymmetry — `Registries.ENCHANTMENT`
+  is synced with its **full** direct codec while the three loot registries
+  are never synced at all (session 7).
 - [ ] **Part X The client** — names to pick up: `LevelExtractor`,
   `SectionUpdateTracker`, `SectionCopy` (session 4);
   `LevelExtractor.blockChanged`, `BlockBreakingRenderState`,
@@ -149,13 +188,18 @@ when the part is written.
   (`ClientLevel.update`, session 4); `EntityRenderDispatcher.extractEntity`,
   `SheepRenderState`, `AvatarRenderer` (there is no `PlayerRenderer`),
   `InterpolationHandler`, and `LivingEntityRenderer`'s red overlay from
-  `LivingEntity.hurtTime` (session 6).
+  `LivingEntity.hurtTime` (session 6). From session 7:
+  `AbstractContainerScreen`, `MenuScreens`,
+  `ItemInHandRenderer.applyEatTransform`, `Hud.extractFood`,
+  `RecipeBookComponent`, `GhostSlots`, `ClientRecipeBook`,
+  `EnchantmentNames`.
 - [ ] **Part XI World generation** — *worldgen-pipeline* points at
   `chunk-generation-pipeline` for the conveyor;
   `ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code (session 4).
-- [ ] **Part XII Commands** — the loot system's data-pack side
-  (`LootTable`, `LootParams`, `LootContextParamSets.BLOCK`) is used but
-  not explained in `block-breaking`.
+- [ ] **Part XII Commands** — `loot-tables` now owns the loot data model,
+  so Part XII need only cover the commands: `/loot`, `/item … with`
+  (`ItemCommands.applyModifier`) and `EnchantCommand`, plus
+  `ResourceOrIdArgument` accepting an inline table (session 7).
 - [ ] **Part XIII Appendix** — the naming-drift table above; the JSON-RPC
   and pause-when-empty paragraphs.
 
@@ -200,6 +244,17 @@ Short list of things established by a page and easy to get wrong from
   the wire; i-frames compare against the last damage — `damage-and-death`.
 - AI is strictly single-threaded and pathfinding never loads a chunk —
   `ai-goals-and-brains`.
+- An item's default components are built at *reload*, not at
+  construction; `Item.components` throws before then — `items-and-stacks`.
+- A shift-click that agrees costs **zero** clientbound packets; the
+  server adopts the client's hash as its new baseline — `containers-and-menus`.
+- The client is never sent a recipe; a `RecipeDisplayId` is a list index
+  that changes on every reload — `recipes`.
+- No enchantment effect runs on the client, but the client still gets the
+  full definitions for tooltips — `enchantments`.
+- Loot tables are never synced; a chest's table key is cleared *before*
+  the roll, and any container read (a hopper, `/data`) commits it with no
+  player luck — `loot-tables`.
 
 ## Catalogue gaps found during pass 1
 

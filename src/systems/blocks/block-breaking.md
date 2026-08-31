@@ -276,9 +276,8 @@ sequenceDiagram
   `ServerboundPlayerActionPacket.Action.SWAP_ITEM_WITH_OFFHAND` … — share
   the packet, not the mechanism.
 - **Calls into:** `Level.removeBlock` → `Level.setBlock` ([blocks and states](blocks-and-states.md));
-  the loot system (`LootTable`, `LootParams`, `LootContext` — Part XII
-  covers the data-pack side); `ItemEntity` and `ExperienceOrb` (Part VI);
-  `ItemStack.hurtAndBreak` (Part VII). The non-player removal path is
+  the loot system ([loot tables](../items/loot-tables.md)); `ItemEntity` and `ExperienceOrb` (Part VI);
+  `ItemStack.hurtAndBreak` ([items and stacks](../items/items-and-stacks.md)). The non-player removal path is
   `Level.destroyBlock` — pistons, commands, explosions — which drops with
   an empty tool and skips stats.
 - **Crosses the network as:** `ServerboundSetCarriedItemPacket`,

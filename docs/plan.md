@@ -84,11 +84,11 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `damage-and-death` — `DamageSource`/`DamageType`, `LivingEntity.hurt`, armour/enchant reduction, i-frames, death, drops, `CombatTracker`. Trace: an arrow hits.
 
 ### Part VII — Items and inventories (5 pages) `world/item`, `world/inventory`
-- [ ] `items-and-stacks` — `Item` vs `ItemStack`, `Item.Properties`, the use pipeline (`use`, `useOn`, `finishUsingItem`), `Consumable`. Trace: eating.
-- [ ] `containers-and-menus` — `Container`, `AbstractContainerMenu`, `Slot`, `MenuType`, `ContainerSynchronizer`, the click protocol (`ServerboundContainerClickPacket`). Trace: shift-clicking into a chest.
-- [ ] `recipes` — `Recipe`, `RecipeManager`, `RecipeSerializer`, the `RecipeBook`. Trace: crafting.
-- [ ] `enchantments` — data-driven `Enchantment` with effect components (`EnchantmentEffectComponents`), `EnchantmentHelper`. Trace: Fire Aspect applies.
-- [ ] `loot-tables` — `LootTable`, `LootPool`, `LootContext`/`LootParams`, predicates, functions; who calls them (blocks, entities, chests, fishing). Trace: a chest generates.
+- [x] `items-and-stacks` — `Item` vs `ItemStack`, `Item.Properties`, the use pipeline (`use`, `useOn`, `finishUsingItem`), `Consumable`. Trace: eating.
+- [x] `containers-and-menus` — `Container`, `AbstractContainerMenu`, `Slot`, `MenuType`, `ContainerSynchronizer`, the click protocol (`ServerboundContainerClickPacket`). Trace: shift-clicking into a chest.
+- [x] `recipes` — `Recipe`, `RecipeManager`, `RecipeSerializer`, the `RecipeBook`. Trace: crafting.
+- [x] `enchantments` — data-driven `Enchantment` with effect components (`EnchantmentEffectComponents`), `EnchantmentHelper`. Trace: Fire Aspect applies.
+- [x] `loot-tables` — `LootTable`, `LootPool`, `LootContext`/`LootParams`, predicates, functions; who calls them (blocks, entities, chests, fishing). Trace: a chest generates.
 
 ### Part VIII — The player (4 pages) `world/entity/player`, `server/level`, `client/player`
 - [ ] `player-anatomy` — `Player`, `ServerPlayer`, `LocalPlayer`/`AbstractClientPlayer`, `ServerPlayerGameMode`/`MultiPlayerGameMode`, `Abilities`, `GameType`, `Inventory`.
@@ -183,7 +183,7 @@ cross-links don't collide.
 | 4–5 | Part IV The world | the biggest server-side system; two sessions (chunks/tickets/generation, then lighting/storage/ticks/events/rules) |
 | 6 | Part V Blocks | done in session 5 (2026-08-30) |
 | 7–8 | Part VI Entities | done in session 6 (2026-08-31), all seven pages |
-| 9 | Part VII Items | |
+| 9 | Part VII Items | done in session 7 (2026-08-31) |
 | 10 | Part VIII The player | needs blocks, entities, items |
 | 11 | Part IX Networking | needs everything it carries |
 | 12–13 | Part X The client | frame/blaze3d/level/lightmap/models, then entities/gui/hud/particles/client-world |
@@ -427,3 +427,66 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   candidates. The fix pass this session was only 21 names (bare enum
   constants, package names needing the `pkg/path` form). Next: Part VII
   Items.
+- **2026-08-31, session 7** — Part VII Items and inventories: five pages
+  in `src/systems/items/`. Things later sessions must know. **Items:**
+  `Item` holds almost no data — the default component map is built by
+  `DataComponentInitializers` at *reload* and installed with
+  `Holder.Reference.bindComponents`, so `Item.components` throws before
+  the first reload and two data-pack sets give the same `Item` different
+  defaults. `InteractionResultHolder` is gone (the transformed stack
+  rides in `InteractionResult.Success.heldItemTransformedTo`), `UseAnim`
+  is `ItemUseAnimation`, and there are three new types: `ItemInstance`
+  (the read-only view — `LootContextParams.TOOL` is typed as one),
+  `ItemStackTemplate` (immutable; what crafting remainders and particles
+  carry) and `UseEffects` (the eat-slowdown is now a component).
+  `Item.releaseUsing` returns a boolean; `Item.getUseDuration` takes the
+  entity. **Menus:** `ClickType` is gone — it is `ContainerInput`, and
+  `MultiPlayerGameMode.handleContainerInput` replaces
+  *handleInventoryMouseClick*. The click protocol is: client predicts,
+  sends its own `HashedStack` diff plus a 15-bit state id, server
+  re-runs the same code and sends **nothing** when the hashes agree
+  (`RemoteSlot.Synchronized` promotes a matching hash to a concrete
+  copy). Only `ContainerSynchronizer.sendInitialData` and
+  `sendSlotChange` bump the state id; the cursor packet
+  (`ClientboundSetCursorItemPacket`) carries neither id.
+  `ClientboundSetCarriedItemPacket` is gone — split into
+  `ClientboundSetCursorItemPacket` and `ClientboundSetHeldSlotPacket`,
+  and *serverbound* `ServerboundSetCarriedItemPacket` is the hotbar
+  index. Mount menus and `InventoryMenu` have a **null `MenuType`** and
+  cannot travel through `ClientboundOpenScreenPacket`. **Recipes:** the
+  client is never sent a recipe — `ClientboundUpdateRecipesPacket`
+  carries only `RecipePropertySet`s and stonecutter displays, and a
+  `RecipeDisplayId` is a *list index* that changes every reload.
+  `RecipeSerializer` is a two-field record; `RecipeType` is an empty
+  interface; matching is a linear scan of the type bucket in
+  alphabetical id order. Recipes live in *data/<ns>/recipe/* (singular).
+  **Enchantments:** `Enchantment` is a record with a `DataComponentMap`
+  of effects; `EnchantmentCategory` and every *getXBonus* helper are
+  gone; vanilla enchantments are JSON in the built-in pack and
+  `Enchantments.bootstrap` is data-gen only. The registry **is** synced
+  with the full direct codec. Effect conditions are loot conditions
+  validated at decode time. Two spellings:
+  `Enchantment.modifyArmorEffectivness` (Mojang's typo) vs
+  `EnchantmentHelper.modifyArmorEffectiveness`. **Loot:** loot
+  parameters have left the loot package — `ContextKey`/`ContextKeySet`/
+  `ContextMap` in `util/context`; there is no *LootDataManager*
+  (`ReloadableServerRegistries` + `Registries.LOOT_TABLE`); a table's
+  declared param set is never checked at runtime; a chest's key is
+  cleared **before** the roll and every container read unpacks first, so
+  a hopper can commit the roll with no luck. **For later parts:**
+  Part VIII gets `Player.attack` / `ServerPlayer.getEnchantedDamage`
+  (the base `Player.getEnchantedDamage` returns its argument unchanged),
+  attacks arriving as `ServerboundAttackPacket`, `FoodData` /
+  `FoodConstants`, and `Player.enchantmentSeed` (re-rolled by *spending
+  XP*, not by enchanting); Part IX gets the whole container packet set,
+  `HashedStack`/`HashedPatchMap` (CRC32C over component values, cached
+  per player) and the fact that loot registries are **not** synced while
+  `Registries.ENCHANTMENT` is; Part X names `AbstractContainerScreen`,
+  `MenuScreens`, `ItemInHandRenderer.applyEatTransform`,
+  `Hud.extractFood`, `RecipeBookComponent`, `GhostSlots`,
+  `EnchantmentNames`; Part XII gets `/loot`, `/item`,
+  `EnchantCommand` and the data-pack side of predicates and item
+  modifiers. `block-breaking` and `block-entities` had their italic
+  Part VII forward references turned into links. Pages are 260–340
+  lines. The fix pass was 64 names, almost all bare members and enum
+  constants in prose. Next: Part VIII The player.

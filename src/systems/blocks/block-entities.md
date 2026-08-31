@@ -288,9 +288,9 @@ sequenceDiagram
 - **Calls into:** `Level.setBlock` (a block entity that wants the world
   to know changes a *block state*); `Level.blockEntityChanged` →
   `LevelChunk.markUnsaved`; `Level.updateNeighbourForOutputSignal`;
-  `RecipeManager` (`ServerLevel.recipeAccess`; Part VII); `FuelValues`;
+  `RecipeManager` (`ServerLevel.recipeAccess`; [recipes](../items/recipes.md)); `FuelValues`;
   `ServerPlayer.openMenu` and `AbstractContainerMenu.broadcastChanges`
-  (Part VII owns menus); `BlockEntityRenderDispatcher` on the client
+  ([containers and menus](../items/containers-and-menus.md)); `BlockEntityRenderDispatcher` on the client
   (Part X — `ClientLevel.onBlockEntityAdded` registers globally rendered
   ones).
 - **Crosses the network as:** `ClientboundBlockEntityDataPacket` (only
