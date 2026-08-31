@@ -182,8 +182,8 @@ sequenceDiagram
    — the sword's *base_attack_damage* modifier from
    `DataComponents.ATTRIBUTE_MODIFIERS` and the effect's +6 — clamps, caches
    and returns. The rest of the swing — cooldown scale from
-   `Attributes.ATTACK_SPEED`, enchantment bonus, crit — belongs to *the
-   sword swing* in Part VIII.
+   `Attributes.ATTACK_SPEED`, enchantment bonus, crit — belongs to
+   [the sword swing](../player/the-sword-swing.md).
 8. **Removal.** Effect expiry → `LivingEntity.onEffectsRemoved` →
    `MobEffect.removeAttributeModifiers` → remove by id from all three
    indices, dirty again.

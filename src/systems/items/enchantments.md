@@ -243,8 +243,12 @@ refunds experience from the minimum costs.
   tests the runtime slot, the other tests exact membership in the
   declared slot list, so an enchantment declared for any slot does not
   surface its attribute lines in a main-hand tooltip.
-- **The enchanting seed is per player, saved, and re-rolled by spending
-  experience** rather than by enchanting.
+- **The enchanting seed is per player, saved, and re-rolled only by
+  `Player.onEnchantmentPerformed`** — that is, by taking an enchantment
+  from the table. Spending levels any other way (an anvil, for instance)
+  leaves it alone, and a seed that loads back as zero is re-rolled on
+  read. [Hunger, XP and effects](../player/hunger-xp-and-effects.md)
+  covers the experience side.
 - **Effect conditions are validated at decode time, per parameter set.**
   A predicate that asks for something its hook cannot provide is a load
   error, not a runtime one.

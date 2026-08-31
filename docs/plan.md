@@ -91,10 +91,10 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `loot-tables` — `LootTable`, `LootPool`, `LootContext`/`LootParams`, predicates, functions; who calls them (blocks, entities, chests, fishing). Trace: a chest generates.
 
 ### Part VIII — The player (4 pages) `world/entity/player`, `server/level`, `client/player`
-- [ ] `player-anatomy` — `Player`, `ServerPlayer`, `LocalPlayer`/`AbstractClientPlayer`, `ServerPlayerGameMode`/`MultiPlayerGameMode`, `Abilities`, `GameType`, `Inventory`.
-- [ ] `input-to-movement` — `KeyMapping`, `ClientInput`, `LocalPlayer.aiStep`, `ServerboundMovePlayerPacket`, server sanity checks in `ServerGamePacketListenerImpl` (moved too quickly, flying), teleport acknowledgement. Trace: W is pressed.
-- [ ] `the-sword-swing` — attack cooldown (`getAttackStrengthScale`), `Player.attack`, hit detection (`GameRenderer.pick`, raycast on the client), sweep, crits, knockback, `ServerboundInteractPacket`. Trace: click to damage.
-- [ ] `hunger-xp-and-effects` — `FoodData`, experience, `MobEffectInstance`, `MobEffects`. Short.
+- [x] `player-anatomy` — `Player`, `ServerPlayer`, `LocalPlayer`/`AbstractClientPlayer`, `ServerPlayerGameMode`/`MultiPlayerGameMode`, `Abilities`, `GameType`, `Inventory`.
+- [x] `input-to-movement` — `KeyMapping`, `ClientInput`, `LocalPlayer.aiStep`, `ServerboundMovePlayerPacket`, server sanity checks in `ServerGamePacketListenerImpl` (moved too quickly, flying), teleport acknowledgement. Trace: W is pressed.
+- [x] `the-sword-swing` — attack cooldown (`getAttackStrengthScale`), `Player.attack`, hit detection (`GameRenderer.pick`, raycast on the client), sweep, crits, knockback, `ServerboundInteractPacket`. Trace: click to damage.
+- [x] `hunger-xp-and-effects` — `FoodData`, experience, `MobEffectInstance`, `MobEffects`. Short.
 
 ### Part IX — Networking (5 pages) `network`, `network/protocol`, `server/network`, `client/multiplayer`
 - [ ] `the-connection` — `Connection`, the Netty pipeline (splitter, decoder, decompressor, cipher), `PacketFlow`, `PacketListener`, `EventLoopGroupHolder`, the local channel in singleplayer. Trace: bytes to `handle`.
@@ -184,7 +184,7 @@ cross-links don't collide.
 | 6 | Part V Blocks | done in session 5 (2026-08-30) |
 | 7–8 | Part VI Entities | done in session 6 (2026-08-31), all seven pages |
 | 9 | Part VII Items | done in session 7 (2026-08-31) |
-| 10 | Part VIII The player | needs blocks, entities, items |
+| 10 | Part VIII The player | done in session 8 (2026-08-31) |
 | 11 | Part IX Networking | needs everything it carries |
 | 12–13 | Part X The client | frame/blaze3d/level/lightmap/models, then entities/gui/hud/particles/client-world |
 | 14 | Part XI World generation | last of the big ones; most data-driven |
@@ -490,3 +490,92 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   Part VII forward references turned into links. Pages are 260–340
   lines. The fix pass was 64 names, almost all bare members and enum
   constants in prose. Next: Part VIII The player.
+- **2026-08-31, session 8** — Part VIII The player: four pages in
+  `src/systems/player/`. Things later sessions must know. **Anatomy:**
+  the ladder is `LivingEntity` → `Avatar` → `Player` → `ServerPlayer` /
+  `AbstractClientPlayer` → `LocalPlayer` / `RemotePlayer`; `Avatar` has
+  **no instance fields at all** (dimensions, the 1.62 eye height, the two
+  cosmetic synched values, abstract `Avatar.getProfile`) and exists so
+  `AvatarRenderer` can draw `Mannequin` — there is no `PlayerRenderer`.
+  **`Inventory` was restructured**: one 36-slot `Inventory.items` plus
+  `Inventory.EQUIPMENT_SLOT_MAPPING` into the player's `EntityEquipment`
+  (`Inventory.SLOT_OFFHAND` 40, `SLOT_BODY_ARMOR` 41, `SLOT_SADDLE` 42),
+  so `Inventory.getContainerSize` is **43**; `PlayerEquipment` aliases
+  `EquipmentSlot.MAINHAND` to `Inventory.getSelectedItem`, so the held
+  item is not stored twice. No `Inventory.armor`/`offhand`/`compartments`,
+  no `Inventory.setPickedItem` (it is `Inventory.addAndPickItem`).
+  `Player.isCreative`/`isSpectator` read `Player.gameMode` (abstract), not
+  `Abilities`; on the client `AbstractClientPlayer.gameMode` resolves
+  through the tab-list `PlayerInfo` and **can be null**.
+  `MultiPlayerGameMode` lives on `Minecraft`, not `LocalPlayer`, and
+  `BlockStatePredictionHandler` lives on `ClientLevel`, not on
+  `MultiPlayerGameMode`. `Abilities` serialises via `Abilities.Packed`
+  (disk keys *flySpeed*/*walkSpeed*), `Abilities.mayBuild` never goes on
+  the wire, and one constant is misspelled (`Abilities.DEFAULY_FLYING`).
+  **Movement:** the server *simulates the player fully and then discards
+  the position* — `ServerGamePacketListenerImpl.tickPlayer` calls
+  `ServerPlayer.doTick` and immediately snaps back to `firstGood…`; the
+  simulation exists only to produce `Entity.getDeltaMovement`, the
+  *expected* distance the check subtracts. The thresholds are inline
+  literals (100 per packet, 300 fall-flying, 0.0625 residual), the
+  vertical residual test is **dead code**, and flooding move packets makes
+  the check *stricter*. `ServerboundPlayerInputPacket` never moves
+  anybody — its only consumers are `ServerPlayer.getLastClientMoveIntent`
+  and an `InputPredicate`. Names that do not exist: `Entity.moveTo`,
+  `ServerGamePacketListenerImpl.isPlayerCollidingWithAnythingNew`,
+  `LocalPlayer.handleNetherPortalClient`, any `MAX_*_DISTANCE` constant.
+  **Combat:** attack is its own packet — `ServerboundAttackPacket` is a
+  record of **one int**, and `ServerboundInteractPacket` is right-click
+  only (no `Action` enum any more). Reach is a component,
+  `DataComponents.ATTACK_RANGE` / `AttackRange`, with a *minimum* range
+  and separate creative values; the server adds a flat 3.0 buffer and uses
+  a five-tick charge tolerance against the client's zero. There is a
+  **second melee path** that never touches `Player.attack`:
+  `DataComponents.PIERCING_WEAPON` → `ServerboundPlayerActionPacket`
+  `STAB` → `PiercingWeapon.attack` → `LivingEntity.stabAttack`, with the
+  raycast redone server-side. Base damage takes a quadratic charge ramp
+  (`Player.baseDamageScaleFactor`) while the enchantment bonus takes a
+  linear one. Sweep is gated by `ItemTags.SWORDS` and scaled by
+  `Attributes.SWEEPING_DAMAGE_RATIO` (default 0, so a flat 1.0) — there is
+  no sweep component; `Player.canCriticalAttack` and `Player.isSweepAttack`
+  are the real names. `GameRenderer.pick` does not exist (it is
+  `Minecraft.pick` → `LocalPlayer.raycastHitResult`). **Hunger/XP/effects:**
+  `GameRules.NATURAL_REGENERATION` is `GameRules.NATURAL_HEALTH_REGENERATION`;
+  nothing named *eat* exists on `Player` or `LivingEntity` (it is
+  `Consumable.onConsume` → `FoodProperties` as a `ConsumableListener` →
+  `FoodData.eat`); `FoodProperties` lost its duration to
+  `Consumable.consumeSeconds`; `FoodConstants` is almost entirely dead
+  (only `FoodConstants.saturationByModifier` is referenced) and `FoodData`
+  inlines every threshold; `MobEffects` entries are all
+  `Holder<MobEffect>` and there is a new `MobEffects.BREATH_OF_THE_NAUTILUS`;
+  `MobEffect.shouldApplyEffectTickThisTick` is **false** by default; the
+  client ticks effect durations but never runs one. **A correction to
+  session 7:** `enchantments` claimed the enchanting seed is re-rolled by
+  *spending* XP rather than by enchanting — it is the other way round
+  (`Player.onEnchantmentPerformed` re-rolls it; `AnvilMenu` does not), and
+  that page's invariant has been fixed. **For later parts:** Part IX gets
+  `ServerboundAttackPacket` (one int, no hand or hit position), the
+  `ServerboundMovePlayerPacket` variant set plus its two-flag byte,
+  `ServerboundPlayerInputPacket` / `Input.STREAM_CODEC` (seven flags in one
+  byte), `ServerboundClientTickEndPacket`,
+  `ClientboundPlayerPositionPacket` (`PositionMoveRotation` + `Relative`)
+  and the twenty-tick teleport re-send, `ClientboundPlayerAbilitiesPacket`
+  (four bits, no `mayBuild`), `CommonPlayerSpawnInfo`,
+  `ClientboundSetHealthPacket` (saturation is sent but only its zero-ness
+  is change-detected) and `ClientboundSetExperiencePacket`; Part X names
+  `AvatarRenderer`, `ClientAvatarEntity`, `ClientAvatarState`,
+  `KeyMapping.Category` (a record), `ToggleKeyMapping`, `MouseHandler`
+  (per *frame*, not per tick), `Hud`'s attack indicator and
+  `AttackIndicatorStatus`; Part XII gets `ExperienceCommand` and
+  `GameRules.PLAYER_MOVEMENT_CHECK` / `ELYTRA_MOVEMENT_CHECK`. The naming-drift
+  appendix gains: `PlayerRenderer`→`AvatarRenderer`,
+  `Inventory.setPickedItem`→`addAndPickItem`, `Entity.moveTo`→`absSnapTo`,
+  `GameRenderer.pick`→`Minecraft.pick`, `NATURAL_REGENERATION`→
+  `NATURAL_HEALTH_REGENERATION`, `ServerboundInteractPacket.Action` (gone),
+  `ClickType`→`ContainerInput` (already noted). Pages are 244–404 lines, and
+  `player-anatomy` is the longest page in the corpus so far — a data page
+  and a trace page in one, and the obvious split for pass 2.
+  The fix pass was 63 names, almost all bare fields in prose plus four
+  `super.tick` references (write the declaring class). Part VI's four
+  plain-text forward references to Part VIII are now links. Next:
+  Part IX Networking.

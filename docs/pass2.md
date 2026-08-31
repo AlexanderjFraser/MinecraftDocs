@@ -26,6 +26,8 @@ read.
 | `entities/ai-goals-and-brains` | 357 | goals vs brains vs pathfinding — three lectures in one page |
 | `items/items-and-stacks` | 340 | the stack data model vs the use pipeline + the eating trace |
 | `items/containers-and-menus` | 320 | the menu/slot model vs the click protocol (state id, `HashedStack`) |
+| `player/player-anatomy` | 404 | the class ladder + `Inventory`/`Abilities` (a data page) vs the two-phase tick trace |
+| `player/input-to-movement` | 305 | the client input chain vs the server's validation and rubber-band |
 
 Parts III–V all came out at 260–380 lines. The lecture-order decision in
 pass 2 is where "one page, two lectures" gets settled; splitting the
@@ -126,6 +128,17 @@ the old name and not finding it.
 | `LootingEnchantFunction` | `EnchantedCountIncreaseFunction` | session 7 |
 | `SetCountFunction` | `SetItemCountFunction` | session 7 |
 | `LootContextParams.KILLER_ENTITY` | `LootContextParams.ATTACKING_ENTITY` | session 7 |
+| `PlayerRenderer` | `AvatarRenderer` (generic over `Avatar` + `ClientAvatarEntity`) | session 8 |
+| `Inventory.armor` / `offhand` / `compartments` | one 36-slot `Inventory.items` + `Inventory.EQUIPMENT_SLOT_MAPPING` | session 8 |
+| `Inventory.setPickedItem` | `Inventory.addAndPickItem` / `Inventory.pickSlot` | session 8 |
+| `Entity.moveTo` | `Entity.absSnapTo` / `Entity.snapTo` | session 8 |
+| `GameRenderer.pick` | `Minecraft.pick` → `LocalPlayer.raycastHitResult` | session 8 |
+| `ServerboundInteractPacket.Action.ATTACK` | `ServerboundAttackPacket` (a record of one int) | session 8 |
+| `GameRules.NATURAL_REGENERATION` | `GameRules.NATURAL_HEALTH_REGENERATION` | session 8 |
+| `Player.isCritArrow` / `Player.sweepAttack` | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack` | session 8 |
+| `LivingEntity.eat` / `Player.eat` | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` | session 8 |
+| `MobEffect.createModifier` | `MobEffect.createModifiers` (plural) | session 8 |
+| `DataComponents.MENDING` | `EnchantmentEffectComponents.REPAIR_WITH_XP` | session 8 |
 
 ## Cross-part obligations (link, don't repeat)
 
@@ -147,7 +160,7 @@ when the part is written.
   `attributes`, and `DataComponents.BLOCKS_ATTACKS`,
   `DataComponents.DAMAGE_RESISTANT` and `DataComponents.DEATH_PROTECTION`
   in `damage-and-death` (session 6).
-- [ ] **Part VIII The player** — `ServerPlayer` is created in the
+- [x] **Part VIII The player** (session 8) — `ServerPlayer` is created in the
   configuration phase (`PrepareSpawnTask`), owned by `players-and-sessions`;
   player ticking is split (`doTick` from the connection, `tick` from the
   level's entity loop) — do not contradict (session 3); the prediction
@@ -179,7 +192,17 @@ when the part is written.
   `containers-and-menus`; `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` for
   inbound stacks; and the registry-sync asymmetry — `Registries.ENCHANTMENT`
   is synced with its **full** direct codec while the three loot registries
-  are never synced at all (session 7).
+  are never synced at all (session 7). From session 8: `ServerboundAttackPacket` (a record of **one int** — no hand, no hit
+  position; `ServerboundInteractPacket` is right-click only and has no
+  `Action` enum), the four `ServerboundMovePlayerPacket` variants and
+  their two-flag byte, `ServerboundPlayerInputPacket` with
+  `Input.STREAM_CODEC` (seven booleans in one byte),
+  `ServerboundClientTickEndPacket`, `ClientboundPlayerPositionPacket`
+  (`PositionMoveRotation` + a `Relative` set) and the twenty-tick
+  teleport re-send, `ClientboundPlayerAbilitiesPacket` (four bits, and
+  `Abilities.mayBuild` never travels), `CommonPlayerSpawnInfo`,
+  `ClientboundSetHealthPacket` (saturation is sent but only its
+  zero-ness is change-detected) and `ClientboundSetExperiencePacket`.
 - [ ] **Part X The client** — names to pick up: `LevelExtractor`,
   `SectionUpdateTracker`, `SectionCopy` (session 4);
   `LevelExtractor.blockChanged`, `BlockBreakingRenderState`,
@@ -192,7 +215,12 @@ when the part is written.
   `AbstractContainerScreen`, `MenuScreens`,
   `ItemInHandRenderer.applyEatTransform`, `Hud.extractFood`,
   `RecipeBookComponent`, `GhostSlots`, `ClientRecipeBook`,
-  `EnchantmentNames`.
+  `EnchantmentNames`. From session 8: `AvatarRenderer` (generic over an `Avatar`
+  that is also a `ClientAvatarEntity` — there is no `PlayerRenderer`),
+  `ClientAvatarState`, `KeyMapping.Category` (a record, publicly
+  registerable), `ToggleKeyMapping`, `MouseHandler` (which turns the
+  player per **frame**, not per tick), and the attack indicator in
+  `Hud` with `AttackIndicatorStatus`.
 - [ ] **Part XI World generation** — *worldgen-pipeline* points at
   `chunk-generation-pipeline` for the conveyor;
   `ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code (session 4).
@@ -255,6 +283,29 @@ Short list of things established by a page and easy to get wrong from
 - Loot tables are never synced; a chest's table key is cleared *before*
   the roll, and any container read (a hopper, `/data`) commits it with no
   player luck — `loot-tables`.
+
+- The server **simulates a human player fully every tick and then throws
+  the position away** (`ServerGamePacketListenerImpl.tickPlayer` →
+  `ServerPlayer.doTick` → snap back to `firstGood…`); the authoritative
+  position only moves in `handleMovePlayer` or a teleport, and the
+  simulation exists to produce `Entity.getDeltaMovement` for the
+  anti-cheat — `input-to-movement`.
+- `ServerboundPlayerInputPacket` **never moves anyone**; its only
+  consumers are `ServerPlayer.getLastClientMoveIntent` and an
+  `InputPredicate` — `input-to-movement`.
+- `Inventory` is 43 slots (36 + equipment view), and `EquipmentSlot.MAINHAND`
+  is an alias for the selected hotbar slot via `PlayerEquipment` —
+  `player-anatomy`.
+- `Player.isCreative` / `isSpectator` read `Player.gameMode`, not
+  `Abilities`; on the client the mode comes from the tab-list `PlayerInfo`
+  and can be null — `player-anatomy`.
+- Attack and interact are **different packets**;
+  `ServerboundAttackPacket` carries only an entity id, and a
+  `PiercingWeapon` takes a third path that never reaches `Player.attack` —
+  `the-sword-swing`.
+- The enchanting seed is re-rolled by `Player.onEnchantmentPerformed`
+  (enchanting), **not** by spending levels elsewhere — `enchantments`
+  (corrected in session 8) / `hunger-xp-and-effects`.
 
 ## Catalogue gaps found during pass 1
 

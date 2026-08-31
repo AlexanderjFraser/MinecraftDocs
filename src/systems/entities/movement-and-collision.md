@@ -242,7 +242,8 @@ this item's turn. Its `Entity.getMovementEmission` is
   `FallingBlockEntity`, `PrimedTnt`, `ExperienceOrb` and the projectiles
   directly; `PistonMovingBlockEntity` with `MoverType.PISTON`
   ([redstone](../blocks/redstone.md)); `Shulker` with its own mover types;
-  player input with `MoverType.PLAYER` (Part VIII).
+  player input with `MoverType.PLAYER`
+  ([input to movement](../player/input-to-movement.md)).
 - **Calls into:** `CollisionGetter` and `BlockCollisions` for block shapes,
   `EntityGetter.getEntityCollisions` for entity boxes, `Shapes` and
   `VoxelShape` for the clipping arithmetic, `Block.fallOn` and
@@ -257,8 +258,9 @@ this item's turn. Its `Entity.getMovementEmission` is
   `ClientboundSetEntityMotionPacket` (applied by `Entity.lerpMotion`),
   `ClientboundMoveMinecartPacket`, `ClientboundMoveVehiclePacket`. Inbound:
   `ServerboundMovePlayerPacket`, `ServerboundMoveVehiclePacket`,
-  `ServerboundPlayerInputPacket` — Part VIII owns the player half and the
-  server's sanity checks in `ServerGamePacketListenerImpl`.
+  `ServerboundPlayerInputPacket` — [input to movement](../player/input-to-movement.md)
+  owns the player half and the server's sanity checks in
+  `ServerGamePacketListenerImpl`.
 - **Smoothed by:** `InterpolationHandler` — three steps by default —
   attached to `LivingEntity` and driven from `LivingEntity.aiStep`.
   `ClientPacketListener.handleEntityPositionSync` only moves an entity that

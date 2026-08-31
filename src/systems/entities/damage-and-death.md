@@ -176,7 +176,9 @@ sequenceDiagram
     `GameRules.FORGIVE_DEAD_PLAYERS`, drops the inventory unless
     `GameRules.KEEP_INVENTORY`, and records the death location. The client
     opens the death screen — unless `GameRules.IMMEDIATE_RESPAWN` — and the
-    button sends the respawn command back. Part VIII owns what happens next.
+    button sends the respawn command back.
+    [Player anatomy](../player/player-anatomy.md) owns the object that
+    comes back.
 11. **Cleanup.** A dead mob counts up `LivingEntity.deathTime` for twenty
     ticks, then broadcasts the poof event and removes itself with
     `Entity.RemovalReason.KILLED`.
