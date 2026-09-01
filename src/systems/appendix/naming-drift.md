@@ -286,6 +286,12 @@ refactor: extract then render.
 | *TextureSheetParticle*, sheet *ParticleRenderType*s | `SingleQuadParticle` + `SingleQuadParticle.Layer` |
 | *ParticleGroup* (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket |
 | *Camera.setup* | `Camera.update` + `Camera.extractRenderState` |
+| *RenderStateShard* composition (the texture/target/layering half) | `RenderType` over a `RenderPipeline`, catalogued in `RenderTypes`, built by `RenderSetup` |
+| *BakedQuad* as four vertices | a ten-component record, with a `BakedQuad.MaterialInfo` of six |
+| *LiquidBlockRenderer* | `FluidRenderer`, over a `FluidModel` |
+| *ItemOverrides* / *getPropertyOverride* | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` |
+| *ScreenManager* — which never existed in Blaze3D | `MonitorManager` for monitors; `MenuScreens` for menu types |
+| *Window.setVsync* | a `GpuSurface.PresentMode` in the surface configuration |
 
 ### Part XII — World generation
 

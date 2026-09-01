@@ -116,9 +116,13 @@ this order and only this order:
 `EnvironmentAttributeSystem.bakeLayerSampler` then folds every *leading*
 constant layer into a single base value, so the dimension's contribution
 costs nothing at read time. `ClientLevel` adds two extra time-based layers
-of its own after those four, both for the End flash: one lerps
+of its own after those four, both keyed on the **lightning** flash that
+`LightningBolt` sets on the level: one lerps
 `EnvironmentAttributes.SKY_COLOR` toward white, one pins
-`EnvironmentAttributes.SKY_LIGHT_FACTOR` to 1.
+`EnvironmentAttributes.SKY_LIGHT_FACTOR` to 1. (The End's sky flash is a
+different thing entirely — `EndFlashState`, read directly by the
+renderers rather than through the stack; see
+[lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md).)
 
 ### The clock and the timeline
 

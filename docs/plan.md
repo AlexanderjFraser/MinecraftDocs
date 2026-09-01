@@ -195,6 +195,21 @@ is client-only without exception, so that whole class of side-attribution
 error cannot occur there. One cheap agent, and it changed the shape of the
 part.
 
+Session I adds a tenth, and it is the counterweight to the ninth:
+**a fact-check agent's *names* are as suspect as the page's.** Session I's
+reports were the strongest of the pass — six of seven found a reversed
+invariant — and two of them cited a method that does not exist. One had the
+rain/snow scatter as *ClientLevel.tickPrecipitation* (it is
+`ClientLevel.tickWeatherEffects`; the name it used belongs to `ServerLevel`);
+another attributed a throw to `LevelRenderer.submitFeatures` when the throw
+is in `LevelRenderer.checkPoseStack`. Both would have passed
+`verify_names.py` had they reached a page, because the token appears
+somewhere in the right file. The agent re-deriving your page's citations is
+producing citations of its own, under no verifier at all — so **run the
+verifier after applying each report, not after applying all of them**, and
+treat any name you have not personally grepped as the agent's claim rather
+than the decompile's.
+
 Session D adds a fifth: **hunt the unstated conditional.** Nearly every
 session-D error was a claim that held in the traced case and was written as
 though it held always — a hook skipped "because the block didn't change"
@@ -235,8 +250,8 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
 - [x] **Session G** — Part IX Networking. *(2026-09-01)*
 - [x] **Session H** — Part X: the client half, and the X/XI split.
   *(2026-09-01)*
-- [ ] **Session I** — Part XI Rendering: the render half plus its new
-  pages.
+- [x] **Session I** — Part XI Rendering: the render half plus its new
+  pages. *(2026-09-01)*
 - [ ] **Session J** — Part XII World generation.
 - [ ] **Session K** — Part XIII Commands · Part XIV Appendix (the gaps
   list gets its rulings here; naming-drift and glossary re-swept after
@@ -296,6 +311,81 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session I** — Part XI Rendering (`the-frame`, `blaze3d`,
+  `level-rendering`, `models-and-atlases`, `entity-rendering`,
+  `lightmap-fog-and-sky`, `particles`), plus a mechanical coverage inventory
+  of the whole rendering tree. Seven adversarial fact-checks, seven rewrites,
+  one new page; 1,797 lines became 2,430 across eight pages. The A–H pattern
+  holds: every page had *wrong* claims.
+  **Session I's centre of gravity is the inverted invariant.** Where F found
+  miscounted exceptions, G borrowed claims and H unowned ones, Part XI's
+  worst errors were sentences that were *backwards* — six of the seven pages
+  had at least one, and in every case the page had the call graph right and
+  the meaning wrong. What mattered most:
+  - **"The frame just stops" was exactly wrong, and it is the page's own
+    next sentence that disproves it.** A failed surface acquisition does not
+    abort `Minecraft.renderFrame`; the whole frame renders into the main
+    target and only the blit and the present skip. A minimized window renders
+    complete frames nobody will ever see, and what actually saves the work is
+    `FramerateLimitTracker` dropping the limit to ten. The old page had
+    written the heading and the refutation two lines apart.
+  - **The meshing result does come back as a callback — the page said it
+    did not.** `SectionRenderDispatcher.uploadTerrainBuffersToGpu` fires the
+    per-allocation callback that publishes the mesh and re-arms the occlusion
+    graph. And the occlusion graph's *full* BFS is a second thing on
+    `Util.backgroundExecutor`, which is the whole reason its `GraphState`
+    lives in an `AtomicReference` — a fact the page stated ("published
+    atomically") without ever saying what it was published *from*.
+  - **A cost model off by up to 27×.** "The 27 sections in the halo" is 27
+    **block positions** mapped through `SectionPos.blockToSectionCoord` — one
+    section for any block not on a boundary, at most eight when it is. Only
+    the mesher's *read* region is genuinely 27 sections. The diagram had
+    taught the wrong number to anyone reasoning about what a placed block
+    costs.
+  - **Two flashes, conflated in two parts.** `ClientLevel`'s two extra
+    attribute layers are the **lightning** flash (`LightningBolt` sets it);
+    `EndFlashState` is a free-running 600-tick End-sky flash with nothing to
+    do with the dragon fight. Both `lightmap-fog-and-sky` and Part IV's
+    `environment-attributes-and-timelines` had it wrong, in the same way —
+    session B's grep-the-corpus rule earning its keep again.
+  - **A load-bearing fact needed a qualifier, not a correction.** "Every
+    per-dimension visual constant is an `EnvironmentAttribute`" is *nearly*
+    true: `DimensionType.ambientLight` and `DimensionType.cardinalLightType`
+    are plain record fields, `CardinalLighting` is two hard-coded records the
+    dimension merely chooses between, and block tint is still `BiomeColors`
+    over `BiomeSpecialEffects`. Three pages state the fact absolutely.
+  - **Cardinality, in the now-familiar shapes:** four call sites of
+    `FeatureRenderDispatcher.renderAllFeatures`, not two — and two of them
+    are the GUI, which is why it needs its own submit storage;
+    `RenderSystem.assertOnRenderThread` is called from eleven classes
+    including eight sites in `RenderSystem` itself, on current API, so "only
+    the legacy corners" was wrong about the class that owns it; three of four
+    particle groups ignore the frustum, not two; a layer's terrain geometry
+    is a growing *list* of 128 MiB heaps, not one buffer; the two backends
+    differ in six of seven feature flags, not one; and `ParticleLimit` really
+    does have exactly one instance, which the page had right.
+  - **The inventory found three more whole systems and one phantom.**
+    Counting the tree (1,187 classes / 97,864 lines, 58% named nowhere)
+    turned up post-processing (`PostChain`), block-entity rendering with its
+    26 render states, and the item-model property system — all unowned, all
+    recommended as pages in [pass2.md](pass2.md). It also killed
+    *ScreenManager*, a class the pass-2 queue had been listing as
+    `blaze3d/platform` content since session H and which does not exist in
+    26.2 in any package.
+  - **`the-window` is new**, discharging the ruling session H deferred to
+    this session. `blaze3d/platform` is 25 classes and ~3,800 lines that no
+    page explained, and three pages in two parts all began *after* it. Its
+    best fact is structural: the backend-selection loop encloses **both**
+    window creation and device creation, because an OpenGL window and a
+    Vulkan window need different GLFW hints — so a rejected backend leaves a
+    window behind that has to be destroyed before the next one is tried.
+  - **Structural notes to [pass3.md](pass3.md):** Part XI is **two substrate
+    pages and one six-page pipeline**, which reframes session H's open
+    "`blaze3d` second or last?" question; `the-window`'s trace is a retry
+    loop that a sequence diagram renders badly; and the part now has **three
+    internal lane collisions**, the worst being `LX` for two different
+    extractors on adjacent pages.
 
 - **2026-09-01, session H** — Part X The client, and the X/XI split. Eight
   adversarial fact-checks (`the-frame`, `ClientLevel`, the prediction ledger,

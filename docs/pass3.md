@@ -465,6 +465,73 @@ respectively. They are in X because that is where their owning objects
 live, which is a packaging argument — exactly the kind pass 3 is allowed to
 overrule.
 
+*(session I)* **Part XI is a pipeline for five of its pages and a substrate
+for three, and the split is cleaner than "second or last".** Session H asked
+whether `blaze3d` goes second or last. The fact-check answers a different
+question instead: Part XI contains **two substrate pages and one genuine
+pipeline**. `the-window` (new this session) and `blaze3d` are what the
+renderer stands on — neither has a trace through the world, both are cited by
+every other page — while `the-frame` → `level-rendering` → `models-and-atlases`
+→ `entity-rendering` → `lightmap-fog-and-sky` → `particles` really is the
+order things happen in. The lecture question is therefore not where `blaze3d`
+goes but **whether the substrate is one lecture or two, and whether it opens
+or closes the part**. Session I's own answer, weakly held: open with
+`the-frame` (it is the part's trace and its shortest page), then the
+substrate, then the pipeline — because a reader who has seen one frame
+end-to-end has a reason to care what `GpuDevice` is.
+
+**`the-window` is new, and it discharges session H's deferred ruling.**
+Session H left "does `blaze3d/platform` get absorbed or a page?" to session I.
+It is a page: 25 classes and ~3,800 lines that no page explained, and three
+pages in two parts all began *after* it (`the-frame` starts at an acquired
+surface, `input-and-keybinds` at a fired callback, `blaze3d` at a created
+device). It is currently third in the part; whether it belongs first, third,
+or beside `anatomy` in Part I is a pass-3 call, and it is the same question as
+session H's open one about `the-client-loop`.
+
+**Part XI has three more whole systems with no owner, all found by counting
+rather than reading.** The session's inventory measured the tree at 1,187
+classes / 97,864 lines and found 58% of it by line count named nowhere. Three
+of the gaps are coherent systems rather than catalogues, and each is a
+candidate page:
+  - **Post-processing** — `PostChain`, `PostPass`, `PostChainConfig`,
+    `UniformValue`, ~1,000 lines, named on no page. Data-driven GLSL chains
+    loaded from JSON that add their own passes to the same `FrameGraphBuilder`
+    `level-rendering` explains. It is the answer to "how do the spectator mob
+    shaders and the menu blur work", and the only place user-authored shaders
+    are first-class. Strongest single candidate.
+  - **Block-entity rendering** — `renderer/blockentity` plus its 26 render
+    states, ~3,300 lines, of which only the dispatcher is named. In 26.2 it
+    has the *same* extract/submit split as entities, which no page says. The
+    parallel to `entity-rendering` is exact, which argues for a page rather
+    than a section. `renderer/special` (the item-side twin — why a chest in
+    your hand looks right with an empty model) belongs with it.
+  - **How an item picks its model** — `renderer/item` plus the 42 classes
+    under `item/properties/**`, the whole successor to *ItemOverrides*. This
+    one is arguably Part VII's, not Part XI's: the trace starts at an
+    `ItemStack`. Decide the owner before writing it.
+
+**Two diagram-shape notes.** `the-window`'s trace is a **retry loop** — the
+backend loop encloses both window creation and device creation — and a
+sequence diagram renders that as an awkward `loop` block; it wants a
+flowchart. And `models-and-atlases`' trace is the corpus's clearest
+**fan-out/barrier** shape (thirteen parallel stitches and a parallel bake
+meeting at one barrier), which the `par`/`and` block understates.
+
+**Lane abbreviations, Part XI.** `M`, `S` (`GpuSurface`), `GR`
+(`GameRenderer`), `LR` (`LevelRenderer`), `GUI` (`GuiRenderer`), `D`, `CE`,
+`RP`, `B` (`GlCommandEncoder`), `G` (game code), `MPGM`, `CL`, `LX`, `SUT`,
+`SRD`, `W`, `SC`, `KH`, `AM`, `SL`, `MM`, `MB`, `TA`, `ERD`, `ZR`, `ZS`,
+`SNS`, `FRD`, `ZM`, `TL`, `EAS`, `P`, `FR`, `SR`, `LM`, `PE`, `B` (`Block`),
+`PL`, `CPL`, `GLX`, `MM` (`MonitorManager`), `RS`. **Three collisions inside
+the part now**, worse than session H's two: `M` is `Minecraft` in four
+diagrams and `ModelManager`'s neighbour `MM` collides with `MonitorManager`;
+`B` is both `GlCommandEncoder` and `Block`; `LX` is `LevelExtractor` here and
+`LightmapRenderStateExtractor` in `lightmap-fog-and-sky`'s own trace. The
+last is the worst — same part, adjacent pages. Plus session H's standing
+`GR` collision (`GuiRenderer` in X, `GameRenderer` in XI) is now live in
+both parts at once.
+
 ---
 
 ## 2 · Page-level structure
@@ -1066,3 +1133,17 @@ knowing before the order is drafted.*
 - `blaze3d` second or last within Part XI? *(session H)*
 - Does the corpus admit a reference-tier **table inside** a lecture page —
   `hud`'s gate table, `the-client-loop`'s zone list? *(session H)*
+- Does `the-window` open Part XI, sit third as it does now, or move to Part I
+  beside `anatomy`? Same question as `the-client-loop`'s, and they may want
+  the same answer. *(session I)*
+- Is the Part XI substrate (`the-window` + `blaze3d`) one lecture or two?
+  *(session I)*
+- Does post-processing get its own page, or a section of `the-frame`? It is
+  ~1,000 lines with a JSON format and no owner. *(session I)*
+- Who owns "how an item picks its model" — Part VII, whose `ItemStack` starts
+  the trace, or Part XI, where the resolution happens? *(session I)*
+- Does block-entity rendering get a page beside `entity-rendering`, given the
+  two now share one extract/submit machine? *(session I)*
+- `LX` means two different extractors on adjacent pages of Part XI, and `GR`
+  means two different renderers across Parts X and XI. The lane standard has
+  to break at least one of them. *(session I)*

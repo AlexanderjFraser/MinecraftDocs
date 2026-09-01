@@ -273,6 +273,14 @@ the old name and not finding it.
 | `Minecraft.destroy` | gone — `Minecraft.stop`, then `Minecraft.exitWorldAndClose` and `Minecraft.close` | session H |
 | raw `(key, scancode, modifiers, action)` on every `Screen` method | the `client/input` records: `KeyEvent`, `MouseButtonEvent`, `CharacterEvent`, `PreeditEvent`, over `InputWithModifiers` | session H |
 | `Options.keyBindings` | `Options.keyMappings`; `KeyMapping.Category` is a registrable record, not a translation-key string | session H |
+| `RenderStateShard` composition | `RenderType` over a `RenderPipeline`, catalogued in `RenderTypes`, built by `RenderSetup`, resolved to a `PreparedRenderType` | session I |
+| `BakedQuad` as a 4-vertex array | a 10-component record: 4 positions, 4 packed UVs, a recomputed `Direction`, and a 6-component `BakedQuad.MaterialInfo` | session I |
+| `LiquidBlockRenderer` | `FluidRenderer`, fed by a `FluidStateModelSet` of `FluidModel` | session I |
+| `DimensionSpecialEffects.forType` | `DimensionType.skybox` (`DimensionType.Skybox`), plus `EnvironmentAttributes` | session I |
+| `ParticleGroup` as a limit record | `ParticleLimit`; `ParticleGroup` is the per-render-type bucket | session I |
+| `ScreenManager` (in Blaze3D) | never existed — monitor handling is `MonitorManager`; menu-type→screen mapping is `MenuScreens` | session I |
+| `Window.updateDisplay` / `setVsync` | `GpuSurface.present`; vsync is a `GpuSurface.PresentMode` in the surface configuration | session I |
+| `ItemOverrides` / `getPropertyOverride` | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` over `renderer/item/properties` | session I |
 | `Options.mouseSensitivity` and the other public option fields | private fields with same-named accessor *methods* (`Options.sensitivity()`) | session H |
 | `MouseHandler.lastMouseEventTime` | gone | session H |
 | `ClientChunkCache.ChunkArray` | `ClientChunkCache.Storage` | session H |
@@ -659,17 +667,26 @@ easy to get wrong from 1.21 memory.
   at most ten run per frame — `the-frame`.
 - The client lights **per frame**, not per tick, and drains the whole
   queue past a threshold — `client-world-and-options`.
-- Animated textures advance **once per frame**, not once per tick, and
-  `Minecraft.pick` runs **twice** per ticking frame — `the-frame`.
+- ~~Animated textures advance **once per frame**~~ — **falsified twice.**
+  Session H corrected the `Minecraft.pick` half (once per tick *and* once per
+  frame). Session I corrected the rest: `TextureManager.tick` is outside the
+  catch-up tick loop **and** gated on the level running normally, so a laggy
+  client advances animations once per *tick batch* and a frozen or paused
+  world does not advance them at all — `the-client-loop`, `models-and-atlases`.
 - The lightmap is drawn on the GPU, once per tick, ignoring partial
   ticks — `lightmap-fog-and-sky`.
-- Every per-dimension and per-biome visual constant is an
+- **Nearly** every per-dimension and per-biome visual constant is an
   `EnvironmentAttribute`; `BiomeSpecialEffects` keeps only
   water/foliage/grass colours — `lightmap-fog-and-sky`. **Part XI must
   not describe biome fog or sky colours as living on
-  `BiomeSpecialEffects`.**
+  `BiomeSpecialEffects`.** *(session I: "every" needs the qualifier.*
+  `DimensionType.ambientLight` *and* `DimensionType.cardinalLightType` *are
+  plain record fields, not attributes, and block tint is still* `BiomeColors`
+  *reading* `BiomeSpecialEffects`*.)*
 - Only **visible** sections are re-meshed, and a dirty flag waits
-  indefinitely; there are **three** chunk layers — `level-rendering`.
+  indefinitely *while its ring slot stays put*; there are **three** chunk
+  layers, and the mesher can still overrule a quad's baked layer (leaves,
+  fluids) — `level-rendering`.
 - Every block entity ticks on the client regardless of simulation
   distance, and client-side scheduled ticks are black-holed —
   `client-world-and-options`.
@@ -741,6 +758,56 @@ easy to get wrong from 1.21 memory.
 - **Measuring text bakes glyphs.** `Font.width` resolves to a *baked* glyph, so
   measuring a never-seen codepoint stitches it into a texture and uploads it —
   `text-and-fonts`.
+
+- **A failed surface acquisition does not skip the frame, only the picture.**
+  The whole frame renders into `GameRenderer.mainRenderTarget`; only the blit
+  and the present re-test the surface. A minimized window renders complete
+  frames nobody sees — `the-frame`.
+- One frame uses **five** partial ticks, and one of them is **per entity**:
+  `LevelExtractor` asks `DeltaTracker.getGameTimeDeltaPartialTick` with the
+  frozen flag per entity, and `TickRateManager.isEntityFrozen` excludes
+  players — so under `/tick freeze` mobs pin and players interpolate, in the
+  same frame — `the-frame`.
+- The post-effect chain is chosen by the **camera entity's type** (creeper,
+  spider, enderman), not by an option — `the-frame`.
+- **The dirty halo is 27 block positions, not 27 sections** — one section for
+  any block off a boundary, at most eight on one. Only the mesher's *read*
+  region is 27 — `level-rendering`.
+- The section-mesh result **does** come back through the client thread as a
+  callback, fired from `SectionRenderDispatcher.uploadTerrainBuffersToGpu`;
+  and `SectionOcclusionGraph`'s full BFS is the *second* thing on
+  `Util.backgroundExecutor` — `level-rendering`.
+- A layer's terrain geometry lives in a growing **list** of 128 MiB heaps
+  sub-allocated by a `TlsfAllocator`, not one buffer — `level-rendering`.
+- `CardinalLighting` is **two hard-coded records**; the dimension only picks
+  between them — `level-rendering`.
+- **A quad's chunk layer is read out of the sprite's pixels** at bake time —
+  `FaceBakery` asks what transparency exists inside that quad's UV rectangle
+  — `models-and-atlases`.
+- `Minecraft.selfTest` **only runs in a development environment**, and throws
+  rather than warns — `models-and-atlases`.
+- **`RenderSystem.assertOnRenderThread` is called from `RenderSystem` itself**,
+  on current API (`setProjectionMatrix`, `getModelViewStack`,
+  `getSequentialBuffer`). It is `GpuDevice`/`CommandEncoder`/`RenderPass` that
+  assert nothing — `blaze3d`.
+- There is **one fog UBO per frame**, handed to four passes; the clouds pass
+  gets none. The sky and cloud fog ends are fields inside that one block —
+  `lightmap-fog-and-sky`.
+- `ClientLevel`'s two extra attribute layers are the **lightning** flash, not
+  the End's; `EndFlashState` is a free-running 600-tick End-sky flash and has
+  nothing to do with the dragon fight — `lightmap-fog-and-sky`,
+  `environment-attributes-and-timelines`.
+- `EnvironmentAttributes.SKY_LIGHT_FACTOR` (visual) and
+  `EnvironmentAttributes.SKY_LIGHT_LEVEL` (gameplay) are **two tracks**, at
+  different times and different night values — `lightmap-fog-and-sky`.
+- **Explosion particles are not particle packets.** `ClientboundExplodePacket`
+  carries a weighted `ExplosionParticleInfo` list and `ClientExplosionTracker`
+  generates them client-side, budgeted per tick and cleared entirely unless
+  the particle setting is *All* — `particles`.
+- The break puff walks the **outline** shape, not the collision shape — a
+  torch has no collision shape and still puffs — `particles`.
+- The override-limiter flag skips the *client* distance check and **widens**
+  the server's from 32 to 512 — it does not skip it — `particles`.
 - The handshake and login state machines run **entirely on the Netty
   thread**; the first `PacketUtils.ensureRunningOnSameThread` is in the
   configuration phase. "Netty never runs game logic" is a *play*-phase
@@ -946,12 +1013,13 @@ What is left with no owner, in priority order:
   (22/2,009), social/report/friends/multiplayer/packs (40/6,845).
   Recommendation: **absorb** as a one-paragraph taxonomy naming the families
   and their entry points. Do not write per-screen pages.
-- **`blaze3d/platform` (29 / 3,896)** — `Window`, `ScreenManager`, monitor
-  and video-mode selection, the GLFW callback wiring, `NativeImage`, cursors,
-  OS quirks. This is where "the game gets a window and input events" lives,
-  and both Part X's input page and Part XI's frame page currently start
-  *after* it. Recommendation: **absorb**, into `blaze3d` or the client loop —
-  session I should decide, since it owns `blaze3d`.
+- ~~**`blaze3d/platform`**~~ — **session I: written as a page,
+  `systems/rendering/the-window.md`.** Session H's count (29 / 3,896) was
+  close; the real figure is 25 classes plus 2 under `platform/cursor`, 3,843
+  lines. It was not absorbed because three pages in two parts all began after
+  it and none could explain it without a digression. **`ScreenManager` does
+  not exist in 26.2 and never did** — that name was carried in from older
+  notes; the monitor side is `MonitorManager` / `Monitor` / `VideoMode`.
 - **`client/multiplayer` tail (~15 classes)** — `ServerData`, `ServerList`
   and the address resolver, `LevelLoadTracker` and the receiving-level
   screen, `TransferState`, `SessionSearchTrees`, `CacheSlot`,
@@ -1575,3 +1643,108 @@ immediately: `LevelRenderer.render` takes eight parameters and none is a
 the extract/render wall — it reads the player's portal and nausea
 intensities and the boss overlay's fog question. The wall is real one level
 down, at `LevelRenderer`.
+
+### Session I — Part XI Rendering
+
+**What the session did.** Eight agents: one adversarial fact-check per page
+(`the-frame`, `blaze3d`, `level-rendering`, `models-and-atlases`,
+`entity-rendering`, `lightmap-fog-and-sky`, `particles`) and one mechanical
+coverage inventory of the whole rendering tree. All seven pages were
+rewritten; one page was added (`the-window`), discharging the ruling session
+H deferred. 1,797 lines became 2,430 across eight pages.
+
+**The remaining rendering gaps** *(session I's inventory, for session K's
+rulings and pass 3's page plan)*. The tree is **1,187 classes / 97,864
+lines**; the corpus names 294 of them, and **58% by line count is named
+nowhere**. Coherent systems with no owner, in priority order:
+
+- **Post-processing** — `PostChain` / `PostPass` / `PostChainConfig` /
+  `UniformValue`, ~1,000 lines, named on no page. JSON-declared shader chains
+  that add passes to the same frame graph. **Recommend a page.**
+- **Block-entity rendering** — `renderer/blockentity` + its 26 render states,
+  ~3,300 lines; only the dispatcher is named, and the extract/submit
+  conversion is undocumented. `renderer/special` (16 classes) belongs with
+  it. **Recommend a page.**
+- **How an item picks its model** — `renderer/item` + 42 classes under
+  `item/properties/**`, the successor to *ItemOverrides*. **Recommend a
+  page; decide whether it is Part VII's or Part XI's.**
+- **`RenderTypes` / `RenderSetup`** (890 lines) — absorbed into `blaze3d`
+  this session as a section, because `blaze3d` already declared
+  *RenderStateShard* dead without saying what replaced it. Could grow.
+- **`BlockModelLighter`** (462 lines) — smooth lighting and ambient
+  occlusion. Named in `level-rendering` this session, not explained.
+  **Recommend a section.**
+- **`LayerDefinitions`** (582 lines, the largest unnamed non-backend class)
+  plus `client/model/geom/builders` — named in `entity-rendering` this
+  session, not explained. **Recommend a section.**
+- **The uniform ring buffers** — `DynamicUniforms`, `DynamicUniformStorage`,
+  `GlobalSettingsUniform`, `ProjectionMatrixBuffer`, ~640 lines. Named in
+  `blaze3d` this session. **Section at most.**
+- **Smaller and unowned:** `Sheets` (the twelve non-block atlases),
+  `MipmapGenerator`, `ItemModelGenerator` + `ItemTransforms`,
+  `SkinTextureDownloader` / `PlayerSkinRenderCache`, `WorldBorderRenderer`,
+  `CubeMap` / `Panorama`, `MapRenderer`, `TlsfAllocator`, `GlslPreprocessor`,
+  `renderer/gizmos`. A paragraph each at most.
+- **The 27 debug renderers** (`renderer/debug`, 2,411 lines) — only two are
+  named, on `debugging-the-running-game`. **Recommend an enumerated table on
+  that page**, not a new page: they are the client end of packets Part IX
+  already covers.
+- **Decline explicitly** (session K): the ~232 concrete entity models, the
+  ~73 concrete particles, the 101 entity render states, the 50 render layers,
+  the 16 animation definitions, and the interiors of `blaze3d/opengl` and
+  `blaze3d/vulkan` — but name `GlslPreprocessor`, `vulkan/glsl`'s
+  shaderc/spirv-cross pair, `TransientMemory` and `GlHeuristics` before
+  declining the rest, because all four are shared concerns rather than
+  backend detail.
+
+**On-spec additions pass 4 may cut.**
+
+- `the-window` in its entirety. It is a real gap and a real lecture, but it
+  is the second page in two sessions written because a *counting* agent found
+  a hole, and a viewer has not asked for either.
+- `blaze3d`'s **What replaced *RenderStateShard*** and **Resources and
+  uniforms** sections. Both are answers to "where did the old thing go",
+  which is a naming-drift job, not a lecture's.
+- `particles`' **The other way a particle is born** section (explosions). It
+  is a genuinely separate mechanism with a budget and a weighted list, and it
+  is also a second trace on a page that already has one.
+- `models-and-atlases`' twelve-layer soft-failure enumeration. The old page
+  said "four separate layers" and was wrong; the honest number is a list, and
+  a list is not a lecture. Pass 4 should probably say "a dozen" and name
+  three.
+- `entity-rendering`'s thirteen-feature-renderer list and fifteen-phase list.
+  Both are catalogues; the first earns its place ("what can be drawn in a
+  level" has no other answer in the corpus), the second may not.
+- `lightmap-fog-and-sky`'s **Not every visual constant is an attribute**
+  invariant. It exists to qualify a load-bearing fact three other pages
+  state absolutely. If pass 4 restates the fact with the qualifier built in,
+  this bullet goes.
+
+**Wording debt.**
+
+- Session H flagged the "acquire, snapshot, draw, present" four-beat gloss as
+  a pattern that must not become a tic. Session I did not add a third, but
+  `the-window` opens with the same "The headline for a 1.21-era reader"
+  formula as the other seven, so Part XI is now **eight for eight**. Pass 4
+  should decide whether the formula is the part's voice or its crutch.
+- Three pages now say some version of "and that is why *X* looks the way it
+  does" as their invariant payoff (the sneaking shadow, the untiled break
+  puff, the fade on streaming terrain). It works; three is the limit.
+- `level-rendering` is 300 lines and carries the split table's oldest
+  deferred seam (meshing vs visibility vs the frame graph). It grew this
+  session rather than splitting, because the fact-check's material landed on
+  both halves evenly — the same reason sessions D and E gave. Pass 3 now has
+  four sessions' worth of "confirmed, not executed" on this shape of page.
+
+**Cross-part edits made** (session B's rule):
+`environment-attributes-and-timelines` (Part IV) attributed `ClientLevel`'s
+two extra attribute layers to the End flash; they are the **lightning**
+flash. Corrected, with a pointer to the End's actual mechanism.
+`the-client-loop`'s animated-texture bullet was checked and is right — it is
+the *load-bearing-facts list* that was stale, and that is now fixed above.
+
+**Left for session J and later.** Nothing in Part XI is half-done, but three
+of this session's findings are other parts' business: the item-model property
+system may be Part VII's page; the debug-renderer table is Part X's
+`debugging-the-running-game`; and `renderer/special` is the reason a chest in
+your hand looks right, which `items-and-stacks` currently does not say.

@@ -81,6 +81,7 @@
 - [XI · Rendering]()
   - [The frame](systems/rendering/the-frame.md)
   - [Blaze3D](systems/rendering/blaze3d.md)
+  - [The window](systems/rendering/the-window.md)
   - [Level rendering](systems/rendering/level-rendering.md)
   - [Models and atlases](systems/rendering/models-and-atlases.md)
   - [Entity rendering](systems/rendering/entity-rendering.md)
