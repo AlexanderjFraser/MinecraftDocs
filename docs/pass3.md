@@ -272,6 +272,114 @@ visible instead of stated. Same argument, more weakly, for
 `ai-goals-and-brains`'s villager day, which is a clock driving a state
 filter rather than a call sequence.
 
+### Part VII · Items and inventories
+
+*(session F)* **Part VII is two systems and a shared vocabulary, and the
+part currently pretends it is one.** `items-and-stacks` and
+`containers-and-menus` are the vocabulary — what a stack *is*, and how two
+machines agree about a set of them. `recipes`, `enchantments` and
+`loot-tables` are three independent data-driven engines that happen to
+produce or decorate stacks. The second three do not depend on each other at
+all; the first two are a hard prerequisite for all of them. That is a
+**two-tier shape**, not a chain, and the lecture order should say so rather
+than running the five as a list.
+
+**`loot-tables` is misnamed for what it is.** The page's own headline is
+that the parameter machinery lives outside the loot package and that
+predicates are the bigger client — `/execute if predicate`, entity-selector
+predicates, advancement conditions, villager trade filters and every
+enchantment effect condition all run on it, and **five of the twenty-six
+parameter sets have no loot caller at all**. Session F fixed the framing but
+left the structure. The honest options for pass 3: rename the page to
+something like *predicates and contexts* with loot as its worked example;
+split a short `contexts-and-predicates` page out of the front of it and let
+Part XIII and the advancement material depend on that instead of on a page
+called "loot tables"; or leave it and accept that two later parts point at a
+page whose title does not describe what they need from it. Session F's guess
+is the split, because the dependants are in different parts.
+
+**`enchantments` is three shapes stacked.** A trace (Fire Aspect), a hook
+table (thirty-odd `EnchantmentHelper` entry points, which is the genuinely
+useful artefact and is now nearly complete), and a fourth section —
+*getting one onto an item* — that is a lecture of its own: the table's
+bookshelf walk and seed, the anvil's arithmetic, the grindstone, the
+providers, `/enchant`. The trace and the hook table belong together; the
+acquisition half is a different subject with a different audience and would
+pair naturally with `containers-and-menus`.
+
+**The use pipeline is traced in one direction only.** `items-and-stacks`
+follows a *completion* (eating, thirty-two ticks then finish) and mentions
+release in a single invariant — yet `ItemStack.useOnRelease` is the third
+term in the completion guard and the bow, the crossbow and the trident all
+take the other branch, finished by a `ServerboundPlayerActionPacket`. A
+*drawing a bow* trace is a real second lecture and it is currently a
+sentence.
+
+**Split candidates confirmed, none executed.** `items-and-stacks` grew a
+durability section and is now three subjects (the data model, the use
+pipeline, the eating trace); `containers-and-menus` grew the creative
+parallel protocol and the crafting-result side channel and is now three
+(the model, the click protocol, the exceptions). Both seams are real and
+both are presentational; the fact-check did not force either.
+
+### Part VIII · The player
+
+*(session F)* **Part VIII has an ordering problem the pages cannot solve
+individually: authority has to be taught before any of them.** Session E
+identified this from the entity side; session F confirms it from the player
+side and can now be specific. `input-to-movement` gained a four-method
+matrix (`Entity.isClientAuthoritative`,
+`Entity.isLocalInstanceAuthoritative`, `Entity.canSimulateMovement`,
+`Entity.isEffectiveAi`) with the per-class answers, because none of the
+page's claims are checkable without it; `player-anatomy` gained a shorter
+version of the same thing, because its two-phase tick makes no sense
+otherwise; and `movement-and-collision` already carries a third. **Three
+pages in two parts now teach the same matrix.** Pass 3 must pick one owner.
+Session F's recommendation differs from session E's: put it in
+`entity-anatomy` as session E suggested *only* if Part VI precedes Part
+VIII in the order; otherwise `input-to-movement` is the better host,
+because the player is the case where the matrix is counter-intuitive in
+both directions at once (client-authoritative everywhere, yet simulated on
+the server and discarded).
+
+**`player-anatomy` is a reference page with one excellent trace inside
+it.** The class ladder, `Inventory`'s slot arithmetic, `Abilities`,
+`GameType` and the persistence list are all lookup material. The
+two-phase tick — with the record-simulate-snap-back bracket that session F
+added — is a lecture, and it is the one thing on the page nobody would
+guess. The split is obvious and was already in the pass-2 table; the
+fact-check strengthened it by making the trace half better.
+
+**`the-sword-swing` now documents three melee paths and traces one.**
+Ordinary attack, `PiercingWeapon` (its own packet, no target id,
+server-side raycast, hits everything along the ray) and `KineticWeapon`
+(reached from item *use*, gated on closing speed) all end in damage and only
+the first goes through `Player.attack`. The spear is a genuinely different
+lecture — it is the 26.2 combat change a viewer will most want explained —
+and it is currently two invariants at the bottom of someone else's page.
+
+**`hunger-xp-and-effects` is three pages in a trench coat, and the fact-check
+made that worse rather than better.** They share only "the server owns it
+and tells you", and after session F each third has its own surprises
+(exhaustion's creative no-op; the total-experience-only change detection;
+the infinite-effect re-send hole). Status effects in particular have their
+own registry, their own instance model with a hidden-effect stack, their own
+packets and their own client-side blend — that is a page. Pass 3 should
+split at least effects off; the hunger and XP halves are small enough to
+stay together, and they do at least meet, in the enchanting seed and in
+mending.
+
+**Diagram note.** `player-anatomy`'s tick diagram is the one place in the
+corpus where a sequence diagram is *exactly* the right shape and was
+previously drawn wrong — the record-and-restore bracket around
+`ServerPlayer.doTick` is a conversation with an explicit undo, and it now
+shows. By contrast `the-sword-swing`'s trace is really a fourteen-step
+*pipeline over one number* (base damage in, total damage out, with two
+different curves applied to two different terms), and a sequence diagram
+across seven lanes buries that. A left-to-right flow of the damage value,
+annotated with what multiplies it where, would teach the whole page in one
+picture.
+
 ---
 
 ---
@@ -663,6 +771,31 @@ knowing before the order is drafted.*
   both assume the section/palette model and the `setBlockState` flag
   vocabulary. Part IV must precede Part V. *(session C)*
 
+- **Authority (`Entity.isLocalInstanceAuthoritative` and its three
+  siblings) is now a three-page dependency in two parts** —
+  `movement-and-collision`, `player-anatomy` and `input-to-movement` — and
+  Part IX's `what-the-client-is-told` and Part X's client-tick material
+  both lean on it too. It is the second-most duplicated idea in the corpus
+  after the thread table. See the Part VIII note in section 1. *(session F)*
+- **`items-and-stacks` → everything in Part VII, and out into Parts V and
+  VIII.** Data components, the use pipeline and durability are assumed by
+  `containers-and-menus`, `enchantments`, `block-interaction`,
+  `block-breaking`, `the-sword-swing` and `hunger-xp-and-effects`. It is
+  the part's root and should be watched first within it. *(session F)*
+- **`loot-tables`'s context machinery is a dependency of Part XIII, not
+  just of Part VII.** `/execute if predicate` and the entity-selector
+  predicate argument both run on `ContextKeySet`; the advancement triggers
+  use two parameter sets of their own. Whoever owns commands will have to
+  either explain contexts again or point back into Part VII. *(session F)*
+- **`containers-and-menus` → `recipes`.** The crafting result slot is
+  pushed by a hand-written packet that bypasses the menu's own diffing and
+  bumps the state id itself; the recipe page cannot explain that without
+  the menu page's synchroniser model first. *(session F)*
+- **`player-anatomy` → `hunger-xp-and-effects` is a *tick-phase*
+  dependency, not a data one.** Every claim on the hunger page about when
+  something reaches the client is a claim about which half of the player
+  tick it ran in. *(session F)*
+
 ## 6 · Open questions for pass 3
 
 - Does `math-and-primitives` move to `src/reference/`? *(session A)*
@@ -693,3 +826,19 @@ knowing before the order is drafted.*
   Part III. The new page uses `Probe` and `Cam` for `EnvironmentAttributeProbe`
   and `Camera`, which are words rather than initials; the standard should
   rule on whether a short word is allowed. *(session C)*
+- Does the authority matrix live in `entity-anatomy`,
+  `movement-and-collision` or `input-to-movement`? Sessions E and F
+  disagree, and the answer depends on whether Part VI precedes Part VIII.
+  *(session F)*
+- Is `loot-tables` renamed, split, or left with a title that undersells it?
+  *(session F)*
+- Is the spear (`PiercingWeapon` / `KineticWeapon`) its own lecture, or two
+  invariants on `the-sword-swing`? *(session F)*
+- Does *drawing a bow* exist as a trace, given the release half of the use
+  pipeline is currently one sentence? *(session F)*
+- Part VII/VIII diagram lanes use `MC`, `MPGM`/`MG`, `SGPL`/`CL`, `SPGM`,
+  `IS`, `C`/`CO`, `LE`, `SP`, `FD`, `SCR`, `CM`, `RS`, `SYNC`, `LP`, `KM`,
+  `KI`, `PL`, `IN`, `GM`. Two collisions the standard must resolve:
+  **`CL` and `SGPL` are both `ServerGamePacketListenerImpl`** within Part
+  VIII, and `CM` is `AbstractContainerMenu` on one page and `CraftingMenu`
+  on another. *(session F)*

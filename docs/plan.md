@@ -133,9 +133,8 @@ Three protocol notes, all cheap and all load-bearing:
   the ordering questions the reports disagreed on. Do this for every *wrong*
   finding that changes a trace; take the *completeness* findings on trust.
 
-Four protocol notes have now been added by four consecutive sessions.
-Session C's is **suspect the tool once before rewording the
-page.** A name you are certain about that fails `verify_names.py` is
+Every session since has added one. Session C's is **suspect the tool once
+before rewording the page.** A name you are certain about that fails `verify_names.py` is
 occasionally the verifier's bug, not yours — session A found one in
 `gen_reference.py`, session C found one in `verify_names.py` itself. Run
 the verifier after each page rather than at the end, so a systematic
@@ -152,6 +151,21 @@ backwards about the system. The tell is a page that establishes "the same
 code runs on both sides" and then never says what each side is allowed to
 *do* with it. Ask the fact-check agent, for every shared code path, which
 side is authoritative and what the other one does instead.
+
+Session F adds a seventh, and it is the cheapest of the lot: **make the
+agent count the call sites.** Sessions D and E found conditions wrong on a
+path; session F's errors were almost all *cardinality* — a rule stated
+correctly with the wrong number of exceptions. "Only the server's
+synchronizer bumps the state id" (three call sites, one of them elsewhere);
+"no enchantment effect runs on the client" (two value effects do); "the only
+override of `Item.finishUsingItem` in the item package" (it is the only one
+anywhere); "an `Ingredient` cannot be empty" (a tag can make one); "twenty-five
+named sets" (twenty-six); "forty loot functions" (forty-three); "thirty
+component keys" (thirty-one); "there is a second melee path" (there are
+three). **Every sentence containing "the only", "exactly one" or a count is a
+question for the agent**, and the answer is a grep it can run in seconds.
+Ask for the *complete* caller or implementor list for any claim of the form
+"only X does Y", and take the count from the report rather than the page.
 
 Session D adds a fifth: **hunt the unstated conditional.** Nearly every
 session-D error was a claim that held in the traced case and was written as
@@ -189,7 +203,7 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
   `environment-attributes-and-timelines` page. *(2026-09-01)*
 - [x] **Session D** — Part V Blocks. *(2026-09-01)*
 - [x] **Session E** — Part VI Entities. *(2026-09-01)*
-- [ ] **Session F** — Part VII Items · Part VIII The player.
+- [x] **Session F** — Part VII Items · Part VIII The player. *(2026-09-01)*
 - [ ] **Session G** — Part IX Networking.
 - [ ] **Session H** — Part X: the client half, and the X/XI split lands
   here (SUMMARY, renumbering, redirects if any).
@@ -254,6 +268,112 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session F** — Part VII Items (`items-and-stacks`,
+  `containers-and-menus`, `recipes`, `enchantments`, `loot-tables`) and
+  Part VIII The player (`player-anatomy`, `input-to-movement`,
+  `the-sword-swing`, `hunger-xp-and-effects`). Nine adversarial
+  fact-checks, nine rewrites. The A–E pattern holds without exception —
+  every page had *wrong* claims. **Session F's centre of gravity is
+  counting**: where B found orderings wrong, C thread attribution, D
+  unstated conditionals and E the client/server split, almost every
+  session-F error was a correct rule with the wrong number of exceptions.
+  Three entries in this file's own load-bearing list were falsified. What
+  mattered most:
+  - **Two load-bearing facts were reversed and one narrowed.**
+    `/data get block` on an unopened chest does **not** commit the loot
+    roll — `trySaveLootTable` writes the key back out and never reads an
+    item, so the save path is not one of the unpacking reads (the hopper
+    and comparator halves are right).
+    `ServerboundPlayerInputPacket` never moves the *player* but is not
+    inert: both minecart behaviours read the move intent to nudge a
+    stalled cart, and the handler sets the sneak flag directly. And "no
+    enchantment effect runs on the client" is true only of entity and
+    location-based effects — `Enchantment.modifyCrossbowChargeTime` and
+    `Enchantment.modifyTridentSpinAttackStrength` take no level, and run
+    on the render thread and in `MultiPlayerGameMode.useItem`
+    respectively. All three confirmed by direct reads.
+  - **`player-anatomy` had the player's second tick phase backwards.**
+    `ServerGamePacketListenerImpl.tickPlayer` *records* the current
+    position into `firstGood…` and then restores it after
+    `ServerPlayer.doTick` with `Entity.absSnapTo`; the page had it
+    resetting to the last accepted position first and the player "actually
+    moving, falling" inside `doTick`. `input-to-movement` had the same
+    mechanism right and the page it depends on had it wrong — the two are
+    now consistent, and both carry the four-method authority matrix
+    (`Player.isClientAuthoritative` is an unconditional true, so the server
+    is *not* locally authoritative, yet `Entity.canSimulateMovement` and
+    `Entity.isEffectiveAi` are overridden true, which is why it simulates
+    at all, and why fall damage arrives via `Entity.doCheckFallDamage` on
+    the packet path).
+  - **`the-sword-swing` was missing the fact that the client predicts
+    nothing.** `Entity.hurtClient` returns false and neither
+    `LivingEntity` nor `Mob` overrides it, so client-side `Player.attack`
+    skips its entire post-hit block; only `RemotePlayer` returns true.
+    Also: a whole damage term was missing — `Item.getAttackDamageBonus`
+    sits between the sprint check and the crit, so the mace's bonus is
+    multiplied by 1.5 — the sweep damage is scaled by the attack-strength
+    ratio and run through the enchantments, `ItemStack.hurtEnemy` does not
+    apply durability (`ItemStack.postHurtEnemy` does),
+    `LivingEntity.getKnockback` does not damp the attacker
+    (`Player.causeExtraKnockback` does), and there is a *third* melee path,
+    `KineticWeapon`, reached from item use.
+  - **`containers-and-menus` had the suppression invariant inverted.** The
+    advancement channel does *not* see intermediate states — nothing calls
+    back into the menu during a click — but `CraftingMenu.slotChangedCraftingGrid`
+    *does* send a packet mid-click, bypassing both the synchronizer and the
+    suppression flag, and is a third `incrementStateId` call site. Also:
+    one synchronizer per `ServerPlayer`, not per menu;
+    `AbstractContainerMenu.broadcastChanges` is a single loop, not two
+    passes; `AbstractContainerMenu.isValidSlotIndex` is only an upper
+    bound; and the page's "the server can never adopt the client's data"
+    is falsified by `ServerboundSetCreativeModeSlotPacket`, which takes an
+    `ItemStack` verbatim.
+  - **`items-and-stacks` had the prediction after the packet.**
+    `MultiPlayerGameMode.startPrediction` runs the local action and *then*
+    sends what it returns. Also: `ItemStack.onUseTick` runs before the
+    decrement (so a 32-tick meal is offered 32…1 and never 0), the item-swap
+    cancel is in the private `LivingEntity.updatingUsingItem` rather than
+    `LivingEntity.updateUsingItem`, the "pre-use copy" is taken at
+    *completion*, the untrusted stream codec is used by exactly one packet
+    and validates by re-encoding rather than by `ItemStack.validateStrict`,
+    the two durability-vs-stackability validators test *different*
+    components, and the client's counter does not stop at zero. Durability
+    was missing from the page entirely.
+  - **`hunger-xp-and-effects` had the starvation floor at ten hearts.** It
+    is five on Easy, the health term is difficulty-independent, and unlike
+    both regen branches the starvation branch is not gated on the game
+    rule. Bigger: the page's premise that "the client computes none of
+    them" is wrong for eating — entity event 9 makes the client re-run
+    `FoodProperties.onConsume` and its `FoodData.eat` locally. Also:
+    infinite effects are never re-sent (−1 modulo 600 is −1), the XP packet
+    is change-detected on the total alone, `ExperienceOrb.award` does not
+    split (its delegate does), and the merge bucket is a fresh random
+    number rather than an entity id.
+  - **`recipes` and `loot-tables` were mostly right and badly counted.**
+    Recipe ties resolve **path before namespace** (`Identifier`'s own
+    order); an unplaceable recipe is logged and *kept*, not dropped, and
+    then lights up as always-craftable in the book; `AbstractFurnaceMenu`
+    uses a property set rather than a cached check and `CrafterMenu` has no
+    `RecipeCache` at all; `ServerPlaceRecipe` counts before it clears. On
+    loot: the recursion guard is a **stack**, not a visited-forever ledger,
+    so a table referenced twice in one draw yields items twice; the
+    all-parameters set is not all of them; running out of slots discards
+    silently; and `DynamicLoot` breaks the "a leaf always makes a fresh
+    stack" invariant.
+
+  **Split rulings: none executed.** All four Part VII/VIII candidates
+  confirmed and left presentational; `loot-tables` **added** to the table,
+  because the page's own headline is that predicates are the bigger client
+  and five of its twenty-six parameter sets have no loot caller. One
+  cross-part correction outside these parts (`entity-anatomy` gained
+  `ClientMannequin`) and one **wrong naming-drift row** fixed in both
+  places. All of it in [pass2.md](pass2.md) and [pass3.md](pass3.md).
+
+  Verifier lesson: two bare words slipped through as identifiers, and the
+  agents caught four member mis-attributions the verifier structurally
+  cannot see — five sessions running that the NAMES section has earned its
+  place.
 
 - **2026-09-01, session E** — Part VI Entities: all seven pages
   (`entity-anatomy`, `entity-lifecycle`, `synched-entity-data`, `attributes`,

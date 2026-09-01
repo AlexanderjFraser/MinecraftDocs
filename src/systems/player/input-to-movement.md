@@ -13,10 +13,48 @@ is not.
 The one sentence a player recognises: *I press W and I walk — unless the
 server disagrees, and then I snap back.*
 
-The headline for a 1.21-era reader: **the server runs the whole physics
-pipeline for a human player every tick and then throws the position
-away.** It simulates in order to know what the player's velocity *ought*
-to be, because that is the number the anti-cheat check compares against.
+The headline: **the server runs the whole physics pipeline for a human
+player every tick and then throws the position away.** It simulates in
+order to know what the player's velocity *ought* to be, because that is
+the number the anti-cheat check compares against.
+
+## Authority: the four methods
+
+Every claim on this page rests on four methods, and they do not say what
+their names suggest.
+
+| | declared | `LocalPlayer` | `RemotePlayer` | `ServerPlayer` |
+|---|---|---|---|---|
+| `Entity.isClientAuthoritative` | `Entity`, overridden on `Player` to an unconditional yes | ✔ | ✔ | ✔ |
+| `Entity.isLocalInstanceAuthoritative` | `Entity`, **final** | ✔ | ✘ | **✘** |
+| `Entity.canSimulateMovement` | `Entity`, overridden on `Player` | ✔ | ✘ | **✔** |
+| `Entity.isEffectiveAi` | `Entity`, overridden on `Player` | ✔ | ✘ | **✔** |
+
+`Entity.isLocalInstanceAuthoritative` is *client side ? locally
+authoritative : not client-authoritative*, and
+`Player.isLocalClientAuthoritative` is `Player.isLocalPlayer`, which only
+`LocalPlayer` answers yes to. So a player is **client-authoritative on
+both sides** — and the server, denied local-instance authority, still has
+`Entity.canSimulateMovement` and `Entity.isEffectiveAi` overridden true,
+which is precisely why it runs `LivingEntity.travel` and `Entity.move`
+for a player it does not believe.
+
+Three consequences fall out of that pairing, and they are the shape of
+the whole system:
+
+- Inside `Entity.move`, `Entity.checkFallDamage` is gated on
+  local-instance authority — **false for a `ServerPlayer`** — so the
+  server's own simulation never applies a player's fall damage.
+  `Entity.doCheckFallDamage`, called from the movement-packet handler
+  with the *client's* reported delta, does.
+- The ground flag is likewise only updated unconditionally for an
+  authoritative instance; otherwise it needs real vertical motion.
+- `LivingEntity.travel` runs when both `Entity.canSimulateMovement` and
+  `Entity.isEffectiveAi` hold — true on the server — so the pipeline runs
+  in full and its position is then discarded.
+
+[Movement and collision](../entities/movement-and-collision.md) owns the
+matrix for entities in general; this is the player's corner of it.
 
 ## The data it owns
 
@@ -26,15 +64,21 @@ to be, because that is the number the anti-cheat check compares against.
   the by-name registry, `KeyMapping.MAP` the physical-key reverse index
   rebuilt by `KeyMapping.resetMapping`. Each holds `KeyMapping.isDown` and
   `KeyMapping.clickCount`. **`KeyMapping.consumeClick` is a counter drain,
-  not an edge test** — call sites loop on it — but the movement keys never
-  use it; they are polled with `KeyMapping.isDown`.
-  `KeyMapping.Category` is a *record* now, with constants like
-  `KeyMapping.Category.MOVEMENT` and a public
+  not an edge test** — most call sites loop on it, a few take one click
+  per tick — but the movement keys never use it; they are polled with
+  `KeyMapping.isDown`. `KeyMapping.Category` is a *record*, with constants
+  like `KeyMapping.Category.MOVEMENT` and a public
   `KeyMapping.Category.register` for mods.
 - **`ToggleKeyMapping`** — `Options.keyShift` and `Options.keySprint` are
   these; hold-versus-toggle lives entirely in
   `ToggleKeyMapping.setDown`, driven by `Options.toggleCrouch` and
-  `Options.toggleSprint`. Nothing downstream knows the difference.
+  `Options.toggleSprint`. Nothing downstream knows the difference. The
+  screen-focus machinery is theirs too: `KeyMapping.setAll`,
+  `KeyMapping.releaseAll`, `KeyMapping.resetToggleKeys` and
+  `KeyMapping.restoreToggleStatesOnScreenClosed`, which consults
+  `ToggleKeyMapping.shouldRestoreStateOnScreenClosed`. That is the answer
+  to why a sneak *toggle* survives opening the inventory when a held
+  sneak does not.
 - **`Options`** — the movement bindings: `Options.keyUp`,
   `Options.keyDown`, `Options.keyLeft`, `Options.keyRight`,
   `Options.keyJump`, `Options.keyShift`, `Options.keySprint`. Plus
@@ -43,14 +87,16 @@ to be, because that is the number the anti-cheat check compares against.
 - **`Input`** (`world/entity/player`) — a **shared** record of seven
   booleans (forward, backward, left, right, jump, shift, sprint) with
   `Input.EMPTY` and an `Input.STREAM_CODEC` that packs all seven into one
-  byte (`Input.FLAG_FORWARD` … `Input.FLAG_SPRINT`).
+  byte; the bit values are named `Input.FLAG_FORWARD` …
+  `Input.FLAG_SPRINT`.
 - **`ClientInput`** — `ClientInput.keyPresses` (an `Input`) plus
   `ClientInput.moveVector` (a `Vec2`, where `Vec2.x` is the *left*
   impulse and `Vec2.y` the *forward* one). `ClientInput.makeJump` is how
-  auto-jump fakes a press. The subclass that actually reads the keyboard
-  is **`KeyboardInput`**, whose `KeyboardInput.tick` builds a fresh
-  `Input` from the seven `KeyMapping.isDown` values and normalises the
-  axes through `KeyboardInput.calculateImpulse`.
+  auto-jump fakes a press. `ClientInput.tick` is empty; the subclass that
+  actually reads the keyboard is **`KeyboardInput`**, whose
+  `KeyboardInput.tick` builds a fresh `Input` from the seven
+  `KeyMapping.isDown` values, maps each pair to −1, 0 or +1 with
+  `KeyboardInput.calculateImpulse`, and normalises the resulting vector.
 - **`LocalPlayer`** — the send-tracking block: `LocalPlayer.xLast`,
   `LocalPlayer.yLast`, `LocalPlayer.zLast`, `LocalPlayer.yRotLast`,
   `LocalPlayer.xRotLast`,
@@ -68,8 +114,9 @@ is why a respawned player's input object is a different one.
 ### On the server
 
 `ServerGamePacketListenerImpl` holds the whole judgement:
-`ServerGamePacketListenerImpl.firstGoodX` and its siblings (where the
-tick started), `ServerGamePacketListenerImpl.lastGoodX` and its siblings
+`ServerGamePacketListenerImpl.firstGoodX` and its siblings (where
+`ServerGamePacketListenerImpl.tickPlayer` found the player),
+`ServerGamePacketListenerImpl.lastGoodX` and its siblings
 (the last accepted position),
 `ServerGamePacketListenerImpl.awaitingPositionFromClient`,
 `ServerGamePacketListenerImpl.awaitingTeleport`,
@@ -82,11 +129,13 @@ tick started), `ServerGamePacketListenerImpl.lastGoodX` and its siblings
 equivalents (`ServerGamePacketListenerImpl.lastVehicle`,
 `ServerGamePacketListenerImpl.vehicleFirstGoodX`,
 `ServerGamePacketListenerImpl.vehicleLastGoodX`,
-`ServerGamePacketListenerImpl.clientVehicleIsFloating`). `ServerPlayer.lastKnownClientMovement` is the
-observed per-tick displacement, and `ServerPlayer.lastClientInput` is the
+`ServerGamePacketListenerImpl.clientVehicleIsFloating`).
+`ServerPlayer.lastKnownClientMovement` is the observed per-tick
+displacement, read back through `ServerPlayer.getKnownMovement` and
+`ServerPlayer.getKnownSpeed`, and `ServerPlayer.lastClientInput` is the
 raw key state.
 
-**There are no named threshold constants.** The numbers in the movement
+**Almost none of the thresholds have names.** The numbers in the movement
 checks are inline literals; the only named ones nearby are
 `ServerGamePacketListenerImpl.MAXIMUM_FLYING_TICKS` (80) and
 `ServerGamePacketListenerImpl.CLIENT_LOADED_TIMEOUT_TIME` (60).
@@ -94,16 +143,20 @@ checks are inline literals; the only named ones nearby are
 ## When it runs
 
 Keys are **sampled inside the tick, not pushed from the callback.** The
-GLFW callback builds a `KeyEvent` and immediately defers to the render
-thread with `Minecraft.execute`; `KeyboardHandler.keyPress` only sets
-`KeyMapping.isDown` and bumps `KeyMapping.clickCount`. The read happens
-once per game tick, deep inside `LocalPlayer.aiStep`, which calls
+GLFW callback builds a `KeyEvent` and immediately defers to the client's
+main thread with `BlockableEventLoop.execute`; `KeyboardHandler.keyPress`
+only sets `KeyMapping.isDown` and bumps `KeyMapping.clickCount` — and
+only when no screen is open. Releases are always delivered, which is the
+asymmetry the toggle-restoring machinery above exists to repair. The read
+happens once per game tick, deep inside `LocalPlayer.aiStep`, which calls
 `ClientInput.tick`.
 
 Mouse look is the exception: `MouseHandler.handleAccumulatedMovement` runs
-**per frame**, in `Minecraft.runTick` after the tick loop, and
-`MouseHandler.turnPlayer` calls `Entity.turn` directly. Rotation is
-therefore finer-grained than position.
+**per frame**, in `Minecraft.runTick` after the tick loop, gated on the
+window being active and the mouse grabbed, and `MouseHandler.turnPlayer`
+calls `Entity.turn` directly — after cubing the sensitivity, applying
+`Options.smoothCamera` through a `SmoothDouble` and honouring the two
+invert options. Rotation is therefore finer-grained than position.
 
 On the server the ordering is the whole story:
 
@@ -114,7 +167,8 @@ On the server the ordering is the whole story:
 3. `MinecraftServer.tickChildren` reaches its connection phase, and
    `ServerGamePacketListenerImpl.tick` runs
    `ServerGamePacketListenerImpl.tickPlayer` — the simulate-and-discard
-   step, and the place the floating check is enforced.
+   step, and the place the floating check is enforced. A paused server
+   short-circuits before it.
 
 ## The trace: W is pressed
 
@@ -136,7 +190,7 @@ sequenceDiagram
     LP->>CL: ServerboundMovePlayerPacket.PosRot — sendPosition decides which variant
     CL->>CL: moved too quickly? — squared delta vs getDeltaMovement, budget 100 or 300
     CL->>SP: move(MoverType.PLAYER) — the only place the server position advances
-    CL->>CL: moved wrongly? — residual over 0.0625, then noCollision / new-collider test
+    CL->>CL: moved wrongly? — residual over 0.0625, or a new collider
     CL->>LP: ClientboundPlayerPositionPacket — rubber-band, awaiting an ack
     CL->>SP: doTick — simulate the whole tick, then absSnapTo(firstGood…) and discard
 ```
@@ -146,18 +200,26 @@ keys and a normalised `Vec2`. `LocalPlayer.applyInput` — overriding a
 `LivingEntity.applyInput` that does nothing but decay them —
 turns that into the `LivingEntity.xxa` and `LivingEntity.zza` movement
 fields, after passing it through
-`LocalPlayer.modifyInput`: the item-use slowdown (from
-`LocalPlayer.itemUseSpeedMultiplier`), `Attributes.SNEAKING_SPEED` when
-moving slowly, and `LocalPlayer.modifyInputSpeedForSquareMovement`, the
-diagonal correction. From there it is ordinary
+`LocalPlayer.modifyInput`: a flat 0.98 scaling, then the item-use
+slowdown (from `LocalPlayer.itemUseSpeedMultiplier`),
+`Attributes.SNEAKING_SPEED` when moving slowly, and
+`LocalPlayer.modifyInputSpeedForSquareMovement`, the diagonal correction.
+From there it is ordinary
 [movement and collision](../entities/movement-and-collision.md):
-`LivingEntity.travel` → `LivingEntity.travelInAir` →
-`LivingEntity.moveRelative` → `Entity.move`.
+`Player.travel` — a real override, handling passengers, the swimming look
+nudge and the creative-flight damping — then `LivingEntity.travel` →
+`LivingEntity.travelInAir` →
+`LivingEntity.handleRelativeFrictionAndCalculateMovement` →
+`Entity.moveRelative` → `Entity.move`.
 
-Sprint is decided in `LocalPlayer.aiStep` before that:
-`LocalPlayer.canStartSprinting` gates it, and the double-tap is
-`LocalPlayer.sprintTriggerTime`, armed with `Options.sprintWindow` when
-the forward key *releases* and consumed when it is pressed again.
+Sprint is decided in `LocalPlayer.aiStep` before that, and it is a
+**rising edge, not a release**. `LocalPlayer.aiStep` snapshots the forward
+impulse *before* ticking the input, so the value it later tests is the
+previous tick's; `LocalPlayer.canStartSprinting` requires the current
+tick's. The pair means the double-tap window is armed on the first
+*press* and consumed on the second, and a release only matters because
+sneaking, using an item or walking backwards clears
+`LocalPlayer.sprintTriggerTime` outright.
 `LocalPlayer.shouldStopRunSprinting` ends it. Auto-jump is
 `LocalPlayer.updateAutoJump` (called from `LocalPlayer.move`) setting
 `LocalPlayer.autoJumpTime`, which makes the *next* tick call
@@ -167,43 +229,72 @@ the forward key *releases* and consumed when it is pressed again.
 `ServerboundMovePlayerPacket.PosRot` when both changed,
 `ServerboundMovePlayerPacket.Pos` or `.Rot` for one,
 `ServerboundMovePlayerPacket.StatusOnly` when only the ground or
-collision flag changed, and **nothing at all** when nothing changed —
-except that a position is re-sent every twenty ticks regardless, via
-`LocalPlayer.positionReminder`. The two booleans ride in one byte
+collision flag changed, and **nothing at all** otherwise — except that a
+position is re-sent every twenty ticks regardless, via
+`LocalPlayer.positionReminder`. "Changed" is not the same test for the
+two halves: rotation compares exactly, while position must have moved by
+more than 2×10⁻⁴ blocks. And the whole method sits behind
+`LocalPlayer.isControlledCamera`, so while spectating another entity a
+client sends no move packets at all, not even the reminder. The two
+booleans ride in one byte
 (`ServerboundMovePlayerPacket.FLAG_ON_GROUND`,
 `ServerboundMovePlayerPacket.FLAG_HORIZONTAL_COLLISION`).
 `ServerboundPlayerInputPacket` is sent only when the key set *changes*,
 and `ServerboundClientTickEndPacket` — a zero-byte singleton — closes
-every client tick.
+every client tick that has a level and is not paused.
 
 **The server half.** `ServerGamePacketListenerImpl.handleMovePlayer`
-rejects non-finite values outright (disconnect), discards the position
-entirely while a teleport is outstanding, clamps to ±3×10⁷ horizontally,
-and returns early for a passenger — **riders never move themselves**.
-Then two checks:
+begins with `ServerGamePacketListenerImpl.containsInvalidValues`, which
+rejects **NaN** coordinates and non-finite *rotations* — an infinite
+coordinate survives it and is clamped instead, to ±3×10⁷ horizontally by
+`ServerGamePacketListenerImpl.clampHorizontal` and ±2×10⁷ vertically by
+`ServerGamePacketListenerImpl.clampVertical`. It then discards the
+position entirely while a teleport is outstanding; short-circuits a
+sleeping player, teleporting them back if they claim to have moved more
+than a block; and for a passenger applies rotation only —
+snapping the position back with `Entity.absSnapTo` and re-registering the
+chunk position, which is not quite "returns early". Then two checks:
 
 - *moved too quickly*: the squared distance from `firstGood…` minus
   `Entity.getDeltaMovement().lengthSqr()` against a budget of **100 per
   packet, or 300 while fall-flying**, scaled by how many move packets
-  arrived since the last tick. Skipped for the singleplayer host, during a
-  dimension change, and when `GameRules.PLAYER_MOVEMENT_CHECK` is off
+  arrived since the last tick. Both sides are squared, so 100 is a
+  hundred blocks *squared* — about ten blocks a tick. The whole check,
+  and the packet counter it uses, is gated on
+  `TickRateManager.runsNormally`, so a frozen or stepping world does no
+  speed checking at all. It is also skipped for the singleplayer host,
+  during a dimension change, and when
+  `GameRules.PLAYER_MOVEMENT_CHECK` is off
   (`GameRules.ELYTRA_MOVEMENT_CHECK` covers the elytra case). Failure
   teleports the player back and returns.
-- The move is then actually applied —
-  `ServerPlayer.move` with `MoverType.PLAYER` — and *moved wrongly*
-  measures what is left over: a residual above `0.0625` while not
-  changing dimension, sleeping, creative, spectating or inside
-  `LivingEntity.isInPostImpulseGraceTime` (the mace and wind-charge
-  exemption). A failure only rubber-bands if the old box was in fact
-  clear, or if
-  `ServerGamePacketListenerImpl.isEntityCollidingWithAnythingNew` says the
-  player ended up inside a collider it was not already inside.
+- The move is then actually applied — `Entity.move` with
+  `MoverType.PLAYER` — and *moved wrongly* measures what is left over: a
+  residual above `0.0625` while not changing dimension, sleeping,
+  creative, spectating or inside `LivingEntity.isInPostImpulseGraceTime`
+  (the mace and wind-charge exemption, closed by
+  `ServerGamePacketListenerImpl.tryResetCurrentImpulseContext`). The
+  rubber-band that follows is a **disjunction**: either that failure with
+  a demonstrably clear old box, *or*
+  `ServerGamePacketListenerImpl.isEntityCollidingWithAnythingNew`
+  reporting the player ended up inside a collider it was not already
+  inside — which fires whether or not the residual check failed. Both
+  arms are additionally suppressed for a no-physics or sleeping player.
 
-Accepting means `ServerPlayer.absSnapTo`, `ServerChunkCache.move`,
+Accepting means `Entity.absSnapTo`, `ServerChunkCache.move`,
 `Entity.setOnGroundWithMovement`, `Entity.doCheckFallDamage`,
 `ServerGamePacketListenerImpl.handlePlayerKnownMovement` and
 `ServerPlayer.checkMovementStatistics` — the walked-distance statistics
 are computed from the *client's reported* delta, never from a simulation.
+The server also **infers the jump**: a packet that reports leaving the
+ground while moving upward calls `LivingEntity.jumpFromGround` on the player's
+behalf.
+
+**Where velocity comes from.** The reported delta is stored by
+`ServerPlayer.setKnownMovement`, and
+`ServerGamePacketListenerImpl.handleClientTickEnd` zeroes it if no move
+packet arrived that tick. That is what everything downstream — attack
+strength, sprint particles — actually reads, and it is why a client that
+stops sending is treated as stationary rather than as still coasting.
 
 **The teleport handshake.** `ServerGamePacketListenerImpl.teleport` bumps
 `ServerGamePacketListenerImpl.awaitingTeleport`, moves the player with `Entity.teleportSetPosition`,
@@ -211,13 +302,22 @@ records `ServerGamePacketListenerImpl.awaitingPositionFromClient` and sends
 `ClientboundPlayerPositionPacket` (a `PositionMoveRotation` plus a set of
 `Relative` flags saying which fields are deltas).
 `ServerGamePacketListenerImpl.updateAwaitingTeleport` **re-sends after
-twenty ticks** if no acknowledgement arrives, and until it does, every
-incoming move packet contributes rotation only. The client replies with
-`ServerboundAcceptTeleportationPacket` *and* an immediate
+more than twenty ticks** if no acknowledgement arrives, and until it does,
+every incoming move packet contributes rotation only. The client replies
+with `ServerboundAcceptTeleportationPacket` *and* an immediate
 `ServerboundMovePlayerPacket.PosRot`, then calls
 `BlockStatePredictionHandler.onTeleport` to drop its outstanding block
-predictions ([block interaction](../blocks/block-interaction.md)).
-`ClientboundPlayerRotationPacket` is the rotation-only sibling.
+predictions ([block interaction](../blocks/block-interaction.md)). On the
+receiving end `ClientPacketListener.handleMovePlayer` applies the position
+only when the player is not a passenger, and refuses to interpolate a jump
+of more than 4096 blocks squared. `ClientboundPlayerRotationPacket` is the
+rotation-only sibling.
+
+**Elytra** is its own round trip:
+`Player.tryToStartFallFlying` sends
+`ServerboundPlayerCommandPacket.Action.START_FALL_FLYING`, the server may
+disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
+`LivingEntity.updateFallFlying` and `LivingEntity.travelFallFlying`.
 
 ## Interfaces
 
@@ -230,9 +330,15 @@ predictions ([block interaction](../blocks/block-interaction.md)).
   ([tickets and loading](../world/tickets-and-loading.md)).
 - **Crosses the network as:** `ServerboundMovePlayerPacket` and its four
   variants, `ServerboundPlayerInputPacket`,
-  `ServerboundPlayerCommandPacket` (with
-  `ServerboundPlayerCommandPacket.Action` — sprint, sneak-exit, ride-jump,
-  open-inventory, start-fall-flying), `ServerboundMoveVehiclePacket`,
+  `ServerboundPlayerCommandPacket` (whose
+  `ServerboundPlayerCommandPacket.Action` is seven values — start and stop
+  sprinting, start and stop riding-jump,
+  `ServerboundPlayerCommandPacket.Action.STOP_SLEEPING`,
+  `ServerboundPlayerCommandPacket.Action.OPEN_INVENTORY`,
+  `ServerboundPlayerCommandPacket.Action.START_FALL_FLYING`; **there is
+  no sneak action** — sneaking reaches the server through
+  `ServerboundPlayerInputPacket`, which calls `Entity.setShiftKeyDown`),
+  `ServerboundMoveVehiclePacket`,
   `ServerboundAcceptTeleportationPacket`,
   `ServerboundClientTickEndPacket`; and back,
   `ClientboundPlayerPositionPacket`, `ClientboundPlayerRotationPacket`,
@@ -245,18 +351,21 @@ predictions ([block interaction](../blocks/block-interaction.md)).
 ## Invariants and surprises
 
 - **The server simulates the player fully, then deletes the answer.**
-  `ServerGamePacketListenerImpl.tickPlayer` calls `ServerPlayer.doTick` —
-  the whole `LivingEntity.aiStep` / `LivingEntity.travel` / `Entity.move`
-  pipeline runs
-  server-side — and the very next thing it does is snap the player back to
-  where the tick started. The simulation exists for
-  `Entity.getDeltaMovement`, which is the *expected* distance the
-  anti-cheat subtracts. The authoritative position only ever moves in
+  `ServerGamePacketListenerImpl.tickPlayer` first **records** the
+  player's current position into the `firstGood…` and `lastGood…` fields,
+  then calls `ServerPlayer.doTick` — the whole `LivingEntity.aiStep` /
+  `LivingEntity.travel` / `Entity.move` pipeline runs server-side — and
+  then puts the player back with `Entity.absSnapTo`, keeping the
+  rotation. The simulation exists for `Entity.getDeltaMovement`, which is
+  the *expected* distance the anti-cheat subtracts. The authoritative
+  position only ever moves in
   `ServerGamePacketListenerImpl.handleMovePlayer` or through a teleport.
-- **The server never uses `ServerboundPlayerInputPacket` to move
-  anybody.** `ServerPlayer.setLastClientInput` feeds exactly two
-  consumers: `ServerPlayer.getLastClientMoveIntent` and an
-  `InputPredicate` for advancements. Boats are steered client-side
+- **`ServerboundPlayerInputPacket` never moves the player — but it does
+  move a minecart.** `ServerPlayer.setLastClientInput` feeds
+  `ServerPlayer.getLastClientMoveIntent`, and both
+  `NewMinecartBehavior` and `OldMinecartBehavior` read it to nudge a
+  stalled cart along the rider's intended direction. The handler also
+  sets the sneak flag directly. Boats are steered client-side
   (`LocalPlayer.rideTick` → `AbstractBoat.setInput`) and the *result* is
   shipped as `ServerboundMoveVehiclePacket`.
 - **The vertical residual in *moved wrongly* is dead code.** The guard
@@ -269,24 +378,31 @@ predictions ([block interaction](../blocks/block-interaction.md)).
   one-packet budget for a many-packet displacement. There is no throttle
   or kick for the flood itself; only chat, commands and item drops have a
   `TickThrottler`.
-- **Riders are not checked at all.** A passenger's move packet
-  contributes rotation and nothing else; the vehicle's own packet has a
-  flat budget of 100, no elytra case, no game rule, and no
-  horizontal-collision flag.
+- **Riders are barely checked.** A passenger's own move packet
+  contributes rotation and a chunk re-registration and nothing else; the
+  vehicle's packet has a flat budget of 100, no elytra case, no game
+  rule, and no horizontal-collision flag.
 - **The flying kick scales with gravity, upward only.**
   `ServerGamePacketListenerImpl.getMaximumFlyingTicks` returns
   an effectively unbounded budget below a gravity of 10⁻⁵ and otherwise stretches the
   eighty-tick budget as gravity falls. `ServerGamePacketListenerImpl.clientIsFloating` is separately
   suppressed by spectator mode, `Abilities.mayfly`, the server's own
-  allow-flight setting, `MobEffects.LEVITATION`, fall-flying and riptide.
+  allow-flight setting, `MobEffects.LEVITATION`, fall-flying, riptide and
+  — the condition that actually defines *floating* — having no blocks
+  anywhere below.
 - **A key tapped between ticks is lost.** Movement polls
   `KeyMapping.isDown`, so a press shorter than a tick never happens —
   unlike the `KeyMapping.consumeClick` keys, where three taps in one tick
-  fire three times.
+  can fire three times.
 - **`Options.autoJump` is read inside a networking method.**
   `LocalPlayer.autoJumpEnabled` is refreshed in `LocalPlayer.sendPosition`,
   which does not run for a passenger or a non-camera player — so the
   setting quietly stops tracking in those states.
+- **A wall-graze cancels sprinting only if it is steep enough.**
+  `LocalPlayer.isHorizontalCollisionMinor` is a client-only override
+  measuring the angle against
+  `LocalPlayer.MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN`, about eight
+  degrees; the server has no equivalent.
 - **`ServerboundPlayerCommandPacket` carries an entity id the server never
   validates** against the sender.
 

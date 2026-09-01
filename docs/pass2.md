@@ -177,7 +177,12 @@ the old name and not finding it.
 | `ClientboundHorseScreenOpenPacket` | `ClientboundMountScreenOpenPacket` | session 7 |
 | `Container.startOpen(Player)` | `Container.startOpen(ContainerUser)` | session 7 |
 | `Recipe.getResultItem` / `getIngredients` | gone — `Recipe.assemble` / `PlacementInfo` | session 7 |
-| `Ingredient.EMPTY` | gone — an `Ingredient` cannot be empty | session 7 |
+| `Ingredient.EMPTY` | gone — `Ingredient.CODEC` rejects an empty literal list, but a tag that resolves to nothing still yields an empty one, hence `Ingredient.isEmpty` | session 7, **corrected session F** |
+| `ClientboundUpdateRecipesPacket` carrying recipes | property sets + the stonecutter input set; the book gets `RecipeDisplayEntry`s | session F |
+| `net.minecraft.advancements.CriteriaTriggers` | `CriteriaTriggers`, moved to the *advancements.triggers* package | session F |
+| `Player.permissionLevel` / `hasPermissions(int)` | `Player.permissions` → a `PermissionSet`, queried by named `Permissions` keys | session F |
+| `ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY` / `RELEASE_SHIFT_KEY` | gone — sneak rides `ServerboundPlayerInputPacket` → `Entity.setShiftKeyDown` | session F |
+| `Mannequin` on the client | `ClientMannequin`, installed by swapping the mutable `Mannequin.constructor` factory at client startup | session F |
 | `data/<ns>/recipes/` | `data/<ns>/recipe/` (singular) | session 7 |
 | `EnchantmentCategory` | `Enchantment.EnchantmentDefinition` item sets | session 7 |
 | `Enchantment.getDamageBonus`, `EnchantmentHelper.getFireAspect`… | gone — `EnchantmentEffectComponents` | session 7 |
@@ -384,13 +389,28 @@ easy to get wrong from 1.21 memory.
   construction; `Item.components` throws before then — `items-and-stacks`.
 - A shift-click that agrees costs **zero** clientbound packets; the
   server adopts the client's hash as its new baseline — `containers-and-menus`.
-- The client is never sent a recipe; a `RecipeDisplayId` is a list index
-  that changes on every reload — `recipes`.
-- No enchantment effect runs on the client, but the client still gets the
-  full definitions for tooltips — `enchantments`.
+- The client is never sent a recipe. A `RecipeDisplayId` is a list index,
+  and — **refined session F** — it is *deterministic* for a given recipe
+  set and unstable across any change to it; the server does not try to
+  work out which, and re-sends the whole book with a replace flag. It does
+  hold the whole *contents* of every recipe it has unlocked, as a
+  `RecipeDisplay`; what it is denied is the identity — `recipes`.
+- No enchantment **entity or location-based** effect can run on the
+  client — but **corrected session F**, two *value* effects do:
+  `Enchantment.modifyCrossbowChargeTime` and
+  `Enchantment.modifyTridentSpinAttackStrength` take a `RandomSource` and
+  no level, and are reached from the item renderer, three entity renderers
+  and `MultiPlayerGameMode.useItem`. Also corrected: the client usually
+  receives only the enchantment's *id*, not the definition — the
+  known-packs handshake elides contents the client's own pack already has
+  — `enchantments`.
 - Loot tables are never synced; a chest's table key is cleared *before*
-  the roll, and any container read (a hopper, `/data`) commits it with no
-  player luck — `loot-tables`.
+  the roll, and a container **read** (a hopper's pull, a comparator)
+  commits it with no player luck. **Corrected session F:** `/data` does
+  *not* — the save path writes the key back out and never touches the
+  items, and `clearContent` and `getContainerSize` do not unpack either.
+  The unpacking reads are emptiness, item read, both removals and item
+  write — `loot-tables`.
 
 - The server **simulates a human player fully every tick and then throws
   the position away** (`ServerGamePacketListenerImpl.tickPlayer` →
@@ -398,9 +418,12 @@ easy to get wrong from 1.21 memory.
   position only moves in `handleMovePlayer` or a teleport, and the
   simulation exists to produce `Entity.getDeltaMovement` for the
   anti-cheat — `input-to-movement`.
-- `ServerboundPlayerInputPacket` **never moves anyone**; its only
-  consumers are `ServerPlayer.getLastClientMoveIntent` and an
-  `InputPredicate` — `input-to-movement`.
+- `ServerboundPlayerInputPacket` never moves **the player** — but
+  **corrected session F**, it is not inert: `NewMinecartBehavior` and
+  `OldMinecartBehavior` both read `ServerPlayer.getLastClientMoveIntent`
+  to nudge a stalled cart, and the handler itself calls
+  `Entity.setShiftKeyDown`. The advancement `InputPredicate` is the third
+  consumer — `input-to-movement`.
 - `Inventory` is 43 slots (36 + equipment view), and `EquipmentSlot.MAINHAND`
   is an alias for the selected hotbar slot via `PlayerEquipment` —
   `player-anatomy`.
@@ -454,6 +477,44 @@ easy to get wrong from 1.21 memory.
   `players-and-sessions` / `tickets-and-loading`.
 - `ServerPlayer.restoreFrom`'s "restore everything" branch is the
   **end-credits** return, not *keepInventory* — `players-and-sessions`.
+- **A player's fall damage never comes from the server's own simulation.**
+  `Entity.move` gates `Entity.checkFallDamage` on local-instance
+  authority, which is false for a `ServerPlayer`; it comes from
+  `Entity.doCheckFallDamage` on the movement-packet path, computed from
+  the client's reported delta (**session F**) —
+  `input-to-movement` / `player-anatomy`.
+- **Against a mob the client predicts nothing at all.** `Entity.hurtClient`
+  returns false and neither `LivingEntity` nor `Mob` overrides it, so on
+  the client `Player.attack`'s whole post-hit block — knockback, sweep,
+  visual effects, durability, exhaustion — is skipped. `RemotePlayer` is
+  the exception (**session F**) — `the-sword-swing`, agreeing with
+  session E's `damage-and-death`.
+- **A menu change made by a block entity reaches the client on the *next*
+  tick; one made by a packet handler reaches it in the same tick.**
+  Packets drain before the levels tick, and `ServerPlayer.tick`'s
+  broadcast runs in the entity phase, before block entities. Nothing calls
+  back into the menu — `Container.setChanged` is a no-op, a chunk mark or
+  a counter (**session F**) — `containers-and-menus`.
+- **`Item.getAttackDamageBonus` is added between the sprint-knockback
+  branch and the crit**, so the mace's fall bonus is multiplied by the
+  ×1.5 (**session F**) — `the-sword-swing`.
+- **`ServerboundSetCreativeModeSlotPacket` is the one packet whose *data*
+  the server adopts verbatim**, straight into `Inventory` behind four
+  cheap gates. Every other client claim is a hash to compare against
+  (**session F**) — `containers-and-menus`.
+- **`CraftingMenu.slotChangedCraftingGrid` is a third state-id bump and an
+  unsuppressed clientbound channel**, sending a slot packet mid-click,
+  outside `ContainerSynchronizer` and outside
+  `AbstractContainerMenu.suppressRemoteUpdates` (**session F**) —
+  `containers-and-menus` / `recipes`.
+- **`ClientboundSetExperiencePacket` is change-detected on
+  `Player.totalExperience` alone**, which is why five level-only mutations
+  poison `ServerPlayer.lastSentExp` to force it (**session F**) —
+  `hunger-xp-and-effects`.
+- **Starvation's floor is five hearts on Easy, not ten**, the health term
+  is difficulty-independent, and the branch is not gated by
+  `GameRules.NATURAL_HEALTH_REGENERATION` although both regen branches are
+  (**session F**) — `hunger-xp-and-effects`.
 - Shutdown does **not** call `MinecraftServer.saveEverything`; it calls
   `PlayerList.saveAll` then `MinecraftServer.saveAllChunks` —
   `server-lifecycle`.
@@ -1110,3 +1171,81 @@ were corrected and it now points at `movement-and-collision`. Session G should
 check the rest of that page against the authority matrix — in particular
 anything it says about client-side entity movement.
 
+---
+
+### Session F — Part VII Items · Part VIII The player
+
+**Added on spec, and pass 4 should look hard at it.** Nine pages, roughly
++35 % in total.
+
+- `items-and-stacks` gained a whole **durability** subsection. It is a
+  genuine catalogue gap — the page's scope is the `ItemStack` data model
+  and half of that model was missing — but it is not part of the eating
+  trace and pass 4 should check it earns its place rather than becoming a
+  reference block.
+- `enchantments` gained ten `EnchantmentHelper` entry points (including
+  Fortune and Looting, which were absent from a page about enchantments),
+  a fourth acquisition path, and the exclusivity mechanism. The hook table
+  is now the largest single artefact in Part VII. It is the right shape;
+  it may be the wrong length.
+- `containers-and-menus` gained the creative-mode parallel protocol, the
+  crafting-result side channel, the drag protocol's real packet count and
+  the data-slot truncation. The creative material is new coverage; the
+  rest is correction.
+- `input-to-movement` and `player-anatomy` both gained an **authority**
+  section. This is deliberate duplication pending pass 3's ruling — see
+  [pass3.md](pass3.md) — and one of the two should be cut to a pointer
+  once the owner is chosen.
+- `the-sword-swing`'s ordered list grew from eleven steps to fourteen. Two
+  of the three additions are real gates that change the arithmetic; the
+  third (`Player.cannotAttack`) is completeness.
+- `recipes` gained `ClientRecipeContainer`, `RecipeBookMenu`, the
+  non-shaped crafting serializers and the five `RecipeDisplay`s. The
+  serializer paragraph is the one to watch — it is a catalogue inside a
+  trace page.
+
+**Wording debt for pass 4.**
+
+- Session F inherited the A–E problem and added to it: these nine pages
+  now contain a large number of "not X but Y", "three, not two", "and it
+  is not what the name suggests" constructions. Part VIII is now as bad as
+  Part III. Restate positively.
+- Three pages open a bullet with "There are two/three …" and two more use
+  "the interesting one is". Vary.
+- `loot-tables`'s invariant list has grown to fourteen bullets and reads
+  as a checklist rather than prose.
+- The em-dash density in `containers-and-menus`'s new *When it runs*
+  section is high enough to hurt.
+
+**Cross-page corrections made outside Parts VII–VIII.**
+
+- `appendix/naming-drift` had a **wrong row**: *Ingredient.EMPTY* → "an
+  `Ingredient` cannot be empty". A tag that resolves to nothing yields a
+  legally empty ingredient, which is why `Ingredient.isEmpty` exists.
+  Fixed in both this file's table and the page.
+- `entity-anatomy` gained one clause naming `ClientMannequin` and the
+  swapped `Mannequin.constructor` factory, because its `AvatarRenderer`
+  sentence was true but incomplete and session F needed the mechanism for
+  `player-anatomy`.
+- Checked and found **already correct**: `damage-and-death`'s
+  `Entity.hurtClient` account (session E got this right), the
+  `HashOps` description in `codecs-nbt-json`, and every
+  `Entity.invulnerableTime` attribution outside `the-sword-swing`.
+- **Not fixed, flagged:** `HashedStack`'s shape is now described on five
+  pages — `containers-and-menus`, `codecs-nbt-json`, `data-components`,
+  `packets-and-stream-codecs` and, in passing, `block-entities`. Session F
+  gave `containers-and-menus` the *use* and left the *production* to
+  `codecs-nbt-json`, but `data-components` still restates both almost
+  verbatim. Pass 4 should cut three of the five.
+
+**Verifier lessons.** Two bare words slipped through as identifiers
+(`true` used as a value, `doTick` unqualified) and one member was
+attributed to the wrong class in a way the verifier cannot see
+(`Entity.jumpFromGround` is `LivingEntity.jumpFromGround`). The session-E
+habit of running the verifier after each page rather than at the end held
+up. The fact-check agents found four more mis-attributions the verifier
+passed — `LivingEntity.moveRelative`, `ServerPlayer.move`,
+`ServerPlayer.absSnapTo` and `Minecraft.execute` were all declared on
+`Entity` or `BlockableEventLoop` — which is now five sessions running that
+the **NAMES section has caught something `verify_names.py` structurally
+cannot**. It is the single highest-value part of the fact-check brief.

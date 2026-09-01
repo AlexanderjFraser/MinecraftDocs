@@ -170,7 +170,12 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *ClientboundHorseScreenOpenPacket* | `ClientboundMountScreenOpenPacket` |
 | *Container.startOpen(Player)* | `Container.startOpen(ContainerUser)` |
 | *Recipe.getResultItem* / *getIngredients* | gone — `Recipe.assemble` / `PlacementInfo` |
-| *Ingredient.EMPTY* | gone — an `Ingredient` cannot be empty |
+| *Ingredient.EMPTY* | gone — `Ingredient.CODEC` rejects an empty literal list, but a tag that resolves to nothing still yields an empty one, hence `Ingredient.isEmpty` |
+| *ClientboundUpdateRecipesPacket* carrying recipes | property sets + the stonecutter input set; the book gets `RecipeDisplayEntry`s |
+| *net.minecraft.advancements.CriteriaTriggers* | `CriteriaTriggers`, moved to the *advancements.triggers* package |
+| *Player.permissionLevel* / *hasPermissions(int)* | `Player.permissions` → a `PermissionSet`, queried by named `Permissions` keys |
+| *ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY* / *RELEASE_SHIFT_KEY* | gone — sneak rides `ServerboundPlayerInputPacket` → `Entity.setShiftKeyDown` |
+| *Mannequin* on the client | `ClientMannequin`, installed by swapping the mutable `Mannequin.constructor` factory at client startup |
 | *data/&lt;ns&gt;/recipes/* | `data/<ns>/recipe/` (singular) |
 | *EnchantmentCategory* | `Enchantment.EnchantmentDefinition` item sets |
 | *Enchantment.getDamageBonus*, *EnchantmentHelper.getFireAspect*… | gone — `EnchantmentEffectComponents` |

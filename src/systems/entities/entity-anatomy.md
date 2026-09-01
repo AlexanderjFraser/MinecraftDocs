@@ -199,7 +199,10 @@ skin-part and handedness synched values (`Avatar.DATA_PLAYER_MAIN_HAND`,
 player-looking entity in the decoration package that is *not* a `Player` and
 carries none of the inventory, abilities or hunger. Anything written against
 "`Player extends LivingEntity`" is now wrong by one level, and on the client
-`AvatarRenderer` has replaced the old player renderer.
+`AvatarRenderer` has replaced the old player renderer — serving
+`AbstractClientPlayer` and `ClientMannequin`, a client-only subclass that
+`Mannequin` accepts by holding a mutable `Mannequin.constructor` factory the
+client swaps at startup.
 
 Cutting across the tree are the capability interfaces: `Leashable` (the
 fattest of them, with `Leashable.tickLeash` called from `Entity.baseTick`),
