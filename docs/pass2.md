@@ -44,12 +44,18 @@ The diagram-consistency and lane-abbreviation items below are **pass-3**
 work (the lane standard is settled corpus-wide there); the content
 re-reads and appendix rulings are pass-2 session A / session K work.
 
-- `anatomy` threads table: add *Management server IO*, *RCON Listener /
+- [x] `anatomy` threads table: add *Management server IO*, *RCON Listener /
   Client*, *Query Listener* (found in session 3); confirm against
-  `reference/threads.md`.
-- Appendix tour needs a paragraph on JSON-RPC (`server/jsonrpc`,
-  `ManagementServer`) and on *pause-when-empty-seconds* (session 3).
-- Re-read `anatomy` and `sound` against the finished corpus.
+  `reference/threads.md`. **Done, session A** — all three added to both the
+  page and `src/reference/threads.md`, which had the same gap, plus a
+  "situational threads" paragraph for the ones no lecture hangs on.
+- Appendix tour still needs its paragraph on JSON-RPC (`server/jsonrpc`,
+  `ManagementServer`) — session K. *pause-when-empty-seconds* is now
+  covered in `anatomy` (the dedicated server pauses too), so the appendix
+  only needs to point at it.
+- [x] Re-read `anatomy` and `sound` against the finished corpus. **Done,
+  session A** — both were substantially wrong; see the session log in
+  [plan.md](plan.md).
 - Diagram consistency: lane names are class names everywhere; check that
   the same class is abbreviated the same way across parts
   (`ServerGamePacketListenerImpl` is *SG* in Part V, *SGPL* in Parts VII
@@ -59,12 +65,17 @@ re-reads and appendix rulings are pass-2 session A / session K work.
 - Part X diagram lanes use `LX` (`LevelExtractor`), `LR`, `GR`
   (`GameRenderer`), `SRD`, `ERD`, `FRD`, `PE`, `H`/`G` — fold into the
   lane-abbreviation decision above (session 10).
-- `sound` was written before the extract/render split was documented;
+- [x] `sound` was written before the extract/render split was documented;
   re-read it against `the-frame` and check whether the sound engine's
-  threading paragraph still matches (session 10).
-- `anatomy` predates Part X. Check its claim about the render thread:
+  threading paragraph still matches (session 10). **Done, session A** —
+  it did not: the page claimed every OpenAL call was on the sound thread
+  (device setup, teardown and enumeration are not) and that nothing
+  outside `client/sounds` touches OpenAL (exactly inverted).
+- [x] `anatomy` predates Part X. Check its claim about the render thread:
   in 26.2 the thread named *Render thread* **is** the main thread, and
-  the client has no second render thread (session 10).
+  the client has no second render thread (session 10). **Confirmed,
+  session A** — there is no *initGameThread* and no *isOnGameThread*
+  anywhere in the tree; `anatomy` now says so explicitly.
 - The naming-drift appendix will be dominated by Part X. It is by far
   the biggest source of gone names in the corpus (session 10).
 
@@ -85,9 +96,9 @@ re-reads and appendix rulings are pass-2 session A / session K work.
 - The **lane-abbreviation** decision now also covers Part XII, which used
   full-ish abbreviations (`SGPL`, `CPL`, `EC`, `PA`) — consistent with
   session 9's choice, so `SGPL`/`CPL` is now the majority spelling.
-- `anatomy`'s thread table should gain the **management server** (JSON-RPC,
+- [x] `anatomy`'s thread table should gain the **management server** (JSON-RPC,
   its own Netty bootstrap) alongside RCON and query — the appendix tour
-  describes it and `anatomy` predates it.
+  describes it and `anatomy` predates it. **Done, session A.**
 - The corpus now claims specific counts in two places (`CLAUDE.md`'s
   7,055 classes / 719k lines, and the appendix's per-package table).
   Re-measure both on the next version bump; the appendix table is the one
@@ -276,6 +287,14 @@ the old name and not finding it.
 | `@GameTest` and the annotation framework | gone — `GameTestInstance` in `Registries.TEST_INSTANCE` | session 12 |
 | `GameTestRegistry` / `TestFunction` | `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` | session 12 |
 
+| *SwordItem* | gone — a kit of components on a plain `Item`. `AxeItem` / `ShovelItem` / `HoeItem` **survive**, for stripping, path-making and tilling only | session A |
+| integer `pack_format` | `PackFormat` major/minor, with *min_format* / *max_format* replacing it above `PackFormat.lastPreMinorVersion` | session A |
+| *ClientboundCustomSoundPacket* | gone — `ClientboundSoundPacket` carries an inline `SoundEvent` when it needs to | session A |
+| `RandomSource.createThreadSafe` / `ThreadSafeLegacyRandomSource` | deprecated; `LegacyRandomSource`'s atomic is a `ThreadingDetector`, not a safety feature | session A |
+| `Registry.getRandom` on a tag | `HolderSet.getRandomElement` (`Registry.getRandom` still exists, for a whole registry) | session A |
+| `BlockPos.betweenClosed` backed by *Cursor3D* | `Cursor3D` is a separate cursor (`SectionPos`, `BlockCollisions`, `ClientLevel`); `BlockPos` iterators reuse a `BlockPos.MutableBlockPos` | session A |
+| `ParserUtils` / lenient JSON everywhere | `StrictJsonParser` for data, `LenientJsonParser` for the two surviving JSON packets | session A |
+
 ## Cross-part obligations — discharged
 
 Every "link, don't repeat" obligation recorded during pass 1 was
@@ -398,6 +417,55 @@ easy to get wrong from 1.21 memory.
 - Density-function caches key on **object identity**, so any
   `DensityFunction.SinglePointContext` sampler bypasses them —
   `density-functions`.
+
+- `Gui` is the whole 2D UI layer; the HUD is `Hud`, reached as `Gui.hud` —
+  `anatomy`. Any page that says "the HUD (`Gui`)" is wrong.
+- The handshake and login state machines run **entirely on the Netty
+  thread**; the first `PacketUtils.ensureRunningOnSameThread` is in the
+  configuration phase. "Netty never runs game logic" is a *play*-phase
+  rule — `anatomy`.
+- `MinecraftServer.haveTime` gates only chunk **unloading**, eager chunk
+  saving and section-storage flushing. Chunk loading and generation are
+  never gated by it, and sprinting polls chunk sources *more*, not less —
+  `anatomy`.
+- Most world sounds are **level events**, not sound packets: the client
+  picks the `SoundEvent` from an int. A block break takes that path, so it
+  never touches `Level.playSound` — `sound`.
+- Music, ambient loops, additions and mood are `EnvironmentAttributes`
+  now; `BiomeSpecialEffects` is block tint only — `sound` (confirms
+  `biomes` and `lightmap-fog-and-sky`).
+- The **last** pack in the selected list wins, and vanilla sits at index 0
+  (`Pack.Position.BOTTOM`). "Higher in the UI" means "later in the list" —
+  `resource-system`.
+- A reload snapshots the **pack list**, not the bytes; files are still
+  opened lazily at read time — `resource-system`.
+- The atlas → model dependency is a **prepare**-phase dependency through
+  `PreparableReloadListener.SharedState` (`AtlasManager.PENDING_STITCH`),
+  not an apply-order one — `resource-system`.
+- Numeric ids come from two places: source order for `BuiltInRegistries`,
+  **sorted element ids** for a dynamic registry. That is why the client can
+  rebuild the same ids — `identifiers-and-registries`.
+- `Registries.DIMENSION` and `Registries.LEVEL_STEM` are literally the same
+  interned `ResourceKey` object — `identifiers-and-registries`.
+- Between bootstrap and world load a tag read returns **empty/false**, not
+  a throw; the throwing window is during `BuiltInRegistries.bootStrap`
+  itself — `tags`.
+- A tag whose entries fail is dropped **whole**, and on a static registry
+  the *required* flag is ignored entirely — `tags`.
+- Item prototypes bind at **reload**; the throw is on
+  `Holder.Reference.components`, and `Holder.areComponentsBound` is the
+  guard. On a multiplayer client only networkable registries get bound —
+  `data-components`.
+- `ItemStack.validateStrict` reaches **one** level into containers and does
+  not re-run itself there; the damageable-and-stackable rule is a
+  *prototype-build-time* validator, a different check at a different time —
+  `data-components`.
+- `BlockPos.asLong`'s 12 Y bits give −2048…2047, but `DimensionType`
+  reserves a 32-block margin: the real limits are −2032 and 2031 —
+  `math-and-primitives`.
+- `Level.random` deliberately **crashes** on cross-thread use
+  (`ThreadingDetector`); it is a detector, not a safe generator —
+  `math-and-primitives`.
 - `BiomeSpecialEffects` is **only block tint**; everything else is an
   `EnvironmentAttribute` and the biome is one layer of a stack — `biomes`
   (and `lightmap-fog-and-sky`).
@@ -524,11 +592,68 @@ Vulkan/platform halves) get their rulings in session K.
 - A member cited on the subclass still fails in Part X:
   `Level.tickBlockEntities` not `ClientLevel.tickBlockEntities`,
   `Model.setupAnim` not `EntityModel.setupAnim` (session 10).
+- **JDK class names in backticks fail** the same way keywords do: `Math`
+  was session A's only miss. Say "the JDK's sine", not `Math.sin`.
+- Session A's four failures were all *unqualified members* written mid
+  sentence — `managedBlock`, `tickChildren`, `prepareSharedState` — plus
+  two names being introduced as **gone** (*initGameThread*,
+  *isOnGameThread*) that wanted italics. Same two traps as every previous
+  session; the fix is mechanical, so run the verifier before reading back
+  rather than after.
+- The verifier proves a name **exists**, not that it is declared where you
+  cite it — see the hand-off section below.
 
 ## Hand-off to passes 3–5
 
-Pass-2 sessions append here whatever they leave for later: structural
-observations for pass 3 (a part that wants to read as a pipeline, a
-diagram that is the wrong shape), wording debt for pass 4, and material
-added speculatively that pass 4 may cut. Nothing yet — pass 2 has not
-started.
+Pass-2 sessions append here whatever they leave for later: wording debt
+for pass 4, and material added speculatively that pass 4 may cut.
+**Structural observations now go to [pass3.md](pass3.md)** — the
+restructuring notebook opened in session A — so that pass 3 starts with
+evidence rather than a blank page.
+
+### Session A (Part I · `sound` · Part II Foundations)
+
+**Added on spec, and pass 4 should look hard at it.** Pass 2's charter
+says add freely, and session A grew eight pages by roughly 40%. The
+candidates for cutting:
+
+- `anatomy`'s *situational threads* paragraph. It is a list of a dozen
+  thread names no lecture depends on. It exists so the threads table can
+  honestly claim to be "the set worth memorising, not the set that
+  exists" — but it may be a footnote, not prose.
+- `sound`'s music-and-ambience section duplicates framing that
+  `environment-attributes-and-timelines` (session C) will own. Once that
+  page exists, this should shrink to a pointer plus the sound-specific
+  attributes.
+- `codecs-nbt-json` now traces **four** serialisations of one `ItemStack`
+  rather than three. The fourth (`HashOps`) is genuinely the best
+  illustration of "one codec, many formats", but the click protocol
+  belongs to `containers-and-menus`; check for overlap when Part VII is
+  fact-checked (session F).
+- `math-and-primitives` gained colour types, `RandomSequences`,
+  `MarsagliaPolarGaussian` and the shape cache. It is now a reference
+  page pretending to be a lecture — see [pass3.md](pass3.md).
+- `resource-system`'s pack-format numbers (resource 88.0, data 107.1, the
+  64/81 cutoffs) are the most version-fragile paragraph in the corpus.
+  Flag it for the 26.3 re-verification sweep.
+
+**Wording debt for pass 4.**
+
+- Three pages now open a section with "There are two X and they are not
+  the same shape" or a close variant. Pick one and vary the others.
+- `anatomy` and `threads.md` state the thread table twice, deliberately.
+  Pass 4 should check they have not drifted again — they had, before
+  session A.
+- The corrected claims tend to read as corrections ("not X but Y", "the
+  page is wrong to say"). That register is right for a fact-check and
+  wrong for a lecture. Pass 4 should restate them positively.
+
+**A verifier gap worth knowing.** `verify_names.py` matches a token
+anywhere in the named class's file, so a member *called* in class A but
+*declared* on class B still passes. Two session-A citations were wrong
+that way and only the fact-check caught them
+(*NetworkRegistryLoadTask.findAndLoadFromResource*, actually on
+`RegistryLoadTask.PendingRegistration`; *ChannelAccess.execute*, actually
+on `ChannelAccess.ChannelHandle`). The verifier cannot be tightened
+cheaply — but a fact-check agent should always be asked for a NAMES
+section, as session A's were.

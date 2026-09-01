@@ -107,18 +107,31 @@ One session = one part (small parts bundle, as in pass 1). Each session:
    `SUMMARY.md` and cross-links updated; regenerate `class-index` if
    pages moved.
 5. **Ship** — commit (`pass 2, Part N: <summary>`), deploy, tick the
-   part in the schedule below, log below. Anything left for passes 3–5
-   (structural observations, wording debt, things added on spec that
-   pass 4 may cut) appends to [pass2.md](pass2.md)'s hand-off section.
+   part in the schedule below, log below. Anything left for later is
+   written down as it is found, not at the end: **structural
+   observations** (part shape, page/lecture boundaries, diagram shape,
+   lecture order, dependencies) go to [pass3.md](pass3.md); **wording
+   debt and material added on spec that pass 4 may cut** go to
+   [pass2.md](pass2.md)'s hand-off section.
+
+Two protocol notes from session A, both cheap and both load-bearing:
+
+- **Always ask the fact-check agent for a NAMES section.**
+  `verify_names.py` matches a token anywhere in the named class's file,
+  so a member *called* in class A but *declared* on class B passes the
+  verifier and is still a wrong citation. Only the agent catches those.
+- **Distrust a page that has never been checked, not just an overloaded
+  one.** All eight of session A's pages had at least one *wrong* claim,
+  including the three shortest.
 
 ### Schedule
 
 Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
 
-- [ ] **Session A** — Part I `anatomy` (re-read against the finished
+- [x] **Session A** — Part I `anatomy` (re-read against the finished
   corpus: the render-thread claim, the threads table vs
   `reference/threads.md`) + `sound` (predates the extract/render split)
-  + Part II Foundations.
+  + Part II Foundations. *(2026-09-01)*
 - [ ] **Session B** — Part III The server.
 - [ ] **Session C** — Part IV The world, plus the new
   `environment-attributes-and-timelines` page.
@@ -189,6 +202,66 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session A** — Part I `anatomy`, `sound`, and all six Part
+  II Foundations pages: eight adversarial fact-checks, eight rewrites.
+  **The protocol works and the corpus needed it.** Every one of the eight
+  pages had at least one *wrong* claim, and three had claims that were
+  exactly inverted. The worst of them:
+  - `sound` said "nothing outside `client/sounds` touches OpenAL" when
+    *only* `com/mojang/blaze3d/audio` does, and its headline trace
+    followed a block **break** — which is a level event and never reaches
+    `Level.playSound` at all. Retraced on block placement, with the
+    level-event path documented as the larger second path. Music and
+    ambience turned out to have moved to `EnvironmentAttributes` (a fifth
+    dependant for session C's new page).
+  - `anatomy` called the HUD `Gui` (it is `Hud`, held as `Gui.hud`), had
+    `runTick`'s steps in the wrong order, claimed two concrete
+    `MinecraftServer` subclasses (three), claimed Netty never runs game
+    logic (handshake and login run entirely there), and said
+    `MinecraftServer.haveTime` gates chunk loading (it gates unloading,
+    eager saves and section-storage flushing — and sprinting polls chunk
+    sources *more*). Gained the three missing dedicated-server threads,
+    and `src/reference/threads.md` was re-synced because it had the same
+    gaps.
+  - `tags` was wrong about which thread `/reload` runs on, about apply
+    being atomic (three unsynchronised steps), and about tag reads
+    throwing before the first bind (they return empty).
+  - `data-components` misattributed the container-sync call, miscounted
+    the slash-namespaced types, and described `validateStrict` as
+    recursive (it reaches one level).
+  - `identifiers-and-registries` had an off-by-one registry count, the
+    wrong purpose for `MappedRegistry.componentLookup`, and a `Lifecycle`
+    rule that reads `KnownPack.isVanilla` and then discards it.
+  - `codecs-nbt-json` said a mixed `ListTag`'s wrapper is never written
+    (it is, on every write), and built an invariant on
+    `ByteBufCodecs.TRUSTED_TAG`, which has no call sites.
+  - `resource-system` described a snapshot of file *contents* (it is a
+    snapshot of the pack list), had the pack-precedence direction
+    unanchored, attributed the atlas→model dependency to apply order (it
+    is a `PreparableReloadListener.SharedState` channel resolved in
+    prepare), and said a failed reload deselects the offending pack (it
+    deselects all of them, or crashes).
+  - `math-and-primitives` credited `Cursor3D` to `BlockPos`, credited
+    `BlockBox` with structure bounds (it has zero call sites; that is
+    `BoundingBox`), and missed that `LegacyRandomSource`'s atomic is a
+    *threading detector* that crashes on cross-thread use.
+
+  Also: found and fixed a **generator bug** — `gen_reference.py`'s
+  component regex used `\w+` for the id, silently dropping all 29
+  slash-namespaced components, so `reference/components.md` had claimed
+  82 of 111 since pass 1. Class index regenerated (2,163 classes). Both
+  pages that lacked the standard rules footer (`anatomy`, `sound` — the
+  only two in the corpus) now have it. `docs/pass3.md` opened as the
+  restructuring notebook and filled in for Parts I and II.
+
+  Decisions and observations recorded rather than acted on: Part II is
+  six pages of three different kinds and `math-and-primitives` is not a
+  lecture at all (pass 3); `sound` is the best-argued split candidate
+  outside the pass-2 table but was left whole; `verify_names.py` proves a
+  name *exists*, not that it is declared where it is cited, which let two
+  wrong citations through — so every fact-check agent must be asked for a
+  NAMES section.
 
 - **2026-09-01, planning session** — pass 1 closed out and archived to
   [pass1.md](pass1.md); this plan written (passes 2–5); pass2.md

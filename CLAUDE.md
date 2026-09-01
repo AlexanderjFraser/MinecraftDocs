@@ -90,7 +90,10 @@ pass's charter, session protocol and schedule, and the session log.
 pass-2 work queue: split candidates, the load-bearing facts to re-verify
 hardest, catalogue gaps, the naming-drift source table, verifier lessons,
 and the hand-off to passes 3–5. **A session that leaves something for
-later appends there, not only to the log.** `docs/pass1.md` is the
+later appends there, not only to the log** — with *structural*
+observations (part shape, page/lecture boundaries, diagram shape,
+lecture order) going instead to [docs/pass3.md](docs/pass3.md), the
+restructuring notebook pass-2 sessions fill in as they go. `docs/pass1.md` is the
 archived pass-1 plan and session log (the record of what each part
 learned — still worth grepping); `docs/outline.md` is the archived
 fourteen-lecture map. The lecture order is drafted in pass 3 and

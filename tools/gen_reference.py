@@ -99,7 +99,9 @@ def registries() -> str:
 
 
 # ------------------------------------------------------------- components
-COMP = re.compile(r"DataComponentType<(.+?)>\s+(\w+)\s*=\s*register\(\"(\w+)\",\s*\(\w+\)\s*->\s*\{(.*?)\}\);", re.S)
+# the id may contain a slash (villager/variant, wolf/sound_variant …) — \w+ silently
+# dropped 29 of the 111 components until pass 2 caught it.
+COMP = re.compile(r"DataComponentType<(.+?)>\s+(\w+)\s*=\s*register\(\"([\w/]+)\",\s*\(\w+\)\s*->\s*\{(.*?)\}\);", re.S)
 
 
 def components() -> str:

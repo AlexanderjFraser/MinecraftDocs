@@ -4,7 +4,7 @@
 
 Every `DataComponentType` registered in `DataComponents`. *Persistent* components have a `Codec` and are written to disk; *synced* ones have a `StreamCodec` and are sent to the client; *cache-encoded* ones use the shared `EncoderCache`. A type that is neither persistent nor synced is transient and lives only in memory. See [Data components](../systems/foundations/data-components.md).
 
-82 components
+111 components
 
 | id | value type | persistent | synced |
 |---|---|---|---|
@@ -90,3 +90,32 @@ Every `DataComponentType` registered in `DataComponents`. *Persistent* component
 | `lock` (`DataComponents.LOCK`) | `LockCode` | yes |  |
 | `container_loot` (`DataComponents.CONTAINER_LOOT`) | `SeededContainerLoot` | yes |  |
 | `break_sound` (`DataComponents.BREAK_SOUND`) | `Holder<…>` | yes (cached) | yes |
+| `villager/variant` (`DataComponents.VILLAGER_VARIANT`) | `Holder<…>` | yes | yes |
+| `wolf/variant` (`DataComponents.WOLF_VARIANT`) | `Holder<…>` | yes | yes |
+| `wolf/sound_variant` (`DataComponents.WOLF_SOUND_VARIANT`) | `Holder<…>` | yes | yes |
+| `wolf/collar` (`DataComponents.WOLF_COLLAR`) | `DyeColor` | yes | yes |
+| `fox/variant` (`DataComponents.FOX_VARIANT`) | `Fox.Variant` | yes | yes |
+| `salmon/size` (`DataComponents.SALMON_SIZE`) | `Salmon.Variant` | yes | yes |
+| `parrot/variant` (`DataComponents.PARROT_VARIANT`) | `Parrot.Variant` | yes | yes |
+| `tropical_fish/pattern` (`DataComponents.TROPICAL_FISH_PATTERN`) | `TropicalFish.Pattern` | yes | yes |
+| `tropical_fish/base_color` (`DataComponents.TROPICAL_FISH_BASE_COLOR`) | `DyeColor` | yes | yes |
+| `tropical_fish/pattern_color` (`DataComponents.TROPICAL_FISH_PATTERN_COLOR`) | `DyeColor` | yes | yes |
+| `mooshroom/variant` (`DataComponents.MOOSHROOM_VARIANT`) | `MushroomCow.Variant` | yes | yes |
+| `rabbit/variant` (`DataComponents.RABBIT_VARIANT`) | `Rabbit.Variant` | yes | yes |
+| `pig/variant` (`DataComponents.PIG_VARIANT`) | `Holder<…>` | yes | yes |
+| `pig/sound_variant` (`DataComponents.PIG_SOUND_VARIANT`) | `Holder<…>` | yes | yes |
+| `cow/variant` (`DataComponents.COW_VARIANT`) | `Holder<…>` | yes | yes |
+| `cow/sound_variant` (`DataComponents.COW_SOUND_VARIANT`) | `Holder<…>` | yes | yes |
+| `chicken/variant` (`DataComponents.CHICKEN_VARIANT`) | `Holder<…>` | yes | yes |
+| `chicken/sound_variant` (`DataComponents.CHICKEN_SOUND_VARIANT`) | `Holder<…>` | yes | yes |
+| `zombie_nautilus/variant` (`DataComponents.ZOMBIE_NAUTILUS_VARIANT`) | `Holder<…>` | yes | yes |
+| `frog/variant` (`DataComponents.FROG_VARIANT`) | `Holder<…>` | yes | yes |
+| `horse/variant` (`DataComponents.HORSE_VARIANT`) | `Variant` | yes | yes |
+| `painting/variant` (`DataComponents.PAINTING_VARIANT`) | `Holder<…>` | yes | yes |
+| `llama/variant` (`DataComponents.LLAMA_VARIANT`) | `Llama.Variant` | yes | yes |
+| `axolotl/variant` (`DataComponents.AXOLOTL_VARIANT`) | `Axolotl.Variant` | yes | yes |
+| `cat/variant` (`DataComponents.CAT_VARIANT`) | `Holder<…>` | yes | yes |
+| `cat/sound_variant` (`DataComponents.CAT_SOUND_VARIANT`) | `Holder<…>` | yes | yes |
+| `cat/collar` (`DataComponents.CAT_COLLAR`) | `DyeColor` | yes | yes |
+| `sheep/color` (`DataComponents.SHEEP_COLOR`) | `DyeColor` | yes | yes |
+| `shulker/color` (`DataComponents.SHULKER_COLOR`) | `DyeColor` | yes | yes |
