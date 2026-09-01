@@ -15,7 +15,7 @@ wait for pass 3 (and feed the lecture-order draft there).
 
 | page | lines | what would split off |
 |---|---:|---|
-| `server/server-lifecycle` | ~310 | startup and `/stop` vs the side threads (RCON, query, management server) |
+| ~~`server/server-lifecycle`~~ | ~390 | **Session B: not split, and the proposed seam was wrong.** The side threads are four bullets with no trace; a page of them would break rule 4. The page's real seam is its *two traces* (startup and `/stop`) and its best new material is the failure paths. See [pass3.md](pass3.md) §2. |
 | `world/game-events-and-poi` | 375 | two traces: sculk/vibrations vs villager POI — the obvious split |
 | `blocks/redstone` | ~380 | the experimental-evaluator coda (`ExperimentalRedstoneWireEvaluator`, `Orientation`) vs the default trace |
 | `blocks/blocks-and-states` | ~340 | the state table (data page) vs the placement trace + prediction |
@@ -295,6 +295,16 @@ the old name and not finding it.
 | `BlockPos.betweenClosed` backed by *Cursor3D* | `Cursor3D` is a separate cursor (`SectionPos`, `BlockCollisions`, `ClientLevel`); `BlockPos` iterators reuse a `BlockPos.MutableBlockPos` | session A |
 | `ParserUtils` / lenient JSON everywhere | `StrictJsonParser` for data, `LenientJsonParser` for the two surviving JSON packets | session A |
 
+| `GameProfile` on the player lists | `NameAndId` (record of UUID + name) — `canPlayerLogin`, `isWhiteListed`, `op`, all four stored-user files | session B |
+| `MinecraftServer.getProfilePermissions` → int | → `LevelBasedPermissionSet` | session B |
+| `ServerPlayer.sendAllPlayerInfo` / `sendActivePlayerEffects` | declared on `PlayerList`, not `ServerPlayer` | session B |
+| `ServerPlayer.resetPosition` | `ServerGamePacketListenerImpl.resetPosition` | session B |
+| `PoiManager.flushAll` | `SectionStorage.flushAll` (inherited) | session B |
+| `QueryThreadGs4.stop` | `GenericThread.stop` (inherited; `RconThread.stop` *is* overridden) | session B |
+| `ScheduledTick.DRAIN_ORDER` as the level's drain order | `ScheduledTick.INTRA_TICK_DRAIN_ORDER`; `DRAIN_ORDER` orders each chunk's own queue | session B |
+| day time → sky light on the level | `EnvironmentAttributes.SKY_LIGHT_LEVEL` via `EnvironmentAttributeSystem` | session B |
+| `MinecraftServer.scheduledEvents` as level state | server-wide `TimerQueue`, advanced by the overworld's `ServerLevel.tickTime` | session B |
+
 ## Cross-part obligations — discharged
 
 Every "link, don't repeat" obligation recorded during pass 1 was
@@ -380,6 +390,60 @@ easy to get wrong from 1.21 memory.
 - The enchanting seed is re-rolled by `Player.onEnchantmentPerformed`
   (enchanting), **not** by spending levels elsewhere — `enchantments`
   (corrected in session 8) / `hunger-xp-and-effects`.
+
+- Outbound packets leave a server tick in **two** flushes per client, not
+  one: `Connection.tick` flushes inside the suspend/resume bracket, so only
+  the chunk batch rides `ServerCommonPacketListenerImpl.resumeFlushing` —
+  `server-tick` (and corrected in `anatomy` and `the-connection`).
+- `MinecraftServer.haveTime` is **true whenever a task is running**, and the
+  budget stops applying altogether inside `BlockableEventLoop.managedBlock`
+  (`shouldRunAllTasks` skips `shouldRun`). That is why a level can block on a
+  chunk mid-tick — `server-tick`.
+- "Can't keep up!" **logs and skips in the same condition**: a server that
+  warned recently stays behind instead of skipping — `server-tick`.
+- A serverbound packet handler that throws is **logged and suppressed**, not
+  fatal and not a disconnect; `ClientboundDisconnectPacket` comes from a
+  throw out of `Connection.tick` instead — `server-tick`.
+- `ServerChunkCache.broadcastChangedChunks` runs **before** `ChunkMap.tick`,
+  so block changes are queued ahead of the same tick's entity movement; and
+  the broadcast unit is the **16³ section**, not the chunk —
+  `server-level-tick`.
+- `TicketStorage.purgeStaleTickets` **is** gated by `runsNormally`, so a
+  frozen world never expires a ticket — `server-level-tick`. (The rest of the
+  chunk system is genuinely un-gated.)
+- An empty dimension past `ServerLevel.EMPTY_TIME_NO_TICK` skips exactly
+  three things — dragon fight, entity loop, block entities. The entity
+  manager's load/unload drain and the debug feed keep running —
+  `server-level-tick`.
+- The level tick's **first** statement is
+  `EnvironmentAttributeSystem.invalidateTickCache`, and sky brightness is read
+  from `EnvironmentAttributes.SKY_LIGHT_LEVEL` — `server-level-tick`. Part IV's
+  new environment-attributes page must agree.
+- `LocalMobCapCalculator` uses the **raw** `MobCategory.getMaxInstancesPerChunk`
+  per player, not the chunk-scaled global cap — two different formulas —
+  `server-level-tick`.
+- Identity on the server is a `NameAndId` record, not a `GameProfile`;
+  the whitelist is bypassed by being an **op**, and `bypassesPlayerLimit`
+  applies only to the capacity check — `players-and-sessions`.
+- A joining player gets **one** unacknowledged chunk batch, not ten; the
+  limit rises to ten only after the client's first acknowledgement —
+  `players-and-sessions` / `tickets-and-loading`.
+- `ServerPlayer.restoreFrom`'s "restore everything" branch is the
+  **end-credits** return, not *keepInventory* — `players-and-sessions`.
+- Shutdown does **not** call `MinecraftServer.saveEverything`; it calls
+  `PlayerList.saveAll` then `MinecraftServer.saveAllChunks` —
+  `server-lifecycle`.
+- `ServerConnectionListener.stop` closes only the **bound** channels; live
+  sessions are severed by `PlayerList.removeAll`, and a connection still in
+  handshake/login/configuration is closed by neither — `server-lifecycle`.
+- **A tick-loop crash saves the world; a watchdog kill does not.**
+  `ServerWatchdog` calls `System.exit`, whose hook joins the wedged Server
+  thread, so `Runtime.halt` fires ten seconds later with nothing written —
+  `server-lifecycle`.
+- `MinecraftServer.prepareLevels` re-arms only **persistent** tickets, of
+  which there are two types (`TicketType.FORCED`, `TicketType.PORTAL`).
+  There is no spawn ticket; on an ordinary world the step loads nothing —
+  `server-lifecycle`.
 
 - There is **no render thread**: the thread named *Render thread* is
   the main thread (`Main` renames it, `Minecraft.gameThread` is it) —
@@ -602,6 +666,12 @@ Vulkan/platform halves) get their rulings in session K.
   rather than after.
 - The verifier proves a name **exists**, not that it is declared where you
   cite it — see the hand-off section below.
+- Session B's failures were the same two shapes yet again: **bare members**
+  (`shouldRun`, `player`) and **file/JSON key names in backticks**
+  (*bypassesPlayerLimit*, *singleplayer_uuid*). A key in a config or save file
+  is not an identifier — italicise it. Also `BlockableEventLoop.runningTask`
+  is declared on `ReentrantBlockableEventLoop`; the verifier accepted it
+  because the base class file mentions the token.
 
 ## Hand-off to passes 3–5
 
@@ -657,3 +727,50 @@ that way and only the fact-check caught them
 on `ChannelAccess.ChannelHandle`). The verifier cannot be tightened
 cheaply — but a fact-check agent should always be asked for a NAMES
 section, as session A's were.
+
+### Session B (Part III · The server)
+
+**Added on spec, and pass 4 should look hard at it.** The four pages grew
+from 1,203 lines to about 1,580 — roughly 30 %, in line with session A. The
+candidates for cutting:
+
+- `server-tick`'s new step 10 (the crash path and `BlockableEventLoop.delayCrash`)
+  duplicates framing `server-lifecycle` owns. It is here because the tick
+  loop's *finally* is genuinely part of the loop, but if the "how a server
+  dies" lecture in [pass3.md](pass3.md) happens, this shrinks to a pointer.
+- `server-tick`'s `SampleLogger` / `TpsDebugDimensions` paragraph is now
+  three sentences about a debug feed nothing else in the corpus uses. It is
+  correct and it earned its place by replacing a *wrong* claim ("the F3
+  charts read these"), but it is a candidate.
+- `server-level-tick`'s guard bookkeeping — which steps are behind
+  `runsNormally`, `emptyTime`, `isDebug` — is now spread across six of the
+  thirteen narrated steps. Pass 3's proposed guard flowchart would let pass 4
+  cut most of that prose.
+- `players-and-sessions` gained the permission model, `NameAndId`,
+  `IntegratedPlayerList`, `ServerPlayerGameMode` and `switchToConfig`. The
+  permission paragraph is the one to watch: Part XIII's
+  `brigadier-and-commands` owns that model and session K should check the two
+  have not drifted.
+- `server-lifecycle` gained the two-failure-paths material, the
+  `server.properties`-is-writable invariant and the `SystemReport` bullet.
+  All three are genuinely new coverage rather than expansion.
+
+**Wording debt for pass 4.**
+
+- Session A flagged that corrected claims "read as corrections". Session B
+  made it worse: the four pages now contain roughly a dozen constructions of
+  the form "not X but Y", "two, not one", "and there is no Z". It is the
+  right register for a fact-check and the wrong one for a lecture, and Part
+  III is now the worst offender in the corpus. Pass 4 should restate all of
+  them positively.
+- Three Part III pages open a bullet with "Two …" (*Two player lists*, *Two
+  `ServerLevel` tick counters*, *Two chunk sets*). Vary them.
+- `server-lifecycle`'s startup section is a numbered list inside a page whose
+  other trace is a diagram. It reads as an appendix to its own page.
+
+**Cross-page corrections made outside Part III.** The "one flush per client
+per tick" claim was wrong in three places; session B fixed
+`anatomy` and `the-connection` alongside `server-tick`. `the-connection` was
+self-contradictory — it already said `Connection.tick` flushes
+unconditionally and then concluded "one flush". Worth a pass-4 sweep for
+other bullets that state a mechanism and then draw the opposite conclusion.

@@ -8,9 +8,10 @@ The server tick is the heartbeat every other server-side page lives inside.
 Twenty times a second `MinecraftServer` drains the packets that arrived since
 last time, advances every `ServerLevel` by one step, flushes what each player
 needs to be told, and then spends whatever is left of the 50 ms running
-deferred work before parking until the next beat. Everything the server owns —
-chunks, entities, block ticks, player sessions — is touched only from inside
-this loop, on this thread.
+deferred work before parking until the next beat. Everything the server owns
+— chunks, entities, block ticks, player sessions — is *committed* from inside
+this loop, on this thread. Plenty is computed elsewhere: chunk generation,
+lighting and IO all run on pools and post their results back here.
 
 The one sentence a player recognises: *TPS is how many of these the server
 finishes per second, and "Can't keep up!" is the server giving up on the
@@ -30,30 +31,45 @@ ones it missed.*
   `MinecraftServer.tickTimesNanos` (a 100-slot ring),
   `MinecraftServer.aggregatedTickTimesNanos` (their sum) and
   `MinecraftServer.smoothedTickTimeMillis` (an exponential average,
-  `MinecraftServer.AVERAGE_TICK_TIME_SMOOTHING` = 0.8). `/tick query` and the
-  F3 charts read these; nothing else writes them.
-- `TickTask` — a `Runnable` plus the `MinecraftServer.tickCount` it was submitted on. Every
-  task handed to the server from another thread becomes one through
-  `MinecraftServer.wrapRunnable`; `MinecraftServer.shouldRun` lets a task
-  run when there is spare time *or* when it is more than
-  `MinecraftServer.MAX_TICK_LATENCY` (3) ticks old — so a saturated server
-  still drains its queue, just late.
+  `MinecraftServer.AVERAGE_TICK_TIME_SMOOTHING` = 0.8). This ledger is what
+  `/tick query` reads, through `MinecraftServer.getAverageTickTimeNanos` and
+  `MinecraftServer.getTickTimesNanos`; the debug screen's TPS chart is fed by
+  a *different* pipe — the `SampleLogger` stream in step 8.
+- `TickTask` — a `Runnable` plus the `MinecraftServer.tickCount` it was
+  submitted on. *Every* runnable handed to the server becomes one through
+  `MinecraftServer.wrapRunnable`, whichever thread submits it;
+  `MinecraftServer.shouldRun` lets a task run when there is spare time *or*
+  when it is more than three ticks old (`MinecraftServer.MAX_TICK_LATENCY`)
+  — so a saturated server still drains its queue, just late. Submitting from
+  the Server thread does not mean running inline:
+  `ReentrantBlockableEventLoop.scheduleExecutables` returns true while
+  another task is already running, so re-entrant work queues instead of
+  nesting. Once the server is stopping, `MinecraftServer.scheduleExecutables`
+  rejects new work with a *RejectedExecutionException*.
 - `ServerTickRateManager` (extends the shared `TickRateManager`, which the
   client also has inside `ClientLevel`) owns the tick *rate*:
   `TickRateManager.nanosecondsPerTick`, `TickRateManager.isFrozen`,
   `TickRateManager.frozenTicksToRun` (for `/tick step`) and the sprint
   bookkeeping (`ServerTickRateManager.remainingSprintTicks`,
-  `ServerTickRateManager.sprintTickStartTime`). The one bit the rest of the
-  server reads is `TickRateManager.runsNormally`: "should game elements
-  advance this tick".
+  `ServerTickRateManager.sprintTickStartTime`,
+  `ServerTickRateManager.sprintTimeSpend`,
+  `ServerTickRateManager.previousIsFrozen`, and
+  `ServerTickRateManager.scheduledCurrentSprintTicks` — that last one is what
+  `ServerTickRateManager.isSprinting` actually tests). The rate is bounded:
+  `TickRateManager.MIN_TICKRATE` is 1.0 and `TickCommand.MAX_TICKRATE` is
+  10000. The one bit the rest of the server reads is
+  `TickRateManager.runsNormally`: "should game elements advance this tick".
 - `PacketProcessor` — a `ConcurrentLinkedQueue` of listener/packet pairs
   (`PacketProcessor.ListenerAndPacket`) that Netty threads fill and the
   Server thread empties. There is one per server
   (`MinecraftServer.packetProcessor`) and one per client
   (`Minecraft.packetProcessor`).
-- `ServerClockManager` — new in this generation: world time is a set of
-  clocks stored as saved data, ticked from the server, not from the level,
-  and gated on the `GameRules.ADVANCE_TIME` rule.
+- `ServerClockManager` — world time is a set of clocks stored as saved
+  data, ticked from the server, not from the level, and gated on the
+  `GameRules.ADVANCE_TIME` rule.
+- `MinecraftServer.scheduledEvents` — a `TimerQueue` of `/schedule` entries.
+  The server owns it and persists it, but it is ticked from inside
+  `ServerLevel.tickTime`, not from here.
 
 ## When it runs
 
@@ -71,10 +87,23 @@ results and anything a worker thread posted back land on the Server thread
 either during the tick (when a level blocks on a chunk) or in the slack
 after it.
 
-The budget is a `BooleanSupplier`, `MinecraftServer.haveTime`, passed down to
-`MinecraftServer.tickServer` and from there into every `ServerLevel.tick`:
-"is now still before the deadline". While sprinting the supplier is the
-constant false, so deferrable work is skipped and ticks run back to back.
+The budget is a `BooleanSupplier`, `MinecraftServer.haveTime`, passed down
+to `MinecraftServer.tickServer` and from there into every `ServerLevel.tick`.
+It is not quite "is now still before the deadline": it is true unconditionally
+*while a task is running* (`ReentrantBlockableEventLoop.runningTask`), and only
+otherwise compares the clock against
+`MinecraftServer.delayedTasksMaxNextTickTimeNanos` or
+`MinecraftServer.nextTickTimeNanos`. While sprinting, the supplier
+`MinecraftServer.processPacketsAndTick` hands to
+`MinecraftServer.tickServer` is a constant false instead, so deferrable work
+is skipped and ticks run back to back.
+
+The budget also stops applying the moment the thread *blocks*. Inside
+`BlockableEventLoop.managedBlock` the blocking depth is non-zero, so
+`BlockableEventLoop.shouldRunAllTasks` is true and
+`BlockableEventLoop.pollTask` skips `MinecraftServer.shouldRun` altogether:
+every queued task runs, budget and age irrelevant. That is what lets a level
+block on a chunk mid-tick without deadlocking — the wait *is* the drain.
 
 ## The trace: one 50 ms tick
 
@@ -89,27 +118,34 @@ sequenceDiagram
     participant PL as PlayerList
     participant EL as BlockableEventLoop (self)
 
-    ST->>TRM: checkShouldSprintThisTick — sprinting? then this tick is 0 ns long
-    ST->>ST: behind by more than 1 s + 20 ticks? log "Can't keep up!", skip nextTickTimeNanos forward
+    alt sprinting (checkShouldSprintThisTick)
+        ST->>TRM: this tick is 0 ns long; nextTickTimeNanos = now
+    else normal
+        ST->>ST: more than 1 s + 20 ticks behind AND not warned recently? log "Can't keep up!", skip nextTickTimeNanos forward
+    end
     ST->>ST: nextTickTimeNanos += nanosecondsPerTick
-    ST->>PP: processQueuedPackets — every serverbound packet since last tick, handled now
-    ST->>MS: tickServer(haveTime)
+    ST->>MS: processPacketsAndTick — the Tracy frame opens here
+    MS->>PP: processQueuedPackets — every serverbound packet since last tick, handled now
+    MS->>MS: tickServer(haveTime)
     MS->>MS: empty for pause-when-empty-seconds? tickConnection only, return
     MS->>MS: ++tickCount
     MS->>TRM: tick — decide runsNormally, consume one /tick step
     MS->>MS: tickChildren
     MS->>MS: suspendFlushing on every player connection
     MS->>MS: ServerFunctionManager.tick (#load once, then #tick) · ServerClockManager.tick
-    MS->>PL: forceGameTimeSynchronization — ClientboundSetTimePacket every 20 ticks
+    MS->>MS: forceGameTimeSynchronization every 20 ticks · updateEffectiveRespawnData
     loop each ServerLevel, overworld first
         MS->>SL: tick(haveTime) — see server-level-tick
     end
     MS->>SCL: tick — Connection.tick per client: flush, keep-alive, ServerGamePacketListenerImpl.tick (the player's own tick)
     MS->>PL: tick — latency broadcast every 600 ticks, nothing else
     MS->>MS: debugSubscribers, GameTestTicker, tickables, then PlayerChunkSender.sendNextChunks + resumeFlushing per player
+    MS->>MS: serverActivityMonitor.tick — the last statement of tickChildren
     MS->>MS: rebuild ServerStatus if 5 s old · --ticksUntilAutosave, autoSave at 0 · record tick time
+    ST->>ST: mayHaveDelayedTasks = true; delayedTasksMaxNextTickTimeNanos = the slack deadline
     ST->>EL: waitUntilNextTick — runAllTasks, then managedBlock until nextTickTimeNanos (parks in waitForTasks)
     ST->>TRM: endTickWork if sprinting
+    ST->>ST: logFullTickTime — measures the whole iteration, tick plus wait; isReady = true
 ```
 
 Narrated:
@@ -120,9 +156,15 @@ Narrated:
    ticking. Being "behind" means the wall clock has passed that deadline. If
    it has passed by more than one second plus twenty ticks' worth
    (`MinecraftServer.OVERLOADED_THRESHOLD_NANOS` and
-   `MinecraftServer.OVERLOADED_TICKS_THRESHOLD`), the loop logs the overload
-   warning — at most once every ten seconds plus a hundred ticks — and
-   **advances the deadline past the backlog**. The missed ticks are gone.
+   `MinecraftServer.OVERLOADED_TICKS_THRESHOLD`) **and** it has not warned
+   within the last ten seconds plus a hundred ticks
+   (`MinecraftServer.OVERLOADED_WARNING_INTERVAL_NANOS`), the loop logs the
+   overload warning and **advances the deadline past the backlog**. Both
+   effects live in the same condition, so a server that warned recently stays
+   behind rather than skipping. When it does skip, the missed ticks are gone.
+   Sprinting takes the other branch of that same *if* entirely — no overload
+   check happens while `ServerTickRateManager.checkShouldSprintThisTick` is
+   answering yes.
 2. **Packets, all of them, before anything else.** `MinecraftServer.processPacketsAndTick`
    calls `PacketProcessor.processQueuedPackets`. A serverbound packet was
    decoded on a Netty thread and its handler called
@@ -132,6 +174,12 @@ Narrated:
    re-checked with `PacketListener.shouldHandleMessage` — a player who
    disconnected between arrival and handling is dropped here — and then
    handled. This is the only point in the tick where player input enters.
+   A handler that throws does **not** end the tick: `ServerPacketListener`'s
+   default `PacketListener.onPacketError` logs and suppresses it, and
+   `ServerCommonPacketListenerImpl.onPacketError` additionally files it
+   through `MinecraftServer.reportPacketHandlingException` so it appears in
+   the next crash report. The one exception is an out-of-memory error, which
+   `PacketUtils.makeReportedException` rethrows.
 3. **An empty dedicated server does not tick.** `MinecraftServer.tickServer`
    first asks `MinecraftServer.pauseWhenEmptySeconds` (the
    `DedicatedServerProperties` value, default 60; zero on the base class):
@@ -178,19 +226,51 @@ Narrated:
    per tick.
 8. **Bookkeeping.** `MinecraftServer.buildServerStatus` is rebuilt if the
    cached one is over `MinecraftServer.STATUS_EXPIRE_TIME_NANOS` (5 s) old;
-   `MinecraftServer.ticksUntilAutosave` counts down to `MinecraftServer.autoSave`; the
-   tick's duration replaces its slot in `MinecraftServer.tickTimesNanos`, updates the
-   aggregate and the smoothed millis, and — when tick-time logging is on —
-   goes to the `SampleLogger` in the `TpsDebugDimensions` layout
-   (`TpsDebugDimensions.FULL_TICK`, `TpsDebugDimensions.TICK_SERVER_METHOD`, `TpsDebugDimensions.SCHEDULED_TASKS`, `TpsDebugDimensions.IDLE`).
-9. **The slack is spent, not slept.** `MinecraftServer.waitUntilNextTick`
-   marks `MinecraftServer.mayHaveDelayedTasks` and runs tasks until `MinecraftServer.haveTime` is false,
-   then `MinecraftServer.waitForTasks` parks the thread with
-   `LockSupport` until `MinecraftServer.nextTickTimeNanos` (or 100 µs at a time,
-   `BlockableEventLoop.BLOCK_TIME_NANOS`, when not waiting on a tick). When
-   sprinting, `ServerTickRateManager.endTickWork` counts the tick down and
-   `ServerTickRateManager.finishTickSprint` prints the measured rate when the
-   sprint ends.
+   `MinecraftServer.ticksUntilAutosave` counts down to
+   `MinecraftServer.autoSave`; the tick's duration replaces its slot in
+   `MinecraftServer.tickTimesNanos` and updates the aggregate and the
+   smoothed millis. The `SampleLogger` stream is a separate ledger, written
+   from three different points, one per `TpsDebugDimensions` slot:
+   `MinecraftServer.logTickMethodTime` here
+   (`TpsDebugDimensions.TICK_SERVER_METHOD`),
+   `MinecraftServer.finishMeasuringTaskExecutionTime` after the wait
+   (`TpsDebugDimensions.SCHEDULED_TASKS` and `TpsDebugDimensions.IDLE`), and
+   `MinecraftServer.logFullTickTime` at the very bottom of the loop
+   (`TpsDebugDimensions.FULL_TICK`), which flushes the whole four-slot sample
+   and measures the **entire loop iteration** — tick plus wait — not the tick
+   alone. None of it runs unless `MinecraftServer.isTickTimeLoggingEnabled`,
+   which on a dedicated server means a client has subscribed to
+   `DebugSubscriptions.DEDICATED_SERVER_TICK_TIME`.
+9. **The slack is spent, not slept.** `MinecraftServer.runServer` — not
+   `MinecraftServer.waitUntilNextTick` — is what sets
+   `MinecraftServer.mayHaveDelayedTasks` and computes
+   `MinecraftServer.delayedTasksMaxNextTickTimeNanos`, the deadline deferrable
+   work may run to; every subsequent poll overwrites the flag with "was there
+   more". `MinecraftServer.waitUntilNextTick` itself is two statements:
+   `BlockableEventLoop.runAllTasks`, then `BlockableEventLoop.managedBlock` on
+   "no time left". `MinecraftServer.waitForTasks` parks the thread with
+   `LockSupport` until `MinecraftServer.nextTickTimeNanos`, or 100 µs at a
+   time when the loop is not waiting on a tick — and
+   `BlockableEventLoop.schedule` unparks it, so a submitted task cuts the park
+   short. `PacketProcessor.scheduleIfPossible` pointedly does not: a packet
+   that lands during the slack waits for the next tick's drain instead of
+   waking the thread. When sprinting, `ServerTickRateManager.endTickWork`
+   counts the tick down and `ServerTickRateManager.finishTickSprint` prints
+   the measured rate when the sprint ends.
+
+10. **Then the loop's own bookkeeping — including the crash path.**
+    `MinecraftServer.isReady` is set at the bottom of *every* iteration (not
+    once after the first tick), and `JvmProfiler.onServerTick` is fed the
+    smoothed millis. A throwable that escapes anything above leaves the loop
+    for good: `MinecraftServer.constructOrExtractCrashReport` unwraps the
+    innermost `ReportedException` — or wraps the throwable as "Exception in
+    server tick loop" — the report is written to *crash-reports/*,
+    `MinecraftServer.onServerCrash` runs, and the *finally* performs exactly
+    the shutdown `/stop` performs; see
+    [server lifecycle](server-lifecycle.md). Crashes from *other* threads
+    arrive here too: `BlockableEventLoop.delayCrash` parks an exception for
+    the owning thread and the next `BlockableEventLoop.pollTask` rethrows it,
+    so a worker's failure surfaces as a tick-loop crash.
 
 ## Interfaces
 
@@ -207,8 +287,10 @@ Narrated:
   and to each joining player by `ServerTickRateManager.updateJoiningPlayer`)
   and `ClientboundTickingStepPacket` (from `ServerTickRateManager.stepGameIfPaused`);
   `ClientboundPlayerInfoUpdatePacket` with latencies every 600 ticks;
-  `ClientboundDisconnectPacket` when a handler throws. Sprinting is not
-  signalled as such — the client only sees the unfreeze before and the
+  `ClientboundDisconnectPacket` ("Internal server error") when
+  `Connection.tick` throws — note that this is the *connection* phase, not the
+  packet drain, where a throwing handler is suppressed instead. Sprinting is
+  not signalled as such — the client only sees the unfreeze before and the
   refreeze after.
 - **Data-driven by:** `server.properties` through `DedicatedServerProperties`
   (`pause-when-empty-seconds`, `max-tick-time`); the `GameRules.ADVANCE_TIME`
@@ -227,10 +309,15 @@ Narrated:
   after every `ServerLevel.tick` has already run. Entities in the level
   see the player where the packets put them; the player ticks against the
   world's new state.
-- **Outbound packets leave once per tick per client.** `ServerCommonPacketListenerImpl.suspendFlushing` at
-  the top of `MinecraftServer.tickChildren`, `ServerCommonPacketListenerImpl.resumeFlushing` after chunk sending; between
-  them `Connection.send` only queues. The exception is a send from a thread
-  that is not the Server thread, which flushes immediately.
+- **Outbound packets leave twice per tick per client, not once.**
+  `ServerCommonPacketListenerImpl.suspendFlushing` at the top of
+  `MinecraftServer.tickChildren` makes each `ServerCommonPacketListenerImpl.send`
+  a write without a flush — but `Connection.tick` flushes the channel
+  unconditionally at the end of its own body, in the *connection* section.
+  So everything the levels and the player's own tick produced goes out there,
+  and `ServerCommonPacketListenerImpl.resumeFlushing` after chunk sending
+  carries only the chunk batch. The suspension is defeated in one more case:
+  a send from a thread that is not the Server thread flushes immediately.
 - **Sprint is a zero-length tick.** Not a shorter one: `TickRateManager.nanosecondsPerTick`
   is unchanged, `MinecraftServer.runServer` just declares this tick 0 ns long, `MinecraftServer.haveTime`
   becomes a constant false, and the overload check is skipped. Sprinting
@@ -245,7 +332,10 @@ Narrated:
   `MinecraftServer.computeNextAutosaveInterval` = tick rate × 300, floored
   at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS` (100 — the typo is Mojang's),
   and `MinecraftServer.onTickRateChanged` re-derives it when `/tick rate`
-  changes.
+  changes — but only ever *shortens* the pending countdown, so lowering the
+  tick rate never pushes the next autosave further out. While sprinting,
+  `MinecraftServer.computeNextAutosaveInterval` uses the *measured* rate from
+  `MinecraftServer.getAverageTickTimeNanos` rather than the configured one.
 - **`ServerLevel.emptyTime` is a per-dimension sleep.** A level with no
   active tickets (`ServerChunkCache.hasActiveTickets`) counts up; after 300
   such ticks it stops ticking entities and block entities entirely, while
@@ -255,9 +345,21 @@ Narrated:
   compares the wall clock to `MinecraftServer.getNextTickTime`; a single
   tick longer than `DedicatedServerProperties.maxTickTime` (default 60 s)
   halts the JVM. See [Server lifecycle](server-lifecycle.md).
-- **The tick loop is instrumented in Tracy.** `MinecraftServer.tickFrame` is a
-  `DiscontinuousFrame` from `TracyClient`, opened and closed around
-  `MinecraftServer.tickServer`; the JFR path is `JvmProfiler.onServerTick`.
+- **The tick loop is instrumented three ways.** `MinecraftServer.tickFrame`
+  is a `DiscontinuousFrame` from `TracyClient`, opened in
+  `MinecraftServer.processPacketsAndTick` *before* the packet drain and closed
+  after `MinecraftServer.tickServer` — so the Tracy frame includes the
+  packets. The JFR path is `JvmProfiler.onServerTick`. And every iteration
+  gets a fresh `ProfilerFiller` from `MinecraftServer.createProfiler`, which
+  composes the `MetricsRecorder`'s profiler with a `SingleTickProfiler`; the
+  `/debug start` timer (`MinecraftServer.TimeProfiler`) arms itself at the
+  *top* of an iteration through `MinecraftServer.debugCommandProfilerDelayStart`.
+- **The slack buys ticket propagation first.** `ServerChunkCache.MainThreadExecutor`
+  has its own policy: its `ServerChunkCache.MainThreadExecutor.shouldRun` is unconditionally true — no
+  three-tick-latency rule — and its poll runs
+  `ServerChunkCache.runDistanceManagerUpdates` before anything else. So the
+  first thing the leftover milliseconds are spent on is chunks changing
+  status.
 
 ## Where to look
 
@@ -267,7 +369,8 @@ Narrated:
 · `BlockableEventLoop` · `PacketProcessor` · `PacketUtils` ·
 `TickRateManager` · `ServerTickRateManager` · `TickCommand` ·
 `ServerConnectionListener` · `ServerCommonPacketListenerImpl` ·
-`IntegratedServer` · `DedicatedServer` · `ServerClockManager`
+`IntegratedServer` · `DedicatedServer` · `ServerClockManager` ·
+`ServerActivityMonitor` · `SampleLogger` · `TpsDebugDimensions`
 
 ---
 

@@ -327,12 +327,15 @@ everything after it does not.
 - **There is no outbound packet queue.** `Connection.pendingActions`
   holds closures and matters only in the window before the channel
   exists. Once connected, Netty owns the buffering.
-- **Flushing is batched per tick, deliberately.**
-  `Connection.send` can write without flushing, and `Connection.tick`
-  flushes unconditionally at the end. On top of that,
-  `ServerCommonPacketListenerImpl.suspendFlushing` and
-  `ServerCommonPacketListenerImpl.resumeFlushing` bracket the whole
-  server tick, so one tick's traffic to one player is one flush.
+- **Flushing is batched per tick, deliberately — into two flushes, not one.**
+  `Connection.send` can write without flushing, and
+  `ServerCommonPacketListenerImpl.suspendFlushing` /
+  `ServerCommonPacketListenerImpl.resumeFlushing` bracket the whole server
+  tick to make it do so. But `Connection.tick` flushes the channel
+  unconditionally at the end of its own body, and that runs inside the
+  bracket: everything the levels and the player's own tick produced leaves
+  there, and `ServerCommonPacketListenerImpl.resumeFlushing` afterwards
+  carries only the chunk batch.
 - **`Connection.disconnect` blocks the calling thread** on the channel
   close. It is called from the game thread.
 - **A disconnection is reported exactly once**, guarded by

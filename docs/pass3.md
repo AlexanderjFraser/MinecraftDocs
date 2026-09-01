@@ -95,6 +95,42 @@ lecture order has to break it somewhere. The cheapest cut is probably to
 let the registries lecture state the freeze rule without justifying it,
 and let tags pay it off.
 
+### Part III · The server
+
+*(session B)* **Four pages that are already a pipeline, and the pipeline is
+the part's best feature — but the entry point is in the wrong place.**
+
+The four pages read, in `SUMMARY.md` order: the server tick → the level tick
+→ players and sessions → server lifecycle. Three of those hand off cleanly:
+the server tick's `MinecraftServer.tickChildren` calls the level tick, and
+the level tick ends with packets the players page explains the destination
+of. The lifecycle page is the odd one, and it is odd in a specific way:
+**it contains the beginning of the story and is filed last.** A viewer
+watching in page order sees a tick loop for two lectures before being told
+where the loop came from.
+
+Two ways out, and pass 3 should pick one deliberately:
+
+- **Lifecycle first.** Startup → the tick → the level tick → players. This
+  matches the code's chronology and gives the part a genuine cold open
+  ("java -jar server.jar"). The cost is that the startup lecture has to name
+  `ServerLevel`, `PlayerList` and `ChunkMap` before any of them are
+  explained.
+- **Lifecycle last, but split.** Keep the tick pages first and let the
+  lifecycle page become the part's *closing* lecture on failure and
+  teardown — which, after session B's fact-check, is where its most
+  interesting material now is (see below).
+
+**Recommendation: the second.** `anatomy` (Part I) already covers enough of
+startup that a viewer is not lost, and the teardown material is a better
+ending than an opening.
+
+One more part-level observation: **Part III is the part where the corpus's
+thread vocabulary is actually earned.** `anatomy` names the threads; Part III
+is the first place a viewer sees one of them do a full lap. Whatever the
+final lecture order, nothing between `anatomy` and `server-tick` should
+assume the Server thread has been demonstrated, because it has not.
+
 ---
 
 ## 2 · Page-level structure
@@ -120,6 +156,42 @@ ones pass 2 deliberately left alone as presentational.*
 - **`codecs-nbt-json`'s trace should probably open Part II**, whatever
   order the pages land in — it is the most concrete thing in the part and
   everything else is machinery for it. *(session A)*
+- **`server-lifecycle`'s split seam is not the one the pass-2 table
+  predicted.** The table proposed "startup and `/stop` vs the side threads
+  (RCON, query, management server)". Session B did **not** split it, and
+  after the fact-check that proposal looks wrong: the side threads are four
+  short bullets with no trace of their own, and a page made of them would
+  violate rule 4 outright. The real seam runs the other way — the page holds
+  **two traces**, `/stop` (which it draws) and startup (which it narrates as
+  a numbered list because there was no room for a second diagram). If the
+  page splits, it splits into *bringing a server up* and *taking one down*,
+  and the side threads stay with whichever half creates them (startup) or
+  stops them (shutdown) — they are created in one and stopped in the other,
+  which is itself an argument for keeping one page. *(session B)*
+- **`server-lifecycle` gained a second subject that is better than either
+  half: the two failure paths.** Session B established that a tick-loop
+  crash saves the world and a watchdog kill does not — `System.exit` runs
+  the shutdown hook, which joins the Server thread, which is the wedged
+  thread, so `Runtime.halt` fires ten seconds later with nothing written.
+  That is a lecture: *how a Minecraft server dies*, with three endings
+  (`/stop`, crash, watchdog) and one diagram comparing them. It is currently
+  three bullets in "Invariants and surprises". Strongest new page candidate
+  found in Part III. *(session B)*
+- **`server-tick` is one page and should stay one**, but its "when it runs"
+  section now carries a genuine sub-lecture: the event loop
+  (`BlockableEventLoop`, `TickTask`, `shouldRun`, `managedBlock`, the
+  budget's suspension while blocked, what can and cannot unpark the thread).
+  That machinery is cited by Part IV, Part IX and Part X. Pass 3 should
+  decide whether it is a box-out inside `server-tick` or a short shared page
+  those parts link to; today every part re-explains a piece of it.
+  *(session B)*
+- **`players-and-sessions` is the longest page in the part and is two
+  audiences, not two subjects.** The join trace is a *sequence* lecture; the
+  respawn / dimension-change / disconnect section is a *comparison* — three
+  paths differing in what survives. The seam is clean and the second half
+  answers the question people actually ask ("what happens to my stuff"). If
+  Part III gains a page, this is the second candidate after the death-of-a-
+  server one. *(session B)*
 
 ---
 
@@ -152,6 +224,34 @@ deliberate decision made here.*
 - **`identifiers-and-registries`'s two traces are the right shape** and
   are a good model for the rest of the corpus: one bootstrap-time trace,
   one runtime trace, same subject.
+
+### Diagram-shape notes from session B
+
+- **`server-level-tick`'s diagram is the best-shaped in the part and the
+  hardest to read**, because it is one lane (`ServerLevel`) talking to itself
+  for a third of its height. The tick genuinely is one method calling its own
+  private methods, so a sequence diagram is honest — but the *interesting*
+  structure is the gating: which steps are behind `runsNormally`, which
+  behind `emptyTime < 300`, which behind `isDebug`, which behind nothing.
+  Three nested guards over twenty steps. Consider a second diagram — a
+  flowchart of the guards — rather than trying to encode them in arrow
+  labels. Session B added the guards to the prose and deliberately left the
+  diagram alone.
+- **`server-tick`'s diagram now has an `alt` block** (sprint vs the overload
+  check) because they are exclusive branches of one *if*, which the old
+  linear diagram misrepresented. Worth a corpus-wide look in pass 3: how many
+  other sequence diagrams draw a branch as two consecutive arrows?
+- **`server-lifecycle` has one diagram for two traces.** `/stop` is drawn;
+  startup is a numbered list. Whichever way the split question goes, startup
+  deserves a diagram — it is the only place in the corpus where the *JVM main
+  thread* is a lane, and that lane handing off to the Server thread and never
+  appearing again is the visual point.
+- **`players-and-sessions`'s join diagram has nine lanes** and is the widest
+  in the corpus. Three of them (`PlayerDataStorage`, `ChunkMap`,
+  `ServerLevel`) appear twice each. It probably wants to be two diagrams —
+  configuration/spawn-prep, then `placeNewPlayer`'s packet burst — split at
+  the same seam the fact-check found interesting (the tasks are strictly
+  sequential, so the diagram's implied concurrency is wrong anyway).
 
 ### The lane-abbreviation standard
 
@@ -198,6 +298,15 @@ section records the ones where the **lecture** boundary differs from the
   may be a lecture boundary even though it is not a page boundary.
   *(session A)*
 
+*(session B additions)*
+
+- **`server-lifecycle`** — startup vs teardown vs the two failure paths. See
+  section 2; the failure paths are the most lecture-shaped material the page
+  has and are currently bullets.
+- **`players-and-sessions`** — the join sequence vs the three exit paths
+  (death, dimension change, disconnect). Different shapes, different
+  audiences.
+
 ### Half-lectures that want a neighbour
 
 - **`math-and-primitives`** is not half a lecture, it is zero lectures —
@@ -230,6 +339,36 @@ knowing before the order is drafted.*
 
 ---
 
+*(session B)*
+
+- **`anatomy` → `server-tick` → everything server-side.** The Server thread
+  is *named* in `anatomy` and *demonstrated* in `server-tick`; Parts IV–VIII
+  all assume the demonstration. `server-tick` is the second-most load-bearing
+  page in the corpus after `anatomy`.
+- **`server-tick` → `server-level-tick` is the tightest coupling in the
+  corpus.** The second page is literally one step of the first, and both
+  pages had to be corrected together in session B (the flush count, the
+  `haveTime` budget, the freeze gates). If any two pages in Part III merge,
+  it is these — though session B's view is that they should not: the level
+  tick is long enough on its own and the seam (`tickChildren` calls
+  `ServerLevel.tick`) is exactly one call.
+- **Part III → Part IV is a forward dependency the pages currently paper
+  over.** `server-level-tick` names `ServerChunkCache`, `ChunkMap`,
+  `DistanceManager`, `TicketStorage`, `FullChunkStatus` and `ChunkLevel`, and
+  links forward for all of them. The level tick cannot be understood without
+  knowing what "entity-ticking range" means. Either Part IV moves before
+  Part III, or `server-level-tick` gets a two-sentence definition of the
+  three ranges up front. **Recommendation: the second** — the full chunk
+  pipeline is far too big to precede the tick loop.
+- **`server-lifecycle` → `environment-attributes-and-timelines` is *not* a
+  dependency, but `server-level-tick` now is.** The level tick's first
+  statement is `EnvironmentAttributeSystem.invalidateTickCache`, and sky
+  brightness is read out of that system. That makes **six** dependants on
+  session C's unwritten page (the five session A counted, plus this one), and
+  one of them is in Part III — earlier in the order than any of the others.
+  This strengthens session A's recommendation that the page come early.
+  *(session B)*
+
 ## 6 · Open questions for pass 3
 
 - Does `math-and-primitives` move to `src/reference/`? *(session A)*
@@ -238,3 +377,14 @@ knowing before the order is drafted.*
 - Do the reference pages appear in the lecture order at all, or are they
   explicitly "not watched"? The answer decides how much of Part II is a
   lecture. *(session A)*
+- Does Part III open with the lifecycle page or close with it? See the Part
+  III note in section 1. *(session B)*
+- Is there a *how a server dies* lecture, and if so does it take the failure
+  material out of `server-lifecycle` or does `server-lifecycle` become it?
+  *(session B)*
+- Where does the event-loop machinery (`BlockableEventLoop`, `TickTask`,
+  `managedBlock`) actually live? Four parts cite it and none owns it.
+  *(session B)*
+- Part III's diagrams use `MS`, `SL`, `PL`, `SCC`, `CM`, `G`/`SGPL` — the
+  `G` for `ServerGamePacketListenerImpl` in `players-and-sessions` is the
+  odd one out and should become `SGPL` when the standard lands. *(session B)*

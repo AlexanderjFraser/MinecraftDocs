@@ -114,7 +114,7 @@ One session = one part (small parts bundle, as in pass 1). Each session:
    debt and material added on spec that pass 4 may cut** go to
    [pass2.md](pass2.md)'s hand-off section.
 
-Two protocol notes from session A, both cheap and both load-bearing:
+Three protocol notes, all cheap and all load-bearing:
 
 - **Always ask the fact-check agent for a NAMES section.**
   `verify_names.py` matches a token anywhere in the named class's file,
@@ -122,7 +122,28 @@ Two protocol notes from session A, both cheap and both load-bearing:
   verifier and is still a wrong citation. Only the agent catches those.
 - **Distrust a page that has never been checked, not just an overloaded
   one.** All eight of session A's pages had at least one *wrong* claim,
-  including the three shortest.
+  including the three shortest. Session B's four had **twenty-nine** between
+  them; the shortest page had six.
+- **Verify the agent, not just the page** *(session B)*. Fact-check reports
+  are long and confident, and a session that applies them wholesale is
+  trusting an unaudited agent. Session B re-read the decisive decompile
+  methods — `MinecraftServer.runServer`, `tickChildren`, `stopServer`,
+  `ServerLevel.tick`, `ServerChunkCache.tick`, `Connection.tick`,
+  `PacketProcessor` — before editing, which cost about ten reads and caught
+  the ordering questions the reports disagreed on. Do this for every *wrong*
+  finding that changes a trace; take the *completeness* findings on trust.
+
+### After-session housekeeping
+
+Every session ends with the same five: naming drift written to **both**
+`docs/pass2.md` and `src/systems/appendix/naming-drift.md`; structural
+observations to `docs/pass3.md`; on-spec additions and wording debt to
+`docs/pass2.md`'s hand-off; the load-bearing-facts list extended with
+anything a later part will lean on; and a check that the session's findings
+do not now contradict a page in another part. Session B's flush correction
+had to be applied to `anatomy` and `the-connection` as well as its own pages
+— **grep the corpus for every corrected claim, not just the page you were
+given.**
 
 ### Schedule
 
@@ -132,7 +153,7 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
   corpus: the render-thread claim, the threads table vs
   `reference/threads.md`) + `sound` (predates the extract/render split)
   + Part II Foundations. *(2026-09-01)*
-- [ ] **Session B** — Part III The server.
+- [x] **Session B** — Part III The server. *(2026-09-01)*
 - [ ] **Session C** — Part IV The world, plus the new
   `environment-attributes-and-timelines` page.
 - [ ] **Session D** — Part V Blocks.
@@ -202,6 +223,75 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session B** — Part III The server: `server-tick`,
+  `server-level-tick`, `players-and-sessions`, `server-lifecycle`. Four
+  adversarial fact-checks, four rewrites, twenty-nine *wrong* findings
+  between them — the shortest page had six. Session A's conclusion holds and
+  hardens: **a page that has never been checked is wrong somewhere, and the
+  wrongness clusters in orderings and in "only/never" claims.** The four
+  that mattered most:
+  - `server-tick` said outbound packets leave **once** per client per tick.
+    They leave twice: `Connection.tick` flushes the channel unconditionally
+    inside the `suspendFlushing`/`resumeFlushing` bracket, so the levels' and
+    the player's own traffic goes in the connection phase and only the chunk
+    batch rides the resume. The same wrong claim was in `anatomy` and — in a
+    bullet that contradicted its own first sentence — in `the-connection`;
+    both were fixed. Also: a throwing packet handler is logged and
+    *suppressed*, not disconnected (`ClientboundDisconnectPacket` comes from
+    a throw out of `Connection.tick` instead); the "Can't keep up!" log and
+    the deadline skip are one condition, so a server that warned recently
+    stays behind; `MinecraftServer.haveTime` is true whenever a task is
+    running and is bypassed entirely inside `managedBlock`, which is the
+    mechanism that keeps a mid-tick chunk wait from deadlocking and was
+    absent from the page; and the tick-time ledger and the debug TPS chart
+    are two separate pipes written from three separate places.
+  - `server-level-tick` had the **broadcast and tracking steps inverted** —
+    `ServerChunkCache.broadcastChangedChunks` runs before `ChunkMap.tick`,
+    so block changes are queued ahead of the same tick's entity movement. The
+    broadcast unit is the 16³ section, not the chunk. `purgeStaleTickets` *is*
+    freeze-gated, against a page that said the whole chunk system was not. An
+    empty dimension does not stop after 300 ticks; it skips exactly three
+    steps and the entity manager keeps draining. The tick's **first**
+    statement — `EnvironmentAttributeSystem.invalidateTickCache` — and its
+    **last** — `LevelDebugSynchronizers.tick` — were both missing. All three
+    load-bearing facts (`ServerClockManager`, the server-global `WeatherData`,
+    and `forEachBlockTickingChunk` walking the entity-ticking set) were
+    **confirmed with evidence**, which is the first time the seed list has
+    been independently re-derived.
+  - `players-and-sessions` attached `canBypassPlayerLimit` to the whitelist
+    (it is the capacity check; the whitelist is bypassed by being an op),
+    gave a joining player ten unacknowledged chunk batches (it is one until
+    the first ack), called `restoreFrom`'s restore-everything branch the
+    *keepInventory* path (it is the end-credits return), and implied the
+    registry sync and the spawn-chunk load overlap (configuration tasks are
+    strictly sequential). Four members were cited on the wrong class —
+    caught only by the NAMES section, exactly as session A predicted. Gained
+    `NameAndId`, the `LevelBasedPermissionSet` model, `IntegratedPlayerList`,
+    `ServerPlayerGameMode` and the `switchToConfig` exit path.
+  - `server-lifecycle` said shutdown calls `saveEverything` (it calls
+    `PlayerList.saveAll` and `saveAllChunks` by hand), that
+    `ServerConnectionListener.stop` closes client connections (it closes only
+    the bound channels — live sessions die with `PlayerList.removeAll`, and a
+    connection still in login is closed by neither), that
+    `MinecraftServer.isReady` is what the "Done" message waits for (that is
+    logged before the loop starts), and that there is a persisted spawn
+    ticket (there is not: only `TicketType.FORCED` and `TicketType.PORTAL`
+    persist, so `prepareLevels` loads nothing on an ordinary world). Its
+    closing invariant was backwards — a tick-loop crash saves the world, a
+    **watchdog kill does not**, because `System.exit` runs a hook that joins
+    the very thread that is wedged.
+
+  Split ruling: `server-lifecycle` was **not** split, and the pass-2 table's
+  proposed seam (lifecycle vs the side threads) was rejected — the side
+  threads are four bullets with no trace of their own, and the page's real
+  seam is its two traces. Recorded in `docs/pass3.md` along with the
+  strongest new-page candidate the session found: *how a Minecraft server
+  dies*, three endings and one diagram, currently three bullets.
+
+  Protocol addition: **verify the agent, not just the page.** Ten decompile
+  re-reads before editing settled every ordering question the reports raised
+  and is now in the session protocol.
 
 - **2026-09-01, session A** — Part I `anatomy`, `sound`, and all six Part
   II Foundations pages: eight adversarial fact-checks, eight rewrites.

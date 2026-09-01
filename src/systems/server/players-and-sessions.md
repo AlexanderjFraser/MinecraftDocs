@@ -13,8 +13,8 @@ player's data. `ServerPlayer` is a `Player` with a *connection*, a
 `ServerPlayerGameMode`, per-player stats and advancements, and the
 knowledge of which chunks its client has been sent.
 
-The one sentence a player recognises: *the "Joining world" screen ends when
-the server has finished this page.*
+The one sentence a player recognises: *the "Downloading terrain" screen ends
+when the server has finished this page.*
 
 ## The data it owns
 
@@ -27,15 +27,37 @@ the server has finished this page.*
   `PlayerList.advancements` (`PlayerAdvancements` per UUID), created lazily
   by `PlayerList.getPlayerStats` and `PlayerList.getPlayerAdvancements`;
   `PlayerList.playerIo`, the `PlayerDataStorage`; `PlayerList.viewDistance`
-  and `PlayerList.simulationDistance`, the server-side caps.
+  and `PlayerList.simulationDistance`, the server-side caps. Only
+  `DedicatedPlayerList` loads and saves those four JSON files; the base class
+  never touches disk. `IntegratedPlayerList` is the other subclass: it pins
+  the view distance at 10, never sets a simulation distance at all (so a LAN
+  world reports 0 in `ClientboundLoginPacket`), and rejects a joiner using the
+  host's own name.
+- **Identity is a `NameAndId`, not a `GameProfile`.** The record
+  (`NameAndId.id`, `NameAndId.name`) is what `PlayerList.canPlayerLogin`,
+  `PlayerList.loadPlayerData`, `PlayerList.isWhiteListed`, `PlayerList.isOp`
+  and all four stored-user lists key on; `ServerPlayer.nameAndId` produces
+  one, and `UserNameToIdResolver` behind `MinecraftServer.services` is the
+  cache that maps between them. It is also how the server notices a player
+  has been renamed since last visit.
+- **A permission is not an integer.** `ServerOpListEntry` stores a
+  `LevelBasedPermissionSet` (written as *level* in `ops.json`) plus
+  `ServerOpListEntry.bypassesPlayerLimit`;
+  `MinecraftServer.getProfilePermissions` resolves the op entry, the
+  singleplayer owner and the *allow-commands* flag into a `PermissionSet`,
+  and `PlayerList.op` / `PlayerList.deop` re-send both the level and the
+  command tree. [Brigadier and commands](../commands/brigadier-and-commands.md)
+  owns the model itself.
 - `PlayerDataStorage` — reads and writes `players/data/<uuid>.dat`
   (`LevelResource.PLAYER_DATA_DIR`), keeping the previous file as
-  `.dat_old` and, on a corrupt read, renaming the bad one aside and
+  `.dat_old` and, on a corrupt read, *copying* the bad one to
+  `<uuid>_corrupted_<timestamp>.dat` — the original stays where it is — before
   falling back to the old copy; runs `DataFixTypes.PLAYER` on load. The
   save goes through `Entity.saveWithoutId` into a `TagValueOutput`
   ([Part II](../foundations/codecs-nbt-json.md)).
 - `ServerPlayer` — `ServerPlayer.connection` (the
-  `ServerGamePacketListenerImpl`, public and reassigned on respawn),
+  `ServerGamePacketListenerImpl`; a respawned player adopts the *same*
+  listener object rather than getting a new one),
   `ServerPlayer.gameMode`, `ServerPlayer.chunkTrackingView` (starts
   `ChunkTrackingView.EMPTY`), `ServerPlayer.respawnConfig`
   (`ServerPlayer.RespawnConfig`: a `LevelData.RespawnData` plus a "forced"
@@ -49,6 +71,13 @@ the server has finished this page.*
   `ServerLevel.EntityCallbacks.onTrackingEnd`) as the entity manager adds and removes the player
   entity — so it is per level and driven by the entity system, not by
   `PlayerList`.
+- `ServerPlayerGameMode` — the mode itself
+  (`ServerPlayerGameMode.gameModeForPlayer` and
+  `ServerPlayerGameMode.previousGameModeForPlayer`, persisted by
+  `ServerPlayer.storeGameTypes`) plus all of the server's block-breaking
+  state; `ServerPlayerGameMode.changeGameModeForPlayer` is what broadcasts a
+  game-mode change to the tab list, and `ServerPlayer.setServerLevel` has to
+  move it to the new level alongside the entity.
 - `CommonListenerCookie` — the record (profile, latency, client
   information, transferred flag) that travels from login through
   configuration into play.
@@ -67,7 +96,12 @@ queued packet, so at the top of a tick. Respawn is a packet
 Two off-thread pieces: the Mojang session check on a
 "User Authenticator" thread spawned by
 `ServerLoginPacketListenerImpl.handleKey`, and the spawn-chunk load, which
-`PrepareSpawnTask` waits on with tickets rather than blocking. The player
+`PrepareSpawnTask` waits on with tickets rather than blocking. Neither
+breaks the single-thread rule: the auth thread only moves the listener into
+`ServerLoginPacketListenerImpl.State.VERIFYING`, and
+`ServerLoginPacketListenerImpl.verifyLoginAndFinishConnectionSetup` then runs
+from the ordinary tick. A login that never gets that far is disconnected
+after `ServerLoginPacketListenerImpl.MAX_TICKS_BEFORE_LOGIN` (600) ticks. The player
 tick is split: `ServerPlayer.doTick` (food, stat and health sync) is driven
 by the connection through `ServerGamePacketListenerImpl.tick`, *after* the
 levels; `ServerPlayer.tick` (containers, camera, advancement criteria) is
@@ -117,9 +151,12 @@ sequenceDiagram
 Narrated:
 
 1. **Admission is a `Component` or null.** `PlayerList.canPlayerLogin`
-   checks `UserBanList`, then `UserWhiteList` (unless
-   `PlayerList.canBypassPlayerLimit`), then `IpBanList`, then capacity, and
-   returns the disconnect reason. It runs twice: in
+   checks `UserBanList`, then the whitelist, then `IpBanList`, then capacity,
+   and returns the disconnect reason. The two bypasses are not where a
+   1.21-era reader expects: the whitelist is bypassed by being an *op*
+   (`PlayerList.isWhiteListed` is true for anyone in `PlayerList.ops`), and
+   `PlayerList.canBypassPlayerLimit` — the *bypasses-player-limit* flag in
+   *ops.json* — applies only to the capacity check. It runs twice: in
    `ServerLoginPacketListenerImpl.verifyLoginAndFinishConnectionSetup` and
    again in `ServerConfigurationPacketListenerImpl.handleConfigurationFinished`,
    because a ban or whitelist change may have landed during configuration.
@@ -137,17 +174,27 @@ Narrated:
    what matters here is that two tasks are queued last by
    `ServerConfigurationPacketListenerImpl.returnToWorld`: `PrepareSpawnTask`
    and `JoinWorldTask`.
-4. **The spawn chunks load before the player exists.**
-   `PrepareSpawnTask.start` reads the player's `.dat` once, for
-   `ServerPlayer.SavedPosition` only (dimension, position, rotation); a
+4. **The spawn chunks load before the player exists — but after the
+   registries.** Configuration tasks are strictly sequential:
+   `ServerConfigurationPacketListenerImpl.startNextTask` refuses to start one
+   while another is unfinished, so `PrepareSpawnTask` does not begin until
+   `SynchronizeRegistriesTask` and the optional tasks have completed. There is
+   no overlap between the registry transfer and the chunk load.
+   `PrepareSpawnTask.start` reads the player's `.dat` once and decodes only
+   `ServerPlayer.SavedPosition` from it (dimension, position, rotation) —
+   though the read itself loads and datafixes the whole file, so a join pays
+   that cost twice. A
    new player instead gets `PlayerSpawnFinder.findSpawn`, an asynchronous
    search over up to `PlayerSpawnFinder.ABSOLUTE_MAX_ATTEMPTS` (1024)
    candidates within `GameRules.RESPAWN_RADIUS`, loading each candidate
    chunk with `TicketType.SPAWN_SEARCH`. Then a `TicketType.PLAYER_SPAWN`
    ticket of radius `PrepareSpawnTask.PREPARE_CHUNK_RADIUS` (3) is placed
-   and the task ticks until the `ChunkLoadCounter` says they are in.
-   The client is meanwhile receiving registries; `JoinWorldTask` sends
-   `ClientboundFinishConfigurationPacket` only when both are done.
+   and the task ticks until that load future completes; the `ChunkLoadCounter`
+   beside it only feeds the client's progress display
+   (`LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS`). Because `TicketType.PLAYER_SPAWN`
+   times out after 20 ticks, `PrepareSpawnTask.keepAlive` re-adds it every
+   tick — otherwise a slow client's spawn chunks would expire underneath it.
+   `JoinWorldTask` then sends `ClientboundFinishConfigurationPacket`.
 5. **The `ServerPlayer` is born in a configuration task, not in `PlayerList`.**
    `PrepareSpawnTask.spawnPlayer` → its `PrepareSpawnTask.Ready` state: `ServerLevel.waitForEntities`
    makes sure the spawn chunk's entities are loaded (a vehicle to
@@ -169,8 +216,16 @@ Narrated:
    `ClientboundUpdateRecipesPacket`; then the permission level as a
    `ClientboundEntityEventPacket` (ids 24–28) and the command tree
    (`Commands.sendCommands` → `ClientboundCommandsPacket`); the recipe book,
-   the scoreboard, the join message; the first `ClientboundPlayerPositionPacket`
-   via `ServerGamePacketListenerImpl.teleport`; the server status.
+   the scoreboard, the join message — which is
+   *multiplayer.player.joined.renamed* rather than *multiplayer.player.joined*
+   when the profile's name differs from the one
+   `MinecraftServer.services` has cached, the reason the name cache is
+   consulted at the top of the method; the first
+   `ClientboundPlayerPositionPacket` via
+   `ServerGamePacketListenerImpl.teleport`; the server status.
+   `ClientboundLoginPacket` also pins three game rules into the join:
+   `GameRules.REDUCED_DEBUG_INFO`, `GameRules.IMMEDIATE_RESPAWN` (as
+   "show the death screen") and `GameRules.LIMITED_CRAFTING`.
 7. **The tab list, in a careful order.** The joiner gets a
    `ClientboundPlayerInfoUpdatePacket` listing everyone already present;
    *then* `PlayerList.players`; then everyone (joiner included) gets one listing
@@ -187,30 +242,54 @@ Narrated:
    player with `DistanceManager` (the player ticket) and computes the first
    `ChunkTrackingView`; chunks inside it are marked pending for the
    `PlayerChunkSender`, which sends them in batches at the end of each
-   server tick (`PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`, 10, before
-   it waits for the client). Part IV's [tickets-and-loading](../world/tickets-and-loading.md)
-   page picks up from here.
+   server tick. For a *joining* player the limit is one unacknowledged batch,
+   not ten: `PlayerChunkSender` starts at 1 and only raises itself to
+   `PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES` (10) once the client has
+   acknowledged the first with a `ServerboundChunkBatchReceivedPacket`. The
+   client's reported rate then replaces the initial nine-chunks-per-tick
+   guess, clamped between `PlayerChunkSender.MIN_CHUNKS_PER_TICK` and
+   `PlayerChunkSender.MAX_CHUNKS_PER_TICK`. Part IV's
+   [tickets-and-loading](../world/tickets-and-loading.md) page picks up from
+   here.
 9. **Loaded means the client said so.** After boss events, active effects
    and `ServerPlayer.initInventoryMenu`, flushing resumes. The client
    answers with `ServerboundPlayerLoadedPacket` → `ServerGamePacketListenerImpl.markClientLoaded`;
    if it has not within `ServerGamePacketListenerImpl.CLIENT_LOADED_TIMEOUT_TIME`
    (60 ticks) the server marks it loaded anyway. Until then the player
-   does not take damage or move.
+   does not take damage or move. The same flag is re-armed on **death**:
+   `ServerPlayer.die` calls
+   `ServerGamePacketListenerImpl.markClientUnloadedAfterDeath`, and the
+   respawn restarts the 60-tick timer — so `ServerGamePacketListenerImpl.hasClientLoaded`
+   gates the death screen as well as the join. The countdown is driven from
+   `ServerPlayer.tick`, which is to say from the level loop, not the
+   connection.
 
 ### Respawn, dimension change and disconnect
 
 - **Respawn makes a new object.** `ServerboundClientCommandPacket` with
   `ServerboundClientCommandPacket.Action.PERFORM_RESPAWN` → `PlayerList.respawn`. `ServerPlayer.findRespawnPositionAndUseSpawnBlock`
-  turns the `ServerPlayer.RespawnConfig` into a `TeleportTransition` (consuming a bed
-  or anchor charge; `TeleportTransition.missingRespawnBlock` if the block is
-  gone; `TeleportTransition.createDefault` at the world spawn otherwise —
-  both use `MinecraftServer.findRespawnDimension` and
-  `ServerLevel.getRespawnData`). The old player is removed from its level
+  turns the `ServerPlayer.RespawnConfig` into a `TeleportTransition`
+  (spending a `RespawnAnchorBlock` charge — a bed is consumed by nothing, and
+  a forced respawn point spends nothing either;
+  `TeleportTransition.missingRespawnBlock` if the block is gone;
+  `TeleportTransition.createDefault` at the world spawn otherwise — both use
+  `MinecraftServer.findRespawnDimension` and `ServerLevel.getRespawnData`).
+  Respawning at the world spawn is the expensive branch:
+  `ServerPlayer.adjustSpawnLocation` runs the same `PlayerSpawnFinder` search
+  a join runs asynchronously, and blocks the Server thread on it with
+  `BlockableEventLoop.managedBlock`. The old player is removed from its level
   with `Entity.RemovalReason.KILLED` (or `Entity.RemovalReason.CHANGED_DIMENSION` after the
   credits), a **new** `ServerPlayer` is constructed with the same profile,
-  `ServerPlayer.restoreFrom` copies what survives death (everything, if
-  *keepInventory*), it takes the old entity id and the same
-  `ServerGamePacketListenerImpl`, and the client is told with
+  `ServerPlayer.restoreFrom` copies what survives death. Its *restoreAll*
+  branch — health, hunger, effects, attribute modifiers and inventory — is
+  **not** the *keepInventory* path; it is reserved for the player returning
+  from the End after the credits (`ServerPlayer.wonGame`).
+  `GameRules.KEEP_INVENTORY` takes the other branch and moves only the
+  inventory, experience and score, leaving health full and effects gone. The
+  new object takes the old entity id and adopts the *same*
+  `ServerGamePacketListenerImpl` — nothing about the connection is
+  reassigned; the listener is repointed at the new player. The client is told
+  with
   `ClientboundRespawnPacket` (its `ClientboundRespawnPacket.dataToKeep` bits say whether attributes
   and entity data carry over), a position, difficulty, experience,
   effects, `PlayerList.sendLevelInfo` and the permission level again. Anyone holding
@@ -221,10 +300,11 @@ Narrated:
   level with `Entity.RemovalReason.CHANGED_DIMENSION` then `Entity.unsetRemoved`,
   `ServerPlayer.setServerLevel`, the teleport, `ServerLevel.addDuringTeleport`,
   and then the same level-info and inventory re-sync
-  (`ServerPlayer.sendAllPlayerInfo`, `ServerPlayer.sendActivePlayerEffects`)
-  a join gets, plus `ServerPlayer.teleportSpectators` for anyone
+  (`PlayerList.sendAllPlayerInfo`, `PlayerList.sendActivePlayerEffects`)
+  a join gets, plus `Entity.teleportSpectators` for anyone
   spectating them. Same-dimension teleports are just
-  `ServerGamePacketListenerImpl.teleport` and `ServerPlayer.resetPosition`.
+  `ServerGamePacketListenerImpl.teleport` and
+  `ServerGamePacketListenerImpl.resetPosition`.
 - **Disconnect is a level tick away.** The channel closes on Netty;
   `ServerConnectionListener.tick` notices and calls
   `Connection.handleDisconnection` → `ServerGamePacketListenerImpl.onDisconnect`
@@ -238,6 +318,21 @@ Narrated:
   a `ClientboundPlayerInfoRemovePacket` to everyone. On a singleplayer
   server the owner's disconnect is what calls `MinecraftServer.halt`
   (`ServerCommonPacketListenerImpl.onDisconnect`).
+- **A player can also leave the world without leaving the server.**
+  `ServerGamePacketListenerImpl.switchToConfig` runs the *same* removal —
+  leave message, `.dat` saved, `PlayerList.remove` — then sends
+  `ClientboundStartConfigurationPacket` and flips the outbound protocol back;
+  `ServerGamePacketListenerImpl.handleConfigurationAcknowledged` builds a
+  fresh `ServerConfigurationPacketListenerImpl`, which is why
+  `ServerConfigurationPacketListenerImpl.returnToWorld` exists separately from
+  `ServerConfigurationPacketListenerImpl.startConfiguration` and why
+  `CommonListenerCookie` carries a *transferred* flag at all.
+- **Three more ways the connection tick ends a session.**
+  `ServerGamePacketListenerImpl.tick` disconnects an idle player after
+  `MinecraftServer.playerIdleTimeout` minutes, and a player who has been
+  airborne longer than `ServerGamePacketListenerImpl.MAXIMUM_FLYING_TICKS`
+  (80, scaled by gravity) for "flying". A keep-alive answered with the wrong
+  id disconnects immediately rather than being ignored.
 
 ## Interfaces
 
@@ -256,7 +351,8 @@ Narrated:
   for the tab list; `ClientboundSetChunkCacheRadiusPacket` and
   `ClientboundSetSimulationDistancePacket` when `PlayerList.setViewDistance`
   / `PlayerList.setSimulationDistance` change; `ClientboundSetHealthPacket`
-  from `ServerPlayer.doTick` whenever health, food or saturation moved;
+  from `ServerPlayer.doTick` when health or food moved, or when saturation
+  *crossed zero* — a saturation change that stays positive sends nothing;
   `ClientboundKeepAlivePacket` every 15 s. Serverbound:
   `ServerboundLoginAcknowledgedPacket`, `ServerboundFinishConfigurationPacket`,
   `ServerboundPlayerLoadedPacket`, `ServerboundClientCommandPacket`,
@@ -273,7 +369,8 @@ Narrated:
 - **The player `.dat` is read twice on join and written on every save and
   every disconnect.** Position first (to know where to load chunks),
   everything later (once the chunks are there). `ServerPlayer.SavedPosition`
-  is the first read's whole result.
+  is all the first read *decodes* — but not all it does: both reads load and
+  datafix the entire file, so the narrowing saves decoding, not IO.
 - **A respawned player is a new `ServerPlayer`; a player who changed
   dimension is not.** The entity id survives both; the object survives
   only the second.
@@ -281,20 +378,29 @@ Narrated:
   `ServerLevel.players` is "whose entity is in this level", maintained by
   the entity manager's callbacks. `PlayerList` never writes the level's
   list.
-- **Nothing in the play phase runs before `ServerConfigurationPacketListenerImpl.handleConfigurationFinished`
-  re-admits the player.** The whitelist is consulted at login *and* at the
-  moment of entering the world.
+- **The two admission checks are not the same check.** The whitelist and
+  bans are consulted at login *and* again in
+  `ServerConfigurationPacketListenerImpl.handleConfigurationFinished` — but
+  the second duplicate test is a flat rejection, where login evicts the older
+  session. And "nothing in the play phase runs first" is only half true: the
+  *outbound* protocol is switched to play before those checks; it is the
+  inbound one that waits for `PlayerList.placeNewPlayer`.
 - **Players are ticked twice, from two places.** `ServerPlayer.doTick` from the
   connection (after the levels), `ServerPlayer.tick` from the level's entity loop — and
   the level loop ticks players even outside entity-ticking range, which is
   how a player standing in an otherwise idle chunk still moves.
 - **The owner of a singleplayer world is looked up by the world's stored
-  UUID**, not the current profile (`PlayerList.loadPlayerData`), which is
-  why switching from offline to online mode does not lose the inventory.
+  UUID**, not the current profile: `PlayerList.loadPlayerData` falls back to
+  the *singleplayer_uuid* recorded in `level.dat` when there is no file for the
+  joining id. It is a one-way rescue — the save then writes under the
+  *current* id and `level.dat` records the current owner, so the old file is
+  read once and orphaned.
 - **Keep-alive is a 15-second pair.** `ServerCommonPacketListenerImpl.keepConnectionAlive`
   sends one every `ServerCommonPacketListenerImpl.LATENCY_CHECK_INTERVAL` and disconnects with
   `ServerCommonPacketListenerImpl.TIMEOUT_DISCONNECTION_MESSAGE` if the previous one is still unanswered;
-  latency is smoothed 3:1 toward the new sample.
+  latency is smoothed three parts *old* to one part new sample, so the tab
+  list lags a real change by several pings. The singleplayer owner is exempt
+  from keep-alives entirely.
 
 ## Where to look
 

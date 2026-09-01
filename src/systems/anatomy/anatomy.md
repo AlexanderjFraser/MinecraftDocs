@@ -293,8 +293,10 @@ Narrated:
 - **Flushing is bracketed by the tick.** `Connection.send` writes and flushes,
   but for the duration of `MinecraftServer.tickChildren` the server calls
   `ServerCommonPacketListenerImpl.suspendFlushing` and resumes afterwards, so
-  a tick's worth of packets leaves in one batch rather than one flush per
-  send.
+  a tick's worth of packets leaves in a couple of batches rather than one
+  flush per send. Two, in practice: `Connection.tick` flushes the channel in
+  the middle of the bracket, so the chunk batch sent after it rides a second
+  flush. [The server tick](../server/server-tick.md) has the detail.
 - **The tick rate is a server field, not a constant.** `ServerTickRateManager`
   (shared base `TickRateManager`) owns the nanoseconds-per-tick, freeze and
   sprint state that `/tick` manipulates; the client mirrors it in

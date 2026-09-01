@@ -85,6 +85,12 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *GameRules* package | `world/level/gamerules` |
 | day time on *ServerLevel* | `ServerClockManager` (`world/clock`) |
 | per-level weather | server-global `WeatherData` |
+| *GameProfile* on the player lists | `NameAndId` (a record of UUID and name) — `PlayerList.canPlayerLogin`, `PlayerList.isWhiteListed`, `PlayerList.op`, the ban/op/whitelist files |
+| *MinecraftServer.getProfilePermissions* returning an int | returns a `LevelBasedPermissionSet` |
+| *ServerPlayer.sendAllPlayerInfo* / *sendActivePlayerEffects* | `PlayerList.sendAllPlayerInfo` / `PlayerList.sendActivePlayerEffects` |
+| *MinecraftServer.getScheduledEvents* on a level | a server-wide `TimerQueue`, advanced by the overworld's `ServerLevel.tickTime` |
+| *ServerLevel.updateSkyBrightness* from day time | `EnvironmentAttributes.SKY_LIGHT_LEVEL` through `EnvironmentAttributeSystem` |
+| *ChunkMap.forEachBlockTickingChunk* meaning block-ticking | it walks the **entity**-ticking set; the name did not follow the split |
 
 ### Part IV — The world
 
