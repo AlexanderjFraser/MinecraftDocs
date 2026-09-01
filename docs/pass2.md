@@ -31,6 +31,8 @@ read.
 | `client/client-world-and-options` | ~300 | **strongest new candidate.** Four subjects: the tick/frame split and the client's own lighting; the prediction ledger (`MultiPlayerGameMode` + `BlockStatePredictionHandler`); options and `ClientInformation`; and input (`KeyMapping`, `MouseHandler`, `KeyboardHandler`). A sibling *input-and-keybinds* page would pair with Part VIII's *input to movement* — the seam is `ClientInput.tick`. The prediction ledger could also be its own page with its own trace; it is currently split across three pages (Part IX names `BlockStatePredictionHandler`, Part V's *block-breaking* has the prediction, this page has the ledger). Decide one owner. (session 10) |
 | `client/gui-and-screens` | ~300 | the two-phase render model + widgets/layouts vs the font and text engine (`Font`, `FontSet`, `GlyphStitcher`, `StringSplitter`, bidi) — the text half is a lecture on its own (session 10) |
 | `client/level-rendering` | ~310 | the meshing pipeline (dirty → compile → upload) vs visibility and the frame graph (session 10) |
+| `worldgen/structures` | 307 | the placement decision (sets, `StructurePlacement`, `StructureCheck`, `/locate`) vs jigsaw assembly and template placement — two lectures, and the only page in Part XI with two distinct mechanisms (session 11) |
+| `worldgen/density-functions` | 307 | the node library and the codec/registry model vs the two rewrites (`RandomState`, `NoiseChunk.wrapNew`) and the cell loop. The rewrite story is the lecture; the catalogue is reference (session 11) |
 
 Parts III–V all came out at 260–380 lines. The lecture-order decision in
 pass 2 is where "one page, two lectures" gets settled; splitting the
@@ -209,6 +211,19 @@ the old name and not finding it.
 | `Minecraft.getPartialTick`, `Timer`, `Camera.setup` | `DeltaTracker.Timer`, `Camera.update` + `Camera.extractRenderState` | session 10 |
 | `ClickType` | `ContainerInput` | session 10 |
 
+| `GenerationStep.Carving` | gone — `BiomeGenerationSettings.carvers` is one flat `HolderSet` | session 11 |
+| `DensityFunctions.WeirdScaledSampler` | `DensityFunctions.IntervalSelect` | session 11 |
+| `StructureFeature` / `ConfiguredStructureFeature` | `Structure` / `Registries.STRUCTURE` | session 11 |
+| `Feature.RANDOM_PATCH`, `Feature.FLOWER` | gone — composed from `Feature.SIMPLE_BLOCK` + placement | session 11 |
+| `Feature.POINTED_DRIPSTONE` / `DRIPSTONE_CLUSTER` | `Feature.SPELEOTHEM` / `SPELEOTHEM_CLUSTER` | session 11 |
+| `AbstractTreeGrower` and its subclasses | one final `TreeGrower` with constants | session 11 |
+| `TreeConfiguration.dirtProvider` | `TreeConfiguration.belowTrunkProvider` | session 11 |
+| `Biome.BiomeCategory` / `Biome.getDownfall` | gone | session 11 |
+| `MultiNoiseBiomeSource.Preset` | `MultiNoiseBiomeSourceParameterList.Preset` | session 11 |
+| `BiomeSpecialEffects.fogColor` / `skyColor` / music / ambient sound | `EnvironmentAttributes.*` via `Biome.getAttributes` | session 11 |
+| the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters | session 11 |
+| `StructureTemplateManager` folder *structures/* | *structure/* | session 11 |
+
 ## Cross-part obligations (link, don't repeat)
 
 What each unwritten part should point at instead of re-explaining. Tick
@@ -314,15 +329,33 @@ when the part is written.
   `AbuseReportSender`, the report screens) and `LegacyQueryHandler` /
   `LegacyProtocolUtils` (the pre-1.7 ping still in the pipeline)
   (session 9).
-- [ ] **Part XI World generation** — *worldgen-pipeline* points at
+- [x] **Part XI World generation** (session 11) — *worldgen-pipeline* points at
   `chunk-generation-pipeline` for the conveyor;
-  `ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code (session 4).
+  `ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code (session 4). Also took
+  from session 10: `Biome.getAttributes` carries the visual attributes and
+  `BiomeSpecialEffects` keeps only water/foliage/grass colours — confirmed
+  and stated in `biomes`.
 - [ ] **Part XII Commands** — `loot-tables` now owns the loot data model,
   so Part XII need only cover the commands: `/loot`, `/item … with`
   (`ItemCommands.applyModifier`) and `EnchantCommand`, plus
   `ResourceOrIdArgument` accepting an inline table (session 7).
 - [ ] **Part XIII Appendix** — the naming-drift table above; the JSON-RPC
   and pause-when-empty paragraphs.
+- [ ] **Part XII Commands** — from session 11: `/locate structure` and
+  `/locate biome` are *very* different (the first can drive world
+  generation on the server thread through `StructureCheck.checkStart`, the
+  second asks the `BiomeSource` and never reads a stored palette);
+  `/fillbiome` writes the biome palette and resends it with
+  `ClientboundChunksBiomesPacket`; `/place` reaches
+  `JigsawPlacement.generateJigsaw`. `structures` and `biomes` own the
+  mechanisms — Part XII owns the command plumbing and should link.
+- [ ] **Part XIII Appendix** — from session 11: the out-of-scope tour
+  should note `net/minecraft/data/worldgen` (`Structures`, `StructureSets`,
+  `PlainVillagePools`, `ProcessorLists`, `TreeFeatures`,
+  `VegetationPlacements`, `BiomeData`) — vanilla's entire worldgen data
+  pack is Java that is data-generated to JSON, which is why "it is
+  data-driven" and "you cannot change it" are both true of the overworld
+  biome table.
 
 ## Facts that later sessions must not contradict
 
@@ -429,6 +462,41 @@ Short list of things established by a page and easy to get wrong from
 - The client **replays the server's opinion** rather than rolling back:
   the ledger stores what the server last said and the ack is permission
   to apply it — `client-world-and-options`.
+
+- A `DensityFunction` graph in the registry is **unseeded and cacheless**;
+  it is rewritten by `RandomState` and again by `NoiseChunk`, and a
+  `DensityFunctions.Marker` computes nothing on its own — `density-functions`.
+- Density-function caches key on **object identity**, so any
+  `DensityFunction.SinglePointContext` sampler bypasses them —
+  `density-functions`.
+- `BiomeSpecialEffects` is **only block tint**; everything else is an
+  `EnvironmentAttribute` and the biome is one layer of a stack — `biomes`
+  (and `lightmap-fog-and-sky`).
+- There are **two biomes per block**: fuzzed for gameplay
+  (`BiomeManager.getBiome`), unfuzzed for environment attributes —
+  `biomes`.
+- Biomes are chosen at `ChunkStatus.BIOMES`, **before** `ChunkStatus.NOISE`
+  — the biome shapes the terrain, never the reverse — `biomes`.
+- **Carvers never place air**: `WorldCarver.getCarveState` asks the
+  `Aquifer` — `worldgen-pipeline`.
+- Ore veins are placed in the **noise** step, and the surface pass only
+  replaces the settings' default block, so they survive it —
+  `worldgen-pipeline`.
+- Feature order is **global and topologically sorted**; a cycle between two
+  biomes makes the world refuse to load — `features-and-placement`.
+- A `RepeatingPlacement` emits N copies of the **same** position; the
+  scatter is a separate modifier, so list order is load-bearing —
+  `features-and-placement`.
+- Writes outside the 3×3 decoration zone are **logged and dropped**, so an
+  over-reaching feature is truncated, not moved; and
+  `WorldGenRegion.getChunk` **throws** rather than loading, which is why
+  cascading worldgen cannot happen — `features-and-placement`.
+- A structure's placement lottery is **pure seed arithmetic**; the biome
+  test only vetoes afterwards — `structures`.
+- Terrain adaptation around a structure writes **no blocks** — it is a
+  `Beardifier` density term at `ChunkStatus.NOISE` — `structures`.
+- Sapling growth **bypasses the whole placement layer**, on the main
+  thread, with no write guard — `features-and-placement`.
 ## Catalogue gaps found during pass 1
 
 - **Environment attributes and timelines have no page** (session 6).
@@ -443,6 +511,14 @@ Short list of things established by a page and easy to get wrong from
   a second, unrelated `AttributeModifier` — a real name collision with
   `world/entity/ai/attributes`. Suggested fix: a 57th page in Part IV or a
   short one of its own, for the owner to decide.
+  **Session 11 escalates this.** `biomes` had to explain
+  `EnvironmentAttributeSystem`'s layer stack (dimension → biome → timeline
+  → weather), `EnvironmentAttributeMap.Entry`'s modify-don't-set model,
+  and the client's `EnvironmentAttributeProbe` / `GaussianSampler`
+  blending, none of which it owns — and Part X's `lightmap-fog-and-sky`
+  explains the same system from the other end. Four pages now depend on a
+  page that does not exist. Recommendation: write it, in Part IV or as its
+  own short part, and cut the paragraph out of `biomes`.
 
 ## Verifier lessons (so drafting stays clean)
 
@@ -465,6 +541,10 @@ Short list of things established by a page and easy to get wrong from
 - Java keywords and JDK exception names in backticks fail (`long`,
   `OutOfMemoryError`); phrase them as prose. So do bare method names
   used as concepts (`render`, `submit`, `extract`, `get`) — italics.
+- **Bare lowercase words in backticks** were session 11's whole fix pass
+  (nine names): category or field names used as prose (*visual*, *audio*,
+  *gameplay*, *offset*), and Java primitives (*double*). If it is not
+  `Class` or `Class.member`, it is italics.
 - A member cited on the subclass still fails in Part X:
   `Level.tickBlockEntities` not `ClientLevel.tickBlockEntities`,
   `Model.setupAnim` not `EntityModel.setupAnim` (session 10).

@@ -117,11 +117,11 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `client-world-and-options` — `ClientLevel` (client-side ticking, prediction), `Options`, `KeyMapping`, `MouseHandler`/`KeyboardHandler`, `Tutorial`. Short.
 
 ### Part XI — World generation (5 pages) `world/level/levelgen`, `world/level/biome`
-- [ ] `worldgen-pipeline` — `NoiseBasedChunkGenerator`, `NoiseGeneratorSettings`, `NoiseChunk`, `Aquifer`, `Beardifier`, surface (`SurfaceRules`), carvers; which `ChunkStatus` runs what. Trace: one chunk's terrain.
-- [ ] `density-functions` — `DensityFunction`, `DensityFunctions`, `NoiseRouter`, `Climate`, the JSON graph and how it is compiled/cached. The core idea, kept high-level.
-- [ ] `biomes` — `Biome`, `BiomeSource`/`MultiNoiseBiomeSource`, `Climate.Parameter`, `BiomeGenerationSettings`.
-- [ ] `features-and-placement` — `Feature`/`ConfiguredFeature`/`PlacedFeature`, `PlacementModifier`, feature ordering by step. Trace: a tree.
-- [ ] `structures` — `Structure`, `StructureSet`/`StructurePlacement`, `StructureStart`/`StructurePiece`, jigsaw (`JigsawPlacement`, `StructureTemplatePool`), `StructureTemplate`, `StructureManager`. Trace: a village.
+- [x] `worldgen-pipeline` — `NoiseBasedChunkGenerator`, `NoiseGeneratorSettings`, `NoiseChunk`, `Aquifer`, `Beardifier`, surface (`SurfaceRules`), carvers; which `ChunkStatus` runs what. Trace: one chunk's terrain.
+- [x] `density-functions` — `DensityFunction`, `DensityFunctions`, `NoiseRouter`, `Climate`, the JSON graph and how it is compiled/cached. The core idea, kept high-level.
+- [x] `biomes` — `Biome`, `BiomeSource`/`MultiNoiseBiomeSource`, `Climate.Parameter`, `BiomeGenerationSettings`.
+- [x] `features-and-placement` — `Feature`/`ConfiguredFeature`/`PlacedFeature`, `PlacementModifier`, feature ordering by step. Trace: a tree.
+- [x] `structures` — `Structure`, `StructureSet`/`StructurePlacement`, `StructureStart`/`StructurePiece`, jigsaw (`JigsawPlacement`, `StructureTemplatePool`), `StructureTemplate`, `StructureManager`. Trace: a village.
 
 ### Part XII — Commands and the data-pack programming model (4 pages) `commands`, `server/commands`, `advancements`
 - [ ] `brigadier-and-commands` — `Commands`, `CommandSourceStack`, argument types, permissions (`server/permissions`), suggestions to the client. Trace: `/give`.
@@ -187,7 +187,7 @@ cross-links don't collide.
 | 10 | Part VIII The player | done in session 8 (2026-08-31) |
 | 11 | Part IX Networking | done in session 9 (2026-08-31) |
 | 12–13 | Part X The client | done in session 10 (2026-08-31), all ten pages in one session |
-| 14 | Part XI World generation | last of the big ones; most data-driven |
+| 14 | Part XI World generation | done in session 11 (2026-09-01), all five pages |
 | 15 | Part XII Commands · Part XIII Appendix | |
 | 16 | Closing pass: re-read `anatomy` and `sound` against the finished corpus, glossary, class index, consistency of diagrams, production deploy | |
 
@@ -722,3 +722,71 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   (they must be italics, and this part has more of them than any other),
   plus the usual bare members. Next: Part XI World generation
   (session 14).
+- **2026-09-01, session 11** — Part XI World generation: all five pages in
+  `src/systems/worldgen/` (`worldgen-pipeline`, `density-functions`,
+  `biomes`, `features-and-placement`, `structures`). Things later sessions
+  must know. **The graph in the registry never runs as written.** A
+  `DensityFunction` is rewritten twice — once per world by `RandomState`
+  (filling `DensityFunction.NoiseHolder`s with real `NormalNoise`s), once
+  per chunk by `NoiseChunk.wrapNew` — and a `DensityFunctions.Marker`
+  *computes nothing*: `cache_once` in a data pack is a request that the
+  noise chunk install a `NoiseChunk.CacheOnce`. The caches key on **object
+  identity** (`context != NoiseChunk.this` falls through), so
+  `Climate.Sampler` and `Aquifer`, which use
+  `DensityFunction.SinglePointContext`, bypass every one of them.
+  `DensityFunctions.WeirdScaledSampler` is **gone** (now
+  `DensityFunctions.IntervalSelect`); `DensityFunctions.FindTopSurface` is
+  new; `DensityFunctions.TransformerWithContext` has no implementor.
+  **Biomes:** `BiomeSpecialEffects` is now *only* block tint (five colour
+  fields) — everything else is an `EnvironmentAttribute`, confirming Part
+  X. A biome may *modify* rather than set a value. The game keeps **two
+  biomes per block**: gameplay uses the fuzzed `BiomeManager.getBiome`,
+  environment attributes use the unfuzzed
+  `BiomeManager.getNoiseBiomeAtQuart`. Biome selection is a seven-
+  dimensional R-tree search whose seventh axis is a constant
+  (`Climate.ParameterPoint.offset`), all integer arithmetic; `Biome` is a
+  final class, `Biome.ClimateSettings` is private, `Biome.BiomeCategory`
+  and `Biome.getDownfall` are gone, and `MobSpawnSettings.SpawnerData` lost
+  its weight field. Biomes are decided at `ChunkStatus.BIOMES`, **before**
+  `ChunkStatus.NOISE`. **Terrain:** carvers never place air — they ask the
+  `Aquifer`; ore veins are terrain, placed in the noise step, and the
+  surface pass only replaces the settings' default block, so veins and
+  aquifer water survive it; the noise fill bypasses
+  `ChunkAccess.setBlockState` entirely; carvers reach a **17×17** source
+  neighbourhood; the lava level is hardcoded while the sea level is data.
+  **`GenerationStep.Carving` is GONE** — `BiomeGenerationSettings.carvers`
+  is one flat `HolderSet` with no step (there is a datafixer for it).
+  **Features:** the feature order is *global* and topologically sorted by
+  `FeatureSorter`; two biomes disagreeing on order make the world refuse to
+  load, and `ChunkGenerator.validate` forces that failure at load time.
+  There is **no +8 population offset** any more — decoration starts at the
+  chunk's minimum corner and `InSquarePlacement` does the scattering. A
+  `RepeatingPlacement` emits N copies of the *same* position, so modifier
+  list order is load-bearing. `BiomeFilter` throws inside a nested or
+  inline placed feature. Writes outside the 3×3 zone are logged and
+  dropped, so an over-reaching tree is **truncated**; cascading worldgen is
+  structurally impossible because `WorldGenRegion.getChunk` throws rather
+  than loads. `Feature.RANDOM_PATCH`, `Feature.FLOWER` and the
+  `AbstractTreeGrower` hierarchy are gone (`TreeGrower` is one final
+  class); `TreeConfiguration.dirtProvider` is `belowTrunkProvider`;
+  `PointedDripstone*` is `Speleothem*`. **Structures:** the placement
+  lottery is pure seed arithmetic — no biome, no terrain — and the biome
+  test only vetoes afterwards; `Structure.GenerationStub` makes assembly
+  lazy, so `StructureCheck` can answer "a village is here" without laying
+  one out; `/locate` can drive generation on the server thread; absence is
+  persisted as an *INVALID* start; terrain adaptation writes **no blocks**
+  (a `Beardifier` density term); jigsaw blocks delete themselves via
+  `JigsawReplacementProcessor`; `StructureStart` is final, `StructureFeature`
+  is gone, and `PostPlacementProcessor` / `PieceGenerator` are dead code.
+  **For later parts:** Part XII owns `/locate`, `/fillbiome`, `/place` and
+  the `/execute if biome` seam — point at `structures` and `biomes` rather
+  than repeating them; Part XIII's naming-drift table gains the entries
+  above, and its out-of-scope tour should note `net/minecraft/data/worldgen`
+  (vanilla's worldgen JSON is Java, data-generated). The
+  **environment-attribute gap** recorded in `pass2.md` is now load-bearing
+  for two parts: `biomes` had to describe `EnvironmentAttributeSystem`'s
+  layer stack in a paragraph it does not own. Pages are 241–307 lines. The
+  fix pass was only 9 names — the new failure class is **bare lowercase
+  words in backticks** (`visual`, `audio`, `gameplay`, `offset`, `double`),
+  i.e. field/category names used as prose; `ConcurrentHashMap` joined
+  ALLOW. Next: Part XII Commands · Part XIII Appendix (session 15).
