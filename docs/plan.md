@@ -124,15 +124,15 @@ diagram, and follows `TEMPLATE.md`. Ticks mark pages that exist and pass.
 - [x] `structures` — `Structure`, `StructureSet`/`StructurePlacement`, `StructureStart`/`StructurePiece`, jigsaw (`JigsawPlacement`, `StructureTemplatePool`), `StructureTemplate`, `StructureManager`. Trace: a village.
 
 ### Part XII — Commands and the data-pack programming model (4 pages) `commands`, `server/commands`, `advancements`
-- [ ] `brigadier-and-commands` — `Commands`, `CommandSourceStack`, argument types, permissions (`server/permissions`), suggestions to the client. Trace: `/give`.
-- [ ] `execution-and-functions` — `commands/execution` (`ExecutionContext`, the non-recursive `/execute`), `CommandFunction`, macros, `ServerFunctionManager`, `#load`/`#tick`. Trace: a function with `/execute` runs.
-- [ ] `advancements` — `Advancement`, `AdvancementTree`, `CriterionTrigger`, `PlayerAdvancements`, sync to the client. Trace: "Stone Age".
-- [ ] `dialogs-and-tests` — `server/dialog` and `gametest` in one page. Short.
+- [x] `brigadier-and-commands` — `Commands`, `CommandSourceStack`, argument types, permissions (`server/permissions`), suggestions to the client. Trace: `/give`.
+- [x] `execution-and-functions` — `commands/execution` (`ExecutionContext`, the non-recursive `/execute`), `CommandFunction`, macros, `ServerFunctionManager`, `#load`/`#tick`. Trace: a function with `/execute` runs.
+- [x] `advancements` — `Advancement`, `AdvancementTree`, `CriterionTrigger`, `PlayerAdvancements`, sync to the client. Trace: "Stone Age".
+- [x] `dialogs-and-tests` — `server/dialog` and `gametest` in one page. Short.
 
 ### Part XIII — Appendix (3 pages)
-- [ ] `out-of-scope-tour` — one paragraph each: `util/datafix`, `util/filefix`, `client/telemetry`, `util/profiling`, `server/jsonrpc`, `server/rcon`, `com/mojang/realmsclient`, `stats`, `gizmos`, `references`, `data` (the data generators).
-- [ ] `naming-drift` — the table for 1.21-era readers (`ResourceLocation`→`Identifier` …) and the Yarn names a modder needs.
-- [ ] `glossary` — every term the pages use in one sentence each, linking to the page that owns it.
+- [x] `out-of-scope-tour` — one paragraph each: `util/datafix`, `util/filefix`, `client/telemetry`, `util/profiling`, `server/jsonrpc`, `server/rcon`, `com/mojang/realmsclient`, `stats`, `gizmos`, `references`, `data` (the data generators).
+- [x] `naming-drift` — the table for 1.21-era readers (`ResourceLocation`→`Identifier` …) and the Yarn names a modder needs.
+- [x] `glossary` — every term the pages use in one sentence each, linking to the page that owns it.
 
 ### Reference (generated; `tools/gen_reference.py`)
 - [x] `reference/packets.md` — every packet: phase, direction, from `network/protocol`.
@@ -188,7 +188,7 @@ cross-links don't collide.
 | 11 | Part IX Networking | done in session 9 (2026-08-31) |
 | 12–13 | Part X The client | done in session 10 (2026-08-31), all ten pages in one session |
 | 14 | Part XI World generation | done in session 11 (2026-09-01), all five pages |
-| 15 | Part XII Commands · Part XIII Appendix | |
+| 15 | Part XII Commands · Part XIII Appendix | done in session 12 (2026-09-01), all seven pages |
 | 16 | Closing pass: re-read `anatomy` and `sound` against the finished corpus, glossary, class index, consistency of diagrams, production deploy | |
 
 Sixteen sessions, fifty-six pages. Then pass 2.
@@ -790,3 +790,90 @@ naming-drift table, cross-part obligations — is [pass2.md](pass2.md).
   words in backticks** (`visual`, `audio`, `gameplay`, `offset`, `double`),
   i.e. field/category names used as prose; `ConcurrentHashMap` joined
   ALLOW. Next: Part XII Commands · Part XIII Appendix (session 15).
+- **2026-09-01, session 12** — Part XII Commands (four pages in
+  `src/systems/commands/`) **and** Part XIII Appendix (three pages in
+  `src/systems/appendix/`). Both parts in one session, as scheduled.
+  Things later sessions must know. **The permission system was rewritten
+  and this is the single largest API break in the corpus so far.** There is
+  a real `net/minecraft/server/permissions` package: a `Permission` is
+  either a named `Permission.Atom` or an ordered
+  `Permission.HasCommandLevel`; a `PermissionSet` answers for one; a
+  `PermissionCheck` is what a command node holds, wrapped as a
+  `PermissionProviderCheck`. `Commands.LEVEL_GAMEMASTERS` and its siblings
+  kept their names and changed type from `int` to `PermissionCheck`.
+  `CommandSourceStack.hasPermission(int)`, `getPermissionLevel`,
+  `ServerPlayer.hasPermissions(int)` and the whole int-typed API are
+  **gone**; ints survive only in *ops.json*, *server.properties* and on the
+  wire (the op level still travels as one of five
+  `ClientboundEntityEventPacket` bytes, which is why the client can never
+  learn about atoms). **`LevelBasedPermissionSet` grants exactly one atom**
+  — the entity-selector one, at gamemaster and above — and denies every
+  other atom including the chat ones, so "an op has everything" is false.
+  `Commands.LEVEL_MODERATORS` gates no vanilla command at all.
+  **Commands:** the permission check happens *inside* Brigadier's parse, so
+  a permission failure is reported as an unknown command; the client can
+  tell the difference only for click-event commands, via a second parse
+  against a no-permission provider and the new
+  `ClientboundCommandsPacket.FLAG_RESTRICTED`. **`/reload` does not resend
+  the command tree** — a reload builds a whole new `Commands` and
+  dispatcher, but the reload broadcast sends only tags and recipes, so
+  clients complete against a dead tree until they rejoin, change dimension
+  or are op'd. **Most tab-completion never leaves the machine**: the client
+  builds *real* parsers from `ArgumentTypeInfo.Template`s, so items, block
+  states and components complete locally; no vanilla command attaches
+  `SuggestionProviders.ASK_SERVER` explicitly and the round trip is a
+  fallback capped at a thousand entries. `ServerboundChatCommandPacket`
+  does **not** go through `PacketUtils.ensureRunningOnSameThread` —
+  the legality check runs on the Netty thread and can disconnect from
+  there. **Execution:** the engine is a trampoline; the queue is an
+  `ArrayDeque` used LIFO with a staging list, a `Frame` is a depth plus a
+  return callback plus a discard control (not a stack frame), a fork does
+  **not** create frames, and for three or more sources the fan-out is one
+  lazy `ContinuationTask` that re-queues itself — so a `/return` mid-fork
+  stops the remaining players. Depth is **unbounded**; recursion is limited
+  only by the cost quota (`GameRules.MAX_COMMAND_SEQUENCE_LENGTH`) and the
+  ten-million queue cap, and exhausting the quota is silent to the player.
+  Conditionals are fork nodes and a forked source **suppresses failure
+  messages**. Functions compile off-thread against a source with a null
+  level and null server; the folders are **singular** (*function/*,
+  *tags/function/*); one `$` line makes the whole file a `MacroFunction`
+  with an eight-entry LRU of re-parsed variants; and a macro function
+  reached with no arguments (from `#minecraft:tick`, `/schedule`, an
+  advancement reward) **fails silently every tick** — the manager swallows
+  the exception. **Advancements:** there is no global listener list;
+  `PlayerAdvancements.activeTriggers` is per player and only ever shrinks.
+  The client is told the *requirements* but never the criteria or the
+  rewards (`Advancement.read` rebuilds with an empty criteria map);
+  `TreeNodePosition` lays the tree out **on the server** and ships the
+  coordinates; the announce-to-chat flag is write-only on the wire; and
+  `/reload` re-reads each player's file from disk, silently rolling back
+  progress earned since the last save. `net.minecraft.advancements.critereon`
+  is gone (now `triggers/` + `predicates/`), and the predicates are the
+  loot conditions of Part VII. **Dialogs and tests** share one page because
+  they are the same pattern twice (a data-pack registry dispatched on a
+  built-in type registry, synced, driven by a gamemaster command).
+  Dialogs work in the **configuration phase** (inline-encoded, no registry
+  access on the buffer); every dialog screen carries a forced
+  disconnect escape hatch; `MinecraftServer.handleCustomClickAction` only
+  logs, so the custom action is purely an extension point. The game-test
+  annotations are **gone** — a test is a `GameTestInstance` registry
+  element, a batch *is* a `TestEnvironmentDefinition`, and test instance
+  blocks are points of interest. **Appendix:** the tour is written against
+  measured counts (7,055 classes, 719,302 lines; the per-package table is
+  in the page) and ends with an honest list of gaps pass 2 must rule on —
+  the debug cluster (~91 classes, including the *server-side* debug
+  subscription system that pushes brains, paths and POIs to the client),
+  `client/resources`, `util/parsing`, `client/animation`, and Blaze3D's
+  Vulkan/platform halves. `net/minecraft/gizmos` turns out to be a
+  debug-drawing API that the **integrated server** also writes into;
+  `net/minecraft/references` is the id-constant tables that break a
+  class-init cycle. The naming-drift page is 164 deduplicated rows from
+  `pass2.md` plus a Part XII block and a Yarn table; the glossary is ~110
+  terms. Pages are 278–422 lines. The fix pass was 64 names — the failure
+  class this time was **prose words and bare members in backticks**
+  (`type`, `pause`, `player`, `if`, `with`, `requires`, `x`, `y`) plus
+  Brigadier/JDK names, five of which joined ALLOW (`CommandNode`,
+  `ContextChain`, `Predicate`, `StackOverflowError`, `Instant`). Also
+  fixed a pre-existing broken link in `blocks/block-entities` (it pointed
+  at a *foundations/nbt.md* that never existed). Next: session 16, the
+  closing pass.

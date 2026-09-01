@@ -264,6 +264,45 @@ Two separate elisions:
 The packet is sent on join, on respawn, on a dimension change, on op and
 deop, and on the LAN cheats toggle. It is **not** sent after `/reload`.
 
+## The commands that reach into other systems
+
+Most of `net/minecraft/server/commands` is a thin lambda over machinery
+another part of this corpus owns. These are the ones worth naming, because
+a reader looking for "how does `/locate` work" wants the *mechanism* page,
+not this one:
+
+- **`LocateCommand`** — and its two halves are barely related.
+  `LocateCommand.locateStructure` can **drive world generation on the server
+  thread**, because deciding whether a structure is at a chunk means asking
+  the structure check; `LocateCommand.locateBiome` asks the biome source and
+  never reads a stored palette at all
+  ([structures](../worldgen/structures.md), [biomes](../worldgen/biomes.md)).
+- **`FillBiomeCommand`** — writes the biome palette of the affected sections
+  and resends them; the only command that edits a chunk's biomes
+  ([chunk anatomy](../world/chunk-anatomy.md)).
+- **`PlaceCommand`** — three entries into Part XI:
+  `PlaceCommand.placeFeature` runs a configured feature with no placement
+  layer, `PlaceCommand.placeStructure` lays out a whole structure, and
+  `PlaceCommand.placeJigsaw` reaches jigsaw assembly directly
+  ([features and placement](../worldgen/features-and-placement.md),
+  [structures](../worldgen/structures.md)).
+- **`LootCommand`** and **`ItemCommands`** — the second is the more
+  interesting: `ItemCommands.applyModifier` runs a loot *function* over an
+  existing stack, which is how `/item … with` edits an item in place
+  ([loot tables](../items/loot-tables.md)). Both take a table or modifier
+  through `ResourceOrIdArgument`, so an inline literal works where an id
+  does.
+- **`EnchantCommand`** and **`ExperienceCommand`** — thin faces over
+  [enchantments](../items/enchantments.md) and
+  [hunger, XP and effects](../player/hunger-xp-and-effects.md).
+- **`DebugConfigCommand`** — the only vanilla caller of the play-to-
+  configuration transition and back
+  ([protocol phases](../networking/protocol-phases.md)).
+- **`ExecuteCommand`** — not a command so much as the front end of the
+  execution engine ([execution and functions](execution-and-functions.md)).
+- **`DataPackCommand`** — enables and disables packs, then reloads
+  ([the resource system](../foundations/resource-system.md)).
+
 ## Invariants and surprises
 
 - **A permission failure is indistinguishable from a typo.** The

@@ -33,6 +33,9 @@ read.
 | `client/level-rendering` | ~310 | the meshing pipeline (dirty → compile → upload) vs visibility and the frame graph (session 10) |
 | `worldgen/structures` | 307 | the placement decision (sets, `StructurePlacement`, `StructureCheck`, `/locate`) vs jigsaw assembly and template placement — two lectures, and the only page in Part XI with two distinct mechanisms (session 11) |
 | `worldgen/density-functions` | 307 | the node library and the codec/registry model vs the two rewrites (`RandomState`, `NoiseChunk.wrapNew`) and the cell loop. The rewrite story is the lecture; the catalogue is reference (session 11) |
+| `commands/brigadier-and-commands` | 313 | the parse/suggest/permission story vs the permission model itself. The permission rewrite (`PermissionSet`, `Permission`, `PermissionCheck`, `LevelBasedPermissionSet`) is a lecture on its own and is currently a section inside a page whose trace is `/give`; it is also the single biggest API break in the corpus and deserves the billing (session 12) |
+| `commands/execution-and-functions` | 310 | the non-recursive engine (queue, `Frame`, forks, `/return`) vs the function model (compile, macros, tags). Two lectures; the seam is clean and the second half is the one data-pack authors want (session 12) |
+| `appendix/naming-drift` | 422 | not a split candidate — a reference table. Flagged only so nobody counts it as an over-long page (session 12) |
 
 Parts III–V all came out at 260–380 lines. The lecture-order decision in
 pass 2 is where "one page, two lectures" gets settled; splitting the
@@ -63,6 +66,31 @@ markdown is optional.
   the client has no second render thread (session 10).
 - The naming-drift appendix will be dominated by Part X. It is by far
   the biggest source of gone names in the corpus (session 10).
+
+- **Session 12 additions.** The appendix now exists, so the closing pass
+  has three concrete jobs on it rather than a wish:
+  - `appendix/naming-drift` is generated from the table below plus a
+    hand-written Part XII block. If pass 2 finds a *wrong* row, fix it in
+    both places or the next regeneration reintroduces it.
+  - `appendix/out-of-scope-tour` ends with a **gaps** list — the debug
+    cluster (~91 classes, and the *server-side* debug subscription system
+    that pushes brains, paths and POIs to the client is genuinely
+    undocumented), `client/resources`, `util/parsing`, `client/animation`,
+    Blaze3D's Vulkan and platform halves. Each needs a ruling: absorb into
+    an existing page, add a page, or decline explicitly.
+  - `appendix/glossary` has ~110 entries and deliberately stops there. It
+    should be re-swept once the lecture order exists, because the lecture
+    order decides which page "owns" a term when two could.
+- The **lane-abbreviation** decision now also covers Part XII, which used
+  full-ish abbreviations (`SGPL`, `CPL`, `EC`, `PA`) — consistent with
+  session 9's choice, so `SGPL`/`CPL` is now the majority spelling.
+- `anatomy`'s thread table should gain the **management server** (JSON-RPC,
+  its own Netty bootstrap) alongside RCON and query — the appendix tour
+  describes it and `anatomy` predates it.
+- The corpus now claims specific counts in two places (`CLAUDE.md`'s
+  7,055 classes / 719k lines, and the appendix's per-package table).
+  Re-measure both on the next version bump; the appendix table is the one
+  that will rot first.
 
 ## Naming drift for the appendix (1.21-era name → 26.2)
 
@@ -224,6 +252,29 @@ the old name and not finding it.
 | the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters | session 11 |
 | `StructureTemplateManager` folder *structures/* | *structure/* | session 11 |
 
+| `ResourceLocationArgument` | `IdentifierArgument` (registry id unchanged) | session 12 |
+| `CommandSourceStack.hasPermission(int)` | `CommandSourceStack.permissions` + `PermissionSet.hasPermission` | session 12 |
+| `CommandSourceStack.getPermissionLevel` | gone — `PermissionLevel` lives inside `LevelBasedPermissionSet` | session 12 |
+| `SharedSuggestionProvider.hasPermission(int)` | gone — it extends `PermissionSetSupplier` | session 12 |
+| `Commands.hasPermission(int)` | `Commands.hasPermission` taking a `PermissionCheck` | session 12 |
+| `ServerPlayer.hasPermissions(int)` | `ServerPlayer.permissions` | session 12 |
+| `MinecraftServer.getFunctionCompilationLevel` | `MinecraftServer.getFunctionCompilationPermissions` | session 12 |
+| `ServerOpListEntry.getLevel` | `ServerOpListEntry.permissions` | session 12 |
+| `ParserUtils.parseJson` | gone — `SnbtGrammar` + `ParserBasedArgument` | session 12 |
+| `ServerFunctionManager.ExecutionContext` (nested) | top-level `ExecutionContext` (`commands/execution`) | session 12 |
+| `CommandFunction.Entry` / `CommandEntry` / `FunctionEntry` | gone — `BuildContexts.Unbound` / `MacroFunction.MacroEntry` | session 12 |
+| `Commands.performCommand` returning a count | returns nothing; a `CommandResultCallback` pair | session 12 |
+| `data/<ns>/functions/` (plural) | `data/<ns>/function/` (singular), likewise `tags/function/` | session 12 |
+| maxCommandChainLength | `GameRules.MAX_COMMAND_SEQUENCE_LENGTH` | session 12 |
+| maxCommandForkCount | `GameRules.MAX_COMMAND_FORKS` | session 12 |
+| announceAdvancements | `GameRules.SHOW_ADVANCEMENT_MESSAGES` | session 12 |
+| `net.minecraft.advancements.critereon` | `advancements/triggers` + `advancements/predicates` | session 12 |
+| `AdvancementList` | `AdvancementTree` (+ `AdvancementNode`, `AdvancementHolder`) | session 12 |
+| `FrameType` | `AdvancementType` | session 12 |
+| `CriterionTrigger.addPlayerListener` | gone — triggers are stateless; state is in `PlayerAdvancements` | session 12 |
+| `@GameTest` and the annotation framework | gone — `GameTestInstance` in `Registries.TEST_INSTANCE` | session 12 |
+| `GameTestRegistry` / `TestFunction` | `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` | session 12 |
+
 ## Cross-part obligations (link, don't repeat)
 
 What each unwritten part should point at instead of re-explaining. Tick
@@ -316,7 +367,7 @@ when the part is written.
   `PlayerSprite`, `SubStringSource` for bidi). Note `ClientLevel.hasChunk`
   returns true unconditionally and `ClientLevel.explode` is empty; *what
   the client is told* owns those, Part X should link rather than repeat.
-- [ ] **Part XII Commands** — from session 9: `SignableCommand`,
+- [x] **Part XII Commands** — from session 9: `SignableCommand`,
   `SignedArgument` (the only implementation is `MessageArgument`),
   `ArgumentSignatures` (one signature per argument, each burning a chain
   index), `CommandSigningContext`, `CommandSourceStack.withSigningContext`
@@ -324,7 +375,7 @@ when the part is written.
   `ServerGamePacketListenerImpl.switchToConfig` and
   `ServerConfigurationPacketListenerImpl.returnToWorld`). Chat *signing*
   is owned by *chat-and-signing*; Part XII owns the argument plumbing.
-- [ ] **Part XIII Appendix** — the out-of-scope tour gains
+- [x] **Part XIII Appendix** — the out-of-scope tour gains
   `client/multiplayer/chat/report` (`ReportingContext`,
   `AbuseReportSender`, the report screens) and `LegacyQueryHandler` /
   `LegacyProtocolUtils` (the pre-1.7 ping still in the pipeline)
@@ -335,13 +386,13 @@ when the part is written.
   from session 10: `Biome.getAttributes` carries the visual attributes and
   `BiomeSpecialEffects` keeps only water/foliage/grass colours — confirmed
   and stated in `biomes`.
-- [ ] **Part XII Commands** — `loot-tables` now owns the loot data model,
+- [x] **Part XII Commands** — `loot-tables` now owns the loot data model,
   so Part XII need only cover the commands: `/loot`, `/item … with`
   (`ItemCommands.applyModifier`) and `EnchantCommand`, plus
   `ResourceOrIdArgument` accepting an inline table (session 7).
-- [ ] **Part XIII Appendix** — the naming-drift table above; the JSON-RPC
+- [x] **Part XIII Appendix** — the naming-drift table above; the JSON-RPC
   and pause-when-empty paragraphs.
-- [ ] **Part XII Commands** — from session 11: `/locate structure` and
+- [x] **Part XII Commands** — from session 11: `/locate structure` and
   `/locate biome` are *very* different (the first can drive world
   generation on the server thread through `StructureCheck.checkStart`, the
   second asks the `BiomeSource` and never reads a stored palette);
@@ -349,7 +400,7 @@ when the part is written.
   `ClientboundChunksBiomesPacket`; `/place` reaches
   `JigsawPlacement.generateJigsaw`. `structures` and `biomes` own the
   mechanisms — Part XII owns the command plumbing and should link.
-- [ ] **Part XIII Appendix** — from session 11: the out-of-scope tour
+- [x] **Part XIII Appendix** — from session 11: the out-of-scope tour
   should note `net/minecraft/data/worldgen` (`Structures`, `StructureSets`,
   `PlainVillagePools`, `ProcessorLists`, `TreeFeatures`,
   `VegetationPlacements`, `BiomeData`) — vanilla's entire worldgen data
@@ -497,6 +548,44 @@ Short list of things established by a page and easy to get wrong from
   `Beardifier` density term at `ChunkStatus.NOISE` — `structures`.
 - Sapling growth **bypasses the whole placement layer**, on the main
   thread, with no write guard — `features-and-placement`.
+- A permission is **not an integer** any more: `PermissionSet` /
+  `Permission` / `PermissionCheck` in `net/minecraft/server/permissions`.
+  `Commands.LEVEL_GAMEMASTERS` kept its name and changed type. Ints survive
+  only in *ops.json*, *server.properties* and the op-level entity event —
+  `brigadier-and-commands`.
+- `LevelBasedPermissionSet` grants **one** atom (entity selectors, at
+  gamemaster and above) and denies all others, including the chat atoms;
+  an op does *not* have everything — `brigadier-and-commands`.
+- A permission failure is reported as an **unknown command**, because the
+  requirement is consulted inside Brigadier's parse —
+  `brigadier-and-commands`.
+- `/reload` does **not** resend the command tree; clients complete against
+  a dead dispatcher until they rejoin, change dimension or are op'd —
+  `brigadier-and-commands`.
+- Item, block-state and component completion is **local**; the server
+  round trip is a fallback, capped at a thousand entries —
+  `brigadier-and-commands`.
+- `ServerboundChatCommandPacket` does **not** hop to the main thread before
+  its legality check; it can disconnect from the Netty thread —
+  `brigadier-and-commands`.
+- Command execution is a queue, not the Java stack; a fork creates **no
+  frames**, the fan-out is lazy for three or more sources, and depth is
+  unbounded — only the cost quota and the queue cap stop recursion —
+  `execution-and-functions`.
+- A forked source **suppresses failure messages**, and every conditional is
+  a fork node — `execution-and-functions`.
+- Function folders are **singular** (*function/*, *tags/function/*), and a
+  macro function reached with no arguments fails **silently, every tick** —
+  `execution-and-functions`.
+- Advancement subscriptions are per player and only shrink; the client is
+  told the requirements but never the criteria or the rewards; the tree is
+  laid out **on the server**; and `/reload` rolls back unsaved progress —
+  `advancements`.
+- Dialogs work in the **configuration phase**, and vanilla does nothing
+  with a custom click action but log it — `dialogs-and-tests`.
+- The game-test annotations are gone; a batch **is** an environment —
+  `dialogs-and-tests`.
+
 ## Catalogue gaps found during pass 1
 
 - **Environment attributes and timelines have no page** (session 6).
