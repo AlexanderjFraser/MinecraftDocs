@@ -9,12 +9,12 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `common` (`CommonPacketTypes`) | 13 | 6 |
 | `configuration` (`ConfigurationPacketTypes`) | 6 | 3 |
 | `cookie` (`CookiePacketTypes`) | 1 | 1 |
-| `game` (`GamePacketTypes`) | 124 | 57 |
+| `game` (`GamePacketTypes`) | 127 | 61 |
 | `handshake` (`HandshakePacketTypes`) | 0 | 1 |
 | `login` (`LoginPacketTypes`) | 5 | 4 |
 | `ping` (`PingPacketTypes`) | 1 | 1 |
 | `status` (`StatusPacketTypes`) | 1 | 1 |
-| **total** | | **225** |
+| **total** | | **232** |
 
 ## `common` — `CommonPacketTypes` — shared across phases
 
@@ -115,6 +115,9 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `map_item_data` | clientbound | `ClientboundMapItemDataPacket` |
 | `merchant_offers` | clientbound | `ClientboundMerchantOffersPacket` |
 | `mount_screen_open` | clientbound | `ClientboundMountScreenOpenPacket` |
+| `move_entity_pos` | clientbound | `ClientboundMoveEntityPacket.Pos` |
+| `move_entity_pos_rot` | clientbound | `ClientboundMoveEntityPacket.PosRot` |
+| `move_entity_rot` | clientbound | `ClientboundMoveEntityPacket.Rot` |
 | `move_minecart_along_track` | clientbound | `ClientboundMoveMinecartPacket` |
 | `move_vehicle` | clientbound | `ClientboundMoveVehiclePacket` |
 | `open_book` | clientbound | `ClientboundOpenBookPacket` |
@@ -215,6 +218,10 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `interact` | serverbound | `ServerboundInteractPacket` |
 | `jigsaw_generate` | serverbound | `ServerboundJigsawGeneratePacket` |
 | `lock_difficulty` | serverbound | `ServerboundLockDifficultyPacket` |
+| `move_player_pos` | serverbound | `ServerboundMovePlayerPacket.Pos` |
+| `move_player_pos_rot` | serverbound | `ServerboundMovePlayerPacket.PosRot` |
+| `move_player_rot` | serverbound | `ServerboundMovePlayerPacket.Rot` |
+| `move_player_status_only` | serverbound | `ServerboundMovePlayerPacket.StatusOnly` |
 | `move_vehicle` | serverbound | `ServerboundMoveVehiclePacket` |
 | `paddle_boat` | serverbound | `ServerboundPaddleBoatPacket` |
 | `pick_item_from_block` | serverbound | `ServerboundPickItemFromBlockPacket` |

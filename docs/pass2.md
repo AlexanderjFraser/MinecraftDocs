@@ -439,9 +439,12 @@ easy to get wrong from 1.21 memory.
   (corrected in session 8) / `hunger-xp-and-effects`.
 
 - Outbound packets leave a server tick in **two** flushes per client, not
-  one: `Connection.tick` flushes inside the suspend/resume bracket, so only
-  the chunk batch rides `ServerCommonPacketListenerImpl.resumeFlushing` —
-  `server-tick` (and corrected in `anatomy` and `the-connection`).
+  one: `Connection.tick` flushes inside the suspend/resume bracket, and the
+  second flush carries everything `MinecraftServer.tickChildren` does after
+  it — player list, debug subscribers, game-test ticker, tickables, and
+  last the chunk batch (**narrowed session G**, which read `tickChildren`;
+  the earlier "only the chunk batch" was too tight) — `server-tick` (and
+  corrected in `anatomy` and `the-connection`).
 - `MinecraftServer.haveTime` is **true whenever a task is running**, and the
   budget stops applying altogether inside `BlockableEventLoop.managedBlock`
   (`shouldRunAllTasks` skips `shouldRun`). That is why a level can block on a
@@ -781,6 +784,39 @@ easy to get wrong from 1.21 memory.
 - The game-test annotations are gone; a batch **is** an environment —
   `dialogs-and-tests`.
 
+- **The `ServerPlayer` is constructed *after* the client acknowledges the
+  end of configuration**, not during the task that bears its name.
+  `PrepareSpawnTask` resolves a spawn and tickets its chunks; the object is
+  built by `PrepareSpawnTask.spawnPlayer`, called from
+  `ServerConfigurationPacketListenerImpl.handleConfigurationFinished`, by
+  which point the server's *outbound* protocol is already PLAY (the inbound
+  one is swapped later still, in `PlayerList.placeNewPlayer`).
+  `players-and-sessions` had this right; `protocol-phases` had it backwards
+  and is fixed (**session G**).
+- **`TickablePacketListener` is the only route to a game thread that is not
+  a packet.** `Connection.tick` calls it; five classes implement it; it is
+  what runs the whole server login state machine and every keep-alive.
+  Nothing outside `the-connection` explained how a listener with no
+  hopping handlers still gets server-thread time (**session G**) —
+  `the-connection` / `protocol-phases`.
+- **The client drains packets once per *frame*, before that frame's ticks**
+  — `Minecraft.runTick`, which may then run zero ticks or ten.
+  `the-frame` had this right and `what-the-client-is-told` had it exactly
+  backwards (**session G**).
+- **`ServerEntity.sendChanges` is reached on three conditions and gates on
+  three more**, and the call counter advances outside the gate — so
+  `ServerEntity.FORCED_POS_UPDATE_PERIOD` counts calls while
+  `ServerEntity.teleportDelay` counts gated ones (**session G**) —
+  `what-the-client-is-told`, agreeing with `synched-entity-data`.
+- **Seven packets override `Packet.isTerminal`, not eight.**
+  `ServerboundResourcePackPacket.Action.isTerminal` is a namesake about
+  resource-pack responses and has nothing to do with the phase machine
+  (**session G**) — `packets-and-stream-codecs`.
+- **Two of five `SignedMessageChain.DecodeException` reasons break the
+  chain**, not most of them: out-of-order and invalid-signature. A missing
+  or expired profile key rejects one message and poisons nothing
+  (**session G**) — `chat-and-signing`.
+
 ## Catalogue gaps found during pass 1
 
 Both items below now have a decision in [plan.md](plan.md): the
@@ -894,6 +930,21 @@ Vulkan/platform halves) get their rulings in session K.
 - Session E's other four failures were the usual bare members written mid
   sentence — *noPhysics*, *equals*, *hashCode*, *define* — plus `super` used
   as a noun. Say "the superclass hook", not `super`.
+
+- **The generated reference can be wrong, and prose that quotes it
+  launders the error** (session G). `packets-and-stream-codecs` said "225
+  packet types" because `tools/gen_reference.py` matched `PacketType<(\w+)>`
+  and `\w` does not match a dot, so the seven nested types
+  (`ClientboundMoveEntityPacket.Pos` and its siblings,
+  `ServerboundMovePlayerPacket.Pos` and its three) were silently dropped.
+  The true count is **232**. This is the third generator/verifier regex bug
+  found by a pass-2 session — session A in `gen_reference.py`, session C in
+  `verify_names.py`, session G in `gen_reference.py` again — and the first
+  where the bad number had been copied into a page. **Any number a page
+  takes from a tool gets re-derived by hand once.**
+- Session G's only two verifier failures were JDK names in backticks
+  (`AutoCloseable`, `Exception`) and two bare members written mid sentence.
+  Same two shapes as every session since A.
 
 ## Hand-off to passes 3–5
 
@@ -1249,3 +1300,67 @@ passed — `LivingEntity.moveRelative`, `ServerPlayer.move`,
 `Entity` or `BlockableEventLoop` — which is now five sessions running that
 the **NAMES section has caught something `verify_names.py` structurally
 cannot**. It is the single highest-value part of the fact-check brief.
+
+### Session G — Part IX Networking
+
+**Added on spec, and pass 4 should look hard at it.** Five pages,
+1,780 → 2,367 lines (+33 %).
+
+- `the-connection` gained a whole **"How a connection dies"** section
+  (`Connection.exceptionCaught`'s four outcomes) and a **"Sending"**
+  section (the outbound event-loop hop, `PacketSendListener`). Both are
+  genuine gaps — the page opened by promising the reader the "Timed out"
+  message and never explained where it comes from — but the sending
+  section is short and might fold into *When it runs*.
+- `protocol-phases` gained the handshake phase's real gates (version
+  check, transfer and status refusals) and a short **status** section. The
+  status phase had been a table row on a page about logging in; it is two
+  packets and a hang-up, and it now says so.
+- `what-the-client-is-told` gained **"The rest of the push"** (time,
+  weather, level events, view distances, the debug feed) and **"What the
+  client does on receipt"**. The first is a list and reads like one; pass 4
+  should decide whether it is a section or a table.
+- `packets-and-stream-codecs` gained `ByteBufCodecs.readCount` (the count
+  check that matters more than the famous allocation clamp),
+  `ProtocolInfoBuilder`'s four entry points, and `PacketReport`. The
+  security bullet is now three defences in one paragraph and may want
+  splitting.
+- `chat-and-signing` gained four invariants (message and key expiry, the
+  client's own `ChatAbilities` / `ChatRestriction` gating layer, the
+  receiving client's error path, and the session-update failure modes).
+  The invariant list is now sixteen bullets — the same complaint session F
+  logged against `loot-tables`.
+
+**Wording debt for pass 4.**
+
+- Part IX now has the "not X but Y" problem badly. `the-connection` alone
+  has *conditional, not the default*, *containment, not recovery*, *not
+  untouched*, *in the middle, not at the end*, *two flushes, not one*.
+  Five pages of corrections read as five pages of arguing with a reader
+  who is not there. Restate positively.
+- Three of the five pages now open a paragraph with **"Two of the five"**
+  or **"three conjuncts, not two"**. The counting habit that made the
+  session accurate has made the prose repetitive.
+- `what-the-client-is-told` is 553 lines and the longest page in the
+  corpus.
+
+**Cross-page corrections made outside Part IX.**
+
+- `server-tick`'s second-flush bullet said `resumeFlushing` "carries only
+  the chunk batch". Corrected to name everything `tickChildren` does after
+  `MinecraftServer.tickConnection`. The load-bearing entry above is
+  narrowed to match.
+- `tools/gen_reference.py`'s packet regex fixed, and `src/reference/packets.md`
+  regenerated (225 → 232; the game group goes 124/57 → 127/61).
+- Checked and found **already correct**, which is the session's most
+  reassuring result: `the-frame`'s per-frame packet drain,
+  `synched-entity-data`'s three-way `ServerEntity.sendChanges` gate,
+  `block-entities`' empty-`BlockEntity.getUpdateTag` default,
+  `players-and-sessions`' entire join trace (including the
+  spawn-after-acknowledgement ordering that `protocol-phases` had wrong),
+  and `anatomy`'s "the first thread hop is in the configuration phase".
+  Where Part IX disagreed with another part, **Part IX was the wrong
+  one every time** — which is an argument for watching the parts that
+  were written earliest.
+- No new rows for `appendix/naming-drift`: session 9's networking rows
+  were re-read against the decompile and are all still right.

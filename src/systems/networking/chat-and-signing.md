@@ -25,9 +25,11 @@ shows you the original — exists purely for servers that are not vanilla.
 
 ### `Component`
 
-`Component` is an interface with three abstract accessors —
-`Component.getStyle`, `Component.getContents`, `Component.getSiblings` —
-and exactly **one** implementation, `MutableComponent`. A component is a
+`Component` is an interface with four abstract members —
+`Component.getStyle`, `Component.getContents`, `Component.getSiblings`
+and `Component.getVisualOrderText`, the last of which is why
+`MutableComponent` caches a laid-out form — and exactly **one**
+implementation, `MutableComponent`. A component is a
 triple: one `ComponentContents`, one `Style`, and an ordered list of
 sibling components. Style inheritance happens during traversal, not in
 storage.
@@ -52,9 +54,16 @@ heads *inside* text, through `ObjectInfo` and its implementations
 `Style` holds eleven nullable fields: `Style.color` (a `TextColor`),
 `Style.shadowColor`, the five booleans, `Style.clickEvent`,
 `Style.hoverEvent`, `Style.insertion` and `Style.font` (a
-`FontDescription`). `ClickEvent` and `HoverEvent` are sealed families of
-records; `ClickEvent.Action.allowFromServer` is what keeps
-`ClickEvent.Action.OPEN_FILE` off the wire.
+`FontDescription`). `ClickEvent` and `HoverEvent` are interfaces
+implemented by nested records — closed by convention and by their
+`Action` dispatch codec, not by the language. What keeps
+`ClickEvent.Action.OPEN_FILE` out of a server's hands is
+`ClickEvent.Action.filterForSerialization`, applied as a validation on
+`ClickEvent.Action.CODEC` and therefore biting in **both** directions and
+in **every** format: a data pack cannot write one either, and the client
+cannot encode one it built itself. The private flag behind it is
+`ClickEvent.Action.allowFromServer`. `HoverEvent.Action` has the identical
+machinery and nothing to filter — all three of its values are allowed.
 
 **Serialisation** is one recursive codec, `ComponentSerialization.CODEC`,
 whose shape is a three-way choice: a bare string becomes a literal, a
@@ -74,8 +83,13 @@ lift the NBT budget, and **every clientbound chat packet uses them**
 Resolution — turning selectors, scores and NBT paths into text — is
 `ComponentUtils.resolve` against a `ResolutionContext`, which carries the
 command source, a depth limit and a `ResolutionContext.LimitBehavior`.
-**Chat never resolves anything**: chat content is a plain string all the
-way to `Component.literal`.
+**Ordinary chat never resolves anything**: the content of a
+`ServerboundChatPacket` is a plain string all the way to
+`Component.literal`. Commands are the exception —
+`MessageArgument.Message.toComponent` expands entity selectors inside a
+message argument, behind a permission, which is why `/say @a` names
+people and a chat line saying the same thing does not. The resolved text
+becomes the message's *unsigned* content.
 
 ### Signing
 
@@ -88,9 +102,12 @@ way to `Component.literal`.
   id and the session id. `SignedMessageLink.root` starts a chain,
   `SignedMessageLink.advance` moves it on, and
   `SignedMessageLink.isDescendantOf` is the ordering check.
-- **`MessageSignature`** — a fixed 256 bytes, so 2048-bit RSA, with no
-  length prefix on the wire. `MessageSignature.Packed` is the wire form:
-  a cache index, or a marker meaning a full signature follows.
+- **`MessageSignature`** — a fixed `MessageSignature.BYTES`, 256 of them,
+  written raw with no length prefix. (The decompile never states the
+  profile key's modulus; the only RSA size it names,
+  `Crypt.ASYMMETRIC_BITS`, belongs to the login handshake and is a
+  different key.) `MessageSignature.Packed` is the wire form: a cache
+  index, or a marker meaning a full signature follows.
 - **`SignedMessageChain`** with its `SignedMessageChain.Encoder` and
   `SignedMessageChain.Decoder`; `SignedMessageChain.DecodeException`
   enumerates every way it can go wrong.
@@ -102,8 +119,11 @@ way to `Component.literal`.
   **`LocalChatSession`** (a session id and the key pair). The key itself
   is signed by Mojang: `ProfilePublicKey.Data` carries an expiry, the
   key and a signature over both, validated against the services key.
-- **`MessageSignatureCache`** — the shared dictionary that keeps
-  twenty full signatures off every packet.
+- **`MessageSignatureCache`** — the shared dictionary that keeps full
+  signatures off packets by sending an index instead. It holds
+  `MessageSignatureCache.DEFAULT_CAPACITY` entries — a hundred and
+  twenty-eight, not the twenty of the last-seen window, which is a
+  different number for a different job.
 - **`ChatType`** — a data-driven pair of `ChatTypeDecoration`s, one for
   display and one for narration, with `ChatType.Bound` carrying the
   resolved sender and target names. The vanilla keys are
@@ -120,7 +140,10 @@ the bit set on the wire. The client keeps a
 `LastSeenMessagesTracker`, a ring of `LastSeenTrackedEntry` with a
 running offset; the server keeps a mirror, `LastSeenMessagesValidator`.
 `LastSeenMessages.Update` is what crosses: an offset, a twenty-bit
-acknowledgement set, and a one-byte checksum.
+acknowledgement set, and a one-byte checksum — which is optional by
+design. `LastSeenMessages.Update.IGNORE_CHECKSUM` is zero and passes
+unconditionally, and a real checksum that computes to zero is bumped to
+one so it can never be mistaken for the opt-out.
 
 ## When it runs
 
@@ -170,12 +193,12 @@ sequenceDiagram
     participant RCPL as (recipient) ClientPacketListener
     participant CLIS as ChatListener
 
-    CS->>CPL: sendChat — trim to 256 characters
+    CS->>CPL: normalizeChatMessage — space-normalised and cut to 256
     CPL->>CPL: build the body; sign it with the session key
     CPL->>SGPL: ServerboundChatPacket — content, timestamp, salt, signature, last-seen
     SGPL->>SGPL: Netty thread: apply the last-seen update, check characters
     SGPL->>SGPL: main thread: unpack through SignedMessageChain.Decoder
-    SGPL->>SGPL: text filter (async), then ChatDecorator.PLAIN (a no-op)
+    SGPL->>SGPL: start the text filter, decorate at once, join them later
     SGPL->>PLL: broadcastChatMessage, bound to ChatType.CHAT
     PLL->>RCPL: ClientboundPlayerChatPacket — signatures packed to cache ids
     RCPL->>RCPL: check the global index; unpack the cache ids; verify the signature
@@ -188,7 +211,10 @@ Each arrow is a decision.
 **The client signs before it sends.** It takes the current time, a random
 salt and the current last-seen window, and produces the signature on the
 main thread. The window it signs is also the window it now considers
-acknowledged.
+acknowledged. The trimming happens earlier still, and not in the network
+code: `ChatScreen` normalises the whitespace and cuts the line to 256
+characters before `ClientPacketListener.sendChat` ever sees it, and the
+same 256 reappears as the wire cap in the body's own codec.
 
 **The server validates the window before anything else, on the network
 thread.** `LastSeenMessagesValidator` checks the offset and the twenty
@@ -197,23 +223,38 @@ mismatch is not a rejected message — it is a **disconnect**, because the
 two sides' idea of the conversation has diverged and no later signature
 could be checked.
 
-**Verification breaks the chain, permanently.**
-`SignedMessageChain.Decoder` fails with a specific reason — missing key,
-expired key, broken chain, out-of-order, invalid signature — and for
-most of them nulls the chain. The sender gets a red message and stays
-connected, but **every subsequent message fails too** until a new session
-key resets it.
+**Two of the five failures break the chain; three do not.**
+`SignedMessageChain.Decoder` refuses a message for one of five reasons,
+and only *out of order* and *invalid signature* call
+`SignedMessageChain.Decoder.setChainBroken`. A missing or expired profile key
+rejects this message and leaves the next one free to succeed; the
+*chain broken* reason is thrown **because** the chain is already broken,
+not to break it. Where the chain does break, the sender gets a red
+message, stays connected, and has **every subsequent message fail too**
+until a new session key resets it. A signed command whose argument names
+do not line up breaks the chain explicitly, by the same call.
+
+**Decoration is not sequenced after filtering.** The handler starts the
+filter future, decorates *immediately and synchronously*, and only then
+registers the continuation that joins the two — so a decorator never sees
+filtered text, and a slow filter service delays delivery rather than
+decoration.
 
 **Decoration is a no-op in vanilla, and that shows on the wire.**
 Because `ChatDecorator.PLAIN` returns the same text,
 `PlayerChatMessage.withUnsignedContent` drops the decorated copy
 entirely, so vanilla always sends a null unsigned content.
 
-**Broadcast is per recipient, and gated.** `PlayerList.broadcastChatMessage`
-logs the line — marked as insecure if the message has no signature or has
-expired — and then sends only to players whose chat visibility accepts
-it. A recipient whose copy was fully filtered causes the *sender* to be
-told so.
+**Broadcast is per recipient, and gated three times in three classes.**
+`PlayerList.broadcastChatMessage` logs the line — marked as insecure if
+the message has no signature or has expired — and then offers it to
+**every** player without testing anything. `ServerPlayer` applies the
+chat-visibility setting; `OutgoingChatMessage` applies the per-recipient
+filter mask and drops a copy that was filtered away entirely. That last
+class is also what chooses the packet: a message whose sender is the nil
+id is a *system* message and goes out disguised, unsigned and
+unreportable. A recipient whose copy was fully filtered causes the
+*sender* to be told so.
 
 **Signatures are packed against the cache.** `SignedMessageBody.pack`
 replaces each last-seen signature with a `MessageSignatureCache` index
@@ -248,10 +289,16 @@ sharing a timestamp, salt and window.
 
 "Signable" means the argument type implements `SignedArgument`, and in
 26.2 there is exactly one such type: `MessageArgument`, behind the
-message-shaped commands. The server re-parses and compares argument names
-positionally; a mismatch is refused. It also refuses an *unsigned*
-command that its own parse says should have had signatures — which is
-how a client cannot simply strip them.
+message-shaped commands. The server re-parses its own copy and looks each
+signature up **by argument name**; a name it cannot find breaks the chain
+outright, and a second pass then checks that every argument that
+*should* have been signed was. There is a ceiling on both sides:
+`ArgumentSignatures.MAX_ARGUMENT_COUNT` is eight and
+`ArgumentSignatures.MAX_ARGUMENT_NAME_LENGTH` is sixteen. It also refuses an *unsigned*
+command that its own parse says should have had signatures — but only
+when *enforce-secure-profile* is on. With it off, a stripped `/msg`
+simply runs. Both command paths also pass through the same rate
+throttles as chat, which exempt operators and the singleplayer host.
 
 A command message with no signed argument becomes a
 `ClientboundDisguisedChatPacket`: chat-type decorated, unsigned, and not
@@ -291,9 +338,14 @@ reportable.
 - **The client's private key is only written to disk in a development
   environment.** In a shipped client the key file is deleted on every
   refresh path, so every launch re-fetches from the account service.
-- **A non-default font counts as tampering.** `ChatTrustLevel` treats any
-  style whose font is not the default as *modified*, so a server that
-  styles chat with a custom font gets every line flagged.
+- **The trust check is a substring test first and a style test second.**
+  `ChatTrustLevel` calls a message *modified* the moment the rendered
+  text does not contain the signed text — that is the limb that catches a
+  server rewriting what someone said. Only if that passes does it look at
+  style, and only inside the *unsigned* copy, which vanilla never sends.
+  So the familiar "a custom font flags every line" is true only of a
+  server that also decorates. And a player's own lines on an integrated
+  server short-circuit to secure without either test.
 - **`ClientboundDeleteChatPacket` is never sent by vanilla.** It is
   handled fully — including the deferred deletion of a message too fresh
   to vanish silently — but nothing constructs it.
@@ -301,15 +353,40 @@ reportable.
   sync does.** An invalid signature costs the sender their chain and
   gets them a red message. A last-seen mismatch, a bad chat index, or an
   unknown cache id ends the connection.
-- **A silent listener is on a timer.** The server tracks every signed
-  message it has sent a player, and past a few thousand unacknowledged
-  it disconnects them — which is what the bare acknowledgement packet
-  exists to prevent.
+- **A silent listener is on a counter, not a timer.** The server tracks
+  every signed message it has sent a player and disconnects them once
+  more than 4,096 are unacknowledged — which is what the bare
+  acknowledgement packet exists to prevent.
 - **Signed and unsigned coexist.** Without a session, the encoder
   produces no signature; if `enforce-secure-profile` is off the server
   accepts it, recipients fall back to accepting unsigned messages, and
   the line is tagged insecure. With it on, every such message is
   rejected at the chain.
+- **Two different clocks call a message expired.** A message is stale to
+  the server after five minutes and to the client after seven, which is
+  what drives the "Not Secure" tag and the trust evaluation; a profile
+  key is separately checked against its own expiry, with an
+  eight-hour grace period on the receiving client that the sending chain
+  does not grant. A server whose clock is out of step with a client's
+  will flag perfectly good messages, and says so in its log.
+- **The client has a whole gating layer of its own.**
+  `ChatAbilities` and `ChatRestriction` decide whether a client will
+  *accept* player messages, system messages or commands at all — options,
+  launcher policy and account profile each strip permissions
+  independently — and `GuiMessageSource` then filters what the HUD shows.
+  `ChatVisiblity` is only the part of that which the server is told about,
+  and it has three values, not two: hidden still lets action-bar text
+  through.
+- **A broken chain shows up as a message, not a silence.**
+  `ChatListener.handleChatMessageError` prints a red validation error with
+  its own tag when the sender is unknown or the validator returns nothing
+  — and still acknowledges the message, so the window does not drift.
+- **Announcing a chat session can itself be fatal.** A session update
+  whose key expires *earlier* than the one it replaces is an immediate
+  disconnect; a failed validation is another. A successful one resets the
+  player's chat state and re-broadcasts the session in the tab-list
+  update through the same ordering chain the messages use, so nothing
+  in flight is verified against the wrong key.
 - **Only signed messages are reportable.** The client's `ChatLog` records
   everything, but a log entry can only be reported if it carries a
   signature from the reported player. System messages never can.
@@ -328,6 +405,7 @@ reportable.
 `SignedMessageValidator` · `MessageSignature` · `MessageSignatureCache`
 · `LastSeenMessages` · `LastSeenMessagesValidator` · `RemoteChatSession`
 · `ProfilePublicKey` · `ChatListener` · `ChatTrustLevel` ·
+`OutgoingChatMessage` · `ChatAbilities` · `ChatRestriction` ·
 `ReportingContext`
 
 ---

@@ -47,7 +47,9 @@ def header(title: str, blurb: str) -> str:
 
 
 # ---------------------------------------------------------------- packets
-PACKET = re.compile(r"PacketType<(\w+)>\s+(\w+)\s*=\s*create(Clientbound|Serverbound)\(\"([\w/]+)\"")
+# The type parameter can name a nested class (ClientboundMoveEntityPacket.Pos),
+# so it is [\w.]+, not \w+ — \w dropped seven packet types silently (session G).
+PACKET = re.compile(r"PacketType<([\w.]+)>\s+(\w+)\s*=\s*create(Clientbound|Serverbound)\(\"([\w/]+)\"")
 
 
 def packets() -> str:

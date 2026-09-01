@@ -380,6 +380,47 @@ across seven lanes buries that. A left-to-right flow of the damage value,
 annotated with what multiplies it where, would teach the whole page in one
 picture.
 
+### Part IX · Networking
+
+*(session G)* **The plan's sketch says Part IX is "two connected pipelines
+meeting at the wire and should read like one". Session G's evidence is that
+it is not two pipelines — it is one pipeline and three passengers, and the
+pipeline is the smallest part of it.** `the-connection` and
+`packets-and-stream-codecs` really are one subject read from two ends: a
+byte becomes a frame becomes a packet becomes a handler call, and the only
+reason they are two pages is that one of them is about threads and the
+other about codecs. They share a trace, they cite each other eight times,
+and every correction session G made to one had a counterpart in the other
+(the skip machinery, the terminal flag, the singleplayer serialisation
+cost, the frame ceilings). **Pass 3's strongest option for this part is to
+teach them as one lecture in two halves with a single continuous trace**,
+rather than as two pages each with its own diagram of the same journey.
+
+The other three are not pipeline pages at all and should stop pretending.
+`protocol-phases` is a **state machine**; `what-the-client-is-told` is a
+**policy** (who is told what, and how often); `chat-and-signing` is a
+**protocol with an adversary**. Three different shapes, three different
+diagrams, and none of them is "follow a packet".
+
+**Part IX has the corpus's worst ordering dependency, and it points
+backwards.** Every one of these pages assumes the server tick's phase
+order, and two of them assume the client's frame/tick interleave — which
+lives in Part X. `what-the-client-is-told` cannot be understood without
+knowing that broadcasts happen in the chunk-source phase, before entities
+tick; `the-connection`'s two-flush invariant is a `MinecraftServer.tickChildren`
+fact; and the whole "once per frame, not once per tick" correction is a
+Part X fact stated in Part IX. **Part IX must follow Part III and at least
+the client-tick half of Part X**, or those three facts have to be taught
+here, badly, for the third time.
+
+**One page is doing another part's job.** `what-the-client-is-told`'s
+closing sections — *`ClientLevel` as a lossy copy*, the prediction ledger,
+the client's own light — are Part X material that ended up here because
+Part IX was written first. After the X/XI split (sessions H–I), pass 3
+should decide whether this page keeps them or hands them over and links
+back. Session G's guess is *hand them over*: the page is already 553 lines
+and its subject is the **server's choosing**, not the client's coping.
+
 ---
 
 ---
@@ -626,6 +667,45 @@ when the class name is already short.
   phase. Any diagram in this corpus that crosses a tick boundary should
   mark it; several probably do so silently.
 
+### Part IX *(session G)*
+
+- **The two "follow a packet" diagrams are the same diagram drawn from
+  opposite ends,** and both are the right shape. `the-connection` traces
+  bytes → handler with lanes for the pipeline handlers;
+  `packets-and-stream-codecs` traces value → bytes → value with lanes for
+  the codecs. If the two pages merge (section 1), they merge into **one
+  round-trip diagram**, which is strictly better than either: the thread
+  hop and the codec layer are the two things a viewer wants to see happen
+  in the same picture.
+- **`protocol-phases`' diagram is a sequence diagram of a state machine,
+  and it fought the correction session G made to it.** The login has three
+  threads, four phases, and a step whose whole point is that it happens
+  *later than you think* — the player is built after the client's finish
+  packet, two arrows below where the old diagram put it. A sequence
+  diagram can show that, but the phase boundaries are invisible in it.
+  The honest shape is a **state diagram with the packets as transitions**,
+  possibly beside a smaller sequence diagram for the encryption handshake
+  alone. At minimum the phase changes need `Note over` bars — this is the
+  page where a silent tick-style boundary does the most damage.
+- **`what-the-client-is-told` wants a decision table, not a sequence.**
+  Its best artefact is already a table (position sync: condition →
+  packet), and its worst passage is the one the creeper trace has to carry
+  — three gates to reach the change detector, three more inside it. Draw
+  that as a **flowchart of one entity's tick**, and let the sequence
+  diagram keep only the part it is good at: the pairing bundle.
+- **`chat-and-signing` has the corpus's only diagram with an adversary in
+  it, and does not show them.** The interesting picture is not the happy
+  path (typed → signed → broadcast → displayed, which the sequence diagram
+  does fine) but **what each check would catch**: which failures kill the
+  message, which kill the chain, and which kill the connection. That is a
+  three-column table or an annotated flow, and it is the lecture.
+- **Lane abbreviations, for the standard in this file above:** Part IX
+  uses `CN` for `Connection`, `PP` for `PacketProcessor`, `PD`/`PE` for
+  the decoder/encoder, `SGPL`/`CPL` for the two play listeners, and
+  `SL`/`SH`/`SC`/`CC`/`CH` across the login trace. `PE` collides with
+  Part X's `ParticleEngine`. Session G kept `SGPL`/`CPL`, which is what
+  the carried-over item recommends settling on.
+
 ---
 
 ## 4 · The lecture order
@@ -777,6 +857,16 @@ knowing before the order is drafted.*
   Part IX's `what-the-client-is-told` and Part X's client-tick material
   both lean on it too. It is the second-most duplicated idea in the corpus
   after the thread table. See the Part VIII note in section 1. *(session F)*
+- **Part IX depends on Part III's tick order and Part X's frame order,
+  in both directions** *(session G)*. Three separate Part IX claims are
+  really facts about somebody else's loop: the broadcast happens in the
+  chunk-source phase (Part III), the second flush carries what
+  `MinecraftServer.tickChildren` does after ticking connections (Part
+  III), and the client applies packets once per frame before that frame's
+  ticks (Part X). Part IX currently restates all three. Whatever order
+  pass 3 picks, **the client's frame/tick interleave has to be taught
+  before `what-the-client-is-told`**, or that page teaches it a second
+  time and gets it wrong again — it already did once.
 - **`items-and-stacks` → everything in Part VII, and out into Parts V and
   VIII.** Data components, the use pipeline and durability are assumed by
   `containers-and-menus`, `enchantments`, `block-interaction`,

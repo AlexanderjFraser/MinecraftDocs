@@ -313,10 +313,12 @@ Narrated:
   `ServerCommonPacketListenerImpl.suspendFlushing` at the top of
   `MinecraftServer.tickChildren` makes each `ServerCommonPacketListenerImpl.send`
   a write without a flush — but `Connection.tick` flushes the channel
-  unconditionally at the end of its own body, in the *connection* section.
-  So everything the levels and the player's own tick produced goes out there,
-  and `ServerCommonPacketListenerImpl.resumeFlushing` after chunk sending
-  carries only the chunk batch. The suspension is defeated in one more case:
+  unconditionally, in the *connection* section. So everything the levels and
+  the player's own tick produced goes out there, and
+  `ServerCommonPacketListenerImpl.resumeFlushing` after chunk sending carries
+  whatever `MinecraftServer.tickChildren` produced *after* that point: the
+  player list, the debug subscribers, the game-test ticker, the server's own
+  tickables, and last the chunk batch. The suspension is defeated in one more case:
   a send from a thread that is not the Server thread flushes immediately.
 - **Sprint is a zero-length tick.** Not a shorter one: `TickRateManager.nanosecondsPerTick`
   is unchanged, `MinecraftServer.runServer` just declares this tick 0 ns long, `MinecraftServer.haveTime`
