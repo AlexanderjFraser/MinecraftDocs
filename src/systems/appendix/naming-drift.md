@@ -1,0 +1,422 @@
+# Naming drift
+
+> Verified against **Minecraft 26.2** · Part XIII · No trace — the translation
+> layer: every name a 1.21-era reader will reach for that 26.2 does not have,
+> and what it is called now.
+
+## Responsibility
+
+Rule three of this corpus is *newest version only*: no page says "in 1.21
+this was…", because version-difference prose is the first thing to rot and
+the last thing anyone rereads. That rule costs something, and this page is
+where the cost is paid back once. Every page assumes you are reading the
+26.2 tree; this page assumes you are not, yet, and are still typing the
+names you learned somewhere else.
+
+Two audiences. A reader coming from **1.21** — the version most public
+writing, most tutorials and most model weights are anchored to — needs the
+first table: the old name on the left, what to grep for on the right. A
+reader coming from **Yarn** (Fabric's community mappings) needs the last
+one: not a version difference at all, just a different name for the same
+class in the same version.
+
+The one sentence: *if a name in your head does not appear in the tree, it
+is probably on this page.*
+
+## How to read the tables
+
+The left column is **italic, not backticked**. Most of these names do not
+exist in 26.2, and `tools/verify_names.py` — which checks every backticked
+identifier on every page against the decompile — would reject the page if
+they were. Italics is the corpus's mark for *a name, but not a 26.2 name*.
+The right column is backticked and therefore verified: those names are in
+the tree.
+
+"gone" in the right column means exactly that: there is no replacement
+class, the responsibility moved into something structurally different, and
+the entry names where it went. Those are the interesting rows — a rename is
+a nuisance, a disappearance is a design change, and the page named beside
+each part explains it.
+
+Every row here was found the same way: a fact-sheet agent reading the 26.2
+decompile went looking for a name it expected and did not find it. The
+table is therefore *not* exhaustive — it is exhaustive over the names the
+corpus needed. Part X (the client) dominates it, and that is itself the
+finding: the client was rewritten around extract-then-render between those
+versions, and almost nothing at the top of the render stack kept its name.
+
+## The four you will hit in the first ten minutes
+
+`Identifier` is *ResourceLocation*. `Lightmap` is *LightTexture*.
+`DeltaTracker` is *Timer*, and `partialTick` is now a `DeltaTracker.Timer`
+you ask rather than a float you are handed. And `Gui` no longer means the
+HUD: the HUD is `Hud`, held as `Gui.hud`, while `Gui` is the screen and
+overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
+1.21-era `Minecraft.setScreen` call site is now on `Gui`. Both `Gui` and
+`Hud` exist, which is the single most confusing pair of names in the tree.
+
+## The tables
+
+
+### Everywhere
+
+| the name you remember | 26.2 |
+|---|---|
+| *ResourceLocation* | `Identifier` |
+| *LightTexture* | `Lightmap` |
+| *Timer* | `DeltaTracker` |
+
+### Part II — Foundations
+
+| the name you remember | 26.2 |
+|---|---|
+| *TagManager* | gone |
+| *Minecraft.reloadResources* | `Minecraft.reloadResourcePacks` |
+| *ItemStack.save* / *parse* | `ValueOutput` / `ItemStack.CODEC` |
+| *ChunkPos.asLong* | `ChunkPos.pack` / `ChunkPos.unpack` (a record) |
+
+### Part III — The server
+
+| the name you remember | 26.2 |
+|---|---|
+| *DO_DAYLIGHT_CYCLE* | `GameRules.ADVANCE_TIME` |
+| *DO_MOB_SPAWNING* | `GameRules.SPAWN_MOBS` |
+| *DO_WEATHER_CYCLE* | `GameRules.ADVANCE_WEATHER` |
+| *GameRules* package | `world/level/gamerules` |
+| day time on *ServerLevel* | `ServerClockManager` (`world/clock`) |
+| per-level weather | server-global `WeatherData` |
+
+### Part IV — The world
+
+| the name you remember | 26.2 |
+|---|---|
+| *ChunkStorage* | gone — `ChunkMap extends SimpleRegionStorage` |
+| *DimensionDataStorage* | `SavedDataStorage` (two of them) |
+| *getLightBlock* | `BlockBehaviour.BlockStateBase.getLightDampening` |
+| *PalettedContainer.Strategy* | top-level `Strategy` + `Configuration` |
+| *ForcedChunksSavedData* | `TicketStorage` |
+| *TicketType&lt;T&gt;* | a registry record with flag bits |
+| *DimensionType* booleans | `EnvironmentAttributeMap` |
+
+### Part V — Blocks
+
+| the name you remember | 26.2 |
+|---|---|
+| *ItemInteractionResult* | gone — `InteractionResult.TryEmptyHandInteraction` |
+| *DirectionProperty* | gone — `EnumProperty<Direction>` |
+| *Level.markAndNotifyBlock* | gone — inline in `Level.setBlock` |
+| *BlockBehaviour.onRemove* | `BlockBehaviour.affectNeighborsAfterRemoval` + `BlockEntity.preRemoveSideEffects` |
+| *doTileDrops* | `GameRules.BLOCK_DROPS` |
+| *BlockModelShaper* | `BlockStateModelSet` / `BlockModelSet` |
+| *RenderShape.ENTITYBLOCK_ANIMATED* | gone — `RenderShape.INVISIBLE` / `RenderShape.MODEL` only |
+| *Player.canInteractWithBlock* | `Player.isWithinBlockInteractionRange` |
+| *Block.rebuildCache* | gone — `BlockBehaviour.BlockStateBase.initCache` from the `Blocks` static init |
+| *Material* | gone — individual `BlockBehaviour.Properties` flags |
+| *BlockEntity.saveToItem* | `BlockItem.setBlockEntityData` + `BlockEntity.collectComponents` |
+| *MobEffects.DIG_SPEED* / *DIG_SLOWDOWN* | `MobEffects.HASTE` / `MobEffects.MINING_FATIGUE` |
+
+### Part VI — Entities
+
+| the name you remember | 26.2 |
+|---|---|
+| *Player extends LivingEntity* | `Player extends Avatar extends LivingEntity` |
+| *EntityType.PIG* (constants) | `EntityTypes.PIG` + `EntityTypeIds.PIG` |
+| *MobSpawnType* | `EntitySpawnReason` (+ `EntitySpawnRequest`) |
+| *SpawnPlacements.Type* | `SpawnPlacementType` / `SpawnPlacementTypes` |
+| *Entity.hurt(DamageSource, float)* | `Entity.hurtServer` / `Entity.hurtClient` |
+| *doMobLoot* | `GameRules.MOB_DROPS` |
+| *LivingEntity.isDamageSourceBlocked* | gone — `DataComponents.BLOCKS_ATTACKS` |
+| *Schedule* / *ScheduleBuilder* | gone — `Timeline` + `EnvironmentAttribute` |
+| *BlockPathTypes* | `PathType` |
+| *Mob.brainProvider* | `LivingEntity.makeBrain(Brain.Packed)` |
+| *Entity.moveTo* / *absMoveTo* | `Entity.snapTo` / `Entity.absSnapTo` |
+| *Entity.maxUpStep* (field) | `Attributes.STEP_HEIGHT` |
+| *Entity.updateFluidHeightAndDoFluidPushing* | `EntityFluidInteraction` |
+| *Entity.lerpTo* | `Entity.moveOrInterpolateTo` + `InterpolationHandler` |
+| *EntityDataSerializers.OPTIONAL_UUID* / *COMPOUND_TAG* | gone |
+| UUID-keyed *AttributeModifier* | `Identifier`-keyed record |
+| *AttributeMap.getDirtyAttributes* | `AttributeMap.getAttributesToSync` + `AttributeMap.getAttributesToUpdate` |
+| *PlayerRenderer* | `AvatarRenderer` (serves players and mannequins, keyed by skin model) |
+
+### Part VII — Items and inventories
+
+| the name you remember | 26.2 |
+|---|---|
+| *InteractionResultHolder* | gone — `InteractionResult.Success.heldItemTransformedTo` |
+| *UseAnim* | `ItemUseAnimation` |
+| *Item.getFoodProperties* | `DataComponents.FOOD` on the stack |
+| *ItemStack.getTag* / *getOrCreateTag* | gone — components |
+| *LivingEntity.triggerItemUseEffects* | `Consumable.emitParticlesAndSounds` |
+| *FoodProperties* effects list | `Consumable.onConsumeEffects` |
+| *ClickType* | `ContainerInput` |
+| *MultiPlayerGameMode.handleInventoryMouseClick* | `MultiPlayerGameMode.handleContainerInput` |
+| *ClientboundSetCarriedItemPacket* | split: `ClientboundSetCursorItemPacket` + `ClientboundSetHeldSlotPacket` |
+| *ClientboundSetSlotPacket* | `ClientboundContainerSetSlotPacket` |
+| *ClientboundHorseScreenOpenPacket* | `ClientboundMountScreenOpenPacket` |
+| *Container.startOpen(Player)* | `Container.startOpen(ContainerUser)` |
+| *Recipe.getResultItem* / *getIngredients* | gone — `Recipe.assemble` / `PlacementInfo` |
+| *Ingredient.EMPTY* | gone — an `Ingredient` cannot be empty |
+| *data/&lt;ns&gt;/recipes/* | `data/<ns>/recipe/` (singular) |
+| *EnchantmentCategory* | `Enchantment.EnchantmentDefinition` item sets |
+| *Enchantment.getDamageBonus*, *EnchantmentHelper.getFireAspect*… | gone — `EnchantmentEffectComponents` |
+| *EnchantedBookItem* | gone — `DataComponents.STORED_ENCHANTMENTS` |
+| *Item.getEnchantmentValue* | `DataComponents.ENCHANTABLE` |
+| *LootContextParam* / *LootContextParamSet* | `ContextKey` / `ContextKeySet` (`util/context`) |
+| *LootDataManager* / *LootTables* | `ReloadableServerRegistries` + `BuiltInLootTables` |
+| *LootTableReference* | `NestedLootTable` |
+| *LootingEnchantFunction* | `EnchantedCountIncreaseFunction` |
+| *SetCountFunction* | `SetItemCountFunction` |
+| *LootContextParams.KILLER_ENTITY* | `LootContextParams.ATTACKING_ENTITY` |
+
+### Part VIII — The player
+
+| the name you remember | 26.2 |
+|---|---|
+| *Inventory.armor* / *offhand* / *compartments* | one 36-slot `Inventory.items` + `Inventory.EQUIPMENT_SLOT_MAPPING` |
+| *Inventory.setPickedItem* | `Inventory.addAndPickItem` / `Inventory.pickSlot` |
+| *Entity.moveTo* | `Entity.absSnapTo` / `Entity.snapTo` |
+| *GameRenderer.pick* | `Minecraft.pick` → `LocalPlayer.raycastHitResult` |
+| *ServerboundInteractPacket.Action.ATTACK* | `ServerboundAttackPacket` (a record of one int) |
+| *GameRules.NATURAL_REGENERATION* | `GameRules.NATURAL_HEALTH_REGENERATION` |
+| *Player.isCritArrow* / *Player.sweepAttack* | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack` |
+| *LivingEntity.eat* / *Player.eat* | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` |
+| *MobEffect.createModifier* | `MobEffect.createModifiers` (plural) |
+| *DataComponents.MENDING* | `EnchantmentEffectComponents.REPAIR_WITH_XP` |
+
+### Part IX — Networking
+
+| the name you remember | 26.2 |
+|---|---|
+| *Connection.setListener* / *setProtocol* / *getCurrentProtocol* | gone — `Connection.setupInboundProtocol` / `Connection.setupOutboundProtocol` |
+| *ConnectionProtocol.getById* / packet tables | gone — a bare enum; ids are `ProtocolInfoBuilder.addPacket` order in `IdDispatchCodec` |
+| *Connection.NETWORK_WORKER_GROUP* etc. | `EventLoopGroupHolder` (in `server/network`) |
+| *MemoryConnection* | gone — `Connection.isMemoryConnection` |
+| *ensureRunningOnSameThread(…, BlockableEventLoop)* | `PacketUtils.ensureRunningOnSameThread` with a `PacketProcessor` |
+| *Packet.write(FriendlyByteBuf)* | gone — a *STREAM_CODEC* field the protocol reads |
+| *ClientboundAddPlayerPacket* / *ClientboundAddMobPacket* | gone — `ClientboundAddEntityPacket` |
+| *ClientboundUpdateViewPositionPacket* | `ClientboundSetChunkCacheCenterPacket` |
+| *ClientboundUpdateViewDistancePacket* | `ClientboundSetChunkCacheRadiusPacket` |
+| *ClientboundLevelChunkPacket* | `ClientboundLevelChunkWithLightPacket` |
+| routine *ClientboundTeleportEntityPacket* | `ClientboundEntityPositionSyncPacket` |
+| *ClientboundGameProfilePacket* | `ClientboundLoginFinishedPacket` (+ a session id) |
+| *ServerboundLoginStartPacket* | `ServerboundHelloPacket` |
+| *ClientboundEncryptionRequestPacket* / response | `ClientboundHelloPacket` / `ServerboundKeyPacket` |
+| *ClientboundSetCompressionPacket* | `ClientboundLoginCompressionPacket` |
+| *ClientboundResourcePackPacket* | `ClientboundResourcePackPushPacket` / `…PopPacket` |
+| *MinecraftServer.getSessionService* | `MinecraftServer.services` |
+| *PlayerChunkSender* in *server/level* | `server/network` |
+| *Component.Serializer* (Gson) | `ComponentSerialization` (codecs; NBT on the wire) |
+| *TextComponent* / *TranslatableComponent* / … | `network/chat/contents` — `PlainTextContents` etc. |
+| *ComponentUtils.updateForEntity* | `ComponentUtils.resolve` with a `ResolutionContext` |
+| *SignedMessageHeader* / *MessageSigner* | `SignedMessageLink` / `SignedMessageChain.Encoder` |
+| *ChatPreview* and its packets | gone |
+| *ClientboundSetTimePacket(gameTime, dayTime, …)* | a game time plus a `WorldClock` update map |
+
+### Part X — The client
+
+| the name you remember | 26.2 |
+|---|---|
+| *Gui* (the HUD) | `Hud`, held as `Gui.hud`; the name `Gui` now means the screen/overlay manager |
+| *Minecraft.screen* / *Minecraft.setScreen* | `Gui.screen` / `Gui.setScreen` |
+| *GuiGraphics* | `GuiGraphicsExtractor` (records states; does not draw) |
+| *Screen.render* / every *render** on *Gui* | `Screen.extractRenderState` / `Hud.extract*` |
+| *LayeredDraw* | call order plus `GuiRenderState.nextStratum` |
+| *Options.hideGui* | `Hud.isHidden`, published as `GuiRenderState.isHudHidden` |
+| *MultiBufferSource* / *BufferSource* | `SubmitNodeCollector` / `SubmitNodeStorage` / `FeatureRenderDispatcher` |
+| *ShaderInstance*, *RenderStateShard* | `RenderPipeline` + `RenderPipelines` + `BindGroupLayouts` |
+| *VertexBuffer*, *Tesselator*, *BufferUploader* | `GpuBuffer` / `GpuBufferSlice`, `ByteBufferBuilder` → `MeshData`, `UberGpuBuffer` |
+| *RenderSystem.setShader* / *enableBlend* / *depthMask* … | fields of a `RenderPipeline` |
+| *VertexFormat.Mode*, *VertexFormat.IndexType*, *TextureFormat* | `PrimitiveTopology`, `IndexType`, `GpuFormat` |
+| *Window.updateDisplay*, vsync as a swap interval | `GpuSurface.present`, vsync as a `GpuSurface.PresentMode` |
+| *LightTexture.pack* and friends | `LightCoordsUtil` |
+| *DimensionSpecialEffects* | `DimensionType.skybox` + `EnvironmentAttributes` + `Timeline` |
+| *FogParameters*, *RenderSystem.setShaderFogColor* | `FogData`, `RenderSystem.setShaderFog` (a uniform slice) |
+| *Level.getSkyColor*, *ClientLevel.getStarBrightness*, *ClientLevel.effects* | `EnvironmentAttributeProbe.getValue` on an `EnvironmentAttribute` |
+| *LevelRenderer.renderLevel* / *renderSky* / *renderChunkLayer* | `LevelRenderer.render` and the `LevelRenderer.addSkyPass` family of frame-graph passes |
+| *LevelRenderer.blockChanged* / *setSectionDirty* / *allChanged* | the same names on `LevelExtractor` |
+| *ChunkRenderDispatcher*, *RenderChunk*, *CompiledChunk* | `SectionRenderDispatcher`, its `SectionRenderDispatcher.RenderSection`, `CompiledSectionMesh` |
+| *RenderType.chunkBufferLayers* (five layers) | `ChunkSectionLayer` — three layers |
+| *BakedModel*, *ModelResourceLocation* | `BlockStateModel` / `ItemModel`; block models keyed by `BlockState` |
+| *BlockModelShaper*, *ItemModelShaper*, *BlockRenderDispatcher*, *ItemRenderer* | `BlockStateModelSet`, `ItemModelResolver`, `ModelBlockRenderer` |
+| *BlockElement* / *BlockElementFace*, *AtlasSet*, *ItemColors* | `CuboidModelElement` / `CuboidFace`, `AtlasManager`, `ItemTintSource` |
+| *EntityRenderer.render*, *RenderLayer.render* | `EntityRenderer.extractRenderState` + `EntityRenderer.submit` |
+| *TextureSheetParticle*, sheet *ParticleRenderType*s | `SingleQuadParticle` + `SingleQuadParticle.Layer` |
+| *ParticleGroup* (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket |
+| *Minecraft.getPartialTick*, *Timer*, *Camera.setup* | `DeltaTracker.Timer`, `Camera.update` + `Camera.extractRenderState` |
+
+### Part XI — World generation
+
+| the name you remember | 26.2 |
+|---|---|
+| *GenerationStep.Carving* | gone — `BiomeGenerationSettings.carvers` is one flat `HolderSet` |
+| *DensityFunctions.WeirdScaledSampler* | `DensityFunctions.IntervalSelect` |
+| *StructureFeature* / *ConfiguredStructureFeature* | `Structure` / `Registries.STRUCTURE` |
+| *Feature.RANDOM_PATCH*, *Feature.FLOWER* | gone — composed from `Feature.SIMPLE_BLOCK` + placement |
+| *Feature.POINTED_DRIPSTONE* / *DRIPSTONE_CLUSTER* | `Feature.SPELEOTHEM` / `Feature.SPELEOTHEM_CLUSTER` |
+| *AbstractTreeGrower* and its subclasses | one final `TreeGrower` with constants |
+| *TreeConfiguration.dirtProvider* | `TreeConfiguration.belowTrunkProvider` |
+| *Biome.BiomeCategory* / *Biome.getDownfall* | gone |
+| *MultiNoiseBiomeSource.Preset* | `MultiNoiseBiomeSourceParameterList.Preset` |
+| *BiomeSpecialEffects.fogColor* / *skyColor* / music / ambient sound | `EnvironmentAttributes.*` via `Biome.getAttributes` |
+| the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters |
+| *StructureTemplateManager* folder *structures/* | *structure/* |
+
+### Part XII — Commands and data packs
+
+The permission rewrite is the largest single break in this table: the
+integer permission level is gone from the whole command API, replaced by
+`PermissionSet` and `PermissionCheck` in `net/minecraft/server/permissions`.
+The ints survive only in *ops.json*, in *server.properties* and on the wire.
+
+| the name you remember | 26.2 |
+|---|---|
+| *ResourceLocationArgument* | `IdentifierArgument` (the registry id is unchanged) |
+| *CommandSourceStack.hasPermission(int)* | `CommandSourceStack.permissions` + `PermissionSet.hasPermission` |
+| *CommandSourceStack.getPermissionLevel* | gone — `PermissionLevel` survives only inside `LevelBasedPermissionSet` |
+| *CommandSourceStack.withPermission(int)* | `CommandSourceStack.withPermission` taking a `PermissionSet` |
+| *SharedSuggestionProvider.hasPermission(int)* | gone — the interface extends `PermissionSetSupplier` |
+| *Commands.LEVEL_GAMEMASTERS* as an int | same name, now a `PermissionCheck` |
+| *Commands.hasPermission(int)* | `Commands.hasPermission` taking a `PermissionCheck`, returning a `PermissionProviderCheck` |
+| *ServerPlayer.hasPermissions(int)* | `ServerPlayer.permissions` |
+| *MinecraftServer.getProfilePermissions* returning an int | the same name returning a `LevelBasedPermissionSet` |
+| *MinecraftServer.getFunctionCompilationLevel* | `MinecraftServer.getFunctionCompilationPermissions` |
+| *ServerOpListEntry.getLevel* | `ServerOpListEntry.permissions` |
+| *ParserUtils.parseJson* | gone — `SnbtGrammar` plus `ParserBasedArgument` |
+| *ItemInput.createItemStack(int, boolean)* | `ItemInput.createItemStack` with one argument; the guard is `GiveCommand.MAX_ALLOWED_ITEMSTACKS` |
+| *ServerFunctionManager.ExecutionContext* (nested) | top-level `ExecutionContext` in `net/minecraft/commands/execution` |
+| *CommandFunction.Entry* / *CommandEntry* / *FunctionEntry* | gone — a line is a `BuildContexts.Unbound`, a macro line a `MacroFunction.MacroEntry` |
+| *CommandFunction.CacheableFunction* (nested) | top-level `CacheableFunction`, codec-backed |
+| *Commands.performCommand* returning a success count | returns nothing; results are a `CommandResultCallback` pair |
+| `data/<ns>/functions/`, `data/<ns>/tags/functions/` | singular — *function/* and *tags/function/* |
+| *maxCommandChainLength* | `GameRules.MAX_COMMAND_SEQUENCE_LENGTH` |
+| *maxCommandForkCount* | `GameRules.MAX_COMMAND_FORKS` |
+| *announceAdvancements* | `GameRules.SHOW_ADVANCEMENT_MESSAGES` |
+| *net.minecraft.advancements.critereon* | split into `net/minecraft/advancements/triggers` and `net/minecraft/advancements/predicates` |
+| *AdvancementList* | `AdvancementTree` (+ `AdvancementNode`, `AdvancementHolder`) |
+| *FrameType* | `AdvancementType` |
+| *CriterionTrigger.addPlayerListener* / *removePlayerListener* | gone — triggers are stateless; subscriptions live in `PlayerAdvancements` |
+| *LootContextParamSet* | `ContextKeySet` |
+| *@GameTest*, *@GameTestGenerator*, *@BeforeBatch*, *@AfterBatch* | gone — `GameTestInstance` in `Registries.TEST_INSTANCE` |
+| *GameTestRegistry* / *TestFunction* | gone — `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` |
+| a test's batch as a string | `GameTestInstance.batch` — the batch *is* a `TestEnvironmentDefinition` |
+| the structure block as the test host | `TestInstanceBlock` / `TestInstanceBlockEntity` |
+
+## The shape changes, not just the names
+
+A rename table flatters the reader: it suggests that if you learn 164 rows
+you can read the tree. You cannot, because a dozen of these rows are one
+design change each, and the change is what the corresponding page is about.
+The recurring ones:
+
+- **Tags on an item became components.** *ItemStack.getTag* /
+  *getOrCreateTag* have no replacement; a stack is an `Item` plus a
+  `PatchedDataComponentMap` and every former tag key is a
+  `DataComponentType` in `DataComponents` — [data components](../foundations/data-components.md),
+  [items and stacks](../items/items-and-stacks.md).
+- **Hand-written serialisation became codecs.** *Packet.write* is gone: a
+  packet is a record with a `StreamCodec` the protocol table reads.
+  *ItemStack.save* is gone: there is `ItemStack.CODEC` and, for saved data,
+  the `ValueOutput` façade — [packets and stream codecs](../networking/packets-and-stream-codecs.md),
+  [codecs, NBT and JSON](../foundations/codecs-nbt-json.md).
+- **Rendering split into extract and render.** *GuiGraphics*,
+  *EntityRenderer.render*, *LevelRenderer.renderLevel*, *MultiBufferSource*
+  and every `RenderSystem` state setter are gone or repurposed, because the
+  frame now builds an immutable render state on the game thread and draws
+  from it — [the frame](../client/the-frame.md), [Blaze3D](../client/blaze3d.md),
+  [entity rendering](../client/entity-rendering.md).
+- **Per-dimension and per-biome constants became one attribute system.**
+  *DimensionSpecialEffects* and most of *BiomeSpecialEffects* are gone;
+  fog, sky, water colour, ambient sound and music are
+  `EnvironmentAttribute`s resolved through an `EnvironmentAttributeProbe`
+  over a stack of layers — [lightmap, fog and sky](../client/lightmap-fog-and-sky.md),
+  [biomes](../worldgen/biomes.md).
+- **Enums of behaviour became registries of data.** *EnchantmentCategory*,
+  *MobSpawnType*, *BlockPathTypes*, *GenerationStep.Carving* and
+  *Biome.BiomeCategory* are all gone, replaced by item sets, registry
+  records, `HolderSet`s or nothing at all.
+- **UUIDs became identifiers.** An `AttributeModifier` is keyed by
+  `Identifier`, not a UUID, which is why a data pack can now name one —
+  [attributes](../entities/attributes.md).
+- **Sides split.** *Entity.hurt* became `Entity.hurtServer` and
+  `Entity.hurtClient`; *Player.attack* is still there but the packet that
+  reaches it is `ServerboundAttackPacket`, a record of one integer, and
+  `ServerboundInteractPacket` is right-click only. The general rule: where
+  1.21 had one method that checked `Level.isClientSide`, 26.2 tends to have
+  two methods — [damage and death](../entities/damage-and-death.md),
+  [the sword swing](../player/the-sword-swing.md).
+
+## Yarn
+
+Yarn is Fabric's community mapping set. It is not a different version of
+the game and nothing on this list is a *change*: it is the same 26.2 class
+under the name a Fabric modder has in their head. Only the ones that
+actually trip people are listed — where the Yarn and Mojang names differ
+enough that grep fails.
+
+Both columns are italic here, because Yarn names are not in the decompile
+and `verify_names.py` cannot check them; the Mojang column is the one this
+corpus uses everywhere else, and every one of those names is backticked and
+verified on its own page.
+
+| Yarn | Mojang (this corpus) |
+|---|---|
+| *World* / *ServerWorld* / *ClientWorld* | *Level* / *ServerLevel* / *ClientLevel* |
+| *WorldChunk* | *LevelChunk* |
+| *MinecraftClient* | *Minecraft* |
+| *PlayerEntity* / *ServerPlayerEntity* / *ClientPlayerEntity* | *Player* / *ServerPlayer* / *LocalPlayer* |
+| *ClientPlayNetworkHandler* | *ClientPacketListener* |
+| *ServerPlayNetworkHandler* | *ServerGamePacketListenerImpl* |
+| *ClientConnection* | *Connection* |
+| *Text* / *MutableText* | *Component* / *MutableComponent* |
+| *TextRenderer* | *Font* |
+| *DrawContext* | *GuiGraphics* — and in 26.2 it does not draw; see the drift table |
+| *NbtCompound* / *NbtList* / *NbtElement* | *CompoundTag* / *ListTag* / *Tag* |
+| *RegistryEntry* / *RegistryEntryList* | *Holder* / *HolderSet* |
+| *Registries* / *RegistryKeys* | *BuiltInRegistries* / *Registries* |
+| *Vec3d* | *Vec3* |
+| *Box* | *AABB* |
+| *Hand* | *InteractionHand* |
+| *ActionResult* | *InteractionResult* |
+| *Inventory* (the interface) | *Container* |
+| *PlayerInventory* | *Inventory* |
+| *ScreenHandler* / *ScreenHandlerType* | *AbstractContainerMenu* / *MenuType* |
+| *StatusEffect* / *StatusEffectInstance* | *MobEffect* / *MobEffectInstance* |
+| *EntityAttribute* / *EntityAttributeInstance* | *Attribute* / *AttributeInstance* |
+| *ParticleEffect* | *ParticleOptions* |
+| *BlockPos.Mutable* | *BlockPos.MutableBlockPos* |
+| *Identifier* | *Identifier* — Yarn was right first; Mojang renamed to match in 26.2 |
+
+The last row is the joke that keeps giving: the single most-cited example
+of "Yarn names are better" stopped being an example, and a decade of
+Fabric code now compiles against a Mojang-named class with the Yarn name.
+
+## Invariants and surprises
+
+- **A verified name is not a correct claim.** `verify_names.py` proves the
+  right-hand column exists; it cannot prove the left-hand column ever did.
+  The 1.21 side of this table is the only unverifiable content in the
+  corpus, which is why it is confined to one page.
+- **The client is where the names went.** Roughly a third of the table is
+  Part X, and almost all of that is one refactor — extract then render.
+- **Renames cluster with rewrites.** No part of the tree renamed a class
+  and kept its design; where the name changed, the responsibility usually
+  moved too. Reading the row is not enough, which is what the linked page
+  is for.
+- **Some names survived and changed meaning**, which is worse than a
+  rename because grep still finds them: `Gui` (now the screen manager, not
+  the HUD), `Material` (now a texture reference in `client/renderer/texture`,
+  not a block property), `ParticleGroup` (now a per-render-type bucket, not
+  a count limit), `Strategy` (now top-level, not nested in
+  `PalettedContainer`), and `MultiVariant`, whose name survives only in the
+  data-generator package while the runtime type is gone.
+
+## Where to look
+
+`Identifier`, then `Holder` and `HolderSet` (`net/minecraft/core`), then `DataComponents`
+— those three carry more of the drift than any others. After that, pick the
+part you are lost in and read its page rather than its rows.
+
+---
+
+*Rules: names, never code · how the system works, not how the code reads ·
+newest version only · every backticked name passes `tools/verify_names.py`.*

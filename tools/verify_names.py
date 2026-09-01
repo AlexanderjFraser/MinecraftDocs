@@ -41,6 +41,8 @@ ALLOW = {
     # DFU ops / lifecycle, JOML.
     "JsonOps", "Lifecycle", "DataFixer", "Vector3f", "Vector3i", "Matrix4f", "Quaternionf",
     # JDK concurrency / IO, and jtracy (Mojang's Tracy binding, outside the game jar).
+    # Brigadier / JDK names Part XII names as concepts.
+    "CommandNode", "ContextChain", "Predicate", "StackOverflowError", "Instant", "java.nio",
     "ConcurrentLinkedQueue", "LinkedHashMap", "LockSupport", "FileChannel", "FileChannel.tryLock",
     "System.exit", "System.in", "Runtime.halt", "DiscontinuousFrame", "TracyClient",
     # JDK collections / fastutil a page names as concepts (Part IV).

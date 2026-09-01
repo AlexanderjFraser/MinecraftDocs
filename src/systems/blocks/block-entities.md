@@ -36,7 +36,7 @@ is open.*
   static `BlockEntity.loadStatic` reads *id* through `BlockEntity.TYPE_CODEC`,
   calls `BlockEntityType.create` and loads — returning null, with a log
   line, on any failure. Everything goes through `ValueInput` / `ValueOutput`
-  ([foundations: NBT](../foundations/nbt.md)).
+  ([codecs, NBT and JSON](../foundations/codecs-nbt-json.md)).
 - **Syncing** is two hooks with weak defaults: `BlockEntity.getUpdateTag`
   returns an **empty tag** and `BlockEntity.getUpdatePacket` returns
   **null**. Nineteen of the 49 types override the packet — signs, banners,

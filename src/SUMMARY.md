@@ -84,7 +84,14 @@
   - [Features and placement](systems/worldgen/features-and-placement.md)
   - [Structures](systems/worldgen/structures.md)
 - [XII · Commands and data packs]()
+  - [Brigadier and commands](systems/commands/brigadier-and-commands.md)
+  - [Execution and functions](systems/commands/execution-and-functions.md)
+  - [Advancements](systems/commands/advancements.md)
+  - [Dialogs and game tests](systems/commands/dialogs-and-tests.md)
 - [XIII · Appendix]()
+  - [The out-of-scope tour](systems/appendix/out-of-scope-tour.md)
+  - [Naming drift](systems/appendix/naming-drift.md)
+  - [Glossary](systems/appendix/glossary.md)
 
 # Reference
 
