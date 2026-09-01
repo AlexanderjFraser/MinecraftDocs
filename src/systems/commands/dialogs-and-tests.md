@@ -1,6 +1,6 @@
 # Dialogs and game tests
 
-> Verified against **Minecraft 26.2** · Part XII · The same pattern applied twice: a data-pack registry whose element type dispatches through a codec registry, used once to put a form on a player's screen and once to run the game's own test suite.
+> Verified against **Minecraft 26.2** · Part XIII · The same pattern applied twice: a data-pack registry whose element type dispatches through a codec registry, used once to put a form on a player's screen and once to run the game's own test suite.
 
 ## Responsibility
 
@@ -15,7 +15,7 @@ command.
 
 Learn the pattern once here and you will recognise it in
 [loot tables](../items/loot-tables.md), [features](../worldgen/features-and-placement.md),
-[density functions](../worldgen/density-functions.md) and half of Part XI.
+[density functions](../worldgen/density-functions.md) and half of Part XII.
 
 The one sentence a player would recognise: *the server put a menu on my
 screen that isn't part of Minecraft* — and, for the other half, *nothing,

@@ -95,7 +95,7 @@ the cracks you see on other players' blocks lag behind theirs.*
   for entries untouched for 400 — which is what eventually clears the
   cracks left by a player who disconnected mid-dig. `LevelExtractor`
   turns those within 32 blocks into `BlockBreakingRenderState`s each
-  frame, drawn with `ModelBakery.DESTROY_TYPES` — Part X.
+  frame, drawn with `ModelBakery.DESTROY_TYPES` — Part XI.
 - **The loot side:** `LootContextParamSets.BLOCK` requires
   `LootContextParams.BLOCK_STATE`, `LootContextParams.ORIGIN` and
   `LootContextParams.TOOL`, and accepts `LootContextParams.THIS_ENTITY`,
@@ -188,8 +188,13 @@ sequenceDiagram
    `MultiPlayerGameMode.getDestroyStage`, which at zero progress is −1 and therefore
    *clears* any crack this player already had rather than writing one. The
    prediction concludes with `ServerboundPlayerActionPacket` action
-   `ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK`. Nothing in
-   the world changed, so nothing is retained in the prediction ledger.
+   `ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK`. For stone
+   nothing in the world changed, so nothing is retained in the prediction
+   ledger — but that is a fact about stone, not a rule: the one
+   `BlockBehaviour.attack` override that is not side-gated,
+   `RedStoneOreBlock.attack`, lights the ore on both sides and therefore
+   does file a ledger entry for a mere left-click. See
+   [prediction and acknowledgement](../client/prediction-and-acks.md).
    (Creative takes a separate branch entirely: it predicts
    `MultiPlayerGameMode.destroyBlock` at once, never calls
    `BlockBehaviour.BlockStateBase.attack`, sends START alone and arms the
@@ -358,10 +363,14 @@ sequenceDiagram
   recomputes from `ServerPlayerGameMode.destroyProgressStart` every tick
   rather than accumulating, so a tool or effect change mid-dig rescales
   the whole dig retroactively on the server.
-- **A too-early STOP is a deferral, not a rejection.** Below 0.7 the
-  server sets `ServerPlayerGameMode.hasDelayedDestroy` and finishes the
-  block itself when *its* clock reaches 1.0; the client's prediction
-  stands meanwhile. Hard rejections differ in what they send back: build
+- **A too-early STOP is a deferral, not a rejection — and the block comes
+  back while you wait.** Below 0.7 the server sets
+  `ServerPlayerGameMode.hasDelayedDestroy` and finishes the block itself
+  when *its* clock reaches 1.0. But the STOP's sequence is acknowledged in
+  the same tick, so the client settles its entry against the stone it
+  recorded, `ClientLevel.syncBlockState` puts the stone back, and the block
+  visibly reappears until the server's own clock finishes it and broadcasts
+  air. The prediction does not stand: it is undone and then redone. Hard rejections differ in what they send back: build
   height, `ServerLevel.mayInteract` and `Player.blockActionRestricted`
   send a block update; spawn protection sends only a chat overlay; a
   failed reach check sends nothing at all.

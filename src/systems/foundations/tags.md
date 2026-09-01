@@ -206,7 +206,7 @@ The same idea appears in data: `TagKey.hashedCodec`, `HolderSetCodec` and
   Vanilla's files are written by the data generator (`TagsProvider`,
   `TagBuilder`), which the running game never calls. Players reach tags
   through `ResourceOrTagArgument`, `ResourceOrTagKeyArgument` and
-  `ResourceSelectorArgument` — the `#tag` syntax in commands (Part XII).
+  `ResourceSelectorArgument` — the `#tag` syntax in commands (Part XIII).
 
 ## Invariants and surprises
 
@@ -258,7 +258,7 @@ The same idea appears in data: `TagKey.hashedCodec`, `HolderSetCodec` and
   with no registry involved; the well-known keys
   `ServerFunctionManager.TICK_FUNCTION_TAG` and
   `ServerFunctionManager.LOAD_FUNCTION_TAG` live on the manager, not the
-  library (see Part XII).
+  library (see Part XIII).
 
 ## Where to look
 

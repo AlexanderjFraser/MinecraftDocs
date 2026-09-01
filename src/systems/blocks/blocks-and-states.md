@@ -394,7 +394,7 @@ sequenceDiagram
   structures, `/setblock`, `DataComponents.BLOCK_STATE`). On the client,
   `BlockStateModelLoader.loadBlockStates` reads *blockstates/\*.json*
   into a map from `BlockState` to model root, baked into a
-  `BlockStateModelSet` — that is Part X's business; there is no
+  `BlockStateModelSet` — that is Part XI's business; there is no
   *BlockModelShaper* any more.
 
 ## Invariants and surprises

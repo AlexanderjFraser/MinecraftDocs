@@ -279,7 +279,7 @@ Narrated:
   JSON-RPC `ManagementServer.tick`, `DedicatedServer.tickConnection` the
   console, `IntegratedServer.tickServer` the pause — never the loop.
 - **Calls into:** `ServerLevel.tick` (Part III), `ServerConnectionListener.tick`
-  ([the connection](../networking/the-connection.md)), `ServerFunctionManager.tick` (Part XII), `PlayerList`,
+  ([the connection](../networking/the-connection.md)), `ServerFunctionManager.tick` (Part XIII), `PlayerList`,
   `ServerClockManager`, `GameTestTicker`.
 - **Crosses the network as:** `ClientboundSetTimePacket` (every 20 ticks);
   `ClientboundTickingStatePacket` (rate and frozen flag, sent by

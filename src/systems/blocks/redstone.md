@@ -273,7 +273,7 @@ sequenceDiagram
     player — the piston the player hears is the server's
     `ClientboundSoundPacket` from step 9. `PistonHeadRenderer` draws
     `PistonMovingBlockEntity.movedState` offset by
-    `PistonMovingBlockEntity.getXOff` (Part X).
+    `PistonMovingBlockEntity.getXOff` (Part XI).
 11. **Two ticks of motion.** `Level.tickBlockEntities` on both sides →
     `PistonMovingBlockEntity.tick`: `PistonMovingBlockEntity.progressO`
     0 → `PistonMovingBlockEntity.progress` 0.5 (the literal;

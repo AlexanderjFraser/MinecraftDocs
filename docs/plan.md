@@ -179,6 +179,22 @@ pass-2 session to find a bug in one of these two scripts, and the first
 where the bug had already been copied into prose. Fix the tool,
 regenerate, and check whether any page repeated the number.
 
+Session H adds a ninth, and it is about *scope* rather than accuracy:
+**ask the coverage question with a tool, once per part, before writing.**
+Every session so far has answered "what is missing?" per page, from the
+page's own point of view — which cannot see a package no page mentions.
+Session H spent one agent on a mechanical inventory instead: every package
+under `net/minecraft/client/`, real class and line counts from `find` and
+`wc`, each one grepped against the corpus and marked covered, mentioned or
+absent. It found ~4,900 lines of a coherent, undocumented **server-push
+debug subscription pipeline** that eight per-page fact-checks had all
+walked past, because no existing page was in its neighbourhood. It also
+produced a rule worth keeping: **`server-classes.txt` contains no entry
+under `net/minecraft/client/` or `com/mojang/blaze3d/`** — the client tree
+is client-only without exception, so that whole class of side-attribution
+error cannot occur there. One cheap agent, and it changed the shape of the
+part.
+
 Session D adds a fifth: **hunt the unstated conditional.** Nearly every
 session-D error was a claim that held in the traced case and was written as
 though it held always — a hook skipped "because the block didn't change"
@@ -217,8 +233,8 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
 - [x] **Session E** — Part VI Entities. *(2026-09-01)*
 - [x] **Session F** — Part VII Items · Part VIII The player. *(2026-09-01)*
 - [x] **Session G** — Part IX Networking. *(2026-09-01)*
-- [ ] **Session H** — Part X: the client half, and the X/XI split lands
-  here (SUMMARY, renumbering, redirects if any).
+- [x] **Session H** — Part X: the client half, and the X/XI split.
+  *(2026-09-01)*
 - [ ] **Session I** — Part XI Rendering: the render half plus its new
   pages.
 - [ ] **Session J** — Part XII World generation.
@@ -280,6 +296,78 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session H** — Part X The client, and the X/XI split. Eight
+  adversarial fact-checks (`the-frame`, `ClientLevel`, the prediction ledger,
+  input/options, screens, the text engine, `hud`, and a full
+  `net/minecraft/client/**` coverage inventory), plus a ninth agent to
+  research what the inventory found. **Part X's eleven pages became eleven
+  client pages and a seven-page Part XI**; worldgen, commands and the
+  appendix renumbered to XII–XIV; the rendering pages moved to
+  `src/systems/rendering/` with `[output.html.redirect]` entries in
+  `book.toml` keeping the published URLs alive. 2,931 lines of Part X became
+  2,631 lines of Part X plus the rendering part, and every page in it is now
+  one subject.
+  **Session H's centre of gravity is ownership.** Where G found errors in
+  claims a page had borrowed, H found errors in claims *nobody* owned: four
+  pages described the prediction ledger and disagreed; the loop and the frame
+  shared a page and the loop lost; the text engine was a paragraph inside a
+  page about screens. What mattered most:
+  - **The split is not where the plan said, and the difference matters.**
+    The plan put `the-frame` in Part XI as the render part's opening trace.
+    Correct for the frame, wrong for the *loop*: `Minecraft.runTick` and
+    `Minecraft.renderFrame` are two subjects in one method chain. Splitting
+    them into `the-client-loop` (X) and `the-frame` (XI) resolved the
+    corpus's worst ordering dependency — Part IX now depends on one short
+    page rather than on all of Part X.
+  - **A whole undocumented system, found by counting rather than by
+    reading.** The debug subscription pipeline — a `DebugSubscription`
+    registry, a per-level poll-and-diff engine that sleeps until somebody
+    subscribes, six packets, two dozen renderers — is ~4,900 lines that no
+    page mentioned. It is now `debugging-the-running-game`, and the appendix
+    gap it closes had been open since session 12. Hence the new protocol
+    note above.
+  - **The prediction ledger had four owners and four stories.**
+    `client-world-and-options` said an inbound block update "does not touch
+    the world" — true only for a position already in the ledger, and the two
+    Part V pages had it right. It also listed five methods on
+    `BlockStatePredictionHandler` and omitted the three that matter
+    (`isPredicting`, `currentSequence`, `close`). The system now has one
+    page, `prediction-and-acks`, and its headline is the fact all four pages
+    had missed: **the acknowledgement is a receipt for a sequence number,
+    not a verdict** — it fires for rejected actions too, and even an
+    unsequenced abort produces an ack of zero. Correctness rests entirely on
+    the ordering rule that corrections precede the receipt. The most visible
+    consequence, which no page had: releasing a dig too early makes the
+    block *come back* and then vanish again.
+  - **A trace with two fabricated arrows.** The render-distance slider trace
+    ended with the server replying `ClientboundSetChunkCacheRadiusPacket` and
+    the client's effective distance moving a second time. Neither happens:
+    `ServerGamePacketListenerImpl.handleClientInformation` does two things,
+    and neither is a reply; that packet is only ever broadcast when the
+    *server's* view distance changes. The client clamps itself and is never
+    told. The absence of a return arrow is now the point of the diagram.
+  - **"Queued onto the client thread" was wrong about input, and it is a
+    threading claim.** GLFW callbacks are dispatched inside
+    `RenderSystem.pollEvents`, on the game thread, and
+    `BlockableEventLoop.execute` runs a task inline when already on its
+    thread. Input handlers run *before* the tick that observes them, not
+    inside it.
+  - **Cardinality again, and in the same shapes as F and G:**
+    `Minecraft.pick` runs once per tick and once per frame, not "twice per
+    ticking frame"; `Minecraft.MAX_TICKS_PER_UPDATE` has **no callers**;
+    `ClientLevel.serverSimulationDistance` has two consumers, not one;
+    `ClientChunkCache.tick` has an **empty body**, so "the chunk cache" was
+    listed as per-tick work that does not exist; F1 does *not* hide the
+    sleep fade; `Options.save` is the only caller of `broadcastOptions` but
+    every cycle-option button calls `Options.save`; three entities implement
+    `HasCustomInventoryScreen` by two different packets, not one.
+  - **Structural notes to [pass3.md](pass3.md):** Part X is a **hub and five
+    spokes**, not a pipeline — the loop is the hub and every other page is
+    defined by its cadence; the GUI stack is the one genuine internal
+    pipeline; two of the new pages (`prediction-and-acks`,
+    `text-and-fonts`) are arguably in the wrong part; and two lane
+    abbreviations now collide across neighbouring parts (`CL`, `GR`).
 
 - **2026-09-01, session G** — Part IX Networking (`the-connection`,
   `protocol-phases`, `packets-and-stream-codecs`,

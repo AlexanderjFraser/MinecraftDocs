@@ -1,6 +1,6 @@
 # Advancements
 
-> Verified against **Minecraft 26.2** · Part XII · "Stone Age": a cobblestone lands in an inventory, and one tick later the toast appears — through a listener set that only ever shrinks, and a packet that never says what the criterion was.
+> Verified against **Minecraft 26.2** · Part XIII · "Stone Age": a cobblestone lands in an inventory, and one tick later the toast appears — through a listener set that only ever shrinks, and a packet that never says what the criterion was.
 
 ## Responsibility
 

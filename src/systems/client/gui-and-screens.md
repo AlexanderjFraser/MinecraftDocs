@@ -1,250 +1,225 @@
 # GUI and screens
 
-> Verified against **Minecraft 26.2** · Part X · pressing E: a screen that the server is never told about, recorded once and drawn once.
+> Verified against **Minecraft 26.2** · Part X · pressing E: a screen the server is never told about, and everything the client does at the two ends of a screen's life.
 
 ## Responsibility
 
-Everything drawn in two dimensions that is not the HUD: menus, container
-screens, widgets, layouts, tooltips, and the text engine underneath all
-of it. This page is the screen lifecycle, the two-phase render model that
-replaced immediate-mode drawing, and how a `Component` becomes glyphs.
+The screen manager, the screen lifecycle, widgets, layouts, focus and
+narration, and the container screens that mirror a server-side menu. How a
+screen's contents become pixels is
+[the GUI render tree](the-gui-render-tree.md); how a `Component` becomes
+glyphs is [text and fonts](text-and-fonts.md). This page is what a screen
+*is* and when it runs.
 
 The one sentence a player would recognise: *opening your inventory.*
 
-The headline for a 1.21-era reader: **there is no *GuiGraphics*.** The
-class is `GuiGraphicsExtractor`, and it draws nothing — every call
-appends a *render state* to a tree, and `GuiRenderer` sorts, batches and
-draws that tree later in the same frame. The old *Screen.render* is now
-`Screen.extractRenderState`. And `Minecraft.screen` is gone: the current
-screen belongs to `Gui`.
+The headline for a 1.21-era reader: **`Minecraft.screen` is gone.** The
+current screen belongs to `Gui`, which is now the screen-and-overlay
+manager rather than the HUD — the HUD is `Hud`, reached as `Gui.hud`. And
+*Screen.render* is gone with it: a screen *records* itself with
+`Screen.extractRenderState` and is drawn later.
 
 ## The data it owns
 
 ### The screen manager
 
-`Gui` owns `Gui.screen` (through `Gui.screen` / `Gui.setScreen`),
-`Gui.overlay`, `Gui.hud`, `Gui.toastManager`, `Gui.chatListener`,
-`Gui.splashManager` and the one `Gui.guiRenderState`. Its two per-frame
-verbs are `Gui.tick` and `Gui.extractRenderState`;
-`Gui.handleKeybinds` and `Gui.isPausing` are the rest of its surface.
-`Minecraft.setScreenAndShow` survives as a wrapper.
+`Gui` owns `Gui.screen` and `Gui.overlay` (through `Gui.setScreen` and
+`Gui.setOverlay`), `Gui.hud`, `Gui.toastManager`, `Gui.chatListener`,
+`Gui.splashManager` and the reference to the frame's render state. It has
+three cadences, not two: `Gui.tick` once per client tick, `Gui.update` once
+per frame — which advances toasts and fires delayed narration — and
+`Gui.extractRenderState` once per frame in the record pass. The rest of its
+surface is `Gui.isPausing`, `Gui.handleKeybinds`, `Gui.openChatScreen`,
+`Gui.canInterruptScreen`, `Gui.buildInitialScreens` and
+`Gui.setClientLevelTeardownInProgress`.
 
 ### Screens and widgets
 
 `Screen` holds `Screen.children`, `Screen.renderables`,
 `Screen.narratables`, `Screen.width`, `Screen.height` and
-`Screen.narrationState`. Its lifecycle is `Screen.init` (final, calling
-the overridable `Screen.init` hook or `Screen.repositionElements`),
-`Screen.rebuildWidgets`, `Screen.added`, `Screen.tick`, `Screen.removed`
-and `Screen.onClose`; widgets are registered with
-`Screen.addRenderableWidget` and friends. Its render entry point is the
+`Screen.narrationState`. Its lifecycle is `Screen.init` — final, and it runs
+the overridable init hook only the first time, taking
+`Screen.repositionElements` on every later call — plus
+`Screen.rebuildWidgets`, `Screen.added`, `Screen.tick`, `Screen.removed`,
+`Screen.resize` and `Screen.onClose`. Widgets are registered with
+`Screen.addRenderableWidget` and its siblings. Its record entry point is the
 final `Screen.extractRenderStateWithTooltipAndSubtitles`.
 
-`Renderable` has exactly one method,
-`Renderable.extractRenderState`. `AbstractWidget` implements it as final
-and hands subclasses `AbstractWidget.extractWidgetRenderState`; the same
-final-wrapper pattern governs `AbstractButton.extractContents`,
-`AbstractWidget.updateNarration` and `AbstractContainerScreen.containerTick`.
-The widget family is `Button`, `EditBox`, `Checkbox`,
-`AbstractSelectionList`, `ObjectSelectionList`, `Tooltip`,
-`MultiLineLabel` and the rest.
+`Renderable` has exactly one method. `AbstractWidget` implements it as final
+and hands subclasses `AbstractWidget.extractWidgetRenderState`;
+`AbstractButton` narrows that again with a final override and an abstract
+`AbstractButton.extractContents`. The family is `Button`, `EditBox`,
+`Checkbox`, `CycleButton`, `AbstractScrollArea` and the selection lists over
+it — `AbstractSelectionList`, `ObjectSelectionList`,
+`ContainerObjectSelectionList`, `OptionsList`. `Tooltip` and
+`MultiLineLabel` are not widgets: the first is held by a
+`WidgetTooltipHolder`, the second is an interface.
 
 Layout is `Layout` over `LayoutElement`: `LinearLayout`, `GridLayout`,
 `FrameLayout`, `EqualSpacingLayout`, `HeaderAndFooterLayout`,
 `SpacerElement`, configured by `LayoutSettings` and resolved by
 `Layout.arrangeElements` and `Layout.visitWidgets`.
 
-Input arrives as records — `KeyEvent`, `MouseButtonEvent`,
-`CharacterEvent`, `PreeditEvent` — through `GuiEventListener` and
-`ContainerEventHandler`, with focus expressed as a `ComponentPath` and
-moved by a `FocusNavigationEvent`. Geometry is `ScreenRectangle`,
-`ScreenPosition`, `ScreenAxis`, `ScreenDirection`.
-
-### The render state tree
-
-`GuiRenderState` is a list of *strata*, each a chain of
-`GuiRenderState.Node`. The recording verbs are
-`GuiRenderState.addGuiElement`, `.addText`, `.addItem`,
-`.addPicturesInPictureState`, `.addBlitToCurrentLayer` and
-`.addGlyphToCurrentLayer`; the structural ones are
-`GuiRenderState.nextStratum` and `GuiRenderState.blurBeforeThisStratum`.
-The states themselves are `BlitRenderState`, `TiledBlitRenderState`,
-`ColoredRectangleRenderState`, `GuiTextRenderState`, `GlyphRenderState`,
-`GuiItemRenderState` and the `PictureInPictureRenderState` family
-(`GuiEntityRenderState`, `GuiSkinRenderState`, `GuiBookModelRenderState`,
-`GuiBannerResultRenderState`, `GuiProfilerChartRenderState`).
-
-`GuiRenderer` owns the draw side: `GuiRenderer.prepare`,
-`GuiRenderer.draw`, `GuiRenderer.endFrame`, the `GuiRenderer.Draw` list,
-a `GuiItemAtlas`, the picture-in-picture renderers, and the sort
-comparators `GuiRenderer.ELEMENT_SORT_COMPARATOR`,
-`GuiRenderer.SCISSOR_COMPARATOR` and `GuiRenderer.TEXTURE_COMPARATOR`.
-
-### Text
-
-`Font` prepares; it cannot draw. `Font.prepareText` produces a
-`Font.PreparedText` that is walked with a `Font.GlyphVisitor`;
-`Font.width`, `Font.split` and `Font.getSplitter` are the measuring API,
-and `Font.bidirectionalShaping` the reordering one. Glyphs come from a
-`GlyphSource` per `FontDescription`, resolved by `FontManager` into a
-`FontSet`, stitched into a `FontTexture` by `GlyphStitcher`, and rendered
-as a `TextRenderable`. `StringSplitter`, `FormattedCharSequence` and
-`SubStringSource` do the line-breaking and bidi work.
+Input arrives as the `client/input` records — `KeyEvent`,
+`MouseButtonEvent`, `CharacterEvent`, `PreeditEvent` — through
+`GuiEventListener` and `ContainerEventHandler`. Focus is a `ComponentPath`
+moved by a `FocusNavigationEvent`; ordering comes from
+`TabOrderedElement.getTabOrderGroup`. Geometry is `ScreenRectangle`,
+`ScreenPosition`, `ScreenAxis`, `ScreenDirection`. Narration is
+`NarratableEntry` and `NarrationSupplier` collected into a
+`ScreenNarrationCollector` and delivered by `Screen.handleDelayedNarration`.
 
 ### Container screens
 
 `AbstractContainerScreen` holds `AbstractContainerScreen.menu`,
-`AbstractContainerScreen.leftPos`, `.topPos`, `.hoveredSlot` and the
-quick-craft state. Its extract chain is
-`AbstractContainerScreen.extractContents` →
-`AbstractContainerScreen.extractLabels` →
-`AbstractContainerScreen.extractSlots` →
-`AbstractContainerScreen.extractCarriedItem` →
-`AbstractContainerScreen.extractTooltip`, and a click
-goes `AbstractContainerScreen.slotClicked` →
+`AbstractContainerScreen.leftPos`, `AbstractContainerScreen.topPos`,
+`AbstractContainerScreen.hoveredSlot` and the quick-craft state. Its record
+pass is `AbstractContainerScreen.extractContents`, then
+`AbstractContainerScreen.extractCarriedItem`, then
+`AbstractContainerScreen.extractTooltip`; the first of those internally
+draws the widget list, translates to the container origin, and runs
+`AbstractContainerScreen.extractLabels`,
+`AbstractContainerScreen.extractSlots` and the two slot-highlight passes. A
+click goes `AbstractContainerScreen.slotClicked` →
 `MultiPlayerGameMode.handleContainerInput` — see
-[containers and menus](../items/containers-and-menus.md) for what happens
-next. `MenuScreens` maps a `MenuType` to a screen class;
-`InventoryScreen` and its `EffectsInInventory` helper are the survival
-inventory.
+[containers and menus](../items/containers-and-menus.md).
+`MenuScreens` maps a `MenuType` to a screen class and is the only registry
+of screens in the game.
 
 ## When it runs
 
-Two phases, one thread, one `Minecraft.runTick`. It is a *data* split,
-not a thread split: the recording phase touches game state, the drawing
-phase touches only the recorded objects and the GPU.
+`Gui.tick` ticks the screen at 20 Hz. `Gui.update` and
+`Gui.extractRenderState` run per frame, the latter as the record half of
+[the two-phase GUI](the-gui-render-tree.md). The record order is: the HUD;
+then the overlay **or** the screen — an overlay suppresses the screen
+entirely rather than stacking on it; then the saving indicator, toasts, the
+debug overlay and any deferred subtitles. Toasts and the debug overlay are
+therefore always above a screen.
 
-**Record.** `Gui.extractRenderState` resets the state tree, builds a
-fresh `GuiGraphicsExtractor` for the frame, and calls the contributors in
-a fixed order: the HUD, then the overlay *or* the screen, then the saving
-indicator, then toasts, then the debug overlay, then deferred subtitles.
-Toasts and the debug overlay are therefore always on top of a screen.
-
-**Resolve and draw.** `GuiRenderer.render` runs
-`GuiRenderer.preparePictureInPicture` (3D content rendered to textures
-and blitted back), `GuiRenderer.prepareItemElements` (items rendered into
-a dynamic atlas), `GuiRenderer.prepareText` (prepared text expanded to
-per-glyph states), then sorts each node's elements and coalesces them
-into as few draws as possible.
+Everything here is gated further up: `GameRenderer.extract` only asks for the
+HUD when resources are loaded, the frame is advancing game time and a level
+exists, and only asks for the screen when resources are loaded.
 
 ## The trace: pressing E
 
 ```mermaid
 sequenceDiagram
     participant KH as KeyboardHandler
-    participant KM as KeyMapping
     participant M as Minecraft
     participant G as Gui
     participant IS as InventoryScreen
-    participant GGE as GuiGraphicsExtractor
-    participant GRS as GuiRenderState
-    participant GR as GuiRenderer
+    participant MPGM as MultiPlayerGameMode
 
-    KH->>KM: click — no screen is open, so it is a game input
+    KH->>KH: keyPress — no screen is open, so the mapping records a click
     Note over M: next client tick
-    M->>M: handleKeybinds — consumeClick on the inventory key
-    M->>M: isServerControlledInventory? false for a player on foot
+    M->>M: handleKeybinds — only with no screen and no overlay
+    M->>MPGM: isServerControlledInventory? false for a player on foot
+    M->>M: Tutorial.onOpenInventory
     M->>G: setScreen(new InventoryScreen(player))
-    Note over IS: the menu is Player.inventoryMenu, which already existed
-    G->>IS: added, then Screen.init(width, height)
-    IS->>IS: init — leftPos/topPos centred, recipe-book button placed
+    G->>IS: removed on the old screen, then added, then Screen.init
+    IS->>IS: init — creative? replace myself with CreativeModeInventoryScreen
+    G->>G: MouseHandler.releaseMouse, KeyMapping.releaseAll
     Note over G: next frame, record
     G->>IS: extractRenderStateWithTooltipAndSubtitles
-    IS->>GGE: extractBackground — gradient, the inventory texture, the player model
-    IS->>GGE: extractContents — labels, slots, hovered highlight
-    GGE->>GRS: every call appends a state; nothing is drawn
-    IS->>GGE: extractCarriedItem, then the deferred tooltip, each in its own stratum
-    Note over GR: same frame, draw
-    G->>GR: render — pictures-in-picture, item atlas, glyphs, sort, batch, draw
+    IS->>IS: extractBackground — in-game UI, so a gradient, no blur, no panorama
+    IS->>IS: extractContents → labels, slots, hovered highlight; then the carried item
 ```
 
-The point of the trace: **the survival inventory is entirely client-side
-and no packet is sent to open it.** `Player.inventoryMenu` has existed
-since the player was constructed, it has no `MenuType`, and
-`MenuScreens` could never produce an `InventoryScreen` from a server
-packet. The one exception is riding a mount with its own inventory, which
-does take a server round trip. Slot *clicks* are a different matter, and
-belong to Part VII.
+The point of the trace: **the survival inventory is entirely client-side and
+no packet opens it.** `Player.inventoryMenu` has existed since the player was
+constructed, it has no `MenuType` at all, and `MenuScreens` could never build
+an `InventoryScreen` from a packet. The honest version of that sentence needs
+one qualification, though — the *screen* is client-side; the *menu* is not
+symmetric. `InventoryMenu` is constructed on both sides, and its crafting
+result is recomputed only on the server, so the client renders a result it
+did not compute.
+
+## Who opens a screen
+
+| route | examples |
+|---|---|
+| entirely client-side | title, pause, options, chat, advancements, social interactions, the survival and creative inventories |
+| `ClientboundOpenScreenPacket` | every menu with a `MenuType` — chests, furnaces, anvils, and a chest boat |
+| `ClientboundMountScreenOpenPacket` | a horse's or a nautilus's own inventory |
+| other packets | the book viewer, the sign editor, the death screen, the win screen, the demo popup, the level-loading screen, dialogs |
+
+Three entities implement `HasCustomInventoryScreen`, and they do not agree:
+two use the mount packet and one falls back to the ordinary menu packet.
 
 ## Interfaces
 
 - **Called by:** `GameRenderer.extract` and `GameRenderer.render` — see
-  [the frame](the-frame.md).
-- **Calls into:** [blaze3d](blaze3d.md) for the draws;
-  `ItemModelResolver` for item icons — see
-  [models and atlases](models-and-atlases.md); the entity render pipeline
-  for the player model in the inventory.
+  [the frame](../rendering/the-frame.md); `Minecraft.tick`.
+- **Calls into:** [the GUI render tree](the-gui-render-tree.md) for every
+  recorded element; `ItemModelResolver` for item icons; the entity render
+  pipeline for the player model in the inventory.
 - **Crosses the network as:** `ServerboundContainerClickPacket` and
   `ServerboundContainerClosePacket` from container screens (Part VII);
-  `ClientboundOpenScreenPacket` opens everything *except* the survival
-  inventory.
-- **Data-driven by:** *font/* definitions and the GUI atlas from resource
-  packs; `Options.guiScale` and the narrator settings.
+  inbound, the packets in the table above.
+- **Data-driven by:** the GUI atlas and *font/* definitions from resource
+  packs; `Options.guiScale`, the menu-background blurriness and the narrator
+  settings.
 
 ## Invariants and surprises
 
-- **Nothing in a screen draws.** Every method on
-  `GuiGraphicsExtractor` appends a state object that captures a *copy* of
-  the current transform and scissor, so pushing and popping afterwards
-  cannot disturb it.
-- **Layering is inferred from bounding boxes, not from a Z value.** A new
-  element is placed above the highest existing element whose bounds it
-  intersects; elements that do not overlap may share a node and be
-  reordered freely by the batching sort. `GuiRenderState.nextStratum` is
-  the only hard barrier, and it is what container screens use before
-  drawing the cursor-held item.
-- **An element with no bounds is silently discarded** — which is exactly
-  why glyphs, whose bounds are deliberately null, must be added through
-  the layer-bypassing verb and are emitted after their node's geometry.
-- **Items are drawn through a dynamic GPU atlas.** Each distinct item
-  model is rendered once per frame into `GuiItemAtlas` and then blitted
-  like any other sprite, so a chest full of identical stacks costs one 3D
-  render. Changing the GUI scale throws the atlas away, and an atlas that
-  cannot grow logs that some items will be skipped.
-- **`Screen.init` runs again on every resize and GUI-scale change.**
-  Every widget object is discarded and rebuilt, so anything that must
-  survive a resize has to live in a field.
-- **Tooltips are deferred to the end of the frame** and drawn in their
-  own stratum, which is why they are always above the screen that asked
-  for them.
-- **Blur is a once-per-frame stratum boundary**, implemented by splitting
-  the draw list, clearing depth and running a post effect in between. A
-  second request in one frame throws. Container screens are never
-  blurred — they take the transparent-background path.
+- **`Gui.setScreen(null)` does not mean "close the screen".** With no level
+  it substitutes the title screen; with a dead player it substitutes the
+  death screen, or respawns; otherwise it restores the chat screen if one
+  was saved. During a level teardown it throws rather than return you to a
+  world that is being dismantled.
+- **`Gui.isPausing` is what stops the integrated server.**
+  `Screen.isPauseScreen` defaults to **true**, and `AbstractContainerScreen`
+  overrides it to false — which is the whole reason a chest does not pause
+  singleplayer and the options screen does. An overlay pauses by default
+  too.
+- **An overlay replaces the screen in the record pass.** Nothing draws both.
+  `LoadingOverlay` is the only implementation of `Overlay` in the game.
+- **`Screen.init` does not run again on a resize.** A resize calls
+  `Screen.resize`, which repositions; only the *default* implementation of
+  that falls back to rebuilding every widget. Forty screens override it and
+  keep their widgets — so "everything is rebuilt on resize" is true of a
+  plain screen and false of most interesting ones.
+- **`Minecraft.setScreenAndShow` draws a frame synchronously.** It sets the
+  screen and then renders one frame on the spot, which is how progress
+  appears during blocking main-thread work — a world load, a data fix, a
+  save.
 - **The framework fixes the outer shape.** `Screen.init`,
-  `AbstractWidget.extractRenderState`,
-  `AbstractButton.extractWidgetRenderState`,
-  `AbstractWidget.updateNarration` and `AbstractContainerScreen.tick` are
-  all final, each handing the subclass one inner hook.
-- **`Font` cannot draw anything.** A `Component` becomes glyphs in four
-  steps: visual-order reordering for bidi, a `FormattedCharSequence`, a
-  `Font.PreparedText` built per codepoint with advances and bold and
-  shadow offsets, and finally per-glyph render states produced a phase
-  later by `GuiRenderer`.
-- **There are debug switches for exactly the failure modes above.** One
-  draws a rectangle per layer; another shuffles each node's element list
-  and re-seeds the sort keys, to shake out accidental order dependence.
+  `Screen.extractRenderStateWithTooltipAndSubtitles`,
+  `AbstractWidget.extractRenderState`, `AbstractWidget.updateNarration`,
+  `AbstractButton.extractWidgetRenderState` and
+  `AbstractContainerScreen.tick` are all final, each handing the subclass one
+  inner hook.
+- **Hover is scissor-aware.** `AbstractWidget.extractRenderState` computes
+  hovered as "inside my rectangle *and* inside the current scissor", so a
+  widget scrolled out of a list does not light up.
+- **A container screen force-closes itself.** The final
+  `AbstractContainerScreen.tick` closes the container when the player is dead
+  or removed — the client, not the server, notices first.
+- **The first screens you see are a chain, not a screen.**
+  `Gui.buildInitialScreens` composes accessibility onboarding, ban notices,
+  a forced name change and a banned-skin notice ahead of the title screen or
+  a quick-play launch.
+- **Narration is timed, not immediate.** `Screen.handleDelayedNarration`
+  fires from `Gui.update` once two clocks have passed — one delay after a
+  mouse move, a shorter one after a keyboard action, and a two-second
+  suppression after a screen is built — and then picks a single widget to
+  narrate by tab-order group and priority.
 - **Names a 1.21-era reader will hunt for and not find:**
-  *GuiGraphics* (now `GuiGraphicsExtractor`), *Font.drawInBatch* and
-  every *drawString* variant, *Screen.render* and *renderBackground* and
-  *renderDirtBackground*, *AbstractContainerScreen.renderBg* /
-  *renderLabels* / *renderSlot*, *AbstractWidget.renderWidget*,
-  *GuiGraphics.renderTooltip*, *ClickType* (now `ContainerInput`),
+  *Screen.render*, *renderBackground* and *renderDirtBackground*;
+  *AbstractContainerScreen.renderBg* / *renderLabels* / *renderSlot*;
+  *AbstractWidget.renderWidget*; *ClickType* (now `ContainerInput`);
   *MultiPlayerGameMode.handleInventoryMouseClick* (now
-  `MultiPlayerGameMode.handleContainerInput`), *Minecraft.screen* and
-  *setScreen*, and `PoseStack` in GUI code — the GUI transform is now a
-  2D affine stack. `MultiLineLabel`, `MenuScreens`, `ComponentPath`,
-  `ScreenRectangle` and all the layout classes survive.
+  `MultiPlayerGameMode.handleContainerInput`); and *Minecraft.screen* and
+  *Minecraft.setScreen*.
 
 ## Where to look
 
-`Gui.extractRenderState` for the frame's contributor order, then
-`Screen.extractRenderStateWithTooltipAndSubtitles` for a screen's.
-`GuiRenderState.nextStratum` and the node-placement logic for how
-layering is decided. `GuiRenderer.prepare` for where items, text and
-picture-in-picture content are resolved. `Font.prepareText` for the text
-engine, and `AbstractContainerScreen.extractContents` for the busiest
-screen in the game.
+`Gui.setScreen` — the substitution tree and the input housekeeping at both
+ends of a screen's life. `Screen.init` and `Screen.resize` for the
+lifecycle, `Screen.extractRenderStateWithTooltipAndSubtitles` for the record
+pass, and `Gui.extractRenderState` for the frame's contributor order.
+`AbstractContainerScreen.extractContents` for the busiest screen in the game,
+and `MenuScreens` for the only screen registry there is.
 
 ---
 

@@ -1,6 +1,6 @@
 # Glossary
 
-> Verified against **Minecraft 26.2** · Part XIII · No trace — one sentence
+> Verified against **Minecraft 26.2** · Part XIV · No trace — one sentence
 > per term the rest of the corpus uses, and a link to the page that owns it.
 
 ## Responsibility
@@ -37,7 +37,7 @@ command; vanilla's live in `net/minecraft/commands/arguments` and are
 described to the client through an `ArgumentTypeInfo`. → [Brigadier and commands](../commands/brigadier-and-commands.md)
 
 **Atlas** — one large texture stitched at load time out of many sprite
-files, so a chunk section can be drawn with a single bound texture. → [models and atlases](../client/models-and-atlases.md)
+files, so a chunk section can be drawn with a single bound texture. → [models and atlases](../rendering/models-and-atlases.md)
 
 **Attribute** — a named, ranged, modifiable number on a `LivingEntity`;
 modifiers are keyed by `Identifier`, and eight attributes are not
@@ -61,7 +61,7 @@ and environment attributes, attached to a 4×4×4 volume of the world. → [biom
 position", either by a climate search or from a fixed table. → [biomes](../worldgen/biomes.md)
 
 **Blaze3D** — Mojang's GPU abstraction, with OpenGL and Vulkan backends
-behind one `GpuDevice`. → [Blaze3D](../client/blaze3d.md)
+behind one `GpuDevice`. → [Blaze3D](../rendering/blaze3d.md)
 
 **Block** — the singleton describing a kind of block: its behaviour, its
 property set and its state table. One `Block`, many `BlockState`s. → [blocks and states](../blocks/blocks-and-states.md)
@@ -85,7 +85,7 @@ argument nodes with per-node requirements, shared by client and server. → [Bri
 ## C
 
 **Camera** — the client's eye: position, rotation and the partial tick it
-was computed at, extracted into a render state once per frame. → [the frame](../client/the-frame.md)
+was computed at, extracted into a render state once per frame. → [the frame](../rendering/the-frame.md)
 
 **Carver** — a worldgen pass that removes terrain to make caves and
 ravines, asking the `Aquifer` what to leave behind. → [the worldgen pipeline](../worldgen/worldgen-pipeline.md)
@@ -127,7 +127,7 @@ a `DataComponentType`; what NBT item tags became. → [data components](../found
 data-driven content; the server half of the resource system. → [the resource system](../foundations/resource-system.md)
 
 **DeltaTracker** — the client's clock: how much of a tick has elapsed, and
-the source of every partial tick in the frame. → [the frame](../client/the-frame.md)
+the source of every partial tick in the frame. → [the client loop](../client/the-client-loop.md)
 
 **Density function** — a node in the JSON-defined graph that turns a
 position into a number; the graph in the registry is never the graph that
@@ -149,11 +149,11 @@ size, tracking range and spawn rules. → [entity anatomy](../entities/entity-an
 
 **EnvironmentAttribute** — a per-dimension, per-biome, keyframed value (fog
 colour, sky colour, music, ambient sound) resolved through a probe over a
-stack of layers; nearly every visual constant is one. → [lightmap, fog and sky](../client/lightmap-fog-and-sky.md)
+stack of layers; nearly every visual constant is one. → [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)
 
 **Extract** — the first half of the client's frame: walk the game state on
 the game thread and record an immutable render state, so that the drawing
-half touches no game object. → [the frame](../client/the-frame.md)
+half touches no game object. → [the frame](../rendering/the-frame.md)
 
 ## F
 
@@ -161,7 +161,7 @@ half touches no game object. → [the frame](../client/the-frame.md)
 opinion about where. → [features and placement](../worldgen/features-and-placement.md)
 
 **Frame graph** — the client's per-frame declaration of render passes and
-the targets each reads and writes, resolved before anything is drawn. → [level rendering](../client/level-rendering.md)
+the targets each reads and writes, resolved before anything is drawn. → [level rendering](../rendering/level-rendering.md)
 
 **Function** — a `.mcfunction` file: a list of commands loaded as a
 `CommandFunction`, optionally with macro lines. → [execution and functions](../commands/execution-and-functions.md)
@@ -224,7 +224,7 @@ template pieces by matching connector blocks. → [structures](../worldgen/struc
 client, sharing an abstract `Level` and remarkably little else. → [the level tick](../server/server-level-tick.md)
 
 **Lightmap** — the small texture the client samples to turn a block-light /
-sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../client/lightmap-fog-and-sky.md)
+sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)
 
 **Loot table** — the data-driven roll that turns an event (a block broken,
 a chest opened, a mob killed) into item stacks. → [loot tables](../items/loot-tables.md)
@@ -263,7 +263,7 @@ block states and biomes in, with a palette that grows as the section gets
 more varied. → [chunk anatomy](../world/chunk-anatomy.md)
 
 **Partial tick** — the fraction of a tick elapsed at the moment a frame is
-drawn, used to interpolate everything the client shows. → [the frame](../client/the-frame.md)
+drawn, used to interpolate everything the client shows. → [the frame](../rendering/the-frame.md)
 
 **Permission level** — the integer a command source carries and a command
 node requires; four levels, granted by the ops file or by being the server. → [Brigadier and commands](../commands/brigadier-and-commands.md)
@@ -294,10 +294,10 @@ built into the jar, some are loaded from data packs, some are sent to the
 client. → [identifiers and registries](../foundations/identifiers-and-registries.md)
 
 **RenderPipeline** — the client's declaration of everything fixed about a
-draw (shader, blend, depth, vertex format). → [Blaze3D](../client/blaze3d.md)
+draw (shader, blend, depth, vertex format). → [Blaze3D](../rendering/blaze3d.md)
 
 **Render state** — the immutable snapshot of what to draw, produced by the
-extract half of the frame and consumed by the drawing half. → [entity rendering](../client/entity-rendering.md)
+extract half of the frame and consumed by the drawing half. → [entity rendering](../rendering/entity-rendering.md)
 
 **Resource pack** — a pack of assets; the client half of the same pack
 machinery data packs use. → [the resource system](../foundations/resource-system.md)
@@ -312,7 +312,7 @@ itself is nearly a stub. → [level data and rules](../world/level-data-and-rule
 states, one of biomes, and light arrays owned by the light engine. → [chunk anatomy](../world/chunk-anatomy.md)
 
 **Section mesh** — the compiled vertex buffers for one section, rebuilt off
-the main thread when the section is both dirty and visible. → [level rendering](../client/level-rendering.md)
+the main thread when the section is both dirty and visible. → [level rendering](../rendering/level-rendering.md)
 
 **Sensor** — the half of brain AI that writes memories from the world, on a
 fixed interval. → [AI](../entities/ai-goals-and-brains.md)
@@ -342,13 +342,13 @@ across them. (The NBT sense of the word is written *NBT tag* throughout.) → [t
 
 **Tick** — one 50 ms step of the server's simulation, or one step of the
 client's; the client drops the ticks it cannot keep up with rather than
-deferring them. → [the server tick](../server/server-tick.md), [the frame](../client/the-frame.md)
+deferring them. → [the server tick](../server/server-tick.md), [the client loop](../client/the-client-loop.md)
 
 **Ticket** — the reason a chunk is loaded, with a level deciding how far it
 gets: loaded, block-ticking or entity-ticking. → [tickets and loading](../world/tickets-and-loading.md)
 
 **Timeline** — the keyframe curve an environment attribute is sampled from
-as the day advances. → [lightmap, fog and sky](../client/lightmap-fog-and-sky.md)
+as the day advances. → [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)
 
 **Trigger** — the server-side hook that tells every listening player's
 advancement state that something happened. → [advancements](../commands/advancements.md)

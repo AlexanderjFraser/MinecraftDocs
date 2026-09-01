@@ -18,3 +18,15 @@ default-theme = "light"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/AlexanderjFraser/MinecraftDocs"
 additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+# Pass-2 session H split Part X into "The client" (systems/client) and
+# "Rendering" (systems/rendering); these keep the published URLs alive.
+[output.html.redirect]
+"/systems/client/the-frame.html" = "../rendering/the-frame.html"
+"/systems/client/blaze3d.html" = "../rendering/blaze3d.html"
+"/systems/client/level-rendering.html" = "../rendering/level-rendering.html"
+"/systems/client/models-and-atlases.html" = "../rendering/models-and-atlases.html"
+"/systems/client/entity-rendering.html" = "../rendering/entity-rendering.html"
+"/systems/client/lightmap-fog-and-sky.html" = "../rendering/lightmap-fog-and-sky.html"
+"/systems/client/particles.html" = "../rendering/particles.html"
+"/systems/client/client-world-and-options.html" = "the-client-level.html"

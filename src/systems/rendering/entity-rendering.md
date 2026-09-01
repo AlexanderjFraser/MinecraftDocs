@@ -1,6 +1,6 @@
 # Entity rendering
 
-> Verified against **Minecraft 26.2** · Part X · a zombie is drawn: extract, submit, prepare, execute.
+> Verified against **Minecraft 26.2** · Part XI · a zombie is drawn: extract, submit, prepare, execute.
 
 ## Responsibility
 

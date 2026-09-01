@@ -1,6 +1,6 @@
 # Execution and functions
 
-> Verified against **Minecraft 26.2** · Part XII · A `#minecraft:tick` function runs `execute as @a at @s run …`: a command engine with no Java recursion, a fork that materialises one player at a time, and a `/return` that deletes work out of a queue rather than unwinding a stack.
+> Verified against **Minecraft 26.2** · Part XIII · A `#minecraft:tick` function runs `execute as @a at @s run …`: a command engine with no Java recursion, a fork that materialises one player at a time, and a `/return` that deletes work out of a queue rather than unwinding a stack.
 
 ## Responsibility
 

@@ -425,6 +425,48 @@ and its subject is the **server's choosing**, not the client's coping.
 
 ---
 
+### Part X · The client · and Part XI · Rendering
+
+*(session H)* **The split landed, and the seam is sharper than the plan
+assumed.** The plan's default allocation put `the-frame` in Part XI as its
+opening trace. That was right for the *frame* and wrong for the *loop*:
+`Minecraft.run` / `runTick` and `Minecraft.renderFrame` are two different
+subjects that happened to live in one method chain, and once separated
+(`the-client-loop` in X, `the-frame` in XI) almost every ordering
+dependency in the corpus resolved. **Part IX's stated dependency — "the
+client's frame/tick interleave has to be taught before
+`what-the-client-is-told`" — is now a dependency on one short page, not on
+the whole of Part X.** That is the most useful consequence of the split and
+pass 3 should protect it: keep `the-client-loop` early and keep it short.
+
+**Part X is not a pipeline and should not pretend to be.** It is a **hub
+and five spokes**: the loop is the hub, and `the-client-level`,
+`prediction-and-acks`, input/options, the GUI stack and sound all hang off
+"when in the loop does this run". Every one of them is defined by its
+cadence — per tick, per frame, per event, per packet — and that is the
+through-line, not a hand-off order. The one genuine internal pipeline is
+the GUI stack (`gui-and-screens` → `the-gui-render-tree` →
+`text-and-fonts`), which *is* three stages of one journey and should be
+taught consecutively.
+
+**Part XI is a pipeline and already reads like one.** Frame → blaze3d →
+level rendering → models → entities → lightmap/fog/sky → particles is close
+to the order things happen in. Session I should check whether `blaze3d`
+wants to be *second* or *last*: it is the substrate, so teaching it early
+means teaching an abstraction before anything uses it, and teaching it last
+means six pages of forward references. Session H has no evidence either
+way, only the observation that every rendering page cites it.
+
+**Two pages in Part X are not lectures about the client at all.**
+`prediction-and-acks` is a *protocol* page that happens to live on the
+client, and `text-and-fonts` is a *typesetting* page that happens to be
+rendered by it. Both would sit equally well in Part IX and Part XI
+respectively. They are in X because that is where their owning objects
+live, which is a packaging argument — exactly the kind pass 3 is allowed to
+overrule.
+
+---
+
 ## 2 · Page-level structure
 
 *Pages that want to be split, merged, reordered internally, or turned
@@ -540,6 +582,36 @@ ones pass 2 deliberately left alone as presentational.*
   watched. Session D grew both halves and did not split, because the
   fact-check's additions landed on both sides evenly and neither half
   became unwieldy. It is presentational and it is pass 3's call.
+
+- **`sound` is now the odd page out in Part X.** *(session H)* Session A
+  found it was two pages' worth of material and did not split it; after
+  session H, every other page in the part is one cadence and one subject,
+  and `sound` is the only one still carrying an engine and a content model.
+  The split session A described (engine · what makes a sound happen) is now
+  the *consistent* choice rather than a nicety.
+- **`the-client-loop` and `the-frame` must not both grow a "when it runs"
+  section.** *(session H)* They are one method chain split in two, and the
+  temptation on both sides is to restate the other's half for context. The
+  rule that worked while writing them: X stops at the profiler's *frame*
+  zone, XI starts at the surface acquisition, and each links once.
+- **`the-gui-render-tree` is the best candidate in the corpus for a
+  non-sequence diagram.** *(session H)* Its subject is a *tree with a
+  placement rule*; the page currently uses a sequence diagram with an
+  alternative block for the fast path, which is a flowchart wearing a
+  sequence diagram's clothes. Draw the strata and node structure and the
+  "above the highest box I intersect" rule as a diagram of the data, not of
+  time.
+- **`hud` wants a table, not prose, for its record order.** *(session H)*
+  The fact-check produced a per-element gate table of twenty-eight rows and
+  the page had to compress it to prose to stay readable. The table is the
+  honest artefact, and pass 3 should decide whether the corpus admits a
+  reference-tier table inside a lecture page.
+- **`prediction-and-acks` closed a four-way duplication.** *(session H)*
+  The ledger was described in `client-world-and-options`, `block-breaking`,
+  `block-interaction` and `what-the-client-is-told`, and the four
+  disagreed. It now has one owner and the others link to it. Pass 3 should
+  look for the same pattern elsewhere: **the corpus's duplications are
+  where its errors were.**
 
 ## 3 · The diagram plan
 
@@ -707,6 +779,35 @@ when the class name is already short.
   the carried-over item recommends settling on.
 
 ---
+
+### Parts X and XI *(session H)*
+
+Part X's new pages use `M` (`Minecraft`), `DT` (`DeltaTracker.Timer`), `PP`
+(`PacketProcessor`), `T` (`Minecraft.tick`), `FL` (`FramerateLimiter`),
+`CPL`, `CCC` (`ClientChunkCache`), `CL` (`ClientLevel`), `LLE`
+(`LevelLightEngine`), `LX` (`LevelExtractor`), `MPGM`, `BSPH`
+(`BlockStatePredictionHandler`), `SGPL`, `SPGM`, `KH` (`KeyboardHandler`),
+`KM` (`KeyMapping`), `MH` (`MouseHandler`), `G` (`Gui`), `H` (`Hud`),
+`GGE`, `GRS`, `GR` (`GuiRenderer`), and `S`/`O`/`SP`/`CM` in the options
+trace. **Two collisions the standard must resolve:** `CL` is `ClientLevel`
+here and `ServerGamePacketListenerImpl` in Part VIII; `GR` is `GuiRenderer`
+here and `GameRenderer` in Part XI. Both are worse than the Part VII/VIII
+collisions session F found, because they are between *neighbouring* parts.
+
+Three diagram-shape notes:
+
+- **`the-client-loop`'s trace is a loop, and a sequence diagram cannot say
+  so.** The bounded tick block carries the page's most important fact —
+  ticks are dropped — in a label. It wants a flowchart with a decision, or
+  a timeline.
+- **`options`'s trace ends at the server with no return arrow,
+  deliberately.** The old version of this diagram had two fabricated return
+  arrows; the absence is now the point, and a reader will read a missing
+  arrow as an omission unless the diagram says otherwise. Worth an explicit
+  "no reply" annotation convention.
+- **`prediction-and-acks` is the corpus's clearest candidate for a
+  two-column state diagram** — client ledger state against server counter
+  state — rather than a sequence.
 
 ## 4 · The lecture order
 
@@ -886,6 +987,26 @@ knowing before the order is drafted.*
   something reaches the client is a claim about which half of the player
   tick it ran in. *(session F)*
 
+- **The client loop is now a prerequisite of three parts, and it is
+  cheap.** *(session H)* Part III wants it for the tick contrast, Part IX
+  needs the per-frame packet drain, and all of Parts X and XI assume the
+  cadence. It is the smallest page with the widest fan-in in the corpus
+  after the thread table — which argues for teaching it very early, perhaps
+  even beside `anatomy` in Part I rather than at the head of Part X.
+- **`prediction-and-acks` → Part V, both ways.** *(session H)*
+  `block-breaking` and `block-interaction` are its applications and cannot
+  be taught without it; it in turn is unreadable without Part V's notion of
+  a block update. Whichever comes first has to forward-reference the other,
+  and pass 3 should pick deliberately rather than by part number.
+- **`text-and-fonts` → `chat-and-signing` (Part IX).** *(session H)* The
+  text page starts from "you have a `Component`", and what a `Component` is
+  lives in Part IX. That is a backwards dependency across five parts, and
+  it is the strongest argument in the corpus for a `Component` page in Part
+  II — the object is a foundation, not a networking detail.
+- **`the-gui-render-tree` → `blaze3d` (Part XI).** *(session H)* The GUI
+  page explains batching and pipelines a whole part before the pipeline
+  page exists.
+
 ## 6 · Open questions for pass 3
 
 - Does `math-and-primitives` move to `src/reference/`? *(session A)*
@@ -932,3 +1053,16 @@ knowing before the order is drafted.*
   **`CL` and `SGPL` are both `ServerGamePacketListenerImpl`** within Part
   VIII, and `CM` is `AbstractContainerMenu` on one page and `CraftingMenu`
   on another. *(session F)*
+- Does `the-client-loop` belong in Part I beside `anatomy`, given three
+  parts depend on it and it is two hundred lines? *(session H)*
+- Does `prediction-and-acks` belong in Part IX rather than Part X? It is a
+  protocol, and its two applications are in Part V. *(session H)*
+- Is there a `Component` page in Part II, so that `text-and-fonts` and
+  `chat-and-signing` stop sharing a subject? *(session H)*
+- Where does the debug subscription system live — Part IX (it is a server
+  push), Part X (the client draws it), or a part of its own? It is the only
+  system in the corpus whose two halves are in different parts by nature.
+  *(session H)*
+- `blaze3d` second or last within Part XI? *(session H)*
+- Does the corpus admit a reference-tier **table inside** a lecture page —
+  `hud`'s gate table, `the-client-loop`'s zone list? *(session H)*

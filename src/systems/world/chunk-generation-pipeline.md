@@ -10,7 +10,7 @@ neighbours at an *earlier* status, which is why asking for one finished
 chunk quietly asks for a 23×23 square of partly-finished ones. The pipeline
 is the machinery that keeps that square consistent: which step needs what,
 who has already started it, and which thread it may run on. The terrain
-itself — noise, surface, carvers, features, structures — is Part XI; this
+itself — noise, surface, carvers, features, structures — is Part XII; this
 page is about the conveyor, not what rides on it.
 
 The one sentence a player recognises: *the ring of half-made chunks beyond
@@ -313,7 +313,7 @@ sequenceDiagram
   `ChunkGenerator.createReferences`, `ChunkGenerator.createBiomes`,
   `ChunkGenerator.fillFromNoise`, `ChunkGenerator.buildSurface`,
   `ChunkGenerator.applyCarvers`, `ChunkGenerator.applyBiomeDecoration`,
-  `ChunkGenerator.spawnOriginalMobs` — Part XI; the implementations are
+  `ChunkGenerator.spawnOriginalMobs` — Part XII; the implementations are
   `NoiseBasedChunkGenerator`, `FlatLevelSource`, `DebugLevelSource`),
   `ThreadedLevelLightEngine`, `ChunkMap.scheduleChunkLoad`, `StructureCheck`.
 - **Crosses the network as:** nothing. A chunk reaches a client only after

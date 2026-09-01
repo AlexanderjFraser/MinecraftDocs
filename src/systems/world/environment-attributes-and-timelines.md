@@ -276,7 +276,7 @@ The probe lives on `Camera`, ticked from `Camera.tick` and cleared by
 `Camera.reset`. Every consumer of a visual attribute goes through it —
 `SkyRenderer`, `LightmapRenderStateExtractor`, `AtmosphericFogEnvironment`,
 `WaterFogEnvironment`, `LevelExtractor` for clouds, and `Minecraft` for
-music — which is why [lightmap, fog and sky](../client/lightmap-fog-and-sky.md)
+music — which is why [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)
 never touches `EnvironmentAttributeSystem` directly.
 
 ## Interfaces

@@ -28,9 +28,9 @@ wait for pass 3 (and feed the lecture-order draft there).
 | `items/containers-and-menus` | 320 | the menu/slot model vs the click protocol (state id, `HashedStack`) |
 | `player/player-anatomy` | 404 | the class ladder + `Inventory`/`Abilities` (a data page) vs the two-phase tick trace |
 | `player/input-to-movement` | 305 | the client input chain vs the server's validation and rubber-band |
-| `client/client-world-and-options` | ~300 | **strongest new candidate.** Four subjects: the tick/frame split and the client's own lighting; the prediction ledger (`MultiPlayerGameMode` + `BlockStatePredictionHandler`); options and `ClientInformation`; and input (`KeyMapping`, `MouseHandler`, `KeyboardHandler`). A sibling *input-and-keybinds* page would pair with Part VIII's *input to movement* — the seam is `ClientInput.tick`. The prediction ledger could also be its own page with its own trace; it is currently split across three pages (Part IX names `BlockStatePredictionHandler`, Part V's *block-breaking* has the prediction, this page has the ledger). Decide one owner. (session 10) |
-| `client/gui-and-screens` | ~300 | the two-phase render model + widgets/layouts vs the font and text engine (`Font`, `FontSet`, `GlyphStitcher`, `StringSplitter`, bidi) — the text half is a lecture on its own (session 10) |
-| `client/level-rendering` | ~310 | the meshing pipeline (dirty → compile → upload) vs visibility and the frame graph (session 10) |
+| ~~`client/client-world-and-options`~~ | ~300 | **Session H: executed, four ways.** The page is gone; its four subjects became `the-client-level`, `prediction-and-acks`, `input-and-keybinds` and `options`. The prediction ledger got the single owner the entry asked for, and the three other pages that described it now link to it. The proposed `input-and-keybinds` seam (`ClientInput.tick`) was wrong in detail — the real seam is the *callback*, because GLFW handlers run inline on the game thread, not queued. |
+| ~~`client/gui-and-screens`~~ | ~300 | **Session H: executed, three ways.** The text engine left as `text-and-fonts` (the entry's own proposal) and the record/draw model left as `the-gui-render-tree`, which the entry did not anticipate and which is the more interesting of the two. What is left is the screen lifecycle and container screens. |
+| `client/level-rendering` | ~310 | the meshing pipeline (dirty → compile → upload) vs visibility and the frame graph (session 10). **Session H did not touch it — it is Part XI now (`systems/rendering/`) and belongs to session I.** |
 | `worldgen/structures` | 307 | the placement decision (sets, `StructurePlacement`, `StructureCheck`, `/locate`) vs jigsaw assembly and template placement — two lectures, and the only page in Part XI with two distinct mechanisms (session 11) |
 | `worldgen/density-functions` | 307 | the node library and the codec/registry model vs the two rewrites (`RandomState`, `NoiseChunk.wrapNew`) and the cell loop. The rewrite story is the lecture; the catalogue is reference (session 11) |
 | `commands/brigadier-and-commands` | 313 | the parse/suggest/permission story vs the permission model itself. The permission rewrite (`PermissionSet`, `Permission`, `PermissionCheck`, `LevelBasedPermissionSet`) is a lecture on its own and is currently a section inside a page whose trace is `/give`; it is also the single biggest API break in the corpus and deserves the billing (session 12) |
@@ -88,11 +88,16 @@ re-reads and appendix rulings are pass-2 session A / session K work.
     hand-written Part XII block. If pass 2 finds a *wrong* row, fix it in
     both places or the next regeneration reintroduces it.
   - `appendix/out-of-scope-tour` ends with a **gaps** list — the debug
-    cluster (~91 classes, and the *server-side* debug subscription system
-    that pushes brains, paths and POIs to the client is genuinely
-    undocumented), `client/resources`, `util/parsing`, `client/animation`,
+    cluster, `client/resources`, `util/parsing`, `client/animation`,
     Blaze3D's Vulkan and platform halves. Each needs a ruling: absorb into
-    an existing page, add a page, or decline explicitly.
+    an existing page, add a page, or decline explicitly. **Session H ruled
+    on the debug cluster: it got a page** (`debugging-the-running-game`,
+    Part X), because the "server-side subscription system" turned out to be
+    the interesting part and the largest undocumented system in the corpus —
+    a registry of `DebugSubscription`s, a per-level poll-and-diff engine that
+    sleeps until somebody subscribes, six packets, and about two dozen
+    renderers. The tour's bullet now points at it. The remaining four are
+    still session K's.
   - `appendix/glossary` has ~110 entries and deliberately stops there. It
     should be re-swept once the lecture order exists, because the lecture
     order decides which page "owns" a term when two could.
@@ -258,6 +263,20 @@ the old name and not finding it.
 | `ParticleGroup` (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket | session 10 |
 | `Minecraft.getPartialTick`, `Timer`, `Camera.setup` | `DeltaTracker.Timer`, `Camera.update` + `Camera.extractRenderState` | session 10 |
 | `ClickType` | `ContainerInput` | session 10 |
+| `Font.drawInBatch` and every `drawString` variant | `Font.prepareText` → `Font.PreparedText`, drawn by somebody else | session H |
+| `Font.StringRenderOutput` | `Font.PreparedTextBuilder` (private), exposed as `Font.PreparedText` + `Font.GlyphVisitor` | session H |
+| `BakedGlyph` (a class) | an interface; the sheet implementation is `BakedSheetGlyph`, effects are `EffectGlyph` | session H |
+| `RawGlyph` / `SheetGlyphInfo` | `UnbakedGlyph` (info + bake) and `GlyphBitmap` (pixels + upload) | session H |
+| `GlyphProviderBuilder` / `GlyphProviderBuilderType` | `GlyphProviderDefinition` / `GlyphProviderType` | session H |
+| `Style.getFont` returning an id | still `Style.getFont`, but it returns a `FontDescription` — which may be a *sprite*, not a font | session H |
+| `FontSet.getGlyph` as public API | private; the entry point is `FontSet.source` → `GlyphSource.getGlyph` | session H |
+| `Minecraft.destroy` | gone — `Minecraft.stop`, then `Minecraft.exitWorldAndClose` and `Minecraft.close` | session H |
+| raw `(key, scancode, modifiers, action)` on every `Screen` method | the `client/input` records: `KeyEvent`, `MouseButtonEvent`, `CharacterEvent`, `PreeditEvent`, over `InputWithModifiers` | session H |
+| `Options.keyBindings` | `Options.keyMappings`; `KeyMapping.Category` is a registrable record, not a translation-key string | session H |
+| `Options.mouseSensitivity` and the other public option fields | private fields with same-named accessor *methods* (`Options.sensitivity()`) | session H |
+| `MouseHandler.lastMouseEventTime` | gone | session H |
+| `ClientChunkCache.ChunkArray` | `ClientChunkCache.Storage` | session H |
+| `ClientLevel.getStarBrightness` / `ClientLevel.effects` | `EnvironmentAttribute` lookups through the probe | session H |
 
 | `GenerationStep.Carving` | gone — `BiomeGenerationSettings.carvers` is one flat `HolderSet` | session 11 |
 | `DensityFunctions.WeirdScaledSampler` | `DensityFunctions.IntervalSelect` | session 11 |
@@ -672,6 +691,56 @@ easy to get wrong from 1.21 memory.
 
 - `Gui` is the whole 2D UI layer; the HUD is `Hud`, reached as `Gui.hud` —
   `anatomy`. Any page that says "the HUD (`Gui`)" is wrong.
+
+- The client's loop **drops** the ticks it cannot run — at most ten per frame,
+  and the rest are already gone from the residual — while the server never
+  drops a tick, only runs late. `Minecraft.MAX_TICKS_PER_UPDATE` exists and has
+  **no callers**; the clamp is a literal — `the-client-loop`.
+- **The server owns the client's tick rate.** `DeltaTracker.Timer`'s
+  target-milliseconds provider is `Minecraft.getTickTargetMillis`, which reads
+  the level's `TickRateManager` — so `/tick rate` changes the arithmetic inside
+  the client's frame loop — `the-client-loop`.
+- **GLFW callbacks are not queued.** `BlockableEventLoop.execute` runs the task
+  inline when already on the thread, and `RenderSystem.pollEvents` dispatches on
+  the game thread — so input handlers run *before* the tick that observes them.
+  Any page that says input is "queued onto the client thread" is wrong —
+  `input-and-keybinds`.
+- `Minecraft.pick` runs **once per tick and once per frame**, not "twice per
+  ticking frame" — `the-client-loop`.
+- **The acknowledgement is a receipt for a sequence number, not a verdict.**
+  `ServerGamePacketListenerImpl.ackBlockChangesUpTo` fires for rejected actions
+  too, and even for an unsequenced abort (an ack of 0). Correctness rests on the
+  ordering rule: corrections travel earlier in the same tick —
+  `prediction-and-acks`.
+- An inbound block update is only swallowed **for a position in the ledger**;
+  for any other position `ClientLevel.setServerVerifiedBlockState` writes the
+  world at once — `prediction-and-acks`.
+- **`Options.save` is the only caller of `Options.broadcastOptions`, and that is
+  weaker than it sounds**: every cycle-option button calls `Options.save` on
+  click. Sliders wait for the screen to close; cycles do not — `options`.
+- **The server never replies to a view-distance request.**
+  `ClientboundSetChunkCacheRadiusPacket` is only ever broadcast by
+  `PlayerList.setViewDistance` when the *server's* distance changes. The client
+  clamps itself — `options`.
+- In singleplayer, `IntegratedServer.tickServer` reads the render **and
+  simulation** sliders off the client's options every tick. "Simulation distance
+  is never sent to the server" is true only of multiplayer — `options`.
+- **`Level.tickBlockEntities` still checks the tick rate manager**, so "every
+  block entity ticks everywhere" is true of distance and false of `/tick
+  freeze` — `the-client-level`.
+- Only the client's light **queue** is budgeted (a tenth of the backlog, floored
+  at ten, or all of it past a thousand); `LevelLightEngine.runLightUpdates`
+  drains completely every frame — `the-client-level`.
+- **F1 does not hide the sleep fade**, which sits between the HUD's two
+  hidden-gated blocks; and the saving indicator, toasts, the debug overlay and
+  deferred subtitles are recorded by `Gui`, not `Hud` — `hud`.
+- **`Gui.isPausing` is what pauses the integrated server**, and
+  `Screen.isPauseScreen` defaults to true — `AbstractContainerScreen` overrides
+  it to false. That is why a chest does not pause singleplayer —
+  `gui-and-screens` / `the-client-loop`.
+- **Measuring text bakes glyphs.** `Font.width` resolves to a *baked* glyph, so
+  measuring a never-seen codepoint stitches it into a texture and uploads it —
+  `text-and-fonts`.
 - The handshake and login state machines run **entirely on the Netty
   thread**; the first `PacketUtils.ensureRunningOnSameThread` is in the
   configuration phase. "Netty never runs game logic" is a *play*-phase
@@ -856,6 +925,63 @@ Vulkan/platform halves) get their rulings in session K.
   page that does not exist. Recommendation: write it, in Part IV or as its
   own short part, and cut the paragraph out of `biomes`.
 
+## The client's remaining gaps *(session H's inventory)*
+
+Session H measured `net/minecraft/client/` at **1,864 classes / 172,711
+lines** and `com/mojang/blaze3d/` at **211 / 26,111**, and mapped every
+package to a page. One rule worth keeping: **`server-classes.txt` contains
+zero entries under `net/minecraft/client/` or `com/mojang/blaze3d/`** — the
+client packages are client-only without exception, so the corpus can state
+that as a rule rather than checking case by case. A spot-check of the
+forty-five most-cited class names on the client pages found no
+mis-attribution in either direction.
+
+What is left with no owner, in priority order:
+
+- **`client/gui/screens` — 224 classes / 33,521 lines, the largest unmapped
+  block in the corpus.** `gui-and-screens` explains the *machinery*
+  (lifecycle, widgets, layout, focus) and nothing explains the *catalogue*:
+  world selection (20/4,474), the container screens beyond
+  `AbstractContainerScreen` (49/7,552), the recipe book (13/1,968), options
+  (22/2,009), social/report/friends/multiplayer/packs (40/6,845).
+  Recommendation: **absorb** as a one-paragraph taxonomy naming the families
+  and their entry points. Do not write per-screen pages.
+- **`blaze3d/platform` (29 / 3,896)** — `Window`, `ScreenManager`, monitor
+  and video-mode selection, the GLFW callback wiring, `NativeImage`, cursors,
+  OS quirks. This is where "the game gets a window and input events" lives,
+  and both Part X's input page and Part XI's frame page currently start
+  *after* it. Recommendation: **absorb**, into `blaze3d` or the client loop —
+  session I should decide, since it owns `blaze3d`.
+- **`client/multiplayer` tail (~15 classes)** — `ServerData`, `ServerList`
+  and the address resolver, `LevelLoadTracker` and the receiving-level
+  screen, `TransferState`, `SessionSearchTrees`, `CacheSlot`,
+  `PingDebugMonitor`. "How the client joins a server" is a real lecture and
+  the corpus covers the protocol but not the client's session.
+  Recommendation: **absorb** into `the-client-level`, or a short
+  *joining a server* page if session K disagrees.
+- **`client/server` (6 / 838)** — `IntegratedServer` is named on six pages;
+  `IntegratedServerLoader`, `IntegratedPlayerList` and the three LAN classes
+  are named nowhere. "Singleplayer is a server" is a claim the corpus makes
+  repeatedly and never walks. Recommendation: **absorb** into
+  `server-lifecycle` (Part III), which already owns the server's two ends.
+- **`client/resources` strays (~6)** — `SkinManager` and
+  `DefaultPlayerSkin` (genuinely interesting: they feed entity rendering),
+  `MapTextureManager`, `WaypointStyleManager`, `IndexedAssetSource`.
+  Recommendation: skins into `entity-rendering`, the rest a sentence each in
+  `resource-system`.
+- **Small and self-contained:** `client/searchtree` (8/505 — the suffix
+  array behind creative and recipe-book search), `client/gui/narration`
+  (7/235), `client/gui/components/toasts` (9/1,180),
+  `client/gui/contextualbar` (5/237) and `client/waypoints` (2/44) — the
+  last two are a real hole in `hud`, which session H closed by naming them.
+  Recommendation: absorb, one paragraph each.
+- **Decline explicitly** (session K): `client/data*` (28 / 6,176 — build-time
+  model generators, the same category as `net/minecraft/data`, and big enough
+  that a reader will trip over it), `client/quickplay` (3/284),
+  `client/profiling` (2/81), `client/renderer/gizmos` (2/91), the ~230
+  per-mob classes under `client/model/*`, and the interiors of
+  `blaze3d/opengl` and `blaze3d/vulkan`.
+
 ## Verifier lessons (so drafting stays clean)
 
 - Qualify every member: `Class.member`; bare members fail.
@@ -886,6 +1012,18 @@ Vulkan/platform halves) get their rulings in session K.
   `Model.setupAnim` not `EntityModel.setupAnim` (session 10).
 - **JDK class names in backticks fail** the same way keywords do: `Math`
   was session A's only miss. Say "the JDK's sine", not `Math.sin`.
+- Session H's four misses were the same three shapes as every previous
+  session and one new one: an unqualified member (`doAddParticle`,
+  `handlePlayerAction`), a JDK type (`AutoCloseable`), a **bare English word
+  in backticks used as a value** (`false`, in "reports `false` for"), and a
+  member cited on the wrong class — `Level.getUncachedNoiseBiome`, which is
+  declared on `LevelReader`. The last one is the interesting one: it is the
+  declaring-class trap that the protocol says only a fact-check agent can
+  catch, and here the *verifier* caught it, because `Level` genuinely does
+  not contain the token. **The verifier catches the wrong-class citation
+  whenever the cited class's file does not happen to mention the member —
+  which is most of the time for an interface method.** It is the citations
+  to *superclasses whose files do mention the name* that stay invisible.
 - Session A's four failures were all *unqualified members* written mid
   sentence — `managedBlock`, `tickChildren`, `prepareSharedState` — plus
   two names being introduced as **gone** (*initGameThread*,
@@ -1364,3 +1502,76 @@ cannot**. It is the single highest-value part of the fact-check brief.
   were written earliest.
 - No new rows for `appendix/naming-drift`: session 9's networking rows
   were re-read against the decompile and are all still right.
+
+### Session H — Part X The client (and the X/XI split)
+
+**What the session did.** Eight fact-check agents: `the-frame`,
+`ClientLevel`, the prediction ledger (cross-checked against `block-breaking`,
+`block-interaction` and `what-the-client-is-told`), input/options, screens,
+the text engine, `hud`, and one full `net/minecraft/client/**` coverage
+inventory, plus a ninth agent to research the debug subscription pipeline
+once the inventory found it. Part X's eleven pages became **eleven client
+pages plus a seven-page Part XI**; three parts renumbered;
+`client-world-and-options` and the old `the-frame` were split four ways and
+two ways respectively.
+
+**On-spec additions pass 4 may cut.** Everything here was added because a
+fact-check found the page silent about it, not because a lecture demanded it:
+
+- `the-client-loop`'s **starting and stopping** section (the teardown order
+  in `Minecraft.close`, the three exits, the out-of-memory ladder) and its
+  **tick, in order** section. Both are catalogues; the second earns its place
+  because three other parts cite the order, the first may not.
+- `the-client-level`'s **chunk-cache torus** and the unload counter-trace.
+  The torus is load-bearing for the render-distance story; the unload half is
+  symmetry, and symmetry is the first thing to cut.
+- `prediction-and-acks`'s **what the ledger does not cover** section. It
+  exists because three pages had implied the ledger covers item use and
+  movement. If pass 3 moves the page to Part IX, this section is what keeps
+  it honest; if not, it could shrink to two sentences.
+- `options`'s **listener side-effect** paragraph and the graphics-preset /
+  restart-required material. Genuinely new machinery, genuinely dull.
+- `hud`'s **contextual-bar priority** paragraph. Four states with an
+  asymmetric rule; correct, and possibly more detail than a lecture wants.
+- `debugging-the-running-game` in its entirety — a page nobody asked for,
+  written because the coverage inventory found ~4,900 lines of undocumented
+  pipeline and the page's own trace turned out to be one of the better ones
+  in the corpus. If pass 4 disagrees, the sample-logger section is the half
+  to cut first: it shares one subscription with the rest and nothing else.
+- `text-and-fonts` as a whole is 260 lines about a subject no other page
+  needed. It is the clearest single-lecture page in Part X and also the one
+  a viewer is least likely to have asked for.
+
+**Wording debt.**
+
+- Three pages now open with "The headline for a 1.21-era reader", four with
+  "The one sentence a player would recognise". The formula is doing real work
+  and is starting to show. Pass 4 should vary it or commit to it.
+- `the-client-loop` and `the-frame` both use "owe, spend, draw, settle" /
+  "acquire, snapshot, draw, present" as a four-beat gloss under their
+  diagram. Two is a pattern; a third would be a tic.
+- `the-gui-render-tree`'s title is the weakest in the part. It is really
+  *how the UI is recorded and drawn*, and the tree is the mechanism, not the
+  subject.
+
+**Cross-part edits made** (grep the corpus, as session B's rule says):
+`block-breaking` (two corrections — the redstone-ore retain, and the
+pop-back on a too-early stop), `block-interaction` (the unconditional
+"always ends by sending" gated, the ledger bullet cut to a pointer),
+`what-the-client-is-told` (the ack claim corrected, the `ClientLevel`
+section handed over to Part X as session G recommended), `anatomy` (linked
+to the new loop page), `items-and-stacks` (a genuinely broken link to
+`../anatomy.md`, pre-existing and unrelated), and the appendix's
+naming-drift tables split between Parts X and XI.
+
+**Left for session I.** The old `the-frame`'s render half is now Part XI's
+opening page and was rewritten from session H's fact-check, but only its
+*wrong* claims were fixed — the missing rendering material the report found
+(the non-world tail of `GameRenderer.render`, the cross-frame resource pool,
+window and resize handling, the frame graph's relationship to
+`FeatureRenderDispatcher`) is session I's. Two of its findings matter
+immediately: `LevelRenderer.render` takes eight parameters and none is a
+`GameRenderState`, and `GameRenderer.render` is **not** on the pure side of
+the extract/render wall — it reads the player's portal and nausea
+intensities and the boss overlay's fog question. The wall is real one level
+down, at `LevelRenderer`.

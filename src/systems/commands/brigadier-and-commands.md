@@ -1,6 +1,6 @@
 # Brigadier and commands
 
-> Verified against **Minecraft 26.2** · Part XII · `/give @p diamond_sword[minecraft:damage=5]`: two parsers for one string, a permission system that is no longer an integer, and a tab-completion that usually never leaves the machine.
+> Verified against **Minecraft 26.2** · Part XIII · `/give @p diamond_sword[minecraft:damage=5]`: two parsers for one string, a permission system that is no longer an integer, and a tab-completion that usually never leaves the machine.
 
 ## Responsibility
 
@@ -280,7 +280,7 @@ not this one:
 - **`FillBiomeCommand`** — writes the biome palette of the affected sections
   and resends them; the only command that edits a chunk's biomes
   ([chunk anatomy](../world/chunk-anatomy.md)).
-- **`PlaceCommand`** — three entries into Part XI:
+- **`PlaceCommand`** — three entries into Part XII:
   `PlaceCommand.placeFeature` runs a configured feature with no placement
   layer, `PlaceCommand.placeStructure` lays out a whole structure, and
   `PlaceCommand.placeJigsaw` reaches jigsaw assembly directly

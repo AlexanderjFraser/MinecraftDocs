@@ -49,7 +49,8 @@ a view of it.*
 
 There are two loops and they are not the same shape.
 
-**The client loop** runs on the *Render thread* — the JVM main thread, renamed
+**The client loop** ([the client loop](../client/the-client-loop.md)) runs on
+the *Render thread* — the JVM main thread, renamed
 in `Main` before `Minecraft` is constructed, and the thread `RenderSystem`
 guards with `RenderSystem.assertOnRenderThread`. `Minecraft.run` polls GLFW
 events (`RenderSystem.pollEvents`) and then calls `Minecraft.runTick` once per

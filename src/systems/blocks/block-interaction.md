@@ -103,13 +103,13 @@ instant even on a laggy server.*
   door, three sixteenths deep, is reachable from as far as a full block
   would be; creative adds `ServerPlayer.CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER`
   (0.5), and the server allows a further 1.0 of slack.
-- **The prediction ledger** on the client: `ClientLevel.blockStatePredictionHandler`,
-  a `BlockStatePredictionHandler` whose `BlockStatePredictionHandler.serverVerifiedStates`
-  maps positions to `BlockStatePredictionHandler.ServerVerifiedState`
-  (sequence, the pre-prediction state, the player position); the sequence
-  counter `BlockStatePredictionHandler.currentSequenceNr`. The server's
-  half is one int per connection,
-  `ServerGamePacketListenerImpl.ackBlockChangesUpTo`.
+- **The prediction ledger** on the client:
+  `ClientLevel.blockStatePredictionHandler`, a `BlockStatePredictionHandler`
+  mapping positions to a remembered state, a sequence and a player position;
+  the server's half is one int per connection,
+  `ServerGamePacketListenerImpl.ackBlockChangesUpTo`. The mechanism belongs
+  to [prediction and acknowledgement](../client/prediction-and-acks.md);
+  this page uses it.
 
 ## When it runs
 
@@ -283,9 +283,12 @@ sequenceDiagram
    `ServerGamePacketListenerImpl.handleAnimate` → `ServerPlayer.swing` →
    `LivingEntity.swing` → `ClientboundAnimatePacket` to the trackers.
 10. **Three kinds of block update go back.** `ServerGamePacketListenerImpl.handleUseItemOn`
-    always ends by sending the clicker a `ClientboundBlockUpdatePacket`
-    for the clicked position and one for the block on its clicked face —
-    not the upper half. Then `ServerLevel.tick` → `ServerChunkCache.tick`
+    ends by sending the clicker a `ClientboundBlockUpdatePacket` for the
+    clicked position and one for the block on its clicked face — not the
+    upper half. Those two are inside the branch that survives the reach and
+    hit-location checks and the build-height test: fail either and **no**
+    block update is sent, while the ack still goes out, because it was
+    recorded as the handler's first statement. Then `ServerLevel.tick` → `ServerChunkCache.tick`
     → `ServerChunkCache.broadcastChangedChunks` → `ChunkHolder.broadcastChanges`:
     two changed positions in one section become one
     `ClientboundSectionBlocksUpdatePacket` to every player tracking the

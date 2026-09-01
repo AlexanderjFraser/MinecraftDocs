@@ -376,10 +376,11 @@ The rest of the block-shaped traffic:
 ([redstone](../blocks/redstone.md)),
 `ClientboundBlockDestructionPacket` for other players' mining progress,
 `ClientboundBlockChangedAckPacket`, sent at most once per connection per
-tick and only on the ticks where the client actually submitted a
-sequenced action, to close out its prediction ledger, and `ClientboundChunksBiomesPacket`
-when biomes are re-sent. The prediction rules themselves belong to
-[block interaction](../blocks/block-interaction.md).
+tick and on any tick where the client sent a block action, a use-on or a
+use — **including an unsequenced abort, which produces an ack of zero and
+settles nothing** — and `ClientboundChunksBiomesPacket` when biomes are
+re-sent. The prediction rules themselves belong to
+[prediction and acknowledgement](../client/prediction-and-acks.md).
 
 ## The rest of the push
 
@@ -456,27 +457,19 @@ to [movement and collision](../entities/movement-and-collision.md).
 
 ## `ClientLevel` as a lossy copy
 
-**What it fakes.** `ClientLevel.hasChunk` returns **true
-unconditionally**, and `ClientChunkCache` hands back a shared empty chunk
-for anything out of range — so "no data" reads as "air, plains biome",
-never as an error. Storage is a fixed torus indexed modulo the view
-range; moving the centre silently re-aims the same slots.
-`ClientLevel.explode` has an **empty body** — explosions are pure
-particles, sound and knockback from `ClientboundExplodePacket`. So does
-its game-event dispatch.
+The counterpart to everything above is what the receiver does with it, and
+that belongs to Part X: the client fakes a great deal
+(`ClientLevel.hasChunk` is unconditionally true, `ClientLevel.explode` and
+its game-event dispatch are empty), simulates a great deal (its own clock,
+its own light engine, full entity ticks on entities it does not own), and
+guesses the rest through a sequence-numbered ledger. See
+[the client level](../client/the-client-level.md) and
+[prediction and acknowledgement](../client/prediction-and-acks.md).
 
-**What it simulates.** It advances its own game time every tick and only
-corrects on `ClientboundSetTimePacket`. It runs full `Entity.tick` on
-entities it does not own. It computes its own light in a queue throttled
-per frame. It runs weather and ambient particles off a
-time-seeded random. It recomputes biome tint locally.
-
-**What it guesses.** `BlockStatePredictionHandler` stashes the
-pre-change state for every block the player places or breaks; incoming
-block updates for a predicted position update only the *stored* server
-state and leave the visible world alone, until the acknowledgement
-packet reconciles the whole range at once — and snaps the player back if
-the correction now intersects them.
+The reason it matters here is the design constraint it puts on this page's
+subject: because the client will happily simulate in the absence of data,
+**the server's job is not to keep the client correct — it is to choose what
+the client is allowed to be wrong about.**
 
 ## Interfaces
 

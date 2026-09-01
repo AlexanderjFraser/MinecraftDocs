@@ -348,7 +348,7 @@ sequenceDiagram
   `RecipeManager` (`ServerLevel.recipeAccess`; [recipes](../items/recipes.md)); `FuelValues`;
   `ServerPlayer.openMenu` and `AbstractContainerMenu.broadcastChanges`
   ([containers and menus](../items/containers-and-menus.md)); `BlockEntityRenderDispatcher` on the client
-  (Part X — `ClientLevel.onBlockEntityAdded` registers globally rendered
+  (Part XI — `ClientLevel.onBlockEntityAdded` registers globally rendered
   ones).
 - **Crosses the network as:** `ClientboundBlockEntityDataPacket` (only
   the nineteen; pos, type, tag); the block entity's *type and position*

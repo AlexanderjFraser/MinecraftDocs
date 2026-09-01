@@ -1,6 +1,6 @@
 # The out-of-scope tour
 
-> Verified against **Minecraft 26.2** · Part XIII · No trace — a map of what this corpus does not cover: what each subsystem is, why it is skipped, and the two or three class names to start at if you need it anyway.
+> Verified against **Minecraft 26.2** · Part XIV · No trace — a map of what this corpus does not cover: what each subsystem is, why it is skipped, and the two or three class names to start at if you need it anyway.
 
 ## Responsibility
 
@@ -83,7 +83,7 @@ greys out a world that needs it.
 **`net/minecraft/client/telemetry`**, client-only. Exactly seven event
 types: world loaded, world unloaded, graphics capabilities (which now
 carries the backend name and the reason a backend failed — see
-[Blaze3D](../client/blaze3d.md)), and four opt-in ones covering performance
+[Blaze3D](../rendering/blaze3d.md)), and four opt-in ones covering performance
 metrics, world load times, advancements and game load times.
 `TelemetryProperty` is the vocabulary; each property carries both an
 internal name and a different export key.
@@ -311,19 +311,19 @@ decide for each.
   (101) — the pack repository and the client reload. Split across
   [the resource system](../foundations/resource-system.md) and Part X, with
   no page owning the client half end to end.
-- **The debug cluster** (about 91 classes across the debug screen
-  components, the debug renderers, and the server-side debug subscription
-  system). The F3 screen is now a registry of entries assembled into
-  profiles, fed by sample loggers and by a *server push* subscription
-  system — brains, paths and points of interest reach the client through
-  it. That last part is server-side and nothing here documents it.
+- ~~**The debug cluster**~~ — **no longer a gap.** The F3 screen's entry
+  registry is in [the HUD](../client/hud.md) and the subscription system,
+  the sample loggers and the debug renderers are in
+  [debugging the running game](../client/debugging-the-running-game.md).
+  What remains out of scope is the drawing code inside the two dozen
+  individual debug renderers, and `client/gui/screens/debug`'s two screens.
 - **`net/minecraft/util/parsing`** (29) — the string-parsing toolkit under
   the command arguments.
 - **`net/minecraft/client/animation`** (23) — declarative keyframe
   animation data for entity models, adjacent to
-  [entity rendering](../client/entity-rendering.md).
+  [entity rendering](../rendering/entity-rendering.md).
 - **The Vulkan and platform halves of Blaze3D** (about 69 classes) — named
-  by [Blaze3D](../client/blaze3d.md) but not walked.
+  by [Blaze3D](../rendering/blaze3d.md) but not walked.
 
 ## Where to look
 

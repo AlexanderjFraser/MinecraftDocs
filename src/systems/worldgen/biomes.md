@@ -1,6 +1,6 @@
 # Biomes
 
-> Verified against **Minecraft 26.2** · Part XI · A point in the world gets a biome: a climate sample, a nearest-neighbour search in seven dimensions, and the two different answers the game keeps for the same block.
+> Verified against **Minecraft 26.2** · Part XII · A point in the world gets a biome: a climate sample, a nearest-neighbour search in seven dimensions, and the two different answers the game keeps for the same block.
 
 ## Responsibility
 
@@ -32,7 +32,7 @@ lines, a couple of blocks apart, and different systems use different ones.
   `BiomeSpecialEffects.grassColorOverride` and
   `BiomeSpecialEffects.grassColorModifier`. Fog, sky, clouds, ambient
   sound, music and particles have all left it
-  ([lightmap, fog and sky](../client/lightmap-fog-and-sky.md)).
+  ([lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)).
 - **`EnvironmentAttributeMap`** — what `Biome.getAttributes` returns. Each
   `EnvironmentAttributeMap.Entry` is an `AttributeModifier` plus its
   argument, so a biome may **override** a value or merely **modify** the

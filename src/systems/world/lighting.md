@@ -271,7 +271,7 @@ sequenceDiagram
    `LayerLightSectionStorage.markNewInconsistencies` splices the layers in,
    `LayerLightSectionStorage.swapSectionMap` publishes and
    `ClientChunkCache.onLightUpdate` marks the section dirty again. The
-   mesher reads the new values on rebuild (Part X). The client had already
+   mesher reads the new values on rebuild (Part XI). The client had already
    run its own `LevelLightEngine.checkBlock` when it placed the torch
    locally — the packet mostly confirms.
 
@@ -329,7 +329,7 @@ sequenceDiagram
 - **The client lights per frame**, and rate-limits packet application; a
   flood of light packets is applied over several frames.
 - **Vocabulary**: *getLightBlock* is `BlockBehaviour.BlockStateBase.getLightDampening`;
-  *LightTexture* is `Lightmap` (Part X). `DynamicGraphMinFixedPoint`,
+  *LightTexture* is `Lightmap` (Part XI). `DynamicGraphMinFixedPoint`,
   `LeveledPriorityQueue` and `SpatialLongSet` still live in
   `world/level/lighting` but the light engine no longer uses them — they
   serve `ChunkTracker` and `SectionTracker` ([tickets](tickets-and-loading.md)).

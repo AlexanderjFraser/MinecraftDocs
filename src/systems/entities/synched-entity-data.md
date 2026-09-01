@@ -157,7 +157,7 @@ data until one of the three becomes true. **Client main thread** for the apply:
 `SynchedEntityData.assignValues`. **Client main thread, extract phase** for
 the read: `LevelExtractor` and `EntityRenderDispatcher.extractEntity` copy
 the values a renderer needs into an `EntityRenderState` once per frame, so
-the render thread never touches the container (Part X owns the extract/render
+the render thread never touches the container (Part XI owns the extract/render
 split).
 
 `ServerEntity.sendChanges` opens with `Entity.updateDataBeforeSync` — the

@@ -1,6 +1,6 @@
 # The worldgen pipeline
 
-> Verified against **Minecraft 26.2** · Part XI · One chunk's terrain: noise cells filled from an interpolated lattice, an aquifer that decides what liquid belongs where, ore veins placed before the surface exists, and carvers that never place air.
+> Verified against **Minecraft 26.2** · Part XII · One chunk's terrain: noise cells filled from an interpolated lattice, an aquifer that decides what liquid belongs where, ore veins placed before the surface exists, and carvers that never place air.
 
 ## Responsibility
 

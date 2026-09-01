@@ -1,6 +1,6 @@
 # Particles
 
-> Verified against **Minecraft 26.2** · Part X · a block breaks, and sixty-four textured quads appear — by two entirely different routes.
+> Verified against **Minecraft 26.2** · Part XI · a block breaks, and sixty-four textured quads appear — by two entirely different routes.
 
 ## Responsibility
 

@@ -47,7 +47,7 @@ What every chunk owns, whatever its shape:
   `ChunkAccess.pendingBlockEntities` (still NBT, not yet deserialised —
   `ChunkAccess.getBlockEntitiesPos` unions the two).
 - `ChunkAccess.structureStarts` and `ChunkAccess.structuresRefences`
-  (Mojang's spelling) — Part XI's structure bookkeeping; every setter
+  (Mojang's spelling) — Part XII's structure bookkeeping; every setter
   marks the chunk unsaved.
 - `ChunkAccess.postProcessing` — per-section `ShortList`s of packed block
   offsets to revisit after load (`ProtoChunk.packOffsetCoordinates`: four

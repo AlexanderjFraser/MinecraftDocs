@@ -137,7 +137,7 @@ in `FoodData.tick`, with the constants in `FoodConstants`
 ## When it runs
 
 **The client's main thread — the one named *Render thread*
-([anatomy](../anatomy.md)) — starts everything.**
+([anatomy](../anatomy/anatomy.md)) — starts everything.**
 `Minecraft.handleKeybinds` sees the use key and calls
 `Minecraft.startUseItem` outright on the press; only the held-down branch
 consults `Minecraft.rightClickDelay`, and it also refuses while the

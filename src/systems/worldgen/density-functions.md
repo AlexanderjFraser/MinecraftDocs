@@ -1,6 +1,6 @@
 # Density functions
 
-> Verified against **Minecraft 26.2** · Part XI · One number out of one point: how a JSON graph becomes "stone or air", and why the graph in the registry is never the graph that runs.
+> Verified against **Minecraft 26.2** · Part XII · One number out of one point: how a JSON graph becomes "stone or air", and why the graph in the registry is never the graph that runs.
 
 ## Responsibility
 

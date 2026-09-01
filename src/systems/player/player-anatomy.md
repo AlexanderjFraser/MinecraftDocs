@@ -274,7 +274,9 @@ does, and it is a `MultiPlayerGameMode`.
 
 [Block interaction](../blocks/block-interaction.md) and
 [block breaking](../blocks/block-breaking.md) own the block halves of both
-columns, including the prediction ledger — which, note,
+columns, and
+[prediction and acknowledgement](../client/prediction-and-acks.md) owns the
+ledger they share — which, note,
 `MultiPlayerGameMode` does not hold: `MultiPlayerGameMode.startPrediction`
 reaches for `ClientLevel.getBlockStatePredictionHandler` per call.
 

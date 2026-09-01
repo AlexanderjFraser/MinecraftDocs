@@ -1,6 +1,6 @@
 # Level rendering
 
-> Verified against **Minecraft 26.2** · Part X · a block is placed, and the section it lives in is re-meshed, uploaded and drawn.
+> Verified against **Minecraft 26.2** · Part XI · a block is placed, and the section it lives in is re-meshed, uploaded and drawn.
 
 ## Responsibility
 

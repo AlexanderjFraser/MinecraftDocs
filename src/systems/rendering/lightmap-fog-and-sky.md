@@ -1,6 +1,6 @@
 # Lightmap, fog and sky
 
-> Verified against **Minecraft 26.2** · Part X · the sun goes down: every colour on screen, traced back to one keyframe curve.
+> Verified against **Minecraft 26.2** · Part XI · the sun goes down: every colour on screen, traced back to one keyframe curve.
 
 ## Responsibility
 

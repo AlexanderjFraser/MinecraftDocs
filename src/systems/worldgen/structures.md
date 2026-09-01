@@ -1,6 +1,6 @@
 # Structures
 
-> Verified against **Minecraft 26.2** · Part XI · A village is generated: a lottery that never looks at the world, a jigsaw assembled in memory, terrain bent by a density function, and blocks written one chunk-slice at a time.
+> Verified against **Minecraft 26.2** · Part XII · A village is generated: a lottery that never looks at the world, a jigsaw assembled in memory, terrain bent by a density function, and blocks written one chunk-slice at a time.
 
 ## Responsibility
 

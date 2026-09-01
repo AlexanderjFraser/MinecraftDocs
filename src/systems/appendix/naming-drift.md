@@ -1,6 +1,6 @@
 # Naming drift
 
-> Verified against **Minecraft 26.2** · Part XIII · No trace — the translation
+> Verified against **Minecraft 26.2** · Part XIV · No trace — the translation
 > layer: every name a 1.21-era reader will reach for that 26.2 does not have,
 > and what it is called now.
 
@@ -41,7 +41,8 @@ each part explains it.
 Every row here was found the same way: a fact-sheet agent reading the 26.2
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. Part X (the client) dominates it, and that is itself the
+corpus needed. The client and rendering parts (X and XI) dominate it,
+and that is itself the
 finding: the client was rewritten around extract-then-render between those
 versions, and almost nothing at the top of the render stack kept its name.
 
@@ -242,6 +243,28 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Screen.render* / every *render** on *Gui* | `Screen.extractRenderState` / `Hud.extract*` |
 | *LayeredDraw* | call order plus `GuiRenderState.nextStratum` |
 | *Options.hideGui* | `Hud.isHidden`, published as `GuiRenderState.isHudHidden` |
+| *Minecraft.getPartialTick*, *Timer* | `DeltaTracker.Timer` and its three questions |
+| *Minecraft.destroy* | gone — `Minecraft.stop`, then `Minecraft.exitWorldAndClose` and `Minecraft.close` |
+| *Options.keyBindings* | `Options.keyMappings`; `KeyMapping.Category` is a registrable record, not a string |
+| *Options.mouseSensitivity* and the other public option fields | private fields with same-named accessor methods |
+| *MouseHandler.lastMouseEventTime* | gone |
+| raw *(key, scancode, modifiers, action)* on every `Screen` method | the `client/input` records: `KeyEvent`, `MouseButtonEvent`, `CharacterEvent`, `PreeditEvent` |
+| *ClientChunkCache.ChunkArray* | `ClientChunkCache.Storage` |
+| *Font.drawInBatch* and every *drawString* variant | `Font.prepareText` → `Font.PreparedText`; the drawing verbs are on `GuiGraphicsExtractor` |
+| *Font.StringRenderOutput* | `Font.PreparedText` plus `Font.GlyphVisitor` |
+| *BakedGlyph* (a class) | an interface; the sheet implementation is `BakedSheetGlyph`, effects are `EffectGlyph` |
+| *RawGlyph* / *SheetGlyphInfo* | `UnbakedGlyph` (info and bake) and `GlyphBitmap` (pixels and upload) |
+| *GlyphProviderBuilder* / *GlyphProviderBuilderType* | `GlyphProviderDefinition` / `GlyphProviderType` |
+| *Style.withFont* taking an id | still `Style.withFont`, but the type is `FontDescription`, which may be a sprite rather than a font |
+| *FontSet.getGlyph* as public API | private — `FontSet.source` then `GlyphSource.getGlyph` |
+
+### Part XI — Rendering
+
+A third of this whole table is here, and almost all of it is one
+refactor: extract then render.
+
+| the name you remember | 26.2 |
+|---|---|
 | *MultiBufferSource* / *BufferSource* | `SubmitNodeCollector` / `SubmitNodeStorage` / `FeatureRenderDispatcher` |
 | *ShaderInstance*, *RenderStateShard* | `RenderPipeline` + `RenderPipelines` + `BindGroupLayouts` |
 | *VertexBuffer*, *Tesselator*, *BufferUploader* | `GpuBuffer` / `GpuBufferSlice`, `ByteBufferBuilder` → `MeshData`, `UberGpuBuffer` |
@@ -262,9 +285,9 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *EntityRenderer.render*, *RenderLayer.render* | `EntityRenderer.extractRenderState` + `EntityRenderer.submit` |
 | *TextureSheetParticle*, sheet *ParticleRenderType*s | `SingleQuadParticle` + `SingleQuadParticle.Layer` |
 | *ParticleGroup* (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket |
-| *Minecraft.getPartialTick*, *Timer*, *Camera.setup* | `DeltaTracker.Timer`, `Camera.update` + `Camera.extractRenderState` |
+| *Camera.setup* | `Camera.update` + `Camera.extractRenderState` |
 
-### Part XI — World generation
+### Part XII — World generation
 
 | the name you remember | 26.2 |
 |---|---|
@@ -281,7 +304,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters |
 | *StructureTemplateManager* folder *structures/* | *structure/* |
 
-### Part XII — Commands and data packs
+### Part XIII — Commands and data packs
 
 The permission rewrite is the largest single break in this table: the
 integer permission level is gone from the whole command API, replaced by
@@ -342,13 +365,13 @@ The recurring ones:
   *EntityRenderer.render*, *LevelRenderer.renderLevel*, *MultiBufferSource*
   and every `RenderSystem` state setter are gone or repurposed, because the
   frame now builds an immutable render state on the game thread and draws
-  from it — [the frame](../client/the-frame.md), [Blaze3D](../client/blaze3d.md),
-  [entity rendering](../client/entity-rendering.md).
+  from it — [the frame](../rendering/the-frame.md), [Blaze3D](../rendering/blaze3d.md),
+  [entity rendering](../rendering/entity-rendering.md).
 - **Per-dimension and per-biome constants became one attribute system.**
   *DimensionSpecialEffects* and most of *BiomeSpecialEffects* are gone;
   fog, sky, water colour, ambient sound and music are
   `EnvironmentAttribute`s resolved through an `EnvironmentAttributeProbe`
-  over a stack of layers — [lightmap, fog and sky](../client/lightmap-fog-and-sky.md),
+  over a stack of layers — [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md),
   [biomes](../worldgen/biomes.md).
 - **Enums of behaviour became registries of data.** *EnchantmentCategory*,
   *MobSpawnType*, *BlockPathTypes*, *GenerationStep.Carving* and
@@ -389,7 +412,13 @@ verified on its own page.
 | *ClientConnection* | *Connection* |
 | *Text* / *MutableText* | *Component* / *MutableComponent* |
 | *TextRenderer* | *Font* |
-| *DrawContext* | *GuiGraphics* — and in 26.2 it does not draw; see the drift table |
+| *TextHandler* | *StringSplitter* |
+| *TextVisitFactory* | *StringDecomposer* |
+| *OrderedText* | *FormattedCharSequence* |
+| *StringVisitable* | *FormattedText* |
+| *FontStorage* | *FontSet* |
+| *GlyphAtlasTexture* | *FontTexture* |
+| *DrawContext* | *GuiGraphicsExtractor* — and in 26.2 it does not draw; see the drift table |
 | *NbtCompound* / *NbtList* / *NbtElement* | *CompoundTag* / *ListTag* / *Tag* |
 | *RegistryEntry* / *RegistryEntryList* | *Holder* / *HolderSet* |
 | *Registries* / *RegistryKeys* | *BuiltInRegistries* / *Registries* |
@@ -417,7 +446,7 @@ Fabric code now compiles against a Mojang-named class with the Yarn name.
   The 1.21 side of this table is the only unverifiable content in the
   corpus, which is why it is confined to one page.
 - **The client is where the names went.** Roughly a third of the table is
-  Part X, and almost all of that is one refactor — extract then render.
+  Part XI, and almost all of that is one refactor — extract then render.
 - **Renames cluster with rewrites.** No part of the tree renamed a class
   and kept its design; where the name changed, the responsibility usually
   moved too. Reading the row is not enough, which is what the linked page

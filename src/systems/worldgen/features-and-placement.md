@@ -1,6 +1,6 @@
 # Features and placement
 
-> Verified against **Minecraft 26.2** · Part XI · A tree is generated: a global sort order every chunk in the world agrees on, a stream of positions filtered by modifiers, and an algorithm that reads the ground before it writes a log.
+> Verified against **Minecraft 26.2** · Part XII · A tree is generated: a global sort order every chunk in the world agrees on, a stream of positions filtered by modifiers, and an algorithm that reads the ground before it writes a log.
 
 ## Responsibility
 

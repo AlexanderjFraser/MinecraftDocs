@@ -1,6 +1,6 @@
 # Blaze3D
 
-> Verified against **Minecraft 26.2** · Part X · one draw call, from a declared pipeline to a triangle — and the two backends that can serve it.
+> Verified against **Minecraft 26.2** · Part XI · one draw call, from a declared pipeline to a triangle — and the two backends that can serve it.
 
 ## Responsibility
 
@@ -229,7 +229,7 @@ push descriptors for the uniform binding, and a real swapchain in
   "missing uniform", "invalid shader program" and buffer-usage checks in
   the backends are gated on the in-IDE flag.
 - **Blaze3D is not only graphics.** `com/mojang/blaze3d/audio` is the
-  OpenAL wrapper — see [sound](sound.md).
+  OpenAL wrapper — see [sound](../client/sound.md).
 - **Names a 1.21-era reader will hunt for and not find:**
   *ShaderInstance*, *RenderStateShard*, *VertexBuffer*, *Tesselator*,
   *BufferUploader*, *RenderSystem.setShader* and every state toggle on
