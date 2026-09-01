@@ -8,6 +8,11 @@ Usage:
     python tools/gen_reference.py gamerules   # every game rule, type, category, default
     python tools/gen_reference.py all         # write all four into src/reference/
 
+Always regenerate with `all`, which writes each file as UTF-8 with LF. Do NOT
+redirect a single view into src/reference/ on Windows: Python's stdout falls
+back to the console codepage, the em dashes in the blurbs come out as mojibake,
+and mdbook then refuses the chapter with "stream did not contain valid UTF-8".
+
 MC_SOURCE points at the extracted decompile (default reference/26.2). Nothing
 here reproduces source: each catalogue is names plus the facts a declaration
 line states about them.
