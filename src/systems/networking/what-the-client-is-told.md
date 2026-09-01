@@ -223,11 +223,14 @@ something forces an absolute `ClientboundEntityPositionSyncPacket`. Head
 yaw is always its own `ClientboundRotateHeadPacket`. Synched data and
 attributes go only when dirty.
 
-**The client interpolates and then simulates.**
+**The client interpolates the position and simulates everything else.**
 `Entity.moveOrInterpolateTo` hands the update to an
-`InterpolationHandler`, which smears it over three client ticks. And
-`ClientLevel.tickEntities` runs `Creeper.tick` locally: the swell
-counter is the client's own, because only its *direction* is synched.
+`InterpolationHandler`, which smears it over three client ticks — the
+client does *not* re-run a tracked entity's physics to fill the gap
+(see [movement and collision](../entities/movement-and-collision.md)).
+What it does run is the rest of the tick: `ClientLevel.tickEntities`
+calls `Creeper.tick` locally, and the swell counter is the client's own,
+because only its *direction* is synched.
 The fuse length is never sent, so the client always animates against the
 default.
 

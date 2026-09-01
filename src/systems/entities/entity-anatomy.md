@@ -28,11 +28,14 @@ same base class.*
 which is a fair summary of how many systems reach into it. Its state falls
 into seven groups.
 
-- **Identity.** `Entity.type` (its `EntityType`), `Entity.id` — a per-level
-  int handed out by `Level.getNextEntityId`, and the *only* thing
-  `Entity.equals` and `Entity.hashCode` look at — `Entity.uuid`,
-  `Entity.tags` (the `/tag` strings, capped at
-  `Entity.MAX_ENTITY_TAG_COUNT`) and `Entity.customData`.
+- **Identity.** `Entity.type` (its `EntityType`), `Entity.id` — a
+  **process-global** int from an atomic counter on `ServerLevel`, handed out
+  by `ServerLevel.getNextEntityId`, which only consults the level to avoid a
+  collision — and the *only* thing `Entity.equals` and `Entity.hashCode`
+  look at — `Entity.uuid`,
+  `Entity.tags` (the `/tag` strings, capped at 1024 — there is an
+  `Entity.MAX_ENTITY_TAG_COUNT` constant, but `Entity.addTag` and the codec
+  both test the literal) and `Entity.customData`.
 - **Place.** `Entity.position` (a `Vec3` at the **feet**), with
   `Entity.blockPosition` and `Entity.chunkPosition` cached beside it,
   `Entity.deltaMovement`, `Entity.yRot`/`Entity.xRot` and their previous-tick
@@ -43,10 +46,13 @@ into seven groups.
 - **Shape.** `Entity.dimensions` (an `EntityDimensions`) and
   `Entity.eyeHeight`, both **caches**, refreshed by
   `Entity.refreshDimensions`. See below.
-- **Synched values.** `Entity.entityData`, filled by the abstract
-  `Entity.defineSynchedData`, with eight accessors declared on `Entity`
-  itself — the shared flags byte `Entity.DATA_SHARED_FLAGS_ID`, air supply,
-  custom name and its visibility, silence, no-gravity, pose and frozen ticks.
+- **Synched values.** `Entity.entityData`. The `Entity` constructor defines
+  its own eight accessors inline — the shared flags byte
+  `Entity.DATA_SHARED_FLAGS_ID` (bit 0 on fire, 1 sneaking, 3 sprinting,
+  4 swimming, 5 invisible, 6 glowing, 7 gliding; bit 2 unused), air supply,
+  custom name and its visibility, silence, no-gravity, pose and frozen ticks
+  — and *then* calls the abstract `Entity.defineSynchedData`, which
+  contributes nothing itself and exists only for the subclasses.
   [Synched entity data](synched-entity-data.md) owns this.
 - **Passengers.** `Entity.passengers` (an immutable list) and
   `Entity.vehicle`, with `Entity.startRiding`, `Entity.stopRiding`,
@@ -77,8 +83,11 @@ see [data components](../foundations/data-components.md)).
 ### `EntityType`, and where the constants went
 
 `EntityType` is one object per registered kind, in `Registries.ENTITY_TYPE`
-— a **defaulted** registry whose default is *pig*, so an unrecognised id
-resolves to a pig rather than throwing. Each carries an
+— a **defaulted** registry whose default is *pig*. That default is narrower
+than it sounds: `DefaultedMappedRegistry` overrides the *value* and *numeric*
+lookups, so a bad id on the wire yields a pig, but it does not override the
+`Optional`-returning lookup the name codec uses, so a bad id in **save
+data** yields nothing at all. Each carries an
 `EntityType.EntityFactory`, a `MobCategory`, an `EntityDimensions`, a
 `FeatureFlagSet`, an optional loot-table key, and the two numbers that
 decide how it reaches clients: `EntityType.clientTrackingRange` (in
@@ -108,8 +117,15 @@ despawn distance that [entity lifecycle](entity-lifecycle.md) uses.
 position and grows it **upward** — the position is the feet, never the
 centre. `EntityDimensions.scalable` and `EntityDimensions.fixed` are the two
 factories, and the flag earns its keep in `EntityDimensions.scale`, which
-returns the record unchanged when *fixed*: that, and nothing else, is why some
-mobs ignore `Attributes.SCALE`.
+returns the record unchanged when *fixed*. It is not the only way to ignore
+`Attributes.SCALE`, though: `EntityDimensions.scale` also returns *this* when
+both factors are 1, `LivingEntity.getDimensions` short-circuits a sleeping
+entity to a fixed lying-down box before any scaling, and plain
+`Entity.getDimensions` never scales at all — so every non-living entity
+ignores scale without needing the flag. Note also the two-level split
+`LivingEntity` uses: `LivingEntity.getDimensions` is final and applies the
+scale; the hook a species overrides is
+`LivingEntity.getDefaultDimensions`.
 
 `EntityAttachments` answers "where does a passenger sit, where does the name
 tag float, where does the lead attach" — `EntityAttachment.PASSENGER`,
@@ -158,14 +174,19 @@ flowchart TD
     PM --> MN[Monster]
     PM --> WA[WaterAnimal / AbstractGolem / Allay]
     AG --> AN[Animal]
-    AG --> CU[AbstractCubeMob / AbstractVillager]
+    AG --> CU[AbstractCubeMob / AbstractVillager / AgeableWaterCreature]
 ```
 
 `LivingEntity` has exactly three direct subclasses — `Avatar`, `ArmorStand`
 and `Mob` — which is worth stating plainly: **`ArmorStand` is a living
-entity with no AI at all**, no `Brain`, no `GoalSelector`, no
-`PathNavigation`. `Mob` adds those, `PathfinderMob` adds navigation,
-`AgeableMob` adds babies, `Animal` and `Monster` split by disposition, and
+entity with no AI at all**, no `GoalSelector` and no `PathNavigation`. Both
+of those are `Mob`'s, and so is the navigation — `PathfinderMob` is 86 lines
+that add walk-target valuation, not movement, which is why `Ghast` and
+`Phantom` navigate without ever being one. The `Brain`, though, is *not*
+`Mob`'s: it is declared on `LivingEntity`, built in its constructor and
+saved under a *Brain* tag on every living entity, so an armour stand carries
+an empty one. `AgeableMob` adds babies, `Animal` and `Monster` split by
+disposition, and
 `Monster` implements the marker interface `Enemy`, which carries nothing but
 the XP-reward constants.
 
@@ -184,7 +205,7 @@ Cutting across the tree are the capability interfaces: `Leashable` (the
 fattest of them, with `Leashable.tickLeash` called from `Entity.baseTick`),
 `Bucketable`, `EquipmentUser`, `NeutralMob` (persistent anger),
 `Attackable`, `Targeting`, `TraceableEntity`, `OwnableEntity`, `Shearable`,
-`ContainerUser` (implemented by `Player`, not by `Mob`),
+`ContainerUser` (exactly two implementors: `Player` and `CopperGolem`),
 `PlayerRideableJumping`, `ItemSteerable`.
 
 `EntityReference` deserves a name here: a reference to another entity that
@@ -216,9 +237,14 @@ section named after the entity type, and then calls `Entity.tick` — through
 the entity's details attached. Passengers are ticked separately through
 `Entity.rideTick`.
 
-**Client main thread.** `ClientLevel.tickEntities` does the same three
-things and calls the same `Entity.tick`. Nothing entity-related runs on a
-worker pool, and `Entity` is not thread-safe.
+**Client main thread.** `ClientLevel.tickEntities` iterates and delegates to
+`ClientLevel.tickNonPassenger`, which does the same three things and calls
+the same `Entity.tick`, with extra gates for removed, riding and frozen
+entities. Nothing entity-related runs on a worker pool — even the entity
+deserialiser, which looks asynchronous, is a `ConsecutiveExecutor` backed by
+the server itself — and `Entity` is not thread-safe. What differs between
+the sides is not the tick but what the tick is allowed to *do*; see
+[movement and collision](movement-and-collision.md).
 
 `Entity.tick`'s body on the base class is one line: call `Entity.baseTick`.
 Everything you remember happening "in tick" is in `Entity.baseTick` — the
@@ -259,14 +285,23 @@ sequenceDiagram
    `EntityDimensions` and its attachment points are computed here, once,
    and never change for the type.
 2. **Name to type.** `EntityType.by` reads the *id* field through
-   `EntityType.CODEC`. An unknown id becomes a pig, silently — the
-   defaulted registry, not an error.
-3. **Type to object.** `EntityType.create` checks `EntityType.canSpawn`
-   (feature flags, and peaceful difficulty for hostile types) and calls the
-   factory. The `Entity` constructor takes the next level-wide id, invents a
-   UUID, copies the type's dimensions into its cache, starts at the origin
-   with a **zero-size** bounding box, and builds its synched-data container
-   by walking `Entity.defineSynchedData` down the subclass chain.
+   `EntityType.CODEC`, which resolves through the registry's `Optional`
+   lookup. An unknown id yields **nothing**: `EntityType.create` logs
+   *Skipping Entity with id …* and the entity is silently dropped from the
+   world. It does not become a pig; the pig default belongs to the numeric
+   and value lookups the network uses.
+3. **Type to object.** `EntityType.create` checks `EntityType.canSpawn` —
+   feature flags, plus a peaceful-difficulty test gated on the type's own
+   `EntityType.Builder.notInPeaceful` flag, which is a declared property and
+   not a synonym for "hostile" — unless the `EntitySpawnRequest` carries
+   `EntitySpawnRequest.ignoreChecks`, which skips both. Then it calls the
+   factory. The `Entity` constructor takes the next id, invents a UUID,
+   copies the type's dimensions into its cache, and builds its synched-data
+   container: the eight base accessors are defined inline in the
+   constructor, *then* the abstract `Entity.defineSynchedData` is called and
+   the subclass chain adds its own. Its last act is `Entity.setPos` at the
+   origin — so a fresh entity has a **full-size** box, not the zero-size one
+   the field initialiser gave it.
 4. **Tag to state.** `Entity.load` reads position (clamped to ±3.0000512E7
    horizontally), motion, rotation and UUID, then calls the abstract
    `Entity.readAdditionalSaveData`. Passengers in the *Passengers* list are
@@ -287,10 +322,14 @@ sequenceDiagram
 together: `Entity.setPose` writes a synched value → the value replicates →
 `Entity.onSyncedDataUpdated` sees the pose accessor →
 `Entity.refreshDimensions` asks `Entity.getDimensions` for the new box and
-eye height → `Entity.reapplyPosition` → `EntityDimensions.makeBoundingBox`.
-If the box grew, on the server, and this is not a player, the entity is
-nudged out of any block it now overlaps
-(`Entity.fudgePositionAfterSizeChange`).
+eye height → `Entity.reapplyPosition` → `EntityDimensions.makeBoundingBox`. The callback
+is synchronous: `SynchedEntityData.set` invokes
+`Entity.onSyncedDataUpdated` inside the setter, before anything is marked
+dirty, so the side that called `Entity.setPose` resizes immediately and the
+other side resizes when the value lands. If the box grew, on the server,
+this is not a player, it is not the first tick, physics are on and the new
+box is under four blocks in both dimensions, the entity is nudged out of any
+block it now overlaps (`Entity.fudgePositionAfterSizeChange`).
 
 ## Interfaces
 
@@ -318,15 +357,26 @@ nudged out of any block it now overlaps
 - **`Entity.equals` compares the network id and nothing else.** Not the
   UUID, not identity. Entities from two different levels with the same id
   are "equal"; never mix them in one set.
+- **On the client, an entity has no id until the packet gives it one.**
+  `Level.getNextEntityId` returns a literal zero and `ClientLevel` does not
+  override it, while zero is the reserved invalid id and `Entity.getId`
+  *throws* on it. A client-side entity is therefore unusable — no id, and
+  so neither equality nor hashing — between construction and
+  `Entity.recreateFromPacket`. `ServerLevel.getNextEntityId` skips zero
+  deliberately.
 - **`Entity.isRemoved` means `Entity.removalReason` is non-null, and the
   first reason wins.** `Entity.RemovalReason` carries two independent flags:
   `Entity.RemovalReason.UNLOADED_TO_CHUNK` is the only one that saves,
   `Entity.RemovalReason.KILLED` and `Entity.RemovalReason.DISCARDED` are the
-  only ones that destroy, and `Entity.RemovalReason.CHANGED_DIMENSION` does
-  neither.
-- **The hitbox is a cache with exactly one automatic refresh.**
-  `Entity.dimensions`, `Entity.eyeHeight` and `Entity.bb` are stored, and
-  only a pose change refreshes them by itself. Note also that
+  only ones that destroy, and the remaining two —
+  `Entity.RemovalReason.CHANGED_DIMENSION` and
+  `Entity.RemovalReason.UNLOADED_WITH_PLAYER` — do neither.
+- **The hitbox is a cache, and only three things refresh it by themselves.**
+  `Entity.dimensions`, `Entity.eyeHeight` and `Entity.bb` are stored. A pose
+  change refreshes them on the base class; `LivingEntity.onAttributeUpdated`
+  adds a refresh on `Attributes.SCALE`; and `AgeableMob` (and `Zombie`, with
+  its own flag) adds one on the baby bit. Everything else has to ask. Note
+  also that
   `Entity.getEyeHeight` (no argument) reads the cache while the `Pose`
   overload recomputes — they disagree whenever the cache is stale.
 - **The box grows up from the feet.** `Entity.position` is the bottom
@@ -340,16 +390,31 @@ nudged out of any block it now overlaps
   goal pass instead of the full one.
 - **`EntityTypes.PLAYER` has a factory that returns null**, plus no-save and
   no-summon. `EntityType.create` for a player always yields null, which is
-  why the client hand-builds a `RemotePlayer` when a player enters view.
+  why `ClientPacketListener.createEntityFromPacket` special-cases it and
+  hand-builds a `RemotePlayer` when a player enters view.
+- **`EntityType` carries a hand-written velocity blacklist.**
+  `EntityType.trackDeltas` names ten types whose motion is simply never
+  sent — one of the few places in the codebase where behaviour is a literal
+  list of types rather than a tag or a flag.
 - **Tracking range is in chunks, update interval in ticks**, both fixed at
   registration. `EntityTypes.MARKER` has range 0 and is never sent to
   anyone; `EntityTypes.AREA_EFFECT_CLOUD` has an interval of two billion.
 - **`Entity.viewScale` is a static field on `Entity`** — process-global
-  state, set from the client's entity-distance option.
+  state, written from one place in `LevelExtractor` out of the render
+  distance *and* the client's entity-distance option, not the option alone.
 - **Passengers are saved inside their vehicle.** `Entity.save` returns false
   for anything currently riding; the vehicle writes them into its
-  *Passengers* list, and `Entity.getEncodeId` is null for types that never
-  serialise at all.
+  *Passengers* list through `Entity.saveAsPassenger`, and
+  `Entity.getEncodeId` is null for types that never serialise at all. The
+  save twin of `Entity.readAdditionalSaveData` is
+  `Entity.addAdditionalSaveData`, and `Entity.repositionEntityAfterLoad` is
+  the hook paintings and item frames use to re-snap once loaded.
+- **The spawn-egg path is a different pipeline from the summon path.**
+  `EntityType.spawn` snaps the new entity out of collision with
+  `EntityType.getYOffset`, runs `Mob.finalizeSpawn`, applies a
+  `PostSpawnProcessor`, adds it, and plays an ambient sound —
+  none of which the load-from-tag trace above does. Both meet at
+  `ServerLevelAccessor.addFreshEntityWithPassengers`.
 
 ## Where to look
 
@@ -357,7 +422,9 @@ nudged out of any block it now overlaps
 `Entity.refreshDimensions` · `Entity.RemovalReason` · `Entity.setRemoved` ·
 `EntityType` · `EntityType.Builder` · `EntityTypes` · `EntityTypeIds` ·
 `EntityType.create` · `EntityType.loadEntityRecursive` · `MobCategory` ·
-`EntityDimensions` · `EntityAttachments` · `Pose` · `LivingEntity` ·
+`EntityDimensions` · `EntityAttachments` · `EntitySpawnRequest` ·
+`EntitySpawnReason` · `EntityType.spawn` · `Entity.saveWithoutId` ·
+`Pose` · `LivingEntity` ·
 `Avatar` · `Mob` · `PathfinderMob` · `Monster` · `Animal` ·
 `EntityReference` · `ClientboundAddEntityPacket`
 

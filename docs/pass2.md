@@ -21,8 +21,9 @@ wait for pass 3 (and feed the lecture-order draft there).
 | `blocks/redstone` | ~520 | ~~the experimental-evaluator coda vs the default trace~~ — **session D: the proposed seam is wrong, and the page is now three lectures, not two.** The evaluator coda belongs *to* the dust half. The real split is dust/neighbour-updates · pistons/block-events · diodes-and-observers, the last of which session D had to **write** (comparators, repeaters and observers were absent). Not executed; see [pass3.md](pass3.md) §2. |
 | `blocks/blocks-and-states` | ~510 | the state table (data page) vs the placement trace + prediction. **Session D: confirmed and not executed.** The fact-check grew both halves evenly and neither became unwieldy; purely presentational, so pass 3's call. |
 | `blocks/block-interaction` + `blocks/block-breaking` | ~456 + ~445 | **Added by session D.** Not a split — a possible *merge*, or a shared preamble. The two pages re-derive the same prediction ledger, reach check, sequence number and ack ordering, and session D had to correct the same ack-timing sentence in both. See [pass3.md](pass3.md) §1. |
-| `entities/entity-anatomy` | 367 | the base class + `EntityType` vs the hierarchy tour |
-| `entities/ai-goals-and-brains` | 357 | goals vs brains vs pathfinding — three lectures in one page |
+| `entities/entity-anatomy` | 367 | the base class + `EntityType` vs the hierarchy tour. **Session E: confirmed, not executed.** The fact-check grew both halves; the seam is real but presentational, and the page is Part VI's map page, which argues for keeping it whole. Pass 3's call — see [pass3.md](pass3.md) §2. |
+| `entities/ai-goals-and-brains` | 357 | goals vs brains vs pathfinding — three lectures in one page. **Session E: confirmed, and the third lecture is the strongest of them.** Pathfinding grew most in the fact-check (node budget, `Path.canReach`, stuck detection) and shares almost nothing with the goals/brains split except `MoveControl`. Not executed; see [pass3.md](pass3.md) §2. |
+| `entities/movement-and-collision` | ~400 | **Added by session E.** Not a split — the page acquired a new *first* section (the authority matrix: `Entity.isLocalInstanceAuthoritative` / `canSimulateMovement` / `isEffectiveAi` / `isClientAuthoritative`) that is arguably a lecture of its own and is the shared prerequisite of this page, Part VIII's *input to movement* and Part IX's *what the client is told*. Decide one owner in pass 3. |
 | `items/items-and-stacks` | 340 | the stack data model vs the use pipeline + the eating trace |
 | `items/containers-and-menus` | 320 | the menu/slot model vs the click protocol (state id, `HashedStack`) |
 | `player/player-anatomy` | 404 | the class ladder + `Inventory`/`Abilities` (a data page) vs the two-phase tick trace |
@@ -344,20 +345,41 @@ easy to get wrong from 1.21 memory.
 - Block events are a set on `ServerLevel`, drained a tick later; the
   client simulates pistons from `ClientboundBlockEventPacket` — `redstone`.
 - `Player extends Avatar extends LivingEntity`; `ArmorStand` is a
-  `LivingEntity` with no AI — `entity-anatomy`.
-- `LevelWriter.addFreshEntity` is a default returning false; only
-  `ServerLevel` implements it — `entity-lifecycle`.
+  `LivingEntity` with no `GoalSelector` and no `PathNavigation` — but it
+  *does* have a `Brain`, which is declared on `LivingEntity`, not `Mob`
+  (**corrected session E**) — `entity-anatomy`.
+- `LevelWriter.addFreshEntity` is a default returning false; **two** classes
+  implement it, `ServerLevel` and `WorldGenRegion`, and the second writes
+  into the proto-chunk instead of the section manager (**corrected session
+  E**) — `entity-lifecycle`.
 - There are two mob caps (global, scaled by covered chunk area; and
-  per-player) and persistent mobs count for neither — `entity-lifecycle`.
+  per-player) and persistent mobs count for neither; persistent *categories*
+  are additionally offered a spawn only every 400 ticks — `entity-lifecycle`.
 - Synched-data ids are class-tree ordinals; defaults never travel; the
   client's writes are discarded — `synched-entity-data`.
 - Eight attributes are not client-syncable, `Attributes.ATTACK_DAMAGE`
   among them, so the client's damage prediction is always stale —
-  `attributes`.
+  `attributes`. (Re-counted in session E against all 40 registrations:
+  exact, and the eight names are exact.)
 - Damage is server-only (`Entity.hurtServer`); the amount never crosses
-  the wire; i-frames compare against the last damage — `damage-and-death`.
+  the wire; i-frames compare against the last damage — and a hit that lands
+  *inside* the window sends no packet, no knockback and no flash either
+  (**session E**) — `damage-and-death`.
 - AI is strictly single-threaded and pathfinding never loads a chunk —
   `ai-goals-and-brains`.
+- **A tracked mob's physics run on the server only.** The client never calls
+  `Entity.move` for it — `LivingEntity.aiStep` gates travel on
+  `Entity.canSimulateMovement`, and a client-side mob coasts and
+  interpolates instead. A *player* is the mirror image: client-authoritative
+  on both sides. (**Session E; this reverses what the page said.**) —
+  `movement-and-collision`.
+- An unknown entity id in **save data** drops the entity with a *Skipping
+  Entity* warning; the registry's pig default applies only to the value and
+  numeric lookups the network uses (**session E**) — `entity-anatomy`.
+- Attribute mutations made during the entity phase are broadcast on the
+  **next** tick: `ChunkMap.tick` runs in the chunkSource phase, before
+  entities. Merely *reading* an attribute for the first time dirties it
+  (**session E**) — `attributes`.
 - An item's default components are built at *reload*, not at
   construction; `Item.components` throws before then — `items-and-stacks`.
 - A shift-click that agrees costs **zero** clientbound packets; the
@@ -803,6 +825,15 @@ Vulkan/platform halves) get their rulings in session K.
   is declared on `ReentrantBlockableEventLoop`; the verifier accepted it
   because the base class file mentions the token.
 
+- **A helper type you assume is nested may be top-level** (session E):
+  `PostSpawnProcessor` is used inside `EntityType` and reads like
+  `EntityType.PostSpawnProcessor`, but it is its own file in `world/entity`.
+  When a name fails and you are sure it exists, check whether you invented
+  the enclosing class.
+- Session E's other four failures were the usual bare members written mid
+  sentence — *noPhysics*, *equals*, *hashCode*, *define* — plus `super` used
+  as a noun. Say "the superclass hook", not `super`.
+
 ## Hand-off to passes 3–5
 
 Pass-2 sessions append here whatever they leave for later: wording debt
@@ -1020,3 +1051,62 @@ per tick" claim was wrong in three places; session B fixed
 self-contradictory — it already said `Connection.tick` flushes
 unconditionally and then concluded "one flush". Worth a pass-4 sweep for
 other bullets that state a mechanism and then draw the opposite conclusion.
+
+---
+
+### Session E — Part VI Entities
+
+**Material added on spec (pass 4 may cut).**
+
+- `movement-and-collision` gained a whole new subsection, *Who is allowed to
+  simulate*, before the trace. It is not padding — three of the page's errors
+  followed from its absence — but it is a second opening and it makes an
+  already-long page longer. If pass 3 gives the authority matrix its own home
+  (see the split table), most of this becomes a pointer.
+- `attributes` gained the tick-phase paragraph explaining why the send is a
+  tick behind. This is the third page in the corpus to explain the same
+  chunkSource-before-entities ordering from scratch (`block-entities` and
+  `server-level-tick` are the others). Pass 4 should pick one owner and have
+  the other two point at it.
+- `entity-lifecycle` step 5 grew a nether-fortress aside and a
+  reduced-water-ambient aside that are both one-line curiosities.
+- `synched-entity-data`'s serializer catalogue is now a 43-entry ordered list
+  with ids. It is reference data in the middle of a lecture page and it is
+  the obvious candidate for `src/reference/`.
+- `ai-goals-and-brains` gained four new invariants (control flags, the
+  sentinel goal, brain rebuild on profession change, activity-switch memory
+  erasure). All are real mechanisms; the page now has fifteen bullets under
+  *invariants and surprises*, which is too many to say out loud.
+- `damage-and-death` gained the non-living-`hurtServer` bullet, which is
+  really a pointer to coverage that does not exist. See the gap below.
+
+**Wording debt for pass 4.**
+
+- The "not X but Y" register session B complained about is now worse in Part
+  VI than in Part III, because session E's corrections were mostly *inversions*
+  rather than adjustments: "it does not become a pig", "only one side runs the
+  physics", "the client never calls `Entity.move`", "`hurtArmor` is empty",
+  "the fence is 1.5 to stand on". Every one of those is currently phrased
+  against the wrong belief it replaces. Restate positively.
+- Three Part VI pages now say some version of "the gate is X, not Y". Vary.
+- `movement-and-collision` and `entity-anatomy` both now carry a
+  cross-reference to the other about what the client's tick does and does not
+  do. One of them should own it.
+
+**A catalogue gap, found and *not* filled.** `damage-and-death` covers
+`LivingEntity` and stops. About thirty classes override `Entity.hurtServer`
+directly — `ArmorStand`, `VehicleEntity`, `ItemFrame`, `EndCrystal`,
+`FallingBlockEntity`, `PrimedTnt`, `Display`, `Interaction` — with their own
+rules, and the armour-stand damage-type tags the page lists exist *only* for
+that code. Session E added a bullet naming the gap rather than writing the
+section, because the page is already the part's longest trace and the material
+is a data table more than a lecture. Pass 3 should decide whether it is a
+section, a sibling page, or an appendix table.
+
+**Cross-page corrections made outside Part VI.** Part IX's
+`what-the-client-is-told` said "the client interpolates and then simulates",
+which reads as the claim session E disproved; its heading and first sentence
+were corrected and it now points at `movement-and-collision`. Session G should
+check the rest of that page against the authority matrix — in particular
+anything it says about client-side entity movement.
+

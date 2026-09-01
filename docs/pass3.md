@@ -219,6 +219,59 @@ then redstone last — which is the current order, and it survives
 scrutiny. The open question is whether the part opens with a reference
 page.
 
+### Part VI · Entities
+
+*(session E)* **Part VI is a ladder, not a hub, and it has a missing
+rung.** The seven pages genuinely build: `entity-anatomy` gives you the
+object, `entity-lifecycle` puts it in a world, `synched-entity-data` and
+`attributes` are the two channels that describe it, `movement-and-collision`
+is what it does, `ai-goals-and-brains` is why, `damage-and-death` is how it
+stops. That order survives scrutiny and should not be reshuffled.
+
+The missing rung is **authority**. Session E's largest correction was that a
+tracked mob's physics do not run on the client at all — the four predicates
+`Entity.isLocalInstanceAuthoritative`, `Entity.canSimulateMovement`,
+`Entity.isEffectiveAi` and `Entity.isClientAuthoritative` decide who
+simulates, and they invert the naive picture in *both* directions (a mob is
+server-authoritative; a player is client-authoritative on both sides). That
+idea is currently taught as a new opening subsection of
+`movement-and-collision`, but it is a prerequisite for at least four pages
+across three parts: this one, Part VIII's `input-to-movement`, Part IX's
+`what-the-client-is-told`, and Part X's client-tick material. It is the
+Part VI analogue of Part V's two-update-channels distinction — the single
+most error-prone idea in the part, and the one that has to be taught before
+anything that depends on it. **Pass 3 should decide where it lives.** The
+honest options are: a short page of its own at the head of Part VI; a
+section of `entity-anatomy` (which is already the part's map page); or
+promotion into Part I's `anatomy`, where the client/server split is
+introduced. Session E's guess is `entity-anatomy`, because it is the only
+one of the three that is already about *what an entity is on each side*.
+
+**Two pages are doing reference work inside a lecture.**
+`synched-entity-data` now carries an ordered 43-entry serializer catalogue
+with wire ids, and `attributes` carries the 40-attribute catalogue. Both are
+tables a viewer would pause the video to read, which is the definition of
+something that belongs in `src/reference/` with the page pointing at it.
+Neither is a split candidate in the usual sense — the *lecture* halves of
+both pages are the right length already.
+
+**`damage-and-death` is the part's longest single trace and it stops
+halfway.** It covers `LivingEntity` and never mentions that ~30 non-living
+classes override `Entity.hurtServer` with entirely separate rules. That is a
+coverage decision pass 3 has to make (section, sibling page, or appendix
+table); it is recorded in [pass2.md](pass2.md)'s hand-off.
+
+**Diagram note.** `entity-lifecycle`'s sequence diagram had the light and
+spawn-rule checks *after* entity construction, when the decompile runs every
+type-level check first and only then builds the mob. Session E fixed it, but
+the deeper problem is that a `sequenceDiagram` is the wrong shape for the
+spawner: it is a **filter cascade**, not a conversation, and almost every
+step is a rejection. A flowchart with the reject arrows drawn would say more
+in less space and would make the "one y roll per category per tick" point
+visible instead of stated. Same argument, more weakly, for
+`ai-goals-and-brains`'s villager day, which is a clock driving a state
+filter rather than a call sequence.
+
 ---
 
 ---

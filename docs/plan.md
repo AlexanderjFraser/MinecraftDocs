@@ -141,6 +141,18 @@ occasionally the verifier's bug, not yours — session A found one in
 the verifier after each page rather than at the end, so a systematic
 failure is localised to the page that provoked it.
 
+Session E adds a sixth, and it is the one with the worst failure mode:
+**ask which side is *authoritative*, not which side runs the code.** Both
+sides run `Entity.tick` for a tracked mob; only one of them runs its physics,
+because `LivingEntity.aiStep` gates travel on `Entity.canSimulateMovement`.
+`movement-and-collision` had a whole "when it runs" section, and an invariant
+headed *Both sides run the physics*, built on the first observation without
+ever checking the second — and a page can be right about the call graph and
+backwards about the system. The tell is a page that establishes "the same
+code runs on both sides" and then never says what each side is allowed to
+*do* with it. Ask the fact-check agent, for every shared code path, which
+side is authoritative and what the other one does instead.
+
 Session D adds a fifth: **hunt the unstated conditional.** Nearly every
 session-D error was a claim that held in the traced case and was written as
 though it held always — a hook skipped "because the block didn't change"
@@ -176,7 +188,7 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
 - [x] **Session C** — Part IV The world, plus the new
   `environment-attributes-and-timelines` page. *(2026-09-01)*
 - [x] **Session D** — Part V Blocks. *(2026-09-01)*
-- [ ] **Session E** — Part VI Entities.
+- [x] **Session E** — Part VI Entities. *(2026-09-01)*
 - [ ] **Session F** — Part VII Items · Part VIII The player.
 - [ ] **Session G** — Part IX Networking.
 - [ ] **Session H** — Part X: the client half, and the X/XI split lands
@@ -242,6 +254,125 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session E** — Part VI Entities: all seven pages
+  (`entity-anatomy`, `entity-lifecycle`, `synched-entity-data`, `attributes`,
+  `movement-and-collision`, `ai-goals-and-brains`, `damage-and-death`). Seven
+  adversarial fact-checks — one died on an API error and was relaunched — and
+  seven rewrites. The A–D pattern holds: every page had *wrong* claims. Where
+  session B found orderings wrong, C thread attribution and D unstated
+  conditionals, **session E's centre of gravity is the client/server split**:
+  the biggest errors were pages that correctly observed the same code runs on
+  both sides and then assumed both sides do the same thing with it. What
+  mattered most:
+  - **`movement-and-collision` had the client/server model backwards, in an
+    invariant headed *Both sides run the physics*.** A tracked mob on the
+    client never calls `Entity.move` at all: `LivingEntity.aiStep` gates
+    travel on `Entity.canSimulateMovement` (which is
+    `Entity.isLocalInstanceAuthoritative`), and a non-authoritative living
+    entity instead **coasts** — interpolate if interpolating, else scale the
+    delta by 0.98. The mirror-image surprise is the player: `Player`
+    overrides `Entity.isClientAuthoritative` to true, so on the *server* a
+    player fails the authority test and `Entity.move` applies it no fall
+    damage — that comes from `Entity.doCheckFallDamage` on the packet path
+    instead. Confirmed directly against `LivingEntity.aiStep`, `Entity` and
+    `Player`. The page now opens with an authority subsection; Part IX's
+    `what-the-client-is-told` was corrected to match.
+  - **`entity-anatomy` said an unknown entity id becomes a pig.** It does
+    not, on the path that matters. `DefaultedMappedRegistry` overrides the
+    value and numeric lookups but *not* the `Optional` one the name codec
+    uses, so a bad id in save data makes `EntityType.create` log *Skipping
+    Entity with id …* and drop the entity. The pig default is real, and it is
+    the network's. Also on that page: `Brain` is declared on `LivingEntity`,
+    not `Mob` (so an armour stand has one), `PathfinderMob` adds walk-target
+    valuation rather than navigation, entity ids come from a **process-global**
+    counter on `ServerLevel`, and a freshly constructed entity has a
+    full-size box, not the zero-size one the field initialiser suggests. The
+    sharpest new fact: on the client `Level.getNextEntityId` returns 0, 0 is
+    the reserved invalid id, and `Entity.getId` *throws* on it — a
+    client-side entity is unusable until `Entity.recreateFromPacket`.
+  - **`attributes` had the send a tick early.** `ServerEntity.sendDirtyEntityData`
+    is reached from `ChunkMap.tick` in `ServerLevel.tick`'s **chunkSource**
+    phase, which runs *before* the entities phase — so an attribute dirtied
+    during an entity's own tick goes out on the following tick. Same ordering
+    session D found for block entities. Also: `LivingEntity.refreshDirtyAttributes`
+    runs on **both** sides (which is why its waypoint branch has to test for a
+    `ServerLevel`); `Mob.onAttributeUpdated` reacts to `Attributes.TEMPT_RANGE`
+    as well as follow range; `Attributes.bootstrap` does nothing but return
+    `Attributes.MAX_HEALTH`; and the best find — **`AttributeMap.getInstance`
+    dirties on creation**, so merely *reading* a syncable attribute for the
+    first time queues it for broadcast. The eight-non-syncable fact was
+    re-counted from all 40 registrations and is exact.
+  - **`damage-and-death` missed the flag that makes i-frames silent.** A hit
+    inside the window that *is* bigger than the last still clears the
+    took-full-damage flag, and the damage-event broadcast, `Entity.markHurt`,
+    the knockback, the hurt sound and the red flash are all inside a test of
+    it — health drops and nothing else happens. Also: `LivingEntity.hurtArmor`
+    is **empty**, overridden only by `Player`, `Horse` and `Wolf`, so a
+    skeleton in iron never wears its armour out; a successful block replaces
+    the damage event rather than accompanying it; freezing and cramming are
+    ticked from `LivingEntity.aiStep`, not `LivingEntity.baseTick`; `Monster`
+    drops the baby gate on loot; `GameRules.SHOW_DEATH_MESSAGES` off still
+    sends the kill packet, with an empty component; and
+    `RemotePlayer.hurtClient` returns true, so there *is* one living entity
+    that simulates a hit client-side.
+  - **`entity-lifecycle`'s spawner diagram had the checks after
+    construction.** Every type-level check — placement, spawn rules, light —
+    runs before `EntityType.create`; only `Mob.checkSpawnRules` and
+    `Mob.checkSpawnObstruction` run after. Also: `WorldGenRegion` is a
+    **second** implementor of `LevelWriter.addFreshEntity`; the y roll is one
+    per chunk per *category*, not per chunk; nether fortresses are a hardcoded
+    short-circuit in `NaturalSpawner.mobsAt`, not a `ChunkGenerator.getMobsAt`
+    structure override; both despawn distance branches also require
+    `Mob.removeWhenFarAway`; the Peaceful branch consults no player at all;
+    the remove packet goes out at the tracking stop, ticks *before* the unload
+    write; `EntityTickList` swaps rather than copies (the walk keeps the
+    original); and three of the four `NaturalSpawner` constants the page cited
+    are declared and never read. Best new material: persistent categories are
+    offered a spawn only every **400 ticks**, which is most of why animals
+    feel rare beside monsters, and the 17 in 17² comes from the spawn-chunk
+    tracker propagating diagonally, giving each player a Chebyshev square.
+  - **`synched-entity-data` had the serializer wire ids wrong from 9 up** and
+    placed the variant tail in the wrong half of the list;
+    `EntityDataSerializers.HUMANOID_ARM` is the *last* registered, not an
+    early one. Also: `ServerEntity.sendPairingData` reads a cached
+    `ServerEntity.trackedDataValues`, not a fresh
+    `SynchedEntityData.getNonDefaultValues` — so an all-default entity sends
+    no data packet on pairing at all; `ServerEntity.sendChanges` is gated by
+    `ChunkMap.tick` on section change / needs-sync / ticking range; A→B→A
+    dirties twice, and there is a force-dirty overload vanilla uses; the
+    duplicate-id check is in `SynchedEntityData.Builder.define`, not
+    `SynchedEntityData.Builder.build`; and `Mob.interact` calls the
+    superclass hook *between* its two mob hooks.
+  - **`ai-goals-and-brains` had the villager's job-site memory wrong.**
+    `AcquirePoi` writes `MemoryModuleType.POTENTIAL_JOB_SITE`;
+    `AssignProfessionFromJobSite` promotes it to
+    `MemoryModuleType.JOB_SITE` only once the villager is within two blocks —
+    so walking to the workstation is a required step, and `Activity.WORK`'s
+    requirement is never satisfied by the acquirer alone. Also: it pathfinds
+    **once** with five targets, not five times; `Sensing` is shared with brain
+    mobs, not the goal system's alone; the zombie has seven goals including
+    the new `SpearUseGoal` at a better priority than its attack goal; the node
+    budget comes from `PathNavigation.requiredPathLength` (48 for a villager),
+    not follow range alone; `MoveControl.setWantedPosition` is the single
+    *method* but not the single call site; and `Mob.tickHeadTurn` has no side
+    check, so `BodyRotationControl.clientTick` really does run on both sides.
+    New material: `Mob.updateControlFlags` as the second writer of the flag
+    table, `GoalSelector`'s sentinel goal, brain rebuild on profession change,
+    and `Path.canReach` as the number that actually matters.
+
+  **Split rulings: none executed.** Both Part VI candidates confirmed but
+  presentational; `movement-and-collision` **added** to the table, not as a
+  split but because its new authority section is a shared prerequisite for
+  four pages across three parts and needs one owner. A **catalogue gap was
+  found and deliberately left**: `damage-and-death` covers `LivingEntity` and
+  never mentions the ~30 non-living `Entity.hurtServer` overrides; session E
+  added a bullet naming the gap and left the ruling to pass 3. Both in
+  [pass3.md](pass3.md).
+
+  Verifier lesson: a helper type that *reads* nested can be top-level —
+  `PostSpawnProcessor` is its own file, not `EntityType.PostSpawnProcessor`.
+  Otherwise the usual bare members, plus `super` used as a noun.
 
 - **2026-09-01, session D** — Part V Blocks: `blocks-and-states`,
   `block-interaction`, `block-breaking`, `block-entities`, `redstone`. Five
