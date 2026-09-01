@@ -34,6 +34,7 @@
   - [Block ticks and fluids](systems/world/block-ticks-and-fluids.md)
   - [Game events and points of interest](systems/world/game-events-and-poi.md)
   - [Level data and rules](systems/world/level-data-and-rules.md)
+  - [Environment attributes and timelines](systems/world/environment-attributes-and-timelines.md)
 - [V · Blocks]()
   - [Blocks and states](systems/blocks/blocks-and-states.md)
   - [Block interaction](systems/blocks/block-interaction.md)

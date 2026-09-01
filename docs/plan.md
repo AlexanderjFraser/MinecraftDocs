@@ -133,6 +133,14 @@ Three protocol notes, all cheap and all load-bearing:
   the ordering questions the reports disagreed on. Do this for every *wrong*
   finding that changes a trace; take the *completeness* findings on trust.
 
+Three protocol notes have now been added by three consecutive sessions;
+session C adds a fourth: **suspect the tool once before rewording the
+page.** A name you are certain about that fails `verify_names.py` is
+occasionally the verifier's bug, not yours — session A found one in
+`gen_reference.py`, session C found one in `verify_names.py` itself. Run
+the verifier after each page rather than at the end, so a systematic
+failure is localised to the page that provoked it.
+
 ### After-session housekeeping
 
 Every session ends with the same five: naming drift written to **both**
@@ -154,8 +162,8 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
   `reference/threads.md`) + `sound` (predates the extract/render split)
   + Part II Foundations. *(2026-09-01)*
 - [x] **Session B** — Part III The server. *(2026-09-01)*
-- [ ] **Session C** — Part IV The world, plus the new
-  `environment-attributes-and-timelines` page.
+- [x] **Session C** — Part IV The world, plus the new
+  `environment-attributes-and-timelines` page. *(2026-09-01)*
 - [ ] **Session D** — Part V Blocks.
 - [ ] **Session E** — Part VI Entities.
 - [ ] **Session F** — Part VII Items · Part VIII The player.
@@ -223,6 +231,105 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session C** — Part IV The world: eight adversarial
+  fact-checks, eight rewrites, and the **57th page written** —
+  `environment-attributes-and-timelines`, the pass-1 catalogue gap that four
+  parts had been leaning on. The pattern from A and B holds: every one of the
+  eight had at least one *wrong* claim, and this time the errors clustered in
+  **thread attribution** and **file paths** rather than in orderings. What
+  mattered most:
+  - **The new page.** `world/attribute` and `world/timeline` are one system
+    with a fixed four-layer stack — dimension, biome, timelines, weather —
+    baked once per level and never rebuilt. 48 attributes in three
+    namespaces; exactly two are non-positional; a biome may set only
+    positional ones and a data pack that tries fails to load. The
+    modify-don't-set model (`EnvironmentAttributeMap.Entry` is an argument
+    plus an `AttributeModifier`) is the design decision everything rests on:
+    the night curve *multiplies* sky light rather than setting it, so it
+    composes with whatever the dimension and biome produced. The wire carries
+    the rules, not the values — `Registries.TIMELINE` and
+    `Registries.WORLD_CLOCK` are synced and the client rebuilds the same
+    stack, adding spatial (216 Gaussian biome samples per tick) and
+    partial-tick smoothing the server never does. And `WorldGenRegion`
+    answers every attribute with its default, so generation cannot depend on
+    the time of day. Session A's and B's dependants (`sound`, `biomes`,
+    `lightmap-fog-and-sky`, `block-ticks-and-fluids`, `ai-goals-and-brains`,
+    `server-level-tick`) now link here; the borrowed explanations were cut
+    out of `biomes` and `lightmap-fog-and-sky`.
+  - **`tickets-and-loading` mis-attributed its own asynchrony.** The
+    player-ticket throttler runs its task on the **main thread** — the
+    worker only does the queue bookkeeping — so the page's "each runs on a
+    worker" and its diagram's worker→main hop were both wrong.
+    `TicketType.ENDER_PEARL` is loading *and* simulation (flags 14), not
+    simulation alone. `ChunkHolder.sendSync` starts complete and
+    `ChunkMap.waitForLightBeforeSending` has exactly one caller,
+    `EnderDragonFight` — the page presented an End special case as the normal
+    send gate. `MainThreadExecutor.pollTask` short-circuits: if the distance
+    updates did anything, no light schedule and no queued task that poll, so
+    propagation *starves* the chunk queue rather than sharing with it.
+  - **`chunk-storage` had `forceSynchronousWrites` backwards.** The base
+    class returns true; both subclasses override it, and the integrated
+    server takes the client option whose default is **Windows only** — so
+    singleplayer on Linux or macOS runs without DSYNC by default, the
+    opposite of what the page said. Datafixing turned out to live on the
+    worker pool between the IO lane and `parse`, which the page located on
+    the lane. And the crash-safety invariant does not hold for oversized
+    chunks: a `.mcc` sidecar is moved into place *after* the header is
+    committed.
+  - **`level-data-and-rules` had eleven wrong file paths.** Every `SavedData`
+    id is an `Identifier`, so every file is under *data/&lt;namespace&gt;/*; the
+    page had them all one folder up. Also: five game rules reach the client,
+    not three (`GameRules.ADVANCE_TIME` broadcasts a clock sync);
+    `ClientboundLoginPacket` carries hardcore but not difficulty;
+    `MinecraftServer.updateMobSpawningFlags` sends no packet at all; and
+    every level reports the server's *effective* respawn data, which is
+    relocated if the stored spawn has fallen outside the border.
+  - **`lighting` over-counted its own dirtying.** A write marks the sections
+    touching the block — one, or up to eight on a corner — not 27; the 3×3×3
+    marking fires only when a section is first allocated a `DataLayer`. "No
+    light is computed on the server thread" was too strong:
+    `ChunkSkyLightSources.update` runs inline. And what stops a chunk
+    shipping half-lit is the pyramid's radius-1 `INITIALIZE_LIGHT`
+    requirement, not a send dependency.
+  - **`chunk-anatomy`'s three headline invariants were each slightly
+    false.** Promotion copies the section *array* (the sections are shared);
+    `ThreadingDetector` kills **both** threads and the winner throws first;
+    and `PalettedContainer.pack` uses the same tier ladder as memory, so
+    packing shrinks the palette rather than the width.
+  - **`chunk-generation-pipeline` mis-stated the ticket→status map** (34 is
+    *INITIALIZE_LIGHT*, not *SPAWN*), counted eleven pass-through layers
+    where there are seven, and had three radius-0 dependencies missing from
+    its table — including *SURFACE* needing *NOISE*, which is the one that
+    stops a surface build reading un-noised terrain. The pyramid is also
+    chosen per chunk per layer, not per task, which is what stops
+    already-generated neighbours being regenerated.
+  - **`block-ticks-and-fluids`** had `getNewLiquid`'s three branches in the
+    wrong precedence, missed that an empty result reschedules **nothing**,
+    and attributed `LiquidBlock.tick` to the wrong callee. Its best new
+    surprise: **lava random-ticks twice** per selected position, once as a
+    block and once as a fluid.
+  - **`game-events-and-poi`** miscounted the registry (61, not 62), had the
+    wake-up chain going through `SleepInBed` when `WakeUp` calls
+    `stopSleeping` itself, put the sensor's cooldown after `deactivate`
+    rather than started by it, and — the best find — standing *on* a sculk
+    sensor bypasses `isValidVibration` entirely, so **sneaking does not
+    protect you when you are on the sensor**.
+
+  Tool fix: `verify_names.py`'s `RECORD` regex required `record Name(` and
+  so could not see the components of a **generic** record — five correct
+  citations on `AttributeType` failed. Fixed; the new protocol note is
+  *suspect the tool once before rewording the page*.
+
+  Split rulings: neither Part IV split was executed. `game-events-and-poi`'s
+  seam is confirmed real (the two fact-check halves shared no classes) but
+  purely presentational; `block-ticks-and-fluids` was **added** to the split
+  table as a new candidate — the scheduler and the fluid model are two
+  lectures and the page's own trace changes subject halfway. Both are in
+  [pass3.md](pass3.md) §2, along with the part-shape finding: Part IV is a
+  genuine forward-only pipeline of four pages with a data page in front and
+  three unrelated pages behind it, and it is the first part in the corpus
+  whose internal order is a real dependency chain.
 
 - **2026-09-01, session B** — Part III The server: `server-tick`,
   `server-level-tick`, `players-and-sessions`, `server-lifecycle`. Four

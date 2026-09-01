@@ -36,17 +36,17 @@ different graphs.*
   | `TicketType.PORTAL` | 300 | ✓ | ✓ | ✓ | `Entity` on portal travel, radius 3 |
   | `TicketType.PLAYER_SPAWN` | 20 | ✓ | | | `PrepareSpawnTask` (configuration phase), radius 3 |
   | `TicketType.SPAWN_SEARCH` | 1 | ✓ | | | `PlayerSpawnFinder` |
-  | `TicketType.ENDER_PEARL` | 40 | | ✓ | | `ServerPlayer`, the pearl's chunk, radius 2 |
+  | `TicketType.ENDER_PEARL` | 40 | ✓ | ✓ | | `ServerPlayer`, the pearl's chunk, radius 2 — also keep-dimension-active |
   | `TicketType.DRAGON` | — | ✓ | ✓ | | `EnderDragonFight`, radius 9 |
-  | `TicketType.UNKNOWN` | 1 | ✓ | | | every synchronous `ServerChunkCache.getChunk` |
+  | `TicketType.UNKNOWN` | 1 | ✓ | | | a synchronous `ServerChunkCache.getChunk` that may generate, at the level for its target status |
 
 - `Ticket` is a type, a `Ticket.ticketLevel` and `Ticket.ticksLeft`; identity
   is (type, level) — there is no key object and no owner. Re-adding an
   identical ticket `Ticket.resetTicksLeft`.
 - `TicketStorage` (in `world/level`, not `server/level`) holds every ticket
   per chunk in `TicketStorage.tickets`. It **is `SavedData`** —
-  `TicketStorage.TYPE` is the *chunk_tickets* file in the dimension's
-  *data/* folder — and `TicketStorage.packTickets` writes only the types
+  `TicketStorage.TYPE` is the *chunk_tickets* saved data in the
+  dimension's *data/* folder — and `TicketStorage.packTickets` writes only the types
   that `TicketType.persist`: forced and portal tickets come back after a
   restart, the rest evaporate. On shutdown
   `TicketStorage.deactivateTicketsOnClosing` parks everything except
@@ -112,14 +112,18 @@ All of it on the **Server thread**, in three slots:
 
 1. `ServerChunkCache.tick`, from the level tick: `TicketStorage.purgeStaleTickets`
    (countdowns; a timed ticket only counts down if it
-   `TicketType.canExpireIfUnloaded` *or* its holder
-   `ChunkHolder.isReadyForSaving`, so a portal ticket never expires under a
-   chunk still loading), then `ServerChunkCache.runDistanceManagerUpdates`.
+   `TicketType.canExpireIfUnloaded`, or its holder is
+   `ChunkHolder.isReadyForSaving`, or there is **no holder at all** — so a
+   portal ticket never expires under a chunk still loading, but one over a
+   chunk nothing tracks expires normally), then
+   `ServerChunkCache.runDistanceManagerUpdates`.
 2. `ServerChunkCache.MainThreadExecutor.pollTask` — whenever the server
    thread idles (`MinecraftServer.pollTaskInternal` polls every level's
-   chunk executor), it runs distance-manager updates *first*, then one
-   light-engine schedule, then one queued task. Ticket propagation is not
-   once per tick; it is whenever there is slack.
+   chunk executor), it runs distance-manager updates *first* and, if they
+   did any work at all, **returns immediately** — the light schedule and
+   the one queued task only happen on a poll where the ticket graphs were
+   already settled. Ticket propagation is not merely "not once per tick":
+   it starves the chunk task queue until it is quiescent.
 3. `ServerChunkCache.getChunk` from anywhere on the server thread: cache,
    then `ServerChunkCache.getChunkFutureMainThread` (adds a
    `TicketType.UNKNOWN` ticket, and if `ServerChunkCache.chunkAbsent` runs
@@ -131,9 +135,11 @@ All of it on the **Server thread**, in three slots:
 The two `ChunkTracker` drains happen inside `DistanceManager.runAllUpdates`:
 spawn counter, simulation tracker, player ticket tracker, loading tracker,
 then `ChunkHolder.updateFutures` for every holder in
-`DistanceManager.chunksToUpdateFutures`. The only worker-thread piece is
-the throttled dispatcher that adds `TicketType.PLAYER_LOADING` tickets,
-and it posts back to `DistanceManager.mainThreadExecutor`.
+`DistanceManager.chunksToUpdateFutures`. Nothing here adds a ticket from a
+worker: the `ThrottlingChunkTaskDispatcher` is built over a `TaskScheduler`
+named *player ticket throttler* wrapping `DistanceManager.mainThreadExecutor`,
+so the submitted ticket task runs on the **main thread**. Only the
+dispatcher's own priority-queue bookkeeping runs on the worker pool.
 
 ## The trace: a player walks east across a chunk boundary
 
@@ -200,9 +206,13 @@ sequenceDiagram
    `ChunkMap.markChunkPendingToSend` (which only marks if
    `ChunkMap.getChunkToSend` already has a ticking chunk — for fresh chunks
    it does not, yet), the western crescent gets `ChunkMap.dropChunk` →
-   `PlayerChunkSender.dropChunk` → `ClientboundForgetLevelChunkPacket`. The
-   view is a **disc**: `ChunkTrackingView.isWithinDistance` squares the
-   distance, with a one-chunk buffer.
+   `PlayerChunkSender.dropChunk`, which sends
+   `ClientboundForgetLevelChunkPacket` **only if the chunk was not still
+   queued** — you cannot forget what was never delivered — and only to a
+   living player. The view is a rounded square, not a disc:
+   `ChunkTrackingView.isWithinDistance` subtracts a buffer of two from each
+   axis *before* squaring, so at view distance 10 it reaches eleven chunks
+   along the axes and nine on the diagonal.
 4. **The simulation graph settles first.** In `DistanceManager.runAllUpdates`,
    `SimulationChunkTracker.runAllUpdates` floods: level 31 out to distance
    10, 32 at 11, 33 (absent from `SimulationChunkTracker.chunks`) at 12; the
@@ -217,10 +227,9 @@ sequenceDiagram
    task to the `ThrottlingChunkTaskDispatcher`, priority = distance; for
    each chunk that left it releases the slot with a main-thread continuation
    that removes the `TicketType.PLAYER_LOADING` ticket. The dispatcher lets
-   four through at a time; each runs on a worker and posts
-   `TicketStorage.addTicket` at `DistanceManager.PLAYER_TICKET_LEVEL` (31)
-   back to the main thread, recording the key in
-   `DistanceManager.ticketsToRelease`.
+   four through at a time; each runs on the main thread and calls
+   `TicketStorage.addTicket` at `DistanceManager.PLAYER_TICKET_LEVEL` (31),
+   recording the key in `DistanceManager.ticketsToRelease`.
 6. **The loading graph creates holders.** `LoadingChunkTracker.runDistanceUpdates`
    floods from the new level-31 ticket: 31 at the chunk, 32 and 33 in the
    rings, then 34…44 eleven chunks further east. `LoadingChunkTracker.setLevel`
@@ -229,8 +238,12 @@ sequenceDiagram
    `ChunkMap.pendingUnloads`), and adds the holders whose level rose past 44
    to `ChunkMap.toDrop`. Every changed holder lands in
    `DistanceManager.chunksToUpdateFutures`.
-7. **Futures are made.** For each of those, `GenerationChunkHolder.updateHighestAllowedStatus`
-   then `ChunkHolder.updateFutures`, which compares `ChunkLevel.fullStatus`
+7. **Futures are made.** `DistanceManager.runAllUpdates` makes **two
+   passes** over the set: `GenerationChunkHolder.updateHighestAllowedStatus`
+   for every holder first, then `ChunkHolder.updateFutures` for every
+   holder — not interleaved, because a holder's range future depends on its
+   neighbours' allowed status. `ChunkHolder.updateFutures` compares
+   `ChunkLevel.fullStatus`
    of the old and new level. Our chunk went 45 → 31, crossing all three
    thresholds upward: `ChunkHolder.fullChunkFuture` =
    `ChunkMap.prepareAccessibleChunk` (range 1, neighbours at
@@ -254,17 +267,22 @@ sequenceDiagram
 9. **BLOCK_TICKING.** `ChunkMap.prepareTickingChunk`'s main-thread
    continuation runs `LevelChunk.postProcessGeneration`,
    `ServerLevel.startTickingChunk` (which is `LevelChunk.unpackTicks` — the
-   saved scheduled ticks become real), and, once `ChunkHolder.sendSync` is
-   satisfied (the light engine has finished what
-   `ChunkMap.waitForLightBeforeSending` registered),
-   `ChunkMap.onChunkReadyToSend` → `PlayerChunkSender.markChunkPendingToSend`
-   for every player whose view contains it.
+   saved scheduled ticks become real), and then `ChunkMap.onChunkReadyToSend`
+   → `PlayerChunkSender.markChunkPendingToSend` for every player whose view
+   contains it. `ChunkHolder.sendSync` starts already complete, so on the
+   ordinary path this happens synchronously in the same continuation. It is
+   only ever delayed by `ChunkMap.waitForLightBeforeSending`, whose single
+   caller is `EnderDragonFight` grafting a light dependency on after it
+   builds the exit portal into chunks the client already has.
 10. **ENTITY_TICKING.** The third future completes →
     `PersistentEntitySectionManager.startTicking` →
     `ServerLevel.EntityCallbacks.onTickingStart` → `EntityTickList.add`.
-    `DistanceManager.runAllUpdates` sees the entity-ticking future done for
-    a key in `DistanceManager.ticketsToRelease` and releases the throttle
-    slot: the next view chunk may start loading.
+    `DistanceManager.runAllUpdates` does not *wait* for that: on a pass
+    where nothing else needed updating, it hangs a continuation on each
+    pending key's entity-ticking future and clears the set. So a busy tick
+    defers every release, and the throttle slot frees whenever the future
+    that was already attached completes: the next view chunk may start
+    loading.
 11. **Sending.** Once per tick, from `MinecraftServer.tickChildren`,
     `PlayerChunkSender.sendNextChunks`: if under the acknowledgement limit,
     accrue quota, `PlayerChunkSender.collectChunksToSend` nearest-first,
@@ -321,7 +339,9 @@ sequenceDiagram
   by *holder* status — a `TicketType.PLAYER_LOADING` ticket puts it at
   level 31 — and yet tick nothing, because `ServerLevel.shouldTickBlocksAt`,
   the entity loop's `DistanceManager.inEntityTickingRange` check and
-  `ChunkMap.forEachBlockTickingChunk` all consult the *simulation* graph.
+  `ChunkMap.forEachBlockTickingChunk` — which is a one-line wrapper over
+  `DistanceManager.forEachEntityTickingChunk`, the method that actually
+  walks the set — all consult the *simulation* graph.
   Render distance loads and generates; simulation distance is what is alive.
 - **Player tickets are per chunk, throttled, and asynchronous.** There is
   no single "player ticket with a radius"; each chunk in view gets its own
@@ -338,6 +358,25 @@ sequenceDiagram
 - **The server thread is never idle inside a chunk load.**
   `BlockableEventLoop.managedBlock` keeps draining chunk tasks and distance
   updates until the future resolves.
+- **There is a third radius, and it is neither graph.**
+  `DistanceManager.naturalSpawnChunkCounter` is a fixed radius-8 tracker of
+  its own, feeding `DistanceManager.hasPlayersNearby`,
+  `DistanceManager.getNaturalSpawnChunkCount` and
+  `ChunkMap.anyPlayerCloseEnoughForSpawning`. Mob spawning obeys none of
+  the numbers a player can set.
+- **View distance shapes what is *sent*, not what is loaded.**
+  `ChunkMap.getPlayerViewDistance` clamps a player's request to the server
+  distance, but `DistanceManager.PlayerTicketTracker`'s radius comes from
+  the **server** view distance through `DistanceManager.updatePlayerTickets`.
+  Turning your render distance down does not stop the server loading.
+- **A player-loading ticket keeps the dimension alive.**
+  `TicketType.FLAG_KEEP_DIMENSION_ACTIVE` is read by
+  `TicketStorage.shouldKeepDimensionActive` →
+  `ServerChunkCache.hasActiveTickets`, which resets `ServerLevel.emptyTime`
+  — the counter that, past 300, makes a dimension skip its entity loop and
+  its block entities entirely ([the level tick](../server/server-level-tick.md)).
+- **Singleplayer ignores the batch quota.** `PlayerChunkSender` detects an
+  in-memory connection and sends the whole pending set in one batch.
 - **The view is a disc, and an unsent chunk is untracked.**
   `ChunkMap.isChunkTracked` is false while the chunk sits in
   `PlayerChunkSender.pendingChunks`, so block updates to a chunk the client

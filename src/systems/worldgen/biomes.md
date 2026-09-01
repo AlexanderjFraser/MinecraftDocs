@@ -44,13 +44,14 @@ lines, a couple of blocks apart, and different systems use different ones.
   `EnvironmentAttributes.BACKGROUND_MUSIC`) and *gameplay*
   (`EnvironmentAttributes.PIGLINS_ZOMBIFY`,
   `EnvironmentAttributes.CREAKING_ACTIVE`,
-  `EnvironmentAttributes.VILLAGER_ACTIVITY`…). The stack that combines
-  them is `EnvironmentAttributeSystem`, whose layers are
-  `EnvironmentAttributeLayer.Constant` (the `DimensionType`),
-  `EnvironmentAttributeLayer.Positional` (the biome),
-  `EnvironmentAttributeLayer.TimeBased` (the timelines) and the weather
-  layers from `WeatherAttributes`. That system has no page of its own yet
-  and is bigger than biomes; treat this as the biome's doorway into it.
+  `EnvironmentAttributes.VILLAGER_ACTIVITY`…). The biome is the second of
+  the four layers `EnvironmentAttributeSystem` stacks, and the only one
+  that is positional; the system itself, the modifier model and the
+  timelines that drive it are
+  [environment attributes and timelines](../world/environment-attributes-and-timelines.md).
+  Note the one restriction that lands on biomes:
+  `EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL` means a biome may not
+  set a non-positional attribute at all.
 - **`BiomeGenerationSettings`** — a `HolderSet` of
   `ConfiguredWorldCarver`s and one `HolderSet` of `PlacedFeature`s **per
   `GenerationStep.Decoration` ordinal**. Read by

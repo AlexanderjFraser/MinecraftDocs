@@ -63,18 +63,21 @@ why the game says "All chunks are saved" a beat after you hit Save.*
   `IOWorker.STORE_EMPTY` deletes a chunk. `IOWorker.scanChunk` is the
   streaming `ChunkScanAccess` that `StructureCheck` uses to peek at unloaded
   chunks.
-- **`SimpleRegionStorage`** — an `IOWorker` plus the `DataFixer` hookup
-  (`SimpleRegionStorage.upgradeChunkTag`, named only; migration is out of
-  scope) and a `RegionStorageInfo` — level id, dimension and a type string,
-  *chunk* / *entities* / *poi* — that names the store in error reports
-  (`MinecraftServer.reportChunkLoadFailure`, `MinecraftServer.reportChunkSaveFailure`)
-  and the executor (*IOWorker-chunk*). **`ChunkMap` extends
+- **`SimpleRegionStorage`** — three fields: an `IOWorker`, a `DataFixer`
+  and a fix type (`SimpleRegionStorage.upgradeChunkTag`; migration is out of
+  scope). The `RegionStorageInfo` — level id, dimension and a type string,
+  *chunk* / *entities* / *poi* — belongs to the `IOWorker`'s
+  `RegionFileStorage`, and names the store in error reports through
+  `ChunkIOErrorReporter` (`MinecraftServer.reportChunkLoadFailure`,
+  `MinecraftServer.reportChunkSaveFailure`). **`ChunkMap` extends
   `SimpleRegionStorage`**: the chunk map *is* the *region/* store. There is
-  no *ChunkStorage* class.
+  no *ChunkStorage* class — but note that `EntityStorage` and
+  `SectionStorage` do **not** extend it; each *holds* one.
 - **`SerializableChunkData`** — the chunk file as a record:
   `SerializableChunkData.sectionData` (one `SerializableChunkData.SectionData`
-  per light section: the `LevelChunkSection` or null, and its block and sky
-  `DataLayer`s), `SerializableChunkData.heightmaps`,
+  per light section **that has something in it** — a chunk section, or a
+  non-empty block or sky `DataLayer`; light sections with none of the three
+  are omitted from the record and from the file), `SerializableChunkData.heightmaps`,
   `SerializableChunkData.packedTicks`, `SerializableChunkData.blockEntities`,
   `SerializableChunkData.structureData`, `SerializableChunkData.inhabitedTime`,
   `SerializableChunkData.chunkStatus`, `SerializableChunkData.lightCorrect`,
@@ -86,7 +89,9 @@ why the game says "All chunks are saved" a beat after you hit Save.*
   `ServerLevel.addLegacyChunkEntities`.
 - **`EntityStorage`** — the *entities/* store (`DataFixTypes.ENTITY_CHUNK`):
   a per-chunk file of *Position* and *Entities*; `EntityStorage.emptyChunks`
-  remembers chunks with nothing in them so they cost no disk;
+  remembers chunks it has already cleared, so the *first* time a chunk goes
+  empty it costs one write (the region entry is zeroed and any sidecar
+  deleted) and every later save of it costs nothing;
   `EntityStorage.entityDeserializerQueue` is a `ConsecutiveExecutor` over
   the **server** main-thread executor — NBT is read on the IO lane, but
   entities are built on the server thread.
@@ -111,9 +116,10 @@ why the game says "All chunks are saved" a beat after you hit Save.*
 ## When it runs
 
 - **Unload**: `ServerChunkCache.tick` → `ChunkMap.tick` with the level's
-  time supplier (the *unload* section, skipped when `ServerLevel.noSave`):
-  `PoiManager.tick` writes dirty POI chunks while there is time, then
-  `ChunkMap.processUnloads` (below). Entities unload in the same level tick,
+  time supplier: `PoiManager.tick` writes dirty POI chunks while there is
+  time — **unconditionally** — and then `ChunkMap.processUnloads` (below),
+  which alone is skipped when `ServerLevel.noSave`. A no-save world still
+  writes POI data and never drains its unload queue. Entities unload in the same level tick,
   later, from `PersistentEntitySectionManager.tick`.
 - **Eager saves**: the tail of `ChunkMap.processUnloads` is
   `ChunkMap.saveChunksEagerly`: up to `ChunkMap.CHUNK_SAVED_EAGERLY_PER_TICK`
@@ -199,8 +205,10 @@ sequenceDiagram
    written twice. Otherwise `LevelChunk.setLoaded` false.
 4. **The snapshot.** `ChunkMap.save`: `SectionStorage.flush` for the
    chunk's POIs; `ChunkAccess.tryMarkSaved` (a clean chunk stops here);
-   guards so a `ProtoChunk` never overwrites a full chunk on disk
-   (`ChunkMap.isExistingChunkFull`, backed by `ChunkMap.chunkTypeCache`) and
+   guards so a `ProtoChunk` does not overwrite a full chunk on disk
+   (`ChunkMap.isExistingChunkFull`, backed by `ChunkMap.chunkTypeCache` —
+   and on a cold cache this **joins the read future on the server thread**,
+   the one unplanned disk wait in the save path) and
    an `ChunkStatus.EMPTY` proto chunk with no valid structure start is never
    written at all; `ChunkMap.activeChunkWrites` up; then
    **`SerializableChunkData.copyOf`** on the server thread — every
@@ -241,18 +249,27 @@ sequenceDiagram
    closing the buffer back-patches the length and calls `RegionFile.write`:
    allocate sectors from the bitmap, write them (or the *.mcc* and a stub),
    update both header tables, `RegionFile.writeHeader`, and only then free
-   the *old* sectors — a chunk never overwrites itself in place.
+   the *old* sectors — an in-file chunk never overwrites itself in place. A
+   chunk too big for the file takes the other branch: the *.mcc* is written
+   to a temp file, a one-sector stub goes in the region file, the header is
+   committed **and only then** is the sidecar moved into place, over the
+   previous one.
 10. **Done.** The `IOWorker.PendingStore.result` completes; `ChunkMap.save`'s
     handler decrements `ChunkMap.activeChunkWrites` or reports through
     `MinecraftServer.reportChunkSaveFailure` with the `RegionStorageInfo`.
-    Nobody waited.
+    Nobody waited for the write. (The cold-cache branch in step 4 is the
+    exception, and `SectionStorage.getOrLoad` is the other one: a POI
+    section that was never prefetched is joined synchronously.)
 
 ## Interfaces
 
 - **Called by:** `ServerChunkCache.tick` (unload and eager save),
   `MinecraftServer.saveAllChunks` (autosave and full save),
-  `ChunkMap.scheduleChunkLoad` (the read path: `ChunkMap.readChunk` on the
-  lane, `SerializableChunkData.parse` on the worker pool,
+  `ChunkMap.scheduleChunkLoad` (the read path is four stages on three
+  thread pools: the region read on the IO lane, then
+  `SimpleRegionStorage.upgradeChunkTag` on the worker pool under the name
+  *upgradeChunk* — this is where datafixing happens — then
+  `SerializableChunkData.parse` on the worker pool under *parseChunk*, then
   `SerializableChunkData.read` on the server thread, alongside
   `SectionStorage.prefetch` for POIs — the [generation pipeline](chunk-generation-pipeline.md)
   picks it up from there).
@@ -261,10 +278,14 @@ sequenceDiagram
   `Entity.save` / `EntityType.loadEntitiesRecursive` (Part VI),
   `PoiManager`, `NbtIo`, the `DataFixer` (named only).
 - **Crosses the network as:** nothing. Storage is invisible to the client.
-- **Data-driven by:** *region-file-compression* and *sync-chunk-writes*
-  (`DedicatedServerProperties.syncChunkWrites`, default true;
-  `MinecraftServer.forceSynchronousWrites` is always true for the
-  integrated server), and the autosave interval above.
+- **Data-driven by:** *region-file-compression*, and the setting that
+  decides whether region files are opened with DSYNC.
+  `MinecraftServer.forceSynchronousWrites` returns true as the base default,
+  but both subclasses override it: `DedicatedServer` from
+  `DedicatedServerProperties.syncChunkWrites` (*sync-chunk-writes*, default
+  true) and `IntegratedServer` from the client option `Options.syncWrites`,
+  whose default is **true only on Windows**. Also the autosave interval
+  above.
 
 ## Invariants and surprises
 
@@ -285,15 +306,31 @@ sequenceDiagram
 - **Entities deserialise on the server thread**, through the
   *entity-deserializer* `ConsecutiveExecutor`; only the NBT read is
   off-thread.
-- **A chunk never overwrites itself in place.** New sectors are allocated
-  before old ones are freed and the header is written in between; a crash
-  mid-write leaves the old chunk.
+- **A chunk never overwrites itself in place — unless it is oversized.**
+  New sectors are allocated before old ones are freed and the header is
+  written in between, so a crash mid-write leaves the old chunk. A chunk of
+  256 sectors or more lives in a *.mcc* sidecar instead, and there the
+  header is committed *before* the file is moved into place, over the
+  previous one. And the whole ordering only buys durability if the writes
+  reach the platter in order, which is what DSYNC is for.
 - **Every dimension, including the overworld, is under *dimensions/*.**
   *DimensionDataStorage* is now `SavedDataStorage`
   ([level data](level-data-and-rules.md)).
-- **Autosave is wall-clock**, rescaled on `MinecraftServer.onTickRateChanged`.
-- **A proto chunk cannot clobber a full one**, and the eager saver only
+- **Autosave is wall-clock**, and `MinecraftServer.onTickRateChanged` can
+  only ever bring it *forward*: slowing the tick rate does not push the next
+  autosave out.
+- **A proto chunk does not clobber a full one — best effort.**
+  `ChunkMap.isExistingChunkFull` allows the overwrite whenever the read
+  throws or the tag is null, so an IO error on read licenses exactly the
+  clobber the guard exists to prevent. And `ChunkAccess.tryMarkSaved` clears
+  the unsaved flag *before* the guards run, so a chunk the guard rejects has
+  already been marked clean and will not be retried. The eager saver only
   touches chunks that `ChunkHolder.wasAccessibleSinceLastSave`.
+- **Repeated saves of one chunk collapse into one write.** `IOWorker` keeps
+  a pending-writes map keyed by position and does not re-order an existing
+  key, so N stores before the lane drains become one disk write and one
+  shared future — and a read of that chunk in the meantime is answered from
+  the pending copy, by lane order rather than by any lock.
 - **Region timestamps are epoch seconds; the save cooldown is monotonic
   `Util.getMillis`.** Two clocks, neither is game time.
 

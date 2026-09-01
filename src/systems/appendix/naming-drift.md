@@ -103,6 +103,15 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *ForcedChunksSavedData* | `TicketStorage` |
 | *TicketType&lt;T&gt;* | a registry record with flag bits |
 | *DimensionType* booleans | `EnvironmentAttributeMap` |
+| *DimensionType.ultraWarm* | split four ways: `EnvironmentAttributes.FAST_LAVA`, *WATER_EVAPORATES*, *INCREASED_FIRE_BURNOUT*, *SNOW_GOLEM_MELTS* |
+| *DimensionType.piglinSafe* | `EnvironmentAttributes.PIGLINS_ZOMBIFY` — **inverted** |
+| *DimensionType.bedWorks* | `EnvironmentAttributes.BED_RULE`, a `BedRule` record, not a boolean |
+| *DimensionType.hasRaids* | `EnvironmentAttributes.CAN_START_RAID` |
+| *DimensionType.natural* | `EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS` and neighbours |
+| *DimensionType.fixedTime* / *ambientLight* | still on `DimensionType`, but the day curve is `Timelines.OVERWORLD_DAY` |
+| *Schedule* (the villager's) | `EnvironmentAttributes.VILLAGER_ACTIVITY` on `Timelines.VILLAGER_SCHEDULE` |
+| *Level.dayTime* | `ServerClockManager`, keyed by `WorldClock` |
+| *data/&lt;id&gt;.dat* | *data/&lt;namespace&gt;/&lt;id&gt;.dat* — every saved-data file gained a namespace folder |
 
 ### Part V — Blocks
 

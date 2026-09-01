@@ -23,8 +23,9 @@ The one sentence a player recognises: *the villager who walks straight to
 
 - `GameEvent` is a record of one field, `GameEvent.notificationRadius`
   (default `GameEvent.DEFAULT_NOTIFICATION_RADIUS`, 16; `GameEvent.JUKEBOX_PLAY`
-  is 10, `GameEvent.SHRIEK` is 32), registered in `BuiltInRegistries.GAME_EVENT`
-  — a defaulted registry whose fallback is `GameEvent.STEP`. Sixty-two
+  and `GameEvent.JUKEBOX_STOP_PLAY` are 10, `GameEvent.SHRIEK` is 32),
+  registered in `BuiltInRegistries.GAME_EVENT`
+  — a defaulted registry whose fallback is `GameEvent.STEP`. Sixty-one
   constants, fifteen of them `GameEvent.RESONATE_1` … `GameEvent.RESONATE_15`,
   one per vibration frequency. `GameEvent.Context` carries the source entity
   and the affected block state.
@@ -66,9 +67,11 @@ The one sentence a player recognises: *the villager who walks straight to
   maps events to frequencies 1–15 (`GameEvent.STEP` is 1,
   `GameEvent.ENTITY_DIE` and `GameEvent.EXPLODE` are 15);
   `VibrationSystem.getRedstoneStrengthForDistance` is max(1, 15 − ⌊15 ×
-  distance ÷ radius⌋). `VibrationSelector` holds at most one candidate per
-  tick and `VibrationSelector.addCandidate` replaces it only for a closer
-  one, or an equal-distance one with a higher frequency.
+  distance ÷ radius⌋). `VibrationSelector` holds at most one candidate, and
+  `VibrationSelector.addCandidate` takes an empty slot unconditionally,
+  replaces a candidate from the *same* tick only for a closer one (ties
+  broken by higher frequency), and **never** replaces one held over from an
+  earlier tick — that one is waiting to be consumed.
 - Radii: sculk sensor `SculkSensorBlockEntity.VibrationUser.LISTENER_RANGE`
   8; calibrated sensor, warden and allay 16; shrieker
   `SculkShriekerBlockEntity.VibrationUser.LISTENER_RADIUS` 8. Sensor
@@ -89,8 +92,10 @@ The one sentence a player recognises: *the villager who walks straight to
   `PoiTypes.forState` and `PoiTypes.hasPoi` read it.
 - `PoiRecord` is one entry: `PoiRecord.pos`, `PoiRecord.poiType`,
   `PoiRecord.freeTickets` (starts at `PoiType.maxTickets`);
-  `PoiRecord.acquireTicket` / `PoiRecord.releaseTicket` are protected —
-  only the section calls them. `PoiRecord.hasSpace`, `PoiRecord.isOccupied`.
+  `PoiRecord.acquireTicket` / `PoiRecord.releaseTicket` are
+  package-private, and the two are called from different places:
+  `PoiSection.release` gives a ticket back, but `PoiManager.take` acquires
+  one on the record directly. `PoiRecord.hasSpace`, `PoiRecord.isOccupied`.
 - `PoiSection` holds a section's records (`PoiSection.records`, by
   section-relative position; `PoiSection.byType`) and a validity flag
   `PoiSection.isValid`; `PoiSection.Packed` is the disk form under
@@ -105,9 +110,11 @@ The one sentence a player recognises: *the villager who walks straight to
   `PoiManager.exists`, `PoiManager.getType` — filtered by
   `PoiManager.Occupancy` (`PoiManager.Occupancy.HAS_SPACE`,
   `PoiManager.Occupancy.IS_OCCUPIED`, `PoiManager.Occupancy.ANY`).
-  `PoiManager.take` acquires a ticket on the first free match;
-  `PoiManager.release` gives one back and **throws** "POI never
-  registered" if there is no record there. `PoiManager.add` /
+  `PoiManager.take` acquires a ticket on the first free match — it has no
+  `PoiManager.Occupancy` parameter, it always asks for *HAS_SPACE*;
+  `PoiManager.release` gives one back and **throws** if the *section* is
+  absent, while `PoiSection.release` throws if the *record* is. (By
+  contrast `PoiSection.remove` on a missing record only logs.) `PoiManager.add` /
   `PoiManager.remove` maintain the index.
 - `PoiManager.distanceTracker`, a `PoiManager.DistanceTracker`, is the
   village graph: a `SectionTracker` (the same `DynamicGraphMinFixedPoint`
@@ -140,9 +147,10 @@ particle and the block-state changes.
 POIs update from `Level.setBlock`: `ServerLevel.updatePOIOnBlockStateChange`
 diffs `PoiTypes.forState` of the old and new state, and — because
 `WorldGenRegion.setBlock` calls the same hook from worker threads — wraps
-the `PoiManager.add` / `PoiManager.remove` in `MinecraftServer.execute`,
-so even on the server thread the record appears on a later task, not
-synchronously with the block. `PoiManager.tick` runs from `ChunkMap.tick`
+the `PoiManager.add` / `PoiManager.remove` in a
+`BlockableEventLoop.execute` on the server, so even on the server thread
+the record appears on a later task in the same tick, not synchronously with
+the block — and a read in between still sees the old state. `PoiManager.tick` runs from `ChunkMap.tick`
 under *poi* (dirty sections written while there is time, then the village
 graph's `PoiManager.DistanceTracker.runAllUpdates`). On chunk load
 `SerializableChunkData.read` calls `PoiManager.checkConsistencyWithBlocks`
@@ -184,14 +192,16 @@ sequenceDiagram
    `ServerLevel.updatePOIOnBlockStateChange`: the old state has no type,
    the new head-half state maps to `PoiTypes.HOME`, so a task is queued
    that calls `PoiManager.add` → `SectionStorage.getOrCreate` →
-   `PoiSection.add` → a `PoiRecord` with one free ticket. `PoiSection.setDirty`
-   marks the section for the *poi/* write; `PoiManager.setDirty` re-seeds
+   `PoiSection.add` → a `PoiRecord` with one free ticket. The section runs
+   the dirty-marking callback `SectionStorage.getOrCreate` handed it, which
+   is `PoiManager.setDirty` — that both books the *poi/* write and re-seeds
    the village graph. `LevelDebugSynchronizers.registerPoi` tells any debug
    subscriber.
 2. **Acquisition is not a night thing.** The villager's `Activity.CORE`
    package always runs, and its priority-10 `AcquirePoi` for `PoiTypes.HOME`
-   fires whenever `MemoryModuleType.HOME` is *absent* and the 20–40-tick
-   `AcquirePoi.nextScheduledStart` has passed. It asks
+   fires whenever `MemoryModuleType.HOME` is *absent* and its own
+   next-start time has passed — 0–19 ticks out on the first evaluation,
+   20–39 after that. It asks
    `PoiManager.findAllClosestFirstWithType` with `PoiManager.Occupancy.HAS_SPACE`
    and radius 48 — `PoiManager.getInSquare` over a chunk radius of 4,
    `PoiManager.getInChunk` per section (`SectionStorage.getOrLoad`, which
@@ -199,21 +209,28 @@ sequenceDiagram
    `PoiSection.getRecords` filtered by `PoiRecord.hasSpace` — sorted by
    distance, limited to five, then `VillagerGoalPackages.validateBedPoi`
    (a bed, not `BedBlock.OCCUPIED`). Beds that recently failed are skipped
-   by the `AcquirePoi.JitteredLinearRetry` cache (40–80 ticks, capped at
-   `AcquirePoi.MAX_RETRY_PATHFINDING_INTERVAL`, 400).
+   by the `AcquirePoi.JitteredLinearRetry` cache, whose delay is
+   **cumulative**: each failure adds 40–79 ticks up to
+   `AcquirePoi.JitteredLinearRetry.MAX_RETRY_PATHFINDING_INTERVAL`, 400, so
+   a bed that keeps failing is checked ever more rarely.
 3. **A path decides it.** `AcquirePoi.findPathToPois` →
    `PathNavigation.createPath` to the candidate set with range
    `PoiType.validRange` (1). If `Path.canReach`, `Path.getTarget` is the
    bed.
 4. **The claim happens now, before walking.** `PoiManager.getType` still
-   says *HOME* → `PoiManager.take` → `PoiSection` → `PoiRecord.acquireTicket`:
+   says *HOME* → `PoiManager.take`, which reads through the sections and
+   then calls `PoiRecord.acquireTicket` on the winner:
    `PoiRecord.freeTickets` goes 1 → 0 and the section is dirty. The memory
    is set to `GlobalPos.of` the level and position;
    `ServerLevel.broadcastEntityEvent` 14 is the green particle burst;
    `LevelDebugSynchronizers.updatePoi`. If no candidate was reachable,
    all of them go into the retry cache.
-5. **Night.** `UpdateActivityFromSchedule` switches the brain to
-   `Activity.REST`. `SetWalkTargetFromBlockMemory` for *HOME* (close enough
+5. **Night.** `UpdateActivityFromSchedule` calls
+   `Brain.updateActivityFromSchedule`, which reads the villager's schedule
+   *attribute* at its position; on `Timelines.VILLAGER_SCHEDULE` that
+   attribute flips to `Activity.REST` at tick 12000
+   ([environment attributes](environment-attributes-and-timelines.md) owns
+   the mechanism — the old *Schedule* class is gone). `SetWalkTargetFromBlockMemory` for *HOME* (close enough
    1, too far 150, stale after 1200 ticks) writes `MemoryModuleType.WALK_TARGET`;
    `MoveToTargetSink` drives the navigation. `ValidateNearbyPoi` for *HOME*
    runs each tick within 16 blocks: if `PoiManager.exists` with the right
@@ -226,8 +243,10 @@ sequenceDiagram
    That *setBlock* runs `ServerLevel.updatePOIOnBlockStateChange` too, but
    both occupied variants of the head map to *HOME*, so the record is
    untouched. **The ticket and the OCCUPIED flag are two independent
-   facts.** Morning: `WakeUp` → `SleepInBed.stop` → `LivingEntity.stopSleeping`
-   clears the flag; the ticket stays taken.
+   facts.** Morning: the CORE-priority `WakeUp` behaviour calls
+   `LivingEntity.stopSleeping` itself the moment `Activity.REST` leaves the
+   brain, and `SleepInBed.stop` does the same when the behaviour ends. The
+   flag clears; the ticket stays taken.
 7. **The village.** The moment the ticket was taken the record became
    `PoiRecord.isOccupied`, `PoiTypes.HOME` is in `PoiTypeTags.VILLAGE`, so
    its section is a `PoiManager.isVillageCenter`; `PoiManager.DistanceTracker`
@@ -272,8 +291,11 @@ Registration first: `LevelChunk.registerAllBlockEntitiesAfterLevelLoad`
    `VibrationSystem.User.canTriggerAvoidVibration`, fire
    `CriteriaTriggers.AVOID_VIBRATION` for a player); `Entity.dampensVibrations`
    (a warden) or an affected block in `BlockTags.DAMPENS_VIBRATIONS`, drop.
-   Then `SculkSensorBlockEntity.VibrationUser.canReceiveVibration` — the
-   sensor must be inactive (`SculkSensorBlock.canActivate`). Then
+   Then `SculkSensorBlockEntity.VibrationUser.canReceiveVibration`: the
+   event must not be a break or place *at the sensor's own position* (which
+   is why a sensor does not hear itself being placed), its frequency must
+   not be zero, and the sensor must be inactive
+   (`SculkSensorBlock.canActivate`). Then
    `VibrationSystem.Listener.isOccluded`: six rays from positions nudged off
    the source block's centre, each a `BlockGetter.isBlockInLine` looking for
    `BlockTags.OCCLUDES_VIBRATION_SIGNALS` — occluded only if **all six**
@@ -295,17 +317,22 @@ Registration first: `LevelChunk.registerAllBlockEntitiesAfterLevelLoad`
    `SculkSensorBlock.activate` (`SculkSensorBlock.PHASE` active, 30 ticks,
    emitting `GameEvent.SCULK_SENSOR_TENDRILS_CLICKING` — what shriekers
    listen for — and `SculkSensorBlock.tryResonateVibration` from adjacent
-   `BlockTags.VIBRATION_RESONATORS`). `SculkSensorBlock.deactivate` after
-   the cooldown. Standing *on* the sensor is a shortcut:
-   `SculkSensorBlock.stepOn` → `VibrationSystem.Listener.forceScheduleVibration`,
-   no dispatcher, no occlusion.
+   `BlockTags.VIBRATION_RESONATORS`). After the 30 active ticks
+   `SculkSensorBlock.deactivate` drops the power and **begins** a 10-tick
+   cooldown; the tick after *that* returns the block to inactive. Standing
+   *on* the sensor is a shortcut: `SculkSensorBlock.stepOn` →
+   `VibrationSystem.Listener.forceScheduleVibration` — no dispatcher, no
+   occlusion, and no `VibrationSystem.User.isValidVibration`, so **sneaking
+   does not save you when you are standing on the sensor itself**. (It still
+   asks `VibrationSystem.User.canReceiveVibration`, and it ignores wardens.)
 
 ## Interfaces
 
 - **Called by:** every emitter — `Entity.gameEvent`, `Level.destroyBlock`,
   block and item code — through `LevelAccessor.gameEvent`; `Level.setBlock`
   via `ServerLevel.updatePOIOnBlockStateChange`; the brain behaviours above;
-  `PortalForcer` (`PoiTypes.NETHER_PORTAL`, radius 16, after
+  `PortalForcer` (`PoiTypes.NETHER_PORTAL`, radius 16 going to the Nether
+  and 128 coming back, after
   `PoiManager.ensureLoadedAndValid`), `Bee` (`PoiTypeTags.BEE_HOME`), the
   lightning-rod search in `ServerLevel` (radius 128), `LocateCommand`,
   `Raids`, `CatSpawner`, `WanderingTraderSpawner`, `VillageSiege` and the
@@ -339,9 +366,10 @@ Registration first: `LevelChunk.registerAllBlockEntitiesAfterLevelLoad`
   `VibrationSelector`, per listener, and always costs one tick.
 - **Wool is a six-ray test.** One block on the straight line is usually
   not enough; all six nudged rays must hit `BlockTags.OCCLUDES_VIBRATION_SIGNALS`.
-- **POI updates are deferred through `MinecraftServer.execute`**, even
-  from the server thread, because worldgen calls the same hook from
-  workers. A record appears a task later than its block.
+- **POI updates are deferred through the server's task queue**, even from
+  the server thread, because worldgen calls the same hook from workers. A
+  record appears a task later than its block — same tick, but any read in
+  between sees the old answer.
 - **`PoiManager.release` throws** on a position with no record — which is
   why every releaser checks `PoiManager.getType` or `PoiManager.exists`
   first, and why a broken bed's record simply disappears rather than being
@@ -351,8 +379,20 @@ Registration first: `LevelChunk.registerAllBlockEntitiesAfterLevelLoad`
   — `GameEventDispatcher.post` uses `ServerChunkCache.getChunkNow`.
 - **The village graph is the light engine's graph.** `PoiManager.DistanceTracker`
   → `SectionTracker` → `DynamicGraphMinFixedPoint`.
-- **Sneaking is a tag, not a hard rule** (`GameEventTags.IGNORE_VIBRATIONS_SNEAKING`),
-  and an unknown game-event id decodes to `GameEvent.STEP`.
+- **Sneaking is a tag, not a hard rule**
+  (`GameEventTags.IGNORE_VIBRATIONS_SNEAKING`), and it is skipped entirely
+  by `SculkSensorBlock.stepOn`.
+- **The `GameEvent.STEP` fallback is for raw registry lookups only.**
+  `BuiltInRegistries.GAME_EVENT` is a `DefaultedMappedRegistry` on *step*,
+  so `Registry.getValue` and `Registry.byId` substitute it for an unknown
+  id — but `GameEvent.CODEC` goes through `RegistryFixedCodec`, which
+  errors instead. Bad data in a pack fails; a bad numeric id becomes a
+  footstep.
+- **The catalyst is the only listener that waits.**
+  `GameEventListener.DeliveryMode.BY_DISTANCE` exists for
+  `SculkCatalystBlockEntity.CatalystListener` alone, and the reason is that
+  it consumes the dead mob's experience — the nearest catalyst must get it
+  first, so the dispatcher sorts the queue by distance before delivering.
 
 ## Where to look
 

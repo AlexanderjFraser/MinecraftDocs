@@ -65,8 +65,11 @@ than it is placed, and the mob-spawning darkness the F3 light values report.*
   face shapes occlude. `SkyLightEngine.checkNode` repairs the column
   (`SkyLightEngine.updateSourcesInColumn`, `SkyLightEngine.removeSourcesBelow`,
   `SkyLightEngine.addSourcesAbove`); `SkyLightEngine.propagateFromEmptySections`
-  fills or clears whole all-air sections below at once when light crosses a
-  section edge, because such sections have no data of their own;
+  handles sky light crossing a section edge sideways at the bottom row of a
+  section: where the *source* column has no data for a run of sections below
+  — so light was continuing down implicitly — the same level is written
+  straight down that one destination column, skipping any section that still
+  has no `DataLayer` to write into;
   `SkyLightEngine.setLightEnabled` fills everything above the highest
   non-source with 15; `SkyLightEngine.propagateLightSources` seeds a fresh
   chunk from its own and its four neighbours' source tables.
@@ -99,10 +102,19 @@ than it is placed, and the mob-spawning darkness the F3 light values report.*
   becomes a `ThreadedLevelLightEngine.addTask` of
   `ThreadedLevelLightEngine.TaskType.PRE_UPDATE` or
   `ThreadedLevelLightEngine.TaskType.POST_UPDATE`, submitted through
-  `ChunkMap.lightTaskDispatcher` at the chunk's queue level into
+  `ChunkMap.lightTaskDispatcher` into
   `ThreadedLevelLightEngine.lightTasks`; `ThreadedLevelLightEngine.runUpdate`
-  drains up to `ThreadedLevelLightEngine.taskPerBatch` (1000) of them
-  around one `LevelLightEngine.runLightUpdates`. Calling
+  drains up to `ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE` (1000) of them
+  around one `LevelLightEngine.runLightUpdates`. Only the five mutators that
+  belong to a specific chunk —
+  `LevelLightEngine.checkBlock`, `LightEventListener.propagateLightSources`,
+  `LevelLightEngine.setLightEnabled`,
+  `ThreadedLevelLightEngine.initializeLight` and
+  `ThreadedLevelLightEngine.lightChunk` — are submitted at the chunk's queue
+  level; `LevelLightEngine.updateSectionStatus`,
+  `LevelLightEngine.queueSectionData`, `LevelLightEngine.retainData` and
+  `ThreadedLevelLightEngine.updateChunkStatus` go in at top priority
+  regardless of where the chunk is. Calling
   `ThreadedLevelLightEngine.runLightUpdates` directly **throws**. It is
   `ChunkMap.lightEngine`, reached through `ServerChunkCache.getLightEngine`.
 - On the client `ClientChunkCache.lightEngine` is a plain `LevelLightEngine`,
@@ -115,8 +127,10 @@ than it is placed, and the mob-spawning darkness the F3 light values report.*
   and non-empty, `LevelLightEngine.updateSectionStatus`; if
   `LightEngine.hasDifferentLightProperties`, `ChunkSkyLightSources.update`
   and then `LevelLightEngine.checkBlock` — which on the server merely queues
-  a task. `ProtoChunk.setBlockState` does the same once the chunk is past
-  `ChunkStatus.INITIALIZE_LIGHT`.
+  a task. `ProtoChunk.setBlockState` does the same once the chunk is at or
+  past `ChunkStatus.INITIALIZE_LIGHT`. Note that `ChunkSkyLightSources.update`
+  is real light work and it runs **inline, on the server thread** — the
+  column table is not deferred, only the propagation is.
 - **The light executor** — a `ConsecutiveExecutor` named *light* on the
   shared pool, one task at a time, no dedicated thread. The kick is
   `ThreadedLevelLightEngine.tryScheduleUpdate`, called from
@@ -124,13 +138,22 @@ than it is placed, and the mob-spawning darkness the F3 light values report.*
   idles ([tickets](tickets-and-loading.md)), or inline when 1000 tasks
   have piled up.
 - **In the generation pipeline**: `ChunkStatusTasks.initializeLight` →
-  `ThreadedLevelLightEngine.initializeLight` (mark non-air sections, enable
-  the column) and `ChunkStatusTasks.light` → `ThreadedLevelLightEngine.lightChunk`
-  (propagate sources, then `ChunkAccess.setLightCorrect`); a chunk from
-  disk with *isLightOn* skips the recompute. `ServerChunkCache.getChunkForLighting`
+  `ThreadedLevelLightEngine.initializeLight`, which marks the non-air
+  sections and then sets the column's enabled flag to whatever
+  `ChunkStatusTasks.isLighted` says — *false* for a freshly generated chunk,
+  so the step usually **disables** it; enabling happens inside
+  `ChunkStatusTasks.light` → `ThreadedLevelLightEngine.lightChunk`
+  (propagate sources, then `ChunkAccess.setLightCorrect`), and a chunk from
+  disk with *isLightOn* skips that propagation.
+  `ServerChunkCache.getChunkForLighting`
   hands the engine chunks at *FEATURES*, before the game may see them.
-  `ChunkMap.waitForLightBeforeSending` makes `ThreadedLevelLightEngine.waitForPendingTasks`
-  a send dependency so no chunk ships half-lit.
+  What stops a chunk shipping half-lit is not a send dependency but the
+  pyramid: `ChunkStatus.LIGHT` requires `ChunkStatus.INITIALIZE_LIGHT` at
+  radius 1, so a chunk cannot reach *FULL* until its neighbours are lit.
+  (`ChunkMap.waitForLightBeforeSending` →
+  `ThreadedLevelLightEngine.waitForPendingTasks` →
+  `ChunkHolder.addSendDependency` exists for exactly one caller:
+  `EnderDragonFight`, grafting light onto chunks the client already has.)
 - **On unload**: `ThreadedLevelLightEngine.updateChunkStatus` disables the
   column and nulls its sections ([chunk storage](chunk-storage.md)); on
   load `SerializableChunkData.read` hands the saved `DataLayer`s in with
@@ -205,11 +228,16 @@ sequenceDiagram
    "increase only back toward me" refills. `LightEngine.propagateIncreases`
    then sets the torch node to 14 through `LayerLightSectionStorage.setStoredLevel`
    — the first write to that section this batch clones its `DataLayer`, and
-   the section and its 26 neighbours join the affected set — and
+   the sections touching the written block join the affected set
+   (`SectionPos.aroundAndAtBlockPos`: one section for an interior block, up
+   to eight for one on a corner) — and
    `BlockLightEngine.propagateIncrease` floods 13, 12, … through air
    (opacity 1), stopping at level 1 or at occluders. The sky engine's
-   `SkyLightEngine.checkNode` finds the column unchanged and gives the node
-   a pull-in that changes nothing. `LayerLightSectionStorage.markNewInconsistencies`
+   `SkyLightEngine.checkNode` has three branches, and a torch under a solid
+   ceiling takes the cheapest: it is below the column's lowest sky source
+   and its stored sky level is already zero, so it gets a pull-in that
+   changes nothing. Placed on a lit surface it would instead go through the
+   source-removal and source-add entries — real sky work. `LayerLightSectionStorage.markNewInconsistencies`
    (nothing queued), then `LayerLightSectionStorage.swapSectionMap`: the
    updating map is copied into `LayerLightSectionStorage.visibleSectionData`
    and `ServerChunkCache.onLightUpdate` fires for each affected section —
@@ -221,7 +249,8 @@ sequenceDiagram
    `ChunkHolder.skyChangedLightSectionFilter`) and adding the holder to
    `ServerChunkCache.chunkHoldersToBroadcast`. `ChunkHolder.sectionLightChanged`
    also `ChunkAccess.markUnsaved` — light is saved data.
-6. **The packet.** At the end of `ServerChunkCache.tick`,
+6. **The packet.** At the end of `ServerChunkCache.tickChunks` — so on a
+   pass where the level actually ticked chunks, and never in a debug world —
    `ServerChunkCache.broadcastChangedChunks` → `ChunkHolder.broadcastChanges`
    ([the level tick](../server/server-level-tick.md)): with either filter
    non-empty it builds one `ClientboundLightUpdatePacket` whose
@@ -283,9 +312,17 @@ sequenceDiagram
 - **`DataLayer` is lazy**, and "empty" means homogeneous zero. A section of
   air above ground costs no bytes on disk or the wire.
 - **The engine never touches a `ChunkHolder`.** Its only exit is
-  `LightChunkGetter.onLightUpdate` from the map swap, and every write
-  dirties the section plus all 26 neighbours — one torch marks up to 27
-  sections in up to 9 holders for re-send.
+  `LightChunkGetter.onLightUpdate` from the map swap. A single write marks
+  only the sections the written block touches — one, or up to eight on a
+  corner. The reason one torch still dirties up to 27 sections is that its
+  flood reaches ±14 blocks, not that writes mark neighbours.
+  (`LayerLightSectionStorage.markSectionAndNeighborsAsAffected`, the real
+  3×3×3 marking, fires only when a section is first given a `DataLayer`.)
+- **Enabling a column is separate from lighting it.**
+  `LayerLightSectionStorage.lightOnInSection` gates emission itself, and
+  `LevelLightEngine.lightOnInColumn` is what the client's
+  `SectionUpdateTracker` consults before it will mesh a section — a light
+  flag deciding whether geometry may be built at all.
 - **Decreases always finish before increases** in a batch, and the
   published map is a copy: readers on other threads never see a
   half-propagated state.

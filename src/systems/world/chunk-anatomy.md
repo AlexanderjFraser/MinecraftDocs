@@ -22,8 +22,10 @@ are standing in, and that loads and unloads as one piece.*
 `ProtoChunk` is a chunk under construction on the worker pool
 (`ChunkType.PROTOCHUNK`); `LevelChunk` is a live chunk owned by a `Level`
 (`ChunkType.LEVELCHUNK`). `ImposterProtoChunk` is a `ProtoChunk`-shaped
-view over a finished `LevelChunk`, and `EmptyLevelChunk` is the client's
-stand-in for "not loaded". Nothing else extends `ChunkAccess`.
+view over a finished `LevelChunk`, and `EmptyLevelChunk` is the stand-in
+for "not loaded" — the client's, but also `PathNavigationRegion`'s, on the
+server, for a chunk a mob's pathfinder cannot see. Nothing else extends
+`ChunkAccess`.
 
 What every chunk owns, whatever its shape:
 
@@ -97,7 +99,10 @@ A section is two palette containers and four counters.
 - `LevelChunkSection.write` / `LevelChunkSection.read` are the wire form:
   two shorts (`LevelChunkSection.nonEmptyBlockCount`, `LevelChunkSection.fluidCount`),
   then the two containers. `LevelChunkSection.copy` is the deep copy the
-  saver and the client mesher take.
+  **saver** takes (`SerializableChunkData.copyOf`). The client mesher takes
+  a different, cheaper one: `SectionCopy` copies only the block-state
+  container (`PalettedContainer.copy`, and nothing at all for an air-only
+  section) plus the whole chunk's block-entity map.
 
 ### `PalettedContainer` — palettes and bit packing
 
@@ -110,10 +115,11 @@ atomically on resize and on network read. Reads
 
 The tiers come from a top-level `Strategy` (it is no longer nested in
 `PalettedContainer`): `Strategy.createForBlockStates` and
-`Strategy.createForBiomes`, each returning a `Configuration` for a
-requested bit count (`Strategy.getConfigurationForBitCount`,
-`Strategy.getConfigurationForPaletteSize`). `Configuration.Simple` has one
-width in memory and on the wire; `Configuration.Global` stores registry ids
+`Strategy.createForBiomes`, each returning a `Strategy` whose
+`Strategy.getConfigurationForBitCount` and
+`Strategy.getConfigurationForPaletteSize` yield the `Configuration`.
+`Configuration.Simple` has one width in memory and on disk;
+`Configuration.Global` stores registry ids
 at `Configuration.bitsInMemory` = ceillog2(registry size) and
 `Configuration.alwaysRepack` on load.
 
@@ -150,15 +156,24 @@ the in-memory width. `PalettedContainer.pack` / `PalettedContainer.unpack`
 (`PalettedContainerRO.PackedData`, the *palette* and optional *data* NBT
 fields behind `PalettedContainer.codecRW` / `PalettedContainer.codecRO`) are
 the disk: `PalettedContainer.pack` re-encodes into a `HashMapPalette` and
-picks the width by *palette size*, so the disk form is the smallest that
-fits and `PalettedContainer.unpack` re-encodes on load whenever the widths
-differ.
+picks the width by *palette size* — off the **same tier ladder** as memory,
+so a two-entry block-state section is still four bits on disk. What packing
+actually buys is dropping palette entries nothing uses any more, which can
+demote a container a whole tier, and shrinking a `Configuration.Global`
+container from its in-memory width to `Configuration.bitsInStorage`.
+Symmetrically, `PalettedContainer.unpack` re-encodes on load only when the
+stored configuration is `Configuration.Global`, whose
+`Configuration.alwaysRepack` is true; every `Configuration.Simple` tier has
+one width for both, so its long array is adopted as it lies.
 
 Thread safety is a **detector, not a lock**. `PalettedContainer.threadingDetector`
 is a `ThreadingDetector` around a one-permit semaphore:
 `ThreadingDetector.checkAndLock` tries to acquire, and on failure records
-the loser, waits, and throws `ThreadingDetector.makeThreadingException`
-("Accessing PalettedContainer from multiple threads") with both stacks.
+itself as the loser and then blocks. It is the **winner** that notices, in
+`ThreadingDetector.checkAndUnlock`: it builds
+`ThreadingDetector.makeThreadingException` ("Accessing PalettedContainer
+from multiple threads") with both stacks and throws it, and the loser
+re-throws the same report as soon as it acquires. Both threads die.
 Contention is a crash by design; the rule it enforces is that only one
 thread writes a section at a time — the server thread for a live chunk,
 the worker that holds `LevelChunkSection.acquire` for a proto chunk.
@@ -177,9 +192,9 @@ is the first *free* Y; `Heightmap.getHighestTaken` the last solid one.
 
 | type | opaque means | usage | saved | sent |
 |---|---|---|---|---|
-| `Heightmap.Types.WORLD_SURFACE_WG` | not air | `Heightmap.Usage.WORLDGEN` | no | no |
+| `Heightmap.Types.WORLD_SURFACE_WG` | not air | `Heightmap.Usage.WORLDGEN` | proto only | no |
 | `Heightmap.Types.WORLD_SURFACE` | not air | `Heightmap.Usage.CLIENT` | yes | yes |
-| `Heightmap.Types.OCEAN_FLOOR_WG` | blocks motion | `Heightmap.Usage.WORLDGEN` | no | no |
+| `Heightmap.Types.OCEAN_FLOOR_WG` | blocks motion | `Heightmap.Usage.WORLDGEN` | proto only | no |
 | `Heightmap.Types.OCEAN_FLOOR` | blocks motion | `Heightmap.Usage.LIVE_WORLD` | yes | **no** |
 | `Heightmap.Types.MOTION_BLOCKING` | blocks motion or has fluid | `Heightmap.Usage.CLIENT` | yes | yes |
 | `Heightmap.Types.MOTION_BLOCKING_NO_LEAVES` | same, not `LeavesBlock` | `Heightmap.Usage.CLIENT` | yes | yes |
@@ -225,8 +240,10 @@ light; it has no block-entity or neighbour side effects.
   server only ([game events](game-events-and-poi.md)).
 - `LevelChunk.getPersistedStatus` is always `ChunkStatus.FULL`.
 
-The constructor from a `ProtoChunk` **shares the section array** — no copy
-— and copies block entities, pending NBT, post-processing lists,
+The constructor from a `ProtoChunk` **shares the sections, not the array**:
+`ChunkAccess` always allocates its own `LevelChunkSection[]` and copies the
+references in, so the two chunks hold two arrays over one set of section
+objects. It also copies block entities, pending NBT, post-processing lists,
 structure data, the four final heightmaps and the sky-light sources.
 
 `LevelChunk.setBlockState` is the one write path and does, in order:
@@ -268,16 +285,28 @@ Once a chunk is `ChunkStatus.FULL`, neighbours still generating ask the holder f
 chunk at status X" and must get something `ProtoChunk`-typed.
 `GenerationChunkHolder.replaceProtoChunk` (from `ChunkStatusTasks.full`)
 and `SerializableChunkData` (when a `ChunkStatus.FULL` chunk is read from disk) install
-an `ImposterProtoChunk` over the `LevelChunk`. Reads delegate; writes are
-ignored unless *allowWrites*; `ImposterProtoChunk.fixType` maps the *_WG*
-heightmap requests onto the live ones; `ImposterProtoChunk.canBeSerialized`
+an `ImposterProtoChunk` over the `LevelChunk`. Reads delegate; most writes
+are ignored unless *allowWrites*, though a handful — heightmaps, structure
+starts and references, block-entity NBT — are dropped even when writes are
+allowed, and `ImposterProtoChunk.markUnsaved` and
+`ImposterProtoChunk.setLightCorrect` always pass through.
+`ImposterProtoChunk.getSections` hands back the wrapped chunk's array
+unconditionally; only the single-section `ImposterProtoChunk.getSection` is
+gated, falling back to the imposter's own all-air array.
+`ImposterProtoChunk.fixType` maps the *_WG*
+heightmap requests onto the live ones, but only inside
+`ImposterProtoChunk.getHeight` — asking it to *create* a *_WG* heightmap
+creates a real one on the live chunk. `ImposterProtoChunk.canBeSerialized`
 is false (the `LevelChunk` is what gets saved); and its carving mask
 throws "Meaningless in this context". `ImposterProtoChunk.getWrapped` is
 the way back.
 
-`EmptyLevelChunk` is `Blocks.VOID_AIR` everywhere, `LevelChunk.isEmpty`
-true, one fixed biome; `ClientChunkCache.emptyChunk` is the one instance
-the client hands out for any position outside its ring.
+`EmptyLevelChunk` is `Blocks.VOID_AIR` everywhere,
+`EmptyLevelChunk.isEmpty` true (`LevelChunk.isEmpty` is false), one fixed
+biome. `ClientChunkCache.emptyChunk` is the one instance the client hands
+out for **any** miss — out of range, empty slot, or a slot holding some
+other chunk — and only when the caller asked to load or generate;
+otherwise it gets null.
 
 ## When it runs
 
@@ -289,9 +318,10 @@ A chunk has no tick of its own. Who touches it and on which thread:
 - **Server thread** owns every `LevelChunk`: `LevelChunk.setBlockState`,
   block entities, tickers, ticks. Promotion from proto to level happens
   here (`ChunkStatusTasks.full`).
-- **IO-Worker-n** never sees a live section: the saver takes
+- **IO-Worker-n** never sees a live section. The saver takes
   `LevelChunkSection.copy` snapshots on the server thread
-  (`SerializableChunkData.copyOf`) and serialises the copies off-thread
+  (`SerializableChunkData.copyOf`); the NBT encoding of those copies runs on
+  the **worker pool**, and the IO lane only writes the finished bytes
   ([chunk storage](chunk-storage.md)).
 - **Render thread** owns the client's `LevelChunk`s inside
   `ClientChunkCache.Storage`, an `AtomicReferenceArray` ring of
@@ -311,8 +341,10 @@ A chunk has no tick of its own. Who touches it and on which thread:
 - **Crosses the network as:** `ClientboundLevelChunkWithLightPacket`,
   whose `ClientboundLevelChunkPacketData` holds the heightmaps whose type
   `Heightmap.Types.sendToClient`, a buffer of *every* section's
-  `LevelChunkSection.write` (empty ones included; the reader caps it at
-  `ClientboundLevelChunkPacketData.TWO_MEGABYTES`), and the block-entity
+  `LevelChunkSection.write` (empty ones included; the reader caps the
+  payload at two megabytes, and the writer pre-sizes the buffer from
+  `LevelChunkSection.getSerializedSize` and throws if the written size does
+  not match to the byte), and the block-entity
   update tags (`ClientboundLevelChunkPacketData.BlockEntityInfo`). Light
   rides beside it in `ClientboundLightUpdatePacketData`. The client
   applies it with `ClientPacketListener.updateLevelChunk` →
@@ -328,19 +360,34 @@ A chunk has no tick of its own. Who touches it and on which thread:
 - **Biomes are 4×4×4 and replaced, never mutated.** The
   `LevelChunkSection.biomes` container is read-only; every biome change
   swaps in a new one. Only block states resize in place.
-- **Small palettes are padded to 4 bits.** A section with two block
-  states ships 256 longs, the same as one with sixteen; the disk form
-  (`PalettedContainer.pack`) is the one that shrinks to fit.
-- **The proto and the level chunk share sections.** Promotion is a
-  handover of the same `LevelChunkSection[]`, which is why the imposter
-  keeps its own empty array and only exposes the wrapped one when writes
-  are allowed.
+- **Small palettes are padded to 4 bits, on disk as well as in memory.** A
+  section with two block states ships 256 longs, the same as one with
+  sixteen, and saves the same. `PalettedContainer.pack` shrinks the
+  *palette*, not the width — only a single-valued section drops to zero
+  bits.
+- **The proto and the level chunk share sections, not the array.** Each
+  holds its own `LevelChunkSection[]` over the same section objects, which
+  is why writing through either is writing the same blocks.
 - **Concurrent section writes crash on purpose.** `ThreadingDetector` is
-  not a mutex; the second thread is the one that dies, with both stacks in
-  the report. Reads are lock-free against a volatile record.
+  not a mutex, and it kills **both** threads: the winner discovers the
+  contention when it releases and throws first. Reads are lock-free against
+  a volatile record.
+- **A palette can answer a question without unpacking.**
+  `LevelChunkSection.maybeHas` tests the predicate against the palette
+  alone, so `ChunkAccess.findBlocks` can skip 4,096 blocks in one comparison
+  — unless the section is on the global palette, whose answer is always
+  "maybe".
+- **The client's ticking counters are always zero.** `LevelChunkSection.write`
+  carries only the non-empty-block and fluid counts, so a client section's
+  `LevelChunkSection.isRandomlyTicking` is false forever. It never needed to
+  be true; the client runs no random ticks.
 - **Heightmaps are not nine bits by definition** — the width is
   ceillog2(height + 1) per dimension — and only three of the six types
   reach the client. `Heightmap.Types.OCEAN_FLOOR` is saved and never sent.
+  What is *saved* is not `Heightmap.Types.keepAfterWorldgen` either: the
+  saver writes whatever the chunk's persisted `ChunkStatus.heightmapsAfter`
+  names, so a proto chunk stored below `ChunkStatus.CARVERS` does save its
+  two *_WG* maps.
 - **The client trusts the counters.** `LevelChunkSection.read` takes the
   two shorts from the wire and never recounts;
   `LevelChunkSection.recalcBlockCounts` runs on disk load only.

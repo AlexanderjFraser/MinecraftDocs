@@ -60,25 +60,14 @@ keyframes, in a data pack.
   `EnvironmentAttributes.AMBIENT_LIGHT_COLOR`,
   `EnvironmentAttributes.NIGHT_VISION_COLOR`,
   `EnvironmentAttributes.AMBIENT_PARTICLES`.
-- **`EnvironmentAttributeSystem`** — the per-level stack of layers.
-  `EnvironmentAttributeSystem.addDefaultLayers` builds it from
-  `EnvironmentAttributeSystem.addDimensionLayer` (constants from
-  `DimensionType.attributes`), `EnvironmentAttributeSystem.addBiomeLayer`
-  (positional, from `Biome.getAttributes`) and the timelines. The
-  builder verbs are
-  `EnvironmentAttributeSystem.Builder.addConstantLayer`,
-  `EnvironmentAttributeSystem.Builder.addTimeBasedLayer`,
-  `EnvironmentAttributeSystem.Builder.addPositionalLayer` and
-  `EnvironmentAttributeSystem.Builder.addTimelineLayer`; the layer types
-  are `EnvironmentAttributeLayer.Constant`,
-  `EnvironmentAttributeLayer.TimeBased` and
-  `EnvironmentAttributeLayer.Positional`. Each attribute ends up as one
-  `EnvironmentAttributeSystem.ValueSampler`, holding a folded
-  `EnvironmentAttributeSystem.ValueSampler.baseValue`, the surviving
-  `EnvironmentAttributeSystem.ValueSampler.layers`,
-  `EnvironmentAttributeSystem.ValueSampler.isAffectedByPosition` and a
-  per-tick cache (`EnvironmentAttributeSystem.ValueSampler.cachedTickValue`
-  against `EnvironmentAttributeSystem.ValueSampler.cacheTickId`).
+- **`EnvironmentAttributeSystem`** — the per-level stack that answers an
+  attribute: four layers (dimension, biome, timelines, weather) baked once
+  in the level constructor, with a per-tick cache that covers only the
+  positionless answer. It is owned by
+  [environment attributes and timelines](../world/environment-attributes-and-timelines.md);
+  what matters here is that **the client builds the same stack from the
+  same synced data** and resolves colours locally, and that `ClientLevel`
+  adds two layers of its own on top for the End flash.
 - **`EnvironmentAttributeProbe`** — the camera's sampler.
   `EnvironmentAttributeProbe.tick` Gaussian-samples the surrounding
   biomes into a `SpatialAttributeInterpolator` and rolls every

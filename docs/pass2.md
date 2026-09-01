@@ -16,7 +16,8 @@ wait for pass 3 (and feed the lecture-order draft there).
 | page | lines | what would split off |
 |---|---:|---|
 | ~~`server/server-lifecycle`~~ | ~390 | **Session B: not split, and the proposed seam was wrong.** The side threads are four bullets with no trace; a page of them would break rule 4. The page's real seam is its *two traces* (startup and `/stop`) and its best new material is the failure paths. See [pass3.md](pass3.md) §2. |
-| `world/game-events-and-poi` | 375 | two traces: sculk/vibrations vs villager POI — the obvious split |
+| `world/game-events-and-poi` | 375 | two traces: sculk/vibrations vs villager POI — the obvious split. **Session C: confirmed but not executed.** The two fact-check halves shared no classes at all, so the seam is real; the fact-check did not add enough to force the split in pass 2, and it is now recorded as presentational in [pass3.md](pass3.md) §2. |
+| `world/block-ticks-and-fluids` | ~330 | **Added by session C.** The scheduled-tick scheduler and the fluid model are two lectures with two traces; the page's own numbered trace changes subject at step 6. Not split in pass 2 for the same reason; see [pass3.md](pass3.md) §2. |
 | `blocks/redstone` | ~380 | the experimental-evaluator coda (`ExperimentalRedstoneWireEvaluator`, `Orientation`) vs the default trace |
 | `blocks/blocks-and-states` | ~340 | the state table (data page) vs the placement trace + prediction |
 | `entities/entity-anatomy` | 367 | the base class + `EntityType` vs the hierarchy tour |
@@ -445,6 +446,60 @@ easy to get wrong from 1.21 memory.
   There is no spawn ticket; on an ordinary world the step loads nothing —
   `server-lifecycle`.
 
+- The environment-attribute layer stack is **fixed and four deep**:
+  dimension (constant) → biome (positional) → timelines (time-based) →
+  weather, built once in the level constructor and never rebuilt —
+  `environment-attributes-and-timelines`.
+- A biome may only set **positional** attributes
+  (`EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL`); exactly two attributes
+  are non-positional, `EnvironmentAttributes.SKY_LIGHT_LEVEL` and
+  `EnvironmentAttributes.FAST_LAVA` —
+  `environment-attributes-and-timelines`.
+- The wire carries the **rules**, not the values: `Registries.TIMELINE` and
+  `Registries.WORLD_CLOCK` are synced registries, and the client rebuilds
+  the same layer stack. The only per-tick traffic is `ClientboundSetTimePacket`
+  — `environment-attributes-and-timelines`.
+- `WorldGenRegion.environmentAttributes` returns `EnvironmentAttributeReader.EMPTY`:
+  **worldgen sees attribute defaults only** —
+  `environment-attributes-and-timelines`.
+- `TicketType.ENDER_PEARL` is loading **and** simulation (and
+  keep-dimension-active) — `tickets-and-loading`.
+- The player-ticket throttler runs its submitted task on the **main
+  thread**; only the dispatcher's queue bookkeeping is on a worker. Nothing
+  in the ticket system adds a ticket from a worker — `tickets-and-loading`.
+- `ChunkHolder.sendSync` starts already complete. `ChunkMap.waitForLightBeforeSending`
+  has exactly one caller, `EnderDragonFight` — `tickets-and-loading` /
+  `lighting`.
+- A light write marks only the sections the written block touches (one, or
+  up to eight on a corner), **not** 27. The 3×3×3 marking happens once, when
+  a section is first given a `DataLayer` — `lighting`.
+- `MinecraftServer.forceSynchronousWrites` is true in the **base class**;
+  both subclasses override it, and singleplayer's default is *Windows only*
+  — `chunk-storage`.
+- Datafixing on the chunk read path happens on the **worker pool**, between
+  the IO lane and `SerializableChunkData.parse` — `chunk-storage`.
+- Every `SavedData` file lives under a **namespace folder**:
+  *data/&lt;namespace&gt;/&lt;id&gt;.dat* — `level-data-and-rules`.
+- Five game rules reach the client, not three; the fifth is
+  `GameRules.ADVANCE_TIME`, which broadcasts a clock sync —
+  `level-data-and-rules`.
+- `ServerLevel.getRespawnData` returns the **server's effective** spawn,
+  relocated if it has fallen outside the border — `level-data-and-rules`.
+- Lava random-ticks **twice** per selected position, once as a block and
+  once as a fluid — `block-ticks-and-fluids`.
+- A `ChunkAccess` built from a `ProtoChunk` copies the section **array**;
+  the section objects are shared — `chunk-anatomy`.
+- `ThreadingDetector` kills **both** threads, and the winner throws first,
+  from `checkAndUnlock` — `chunk-anatomy`.
+- `PalettedContainer.pack` uses the **same tier ladder** as memory; packing
+  shrinks the palette, not the width — `chunk-anatomy`.
+- `ChunkLevel.generationStatus` maps 34 to *INITIALIZE_LIGHT*, not *SPAWN* —
+  `chunk-generation-pipeline`.
+- The pyramid is chosen **per chunk, per layer**, so one task's ring mixes
+  both pyramids — `chunk-generation-pipeline`.
+- `ChunkStep`'s default block-state write radius is **−1**: most steps may
+  not write at all — `chunk-generation-pipeline`.
+
 - There is **no render thread**: the thread named *Render thread* is
   the main thread (`Main` renames it, `Minecraft.gameThread` is it) —
   `the-frame`. `anatomy` predates this and must be re-checked.
@@ -607,6 +662,13 @@ frame graph). The appendix's remaining gaps (the debug cluster,
 `client/resources`, `util/parsing`, `client/animation`, Blaze3D's
 Vulkan/platform halves) get their rulings in session K.
 
+- ~~**Environment attributes and timelines have no page**~~ — **written
+  in session C** as `src/systems/world/environment-attributes-and-timelines.md`,
+  last in Part IV. The borrowed explanations were cut out of `biomes` and
+  `lightmap-fog-and-sky` and replaced with pointers; `block-ticks-and-fluids`,
+  `level-data-and-rules` and `game-events-and-poi` now link to it for the
+  mechanism rather than restating it. The original entry, for the record:
+
 - **Environment attributes and timelines have no page** (session 6).
   `world/attribute` (`EnvironmentAttribute`, `EnvironmentAttributes`,
   `EnvironmentAttributeMap`, `EnvironmentAttributeSystem`,
@@ -666,6 +728,16 @@ Vulkan/platform halves) get their rulings in session K.
   rather than after.
 - The verifier proves a name **exists**, not that it is declared where you
   cite it — see the hand-off section below.
+- **The verifier could not see record components on a generic record.**
+  Session C found and fixed a real bug in `tools/verify_names.py`: the
+  `RECORD` regex required `record Name(` and so missed `record Name<T>(`,
+  which is why `AttributeType.valueCodec` and its four `LerpFunction`
+  siblings failed. Same class of bug as session A's `gen_reference.py`
+  component regex. **When a name you are certain about fails, suspect the
+  tool once before rewording the page.**
+- Session C's other failures were the usual two shapes and were caught by
+  running the verifier after every page rather than at the end. Doing it per
+  page also localises a regex bug like the one above.
 - Session B's failures were the same two shapes yet again: **bare members**
   (`shouldRun`, `player`) and **file/JSON key names in backticks**
   (*bypassesPlayerLimit*, *singleplayer_uuid*). A key in a config or save file
@@ -680,6 +752,61 @@ for pass 4, and material added speculatively that pass 4 may cut.
 **Structural observations now go to [pass3.md](pass3.md)** — the
 restructuring notebook opened in session A — so that pass 3 starts with
 evidence rather than a blank page.
+
+### Session C (Part IV The world + the new environment page)
+
+**Added on spec.** The new page is 300 lines and entirely on spec — it was
+approved, but pass 4 should check two things: the 48-attribute census
+(counts by namespace, syncable, spatially interpolated) is reference
+material inside a lecture page and may want to move to
+`src/reference/`; and the *Interfaces* bullet listing ~25 consumer classes
+is a wall of names that earns its place only if the reader is meant to
+grasp how wide the system reaches. One or the other should probably go.
+
+The eight fact-checked pages grew by roughly 15% — much less than session
+A's 40%, because most of session C's work was correction rather than
+addition. Specific additions pass 4 should weigh:
+
+- `block-ticks-and-fluids` gained the `TickAccess` interface-layer bullet.
+  It is true and it explains why the client and worldgen can substitute
+  no-ops, but it is five interface names in a row with no trace.
+- `tickets-and-loading` gained five invariants at once. The
+  natural-spawn-radius one and the keep-dimension-active one are load-bearing;
+  the singleplayer batch-quota one is a footnote.
+- `chunk-anatomy` gained `LevelChunkSection.maybeHas` and the
+  client-counters-are-zero invariant. Both are good; the palette one is the
+  better of the two and could carry the other.
+- `chunk-generation-pipeline`'s dependency table grew from six rows to nine
+  because the six were wrong. It is now correct and less readable. Pass 3's
+  "draw the pyramid" note (§3) would fix this properly.
+
+**Wording debt for pass 4.**
+
+- The same register problem session A flagged, worse here: session C's
+  fixes are full of "not X but Y" and "except that", because a great many of
+  them were corrections to over-confident claims. `chunk-storage`'s
+  invariant list in particular now reads as a series of retractions.
+- Three pages now say some variant of "*and it is not what you think*"
+  about a thread. Pick one.
+- `game-events-and-poi` and `block-ticks-and-fluids` both now carry a
+  parenthetical aside longer than the sentence containing it.
+- The em-dash density in the new page is high even by this corpus's
+  standards.
+
+**Left for later, deliberately.**
+
+- The two Part IV splits (`block-ticks-and-fluids`,
+  `game-events-and-poi`) — recorded in [pass3.md](pass3.md) §2.
+- The completeness findings session C did **not** act on, in rough order of
+  how much they would add: `chunk-storage`'s `IOWorker.isOldChunkAround`
+  blending cache (a genuinely separate second job of the chunk lane, and a
+  page-sized omission); `game-events-and-poi`'s sculk-shrieker → warden
+  chain and the calibrated sensor's frequency filter; `lighting`'s
+  `BlockLightSectionStorage` and the `SkyLightSectionStorage.topSections`
+  map; `tickets-and-loading`'s `ChunkMap.getChunkRangeFuture` bail-out;
+  `chunk-anatomy`'s `LevelChunk.setBlockState` re-entrancy guard and the
+  three flag gates it does not name. Any of these is a fair pass-4 or
+  pass-5 addition; none of them makes a current claim false.
 
 ### Session A (Part I · `sound` · Part II Foundations)
 

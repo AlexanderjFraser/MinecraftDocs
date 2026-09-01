@@ -131,6 +131,51 @@ is the first place a viewer sees one of them do a full lap. Whatever the
 final lecture order, nothing between `anatomy` and `server-tick` should
 assume the Server thread has been demonstrated, because it has not.
 
+### Part IV · The world
+
+*(session C)* **Part IV is a pipeline with two reference pages bolted to
+its side, and it is now nine pages long.** The pipeline is real and reads
+in order: a ticket arrives → holders and futures → the generation pyramid →
+light → the chunk becomes a `LevelChunk` → it is sent → it is saved →
+eventually it unloads. Four pages sit on that line (`tickets-and-loading`,
+`chunk-generation-pipeline`, `lighting`, `chunk-storage`) and they hand off
+to each other cleanly enough that pass 3 could make the hand-offs explicit
+and gain a through-line for free.
+
+The other five are not on it:
+
+- **`chunk-anatomy` is the data page** and has to come first — every other
+  page in the part names `LevelChunkSection`, `PalettedContainer` and the
+  heightmaps. It is the part's vocabulary page, the way `anatomy` is the
+  corpus's.
+- **`block-ticks-and-fluids` is two pages wearing one coat**, and session C
+  is the first to say so with evidence. The scheduled-tick system
+  (`ScheduledTick`, `LevelTicks`, `LevelChunkTicks`, dedup, drain order,
+  save/load) is a complete lecture with its own trace, and the fluid model
+  (`FlowingFluid`, `getNewLiquid`, the slope search, lava's overrides) is a
+  *different* complete lecture that happens to be the tick system's biggest
+  customer. The seam is exactly at trace step 5 → 6. Session C did not split
+  it because the fact-check did not force the issue, but the page grew again
+  here and the split is now the strongest un-executed one in Part IV.
+- **`game-events-and-poi` is the split the pass-2 table already names** and
+  session C confirms it: the fact-check produced two disjoint reports with
+  no shared classes between them. Sculk/vibrations and villager POI share a
+  package and nothing else.
+- **`level-data-and-rules` is a reference page** — a who-owns-what table
+  with a lot of file paths — and it says so itself ("Short, no trace"). It
+  belongs with `math-and-primitives` in whatever pass 3 decides reference
+  pages are.
+- **`environment-attributes-and-timelines` (new, session C) is a genuine
+  lecture** and is the best-shaped page in the part: one mechanism, one
+  trace, and a second trace on the client that is the *same* trace seen
+  from the other side. See section 4.
+
+**Recommendation for pass 3:** the part wants to be read as
+`chunk-anatomy` → the four-page pipeline → `environment-attributes` →
+`block-ticks-and-fluids` (or its two halves) → `game-events-and-poi` (or
+its two halves), with `level-data-and-rules` demoted to reference. That is
+also very nearly the current order, which is a good sign.
+
 ---
 
 ## 2 · Page-level structure
@@ -143,6 +188,32 @@ ones pass 2 deliberately left alone as presentational.*
 - **`math-and-primitives` → reference.** See Part II above. It is the
   clearest case in the corpus of a page that is not a lecture.
   *(session A)*
+- **`block-ticks-and-fluids` → two pages.** *(session C)* Not in the pass-2
+  split table, and it should have been. The tick scheduler and the fluid
+  model are independent systems with independent traces; the page's own
+  numbered trace changes subject at step 6 and never comes back. The
+  scheduler half is also the part's answer to "how does anything happen
+  later", which several other parts (redstone, blocks) lean on, so it is
+  worth being findable on its own. Fluids keep the bucket trace; the
+  scheduler gets a repeater or a sapling.
+- **`game-events-and-poi` → two pages, confirmed.** *(session C)* The
+  pass-2 table's proposed seam is right and the fact-check found it
+  independently: the two halves share no classes, no traces, and no
+  invariants. The only thing they share is `world/level/gameevent` sitting
+  next to `world/entity/ai/village/poi` in the tree — a packaging fact, not
+  a conceptual one.
+- **`level-data-and-rules` → reference.** *(session C)* Its header already
+  says "Short, no trace"; its body is a table of files. Session C's
+  fact-check found eleven wrong *paths* and almost nothing wrong about
+  mechanism, which is the signature of a reference page. If pass 3 keeps a
+  reference tier, this and `math-and-primitives` are its first two members.
+- **`environment-attributes-and-timelines` does not want to move.**
+  *(session C)* It was floated as "Part IV or a short part of its own"; the
+  answer is Part IV. Everything it explains is per-level state resolved
+  through the level, and three of its consumers (`block-ticks-and-fluids`,
+  `game-events-and-poi`, `level-data-and-rules`) are its neighbours in the
+  part. Making it a part of its own would isolate it from exactly the pages
+  that motivate it.
 - **`anatomy`'s threads table → trim to four rows**, deferring the rest
   to `src/reference/threads.md`. *(session A)*
 - **`sound` is two pages' worth of material in one**, and the seam is
@@ -269,6 +340,30 @@ Session A adds one open sub-question: `sound` uses long abbreviations
 standard has to say whether one- and two-letter lanes are allowed at all
 when the class name is already short.
 
+### Part IV *(session C)*
+
+- **The two best diagrams in the part are the two the new page added**, and
+  they are a matched pair: the same value resolved on the server (four
+  layers, one clock) and on the client (the same four layers plus spatial
+  and partial-tick smoothing). Pass 3 should keep them adjacent and
+  consider drawing the *layer stack* itself as a small flowchart above
+  them, because the stack is the one thing every reader needs and neither
+  sequence diagram shows it as a stack.
+- **`tickets-and-loading`'s diagram is the wrong shape.** It is a
+  `sequenceDiagram`, but the thing being explained is two graphs relaxing
+  and a state machine promoting through `FullChunkStatus`. The sequence
+  version has eleven lanes and reads as a list. A flowchart of the ticket →
+  level → status → future chain, plus a small state diagram for the three
+  full statuses, would replace most of the numbered trace.
+- **`chunk-generation-pipeline`'s diagram is the right shape and too
+  small.** The pyramid — twelve statuses, a radius each, two variants — is
+  the page's real subject and currently lives in a markdown table. It wants
+  to be drawn.
+- **`lighting` needs a diagram it does not have**: the four-stage batch
+  (check nodes → decreases → increases → swap) is a pipeline, and the page
+  explains it in prose while the diagram traces a torch. Both are worth
+  having.
+
 ---
 
 ## 4 · The lecture order
@@ -306,6 +401,33 @@ section records the ones where the **lecture** boundary differs from the
 - **`players-and-sessions`** — the join sequence vs the three exit paths
   (death, dimension change, disconnect). Different shapes, different
   audiences.
+
+### Lectures Part IV would give
+
+*(session C)* Ordered as they should be watched, with the trace each one
+follows:
+
+1. **What a chunk is** — `chunk-anatomy`. Trace: one block placed, all the
+   way down to the bit storage. Vocabulary page; everything later assumes
+   it.
+2. **How a chunk comes to exist** — `tickets-and-loading` +
+   `chunk-generation-pipeline`. Two recordings or one long one; the seam is
+   `scheduleChunkGenerationTask`. Trace: a player walks east.
+3. **Light** — `lighting`. Trace: a torch is placed. Self-contained, and
+   the only part of the pipeline with its own executor.
+4. **How a chunk is saved and forgotten** — `chunk-storage`. Trace: the
+   player walks back west.
+5. **What the place and the hour decide** —
+   `environment-attributes-and-timelines`. Trace: dusk falls. This is the
+   part's best standalone lecture and the least like anything a viewer has
+   seen before; it is also the one with a **forward** dependency from Part
+   III (see section 5), so it may need to move earlier than its page order.
+6. **Appointments** — the scheduler half of `block-ticks-and-fluids`.
+7. **Fluids** — the other half. Trace: the bucket.
+8. **Vibrations** — the sculk half of `game-events-and-poi`.
+9. **Villagers and their beds** — the POI half.
+
+`level-data-and-rules` is not on this list, deliberately. It is a look-up.
 
 ### Half-lectures that want a neighbour
 
@@ -368,6 +490,24 @@ knowing before the order is drafted.*
   one of them is in Part III — earlier in the order than any of the others.
   This strengthens session A's recommendation that the page come early.
   *(session B)*
+- **`environment-attributes-and-timelines` now exists, and it has six
+  dependants across four parts** — `server-level-tick` (Part III),
+  `block-ticks-and-fluids`, `game-events-and-poi`, `level-data-and-rules`
+  (Part IV), `biomes` (worldgen) and `lightmap-fog-and-sky` (rendering).
+  Session C cut the borrowed explanations out of `biomes` and
+  `lightmap-fog-and-sky` and pointed them here. That makes it the single
+  most-linked-to page written so far, and its own dependencies are tiny:
+  it needs registries and codecs (Part II) and nothing else. **It could be
+  watched anywhere from Part II onward, and the earliest position that is
+  not absurd is probably best.** *(session C)*
+- **Part IV's internal order is already a chain.** `chunk-anatomy` →
+  `tickets-and-loading` → `chunk-generation-pipeline` → `lighting` →
+  `chunk-storage` is a genuine forward-only dependency chain, the first
+  one in the corpus. Nothing later in it can be watched first. That is
+  worth exploiting in the lecture order rather than fighting. *(session C)*
+- **`chunk-anatomy` → Part V.** `blocks-and-states` and `block-entities`
+  both assume the section/palette model and the `setBlockState` flag
+  vocabulary. Part IV must precede Part V. *(session C)*
 
 ## 6 · Open questions for pass 3
 
@@ -388,3 +528,14 @@ knowing before the order is drafted.*
 - Part III's diagrams use `MS`, `SL`, `PL`, `SCC`, `CM`, `G`/`SGPL` — the
   `G` for `ServerGamePacketListenerImpl` in `players-and-sessions` is the
   odd one out and should become `SGPL` when the standard lands. *(session B)*
+- Is there a **reference tier** in the systems tree, and if so which pages
+  are in it? `math-and-primitives` and `level-data-and-rules` are both
+  clear members; `naming-drift` and `glossary` already behave like one.
+  *(session C)*
+- Does `environment-attributes-and-timelines` move earlier than Part IV,
+  given Part III already depends on it? *(session C)*
+- Part IV's diagrams use `SL`, `CM`, `CH`, `TS`, `TD`, `LT`, `CT`, `FF`,
+  `PM`, `EAS`, `VS`, `ATS` — mostly two- and three-letter, consistent with
+  Part III. The new page uses `Probe` and `Cam` for `EnvironmentAttributeProbe`
+  and `Camera`, which are words rather than initials; the standard should
+  rule on whether a short word is allowed. *(session C)*
