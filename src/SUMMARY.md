@@ -78,6 +78,11 @@
   - [Sound](systems/client/sound.md)
   - [The client world and options](systems/client/client-world-and-options.md)
 - [XI · World generation]()
+  - [The worldgen pipeline](systems/worldgen/worldgen-pipeline.md)
+  - [Density functions](systems/worldgen/density-functions.md)
+  - [Biomes](systems/worldgen/biomes.md)
+  - [Features and placement](systems/worldgen/features-and-placement.md)
+  - [Structures](systems/worldgen/structures.md)
 - [XII · Commands and data packs]()
 - [XIII · Appendix]()
 
