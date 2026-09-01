@@ -1,20 +1,17 @@
-# Pass 2 — running notes for the owner's read
+# Pass 2 — the work queue (completeness and accuracy)
 
-Consolidated from the session log in [plan.md](plan.md), one place per
-concern, so the pass-2 sessions and the closing session (16) do not have
-to re-read every log entry. Pass 1 sessions **append here** whenever they
-leave something for later; pass 2 ticks items off.
-
-## How pass 2 works (recap)
-
-The owner reads part by part with the decompile open and leaves questions
-**in the page** as `<!-- Q: … -->` comments. A pass-2 session answers each
-in the prose — if the owner had to ask, the page was wrong or missing it —
-removes the comment, and re-runs `tools/verify_names.py`. Pass 2 also
-writes `src/lectures.md` (the lecture order) once every part has been
-read.
+*Repurposed 2026-09-01. Pass 2 is now the AI completeness-and-accuracy
+pass defined in [plan.md](plan.md); the owner's read — which this file
+originally served — is pass 5. Everything below was consolidated from
+pass 1's session log ([pass1.md](pass1.md)) and is the standing input:
+pass-2 sessions work it off part by part and tick items here; anything
+left for passes 3–5 goes in the hand-off section at the bottom.*
 
 ## Split candidates (pages over the ~250-line guideline that carry two ideas)
+
+Pass 2 executes a split when the fact-check adds material and the page
+is carrying two subjects anyway; splits that are purely presentational
+wait for pass 3 (and feed the lecture-order draft there).
 
 | page | lines | what would split off |
 |---|---:|---|
@@ -37,11 +34,15 @@ read.
 | `commands/execution-and-functions` | 310 | the non-recursive engine (queue, `Frame`, forks, `/return`) vs the function model (compile, macros, tags). Two lectures; the seam is clean and the second half is the one data-pack authors want (session 12) |
 | `appendix/naming-drift` | 422 | not a split candidate — a reference table. Flagged only so nobody counts it as an over-long page (session 12) |
 
-Parts III–V all came out at 260–380 lines. The lecture-order decision in
-pass 2 is where "one page, two lectures" gets settled; splitting the
-markdown is optional.
+Parts III–V all came out at 260–380 lines. Where a split is deferred,
+the "one page, two lectures" call gets settled by pass 3's lecture-order
+draft.
 
-## Closing session (16) to-dos
+## Carried over from pass 1's closing session (never ran; folded into pass 2)
+
+The diagram-consistency and lane-abbreviation items below are **pass-3**
+work (the lane standard is settled corpus-wide there); the content
+re-reads and appendix rulings are pass-2 session A / session K work.
 
 - `anatomy` threads table: add *Management server IO*, *RCON Listener /
   Client*, *Query Listener* (found in session 3); confirm against
@@ -275,143 +276,20 @@ the old name and not finding it.
 | `@GameTest` and the annotation framework | gone — `GameTestInstance` in `Registries.TEST_INSTANCE` | session 12 |
 | `GameTestRegistry` / `TestFunction` | `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` | session 12 |
 
-## Cross-part obligations (link, don't repeat)
+## Cross-part obligations — discharged
 
-What each unwritten part should point at instead of re-explaining. Tick
-when the part is written.
+Every "link, don't repeat" obligation recorded during pass 1 was
+discharged as its part was written; the full ticked list is in this
+file's git history and in [pass1.md](pass1.md)'s session log. The rule
+itself still applies: a fact-check agent that finds a page *re-explaining*
+a mechanism another page owns should flag it as a *misleading* finding.
 
-- [x] **Part VI Entities** (session 6) — villager/POI half of `game-events-and-poi`;
-  `PersistentEntitySectionManager.updateChunkStatus` / `Visibility`
-  (session 4); `Block.popResource` → `ItemEntity` and `Entity.absSnapTo`
-  from `block-breaking` / `blocks-and-states` (session 5).
-- [x] **Part VII Items** (session 7) — menus (`ServerPlayer.openMenu`,
-  `AbstractContainerMenu.broadcastChanges`, `ContainerSynchronizer`,
-  `RemoteSlot.Synchronized` hashing) are half-explained in
-  `block-entities`; `Tool` / `ToolMaterial` in `block-breaking`; item
-  component prototypes bind at reload (`DataComponentInitializers`,
-  session 2); serverbound container clicks carry `HashedStack` (session 2);
-  `ItemAttributeModifiers` / `EquipmentSlotGroup` / the item-tooltip
-  `ItemAttributeModifiers.Display` are named but not explained in
-  `attributes`, and `DataComponents.BLOCKS_ATTACKS`,
-  `DataComponents.DAMAGE_RESISTANT` and `DataComponents.DEATH_PROTECTION`
-  in `damage-and-death` (session 6).
-- [x] **Part VIII The player** (session 8) — `ServerPlayer` is created in the
-  configuration phase (`PrepareSpawnTask`), owned by `players-and-sessions`;
-  player ticking is split (`doTick` from the connection, `tick` from the
-  level's entity loop) — do not contradict (session 3); the prediction
-  ledger (`BlockStatePredictionHandler`) is in `block-interaction`;
-  `Avatar`, i-frames, the armour/protection formulas and
-  `ServerPlayer.die` (which never calls `super.die`) are in Part VI — link,
-  do not repeat (session 6). `Player.attack`, `Player.itemAttackInteraction`
-  and `ServerPlayer.getEnchantedDamage` (the base `Player.getEnchantedDamage`
-  returns its argument unchanged) are named but not owned by
-  `enchantments`; attacks arrive as `ServerboundAttackPacket`; `FoodData`
-  and `FoodConstants` are half-explained in `items-and-stacks`; the
-  enchanting seed `Player.enchantmentSeed` is re-rolled by *spending XP*
-  (session 7).
-- [x] **Part IX Networking** (session 9) — `protocol-phases` points back at
-  `players-and-sessions` for the configuration phase (session 3);
-  *what-the-client-is-told* points at `tickets-and-loading` for
-  `PlayerChunkSender` batching, `lighting` for `ClientboundLightUpdatePacket`
-  (session 4), and gains `ClientboundBlockChangedAckPacket`,
-  `ClientboundBlockEventPacket`, `ClientboundBlockDestructionPacket` and
-  the "clicked block always comes back" rule from `block-interaction`
-  (session 5); and the entity channels from Part VI —
-  `ClientboundSetEntityDataPacket`, `ClientboundUpdateAttributesPacket`,
-  `ClientboundSetEquipmentPacket` (which bypasses `ServerEntity`),
-  `ClientboundDamageEventPacket` (**no damage amount on the wire**),
-  `ClientboundHurtAnimationPacket`, `ClientboundEntityPositionSyncPacket`
-  and the `ServerEntity.sendPairingData` bundle (session 6). Adds the whole container
-  packet set, `HashedStack` / `HashedPatchMap` (CRC32C over component
-  values, cached per player) and the 15-bit state id from
-  `containers-and-menus`; `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` for
-  inbound stacks; and the registry-sync asymmetry — `Registries.ENCHANTMENT`
-  is synced with its **full** direct codec while the three loot registries
-  are never synced at all (session 7). From session 8: `ServerboundAttackPacket` (a record of **one int** — no hand, no hit
-  position; `ServerboundInteractPacket` is right-click only and has no
-  `Action` enum), the four `ServerboundMovePlayerPacket` variants and
-  their two-flag byte, `ServerboundPlayerInputPacket` with
-  `Input.STREAM_CODEC` (seven booleans in one byte),
-  `ServerboundClientTickEndPacket`, `ClientboundPlayerPositionPacket`
-  (`PositionMoveRotation` + a `Relative` set) and the twenty-tick
-  teleport re-send, `ClientboundPlayerAbilitiesPacket` (four bits, and
-  `Abilities.mayBuild` never travels), `CommonPlayerSpawnInfo`,
-  `ClientboundSetHealthPacket` (saturation is sent but only its
-  zero-ness is change-detected) and `ClientboundSetExperiencePacket`.
-- [x] **Part X The client** — *written in session 10.* Names picked up: `LevelExtractor`,
-  `SectionUpdateTracker`, `SectionCopy` (session 4);
-  `LevelExtractor.blockChanged`, `BlockBreakingRenderState`,
-  `ModelBakery.DESTROY_TYPES`, `BlockStateModelSet`, `PistonHeadRenderer`,
-  `BlockEntityRenderDispatcher` (session 5); the client lights per frame
-  (`ClientLevel.update`, session 4); `EntityRenderDispatcher.extractEntity`,
-  `SheepRenderState`, `AvatarRenderer` (there is no `PlayerRenderer`),
-  `InterpolationHandler`, and `LivingEntityRenderer`'s red overlay from
-  `LivingEntity.hurtTime` (session 6). From session 7:
-  `AbstractContainerScreen`, `MenuScreens`,
-  `ItemInHandRenderer.applyEatTransform`, `Hud.extractFood`,
-  `RecipeBookComponent`, `GhostSlots`, `ClientRecipeBook`,
-  `EnchantmentNames`. From session 8: `AvatarRenderer` (generic over an `Avatar`
-  that is also a `ClientAvatarEntity` — there is no `PlayerRenderer`),
-  `ClientAvatarState`, `KeyMapping.Category` (a record, publicly
-  registerable), `ToggleKeyMapping`, `MouseHandler` (which turns the
-  player per **frame**, not per tick), and the attack indicator in
-  `Hud` with `AttackIndicatorStatus`. From session 9: `ClientChunkCache`
-  and its nested `Storage` (a torus of slots indexed modulo the view
-  range, read off-thread by the render path), `ChunkBatchSizeCalculator`
-  (the chunk-rate control loop, measured on the Netty thread),
-  `InterpolationHandler` again (three client ticks per update), the chat
-  HUD — `ChatComponent`, `ChatListener`, `GuiMessage`, `GuiMessageTag`,
-  `ChatTrustLevel`, `GuiMessageSource`, `ChatAbilities` /
-  `ChatRestriction` — and the render side of `Component`
-  (`FontDescription`, `ObjectContents` with `AtlasSprite` /
-  `PlayerSprite`, `SubStringSource` for bidi). Note `ClientLevel.hasChunk`
-  returns true unconditionally and `ClientLevel.explode` is empty; *what
-  the client is told* owns those, Part X should link rather than repeat.
-- [x] **Part XII Commands** — from session 9: `SignableCommand`,
-  `SignedArgument` (the only implementation is `MessageArgument`),
-  `ArgumentSignatures` (one signature per argument, each burning a chain
-  index), `CommandSigningContext`, `CommandSourceStack.withSigningContext`
-  and `DebugConfigCommand` (the only vanilla caller of
-  `ServerGamePacketListenerImpl.switchToConfig` and
-  `ServerConfigurationPacketListenerImpl.returnToWorld`). Chat *signing*
-  is owned by *chat-and-signing*; Part XII owns the argument plumbing.
-- [x] **Part XIII Appendix** — the out-of-scope tour gains
-  `client/multiplayer/chat/report` (`ReportingContext`,
-  `AbuseReportSender`, the report screens) and `LegacyQueryHandler` /
-  `LegacyProtocolUtils` (the pre-1.7 ping still in the pipeline)
-  (session 9).
-- [x] **Part XI World generation** (session 11) — *worldgen-pipeline* points at
-  `chunk-generation-pipeline` for the conveyor;
-  `ChunkStatus.MAX_STRUCTURE_DISTANCE` is dead code (session 4). Also took
-  from session 10: `Biome.getAttributes` carries the visual attributes and
-  `BiomeSpecialEffects` keeps only water/foliage/grass colours — confirmed
-  and stated in `biomes`.
-- [x] **Part XII Commands** — `loot-tables` now owns the loot data model,
-  so Part XII need only cover the commands: `/loot`, `/item … with`
-  (`ItemCommands.applyModifier`) and `EnchantCommand`, plus
-  `ResourceOrIdArgument` accepting an inline table (session 7).
-- [x] **Part XIII Appendix** — the naming-drift table above; the JSON-RPC
-  and pause-when-empty paragraphs.
-- [x] **Part XII Commands** — from session 11: `/locate structure` and
-  `/locate biome` are *very* different (the first can drive world
-  generation on the server thread through `StructureCheck.checkStart`, the
-  second asks the `BiomeSource` and never reads a stored palette);
-  `/fillbiome` writes the biome palette and resends it with
-  `ClientboundChunksBiomesPacket`; `/place` reaches
-  `JigsawPlacement.generateJigsaw`. `structures` and `biomes` own the
-  mechanisms — Part XII owns the command plumbing and should link.
-- [x] **Part XIII Appendix** — from session 11: the out-of-scope tour
-  should note `net/minecraft/data/worldgen` (`Structures`, `StructureSets`,
-  `PlainVillagePools`, `ProcessorLists`, `TreeFeatures`,
-  `VegetationPlacements`, `BiomeData`) — vanilla's entire worldgen data
-  pack is Java that is data-generated to JSON, which is why "it is
-  data-driven" and "you cannot change it" are both true of the overworld
-  biome table.
+## Load-bearing facts (the fact-check seed list)
 
-## Facts that later sessions must not contradict
-
-Short list of things established by a page and easy to get wrong from
-1.21 memory. Each is stated once, in the page named.
+Each fact below is established once, in the page named, and other pages
+lean on it — so these are what the pass-2 fact-check agents verify
+hardest: a wrong entry here corrupts every page that cites it. All are
+easy to get wrong from 1.21 memory.
 
 - Day time is `ServerClockManager`, server-wide; `ServerLevel.tickTime`
   only bumps `gameTime` in the overworld — `server-level-tick`.
@@ -588,6 +466,15 @@ Short list of things established by a page and easy to get wrong from
 
 ## Catalogue gaps found during pass 1
 
+Both items below now have a decision in [plan.md](plan.md): the
+environment-attributes page is approved (pass-2 session C), and the
+under-coverage of rendering is answered by splitting Part X into a
+client part and a rendering part (sessions H–I), with new pages for the
+lectures pass 1 found hiding inside pages (the text/font engine, the
+frame graph). The appendix's remaining gaps (the debug cluster,
+`client/resources`, `util/parsing`, `client/animation`, Blaze3D's
+Vulkan/platform halves) get their rulings in session K.
+
 - **Environment attributes and timelines have no page** (session 6).
   `world/attribute` (`EnvironmentAttribute`, `EnvironmentAttributes`,
   `EnvironmentAttributeMap`, `EnvironmentAttributeSystem`,
@@ -638,7 +525,10 @@ Short list of things established by a page and easy to get wrong from
   `Level.tickBlockEntities` not `ClientLevel.tickBlockEntities`,
   `Model.setupAnim` not `EntityModel.setupAnim` (session 10).
 
-## Questions already known to be waiting for the owner
+## Hand-off to passes 3–5
 
-None yet — the owner has not started reading. When `<!-- Q: -->` comments
-appear, a pass-2 session lists the pages here before answering them.
+Pass-2 sessions append here whatever they leave for later: structural
+observations for pass 3 (a part that wants to read as a pipeline, a
+diagram that is the wrong shape), wording debt for pass 4, and material
+added speculatively that pass 4 may cut. Nothing yet — pass 2 has not
+started.
