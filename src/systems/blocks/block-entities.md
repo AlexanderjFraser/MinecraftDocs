@@ -27,24 +27,31 @@ is open.*
   and `BlockEntity.components`, the item components carried over from
   the placing stack that the subclass did not claim. The constructor
   throws if `BlockEntity.isValidBlockState` fails.
-- **Saving** is layered: `BlockEntity.saveAdditional` (the subclass hook)
-  → `BlockEntity.saveCustomOnly` (just that) → `BlockEntity.saveWithoutMetadata`
-  (plus *components*) → `BlockEntity.saveWithId` (plus *id*) →
-  `BlockEntity.saveWithFullMetadata` (plus *x*, *y*, *z* — the chunk-save
-  form). Loading mirrors it: `BlockEntity.loadAdditional` under
+- **Saving** is a small tree, not a chain. `BlockEntity.saveAdditional` is
+  the subclass hook, and two methods call it: `BlockEntity.saveCustomOnly`
+  (that and nothing else) and `BlockEntity.saveWithoutMetadata` (that plus
+  *components*). Off `BlockEntity.saveWithoutMetadata` hang two siblings —
+  `BlockEntity.saveWithId`, which adds *id*, and
+  `BlockEntity.saveWithFullMetadata`, which adds *id*, *x*, *y* and *z*
+  through `BlockEntity.saveMetadata` and is the chunk-save form. Loading
+  mirrors it: `BlockEntity.loadAdditional` under
   `BlockEntity.loadWithComponents` or `BlockEntity.loadCustomOnly`, and the
   static `BlockEntity.loadStatic` reads *id* through `BlockEntity.TYPE_CODEC`,
   calls `BlockEntityType.create` and loads — returning null, with a log
-  line, on any failure. Everything goes through `ValueInput` / `ValueOutput`
-  ([codecs, NBT and JSON](../foundations/codecs-nbt-json.md)).
+  line, on any failure. Everything *after* that goes through `ValueInput` /
+  `ValueOutput` ([codecs, NBT and JSON](../foundations/codecs-nbt-json.md));
+  the *id* itself is read off the raw `CompoundTag`, before any
+  `ValueInput` exists to read it with.
 - **Syncing** is two hooks with weak defaults: `BlockEntity.getUpdateTag`
   returns an **empty tag** and `BlockEntity.getUpdatePacket` returns
-  **null**. Nineteen of the 49 types override the packet — signs, banners,
-  beacons, skulls, spawners, conduits, end gateways, structure and jigsaw
-  blocks, campfires, decorated pots, vaults, shelves, brushable blocks,
-  the creaking heart, copper golem statues, test blocks — and every one
-  returns `ClientboundBlockEntityDataPacket.create` of itself.
-  `PistonMovingBlockEntity` overrides the tag but not the packet.
+  **null**. Nineteen classes override the packet — signs, banners,
+  beacons, skulls, spawners and trial spawners, conduits, end gateways,
+  structure and jigsaw blocks, campfires, decorated pots, vaults, shelves,
+  brushable blocks, the creaking heart, copper golem statues, test blocks
+  — and every one returns `ClientboundBlockEntityDataPacket.create` of
+  itself. That is **twenty** of the 49 registered types, because
+  `HangingSignBlockEntity` is its own type and inherits `SignBlockEntity`'s
+  override. `PistonMovingBlockEntity` overrides the tag but not the packet.
 - **Items ↔ block entities** is the components round trip:
   `BlockEntity.applyComponentsFromItemStack` → `BlockEntity.applyImplicitComponents`
   (the subclass pulls what it understands; what is left becomes
@@ -55,11 +62,15 @@ is open.*
   `BlockItem.updateCustomBlockEntityTag` and refused for the six
   `BlockEntityTypes.OP_ONLY_CUSTOM_DATA` types unless
   `Player.canUseGameMasterBlocks`.
-- **`BlockEntityType`** is almost nothing: a `BlockEntityType.factory`
-  (`BlockEntityType.BlockEntitySupplier`) and `BlockEntityType.validBlocks`,
-  a set of blocks; `BlockEntityType.isValid` is a set lookup on the block,
-  `BlockEntityType.create` calls the factory, `BlockEntityType.getBlockEntity`
-  is the typed read. `BlockEntityTypes.register` builds them into
+- **`BlockEntityType`** is almost nothing: three fields — a
+  `BlockEntityType.factory` (`BlockEntityType.BlockEntitySupplier`),
+  `BlockEntityType.validBlocks`, a set of blocks, and an intrusive
+  `BlockEntityType.builtInRegistryHolder`, which is where the type's name
+  comes from (`BlockEntity.typeHolder`). `BlockEntityType.isValid` is a
+  set lookup on the block, `BlockEntityType.create` calls the factory,
+  `BlockEntityType.getBlockEntity` is the typed read, and
+  `BlockEntityType.onlyOpCanSetNbt` is the per-type op gate.
+  `BlockEntityTypes.register` builds them into
   `BuiltInRegistries.BLOCK_ENTITY_TYPE` from keys in `BlockEntityTypeIds`;
   **49** in 26.2, including `BlockEntityTypes.SHELF`,
   `BlockEntityTypes.COPPER_GOLEM_STATUE` and `BlockEntityTypes.CREAKING_HEART`.
@@ -112,12 +123,26 @@ is open.*
 ## When it runs
 
 **Server:** `ServerLevel.tick` runs `Level.tickBlockEntities` under the
-*blockEntities* profiler section, after entities. **Client:**
-`Minecraft.tick` calls the same `Level.tickBlockEntities` on the
-`ClientLevel` after `Minecraft.tick`'s entity pass — `ClientLevel.tick`
-itself does not. Each entry is a `LevelChunk.BoundTickingBlockEntity`:
-skip if removed; `LevelChunk.isTicking` (inside the border, and on the
-server the chunk is at least `FullChunkStatus.BLOCK_TICKING` with
+*blockEntities* profiler section — **last** of the three world phases,
+after the chunk source (which is where the previous tick's block changes
+are broadcast) and after entities (which is where players tick and menus
+reconcile). That ordering is why a block entity's own writes are always
+seen by clients a tick later than they happen. The whole entities +
+block-entities block is skipped once `ServerLevel.EMPTY_TIME_NO_TICK`
+passes with no player ([the level tick](../server/server-level-tick.md)).
+**Client:** `Minecraft.tick` calls the same `Level.tickBlockEntities` on
+the `ClientLevel`, after its entity pass and only when unpaused —
+`ClientLevel.tick` itself does not.
+
+`Level.tickBlockEntities` first drains `Level.pendingBlockEntityTickers`
+into the live list, then walks it under two gates the individual tickers
+never see: `TickRateManager.runsNormally` (so `/tick freeze` stops every
+block entity in the game) and `Level.shouldTickBlocksAt`, which on
+`ServerLevel` is the **simulation-distance** test — a chunk can be
+fully loaded and its furnaces still not tick. Each surviving entry is a
+`LevelChunk.BoundTickingBlockEntity`: skip if removed or not yet adopted
+by a level; `LevelChunk.isTicking` (inside the border, and on the server
+the chunk at least `FullChunkStatus.BLOCK_TICKING` with
 `ServerLevel.areEntitiesLoaded`); profiler zone named by the type;
 re-read the live state; tick only if `BlockEntityType.isValid` still
 holds; crash reports wrap the rest.
@@ -125,10 +150,18 @@ holds; crash reports wrap the rest.
 Registration follows the chunk's life. `LevelChunk.setBlockState` creates
 the entity (`EntityBlock.newBlockEntity` →
 `LevelChunk.addAndRegisterBlockEntity`) after `BlockBehaviour.BlockStateBase.onPlace`,
-and removes it (`BlockEntity.preRemoveSideEffects` unless
-`Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS`, then `LevelChunk.removeBlockEntity`)
-when the *block* changes — a state change on the same block keeps it and
-only calls `BlockEntity.setBlockState` + `LevelChunk.updateBlockEntityTicker`.
+and removes it when the *block* changes — but only if the new state does
+not claim it through
+`BlockBehaviour.BlockStateBase.shouldChangedStateKeepBlockEntity`, and the
+`BlockEntity.preRemoveSideEffects` half runs on the **server only** and
+only without `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` (so a client
+chest never drops its contents), before `LevelChunk.removeBlockEntity`.
+A state change on the same block usually keeps the entity — but not
+blindly: the chunk re-reads it and asks `BlockEntity.isValidBlockState`
+first, and an entity that no longer matches is removed and replaced with
+a fresh one, with a *mismatched block entity* warning. Only when it does
+match is it kept, with `BlockEntity.setBlockState` +
+`LevelChunk.updateBlockEntityTicker`.
 `ChunkStatusTasks` marks the chunk `LevelChunk.setLoaded` and calls
 `LevelChunk.registerAllBlockEntitiesAfterLevelLoad` when it becomes full
 ([tickets and loading](../world/tickets-and-loading.md)); `ServerLevel.unload`
@@ -160,7 +193,9 @@ sequenceDiagram
     LC->>FE: serverTick: CachedCheck finds smelting recipe · canBurn
     FE->>FE: litTimeRemaining = litTotalTime = 1600 · consumeFuel · ++cookingTimer
     FE->>L: setBlock(pos, LIT=true, 3) — same block, entity kept
-    L->>CH: blockChanged(pos) → ClientboundBlockUpdatePacket · getUpdatePacket() = null
+    L->>CH: blockChanged(pos) — queued only; the drain phase already ran
+    Note over CH,SP: next tick — chunkSource drains, then entities tick
+    CH-->>M: ClientboundBlockUpdatePacket · getUpdatePacket() = null
     SP->>M: tick → broadcastChanges — slot 1 · data 0, 1, 2 → ClientboundContainerSetDataPacket
     Note over FE: 200 ticks: only data 0 and 2 change each tick
     FE->>FE: cookingTimer == total → burn · setRecipeUsed · setChanged
@@ -196,8 +231,12 @@ sequenceDiagram
    → `Level.blockEntityChanged` → `LevelChunk.markUnsaved`, and
    `Level.updateNeighbourForOutputSignal` for comparators. Nothing is
    sent for that; the menu's `AbstractContainerMenu.broadcastChanges`
-   reconciles slots by hash (`RemoteSlot.Synchronized`) and sends
-   `ClientboundContainerSetSlotPacket` only for what differs.
+   reconciles each slot against a `RemoteSlot.Synchronized` and sends
+   `ClientboundContainerSetSlotPacket` only for what differs. That
+   comparison is against the **full stack** the server last sent; the hash
+   comparison people remember is the other direction, used only once the
+   client has pushed a `HashedStack` with a predicted click
+   ([containers and menus](../items/containers-and-menus.md)).
 3. **The tick.** `Level.tickBlockEntities` reaches the furnace's wrapper →
    `LevelChunk.BoundTickingBlockEntity.tick` → the ticker
    `AbstractFurnaceBlock.createFurnaceTicker` handed out — **only when the
@@ -205,7 +244,8 @@ sequenceDiagram
    `AbstractFurnaceBlockEntity.serverTick`. Not lit; has input and fuel;
    `RecipeManager.CachedCheck.getRecipeFor` with a `SingleRecipeInput`
    finds the `SmeltingRecipe` (an `AbstractCookingRecipe` — `RecipeType.SMELTING`;
-   `AbstractCookingRecipe.cookingTime` 200 by default);
+   `AbstractCookingRecipe.cookingTime` defaults per subtype, 200 for
+   smelting and 100 for `BlastingRecipe` and `SmokingRecipe`);
    `AbstractFurnaceBlockEntity.canBurn` says the result slot can take
    the ingot. So: `AbstractFurnaceBlockEntity.getBurnDuration` →
    `FuelValues.burnDuration` (coal, 1600), both lit fields set,
@@ -220,15 +260,24 @@ sequenceDiagram
    the wrapper. Then `ServerLevel.sendBlockUpdated` → `ServerChunkCache.blockChanged`
    → `ChunkHolder.blockChanged`; flag 1 → neighbours, and since
    `AbstractFurnaceBlock.hasAnalogOutputSignal`, `Level.updateNeighbourForOutputSignal`.
-   `BlockEntity.setChanged` marks the chunk. Later in the tick,
-   `ChunkHolder.broadcastChanges` sends the `ClientboundBlockUpdatePacket`
-   and then `ChunkHolder.broadcastBlockEntityIfNeeded` →
+   `BlockEntity.setChanged` marks the chunk. **Not** later in this tick:
+   `ChunkHolder.blockChanged` only queues the holder, and the drain lives
+   in the chunk-source phase, which already ran. So the packet goes out in
+   the *next* tick, when `ChunkHolder.broadcastChanges` sends the
+   `ClientboundBlockUpdatePacket` and then
+   `ChunkHolder.broadcastBlockEntityIfNeeded` →
    `ChunkHolder.broadcastBlockEntity` → `BlockEntity.getUpdatePacket` →
-   **null**. That is the only place the game ever calls `BlockEntity.getUpdatePacket`.
+   **null**. That is the only place the game ever calls
+   `BlockEntity.getUpdatePacket`, and it fires for every broadcast
+   position whose state has a block entity — including the positions
+   inside a `ClientboundSectionBlocksUpdatePacket`.
    The client applies the state with `ClientLevel.setServerVerifiedBlockState`,
    keeps its bare client-side `FurnaceBlockEntity`, and
    `FurnaceBlock.animateTick` starts the smoke, flames and crackle.
-5. **The arrow is menu data.** Same tick, `ServerPlayer.tick` →
+5. **The arrow is menu data.** Also a tick behind, and for the mirror-image
+   reason: `ServerPlayer.tick` runs in the *entities* phase, which
+   precedes *blockEntities*, so the furnace's change is picked up by the
+   next tick's `ServerPlayer.tick` →
    `AbstractContainerMenu.broadcastChanges`: the coal slot changed →
    `ClientboundContainerSetSlotPacket`; data slots 0, 1 and 2 differ from
    `AbstractContainerMenu.remoteDataSlots` → three
@@ -246,7 +295,9 @@ sequenceDiagram
    (result slot grows, input shrinks; a wet sponge fills an empty bucket
    in the fuel slot), `AbstractFurnaceBlockEntity.setRecipeUsed` counts the
    recipe, `BlockEntity.setChanged`. Taking it out runs
-   `FurnaceResultSlot.onTake` → `AbstractFurnaceBlockEntity.awardUsedRecipesAndPopExperience`
+   `FurnaceResultSlot.onTake` → `FurnaceResultSlot.checkTakeAchievements`
+   (which `FurnaceResultSlot.onQuickCraft` also calls, so a shift-click
+   awards too) → `AbstractFurnaceBlockEntity.awardUsedRecipesAndPopExperience`
    → `AbstractFurnaceBlockEntity.getRecipesToAwardAndPopExperience`
    (`ExperienceOrb.award` at the *player*, from `AbstractCookingRecipe.experience`)
    → `ServerPlayer.awardRecipes` and `ServerPlayer.triggerRecipeCrafted`.
@@ -257,8 +308,11 @@ sequenceDiagram
    the base `BlockEntity.preRemoveSideEffects` drops the three slots
    (`Containers.dropContents`), then the XP for un-collected smelts pops
    at the block — no recipes are awarded to anyone. `LevelChunk.removeBlockEntity`
-   sets the removed flag, rebinds the ticker to `LevelChunk.NULL_TICKER`,
-   drops the game-event listener. `AbstractFurnaceBlock.affectNeighborsAfterRemoval`
+   then, if the chunk is in a level, removes it from the map, unregisters
+   its game-event listener and drops it from the debug synchronizers (both
+   server-only), and sets the removed flag; the one thing it does
+   unconditionally is rebind the ticker to `LevelChunk.NULL_TICKER`.
+   `AbstractFurnaceBlock.affectNeighborsAfterRemoval`
    → `Containers.updateNeighboursAfterDestroy` refreshes comparators. An
    open menu fails `Container.stillValidBlockEntity` (same entity, within
    `Container.DEFAULT_DISTANCE_BUFFER` of 4.0) and `ServerPlayer.tick`
@@ -270,10 +324,13 @@ sequenceDiagram
    *RecipesUsed*); a pending tag is copied with *keepPacked* true
    ([chunk storage](../world/chunk-storage.md)). When a chunk is sent,
    `ClientboundLevelChunkPacketData` calls `BlockEntity.getUpdateTag` per
-   entity — empty for a furnace, stored as null — and the client's
-   `LevelChunk.replaceWithPacketData` creates a bare entity of the right
-   type at the right position. The client never learns the contents
-   except through an open menu.
+   entity — empty for a furnace, stored as null. On the receiving side
+   `LevelChunk.replaceWithPacketData` clears the chunk's existing
+   entities, and each entity is then created from the **block state** the
+   packet's sections already decoded, not from the packet's list: the
+   list's type is only a guard deciding whether its tag is applied. A
+   position whose state disagrees gets no entity at all. The client never
+   learns the contents except through an open menu.
 
 ## Interfaces
 
@@ -326,8 +383,16 @@ sequenceDiagram
 - **`BlockEntity.setChanged` sends nothing.** `BlockEntity.setChanged` marks the
   chunk unsaved and pokes comparators. `BlockEntity.getUpdatePacket` is
   called from exactly one place, `ChunkHolder.broadcastBlockEntity`, and
-  only for positions whose *block state* changed that tick. A sign edit
-  reaches clients because `SignBlockEntity` triggers a block update.
+  only for positions handed to `ChunkHolder.blockChanged`. Note that this
+  does **not** require the state to have actually changed: a block entity
+  that wants to be re-sent calls `Level.sendBlockUpdated` with the same
+  state for old and new, which is exactly what `SignBlockEntity` does to
+  push an edit to clients.
+- **A block entity's own writes are always a tick late.** Block entities
+  tick in the last world phase; the broadcast drain and the menu
+  reconciliation both ran earlier in that same tick. So the furnace's
+  lit-state flip and its four menu ints alike leave the server on the
+  following tick.
 - **The client never ticks a furnace**, and the client's block-entity
   tick is in `Minecraft.tick`, not `ClientLevel.tick`. What ticks on the
   client is animation: `ChestBlockEntity.lidAnimateTick` (client only —
@@ -339,7 +404,15 @@ sequenceDiagram
 - **The tick list is never searched.** Removal rebinds the chunk's
   wrapper to `LevelChunk.NULL_TICKER`; `Level.tickBlockEntities` evicts
   lazily; tickers registered during the pass wait in
-  `Level.pendingBlockEntityTickers`.
+  `Level.pendingBlockEntityTickers` and are folded in at the top of the
+  next pass.
+- **Loaded is not enough to tick.** `Level.tickBlockEntities` is gated on
+  `TickRateManager.runsNormally` and on `Level.shouldTickBlocksAt`, which
+  on the server is simulation distance. A furnace in a chunk you have
+  loaded but are standing too far from does not smelt — the *view*
+  distance keeps the chunk, the *simulation* distance decides whether
+  anything in it runs. On the client both gates pass trivially, which is
+  why every client-side block entity animates regardless of distance.
 - **Breaking a furnace pops XP but awards no recipes** (at the block,
   in `AbstractFurnaceBlockEntity.preRemoveSideEffects`); taking the ingot
   does both, at the player. `RecipeCraftingHolder` is a counter map here
@@ -351,13 +424,27 @@ sequenceDiagram
 - **`BlockEntityType.isValid` runs every tick** against the live chunk
   state, in `LevelChunk.BoundTickingBlockEntity.tick`; a mismatch logs
   once and stops ticking.
-- **Drops on removal are the base class's doing**, not the block's:
-  `BlockEntity.preRemoveSideEffects` calls `Containers.dropContents` for
-  any `Container`; `BlockBehaviour.affectNeighborsAfterRemoval` is for
-  neighbours, and there is no *onRemove*. `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS`
-  (256, part of `Block.UPDATE_NONE`) exists to suppress exactly that.
-- **There is no *saveToItem***; the item side is
+- **Drops on removal are the base class's doing**, not the block's — for
+  the furnace and most others: `BlockEntity.preRemoveSideEffects` calls
+  `Containers.dropContents` for any `Container`;
+  `BlockBehaviour.affectNeighborsAfterRemoval` is for neighbours, and
+  there is no *onRemove*. `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS`
+  (256, part of `Block.UPDATE_NONE`) exists to suppress exactly that, and
+  so does being on the client. Several block entities override the hook,
+  most tellingly `ShulkerBoxBlockEntity`, which overrides it to do
+  **nothing** — that is how a shulker box keeps its contents.
+- **There is no *saveToItem***. The nearest thing is the pick-block path,
+  `ServerGamePacketListenerImpl.addBlockDataToItem`, which runs
+  `BlockEntity.saveCustomOnly`, strips the keys that are now components
+  with `BlockEntity.removeComponentsFromTag`, and attaches the rest with
   `BlockItem.setBlockEntityData` plus `BlockEntity.collectComponents`.
+  Breaking a block takes a different route entirely — the loot table's
+  *copy_components* function reads `BlockEntity.collectComponents`.
+- **A non-null update packet is loaded through the save path.**
+  `ClientPacketListener.handleBlockEntityData` finds the entity by
+  position and type and hands the tag to `BlockEntity.loadWithComponents`
+   — the same method the chunk loader uses. There is no separate
+  "network" deserialiser.
 
 ## Where to look
 

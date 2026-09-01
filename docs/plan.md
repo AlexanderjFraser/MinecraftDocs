@@ -133,13 +133,24 @@ Three protocol notes, all cheap and all load-bearing:
   the ordering questions the reports disagreed on. Do this for every *wrong*
   finding that changes a trace; take the *completeness* findings on trust.
 
-Three protocol notes have now been added by three consecutive sessions;
-session C adds a fourth: **suspect the tool once before rewording the
+Four protocol notes have now been added by four consecutive sessions.
+Session C's is **suspect the tool once before rewording the
 page.** A name you are certain about that fails `verify_names.py` is
 occasionally the verifier's bug, not yours — session A found one in
 `gen_reference.py`, session C found one in `verify_names.py` itself. Run
 the verifier after each page rather than at the end, so a systematic
 failure is localised to the page that provoked it.
+
+Session D adds a fifth: **hunt the unstated conditional.** Nearly every
+session-D error was a claim that held in the traced case and was written as
+though it held always — a hook skipped "because the block didn't change"
+when the real gate is the side; "every refusal is answered with a block
+update" when three of five refusals answer differently; "later in the tick"
+for a broadcast that is next tick. The template invites this: *invariants
+and surprises* rewards absolute sentences. When fixing a page, ask of every
+"always", "never", "only" and "the" whether the decompile's condition is the
+one the page names — and ask the fact-check agent for the **gates** on each
+call, not just the call order.
 
 ### After-session housekeeping
 
@@ -164,7 +175,7 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
 - [x] **Session B** — Part III The server. *(2026-09-01)*
 - [x] **Session C** — Part IV The world, plus the new
   `environment-attributes-and-timelines` page. *(2026-09-01)*
-- [ ] **Session D** — Part V Blocks.
+- [x] **Session D** — Part V Blocks. *(2026-09-01)*
 - [ ] **Session E** — Part VI Entities.
 - [ ] **Session F** — Part VII Items · Part VIII The player.
 - [ ] **Session G** — Part IX Networking.
@@ -231,6 +242,98 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session D** — Part V Blocks: `blocks-and-states`,
+  `block-interaction`, `block-breaking`, `block-entities`, `redstone`. Five
+  adversarial fact-checks, five rewrites. The pattern from A–C holds without
+  exception — every page had *wrong* claims — but session D's errors have a
+  different centre of gravity: **conditionals**. Where session B found
+  orderings wrong and session C found thread attribution wrong, almost every
+  session-D error was a claim that was true in the traced case and stated as
+  though it were universal: a hook "not called" for the wrong reason, a
+  refusal "always answered" when three of five refusals answer differently,
+  a broadcast "later in the tick" that is actually next tick. What mattered
+  most:
+  - **Two pages had the tick phase wrong in the same direction.**
+    `block-entities` had the furnace's block update *and* its menu data
+    leaving in the tick they were produced. `ServerLevel.tick` runs
+    chunkSource (the broadcast drain) → blockEvents → entities (where
+    `ServerPlayer.tick` reconciles menus) → **blockEntities**, so a block
+    entity's own writes always reach clients on the *following* tick, by
+    both routes. Confirmed directly against `ServerLevel.tick`; it agrees
+    with session B's `server-level-tick`, which was right.
+  - **`Level.setBlock` runs three shape passes, not one**, and ends with
+    `Level.updatePOIOnBlockStateChange` — `blocks-and-states` named the
+    middle pass only and stopped a statement early. The new state's
+    *indirect* pass is how dust reaches diagonal wires.
+  - **`block-interaction` had the door's `onPlace` skipped for the wrong
+    reason.** `BlockBehaviour.BlockStateBase.onPlace` is gated on the side
+    and on flag 512, *not* on the block changing — so it does run for the
+    server's same-block write. And the page's clean "shape updates run on
+    both sides" story has a hole it did not mention:
+    `Block.updateOrDestroy`'s destroy branch is server-only and re-enters at
+    flags 3, which is why breaking one door half is not predicted for the
+    other.
+  - **`block-breaking`'s headline sentence was wrong in the flavour line** —
+    "stone takes 1.5 seconds" is the *hardness*, and the page's own
+    arithmetic three sections later says eight ticks. Also: a failed reach
+    check sends the client **nothing at all** and spawn protection sends
+    only a chat overlay, against a page that said every refusal answers with
+    a block update; mining fatigue is not read through `MobEffectUtil`;
+    `Minecraft.continueAttack`, not the game mode, spawns the particle and
+    swings; and the best find — **ABORT does not cancel a deferred
+    destroy**, because `ServerPlayerGameMode.tick` tests `hasDelayedDestroy`
+    first and the ABORT branch never clears it, so stopping early and
+    letting go still breaks the block, down a path that re-checks neither
+    reach nor spawn protection nor whether you are still there.
+  - **`redstone` had a piece of dead code presented as a mechanism.** The
+    piston's `SignalGetter.hasSignal` downward on itself can never return
+    true — `SignalGetter.getSignal` only consults strong power for a
+    conductor, and `Blocks.pistonProperties` declares a piston a
+    non-conductor. Also: the moving placeholders are written at flags 324,
+    **without** `Block.UPDATE_CLIENTS`, so the client's copy comes *only*
+    from re-simulating the block event and no correcting packet ever
+    follows (the page claimed one arrived and changed nothing); the client
+    does not play the piston sound itself; comparators override
+    `ComparatorBlock.checkTickOnNeighbor` and never use the two urgent tick
+    priorities the page attributed to them; and `PistonMovingBlockEntity.finalTick`
+    places **air** for the head entity rather than being an early-exit form
+    of the normal landing.
+  - **`blocks-and-states`' "no allocation, no search" was half right.**
+    `StateHolder.setValue` allocates nothing but does a linear scan of the
+    key array by reference — and the sting is that `Property.equals` is
+    *value*-based while that scan is identity-based, so two equal properties
+    can still throw. Also `StateHolder.hashCode` is not final (only
+    `equals` is); the place sound is the *mean* of the sound type's volume
+    and 1.0, not half of it; six stairs use `Blocks.registerStair`, not
+    three; and `Block.UpdateFlags` is an empty marker annotation that names
+    nothing.
+
+  **Catalogue gap found and filled.** `redstone` claimed to cover redstone
+  while naming `DiodeBlock.checkTickOnNeighbor` and nothing else:
+  comparators, repeaters and observers were **entirely absent**. Session D
+  wrote a new section covering `DiodeBlock`'s input/side/output model, the
+  repeater's `RepeaterBlock.LOCKED` (recomputed by a *shape* update, which
+  is why it survives on a client), the comparator's block entity and its
+  reach-through-a-conductor input including the single `ItemFrame`, the
+  container fullness formula, and the observer — which fires on
+  `ObserverBlock.updateShape`, i.e. the one block whose job is noticing
+  changes listens on the *other* channel.
+
+  Split rulings: none of the three Part V candidates executed. `redstone`'s
+  proposed seam in the pass-2 table was **rejected** — the
+  experimental-evaluator coda belongs to the dust half, and the page is
+  three lectures (dust · pistons · diodes), not two.
+  `blocks-and-states`' seam is confirmed but presentational.
+  `block-interaction` + `block-breaking` were **added** to the table as a
+  possible *merge* rather than a split: they re-derive the same prediction
+  ledger and ack ordering, and the same wrong sentence had to be fixed in
+  both. All three in [pass3.md](pass3.md).
+
+  Verifier lesson: a method **parameter** name in backticks is a new trap
+  shape (it looks exactly like a field). Otherwise the usual two — bare
+  members, and one member cited on a subclass that the verifier caught only
+  by luck.
 
 - **2026-09-01, session C** — Part IV The world: eight adversarial
   fact-checks, eight rewrites, and the **57th page written** —

@@ -176,6 +176,51 @@ The other five are not on it:
 its two halves), with `level-data-and-rules` demoted to reference. That is
 also very nearly the current order, which is a good sign.
 
+### Part V · Blocks
+
+*(session D)* **Part V is a hub with four spokes, and the hub is not
+where a viewer would expect it.** `blocks-and-states` is the vocabulary
+page — `StateDefinition`, `StateHolder`, the flag word, `Level.setBlock`
+— and the other four all reach back into it. But it also carries the
+part's best *trace* (placing a stair), so it is doing the same double
+duty `anatomy` does in Part I: reference material and a lecture sharing
+one page.
+
+The four spokes are not equal:
+
+- **`block-interaction` and `block-breaking` are one subject in two
+  halves** — right-click and left-click, both under prediction, both
+  through `ServerPlayerGameMode`, both reconciled by the same ack. They
+  share the prediction ledger, the reach check, the sequence number and
+  the packet-ordering argument, and session D had to fix the *same*
+  ack-timing sentence in both. Pass 3 should decide whether that is one
+  two-part lecture or two lectures with a shared preamble; what it should
+  not be is two pages each re-deriving the prediction machinery.
+- **`block-entities` is a genuine standalone lecture** and the
+  best-shaped page in the part: one object, one trace, and a real
+  argument (the furnace tells you nothing; the world state and the menu
+  do). It barely depends on the rest of the part.
+- **`redstone` is now three lectures in a trench coat.** It was two —
+  the dust/neighbour-update cascade and the piston/block-event machinery
+  — and session D added a third by filling the diode and observer gap.
+  See section 2.
+
+**The part's real dependency**, and the thing pass 3 must not break: the
+*two update channels* — shape updates (both sides) versus neighbour
+updates (server only) — are established in `block-interaction` and then
+assumed by `redstone` and by half of `blocks-and-states`. Whatever order
+the part ends up in, that distinction has to be taught before redstone.
+It is also, on session D's evidence, the single most error-prone idea in
+the part: three of the five pages had it subtly wrong somewhere.
+
+**Recommendation for pass 3:** `blocks-and-states` (or its data half)
+first, then interaction and breaking as a pair, then `block-entities`,
+then redstone last — which is the current order, and it survives
+scrutiny. The open question is whether the part opens with a reference
+page.
+
+---
+
 ---
 
 ## 2 · Page-level structure
@@ -265,6 +310,34 @@ ones pass 2 deliberately left alone as presentational.*
   server one. *(session B)*
 
 ---
+- **`redstone` → three pages, and session D made the case worse.**
+  *(session D)* The pass-2 table already lists it (the experimental-evaluator
+  coda vs the default trace), but that is the wrong seam. The page holds
+  three independent mechanisms with three independent traces: the
+  **dust/neighbour-update cascade** (a lever, two dust, the seven-position
+  hand-issued fan-out, and the two evaluators — the experimental one is a
+  coda *to this*, not to the page); the **piston** (block events, the
+  one-tick delay, `PistonStructureResolver`, the moving block entity, and
+  the client re-simulating from `ClientboundBlockEventPacket`); and the
+  **diodes and the observer**, which session D added because the page named
+  `DiodeBlock.checkTickOnNeighbor` and nothing else while comparators,
+  repeaters and observers were absent entirely. Those three share only
+  `SignalGetter`. The clean split is *signal and dust* / *pistons and block
+  events* / *diodes, comparators and observers*, with the signal-reading
+  primitives in the first. The observer belongs with the diodes for
+  circuit-building reasons but is mechanically the odd one out — it fires
+  on shape updates — which is a good closing beat for that lecture rather
+  than a problem.
+- **`block-interaction` + `block-breaking` → possibly one lecture in two
+  parts.** *(session D)* See Part V in section 1. They are not too long
+  individually; the duplication is conceptual, not textual.
+- **`blocks-and-states` → data page + placement trace, still the right
+  call.** *(session D)* The pass-2 table's proposed seam is confirmed: the
+  first half (`Block` / `BlockBehaviour` / `StateDefinition` / `StateHolder`
+  / the flag word) is looked up, the second half (the stair placement) is
+  watched. Session D grew both halves and did not split, because the
+  fact-check's additions landed on both sides evenly and neither half
+  became unwieldy. It is presentational and it is pass 3's call.
 
 ## 3 · The diagram plan
 
@@ -363,6 +436,34 @@ when the class name is already short.
   (check nodes → decreases → increases → swap) is a pipeline, and the page
   explains it in prose while the diagram traces a torch. Both are worth
   having.
+
+### Part V *(session D)*
+
+- **The part needs one diagram it does not have: the two update
+  channels.** Shape updates versus neighbour updates — who runs them,
+  which side, in which of the two direction orders, and where
+  `Block.updateOrDestroy` can turn one into the other — is the part's
+  load-bearing idea and is currently prose spread over three pages. A
+  single flowchart of `Level.setBlock`'s tail (dirty → flag 2 → flag 1 →
+  the three shape passes → POI) would serve `blocks-and-states`,
+  `block-interaction` and `redstone` at once, and is a better opening
+  visual for the part than any of the sequence diagrams.
+- **`block-breaking`'s diagram is the right shape.** Two clocks running
+  independently with no packets between them is exactly what a sequence
+  diagram with a `loop` block shows well, and the loop is the page's whole
+  argument.
+- **`redstone`'s diagram is the wrong shape for its first half.** Signal
+  propagation through a wire network is a graph relaxing, not a sequence;
+  the sequence version works only because the trace is a straight line of
+  two dust. The piston half, by contrast, is genuinely sequential (queue,
+  next tick, two ticks of motion) and should keep its lanes. Another
+  argument for the split in section 2.
+- **`block-entities`' diagram needed a `Note over` to carry a tick
+  boundary** — session D found the page had the furnace's block update and
+  its menu data both leaving in the same tick they were produced, when
+  block entities tick *after* both the broadcast drain and the entity
+  phase. Any diagram in this corpus that crosses a tick boundary should
+  mark it; several probably do so silently.
 
 ---
 

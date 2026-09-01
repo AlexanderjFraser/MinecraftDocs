@@ -81,13 +81,19 @@ when they meet another stair.*
   `StateHolder.propertyKeys` / `StateHolder.propertyValues`, and
   `StateHolder.neighbors`: a two-dimensional table, property index by
   value index, answering *what state am I if this property becomes that
-  value*. `StateHolder.setValue` is a lookup into that table and nothing
-  else — no allocation, no search; `StateHolder.trySetValue` tolerates a
-  missing property, `StateHolder.cycle` steps to the next value. The table
-  is installed once by `StateHolder.initializeNeighbors` (a second call
-  throws) from `StateDefinition.StateCollection.fillNeighborsForState`.
-  `StateHolder.equals` and `StateHolder.hashCode` are **final and
-  identity-based**: two states are the same iff they are the same object.
+  value*. `StateHolder.setValue` allocates nothing, but it is not a bare
+  index either: `StateHolder.valueIndex` walks the key array comparing by
+  reference to find the property's row, then `Property.getInternalIndex`
+  gives the column. `StateHolder.trySetValue` tolerates a missing
+  property, `StateHolder.cycle` steps to the next value. The table is
+  installed once by `StateHolder.initializeNeighbors` (a second call
+  throws) — from `StateDefinition.StateCollection.fillNeighborsForState`
+  for a block with two or more properties, and directly from
+  `StateDefinition.createSingletonState` or
+  `StateDefinition.createSinglePropertyStates` otherwise.
+  `StateHolder.equals` is **final and identity-based** (`StateHolder.hashCode`
+  is identity-based too, but not final): two states are the same iff they
+  are the same object.
 - **`BlockBehaviour.BlockStateBase`** is where a block state's behaviour
   lives — it extends `StateHolder` and is the "state → block" hop:
   `BlockBehaviour.BlockStateBase.getShape`, `BlockBehaviour.BlockStateBase.updateShape`,
@@ -132,8 +138,10 @@ when they meet another stair.*
   adds every state to `Block.BLOCK_STATE_REGISTRY` and calls
   `BlockBehaviour.BlockStateBase.initCache` on each. That is the only
   caller; there is no *rebuildCache* in 26.2.
-- **`Block.UpdateFlags`** is a type-use annotation naming the `Level.setBlock`
-  flag bits: `Block.UPDATE_NEIGHBORS` (1), `Block.UPDATE_CLIENTS` (2),
+- **`Block.UpdateFlags`** is an empty type-use marker annotation — it tags
+  the parameters that take a flag word and carries no values itself. The
+  flag bits are plain constants beside it: `Block.UPDATE_NEIGHBORS` (1),
+  `Block.UPDATE_CLIENTS` (2),
   `Block.UPDATE_INVISIBLE` (4), `Block.UPDATE_IMMEDIATE` (8),
   `Block.UPDATE_KNOWN_SHAPE` (16), `Block.UPDATE_SUPPRESS_DROPS` (32),
   `Block.UPDATE_MOVE_BY_PISTON` (64), `Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE`
@@ -152,9 +160,14 @@ when they meet another stair.*
 
 Block and state construction happens once, at class-initialisation, on
 whichever thread touches `Blocks` first (the bootstrap, before any level
-exists). Everything after that is reads of immutable objects from any
-thread — the chunk workers, the meshing threads and the main threads all
-hold the same `BlockState` references.
+exists). Everything after that is reads from any thread — the chunk
+workers, the meshing threads and the main threads all hold the same
+`BlockState` references. Note what makes that safe: it is **not**
+immutability. `BlockBehaviour.BlockStateBase`'s cached fields are
+non-final and written by `BlockBehaviour.BlockStateBase.initCache` long
+after the constructor; what publishes them safely to every other thread
+is the happens-before edge of `Blocks`' class initialisation, since
+`BlockBehaviour.BlockStateBase.initCache` runs inside it.
 
 Placement runs on **both main threads**: the client predicts it in
 `MultiPlayerGameMode.performUseItemOn` and the server executes it in
@@ -260,25 +273,43 @@ sequenceDiagram
    but calls `BlockBehaviour.BlockStateBase.onPlace` **only on the server**
    and only when `Block.UPDATE_SKIP_ON_PLACE` is clear; then
    `Level.setBlocksDirty` (client: `LevelExtractor.setBlockDirty`, a re-mesh);
-   flag 2 → `Level.sendBlockUpdated` (client: `LevelExtractor.blockChanged`;
-   server: below); flag 1 → `Level.updateNeighborsAt`, which is **empty on
-   `Level`** and only `ServerLevel` overrides; flag 16 clear → with 1 and
-   32 masked off, `BlockBehaviour.BlockStateBase.updateIndirectNeighbourShapes`
-   for the old state and `BlockBehaviour.BlockStateBase.updateNeighbourShapes`
-   for the new, which walks `BlockBehaviour.UPDATE_SHAPE_ORDER` (west,
-   east, north, south, down, up) calling `Level.neighborShapeChanged` →
-   the level's `CollectingNeighborUpdater` → `NeighborUpdater.executeShapeUpdate`
-   → each neighbour's `BlockBehaviour.BlockStateBase.updateShape` → `Block.updateOrDestroy`. An adjacent
-   stair recomputes its own `StairBlock.SHAPE` here, in `StairBlock.updateShape`,
-   on both sides.
+   flag 2 → `Level.sendBlockUpdated` — which also needs
+   `Block.UPDATE_INVISIBLE` clear on the client, and on the server needs
+   the chunk to be at least `FullChunkStatus.BLOCK_TICKING`, which is why
+   worldgen writes never broadcast — (client: `LevelExtractor.blockChanged`;
+   server: below); flag 1 → `Level.updateNeighborsAt`, empty on the base
+   level and overridden only by `ServerLevel`, plus
+   `Level.updateNeighbourForOutputSignal` on the server if the new state
+   has an analog output; flag 16 clear → with 1 and 32 masked off,
+   **three** shape passes in order —
+   `BlockBehaviour.BlockStateBase.updateIndirectNeighbourShapes` for the
+   old state, `BlockBehaviour.BlockStateBase.updateNeighbourShapes` for the
+   new, and `BlockBehaviour.BlockStateBase.updateIndirectNeighbourShapes`
+   again for the new. The middle one is the familiar one: it walks
+   `BlockBehaviour.UPDATE_SHAPE_ORDER` (west, east, north, south, down, up)
+   calling `Level.neighborShapeChanged` → the level's
+   `CollectingNeighborUpdater` → `NeighborUpdater.executeShapeUpdate` →
+   each neighbour's `BlockBehaviour.BlockStateBase.updateShape` →
+   `Block.updateOrDestroy`. An adjacent stair recomputes its own
+   `StairBlock.SHAPE` here, in `StairBlock.updateShape`, on both sides. The
+   indirect passes are the hook a block uses to reach past its six
+   neighbours — how redstone dust reaches diagonal wires. Finally, and on
+   every successful write, `Level.updatePOIOnBlockStateChange` (empty on
+   the base level, real on `ServerLevel`).
 8. **After the write.** `BlockItem.place` re-reads the position; if the
    block there is the one it placed it applies the item's
-   `DataComponents.BLOCK_STATE` (`BlockItemStateProperties.apply`, via
-   `StateHolder.trySetValue`) and, server-side, `DataComponents.BLOCK_ENTITY_DATA`
-   (`BlockItem.updateCustomBlockEntityTag`, op-gated by
-   `BlockEntityType.onlyOpCanSetNbt`), calls `Block.setPlacedBy`, fires
-   `CriteriaTriggers.PLACED_BLOCK` for a `ServerPlayer`, plays
-   `SoundType.getPlaceSound` at half volume and 0.8 pitch, raises
+   `DataComponents.BLOCK_STATE` (`BlockItemStateProperties.apply`, which
+   looks each name up in the `StateDefinition` and uses `StateHolder.setValue`
+   on what it finds; a changed state is written back with a **second**
+   `Level.setBlock`, flags 2) and, server-side,
+   `DataComponents.BLOCK_ENTITY_DATA` (`BlockItem.updateCustomBlockEntityTag`,
+   op-gated by `BlockEntityType.onlyOpCanSetNbt`), then
+   `BlockItem.updateBlockEntityComponents`, then `Block.setPlacedBy`, then
+   `CriteriaTriggers.PLACED_BLOCK` for a `ServerPlayer`. Outside that
+   conditional — so they happen even if something replaced the block
+   underneath — it plays `SoundType.getPlaceSound` at the *mean of the
+   sound type's volume and 1.0* and 0.8 **times** the type's pitch (for
+   oak stairs, `SoundType.WOOD`, that is full volume), raises
    `GameEvent.BLOCK_PLACE` ([game events](../world/game-events-and-poi.md))
    and `ItemStack.consume`s one — restored under `Player.hasInfiniteMaterials`.
    `InteractionResult.SUCCESS`. `MultiPlayerGameMode.startPrediction` sends
@@ -298,16 +329,24 @@ sequenceDiagram
     `ServerLevel.sendBlockUpdated` → `ServerChunkCache.blockChanged` →
     `ChunkHolder.blockChanged` queues the position (nothing is sent yet),
     invalidates `ServerLevel.pathTypesByPosCache`, and if the collision
-    shape changed asks every `Mob`'s `PathNavigation.shouldRecomputePath`.
-    And `ServerLevel.updateNeighborsAt` fires six `BlockBehaviour.neighborChanged`s in
+    shape changed asks the mobs in `ServerLevel.navigatingMobs` — not every
+    mob in the level — whether `PathNavigation.shouldRecomputePath`.
+    And `ServerLevel.updateNeighborsAt` fires six
+    `BlockBehaviour.BlockStateBase.handleNeighborChanged`s, each forwarding
+    to the block's own `BlockBehaviour.neighborChanged`, in
     `NeighborUpdater.UPDATE_ORDER` (west, east, down, up, north, south) —
     a different order from the shape pass — plus
     `Level.updateNeighbourForOutputSignal` if the new state
     `BlockBehaviour.BlockStateBase.hasAnalogOutputSignal`.
-11. **Broadcast, then ack.** `ServerGamePacketListenerImpl.handleUseItemOn`
-    ends, whatever happened, by sending the placer a
+11. **Broadcast, then ack.** Once past the build-height check,
+    `ServerGamePacketListenerImpl.handleUseItemOn` ends — whatever the
+    interaction did — by sending the placer a
     `ClientboundBlockUpdatePacket` for the clicked block and one for the
-    block on its clicked face — here the stone and the new stairs. Later
+    block on its clicked face, here the stone and the new stairs. Those
+    two sends sit *inside* that branch, so a click refused earlier — out
+    of reach, a hit location outside the block, above or below the build
+    limit — sends nothing at all and leaves the client's prediction to be
+    unwound by the ack alone. Later
     in the same tick the chunk cache drains `ChunkHolder.broadcastChanges`:
     one changed position becomes a `ClientboundBlockUpdatePacket`, several
     in one section a `ClientboundSectionBlocksUpdatePacket`, to every
@@ -364,11 +403,20 @@ sequenceDiagram
   the class people mean; `BlockBehaviour` holds the hooks; `Block` is
   registration and statics. `BlockState` exists so `BlockState.asState`
   can return the concrete type.
-- **Setting a property never allocates.** `StateHolder.setValue` is an
-  index into `StateHolder.neighbors`; every state a block can have was
-  built once in `StateDefinition` and is compared by identity
+- **Setting a property never allocates.** `StateHolder.setValue` resolves
+  a row by scanning the key array and a column by
+  `Property.getInternalIndex`, then returns the pre-built state at that
+  cell of `StateHolder.neighbors`; every state a block can have was built
+  once in `StateDefinition` and is compared by identity
   (`StateHolder.equals` is final). Two blocks' states with identical
   values are never equal, by construction.
+- **States match properties by identity; properties match each other by
+  value.** `StateHolder.valueIndex` compares `Property` references with
+  `==`, but `Property.equals` — refined by `EnumProperty` and
+  `IntegerProperty` to compare the value list too — is value-based. So two
+  separately constructed properties can be equal to one another and still
+  make `StateHolder.setValue` throw *Cannot set property … as it does not
+  exist*. Use the `BlockStateProperties` constant, not a look-alike.
 - **Property order is alphabetical.** `StateDefinition.propertiesByName`
   is sorted, so the state table, `StateDefinition.any` and the global
   state ids follow property *names*, not the order in
@@ -379,8 +427,14 @@ sequenceDiagram
   `StairBlock.WATERLOGGED` false explicitly.
 - **The client places blocks for real.** `MultiPlayerGameMode.performUseItemOn`
   runs the identical `BlockItem.place`, including shape updates on the
-  neighbours; only `BlockBehaviour.BlockStateBase.onPlace` and
-  `ServerLevel.updateNeighborsAt` are server-only. The server's own
+  neighbours. What it does not run is everything the write path gates on
+  the side: `BlockBehaviour.BlockStateBase.onPlace`,
+  `ServerLevel.updateNeighborsAt`, `Level.updateNeighbourForOutputSignal`,
+  `BlockEntity.preRemoveSideEffects`,
+  `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval`,
+  `BlockItem.updateCustomBlockEntityTag`, and the destroy half of
+  `Block.updateOrDestroy` — a shape update that returns air deletes the
+  block on the server and does nothing on the client. The server's own
   `ClientboundBlockUpdatePacket` for that position is *swallowed* by
   `BlockStatePredictionHandler.updateKnownServerState` until the ack
   lands; server-authoritative writes on the client always carry
@@ -402,19 +456,36 @@ sequenceDiagram
   falls back to the virtual path. Its constructor throws at startup for a
   block with a collision shape and an offset function but no
   `BlockBehaviour.Properties.dynamicShape`.
-- **`Level.setBlock` says true when it did not do what you asked.** It
-  returns true whenever `LevelChunk.setBlockState` accepted the write —
-  even if `BlockBehaviour.BlockStateBase.onPlace` or a block entity
-  immediately changed the state again; the post-write logic only runs if
-  the state read back is the one written. And `Level.setBlock` refuses
-  everything on a debug world.
+- **`Level.setBlock` says true when it did not do what you asked, and
+  false when there was nothing to do.** It returns true whenever
+  `LevelChunk.setBlockState` accepted the write — even if
+  `BlockBehaviour.BlockStateBase.onPlace` or a block entity immediately
+  changed the state again; the post-write logic only runs if the state
+  read back is the one written. It returns **false** when
+  `LevelChunk.setBlockState` returns null, and the commonest reason for
+  that is writing the state that is already there — states being interned,
+  that is an identity comparison, and it is the usual explanation for a
+  `Level.setBlock` that "failed" without anything being wrong. Writing air
+  into an already-empty section is the other. And `Level.setBlock` refuses
+  everything on the **server side** of a debug world; a `ClientLevel` in
+  one writes normally.
+- **A block state id that the client does not recognise becomes air.**
+  `Block.getId` answers 0 for an unregistered state and `Block.stateById`
+  answers `Blocks.AIR` for an unknown id — so a client and server that
+  disagree about a block's property set do not throw, they quietly
+  disagree about the world.
 - **Oak stairs are a legacy copy of oak planks.** `Blocks.registerLegacyStair`
-  uses `BlockBehaviour.Properties.ofLegacyCopy`, which does not copy
+  uses `BlockBehaviour.Properties.ofLegacyCopy`, which is
+  `BlockBehaviour.Properties.ofFullCopy` minus eight things:
+  `BlockBehaviour.Properties.jumpFactor`,
   `BlockBehaviour.Properties.isRedstoneConductor`,
+  `BlockBehaviour.Properties.isValidSpawn`,
+  `BlockBehaviour.Properties.postProcess`,
   `BlockBehaviour.Properties.isSuffocating`,
-  `BlockBehaviour.Properties.isViewBlocking`,
-  `BlockBehaviour.Properties.isValidSpawn` or
-  `BlockBehaviour.Properties.jumpFactor`. Only three stairs use
+  `BlockBehaviour.Properties.isViewBlocking`, and — the two that matter
+  most — the loot table and the description id, which therefore fall back
+  to the `DependantName` defaults derived from the *stair's* own id rather
+  than the plank's. Forty-seven stairs take this path; only six use
   `Blocks.registerStair`.
 - **`RenderShape` has two values**, `RenderShape.INVISIBLE` and
   `RenderShape.MODEL`; the animated-block-entity value is gone.

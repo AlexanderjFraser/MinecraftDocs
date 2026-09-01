@@ -18,8 +18,9 @@ wait for pass 3 (and feed the lecture-order draft there).
 | ~~`server/server-lifecycle`~~ | ~390 | **Session B: not split, and the proposed seam was wrong.** The side threads are four bullets with no trace; a page of them would break rule 4. The page's real seam is its *two traces* (startup and `/stop`) and its best new material is the failure paths. See [pass3.md](pass3.md) §2. |
 | `world/game-events-and-poi` | 375 | two traces: sculk/vibrations vs villager POI — the obvious split. **Session C: confirmed but not executed.** The two fact-check halves shared no classes at all, so the seam is real; the fact-check did not add enough to force the split in pass 2, and it is now recorded as presentational in [pass3.md](pass3.md) §2. |
 | `world/block-ticks-and-fluids` | ~330 | **Added by session C.** The scheduled-tick scheduler and the fluid model are two lectures with two traces; the page's own numbered trace changes subject at step 6. Not split in pass 2 for the same reason; see [pass3.md](pass3.md) §2. |
-| `blocks/redstone` | ~380 | the experimental-evaluator coda (`ExperimentalRedstoneWireEvaluator`, `Orientation`) vs the default trace |
-| `blocks/blocks-and-states` | ~340 | the state table (data page) vs the placement trace + prediction |
+| `blocks/redstone` | ~520 | ~~the experimental-evaluator coda vs the default trace~~ — **session D: the proposed seam is wrong, and the page is now three lectures, not two.** The evaluator coda belongs *to* the dust half. The real split is dust/neighbour-updates · pistons/block-events · diodes-and-observers, the last of which session D had to **write** (comparators, repeaters and observers were absent). Not executed; see [pass3.md](pass3.md) §2. |
+| `blocks/blocks-and-states` | ~510 | the state table (data page) vs the placement trace + prediction. **Session D: confirmed and not executed.** The fact-check grew both halves evenly and neither became unwieldy; purely presentational, so pass 3's call. |
+| `blocks/block-interaction` + `blocks/block-breaking` | ~456 + ~445 | **Added by session D.** Not a split — a possible *merge*, or a shared preamble. The two pages re-derive the same prediction ledger, reach check, sequence number and ack ordering, and session D had to correct the same ack-timing sentence in both. See [pass3.md](pass3.md) §1. |
 | `entities/entity-anatomy` | 367 | the base class + `EntityType` vs the hierarchy tour |
 | `entities/ai-goals-and-brains` | 357 | goals vs brains vs pathfinding — three lectures in one page |
 | `items/items-and-stacks` | 340 | the stack data model vs the use pipeline + the eating trace |
@@ -446,6 +447,52 @@ easy to get wrong from 1.21 memory.
   There is no spawn ticket; on an ordinary world the step loads nothing —
   `server-lifecycle`.
 
+- `Level.setBlock` runs **three** shape passes, not one — the old state's
+  indirect, the new state's direct, the new state's indirect — and ends with
+  `Level.updatePOIOnBlockStateChange`. `Block.UPDATE_NEIGHBORS` and
+  `Block.UPDATE_SUPPRESS_DROPS` are masked out of the flags it propagates —
+  `blocks-and-states`.
+- `BlockBehaviour.BlockStateBase.onPlace` is gated on **side and flag 512
+  only**, not on the block changing: a same-block state write on the server
+  runs it — `block-interaction`.
+- `Block.updateOrDestroy`'s **destroy** branch is server-only and goes through
+  `Level.destroyBlock` at flags 3, so a shape cascade that kills a block does
+  fire neighbour updates and a `GameEvent.BLOCK_DESTROY`. That is why breaking
+  one door half is *not* predicted for the other — `block-interaction`.
+- Block entities tick in the **last** world phase, after the chunk-source
+  broadcast drain and after the entity phase. So a block entity's own block
+  write and its menu data both reach clients on the **following** tick —
+  `block-entities` (agrees with `server-level-tick`).
+- `Level.tickBlockEntities` is gated by `TickRateManager.runsNormally` and by
+  `Level.shouldTickBlocksAt`, which on the server is **simulation distance**:
+  a loaded chunk's furnaces need not tick. Both gates pass trivially on the
+  client — `block-entities`.
+- Twenty of the 49 block-entity types send a `ClientboundBlockEntityDataPacket`
+  (nineteen classes declare `BlockEntity.getUpdatePacket`;
+  `HangingSignBlockEntity` inherits `SignBlockEntity`'s) — `block-entities`.
+- `Tool.getMiningSpeed` and `Tool.isCorrectForDrops` are **two independent
+  scans** of the rule list, each skipping rules that lack the field it wants.
+  Hence full pickaxe speed on obsidian with no drop — `block-breaking`.
+- A failed reach check on a dig or a use sends the client **nothing at all**;
+  spawn protection sends only a chat overlay. Only build height,
+  `ServerLevel.mayInteract` and `Player.blockActionRestricted` answer with a
+  `ClientboundBlockUpdatePacket` — `block-breaking`, `block-interaction`.
+- **ABORT does not cancel a deferred destroy.** `ServerPlayerGameMode.tick`
+  tests `hasDelayedDestroy` first and the ABORT branch never clears it, so a
+  client that STOPs early and releases still gets the block broken — and the
+  delayed path re-checks nothing but `isAir` — `block-breaking`.
+- Piston placeholders are written with flags 324, **without**
+  `Block.UPDATE_CLIENTS`: the client's moving blocks come *only* from
+  re-running `PistonBaseBlock.moveBlocks` off `ClientboundBlockEventPacket`,
+  and no correcting packet ever follows — `redstone`.
+- There are **three** direction orders, not two: `SignalGetter.DIRECTIONS`
+  (D U N S W E) decides what a block *reads*, against
+  `BlockBehaviour.UPDATE_SHAPE_ORDER` (W E N S D U) and
+  `NeighborUpdater.UPDATE_ORDER` (W E D U N S) for what gets *notified* —
+  `redstone`.
+- The **observer fires on shape updates**, not neighbour updates
+  (`ObserverBlock.updateShape` → a two-tick scheduled tick) — `redstone`.
+
 - The environment-attribute layer stack is **fixed and four deep**:
   dimension (constant) → biome (positional) → timelines (time-based) →
   weather, built once in the level constructor and never rebuilt —
@@ -728,6 +775,17 @@ Vulkan/platform halves) get their rulings in session K.
   rather than after.
 - The verifier proves a name **exists**, not that it is declared where you
   cite it — see the hand-off section below.
+- **A method *parameter* name in backticks is a new trap shape** (session D):
+  `ExperimentalRedstoneWireEvaluator.shapeUpdateWiresAroundInitialPosition`
+  looked like a field and is an argument of
+  `ExperimentalRedstoneWireEvaluator.updatePowerStrength`. Same rule as
+  config keys and JSON keys — if it is not a declared `Class` or
+  `Class.member`, say it in prose. Session D's other three failures were the
+  familiar ones: two **bare members** (`initCache`, `saveWithoutMetadata`)
+  written mid-sentence, and one member cited on the subclass
+  (`Player.swing`, declared on `LivingEntity`) — the verifier caught that
+  last one only because `Player.java` happens not to contain the token, so
+  do not rely on it.
 - **The verifier could not see record components on a generic record.**
   Session C found and fixed a real bug in `tools/verify_names.py`: the
   `RECORD` regex required `record Name(` and so missed `record Name<T>(`,
@@ -752,6 +810,67 @@ for pass 4, and material added speculatively that pass 4 may cut.
 **Structural observations now go to [pass3.md](pass3.md)** — the
 restructuring notebook opened in session A — so that pass 3 starts with
 evidence rather than a blank page.
+
+### Session D (Part V Blocks)
+
+**Added on spec — pass 4 should weigh these:**
+
+- `redstone` gained a whole new section, *The diodes, and the one block
+  that is not on this channel* (~55 lines): `DiodeBlock`'s input/side/output
+  model, the repeater's `RepeaterBlock.LOCKED`-as-a-shape-update, the
+  comparator's block entity and its reach-through-a-conductor input
+  (including the single `ItemFrame`), the container fullness formula, and
+  the observer. This was a real catalogue gap — the page previously named
+  `DiodeBlock.checkTickOnNeighbor` and nothing else while claiming to cover
+  redstone — so it should survive, but it is the largest single addition of
+  the session and it pushes the page to ~520 lines. If pass 3 splits the
+  page three ways ([pass3.md](pass3.md) §2) this section becomes its own
+  lecture and the length problem goes away by itself.
+- `block-breaking` gained the deferred-destroy consequences (ABORT does not
+  cancel it; the delayed path re-checks nothing), the two anti-desync paths,
+  and the two-independent-scans rule for `Tool`. The anti-desync bullet is
+  the most cuttable — it is a debug-string-level detail — but it is also the
+  only place the corpus explains what happens when the two clocks disagree.
+- `block-entities` gained the simulation-distance and freeze gates on
+  ticking. Load-bearing and player-visible; keep.
+- `blocks-and-states` gained the property-identity-versus-equality trap and
+  the `Block.getId` → air degradation. Both are "surprise" material rather
+  than trace material; if pass 4 needs to cut, they are the candidates.
+
+**Wording debt:**
+
+- Three pages now say some version of "shape updates run on both sides,
+  neighbour updates are server-only, and here is the exception". Pass 4
+  should pick one page to own the sentence and have the others point at it —
+  most likely `block-interaction`, which already has the cleanest statement.
+- `blocks-and-states` step 7 has grown into a single paragraph walking the
+  whole tail of `Level.setBlock` and is now hard to read as prose. It wants
+  to be a list, or the flowchart [pass3.md](pass3.md) §3 asks for.
+- "The one sentence a player recognises" in `block-breaking` had a factual
+  error in it (1.5 *seconds*, which is the hardness, not the time). Worth a
+  pass-4 sweep of those sentences specifically — they are the least-checked
+  line on every page because they read as flavour.
+
+**Naming drift:** none new. Session D checked every *gone* name its five
+pages assert — *ItemInteractionResult*, *DirectionProperty*,
+*markAndNotifyBlock*, *onRemove*, *rebuildCache*, *saveToItem*,
+*doTileDrops*, *dropsLike*, *BlockModelShaper* — and all are already in the
+table below and in `appendix/naming-drift`. Part V's renames were caught in
+pass 1 (sessions 4–5) and have held up.
+
+**Not done, deliberately:**
+
+- The `redstone` and `blocks-and-states` splits, and the
+  interaction/breaking merge question — all presentational, all in
+  [pass3.md](pass3.md).
+- `redstone`'s remaining completeness gaps, which are real but are
+  circuit-building detail rather than mechanism: `RedStoneWireBlock`'s
+  corner-update fan-out (`updateNeighborsOfNeighboringWires`,
+  `checkCornerChangeAt`), the dot/cross connection rules, the redstone
+  torch's own toggle path beyond burnout, and the long tail of piston
+  special cases (slime reordering, the sticky-retract interrupt,
+  `MovingPistonBlock.destroy`, the moving hitbox). Listed here so a later
+  session can decide rather than rediscover.
 
 ### Session C (Part IV The world + the new environment page)
 

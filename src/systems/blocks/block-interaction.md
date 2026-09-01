@@ -31,11 +31,18 @@ instant even on a laggy server.*
   `InteractionResult.SUCCESS_SERVER` (server swings to trackers and self),
   `InteractionResult.CONSUME` (nobody swings), `InteractionResult.FAIL`,
   `InteractionResult.PASS` and `InteractionResult.TRY_WITH_EMPTY_HAND`.
-  `InteractionResult.consumesAction` is the only boolean the handlers
-  care about. There is no *ItemInteractionResult* any more.
+  `InteractionResult.consumesAction` is the boolean almost every branch
+  turns on, but not the only one read: `InteractionResult.Success` also
+  carries `InteractionResult.Success.wasItemInteraction`, which decides
+  whether `Stats.ITEM_USED` is awarded, and
+  `InteractionResult.Success.heldItemTransformedTo`, which the game modes
+  use to swap the stack the hand ends up holding. There is no
+  *ItemInteractionResult* any more.
 - **The hooks** live on `BlockBehaviour`, all protected:
   `BlockBehaviour.useItemOn` (item-on-block; default
-  `InteractionResult.TRY_WITH_EMPTY_HAND`, eleven blocks override it),
+  `InteractionResult.TRY_WITH_EMPTY_HAND`, twenty-four blocks override
+  it — cauldrons, beehives, cakes, campfires, candles, lecterns,
+  jukeboxes, note blocks, signs, shelves, decorated pots and the rest),
   `BlockBehaviour.useWithoutItem` (default `InteractionResult.PASS`),
   `BlockBehaviour.attack` (left-click, default nothing),
   `BlockBehaviour.updateShape`, `BlockBehaviour.neighborChanged` (which
@@ -52,11 +59,18 @@ instant even on a laggy server.*
   (`DoubleBlockHalf.LOWER` / `DoubleBlockHalf.UPPER`), `DoorBlock.HINGE`
   (`DoorHingeSide`), `DoorBlock.OPEN`, `DoorBlock.POWERED` — and a
   `DoorBlock.type`, a **`BlockSetType`**. That is a record, not a registry
-  entry: name, `BlockSetType.canOpenByHand`, `BlockSetType.canOpenByWindCharge`,
-  a `SoundType` and the eight open/close/click sound events; the instances
+  entry: fourteen components — name, `BlockSetType.canOpenByHand`,
+  `BlockSetType.canOpenByWindCharge`,
+  `BlockSetType.canButtonBeActivatedByArrows`,
+  `BlockSetType.pressurePlateSensitivity`
+  (`BlockSetType.PressurePlateSensitivity.EVERYTHING` or
+  `BlockSetType.PressurePlateSensitivity.MOBS`), a `SoundType` and the
+  eight open/close/click sound events. The seventeen instances
   (`BlockSetType.OAK`, `BlockSetType.IRON` with *canOpenByHand* false,
-  `BlockSetType.COPPER`, `BlockSetType.GOLD` …) sit in a private static
-  map behind `BlockSetType.values` and a string `BlockSetType.CODEC`.
+  `BlockSetType.COPPER`, `BlockSetType.GOLD` …) are public constants on
+  the record itself; `BlockSetType.register` additionally files each in a
+  private map that `BlockSetType.values` and the string
+  `BlockSetType.CODEC` read.
   "Wooden door" for interaction purposes means `BlockSetType.canOpenByHand`;
   `BlockTags.WOODEN_DOORS` and `BlockTags.DOORS` exist but this path never
   reads them.
@@ -70,8 +84,11 @@ instant even on a laggy server.*
   `CollectingNeighborUpdater.addedThisLayer` list for requests made from
   inside a running hook, a `CollectingNeighborUpdater.count`, and
   `CollectingNeighborUpdater.maxChainedNeighborUpdates`. The static workers
-  are `NeighborUpdater.executeShapeUpdate` (read the current state, call
-  `BlockBehaviour.BlockStateBase.updateShape`, `Block.updateOrDestroy`) and `NeighborUpdater.executeUpdate`
+  are `NeighborUpdater.executeShapeUpdate` (bail out if the target is
+  redstone dust and `Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE` is set —
+  the test is on the *target*, whatever the source; otherwise read the
+  current state, call `BlockBehaviour.BlockStateBase.updateShape`, then
+  `Block.updateOrDestroy`) and `NeighborUpdater.executeUpdate`
   (`BlockBehaviour.BlockStateBase.handleNeighborChanged`), each wrapping failures in a crash report.
   `InstantNeighborUpdater` exists but `Level` does not use it.
 - **Two direction orders.** `BlockBehaviour.UPDATE_SHAPE_ORDER` — west,
@@ -82,7 +99,9 @@ instant even on a laggy server.*
 - **Reach** is an attribute: `Attributes.BLOCK_INTERACTION_RANGE` (default
   4.5, synced), read by `Player.blockInteractionRange` and tested by
   `Player.isWithinBlockInteractionRange` from the eye position to the
-  block's box; creative adds `ServerPlayer.CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER`
+  block's **full unit cube**, not its collision shape — which is why a
+  door, three sixteenths deep, is reachable from as far as a full block
+  would be; creative adds `ServerPlayer.CREATIVE_BLOCK_INTERACTION_RANGE_MODIFIER`
   (0.5), and the server allows a further 1.0 of slack.
 - **The prediction ledger** on the client: `ClientLevel.blockStatePredictionHandler`,
   a `BlockStatePredictionHandler` whose `BlockStatePredictionHandler.serverVerifiedStates`
@@ -94,10 +113,12 @@ instant even on a laggy server.*
 
 ## When it runs
 
-**Client main thread.** `Minecraft.handleKeybinds` drains the use key each
-client tick into `Minecraft.startUseItem` (throttled by
-`Minecraft.rightClickDelay`, four ticks), which loops the hands — main
-then off — and calls `MultiPlayerGameMode.useItemOn` for a block hit. The
+**Client main thread.** `Minecraft.handleKeybinds` — which only runs when
+no screen and no overlay is open — drains every queued press of the use
+key into `Minecraft.startUseItem`, unthrottled; `Minecraft.rightClickDelay`
+gates only the *held-down* auto-repeat, and `Minecraft.startUseItem` is
+what sets it, to four ticks. `Minecraft.startUseItem` loops the hands —
+main then off — and calls `MultiPlayerGameMode.useItemOn` for a block hit. The
 attack key goes to `Minecraft.startAttack` / `Minecraft.continueAttack` →
 `MultiPlayerGameMode.startDestroyBlock` ([block breaking](block-breaking.md)).
 
@@ -106,7 +127,10 @@ attack key goes to `Minecraft.startAttack` / `Minecraft.continueAttack` →
 `MinecraftServer.processPacketsAndTick` drains *before* `MinecraftServer.tickServer`
 — so interaction handlers run at the very start of a server tick, the
 levels tick after them (broadcasting the block changes), and the
-connections tick last (sending the ack).
+connections tick after *that*, sending the ack. (Connections are not the
+last thing in the tick — the player list, the debug subscribers and the
+chunk sender follow — but they are after the levels, which is the
+ordering the ack depends on.)
 
 Neighbour updates and shape updates run synchronously inside `Level.setBlock`,
 on whichever thread called it; on the server that is always the main
@@ -131,7 +155,7 @@ sequenceDiagram
     GM->>DB: performUseItemOn → useItemOn (TRY_WITH_EMPTY_HAND) → useWithoutItem
     DB->>CL: canOpenByHand · cycle(OPEN) · setBlock(lower, flags 10)
     CL->>CL: retainKnownServerState(lower, closed) · remesh
-    CL->>NU: updateNeighbourShapes → shapeUpdate(UP)
+    CL->>NU: updateNeighbourShapes ×6 → shapeUpdate to the block above, dir DOWN
     NU->>DB: updateShape on the upper half — copy lower, HALF=UPPER
     NU->>CL: updateOrDestroy → setBlock(upper, flags 10, limit 511)
     DB->>CL: playSound(except = player) — plays locally
@@ -156,7 +180,13 @@ sequenceDiagram
    `MultiPlayerGameMode.startPrediction` →
    `BlockStatePredictionHandler.startPredicting`, sequence *n*.
 2. **Block, then empty hand, then item.** `MultiPlayerGameMode.performUseItemOn`
-   mirrors the server's order exactly. Sneaking suppresses the block only
+   mirrors the server's *inner* order exactly, and its outer gates
+   differ in three ways worth knowing: the server tests the block's
+   feature flags as its very first statement while the client tests the
+   item's inside the not-sneaking branch; a spectator gets
+   `InteractionResult.CONSUME` on the client but is routed to
+   `BlockBehaviour.BlockStateBase.getMenuProvider` on the server; and the
+   advancement triggers exist only on the server. Sneaking suppresses the block only
    if *some* hand holds something (`Player.isSecondaryUseActive`), so an
    empty-handed sneak still opens doors. `BlockBehaviour.BlockStateBase.useItemOn`
    → the `BlockBehaviour.useItemOn` default, `InteractionResult.TRY_WITH_EMPTY_HAND`;
@@ -180,13 +210,25 @@ sequenceDiagram
    progress, lets `Level.setBlock` run and then
    `BlockStatePredictionHandler.retainKnownServerState` remembers the
    closed lower half under *n*. Inside: `LevelChunk.setBlockState` writes
-   the palette — same block type, so no place/remove hooks; flag 2 →
+   the palette. The block did not change, so the removal hooks
+   (`BlockEntity.preRemoveSideEffects`,
+   `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval`) are
+   skipped; `BlockBehaviour.BlockStateBase.onPlace` is skipped for a
+   different reason — it is gated on the side and on
+   `Block.UPDATE_SKIP_ON_PLACE`, *not* on the block changing, so on the
+   client it never runs at all (and on the server, in step 9, it does run
+   for this same-block write). Then flag 2 →
    `ClientLevel.sendBlockUpdated` → `LevelExtractor.blockChanged`, which
    reads bit 8 as *player-caused* and schedules a priority remesh; flag 1
    absent (and `Level.updateNeighborsAt` is a no-op on the client anyway);
    flag 16 clear → `BlockBehaviour.BlockStateBase.updateNeighbourShapes`
    with flags 10 and limit 511.
-5. **The upper half follows.** For `Direction.UP` that is
+5. **The upper half follows.** `Block.UPDATE_KNOWN_SHAPE` is clear, so
+   `BlockBehaviour.BlockStateBase.updateNeighbourShapes` walks all six of
+   `BlockBehaviour.UPDATE_SHAPE_ORDER` — `Direction.UP` is the last of
+   them — and each is its own top-level cascade. Note the direction that
+   travels: the door tells the block above about the change by sending
+   `Direction.DOWN`, the direction *from the neighbour back to it*. That is
    `Level.neighborShapeChanged` → `CollectingNeighborUpdater.shapeUpdate`
    → `CollectingNeighborUpdater.addAndRun` → `CollectingNeighborUpdater.runUpdates`
    → `NeighborUpdater.executeShapeUpdate` → `DoorBlock.updateShape` on the
@@ -316,15 +358,32 @@ progress — same reach check, same ack machinery.
   and `DoorBlock.setOpen` write with flags 10, so `Level.setBlock` never
   reaches `Level.updateNeighborsAt`; the other half follows through
   `DoorBlock.updateShape`, which copies the neighbour half's whole state
-  and swaps `DoorBlock.HALF`. Only the redstone path
-  (`DoorBlock.neighborChanged`, flags 2, both halves set together) and
-  placement (`DoorBlock.setPlacedBy` with `Level.setBlockAndUpdate`,
-  flags 3) differ.
-- **Shape updates are predictable; neighbour updates are not.**
-  `Level.neighborShapeChanged` is implemented on `Level` and runs on both
-  sides; `Level.updateNeighborsAt` and `Level.neighborChanged` are empty on
-  `Level` and overridden only by `ServerLevel`. That is exactly why the
-  client can predict the second door half and cannot predict redstone.
+  and swaps `DoorBlock.HALF`. The other entry points differ: the redstone
+  path (`DoorBlock.neighborChanged`, flags 2 — each half writes only
+  *itself*, and the halves converge because both get their own neighbour
+  update and each flags-2 write triggers a shape pass), placement
+  (`DoorBlock.setPlacedBy` with `Level.setBlockAndUpdate`, flags 3), and
+  the wind-charge path (`DoorBlock.onExplosionHit` calling
+  `DoorBlock.setOpen` directly).
+- **`DoorBlock.updateShape` has three outcomes, not one.** It copies the
+  matching other half; it returns **air** when the vertical neighbour is
+  not the matching half; and, for the lower half on a `Direction.DOWN`
+  update, it returns air when `DoorBlock.canSurvive` fails — the block
+  below must be face-sturdy upward. That third branch, feeding
+  `Block.updateOrDestroy`, is the whole of "break the bottom and the top
+  pops", and it is a shape update, not a neighbour update.
+- **Shape updates are predictable; neighbour updates are not — but only
+  half of a shape update is.** `Level.neighborShapeChanged` is implemented
+  on `Level` and runs on both sides; `Level.updateNeighborsAt` and
+  `Level.neighborChanged` are empty on `Level` and overridden only by
+  `ServerLevel`. That is why the client can predict the second door half
+  and cannot predict redstone. The catch is in `Block.updateOrDestroy`:
+  when `BlockBehaviour.BlockStateBase.updateShape` returns air, the
+  *destroy* branch is wrapped in a server-side check and goes through
+  `Level.destroyBlock` with flags 3 — so it fires neighbour updates and a
+  `GameEvent.BLOCK_DESTROY` of its own. Breaking the bottom half of a door
+  therefore removes the top half **on the server only**; the client waits
+  for the packet.
 - **The empty-hand hook is main-hand only, and sneaking is conditional.**
   `ServerPlayerGameMode.useItemOn` routes `InteractionResult.TRY_WITH_EMPTY_HAND`
   to `BlockBehaviour.BlockStateBase.useWithoutItem` only when the hand is
@@ -337,8 +396,11 @@ progress — same reach check, same ack machinery.
   swings.
 - **The chain limit counts queued updates per top-level cascade, not
   depth, and it drops rather than crashes.** `CollectingNeighborUpdater.addAndRun`
-  increments `CollectingNeighborUpdater.count` per request; past the
-  limit, further updates are discarded with one logged error;
+  increments `CollectingNeighborUpdater.count` once per *request* — and a
+  `CollectingNeighborUpdater.MultiNeighborUpdate` is one request that
+  expands to up to six actual updates, so the budget is coarser than the
+  number suggests. Past the limit, further updates are discarded with one
+  logged error;
   `CollectingNeighborUpdater.runUpdates` resets the count when the
   outermost cascade finishes. Nested requests from inside a hook go to
   `CollectingNeighborUpdater.addedThisLayer` and run depth-first before
@@ -350,10 +412,19 @@ progress — same reach check, same ack machinery.
   `ServerGamePacketListenerImpl.tick` emits one `ClientboundBlockChangedAckPacket`
   after the level tick has already broadcast the changes, because
   `MinecraftServer.tickChildren` ticks levels before connections.
-- **The clicked block always comes back, even on success** —
-  `ServerGamePacketListenerImpl.handleUseItemOn` sends the clicked
-  position and its face neighbour unconditionally; the door's other half
-  only arrives through `ChunkHolder.broadcastChanges`.
+- **The clicked block comes back even on success — but only if the click
+  got past the gates.** `ServerGamePacketListenerImpl.handleUseItemOn`
+  sends the clicked position and its face neighbour whatever the
+  interaction returned, and the door's other half only arrives through
+  `ChunkHolder.broadcastChanges`. Those two sends live inside the
+  build-height branch, though, so a click that fails the reach check, or
+  whose hit location is not within the block, or that is above or below
+  the build limit, is answered with **nothing at all**.
+- **A world-border or pending-teleport refusal is reported as a build
+  limit.** When `ServerLevel.mayInteract` says no, or a teleport is still
+  outstanding, the else-branch the click falls into is
+  `ServerPlayer.sendBuildLimitMessage` — the player is told they are
+  building too high whatever the actual reason.
 - **The clicker hears the door from prediction.** `DoorBlock.playSound`
   passes the player as *except*; `ServerLevel.playSeededSound` skips them
   and `ClientLevel.playSeededSound` plays only for them. Same design as
