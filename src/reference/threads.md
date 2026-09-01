@@ -7,28 +7,46 @@ is *allowed* to run on it. The last column is the rule the rest of the
 documentation leans on: game state belongs to exactly one thread, and
 anything else submits a task to that thread's event loop.
 
+## The threads a lecture leans on
+
 | thread | made by | runs | may touch |
 |---|---|---|---|
 | **Render thread** (client) | the JVM main thread, renamed in `client/main/Main` | `Minecraft.run` → `Minecraft.runTick` once per frame; `Minecraft.tick` 0–10 times inside it | Everything client-side: `ClientLevel`, `LocalPlayer`, the GPU (`RenderSystem.assertOnRenderThread`), screens, options. It is also the client's event loop (`Minecraft` is a `ReentrantBlockableEventLoop`), so packet handlers run here after `PacketUtils.ensureRunningOnSameThread`. |
-| **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` → `MinecraftServer.tickServer` every 50 ms; `MinecraftServer.waitUntilNextTick` drains the task queue in the slack | Every `ServerLevel`, every chunk, entity and block entity, the `PlayerList`. Serverbound packet handlers run here, not on Netty. One per server; singleplayer has exactly one. |
-| **Netty IO** (`Netty NIO IO #n`, `Netty Epoll IO #n`, `Netty Local IO #n`) | `EventLoopGroupHolder` | the `Connection` pipeline: split, decrypt, decompress, decode; encode, compress, encrypt | Bytes and `Packet` objects only. A handler that needs game state re-posts to the owning thread. *Local* is the in-process channel of singleplayer. |
-| **Worker-Main-n** | `Util.backgroundExecutor` — a `ForkJoinPool` sized to the core count | chunk generation and lighting via `ChunkTaskDispatcher`; section meshing via `SectionRenderDispatcher`; resource-reload *prepare* phases; chunk serialisation | Its own inputs. Results return to the owning thread as a `CompletableFuture` completed onto that thread's executor. Never `Level` state directly. |
-| **IO-Worker-n** | `Util.ioPool` | region file reads and writes through `IOWorker`, one `PriorityConsecutiveExecutor` per storage so writes to one file stay ordered | Files. `Util.nonCriticalIoPool` is the same shape for downloads and telemetry. |
-| **Sound engine** | `SoundEngineExecutor` | a `BlockableEventLoop` that owns OpenAL | The `SoundEngine` and its `Library`; see [Sound](../systems/client/sound.md). |
-| **Server Watchdog** | `DedicatedServer.initServer` (dedicated only) | `ServerWatchdog` | Nothing; it reads the tick timestamp and kills the JVM after `DedicatedServerProperties.maxTickTime`. |
+| **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` → `MinecraftServer.processPacketsAndTick` every `TickRateManager.nanosecondsPerTick` (50 ms by default); `MinecraftServer.waitUntilNextTick` drains the task queue in the slack | Every `ServerLevel`, every chunk, entity and block entity, the `PlayerList`. Serverbound *play* packet handlers run here, not on Netty. One per server; singleplayer has exactly one. |
+| **Netty IO** (`Netty NIO IO #n`, `Netty Epoll IO #n`, `Netty Kqueue IO #n`, `Netty Local IO #n`) | `EventLoopGroupHolder` | the `Connection` pipeline: split, decrypt, decompress, decode; encode, compress, encrypt — **and the whole handshake and login state machines** | Bytes and `Packet` objects — plus, in handshake and login, the login flow itself: `ServerHandshakePacketListenerImpl` and `ServerLoginPacketListenerImpl` never hop. A *play* handler that needs game state re-posts to the owning thread. *Local* is the in-process channel of singleplayer. |
+| **Worker-Main-n** | `Util.backgroundExecutor` — a `ForkJoinPool` sized to `availableProcessors()` minus one, clamped by `Util.maxAllowedExecutorThreads` and capped by the *max.bg.threads* property (`Util.getMaxThreads`) | chunk generation and lighting via `ChunkTaskDispatcher`; section meshing via `SectionRenderDispatcher`; resource-reload *prepare* phases; chunk serialisation | Its own inputs. Results return to the owning thread as a `CompletableFuture` completed onto that thread's executor. Never `Level` state directly. |
+| **IO-Worker-n** | `Util.ioPool` | region file reads and writes through `IOWorker`, one `PriorityConsecutiveExecutor` per storage so writes to one file stay ordered | Files. `Util.nonCriticalIoPool` (`Download-n`) is the same shape for downloads, telemetry and sound decoding. |
+| **Sound engine** | `SoundEngineExecutor` | a `BlockableEventLoop` that owns the per-source OpenAL calls | The `SoundEngine`'s channels; see [Sound](../systems/client/sound.md). Device open/close and buffer deletion stay on the Render thread. |
+| **Server Watchdog** | `DedicatedServer.initServer` (dedicated only, positive limit only) | `ServerWatchdog` | Nothing; it reads the tick timestamp and kills the JVM after `DedicatedServerProperties.maxTickTime`. |
 | **Server console handler** | `DedicatedServer.initServer` | reads stdin | Queues each line to the server thread as a command; runs nothing itself. |
+| **RCON Listener #n** / **RCON Client** | `RconThread` from `DedicatedServer.initServer`, when *enable-rcon* | accepts RCON sockets; one `RconClient` thread per connection | Sockets. Each command is queued to the server thread. Dedicated only. |
+| **Query Listener #n** | `QueryThreadGs4` from `DedicatedServer.initServer`, when *enable-query* | the GS4 query protocol | Its own cached status. Dedicated only. |
+| **Management server IO #n** | `ManagementServer`, built by `JsonRpc` in `server/Main` | a second, independent Netty event-loop group: the JSON-RPC/WebSocket management API and its heartbeat | Its own pipeline; management calls reach the game through the server's task queue. Dedicated only. |
 | Timer hack thread | `Util.startTimerHackThread` | sleeps forever | Nothing. Keeps the JVM's timer resolution high by existing. |
+
+## Situational threads
+
+Real, but nothing in the corpus hangs on them: *User Authenticator* (one per
+login, for the session-server call), *Chat-Filter-Worker*, *Server Pinger* and
+*Server Connector* (the multiplayer screen), *Telemetry-Sender*,
+`LanServerPinger` and its detector, *World Upgrader*, *Datafixer Bootstrap*
+(priority 1, so it yields to everything), the client and server shutdown
+hooks with `ClientShutdownWatchdog` behind them, and Swing's event dispatch
+thread when a dedicated server runs with its `MinecraftServerGui`.
 
 ## The rules that follow
 
 - **Two owners, one wire.** Client state is the Render thread's; server state
   is the Server thread's; in singleplayer they share a JVM and still only
-  talk through packets over the local channel.
-- **Handlers hop.** A packet is decoded on Netty and *handled* on the owning
-  game thread; `PacketUtils.ensureRunningOnSameThread` is the hop.
+  talk about the *world* through packets over the local channel. (Settings —
+  pause, view distance, publishing — do cross by direct call; see Anatomy.)
+- **Handlers hop.** A play packet is decoded on Netty and *handled* on the
+  owning game thread; `PacketUtils.ensureRunningOnSameThread` is the hop.
+  Handshake and login are the exception and run to completion on Netty.
 - **Workers compute, owners commit.** Chunk generation, lighting and meshing
   produce results on the worker pool; only the owning thread installs them.
 - **Waiting drains.** An owning thread never blocks idle: `BlockableEventLoop.managedBlock`
   keeps running its own queue while it waits on a future, which is why a
   server tick that waits for a chunk does not deadlock the chunk that needs
-  the server tick.
+  the server tick. `ServerChunkCache.MainThreadExecutor` is the extra event
+  loop that makes that work.
