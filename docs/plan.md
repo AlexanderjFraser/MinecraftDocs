@@ -83,7 +83,10 @@ sessions of pass 2.
    error in text mermaid version 11.6.0*. The planning session built
    `tools/check_mermaid.js` — it parses the *built* HTML with the site's own
    mermaid, so its verdict is the browser's — fixed the failures, and made it
-   a gate in `tools/deploy.sh`.
+   a gate in `tools/deploy.sh`. A diagram that does render is still scaled
+   down to the column, and a nine-lane trace is unreadable there;
+   `diagram-zoom.js` (planning session) opens any diagram at viewport size on
+   click.
 3. **Tables scroll sideways with room to spare.** mdBook's reading column is
    750px and cells pad 20px a side, so a four-column table of identifiers
    overflowed on any screen. `custom.css` (planning session) widens the
@@ -490,3 +493,22 @@ missing it — and removes the comment. The owner confirms or reorders
   lines in 40 pages, `;` → `#59;` and `#` → `#35;`).
   [pass4.md](pass4.md) and [pass5.md](pass5.md) opened; `CLAUDE.md`,
   `README.md`, `TEMPLATE.md` and `lectures.md` brought current.
+  **Second half, on two owner notes.** Diagrams that render are still too
+  small to read: `diagram-zoom.js` opens any diagram at viewport size on
+  click, on the page's own background. And the fact base was widened
+  *before* pass 3 rather than after it: session K had recorded one question
+  the decompile could not settle because Brigadier is not in the tree, and
+  that was the visible tip of a larger gap — pass 2 took every claim about
+  Brigadier, DataFixerUpper and authlib on trust, and every data-driven claim
+  (atlases, fonts, post-effect chains, shaders) against a tree that held the
+  jar's `data/` but not its `assets/`. Now staged, all gitignored: the jar's
+  `assets/` minus textures beside `data/`; Brigadier 1.3.10 and
+  DataFixerUpper 10.0.21 from their published source jars; authlib 9.0.75
+  decompiled from the launcher's jar with the PvP mod's Vineflower — by the
+  new `tools/fetch_libs.sh`. `verify_names.py` indexes `reference/libs/` and
+  twenty-seven allow-list entries were retired, so library names are now
+  checked at member level; all 19,745 names still resolve. The `execute
+  store` question is answerable and is on pass 4's list. Also noted: this
+  machine has 26.3 snapshots 8 and 9 installed, on authlib 10.0.77 and
+  Brigadier 1.3.11 — the 26.3 risk is near, and `fetch_libs.sh` carries the
+  versions to bump.

@@ -53,6 +53,48 @@
     overflow-x: auto;
 }
 
+/* Click to enlarge (diagram-zoom.js): the overlay sits on the page's own
+ * background so mermaid's light/dark palette still reads. */
+.content pre.mermaid svg,
+.content figure.map svg {
+    cursor: zoom-in;
+}
+.content pre.mermaid::after {
+    content: "click to enlarge";
+    display: block;
+    text-align: right;
+    font-size: 0.75em;
+    color: var(--icons);
+    font-family: inherit;
+}
+.diagram-lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+}
+.diagram-lightbox-panel {
+    box-sizing: border-box;
+    width: 96vw;
+    max-height: 96vh;
+    overflow: auto;
+    padding: 1em;
+    border-radius: 6px;
+    background: var(--bg);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+}
+.diagram-lightbox-panel svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-width: none !important;
+    max-height: 90vh;
+}
+
 /* Generated figures (inline SVG from tools/, see pass 3): full column,
  * text in the theme's foreground colour. */
 .content figure.map,

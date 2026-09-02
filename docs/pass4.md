@@ -29,6 +29,22 @@ entry first.
   exists. (If session A writes a lane linter, strike this.)
 - Pass 2's twelve lessons apply unchanged; the shape to watch remains the
   confident sentence — orderings, "only", "never", counts, and "X, not Y".
+- **Library facts are checkable now and were not in pass 2.**
+  `reference/libs/` holds Brigadier, DataFixerUpper and authlib sources
+  (`tools/fetch_libs.sh`) and `reference/26.2/assets/` the atlas, font,
+  shader and post-effect JSON. Pass 2 took every claim about them on trust;
+  pass 4 re-derives them, hardest on: `codecs-nbt-json` (DFU semantics —
+  `DataResult` partials, `MapCodec`, `Lifecycle`), `protocol-phases` and
+  `players-and-sessions` (authlib's session-server round trip),
+  `chat-and-signing` (profile keys and signature validation),
+  `brigadier-and-commands`, `execution-and-functions` and
+  `scoreboard-and-data` (parse, suggestions, `ContextChain`, the result
+  consumer), `models-and-atlases` and `text-and-fonts` (the atlas and font
+  JSON), and whatever pass 3 writes about post-processing.
+- **The `execute store` question** on `scoreboard-and-data` — what a failing
+  ordinary leaf command writes — is now answerable from Brigadier 1.3.10;
+  settle it and remove the page's "cannot be settled from the decompile"
+  note.
 
 ## Entries
 

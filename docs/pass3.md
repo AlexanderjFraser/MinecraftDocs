@@ -1366,7 +1366,10 @@ rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
 - **Post-processing** — `PostChain`, `PostPass`, `PostChainConfig`,
-  `UniformValue`, ~1,000 lines, named on no page. Part XI. *(session I)*
+  `UniformValue`, ~1,000 lines, named on no page. Part XI. *(session I)* The
+  six `post_effect` chains and the shader tree are now in
+  `reference/26.2/assets/` (planning session), so the page can be written
+  against the JSON it loads.
 - **Block-entity rendering** — `renderer/blockentity` with its 26 render
   states, plus `renderer/special`, ~3,300 lines; the same extract/submit
   split as entities, which no page says. Part XI. *(session I)*
