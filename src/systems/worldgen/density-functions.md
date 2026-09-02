@@ -9,11 +9,14 @@ a block position and returns a *double*, and everything about the shape of
 the world — continents, erosion, cliffs, caves, the underside of the
 floating islands — is that one function being large or small. `DensityFunction`
 is the interface, `DensityFunctions` is the library of nodes you build it
-out of, and a data pack assembles them as JSON. `Density` writes the
-convention down in three constants: `Density.SURFACE` is 0.0, so **positive
-means solid**; `Density.UNRECOVERABLY_DENSE` (64.0) and
-`Density.UNRECOVERABLY_THIN` (−64.0) are the values a node uses when it
-wants to end an argument.
+out of, and a data pack assembles them as JSON. The convention is that
+zero is the surface, so **positive means solid**, and ±64 are the values a
+node reaches for when it wants to end an argument. `Density` writes all
+three down as constants — `Density.SURFACE`,
+`Density.UNRECOVERABLY_DENSE`, `Density.UNRECOVERABLY_THIN` — and then
+nothing reads them: the class has no callers anywhere in 26.2, and the
+routers spell the same numbers as literals. It is documentation that
+happens to compile.
 
 The one sentence a player recognises: *the seed*. Everything on this page
 is deterministic given the seed and the data pack, and nothing on it
@@ -114,7 +117,7 @@ that pick biomes are [biomes](biomes.md).
   `ImprovedNoise`), `ImprovedNoise` (one octave of 3-D Perlin over a
   permutation table), `BlendedNoise` (the pre-1.18 terrain noise, itself a
   `DensityFunction.SimpleFunction`), `SimplexNoise`, `PerlinSimplexNoise`,
-  `NoiseUtils`. `Noises` holds the ~65 `ResourceKey`s for the parameter
+  `NoiseUtils`. `Noises` holds the 63 `ResourceKey`s for the parameter
   sets and `Noises.instantiate` builds one from a positional factory.
 
 ## When it runs
@@ -137,9 +140,13 @@ Three stages, and they are on different clocks:
 
 Nothing here is thread-safe below the chunk: a `NoiseChunk` mutates its own
 in-cell coordinates as it walks, keeps a plain hash map, and every cache
-holds mutable arrays. One `NoiseChunk` belongs to one chunk and one thread.
-Above it, `NormalNoise` and friends are read-only after construction and
-shared freely.
+holds mutable arrays. One `NoiseChunk` belongs to one chunk — but not to
+one *thread*: it is created at the biomes step and reused by the noise,
+surface and carver steps, which run as separate tasks on whichever worker
+picks them up. What makes that safe is that the chunk-status future chain
+never lets two of them overlap, not thread affinity. Above the chunk,
+`NormalNoise` and friends are read-only after construction and shared
+freely.
 
 ## The trace: one density function, from JSON to a number
 
@@ -184,8 +191,11 @@ sequenceDiagram
 2. **Seed.** `RandomState.create` forks the seed into named positional
    factories and calls `NoiseRouter.mapAll` with a wiring visitor. Each
    `DensityFunction.NoiseHolder` gets its `NormalNoise` filled in from
-   `RandomState.getOrCreateNoise`; `BlendedNoise.withNewRandom` re-seeds
-   the legacy noise and the end-islands node is rebuilt. The visitor's own
+   `RandomState.getOrCreateNoise` — except the two nether climate noises,
+   which the wiring visitor special-cases into
+   `NormalNoise.createLegacyNetherBiome` over a `LegacyRandomSource`, and
+   which therefore skip the memo entirely. `BlendedNoise.withNewRandom`
+   re-seeds the legacy noise and the end-islands node is rebuilt. The visitor's own
    memo means a subgraph referenced from five router fields is rewritten
    **once** and stays one object — which is what makes the caching in the
    next step pay.
@@ -201,7 +211,10 @@ sequenceDiagram
    `NoiseChunk.CacheAllInCell`, `NoiseChunk.BlendDensity` (or, if the
    `Blender` is empty, nothing at all); a `DensityFunctions.HolderHolder`
    is resolved to its value once instead of on every sample; the
-   beardifier marker becomes this chunk's `Beardifier`.
+   beardifier marker becomes this chunk's `Beardifier`; and
+   `DensityFunctions.BlendAlpha` and `DensityFunctions.BlendOffset` become
+   two flat caches the constructor has **already filled**, before any
+   router mapping ran.
    `NoiseChunk.fullNoiseDensity` is the final density with the beardifier
    added and one more `DensityFunctions.cacheAllInCell` around it.
 5. **The cell loop.** `NoiseChunk.initializeForFirstCellX` and
@@ -227,9 +240,14 @@ sequenceDiagram
 
 - **Called by:** `NoiseBasedChunkGenerator` (through `NoiseChunk`),
   `Aquifer.NoiseBasedAquifer`, `OreVeinifier`, `Climate.Sampler.sample`
-  from `MultiNoiseBiomeSource`, `SurfaceSystem`, and `Blender`.
-- **Calls into:** the *synth* package, and nothing else — a density
-  function reads no blocks, no chunks and no level.
+  from `MultiNoiseBiomeSource`, and `SurfaceRules.Context` through
+  `NoiseChunk.preliminarySurfaceLevel`. `Blender` is *not* a caller — it is
+  a callee, reached from the three blend nodes.
+- **Calls into:** the *synth* package, `CubicSpline` — and, through the
+  blend nodes only, `Blender`. That last one is the single exception to
+  "a density function reads nothing": `NoiseChunk.BlendDensity` and its two
+  siblings reach `BlendingData` harvested from **neighbouring chunks**.
+  Everything else reads no blocks, no chunks and no level.
 - **Crosses the network as:** nothing. Density functions are server-side
   only; the client is sent finished blocks
   ([what the client is told](../networking/what-the-client-is-told.md)).
@@ -237,8 +255,10 @@ sequenceDiagram
   `Registries.NOISE` (`NormalNoise.NoiseParameters`), and
   `Registries.DENSITY_FUNCTION_TYPE` (the *kinds* of node, a built-in
   registry bootstrapped by `DensityFunctions.bootstrap` — this is the one
-  a mod extends). All of it is dynamic-registry data, reloaded with the
-  world, and `NoiseGeneratorSettings` carries the router.
+  a mod extends). The first two are dynamic-registry data reloaded with the
+  world; the third is a **built-in** registry frozen at startup, which is
+  precisely why adding a new *kind* of node takes code and adding a new
+  graph takes a JSON file. `NoiseGeneratorSettings` carries the router.
 
 ## Invariants and surprises
 
@@ -251,18 +271,33 @@ sequenceDiagram
   `NoiseChunk.wrapNew` install a `NoiseChunk.CacheOnce` in that slot; sample
   the registry graph directly and every cache is a no-op. Worldgen
   performance lives in a switch statement, not in the data.
-- **The caches are keyed on object identity, not position.** Every one of
-  them begins by checking that the context *is* the `NoiseChunk`; a
-  `DensityFunction.SinglePointContext` — which is what `Climate.Sampler`,
-  `Aquifer` and the surface search use — falls straight through to the
-  leaves. And `NoiseChunk.NoiseInterpolator` throws outright if it is
-  sampled while `NoiseChunk` is not in its interpolation loop.
-- **Only the 3-D functions are interpolated.** The *interpolated* marker
-  sits on the expensive ones, evaluated at cell corners
-  (`NoiseSettings.getCellWidth` × `NoiseSettings.getCellHeight`) and
-  trilinearly filled in. The 2-D shaping terms are behind *flat_cache* and
-  *cache_2d* instead and are exact per column. "Minecraft terrain is a
-  lattice" is half true, and it is the expensive half.
+- **Three of the six caches are keyed on object identity; the other three
+  are not, and that is the load-bearing half.**
+  `NoiseChunk.NoiseInterpolator`, `NoiseChunk.CacheAllInCell` and
+  `NoiseChunk.CacheOnce` each begin by checking that the context *is* the
+  `NoiseChunk` and delegate to the wrapped function otherwise — they are
+  meaningful only inside the cell loop, and `NoiseChunk.NoiseInterpolator`
+  throws outright if sampled while `NoiseChunk` is not interpolating.
+  `NoiseChunk.FlatCache` and `NoiseChunk.Cache2D` do the opposite: they key
+  on **position alone** and will happily answer a
+  `DensityFunction.SinglePointContext`. (`NoiseChunk.Cache2D` could not do
+  otherwise — it is the one nested class here that is *static*, so it holds
+  no reference to the chunk to compare against.) That is exactly what makes
+  `NoiseChunk.cachedClimateSampler` and
+  `NoiseChunk.preliminarySurfaceLevel` cheap: both sample the wrapped graph
+  with single-point contexts and both hit the 2-D caches every time. A
+  single-point sample is not a cache bypass — it is a cache bypass for the
+  3-D caches only.
+- **Only the 3-D functions are interpolated — and the 2-D ones are on a
+  lattice of their own.** The *interpolated* marker sits on the expensive
+  terms, evaluated at cell corners (`NoiseSettings.getCellWidth` ×
+  `NoiseSettings.getCellHeight`) and trilinearly filled in. The 2-D shaping
+  terms sit behind *flat_cache*, which is **not** exact per column:
+  `NoiseChunk.FlatCache` fills its array by sampling at the quart corner
+  with y = 0 and reads back through `QuartPos.fromBlock`, so one value
+  serves a 4×4 block group. Only *cache_2d* is genuinely per column, and in
+  vanilla it always sits *inside* a flat cache. "Minecraft terrain is a
+  lattice" is true twice, at two resolutions.
 - **The bounds are a static analysis that talks back.**
   `DensityFunction.minValue` and `DensityFunction.maxValue` propagate at construction, fold
   constants, and log a warning when a MIN or MAX is built over two ranges
@@ -272,23 +307,40 @@ sequenceDiagram
   its codec throws. It exists only in memory; writing the graph back out
   goes through `DensityFunction.CODEC`, which recognises it and emits the
   id string it came from.
-- **The rewrite is reversible.** The caches `NoiseChunk` installs still
-  implement `DensityFunctions.MarkerOrMarked`, so they report their
-  original marker type and rebuild as plain markers — a wrapped graph can
-  be written back out, and wrapping is idempotent.
+- **The rewrite is reversible, for the caches.** The six caches
+  `NoiseChunk` installs implement `DensityFunctions.MarkerOrMarked`, so
+  they report their original marker type and rebuild as plain markers. The
+  blend nodes are not reversible: `DensityFunctions.BlendAlpha` comes back
+  wrapped in a flat cache it did not start inside.
 - **One noise supplies both horizontal offsets.**
   `DensityFunctions.ShiftB` samples the same parameters as
   `DensityFunctions.ShiftA` with its axes swapped, and the registry id
   behind `Noises.SHIFT` is *offset*, not *shift*.
 - **`DensityFunctions.Spline.compute` allocates** a
   `DensityFunctions.Spline.Point` per call, because `CubicSpline` wants a
-  value and not a context. That is why vanilla always wraps splines in a
-  flat cache: they are the 2-D shaping terms and must run once per column.
+  value and not a context. That is why all three of vanilla's splines are
+  built through `NoiseRouterData.splineWithBlending`, which wraps them in a
+  flat cache over a *cache_2d*: they are the 2-D shaping terms and must not
+  run per block.
 - **`DensityFunctions.TransformerWithContext` has no implementation** in
   26.2. It reads as load-bearing and is dead.
 - **Two vocabularies for the same six functions.** `NoiseRouter` calls them
-  *vegetation* and *ridges*; `Climate.Sampler` calls the same ones
-  *humidity* and *weirdness*.
+  *vegetation*, *ridges* and *continents*; `Climate.Sampler` calls the same
+  three *humidity*, *weirdness* and *continentalness*.
+- **A marker delegates its value but not its bounds.**
+  `DensityFunctions.Marker` passes `DensityFunction.compute` and
+  `DensityFunction.fillArray` straight through, and then reports ±infinity for its own minimum and maximum when
+  its type is *blend_density* — the one place a marker is not transparent.
+- **The rewrite memo is structural, not by reference.** Both visitors key
+  their memo map on the node itself, and the nodes are records — so two
+  separately-parsed but identical subgraphs are *merged* into one object,
+  and in `NoiseChunk` that means they end up sharing one cache instance.
+- **The seeded-but-unwrapped router does run, every time you open F3.**
+  `NoiseBasedChunkGenerator.addDebugScreenInfo` samples
+  `RandomState.router` with single-point contexts to fill the debug noise
+  readout. It is the one production path that samples the graph with every
+  marker a no-op — and the reason the once-rewritten graph has to stay
+  safe to sample from anywhere.
 
 ## Where to look
 

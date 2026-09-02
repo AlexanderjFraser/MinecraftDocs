@@ -93,6 +93,7 @@
   - [Biomes](systems/worldgen/biomes.md)
   - [Features and placement](systems/worldgen/features-and-placement.md)
   - [Structures](systems/worldgen/structures.md)
+  - [Hand-built structures](systems/worldgen/hand-built-structures.md)
 - [XIII · Commands and data packs]()
   - [Brigadier and commands](systems/commands/brigadier-and-commands.md)
   - [Execution and functions](systems/commands/execution-and-functions.md)

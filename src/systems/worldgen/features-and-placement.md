@@ -19,10 +19,13 @@ once, for the whole world, before a single chunk exists.
 
 - **`Feature`** — the algorithm. One abstract method, `Feature.place`,
   taking a `FeaturePlaceContext` and returning whether it wrote anything.
-  About sixty-five instances live as constants on the class (`Feature.TREE`,
-  `Feature.ORE`, `Feature.LAKE`, `Feature.GEODE`, `Feature.SIMPLE_BLOCK`…),
-  registered into `BuiltInRegistries.FEATURE`. The shared write helpers are
-  `Feature.setBlock` and `Feature.safeSetBlock`.
+  Sixty-three instances are registered into `BuiltInRegistries.FEATURE` as
+  constants on the class (`Feature.TREE`, `Feature.ORE`, `Feature.LAKE`,
+  `Feature.GEODE`, `Feature.SIMPLE_BLOCK`…) — though being a `Feature`
+  subclass does not imply being registered: `EndPodiumFeature` is
+  constructed directly by the dragon fight and appears in no registry.
+  The shared write helpers are `Feature.setBlock` and
+  `Feature.safeSetBlock` — though `TreeFeature` overrides the first.
 - **`FeatureConfiguration`** — the parameters, per feature type;
   `NoneFeatureConfiguration` for the ones that need none.
 - **`ConfiguredFeature`** — a record of a feature and its configuration. No
@@ -43,8 +46,16 @@ once, for the whole world, before a single chunk exists.
   `HeightmapPlacement` and `HeightRangePlacement` decide Y,
   `RandomOffsetPlacement` jitters, `EnvironmentScanPlacement` searches up
   or down for a surface, `FixedPlacement` names absolute positions.
-  `PlacementContext` is what they read the world through.
-- **`GenerationStep.Decoration`** — the eleven steps, in order:
+  `PlacementContext` is what they read the world through, and
+  `PlacementModifierType` is the registry that makes the set data-driven:
+  fifteen constants, of which the fifteenth,
+  `CountOnEveryLayerPlacement`, fits neither shape — it is deprecated,
+  extends `PlacementModifier` directly, and does its own scatter and
+  cave-layer scan inside `PlacementModifier.getPositions`.
+- **`GenerationStep.Decoration`** — the eleven steps, in order (though a
+  biome's list is not *capped* at eleven: the driver and the sorter both
+  size themselves from the longest list they find, so a data pack can
+  declare a twelfth that runs after top-layer modification):
   raw generation, lakes, local modifications, underground structures,
   surface structures, strongholds, underground ores, underground
   decoration, fluid springs, vegetal decoration (trees), top-layer
@@ -56,28 +67,37 @@ once, for the whole world, before a single chunk exists.
   `FeatureSorter.StepFeatureData` with an index lookup.
   `ChunkGenerator.featuresPerStep` memoises it and
   `ChunkGenerator.validate` forces it at world load.
-- **Trees** — `TreeFeature` with `TreeConfiguration`, which is assembled
-  from five pluggable parts: a `TrunkPlacer` (which writes the logs and
-  returns `FoliagePlacer.FoliageAttachment`s), a `FoliagePlacer`, an
-  optional `RootPlacer`, a `FeatureSize` (the clearance profile the tree
+- **Trees** — `TreeFeature` with `TreeConfiguration`, nine fields
+  assembled from five pluggable parts: a `TrunkPlacer` (which writes the
+  logs and returns `FoliagePlacer.FoliageAttachment`s), a `FoliagePlacer`,
+  an optional `RootPlacer`, a `FeatureSize` (the clearance profile the tree
   needs at each height) and a list of `TreeDecorator`s that run afterwards
-  over the blocks that were placed. Blocks come from a
-  `BlockStateProvider`. The other caller is `TreeGrower` — now a single
+  over the blocks that were placed. Blocks come from **three** separate
+  `BlockStateProvider`s — trunk, foliage, and
+  `TreeConfiguration.belowTrunkProvider`, the dirt column laid under the
+  trunk. The other caller is `TreeGrower` — now a single
   final class with static constants, not a hierarchy — driven by
   `SaplingBlock.advanceTree`.
 - **Supporting value types** — `BlockPredicate` (the
   `world/level/levelgen/blockpredicates` package), `HeightProvider`,
-  `IntProvider`, `VerticalAnchor`, all resolved against a
-  `WorldGenerationContext`.
+  `IntProvider` and `VerticalAnchor`. Only two of them take a
+  `WorldGenerationContext`: `HeightProvider.sample` and
+  `VerticalAnchor.resolveY`. An `IntProvider` needs only a random source,
+  and a `BlockPredicate` is a predicate over a level and a position.
 
 ## When it runs
 
 `ChunkStatus.FEATURES`, on the worldgen executor, and it is the **only**
-step in the generation pyramid with a non-zero block write radius: one, so
-a tree may cross into a neighbour ([the pipeline](../world/chunk-generation-pipeline.md)).
-`ChunkStatusTasks.generateFeatures` primes the four final heightmaps first —
-that is what `HeightmapPlacement` reads — and finishes with
-`Blender.generateBorderTicks`.
+step in the generation pyramid with a *positive* block write radius: one,
+so a tree may cross into a neighbour
+([the pipeline](../world/chunk-generation-pipeline.md)). The terrain steps
+declare zero and everything else declares minus one, which forbids even the
+centre chunk. `ChunkStatusTasks.generateFeatures` primes the four final
+heightmaps first — though two of vanilla's `HeightmapPlacement` presets
+read the *worldgen* heightmaps instead, which are not among those four —
+and finishes with `Blender.generateBorderTicks`. `WorldGenRegion.getHeight`
+returns the stored height **plus one**, so a heightmap placement lands on
+top of the surface rather than in it.
 
 The other entry is sapling growth, on the **server main thread**, from
 `SaplingBlock.randomTick` or bone meal. That path skips the placement layer
@@ -129,7 +149,10 @@ sequenceDiagram
    unioned and intersected with the biome source's possible biomes. Every
    `PlacedFeature` any of those biomes lists for this step is collected —
    by its global index — and the indices are **sorted**. That sort is the
-   execution order, and it is the same everywhere in the world.
+   execution order, and it is the same for every chunk **in that
+   dimension**: `ChunkGenerator.featuresPerStep` is memoised per generator
+   and built from that generator's possible biomes, so the Nether's order
+   has nothing to do with the Overworld's.
 4. **Structures first.** Within each step, structures at that step are
    placed before its features ([structures](structures.md)).
 5. **The modifier fold.** `PlacedFeature.placeWithBiomeCheck` starts a
@@ -137,8 +160,11 @@ sequenceDiagram
    modifier in list order. For a plains oak: a count that yields zero or one
    attempt; `InSquarePlacement` throwing it somewhere in the 16×16
    footprint; a surface-water-depth filter; a heightmap placement that
-   **finally sets Y**; `BiomeFilter`; and, for the checked variants, a
-   block predicate asking whether a sapling would survive there.
+   **finally sets Y**; a block predicate asking whether an oak sapling
+   would survive there; and `BiomeFilter` last. Vanilla is not consistent
+   about those last two — `VegetationPlacements.treePlacementBase` ends
+   with the biome filter, and the survival-checked variant appends its
+   predicate *after* it — so both orders ship.
 6. **The biome check happens twice.** A feature was selected because *some*
    biome in the 3×3 wanted it; `BiomeFilter` re-reads the biome at the
    scattered position and asks whether *that* biome's generation settings
@@ -151,9 +177,12 @@ sequenceDiagram
 8. **The tree reads before it writes.** `TreeFeature` collects the blocks it
    places into four sets as it goes. First it negotiates a height: the trunk
    placer proposes one, and a clearance scan tests every column the
-   `FeatureSize` profile demands, using the replaceable-by-trees tag. A
-   blocked layer clips the height, and a clipped height below the profile's
-   minimum **abandons the tree with nothing written**.
+   `FeatureSize` profile demands. "Free" is generous — air, anything in the
+   replaceable-by-trees tag, **or an existing log** — which is how a new
+   tree grows through an old one. A blocked layer clips the height, and a
+   clipped height below the profile's `FeatureSize.minClippedHeight`
+   **abandons the tree with nothing written**; where the profile declares
+   no minimum, *any* clipping at all abandons it.
 9. **Trunk, then foliage, then decorators.** `TrunkPlacer.placeTrunk` writes
    the logs and returns the attachment points; `FoliagePlacer.createFoliage`
    writes leaf rows at each; each `TreeDecorator` then runs over the
@@ -187,11 +216,16 @@ sequenceDiagram
 - **A datapack can make the world refuse to load.** Feature order is
   global: every biome's list contributes "this before that" edges to one
   graph, and `FeatureSorter` topologically sorts it. Two biomes listing the
-  same two features in opposite orders form a cycle, and generation throws
-  rather than starting. The sorter will even re-run itself, dropping one
-  biome at a time, to name the smallest offending set — and
-  `ChunkGenerator.validate` forces it at world load so the failure is not
-  saved for the first chunk.
+  same two features in opposite orders form a cycle, and the sort throws
+  rather than returning an order. The sorter will even re-run itself,
+  dropping one source at a time, to name the smallest offending set. Where
+  you find out depends on the side: the **client** calls
+  `ChunkGenerator.validate` from `WorldOpenFlows` while opening the world,
+  catches the exception and offers safe mode, so the world refuses to open.
+  A dedicated server never calls `ChunkGenerator.validate` at all — there
+  the cycle surfaces later, as the crash report
+  `ChunkGenerator.applyBiomeDecoration` wraps around the first chunk that
+  tries to decorate.
 - **`CountPlacement` does not scatter.** A repeating placement emits the
   *same* position N times; the scatter is a separate modifier downstream.
   List order is load-bearing: count-then-scatter gives ten trees in ten
@@ -204,12 +238,21 @@ sequenceDiagram
   biome filter in an inline or nested placed feature is an error, not a
   no-op. That is why the "checked" tree placements carry no biome filter and
   the biome-level ones do.
-- **Writes outside the 3×3 window fail silently.** `Feature.place` checks
-  the origin, but each individual write is re-checked by `WorldGenRegion`
-  and simply logged and dropped if it lands too far away. A canopy that
-  would reach two chunks out is **truncated**, not moved and not aborted.
-  The mirror guard on reads is why cascading worldgen is now structurally
-  impossible: a region cannot see a chunk outside its declared radius.
+- **Writes outside the 3×3 window are dropped and logged.** `Feature.place`
+  checks the origin, but each individual write is re-checked by
+  `WorldGenRegion.ensureCanWrite`, which logs — and pauses, in a
+  development environment — and does not write. A canopy that would reach
+  two chunks out is **truncated**, not moved and not aborted.
+- **Reads are guarded in a different place, and further out.** A read
+  outside the write zone is only *warned* about by
+  `WorldGenRegion.warnIfReadOutsideWriteZone`; it still happens. What makes
+  cascading worldgen structurally impossible is
+  `WorldGenRegion.getChunk`, which **throws** rather than loading once the
+  request passes the step's declared dependency radius — for
+  `ChunkStatus.FEATURES` that is nine chunks of chessboard distance, and
+  what it may see there is a chunk at `ChunkStatus.STRUCTURE_STARTS`. So a
+  feature can legally read much further than it can write, and beyond that
+  it crashes rather than generating anything.
 - **A chunk keeps receiving blocks after its own features step.** All eight
   neighbours write into it when they decorate. What makes that safe is the
   dependency graph: lighting requires the whole ring to have decorated
@@ -227,9 +270,12 @@ sequenceDiagram
 - **Structures are clipped to one chunk; features are not.** A structure
   piece gets an explicit writable box covering exactly the centre chunk;
   a feature gets only the softer 3×3 write-zone check.
-- **Every random draw is counted.** `WorldgenRandom` tracks how many times
-  it has been asked, which is why inserting one extra draw anywhere in a
-  feature changes every feature after it in that step.
+- **Features in a step do *not* share a random stream.** Every one is
+  reseeded absolutely before it runs — `WorldgenRandom.setFeatureSeed` is
+  the decoration seed plus the global index plus ten thousand times the
+  step — so an extra draw inside a feature perturbs the rest of *that*
+  feature and nothing after it. `WorldgenRandom` does keep a draw counter,
+  and in 26.2 nothing reads it.
 
 ## Where to look
 

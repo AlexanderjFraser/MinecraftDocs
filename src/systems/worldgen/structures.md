@@ -50,9 +50,16 @@ flat shelf of ground it is standing on that was not there before.*
   written-down "nothing here".
 - **`StructurePiece`** — one placeable box, with
   `StructurePiece.postProcess` as the write-into-the-world call.
-  `StructurePiecesBuilder` accumulates them (and is the
-  `StructurePieceAccessor` the assembler talks to); `StructurePieceType` is
-  the registry that deserialises them. Concrete bases:
+  `StructurePiecesBuilder` accumulates them; `StructurePieceType` is the
+  registry that deserialises them. There are **two** assemblers with two
+  collision models: the jigsaw placer below, which collides candidate
+  boxes against a `VoxelShape` of remaining free space, and the older
+  recursive `StructurePiece.addChildren` grammar — strongholds, mineshafts,
+  fortresses, mansions — which grows pieces through
+  `StructurePieceAccessor.findCollisionPiece` against the boxes placed so
+  far. This page traces the first; the second, which fifteen of the sixteen
+  structure types use, is
+  [hand-built structures](hand-built-structures.md). Concrete bases:
   `TemplateStructurePiece` (one `.nbt` template),
   `PoolElementStructurePiece` (jigsaw), `ScatteredFeaturePiece`.
 - **Jigsaw** — `JigsawStructure` holds the start pool, the start jigsaw
@@ -71,7 +78,9 @@ flat shelf of ground it is standing on that was not there before.*
   `StructureTemplate.Palette`s of `StructureTemplate.StructureBlockInfo`,
   entities, and `StructureTemplate.JigsawBlockInfo` for the connectors.
   `StructureTemplateManager` loads them, in order, from the world's
-  generated directory, the gametest source, then data packs.
+  generated directory, the gametest source, then data packs — and the
+  folder is *structure*, singular, where a 1.21-era reader will expect
+  *structures*.
   `StructurePlaceSettings` carries rotation, mirror, bounding box,
   `LiquidSettings` and an ordered list of `StructureProcessor`s —
   `RuleProcessor` with its `ProcessorRule`s, `BlockRotProcessor`,
@@ -83,7 +92,12 @@ flat shelf of ground it is standing on that was not there before.*
   `StructureManager.addReferenceForStructure`,
   `StructureManager.getStructureAt`), with
   `StructureManager.forWorldGenRegion` for a generating chunk. `StructureCheck`
-  is the presence cache that answers `StructureCheckResult`.
+  is the presence cache that answers `StructureCheckResult`, and it is two
+  caches over a partial-NBT reader: chunk → structure → **reference count**
+  (which is what makes "unreferenced only" searches possible), and
+  structure → chunk → would-generate. On a miss it reads the chunk off disk
+  through `ChunkScanAccess`, pulling only the data version and the
+  structure starts and data-fixing that fragment alone.
 
 ## When it runs
 
@@ -154,9 +168,13 @@ sequenceDiagram
    here. **Nothing about the world is consulted** — no biome, no terrain,
    no chunk data.
 2. **Which village.** The set has five entries, so a second `WorldgenRandom`
-   picks one by weight. If it fails — almost always the biome filter — that
-   entry is removed, its weight subtracted, and the roll repeated. A chunk
-   on a biome border therefore still gets *a* village rather than none.
+   picks one by weight. If it fails — most often the biome filter, but also
+   an empty start pool, a missing start jigsaw or a structure that would
+   sit too close to the world height limits — that entry is removed, its
+   weight subtracted, and the roll repeated. A chunk on a biome border
+   therefore usually gets *a* village where a single-candidate set would
+   get none; if every entry fails, the loop drains and the cell stays
+   empty.
 3. **The start point.** `Structure.generate` calls
    `Structure.findValidGenerationPoint`, which is
    `Structure.findGenerationPoint` filtered through `Structure.isValidBiome`
@@ -170,7 +188,9 @@ sequenceDiagram
    `JigsawPlacement.addPieces` builds a free-space shape around the centre
    and hands it to `JigsawPlacement.Placer`. For each jigsaw block of a
    placed piece — shuffled, then sorted by selection priority — the target
-   pool's shuffled templates are tried, then the *fallback* pool's;
+   pool's shuffled templates are tried, then the *fallback* pool's — except
+   at the depth limit, where the target pool is skipped entirely and only
+   the fallback is offered, which is exactly how a village stops growing;
    `JigsawBlock.canAttach` requires opposed faces and matching names, and an
    aligned joint additionally requires matching rotation. Y comes from the
    `StructureTemplatePool.Projection`: rigid onto rigid keeps the parent's
@@ -191,9 +211,11 @@ sequenceDiagram
    bounding box overlaps it. Discovery is outside-in: a village never walks
    its own pieces to announce itself.
 7. **The ground bends.** At `ChunkStatus.NOISE`,
-   `Beardifier.forStructuresInChunk` reads those references, keeps the rigid
-   pieces as `Beardifier.Rigid` boxes plus the nearby junctions, and adds a
-   density contribution from a precomputed kernel. `TerrainAdjustment` picks
+   `Beardifier.forStructuresInChunk` reads those references and turns the
+   nearby pieces into `Beardifier.Rigid` boxes plus their junctions. The
+   *rigid* filter applies only to jigsaw pieces, which have a projection to
+   test; a desert pyramid or a mineshaft corridor contributes
+   unconditionally. `TerrainAdjustment` picks
    the shape. **No blocks are edited** — the shelf under a village is the
    noise field being told to be solid there
    ([the worldgen pipeline](worldgen-pipeline.md)).
@@ -229,9 +251,13 @@ sequenceDiagram
 - **Calls into:** `StructureTemplateManager`, the placed-feature path for
   feature pool elements, `ChunkGenerator.getFirstFreeHeight`, and
   `BiomeSource.getNoiseBiome` for the biome filter.
-- **Crosses the network as:** nothing directly. Structures reach the client
-  as ordinary blocks. Only the *effects* travel — a filled map, a spawner's
-  mobs.
+- **Crosses the network as:** nothing, during generation — structures reach
+  the client as ordinary blocks, and only the *effects* travel, a filled map
+  or a spawner's mobs. The jigsaw *editor* is the exception, and it is a
+  serverbound one: `ServerboundSetJigsawBlockPacket` and
+  `ServerboundJigsawGeneratePacket` let a creative player run the assembler
+  live against a loaded `ServerLevel`, and `JigsawBlockEntity` syncs its
+  pool, target and joint back to the client.
 - **Data-driven by:** `Registries.STRUCTURE`, `Registries.STRUCTURE_SET`,
   `Registries.TEMPLATE_POOL` and `Registries.PROCESSOR_LIST` (all data-pack
   registries, bootstrapped from the Java in the data package —
@@ -242,26 +268,45 @@ sequenceDiagram
 
 ## Invariants and surprises
 
-- **The grid is decided by seed arithmetic alone.** A village's candidate
-  chunk falls out of the level seed, the spacing and the salt, with no
-  reference to the world. The biome test happens afterwards and can veto
-  it, leaving the cell empty — the slot still exists, the village does not.
-- **Assembly is lazy, and may run twice.** `Structure.GenerationStub` holds
-  the pieces as an unexecuted consumer, so `StructureCheck` can answer "a
-  village exists here" without ever laying one out — and `Structure.generate`
-  then lays it out again. Both runs are deterministic and agree.
+- **The grid is decided by seed arithmetic alone — for the spread
+  placement.** A village's candidate chunk falls out of the level seed, the
+  spacing and the placement's salt, with no reference to the world. The
+  biome test happens afterwards and can veto it, leaving the cell empty —
+  the slot still exists, the village does not. Two qualifiers: the *other*
+  placement type is not like this at all, since
+  `ConcentricRingsStructurePlacement` positions strongholds by asking
+  `BiomeSource.findBiomeHorizontal` for real biome positions; and even for
+  villages a coarse biome test has already happened once per world, when
+  `ChunkGeneratorStructureState` filtered out the sets no biome in this
+  dimension can host.
+- **Assembly is half lazy, and may run twice.** `Structure.GenerationStub`
+  holds the *child expansion* as an unexecuted consumer, so `StructureCheck`
+  can answer "a village exists here" without laying the village out — and
+  `Structure.generate` then lays it out again. What is not deferred is the
+  centre: the start template, its rotation and its ground height are all
+  resolved before the stub is returned. Both runs are deterministic and
+  agree, because the generation context rebuilds its `WorldgenRandom` from
+  the seed and the chunk position.
 - **`/locate` can drive world generation from the server thread.** On a
-  cache miss `StructureCheck` re-runs the placement test; on
+  cache miss `StructureCheck` re-runs the *start-point and biome* test —
+  the grid arithmetic having already produced the candidate chunk — and on
   `StructureCheckResult.CHUNK_LOAD_NEEDED` it loads the chunk to structure
   starts, synchronously, for up to a hundred expanding rings of grid cells.
   That is the pause after the command.
-- **Absence is written to disk.** An invalid start is persisted with an id
-  of *INVALID*, so a partial chunk scan can prove there is nothing there
-  without regenerating it.
+- **Absence is written to disk — as a hole, not as a marker.** An invalid
+  start is never stored at all: `ChunkGenerator.tryGenerateStructure` calls
+  `StructureManager.setStartForStructure` only when the start is valid, and
+  `StructureStart.INVALID_START` is dropped on the floor. What lets a
+  partial scan prove absence is that every saved chunk carries a *starts*
+  compound unconditionally, empty or not — so a structure simply missing
+  from that map is a definite "not here". The *INVALID* ids that do appear
+  are legacy, and `StructureCheck` explicitly skips them while loading.
 - **Terrain adaptation writes no blocks.** It is a density term added by
-  `Beardifier` at `ChunkStatus.NOISE`, kernel-weighted, with the junctions
-  between pieces contributing at a lower weight than the pieces — which is
-  where the smooth shoulders under village streets come from.
+  `Beardifier` at `ChunkStatus.NOISE`. Only two of `TerrainAdjustment`'s
+  five values use the 24³ kernel the name "beard" refers to — the two beard
+  modes, where junctions contribute at half the weight of the pieces, which
+  is where the smooth shoulders under village streets come from. *Bury* and
+  *encapsulate* use a plain linear distance falloff instead.
 - **The 128-block cage is enforced when the data pack loads**, not when the
   structure generates: a jigsaw whose maximum distance plus the terrain
   margin exceeds `JigsawStructure.MAX_TOTAL_STRUCTURE_RANGE` fails
@@ -282,9 +327,24 @@ sequenceDiagram
   `ServerLevel.getStructureManager` is the `.nbt` template loader owned by
   the server. And there is a second, unrelated `StructureCheck` in the
   entity-variant package.
-- **Dead code ships in this package.** `PostPlacementProcessor`,
-  `PieceGenerator` and `PieceGeneratorSupplier` are referenced by nothing;
-  the live hook is `Structure.afterPlace`.
+- **Dead code ships in this package.** `PostPlacementProcessor` is
+  referenced by nothing at all, and `PieceGenerator` and
+  `PieceGeneratorSupplier` are referenced only by each other; the live hook
+  is `Structure.afterPlace`.
+- **A structure's bounding box grows by twelve the moment it adapts
+  terrain.** `Structure.adjustBoundingBox` inflates the box whenever
+  `TerrainAdjustment` is anything but *none*, and that inflated box is what
+  the 17×17 reference scan, `StructureManager.getStructureAt` and the spawn
+  overrides all see. The margin the beardifier needs is therefore also the
+  margin in which a village counts as "here" for mob spawning.
+- **A structure start can only be referenced once.**
+  `StructureStart.getMaxReferences` is one, which is what stops two
+  treasure maps from pointing at the same monument: an exploration map asks
+  for an *unreferenced* structure and takes a reference when it finds one.
+- **One structure re-derives itself on every load.** Ocean monuments throw
+  their saved pieces away and regenerate them from the seed in
+  `StructureStart.loadStaticStart`; every other structure deserialises the
+  pieces it saved.
 
 ## Where to look
 

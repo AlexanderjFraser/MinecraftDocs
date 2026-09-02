@@ -18,8 +18,8 @@ lines, a couple of blocks apart, and different systems use different ones.
 
 ## The data it owns
 
-- **`Biome`** — a final class (not a record), built only through
-  `Biome.BiomeBuilder`, holding exactly five things:
+- **`Biome`** — a final class (not a record) with a private constructor,
+  holding exactly five things:
   `Biome.climateSettings` (the private record `Biome.ClimateSettings`:
   precipitation, temperature, `Biome.TemperatureModifier`, downfall),
   `Biome.attributes` (an `EnvironmentAttributeMap`), `Biome.specialEffects`,
@@ -45,8 +45,12 @@ lines, a couple of blocks apart, and different systems use different ones.
   (`EnvironmentAttributes.PIGLINS_ZOMBIFY`,
   `EnvironmentAttributes.CREAKING_ACTIVE`,
   `EnvironmentAttributes.VILLAGER_ACTIVITY`…). The biome is the second of
-  the four layers `EnvironmentAttributeSystem` stacks, and the only one
-  that is positional; the system itself, the modifier model and the
+  the four *kinds* of layer `EnvironmentAttributeSystem` stacks — and the
+  only positional one, since the dimension is a constant and the timeline
+  and weather layers are time-based. The count of actual layers is larger
+  and varies: one per timeline the dimension declares, one per weather
+  attribute, and on the client two more that `ClientLevel` adds for sky
+  colour and sky light. The system itself, the modifier model and the
   timelines that drive it are
   [environment attributes and timelines](../world/environment-attributes-and-timelines.md).
   Note the one restriction that lands on biomes:
@@ -55,8 +59,11 @@ lines, a couple of blocks apart, and different systems use different ones.
 - **`BiomeGenerationSettings`** — a `HolderSet` of
   `ConfiguredWorldCarver`s and one `HolderSet` of `PlacedFeature`s **per
   `GenerationStep.Decoration` ordinal**. Read by
-  [features and placement](features-and-placement.md);
-  `BiomeGenerationSettings.getBoneMealFeatures` is the one runtime use.
+  [features and placement](features-and-placement.md).
+  `BiomeGenerationSettings.getCarvers` is read at `ChunkStatus.CARVERS` and
+  `BiomeGenerationSettings.hasFeature` by `BiomeFilter` during decoration;
+  `BiomeGenerationSettings.getBoneMealFeatures` is the only read from
+  outside worldgen, and its one caller is `GrassBlock`.
 - **`MobSpawnSettings`** — `MobSpawnSettings.creatureGenerationProbability`,
   a weighted list of `MobSpawnSettings.SpawnerData` per `MobCategory`, and
   `MobSpawnSettings.MobSpawnCost` per entity type. Read by `NaturalSpawner`
@@ -65,21 +72,42 @@ lines, a couple of blocks apart, and different systems use different ones.
   implementations, their codecs registered by `BiomeSources.bootstrap`:
   `FixedBiomeSource`, `CheckerboardColumnBiomeSource`,
   `MultiNoiseBiomeSource`, `TheEndBiomeSource`.
-  `BiomeSource.possibleBiomes` is memoised and used as a pre-filter
-  everywhere.
+  `BiomeSource.possibleBiomes` is memoised and used as a pre-filter by the
+  structure-set filter and by `/locate biome` — but *not* by the surface
+  step, which reads the biomes actually written into the chunk palettes
+  through `ChunkAccess.collectBiomesInPalette` instead. Beyond
+  `BiomeSource.getNoiseBiome` there are three search entry points:
+  `BiomeSource.findClosestBiome3d`, `BiomeSource.findBiomeHorizontal` and
+  `BiomeSource.getBiomesWithin`.
 - **`Climate`** — the search space. `Climate.Sampler` is a record of six
   `DensityFunction`s plus a spawn target; `Climate.TargetPoint` is six
   quantised longs; `Climate.Parameter` is an interval;
   `Climate.ParameterPoint` is six intervals **plus a scalar offset**;
   `Climate.ParameterList` holds the pairs and builds a `Climate.RTree`.
   `Climate.quantizeCoord` multiplies by 10,000 and truncates, so the whole
-  search is integer arithmetic.
+  search is integer arithmetic. `Climate.PARAMETER_COUNT` is seven, and
+  `Climate.RTree.create` refuses a point that does not supply seven.
+  The same class also finds the **world spawn**: `Climate.SpawnFinder` and
+  `Climate.findSpawnPosition` search for the point whose climate best
+  matches the sampler's spawn target, two spiral passes out to a maximum
+  radius of 2,048 blocks, with depth pinned to zero and the fitness biased
+  toward the origin so a tie lands near 0,0. A sampler with an empty spawn
+  target skips the search and answers `BlockPos.ZERO`.
 - **`OverworldBiomeBuilder`** — the overworld's parameter table, in Java:
-  temperature, humidity, erosion and continentalness bands and six 5×5
-  tables of biome keys, assembled by `OverworldBiomeBuilder.addBiomes`.
-  `MultiNoiseBiomeSourceParameterList` is a data-pack registry element, but
-  all it stores is a `MultiNoiseBiomeSourceParameterList.Preset` id and
-  there are only two.
+  temperature, humidity, erosion and continentalness bands, and six tables
+  of biome keys — five 5×5 (middle, middle-variant, plateau,
+  plateau-variant, shattered) plus a 2×5 ocean table, deep and shallow
+  across the five temperature bands — assembled by
+  `OverworldBiomeBuilder.addBiomes`. The **cave biomes are entries in the
+  same table**: `OverworldBiomeBuilder.addUndergroundBiomes` and
+  `OverworldBiomeBuilder.addBottomBiome` place dripstone caves, lush caves
+  and the deep dark by their *depth* band, so there is no separate
+  underground biome system — a cave biome is an ordinary 7-D entry that
+  happens to win only below the surface.
+  `MultiNoiseBiomeSourceParameterList` is a data-pack registry element
+  holding a `MultiNoiseBiomeSourceParameterList.Preset` and the
+  `Climate.ParameterList` it expands to; only the *codec* reduces to a
+  preset name, and there are only two presets.
 - **Where the label lives** — a second `PalettedContainer` in every
   `LevelChunkSection`, keyed by `Holder<Biome>`, built with
   `Strategy.createForBiomes`: **two bits per axis**, so 4×4×4 = 64 biome
@@ -93,10 +121,10 @@ lines, a couple of blocks apart, and different systems use different ones.
 ## When it runs
 
 - **Once per chunk, on a worldgen worker.** `ChunkStatus.BIOMES` sits after
-  structure references and **before `ChunkStatus.NOISE`** — the biome is
-  decided before the terrain shape exists, not derived from it.
-  `NoiseBasedChunkGenerator.createBiomes` forks to
-  `Util.backgroundExecutor` under the name *init_biomes*.
+  structure references and **before `ChunkStatus.NOISE`** — but the two
+  steps do not depend on each other at all. `NoiseBasedChunkGenerator.createBiomes`
+  forks to `Util.backgroundExecutor` under the name *init_biomes*. The
+  biome does not affect a block until `ChunkStatus.SURFACE`.
 - **Constantly, on the server thread**, for gameplay: precipitation and
   freezing in `ServerLevel.tickPrecipitation`, spawning in
   `NaturalSpawner`, commands.
@@ -119,7 +147,7 @@ sequenceDiagram
     participant BM as BiomeManager
     participant EAS as EnvironmentAttributeSystem
 
-    CST->>CG: createBiomes — ChunkStatus.BIOMES, before NOISE
+    CST->>CG: createBiomes — ChunkStatus.BIOMES, before NOISE but independent of it
     CG->>CG: fork to init_biomes · wrap resolver in Blender and BelowZeroRetrogen
     CG->>CA: fillBiomesFromNoise(BiomeResolver, cachedClimateSampler)
     CA->>LCS: fillBiomesFromNoise — 4×4×4 cells per section
@@ -129,8 +157,8 @@ sequenceDiagram
     MN->>RT: Climate.ParameterList.findValue → RTree.search, 7 dimensions
     RT-->>LCS: Holder<Biome> → into the palette
     Note over LCS: saved under "biomes", shipped inside the chunk payload
-    BM->>CA: gameplay read: getBiome → fiddled corner → getNoiseBiome
-    EAS->>BM: visual read: getNoiseBiomeAtPosition — unfuzzed
+    BM->>CA: gameplay and block tint: getBiome → fiddled corner → getNoiseBiome
+    EAS->>BM: environment attributes: getNoiseBiomeAtPosition — unfuzzed
     EAS->>EAS: dimension → biome → timeline → weather layers
 ```
 
@@ -138,8 +166,11 @@ sequenceDiagram
    `NoiseBasedChunkGenerator` wraps its `BiomeSource` in the blending and
    below-zero-retrogen resolvers and uses
    `NoiseChunk.cachedClimateSampler` so the sample hits the chunk's caches
-   ([density functions](density-functions.md)); the flat, debug and end
-   generators use `RandomState.sampler` directly.
+   ([density functions](density-functions.md)). Only `FlatLevelSource` and
+   `DebugLevelSource` inherit the base `ChunkGenerator.createBiomes`, which
+   uses `RandomState.sampler` directly — the End is a
+   `NoiseBasedChunkGenerator` like the overworld and the nether, just with
+   `TheEndBiomeSource` in front of it.
 2. **Per quart cell.** `ChunkAccess.fillBiomesFromNoise` walks the sections;
    `LevelChunkSection.fillBiomesFromNoise` rebuilds the container and
    writes 64 entries per section.
@@ -158,20 +189,29 @@ sequenceDiagram
    NBT under *biomes* ([chunk storage](../world/chunk-storage.md)) and is
    sent to the client inside the chunk payload
    ([what the client is told](../networking/what-the-client-is-told.md)).
-6. **The gameplay read.** `LevelReader.getBiome` goes through
-   `BiomeManager.getBiome`, which does not floor to the quart cell: it
-   offsets by two, takes the eight surrounding corners, and picks the one
-   minimising `BiomeManager.getFiddledDistance` — a seeded hash giving each
-   corner up to ±0.45 of jitter per axis. That is the ragged border. The
-   chosen corner then resolves through `ChunkAccess.getNoiseBiome` to the
-   palette.
-7. **The visual read.** `EnvironmentAttributeSystem` and the client's
-   `EnvironmentAttributeProbe` call
-   `BiomeManager.getNoiseBiomeAtPosition` — the **unfuzzed** value — and
-   for attributes declared spatially interpolated, `GaussianSampler.sample`
-   blends a 6×6×6 quart neighbourhood into a
-   `SpatialAttributeInterpolator` before
-   `EnvironmentAttributeMap.applyModifier` runs.
+6. **The fuzzed read — gameplay *and* block tint.** `LevelReader.getBiome`
+   goes through `BiomeManager.getBiome`, which does not floor to the quart
+   cell: it offsets by two, takes the eight surrounding corners, and picks
+   the one minimising `BiomeManager.getFiddledDistance` — a seeded hash
+   giving each corner up to ±0.45 of jitter per axis. That is the ragged
+   border. The chosen corner then resolves through
+   `ChunkAccess.getNoiseBiome` to the palette. Grass, foliage and water
+   colour come through **this** path:
+   `ClientLevel.calculateBlockTint` calls `LevelReader.getBiome`, then box-blurs the
+   result over the `(2r+1)²` columns named by the *biome blend radius*
+   option and caches it in a `BlockTintCache`.
+7. **The unfuzzed read — environment attributes only.** Two different
+   callers, two different methods.
+   `EnvironmentAttributeSystem.addBiomeLayerForAttribute` reads
+   `BiomeManager.getNoiseBiomeAtPosition` directly. The client's
+   `EnvironmentAttributeProbe.tick` instead runs `GaussianSampler.sample`
+   over `BiomeManager.getNoiseBiomeAtQuart` **every tick and
+   unconditionally**, accumulating whole `EnvironmentAttributeMap`s into a
+   `SpatialAttributeInterpolator`; the
+   `EnvironmentAttribute.isSpatiallyInterpolated` test happens later, when
+   the layer is applied, and an attribute that fails it falls back to the
+   single unfuzzed lookup. The server never interpolates — it passes no
+   interpolator at all.
 
 ## Interfaces
 
@@ -194,23 +234,37 @@ sequenceDiagram
 
 ## Invariants and surprises
 
-- **The game keeps two biomes for the same block, deliberately.**
-  Gameplay uses the fuzzed `BiomeManager.getBiome`; environment attributes
-  and the client probe use the unfuzzed
-  `BiomeManager.getNoiseBiomeAtQuart`. Fog and grass colour follow a
-  slightly different boundary from the one that decides whether the water
-  freezes.
+- **The game keeps two biomes for the same block, deliberately** — and the
+  split is not the one you would guess. Gameplay uses the fuzzed
+  `BiomeManager.getBiome`; only the environment-attribute stack uses the
+  unfuzzed value. **Block tint is on the fuzzed side**: grass, foliage and
+  water colour follow exactly the same ragged border as freezing and mob
+  spawning, because `ClientLevel.calculateBlockTint` calls `LevelReader.getBiome`. What
+  softens the colour boundary is not the biome lookup but the blur on top
+  of it. Fog and sky are the ones on the other border.
 - **`BiomeSpecialEffects` is only block tint now.** Anything else you
   remember on it is an `EnvironmentAttribute`, and the biome is one layer
   in a stack — it can multiply the dimension's value rather than replace
   it, which is how swamps thicken water fog without naming a distance.
-- **The search is seven-dimensional and the seventh axis is a constant.**
-  `Climate.ParameterPoint` carries a `Climate.ParameterPoint.offset` that pads the target's
-  seventh slot with zero — a fixed fitness penalty, a "make this biome
-  harder to win" dial, not a sampled value.
-- **Biomes are decided before terrain.** `ChunkStatus.BIOMES` precedes
-  `ChunkStatus.NOISE`, so the biome shapes the terrain and never the
-  reverse ([the pipeline](../world/chunk-generation-pipeline.md)).
+- **The search is seven-dimensional and the seventh axis is a handicap.**
+  `Climate.TargetPoint.toParameterArray` appends a literal zero as the
+  seventh coordinate of every *query*; each biome's
+  `Climate.ParameterPoint.parameterSpace` puts the degenerate interval
+  `[offset, offset]` in that slot. So the seventh term of the metric is
+  always `offset²` — a fixed penalty added to that biome's score, a "make
+  this biome harder to win" dial rather than anything sampled from the
+  world.
+- **Biomes are decided before terrain, but not *for* it.**
+  `ChunkStatus.BIOMES` precedes `ChunkStatus.NOISE` and the two are
+  independent: `NoiseBasedChunkGenerator.fillFromNoise` never reads a
+  biome. Neither shapes the other — both are read off the *same* noise
+  router, since `RandomState` builds the `Climate.Sampler` out of
+  `NoiseRouter.depth`, `NoiseRouter.continents`, `NoiseRouter.erosion` and
+  `NoiseRouter.ridges`, the very functions that shape the land. A jungle
+  and its terrain agree because they were computed from one set of
+  numbers, not because either was consulted about the other. The biome
+  first touches a block at `ChunkStatus.SURFACE`
+  ([the pipeline](../world/chunk-generation-pipeline.md)).
 - **Biomes are stored, not computed** — at 1/64 the resolution of blocks,
   in a second palette per section. `/fillbiome` exists because the stored
   value can be made to disagree with what the generator would say, and
@@ -238,8 +292,27 @@ sequenceDiagram
   `Biome.getHeightAdjustedTemperature` samples noise per block high up —
   that is why snow lines are ragged rather than flat — and `Biome` keeps a
   fixed-size, per-thread cache in front of it that evicts rather than
-  grows. The public API is only the questions: `Biome.warmEnoughToRain`,
-  `Biome.coldEnoughToSnow`, `Biome.shouldFreeze`, `Biome.shouldSnow`.
+  grows. Most of the public API is the questions rather than the number —
+  `Biome.warmEnoughToRain`, `Biome.coldEnoughToSnow`, `Biome.shouldFreeze`,
+  `Biome.shouldSnow`, `Biome.getPrecipitationAt` — with
+  `Biome.getBaseTemperature` the raw, uncached, unadjusted escape hatch.
+- **The nearest-neighbour search remembers its last answer.**
+  `Climate.RTree` keeps the winning leaf in a `ThreadLocal` and seeds the
+  next search with it as the initial candidate. Adjacent quart cells almost
+  always resolve to the same biome, so the walk usually prunes immediately
+  — which is what makes filling 64 cells a section cheap. It also means the
+  tree is stateful per thread, though never incorrect: the seed is only a
+  starting bound.
+- **`Biome.TemperatureModifier.FROZEN` is the odd one out.** Temperature is
+  otherwise a flat per-biome constant with a height adjustment; the frozen
+  modifier layers two noises to punch warm patches into frozen oceans. One
+  of them, `Biome.BIOME_INFO_NOISE`, is marked for removal and is also what
+  drives `BiomeSpecialEffects.GrassColorModifier.SWAMP`.
+- **When the effects are silent, the tint comes from a texture.** With no
+  override set, grass and foliage colour are a lookup into the colormap
+  images by temperature and downfall (`GrassColor`, `FoliageColor`,
+  `DryFoliageColor`) — so "the biome's grass colour" is usually not stored
+  in the biome at all, only the two climate numbers that index it.
 - **Adding one biome can change the whole dimension's layer stack.**
   `EnvironmentAttributeSystem` builds one positional layer per attribute
   *any* biome in the registry mentions, at level construction.

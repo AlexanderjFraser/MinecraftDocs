@@ -210,6 +210,25 @@ verifier after applying each report, not after applying all of them**, and
 treat any name you have not personally grepped as the agent's claim rather
 than the decompile's.
 
+Session J adds an eleventh, and it is aimed at this file's own artefacts:
+**re-derive the load-bearing facts hardest, because they rot invisibly.**
+The *Load-bearing facts* list in [pass2.md](pass2.md) exists so that a fact
+stated once can be leaned on everywhere — which means a wrong entry is a
+wrong entry in every page that trusted it, and none of those pages will
+show the error. Three of Part XII's seed entries were wrong: the
+density-function caches key on identity (only three of six do), carvers
+never place air (the aquifer answers air above the water table), and the
+biome shapes the terrain (neither shapes the other; both come off the same
+noise router). All three had the same signature — **a true observation with
+an invented causal story attached**, written as an absolute because the
+*invariants and surprises* section rewards absolutes. The status order
+really is biomes-before-noise; "so the biome shapes the terrain" was the
+page explaining a fact it had not checked. When a load-bearing entry states
+both a mechanism and a reason, **the reason is the part to re-derive** —
+and when a page's own best surprise rests on one, check which side of the
+surprise each consumer is actually on. `biomes` sold "two biomes per block"
+and put grass colour on the wrong one.
+
 Session D adds a fifth: **hunt the unstated conditional.** Nearly every
 session-D error was a claim that held in the traced case and was written as
 though it held always — a hook skipped "because the block didn't change"
@@ -252,7 +271,8 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
   *(2026-09-01)*
 - [x] **Session I** — Part XI Rendering: the render half plus its new
   pages. *(2026-09-01)*
-- [ ] **Session J** — Part XII World generation.
+- [x] **Session J** — Part XII World generation, plus the new
+  `hand-built-structures` page. *(2026-09-01)*
 - [ ] **Session K** — Part XIII Commands · Part XIV Appendix (the gaps
   list gets its rulings here; naming-drift and glossary re-swept after
   every earlier session's changes).
@@ -311,6 +331,98 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session J** — Part XII World generation (`worldgen-pipeline`,
+  `density-functions`, `biomes`, `features-and-placement`, `structures`), a
+  mechanical coverage inventory of the whole worldgen tree, and a research
+  agent on what it found. Five adversarial fact-checks, five rewrites, one
+  new page; 1,364 lines became 1,661 across the five, plus 300 new. The
+  A–I pattern holds — every page had *wrong* claims.
+  **Session J's centre of gravity is the load-bearing fact that was half
+  true.** Where F miscounted exceptions and I inverted invariants, Part
+  XII's worst errors were facts on the *seed list itself* — three of them —
+  each correct in the case that had been traced and written as an absolute.
+  A fact promoted to "load-bearing" is a fact several pages lean on without
+  re-deriving, so it is exactly the kind that rots unnoticed. What mattered
+  most:
+  - **"Density-function caches key on object identity" was half wrong, and
+    the wrong half was the load-bearing one.** Only three of the six do the
+    identity test. `NoiseChunk.FlatCache` and `NoiseChunk.Cache2D` key on
+    **position**, which is precisely what makes
+    `NoiseChunk.cachedClimateSampler` and `NoiseChunk.preliminarySurfaceLevel`
+    cheap — the page had drawn "a single-point sample bypasses the caches"
+    from the half that holds. The tell was structural and in plain sight:
+    `Cache2D` is the one nested class that is `static`, so it *cannot* hold
+    a reference to compare against.
+  - **"Carvers never place air" is exactly backwards.** `Aquifer.FluidStatus.at`
+    answers plain air above the local water table; every dry cave is the
+    carver writing air. And `NetherWorldCarver` overrides
+    `WorldCarver.carveBlock` and never consults the aquifer at all. The
+    page's *mechanism* was right and its headline was the negation of it.
+  - **"The biome shapes the terrain, never the reverse" is wrong in both
+    directions.** `NoiseBasedChunkGenerator.fillFromNoise` never reads a
+    biome, and the biome is itself read off the terrain-shaping functions —
+    `RandomState` builds the `Climate.Sampler` from `NoiseRouter.depth`,
+    `continents`, `erosion` and `ridges`. Neither causes the other; both
+    come off one router. The status *order* was right and the causal story
+    invented to explain it was not, which is the shape to watch for.
+  - **The page's own best surprise was half inverted.** `biomes` sold "two
+    biomes per block, and different systems use different ones" and then
+    put grass colour on the wrong side: `ClientLevel.calculateBlockTint`
+    calls `LevelReader.getBiome`, the **fuzzed** path. What softens a colour
+    boundary is the blur on top, not the lookup. Only the
+    environment-attribute stack reads unfuzzed.
+  - **Two more inversions with the same signature** — a true observation and
+    a false consequence. `WorldgenRandom`'s draw counter is **dead** and
+    every feature is reseeded absolutely, so "one extra draw shifts every
+    feature after it" is the opposite of the truth. And the guard that makes
+    cascading worldgen impossible is not the write-zone check on reads (that
+    only *logs*) but `WorldGenRegion.getChunk` throwing at the dependency
+    radius — nine chunks for FEATURES, not three.
+  - **A side-attribution error of a new kind.** `ChunkGenerator.validate` is
+    **client-only**: `WorldOpenFlows` calls it, catches the exception and
+    offers safe mode. A dedicated server never calls it, so a feature-order
+    cycle there is not a refusal to load but a crash on the first decorating
+    chunk. Session E's rule was "ask which side is authoritative"; this is
+    its cousin — *ask whether the failure path exists on both sides at all*.
+  - **Cardinality, as usual:** 63 registered features not ~65, 63 noise keys
+    not ~65, fifteen placement modifier types not fourteen, five 5×5 biome
+    tables plus a 2×5 not six 5×5, two of four terrain adaptations
+    kernel-weighted not all four, three `StructureProcessor`s named of
+    eleven. Both "~65"s were the page hedging with a tilde instead of
+    counting — session G's rule (re-derive any number a page took from a
+    tool) extends to numbers a page took from its own estimate.
+  - **`hand-built-structures` is new**, and it is the largest gap the pass
+    has found: `levelgen/structure/structures` is 10,012 lines, 98% of it
+    named nowhere, and it is the assembler **fifteen of the sixteen
+    structure types actually use** — `structures` documents the jigsaw path
+    and silently implies that is how structures work. Its best facts are
+    that `StructurePiece.addChildren` is *not* a framework hook (empty
+    default body, never called by the framework — every family arranges its
+    own recursion), that a stronghold is a **rejection sampler** which
+    discards and reseeds the entire graph until one contains a portal room,
+    that growth stops when the piece *budget* is spent rather than when the
+    depth cap is hit, and that `StrongholdPieces` keeps its generation state
+    in **private static fields** mutated from chunk workers.
+  - **The inventory found that ~53% of the worldgen tree by line count is in
+    classes no page names** (272 of 429 classes, 24,512 of 46,628 lines).
+    The ranked remainder is in [pass2.md](pass2.md): concrete features
+    (5,928 lines, of which the *composition* features are the interesting
+    part), the tree kit's implementations (3,219 — probably the most
+    watchable page in the part), `Blender`/`BlendingData` (858, named in
+    five pages and explained in none), and world creation + the world-select
+    screens (~5,100, spanning Parts X and XII).
+  - **First session to add no naming drift.** All thirteen Part XII rows
+    were re-derived and hold — worth recording as a positive result about
+    session 11's fact sheets rather than a gap.
+  - **Structural notes to [pass3.md](pass3.md):** Part XII is a pipeline
+    with a substrate underneath it and `density-functions` is sitting in the
+    wrong place for either reading; `structures` is now three subjects, not
+    the two the split table proposed, which may argue for promoting it to
+    its own part; two of the five diagrams are the wrong shape, and
+    `density-functions`' is the corpus's strongest case for a static figure;
+    three internal lane collisions, of which `SS` and `TP` will actually
+    mislead.
 
 - **2026-09-01, session I** — Part XI Rendering (`the-frame`, `blaze3d`,
   `level-rendering`, `models-and-atlases`, `entity-rendering`,

@@ -702,9 +702,15 @@ easy to get wrong from 1.21 memory.
 - A `DensityFunction` graph in the registry is **unseeded and cacheless**;
   it is rewritten by `RandomState` and again by `NoiseChunk`, and a
   `DensityFunctions.Marker` computes nothing on its own — `density-functions`.
-- Density-function caches key on **object identity**, so any
-  `DensityFunction.SinglePointContext` sampler bypasses them —
-  `density-functions`.
+- ~~Density-function caches key on **object identity**, so any
+  `DensityFunction.SinglePointContext` sampler bypasses them.~~
+  **Corrected, session J: half wrong, and the wrong half was load-bearing.**
+  Only `NoiseChunk.NoiseInterpolator`, `CacheAllInCell` and `CacheOnce`
+  test the context's identity. `FlatCache` and `Cache2D` key on **position
+  alone** and serve single-point samples happily — which is exactly what
+  makes `NoiseChunk.cachedClimateSampler` and
+  `NoiseChunk.preliminarySurfaceLevel` cheap. A single-point sample bypasses
+  the 3-D caches only — `density-functions`.
 
 - `Gui` is the whole 2D UI layer; the HUD is `Hud`, reached as `Gui.hud` —
   `anatomy`. Any page that says "the HUD (`Gui`)" is wrong.
@@ -861,14 +867,31 @@ easy to get wrong from 1.21 memory.
   (`BiomeManager.getBiome`), unfuzzed for environment attributes —
   `biomes`.
 - Biomes are chosen at `ChunkStatus.BIOMES`, **before** `ChunkStatus.NOISE`
-  — the biome shapes the terrain, never the reverse — `biomes`.
-- **Carvers never place air**: `WorldCarver.getCarveState` asks the
-  `Aquifer` — `worldgen-pipeline`.
+  — but ~~the biome shapes the terrain, never the reverse~~ is wrong in both
+  directions. **Corrected, session J:** the two steps are independent.
+  `NoiseBasedChunkGenerator.fillFromNoise` never reads a biome, and the
+  biome is itself derived from the terrain-shaping functions
+  (`RandomState` builds the `Climate.Sampler` from `NoiseRouter.depth`,
+  `continents`, `erosion`, `ridges`). Neither shapes the other; both come
+  off the same router. The biome first touches a block at
+  `ChunkStatus.SURFACE` — `biomes`.
+- ~~**Carvers never place air**~~ — **inverted, session J.**
+  `WorldCarver.getCarveState` does ask the `Aquifer`, but
+  `Aquifer.FluidStatus.at` answers plain **air** above the local water
+  table; every dry cave is a carver writing air. And `NetherWorldCarver`
+  overrides `WorldCarver.carveBlock` to bypass the aquifer entirely. The
+  true fact is *the carver does not choose the block — the aquifer does*
+  (except in the nether) — `worldgen-pipeline`.
 - Ore veins are placed in the **noise** step, and the surface pass only
   replaces the settings' default block, so they survive it —
   `worldgen-pipeline`.
-- Feature order is **global and topologically sorted**; a cycle between two
-  biomes makes the world refuse to load — `features-and-placement`.
+- Feature order is **global and topologically sorted**, and **per
+  dimension** (`ChunkGenerator.featuresPerStep` is memoised per generator).
+  A cycle makes the sort throw — but *where* differs by side
+  (session J): the client calls `ChunkGenerator.validate` from
+  `WorldOpenFlows` and refuses to open the world; a dedicated server never
+  calls `validate` and crashes on the first decorating chunk —
+  `features-and-placement`.
 - A `RepeatingPlacement` emits N copies of the **same** position; the
   scatter is a separate modifier, so list order is load-bearing —
   `features-and-placement`.
@@ -876,8 +899,12 @@ easy to get wrong from 1.21 memory.
   over-reaching feature is truncated, not moved; and
   `WorldGenRegion.getChunk` **throws** rather than loading, which is why
   cascading worldgen cannot happen — `features-and-placement`.
-- A structure's placement lottery is **pure seed arithmetic**; the biome
-  test only vetoes afterwards — `structures`.
+- A structure's placement lottery is **pure seed arithmetic** *for
+  `RandomSpreadStructurePlacement`*; the biome test only vetoes afterwards.
+  Session J's qualifiers: `ConcentricRingsStructurePlacement` (strongholds)
+  really does search biomes via `BiomeSource.findBiomeHorizontal`, and a
+  coarse per-world biome filter has already run in
+  `ChunkGeneratorStructureState` — `structures`.
 - Terrain adaptation around a structure writes **no blocks** — it is a
   `Beardifier` density term at `ChunkStatus.NOISE` — `structures`.
 - Sapling growth **bypasses the whole placement layer**, on the main
@@ -1748,3 +1775,103 @@ of this session's findings are other parts' business: the item-model property
 system may be Part VII's page; the debug-renderer table is Part X's
 `debugging-the-running-game`; and `renderer/special` is the reason a chest in
 your hand looks right, which `items-and-stacks` currently does not say.
+
+### Session J — Part XII World generation
+
+**Added on spec (pass 4 may cut).**
+
+- **`hand-built-structures` is a new page**, discharging the largest single
+  gap the pass has found: `levelgen/structure/structures` is 30 classes and
+  10,012 lines, 98% of it named nowhere in the corpus, and it is the
+  assembler *fifteen of the sixteen structure types actually use*. The
+  existing `structures` page documents the jigsaw path end to end and the
+  shared framework, and silently implies that is how structures work. It is
+  how *villages* work. Pass 4 should check the new page against
+  `structures` for the framework material they now both touch
+  (`StructurePiece`, `StructureStart`, `BoundingBox`) — the boundary is
+  "shared framework in `structures`, the recursive grammar in the new
+  page", and it may have drifted.
+- **`biomes` grew the world-spawn search** (`Climate.SpawnFinder`,
+  `Climate.findSpawnPosition`), the cave-biome observation, the
+  `Climate.RTree` thread-local, the colormap fallback and
+  `Biome.TemperatureModifier.FROZEN`. The spawn search is arguably a Part IV
+  subject (it is where the player appears, not how a biome is chosen) and is
+  the first thing to cut if the page is long.
+- **`worldgen-pipeline` grew five invariants** — the debug switches, the
+  height-query throwaway `NoiseChunk`, aquifer post-processing,
+  `WorldCarver.canReplaceBlock`, and the `NoiseChunk` mutation story. The
+  `SharedConstants` debug-flag bullet is the weakest and is the cut
+  candidate; it is a list, not a mechanism.
+- **`density-functions` grew four invariants** and lost its `Density`
+  paragraph's authority (see below). The structural-memo bullet and the F3
+  bullet are both genuinely surprising and should survive; the
+  marker-bounds bullet is a detail.
+
+**Wording debt.**
+
+- `biomes`' *two biomes per block* invariant is now three sentences longer
+  than it was and has a "not the split you would guess" construction that
+  reads as a correction of the reader rather than a statement. It is right,
+  but pass 4 should re-voice it.
+- `worldgen-pipeline`'s *when it runs* section acquired a long paragraph
+  about write radius vs read radius that is really two facts fighting for
+  one sentence. Split it or move the read half to `features-and-placement`,
+  which is where the guard actually bites.
+- Em-dash density is high in the new `biomes` and `density-functions`
+  material, as in sessions C and F.
+
+**Verifier lessons.** Two members needed qualifying that read naturally
+bare: `getBiome` (it is `LevelReader.getBiome`, and `BiomeManager` has a
+different one) and `carveBlock` (declared on `WorldCarver`, overridden by
+`NetherWorldCarver` — and the page's whole point was the override). Both
+are the same shape as session I's: the *interesting* fact is that a member
+is declared in one place and overridden in another, and the verifier's
+"token appears somewhere in that file" rule cannot see the distinction.
+
+**Naming drift: no new rows.** Session J re-derived every row of the
+Part XII table in `appendix/naming-drift.md` and all thirteen hold. This is
+the first session to add none, and it is worth recording as a positive
+result rather than a gap: the table was built from session 11's fact-sheet
+agents and has survived an adversarial re-check.
+
+**Left for session K and later.**
+
+- **The coverage inventory found that ~53% of the worldgen tree by line
+  count is in classes no page names** (272 of 429 classes, 24,512 of 46,628
+  lines). Session J closed the largest hole. The ranked remainder, for
+  session K's rulings or pass 3's page plan:
+  - **concrete features — 69 classes / 5,928 lines.** Sixty-one registered
+    `Feature`s of which the corpus names two. The *composition* features
+    (`RandomSelectorFeature`, `SequenceFeature`, `WeightedPlacedFeature`
+    and friends) are the structurally interesting ones — they are how a
+    data pack builds a feature *tree* — and `features-and-placement` says
+    "a random selector" once and names nothing. **Recommend: a section, not
+    a page.**
+  - **the tree kit's implementations — 50 classes / 3,219 lines.**
+    `features-and-placement` explains the five contracts beautifully and
+    not one implementation. "How one species of tree differs from another"
+    is a real lecture and would be the most *watchable* page in the part.
+  - **old-chunk blending — `Blender` + `BlendingData`, 858 lines.** Named
+    in five pages, explained in none, and it is the only part of the
+    density graph with no owner. **Recommend: a page or a long section in
+    `worldgen-pipeline`.**
+  - **world creation — `levelgen/flat` + `levelgen/presets`, 653 lines,
+    zero citations**, and adjacent to `client/gui/screens/worldselection`
+    (19 classes / 4,474 lines, also zero). Together ~5,100 lines and a
+    coherent lecture: *how a world is created* — seed, preset, dimension
+    set, datapack negotiation, the handoff to `WorldGenSettings`. This
+    spans Part XII and Part X and needs an owner named in pass 3.
+  - **carver algorithms — 468 lines.** The contract is documented, the
+    tunnel walk is not. A section in `worldgen-pipeline`.
+  - **the dragon fight — `EnderDragonFight` + `DragonRespawnStage`, 801
+    lines**, named in five pages and explained in none. Not worldgen; it
+    lives under `dimension/end` and needs a part.
+  - Paragraph-sized: `blockpredicates` (531), `heightproviders` (363),
+    `pools/alias` (134), the template `loader` package (298), the
+    processors and rule tests `structures` skips (~700).
+- **`data/worldgen` is confirmed out of scope** (52 classes / 5,353 lines):
+  it is the datagen bootstrap that *emits* vanilla's JSON, i.e. content,
+  not mechanism. The corpus's current one-line treatment is right.
+- **`ChunkGenerator.validate` being client-only** is a fact Part X may want:
+  `WorldOpenFlows` is in session H's "client/multiplayer and world
+  selection" gap list, and this is a concrete reason that page matters.

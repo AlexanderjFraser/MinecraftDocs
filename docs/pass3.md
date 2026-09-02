@@ -532,6 +532,81 @@ last is the worst — same part, adjacent pages. Plus session H's standing
 `GR` collision (`GuiRenderer` in X, `GameRenderer` in XI) is now live in
 both parts at once.
 
+### Part XII · World generation
+
+*(session J)* **The part is a pipeline with a substrate underneath it, and
+the current page order half-admits it.** `density-functions` is not step
+two of anything — it is the *material* every other page is made of, the way
+`blaze3d` is for Part XI. The genuine sequence is
+biomes → noise/surface/carvers → structures → features, which is chunk
+status order, and the part already has a page per stage. Two consequences
+for pass 3:
+
+- **`density-functions` should open the part or close it, not sit second.**
+  Session I settled the same question for `blaze3d` by observing that a
+  substrate page read *before* the pipeline teaches vocabulary with no
+  motivation, and read *after* it explains machinery the reader has already
+  formed a wrong model of. Part XII has it worse than Part XI, because the
+  density graph is genuinely prerequisite: `worldgen-pipeline`'s aquifer,
+  ore veins and beardifier are all density terms, and `biomes` cannot
+  explain the climate sampler without it. **Recommendation: open with it**,
+  and accept that the first lecture is the abstract one. The counter-case
+  is that "the seed" is the best hook in the part and it is in that page.
+- **The through-line to protect is the chunk status ladder**, which is
+  owned by Part IV's `chunk-generation-pipeline`. Part XII is the cargo of
+  four statuses and Part IV is the conveyor. That split is right, but it
+  means **Part XII cannot be lectured before Part IV's pipeline page**, and
+  the dependency should be stated in the lecture order rather than
+  rediscovered.
+
+**The split candidates both survive, and one of them grew a third page.**
+
+- **`structures` is now three subjects, not two.** The pass-2 table
+  proposed placement-decision vs jigsaw-assembly, and that seam is real and
+  clean. Session J's inventory found a third: the **hand-built piece-graph
+  assembler** (`levelgen/structure/structures`, 30 classes / 10,012 lines,
+  98% of it named nowhere in the corpus), which fifteen of the sixteen
+  structure types still use and which is a genuinely different mechanism
+  from jigsaw — recursive `StructurePiece.addChildren` growth with
+  collision against the pieces placed so far, rather than pool draws
+  against a free-space shape. Session J wrote it as its own page; pass 3
+  should decide whether the *remaining* placement/jigsaw seam is also worth
+  cutting, and if so the part is five pages of worldgen plus three of
+  structures, which is probably one part too many and argues for a
+  **Part XII-A / XII-B** shape or for promoting structures to its own part.
+- **`density-functions`' own split** (node catalogue vs the two rewrites)
+  is still presentational and still correct. The rewrite story is the
+  lecture; the node families are reference. Session J grew the rewrite half
+  and left the catalogue alone, so the imbalance is now more obvious, not
+  less.
+
+**Diagram shape.** Two of the five traces are the wrong shape:
+
+- `worldgen-pipeline`'s sequence diagram is really a **pipeline with a
+  nested loop**, and mermaid renders the cell walk as four indistinguishable
+  self-calls on one lane. The interesting structure — cell corners
+  interpolated, blocks filled inside the cell, two filler passes per block
+  — is a diagram about *nesting depth*, not about message order. A flowchart
+  or a simple annotated figure would teach it better.
+- `density-functions`' trace is **three graphs and two rewrites**, which a
+  sequence diagram cannot show at all: the whole point is that the same
+  tree exists in three forms. This wants a before/after tree figure, and it
+  is the strongest candidate in the corpus for the "static image" question
+  the diagram plan defers.
+- `biomes`' trace is fine and is the part's best diagram, because the
+  generation path and the two read paths genuinely are three sequences.
+
+**Lane abbreviations, for the corpus-wide decision.** Part XII currently
+uses `CST` (`ChunkStatusTasks`), `NBC`/`CG` (both for chunk generators —
+`CG` is `ChunkGenerator` in `structures` and `NoiseBasedChunkGenerator` in
+`biomes`, **a collision inside the part**), `NC`, `MRL`, `AQ`, `OV`, `SS`
+(`SurfaceSystem` in one page, `StructureStart` in another — **a second
+collision**), `WC`, `PC`, `MN`, `CS`, `RT`, `BM`, `EAS`, `FS`, `WR`, `PF`,
+`PM`, `CF`, `TF`, `TP` (`TrunkPlacer`/`FoliagePlacer` in one page,
+`StructureTemplate` in another — **a third**), `ST`, `SP`, `JS`, `JP`,
+`SM`, `BD`. Three internal collisions, same as Part XI. `SS` and `TP` are
+the ones that will actually mislead.
+
 ---
 
 ## 2 · Page-level structure
