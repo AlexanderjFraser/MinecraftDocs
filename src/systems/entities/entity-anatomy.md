@@ -146,7 +146,7 @@ change into `Entity.refreshDimensions`.
 
 ## The hierarchy
 
-`Entity` has **18 direct subclasses** and 188 descendants in the jar. The
+`Entity` has **18 direct subclasses** and 193 descendants in the jar. The
 non-living branches are the short half: `Projectile`, `VehicleEntity`,
 `Display`, `BlockAttachedEntity`, `ItemEntity`, `FallingBlockEntity`,
 `PrimedTnt`, `ExperienceOrb`, `AreaEffectCloud`, `LightningBolt`, `Marker`,

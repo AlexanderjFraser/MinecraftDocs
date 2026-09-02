@@ -1,0 +1,153 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 578" width="1000" height="578" role="img" aria-label="The 30 most-imported classes of 26.2: how many files import each">
+<title>The 30 most-imported classes of 26.2: how many files import each</title>
+<g><title>BlockPos (core): 1,221 importing files</title>
+<text x="330" y="17" text-anchor="end" font-size="12">BlockPos<tspan class="muted" font-size="9"> core</tspan></text>
+<rect class="shared" x="338" y="7" width="600.0" height="13" rx="2"/>
+<text class="muted" x="943.0" y="17" font-size="11">1,221</text>
+</g>
+<g><title>Codec (com.mojang.serialization): 987 importing files</title>
+<text x="330" y="36" text-anchor="end" font-size="12">Codec<tspan class="muted" font-size="9"> com.mojang.serialization</tspan></text>
+<rect class="lib" x="338" y="26" width="485.0" height="13" rx="2"/>
+<text class="muted" x="828.0" y="36" font-size="11">987</text>
+</g>
+<g><title>MapCodec (com.mojang.serialization): 917 importing files</title>
+<text x="330" y="55" text-anchor="end" font-size="12">MapCodec<tspan class="muted" font-size="9"> com.mojang.serialization</tspan></text>
+<rect class="lib" x="338" y="45" width="450.6" height="13" rx="2"/>
+<text class="muted" x="793.6" y="55" font-size="11">917</text>
+</g>
+<g><title>Identifier (resources): 882 importing files</title>
+<text x="330" y="74" text-anchor="end" font-size="12">Identifier<tspan class="muted" font-size="9"> resources</tspan></text>
+<rect class="shared" x="338" y="64" width="433.4" height="13" rx="2"/>
+<text class="muted" x="776.4" y="74" font-size="11">882</text>
+</g>
+<g><title>BlockState (world.level.block.state): 862 importing files</title>
+<text x="330" y="93" text-anchor="end" font-size="12">BlockState<tspan class="muted" font-size="9"> world.level.block.state</tspan></text>
+<rect class="shared" x="338" y="83" width="423.6" height="13" rx="2"/>
+<text class="muted" x="766.6" y="93" font-size="11">862</text>
+</g>
+<g><title>RecordCodecBuilder (com.mojang.serialization.codecs): 804 importing files</title>
+<text x="330" y="112" text-anchor="end" font-size="12">RecordCodecBuilder<tspan class="muted" font-size="9"> com.mojang.serialization.codecs</tspan></text>
+<rect class="lib" x="338" y="102" width="395.1" height="13" rx="2"/>
+<text class="muted" x="738.1" y="112" font-size="11">804</text>
+</g>
+<g><title>RandomSource (util): 773 importing files</title>
+<text x="330" y="131" text-anchor="end" font-size="12">RandomSource<tspan class="muted" font-size="9"> util</tspan></text>
+<rect class="shared" x="338" y="121" width="379.9" height="13" rx="2"/>
+<text class="muted" x="722.9" y="131" font-size="11">773</text>
+</g>
+<g><title>Component (network.chat): 766 importing files</title>
+<text x="330" y="150" text-anchor="end" font-size="12">Component<tspan class="muted" font-size="9"> network.chat</tspan></text>
+<rect class="shared" x="338" y="140" width="376.4" height="13" rx="2"/>
+<text class="muted" x="719.4" y="150" font-size="11">766</text>
+</g>
+<g><title>Level (world.level): 750 importing files</title>
+<text x="330" y="169" text-anchor="end" font-size="12">Level<tspan class="muted" font-size="9"> world.level</tspan></text>
+<rect class="shared" x="338" y="159" width="368.6" height="13" rx="2"/>
+<text class="muted" x="711.6" y="169" font-size="11">750</text>
+</g>
+<g><title>ServerLevel (server.level): 726 importing files</title>
+<text x="330" y="188" text-anchor="end" font-size="12">ServerLevel<tspan class="muted" font-size="9"> server.level</tspan></text>
+<rect class="shared" x="338" y="178" width="356.8" height="13" rx="2"/>
+<text class="muted" x="699.8" y="188" font-size="11">726</text>
+</g>
+<g><title>ItemStack (world.item): 682 importing files</title>
+<text x="330" y="207" text-anchor="end" font-size="12">ItemStack<tspan class="muted" font-size="9"> world.item</tspan></text>
+<rect class="shared" x="338" y="197" width="335.1" height="13" rx="2"/>
+<text class="muted" x="678.1" y="207" font-size="11">682</text>
+</g>
+<g><title>Mth (util): 677 importing files</title>
+<text x="330" y="226" text-anchor="end" font-size="12">Mth<tspan class="muted" font-size="9"> util</tspan></text>
+<rect class="shared" x="338" y="216" width="332.7" height="13" rx="2"/>
+<text class="muted" x="675.7" y="226" font-size="11">677</text>
+</g>
+<g><title>Entity (world.entity): 667 importing files</title>
+<text x="330" y="245" text-anchor="end" font-size="12">Entity<tspan class="muted" font-size="9"> world.entity</tspan></text>
+<rect class="shared" x="338" y="235" width="327.8" height="13" rx="2"/>
+<text class="muted" x="670.8" y="245" font-size="11">667</text>
+</g>
+<g><title>Holder (core): 597 importing files</title>
+<text x="330" y="264" text-anchor="end" font-size="12">Holder<tspan class="muted" font-size="9"> core</tspan></text>
+<rect class="shared" x="338" y="254" width="293.4" height="13" rx="2"/>
+<text class="muted" x="636.4" y="264" font-size="11">597</text>
+</g>
+<g><title>Vec3 (world.phys): 575 importing files</title>
+<text x="330" y="283" text-anchor="end" font-size="12">Vec3<tspan class="muted" font-size="9"> world.phys</tspan></text>
+<rect class="shared" x="338" y="273" width="282.6" height="13" rx="2"/>
+<text class="muted" x="625.6" y="283" font-size="11">575</text>
+</g>
+<g><title>Direction (core): 570 importing files</title>
+<text x="330" y="302" text-anchor="end" font-size="12">Direction<tspan class="muted" font-size="9"> core</tspan></text>
+<rect class="shared" x="338" y="292" width="280.1" height="13" rx="2"/>
+<text class="muted" x="623.1" y="302" font-size="11">570</text>
+</g>
+<g><title>LivingEntity (world.entity): 533 importing files</title>
+<text x="330" y="321" text-anchor="end" font-size="12">LivingEntity<tspan class="muted" font-size="9"> world.entity</tspan></text>
+<rect class="shared" x="338" y="311" width="261.9" height="13" rx="2"/>
+<text class="muted" x="604.9" y="321" font-size="11">533</text>
+</g>
+<g><title>StreamCodec (network.codec): 508 importing files</title>
+<text x="330" y="340" text-anchor="end" font-size="12">StreamCodec<tspan class="muted" font-size="9"> network.codec</tspan></text>
+<rect class="shared" x="338" y="330" width="249.6" height="13" rx="2"/>
+<text class="muted" x="592.6" y="340" font-size="11">508</text>
+</g>
+<g><title>LogUtils (com.mojang.logging): 470 importing files</title>
+<text x="330" y="359" text-anchor="end" font-size="12">LogUtils<tspan class="muted" font-size="9"> com.mojang.logging</tspan></text>
+<rect class="lib" x="338" y="349" width="231.0" height="13" rx="2"/>
+<text class="muted" x="574.0" y="359" font-size="11">470</text>
+</g>
+<g><title>Util (util): 454 importing files</title>
+<text x="330" y="378" text-anchor="end" font-size="12">Util<tspan class="muted" font-size="9"> util</tspan></text>
+<rect class="shared" x="338" y="368" width="223.1" height="13" rx="2"/>
+<text class="muted" x="566.1" y="378" font-size="11">454</text>
+</g>
+<g><title>Player (world.entity.player): 449 importing files</title>
+<text x="330" y="397" text-anchor="end" font-size="12">Player<tspan class="muted" font-size="9"> world.entity.player</tspan></text>
+<rect class="shared" x="338" y="387" width="220.6" height="13" rx="2"/>
+<text class="muted" x="563.6" y="397" font-size="11">449</text>
+</g>
+<g><title>Registries (core.registries): 448 importing files</title>
+<text x="330" y="416" text-anchor="end" font-size="12">Registries<tspan class="muted" font-size="9"> core.registries</tspan></text>
+<rect class="shared" x="338" y="406" width="220.1" height="13" rx="2"/>
+<text class="muted" x="563.1" y="416" font-size="11">448</text>
+</g>
+<g><title>ResourceKey (resources): 402 importing files</title>
+<text x="330" y="435" text-anchor="end" font-size="12">ResourceKey<tspan class="muted" font-size="9"> resources</tspan></text>
+<rect class="shared" x="338" y="425" width="197.5" height="13" rx="2"/>
+<text class="muted" x="540.5" y="435" font-size="11">402</text>
+</g>
+<g><title>Schema (com.mojang.datafixers.schemas): 389 importing files</title>
+<text x="330" y="454" text-anchor="end" font-size="12">Schema<tspan class="muted" font-size="9"> com.mojang.datafixers.schemas</tspan></text>
+<rect class="lib" x="338" y="444" width="191.2" height="13" rx="2"/>
+<text class="muted" x="534.2" y="454" font-size="11">389</text>
+</g>
+<g><title>SoundEvents (sounds): 316 importing files</title>
+<text x="330" y="473" text-anchor="end" font-size="12">SoundEvents<tspan class="muted" font-size="9"> sounds</tspan></text>
+<rect class="shared" x="338" y="463" width="155.3" height="13" rx="2"/>
+<text class="muted" x="498.3" y="473" font-size="11">316</text>
+</g>
+<g><title>BlockBehaviour (world.level.block.state): 311 importing files</title>
+<text x="330" y="492" text-anchor="end" font-size="12">BlockBehaviour<tspan class="muted" font-size="9"> world.level.block.state</tspan></text>
+<rect class="shared" x="338" y="482" width="152.8" height="13" rx="2"/>
+<text class="muted" x="495.8" y="492" font-size="11">311</text>
+</g>
+<g><title>Blocks (world.level.block): 310 importing files</title>
+<text x="330" y="511" text-anchor="end" font-size="12">Blocks<tspan class="muted" font-size="9"> world.level.block</tspan></text>
+<rect class="shared" x="338" y="501" width="152.3" height="13" rx="2"/>
+<text class="muted" x="495.3" y="511" font-size="11">310</text>
+</g>
+<g><title>Packet (network.protocol): 287 importing files</title>
+<text x="330" y="530" text-anchor="end" font-size="12">Packet<tspan class="muted" font-size="9"> network.protocol</tspan></text>
+<rect class="shared" x="338" y="520" width="141.0" height="13" rx="2"/>
+<text class="muted" x="484.0" y="530" font-size="11">287</text>
+</g>
+<g><title>Minecraft (client): 280 importing files</title>
+<text x="330" y="549" text-anchor="end" font-size="12">Minecraft<tspan class="muted" font-size="9"> client</tspan></text>
+<rect class="client" x="338" y="539" width="137.6" height="13" rx="2"/>
+<text class="muted" x="480.6" y="549" font-size="11">280</text>
+</g>
+<g><title>DSL (com.mojang.datafixers): 278 importing files</title>
+<text x="330" y="568" text-anchor="end" font-size="12">DSL<tspan class="muted" font-size="9"> com.mojang.datafixers</tspan></text>
+<rect class="lib" x="338" y="558" width="136.6" height="13" rx="2"/>
+<text class="muted" x="479.6" y="568" font-size="11">278</text>
+</g>
+</svg>

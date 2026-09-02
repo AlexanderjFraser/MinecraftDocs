@@ -6,6 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 export PATH="$HOME/.cargo/bin:$PATH"
 export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-$(tr -d '"\r\n ' < ~/.cloudflare/pvpmod.token)}"
+python tools/map_source.py      # the atlas: src/generated/ (tables and SVG figures) from the decompile
 python tools/verify_names.py --index
 python tools/check_lanes.py --index   # the lane key resolves; src/reference/lanes.md regenerated (page drift is report-only until pass-3 session P)
 mdbook build

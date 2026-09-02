@@ -1,0 +1,252 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1939 1016" width="1939" height="1016" role="img" aria-label="The class hierarchy under Block: each node shows how many types descend from it">
+<title>The class hierarchy under Block: each node shows how many types descend from it</title>
+<text class="node" x="4.0" y="554.0" font-size="12">Block (293)</text>
+<path class="edge" d="M86.6 550.0 H204.0 V96.0 H211.0"/>
+<text class="node" x="214.0" y="100.0" font-size="12">BaseEntityBlock (64)</text>
+<path class="edge" d="M359.2 96.0 H729.1 V20.0 H736.1"/>
+<text class="node" x="739.1" y="24.0" font-size="12">AbstractSkullBlock (7)</text>
+<path class="edge" d="M898.2 20.0 H1282.1 V12.0 H1289.1"/>
+<text class="node" x="1292.1" y="16.0" font-size="12">WallSkullBlock (3)</text>
+<path class="edge" d="M898.2 20.0 H1282.1 V28.0 H1289.1"/>
+<text class="node" x="1292.1" y="32.0" font-size="12">SkullBlock (2)</text>
+<path class="edge" d="M359.2 96.0 H729.1 V52.0 H736.1"/>
+<text class="node" x="739.1" y="56.0" font-size="12">AbstractChestBlock (5)</text>
+<path class="edge" d="M898.2 52.0 H1282.1 V44.0 H1289.1"/>
+<text class="node" x="1292.1" y="48.0" font-size="12">ChestBlock (3)</text>
+<path class="edge" d="M898.2 52.0 H1282.1 V60.0 H1289.1"/>
+<text class="node" x="1292.1" y="64.0" font-size="12">EnderChestBlock</text>
+<path class="edge" d="M359.2 96.0 H729.1 V76.0 H736.1"/>
+<text class="node" x="739.1" y="80.0" font-size="12">SignBlock (4)</text>
+<path class="edge" d="M835.6 76.0 H1282.1 V76.0 H1289.1"/>
+<text class="fold" x="1292.1" y="80.0" font-size="12">4 with no subclasses: CeilingHangingSignBlock, StandingSignBlock, WallHangingSignBlock, …</text>
+<path class="edge" d="M359.2 96.0 H729.1 V92.0 H736.1"/>
+<text class="node" x="739.1" y="96.0" font-size="12">AbstractFurnaceBlock (3)</text>
+<path class="edge" d="M912.2 92.0 H1282.1 V92.0 H1289.1"/>
+<text class="fold" x="1292.1" y="96.0" font-size="12">3 with no subclasses: BlastFurnaceBlock, FurnaceBlock, SmokerBlock</text>
+<path class="edge" d="M359.2 96.0 H729.1 V108.0 H736.1"/>
+<text class="node" x="739.1" y="112.0" font-size="12">AbstractBannerBlock (2)</text>
+<path class="edge" d="M905.2 108.0 H1282.1 V108.0 H1289.1"/>
+<text class="fold" x="1292.1" y="112.0" font-size="12">2 with no subclasses: BannerBlock, WallBannerBlock</text>
+<path class="edge" d="M359.2 96.0 H729.1 V124.0 H736.1"/>
+<text class="node" x="739.1" y="128.0" font-size="12">CopperGolemStatueBlock (1)</text>
+<path class="edge" d="M926.1 124.0 H1282.1 V124.0 H1289.1"/>
+<text class="node" x="1292.1" y="128.0" font-size="12">WeatheringCopperGolemStatueBlock</text>
+<path class="edge" d="M359.2 96.0 H729.1 V140.0 H736.1"/>
+<text class="node" x="739.1" y="144.0" font-size="12">DispenserBlock (1)</text>
+<path class="edge" d="M870.4 140.0 H1282.1 V140.0 H1289.1"/>
+<text class="node" x="1292.1" y="144.0" font-size="12">DropperBlock</text>
+<path class="edge" d="M359.2 96.0 H729.1 V156.0 H736.1"/>
+<text class="node" x="739.1" y="160.0" font-size="12">SculkSensorBlock (1)</text>
+<path class="edge" d="M884.3 156.0 H1282.1 V156.0 H1289.1"/>
+<text class="node" x="1292.1" y="160.0" font-size="12">CalibratedSculkSensorBlock</text>
+<path class="edge" d="M359.2 96.0 H729.1 V172.0 H736.1"/>
+<text class="fold" x="739.1" y="176.0" font-size="12">32 with no subclasses: BarrelBlock, BeaconBlock, BeehiveBlock, …</text>
+<path class="edge" d="M86.6 550.0 H204.0 V228.0 H211.0"/>
+<text class="node" x="214.0" y="232.0" font-size="12">VegetationBlock (36)</text>
+<path class="edge" d="M359.2 228.0 H729.1 V188.0 H736.1"/>
+<text class="node" x="739.1" y="192.0" font-size="12">CropBlock (4)</text>
+<path class="edge" d="M835.6 188.0 H1282.1 V188.0 H1289.1"/>
+<text class="fold" x="1292.1" y="192.0" font-size="12">4 with no subclasses: BeetrootBlock, CarrotBlock, PotatoBlock, …</text>
+<path class="edge" d="M359.2 228.0 H729.1 V204.0 H736.1"/>
+<text class="node" x="739.1" y="208.0" font-size="12">DoublePlantBlock (4)</text>
+<path class="edge" d="M884.3 204.0 H1282.1 V204.0 H1289.1"/>
+<text class="fold" x="1292.1" y="208.0" font-size="12">4 with no subclasses: PitcherCropBlock, SmallDripleafBlock, TallFlowerBlock, …</text>
+<path class="edge" d="M359.2 228.0 H729.1 V220.0 H736.1"/>
+<text class="node" x="739.1" y="224.0" font-size="12">DryVegetationBlock (2)</text>
+<path class="edge" d="M898.2 220.0 H1282.1 V220.0 H1289.1"/>
+<text class="fold" x="1292.1" y="224.0" font-size="12">2 with no subclasses: ShortDryGrassBlock, TallDryGrassBlock</text>
+<path class="edge" d="M359.2 228.0 H729.1 V236.0 H736.1"/>
+<text class="node" x="739.1" y="240.0" font-size="12">FlowerBlock (2)</text>
+<path class="edge" d="M849.5 236.0 H1282.1 V236.0 H1289.1"/>
+<text class="fold" x="1292.1" y="240.0" font-size="12">2 with no subclasses: EyeblossomBlock, WitherRoseBlock</text>
+<path class="edge" d="M359.2 228.0 H729.1 V252.0 H736.1"/>
+<text class="node" x="739.1" y="256.0" font-size="12">SaplingBlock (1)</text>
+<path class="edge" d="M856.5 252.0 H1282.1 V252.0 H1289.1"/>
+<text class="node" x="1292.1" y="256.0" font-size="12">MangrovePropaguleBlock</text>
+<path class="edge" d="M359.2 228.0 H729.1 V268.0 H736.1"/>
+<text class="fold" x="739.1" y="272.0" font-size="12">18 with no subclasses: AttachedStemBlock, AzaleaBlock, BushBlock, …</text>
+<path class="edge" d="M86.6 550.0 H204.0 V308.0 H211.0"/>
+<text class="node" x="214.0" y="312.0" font-size="12">HorizontalDirectionalBlock (18)</text>
+<path class="edge" d="M435.8 308.0 H729.1 V284.0 H736.1"/>
+<text class="node" x="739.1" y="288.0" font-size="12">FaceAttachedHorizontalDirectionalBlock (3)</text>
+<path class="edge" d="M1037.4 284.0 H1282.1 V284.0 H1289.1"/>
+<text class="fold" x="1292.1" y="288.0" font-size="12">3 with no subclasses: ButtonBlock, GrindstoneBlock, LeverBlock</text>
+<path class="edge" d="M435.8 308.0 H729.1 V300.0 H736.1"/>
+<text class="node" x="739.1" y="304.0" font-size="12">DiodeBlock (2)</text>
+<path class="edge" d="M842.6 300.0 H1282.1 V300.0 H1289.1"/>
+<text class="fold" x="1292.1" y="304.0" font-size="12">2 with no subclasses: ComparatorBlock, RepeaterBlock</text>
+<path class="edge" d="M435.8 308.0 H729.1 V316.0 H736.1"/>
+<text class="node" x="739.1" y="320.0" font-size="12">TrapDoorBlock (1)</text>
+<path class="edge" d="M863.4 316.0 H1282.1 V316.0 H1289.1"/>
+<text class="node" x="1292.1" y="320.0" font-size="12">WeatheringCopperTrapDoorBlock</text>
+<path class="edge" d="M435.8 308.0 H729.1 V332.0 H736.1"/>
+<text class="fold" x="739.1" y="336.0" font-size="12">9 with no subclasses: BedBlock, BigDripleafBlock, BigDripleafStemBlock, …</text>
+<path class="edge" d="M86.6 550.0 H204.0 V356.0 H211.0"/>
+<text class="node" x="214.0" y="360.0" font-size="12">GrowingPlantBlock (10)</text>
+<path class="edge" d="M373.1 356.0 H729.1 V348.0 H736.1"/>
+<text class="node" x="739.1" y="352.0" font-size="12">GrowingPlantBodyBlock (4)</text>
+<path class="edge" d="M919.1 348.0 H1282.1 V348.0 H1289.1"/>
+<text class="fold" x="1292.1" y="352.0" font-size="12">4 with no subclasses: CaveVinesPlantBlock, KelpPlantBlock, TwistingVinesPlantBlock, …</text>
+<path class="edge" d="M373.1 356.0 H729.1 V364.0 H736.1"/>
+<text class="node" x="739.1" y="368.0" font-size="12">GrowingPlantHeadBlock (4)</text>
+<path class="edge" d="M919.1 364.0 H1282.1 V364.0 H1289.1"/>
+<text class="fold" x="1292.1" y="368.0" font-size="12">4 with no subclasses: CaveVinesBlock, KelpBlock, TwistingVinesBlock, …</text>
+<path class="edge" d="M86.6 550.0 H204.0 V408.0 H211.0"/>
+<text class="node" x="214.0" y="412.0" font-size="12">HalfTransparentBlock (9)</text>
+<path class="edge" d="M387.0 408.0 H729.1 V388.0 H736.1"/>
+<text class="node" x="739.1" y="392.0" font-size="12">TransparentBlock (4)</text>
+<path class="edge" d="M884.3 388.0 H1282.1 V380.0 H1289.1"/>
+<text class="node" x="1292.1" y="384.0" font-size="12">WaterloggedTransparentBlock (1)</text>
+<path class="edge" d="M884.3 388.0 H1282.1 V396.0 H1289.1"/>
+<text class="fold" x="1292.1" y="400.0" font-size="12">2 with no subclasses: StainedGlassBlock, TintedGlassBlock</text>
+<path class="edge" d="M387.0 408.0 H729.1 V412.0 H736.1"/>
+<text class="node" x="739.1" y="416.0" font-size="12">IceBlock (1)</text>
+<path class="edge" d="M828.6 412.0 H1282.1 V412.0 H1289.1"/>
+<text class="node" x="1292.1" y="416.0" font-size="12">FrostedIceBlock</text>
+<path class="edge" d="M387.0 408.0 H729.1 V428.0 H736.1"/>
+<text class="fold" x="739.1" y="432.0" font-size="12">2 with no subclasses: HoneyBlock, SlimeBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V464.0 H211.0"/>
+<text class="node" x="214.0" y="468.0" font-size="12">DirectionalBlock (7)</text>
+<path class="edge" d="M359.2 464.0 H729.1 V452.0 H736.1"/>
+<text class="node" x="739.1" y="456.0" font-size="12">RodBlock (3)</text>
+<path class="edge" d="M828.6 452.0 H1282.1 V444.0 H1289.1"/>
+<text class="node" x="1292.1" y="448.0" font-size="12">LightningRodBlock (1)</text>
+<path class="edge" d="M828.6 452.0 H1282.1 V460.0 H1289.1"/>
+<text class="node" x="1292.1" y="464.0" font-size="12">EndRodBlock</text>
+<path class="edge" d="M359.2 464.0 H729.1 V476.0 H736.1"/>
+<text class="fold" x="739.1" y="480.0" font-size="12">3 with no subclasses: ObserverBlock, PistonBaseBlock, PistonHeadBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V512.0 H211.0"/>
+<text class="node" x="214.0" y="516.0" font-size="12">BaseCoralPlantTypeBlock (6)</text>
+<path class="edge" d="M407.9 512.0 H729.1 V500.0 H736.1"/>
+<text class="node" x="739.1" y="504.0" font-size="12">BaseCoralFanBlock (3)</text>
+<path class="edge" d="M891.3 500.0 H1282.1 V492.0 H1289.1"/>
+<text class="node" x="1292.1" y="496.0" font-size="12">BaseCoralWallFanBlock (1)</text>
+<path class="edge" d="M891.3 500.0 H1282.1 V508.0 H1289.1"/>
+<text class="node" x="1292.1" y="512.0" font-size="12">CoralFanBlock</text>
+<path class="edge" d="M407.9 512.0 H729.1 V524.0 H736.1"/>
+<text class="fold" x="739.1" y="528.0" font-size="12">2 with no subclasses: BaseCoralPlantBlock, CoralPlantBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V548.0 H211.0"/>
+<text class="node" x="214.0" y="552.0" font-size="12">FallingBlock (5)</text>
+<path class="edge" d="M331.4 548.0 H729.1 V540.0 H736.1"/>
+<text class="node" x="739.1" y="544.0" font-size="12">ColoredFallingBlock (1)</text>
+<path class="edge" d="M905.2 540.0 H1282.1 V540.0 H1289.1"/>
+<text class="node" x="1292.1" y="544.0" font-size="12">SandBlock</text>
+<path class="edge" d="M331.4 548.0 H729.1 V556.0 H736.1"/>
+<text class="fold" x="739.1" y="560.0" font-size="12">3 with no subclasses: AnvilBlock, ConcretePowderBlock, DragonEggBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V580.0 H211.0"/>
+<text class="node" x="214.0" y="584.0" font-size="12">BaseTorchBlock (4)</text>
+<path class="edge" d="M345.3 580.0 H729.1 V572.0 H736.1"/>
+<text class="node" x="739.1" y="576.0" font-size="12">RedstoneTorchBlock (1)</text>
+<path class="edge" d="M898.2 572.0 H1282.1 V572.0 H1289.1"/>
+<text class="node" x="1292.1" y="576.0" font-size="12">RedstoneWallTorchBlock</text>
+<path class="edge" d="M345.3 580.0 H729.1 V588.0 H736.1"/>
+<text class="node" x="739.1" y="592.0" font-size="12">TorchBlock (1)</text>
+<path class="edge" d="M842.6 588.0 H1282.1 V588.0 H1289.1"/>
+<text class="node" x="1292.1" y="592.0" font-size="12">WallTorchBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V612.0 H211.0"/>
+<text class="node" x="214.0" y="616.0" font-size="12">CrossCollisionBlock (4)</text>
+<path class="edge" d="M380.1 612.0 H729.1 V604.0 H736.1"/>
+<text class="node" x="739.1" y="608.0" font-size="12">IronBarsBlock (2)</text>
+<path class="edge" d="M863.4 604.0 H1282.1 V604.0 H1289.1"/>
+<text class="fold" x="1292.1" y="608.0" font-size="12">2 with no subclasses: StainedGlassPaneBlock, WeatheringCopperBarsBlock</text>
+<path class="edge" d="M380.1 612.0 H729.1 V620.0 H736.1"/>
+<text class="node" x="739.1" y="624.0" font-size="12">FenceBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V636.0 H211.0"/>
+<text class="node" x="214.0" y="640.0" font-size="12">AbstractCauldronBlock (3)</text>
+<path class="edge" d="M394.0 636.0 H729.1 V636.0 H736.1"/>
+<text class="fold" x="739.1" y="640.0" font-size="12">3 with no subclasses: CauldronBlock, LavaCauldronBlock, LayeredCauldronBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V652.0 H211.0"/>
+<text class="node" x="214.0" y="656.0" font-size="12">BaseRailBlock (3)</text>
+<path class="edge" d="M338.3 652.0 H729.1 V652.0 H736.1"/>
+<text class="fold" x="739.1" y="656.0" font-size="12">3 with no subclasses: DetectorRailBlock, PoweredRailBlock, RailBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V676.0 H211.0"/>
+<text class="node" x="214.0" y="680.0" font-size="12">LeavesBlock (3)</text>
+<path class="edge" d="M324.4 676.0 H729.1 V668.0 H736.1"/>
+<text class="node" x="739.1" y="672.0" font-size="12">TintedParticleLeavesBlock (1)</text>
+<path class="edge" d="M947.0 668.0 H1282.1 V668.0 H1289.1"/>
+<text class="node" x="1292.1" y="672.0" font-size="12">MangroveLeavesBlock</text>
+<path class="edge" d="M324.4 676.0 H729.1 V684.0 H736.1"/>
+<text class="node" x="739.1" y="688.0" font-size="12">UntintedParticleLeavesBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V700.0 H211.0"/>
+<text class="node" x="214.0" y="704.0" font-size="12">MultifaceBlock (3)</text>
+<path class="edge" d="M345.3 700.0 H729.1 V700.0 H736.1"/>
+<text class="node" x="739.1" y="704.0" font-size="12">MultifaceSpreadeableBlock (2)</text>
+<path class="edge" d="M947.0 700.0 H1282.1 V700.0 H1289.1"/>
+<text class="fold" x="1292.1" y="704.0" font-size="12">2 with no subclasses: GlowLichenBlock, SculkVeinBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V724.0 H211.0"/>
+<text class="node" x="214.0" y="728.0" font-size="12">RotatedPillarBlock (3)</text>
+<path class="edge" d="M373.1 724.0 H729.1 V716.0 H736.1"/>
+<text class="node" x="739.1" y="720.0" font-size="12">ChainBlock (1)</text>
+<path class="edge" d="M842.6 716.0 H1282.1 V716.0 H1289.1"/>
+<text class="node" x="1292.1" y="720.0" font-size="12">WeatheringCopperChainBlock</text>
+<path class="edge" d="M373.1 724.0 H729.1 V732.0 H736.1"/>
+<text class="node" x="739.1" y="736.0" font-size="12">HayBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V748.0 H211.0"/>
+<text class="node" x="214.0" y="752.0" font-size="12">SnowyBlock (3)</text>
+<path class="edge" d="M317.4 748.0 H729.1 V748.0 H736.1"/>
+<text class="node" x="739.1" y="752.0" font-size="12">SpreadingSnowyBlock (2)</text>
+<path class="edge" d="M905.2 748.0 H1282.1 V748.0 H1289.1"/>
+<text class="fold" x="1292.1" y="752.0" font-size="12">2 with no subclasses: GrassBlock, MyceliumBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V764.0 H211.0"/>
+<text class="node" x="214.0" y="768.0" font-size="12">AbstractCandleBlock (2)</text>
+<path class="edge" d="M380.1 764.0 H729.1 V764.0 H736.1"/>
+<text class="fold" x="739.1" y="768.0" font-size="12">2 with no subclasses: CandleBlock, CandleCakeBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V780.0 H211.0"/>
+<text class="node" x="214.0" y="784.0" font-size="12">AmethystBlock (2)</text>
+<path class="edge" d="M338.3 780.0 H729.1 V780.0 H736.1"/>
+<text class="fold" x="739.1" y="784.0" font-size="12">2 with no subclasses: AmethystClusterBlock, BuddingAmethystBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V796.0 H211.0"/>
+<text class="node" x="214.0" y="800.0" font-size="12">BaseFireBlock (2)</text>
+<path class="edge" d="M338.3 796.0 H729.1 V796.0 H736.1"/>
+<text class="fold" x="739.1" y="800.0" font-size="12">2 with no subclasses: FireBlock, SoulFireBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V812.0 H211.0"/>
+<text class="node" x="214.0" y="816.0" font-size="12">BasePressurePlateBlock (2)</text>
+<path class="edge" d="M401.0 812.0 H729.1 V812.0 H736.1"/>
+<text class="fold" x="739.1" y="816.0" font-size="12">2 with no subclasses: PressurePlateBlock, WeightedPressurePlateBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V828.0 H211.0"/>
+<text class="node" x="214.0" y="832.0" font-size="12">SpeleothemBlock (2)</text>
+<path class="edge" d="M352.2 828.0 H729.1 V828.0 H736.1"/>
+<text class="fold" x="739.1" y="832.0" font-size="12">2 with no subclasses: PointedDripstoneBlock, SulfurSpikeBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V844.0 H211.0"/>
+<text class="node" x="214.0" y="848.0" font-size="12">CarpetBlock (1)</text>
+<path class="edge" d="M324.4 844.0 H729.1 V844.0 H736.1"/>
+<text class="node" x="739.1" y="848.0" font-size="12">WoolCarpetBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V860.0 H211.0"/>
+<text class="node" x="214.0" y="864.0" font-size="12">CopperBulbBlock (1)</text>
+<path class="edge" d="M352.2 860.0 H729.1 V860.0 H736.1"/>
+<text class="node" x="739.1" y="864.0" font-size="12">WeatheringCopperBulbBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V876.0 H211.0"/>
+<text class="node" x="214.0" y="880.0" font-size="12">CraftingTableBlock (1)</text>
+<path class="edge" d="M373.1 876.0 H729.1 V876.0 H736.1"/>
+<text class="node" x="739.1" y="880.0" font-size="12">SmithingTableBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V892.0 H211.0"/>
+<text class="node" x="214.0" y="896.0" font-size="12">DoorBlock (1)</text>
+<path class="edge" d="M310.5 892.0 H729.1 V892.0 H736.1"/>
+<text class="node" x="739.1" y="896.0" font-size="12">WeatheringCopperDoorBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V908.0 H211.0"/>
+<text class="node" x="214.0" y="912.0" font-size="12">DropExperienceBlock (1)</text>
+<path class="edge" d="M380.1 908.0 H729.1 V908.0 H736.1"/>
+<text class="node" x="739.1" y="912.0" font-size="12">SculkBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V924.0 H211.0"/>
+<text class="node" x="214.0" y="928.0" font-size="12">InfestedBlock (1)</text>
+<path class="edge" d="M338.3 924.0 H729.1 V924.0 H736.1"/>
+<text class="node" x="739.1" y="928.0" font-size="12">InfestedRotatedPillarBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V940.0 H211.0"/>
+<text class="node" x="214.0" y="944.0" font-size="12">LanternBlock (1)</text>
+<path class="edge" d="M331.4 940.0 H729.1 V940.0 H736.1"/>
+<text class="node" x="739.1" y="944.0" font-size="12">WeatheringLanternBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V956.0 H211.0"/>
+<text class="node" x="214.0" y="960.0" font-size="12">PipeBlock (1)</text>
+<path class="edge" d="M310.5 956.0 H729.1 V956.0 H736.1"/>
+<text class="node" x="739.1" y="960.0" font-size="12">ChorusPlantBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V972.0 H211.0"/>
+<text class="node" x="214.0" y="976.0" font-size="12">SlabBlock (1)</text>
+<path class="edge" d="M310.5 972.0 H729.1 V972.0 H736.1"/>
+<text class="node" x="739.1" y="976.0" font-size="12">WeatheringCopperSlabBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V988.0 H211.0"/>
+<text class="node" x="214.0" y="992.0" font-size="12">StairBlock (1)</text>
+<path class="edge" d="M317.4 988.0 H729.1 V988.0 H736.1"/>
+<text class="node" x="739.1" y="992.0" font-size="12">WeatheringCopperStairBlock</text>
+<path class="edge" d="M86.6 550.0 H204.0 V1004.0 H211.0"/>
+<text class="fold" x="214.0" y="1008.0" font-size="12">61 with no subclasses: AirBlock, BambooSaplingBlock, BambooStalkBlock, …</text>
+</svg>

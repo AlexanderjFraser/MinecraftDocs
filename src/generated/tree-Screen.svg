@@ -1,0 +1,80 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2176 328" width="2176" height="328" role="img" aria-label="The class hierarchy under Screen: each node shows how many types descend from it">
+<title>The class hierarchy under Screen: each node shows how many types descend from it</title>
+<text class="node" x="4.0" y="186.0" font-size="12">Screen (157)</text>
+<path class="edge" d="M93.5 182.0 H204.0 V48.0 H211.0"/>
+<text class="node" x="214.0" y="52.0" font-size="12">AbstractContainerScreen (27)</text>
+<path class="edge" d="M414.9 48.0 H840.5 V20.0 H847.5"/>
+<text class="node" x="850.5" y="24.0" font-size="12">AbstractRecipeBookScreen (6)</text>
+<path class="edge" d="M1051.4 20.0 H1483.9 V12.0 H1490.9"/>
+<text class="node" x="1493.9" y="16.0" font-size="12">AbstractFurnaceScreen (3)</text>
+<path class="edge" d="M1051.4 20.0 H1483.9 V28.0 H1490.9"/>
+<text class="fold" x="1493.9" y="32.0" font-size="12">2 with no subclasses: CraftingScreen, InventoryScreen</text>
+<path class="edge" d="M414.9 48.0 H840.5 V44.0 H847.5"/>
+<text class="node" x="850.5" y="48.0" font-size="12">AbstractMountInventoryScreen (2)</text>
+<path class="edge" d="M1079.2 44.0 H1483.9 V44.0 H1490.9"/>
+<text class="fold" x="1493.9" y="48.0" font-size="12">2 with no subclasses: HorseInventoryScreen, NautilusInventoryScreen</text>
+<path class="edge" d="M414.9 48.0 H840.5 V60.0 H847.5"/>
+<text class="node" x="850.5" y="64.0" font-size="12">ItemCombinerScreen (2)</text>
+<path class="edge" d="M1009.6 60.0 H1483.9 V60.0 H1490.9"/>
+<text class="fold" x="1493.9" y="64.0" font-size="12">2 with no subclasses: AnvilScreen, SmithingScreen</text>
+<path class="edge" d="M414.9 48.0 H840.5 V76.0 H847.5"/>
+<text class="fold" x="850.5" y="80.0" font-size="12">14 with no subclasses: BeaconScreen, BrewingStandScreen, CartographyTableScreen, …</text>
+<path class="edge" d="M93.5 182.0 H204.0 V100.0 H211.0"/>
+<text class="node" x="214.0" y="104.0" font-size="12">RealmsScreen (23)</text>
+<path class="edge" d="M338.3 100.0 H840.5 V92.0 H847.5"/>
+<text class="node" x="850.5" y="96.0" font-size="12">RealmsLongRunningMcoTaskScreen (1)</text>
+<path class="edge" d="M1093.1 92.0 H1483.9 V92.0 H1490.9"/>
+<text class="node" x="1493.9" y="96.0" font-size="12">RealmsLongRunningMcoConnectTaskScreen</text>
+<path class="edge" d="M338.3 100.0 H840.5 V108.0 H847.5"/>
+<text class="fold" x="850.5" y="112.0" font-size="12">21 with no subclasses: AddRealmPopupScreen, RealmsBackupInfoScreen, RealmsBackupScreen, …</text>
+<path class="edge" d="M93.5 182.0 H204.0 V124.0 H211.0"/>
+<text class="node" x="214.0" y="128.0" font-size="12">OptionsSubScreen (11)</text>
+<path class="edge" d="M366.2 124.0 H840.5 V124.0 H847.5"/>
+<text class="fold" x="850.5" y="128.0" font-size="12">11 with no subclasses: AccessibilityOptionsScreen, ChatOptionsScreen, ControlsScreen, …</text>
+<path class="edge" d="M93.5 182.0 H204.0 V148.0 H211.0"/>
+<text class="node" x="214.0" y="152.0" font-size="12">ConfirmScreen (5)</text>
+<path class="edge" d="M338.3 148.0 H840.5 V140.0 H847.5"/>
+<text class="node" x="850.5" y="144.0" font-size="12">ConfirmLinkScreen (1)</text>
+<path class="edge" d="M1002.6 140.0 H1483.9 V140.0 H1490.9"/>
+<text class="node" x="1493.9" y="144.0" font-size="12">PrivacyConfirmLinkScreen</text>
+<path class="edge" d="M338.3 148.0 H840.5 V156.0 H847.5"/>
+<text class="fold" x="850.5" y="160.0" font-size="12">3 with no subclasses: FriendsListConfirmScreen, PackConfirmScreen, TitleConfirmScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V180.0 H211.0"/>
+<text class="node" x="214.0" y="184.0" font-size="12">DialogScreen (5)</text>
+<path class="edge" d="M331.4 180.0 H840.5 V172.0 H847.5"/>
+<text class="node" x="850.5" y="176.0" font-size="12">ButtonListDialogScreen (3)</text>
+<path class="edge" d="M1037.4 172.0 H1483.9 V172.0 H1490.9"/>
+<text class="fold" x="1493.9" y="176.0" font-size="12">3 with no subclasses: DialogListDialogScreen, MultiButtonDialogScreen, ServerLinksDialogScreen</text>
+<path class="edge" d="M331.4 180.0 H840.5 V188.0 H847.5"/>
+<text class="node" x="850.5" y="192.0" font-size="12">SimpleDialogScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V204.0 H211.0"/>
+<text class="node" x="214.0" y="208.0" font-size="12">AbstractReportScreen (3)</text>
+<path class="edge" d="M387.0 204.0 H840.5 V204.0 H847.5"/>
+<text class="fold" x="850.5" y="208.0" font-size="12">3 with no subclasses: ChatReportScreen, NameReportScreen, SkinReportScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V220.0 H211.0"/>
+<text class="node" x="214.0" y="224.0" font-size="12">WarningScreen (3)</text>
+<path class="edge" d="M338.3 220.0 H840.5 V220.0 H847.5"/>
+<text class="fold" x="850.5" y="224.0" font-size="12">3 with no subclasses: CodeOfConductScreen, DiscardReportWarningScreen, SafetyScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V236.0 H211.0"/>
+<text class="node" x="214.0" y="240.0" font-size="12">AbstractCommandBlockEditScreen (2)</text>
+<path class="edge" d="M456.6 236.0 H840.5 V236.0 H847.5"/>
+<text class="fold" x="850.5" y="240.0" font-size="12">2 with no subclasses: CommandBlockEditScreen, MinecartCommandBlockEditScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V252.0 H211.0"/>
+<text class="node" x="214.0" y="256.0" font-size="12">AbstractGameRulesScreen (2)</text>
+<path class="edge" d="M407.9 252.0 H840.5 V252.0 H847.5"/>
+<text class="fold" x="850.5" y="256.0" font-size="12">2 with no subclasses: InWorldGameRulesScreen, WorldCreationGameRulesScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V268.0 H211.0"/>
+<text class="node" x="214.0" y="272.0" font-size="12">AbstractSignEditScreen (2)</text>
+<path class="edge" d="M401.0 268.0 H840.5 V268.0 H847.5"/>
+<text class="fold" x="850.5" y="272.0" font-size="12">2 with no subclasses: HangingSignEditScreen, SignEditScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V284.0 H211.0"/>
+<text class="node" x="214.0" y="288.0" font-size="12">BookViewScreen (1)</text>
+<path class="edge" d="M345.3 284.0 H840.5 V284.0 H847.5"/>
+<text class="node" x="850.5" y="288.0" font-size="12">LecternScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V300.0 H211.0"/>
+<text class="node" x="214.0" y="304.0" font-size="12">ChatScreen (1)</text>
+<path class="edge" d="M317.4 300.0 H840.5 V300.0 H847.5"/>
+<text class="node" x="850.5" y="304.0" font-size="12">InBedChatScreen</text>
+<path class="edge" d="M93.5 182.0 H204.0 V316.0 H211.0"/>
+<text class="fold" x="214.0" y="320.0" font-size="12">60 with no subclasses: AccessibilityOnboardingScreen, AdvancementsScreen, AlertScreen, …</text>
+</svg>

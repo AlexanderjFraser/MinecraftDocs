@@ -43,3 +43,13 @@ was cut or moved, and why)*
   still carry em-dash chains in the decision tables' gate cells, and the
   tickets page says "graph" and "tracker" for the same object.
 
+
+- **2026-09-02, session B — maps.** The four atlas pages and the atlas
+  front page are new prose and carry the em-dash chains the corpus is
+  prone to; `packages.md`'s part → packages table will duplicate the
+  landing pages once all thirteen exist and is a candidate cut then;
+  `hierarchy.md`'s *two trees the table shows and the figures do not* is a
+  two-sentence section and should either grow a figure or fold into the
+  tables' preamble; "the number" device is used once (`biggest.md`) —
+  check it reads as intended. Nothing was cut from the old maps: the
+  tables are all still there under the figures, at the same URLs.

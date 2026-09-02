@@ -7,6 +7,53 @@ is *allowed* to run on it. The last column is the rule the rest of the
 documentation leans on: game state belongs to exactly one thread, and
 anything else submits a task to that thread's event loop.
 
+## The picture
+
+Two threads own game state — the Render thread owns the client's, the
+Server thread owns the world's — and everything else is a way of getting
+work to them or from them. Work crosses a thread boundary in exactly three
+ways, and the figure labels each edge with which: a **posted task** (a
+`Runnable` on the owner's `BlockableEventLoop`), a **completed future** (a
+worker's result, completed onto the owner's executor), or a **hopped
+handler** (a packet decoded on Netty and re-posted to its owner by
+`PacketUtils.ensureRunningOnSameThread`).
+
+```mermaid
+flowchart LR
+    subgraph ClientSide["the client process"]
+        RT["Render thread<br/>Minecraft.runTick: a frame, then 0 to 10 client ticks"]
+        SND["Sound engine<br/>SoundEngineExecutor: the OpenAL calls"]
+    end
+    subgraph Shared["shared by both halves"]
+        NET["Netty IO<br/>Connection: split, decode, encode, plus the whole handshake and login"]
+        WK["Worker-Main-n<br/>Util.backgroundExecutor: generation, lighting, meshing"]
+    end
+    subgraph ServerSide["the server"]
+        ST["Server thread<br/>MinecraftServer.runServer: a tick every 50 ms"]
+        IO["IO-Worker-n<br/>Util.ioPool: region file reads and writes"]
+        WD["Server Watchdog<br/>dedicated only"]
+        LST["Console, RCON, query, management<br/>dedicated only"]
+    end
+    RT -- "serverbound packets, written on the caller's thread" --> NET
+    NET -- "clientbound play packets: hopped handler" --> RT
+    NET -- "serverbound play packets: hopped handler" --> ST
+    ST -- "clientbound packets" --> NET
+    ST -- "chunk generation and lighting: posted task" --> WK
+    WK -- "a generated chunk: completed future" --> ST
+    RT -- "section meshing: posted task" --> WK
+    WK -- "a built mesh: completed future" --> RT
+    ST -- "region reads and writes: posted task" --> IO
+    IO -- "a loaded chunk's data: completed future" --> ST
+    RT -- "play, stop, move a source: posted task" --> SND
+    LST -- "a command line: posted task" --> ST
+    WD -. "reads tick state unsynchronised, kills the JVM past max-tick-time" .-> ST
+```
+
+The table is the figure's rows. Netty is drawn once and shared because
+it is: in singleplayer the client's `Connection` and the integrated
+server's run on the same `Netty Local IO` threads, and the packets between
+them are real.
+
 ## The threads a lecture leans on
 
 | thread | made by | runs | may touch |

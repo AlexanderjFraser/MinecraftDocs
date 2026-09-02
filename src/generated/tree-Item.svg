@@ -1,0 +1,38 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1619 152" width="1619" height="152" role="img" aria-label="The class hierarchy under Item: each node shows how many types descend from it">
+<title>The class hierarchy under Item: each node shows how many types descend from it</title>
+<text class="node" x="4.0" y="90.0" font-size="12">Item (71)</text>
+<path class="edge" d="M72.6 86.0 H204.0 V32.0 H211.0"/>
+<text class="node" x="214.0" y="36.0" font-size="12">BlockItem (11)</text>
+<path class="edge" d="M317.4 32.0 H631.7 V20.0 H638.7"/>
+<text class="node" x="641.7" y="24.0" font-size="12">StandingAndWallBlockItem (4)</text>
+<path class="edge" d="M842.6 20.0 H1170.7 V12.0 H1177.7"/>
+<text class="node" x="1180.7" y="16.0" font-size="12">SignItem (1)</text>
+<path class="edge" d="M842.6 20.0 H1170.7 V28.0 H1177.7"/>
+<text class="fold" x="1180.7" y="32.0" font-size="12">2 with no subclasses: BannerItem, PlayerHeadItem</text>
+<path class="edge" d="M317.4 32.0 H631.7 V44.0 H638.7"/>
+<text class="fold" x="641.7" y="48.0" font-size="12">6 with no subclasses: BedItem, DoubleHighBlockItem, GameMasterBlockItem, …</text>
+<path class="edge" d="M72.6 86.0 H204.0 V60.0 H211.0"/>
+<text class="node" x="214.0" y="64.0" font-size="12">PotionItem (3)</text>
+<path class="edge" d="M317.4 60.0 H631.7 V60.0 H638.7"/>
+<text class="node" x="641.7" y="64.0" font-size="12">ThrowablePotionItem (2)</text>
+<path class="edge" d="M807.8 60.0 H1170.7 V60.0 H1177.7"/>
+<text class="fold" x="1180.7" y="64.0" font-size="12">2 with no subclasses: LingeringPotionItem, SplashPotionItem</text>
+<path class="edge" d="M72.6 86.0 H204.0 V76.0 H211.0"/>
+<text class="node" x="214.0" y="80.0" font-size="12">ArrowItem (2)</text>
+<path class="edge" d="M310.5 76.0 H631.7 V76.0 H638.7"/>
+<text class="fold" x="641.7" y="80.0" font-size="12">2 with no subclasses: SpectralArrowItem, TippedArrowItem</text>
+<path class="edge" d="M72.6 86.0 H204.0 V92.0 H211.0"/>
+<text class="node" x="214.0" y="96.0" font-size="12">ProjectileWeaponItem (2)</text>
+<path class="edge" d="M387.0 92.0 H631.7 V92.0 H638.7"/>
+<text class="fold" x="641.7" y="96.0" font-size="12">2 with no subclasses: BowItem, CrossbowItem</text>
+<path class="edge" d="M72.6 86.0 H204.0 V108.0 H211.0"/>
+<text class="node" x="214.0" y="112.0" font-size="12">BucketItem (1)</text>
+<path class="edge" d="M317.4 108.0 H631.7 V108.0 H638.7"/>
+<text class="node" x="641.7" y="112.0" font-size="12">MobBucketItem</text>
+<path class="edge" d="M72.6 86.0 H204.0 V124.0 H211.0"/>
+<text class="node" x="214.0" y="128.0" font-size="12">HangingEntityItem (1)</text>
+<path class="edge" d="M366.2 124.0 H631.7 V124.0 H638.7"/>
+<text class="node" x="641.7" y="128.0" font-size="12">ItemFrameItem</text>
+<path class="edge" d="M72.6 86.0 H204.0 V140.0 H211.0"/>
+<text class="fold" x="214.0" y="144.0" font-size="12">45 with no subclasses: AirItem, ArmorStandItem, AxeItem, …</text>
+</svg>

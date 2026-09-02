@@ -121,6 +121,29 @@ Shapes that render under 11.6.0 and are in use: `sequenceDiagram`,
 `flowchart`, `stateDiagram-v2`. Others the checker accepts may be added;
 a shape the checker rejects is not available whatever the docs say.
 
+**A generated figure** (session B's pipeline, used by the atlas) is an SVG a
+tool under `tools/` writes into `src/generated/` — never hand-edited, always
+regenerable on the next version — and a page includes it inside an HTML
+block so that it inherits the theme:
+
+    <figure class="map">
+    {{#include ../generated/<name>.svg}}
+    <figcaption>What the figure shows. Click to enlarge.</figcaption>
+    </figure>
+
+The SVG carries **classes only** — `class="mapfig"` on the root, and
+`shared`, `client`, `lib`, `skip`, `muted`, `fold`, `edge`, `group` on its
+parts — and every colour, font and theme rule lives in `custom.css`, with
+text as `currentColor`, so the five mdBook themes and the zoom overlay all
+read it. It emits no blank line (an HTML block ends at one), sets a
+`viewBox` so it scales to the column, and puts a `<title>` on each element
+that has a number, so hovering answers what a label could not fit.
+`tools/map_source.py` is the worked example: a squarified treemap, bar
+charts and a left-to-right tree with counts, each a forty-line function.
+`llms_full.py` replaces an SVG include with a one-line note and pastes a
+markdown include in, so a generated table beside the figure is what
+agents read.
+
 ## Lanes
 
 A lane in a sequence diagram is a class name, abbreviated once for the whole

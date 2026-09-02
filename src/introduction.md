@@ -38,11 +38,21 @@ flowchart LR
 ```
 
 The whole thing is 7,055 classes and about 720,000 lines of Java 25. Just
-under a third of it is client-only; the rest ships in both jars. Four threads carry nearly
-all of it — the Render thread, which is also the client's game thread; the
-Server thread; the Netty event loop; and a shared worker pool — and the
-first page of the book, [Anatomy](systems/anatomy/anatomy.md), is those
-four threads and the two loops.
+under a third of it is client-only; the rest ships in both jars, and the
+picture below is the split — orange is the client's, blue is everything the
+dedicated server also runs, and the hatched boxes are the corners this book
+leaves out.
+
+<figure class="map">
+{{#include generated/packages-treemap.svg}}
+<figcaption>The two jars. Every box is a package, its area is lines of decompiled source; the <a href="maps/packages.html">atlas</a> walks through it. Click to enlarge.</figcaption>
+</figure>
+
+Four threads carry nearly all of it — the Render thread, which is also the
+client's game thread; the Server thread; the Netty event loop; and a shared
+worker pool — and the first page of the book,
+[Anatomy](systems/anatomy/anatomy.md), is those four threads and the two
+loops.
 
 ## How the book is read
 
@@ -61,10 +71,13 @@ state machine, a flowchart of a decision. Every diagram enlarges on click.
 Each part only assumes the ones before it, and the
 [lecture map](lectures.md) says where that is not quite true.
 
-**Maps** are looked at once. The [atlas](maps/README.md) is generated from
-the decompile — where the mass is, which classes everything imports, the
-widest hierarchies — and is the "where is everything" answer a newcomer
-wants before any system page makes sense.
+**Maps** are looked at once. The [atlas](maps/README.md) is four figures
+generated from the decompile on every build — [where the code
+is](maps/packages.md), [where the mass is](maps/biggest.md), [what
+everything imports](maps/fanin.md) and [what extends
+what](maps/hierarchy.md) — each with a page of prose and the table it was
+drawn from. It is the "where is everything" answer a newcomer wants before
+any system page makes sense.
 
 **Reference** is looked up. Every packet, registry, data component, game
 rule and thread, a class index that answers "which page talks about

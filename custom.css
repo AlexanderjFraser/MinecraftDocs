@@ -107,3 +107,62 @@
     height: auto;
     color: var(--fg);
 }
+
+/* The atlas's generated figures (tools/map_source.py → src/generated/*.svg,
+ * pass-3 session B). The SVG carries classes only; every colour lives here so
+ * the five themes and the zoom overlay all read. Text is currentColor. */
+:root {
+    --map-shared: #3b7dd8;
+    --map-client: #e0862e;
+    --map-lib: #8f8f8f;
+}
+.coal, .navy, .ayu {
+    --map-shared: #6aa6ee;
+    --map-client: #f0a24a;
+    --map-lib: #a0a0a0;
+}
+svg.mapfig {
+    font-family: inherit;
+    color: var(--fg);
+    display: block;
+}
+svg.mapfig text {
+    fill: currentColor;
+}
+svg.mapfig .muted {
+    opacity: 0.65;
+}
+svg.mapfig .fold {
+    opacity: 0.65;
+    font-style: italic;
+}
+svg.mapfig rect.shared { fill: var(--map-shared); fill-opacity: 0.55; }
+svg.mapfig rect.client { fill: var(--map-client); fill-opacity: 0.55; }
+svg.mapfig rect.lib    { fill: var(--map-lib);    fill-opacity: 0.55; }
+svg.mapfig rect.skip   { fill: url(#mapfig-hatch); }
+svg.mapfig .hatch      { stroke: currentColor; stroke-width: 1; opacity: 0.35; }
+svg.mapfig g.cell rect.shared,
+svg.mapfig g.cell rect.client {
+    stroke: var(--bg);
+    stroke-width: 1;
+}
+svg.mapfig rect.group {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+}
+svg.mapfig .edge {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1;
+    opacity: 0.45;
+}
+.content figure.map {
+    max-width: 100%;
+    margin: 1.5em 0;
+}
+.content figure.map figcaption {
+    font-size: 0.85em;
+    color: var(--icons);
+    margin-top: 0.4em;
+}

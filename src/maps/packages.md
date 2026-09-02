@@ -1,169 +1,114 @@
+# Where the code is
 
-## packages — 26.2
+> Verified against **Minecraft 26.2** · Maps · The jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching is what this book skips.
 
-| package (depth 3) | classes | client-only | lines |
-|---|---:|---:|---:|
-| `net/minecraft/world` | 2585 | 0 | 304,897 |
-| `net/minecraft/client` | 1864 | 1864 | 172,711 |
-| `net/minecraft/util` | 717 | 0 | 53,275 |
-| `net/minecraft/server` | 420 | 0 | 52,720 |
-| `com/mojang/blaze3d` | 211 | 211 | 26,111 |
-| `net/minecraft/network` | 411 | 0 | 23,378 |
-| `net/minecraft/data` | 163 | 0 | 15,587 |
-| `com/mojang/realmsclient` | 127 | 127 | 13,217 |
-| `net/minecraft/commands` | 122 | 0 | 13,001 |
-| `net/minecraft/core` | 110 | 0 | 11,239 |
-| `net/minecraft/nbt` | 43 | 0 | 8,001 |
-| `net/minecraft/advancements` | 116 | 0 | 7,735 |
-| `net/minecraft/gametest` | 47 | 0 | 5,514 |
-| `net/minecraft/sounds` | 6 | 0 | 2,101 |
-| `net/minecraft/tags` | 29 | 0 | 1,788 |
-| `net/minecraft/resources` | 15 | 0 | 1,764 |
-| `net/minecraft` | 19 | 0 | 1,665 |
-| `net/minecraft/references` | 5 | 0 | 1,434 |
-| `com/mojang/math` | 10 | 0 | 922 |
-| `net/minecraft/stats` | 10 | 0 | 873 |
-| `net/minecraft/gizmos` | 15 | 0 | 569 |
-| `net/minecraft/recipebook` | 3 | 0 | 350 |
-| `net/minecraft/locale` | 3 | 0 | 247 |
-| `net/minecraft/realms` | 4 | 4 | 203 |
-| **total** | 7055 | 2206 | 719,302 |
+Java Minecraft is 7,055 classes and 719,302 lines of decompiled Java 25,
+and the first surprise in it is which half is bigger. Everything a player
+sees — every screen, the HUD, the whole renderer, the entity models, both
+GPU back-ends, the sound engine, Realms — is the orange quarter of this
+picture. The blue three quarters ship in both jars, and the biggest box
+of all, `world/level`, is a fifth of the game by itself: blocks, block
+states, chunks, lighting and world generation, all of it code the
+dedicated server runs with no window attached.
 
-| package (depth 4) | classes | client-only | lines |
-|---|---:|---:|---:|
-| `net/minecraft/world/level` | 1312 | 0 | 146,417 |
-| `net/minecraft/world/entity` | 716 | 0 | 109,061 |
-| `net/minecraft/client/gui` | 444 | 444 | 59,057 |
-| `net/minecraft/client/renderer` | 701 | 701 | 48,412 |
-| `net/minecraft/world/item` | 314 | 0 | 29,281 |
-| `net/minecraft/util/datafix` | 396 | 0 | 26,372 |
-| `net/minecraft/network/protocol` | 293 | 0 | 12,934 |
-| `net/minecraft/server/commands` | 102 | 0 | 12,781 |
-| `net/minecraft/client/model` | 267 | 267 | 12,696 |
-| `net/minecraft/util` | 91 | 0 | 12,067 |
-| `net/minecraft/server/level` | 42 | 0 | 11,977 |
-| `net/minecraft/client/multiplayer` | 63 | 63 | 11,169 |
-| `net/minecraft/client` | 41 | 41 | 10,709 |
-| `net/minecraft/commands/arguments` | 71 | 0 | 8,847 |
-| `net/minecraft/client/resources` | 101 | 101 | 7,612 |
-| `net/minecraft/nbt` | 36 | 0 | 7,489 |
-| `com/mojang/blaze3d/vulkan` | 40 | 40 | 7,477 |
-| `net/minecraft/world/inventory` | 64 | 0 | 7,082 |
-| `net/minecraft/client/particle` | 87 | 87 | 6,806 |
-| `net/minecraft/client/data` | 28 | 28 | 6,176 |
-| `com/mojang/realmsclient/gui` | 40 | 40 | 5,830 |
-| `com/mojang/blaze3d/opengl` | 28 | 28 | 5,627 |
-| `net/minecraft/gametest/framework` | 45 | 0 | 5,495 |
-| `net/minecraft/core` | 38 | 0 | 5,493 |
-| `net/minecraft/server/network` | 28 | 0 | 5,409 |
-| `net/minecraft/data/worldgen` | 56 | 0 | 5,369 |
-| `net/minecraft/server` | 27 | 0 | 5,227 |
-| `net/minecraft/server/packs` | 55 | 0 | 4,975 |
-| `net/minecraft/network/chat` | 63 | 0 | 4,818 |
-| `net/minecraft/util/profiling` | 70 | 0 | 4,260 |
-| `net/minecraft/server/jsonrpc` | 65 | 0 | 4,094 |
-| `com/mojang/blaze3d/platform` | 29 | 29 | 3,896 |
-| `net/minecraft/network` | 42 | 0 | 3,732 |
-| `net/minecraft/util/filefix` | 57 | 0 | 3,544 |
-| `net/minecraft/advancements/predicates` | 54 | 0 | 3,459 |
-| `net/minecraft/world/phys` | 28 | 0 | 3,020 |
-| `net/minecraft/data/loot` | 21 | 0 | 2,883 |
-| `net/minecraft/advancements/triggers` | 49 | 0 | 2,809 |
-| `net/minecraft/server/players` | 19 | 0 | 2,766 |
-| `net/minecraft/core/component` | 30 | 0 | 2,668 |
-| `com/mojang/realmsclient/client` | 19 | 19 | 2,534 |
-| `com/mojang/blaze3d/vertex` | 16 | 16 | 2,420 |
-| `com/mojang/blaze3d/systems` | 26 | 26 | 2,308 |
-| `net/minecraft/data/recipes` | 17 | 0 | 2,227 |
-| `net/minecraft/client/sounds` | 17 | 17 | 2,152 |
-| `net/minecraft/sounds` | 6 | 0 | 2,101 |
-| `net/minecraft/util/parsing` | 29 | 0 | 1,879 |
-| `net/minecraft/commands` | 14 | 0 | 1,873 |
-| `com/mojang/realmsclient/dto` | 39 | 39 | 1,866 |
-| `net/minecraft/client/player` | 9 | 9 | 1,821 |
-| `net/minecraft/server/dedicated` | 7 | 0 | 1,809 |
-| `net/minecraft/tags` | 29 | 0 | 1,788 |
-| `net/minecraft/resources` | 15 | 0 | 1,764 |
-| `net/minecraft/world/attribute` | 28 | 0 | 1,705 |
-| `net/minecraft` | 19 | 0 | 1,665 |
-| `net/minecraft/world` | 25 | 0 | 1,664 |
-| `net/minecraft/data/tags` | 29 | 0 | 1,660 |
-| `com/mojang/realmsclient` | 4 | 4 | 1,524 |
-| `net/minecraft/advancements` | 13 | 0 | 1,467 |
-| `net/minecraft/world/scores` | 16 | 0 | 1,442 |
-| `net/minecraft/references` | 5 | 0 | 1,434 |
-| `com/mojang/realmsclient/util` | 20 | 20 | 1,399 |
-| `net/minecraft/network/codec` | 7 | 0 | 1,372 |
-| `net/minecraft/util/debug` | 19 | 0 | 1,370 |
-| `net/minecraft/world/effect` | 20 | 0 | 1,306 |
-| `net/minecraft/data` | 10 | 0 | 1,264 |
-| `net/minecraft/client/telemetry` | 18 | 18 | 1,221 |
-| `net/minecraft/core/dispenser` | 14 | 0 | 1,094 |
-| `com/mojang/blaze3d/audio` | 12 | 12 | 1,013 |
-| `com/mojang/blaze3d/pipeline` | 11 | 11 | 954 |
-| `net/minecraft/util/worldupdate` | 6 | 0 | 937 |
-| `net/minecraft/world/damagesource` | 12 | 0 | 936 |
-| `com/mojang/math` | 10 | 0 | 922 |
-| `net/minecraft/client/color` | 18 | 18 | 915 |
-| `net/minecraft/commands/synchronization` | 12 | 0 | 895 |
-| `net/minecraft/server/dialog` | 35 | 0 | 886 |
-| `net/minecraft/data/advancements` | 10 | 0 | 874 |
-| `net/minecraft/stats` | 10 | 0 | 873 |
-| `net/minecraft/world/ticks` | 14 | 0 | 869 |
-| `net/minecraft/core/particles` | 21 | 0 | 860 |
-| `net/minecraft/util/thread` | 9 | 0 | 842 |
-| `net/minecraft/server/rcon` | 9 | 0 | 839 |
-| `net/minecraft/client/server` | 6 | 6 | 838 |
-| `net/minecraft/core/registries` | 4 | 0 | 817 |
-| `net/minecraft/commands/execution` | 18 | 0 | 756 |
-| `net/minecraft/world/waypoints` | 9 | 0 | 677 |
-| `net/minecraft/client/tutorial` | 10 | 10 | 671 |
-| `net/minecraft/util/valueproviders` | 18 | 0 | 670 |
-| `net/minecraft/commands/functions` | 7 | 0 | 630 |
-| `net/minecraft/gizmos` | 15 | 0 | 569 |
-| `net/minecraft/data/info` | 8 | 0 | 530 |
-| `net/minecraft/client/main` | 4 | 4 | 523 |
-| `net/minecraft/network/syncher` | 6 | 0 | 522 |
-| `net/minecraft/nbt/visitors` | 7 | 0 | 512 |
-| `net/minecraft/client/animation` | 23 | 23 | 509 |
-| `net/minecraft/client/searchtree` | 8 | 8 | 505 |
-| `net/minecraft/data/structures` | 5 | 0 | 469 |
-| `com/mojang/blaze3d` | 12 | 12 | 462 |
-| `net/minecraft/util/eventlog` | 4 | 0 | 459 |
-| `net/minecraft/world/timeline` | 5 | 0 | 447 |
-| `com/mojang/blaze3d/framegraph` | 3 | 3 | 437 |
-| `com/mojang/blaze3d/font` | 7 | 7 | 432 |
-| `net/minecraft/server/permissions` | 12 | 0 | 402 |
-| `net/minecraft/util/random` | 4 | 0 | 369 |
-| `net/minecraft/world/flag` | 7 | 0 | 356 |
-| `net/minecraft/server/chase` | 3 | 0 | 355 |
-| `net/minecraft/world/clock` | 10 | 0 | 351 |
-| `net/minecraft/recipebook` | 3 | 0 | 350 |
-| `net/minecraft/server/bossevents` | 3 | 0 | 328 |
-| `com/mojang/blaze3d/buffers` | 6 | 6 | 327 |
-| `net/minecraft/server/gui` | 4 | 0 | 310 |
-| `net/minecraft/core/cauldron` | 3 | 0 | 307 |
-| `net/minecraft/server/notifications` | 5 | 0 | 295 |
-| `net/minecraft/client/quickplay` | 3 | 3 | 284 |
-| `net/minecraft/world/food` | 5 | 0 | 283 |
-| `net/minecraft/client/input` | 8 | 8 | 282 |
-| `net/minecraft/data/registries` | 5 | 0 | 248 |
-| `net/minecraft/locale` | 3 | 0 | 247 |
-| `net/minecraft/client/entity` | 4 | 4 | 228 |
-| `net/minecraft/realms` | 4 | 4 | 203 |
-| `net/minecraft/util/debugchart` | 8 | 0 | 199 |
-| `com/mojang/blaze3d/util` | 2 | 2 | 189 |
-| `net/minecraft/util/context` | 4 | 0 | 187 |
-| `com/mojang/blaze3d/resource` | 6 | 6 | 185 |
-| `net/minecraft/server/waypoints` | 2 | 0 | 180 |
-| `com/mojang/blaze3d/preprocessor` | 2 | 2 | 164 |
-| `com/mojang/blaze3d/textures` | 6 | 6 | 150 |
-| `net/minecraft/util/monitoring` | 2 | 0 | 120 |
-| `net/minecraft/server/advancements` | 2 | 0 | 87 |
-| `net/minecraft/client/profiling` | 2 | 2 | 81 |
-| `com/mojang/blaze3d/shaders` | 5 | 5 | 70 |
-| `com/mojang/realmsclient/exception` | 5 | 5 | 64 |
-| `net/minecraft/data/metadata` | 2 | 0 | 63 |
-| `net/minecraft/client/waypoints` | 2 | 2 | 44 |
-| `net/minecraft/gametest` | 2 | 0 | 19 |
-| **total** | 7055 | 2206 | 719,302 |
+<figure class="map">
+{{#include ../generated/packages-treemap.svg}}
+<figcaption>The 26.2 decompile as a treemap. Each outer box is a package directly under <code>net/minecraft</code> or <code>com/mojang</code>, labelled with its share of the lines; the boxes inside are its sub-packages. Hover a box for its counts; click the figure to enlarge it.</figcaption>
+</figure>
+
+## Two jars, one tree
+
+The client jar is a strict superset of the server jar, and the split is
+clean: the 2,206 client-only classes live in exactly four packages —
+`net/minecraft/client` (1,864 classes), `com/mojang/blaze3d` (211),
+`com/mojang/realmsclient` (127) and `net/minecraft/realms` (4). Every other
+package in the table below ships in both jars, class for class; no
+sub-package at this depth is mixed. The client-only quarter is 212,242
+lines, 29.5% of the total, which is the "just under a third" the
+introduction quotes.
+
+The consequence for reading this book: when a page says a class is
+*client-only* it is saying which package the class lives in, and when a
+page in Part IV or V names a class, the dedicated server has it. The class
+index in Reference says which side each named class is on; the oracle
+behind it is `server-classes.txt`.
+
+## What the big boxes are
+
+**world — 42%.** `world/level` (146,417 lines, 1,312 classes) is Parts
+IV, V and XII: chunks, block states, lighting and, under
+`world/level/levelgen`, the whole of world generation. `world/entity`
+(109,061 lines, 716 classes) is Parts VI and VIII: the entity hierarchy,
+its AI and the player. `world/item` and `world/inventory` (36,363 lines
+between them) are Part VII.
+
+**client — 24%.** `client/gui` (59,057 lines) is the screens and the HUD,
+Part X; `client/renderer` and `client/model` (61,108 lines together) are
+the frame, section meshing and the entity models, Part XI;
+`client/multiplayer` (11,169) holds `ClientPacketListener` and
+`ClientLevel`, the client's copy of the world. The 41 classes directly in
+`net/minecraft/client` — `Minecraft`, `Options`, `KeyMapping`,
+`MouseHandler` — are 10,709 lines on their own.
+
+**util — 7%, two thirds of it skipped.** `util/datafix`, `util/filefix`
+and `util/profiling` are 34,176 of the package's 53,275 lines and are all
+outside this book; the hatched box is the save-migration history. What is
+left is the toolbox every part uses — `Mth`, `RandomSource`, `Util` — and
+the parsing and debug packages.
+
+**server — 7%.** `server/commands` (12,781) is Part XIII's command
+implementations; `server/level` is 42 classes and 11,977 lines, the
+smallest package with the largest classes (`ServerLevel`, `ChunkMap`,
+`ServerPlayer`), Parts III and IV; `server/network` is the serverbound
+packet handlers, Part IX; `server/packs` is the pack system, Part II;
+`server/jsonrpc`, the management server, is skipped.
+
+**blaze3d — 4%.** The GPU abstraction has two back-ends behind
+`GpuDevice`, and the Vulkan one (`blaze3d/vulkan`, 7,477 lines) is larger
+than the OpenGL one (`blaze3d/opengl`, 5,627).
+
+**network — 3%, in 411 classes.** `network/protocol` is 293 classes in
+12,934 lines: the packet catalogue is many tiny classes, one per packet.
+`network/chat` (4,818) is `Component` and chat signing.
+
+Below 3% the boxes are Part II's foundations — `net/minecraft/core`,
+`net/minecraft/nbt`, `net/minecraft/tags`, `net/minecraft/resources`,
+`net/minecraft/commands` (Brigadier's argument types, Part XIII) and
+`net/minecraft/advancements` — plus the skipped `net/minecraft/data` package, which is the program
+that writes the vanilla data pack rather than anything that runs in a game.
+
+## Where each part lives
+
+The parts follow the tree, but not one box each. This table is the map
+from the book's order to the jar's; a part's landing page says the same
+thing with the classes named.
+
+| part | packages |
+|---|---|
+| I · Anatomy | `client/main`, `net/minecraft/server` (the two `Main`s, `MinecraftServer`), `net/minecraft/client` (`Minecraft`) |
+| II · Foundations | `net/minecraft/core`, `net/minecraft/resources`, `net/minecraft/tags`, `net/minecraft/nbt`, `core/component`, `server/packs`, `net/minecraft/util` |
+| III · The server | `net/minecraft/server`, `server/level`, `server/players`, `server/dedicated` |
+| IV · The world | `world/level/chunk`, `world/level/chunk/storage`, `world/level/lighting`, `world/ticks`, `world/level/gameevent`, `world/level/entity`, `server/level` |
+| V · Blocks | `world/level/block`, `world/level/block/state`, `world/level/block/entity`, `world/level/redstone` |
+| VI · Entities | `world/entity`, `world/entity/ai`, `world/entity/ai/attributes`, `network/syncher`, `world/level/pathfinder` |
+| VII · Items and inventories | `world/item`, `world/inventory`, `world/item/crafting`, `world/item/enchantment`, `world/level/storage/loot` |
+| VIII · The player | `world/entity/player`, `world/food`, `server/level` (`ServerPlayer`), `client/player` |
+| IX · Networking | `net/minecraft/network`, `network/protocol`, `network/codec`, `network/chat`, `server/network`, `client/multiplayer` |
+| X · The client | `net/minecraft/client`, `client/gui`, `client/multiplayer`, `client/sounds`, `client/resources`, `client/player` |
+| XI · Rendering | `client/renderer`, `client/model`, `client/particle`, `com/mojang/blaze3d` |
+| XII · World generation | `world/level/levelgen`, `world/level/biome`, `world/level/levelgen/structure` |
+| XIII · Commands and data packs | `net/minecraft/commands`, `server/commands`, `server/dialog`, `net/minecraft/advancements`, `net/minecraft/gametest`, `world/scores` |
+
+## The table
+
+Depth three is the outer boxes of the treemap; depth four is the inner
+ones. *client-only* counts the classes not in `server-classes.txt`.
+
+{{#include ../generated/packages-depth3.md}}
+
+{{#include ../generated/packages-depth4.md}}
+
+---
+
+*Rules: names, never code · how the system works, not how the code reads ·
+newest version only · every backticked name passes `tools/verify_names.py`.*

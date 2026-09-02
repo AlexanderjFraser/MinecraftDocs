@@ -114,3 +114,65 @@ entry first.
 - **2026-09-02, planning session** — the mermaid syntax fixes were
   syntax-only (labels reworded around `;` and `#`, see the commit diff); no
   claim changed. Nothing to check beyond a glance at that diff.
+
+- **2026-09-02, session B — maps: the atlas.** The atlas is new prose over
+  regenerated numbers, and the tool that makes the numbers changed; check
+  the tool first, then the prose against a fresh run.
+  - **`tools/map_source.py`** (rewritten): the declaration regex now matches
+    indented (nested) declarations and record headers, which the old one
+    silently did not — every hierarchy count changed (`Entity` 188 → 193,
+    `Goal` 70 → 200, `Screen` 153 → 157, `Packet` unlisted → 232), and a
+    simple name declared twice now resolves to the top-level class (a nested
+    `Block` in blaze3d had claimed the name). Fan-in now counts every
+    `com.mojang` import, so `Codec`, `MapCodec`, `RecordCodecBuilder`,
+    `Schema`, `DSL` and *LogUtils* appear. Re-derive one number of each
+    kind by hand (a package's line count, one class's importers, one root's
+    descendants) before trusting the rest.
+  - **`maps/packages.md`**: 2,206 client-only classes in exactly four
+    packages and no mixed depth-4 package (read off the table's client-only
+    column: every row is 0 or all); 212,242 client-only lines = 29.5%;
+    `world/level` a fifth of the game; two thirds of `util` skipped (34,176
+    of 53,275); Vulkan back-end larger than OpenGL; the **part → packages
+    table** is a claim about where each part's classes live and should be
+    checked per part as the parts convert (`server/dialog` and
+    `world/level/pathfinder` are guesses from package names, not from
+    pages); the `SKIPPED` list in the tool must agree with *what this book
+    skips* (gametest is deliberately not hatched: covered in Part XIII).
+  - **`maps/biggest.md`**: `BlockModelGenerators`' only caller is
+    `ModelProvider` (one grep hit); nothing outside `util/datafix` reads
+    `BlockStateData` (seven files, all datafix); the sum 62,935 = 8.7%;
+    "`Fox` and `Bee`, the two with the most bespoke behaviour" is a
+    judgement stated as fact — verify or soften; "`Options` is every
+    setting" and "`Hud` is everything drawn over the world" are glosses;
+    `OceanMonumentPieces` and `StrongholdPieces` "built by hand in Java
+    rather than a template" rests on `hand-built-structures`.
+  - **`maps/fanin.md`**: one file in six (1,221 of 7,055); all but ten
+    `Schema` importers in `util/datafix` (389, 10 outside); `Minecraft`
+    twenty-ninth and the only client-only class in the thirty; the hub →
+    page table sends `Component` to "Part II", which has no page until
+    session C writes one (R6) — fix the link then; "same-package use is
+    not counted" is Java, not a claim about the game.
+  - **`maps/hierarchy.md`**: `FeatureElement`'s seven implementers
+    (grep-verified: `BlockBehaviour`, `Item`, `EntityType`, `MenuType`,
+    `MobEffect`, `Potion`, `GameRule`); `ItemLike` = `Block` + `Item`; the
+    per-tree numbers (193/18, 124, 114, 108, thirteen terminal; 293/92, 61
+    terminal, 64; 71/51; 157/72, 60 terminal, 27, 23); "over a thousand
+    registered items" (1,130 `registerItem`/`registerBlock` lines in
+    `Items`, a few of them definitions); "`Items` registers most of the
+    game as a plain `Item`" is asserted, not counted; "`BlockBehaviour`
+    exists so that behaviour and registry identity can be separate
+    classes" is a motive, not a fact — check or cut; `Goal` 130 of 200
+    nested; `Packet` 227 direct implementers versus the packets reference's
+    count (packet *types* and packet *classes* differ; say which).
+  - **`reference/threads.md`** (new figure): every edge asserts a
+    direction and a kind (posted task / completed future / hopped handler)
+    — "serverbound packets written on the caller's thread", region I/O as
+    posted task and completed future through `IOWorker`, sound as posted
+    tasks to `SoundEngineExecutor`, console/RCON/query/management as
+    posted command lines; all drawn from the page's own table, none
+    re-verified against the decompile this session.
+  - **`introduction`**: the treemap's hatching is the tool's `SKIPPED`
+    list; the "just under a third" now has its figure.
+  - **`entities/entity-anatomy.md`**: "193 descendants" (was 188, from
+    the old map that could not see nested classes); re-derive with the new
+    tool and by hand once.

@@ -1,0 +1,584 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 628" width="1000" height="628" role="img" aria-label="The 26.2 jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching marks what this book skips">
+<title>The 26.2 jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching marks what this book skips</title>
+<defs><pattern id="mapfig-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><line class="hatch" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>
+<g class="pkg"><title>net/minecraft/world — 2585 classes, 304,897 lines, shared</title>
+<g class="cell"><title>net/minecraft/world/level — 1312 classes, 146,417 lines, shared</title>
+<rect class="shared" x="2.0" y="15.0" width="419.9" height="280.0"/>
+<text x="211.9" y="155.0" text-anchor="middle" font-size="11">level</text>
+<text class="muted" x="211.9" y="167.0" text-anchor="middle" font-size="9">146,417</text>
+</g>
+<g class="cell"><title>net/minecraft/world/entity — 716 classes, 109,061 lines, shared</title>
+<rect class="shared" x="2.0" y="295.0" width="288.9" height="303.0"/>
+<text x="146.5" y="446.5" text-anchor="middle" font-size="11">entity</text>
+<text class="muted" x="146.5" y="458.5" text-anchor="middle" font-size="9">109,061</text>
+</g>
+<g class="cell"><title>net/minecraft/world/item — 314 classes, 29,281 lines, shared</title>
+<rect class="shared" x="290.9" y="295.0" width="130.9" height="179.5"/>
+<text x="356.4" y="384.7" text-anchor="middle" font-size="11">item</text>
+<text class="muted" x="356.4" y="396.7" text-anchor="middle" font-size="9">29,281</text>
+</g>
+<g class="cell"><title>net/minecraft/world/inventory — 64 classes, 7,082 lines, shared</title>
+<rect class="shared" x="290.9" y="474.5" width="65.7" height="86.6"/>
+<text x="323.8" y="517.8" text-anchor="middle" font-size="11">inventory</text>
+<text class="muted" x="323.8" y="529.8" text-anchor="middle" font-size="9">7,082</text>
+</g>
+<g class="cell"><title>net/minecraft/world/phys — 28 classes, 3,020 lines, shared</title>
+<rect class="shared" x="290.9" y="561.1" width="65.7" height="36.9"/>
+<text x="323.8" y="579.5" text-anchor="middle" font-size="11">phys</text>
+</g>
+<g class="cell"><title>net/minecraft/world/attribute — 28 classes, 1,705 lines, shared</title>
+<rect class="shared" x="356.6" y="474.5" width="33.0" height="41.5"/>
+</g>
+<g class="cell"><title>net/minecraft/world — 25 classes, 1,664 lines, shared</title>
+<rect class="shared" x="389.7" y="474.5" width="32.2" height="41.5"/>
+</g>
+<g class="cell"><title>net/minecraft/world/scores — 16 classes, 1,442 lines, shared</title>
+<rect class="shared" x="356.6" y="516.0" width="34.2" height="33.8"/>
+</g>
+<g class="cell"><title>net/minecraft/world/effect — 20 classes, 1,306 lines, shared</title>
+<rect class="shared" x="390.9" y="516.0" width="31.0" height="33.8"/>
+</g>
+<g class="cell"><title>net/minecraft/world/damagesource — 12 classes, 936 lines, shared</title>
+<rect class="shared" x="356.6" y="549.8" width="30.1" height="25.0"/>
+</g>
+<g class="cell"><title>net/minecraft/world/ticks — 14 classes, 869 lines, shared</title>
+<rect class="shared" x="356.6" y="574.8" width="30.1" height="23.2"/>
+</g>
+<g class="cell"><title>net/minecraft/world/waypoints — 9 classes, 677 lines, shared</title>
+<rect class="shared" x="386.7" y="549.8" width="21.2" height="25.6"/>
+</g>
+<g class="cell"><title>net/minecraft/world/timeline — 5 classes, 447 lines, shared</title>
+<rect class="shared" x="407.9" y="549.8" width="14.0" height="25.6"/>
+</g>
+<g class="cell"><title>net/minecraft/world/flag — 7 classes, 356 lines, shared</title>
+<rect class="shared" x="386.7" y="575.4" width="12.7" height="22.6"/>
+</g>
+<g class="cell"><title>net/minecraft/world/clock — 10 classes, 351 lines, shared</title>
+<rect class="shared" x="399.3" y="575.4" width="22.5" height="12.5"/>
+</g>
+<g class="cell"><title>net/minecraft/world/food — 5 classes, 283 lines, shared</title>
+<rect class="shared" x="399.3" y="587.9" width="22.5" height="10.1"/>
+</g>
+<rect class="group" x="0.0" y="0.0" width="423.9" height="600.0"/>
+<text class="grouplabel" x="4.0" y="11.5" font-size="12" font-weight="bold">world 42%</text>
+</g>
+<g class="pkg"><title>net/minecraft/client — 1864 classes, 172,711 lines, client-only</title>
+<g class="cell"><title>net/minecraft/client/gui — 444 classes, 59,057 lines, client-only</title>
+<rect class="client" x="425.9" y="15.0" width="195.6" height="233.1"/>
+<text x="523.7" y="131.5" text-anchor="middle" font-size="11">gui</text>
+<text class="muted" x="523.7" y="143.5" text-anchor="middle" font-size="9">59,057</text>
+</g>
+<g class="cell"><title>net/minecraft/client/renderer — 701 classes, 48,412 lines, client-only</title>
+<rect class="client" x="621.5" y="15.0" width="160.4" height="233.1"/>
+<text x="701.7" y="131.5" text-anchor="middle" font-size="11">renderer</text>
+<text class="muted" x="701.7" y="143.5" text-anchor="middle" font-size="9">48,412</text>
+</g>
+<g class="cell"><title>net/minecraft/client/model — 267 classes, 12,696 lines, client-only</title>
+<rect class="client" x="781.9" y="15.0" width="115.0" height="85.3"/>
+<text x="839.4" y="57.6" text-anchor="middle" font-size="11">model</text>
+<text class="muted" x="839.4" y="69.6" text-anchor="middle" font-size="9">12,696</text>
+</g>
+<g class="cell"><title>net/minecraft/client/multiplayer — 63 classes, 11,169 lines, client-only</title>
+<rect class="client" x="896.9" y="15.0" width="101.1" height="85.3"/>
+<text x="947.4" y="57.6" text-anchor="middle" font-size="11">multiplayer</text>
+<text class="muted" x="947.4" y="69.6" text-anchor="middle" font-size="9">11,169</text>
+</g>
+<g class="cell"><title>net/minecraft/client — 41 classes, 10,709 lines, client-only</title>
+<rect class="client" x="781.9" y="100.3" width="95.7" height="86.4"/>
+<text x="829.7" y="143.5" text-anchor="middle" font-size="11">(itself)</text>
+<text class="muted" x="829.7" y="155.5" text-anchor="middle" font-size="9">10,709</text>
+</g>
+<g class="cell"><title>net/minecraft/client/resources — 101 classes, 7,612 lines, client-only</title>
+<rect class="client" x="781.9" y="186.6" width="95.7" height="61.4"/>
+<text x="829.7" y="217.4" text-anchor="middle" font-size="11">resources</text>
+<text class="muted" x="829.7" y="229.4" text-anchor="middle" font-size="9">7,612</text>
+</g>
+<g class="cell"><title>net/minecraft/client/particle — 87 classes, 6,806 lines, client-only</title>
+<rect class="client" x="877.6" y="100.3" width="63.1" height="83.2"/>
+<text x="909.1" y="141.9" text-anchor="middle" font-size="11">particle</text>
+<text class="muted" x="909.1" y="153.9" text-anchor="middle" font-size="9">6,806</text>
+</g>
+<g class="cell"><title>net/minecraft/client/data — 28 classes, 6,176 lines, client-only — skipped by this book</title>
+<rect class="client" x="940.7" y="100.3" width="57.3" height="83.2"/>
+<rect class="skip" x="940.7" y="100.3" width="57.3" height="83.2"/>
+<text x="969.4" y="141.9" text-anchor="middle" font-size="11">data</text>
+<text class="muted" x="969.4" y="153.9" text-anchor="middle" font-size="9">6,176</text>
+</g>
+<g class="cell"><title>net/minecraft/client/sounds — 17 classes, 2,152 lines, client-only</title>
+<rect class="client" x="877.6" y="183.5" width="47.5" height="35.0"/>
+<text x="901.3" y="201.0" text-anchor="middle" font-size="11">sounds</text>
+</g>
+<g class="cell"><title>net/minecraft/client/player — 9 classes, 1,821 lines, client-only</title>
+<rect class="client" x="877.6" y="218.5" width="47.5" height="29.6"/>
+<text x="901.3" y="233.3" text-anchor="middle" font-size="11">player</text>
+</g>
+<g class="cell"><title>net/minecraft/client/telemetry — 18 classes, 1,221 lines, client-only — skipped by this book</title>
+<rect class="client" x="925.1" y="183.5" width="25.5" height="36.9"/>
+<rect class="skip" x="925.1" y="183.5" width="25.5" height="36.9"/>
+</g>
+<g class="cell"><title>net/minecraft/client/color — 18 classes, 915 lines, client-only</title>
+<rect class="client" x="925.1" y="220.4" width="25.5" height="27.7"/>
+</g>
+<g class="cell"><title>net/minecraft/client/server — 6 classes, 838 lines, client-only</title>
+<rect class="client" x="950.6" y="183.5" width="26.3" height="24.6"/>
+</g>
+<g class="cell"><title>net/minecraft/client/tutorial — 10 classes, 671 lines, client-only</title>
+<rect class="client" x="976.9" y="183.5" width="21.1" height="24.6"/>
+</g>
+<g class="cell"><title>net/minecraft/client/main — 4 classes, 523 lines, client-only</title>
+<rect class="client" x="950.6" y="208.1" width="19.9" height="20.3"/>
+</g>
+<g class="cell"><title>net/minecraft/client/animation — 23 classes, 509 lines, client-only</title>
+<rect class="client" x="950.6" y="228.3" width="19.9" height="19.7"/>
+</g>
+<g class="cell"><title>net/minecraft/client/searchtree — 8 classes, 505 lines, client-only</title>
+<rect class="client" x="970.5" y="208.1" width="27.5" height="14.2"/>
+</g>
+<g class="cell"><title>net/minecraft/client/quickplay — 3 classes, 284 lines, client-only</title>
+<rect class="client" x="970.5" y="222.2" width="16.9" height="13.0"/>
+</g>
+<g class="cell"><title>net/minecraft/client/input — 8 classes, 282 lines, client-only</title>
+<rect class="client" x="970.5" y="235.2" width="16.9" height="12.9"/>
+</g>
+<g class="cell"><title>net/minecraft/client/entity — 4 classes, 228 lines, client-only</title>
+<rect class="client" x="987.4" y="222.2" width="10.6" height="16.7"/>
+</g>
+<g class="cell"><title>net/minecraft/client/profiling — 2 classes, 81 lines, client-only</title>
+<rect class="client" x="987.4" y="238.9" width="6.8" height="9.1"/>
+</g>
+<g class="cell"><title>net/minecraft/client/waypoints — 2 classes, 44 lines, client-only</title>
+<rect class="client" x="994.3" y="238.9" width="3.7" height="9.1"/>
+</g>
+<rect class="group" x="423.9" y="0.0" width="576.1" height="250.1"/>
+<text class="grouplabel" x="427.9" y="11.5" font-size="12" font-weight="bold">client 24%</text>
+</g>
+<g class="pkg"><title>net/minecraft/util — 717 classes, 53,275 lines, shared</title>
+<g class="cell"><title>net/minecraft/util/datafix — 396 classes, 26,372 lines, shared — skipped by this book</title>
+<rect class="shared" x="425.9" y="265.1" width="123.1" height="158.9"/>
+<rect class="skip" x="425.9" y="265.1" width="123.1" height="158.9"/>
+<text x="487.4" y="344.5" text-anchor="middle" font-size="11">datafix</text>
+<text class="muted" x="487.4" y="356.5" text-anchor="middle" font-size="9">26,372</text>
+</g>
+<g class="cell"><title>net/minecraft/util — 91 classes, 12,067 lines, shared</title>
+<rect class="shared" x="549.0" y="265.1" width="125.6" height="71.3"/>
+<text x="611.8" y="300.7" text-anchor="middle" font-size="11">(itself)</text>
+<text class="muted" x="611.8" y="312.7" text-anchor="middle" font-size="9">12,067</text>
+</g>
+<g class="cell"><title>net/minecraft/util/profiling — 70 classes, 4,260 lines, shared — skipped by this book</title>
+<rect class="shared" x="549.0" y="336.3" width="66.1" height="47.8"/>
+<rect class="skip" x="549.0" y="336.3" width="66.1" height="47.8"/>
+<text x="582.0" y="360.2" text-anchor="middle" font-size="11">profiling</text>
+<text class="muted" x="582.0" y="372.2" text-anchor="middle" font-size="9">4,260</text>
+</g>
+<g class="cell"><title>net/minecraft/util/filefix — 57 classes, 3,544 lines, shared — skipped by this book</title>
+<rect class="shared" x="549.0" y="384.2" width="66.1" height="39.8"/>
+<rect class="skip" x="549.0" y="384.2" width="66.1" height="39.8"/>
+<text x="582.0" y="404.1" text-anchor="middle" font-size="11">filefix</text>
+</g>
+<g class="cell"><title>net/minecraft/util/parsing — 29 classes, 1,879 lines, shared</title>
+<rect class="shared" x="615.0" y="336.3" width="34.4" height="40.5"/>
+</g>
+<g class="cell"><title>net/minecraft/util/debug — 19 classes, 1,370 lines, shared</title>
+<rect class="shared" x="649.4" y="336.3" width="25.1" height="40.5"/>
+</g>
+<g class="cell"><title>net/minecraft/util/worldupdate — 6 classes, 937 lines, shared</title>
+<rect class="shared" x="615.0" y="376.8" width="28.0" height="24.8"/>
+</g>
+<g class="cell"><title>net/minecraft/util/thread — 9 classes, 842 lines, shared</title>
+<rect class="shared" x="615.0" y="401.6" width="28.0" height="22.3"/>
+</g>
+<g class="cell"><title>net/minecraft/util/valueproviders — 18 classes, 670 lines, shared</title>
+<rect class="shared" x="643.0" y="376.8" width="31.5" height="15.8"/>
+</g>
+<g class="cell"><title>net/minecraft/util/eventlog — 4 classes, 459 lines, shared</title>
+<rect class="shared" x="643.0" y="392.6" width="19.6" height="17.4"/>
+</g>
+<g class="cell"><title>net/minecraft/util/random — 4 classes, 369 lines, shared</title>
+<rect class="shared" x="643.0" y="410.0" width="19.6" height="14.0"/>
+</g>
+<g class="cell"><title>net/minecraft/util/debugchart — 8 classes, 199 lines, shared</title>
+<rect class="shared" x="662.6" y="392.6" width="12.0" height="12.3"/>
+</g>
+<g class="cell"><title>net/minecraft/util/context — 4 classes, 187 lines, shared</title>
+<rect class="shared" x="662.6" y="404.9" width="12.0" height="11.6"/>
+</g>
+<g class="cell"><title>net/minecraft/util/monitoring — 2 classes, 120 lines, shared</title>
+<rect class="shared" x="662.6" y="416.5" width="12.0" height="7.4"/>
+</g>
+<rect class="group" x="423.9" y="250.1" width="252.7" height="175.9"/>
+<text class="grouplabel" x="427.9" y="261.6" font-size="12" font-weight="bold">util 7%</text>
+</g>
+<g class="pkg"><title>net/minecraft/server — 420 classes, 52,720 lines, shared</title>
+<g class="cell"><title>net/minecraft/server/commands — 102 classes, 12,781 lines, shared</title>
+<rect class="shared" x="425.9" y="440.9" width="116.8" height="81.1"/>
+<text x="484.3" y="481.5" text-anchor="middle" font-size="11">commands</text>
+<text class="muted" x="484.3" y="493.5" text-anchor="middle" font-size="9">12,781</text>
+</g>
+<g class="cell"><title>net/minecraft/server/level — 42 classes, 11,977 lines, shared</title>
+<rect class="shared" x="425.9" y="522.0" width="116.8" height="76.0"/>
+<text x="484.3" y="560.0" text-anchor="middle" font-size="11">level</text>
+<text class="muted" x="484.3" y="572.0" text-anchor="middle" font-size="9">11,977</text>
+</g>
+<g class="cell"><title>net/minecraft/server/network — 28 classes, 5,409 lines, shared</title>
+<rect class="shared" x="542.7" y="440.9" width="67.1" height="59.7"/>
+<text x="576.2" y="470.8" text-anchor="middle" font-size="11">network</text>
+<text class="muted" x="576.2" y="482.8" text-anchor="middle" font-size="9">5,409</text>
+</g>
+<g class="cell"><title>net/minecraft/server — 27 classes, 5,227 lines, shared</title>
+<rect class="shared" x="609.7" y="440.9" width="64.8" height="59.7"/>
+<text x="642.1" y="470.8" text-anchor="middle" font-size="11">(itself)</text>
+<text class="muted" x="642.1" y="482.8" text-anchor="middle" font-size="9">5,227</text>
+</g>
+<g class="cell"><title>net/minecraft/server/packs — 55 classes, 4,975 lines, shared</title>
+<rect class="shared" x="542.7" y="500.7" width="69.0" height="53.4"/>
+<text x="577.2" y="527.4" text-anchor="middle" font-size="11">packs</text>
+<text class="muted" x="577.2" y="539.4" text-anchor="middle" font-size="9">4,975</text>
+</g>
+<g class="cell"><title>net/minecraft/server/jsonrpc — 65 classes, 4,094 lines, shared — skipped by this book</title>
+<rect class="shared" x="542.7" y="554.1" width="69.0" height="43.9"/>
+<rect class="skip" x="542.7" y="554.1" width="69.0" height="43.9"/>
+<text x="577.2" y="576.0" text-anchor="middle" font-size="11">jsonrpc</text>
+<text class="muted" x="577.2" y="588.0" text-anchor="middle" font-size="9">4,094</text>
+</g>
+<g class="cell"><title>net/minecraft/server/players — 19 classes, 2,766 lines, shared</title>
+<rect class="shared" x="611.7" y="500.7" width="62.9" height="32.6"/>
+<text x="643.1" y="517.0" text-anchor="middle" font-size="11">players</text>
+</g>
+<g class="cell"><title>net/minecraft/server/dedicated — 7 classes, 1,809 lines, shared</title>
+<rect class="shared" x="611.7" y="533.3" width="42.2" height="31.8"/>
+</g>
+<g class="cell"><title>net/minecraft/server/dialog — 35 classes, 886 lines, shared</title>
+<rect class="shared" x="653.9" y="533.3" width="20.7" height="31.8"/>
+</g>
+<g class="cell"><title>net/minecraft/server/rcon — 9 classes, 839 lines, shared — skipped by this book</title>
+<rect class="shared" x="611.7" y="565.0" width="18.9" height="33.0"/>
+<rect class="skip" x="611.7" y="565.0" width="18.9" height="33.0"/>
+</g>
+<g class="cell"><title>net/minecraft/server/permissions — 12 classes, 402 lines, shared</title>
+<rect class="shared" x="630.5" y="565.0" width="17.0" height="17.5"/>
+</g>
+<g class="cell"><title>net/minecraft/server/chase — 3 classes, 355 lines, shared</title>
+<rect class="shared" x="630.5" y="582.5" width="17.0" height="15.5"/>
+</g>
+<g class="cell"><title>net/minecraft/server/bossevents — 3 classes, 328 lines, shared</title>
+<rect class="shared" x="647.6" y="565.0" width="13.9" height="17.5"/>
+</g>
+<g class="cell"><title>net/minecraft/server/gui — 4 classes, 310 lines, shared</title>
+<rect class="shared" x="661.4" y="565.0" width="13.1" height="17.5"/>
+</g>
+<g class="cell"><title>net/minecraft/server/notifications — 5 classes, 295 lines, shared</title>
+<rect class="shared" x="647.6" y="582.6" width="14.2" height="15.4"/>
+</g>
+<g class="cell"><title>net/minecraft/server/waypoints — 2 classes, 180 lines, shared</title>
+<rect class="shared" x="661.7" y="582.6" width="12.8" height="10.4"/>
+</g>
+<g class="cell"><title>net/minecraft/server/advancements — 2 classes, 87 lines, shared</title>
+<rect class="shared" x="661.7" y="593.0" width="12.8" height="5.0"/>
+</g>
+<rect class="group" x="423.9" y="425.9" width="252.7" height="174.1"/>
+<text class="grouplabel" x="427.9" y="437.4" font-size="12" font-weight="bold">server 7%</text>
+</g>
+<g class="pkg"><title>com/mojang/blaze3d — 211 classes, 26,111 lines, client-only</title>
+<g class="cell"><title>com/mojang/blaze3d/vulkan — 40 classes, 7,477 lines, client-only</title>
+<rect class="client" x="678.5" y="265.1" width="83.6" height="63.1"/>
+<text x="720.4" y="296.6" text-anchor="middle" font-size="11">vulkan</text>
+<text class="muted" x="720.4" y="308.6" text-anchor="middle" font-size="9">7,477</text>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/opengl — 28 classes, 5,627 lines, client-only</title>
+<rect class="client" x="678.5" y="328.2" width="83.6" height="47.5"/>
+<text x="720.4" y="351.9" text-anchor="middle" font-size="11">opengl</text>
+<text class="muted" x="720.4" y="363.9" text-anchor="middle" font-size="9">5,627</text>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/platform — 29 classes, 3,896 lines, client-only</title>
+<rect class="client" x="762.2" y="265.1" width="51.2" height="53.7"/>
+<text x="787.8" y="294.9" text-anchor="middle" font-size="9">platform</text>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/vertex — 16 classes, 2,420 lines, client-only</title>
+<rect class="client" x="813.4" y="265.1" width="31.8" height="53.7"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/systems — 26 classes, 2,308 lines, client-only</title>
+<rect class="client" x="762.2" y="318.8" width="28.6" height="56.9"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/audio — 12 classes, 1,013 lines, client-only</title>
+<rect class="client" x="790.8" y="318.8" width="28.0" height="25.5"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/pipeline — 11 classes, 954 lines, client-only</title>
+<rect class="client" x="818.8" y="318.8" width="26.4" height="25.5"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d — 12 classes, 462 lines, client-only</title>
+<rect class="client" x="790.8" y="344.3" width="20.2" height="16.1"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/framegraph — 3 classes, 437 lines, client-only</title>
+<rect class="client" x="790.8" y="360.4" width="20.2" height="15.2"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/font — 7 classes, 432 lines, client-only</title>
+<rect class="client" x="811.1" y="344.3" width="17.1" height="17.9"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/buffers — 6 classes, 327 lines, client-only</title>
+<rect class="client" x="811.1" y="362.2" width="17.1" height="13.5"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/util — 2 classes, 189 lines, client-only</title>
+<rect class="client" x="828.1" y="344.3" width="8.6" height="15.5"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/resource — 6 classes, 185 lines, client-only</title>
+<rect class="client" x="836.8" y="344.3" width="8.4" height="15.5"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/preprocessor — 2 classes, 164 lines, client-only</title>
+<rect class="client" x="828.1" y="359.8" width="14.0" height="8.3"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/textures — 6 classes, 150 lines, client-only</title>
+<rect class="client" x="828.1" y="368.1" width="14.0" height="7.6"/>
+</g>
+<g class="cell"><title>com/mojang/blaze3d/shaders — 5 classes, 70 lines, client-only</title>
+<rect class="client" x="842.1" y="359.8" width="3.1" height="15.9"/>
+</g>
+<rect class="group" x="676.5" y="250.1" width="170.7" height="127.6"/>
+<text class="grouplabel" x="680.5" y="261.6" font-size="12" font-weight="bold">mojang/blaze3d 4%</text>
+</g>
+<g class="pkg"><title>net/minecraft/network — 411 classes, 23,378 lines, shared</title>
+<g class="cell"><title>net/minecraft/network/protocol — 293 classes, 12,934 lines, shared</title>
+<rect class="shared" x="849.2" y="265.1" width="82.3" height="110.6"/>
+<text x="890.4" y="320.4" text-anchor="middle" font-size="11">protocol</text>
+<text class="muted" x="890.4" y="332.4" text-anchor="middle" font-size="9">12,934</text>
+</g>
+<g class="cell"><title>net/minecraft/network/chat — 63 classes, 4,818 lines, shared</title>
+<rect class="shared" x="931.5" y="265.1" width="66.5" height="51.0"/>
+<text x="964.8" y="290.6" text-anchor="middle" font-size="11">chat</text>
+<text class="muted" x="964.8" y="302.6" text-anchor="middle" font-size="9">4,818</text>
+</g>
+<g class="cell"><title>net/minecraft/network — 42 classes, 3,732 lines, shared</title>
+<rect class="shared" x="931.5" y="316.1" width="44.1" height="59.6"/>
+</g>
+<g class="cell"><title>net/minecraft/network/codec — 7 classes, 1,372 lines, shared</title>
+<rect class="shared" x="975.6" y="316.1" width="22.4" height="43.2"/>
+</g>
+<g class="cell"><title>net/minecraft/network/syncher — 6 classes, 522 lines, shared</title>
+<rect class="shared" x="975.6" y="359.3" width="22.4" height="16.4"/>
+</g>
+<rect class="group" x="847.2" y="250.1" width="152.8" height="127.6"/>
+<text class="grouplabel" x="851.2" y="261.6" font-size="12" font-weight="bold">network 3%</text>
+</g>
+<g class="pkg"><title>net/minecraft/data — 163 classes, 15,587 lines, shared</title>
+<g class="cell"><title>net/minecraft/data/worldgen — 56 classes, 5,369 lines, shared — skipped by this book</title>
+<rect class="shared" x="678.5" y="392.7" width="55.1" height="67.2"/>
+<rect class="skip" x="678.5" y="392.7" width="55.1" height="67.2"/>
+<text x="706.1" y="429.3" text-anchor="middle" font-size="9">worldgen</text>
+</g>
+<g class="cell"><title>net/minecraft/data/loot — 21 classes, 2,883 lines, shared — skipped by this book</title>
+<rect class="shared" x="678.5" y="459.9" width="55.1" height="36.1"/>
+<rect class="skip" x="678.5" y="459.9" width="55.1" height="36.1"/>
+<text x="706.1" y="477.9" text-anchor="middle" font-size="11">loot</text>
+</g>
+<g class="cell"><title>net/minecraft/data/recipes — 17 classes, 2,227 lines, shared — skipped by this book</title>
+<rect class="shared" x="733.6" y="392.7" width="49.0" height="31.4"/>
+<rect class="skip" x="733.6" y="392.7" width="49.0" height="31.4"/>
+<text x="758.1" y="411.4" text-anchor="middle" font-size="9">recipes</text>
+</g>
+<g class="cell"><title>net/minecraft/data/tags — 29 classes, 1,660 lines, shared — skipped by this book</title>
+<rect class="shared" x="733.6" y="424.0" width="27.8" height="41.2"/>
+<rect class="skip" x="733.6" y="424.0" width="27.8" height="41.2"/>
+<text x="747.5" y="447.6" text-anchor="middle" font-size="9">tags</text>
+</g>
+<g class="cell"><title>net/minecraft/data — 10 classes, 1,264 lines, shared — skipped by this book</title>
+<rect class="shared" x="761.4" y="424.0" width="21.2" height="41.2"/>
+<rect class="skip" x="761.4" y="424.0" width="21.2" height="41.2"/>
+</g>
+<g class="cell"><title>net/minecraft/data/advancements — 10 classes, 874 lines, shared — skipped by this book</title>
+<rect class="shared" x="733.6" y="465.2" width="19.6" height="30.8"/>
+<rect class="skip" x="733.6" y="465.2" width="19.6" height="30.8"/>
+</g>
+<g class="cell"><title>net/minecraft/data/info — 8 classes, 530 lines, shared — skipped by this book</title>
+<rect class="shared" x="753.2" y="465.2" width="15.6" height="23.5"/>
+<rect class="skip" x="753.2" y="465.2" width="15.6" height="23.5"/>
+</g>
+<g class="cell"><title>net/minecraft/data/structures — 5 classes, 469 lines, shared — skipped by this book</title>
+<rect class="shared" x="768.8" y="465.2" width="13.8" height="23.5"/>
+<rect class="skip" x="768.8" y="465.2" width="13.8" height="23.5"/>
+</g>
+<g class="cell"><title>net/minecraft/data/registries — 5 classes, 248 lines, shared — skipped by this book</title>
+<rect class="shared" x="753.2" y="488.7" width="23.4" height="7.3"/>
+<rect class="skip" x="753.2" y="488.7" width="23.4" height="7.3"/>
+</g>
+<g class="cell"><title>net/minecraft/data/metadata — 2 classes, 63 lines, shared — skipped by this book</title>
+<rect class="shared" x="776.7" y="488.7" width="6.0" height="7.3"/>
+<rect class="skip" x="776.7" y="488.7" width="6.0" height="7.3"/>
+</g>
+<rect class="group" x="676.5" y="377.7" width="108.1" height="120.3"/>
+<text class="grouplabel" x="680.5" y="389.2" font-size="12" font-weight="bold">data 2%</text>
+</g>
+<g class="pkg"><title>com/mojang/realmsclient — 127 classes, 13,217 lines, client-only</title>
+<g class="cell"><title>com/mojang/realmsclient/gui — 40 classes, 5,830 lines, client-only — skipped by this book</title>
+<rect class="client" x="678.5" y="513.0" width="45.9" height="85.0"/>
+<rect class="skip" x="678.5" y="513.0" width="45.9" height="85.0"/>
+<text x="701.5" y="555.5" text-anchor="middle" font-size="11">gui</text>
+<text class="muted" x="701.5" y="567.5" text-anchor="middle" font-size="9">5,830</text>
+</g>
+<g class="cell"><title>com/mojang/realmsclient/client — 19 classes, 2,534 lines, client-only — skipped by this book</title>
+<rect class="client" x="724.4" y="513.0" width="58.2" height="29.2"/>
+<rect class="skip" x="724.4" y="513.0" width="58.2" height="29.2"/>
+<text x="753.5" y="527.6" text-anchor="middle" font-size="11">client</text>
+</g>
+<g class="cell"><title>com/mojang/realmsclient/dto — 39 classes, 1,866 lines, client-only — skipped by this book</title>
+<rect class="client" x="724.4" y="542.1" width="40.6" height="30.7"/>
+<rect class="skip" x="724.4" y="542.1" width="40.6" height="30.7"/>
+<text x="744.8" y="557.5" text-anchor="middle" font-size="11">dto</text>
+</g>
+<g class="cell"><title>com/mojang/realmsclient — 4 classes, 1,524 lines, client-only — skipped by this book</title>
+<rect class="client" x="724.4" y="572.9" width="40.6" height="25.1"/>
+<rect class="skip" x="724.4" y="572.9" width="40.6" height="25.1"/>
+</g>
+<g class="cell"><title>com/mojang/realmsclient/util — 20 classes, 1,399 lines, client-only — skipped by this book</title>
+<rect class="client" x="765.1" y="542.1" width="17.5" height="53.4"/>
+<rect class="skip" x="765.1" y="542.1" width="17.5" height="53.4"/>
+</g>
+<g class="cell"><title>com/mojang/realmsclient/exception — 5 classes, 64 lines, client-only — skipped by this book</title>
+<rect class="client" x="765.1" y="595.6" width="17.5" height="2.4"/>
+<rect class="skip" x="765.1" y="595.6" width="17.5" height="2.4"/>
+</g>
+<rect class="group" x="676.5" y="498.0" width="108.1" height="102.0"/>
+</g>
+<g class="pkg"><title>net/minecraft/commands — 122 classes, 13,001 lines, shared</title>
+<g class="cell"><title>net/minecraft/commands/arguments — 71 classes, 8,847 lines, shared</title>
+<rect class="shared" x="786.6" y="392.7" width="75.9" height="76.9"/>
+<text x="824.6" y="431.1" text-anchor="middle" font-size="11">arguments</text>
+<text class="muted" x="824.6" y="443.1" text-anchor="middle" font-size="9">8,847</text>
+</g>
+<g class="cell"><title>net/minecraft/commands — 14 classes, 1,873 lines, shared</title>
+<rect class="shared" x="862.5" y="392.7" width="35.6" height="34.7"/>
+</g>
+<g class="cell"><title>net/minecraft/commands/synchronization — 12 classes, 895 lines, shared</title>
+<rect class="shared" x="862.5" y="427.3" width="19.3" height="30.6"/>
+</g>
+<g class="cell"><title>net/minecraft/commands/execution — 18 classes, 756 lines, shared</title>
+<rect class="shared" x="881.8" y="427.3" width="16.3" height="30.6"/>
+</g>
+<g class="cell"><title>net/minecraft/commands/functions — 7 classes, 630 lines, shared</title>
+<rect class="shared" x="862.5" y="457.9" width="35.6" height="11.7"/>
+</g>
+<rect class="group" x="784.6" y="377.7" width="115.5" height="93.9"/>
+<text class="grouplabel" x="788.6" y="389.2" font-size="12" font-weight="bold">commands 2%</text>
+</g>
+<g class="pkg"><title>net/minecraft/core — 110 classes, 11,239 lines, shared</title>
+<g class="cell"><title>net/minecraft/core — 38 classes, 5,493 lines, shared</title>
+<rect class="shared" x="902.1" y="392.7" width="46.9" height="76.9"/>
+<text x="925.6" y="434.1" text-anchor="middle" font-size="9">(itself)</text>
+</g>
+<g class="cell"><title>net/minecraft/core/component — 30 classes, 2,668 lines, shared</title>
+<rect class="shared" x="949.0" y="392.7" width="49.0" height="35.7"/>
+</g>
+<g class="cell"><title>net/minecraft/core/dispenser — 14 classes, 1,094 lines, shared</title>
+<rect class="shared" x="949.0" y="428.4" width="31.1" height="23.1"/>
+</g>
+<g class="cell"><title>net/minecraft/core/particles — 21 classes, 860 lines, shared</title>
+<rect class="shared" x="949.0" y="451.4" width="31.1" height="18.1"/>
+</g>
+<g class="cell"><title>net/minecraft/core/registries — 4 classes, 817 lines, shared</title>
+<rect class="shared" x="980.1" y="428.4" width="17.9" height="29.9"/>
+</g>
+<g class="cell"><title>net/minecraft/core/cauldron — 3 classes, 307 lines, shared</title>
+<rect class="shared" x="980.1" y="458.3" width="17.9" height="11.2"/>
+</g>
+<rect class="group" x="900.1" y="377.7" width="99.9" height="93.9"/>
+<text class="grouplabel" x="904.1" y="389.2" font-size="12" font-weight="bold">core 2%</text>
+</g>
+<g class="pkg"><title>net/minecraft/nbt — 43 classes, 8,001 lines, shared</title>
+<g class="cell"><title>net/minecraft/nbt — 36 classes, 7,489 lines, shared</title>
+<rect class="shared" x="786.6" y="486.6" width="91.9" height="48.3"/>
+<text x="832.6" y="510.7" text-anchor="middle" font-size="11">(itself)</text>
+<text class="muted" x="832.6" y="522.7" text-anchor="middle" font-size="9">7,489</text>
+</g>
+<g class="cell"><title>net/minecraft/nbt/visitors — 7 classes, 512 lines, shared</title>
+<rect class="shared" x="878.5" y="486.6" width="6.3" height="48.3"/>
+</g>
+<rect class="group" x="784.6" y="471.6" width="102.2" height="65.3"/>
+<text class="grouplabel" x="788.6" y="483.1" font-size="12" font-weight="bold">nbt 1%</text>
+</g>
+<g class="pkg"><title>net/minecraft/advancements — 116 classes, 7,735 lines, shared</title>
+<g class="cell"><title>net/minecraft/advancements/predicates — 54 classes, 3,459 lines, shared</title>
+<rect class="shared" x="786.6" y="551.9" width="43.9" height="46.1"/>
+</g>
+<g class="cell"><title>net/minecraft/advancements/triggers — 49 classes, 2,809 lines, shared</title>
+<rect class="shared" x="830.5" y="551.9" width="35.7" height="46.1"/>
+</g>
+<g class="cell"><title>net/minecraft/advancements — 13 classes, 1,467 lines, shared</title>
+<rect class="shared" x="866.2" y="551.9" width="18.6" height="46.1"/>
+</g>
+<rect class="group" x="784.6" y="536.9" width="102.2" height="63.1"/>
+<text class="grouplabel" x="788.6" y="548.4" font-size="12" font-weight="bold">advancements</text>
+</g>
+<g class="pkg"><title>net/minecraft/gametest — 47 classes, 5,514 lines, shared</title>
+<g class="cell"><title>net/minecraft/gametest/framework — 45 classes, 5,495 lines, shared</title>
+<rect class="shared" x="888.8" y="486.6" width="77.7" height="39.1"/>
+<text x="927.7" y="506.1" text-anchor="middle" font-size="11">framework</text>
+</g>
+<g class="cell"><title>net/minecraft/gametest — 2 classes, 19 lines, shared</title>
+<rect class="shared" x="966.5" y="486.6" width="0.3" height="39.1"/>
+</g>
+<rect class="group" x="886.8" y="471.6" width="82.0" height="56.1"/>
+<text class="grouplabel" x="890.8" y="483.1" font-size="12" font-weight="bold">gametest</text>
+</g>
+<g class="pkg"><title>net/minecraft/sounds — 6 classes, 2,101 lines, shared</title>
+<g class="cell"><title>net/minecraft/sounds — 6 classes, 2,101 lines, shared</title>
+<rect class="shared" x="970.8" y="486.6" width="27.2" height="39.1"/>
+</g>
+<rect class="group" x="968.8" y="471.6" width="31.2" height="56.1"/>
+</g>
+<g class="pkg"><title>net/minecraft/tags — 29 classes, 1,788 lines, shared</title>
+<g class="cell"><title>net/minecraft/tags — 29 classes, 1,788 lines, shared</title>
+<rect class="shared" x="888.8" y="542.7" width="37.0" height="19.4"/>
+</g>
+<rect class="group" x="886.8" y="527.7" width="41.0" height="36.4"/>
+<text class="grouplabel" x="890.8" y="539.2" font-size="12" font-weight="bold">tags</text>
+</g>
+<g class="pkg"><title>net/minecraft/resources — 15 classes, 1,764 lines, shared</title>
+<g class="cell"><title>net/minecraft/resources — 15 classes, 1,764 lines, shared</title>
+<rect class="shared" x="888.8" y="579.1" width="37.0" height="18.9"/>
+</g>
+<rect class="group" x="886.8" y="564.1" width="41.0" height="35.9"/>
+</g>
+<g class="pkg"><title>net/minecraft — 19 classes, 1,665 lines, shared</title>
+<g class="cell"><title>net/minecraft — 19 classes, 1,665 lines, shared</title>
+<rect class="shared" x="929.8" y="542.7" width="34.8" height="18.8"/>
+</g>
+<rect class="group" x="927.8" y="527.7" width="38.8" height="35.8"/>
+</g>
+<g class="pkg"><title>net/minecraft/references — 5 classes, 1,434 lines, shared</title>
+<g class="cell"><title>net/minecraft/references — 5 classes, 1,434 lines, shared — skipped by this book</title>
+<rect class="shared" x="968.6" y="542.7" width="29.4" height="18.8"/>
+<rect class="skip" x="968.6" y="542.7" width="29.4" height="18.8"/>
+</g>
+<rect class="group" x="966.6" y="527.7" width="33.4" height="35.8"/>
+</g>
+<g class="pkg"><title>com/mojang/math — 10 classes, 922 lines, shared</title>
+<g class="cell"><title>com/mojang/math — 10 classes, 922 lines, shared</title>
+<rect class="shared" x="929.8" y="578.5" width="17.0" height="19.5"/>
+</g>
+<rect class="group" x="927.8" y="563.5" width="21.0" height="36.5"/>
+</g>
+<g class="pkg"><title>net/minecraft/stats — 10 classes, 873 lines, shared</title>
+<g class="cell"><title>net/minecraft/stats — 10 classes, 873 lines, shared — skipped by this book</title>
+<rect class="shared" x="950.8" y="578.5" width="15.9" height="19.5"/>
+<rect class="skip" x="950.8" y="578.5" width="15.9" height="19.5"/>
+</g>
+<rect class="group" x="948.8" y="563.5" width="19.9" height="36.5"/>
+</g>
+<g class="pkg"><title>net/minecraft/gizmos — 15 classes, 569 lines, shared</title>
+<rect class="group" x="968.7" y="563.5" width="31.3" height="15.2"/>
+</g>
+<g class="pkg"><title>net/minecraft/recipebook — 3 classes, 350 lines, shared</title>
+<g class="cell"><title>net/minecraft/recipebook — 3 classes, 350 lines, shared</title>
+<rect class="shared" x="970.7" y="593.6" width="9.7" height="4.4"/>
+</g>
+<rect class="group" x="968.7" y="578.6" width="13.7" height="21.4"/>
+</g>
+<g class="pkg"><title>net/minecraft/locale — 3 classes, 247 lines, shared</title>
+<rect class="group" x="982.4" y="578.6" width="17.6" height="11.7"/>
+</g>
+<g class="pkg"><title>net/minecraft/realms — 4 classes, 203 lines, client-only</title>
+<rect class="group" x="982.4" y="590.4" width="17.6" height="9.6"/>
+</g>
+<rect class="shared" x="0" y="608" width="14" height="14"/><text x="20" y="619" font-size="12">in both jars</text>
+<rect class="client" x="130" y="608" width="14" height="14"/><text x="150" y="619" font-size="12">client only</text>
+<rect class="shared" x="250" y="608" width="14" height="14"/><rect class="skip" x="250" y="608" width="14" height="14"/><text x="270" y="619" font-size="12">hatched: what this book skips</text>
+<text class="muted" x="1000" y="619" text-anchor="end" font-size="11">719,302 lines, 7055 classes — area is lines of decompiled source</text>
+</svg>

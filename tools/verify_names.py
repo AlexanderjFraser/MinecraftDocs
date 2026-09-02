@@ -120,8 +120,8 @@ def main() -> int:
                 continue
             page = os.path.join(dirpath, f)
             rel = os.path.relpath(page, args.src).replace(os.sep, "/")
-            if rel.startswith("maps/") or (rel.startswith("reference/") and rel != "reference/threads.md"):
-                continue  # generated pages are not checked; threads.md is hand-written
+            if rel.startswith("generated/") or (rel.startswith("reference/") and rel != "reference/threads.md"):
+                continue  # generated fragments and pages are not checked; threads.md is hand-written
             with open(page, encoding="utf-8") as fh:
                 text = fh.read()
             for m in TICK.finditer(text):

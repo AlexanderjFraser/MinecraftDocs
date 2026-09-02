@@ -4,11 +4,11 @@
 
 # Maps
 
-- [Maps](maps/README.md)
-  - [Packages](maps/packages.md)
-  - [Biggest classes](maps/biggest.md)
-  - [Hierarchy](maps/hierarchy.md)
-  - [Fan-in](maps/fanin.md)
+- [The atlas](maps/README.md)
+  - [Where the code is](maps/packages.md)
+  - [Where the mass is](maps/biggest.md)
+  - [What everything imports](maps/fanin.md)
+  - [What extends what](maps/hierarchy.md)
 
 # Systems
 

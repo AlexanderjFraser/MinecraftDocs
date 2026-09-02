@@ -1,45 +1,61 @@
+# Where the mass is
 
-## biggest — 26.2
+> Verified against **Minecraft 26.2** · Maps · The thirty largest classes by lines of decompiled source, coloured by which jar ships them.
 
-| class | lines | side |
-|---|---:|---|
-| `net/minecraft/world/entity/Entity` | 4,464 | shared |
-| `net/minecraft/world/entity/LivingEntity` | 4,321 | shared |
-| `net/minecraft/client/Minecraft` | 3,274 | client |
-| `net/minecraft/client/data/models/BlockModelGenerators` | 3,090 | client |
-| `net/minecraft/client/multiplayer/ClientPacketListener` | 3,051 | client |
-| `net/minecraft/server/MinecraftServer` | 2,632 | shared |
-| `net/minecraft/server/network/ServerGamePacketListenerImpl` | 2,499 | shared |
-| `net/minecraft/server/level/ServerPlayer` | 2,445 | shared |
-| `net/minecraft/util/datafix/fixes/BlockStateData` | 2,270 | shared |
-| `net/minecraft/server/level/ServerLevel` | 2,126 | shared |
-| `net/minecraft/world/entity/player/Player` | 2,053 | shared |
-| `net/minecraft/sounds/SoundEvents` | 2,000 | shared |
-| `net/minecraft/world/level/levelgen/structure/structures/OceanMonumentPieces` | 1,983 | shared |
-| `net/minecraft/client/Options` | 1,972 | client |
-| `net/minecraft/world/level/block/Blocks` | 1,969 | shared |
-| `net/minecraft/world/item/CreativeModeTabs` | 1,706 | shared |
-| `net/minecraft/world/item/Items` | 1,694 | shared |
-| `net/minecraft/server/level/ChunkMap` | 1,668 | shared |
-| `net/minecraft/world/entity/animal/fox/Fox` | 1,625 | shared |
-| `net/minecraft/world/entity/Mob` | 1,612 | shared |
-| `net/minecraft/util/datafix/DataFixers` | 1,582 | shared |
-| `net/minecraft/network/FriendlyByteBuf` | 1,546 | shared |
-| `net/minecraft/client/gui/Hud` | 1,478 | client |
-| `net/minecraft/world/entity/animal/bee/Bee` | 1,451 | shared |
-| `net/minecraft/world/level/levelgen/DensityFunctions` | 1,445 | shared |
-| `net/minecraft/world/level/levelgen/structure/structures/StrongholdPieces` | 1,436 | shared |
-| `net/minecraft/util/Util` | 1,415 | shared |
-| `net/minecraft/client/player/LocalPlayer` | 1,392 | client |
-| `com/mojang/realmsclient/RealmsMainScreen` | 1,376 | client |
-| `net/minecraft/data/loot/packs/VanillaBlockLoot` | 1,360 | shared |
-| `net/minecraft/world/level/block/state/BlockBehaviour` | 1,357 | shared |
-| `net/minecraft/gametest/framework/GameTestHelper` | 1,353 | shared |
-| `net/minecraft/client/multiplayer/ClientLevel` | 1,320 | client |
-| `net/minecraft/world/level/levelgen/structure/structures/NetherFortressPieces` | 1,317 | shared |
-| `net/minecraft/world/item/ItemStack` | 1,253 | shared |
-| `net/minecraft/world/level/levelgen/structure/structures/WoodlandMansionPieces` | 1,185 | shared |
-| `net/minecraft/world/entity/animal/panda/Panda` | 1,121 | shared |
-| `net/minecraft/world/entity/animal/equine/AbstractHorse` | 1,114 | shared |
-| `net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen` | 1,101 | client |
-| `net/minecraft/world/entity/monster/cubemob/SulfurCube` | 1,082 | shared |
+The two largest classes in the game are the top of one hierarchy: `Entity`
+and `LivingEntity`, 8,785 lines between them, the thing every mob and
+player is before it is anything else. Third is `Minecraft`, the client
+itself. And then the list turns odd: two of the top ten never run while
+anyone is playing. `BlockModelGenerators` runs only inside the data
+generator — its single caller is `ModelProvider` — and writes the block
+model JSON that ships in the jar; `BlockStateData` is a table that the
+save-migration fixes consult when a world from an older version is opened,
+and nothing outside `util/datafix` reads it. Size is where the reading is,
+not where the game is.
+
+<figure class="map">
+{{#include ../generated/biggest.svg}}
+<figcaption>The thirty largest classes of 26.2. Blue ships in both jars, orange is client-only; the small grey text is the package under <code>net/minecraft</code>. Click to enlarge.</figcaption>
+</figure>
+
+**The number:** 62,935 — the lines in these thirty classes, 8.7% of the
+game in 0.4% of its files.
+
+## Three kinds of big
+
+Read down the bars and the thirty sort themselves into three kinds, and
+the kind tells you how to read the class.
+
+**The god objects.** `Entity`, `LivingEntity`, `Player`, `ServerPlayer`,
+`LocalPlayer` and `Mob` are one chain of inheritance, and each level adds
+a thousand lines or more because each is the base of everything below it.
+`Minecraft` and `MinecraftServer` are the two programs' roots; `ServerLevel`
+is the world; `ChunkMap` is the world's loader. Only two concrete mobs make
+the list — `Fox` and `Bee`, the two with the most bespoke behaviour — and
+they are the pages a reader of Part VI should expect to be long.
+
+**The switchboards.** `ClientPacketListener` is a handler method for every
+clientbound play packet, and `ServerGamePacketListenerImpl` is the same for
+every serverbound one; between them they are the whole of what the wire
+can say, which is why Part IX's pages keep coming back to them.
+`FriendlyByteBuf` is the buffer both read from.
+
+**The catalogues written as code.** `SoundEvents`, `Blocks`, `Items` and
+`CreativeModeTabs` are registries populated one constant per line;
+`DensityFunctions` is the vanilla noise graph; `DataFixers` is the
+migration history; `OceanMonumentPieces` and `StrongholdPieces` are
+structures built by hand, room by room, in Java rather than in a template;
+`Options` is every setting the client has, and `Hud` is everything drawn
+over the world. These are long because they are lists. None is hard.
+
+## The table
+
+Forty rows, of which the figure draws thirty. *side* is which jar ships
+the class.
+
+{{#include ../generated/biggest.md}}
+
+---
+
+*Rules: names, never code · how the system works, not how the code reads ·
+newest version only · every backticked name passes `tools/verify_names.py`.*

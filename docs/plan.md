@@ -323,7 +323,7 @@ sidebar order.
   read; the three tiers; the rules; `llms-full.txt`). The landing-page spec
   proven on Part I's. `lectures.md` reduced to a skeleton the parts fill. A
   lane linter if it is cheap (a lane not in the key fails).
-- [ ] **Session B — Maps: the atlas.** `map_source.py` grows an SVG output
+- [x] **Session B — Maps: the atlas.** *(done 2026-09-02)* `map_source.py` grows an SVG output
   and the maps become figures with prose: the jar as a treemap by package,
   coloured client-only versus shared (which is also the *two jars* figure
   the introduction wants); the biggest classes and the fan-in hubs as bars;
@@ -560,3 +560,57 @@ missing it — and removes the comment. The owner confirms or reorders
   landing page is the R3 proof and the sidebar's Part I now opens on it;
   `lectures.md` is the skeleton. 84 diagrams checked, 0 failed; all names
   resolve; hand-offs in pass3.md §8, pass4.md and pass5.md.
+- **2026-09-02, session B — maps: the atlas.** *Rulings, written before
+  editing.* **One generated directory.** Everything a page includes that a
+  tool wrote lives in `src/generated/` — the SVG figures and the markdown
+  tables — and nothing there is hand-edited; `python tools/map_source.py`
+  with no argument rewrites all of it, so regenerating on the next version
+  can never clobber prose. `llms_full.py` expands the markdown includes and
+  replaces an SVG include with a one-line note, so agents get the tables.
+  **The figure pipeline** is `<figure class="map">` + `{{#include
+  ../generated/<name>.svg}}` + `<figcaption>`, with the SVG carrying only
+  classes (`svg.mapfig`, `.shared`, `.client`, `.skip`, `.lib`) and all
+  colour, font and theme in `custom.css`; text is `currentColor`, so the
+  five mdBook themes and the zoom overlay all read. **The atlas is four
+  maps and a front page**, each a figure with prose then the table it
+  summarises: *where the code is* (`packages`: the jar as a treemap of
+  packages, area by lines, colour by jar, the out-of-scope packages
+  hatched — which is also the two-jars figure the introduction wanted and
+  the treemap `out-of-scope-tour` wants in session C); *where the mass is*
+  (`biggest`: bars); *what everything imports* (`fanin`: bars, with the
+  library classes the old table could not see — `Codec` was not counted —
+  now counted and marked); *what extends what* (`hierarchy`: trees with
+  numbers on them for the roots the parts teach, and the table split into
+  class roots and interface roots, because the old table's top was mixin
+  interfaces). File names and URLs do not change (R8); sidebar titles do.
+  **The threads figure is mermaid** (R4: mermaid for what mermaid draws): a
+  flowchart beside `reference/threads.md` of every thread a lecture leans
+  on and the three ways work crosses between them — a posted task, a
+  completed future, a hopped packet handler — drawn from the pass-2
+  verified table, no new fact. **The verifier stops skipping `maps/`** now
+  that the atlas has prose; it skips `generated/` instead. The atlas pages
+  say how each number was counted (a class is one `.java` file, a line is a
+  line of decompiled source, client-only is absence from
+  `server-classes.txt`, fan-in is import statements), because pass 4 will
+  re-derive them.
+  *Done.* `tools/map_source.py` rewritten: it writes `src/generated/` —
+  six markdown tables and seven SVGs (the treemap, two bar charts, four
+  trees) — and `deploy.sh` runs it first, so the atlas cannot drift from
+  the decompile. Rewriting it found two bugs in the old view: nested
+  classes and records were invisible to the hierarchy parser (every count
+  moved; `Goal` went from 70 to 200 because two thirds of its subclasses
+  are nested in the mobs that use them; `Packet` appeared at 232), and the
+  import count ignored `com.mojang.*`, which hid the best fact on the map:
+  `Codec` is the second most-imported class in the game. The five atlas
+  pages are prose over figures over tables — *where the code is*, *where
+  the mass is*, *what everything imports*, *what extends what*, and a front
+  page that says how every number is counted. The treemap is in the
+  introduction as the two-jars figure; `reference/threads.md` has its
+  mermaid figure of the eight threads and the three ways work crosses
+  between them; `verify_names.py` now checks the atlas prose (all 19,895
+  names resolve); `llms_full.py` expands includes; the figure recipe is in
+  `TEMPLATE.md` and `CLAUDE.md`. Rendered and looked at in the light and
+  navy themes with headless Chrome before shipping. 85 diagrams, 0 failed.
+  Hand-offs in pass3.md §8 (session C's treemap include, the `SKIPPED`
+  list), pass4.md (every number, the tool itself, `entity-anatomy`'s
+  corrected 193) and pass5.md.
