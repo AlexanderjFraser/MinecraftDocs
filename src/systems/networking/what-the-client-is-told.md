@@ -422,9 +422,9 @@ Named concretely, with the server-side owner:
   ([AI, goals and brains](../entities/ai-goals-and-brains.md)).
 - **Scheduled ticks.** `ServerLevel.blockTicks` and
   `ServerLevel.fluidTicks`. The client's equivalents are empty
-  black holes ([block ticks and fluids](../world/block-ticks-and-fluids.md)).
+  black holes ([scheduled ticks](../world/scheduled-ticks.md)).
 - **Points of interest.** `ChunkMap.poiManager`, except through the
-  opt-in debug channel ([game events and POI](../world/game-events-and-poi.md)).
+  opt-in debug channel ([points of interest](../world/points-of-interest.md)).
 - **The ticket graph.** `TicketStorage`, `DistanceManager`,
   `ChunkHolder.ticketLevel`, `FullChunkStatus`. The client is told only
   a radius and a simulation distance, as two integers.
@@ -438,7 +438,7 @@ Named concretely, with the server-side owner:
   spawn state, raids and the dragon fight.
 - **Game rules.** They reach the client only on request and only for a
   player with the command permission
-  ([level data and rules](../world/level-data-and-rules.md)). An
+  ([level data and rules](../../reference/level-data-and-rules.md)). An
   ordinary client does not know the game rules.
 - **Everything outside the disc**: entities beyond tracking range,
   chunks outside the tracking view, and every other level on the server.

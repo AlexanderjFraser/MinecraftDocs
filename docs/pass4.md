@@ -48,6 +48,299 @@ entry first.
 
 ## Entries
 
+- **2026-09-02, session E — Part IV The world.** Ten pages: five rewritten
+  (`chunk-anatomy`, `chunk-generation-pipeline`, `lighting`, `chunk-storage`,
+  `environment-attributes-and-timelines`), four produced by the two confirmed
+  splits (`scheduled-ticks` + `fluids` from `block-ticks-and-fluids`,
+  `game-events-and-vibrations` + `points-of-interest` from
+  `game-events-and-poi`), and `level-data-and-rules` reframed as Reference —
+  plus a landing page and Part IV's section of `lectures.md`.
+  `tickets-and-loading` was session A's pilot and was not rewritten.
+  **Check the four split pages hardest**: a split re-attributes every fact,
+  and a fact that changes owner is a fact that moved without a diff. Every
+  draft was diffed against its old page from the agent's report before
+  acceptance; the corrections marked *(session-verified)* were re-derived
+  from the decompile by the session itself, method by method.
+
+  - **Twelve pass-2 errors found.** Re-check each *fix*, not only the old
+    claim.
+    - `lighting` had the light broadcast **backwards**. It said the packet
+      goes to the watching players "with border players included";
+      `ChunkHolder.broadcastChanges` passes *borderOnly* **true** for the
+      light packet and false for block changes, and
+      `ChunkMap.isChunkOnTrackedBorder` keeps only players for whom some
+      neighbour of the chunk is untracked. Light updates reach the edge of a
+      player's tracking view **only**. The old page's "up to nine packets
+      for one torch" went with it. *(session-verified)*
+    - `game-events-and-poi` said POI updates are "deferred through the
+      server's task queue, **even from the server thread**", so "a record
+      appears a task later than its block and any read in between sees the
+      old answer". False for the ordinary case:
+      `MinecraftServer.scheduleExecutables` is *running a task or not on this
+      thread, and not stopped*, so on the Server thread outside a queued task
+      `BlockableEventLoop.execute` runs the body **inline** and the record
+      appears synchronously. Deferral is the worldgen-worker case and the
+      nested-task case. *(session-verified)*
+    - `scheduled-ticks` (from `block-ticks-and-fluids`): the tick drain was
+      said to be skipped "whenever `TickRateManager.runsNormally` is false,
+      which covers stepping and sprinting as well as a plain freeze".
+      `TickRateManager.tick` sets its flag to *not frozen, or frozen with
+      ticks left to run*, so `/tick step` **runs** the drain, and the sprint
+      path never touches the flag. *(session-verified)*
+    - `chunk-anatomy`'s palette tier table put biomes' one-, two- and
+      three-bit linear rungs on the same *1–4 bits* row as block states.
+      `Strategy.createForBiomes` has linear rungs at 1, 2 and 3 only and is
+      `Configuration.Global` from 4 bits up — no four-bit linear rung for
+      biomes and no hashmap tier at all. *(session-verified)*
+    - `chunk-anatomy` said of `LevelChunk.setBlockState` that "neighbour
+      *updates* are not here — they are `Level.setBlock`'s job". Partly
+      false: `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` runs
+      inside `LevelChunk.setBlockState`, on a `ServerLevel`, when the block
+      changed or the new block is a `BaseRailBlock`, and the flags carry
+      `Block.UPDATE_NEIGHBORS` or a piston move. *(session-verified)*
+    - `chunk-anatomy` also conflated the two halves of the block-entity
+      removal gate — `BlockEntity.preRemoveSideEffects` is what the client
+      and `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` skip, not the removal
+      — and "a client section's `LevelChunkSection.isRandomlyTicking` is
+      false forever" is over-strong, because a client-side write does move
+      `LevelChunkSection.tickingBlockCount`. *(agent, re-read by the session)*
+    - `environment-attributes-and-timelines` said "the night curve can dim a
+      nether-red fog and a taiga-blue fog by the same factor". **The nether
+      has no day timeline**: its dimension type's *timelines* is
+      *#minecraft:in_nether*, which resolves through *#minecraft:universal*
+      to `Timelines.VILLAGER_SCHEDULE` alone. Only the overworld tag adds
+      day, moon and early game. *(session-verified)*
+    - `environment-attributes-and-timelines` said a positional read
+      "recomputes the whole layer stack on **every call**, every time". The
+      sampler's positional flag is computed from whether any *layer* is an
+      `EnvironmentAttributeLayer.Positional`, **not** from the attribute's
+      own flag, so a nominally positional attribute that no biome mentions
+      is memoised for the tick like any other. *(session-verified)*
+    - `environment-attributes-and-timelines`, four more: "`TimeCommand` is
+      the only class outside `world/clock` that touches `ServerClockManager`
+      directly" — false; "the two positionless readers" — there are three
+      `EnvironmentAttributeSystem.getDimensionValue` call sites; "all of it
+      scoped to a clock through `/time of`" — the same subtree is registered
+      directly on `/time` against `DimensionType.defaultClock`; and
+      "`ServerLevel.tick`'s very first statement". *(agent)*
+    - `chunk-generation-pipeline` was self-inconsistent about the noise fork:
+      one section said "biomes and noise fork to the pool" flatly while its
+      step 8 said only `NoiseBasedChunkGenerator` does. Only the latter is
+      true, and the old page's stated *reason* for the biome fork ("it is on
+      the base `ChunkGenerator.createBiomes`, so every generator forks") is
+      wrong, because `NoiseBasedChunkGenerator` overrides it. *(agent)*
+    - `chunk-generation-pipeline` singled out "*SURFACE*'s distance-0
+      requirement on *NOISE*" as "the one that matters most". That is the
+      automatic parent requirement every step carries and distinguishes
+      nothing; the radius-1 rows are what stack into the 11. *(agent)*
+    - `fluids` (from `block-ticks-and-fluids`): "seven blocks out
+      `FlowingFluid.getNewLiquid` reaches zero, nothing is rescheduled"
+      conflates two stopping mechanisms — the front stops because
+      `FlowingFluid.spreadToSides`' gate computes zero at amount 1, while
+      `getNewLiquid` returning empty is what happens when the *supply* is
+      cut. And `LavaFluid.spreadTo` turns the target to stone only when that
+      block is a `LiquidBlock`. *(agent)*
+    - `game-events-and-poi`: arrival is **⌊distance⌋ − 1** ticks after
+      selection, not ⌊distance⌋ — `VibrationSystem.Ticker.tick` decrements
+      the travel time inside the same call that selected the candidate, so
+      anything under two blocks arrives on the selecting tick.
+      `VibrationSystem.User.requiresAdjacentChunksToBeTicking` is true for
+      the shrieker as well as the sensor, and its test also requires each of
+      the nine columns to come back non-null from
+      `ServerChunkCache.getChunkNow`. *(session-verified for the decrement)*
+    - `game-events-and-poi` gave `ValidateNearbyPoi` for *HOME* as running
+      "each tick within 16 blocks". It is in the **rest** package at
+      priority 3, so it only runs while `Activity.REST` is active — which
+      means the stale-`GlobalPos` answer needs *and it is night* too.
+      *(agent)*
+
+  - **The claims each rewrite introduced**, per page. None was fact-checked
+    in pass 2.
+    - **`chunk-anatomy`** — the hook (a two-state section costs what a
+      sixteen-state one costs, and the seventeenth re-encodes 4,096 entries)
+      rests on three legs: `Strategy.createForBlockStates`' always-four-bits
+      rung, `PalettedContainer.pack` taking its width off the same ladder,
+      and `LinearPalette.idFor` → `PalettedContainer.onResize` →
+      `PalettedContainer.Data.copyFrom`. Then: `SerializableChunkData.read`
+      on the server thread while only `SerializableChunkData.parse` is on the
+      pool; `read` returning a `ProtoChunk` in every case; `ImposterProtoChunk`
+      and `EmptyLevelChunk` being subclasses of the two lines rather than
+      four peers; `EmptyLevelChunk.getFullStatus` flat `FullChunkStatus.FULL`;
+      `LevelChunk.getBlockState` answering air from
+      `LevelChunkSection.hasOnlyAir` without a palette; `BulkSectionAccess`
+      as the second `LevelChunkSection.acquire` holder; `SectionCopy` storing
+      null for an air-only section; `SingleValuePalette.idFor` jumping 0 → 4
+      bits in one step; `LevelChunkSection.recalcBlockCounts` reachable only
+      from the two-container constructor, whose only caller is
+      `SerializableChunkData`; `LevelChunkSection.isRandomlyTicking` having
+      exactly one reader outside its class;
+      `LevelChunk.EntityCreationType.QUEUED` having **no caller anywhere**;
+      `LevelChunk.getBlockEntity` promoting pending NBT on any creation type;
+      `ChunkStatus.FINAL_HEIGHTMAPS`; and the twelve ordered steps of the
+      write path as a table — check that table row by row.
+    - **`chunk-generation-pipeline`** — the hook (529 holders claimed before
+      a step runs) and: `ChunkGenerationTask.create` taking the generation
+      pyramid's radius **unconditionally**, before any disk read; the
+      per-layer sweep radii 11, 11, 3, 3, 2, 2, 2, 1, 1, 0, 0, 0 (derived by
+      replaying `ChunkStep.Builder` — re-derive these); the loading pyramid's
+      accumulated FULL requirement being *SPAWN* at 0 and *INITIALIZE_LIGHT*
+      at 1; `ChunkStatusTasks.full` unwrapping an existing
+      `ImposterProtoChunk` and replacing nothing in that case;
+      `GenerationChunkHolder.replaceProtoChunk` throwing on a changed slot;
+      the dispatcher's four-priority bookkeeping queue;
+      `ChunkTaskPriorityQueue.PRIORITY_LEVEL_COUNT` being derived from
+      `ChunkLevel.MAX_LEVEL` rather than the literal 46;
+      `ChunkPyramid.SAFETY_MARGIN_CHUNKS` computing to **90** chunks;
+      *STRUCTURE_STARTS* needing *EMPTY* at 0 (the old table said "—"); the
+      second *EMPTY* sweep reading only chunks the first missed because
+      `GenerationChunkHolder.acquireStatusBump` fails for holders already
+      there; and **five** steps leaving the worldgen executor, six inline,
+      plus *EMPTY* — the figure asserts all of it, so check it node by node.
+      *(The session verified `ChunkGenerationTask.getRadiusForLayer` picks
+      the pyramid from the task's needs-generation flag, so the figure's
+      radii are the generation-pyramid ones and `EMPTY`'s first sweep is the
+      loading pyramid's 1; the caption now says so.)*
+    - **`lighting`** — the hook (no light thread, no light phase; the kick is
+      the idle poll) and: the border-only broadcast above; the queued light
+      task's runnable running on the light executor, not the server thread;
+      `LevelLightEngine.runLightUpdates` running the block engine to
+      completion then the sky engine, so the four stages happen **twice** per
+      batch; `ThreadedLevelLightEngine.runUpdate` taking a window of
+      min(size, 1000) and the POST pass removing that same window;
+      `ChunkMap.scheduleUnload` as the second caller of
+      `ThreadedLevelLightEngine.tryScheduleUpdate`;
+      `ChunkHolder.sectionLightChanged` returning false with no bit set when
+      there is no ticking chunk, *after* marking unsaved;
+      `ClientPacketListener.applyLightData` ending in
+      `LevelLightEngine.setLightEnabled`; enabling being inside
+      `LightEngine.propagateLightSources` rather than
+      `ThreadedLevelLightEngine.lightChunk`; the 27-section figure deriving
+      from a flood reaching **thirteen** blocks plus the one-block halo; and
+      `SectionUpdateTracker.hasAllNeighbors` checking the eight surrounding
+      columns.
+    - **`chunk-storage`** — the hook (the eager sweep and the wall-clock
+      autosave) and: `ChunkMap.setChunkUnsaved` being installed only at the
+      moment a chunk becomes full, so the eager set never holds a generating
+      chunk; `/save-all` forcing a write on a no-save world while an autosave
+      does not; `ImposterProtoChunk` never being written;
+      `ChunkMap.saveChunkIfNeeded` accepting only `LevelChunk` and
+      `ImposterProtoChunk`, so a `ProtoChunk` is written only by the unload
+      path; the in-file/sidecar ordering asymmetry stated as a principle
+      (**session-verified against `RegionFile.write`**: allocate, write,
+      headers, `RegionFile.writeHeader`, commit, free — the sidecar's commit
+      being the move); `RegionFileVersion.VERSION_GZIP` having a null option
+      name so it is readable but unselectable (**session-verified**); the
+      `StrictQueue.FixedPriorityQueue` ordinal scan behind `IOWorker`'s three
+      lanes; the unload task **re-arming** on a new sync future rather than
+      only re-checking; `EntityStorage.loadEntities` running its datafix on
+      the server thread; and `ChunkMap.saveAllChunks` with flush computing
+      its holder list once and looping until a pass saves none.
+    - **`scheduled-ticks`** — the hook (dedup by type and position only) and:
+      the dedup slot being released in the **collect** phase, not at run;
+      `LevelTicks.hasScheduledTick` and `LevelTicks.willTickThisTick`
+      answering different questions, with their caller lists; two further
+      comparators the old page did not name
+      (`LevelTicks.CONTAINER_DRAIN_ORDER`, `LevelChunkTicks.SUB_TICK_ORDERING`);
+      the gate being per **chunk**, not per position; random ticks stopping
+      one ring sooner than scheduled ticks because
+      `ChunkMap.forEachBlockTickingChunk` wraps
+      `DistanceManager.forEachEntityTickingChunk`; the budget being per
+      `LevelTicks.tick` call, so 65536 each for blocks and fluids; the
+      **inference** that a block tick booking a delay-0 fluid tick is caught
+      in the same level tick while the reverse waits — flagged by its own
+      author as the page's one inference rather than a reading;
+      `LevelTicks.clearArea` / `LevelTicks.copyAreaFrom` touching block ticks
+      only, with gametest rather than structure placement as the caller;
+      `SavedTick.filterTickListForChunk`; the repeater priorities
+      (`TickPriority.HIGH` on, `TickPriority.VERY_HIGH` off,
+      `TickPriority.EXTREMELY_HIGH` under `DiodeBlock.shouldPrioritize`,
+      `TickPriority.NORMAL` only from `DiodeBlock.setPlacedBy`) —
+      **session-verified**, as are the two-tick delay and the placement of
+      the turn-off booking inside `DiodeBlock.tick`'s *not on* branch; and
+      lava being the only randomly-ticking fluid.
+    - **`fluids`** — the hook (four independent slope searches, and a side
+      that cannot be *replaced* still votes) is **session-verified against
+      `FlowingFluid.getSpread`**: a strictly better score clears the
+      collected winners **before** the `FluidState.canBeReplacedWith` test
+      and the running minimum is updated regardless, so an unreplaceable near
+      neighbour both empties the map and suppresses the rest. Then:
+      thirty-seven fluid states and roughly 120 positions per side (both
+      **derived arithmetic** — re-derive); `LiquidBlock.getFluidState`
+      clamping the level so `FlowingFluid.getLegacyLevel` is lossy for
+      falling flows; a waterlogged block reporting a **source** and therefore
+      never being drained by a fluid tick; `WaterloggedTransparentBlock`
+      being the only block that reports a falling source;
+      `EnvironmentAttributes.WATER_EVAPORATES` read positionally while
+      `EnvironmentAttributes.FAST_LAVA` is not; the nether's dimension type
+      setting both; `LiquidBlock.shouldSpreadLiquid` being a no-op for water
+      because its whole body sits inside a lava test;
+      `LiquidBlock.updateShape` scheduling with no `shouldSpreadLiquid` gate;
+      and the reach figures (water 7, lava 3, fast lava 7 — derived).
+    - **`game-events-and-vibrations`** — the hook (one tick late, six rays,
+      and `SculkSensorBlock.stepOn` bypassing the cascade —
+      **session-verified**: `stepOn` tests `SculkSensorBlock.canActivate` and
+      not-a-warden, calls `VibrationSystem.User.canReceiveVibration`, then
+      `VibrationSystem.Listener.forceScheduleVibration`, which goes straight
+      to `VibrationSelector.addCandidate` past
+      `VibrationSystem.User.isValidVibration` and
+      `VibrationSystem.Listener.isOccluded`). Then: the arrival correction
+      above; `LevelChunk.getListenerRegistry` creating a registry for any
+      section merely queried; `DynamicGameEventListener.move` doing nothing
+      when either chunk is not `ChunkStatus.FULL`; the allay carrying **two**
+      listeners; the position source resolving between the two validity
+      gates; `isOccluded` short-circuiting on the first clear ray; the
+      redstone distance recomputed from block positions at arrival; the full
+      step condition (`Entity.moveDist` past `Entity.nextStep`, and on ground
+      *or* climbable *or* crouching-with-zero-clip *or* on rails) replacing
+      the old "on the ground and not swimming"; resonance posting at the
+      **neighbour's** position before tendrils-clicking; and the four tag
+      contents read from the data pack.
+    - **`points-of-interest`** — the hook (claimed when a path exists, and the
+      ticket and the *occupied* flag never speak) and: **two release paths
+      the old page missed** —
+      `SetWalkTargetFromBlockMemory` calling `Villager.releasePoi` when the
+      dimension differs, when the cant-reach memory exceeds 1200 ticks, or
+      after a thousand failed intermediate-position tries
+      (**session-verified**), and `VillagerMakeLove` claiming a bed for a
+      baby and releasing it if the birth fails; `PoiTypes.TEST_INSTANCE`
+      missing from the old catalogue; zero-ticket types never being occupied
+      and therefore never village centres; `PoiSection.refresh` reusing
+      existing records so a repair does not reset ticket counts;
+      `AcquirePoi` taking at radius 1 around the path target and
+      **discarding** the take's result; `PoiManager.isVillageCenter` using
+      the non-loading getter, so the village graph only sees sections already
+      in memory; and the whole *who else asks* table of radii, every number
+      new.
+    - **`environment-attributes-and-timelines`** — the layer-stack figure is
+      new and asserts the whole order; the corrections above; plus the
+      biome-layer count (eleven attributes across sixty-six biome files,
+      *visual/sky_color* in fifty-six), the nine weather attributes and the
+      *rain minus thunder* blend, the client flash layer's fixed lerp toward
+      a named colour rather than "toward white", `Timelines.EARLY_GAME` using
+      `BooleanModifier.AND`, all four vanilla timelines running on the
+      overworld clock, the `/time` rate range, and the routine time broadcast
+      being every **twenty** ticks with an empty clock map.
+
+  - **The landing page and `lectures.md` are claims about order.** Part IV's
+    landing page asserts that the first five lectures are a forward-only
+    chain, that `environment-attributes-and-timelines` depends on nothing
+    else in the part, that Part IV needs Part III in front of it and nothing
+    after it, and that render distance, simulation distance and the
+    mob-spawning radius are three different radii of which only two are
+    settings. Each is checkable.
+
+  - **`level-data-and-rules` moved to Reference** and its body was *not*
+    re-verified this session — only its header, its links and its framing
+    changed. Pass 2 found eleven wrong file paths on it; re-check the paths
+    and the who-owns-what table again.
+
+  - **Two claims their own authors flagged as unverified**, both worth a
+    direct read: `scheduled-ticks`' delay-0 cross-queue inference, and
+    `points-of-interest`' statement that a consistency repair never resets
+    tickets, which was confirmed for the reuse-by-key path but not for a
+    position whose *type* changed between the record and the block.
+
+
 - **2026-09-02, session D — Part III The server.** Five pages: four
   rewritten (`server-tick`, `server-level-tick`, `players-and-sessions`,
   `starting-a-server` — the old `server-lifecycle`, renamed) and one written

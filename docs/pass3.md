@@ -1566,3 +1566,78 @@ writes one strikes it through; a session that rules one out says why, here.*
   ordering in its new diagram** (light before block packets in
   `ChunkHolder.broadcastChanges`). A drafting report is not evidence about
   the figure; read the figure separately.
+
+- **Session E (Part IV The world).** **`tools/check_lanes.py --pages` was
+  matching the wrong directory.** It filtered with a plain `startswith` on
+  absolute paths, so `--pages src/systems/world` also picked up
+  `src/systems/worldgen` and reported nine unconverted Part XII pages as
+  Part IV failures. Fixed with a `_under` helper that requires a path
+  separator; **session M would have hit this head-on**, and any later
+  session scoping to a directory whose name is a prefix of another should
+  now be safe. This is the third pass-3 session to find a bug in a tool
+  before finding one in a page — the "suspect the tool once" lesson is
+  holding.
+  **The lane key is now pruned to lanes in use.** Session E added 62 rows
+  before drafting and then removed the 29 no page introduced, because a key
+  row is a claim on a lane corpus-wide and claiming one speculatively
+  pre-empts a session that has not run. Rows *not* claimed, and therefore
+  still open for the sessions that own those pages: `CA`, `PC`, `IPC`,
+  `LCS`, `PCon`, `HM`, `CCC`, `GCH`, `CST`, `CG`, `CP`, `WGR`, `LLE`,
+  `SLE`, `CSLS`, `DLay`, `RFS`, `RF`, `ES`, `SS`, `SDS`, `PCT`, `WF`, `LF`,
+  `EGELR`, `VS`, `SSBE`, `PS`, `PRec`. Rows Part IV **did** claim, which
+  later sessions must lengthen around: `LC`, `SCD`, `IOW`, `LCTs`, `LTs`,
+  `FF`, `LB`, `BI`, `RB`, `GED`, `VSL`, `VST`, `VSel`, `SSB`, `PM`, `PN`,
+  `AP`, `VNP`, `SIB`, `Brain`, `BLE`, `TLE`, `LLSS`, `EAP`, `EVS`, `ATS`,
+  `KTS`, `SCM`, `GS`, `SAI`, `SR`, `Camera`, `Mob`, `CGT`. Three collisions
+  were resolved by lengthening the later claimant, as the rule says:
+  `LevelChunkTicks` → `LCTs` (`LCT` is session A's `LoadingChunkTracker`),
+  `PoiRecord` → `PRec` (`PR` is session C's `PackRepository`) — though
+  `PRec` was then pruned unused — and `PalettedContainer` → `PCon`, also
+  pruned. **Four page lanes now collide with unconverted parts** and those
+  sessions will have to lengthen: `PM` (`PlacementModifier` in
+  `features-and-placement`), `GS` (`GlyphStitcher` in `text-and-fonts`),
+  `CG` was not claimed but `biomes` uses it for `NoiseBasedChunkGenerator`,
+  and `LB` (`LeverBlock` in `redstone`) — **session F should expect to
+  rename that one**, since `LB` is `LiquidBlock` now.
+  **A part-session pattern worth repeating.** Both Part IV splits were
+  drafted by two agents working from the same source page in parallel, each
+  told where the seam was, which classes were theirs, and what to hand over
+  in one clause plus a link. Neither duplicated the other and both reported
+  the seam facts they had handed over — but **both also flagged that they
+  could not see the sibling page while writing**, so the cross-links were
+  written blind and the session had to check them. A future split session
+  should either sequence the two halves or plan a link-check pass; session E
+  did the latter.
+  **For session F (Part V Blocks).** Three things landed in Part IV that
+  Part V now links into rather than re-teaching. `scheduled-ticks` owns the
+  appointment book and traces a **repeater** specifically so `redstone` can
+  link to it for the delay, the priorities and the pulse-extension
+  behaviour; `redstone.md`'s link was re-pointed there this session.
+  `fluids` owns `LiquidBlock`, waterlogging and the flow model, and
+  `blocks-and-states`' `Fluid`/`FluidState` link now points at it.
+  `game-events-and-vibrations` owns `GameEvent` posting, and the three
+  Part V links (`block-breaking`, `block-interaction`, `blocks-and-states`)
+  were re-pointed. Also: `chunk-anatomy` now states that
+  `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` runs **inside**
+  `LevelChunk.setBlockState` — the old page denied it — so R6's
+  *two update channels* flowchart, which session F draws in
+  `blocks-and-states`, must place that call inside the chunk write, not in
+  `Level.setBlock`'s tail.
+  **For session G (Part VI Entities).** `points-of-interest` names the
+  villager memories and behaviours its trace passes through and links to
+  `ai-goals-and-brains` for the brain itself; it also corrects
+  `ValidateNearbyPoi` to the rest package, so the brain page's activity
+  story and this one must agree. `game-events-and-vibrations` owns the
+  warden's and allay's listener behaviour at the vibration level only.
+  **For session O (Reference).** `level-data-and-rules` is now
+  `src/reference/level-data-and-rules.md` with a redirect and a corrected
+  header, and is listed in the reference README and `SUMMARY.md`; **its body
+  is still a systems page's body** and wants the same reframe
+  `math-and-primitives` will get. Two extraction candidates arrived with it:
+  `environment-attributes-and-timelines`' twenty-one-class *called by*
+  roster, and Part IV's POI catalogue, both of which are class-index
+  material rather than lecture material.
+  **The coverage queue is unchanged.** Part IV has no entry in §7 and
+  session E spent no R7 allowance — its two new pages are the notebook's
+  confirmed splits, not new coverage. The queue still stands at fifteen
+  items.

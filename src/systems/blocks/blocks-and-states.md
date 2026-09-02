@@ -76,7 +76,7 @@ when they meet another stair.*
   and `BlockStateProperties.HORIZONTAL_FACING` are all *facing* on disk
   but distinct objects.
 - **`StateHolder`** is the state itself, generic over owner and self so
-  `Fluid`/`FluidState` share it ([block ticks and fluids](../world/block-ticks-and-fluids.md)).
+  `Fluid`/`FluidState` share it ([fluids](../world/fluids.md)).
   It holds `StateHolder.owner`, two parallel arrays
   `StateHolder.propertyKeys` / `StateHolder.propertyValues`, and
   `StateHolder.neighbors`: a two-dimensional table, property index by
@@ -310,7 +310,7 @@ sequenceDiagram
    underneath — it plays `SoundType.getPlaceSound` at the *mean of the
    sound type's volume and 1.0* and 0.8 **times** the type's pitch (for
    oak stairs, `SoundType.WOOD`, that is full volume), raises
-   `GameEvent.BLOCK_PLACE` ([game events](../world/game-events-and-poi.md))
+   `GameEvent.BLOCK_PLACE` ([game events](../world/game-events-and-vibrations.md))
    and `ItemStack.consume`s one — restored under `Player.hasInfiniteMaterials`.
    `InteractionResult.SUCCESS`. `MultiPlayerGameMode.startPrediction` sends
    `ServerboundUseItemOnPacket` with sequence *n* and closes the prediction.

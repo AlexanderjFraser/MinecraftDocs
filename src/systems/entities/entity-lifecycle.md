@@ -260,7 +260,7 @@ and `VillageSiege`, ticked from `ServerLevel.tickCustomSpawners`.
   is where scoreboard removal, the navigating-mob set, dragon parts, the
   sleeping-player list, waypoints and the dynamic
   `DynamicGameEventListener` registration all hang
-  ([game events](../world/game-events-and-poi.md)).
+  ([game events](../world/game-events-and-vibrations.md)).
 - **Crosses the network as:** `ClientboundAddEntityPacket` bundled with
   `ClientboundSetEntityDataPacket`, `ClientboundUpdateAttributesPacket`,
   `ClientboundSetEquipmentPacket`, `ClientboundSetPassengersPacket` and

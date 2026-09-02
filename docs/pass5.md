@@ -19,6 +19,68 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+- **2026-09-02, session E — Part IV.** **The length debt is this session's
+  main bequest.** Ten pages, and eight of them landed at 358–417 lines
+  against the 260–340 the brief asked for; the two pilots sit at 377 and
+  389, so Part IV is now the corpus's fattest part. Every drafter reported
+  trimming twice and stopping rather than dropping a verified fact, which is
+  the right call under R7 but leaves the bill here. Each names its own
+  cheapest cut, and those are the places to start: `chunk-anatomy` — the
+  *double indirection* subsection on block-entity tickers (arguably
+  `block-entities` material), the *what the client actually receives* answer
+  (arguably `what-the-client-is-told`), and the second half of the
+  `ImposterProtoChunk` paragraph; `lighting` — the sky-column section, its
+  most self-contained; `environment-attributes-and-timelines` — *what
+  crosses the wire*, or the *what a type allows* subsection;
+  `points-of-interest` — the *who else asks* table; `game-events-and-vibrations`
+  — one *Questions players ask* entry. Nothing above is a factual cut; all of
+  it is length.
+
+  **Cuts made, all of them names rather than claims.** `chunk-anatomy` drops
+  `Block.UpdateFlags` as a named catalogue (the four flags the write path
+  actually tests survive; the catalogue belongs to `blocks-and-states`),
+  `CarvingMask`'s internal shape, `UpgradeData.EMPTY`, and a dozen field
+  names now carried by the sentences that touch them.
+  `chunk-generation-pipeline` drops `WorldGenContext`'s six components, the
+  `ChunkGenerator` method roll-call (Part XII owns those; `createStructures`
+  and `createBiomes` stay because their threading is the point),
+  `Blender.of`, `ChunkAccess.isUpgrading` skipping *SPAWN*, and
+  `Util.DEFAULT_MAX_THREADS`; it also hands `ServerLevel.updatePOIOnBlockStateChange`'s
+  worker-thread posting to `points-of-interest`, **which now owns and
+  corrects it**. `lighting` drops the `LightEngine.QueueEntry` constructor
+  list, four constants, and the *called by* roll-call, of which only
+  `ClientPacketListener.queueLightRemoval` and `ClientLevel.unload` are now
+  absent from the corpus. `chunk-storage` drops the thirteen-component
+  `SerializableChunkData` inventory, `RecreatingSimpleRegionStorage`, and
+  "crosses the network as: nothing" — and **proposes** that the read path's
+  null-parse failure branch and `ChunkMap.handleChunkLoadFailure` move to
+  `chunk-generation-pipeline`, which pass 5 should either do or drop.
+  `scheduled-ticks` drops `ScheduledTick.probe`. `fluids` drops
+  `FluidState.AMOUNT_FULL`, `EmptyFluid`, `FluidTags.WATER`/`LAVA`,
+  `LiquidBlock.fizz` and the client-packet names.
+  `game-events-and-vibrations` drops three private constant *names* (the
+  numbers survive in the listener table) and the "there is no *DebugPackets*
+  class" aside — **which wants a home in `naming-drift`**.
+  `environment-attributes-and-timelines` drops the twenty-one-class *called
+  by* roster; its author suggests it becomes a Reference table, and session
+  O should rule.
+
+  **Voice debt.** Eight of the ten pages end their opening paragraph on a
+  bolded sentence — the same device session C already flagged for Part II,
+  now used corpus-wide, and by pass 5 it will be a tic rather than a
+  signature. Two hooks are close cousins in shape ("X does not do the thing
+  you think, it does Y" — `fluids` and
+  `environment-attributes-and-timelines`) and should not sit near each other
+  in the lecture order. Three pages now carry a *Questions players ask*
+  close (`chunk-anatomy`, `lighting`, `points-of-interest`) plus the pilot's,
+  which is four in one part; check whether that reads as a part-level
+  convention or a template.
+
+  **`level-data-and-rules`'s Reference framing is provisional.** Session E
+  changed only its header, its links and its opening; it still carries a
+  `## Responsibility`-era body shape and a "Short, no trace" ancestry.
+  Session O owns the reframe.
+
 *(pass-3 and pass-4 sessions append below, newest first: the page, what
 was cut or moved, and why)*
 

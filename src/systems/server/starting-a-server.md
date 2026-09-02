@@ -256,7 +256,7 @@ server-wide saved data. Every other `LevelStem` in the registry then gets a
 `ServerLevel` over a `DerivedLevelData`, a view of the overworld's data —
 which is why the time of day, the weather, the difficulty and the world spawn
 are one set of numbers every dimension shares
-([level data and rules](../world/level-data-and-rules.md)).
+([level data and rules](../../reference/level-data-and-rules.md)).
 
 A brand-new world takes one detour, and it is the detour that actually
 generates terrain at boot. When `ServerLevelData.isInitialized` is false,

@@ -266,7 +266,7 @@ sequenceDiagram
    then `Block.playerWillDestroy` — `Block.spawnDestroyParticles` sends
    level event 2001 to everyone within 64 blocks *except the breaker*,
    `BlockTags.GUARDED_BY_PIGLINS` angers piglins, and `GameEvent.BLOCK_DESTROY`
-   is posted for sculk ([game events](../world/game-events-and-poi.md)).
+   is posted for sculk ([game events](../world/game-events-and-vibrations.md)).
    `Level.removeBlock` → `Level.setBlock` of the fluid that was in the
    block (water for a waterlogged block, air here) with flags 3 →
    `ServerLevel.sendBlockUpdated` → `ServerChunkCache.blockChanged`.

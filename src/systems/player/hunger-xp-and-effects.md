@@ -16,7 +16,7 @@ the swirls.*
 The headline: **the natural-regeneration game rule is
 `GameRules.NATURAL_HEALTH_REGENERATION`**, and `GameRules` lives in
 `world/level/gamerules` with typed `GameRule` lookups
-([level data and rules](../world/level-data-and-rules.md)). And no method
+([level data and rules](../../reference/level-data-and-rules.md)). And no method
 called *eat* exists on `Player` or `LivingEntity` — eating is a component
 walk that ends in `FoodData.eat`.
 

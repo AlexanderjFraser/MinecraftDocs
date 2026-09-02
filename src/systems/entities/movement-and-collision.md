@@ -354,7 +354,7 @@ this item's turn. Its `Entity.getMovementEmission` is
   `Block.stepOn`, `BlockBehaviour.BlockStateBase.entityInside`,
   `LivingEntity.causeFallDamage` ([damage](damage-and-death.md)),
   `GameEvent.STEP` / `GameEvent.HIT_GROUND` / `GameEvent.BOUNCE`
-  ([game events](../world/game-events-and-poi.md)).
+  ([game events](../world/game-events-and-vibrations.md)).
 - **Crosses the network as:** `ClientboundMoveEntityPacket.Pos`,
   `ClientboundMoveEntityPacket.Rot`, `ClientboundMoveEntityPacket.PosRot`
   (short deltas), `ClientboundEntityPositionSyncPacket` (absolute, the

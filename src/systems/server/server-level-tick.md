@@ -159,7 +159,7 @@ the tick was scheduled for before `BlockBehaviour.BlockStateBase.tick` runs.
 That check is the whole cancellation mechanism: replace a block and its
 pending ticks evaporate, with nothing anywhere removing them. The queue
 itself, and what schedules into it, is
-[block ticks and fluids](../world/block-ticks-and-fluids.md).
+[scheduled ticks](../world/scheduled-ticks.md).
 
 ## The chunk source does five things in one call
 

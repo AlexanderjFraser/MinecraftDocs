@@ -92,6 +92,13 @@ def check_key_against_source(classes: dict[str, str], root: str, libs: str) -> l
     return problems
 
 
+def _under(path: str, root: str) -> bool:
+    """True if `path` is `root` or lies inside it. A plain startswith would put
+    src/systems/worldgen inside src/systems/world."""
+    p, r = os.path.abspath(path), os.path.abspath(root)
+    return p == r or p.startswith(r + os.sep)
+
+
 def walk_pages(src: str, only: list[str] | None):
     for dirpath, _dirs, files in os.walk(src):
         for f in files:
@@ -99,7 +106,7 @@ def walk_pages(src: str, only: list[str] | None):
                 continue
             path = os.path.join(dirpath, f)
             rel = os.path.relpath(path, src).replace(os.sep, "/")
-            if only and not any(os.path.abspath(path).startswith(os.path.abspath(o)) for o in only):
+            if only and not any(_under(path, o) for o in only):
                 continue
             yield path, rel
 

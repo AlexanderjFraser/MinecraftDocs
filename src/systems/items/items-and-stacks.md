@@ -317,7 +317,7 @@ sequenceDiagram
   `BlockBehaviour.BlockStateBase.useWithoutItem` for the block half
   ([block interaction](../blocks/block-interaction.md)), `FoodData`,
   `ItemCooldowns`, `GameEvent` for vibrations
-  ([game events](../world/game-events-and-poi.md)), and
+  ([game events](../world/game-events-and-vibrations.md)), and
   `Level.playSeededSound`.
 - **Crosses the network as:** `ServerboundUseItemPacket`,
   `ServerboundUseItemOnPacket`, `ServerboundPlayerActionPacket` (whose

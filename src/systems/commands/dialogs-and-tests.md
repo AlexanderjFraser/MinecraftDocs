@@ -253,7 +253,7 @@ and stands the new one up.
 - **Calls into:** for dialogs, the chat-command path and
   `MinecraftServer.handleCustomClickAction`, the single extension point —
   **vanilla only logs it**. For tests, the point-of-interest manager
-  ([game events and POI](../world/game-events-and-poi.md)), the structure
+  ([points of interest](../world/points-of-interest.md)), the structure
   template manager ([structures](../worldgen/structures.md)),
   `ServerFunctionManager` ([execution and functions](execution-and-functions.md))
   and `ServerLevel.setChunkForced`.

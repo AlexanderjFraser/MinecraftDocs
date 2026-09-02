@@ -171,7 +171,7 @@ otherwise.
 | `BuiltInRegistries.TRIGGER_TYPES` | `CriterionTrigger` | `Criterion` | *trigger*, with the fields under *conditions* (`ExtraCodecs.dispatchOptionalValue`) | advancements, loaded by `ServerAdvancementManager` — a reload listener, not a registry | [advancements](../commands/advancements.md) |
 | `BuiltInRegistries.PARTICLE_TYPE` | `ParticleType` | `ParticleOptions` | | inline in biome ambient particles (`AmbientParticle`) and area effect clouds | [particles](../rendering/particles.md) |
 | `BuiltInRegistries.NUMBER_FORMAT_TYPE` | `NumberFormatType` | `NumberFormat` | | inline in `Objective` and `Score` — save data and commands, no pack | [scoreboard and data](../commands/scoreboard-and-data.md) |
-| `BuiltInRegistries.POSITION_SOURCE_TYPE` | `PositionSourceType` | `PositionSource` | | `VibrationParticleOption`, and one enchantment effect (`SpawnParticlesEffect`) — save data and the wire, no pack | [game events and POI](../world/game-events-and-poi.md) |
+| `BuiltInRegistries.POSITION_SOURCE_TYPE` | `PositionSourceType` | `PositionSource` | | `VibrationParticleOption`, and one enchantment effect (`SpawnParticlesEffect`) — save data and the wire, no pack | [game events and vibrations](../world/game-events-and-vibrations.md) |
 
 The first nine rows are the sub-objects of a configured or placed feature,
 and the trace on [features and placement](../worldgen/features-and-placement.md)

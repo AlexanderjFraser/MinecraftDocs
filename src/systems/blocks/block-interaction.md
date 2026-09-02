@@ -277,7 +277,7 @@ sequenceDiagram
    `DoorBlock.playSound` → `ServerLevel.playSeededSound` → `PlayerList.broadcast`
    of a `ClientboundSoundPacket` to everyone in range **except the
    clicker**; `ServerLevel.gameEvent` → `GameEventDispatcher.post`
-   ([game events](../world/game-events-and-poi.md)). The result is
+   ([game events](../world/game-events-and-vibrations.md)). The result is
    `InteractionResult.SUCCESS` with a client swing source, so the server
    does not swing; the swing arrives separately through
    `ServerGamePacketListenerImpl.handleAnimate` → `ServerPlayer.swing` →

@@ -293,7 +293,7 @@ from one list of three providers applied twice.
 - **Saved as:** `ScoreboardSaveData` under `minecraft:scoreboard`, and one
   command-storage file per namespace, both beside the world in the data folder
   and both through the data fixer
-  ([level data and rules](../world/level-data-and-rules.md)). The NBT field
+  ([level data and rules](../../reference/level-data-and-rules.md)). The NBT field
   names are the archaeology — *Objectives*, *PlayerScores*, *DisplaySlots*,
   *Teams*, and inside them *Name*, *CriteriaName*, *RenderType*, *Locked* —
   capitalised, pre-flattening conventions, preserved by codec.

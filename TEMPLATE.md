@@ -282,6 +282,39 @@ never change an existing row's meaning.
 | `SC` | `StopCommand` |
 | `DL` | `DirectoryLock` |
 | `WS` | `WorldStem` |
+| `LC` | `LevelChunk` |
+| `CGT` | `ChunkGenerationTask` |
+| `TLE` | `ThreadedLevelLightEngine` |
+| `BLE` | `BlockLightEngine` |
+| `LLSS` | `LayerLightSectionStorage` |
+| `SCD` | `SerializableChunkData` |
+| `IOW` | `IOWorker` |
+| `LCTs` | `LevelChunkTicks` |
+| `FF` | `FlowingFluid` |
+| `LB` | `LiquidBlock` |
+| `BI` | `BucketItem` |
+| `RB` | `RepeaterBlock` |
+| `GED` | `GameEventDispatcher` |
+| `VSL` | `VibrationSystem.Listener` |
+| `VST` | `VibrationSystem.Ticker` |
+| `VSel` | `VibrationSelector` |
+| `SSB` | `SculkSensorBlock` |
+| `PM` | `PoiManager` |
+| `Brain` | `Brain` |
+| `AP` | `AcquirePoi` |
+| `VNP` | `ValidateNearbyPoi` |
+| `SIB` | `SleepInBed` |
+| `PN` | `PathNavigation` |
+| `EVS` | `EnvironmentAttributeSystem.ValueSampler` |
+| `ATS` | `AttributeTrackSampler` |
+| `KTS` | `KeyframeTrackSampler` |
+| `SCM` | `ServerClockManager` |
+| `EAP` | `EnvironmentAttributeProbe` |
+| `Camera` | `Camera` |
+| `GS` | `GaussianSampler` |
+| `SAI` | `SpatialAttributeInterpolator` |
+| `SR` | `SkyRenderer` |
+| `Mob` | `Mob` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |

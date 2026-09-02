@@ -1,19 +1,20 @@
 # Level data and rules
 
-> Verified against **Minecraft 26.2** · Part IV · Short, no trace: who owns the seed, the spawn, the rules, the border and the dimensions, where each is saved, and what tells the client.
-
-## Responsibility
+> Verified against **Minecraft 26.2** · Reference · Who owns the seed, the spawn, the rules, the border and the dimensions, where each is saved, and what tells the client — looked up, not watched.
 
 The facts about a world that are not blocks or entities: its seed and
-dimensions, its spawn, its game time, its difficulty, its rules, its border,
-its scoreboard and maps. In 26.2 almost none of them live in *level.dat*
-any more. `PrimaryLevelData` is a stub, and everything else is a
-`SavedData` file under a *data/* folder — one server-global folder and
-one per dimension. This page is the map of who owns what.
+dimensions, its spawn, its game time, its difficulty, its rules, its
+border, its scoreboard and maps. In 26.2 almost none of them live in
+*level.dat* any more. `PrimaryLevelData` is a stub and everything else is a
+`SavedData` file under a *data/* folder — one server-global folder and one
+per dimension — so the question this page answers is always the same one:
+*which file remembers this, and who is allowed to change it.* The table
+under [who owns what](#who-owns-what) is the page, and the sections above
+it say what each owner is.
 
-The one sentence a player recognises: */gamerule, /worldborder,
-/setworldspawn and /difficulty — and the .dat files under data/ that
-remember them.*
+[Part IV](../systems/world/README.md) is where these things are used;
+[the level tick](../systems/server/server-level-tick.md) is where most of
+them are read.
 
 ## The data it owns
 
@@ -22,7 +23,7 @@ remember them.*
 - `LevelData` is the read-only interface every `Level` exposes, and it is
   small: `LevelData.getRespawnData`, `LevelData.getGameTime`,
   `LevelData.isHardcore`, `LevelData.getDifficulty`, `LevelData.isDifficultyLocked`.
-  No day time (`ServerClockManager`, [the server tick](../server/server-tick.md)),
+  No day time (`ServerClockManager`, [the server tick](../systems/server/server-tick.md)),
   no weather, no rules, no border. `LevelData.RespawnData` is the world
   spawn as a `GlobalPos` with yaw *and* pitch — it carries a dimension.
   `WritableLevelData` adds `WritableLevelData.setSpawn`; `ServerLevelData`
@@ -76,7 +77,7 @@ remember them.*
   is server-global at *\<world\>/data/*. `ServerChunkCache.savedDataStorage`
   (`ServerChunkCache.getDataStorage`, forwarded by `ServerLevel.getDataStorage`)
   is per dimension at *dimensions/\<namespace\>/\<path\>/data/* — the
-  overworld included ([chunk storage](chunk-storage.md)). Neither is "the
+  overworld included ([chunk storage](../systems/world/chunk-storage.md)). Neither is "the
   overworld's".
 
 ### Game rules
@@ -94,7 +95,7 @@ remember them.*
   (3), `GameRules.PLAYERS_SLEEPING_PERCENTAGE` (100), `GameRules.RESPAWN_RADIUS`
   (10), `GameRules.MAX_ENTITY_CRAMMING` (24), `GameRules.MAX_SNOW_ACCUMULATION_HEIGHT`
   (1), `GameRules.MAX_MINECART_SPEED` (feature-gated) … fifty-nine of them,
-  all in [the reference](../../reference/gamerules.md). The 1.21 names
+  all in [the reference](gamerules.md). The 1.21 names
   (*doDaylightCycle*, *doMobSpawning*) and the *GameRules.BooleanValue* /
   *IntegerValue* / *Key* classes are gone.
 - The values are a `GameRuleMap` — `SavedData`, *game_rules.dat*,
@@ -114,7 +115,7 @@ remember them.*
   inverted, as *showDeathScreen*); `GameRules.LOCATOR_BAR` through
   `ServerWaypointManager`; and `GameRules.ADVANCE_TIME`, which broadcasts a
   full clock sync because a paused clock is expressed on the wire as rate 0
-  ([environment attributes](environment-attributes-and-timelines.md)).
+  ([environment attributes](../systems/world/environment-attributes-and-timelines.md)).
   Five rules, and everything else is server-only —
   `MinecraftServer.updateMobSpawningFlags` sends nothing; it only flips
   `ServerChunkCache.setSpawnSettings`.
@@ -138,7 +139,7 @@ remember them.*
   a fresh `WorldBorder` starts with a warning time of 15, not 300. The live extent
   is a `WorldBorder.BorderExtent` — `WorldBorder.StaticBorderExtent` or
   `WorldBorder.MovingBorderExtent`, which `WorldBorder.tick` advances
-  ([the level tick](../server/server-level-tick.md)). `WorldBorder.MAX_SIZE`
+  ([the level tick](../systems/server/server-level-tick.md)). `WorldBorder.MAX_SIZE`
   is 59,999,968; `MinecraftServer.getAbsoluteMaxWorldSize` is applied to
   every level's border in `MinecraftServer.createLevels` — 29,999,984 on
   the integrated server, but `DedicatedServer` overrides it with
@@ -179,7 +180,7 @@ remember them.*
 - `LevelStem` is a `DimensionType` holder plus a `ChunkGenerator`
   (`LevelStem.OVERWORLD`, `LevelStem.NETHER`, `LevelStem.END`).
   `Registries.LEVEL_STEM` and `Registries.DIMENSION` share the id
-  *dimension* ([identifiers and registries](../foundations/identifiers-and-registries.md));
+  *dimension* ([identifiers and registries](../systems/foundations/identifiers-and-registries.md));
   `Level.OVERWORLD`, `Level.NETHER`, `Level.END` are `ResourceKey`s under
   the latter, and `Level.dimension` / `Level.dimensionType` are the
   accessors. `Level.canHaveWeather` is sky light, no ceiling, not the End.
@@ -210,9 +211,9 @@ remember them.*
   attribute, `EnvironmentAttributes.MOON_PHASE`, indexed into
   `DimensionType.MOON_BRIGHTNESS_PER_PHASE` — the one piece of the old moon
   logic still on `DimensionType`; see
-  [environment attributes](environment-attributes-and-timelines.md)).
+  [environment attributes](../systems/world/environment-attributes-and-timelines.md)).
 - `WeatherData` — server-global `SavedData`, `MinecraftServer.getWeatherData`
-  — was covered in [the level tick](../server/server-level-tick.md).
+  — was covered in [the level tick](../systems/server/server-level-tick.md).
   `PrimaryLevelData` stores no rain fields.
 
 ## Who owns what
@@ -231,7 +232,7 @@ remember them.*
 | scoreboard | `ServerScoreboard` (`MinecraftServer.scoreboard`), buffered by `ScoreboardSaveData` at save time | *data/minecraft/scoreboard.dat* | `ClientboundSetObjectivePacket`, `ClientboundSetScorePacket`, `ClientboundSetPlayerTeamPacket` |
 | maps | `MapItemSavedData` per `MapId`, `MapIndex` for the counter | *data/minecraft/maps/\<n\>.dat*, *data/minecraft/maps/last_id.dat* | `ClientboundMapItemDataPacket` |
 | raids | `Raids` per level | *dimensions/minecraft/…/data/minecraft/raids.dat* | boss bars |
-| chunk tickets | `TicketStorage` per level ([tickets](tickets-and-loading.md)) | *dimensions/minecraft/…/data/minecraft/chunk_tickets.dat* | — |
+| chunk tickets | `TicketStorage` per level ([tickets](../systems/world/tickets-and-loading.md)) | *dimensions/minecraft/…/data/minecraft/chunk_tickets.dat* | — |
 | dragon fight | `EnderDragonFight`, where `DimensionType.hasEnderDragonFight` | *dimensions/minecraft/…/data/minecraft/ender_dragon_fight.dat* | boss bars |
 | boss bars, scheduled functions, random sequences, stopwatches, trader timers, command storage | `CustomBossEvents`, `TimerQueue`, `RandomSequences`, `Stopwatches`, `WanderingTraderData`, `CommandStorage` | *data/\<id\>.dat* | boss bars only |
 | player data | `PlayerDataStorage` | *players/data/\<uuid\>.dat* | — |

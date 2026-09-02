@@ -154,7 +154,7 @@ actually runs. → [density functions](../systems/worldgen/density-functions.md)
 screen, whose submitted values come back as a packet. → [dialogs and tests](../systems/commands/dialogs-and-tests.md)
 
 **Dimension** — one `ServerLevel` and its `DimensionType`: a height range,
-a set of environment attributes and its own chunk storage. → [level data and rules](../systems/world/level-data-and-rules.md)
+a set of environment attributes and its own chunk storage. → [level data and rules](level-data-and-rules.md)
 
 ## E
 
@@ -198,10 +198,10 @@ the targets each reads and writes, resolved before anything is drawn. → [level
 
 **Game event** — a broadcast fact about something that just happened at a
 position (a block placed, a door opened) that sculk sensors and mobs
-listen for. → [game events and points of interest](../systems/world/game-events-and-poi.md)
+listen for. → [game events and vibrations](../systems/world/game-events-and-vibrations.md)
 
 **Game rule** — one typed, per-world switch or number in `GameRules`, saved
-with the world and sometimes sent to the client. → [level data and rules](../systems/world/level-data-and-rules.md)
+with the world and sometimes sent to the client. → [level data and rules](level-data-and-rules.md)
 
 **Game test** — a data-driven test instance: a structure, an environment
 and a check the server runs and reports on. → [dialogs and tests](../systems/commands/dialogs-and-tests.md)
@@ -330,7 +330,7 @@ command source carries a `PermissionSet` and a node requires a
 modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)
 
 **Point of interest** — a per-position index of blocks worth walking to
-(beds, job sites, portals), stored beside the chunks in its own files. → [game events and points of interest](../systems/world/game-events-and-poi.md)
+(beds, job sites, portals), stored beside the chunks in its own files. → [points of interest](../systems/world/points-of-interest.md)
 
 **Prediction ledger** — the corpus's name for `BlockStatePredictionHandler`:
 the client's record of what the server last said about a block it changed
@@ -366,10 +366,10 @@ machinery data packs use. → [the resource system](../systems/foundations/resou
 
 **SavedData** — a named, codec-backed blob stored beside the world (the
 border, the weather, the rules, raids, the dragon fight); `level.dat`
-itself is nearly a stub. → [level data and rules](../systems/world/level-data-and-rules.md)
+itself is nearly a stub. → [level data and rules](level-data-and-rules.md)
 
 **Scheduled tick** — a block or fluid position queued to run at a named
-future tick, with a priority breaking ties inside that tick. → [block ticks and fluids](../systems/world/block-ticks-and-fluids.md)
+future tick, with a priority breaking ties inside that tick. → [scheduled ticks](../systems/world/scheduled-ticks.md)
 
 **Score** — one number for one holder under one objective, reached through a
 `ScoreAccess` handle rather than a setter. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)

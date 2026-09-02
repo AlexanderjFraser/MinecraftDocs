@@ -2,7 +2,7 @@
 
 > Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their minimum after the default where one is declared. Values live per world in a `GameRuleMap` on the level data. See [Level data and rules](../systems/world/level-data-and-rules.md).
+Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their minimum after the default where one is declared. Values live per world in a `GameRuleMap` on the level data. See [Level data and rules](level-data-and-rules.md).
 
 59 rules
 

@@ -130,7 +130,7 @@ as written on the base class: `ScheduledTickAccess.scheduleTick` at
 `TickPriority.HIGH`, `TickPriority.VERY_HIGH` when turning off and
 `TickPriority.EXTREMELY_HIGH` when facing another diode — the reason a
 repeater turns off before it turns on
-([block ticks and fluids](../world/block-ticks-and-fluids.md)). The
+([scheduled ticks](../world/scheduled-ticks.md)). The
 **comparator** overrides `ComparatorBlock.checkTickOnNeighbor` entirely:
 a fixed two-tick delay at `TickPriority.HIGH` or `TickPriority.NORMAL`,
 never the two urgent priorities. It overrides `ComparatorBlock.tick` too.

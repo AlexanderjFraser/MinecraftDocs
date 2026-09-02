@@ -77,7 +77,49 @@ earliest of them.
 
 ## IV · The world
 
-*Filled by session E.*
+Part IV is a conveyor: five pages that hand a chunk along a line, and five
+more about the world the line delivers. The first five must be watched in
+order — nothing later in the chain can be watched first — and the rest can
+be watched in any order once the vocabulary page is done.
+
+1. [Environment attributes and
+   timelines](systems/world/environment-attributes-and-timelines.md) —
+   what the place and the hour decide, resolved through four layers on the
+   server and the same four plus two kinds of smoothing on the client. It
+   is listed first here for the reason Part III already gave: it depends on
+   nothing but registries and codecs, and six pages across four parts
+   depend on it.
+2. [Chunk anatomy](systems/world/chunk-anatomy.md) — the vocabulary page:
+   sections, palettes, bit storage, heightmaps, and the four shapes a
+   chunk takes. Everything below assumes it, and so does Part V.
+3. [Tickets and loading](systems/world/tickets-and-loading.md) — a player
+   takes one step east. Two graphs over one ticket store, and what each of
+   the four `FullChunkStatus` values buys.
+4. [The chunk generation
+   pipeline](systems/world/chunk-generation-pipeline.md) — *EMPTY* to
+   *FULL* in twelve steps, and the pyramid of neighbour requirements that
+   turns one request into 529. Part XII is the cargo on this conveyor and
+   cannot be watched before it.
+5. [Lighting](systems/world/lighting.md) — a torch, a flood on a worker,
+   and a copy-on-write publish. Self-contained, and the only part of the
+   pipeline with an executor of its own.
+6. [Chunk storage](systems/world/chunk-storage.md) — the walk back west:
+   snapshot, encode, write, on three threads, and the sector dance in the
+   region file.
+7. [Scheduled ticks](systems/world/scheduled-ticks.md) — how anything
+   happens later. Part V's redstone lecture assumes this one, and so does
+   the next.
+8. [Fluids](systems/world/fluids.md) — the bucket. The scheduler's biggest
+   customer, and the best worked example of a block that keeps booking its
+   own future.
+9. [Game events and vibrations](systems/world/game-events-and-vibrations.md)
+   — a footstep, a filter cascade and a sculk sensor.
+10. [Points of interest](systems/world/points-of-interest.md) — a villager
+    and a bed. Part VI owns the brain; this owns the index it reads.
+
+[Level data and rules](reference/level-data-and-rules.md) is not a lecture;
+it is Reference, and this part and Part III both link into it.
+
 
 ## V · Blocks
 

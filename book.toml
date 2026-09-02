@@ -46,3 +46,7 @@ level = 0
 "/systems/foundations/math-and-primitives.html" = "../../reference/math-and-primitives.html"
 # Pass-3 session D: server-lifecycle split into startup and the three endings.
 "/systems/server/server-lifecycle.html" = "starting-a-server.html"
+# Pass-3 session E: Part IV's two splits, and level-data-and-rules moved to Reference (R5).
+"/systems/world/level-data-and-rules.html" = "../../reference/level-data-and-rules.html"
+"/systems/world/block-ticks-and-fluids.html" = "scheduled-ticks.html"
+"/systems/world/game-events-and-poi.html" = "points-of-interest.html"

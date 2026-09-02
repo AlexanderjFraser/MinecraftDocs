@@ -239,7 +239,7 @@ sequenceDiagram
    `Entity.DATA_POSE`, by calling `Entity.refreshDimensions` — and *then*
    marks the item and the container dirty. Back in `Sheep.mobInteract`:
    `Entity.gameEvent` with `GameEvent.SHEAR` for the sculk listeners
-   ([game events](../world/game-events-and-poi.md)), `ItemStack.hurtAndBreak`
+   ([game events](../world/game-events-and-vibrations.md)), `ItemStack.hurtAndBreak`
    on the shears, and an `InteractionResult.SUCCESS_SERVER`.
 6. **The send.** Still the same tick — because packets are processed
    *before* the level ticks, and the tracking loop runs in the level tick's

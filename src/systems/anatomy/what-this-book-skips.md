@@ -98,7 +98,7 @@ deletions, content modifications and one composite that scopes a nested list
 of operations to matching folders, and the concrete fixes do things like
 relocate dimension storage, split player storage and pull data out of
 *level.dat* into saved data
-([level data and rules](../world/level-data-and-rules.md)).
+([level data and rules](../../reference/level-data-and-rules.md)).
 
 It stays safe by working somewhere else: the whole upgrade runs against a
 **custom copy-on-write file system** rooted at a scratch directory, and the

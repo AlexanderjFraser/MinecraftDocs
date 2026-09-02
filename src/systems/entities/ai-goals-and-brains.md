@@ -233,7 +233,7 @@ sequenceDiagram
 3. **Claiming a job site.** `AcquirePoi` runs from the core package. It asks
    `PoiManager.findAllClosestFirstWithType` for free points of interest
    matching the profession within 48 blocks
-   ([points of interest](../world/game-events-and-poi.md)), takes the best
+   ([points of interest](../world/points-of-interest.md)), takes the best
    five, and runs **one** pathfind with all five as targets at once — the
    pathfinder stops at whichever it reaches first. Only a POI the villager
    can actually *reach* is claimed with `PoiManager.take`, and what it writes
@@ -330,7 +330,7 @@ same physics.
   itself change blocks.
 - **Calls into:** `MoveControl.setWantedPosition` → `LivingEntity.travel`
   ([movement](movement-and-collision.md)); `PoiManager`
-  ([points of interest](../world/game-events-and-poi.md)); `Mob.setTarget`
+  ([points of interest](../world/points-of-interest.md)); `Mob.setTarget`
   and, for damage, the paths in [damage and death](damage-and-death.md);
   `Attributes.FOLLOW_RANGE` and `Attributes.TEMPT_RANGE`
   ([attributes](attributes.md)).

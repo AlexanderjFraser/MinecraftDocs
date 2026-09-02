@@ -345,7 +345,7 @@ disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
   `ClientboundMoveVehiclePacket`.
 - **Data-driven by:** almost nothing —
   `GameRules.PLAYER_MOVEMENT_CHECK` and `GameRules.ELYTRA_MOVEMENT_CHECK`
-  ([level data and rules](../world/level-data-and-rules.md)), plus the
+  ([level data and rules](../../reference/level-data-and-rules.md)), plus the
   movement attributes.
 
 ## Invariants and surprises

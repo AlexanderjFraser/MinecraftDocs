@@ -11,6 +11,7 @@ enumerate.
 - [Game rules](gamerules.md) — every rule, type, category, default.
 - [Threads](threads.md) — every thread, who makes it, what may run on it.
 - [Math and primitives](math-and-primitives.md) — the coordinate spaces, packings, shapes and random sources every page assumes.
+- [Level data and rules](level-data-and-rules.md) — who owns the seed, the spawn, the rules and the border, and which file each is in.
 - [Naming drift](naming-drift.md) — every 1.21-era name a reader will reach for, and what 26.2 calls it.
 - [Glossary](glossary.md) — one sentence per term, and the page that owns it.
 - [Class index](class-index.md) — every class a system page names, and where.

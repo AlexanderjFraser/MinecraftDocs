@@ -346,7 +346,7 @@ sidebar order.
   `server-tick`; `server-level-tick`'s guard flowchart beside its trace;
   `players-and-sessions` as a join trace plus a three-path comparison, its
   nine-lane diagram split in two.
-- [ ] **Session E — Part IV The world.** The conveyor made explicit:
+- [x] **Session E — Part IV The world.** *(done 2026-09-02)* The conveyor made explicit:
   `chunk-anatomy` first, then the four pipeline pages handing off;
   `block-ticks-and-fluids` and `game-events-and-poi` each split in two;
   `level-data-and-rules` to Reference; the pyramid drawn; the light batch
@@ -835,3 +835,161 @@ missing it — and removes the comment. The owner confirms or reorders
   diagram**; the session caught it against the decompile. A drafting
   report is not evidence about the figure — later sessions should read
   every redrawn diagram separately, and pass 4 has been told the same.
+- **2026-09-02, session E — Part IV The world.** *Rulings, written before
+  editing.* **Part IV is a conveyor with a vocabulary page in front of it and
+  three lectures hanging off the side**, and the landing page draws exactly
+  that: `chunk-anatomy` defines the thing, then four pages hand a chunk along
+  a line — a ticket asks for it (`tickets-and-loading`), the pyramid builds
+  it (`chunk-generation-pipeline`), the light engine finishes it
+  (`lighting`), the region file forgets it (`chunk-storage`) — and
+  `environment-attributes-and-timelines`, the two tick pages and the two
+  index pages are about the world the conveyor delivers, not about the
+  conveyor. **The part goes from nine pages to ten**, and both changes are
+  the notebook's confirmed splits rather than R7's new-page allowance, which
+  this session does not spend (Part IV has no coverage-queue entry).
+  `block-ticks-and-fluids` splits at its own trace step 5 → 6 into
+  **`scheduled-ticks`** and **`fluids`**; `game-events-and-poi` splits into
+  **`game-events-and-vibrations`** and **`points-of-interest`**, the seam the
+  pass-2 fact-check found by producing two reports with no shared class in
+  them. `level-data-and-rules` moves to `src/reference/` (R5), which leaves
+  Part IV with no page that says of itself "short, no trace". Four redirects
+  (R8).
+  **The ten pages, their shapes and their hooks.**
+  **`chunk-anatomy`** takes the **vocabulary** shape: two figures of the data
+  (the four shapes a chunk takes, and the containment from chunk down to bit
+  storage) and a tour by object grounded in one small trace, one block
+  written. Hook: a section holding two block states costs exactly what one
+  holding sixteen costs, on disk as well as in memory — and the block that
+  makes it seventeen re-encodes all 4,096 entries.
+  **`tickets-and-loading`** is session A's policy pilot and is not rewritten;
+  it is re-read against `server-level-tick`'s new three-ranges opener so the
+  two agree.
+  **`chunk-generation-pipeline`** takes the **pipeline** shape the notebook
+  asked for, and **the pyramid is drawn** — twelve statuses, the radius each
+  needs, the four that fork off the worldgen executor — instead of living in
+  a markdown table; a section per stage; the ten-lane trace comes down to
+  seven. Hook: asking for one chunk asks for 529, and eleven chunks of that
+  ring will never become chunks you can stand on.
+  **`lighting`** keeps the **trace** shape and gains the figure the notebook
+  says it lacks: the four-stage batch (check nodes, decreases, increases,
+  swap) as a pipeline flowchart beside the torch trace, which also comes down
+  to seven lanes. Hook: there is no light thread and no light phase of the
+  tick — the light engine runs because the server thread had nothing else to
+  do.
+  **`chunk-storage`** keeps the **trace** shape with a three-lane hand-off
+  figure in front of it (the server thread copies, the worker encodes, the IO
+  lane writes), and its eleven-lane diagram splits: the unload and the write
+  are two pictures. Hook: almost every write of your world is one nobody
+  asked for — a chunk you touched is written about every ten seconds by a
+  background sweep, and the autosave is five minutes of wall clock whatever
+  `/tick rate` says.
+  **`scheduled-ticks`** is the **pipeline** shape: schedule, index, collect,
+  drain, run, with a section per phase and a repeater as the grounding trace
+  (the notebook's suggestion; it is also what Part V will link to). Hook:
+  dedup is by type and position only, so a second, *sooner* tick for the same
+  block is dropped — "rescheduling moves the tick" is folklore.
+  **`fluids`** is the **trace** shape on the bucket, with
+  `FlowingFluid.getNewLiquid`'s three branches drawn as a decision flowchart
+  — the ordering pass 2 found wrong is exactly the thing a flowchart cannot
+  fudge. Hook: water finds a hole four blocks away because every side runs
+  its own depth-first search, and a side the water cannot even enter still
+  votes on where the rest of it goes.
+  **`game-events-and-vibrations`** is the **trace** shape (the footstep) with
+  the filter cascade drawn — every test that drops a vibration, in order,
+  which is the page's real subject and today is prose. Hook: a sensor always
+  hears you one tick late by design, and the wool box only works if all six
+  rays hit wool — but standing *on* the sensor skips the whole cascade,
+  sneaking included.
+  **`points-of-interest`** is the **trace** shape (the villager and the bed).
+  Hook: the bed is claimed the moment a path to it exists, up to 48 blocks
+  away, and the claim and the *occupied* flag are two facts that never speak
+  to each other.
+  **`environment-attributes-and-timelines`** is the best-shaped page in the
+  part and keeps its mirrored server/client pair; it gains the third figure
+  the notebook asked for — **the layer stack drawn as a stack** above the two
+  sequence diagrams — and the frame every page now keeps (hook first, cast
+  table, headings that say what they say). Hook: the night does not set the
+  sky's colour, it multiplies whatever the biome produced — every timeline
+  track carries a modifier argument, not a value, which is the one decision
+  the whole system rests on.
+  **`level-data-and-rules`** becomes Reference: the who-owns-what table is
+  the page, the header stops promising a lecture, and Part IV's landing page
+  points at it as the part's look-up.
+  **Lanes**: the Part IV rows go into the key before drafting. Three
+  collisions with existing rows are resolved by lengthening the later
+  claimant, as the rule says — `LevelChunkTicks` cannot be `LCT`
+  (`LoadingChunkTracker`, session A) and becomes `LCTs`; `PoiRecord` cannot
+  be `PR` (`PackRepository`, session C) and becomes `PRec`; and
+  `PalettedContainer` yields `PC` to `ProtoChunk` and becomes `PCon`. `VS` is
+  claimed for `VibrationSystem`, and `EnvironmentAttributeSystem.ValueSampler`
+  is recorded as `EVS` under the nested-class exception. `check_lanes.py
+  --strict --pages src/systems/world` before shipping.
+  *Done.* Part IV is ten pages in a conveyor, drawn on a new landing page
+  the sidebar's Part IV opens on: `chunk-anatomy` defines the thing, four
+  pages hand it along the line, and five are about the world the line
+  delivers. `chunk-anatomy` is a vocabulary page with two figures — the four
+  shapes a chunk takes and where each is made, and the containment from
+  chunk down to the bit storage, which is the hook drawn — in place of a
+  415-line field inventory. `chunk-generation-pipeline` **draws the
+  pyramid** the notebook has asked for since session C: twelve statuses,
+  the radius each sweeps, and which of them leave the worldgen executor,
+  with its ten-lane conversation cut to seven. `lighting` gained the
+  four-stage batch as a pipeline figure beside the torch trace, and now
+  says plainly that the light engine runs because the server thread went
+  idle. `chunk-storage`'s eleven-lane monster became three figures — the
+  three-thread hand-off, the unload, and `RegionFile.write`'s sector dance,
+  whose in-file and sidecar branches commit in opposite orders. Both
+  confirmed splits were executed: `block-ticks-and-fluids` at its own trace
+  step 5 → 6 into **`scheduled-ticks`** (a pipeline, traced on a repeater,
+  which is what Part V will link to) and **`fluids`** (the bucket, with
+  `FlowingFluid.getNewLiquid`'s three branches drawn as a decision
+  flowchart, because the ordering is what pass 2 got wrong);
+  `game-events-and-poi` into **`game-events-and-vibrations`** (the filter
+  cascade drawn, which the old page carried as a numbered list with no
+  figure at all) and **`points-of-interest`** (the villager and the bed,
+  with the life of one ticket as a state diagram).
+  `environment-attributes-and-timelines` kept its matched server/client
+  pair and gained the layer stack drawn as a stack.
+  `level-data-and-rules` is Reference.
+  **Twelve pass-2 errors found**, seven of them re-derived by the session
+  from the decompile. The largest is `lighting`'s: the light packet goes to
+  **border players only** — `ChunkHolder.broadcastChanges` passes
+  *borderOnly* true for light and false for blocks — where the old page
+  said "with border players included", exactly inverting it. Two more
+  overturned claims this session's own rulings had repeated: POI records
+  appear **synchronously** on the server thread (`MinecraftServer.scheduleExecutables`
+  is false outside a queued task, so `BlockableEventLoop.execute` runs the
+  body inline), and the vetoing side in `FlowingFluid.getSpread` is one the
+  water may enter but not *replace*, and it clears the collected winners as
+  well as lowering the minimum. Also: the scheduled-tick drain **does** run
+  during `/tick step`; biomes have no four-bit linear palette rung; the
+  nether has no day timeline at all; a positional attribute no layer makes
+  positional is memoised like any other; and a vibration arrives
+  ⌊distance⌋ − 1 ticks after selection, not ⌊distance⌋.
+  Two release paths for a villager's bed that no page had.
+  **One tool bug**: `check_lanes.py --pages src/systems/world` also matched
+  `src/systems/worldgen`, so it was reporting nine Part XII pages as Part IV
+  failures — a plain `startswith` on paths, fixed with a separator-aware
+  check that session M would otherwise have hit.
+  Thirty-three lane rows added and twenty-nine speculative ones pruned
+  before shipping, on the principle that a key row is a claim on a lane and
+  claiming one a page does not use pre-empts a session that has not run;
+  `check_lanes --strict --pages src/systems/world` is clean, 117 diagrams
+  render, 19,215 names resolve, and four old URLs redirect. Twenty pages
+  across nine other parts were re-pointed at the right half of each split.
+  Hand-offs in pass3.md §8 (the tool bug, the lane ledger, the four
+  collisions later sessions must lengthen, and what Parts V, VI and O
+  inherit), pass4.md and pass5.md.
+  Process note: nine pages drafted by parallel Opus agents against a shared
+  brief, each report diffed by the session. **Three agents overruled the
+  session's own rulings with evidence** — the fluid hook's wording, the POI
+  deferral, and the brief's "four steps leave the worldgen executor" (it is
+  five) — which is the protocol working as intended; a ruling written
+  before the pages are open is a hypothesis. The session read every redrawn
+  diagram against the source separately from its page's prose, per session
+  D's lesson, and that caught four figure-level problems the reports did not
+  mention: a `getNewLiquid` flowchart that implied `FlowingFluid.spread` is
+  not called on an empty result, a pyramid caption asserting radius 11 for
+  *EMPTY* without saying the first sweep is the loading pyramid's 1, a
+  containment figure showing the block-state palette ladder on a node shared
+  with biomes, and a lane carrying a parenthetical the linter cannot read.
