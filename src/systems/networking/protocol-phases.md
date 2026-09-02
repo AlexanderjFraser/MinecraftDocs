@@ -117,7 +117,7 @@ sequenceDiagram
     CH->>SL: ServerboundKeyPacket — AES secret and the challenge, RSA-encrypted
     SL->>SL: Connection.setEncryptionKey now, before anyone is authenticated
     SL->>AUTH: hasJoinedServer on a fresh thread
-    AUTH->>SL: the authenticated profile; state becomes VERIFYING
+    AUTH->>SL: the authenticated profile#59; state becomes VERIFYING
     SL->>SL: tick on the server thread: bans, whitelist, compression, duplicates
     SL->>CH: ClientboundLoginFinishedPacket — terminal, LOGIN ends
     CH->>SC: ServerboundLoginAcknowledgedPacket — terminal, then brand and client info

@@ -188,7 +188,7 @@ sequenceDiagram
     TLE->>LE: LevelLightEngine.runLightUpdates
     LE->>LE: checkNode: emission 14 > stored → enqueue PULL_LIGHT_IN_ENTRY, increaseLightFromEmission(14)
     LE->>LE: propagateDecreases (refill entries only)
-    LE->>ST: propagateIncreases: setStoredLevel 14, 13, 12 … copy-on-write per section; section + 26 neighbours affected
+    LE->>ST: propagateIncreases: setStoredLevel 14, 13, 12 … copy-on-write per section#59; section + 26 neighbours affected
     LE->>ST: markNewInconsistencies · swapSectionMap → visibleSectionData = copy
     ST->>SCC: onLightUpdate(BLOCK, section) per affected section
     SCC->>MT: execute → ChunkHolder.sectionLightChanged

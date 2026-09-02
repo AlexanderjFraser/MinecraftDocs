@@ -223,10 +223,10 @@ sequenceDiagram
     GR->>GR: TestEnvironmentDefinition.setup — returns the undo log
     GR->>GT: add every info to the ticker
     GT->>GI: tick — count up from negative: setup ticks run before tick zero
-    GI->>GI: GameTestInstance.run(helper) at tick zero; sequences tick after
+    GI->>GI: GameTestInstance.run(helper) at tick zero#59; sequences tick after
     GI->>RL: succeed, or a GameTestException — timeout is just another one
     RL->>TIB: setSuccess / markError — the beam turns green, red or orange
-    RL->>RL: say to chat; GlobalTestReporter to the log or JUnit XML
+    RL->>RL: say to chat#59; GlobalTestReporter to the log or JUnit XML
 ```
 
 The dialog trace turns on one decision: **when are the input values read?**

@@ -149,7 +149,7 @@ sequenceDiagram
     C->>BC: the parsed chain — @s and the objective name are still strings
     BC->>BC: "as @a" forks: N sources, one per player
     BC->>XC: "store result score" is a redirect, run once per source
-    XC->>XC: resolve @s and the objective NOW; withCallback chains onto the source
+    XC->>XC: resolve @s and the objective NOW#59; withCallback chains onto the source
     BC->>DC: the leaf runs: getData(accessor, path)
     DC->>EDA: getData — the entire entity save, built fresh
     DC->>DC: NbtPath.get, then collapse the tag to one int by four rules

@@ -1,0 +1,67 @@
+/* MinecraftDocs — site overrides on top of mdBook's theme (book.toml: additional-css).
+ *
+ * Two problems this fixes, both found in pass 2's read of the live site:
+ *  - mdBook's reading column is 750px, so any table with three or four
+ *    columns of identifiers scrolled sideways even on a wide screen. Prose
+ *    keeps a readable measure; tables, diagrams and figures may use the
+ *    whole (wider) column.
+ *  - Identifiers in table cells never wrapped, which is what pushed the
+ *    tables over the edge in the first place.
+ */
+
+:root {
+    /* The main column. Prose is capped separately below. */
+    --content-max-width: 1100px;
+    --prose-max-width: 800px;
+}
+
+/* Prose keeps a readable measure; everything is left-aligned inside the
+ * (centred) main column so wide blocks extend to the right, not both ways. */
+.content main > :not(.table-wrapper):not(pre):not(figure):not(.wide) {
+    max-width: var(--prose-max-width);
+}
+
+/* Tables: use the room, wrap the cells, and stop padding each cell 20px a side. */
+.content .table-wrapper {
+    max-width: 100%;
+}
+.content table {
+    margin: 0;
+    max-width: 100%;
+}
+.content table td,
+.content table th {
+    padding: 3px 10px;
+    vertical-align: top;
+    white-space: normal;
+}
+.content table code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}
+/* Numeric columns stay right-aligned as the generators emit them. */
+.content table td[align="right"],
+.content table th[align="right"] {
+    white-space: nowrap;
+}
+
+/* Diagrams: mermaid scales an SVG to its container, so a nine-lane sequence
+ * diagram in a 750px column was unreadable. Let it have the full column. */
+.content pre.mermaid {
+    max-width: 100%;
+    background: transparent;
+    overflow-x: auto;
+}
+
+/* Generated figures (inline SVG from tools/, see pass 3): full column,
+ * text in the theme's foreground colour. */
+.content figure.map,
+.content .wide {
+    max-width: 100%;
+    margin: 1em 0;
+}
+.content figure.map svg {
+    max-width: 100%;
+    height: auto;
+    color: var(--fg);
+}

@@ -122,7 +122,7 @@ sequenceDiagram
     Note over G: next frame, record
     G->>IS: extractRenderStateWithTooltipAndSubtitles
     IS->>IS: extractBackground — in-game UI, so a gradient, no blur, no panorama
-    IS->>IS: extractContents → labels, slots, hovered highlight; then the carried item
+    IS->>IS: extractContents → labels, slots, hovered highlight#59; then the carried item
 ```
 
 The point of the trace: **the survival inventory is entirely client-side and

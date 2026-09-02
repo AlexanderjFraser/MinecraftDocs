@@ -1,12 +1,15 @@
-# Pass 3 — the restructuring notebook (open while pass 2 runs)
+# Pass 3 — the restructuring notebook
 
-*Started 2026-09-01, at the beginning of pass-2 session A. Pass 3 is the
-restructuring pass defined in [plan.md](plan.md): each part takes the
-shape of the system it explains, the diagram plan is drawn, and the
-lecture order is drafted into `src/lectures.md`. This file is where
-pass-2 sessions **write pass 3's inputs down as they find them** —
+*Started 2026-09-01, at the beginning of pass-2 session A, as the file
+where pass-2 sessions **wrote pass 3's inputs down as they found them** —
 observations you can only make with the decompile open and the page in
-front of you, which would otherwise be lost by the time pass 3 starts.*
+front of you. **Pass 3 started on 2026-09-02.** Its charter, its eight
+rulings (R1–R8) and its session schedule are in [plan.md](plan.md); this
+file is the evidence those were made from, and it stays open: a pass-3
+session that finds something structural for a* later *pass-3 session (a
+cross-part consequence, a lane, a page that belongs elsewhere) appends it
+here, and §7 — new — is the coverage queue ruling R7 refers to. Facts to
+re-check go to [pass4.md](pass4.md); wording debt to [pass5.md](pass5.md).*
 
 **How to use this file.** Every pass-2 session appends here. A note
 belongs in this file (rather than in [pass2.md](pass2.md)'s hand-off
@@ -1354,3 +1357,54 @@ knowing before the order is drafted.*
   closing. *(session K)*
 - `GR` now means `GameTestRunner`, `GameRenderer` and `GpuDevice`-adjacent
   things across three parts. *(session K, extending session I)*
+
+## 7 · The coverage queue
+
+*Systems the pass-2 inventories found with no owner. Ruling R7 in
+[plan.md](plan.md) lets each part session write at most one of these; the
+rest wait here, and session P discharges what budget allows. A session that
+writes one strikes it through; a session that rules one out says why, here.*
+
+- **Post-processing** — `PostChain`, `PostPass`, `PostChainConfig`,
+  `UniformValue`, ~1,000 lines, named on no page. Part XI. *(session I)*
+- **Block-entity rendering** — `renderer/blockentity` with its 26 render
+  states, plus `renderer/special`, ~3,300 lines; the same extract/submit
+  split as entities, which no page says. Part XI. *(session I)*
+- **How an item picks its model** — `renderer/item` and the 42 classes under
+  `item/properties/**`. Part VII or Part XI; decide the owner first.
+  *(session I)*
+- **How a server dies** — `/stop` · crash · watchdog: three endings, one
+  diagram, currently three bullets. Part III; session D may make it
+  `server-lifecycle`'s reframing rather than a new page. *(session B)*
+- **The spear** — `PiercingWeapon` / `KineticWeapon`, the 26.2 combat change
+  a viewer most wants explained, currently two invariants. Part VIII.
+  *(session F)*
+- **Drawing a bow** — the release half of the use pipeline, currently one
+  sentence. Part VII. *(session F)*
+- **Status effects** — own registry, instance model with the hidden-effect
+  stack, packets, client blend. Part VIII, as a split of
+  `hunger-xp-and-effects`. *(session F)*
+- **The permission model** — `PermissionSet`, `Permission`,
+  `PermissionCheck`, `LevelBasedPermissionSet`; the biggest API break in the
+  corpus, a section today. Part XIII, as a split. *(sessions 12, K)*
+- **The function model** — compile, macros, tags, `/schedule`. Part XIII, as
+  the other half of `execution-and-functions`. *(session K)*
+- **Writing a game test** — `GameTestHelper`, 1,353 lines and one bullet.
+  Part XIII. *(session K)*
+- **The entity selector grammar** — six classes, ~2,136 lines, a section
+  today and the most-asked question in the part. Part XIII. *(session K)*
+- **The tree kit** — the `TrunkPlacer` / `FoliagePlacer` implementations,
+  3,219 lines, probably the most watchable page in Part XII. *(session J)*
+- **`Blender` / `BlendingData`** — named in five pages, explained in none,
+  858 lines. Part XII. *(session J)*
+- **World creation and the world-select screens** — ~5,100 lines spanning
+  Parts X and XII. *(session J)*
+- **The non-living `Entity.hurtServer` overrides** — ~30 classes with their
+  own rules, unmentioned by `damage-and-death`. Part VI: a section, a
+  sibling page, or a Reference table. *(session E)*
+- **Commands that are algorithms** — `SpreadPlayersCommand`,
+  `CloneCommands`, `ChaseCommand` (a debug socket protocol between two game
+  instances). Part XIII, or Reference. *(session K)*
+- **The predicate catalogue and the boss bar** — 54 predicate files; the
+  boss bar is `execute store`'s third sink and belongs with
+  `scoreboard-and-data`. Parts VII and XIII. *(session K)*

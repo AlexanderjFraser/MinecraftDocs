@@ -1,0 +1,8 @@
+{
+  "name": "minecraftdocs-tools",
+  "private": true,
+  "description": "Node dependencies for tools/check_mermaid.js (jsdom). Run `npm install` in this directory once.",
+  "dependencies": {
+    "jsdom": "^26.1.0"
+  }
+}

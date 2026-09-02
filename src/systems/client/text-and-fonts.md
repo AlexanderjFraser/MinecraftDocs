@@ -117,7 +117,7 @@ sequenceDiagram
 
     CC->>CRU: wrapComponents — chat width divided by the chat scale
     CRU->>SS: splitLines — translation happens here, on first visit
-    SS->>SS: break at a char offset; each surviving run keeps its own Style
+    SS->>SS: break at a char offset#59; each surviving run keeps its own Style
     CRU->>FBR: Language.getVisualOrder(line)
     FBR->>FBR: SubStringSource, ICU bidi, one substring per run
     Note over CC: next frame, record
@@ -125,11 +125,11 @@ sequenceDiagram
     loop per codepoint
         F->>FS: source().getGlyph — first provider that has it
         FS->>GS: first sight only: stitch into a FontTexture and upload
-        F->>F: emit a TextRenderable; add underline or strikethrough; advance the pen
+        F->>F: emit a TextRenderable#59; add underline or strikethrough#59; advance the pen
     end
     Note over GR: same frame, draw
     GR->>GR: prepareText — walk the PreparedText with a Font.GlyphVisitor
-    GR->>GR: one GlyphRenderState per glyph; shadow pass, bold copy, italic shear
+    GR->>GR: one GlyphRenderState per glyph#59; shadow pass, bold copy, italic shear
 ```
 
 Three moments are worth pausing on. **Translation is lazy and cached on the

@@ -161,7 +161,7 @@ sequenceDiagram
     participant W as (worker)
     participant SC as SectionCompiler
 
-    MPGM->>CL: useItemOn under a prediction; BlockItem.placeBlock calls setBlock
+    MPGM->>CL: useItemOn under a prediction#59; BlockItem.placeBlock calls setBlock
     CL->>LX: setBlockDirty — but only if ModelManager.requiresRender
     CL->>LX: blockChanged — playerChanged, from the update flags
     LX->>SUT: setDirty over a 3×3×3 block halo — 1 section, or up to 8 on a boundary
@@ -169,11 +169,11 @@ sequenceDiagram
     Note over LX: next frame, extract
     LX->>LR: walk visibleSections only
     LX->>LX: RenderRegionCache.createRegion — a 27-section snapshot
-    LX->>LX: SectionUpdateRenderState added; the dirty flag is cleared
+    LX->>LX: SectionUpdateRenderState added#59; the dirty flag is cleared
 
     Note over LR: same frame, after the frame graph has executed
     LR->>SRD: compileAsync (or compileSync, per PrioritizeChunkUpdates)
-    SRD->>W: queued nearest-first; a buffer pack must be free
+    SRD->>W: queued nearest-first#59; a buffer pack must be free
     W->>SC: compile — every block in the section, into up to three layers
     SC-->>W: Results — meshes, block entities, VisibilitySet, sort state
     W->>SRD: append to the staging buffer, spin-wait if it is full

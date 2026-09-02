@@ -142,7 +142,7 @@ sequenceDiagram
     participant Item as Item
     participant MR as DefaultedMappedRegistry (ITEM)
 
-    Main->>B: bootStrap — early, after argument parsing; isBootstrapped is set before any registry is touched
+    Main->>B: bootStrap — early, after argument parsing#59; isBootstrapped is set before any registry is touched
     B->>BIR: class init — one empty registry per Registries key, each registered into WRITABLE_REGISTRY, each with a loader in LOADERS
     B->>BIR: bootStrap → createContents — run every loader
     BIR->>Items: class init (the ITEM loader touches Items.AIR)
@@ -152,8 +152,8 @@ sequenceDiagram
     Items->>MR: Registry.register → WritableRegistry.register(key, item, BUILT_IN) — bindKey, numeric id = byId.size()
     BIR->>BIR: freeze — root first, then every registry: bindBootstrappedTagsToEmpty, MappedRegistry.freeze
     MR->>MR: freeze — bindValue on every holder, refuse if any holder or declared tag is unbound, build componentLookup
-    BIR->>BIR: validate — an empty registry logs; a DefaultedRegistry without its default throws
-    Note over Main,MR: components are still unbound here; they are bound at the first reload, and tags at world load
+    BIR->>BIR: validate — an empty registry logs#59; a DefaultedRegistry without its default throws
+    Note over Main,MR: components are still unbound here#59; they are bound at the first reload, and tags at world load
 ```
 
 Narrated:
@@ -207,16 +207,16 @@ sequenceDiagram
 
     WL->>WL: RegistryLayer.createRegistryAccess — STATIC filled from BuiltInRegistries.REGISTRY, three empty layers
     WL->>RDL: load(resources, getAccessForLoading(WORLDGEN), WORLDGEN_REGISTRIES, backgroundExecutor)
-    RDL->>T: one RegistryLoadTask per RegistryData; every task's ConcurrentHolderGetter is visible to every other
-    T->>T: FileToIdConverter.registry lists data/*/worldgen/biome/*.json; decode in parallel; register sorted by id; load and bind this registry's tags
+    RDL->>T: one RegistryLoadTask per RegistryData#59; every task's ConcurrentHolderGetter is visible to every other
+    T->>T: FileToIdConverter.registry lists data/*/worldgen/biome/*.json#59; decode in parallel#59; register sorted by id#59; load and bind this registry's tags
     T->>T: freezeRegistry, then the RegistryData's RegistryValidator
     RDL->>LRA: one replaceFrom(WORLDGEN, worldgen layer, dimensions layer) — the dimensions layer is the WorldDataSupplier's finalDimensions
     SCP->>CCP: ClientboundSelectKnownPacks — which packs do you already have?
     CCP->>SCP: ServerboundSelectKnownPacks — accepted all-or-nothing
-    SCP->>CCP: ClientboundRegistryDataPacket × N — RegistrySynchronization.packRegistries; entries from a known pack carry no data
+    SCP->>CCP: ClientboundRegistryDataPacket × N — RegistrySynchronization.packRegistries#59; entries from a known pack carry no data
     SCP->>CCP: ClientboundUpdateTagsPacket — every static registry's tags plus the synced dynamic ones, as registry ints
     SCP->>CCP: ClientboundFinishConfigurationPacket
-    CCP->>RDC: collectGameRegistries — rebuild REMOTE with NetworkRegistryLoadTasks; missing data re-read from the local pack; static tags applied in place
+    CCP->>RDC: collectGameRegistries — rebuild REMOTE with NetworkRegistryLoadTasks#59; missing data re-read from the local pack#59; static tags applied in place
     RDC->>CCP: a RegistryAccess.Frozen into CommonListenerCookie.receivedRegistries
     CCP->>SCP: ServerboundFinishConfigurationPacket — play may begin
 ```

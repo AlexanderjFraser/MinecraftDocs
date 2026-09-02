@@ -212,7 +212,7 @@ sequenceDiagram
     SE->>CPL: ClientboundRotateHeadPacket — always its own packet
     CPL->>CL: moveOrInterpolateTo — smeared over three client ticks
     SE->>CPL: ClientboundSetEntityDataPacket — only the dirty values
-    CL->>CL: Creeper.tick runs locally; the swell counter is the client's own
+    CL->>CL: Creeper.tick runs locally#59; the swell counter is the client's own
 ```
 
 Each arrow is a decision.

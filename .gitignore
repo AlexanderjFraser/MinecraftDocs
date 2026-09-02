@@ -6,3 +6,6 @@ mermaid-init.js
 /reference/
 *.zip
 /.wrangler/
+
+# node deps for tools/check_mermaid.js (npm install in tools/)
+/tools/node_modules/

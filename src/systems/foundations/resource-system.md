@@ -128,7 +128,7 @@ sequenceDiagram
     W-->>L: PreparationBarrier.wait — resolved on the Render thread once all prepares are done and the previous listener has applied
     L->>MC: apply — swap the manager's live state (atlases, models, sounds, fonts)
     MC->>LO: setOverlay(LoadingOverlay) — logo and progress bar from ReloadInstance.getActualProgress
-    LO->>MC: tick → isDone → checkExceptions → onFinish — success: levelExtractor.allChanged; failure: rollbackResourcePacks
+    LO->>MC: tick → isDone → checkExceptions → onFinish — success: levelExtractor.allChanged#59; failure: rollbackResourcePacks
 ```
 
 Narrated:

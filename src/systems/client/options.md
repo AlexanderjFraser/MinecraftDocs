@@ -86,7 +86,7 @@ sequenceDiagram
     participant SP as ServerPlayer
     participant CM as ChunkMap
 
-    S->>S: drag — the value is not applied yet; a delay is armed
+    S->>S: drag — the value is not applied yet#59; a delay is armed
     S->>O: OptionInstance.set — on a later frame, or at once if the screen closes first
     O->>O: listener — for this option, only "the graphics preset is now custom"
     Note over LX: next frame

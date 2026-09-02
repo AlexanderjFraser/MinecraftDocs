@@ -101,7 +101,7 @@ sequenceDiagram
     SL->>SL: handlingTick = true
     SL->>EAS: invalidateTickCache — the first statement of the tick
     SL->>WB: tick — the border interpolates toward its target size
-    SL->>SL: advanceWeatherCycle — countdowns on the server's WeatherData; rain/thunder level fade ±0.01
+    SL->>SL: advanceWeatherCycle — countdowns on the server's WeatherData#59; rain/thunder level fade ±0.01
     SL->>PL: broadcastAll ClientboundGameEventPacket — RAIN_LEVEL_CHANGE / THUNDER_LEVEL_CHANGE / START_RAINING
     SL->>SL: SleepStatus.areEnoughSleeping? moveToTimeMarker(WAKE_UP_FROM_SLEEP), wakeUpAllPlayers, resetWeatherCycle
     SL->>SL: updateSkyBrightness (reads an environment attribute) · tickTime (gameTime++, the /schedule queue)

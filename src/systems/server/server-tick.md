@@ -119,7 +119,7 @@ sequenceDiagram
     participant EL as BlockableEventLoop (self)
 
     alt sprinting (checkShouldSprintThisTick)
-        ST->>TRM: this tick is 0 ns long; nextTickTimeNanos = now
+        ST->>TRM: this tick is 0 ns long#59; nextTickTimeNanos = now
     else normal
         ST->>ST: more than 1 s + 20 ticks behind AND not warned recently? log "Can't keep up!", skip nextTickTimeNanos forward
     end
@@ -132,7 +132,7 @@ sequenceDiagram
     MS->>TRM: tick — decide runsNormally, consume one /tick step
     MS->>MS: tickChildren
     MS->>MS: suspendFlushing on every player connection
-    MS->>MS: ServerFunctionManager.tick (#load once, then #tick) · ServerClockManager.tick
+    MS->>MS: ServerFunctionManager.tick (#35;load once, then #35;tick) · ServerClockManager.tick
     MS->>MS: forceGameTimeSynchronization every 20 ticks · updateEffectiveRespawnData
     loop each ServerLevel, overworld first
         MS->>SL: tick(haveTime) — see server-level-tick
@@ -142,10 +142,10 @@ sequenceDiagram
     MS->>MS: debugSubscribers, GameTestTicker, tickables, then PlayerChunkSender.sendNextChunks + resumeFlushing per player
     MS->>MS: serverActivityMonitor.tick — the last statement of tickChildren
     MS->>MS: rebuild ServerStatus if 5 s old · --ticksUntilAutosave, autoSave at 0 · record tick time
-    ST->>ST: mayHaveDelayedTasks = true; delayedTasksMaxNextTickTimeNanos = the slack deadline
+    ST->>ST: mayHaveDelayedTasks = true#59; delayedTasksMaxNextTickTimeNanos = the slack deadline
     ST->>EL: waitUntilNextTick — runAllTasks, then managedBlock until nextTickTimeNanos (parks in waitForTasks)
     ST->>TRM: endTickWork if sprinting
-    ST->>ST: logFullTickTime — measures the whole iteration, tick plus wait; isReady = true
+    ST->>ST: logFullTickTime — measures the whole iteration, tick plus wait#59; isReady = true
 ```
 
 Narrated:

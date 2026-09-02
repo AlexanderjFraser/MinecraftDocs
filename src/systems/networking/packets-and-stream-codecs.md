@@ -226,9 +226,9 @@ sequenceDiagram
     CN->>PE: the packet reaches the "encoder" handler
     PE->>IDC: codec().encode — one codec for the whole phase
     IDC->>IDC: type to int, VarInt.write — the id is a registration index
-    IDC->>SC: delegate; mapStream wraps the output in a fresh RegistryFriendlyByteBuf
+    IDC->>SC: delegate#59; mapStream wraps the output in a fresh RegistryFriendlyByteBuf
     SC->>SC: BlockPos.STREAM_CODEC, then idMapper over Block.BLOCK_STATE_REGISTRY
-    PE-->>PD: "prepender" writes the frame length; "splitter" reassembles it
+    PE-->>PD: "prepender" writes the frame length#59; "splitter" reassembles it
     PD->>IDC: codec().decode — read the id, bounds-check it
     IDC->>SC: build the value
     PD->>PD: the buffer must now be empty, or it is a protocol error

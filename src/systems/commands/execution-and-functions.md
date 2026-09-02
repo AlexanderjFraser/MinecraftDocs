@@ -165,13 +165,13 @@ sequenceDiagram
     participant XC as ExecuteCommand
 
     SFM->>C: executeCommandInContext — a source at gamemaster, output suppressed
-    C->>EC: new context; limits read from the level's game rules
+    C->>EC: new context#59; limits read from the level's game rules
     EC->>CF: queue the initial call, in a depth-zero frame
     CF->>CF: spend a cost unit, open a frame at depth one
     CF->>CT: schedule the function's lines — one entry, or a continuation if three or more
     CT->>BC: emit the entry for one line, then re-queue itself behind it
     BC->>BC: walk the stages — "as @a" forks, one cost unit for the whole stage
-    BC->>BC: "at @s" moves each source; the forked flag was set at "as"
+    BC->>BC: "at @s" moves each source#59; the forked flag was set at "as"
     BC->>CT: reaching the execute stage, schedule the fan-out
     CT->>XC: emit the entry for one source, then re-queue itself behind it
     XC->>XC: spend a cost unit, run the executable, report to the tracer

@@ -100,19 +100,19 @@ sequenceDiagram
     participant LSA as LevelStorageAccess
     participant JVM as JVM
 
-    SC->>MS: halt(false) — running = false; nothing else
-    MS->>MS: current tick finishes; runServer's while loop exits; stopped = true
+    SC->>MS: halt(false) — running = false#59; nothing else
+    MS->>MS: current tick finishes#59; runServer's while loop exits#59; stopped = true
     MS->>DS: stopServer — NotificationManager.serverShuttingDown
     DS->>MS: super.stopServer
     MS->>PP: close — late packets are rejected, not queued
-    MS->>SCL: stop — the bound listening channels close; accepted connections do not
+    MS->>SCL: stop — the bound listening channels close#59; accepted connections do not
     MS->>PL: saveAll, then removeAll — every player written, then disconnected
     MS->>SL: noSave = false on every level (/save-off is overridden)
     loop while any ChunkMap.hasWork
         MS->>SCC: deactivateTicketsOnClosing · tick — unloads drain with 1 ms slices
     end
     MS->>MS: saveAllChunks(silent=false, flush=true, force=false)
-    MS->>SL: save → saveLevelData, ServerChunkCache.save(flush) → ChunkMap.saveAllChunks(true) — every holder accessed since last save, repeated until nothing is left; the POI storage flushed; IOWorker synchronized
+    MS->>SL: save → saveLevelData, ServerChunkCache.save(flush) → ChunkMap.saveAllChunks(true) — every holder accessed since last save, repeated until nothing is left#59; the POI storage flushed#59; IOWorker synchronized
     MS->>LSA: saveDataTag(worldData) — level.dat via temp file, previous → level.dat_old
     MS->>MS: savedDataStorage.saveAndJoin — the server-wide saved data, after level.dat
     MS->>SL: close — ServerChunkCache.close (save again, light engine, ChunkMap.close), entityManager.close
@@ -120,7 +120,7 @@ sequenceDiagram
     MS->>LSA: close — session.lock released
     DS->>DS: Util.shutdownExecutors — the Worker-Main and IO-Worker pools stop
     MS->>DS: onServerExit — text filter, GUI, RconThread.stop, the query thread, ManagementServer.stop
-    DS->>JVM: the Server thread ends; every other thread is a daemon; the JVM exits
+    DS->>JVM: the Server thread ends#59; every other thread is a daemon#59; the JVM exits
 ```
 
 Narrated:

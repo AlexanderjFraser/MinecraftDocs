@@ -157,7 +157,7 @@ sequenceDiagram
     CS->>CPL: getCompletionSuggestions on that dispatcher, with CSP as the source
     CSP->>SGPL: ServerboundCommandSuggestionPacket — only if the node asks the server
     SGPL->>CPL: ClientboundCommandSuggestionsPacket — capped at a thousand, id-matched
-    CPL->>SGPL: ServerboundChatCommandPacket — the raw string; no signatures for /give
+    CPL->>SGPL: ServerboundChatCommandPacket — the raw string#59; no signatures for /give
     SGPL->>SGPL: illegal-character check on the Netty thread, then hand to the server thread
     SGPL->>C: parse again, authoritatively, with the player's real source
     C->>C: CommandNode.canUse — the permission check lives inside the parse

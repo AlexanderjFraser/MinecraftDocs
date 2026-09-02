@@ -172,19 +172,19 @@ sequenceDiagram
     M->>AM: prepareSharedState — publish thirteen pending stitches
     par on worker threads
         AM->>SL: loadAndStitch(blocks atlas)
-        SL->>SL: SpriteSourceList runs each source; the pack's PNG wins
+        SL->>SL: SpriteSourceList runs each source#59; the pack's PNG wins
         SL->>SL: Stitcher — sort by height, grow by powers of two
     and
         MM->>MM: parse models/, blockstates/, items/
     end
     MM->>MM: ModelDiscovery — intern, resolve parents, drop cycles
     MM->>MB: bakeModels — one bake per BlockState, in batches
-    MB->>SL: MaterialBaker resolves each #slot to the NEW sprite
+    MB->>SL: MaterialBaker resolves each #35;slot to the NEW sprite
     MB->>MB: FaceBakery writes the new UVs into each BakedQuad
     Note over AM,MM: the barrier
     AM->>TA: upload — new GpuTexture, old sprites closed
     MM->>MM: apply — the new BlockStateModelSet goes live
-    M->>LX: allChanged — a flag; next frame rebuilds the SectionCompiler
+    M->>LX: allChanged — a flag#59; next frame rebuilds the SectionCompiler
 ```
 
 The point the trace makes: **changing one texture rebuilds the entire

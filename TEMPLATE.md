@@ -1,5 +1,15 @@
 # <System name>
 
+<!--
+  PASS 3 NOTE (2026-09-02). This skeleton is the pass-1 template, and every
+  one of the 79 pages follows it heading for heading — which is the site's
+  biggest readability problem. Pass 3 session A rewrites this file into a
+  MENU OF SHAPES (trace · pipeline · state machine · policy · comparison ·
+  vocabulary · pattern · landing page), with the devices, the bullet budgets
+  and the lane key, after piloting it on two pages. Until then the spec is
+  ruling R2 in docs/plan.md. Do not draft a new page from the skeleton below.
+-->
+
 > Verified against **Minecraft 26.2** · Part <N> · <one-line scenario this page traces>
 
 ## Responsibility

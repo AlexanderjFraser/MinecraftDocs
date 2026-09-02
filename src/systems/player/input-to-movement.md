@@ -182,7 +182,7 @@ sequenceDiagram
     participant CL as ServerGamePacketListenerImpl
     participant SP as ServerPlayer
 
-    KH->>KM: set — isDown = true; nothing else happens yet
+    KH->>KM: set — isDown = true#59; nothing else happens yet
     LP->>KI: tick — from inside aiStep: poll seven keys into one Input
     KI->>LP: applyInput — moveVector becomes xxa/zza, jump becomes jumping
     LP->>LE: travel — travelInAir, then Entity.move: the client is authoritative

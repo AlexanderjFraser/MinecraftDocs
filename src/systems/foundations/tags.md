@@ -102,10 +102,10 @@ sequenceDiagram
     participant P as Parrot
 
     WL->>TL: loadTagsForExistingRegistries(resources, STATIC layer)
-    TL->>TL: load — every pack's tags/block/logs.json via FileToIdConverter.listMatchingResourceStacks; "replace" clears what lower packs contributed
-    TL->>TL: build — DependencySorter orders oak_logs before logs; tryBuildTag resolves ids through ElementLookup.fromFrozenRegistry
-    TL->>MR: prepareTagReload(LoadResult) — a Registry.PendingTags; nothing visible yet
-    Note over WL,MR: worldgen and loot codecs resolve #minecraft:logs through PendingTags.lookup via TagLoader.buildUpdatedLookups
+    TL->>TL: load — every pack's tags/block/logs.json via FileToIdConverter.listMatchingResourceStacks#59; "replace" clears what lower packs contributed
+    TL->>TL: build — DependencySorter orders oak_logs before logs#59; tryBuildTag resolves ids through ElementLookup.fromFrozenRegistry
+    TL->>MR: prepareTagReload(LoadResult) — a Registry.PendingTags#59; nothing visible yet
+    Note over WL,MR: worldgen and loot codecs resolve #35;minecraft:logs through PendingTags.lookup via TagLoader.buildUpdatedLookups
     RSR->>MR: PendingTags.apply — bind every HolderSet.Named, swap allTags, refreshTagsInHolders → Holder.Reference.bindTags on every Block
     SRT->>CCP: ClientboundUpdateTagsPacket — TagNetworkSerialization.serializeTagsToNetwork: registry ints, not names
     CCP->>CCP: handleUpdateTags → RegistryDataCollector.appendTags — buffered until handleConfigurationFinished

@@ -176,7 +176,7 @@ sequenceDiagram
     CH->>CM: applyStep(EMPTY) → scheduleChunkLoad
     CM->>SCD: read region → upgrade (pool) → parse (pool)
     SCD->>MT: SerializableChunkData.read → ProtoChunk / ImposterProtoChunk / empty
-    GT-->>TD: wait — futures pending; resubmit on completion
+    GT-->>TD: wait — futures pending#59; resubmit on completion
     TD->>GT: runUntilWait — canLoadWithoutGeneration? no → EMPTY again at radius 11
     GT->>ST: STRUCTURE_STARTS at radius 11 — createStructures, inline
     GT->>ST: STRUCTURE_REFERENCES, BIOMES at radius 3

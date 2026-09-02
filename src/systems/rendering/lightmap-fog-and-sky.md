@@ -272,7 +272,7 @@ sequenceDiagram
     Note over TL,EAS: per tick
     TL->>EAS: keyframe tracks for this world time — SUN_ANGLE, SKY_COLOR, SKY_LIGHT_FACTOR…
     EAS->>EAS: invalidateTickCache — every non-positional value recomputes once
-    EAS->>P: tick — Gaussian biome blend; last ← new, unread attributes evicted
+    EAS->>P: tick — Gaussian biome blend#59; last ← new, unread attributes evicted
     LX->>LX: tick — flicker walk, needsUpdate = true
 
     Note over P,SR: per frame, extract

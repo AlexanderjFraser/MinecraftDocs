@@ -103,7 +103,7 @@ sequenceDiagram
     M->>S: update window zone — reconfigure if needed, then acquireNextTexture — vsync lives here, as a PresentMode
     M->>M: update zone — advanceRealTime, the GPU timer query, pauseIfInactive, Gui.update
     M->>M: ClientLevel.update — the client's own light engine, on ticking frames only
-    M->>GR: update — Camera.update; then Minecraft.pick, writing hitResult
+    M->>GR: update — Camera.update#59; then Minecraft.pick, writing hitResult
     GR->>GR: extract — window, options, lightmap, camera, LevelExtractor, Gui
     M->>M: gpuAsync — RenderSystem.executePendingTasks drains signalled fences
     GR->>GR: render — resize if needed, clear, the lightmap, then the world

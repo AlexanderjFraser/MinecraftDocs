@@ -128,10 +128,10 @@ sequenceDiagram
     PF->>PM: fold — each modifier flatMaps one position into 0..N
     PM->>PM: CountPlacement → N copies · InSquarePlacement → scatter in 16×16
     PM->>PM: SurfaceWaterDepthFilter · HeightmapPlacement → Y is finally set
-    PM->>PM: BiomeFilter — re-read the biome *here*; does it want this feature?
+    PM->>PM: BiomeFilter — re-read the biome *here*#59; does it want this feature?
     PM-->>CF: surviving positions
     CF->>TF: Feature.place — ensureCanWrite(origin) checked once, here
-    TF->>TF: getMaxFreeTreeHeight — read the clearance profile; abort writes nothing
+    TF->>TF: getMaxFreeTreeHeight — read the clearance profile#59; abort writes nothing
     TF->>TP: placeTrunk → foliage attachments → createFoliage
     TF->>TF: decorators over the collected log/leaf sets · updateLeaves rewrites DISTANCE
 ```

@@ -265,7 +265,7 @@ sequenceDiagram
     participant MS as MinecraftServer
 
     NET->>SP: a TCP read, on the Netty event loop
-    SP->>SP: read the length VarInt; wait until the whole frame is present
+    SP->>SP: read the length VarInt#59; wait until the whole frame is present
     SP->>PD: exactly one frame
     PD->>PD: codec().decode — VarInt id, then the packet's STREAM_CODEC
     PD->>CN: channelRead0 — still the Netty thread

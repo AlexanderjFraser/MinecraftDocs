@@ -115,7 +115,7 @@ sequenceDiagram
     CBE->>CH: saveAdditional → saveAllItems(output, items)
     CH->>TVO: list("Items", ItemStackWithSlot.CODEC) → TypedOutputList.add per slot
     TVO->>MC: encode — "id" (Item.CODEC_WITH_BOUND_COMPONENTS), "count", "components" (DataComponentPatch.CODEC)
-    TVO->>CBE: buildResult → CompoundTag; ScopedCollector.close logs any problem
+    TVO->>CBE: buildResult → CompoundTag#59; ScopedCollector.close logs any problem
     CBE->>NIO: SerializableChunkData → RegionFileStorage.write → NbtIo.write
     Note over PE,DCP: (b) to the wire
     PE->>DCP: ItemStack.OPTIONAL_STREAM_CODEC — varint count (non-positive = empty), Item.STREAM_CODEC id, then DataComponentPatch.STREAM_CODEC

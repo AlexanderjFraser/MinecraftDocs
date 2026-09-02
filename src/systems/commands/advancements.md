@@ -196,7 +196,7 @@ sequenceDiagram
     T->>T: TriggerInstance.matches — one predicate, so test only the changed stack
     T->>PA: award(mine_stone, "get_stone") — after the sweep, never during
     PA->>PA: unregisterListeners — the criterion is done, stop watching
-    PA->>R: grant(player) — EMPTY here; XP, loot, recipes and a function otherwise
+    PA->>R: grant(player) — EMPTY here#59; XP, loot, recipes and a function otherwise
     PA->>PA: markForVisibilityUpdate — the root, not the advancement
     SP->>PA: flushDirty — last line of the tick
     PA->>PA: updateTreeVisibility — re-walk the whole story tree

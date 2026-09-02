@@ -116,12 +116,12 @@ sequenceDiagram
     EM->>IS: enchant(holder, level) for each EnchantmentInstance
     IS->>EH: updateEnchantments(stack, mutable → upgrade)
     EH->>IS: set(DataComponents.ENCHANTMENTS, ItemEnchantments)
-    IS->>PDM: set — ensureMapOwnership clones the shared map; value ≠ prototype's EMPTY, so patch.put
+    IS->>PDM: set — ensureMapOwnership clones the shared map#59; value ≠ prototype's EMPTY, so patch.put
     Note over PDM: patch is now {minecraft:enchantments ⇒ {sharpness: 3}}
     SGPL->>ACM: broadcastChanges — RemoteSlot.Synchronized.matches fails
     ACM->>CPL: ClientboundContainerSetSlotPacket — ItemStack.OPTIONAL_STREAM_CODEC: count, item id, DataComponentPatch.STREAM_CODEC
     CPL->>CPL: decode → new ItemStack(holder, count, patch) → PatchedDataComponentMap.fromPatch against the client's bound prototype
-    CPL->>CPL: handleContainerSetSlot → AbstractContainerMenu.setItem; tooltip via ItemEnchantments.addToTooltip
+    CPL->>CPL: handleContainerSetSlot → AbstractContainerMenu.setItem#59; tooltip via ItemEnchantments.addToTooltip
 ```
 
 Narrated:

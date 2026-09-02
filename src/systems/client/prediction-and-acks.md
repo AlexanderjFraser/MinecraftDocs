@@ -118,7 +118,7 @@ sequenceDiagram
     MPGM->>CL: performUseItemOn → ItemStack.useOn → setBlock
     CL->>BSPH: retainKnownServerState(pos, air, playerPos) — the truth, filed under n
     MPGM->>SGPL: ServerboundUseItemOnPacket(hand, hit, n)
-    MPGM->>BSPH: close — the window shuts; the block is on screen
+    MPGM->>BSPH: close — the window shuts#59; the block is on screen
     SGPL->>SGPL: hasClientLoaded? then ackBlockChangesUpTo(n) — first statement
     SGPL->>SPGM: useItemOn — refused (protection, or a stale hit)
     SGPL->>CL: ClientboundBlockUpdatePacket — the true state of the position

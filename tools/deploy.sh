@@ -8,5 +8,6 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-$(tr -d '"\r\n ' < ~/.cloudflare/pvpmod.token)}"
 python tools/verify_names.py --index
 mdbook build
+node tools/check_mermaid.js --no-build   # every diagram parses under the site's own mermaid (needs `npm install` in tools/ once)
 python tools/llms_full.py   # book/llms-full.txt: the whole corpus in one file for agents
 wrangler pages deploy book --project-name=minecraftdocs --branch="${1:-main}" --commit-dirty=true

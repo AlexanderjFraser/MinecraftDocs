@@ -163,7 +163,7 @@ sequenceDiagram
     CM->>DM: removePlayer(old) · addPlayer(new)
     DM->>TS: removeTicket / addTicket PLAYER_SIMULATION, level 31 − 10
     TS->>ST: update(chunk, level) — queued, not propagated yet
-    CM->>CM: updateChunkTracking → ClientboundSetChunkCacheCenterPacket; markChunkPendingToSend / dropChunk for the two crescents
+    CM->>CM: updateChunkTracking → ClientboundSetChunkCacheCenterPacket#59; markChunkPendingToSend / dropChunk for the two crescents
     Note over DM: runAllUpdates (this tick, or the next idle pollTask)
     DM->>ST: runAllUpdates — the simulation graph is final now: entity range 10, block range 11
     DM->>PT: runAllUpdates — 21 chunks entered view, 21 left

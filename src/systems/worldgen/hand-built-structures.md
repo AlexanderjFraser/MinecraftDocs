@@ -123,9 +123,9 @@ sequenceDiagram
         SS->>SP: resetPieces — static weight table and imposedPiece
         SS->>SP: new StartPiece → addChildren the start room
         loop drain pendingChildren at a random index
-            SP->>SP: pick by weight; reject the previous type; 5 attempts
+            SP->>SP: pick by weight#59; reject the previous type#59; 5 attempts
             SP->>PB: findCollisionPiece(candidate box) — linear scan
-            PB-->>SP: null → construct; hit → try the next candidate
+            PB-->>SP: null → construct#59; hit → try the next candidate
             SP->>PB: addPiece · append to pendingChildren
         end
         SS->>PB: moveBelowSeaLevel(seaLevel, minY, random, 10)

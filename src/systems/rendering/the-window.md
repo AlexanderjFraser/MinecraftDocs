@@ -120,7 +120,7 @@ sequenceDiagram
     loop over PreferredGraphicsApi.getBackendsToTry
         M->>B: setWindowHints — GL and Vulkan want different ones
         M->>W: new Window(handler, DisplayData, mode, title, monitors, backend)
-        W->>W: createGlfwWindow; on failure, backend.handleWindowCreationErrors
+        W->>W: createGlfwWindow#59; on failure, backend.handleWindowCreationErrors
         W->>W: register six callbacks: framebufferSize, pos, size, focus, cursorEnter, iconify
         M->>B: createDevice(handle, shader source, debug options)
         Note over M,B: first backend that survives both steps wins

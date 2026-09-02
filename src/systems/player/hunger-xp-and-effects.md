@@ -206,7 +206,7 @@ sequenceDiagram
     IS->>CO: onConsume — walks every ConsumableListener on the stack
     CO->>FP: onConsume — the food component is one such listener
     FP->>FD: eat — nutrition and pre-multiplied saturation, clamped
-    CO->>CO: onConsumeEffects — server only; then consume(1)
+    CO->>CO: onConsumeEffects — server only#59; then consume(1)
     SP->>CP: ClientboundEntityEventPacket(9) — the client replays the meal
     SP->>FD: tick — exhaustion drain, then regen or starvation
     SP->>CP: ClientboundSetHealthPacket — when health, food or zero-saturation changed

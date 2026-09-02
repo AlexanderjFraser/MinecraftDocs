@@ -130,7 +130,7 @@ sequenceDiagram
     NBC->>SS: buildSurface — one rule for the chunk, then 256 columns walked downward
     SS->>PC: replace only where the block is still the default block
     CST->>NBC: applyCarvers — CARVERS
-    NBC->>WC: 17×17 source chunks; isStartChunk per carver, then carve into the centre
+    NBC->>WC: 17×17 source chunks#59; isStartChunk per carver, then carve into the centre
     WC->>AQ: getCarveState — aquifer answers air, water, lava or null (don't carve)
     WC->>PC: setBlockState · re-skin the dirt below via CarvingContext.topMaterial
 ```

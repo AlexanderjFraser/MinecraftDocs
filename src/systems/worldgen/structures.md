@@ -139,9 +139,9 @@ sequenceDiagram
     participant TP as StructureTemplate
 
     ST->>CG: createStructures — ChunkStatus.STRUCTURE_STARTS
-    CG->>SP: isStructureChunk — spacing 34, separation 8, salt; seed arithmetic only
+    CG->>SP: isStructureChunk — spacing 34, separation 8, salt#59; seed arithmetic only
     SP-->>CG: yes: this is the grid cell's chosen chunk
-    CG->>CG: weighted pick among the five villages; re-roll on failure
+    CG->>CG: weighted pick among the five villages#59; re-roll on failure
     CG->>JS: Structure.generate → findValidGenerationPoint
     JS->>JS: sample start height · pick a town centre · drop to getFirstFreeHeight
     JS-->>CG: Structure.GenerationStub — pieces still a deferred consumer

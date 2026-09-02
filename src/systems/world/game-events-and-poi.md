@@ -175,7 +175,7 @@ sequenceDiagram
     L->>L: setBlock(bed) → updatePOIOnBlockStateChange: forState(head) = HOME
     L->>PM: (MinecraftServer.execute) add(pos, HOME)
     PM->>PS: add → PoiRecord(freeTickets = 1) · setDirty
-    Note over B: CORE activity, every tick; HOME absent
+    Note over B: CORE activity, every tick#59; HOME absent
     B->>AP: tick — nextScheduledStart passed?
     AP->>PM: findAllClosestFirstWithType(HOME, HAS_SPACE, 48) — five nearest, validateBedPoi
     AP->>NAV: createPath(candidates, range 1) — canReach?

@@ -193,7 +193,7 @@ sequenceDiagram
     LC->>FE: serverTick: CachedCheck finds smelting recipe · canBurn
     FE->>FE: litTimeRemaining = litTotalTime = 1600 · consumeFuel · ++cookingTimer
     FE->>L: setBlock(pos, LIT=true, 3) — same block, entity kept
-    L->>CH: blockChanged(pos) — queued only; the drain phase already ran
+    L->>CH: blockChanged(pos) — queued only#59; the drain phase already ran
     Note over CH,SP: next tick — chunkSource drains, then entities tick
     CH-->>M: ClientboundBlockUpdatePacket · getUpdatePacket() = null
     SP->>M: tick → broadcastChanges — slot 1 · data 0, 1, 2 → ClientboundContainerSetDataPacket

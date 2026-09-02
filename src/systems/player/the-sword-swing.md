@@ -95,7 +95,7 @@ sequenceDiagram
     CL->>CL: isWithinAttackRange — AttackRange plus a 3.0 buffer both ways
     CL->>PL: attack — the server recomputes damage from nothing but the id
     PL->>PL: baseDamageScaleFactor — the 0.2 + s² × 0.8 ramp on base damage
-    PL->>LE: hurtOrSimulate — into Part VI; returns did-it-land
+    PL->>LE: hurtOrSimulate — into Part VI#59; returns did-it-land
     PL->>PL: causeExtraKnockback, doSweepAttack, itemAttackInteraction, causeFoodExhaustion
     SL->>MC: ClientboundDamageEventPacket — a damage type and three ids, no amount
 ```

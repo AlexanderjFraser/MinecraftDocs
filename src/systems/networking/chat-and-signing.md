@@ -194,16 +194,16 @@ sequenceDiagram
     participant CLIS as ChatListener
 
     CS->>CPL: normalizeChatMessage — space-normalised and cut to 256
-    CPL->>CPL: build the body; sign it with the session key
+    CPL->>CPL: build the body#59; sign it with the session key
     CPL->>SGPL: ServerboundChatPacket — content, timestamp, salt, signature, last-seen
     SGPL->>SGPL: Netty thread: apply the last-seen update, check characters
     SGPL->>SGPL: main thread: unpack through SignedMessageChain.Decoder
     SGPL->>SGPL: start the text filter, decorate at once, join them later
     SGPL->>PLL: broadcastChatMessage, bound to ChatType.CHAT
     PLL->>RCPL: ClientboundPlayerChatPacket — signatures packed to cache ids
-    RCPL->>RCPL: check the global index; unpack the cache ids; verify the signature
+    RCPL->>RCPL: check the global index#59; unpack the cache ids#59; verify the signature
     RCPL->>CLIS: handlePlayerChatMessage — trust level, blocks, the delay queue
-    CLIS->>CPL: markMessageAsProcessed; eventually ServerboundChatAckPacket
+    CLIS->>CPL: markMessageAsProcessed#59; eventually ServerboundChatAckPacket
 ```
 
 Each arrow is a decision.

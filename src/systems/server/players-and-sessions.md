@@ -123,24 +123,24 @@ sequenceDiagram
     participant CM as ChunkMap
 
     L->>PL: canPlayerLogin — ban, whitelist, ip ban, capacity → a reason or null
-    L->>PL: disconnectAllPlayersWithProfile — a duplicate is kicked first; wait in WAITING_FOR_DUPE_DISCONNECT
+    L->>PL: disconnectAllPlayersWithProfile — a duplicate is kicked first#59; wait in WAITING_FOR_DUPE_DISCONNECT
     L->>CFG: handleLoginAcknowledgement — CommonListenerCookie.createInitial, startConfiguration
     CFG->>CFG: brand, server links, enabled features, SynchronizeRegistriesTask (+ tags), optional tasks
-    CFG->>PST: start — loadPlayerData for SavedPosition only; none → PlayerSpawnFinder.findSpawn
+    CFG->>PST: start — loadPlayerData for SavedPosition only#59; none → PlayerSpawnFinder.findSpawn
     PST->>SL: TicketType.PLAYER_SPAWN, radius 3 — chunks load while the client is still configuring
-    CFG->>CFG: JoinWorldTask — ClientboundFinishConfigurationPacket; client replies FinishConfiguration
+    CFG->>CFG: JoinWorldTask — ClientboundFinishConfigurationPacket#59; client replies FinishConfiguration
     CFG->>PL: handleConfigurationFinished — re-check duplicate and canPlayerLogin
     CFG->>PST: spawnPlayer → Ready.spawn
     PST->>SL: waitForEntities(spawn chunk, 3)
     PST->>SP: new ServerPlayer(server, level, profile, clientInformation)
     PST->>PDS: load — the full .dat, then ServerPlayer.load
     PST->>PL: placeNewPlayer(connection, player, cookie)
-    PL->>G: new ServerGamePacketListenerImpl — player.connection set; suspendFlushing
+    PL->>G: new ServerGamePacketListenerImpl — player.connection set#59; suspendFlushing
     PL->>G: ClientboundLoginPacket · ChangeDifficulty · PlayerAbilities · SetHeldSlot · UpdateRecipes
     PL->>G: sendPlayerPermissionLevel (EntityEvent 24–28) · ClientboundCommandsPacket
     PL->>G: initial recipe book · updateEntireScoreboard · "multiplayer.player.joined" to all
     PL->>G: teleport → ClientboundPlayerPositionPacket · sendServerStatus
-    PL->>G: ClientboundPlayerInfoUpdatePacket (everyone) — then players.add; everyone gets the newcomer
+    PL->>G: ClientboundPlayerInfoUpdatePacket (everyone) — then players.add#59; everyone gets the newcomer
     PL->>G: sendLevelInfo — border, clocks, default spawn, rain state, LEVEL_CHUNKS_LOAD_START, ticking state
     PL->>SL: addNewPlayer → entityManager.addNewEntity
     SL->>CM: onTrackingStart → updatePlayerStatus — ChunkTrackingView set, chunks queued to PlayerChunkSender

@@ -18,6 +18,15 @@ default-theme = "light"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/AlexanderjFraser/MinecraftDocs"
 additional-js = ["mermaid.min.js", "mermaid-init.js"]
+# Wider column for tables/diagrams, prose capped at 800px, identifiers wrap
+# in table cells (pass 3, planning session).
+additional-css = ["custom.css"]
+
+# The sidebar folds to the current part; each part's landing page
+# (src/systems/<part>/README.md, pass 3) is what the fold opens on.
+[output.html.fold]
+enable = true
+level = 0
 
 # Pass-2 session H split Part X into "The client" (systems/client) and
 # "Rendering" (systems/rendering); these keep the published URLs alive.
