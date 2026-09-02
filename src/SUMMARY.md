@@ -99,6 +99,7 @@
   - [Execution and functions](systems/commands/execution-and-functions.md)
   - [Advancements](systems/commands/advancements.md)
   - [Dialogs and game tests](systems/commands/dialogs-and-tests.md)
+  - [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
 - [XIV · Appendix]()
   - [The out-of-scope tour](systems/appendix/out-of-scope-tour.md)
   - [Naming drift](systems/appendix/naming-drift.md)

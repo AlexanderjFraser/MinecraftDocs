@@ -607,6 +607,87 @@ collision**), `WC`, `PC`, `MN`, `CS`, `RT`, `BM`, `EAS`, `FS`, `WR`, `PF`,
 `SM`, `BD`. Three internal collisions, same as Part XI. `SS` and `TP` are
 the ones that will actually mislead.
 
+### Part XIII · Commands and data packs
+
+*(session K)* **The part is a stack, and its current order reads as a list.**
+The four pages are not four peers: `brigadier-and-commands` is the parser and
+the permission model, `execution-and-functions` is the engine that runs what
+the parser produced, and the other two are *consumers* of both. The dependency
+is strictly one-directional — nothing in advancements or dialogs is needed to
+understand the engine, and both need it — so the part is
+**parse → execute → what commands are used for**, which is what the page order
+already is by accident. Pass 3 should make it deliberate and say so at the top
+of each page, because a viewer arriving at `advancements` has no way to know
+it is the third floor of a building.
+
+Four structural observations:
+
+- **`brigadier-and-commands` is now the largest page in the part and carries
+  four subjects**: the parse (client and server), the permission model, the
+  argument-type catalogue, and the wire form of the tree. Session K added two
+  more sections to it — the arguments that resolve against the source
+  (coordinates, selectors, function ids) and the packrat grammar — because
+  each answers a question the page already raised. That is four sessions of
+  "confirmed overloaded, not split". The seam that has held up best is
+  **the permission model**: it is a lecture with its own trace (a click-event
+  command being confirmed), it is the single biggest API break in the corpus,
+  and it is currently a section inside a page whose trace is `/give`. If
+  Part XIII splits one page, that is the one.
+- **`execution-and-functions` splits cleanly and the split has got cleaner.**
+  The engine half (queue, `Frame`, discards, `/return`, the two failure paths)
+  and the function half (compile, macros, tags, `/schedule`) share exactly one
+  class, and session K's additions all landed on the engine side. The second
+  half is the one data-pack authors want and it is now the shorter of the two.
+- **Advancements is two lectures and the second one is a screen.** The server
+  half is a subscription system; the client half is a tree the server laid out
+  and a tab strip with a hard cap of twenty-six. Session K absorbed the client
+  half as a section rather than a page, but it is the most *watchable* material
+  in the part — the one place a viewer sees a data structure they already know
+  from playing.
+- **`dialogs-and-tests` is two pages held together by an argument, not a
+  system.** The argument ("this is the registry-element pattern, twice") is a
+  good one and the corpus makes it nowhere else at this altitude. Pass 3's
+  choice is between promoting that argument to a Part II page about the pattern
+  itself — with dialogs and tests as its two examples, which would also serve
+  loot tables, features and density functions — and splitting the page in two
+  and losing it. The first is better and is a bigger change than it looks.
+
+**A fifth page arrived in this pass:** `scoreboard-and-data`, covering the
+scoreboard, teams, command storage, NBT paths and `execute store`. It is here
+because its trace is a command, but two of its four subjects are not command
+subjects at all — `PlayerTeam` is read by collision and by nametag rendering,
+and the scoreboard is per-world saved data with four packets of its own. Pass 3
+has a genuine placement question: **does the scoreboard belong to Part XIII,
+to Part IV (it is level state), or to a part of its own with the boss bar and
+the statistics?** The `execute store` seam argues for XIII; everything else
+argues against.
+
+### Part XIV · Appendix
+
+*(session K)* **The appendix behaves like a reference tier and should be named
+one.** All three pages have "No trace" in their header, none follows the
+template, and two of them (`naming-drift`, `glossary`) are lookup tables that
+a viewer would never watch and a reader would use constantly. Session C
+already asked whether a reference tier exists; the appendix answers yes, and
+`math-and-primitives`, `level-data-and-rules` and the generated
+`src/reference/` pages are its other members. Two consequences:
+
+- **The appendix is not a part, it is the end of the book.** Numbering it XIV
+  puts it in the lecture sequence, which it can never be. Pass 3 should decide
+  whether the numbered parts stop at XIII and the appendix sits outside them.
+- **`out-of-scope-tour` is the one appendix page that *is* a lecture** — "here
+  is everything in the jar that this series will not teach you, and why" is a
+  real fifteen minutes, and it is the natural *first* or *last* video rather
+  than an appendix entry. Its gaps list, now a ruling list, is also the only
+  place the corpus states its own boundary.
+- **The glossary should be regenerated, not maintained.** It drifted badly:
+  session K found five stale entries describing designs 26.2 no longer has
+  (the permission integer chief among them) and fifteen missing terms, all of
+  them from pages written after it. A term is owned by exactly one page; if
+  each page declared its terms, the glossary would be a build artefact like
+  `class-index`. That is a tools decision, not a prose one, and it belongs to
+  pass 3 or 4.
+
 ---
 
 ## 2 · Page-level structure
@@ -951,6 +1032,37 @@ Three diagram-shape notes:
   two-column state diagram** — client ledger state against server counter
   state — rather than a sequence.
 
+### Parts XIII and XIV *(session K)*
+
+Part XIII's lanes are the most consistent in the corpus and confirm the
+`SGPL`/`CPL` majority: `CS` (`CommandSuggestions`), `CSP`
+(`ClientSuggestionProvider`), `CPL`, `SGPL`, `C` (`Commands`), `EC`
+(`ExecutionContext`), `CF`, `BC`, `CT`, `XC`, `SFM`, `PA`
+(`PlayerAdvancements`), `CA` (`ClientAdvancements`), `M`
+(`AbstractContainerMenu`), `SP`, `T`, `R`, `RDL`, `DC`, `CCPL`, `DS`, `MS`,
+`TC`, `GR`, `TIB`, `GT`, `GI`, `RL`. One internal collision worth noting:
+**`C` is `Commands` here and `Container` in Part VII**, and **`GR` is
+`GameTestRunner` here and `GameRenderer` in Parts X and XI** — the second is
+the same clash session I flagged, now with a third claimant.
+
+Two diagram-shape notes:
+
+- `brigadier-and-commands`'s trace is a sequence diagram and should probably
+  stay one, but the *permission model* section wants a small state or
+  containment diagram (a `PermissionSet` is a union of atoms and a level, and
+  the prose spends four bullets saying so).
+- `execution-and-functions`'s trace is the one diagram in the corpus that is
+  really about a **data structure over time** — the queue, with entries being
+  spliced onto and off the head. A sequence diagram cannot show that, and it
+  is why the page needs five hundred words of prose after the diagram to
+  explain the staging buffer. This is the strongest candidate in the corpus for
+  a non-sequence, non-flowchart visual: three or four snapshots of the queue.
+  Worth deciding deliberately, because it is also the page where a wrong
+  mental model is most expensive.
+- The appendix has no diagrams and wants none, except possibly one: a treemap
+  or bar of the jar by package, in `out-of-scope-tour`, where the size table
+  currently does that job in fifteen rows of numbers.
+
 ## 4 · The lecture order
 
 *Raw material for `src/lectures.md`. A "lecture" is one recording, one
@@ -1222,3 +1334,23 @@ knowing before the order is drafted.*
 - `LX` means two different extractors on adjacent pages of Part XI, and `GR`
   means two different renderers across Parts X and XI. The lane standard has
   to break at least one of them. *(session I)*
+- Does the **permission model** become its own page? It is the biggest API
+  break in the corpus, it has a trace of its own, and it is currently a
+  section. *(session K, agreeing with session 12)*
+- Does the **registry-element pattern** become a Part II page, with dialogs,
+  tests, loot tables, features and density functions as its examples? If yes,
+  `dialogs-and-tests` can split without losing its argument. *(session K)*
+- Who owns the **scoreboard** — Part XIII (its trace is a command), Part IV
+  (it is per-world saved data), or a new part with boss bars and statistics?
+  *(session K)*
+- Does the **appendix stay numbered as a part**, or move outside the numbered
+  sequence as the book's back matter? *(session K)*
+- Should the **glossary be generated** from per-page term declarations rather
+  than maintained by hand? It drifted by five wrong entries and fifteen
+  missing ones in one pass. *(session K)*
+- Is `out-of-scope-tour` the **first** lecture or the last? It is the only page
+  that states the series' boundary, and it works as either an opening
+  ("here is the shape of the thing, and here is what we are skipping") or a
+  closing. *(session K)*
+- `GR` now means `GameTestRunner`, `GameRenderer` and `GpuDevice`-adjacent
+  things across three parts. *(session K, extending session I)*

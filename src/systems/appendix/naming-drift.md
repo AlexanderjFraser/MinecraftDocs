@@ -41,10 +41,12 @@ each part explains it.
 Every row here was found the same way: a fact-sheet agent reading the 26.2
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. The client and rendering parts (X and XI) dominate it,
-and that is itself the
-finding: the client was rewritten around extract-then-render between those
-versions, and almost nothing at the top of the render stack kept its name.
+corpus needed. Two hundred and forty-four rows, and the distribution is
+itself a finding: the three biggest tables are **commands** (36), **the
+server** (32) and **items** (30), and the fourth is **rendering** (27). The
+client was rewritten around extract-then-render, which is why almost nothing
+at the top of the render stack kept its name — but the permission rewrite and
+the game-rule registry moved more names than the renderer did.
 
 ## The four you will hit in the first ten minutes
 
@@ -84,13 +86,32 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *DO_MOB_SPAWNING* | `GameRules.SPAWN_MOBS` |
 | *DO_WEATHER_CYCLE* | `GameRules.ADVANCE_WEATHER` |
 | *GameRules* package | `world/level/gamerules` |
+| *GameRules.Key&lt;T&gt;* / *GameRules.Value* / *BooleanValue* / *IntegerValue* / *GameRules.Type* (all nested) | top-level `GameRule`, with `GameRuleType`, `GameRuleTypeVisitor`, `GameRuleMap` for the values and `GameRuleCategory` for the grouping |
+| game rules as a hard-coded map | a **registry** — `Registries.GAME_RULE` / `BuiltInRegistries.GAME_RULE`, bootstrapped by `GameRules` |
+| *level.dat* field *GameRules*, ids camelCase and unnamespaced | field *game_rules*, ids namespaced (*minecraft:advance_time*) — the whole rename table is `GameRuleRegistryFix` |
+| *doEntityDrops* | `GameRules.ENTITY_DROPS` |
+| *doImmediateRespawn* | `GameRules.IMMEDIATE_RESPAWN` |
+| *doInsomnia* | `GameRules.SPAWN_PHANTOMS` |
+| *doLimitedCrafting* | `GameRules.LIMITED_CRAFTING` |
+| *doPatrolSpawning* / *doTraderSpawning* / *doWardenSpawning* | `GameRules.SPAWN_PATROLS` / `GameRules.SPAWN_WANDERING_TRADERS` / `GameRules.SPAWN_WARDENS` |
+| *doVinesSpread* | `GameRules.SPREAD_VINES` |
+| *enableCommandBlocks* **and** *commandBlocksEnabled* | one rule, `GameRules.COMMAND_BLOCKS_WORK` |
+| *spawnerBlocksEnabled* | `GameRules.SPAWNER_BLOCKS_WORK` |
+| *commandModificationBlockLimit* | `GameRules.MAX_BLOCK_MODIFICATIONS` |
+| *minecartMaxSpeed* | `GameRules.MAX_MINECART_SPEED` |
+| *snowAccumulationHeight* | `GameRules.MAX_SNOW_ACCUMULATION_HEIGHT` |
+| *spawnRadius* | `GameRules.RESPAWN_RADIUS` |
+| *disableElytraMovementCheck* | `GameRules.ELYTRA_MOVEMENT_CHECK` — **inverted** |
+| *disablePlayerMovementCheck* | `GameRules.PLAYER_MOVEMENT_CHECK` — **inverted** |
+| *disableRaids* | `GameRules.RAIDS` — **inverted** |
+| *doFireTick* + *allowFireTicksAwayFromPlayer* (two booleans) | one integer, `GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER` (0 none, 128 near players only, −1 everywhere) |
+| *spawnChunkRadius*, *entitiesWithPassengersCanUsePortals*, *gameLoopFunction* | gone with no replacement — the fix simply deletes them |
 | day time on *ServerLevel* | `ServerClockManager` (`world/clock`) |
 | per-level weather | server-global `WeatherData` |
 | *GameProfile* on the player lists | `NameAndId` (a record of UUID and name) — `PlayerList.canPlayerLogin`, `PlayerList.isWhiteListed`, `PlayerList.op`, the ban/op/whitelist files |
-| *MinecraftServer.getProfilePermissions* returning an int | returns a `LevelBasedPermissionSet` |
 | *ServerPlayer.sendAllPlayerInfo* / *sendActivePlayerEffects* | `PlayerList.sendAllPlayerInfo` / `PlayerList.sendActivePlayerEffects` |
-| *MinecraftServer.getScheduledEvents* on a level | a server-wide `TimerQueue`, advanced by the overworld's `ServerLevel.tickTime` |
-| *ServerLevel.updateSkyBrightness* from day time | `EnvironmentAttributes.SKY_LIGHT_LEVEL` through `EnvironmentAttributeSystem` |
+| *MinecraftServer.getScheduledEvents* returning a per-level queue | the same name, returning a server-wide `TimerQueue` saved data, advanced only by the overworld's `ServerLevel.tickTime` |
+| *ServerLevel.updateSkyBrightness* reading day time | the method survives, declared on `Level`, and now reads `EnvironmentAttributes.SKY_LIGHT_LEVEL` through `EnvironmentAttributeSystem` |
 | *ChunkMap.forEachBlockTickingChunk* meaning block-ticking | it walks the **entity**-ticking set; the name did not follow the split |
 
 ### Part IV — The world
@@ -104,12 +125,13 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *ForcedChunksSavedData* | `TicketStorage` |
 | *TicketType&lt;T&gt;* | a registry record with flag bits |
 | *DimensionType* booleans | `EnvironmentAttributeMap` |
-| *DimensionType.ultraWarm* | split four ways: `EnvironmentAttributes.FAST_LAVA`, *WATER_EVAPORATES*, *INCREASED_FIRE_BURNOUT*, *SNOW_GOLEM_MELTS* |
+| *DimensionType.ultraWarm* | split four ways: `EnvironmentAttributes.FAST_LAVA`, `EnvironmentAttributes.WATER_EVAPORATES`, `EnvironmentAttributes.INCREASED_FIRE_BURNOUT`, `EnvironmentAttributes.SNOW_GOLEM_MELTS` |
 | *DimensionType.piglinSafe* | `EnvironmentAttributes.PIGLINS_ZOMBIFY` — **inverted** |
 | *DimensionType.bedWorks* | `EnvironmentAttributes.BED_RULE`, a `BedRule` record, not a boolean |
 | *DimensionType.hasRaids* | `EnvironmentAttributes.CAN_START_RAID` |
 | *DimensionType.natural* | `EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS` and neighbours |
-| *DimensionType.fixedTime* / *ambientLight* | still on `DimensionType`, but the day curve is `Timelines.OVERWORLD_DAY` |
+| *DimensionType.fixedTime* | `DimensionType.hasFixedTime`, a bare boolean — the time itself moved to `WorldClock` and `Timelines.OVERWORLD_DAY` |
+| *DimensionType.ambientLight* | unchanged; it is the one visual field that did not become an attribute |
 | *Schedule* (the villager's) | `EnvironmentAttributes.VILLAGER_ACTIVITY` on `Timelines.VILLAGER_SCHEDULE` |
 | *Level.dayTime* | `ServerClockManager`, keyed by `WorldClock` |
 | *data/&lt;id&gt;.dat* | *data/&lt;namespace&gt;/&lt;id&gt;.dat* — every saved-data file gained a namespace folder |
@@ -139,7 +161,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *EntityType.PIG* (constants) | `EntityTypes.PIG` + `EntityTypeIds.PIG` |
 | *MobSpawnType* | `EntitySpawnReason` (+ `EntitySpawnRequest`) |
 | *SpawnPlacements.Type* | `SpawnPlacementType` / `SpawnPlacementTypes` |
-| *Entity.hurt(DamageSource, float)* | `Entity.hurtServer` / `Entity.hurtClient` |
+| *Entity.hurt(DamageSource, float)* returning a boolean | split into `Entity.hurtServer` and `Entity.hurtClient`. Both old shapes survive as deprecated finals — `Entity.hurt` delegating to the server half, `Entity.hurtOrSimulate` as the boolean-returning successor — so grep still finds the name |
 | *doMobLoot* | `GameRules.MOB_DROPS` |
 | *LivingEntity.isDamageSourceBlocked* | gone — `DataComponents.BLOCKS_ATTACKS` |
 | *Schedule* / *ScheduleBuilder* | gone — `Timeline` + `EnvironmentAttribute` |
@@ -173,7 +195,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Recipe.getResultItem* / *getIngredients* | gone — `Recipe.assemble` / `PlacementInfo` |
 | *Ingredient.EMPTY* | gone — `Ingredient.CODEC` rejects an empty literal list, but a tag that resolves to nothing still yields an empty one, hence `Ingredient.isEmpty` |
 | *ClientboundUpdateRecipesPacket* carrying recipes | property sets + the stonecutter input set; the book gets `RecipeDisplayEntry`s |
-| *net.minecraft.advancements.CriteriaTriggers* | `CriteriaTriggers`, moved to the *advancements.triggers* package |
+| *net.minecraft.advancements.CriteriaTriggers* | `CriteriaTriggers`, moved to `net/minecraft/advancements/triggers` |
 | *Player.permissionLevel* / *hasPermissions(int)* | `Player.permissions` → a `PermissionSet`, queried by named `Permissions` keys |
 | *ServerboundPlayerCommandPacket.Action.PRESS_SHIFT_KEY* / *RELEASE_SHIFT_KEY* | gone — sneak rides `ServerboundPlayerInputPacket` → `Entity.setShiftKeyDown` |
 | *Mannequin* on the client | `ClientMannequin`, installed by swapping the mutable `Mannequin.constructor` factory at client startup |
@@ -202,7 +224,6 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Player.isCritArrow* / *Player.sweepAttack* | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack` |
 | *LivingEntity.eat* / *Player.eat* | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` |
 | *MobEffect.createModifier* | `MobEffect.createModifiers` (plural) |
-| *DataComponents.MENDING* | `EnchantmentEffectComponents.REPAIR_WITH_XP` |
 
 ### Part IX — Networking
 
@@ -213,7 +234,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Connection.NETWORK_WORKER_GROUP* etc. | `EventLoopGroupHolder` (in `server/network`) |
 | *MemoryConnection* | gone — `Connection.isMemoryConnection` |
 | *ensureRunningOnSameThread(…, BlockableEventLoop)* | `PacketUtils.ensureRunningOnSameThread` with a `PacketProcessor` |
-| *Packet.write(FriendlyByteBuf)* | gone — a *STREAM_CODEC* field the protocol reads |
+| *Packet.write(FriendlyByteBuf)* | gone — a per-packet `StreamCodec` constant the protocol reads |
 | *ClientboundAddPlayerPacket* / *ClientboundAddMobPacket* | gone — `ClientboundAddEntityPacket` |
 | *ClientboundUpdateViewPositionPacket* | `ClientboundSetChunkCacheCenterPacket` |
 | *ClientboundUpdateViewDistancePacket* | `ClientboundSetChunkCacheRadiusPacket` |
@@ -246,7 +267,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Minecraft.getPartialTick*, *Timer* | `DeltaTracker.Timer` and its three questions |
 | *Minecraft.destroy* | gone — `Minecraft.stop`, then `Minecraft.exitWorldAndClose` and `Minecraft.close` |
 | *Options.keyBindings* | `Options.keyMappings`; `KeyMapping.Category` is a registrable record, not a string |
-| *Options.mouseSensitivity* and the other public option fields | private fields with same-named accessor methods |
+| *Options.mouseSensitivity* | the field is `Options.sensitivity` with an accessor of that name; *mouseSensitivity* survives only as the key in *options.txt* |
 | *MouseHandler.lastMouseEventTime* | gone |
 | raw *(key, scancode, modifiers, action)* on every `Screen` method | the `client/input` records: `KeyEvent`, `MouseButtonEvent`, `CharacterEvent`, `PreeditEvent` |
 | *ClientChunkCache.ChunkArray* | `ClientChunkCache.Storage` |
@@ -260,8 +281,8 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part XI — Rendering
 
-A third of this whole table is here, and almost all of it is one
-refactor: extract then render.
+Twenty-seven rows, and almost all of them are one refactor: extract then
+render.
 
 | the name you remember | 26.2 |
 |---|---|
@@ -290,7 +311,7 @@ refactor: extract then render.
 | *BakedQuad* as four vertices | a ten-component record, with a `BakedQuad.MaterialInfo` of six |
 | *LiquidBlockRenderer* | `FluidRenderer`, over a `FluidModel` |
 | *ItemOverrides* / *getPropertyOverride* | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` |
-| *ScreenManager* — which never existed in Blaze3D | `MonitorManager` for monitors; `MenuScreens` for menu types |
+| *ScreenManager* (the Blaze3D monitor manager) | `MonitorManager`, with `Monitor` and `VideoMode` — same package, same GLFW monitor callback |
 | *Window.setVsync* | a `GpuSurface.PresentMode` in the surface configuration |
 
 ### Part XII — World generation
@@ -321,7 +342,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 |---|---|
 | *ResourceLocationArgument* | `IdentifierArgument` (the registry id is unchanged) |
 | *CommandSourceStack.hasPermission(int)* | `CommandSourceStack.permissions` + `PermissionSet.hasPermission` |
-| *CommandSourceStack.getPermissionLevel* | gone — `PermissionLevel` survives only inside `LevelBasedPermissionSet` |
+| *CommandSourceStack.getPermissionLevel* | gone — a source carries a `PermissionSet`. `PermissionLevel` itself is very much alive: `LevelBasedPermissionSet`, *server.properties*, `ServerOpListEntry` and the JSON-RPC schema all still speak it |
 | *CommandSourceStack.withPermission(int)* | `CommandSourceStack.withPermission` taking a `PermissionSet` |
 | *SharedSuggestionProvider.hasPermission(int)* | gone — the interface extends `PermissionSetSupplier` |
 | *Commands.LEVEL_GAMEMASTERS* as an int | same name, now a `PermissionCheck` |
@@ -329,6 +350,12 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 | *ServerPlayer.hasPermissions(int)* | `ServerPlayer.permissions` |
 | *MinecraftServer.getProfilePermissions* returning an int | the same name returning a `LevelBasedPermissionSet` |
 | *MinecraftServer.getFunctionCompilationLevel* | `MinecraftServer.getFunctionCompilationPermissions` |
+| *Commands.LEVEL_ALL* / *LEVEL_MODERATORS* / *LEVEL_ADMINS* / *LEVEL_OWNERS* as ints | all four are `PermissionCheck`s too — `PermissionCheck.AlwaysPass` for the first, `PermissionCheck.Require` for the rest |
+| *ServerPlayer.setPermissionLevel(int)* | `PlayerList.sendPlayerPermissionLevel` on the server; `LocalPlayer.setPermissions` on the client |
+| *ColorArgument* | `TeamColorArgument`, yielding a `TeamColor` rather than a `ChatFormatting` |
+| *PlayerTeam.getColor* returning a *ChatFormatting* | returns an optional `TeamColor`, its own enum carrying a `TextColor` |
+| *TestFunctionArgument* / *TestClassNameArgument* | gone — `/test` addresses tests as registry ids through `ResourceSelectorArgument` and `TestFinder` |
+| *net.minecraft.advancements.Criterion* / *CriterionTrigger* / *SimpleCriterionTrigger* | all moved to `net/minecraft/advancements/triggers`; `CriterionTriggerInstance` is the one that stayed behind in `net/minecraft/advancements` |
 | *ServerOpListEntry.getLevel* | `ServerOpListEntry.permissions` |
 | *ParserUtils.parseJson* | gone — `SnbtGrammar` plus `ParserBasedArgument` |
 | *ItemInput.createItemStack(int, boolean)* | `ItemInput.createItemStack` with one argument; the guard is `GiveCommand.MAX_ALLOWED_ITEMSTACKS` |
@@ -340,7 +367,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 | *maxCommandChainLength* | `GameRules.MAX_COMMAND_SEQUENCE_LENGTH` |
 | *maxCommandForkCount* | `GameRules.MAX_COMMAND_FORKS` |
 | *announceAdvancements* | `GameRules.SHOW_ADVANCEMENT_MESSAGES` |
-| *net.minecraft.advancements.critereon* | split into `net/minecraft/advancements/triggers` and `net/minecraft/advancements/predicates` |
+| *net.minecraft.advancements.critereon* | split **three** ways: `net/minecraft/advancements/triggers`, `net/minecraft/advancements/predicates`, and `advancements/predicates/entity` for the entity half |
 | *AdvancementList* | `AdvancementTree` (+ `AdvancementNode`, `AdvancementHolder`) |
 | *FrameType* | `AdvancementType` |
 | *CriterionTrigger.addPlayerListener* / *removePlayerListener* | gone — triggers are stateless; subscriptions live in `PlayerAdvancements` |
@@ -352,8 +379,8 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 
 ## The shape changes, not just the names
 
-A rename table flatters the reader: it suggests that if you learn 164 rows
-you can read the tree. You cannot, because a dozen of these rows are one
+A rename table flatters the reader: it suggests that if you learn the two
+hundred and forty-four rows above you can read the tree. You cannot, because a dozen of these rows are one
 design change each, and the change is what the corresponding page is about.
 The recurring ones:
 
@@ -451,16 +478,29 @@ Fabric code now compiles against a Mojang-named class with the Yarn name.
   right-hand column exists; it cannot prove the left-hand column ever did.
   The 1.21 side of this table is the only unverifiable content in the
   corpus, which is why it is confined to one page.
-- **The client is where the names went.** Roughly a third of the table is
-  Part XI, and almost all of that is one refactor — extract then render.
+- **The names did not move where you would guess.** Rendering is the
+  fourth-largest table, behind commands, the server and items. Two rewrites
+  nobody advertised — permissions ceasing to be integers, and game rules
+  becoming a registry — renamed more identifiers than the render-stack
+  refactor did, and the render one is the famous half only because its
+  classes are the ones tutorials name.
 - **Renames cluster with rewrites.** No part of the tree renamed a class
   and kept its design; where the name changed, the responsibility usually
   moved too. Reading the row is not enough, which is what the linked page
   is for.
+- **Two subsystems have no rows at all, and that is the answer.** Dialogs
+  (`net/minecraft/server/dialog` and its client screens) and the JSON-RPC
+  management server postdate 1.21 entirely: there is no old name to look up,
+  and a reader who cannot find one is not missing a row. Game tests are the
+  opposite case — the *whole* 1.21 API is gone, which is why they have five.
+- **`Minecraft.setScreen` is a trap rather than a rename.**
+  `Minecraft.setScreenAndShow` exists in 26.2 and a 1.21-era reader grepping
+  for the old name will land on it, then wonder why the screen stack behaves
+  differently. The method that replaced the old one is `Gui.setScreen`.
 - **Some names survived and changed meaning**, which is worse than a
   rename because grep still finds them: `Gui` (now the screen manager, not
-  the HUD), `Material` (now a texture reference in `client/renderer/texture`,
-  not a block property), `ParticleGroup` (now a per-render-type bucket, not
+  the HUD), `Material` (now a texture reference in
+  `client/resources/model/sprite`, not a block property), `ParticleGroup` (now a per-render-type bucket, not
   a count limit), `Strategy` (now top-level, not nested in
   `PalettedContainer`), and `MultiVariant`, whose name survives only in the
   data-generator package while the runtime type is gone.

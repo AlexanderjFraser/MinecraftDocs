@@ -33,9 +33,11 @@ wait for pass 3 (and feed the lecture-order draft there).
 | `client/level-rendering` | ~310 | the meshing pipeline (dirty → compile → upload) vs visibility and the frame graph (session 10). **Session H did not touch it — it is Part XI now (`systems/rendering/`) and belongs to session I.** |
 | `worldgen/structures` | 307 | the placement decision (sets, `StructurePlacement`, `StructureCheck`, `/locate`) vs jigsaw assembly and template placement — two lectures, and the only page in Part XI with two distinct mechanisms (session 11) |
 | `worldgen/density-functions` | 307 | the node library and the codec/registry model vs the two rewrites (`RandomState`, `NoiseChunk.wrapNew`) and the cell loop. The rewrite story is the lecture; the catalogue is reference (session 11) |
-| `commands/brigadier-and-commands` | 313 | the parse/suggest/permission story vs the permission model itself. The permission rewrite (`PermissionSet`, `Permission`, `PermissionCheck`, `LevelBasedPermissionSet`) is a lecture on its own and is currently a section inside a page whose trace is `/give`; it is also the single biggest API break in the corpus and deserves the billing (session 12) |
-| `commands/execution-and-functions` | 310 | the non-recursive engine (queue, `Frame`, forks, `/return`) vs the function model (compile, macros, tags). Two lectures; the seam is clean and the second half is the one data-pack authors want (session 12) |
-| `appendix/naming-drift` | 422 | not a split candidate — a reference table. Flagged only so nobody counts it as an over-long page (session 12) |
+| `commands/brigadier-and-commands` | 530 | **still not split, and now the largest page in the part.** Session K added the source-resolving arguments and the packrat grammar rather than splitting, because both answer questions the page raised. The permission rewrite (`PermissionSet`, `Permission`, `PermissionCheck`, `LevelBasedPermissionSet`) remains the cleanest seam: a lecture on its own, the single biggest API break in the corpus, currently a section inside a page whose trace is `/give` (sessions 12, K) |
+| `commands/execution-and-functions` | 444 | the non-recursive engine (queue, `Frame`, forks, `/return`, the two failure paths) vs the function model (compile, macros, tags). Two lectures; the seam got *cleaner* in session K — every addition landed on the engine side — and the second half is both shorter and the one data-pack authors want (sessions 12, K) |
+| `appendix/naming-drift` | 517 | not a split candidate — a reference table, and session K's evidence says the whole appendix is a reference *tier*. Flagged only so nobody counts it as an over-long page (sessions 12, K) |
+| `commands/scoreboard-and-data` | 400 | new in session K, and two subjects by construction: scores + teams, and NBT paths + storage. They are joined by `execute store`, which is the page's trace, so the split is presentational rather than factual — pass 3's call. See [pass3.md](pass3.md) for the prior question of which *part* it belongs to (session K) |
+| `commands/advancements` | 396 | three subjects now: the subscription system, the predicate library, and the client screen. The first is the page; the other two were absorbed in session K because nothing else owned them. Both are cleanly extractable (session K) |
 
 Parts III–V all came out at 260–380 lines. Where a split is deferred,
 the "one page, two lectures" call gets settled by pass 3's lecture-order
@@ -87,20 +89,36 @@ re-reads and appendix rulings are pass-2 session A / session K work.
   - `appendix/naming-drift` is generated from the table below plus a
     hand-written Part XII block. If pass 2 finds a *wrong* row, fix it in
     both places or the next regeneration reintroduces it.
-  - `appendix/out-of-scope-tour` ends with a **gaps** list — the debug
-    cluster, `client/resources`, `util/parsing`, `client/animation`,
-    Blaze3D's Vulkan and platform halves. Each needs a ruling: absorb into
-    an existing page, add a page, or decline explicitly. **Session H ruled
+  - ~~`appendix/out-of-scope-tour` ends with a **gaps** list~~ — **done,
+    session K.** The list is now a rulings list with a four-way verdict against
+    every entry (covered / absorbed / a page / declined with a reason), plus a
+    "named for a later pass to place" tail for the systems the coverage sweeps
+    found and nobody wrote. The originals resolved as: `util/parsing` →
+    absorbed into `brigadier-and-commands` (it is a packrat parser framework,
+    not a string toolkit, and its biggest consumer is SNBT);
+    `client/animation` → framework absorbed into `entity-rendering`, the
+    sixteen definition classes declined; `client/resources` → reframed, it is
+    six pages' worth of asset types rather than one system, and the only real
+    hole is the server-pack download flow; Blaze3D's `platform` half → covered
+    by `the-window`; its `vulkan` half → declined, with
+    `GlslCompiler`/`DestructionQueue`/`checkpoints` named first.
+    **Session H ruled
     on the debug cluster: it got a page** (`debugging-the-running-game`,
     Part X), because the "server-side subscription system" turned out to be
     the interesting part and the largest undocumented system in the corpus —
     a registry of `DebugSubscription`s, a per-level poll-and-diff engine that
     sleeps until somebody subscribes, six packets, and about two dozen
-    renderers. The tour's bullet now points at it. The remaining four are
-    still session K's.
-  - `appendix/glossary` has ~110 entries and deliberately stops there. It
-    should be re-swept once the lecture order exists, because the lecture
-    order decides which page "owns" a term when two could.
+    renderers. The tour's bullet now points at it.
+  - ~~`appendix/glossary` has ~110 entries and deliberately stops there~~ —
+    **re-swept in session K**, and it had drifted badly: five entries described
+    designs 26.2 no longer has (the permission integer, "carvers ask the
+    aquifer rather than placing air", an `Ingredient` that "can never be
+    empty", an immutable render state, a `Tag` hierarchy "of records"), three
+    linked to a page that is no longer the owner, and fifteen terms from pages
+    written *after* it were missing entirely. 116 entries now. The
+    lecture-order re-sweep is still owed, and session K's recommendation is
+    stronger than a re-sweep: **generate it**, from per-page term
+    declarations — see [pass3.md](pass3.md).
 - The **lane-abbreviation** decision now also covers Part XII, which used
   full-ish abbreviations (`SGPL`, `CPL`, `EC`, `PA`) — consistent with
   session 9's choice, so `SGPL`/`CPL` is now the majority spelling.
@@ -110,7 +128,14 @@ re-reads and appendix rulings are pass-2 session A / session K work.
 - The corpus now claims specific counts in two places (`CLAUDE.md`'s
   7,055 classes / 719k lines, and the appendix's per-package table).
   Re-measure both on the next version bump; the appendix table is the one
-  that will rot first.
+  that will rot first. **Session K re-measured every cell of it against the
+  decompile: all thirty classes/lines figures and both opening totals are
+  exactly right.** What was wrong was the *side* column — `net/minecraft/data`
+  and `data/worldgen` labelled "build-time" when the dedicated server ships
+  all 163 classes — and three prose counts that were file counts read as class
+  counts (rcon "nine classes" → seven, the Realms shim "four" → three, stats
+  "ten" → nine). The lesson for the next bump: the numbers survive, the
+  *labels* rot.
 
 ## Naming drift for the appendix (1.21-era name → 26.2)
 
@@ -155,7 +180,7 @@ the old name and not finding it.
 | `EntityType.PIG` (constants) | `EntityTypes.PIG` + `EntityTypeIds.PIG` | session 6 |
 | `MobSpawnType` | `EntitySpawnReason` (+ `EntitySpawnRequest`) | session 6 |
 | `SpawnPlacements.Type` | `SpawnPlacementType` / `SpawnPlacementTypes` | session 6 |
-| `Entity.hurt(DamageSource, float)` | `Entity.hurtServer` / `Entity.hurtClient` | session 6 |
+| `Entity.hurt(DamageSource, float)` | `Entity.hurtServer` / `Entity.hurtClient` — **but both old shapes survive as deprecated finals** (`Entity.hurt`, `Entity.hurtOrSimulate`), so grep still finds the name (session K) | session 6 |
 | `doMobLoot` | `GameRules.MOB_DROPS` | session 6 |
 | `LivingEntity.isDamageSourceBlocked` | gone — `DataComponents.BLOCKS_ATTACKS` | session 6 |
 | `Schedule` / `ScheduleBuilder` | gone — `Timeline` + `EnvironmentAttribute` | session 6 |
@@ -209,7 +234,7 @@ the old name and not finding it.
 | `Player.isCritArrow` / `Player.sweepAttack` | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack` | session 8 |
 | `LivingEntity.eat` / `Player.eat` | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` | session 8 |
 | `MobEffect.createModifier` | `MobEffect.createModifiers` (plural) | session 8 |
-| `DataComponents.MENDING` | `EnchantmentEffectComponents.REPAIR_WITH_XP` | session 8 |
+| ~~`DataComponents.MENDING`~~ | **WRONG ROW, removed session K** — there is no such 1.21 name; mending was and is `Enchantments.MENDING`, and `EnchantmentEffectComponents.REPAIR_WITH_XP` is itself a 1.21-era name. No drift here at all. | session 8 |
 | `Connection.setListener` / `setProtocol` / `getCurrentProtocol` | gone — `Connection.setupInboundProtocol` / `setupOutboundProtocol` | session 9 |
 | `ConnectionProtocol.getById` / packet tables | gone — a bare enum; ids are `addPacket` order in `IdDispatchCodec` | session 9 |
 | `Connection.NETWORK_WORKER_GROUP` etc. | `EventLoopGroupHolder` (in `server/network`) | session 9 |
@@ -278,10 +303,10 @@ the old name and not finding it.
 | `LiquidBlockRenderer` | `FluidRenderer`, fed by a `FluidStateModelSet` of `FluidModel` | session I |
 | `DimensionSpecialEffects.forType` | `DimensionType.skybox` (`DimensionType.Skybox`), plus `EnvironmentAttributes` | session I |
 | `ParticleGroup` as a limit record | `ParticleLimit`; `ParticleGroup` is the per-render-type bucket | session I |
-| `ScreenManager` (in Blaze3D) | never existed — monitor handling is `MonitorManager`; menu-type→screen mapping is `MenuScreens` | session I |
+| `ScreenManager` (in Blaze3D) | `MonitorManager` (with `Monitor`, `VideoMode`) — same package, same GLFW monitor callback, so it *is* the successor; session I's "never existed" was overstated and `MenuScreens` does not belong in the row (session K) | session I |
 | `Window.updateDisplay` / `setVsync` | `GpuSurface.present`; vsync is a `GpuSurface.PresentMode` in the surface configuration | session I |
 | `ItemOverrides` / `getPropertyOverride` | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` over `renderer/item/properties` | session I |
-| `Options.mouseSensitivity` and the other public option fields | private fields with same-named accessor *methods* (`Options.sensitivity()`) | session H |
+| `Options.mouseSensitivity` | the field is `Options.sensitivity` — the accessor is **not** same-named — and *mouseSensitivity* survives as the *options.txt* key (session K) | session H |
 | `MouseHandler.lastMouseEventTime` | gone | session H |
 | `ClientChunkCache.ChunkArray` | `ClientChunkCache.Storage` | session H |
 | `ClientLevel.getStarBrightness` / `ClientLevel.effects` | `EnvironmentAttribute` lookups through the probe | session H |
@@ -301,7 +326,7 @@ the old name and not finding it.
 
 | `ResourceLocationArgument` | `IdentifierArgument` (registry id unchanged) | session 12 |
 | `CommandSourceStack.hasPermission(int)` | `CommandSourceStack.permissions` + `PermissionSet.hasPermission` | session 12 |
-| `CommandSourceStack.getPermissionLevel` | gone — `PermissionLevel` lives inside `LevelBasedPermissionSet` | session 12 |
+| `CommandSourceStack.getPermissionLevel` | gone — a source carries a `PermissionSet`. `PermissionLevel` itself is alive in four more places: `LevelBasedPermissionSet`, *server.properties*, `ServerOpListEntry`, and the JSON-RPC schema (session K) | session 12 |
 | `SharedSuggestionProvider.hasPermission(int)` | gone — it extends `PermissionSetSupplier` | session 12 |
 | `Commands.hasPermission(int)` | `Commands.hasPermission` taking a `PermissionCheck` | session 12 |
 | `ServerPlayer.hasPermissions(int)` | `ServerPlayer.permissions` | session 12 |
@@ -321,6 +346,36 @@ the old name and not finding it.
 | `CriterionTrigger.addPlayerListener` | gone — triggers are stateless; state is in `PlayerAdvancements` | session 12 |
 | `@GameTest` and the annotation framework | gone — `GameTestInstance` in `Registries.TEST_INSTANCE` | session 12 |
 | `GameTestRegistry` / `TestFunction` | `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` | session 12 |
+
+| `GameRules.Key<T>` / `Value` / `BooleanValue` / `IntegerValue` / `Type` (all nested) | top-level `GameRule`, plus `GameRuleType`, `GameRuleTypeVisitor`, `GameRuleMap`, `GameRuleCategory` | session K |
+| game rules as a hard-coded map | a registry — `Registries.GAME_RULE` / `BuiltInRegistries.GAME_RULE`, bootstrapped by `GameRules` | session K |
+| *level.dat* field `GameRules`, camelCase unnamespaced ids | field *game_rules*, namespaced ids; the full rename table is `GameRuleRegistryFix` | session K |
+| doEntityDrops | `GameRules.ENTITY_DROPS` | session K |
+| doImmediateRespawn | `GameRules.IMMEDIATE_RESPAWN` | session K |
+| doInsomnia | `GameRules.SPAWN_PHANTOMS` | session K |
+| doLimitedCrafting | `GameRules.LIMITED_CRAFTING` | session K |
+| doPatrolSpawning / doTraderSpawning / doWardenSpawning | `GameRules.SPAWN_PATROLS` / `GameRules.SPAWN_WANDERING_TRADERS` / `GameRules.SPAWN_WARDENS` | session K |
+| doVinesSpread | `GameRules.SPREAD_VINES` | session K |
+| enableCommandBlocks **and** commandBlocksEnabled | one rule, `GameRules.COMMAND_BLOCKS_WORK` | session K |
+| spawnerBlocksEnabled | `GameRules.SPAWNER_BLOCKS_WORK` | session K |
+| commandModificationBlockLimit | `GameRules.MAX_BLOCK_MODIFICATIONS` | session K |
+| minecartMaxSpeed | `GameRules.MAX_MINECART_SPEED` | session K |
+| snowAccumulationHeight | `GameRules.MAX_SNOW_ACCUMULATION_HEIGHT` | session K |
+| spawnRadius | `GameRules.RESPAWN_RADIUS` | session K |
+| disableElytraMovementCheck | `GameRules.ELYTRA_MOVEMENT_CHECK` — **inverted** | session K |
+| disablePlayerMovementCheck | `GameRules.PLAYER_MOVEMENT_CHECK` — **inverted** | session K |
+| disableRaids | `GameRules.RAIDS` — **inverted** | session K |
+| doFireTick + allowFireTicksAwayFromPlayer (two booleans) | one integer, `GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER` (0 / 128 / −1) | session K |
+| spawnChunkRadius, entitiesWithPassengersCanUsePortals, gameLoopFunction | gone with no replacement; the fix deletes them | session K |
+| `Commands.LEVEL_ALL` / `LEVEL_MODERATORS` / `LEVEL_ADMINS` / `LEVEL_OWNERS` as ints | all four are `PermissionCheck`s (`PermissionCheck.AlwaysPass` / `PermissionCheck.Require`) | session K |
+| `ServerPlayer.setPermissionLevel(int)` | `PlayerList.sendPlayerPermissionLevel` server-side; `LocalPlayer.setPermissions` client-side | session K |
+| `ColorArgument` | `TeamColorArgument`, yielding a `TeamColor` not a `ChatFormatting` | session K |
+| `PlayerTeam.getColor` returning a `ChatFormatting` | returns an optional `TeamColor`, its own enum carrying a `TextColor` | session K |
+| `TestFunctionArgument` / `TestClassNameArgument` | gone — `/test` addresses tests as registry ids via `ResourceSelectorArgument` and `TestFinder` | session K |
+| `net.minecraft.advancements.Criterion` / `CriterionTrigger` / `SimpleCriterionTrigger` | moved to `advancements/triggers`; `CriterionTriggerInstance` stayed in `net/minecraft/advancements` | session K |
+| `net.minecraft.advancements.critereon` (refinement of the session-12 row) | split **three** ways — `advancements/triggers`, `advancements/predicates`, `advancements/predicates/entity` | session K |
+| `DimensionType.fixedTime` | `DimensionType.hasFixedTime`, a bare boolean; the time moved to `WorldClock` / `Timelines.OVERWORLD_DAY`. (`DimensionType.ambientLight` did **not** move) | session K |
+| `MinecraftServer.setScreen`-era `Minecraft.setScreen` | not a rename but a trap: `Minecraft.setScreenAndShow` exists and is a different thing; the replacement is `Gui.setScreen` | session K |
 
 | *SwordItem* | gone — a kit of components on a plain `Item`. `AxeItem` / `ShovelItem` / `HoeItem` **survive**, for stripping, path-making and tilling only | session A |
 | integer `pack_format` | `PackFormat` major/minor, with *min_format* / *max_format* replacing it above `PackFormat.lastPreMinorVersion` | session A |
@@ -920,32 +975,96 @@ easy to get wrong from 1.21 memory.
 - A permission failure is reported as an **unknown command**, because the
   requirement is consulted inside Brigadier's parse —
   `brigadier-and-commands`.
-- `/reload` does **not** resend the command tree; clients complete against
-  a dead dispatcher until they rejoin, change dimension or are op'd —
-  `brigadier-and-commands`.
-- Item, block-state and component completion is **local**; the server
-  round trip is a fallback, capped at a thousand entries —
-  `brigadier-and-commands`.
+- `/reload` does **not** resend the command tree — `Commands.sendCommands`
+  has exactly one call site, `PlayerList.sendPlayerPermissionLevel`, reached
+  on join, respawn, a dimension *change*, op/deop and the two LAN toggles.
+  **Session K's qualifier:** the consequence is narrower than it reads. Both
+  server-side parses go through `MinecraftServer.getCommands` and pick up the
+  new dispatcher at once, so a newly added function *does* complete after a
+  reload; what goes stale on the client is the tree's shape and its restricted
+  flags, which no vanilla pack changes — `brigadier-and-commands`.
+- Item, block-state and component completion is **local** — those argument
+  types are registered *contextAware*, so the client builds a real parser.
+  **Session K overturned the second half:** the round trip is not a fallback,
+  it is the default. `SuggestionProviders.getName` returns *ask_server* for any
+  provider that is not one of the three registered ones, so 62 of the 67
+  vanilla suggestion providers serialise as a request to ask the server. The
+  reply is capped at a thousand entries, silently — `brigadier-and-commands`.
 - `ServerboundChatCommandPacket` does **not** hop to the main thread before
   its legality check; it can disconnect from the Netty thread —
   `brigadier-and-commands`.
 - Command execution is a queue, not the Java stack; a fork creates **no
-  frames**, the fan-out is lazy for three or more sources, and depth is
-  unbounded — only the cost quota and the queue cap stop recursion —
+  frames** (frames come only from `ExecutionContext.createTopFrame`,
+  `CallFunction` and `IsolatedCall`), and depth is unbounded — only the cost
+  quota and the ten-million *queue-length* cap stop recursion.
+  **Session K's correction:** the laziness is not a fork property.
+  `ContinuationTask.schedule` queues one entry for ≥3 elements whether the
+  elements are a chain's sources *or a function's lines*, so a hundred-line
+  function and a hundred-player fork are the same shape in the queue —
   `execution-and-functions`.
 - A forked source **suppresses failure messages**, and every conditional is
   a fork node — `execution-and-functions`.
 - Function folders are **singular** (*function/*, *tags/function/*), and a
   macro function reached with no arguments fails **silently, every tick** —
   `execution-and-functions`.
-- Advancement subscriptions are per player and only shrink; the client is
-  told the requirements but never the criteria or the rewards; the tree is
-  laid out **on the server**; and `/reload` rolls back unsaved progress —
+- Advancement subscriptions are per player and shrink as criteria are
+  satisfied — **with two exceptions session K found**: `/advancement revoke`
+  re-subscribes, and `PlayerAdvancements.reload` re-subscribes everything
+  unfinished in the new pack. The client is told the requirements but never
+  the criteria or the rewards, and the tree is laid out **on the server**.
+  **`/reload` does *not* roll back unsaved progress** — `MinecraftServer.reloadResources`
+  calls `PlayerList.saveAll` *before* `PlayerList.reloadResources`, so the
+  file re-read is the one just written. What is lost is progress for
+  advancements the new pack no longer defines, plus the selected tab —
   `advancements`.
-- Dialogs work in the **configuration phase**, and vanilla does nothing
-  with a custom click action but log it — `dialogs-and-tests`.
+- Dialogs work in the **configuration phase** — and the reason is the
+  codec: the configuration buffer has no registry access, so the packet
+  cannot carry a holder id and `Dialog.CONTEXT_FREE_STREAM_CODEC` sends the
+  dialog inline. ("Context-free" is about the buffer, not the payload.)
+  Vanilla does nothing with a custom click action but log it at debug — and
+  the only vanilla sender of a configuration-phase dialog is
+  `DebugConfigCommand`, dev-flag-gated and dedicated-server-only —
+  `dialogs-and-tests`.
 - The game-test annotations are gone; a batch **is** an environment —
   `dialogs-and-tests`.
+
+- **`MinecraftServer.tickChildren` ticks connections and players *after* the
+  levels, not before**, and command functions are the very first thing it
+  does — before the clocks, the time sync and every level.
+  `server-tick` had this right; `execution-and-functions` had it backwards and
+  is fixed. The corollary is a real one-tick delay in the advancement system:
+  `ServerPlayer.doTick` runs in the connection phase, i.e. after
+  `PlayerAdvancements.flushDirty` has already run, so `CriteriaTriggers.LOCATION`
+  always lands in the next tick's packet (**session K**).
+- **A permission failure is reported as an unknown command** — but the entity
+  selector permission is checked *twice*: at parse time by
+  `EntitySelectorParser.allowSelectors`, and again at resolve time by
+  `EntitySelector.checkPermissions` (**session K**) — `brigadier-and-commands`.
+- **`LevelBasedPermissionSet` is an interface with five constants**, not a
+  class carrying a level, and `LevelBasedPermissionSet.ALL` — deprecated in
+  place — is what a non-op gets. It still grants exactly one atom
+  (**session K**) — `brigadier-and-commands`.
+- **The client has permission atoms of its own** (`ClientPacketListener`'s
+  restricted-command atom, and the four chat atoms on `ChatAbilities`). What
+  it never learns is the *server's* atom set, because no packet carries a
+  `PermissionSet` (**session K**) — `brigadier-and-commands`.
+- **Statistics are one of *two* parts of the save that go through the data
+  fixer as JSON**; the other is advancement progress. The tour claimed "the
+  one" while itself naming advancements eleven lines earlier
+  (**session K**) — `out-of-scope-tour`.
+- **`net/minecraft/data` is not build-time only**, and the dedicated server
+  ships all 163 classes. `AtlasIds` is read by the render path,
+  `BootstrapContext` is what every vanilla registry bootstrap is written
+  against, and `NoiseRouterData` calls `TerrainProvider` and `SurfaceRuleData`
+  every time a chunk's density functions are built — so "editing these
+  changes nothing" is false for the terrain splines (**session K**) —
+  `out-of-scope-tour`. No other page repeats the claim; grepped.
+- **The dedicated server ships `net/minecraft/server/jsonrpc` and
+  `net/minecraft/server/rcon`, and so does the client jar** —
+  `server-classes.txt` can prove "client-only" and "both", and cannot prove
+  "dedicated server only". Two rows of the tour's table rest on a different
+  check: no client-tree references, and callers only in `Main` and
+  `DedicatedServer` (**session K**) — `out-of-scope-tour`.
 
 - **The `ServerPlayer` is constructed *after* the client acknowledges the
   end of configuration**, not during the task that bears its name.
@@ -1098,6 +1217,25 @@ What is left with no owner, in priority order:
 - Java keywords and JDK exception names in backticks fail (`long`,
   `OutOfMemoryError`); phrase them as prose. So do bare method names
   used as concepts (`render`, `submit`, `extract`, `get`) — italics.
+- **A sub-package needs its parent's segment too** (session K). Writing
+  `blocks`, `item`, `coordinates`, `selector` for the four subpackages of
+  `commands/arguments` fails; `arguments/blocks` resolves. The verifier
+  matches directories by suffix, so one segment is only enough when that
+  segment is unique in the tree — and short ones never are.
+- **A nested type must carry its outer class** (session K):
+  `TestEnvironmentDefinition.ClockTime`, not `ClockTime`. Enumerating six
+  nested kinds in a row is where this bites, because the list reads better
+  without the prefix and fails without it.
+- **A convention is not a declaration** (session K). Every packet record has a
+  `STREAM_CODEC` constant, and `Packet.STREAM_CODEC` still fails, correctly:
+  the interface declares no such member. When a page wants to talk about a
+  member that *every* implementor has and no supertype declares, name the
+  type it holds ("a per-packet `StreamCodec` constant") rather than inventing
+  a qualified name for it. This is the same failure shape as the
+  declaring-class rule, one level up.
+- **String literals that look like identifiers** (session K): *ask_server*,
+  *xz*, the selector option names (*distance*, *scores*, *nbt*, …), a bare
+  namespace (*minecraft*). These are values, not names; italics.
 - **Bare lowercase words in backticks** were session 11's whole fix pass
   (nine names): category or field names used as prose (*visual*, *audio*,
   *gameplay*, *offset*), and Java primitives (*double*). If it is not
@@ -1875,3 +2013,118 @@ agents and has survived an adversarial re-check.
 - **`ChunkGenerator.validate` being client-only** is a fact Part X may want:
   `WorldOpenFlows` is in session H's "client/multiplayer and world
   selection" gap list, and this is a concrete reason that page matters.
+
+### Session K — Part XIII Commands · Part XIV Appendix
+
+**Added on spec (pass 4 may cut).**
+
+- **`scoreboard-and-data` is a new page**, discharging the largest coherent
+  system in the corpus with no page at all: 32 classes and ~3,830 lines across
+  `world/scores`, `ServerScoreboard`, `network/chat/numbers`, `CommandStorage`,
+  `NbtPathArgument` and `server/commands/data`, plus four commands and five
+  packets — and **zero** entries for `Scoreboard`, `Objective`, `PlayerTeam` or
+  `ScoreHolder` in `class-index` before this session. It is one page carrying
+  two subjects (scores/teams, and paths/storage) joined by `execute store`; the
+  seam is clean and pass 3 may split it. The placement question is in
+  [pass3.md](pass3.md).
+- **`brigadier-and-commands` grew two whole sections** — *The arguments that
+  resolve against the source* (coordinates, selectors, the function id) and
+  *The parser under the parser* (the packrat framework). Both are answers to
+  questions the page already raised and dropped, and both are the reason two
+  appendix gaps could be marked absorbed rather than declined. The packrat
+  section is the more cuttable of the two: it explains a library, not a
+  mechanism the trace touches.
+- **`advancements` grew a predicate-library section and a client-screen
+  section.** The first was forced: the page and `loot-tables` were deferring to
+  each other and neither explained `MinMaxBounds`, the collection combinators or
+  sub-predicate dispatch. The second (the tab strip, the twenty-six-tab cap,
+  the coordinate scaling) is the most watchable material in the part and the
+  most obviously optional.
+- **`out-of-scope-tour`'s gaps list became a rulings list** and roughly
+  doubled. Pass 4 should check whether the four-way verdict (*covered*,
+  *absorbed*, *a page*, *declined with a reason*) is worth the length, or
+  whether a table would say it in a third of the space.
+- **`execution-and-functions` grew a *Two ways to die* section** and a section
+  on `execute if function` and `/debug function`. The first replaced a wrong
+  single-failure claim and should survive; the second is two paragraphs about
+  two commands and is a cut candidate.
+
+**Wording debt for pass 4.**
+
+- Part XIII is now the corpus's worst offender for the "not X but Y"
+  construction that session A first flagged and session B made worse — because
+  almost every fact-check finding here was an *inversion*, and the honest fix
+  reads as a correction of the reader. `brigadier-and-commands` has "the round
+  trip is not a fallback, it is the default", "deletes the node, not its
+  children", "not a rename but a trap"; `advancements` has "does not roll back
+  progress; it drops what the pack no longer defines". All true, all in the
+  wrong register for a lecture.
+- **Three pages now hedge with a named qualifier** — "with two exceptions",
+  "five of the seven", "almost only ever shrinks". The precision is right and
+  the phrasing is repetitive.
+- `advancements`' title line now says "(almost) only ever shrinks", with the
+  parenthetical doing the work of a whole invariant. Either the headline should
+  drop the hedge or the invariant should move up.
+- The appendix's `out-of-scope-tour` acquired four "the honest version, then:"
+  and "which is the detail worth having" constructions in one session. One is a
+  voice; four is a tic.
+
+**Verifier lessons** are folded into the list above; the new shapes were a
+sub-package needing its parent segment, a nested type needing its outer class,
+and a member (`STREAM_CODEC`) that every implementor has and no supertype
+declares.
+
+**Cross-part edits made** (session B's rule). Grepped the corpus for every
+corrected claim:
+
+- `players-and-sessions`' permission paragraph was checked against the rewritten
+  model and **holds** — the pass-2 note asking session K to check for drift is
+  discharged.
+- `server-tick`'s tick-order list was checked against `MinecraftServer.tickChildren`
+  statement by statement and **holds**; it was
+  `execution-and-functions` that had the order backwards, and it is fixed there.
+- `resource-system`'s reload sequence already had `PlayerList.saveAll` before
+  `PlayerList.reloadResources`, which is what makes the advancements
+  "rollback" claim wrong. No edit needed.
+- No other page repeats the gizmo collector count, the statistics-JSON claim,
+  the `data/worldgen` "never executes" claim, or the `ask_server` framing.
+
+**Left for pass 3 and later.**
+
+- The coverage inventory of the Part XIII tree (502 files, 45,793 lines) found
+  the following still unowned after this session's additions, ranked:
+  **the predicate catalogue** (54 files / 3,459 lines, of which the four
+  combinator shapes are now covered and the ~20 small entity sub-predicates are
+  declined); **the entity selector grammar** (6 classes / ~2,136 lines — now a
+  section on `brigadier-and-commands`, and the single most-requested
+  explanation in the part, so pass 3 should ask whether it wants a page);
+  **the advancements client UI** (6 / 1,116 — now a section);
+  **coordinate arguments** (10 / 714 — now a section);
+  **server-side boss bars** (4 / 771 — a paragraph, and the third `execute
+  store` sink, so it belongs with `scoreboard-and-data`);
+  **`gametest`'s `StructureUtils` / `TestFinder` / `StructureGridSpawner`**
+  (3 / 424 — a paragraph on `dialogs-and-tests`); and
+  **`client/gui/screens/dialog`'s body and input handler registries**
+  (~613 lines — a paragraph).
+- **`GameTestHelper` is 1,353 lines and gets one bullet.** It is the largest
+  single class in Part XIII's scope and "how you write a game test" is a real
+  lecture. Named for pass 3.
+- **`TestCommand`'s twenty-one subcommands** and **`ScoreboardCommand`'s
+  fourteen leaves** are both unenumerated. Neither wants enumerating in prose;
+  both are candidates for the reference tier.
+- **One fact this corpus cannot settle from the decompile**, recorded on
+  `scoreboard-and-data` and repeated here: what a *failing* ordinary leaf
+  command writes under `execute store result`. The custom-executor path is
+  explicit (a failure is a zero); the plain path goes through Brigadier's result
+  consumer, and Brigadier is not in the tree. Flagged in the page rather than
+  guessed, and it is a good pass-5 question for the owner.
+- **Mechanically interesting commands nobody names.** The inventory found
+  twenty command classes that implement a real algorithm rather than calling
+  into a system another page owns. The three worth a lecture's attention:
+  `SpreadPlayersCommand` (an iterative relaxation solver, team-aware, with a
+  no-valid-position bail), `CloneCommands` (three-phase clone with
+  source/destination overlap detection and a strict mode), and `ChaseCommand`
+  (a debug socket protocol between two running game instances, streaming
+  positions — dev-flag-gated, and unlike anything else in the game).
+  `FillCommand`, `TeleportCommand`, `RandomCommand`'s sequence salting and
+  `FetchProfileCommand`'s async rejoin are the next four.

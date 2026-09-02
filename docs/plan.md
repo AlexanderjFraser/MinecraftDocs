@@ -7,25 +7,35 @@ for the current pass is [pass2.md](pass2.md).*
 
 ## Where we are
 
-Pass 1 is done: fifty-six pages, thirteen parts, twelve sessions, all
-deployed, every name verified. What pass 1 could not guarantee is that
-the *claims* attached to those names are true (the verifier checks
-existence, not truth), that nothing in scope was missed, or that the
-uniform page-per-system format is the most interesting shape for each
-part. That is what the remaining AI passes are for — the corpus gets
-correct, then complete, then well-shaped, then well-written, and only
-then does the owner spend reading time on it.
+**Pass 2 is done.** Seventy-nine pages, fourteen parts, eleven sessions
+(A–K), all deployed, every name verified. Every page pass 1 drafted has now
+been read back against the decompile by an agent briefed to falsify it, and
+**every single one of them had at least one wrong claim** — including the
+shortest pages, the pages nobody thought were overloaded, and the facts the
+plan itself had promoted to "load-bearing". Five pages were added along
+the way for gaps the fact-checks and coverage sweeps found:
+`environment-attributes-and-timelines`, `debugging-the-running-game`,
+`the-window`, `hand-built-structures` and `scoreboard-and-data`. Pass 1's
+never-run closing session is discharged: its appendix rulings, its glossary
+and naming-drift sweeps and its `anatomy` re-reads all landed in sessions A
+and K.
 
-The planned pass-1 closing session (16) never ran; its to-dos are folded
-into pass 2's queue in [pass2.md](pass2.md).
+What pass 2 could not do is decide whether the corpus is *shaped* well. It
+added freely and by design, so the bill is now due: pages grew by roughly a
+third, several carry three subjects, and eleven sessions of "confirmed
+overloaded, not split" are recorded in [pass2.md](pass2.md)'s split table.
+Pass 3 restructures and drafts the lecture order; pass 4 cuts what pass 2
+over-added, using the on-spec log each session left. The evidence for both is
+already written down — [pass3.md](pass3.md) is eleven sessions of structural
+observations rather than a blank page.
 
 ## The passes
 
 | pass | what | status |
 |---|---|---|
 | **1 — rough draft** | every page drafted from the decompile, names verified | done — [pass1.md](pass1.md) |
-| **2 — completeness and accuracy** | every claim fact-checked against the decompile; gaps filled; pages split/added freely — length is not a concern here | **current** |
-| **3 — restructuring** | each part gets the shape of the system it explains; diagram/image plan; lecture order drafted | next |
+| **2 — completeness and accuracy** | every claim fact-checked against the decompile; gaps filled; pages split/added freely — length is not a concern here | **done, 2026-09-01** — eleven sessions (A–K), seventy-nine pages, five new ones |
+| **3 — restructuring** | each part gets the shape of the system it explains; diagram/image plan; lecture order drafted | **next** — the charter is written when it starts; the evidence is already in [pass3.md](pass3.md) |
 | **4 — polish** | wording, per page; corpus-wide consistency sweep; cut what pass 2 over-added | after 3 |
 | **5+ — human feedback** | the owner reads part by part with the decompile open; `<!-- Q: … -->` comments answered in the prose; lecture order confirmed; then voice and cuts | after 4 |
 
@@ -229,6 +239,45 @@ and when a page's own best surprise rests on one, check which side of the
 surprise each consumer is actually on. `biomes` sold "two biomes per block"
 and put grass colour on the wrong one.
 
+Session K adds a twelfth, and it is the one that closes the pass:
+**a page's own framing is the last thing to get fact-checked, and the
+cheapest thing to get wrong.** Session K's findings were overwhelmingly
+*inversions of emphasis* rather than wrong facts. Every mechanical claim on
+`brigadier-and-commands` about tab completion was true, and the sentence
+built on them — "the round trip is a fallback, not a design" — was the
+negation of the truth, because `SuggestionProviders.getName` returns
+*ask_server* by **default** and sixty-two of sixty-seven vanilla nodes take
+that path. The `/reload` bullet had the mechanism exactly right (one call
+site, not on the reload path) and drew a conclusion two steps too strong.
+`advancements` had the save order backwards by one statement —
+`PlayerList.saveAll` runs *before* `PlayerList.reloadResources` — and a whole
+invariant rested on it. The tour said statistics were "the one part of the
+save" fixed as JSON while naming the other one eleven lines earlier.
+
+The shape to watch is a sentence of the form **"X, not Y"** or **"X is a
+fallback / an exception / the only"**. Those are the sentences a fact-check
+agent will confirm the *first half* of and never test the second, because the
+second half is not a claim about the decompile — it is a claim about the
+distribution, or the intent, or the other cases. So: ask the agent for the
+*complete* population whenever a page characterises one member of it, and
+treat every "not" as a separate question. Sessions F and J found this as
+cardinality and as invented causes; session K's version is the general case,
+and it is why the corpus's most confident sentences need checking hardest.
+
+Two cheaper corollaries worth keeping:
+
+- **Ask the coverage agent for the *unowned* systems outside the part too.**
+  Session H's inventory rule found a package no page mentioned; session K's
+  found a whole *subsystem* — the scoreboard, 32 classes, four commands, five
+  packets, zero index entries — sitting between Part IV and Part XIII with
+  neither claiming it. A per-part inventory cannot see something that belongs
+  to no part. Once per corpus, ask which registered-and-networked systems have
+  no page at all.
+- **A generated artefact needs a re-sweep, not a re-read.** The glossary was
+  written by hand in session 12 and had drifted by five wrong entries and
+  fifteen missing terms one pass later — every missing term from a page written
+  after it. Anything hand-maintained that mirrors the corpus will do this.
+
 Session D adds a fifth: **hunt the unstated conditional.** Nearly every
 session-D error was a claim that held in the traced case and was written as
 though it held always — a hook skipped "because the block didn't change"
@@ -273,9 +322,10 @@ Part order as in pass 1, with the pass-1 leftovers first. Tick as done.
   pages. *(2026-09-01)*
 - [x] **Session J** — Part XII World generation, plus the new
   `hand-built-structures` page. *(2026-09-01)*
-- [ ] **Session K** — Part XIII Commands · Part XIV Appendix (the gaps
-  list gets its rulings here; naming-drift and glossary re-swept after
-  every earlier session's changes).
+- [x] **Session K** — Part XIII Commands · Part XIV Appendix, plus the new
+  `scoreboard-and-data` page. The gaps list became a rulings list;
+  naming-drift and glossary were both re-swept. **Pass 2 is complete.**
+  *(2026-09-01)*
 
 ---
 
@@ -331,6 +381,91 @@ or missing it — and removes the comment. The owner confirms or reorders
   one session (H), everywhere at once, or links rot.
 
 ## Session log — pass 2 onward
+
+- **2026-09-01, session K** — Part XIII Commands and Part XIV Appendix, and
+  the close of pass 2. Seven adversarial fact-checks (four command pages, the
+  out-of-scope tour, the whole naming-drift table, the whole glossary), one
+  mechanical coverage inventory of the 502-file command tree, and one research
+  agent on the system that inventory found. Seven pages of 2,408 lines became
+  3,185, plus 400 new. Every page had *wrong* claims, as in every session
+  since A.
+  **Session K's centre of gravity is the sentence that frames a true fact.**
+  Where F miscounted exceptions, I inverted invariants and J attached invented
+  causes to real mechanisms, Part XIII's errors were almost all *characterisations
+  of a distribution the page never counted* — and they read as the most
+  confident sentences on the page. What mattered most:
+  - **"The server round trip is a fallback, not a design" is the negation of
+    the truth.** `SuggestionProviders.getName` returns *ask_server* for any
+    provider that is not one of the three registered ones, so **sixty-two of
+    the sixty-seven** suggestion providers on vanilla nodes serialise as "ask
+    the server". The page's mechanical claims were all correct — item and
+    block-state completion really is local, because those types are
+    *contextAware* — and the sentence built on them was wrong because it
+    described the *other* cases without counting them.
+  - **`/reload` does not roll back advancement progress.**
+    `MinecraftServer.reloadResources` calls `PlayerList.saveAll` and *then*
+    `PlayerList.reloadResources`, so the file `PlayerAdvancements.reload`
+    re-reads is the one written a statement earlier. What is actually lost is
+    progress for advancements the new pack no longer defines — plus the
+    selected tab, silently, with no packet. A load-bearing fact, wrong by one
+    statement of ordering.
+  - **`MinecraftServer.tickChildren` ticks connections and players *after* the
+    levels**, and command functions are the very first thing it does.
+    `server-tick` had this right and `execution-and-functions` had it exactly
+    backwards. The corollary is real: `ServerPlayer.doTick` runs in the
+    connection phase, i.e. after `PlayerAdvancements.flushDirty`, so
+    `CriteriaTriggers.LOCATION` — the trigger behind most vanilla biome and
+    structure advancements — always lands in the *next* tick's packet.
+  - **The laziness in the command engine is not a fork property.**
+    `ContinuationTask.schedule` queues one entry for three or more elements
+    whether those elements are a chain's sources *or a function's lines*, so a
+    hundred-line function and a hundred-player fork are the same shape in the
+    queue. The page had sold laziness as the fork's trick and stated the eager
+    version for function bodies — which also mislocates the mechanism that
+    makes `/return` cheap.
+  - **`net/minecraft/data` is not build-time only**, and the dedicated server
+    ships all 163 classes. `AtlasIds` is read by the render path,
+    `BootstrapContext` is what every vanilla registry bootstrap is written
+    against, and `NoiseRouterData` calls `TerrainProvider` and
+    `SurfaceRuleData` every time a chunk's density functions are built. The
+    tour's "these Java classes never execute at runtime — editing them changes
+    nothing" was the paradox stated one step too hard, and it is false for the
+    terrain splines specifically.
+  - **Cardinality, as usual:** 58 registered triggers not 60, 79 gameplay
+    trigger sites not ~140, 44 game-test framework classes not 47, 31 dialog
+    classes not 35, 10 files importing `net/minecraft/references` not ~15,
+    four gizmo collectors not three, nine `/perf` categories not seven, seven
+    rcon classes not nine, three environments in the Realms client not two,
+    and 244 rows in the naming-drift table not 164 — that last one being the
+    page's own claim about itself.
+  - **The naming-drift table's biggest gap was a rewrite nobody had noticed.**
+    `GameRuleRegistryFix` spells out the whole game-rule migration old-name to
+    new, and twenty-one rows of it were missing: game rules became a
+    *registry*, the nested `Value` classes became top-level `GameRule`, ids
+    became namespaced, three booleans inverted, and `doFireTick` plus
+    `allowFireTicksAwayFromPlayer` collapsed into one integer. One wrong row
+    was also found and removed — *DataComponents.MENDING* records no drift at
+    all, since neither side of it is a 1.21→26.2 rename.
+  - **The glossary had drifted by five entries and fifteen omissions**, all
+    fifteen from pages written after it. The worst was **Permission level**,
+    which still described the integer the corpus's own Part XIII page opens by
+    saying no longer exists.
+  - **`scoreboard-and-data` is new**, and it is the last big hole the pass
+    found: 32 classes and ~3,830 lines with **zero** entries for `Scoreboard`,
+    `Objective`, `PlayerTeam` or `ScoreHolder` in the class index. It sits
+    between Part IV and Part XIII with neither claiming it — which is why nine
+    per-page fact-checks and a per-part inventory all walked past it. Its best
+    facts are that `Entity.getScoreboardName` returns a UUID while
+    `Player.getScoreboardName` returns a name (one override, and it explains
+    every scoreboard idiom players use), that an objective in no display slot
+    is invisible to every client forever, that the client is told
+    `ObjectiveCriteria.DUMMY` for every objective it receives, and that
+    `execute store` is a *source decoration* rather than a step.
+  - **One question the decompile cannot answer** is recorded in the page rather
+    than guessed: what a failing ordinary leaf command writes under
+    `execute store result`. The custom-executor path is explicit; the plain
+    path goes through Brigadier's result consumer, and Brigadier is not in the
+    tree.
 
 - **2026-09-01, session J** — Part XII World generation (`worldgen-pipeline`,
   `density-functions`, `biomes`, `features-and-placement`, `structures`), a
