@@ -261,16 +261,11 @@ manipulates, and the client mirrors it in `ClientLevel` so the
 `DeltaTracker` can freeze too.
 
 **Does a busy server skip work?** Less than the budget's name suggests.
-`MinecraftServer.haveTime` travels from `MinecraftServer.tickServer` through
-`ServerLevel.tick` to `ServerChunkCache.tick` and gates exactly three things:
-chunk *unloading* (`ChunkMap.processUnloads`), eager saving
-(`ChunkMap.saveChunksEagerly`) and section-storage flushing
-(`SectionStorage.tick`). Loading and generation are not gated at all —
-`ServerChunkCache.tickChunks` runs regardless. Sprinting (`/tick sprint`)
-makes the supplier permanently false, yet `MinecraftServer.pollTaskInternal`
-short-circuits on `ServerTickRateManager.isSprinting` and polls every level's
-chunk source *unconditionally*: a sprint does more chunk work per wall-clock
-second, not less.
+`MinecraftServer.haveTime` travels from `MinecraftServer.tickServer` down
+through every level, and what it actually gates is a short list that does
+not include loading or generating a chunk. [The server
+tick](../server/server-tick.md) has that list, and the sprint's inverted
+effect on it.
 
 **What happens when something throws?** It is collected, not thrown. Both
 loops catch everything, wrap it in a `CrashReport` and, on the client, try

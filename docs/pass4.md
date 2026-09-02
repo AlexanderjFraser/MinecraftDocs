@@ -48,6 +48,205 @@ entry first.
 
 ## Entries
 
+- **2026-09-02, session D — Part III The server.** Five pages: four
+  rewritten (`server-tick`, `server-level-tick`, `players-and-sessions`,
+  `starting-a-server` — the old `server-lifecycle`, renamed) and one written
+  from the decompile (`how-a-server-dies`), plus a landing page and Part
+  III's section of `lectures.md`. **Check `how-a-server-dies` hardest:
+  nothing on it was fact-checked in pass 2**, and its drafting agent's claim
+  list is the only record of where each sentence came from. Every rewrite
+  was diffed against its old page from the agent's report before acceptance,
+  and the corrections marked *(session-verified)* below were re-derived from
+  the decompile by the session itself.
+  - **Eighteen pass-2 errors found**, the largest crop since pass 2 itself,
+    which says the "every page has a wrong claim" result survives one
+    fact-check. Re-check each *fix*, not only the old claim.
+    - `server-tick` said `MinecraftServer.scheduleExecutables` "rejects new
+      work with a *RejectedExecutionException*". It returns false, and
+      `BlockableEventLoop.execute` then runs the task **inline on the
+      caller's thread**; the exception belongs to the separate
+      `MinecraftServer.executeIfPossible`. *(session-verified)*
+    - `server-tick` said a server "consistently 40 % late never says so".
+      `MinecraftServer.nextTickTimeNanos` advances by a fixed amount every
+      lap whatever the work costs, so lateness accumulates and the
+      two-second threshold falls in about a hundred laps: such a server
+      warns and skips repeatedly. The page's hook — log and skip are one
+      condition, so a server that warned recently stays behind — is
+      unaffected and stands. *(session-verified)*
+    - `server-tick`'s `BlockableEventLoop.delayCrash` framing: the crash
+      slot is a **static** field shared JVM-wide, the rethrow happens only
+      on a loop built with *propagatesCrashes* (true for `DedicatedServer`,
+      false for `IntegratedServer`), and every server-side caller uses
+      `BlockableEventLoop.relayDelayCrash`.
+    - `server-level-tick` drew and narrated `ServerLevel.runBlockEvents` as
+      ungated. It is inside the freeze gate: a frozen world runs no block
+      events. *(session-verified in `ServerLevel.tick`)*
+    - `server-level-tick` gated `EnderDragonFight.tick` on the empty check
+      alone; it is also behind the freeze gate. *(session-verified)*
+    - `server-level-tick` mis-scoped both chunk-source gates. In
+      `ServerChunkCache.tick` the purge is freeze-gated and
+      `ServerChunkCache.runDistanceManagerUpdates` is not; inside
+      `ServerChunkCache.tickChunks`, `Level.isDebug` wraps the **whole**
+      body including `ServerChunkCache.broadcastChangedChunks`, so a debug
+      world drops the block-change broadcast — which no page had said.
+      *(session-verified)*
+    - `server-level-tick` said `NaturalSpawner.createState` counts mobs
+      "across `DistanceManager.getNaturalSpawnChunkCount` chunks". It walks
+      `ServerLevel.getAllEntities`; the chunk count is only the cap's
+      divisor. *(session-verified)*
+    - `server-level-tick` had the light and block packets in the wrong
+      order. `ChunkHolder.broadcastChanges` sends
+      `ClientboundLightUpdatePacket` **first**, to the border players, before
+      the changed-section walk begins. *(session-verified — and note that the
+      drafting agent reported this correctly and then drew it wrongly in its
+      own new diagram, which the session caught. Pass 4 should assume a
+      redrawn figure can contradict the prose beside it, and read both.)*
+    - `players-and-sessions` said `IntegratedPlayerList` "pins the view
+      distance at 10, never sets a simulation distance at all (so a LAN
+      world reports 0)". `IntegratedServer.tickServer` sets both from
+      `Options` every unpaused tick, floored at 2, long before anyone joins.
+      The claim is cut. *(session-verified)*
+    - `players-and-sessions` said `MinecraftServer.getProfilePermissions`
+      returns a `PermissionSet`; it returns a `LevelBasedPermissionSet`.
+    - `players-and-sessions` said `PlayerList.respawn` chooses
+      `Entity.RemovalReason.KILLED` or `CHANGED_DIMENSION`. The reason is its
+      third **parameter**, chosen by
+      `ServerGamePacketListenerImpl.handleClientCommand`, in the same call
+      that selects `ServerPlayer.restoreFrom`'s branch. *(session-verified)*
+    - `players-and-sessions` said a respawn "restarts the 60-tick timer".
+      Death sets `ServerGamePacketListenerImpl.markClientUnloadedAfterDeath`,
+      a flag the countdown never clears; the give-up-after-60-ticks rule
+      belongs to the join alone.
+    - `players-and-sessions` attributed the *bypasses-player-limit* read to
+      `PlayerList.canBypassPlayerLimit`, a constant false on the base class;
+      only `DedicatedPlayerList` reads the op entry.
+    - `starting-a-server` said `DedicatedServer.convertOldUsers` returning
+      false is the second way startup fails. It returns true if any of five
+      conversions succeeded and only decides whether the name cache is
+      saved; the boot-stopping gate is the separate
+      `OldUsersConverter.areOldUserlistsRemoved`, over four files.
+      *(session-verified)*
+    - `starting-a-server` placed the *Done* log after query, RCON, the
+      watchdog, JMX and the flush save. It is logged on the line after
+      `MinecraftServer.loadLevel` returns, before all of them.
+      *(session-verified)*
+    - `starting-a-server` put `CrashReport.preload` "at the very top of
+      `server/Main`"; version detection, the option parser, *--help* and
+      *--pidFile* all precede it. And "about twenty" mutable
+      `DedicatedServerProperties` fields is exactly nineteen.
+    - the old `server-lifecycle` credited
+      `DedicatedServer.fillServerSystemReport` with the whole report; it
+      sets two details and everything listed belongs to
+      `MinecraftServer.fillSystemReport`. Its `SuppressedExceptionCollector`
+      sentence named packet handlers only: chunk load and chunk save
+      failures feed it too.
+    - the old `server-lifecycle` implied `level.dat` is written by the flush
+      save. `MinecraftServer.saveAllChunks` calls
+      `LevelStorageSource.LevelStorageAccess.saveDataTag` on **every** call,
+      so an ordinary autosave rewrites it. The new durability section rests
+      on this, so check it first. Also `PacketProcessor.close` drops packets
+      *already queued*, not only late arrivals; and "the Server thread was
+      the only non-daemon thread left" holds only after
+      `Util.shutdownExecutors`, because `Util.ioPool`'s *IO-Worker* threads
+      are non-daemon while `Util.nonCriticalIoPool`'s are daemons.
+      *(session-verified)*
+  - **`server-tick`** — the hook (the log *is* the skip, and the missed
+    ticks are never run); the warning gate read as fifteen seconds of
+    *scheduled* time; the six-lane figure's ordering, and in particular that
+    `ServerCommonPacketListenerImpl.resumeFlushing` itself calls
+    `Connection.flushChannel` (the second write is that call, not a later
+    side effect) and that `Connection.tick` flushes **after** ticking its
+    listener; the flush suspension applying only to sends made on the Server
+    thread; the `MinecraftServer.tickChildren` order table row by row,
+    including which rows are freeze-gated; the event-loop flowchart, which
+    asserts the whole `pollTask` → `shouldRun` → `haveTime` decision;
+    **the "three things the budget gates" count, re-derived twice this
+    session** (`ChunkMap.processUnloads`, `ChunkMap.saveChunksEagerly`,
+    `SectionStorage.tick` by way of `PoiManager.tick`) with its new riders —
+    the unload queue draining regardless above two thousand entries, eager
+    saving capped at twenty chunks and 128 outstanding writes; the sprint
+    inversion; `MinecraftServer.emptyTicks` advancing only while not
+    sprinting; *pause-when-empty-seconds* being zero on the base class; the
+    in-memory connection rethrow; `IntegratedServer.isTickTimeLoggingEnabled`
+    being unconditionally true.
+  - **`server-level-tick`** — the hook (blocks broadcast before entities
+    tick, so an entity's change lands a tick behind a command's); **the
+    guard flowchart, the page's primary figure, which asserts a gate on
+    every one of its twenty-odd steps — check it against `ServerLevel.tick`
+    statement by statement**; the three-range opener (31 / 32, and "loaded
+    means a holder exists"); the broadcast sequence diagram's order;
+    `ChunkHolder.blockChanged` returning true only on the holder's first
+    changed section; `GameRules.RANDOM_TICK_SPEED` at zero stopping ice and
+    snow as well; `LocalMobCapCalculator.canSpawn` answering false with no
+    player near; spawning chunks coming from
+    `DistanceManager.getSpawnCandidateChunks` under a squared-distance test;
+    `Level.tickBlockEntities` pruning removed tickers even while frozen; the
+    overworld-only *gameTime* flag being the level constructor's last
+    argument; commands being handled before `MinecraftServer.tickChildren`
+    begins, which is what makes the hook's comparison exact.
+  - **`players-and-sessions`** — the hook (death replaces the object, a
+    dimension change does not, and both keep the entity id and the same
+    listener); **both join diagrams, replacing one nine-lane diagram whose
+    implied concurrency was wrong** — especially the claim that the burst
+    runs inside `MinecraftServer.processPacketsAndTick`, before
+    `MinecraftServer.tickChildren` opens the tick's own flush bracket, which
+    is why `PlayerList.placeNewPlayer` brackets itself; the four-column
+    comparison table, cell by cell; `ServerLevel.waitForEntities` blocking
+    the Server thread; a respawn broadcasting **no**
+    `ClientboundPlayerInfoUpdatePacket` *(session-verified)*; everything
+    `ServerPlayer.restoreFrom` copies unconditionally, the ender chest
+    among them, which makes its survival a field assignment rather than a
+    game rule; the `.dat` written before the vehicle and ender-pearl
+    removal; `PlayerSpawnFinder`'s coprime-strided search;
+    `PlayerDataStorage.load` reading with an unlimited accounter;
+    `ServerGamePacketListenerImpl.switchToConfig`'s round trip producing a
+    new entity id and a new listener; the flying kick disabled at zero
+    gravity.
+  - **`starting-a-server`** — the hook (the boot step that loads the world's
+    chunks loads none of them: of nine ticket types only
+    `TicketType.FORCED` and `TicketType.PORTAL` carry
+    `TicketType.FLAG_PERSIST`, *session-verified against all nine*); **the
+    sequence diagram, the only one in the corpus with the JVM main thread as
+    a lane — check which side of `MinecraftServer.spin` every step falls
+    on**; `level.dat` parsed once and datafixed twice;
+    `DirectoryLock.create` writing a snowman before taking the lock;
+    `Util.blockUntilDone` making the main thread an executor for two stages
+    of `WorldLoader.load`; the `MinecraftServer` constructor refusing a stem
+    with no overworld `LevelStem`; the console thread building its
+    `CommandSourceStack` off the Server thread; the icon and the first
+    `ServerStatus` being built after `DedicatedServer.initServer` returns;
+    `LevelLoadListener.Stage.START_SERVER` being declared and fired by
+    nothing; there being no *spawnChunkRadius* game rule in 26.2
+    (`GameRuleRegistryFix` removes it from saves); and the claim that the
+    *menu.preparingSpawn* percentage line never runs on an ordinary world.
+  - **`how-a-server-dies`** — new, so all of it; the drafting report cites a
+    file and line per claim and pass 4 should walk that list. The
+    load-bearing ones: the three-column comparison table, cell by cell; the
+    `/stop` sequence diagram's order, which asserts players before chunks,
+    `level.dat` before the server-wide `SavedDataStorage`, and the lock
+    released last; **the watchdog self-deadlock diagram**, the hook drawn —
+    `System.exit` runs the hook, the hook joins the wedged thread,
+    `Runtime.halt` fires ten seconds later (*session-verified*:
+    `ServerWatchdog.run` loops on `MinecraftServer.isRunning`,
+    `ServerWatchdog.MAX_SHUTDOWN_TIME` is ten seconds, and the timer is
+    scheduled before `System.exit`); the five callers of
+    `MinecraftServer.halt` and which of them pass *wait* true; the
+    durability section's answer per ending, which depends on the corrected
+    autosave-writes-`level.dat` fact; the claim that a server stuck in
+    teardown has no watchdog left watching it, because the watchdog loops
+    only while `MinecraftServer.running`; and
+    `MinecraftServer.reportChunkSaveFailure` writing a
+    `ReportType.CHUNK_IO_ERROR` file under *debug/*.
+  - **The landing page and `lectures.md`** assert Part III's order and its
+    dependencies: that the part can be watched before Part IV because
+    `server-level-tick` defines the three ranges itself, that
+    `environment-attributes-and-timelines` is best watched before the level
+    tick, and that Part I's *two loops* figure is the only earlier
+    prerequisite. Each is a claim.
+  - **`anatomy` lost two invariants to `server-tick`** — the budget's count
+    and the sprint conclusion — and now carries a one-sentence pointer;
+    check that the compression lost nothing true.
+
 - **2026-09-02, session C — Part I Anatomy · Part II Foundations.** Nine
   pages rewritten or written (two Part I, seven Part II), three moved to
   Reference, one landing page. Every rewrite was diffed against its old

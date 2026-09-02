@@ -44,3 +44,5 @@ level = 0
 "/systems/appendix/naming-drift.html" = "../../reference/naming-drift.html"
 "/systems/appendix/glossary.html" = "../../reference/glossary.html"
 "/systems/foundations/math-and-primitives.html" = "../../reference/math-and-primitives.html"
+# Pass-3 session D: server-lifecycle split into startup and the three endings.
+"/systems/server/server-lifecycle.html" = "starting-a-server.html"

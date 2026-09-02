@@ -22,6 +22,79 @@ Nothing here is acted on before pass 4 has checked the page.*
 *(pass-3 and pass-4 sessions append below, newest first: the page, what
 was cut or moved, and why)*
 
+- **2026-09-02, session D — Part III.** Five pages, and the register debt
+  pass 2 logged against this part is **paid**: the dozen "not X but Y",
+  "two, not one" and "and there is no Z" constructions that made Part III
+  the corpus's worst offender are gone, restated positively. The three
+  bullets opening with "Two …" are gone with the bullet walls — all five
+  pages now carry **zero** bulleted lists between them (the budget allows
+  three each), which is worth checking is not its own monotony: the
+  material became prose, tables and figures, and pass 5 should look for
+  paragraphs that would read better as a short list after all.
+  *Cuts and moves, per page.*
+  **`server-tick`**: the field inventories go (the `ServerTickRateManager`
+  sprint bookkeeping — `remainingSprintTicks`, `sprintTickStartTime`,
+  `sprintTimeSpend` — and `MinecraftServer.mayHaveDelayedTasks` as a named
+  field are no longer listed, only used); `MinecraftServer.spin` and the
+  creation of the Server thread move to `starting-a-server`; the crash
+  report, `MinecraftServer.constructOrExtractCrashReport`,
+  `MinecraftServer.onServerCrash`, the *finally* and `ServerWatchdog` move
+  to `how-a-server-dies`, leaving a pointer; `Minecraft.packetProcessor`
+  (the client's copy) is left to Part X; `TickRateManager` living in
+  `ClientLevel` too is left to `anatomy`, which already says it; the
+  *Interfaces* and *Data-driven by* blocks dissolve into the cast row, the
+  `tickChildren` table and the questions. The `SampleLogger` /
+  `TpsDebugDimensions` paragraph pass 2 flagged as a cut candidate
+  **survives**, now inside the bookkeeping section — pass 5 should decide
+  again with the page in front of it.
+  **`server-level-tick`**: the field inventory and the thirteen-step
+  narration go as structures, every fact re-placed; `BlockEventData` and the
+  `ServerLevel.customSpawners` / `dragonFight` / `raids` / `sleepStatus`
+  fields are no longer named as fields. `ServerChunkCache.onLightUpdate`'s
+  off-thread hop is **moved** to `../world/lighting.md`, which already
+  narrates it in full (checked). The "Exception ticking world" crash wrapper
+  moves to `server-tick`; the `GameRules` package-move note and the
+  *DO_DAYLIGHT_CYCLE* / *DO_MOB_SPAWNING* renames move to
+  `../world/level-data-and-rules.md`. The pass-2 guard bookkeeping spread
+  across six narrated steps is now the flowchart, which is what pass 2
+  predicted would let it be cut.
+  **`players-and-sessions`**: the `PlayerList` and `ServerPlayer` field
+  inventories go. **Three items need a home and have none yet** — the
+  `ServerPlayerGameMode` paragraph (block-breaking state,
+  `ServerPlayerGameMode.changeGameModeForPlayer`,
+  `ServerPlayer.storeGameTypes`), which belongs with `player-anatomy` or a
+  game-mode page; `ClientboundSetChunkCacheRadiusPacket` /
+  `ClientboundSetSimulationDistancePacket` on a view-distance change, which
+  is server reconfiguration rather than a session event (candidate home:
+  `what-the-client-is-told`); and `PlayerDataStorage`'s *.dat_old* and
+  *corrupted* rescue, compressed here into one cast-table cell and wanting a
+  save-format Reference entry. The `ClientboundSetHealthPacket`
+  saturation-crossing detail moves to `player-anatomy` by reference; the
+  login state machine, the 600-tick login timeout, the auth thread and
+  `CommonListenerCookie`'s travel move to `protocol-phases`, linked; the
+  permission model is one sentence and a link to `brigadier-and-commands`
+  (pass 2 asked session K to check the two had not drifted — they no longer
+  can).
+  **`starting-a-server`** (was `server-lifecycle`): the field inventories
+  go; everything about stopping — `MinecraftServer.halt`, the *finally*, the
+  save model, `Util.shutdownExecutors`, the lock release, the three endings,
+  the crash-report machinery — moves to `how-a-server-dies`. Only
+  `CrashReport.preload` stays, because it happens at boot. The side threads
+  became a four-column table (thread · made by · daemon · what it may
+  touch), which is the enumerative-beyond-seven rule doing its job.
+  *Wording left rough on purpose.* All five pages end their opening
+  paragraph on a bolded or dashed sentence — one voice, five times, and the
+  same tic session C logged for Part II; a corpus-wide look belongs in pass
+  5's voice sweep rather than in any one part. `how-a-server-dies` uses
+  *the number* device twice (**Ten seconds**, and the comparison table's
+  "differ in one cell") where once is the convention. `server-tick`'s
+  *Questions players ask* was trimmed to four questions by moving the
+  profiler answer into the bookkeeping section and the worker-crash answer
+  into the event-loop section, which is where both belonged; the remaining
+  four are the ones a player would actually ask. Part III now has five
+  pages where pass 2 had four, so the part is longer, not shorter — the
+  length bill for it comes due here.
+
 - **2026-09-02, session A.** `tickets-and-loading`: the *data it owns*
   inventory is gone — `ChunkHolder.queueLevel`, `ChunkMap.unloadQueue`,
   `ChunkMap.serverViewDistance` and `MIN_VIEW_DISTANCE`, `ChunkMap.playerMap`,

@@ -1376,9 +1376,10 @@ writes one strikes it through; a session that rules one out says why, here.*
 - **How an item picks its model** — `renderer/item` and the 42 classes under
   `item/properties/**`. Part VII or Part XI; decide the owner first.
   *(session I)*
-- **How a server dies** — `/stop` · crash · watchdog: three endings, one
-  diagram, currently three bullets. Part III; session D may make it
-  `server-lifecycle`'s reframing rather than a new page. *(session B)*
+- ~~**How a server dies**~~ — **written by session D** as
+  `src/systems/server/how-a-server-dies.md`, a comparison page with the
+  three endings as columns and the watchdog's self-deadlock drawn.
+  *(session B, discharged session D)*
 - **The spear** — `PiercingWeapon` / `KineticWeapon`, the 26.2 combat change
   a viewer most wants explained, currently two invariants. Part VIII.
   *(session F)*
@@ -1520,3 +1521,48 @@ writes one strikes it through; a session that rules one out says why, here.*
   relaunched on Opus; their reports were as usable as the six on the
   session's own model, which is the evidence for running the part sessions
   on Opus from here.
+
+- **Session D (Part III The server).** **Part III is five pages**, not four:
+  `server-lifecycle` split into `starting-a-server.md` (redirect from the old
+  URL) and the new `how-a-server-dies.md`, which spends R7's one-page
+  allowance on the coverage queue's *how a server dies*. §7's entry for it is
+  discharged; strike it. The part's shape is **a line into a loop and out
+  again** and the landing page draws it. **The event-loop section now exists
+  and has an owner** (R6): `server-tick`'s *The event loop, and what a tick's
+  spare time buys*, with a flowchart of `pollTask` → `shouldRun` →
+  `haveTime` and the `managedBlock` suspension. Sessions E, J and K should
+  link to it rather than re-explain `BlockableEventLoop`,
+  `MinecraftServer.managedBlock` or `TickTask`; the one-sentence uses already
+  in `the-client-loop`, `resource-system`, `chunk-generation-pipeline` and
+  `tickets-and-loading` are fine as they stand and only want a link.
+  **`anatomy`'s two Part III invariants are moved and cut to a pointer**, so
+  §8's session-C hand-off on that is discharged too. **Lanes**: thirteen rows
+  added (`PP`, `TRM`, `LTs`, `EAS`, `NS`, `ETL`, `WB`, `PDS`, `SW`, `LSA`,
+  `SC`, `DL`, `WS`) plus the word lanes `JVM` and `Hook`;
+  `ServerGamePacketListenerImpl` is `SGPL` everywhere now, settling the
+  notebook's odd-one-out `G`. **`LT` was already `LootTable`** (session C),
+  so `LevelTicks` took `LTs` — the first time the lengthen-the-later-claimant
+  rule has bitten, and worth expecting again in Parts IV and V, which both
+  want `LT`. `check_lanes --strict --pages src/systems/server` is clean.
+  **For session E (Part IV)**: `server-level-tick` now opens by defining
+  entity-ticking, block-ticking and loaded in two sentences with the two
+  `ChunkLevel` numbers, so Part IV no longer has to precede Part III — but
+  Part IV owns the real explanation and the two must agree, so re-read that
+  opener when `tickets-and-loading` is re-checked. Session D also found that
+  a **debug world drops the block-change broadcast** (the `Level.isDebug`
+  guard wraps all of `ServerChunkCache.tickChunks`), which no Part IV page
+  says either. And `lighting.md` is now the sole owner of
+  `ServerChunkCache.onLightUpdate`'s off-thread hop.
+  **For session I (Part VIII)** and **session N (Part XIII)**: two link
+  labels elsewhere in the corpus point at Part III pages under the wrong
+  name — `player-anatomy.md` calls `server-tick.md` "the connection", and
+  `scoreboard-and-data.md` calls `server-level-tick.md` "the server tick".
+  Both are label bugs, not target bugs; fix them when those parts are
+  reshaped, or session P sweeps them.
+  **Process**: five pages drafted by parallel agents on Opus against a shared
+  brief, each report diffed by the session, which re-derived twelve of the
+  eighteen corrections from the decompile itself. One lesson worth carrying:
+  an agent reported a corrected ordering in its prose **and then drew the old
+  ordering in its new diagram** (light before block packets in
+  `ChunkHolder.broadcastChanges`). A drafting report is not evidence about
+  the figure; read the figure separately.

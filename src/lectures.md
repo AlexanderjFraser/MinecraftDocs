@@ -49,7 +49,31 @@ it is Reference, and the parts link into it.
 
 ## III · The server
 
-*Filled by session D.*
+Part III is a line into a loop and out again: the loop first, because it is
+what the rest of the book lives inside, and the beginning and the end last,
+because they are only interesting once you know what they start and stop.
+
+1. [The server tick](systems/server/server-tick.md) — one 50 ms lap of the
+   Server thread. The most load-bearing lecture in the book after
+   *Anatomy*: Parts IV to VIII all assume it, and it is the first place a
+   viewer sees a named thread do a full lap.
+2. [The level tick](systems/server/server-level-tick.md) — one step of that
+   lap, which is the entire world changing. Watched immediately after, and
+   never apart from it.
+3. [Players and sessions](systems/server/players-and-sessions.md) — a join,
+   then death, a dimension and a disconnect compared. The second half
+   answers the question people actually ask about a server.
+4. [Starting a server](systems/server/starting-a-server.md) — the cold
+   open, told fourth: *java -jar server.jar* to the word *Done*.
+5. [How a server dies](systems/server/how-a-server-dies.md) — the part's
+   closer, and the strongest single lecture in it: three endings, and only
+   two of them save your world.
+
+Watch [environment attributes and
+timelines](systems/world/environment-attributes-and-timelines.md) (Part IV)
+before *the level tick* if you want its first statement to mean anything;
+it is the page with the most dependants in the book and Part III is the
+earliest of them.
 
 ## IV · The world
 

@@ -340,7 +340,7 @@ sidebar order.
   `Component` page and the data-driven-types page written or ruled out with
   the pages open; `resource-system`'s two traces settled as one lecture
   with a coda, or two.
-- [ ] **Session D — Part III The server.** Lifecycle last and reframed as
+- [x] **Session D — Part III The server.** *(done 2026-09-02)* Lifecycle last and reframed as
   *how a server dies* (three endings, one diagram; startup gets its own
   diagram with the JVM main thread as a lane); the event-loop section in
   `server-tick`; `server-level-tick`'s guard flowchart beside its trace;
@@ -726,3 +726,112 @@ missing it — and removes the comment. The owner confirms or reorders
   interrupt were relaunched on Opus with no visible loss — the part
   sessions from D on should run on Opus, with Fable kept for O, P and the
   inter-pass planning.
+- **2026-09-02, session D — Part III The server.** *Rulings, written before
+  editing.* **Part III is a line into a loop and out again**, and the
+  landing page draws exactly that: `starting-a-server` runs into
+  `server-tick`, which turns with `server-level-tick`, with
+  `players-and-sessions` hanging off the loop as who is in it, and
+  `how-a-server-dies` at the exit. **The part gains one page** — R7's
+  allowance, spent on the coverage queue's *how a server dies* — and
+  `server-lifecycle` splits, which **overrules the schedule line** ("lifecycle
+  last and reframed … startup gets its own diagram"): the schedule asked for
+  one page with two traces, and one page with two traces is precisely the
+  lecture/page mismatch this pass exists to fix (charter §*What is wrong
+  today* item 6). Session B's own note called *how a server dies* "the
+  strongest new page candidate found in Part III". The side threads, which
+  span both halves, are described where they are **created** (startup) and
+  their non-daemon consequence is stated where it **bites** (the death page's
+  `onServerExit`). `server-lifecycle.md` becomes
+  `starting-a-server.md` with a redirect (R8); nothing outside Part III
+  linked to it. **The five pages, their shapes and their hooks.**
+  **`server-tick`** keeps the **trace** shape but takes a seven-lane
+  sequence that ends on the wire, so the two flushes are visible rather
+  than asserted, plus a small flowchart of the budget for the **event-loop
+  section R6 gives it to own** (`BlockableEventLoop`, `TickTask`,
+  `shouldRun`, `managedBlock`) — the section four parts link to instead of
+  re-explaining. Hook: "Can't keep up!" is not a warning that the server is
+  skipping ticks, it *is* the skip, and the same condition holds the log, so
+  a server that complained recently stays behind instead. It also absorbs
+  the two Part I invariants `anatomy` still carries (the `haveTime` "gates
+  exactly three things" claim, the sprint-polls-chunk-sources conclusion),
+  cut there to a link. **`server-level-tick`** trades its twelve-lane
+  conversation for the **guard flowchart** the notebook asked for — the
+  fourteen phases with their gates (`runsNormally`, `emptyTime`, `isDebug`,
+  none) on the arrows, which carries the ordering and the gating at once —
+  plus a four-lane sequence of the block-change broadcast alone. It opens by
+  defining the three chunk ranges in two sentences (pass3 §5's
+  recommendation) so the page does not borrow Part IV's vocabulary
+  unexplained. Hook: the tick broadcasts its block changes *before* it ticks
+  its entities, so a change an entity makes always reaches the client a tick
+  later than a change a command makes. **`players-and-sessions`** becomes a
+  **trace** and a **comparison** with the seam the notebook found: the join
+  as two diagrams (admission and configuration, then `placeNewPlayer`'s
+  packet burst) in place of the nine-lane one whose implied concurrency was
+  wrong anyway, then the exits as a four-column table (respawn · dimension
+  change · disconnect · `switchToConfig`) with the question people actually
+  ask as its headings. Hook: dying destroys and rebuilds your `ServerPlayer`
+  while a trip to the Nether does not, and both keep the entity id and the
+  same connection object. **`starting-a-server`** is the **trace** shape
+  with the diagram the notebook asked for: the only figure in the corpus
+  where the **JVM main thread is a lane**, handing off to the Server thread
+  and never appearing again. Hook: the step the loading screen calls
+  preparing the world loads no chunks at all on an ordinary world —
+  `prepareLevels` re-arms persisted tickets, and only `/forceload` and
+  portal tickets persist. **`how-a-server-dies`** is the **comparison**
+  shape: three endings (`/stop`, a tick-loop crash, a watchdog kill) as the
+  columns, `/stop` traced in full because the other two are differences from
+  it, and a four-lane sequence of the watchdog's self-deadlock. Hook: a
+  crash saves your world and the watchdog does not — `System.exit` runs a
+  hook that joins the very thread that is wedged. **Lanes**: the Part III
+  rows go into the key before drafting; `G` becomes `SGPL` (the notebook's
+  odd one out), `LevelTicks` lengthens to `LTs` because session C's
+  `LT` is `LootTable`, and `SL`/`MS` lose their parenthetical labels so the
+  linter can read them. `check_lanes.py --strict --pages src/systems/server`
+  before shipping.
+  *Done.* Part III is five pages in a line-into-a-loop, drawn on a new
+  landing page the sidebar's Part III opens on. `server-tick` is a
+  six-lane trace that ends on the wire, so the two writes per client are
+  visible rather than asserted, and it now owns **the event loop** (R6) as
+  a named section with a flowchart of `pollTask` → `shouldRun` →
+  `haveTime` and the `managedBlock` suspension — the section four parts
+  will link to instead of re-explaining; `anatomy`'s two Part III
+  invariants moved here and are a pointer there. `server-level-tick`
+  traded its twelve-lane conversation for the **guard flowchart** the
+  notebook asked for, twenty-odd phases each labelled with the gate it
+  sits behind, plus a four-lane sequence of the block-change broadcast
+  that is the page's hook drawn; it opens by defining the three chunk
+  ranges, so Part III no longer needs Part IV in front of it.
+  `players-and-sessions` is a trace and a comparison at the seam session B
+  found: two join diagrams in place of the corpus's widest one, then the
+  four exits as a table with sections per point of difference (*what comes
+  across when you die*, *why the Nether keeps your potion effects*,
+  *where your llama goes when you log out*). `server-lifecycle` split:
+  `starting-a-server` is the boot trace with the only diagram in the book
+  that has the JVM main thread as a lane, and **`how-a-server-dies` is the
+  part's closer** — three endings as columns, `/stop` traced in full, and
+  the watchdog's self-deadlock drawn in four lanes.
+  **Eighteen pass-2 errors found**, the largest crop since pass 2 itself,
+  twelve of them re-derived by the session from the decompile: among them
+  `ServerLevel.runBlockEvents` is freeze-gated (the old figure said
+  otherwise by omission), a debug world drops the block-change broadcast,
+  `ChunkHolder.broadcastChanges` sends light *before* blocks,
+  `NaturalSpawner.createState` walks every entity rather than a chunk
+  window, `MinecraftServer.scheduleExecutables` runs a late task inline
+  instead of throwing, `PlayerList.respawn` is handed its removal reason
+  rather than choosing it, `IntegratedServer` does set a simulation
+  distance, the *Done* line is logged before RCON and the watchdog exist,
+  and an ordinary autosave rewrites `level.dat` — which is what the new
+  durability section rests on. All are in pass4.md with the fixes flagged
+  for re-checking.
+  Thirteen lane rows added plus two word lanes;
+  `check_lanes --strict --pages src/systems/server` is clean, 103 diagrams
+  render, 19,659 names resolve, and the old `server-lifecycle` URL
+  redirects. Hand-offs in pass3.md §8 (the event loop's owner, the
+  three-ranges opener session E must keep in step, two wrong link labels
+  for sessions I and N), pass4.md and pass5.md.
+  Process note: five pages drafted by parallel Opus agents against a shared
+  brief and diffed by the session. **One agent reported a corrected
+  ordering in its prose and then drew the old ordering in its own new
+  diagram**; the session caught it against the decompile. A drafting
+  report is not evidence about the figure — later sessions should read
+  every redrawn diagram separately, and pass 4 has been told the same.

@@ -26,13 +26,16 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CTD` | `ChunkTaskDispatcher` |
 | `CU` | `ComponentUtils` |
 | `DCP` | `DataComponentPatch` |
+| `DL` | `DirectoryLock` |
 | `DM` | `DistanceManager` |
 | `DMR` | `DefaultedMappedRegistry` |
 | `DS` | `DedicatedServer` |
 | `DScr` | `DeathScreen` |
+| `EAS` | `EnvironmentAttributeSystem` |
 | `EH` | `EnchantmentHelper` |
 | `EM` | `EnchantmentMenu` |
 | `Entity` | `Entity` |
+| `ETL` | `EntityTickList` |
 | `Font` | `Font` |
 | `GR` | `GameRenderer` |
 | `Gui` | `Gui` |
@@ -53,21 +56,26 @@ a one-word class as itself, and a few words for things that are not classes.
 | `LP` | `LocalPlayer` |
 | `LR` | `LevelRenderer` |
 | `LRA` | `LayeredRegistryAccess` |
+| `LSA` | `LevelStorageSource.LevelStorageAccess` |
 | `LT` | `LootTable` |
+| `LTs` | `LevelTicks` |
 | `MC` | `Minecraft` |
 | `MComp` | `MutableComponent` |
 | `MPRM` | `MultiPackResourceManager` |
 | `MR` | `MappedRegistry` |
 | `MS` | `MinecraftServer` |
 | `NbtIo` | `NbtIo` |
+| `NS` | `NaturalSpawner` |
 | `Parrot` | `Parrot` |
 | `PCS` | `PlayerChunkSender` |
 | `PDec` | `PacketDecoder` |
 | `PDM` | `PatchedDataComponentMap` |
+| `PDS` | `PlayerDataStorage` |
 | `PEnc` | `PacketEncoder` |
 | `PESM` | `PersistentEntitySectionManager` |
 | `PL` | `PlayerList` |
 | `Player` | `Player` |
+| `PP` | `PacketProcessor` |
 | `PR` | `PackRepository` |
 | `PRL` | `PreparableReloadListener` |
 | `PST` | `PrepareSpawnTask` |
@@ -82,6 +90,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `RSR` | `ReloadableServerResources` |
 | `RSReg` | `ReloadableServerRegistries` |
 | `RSyn` | `RegistrySynchronization` |
+| `SC` | `StopCommand` |
 | `SCC` | `ServerChunkCache` |
 | `SCL` | `ServerConnectionListener` |
 | `SCPL` | `ServerConfigurationPacketListenerImpl` |
@@ -96,16 +105,22 @@ a one-word class as itself, and a few words for things that are not classes.
 | `SRI` | `SimpleReloadInstance` |
 | `SRT` | `SynchronizeRegistriesTask` |
 | `SSPL` | `ServerStatusPacketListenerImpl` |
+| `SW` | `ServerWatchdog` |
 | `TagP` | `TagParser` |
 | `TCTD` | `ThrottlingChunkTaskDispatcher` |
 | `TL` | `TagLoader` |
 | `TrC` | `TranslatableContents` |
+| `TRM` | `ServerTickRateManager` |
 | `TS` | `TicketStorage` |
 | `TVO` | `TagValueOutput` |
+| `WB` | `WorldBorder` |
 | `Window` | `Window` |
 | `WL` | `WorldLoader` |
+| `WS` | `WorldStem` |
 | `Auth` | *Auth: not a class* |
 | `Disk` | *Disk: not a class* |
+| `Hook` | *Hook: not a class* |
+| `JVM` | *JVM: not a class* |
 | `Main` | *Main: not a class* |
 | `Netty` | *Netty: not a class* |
 | `Wire` | *Wire: not a class* |

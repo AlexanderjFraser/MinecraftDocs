@@ -269,12 +269,27 @@ never change an existing row's meaning.
 | `LT` | `LootTable` |
 | `LIF` | `LootItemFunctions` |
 | `SICF` | `SetItemCountFunction` |
+| `PP` | `PacketProcessor` |
+| `TRM` | `ServerTickRateManager` |
+| `LTs` | `LevelTicks` |
+| `EAS` | `EnvironmentAttributeSystem` |
+| `NS` | `NaturalSpawner` |
+| `ETL` | `EntityTickList` |
+| `WB` | `WorldBorder` |
+| `PDS` | `PlayerDataStorage` |
+| `SW` | `ServerWatchdog` |
+| `LSA` | `LevelStorageSource.LevelStorageAccess` |
+| `SC` | `StopCommand` |
+| `DL` | `DirectoryLock` |
+| `WS` | `WorldStem` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
 | `Auth` | *the User Authenticator thread, not a class* |
 | `Wire` | *the network between the two programs, not a class* |
 | `Disk` | *the save on disk, not a class* |
+| `JVM` | *the process itself, not a class* |
+| `Hook` | *the Server Shutdown Thread JVM hook, not a class* |
 
 Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
 `ServerLevel` (not `ServerLoginPacketListenerImpl`, now `SLPL`, nor
