@@ -48,6 +48,193 @@ entry first.
 
 ## Entries
 
+- **2026-09-02, session C — Part I Anatomy · Part II Foundations.** Nine
+  pages rewritten or written (two Part I, seven Part II), three moved to
+  Reference, one landing page. Every rewrite was diffed against its old
+  page from the drafting agent's report before acceptance; the claims
+  below are the ones that report listed as *introduced* or *reworded*, and
+  the two pass-2 errors found on the way. Check the two new pages hardest —
+  nothing on them was fact-checked in pass 2.
+  - **Two pass-2 errors found.** `tags` said "an axe strips anything in
+    `#minecraft:logs`". It does not: `AxeItem.STRIPPABLES` is a hard-coded
+    `Map` of block to block and stripping never consults a tag; the page
+    now opens on the parrot (`Parrot.ParrotWanderGoal` recognises leaves by
+    class and logs by tag) and `PunchTreeTutorialStepInstance`. And
+    `out-of-scope-tour` said `NoiseRouterData` calls `TerrainProvider` and
+    `SurfaceRuleData` "every time a chunk's density functions are built".
+    It does not: `NoiseRouterData.overworld` and its siblings are called
+    only from `NoiseGeneratorSettings`' bootstrap methods, whose callers
+    are `VanillaRegistries` (datagen) and `Commands.validate`;
+    `SurfaceRuleData` is referenced by `NoiseGeneratorSettings` alone; the
+    running game reads the generated JSON from the built-in pack. Verified
+    by the session. The surviving runtime call is
+    `NoiseRouterData.peaksAndValleys` → `TerrainProvider` on the F3 biome
+    line and in `OverworldBiomeBuilder`'s parameter spans.
+  - **`anatomy`** (trace, two figures). The two-loops flowchart is the
+    figure Parts III, IX and X now link to; it asserts `Minecraft.runTick`
+    = advance the `DeltaTracker` → drain the `PacketProcessor` → run own
+    tasks → 0 to 10 ticks → render, and `MinecraftServer.runServer` = set
+    the deadline → `processPacketsAndTick` (drain, then `tickServer`) →
+    `waitUntilNextTick` (run tasks, then `managedBlock`); the startup
+    sequence asserts `spin` constructs the `IntegratedServer` on the
+    caller's thread before starting the new one. New: "the second thread
+    was created by the first, mid-frame, while the first went on drawing"
+    (`Minecraft.doWorldLoad` renders inside its wait loop);
+    `PriorityConsecutiveExecutor` "adds a priority to the same idea"; both
+    `Main`s read *version.json* through `SharedConstants`. Reworded:
+    `DataFixers.optimize` is kicked off "before the registries are built"
+    (was "at the very start"). Moved, not cut: `Minecraft.isPaused`'s
+    three-part condition now lives only on `the-client-loop`;
+    `tickPaused`'s "or the player list is empty" and "one save on the
+    transition" only on `server-tick`.
+  - **`what-this-book-skips`** (the old `out-of-scope-tour`, moved to
+    Part I, the treemap included, the gaps as one table). New: the F3
+    biome line runs through `NoiseRouterData.peaksAndValleys` into
+    `TerrainProvider`; `NoiseRouterData` and `NoiseGeneratorSettings` are
+    compiled against `TerrainProvider` and `SurfaceRuleData`; their
+    bootstraps are collected by `VanillaRegistries`, run by the
+    data-generator entry point and borrowed by `Commands.validate`; the
+    `net/minecraft/realms` row (4 files, 203 lines: three classes and a
+    *package-info*); "the table counts files, so *package-info.java*
+    counts there and not in the prose" (rcon 9 files / 7 classes, stats 10
+    / 9). Every size in the page's tables was checked against
+    `src/generated/` and matches. The figcaption's "hatched boxes are the
+    packages this page tours" is true of twelve of the fourteen: `gizmos`
+    and `realms` are too small for the tool to hatch (a tool limitation,
+    logged in pass3.md), and `client/multiplayer/chat/report` is depth 5.
+  - **`codecs-nbt-json`** (comparison). New: both sides wrap
+    `HashOps.CRC32C_INSTANCE` in a `RegistryOps` (`ClientPacketListener`
+    from the received registries, `ServerPlayer` from its own) "because a
+    component value can name a registry entry" — the motive is the agent's
+    reading, soften if unverifiable; `ServerPlayer`'s container
+    synchroniser hashes through a 256-entry cache keyed on
+    `TypedDataComponent` (verified by the session); **removals are not
+    hashed** — `HashedPatchMap` is a map of added type to int plus a set of
+    removed types (verified; sharpens pass 2's "one CRC32C per component");
+    a wire decode failure reaches `Connection.exceptionCaught` and drops the
+    connection; `ItemParser.SYNTAX_REMOVED_COMPONENT` is the command-line
+    spelling of `!minecraft:foo`; the hash path runs on the Render thread
+    (`AbstractContainerScreen.slotClicked` → `MultiPlayerGameMode.handleContainerInput`).
+    The four short diagrams assert: the disk path never touches a
+    `CompoundTag` in the block entity; the wire path is `StreamCodec` all
+    the way with the `NullOps` re-encode on exactly one packet; the server
+    re-hashes its own stack rather than decoding; the text path builds its
+    `TagParser` for the parser's own `RegistryOps`.
+  - **`identifiers-and-registries`** (trace, both diagrams kept). The
+    world-load diagram's `replaceFrom` arrow now comes from `WorldLoader`,
+    not `RegistryDataLoader` (read from `WorldLoader.load`), and
+    `RegistryDataLoader.load` is given lookups built by
+    `TagLoader.buildUpdatedLookups` over `getAccessForLoading`, not the
+    access directly. New cast claims: `RegistryDataLoader` loads JSON on the
+    server and NBT from the wire on the client (`NetworkRegistryLoadTask`).
+    The freeze rule is now stated in one section and justified nowhere on
+    this page; `Registry.PendingTags` and `prepareTagReload` are named only
+    on `tags`. Counts unchanged: 148 keys, 147 objects, five intrusive.
+  - **`resource-system`** (pipeline, `/reload` as a comparison table).
+    New, all from `SimpleReloadInstance`, `Minecraft`, `LoadingOverlay`,
+    `MinecraftServer.reloadResources`, `ReloadCommand`,
+    `MultiPackResourceManager`, `Pack.Position`: the first listener's
+    barrier is chained to the initial task; `PreparationBarrier.wait` posts
+    a main-thread task that removes the listener from the preparing set and
+    completes the all-preparations future when it empties; a listener that
+    never reaches its barrier holds every apply; **twenty** client
+    listeners; `AtlasManager` publishes one future per atlas in
+    `prepareSharedState`; the overlay fades in over half a second and will
+    not fade out before a full second; the recovery reload skips the fade;
+    the success continuation is `finishReload` → `DownloadedPackSource.onReloadSuccess`
+    → `onResourceLoadFinished`; `abortResourcePackRecovery` drops the
+    overlay, disconnects and shows a toast; `triggerResourcePackRecovery`
+    "takes the same road" (caveat: `clearResourcePacksOnError` crashes or
+    aborts when `isAbleToClearAnyPack` is false — check the sentence);
+    `ReloadReason.INITIAL`; `ReloadCommand` at `Commands.LEVEL_GAMEMASTERS`;
+    on server failure the new manager is closed and the old stays; filter
+    sections are pushed onto the namespace stacks; `Pack.Position.TOP`
+    inserts at the back; a new `Commands` inside each
+    `ReloadableServerResources`. Reworded: `Pack.Position.BOTTOM` "inserts
+    at the front, past any pack already fixed there" (was "at index 0").
+    The lattice figure asserts every apply waits on all preparations *and*
+    the previous apply, and that the only prepare-to-prepare edge is
+    `AtlasManager` → `ModelManager` through shared state.
+  - **`tags`** (trace). New: the vanilla *logs* file is three tag
+    references (*logs_that_burn*, *crimson_stems*, *warped_stems*),
+    *logs_that_burn* nine references including *oak_logs*, *oak_logs* four
+    blocks — so *oak_logs* is a grandchild of *logs*, not a direct entry
+    (the old page said otherwise); `Registry.PendingTags.lookup` answers as
+    if installed; the client rebuilds its fuel table and creative search
+    tree on a play-phase tags packet; `Holder.Reference.is` is a
+    set-contains on the bound tag set; `FileToIdConverter.json` over the tag
+    directory. The diagram's five `Note over` bars (worker pool → server
+    thread → configuration → play → a server tick) are ordering claims.
+  - **`data-components`** (vocabulary). New: `DataComponentLookup` reads the
+    same bound prototypes and is meaningless before the first reload (check
+    that its lazy population reads `Holder.components`); "set the
+    enchantments back to empty and the entry vanishes" (a worked instance of
+    the sanitising rule); `ItemStack.set` is `PatchedDataComponentMap.set`;
+    the cast's thread cells. The figure asserts prototype on
+    `Holder.Reference` ← `DataComponentInitializers.build`, stack = shared
+    prototype + `Optional` patch + `copyOnWrite`; the trace asserts click →
+    `transmuteCopy` → `enchant` → `set` → `ensureMapOwnership` → the next
+    `ServerPlayer.tick`'s `broadcastChanges` → `ClientboundContainerSetSlotPacket`
+    → `fromPatch`.
+  - **`text-components`** (new, vocabulary; every claim is new). The hook:
+    the death message is sent twice (`ClientboundPlayerCombatKillPacket` to
+    the victim, system chat to everyone — verified by the session from
+    `ServerPlayer.die`; a team visibility of `NEVER` broadcasts nothing,
+    which the page does not say), crosses as a translation key, and is
+    worded by the client's `Language` on the first frame that draws it; the
+    server logs it through `Language.DEFAULT_INSTANCE` and `Language.inject`
+    is called only by `LanguageManager` (verified). The rest of the page —
+    the visit order, `getString` with a limit, `TranslatableContents.decompose`'s
+    accepted specifiers and its cache by `Language` identity, the keybind
+    resolver, the three unresolved kinds, `ObjectContents`' U+FFFC
+    placeholder, the eleven `Style` fields and `applyTo`, `TextColor`,
+    `shadowColor`, the eight click actions table (`UNSAFE_CODEC` read by
+    nothing outside the enum; `OpenFile` built only by `Screenshot`,
+    `KeyboardHandler` and `Minecraft`), the flat serialisation (never a
+    *type* key on encode), the two NBT budgets and which packets use which
+    stream codec, the resolution walk and its depth limit, the death-message
+    key rules (`.player`, `.item`, `FALL_VARIANTS`, `INTENTIONAL_GAME_DESIGN`),
+    `Entity.getDisplayName`'s shape, the `even_more_magic` fallback,
+    `ClientLanguage.loadFrom`'s two-code stack — is one claim per sentence,
+    each with a file in the agent's report; two the agent flagged as
+    unverified: "merged in stack order" (which end of the pack stack wins
+    for language files) and that the dedicated server jar bundles
+    *en_us.json*.
+  - **`data-driven-types`** (new, pattern; every claim is new). The count
+    — **fifty-six** registries in `BuiltInRegistries` that some codec
+    dispatches on through `Registry.byNameCodec`: thirty-one bare
+    `MapCodec` registries, twenty-three type-object registries, two where
+    the type is the behaviour (`Feature`, `WorldCarver`) — was derived by
+    grepping dispatch sites; re-derive it. The three tables' *where the
+    elements live* and dispatch-key columns (*function*, *condition*,
+    *processor_type*, *predicate_type*, *element_type*, *trigger*) are one
+    claim per row. The trace asserts the reload half
+    (`ReloadableServerResources.loadResources` → `ReloadableServerRegistries.reload`
+    on the background executor; `scanDirectory` via `FileToIdConverter.registry`
+    over `Registries.elementsDirPath`; a bad file logged and skipped, a
+    duplicate id an error; `LootItemFunctions.compose`; `createUpdatedRegistries`
+    → `replaceFrom`; validation warns and keeps the element;
+    `Lifecycle.experimental`) and the run half (`RandomizableContainerBlockEntity.getItem`
+    → `unpackLootTable` → `LootTable.EMPTY` for an unknown key; `fill` →
+    `getRandomItems` → `shuffleAndSplitItems`; `decorate` nesting table →
+    pool → entry, "a function on the table runs last"; `LootItem.createItemStack`
+    → `LootItemConditionalFunction.apply` → `SetItemCountFunction.run`).
+    The exceptions section: `Codec.dispatchedMap` for `GameRuleMap` and
+    `DataComponentPredicate`; `ENTITY_SUB_PREDICATE_TYPE` holds a plain
+    `Codec`; `RECIPE_TYPE` versus `RECIPE_SERIALIZER`; `BLOCK_TYPE` read by
+    nothing but `BlockListReport`; `RegistryDataLoader` fails the whole
+    load where `scanDirectory` skips one file.
+  - **`systems/foundations/README.md`** (new, landing page): the stack
+    figure's ten edges are dependency claims; *before you start* names only
+    `anatomy`; the seven teasers restate the seven hooks.
+  - **`chat-and-signing`**: its `Component` section is now a one-paragraph
+    pointer; the three facts it keeps (NBT on the wire, the `OPEN_FILE`
+    filter, chat never resolves) are unchanged. **`reference/threads.md`**:
+    one clause added — Swing's thread appears only when the dedicated
+    server is started without *--nogui*. **`tools/map_source.py`**:
+    `com/mojang/blaze3d/audio` added to `SKIPPED` so the treemap hatches
+    what the tour tours.
+
 - **2026-09-02, session A (the frame)** — two pilot pages rewritten in new
   shapes, the introduction and Part I's landing page written, the lane key
   seeded. The standing item on the lane key is discharged:

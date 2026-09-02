@@ -80,8 +80,10 @@ drawn from. It is the "where is everything" answer a newcomer wants before
 any system page makes sense.
 
 **Reference** is looked up. Every packet, registry, data component, game
-rule and thread, a class index that answers "which page talks about
-`ChunkMap`", and the [diagram lanes](reference/lanes.md). The rule for what
+rule and thread, the coordinate spaces and the random sources, the
+[glossary](reference/glossary.md), the [naming drift](reference/naming-drift.md)
+table, a class index that answers "which page talks about `ChunkMap`", and
+the [diagram lanes](reference/lanes.md). The rule for what
 belongs here is *would a viewer pause the video to read this*.
 
 For agents, the whole site is one file:
@@ -102,7 +104,7 @@ decompile uses. Fabric's Yarn names differ; where a modder would not
 recognise a class under its official name, the Yarn name is noted once.
 Names have moved since 1.21 — `Identifier` was *ResourceLocation*,
 `Lightmap` was *LightTexture*, `DeltaTracker` was *Timer* — and the
-[naming drift](systems/appendix/naming-drift.md) table is the list.
+[naming drift](reference/naming-drift.md) table is the list.
 
 **Newest version only.** Every page says what it was verified against, and
 it is one version: 26.2. There are no version-difference sections and no
@@ -121,10 +123,10 @@ then. Never line-level. Code makes boring video and dates fast.
 
 Save migration (the `util/datafix` tree, which is version-difference code by
 definition), Realms, telemetry, the profiler, the management server, RCON,
-the data generators, the game-test harness and a few packages nobody will
-recognise are all in the jar and not in the parts. The
-[out-of-scope tour](systems/appendix/out-of-scope-tour.md) draws that
-boundary honestly — what each thing is, how big, whether the dedicated
+the data generators and a few packages nobody will
+recognise are all in the jar and not in the parts.
+[What this book skips](systems/anatomy/what-this-book-skips.md), the closing
+page of Part I, draws that boundary honestly — what each thing is, how big, whether the dedicated
 server ships it, and the two or three class names to start at if you need
 it anyway — so a viewer knows the edge of the map before investing in
 thirteen parts.

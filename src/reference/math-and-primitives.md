@@ -1,6 +1,6 @@
 # Math and primitives
 
-> Verified against **Minecraft 26.2** · Part II · The coordinate spaces, geometry and randomness every other page assumes. No trace — a table of who owns which space.
+> Verified against **Minecraft 26.2** · Reference · The coordinate spaces, geometry and randomness every system page assumes — looked up, not watched.
 
 ## Responsibility
 

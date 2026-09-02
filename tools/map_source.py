@@ -47,6 +47,7 @@ SKIPPED = (
     "net/minecraft/client/telemetry", "net/minecraft/client/data", "net/minecraft/data",
     "net/minecraft/server/jsonrpc", "net/minecraft/server/rcon",
     "com/mojang/realmsclient", "net/minecraft/realms", "net/minecraft/stats", "net/minecraft/gizmos",
+    "com/mojang/blaze3d/audio",
     "net/minecraft/references",
 )
 

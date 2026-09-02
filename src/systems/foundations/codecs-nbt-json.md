@@ -2,297 +2,389 @@
 
 > Verified against **Minecraft 26.2** · Part II · One `ItemStack` written four ways: into a chest's chunk file, into a container packet, as a checksum in a click, and out of the text of a `/give`.
 
-## Responsibility
+A player types `/give @s diamond_sword[damage=5]`, drops the sword into a
+chest, logs out, comes back and clicks the slot. In those few seconds the
+same sword has been written four times into four different shapes: parsed
+out of the square brackets, written into the chunk file the chest lives in,
+sent down a socket as bytes, and sent back up when the slot was clicked.
+The fourth is the one worth stopping on. **The click carries no item data at
+all.** For each component on the sword it sends one 32-bit checksum,
+produced by running that component's own codec into a `DynamicOps` whose
+output is a hash rather than a document — `HashOps`. And it is the same
+codec every time. The codec that hashed the damage value is the codec that
+wrote it into the chunk file and the codec that parsed it out of the square
+brackets. One description of a type, and the format is an argument.
 
-Minecraft serialises through one abstraction and several wire shapes. The
-abstraction is DataFixerUpper's `Codec`: a description of a type that can
-encode to or decode from *any* format given a `DynamicOps` for it. The
-formats the game actually uses are **NBT** (`NbtOps`, the binary tree on
-disk and the text form SNBT that commands use), **JSON** (`JsonOps`, the
-data packs), and two curiosities the game supplies itself — `HashOps`, which
-"encodes" to a checksum, and `NullOps`, which encodes to nothing. Packets
-are the exception: they mostly do not go through a codec at all but through
-a `StreamCodec`, hand-laid bytes on a Netty `ByteBuf`, because a packet is
-written once, read once, and must be small.
+## The cast
 
-The one sentence a player recognises: *the thing in square brackets after an
-item name in `/give` is the same data that ends up in the chunk file.*
+| class | what it decides | thread |
+|---|---|---|
+| `Codec` | DataFixerUpper's description of a type: encode to and decode from *any* format, given the ops for it | any |
+| `DynamicOps` | what a format's map, list, string and number are made of — the argument a codec takes | any |
+| `NbtOps` | tags: the binary tree on disk, and what SNBT text parses into | any |
+| `RegistryOps` | the registry lookup a `Holder`-valued codec needs, wrapped around another ops | any |
+| `HashOps` | the format whose finished document is a hash; nothing is serialised on the way | Render on the client, Server on the comparison |
+| `StreamCodec` | the exception: hand-laid bytes on a Netty `ByteBuf`, written once, read once | Netty |
+| `TagValueOutput` · `TagValueInput` | the only `ValueOutput` and `ValueInput` there are — a `CompoundTag` plus its ops, and what save code actually sees | whichever thread saves |
+| `ProblemReporter` | that a codec failure inside a save is a logged path, not an exception in the tick | the failing thread |
 
-## The data it owns
+All of it ships in both jars.
 
-- **Codecs** (external, in com.mojang.serialization; the game adds
-  `ExtraCodecs` in `net/minecraft/util`, nearly a thousand lines of them).
-  `ExtraCodecs.intRange`, `ExtraCodecs.nonEmptyList`,
-  `ExtraCodecs.optionalAlwaysPresentFieldOf` and friends are the vocabulary
-  most game codecs are built from. A codec that names an entry of a
-  **dynamic** registry — `RegistryFileCodec`, `RegistryFixedCodec`,
-  `HolderSetCodec` — needs a `RegistryOps` (`net/minecraft/resources`), a
-  `DelegatingOps` carrying a `RegistryOps.RegistryInfoLookup`;
-  `HolderLookup.Provider.createSerializationContext` is how most callers make
-  one, and `RegistryDataLoader.createContext` is the other way, used during
-  registry loading itself. A codec over a **built-in** registry
-  (`Registry.holderByNameCodec`, and so `Item.CODEC`) resolves against the
-  registry instance captured inside it and works fine on bare
-  `NbtOps.INSTANCE` — the distinction matters, because it decides which
-  paths must build a context first.
-- **NBT** (`net/minecraft/nbt`). `Tag` is a **sealed** interface: `CompoundTag`,
-  `CollectionTag` (`ListTag`, `ByteArrayTag`, `IntArrayTag`, `LongArrayTag`),
-  `PrimitiveTag` (`StringTag` and the six `NumericTag` records) and
-  `EndTag`. The **scalar** leaves are records — `StringTag` and the numerics;
-  `CompoundTag`, `EndTag` and the array tags are final classes and `ListTag`
-  is a list. `TagType` and `TagTypes` are the per-type read strategy every
-  binary load goes through, and where the accounter is charged;
-  `NbtException` and its siblings are what a malformed read raises.
-  `NbtIo` reads and writes streams and files (`NbtIo.readCompressed`,
-  `NbtIo.writeCompressed` are GZIP); `NbtAccounter` is the read-side
-  byte-and-depth budget every untrusted read carries
-  (`NbtAccounter.DEFAULT_NBT_QUOTA` 2 MiB,
-  `NbtAccounter.UNCOMPRESSED_NBT_QUOTA` 100 MiB, and a depth cap of
-  `NbtAccounter.MAX_STACK_DEPTH`); `NbtOps.INSTANCE` is the `DynamicOps` over
-  tags, and `NbtOps.convertTo` is the bridge to any other format.
-  `TagParser` parses SNBT and is generic over the *output* ops, so text can
-  decode straight into a registry-aware context; `SnbtGrammar` is the packrat
-  grammar behind it, `SnbtOperations` the built-in `bool(...)` and `uuid(...)`
-  functions. `StringTagVisitor` and `SnbtPrinterTagVisitor` print;
-  `TextComponentTagVisitor` colours for `/data`.
-- **The save façade** (`world/level/storage`). `ValueOutput` and
-  `ValueInput` are what a `BlockEntity` or `Entity` writes to and reads
-  from: `ValueOutput.store` with a codec, `ValueOutput.child`,
-  `ValueOutput.list` (returning a `ValueOutput.TypedOutputList`), and typed
-  getters with defaults on the input side (`ValueInput.getIntOr`,
-  `ValueInput.getStringOr`). The only implementations are `TagValueOutput`
-  and `TagValueInput`, which wrap a `CompoundTag` plus a `DynamicOps`, with
-  `ValueInputContextHelper` holding the shared provider and the empty
-  instances. Every encode or decode failure is *reported*, not thrown,
-  through a `ProblemReporter` — `ProblemReporter.ScopedCollector` logs the
-  collected tree of problems on close, rooted at `BlockEntity.problemPath`
-  or `Entity.problemPath`.
-- **Stream codecs** (`net/minecraft/network/codec`, `net/minecraft/network`). `StreamCodec` pairs a
-  `StreamEncoder` and a `StreamDecoder`; `StreamCodec.composite` builds one
-  from up to twelve field codecs. `ByteBufCodecs` is the catalogue of
-  primitives (`ByteBufCodecs.VAR_INT`, `ByteBufCodecs.STRING_UTF8`,
-  `ByteBufCodecs.COMPOUND_TAG`, `ByteBufCodecs.TRUSTED_COMPOUND_TAG` …) and
-  bridges: `ByteBufCodecs.fromCodec` and
-  `ByteBufCodecs.fromCodecWithRegistries` (plus their `…Trusted` variants)
-  send NBT built by a `Codec`, `ByteBufCodecs.lenientJson` sends JSON text,
-  and `ByteBufCodecs.registry`, `ByteBufCodecs.holder`,
-  `ByteBufCodecs.holderSet` send registry ids. `FriendlyByteBuf` wraps a
-  `ByteBuf` with varints, strings, NBT, identifiers and positions;
-  `RegistryFriendlyByteBuf` adds `RegistryFriendlyByteBuf.registryAccess`,
-  and exists only in the play phase — `RegistryFriendlyByteBuf.decorator` is
-  bound when the protocol switches from configuration to play.
-  `IdDispatchCodec` is the packet-id table itself.
+## The four paths, side by side
 
-All of this ships in both jars.
+|  | into the chunk file | onto the wire | back as a checksum | out of the text |
+|---|---|---|---|---|
+| **who starts it** | `ChestBlockEntity.saveAdditional`, inside chunk serialisation | `ClientboundContainerSetSlotPacket`, from `AbstractContainerMenu.broadcastChanges` | `MultiPlayerGameMode.handleContainerInput`, on the click | `GiveCommand` through `ItemArgument` |
+| **the ops** | `RegistryOps` over `NbtOps` | none — a `RegistryFriendlyByteBuf` and nothing else | `RegistryOps` over `HashOps.CRC32C_INSTANCE` | `RegistryOps` over `NbtOps`, held by a `TagParser` |
+| **the codec** | `ItemStack.MAP_CODEC`, inside `ItemStackWithSlot.CODEC` | `ItemStack.OPTIONAL_STREAM_CODEC` | each component's own codec, through `TypedDataComponent.encodeValue` | `DataComponentType.codecOrThrow`, one component at a time |
+| **what is carried** | a document — *id*, *count*, *components* | a count, an item id, then a `DataComponentPatch` | one int per added component, and the bare names of the removed ones | SNBT text, then a `Tag` |
+| **the thread** | Server, then an IO worker for the file itself | Netty | Render on the client, Server on the comparison | Server |
+| **when it fails** | a problem is recorded on a `ProblemReporter` and logged when the scope closes | the decoder throws, `Connection.exceptionCaught` sees it, and the connection drops | the hash disagrees, and the server sends the slot back | a `CommandSyntaxException` with the cursor position in it |
 
-## When it runs
+Four columns, four diagrams. Read them as four answers to the same question.
 
-Codecs run wherever data is: the **server thread** for saves initiated by
-the tick (`BlockEntity.saveWithFullMetadata` inside chunk serialisation,
-`PlayerDataStorage.save`), the **worker pool** for `SerializableChunkData.write`
-and for data-pack JSON decoding in reload listeners and registry load tasks,
-the **IO workers** for `NbtIo.write` into region files, and the **Netty
-threads** for every `StreamCodec` in `PacketEncoder` and `PacketDecoder`.
-Nothing here has a tick of its own.
-
-## The trace: one `ItemStack`, four ways
+### Disk: a chest writes a list of slots
 
 ```mermaid
 sequenceDiagram
-    participant CBE as ChestBlockEntity (server thread)
+    participant CBE as ChestBlockEntity
+    participant CHelp as ContainerHelper
     participant TVO as TagValueOutput
-    participant CH as ContainerHelper
-    participant MC as ItemStack.MAP_CODEC
-    participant NIO as NbtIo (IO worker)
-    participant PE as PacketEncoder (Netty)
-    participant DCP as DataComponentPatch
-    participant HS as HashedStack (client)
-    participant IP as ItemParser (server thread)
-    participant TP as TagParser
+    participant NbtIo as NbtIo
 
-    Note over CBE,NIO: (a) to disk
-    CBE->>TVO: saveWithFullMetadata → createWithContext(ProblemReporter, registries) — a RegistryOps over NbtOps
-    CBE->>CH: saveAdditional → saveAllItems(output, items)
-    CH->>TVO: list("Items", ItemStackWithSlot.CODEC) → TypedOutputList.add per slot
-    TVO->>MC: encode — "id" (Item.CODEC_WITH_BOUND_COMPONENTS), "count", "components" (DataComponentPatch.CODEC)
-    TVO->>CBE: buildResult → CompoundTag#59; ScopedCollector.close logs any problem
-    CBE->>NIO: SerializableChunkData → RegionFileStorage.write → NbtIo.write
-    Note over PE,DCP: (b) to the wire
-    PE->>DCP: ItemStack.OPTIONAL_STREAM_CODEC — varint count (non-positive = empty), Item.STREAM_CODEC id, then DataComponentPatch.STREAM_CODEC
-    DCP->>PE: varint added, varint removed, each (type id, value via DataComponentType.streamCodec), then removed ids
-    Note over HS,HS: (c) back from the client, as checksums
-    HS->>HS: ServerboundContainerClickPacket — item, count, and a HashedPatchMap of CRC32C per component via HashOps
-    Note over IP,TP: (d) from text
-    IP->>TP: /give … [damage=5] → TagParser.create(registryOps).parseAsArgument — SNBT straight into Tag
-    IP->>IP: DataComponentType.codecOrThrow.parse(registryOps, tag) → DataComponentPatch.Builder → ItemInput.createItemStack
+    Note over CBE: the server thread, inside chunk serialisation
+    CBE->>TVO: saveWithFullMetadata, createWithContext with a ProblemReporter and the registries
+    CBE->>CHelp: saveAdditional hands the ValueOutput straight on
+    CHelp->>TVO: list Items with ItemStackWithSlot.CODEC, one entry per occupied slot
+    TVO->>TVO: ItemStack.MAP_CODEC writes id, count and components
+    TVO-->>CBE: buildResult gives a CompoundTag, and ScopedCollector.close logs any problem
+    Note over NbtIo: an IO worker, later
+    CBE->>NbtIo: SerializableChunkData through RegionFileStorage.write
 ```
 
-Narrated:
-
-**(a) Disk.** `ItemStack` has no NBT method; there is no *save* or *parse*
-on it. `ChestBlockEntity.saveAdditional` receives a `ValueOutput` and calls
-`ContainerHelper.saveAllItems`, which opens a typed list under "Items" with
-`ItemStackWithSlot.CODEC` — a record of slot plus the stack's `ItemStack.MAP_CODEC`
-fields inlined. That map codec writes "id", "count" (defaulting to 1 via
-`ExtraCodecs.optionalAlwaysPresentFieldOf`) and "components"
-(`DataComponentPatch.CODEC`, removals as `!minecraft:foo`). The
-`TagValueOutput` was created by the final shell `BlockEntity.saveWithFullMetadata`
-with `TagValueOutput.createWithContext`, so the ops are a `RegistryOps`.
-The three save shells differ only in metadata: `BlockEntity.saveCustomOnly`
-adds none, `BlockEntity.saveWithoutMetadata` adds the block entity's own
-"components" (`DataComponentMap.CODEC`), `BlockEntity.saveWithId` adds the
-id, and `BlockEntity.saveWithFullMetadata` adds id, x, y and z. The result
-joins the chunk's "block_entities", `NbtUtils.addCurrentDataVersion` stamps
-the data version, and an IO worker writes it through `RegionFileStorage.write`
-with `NbtIo.write`. Load is the mirror: `BlockEntity.loadStatic` reads "id",
+`ItemStack` has no NBT method — there is no *save* and no *parse* on it.
+`ChestBlockEntity.saveAdditional` receives a `ValueOutput` and calls
+`ContainerHelper.saveAllItems`, which opens a typed list under *Items* with
+`ItemStackWithSlot.CODEC`, a record of slot plus the stack's own
+`ItemStack.MAP_CODEC` fields inlined. That map codec writes *id*, *count*
+(defaulting to 1) and *components*, the last being
+`DataComponentPatch.CODEC`, which spells a removal as *!minecraft:foo*.
+`NbtUtils.addCurrentDataVersion` stamps the data version on the way out.
+Load is the mirror: `BlockEntity.loadStatic` reads the id,
 `ChestBlockEntity.loadAdditional` calls `ContainerHelper.loadAllItems` over
 `ValueInput.listOrEmpty`.
 
-**(b) Wire.** `ClientboundContainerSetSlotPacket` encodes the stack with
-`ItemStack.OPTIONAL_STREAM_CODEC`: a varint count where anything non-positive
-means empty and nothing else follows; `Item.STREAM_CODEC` (a registry id,
-resolvable because the buffer is a `RegistryFriendlyByteBuf`); then
-`DataComponentPatch.STREAM_CODEC`. `ItemStack.STREAM_CODEC` is the same but
-refuses an empty stack. Serverbound is different:
+### Wire: a count, an id and a patch
+
+```mermaid
+sequenceDiagram
+    participant PEnc as PacketEncoder
+    participant IStack as ItemStack
+    participant DCP as DataComponentPatch
+    participant PDec as PacketDecoder
+
+    Note over PEnc: Netty, clientbound
+    PEnc->>IStack: OPTIONAL_STREAM_CODEC, a varint count where anything non-positive means empty
+    IStack->>DCP: Item.STREAM_CODEC for the id, then STREAM_CODEC for the patch
+    DCP->>PEnc: added count, removed count, each type id with its value, then the removed ids
+    Note over PDec: Netty, serverbound, the creative slot alone
+    PDec->>IStack: validatedStreamCodec over OPTIONAL_UNTRUSTED_STREAM_CODEC
+    IStack->>IStack: re-encode through ItemStack.CODEC into NullOps, keeping only the errors
+```
+
+Nothing on this path is a `Codec`. `ItemStack.OPTIONAL_STREAM_CODEC` writes
+a varint count where anything non-positive means empty and nothing else
+follows, then a registry id that resolves because the buffer is a
+`RegistryFriendlyByteBuf`, then `DataComponentPatch.STREAM_CODEC`.
+`ItemStack.STREAM_CODEC` is the same codec that refuses an empty stack.
+Serverbound is a different animal:
 `ServerboundSetCreativeModeSlotPacket` uses `ItemStack.validatedStreamCodec`
 over `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC`, where
 `DataComponentPatch.DELIMITED_STREAM_CODEC` length-prefixes every component
-value and the decoded stack is then *re-encoded* through `ItemStack.CODEC`
-into `NullOps` — output discarded, only the errors kept — to prove the
-persistent codec would accept it. Everything here runs on a Netty thread
-inside `PacketEncoder` and `PacketDecoder`.
+value, and the decoded stack is then re-encoded through `ItemStack.CODEC`
+into `NullOps` — output thrown away, only the errors kept — to prove that
+the persistent codec would have accepted it.
 
-**(c) Checksums.** The ordinary container click does not send components at
-all. `ServerboundContainerClickPacket` carries a `HashedStack`, whose
-`HashedPatchMap` is one CRC32C per component, produced by running the
-component's own codec into `HashOps` — a `DynamicOps` whose output is a hash
-rather than a document. The server compares hashes against what it last sent.
-This is the fourth serialisation of the same object and the one that carries
-no data; [data-components](data-components.md) owns what the server does with
-it.
+### Checksum: a hash instead of a stack
 
-**(d) Text.** `GiveCommand` asks `ItemArgument` for an `ItemInput`.
-`ItemParser` holds a `RegistryOps` over `NbtOps.INSTANCE` and a `TagParser`
-created *for that ops*, so `[damage=5]` is parsed by `TagParser.parseAsArgument`
-directly into a `Tag`, then each component's `DataComponentType.codecOrThrow`
-parses it — the same codec the chunk file used — into a
-`DataComponentPatch.Builder`. Data packs are the JSON twin:
+```mermaid
+sequenceDiagram
+    participant CPL as ClientPacketListener
+    participant HS as HashedStack
+    participant ACM as AbstractContainerMenu
+
+    Note over CPL: the client, once, when configuration ends
+    CPL->>CPL: createSerializationContext over HashOps.CRC32C_INSTANCE, a RegistryOps whose document is a hash
+    Note over HS: the render thread, on the click
+    CPL->>HS: create, one int per added component through TypedDataComponent.encodeValue
+    HS->>ACM: ServerboundContainerClickPacket, the changed slots and the cursor
+    Note over ACM: the server thread, after the click has been re-run
+    ACM->>ACM: RemoteSlot.Synchronized re-hashes the server's own stack and compares
+```
+
+`HashOps` is a `DynamicOps` like any other, and a codec cannot tell the
+difference: it builds maps and lists and strings as usual, and what comes
+back at the end is a hash code rather than a tree. There is no intermediate
+byte form to hash. Only one instance is ever built,
+`HashOps.CRC32C_INSTANCE`, and **both sides wrap it in a `RegistryOps`** —
+`ClientPacketListener` builds one from the registries it received during
+configuration, `ServerPlayer` from the server's own — because a component
+value can name a registry entry, and a hash of an unresolvable name is no
+hash at all. The server's is behind a 256-entry cache keyed on the
+`TypedDataComponent`, so the common components are hashed once per player
+and then looked up. Removals are not hashed: `HashedPatchMap` is a map of
+added component type to int plus a plain set of removed types. What the
+server does with the comparison — the either-or in
+`RemoteSlot.Synchronized`, and the promotion to a concrete stack when the
+hash agrees — is [containers and menus](../items/containers-and-menus.md).
+
+### Text: square brackets into a `Tag`
+
+```mermaid
+sequenceDiagram
+    participant IP as ItemParser
+    participant TagP as TagParser
+
+    Note over IP: the server thread, while Brigadier parses the command line
+    IP->>TagP: create, over this parser's own RegistryOps on NbtOps
+    IP->>TagP: parseAsArgument at the opening bracket
+    TagP-->>IP: a Tag, read no further than its own closing brace
+    IP->>IP: DataComponentType.codecOrThrow parses that Tag into a DataComponentPatch.Builder
+```
+
+`ItemArgument` hands `GiveCommand` an `ItemInput`, and `ItemParser` is what
+builds it. The parser holds a `RegistryOps` over `NbtOps.INSTANCE` and a
+`TagParser` created *for that ops*, so `[damage=5]` becomes a `Tag` and
+then goes through the very codec the chunk file used, reached by
+`DataComponentType.codecOrThrow`. A leading `ItemParser.SYNTAX_REMOVED_COMPONENT`
+is the command-line spelling of the same removal the disk codec writes.
+Data packs are the JSON twin of this path:
 `SimpleJsonResourceReloadListener.scanDirectory` takes whatever
-`DynamicOps` it is handed (registry-aware or bare) and parses with
-`StrictJsonParser`; an `ItemStack` in a loot table goes through
-`ItemStack.CODEC` exactly as on disk. One codec, many formats.
+`DynamicOps` it is handed, registry-aware or bare, and an `ItemStack` in a
+loot table goes through `ItemStack.CODEC` exactly as it does on disk.
 
-## Interfaces
+## One abstraction, and the ops that are not formats
 
-- **Called by:** every `BlockEntity` and `Entity` save (`BlockEntity.saveAdditional`,
-  `BlockEntity.loadAdditional`, `Entity.saveWithoutId`, `Entity.load`),
-  `PlayerDataStorage`, `LevelStorageSource` for `level.dat`, `SavedDataStorage`
-  via `SavedDataType`, `CommandStorage`; every packet's static stream codec;
-  every command argument that parses NBT (`CompoundTagArgument`,
-  `NbtTagArgument`, `NbtPathArgument`, `ItemArgument`).
-- **Calls into:** registries for `RegistryOps`
-  ([identifiers-and-registries](identifiers-and-registries.md)); the
-  component types for their codecs ([data-components](data-components.md));
-  the resource system for files ([resource-system](resource-system.md)).
-- **Crosses the network as:** everything — but in four shapes. Structured
-  data is `StreamCodec` fields. Opaque data is NBT, through
-  `ByteBufCodecs.COMPOUND_TAG` or a `ByteBufCodecs.fromCodec` bridge.
-  **JSON text** survives in exactly two places, both outside the play phase:
-  `ClientboundStatusResponsePacket` and `ClientboundLoginDisconnectPacket`,
-  which is why the game ships two JSON parsers — `LenientJsonParser` for the
-  wire, `StrictJsonParser` for data packs. And a codec can reach the wire as
-  a bare integer through `HashOps`.
-- **Data-driven by:** nothing; this is the layer the data goes through.
-  The save format's *migration* is `DataFixTypes` — the enum of every kind
-  of file the game owns (`DataFixTypes.CHUNK`, `DataFixTypes.PLAYER`, `DataFixTypes.LEVEL`, `DataFixTypes.OPTIONS` …), each
-  calling `DataFixTypes.updateToCurrentVersion` on the DFU `DataFixer` from
-  `DataFixers.getDataFixer` before the codec sees the tag. The fixes
-  themselves (`util/datafix`) are out of scope by rule 3.
+A `Codec` is a description of a type and nothing else; it does not know
+what it is writing into. The format is the `DynamicOps` handed to it at the
+call, so the same object describes NBT on disk, JSON in a data pack, and
+SNBT typed at a command line. Most of the game's codecs are assembled from
+the combinators in `ExtraCodecs`, a thousand lines of vocabulary in
+`net/minecraft/util`; the [class index](../../reference/class-index.md) is
+where to look one of them up.
 
-## Invariants and surprises
+Two of the four ops in the table above are not formats at all. `HashOps`
+answers every question a codec asks and returns a checksum instead of a
+document. `NullOps` returns `Unit`: it encodes to nothing, and exists so
+that a codec can be *run for its errors alone*, which is exactly what
+`ItemStack.validatedStreamCodec` does to a creative-mode stack.
 
-- **`Tag` is sealed and the scalar leaves are records.** `IntTag` is a record
-  of one int; the old *getAsInt* family is gone and `Tag.asInt`, `Tag.asString`
-  etc. return `Optional`. On `CompoundTag`, `CompoundTag.getInt` is
-  `Optional` and `CompoundTag.getIntOr` is the defaulted form;
-  `CompoundTag.get` is still nullable; the two-argument *contains* with a
-  type id no longer exists.
-- **Save code never sees a `CompoundTag`.** `BlockEntity.saveAdditional`
-  and `Entity` take `ValueOutput`; the `CompoundTag`-returning methods on
-  `BlockEntity` are final shells that build a `TagValueOutput`. A codec
-  failure inside a save is a logged problem path, never an exception in the
-  tick — `TagValueOutput.EncodeToFieldFailedProblem` and its siblings. The
-  named exceptions are `CustomData` and `TypedEntityData`, the components
-  that deliberately carry a `CompoundTag` verbatim so data packs have an
-  escape hatch.
-- **Registry context is not optional in practice.**
-  `TagValueOutput.createWithoutContext` exists and is called by nothing at
-  all; there is no context-free `ValueInput` even in principle. Almost every
-  real codec resolves a dynamic-registry `Holder` somewhere.
-- **A mixed-type `ListTag` is boxed on the way out.** Binary NBT stores one
-  element type per list, so `ListTag.write` promotes a heterogeneous list to
-  compounds and wraps each element in a one-entry compound under the empty
-  key; `ListTag.addAndUnwrap` is the exact inverse on read. The wrapper is
-  not a legacy artefact — it is written today, and it is the whole reason
-  mixed lists are legal.
-- **`NbtOps` list collectors start specialised.** A list of bytes, ints or
-  longs is collected into a `ByteArrayTag`, `IntArrayTag` or `LongArrayTag`
-  and only degrades to a generic `ListTag` on the first mismatched element —
-  so a homogeneous numeric list on disk is an array tag, not a list of
-  numeric tags.
-- **`TagParser` is generic over its output.** SNBT can decode into any
-  `DynamicOps` target without going through a `CompoundTag` first;
-  `TagParser.parseCompoundFully` is the plain-string entry point.
-  `TagParser.FLATTENED_CODEC` accepts an SNBT **string** only; the codec that
-  takes a string *or* an object interchangeably is
-  `TagParser.LENIENT_CODEC`, built as an alternative of the two.
-- **"Trusted" means the server wrote it, not that it is clientbound.** The
-  live distinction is `ByteBufCodecs.TRUSTED_COMPOUND_TAG` (an unlimited
-  accounter, used for block-entity update payloads, chat components and
-  dialogs) against plain `ByteBufCodecs.COMPOUND_TAG` (the 2 MiB default,
-  used for `CustomData` and predicates). `ByteBufCodecs.TRUSTED_TAG` exists
-  and has no call sites at all; do not build a mental model on it.
-- **Serverbound defence is layered, not singular.** Full re-validation
-  through `ItemStack.validatedStreamCodec` is unique to the creative-mode
-  slot. `ServerboundCustomClickActionPacket` builds its own, much tighter
-  `NbtAccounter` and length-prefixes the payload. And the ordinary container
-  click sends no component data at all, only hashes.
-- **`RegistryFriendlyByteBuf` is a play-phase decorator.** Configuration
-  packets have no registry context, which is why registry data and tags
-  are sent as NBT and ids in that phase (`RegistrySynchronization` is the
-  concrete case) and why `ByteBufCodecs.holder` codecs are play-only.
-- **Chat components are NBT on the wire.** `ComponentSerialization` is the
-  most-used codec in the game and carries the whole matrix in one class: a
-  JSON/NBT `Codec` for data, a registry-aware stream codec for play, trusted
-  and context-free stream variants, and a flat-size-restricted codec used
-  where a component arrives from a player.
-- **A whole file need not be read to answer a question about it.**
-  `StreamTagVisitor` and the `nbt/visitors` family (`CollectFields`,
-  `SkipFields`, `FieldSelector`, `FieldTree`, `CollectToTag`) let
-  `NbtIo.parse` pull two fields out of a region chunk without materialising
-  it — which is how the IO worker reads a chunk's data version, and how
-  `StructureCheck` and the world-list screen answer without loading worlds.
-- **Region compression is a global setting stamped per chunk.**
-  `RegionFileVersion.configure` sets one process-wide selection from
-  *region-file-compression*; a `RegionFile` captures it once for **writing**,
-  but every chunk carries its own version byte and reads honour that, so a
-  world can hold chunks in several compressions at once. `RegionFileVersion`
-  also knows GZIP, LZ4, none, and `RegionFileVersion.VERSION_CUSTOM`, the
-  marker meaning the chunk is too big and lives in its own external file.
-  `NbtIo.writeCompressed` (GZIP) is for standalone files like `level.dat`
-  and player data.
+`StreamCodec` is the genuine exception, and it is not a `Codec` at all.
+A `StreamCodec` pairs an encoder and a decoder over a `ByteBuf` directly,
+with `StreamCodec.composite` building one out of field codecs; the
+catalogue of primitives is `ByteBufCodecs`. A packet is written once, read
+once and must be small, so it gets hand-laid bytes rather than a document
+in some format. The two worlds meet at `ByteBufCodecs.fromCodec` and
+`ByteBufCodecs.fromCodecWithRegistries`, which run an ordinary `Codec` into
+NBT and put the tag on the wire, and at `IdDispatchCodec`, the packet-id
+table itself.
+
+## Where the registry context comes from
+
+A codec that names an entry of a **dynamic** registry cannot resolve it on
+its own. `RegistryFileCodec`, `RegistryFixedCodec` and `HolderSetCodec` all
+demand a `RegistryOps`, a `DelegatingOps` carrying a
+`RegistryOps.RegistryInfoLookup` beside whatever real ops it wraps. There
+are two ways to make one: `HolderLookup.Provider.createSerializationContext`,
+which is what nearly every caller uses, and `RegistryDataLoader.createContext`,
+used during registry loading itself, when the registries are still being
+built ([identifiers and registries](identifiers-and-registries.md)).
+
+A codec over a **built-in** registry is a different case:
+`Registry.holderByNameCodec` — and so `Item.CODEC` — resolves against the
+registry instance captured inside the codec, and works on bare
+`NbtOps.INSTANCE`. The distinction is not academic. It decides which paths
+must build a context before they can decode anything, and in practice
+almost every real path must: `TagValueOutput.createWithoutContext` exists
+and is called by nothing at all, and there is no context-free `ValueInput`
+even in principle.
+
+On the network the same context arrives as a decorator.
+`RegistryFriendlyByteBuf` adds `RegistryFriendlyByteBuf.registryAccess` to a
+`FriendlyByteBuf`, and `RegistryFriendlyByteBuf.decorator` is bound when the
+protocol switches from configuration to play. Configuration packets have no
+registry context — which is why registry data and tags are sent in that
+phase as NBT and ids, and why the `ByteBufCodecs.holder` family is play-only
+([protocol phases](../networking/protocol-phases.md)).
+
+## What NBT actually is
+
+`Tag` is a **sealed** interface, and the scalar leaves are records.
+
+| branch | members | notes |
+|---|---|---|
+| `CompoundTag` | — | a final class; the only keyed shape |
+| `CollectionTag` | `ListTag`, `ByteArrayTag`, `IntArrayTag`, `LongArrayTag` | the arrays are final classes, `ListTag` is a list |
+| `PrimitiveTag` | `StringTag` and the six `NumericTag` records | records of one value each |
+| `EndTag` | — | the terminator |
+
+Because the leaves are records, the old *getAsInt* family is gone:
+`Tag.asInt` and `Tag.asString` return `Optional`, `CompoundTag.getInt` is
+`Optional` and `CompoundTag.getIntOr` is its defaulted form,
+`CompoundTag.get` is still nullable, and the two-argument *contains* taking
+a type id no longer exists.
+
+Three things about the binary form surprise people.
+
+**A mixed-type list is boxed on the way out.** Binary NBT stores one
+element type per list, so `ListTag.write` promotes a heterogeneous list to
+compounds and wraps each element in a one-entry compound under the empty
+key, with `ListTag.addAndUnwrap` the exact inverse on read. This is not a
+legacy artefact left lying around — it is written today, and it is the whole
+reason mixed lists are legal at all.
+
+**A homogeneous numeric list is not a list.** `NbtOps`' list collectors
+start specialised: a list of bytes, ints or longs is collected into a
+`ByteArrayTag`, `IntArrayTag` or `LongArrayTag` and only degrades to a
+generic `ListTag` on the first mismatched element. So the arrays on disk are
+mostly not written as arrays by anyone — they are what a plain list of
+numbers becomes.
+
+**A whole file need not be read to answer a question about it.**
+`StreamTagVisitor` and the visitors beside it let `NbtIo.parse` pull two
+fields out of a region chunk without materialising the chunk — which is how
+an IO worker reads a chunk's data version, and how `StructureCheck` and the
+world-list screen answer without loading a world.
+
+Every read that came from outside carries a budget. `NbtAccounter` is
+charged as the per-type read strategy in `TagType` walks the stream, with
+`NbtAccounter.DEFAULT_NBT_QUOTA` at 2 MiB,
+`NbtAccounter.UNCOMPRESSED_NBT_QUOTA` at 100 MiB and a depth cap of
+`NbtAccounter.MAX_STACK_DEPTH`; overrunning any of them raises an
+`NbtException`. Region compression is a separate global:
+`RegionFileVersion.configure` sets one process-wide selection from
+*region-file-compression*, a `RegionFile` captures it once for **writing**,
+but every chunk carries its own version byte and reads honour that — so one
+world can hold chunks in several compressions at once.
+`RegionFileVersion.VERSION_CUSTOM` is the marker meaning a chunk grew too
+big and lives in its own external file, and `NbtIo.writeCompressed` (GZIP)
+is for the standalone files, *level.dat* and player data.
+
+The text form is `TagParser`, and it is generic over its *output* ops
+rather than producing tags: SNBT can decode straight into any format's
+target without a `CompoundTag` in between. `TagParser.parseCompoundFully`
+is the plain-string entry point; `TagParser.FLATTENED_CODEC` accepts an
+SNBT string only, and `TagParser.LENIENT_CODEC`, built as an alternative of
+the two, is the one that takes a string *or* an object interchangeably.
+Under it, `SnbtGrammar` is a packrat grammar and `SnbtOperations` supplies
+the built-in *bool* and *uuid* functions.
+
+## Save code never sees a `CompoundTag`
+
+`ValueOutput` and `ValueInput` are the façade every `BlockEntity` and
+`Entity` writes through — `ValueOutput.store` with a codec,
+`ValueOutput.child`, `ValueOutput.list`, and typed getters with defaults on
+the way back in (`ValueInput.getIntOr`, `ValueInput.getStringOr`). The only
+implementations are `TagValueOutput` and `TagValueInput`, which wrap a
+`CompoundTag` and a `DynamicOps`, with `ValueInputContextHelper` holding the
+shared provider and the empty instances. The `CompoundTag`-returning methods
+on `BlockEntity` are final shells that build one of these, and they differ
+only in how much metadata they add: `BlockEntity.saveCustomOnly` none,
+`BlockEntity.saveWithoutMetadata` the block entity's own *components* as a
+full `DataComponentMap`, `BlockEntity.saveWithId` the id, and
+`BlockEntity.saveWithFullMetadata` the id and x, y and z.
+
+The point of the façade is that **an encode failure is reported, not
+thrown**. Everything goes through a `ProblemReporter`, and
+`ProblemReporter.ScopedCollector` logs the whole collected tree of problems
+when it closes, rooted at `BlockEntity.problemPath` or `Entity.problemPath`;
+`TagValueOutput.EncodeToFieldFailedProblem` and its siblings are what a bad
+codec produces. A component that will not serialise costs you the component,
+not the tick. The deliberate exceptions to the façade are `CustomData` and
+`TypedEntityData`, the two components that carry a `CompoundTag` verbatim so
+that data packs have an escape hatch
+([data components](data-components.md)).
+
+Migration is the one thing that runs before any of this. `DataFixTypes` is
+the enum of every kind of file the game owns — `DataFixTypes.CHUNK`,
+`DataFixTypes.PLAYER`, `DataFixTypes.LEVEL`, `DataFixTypes.OPTIONS` and the
+rest — and each calls `DataFixTypes.updateToCurrentVersion` on the
+DataFixerUpper `DataFixer` from `DataFixers.getDataFixer` before the codec is
+shown the tag, using the data version `NbtUtils.addCurrentDataVersion`
+stamped when the file was written. The fixes themselves are out of scope
+here.
+
+## Trusted, untrusted and validated
+
+"Trusted" on this wire means *the server wrote it*, and it is a statement
+about the read budget, not about direction. `ByteBufCodecs.TRUSTED_COMPOUND_TAG`
+reads with an unlimited accounter and carries block-entity update payloads,
+chat components and dialogs; plain `ByteBufCodecs.COMPOUND_TAG` reads under
+the 2 MiB default and carries `CustomData` and predicates.
+`ByteBufCodecs.TRUSTED_TAG` also exists and has no call sites at all, so
+build no mental model on it.
+
+Serverbound defence is layered rather than singular, and the three layers
+sit on three different packets. Full re-validation through
+`ItemStack.validatedStreamCodec` is unique to the creative-mode slot.
+`ServerboundCustomClickActionPacket` builds its own, much tighter
+`NbtAccounter` and length-prefixes its payload. And the ordinary container
+click sends no component data at all, only the hashes above — the strongest
+defence of the three, because there is nothing to validate.
+
+JSON is the format with the smallest footprint. It is the data packs, and
+on the wire it survives in exactly two places, both outside the play phase:
+`ClientboundStatusResponsePacket` and `ClientboundLoginDisconnectPacket`,
+sent through `ByteBufCodecs.lenientJson`. That is why the game ships two
+JSON parsers — `LenientJsonParser` for the wire and `StrictJsonParser` for
+data packs. Chat text itself is NBT by the time it reaches the play phase:
+`ComponentSerialization` is the most-used codec in the game and holds the
+whole matrix in one class ([text components](text-components.md)).
+
+## Questions players ask
+
+**Why does an item look identical and not stack?** Because equality is
+prototype plus patch, and the patch is what these codecs round-trip. Two
+stacks that took different routes to the same components compare equal;
+one that kept a component the other dropped does not, however the tooltip
+reads.
+
+**Why can a data pack put arbitrary NBT on an item at all?** Because
+`CustomData` and `TypedEntityData` are components whose value *is* a
+`CompoundTag`, passed through verbatim. Everything else on a stack has a
+real codec and is checked by it.
+
+**Why does a corrupt item vanish instead of crashing the world?** Because
+the save façade reports rather than throws. The bad field becomes a problem
+on a `ProblemReporter` and is logged when the scope closes, and the chunk
+saves without it.
+
+**Why is a creative-mode item the one thing the server double-checks?**
+Because it is the only packet on which a client authors a whole stack.
+Everywhere else the client either receives stacks or asserts hashes about
+stacks the server already sent it.
+
+**Why does a `/give` accept the same square brackets a chunk file uses?**
+Because it is the same codec. `ItemParser` parses the text into a `Tag`
+with `TagParser` and hands that tag to `DataComponentType.codecOrThrow` —
+the codec `ItemStack.MAP_CODEC` reaches for when it writes *components* to
+disk.
+
+**Why can a world hold chunks in two different compressions?** Because the
+compression setting is captured per `RegionFile` for writing only, and every
+chunk stores the version byte it was written with. Reads honour the byte.
 
 ## Where to look
 
-`ExtraCodecs` · `RegistryOps` · `HolderLookup.Provider.createSerializationContext` ·
-`Tag` · `TagType` · `CompoundTag` · `ListTag` · `NbtIo` · `NbtAccounter` ·
-`NbtOps` · `HashOps` · `NullOps` · `TagParser` · `SnbtGrammar` ·
-`StreamTagVisitor` · `ValueOutput` · `ValueInput` · `TagValueOutput` ·
-`TagValueInput` · `ValueInputContextHelper` · `ProblemReporter` ·
-`BlockEntity` (the save shells) · `ContainerHelper` · `ItemStackWithSlot` ·
-`ItemStack` (the codec fields) · `StreamCodec` · `ByteBufCodecs` ·
-`ComponentSerialization` · `FriendlyByteBuf` · `RegistryFriendlyByteBuf` ·
-`PacketEncoder` · `ItemParser` · `DataFixTypes` · `RegionFileVersion`
+`Codec` · `DynamicOps` · `ExtraCodecs` · `RegistryOps` ·
+`HolderLookup.Provider.createSerializationContext` · `Tag` · `CompoundTag` ·
+`ListTag` · `NbtOps` · `NbtIo` · `NbtAccounter` · `TagParser` ·
+`StreamTagVisitor` · `HashOps` · `NullOps` · `ValueOutput` · `ValueInput` ·
+`TagValueOutput` · `ProblemReporter` · `BlockEntity` (the save shells) ·
+`ContainerHelper` · `ItemStackWithSlot` · `ItemStack` (the codec fields) ·
+`StreamCodec` · `ByteBufCodecs` · `RegistryFriendlyByteBuf` ·
+`PacketEncoder` · `HashedPatchMap` · `ItemParser` · `DataFixTypes` ·
+`RegionFileVersion`
 
 ---
 

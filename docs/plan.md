@@ -331,7 +331,7 @@ sidebar order.
   `reference/threads.md`. This session builds the figure pipeline
   (`{{#include}}`, theming through `custom.css`) every later session
   reuses, which is why it comes second.
-- [ ] **Session C — Part I Anatomy · Part II Foundations.** `anatomy` split
+- [x] **Session C — Part I Anatomy · Part II Foundations.** *(done 2026-09-02)* `anatomy` split
   into a startup diagram and a steady-state one, the two-loops figure, the
   threads table trimmed to four rows; `out-of-scope-tour` joins Part I as
   *what this book skips*, with the treemap. Part II: `math-and-primitives`
@@ -614,3 +614,115 @@ missing it — and removes the comment. The owner confirms or reorders
   Hand-offs in pass3.md §8 (session C's treemap include, the `SKIPPED`
   list), pass4.md (every number, the tool itself, `entity-anatomy`'s
   corrected 193) and pass5.md.
+- **2026-09-02, session C — Part I Anatomy · Part II Foundations.**
+  *Rulings, written before editing.* **Part I is a root of two pages.**
+  `anatomy` keeps the trace shape but takes **two figures**: a startup
+  sequence (the JVM main thread becoming the Render thread, the Server
+  thread born in `MinecraftServer.spin`, the in-process channel) and the
+  two-loops figure R6 asks for — a flowchart of the frame loop and the tick
+  loop side by side with the packet drain in each, which Parts III, IX and
+  X then link to instead of restating. Hook: the client walks the same
+  handshake against the server in its own process as against one across
+  the world, and the one thing that leaks between them is a setting —
+  pause is decided on the client and enforced by the server, so a
+  published LAN world never pauses. The threads table trims to the four a
+  viewer must hold (Render, Server, Netty, workers) and defers the rest to
+  `reference/threads.md`, which already carries every row; the situational
+  paragraph goes with it. The invariants that belong to Part III (the
+  `haveTime` budget, sprinting, the stale `TickTask`, the overload
+  warning, the flush bracket) are already owned by `server-tick` and are
+  cut here to a link, logged in pass5.md as moved. **`out-of-scope-tour`
+  becomes `systems/anatomy/what-this-book-skips.md`** (R1; redirect from
+  the appendix URL), opening on the treemap with the skipped packages
+  hatched, a section per skipped thing as today, and the four-way rulings
+  list compressed to one table. Hook: vanilla's own content is a data pack,
+  and the generator that writes it ships in the server jar and is called
+  by the running game. **The appendix dissolves now, not in session O**:
+  `naming-drift` and `glossary` move to `src/reference/` with redirects
+  and their headers corrected, because a Part XIV of two look-up pages is
+  not a part (R1); session O reframes them. **Part II is a stack**, drawn
+  on its landing page bottom-up: codecs (how anything becomes data) →
+  registries (how anything gets a name and a number) → the resource system
+  (where data comes from and when) → tags (data reaching into code) → data
+  components and text components (data on an object) → the data-driven
+  type pattern (the closer, which every data-pack file is an instance of).
+  `math-and-primitives` moves to `src/reference/` (redirect; header
+  reframed; the notebook's coordinate-spaces figure left for session O).
+  Page shapes and hooks: **`codecs-nbt-json`** leads and takes the
+  **comparison** shape — one `ItemStack` four ways is four paths that
+  differ, so a table with the paths as columns and one short diagram per
+  path replace the ten-lane conversation; hook: the click on a chest slot
+  sends the server no item data at all, only a checksum per component.
+  **`identifiers-and-registries`** keeps the **trace** shape with its two
+  diagrams (the notebook calls them the model for the corpus); hook: the
+  wire id of a diamond sword is the line number of its registration in
+  `Items`; it states the freeze rule (contents never change; tags and
+  components do) without justifying it. **`resource-system`** is one
+  lecture in the **pipeline** shape — discover, snapshot, prepare in
+  parallel, apply in order, finish or roll back — with the prepare/apply
+  lattice drawn as a flowchart with three listeners explicit (the
+  notebook's clearest wrong-shape case), F3+T as the grounding trace and
+  `/reload` as a comparison coda (what differs, as a table); hook: a reload
+  that fails does not find the bad pack, it deselects every pack and
+  reloads again. **`tags`** keeps the **trace** shape and pays the freeze
+  rule off; hook: a frozen registry's contents cannot change, and yet
+  `/reload` changes what `#minecraft:logs` contains — the tag table is the
+  one part of a frozen registry that is swapped, in three ordered steps
+  with no lock. **`data-components`** takes the **vocabulary** shape — a
+  figure of prototype, patch and map, a tour by object, the enchanting
+  trace cut to the grounding so Part VII keeps the enchanting table; hook:
+  an item's prototype is built on every reload with the world's registries
+  in hand, not in its constructor, which is why a stack cannot be decoded
+  before the first reload. **`text-components`** is written (R6): the
+  **vocabulary** shape — contents, style, siblings as a figure; the seven
+  contents kinds as the table; one small trace of a death message crossing
+  the wire as a translation key and being worded on the client; hook: the
+  client receives the death message before anyone knows what it says. The
+  `Component` section of `chat-and-signing` moves here and that page links
+  (grep-the-corpus rule); `text-and-fonts` points here. **`data-driven-types`**
+  is written (R6) as the part's closer in the **pattern** shape: the idea
+  (a `type` field is a lookup in a registry data packs cannot extend), the
+  instances as a table drawn from every `Registry<MapCodec<? extends …>>`
+  and every `…Type<?>` registry in `BuiltInRegistries`, one instance traced
+  from JSON to object; hook: `type` is the most important key in a data
+  pack. `dialogs-and-tests` keeps its own statement of the pattern until
+  session N links here. Lanes: 45 rows added to the key before drafting;
+  `CH`, `MC`, `IS`, `PE`, `TP` collisions in Part II resolved by lengthening
+  the later claimant (`CHelp`, `IStack`, `PEnc`, `TagP`); expansions are the
+  bare class name, thread in the cast. Agents draft in parallel; every
+  draft's claims are diffed against the old page before acceptance.
+  *Done.* Part I: `anatomy` rewritten as a trace with two figures — the
+  startup sequence (seven lanes, the JVM main thread becoming the Render
+  thread, the Server thread born in `spin`) and the two-loops flowchart
+  Parts III, IX and X now link to — the threads table cut to four rows
+  with `reference/threads.md` carrying the rest, the Part III invariants
+  cut to a link; `out-of-scope-tour` became `what-this-book-skips` in Part
+  I with the treemap and the rulings as one table; `naming-drift` and
+  `glossary` moved to Reference and the appendix is gone from the sidebar
+  (four redirects). Part II: seven pages in a stack, drawn on a new
+  landing page — `codecs-nbt-json` leads in the comparison shape (a
+  four-column table and four short diagrams for the ten-lane one),
+  `identifiers-and-registries` keeps its two traces and states the freeze
+  rule, `resource-system` is a pipeline with the prepare/apply lattice
+  drawn and `/reload` as a comparison table, `tags` pays the freeze rule
+  off, `data-components` is a vocabulary page with the enchanting trace
+  cut to its Part II core, and two R6 pages were written from the decompile:
+  `text-components` (the death message worded on the client) and
+  `data-driven-types` (fifty-six registries of kinds, `set_count` traced
+  from JSON to a chest). `math-and-primitives` is Reference.
+  `chat-and-signing`'s `Component` section is a pointer; `text-and-fonts`
+  points here. Fifty-two lane rows added; `check_lanes --strict` is clean
+  for both parts. **Two pass-2 errors caught by drafting agents**: the axe
+  does not strip by tag (`AxeItem.STRIPPABLES` is a map), and
+  `NoiseRouterData` does not call `TerrainProvider` per chunk (its
+  bootstraps are datagen and `Commands.validate`); both verified by the
+  session and logged in pass4.md. 97 diagrams, 0 failed; 19,720 names
+  resolve. Hand-offs in pass3.md §8 (the two Part III invariants still on
+  `anatomy`, the three enchanting facts for session H, the treemap's
+  hatch limitation, the pattern page's *taught in* obligations), pass4.md
+  (every introduced claim, per page) and pass5.md (every cut name).
+  Process note: nine pages drafted by parallel agents against a shared
+  brief, each report diffed by the session; three agents lost to an
+  interrupt were relaunched on Opus with no visible loss — the part
+  sessions from D on should run on Opus, with Fable kept for O, P and the
+  inter-pass planning.

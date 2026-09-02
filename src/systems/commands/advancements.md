@@ -379,7 +379,7 @@ advancement's criteria by name. Two behaviours are worth naming:
   `WorldSessionTelemetryManager` reads it when an advancement completes, and
   only for advancements in the *minecraft* namespace. That is the whole
   reason a flag rides a wire form that drops the criteria and the rewards
-  ([the out-of-scope tour](../appendix/out-of-scope-tour.md)).
+  ([what this book skips](../anatomy/what-this-book-skips.md)).
 
 ## Where to look
 

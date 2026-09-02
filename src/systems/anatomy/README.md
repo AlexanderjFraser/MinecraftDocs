@@ -36,16 +36,15 @@ the game.
    the Render thread that is also the game thread, the Server thread that
    is the world, the Netty threads that run more than bytes, and the one
    worker pool that everything else is serialised onto.
-2. [What this book skips](../appendix/out-of-scope-tour.md) — the boundary,
-   drawn honestly: save migration, Realms, telemetry, the profiler, the
-   management server, the data generators, and where to start if you need
-   one anyway. *(Today in the appendix; it moves here in pass-3 session C,
-   with the treemap of the jar beside it.)*
+2. [What this book skips](what-this-book-skips.md) — the boundary, drawn
+   honestly on the treemap of the jar: save migration, Realms, telemetry,
+   the profiler, the management server, the data generators, and where to
+   start if you need one anyway.
 
 ## Reference this part uses
 
 [Threads](../../reference/threads.md) — every thread, who makes it and what
-may run on it. [Naming drift](../appendix/naming-drift.md) — the 1.21-era
+may run on it. [Naming drift](../../reference/naming-drift.md) — the 1.21-era
 names that have moved. [Diagram lanes](../../reference/lanes.md) — the
 abbreviations every diagram uses. The [maps](../../maps/README.md) — where
 the mass is.

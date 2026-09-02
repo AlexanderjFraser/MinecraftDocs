@@ -14,13 +14,15 @@
 
 - [I · Anatomy](systems/anatomy/README.md)
   - [Anatomy](systems/anatomy/anatomy.md)
-- [II · Foundations]()
-  - [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
+  - [What this book skips](systems/anatomy/what-this-book-skips.md)
+- [II · Foundations](systems/foundations/README.md)
   - [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md)
+  - [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
   - [The resource system](systems/foundations/resource-system.md)
   - [Tags](systems/foundations/tags.md)
   - [Data components](systems/foundations/data-components.md)
-  - [Math and primitives](systems/foundations/math-and-primitives.md)
+  - [Text components](systems/foundations/text-components.md)
+  - [The data-driven type pattern](systems/foundations/data-driven-types.md)
 - [III · The server]()
   - [The server tick](systems/server/server-tick.md)
   - [The level tick](systems/server/server-level-tick.md)
@@ -101,10 +103,6 @@
   - [Advancements](systems/commands/advancements.md)
   - [Dialogs and game tests](systems/commands/dialogs-and-tests.md)
   - [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
-- [XIV · Appendix]()
-  - [The out-of-scope tour](systems/appendix/out-of-scope-tour.md)
-  - [Naming drift](systems/appendix/naming-drift.md)
-  - [Glossary](systems/appendix/glossary.md)
 
 # Reference
 
@@ -114,6 +112,9 @@
   - [Data components](reference/components.md)
   - [Game rules](reference/gamerules.md)
   - [Threads](reference/threads.md)
+  - [Math and primitives](reference/math-and-primitives.md)
+  - [Naming drift](reference/naming-drift.md)
+  - [Glossary](reference/glossary.md)
   - [Diagram lanes](reference/lanes.md)
   - [Class index](reference/class-index.md)
 

@@ -1464,3 +1464,59 @@ writes one strikes it through; a session that rules one out says why, here.*
   count and the atlas's 227 direct `Packet` implementers are different
   things (types versus classes) and pass 4 should say which is which.
   **Sidebar titles** for the maps changed; file names and URLs did not.
+
+- **Session C (Part I Anatomy · Part II Foundations).** **The appendix is
+  gone**: `naming-drift` and `glossary` are in `src/reference/` with
+  redirects, headers corrected, otherwise untouched — session O reframes
+  them (the glossary's link targets now point at `../systems/…`, checked).
+  `math-and-primitives` is at `src/reference/math-and-primitives.md`; its
+  coordinate-spaces figure (the §3 note) is session O's. **The two-loops
+  figure exists** in `anatomy` (*Two loops, and a wire between them*) —
+  sessions D, J and K link to it instead of restating the frame/tick
+  interleave and the per-frame packet drain. **Two Part I invariants
+  belong to Part III and are still on `anatomy`**: the `haveTime` "gates
+  exactly three things" claim and the sprint-polls-chunk-sources
+  conclusion; `server-tick` has the pieces but not the framing. Session D
+  moves both and cuts them here to a link. **Part II is seven pages**, a
+  stack: codecs → registries → resources → tags → components → text
+  components → the data-driven type pattern; the landing page draws it.
+  **`text-components` exists** (R6): `text-and-fonts` and
+  `chat-and-signing` point at it, and `chat-and-signing`'s `Component`
+  section is a pointer paragraph — session J reshapes that page knowing
+  the subject is gone. **`data-driven-types` exists** (R6) with a
+  fifty-six-row instance table whose *taught in* column assumes the parts
+  cover those instances: loot (H), features, density functions, structures
+  (M), enchantments and recipes (H), spawn conditions (G), dialogs and
+  tests (N), advancements and permissions (N). `dialogs-and-tests` keeps
+  its own *The pattern, stated once* until session N links here and
+  decides the split R6 allows. **Seven of the eight shapes now have a
+  worked example**: the trace (`identifiers-and-registries`, `tags`), the
+  comparison (`codecs-nbt-json`), the pipeline (`resource-system`), the
+  vocabulary page (`data-components`, `text-components`), the pattern
+  (`data-driven-types`), plus session A's policy and state machine;
+  `what-this-book-skips` is a map page outside the menu (figure, then a
+  tour by package) and `TEMPLATE.md` may want to name that shape.
+  **Lanes**: fifty-two rows added to the key; `CT` is `CombatTracker`
+  (matching `damage-and-death`), so `execution-and-functions`'
+  `ContinuationTask` and `block-ticks-and-fluids`' `LevelChunkTicks`
+  lengthen when sessions N and E convert; `PE` and `TP` are still open
+  (this session took `PEnc` and `TagP`). **Three enchanting facts** moved
+  out of `data-components` are not yet on `enchantments` (pass5.md) —
+  session H absorbs them. **The treemap's hatching** (session O or P):
+  `svg_treemap` hatches leaf cells only, and a depth-3 package with no
+  sub-packages and fewer lines than the title strip (`gizmos` at 569,
+  `realms` at 203) draws no leaf and so no hatch; the figcaption on
+  `what-this-book-skips` says "hatched boxes" and two are not.
+  `client/multiplayer/chat/report` is depth 5 and can never be hatched as
+  drawn. `blaze3d/audio` was added to `SKIPPED` this session. **The
+  drafting protocol that worked**: one shared brief file in the
+  scratchpad, one agent per page with the ruling in its prompt, a report
+  in six fixed sections (figures, claims introduced, claims reworded, cut
+  or moved, new lanes, check output); the session reads the page and
+  spot-checks two or three of the report's sharpest claims in the
+  decompile. Nine drafts, none rejected, two pass-2 errors caught by
+  agents (the axe and the logs tag; `NoiseRouterData` and the datagen
+  bootstrap). The first three agents were lost to an interrupt and
+  relaunched on Opus; their reports were as usable as the six on the
+  session's own model, which is the evidence for running the part sessions
+  on Opus from here.

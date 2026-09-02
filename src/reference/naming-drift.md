@@ -1,6 +1,6 @@
 # Naming drift
 
-> Verified against **Minecraft 26.2** · Part XIV · No trace — the translation
+> Verified against **Minecraft 26.2** · Reference · The translation
 > layer: every name a 1.21-era reader will reach for that 26.2 does not have,
 > and what it is called now.
 
@@ -387,39 +387,39 @@ The recurring ones:
 - **Tags on an item became components.** *ItemStack.getTag* /
   *getOrCreateTag* have no replacement; a stack is an `Item` plus a
   `PatchedDataComponentMap` and every former tag key is a
-  `DataComponentType` in `DataComponents` — [data components](../foundations/data-components.md),
-  [items and stacks](../items/items-and-stacks.md).
+  `DataComponentType` in `DataComponents` — [data components](../systems/foundations/data-components.md),
+  [items and stacks](../systems/items/items-and-stacks.md).
 - **Hand-written serialisation became codecs.** *Packet.write* is gone: a
   packet is a record with a `StreamCodec` the protocol table reads.
   *ItemStack.save* is gone: there is `ItemStack.CODEC` and, for saved data,
-  the `ValueOutput` façade — [packets and stream codecs](../networking/packets-and-stream-codecs.md),
-  [codecs, NBT and JSON](../foundations/codecs-nbt-json.md).
+  the `ValueOutput` façade — [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md),
+  [codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md).
 - **Rendering split into extract and render.** *GuiGraphics*,
   *EntityRenderer.render*, *LevelRenderer.renderLevel*, *MultiBufferSource*
   and every `RenderSystem` state setter are gone or repurposed, because the
   frame now builds an immutable render state on the game thread and draws
-  from it — [the frame](../rendering/the-frame.md), [Blaze3D](../rendering/blaze3d.md),
-  [entity rendering](../rendering/entity-rendering.md).
+  from it — [the frame](../systems/rendering/the-frame.md), [Blaze3D](../systems/rendering/blaze3d.md),
+  [entity rendering](../systems/rendering/entity-rendering.md).
 - **Per-dimension and per-biome constants became one attribute system.**
   *DimensionSpecialEffects* and most of *BiomeSpecialEffects* are gone;
   fog, sky, water colour, ambient sound and music are
   `EnvironmentAttribute`s resolved through an `EnvironmentAttributeProbe`
-  over a stack of layers — [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md),
-  [biomes](../worldgen/biomes.md).
+  over a stack of layers — [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md),
+  [biomes](../systems/worldgen/biomes.md).
 - **Enums of behaviour became registries of data.** *EnchantmentCategory*,
   *MobSpawnType*, *BlockPathTypes*, *GenerationStep.Carving* and
   *Biome.BiomeCategory* are all gone, replaced by item sets, registry
   records, `HolderSet`s or nothing at all.
 - **UUIDs became identifiers.** An `AttributeModifier` is keyed by
   `Identifier`, not a UUID, which is why a data pack can now name one —
-  [attributes](../entities/attributes.md).
+  [attributes](../systems/entities/attributes.md).
 - **Sides split.** *Entity.hurt* became `Entity.hurtServer` and
   `Entity.hurtClient`; *Player.attack* is still there but the packet that
   reaches it is `ServerboundAttackPacket`, a record of one integer, and
   `ServerboundInteractPacket` is right-click only. The general rule: where
   1.21 had one method that checked `Level.isClientSide`, 26.2 tends to have
-  two methods — [damage and death](../entities/damage-and-death.md),
-  [the sword swing](../player/the-sword-swing.md).
+  two methods — [damage and death](../systems/entities/damage-and-death.md),
+  [the sword swing](../systems/player/the-sword-swing.md).
 
 ## Yarn
 

@@ -24,12 +24,12 @@ book is about them.
 
 | idea | the hubs | where the book teaches it |
 |---|---|---|
-| a position | `BlockPos`, `Vec3`, `Direction`, `Mth` | [Math and primitives](../systems/foundations/math-and-primitives.md) |
+| a position | `BlockPos`, `Vec3`, `Direction`, `Mth` | [Math and primitives](../reference/math-and-primitives.md) |
 | a name and a registry | `Identifier`, `ResourceKey`, `Registries`, `BuiltInRegistries`, `Holder` | [Identifiers and registries](../systems/foundations/identifiers-and-registries.md) |
 | a shape on disk | `Codec`, `MapCodec`, `RecordCodecBuilder` | [Codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md) |
 | a shape on the wire | `StreamCodec`, `ByteBufCodecs`, `RegistryFriendlyByteBuf`, `Packet`, `PacketType` | [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md) |
-| text | `Component` | Part II |
-| chance | `RandomSource` | [Math and primitives](../systems/foundations/math-and-primitives.md) |
+| text | `Component` | [Text components](../systems/foundations/text-components.md) |
+| chance | `RandomSource` | [Math and primitives](../reference/math-and-primitives.md) |
 | the world's nouns | `Level`, `ServerLevel`, `BlockState`, `Block`, `Blocks`, `Entity`, `LivingEntity`, `Player`, `EntityType`, `ItemStack`, `SoundEvents`, `SoundEvent`, `DataComponents` | Parts IV to VIII |
 
 Three rows of the table are worth a second look. `ServerLevel` (726) is

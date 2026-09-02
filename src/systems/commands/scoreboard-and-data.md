@@ -232,7 +232,7 @@ the game *is* a criterion, and `ObjectiveCriteria.byName` parses a
 colon-separated name by looking the left half up as a stat type and the right
 half in that stat type's own registry. `minecraft.mined:minecraft.stone` is not
 a special case; it is the statistics registry addressed through a string
-([the out-of-scope tour](../appendix/out-of-scope-tour.md) covers the
+([what this book skips](../anatomy/what-this-book-skips.md) covers the
 statistics side). Nine stat types over the block, item, entity-type and
 custom-stat registries make thousands of valid criteria names, which is why
 `/scoreboard objectives add` suggests forty-three and accepts far more.

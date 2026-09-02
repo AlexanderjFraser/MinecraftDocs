@@ -299,8 +299,9 @@
 <g class="cell"><title>com/mojang/blaze3d/systems — 26 classes, 2,308 lines, client-only</title>
 <rect class="client" x="762.2" y="318.8" width="28.6" height="56.9"/>
 </g>
-<g class="cell"><title>com/mojang/blaze3d/audio — 12 classes, 1,013 lines, client-only</title>
+<g class="cell"><title>com/mojang/blaze3d/audio — 12 classes, 1,013 lines, client-only — skipped by this book</title>
 <rect class="client" x="790.8" y="318.8" width="28.0" height="25.5"/>
+<rect class="skip" x="790.8" y="318.8" width="28.0" height="25.5"/>
 </g>
 <g class="cell"><title>com/mojang/blaze3d/pipeline — 11 classes, 954 lines, client-only</title>
 <rect class="client" x="818.8" y="318.8" width="26.4" height="25.5"/>

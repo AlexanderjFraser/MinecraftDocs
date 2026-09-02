@@ -39,3 +39,8 @@ level = 0
 "/systems/client/lightmap-fog-and-sky.html" = "../rendering/lightmap-fog-and-sky.html"
 "/systems/client/particles.html" = "../rendering/particles.html"
 "/systems/client/client-world-and-options.html" = "the-client-level.html"
+# Pass-3 session C: the appendix dissolved (R1) and math-and-primitives moved to Reference.
+"/systems/appendix/out-of-scope-tour.html" = "../anatomy/what-this-book-skips.html"
+"/systems/appendix/naming-drift.html" = "../../reference/naming-drift.html"
+"/systems/appendix/glossary.html" = "../../reference/glossary.html"
+"/systems/foundations/math-and-primitives.html" = "../../reference/math-and-primitives.html"

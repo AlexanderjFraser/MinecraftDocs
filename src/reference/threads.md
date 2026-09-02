@@ -79,7 +79,8 @@ login, for the session-server call), *Chat-Filter-Worker*, *Server Pinger* and
 `LanServerPinger` and its detector, *World Upgrader*, *Datafixer Bootstrap*
 (priority 1, so it yields to everything), the client and server shutdown
 hooks with `ClientShutdownWatchdog` behind them, and Swing's event dispatch
-thread when a dedicated server runs with its `MinecraftServerGui`.
+thread when a dedicated server is started without *--nogui* and runs its
+`MinecraftServerGui`.
 
 ## The rules that follow
 

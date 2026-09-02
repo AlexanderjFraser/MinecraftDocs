@@ -186,7 +186,7 @@ manager reports the game running normally, so `/tick freeze` suspends them.
 `GameTestServer.waitUntilNextTick` is overridden to drain tasks instead of
 sleeping: the headless test server runs flat out, and installs a no-op
 gizmo collector so debug drawing costs nothing
-([the out-of-scope tour](../appendix/out-of-scope-tour.md)).
+([what this book skips](../anatomy/what-this-book-skips.md)).
 
 ## The trace: a data pack's form, and a data pack's test
 

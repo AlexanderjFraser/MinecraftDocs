@@ -44,6 +44,62 @@ was cut or moved, and why)*
   tickets page says "graph" and "tracker" for the same object.
 
 
+- **2026-09-02, session C — Parts I and II.** Cuts are names, not claims,
+  unless marked; the class index still answers "where" for every name here.
+  **`anatomy`**: the eleven-row thread table and the situational-threads
+  paragraph moved to `reference/threads.md` (already there, verified);
+  `Minecraft`'s manager inventory retired (`TextureManager`, `ShaderManager`,
+  `ModelManager`, `AtlasManager`, `FontManager`, `SoundManager`,
+  `GameRenderer`, `LevelRenderer`, `EntityRenderDispatcher`,
+  `BlockEntityRenderDispatcher`, `ParticleEngine`, `MouseHandler`,
+  `KeyboardHandler`) and `MinecraftServer`'s (`ServerFunctionManager`,
+  `TimerQueue`, `ServerClockManager` — the rest are on `server-tick`); the
+  stale-`TickTask`, "Can't keep up!" and flush-bracket invariants cut to a
+  link to `server-tick`, which states them; "the server is the game; the
+  client is a view of it" and the "this page is the frame" meta-sentence
+  cut (the landing page says it); `RconThread`, `QueryThreadGs4`,
+  `ManagementServer` dropped from *Where to look*.
+  **`what-this-book-skips`**: "Seventy-six pages cover the game" cut (the
+  count churns); the four gap lists folded into one table with two prose
+  paragraphs for the three entries that needed more than a cell; the four
+  "the honest version" / "the detail worth having" tics rephrased.
+  **`codecs-nbt-json`**: cut names — `ExtraCodecs.intRange` /
+  `nonEmptyList` / `optionalAlwaysPresentFieldOf`, `TagTypes`,
+  `NbtIo.readCompressed`, `NbtOps.convertTo`, the three printing visitors
+  and the `/data` colouring aside, the five `nbt/visitors` classes,
+  `ValueOutput.TypedOutputList`, `StreamEncoder` / `StreamDecoder`,
+  `ByteBufCodecs.VAR_INT` / `STRING_UTF8` / `registry` / `holderSet` and
+  the `…Trusted` variants, "up to twelve field codecs", `RegionFileVersion`'s
+  GZIP/LZ4/none roster; the caller inventory (`PlayerDataStorage`,
+  `LevelStorageSource`, `SavedDataStorage`, `SavedDataType`,
+  `CommandStorage`, the three NBT command arguments, `Entity.saveWithoutId`
+  / `load`); moved to links: the `ComponentSerialization` matrix
+  (`text-components`), the `RegistrySynchronization` case
+  (`protocol-phases`), `CODEC_WITH_BOUND_COMPONENTS` (`data-components`),
+  `RemoteSlot`'s either-or (`containers-and-menus`).
+  **`identifiers-and-registries`**: `MappedRegistry.byValue` cut;
+  `TagLoader` named only as `TagLoader.buildUpdatedLookups`.
+  **`resource-system`**: `RegistryDataLoader` dropped from its calls-into
+  (the registries page owns it). **`tags`**: nothing cut.
+  **`data-components`**: the hashing detail (`HashedStack`,
+  `HashedPatchMap`, `RemoteSlot.Synchronized`'s either-or and promotion,
+  the creative double guard) moved to `codecs-nbt-json` and
+  `containers-and-menus`; three enchanting facts moved *towards* Part VII
+  and **not yet present there** — "if the prototype lacks `ENCHANTMENTS`
+  the `updateEnchantments` write is skipped", "`clickMenuButton` consumes
+  lapis and fires `CriteriaTriggers.ENCHANTED_ITEM`", "`/enchant` is the
+  same tail after `Enchantment.canEnchant` and a compatibility check" —
+  session H absorbs them into `enchantments`; `RegistryDataCollector`'s
+  client-only status no longer stated; `EnchantmentHelper`,
+  `ItemEnchantments`, `RemoteSlot`, `HashedStack`, `HashOps` dropped from
+  *Where to look*. **`chat-and-signing`**: the `Component` section
+  replaced by a pointer paragraph; "new-shaped in 26.2" cut (rule 3).
+  Wording left rough on purpose: the seven Part II hooks all end their
+  opening paragraph on a bold or dashed sentence — one voice, seven times;
+  the comparison and pattern pages carry long table cells that pass 5 may
+  want as prose; `what-this-book-skips` still says "the part that
+  surprises" where it used to say "the fact worth knowing".
+
 - **2026-09-02, session B — maps.** The four atlas pages and the atlas
   front page are new prose and carry the em-dash chains the corpus is
   prone to; `packages.md`'s part → packages table will duplicate the

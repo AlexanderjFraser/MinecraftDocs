@@ -17,12 +17,35 @@ page to watch early.
 
 1. [Anatomy](systems/anatomy/anatomy.md) — four threads, two loops, one
    wire. Watched first, because every later diagram's lanes assume it.
-2. [What this book skips](systems/appendix/out-of-scope-tour.md) — the edge
-   of the map, before investing in thirteen parts.
+2. [What this book skips](systems/anatomy/what-this-book-skips.md) — the edge
+   of the map, drawn on the treemap of the jar, before investing in thirteen
+   parts.
 
 ## II · Foundations
 
-*Filled by pass-3 session C.*
+Part II is a stack, watched bottom-up; each page is the machinery the one
+above it assumes.
+
+1. [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md) — one
+   `ItemStack` four ways: a chunk file, a packet, a checksum, the text of a
+   `/give`. How anything becomes data.
+2. [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
+   — how anything gets a name and a number, before the game exists and
+   again when a world opens; the freeze rule, stated.
+3. [The resource system](systems/foundations/resource-system.md) — where
+   data comes from and when: F3+T as a pipeline, `/reload` as its coda.
+4. [Tags](systems/foundations/tags.md) — data reaching into code; the
+   freeze rule paid off.
+5. [Data components](systems/foundations/data-components.md) — data on an
+   item: prototype, patch, and when the prototype is built.
+6. [Text components](systems/foundations/text-components.md) — text as
+   data: a death message that is worded on the client.
+7. [The data-driven type pattern](systems/foundations/data-driven-types.md)
+   — the closer: every *type* field in a data pack is a lookup in a
+   registry data packs cannot extend.
+
+[Math and primitives](reference/math-and-primitives.md) is not a lecture;
+it is Reference, and the parts link into it.
 
 ## III · The server
 

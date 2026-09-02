@@ -273,7 +273,7 @@ Where a set comes from: `MinecraftServer.getProfilePermissions` resolves the
 ops file first, then singleplayer ownership, then the LAN "allow cheats"
 flag, then the server's configured operator level. `ops.json` still stores
 an integer, *server.properties* still stores one, the JSON-RPC management API
-still exposes one ([the out-of-scope tour](../appendix/out-of-scope-tour.md)),
+still exposes one ([what this book skips](../anatomy/what-this-book-skips.md)),
 and the wire carries one: the op level reaches the client as one of five
 values on `ClientboundEntityEventPacket`.
 

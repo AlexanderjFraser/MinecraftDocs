@@ -9,9 +9,10 @@ component tree into styled runs, measuring and wrapping it, reordering it for
 bidirectional scripts, choosing a glyph for every codepoint from a chain of
 providers, baking that glyph into a texture the first time anyone asks, and
 finally emitting the vertices. What a `Component` *is* — its contents kinds,
-its `Style`, how it is serialised and signed — belongs to
-[chat and signing](../networking/chat-and-signing.md); this page starts from
-"you have one".
+its `Style`, how it is serialised — is Part II's
+[text components](../foundations/text-components.md), and how it is signed
+is [chat and signing](../networking/chat-and-signing.md); this page starts
+from "you have one".
 
 The one sentence a player would recognise: *a chat message in a language
 whose characters are not in the default font.*

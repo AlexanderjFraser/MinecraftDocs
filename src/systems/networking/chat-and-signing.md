@@ -4,10 +4,9 @@
 
 ## Responsibility
 
-Two systems share this page because they are inseparable in the code.
-`Component` is the text type the whole game uses — every name, tooltip,
-title, disconnect reason and chat line. And chat is the one place where
-text is **cryptographically attributed**: a message carries a signature
+Chat is the one place where text — a `Component`, the type Part II's
+[text components](../foundations/text-components.md) explains — is
+**cryptographically attributed**: a message carries a signature
 proving that a specific account, in a specific session, said exactly
 those characters with exactly that conversational context in front of
 them.
@@ -23,69 +22,22 @@ shows you the original — exists purely for servers that are not vanilla.
 
 ## The data it owns
 
-### `Component`
+### `Component`, in one paragraph
 
-`Component` is an interface with four abstract members —
-`Component.getStyle`, `Component.getContents`, `Component.getSiblings`
-and `Component.getVisualOrderText`, the last of which is why
-`MutableComponent` caches a laid-out form — and exactly **one**
-implementation, `MutableComponent`. A component is a
-triple: one `ComponentContents`, one `Style`, and an ordered list of
-sibling components. Style inheritance happens during traversal, not in
-storage.
-
-There are seven kinds of contents, each with a static factory on
-`Component`:
-
-| kind | class | made by |
-|---|---|---|
-| text | `PlainTextContents`, with `PlainTextContents.LiteralContents` | `Component.literal` |
-| translatable | `TranslatableContents` | `Component.translatable` |
-| keybind | `KeybindContents` | `Component.keybind` |
-| score | `ScoreContents` | `Component.score` |
-| selector | `SelectorContents` | `Component.selector` |
-| nbt | `NbtContents` | `Component.nbt` |
-| object | `ObjectContents` | `Component.object` |
-
-`ObjectContents` is new-shaped in 26.2: it puts atlas sprites and player
-heads *inside* text, through `ObjectInfo` and its implementations
-`AtlasSprite` and `PlayerSprite`.
-
-`Style` holds eleven nullable fields: `Style.color` (a `TextColor`),
-`Style.shadowColor`, the five booleans, `Style.clickEvent`,
-`Style.hoverEvent`, `Style.insertion` and `Style.font` (a
-`FontDescription`). `ClickEvent` and `HoverEvent` are interfaces
-implemented by nested records — closed by convention and by their
-`Action` dispatch codec, not by the language. What keeps
-`ClickEvent.Action.OPEN_FILE` out of a server's hands is
-`ClickEvent.Action.filterForSerialization`, applied as a validation on
-`ClickEvent.Action.CODEC` and therefore biting in **both** directions and
-in **every** format: a data pack cannot write one either, and the client
-cannot encode one it built itself. The private flag behind it is
-`ClickEvent.Action.allowFromServer`. `HoverEvent.Action` has the identical
-machinery and nothing to filter — all three of its values are allowed.
-
-**Serialisation** is one recursive codec, `ComponentSerialization.CODEC`,
-whose shape is a three-way choice: a bare string becomes a literal, a
-list becomes its first element with the rest appended, and an object is
-the full record. Contents are matched by an explicit *type* field if one
-is present and otherwise by trying each contents codec in turn — which
-is why an untyped component still round-trips. `Component.tryCollapseToString`
-is what lets a plain unstyled literal encode as a bare string.
-
-On the wire, **components travel as NBT, not JSON**:
-`ComponentSerialization.STREAM_CODEC` is built over the NBT ops. There
-are trusted variants —
-`ComponentSerialization.TRUSTED_STREAM_CODEC` and its siblings — that
-lift the NBT budget, and **every clientbound chat packet uses them**
-([packets and stream codecs](packets-and-stream-codecs.md)).
-
-Resolution — turning selectors, scores and NBT paths into text — is
-`ComponentUtils.resolve` against a `ResolutionContext`, which carries the
-command source, a depth limit and a `ResolutionContext.LimitBehavior`.
-**Ordinary chat never resolves anything**: the content of a
-`ServerboundChatPacket` is a plain string all the way to
-`Component.literal`. Commands are the exception —
+What a `Component` *is* — one `ComponentContents` of seven kinds, one
+`Style`, an ordered list of siblings, a single implementation in
+`MutableComponent`, the recursive `ComponentSerialization.CODEC` and the
+NBT-not-JSON stream codecs — is Part II's
+[text components](../foundations/text-components.md). Three of its facts
+this page leans on: **components travel as NBT**, and every clientbound
+chat packet uses the trusted stream variants that lift the NBT budget
+([packets and stream codecs](packets-and-stream-codecs.md)); a data pack
+and a server are both refused a `ClickEvent.Action.OPEN_FILE` click event by the same
+`ClickEvent.Action.filterForSerialization` validation; and resolution —
+turning selectors, scores and NBT paths into text — is
+`ComponentUtils.resolve` against a `ResolutionContext`, which **ordinary
+chat never runs**: the content of a `ServerboundChatPacket` is a plain
+string all the way to `Component.literal`. Commands are the exception —
 `MessageArgument.Message.toComponent` expands entity selectors inside a
 message argument, behind a permission, which is why `/say @a` names
 people and a chat line saying the same thing does not. The resolved text
@@ -399,8 +351,7 @@ reportable.
 
 ## Where to look
 
-`Component` · `MutableComponent` · `ComponentContents` ·
-`ComponentSerialization` · `Style` · `ChatType` · `PlayerChatMessage` ·
+`ComponentUtils` · `ChatType` · `PlayerChatMessage` ·
 `SignedMessageBody` · `SignedMessageLink` · `SignedMessageChain` ·
 `SignedMessageValidator` · `MessageSignature` · `MessageSignatureCache`
 · `LastSeenMessages` · `LastSeenMessagesValidator` · `RemoteChatSession`
