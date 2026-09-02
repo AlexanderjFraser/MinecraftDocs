@@ -12,7 +12,8 @@
 
 # Systems
 
-- [I · Anatomy](systems/anatomy/anatomy.md)
+- [I · Anatomy](systems/anatomy/README.md)
+  - [Anatomy](systems/anatomy/anatomy.md)
 - [II · Foundations]()
   - [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
   - [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md)
@@ -113,6 +114,7 @@
   - [Data components](reference/components.md)
   - [Game rules](reference/gamerules.md)
   - [Threads](reference/threads.md)
+  - [Diagram lanes](reference/lanes.md)
   - [Class index](reference/class-index.md)
 
 # Lectures

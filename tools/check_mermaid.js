@@ -266,8 +266,13 @@ async function main() {
     const nodes = Array.from(pageDom.window.document.querySelectorAll('.mermaid'));
     if (nodes.length === 0) continue;
 
-    const mdRel = 'src/' + inBook.replace(/\.html$/, '.md');
-    const mdPath = path.join(ROOT, mdRel);
+    let mdRel = 'src/' + inBook.replace(/\.html$/, '.md');
+    let mdPath = path.join(ROOT, mdRel);
+    if (!fs.existsSync(mdPath) && inBook.endsWith('/index.html')) {
+      // mdBook renders a part's README.md as index.html (pass-3 landing pages).
+      mdRel = 'src/' + inBook.replace(/index\.html$/, 'README.md');
+      mdPath = path.join(ROOT, mdRel);
+    }
     let fences = null;
     if (fs.existsSync(mdPath)) fences = mermaidFences(fs.readFileSync(mdPath, 'utf8'));
     else console.error(`warning: ${rel} has diagrams but there is no ${mdRel}; reporting HTML positions`);

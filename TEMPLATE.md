@@ -1,62 +1,211 @@
-# <System name>
+# The page — a menu of shapes
 
-<!--
-  PASS 3 NOTE (2026-09-02). This skeleton is the pass-1 template, and every
-  one of the 79 pages follows it heading for heading — which is the site's
-  biggest readability problem. Pass 3 session A rewrites this file into a
-  MENU OF SHAPES (trace · pipeline · state machine · policy · comparison ·
-  vocabulary · pattern · landing page), with the devices, the bullet budgets
-  and the lane key, after piloting it on two pages. Until then the spec is
-  ruling R2 in docs/plan.md. Do not draft a new page from the skeleton below.
--->
+*Rewritten by pass-3 session A (2026-09-02) from two pilots:
+`src/systems/world/tickets-and-loading.md` (a policy page) and
+`src/systems/networking/protocol-phases.md` (a state machine). The old
+seven-heading skeleton is gone; a page takes the shape of its story, and the
+budgets below are the enforceable part. Ruling R2 in `docs/plan.md` is the
+authority; this file is its working form.*
 
-> Verified against **Minecraft 26.2** · Part <N> · <one-line scenario this page traces>
+## What every page keeps
 
-## Responsibility
+1. **The title** — the system, not the scenario.
+2. **The verified line** — `> Verified against **Minecraft 26.2** · Part N ·
+   <the scenario in one line>`. The scenario is a sentence a player could
+   act out, not a topic.
+3. **The opening paragraph** — starts *inside* the scenario (a player takes a
+   step; a server is clicked in the list) and ends on the **hook**: the one
+   observable, surprising, true thing the page explains. No "Responsibility"
+   heading; the paragraph is the responsibility. The pass-2 findings are the
+   hook bank (the block that comes back and vanishes again; lava
+   random-ticking twice; the watchdog kill that saves nothing; the minimized
+   window rendering frames nobody sees; the player built after the phase
+   named for preparing it).
+4. **The cast** — at most eight classes with role and thread, as a small
+   table (`| class | what it decides | thread |`) or woven into the
+   narration. It replaces the field inventories: a page names the fields
+   its story touches, in the sentences that touch them, and the exhaustive
+   lists live in the class index and Reference.
+5. **At least one figure**, in the shape the page chose (below), with lanes
+   from the key.
+6. **Headings that say what the section says** — *The two flushes*, *When
+   a ticket dies*, *Status, the phase nobody logs in through* — never which
+   template slot it fills. A reader should be able to tell two pages apart
+   from their tables of contents.
+7. ***Where to look*** — entry-point names, one line, in reading order — and
+   the rules footer, verbatim:
 
-One paragraph: what this system is for, and the one sentence a player would
-recognise it by.
+   `*Rules: names, never code · how the system works, not how the code reads ·
+   newest version only · every backticked name passes \`tools/verify_names.py\`.*`
 
-## The data it owns
+What every page drops: *Responsibility*, *The data it owns*, *When it runs*,
+*Interfaces* and *Invariants and surprises* as headings. Their content goes
+where the story needs it — the thread in the cast table, the interfaces as
+one sentence or one cast row (what crosses the network, as which packets),
+the invariants placed where they happen or gathered as answers in a
+*Questions players ask* section.
 
-The types, by name, and what each holds. Who else may touch them, and on
-which thread. (`ServerLevel` owns …; `ClientLevel` holds the client's copy
-of …; nothing outside `X` writes `Y`.)
+## The shapes
 
-## When it runs
+Choose the one whose figure is the true picture of the system. If the
+truth is a graph, do not draw a conversation.
 
-Its place in the server tick and/or the client frame, and the thread it runs
-on. Where it hands work to another thread and how the result comes back.
+| shape | for | its figure | how the sections go | pilot |
+|---|---|---|---|---|
+| **the trace** | one scenario through the system | a `sequenceDiagram`, at most seven lanes, `Note over` at every tick boundary | narrated as prose in the order things happen, each surprise placed where it happens | (session C onward) |
+| **the pipeline** | stages that hand off | a `flowchart` of the stages at the top | a section per stage: what comes in, what is decided, what goes out | — |
+| **the state machine** | phases and transitions | `stateDiagram-v2`, transitions labelled with the packets or events; an orphan state drawn as an orphan | a section per state, each ending in *what disconnects / fails / leaves it* | `protocol-phases` |
+| **the policy** | who is told what, and when | a decision table or a `flowchart` per decision; the surprises are its rows | one section per decision on the path the opening figure draws; a short trace kept as the grounding | `tickets-and-loading` |
+| **the comparison** | two or three paths that differ | a table with the paths as columns; one diagram per path, or one with `alt` | a section per point of difference, not per path | — |
+| **the vocabulary page** | the objects and their relations | a figure of the data (`classDiagram`, a containment `flowchart`), then one small trace | a tour by object, each grounded in the trace | — |
+| **the pattern** | one idea, many instances | the instances as a table; one instance traced | the idea, the table, the trace, the exceptions | — |
+| **the landing page** | a part | the part's shape as a figure of its pages | one paragraph · the figure · *before you start* · *watch in this order* · the Reference pages it uses; under a hundred lines, no trace | `src/systems/anatomy/README.md` |
 
-## The trace: <scenario>
+A page may borrow one section from another shape (the policy pilot keeps a
+six-lane trace; the state-machine pilot keeps a three-lane sequence for the
+encryption handshake alone). It may not borrow the whole skeleton. **A page
+is not done until it reads differently from its neighbours.**
 
-```mermaid
-sequenceDiagram
-    participant A as ClassA
-    participant B as ClassB
-    A->>B: methodName — what this step decides
-```
+## The devices
 
-Narrate the diagram: each arrow is a decision, not a call. Name the class and
-method so a reader with the decompile can find it; never paste the body.
+Any page may use these; none must.
 
-## Interfaces
+- **The myth table** — `| what the forum says | what the decompile does |`.
+- **The number** — a count with its owner, set off on its own line:
+  `**Four** — player-view chunks loading at once (\`DistanceManager.ticketDispatcher\`).`
+- **For a 1.21-era reader** — a blockquote opening `> **For a 1.21-era
+  reader.**`, replacing the names-you-will-hunt-for bullets; one per page at
+  most, and only where a modder would reach for a name that has moved.
+- **Questions players ask** — a section whose bold lead-ins are questions
+  and whose paragraphs are the invariants, restated as answers.
+- **The same trace from the other side** — a mirrored client/server pair,
+  as `environment-attributes-and-timelines` already does.
+- **The tick-boundary bar** — `Note over X: a later tick` (or the tick
+  phase by name) wherever a sequence crosses a tick; and the explicit *no
+  reply* annotation (`-->>` with the word *nothing*) where a packet is
+  answered by silence.
 
-- **Called by:** …
-- **Calls into:** …
-- **Crosses the network as:** the packets by name, and in which direction.
-- **Data-driven by:** the registry / JSON / tag that configures it.
+## The budgets
 
-## Invariants and surprises
+The enforceable part.
 
-The things that are wrong in every forum answer. Bullet each with the
-class that makes it true.
+- A bulleted or numbered list holds **parallel items of at most two
+  sentences, at most seven of them**, and a page has **at most three
+  lists**. *Where to look* is not a list; the cast is a table.
+- Anything explanatory is prose. Anything enumerative **beyond seven is a
+  table**, or a Reference page the text links to.
+- A section **passes forty lines only with a figure or a subsection in it**.
+- *Interfaces* survives as one sentence or one cast row.
+- Nothing is dropped from a page except by moving it (Reference, another
+  page) or by logging the cut in `docs/pass5.md` with the reason.
+- Every claim a rewrite introduces — a hook, a redrawn ordering, a new
+  section — is listed in `docs/pass4.md` by the session that wrote it.
 
-## Where to look
+## Figures
 
-Entry-point class names only, in the order you'd read them.
+Mermaid in the page for anything mermaid 11.6.0 draws; generated SVG from
+`tools/` (inlined with `{{#include}}`) for the maps and for figures no mermaid
+type draws; never a hand-drawn or raster image. `node tools/check_mermaid.js`
+is the arbiter of what the site's mermaid accepts, and a diagram that fails
+it does not publish. The three rules it enforces most often:
 
----
+- **No `;` in any label** — mermaid ends the statement there. Write `#59;`
+  if the character is unavoidable; usually a comma or *then* is better.
+- **No `#` in any label** — mermaid reads an entity code and drops the rest
+  of the line silently. Write `#35;`.
+- **Quote flowchart labels** (`A["…"]`) so parentheses, colons and slashes
+  survive; keep `stateDiagram-v2` transition text on one line after the
+  colon; a note is `note right of STATE : text`.
 
-*Rules: names, never code · how the system works, not how the code reads ·
-newest version only · every backticked name passes `tools/verify_names.py`.*
+Shapes that render under 11.6.0 and are in use: `sequenceDiagram`,
+`flowchart`, `stateDiagram-v2`. Others the checker accepts may be added;
+a shape the checker rejects is not available whatever the docs say.
+
+## Lanes
+
+A lane in a sequence diagram is a class name, abbreviated once for the whole
+corpus. `python tools/check_lanes.py` reads the key below and every
+`participant X as Y` in `src/`, fails if a key entry is not a class in the
+decompile or if two key rows share a lane, and reports every page whose
+lane means something other than the key says; `--strict` turns the report
+into a failure (used per part as sessions convert them, corpus-wide from
+session P), and `--index` writes the key to `src/reference/lanes.md` for
+readers.
+
+**How a lane is derived** when it is not yet in the key: the initials of
+the class's CamelCase words (`ServerGamePacketListenerImpl` → `SGPL`),
+never fewer than two letters; a one-word class of up to eight letters is
+its own lane (`Player`, `Entity`, `Window`), a longer one takes a fixed
+prefix recorded here (`Connection` → `Conn`); a nested class takes the
+outer initials plus its own (`DistanceManager.PlayerTicketTracker` →
+`PTT` is the exception, claimed by the pilot); a collision is resolved by
+lengthening the **later** claimant, never by reassigning an existing row.
+A short whole word is allowed for a lane that is not a class (`Netty`,
+`Main`, `Worker`, `Auth`, `Wire`, `Disk`) and is marked as such below.
+**The key is the authority**: add a row when a page introduces a lane, and
+never change an existing row's meaning.
+
+### The lane key
+
+| lane | class |
+|---|---|
+| `MC` | `Minecraft` |
+| `MS` | `MinecraftServer` |
+| `IS` | `IntegratedServer` |
+| `DS` | `DedicatedServer` |
+| `SL` | `ServerLevel` |
+| `CL` | `ClientLevel` |
+| `Level` | `Level` |
+| `SP` | `ServerPlayer` |
+| `LP` | `LocalPlayer` |
+| `Player` | `Player` |
+| `Entity` | `Entity` |
+| `PL` | `PlayerList` |
+| `SGPL` | `ServerGamePacketListenerImpl` |
+| `CPL` | `ClientPacketListener` |
+| `SHPL` | `ServerHandshakePacketListenerImpl` |
+| `SSPL` | `ServerStatusPacketListenerImpl` |
+| `SLPL` | `ServerLoginPacketListenerImpl` |
+| `SCPL` | `ServerConfigurationPacketListenerImpl` |
+| `CHPL` | `ClientHandshakePacketListenerImpl` |
+| `CCPL` | `ClientConfigurationPacketListenerImpl` |
+| `Conn` | `Connection` |
+| `SCL` | `ServerConnectionListener` |
+| `BEL` | `BlockableEventLoop` |
+| `SCC` | `ServerChunkCache` |
+| `CM` | `ChunkMap` |
+| `CH` | `ChunkHolder` |
+| `DM` | `DistanceManager` |
+| `TS` | `TicketStorage` |
+| `LCT` | `LoadingChunkTracker` |
+| `SCT` | `SimulationChunkTracker` |
+| `PTT` | `DistanceManager.PlayerTicketTracker` |
+| `CTD` | `ChunkTaskDispatcher` |
+| `TCTD` | `ThrottlingChunkTaskDispatcher` |
+| `PCS` | `PlayerChunkSender` |
+| `PESM` | `PersistentEntitySectionManager` |
+| `PST` | `PrepareSpawnTask` |
+| `SRT` | `SynchronizeRegistriesTask` |
+| `JWT` | `JoinWorldTask` |
+| `RS` | `RenderSystem` |
+| `GR` | `GameRenderer` |
+| `LR` | `LevelRenderer` |
+| `Gui` | `Gui` |
+| `Hud` | `Hud` |
+| `Screen` | `Screen` |
+| `Window` | `Window` |
+| `Main` | *the JVM main thread, not a class* |
+| `Netty` | *the Netty event loop, not a class* |
+| `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
+| `Auth` | *the User Authenticator thread, not a class* |
+| `Wire` | *the network between the two programs, not a class* |
+| `Disk` | *the save on disk, not a class* |
+
+Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
+`ServerLevel` (not `ServerLoginPacketListenerImpl`, now `SLPL`, nor
+`SpriteLoader`); `CL` is `ClientLevel` (not `ClientPacketListener`, `CPL`);
+`CM` is `ChunkMap` (the menus take their own initials); `CH` is `ChunkHolder`
+(the client handshake listener is `CHPL`); `GR` is `GameRenderer`
+(`GuiRenderer` lengthens to `GuiR`); `TD` is retired in favour of `CTD` /
+`TCTD`. Rows for `SS`, `ST`, `SP`-as-structure, `TP`, `LX`, `PE` and `C`
+are left for the part sessions that own the pages, under the rule above.

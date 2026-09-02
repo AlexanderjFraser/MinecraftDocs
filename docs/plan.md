@@ -314,7 +314,7 @@ which pass 4 must check like any other.
 Tick as done. Sessions A, B, O and P are the site; C–N are the parts, in
 sidebar order.
 
-- [ ] **Session A — The frame.** Two pilot pages reshaped end to end —
+- [x] **Session A — The frame.** *(done 2026-09-02)* Two pilot pages reshaped end to end —
   `tickets-and-loading` (a policy page: eleven lanes today; wants a
   flowchart and a small state diagram) and `protocol-phases` (a state
   machine) — and then `TEMPLATE.md` rewritten from what worked: the menu,
@@ -512,3 +512,51 @@ missing it — and removes the comment. The owner confirms or reorders
   machine has 26.3 snapshots 8 and 9 installed, on authlib 10.0.77 and
   Brigadier 1.3.11 — the 26.3 risk is near, and `fetch_libs.sh` carries the
   versions to bump.
+- **2026-09-02, session A — the frame.** *Rulings, written before editing.*
+  **`tickets-and-loading` takes the policy shape.** Its questions are
+  decisions — what level a chunk gets, which graph answers which question,
+  when a holder is promoted or demoted, what a player is sent and when a
+  ticket dies — so the page becomes one figure per decision: a flowchart of
+  ticket → level → status → future, a `stateDiagram-v2` of the four
+  `FullChunkStatus` values, three decision tables, and one six-lane trace of
+  the walk east kept as the grounding. Hook: two graphs share one ticket
+  store, so a chunk can be entity-ticking by holder status and tick nothing.
+  The field inventories go (logged in pass5.md); the nine-row ticket table
+  stays, because nine is past the list budget and the table is the
+  reference. **`protocol-phases` takes the state-machine shape.** Two
+  `stateDiagram-v2`s — the five `ConnectionProtocol`s with the terminal
+  packets as transitions, and `ServerLoginPacketListenerImpl.State` with
+  its orphan — one small sequence diagram for the encryption handshake
+  alone, one flowchart for the configuration task queue; a section per
+  phase ending in what disconnects it. Hook: the `ServerPlayer` is built
+  after the client has acknowledged the end of the phase named for
+  preparing it. **`TEMPLATE.md`** becomes the menu (R2) with the two
+  pilots named as its worked examples, the devices, the budgets, the
+  mermaid rules the checker enforces, and the lane key — seeded with the
+  hubs whose spelling is already the majority, the two pilots' lanes and
+  Part I's; one-word classes take a fixed prefix of two or more letters
+  (`Conn`), not one initial. **`tools/check_lanes.py`** is the lane linter:
+  every key expansion must be a class in the decompile (hard), a lane in
+  the key must mean the same class on every page (report-only until session
+  P; `--strict` fails; `--pages` scopes it to a part). **The introduction**
+  becomes the front door with one figure of the two programs and the wire;
+  the two-jars treemap (B) and the parts-dependency figure (P) are named
+  as placeholders, not drawn. **Part I's landing page** is written as the
+  R3 proof: its figure is a root, `anatomy` handing a thread to every part.
+  **`lectures.md`** becomes a skeleton, one section per part, Part I filled.
+  No page moves this session, so no redirects.
+  *Done.* Both pilots rewritten and shipped: `tickets-and-loading` at 330
+  lines with a flowchart, a state diagram, three decision tables, a six-lane
+  trace (was eleven) and a *questions players ask* close;
+  `protocol-phases` with two state diagrams, a three-lane handshake, the
+  task-queue flowchart and a section per phase. The reshaping surfaced one
+  pass-2 error: the keep-dimension-active flag is on the player
+  *simulation* ticket, not the loading tickets (pass4.md has it).
+  `TEMPLATE.md` is the menu, with the two pilots as its worked examples;
+  `tools/check_lanes.py` is written and in `deploy.sh` (key verified
+  against the decompile, page drift report-only until session P) and
+  generates `src/reference/lanes.md` so readers see the key; the
+  introduction is the front door with the two-programs figure; Part I's
+  landing page is the R3 proof and the sidebar's Part I now opens on it;
+  `lectures.md` is the skeleton. 84 diagrams checked, 0 failed; all names
+  resolve; hand-offs in pass3.md §8, pass4.md and pass5.md.

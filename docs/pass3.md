@@ -1411,3 +1411,28 @@ writes one strikes it through; a session that rules one out says why, here.*
 - **The predicate catalogue and the boss bar** — 54 predicate files; the
   boss bar is `execute store`'s third sink and belongs with
   `scoreboard-and-data`. Parts VII and XIII. *(session K)*
+
+---
+
+## 8 · Notes from pass-3 sessions for later pass-3 sessions
+
+*(appended by the pass-3 sessions themselves; structural only)*
+
+- **Session A (the frame).** The lane key is seeded in `TEMPLATE.md` (45
+  class lanes, 6 word lanes) and `tools/check_lanes.py` reports 41
+  participants disagreeing with it and 49 unkeyed lanes colliding across
+  the unconverted pages; each part session runs `python tools/check_lanes.py
+  --strict --pages src/systems/<part>` before shipping and adds its rows to
+  the key. Rows deliberately left open: `SS`, `ST`, `TP`, `LX`, `PE`, `C`,
+  `SE`, `SM`, `SC`, `T`, `W`. The introduction names two figures it does
+  not draw — the two-jars treemap (session B) and the parts-dependency
+  figure (session P) — and links `out-of-scope-tour`, `naming-drift` and
+  `glossary` at their **appendix** paths; sessions C and O must update the
+  introduction, `systems/anatomy/README.md` and `lectures.md` when those
+  pages move. Part I's landing page lists *what this book skips* as its
+  second lecture already, marked as arriving in session C. Two of the eight
+  shapes are now exemplified (policy, state machine); the trace shape has
+  no pilot yet and session C's first trace page should be written against
+  the menu with care, since it is the shape most likely to reproduce the
+  old template. `check_mermaid.js` now maps a part's `index.html` to
+  `README.md`.

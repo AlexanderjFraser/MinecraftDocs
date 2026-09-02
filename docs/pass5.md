@@ -21,3 +21,25 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 *(pass-3 and pass-4 sessions append below, newest first: the page, what
 was cut or moved, and why)*
+
+- **2026-09-02, session A.** `tickets-and-loading`: the *data it owns*
+  inventory is gone — `ChunkHolder.queueLevel`, `ChunkMap.unloadQueue`,
+  `ChunkMap.serverViewDistance` and `MIN_VIEW_DISTANCE`, `ChunkMap.playerMap`,
+  `ChunkMap.getUpdatingChunkIfPresent`, `ServerPlayer.requestedViewDistance`
+  / `chunkTrackingView` / `lastSectionPos`, `PlayerList.viewDistance` /
+  `simulationDistance`, `ServerChunkCache.CACHE_SIZE` / `lastChunk`,
+  `ServerChunkCache.ticketStorage` are no longer named (reason: the cast
+  table replaces the inventory; the class index still answers "where");
+  the *Called by* list (teleports and `ServerPlayer.doTick` as callers of
+  `ChunkMap.move`, `ForceLoadCommand` → `ServerLevel.setChunkForced` at
+  `ChunkMap.FORCED_TICKET_LEVEL` loaded synchronously) and the *Calls into*
+  list are cut (reason: interfaces survive as one sentence; the forced
+  ticket is in the table). `protocol-phases`: the *Crosses the network as*
+  packet list is cut in favour of `reference/packets.md`
+  (`ClientboundLoginCompressionPacket` is now unnamed — the compression
+  switch is described); the *Data-driven by* bullet (server properties,
+  resource-pack settings, data packs) is cut; the *Interfaces* callers are
+  folded into one sentence. Wording left rough on purpose: both pilots
+  still carry em-dash chains in the decision tables' gate cells, and the
+  tickets page says "graph" and "tracker" for the same object.
+
