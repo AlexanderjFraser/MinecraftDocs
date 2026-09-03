@@ -564,6 +564,7 @@
 <rect class="group" x="948.8" y="563.5" width="19.9" height="36.5"/>
 </g>
 <g class="pkg"><title>net/minecraft/gizmos — 15 classes, 569 lines, shared</title>
+<rect class="skip" x="968.7" y="563.5" width="31.3" height="15.2"/>
 <rect class="group" x="968.7" y="563.5" width="31.3" height="15.2"/>
 </g>
 <g class="pkg"><title>net/minecraft/recipebook — 3 classes, 350 lines, shared</title>
@@ -576,6 +577,7 @@
 <rect class="group" x="982.4" y="578.6" width="17.6" height="11.7"/>
 </g>
 <g class="pkg"><title>net/minecraft/realms — 4 classes, 203 lines, client-only</title>
+<rect class="skip" x="982.4" y="590.4" width="17.6" height="9.6"/>
 <rect class="group" x="982.4" y="590.4" width="17.6" height="9.6"/>
 </g>
 <rect class="shared" x="0" y="608" width="14" height="14"/><text x="20" y="619" font-size="12">in both jars</text>

@@ -89,7 +89,8 @@ until Part X.
 
 ## Reference this part uses
 
-[Registries](../../reference/registries.md) — `BuiltInRegistries.BLOCK` and
+[Block update flags](../../reference/block-update-flags.md) — the ten bits of
+`Level.setBlock`'s flag word and what reads each. [Registries](../../reference/registries.md) — `BuiltInRegistries.BLOCK` and
 `BuiltInRegistries.BLOCK_ENTITY_TYPE` are two of its rows.
 [Packets](../../reference/packets.md) — every block update, block event and
 acknowledgement in one table. [Data

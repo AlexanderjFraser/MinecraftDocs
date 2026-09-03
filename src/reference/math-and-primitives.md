@@ -2,8 +2,6 @@
 
 > Verified against **Minecraft 26.2** · Reference · The coordinate spaces, geometry and randomness every system page assumes — looked up, not watched.
 
-## Responsibility
-
 Every system in the game speaks in a handful of value types: an integer
 block position, a chunk column, a 16³ section, a double-precision world
 position, a direction, a box, a collision shape, a random source. They are
@@ -12,6 +10,33 @@ importers — and most of what is confusing about "which coordinate is this"
 is answered by knowing which type a method takes.
 
 ## The coordinate spaces
+
+Six integer spaces and one double one, each a power of two apart from its
+neighbour, and every conversion is a named static method on the type you
+are converting *to* — which is the figure: the spaces as nodes, the
+conversions as the edges between them, and the three that also pack to a
+long key.
+
+```mermaid
+flowchart LR
+    V["Vec3: a double world position"] -- "BlockPos.containing, which floors" --> B["BlockPos: one block, int"]
+    B -- "Vec3.atCenterOf, atLowerCornerOf, atBottomCenterOf" --> V
+    B -- "ChunkPos.containing, shift 4" --> C["ChunkPos: a 16-block column"]
+    C -- "ChunkPos.getMinBlockX, getWorldPosition" --> B
+    B -- "SectionPos.of, blockToSectionCoord, shift 4" --> S["SectionPos: a 16-cubed section"]
+    S -- "sectionToBlockCoord, sectionRelative masks 15" --> B
+    C -- "SectionPos.of, with a section y" --> S
+    B -- "QuartPos.fromBlock, shift 2" --> Q["QuartPos: a 4-block biome cell"]
+    Q -- "QuartPos.toBlock" --> B
+    S -- "QuartPos.fromSection" --> Q
+    Q -- "QuartPos.toSection" --> S
+    C -- "ChunkPos.getRegionX, getRegionLocalX, shift 5" --> R["region: 32 chunks, one .mca file"]
+    R -- "ChunkPos.minFromRegion" --> C
+    B -- "GlobalPos.of, plus a Level key" --> G["GlobalPos: a dimension and a block"]
+    B -- "BlockPos.asLong: 26-bit x and z, 12-bit y" --> L["long keys"]
+    S -- "SectionPos.asLong: 22-bit x and z, 20-bit y" --> L
+    C -- "ChunkPos.pack: 32 and 32" --> L
+```
 
 | space | unit | type | owner / notes | conversions |
 |---|---|---|---|---|
@@ -45,7 +70,7 @@ where every pack, unpack, lerp, multiply and alpha helper is, with
 `CommonColors` for the named constants, `ColorRGBA` for the codec-friendly
 value and `Brightness` for the packed block/sky light pair.
 
-## Packing
+## Three long keys
 
 Three long-packings appear everywhere as map keys.
 
@@ -119,7 +144,7 @@ bottom Y, held item, whether fluids collide), `CollisionContext.empty`,
 return a `HitResult`: `BlockHitResult` (position, face, inside,
 world-border) or `EntityHitResult`.
 
-## Randomness
+## Two random families, and two that are neither
 
 `RandomSource` (`net/minecraft/util`) is the interface; the implementations live in
 `world/level/levelgen` and share `BitRandomSource`, which defines
@@ -176,41 +201,48 @@ numeric odds and ends worth knowing by name are `CubicSpline` (terrain
 shaping), `InclusiveRange`, and `BitStorage`, the packed-integer array
 underneath every palette.
 
-## Invariants and surprises
+## What trips people up
 
-- **`ChunkPos` is a record with no *asLong*.** The names are `ChunkPos.pack`
-  and `ChunkPos.unpack`; construction from a block is `ChunkPos.containing`;
-  the components are accessed as x() and z().
-- **`Vec3i.toMutable` returns a JOML `Vector3i`,** not a
-  `BlockPos.MutableBlockPos`; the mutable block position is constructed
-  directly and its `BlockPos.MutableBlockPos.set` / `BlockPos.MutableBlockPos.move`
-  are the loop idiom.
-- **`BlockPos` is immutable, `Vec3i` only pretends to be.** `Vec3i` keeps
-  protected setters that `BlockPos.MutableBlockPos` uses; every other
-  subclass treats them as final. `BlockPos.immutable` is the copy to call
-  before storing a mutable one.
-- **`Level.random` deliberately crashes on cross-thread use.**
-  `LegacyRandomSource` holds an atomic seed not for safety but as a
-  *detector*: a concurrent reseed fails the compare-and-set and raises a
-  `ThreadingDetector` exception. The genuinely safe variant,
-  `ThreadSafeLegacyRandomSource`, and `RandomSource.createThreadSafe` are
-  both deprecated. Touching a level's random from a worker is meant to be
-  loud.
-- **Tick randomness and worldgen randomness are different generators.**
-  The LCG drives every `Level` and `Entity`; Xoroshiro drives terrain **and**
-  the saved `RandomSequences` behind loot and `/random`. Seed-parity
-  guarantees apply to the second family only.
-- **`BlockBox` is declared and unused.** It is a tidy `BlockPos`-pair record
-  in `net/minecraft/core`, and in 26.2 nothing calls it; structure bounds
-  are still `BoundingBox` in `world/level/levelgen/structure`. Worth knowing
-  before assuming a rename happened.
-- **`Direction.getRotation` treats UP as identity**, and `Direction.step`
-  returns a fresh JOML vector while `Direction.getUnitVec3f` returns the
-  read-only shared one.
-- **`SectionPos` has `x()` and `x(long)`,** instance and static, same name.
-- **`BlockUtil` is in `net/minecraft/util`, not `net/minecraft/core`;** `BlockBox`, `BlockMath` and
-  `Cursor3D` are in `net/minecraft/core`. `BlockMath` is model-rotation plumbing, not
-  coordinates.
+**`ChunkPos` is a record with no *asLong*.** The names are `ChunkPos.pack`
+and `ChunkPos.unpack`; construction from a block is `ChunkPos.containing`;
+the components are accessed as x() and z().
+
+**`Vec3i.toMutable` returns a JOML `Vector3i`,** not a
+`BlockPos.MutableBlockPos`; the mutable block position is constructed
+directly and its `BlockPos.MutableBlockPos.set` /
+`BlockPos.MutableBlockPos.move` are the loop idiom.
+
+**`BlockPos` is immutable, `Vec3i` only pretends to be.** `Vec3i` keeps
+protected setters that `BlockPos.MutableBlockPos` uses; every other subclass
+treats them as final. `BlockPos.immutable` is the copy to call before
+storing a mutable one.
+
+**`Level.random` deliberately crashes on cross-thread use.**
+`LegacyRandomSource` holds an atomic seed not for safety but as a
+*detector*: a concurrent reseed fails the compare-and-set and raises a
+`ThreadingDetector` exception. The genuinely safe variant,
+`ThreadSafeLegacyRandomSource`, and `RandomSource.createThreadSafe` are both
+deprecated. Touching a level's random from a worker is meant to be loud.
+
+**Tick randomness and worldgen randomness are different generators.** The
+LCG drives every `Level` and `Entity`; Xoroshiro drives terrain **and** the
+saved `RandomSequences` behind loot and `/random`. Seed-parity guarantees
+apply to the second family only.
+
+**`BlockBox` is declared and unused.** It is a tidy `BlockPos`-pair record
+in `net/minecraft/core`, and in 26.2 nothing calls it; structure bounds are
+still `BoundingBox` in `world/level/levelgen/structure`. Worth knowing
+before assuming a rename happened.
+
+**`Direction.getRotation` treats UP as identity**, and `Direction.step`
+returns a fresh JOML vector while `Direction.getUnitVec3f` returns the read-
+only shared one.
+
+**`SectionPos` has `x()` and `x(long)`,** instance and static, same name.
+
+**`BlockUtil` is in `net/minecraft/util`, not `net/minecraft/core`;**
+`BlockBox`, `BlockMath` and `Cursor3D` are in `net/minecraft/core`.
+`BlockMath` is model-rotation plumbing, not coordinates.
 
 ## Where to look
 

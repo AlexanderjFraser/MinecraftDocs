@@ -31,7 +31,7 @@ current even when nothing is recorded.
 | 7 | crosshair | `Hud.extractCrosshair` | yes | first-person, and either not a spectator or a hit result a spectator may see |
 | — | *new stratum* | `GuiGraphicsExtractor.nextStratum` | — | a hard layering barrier — everything below is above everything above |
 | 8 | hotbar | `Hud.extractItemHotbar` | yes | a camera player exists — replaced by `SpectatorGui.extractHotbar` in spectator mode |
-| 9 | armour | `Hud.extractArmor` | yes | inside the health block, and `Player.getArmorValue` above zero |
+| 9 | armour | `Hud.extractArmor` | yes | inside the health block, and `LivingEntity.getArmorValue` above zero |
 | 10 | hearts | `Hud.extractHearts` | yes | inside the health block |
 | 11 | food | `Hud.extractFood` | yes | inside the health block, **and** the vehicle contributes no hearts |
 | 12 | air bubbles | `Hud.extractAirBubbles` | yes | inside the health block, and the player's eyes are in water or the air supply is below its maximum |

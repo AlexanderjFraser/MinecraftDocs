@@ -43,9 +43,9 @@ same-type nodes still merge, but nothing merges backwards past a stranger.
 | 15 | `SubmitNodeCollection.outline` | a second copy of any model, block model, moving block, item or custom submit whose outline colour was non-zero, re-typed to the outline variant | `.executeOutline` |
 
 Two rows are worth reading twice. A quad-particle group is submitted **once**
-and lands in two phases at once, `solid` and `afterTerrain`, with a flag that
-picks which of its layers each half draws. And `outline` is filled by the same
-calls that filled `solid` — the glow is a second submission of the same
+and lands in two phases at once, *solid* and *afterTerrain*, with a flag that
+picks which of its layers each half draws. And *outline* is filled by the same
+calls that filled *solid* — the glow is a second submission of the same
 geometry, not a post-process over the first.
 
 ## The thirteen feature renderers

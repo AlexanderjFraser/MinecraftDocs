@@ -48,6 +48,70 @@ entry first.
 
 ## Entries
 
+## Session O — Reference *(2026-09-03)*
+
+**Pages rewritten or reshaped.** `reference/README.md` (new, a landing
+page), `reference/level-data-and-rules.md` (reshaped around its table),
+`reference/math-and-primitives.md` (figure added, surprises list dissolved
+to prose), `reference/threads.md` (a new section), `reference/glossary.md`
+(eleven entries added, one reordered), `reference/naming-drift.md`
+(headings only), `reference/block-update-flags.md` (new, extracted from
+`blocks/blocks-and-states.md`, which now links to it).
+
+**Claims introduced, check first.**
+
+- `threads.md`, *The eight client handlers that never hop*: "In
+  `ClientPacketListener` 115 handlers do that and eight do not" — counted by
+  splitting the class at every `public void handle…(` and testing each body
+  for `ensureRunningOnSameThread`; re-derive, and check the common
+  listener's thirteen handlers are correctly excluded (`handlePing` hops;
+  `the-connection` used to say the ping reply ran on Netty and was corrected
+  to *the pong bookkeeping*). Every row's "what it does" is one method body
+  read once; `handleLowDiskSpaceWarning` → `Minecraft.sendLowDiskSpaceWarning`
+  → `Minecraft.execute` is the row that makes a claim about a second class.
+- `math-and-primitives.md`, the coordinate-spaces figure: every edge is a
+  named method and every shift count is a claim — `ChunkPos.containing`
+  shift 4, `QuartPos.fromBlock` shift 2, `ChunkPos.getRegionX` shift 5 (the
+  old page said "32 chunks" and never "shift 5"), `SectionPos.of` from a
+  `ChunkPos` plus a section y, and the three packings' bit widths (26/12/26,
+  22/20/22, 32/32) copied from the page's own *Three long keys* section.
+  Also the new intro sentences: "each a power of two apart from its
+  neighbour" and "every conversion is a named static method on the type you
+  are converting *to*" — a generalisation the old page did not make; check
+  it against every edge in the figure.
+- `level-data-and-rules.md`: no new facts, but eleven surprises were
+  merged into the sections; the drafting agent's report listed every
+  rewording. Two to read closely: "That forwarding is how game time comes
+  to be shared by every level" (a causal sentence built from two old ones),
+  and "So every level reports the same spawn, and it is not the one
+  *level.dat* holds" (the old text said "not the stored one").
+- `reference/README.md`, the table's last column: which parts' landing
+  pages link each reference page, read off the landing pages today (grep
+  `reference/` in `src/systems/*/README.md`); a landing-page edit in a
+  later session silently dates it. And "two of these pages (submit phases,
+  density-function nodes) are nothing but declaration order".
+- `glossary.md`, the eleven new entries — *authority*, *batch*, *event
+  loop*, *frame*, *noise cell*, *permission atom*, *permission set*,
+  *quart*, *staging buffer*, *submit node*, *unattended command* — each
+  written from one sentence of its owner page; the confident ones are
+  "an operator's level-based set grants exactly one [atom]", "No packet
+  carries one in either direction", "the client parses twice more", and
+  "`Minecraft` and `MinecraftServer` are both one" (event loop).
+- `block-update-flags.md`: the table moved verbatim; the new opening
+  sentence claims `fluids` and `pistons-and-block-events` "mean the same
+  bits" when they pass a flag word.
+
+**Standing item added.** The five hand-kept catalogues
+(`non-living-damage`, `hud-elements`, `submit-phases`,
+`density-function-nodes`, `block-update-flags`) are name-verified from this
+session on but have had one reader each; re-sweep every row against the
+decompile, hardest on the two that are declaration orders. Strike the
+"glossary if generated" clause above — it is hand-kept.
+
+**Diagrams redrawn.** One added (`math-and-primitives`, the coordinate
+graph — seventeen edges, each a conversion claim); one added
+(`reference/README.md`, the shelf — asserts which tool writes which page).
+
 - **2026-09-03, session L — Part XI Rendering.** Twelve pages: eight
   rewritten (`the-frame`, `the-window`, `blaze3d`, `models-and-atlases`,
   `entity-rendering`, `lightmap-fog-and-sky`, `particles`, and

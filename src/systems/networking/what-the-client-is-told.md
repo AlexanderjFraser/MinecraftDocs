@@ -285,10 +285,10 @@ chunk, so the opening ask is three and a half chunks a tick against
 
 What is being measured is narrower than it looks.
 `ClientPacketListener.handleChunkBatchStart` and
-`ClientPacketListener.handleChunkBatchFinished` are among the handful of
+`ClientPacketListener.handleChunkBatchFinished` are two of the eight
 `ClientPacketListener` methods that never hop off the network thread, so the
-loop is timing packet decode, not mesh building
-([the connection](the-connection.md)).
+loop is timing packet decode, not mesh building (the eight are listed in
+[threads](../../reference/threads.md#the-eight-client-handlers-that-never-hop)).
 
 ### What a chunk packet carries
 

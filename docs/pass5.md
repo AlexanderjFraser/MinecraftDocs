@@ -750,3 +750,22 @@ it lost a fight for space against the page's own story.
 - `permissions` and `brigadier-and-commands` both describe the command-tree
   packet, deliberately from two sides (shape versus gating). Read them
   together once for a seam that reads as a repetition.
+
+## Session O — Reference *(2026-09-03)*
+
+- `level-data-and-rules` was reshaped bullet-for-paragraph, so its
+  paragraphs are still inventories in prose clothing (the `PrimaryLevelData`
+  field list, the `DimensionType` record). A reference page may keep them;
+  a polish pass should decide whether the two longest become tables.
+- `math-and-primitives`' *What trips people up* is nine bold-led paragraphs
+  where the list was; the ninth (`BlockUtil` is in `util`, not `core`) is a
+  naming-drift row wearing a surprise's clothes and could move to that
+  page.
+- `naming-drift` keeps its second-person "the name in your head" voice,
+  which is now the only page in Reference that talks to the reader; keep or
+  level in the voice sweep.
+- `reference/README.md`'s table has a *parts* column written by hand from
+  the landing pages; if a tool ever writes it, the column goes generated.
+- The glossary's owner links are one page each except *Component*,
+  *Level*, *Render state*, *Tick*, *Quart* and *Submit node*, which point at
+  two; a polish rule should say whether two is allowed.

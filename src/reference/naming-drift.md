@@ -4,8 +4,6 @@
 > layer: every name a 1.21-era reader will reach for that 26.2 does not have,
 > and what it is called now.
 
-## Responsibility
-
 Rule three of this corpus is *newest version only*: no page says "in 1.21
 this was…", because version-difference prose is the first thing to rot and
 the last thing anyone rereads. That rule costs something, and this page is
@@ -472,7 +470,7 @@ The last row is the joke that keeps giving: the single most-cited example
 of "Yarn names are better" stopped being an example, and a decade of
 Fabric code now compiles against a Mojang-named class with the Yarn name.
 
-## Invariants and surprises
+## What a rename table cannot tell you
 
 - **A verified name is not a correct claim.** `verify_names.py` proves the
   right-hand column exists; it cannot prove the left-hand column ever did.

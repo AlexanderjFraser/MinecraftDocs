@@ -12,9 +12,9 @@ death](../systems/entities/damage-and-death.md); this is the per-class table.
 
 Two things happen before any of them. `Player.attack` asks
 `Entity.isAttackable` and then `Entity.skipAttackInteraction`, either of
-which consumes the click without `hurtServer` ever being called —
+which consumes the click without `Entity.hurtServer` ever being called —
 `Interaction` uses that hook to record who hit it, `ArmorStand` and
-`BlockAttachedEntity` to run their own rules. And a `false` return is not
+`BlockAttachedEntity` to run their own rules. And a *false* return is not
 "the hit missed": it is "nothing was damaged", which is what stops a
 creative-mode swing from being counted.
 

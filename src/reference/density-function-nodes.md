@@ -1,7 +1,7 @@
 # Density-function nodes
 
 > Verified against **Minecraft 26.2** · Reference · the thirty-four node types a
-> `worldgen/density_function` file may name, what each one takes, and what the
+> *worldgen/density_function* file may name, what each one takes, and what the
 > per-chunk rewrite turns it into.
 
 [Density functions](../systems/worldgen/density-functions.md) is the lecture:
@@ -81,12 +81,12 @@ would re-serialise unchanged.
 
 | marker type | installed | keyed on |
 |---|---|---|
-| `Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell. Requires the context to *be* the `NoiseChunk`, and throws if sampled outside the loop |
-| `FlatCache` | `NoiseChunk.FlatCache` | **position**, at quart resolution: one array entry per 4×4 block column group, filled at construction |
-| `Cache2D` | `NoiseChunk.Cache2D` | **position**, one entry — the packed XZ of the last sample |
-| `CacheOnce` | `NoiseChunk.CacheOnce` | **a counter** — `NoiseChunk.interpolationCounter` for the scalar, a second counter for the array form |
-| `CacheAllInCell` | `NoiseChunk.CacheAllInCell` | **the cell** — one array entry per block in the cell, Y stored inverted |
-| `BlendDensity` | `NoiseChunk.BlendDensity`, **or nothing at all** if the level's `Blender` is empty, in which case the marker is replaced by its own child | not cached |
+| `DensityFunctions.Marker.Type.Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell. Requires the context to *be* the `NoiseChunk`, and throws if sampled outside the loop |
+| `DensityFunctions.Marker.Type.FlatCache` | `NoiseChunk.FlatCache` | **position**, at quart resolution: one array entry per 4×4 block column group, filled at construction |
+| `DensityFunctions.Marker.Type.Cache2D` | `NoiseChunk.Cache2D` | **position**, one entry — the packed XZ of the last sample |
+| `DensityFunctions.Marker.Type.CacheOnce` | `NoiseChunk.CacheOnce` | **a counter** — `NoiseChunk.interpolationCounter` for the scalar, a second counter for the array form |
+| `DensityFunctions.Marker.Type.CacheAllInCell` | `NoiseChunk.CacheAllInCell` | **the cell** — one array entry per block in the cell, Y stored inverted |
+| `DensityFunctions.Marker.Type.BlendDensity` | `NoiseChunk.BlendDensity`, **or nothing at all** if the level's `Blender` is empty, in which case the marker is replaced by its own child | not cached |
 
 The same rewrite resolves three singletons by object identity:
 `DensityFunctions.BlendAlpha` and `DensityFunctions.BlendOffset` become flat
@@ -111,12 +111,12 @@ or a *max* over two ranges that cannot overlap logs a warning and proceeds.
 *abs* and *square* clamping the minimum up to zero and *invert* reporting
 **±infinity** whenever the child's range straddles zero. *clamp* is the one
 node whose bounds are not derived from its child at all: its record
-components are literally named `minValue` and `maxValue`, so the codec's
+components are literally named *minValue* and *maxValue*, so the codec's
 *min* and *max* fields *are* the interface's bound methods.
 
 Three nodes report bounds that are not densities or not final.
 `DensityFunctions.Marker` passes its child's bounds through except when its
-type is `BlendDensity`, where it reports ±infinity — the one place a marker
+type is `DensityFunctions.Marker.Type.BlendDensity`, where it reports ±infinity — the one place a marker
 is not transparent. `DensityFunctions.HolderHolder` reports ±infinity while
 its holder is unbound, which is what lets forward references parse. And
 `DensityFunctions.FindTopSurface` reports its *lower bound* and its upper

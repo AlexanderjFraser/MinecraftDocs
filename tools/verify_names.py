@@ -25,6 +25,11 @@ import os
 import re
 import sys
 
+# A reference page whose header carries this was written by tools/gen_reference.py and is not
+# checked (its backticked cells are registry ids and packet ids). Every other page under
+# src/reference/ is hand-kept and is checked like a system page (pass-3 session O).
+GENERATED_MARK = "Do not edit by hand"
+
 ALLOW = {
     # Java / Netty / Brigadier / library names a page may reasonably use.
     "Thread", "Runnable", "Executor", "CompletableFuture", "Channel", "ChannelHandler",
@@ -120,10 +125,12 @@ def main() -> int:
                 continue
             page = os.path.join(dirpath, f)
             rel = os.path.relpath(page, args.src).replace(os.sep, "/")
-            if rel.startswith("generated/") or (rel.startswith("reference/") and rel != "reference/threads.md"):
-                continue  # generated fragments and pages are not checked; threads.md is hand-written
+            if rel.startswith("generated/") or rel in ("reference/class-index.md", "reference/lanes.md"):
+                continue  # written by the tools, from names already checked
             with open(page, encoding="utf-8") as fh:
                 text = fh.read()
+            if rel.startswith("reference/") and GENERATED_MARK in text[:400]:
+                continue  # a gen_reference.py view: its backticks are ids read off the decompile, not names
             for m in TICK.finditer(text):
                 name = m.group(1)
                 checked += 1

@@ -401,7 +401,7 @@ sidebar order.
   and the function model, the queue drawn as snapshots; advancements'
   client screen ruled; `dialogs-and-tests` split if the Part II pattern
   page exists; the scoreboard stays.
-- [ ] **Session O — Reference.** The moved pages redirected and reframed;
+- [x] **Session O — Reference.** *(done 2026-09-03)* The moved pages redirected and reframed;
   the extracted catalogues generated (`gen_reference.py` views for
   serializers and attributes at least); the glossary generated or re-swept;
   the reference README as a real page; the class index regenerated;
@@ -2273,3 +2273,125 @@ missing it — and removes the comment. The owner confirms or reorders
   redrawn figure), [pass5.md](pass5.md) (the cuts, and second person now five
   parts wide) and [pass3.md](pass3.md) (two queue entries discharged, one
   opened, and the notes for sessions O and P).
+- **2026-09-03, session O — Reference.** *(rulings written before any
+  editing, per protocol step 2.)*
+
+  **The Reference tier's shape is a shelf, not a sequence**, and the README
+  becomes its landing page in the landing-page shape: one paragraph on what
+  the tier is for (the rule is R5's — *would a viewer pause the video to
+  read this*), a figure of the shelf with the pages grouped by **how each is
+  kept** — generated from the decompile by `gen_reference.py`,
+  generated from the corpus by `verify_names.py --index` and
+  `check_lanes.py --index`, or hand-kept and therefore re-swept every pass —
+  no *watch in this order* (nothing here is watched), and instead *which
+  parts lean on which page*, from the landing pages' own *Reference this
+  part uses* sections. Under a hundred lines.
+
+  **The tier gets name-verified.** `verify_names.py` has skipped every page
+  under `reference/` except `threads.md` since pass 1, so the four hand-kept
+  catalogues the part sessions wrote this pass (`non-living-damage`,
+  `hud-elements`, `submit-phases`, `density-function-nodes`) and the four
+  look-up pages have never been checked. The rule becomes: a reference page
+  is checked unless its header says the tool wrote it; `class-index` and
+  `lanes` are the two other exceptions. A dry run finds sixteen failures,
+  all in the four catalogues, all qualification (`hurtServer` for
+  `Entity.hurtServer`, the five marker types bare, ids in backticks).
+
+  **The glossary is re-swept, not generated.** A per-page term declaration
+  would be a new convention across ninety pages, seeded by hand once and
+  then checked by pass 4 exactly as a hand-kept glossary is; the cheap
+  mechanism R5 hoped for does not exist. One agent audits every entry
+  against its owner page and the decompile and lists the missing terms
+  (sessions M and N named eight); the session applies the sweep. The
+  glossary stays the terminology checklist for pass 5.
+
+  **The moved pages are reframed, not rewritten.** `math-and-primitives`
+  gets the coordinate-spaces figure session A asked for — the spaces as
+  nodes, the conversions as edges, drawn from its own table — and headings
+  that say what the section says; `level-data-and-rules` is reshaped around
+  its who-owns-what table (the table first, one prose section per row group
+  after it, the surprises placed where they happen); `naming-drift` and
+  `glossary` lose the *Responsibility* heading and keep their tables.
+  Every claim carried; the figure is the only addition.
+
+  **The eight `ClientPacketListener` handlers that never hop go to
+  `threads.md`** (session J's deferred question, twice handed on), as a
+  short table beside the Netty row, because an enumeration a viewer pauses
+  on is Reference and the rule is already stated on `the-connection`. The
+  decompile confirms the count: 115 handlers call
+  `PacketUtils.ensureRunningOnSameThread` and 8 do not.
+
+  **One extraction executed, four declined.** The update-flag bit table
+  leaves `blocks-and-states` for `reference/block-update-flags.md`
+  (session F's stronger candidate; ten rows plus the named combinations,
+  hand-kept, `Block`'s declaration lines). The block-event users stay a
+  paragraph on `pistons-and-block-events`; the nineteen
+  `EntitySpawnReason` constants, the spawn-list override and the predicate
+  shape library go to the coverage queue as Reference candidates — three of
+  the four are generation candidates and want `gen_reference.py` views, not
+  hand-kept tables.
+
+  **The hand-kept catalogues are not re-swept here.** R5 says pass 4; each
+  was read one class at a time by its part session within the last two
+  days, and a second read today would be the same reader. They go to
+  pass4.md as a standing item with the verifier now behind them.
+
+  **Tool fixes in passing:** the treemap hatches a skipped depth-3 package
+  that draws no leaf (session B's note; `gizmos` and `realms` today), so the
+  figcaption on *what this book skips* becomes true; `gen_reference.py
+  all` re-run and every blurb's link checked; the class index and lane
+  index regenerated.
+
+  **What was done.** Twenty-one reference pages where there were twenty,
+  and a landing page where there was a list. `reference/README.md` is a
+  landing page in the landing-page shape: the shelf drawn as a figure of
+  who writes each page, and a table of every page with what it lists, how
+  it is kept, and which parts' landing pages point at it. One page written
+  from an extraction (`block-update-flags`, session F's candidate, moved
+  verbatim out of `blocks-and-states`, which keeps two sentences and a
+  link). Four pages reframed: `level-data-and-rules` drafted by an agent
+  around its table — the who-owns-what table first, six prose sections and
+  two subsections behind it, the eleven surprises merged into the sections
+  where they happen, zero bullets where there were six lists, 294 lines
+  where there were 294, and a claim-diff that found one reworded sentence
+  worth pass 4's eye (game time "comes to be shared" through
+  `DerivedLevelData`); `math-and-primitives` with the coordinate-spaces
+  figure session A asked for — seven spaces, seventeen edges, each a named
+  conversion, drawn from the page's own table — and its surprises list
+  dissolved into nine bold-led paragraphs; `threads.md` with the eight
+  `ClientPacketListener` handlers that never hop as a table (session J's
+  question, handed on twice), with `the-connection` and
+  `what-the-client-is-told` now linking to it; `naming-drift` and
+  `glossary` with their template headings gone. The glossary was swept by
+  hand after the audit agent hit the spend limit: eleven entries added
+  (*authority* — R6's page had none — *event loop*, *submit node*, and the
+  eight sessions M and N named), one moved to alphabetical order, every
+  owner link checked to exist, and the entries the splits touched read as
+  sets (dialog, game test, function, macro; the worldgen nine; permission
+  level) and found already correct.
+
+  **Two tool fixes that outlast the session.** `verify_names.py` now checks
+  every hand-kept page under `src/reference/` — it had skipped the whole
+  directory except `threads.md` since pass 1, so the four catalogues the
+  part sessions wrote this pass had never been verified; the dry run found
+  sixteen failures, all qualification, all fixed (`Entity.hurtServer`, the
+  six `DensityFunctions.Marker.Type` constants, ids to italics,
+  `LivingEntity.getArmorValue` for the `Player` the page had named). And
+  `map_source.py` hatches a skipped depth-3 package too small for a leaf,
+  so *what this book skips*' "hatched boxes" is true of `gizmos`, `realms`
+  and `references` now.
+
+  **One factual correction in passing.** `the-connection` gave "the ping
+  reply" as its example of a handler that runs on Netty; `handlePing` hops.
+  The example is now the pong bookkeeping, which does not.
+
+  Checks at commit: 18,520 names resolve (the reference tier included),
+  186 diagrams pass, 537 lane participants with 0 disagreeing and 0
+  colliding, `gen_reference.py all` re-run with no diff, class and lane
+  indexes regenerated, `mdbook build` clean. Hand-offs in
+  [pass4.md](pass4.md) (the handler count, the figure's shift counts, the
+  glossary's eleven sentences, the README's parts column, and the
+  hand-kept catalogues as a standing item), [pass5.md](pass5.md) (the
+  reshaped page's inventories-in-prose, the voice of `naming-drift`) and
+  [pass3.md](pass3.md) (the queue gains the three generation candidates;
+  session P's four notes).

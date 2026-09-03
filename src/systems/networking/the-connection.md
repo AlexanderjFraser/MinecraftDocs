@@ -92,8 +92,9 @@ pair and throws the singleton `RunningOnDifferentThreadException`, a stackless
 exception that `Connection.channelRead0` catches and drops on the floor. **The
 handler body then runs again from the top** when the queue is drained, which
 is why a handler method must do nothing observable before that line. A handler
-that touches no game state — the ping reply, an empty custom-payload hook —
-simply omits it and runs on Netty.
+that touches no game state — the pong bookkeeping, the fallback for a custom
+payload nobody claimed — simply omits it and runs on Netty; the client has exactly eight, listed in
+[threads](../../reference/threads.md#the-eight-client-handlers-that-never-hop).
 
 **The drain has a phase of its own, and the two sides do not schedule it
 alike.** The server drains before the tick proper, so every packet that

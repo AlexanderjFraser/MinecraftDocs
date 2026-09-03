@@ -1,6 +1,6 @@
 # Threads
 
-> Verified against **Minecraft 26.2** · Hand-written from [Anatomy](../systems/anatomy/anatomy.md); the one reference page that is not generated.
+> Verified against **Minecraft 26.2** · Reference · Hand-kept from `net/minecraft/util/thread` and every `Thread` the game starts, beside [Anatomy](../systems/anatomy/anatomy.md)'s four — looked up, not watched.
 
 Every thread the game creates, who creates it, what runs on it, and what
 is *allowed* to run on it. The last column is the rule the rest of the
@@ -70,6 +70,26 @@ them are real.
 | **Query Listener #n** | `QueryThreadGs4` from `DedicatedServer.initServer`, when *enable-query* | the GS4 query protocol | Its own cached status. Dedicated only, and **non-daemon**, like RCON. |
 | **Management server IO #n** | `ManagementServer`, built by `JsonRpc` in `server/Main` | a second, independent Netty event-loop group: the JSON-RPC/WebSocket management API and its heartbeat | Its own pipeline; management calls reach the game through the server's task queue. Dedicated only. |
 | Timer hack thread | `Util.startTimerHackThread` | sleeps forever | Nothing. Keeps the JVM's timer resolution high by existing. |
+
+## The eight client handlers that never hop
+
+`Connection.channelRead0` calls a packet's handler on the Netty thread, and
+a handler's first line is normally `PacketUtils.ensureRunningOnSameThread`,
+which re-posts it to the owning thread and aborts
+([the connection](../systems/networking/the-connection.md)). In
+`ClientPacketListener` 115 handlers do that and eight do not, so these eight
+run to completion on Netty and must touch nothing the Render thread owns.
+
+| handler | what it does on the Netty thread |
+|---|---|
+| `ClientPacketListener.handlePlayerCombatEnter` | nothing — the body is empty |
+| `ClientPacketListener.handlePlayerCombatEnd` | nothing — the body is empty |
+| `ClientPacketListener.handleCustomPayload` | the play-phase fallback for a payload no handler claimed: `ClientPacketListener.handleUnknownCustomPayload` logs a warning |
+| `ClientPacketListener.handleChunkBatchStart` | starts the `ChunkBatchSizeCalculator`'s clock |
+| `ClientPacketListener.handleChunkBatchFinished` | stops it and sends `ServerboundChunkBatchReceivedPacket` with the chunks-per-tick it now wants — so the loop in [what the client is told](../systems/networking/what-the-client-is-told.md) times packet decode, not mesh building |
+| `ClientPacketListener.handleDebugSample` | hands the sample to `DebugScreenOverlay.logRemoteSample` |
+| `ClientPacketListener.handlePongResponse` | records the round trip in `PingDebugMonitor` |
+| `ClientPacketListener.handleLowDiskSpaceWarning` | calls `Minecraft.sendLowDiskSpaceWarning`, which posts the toast to the Render thread itself — the one of the eight that crosses after all, by `Minecraft.execute` rather than by the hop |
 
 ## Situational threads
 

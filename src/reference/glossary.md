@@ -3,8 +3,6 @@
 > Verified against **Minecraft 26.2** · Reference · One sentence
 > per term the rest of the corpus uses, and a link to the page that owns it.
 
-## Responsibility
-
 Every page in this corpus assumes the vocabulary of the pages before it.
 That is deliberate — a lecture that redefines "chunk holder" every time it
 appears is unwatchable — but it means a reader who arrives in the middle
@@ -43,10 +41,18 @@ files, so a chunk section can be drawn with a single bound texture. → [models 
 modifiers are keyed by `Identifier`, and eight attributes are not
 client-syncable at all. → [attributes](../systems/entities/attributes.md)
 
+**Authority** — which side's copy of an entity does the arithmetic for it:
+the server for a mob, the owning client for its own player and for the boat
+that player is steering. Four predicates on `Entity` decide it, starting
+with `Entity.isLocalInstanceAuthoritative`. → [authority](../systems/entities/authority.md)
+
 **Avatar** — the class between `LivingEntity` and `Player`; a `Mannequin`
 is an `Avatar` that is not a player, and `AvatarRenderer` draws both. → [player anatomy](../systems/player/player-anatomy.md)
 
 ## B
+
+**Batch** — a group of game tests keyed by the environment they share;
+a batch *is* an environment, not a name and not a class. → [game tests](../systems/commands/game-tests.md)
 
 **Beardifier** — the density-function term that bends terrain around a
 structure; terrain adaptation writes no blocks, it changes the noise. → [structure placement](../systems/worldgen/structure-placement.md)
@@ -173,6 +179,11 @@ alongside fog and sky colour sit twenty gameplay attributes — whether lava
 flows fast, whether piglins zombify, whether a bed works, and the villager's
 schedule. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md)
 
+**Event loop** — the queue-and-thread pairing `BlockableEventLoop` is: an
+owning thread that drains posted tasks in its spare time and, through
+`BlockableEventLoop.managedBlock`, keeps draining while it waits on a
+future. `Minecraft` and `MinecraftServer` are both one. → [the server tick](../systems/server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)
+
 **Extract** — the first half of the client's frame: walk the game state on
 the game thread and write the render states, so that the drawing half
 touches no game object. A state is written once per frame and not touched
@@ -190,6 +201,11 @@ is asked for. → [text and fonts](../systems/client/text-and-fonts.md)
 
 **Frame graph** — the client's per-frame declaration of render passes and
 the targets each reads and writes, resolved before anything is drawn. → [visibility and the frame graph](../systems/rendering/visibility-and-the-frame-graph.md)
+
+**Frame** — the execution engine's unit of a running function: a depth, a
+result callback that `/return` feeds sideways, and a control that can delete
+the frame's pending work — one object shared by reference across a whole
+function body, and deliberately *not* a stack frame. → [the execution engine](../systems/commands/the-execution-engine.md)
 
 **Function** — a `.mcfunction` file: a list of commands loaded as a
 `CommandFunction`, optionally with macro lines. → [functions and macros](../systems/commands/functions-and-macros.md)
@@ -289,13 +305,18 @@ whose scalars are records and whose containers (`CompoundTag`, `ListTag`) are
 final classes, read and written through `NbtIo` and reached by codecs through
 `NbtOps`. → [codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md)
 
+**NBT path** — a compiled query over a tag — compounds, indexed lists,
+filtered lists, wildcards — that `/data` uses to read and write, and which
+materialises the structure it walks through on a write. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+
 **Neighbour update** — the server-only notification a block sends its six
 neighbours after a change; distinct from a *shape update*, which runs on
 both sides. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
-**NBT path** — a compiled query over a tag — compounds, indexed lists,
-filtered lists, wildcards — that `/data` uses to read and write, and which
-materialises the structure it walks through on a write. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+**Noise cell** — the lattice cell of terrain noise: the expensive
+three-dimensional density terms are evaluated at its corners and
+interpolated within it, and the caches keyed on it mean nothing outside
+the cell loop. → [density functions](../systems/worldgen/density-functions.md)
 
 **NoiseChunk** — the per-chunk machine that fills the noise lattice and
 installs the caches the density-function graph asked for. → [density functions](../systems/worldgen/density-functions.md)
@@ -321,10 +342,20 @@ drawn, used to interpolate everything the client shows. → [the frame](../syste
 **Path** — the list of nodes a navigator is following, produced by a
 `NodeEvaluator` that scores blocks rather than reading them directly. → [AI](../systems/entities/ai-goals-and-brains.md)
 
+**Permission atom** — a named capability with an `Identifier`
+(`Permission.Atom`), the other kind of permission besides a command level;
+an operator's level-based set grants exactly one, the entity-selector atom,
+from gamemaster up. → [permissions](../systems/commands/permissions.md)
+
 **Permission level** — one rung of `PermissionLevel` (all, moderators,
 gamemasters, admins, owners), and only the *ordered* half of a permission: a
 command source carries a `PermissionSet` and a node requires a
 `PermissionCheck`, neither of which is an integer. → [permissions](../systems/commands/permissions.md)
+
+**Permission set** — what a command source carries and a node's check is
+asked against: on the server a level-based set (a rung plus one atom), on
+the client a chat set built by subtraction from all four chat atoms. No
+packet carries one in either direction. → [permissions](../systems/commands/permissions.md)
 
 **PlacedFeature** — a configured feature plus an ordered list of placement
 modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)
@@ -338,6 +369,9 @@ optimistically. The ack is permission to apply that opinion, not a rollback. →
 
 **Protocol phase** — one of handshake, status, login, configuration and
 play; each has its own packet table and its own listener. → [protocol phases](../systems/networking/protocol-phases.md)
+
+**Quart** — a four-block cell, the resolution biomes are stored and
+sampled at; `QuartPos` is the arithmetic. → [biomes](../systems/worldgen/biomes.md), [math and primitives](math-and-primitives.md)
 
 ## R
 
@@ -399,6 +433,14 @@ and its place in a per-player chain, so the server can prove who said it. → [c
 **StreamCodec** — the wire counterpart of a `Codec`: encodes to and decodes
 from a `ByteBuf`, with no schema and no field names. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md)
 
+**Staging buffer** — the list an executing action appends its spawned
+commands to, spliced onto the *head* of the queue after it runs — which is
+what makes an `ArrayDeque` behave as a call stack. → [the execution engine](../systems/commands/the-execution-engine.md)
+
+**Submit node** — one thing to draw that is not terrain, written by the
+extract half of the frame into `SubmitNodeStorage` and sorted into a phase
+before the feature renderers turn it into vertices. → [entity rendering](../systems/rendering/entity-rendering.md), [submit phases](submit-phases.md)
+
 **Structure** — a generated building or landmark: a placement lottery, a
 start assembled in memory, and pieces written a chunk at a time. → [structure placement](../systems/worldgen/structure-placement.md)
 
@@ -432,6 +474,10 @@ as a `WorldClock` advances. → [environment attributes and timelines](../system
 **Trigger** — the server-side hook that tells **one** player's advancement
 state that something happened, by sweeping that player's listener map for
 this trigger. Nothing broadcasts. → [advancements](../systems/commands/advancements.md)
+
+**Unattended command** — a command the player did not type — a dialog
+button, a click event, a sign — which the client parses twice more and
+confirms with the player before it leaves the machine. → [dialogs](../systems/commands/dialogs.md)
 
 ## V
 

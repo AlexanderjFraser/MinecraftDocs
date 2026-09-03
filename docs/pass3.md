@@ -1467,6 +1467,19 @@ writes one strikes it through; a session that rules one out says why, here.*
   machinery and not these. A Reference page, most likely generated. *(session
   N)*
 
+- **Reference views `gen_reference.py` does not yet have** — three
+  catalogues the part sessions named and session O declined to hand-keep,
+  because each is a declaration order the tool could read: the nineteen
+  `EntitySpawnReason` constants with what each gates (session G); the
+  `Item.Properties` weapon helpers — the components that make an item a
+  weapon, for every item (session I); the `Structure.spawnOverrides`
+  spawn-list override, which nothing in the corpus states (session G, cut
+  from `entity-lifecycle`). And the **block-event users** — four blocks and
+  seven block entities with their two int parameters — stay a paragraph on
+  `pistons-and-block-events` (session F's weaker candidate; declined by
+  session O because the page's argument needs them in place). Reference,
+  generated where possible. *(sessions F, G, I; ruled session O)*
+
 ---
 
 ## 8 · Notes from pass-3 sessions for later pass-3 sessions
@@ -2339,3 +2352,23 @@ disagreements and 6 collisions to 7 and 1**.
   it — is answered by R6 and by the page's own trace, which is a command.
   The boss bar and the statistics remain the only two candidates for a part
   that does not exist, and neither has an owner page in the corpus.
+
+- **Session O (Reference).** Four things for session P. **The tier is
+  name-verified now**: `verify_names.py` checks every page under
+  `src/reference/` except the eight `gen_reference.py` views (recognised by
+  their *Do not edit by hand* header) and the two indexes — so a hand-kept
+  reference page fails the build like a system page, and the sixteen bare
+  names the four catalogues carried are fixed. **The reference README is a
+  landing page** with a table whose last column says which parts' landing
+  pages link each page; if session P's cross-corpus sweep changes a landing
+  page's *Reference this part uses*, that column is the place it must also
+  change. **The glossary is hand-kept, and eleven entries were added**
+  (`authority`, `event loop`, `submit node`, and the eight sessions M and N
+  named); the R5 clause about generating it is closed — no page declares
+  its terms, and seeding ninety pages by hand is the same work as keeping
+  the page. **`lectures.md`** still says nothing about Reference beyond the
+  Part II note that `math-and-primitives` is not a lecture; session P should
+  add one sentence at the top: nothing in Reference is watched. Also: the
+  treemap hatch bug is fixed (`gizmos`, `realms`, `references` hatch as
+  whole groups), and `the-connection` had a wrong example — `handlePing`
+  hops; the handlers that do not are the eight now listed in `threads.md`.

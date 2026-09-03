@@ -347,6 +347,10 @@ def svg_treemap(files, W=1000, H=600):
                 elif lw > text_w(short, 9) + 4 and lh > 13:
                     out.append(f'<text x="{lx + lw / 2:.1f}" y="{ly + lh / 2 + 3:.1f}" text-anchor="middle" font-size="9">{esc(short)}</text>')
                 out.append("</g>")
+        if is_skipped(g) and not (iw > 0 and ih > 0):
+            # a skipped depth-3 package too small for a leaf (gizmos, realms) is hatched as a whole,
+            # so the atlas's "hatched boxes" promise holds for every skipped package (session O)
+            out.append(f'<rect class="skip" x="{gx:.1f}" y="{gy:.1f}" width="{gw:.1f}" height="{gh:.1f}"/>')
         out.append(f'<rect class="group" x="{gx:.1f}" y="{gy:.1f}" width="{gw:.1f}" height="{gh:.1f}"/>')
         label = g.replace("net/minecraft/", "").replace("com/mojang/", "mojang/")
         pct = f" {100 * gl / total:.0f}%"
