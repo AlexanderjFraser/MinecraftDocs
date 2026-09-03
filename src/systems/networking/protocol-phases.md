@@ -61,8 +61,11 @@ handles it.
 | `ConnectionProtocol.CONFIGURATION` | `ServerConfigurationPacketListenerImpl` | `ClientConfigurationPacketListenerImpl` | `ConfigurationProtocols.SERVERBOUND` / `ConfigurationProtocols.CLIENTBOUND` |
 | `ConnectionProtocol.PLAY` | `ServerGamePacketListenerImpl` | `ClientPacketListener` | **not pre-bound** — `GameProtocols.SERVERBOUND_TEMPLATE` and `GameProtocols.CLIENTBOUND_TEMPLATE` are bound per connection |
 
-The first four bind their buffers once, at class load, because they need no
-registries. Play cannot: its codecs write registry ids, so both templates are
+The bindings in the last column are the per-phase codec tables that
+[packets and stream codecs](packets-and-stream-codecs.md) builds, and the
+swap itself is the pipeline surgery [the connection](the-connection.md)
+performs; this page is what the swaps are *for*. The first four bind their
+buffers once, at class load, because they need no registries. Play cannot: its codecs write registry ids, so both templates are
 bound per connection with `RegistryFriendlyByteBuf.decorator` at the
 configuration-to-play switch. On the client that is genuinely the first
 moment a `RegistryAccess` exists; on the server the registries have been

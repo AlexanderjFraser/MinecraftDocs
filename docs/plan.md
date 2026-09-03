@@ -1605,3 +1605,47 @@ missing it — and removes the comment. The owner confirms or reorders
   the licensing lands in two commits — `a520d6c` and `185f16b`, whose message
   names the first. Worth knowing for pass 4, when sessions may again overlap:
   commit named files as soon as the checks pass rather than batching.
+
+- **2026-09-03, pass 3 session J — Part IX Networking. The ruling, written
+  before any edit.** *(the record of what was done follows below)*
+  **The part's shape: one wire, three passengers.** The notebook's finding
+  (§1, session G) stands with the pages open — Part IX is not two pipelines
+  meeting at the wire, it is one pipeline that three unrelated systems ride.
+  The landing page draws it that way: a spine of two pages that carry bytes,
+  and three pages hanging off it that each have a different shape and a
+  different reason to exist.
+  **The page list: no splits, no merges, no new pages, no renames** — and so
+  no redirects. Five pages, reordered, four of them rewritten.
+  1. `the-connection` — **the trace**, and it takes the merge's dividend
+     without the merge: the notebook wanted one round-trip diagram, and this
+     page gets it (client value → codec → wire → server handler → back),
+     because a single picture of the thread hop *and* the codec layer is the
+     artefact the pair exists for. Splitting a 550-line page and a 448-line
+     one into one 1,000-line page would have failed the length brief on its
+     own; the pair becomes **one lecture in two halves** by sharing one
+     diagram and one continuous story instead. Half one is the transport.
+  2. `packets-and-stream-codecs` — half two, and a **vocabulary page**: what
+     a packet *is*, once you know how it travels. It does not redraw the
+     journey; its figure is the codec layer itself. Moved to second in the
+     sidebar so the two halves are adjacent.
+  3. `protocol-phases` — untouched in shape (session A's pilot, a **state
+     machine**); re-checked for borrowed facts and links only.
+  4. `what-the-client-is-told` — the **policy** page it always was. The
+     creeper trace's gate cascade becomes a flowchart of one entity's tick;
+     the sequence diagram keeps only the pairing bundle. Its client-coping
+     sections go to Part X as links (session G's guess, taken).
+  5. `chat-and-signing` — a **protocol with an adversary**, and its figure is
+     the three-column table of what each check catches and what dies:
+     message, chain, or connection. Its `Component` paragraph becomes a link
+     to Part II's `text-components`, which session C wrote.
+  **The three borrowed facts are replaced by links, not restated.** The
+  broadcast in the chunk-source phase → Part III's `server-level-tick`; the
+  second flush after `MinecraftServer.tickChildren` → Part III's
+  `server-tick`; the per-frame packet drain → Part I's `anatomy` two-loops
+  figure, with Part X's `the-client-loop` as the deeper reference. Session I
+  named the first two as Part III's to own; this session is the caller that
+  stops restating them.
+  **No coverage page.** R7 allows one; the queue holds none for Part IX (the
+  debug-subscription question is session K's, since `debugging-the-running-game`
+  already lives in Part X), and the budget is better spent on the round-trip
+  diagram.

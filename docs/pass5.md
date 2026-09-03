@@ -465,3 +465,19 @@ was cut or moved, and why)*
   the prose is what reaches an agent through `llms-full.txt`, which the JS
   footer never does. Not urgent; nobody has complained, and duplication in
   favour of the licence being visible is the right way round to err.
+
+- **2026-09-03, pass 3 session J — what Part IX's reshape cut.** Logged per
+  R7: nothing left a page except by moving or by this entry.
+  **From `the-connection`** (550 → 442 lines), all of it enumeration the
+  budgets no longer allow and none of it load-bearing: the sixteen
+  `HandlerNames` constants named one by one (the class survives, and so does
+  the fact that nothing references some of them); the packet-rate smoothing
+  constant and its lerp fraction; `Connection.intendedProfileId` with its
+  setter and the observation that `ServerConnectionListener.acceptChannel` is
+  its only assignment and is itself uncalled; the method-by-method tour of
+  `PacketListener`; `ServerConnectionListener.getSessionId`, its two stop
+  methods and the *Open to LAN* note; `ServerConnectionListener.LatencySimulator`;
+  the five `TickablePacketListener` implementors listed by name (the
+  interface's role survives in the cast); and five `Connection` accessors
+  named as names. If pass 6 misses any of these, the class index still has
+  them and `reference/packets.md` is the catalogue.

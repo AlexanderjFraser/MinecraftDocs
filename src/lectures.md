@@ -276,7 +276,38 @@ is needed to watch it, but Part IX and Part X both come back to it.
 
 ## IX · Networking
 
-*Filled by session J.*
+Part IX is one wire and three passengers. The first two lectures are one
+lecture in two halves and should be watched together; the last three are
+unrelated systems that ride the wire, and each has a different shape.
+
+1. [The connection](systems/networking/the-connection.md) — bytes land on a
+   socket and, some milliseconds later, a method runs on the game thread.
+   The lecture with the round-trip diagram: two threads, two codec layers,
+   one hop, and the packets that never make the hop at all.
+2. [Packets and stream codecs](systems/networking/packets-and-stream-codecs.md)
+   — the second half of the same lecture. What the thing crossing the wire
+   actually is, once you have watched it travel: a record, a codec built
+   from its fields, and an id that only means something inside one phase.
+3. [Protocol phases](systems/networking/protocol-phases.md) — a login, from
+   clicking a server in the list to standing in the world. Four languages
+   over one socket, and a `ServerPlayer` constructed *after* the client has
+   acknowledged that the phase named for preparing it is over.
+4. [What the client is told](systems/networking/what-the-client-is-told.md)
+   — a creeper walks into view. A policy, not a trace: every gate a change
+   passes before it becomes a packet, and the things the server chooses
+   never to say at all.
+5. [Chat and signing](systems/networking/chat-and-signing.md) — the closer,
+   and the only lecture in the book with an adversary in the diagram. What
+   each check catches, and whether it kills the message, the chain, or the
+   connection.
+
+Part IX assumes Part III for the tick phases its traffic is timed against,
+and Part I's [anatomy](systems/anatomy/anatomy.md) for the two loops — the
+client drains packets once per *frame*, and that single fact explains most
+of what looks like network jitter. It assumes Part II for codecs and for
+`Component`, and Part VI's [authority](systems/entities/authority.md) for
+the premise under lecture four. It is a prerequisite of Part X, which is the
+same wire watched from the receiving end.
 
 ## X · The client
 
