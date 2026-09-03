@@ -123,9 +123,16 @@ beyond seven is a table or a Reference page.
 
 [docs/plan.md](docs/plan.md) — the passes, the current pass's charter,
 session protocol and schedule, and the session log. **Read it first; tick
-it last.** [docs/pass4.md](docs/pass4.md) is the queue pass 4 works from:
-per pass-3 session, every claim its rewrite introduced, newest entry first,
-struck through as settled; [docs/pass5.md](docs/pass5.md) collects wording
+it last.** [docs/pass4-brief.md](docs/pass4-brief.md) is pass 4's agent
+brief and session runbook; `python tools/pass4_prompts.py --part <part>
+--out DIR` writes one prompt file per page from it (the page's pass4.md
+checklist via `pass4_queue.py`, its confident sentences via `claims.py`,
+its diagrams arrow by arrow via `diagram_arrows.py`), and
+`tools/check_deps.py` checks the landing pages, the lecture table and the
+parts-dependency figure against each other. [docs/pass4.md](docs/pass4.md)
+is the queue pass 4 works from: per pass-3 session, every claim its
+rewrite introduced, newest entry first, struck through as settled (the
+queue tool reads the strikes); [docs/pass5.md](docs/pass5.md) collects wording
 debt, cuts and structural findings; [docs/pass3.md](docs/pass3.md) §7 is
 the coverage queue (a system with no owner page) and stays live. **A
 session that leaves something for later appends to the right one of those,

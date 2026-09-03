@@ -146,18 +146,47 @@ what a landing page, `lectures.md` or the glossary says about the page
 changes those in the same commit, because a landing page is a claim about
 order and pass 4 has just checked it.
 
+### The tooling
+
+Built 2026-09-03 by the planning session between the passes, so that
+fifteen Opus sessions run the same check the same way. All in `tools/`,
+all read-only over the corpus, none a deploy gate yet:
+
+- `pass4_queue.py` — every pass4.md note that names a page (either entry
+  format, either page name, renamed pages aliased), as one checklist per
+  page; reads `~~strikes~~`, so checklists shrink as sessions settle lines.
+  `--summary` is the corpus-wide count.
+- `claims.py` — a page's confident sentences by category: count, absolute,
+  order, contrast, side. About 5,000 count sentences and 4,700 absolutes
+  corpus-wide; `--all --counts --out DIR` is session N's queue.
+- `diagram_arrows.py` — every diagram as a numbered list of arrows, notes
+  and bars (195 diagrams, 2,442 items, none unparsed), so an arrow-by-arrow
+  report has one verdict per number and a gap is visible.
+- `check_deps.py` — the mechanical half of addition 2: landing pages, the
+  figure, the lecture table and every cross-part link against each other.
+  Exit 1 on a contradiction; a report for the rest.
+- `pass4_prompts.py` — the four above assembled into one prompt file per
+  page behind the brief in [pass4-brief.md](pass4-brief.md), which is also
+  the session runbook.
+
 ### Session protocol
 
 One session = one part (Parts IV, XI, XII and XIII may take two), plus a
-first session on the frame and a closing session. Each part session:
+first session on the frame and a closing session. The step-by-step
+version, with the commands, is [pass4-brief.md](pass4-brief.md) Part 2.
+Each part session:
 
 1. **Read** this charter, `CLAUDE.md`, [pass2.md](pass2.md)'s protocol and
    lessons, every [pass4.md](pass4.md) entry that names the part (grep it —
    sessions other than the part's own left notes, and session O's standing
    items apply to every part), and the part's landing page.
-2. **Check.** One agent per page, in parallel, on Opus: the page, its
-   pass4.md checklist, `reference/26.2`, `reference/libs/`, the data and
-   assets trees, and the brief above. Fact-check output is not committed.
+2. **Check.** One agent per page, in parallel, on Opus, each given the
+   prompt file `python tools/pass4_prompts.py --part <part> --out DIR`
+   writes for its page: the brief ([pass4-brief.md](pass4-brief.md) Part
+   1), the page's pass4.md checklist, its confident sentences by category
+   and its diagrams arrow by arrow. The part's page-less notes land in
+   `_part-notes.md` for the session to route. Fact-check output is not
+   committed.
 3. **Re-derive before rewording.** Suspect the tool once, then the agent
    once, before the page: pass 2's verifier and both generators had bugs,
    and pass 3's drafting agents were wrong in about a third of their own
@@ -185,7 +214,16 @@ O is the close.
   thirteen landing pages and `lectures.md` as claims about order (addition
   2, in full, once), the parts-dependency figure, and Reference's ten
   hand-kept pages (addition 7). The generated views' one-sample-per-view
-  check.
+  check. Opens with `python tools/check_deps.py`, which already reports:
+  two rows of the lecture table that the landing pages do not support
+  (*environment attributes* says III, VI, XI and only XI's landing page
+  links it; *blocks and states* says VI, VII and the landing pages say IV,
+  VI); three forward links in *before you start* sections with no dashed
+  arrow (IV → blocks and states, VI → prediction, IX → the client loop —
+  the one session P named); and per part the entries no page in the part
+  links or names (Part X: anatomy, authority; Part VI: chunk anatomy,
+  scheduled ticks, prediction; Part XII: codecs, registries). When the
+  checker is green, add it to `tools/deploy.sh` as the fourth gate.
 - [ ] **Session B — Part I Anatomy · Part II Foundations.** The threads
   table and the two-loops figure; DFU semantics in `codecs-nbt-json`
   (addition 6); the freeze rule across `identifiers-and-registries` and
@@ -279,3 +317,21 @@ missing it — and removes the comment. The owner confirms or reorders
 ## Session log — pass 4 onward
 
 *(newest last; pass 3's log is in [pass3.md](pass3.md) §10)*
+
+- **2026-09-03, planning session (Fable, between passes 3 and 4).** No
+  page touched. Read the charter, the queue and pass 2's protocol; built
+  the five tools under *The tooling* above and wrote
+  [pass4-brief.md](pass4-brief.md) — the agent brief (one report shape,
+  nine steps in order, evidence for every verdict) and the session
+  runbook (nine steps, each a command or a rule) — so sessions A–O on
+  Opus do no planning of their own. Measured while building: the queue
+  is 562 page-attributed notes and 82 part-wide ones; the corpus has
+  about 5,000 count sentences and 4,700 absolutes for session N; all
+  195 diagrams parse into 2,442 checkable items. `check_deps.py` found
+  session A's first findings (listed in its schedule line). Rulings:
+  `check_deps.py` treats Parts I and II as universally assumed (session
+  P's figure omits them on purpose) and reports a forward link rather
+  than failing it, because a landing page may link a later part to say
+  what it hands forward; the session decides which it is. A note in
+  pass4.md written under a renamed page's old name is routed to the new
+  page(s) by an alias table in `pass4_queue.py`.

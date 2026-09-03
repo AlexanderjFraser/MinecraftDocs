@@ -61,6 +61,23 @@ entry first.
   settle it and remove the page's "cannot be settled from the decompile"
   note.
 
+- **The tooling reads this file** *(planning session, 2026-09-03)*.
+  `tools/pass4_queue.py` cuts it into units (a heading, or a list item with
+  its continuation lines) and gives each page every unit that names it as
+  `` `slug` ``, `part/slug` or `slug.md`, plus every unit under a heading
+  that names it; a unit that names no page is a *part-wide* note, routed by
+  the session from `_part-notes.md`. So: **name the page in backticks when
+  you write a note**, one page per line where you can, and **strike a
+  settled line as `~~…~~` at the start of the line** — the tool drops
+  struck units, so the next session's checklist is only what is open.
+  Corrections logged by a pass-4 session go under a `## Session X — Part N
+  (pass 4)` heading at the top of *Entries*.
+- **`tools/check_deps.py`'s first run** (2026-09-03) is session A's opening
+  list: two lecture-table rows the landing pages do not support, three
+  forward links with no dashed arrow, and per part the *before you start*
+  entries no page in the part links or names — all in the plan's schedule
+  line for session A.
+
 ## Entries
 
 ## Session P — The lecture order and the close *(2026-09-03)*
