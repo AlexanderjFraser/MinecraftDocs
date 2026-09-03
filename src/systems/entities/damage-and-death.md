@@ -2,365 +2,392 @@
 
 > Verified against **Minecraft 26.2** · Part VI · An arrow hits a player in full iron with Protection II: six damage becomes two, and if it kills, a message, a loot drop and a death screen.
 
-## Responsibility
+The arrow lands, the screen goes red, the hearts drop by one, and a
+notification sound plays somewhere behind you. Six damage left the bow and
+about two reached your health, which is the part everybody knows. The part
+nobody sees is what happens when a second arrow arrives four ticks later,
+inside the flash. If more than ten ticks of invulnerability remain, that hit
+is worth only its *excess* over `LivingEntity.lastHurt`: a weaker one returns
+immediately, having done nothing at all, and a stronger one takes a partial
+branch that clears an internal *took full damage* flag. That one flag gates
+the damage-event broadcast, the knockback, the hurt sound and the red flash
+alike. Health goes down and nothing else happens — which means neither
+`ClientboundDamageEventPacket` nor the red flash is a reliable "was hit"
+signal. It is all in `LivingEntity.hurtServer`.
 
-Every way an entity can be hurt — a sword, an arrow, lava, suffocation, the
-void, a cactus, a falling anvil — funnels into one abstract method that only
-exists on the server. What varies is the `DamageSource` describing *what*
-and *who*, and the tags on its `DamageType` describing which of the dozen
-reduction and immunity steps apply. Death is the tail of the same path:
-loot, experience, a message assembled from the victim's combat log, and one
-byte broadcast to everyone watching.
+## The cast
 
-The one sentence a player recognises: *armour and Protection stack, hits
-inside the red flash do nothing, and the message says what killed you.*
+| class | what it decides | thread |
+|---|---|---|
+| `DamageSource` | *what* hit and *who*: a direct entity, a causing entity, and — rarely — a position instead | built wherever the hit starts, server main |
+| `DamageType` | the message id, the difficulty scaling, the food cost, the hurt sound and the kind of death message | a dynamic registry entry, loaded from a data pack and synced to clients |
+| `DamageTypeTags` | almost every behavioural branch on the path below | read on the server main thread |
+| `LivingEntity` | the whole reduction pipeline, the i-frames, the flash, the two attribution references and death | server main thread |
+| `CombatRules` | the two pieces of arithmetic — armour and enchantment protection | stateless statics |
+| `CombatTracker` | what killed you, and the sentence that says so | server main, cleared on its own timer |
+| `ServerPlayer` | PvP, the death screen packet, the death message, the inventory drop | server main thread |
+| `Entity` | that `Entity.hurtServer` is **abstract** — there is no default behaviour to inherit | — |
 
-## The data it owns
+Everything above is server-side, and `LivingEntity` does not override
+`Entity.hurtClient`: no health is ever changed on a client. See
+[authority](authority.md) for why `Entity.hurtServer` takes a `ServerLevel`,
+so the compiler enforces that and not a convention.
 
-- **`DamageSource`** — a `DamageType` holder plus up to two entities: the
-  *direct* one (the arrow) and the *causing* one (the archer), which are the
-  same object for a melee hit (`DamageSource.isDirect`). It can also carry a
-  position instead of an entity, though far less often than you would guess:
-  ordinary explosions do **not** — they are entity-sourced and get their
-  position from `DamageSource.getSourcePosition`'s fallback. The only
-  genuinely positional sources in 26.2 are the bad-respawn-point explosion,
-  `/damage … at`, and a loot-table explode effect.
-  `DamageSource.getWeaponItem` reaches through the direct entity.
-- **`DamageType`** — a record of a message id, a `DamageScaling`, a food
-  exhaustion cost, a `DamageEffects` (which picks the hurt *sound*) and a
-  `DeathMessageType`. It is a **dynamic registry**: the JSON lives in data
-  packs and is synced to clients, which is why a hurt packet can carry a
-  holder and the client can resolve the right sound.
-- **`DamageTypes`** — 51 keys, from `DamageTypes.IN_FIRE` and
-  `DamageTypes.LAVA` through `DamageTypes.FALL`, `DamageTypes.DROWN`,
-  `DamageTypes.CRAMMING`, `DamageTypes.ARROW`, `DamageTypes.PLAYER_ATTACK`,
-  `DamageTypes.MOB_ATTACK`, `DamageTypes.EXPLOSION`,
-  `DamageTypes.SONIC_BOOM`, `DamageTypes.MACE_SMASH`,
-  `DamageTypes.BAD_RESPAWN_POINT` (the only *intentional game design* one)
-  and `DamageTypes.GENERIC_KILL`. `DamageSources` is the per-level factory
-  that pre-builds the 25 entity-less ones and constructs the rest on demand;
-  reach it from any entity through `Entity.damageSources`.
-- **`DamageTypeTags`** — 35 tags, and **almost every behavioural branch in
-  the hurt path is tag-driven rather than type-driven**. The exceptions are
-  worth knowing because they are the whole list: thorns picks its own
-  secondary sound, wind charge is excluded from mob-anger attribution, and a
-  `ServerPlayer` mid-dimension-change is invulnerable to everything except
-  an ender pearl. Everything else goes through a tag. The ones actually
-  read:
-  `DamageTypeTags.BYPASSES_INVULNERABILITY`, `DamageTypeTags.BYPASSES_COOLDOWN`,
-  `DamageTypeTags.BYPASSES_ARMOR`, `DamageTypeTags.BYPASSES_EFFECTS`,
-  `DamageTypeTags.BYPASSES_RESISTANCE`, `DamageTypeTags.BYPASSES_ENCHANTMENTS`,
-  `DamageTypeTags.DAMAGES_HELMET`, `DamageTypeTags.IS_FIRE`,
-  `DamageTypeTags.IS_FALL`, `DamageTypeTags.IS_FREEZING`,
-  `DamageTypeTags.IS_PROJECTILE`, `DamageTypeTags.NO_IMPACT`,
-  `DamageTypeTags.NO_KNOCKBACK`, `DamageTypeTags.NO_ANGER`,
-  `DamageTypeTags.ALWAYS_MOST_SIGNIFICANT_FALL`.
-- **The victim's state**, all on `LivingEntity`: `LivingEntity.hurtTime` and
-  `LivingEntity.hurtDuration` (the red flash), `Entity.invulnerableTime` (the
-  i-frames), `LivingEntity.lastHurt` (how much the last hit was worth),
-  `LivingEntity.deathTime`, `LivingEntity.dead`, the two attribution
-  references `LivingEntity.lastHurtByPlayer` (with its
-  `LivingEntity.lastHurtByPlayerMemoryTime` countdown) and
-  `LivingEntity.lastHurtByMob`, and the `CombatTracker`. The two references
-  are written by `LivingEntity.resolveMobResponsibleForDamage` and
-  `LivingEntity.resolvePlayerResponsibleForDamage`, which run on **every**
-  hit including the silent partial one — and which credit a tamed wolf's
-  work to its owner. `LivingEntity.lastDamageSource` and
-  `LivingEntity.lastDamageStamp` are set beside them, but only when the hit
-  actually counted.
-- **`CombatTracker`** — a list of `CombatEntry` records (source, damage, an
-  optional `FallLocation`, fall distance) that clears itself after 100 ticks
-  out of combat or 300 in it, plus `CombatTracker.getDeathMessage` and the
-  fall-attribution logic that produces "was doomed to fall by".
-- **The formulas** live in `CombatRules`: `CombatRules.MAX_ARMOR` 20,
-  `CombatRules.ARMOR_PROTECTION_DIVIDER` 25,
-  `CombatRules.BASE_ARMOR_TOUGHNESS` 2, `CombatRules.MIN_ARMOR_RATIO` 0.2.
+## The number the arrow decides
 
-## When it runs
+`AbstractArrow.onHitEntity` builds the number before it builds the source. It
+starts from `AbstractArrow.baseDamage`, 2.0 for an ordinary arrow, runs
+`EnchantmentHelper.modifyDamage` over the bow that fired it so Power raises
+the *base*, then multiplies by the arrow's current speed and rounds up with
+`Mth.ceil` — so the damage that leaves the bow is an integer, and a slowing
+arrow does less. `AbstractArrow.isCritArrow` adds a random bonus of up to
+half again. Six is a fresh arrow at full draw.
 
-**Server main thread, always, for the damage itself.** `Entity.hurtServer`
-takes a `ServerLevel` as its first parameter precisely so the compiler
-enforces it, and `LivingEntity` does not override `Entity.hurtClient` — so
-no health is ever changed client-side. There *is* one living override, and
-it is the interesting one: `RemotePlayer.hurtClient` returns true
-unconditionally, which is how a client-side arrow knows it hit another
-player and can play its own effects without knowing anything about the
-damage. Nine classes declare `Entity.hurtClient` in all, and they only ever
-answer *did this connect*, never *how much*. `Entity.hurt` and
-`Entity.hurtOrSimulate` survive as deprecated final wrappers; only the
-second picks a side, the first simply does nothing off a `ServerLevel`.
+`DamageSources.arrow` then names two entities: the arrow as the *direct*
+entity, the shooter as the *causing* one — or, when the arrow has no owner
+left, the arrow itself in both roles. `DamageSource.getWeaponItem` reaches
+through the direct entity, which is how Breach on the attacker's weapon
+reaches the victim's armour calculation. A source can carry a position
+instead, though far less often than you would guess: ordinary explosions do
+not, and fall back to the direct entity in `DamageSource.getSourcePosition`.
+Exactly three sources are genuinely positional, and only they put a position
+on the wire through `DamageSource.sourcePositionRaw` —
+`DamageSources.badRespawnPointExplosion`, `/damage … at` (`DamageCommand`),
+and `ExplodeEffect` unattributed.
 
-The client's share is presentation, driven by packets:
-`LivingEntity.handleDamageEvent` sets the flash and plays the sound without
-touching health; health arrives separately, as synched data for a mob and as
-`ClientboundSetHealthPacket` for your own player. `LocalPlayer.hurtTo` is
-the one place the client infers a hit from a health *drop*.
+The `DamageType` behind the source is five fields — message id,
+`DamageScaling`, food exhaustion, `DamageEffects` (which picks the hurt
+*sound*) and `DeathMessageType` — and it lives in a data pack. There are 51
+keys in `DamageTypes` and 35 tags in `DamageTypeTags`, and **almost every
+behavioural branch below is tag-driven rather than type-driven**. The
+exceptions are worth listing because they are the whole list: thorns picks
+its own secondary sound in `LivingEntity.playSecondaryHurtSound`, wind charge
+is excluded from mob-anger attribution against an
+`EntityTypeTags.NO_ANGER_FROM_WIND_CHARGE` entity, and a `ServerPlayer`
+mid-dimension-change is invulnerable to all but `DamageTypes.ENDER_PEARL`.
 
-`Entity.invulnerableTime` is decremented once per tick from two different
-places — `LivingEntity.baseTick` for everything except a `ServerPlayer`, and
-`ServerPlayer.tick` for players, earlier in the tick.
+## Three gates before anything is computed
 
-Environmental damage is ticked from two places, not one. Fire every twenty
-ticks, lava at four a tick, suffocation, the world border and drowning come
-from `LivingEntity.baseTick`. **Freezing and cramming do not** — freezing is
-in `LivingEntity.aiStep`, every forty ticks, and cramming is inside
-`LivingEntity.pushEntities`, which `LivingEntity.aiStep` calls at the end of
-its movement work.
+`LivingEntity.hurtServer` opens with three early returns: already
+invulnerable, already dying, or a `DamageTypeTags.IS_FIRE` source against
+`MobEffects.FIRE_RESISTANCE` — a mob-effect immunity sitting *outside* the
+reduction pipeline entirely. Invulnerability itself is
+`Entity.isInvulnerableToBase` (removed, the invulnerable flag, fire immunity,
+fall immunity) **or** an enchantment-granted one through
+`EnchantmentHelper.isImmuneToDamage`, which is how Frost Walker makes its
+wearer immune to magma blocks.
 
-## The trace: an arrow hits
+Two subclasses get there first. `ServerPlayer.hurtServer` adds the PvP and
+team check — `ServerPlayer.canHarmPlayer` refuses when the level forbids PvP
+or the two share a team that disallows friendly fire — testing both a `Player`
+causing entity directly and an `AbstractArrow` causing entity by asking it for
+its owner. `ServerPlayer.isInvulnerableTo` adds the two conditions that have
+no tag: mid-dimension-change, and a client that has not finished loading. Then
+`Player.hurtServer` refuses a creative player unless the source is
+`DamageTypeTags.BYPASSES_INVULNERABILITY`, and applies **difficulty
+scaling** — halved and offset on easy, one and a half times on hard, zero on
+peaceful — but only when `DamageSource.scalesWithDifficulty` says so. That
+reads `DamageScaling` off the type, and `DamageTypes.ARROW` is
+*when_caused_by_living_non_player*: a skeleton's arrow scales and a player's
+does not. `Player.isInvulnerableTo` is also where `GameRules.DROWNING_DAMAGE`,
+`GameRules.FALL_DAMAGE`, `GameRules.FIRE_DAMAGE` and
+`GameRules.FREEZE_DAMAGE` live — switching one off makes a player *immune*
+rather than making the damage smaller.
+
+## One number, a dozen owners
+
+Past the gates the number goes down a chain in which every link owns exactly
+one multiplication and knows about none of the others.
+
+```mermaid
+flowchart TB
+    N0["6.0 leaves the bow — Mth.ceil(speed times baseDamage), Power already folded into the base"]
+    N1["LivingEntity.applyItemBlocking — subtract what BLOCKS_ATTACKS resolves for this angle and this damage type"]
+    N2["freezing times 5 on a FREEZE_HURTS_EXTRA_TYPES entity, helmet times 0.75 on a DAMAGES_HELMET source"]
+    N3["the i-frame window — over ten ticks left, only the excess over lastHurt survives"]
+    N4["CombatRules.getDamageAfterAbsorb — armour, floored at a fifth and capped at 20"]
+    N5["Resistance — five points of twenty-five per level, total immunity at amplifier four"]
+    N6["CombatRules.getDamageAfterMagicAbsorb — protection points, capped at 20 as well"]
+    N7["absorption hearts, spent before health is, then LivingEntity.setHealth and CombatTracker.recordDamage"]
+
+    N0 -- "6.0 — Player.hurtServer scales by difficulty, but not a player's arrow" --> N1
+    N1 -- "6.0 — nothing raised" --> N2
+    N2 -- "6.0 — neither applies" --> N3
+    N3 -- "6.0 — the window was clear" --> N4
+    N4 -- "3.12 — 15 armour, no toughness, 48 per cent off" --> N5
+    N5 -- "3.12 — no Resistance" --> N6
+    N6 -- "2.12 — 8 protection points, 32 per cent off" --> N7
+```
+
+The first link is blocking, and **shields are no longer a mechanism, only a
+vocabulary**. `LivingEntity.applyItemBlocking` asks the item being used —
+through `LivingEntity.getItemBlockingWith`, which enforces
+`BlocksAttacks.blockDelayTicks` — for a `DataComponents.BLOCKS_ATTACKS`
+component, checks the damage type against `BlocksAttacks.bypassedBy`,
+computes the angle between the source position and the victim's head
+rotation, and lets `BlocksAttacks.resolveBlockedDamage` pick a reduction from
+the component's own list. `BlocksAttacks.hurtBlockingItem` then charges
+durability, and a non-projectile block knocks the *attacker* back through
+`LivingEntity.blockedByItem`. An arrow with any piercing level skips all of
+it before the angle is computed. `ShieldItem` still exists, the statistic is
+still `Stats.DAMAGE_BLOCKED_BY_SHIELD`, and the axe-disables-shield rule
+survives as `LivingEntity.getSecondsToDisableBlocking` — which `Warden`
+overrides — feeding `Player.blockUsingItem` and `BlocksAttacks.disable`. None
+of it is shield-specific code any more.
+
+The two multipliers after it almost never fire and are both pure tag lookups:
+`DamageTypeTags.IS_FREEZING` against an entity in
+`EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES` multiplies by five, and
+`DamageTypeTags.DAMAGES_HELMET` against a helmeted victim calls
+`LivingEntity.hurtHelmet` and multiplies by 0.75.
+
+## Ten ticks in which nothing shows
+
+`Entity.invulnerableTime` is set to 20 by a hit that lands in full and counted
+down once a tick — from `LivingEntity.baseTick` for everything except a
+`ServerPlayer`, and from `ServerPlayer.tick` for players, earlier in the tick.
+`LivingEntity.hurtDuration` and `LivingEntity.hurtTime` are set to 10, so the
+red flash is only half the window.
+
+The other half is the silent one. Inside it, unless the type carries
+`DamageTypeTags.BYPASSES_COOLDOWN`, the incoming damage is compared against
+`LivingEntity.lastHurt` — what the last hit was worth — and only the excess
+is applied. A hit that is not bigger returns before any sound, packet,
+knockback or combat entry. A hit that *is* bigger applies the difference and
+clears a local *took full damage* flag, and everything downstream sits inside
+a test of that flag: no `ServerLevel.broadcastDamageEvent`, no
+`Entity.markHurt`, no `LivingEntity.dealDefaultKnockback`, no hurt sound, no
+reset of the flash. So the strongest hit in each window is the only one
+anyone can see, and the rest are free damage that leaves no trace on the wire.
+
+`LivingEntity.resolveMobResponsibleForDamage` and
+`LivingEntity.resolvePlayerResponsibleForDamage` sit outside that test and run
+on **every** hit, silent partial ones included. They write
+`LivingEntity.lastHurtByMob` and `LivingEntity.lastHurtByPlayer` (with its
+hundred-tick `LivingEntity.lastHurtByPlayerMemoryTime` countdown), crediting a
+tamed `Wolf`'s work to its owner. `LivingEntity.lastDamageSource` and
+`LivingEntity.lastDamageStamp` are set beside them, but only when the hit
+counted for something.
+
+## Armour, and why big hits punch through it
+
+`LivingEntity.actuallyHurt` is where the number meets the victim's gear.
+`LivingEntity.getDamageAfterArmorAbsorb` first calls `LivingEntity.hurtArmor`
+— which is **empty on `LivingEntity`** and overridden only by `Player`,
+`Horse` and `Wolf`. A skeleton in full iron never wears its armour out. Where
+it is implemented it routes to `LivingEntity.doHurtEquipment`: one durability
+point per four damage, minimum one, per piece, and each piece must separately
+be `Equippable.damageOnHurt`, damageable, and pass `ItemStack.canBeHurtBy`.
+
+Then `CombatRules.getDamageAfterAbsorb` does the arithmetic. Effective armour
+is the armour points *minus the incoming damage divided by two plus a quarter
+of toughness*, clamped between `CombatRules.MIN_ARMOR_RATIO` of nominal and
+`CombatRules.MAX_ARMOR`, and the reduction is that over
+`CombatRules.ARMOR_PROTECTION_DIVIDER`. **Big hits punch through armour by
+design**: the subtraction is what makes a 40-damage hit see less armour than a
+6-damage one, and `Attributes.ARMOR_TOUGHNESS` is exactly the term that slows
+it down. Full iron is 15 points and no toughness, so a 6-damage hit sees 12
+effective armour, 48 per cent off, 3.12 left. Breach moves the resulting
+fraction through `EnchantmentHelper.modifyArmorEffectiveness` first.
+
+`LivingEntity.getDamageAfterMagicAbsorb` then applies Resistance and sums
+`EnchantmentHelper.getDamageProtection` across every equipment slot.
+Protection is not a class: it is
+`EnchantmentEffectComponents.DAMAGE_PROTECTION` holding a conditional value
+effect, confined to armour by its own *slots* declaration in the JSON rather
+than by the helper, worth one point per level per piece — so Protection II on
+four pieces is 8. `CombatRules.getDamageAfterMagicAbsorb` caps that sum at 20
+and takes *sum over 25* off. 3.12 becomes about 2.12.
+
+**Armour is capped twice and floored once.** Effective armour never drops
+below a fifth of nominal and never counts above 20, and protection points cap
+at 20 as well — so armour alone tops out at 80 per cent reduction, protection
+at 80 per cent of what is left, 96 per cent combined. Something always lands.
+What survives comes off absorption first and health second, at which point
+`CombatTracker.recordDamage` files a `CombatEntry`. `Player.actuallyHurt`
+overrides the whole method to add food exhaustion (`DamageType.exhaustion`,
+0.1 for an arrow) and the damage statistics.
+
+## Telling everyone, and what a block replaces
 
 ```mermaid
 sequenceDiagram
     participant AA as AbstractArrow
     participant SP as ServerPlayer
     participant LE as LivingEntity
-    participant CR as CombatRules
-    participant EH as EnchantmentHelper
     participant CT as CombatTracker
-    participant CL as ClientPacketListener
+    participant SL as ServerLevel
+    participant CPL as ClientPacketListener
 
-    AA->>AA: onHitEntity — damage = ceil(speed × baseDamage), crit bonus
-    AA->>SP: hurtOrSimulate(damageSources().arrow(arrow, shooter), 6.0)
-    SP->>LE: hurtServer — PvP gate, difficulty scaling, invulnerability
-    LE->>LE: applyItemBlocking — BlocksAttacks component, angle, bypasses
-    LE->>LE: i-frames: over 10 ticks left? only the excess over lastHurt counts
-    LE->>CR: getDamageAfterArmorAbsorb → hurtArmor → getDamageAfterAbsorb
-    CR-->>LE: 6.0 → 3.12 (15 armour, 0 toughness)
-    LE->>EH: getDamageAfterMagicAbsorb → getDamageProtection (Protection II ×4)
-    EH-->>LE: 3.12 → ≈2.12 (8 protection points, capped at 20)
-    LE->>CT: actuallyHurt → recordDamage → CombatEntry, setHealth
-    LE-->>CL: broadcastDamageEvent → ClientboundDamageEventPacket
-    LE->>LE: markHurt · dealDefaultKnockback · indicateDamage
-    LE-->>CL: ClientboundHurtAnimationPacket — self only, and only if unblocked
-    LE->>LE: dead? checkTotemDeathProtection, else die(source)
-    SP-->>CL: ClientboundPlayerCombatKillPacket → DeathScreen
+    AA->>SP: hurtOrSimulate(arrow source, 6.0)
+    SP->>SP: hurtServer — PvP and teams, then Player's creative gate and difficulty scaling
+    SP->>LE: three gates, blocking, the two odd multipliers
+    LE->>LE: i-frames — a partial hit clears the took-full-damage flag here
+    LE->>CT: actuallyHurt — armour, protection, absorption, then recordDamage and setHealth
+    LE->>LE: resolveMobResponsibleForDamage, resolvePlayerResponsibleForDamage
+    LE->>SL: broadcastDamageEvent — full hits only, and only when nothing was blocked
+    SL-->>CPL: ClientboundDamageEventPacket — every tracker, and the victim
+    LE->>LE: markHurt, then dealDefaultKnockback
+    LE->>SP: indicateDamage — skipped entirely if anything was blocked
+    SP-->>CPL: ClientboundHurtAnimationPacket — that one player, nobody else
+    LE->>LE: dead? checkTotemDeathProtection, else the death sound, then die
+    SP->>SP: die — message, loot, byte 3, and no call up to LivingEntity
+    SP-->>CPL: ClientboundPlayerCombatKillPacket — the death screen opens
+    Note over LE,CPL: twenty ticks later, for a mob — tickDeath broadcasts byte 60 and removes it
 ```
 
-1. **The projectile decides a number.** `AbstractArrow.onHitEntity`
-   multiplies the arrow's current speed by `AbstractArrow.baseDamage` (2.0
-   for a player-fired arrow), lets `EnchantmentHelper.modifyDamage` apply
-   Power via the bow that fired it, rounds up, and adds a random bonus for a
-   critical arrow. `DamageSources.arrow` builds the source with the arrow as
-   direct entity and the shooter as cause.
-2. **Gates.** `LivingEntity.hurtServer` opens with three early returns —
-   already invulnerable, already dying, or a `DamageTypeTags.IS_FIRE` source
-   against `MobEffects.FIRE_RESISTANCE`, which is a mob-effect immunity
-   sitting *outside* the reduction pipeline entirely. Invulnerability itself
-   is `Entity.isInvulnerableToBase` **or** an enchantment-granted immunity,
-   and `ServerPlayer` adds two more of its own: mid-dimension-change, and
-   client-not-yet-loaded. Then `ServerPlayer.hurtServer` checks PvP and
-   teams, unwrapping the arrow to find the shooter — though for a
-   player-fired arrow the causing entity already *is* the shooter, so the
-   unwrap only matters for an ownerless one. `Player.hurtServer` checks creative
-   invulnerability and applies **difficulty scaling** — but only because
-   `DamageTypes.ARROW` is `DamageScaling.WHEN_CAUSED_BY_LIVING_NON_PLAYER`,
-   so a skeleton's arrow scales and a player's does not.
-3. **Blocking.** `LivingEntity.applyItemBlocking` asks the item being used
-   for `DataComponents.BLOCKS_ATTACKS`, checks the damage type against the
-   component's bypass set, computes the angle between the incoming source
-   and the victim's view against the component's blocking arc, and returns
-   the *amount* blocked. An arrow with any piercing level skips all of it.
-   Two multipliers sit between here and the i-frames and belong to the
-   sequence even though they rarely fire: a `DamageTypeTags.IS_FREEZING`
-   source against an entity in `EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES`
-   is multiplied by **five**, and a `DamageTypeTags.DAMAGES_HELMET` source
-   against a helmeted victim damages the helmet and is multiplied by 0.75.
-4. **I-frames, and the flag that makes them silent.** If more than ten ticks
-   of invulnerability remain and the type does not bypass the cooldown, the
-   hit is only worth its **excess over `LivingEntity.lastHurt`** — and a hit
-   that is not bigger returns immediately, before any sound, packet,
-   knockback or combat entry. A hit that *is* bigger takes that partial
-   branch and clears an internal *took full damage* flag, and everything
-   downstream is inside a test of that flag: no `ClientboundDamageEventPacket`,
-   no `Entity.markHurt`, no knockback, no hurt sound and no red flash. The
-   health simply drops. Otherwise the normal branch records the new
-   `LivingEntity.lastHurt`, sets twenty ticks of invulnerability and ten of
-   flash, and lets the rest of the pipeline run.
-5. **Armour.** `LivingEntity.getDamageAfterArmorAbsorb` first calls
-   `LivingEntity.hurtArmor` — which is **empty on `LivingEntity`** and
-   overridden only by `Player`, `Horse` and `Wolf`, so a skeleton in iron
-   never wears its armour out. Where it is implemented, the cost is one
-   durability per four damage, minimum one, per piece, and each piece must
-   separately be damageable and not immune to this damage type. Then
-   `CombatRules.getDamageAfterAbsorb`: effective armour is the
-   armour points *minus damage divided by (2 + toughness/4)*, clamped to
-   between a fifth of nominal and 20; the reduction is that over 25. Full
-   iron is 15 points and no toughness, so a 6-damage hit sees 12 effective
-   armour, 48 % off — 3.12 left. Breach moves this number through
-   `EnchantmentHelper.modifyArmorEffectiveness`.
-6. **Enchantments and effects.** `LivingEntity.getDamageAfterMagicAbsorb`
-   applies Resistance (20 % per level, immune at amplifier four), then sums
-   `EnchantmentHelper.getDamageProtection` across every equipment slot —
-   Protection is confined to armour by its own *slots* declaration in the
-   JSON, not by the helper — Protection II
-   contributes 2 per piece, 8 in total — and `CombatRules.getDamageAfterMagicAbsorb`
-   caps that sum at 20 and reduces by *sum over 25*. 3.12 becomes about
-   2.12. **Combined with armour the ceiling is 96 %: something always lands.**
-7. **Absorption, then health.** Absorption hearts are subtracted first; then
-   `Player.actuallyHurt` charges food exhaustion (0.1 for an arrow), records
-   a `CombatEntry`, sets health and posts `GameEvent.ENTITY_DAMAGE`.
-8. **Telling everyone.** `ServerLevel.broadcastDamageEvent` sends a
-   `ClientboundDamageEventPacket` — the damage *type*, the two entity ids,
-   an optional position, and **no amount** — and it runs *before* the
-   knockback, not after. A successful block replaces it entirely: if the
-   blocking component absorbed anything, `BlocksAttacks.onBlocked` plays the
-   block sound and **no damage event is broadcast at all**. Then
-   `Entity.markHurt` queues the velocity packet;
-   `LivingEntity.dealDefaultKnockback` computes the direction from the
-   projectile and scales it by one minus
-   `Attributes.KNOCKBACK_RESISTANCE`; and for a player
-   `ServerPlayer.indicateDamage` sends the directional
-   `ClientboundHurtAnimationPacket` — to that player alone, and only when
-   the hit was not blocked.
-9. **Death, or not.** If health has reached zero,
-   `LivingEntity.checkTotemDeathProtection` looks for
-   `DataComponents.DEATH_PROTECTION` in either hand — unless the source is
-   `DamageTypeTags.BYPASSES_INVULNERABILITY`, which is why `/kill` cannot be
-   totemed — and on a hit consumes one of the item, sets
-   health to one, applies the totem's effects and broadcasts the totem
-   entity event. Otherwise `LivingEntity.die`: kill credit, the combat log
-   read for a message, `LivingEntity.dropAllDeathLoot`
-   (`LivingEntity.dropFromLootTable` with `LootContextParamSets.ENTITY`,
-   then `LivingEntity.dropEquipment`, then `LivingEntity.dropExperience`),
-   the wither rose, one entity-event byte to every watcher, and *then*
-   `Pose.DYING` — the byte goes out before the pose, not after. The loot,
-   the game event and the wither rose are all inside one gate the page's
-   ordering hides: `Entity.killedEntity` on the killer, which can veto them
-   outright.
-10. **The death screen.** For a player, `ServerPlayer.die` sends
-    `ClientboundPlayerCombatKillPacket`. `GameRules.SHOW_DEATH_MESSAGES`
-    gates more than the chat line: with the rule off the message is never
-    even assembled and the packet goes out carrying an **empty** component,
-    so the death screen still opens but says nothing. With it on, the
-    message is built from the combat log, sent in the packet and
-    broadcast in chat. `ServerPlayer.die` also tells
-    nearby angry mobs to forgive them under
-    `GameRules.FORGIVE_DEAD_PLAYERS`, drops the inventory unless
-    `GameRules.KEEP_INVENTORY`, and records the death location. The client
-    opens the death screen — unless `GameRules.IMMEDIATE_RESPAWN` — and the
-    button sends the respawn command back.
-    [Player anatomy](../player/player-anatomy.md) owns the object that
-    comes back.
-11. **Cleanup.** A dead mob counts up `LivingEntity.deathTime` for twenty
-    ticks, then broadcasts the poof event and removes itself with
-    `Entity.RemovalReason.KILLED`.
+`ServerLevel.broadcastDamageEvent` sends the type, the two entity ids and an
+optional position to every tracking player *and the victim*, and it runs
+**before** the knockback, not after. A successful block replaces it entirely:
+if the blocking component absorbed anything, `BlocksAttacks.onBlocked` plays
+the block sound and **no damage event is broadcast at all**, so a blocked hit
+puts no flash on anyone's screen. Only then does `Entity.markHurt` queue the
+velocity packet, and `LivingEntity.dealDefaultKnockback` compute a direction
+(from the projectile for a projectile, from the source position otherwise)
+for `LivingEntity.knockback`, which scales it by one minus
+`Attributes.KNOCKBACK_RESISTANCE`. `ServerPlayer.indicateDamage` ends that
+call, and is skipped when anything was blocked. The hurt sound comes after
+all of it — after the death check, not with the flash.
 
-## Interfaces
+Six packets carry all of this. `ClientboundDamageEventPacket` (type holder,
+causing and direct entity ids, optional position) and
+`ClientboundSetEntityMotionPacket` go to every tracker and the victim,
+`ClientboundHurtAnimationPacket` and `ClientboundSetHealthPacket` only ever to
+one player about themselves, `ClientboundSetEntityDataPacket` carries
+`LivingEntity.DATA_HEALTH_ID` for a mob, and `ClientboundEntityEventPacket`
+carries one byte — 3 for death, 60 for the poof, 35 for a totem. Inbound,
+only the respawn command.
 
-- **Called by:** everything that hurts — `Player.attack`,
-  `Mob.doHurtTarget`, `AbstractArrow.onHitEntity` and the other projectiles,
-  explosions, `Entity.lavaHurt`, the environmental tickers in
-  `Entity.baseTick` and `LivingEntity.baseTick`, `Entity.thunderHit`,
-  `LivingEntity.kill`, and the `/kill` and `/damage` commands.
-- **Calls into:** `CombatRules`, `EnchantmentHelper`,
-  `MobEffectInstance.onMobHurt`, `ItemStack.hurtAndBreak` for armour
-  durability, the loot system (`LootContextParamSets.ENTITY` with
-  `LootContextParams.DAMAGE_SOURCE`, `LootContextParams.ATTACKING_ENTITY`
-  and `LootContextParams.LAST_DAMAGE_PLAYER`), `ExperienceOrb.award`,
-  `CriteriaTriggers` and the `Stats` counters.
-- **Crosses the network as:** `ClientboundDamageEventPacket` (type and ids,
-  no amount, to all trackers and self); `ClientboundHurtAnimationPacket`
-  (only ever to one player, about themselves);
-  `ClientboundEntityEventPacket` — byte 3 for death, 60 for the poof, 35 for
-  a totem; `ClientboundSetHealthPacket` for your own player;
-  `ClientboundSetEntityDataPacket` carrying `LivingEntity.DATA_HEALTH_ID`
-  for mobs; `ClientboundSetEntityMotionPacket` for knockback;
-  `ClientboundPlayerCombatKillPacket`, `ClientboundPlayerCombatEnterPacket`
-  and `ClientboundPlayerCombatEndPacket`. Inbound, only the respawn command.
-- **Data-driven by:** the damage-type registry and its tags; loot tables;
-  enchantment definitions, entirely — Protection is
-  `EnchantmentEffectComponents.DAMAGE_PROTECTION` holding a conditional
-  value effect, not a class; the item components
-  `DataComponents.BLOCKS_ATTACKS`, `DataComponents.DAMAGE_RESISTANT`,
-  `DataComponents.DEATH_PROTECTION`; the armour and toughness
-  [attributes](attributes.md); and the game rules `GameRules.MOB_DROPS`,
-  `GameRules.KEEP_INVENTORY`, `GameRules.SHOW_DEATH_MESSAGES`,
-  `GameRules.FALL_DAMAGE`, `GameRules.FIRE_DAMAGE`,
-  `GameRules.DROWNING_DAMAGE`, `GameRules.FREEZE_DAMAGE`,
-  `GameRules.IMMEDIATE_RESPAWN`.
+**The damage amount never crosses the wire.** The client picks a sound and a
+flash from the type and infers magnitude from health — and only for your own
+player, in `LocalPlayer.hurtTo`, the one place a hit is deduced from a health
+*drop*. `LivingEntity.handleDamageEvent` sets `Entity.invulnerableTime` to 20
+and the flash to 10 and plays the sound, touching health not at all.
 
-## Invariants and surprises
+## Death, or not
 
-- **I-frames compare against the last damage, not zero.** Inside the window,
-  only the excess over `LivingEntity.lastHurt` is felt, and a weaker hit
-  returns immediately — no sound, no knockback, no packet, no combat entry.
-  This is why the strongest hit in each window is the only one that counts.
-- **A hit inside the window that *does* land is invisible.** The partial
-  branch clears the took-full-damage flag, which gates the damage-event
-  broadcast, the knockback, the hurt sound and the flash alike. Health goes
-  down and nothing else happens — so `ClientboundDamageEventPacket` is not a
-  reliable "was hit" signal, and neither is the red flash.
-- **The damage amount never crosses the wire.**
-  `ClientboundDamageEventPacket` carries the type and who, so the client can
-  pick the right sound and flash; magnitude is inferred from health, and
-  only for your own player.
-- **The client kills mobs on its own, from one byte.** The death entity
-  event makes a client-side non-player set its health to zero and run the
-  death sequence locally — the twenty-tick animation is client-driven, not a
-  consequence of a health packet.
-- **Armour is capped twice and floored once.** Effective armour never drops
-  below a fifth of nominal and never counts above 20; protection points also
-  cap at 20. Armour alone tops out at 80 % reduction, enchantment protection
-  at 80 % of the remainder — 96 % combined.
-- **Big hits punch through armour** by design: effective armour is reduced
-  by the incoming damage divided by the toughness term, which is exactly
-  what toughness slows down.
-- **Shields are no longer a mechanism, only a vocabulary.** Blocking is any
-  item carrying `DataComponents.BLOCKS_ATTACKS`, held past its delay, with a
-  data-defined arc, per-damage-type bypass set, reduction formula,
-  durability cost and sounds; an arrow with piercing ignores it before the
-  angle is even computed. But `ShieldItem` still exists, a statistic is
-  still awarded under a shield-shaped name, and the disable rule survives as
-  `LivingEntity.getSecondsToDisableBlocking` — which `Warden` overrides —
-  feeding `Player.blockUsingItem`. And a successful non-projectile block
-  knocks the *attacker* back.
-- **`ServerPlayer.die` never calls up.** It reimplements the whole sequence,
-  so the base death hook — and everything hung off it — does not run for a
-  real player. One visible consequence: `LivingEntity.dead` is set inside
-  the part that is skipped, so it stays **false** on a dead player for the
-  whole death screen.
-- **Death loot needs a *recent* player.** The player attribution expires
-  after 100 ticks; without it the loot context gets no
-  `LootContextParams.LAST_DAMAGE_PLAYER` and no luck, and experience is not
-  dropped at all unless the mob is an always-dropper. Loot is gated on
-  `GameRules.MOB_DROPS` and, on `LivingEntity`, on not being a baby — but
-  `Monster` overrides that gate to drop the baby condition, so baby zombies
-  and piglins do drop. Experience is gated on the same game rule; only
-  **equipment** sits outside it.
-- **`CombatTracker` clears itself**, after 100 ticks out of combat or 300
-  in it — so the death message can only be built from a live window, and the
-  status recheck happens *after* the message is read. The recheck is on a
-  timer of its own: `LivingEntity.tick` runs it every twenty ticks, so the
-  expiry is a background rule and not a side effect of the next hit.
-- **Non-living entities have their own damage code entirely.** About thirty
-  classes override `Entity.hurtServer` directly — `ArmorStand`,
-  `VehicleEntity`, `ItemFrame`, `EndCrystal`, `EnderDragonPart`,
-  `FallingBlockEntity`, `PrimedTnt`, `Display`, `Interaction` and the rest —
-  and never touch armour, i-frames or the combat tracker. The armour-stand
-  damage-type tags exist only for that code.
-- **Fall attribution has a threshold.** The tracker only credits a fall when
-  the best fall exceeds five, and when the fall was not the first entry it
-  credits the *previous* one — which is where "was doomed to fall by" comes
-  from.
-- **`Entity.hurt` and `Entity.hurtOrSimulate` are deprecated final
-  wrappers.** The method to override is `Entity.hurtServer`.
-  `Entity.hurtClient` has nine declarations and answers only *did it
-  connect* — including on `RemotePlayer`, the one living entity that has it.
+If health has reached zero, `LivingEntity.checkTotemDeathProtection` looks for
+`DataComponents.DEATH_PROTECTION` in either hand — unless the source is
+`DamageTypeTags.BYPASSES_INVULNERABILITY`, which is why `/kill` cannot be
+totemed — and on a hit consumes one, sets health to one, applies
+`DeathProtection`'s effects and broadcasts byte 35.
+
+Otherwise `LivingEntity.die` runs, and its order matters. Kill credit is read
+from the attribution references written a few lines earlier,
+`LivingEntity.handleKillingBlow` sets `LivingEntity.dead`, and
+`CombatTracker.recheckStatus` runs. Then, **only if `Entity.killedEntity` on
+the killer agrees**, the death game event fires,
+`LivingEntity.dropAllDeathLoot` runs and the wither rose is planted. The
+entity-event byte sits *outside* that veto and goes out to every watcher
+**before** `Pose.DYING` is set — the byte first, the pose after.
+
+Loot needs a *recent* player. `LivingEntity.dropAllDeathLoot` reads *killed by
+a player* off `LivingEntity.lastHurtByPlayerMemoryTime` still being above
+zero, so an attribution older than a hundred ticks costs the loot context its
+`LootContextParams.LAST_DAMAGE_PLAYER` and its luck, and costs the experience
+drop entirely unless the mob is an always-dropper. `LivingEntity.shouldDropLoot`
+gates loot on `GameRules.MOB_DROPS` and on not being a baby — but
+`Monster.shouldDropLoot` drops the baby condition, which is why baby zombies
+and piglins do drop. `LivingEntity.shouldDropExperience` mirrors it. Only
+`LivingEntity.dropEquipment` is outside both.
+
+## The death screen, and what the client does alone
+
+**`ServerPlayer.die` never calls up.** It reimplements the sequence, so
+`LivingEntity.handleKillingBlow` never runs and `LivingEntity.dead` stays
+**false** on a dead player for the whole death screen. It reads the message
+from the combat log at the top and calls `CombatTracker.recheckStatus` at the
+bottom, so the log survives long enough to be read.
+`GameRules.SHOW_DEATH_MESSAGES` gates more than the chat line: with the rule
+off the message is never assembled and `ClientboundPlayerCombatKillPacket`
+carries an **empty** component, so the death screen still opens and says
+nothing. `ServerPlayer.die` also forgives neutral mobs under
+`GameRules.FORGIVE_DEAD_PLAYERS`, drops the inventory through
+`Player.dropEquipment` unless `GameRules.KEEP_INVENTORY`, and calls
+`ServerGamePacketListenerImpl.markClientUnloadedAfterDeath`. `DeathScreen`
+opens unless `GameRules.IMMEDIATE_RESPAWN`, and
+[player anatomy](../player/player-anatomy.md) owns the object that comes back.
+
+Two things then happen without a packet. **The client kills mobs on its own,
+from one byte**: `LivingEntity.handleEntityEvent` for byte 3 sets a non-player
+entity's health to zero and runs `LivingEntity.die` locally, so the twenty
+tick animation in `LivingEntity.tickDeath` is client-driven, not a
+consequence of a health update. And **`CombatTracker` clears itself** — after
+`CombatTracker.RESET_DAMAGE_STATUS_TIME` out of combat or
+`CombatTracker.RESET_COMBAT_STATUS_TIME` in it — from two places: a twenty
+tick timer in `LivingEntity.tick`, and the top of `CombatTracker.recordDamage`,
+so a hit after a long lull discards the old log before filing its entry.
+
+## Everything that calls it
+
+`Entity.hurt` and `Entity.hurtOrSimulate` are deprecated final wrappers over
+the abstract method: the second picks a side and returns `Entity.hurtClient`
+off a client level, the first does nothing there. `Entity.hurtClient` has
+nine declarations counting the base, and every one only ever answers *did
+this connect* — including `RemotePlayer`, which returns true unconditionally
+so a client-side arrow can play its own effects without knowing any numbers.
+
+Environmental damage is ticked from more places than *base tick* suggests.
+Fire (once per twenty fire ticks) is in `Entity.baseTick`, lava (four at a
+time) in `Entity.lavaHurt`, and suffocation, world-border and drowning damage
+in `LivingEntity.baseTick`. **Freezing and cramming are not**: freezing is in
+`LivingEntity.aiStep` every forty ticks, and cramming inside
+`LivingEntity.pushEntities`, called at the end of the same method under
+`GameRules.MAX_ENTITY_CRAMMING`.
+
+## The five families of non-living damage
+
+`Entity.hurtServer` is abstract: there is no default behaviour at all, so
+every branch of the tree answers for itself, and the answers have nothing to
+do with anything above. **Fifty-five** files declare the method, thirty-three
+of them `LivingEntity` descendants — `ArmorStand` among them, a
+`LivingEntity` despite having no AI — and **twenty-one** not. Those
+twenty-one never touch armour, i-frames, absorption or the combat tracker,
+and fall into five families:
+
+- **Nothing happens.** `Entity.hurtServer` returns false, no side effect:
+  `AreaEffectCloud`, `Display`, `Interaction`, `LightningBolt`, `Marker`,
+  `OminousItemSpawner`, `PrimedTnt`, `EvokerFangs`, `EyeOfEnder` and
+  `AbstractHurtingProjectile`.
+- **A flinch and nothing else.** `FallingBlockEntity` and `Projectile` call
+  `Entity.markHurt` so the client sees the shove, then still return false.
+- **An int of health, no armour, no i-frames.** `ItemEntity` and
+  `ExperienceOrb` keep a plain integer and subtract the damage from it.
+  `ItemEntity` adds two rules: a `Mob` source is refused under
+  `GameRules.MOB_GRIEFING`, and the stack itself is asked
+  `ItemStack.canBeHurtBy`.
+- **One hit destroys.** `BlockAttachedEntity` kills itself and drops its item
+  (mob-griefing gated too), `ShulkerBullet` is destroyed with particles
+  without checking invulnerability at all, `EndCrystal` explodes and is
+  **immune to the `EnderDragon` that eats it**, and `EnderDragonPart` forwards
+  the whole call to `EnderDragon.hurt` on its parent. `ItemFrame` takes two
+  hits — the first pops the item, the second falls through to
+  `BlockAttachedEntity` and breaks the frame — while a *fixed* frame answers
+  only to `DamageTypeTags.BYPASSES_INVULNERABILITY` or a creative player.
+- **An accumulator.** `VehicleEntity` adds *damage × 10* to a field through
+  `VehicleEntity.setDamage` and destroys itself past 40, while a creative
+  player skips the whole thing and goes straight to `Entity.discard` — no
+  drop. `MinecartTNT` adds one rule on top: a *burning* `AbstractArrow`
+  explodes it before the accumulator is even reached.
+
+The per-class detail is in [the non-living damage
+table](../../reference/non-living-damage.md).
 
 ## Where to look
 
 `DamageSource` · `DamageType` · `DamageTypes` · `DamageSources` ·
 `DamageTypeTags` · `Entity.hurtServer` · `Entity.isInvulnerableToBase` ·
-`LivingEntity.hurtServer` · `LivingEntity.applyItemBlocking` ·
+`ServerPlayer.hurtServer` · `Player.hurtServer` · `LivingEntity.hurtServer` ·
+`LivingEntity.applyItemBlocking` · `BlocksAttacks` ·
 `LivingEntity.actuallyHurt` · `LivingEntity.getDamageAfterArmorAbsorb` ·
 `LivingEntity.getDamageAfterMagicAbsorb` · `CombatRules` ·
-`LivingEntity.knockback` · `LivingEntity.die` ·
-`LivingEntity.dropAllDeathLoot` · `LivingEntity.tickDeath` ·
-`ServerPlayer.die` · `Entity.killedEntity` · `LivingEntity.getKillCredit` ·
-`LivingEntity.resolvePlayerResponsibleForDamage` ·
-`CombatTracker` · `CombatEntry` · `FallLocation` ·
-`BlocksAttacks` · `DeathProtection` · `ClientboundDamageEventPacket` ·
-`ClientboundPlayerCombatKillPacket`
+`LivingEntity.dealDefaultKnockback` · `ServerLevel.broadcastDamageEvent` ·
+`LivingEntity.checkTotemDeathProtection` · `LivingEntity.die` ·
+`ServerPlayer.die` · `LivingEntity.dropAllDeathLoot` · `Entity.killedEntity` ·
+`LivingEntity.tickDeath` · `CombatTracker` · `CombatEntry` · `FallLocation` ·
+`ClientboundDamageEventPacket` · `ClientboundPlayerCombatKillPacket` ·
+`VehicleEntity` · `ItemFrame` — and [attributes](attributes.md) for armour,
+toughness and knockback resistance as attribute values.
 
 ---
 

@@ -328,6 +328,28 @@ never change an existing row's meaning.
 | `PBB` | `PistonBaseBlock` |
 | `PSR` | `PistonStructureResolver` |
 | `PMBE` | `PistonMovingBlockEntity` |
+| `ET` | `EntityType` |
+| `SumC` | `SummonCommand` |
+| `SE` | `ServerEntity` |
+| `ES` | `EntityStorage` |
+| `SED` | `SynchedEntityData` |
+| `Sheep` | `Sheep` |
+| `LE` | `LivingEntity` |
+| `CG` | `CollisionGetter` |
+| `Shapes` | `Shapes` |
+| `AttrI` | `AttributeInstance` |
+| `AttrM` | `AttributeMap` |
+| `EffC` | `EffectCommands` |
+| `ME` | `MobEffect` |
+| `AB` | `AbstractBoat` |
+| `AA` | `AbstractArrow` |
+| `CR` | `CombatRules` |
+| `MTS` | `MoveToTargetSink` |
+| `MoveC` | `MoveControl` |
+| `NE` | `NodeEvaluator` |
+| `PF` | `PathFinder` |
+| `PNR` | `PathNavigationRegion` |
+| `UAFS` | `UpdateActivityFromSchedule` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
@@ -350,3 +372,13 @@ reassigning a row: `LeverBlock` is `LevB` because `LB` is `LiquidBlock`,
 `PistonStructureResolver` is `PSR` because `PR` is `PackRepository`. Rows for
 `SS`, `ST`, `SP`-as-structure, `TP`, `LX`, `PE` and `C` are left for the part
 sessions that own the pages, under the rule above.
+
+Part VI (session G) lengthened five later claimants: `MoveControl` is
+`MoveC` because `MC` is `Minecraft`, `SummonCommand` is `SumC` because `SC`
+is `StopCommand`, `AttributeMap` is `AttrM` because `AM` is `AtlasManager`
+(Part XI), `EffectCommands` is `EffC` because `EC` is `ExecutionContext`
+(Part XIII), and `AttributeInstance` follows its map to `AttrI` even though
+`AI` is free, because `AI` reads as the AI system on an entities page. Two one-word classes take their own name as a lane under the
+short-word rule, `Sheep` and `Shapes`. One collision is recorded and **not
+yet claimed**: `ES` is `EntityStorage`, so `EntitySection` would have to
+lengthen to `ESec` if a later page wants it.

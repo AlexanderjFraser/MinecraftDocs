@@ -1403,9 +1403,13 @@ writes one strikes it through; a session that rules one out says why, here.*
   858 lines. Part XII. *(session J)*
 - **World creation and the world-select screens** — ~5,100 lines spanning
   Parts X and XII. *(session J)*
-- **The non-living `Entity.hurtServer` overrides** — ~30 classes with their
-  own rules, unmentioned by `damage-and-death`. Part VI: a section, a
-  sibling page, or a Reference table. *(session E)*
+- ~~**The non-living `Entity.hurtServer` overrides**~~ — **discharged by
+  session G** as the closing section of `damage-and-death` (five families)
+  plus the per-class table in `src/reference/non-living-damage.md`, which is
+  the "Reference table" option this entry offered. The count was wrong: it
+  is **21** non-living classes, not ~30, and `Entity.hurtServer` is
+  *abstract*, so there is no default behaviour anywhere in the tree.
+  *(session E, discharged session G)*
 - **Commands that are algorithms** — `SpreadPlayersCommand`,
   `CloneCommands`, `ChaseCommand` (a debug socket protocol between two game
   instances). Part XIII, or Reference. *(session K)*
@@ -1716,3 +1720,80 @@ key: `LeverBlock` is `LevB` (`LB` is `LiquidBlock`), `BlockItem` would be
 `ProtoChunk`), and `PistonStructureResolver` is `PSR` (`PR` is
 `PackRepository`). The last two of those are recorded but **not yet used by
 any page** — a later session may claim them or free them.
+
+### Session G (Part VI Entities) — for later sessions
+
+**Authority has an owner now, and four pages are expected to link to it
+rather than re-derive it.** `src/systems/entities/authority.md` is the R6
+page: the four predicates (`Entity.isLocalInstanceAuthoritative`, which is
+**final**, plus `Entity.isLocalClientAuthoritative`,
+`Entity.isClientAuthoritative`, `Entity.canSimulateMovement` and
+`Entity.isEffectiveAi`), a three-column comparison of a tracked mob, a
+player and a ridden vehicle read on both sides, and the six gates inside
+`Entity.move` and `LivingEntity.aiStep` that read them.
+`movement-and-collision` has already been cut back to three sentences and a
+link. **Sessions I, J and K should do the same**: `input-to-movement` and
+`player-anatomy` (Part VIII) each carry a version of the matrix,
+`what-the-client-is-told` (Part IX) leans on it, and Part X's client-tick
+material does too. The page also owns the vehicle case, which nothing else
+did: the base implementations of both client-authority predicates delegate
+to the **controlling passenger**, which is the whole vehicle model, and it
+is why `ClientboundMoveVehiclePacket` is a rejection notice rather than a
+routine update.
+
+**The AI split landed as two pages, not three, and the seam is the
+waterline.** `ai-goals-and-brains` keeps its URL (no redirect needed) and
+owns goals, brains, memories, sensors, behaviours, activities and the
+villager day; **`pathfinding` is new** and owns `PathNavigation`,
+`PathFinder`, `NodeEvaluator`, `PathType`, `PathTypeCache`,
+`PathNavigationRegion`, the node budget, stuck detection, the four controls
+(`MoveControl`, `LookControl`, `JumpControl`, `BodyRotationControl`) and
+`ServerLevel.sendBlockUpdated`'s push into `ServerLevel.navigatingMobs`.
+Other parts link across that seam: **anything about a mob's *decision* goes
+to the first, anything about a wanted position becoming movement goes to the
+second.** `attributes` and `movement-and-collision` were re-pointed this
+session.
+
+**`entity-anatomy` now includes a generated figure**, `tree-Entity.svg` from
+session B's atlas, in place of a hand-drawn mermaid class tree. That is the
+first system page to use the figure pipeline, and it is the pattern for any
+other page whose figure is really a tree with numbers on it — Part XI's
+render-state hierarchy and Part XII's structure-piece families are the
+obvious candidates.
+
+**For session K (Part X The client): one lane must be lengthened.**
+`SE` is now `ServerEntity` in the key, used by four Part VI pages;
+`systems/client/sound.md` uses `SE` for `SoundEngine` and is the later
+claimant, so it becomes `SndE` or similar when session K rewrites it. Two
+more collisions were resolved *away* from the obvious spelling and later
+sessions should not re-take them: `AM` stays `AtlasManager` (Part XI), so
+`AttributeMap` is `AttrM`, and `EC` stays `ExecutionContext` (Part XIII), so
+`EffectCommands` is `EffC`. `ES` is `EntityStorage`, which means
+`EntitySection` would have to lengthen to `ESec`.
+
+**For session O (Reference): three new pages, two of them generated.**
+`gen_reference.py` grew two views — `entity-data-serializers` (43 rows in
+registration order, which is the wire id) and `attributes` (40 rows with
+default, range, syncable and sentiment) — so both regenerate on the next
+version like the other four. `non-living-damage.md` is **hand-kept** and
+wants the same re-sweep the other hand-kept pages get; its twenty-one rows
+were read one class at a time this session. Also fixed in passing: the
+`gamerules` view's blurb still linked to the old
+`systems/world/level-data-and-rules.md` path, so **regenerating the
+reference tier used to reintroduce a broken link that session E had fixed by
+hand**. The tool is the fix; check the other blurbs' links when the pages
+they point at move.
+
+**Two extraction candidates surfaced and were not written.** The nineteen
+`EntitySpawnReason` constants, currently named three at a time across
+`entity-lifecycle`, and the `Nether fortress` / `Structure.spawnOverrides`
+spawn-list override, which is verified true and was cut from
+`entity-lifecycle` for budget — it belongs on a Part XII page or in
+Reference, and **nothing in the corpus says it now**.
+
+**The coverage queue drops to fourteen.** Part VI's entry — the non-living
+`Entity.hurtServer` overrides — is discharged as the closing section of
+`damage-and-death` plus `reference/non-living-damage.md`, which is one of
+the three options the queue itself offered. R7's new-page allowance was
+therefore **not** spent: both of the part's extra pages are R6's owner page
+and the notebook's confirmed split.

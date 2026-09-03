@@ -6,7 +6,9 @@ Usage:
     python tools/gen_reference.py registries  # every registry key: built-in / data-pack / synced
     python tools/gen_reference.py components  # every DataComponentType, persistent / synced
     python tools/gen_reference.py gamerules   # every game rule, type, category, default
-    python tools/gen_reference.py all         # write all four into src/reference/
+    python tools/gen_reference.py entity-data-serializers   # every EntityDataSerializer, in wire-id order
+    python tools/gen_reference.py attributes                # every attribute: default, range, syncable
+    python tools/gen_reference.py all         # write every view into src/reference/
 
 Always regenerate with `all`, which writes each file as UTF-8 with LF. Do NOT
 redirect a single view into src/reference/ on Windows: Python's stdout falls
@@ -133,7 +135,7 @@ DEFAULT_NOTE = {"!SharedConstants.DEBUG_WORLD_RECREATE": "true"}
 
 def gamerules() -> str:
     rows = RULE.findall(read("world", "level", "gamerules", "GameRules.java"))
-    out = header("Game rules", "Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their minimum after the default where one is declared. Values live per world in a `GameRuleMap` on the level data. See [Level data and rules](../systems/world/level-data-and-rules.md).")
+    out = header("Game rules", "Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their minimum after the default where one is declared. Values live per world in a `GameRuleMap` on the level data. See [Level data and rules](level-data-and-rules.md).")
     out += f"{len(rows)} rules\n\n| rule | type | category | default |\n|---|---|---|---|\n"
     for typ, const, _kind, rid, cat, default, extra in sorted(rows, key=lambda r: (r[4], r[3])):
         default = DEFAULT_NOTE.get(default.strip(), default.strip())
@@ -143,7 +145,71 @@ def gamerules() -> str:
     return out
 
 
-VIEWS = {"packets": packets, "registries": registries, "components": components, "gamerules": gamerules}
+# --------------------------------------------------- entity data serializers
+# Registration order in the static block *is* the wire id: registerSerializer
+# pushes into a CrudeIncrementalIntIdentityHashBiMap that hands out the next
+# int. The declaration lines carry the value type, the static block carries the
+# order, and the two are not in the same order — read both (session G).
+SERIALIZER_DECL = re.compile(r"EntityDataSerializer<(.+?)>\s+(\w+)\s*=\s*EntityDataSerializer\.(\w+)\(")
+SERIALIZER_ORDER = re.compile(r"registerSerializer\(EntityDataSerializers\.(\w+)\)")
+
+
+def serializers() -> str:
+    src = read("network", "syncher", "EntityDataSerializers.java")
+    decl = {const: (typ, kind) for typ, const, kind in SERIALIZER_DECL.findall(src)}
+    order = SERIALIZER_ORDER.findall(src)
+    out = header("Entity data serializers", "Every `EntityDataSerializer` in `EntityDataSerializers`, in **registration order, which is the wire id** — `EntityDataSerializers.registerSerializer` pushes each one into a `CrudeIncrementalIntIdentityHashBiMap` that hands out the next int. A `SynchedEntityData.DataValue` on the wire is an unsigned byte accessor id, this var-int, and the encoded value. *For value type* marks the ones built by `EntityDataSerializer.forValueType`, the immutable case where `EntityDataSerializer.copy` is identity. See [Synched entity data](../systems/entities/synched-entity-data.md).")
+    out += f"{len(order)} serializers, wire ids 0 to {len(order) - 1}\n\n"
+    out += "| id | constant | value type | built by |\n|---:|---|---|---|\n"
+    for i, const in enumerate(order):
+        typ, kind = decl.get(const, ("?", "?"))
+        kind = "for value type" if kind == "forValueType" else f"`EntityDataSerializer.{kind}`"
+        out += f"| {i} | `EntityDataSerializers.{const}` | `{typ}` | {kind} |\n"
+    missing = sorted(set(decl) - set(order))
+    if missing:
+        out += "\nDeclared but never registered, so unreachable from the wire: " + ", ".join("`" + m + "`" for m in missing) + ".\n"
+    return out
+
+
+# ---------------------------------------------------------------- attributes
+ATTRIBUTE = re.compile(
+    r"Holder<Attribute>\s+(\w+)\s*=\s*register\(\s*\"([\w/]+)\"\s*,\s*\(?new RangedAttribute\(\s*\"([\w.]+)\"\s*,\s*([-\w.E]+?)D?\s*,\s*([-\w.E]+?)D?\s*,\s*([-\w.E]+?)D?\s*\)\)?((?:\.\w+\([^)]*\))*)"
+)
+
+
+def _num(text: str) -> str:
+    try:
+        value = float(text)
+    except ValueError:
+        return text
+    if value == int(value) and abs(value) < 1e12:
+        return str(int(value))
+    return f"{value:g}"
+
+
+def attributes() -> str:
+    rows = ATTRIBUTE.findall(read("world", "entity", "ai", "attributes", "Attributes.java"))
+    syncable = sum(1 for r in rows if "setSyncable(true)" in r[6])
+    out = header("Attributes", "Every attribute registered in `Attributes`. All of them are `RangedAttribute`s, so every one clamps to its range once, at the end of `AttributeInstance.calculateValue`. **Syncable** attributes are the only ones `ClientboundUpdateAttributesPacket` ever carries: a mutation to one of the others changes the server's number and never reaches the client at all. The sentiment decides tooltip colour and nothing else. Defaults here are the registry's, and most entity types override them in their own `AttributeSupplier`. See [Attributes](../systems/entities/attributes.md).")
+    out += f"{len(rows)} attributes, {syncable} syncable and {len(rows) - syncable} not\n\n"
+    out += "| id | constant | default | min | max | syncable | sentiment |\n|---|---|---:|---:|---:|---|---|\n"
+    for const, aid, _desc, default, lo, hi, tail in sorted(rows, key=lambda r: r[1]):
+        sent = re.search(r"setSentiment\(Attribute\.Sentiment\.(\w+)\)", tail)
+        out += (
+            f"| `{aid}` | `Attributes.{const}` | {_num(default)} | {_num(lo)} | {_num(hi)} | "
+            f"{'yes' if 'setSyncable(true)' in tail else ''} | {sent.group(1).lower() if sent else 'positive'} |\n"
+        )
+    return out
+
+
+VIEWS = {
+    "packets": packets,
+    "registries": registries,
+    "components": components,
+    "gamerules": gamerules,
+    "entity-data-serializers": serializers,
+    "attributes": attributes,
+}
 
 
 def main(argv: list[str]) -> int:

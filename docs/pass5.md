@@ -303,3 +303,76 @@ was cut or moved, and why)*
   tables' preamble; "the number" device is used once (`biggest.md`) —
   check it reads as intended. Nothing was cut from the old maps: the
   tables are all still there under the figures, at the same URLs.
+
+- **2026-09-03, session G — Part VI Entities.** *Cuts, all of them moves or
+  logged losses.*
+  **`entity-anatomy`**: the seven-group field inventory and the "smaller
+  state families" paragraph (fire, freezing, fluids, portals, naming,
+  item-component views) go — the names survive only where the story touches
+  them, mostly as the contents of `Entity.baseTick`; the hand-drawn class
+  tree is replaced by the atlas's generated SVG, taking the eighteen-name
+  list of non-living direct subclasses with it; `Entity.MAX_ENTITY_TAG_COUNT`
+  versus the literal 1024 (true, earns nothing on a map page); the
+  `Entity.RemovalReason` four-way flag breakdown, **moved to
+  `entity-lifecycle`**; `Mob.serverAiStep` being final and alternating on
+  `tickCount + id`, **moved to `ai-goals-and-brains`**; `Marker.tick` being
+  genuinely empty. The subpackage table stayed and its counts were corrected
+  — the old rows summed to 639 of a stated 716.
+  **`entity-lifecycle`**: the nineteen-constant `EntitySpawnReason` list
+  (four survive, the rest want Reference — logged in pass3.md); the
+  `SpawnPlacementTypes` list, folded into a cast row; the game-rule and tag
+  roster from *Data-driven by*; and — the largest deliberate cut — the
+  **Nether-fortress hard-coded spawn list and `Structure.spawnOverrides`**,
+  which are verified true and are now stated **nowhere in the corpus**.
+  Session M or O should take them.
+  **`synched-entity-data`**: the 43-constant serializer bullet (74 lines) to
+  the generated Reference page, leaving three named in prose; the
+  `defineId`/`defineSynchedData`/setter roster; the thirty-five-overrider
+  list, cut to three examples; `ServerEntity.Synchronizer` compressed to one
+  table cell.
+  **`attributes`**: the forty-constant catalogue (five themed bullets, 34
+  lines) to the generated Reference page, with the count, the clamp rule,
+  the eight non-syncable names and the handful of numbers the argument uses
+  kept in prose. `Attributes.DEFAULT_ATTACK_SPEED` cut outright because the
+  claim about it was false.
+  **`movement-and-collision`**: the position-and-teleport family
+  (`Entity.absSnapTo`, `Entity.snapTo`, `Entity.setOldPosAndRot`, the
+  ±3.0000512E7 clamp, `Entity.setBoundingBox`'s public callers,
+  `Entity.getKnownMovement`, `Entity.flyDist`) — these are
+  `entity-anatomy`'s or `authority`'s and are currently on **neither**;
+  half the outbound packet list and the whole inbound one, which
+  `input-to-movement` owns; the data-driven tag inventory.
+  **`ai-goals-and-brains`**: the behaviour-package roster cut to eight named
+  classes plus a count; `VillagerType`.
+  **`damage-and-death`**: the exhaustive `DamageTypes` key list and the
+  fifteen-name `DamageTypeTags` list, replaced by the counts (51 and 35)
+  with each tag named where it acts — both are Reference material and
+  **neither Reference page exists yet**; `DamageSources` pre-building the 25
+  entity-less sources; and the *Interfaces* inventory as a category, taking
+  with it `Entity.thunderHit`, `LivingEntity.kill`, `/kill` and `/damage` as
+  named callers, `CriteriaTriggers` and `Stats` as consumers,
+  `MobEffectInstance.onMobHurt`, `ItemStack.hurtAndBreak`,
+  `DataComponents.DAMAGE_RESISTANT`, and the two combat-status packets —
+  all of which are now **nowhere**. The one substantive cut that needs a
+  home is the **fall-attribution threshold** (`CombatTracker` credits a fall
+  only when the best one exceeds five, and credits the *previous* entry when
+  the fall was not the first — the source of *was doomed to fall by*): it is
+  death-*message* machinery rather than damage, and wants a `CombatTracker`
+  or death-message Reference page. Also found and deliberately **not** added:
+  world-border damage is player-only.
+  `damage-and-death` is 395 lines against the 240–390 target, and its
+  drafter's verdict is that getting under 390 now costs a claim rather than
+  words.
+  *Wording debt.* `ai-goals-and-brains` is 420 lines against a 240–390
+  target — the comparison table, the `Brain.tick` flowchart and seven
+  difference sections cost more than the dissolved bullet walls saved; its
+  own drafter names the *Questions players ask* section as the cheapest
+  honest cut. **Six** of the nine pages ended on a *Questions players ask*
+  section, which is one device used six times in one part and is exactly
+  the "second uniformity" risk the charter names. The session renamed three
+  of them to headings that say what the section says — *Three things about
+  the id*, *What the four predicates explain*, *Why mobs look stupid* —
+  leaving three; the question-and-answer form underneath is unchanged, and
+  pass 5 should decide whether the form itself wants varying. Session P
+  should check the device's distribution across all thirteen parts. The part's hooks all land on a bold or em-dashed final sentence,
+  the same tic session C logged for Part II.

@@ -159,7 +159,48 @@ statement of the contract, and the machinery waits for Part X.
 
 ## VI · Entities
 
-*Filled by session G.*
+Part VI is a ladder, and the second rung carries the rest of it. Nothing in
+the part can be reordered without breaking something, and the one page most
+often skipped — *authority* — is the one four later parts link back to.
+
+1. [Entity anatomy](systems/entities/entity-anatomy.md) — one `EntityType`
+   from the registry, through a factory, to a live object the level ticks.
+   The vocabulary the other eight lectures use.
+2. [Authority](systems/entities/authority.md) — a zombie, a player and a
+   boat each take one step, on both sides. Short, and the highest
+   consequence-per-minute lecture in the part: Parts VIII, IX and X all
+   assume it rather than re-deriving it.
+3. [Entity lifecycle](systems/entities/entity-lifecycle.md) — a mob
+   appears, is ticked, and is either forgotten or written to disk. Assumes
+   [tickets and loading](systems/world/tickets-and-loading.md) for what
+   *entity-ticking* means.
+4. [Synched entity data](systems/entities/synched-entity-data.md) — a sheep
+   is sheared and every screen agrees within the tick. The first of the two
+   channels that describe an entity, and the one every later part reaches
+   for.
+5. [Attributes](systems/entities/attributes.md) — the second channel, and
+   the one that sends nothing. Watch it after *synched entity data*, because
+   the contrast between the two is the lesson.
+6. [Movement and collision](systems/entities/movement-and-collision.md) —
+   one tick of a falling zombie. Needs *authority* in front of it and
+   [blocks and states](systems/blocks/blocks-and-states.md) for what a
+   collision shape is.
+7. [AI: goals and brains](systems/entities/ai-goals-and-brains.md) — a
+   villager's day, and a zombie with none of it. Assumes [environment
+   attributes and timelines](systems/world/environment-attributes-and-timelines.md)
+   for the schedule and [points of
+   interest](systems/world/points-of-interest.md) for the bed.
+8. [Pathfinding](systems/entities/pathfinding.md) — the other half of the
+   same lecture, and watchable on its own once *goals and brains* has said
+   where the wanted position comes from.
+9. [Damage and death](systems/entities/damage-and-death.md) — the closer.
+   An arrow, a dozen multiplications, and the twenty-one classes that
+   implement being hurt some other way entirely.
+
+Part VI must precede Part VIII, which is the player half of nearly every
+page here, and it should precede Parts IX and X, both of which lean on
+*authority*. It assumes Part IV for what makes an entity tick at all and
+Part V for what it collides with.
 
 ## VII · Items and inventories
 

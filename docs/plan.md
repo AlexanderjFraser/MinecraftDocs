@@ -357,7 +357,7 @@ sidebar order.
   in two halves with the shared preamble; `redstone` split three ways
   (signal and dust · pistons and block events · diodes, comparators and the
   observer); `block-entities` kept as the part's model page.
-- [ ] **Session G — Part VI Entities.** The authority page; the serializer
+- [x] **Session G — Part VI Entities.** *(done 2026-09-03)* The authority page; the serializer
   and attribute catalogues to Reference (generated); `entity-lifecycle`'s
   spawner as a filter-cascade flowchart; `ai-goals-and-brains` ruled (three
   lectures — pathfinding is the strongest); the non-living `hurtServer` gap
@@ -1147,3 +1147,178 @@ missing it — and removes the comment. The owner confirms or reorders
   over it. Hand-offs in pass3.md (the shared anchor six pages depend on, the
   split seams other parts link across, two Reference candidates for session O,
   the lane ledger), pass4.md and pass5.md.
+- **2026-09-03, session G — Part VI Entities.** *Rulings, written before
+  editing.* **Part VI is a ladder with a missing rung, and the rung goes in
+  second.** The notebook's order survives — object, world, the channels that
+  describe it, what it does, why, how it stops — and R6's authority page is
+  inserted directly after `entity-anatomy`, where it is a prerequisite for
+  everything above it and for Parts VIII, IX and X. The landing page draws
+  the ladder and says so.
+  **The part goes from seven pages to nine.** One page is R6's
+  (`authority`); one is the notebook's confirmed split of
+  `ai-goals-and-brains`. R7's new-page allowance is **not** spent as a page:
+  Part VI's single coverage-queue entry, the non-living `Entity.hurtServer`
+  overrides, is discharged as **a named closing section in
+  `damage-and-death` plus a Reference table** — the queue itself offered
+  that as one of its three options, and a twenty-one-row table of "what
+  this class does when you hit it" is the definition of something a viewer
+  pauses on (R5). Two catalogues move to Reference **generated**, as the
+  schedule asks: the 43 entity-data serializers with their wire ids and the
+  40 attributes with their defaults, ranges and syncable flags —
+  `gen_reference.py` gains two views, so both are re-derived on the next
+  version rather than re-checked by hand.
+  **`ai-goals-and-brains` splits in two, not three**, which is this
+  session's answer to the schedule's *ruled*. The page's argument is that
+  two decision systems coexist and are identical below the waterline;
+  cutting between goals and brains would destroy the one comparison the
+  page exists to make. The seam the notebook actually found is the
+  waterline itself — `MoveControl.setWantedPosition` — so the cut is there:
+  **`ai-goals-and-brains`** keeps goals, brains, activities, the villager
+  day and the zombie (and its URL, so no redirect), and **`pathfinding`** is
+  new and takes navigation, the A\* and its budget, the node evaluator and
+  path types, the region snapshot, stuck detection and the four controls.
+  **`entity-anatomy` is not split** (pass 2 confirmed the seam and left the
+  call here): it is the part's map page and its two halves are what an
+  entity *is* and what the tree *looks like*, which is one lecture. But its
+  hand-drawn mermaid class tree goes, replaced by the atlas's **generated**
+  `tree-Entity.svg` (R4: a figure has to be regenerable, and session B
+  already draws this one with real counts).
+  **The nine pages, their shapes and their hooks.**
+  **`entity-anatomy`** takes the **vocabulary** shape: a containment figure
+  of what an entity is made of, the generated tree, and the registry-to-live-object
+  trace kept as the grounding. Hook: the entity registry's default is a
+  pig, and that default reaches the network and not your save file — a bad
+  id on the wire is a pig, a bad id in a region file is a *Skipping Entity*
+  line and a hole where the entity was.
+  **`authority`** is new (R6) and takes the **comparison** shape: a mob and
+  a player, each taking one step, on each side, as the columns; the four
+  predicates as the rows; a section per point of difference. Hook: the
+  client runs no physics at all for the zombie chasing you, and it runs
+  full physics for the player standing beside you — while the server runs
+  that player's physics too and throws the answer away. Parts VIII, IX and
+  X link here instead of re-teaching the matrix, and
+  `movement-and-collision` loses its opening section to it.
+  **`entity-lifecycle`** keeps the **trace** shape (a zombie's life) and
+  gains the two figures the notebook asked for: the spawn attempt as a
+  **filter cascade** — every test that rejects, in order, with the
+  rejections drawn — and `Visibility` as a small state diagram. Hook: the
+  spawner rolls **one** height per category per chunk per tick, uniform
+  from the world bottom to the surface, so every category gets its own
+  horizontal slice and a taller world thins the surface out.
+  **`synched-entity-data`** keeps the **trace** shape (the sheep) with the
+  43-serializer catalogue gone to Reference and the sheep's nineteen slots
+  kept, because that table *is* the lecture. Hook: the id of the sheep's
+  wool byte is decided by the order the JVM runs static initialisers in,
+  and the packet stops at 254 because 255 means stop.
+  **`attributes`** takes the **vocabulary** shape — the five objects, the
+  three-pass arithmetic, the sync gate — with the Strength II trace as its
+  grounding and the forty-attribute catalogue gone to Reference. Hook:
+  Strength II sends no packet at all, because eight of the forty attributes
+  are not syncable and attack damage is one of them.
+  **`movement-and-collision`** keeps the **trace** shape (the falling
+  zombie) and hands its authority section to the new page. Hook: the mover
+  answers *what did I walk through* after the fact, by replaying the tick's
+  movement in the same axis order the collision used — which is why fire
+  and water touched in the same step always end in the extinguish.
+  **`ai-goals-and-brains`** takes the **comparison** shape: the goal
+  selector and the brain as two columns of *what holds the state*, *what
+  decides*, *what arbitrates* and *what persists*, with the villager day
+  as the brain's trace and the zombie as the goal selector's. Hook:
+  schedules are gone — a villager goes to bed because it asks the world
+  what time it is *where it is standing*.
+  **`pathfinding`** is new and takes the **pipeline** shape: walk target →
+  navigation → region snapshot → node evaluator → A\* → path → move
+  control, a section per stage. Hook: giving up is machinery — every node
+  carries a timeout derived from its distance and the mob's speed, and
+  three overruns abandon the path, so the mob you watch walk into a wall
+  and then wander off is running a scheduled surrender.
+  **`damage-and-death`** keeps the **trace** shape (the arrow) and gains
+  the closing section it has been missing: **the five families of
+  non-living damage**, with the per-class table in Reference. Hook stays
+  the i-frame one — a hit inside the red flash that *does* land is
+  invisible: health drops and nothing else happens.
+  **Reference.** `reference/entity-data-serializers.md` and
+  `reference/attributes.md` are generated by two new `gen_reference.py`
+  views; `reference/non-living-damage.md` is hand-kept and re-swept in pass
+  4. All three are in `SUMMARY.md` and the reference README.
+  **Lanes** go into the key *after* drafting, from the diagrams that exist
+  (session E's rule); collisions are resolved by lengthening the later
+  claimant. `check_lanes.py --strict --pages src/systems/entities` before
+  shipping.
+  *Done.* Part VI is nine pages in a ladder, drawn on a new landing page the
+  sidebar's Part VI opens on. **The missing rung went in second**:
+  `authority` is a comparison of three cases — a tracked mob, a player and a
+  ridden boat, each read on both sides — with the four predicates as its
+  rows, the six gates inside `Entity.move` and `LivingEntity.aiStep` that
+  read them, and the vehicle case nothing in the corpus had: both base
+  client-authority predicates delegate to the *controlling passenger*, which
+  is the whole vehicle model, and `ClientboundMoveVehiclePacket` turns out to
+  be a rejection notice rather than a routine update. Sessions I, J and K now
+  link there instead of re-teaching the matrix, and
+  `movement-and-collision` is already cut to three sentences and a link.
+  **`ai-goals-and-brains` split in two, not three** — the ruling the schedule
+  asked for. The page's argument is that two decision systems coexist and are
+  identical below the waterline, so cutting between goals and brains would
+  have destroyed the one comparison it exists to make; the cut is at the
+  waterline itself, `MoveControl.setWantedPosition`. Goals and brains keep the
+  URL (no redirect) and became a **comparison** with seven rows of
+  difference; **`pathfinding`** is new and took navigation, the A\* and its
+  budget, the node evaluator, the region snapshot, stuck detection and the
+  four controls. `entity-lifecycle` got the **filter cascade** the notebook
+  has asked for since session E — every rejection in source order, with the
+  only-now-is-the-mob-constructed boundary drawn — plus `Visibility` as a
+  state diagram; `entity-anatomy` traded its hand-drawn class tree for the
+  atlas's generated `tree-Entity.svg`, the first system page to use session
+  B's figure pipeline. Both reference catalogues moved out **generated**:
+  `gen_reference.py` grew `entity-data-serializers` (43 rows, registration
+  order, which is the wire id) and `attributes` (40 rows with range, syncable
+  and sentiment). R7's allowance was **not** spent as a page: Part VI's one
+  coverage-queue entry, the non-living `Entity.hurtServer` overrides, became
+  a five-family closing section in `damage-and-death` plus the hand-kept
+  `reference/non-living-damage.md` — and the count was wrong twice over, at
+  21 classes rather than "about thirty", with `Entity.hurtServer` **abstract**
+  so there is no default behaviour anywhere in the tree. The queue drops to
+  fourteen.
+  **Twenty-two pass-2 errors found**, eight of them re-derived by the session
+  itself. The largest is that **only `Villager` has a schedule**:
+  `Brain.setSchedule` has two call sites, both in `Villager`, and the other
+  nineteen brain mobs use `Brain.setActiveActivityToFirstValid` — the old
+  page called that the exception used by three mobs. Then: the spawner's
+  biome energy budget runs *before* construction, not after;
+  `INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK` is 5, not 8, and feeds only
+  `DistanceManager.hasPlayersNearby`'s fast-yes arm;
+  `EntityTypes.ITEM_FRAME`'s update interval is `Integer.MAX_VALUE`, which is
+  *why* `ServerEntity` has an item-frame bypass — and that bypass is the only
+  one, where the old page named two; the *chunkSource* phase is mid-tick, not
+  near its start; `LivingEntity.shouldTravelInFluid` reads the cached flags,
+  not the live fluid state; `Attributes.DEFAULT_ATTACK_SPEED` has no callers
+  at all; `EntitySpawnRequest.ignoreChecks` is never true;
+  `entity-anatomy`'s subpackage table summed to 639 of a stated 716; and
+  — the one that would have embarrassed the new page most — the old
+  `damage-and-death` opened its list of classes that "never touch armour,
+  i-frames or the combat tracker" with `ArmorStand`, which is a
+  `LivingEntity`.
+  **One tool bug**: `gen_reference.py`'s *gamerules* blurb still linked to
+  the pre-session-E path for `level-data-and-rules`, so **regenerating the
+  reference tier reintroduced a broken link somebody had fixed by hand** —
+  found by a link sweep, fixed in the tool.
+  Twenty-two lane rows added and five later claimants lengthened (`MoveC`,
+  `SumC`, `AttrM`, `AttrI`, `EffC`); `check_lanes --strict --pages
+  src/systems/entities` is clean, **135 diagrams render**, 18,015 names
+  resolve, and every relative link in `src/` resolves. Nine pages at 118–420
+  lines, two of them over the length brief and logged in pass5.md. Three of the six identical *Questions players ask* headings were
+  varied in-session, which is the "second uniformity" risk showing up for the
+  first time. Hand-offs in pass3.md §8 (the authority owner and its four
+  dependants, the AI seam, the `SE` lane session K must lengthen, the
+  Nether-fortress material that now lives nowhere), pass4.md and pass5.md.
+  Process note: seven pages drafted by parallel Opus agents against a shared
+  brief, every report diffed by the session. `damage-and-death`'s report ran
+  long, and rather than wait the session audited that page against the
+  decompile itself — so when the report did arrive there were **two
+  independent audits of one page, and they agreed**, which is a cheap check
+  worth repeating on the page a part cares most about. Three agents overruled
+  the session's own rulings with evidence — the spawner's budget ordering, the
+  claim in the brief that `ServerEntity.handleMinecartPosRot` bypasses the
+  send gate, and the brief's own roster of non-living damage classes, whose
+  first entry — `ArmorStand` — is a `LivingEntity` — which is the protocol
+  working: a ruling written before the pages are open is a hypothesis.

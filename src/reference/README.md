@@ -9,6 +9,9 @@ enumerate.
 - [Registries](registries.md) — every registry key: built-in, data-pack, synced.
 - [Data components](components.md) — every `DataComponentType`, persistent and synced.
 - [Game rules](gamerules.md) — every rule, type, category, default.
+- [Attributes](attributes.md) — every attribute: default, range, sentiment, and whether the client is ever told.
+- [Entity data serializers](entity-data-serializers.md) — all 43, in registration order, which is the wire id.
+- [Damage outside `LivingEntity`](non-living-damage.md) — what each of the twenty-one non-living classes does when you hit it.
 - [Threads](threads.md) — every thread, who makes it, what may run on it.
 - [Math and primitives](math-and-primitives.md) — the coordinate spaces, packings, shapes and random sources every page assumes.
 - [Level data and rules](level-data-and-rules.md) — who owns the seed, the spawn, the rules and the border, and which file each is in.
