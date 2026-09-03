@@ -1974,3 +1974,87 @@ rows already existed for `codecs-nbt-json`, they satisfy the real constraint
 one class would break the key's own rule of one meaning corpus-wide. Part IX
 is clean under `check_lanes.py --strict`; the corpus-wide count is still 25
 disagreements and 16 collisions, all in parts sessions K–N have not reached.
+
+### Part X, after session K — what sessions L, M, O and P inherit
+
+*(session K, 2026-09-03)*
+
+**Four open questions from section 6 are answered, and the answers are
+rulings a later session should not silently re-open.**
+
+- *Does `prediction-and-acks` belong in Part IX rather than Part X?*
+  **No.** It stays. Its two applications are Part V pages, and Part V's
+  landing page already rules that Part V is watched first; moving it into
+  Part IX would put the machinery two parts before the vocabulary it needs.
+- *Does `text-and-fonts` belong in Part XI?* **No**, same shape of answer.
+  It is the only page a viewer can watch straight after Part II's
+  `text-components` without having seen a render pass, and it ends at a
+  `Font.PreparedText` rather than at a draw call. Session L should link to
+  it from `entity-rendering` rather than re-teach the glyph pipeline.
+- *Where does the debug subscription system live?* **Part X, as its
+  closer**, and it is the part's one *pattern* page. The machinery ships on
+  the dedicated server, but the client is the only thing that asks and the
+  only thing that draws, and the trace ends in a renderer.
+- *Does the corpus admit a reference-tier table inside a lecture page?*
+  **No** — it admits a Reference *page* and a link.
+  `src/reference/hud-elements.md` is the worked example: thirty rows, in
+  record order, with the condition each element is gated on. Session L has
+  the same question with the render-state hierarchy and session N with the
+  selector grammar, and this is the precedent.
+
+**`sound` is split, and the seam is *machine* against *content*.**
+`sound-engine.md` owns the five threads, `ChannelAccess`, the channel
+limits, the volume arithmetic, the three looping mechanisms, the device and
+the decode stack. `what-makes-a-sound.md` owns `SoundEvent`, `SoundSource`,
+`sounds.json`, the three doors (a named sound, a level event, client-side
+ambience), the local-player prediction, propagation delay and the
+environment-attribute music model. `sound.md` is deleted and redirects to the
+engine. **Other parts link across that seam**: anything about *how* a sound
+is produced goes to the first, anything about *what decides a sound happens*
+to the second. `reference/threads.md`, `what-this-book-skips` and `blaze3d`
+were re-pointed this session.
+
+**For session L (Part XI Rendering).** Three things Part X now asserts that
+Part XI has to agree with. `the-client-loop` stops at the profiler's *frame*
+zone and states that `FramerateLimiter.limitDisplayFPS` runs **inside**
+`Minecraft.renderFrame`, after the present — the old diagram had it after
+*Post render*, and `the-frame` should be checked for the same error.
+`the-client-level` states that `LevelExtractor` is reached three ways — the
+level pushes, the chunk cache calls it directly, and the extractor pulls
+three collections per frame with no notification — which is a claim about
+Part XI's entry points. And `the-gui-render-tree` states that
+`GuiRenderer.endFrame` is called by `GameRenderer` rather than by
+`GuiRenderer.render`, and that `GuiRenderState.isHudHidden` is read by
+`GameRenderer` in three places, with a clear-colour override on the same
+object read alongside it. Also: **`LX` is now keyed as `LevelExtractor`**, which five pages in
+two parts already used it for, so Part XI's `LightmapRenderStateExtractor`
+is the later claimant and must lengthen.
+
+**For session O (Reference).** One new hand-kept page,
+`src/reference/hud-elements.md`, wanting the same re-sweep the other
+hand-kept pages get. And session J's deferred question is still open and is
+**not** Part X's to answer: the eight `ClientPacketListener` handlers that
+never hop belong either in `the-connection` or in `reference/threads.md`,
+and session O should pick. Part X does not state the list.
+
+**The coverage queue is unchanged at fifteen items, and Part X's entry is
+explicitly deferred rather than declined.** *World creation and the
+world-select screens*, ~5,100 lines, spans Parts X and XII: half of it is
+worldgen's world-creation settings and half is a screen family. Splitting
+one subject across two part sessions is how this corpus grew its
+duplications, so session K spent no R7 allowance on it. **Session M should
+rule on it with the worldgen half in front of it**, and session P discharges
+whatever is left. The sound split is a confirmed split, not new coverage.
+
+**Lane ledger.** Twenty-six rows added, seven of them lengthened later
+claimants and two of those lengthened *pre-emptively*: `StringSplitter` is
+`SSpl` and `FontSet` `FSet` although `SS` and `FS` are unkeyed, because both
+short forms are contested in Part XII and leaving them free costs Part X two
+letters. The others: `SndE`/`SndM` (`SE` is `ServerEntity`, `SM` is
+contested), `ChanA` (`CA` means three things in three unconverted parts),
+`GuiR` (the key's own recorded collision with `GameRenderer`), `InvS` (`IS`
+is `IntegratedServer`) and `GStit` (`GS` is `GaussianSampler`). `Library` and
+`Channel` take their own names under the short-word rule. Part X is clean
+under `check_lanes.py --strict`; the corpus-wide count fell from 25
+disagreements and 16 collisions to **19 and 10**, all of them in Parts XI to
+XIII.

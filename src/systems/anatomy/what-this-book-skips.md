@@ -370,7 +370,7 @@ book's own [reference layer](../../reference/README.md) covers.
 the *location*. The binding sits inside Blaze3D, beside the GPU
 abstraction, not in the client's sound package where the engine, the
 manager, the channel pool and the Ogg decoding live
-([sound](../client/sound.md)). Blaze3D is the platform layer for both
+([the sound engine](../client/sound-engine.md)). Blaze3D is the platform layer for both
 devices, not only the graphics one.
 
 `Library` owns the device and context and splits a default thirty channels
@@ -416,7 +416,7 @@ reader will not miss it, not a shrug.
 | `net/minecraft/util/parsing` | 29 classes, 1,879 lines | absorbed — Mojang's own packrat parser-combinator framework, and the question it answers, why the client can complete mid-token, is that page's question | [Brigadier and commands](../commands/brigadier-and-commands.md), and [codecs, NBT and JSON](../foundations/codecs-nbt-json.md) for its largest consumer, the SNBT reader |
 | `net/minecraft/client/animation` | 23 classes, 509 lines | absorbed for its five framework classes, declined for the sixteen pure-keyframe definitions | [entity rendering](../rendering/entity-rendering.md) |
 | `net/minecraft/server/packs` | 55 classes, 4,975 lines | absorbed — mostly covered already, two corners owed a sentence each | [the resource system](../foundations/resource-system.md) |
-| `net/minecraft/client/resources` | 101 classes, 7,612 lines | reframed — it is not one system, and five pages own its parts | [models and atlases](../rendering/models-and-atlases.md), [sound](../client/sound.md), [entity rendering](../rendering/entity-rendering.md), [the HUD](../client/hud.md), [the resource system](../foundations/resource-system.md) |
+| `net/minecraft/client/resources` | 101 classes, 7,612 lines | reframed — it is not one system, and five pages own its parts | [models and atlases](../rendering/models-and-atlases.md), [what makes a sound happen](../client/what-makes-a-sound.md), [entity rendering](../rendering/entity-rendering.md), [the HUD](../client/hud.md), [the resource system](../foundations/resource-system.md) |
 | `com/mojang/blaze3d/vulkan` | 40 classes, 7,477 lines | declined — a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
 | `net/minecraft/client/data` | 28 classes, 6,176 lines | declined — build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
 | the catalogues | ~230 mob models, ~73 particles, 101 render states, 50 render layers, 16 animation definitions, 61 of 63 worldgen features, 50 tree kits, the entity sub-predicates | declined — each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |

@@ -504,3 +504,52 @@ was cut or moved, and why)*
   `packets-and-stream-codecs` both call the codec table *the phase's one
   codec*, which is precise but is the sort of phrase a viewer hears as a
   singular file rather than a composed dispatcher.
+
+- **2026-09-03, session K, Part X's cuts and its wording debt.**
+  **Cuts, all of them moves rather than losses.** `hud`'s twenty-eight-row
+  element gate table, which pass 2 had compressed to a paragraph of prose,
+  is now `src/reference/hud-elements.md` and the page links to it — the page
+  keeps only the two-block *shape* as a flowchart. `the-client-loop` lost its
+  *data it owns* field inventory (the timing fields, the profiler apparatus,
+  the gizmo collectors) and its *interfaces* list; every field the story
+  touches is still named in the sentence that touches it, and the rest is in
+  the class index. `the-client-level` lost the same kind of inventory, and
+  `prediction-and-acks` lost its enumeration of
+  `BlockStatePredictionHandler`'s eight public members as a list — three are
+  still named in *Where to look*. Nothing factual was dropped except one
+  stale framing sentence in `sound`, which called the sound system "the first
+  system after Anatomy"; the lecture order it referred to no longer exists.
+  **Wording debt.**
+  - **The formula sweep is now overdue and Part X is where it is worst.**
+    Session H recorded that three Part X pages opened with "The headline for
+    a 1.21-era reader" and four with "The one sentence a player would
+    recognise"; session I found Part XI eight for eight. This session
+    removed both formulas from all twelve Part X pages — the headline
+    material became the *for a 1.21-era reader* blockquote at the foot of
+    each page, and the player-recognises sentence was folded into the
+    opening paragraph or the verified line. **The formulas now survive
+    nowhere in Part X and everywhere in Parts XI to XIII.** Sessions L to N
+    should do the same, or pass 5 will be reconciling three different house
+    styles.
+  - **The *questions players ask* device is now doing a lot of work.** Six of
+    the twelve pages use it, because it is the honest home for what used to
+    be a bullet wall of invariants. That is one page in two, which is the
+    same trap the old seven-heading template fell into. Pass 5 should check
+    whether it reads as a device or as a section every page must have — and
+    note that on three pages (`the-gui-render-tree`, `text-and-fonts`,
+    `sound-engine`) the questions are a reader's rather than a player's, and
+    the heading says so, which may be a distinction without a difference.
+  - **Second person again.** `input-and-keybinds`, `hud`,
+    `what-makes-a-sound` and `the-gui-render-tree` all open in the second
+    person (*hold the key*, *press F1*, *you break a block*, *a chest full of
+    the same item*). Sessions I and J both flagged the drift; it is now four
+    parts wide and the corpus-wide decision cannot wait for pass 6.
+  - **`the-gui-render-tree`'s title is still the weakest in the part**
+    (session H's note, unresolved). It is really *how the UI is recorded and
+    drawn*, and the tree is the mechanism rather than the subject. Not
+    renamed this session because a rename costs a redirect and the page's own
+    figure now makes the tree the point; pass 5 or pass 6 should settle it.
+  - **"Record" and "extract" are used interchangeably across four pages** —
+    `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud` —
+    because the methods are all named *extract* and the concept reads better
+    as *record*. The glossary has *extract*. One of the two should win.

@@ -311,7 +311,66 @@ same wire watched from the receiving end.
 
 ## X · The client
 
-*Filled by session K.*
+Part X is a hub and its spokes, and the spokes are cadences rather than
+stages. Nothing here hands off to anything; every page after the first
+answers "when in the client's one loop does *this* happen". Watch the hub
+first and then take the rest in any order that suits — except the two pairs
+noted below.
+
+1. [The client loop](systems/client/the-client-loop.md) — the hub, and the
+   shortest page in the part. One turn of `Minecraft.run`: how much
+   simulated time a frame owes, and what happens to the time it cannot
+   afford. A frame that earns fifteen ticks runs ten and loses five.
+2. [The client level](systems/client/the-client-level.md) — the same `Level`
+   class the server runs, with its authority removed. A comparison of what
+   the client really simulates against what it only pretends to, and the
+   client's tick lists confidently answering *no*.
+3. [Prediction and acknowledgement](systems/client/prediction-and-acks.md) —
+   the block that appears and then disappears. The receipt is for a number,
+   not a verdict, and it is sent for the actions the server refused.
+4. [Input and keybinds](systems/client/input-and-keybinds.md) — holding
+   sneak. Five chances for a press to be swallowed, and a key that stays
+   down while you are not touching it.
+5. [Options](systems/client/options.md) — the render-distance slider.
+   Saving *is* the event system, and a cycle button broadcasts your client
+   information on every click.
+6. [GUI and screens](systems/client/gui-and-screens.md) — what a screen is,
+   grounded in pressing E: a screen the server is never told about, over a
+   menu with no `MenuType`.
+7. [The GUI render tree](systems/client/the-gui-render-tree.md) — nothing in
+   the 2D UI draws anything. Layering is inferred from bounding boxes, which
+   is what makes the batching possible.
+8. [Text and fonts](systems/client/text-and-fonts.md) — six stages from a
+   `Component` to a quad, one of which uploads a texture while pretending to
+   measure.
+9. [The HUD](systems/client/hud.md) — the other thing that records into that
+   tree. Two hidden-gated blocks, and the one element between them that F1
+   does not hide.
+10. [Sound: the engine](systems/client/sound-engine.md) — five threads and
+    one OpenAL device. A sound always starts at least one hop after the
+    packet, even on a cache hit.
+11. [What makes a sound happen](systems/client/what-makes-a-sound.md) — three
+    doors, and only one of them names the sound. Your own sounds never round
+    trip.
+12. [Debugging the running game](systems/client/debugging-the-running-game.md)
+    — the closer, and the part's one *pattern* lecture: sixteen instances of
+    one subscription mechanism, all shipped and none of them on.
+
+Six to nine are the part's one internal pipeline — a screen records, the
+tree sorts and batches, the text becomes glyphs — and are watched
+consecutively. Two and three are the other pair: the ledger lives on
+`ClientLevel` and is reached through three of its methods.
+
+Part X assumes [Part IX](systems/networking/README.md), which is the same
+wire watched from the sending end, and Part I's
+[anatomy](systems/anatomy/anatomy.md) for the two loops. It assumes Part
+VI's [authority](systems/entities/authority.md) as the premise under
+lectures two and three, and **Part V before lecture three** — Part V's
+landing page rules that its two click lectures come first, because they are
+the ledger's two applications. Lecture eight assumes Part II's [text
+components](systems/foundations/text-components.md). Lecture one is a
+prerequisite of Part XI, which begins where it ends, at the acquired
+surface.
 
 ## XI · Rendering
 

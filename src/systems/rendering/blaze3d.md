@@ -335,7 +335,7 @@ push descriptors for the uniform binding, and a real swapchain in
   in a shipped game the same conditions make the draw return without a
   word.
 - **Blaze3D is not only graphics.** `com/mojang/blaze3d/audio` is the
-  OpenAL wrapper — see [sound](../client/sound.md).
+  OpenAL wrapper — see [the sound engine](../client/sound-engine.md).
 - **Names a 1.21-era reader will hunt for and not find:**
   *ShaderInstance*, *RenderStateShard* (now `RenderType` over a
   `RenderPipeline`), *VertexBuffer*, *Tesselator*,

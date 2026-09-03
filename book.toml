@@ -54,3 +54,5 @@ level = 0
 "/systems/blocks/redstone.html" = "signal-and-dust.html"
 # Pass-3 session I: hunger-xp-and-effects split and renamed.
 "/systems/player/hunger-xp-and-effects.html" = "hunger-and-experience.html"
+# Pass-3 session K: sound split into the engine and the content model.
+"/systems/client/sound.html" = "sound-engine.html"

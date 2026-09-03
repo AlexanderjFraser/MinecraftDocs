@@ -1536,3 +1536,105 @@ entry first.
   Part I's two loops, and that Part IX is a prerequisite of Part X. Three
   are orderings, which pass 2 found is where this corpus is most confidently
   wrong.
+
+- **2026-09-03, pass 3 session K — Part X The client.** Twelve pages
+  rewritten in shape, one page split into two, one landing page and one
+  Reference page written. The whole part is on this list; below is what
+  pass 4 should check *hardest*, being what the rewrite introduced.
+
+  **One ordering the rewrite corrected, which is the first thing to
+  re-check.** `the-client-loop`'s old sequence diagram put
+  `FramerateLimiter.limitDisplayFPS` after the *Post render* section, i.e.
+  at the end of `Minecraft.runTick`. It is not there: it is inside
+  `Minecraft.renderFrame`, after the present and before *Post render*, and
+  it is gated on `GameRenderState`'s framerate limit being below 260 rather
+  than on the tracker being asked again at that moment. The new flowchart
+  says so. Confirm both halves of that correction.
+
+  **The hooks, one per page, all new or newly load-bearing.** The frame that
+  earns fifteen ticks runs ten and loses five (`the-client-loop` — the claim
+  was in the old page's invariants, it is now the opening paragraph). The
+  client's tick lists accept a schedule and then answer *no* when asked
+  whether one is pending, so a predicted repeater looks inert
+  (`the-client-level` — the *repeater* is the session's example and is not
+  in the decompile as such: check that a repeater actually reschedules
+  itself through the black-holed path). The receipt is for a number and is
+  sent for refusals (`prediction-and-acks`, unchanged in substance). A
+  toggle-sneak press flips the mapping and the *release* is swallowed
+  entirely, and a screen closing turns the toggle back on
+  (`input-and-keybinds` — new scenario this session, read from
+  `ToggleKeyMapping` and `KeyMapping.restoreToggleStatesOnScreenClosed`). A
+  cycle button broadcasts your `ClientInformation` on every click
+  (`options`, unchanged). Pressing E sends and receives nothing
+  (`gui-and-screens`, unchanged). Layering is inferred from bounding boxes
+  (`the-gui-render-tree`, unchanged). Measuring bakes (`text-and-fonts`,
+  unchanged). F1 does not hide the sleep fade (`hud`, unchanged). A sound
+  always starts at least one hop after the packet (`sound-engine`,
+  unchanged). Most world sounds are an int (`what-makes-a-sound`,
+  unchanged). Nothing is stripped from the shipped jar
+  (`debugging-the-running-game`, unchanged).
+
+  **Facts added this session, which had no owner before.**
+  `Entity.moveOrInterpolateTo` and the seven overrides of
+  `Entity.getInterpolation` — `LivingEntity`, `Display`, `ExperienceOrb`,
+  `Shulker`, `FishingHook`, `AbstractBoat`, `AbstractMinecart` — against a
+  default that returns null and therefore snaps; the page's *snaps* column
+  names `AbstractArrow`, `PrimedTnt`, `ItemEntity` and `FallingBlockEntity`
+  as examples of the default, which is an inference from *does not override*
+  and should be spot-checked. `ClientPacketListener.serverChunkRadius` and
+  `ClientPacketListener.serverSimulationDistance`, seeded at login and handed
+  to each new `ClientLevel`. `ClientChunkCache.Storage` as an
+  `AtomicReferenceArray` with volatile centre coordinates, and the claim
+  that the reason is the render thread reading them — a *why*, and therefore
+  weaker than the *what*. `Entity.isInterpolating` being read by
+  `ServerboundMoveVehiclePacket` and `PositionMoveRotation`. And
+  `DebugSubscriptions.DEDICATED_SERVER_TICK_TIME` named properly, replacing
+  the old page's awkward reference to a `RemoteDebugSampleType` constant; the
+  count of sixteen was re-derived by counting the fields, and the four
+  expiring kinds now carry their tick counts (60, 100, 200, 200).
+
+  **The new Reference page is thirty rows of gate, and every row is a
+  claim.** `src/reference/hud-elements.md` was read one method at a time out
+  of `Hud.extractRenderState` and `Gui.extractRenderState`. Two rows are
+  inferences rather than transcriptions and should be checked first: row 13,
+  that mount health sits *outside* the can-hurt-you block and so shows in
+  creative; and row 26, the two different paths by which subtitles are
+  recorded when the HUD is hidden. Also check the preamble's claim that
+  `GuiRenderState.isHudHidden` is published before the loading-screen
+  short-circuit.
+
+  **The diagrams.** New and asserting orderings: the one-turn flowchart in
+  `the-client-loop` (every edge is an ordering claim, and the clamp is a
+  decision node); the two-column `stateDiagram-v2` in `prediction-and-acks`
+  (five client transitions and three server ones, and the claim that no
+  transition anywhere is "the server said no"); the setting-change flowchart
+  in `options`; the containment flowchart in `gui-and-screens`; two
+  flowcharts in `the-gui-render-tree`, one of the data and one of the draw
+  pass; the six-stage pipeline flowchart in `text-and-fonts`; the record-order
+  flowchart in `hud`, which asserts exactly where the sleep fade sits; the
+  three-doors flowchart in `what-makes-a-sound`; the hub-and-spokes figure on
+  the landing page, whose seven arrow labels are cadence claims. Redrawn:
+  the sneak trace in `input-and-keybinds` (a different scenario from the old
+  page's, so it is a new diagram not an edited one). Kept and re-checked:
+  the chunk-arrival sequence in `the-client-level`, the refusal sequence in
+  `prediction-and-acks`, the inventory sequence in `gui-and-screens`, the
+  chat-line sequence in `text-and-fonts`, the hearts sequence in `hud`, the
+  villager-brain sequence in `debugging-the-running-game`, and the
+  block-placed sequence now in `sound-engine`.
+
+  **The split.** `sound.md` became `sound-engine.md` and
+  `what-makes-a-sound.md`. Nothing was cut in the split, but material moved
+  across the seam and pass 4 should read the two together once: the engine
+  page keeps `SoundInstance`, the threads, the channel limits, the volume
+  arithmetic, looping and the device, and the content page keeps
+  `SoundEvent`, `SoundSource`, `sounds.json`, level events, the local-player
+  prediction, propagation delay and the environment-attribute music model.
+  The one claim that was *sharpened* rather than moved: a server can name a
+  sound in no registry (inline `SoundEvent` in the stream codec) while data
+  packs cannot register one — the old page said this in passing and the new
+  one makes it a table row.
+
+  **The landing page and `lectures.md`** claim that Part X is a hub and
+  spokes rather than a pipeline, that only the GUI stack is internally
+  ordered, that Part IX and Part V are both prerequisites, and that
+  `the-client-loop` is a prerequisite of Part XI. All four are orderings.

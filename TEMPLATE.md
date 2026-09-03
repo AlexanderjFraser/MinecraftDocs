@@ -380,6 +380,32 @@ never change an existing row's meaning.
 | `MEI` | `MobEffectInstance` |
 | `CScr` | `ChatScreen` |
 | `CLis` | `ChatListener` |
+| `CCC` | `ClientChunkCache` |
+| `LLE` | `LevelLightEngine` |
+| `LX` | `LevelExtractor` |
+| `BSPH` | `BlockStatePredictionHandler` |
+| `MH` | `MouseHandler` |
+| `InvS` | `InventoryScreen` |
+| `GGE` | `GuiGraphicsExtractor` |
+| `GuiR` | `GuiRenderer` |
+| `ChatC` | `ChatComponent` |
+| `CRU` | `ComponentRenderUtils` |
+| `SSpl` | `StringSplitter` |
+| `FBR` | `FormattedBidiReorder` |
+| `FSet` | `FontSet` |
+| `GStit` | `GlyphStitcher` |
+| `SndM` | `SoundManager` |
+| `SndE` | `SoundEngine` |
+| `SBL` | `SoundBufferLibrary` |
+| `ChanA` | `ChannelAccess` |
+| `Library` | `Library` |
+| `Channel` | `Channel` |
+| `LEH` | `LevelEventHandler` |
+| `CDS` | `ClientDebugSubscriber` |
+| `SDS` | `ServerDebugSubscribers` |
+| `LDS` | `LevelDebugSynchronizers` |
+| `TDSS` | `TrackingDebugSynchronizer.SourceSynchronizer` |
+| `BDR` | `BrainDebugRenderer` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
@@ -426,3 +452,18 @@ collision rules, and `Ignite` takes its own name. `CI`, `RM`, `SRB` and
 `LIC` were free. One collision is recorded and **not
 yet claimed**: `ES` is `EntityStorage`, so `EntitySection` would have to
 lengthen to `ESec` if a later page wants it.
+
+Part X (session K) added twenty-six rows and lengthened seven later
+claimants rather than reassigning a row: `SoundEngine` is `SndE` and
+`SoundManager` `SndM` because `SE` is `ServerEntity` and `SM` is claimed in
+Part XII's prose, `ChannelAccess` is `ChanA` because `CA` means three things
+in three unconverted parts, `GuiRenderer` is `GuiR` because `GR` is
+`GameRenderer` (the collision the key already recorded), `InventoryScreen`
+is `InvS` because `IS` is `IntegratedServer`, `GlyphStitcher` is `GStit`
+because `GS` is `GaussianSampler`, and `StringSplitter` is `SSpl` and
+`FontSet` `FSet` deliberately — `SS` and `FS` are unkeyed collisions in Part
+XII, and leaving them free costs Part X two letters and saves session M a
+renaming. `LX` is claimed here for `LevelExtractor`, which five pages in two
+parts already use it for, so Part XI's `LightmapRenderStateExtractor` is the
+later claimant and lengthens. `Library` and `Channel` take their own names
+under the short-word rule.

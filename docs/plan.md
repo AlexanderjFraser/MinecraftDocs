@@ -379,7 +379,7 @@ sidebar order.
   page with its `ClientLevel` sections handed to Part X; `chat-and-signing`
   with the adversary table. Part IX's three borrowed facts replaced by links
   to Parts I and III.
-- [ ] **Session K — Part X The client.** The hub-and-spokes landing, each
+- [x] **Session K — Part X The client.** *(done 2026-09-03)* The hub-and-spokes landing, each
   spoke named by its cadence; `sound` split (the engine · what makes a
   sound happen); the GUI stack as the part's one internal pipeline,
   `the-gui-render-tree` drawn as a tree; `hud`'s gate table to Reference;
@@ -1694,3 +1694,151 @@ missing it — and removes the comment. The owner confirms or reorders
   losing the last agent in a fan-out.
   Checks at commit: 18,034 names resolve, 158 diagrams pass, Part IX clean
   under `check_lanes.py --strict`, class index and lane index regenerated.
+
+- **2026-09-03, pass 3 session K — Part X The client. The ruling, written
+  before any page was opened.**
+  **The part's shape is a hub and its spokes, and every spoke is named by
+  its cadence.** Session H's finding, taken as-is: Part X is not a pipeline
+  and must not pretend to be. `the-client-loop` is the hub — the one page
+  that says when anything on the client runs — and every other page in the
+  part answers "when in that loop does *this* happen": per tick, per frame,
+  per event, per packet, per sound, per subscription. The landing page's
+  figure is that hub with its spokes labelled by cadence, not by hand-off
+  order. The one internal pipeline is the GUI stack
+  (`gui-and-screens` → `the-gui-render-tree` → `text-and-fonts`), taught
+  consecutively, with `hud` as its fourth page — the other recorder.
+  **Thirteen pages after one split.** `sound` becomes `sound-engine` (the
+  machine: five threads, one OpenAL device, one hop the sound cannot skip)
+  and `what-makes-a-sound` (the content model: the three doors a sound comes
+  through, and the fact that most world sounds are an int). `sound.md` is
+  deleted and redirects to `sound-engine.md`. Session A found the material
+  was two pages' worth and did not split; after session H every other page
+  in the part is one cadence and one subject, and sound was the only page
+  still carrying an engine and a content model. No other splits, no merges,
+  no renames.
+  **The order, hub first, then the spokes grouped by cadence:**
+  `the-client-loop` · `the-client-level` · `prediction-and-acks` ·
+  `input-and-keybinds` · `options` · `gui-and-screens` ·
+  `the-gui-render-tree` · `text-and-fonts` · `hud` · `sound-engine` ·
+  `what-makes-a-sound` · `debugging-the-running-game`. Unchanged from the
+  sidebar's order except that the sound pair replaces one page.
+  **The shapes, one per page, chosen so no two neighbours read alike:**
+
+  | page | shape | its hook |
+  |---|---|---|
+  | `README` | landing | — |
+  | `the-client-loop` | trace, figure overruled to a **flowchart** | the frame that earns fifteen ticks runs ten and loses five |
+  | `the-client-level` | **comparison** — the same `Level` class, two authorities — grounded by the chunk-arrival trace | the client's tick lists accept a schedule, drop it, and then answer *no* when asked whether one is pending |
+  | `prediction-and-acks` | **state machine** — a two-column state diagram, ledger entry against server counter | the receipt is for a number, and it is sent for the actions the server refused |
+  | `input-and-keybinds` | trace — **holding sneak**, not pressing E | a key press is fully processed before the tick that observes it |
+  | `options` | **policy** — saving *is* the event system | a cycle button broadcasts your client information on every click |
+  | `gui-and-screens` | **vocabulary page**, grounded by pressing E | the survival inventory is opened entirely client-side, and its menu has no `MenuType` |
+  | `the-gui-render-tree` | **vocabulary page** — a figure of the tree, not of time | layering is inferred from bounding boxes and never declared |
+  | `text-and-fonts` | **pipeline** — six stages from a `Component` to a quad | measuring text bakes a glyph and uploads a texture |
+  | `hud` | **policy** — what is drawn, when, and what F1 does not hide | F1 does not hide the sleep fade |
+  | `sound-engine` | trace — a block placed near you, through five threads | a sound always starts at least one hop after the packet, even on a cache hit |
+  | `what-makes-a-sound` | **comparison** — three doors | most world sounds are an int, and your own sounds never round-trip |
+  | `debugging-the-running-game` | **the pattern** — one subscription, sixteen instances, one traced | none of it is stripped from the shipped jar; the client simply never asks |
+
+  **Two diagram-shape overrules, both session H's.** `the-client-loop`'s
+  trace is a *loop* and a sequence diagram cannot say so — its most
+  important fact, that ticks are dropped, was living in a label on a bounded
+  block. It becomes a flowchart with the clamp as a decision node and the
+  drop as its own box. `the-gui-render-tree`'s subject is a tree with a
+  placement rule, and its sequence diagram was a flowchart in a sequence
+  diagram's clothes; it becomes two flowcharts, one of the data and one of
+  the draw pass. `prediction-and-acks` gains the two-column state diagram
+  session H asked for and keeps the refusal sequence as its second figure —
+  the one page in the part with two figures of different kinds, because the
+  ledger's *state* and the packet *ordering* are two different claims.
+  **`hud`'s gate table goes to Reference**, as `src/reference/hud-elements.md`
+  — the twenty-two elements of the HUD in record order with the condition
+  each is gated on, which is exactly the thing R5 says a viewer would pause
+  the video to read. `hud` keeps the two-block structure as a flowchart and
+  links.
+  **`prediction-and-acks` and `text-and-fonts` stay in Part X**, overruling
+  session H's own observation that they would sit equally well in Parts IX
+  and XI. The packaging argument is weak, but the *watching* argument is
+  not: Part V's landing page already rules that Part V is watched before
+  `prediction-and-acks`, so moving the page into Part IX would put it before
+  its own two applications, and `text-and-fonts` is the only page a viewer
+  can watch after Part II's `text-components` without having seen a single
+  render pass. Both are recorded as answered open questions in
+  [pass3.md](pass3.md) §6.
+  **`debugging-the-running-game` is placed, and stays where it is.** Session
+  H asked whether the debug subscription system belongs to Part IX (a server
+  push), Part X (the client draws it) or a part of its own. It is Part X's,
+  as the part's closer, for the reason the page already gives: the
+  machinery ships on the dedicated server, but the client is the only thing
+  that ever asks and the only thing that draws, and the page's trace ends in
+  a renderer. It is the part's one **pattern** page, which is also why it
+  closes rather than opens.
+  **No coverage page.** R7 allows one; the queue's only Part X entry is
+  *world creation and the world-select screens*, ~5,100 lines that session J
+  found spanning Parts X and XII. It is ruled **not this session's**: half of
+  it is worldgen's world-creation settings and half is a screen family, and
+  splitting the subject across two part sessions is how the corpus grew its
+  duplications. It stays in the queue with that reason, for session M and
+  session P to co-rule. The sound split is a confirmed split, not new
+  coverage, and spends no allowance.
+  **What session J handed over is checked, not assumed.** Session J's
+  hand-off lists six `ClientLevel` facts that left `what-the-client-is-told`
+  for Part X; each is confirmed present in `the-client-level` or added, and
+  the one with no owner anywhere in the corpus —
+  `Entity.moveOrInterpolateTo` and which entity families supply an
+  `InterpolationHandler` — is written into `the-client-level` this session.
+
+  **What was done.** Thirteen pages where there were eleven: twelve system
+  pages plus a landing page, one split, one new Reference page, and no
+  renames beyond the split — so one redirect (`sound.html` to
+  `sound-engine.html`) and a sidebar that now folds onto a real page. Every
+  page lost the seven-heading skeleton, the field inventories and the
+  invariants bullet wall; the material went into a cast table, into the
+  sentence that touches it, or into a *questions players ask* section, and
+  the *headline for a 1.21-era reader* formula that opened seven of the
+  eleven pages became a blockquote at the foot of each. Six shapes are in
+  use across the twelve pages — trace, comparison, state machine, policy,
+  vocabulary, pipeline and pattern — and no two neighbours share one.
+  **Three diagrams were the wrong shape and are now right.**
+  `the-client-loop`'s loop is a flowchart with the ten-tick clamp as a
+  decision node and the dropped ticks as their own box, which is where its
+  hook now lives instead of in a label on a bounded block. `prediction-and-acks`
+  gained the two-column `stateDiagram-v2` session H asked for — a ledger
+  entry's five transitions against a connection counter's three — and kept
+  the refusal sequence beside it, because the ledger's *state* and the
+  packet *ordering* are two different claims and only the second is a
+  conversation. `the-gui-render-tree` became two flowcharts, one of the data
+  and one of the draw pass, in place of a sequence diagram that was a
+  flowchart in disguise.
+  **Redrawing the loop found a real error.** The old sequence diagram put
+  `FramerateLimiter.limitDisplayFPS` at the end of `Minecraft.runTick`,
+  after *Post render*. It is inside `Minecraft.renderFrame`, after the
+  present and before *Post render*. Session B's lesson holds — suspect the
+  page, not only the tool — and the correction is at the head of
+  [pass4.md](pass4.md)'s session-K entry so pass 4 checks it first, along
+  with `the-frame`, which may have inherited the same mistake.
+  **Session J's hand-off was checked rather than assumed, and one item was
+  missing.** Five of the six `ClientLevel` facts handed over from
+  `what-the-client-is-told` were present. The sixth —
+  `Entity.moveOrInterpolateTo` and which entity families supply an
+  `InterpolationHandler` — had no owner anywhere in the corpus and is now a
+  table in `the-client-level`: seven overrides against a default that
+  returns null and therefore snaps, which is why a dropped item moves
+  differently from a mob over the same connection. Two smaller gaps were
+  filled at the same time: `ClientPacketListener.serverChunkRadius` and
+  `ClientPacketListener.serverSimulationDistance`, and the torus's
+  `AtomicReferenceArray` and volatile centre.
+  **`hud`'s gate table is the R5 precedent.** Twenty-two HUD elements plus
+  the four `Gui` records after them, in record order, with the condition
+  each is gated on: `src/reference/hud-elements.md`. It answers section 6's
+  open question about reference-tier tables inside lecture pages with *no,
+  a Reference page and a link* — which is the answer session L needs for the
+  render-state hierarchy and session N for the selector grammar.
+  **No coverage page, deliberately.** The queue's only Part X entry spans
+  Parts X and XII, so it is deferred to session M with the worldgen half in
+  front of it rather than declined; the reason is written into
+  [pass3.md](pass3.md) §7's discipline note rather than only here.
+  Checks at commit: 17,869 names resolve, 165 diagrams pass, Part X clean
+  under `check_lanes.py --strict`, the corpus-wide lane count down from 25
+  disagreements and 16 collisions to 19 and 10, class index and lane index
+  regenerated, `mdbook build` clean and no broken internal links.
