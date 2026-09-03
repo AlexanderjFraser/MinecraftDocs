@@ -374,7 +374,58 @@ surface.
 
 ## XI · Rendering
 
-*Filled by session L.*
+*A substrate under a pipeline.* Two lectures are what the renderer stands
+on and have no trace through the world; the rest are one frame in the order
+it happens. The part opens on the frame itself because it is the shortest
+way to see the whole shape at once — and because a viewer who has watched
+one frame end to end has a reason to care what a `GpuDevice` is.
+
+1. [The frame](systems/rendering/the-frame.md) — one method, two halves, and
+   a wall between them. A failed surface acquisition costs the picture and
+   not the work: a minimized window renders complete frames nobody sees.
+2. [The window](systems/rendering/the-window.md) — the substrate nothing
+   else admits to needing. The window and the graphics backend are created
+   together and neither can go first.
+3. [Blaze3D](systems/rendering/blaze3d.md) — the game's own graphics API,
+   and the part's vocabulary lecture. The state machine left the game and
+   moved behind the backend boundary, where it still elides redundant calls.
+4. [Visibility and the frame graph](systems/rendering/visibility-and-the-frame-graph.md)
+   — what the frame decides to draw. An uncompiled section is opaque to the
+   reachability walk and an empty one is transparent, which is why terrain
+   reveals itself outward.
+5. [Section meshing](systems/rendering/section-meshing.md) — where the
+   triangles came from. A block placed behind you costs nothing at all: the
+   dirty flag simply waits until the section is visible again.
+6. [Models and atlases](systems/rendering/models-and-atlases.md) — the
+   reload pipeline behind every quad, and the clearest fan-out and barrier
+   in the game. A quad's chunk layer is read out of its sprite's pixels.
+7. [Entity rendering](systems/rendering/entity-rendering.md) — four stages,
+   none of them called *render*. The zombie is animated at least twice per
+   frame, and the red flash is not a colour.
+8. [Lightmap, fog and sky](systems/rendering/lightmap-fog-and-sky.md) — the
+   part's *pattern* lecture: one question asked five times over, by
+   renderers that mostly no longer know what time it is.
+9. [Particles](systems/rendering/particles.md) — the part's *policy*
+   lecture: five gates that disagree with each other, and a break puff that
+   passes through none of them.
+10. [Post-processing](systems/rendering/post-processing.md) — the closer.
+    Six JSON-declared shader chains, and a pack can rewrite all six and add
+    none. Two of them append passes to the frame graph lecture four builds
+    and four get a throwaway graph of their own, which is why the blur and
+    the spectator shaders appear in no profiler slice at all.
+
+Four and five are a pair — one page until this pass, and still one journey
+seen from its two ends. One to three can also be watched one, three, two;
+the window is the lecture a viewer is most likely to skip and least likely
+to regret.
+
+Part XI assumes Part X's [client loop](systems/client/the-client-loop.md),
+and only that page — it is the one thing that says when a frame happens.
+Lecture six assumes Part II's [resource
+system](systems/foundations/resource-system.md); lecture eight assumes Part
+IV's [environment attributes and
+timelines](systems/world/environment-attributes-and-timelines.md), which
+owns the system this part only consumes.
 
 ## XII · World generation
 

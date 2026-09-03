@@ -189,7 +189,7 @@ wrapping API on top of it; a glyph is baked into a texture the first time it
 is asked for. → [text and fonts](../systems/client/text-and-fonts.md)
 
 **Frame graph** — the client's per-frame declaration of render passes and
-the targets each reads and writes, resolved before anything is drawn. → [level rendering](../systems/rendering/level-rendering.md)
+the targets each reads and writes, resolved before anything is drawn. → [visibility and the frame graph](../systems/rendering/visibility-and-the-frame-graph.md)
 
 **Function** — a `.mcfunction` file: a list of commands loaded as a
 `CommandFunction`, optionally with macro lines. → [execution and functions](../systems/commands/execution-and-functions.md)
@@ -382,7 +382,7 @@ states, one of biomes, and four counters. Its light lives in the light
 engine's own storage, not on the section. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
 **Section mesh** — the compiled vertex buffers for one section, rebuilt off
-the main thread when the section is both dirty and visible. → [level rendering](../systems/rendering/level-rendering.md)
+the main thread when the section is both dirty and visible. → [section meshing](../systems/rendering/section-meshing.md)
 
 **Sensor** — the half of brain AI that writes memories from the world, on a
 fixed interval. → [AI](../systems/entities/ai-goals-and-brains.md)

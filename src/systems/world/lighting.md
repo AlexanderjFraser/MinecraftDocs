@@ -344,7 +344,7 @@ gates geometry. `SectionUpdateTracker.hasAllNeighbors` asks
 `LevelLightEngine.lightOnInColumn` about each of the eight surrounding
 columns, and `LevelExtractor` queues a never-yet-meshed section for rebuild
 only when they all answer yes — a light flag deciding whether a section may
-have a mesh at all ([level rendering](../rendering/level-rendering.md)).
+have a mesh at all ([section meshing](../rendering/section-meshing.md)).
 Meanwhile the client had already lit this torch itself:
 `MultiPlayerGameMode.startPrediction` runs the placement locally through the
 same `LevelChunk.setBlockState`, so the packet mostly confirms what the

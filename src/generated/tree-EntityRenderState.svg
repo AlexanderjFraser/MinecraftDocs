@@ -1,0 +1,48 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2217 200" width="2217" height="200" role="img" aria-label="The class hierarchy under EntityRenderState: each node shows how many types descend from it">
+<title>The class hierarchy under EntityRenderState: each node shows how many types descend from it</title>
+<text class="node" x="4.0" y="130.0" font-size="12">EntityRenderState (98)</text>
+<path class="edge" d="M163.1 126.0 H204.0 V64.0 H211.0"/>
+<text class="node" x="214.0" y="68.0" font-size="12">LivingEntityRenderState (70)</text>
+<path class="edge" d="M414.9 64.0 H840.5 V20.0 H847.5"/>
+<text class="node" x="850.5" y="24.0" font-size="12">ArmedEntityRenderState (17)</text>
+<path class="edge" d="M1044.4 20.0 H1637.0 V12.0 H1644.0"/>
+<text class="node" x="1647.0" y="16.0" font-size="12">HumanoidRenderState (13)</text>
+<path class="edge" d="M1044.4 20.0 H1637.0 V28.0 H1644.0"/>
+<text class="fold" x="1647.0" y="32.0" font-size="12">3 with no subclasses: AllayRenderState, CopperGolemRenderState, VexRenderState</text>
+<path class="edge" d="M414.9 64.0 H840.5 V44.0 H847.5"/>
+<text class="node" x="850.5" y="48.0" font-size="12">HoldingEntityRenderState (5)</text>
+<path class="edge" d="M1051.4 44.0 H1637.0 V44.0 H1644.0"/>
+<text class="fold" x="1647.0" y="48.0" font-size="12">5 with no subclasses: DolphinRenderState, FoxRenderState, PandaRenderState, …</text>
+<path class="edge" d="M414.9 64.0 H840.5 V60.0 H847.5"/>
+<text class="node" x="850.5" y="64.0" font-size="12">EquineRenderState (2)</text>
+<path class="edge" d="M1002.6 60.0 H1637.0 V60.0 H1644.0"/>
+<text class="fold" x="1647.0" y="64.0" font-size="12">2 with no subclasses: DonkeyRenderState, HorseRenderState</text>
+<path class="edge" d="M414.9 64.0 H840.5 V76.0 H847.5"/>
+<text class="node" x="850.5" y="80.0" font-size="12">FelineRenderState (1)</text>
+<path class="edge" d="M1002.6 76.0 H1637.0 V76.0 H1644.0"/>
+<text class="node" x="1647.0" y="80.0" font-size="12">CatRenderState</text>
+<path class="edge" d="M414.9 64.0 H840.5 V92.0 H847.5"/>
+<text class="node" x="850.5" y="96.0" font-size="12">SlimeRenderState (1)</text>
+<path class="edge" d="M995.7 92.0 H1637.0 V92.0 H1644.0"/>
+<text class="node" x="1647.0" y="96.0" font-size="12">SulfurCubeRenderState</text>
+<path class="edge" d="M414.9 64.0 H840.5 V108.0 H847.5"/>
+<text class="fold" x="850.5" y="112.0" font-size="12">39 with no subclasses: ArmadilloRenderState, AxolotlRenderState, BatRenderState, …</text>
+<path class="edge" d="M163.1 126.0 H204.0 V124.0 H211.0"/>
+<text class="node" x="214.0" y="128.0" font-size="12">DisplayEntityRenderState (3)</text>
+<path class="edge" d="M414.9 124.0 H840.5 V124.0 H847.5"/>
+<text class="fold" x="850.5" y="128.0" font-size="12">3 with no subclasses: BlockDisplayEntityRenderState, ItemDisplayEntityRenderState, TextDisplayEntityRenderState</text>
+<path class="edge" d="M163.1 126.0 H204.0 V140.0 H211.0"/>
+<text class="node" x="214.0" y="144.0" font-size="12">ArrowRenderState (1)</text>
+<path class="edge" d="M359.2 140.0 H840.5 V140.0 H847.5"/>
+<text class="node" x="850.5" y="144.0" font-size="12">TippableArrowRenderState</text>
+<path class="edge" d="M163.1 126.0 H204.0 V156.0 H211.0"/>
+<text class="node" x="214.0" y="160.0" font-size="12">ItemClusterRenderState (1)</text>
+<path class="edge" d="M401.0 156.0 H840.5 V156.0 H847.5"/>
+<text class="node" x="850.5" y="160.0" font-size="12">ItemEntityRenderState</text>
+<path class="edge" d="M163.1 126.0 H204.0 V172.0 H211.0"/>
+<text class="node" x="214.0" y="176.0" font-size="12">MinecartRenderState (1)</text>
+<path class="edge" d="M380.1 172.0 H840.5 V172.0 H847.5"/>
+<text class="node" x="850.5" y="176.0" font-size="12">MinecartTntRenderState</text>
+<path class="edge" d="M163.1 126.0 H204.0 V188.0 H211.0"/>
+<text class="fold" x="214.0" y="192.0" font-size="12">17 with no subclasses: BoatRenderState, EndCrystalRenderState, EnderDragonRenderState, …</text>
+</svg>

@@ -305,8 +305,7 @@ How two machines agree about a set of stacks in a screen is
 is [data components](../foundations/data-components.md), catalogued in the
 [components reference](../../reference/components.md). And how an item picks
 the model, texture and tint you see in the slot is **not** this part's subject
-at all: it is Part XI's, in
-[models and atlases](../rendering/models-and-atlases.md).
+at all: it is Part XI's, in [models and atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model).
 
 ## Where to look
 

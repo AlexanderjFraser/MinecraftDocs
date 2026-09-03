@@ -412,6 +412,8 @@ reader will not miss it, not a shrug.
 | `net/minecraft/gametest` | 47 classes, 5,514 lines | covered, which is why the treemap does not hatch it | [dialogs and tests](../commands/dialogs-and-tests.md) |
 | the debug cluster | four packages' worth | covered: the F3 entry registry, and the server-push subscriptions, sample loggers and debug renderers | [the HUD](../client/hud.md), [debugging the running game](../client/debugging-the-running-game.md) |
 | `com/mojang/blaze3d/platform` | 29 classes, 3,896 lines | covered | [the window](../rendering/the-window.md) |
+| `PostChain`, `PostChainConfig`, `PostPass`, `UniformValue` | 4 classes, 996 lines, and six shipped chains | covered — it was the only place in the game where user-authored shaders are first class | [post-processing](../rendering/post-processing.md) |
+| `net/minecraft/client/renderer/item`, its item-properties subtree included | 63 classes | covered as a section rather than a page: the trace starts at an `ItemStack` but everything it touches is Part XI's | [models and atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model) |
 | the scoreboard, teams and command storage | 32 classes, ~3,830 lines | covered — it was the largest coherent system in the book with no page at all | [scores, teams and stored data](../commands/scoreboard-and-data.md) |
 | `net/minecraft/util/parsing` | 29 classes, 1,879 lines | absorbed — Mojang's own packrat parser-combinator framework, and the question it answers, why the client can complete mid-token, is that page's question | [Brigadier and commands](../commands/brigadier-and-commands.md), and [codecs, NBT and JSON](../foundations/codecs-nbt-json.md) for its largest consumer, the SNBT reader |
 | `net/minecraft/client/animation` | 23 classes, 509 lines | absorbed for its five framework classes, declined for the sixteen pure-keyframe definitions | [entity rendering](../rendering/entity-rendering.md) |
@@ -453,9 +455,7 @@ download queue and its cache eviction.
 
 **Named for a later pass to place.** These are real systems with real
 lectures in them, found by the coverage sweeps and not written:
-post-processing (`PostChain`, `PostPass`); block-entity and special-item
-rendering; how an item picks its model (`renderer/item` and the item
-properties tree); old-chunk blending (`Blender`, `BlendingData`); how a
+block-entity and special-item rendering; old-chunk blending (`Blender`, `BlendingData`); how a
 world is created (`levelgen/flat`, `levelgen/presets` and the
 world-selection screens); the carver tunnel walk; the dragon fight
 (`EnderDragonFight`); the advancements screen; and `client/multiplayer`'s

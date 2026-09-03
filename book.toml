@@ -33,7 +33,6 @@ level = 0
 [output.html.redirect]
 "/systems/client/the-frame.html" = "../rendering/the-frame.html"
 "/systems/client/blaze3d.html" = "../rendering/blaze3d.html"
-"/systems/client/level-rendering.html" = "../rendering/level-rendering.html"
 "/systems/client/models-and-atlases.html" = "../rendering/models-and-atlases.html"
 "/systems/client/entity-rendering.html" = "../rendering/entity-rendering.html"
 "/systems/client/lightmap-fog-and-sky.html" = "../rendering/lightmap-fog-and-sky.html"
@@ -56,3 +55,6 @@ level = 0
 "/systems/player/hunger-xp-and-effects.html" = "hunger-and-experience.html"
 # Pass-3 session K: sound split into the engine and the content model.
 "/systems/client/sound.html" = "sound-engine.html"
+# Pass-3 session L: level-rendering split into visibility/frame-graph and section meshing.
+"/systems/rendering/level-rendering.html" = "visibility-and-the-frame-graph.html"
+"/systems/client/level-rendering.html" = "../rendering/visibility-and-the-frame-graph.html"

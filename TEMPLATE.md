@@ -406,6 +406,39 @@ never change an existing row's meaning.
 | `LDS` | `LevelDebugSynchronizers` |
 | `TDSS` | `TrackingDebugSynchronizer.SourceSynchronizer` |
 | `BDR` | `BrainDebugRenderer` |
+| `GpuS` | `GpuSurface` |
+| `GD` | `GpuDevice` |
+| `CE` | `CommandEncoder` |
+| `RP` | `RenderPass` |
+| `GlCE` | `GlCommandEncoder` |
+| `GB` | `GpuBackend` |
+| `GLX` | `GLX` |
+| `MonM` | `MonitorManager` |
+| `SUT` | `SectionUpdateTracker` |
+| `SRD` | `SectionRenderDispatcher` |
+| `SectC` | `SectionCompiler` |
+| `SOG` | `SectionOcclusionGraph` |
+| `FGB` | `FrameGraphBuilder` |
+| `MM` | `ModelManager` |
+| `MB` | `ModelBakery` |
+| `AM` | `AtlasManager` |
+| `SprL` | `SpriteLoader` |
+| `TA` | `TextureAtlas` |
+| `ERD` | `EntityRenderDispatcher` |
+| `ZR` | `ZombieRenderer` |
+| `ZS` | `ZombieRenderState` |
+| `ZM` | `ZombieModel` |
+| `SNS` | `SubmitNodeStorage` |
+| `FRD` | `FeatureRenderDispatcher` |
+| `LM` | `Lightmap` |
+| `FR` | `FogRenderer` |
+| `LRSE` | `LightmapRenderStateExtractor` |
+| `Time` | `Timelines` |
+| `PE` | `ParticleEngine` |
+| `PChain` | `PostChain` |
+| `PPass` | `PostPass` |
+| `ShadM` | `ShaderManager` |
+| `Game` | *the game's own code above Blaze3D, not a class* |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |

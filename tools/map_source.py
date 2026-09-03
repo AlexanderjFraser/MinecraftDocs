@@ -52,7 +52,7 @@ SKIPPED = (
 )
 
 # The hierarchies drawn as trees, in the order the parts teach them.
-TREE_ROOTS = ("Entity", "Block", "Item", "Screen")
+TREE_ROOTS = ("Entity", "Block", "Item", "Screen", "EntityRenderState")
 TREE_DEPTH = 3
 
 DECL = re.compile(

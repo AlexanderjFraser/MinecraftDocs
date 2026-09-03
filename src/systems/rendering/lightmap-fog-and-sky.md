@@ -2,444 +2,337 @@
 
 > Verified against **Minecraft 26.2** · Part XI · the sun goes down: every colour on screen, traced back to one keyframe curve.
 
-## Responsibility
+Stand on a hill and watch the light go. The sky over the taiga slides from
+blue towards black, the murk closes in until the far trees dissolve, stars
+come up, the moon takes whatever shape it is owed tonight, and if a storm
+arrives the scene goes grey and streaked. Five renderers make those colours —
+`Lightmap` decides how bright, `FogRenderer` how far, `SkyRenderer` and
+`CloudRenderer` what is up there, `WeatherEffectRenderer` what is coming down
+— and between them they ask one question and nothing else: *what is this
+attribute worth, here, now?* The surprise is who they ask. **Most of them no
+longer know what time it is.** They ask a probe for a named value at a
+position and a partial tick, and the day/night curve behind it is keyframes in
+a data pack. Only two still read the raw world clock: the clouds, because they
+drift, and the weather, whose streaks are seeded from it.
 
-This is the part of the renderer that decides what colour the world is.
-Not what shape it is — that is [level rendering](level-rendering.md) — but
-how bright a torch-lit corner reads, how far you can see through the
-murk, what hangs above the horizon and what falls out of it. Four
-renderers own the four answers: `Lightmap` (how bright), `FogRenderer`
-(how far), `SkyRenderer` and `CloudRenderer` (what is up there),
-`WeatherEffectRenderer` (what is coming down).
+## The cast
 
-The one sentence a player would recognise: *it gets dark, and then it
-gets foggy, and then it rains.*
+| class | what it decides | thread |
+|---|---|---|
+| `EnvironmentAttributeProbe` | what any attribute is worth at the camera, this frame | Render thread |
+| `LightmapRenderStateExtractor` | the lightmap's ten uniforms, and whether to redraw at all | Render thread |
+| `Lightmap` | how bright, as the 16×16 texture every terrain vertex samples | Render thread |
+| `FogRenderer` | how far you can see, in what colour, and in which medium | Render thread |
+| `SkyRenderer` | what hangs above the horizon — and which of two skies it is | Render thread |
+| `CloudRenderer` | the cloud cells, and the face list built from them | `CloudRenderer.prepare` bakes on a worker, the rest on Render |
+| `WeatherEffectRenderer` | which columns get rain, which get snow, and how hard | Render thread |
+| `LevelRenderer` | which of those become frame-graph passes at all | Render thread |
 
-The headline for a 1.21-era reader: **most of these renderers no longer
-know what time it is.** *DimensionSpecialEffects* is gone. *LightTexture*
-is gone. Nearly every per-dimension, per-biome, per-time-of-day visual
-constant now lives in one registry-backed, data-driven, layered system —
-`EnvironmentAttributes` — and each renderer asks a probe for a value at a
-position and a partial tick. The day/night cycle is a `Timeline`: JSON
-keyframes, in a data pack. Two renderers are exceptions and still read
-raw world time: the clouds, which drift, and the weather, whose streaks
-are seeded from it.
+## What a renderer has to know about an attribute, and no more
 
-## The data it owns
+An **environment attribute** is a named, typed quantity — a colour, a
+distance, an angle, a moon phase — that the world answers for a position and
+an instant. `EnvironmentAttributeSystem` assembles that answer by running a
+short stack of layers over the attribute's own default: the dimension, the
+biome, one layer per timeline the dimension runs, and weather where a
+dimension can have it. That machinery belongs to [environment attributes and
+timelines](../world/environment-attributes-and-timelines.md); this page
+assumes it and names only what it consumes. Three consequences shape
+everything below.
 
-### The attribute system (server-side data, client-side consumers)
+**The client resolves the same stack from the same data** — it is never sent
+a resolved colour — and what it adds is `EnvironmentAttributeProbe`, on the
+camera. `EnvironmentAttributeProbe.tick` re-samples the biome neighbourhood
+once per client tick and rolls each probed value's new answer down into last
+tick's; `EnvironmentAttributeProbe.getValue` fetches the fresh one lazily,
+during the frame, and interpolates between the two by partial tick; and any
+attribute nobody asked for during a tick is evicted. Every renderer here goes
+through the probe, never through the system.
 
-- **`EnvironmentAttribute`** — one visual (or gameplay) quantity, in
-  `BuiltInRegistries`. Each declares `EnvironmentAttribute.defaultValue`,
-  an `EnvironmentAttribute.type` (fourteen of them in `AttributeTypes`,
-  including `AttributeTypes.RGB_COLOR`, `AttributeTypes.ARGB_COLOR`,
-  `AttributeTypes.FLOAT`, `AttributeTypes.ANGLE_DEGREES` and
-  `AttributeTypes.MOON_PHASE`), an `EnvironmentAttribute.valueRange` that
-  clamps the assembled answer, and three flags:
-  `EnvironmentAttribute.isPositional`,
-  `EnvironmentAttribute.isSpatiallyInterpolated` and
-  `EnvironmentAttribute.isSyncable`, set by
-  `EnvironmentAttribute.Builder.notPositional`,
-  `EnvironmentAttribute.Builder.spatiallyInterpolated` and
-  `EnvironmentAttribute.Builder.syncable`. Whether a type is declared
-  interpolated is what decides if a value smooths across a tick boundary
-  or steps — which is why the moon phase snaps.
-- **`EnvironmentAttributes`** — the catalogue. The ones this page uses:
-  `EnvironmentAttributes.SKY_COLOR`, `EnvironmentAttributes.FOG_COLOR`,
-  `EnvironmentAttributes.FOG_START_DISTANCE`,
-  `EnvironmentAttributes.FOG_END_DISTANCE`,
-  `EnvironmentAttributes.SKY_FOG_END_DISTANCE`,
-  `EnvironmentAttributes.CLOUD_FOG_END_DISTANCE`,
-  `EnvironmentAttributes.WATER_FOG_COLOR`,
-  `EnvironmentAttributes.WATER_FOG_START_DISTANCE`,
-  `EnvironmentAttributes.WATER_FOG_END_DISTANCE`,
-  `EnvironmentAttributes.SUNRISE_SUNSET_COLOR`,
-  `EnvironmentAttributes.CLOUD_COLOR`,
-  `EnvironmentAttributes.CLOUD_HEIGHT`,
-  `EnvironmentAttributes.SUN_ANGLE`,
-  `EnvironmentAttributes.MOON_ANGLE`,
-  `EnvironmentAttributes.STAR_ANGLE`,
-  `EnvironmentAttributes.STAR_BRIGHTNESS`,
-  `EnvironmentAttributes.MOON_PHASE`,
-  `EnvironmentAttributes.BLOCK_LIGHT_TINT`,
-  `EnvironmentAttributes.SKY_LIGHT_COLOR`,
-  `EnvironmentAttributes.SKY_LIGHT_FACTOR`,
-  `EnvironmentAttributes.SKY_LIGHT_LEVEL`,
-  `EnvironmentAttributes.AMBIENT_LIGHT_COLOR`,
-  `EnvironmentAttributes.NIGHT_VISION_COLOR`,
-  `EnvironmentAttributes.AMBIENT_PARTICLES`.
-- **`EnvironmentAttributeSystem`** — the per-level stack that answers an
-  attribute: dimension, biome, one layer per timeline, and the weather
-  layers if the dimension can have weather, baked once in the level
-  constructor by `EnvironmentAttributeSystem.addDefaultLayers`, with a
-  per-tick cache that covers only the positionless answer. Layers come in
-  three shapes — constant, time-based and positional — and a run of
-  leading constants is folded into a base value rather than kept as
-  layers. It is owned by
-  [environment attributes and timelines](../world/environment-attributes-and-timelines.md);
-  what matters here is that **the client builds the same stack from the
-  same synced data** and resolves colours locally, and that `ClientLevel`
-  adds two layers of its own — both for the **lightning** flash, which
-  whitens `EnvironmentAttributes.SKY_COLOR` and pins
-  `EnvironmentAttributes.SKY_LIGHT_FACTOR` to one while it lasts.
-- **`EnvironmentAttributeProbe`** — the camera's sampler.
-  `EnvironmentAttributeProbe.tick` Gaussian-samples the surrounding
-  biomes into a `SpatialAttributeInterpolator` and rolls each
-  `EnvironmentAttributeProbe.ValueProbe`'s new value down into
-  `EnvironmentAttributeProbe.ValueProbe.lastValue`, clearing
-  `EnvironmentAttributeProbe.ValueProbe.newValue` — and **evicting any
-  attribute nobody asked for last tick**. `EnvironmentAttributeProbe.getValue`
-  fetches the fresh value lazily, during the frame, and interpolates
-  between the two by partial tick. Layers combine through
-  `ColorModifier.MULTIPLY_RGB`, `ColorModifier.ALPHA_BLEND`,
-  `FloatModifier.MULTIPLY`, `FloatModifier.MAXIMUM` and friends;
-  `WeatherAttributes.RAIN` and `WeatherAttributes.THUNDER` are the
-  worked examples.
-- **`Timeline`** — a period in ticks plus keyframe tracks, built through
-  `Timeline.Builder` (`Timeline.Builder.addTrack`,
-  `Timeline.Builder.addModifierTrack`, `Timeline.Builder.addTimeMarker`,
-  eased by `EasingType`). There are **four**: `Timelines.OVERWORLD_DAY`
-  is the day/night cycle, `Timelines.MOON` a second and longer one,
-  `Timelines.VILLAGER_SCHEDULE` drives villager activity, and
-  `Timelines.EARLY_GAME` does not loop at all — it is what gates pillager
-  patrols until the world is old enough. Time itself comes from
-  `WorldClock`/`ClockManager` (see
-  [the level tick](../server/server-level-tick.md)), and
-  `ClockTimeMarkers` names six instants on it —
-  `ClockTimeMarkers.DAY`, `ClockTimeMarkers.NOON`, `ClockTimeMarkers.NIGHT`
-  and `ClockTimeMarkers.MIDNIGHT` are the four that commands can name;
-  `ClockTimeMarkers.WAKE_UP_FROM_SLEEP` and
-  `ClockTimeMarkers.ROLL_VILLAGE_SIEGE` are internal.
-- **`DimensionType`** now carries `DimensionType.skybox` — a three-valued
-  `DimensionType.Skybox` (`DimensionType.Skybox.NONE`,
-  `DimensionType.Skybox.OVERWORLD`, `DimensionType.Skybox.END`) —
-  plus `DimensionType.attributes` (an `EnvironmentAttributeMap`) and
-  `DimensionType.timelines`. `BiomeSpecialEffects` still exists but has
-  been hollowed out to `BiomeSpecialEffects.waterColor`,
-  `BiomeSpecialEffects.grassColorOverride`,
-  `BiomeSpecialEffects.grassColorModifier` and the foliage colours; every
-  fog and sky colour left it.
+**Whether a value smooths or steps is declared on the attribute**, not chosen
+by the renderer — which is why the sky colour slides and
+`EnvironmentAttributes.MOON_PHASE` snaps, and why a renderer that wants a
+different curve must ask for a different attribute.
 
-### The lightmap
+**`ClientLevel` adds two layers of its own** on top of the four, and both are
+the **lightning** flash: one whitens `EnvironmentAttributes.SKY_COLOR`, the
+other pins `EnvironmentAttributes.SKY_LIGHT_FACTOR` to one while the flash
+lasts. Neither has anything to do with the End's sky flash, which never
+enters the stack at all.
 
-- **`Lightmap`** — a 16×16 `GpuTexture` (`Lightmap.texture`,
-  `Lightmap.textureView`, `Lightmap.TEXTURE_SIZE`) and a
-  `MappableRingBuffer` of uniforms (`Lightmap.ubo`,
-  `Lightmap.LIGHTMAP_UBO_SIZE`). `Lightmap.render` writes the uniforms
-  and issues one three-vertex draw with `RenderPipelines.LIGHTMAP`.
-- **`LightmapRenderState`** — ten uniforms in std140 order — six floats
-  (`LightmapRenderState.skyFactor`, `LightmapRenderState.blockFactor`,
-  `LightmapRenderState.nightVisionEffectIntensity`,
-  `LightmapRenderState.darknessEffectScale`,
-  `LightmapRenderState.bossOverlayWorldDarkening`,
-  `LightmapRenderState.brightness`) then four colours
-  (`LightmapRenderState.blockLightTint`,
-  `LightmapRenderState.skyLightColor`,
-  `LightmapRenderState.ambientColor`,
-  `LightmapRenderState.nightVisionColor`) — plus
-  `LightmapRenderState.needsUpdate`, which is not a uniform at all but
-  the flag that decides whether the draw happens.
-- **`LightmapRenderStateExtractor`** — fills that state.
-  `LightmapRenderStateExtractor.tick` runs the torch-flicker random walk
-  (`LightmapRenderStateExtractor.blockLightFlicker`) and raises its own
-  `LightmapRenderStateExtractor.needsUpdate`;
-  `LightmapRenderStateExtractor.extract` copies that flag into the render
-  state, clears it, and reads the probe, `Options.gamma`,
-  `Options.darknessEffectScale`, the conduit-power water vision, and
-  `LightmapRenderStateExtractor.calculateDarknessScale`.
-- **`LightCoordsUtil`** — the packing statics, split out of the texture.
-  `LightCoordsUtil.pack`, `LightCoordsUtil.block`, `LightCoordsUtil.sky`,
-  `LightCoordsUtil.FULL_BRIGHT`, `LightCoordsUtil.FULL_SKY`, the smooth
-  variants used by ambient occlusion
-  (`LightCoordsUtil.smoothPack`, `LightCoordsUtil.smoothBlend`,
-  `LightCoordsUtil.addSmoothBlockEmission`) and the lookups
-  `LightCoordsUtil.getLightCoords` with its
-  `LightCoordsUtil.BrightnessGetter.DEFAULT`. A packed value reaches a
-  vertex through `VertexConsumer.setLight`.
-- **`UiLightmap`** — a 1×1 white `DynamicTexture`. `GameRenderer.lightmap`
-  hands this out while `GameRenderer.useUiLightmap` is set;
-  `GameRenderer.levelLightmap` always returns the real one.
+### What the dimension type and the biome still carry
 
-### Fog
+Two record fields survived the migration. `DimensionType.skybox` is a
+three-valued `DimensionType.Skybox` — `DimensionType.Skybox.NONE`,
+`DimensionType.Skybox.OVERWORLD`, `DimensionType.Skybox.END` — and it is a
+*branch*, not a colour. `BiomeSpecialEffects` still exists, hollowed out to
+`BiomeSpecialEffects.waterColor`, `BiomeSpecialEffects.grassColorOverride`,
+`BiomeSpecialEffects.grassColorModifier` and the foliage colours: every fog
+and sky colour left it for `Biome.getAttributes`. None of it crosses the
+network as pixels — the inputs arrive as registry sync during configuration,
+attribute maps filtered through `EnvironmentAttributeMap.NETWORK_CODEC`, then
+world time and weather during play ([protocol
+phases](../networking/protocol-phases.md)) — so a data pack retints a
+dimension without touching the client.
 
-`FogRenderer` owns one ring buffer, `FogRenderer.regularBuffer`, and one
-static `FogRenderer.emptyBuffer` filled once with "infinitely far" for
-when fog is off. Its output is a mutable `FogData` — `FogData.color`
-plus six distances (`FogData.environmentalStart`, `FogData.environmentalEnd`,
-`FogData.renderDistanceStart`, `FogData.renderDistanceEnd`,
-`FogData.skyEnd`, `FogData.cloudEnd`) — stashed on
-`CameraRenderState.fogData` and uploaded by `FogRenderer.updateBuffer`.
+## The five askers
 
-`FogRenderer.FOG_ENVIRONMENTS` is an ordered list and the order is the
-priority: `LavaFogEnvironment`, `PowderedSnowFogEnvironment`,
-`BlindnessFogEnvironment`, `DarknessFogEnvironment`,
-`WaterFogEnvironment`, and `AtmosphericFogEnvironment` **last**, which is
-what makes it the guaranteed fallback. Only `FogEnvironment.setupFog` and
-`FogEnvironment.isApplicable` are abstract; `FogEnvironment.providesColor`,
-`FogEnvironment.getBaseColor`, `FogEnvironment.modifiesDarkness` and
-`FogEnvironment.getModifiedDarkness` are defaults a subclass overrides
-only when it needs to. `FogType` (`FogType.WATER`, `FogType.LAVA`,
-`FogType.POWDER_SNOW`, `FogType.ATMOSPHERIC`, `FogType.NONE`) says which
-medium the camera is in — and *NONE* maps to the atmospheric environment.
-
-### Sky, clouds, weather
-
-`SkyRenderer` builds every buffer it will ever need in its constructor:
-`SkyRenderer.starBuffer` (`SkyRenderer.buildStars`),
-`SkyRenderer.topSkyBuffer` and `SkyRenderer.bottomSkyBuffer`
-(`SkyRenderer.buildSkyDisc`, `SkyRenderer.SKY_DISC_RADIUS`),
-`SkyRenderer.sunriseBuffer` (`SkyRenderer.buildSunriseFan`),
-`SkyRenderer.sunBuffer` and `SkyRenderer.moonBuffer`
-(`SkyRenderer.buildSunQuad`, `SkyRenderer.buildMoonPhases`, from the
-`AtlasIds.CELESTIALS` atlas), `SkyRenderer.endSkyBuffer` and
-`SkyRenderer.endFlashBuffer`. Per frame it fills a `SkyRenderState` —
-`SkyRenderState.skybox`, `SkyRenderState.sunAngle`,
-`SkyRenderState.moonAngle`, `SkyRenderState.starAngle`,
-`SkyRenderState.starBrightness`, `SkyRenderState.skyColor`,
-`SkyRenderState.sunriseAndSunsetColor`, `SkyRenderState.moonPhase`,
-`SkyRenderState.rainBrightness`, `SkyRenderState.shouldRenderDarkDisc`,
-`SkyRenderState.endFlashIntensity` and the two End-flash angles.
-
-`CloudRenderer` is a `SimplePreparableReloadListener`: `CloudRenderer.prepare`
-reads the cloud image and `CloudRenderer.apply` bakes it into
-`CloudRenderer.TextureData`, one 64-bit word per pixel with the colour in the
-high bits and four neighbour-emptiness flags in the low four
-(`CloudRenderer.packCellData`, `CloudRenderer.isCellEmpty`).
-`CloudRenderer.buildMesh` walks cells (`CloudRenderer.CELL_SIZE_IN_BLOCKS`)
-and writes three bytes per face through `CloudRenderer.encodeFace`;
-`CloudRenderer.RelativeCameraPos` and `CloudStatus` decide which faces
-exist at all.
-
-`WeatherEffectRenderer` holds one `WeatherEffectRenderer.vertexBuffer` and
-the precomputed tangent tables `WeatherEffectRenderer.columnSizeX` and
-`WeatherEffectRenderer.columnSizeZ` (`WeatherEffectRenderer.RAIN_TABLE_SIZE`).
-Its per-frame product is a list of
-`WeatherEffectRenderer.ColumnInstance` records inside `WeatherRenderState`
-(`WeatherRenderState.rainColumns`, `WeatherRenderState.snowColumns`,
-`WeatherRenderState.intensity`, `WeatherRenderState.radius`).
-
-## When it runs
-
-All the per-tick and per-frame work is on the client's main thread. The
-one exception is the cloud bake: `CloudRenderer.prepare` is a reload
-task and runs on a worker, with only `CloudRenderer.apply` coming back.
-
-**Per client tick.** `EnvironmentAttributeSystem.invalidateTickCache`
-bumps the cache id, dropping every non-positional cached value.
-`EnvironmentAttributeProbe.tick` re-samples the biome neighbourhood.
-`LightmapRenderStateExtractor.tick` advances the flicker and raises the
-update flag. `Level.updateSkyBrightness` recomputes
-`Level.skyDarken`. `ClientLevel.tickWeatherEffects` spawns rain particles
-and sounds within `Options.weatherRadius`; `ClientLevel.animateTick` runs
-the ambient particle scatter; `EndFlashState.tick` advances the End-sky
-flash.
-
-**Per frame, extract.** `GameRenderer.extract` runs
-`LightmapRenderStateExtractor.extract` first of the level-facing steps,
-then `GameRenderer.extractCamera` (which calls `FogRenderer.setupFog` and
-stores the `FogData`), then `LevelExtractor.extract`, which drives
-`WeatherEffectRenderer.extractRenderState` and
-`SkyRenderer.extractRenderState` and reads the cloud colour and height.
-
-**Per frame, render.** `Lightmap.render` goes first and returns
-immediately unless the flag is set. `GameRenderer.renderLevel`
-uploads the fog with `FogRenderer.updateBuffer` and takes a single slice
-with `FogRenderer.getBuffer`. `LevelRenderer.render` then declares the
-passes: `LevelRenderer.addSkyPass`, `LevelRenderer.addMainPass`,
-`LevelRenderer.addCloudsPass`, `LevelRenderer.addWeatherPass`. The frame
-closes with `FogRenderer.endFrame` and `CloudRenderer.endFrame` rotating
-their ring buffers.
-
-**Per resource reload.** `CloudRenderer.prepare`/`CloudRenderer.apply`
-rebake the cloud cells, and `LevelExtractor.onResourceManagerReload` sets
-`LevelExtractor.shouldResetSkyRenderer`, which makes
-`LevelRenderer.addSkyPass` close and reconstruct the entire `SkyRenderer`
-— stars, moon phases and all.
+| renderer | what it asks for | when it asks | what it produces |
+|---|---|---|---|
+| `Lightmap`, through `LightmapRenderStateExtractor` | how bright block light and sky light should read, and in what tint | once per tick, at a partial tick of exactly one | ten std140 uniforms and one 16×16 texture |
+| `FogRenderer` | the colour of the murk and the six distances it lives between | once per frame, inside the camera extract | one `FogData`, uploaded as one UBO slice |
+| `SkyRenderer` | where the sun, moon and stars are, and how bright | once per frame | a `SkyRenderState` for the sky pass |
+| `CloudRenderer` | what colour the clouds are and how high they sit | once per frame, read for it by `LevelExtractor` | a compressed face list, rebaked only when it must be |
+| `WeatherEffectRenderer` | nothing, until it is raining | once per frame, and only then | a list of `WeatherEffectRenderer.ColumnInstance` |
 
 ## The trace: the sun goes down
 
 ```mermaid
 sequenceDiagram
-    participant TL as Timelines
+    participant Time as Timelines
     participant EAS as EnvironmentAttributeSystem
-    participant P as EnvironmentAttributeProbe
-    participant LX as LightmapRenderStateExtractor
+    participant EAP as EnvironmentAttributeProbe
+    participant LRSE as LightmapRenderStateExtractor
     participant FR as FogRenderer
     participant SR as SkyRenderer
     participant LR as LevelRenderer
     participant LM as Lightmap
 
-    Note over TL,EAS: per tick
-    TL->>EAS: keyframe tracks for this world time — SUN_ANGLE, SKY_COLOR, SKY_LIGHT_FACTOR…
+    Note over Time,EAS: per client tick
+    Time->>EAS: the keyframe tracks for this world time — SUN_ANGLE, SKY_COLOR, SKY_LIGHT_FACTOR
     EAS->>EAS: invalidateTickCache — every non-positional value recomputes once
-    EAS->>P: tick — Gaussian biome blend#59; last ← new, unread attributes evicted
-    LX->>LX: tick — flicker walk, needsUpdate = true
+    EAS->>EAP: tick — Gaussian biome blend, last becomes new, unread attributes evicted
+    LRSE->>LRSE: tick — flicker walk, then needsUpdate is raised
 
-    Note over P,SR: per frame, extract
-    LX->>P: getValue(SKY_LIGHT_FACTOR, BLOCK_LIGHT_TINT, AMBIENT_LIGHT_COLOR)
-    LX-->>LM: LightmapRenderState — ten std140 values, plus the flag
-    FR->>P: getValue(FOG_COLOR, SUNRISE_SUNSET_COLOR, SKY_FOG_END_DISTANCE)
+    Note over EAP,SR: per frame, extract
+    LRSE->>EAP: getValue(SKY_LIGHT_FACTOR, BLOCK_LIGHT_TINT, AMBIENT_LIGHT_COLOR)
+    LRSE-->>LM: LightmapRenderState — ten std140 values, plus the flag
+    FR->>EAP: getValue(FOG_COLOR, SUNRISE_SUNSET_COLOR, SKY_FOG_END_DISTANCE)
     FR-->>LR: FogData — one colour and six distances, in one UBO
-    SR->>P: getValue(SUN_ANGLE, MOON_ANGLE, STAR_BRIGHTNESS, MOON_PHASE)
+    SR->>EAP: getValue(SUN_ANGLE, MOON_ANGLE, STAR_BRIGHTNESS, MOON_PHASE)
     SR-->>LR: SkyRenderState
 
     Note over LM,LR: per frame, render
-    LM->>LM: render — one 3-vertex draw into a 16×16 texture
+    LM->>LM: render — one three-vertex draw into a 16×16 texture
     LR->>LR: addSkyPass — disc, sunrise fan, sun, moon, stars, dark disc
     LR->>LR: addMainPass — terrain samples the lightmap
-    LR->>LR: addCloudsPass, addWeatherPass
+    LR->>LR: addCloudsPass, then addWeatherPass
 ```
 
-Read the diagram as one question asked repeatedly: *what is this
-attribute worth, here, now?* The timeline supplies the curve, the layer
-stack decides how dimension, biome, time and weather combine, the probe
-smooths the answer over space and time, and four renderers consume it.
-`SkyRenderer.renderSunriseAndSunset` is the clearest case: the sunrise
-fan's colour *is* `EnvironmentAttributes.SUNRISE_SUNSET_COLOR`, an ARGB
-keyframe track, and its visibility is that colour's own alpha channel —
-which the renderer also scales the fan's depth by, so the fade is a
-property of the data, not of the geometry.
+The middle band's order is a dependency order. `GameRenderer.extract` runs
+`LightmapRenderStateExtractor.extract`, then `GameRenderer.extractCamera` —
+where `FogRenderer.setupFog` stashes its `FogData` on
+`CameraRenderState.fogData` — then `LevelExtractor.extract`, which drives
+`WeatherEffectRenderer.extractRenderState` and
+`SkyRenderer.extractRenderState`. Then `GameRenderer.renderLevel` uploads the
+fog with `FogRenderer.updateBuffer`, takes one slice with
+`FogRenderer.getBuffer`, and `LevelRenderer.render` declares the passes.
 
-## Interfaces
+`SkyRenderer.renderSunriseAndSunset` is the clearest instance of the pattern.
+The sunrise fan's colour *is* `EnvironmentAttributes.SUNRISE_SUNSET_COLOR`, an
+ARGB keyframe track, and its visibility is that colour's own alpha channel —
+which the renderer also scales the fan's depth by. The fade is a property of
+the data, not of the geometry, so a data pack restyles the sunset without a
+line of client code changing.
 
-- **Called by:** `GameRenderer.extract` and `GameRenderer.render` for the
-  lightmap and fog; `LevelRenderer.render` for sky, clouds and weather,
-  through the frame graph described in
-  [level rendering](level-rendering.md).
-- **Calls into:** `EnvironmentAttributeProbe` for most values;
-  `RenderSystem.setShaderFog` and `RenderPipelines.LIGHTMAP`,
-  `RenderPipelines.SKY`, `RenderPipelines.CELESTIAL`,
-  `RenderPipelines.STARS`, `RenderPipelines.SUNRISE_SUNSET`,
-  `RenderPipelines.END_SKY`, `RenderPipelines.CLOUDS`,
-  `RenderPipelines.FLAT_CLOUDS`,
-  `RenderPipelines.WEATHER_DEPTH_WRITE` and
-  `RenderPipelines.WEATHER_NO_DEPTH_WRITE` for the draws — see
-  [blaze3d](blaze3d.md).
-- **Crosses the network as:** nothing directly. The inputs arrive as
-  registry sync (`DimensionType`, `Biome`, `Timeline`,
-  `EnvironmentAttributeMap.NETWORK_CODEC`) during configuration, and as
-  the world time and weather in the play phase — see
-  [protocol phases](../networking/protocol-phases.md).
-- **Data-driven by:** `DimensionType.attributes`, `Biome.getAttributes`,
-  `Timelines.OVERWORLD_DAY` and `Timelines.MOON`, all reloadable
-  registries. A data pack can retint a dimension without touching the
-  client.
+## How bright: one draw per tick, and no partial ticks at all
 
-## Invariants and surprises
+`Lightmap` is a 16×16 `GpuTexture` plus a `MappableRingBuffer` of uniforms.
+`Lightmap.render` writes those uniforms and issues **one three-vertex draw**
+with `RenderPipelines.LIGHTMAP`: the brightness curve lives in the shader and
+the whole texture is a by-product of it. In 1.21 this was a `NativeImage`
+filled pixel by pixel in Java and re-uploaded every frame.
 
-- **The lightmap is computed on the GPU now, and only once per tick.**
-  `Lightmap.render` writes ten uniforms and draws three vertices; the
-  brightness curve lives in the shader. It early-outs unless
-  `LightmapRenderState.needsUpdate` — a flag raised by
-  `LightmapRenderStateExtractor.tick` and cleared by its own
-  `LightmapRenderStateExtractor.extract`. In 1.21 this was a 16×16
-  `NativeImage` filled pixel by pixel in Java and re-uploaded every frame.
-- **The lightmap deliberately ignores partial ticks.**
-  `GameRenderer.extract` passes a literal `1.0` to
-  `LightmapRenderStateExtractor.extract`, while `FogRenderer.setupFog`
-  and `SkyRenderer.extractRenderState` use the real one. Sky and fog
-  interpolate mid-tick; world lighting steps.
-- **`Lightmap.getBrightness` survives but no longer feeds the lightmap.**
-  It is a CPU-side duplicate of the shader's curve, kept for exactly
-  three callers: `Hud`, `EntityRenderer`'s shadow sampling and
-  `ScreenEffectRenderer`.
-- **There is one fog UBO for the whole frame, not one per pass.**
-  `LevelRenderer.render` takes a single slice and hands the same one to
-  the sky, main, weather and always-on-top passes; the clouds pass is
-  handed no fog at all. The sky and cloud fog *ends* are separate fields
-  **inside that one block**, which the shaders choose between — so the
-  effect the page's reader sees is real and the mechanism is not per-pass
-  binding.
-- **Fog picks its colour and its darkening from different sources.**
-  `FogRenderer.computeFogColor` walks `FogRenderer.FOG_ENVIRONMENTS` in a
-  fixed priority order and takes the first that
-  `FogEnvironment.providesColor` and, separately, the first that
-  `FogEnvironment.modifiesDarkness`. `MobEffectFogEnvironment` declares
-  the former false — blindness and darkness can only darken somebody
-  else's colour, never supply one — and `AtmosphericFogEnvironment` sits
-  last in the list precisely so that somebody always does.
-  `FogEnvironment.setupFog`, by contrast, stops at the first applicable
-  environment.
-- **Rain fog is the only stateful fog.**
-  `AtmosphericFogEnvironment.rainFogMultiplier` is an exponential
-  follower, so fog lags a storm starting; and
-  `AtmosphericFogEnvironment.updateRainFogState` still thickens it in a
-  biome that has no precipitation, at half strength.
-- **The cloud texture is never bound as a texture.** It is baked into a
-  `CloudRenderer.TextureData` cell array at reload, and the mesh is a
-  compressed *face list* — three bytes per face, expanded to quads in the
-  shader. The mesh is rebuilt on a resource reload, when the camera
-  crosses a cell boundary, when it changes side
-  (`CloudRenderer.RelativeCameraPos`), or when the `CloudStatus` changes.
-  A data pack that sets `EnvironmentAttributes.CLOUD_COLOR` to zero alpha
-  removes the pass entirely.
-- **The stars are the same in every world.** `SkyRenderer.buildStars`
-  seeds a fixed constant and rejects samples outside a shell, so
-  `SkyRenderer.STAR_COUNT` is an attempt count, not a star count. They
-  are built once in the constructor and only rebuilt when a resource
-  reload reconstructs the whole `SkyRenderer`.
-- **Weather is re-derived on the CPU every frame — when there is
-  weather.** `WeatherEffectRenderer.extractRenderState` returns
-  immediately if the rain level is zero; otherwise it loops every column
-  in a square of radius `Options.weatherRadius`, queries the heightmap
-  and the precipitation at each. The vertex buffer itself is rebuilt in
-  `WeatherEffectRenderer.render`, not in extract, and rain and snow are
-  two indexed draws sharing one buffer. The world border rides in the
-  same pass.
-- **The sky can be skipped five different ways.**
-  `LevelRenderer.addSkyPass` bails in lava, in powder snow, under
-  blindness or darkness, and when the dimension's
-  `DimensionType.Skybox` is *NONE* — which is the Nether. On top of that
-  `GameRenderer.renderLevel` suppresses it when a boss bar wants world
-  fog, and `AtmosphericFogEnvironment.setupFog` clamps the fog hard in
-  that case.
-- **The End takes a different branch entirely.** With
-  `DimensionType.Skybox.END`, `SkyRenderer.extractRenderState` fills only
-  the End-flash fields — the sun angle, moon phase, sky colour and dark
-  disc are never sampled. And `EndFlashState` is not the dragon fight: it
-  is a free-running flash on a six-hundred-tick cycle, seeded per
-  interval for its offset, duration and angles, present in any dimension
-  whose skybox is the End's.
-- **Moon phase is no longer arithmetic on the day count.** It is
-  `EnvironmentAttributes.MOON_PHASE`, driven by `Timelines.MOON`, whose
-  period is `MoonPhase.COUNT` days; the renderer selects a sub-quad of one
-  eight-quad buffer by `MoonPhase.index`.
-- **Gameplay darkness and visual darkness are two curves, not one.**
-  `EnvironmentAttributes.SKY_LIGHT_FACTOR` is a *visual* attribute,
-  spatially interpolated, and drives the lightmap;
-  `EnvironmentAttributes.SKY_LIGHT_LEVEL` is a *gameplay* attribute, not
-  positional, and is what `Level.updateSkyBrightness` turns into
-  `Level.skyDarken` for mob spawning. `Timelines.OVERWORLD_DAY`
-  keyframes both, at slightly different times and to different night
-  values — so they look like one curve and a data pack can separate them.
-- **Not every visual constant is an attribute.**
-  `DimensionType.ambientLight` — the floor under the lightmap's curve —
-  and `DimensionType.cardinalLightType` are plain record fields, and
-  block tint is still `BiomeColors` reading `BiomeSpecialEffects` through
-  the four `ColorResolver`s. That is the whole of what is left of the old
-  system, and it is why "everything is an attribute now" needs the
-  qualifier.
-- **Names a 1.21-era reader will hunt for and not find:**
-  *LightTexture* (now `Lightmap` plus `LightCoordsUtil`),
-  *DimensionSpecialEffects* and all three of its subclasses (now
-  `DimensionType.skybox` plus attributes), *FogParameters* (now `FogData`),
-  *RenderSystem.setShaderFogColor* and its siblings (now one
-  `RenderSystem.setShaderFog` taking a uniform slice),
-  *LevelRenderer.renderSky* / *renderClouds* / *renderSnowAndRain* (now
-  the `LevelRenderer.addSkyPass` family of frame-graph passes),
-  *Level.getSkyColor*, *ClientLevel.getStarBrightness* and
-  *ClientLevel.effects* (all attributes now).
+What it draws from is `LightmapRenderState`: ten values in std140 order — six
+floats from `LightmapRenderState.skyFactor` and
+`LightmapRenderState.blockFactor` to `LightmapRenderState.brightness`, then
+four colours, `LightmapRenderState.blockLightTint` and
+`LightmapRenderState.skyLightColor` from
+`EnvironmentAttributes.BLOCK_LIGHT_TINT` and
+`EnvironmentAttributes.SKY_LIGHT_COLOR`, the other two from
+`EnvironmentAttributes.AMBIENT_LIGHT_COLOR` and
+`EnvironmentAttributes.NIGHT_VISION_COLOR` — and an eleventh field,
+`LightmapRenderState.needsUpdate`, which is not a uniform at all but the flag
+that decides whether the draw happens. `LightmapRenderStateExtractor.tick`
+runs the torch-flicker random walk in
+`LightmapRenderStateExtractor.blockLightFlicker` and raises its own copy of
+the flag; `LightmapRenderStateExtractor.extract` copies it across, clears it,
+and reads the probe alongside `Options.gamma`, `Options.darknessEffectScale`,
+the conduit-power water vision and
+`LightmapRenderStateExtractor.calculateDarknessScale`. **So the lightmap is
+recomputed once per tick and not once per frame** — and, deliberately,
+`GameRenderer.extract` hands the extractor a partial tick of exactly one
+while `FogRenderer.setupFog` and `SkyRenderer.extractRenderState` get the
+real one. Sky and fog interpolate mid-tick. World lighting steps.
+
+Three leftovers. `Lightmap.getBrightness` survives but no longer feeds the
+lightmap: it is a CPU-side duplicate of the shader's curve, kept for `Hud`,
+`EntityRenderer`'s shadow sampling and `ScreenEffectRenderer` alone. The
+packing statics moved out of the texture into `LightCoordsUtil`, from where a
+packed value reaches a vertex through `VertexConsumer.setLight`. And
+`UiLightmap` is the 1×1 white `DynamicTexture` handed out while
+`GameRenderer.useUiLightmap` is set.
+
+### Two curves that look like one
+
+`EnvironmentAttributes.SKY_LIGHT_FACTOR` is a *visual* attribute, spatially
+interpolated, and the lightmap reads it;
+`EnvironmentAttributes.SKY_LIGHT_LEVEL` is a *gameplay* attribute, not
+positional, and `Level.updateSkyBrightness` turns it into `Level.skyDarken`
+for mob spawning. `Timelines.OVERWORLD_DAY` keyframes both, at slightly
+different times and to different night values — so they look like one number,
+and a data pack can pull them apart.
+
+## How far: one block for the whole frame, filled by a priority walk
+
+`FogRenderer`'s output is a mutable `FogData`: `FogData.color` plus six
+distances — a start and an end each for the medium and the horizon, then
+`FogData.skyEnd` and `FogData.cloudEnd`. In open air those are
+`EnvironmentAttributes.FOG_COLOR`, `EnvironmentAttributes.FOG_START_DISTANCE`,
+`EnvironmentAttributes.FOG_END_DISTANCE`,
+`EnvironmentAttributes.SKY_FOG_END_DISTANCE` and
+`EnvironmentAttributes.CLOUD_FOG_END_DISTANCE`, and underwater they are
+`EnvironmentAttributes.WATER_FOG_COLOR`,
+`EnvironmentAttributes.WATER_FOG_START_DISTANCE` and
+`EnvironmentAttributes.WATER_FOG_END_DISTANCE` instead. It owns one ring
+buffer, `FogRenderer.regularBuffer`, and a static `FogRenderer.emptyBuffer`
+filled with *infinitely far* for when fog is off.
+
+**There is one fog UBO for the whole frame, not one per pass.**
+`LevelRenderer.render` takes a single slice and hands the same one to the
+sky, main, weather and always-on-top passes — and hands the clouds pass no
+fog at all. The sky and cloud fog ends are separate fields *inside that one
+block*, which the shaders choose between, so what a player sees as
+per-element fog is a shader decision and not a binding.
+
+### The list that decides the colour
+
+The colour and the darkening come from different places.
+`FogRenderer.FOG_ENVIRONMENTS` is an ordered list and the order *is* the
+priority: `LavaFogEnvironment`, `PowderedSnowFogEnvironment`,
+`BlindnessFogEnvironment`, `DarknessFogEnvironment`, `WaterFogEnvironment`,
+and `AtmosphericFogEnvironment` **last**, which is what makes it the
+guaranteed fallback. `FogRenderer.computeFogColor` walks that list twice —
+once for the first environment whose `FogEnvironment.providesColor` is true,
+separately for the first whose `FogEnvironment.modifiesDarkness` is — whereas
+`FogEnvironment.setupFog` stops at the first applicable one, and it and
+`FogEnvironment.isApplicable` are the class's only abstract methods.
+`MobEffectFogEnvironment` declares `FogEnvironment.providesColor` false on
+purpose: blindness and darkness may darken somebody else's colour, never
+supply one, and the atmospheric environment sits last precisely so somebody
+always does. Which medium the camera is in is a `FogType` (`FogType.WATER`,
+`FogType.LAVA`, `FogType.POWDER_SNOW`, `FogType.ATMOSPHERIC`,
+`FogType.NONE`), and *NONE* maps to the atmospheric environment. Rain fog is
+the only stateful one: `AtmosphericFogEnvironment.rainFogMultiplier` is an
+exponential follower, so the murk lags a storm starting rather than
+snapping to it, and `AtmosphericFogEnvironment.updateRainFogState` thickens it
+even in a biome with no precipitation, at half strength.
+
+## What is up there: two skies, and a texture that is never bound
+
+`SkyRenderer` builds every buffer it will ever need in its constructor, from
+`SkyRenderer.buildStars` to `SkyRenderer.buildMoonPhases` against the
+`AtlasIds.CELESTIALS` atlas, and per frame fills a `SkyRenderState` running
+from `SkyRenderState.skybox` through `EnvironmentAttributes.SUN_ANGLE`,
+`EnvironmentAttributes.MOON_ANGLE`, `EnvironmentAttributes.STAR_ANGLE` and
+`EnvironmentAttributes.STAR_BRIGHTNESS` to `SkyRenderState.endFlashIntensity`.
+
+**The stars are the same in every world.** `SkyRenderer.buildStars` seeds a
+fixed constant and rejects samples outside a shell, so `SkyRenderer.STAR_COUNT`
+is an attempt count rather than a star count, and they are rebuilt only when a
+resource reload takes the whole renderer down:
+`LevelExtractor.onResourceManagerReload` sets
+`LevelExtractor.shouldResetSkyRenderer` and `LevelRenderer.addSkyPass` closes
+and reconstructs the entire `SkyRenderer`, stars, moon phases and all. The moon
+phase, likewise, is no longer arithmetic on the day count — it is
+`EnvironmentAttributes.MOON_PHASE` driven by `Timelines.MOON`, whose period is
+`MoonPhase.COUNT` days, and the renderer picks a sub-quad of an eight-quad
+buffer by `MoonPhase.index`.
+
+**The End takes a different branch entirely.** With
+`DimensionType.Skybox.END`, `SkyRenderer.extractRenderState` fills only the
+End-flash fields: the sun angle, the moon phase, the sky colour and the dark
+disc are never sampled. And `EndFlashState` is not the dragon fight — it is a
+free-running flash on a six-hundred-tick cycle, seeded per interval for its
+offset, duration and angles, advanced by `EndFlashState.tick` in any dimension
+whose skybox is the End's. The sky is also skipped five ways:
+`LevelRenderer.addSkyPass` bails in lava, in powder snow, under blindness,
+under darkness, and when `DimensionType.Skybox` is *NONE* — the Nether — and
+`GameRenderer.renderLevel` suppresses it when a boss bar wants world fog,
+with `AtmosphericFogEnvironment.setupFog` clamping the fog hard in that case.
+
+### The clouds, which get no fog and no texture
+
+The clouds are the first of the two exceptions: their colour and height are
+`EnvironmentAttributes.CLOUD_COLOR` and `EnvironmentAttributes.CLOUD_HEIGHT`,
+but their *drift* is raw world time. **And the cloud texture is never bound as
+a texture.** `CloudRenderer.prepare` reads the image on a worker and
+`CloudRenderer.apply` bakes it into `CloudRenderer.TextureData` through
+`CloudRenderer.packCellData`, one 64-bit word per pixel with the colour in the
+high bits and four neighbour-emptiness flags in the low four.
+`CloudRenderer.buildMesh` walks cells of `CloudRenderer.CELL_SIZE_IN_BLOCKS`,
+writing three bytes per face through `CloudRenderer.encodeFace` — a compressed
+*face list*, expanded to quads in the shader, with
+`CloudRenderer.RelativeCameraPos` and `CloudStatus` deciding which faces
+exist. It is rebuilt on a reload, when the camera crosses a cell boundary or
+changes side, or when the `CloudStatus` changes — and a data pack setting the
+cloud colour to zero alpha removes the pass entirely.
+
+## What is coming down: rebuilt every frame, and seeded from the clock
+
+`WeatherEffectRenderer` is the second exception: its columns are placed by
+world position, but the streaks are seeded from raw world time. It holds one
+`WeatherEffectRenderer.vertexBuffer` and the precomputed tangent tables
+`WeatherEffectRenderer.columnSizeX` and `WeatherEffectRenderer.columnSizeZ`,
+and its per-frame product is a list of `WeatherEffectRenderer.ColumnInstance`
+records inside a `WeatherRenderState`.
+`WeatherEffectRenderer.extractRenderState` returns immediately when the rain
+level is zero, so a clear sky costs nothing. Otherwise it loops every column
+in a square of radius `Options.weatherRadius`, querying the heightmap and the
+precipitation at each — every frame, on the CPU. The vertex buffer is rebuilt in
+`WeatherEffectRenderer.render` rather than in extract, rain and snow are two
+indexed draws sharing it, and the world border rides in the same pass. Particles and sound are somebody else's job:
+`ClientLevel.tickWeatherEffects` spawns those per tick within the same radius,
+next to `ClientLevel.animateTick`, which scatters
+`EnvironmentAttributes.AMBIENT_PARTICLES`.
+
+## What is not an attribute
+
+The migration was not total, which is why *everything is an attribute now*
+needs a qualifier. `DimensionType.ambientLight` — the floor under the
+lightmap's curve — and `DimensionType.cardinalLightType` are plain record
+fields, read directly. Block tint never moved at all: grass, foliage and water
+are still `BiomeColors` reading `BiomeSpecialEffects` through the four
+`ColorResolver`s, with no probe and no layer stack in it. And the clouds and
+the weather still read the world clock, because a value sampled at the camera
+and lerped by partial tick is the wrong shape for a drift or a seed.
+
+> **For a 1.21-era reader.** Nearly every per-dimension, per-biome,
+> per-time-of-day visual constant is an environment attribute now, so the
+> names to stop hunting for are: *LightTexture* (now `Lightmap` plus
+> `LightCoordsUtil`), *DimensionSpecialEffects* and all three subclasses (now
+> `DimensionType.skybox` plus attributes), *FogParameters* (now `FogData`),
+> *RenderSystem.setShaderFogColor* and its siblings (now one
+> `RenderSystem.setShaderFog` taking a uniform slice),
+> *LevelRenderer.renderSky* / *renderClouds* / *renderSnowAndRain* (now the
+> `LevelRenderer.addSkyPass` family of frame-graph passes, declared as
+> [visibility and the frame graph](visibility-and-the-frame-graph.md)
+> describes), and *Level.getSkyColor*, *ClientLevel.getStarBrightness* and
+> *ClientLevel.effects*, all attributes now. The draws went the way of
+> everything in [blaze3d](blaze3d.md), from `RenderPipelines.LIGHTMAP` and
+> `RenderPipelines.SKY` to `RenderPipelines.WEATHER_DEPTH_WRITE`.
 
 ## Where to look
 
-`Lightmap`, then `LightmapRenderStateExtractor.extract` for what feeds
-it. `EnvironmentAttributes` for the catalogue and
-`EnvironmentAttributeSystem.addDefaultLayers` for how a value is
-assembled. `FogRenderer.computeFogColor` for the priority walk.
-`SkyRenderer.extractRenderState` and `LevelRenderer.addSkyPass` for the
-sky. `CloudRenderer.buildMesh` and
-`WeatherEffectRenderer.extractRenderState` for the two per-frame meshes.
-`BiomeColors` for the one colour system that did not move.
+`LightmapRenderStateExtractor.extract` first, then `Lightmap.render` for what
+it feeds. `EnvironmentAttributeProbe.getValue` for the question every renderer
+here asks, and [environment attributes and
+timelines](../world/environment-attributes-and-timelines.md) for how it is
+answered. `FogRenderer.computeFogColor` for the priority walk.
+`SkyRenderer.extractRenderState` and `LevelRenderer.addSkyPass` for the sky
+and its two branches, `CloudRenderer.buildMesh` and
+`WeatherEffectRenderer.extractRenderState` for the meshes rebuilt inside the
+frame, and `BiomeColors` for the colour system that did not move.
 
 ---
 

@@ -385,7 +385,7 @@ sidebar order.
   `the-gui-render-tree` drawn as a tree; `hud`'s gate table to Reference;
   `prediction-and-acks` as a two-column state diagram;
   `debugging-the-running-game` placed.
-- [ ] **Session L — Part XI Rendering.** Frame → substrate → pipeline;
+- [x] **Session L — Part XI Rendering.** *(done 2026-09-03)* Frame → substrate → pipeline;
   `the-window`'s retry loop as a flowchart; `models-and-atlases`'
   fan-out/barrier drawn; the lane collisions fixed; one of post-processing
   / block-entity rendering / item models written (R7), the others queued.
@@ -1842,3 +1842,138 @@ missing it — and removes the comment. The owner confirms or reorders
   under `check_lanes.py --strict`, the corpus-wide lane count down from 25
   disagreements and 16 collisions to 19 and 10, class index and lane index
   regenerated, `mdbook build` clean and no broken internal links.
+- **2026-09-03, session L — Part XI Rendering.** *Rulings, written before
+  editing.* **The part is a substrate under a pipeline, and the order is
+  R6's.** `the-frame` opens — it is the part's trace and its shortest page,
+  and a reader who has seen one frame end to end has a reason to care what a
+  `GpuDevice` is — then the substrate (`the-window`, `blaze3d`), then the
+  pipeline. Session I's two open questions are closed with it: **the
+  substrate is two lectures, not one** (a GLFW window, its six callbacks and
+  `NativeImage` are a different subject from a graphics API with two
+  backends, and neither hook survives being merged with the other), and
+  **`the-window` stays in Part XI**, second, rather than moving to Part I —
+  it is a rendering prerequisite, not a program-anatomy one, and Part I is
+  deliberately two pages.
+  **`level-rendering` splits, and it is the corpus's oldest deferred seam.**
+  Four sessions (10, H, I and the split table) confirmed *meshing* against
+  *visibility and the frame graph* and none executed it; pass 3 is the pass
+  that executes splits, and the page fails the cast budget twice over — its
+  two halves share `LevelRenderer` and nothing else. The halves are
+  **`visibility-and-the-frame-graph`** (what the frame draws: the occlusion
+  BFS over an `Octree`, the frustum, the pass declaration order, the
+  multi-draw batching and the translucency resort) and **`section-meshing`**
+  (where the triangles came from: the dirty halo, the 27-section snapshot,
+  the worker compile, the staging buffer and the late atomic swap).
+  Visibility comes first, because it continues `the-frame` — which ends at
+  `LevelRenderer.render` — and because meshing is gated on it. The old URL
+  redirects to the visibility half (R8).
+  **The R7 page is post-processing**, session I's strongest candidate: 996
+  lines in four classes named on no page, six `post_effect` chains now in
+  `reference/26.2/assets/` to write it against, and the only place in the
+  game where user-authored shaders are first class. It is the part's closer,
+  because its instances are spread across every page before it — two chains
+  declared inside `LevelRenderer.render`, three chosen by
+  `GameRenderer.checkEntityPostEffect`, one behind a pause screen.
+  Block-entity rendering stays queued; **"how an item picks its model"
+  becomes a named section of `models-and-atlases`**, not a page, which is
+  what session H's hand-off requires — Part VII's two forward links now land
+  on a heading rather than a page that only mentions `ItemModelResolver` in
+  passing.
+  **Shapes, one per page, no two neighbours alike.** `the-frame` the trace;
+  `the-window` the trace with the retry loop drawn as the flowchart the
+  notebook asked for; `blaze3d` the **vocabulary page** (the façade and its
+  four objects, grounded by one draw); `visibility-and-the-frame-graph` the
+  pipeline; `section-meshing` the trace; `models-and-atlases` the pipeline,
+  with the fan-out/barrier figure the notebook asked for; `entity-rendering`
+  the pipeline (extract, submit, prepare, execute); `lightmap-fog-and-sky`
+  the **pattern** — one question (*what is this attribute worth, here,
+  now?*) asked by five renderers, which is what lets the page stop
+  re-teaching Part IV's system; `particles` the **policy**, because its
+  subject is five gates that disagree with each other; `post-processing` the
+  pipeline.
+  **Two Reference extractions, on session K's precedent** (a reference-tier
+  table is a Reference page and a link, never a table inside a lecture):
+  `entity-rendering`'s fifteen submit phases and thirteen feature renderers
+  become `src/reference/submit-phases.md`, and its render-state hierarchy
+  becomes a **generated** tree figure — `EntityRenderState` joins
+  `TREE_ROOTS` in `map_source.py`, the pattern session G set with
+  `tree-Entity.svg`. `lightmap-fog-and-sky`'s twenty-four-attribute
+  enumeration is not extracted but dissolved: the page names the attributes
+  in the sentences that use them and links to Part IV for the system.
+  **Lanes: eleven collisions fixed, all by lengthening the later claimant.**
+  `SectionCompiler` → `SectC` (`SC` is `StopCommand`), `Timelines` → `Time`
+  (`TL` is `TagLoader`), `LightmapRenderStateExtractor` → `LRSE` (`LX` is
+  `LevelExtractor`, keyed by session K), `SpriteLoader` → `SprL` (`SL` is
+  `ServerLevel`), `GlCommandEncoder` → `GlCE` and `GpuBackend` → `GB` (`B`
+  is `Block`, which particles should have been using), `MonitorManager` →
+  `MonM` (`MM` is `ModelManager`), `GpuSurface` → `GpuS` (`GS` is
+  `GaussianSampler`), `EnvironmentAttributeProbe` → `EAP` (keyed already;
+  `P` was wrong), `Minecraft` → `MC` and `Window` → `Window` (both keyed
+  already; `M` and `W` were wrong), and `(worker)` takes the existing word
+  lane `Worker`.
+
+  **What was done.** Thirteen pages where there were eight: eleven system
+  pages, a landing page and a new Reference page. One split executed
+  (`level-rendering` → `visibility-and-the-frame-graph` + `section-meshing`,
+  one redirect), one page written from nothing (`post-processing`), one
+  section written to discharge a ruling (*How an item picks its model*, which
+  Part VII's two forward links now reach by anchor), one catalogue extracted
+  (`src/reference/submit-phases.md`) and one figure generated
+  (`tree-EntityRenderState.svg`, from `EntityRenderState` added to
+  `map_source.py`'s `TREE_ROOTS`). Every page lost the seven-heading
+  skeleton, and the part now has **zero bulleted lists in it** — eight pages
+  each opened with a field inventory and closed with a twenty-bullet
+  invariant wall, and all of that is now cast tables, decision tables,
+  *Questions players ask* sections and the sentences that use each name.
+  **Every page landed inside the 260–340 brief**, 256 to 339, which is a
+  first; the brief went to the drafters in the prompt rather than as a
+  correction. Six shapes across eleven pages — trace, vocabulary, pipeline,
+  pattern, policy and the landing page — and no two neighbours share one.
+
+  **Redrawing found two errors, which is three sessions in a row.** The first
+  is the more instructive. `the-window` said that three of the six
+  operating-system callbacks reach the game through `WindowEventHandler`;
+  **only two do**, and the interface's third method, `resizeGui`, is never
+  called by `Window` at all — its callers are `Minecraft` and `Options`,
+  calling the game on itself. The old claim was an inference from three
+  method names lining up with three callbacks, and it survived pass 2 because
+  nobody had to *draw* it. The second: `level-rendering` gave
+  `SectionOcclusionGraph.invalidateIfNeeded`'s triggers (an eight-block
+  camera move, a field-of-view change, the smart-cull toggle) as the reason
+  `LevelExtractor.applyFrustum` re-runs. Those schedule the **full walk**;
+  the frustum step has its own gate, and the common half of it is the
+  camera's pitch or yaw crossing a **two-degree** step — so turning your head
+  re-applies the frustum without touching the walk. Both are fixed in the
+  pages and are at the head of [pass4.md](pass4.md)'s session-L entry. The
+  lesson for the remaining part sessions: **a figure asserts more than the
+  prose it was drawn from**, which is the argument for drawing them.
+
+  **The R7 page is `post-processing`, and it earned the slot.** 996 lines in
+  four classes that no page named, six shipped chains, written against the
+  JSON the planning session staged in `reference/26.2/assets/`. Its findings
+  are the kind a coverage queue entry cannot predict: a chain's uniforms are
+  packed and uploaded **once, at load**, so anything that has to vary per
+  frame — the blur radius, for one — cannot be a chain uniform at all and has
+  to come through the global block; the per-entry *name* in the JSON is read
+  by no codec, only the type and the value, and members match the GLSL
+  positionally; a resource pack can rewrite all six chains and add none,
+  because the six ids are constants in Java; and the two chains that go
+  through the deprecated `PostChain.process` door build a throwaway frame
+  graph with no inspector, so **the pause blur and the spectator shaders
+  appear in no slice of the F3 pie chart**.
+
+  **Two more numbers were corrected in passing**, both cases of a page
+  disagreeing with the corpus rather than with the decompile. `blaze3d`
+  compared the backends at 7,461 lines against 5,623; they are 7,477 and
+  5,627, and `what-this-book-skips` was already saying 7,477. And the landing
+  page could not reproduce session I's "1,187 classes / 97,864 lines" for the
+  rendering tree — the inventory never said which packages it counted — so
+  the page states its own package set and counting rule and gives 1,179 and
+  87,000, which is CLAUDE.md's own table added up.
+
+  Checks at commit: 17,694 names resolve, 174 diagrams pass, Part XI clean
+  under `check_lanes.py --strict` with thirty-three lane rows added (the
+  pass's largest single addition, eleven of them lengthened later claimants),
+  the corpus-wide lane count down from 19 disagreements and 10 collisions to
+  15 and 6, class index and lane index regenerated, `mdbook build` clean and
+  no broken internal links.

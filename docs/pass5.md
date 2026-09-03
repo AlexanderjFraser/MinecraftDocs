@@ -19,6 +19,70 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+- **2026-09-03, session L — Part XI.** Eleven system pages plus a landing
+  page and a Reference page. **Every page landed inside the 260–340 brief**
+  — 256 to 339, with the landing page at 150 and the Reference page at 81 —
+  which is the first part to need no length note at all, and the brief was
+  given to the drafters in the prompt rather than corrected afterwards.
+  **Zero bulleted lists across the whole part**: every one of the eight old
+  pages opened with a field inventory and closed with a twenty-bullet
+  invariant wall, and none of that survives. The material is in cast tables,
+  decision tables, *Questions players ask* sections and the sentences that
+  use each name. `lightmap-fog-and-sky` came *down* from 447 to 339 by
+  dissolving the twenty-four-attribute enumeration Part IV already owns.
+
+  The one shape note pass 5 might revisit: **`models-and-atlases` carries a
+  single figure over 330 lines.** Its drafter cut a sequence diagram that
+  repeated the fan-out flowchart, which was right, and cut an item-model
+  flowchart with it, which is arguable — the *How an item picks its model*
+  section is where two forward links from Part VII land and it is now the
+  page's longest stretch of unbroken prose.
+
+  **Cuts made, all field inventories, no behaviour:** `the-frame` dropped the
+  `GameRenderer` field roll-call (eleven fields), most of the `GameRenderState`
+  and `CameraRenderState` field lists, and the `CrossFrameResourcePool`
+  mention, which asserted only that the pool exists and is three frames deep;
+  the `Camera` accessor roll-call is compressed to four examples inside the
+  1.21 blockquote. `lightmap-fog-and-sky` dropped the twenty-four-item
+  `EnvironmentAttributes` list outright — every constant on it now appears in
+  the sentence that consumes it, and the system itself is Part IV's — along
+  with the `EnvironmentAttribute` builder and flag inventory and the
+  `Timeline`/`ClockTimeMarkers` tour, all of which Part IV already teaches.
+  `particles` dropped the nine-class inventory into the cast table.
+  `entity-rendering` moved its fifteen-phase and thirteen-renderer catalogues
+  out to `src/reference/submit-phases.md` and its render-state ladder to a
+  generated figure. `blaze3d`'s naming-drift bullet became a two-column table. And
+  `models-and-atlases` dropped a long tail of identifiers with no facts
+  attached — the `ModelManager` field and getter roll-call, `ModelBakery`'s
+  destroy-stage constants and the two fire sprites, `ModelBakery.BakingResult`'s
+  members, the four `ResolvedModel` parent-walking helpers, `Sheets`,
+  `SpriteGetter`, `TextureAtlasSprite`, `Stitcher.registerSprite`,
+  `Variant`/`VariantMutator`, and the observation that there are two
+  `MaterialBaker`s. Nothing behavioural went with them, but that last one was
+  the mechanism behind the block-atlas rule the page still states, so pass 5
+  should decide whether the rule now floats. `blaze3d` cut its
+  `RenderSystem` member roll-call, and one member in it was doing work:
+  `RenderSystem.outputColorTextureOverride` and
+  `RenderSystem.outputDepthTextureOverride` were the only mention anywhere in
+  the corpus of *where the world can be redirected*, and no page names them
+  now. `lightmap-fog-and-sky` dropped one behavioural sentence
+  with its field inventories: `FogRenderer.endFrame` and
+  `CloudRenderer.endFrame` rotating their ring buffers at the close of a
+  frame. Worth restoring if a line becomes available, since it is the only
+  mention of what ends those two buffers' frames.
+
+  **Wording debt.** The *headline for a 1.21-era reader* formula that opened
+  eight of eight Part XI pages is gone as an opening and survives as one
+  blockquote at the foot of each — the same move session K made, so the
+  device is now consistent across two parts and pass 5 should check it reads
+  as a convention rather than a tic. Three pages open on a second-person
+  scenario in the present tense (*you fly forward in creative*, *you
+  right-click a block into place*, *stand on a hill and watch the light go*),
+  which is the strongest opening in the part and also, at three, the point at
+  which it becomes a pattern. `particles`' *Where to look* is a
+  middle-dot list where every other page's is a sentence; it reads fine and it
+  is the only one, so it is either a deliberate variation or a fix.
+
 - **2026-09-02, session F — Part V.** Seven pages at 243–388 lines, which is
   the first part to land inside the 260–340 brief rather than over it — the
   line budget was given to the drafters explicitly this time, mid-flight, and

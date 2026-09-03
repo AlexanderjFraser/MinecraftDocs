@@ -48,6 +48,280 @@ entry first.
 
 ## Entries
 
+- **2026-09-03, session L — Part XI Rendering.** Twelve pages: eight
+  rewritten (`the-frame`, `the-window`, `blaze3d`, `models-and-atlases`,
+  `entity-rendering`, `lightmap-fog-and-sky`, `particles`, and
+  `level-rendering` in the act of splitting), two produced by that split
+  (`visibility-and-the-frame-graph`, `section-meshing`), one written from
+  nothing (`post-processing`), plus a landing page, a new Reference page
+  (`submit-phases`), a generated figure and Part XI's section of
+  `lectures.md`. `level-rendering.md` is gone and its URL redirects to the
+  visibility half.
+
+  **Two errors were found by redrawing, and both are already fixed in the
+  pages — check the fixes, not the old claims.**
+
+  1. **`the-window` said three of the six operating-system callbacks reach
+     the game through `WindowEventHandler`. Only two do.** `Window`
+     registers six GLFW callbacks; `onFramebufferResize` calls
+     `WindowEventHandler.framebufferSizeChanged` and `onEnter` calls
+     `WindowEventHandler.cursorEntered`, while `onMove`, `onResize` and
+     `onIconify` write a field and stop. The interface's third method,
+     `WindowEventHandler.resizeGui`, is never called by `Window` at all —
+     its callers are `Minecraft` and `Options`. `framebufferSizeChanged` is
+     also raised directly by `Window.updateFullscreenIfChanged` and
+     `Window.changeFullscreenVideoMode`, so it is not only a callback path.
+     The old claim was an inference from three method names lining up with
+     three callbacks; verify the new one against `Window`'s registrations
+     and its `eventHandler` call sites.
+  2. **`level-rendering` conflated two different triggers.** It said
+     `LevelExtractor.applyFrustum` re-runs when "the occlusion graph
+     invalidates on a camera move quantised to eight blocks, on a
+     field-of-view change and on the smart-cull toggle". Those three are the
+     triggers for `SectionOcclusionGraph.invalidateIfNeeded`, which schedules
+     the **full walk**. The **frustum step** has its own gate:
+     `SectionOcclusionGraph.consumeFrustumUpdate` — set by a completed full
+     walk and by a partial walk that added a section inside the offset
+     frustum — **or** the camera's pitch or yaw crossing a two-degree step.
+     `visibility-and-the-frame-graph` now states both clocks separately;
+     check both. Corrected in the same paragraph: the old page presented
+     "three sections" and "sixty blocks" as two independent numbers, and they
+     are one — `MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE` is
+     `MINIMUM_ADVANCED_CULLING_DISTANCE` converted to section coordinates.
+
+  **The split.** `level-rendering` became `visibility-and-the-frame-graph`
+  and `section-meshing`. Nothing was cut, but the material was divided, and
+  pass 4 should read the two together once against the old page, which is in
+  git history at commit `03712d1`. The seam: visibility owns `LevelRenderer`,
+  `SectionOcclusionGraph`, `Octree`/`VisGraph`/`VisibilitySet`, `Frustum`,
+  `LevelExtractor.applyFrustum`, `FrameGraphBuilder` and the pass list,
+  `LevelRenderer.prepareChunkRenders` and `ChunkSectionsToRender`, the
+  translucency budget and `CardinalLighting`; meshing owns the dirty API,
+  `SectionUpdateTracker`, `RotatingSectionStorage`, `RenderRegionCache`,
+  `SectionRenderDispatcher`, `SectionCompiler`, `BlockModelLighter`,
+  `ChunkSectionLayer`, the `UberGpuBuffer` arenas, the upload callback and
+  the fade-in. Two facts are deliberately stated on both pages, once each,
+  and must not have drifted: *only visible sections are re-meshed*, and
+  *terrain is drawn before the sections queued this frame are compiled*.
+
+  **Claims introduced, by page.** These are what the rewrites added that the
+  old pages did not contain. Each was checked against the decompile before
+  the session accepted it, which is exactly the level of checking pass 2
+  proved insufficient.
+
+  - `the-window`: the candidate loop ends in `MessageBox.error` and the game
+    never starts; `RenderSystem.initRenderer` happens *inside* the loop on
+    the success path, not after it; `GpuBackend.handleWindowCreationErrors`
+    is handed a captured GLFW error and throws `BackendCreationException`;
+    the two-of-six callback pairing above; `ClientShutdownWatchdog` is
+    started from the window-close callback. Flagged as unverified by the
+    drafter: where `Window.getRefreshRate`'s number originates.
+  - `the-frame`: the blit is described as going *to the acquired surface
+    texture*, where the old page said only "from the main render target".
+  - `blaze3d`: two numbers were **corrected**, not introduced. The old page
+    compared the backends at "7,461 lines against 5,623"; measured today the
+    two trees are **7,477 and 5,627** (40 classes and 28), and 7,477 is also
+    what `what-this-book-skips` already claimed for the Vulkan tree, so the
+    two pages disagreed. The page now states both counts and the class
+    counts. Also corrected: the old page's "Outside `com/mojang/blaze3d/opengl`
+    — fourteen files in all" reads as if that package holds fourteen files.
+    It holds twenty-eight; *fourteen* is the number of files anywhere in the
+    game that import LWJGL's OpenGL bindings, thirteen of them in that
+    package plus the native-library bootstrap. Introduced: that changing the
+    Graphics API setting needs a restart (`Options.preferredGraphicsBackend`
+    adds `Options.TOOLTIP_NEEDS_RESTART` when it differs from the value at
+    startup).
+  - `visibility-and-the-frame-graph`: the walk may step into a neighbour only
+    if the two faces can see each other through that section's geometry
+    (`SectionOcclusionGraph.runUpdates`); `FrameGraphBuilder.execute` culls
+    before it orders; the *clear* pass wipes colour and depth on the main
+    target; the depth copy inside the main pass goes to the translucent,
+    item-entity and particle targets; `LevelRenderer.viewArea` is what a
+    by-position lookup goes through; and **the entity-outline chain is added
+    only when the prepared frame reports an outline** — `LevelRenderer`
+    around line 199, `featureFrame.hasAnyOutline()` and a non-null chain. By
+    the same evidence the drafter reports that the sky pass and the *always
+    on top* pass are conditional too, which the old page's flat "in
+    declaration order" list obscured. **Check the conditionality of all four
+    passes.**
+  - `section-meshing`:
+    `SectionUpdateTracker.SectionDirtyState.isDirtyFromPlayer` is what
+    *prioritise chunk updates* keys off, travelling through
+    `SectionUpdateRenderState` to `LevelRenderer`'s synchronous-rebuild
+    decision — and there are two settings, `PrioritizeChunkUpdates.NEARBY`
+    (which also takes anything within a near radius) and `.PLAYER_AFFECTED`;
+    the rationale given for `SectionUpdateTracker.hasAllNeighbors`, that a
+    mesher decides a face by reading the block on the other side of it; and
+    "a newly homed slot starts dirty". The drafter also found three things it
+    kept *out* of the page, each a possible old-page error worth checking:
+    that `LevelExtractor.blockChanged` is itself the halo path while the
+    public `LevelExtractor.setBlockDirty` is the `ModelManager.requiresRender`-gated
+    entry; that `LevelExtractor.setBlocksDirty` expands its box by one block
+    on each side; and that `LevelExtractor.allChanged` also clears tint
+    caches and rebuilds `SectionUpdateTracker` at the current render
+    distance.
+  - `models-and-atlases`: the whole *How an item picks its model* section is
+    new — `ItemModelResolver` reading `DataComponents.ITEM_MODEL`, both
+    lookups falling back rather than failing, `ClientItem.Properties`
+    carrying the hand-swap animation and the GUI-overflow flag, and
+    **`ItemModels` registering eight kinds of unbaked item model of which
+    only one draws anything itself**. That count and that characterisation
+    are the two hardest claims on the page. Also new: the fan-out is
+    described as **sixteen** parallel pieces of work — thirteen stitches plus
+    three listings — where the old page said thirteen stitches "plus" the
+    listings without counting them together.
+  - `entity-rendering` and `reference/submit-phases.md`: the Reference page
+    is almost entirely new fact and is the largest single body of unchecked
+    claims this session produced — the declaration order of the fifteen
+    phases, which three are a `TranslucentFeatureRenderPhase` (and that
+    `SubmitNodeCollection.translucentCustomGeometry` is *not*, despite the
+    name), what files into each phase and on what condition, that a
+    see-through name tag emits two nodes, that a quad-particle group lands in
+    `SubmitNodeCollection.solid` and `SubmitNodeCollection.afterTerrain` at
+    once, the registration order of the thirteen feature renderers, the three
+    sweeps `FeatureRenderDispatcher.PreparedFrame.executeTranslucent` makes
+    and which phases each drains, and one line per renderer on what it
+    writes. **Check this page row by row.** The drafter also contradicts two
+    old-page claims that are still standing in the lecture prose: that
+    "batching is by feature type, then by `RenderType`" (only batchable
+    submit types have a batch key at all — everything else merges by
+    adjacency), and that "translucency opts out of reordering rather than of
+    merging" (the translucent phase does reorder, by depth-sorting; what it
+    opts out of is the *grouper's* reordering).
+  - `particles`: the destroy event is raised on the server side too, so the
+    trace gains a server-side arrow — `Block.playerWillDestroy` is called
+    from both `MultiPlayerGameMode` and `ServerPlayerGameMode`; the broadcast
+    is 64 blocks, same dimension, excluding the source when it is a `Player`
+    (`ServerLevel.levelEvent`); a level event carries no particle type, which
+    is why the override flag cannot apply to it; and
+    `ParticleEngine.clearParticles` is the named reload callback. Two
+    interpretive glosses with no new mechanism: that the two independent
+    32-block checks can disagree because the camera moves while the packet is
+    in flight, and that the reservoir's squared probability makes a particle
+    storm degrade gradually rather than hit a wall. Carried over verbatim and
+    **not** re-verified: "eight call sites in all" bypass
+    `ClientLevel.addParticle`.
+  - `lightmap-fog-and-sky`: dissolving the attribute enumeration meant
+    pinning each constant to the thing that reads it, and those *mappings*
+    are new even though the constants are not — which fog environment reads
+    which of the eight fog attributes (`AtmosphericFogEnvironment` and
+    `WaterFogEnvironment`), which of the lightmap's four colours comes from
+    which attribute (`LightmapRenderStateExtractor`),
+    `EnvironmentAttributes.STAR_ANGLE` as one of the sky's three angles, and
+    `ClientLevel.animateTick` scattering
+    `EnvironmentAttributes.AMBIENT_PARTICLES`. Also: the raw-clock claim in
+    the hook is asserted of exactly two renderers, `CloudRenderer` (drift
+    from game time) and `WeatherEffectRenderer` (the column seed) — check
+    that no third renderer reads the clock. And a counting nuance: the old
+    page said the sky can be skipped "five different ways" and then added the
+    boss-bar suppression "on top of that"; the new page keeps five for
+    `LevelRenderer.addSkyPass`'s own conditions and makes the boss bar a
+    separate sixth. Confirm which reading is right.
+
+  - **`post-processing` is entirely new and nothing has ever checked it.**
+    It is the one page in the corpus written from the decompile with no
+    pass-2 history behind it, so pass 4 should treat it as a pass-2 subject
+    rather than a pass-3 one: falsify every sentence, not just the ones
+    listed here. Five of its load-bearing claims were verified by the session
+    itself before it shipped, and those five are the *least* likely to be
+    wrong: the six chain ids are the only ones ever requested
+    (`GameRenderer.BLUR_POST_CHAIN_ID`, `LevelRenderer.ENTITY_OUTLINE_POST_CHAIN_ID`,
+    `LevelRenderer.TRANSPARENCY_POST_CHAIN_ID`, plus three built from the
+    camera entity's class in `GameRenderer.checkEntityPostEffect` — those are
+    all five `ShaderManager.getPostChain` call sites); every post-processing
+    draw is **three vertices** (`PostPass`, one `RenderPass.draw` of three);
+    the six chains declare **twenty-six passes** between them (blur 6, spider
+    10, entity_outline 4, creeper 2, invert 2, transparency 2 — counted from
+    the JSON in `reference/26.2/assets/minecraft/post_effect/`, which also
+    confirms spider's four internal targets and blur's one);
+    `PostChain.process` carries `@Deprecated`, builds its own
+    `FrameGraphBuilder` and imports one target named *main*, and its only two
+    callers are in `GameRenderer`; and a pass's custom uniforms are packed
+    with `Std140Builder` and uploaded in `PostPass`'s **constructor**, so
+    they are written once at load and never again.
+
+    Everything else on the page is unchecked, and these are the claims most
+    worth attacking because the page's argument rests on them: that a
+    JSON-declared uniform's per-entry *name* is read by no codec and members
+    match the GLSL positionally; that *blur.json* declares a radius of zero
+    and *box_blur* falls back to a member of the *Globals* block that
+    `GlobalSettingsUniform.update` rewrites each frame from
+    `OptionsRenderState.menuBackgroundBlurriness`; that an input's sampler
+    name gets *Sampler* appended when the `BindGroupLayout` is built; that
+    two inputs on one pass sharing a sampler name is rejected at load; that
+    the internal/external target distinction is enforced by subtracting the
+    chain's own targets from `PostChainConfig.Pass.referencedTargets` and
+    requiring the remainder to be a subset of the caller's allowed set; that
+    none of the six shipped chains asks for a persistent target; that a
+    compilation failure is cached as a permanent absence and reported to
+    `Minecraft.triggerResourcePackRecovery`; that the cache key is the chain
+    id alone and not the id plus the allowed target set; that the outline
+    chain's first pass detects edges in **alpha**; that
+    `LevelRenderer.doEntityOutline` composites outside the graph after
+    `GameRenderer.renderLevel` returns; that the blur runs inside
+    `GuiRenderer.draw` with the depth buffer cleared between the two halves
+    of the GUI, bounded by `Screen.extractBlurredBackground` calling
+    `GuiGraphicsExtractor.blurBeforeThisStratum` only when
+    `Options.getMenuBackgroundBlurriness` is at least one; that neither
+    deprecated-door caller passes an inspector, so the blur and the spectator
+    shaders appear in no F3 profiler slice; and that `Minecraft.setCameraEntity`
+    is what clears the effect when you leave first person. The per-chain
+    table's *what a player sees* column is interpretation of GLSL the book
+    does not quote, and should be read as such.
+
+    One consequence for other pages: `post-processing` states that the
+    transparency chain is gated on `OptionsRenderState.improvedTransparency`
+    and not on any graphics preset, and that there is no *Fabulous* setting
+    any more. If that is right, check whether `options` in Part X says
+    otherwise. And one thing to re-check on the next version bump
+    rather than now: `ShaderManager.CompilationCache` keys a loaded chain by
+    its id alone and not by the allowed target set it was validated against,
+    so two callers wanting one chain under different permissions would share
+    whichever object was built first. No two callers do today.
+  **What `lightmap-fog-and-sky` gave back to Part IV.** The page's opening
+  hundred lines re-taught `EnvironmentAttribute`, its flags and builder, a
+  twenty-four-item enumeration of `EnvironmentAttributes` constants,
+  `EnvironmentAttributeSystem`'s layer stack, `Timeline`, `Timelines` and
+  `ClockTimeMarkers`. All of it is **deleted, not moved**: Part IV's
+  `environment-attributes-and-timelines` already owned every one of those
+  subjects, and the session confirmed each name is still present there before
+  deleting — `AttributeTypes`, `ColorModifier`, `Timeline.Builder`,
+  `ClockTimeMarkers`, `EnvironmentAttribute.isSpatiallyInterpolated` and
+  `Timelines.EARLY_GAME` all checked. **Pass 4 should confirm nothing was
+  lost across that seam** and should read the two pages together. Kept on the
+  Part XI side because they are its own: `ClientLevel`'s two extra attribute
+  layers are the lightning flash, `DimensionType.skybox` and its three
+  values, and `BiomeSpecialEffects` hollowed out to water, grass and foliage.
+
+  **The diagrams.** Every figure in the part is new or redrawn, and each one
+  asserts an ordering. New flowcharts: the substrate-under-pipeline figure on
+  the landing page, whose arrow labels are hand-off claims; the backend retry
+  loop and the six-callback figure in `the-window`; the façade-over-backend
+  figure in `blaze3d`; the five-stage pipeline and the pass-order figure in
+  `visibility-and-the-frame-graph`, the second of which is a declaration-order
+  claim *and* a conditionality claim; the sixteen-fan barrier figure in
+  `models-and-atlases`; the four-stage figure in `entity-rendering`; the
+  admission flowchart in `particles`; and in `post-processing`, the
+  parse-compile-declare-draw figure. Redrawn with corrected lanes, and in one case with its `rect` blocks
+  removed: one frame in `the-frame`, one draw in `blaze3d`, a block placed in
+  `section-meshing`, a zombie in `entity-rendering`, the sun going down in
+  `lightmap-fog-and-sky`, the break puff in `particles`. One generated
+  figure, `tree-EntityRenderState.svg`, whose counts — 98 render states, 70
+  of them living — come from `map_source.py` and want re-deriving like the
+  atlas's other numbers.
+
+  **The landing page and `lectures.md`** claim that Part XI is a substrate
+  under a pipeline; that `the-frame` is watchable before the substrate it
+  stands on; that the only hard prerequisite is Part X's `the-client-loop`,
+  with `resource-system` (Part II) and `environment-attributes-and-timelines`
+  (Part IV) as per-lecture ones; and that lectures four and five are one
+  journey seen from two ends. The landing page also states the renderer's
+  size as 1,179 classes and 87,000 lines against `net/minecraft/server`'s 420
+  and 53,000 — **re-derive both**. Session I's inventory reported 1,187 and
+  97,864 for "the rendering tree" without saying which packages it counted,
+  this session could not reproduce it, and the page now states its own
+  package set and counting rule rather than inheriting the number.
+
 - **2026-09-02, session F — Part V Blocks.** Seven pages: four rewritten
   (`blocks-and-states`, `block-interaction`, `block-breaking`,
   `block-entities`) and three produced by the notebook's confirmed three-way

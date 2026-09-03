@@ -1369,21 +1369,23 @@ knowing before the order is drafted.*
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
-- **Post-processing** — `PostChain`, `PostPass`, `PostChainConfig`,
-  `UniformValue`, ~1,000 lines, named on no page. Part XI. *(session I)* The
-  six `post_effect` chains and the shader tree are now in
-  `reference/26.2/assets/` (planning session), so the page can be written
-  against the JSON it loads.
+- ~~**Post-processing**~~ — **written by session L** as
+  `src/systems/rendering/post-processing.md`, the part's closer and its R7
+  spend: 996 lines in four classes, six shipped chains, written against the
+  JSON in `reference/26.2/assets/` that the planning session staged.
+  *(session I, discharged session L)*
 - **Block-entity rendering** — `renderer/blockentity` with its 26 render
   states, plus `renderer/special`, ~3,300 lines; the same extract/submit
   split as entities, which no page says. Part XI. *(session I)*
-- **How an item picks its model** — `renderer/item` and the 42 classes under
-  `item/properties/**`. **Owner ruled by session H: Part XI.** The trace
-  starts at an `ItemStack`, but everything it touches — `ItemModelResolver`,
-  the baked models, the atlas, the render state — is Part XI's, and Part VII
-  owns the stack rather than its appearance. Part VII links forward from
-  `items-and-stacks` and its landing page instead. Session L decides page or
-  section of `models-and-atlases`. *(session I, ruled session H)*
+- ~~**How an item picks its model**~~ — **ruled and written by session L as a
+  named section of `models-and-atlases`**, not a page: *How an item picks its
+  model*, which Part VII's two forward links now land on by anchor. A page
+  would have spent the part's R7 allowance on the weaker of two candidates,
+  and the section's own material — the component *is* the decision, eight
+  kinds of unbaked item model of which one draws anything, and the
+  single-atlas rule that throws — sits naturally under the bake pipeline that
+  produced it. The tree is 63 classes, not the 42 the entry estimated.
+  *(session I, ruled session H, discharged session L)*
 - ~~**How a server dies**~~ — **written by session D** as
   `src/systems/server/how-a-server-dies.md`, a comparison page with the
   three endings as columns and the watchdog's self-deadlock drawn.
@@ -2058,3 +2060,102 @@ is `IntegratedServer`) and `GStit` (`GS` is `GaussianSampler`). `Library` and
 under `check_lanes.py --strict`; the corpus-wide count fell from 25
 disagreements and 16 collisions to **19 and 10**, all of them in Parts XI to
 XIII.
+
+---
+
+*(session L, 2026-09-03)*
+
+**Five open questions from section 6 are answered, and the answers are
+rulings a later session should not silently re-open.**
+
+- *Does `the-window` open Part XI, sit third, or move to Part I?* **Second**,
+  and it stays in Part XI. R6 already ruled that `the-frame` opens the part;
+  the window is the first thing the frame assumed, so it follows immediately.
+  Part I is deliberately two pages and a GLFW window is not program anatomy.
+- *Is the substrate one lecture or two?* **Two.** `the-window` and `blaze3d`
+  share only the word *substrate*: one is GLFW, monitors, six callbacks and
+  `NativeImage`, the other is a graphics API with two backends, and their
+  hooks do not survive being merged.
+- *Does post-processing get its own page, or a section of `the-frame`?* **A
+  page**, and the part's R7 spend — see §7.
+- *Who owns "how an item picks its model"?* **Part XI, as a named section of
+  `models-and-atlases`** rather than a page — see §7. Part VII's two forward
+  links now carry the anchor.
+- *`LX` and `GR` mean two things each.* Fixed by lengthening the later
+  claimant in every case: `LightmapRenderStateExtractor` is `LRSE` because
+  session K keyed `LX` as `LevelExtractor`, and `GuiRenderer` was already
+  `GuiR` so `GR` stays `GameRenderer` unopposed.
+
+**`level-rendering` is split, and it was the corpus's oldest deferred seam.**
+Sessions 10, H and I all confirmed *meshing* against *visibility and the
+frame graph* and none executed it. It is executed now:
+`visibility-and-the-frame-graph.md` (the occlusion walk, the frustum step,
+the pass declarations, the multi-draw batching, the translucency budget) and
+`section-meshing.md` (the dirty halo, the 27-section snapshot, the worker
+compile, the staging buffer, the late atomic swap). Visibility comes first
+because it continues `the-frame` and because meshing is gated on it; the old
+URL redirects there. **The evidence for splitting was the cast budget, not
+the line count** — the two halves shared `LevelRenderer` and nothing else,
+and a later session facing the same call (`brigadier-and-commands`,
+`blocks-and-states`, `entity-anatomy`) should count casts rather than lines.
+
+**Redrawing found two errors in pass-2 prose, which is now three parts in a
+row** (session K's frame limiter, session J's, and these). Both are in
+[pass4.md](pass4.md) at the head of the session-L entry. The first is the
+one worth generalising: `the-window` claimed six operating-system callbacks
+of which three reach the game through `WindowEventHandler`. Only **two** do;
+the interface's third method is called by `Minecraft` and `Options` on
+themselves and never by `Window` at all. The old claim was an inference from
+three method names lining up with three callbacks, and it was drawn as a
+figure before anyone opened `Window`'s registrations. **A figure asserts
+more than the prose it was drawn from**, which is exactly why pass 3 draws
+them.
+
+**For session M (Part XII World generation).** Part XII asks Part XI's
+question and section 1 already noticed: is `density-functions` a substrate
+like `blaze3d`, and does a substrate open a part or close it? Part XI's
+answer, now tested on two pages: **open with the part's trace, then the
+substrate, then the pipeline** — a reader who has seen one frame end to end
+has a reason to care what a `GpuDevice` is, and the same argument makes
+`worldgen-pipeline` before `density-functions` worth considering against §1's
+recommendation. Session L holds it weakly and Part XII's substrate is more
+genuinely prerequisite than Part XI's was, so this is evidence and not a
+ruling. Also: `SM`, `SS` and `FS` are still free and still contested in Part
+XII's prose, as session K left them.
+
+**For session O (Reference).** One new hand-kept page,
+`src/reference/submit-phases.md` — the fifteen `SubmitNodeCollection` phases
+in declaration order with what lands in each and which execute method drains
+it, and the thirteen feature renderers with what each writes. It is the
+richest of the hand-kept pages and the one most likely to drift on a version
+bump, because both orders are declaration orders. It wants the same re-sweep
+the others get, and it is a candidate for generation if `gen_reference.py`
+ever learns to read a constructor's registration order.
+
+**And one generated figure**, `tree-EntityRenderState.svg`:
+`EntityRenderState` joins `TREE_ROOTS` in `map_source.py`, on session G's
+`tree-Entity.svg` precedent, and `entity-rendering` includes it in place of a
+hand-drawn class ladder. **98 render states, 70 of them living.** The other
+candidate §8 named — Part XII's structure-piece families — is still open.
+
+**Lane ledger.** Thirty-three rows added, the largest single addition in the
+pass, and eleven of them lengthened later claimants: `SectC`
+(`SC` is `StopCommand`), `Time` for `Timelines` (`TL` is `TagLoader`), `LRSE`
+(`LX` is `LevelExtractor`), `SprL` (`SL` is `ServerLevel`), `GlCE` and `GB`
+(`B` is `Block`, which `particles` should have been using all along), `MonM`
+(`MM` went to `ModelManager`, which more pages cite), `GpuS` (`GS` is
+`GaussianSampler`), and `EAP`, `MC` and `Window` where the old pages had
+simply used `P`, `M` and `W` for classes the key already named. `Game` is a
+new word lane for the game's own code above Blaze3D. Part XI is clean under
+`check_lanes.py --strict`; the corpus-wide count fell from **19 disagreements
+and 10 collisions to 15 and 6**, all now in Parts XII and XIII.
+
+**The coverage queue is down to thirteen and Part XI's remaining entry is
+sharpened.** Block-entity rendering (`renderer/blockentity` plus
+`renderer/special`, ~3,300 lines) stays queued, and writing
+`entity-rendering` confirmed why it is a page rather than a section: the two
+now share one extract/submit/prepare/execute machine, so the page that would
+be written is *the differences*, and the differences are real — a stricter
+visibility rule enforced twice, per-renderer view distances, and
+`renderer/special` existing so that a chest in your hand looks right with an
+empty model. Session P should write it if there is budget.

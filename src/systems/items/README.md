@@ -112,7 +112,7 @@ The part stops at the slot. What a player's own inventory is, and how the
 hand relates to the equipment slots, is [player
 anatomy](../player/player-anatomy.md) in Part VIII; how a held stack picks
 the model you actually see is Part XI's, in [models and
-atlases](../rendering/models-and-atlases.md); and the ledger behind the
+atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model); and the ledger behind the
 click you have already seen happen is [prediction and
 acknowledgement](../client/prediction-and-acks.md) in Part X.
 

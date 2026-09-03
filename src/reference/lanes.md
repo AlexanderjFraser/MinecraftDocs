@@ -11,6 +11,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `AB` | `AbstractBoat` |
 | `ACM` | `AbstractContainerMenu` |
 | `AFBE` | `AbstractFurnaceBlockEntity` |
+| `AM` | `AtlasManager` |
 | `AP` | `AcquirePoi` |
 | `ATS` | `AttributeTrackSampler` |
 | `AttrI` | `AttributeInstance` |
@@ -30,6 +31,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CCC` | `ClientChunkCache` |
 | `CCPL` | `ClientConfigurationPacketListenerImpl` |
 | `CDS` | `ClientDebugSubscriber` |
+| `CE` | `CommandEncoder` |
 | `CG` | `CollisionGetter` |
 | `CGT` | `ChunkGenerationTask` |
 | `CH` | `ChunkHolder` |
@@ -74,6 +76,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `EM` | `EnchantmentMenu` |
 | `Ench` | `Enchantment` |
 | `Entity` | `Entity` |
+| `ERD` | `EntityRenderDispatcher` |
 | `ES` | `EntityStorage` |
 | `EScr` | `EnchantmentScreen` |
 | `ET` | `EntityType` |
@@ -83,12 +86,20 @@ a one-word class as itself, and a few words for things that are not classes.
 | `FBR` | `FormattedBidiReorder` |
 | `FD` | `FoodData` |
 | `FF` | `FlowingFluid` |
+| `FGB` | `FrameGraphBuilder` |
 | `FM` | `FurnaceMenu` |
 | `Font` | `Font` |
 | `FP` | `FoodProperties` |
+| `FR` | `FogRenderer` |
+| `FRD` | `FeatureRenderDispatcher` |
 | `FSet` | `FontSet` |
+| `GB` | `GpuBackend` |
+| `GD` | `GpuDevice` |
 | `GED` | `GameEventDispatcher` |
 | `GGE` | `GuiGraphicsExtractor` |
+| `GlCE` | `GlCommandEncoder` |
+| `GLX` | `GLX` |
+| `GpuS` | `GpuSurface` |
 | `GR` | `GameRenderer` |
 | `GS` | `GaussianSampler` |
 | `GStit` | `GlyphStitcher` |
@@ -125,6 +136,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `LIF` | `LootItemFunctions` |
 | `LLE` | `LevelLightEngine` |
 | `LLSS` | `LayerLightSectionStorage` |
+| `LM` | `Lightmap` |
 | `LO` | `LoadingOverlay` |
 | `LootC` | `LootContext` |
 | `LootP` | `LootParams` |
@@ -132,16 +144,20 @@ a one-word class as itself, and a few words for things that are not classes.
 | `LPool` | `LootPool` |
 | `LR` | `LevelRenderer` |
 | `LRA` | `LayeredRegistryAccess` |
+| `LRSE` | `LightmapRenderStateExtractor` |
 | `LSA` | `LevelStorageSource.LevelStorageAccess` |
 | `LT` | `LootTable` |
 | `LTs` | `LevelTicks` |
 | `LX` | `LevelExtractor` |
+| `MB` | `ModelBakery` |
 | `MC` | `Minecraft` |
 | `MComp` | `MutableComponent` |
 | `ME` | `MobEffect` |
 | `MEI` | `MobEffectInstance` |
 | `MH` | `MouseHandler` |
+| `MM` | `ModelManager` |
 | `Mob` | `Mob` |
+| `MonM` | `MonitorManager` |
 | `MoveC` | `MoveControl` |
 | `MPGM` | `MultiPlayerGameMode` |
 | `MPRM` | `MultiPackResourceManager` |
@@ -153,10 +169,12 @@ a one-word class as itself, and a few words for things that are not classes.
 | `NS` | `NaturalSpawner` |
 | `Parrot` | `Parrot` |
 | `PBB` | `PistonBaseBlock` |
+| `PChain` | `PostChain` |
 | `PCS` | `PlayerChunkSender` |
 | `PDec` | `PacketDecoder` |
 | `PDM` | `PatchedDataComponentMap` |
 | `PDS` | `PlayerDataStorage` |
+| `PE` | `ParticleEngine` |
 | `PEnc` | `PacketEncoder` |
 | `PESM` | `PersistentEntitySectionManager` |
 | `PF` | `PathFinder` |
@@ -167,6 +185,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `PN` | `PathNavigation` |
 | `PNR` | `PathNavigationRegion` |
 | `PP` | `PacketProcessor` |
+| `PPass` | `PostPass` |
 | `PR` | `PackRepository` |
 | `PRL` | `PreparableReloadListener` |
 | `PSR` | `PistonStructureResolver` |
@@ -183,6 +202,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `RLT` | `RegistryLoadTask` |
 | `RM` | `RecipeManager` |
 | `RMRLT` | `ResourceManagerRegistryLoadTask` |
+| `RP` | `RenderPass` |
 | `RRM` | `ReloadableResourceManager` |
 | `RS` | `RenderSystem` |
 | `RSR` | `ReloadableServerResources` |
@@ -201,8 +221,10 @@ a one-word class as itself, and a few words for things that are not classes.
 | `SCT` | `SimulationChunkTracker` |
 | `SDS` | `ServerDebugSubscribers` |
 | `SE` | `ServerEntity` |
+| `SectC` | `SectionCompiler` |
 | `SED` | `SynchedEntityData` |
 | `SGPL` | `ServerGamePacketListenerImpl` |
+| `ShadM` | `ShaderManager` |
 | `Shapes` | `Shapes` |
 | `Sheep` | `Sheep` |
 | `SHPL` | `ServerHandshakePacketListenerImpl` |
@@ -212,20 +234,27 @@ a one-word class as itself, and a few words for things that are not classes.
 | `SLPL` | `ServerLoginPacketListenerImpl` |
 | `SndE` | `SoundEngine` |
 | `SndM` | `SoundManager` |
+| `SNS` | `SubmitNodeStorage` |
+| `SOG` | `SectionOcclusionGraph` |
 | `SP` | `ServerPlayer` |
 | `SPGM` | `ServerPlayerGameMode` |
+| `SprL` | `SpriteLoader` |
 | `SR` | `SkyRenderer` |
 | `SRB` | `ServerRecipeBook` |
+| `SRD` | `SectionRenderDispatcher` |
 | `SRI` | `SimpleReloadInstance` |
 | `SRT` | `SynchronizeRegistriesTask` |
 | `SSB` | `SculkSensorBlock` |
 | `SSPL` | `ServerStatusPacketListenerImpl` |
 | `SSpl` | `StringSplitter` |
 | `SumC` | `SummonCommand` |
+| `SUT` | `SectionUpdateTracker` |
 | `SW` | `ServerWatchdog` |
+| `TA` | `TextureAtlas` |
 | `TagP` | `TagParser` |
 | `TCTD` | `ThrottlingChunkTaskDispatcher` |
 | `TDSS` | `TrackingDebugSynchronizer.SourceSynchronizer` |
+| `Time` | `Timelines` |
 | `TL` | `TagLoader` |
 | `TLE` | `ThreadedLevelLightEngine` |
 | `TrC` | `TranslatableContents` |
@@ -241,8 +270,12 @@ a one-word class as itself, and a few words for things that are not classes.
 | `Window` | `Window` |
 | `WL` | `WorldLoader` |
 | `WS` | `WorldStem` |
+| `ZM` | `ZombieModel` |
+| `ZR` | `ZombieRenderer` |
+| `ZS` | `ZombieRenderState` |
 | `Auth` | *Auth: not a class* |
 | `Disk` | *Disk: not a class* |
+| `Game` | *Game: not a class* |
 | `Hook` | *Hook: not a class* |
 | `JVM` | *JVM: not a class* |
 | `Main` | *Main: not a class* |
