@@ -1912,3 +1912,148 @@ entry first.
   spokes rather than a pipeline, that only the GUI stack is internally
   ordered, that Part IX and Part V are both prerequisites, and that
   `the-client-loop` is a prerequisite of Part XI. All four are orderings.
+
+---
+
+## Session M — Part XII World generation *(2026-09-03)*
+
+**Two errors found while rewriting, which is four part-sessions in a row.**
+Both are counts, and both had survived pass 2 because nobody had recounted
+them against the registration site.
+
+- **`features-and-placement` said sixty-three features are registered into
+  `BuiltInRegistries.FEATURE`. It is 61** (`Feature.java`, counting the
+  registering assignments). Fixed in place. The page's separate observation
+  that being a `Feature` subclass does not imply being registered — the
+  dragon fight's podium feature — is unchanged and still true.
+- **The same page called `CountOnEveryLayerPlacement` "the fifteenth" of the
+  fifteen placement modifier types.** There are fifteen, but it is **ninth**
+  in `PlacementModifierType`'s declaration order, so "the fifteenth" reads
+  as an ordinal and is wrong. Reworded to "one of the fifteen". Pass 4
+  should treat every *ordinal* in the corpus the way it treats counts.
+
+**Claims this session introduced, hardest first.**
+
+- **The overworld noise cell is four blocks wide, four deep and eight tall,
+  and a chunk holds 768 of them** (`terrain`, stated as *the number*).
+  Derived from `NoiseSettings.OVERWORLD_NOISE_SETTINGS` (horizontal size 1,
+  vertical size 2) through `NoiseSettings.getCellWidth` and
+  `NoiseSettings.getCellHeight`, which multiply by four via
+  `QuartPos.toBlock`, and from `NoiseBasedChunkGenerator.fillFromNoise`'s
+  cell counts (16 / 4 = 4 each way, 384 / 8 = 48 up). No page said any of
+  this before.
+- **1,225 corner samples per interpolated density term, per chunk**
+  (`terrain`, the second *number*). Five slices, five Z, forty-nine Y: read
+  off `NoiseChunk.fillSlice` (which loops the horizontal cell count plus
+  one) and the slice-filling context provider (which loops the vertical cell
+  count plus one), plus the five slices that
+  `NoiseChunk.initializeForFirstCellX` and four `NoiseChunk.advanceCellX`
+  calls fill. Check the slice count first: it is the one step in the
+  arithmetic that is an inference from loop structure rather than a literal.
+- **The six-deep nesting figure in `terrain`** asserts the exact loop order
+  of the noise fill: cell X, cell Z, cell Y *descending*, block Y
+  *descending*, block X, block Z — and that `NoiseChunk.advanceCellX` fills
+  the next slice while `NoiseChunk.swapSlices` drops the old one at the end
+  of each X column. Every level of that nesting is an ordering claim.
+- **The three-forms figure in `density-functions`** asserts what survives
+  each rewrite: that `RandomState`'s wiring visitor fills noise holders and
+  rebuilds `BlendedNoise` and the end-islands node while leaving
+  `DensityFunctions.Marker` and `DensityFunctions.HolderHolder` **intact**,
+  and that only `NoiseChunk.wrapNew` resolves those two. It also asserts
+  that the parsed form is sampled by nothing at all — the F3 readout samples
+  `RandomState.router`, the *once*-rewritten form, which corrects the old
+  page's framing rather than its facts.
+- **`DensityFunctions.FindTopSurface` is a node type the corpus had never
+  named**, and it is the thirty-fourth and last registration. The claims to
+  check: that there are exactly **34** registered types (four by name, six
+  markers, nine by name, seven mapped, four arithmetic, four last), and that
+  its declared bounds are **Y coordinates rather than densities**, which
+  makes it the one node whose range is on a different scale from the rest of
+  the catalogue.
+- **`DensityFunctions.shift` — the three-dimensional domain warp — has no
+  callers and appears in no shipped file** (`density-functions`, and the
+  Reference page's closing section). Also: *constant*, *cache_all_in_cell*
+  and *beardifier* are never written as typed objects in vanilla data, the
+  last two being added in code by `NoiseChunk`'s constructor.
+- **`DensityFunction.NoiseHolder` reports a maximum of 2.0 while its noise
+  is null**, so the parsed graph reports wider noise bounds than the seeded
+  graph it becomes. New, and the kind of claim one test would settle.
+- **`DensityFunctions.Spline` has a hand-written equality that ignores its
+  derived sampler**, offered as the *mechanism* behind the old page's "the
+  rewrite memo is structural, not by reference". The old claim was about
+  records generally; this names the one node that is not a record and still
+  merges.
+- **`NoiseChunk.BlendOffset` reports infinite bounds where the data-side
+  `DensityFunctions.BlendOffset` reports zero** — in the Reference page
+  only, and never checked by pass 2.
+
+**`trees` is a new page and every claim in it is new.** It was written from a
+source inventory of `TreeFeature`, `TreeConfiguration`, the four placer
+packages, the feature-size package, `TreeFeatures` and `TreeGrower`, and
+five of its claims were re-read against the decompile by hand before
+publishing. Those five: that `TreeFeature.doPlace` derives the foliage
+height and the leaf radius from the **unclipped** proposed height and passes
+the *clipped* height to both placers, so a clipped tree keeps a full-size
+crown; that the clearance scan returns *two below* the first blocked layer;
+that `FancyTrunkPlacer`'s crown-candidates-per-level count is pinned at one
+by a minimum against one over an expression that is never below one, making
+the named density constant inert; that `CherryFoliagePlacer`'s codec gives
+the *corner hole chance* field a getter returning the **wide bottom layer**
+field, so any encode writes one value into both; and that
+`TreeGrower.DARK_OAK` declares only a mega tree, which is why a lone
+dark-oak sapling never grows, with `TreeGrower.PALE_OAK` doing the same and
+pointing at the decorator-free bone-meal variant.
+
+The rest of that page is inventory-sourced and wants checking row by row:
+the nine trunk placers, the eleven foliage placers, the ten decorators, the
+five-species table with its numeric configurations, the mangrove root
+recursion that "succeeds by failing" (and the muddy-roots branch that skips
+its moss carpet), and the bucketed leaf-distance walk whose pre-marked
+decoration and root sets *block* propagation. Counts to re-derive: 9 trunk
+placers, 11 foliage placers, 1 root placer, 2 feature sizes, 10 decorators —
+and the claim that `MegaJungleFoliagePlacer` is registered under a *jungle*
+id rather than a *mega jungle* one.
+
+**The split, and where material crossed the seam.** `structures.md` became
+`structure-placement.md` (redirected) and `jigsaw-and-templates.md`. Read the
+two together once: placement keeps the lottery,
+`ChunkGeneratorStructureState`, `Structure`, `StructureStart`, the reference
+scan, `StructureCheck`, both `StructureManager`s, `Beardifier`,
+`TerrainAdjustment`, the locate command and the per-chunk write; jigsaw keeps
+the pools, the assembly loop, the template system and the whole processor
+stack — which `hand-built-structures` now reaches by link rather than owning
+a share of. Three framework facts moved from the old page's invariant wall
+onto `structure-placement` and should be re-read in their new context: that
+the reference position comes from **piece zero**, that
+`Structure.adjustBoundingBox` inflates the box by twelve, and that
+`StructurePiece.postProcess` runs once per overlapping chunk and must be
+idempotent. Two facts moved *off* `terrain` because
+`features-and-placement` already owned them better — the minus-one default
+write radius and `WorldGenRegion.getChunk` throwing — and pass 4 should
+confirm they are not now stated nowhere.
+
+**Diagrams, all of them new or redrawn.** The status-ladder figure on the
+landing page, whose whole point is that the lecture order runs *against* the
+execution order — every subgraph placement is a claim about which status owns
+which page. The four-status hand-off flowchart and the six-deep nesting
+figure in `terrain`. The three-forms figure in `density-functions`. The
+four-decision flowchart in `structure-placement`, which asserts that
+`ChunkStatus.STRUCTURE_STARTS` is the second status and two before
+`ChunkStatus.BIOMES`. The modifier-fold flowchart in
+`features-and-placement`, whose eight stages are an ordering claim about a
+*vanilla* chain rather than a required one. The five-lane sequence in
+`trees`. Redrawn on the same subject: the biome trace (six lanes now, the
+two read paths moved out of the diagram into a comparison table) and the
+village and stronghold traces (relabelled, and the village one now stops at
+the pieces rather than running on into the blocks). Nothing in the part
+survives unredrawn.
+
+**The landing page and `lectures.md`** claim: that the part is a substrate, a
+pipeline and a wing; that the structure wing is decided at
+`ChunkStatus.STRUCTURE_STARTS` and written at `ChunkStatus.FEATURES`; that
+biomes and terrain are independent statuses and can be watched in either
+order; that jigsaw and hand-built are alternatives rather than a sequence;
+that Part IV's chunk-generation pipeline is a hard prerequisite; and that
+`world/level/levelgen` plus `world/level/biome` come to **423 classes and
+45,600 lines** (counted this session, one class per file, package markers
+excluded; pass 2 said 429 and 46,628 for a boundary it never stated).

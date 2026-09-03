@@ -58,3 +58,7 @@ level = 0
 # Pass-3 session L: level-rendering split into visibility/frame-graph and section meshing.
 "/systems/rendering/level-rendering.html" = "visibility-and-the-frame-graph.html"
 "/systems/client/level-rendering.html" = "../rendering/visibility-and-the-frame-graph.html"
+# Pass-3 session M: worldgen-pipeline renamed terrain (Part IV owns "the pipeline"),
+# and structures split into placement and the jigsaw/template assembler.
+"/systems/worldgen/worldgen-pipeline.html" = "terrain.html"
+"/systems/worldgen/structures.html" = "structure-placement.html"

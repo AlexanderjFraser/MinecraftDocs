@@ -30,7 +30,7 @@ expression over them, an optional display entry and a reward. → [advancements]
 
 **Aquifer** — the worldgen component that decides whether the non-stone
 part of a column is air, water or lava; a carver writes the block itself but
-asks the aquifer which block to write. → [the worldgen pipeline](../systems/worldgen/worldgen-pipeline.md)
+asks the aquifer which block to write. → [terrain](../systems/worldgen/terrain.md)
 
 **Argument type** — a Brigadier `ArgumentType` that parses one token of a
 command; vanilla's live in `net/minecraft/commands/arguments` and are
@@ -49,7 +49,7 @@ is an `Avatar` that is not a player, and `AvatarRenderer` draws both. → [playe
 ## B
 
 **Beardifier** — the density-function term that bends terrain around a
-structure; terrain adaptation writes no blocks, it changes the noise. → [structures](../systems/worldgen/structures.md)
+structure; terrain adaptation writes no blocks, it changes the noise. → [structure placement](../systems/worldgen/structure-placement.md)
 
 **Behaviour** — one unit of brain AI, gated on memories and running over
 several ticks. → [AI](../systems/entities/ai-goals-and-brains.md)
@@ -92,7 +92,7 @@ frame. → [the frame](../systems/rendering/the-frame.md)
 
 **Carver** — a worldgen pass that hollows out caves and ravines by writing
 air, water or lava, asking the `Aquifer` which — except the nether carver,
-which does not ask. → [the worldgen pipeline](../systems/worldgen/worldgen-pipeline.md)
+which does not ask. → [terrain](../systems/worldgen/terrain.md)
 
 **Chunk** — a 16-by-16 column of the world's full height: sections,
 heightmaps, block entities, tick queues and a status. → [chunk anatomy](../systems/world/chunk-anatomy.md)
@@ -257,7 +257,7 @@ would be wrong. → [items and stacks](../systems/items/items-and-stacks.md)
 ## J
 
 **Jigsaw** — the structure-assembly system that grows a village out of
-template pieces by matching connector blocks. → [structures](../systems/worldgen/structures.md)
+template pieces by matching connector blocks. → [jigsaw and templates](../systems/worldgen/jigsaw-and-templates.md)
 
 ## L
 
@@ -400,7 +400,7 @@ and its place in a per-player chain, so the server can prove who said it. → [c
 from a `ByteBuf`, with no schema and no field names. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md)
 
 **Structure** — a generated building or landmark: a placement lottery, a
-start assembled in memory, and pieces written a chunk at a time. → [structures](../systems/worldgen/structures.md)
+start assembled in memory, and pieces written a chunk at a time. → [structure placement](../systems/worldgen/structure-placement.md)
 
 **StructurePiece** — one room, corridor or slab of a hand-built structure:
 a Java class that writes its own blocks and constructs its own neighbours,

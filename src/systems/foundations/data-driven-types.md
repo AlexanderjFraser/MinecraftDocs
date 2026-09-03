@@ -123,12 +123,12 @@ otherwise.
 | `BuiltInRegistries.INT_PROVIDER_TYPE` | `IntProvider` | | inline in feature configs and elsewhere; a bare integer is a constant | [features and placement](../worldgen/features-and-placement.md) |
 | `BuiltInRegistries.FLOAT_PROVIDER_TYPE` | `FloatProvider` | | inline; a bare float is a constant | [features and placement](../worldgen/features-and-placement.md) |
 | `BuiltInRegistries.DENSITY_FUNCTION_TYPE` | `DensityFunction` | | `Registries.DENSITY_FUNCTION`, and inline; a bare number is a constant | [density functions](../worldgen/density-functions.md) |
-| `BuiltInRegistries.MATERIAL_CONDITION` | `SurfaceRules.ConditionSource` | | inline in `Registries.NOISE_SETTINGS` | [the worldgen pipeline](../worldgen/worldgen-pipeline.md) |
-| `BuiltInRegistries.MATERIAL_RULE` | `SurfaceRules.RuleSource` | | inline in `Registries.NOISE_SETTINGS` | [the worldgen pipeline](../worldgen/worldgen-pipeline.md) |
+| `BuiltInRegistries.MATERIAL_CONDITION` | `SurfaceRules.ConditionSource` | | inline in `Registries.NOISE_SETTINGS` | [terrain](../worldgen/terrain.md) |
+| `BuiltInRegistries.MATERIAL_RULE` | `SurfaceRules.RuleSource` | | inline in `Registries.NOISE_SETTINGS` | [terrain](../worldgen/terrain.md) |
 | `BuiltInRegistries.BIOME_SOURCE` | `BiomeSource` | | inline in `Registries.LEVEL_STEM` | [biomes](../worldgen/biomes.md) |
-| `BuiltInRegistries.CHUNK_GENERATOR` | `ChunkGenerator` | | inline in `Registries.LEVEL_STEM` | [the worldgen pipeline](../worldgen/worldgen-pipeline.md) |
-| `BuiltInRegistries.STRUCTURE_PROCESSOR` | `StructureProcessor` | *processor_type* | `Registries.PROCESSOR_LIST` | [structures](../worldgen/structures.md) |
-| `BuiltInRegistries.POOL_ALIAS_BINDING_TYPE` | `PoolAliasBinding` | | inline in jigsaw structures | [structures](../worldgen/structures.md) |
+| `BuiltInRegistries.CHUNK_GENERATOR` | `ChunkGenerator` | | inline in `Registries.LEVEL_STEM` | [terrain](../worldgen/terrain.md) |
+| `BuiltInRegistries.STRUCTURE_PROCESSOR` | `StructureProcessor` | *processor_type* | `Registries.PROCESSOR_LIST` | [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
+| `BuiltInRegistries.POOL_ALIAS_BINDING_TYPE` | `PoolAliasBinding` | | inline in jigsaw structures | [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
 | `BuiltInRegistries.ENCHANTMENT_LEVEL_BASED_VALUE_TYPE` | `LevelBasedValue` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
 | `BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE` | `EnchantmentEntityEffect` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
 | `BuiltInRegistries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE` | `EnchantmentLocationBasedEffect` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
@@ -153,17 +153,17 @@ otherwise.
 | `BuiltInRegistries.HEIGHT_PROVIDER_TYPE` | `HeightProviderType` | `HeightProvider` | | inline in placements; a bare anchor is a constant | [features and placement](../worldgen/features-and-placement.md) |
 | `BuiltInRegistries.BLOCK_PREDICATE_TYPE` | `BlockPredicateType` | `BlockPredicate` | | inline in features and placements | [features and placement](../worldgen/features-and-placement.md) |
 | `BuiltInRegistries.BLOCKSTATE_PROVIDER_TYPE` | `BlockStateProviderType` | `BlockStateProvider` | | inline in feature configs | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.TRUNK_PLACER_TYPE` | `TrunkPlacerType` | `TrunkPlacer` | | inline in tree configs | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.FOLIAGE_PLACER_TYPE` | `FoliagePlacerType` | `FoliagePlacer` | | inline in tree configs | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.ROOT_PLACER_TYPE` | `RootPlacerType` | `RootPlacer` | | inline in tree configs | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.TREE_DECORATOR_TYPE` | `TreeDecoratorType` | `TreeDecorator` | | inline in tree configs | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.FEATURE_SIZE_TYPE` | `FeatureSizeType` | `FeatureSize` | | inline in tree configs | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.STRUCTURE_TYPE` | `StructureType` | `Structure` | | `Registries.STRUCTURE` | [structures](../worldgen/structures.md) |
-| `BuiltInRegistries.STRUCTURE_PLACEMENT` | `StructurePlacementType` | `StructurePlacement` | | inline in `Registries.STRUCTURE_SET` | [structures](../worldgen/structures.md) |
-| `BuiltInRegistries.STRUCTURE_POOL_ELEMENT` | `StructurePoolElementType` | `StructurePoolElement` | *element_type* | inline in `Registries.TEMPLATE_POOL` | [structures](../worldgen/structures.md) |
-| `BuiltInRegistries.RULE_TEST` | `RuleTestType` | `RuleTest` | *predicate_type* | inline in processor lists | [structures](../worldgen/structures.md) |
-| `BuiltInRegistries.POS_RULE_TEST` | `PosRuleTestType` | `PosRuleTest` | *predicate_type* | inline in processor lists | [structures](../worldgen/structures.md) |
-| `BuiltInRegistries.RULE_BLOCK_ENTITY_MODIFIER` | `RuleBlockEntityModifierType` | `RuleBlockEntityModifier` | | inline in processor rules | [structures](../worldgen/structures.md) |
+| `BuiltInRegistries.TRUNK_PLACER_TYPE` | `TrunkPlacerType` | `TrunkPlacer` | | inline in tree configs | [trees](../worldgen/trees.md) |
+| `BuiltInRegistries.FOLIAGE_PLACER_TYPE` | `FoliagePlacerType` | `FoliagePlacer` | | inline in tree configs | [trees](../worldgen/trees.md) |
+| `BuiltInRegistries.ROOT_PLACER_TYPE` | `RootPlacerType` | `RootPlacer` | | inline in tree configs | [trees](../worldgen/trees.md) |
+| `BuiltInRegistries.TREE_DECORATOR_TYPE` | `TreeDecoratorType` | `TreeDecorator` | | inline in tree configs | [trees](../worldgen/trees.md) |
+| `BuiltInRegistries.FEATURE_SIZE_TYPE` | `FeatureSizeType` | `FeatureSize` | | inline in tree configs | [trees](../worldgen/trees.md) |
+| `BuiltInRegistries.STRUCTURE_TYPE` | `StructureType` | `Structure` | | `Registries.STRUCTURE` | [structure placement](../worldgen/structure-placement.md) |
+| `BuiltInRegistries.STRUCTURE_PLACEMENT` | `StructurePlacementType` | `StructurePlacement` | | inline in `Registries.STRUCTURE_SET` | [structure placement](../worldgen/structure-placement.md) |
+| `BuiltInRegistries.STRUCTURE_POOL_ELEMENT` | `StructurePoolElementType` | `StructurePoolElement` | *element_type* | inline in `Registries.TEMPLATE_POOL` | [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
+| `BuiltInRegistries.RULE_TEST` | `RuleTestType` | `RuleTest` | *predicate_type* | inline in processor lists | [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
+| `BuiltInRegistries.POS_RULE_TEST` | `PosRuleTestType` | `PosRuleTest` | *predicate_type* | inline in processor lists | [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
+| `BuiltInRegistries.RULE_BLOCK_ENTITY_MODIFIER` | `RuleBlockEntityModifierType` | `RuleBlockEntityModifier` | | inline in processor rules | [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
 | `BuiltInRegistries.RECIPE_SERIALIZER` | `RecipeSerializer` | `Recipe` | | the `RecipeMap` that `RecipeManager` builds from *data/&lt;ns&gt;/recipe/* — a reload listener, not a registry | [recipes](../items/recipes.md) |
 | `BuiltInRegistries.RECIPE_DISPLAY` | `RecipeDisplay.Type` | `RecipeDisplay` | | inline, mostly on the wire to the recipe book | [recipes](../items/recipes.md) |
 | `BuiltInRegistries.SLOT_DISPLAY` | `SlotDisplay.Type` | `SlotDisplay` | | inline in recipe displays | [recipes](../items/recipes.md) |
@@ -182,7 +182,7 @@ walks a tree through all of them.
 | registry | type object | element | where the elements live | taught in |
 |---|---|---|---|---|
 | `BuiltInRegistries.FEATURE` | `Feature` | `ConfiguredFeature` | `Registries.CONFIGURED_FEATURE` | [features and placement](../worldgen/features-and-placement.md) |
-| `BuiltInRegistries.CARVER` | `WorldCarver` | `ConfiguredWorldCarver` | `Registries.CONFIGURED_CARVER` | [the worldgen pipeline](../worldgen/worldgen-pipeline.md) |
+| `BuiltInRegistries.CARVER` | `WorldCarver` | `ConfiguredWorldCarver` | `Registries.CONFIGURED_CARVER` | [terrain](../worldgen/terrain.md) |
 
 Three of the registered destinations are not in `RegistryDataLoader` at
 all. `Registries.LOOT_TABLE`, `Registries.ITEM_MODIFIER` and

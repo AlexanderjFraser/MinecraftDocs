@@ -254,7 +254,7 @@ and stands the new one up.
   `MinecraftServer.handleCustomClickAction`, the single extension point —
   **vanilla only logs it**. For tests, the point-of-interest manager
   ([points of interest](../world/points-of-interest.md)), the structure
-  template manager ([structures](../worldgen/structures.md)),
+  template manager ([jigsaw and templates](../worldgen/jigsaw-and-templates.md)),
   `ServerFunctionManager` ([execution and functions](execution-and-functions.md))
   and `ServerLevel.setChunkForced`.
 - **Crosses the network as:** `ClientboundShowDialogPacket`,

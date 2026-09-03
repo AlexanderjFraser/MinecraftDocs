@@ -359,7 +359,7 @@ not this one:
   thread**, because deciding whether a structure is at a chunk means asking
   the structure check; `LocateCommand.locateBiome` asks the biome source and
   never reads a stored palette at all
-  ([structures](../worldgen/structures.md), [biomes](../worldgen/biomes.md)).
+  ([structure placement](../worldgen/structure-placement.md), [biomes](../worldgen/biomes.md)).
 - **`FillBiomeCommand`** — writes the biome palette of the affected sections
   and resends them; the only command that edits a chunk's biomes
   ([chunk anatomy](../world/chunk-anatomy.md)).
@@ -370,7 +370,7 @@ not this one:
   `PlaceCommand.placeTemplate` reaches the structure template manager with
   rotation, mirror, integrity and a seed
   ([features and placement](../worldgen/features-and-placement.md),
-  [structures](../worldgen/structures.md),
+  [structure placement](../worldgen/structure-placement.md),
   [hand-built structures](../worldgen/hand-built-structures.md)).
 - **`LootCommand`** and **`ItemCommands`** — the second is the more
   interesting: `ItemCommands.applyModifier` runs a loot *function* over an

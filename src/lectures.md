@@ -429,7 +429,56 @@ owns the system this part only consumes.
 
 ## XII · World generation
 
-*Filled by session M.*
+A substrate, a pipeline, and a wing — and the wing runs first while being
+watched last. The eight lectures below run against the chunk status ladder
+rather than along it: a structure is *decided* two statuses before the
+biomes and terrain it will stand in exist, and writes its blocks four
+statuses later, so keeping the three structure lectures together at the end
+costs one forward reference and buys a whole arc in one place.
+
+1. [Density functions](systems/worldgen/density-functions.md) — the
+   substrate, and the one lecture in the part with no chunk in it. Three
+   forms of one graph, two rewrites, and six caches that cache nothing until
+   something else installs them.
+2. [Biomes](systems/worldgen/biomes.md) — a nearest-neighbour search in
+   seven dimensions, the seventh of which is not sampled from the world at
+   all, and the two biome borders the game deliberately keeps a couple of
+   blocks apart. Block tint is on the side nobody guesses.
+3. [Terrain](systems/worldgen/terrain.md) — noise, surface and carvers.
+   Seven hundred and sixty-eight cells filled from their corners, and a cave
+   whose water was decided before the cave was: a carver chooses the shape
+   and the aquifer chooses the material.
+4. [Features and placement](systems/worldgen/features-and-placement.md) —
+   decoration as a stream of positions folded through filters, in an order
+   the whole dimension agreed on before any chunk existed. Two biomes that
+   disagree about that order make the world refuse to open.
+5. [Trees](systems/worldgen/trees.md) — one algorithm with five pluggable
+   slots, and a clearance scan that shortens the trunk and not the crown.
+   The dark-oak sapling that will never grow alone is an `Optional` left
+   empty.
+6. [Structure placement](systems/worldgen/structure-placement.md) — the
+   part's *policy* lecture. A lottery that never looks at the world, an
+   absence stored as a hole rather than a marker, and a command that
+   generates chunks to answer a question.
+7. [Jigsaw and templates](systems/worldgen/jigsaw-and-templates.md) — how a
+   village assembles itself, and how any piece becomes blocks. The growth
+   limit works by offering the wrong pool.
+8. [Hand-built structures](systems/worldgen/hand-built-structures.md) — the
+   older assembler, which is still most of the code. Four families of piece
+   grammar, and the one structure that throws itself away and starts again
+   because it had no portal room.
+
+Two and three can be watched in either order — they are independent statuses
+and neither reads the other. Six comes before seven and eight, which are
+alternatives to each other rather than a sequence.
+
+Part XII assumes Part IV's [chunk generation
+pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the
+only page that says when any of this runs and what the twelve statuses are,
+and every lecture here opens by naming one. It also assumes Part IV's
+[chunk anatomy](systems/world/chunk-anatomy.md) for what is being written
+into, and Part II's codec and registry lectures, because worldgen is the
+most thoroughly data-driven system in the game.
 
 ## XIII · Commands and data packs
 

@@ -1416,12 +1416,21 @@ writes one strikes it through; a session that rules one out says why, here.*
   Part XIII. *(session K)*
 - **The entity selector grammar** — six classes, ~2,136 lines, a section
   today and the most-asked question in the part. Part XIII. *(session K)*
-- **The tree kit** — the `TrunkPlacer` / `FoliagePlacer` implementations,
-  3,219 lines, probably the most watchable page in Part XII. *(session J)*
+- ~~**The tree kit**~~ — **written by session M** as
+  `src/systems/worldgen/trees.md`, Part XII's R7 spend: one algorithm with
+  five pluggable slots, nine trunk placers, eleven foliage placers, one root
+  placer and ten decorators. Writing it settled what the entry could not —
+  the kit's most visible output is an *asymmetry*, not a variation, because
+  `TreeFeature` sizes the crown from the unclipped proposed height and hands
+  both placers the clipped one. *(session J, discharged session M)*
 - **`Blender` / `BlendingData`** — named in five pages, explained in none,
   858 lines. Part XII. *(session J)*
 - **World creation and the world-select screens** — ~5,100 lines spanning
-  Parts X and XII. *(session J)*
+  Parts X and XII. **Ruled by session M: one lecture, and it belongs to
+  Part XII** — the subject is `WorldGenSettings`, `WorldDimensions`,
+  `levelgen/flat` and `levelgen/presets`, and the screen family is that
+  subject's user interface. Not written (the R7 allowance went to the
+  trees); for session P or pass 6. *(session J, owner ruled session M)*
 - ~~**The non-living `Entity.hurtServer` overrides**~~ — **discharged by
   session G** as the closing section of `damage-and-death` (five families)
   plus the per-class table in `src/reference/non-living-damage.md`, which is
@@ -2159,3 +2168,106 @@ be written is *the differences*, and the differences are real — a stricter
 visibility rule enforced twice, per-renderer view distances, and
 `renderer/special` existing so that a chest in your hand looks right with an
 empty model. Session P should write it if there is budget.
+
+---
+
+*(session M, 2026-09-03)*
+
+**Section 1's three Part XII questions are all answered, and one of the
+answers is a ruling a later session should not silently re-open.**
+
+- *Should `density-functions` open the part or close it?* **Open it**, as R6
+  ruled, and against session L's Part XI evidence. The argument that lost is
+  a good one — a reader who has seen one frame end to end has a reason to
+  care what a `GpuDevice` is — and it loses because Part XII's substrate is
+  genuinely prerequisite rather than merely underneath: `biomes` cannot
+  explain the climate sampler without it and `terrain`'s aquifer, ore veins
+  and beardifier are all density terms. What Part XI bought with its
+  *frame* page, this part buys with its **landing page**, which carries the
+  one-chunk overview figure. **That is the transferable ruling: in a part
+  whose substrate is load-bearing, the overview is the landing page's job
+  and no content page is spent on it.**
+- *Is the remaining placement/jigsaw seam worth cutting?* **Yes**, and the
+  seam that survived contact with the page is not quite the one §1
+  proposed. It is not *decision* against *assembly*; it is **what is true of
+  all sixteen structure types** (the lottery, `Structure`, `StructureStart`,
+  the reference scan, `StructureCheck`, `Beardifier`, the per-chunk write)
+  against **one assembler and its output format**. The `.nbt` template
+  system therefore went with jigsaw rather than staying in the framework
+  page, because a template is how a pool element becomes blocks, and
+  `hand-built-structures` reaches it by link — which is what it was already
+  claiming from the other side.
+- *Does the part become XII-A / XII-B, or does structures get promoted?*
+  **Neither.** R1 forbids a new numbered part this pass, and with the split
+  executed Part XII is eight pages, the same size as Parts IV and XI. The
+  two halves are a landing-page fact.
+
+**The lecture order runs against the execution order, and that is the
+part's shape.** Session J's §1 said "biomes → noise/surface/carvers →
+structures → features", which is the *status* order for the pieces it names.
+It is not quite right: `ChunkStatus.STRUCTURE_STARTS` is the **second**
+status, two before `ChunkStatus.BIOMES`, and structures write their blocks
+inside `ChunkStatus.FEATURES`. So the structure wing brackets the terrain
+pipeline rather than following it. The landing page draws the status ladder
+with the lecture numbers on it precisely so a reader sees 1, then 6-7-8,
+then 2, 3, 4-5 running down it — and the cost is one forward reference, the
+beardifier, which `terrain` names and `structure-placement` owns.
+
+**A page is now allowed to have no lanes at all.** `terrain`,
+`density-functions` and `structure-placement` use only flowcharts, which is
+what settled three of the part's lane collisions without a rename: nobody
+needed `SS` because the pages that fought over it stopped drawing
+sequences. Worth knowing for Part XIII, which has the corpus's last seven
+lane disagreements.
+
+**For session N (Part XIII).** Two lanes were claimed against you and you
+are the later claimant: **`CA` is `ChunkAccess`** (so `ClientAdvancements`
+lengthens) and **`CF` is `ConfiguredFeature`** (so `CallFunction` does).
+Three short forms were left deliberately free for you, because this part
+used them to mean three different things each and stopped: **`SS`** (Part
+XIII wants it for `ServerScoreboard`), **`ST`** and **`SP`**. The corpus-wide
+count is now **7 disagreements and 1 collision, all of them yours** —
+`check_lanes.py --strict` over `src/systems/commands` is the last thing
+between the corpus and session P turning `--strict` on everywhere.
+
+**For session O (Reference).** One new hand-kept page,
+`src/reference/density-function-nodes.md` — the thirty-four registered node
+types in registration order, the six markers and what the per-chunk rewrite
+installs for each, the bounds rules, and what vanilla data never uses. It is
+a generation candidate if `gen_reference.py` ever learns to read a
+bootstrap method's registration order, which is the same wish
+`src/reference/submit-phases.md` filed. Also: **the glossary is missing
+*quart* and *noise cell***, both of which Part XII now leans on heavily, and
+its *Structure* entry now points at `structure-placement` while *Jigsaw*
+points at `jigsaw-and-templates` — worth re-reading the six worldgen
+entries as a set.
+
+**The coverage queue is down to twelve, and the world-creation entry now has
+an owner.** The R7 spend was **the tree kit**, written as
+`src/systems/worldgen/trees.md`: fifty classes and about three thousand
+lines that `features-and-placement` documented as five contracts and zero
+instances. Writing it settled what the queue entry could not — the
+distinguishing fact is not that the placers differ, it is that
+`TreeFeature` sizes the crown from the *unclipped* proposed height and then
+hands both placers the clipped one, so the kit's most visible output is an
+asymmetry rather than a variation.
+
+And the ruling session L asked for: ***world creation and the world-select
+screens* is one lecture and it belongs to Part XII**, not Part X. The
+subject is `WorldGenSettings`, `WorldDimensions`, `WorldOptions`,
+`levelgen/flat` and `levelgen/presets`, and `client/gui/screens/worldselection`
+is that subject's user interface — a Part X page would have to teach worldgen
+settings before it could explain a single screen. It is **not** written this
+session (the allowance went to the trees, which is a lecture rather than a
+settings tour) and stays queued with Part XII named as its owner, for
+session P or pass 6. `Blender` / `BlendingData` also stays queued for Part
+XII, unchanged: it is the only part of the density graph with no owner, and
+`terrain` and `density-functions` between them now name it four times
+without explaining it.
+
+**Lane ledger.** Twenty-eight rows added, seven of them lengthened later
+claimants (`ChunkG`, `RootP`, `TDec`, `ClimS`, `CRT`, `PlacedF`, `PMod`),
+two claimed against unconverted Part XIII (`CA`, `CF`), and three contested
+short forms deliberately left free (`SS`, `ST`, `SP`). Part XII is clean
+under `check_lanes.py --strict`, and the corpus-wide count fell from **15
+disagreements and 6 collisions to 7 and 1**.

@@ -390,7 +390,7 @@ sidebar order.
   fan-out/barrier drawn; the lane collisions fixed; one of post-processing
   / block-entity rendering / item models written (R7), the others queued.
   Probably two sessions.
-- [ ] **Session M — Part XII World generation.** `density-functions` first,
+- [x] **Session M — Part XII World generation.** *(done 2026-09-03)* `density-functions` first,
   its three-graphs figure as generated SVG or a before/after pair;
   `structures` split into placement and jigsaw beside
   `hand-built-structures`; `worldgen-pipeline`'s nested cell loop drawn as
@@ -1977,3 +1977,160 @@ missing it — and removes the comment. The owner confirms or reorders
   the corpus-wide lane count down from 19 disagreements and 10 collisions to
   15 and 6, class index and lane index regenerated, `mdbook build` clean and
   no broken internal links.
+- **2026-09-03, session M — Part XII World generation.** *Rulings, written
+  before editing.*
+
+  **The part is a substrate, a pipeline and a wing.** Session J's §1 read is
+  confirmed with the pages open: `density-functions` is not a step, it is the
+  material every other page is made of, and the genuine sequence underneath
+  it is biomes → noise/surface/carvers → features. What §1 did not name is
+  that the three structure pages are not a fourth stage of that pipeline —
+  they are a parallel wing that starts *earlier* than any of it
+  (`ChunkStatus.STRUCTURE_STARTS` is the second status, two before
+  `ChunkStatus.BIOMES`) and finishes inside `ChunkStatus.FEATURES`. So the
+  part has two halves, terrain and structures, exactly as the schedule says,
+  and the landing page draws them against the status ladder so that the
+  lecture order and the execution order are visibly not the same thing.
+
+  **`density-functions` still opens the part, against session L's
+  evidence.** R6 ruled it and session L offered Part XI's counter-argument
+  (open with the trace, then the substrate, then the pipeline, because a
+  reader who has seen one frame end to end has a reason to care about
+  `GpuDevice`). It is a real argument and it loses here for the reason
+  session L itself gave: Part XII's substrate is genuinely prerequisite
+  rather than merely underneath. `biomes` cannot explain the climate sampler
+  without it, and `terrain`'s aquifer, ore veins and beardifier are all
+  density terms. What Part XI's *frame* page bought — the whole shape before
+  the abstract part — is bought here by the **landing page**, which carries
+  the one-chunk overview figure. That is the ruling: the overview is the
+  landing page's job in a part whose substrate is load-bearing, and no
+  content page is spent on it.
+
+  **Part XII stays one part.** §1 raised Part XII-A / XII-B, or promoting
+  structures. R1 forbids a new numbered part this pass, and with the split
+  executed the part is eight pages — the same size as Parts IV and XI — so
+  the halves are a landing-page fact, not a numbering one.
+
+  **The page list after the session** (eight content pages, one landing
+  page, one new Reference page):
+
+  | page | shape | hook |
+  |---|---|---|
+  | `README.md` *(new)* | the landing page | the status ladder, and why the lecture order runs against it |
+  | `density-functions.md` | the pipeline (three rewrites) | the graph in the registry never runs as written, and a caching marker does not cache |
+  | `biomes.md` | the trace, with one comparison section | there are two biome borders a couple of blocks apart, and block tint is on the side nobody guesses |
+  | `terrain.md` *(renamed from `worldgen-pipeline.md`)* | the pipeline (noise · surface · carvers) | the carver does not choose the block it carves — the aquifer does |
+  | `features-and-placement.md` | the trace (a stream of positions) | two biomes that disagree about feature order make the world refuse to open *(landed here rather than on count-then-scatter — see below)* |
+  | `trees.md` *(new — the R7 spend)* | the pattern | the dark-oak sapling that never grows alone, which is an `Optional` left empty |
+  | `structure-placement.md` *(from `structures.md`)* | the policy | the grid never looks at the world, and absence is stored as a hole rather than a marker |
+  | `jigsaw-and-templates.md` *(from `structures.md`)* | the trace (a village) | a village stops growing because at the depth limit the assembler is offered only the fallback pool |
+  | `hand-built-structures.md` | the pattern (four families, one traced) | a stronghold is a rejection sampler — no portal room, and the whole thing is thrown away and regenerated |
+  | `src/reference/density-function-nodes.md` *(new)* | Reference | — |
+
+  **`structures` splits three ways, not two.** The schedule says placement
+  and jigsaw beside `hand-built-structures`, and the seam that survives
+  contact with the page is: everything that is true of all sixteen structure
+  types goes to `structure-placement` (the lottery, `StructureSet`,
+  `StructurePlacement`, `ChunkGeneratorStructureState`, `Structure`,
+  `StructureStart`, the reference scan, `StructureCheck`,
+  `StructureManager`, `Beardifier`, `/locate`, and the per-chunk write), and
+  the `.nbt` template system goes with **jigsaw** rather than staying in the
+  framework page, because a template is how a pool element becomes blocks
+  and the hand-built families reach it by link. `hand-built-structures`
+  already declared that boundary from the other side and now points at the
+  right page.
+
+  **`worldgen-pipeline` is renamed `terrain`.** Two pages called *pipeline*,
+  one the conveyor (Part IV) and one the cargo (Part XII), is a name
+  collision that costs a reader the whole distinction the split was made
+  for. Redirect kept under R8.
+
+  **The catalogue extraction is the node families**, to
+  `src/reference/density-function-nodes.md` — §1's "the rewrite story is the
+  lecture, the node families are reference", executed. Hand-kept, for
+  session O's sweep.
+
+  **The R7 spend is the tree kit** (`trees.md`), the coverage queue's
+  "probably the most watchable page in Part XII": fifty classes and ~3,000
+  lines of `TrunkPlacer` / `FoliagePlacer` / `RootPlacer` / `TreeDecorator`
+  implementations that `features-and-placement` documents as five contracts
+  and zero instances. It also relieves that page, which is over-budget with
+  tree material.
+
+  **The world-creation ruling session L asked for.** *World creation and the
+  world-select screens* (~5,100 lines, zero citations) is **one lecture and
+  it belongs to Part XII**, not Part X: the subject is `WorldGenSettings`,
+  `WorldDimensions`, `WorldOptions`, `levelgen/flat` and `levelgen/presets`,
+  and `client/gui/screens/worldselection` is that subject's user interface —
+  a Part X page would have to teach worldgen settings before it could
+  explain a single screen. It is **not** written this session (the R7
+  allowance went to the trees, which is a lecture rather than a settings
+  tour) and stays in the queue with Part XII named as its owner, for session
+  P or pass 6.
+
+  **What was done.** Ten pages where there were six: eight system pages, a
+  landing page and a new Reference page. One split executed (`structures`
+  → `structure-placement` + `jigsaw-and-templates`), one page renamed
+  (`worldgen-pipeline` → `terrain`), two redirects, one page written from
+  nothing (`trees`, the R7 spend) and one catalogue extracted
+  (`src/reference/density-function-nodes.md`). Every page lost the
+  seven-heading skeleton and the part now has **zero bulleted lists in it**.
+  Lengths 204 to 288 against the 260–340 brief — the first part to
+  *undershoot* it, three pages under 240, which is worth noticing rather
+  than fixing: the structure pages are short because the split gave each of
+  them one subject.
+
+  **Two hooks moved off the plan above while writing.**
+  `features-and-placement` was slated for count-then-scatter and opens on
+  the global sort instead — a data pack that makes the world refuse to open
+  is the more surprising true thing, and count-then-scatter survives as a
+  named paragraph. `trees`, whose hook the table could not name before the
+  source inventory came back, opens on `TreeGrower.DARK_OAK`: the
+  best-known growth rule in the game, that a lone dark-oak sapling never
+  grows, is implemented as an `Optional` left empty.
+
+  **Redrawing found two errors, which is four sessions in a row, and both
+  are counts.** `features-and-placement` said sixty-three features are
+  registered; it is **61**. And it called `CountOnEveryLayerPlacement` "the
+  fifteenth" of the fifteen placement modifier types — there are fifteen,
+  but it is **ninth** in declaration order, so the ordinal is wrong where
+  the count is right. Both are fixed and both head
+  [pass4.md](pass4.md)'s session-M entry. The generalisation for the
+  remaining sessions: pass 2 checked counts and did not check **ordinals**,
+  and an ordinal is a count with an extra claim in it.
+
+  **The R7 page is `trees`, and the coverage queue's own framing was
+  wrong.** The entry promised "how one species of tree differs from
+  another" and the page that came out is mostly about what they *share*: one
+  `final` algorithm with five codec-dispatched slots, and an asymmetry
+  inside it that no configuration can reach — `TreeFeature` samples a
+  proposed height, sizes the foliage height and leaf radius from it, and
+  only then runs the clearance scan, so a clipped tree grows a short trunk
+  under a full-size crown and every one of the eleven foliage placers
+  ignores the clipped height it is handed. Three more findings the queue
+  could not have predicted: `FancyTrunkPlacer`'s crown-candidates-per-level
+  count is pinned at one by a minimum against one, so its named density
+  constant does nothing at any height; `CherryFoliagePlacer`'s codec gives
+  its *corner hole chance* field a getter that returns the *wide bottom
+  layer* field, so decoding is right and any encode writes one value into
+  both; and `TreeGrower.PALE_OAK` points at the decorator-free bone-meal
+  variant, so a player-grown pale oak gets neither moss nor a creaking
+  heart.
+
+  **Three of the part's lane collisions were settled by not drawing a
+  sequence.** `terrain`, `density-functions` and `structure-placement` all
+  chose flowcharts, and `SS` — which meant `SurfaceSystem`, `StructureStart`
+  and `StrongholdStructure` on three adjacent pages — is now used by none of
+  them and left free for Part XIII's `ServerScoreboard`. Twenty-eight rows
+  added, seven lengthened later claimants, two claimed against unconverted
+  Part XIII (`CA`, `CF`). Part XII is clean under `check_lanes.py --strict`
+  and the corpus-wide count fell from 15 disagreements and 6 collisions to
+  **7 and 1, every one of them in Part XIII**.
+
+  **The world-creation ruling** session L asked for is above and is recorded
+  against the queue entry in [pass3.md](pass3.md) §7: one lecture, Part
+  XII's, not written this session.
+
+  Checks at commit: 17,335 names resolve, 179 diagrams pass, Part XII clean
+  under `check_lanes.py --strict`, class index and lane index regenerated,
+  `mdbook build` clean and no broken internal links across `src/`.

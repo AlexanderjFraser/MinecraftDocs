@@ -238,9 +238,9 @@ rather than doing anything. Only *NOISE*, *SURFACE* and *CARVERS* (radius 0)
 and *FEATURES* (radius 1) can change a block at all. What rides on those
 steps — the density functions, the surface rules, the carvers, the features
 and the structures they place — is Part XII's subject
-([the worldgen pipeline](../worldgen/worldgen-pipeline.md),
+([terrain](../worldgen/terrain.md),
 [density functions](../worldgen/density-functions.md),
-[structures](../worldgen/structures.md)). This page is the conveyor.
+[structure placement](../worldgen/structure-placement.md)). This page is the conveyor.
 
 *STRUCTURE_STARTS* runs `ChunkGenerator.createStructures` for every chunk in
 the radius-11 square that is not already past it — seed and placement state

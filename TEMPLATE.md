@@ -438,6 +438,34 @@ never change an existing row's meaning.
 | `PChain` | `PostChain` |
 | `PPass` | `PostPass` |
 | `ShadM` | `ShaderManager` |
+| `CST` | `ChunkStatusTasks` |
+| `ChunkG` | `ChunkGenerator` |
+| `NBC` | `NoiseBasedChunkGenerator` |
+| `CA` | `ChunkAccess` |
+| `LCS` | `LevelChunkSection` |
+| `MNBS` | `MultiNoiseBiomeSource` |
+| `ClimS` | `Climate.Sampler` |
+| `CRT` | `Climate.RTree` |
+| `FS` | `FeatureSorter` |
+| `WR` | `WorldgenRandom` |
+| `PlacedF` | `PlacedFeature` |
+| `PMod` | `PlacementModifier` |
+| `CF` | `ConfiguredFeature` |
+| `TF` | `TreeFeature` |
+| `TP` | `TrunkPlacer` |
+| `FolP` | `FoliagePlacer` |
+| `RootP` | `RootPlacer` |
+| `TDec` | `TreeDecorator` |
+| `WGL` | `WorldGenLevel` |
+| `JS` | `JigsawStructure` |
+| `JPP` | `JigsawPlacement.Placer` |
+| `STP` | `StructureTemplatePool` |
+| `PESP` | `PoolElementStructurePiece` |
+| `STemp` | `StructureTemplate` |
+| `SStart` | `StructureStart` |
+| `SStr` | `StrongholdStructure` |
+| `SPie` | `StrongholdPieces` |
+| `SPB` | `StructurePiecesBuilder` |
 | `Game` | *the game's own code above Blaze3D, not a class* |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
@@ -500,3 +528,24 @@ renaming. `LX` is claimed here for `LevelExtractor`, which five pages in two
 parts already use it for, so Part XI's `LightmapRenderStateExtractor` is the
 later claimant and lengthens. `Library` and `Channel` take their own names
 under the short-word rule.
+
+Part XII (session M) added twenty-eight rows and lengthened seven later
+claimants, and deliberately left three contested short forms free. The
+lengthenings: `ChunkGenerator` is `ChunkG` because `CG` is `CollisionGetter`,
+`RootPlacer` is `RootP` because `RP` is `RenderPass`, `TreeDecorator` is
+`TDec` because the key records `TD` as retired, `Climate.Sampler` is `ClimS`
+because `CS` is `ComponentSerialization`, `Climate.RTree` is `CRT` because
+`RT` is free but reads as nothing, `PlacedFeature` is `PlacedF` because `PF`
+is `PathFinder`, and `PlacementModifier` is `PMod` because `PM` is
+`PoiManager`. `MultiNoiseBiomeSource` takes its full initials, `MNBS`, rather
+than the `MN` its page used. Two rows were claimed against Part XIII, which
+is not yet converted, so session N is the later claimant and lengthens:
+`CA` is `ChunkAccess` (so `ClientAdvancements` must lengthen) and `CF` is
+`ConfiguredFeature` (so `CallFunction` must). And three short forms this part
+used to mean several things are now used for none of them: **`SS`** (it meant
+`SurfaceSystem`, `StructureStart` and `StrongholdStructure` on three
+adjacent pages, and Part XIII wants it for `ServerScoreboard`), **`ST`** and
+**`SP`**-as-a-structure. `StructureStart` is `SStart`,
+`StrongholdStructure` `SStr`, `StrongholdPieces` `SPie`, and the terrain and
+structure-placement pages now use flowcharts with no lanes at all.
+

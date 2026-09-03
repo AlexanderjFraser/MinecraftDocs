@@ -19,6 +19,60 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+- **2026-09-03, session M — Part XII.** Eight system pages plus a landing
+  page and a Reference page. **Every page landed inside the 260–340 brief or
+  below it** — 204 to 288, with the landing page at 143 and the Reference
+  page at 152 — and three pages came in under 240, which is the first time a
+  part has *undershot*. **Zero bulleted lists across the whole part**, as in
+  Part XI. Four cuts, all from the old `worldgen-pipeline`, now `terrain`,
+  and none of them a fact the corpus loses: `NoiseSettings.guardY`'s
+  multiples-of-sixteen validation (a codec detail with no visible
+  consequence); the registries inventory at the foot of the page (the
+  data-driven type pattern owns that table and three of its rows now link
+  here); the `ChunkStatusTasks` caller list (Part IV owns the conveyor and
+  the landing page makes the dependency explicit); and the `Heightmap.Usage`
+  taxonomy (the *status, not the step* half survives, and `chunk-anatomy`
+  already has the rest). Two more facts were **moved rather than cut** and
+  are in [pass4.md](pass4.md) instead: the minus-one default write radius
+  and `WorldGenRegion.getChunk` throwing, both now stated only on
+  `features-and-placement`, which is where they bite.
+
+  Wording debt:
+
+  - **The *questions players ask* device is on six of the eight pages**,
+    which is the ratio session K flagged in Part X and the trap the old
+    seven-heading template fell into. It is genuinely the honest home for
+    what used to be an invariant wall, which is exactly why it spreads.
+    Session P should count it as a *device* becoming a *slot*, and pass 5
+    should consider a rule — at most half the pages in a part.
+  - **Session K's two formulas are gone from Part XII too.** No page says
+    "the one sentence a player recognises" and none carries a
+    names-you-will-hunt-for list; two pages use the *for a 1.21-era reader*
+    blockquote instead (`density-functions` on the two vocabularies for the
+    six climate functions, `jigsaw-and-templates` on the singular
+    *structure* folder). With X, XI and XII converted the formulas survive
+    only in Part XIII.
+  - **Second person, now five parts wide and needing a ruling rather than
+    another flag.** `terrain` opens with *you dig into a cave*, `biomes`
+    with *walk out of a desert*, `trees` with *plant a single dark-oak
+    sapling*, `structure-placement` with *type the locate command*. It is
+    the most natural way to start inside a scenario and it is the house
+    style now whether or not anyone decided it. Sessions I, J and K all
+    flagged the drift.
+  - **`terrain`'s title is a compromise.** The page is noise, surface and
+    carvers — three statuses — so *Terrain* is broader than its subject,
+    while its old name collided with Part IV's *chunk generation pipeline*.
+    If pass 5 finds a better name the redirect already exists and a second
+    costs nothing.
+  - **The lattice fact is stated three times across two pages** — twice in
+    `terrain`, at its two resolutions, and once more in `density-functions`
+    from the cache side. All three are true and it is the part's best "true
+    twice over" observation, but one of the three should become a link.
+  - **`jigsaw-and-templates` is the shortest page in the part** at 204
+    lines, because the processor stack is described rather than traced. If
+    pass 5 wants a section trimmed elsewhere, this is the page that could
+    absorb it instead.
+
 - **2026-09-03, session L — Part XI.** Eleven system pages plus a landing
   page and a Reference page. **Every page landed inside the 260–340 brief**
   — 256 to 339, with the landing page at 150 and the Reference page at 81 —

@@ -360,7 +360,7 @@ half really is inert at runtime, and it is the half worth reading — it is
 the fastest way to understand what a vanilla biome or structure declares,
 because it is typed and cross-referenced where the JSON is not, a point
 [biomes](../worldgen/biomes.md) and
-[structures](../worldgen/structures.md) both depend on. And the report
+[structure placement](../worldgen/structure-placement.md) both depend on. And the report
 providers are how you get machine-readable dumps of exactly the tables this
 book's own [reference layer](../../reference/README.md) covers.
 
