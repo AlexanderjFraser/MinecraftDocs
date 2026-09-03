@@ -119,7 +119,7 @@ prior work erased. The refund is the sum of `Enchantment.getMinCost` at each
 stripped level, halved upward with a random bonus of up to that half again,
 and it arrives as orbs from `ExperienceOrb.award` at the block — on the
 ground, not in the player
-([hunger, XP and effects](../player/hunger-xp-and-effects.md)).
+([hunger and experience](../player/hunger-and-experience.md)).
 
 ## What each path is allowed to add
 

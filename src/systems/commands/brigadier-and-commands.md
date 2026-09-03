@@ -381,7 +381,7 @@ not this one:
   ([loot tables](../items/loot-tables.md)).
 - **`EnchantCommand`** and **`ExperienceCommand`** — thin faces over
   [enchanting](../items/enchanting.md) and
-  [hunger, XP and effects](../player/hunger-xp-and-effects.md).
+  [hunger and experience](../player/hunger-and-experience.md).
 - **`ExecuteCommand`** — not a command so much as the front end of the
   execution engine ([execution and functions](execution-and-functions.md)).
 - **`DataPackCommand`** — enables and disables packs, then reloads

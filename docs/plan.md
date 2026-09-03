@@ -1484,3 +1484,27 @@ missing it — and removes the comment. The owner confirms or reorders
   raced each other's output directory; one agent hit a spurious `ENOENT` and
   had to re-run with `--no-build`. A future session should tell agents to
   verify names only and leave the build to the session.
+- **2026-09-03, session I — Part VIII The player.** *Rulings, written before
+  editing.* **Part VIII is a trunk and four branches**, not a chain: two
+  pages say what a player is and when it runs, and everything else is one
+  thing a player *does*. So the part grows from four pages to seven.
+  **`player-anatomy` splits** as the pass-2 table and the notebook both
+  asked: the vocabulary half keeps the URL, and the two-phase tick —
+  record, simulate, snap back — becomes **`the-two-phase-tick`**, a trace
+  page, because it is the one thing on the old page nobody would guess.
+  **`hunger-xp-and-effects` splits** at the seam the notebook named: status
+  effects take **`status-effects`** (own registry, the hidden-effect stack,
+  two synched values, the client blend), and the hunger and experience
+  halves stay together in **`hunger-and-experience`** — a rename, so the old
+  URL is redirected. **The spear gets its own lecture** (`the-spear`),
+  discharging the coverage-queue entry: two data components, two entry
+  points, two implementations of `LivingEntity.stabAttack`, a mob AI that
+  uses it and a first-person animation that reads a combat field — it is
+  far more than the two invariants it was, and it is the 26.2 combat change
+  a viewer will most want explained. `the-sword-swing` keeps the ordinary
+  path and hands both spear paths forward. **`the-sword-swing`'s figure
+  becomes a flow over one number** (base damage in, total damage out) as the
+  notebook asked, with the sequence kept only for the round trip.
+  **The authority matrix leaves Part VIII entirely**: session G gave it a
+  page, so `input-to-movement`'s four-method table and `player-anatomy`'s
+  authority section are cut to a link, the way `movement-and-collision` was.

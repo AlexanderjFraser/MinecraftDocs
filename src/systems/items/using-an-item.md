@@ -262,7 +262,7 @@ body. Particles, sound, the `ConsumableListener` walk that finds
 `FoodProperties`, and the `ItemStack.consume` shrink all run on both — and
 every one of those client mutations is then overwritten. That is why a
 chorus fruit's teleport is never predicted while the hunger bar's jump is
-([hunger, XP and effects](../player/hunger-xp-and-effects.md)).
+([hunger and experience](../player/hunger-and-experience.md)).
 
 One meal, two exactly-once sound strategies. The chew sound goes through
 `Player.playSound`, which names the eater as the entity to *exclude*, so the

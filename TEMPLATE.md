@@ -371,6 +371,12 @@ never change an existing row's meaning.
 | `LPool` | `LootPool` |
 | `RCont` | `RandomizableContainer` |
 | `ExecC` | `ExecuteCommand` |
+| `Inv` | `Inventory` |
+| `FD` | `FoodData` |
+| `FP` | `FoodProperties` |
+| `KM` | `KeyMapping` |
+| `KI` | `KeyboardInput` |
+| `MEI` | `MobEffectInstance` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |

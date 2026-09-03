@@ -69,9 +69,11 @@ a one-word class as itself, and a few words for things that are not classes.
 | `ETL` | `EntityTickList` |
 | `EVS` | `EnvironmentAttributeSystem.ValueSampler` |
 | `ExecC` | `ExecuteCommand` |
+| `FD` | `FoodData` |
 | `FF` | `FlowingFluid` |
 | `FM` | `FurnaceMenu` |
 | `Font` | `Font` |
+| `FP` | `FoodProperties` |
 | `GED` | `GameEventDispatcher` |
 | `GR` | `GameRenderer` |
 | `GS` | `GaussianSampler` |
@@ -79,6 +81,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `HS` | `HashedStack` |
 | `Hud` | `Hud` |
 | `Ignite` | `Ignite` |
+| `Inv` | `Inventory` |
 | `IOW` | `IOWorker` |
 | `IP` | `ItemParser` |
 | `IS` | `IntegratedServer` |
@@ -87,6 +90,8 @@ a one-word class as itself, and a few words for things that are not classes.
 | `Items` | `Items` |
 | `JWT` | `JoinWorldTask` |
 | `KH` | `KeyboardHandler` |
+| `KI` | `KeyboardInput` |
+| `KM` | `KeyMapping` |
 | `KTS` | `KeyframeTrackSampler` |
 | `Language` | `Language` |
 | `LB` | `LiquidBlock` |
@@ -112,6 +117,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `MC` | `Minecraft` |
 | `MComp` | `MutableComponent` |
 | `ME` | `MobEffect` |
+| `MEI` | `MobEffectInstance` |
 | `Mob` | `Mob` |
 | `MoveC` | `MoveControl` |
 | `MPGM` | `MultiPlayerGameMode` |
