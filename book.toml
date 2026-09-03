@@ -17,7 +17,7 @@ command = "mdbook-mermaid"
 default-theme = "light"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/AlexanderjFraser/MinecraftDocs"
-additional-js = ["mermaid.min.js", "mermaid-init.js", "diagram-zoom.js"]
+additional-js = ["mermaid.min.js", "mermaid-init.js", "diagram-zoom.js", "site-footer.js"]
 # Wider column for tables/diagrams, prose capped at 800px, identifiers wrap
 # in table cells (pass 3, planning session).
 additional-css = ["custom.css"]

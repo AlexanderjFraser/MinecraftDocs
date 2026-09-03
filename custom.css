@@ -166,3 +166,17 @@ svg.mapfig .edge {
     color: var(--icons);
     margin-top: 0.4em;
 }
+
+/* The licence and disclaimer footer (site-footer.js): quiet, and out of the
+   way of the prose it follows. */
+.content footer.site-footer {
+    max-width: 800px;
+    margin: 3.5em auto 0;
+    padding-top: 1.2em;
+    border-top: 1px solid var(--table-border-color, currentColor);
+    font-size: 0.8em;
+    color: var(--icons);
+}
+.content footer.site-footer p {
+    margin: 0.4em 0;
+}
