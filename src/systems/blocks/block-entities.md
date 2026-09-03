@@ -277,6 +277,9 @@ menu is gone, and the furnace goes on smelting with no packets at all.
 `Level.shouldTickBlocksAt` · `ChunkHolder.broadcastBlockEntity` ·
 `AbstractFurnaceBlockEntity.serverTick` · `AbstractFurnaceMenu.getBurnProgress`
 
+How a block entity is *drawn* — and why a chest's block model is empty — is
+[block-entity rendering](../rendering/block-entity-rendering.md), in Part XI.
+
 ---
 
 *Rules: names, never code · how the system works, not how the code reads ·

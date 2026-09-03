@@ -243,7 +243,9 @@ the latter, and `Level.dimension` / `Level.dimensionType` are the
 accessors. `Level.canHaveWeather` is sky light, no ceiling, not the End.
 
 The seed and the dimension list are `WorldGenSettings` — `SavedData`,
-*world_gen_settings.dat*, server-global — holding `WorldOptions`
+*world_gen_settings.dat*, server-global; [creating a
+world](../systems/worldgen/creating-a-world.md) is who writes it — holding
+`WorldOptions`
 (`WorldOptions.seed`, `WorldOptions.generateStructures`,
 `WorldOptions.generateBonusChest`) and `WorldDimensions` (the stem map;
 `WorldDimensions.bake` produces the registry). It is read before the

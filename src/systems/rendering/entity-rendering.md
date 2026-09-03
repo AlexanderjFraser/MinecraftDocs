@@ -267,15 +267,10 @@ graph](visibility-and-the-frame-graph.md)'s subject; the draws go out through
 
 ## Three things shaped like this pipeline, that are not it
 
-**Block entities** take the same four stages, through
-`BlockEntityRenderDispatcher.tryExtractRenderState` and
-`BlockEntityRenderDispatcher.submit`, under a stricter visibility rule: a
-block entity is extracted from the visible-section walk *or* from the
-globally-rendered list, never both. The check is an exact match against
-`BlockEntityRenderer.shouldRenderOffScreen`, only three renderers opt in, and
-it is enforced twice — once when the block entity is added to the level, once
-when its state is extracted. Each renderer carries its own
-`BlockEntityRenderer.getViewDistance`.
+**Block entities** take the same four stages under a different visibility
+policy, a different partial tick and an empty block model —
+[block-entity rendering](block-entity-rendering.md) is the whole of the
+difference.
 
 **The first-person hand** is a second pipeline entirely: `ItemInHandRenderer`
 submits into its own `SubmitNodeStorage` and is drawn by

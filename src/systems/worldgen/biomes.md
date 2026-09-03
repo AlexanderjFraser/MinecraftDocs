@@ -57,6 +57,10 @@ sequenceDiagram
     Note over LCS: saved under "biomes", shipped inside the chunk payload
 ```
 
+The two wrappers in the second arrow only do anything beside chunks an
+older version generated — [blending at the old-chunk border](blending.md)
+is where they are explained.
+
 **Biomes are decided before terrain, and not for it.** `ChunkStatus.BIOMES`
 precedes `ChunkStatus.NOISE`, and the two do not depend on each other at all:
 the noise fill never reads a biome. What makes a jungle and its terrain agree

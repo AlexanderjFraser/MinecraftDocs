@@ -257,7 +257,9 @@ registers **eight** kinds of unbaked item model and only one of them draws
 anything by itself — the rest select, compose, dispatch on a range or
 delegate — while `SpecialModelRenderers` covers the thirteen shapes no
 cuboid model can express, from chests and banners to shields, heads,
-tridents and decorated pots. `ItemModelGenerator` is the odd one out and by
+tridents and decorated pots ([block-entity
+rendering](block-entity-rendering.md) is where those thirteen get their
+geometry). `ItemModelGenerator` is the odd one out and by
 far the most-used model in the game: it extrudes a flat sprite into
 geometry by tracing its alpha channel, which is what *item/generated*
 means.

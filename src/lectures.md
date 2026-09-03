@@ -4,14 +4,17 @@ The video series is an *ordering* over the system pages, which are the
 stable content. Each part's landing page lists its lectures in watching
 order; this page assembles them and states the dependencies between parts
 — where a later part is assumed by an earlier one, and what to watch first
-because of it. It is drafted in pass 3, one part per session, and confirmed
-by the owner in pass 6 after reading every part with the decompile open.
-Until a part's section below is filled, its sidebar order is its watching
-order.
+because of it. It was drafted in pass 3, one part per session, and is
+confirmed by the owner in pass 6 after reading every part with the
+decompile open. Nothing in [Reference](reference/README.md) is watched, and
+nothing in the [maps](maps/README.md) is: the maps are looked at once, the
+reference pages are looked up, and a lecture links into them wherever a
+viewer would pause the video to read a table.
 
 The one rule that holds everywhere: **each part assumes only the parts
 before it**, and where that is not true the section says so and names the
-page to watch early.
+page to watch early. [The dependencies between parts](#the-dependencies-between-parts),
+at the end, draws the whole graph.
 
 ## I · Anatomy
 
@@ -402,27 +405,33 @@ one frame end to end has a reason to care what a `GpuDevice` is.
 7. [Entity rendering](systems/rendering/entity-rendering.md) — four stages,
    none of them called *render*. The zombie is animated at least twice per
    frame, and the red flash is not a colour.
-8. [Lightmap, fog and sky](systems/rendering/lightmap-fog-and-sky.md) — the
+8. [Block-entity rendering](systems/rendering/block-entity-rendering.md) —
+   the part's *comparison* lecture: entity, block entity and special model,
+   three roads to one collector. The chest's block model is empty, and
+   under */tick freeze* only one of the two chests stops.
+9. [Lightmap, fog and sky](systems/rendering/lightmap-fog-and-sky.md) — the
    part's *pattern* lecture: one question asked five times over, by
    renderers that mostly no longer know what time it is.
-9. [Particles](systems/rendering/particles.md) — the part's *policy*
-   lecture: five gates that disagree with each other, and a break puff that
-   passes through none of them.
-10. [Post-processing](systems/rendering/post-processing.md) — the closer.
+10. [Particles](systems/rendering/particles.md) — the part's *policy*
+    lecture: five gates that disagree with each other, and a break puff that
+    passes through none of them.
+11. [Post-processing](systems/rendering/post-processing.md) — the closer.
     Six JSON-declared shader chains, and a pack can rewrite all six and add
     none. Two of them append passes to the frame graph lecture four builds
     and four get a throwaway graph of their own, which is why the blur and
     the spectator shaders appear in no profiler slice at all.
 
 Four and five are a pair — one page until this pass, and still one journey
-seen from its two ends. One to three can also be watched one, three, two;
+seen from its two ends — and so are seven and eight, the second written as
+the differences from the first. One to three can also be watched one, three,
+two;
 the window is the lecture a viewer is most likely to skip and least likely
 to regret.
 
 Part XI assumes Part X's [client loop](systems/client/the-client-loop.md),
 and only that page — it is the one thing that says when a frame happens.
 Lecture six assumes Part II's [resource
-system](systems/foundations/resource-system.md); lecture eight assumes Part
+system](systems/foundations/resource-system.md); lecture nine assumes Part
 IV's [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md), which
 owns the system this part only consumes.
@@ -430,7 +439,7 @@ owns the system this part only consumes.
 ## XII · World generation
 
 A substrate, a pipeline, and a wing — and the wing runs first while being
-watched last. The eight lectures below run against the chunk status ladder
+watched last. The ten lectures below run against the chunk status ladder
 rather than along it: a structure is *decided* two statuses before the
 biomes and terrain it will stand in exist, and writes its blocks four
 statuses later, so keeping the three structure lectures together at the end
@@ -448,29 +457,40 @@ costs one forward reference and buys a whole arc in one place.
    Seven hundred and sixty-eight cells filled from their corners, and a cave
    whose water was decided before the cave was: a carver chooses the shape
    and the aquifer chooses the material.
-4. [Features and placement](systems/worldgen/features-and-placement.md) —
+4. [Blending at the old-chunk border](systems/worldgen/blending.md) — the
+   part's *pattern* lecture, and the one place world generation reads the
+   world. One measurement of a neighbour's blocks, five consumers at four
+   statuses, and a seam where the terrain splines are switched off entirely.
+5. [Features and placement](systems/worldgen/features-and-placement.md) —
    decoration as a stream of positions folded through filters, in an order
    the whole dimension agreed on before any chunk existed. Two biomes that
    disagree about that order make the world refuse to open.
-5. [Trees](systems/worldgen/trees.md) — one algorithm with five pluggable
+6. [Trees](systems/worldgen/trees.md) — one algorithm with five pluggable
    slots, and a clearance scan that shortens the trunk and not the crown.
    The dark-oak sapling that will never grow alone is an `Optional` left
    empty.
-6. [Structure placement](systems/worldgen/structure-placement.md) — the
+7. [Structure placement](systems/worldgen/structure-placement.md) — the
    part's *policy* lecture. A lottery that never looks at the world, an
    absence stored as a hole rather than a marker, and a command that
    generates chunks to answer a question.
-7. [Jigsaw and templates](systems/worldgen/jigsaw-and-templates.md) — how a
+8. [Jigsaw and templates](systems/worldgen/jigsaw-and-templates.md) — how a
    village assembles itself, and how any piece becomes blocks. The growth
    limit works by offering the wrong pool.
-8. [Hand-built structures](systems/worldgen/hand-built-structures.md) — the
+9. [Hand-built structures](systems/worldgen/hand-built-structures.md) — the
    older assembler, which is still most of the code. Four families of piece
    grammar, and the one structure that throws itself away and starts again
    because it had no portal room.
+10. [Creating a world](systems/worldgen/creating-a-world.md) — the closer,
+    and the origin told last: where the seed and the data packs came from. A
+    screen that is a running data-pack load with widgets on it, settings
+    carried across a reload by being serialised to JSON, and a Cancel button
+    that does not undo.
 
 Two and three can be watched in either order — they are independent statuses
-and neither reads the other. Six comes before seven and eight, which are
-alternatives to each other rather than a sequence.
+and neither reads the other; four needs both and nothing after it. Seven
+comes before eight and nine, which are alternatives to each other rather
+than a sequence. Ten is the object the other nine read, told last because
+it is a tree of everything they explain.
 
 Part XII assumes Part IV's [chunk generation
 pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the
@@ -496,35 +516,41 @@ about — but neither of the first two floors is optional for any of them.
    the book: a permission is no longer an integer. An operator does not have
    everything, a permission failure is reported as a typo, and the client's
    chat permissions are built by subtraction from four local reasons.
-3. [The execution engine](systems/commands/the-execution-engine.md) — a
+3. [Entity selectors](systems/commands/entity-selectors.md) — a selector is
+   a compiled query, and four of its twenty-one options are not filters but
+   the query plan. *@p* crosses dimensions, *sort=nearest* is what takes
+   your *limit* away, and one permission is checked twice for two reasons.
+4. [The execution engine](systems/commands/the-execution-engine.md) — a
    command engine with no Java recursion. A fork creates no frames, a
    hundred-player fan-out materialises one player at a time, and `/return`
    deletes work out of a queue rather than unwinding a stack.
-4. [Functions and macros](systems/commands/functions-and-macros.md) — what a
+5. [Functions and macros](systems/commands/functions-and-macros.md) — what a
    `.mcfunction` becomes, in two steps, the second of which usually does
    nothing. Compilation runs off the main thread against a null world, and a
    macro function reached with no arguments fails silently every tick,
    forever.
-5. [Advancements](systems/commands/advancements.md) — the game's
+6. [Advancements](systems/commands/advancements.md) — the game's
    general-purpose "tell me when the player does X", as a per-player
    subscription table that only ever shrinks. The tree is laid out on the
    server and shipped; the client is told the requirements and never the
    criteria.
-6. [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
+7. [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
    — one number per thing, one query language for any tag, and the
    `execute store` seam that joins them. One method override explains fake
    players, the tab list and renaming.
-7. [Dialogs](systems/commands/dialogs.md) — a data pack puts a form on your
+8. [Dialogs](systems/commands/dialogs.md) — a data pack puts a form on your
    screen, possibly before you are in a world at all, and the input values
    are read at the moment of the click rather than before it.
-8. [Game tests](systems/commands/game-tests.md) — the game's own test suite,
+9. [Game tests](systems/commands/game-tests.md) — the game's own test suite,
    as a data pack. The annotations are gone, a batch *is* an environment, a
    test can be written with no Java in it, and the shipped jar contains
    exactly one.
 
-Two and three are the pair that most changes how a viewer reads everything
-else, and two is the one an existing mod author most needs. Five, six, seven
-and eight each assume one through four and nothing else in this part.
+Two and four are the pair that most changes how a viewer reads everything
+else, and two is the one an existing mod author most needs; three sits
+between them because it needs the atom two defines and hands its fan-out to
+four. Six, seven, eight and nine each assume one through five and nothing
+else in this part.
 
 Part XIII assumes Part III's [server tick](systems/server/server-tick.md)
 twice over — command functions are the first thing the server does to its
@@ -541,10 +567,72 @@ a trigger's conditions are loot conditions.
 
 ## The dependencies between parts
 
-*Assembled by session P from the landing pages' "before you start" lists,
-with the figure of which part assumes which.* Two are already known from
-the pass-2 notebook: Part IX assumes the server tick's phase order (Part
-III) and the client's frame/tick interleave (Part X); and
-[environment attributes and timelines](systems/world/environment-attributes-and-timelines.md)
-in Part IV is assumed by a Part III page and by four later parts, so it is
-watched early.
+Every arrow below is a *before you start* entry on a landing page: the part
+at the tail is one the part at the head assumes, and not optionally. The
+two dependencies every part shares are left off the figure because they
+would touch every node — Part I's [anatomy](systems/anatomy/anatomy.md), for
+the threads every diagram's lanes are on, and Part II's
+[codecs](systems/foundations/codecs-nbt-json.md) and
+[registries](systems/foundations/identifiers-and-registries.md), assumed
+wherever something is written to disk, sent on the wire or looked up by
+name. Read a solid arrow as *watch before*.
+
+{{#include figures/parts-dependency.md}}
+
+The graph is a line with two knots in it, and the sidebar order is a valid
+walk through it: no solid arrow points at an earlier part. The two dashed
+arrows are the places where it does not hold, and each is cut on purpose
+rather than solved by reordering.
+
+**Part III assumes two pages of Part IV.** [The level
+tick](systems/server/server-level-tick.md) uses *entity-ticking* and
+*block-ticking* range, which [tickets and
+loading](systems/world/tickets-and-loading.md) owns, and its first statement
+about the day-night cycle rests on [environment attributes and
+timelines](systems/world/environment-attributes-and-timelines.md). The first
+is cut by definition — the level tick defines both ranges in two sentences
+before it uses them — and the second by order: the environment page depends
+on nothing but registries and codecs, so it is listed first in Part IV and
+is the one lecture worth watching before its part.
+
+**Part V and Part X assume each other.** The two click lectures in Part V
+are the applications of [prediction and
+acknowledgement](systems/client/prediction-and-acks.md), and that page's own
+scenario is a block placed against a wall, which needs Part V's vocabulary.
+The cut is at Part V: both click pages open with the same four-sentence
+statement of the ledger's contract, which is all either needs, and the
+machinery waits for Part X. Part VI states the same thing from its side —
+the player half of [authority](systems/entities/authority.md) is the
+ledger's foundation, not its consequence — so the whole of Parts V and VI is
+watched before that one Part X lecture.
+
+Nine pages carry most of the graph. A viewer who has watched these nine can
+take the parts they belong to in almost any order; a viewer who skips one of
+them will find a later part's first surprise unexplained.
+
+| the page | its part | the parts whose landing pages assume it |
+|---|---|---|
+| [The server tick](systems/server/server-tick.md) and [the level tick](systems/server/server-level-tick.md) | III | IV, V, VI, VII, VIII, IX, XIII — every part that lives on the Server thread, for *which phase* something ran in |
+| [Chunk anatomy](systems/world/chunk-anatomy.md) | IV | V, VI, XII — a block state's home, a ticking entity's chunk, and what terrain is written into |
+| [Tickets and loading](systems/world/tickets-and-loading.md) | IV | III, VI — what *entity-ticking* means |
+| [Environment attributes and timelines](systems/world/environment-attributes-and-timelines.md) | IV | III, VI, XI — the clock, the schedule, and the colour of the sky |
+| [Blocks and states](systems/blocks/blocks-and-states.md) | V | VI, VII — collision shapes, and how a chest is opened |
+| [Authority](systems/entities/authority.md) | VI | VIII, IX, X — the premise under every page about a player, and under *what the client is told* |
+| [Contexts and predicates](systems/items/contexts-and-predicates.md) | VII | XIII — an advancement trigger's conditions are loot conditions |
+| [The connection](systems/networking/the-connection.md) | IX | X, XIII — the thread boundary every packet crosses |
+| [The client loop](systems/client/the-client-loop.md) | X | XI, and IX's deeper version — the only page that says when a frame happens |
+
+Watched straight through, the sidebar order needs one departure from
+itself: *environment attributes and timelines* before *the level tick*. A
+viewer coming for one part rather than the whole book takes that part's
+*before you start* list as the order, and the three lectures most often
+worth taking out of order are named there — the environment page before
+Part III, *contexts and predicates* before Part XIII's advancements, and
+*the client loop* before Part XI.
+
+[What this book skips](systems/anatomy/what-this-book-skips.md) is the
+second lecture and not the last: it is the only page that states the
+series' boundary, and a boundary is drawn before the investment, not after.
+Part XIII's game tests are the closing lecture because they are the game's
+own answer to the question the whole book has been asking — how do you know
+what it does — and because nothing later depends on them.

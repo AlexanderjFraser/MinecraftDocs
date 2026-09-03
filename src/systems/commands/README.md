@@ -32,20 +32,20 @@ another.
 flowchart TB
     subgraph P["PARSE — a string becomes a call"]
         direction LR
-        L1["1 · Brigadier and commands"] --- L2["2 · Permissions"]
+        L1["1 · Brigadier and commands"] --- L2["2 · Permissions"] --- L2b["3 · Entity selectors"]
     end
     P --> X
     subgraph X["EXECUTE — the call becomes work on a queue"]
         direction LR
-        L3["3 · The execution engine"] --- L4["4 · Functions and macros"]
+        L3["4 · The execution engine"] --- L4["5 · Functions and macros"]
     end
     X --> U
     subgraph U["WHAT COMMANDS ARE FOR — four systems whose write surface is a command"]
         direction LR
-        L5["5 · Advancements"]
-        L6["6 · Scores, teams and stored data"]
-        L7["7 · Dialogs"]
-        L8["8 · Game tests"]
+        L5["6 · Advancements"]
+        L6["7 · Scores, teams and stored data"]
+        L7["8 · Dialogs"]
+        L8["9 · Game tests"]
     end
 ```
 
@@ -84,23 +84,27 @@ machine.
 2. [Permissions](permissions.md) — the biggest API break in the game since
    the flattening. A permission is no longer an integer, an operator does
    not have everything, and a permission failure is reported as a typo.
-3. [The execution engine](the-execution-engine.md) — a command engine with
+3. [Entity selectors](entity-selectors.md) — a selector is a compiled
+   query, and four of its twenty-one options are not filters but the query
+   plan. Why *@p* crosses dimensions, why *sort=nearest* is what takes your
+   *limit* away, and why one permission is checked twice.
+4. [The execution engine](the-execution-engine.md) — a command engine with
    no Java recursion. A fan-out that materialises one player at a time, and
    a `/return` that deletes work out of a queue rather than unwinding a
    stack.
-4. [Functions and macros](functions-and-macros.md) — what a `.mcfunction`
+5. [Functions and macros](functions-and-macros.md) — what a `.mcfunction`
    file becomes, in two steps, the second of which usually does nothing.
    The one that fails silently every tick, forever.
-5. [Advancements](advancements.md) — the game's general-purpose "tell me
+6. [Advancements](advancements.md) — the game's general-purpose "tell me
    when the player does X", built as a per-player subscription table that
    only ever shrinks. The tree is laid out on the server and shipped.
-6. [Scores, teams and stored data](scoreboard-and-data.md) — one number per
+7. [Scores, teams and stored data](scoreboard-and-data.md) — one number per
    thing, one query language for any tag, and the `execute store` seam that
    joins them. Why fake players exist.
-7. [Dialogs](dialogs.md) — a data pack puts a form on your screen, possibly
+8. [Dialogs](dialogs.md) — a data pack puts a form on your screen, possibly
    before you are in a world at all. The values are read at the moment of
    the click and not before.
-8. [Game tests](game-tests.md) — the game's own test suite, as a data pack.
+9. [Game tests](game-tests.md) — the game's own test suite, as a data pack.
    The annotations are gone, a batch *is* an environment, and the shipped
    jar contains exactly one test.
 
@@ -116,7 +120,8 @@ six type registries dialogs and tests dispatch on.
 sets an advancement trigger and an advancement reward run in.
 [Diagram lanes](../../reference/lanes.md) for the abbreviations these figures
 use, and [the glossary](../../reference/glossary.md) for *Brigadier*,
-*criterion*, *objective*, *macro*, *dialog* and *game test*.
+*selector head*, *world-limited*, *criterion*, *objective*, *macro*, *dialog*
+and *game test*.
 
 Where the part stops: what a command *does* once it has been dispatched is
 almost always another part's page, and

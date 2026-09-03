@@ -256,7 +256,8 @@ only for `NoiseBasedChunkGenerator`, under *wgen_fill_noise*, and applies the
 `FlatLevelSource` and `DebugLevelSource` return a completed future and stay
 inline. *SURFACE* and *CARVERS* run inline at write radius 0. *FEATURES*
 primes the four final heightmaps with `Heightmap.primeHeightmaps`, decorates,
-and calls `Blender.generateBorderTicks`.
+and calls `Blender.generateBorderTicks`
+([blending](../worldgen/blending.md)).
 
 *FEATURES* is the interesting one, because a tree at a chunk edge writes into
 a neighbour and nothing about that neighbour's status says it is safe. What

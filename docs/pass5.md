@@ -769,3 +769,99 @@ it lost a fight for space against the page's own story.
 - The glossary's owner links are one page each except *Component*,
   *Level*, *Render state*, *Tick*, *Quart* and *Submit node*, which point at
   two; a polish rule should say whether two is allowed.
+
+## Session P — The lecture order and the close *(2026-09-03)*
+
+The charter asked session P to check the distribution of page shapes ("if
+half the corpus chose the trace, the menu failed") and the *Questions
+players ask* device's spread (sessions J and M each flagged it in their
+part). Two agents classified all ninety-eight system pages by the menu's
+rubric — primary shape from the spine, secondary from the borrowed section,
+first figure's type, and whether the page ends on a questions section — and
+the session read their evidence lines against the pages' headings.
+
+**The menu held.** Primary shapes over ninety-eight pages: **trace 31 ·
+vocabulary 25 · pipeline 17 · comparison 10 · policy 7 · pattern 6 · state
+machine 2.** The trace is a plurality at just under a third, not the
+majority the risk named; the vocabulary page is the surprise at a quarter,
+and three of those (`tags`, `signal-and-dust`, `synched-entity-data`) lead
+with a figure that belongs to a different shape than their spine. The state
+machine is the least-used shape, and the two that exist are both in Part
+IX/X (`protocol-phases`, `prediction-and-acks`); Parts I–VII have none as a
+primary although three of their pages carry a `stateDiagram` as a secondary
+figure (`points-of-interest`, `entity-lifecycle`, `tickets-and-loading`).
+Pass 5 should ask, page by page, whether a secondary state diagram is the
+page's true picture.
+
+**The closing device did not hold.** Sixty-three of ninety-eight pages end
+on a questions section (sixty *Questions players ask* verbatim, three
+*Questions a reader asks*, one *Questions the pattern raises*, one
+*Questions a data-pack author asks*) and four more carry one that is not
+last (`what-the-client-is-told`, `the-client-level`, `advancements`,
+`the-execution-engine`). By part: I 1/2 · II 6/7 · III 2/5 · IV 10/10 ·
+V 7/7 · VI 3/9 · VII 2/8 · VIII 7/7 · IX 4/5 · X 8/12 · XI 6/10 · XII 8/8
+· XIII 3/8. Parts IV, V, VIII and XII use it on every page. This is a
+*device* become a *slot*, exactly the second-uniformity risk the charter
+named, and it happened for the reason session J gave: the section is the
+honest home for what used to be the invariants wall. **Rule of thumb for
+pass 5: at most half the pages in a part end on it**, and on the others
+the same question-and-answer material either dissolves into the section
+where the answer happens (session G's precedent — *Three things about the
+id*, *Why mobs look stupid*) or takes a heading that says what the section
+says.
+
+**Seven pairs of pages share a skeleton**, which the charter says means
+neither is done. Within one part: `server-tick` / `server-level-tick`
+(deliberate mirroring — the outer and inner loop — but the tables of
+contents are hard to tell apart); `starting-a-server` / `how-a-server-dies`
+(one skeleton run forwards and backwards); `chunk-generation-pipeline` /
+`chunk-storage` / `scheduled-ticks` (three pipelines: lead flowchart,
+per-stage sections, a named trace late, questions); `block-breaking` /
+`block-interaction` (both are applications of the same ledger and the
+shape does not distinguish them); `attributes` / `synched-entity-data`;
+`enchanting` / `using-an-item`; `biomes` / `features-and-placement` /
+`jigsaw-and-templates` (Part XII: cast → *The trace: X* → two or three
+detail sections → questions → where to look, only the nouns change);
+`the-spear` / `the-sword-swing`; `hud` / `options` / `input-and-keybinds` /
+`the-gui-render-tree`; `blaze3d` / `section-meshing` / `the-frame` /
+`the-window`. Across parts: `data-components` / `text-components` /
+`items-and-stacks` (one skeleton three times), and `the-client-loop` /
+`the-frame` (one turn of a loop, zones named, what falls off the end — kept
+apart mainly by one being a flowchart and the other a sequence). Pass 5
+varies one of each pair; the shape need not change, the skeleton must.
+
+**The literal heading `## The trace: …` is on twelve pages** in four
+parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
+`the-sword-swing`, `the-two-phase-tick`, `biomes`,
+`features-and-placement`, `hand-built-structures`, `jigsaw-and-templates`,
+`advancements`, `dialogs`, `game-tests`, `scoreboard-and-data`), which is
+a template slot's name and breaks the *headings say what the section
+says* rule from `TEMPLATE.md`. Each wants the scenario as its heading.
+
+**Two structural outliers**, for the same sweep: `functions-and-macros`
+has no cast table (it opens on *The pipeline*), and `hand-built-structures`
+buries its cast inside *The idea* — both differ from every other page in
+their part, and either is fine if it is deliberate.
+
+**Wording debt from the four session-P pages.** All four were drafted by
+Opus agents against the shared brief and accepted after the session
+re-derived their sharpest claims; none was cut. `block-entity-rendering`
+(332 lines) is a comparison whose three-column table is the figure and
+whose *why* column on the view-distance table is editorial — pass 5 should
+decide whether an inferred reason belongs in a table cell; its
+1.21-reader blockquote is eleven lines, the longest in the corpus.
+`entity-selectors` (313 lines) ends on *Questions a command author asks*,
+the fourth spelling of the device; its twenty-one-row option table is
+under budget only because three rows fold *x, y, z* and *dx, dy, dz* and
+the rotations together. `blending` (346 lines, the longest of the four and
+over the brief) ends on *Questions players ask* — Part XII is now 9 of 10
+on the device — and its opening paragraph carries two numbers ("roughly a
+hundred blocks", "a hundred and ninety-three") before the reader knows what
+a column is; consider moving the 193 down to the *Two maps* paragraph
+where it is explained. `creating-a-world` (300 lines) has a
+three-column comparison table whose *Re-Create* column is the argument;
+the paragraph after the sequence diagram ("Three details in that order are
+worth stopping on") is a list in prose clothing and could be three
+bold-led paragraphs. All four use the *For a 1.21-era reader* blockquote;
+none uses the myth table; three carry a *Questions* closer, so the
+session's own pages score 3 of 4 on the device it just flagged.

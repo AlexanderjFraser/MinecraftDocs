@@ -45,13 +45,15 @@ flowchart TD
         MESH["Section meshing"]
         MOD["Models and atlases"]
         ENT["Entity rendering"]
+        BEN["Block-entity rendering"]
         SKY["Lightmap, fog and sky"]
         PART["Particles"]
         POST["Post-processing"]
         VIS -- "the sections it decided to draw" --> MESH
         MESH -- "the quads a section is made of" --> MOD
         MOD -- "the same atlases, a different pipeline" --> ENT
-        ENT -- "and every draw needs a colour" --> SKY
+        ENT -- "and the things that are neither terrain nor entity" --> BEN
+        BEN -- "and every draw needs a colour" --> SKY
         SKY -- "plus the quads that are not geometry" --> PART
         PART -- "then the finished picture, read back" --> POST
     end
@@ -111,35 +113,43 @@ ways `LevelExtractor` is reached.
 7. [Entity rendering](entity-rendering.md) — everything in the world that is
    not terrain, in four stages, none of which is called *render*. The zombie
    is animated at least twice per frame.
-8. [Lightmap, fog and sky](lightmap-fog-and-sky.md) — what colour all of it
+8. [Block-entity rendering](block-entity-rendering.md) — the same four
+   stages with three differences that show. A chest's block model is empty,
+   a block entity is culled by its section rather than by the frustum, and
+   the chest in your hand is drawn by a different renderer at a different
+   partial tick.
+9. [Lightmap, fog and sky](lightmap-fog-and-sky.md) — what colour all of it
    is. One question asked five times over, by renderers that mostly no
    longer know what time it is.
-9. [Particles](particles.md) — the part's policy page: five gates that
-   disagree with each other, and a break puff that passes through none of
-   them.
-10. [Post-processing](post-processing.md) — the closer. Six JSON-declared
+10. [Particles](particles.md) — the part's policy page: five gates that
+    disagree with each other, and a break puff that passes through none of
+    them.
+11. [Post-processing](post-processing.md) — the closer. Six JSON-declared
     shader chains, which is how the pause-menu blur and the creeper
     spectator shader turn out to be the same machine — and a resource pack
     can rewrite all six and add none.
 
 Four and five are a pair — they were one page until this pass, and they are
-still one journey seen from its two ends. One to three can be watched in
+still one journey seen from its two ends — and so are seven and eight, the
+second of which is written as the differences from the first. One to three can be watched in
 order or in the order one, three, two; the window is the page a viewer is
 most likely to skip and least likely to regret.
 
 ## Reference this part uses
 
 [Submit phases and feature renderers](../../reference/submit-phases.md) is
-the catalogue behind [entity rendering](entity-rendering.md): the fifteen
-phases a submitted feature can land in, in declaration order, and the
-thirteen renderers that write the vertices. [Diagram
+the catalogue behind [entity rendering](entity-rendering.md) and
+[block-entity rendering](block-entity-rendering.md): the fifteen phases a
+submitted feature can land in, in declaration order, and the thirteen
+renderers that write the vertices. [Diagram
 lanes](../../reference/lanes.md) for the abbreviations these figures use, and
 [the threads](../../reference/threads.md) for the two that matter here — the
 one the whole part runs on, and the background pool that meshes sections.
 [Naming drift](../../reference/naming-drift.md) is worth having open for this
 part in particular: no area of the game was renamed harder between 1.21 and
 26.2. [The glossary](../../reference/glossary.md) for *extract*, *render
-state*, *frame graph*, *chunk layer*, *partial tick* and *atlas*.
+state*, *frame graph*, *chunk layer*, *partial tick*, *atlas*, *special
+model renderer* and *built-in block model*.
 
 Where the part stops: what draws *over* the world rather than in it — screens,
 the HUD, the render tree they record into and the text inside them — is Part

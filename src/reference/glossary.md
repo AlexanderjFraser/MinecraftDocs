@@ -70,6 +70,14 @@ in the End — off a single erosion sample. → [biomes](../systems/worldgen/bio
 **Blaze3D** — Mojang's GPU abstraction, with OpenGL and Vulkan backends
 behind one `GpuDevice`. → [Blaze3D](../systems/rendering/blaze3d.md)
 
+**Blend alpha** — the mixing weight `Blender` computes from the distance to
+the nearest measured old column: zero against the seam (use the old
+measurement), one out of range (use the noise). → [blending at the old-chunk border](../systems/worldgen/blending.md)
+
+**Blending data** — the sixteen-column ring of heights, densities and
+biomes a `BlendingData` measures out of an old chunk's blocks; its presence
+on a chunk is what makes the chunk old. → [blending at the old-chunk border](../systems/worldgen/blending.md)
+
 **Block** — the singleton describing a kind of block: its behaviour, its
 property set and its state table. One `Block`, many `BlockState`s. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
@@ -84,11 +92,20 @@ mirrored to nearby clients as a packet. → [pistons and block events](../system
 **BlockState** — one immutable combination of a block's properties,
 interned in `Block.BLOCK_STATE_REGISTRY` and compared by identity. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
+**Border tick** — a position along an old chunk's seam queued for
+post-processing, so a leaf or a fluid there is re-evaluated when the chunk
+goes live. → [blending at the old-chunk border](../systems/worldgen/blending.md)
+
 **Brain** — the memory-and-behaviour AI used by villagers, piglins and
 axolotls, as opposed to the older goal system. → [AI](../systems/entities/ai-goals-and-brains.md)
 
 **Brigadier** — Mojang's command-parsing library: a tree of literal and
 argument nodes with per-node requirements, shared by client and server. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
+
+**Built-in block model** — a block model attached in code by
+`BuiltInBlockModels` rather than by a resource pack, living in a second
+model table that terrain never reads; how a minecart or a block display
+draws a chest. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
 
 ## C
 
@@ -118,6 +135,10 @@ erosion, depth, weirdness) a biome is chosen by. → [biomes](../systems/worldge
 
 **Codec** — a DataFixerUpper object that both encodes and decodes one type
 against any `DynamicOps`; the corpus's universal serialisation vocabulary. → [codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md)
+
+**Compiled query** — the immutable `EntitySelector` a parse produces:
+thirteen fields, no reader and no grammar, resolvable any number of times
+against different sources. → [entity selectors](../systems/commands/entity-selectors.md)
 
 **Component** — two different things the corpus keeps apart: a *data
 component* on an item stack, and a `Component` of chat text. → [data components](../systems/foundations/data-components.md), [chat and signing](../systems/networking/chat-and-signing.md)
@@ -184,6 +205,10 @@ owning thread that drains posted tasks in its spare time and, through
 `BlockableEventLoop.managedBlock`, keeps draining while it waits on a
 future. `Minecraft` and `MinecraftServer` are both one. → [the server tick](../systems/server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)
 
+**Experiment** — a built-in data pack whose `PackSource` is
+`PackSource.FEATURE`, enabling one non-vanilla `FeatureFlag`; switching one
+on in the create-world screen is a data-pack reload. → [creating a world](../systems/worldgen/creating-a-world.md)
+
 **Extract** — the first half of the client's frame: walk the game state on
 the game thread and write the render states, so that the drawing half
 touches no game object. A state is written once per frame and not touched
@@ -194,6 +219,10 @@ fresh immutable values. → [the frame](../systems/rendering/the-frame.md)
 
 **Feature** — the algorithm half of decoration: what to build, with no
 opinion about where. → [features and placement](../systems/worldgen/features-and-placement.md)
+
+**Flat level generator preset** — a `FlatLevelGeneratorPreset`: a display
+item plus a `FlatLevelGeneratorSettings`, one row of the Superflat *Presets*
+screen. → [creating a world](../systems/worldgen/creating-a-world.md)
 
 **Font** — a resource-pack-defined glyph source plus the measuring and
 wrapping API on top of it; a glyph is baked into a texture the first time it
@@ -221,6 +250,11 @@ with the world and sometimes sent to the client. → [level data and rules](leve
 
 **Game test** — a data-driven test instance: a structure, an environment
 and a check the server runs and reports on. → [game tests](../systems/commands/game-tests.md)
+
+**Globally-rendered block entity** — one whose renderer says
+`BlockEntityRenderer.shouldRenderOffScreen`, so the client keeps it in a
+level-wide set and draws it whether or not its section is visible; three
+renderers qualify. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
 
 **Goal** — one unit of the older mob AI: a priority, a start condition, and
 the set of controls it claims while running. → [AI](../systems/entities/ai-goals-and-brains.md)
@@ -327,6 +361,11 @@ installs the caches the density-function graph asked for. → [density functions
 number format. Almost all of them are written only by commands; a handful are
 driven by the game itself. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
 
+**Old chunk** — a chunk whose `ChunkAccess.blendingData` is non-null, which
+is to say one whose save data carried a *blending_data* compound;
+`ChunkAccess.isOldNoiseGeneration` is the test. → [blending at the old-chunk border](../systems/worldgen/blending.md)
+
+
 ## P
 
 **Packet** — a record with a `PacketType` and a `StreamCodec`, valid in one
@@ -418,6 +457,10 @@ engine's own storage, not on the section. → [chunk anatomy](../systems/world/c
 **Section mesh** — the compiled vertex buffers for one section, rebuilt off
 the main thread when the section is both dirty and visible. → [section meshing](../systems/rendering/section-meshing.md)
 
+**Selector head** — the single character after the *@* (*a*, *e*, *n*,
+*p*, *r*, *s*) that sets a selector's default limit, order, entity scope and
+type before any option is read. → [entity selectors](../systems/commands/entity-selectors.md)
+
 **Sensor** — the half of brain AI that writes memories from the world, on a
 fixed interval. → [AI](../systems/entities/ai-goals-and-brains.md)
 
@@ -429,6 +472,10 @@ that runs on both client and server, unlike a neighbour update. → [blocks and 
 
 **Signed message** — a chat message carrying a signature over its content
 and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md)
+
+**Special model renderer** — a hand-written submitter for a shape no cuboid
+model can express, reached from an item model or a block state rather than
+from a block entity; thirteen of them. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
 
 **StreamCodec** — the wire counterpart of a `Codec`: encodes to and decodes
 from a `ByteBuf`, with no schema and no field names. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md)
@@ -492,6 +539,22 @@ through. → [the window](../systems/rendering/the-window.md)
 
 **World clock** — the counter a timeline is sampled against; there is more
 than one, and they do not all advance at the same rate. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md)
+
+**World gen settings** — `WorldGenSettings`: the seed and the map of
+dimensions, a `SavedData` written to *data/world_gen_settings.dat*, and the
+input every Part XII page reads. → [creating a world](../systems/worldgen/creating-a-world.md)
+
+**World preset** — a `WorldPreset` registry entry holding one `LevelStem`
+per dimension; what the world-type button selects, and what *level-type*
+names on a dedicated server. → [creating a world](../systems/worldgen/creating-a-world.md)
+
+**World stem** — `WorldStem`, the four things a `MinecraftServer` is
+constructed from: the resource manager, the reloadable server resources,
+the layered registries, and the level data with its gen settings. → [creating a world](../systems/worldgen/creating-a-world.md)
+
+**World-limited** — a parse-time flag, set by any of seven positional
+selector options, that confines a selector's resolve to the source's own
+level instead of every level on the server. → [entity selectors](../systems/commands/entity-selectors.md)
 
 **WorldGenRegion** — the bounded, write-guarded view of the world a
 generation step is given; it throws rather than loading a chunk, which is

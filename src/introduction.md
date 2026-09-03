@@ -69,7 +69,14 @@ east across a chunk boundary; a server is clicked in the list) and its
 figure is the artefact — a sequence diagram whose lanes are class names, a
 state machine, a flowchart of a decision. Every diagram enlarges on click.
 Each part only assumes the ones before it, and the
-[lecture map](lectures.md) says where that is not quite true.
+[lecture map](lectures.md) says where that is not quite true. The picture
+below is the whole of that: an arrow is *watch before*, the two shared
+foundations — Part I for the threads, Part II for codecs and registries —
+are left off because they would touch every box, and the two dashed arrows
+are the only places a part reaches forward, each cut by a definition rather
+than a reordering.
+
+{{#include figures/parts-dependency.md}}
 
 **Maps** are looked at once. The [atlas](maps/README.md) is four figures
 generated from the decompile on every build — [where the code
@@ -111,14 +118,17 @@ it is one version: 26.2. There are no version-difference sections and no
 "in 1.x this was". When a release lands, every page is re-read against it.
 
 **Verified means tested.** Every backticked name on every page is checked
-against the decompile before the site publishes, and every diagram is
-parsed by the same mermaid the site ships. A page that fails either check
-does not go up. That is a narrow guarantee, and it is worth stating
-narrowly: it proves the names are real and current in 26.2, not that the
-sentence around them is true. The sentences are what the passes are for.
+against the decompile before the site publishes, every diagram is parsed
+by the same mermaid the site ships, and every lane in every diagram is
+checked against the one [key](reference/lanes.md) the whole book uses. A
+page that fails any of the three does not go up. That is a narrow
+guarantee, and it is worth stating narrowly: it proves the names are real
+and current in 26.2, not that the sentence around them is true. The
+sentences are what the passes are for.
 Every claim has been fact-checked against the decompile once; the pages
-being restructured now are queued for a second check; and anything still
-wrong is a correction waiting to be filed.
+were then restructured into the book you are reading, and a second check
+over all of them is the pass in progress; anything still wrong is a
+correction waiting to be filed.
 
 **How the system works, not how the code reads.** Object-level: this class
 owns that state, this call happens on that thread, this packet is sent

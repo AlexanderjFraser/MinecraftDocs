@@ -18,11 +18,14 @@ a one-word class as itself, and a few words for things that are not classes.
 | `AttrI` | `AttributeInstance` |
 | `AttrM` | `AttributeMap` |
 | `BC` | `BuildContexts` |
+| `BD` | `BlendingData` |
 | `BDR` | `BrainDebugRenderer` |
 | `BEL` | `BlockableEventLoop` |
+| `BERD` | `BlockEntityRenderDispatcher` |
 | `BI` | `BucketItem` |
 | `BIR` | `BuiltInRegistries` |
 | `BLE` | `BlockLightEngine` |
+| `Blender` | `Blender` |
 | `Block` | `Block` |
 | `Boot` | `Bootstrap` |
 | `BowI` | `BowItem` |
@@ -47,6 +50,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `ChatC` | `ChatComponent` |
 | `CHelp` | `ContainerHelper` |
 | `ChestM` | `ChestMenu` |
+| `ChestR` | `ChestRenderer` |
 | `CHPL` | `ClientHandshakePacketListenerImpl` |
 | `ChunkG` | `ChunkGenerator` |
 | `CI` | `CraftingInput` |
@@ -70,12 +74,14 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CS` | `ComponentSerialization` |
 | `CScr` | `ChatScreen` |
 | `CSP` | `ClientSuggestionProvider` |
+| `CSR` | `ChestSpecialRenderer` |
 | `CST` | `ChunkStatusTasks` |
 | `CSug` | `CommandSuggestions` |
 | `CSync` | `ContainerSynchronizer` |
 | `CT` | `CombatTracker` |
 | `CTD` | `ChunkTaskDispatcher` |
 | `CU` | `ComponentUtils` |
+| `CWS` | `CreateWorldScreen` |
 | `DataC` | `DataCommands` |
 | `DB` | `DoorBlock` |
 | `DCP` | `DataComponentPatch` |
@@ -134,6 +140,8 @@ a one-word class as itself, and a few words for things that are not classes.
 | `Hud` | `Hud` |
 | `ICT` | `InventoryChangeTrigger` |
 | `Ignite` | `Ignite` |
+| `IIHR` | `ItemInHandRenderer` |
+| `IMR` | `ItemModelResolver` |
 | `Inv` | `Inventory` |
 | `InvS` | `InventoryScreen` |
 | `IOW` | `IOWorker` |
@@ -196,6 +204,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `MTS` | `MoveToTargetSink` |
 | `NBC` | `NoiseBasedChunkGenerator` |
 | `NbtIo` | `NbtIo` |
+| `NC` | `NoiseChunk` |
 | `NE` | `NodeEvaluator` |
 | `NS` | `NaturalSpawner` |
 | `PA` | `PlayerAdvancements` |
@@ -319,9 +328,11 @@ a one-word class as itself, and a few words for things that are not classes.
 | `VSL` | `VibrationSystem.Listener` |
 | `VST` | `VibrationSystem.Ticker` |
 | `WB` | `WorldBorder` |
+| `WCUS` | `WorldCreationUiState` |
 | `WGL` | `WorldGenLevel` |
 | `Window` | `Window` |
 | `WL` | `WorldLoader` |
+| `WOF` | `WorldOpenFlows` |
 | `WR` | `WorldgenRandom` |
 | `WS` | `WorldStem` |
 | `ZM` | `ZombieModel` |

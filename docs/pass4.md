@@ -22,11 +22,26 @@ entry first.
   dependency: check that every *before you start* link is actually assumed
   by the part, and that nothing earlier depends on something later.
 - Every redrawn diagram: arrow by arrow, and every tick-boundary bar.
-- The generated Reference views pass 3 adds (serializers, attributes, the
-  glossary if generated): re-derive one sample by hand per view — pass 2
-  found bugs in both generators, and one had reached the prose.
-- The lane key in `TEMPLATE.md`: every lane's expansion is a class that
-  exists. (If session A writes a lane linter, strike this.)
+- The eight generated Reference views (pass 3 added serializers,
+  attributes, enchantment hooks and loot-context sets to the four pass 2
+  had; the glossary stayed hand-kept): re-derive one sample by hand per
+  view — pass 2 found bugs in both generators, and one had reached the
+  prose.
+- ~~The lane key in `TEMPLATE.md`: every lane's expansion is a class that
+  exists.~~ `tools/check_lanes.py` checks it on every deploy, `--strict`
+  corpus-wide since session P.
+- **Every count is re-counted** (session P's addition 4 in the charter):
+  pass-3 sessions K, L, M and N each found a wrong count while redrawing a
+  page, three of them load-bearing. Session N of pass 4 is a corpus-wide
+  count sweep with one brief.
+- **The four session-P pages have never been checked** —
+  `rendering/block-entity-rendering`, `commands/entity-selectors`,
+  `worldgen/blending`, `worldgen/creating-a-world`. Their claims lists are
+  under session P's entry; they get pass 2's completeness question too.
+- **The parts-dependency figure** (`src/figures/parts-dependency.md`,
+  included by the introduction and `lectures.md`) and the dependency table
+  on `lectures.md` are claims: every arrow is a landing page's *before you
+  start* entry, and every entry must be used by a sentence in the part.
 - Pass 2's twelve lessons apply unchanged; the shape to watch remains the
   confident sentence — orderings, "only", "never", counts, and "X, not Y".
 - **Library facts are checkable now and were not in pass 2.**
@@ -37,16 +52,441 @@ entry first.
   `DataResult` partials, `MapCodec`, `Lifecycle`), `protocol-phases` and
   `players-and-sessions` (authlib's session-server round trip),
   `chat-and-signing` (profile keys and signature validation),
-  `brigadier-and-commands`, `execution-and-functions` and
-  `scoreboard-and-data` (parse, suggestions, `ContextChain`, the result
+  `brigadier-and-commands`, `the-execution-engine`, `functions-and-macros`
+  and `scoreboard-and-data` (parse, suggestions, `ContextChain`, the result
   consumer), `models-and-atlases` and `text-and-fonts` (the atlas and font
-  JSON), and whatever pass 3 writes about post-processing.
+  JSON), and `post-processing` (the six chains' JSON).
 - **The `execute store` question** on `scoreboard-and-data` — what a failing
   ordinary leaf command writes — is now answerable from Brigadier 1.3.10;
   settle it and remove the page's "cannot be settled from the decompile"
   note.
 
 ## Entries
+
+## Session P — The lecture order and the close *(2026-09-03)*
+
+Session P wrote no part; it wrote the lecture map's dependency section and
+the parts-dependency figure, four coverage pages, and one sentence or link
+on each of eleven sibling pages. Everything below is new to the corpus and
+has been checked once by the session and never by an adversary.
+
+### `lectures.md` and `src/figures/parts-dependency.md` — claims about order
+
+- **Every solid arrow in the figure is a landing page's *before you start*
+  entry**, and the section says so; check each of the twenty-two arrows
+  against the landing page it came from, and each landing-page entry
+  against a sentence in the part that uses it (the charter's addition 2).
+  The two omitted foundations (Part I anatomy, Part II codecs and
+  registries) are asserted to be assumed by every part.
+- **"No solid arrow points at an earlier part"** — true by construction of
+  the figure; the claim to check is that no landing page lists a later
+  part's page that the figure left out. Candidates: Part IX names *the
+  client loop* (Part X) as "the deeper version" and the session drew that
+  as no arrow.
+- **The two dashed arrows**: Part III → Part IV (tickets and loading; the
+  environment page), cut "by definition" — `server-level-tick.md` defines
+  entity-ticking and block-ticking range before using them — and "by
+  order"; Part X → Part V (prediction), cut at Part V by the two identical
+  preambles. Both restate landing-page rulings by sessions D/E and F/K.
+- **The nine-page table**: each row's "parts whose landing pages assume it"
+  was read off the landing pages by the session; re-derive the column by
+  grep. In particular: *environment attributes* ← III, VI, XI (Part X's
+  `what-makes-a-sound` also names it and Part X's landing page does not);
+  *the connection* ← X, XIII; *chunk anatomy* ← V, VI, XII.
+- **"Watched straight through, the sidebar order needs one departure from
+  itself"** — that the environment page is the only backward dependency a
+  straight viewer meets.
+- **The Part I ruling**: *what this book skips* second, game tests last
+  "because nothing later depends on them" — check that no landing page
+  assumes `game-tests`.
+- The intro sentence "Nothing in Reference is watched, and nothing in the
+  maps is" — check no landing page lists a Reference page in *watch in this
+  order* (session O's note).
+
+### `rendering/block-entity-rendering.md` — new, 332 lines, comparison
+
+Drafted by an agent from the decompile; the session re-derived the 26
+registrations against 49 `BlockEntityTypes` and the 13 `ID_MAPPER.put`
+calls (`grep -c`), the 0.3 fade gate (`LevelExtractor.java:274`), the
+equality gate in `BlockEntityRenderDispatcher.tryExtractRenderState`, the
+frozen partial tick (`DeltaTracker.getGameTimeDeltaPartialTick` returns 1.0
+when frozen and not ignored; `Camera.getCameraEntityPartialTicks` passes
+`true`; `GameRenderer.extract` passes `false`), and the three Christmas
+implementations (`ChestRenderer` constructor, `IsXmas`, *items/chest.json*'s
+*local_time*). Everything else is the agent's evidence. Paths relative to
+`reference/26.2/net/minecraft/client/`.
+
+- **The hook**: "the two are drawn at different partial ticks and only one
+  of them respects the freeze" — `renderer/GameRenderer.java:407, 416`,
+  `renderer/extract/LevelExtractor.java:175, 262` (one world partial tick
+  for every block entity); `LevelExtractor.java:222` (per-entity
+  `isEntityFrozen`); `Camera.java:138-140`; `GameRenderer.java:619`;
+  `world/TickRateManager.java:72-74` (never freezes a `Player`).
+  Session-confirmed the three partial-tick sources; "keeps swaying with
+  your view bob" is the agent's phrasing of the consequence.
+- Counts: 26 of 49 (`BlockEntityRenderers.java` static block;
+  `BlockEntityTypes.java`); 24 renderer classes (`ChestRenderer` serves
+  three types); the other 23 include FURNACE, HOPPER, BARREL, BEEHIVE; 26
+  state classes (27 files with `package-info`); `BedRenderState` the only
+  orphan (corpus grep); 13 special renderers under 13 ids; nine implement
+  `NoDataSpecialModelRenderer`; eleven import `renderer/blockentity` (all
+  but Trident and CopperGolemStatue); three hold a block-entity renderer
+  instance (Banner, DecoratedPot, ShulkerBox); `getViewDistance` overridden
+  in five files so nineteen take the default 64
+  (`blockentity/BlockEntityRenderer.java:27`); `shouldRenderOffScreen`
+  overridden in exactly three (`BeaconRenderer.java:128`,
+  `BlockEntityWithBoundingBoxRenderer.java:172`,
+  `TestInstanceRenderer.java:77`); five states carry another pipeline's
+  snapshot (Spawner, Shelf, Campfire, BrushableBlock, Vault).
+- Orderings and mechanism: never frustum-tested (`LevelExtractor.java:262-300`
+  vs `isEntityVisible` 242-256); fade zeroed within √768 ≈ 27.7 blocks or
+  for a previously empty section (`renderer/LevelRenderer.java:588-606`;
+  ramp `renderer/chunk/SectionRenderDispatcher.java:253-257`); the chest
+  contributes zero quads and adds itself to the section's list
+  (`renderer/chunk/SectionCompiler.java:83-88, 97-98`;
+  *blockstates/chest.json* → *models/block/chest.json*, particle only);
+  **two model tables** (`resources/model/ModelManager.java:91, 95, 110,
+  326-327`; `SectionCompiler.java:36`; `renderer/block/BlockModelResolver.java:19-22`)
+  and `BlockModelResolver`'s callers are all entity renderers (ten named)
+  — note `BlockEntityRendererProvider.Context` carries a
+  `blockModelResolver` no block-entity renderer uses; the equality gate
+  (`ClientLevel.java:199-206`; `BlockEntityRenderDispatcher.java:68`);
+  `BlockEntityRenderer.shouldRender` is a centre-distance test (31-33) vs
+  `EntityRenderer.java:66-70` and `Entity.java:2158-2174`; beacon
+  horizontal-only (`BeaconRenderer.java:137-140`), view distance = render
+  distance × 16 (132-135), `beamRadiusScale` and the scoping reset (47-51),
+  `MAX_RENDER_Y = 2048` (25); distances 68 / 96 / 256 / max-of-two
+  (`PistonHeadRenderer.java:93-95`, `BlockEntityWithBoundingBoxRenderer.java:176-178`,
+  `TheEndGatewayRenderer.java:55-57`, `TestInstanceRenderer.java:82-84`);
+  no `finalizeRenderState` counterpart (`BlockEntityRenderer.java` vs
+  `EntityRenderer.java:162-172, 313`); the base state five fields
+  (`state/BlockEntityRenderState.java:16-20, 27-34`);
+  `MovingBlockRenderState` holds the light engine by reference
+  (`PistonHeadRenderer.java:86-90`; `entity/state/FallingBlockRenderState.java`);
+  `AbstractSignRenderer` calls `Font.split` in submit (53); the spawner
+  overwrites the display entity's light (`TrialSpawnerRenderer.java:43-44`);
+  the pose pre-translated (`LevelRenderer.java:653-659` vs 634-639); the
+  held chest in `handAndScreenSubmitNodeStorage`
+  (`GameRenderer.java:367-386, 619-622`); a layer has quads or a special
+  renderer, never both (`item/ItemStackRenderState.java:242-253`).
+- The Christmas triple: `ChestRenderer.java:46-56` and
+  `BlockEntityRenderDispatcher.java:101-105` (constructor runs only on
+  reload); *items/chest.json* and `renderer/item/properties/select/LocalTime.java:25`
+  (`UPDATE_INTERVAL_MS`); `BuiltInBlockModels.createXmasChest`,
+  `block/model/properties/conditional/IsXmas.java`,
+  `ConditionalBlockModel.java:22-25`. **"Two of the three notice midnight
+  almost at once. The one you are standing in front of does not"** is the
+  page's most inference-shaped sentence; check it hardest.
+- Editorial: the *why* column of the view-distance table (68 = "a moving
+  block starts outside the block it is drawn from"; the structure block;
+  the gateway) is the agent's reasoning, not a source comment.
+- **Unsettled by the agent**: whether the 0.3 gate is observable at the
+  default *chunk section fade-in time*; whether `EnchantTableRenderer`'s
+  book and `BuiltInBlockModels.createEnchantingTable`'s `BookSpecialRenderer`
+  can both draw for one object; whether a block entity added before the
+  first resource reload can be permanently excluded from the global set
+  (`ClientLevel.onBlockEntityAdded` with a null renderer).
+- **Where the queue entry and session L were wrong**: "26 render states"
+  is a file count and 25 are reachable; the territory is ~4,300 lines
+  (3,353 + 973), not ~3,300; the extract/submit split is *shorter* than the
+  entity side (no finalize); `renderer/special` is reached by two roads
+  (item model and block state via `SpecialBlockModelWrapper` in a table
+  terrain never reads), which no page said; "a stricter visibility rule
+  enforced twice" conflated the section walk + fade + flat radius with the
+  off-screen flag's double-draw guard.
+- Siblings: `entity-rendering.md`'s *Block entities* paragraph cut to one
+  sentence and a link; `block-entities.md` (Part V) and
+  `models-and-atlases.md` gained a link each.
+
+### `commands/entity-selectors.md` — new, 313 lines, pipeline with a policy figure
+
+Drafted by an agent from the decompile; the session re-derived the seven
+`setWorldLimited` callers and the twenty-one `register` calls
+(`grep -c`), the box rule in `EntitySelectorParser.getSelector`, the six
+heads' `selectOnlyAlive` / `includesEntities` settings, the linear player
+walk in `EntitySelector.findPlayers`, and the seven reads of
+`Permissions.COMMANDS_ENTITY_SELECTORS` plus the one grant. Everything else
+is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
+
+- **The hook**: "*@p* is not 'the nearest player in this world' … chosen
+  from the list of everybody on the server" — case `'p'` sets no
+  `worldLimited` (`EntitySelectorParser.java:274-279`); `findPlayers` with
+  `isWorldLimited()` false walks `PlayerList.getPlayers()`
+  (`EntitySelector.java:240-254`); `ORDER_NEAREST` is `distanceToSqr` with
+  no dimension term (`EntitySelectorParser.java:64-68`). Session-confirmed
+  the walk; the "raw x, y, z" wording is the agent's.
+- Counts: twenty-one names (`EntitySelectorOptions.bootStrap` 92-615);
+  seven world-limiting options (lines 117, 138, 144, 150, 156, 162, 168);
+  three always-available options *tag*, *nbt*, *predicate* (393, 428, 613);
+  four `SetOnceOptionState` options *limit*, *sort*, *scores*,
+  *advancements* (`EntitySelectorParser.java:106-112`); thirty-two parser
+  fields; thirteen `EntitySelector` fields (57-69, constructor 71); five
+  classes and 1,717 lines — **excludes two `package-info.java` stubs**; the
+  atlas convention would say seven files and 1,725 lines, and pass 4 should
+  pick one convention for the corpus; seven reads of the permission
+  (`EntityArgument.java:134`, `GameProfileArgument.java:87`,
+  `MessageArgument.java:101`, `ScoreHolderArgument.java:41`,
+  `EntitySelector.java:108`, `EntitySelectorParser.java:130, 143`) and the
+  grant at `LevelBasedPermissionSet.java:20`; eight `EnderDragonPart`
+  sub-entities (`EnderDragon.java:100-108`).
+- Orderings: `finalizePredicates` adds rotation and level tests last
+  (190-214, called at 525); `EntitySelector.getPredicate` appends
+  feature-flag, exact box, range in that order (265-300); `Util.allOf`
+  evaluates in order and short-circuits, so the range test runs after an
+  *nbt* comparison; `EntitySelectorOptions.get` (628-638) refuses a
+  repeated option before its handler runs (`parseOptions:379`).
+- Only/never: six heads and the default throws (239-293); only *@e* and
+  *@n* add `isAlive` (266, 272, applied 295); `LivingEntity.isAlive`
+  (1848-1850) vs `Entity.isAlive` (2386-2388); **no index by entity type**
+  (`world/level/entity/EntityLookup.java:23-37` iterates `byId.values()`
+  with `EntityTypeTest.tryCast`); **players never get a box**
+  (`EntitySelector.java:207-259`; `ServerLevel.getPlayers` 995-1012 is a
+  linear walk); the three vanilla commands with a selector-capable argument
+  and no `requires` — `MsgCommand`, `EmoteCommands`, `TeamMsgCommand` — from
+  46 files under `server/commands/` naming the four argument types;
+  `MessageArgument` treats refusal as formatting (139-142) and swallows only
+  `ERROR_MISSING_SELECTOR_TYPE` / `ERROR_UNKNOWN_SELECTOR_TYPE` (156-163);
+  `EntitySelector.usesSelector` set only by `parseSelector` (229);
+  `COMPILABLE_CODEC` compiles with selectors unconditionally allowed
+  (45-55); `ServerStatusPinger`'s `ResolutionContext` has no source
+  (`client/multiplayer/ServerStatusPinger.java:51-53`;
+  `SelectorContents.java:33-36` returns empty); all five classes in
+  `server-classes.txt`; the name `EntitySelector` used twice
+  (`world/entity/EntitySelector.java`).
+- X-not-Y: `getResultLimit` returns the parsed limit only for arbitrary
+  order (192-194), consumed at 180 and 235; the box path offers
+  `EnderDragon.getSubEntities()` (`Level.java:602-635`) and the walk does
+  not (`ServerLevel.java:978-989`); the two structures behind
+  `LevelEntityGetterAdapter`; *dx=0* is one block wide and the cube for 8
+  spans −8 to +9 (`createAabb:176-188`, `getSelector:148-156`); the delta
+  branch beats *distance* (148); *distance=8..* gives no box (150);
+  `MinMaxBounds.Doubles.matchesSqr` compares squares
+  (`advancements/predicates/MinMaxBounds.java:231, 261`);
+  `InvertableSetOptionState`'s two terminal states; `EntityArgument`
+  rejects on shape at parse time with *@s* exempt (107-124);
+  `EntityArgument.listSuggestions` (128-146) and
+  `ClientSuggestionProvider.getSelectedEntities` (77-79); `ORDER_RANDOM` is
+  `Collections.shuffle` with no `RandomSource` (73-75); `Bootstrap.bootStrap`
+  fills the options once (`server/Bootstrap.java:59`); *gamemode*, *level*,
+  *advancements* call `setIncludesEntities(false)` (275, 133, 585).
+- **Unsettled by the agent**: whether `Collections.shuffle(List)` is
+  unseeded per call (JDK source not in the tree; the page says only that no
+  world seed reaches it); whether any vanilla writer puts a
+  `SelectorContents` in a status description; whether option-suggestion
+  order is stable (Brigadier's `Suggestions.create` sorts, so it should
+  be). Two field names for one fact — `EntitySelector.usesSelector` and
+  `EntitySelectorParser.usesSelectors` — are both correct and should not be
+  "fixed" to match.
+- **The queue entry's count was wrong**: "six classes, ~2,136 lines" is
+  five classes and 1,717 lines (seven files and 1,725 with the stubs).
+- Sibling: `brigadier-and-commands.md`'s selector paragraph shrank to a
+  link, dropping four backticked selector strings and the "667 lines"
+  aside; its claim "thirteen final fields" is the new page's.
+
+### `worldgen/blending.md` — new, 346 lines, pattern
+
+Drafted by an agent from the decompile; the session re-derived the 193
+positions (enumerated dx, dz in −7..7 with dx²+dz² ≤ 64; `Blender.java:76-82`),
+the three blendable router functions and their targets
+(`NoiseRouterData.java:34-35, 120-123`), the absence of any
+`setBlendingData` in the tree, the single `sideByGenerationAge` call with
+*false* (`BlendingData.java:101, 108`), and the data-pack counts
+(*blend_density* in all 7 noise settings; *blend_alpha* in 9 density
+function files; *blend_offset* in 3). Everything else is the agent's
+evidence. Paths relative to `reference/26.2/net/minecraft/`.
+
+- **The hook**: "The three splines that shape overworld terrain are swapped
+  out for a ground height the game read off the old chunk's blocks…, the
+  constant ten, and zero" — `NoiseRouterData.java:34, 35, 120, 121, 123,
+  324`; `Blender.java:119-121` (alpha 0 on an exact hit) and 148-150 (alpha
+  → 0 as distance → 0). Session-confirmed the targets; the "hardly generated
+  at all" framing is the agent's.
+- Counts and constants: inner 3×3 for density (`Blender.java:59, 87-89`);
+  radius seven derived from the 27-cell range (`Blender.java:56-57`;
+  `core/QuartPos.java:25, 29`); 27 cells / 108 blocks and smoothstep over
+  28 (132, 148-150); inverse fourth power (137); density lerp within two
+  cells, alpha over three (181, 197-198); Y difference doubled (178);
+  biome: twelve cells of shift noise, over 28, threshold one half
+  (264-267); sixteen columns = 7 inside + 9 outside
+  (`BlendingData.java:44-49`, fills 127-165); `BlendingData.Packed` codec
+  validates 16 (396-401); eleven surface block types (51); fifteen blocks
+  per density cell (206-208, 228-230); 25 columns in the `NoiseChunk`
+  constructor (`NoiseChunk.java:123-135`; `forChunk:64`); 1,024-chunk region
+  scan and cache (`world/level/chunk/storage/IOWorker.java:41, 86, 97-113`);
+  *DataVersion* below 4882 or a *blending_data* compound (129-131); four Y
+  levels across 256 columns (`Blender.java:287-296`); within four blocks of
+  the box after shift noise ×4 (358-363); box eight wide (395-397).
+- Orderings: `NoiseChunk` created at *BIOMES* and cached
+  (`NoiseBasedChunkGenerator.java:92-94`; `ChunkAccess.java:438-443`; no
+  `noiseChunk = null` anywhere); the flat caches filled before
+  `router.mapAll` (`NoiseChunk.java:120-135` vs 141-142); identity swap
+  (483); empty blender skips the swap and replaces *blend_density* with its
+  child (117, 138-140, 458-459); `ChunkStatusTasks.generateFeatures` primes
+  heightmaps before decorating and calls `generateBorderTicks` after
+  (`ChunkStatusTasks.java:115, 120, 123`; read at `Blender.java:307`);
+  `Blender.of` asks the save first (69-72).
+- Only/never/not: `ChunkAccess.blendingData` is `protected final`
+  (`ChunkAccess.java:74`), `isOldNoiseGeneration` returns its presence
+  (388-390); a neighbour yields data only with a `BlendingData` and
+  `getHighestGeneratedStatus` ≥ *BIOMES* (`BlendingData.java:100`); only
+  heights are saved — density *transient* (56), `pack` (79-94), codec (395);
+  a chunk measures itself once (53, 127, 166); exactly three router
+  functions are blendable, all in `registerTerrainNoises` whose three
+  callers are the overworld variants (`NoiseRouterData.java:100, 104, 105`);
+  `postProcess` wraps every dimension's router (224-227; 253, 287, 295,
+  301, 310); the water table follows the old ground
+  (`preliminarySurfaceLevel` 249, 335-343; `Aquifer.java:403`);
+  `generateBorderTicks` returns unless the generated chunk itself is old
+  (`Blender.java:279`) — so the neighbour test at 299 reduces to "not old";
+  carvers skip masked positions (`CarvingMask.java:38-40, 52-54`;
+  `WorldCarver.java:98`); `Blender.empty` is an anonymous subclass (39-53);
+  four `Blender.of` call sites, three eager
+  (`ChunkStatusTasks.java:70, 77`; `NoiseBasedChunkGenerator.java:237, 274`);
+  the biome answer is a holder or null (267); three cave biomes in
+  `BelowZeroRetrogen` (44; resolver 104-116); *Blending: Old* on the debug
+  screen (`client/gui/components/debug/DebugEntryChunkGeneration.java:65-66`).
+- Deliberately softened: seven "sits inside" the radius-eight window
+  (`ChunkPyramid.java:19`; `WorldGenRegion.java:126-133`) — eight would fit
+  too, so no claim that seven is maximal.
+- **Unsettled by the agent**: how a chunk first acquires *blending_data*
+  (three fixers under `util/datafix/fixes/`, out of scope by rule 3; one
+  strips the key outside the overworld, so blending is in practice
+  overworld-only — a fact the page does *not* state; pass 4 rules whether it
+  is sayable); three declared-but-unused constants in `Blender` and a
+  cluster in `BlendingData`; the cost of the region scan (asserted as what
+  the code does, not measured).
+- **Where the queue entry and the brief were wrong**: `ProtoChunk.setBlendingData`
+  does not exist; `ChunkSerializer` is `SerializableChunkData`; there are
+  five consumers, not three; `generateBorderTicks` fires on the *old* chunk,
+  not the new one. 858 lines confirmed (439 + 419).
+- Siblings: `terrain.md`'s boundary question now points here (and lost the
+  phrase "from four years ago"); `density-functions.md` gained two links;
+  `biomes.md` one sentence; `chunk-generation-pipeline.md` and
+  `chunk-anatomy.md` one link each; `what-this-book-skips.md` dropped the
+  three now-written systems from *Named for a later pass to place*.
+
+### `worldgen/creating-a-world.md` — new, 300 lines, pipeline with a comparison
+
+Drafted by an agent from the decompile; the session re-derived the parked
+main thread (`CreateWorldScreen.openCreateWorldScreen` →
+`Minecraft.managedBlock`), the live layer list behind *Cancel*
+(`PresetEditor.EDITORS` passes `FlatLevelSource.settings()`;
+`CreateFlatWorldScreen`'s Cancel calls only `onClose` and `updateLayers`)
+and `WorldGenSettings extends SavedData` with its own `SavedDataType`.
+Everything else below is the agent's evidence, unchecked by the session.
+Paths relative to `reference/26.2/net/minecraft/`.
+
+- **The hook**: "Before the screen can draw a single widget the game has
+  already run a complete server-side data-pack load … with the client's
+  main thread parked on `BlockableEventLoop.managedBlock`" —
+  `client/gui/screens/worldselection/CreateWorldScreen.java:150-168`.
+- "`WorldLoader.load` … calls it **after** the worldgen registries and the
+  `Registries.LEVEL_STEM` registry are loaded and **before**
+  `ReloadableServerResources.loadResources` runs" — `server/WorldLoader.java:38-48`.
+- "The registry set that recipes, loot tables and functions are then parsed
+  against includes the dimension registry that callback produced" —
+  `WorldLoader.java:45-47`.
+- "*level.dat* is written by the client, in `Minecraft.doWorldLoad`, before
+  the server thread exists — while the settings file is written by the
+  server after it starts" — `client/Minecraft.java:2223-2240`;
+  `server/MinecraftServer.java:355`, `646-648`.
+- "`CreateWorldScreen.onCreate` bakes the dimensions to decide the
+  lifecycle … but the `WorldGenSettings` it stores holds the **unbaked**
+  selection" — `CreateWorldScreen.java:245-268`.
+- "the `MinecraftServer` constructor … builds a fresh rule set from the
+  saved-data default and then overlays the screen's values" —
+  `MinecraftServer.java:367-370`.
+- Counts: three experiments (`data/minecraft/datapacks/`, `FeatureFlags.java:42-45`);
+  five presets in the *normal* tag, plus *debug_all_block_states* in
+  *extended*; seven world presets as JSON (`WorldPresets.java:39-45`);
+  `PresetEditor.EDITORS` two entries; nine flat presets as JSON and ten keys
+  (`FlatLevelGeneratorPresets.java:27-36`, `run()` 79-88; `TEST_WORLD` has
+  no reader); `RegistryDataLoader.DIMENSION_REGISTRIES` one entry
+  (`resources/RegistryDataLoader.java:85`); `WorldOptions` four fields;
+  nineteen classes, nine screens, in `worldselection`; six footer buttons on
+  `SelectWorldScreen` (79-106; the debug re-create button is in the header);
+  `WorldOpenFlows.openWorld` a chain of eight (`WorldOpenFlows.java:248, 257,
+  295, 409, 444, 463, 487, 508`); seven listeners in `CreateWorldScreen`;
+  `WorldGenSettings` fifty-one lines.
+- **"The *Cancel* button on the layer editor does not undo a layer
+  deletion"** — `CreateFlatWorldScreen.java:100-103, 177-187`;
+  `FlatLevelSource.java:60-62`. Session-confirmed. The agent's further
+  inference, *not* on the page: the mutated settings object is the one held
+  by the `WORLD_PRESET` registry's `LevelStem`. Pass 4 should say whether
+  the next reload rebuilds it.
+- "`WorldCreationUiState.setWorldType` … replaces **all** the dimensions";
+  "the overworld only. Nothing in the create screen can edit the nether or
+  the end" — `PresetEditor.flatWorldConfigurator` / `fixedBiomeConfigurator`
+  both call `WorldDimensions.replaceOverworldGenerator`.
+- "shows `ConfirmExperimentalFeaturesScreen` only when the requested flags
+  are experimental **and** the caller was the data-pack screen" —
+  `CreateWorldScreen.java:362, 380, 384-397`.
+- "`WorldOptions.parseSeed` … otherwise returns the Java string hash" and
+  "an empty box is re-rolling a new random world every time you touch it" —
+  `WorldOptions.java:71-88`; `CreateWorldScreen.java:747-749`.
+- **"`WorldDimensions.checkStability` only asks whether each of the three
+  built-in keys carries the vanilla dimension type and biome source; every
+  shipped preset passes"** — `WorldDimensions.java:120-190`. An inference
+  from what the method does *not* check (`isStableOverworld` examines noise
+  parameters only for `MultiNoiseBiomeSource`); re-derive adversarially.
+- "*generator-settings* JSON, parsed … **only when the preset is**
+  `WorldPresets.FLAT`" — `server/dedicated/DedicatedServerProperties.java:310-322`;
+  "*server.properties* has no rules" — no game-rule read there.
+- "Nothing in the family edits an existing world's `WorldGenSettings` in
+  place" — `EditWorldScreen.java:44-52`; `WorldSelectionList.java:692-728`.
+- "`WorldOpenFlows.recreateWorldData` reads the old world with a
+  deliberately **empty** `LevelStem` registry" — `WorldOpenFlows.java:168-170`.
+- "an NBT parse that deliberately skips the *Data/Player* and
+  *Data/WorldGenSettings* subtrees" — `world/level/storage/LevelStorageSource.java:418-420`.
+- "the water in *Water World* arrives as a feature, not as terrain" —
+  `FlatLevelGeneratorSettings.java:165-173`; preset at
+  `FlatLevelGeneratorPresets.java:82`.
+- "the only thing that ever selects it is `CreateWorldScreen.testWorld`" —
+  grep of `FLAT_ALL_DIMENSIONS`; `client/gui/screens/TitleScreen.java:183-188`.
+- "`WorldGenSettings.CODEC` encodes … to JSON using the old registries as
+  context, and re-parses that JSON against the new ones" —
+  `CreateWorldScreen.java:411-425`.
+- `getDifficulty` hard in hardcore; `isAllowCommands` true in debug, false
+  in hardcore; `isBonusChest` false in both — `WorldCreationUiState.java`.
+- The *mcworld-* temp directory copied in or deleted —
+  `CreateWorldScreen.java:74, 342-355, 464-499, 508-560`.
+- **Unsettled by the agent**: whether enabling an experiment makes any
+  registry lifecycle non-stable (so whether the create-time warning ever
+  fires for an experiment alone); whether the registry-held flat settings
+  mutation survives the next reload; the exact save at which
+  *data/world_gen_settings.dat* first hits disk (the page says "the first
+  save"). `LevelStorageSource.writeWorldGenSettings` and `writeGameRules`
+  exist with no callers under `net/` and are not on the page.
+
+### Sibling sentences the session wrote (one line each, all new claims)
+
+- `rendering/entity-rendering.md` — *Block entities* paragraph replaced by
+  one sentence: "a different visibility policy, a different partial tick
+  and an empty block model".
+- `blocks/block-entities.md` — "why a chest's block model is empty".
+- `rendering/models-and-atlases.md` — "where those thirteen get their
+  geometry".
+- `commands/brigadier-and-commands.md` — the selector paragraph now says
+  "thirteen final fields" and "resolved against a `CommandSourceStack` much
+  later".
+- `worldgen/terrain.md` — the boundary answer now calls `BelowZeroRetrogen`
+  "the world-deepening path that rides the same hooks".
+- `worldgen/biomes.md` — "The two wrappers in the second arrow only do
+  anything beside chunks an older version generated".
+- `server/starting-a-server.md` — "where the stem was built, by a screen
+  or by *server.properties*".
+- `reference/level-data-and-rules.md` — "creating a world is who writes
+  it".
+- `introduction.md` — the lane gate added to *Verified means tested*; the
+  dependency-figure caption ("each cut by a definition rather than a
+  reordering").
+- The glossary gained fifteen entries (five per Part XII page, three each
+  for the other two, one shared): *experiment*, *flat level generator
+  preset*, *world gen settings*, *world preset*, *world stem*, *compiled
+  query*, *selector head*, *world-limited*, *built-in block model*,
+  *globally-rendered block entity*, *special model renderer*, *blending
+  data*, *blend alpha*, *border tick*, *old chunk*. Each is one sentence
+  written from the agent's report; check each against its owner page.
 
 ## Session O — Reference *(2026-09-03)*
 

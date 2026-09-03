@@ -455,9 +455,7 @@ download queue and its cache eviction.
 
 **Named for a later pass to place.** These are real systems with real
 lectures in them, found by the coverage sweeps and not written:
-block-entity and special-item rendering; old-chunk blending (`Blender`, `BlendingData`); how a
-world is created (`levelgen/flat`, `levelgen/presets` and the
-world-selection screens); the carver tunnel walk; the dragon fight
+the carver tunnel walk; the dragon fight
 (`EnderDragonFight`); the advancements screen; and `client/multiplayer`'s
 joining-a-server tail. Each is recorded with a size and a recommendation in
 the coverage queue in the project's restructuring notebook.

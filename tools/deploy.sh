@@ -8,7 +8,7 @@ export PATH="$HOME/.cargo/bin:$PATH"
 export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-$(tr -d '"\r\n ' < ~/.cloudflare/pvpmod.token)}"
 python tools/map_source.py      # the atlas: src/generated/ (tables and SVG figures) from the decompile
 python tools/verify_names.py --index
-python tools/check_lanes.py --index   # the lane key resolves; src/reference/lanes.md regenerated (page drift is report-only until pass-3 session P)
+python tools/check_lanes.py --strict --index   # every lane on every page means what the key says (corpus-wide since pass-3 session P); src/reference/lanes.md regenerated
 mdbook build
 node tools/check_mermaid.js --no-build   # every diagram parses under the site's own mermaid (needs `npm install` in tools/ once)
 python tools/llms_full.py   # book/llms-full.txt: the whole corpus in one file for agents

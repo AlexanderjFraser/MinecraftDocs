@@ -187,7 +187,8 @@ before there is a server for it to run.
 
 That constructor is real work. `MinecraftServer`'s own opens the server-wide
 `SavedDataStorage`, takes the `WorldData` and `WorldGenSettings` out of the
-stem, builds the `ServerConnectionListener`, the `PlayerDataStorage`, the
+stem ([creating a world](../worldgen/creating-a-world.md) is where the stem
+was built, by a screen or by *server.properties*), builds the `ServerConnectionListener`, the `PlayerDataStorage`, the
 `GameRules`, the `StructureTemplateManager` and the `PacketProcessor`,
 finalises recipe loading, and refuses outright a stem whose `LevelStem`
 registry has no overworld. `DedicatedServer`'s adds the `ServerTextFilter`,

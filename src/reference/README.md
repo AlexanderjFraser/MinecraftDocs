@@ -56,7 +56,7 @@ flowchart LR
 | [Density-function nodes](density-function-nodes.md) | the thirty-four node types and what the rewrite installs for each | hand-kept | XII |
 | [Threads](threads.md) | every thread, who makes it, what may run on it | hand-kept | I, III, IV, IX, X, XI |
 | [Math and primitives](math-and-primitives.md) | the coordinate spaces, packings, shapes and random sources | hand-kept | II, IV, V, VI |
-| [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | IV, VIII |
+| [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | IV, VIII, XII |
 | [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.2 calls it | hand-kept | I, II, XI, XII |
 | [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | X, XI, XII, XIII |
 | [Diagram lanes](lanes.md) | every lane abbreviation and the class it means | generated from the lane key | every part |

@@ -61,7 +61,8 @@ after load (`ProtoChunk.packOffsetCoordinates` packs four bits each of x, y
 and z into a short), `ChunkAccess.inhabitedTime` behind local difficulty
 ([the level tick](../server/server-level-tick.md)), `ChunkAccess.upgradeData`
 and the nullable `ChunkAccess.blendingData` whose presence *is*
-`ChunkAccess.isOldNoiseGeneration`, and two *volatile* flags —
+`ChunkAccess.isOldNoiseGeneration` ([blending](../worldgen/blending.md)),
+and two *volatile* flags —
 `ChunkAccess.unsaved`, whose test-and-clear `ChunkAccess.tryMarkSaved` the
 saver uses, and `ChunkAccess.isLightCorrect`, saved as *isLightOn*. It is
 also three interfaces at once — `LightChunk`, which is what the light engine

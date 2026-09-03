@@ -14,12 +14,13 @@ proxy": starts sessions, approves nothing technical): **pass 1** — Claude
 drafted every page from the decompile (done; `docs/pass1.md`); **pass 2** —
 completeness and accuracy: every claim adversarially fact-checked against
 the decompile, and every page had at least one wrong claim (done;
-`docs/pass2.md`); **pass 3** — restructuring: the site becomes a book — each
-part takes the shape of its system, each page the shape of its story, the
-frame, introduction, maps and reference tier redone, the lecture order
-drafted (**current**); **pass 4** — the second fact-check, pass 2's protocol
-over everything pass 3 rewrote; **pass 5** — polish: wording, consistency,
-cuts; **pass 6+** — the owner reads each page against the source, asks
+`docs/pass2.md`); **pass 3** — restructuring: the site became a book — each
+part the shape of its system, each page one of eight shapes, the frame,
+introduction, maps and reference tier redone, the lecture order drafted
+(done; `docs/pass3.md`); **pass 4** — the second fact-check, pass 2's
+protocol over everything pass 3 rewrote, the claims pass 3 introduced
+checked first (**current**; charter in `docs/plan.md`, queue in
+`docs/pass4.md`); **pass 5** — polish: wording, consistency, cuts; **pass 6+** — the owner reads each page against the source, asks
 questions in the page, and confirms the lecture order; then voice and cuts.
 Nothing is recorded that the owner hasn't understood.
 
@@ -47,6 +48,11 @@ Nothing is recorded that the owner hasn't understood.
    the built site with the site's own mermaid (11.6.0). A diagram that
    fails does not publish — mermaid ends a statement at `;` and reads `#` as
    an entity code, so neither goes in a label.
+7. **Lanes mean one thing.** `python tools/check_lanes.py --strict` checks
+   every `participant` in every sequence diagram against the lane key in
+   `TEMPLATE.md`; a page whose lane disagrees with the key does not
+   publish. Add a row to the key when a page introduces a lane; never
+   change a row's meaning.
 
 ## The source
 
@@ -99,10 +105,11 @@ Naming drift a 1.21-era reader will trip on: `ResourceLocation` is now
 policy · comparison · vocabulary · pattern · landing page), written by
 pass-3 session A from two pilots — `tickets-and-loading` (policy) and
 `protocol-phases` (state machine) — with the devices, the budgets, the
-mermaid rules and **the lane key**, which `python tools/check_lanes.py`
-enforces (key expansions must exist in the decompile; page drift is
-reported, `--strict --pages src/systems/<part>` per part as sessions
-convert). What every page keeps:
+mermaid rules and **the lane key** (rule 7). Over the 102 system pages the
+shapes fell out as trace 31, vocabulary 25, pipeline 19, comparison 11,
+policy 7, pattern 7, state machine 2 (session P's audit); the *Questions
+players ask* closer is on two pages in three, which pass 5 thins. What
+every page keeps:
 the verified line with the part and scenario; an opening paragraph that
 starts inside the scenario and ends on the hook (the surprising true thing
 the page explains); a cast of at most eight classes instead of field
@@ -115,17 +122,18 @@ beyond seven is a table or a Reference page.
 ## The plan
 
 [docs/plan.md](docs/plan.md) — the passes, the current pass's charter,
-rulings, session protocol and schedule, and the session log. **Read it
-first; tick it last.** [docs/pass3.md](docs/pass3.md) is the restructuring
-notebook (eleven sessions of pass-2 evidence on part shapes, splits,
-diagram shapes, dependencies and open questions, plus §7 the coverage
-queue); [docs/pass4.md](docs/pass4.md) is where pass-3 sessions list what
-the second fact-check must re-check; [docs/pass5.md](docs/pass5.md) collects
-wording debt and cuts. **A session that leaves something for later appends
-to the right one of those, not only to the log.** `docs/pass1.md` and
-`docs/pass2.md` are the archived passes (charter, protocol, queue, log —
-still worth grepping); `docs/outline.md` is the archived fourteen-lecture
-map. The lecture order is drafted in pass 3 (`src/lectures.md`) and
+session protocol and schedule, and the session log. **Read it first; tick
+it last.** [docs/pass4.md](docs/pass4.md) is the queue pass 4 works from:
+per pass-3 session, every claim its rewrite introduced, newest entry first,
+struck through as settled; [docs/pass5.md](docs/pass5.md) collects wording
+debt, cuts and structural findings; [docs/pass3.md](docs/pass3.md) §7 is
+the coverage queue (a system with no owner page) and stays live. **A
+session that leaves something for later appends to the right one of those,
+not only to the log.** `docs/pass1.md`, `docs/pass2.md` and `docs/pass3.md`
+are the archived passes (charter, protocol, rulings, queue, log — still
+worth grepping; pass 2's fact-check protocol and lessons are what pass 4
+runs); `docs/outline.md` is the archived fourteen-lecture map. The lecture
+order is drafted (`src/lectures.md`, with the parts-dependency figure) and
 confirmed by the owner in pass 6.
 
 ## Site
@@ -138,12 +146,15 @@ hand-edited and is regenerated by `deploy.sh`; the figure pipeline —
 `<figure class="map">` + `{{#include}}` + classes themed in `custom.css` —
 is in `TEMPLATE.md` for any page that needs a figure mermaid cannot draw);
 `src/systems/<part>/`
-(the content; each part gets a `README.md` landing page in pass 3, which is
-what the folding sidebar opens on); `src/reference/` (the shelf: eight views generated by
-`tools/gen_reference.py`, two indexes by `verify_names.py --index` and
-`check_lanes.py --index`, and the hand-kept catalogues and look-up pages,
-which `verify_names.py` checks like any system page — its README is the
-tier's landing page); `src/lectures.md` (the lecture order). `custom.css` widens
+(the content; each part's `README.md` is its landing page, which is what
+the folding sidebar opens on); `src/reference/` (the shelf: eight views
+generated by `tools/gen_reference.py`, two indexes by `verify_names.py
+--index` and `check_lanes.py --index`, and the hand-kept catalogues and
+look-up pages, which `verify_names.py` checks like any system page — its
+README is the tier's landing page); `src/figures/` (a hand-kept mermaid
+figure two pages share through `{{#include}}` — today the parts-dependency
+graph, on the introduction and `lectures.md`); `src/lectures.md` (the
+lecture order and the dependencies between parts). `custom.css` widens
 the column for tables, diagrams and figures and caps prose at 800px;
 `diagram-zoom.js` opens any diagram at viewport size on click.
 Moved pages keep their URLs through `[output.html.redirect]` in `book.toml`.
@@ -164,5 +175,6 @@ node and a one-time `npm install` in `tools/` (see its header comment).
 - Lanes are class initials, at least two letters, one meaning corpus-wide
   (`SGPL`, `CPL`, `MC`, `MS`, `SL`); the key lives in `TEMPLATE.md`.
 - Reasoning > sensing > measuring; the owner judges what lands.
-- `verify_names.py`, `check_mermaid.js` and `check_lanes.py --strict --pages
-  <the part>` before every commit that touches a page.
+- `verify_names.py`, `check_mermaid.js` and `check_lanes.py --strict`
+  before every commit that touches a page; `deploy.sh` runs all three and
+  refuses to publish on a failure.

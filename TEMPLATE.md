@@ -121,6 +121,12 @@ Shapes that render under 11.6.0 and are in use: `sequenceDiagram`,
 `flowchart`, `stateDiagram-v2`. Others the checker accepts may be added;
 a shape the checker rejects is not available whatever the docs say.
 
+**A figure two pages share** is written once, as a mermaid block in a file
+under `src/figures/`, and each page includes it with `{{#include}}` — the
+parts-dependency graph is on the introduction and on `lectures.md` this
+way. One source, so the two copies cannot drift; the file is hand-kept and
+`verify_names.py` reads it like any page.
+
 **A generated figure** (session B's pipeline, used by the atlas) is an SVG a
 tool under `tools/` writes into `src/generated/` — never hand-edited, always
 regenerable on the next version — and a page includes it inside an HTML
@@ -151,9 +157,9 @@ corpus. `python tools/check_lanes.py` reads the key below and every
 `participant X as Y` in `src/`, fails if a key entry is not a class in the
 decompile or if two key rows share a lane, and reports every page whose
 lane means something other than the key says; `--strict` turns the report
-into a failure (used per part as sessions convert them, corpus-wide from
-session P), and `--index` writes the key to `src/reference/lanes.md` for
-readers.
+into a failure, and `tools/deploy.sh` runs it that way over the whole corpus,
+so a page whose lane disagrees with the key does not publish. `--index`
+writes the key to `src/reference/lanes.md` for readers.
 
 **How a lane is derived** when it is not yet in the key: the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` → `SGPL`),
@@ -492,6 +498,17 @@ never change an existing row's meaning.
 | `SS` | `ServerScoreboard` |
 | `SA` | `ScoreAccess` |
 | `DataC` | `DataCommands` |
+| `BERD` | `BlockEntityRenderDispatcher` |
+| `ChestR` | `ChestRenderer` |
+| `CSR` | `ChestSpecialRenderer` |
+| `IIHR` | `ItemInHandRenderer` |
+| `IMR` | `ItemModelResolver` |
+| `Blender` | `Blender` |
+| `BD` | `BlendingData` |
+| `NC` | `NoiseChunk` |
+| `CWS` | `CreateWorldScreen` |
+| `WCUS` | `WorldCreationUiState` |
+| `WOF` | `WorldOpenFlows` |
 | `Game` | *the game's own code above Blaze3D, not a class* |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |

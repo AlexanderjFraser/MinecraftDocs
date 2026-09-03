@@ -8,8 +8,8 @@ previously generated chunk and no tick has any say in it. Give the same seed
 to two copies of the game and they will agree, block for block, forever —
 which is the property speedrunners, seed-hunting sites and structure finders
 all depend on, and it holds because **nothing here reads the world it is
-building**, with one deliberate exception at the boundary with chunks an
-older version generated.
+building**, with one deliberate exception
+[at the boundary with chunks an older version generated](blending.md).
 
 What a player recognises the part by is the seam: the flat shelf of ground
 under a village that was not there before, the cave that is flooded the
@@ -36,8 +36,8 @@ flowchart TB
     DF --> SS
     subgraph SS["STRUCTURE_STARTS, STRUCTURE_REFERENCES — first in the game, last in the lectures"]
         direction LR
-        S6["6 · Structure placement"] --> S7["7 · Jigsaw and templates"]
-        S6 --> S8["8 · Hand-built structures"]
+        S6["7 · Structure placement"] --> S7["8 · Jigsaw and templates"]
+        S6 --> S8["9 · Hand-built structures"]
     end
     SS --> BI
     subgraph BI["BIOMES"]
@@ -45,13 +45,14 @@ flowchart TB
     end
     BI --> NO
     subgraph NO["NOISE, SURFACE, CARVERS"]
-        L3["3 · Terrain"]
+        L3["3 · Terrain"] --- L3b["4 · Blending — the one place generation reads the world"]
     end
     NO --> FE
     subgraph FE["FEATURES"]
         direction LR
-        L4["4 · Features and placement"] --> L5["5 · Trees"]
+        L4["5 · Features and placement"] --> L5["6 · Trees"]
     end
+    FE --> CW["10 · Creating a world — the origin, told last: where the seed and the packs were chosen"]
 ```
 
 Read the outer chain as the order the game runs, and the numbers as the order
@@ -67,6 +68,13 @@ The substrate arrow means *is made of*, not *happens before*. Every other
 page in the part is a consumer of the density graph — the biome sampler is
 six of its functions, the aquifer is four more, ore veins are three, and the
 beardifier is a node the chunk splices in.
+
+The tenth page is the part's origin, told last. The object every other page
+reads — the seed and the map of dimensions, each a generator built out of
+noise settings, biome sources and placed features — is a tree of everything
+the first nine explain, so the page that says where it came from is a
+closer with nine satisfied references rather than an opener with nine
+forward ones.
 
 ## Before you start
 
@@ -98,24 +106,34 @@ names five of its instances in this part alone.
 3. [Terrain](terrain.md) — noise, surface and carvers. Seven hundred and
    sixty-eight cells filled from their corners, and a cave whose water was
    decided before the cave was.
-4. [Features and placement](features-and-placement.md) — decoration as a
+4. [Blending at the old-chunk border](blending.md) — the one place world
+   generation reads the world. Sixteen columns re-measured out of a
+   neighbour's blocks, and a seam where the terrain splines are switched
+   off entirely.
+5. [Features and placement](features-and-placement.md) — decoration as a
    stream of positions folded through filters, in an order the whole
    dimension agreed on before any chunk existed.
-5. [Trees](trees.md) — one algorithm with five slots in it, and the
+6. [Trees](trees.md) — one algorithm with five slots in it, and the
    clearance scan that shortens the trunk and not the crown.
-6. [Structure placement](structure-placement.md) — the part's policy page.
+7. [Structure placement](structure-placement.md) — the part's policy page.
    A lottery that never looks at the world, an absence stored as a hole, and
    a command that generates chunks to answer a question.
-7. [Jigsaw and templates](jigsaw-and-templates.md) — how a village assembles
+8. [Jigsaw and templates](jigsaw-and-templates.md) — how a village assembles
    itself, and how any piece becomes blocks. A growth limit that works by
    offering the wrong pool.
-8. [Hand-built structures](hand-built-structures.md) — the older assembler,
+9. [Hand-built structures](hand-built-structures.md) — the older assembler,
    which is still most of the code. Four families of piece grammar, and the
    one structure that throws itself away and starts again.
+10. [Creating a world](creating-a-world.md) — where the seed and the data
+    packs came from. A screen that is a running data-pack load with widgets
+    on it, settings carried across a reload by being serialised to JSON, and
+    a Cancel button that does not undo.
 
 Two and three can be watched in either order — they are independent statuses
-and neither reads the other. Six comes before seven and eight, which are
-alternatives to each other rather than a sequence.
+and neither reads the other; four needs both, and nothing after it. Seven
+comes before eight and nine, which are alternatives to each other rather
+than a sequence. Ten can be watched first by a viewer who wants the origin
+before the machinery, at the cost of nine forward references.
 
 ## Reference this part uses
 
@@ -128,9 +146,13 @@ a data pack writes into, and
 some of them are frozen at startup and some reload with the world.
 [Diagram lanes](../../reference/lanes.md) for the abbreviations these figures
 use. [Naming drift](../../reference/naming-drift.md) has thirteen rows for
-this part, all of them re-derived and none of them changed since pass 2. And
+this part, all of them re-derived and none of them changed since pass 2.
+[Level data and rules](../../reference/level-data-and-rules.md) for which
+file the seed, the dimensions and the rules each end up in, which lecture
+nine links to rather than restates. And
 [the glossary](../../reference/glossary.md) for *density function*,
-*aquifer*, *beardifier*, *NoiseChunk*, *PlacedFeature* and *jigsaw*.
+*aquifer*, *beardifier*, *NoiseChunk*, *blending data*, *old chunk*,
+*PlacedFeature*, *jigsaw*, *world preset* and *world gen settings*.
 
 Where the part stops: what happens to a chunk *after* `ChunkStatus.FEATURES`
 — lighting, spawning, promotion to a live chunk, and being saved or sent — is

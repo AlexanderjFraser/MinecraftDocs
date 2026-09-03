@@ -154,19 +154,15 @@ interesting one: it builds a basis from the source's rotation *and* its
 on eye height. `SwizzleArgument` parses an axis subset (*xz*) for `/clone`
 and `/spreadplayers`.
 
-**`EntitySelector` is a compiled query, not a parse tree** — predicates, a
-distance range, an optional `AABB`, a position resolver, a sort order and an
-`EntityTypeTest`. `EntitySelectorParser` assembles it from
-`EntitySelectorOptions`, a name-to-handler map of twenty-one option names
-(*distance*, *scores*, *nbt*, *predicate*, *sort*, *limit*, *type*, …) and,
-at 667 lines, the largest single file in this page's scope. Whether the
-level is asked for a box query or every entity is scanned is decided by the
-presence of that `AABB`, so `@e[type=X]` and `@e[type=X,distance=..8]` are
-not the same cost. `InvertableSetOptionState` is the machine behind
-`type=!zombie,!skeleton`: repeatable negation and a single positive
-assertion, enforced structurally. `ScoreHolderArgument` and
-`GameProfileArgument` reimplement the same selector-or-literal fork for
-their own value types.
+**`EntitySelector` is a compiled query, not a parse tree** — thirteen final
+fields with no reader and no grammar in them, assembled by
+`EntitySelectorParser` from `EntitySelectorOptions` and resolved against a
+`CommandSourceStack` much later, which is why one parsed selector yields a
+different set at every link of a chain. `ScoreHolderArgument` and
+`GameProfileArgument` reimplement the same selector-or-literal fork for their
+own value types. The grammar, the twenty-one options, the two-phase
+permission check and the two data structures a selector can be resolved
+against are [entity selectors](entity-selectors.md).
 
 **`FunctionArgument` reads an id and nothing else**, deferring the lookup to
 execution — which is what lets a function be compiled against a null server

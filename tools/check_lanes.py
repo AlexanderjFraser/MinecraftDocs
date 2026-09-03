@@ -12,9 +12,10 @@ key"). This reads it and every `participant X as Y` / `actor X as Y` in
            a lane the key does not know must not mean two different classes
            on two pages  -> reported; exit 1 only with --strict
 
-The page checks are report-only by default because the corpus is converted
-part by part (pass 3): a part session runs `--strict --pages src/systems/<part>`
-on its own pages, and session P turns `--strict` on corpus-wide.
+The page checks are report-only by default; `tools/deploy.sh` runs `--strict`
+corpus-wide (since pass-3 session P, when every part had been converted), so a
+page whose lane disagrees with the key does not publish. `--pages` restricts the
+page checks while drafting.
 
 Usage:
     python tools/check_lanes.py [--src src] [--template TEMPLATE.md] [--mc-source PATH] [--libs PATH]

@@ -151,7 +151,8 @@ every sample. And three singletons are swapped **by object identity**:
 `DensityFunctions.BlendAlpha` and `DensityFunctions.BlendOffset` become two
 flat caches the `NoiseChunk` constructor has *already filled*, before any
 router mapping ran, and `DensityFunctions.BeardifierMarker` becomes this
-chunk's `Beardifier`. If the level's `Blender` is empty, the blend nodes
+chunk's `Beardifier`. If the level's [`Blender`](blending.md) is empty, the
+blend nodes
 survive as the constants they are and a *blend_density* marker is replaced by
 its own child, erasing the node.
 
@@ -241,7 +242,8 @@ their axes swapped, behind a registry id that is called *offset* rather than
 
 **Which of these nodes reads the world?** Exactly one family. The three blend
 nodes reach `BlendingData` harvested from **neighbouring chunks**, which is
-the single exception to "a density function reads nothing". Everything
+the single exception to "a density function reads nothing"
+([blending at the old-chunk border](blending.md)). Everything
 else — every noise, spline, selector and cache in the catalogue — reads no
 blocks, no chunks and no level, which is why the whole system can run on a
 worldgen worker with nothing loaded.
