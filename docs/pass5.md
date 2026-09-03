@@ -453,3 +453,15 @@ was cut or moved, and why)*
   with the second person (*you press W*, *you open your own inventory*, *you
   drink a potion*), which reads well here and is worth a corpus-wide decision
   rather than a per-part accident.
+
+- **2026-09-03, out of band — the licence footer says it twice on one page.**
+  `site-footer.js` puts the disclaimer and the CC BY-SA line on every page,
+  and the introduction now also closes on *Unofficial, and free to reuse*,
+  which says the same two things in prose. Everywhere else the footer is the
+  only statement and reads as small print; on `introduction` alone it is a
+  restatement two inches below the section it restates. Cheapest fix if pass 5
+  agrees it grates: have the footer skip the introduction (it is the one page
+  guaranteed to carry the prose version), rather than cutting the prose —
+  the prose is what reaches an agent through `llms-full.txt`, which the JS
+  footer never does. Not urgent; nobody has complained, and duplication in
+  favour of the licence being visible is the right way round to err.

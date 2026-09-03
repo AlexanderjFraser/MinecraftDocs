@@ -1559,3 +1559,49 @@ missing it — and removes the comment. The owner confirms or reorders
   re-cut and the diffing step is the expensive half of that protocol. The one
   page that needed research was researched first, before any page was written,
   which is what made the seven-page rewrite affordable.
+
+- **2026-09-03, out of band — the repo went public-safe.** Not a pass session;
+  triggered by the first fork (and star) of the GitHub repo, which made the
+  question *what does a stranger get when they clone this* worth answering
+  properly. **Nothing was leaking.** `git log --all --diff-filter=A` over the
+  whole history finds no file under `reference/`, no jar, zip or class, no
+  secret; `tools/deploy.sh` reads the Cloudflare token from `~/.cloudflare/`
+  at run time and has never contained one; there are no ```` ```java ```` blocks
+  in any of the 132 tracked files, so rule 1 is holding by practice and not
+  only by intent. The file most likely to be a problem, `class-index.md` at
+  372 KB, is a book index — 2,560 class names against the pages that discuss
+  them, no obfuscated pairs, no member signatures — and is not a mappings
+  extract.
+  **What was missing was a licence.** The repo was all-rights-reserved by
+  default, which is the worst of both: a good-faith reader has no safe way to
+  quote a page, and a bad-faith one gets to say it looked open. Now
+  **CC BY-SA 4.0** for `src/` (the prose and the figures) and **MIT** for
+  `tools/`. The owner chose BY-SA over BY-NC-SA on the argument that the real
+  threat is an unattributed mirror outranking minecraftdocs.dev, which
+  attribution and share-alike prevent and a non-commercial clause does not —
+  NC does not even forbid an ad-free mirror, and it costs citations and wiki
+  reuse. The cost accepted: someone may build their own videos from these
+  notes, but only with visible credit. `LICENSE` is the canonical CC text with
+  no preamble so GitHub's detector recognises it; the scope note lives in the
+  README instead.
+  **The Mojang carve-out is now stated, not assumed.** README and
+  introduction both say the licence covers the writing and the figures and
+  not the game, its source, its assets or the mappings, and tie that to why
+  the pages name identifiers and never reproduce code. `site-footer.js` puts
+  that line plus the unofficial/trademark disclaimer on **every** page
+  (mdBook has no footer setting, so it appends to each page's `<main>`) —
+  every page rather than the introduction alone, because pages are linked to
+  and quoted individually and a mirror has to actively strip a footer.
+  **Two smaller things.** The introduction's *verified means tested* rule now
+  says what the check does **not** prove — that the sentence around the name
+  is true — and points at the passes; publishing the pass notebooks means
+  that admission is public anyway, and stating it first turns it from a
+  gotcha into the method. And the README now has a corrections policy:
+  issues with a decompile citation are the wanted contribution, prose PRs are
+  not merged, because nothing publishes here that the owner has not read
+  against the source, and a merged patch routes around exactly that.
+  Process note: session I was running concurrently and its add-all commit
+  (`a520d6c`) absorbed the half of this change that existed at the time, so
+  the licensing lands in two commits — `a520d6c` and `185f16b`, whose message
+  names the first. Worth knowing for pass 4, when sessions may again overlap:
+  commit named files as soon as the checks pass rather than batching.
