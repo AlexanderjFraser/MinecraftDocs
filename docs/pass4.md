@@ -48,6 +48,193 @@ entry first.
 
 ## Entries
 
+- **2026-09-02, session F — Part V Blocks.** Seven pages: four rewritten
+  (`blocks-and-states`, `block-interaction`, `block-breaking`,
+  `block-entities`) and three produced by the notebook's confirmed three-way
+  split of `redstone` (`signal-and-dust`, `pistons-and-block-events`,
+  `diodes-and-observers`), plus a landing page and Part V's section of
+  `lectures.md`. `redstone.md` is gone and its URL redirects to
+  `signal-and-dust`.
+
+  **Read the provenance note before trusting anything below.** The session
+  was interrupted after four pages had been drafted: two of the four agent
+  reports arrived, two did not, and the three redstone pages were then
+  written by the session itself directly from the decompile. The pages divide
+  into four classes of evidence and pass 4 should weight them differently.
+
+  1. **`block-interaction`** — agent-drafted, report received, and every
+     correction in it **re-derived by the session** against the source.
+  2. **`block-breaking`** — agent-drafted, report received, corrections
+     **not** independently re-derived (the interrupt landed first). Treat its
+     twelve claimed corrections as unverified leads, not as findings.
+  3. **`blocks-and-states`** and **`block-entities`** — agent-drafted, **no
+     report survived**, so nothing is recorded about what they changed
+     relative to the old page beyond the session's own read of the finished
+     text. These two need the full protocol, starting with a diff against
+     their pass-2 versions in git.
+  4. **The three redstone pages** — session-written, every claim derived from
+     the decompile in this session, and every diagram read separately from
+     its prose.
+
+  - **Corrections the session derived itself, method by method.**
+    - **Block events are not "a tick late".** The old `redstone` diagram
+      carried a *next tick* bar over `ServerLevel.runBlockEvents`, and that is
+      wrong for the common cases. `MinecraftServer.processPacketsAndTick`
+      drains queued packets and *then* calls `MinecraftServer.tickServer` in
+      the same lap, and the *blockEvents* section of `ServerLevel.tick` sits
+      after *tickPending* and *chunkSource* and before *entities* — so an
+      event queued by a packet handler or by a scheduled tick drains in the
+      **same** tick, and `ServerLevel.runBlockEvents` loops until its set is
+      empty, so an event queued during the drain does too. Only the entity and
+      block-entity phases, and a chunk that is not block-ticking, push one to
+      the next tick. `reference/glossary.md` already said "usually within the
+      same tick", so the corpus contradicted itself.
+      `pistons-and-block-events` now states all five cases.
+      **Re-derive the phase order and each case.**
+    - **`RepeaterBlock.LOCKED` does not survive on the client, and the old
+      page's reason for saying so was wrong.** It claimed locking "is a shape
+      update, which is why it survives on a client that never runs neighbour
+      updates". `RepeaterBlock.updateShape` recomputes the lock only when the
+      level is not client-side, and `ObserverBlock.startSignal` returns
+      immediately on a `ClientLevel` — both shape hooks opt out of the client
+      explicitly, and a client keeps no appointment book to fire into anyway.
+      `diodes-and-observers` gives the real reason the shape channel is the
+      right one: it carries a neighbour's state change even when the neighbour
+      issued no neighbour update.
+    - **`blocks-and-states`' opening overclaimed and was narrowed.** Its own
+      closing question is right and its hook was not: `Block.getId` and
+      `Block.stateById` are tolerant, but
+      `ClientboundBlockUpdatePacket.STREAM_CODEC` reads the same table through
+      `ByteBufCodecs.idMapper`, which is `IdMap.byIdOrThrow`. Check the
+      narrowed sentence, and check the Q&A's account of which paths use which
+      lookup.
+    - **Dust powers the block below it and never the one above.**
+      `RedStoneWireBlock.getSignal` answers zero for `Direction.DOWN` and
+      answers full power for `Direction.UP` with no connection test. This is
+      nowhere in the pass-2 corpus.
+    - **`LeverBlock.pull` is handed a null player**, so — unlike the door —
+      nobody is excluded from the sound and the clicker hears the server's
+      copy. And `LeverBlock.useWithoutItem` writes no state at all on a
+      `ClientLevel`, so a lever is not predicted.
+    - **`PistonBaseBlock.checkIfExtend` runs a dry-run
+      `PistonStructureResolver.resolve` before queueing** an extend event, so
+      a piston with an immovable wall in front of it queues nothing at all.
+    - **A diode's `HorizontalDirectionalBlock.FACING` points at its input**,
+      and `DiodeBlock.updateNeighborsInFront` acts on the opposite side. Any
+      sentence in the corpus saying a diode "faces its output" is wrong.
+    - **`ComparatorBlock.checkTickOnNeighbor` books on a second condition**
+      the repeater has no analogue of: whenever the computed output differs
+      from the int held in the `ComparatorBlockEntity`, not only when the
+      powered flag disagrees with the input.
+    - **`SignalGetter.getSignal` is a maximum, not a choice.** For a redstone
+      conductor it takes the larger of the block's own weak signal and
+      `SignalGetter.getDirectSignalTo`. Three Part V pages used to phrase this
+      as one *or* the other.
+
+  - **Claims the rewrite introduced, per page.** Check these first and
+    hardest.
+    - **`signal-and-dust`** (session-written): *the number* — **forty-two**
+      neighbour updates per changed wire, derived as seven
+      `Level.updateNeighborsAt` calls (the position plus its six neighbours,
+      collected in a hash set in
+      `DefaultRedstoneWireEvaluator.updatePowerStrength`) times six directions
+      per `CollectingNeighborUpdater.MultiNeighborUpdate` — **re-derive both
+      factors**. Also: the framing that the staircase of intermediate values
+      follows from the recursion terminating on *value* rather than on
+      distance; the three-direction-order table; the claim that
+      `RedStoneWireBlock.getConnectionState`'s completion pass, not
+      `RedStoneWireBlock.shouldConnectTo`, is what points dust into a piston;
+      `RedstoneTorchBlock.isToggledTooFrequently` burning out on the eighth
+      surviving entry using a literal rather than
+      `RedstoneTorchBlock.MAX_RECENT_TOGGLES`. The flowchart asserts an
+      ordering from arrival to fan-out.
+    - **`pistons-and-block-events`** (session-written): the five-case tick
+      analysis above; the census of block-event users — four blocks
+      (`PistonBaseBlock`, `NoteBlock`, `PotentSulfurBlock`,
+      `ComparatorBlock`) plus seven block entities through
+      `BaseEntityBlock.triggerEvent` — **counted by grep and worth
+      re-counting**; the flag table (324 for the placeholders and the arm, 82
+      for vacated positions, 67 for the base, 18 for a destroyed block) and
+      the claim that only the first of those omits `Block.UPDATE_CLIENTS`;
+      that the crushed-block particle event in `PistonBaseBlock.moveBlocks` is
+      raised on the **client** side only; that the middle
+      `SignalGetter.hasSignal` in `PistonBaseBlock.getNeighborSignal` is dead
+      code because `Blocks.pistonProperties` declares a piston never a
+      redstone conductor; that `PistonMovingBlockEntity.finalTick` writes
+      flags 3 and writes **air** for the source piston, against
+      `PistonMovingBlockEntity.tick`'s 67; that
+      `PistonMovingBlockEntity.TICKS_TO_EXTEND` is declared and never read.
+      The sequence diagram asserts four tick boundaries.
+    - **`diodes-and-observers`** (session-written): the whole comparison
+      table, which is a claim about *three* differences and no others; "a
+      diode never writes into its target"; that the signal leaves through
+      `DiodeBlock.onPlace` rather than through `Level.setBlock`'s fan-out,
+      because `DiodeBlock.tick` writes with flag 2 alone; the priority account
+      (`TickPriority.EXTREMELY_HIGH` / `VERY_HIGH` / `HIGH` for the repeater,
+      only `HIGH` / `NORMAL` for the comparator, and `NORMAL` only from
+      `DiodeBlock.setPlacedBy`); the item-frame rule (exactly one, facing the
+      comparator's way, else neither reading is taken); container fullness as
+      each stack's count over **that stack's own** maximum; the claim that an
+      observer sees a door opened by hand. The flowchart asserts which channel
+      each of the three listens on.
+    - **`block-interaction`** (agent, session-verified): bit 8 read as
+      *player-caused* by `LevelExtractor.blockChanged`; the copper door as
+      proof the path never reads `BlockTags.WOODEN_DOORS`; `InteractWithDoor`
+      reading `BlockTags.MOB_INTERACTABLE_DOORS` while the older goals read
+      `DoorBlock.isWoodenDoor`; that opening a door makes navigating mobs
+      repath through `ServerLevel.sendBlockUpdated`; that a disabled item
+      aborts the whole hand loop; the eight-row gate table's *what the client
+      gets* column, including "nothing, not even the receipt" for
+      `ServerGamePacketListenerImpl.hasClientLoaded`; the chain-limit count
+      resetting in a `finally`. The agent also flagged a **duplicated swing
+      branch** in `ServerGamePacketListenerImpl.handleUseItemOn` — the
+      server-swing test appears twice in structurally identical arms — which
+      reads like a decompiler artefact. The page describes the behaviour
+      rather than the shape. Settle it.
+    - **`block-breaking`** (agent, **not** session-verified): the plus-one
+      identity, i.e. that `ServerPlayerGameMode.incrementDestroyProgress`'s
+      *(elapsed + 1)* is exactly the client's first `Minecraft.continueAttack`
+      in the same client tick as `Minecraft.startAttack`; "about two ticks of
+      slack" at the 0.7 bar for stone; that the delayed path calls
+      `ServerPlayerGameMode.destroyBlock` rather than
+      `ServerPlayerGameMode.destroyAndAck`, so a failure there sends no
+      correction; that the first crack stage broadcast is 1 rather than 0;
+      that `LevelExtractor` picks the deepest crack within 32 blocks **of the
+      camera**. Plus its twelve claimed corrections — among them that reach
+      and the height check sit outside the action switch and so gate ABORT and
+      STOP too, that `MobEffectUtil.getDigSpeedAmplification` returns the
+      maximum of haste and conduit power rather than stacking them, that
+      `Block.popResource` jitters on all three axes, that the durability cost
+      is skipped because hardness is zero rather than because
+      `Tool.damagePerBlock` is zero, and that three blocks override
+      `BlockBehaviour.attack` rather than one. **None of these were
+      re-derived.**
+    - **`blocks-and-states`** and **`block-entities`** (agent, **no report**):
+      unknown. Diff both against their pass-2 versions in git before checking.
+      Claims the session noticed while reading and did not verify: that
+      exactly two blocks override
+      `BlockBehaviour.BlockStateBase.shouldChangedStateKeepBlockEntity`
+      (`CopperChestBlock` and `CopperGolemStatueBlock`); that
+      `CopperGolemStatueBlockEntity` overrides the update *packet* but not the
+      *tag*; that eight classes override
+      `BlockEntity.preRemoveSideEffects`; the nineteen-classes / twenty-types
+      sync count; `Level.setBlock`'s four false-returning cases; and that
+      `LevelExtractor.setBlockDirty` re-meshes only when
+      `ModelManager.requiresRender` says the two states look different. The
+      session did verify one of `block-entities`' orderings: the client's
+      block-entity pass runs after its entity pass and before
+      `ClientLevel.tick`, in `Minecraft.tick`.
+
+  - **The landing page and the lecture order.** Part V's `README.md` claims
+    the part is a hub and six spokes, that `blocks-and-states` is what the
+    other six reach into, and that the interaction/breaking pair is one
+    lecture in two halves. It also makes a **dependency ruling pass 4 should
+    test**: Part V is watched *before* Part X's `prediction-and-acks`, on the
+    grounds that the two click pages' shared preamble is all either lecture
+    needs. Check that the preamble is sufficient and that it contradicts
+    nothing in `prediction-and-acks`.
+
+
 - **2026-09-02, session E — Part IV The world.** Ten pages: five rewritten
   (`chunk-anatomy`, `chunk-generation-pipeline`, `lighting`, `chunk-storage`,
   `environment-attributes-and-timelines`), four produced by the two confirmed

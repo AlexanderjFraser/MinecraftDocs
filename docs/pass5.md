@@ -19,6 +19,65 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+- **2026-09-02, session F — Part V.** Seven pages at 243–388 lines, which is
+  the first part to land inside the 260–340 brief rather than over it — the
+  line budget was given to the drafters explicitly this time, mid-flight, and
+  it worked. The exception is **`blocks-and-states` at 388**, and it is the
+  one page here with a genuine length case to answer: it carries two figures
+  (the twelve-class containment figure and the write flowchart the other six
+  pages link to), the flag-bit table, and a grounding trace. Its cheapest cuts
+  if pass 5 needs them, in order: the *Twelve classes and one Cartesian
+  product* figure could lose the three `Property` subclasses to prose; the
+  *four decisions, four lookups* section is the most compressible, since
+  `StairBlock.getStairsShape`'s corner rules are detail the hook does not
+  need; and the `BlockBehaviour.BlockStateBase.initCache` thread-safety
+  paragraph is the page's most self-contained.
+
+  **Cuts made, and where they went.** All are names rather than claims.
+  `block-interaction` dropped the `InteractionResult.ItemContext` record and
+  `InteractionResult.Success.withoutItem`; the full `BlockSetType` component
+  roster (fourteen components, seventeen instances, its register/values/codec
+  trio) down to what the door needs; the "twenty-four blocks override
+  `BlockBehaviour.useItemOn`" count, dropped rather than carried because it
+  could not be cheaply re-verified — **worth restoring with a real count**;
+  the creative reach modifier, keeping only the server's 1.0 of slack; and the
+  alternative door entry points (the redstone path, `DoorBlock.setPlacedBy`,
+  the wind-charge path). `block-breaking` dropped the creative-mining branch
+  entirely (a fresh START every five ticks, each its own prediction), the
+  `ServerPlayerGameMode` anti-desync paths, the `RedStoneOreBlock.attack`
+  case — the only left-click that files a ledger entry without breaking
+  anything, arguably `prediction-and-acks`' material — the non-player removal
+  path through `Level.destroyBlock`, and the note that
+  `BlockTags.NEEDS_IRON_TOOL` is a data-generation input never read at
+  runtime, which is a good myth-table row for whoever owns tags. The redstone
+  split dropped the piston's long tail of special cases: slime reordering,
+  the sticky-retract interrupt, `MovingPistonBlock` destruction, and the
+  moving hitbox. None of the above is a factual cut; all of it is length, and
+  every item is recoverable from the pass-2 `redstone.md` in git.
+
+  **Wording debt.**
+  - Three pages used to say some version of "shape updates run on both sides,
+    neighbour updates are server-only, and here is the exception". That is now
+    owned once, by `blocks-and-states`' *The two update channels* section, and
+    the other six link to the anchor. **Check in pass 5 that none of them has
+    started re-explaining it**; this is the duplication that produced three of
+    the part's pass-2 errors.
+  - `block-interaction` and `block-breaking` carry an identical four-sentence
+    preamble blockquote. That is deliberate (R6) and it should stay identical
+    — if either drifts, they stop reading as one lecture in two halves.
+  - The reflow around three link edits is untidy: `block-interaction` line
+    155, `block-breaking` line 242 and `block-entities` line 96 each have an
+    awkward wrap where the `#the-two-update-channels` anchor was added.
+    Cosmetic only.
+  - `diodes-and-observers` line 52 runs long after
+    `HorizontalDirectionalBlock.FACING` replaced the shorter name the
+    verifier rejected.
+  - The three redstone pages were written by the session rather than by
+    drafting agents, so they have had one fewer pair of eyes on their prose
+    than the rest of the corpus. They are the pages most likely to be carrying
+    the session's own tics.
+
+
 - **2026-09-02, session E — Part IV.** **The length debt is this session's
   main bequest.** Ten pages, and eight of them landed at 358–417 lines
   against the 260–340 the brief asked for; the two pilots sit at 377 and

@@ -345,7 +345,7 @@ this item's turn. Its `Entity.getMovementEmission` is
 - **Called by:** `LivingEntity.travel` and its four siblings; `ItemEntity`,
   `FallingBlockEntity`, `PrimedTnt`, `ExperienceOrb` and the projectiles
   directly; `PistonMovingBlockEntity` with `MoverType.PISTON`
-  ([redstone](../blocks/redstone.md)); `Shulker` with its own mover types;
+  ([pistons and block events](../blocks/pistons-and-block-events.md)); `Shulker` with its own mover types;
   player input with `MoverType.PLAYER`
   ([input to movement](../player/input-to-movement.md)).
 - **Calls into:** `CollisionGetter` and `BlockCollisions` for block shapes,

@@ -315,6 +315,19 @@ never change an existing row's meaning.
 | `SAI` | `SpatialAttributeInterpolator` |
 | `SR` | `SkyRenderer` |
 | `Mob` | `Mob` |
+| `Block` | `Block` |
+| `MPGM` | `MultiPlayerGameMode` |
+| `SPGM` | `ServerPlayerGameMode` |
+| `CNU` | `CollectingNeighborUpdater` |
+| `DB` | `DoorBlock` |
+| `AFBE` | `AbstractFurnaceBlockEntity` |
+| `FM` | `FurnaceMenu` |
+| `LevB` | `LeverBlock` |
+| `RSWB` | `RedStoneWireBlock` |
+| `DRWE` | `DefaultRedstoneWireEvaluator` |
+| `PBB` | `PistonBaseBlock` |
+| `PSR` | `PistonStructureResolver` |
+| `PMBE` | `PistonMovingBlockEntity` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
@@ -330,5 +343,10 @@ Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
 `CM` is `ChunkMap` (the menus take their own initials); `CH` is `ChunkHolder`
 (the client handshake listener is `CHPL`); `GR` is `GameRenderer`
 (`GuiRenderer` lengthens to `GuiR`); `TD` is retired in favour of `CTD` /
-`TCTD`. Rows for `SS`, `ST`, `SP`-as-structure, `TP`, `LX`, `PE` and `C`
-are left for the part sessions that own the pages, under the rule above.
+`TCTD`. Part V (session F) lengthened four later claimants rather than
+reassigning a row: `LeverBlock` is `LevB` because `LB` is `LiquidBlock`,
+`BlockItem` would be `BItem` because `BI` is `BucketItem`,
+`BlockPlaceContext` would be `BPC` because `PC` is `ProtoChunk`, and
+`PistonStructureResolver` is `PSR` because `PR` is `PackRepository`. Rows for
+`SS`, `ST`, `SP`-as-structure, `TP`, `LX`, `PE` and `C` are left for the part
+sessions that own the pages, under the rule above.

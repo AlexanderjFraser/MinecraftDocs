@@ -273,8 +273,8 @@ one delay later. Pulse extension is two entries in this queue.
 `Block.UPDATE_CLIENTS` alone, and the signal leaves through
 `DiodeBlock.onPlace` — which `LevelChunk.setBlockState` runs on the server for
 any write without `Block.UPDATE_SKIP_ON_PLACE` — calling
-`DiodeBlock.updateNeighborsInFront`. The rest is
-[redstone](../blocks/redstone.md).
+`DiodeBlock.updateNeighborsInFront`. The rest is [diodes and the
+observer](../blocks/diodes-and-observers.md).
 
 ## The other kind of turn: random ticks
 

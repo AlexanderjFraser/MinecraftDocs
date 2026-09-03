@@ -352,7 +352,7 @@ sidebar order.
   `level-data-and-rules` to Reference; the pyramid drawn; the light batch
   drawn; `tickets-and-loading` from the pilot re-checked. Probably two
   sessions.
-- [ ] **Session F — Part V Blocks.** The update-channels flowchart in
+- [x] **Session F — Part V Blocks.** *(done 2026-09-02)* The update-channels flowchart in
   `blocks-and-states`; `block-interaction` + `block-breaking` as one lecture
   in two halves with the shared preamble; `redstone` split three ways
   (signal and dust · pistons and block events · diodes, comparators and the
@@ -993,3 +993,157 @@ missing it — and removes the comment. The owner confirms or reorders
   *EMPTY* without saying the first sweep is the loading pyramid's 1, a
   containment figure showing the block-state palette ladder on a node shared
   with biomes, and a lane carrying a parenthetical the linter cannot read.
+- **2026-09-02, session F — Part V Blocks.** *Rulings, written before
+  editing.* **Part V is a hub and six spokes, and the hub's second half is
+  the part's real subject.** `blocks-and-states` is the vocabulary page every
+  other page reaches back into, and the thing they reach for is not the state
+  table but **the tail of a write**: what `LevelChunk.setBlockState` and
+  `Level.setBlock` do after the section has been written. R6 puts the *two
+  update channels* flowchart there and this session draws it as one figure
+  spanning both methods, because the split runs through the middle of them —
+  `BlockEntity.preRemoveSideEffects`,
+  `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` and
+  `BlockBehaviour.BlockStateBase.onPlace` are inside the **chunk** write
+  (session E's correction), while the broadcast, the neighbour fan-out and the
+  three shape passes are in `Level.setBlock`'s tail. Every other page in the
+  part links to that one figure instead of restating it, which is the fix for
+  the notebook's finding that three of five pages had the distinction subtly
+  wrong.
+  **The part goes from five pages to seven**, all of it the schedule's own
+  work: `redstone` splits three ways, and R7's new-page allowance is **not
+  spent** — Part V has no entry in the coverage queue, which therefore still
+  stands at fifteen items. `blocks-and-states` is **not** split, overruling
+  nothing (pass 2 left it as pass 3's call): its two halves are the state
+  table and the write, and the write is what the other six pages need, so
+  cutting between them would put the part's load-bearing figure on a page
+  nobody is sent to. One redirect (R8): the old `redstone` URL goes to
+  `signal-and-dust`.
+  **The seven pages, their shapes and their hooks.**
+  **`blocks-and-states`** takes the **vocabulary** shape with two figures — a
+  containment figure of the objects (`Block`, `BlockBehaviour`,
+  `StateDefinition`, `Property`, `StateHolder`,
+  `BlockBehaviour.BlockStateBase`, `BlockState`) and the two-channel flowchart
+  of a write — and the stair placement kept as the grounding trace, cut to
+  the state *choice* and the write, since the click that led to it is the
+  next page's. Hook: every state the game will ever have is built before any
+  world exists, and the world stores an index into that table, so setting a
+  property allocates nothing and a client that disagrees with the server
+  about a block's properties does not throw — it sees air.
+  **`block-interaction`** and **`block-breaking`** are **one lecture in two
+  halves** (R6): both keep the **trace** shape and both open with the *same*
+  preamble stating the prediction ledger's contract — the ack is a receipt
+  for a number and not a verdict, and correctness comes from the ordering —
+  with the mechanism left to `prediction-and-acks`. Neither page re-derives
+  the ledger again. `block-interaction`'s hook: opening a door fires no
+  neighbour update at all, and the other half follows anyway, through the
+  one channel the client also runs. `block-breaking`'s hook is the hook bank's
+  block that comes back and vanishes again: releasing the button does not
+  cancel a break, and nothing the client does between the two can stop it.
+  **`block-entities`** keeps the **trace** shape and the furnace, reshaped to
+  the frame; the notebook calls it the best-shaped page in the part and this
+  session does not go looking for a reason to change it. Hook: a furnace
+  tells nobody anything — the fire is a block state, the arrow is four ints
+  from a menu, and both are a tick late because block entities tick last.
+  **`signal-and-dust`** takes the **trace** shape (lever, two dust) but the
+  notebook's wrong-shape finding is honoured in the figure: the cascade is
+  drawn as a **flowchart of one wire's recomputation and its hand-issued
+  fan-out**, not as a conversation, and the experimental evaluator is the
+  coda it belongs to rather than a page of its own. Hook: a line of dust
+  turning off counts down through every intermediate value because each wire
+  recomputes from scratch and then hand-notifies forty-two positions — and
+  the game ships a second implementation, behind a feature flag, that does
+  not. It owns the third direction order, `SignalGetter.DIRECTIONS`, and the
+  weak/strong distinction.
+  **`pistons-and-block-events`** keeps its **lanes** — the notebook says this
+  half is genuinely sequential — and owns the block-event queue, which is the
+  part's only *deferral* mechanism and is what makes the piston a tick late.
+  Hook: the moving blocks are never sent. The client re-runs the push itself
+  from one event packet, the placeholders are written with the tell-clients
+  bit deliberately clear, and no correction ever follows.
+  **`diodes-and-observers`** takes the **comparison** shape — repeater,
+  comparator and observer as three columns of *what it reads*, *how it books
+  its turn*, *how it outputs* — because that is exactly how they differ and
+  the old section read as three unrelated paragraphs. Hook: the observer, the
+  block whose whole job is noticing that something changed, is not on the
+  channel that carries change notifications, and neither is the repeater's
+  lock — both listen on the shape channel.
+  **What Part V no longer teaches.** `scheduled-ticks` (Part IV) owns the
+  appointment book, the priorities and the repeater's pulse extension;
+  `fluids` owns `LiquidBlock` and waterlogging; `prediction-and-acks` owns the
+  ledger; `game-events-and-vibrations` owns `GameEvent` posting;
+  `chunk-anatomy` owns the section and palette. The diodes page links to the
+  first for delay and priority rather than restating either.
+  **Lanes**: the Part V rows go into the key after drafting, from the
+  diagrams that actually exist, not before (session E's rule that a key row
+  is a claim). Four collisions with existing rows are resolved by lengthening
+  the later claimant: `LeverBlock` cannot be `LB` (`LiquidBlock`, session E)
+  and becomes `LevB`; `BlockItem` cannot be `BI` (`BucketItem`, session E) and
+  becomes `BItem`; `BlockPlaceContext` cannot be `PC` (`ProtoChunk`, session
+  E) and becomes `BPC`; `PistonStructureResolver` cannot be `PR`
+  (`PackRepository`, session C) and becomes `PSR`.
+  `check_lanes.py --strict --pages src/systems/blocks` before shipping.
+  *Done.* Part V is seven pages in a hub and six spokes, drawn on a new
+  landing page the sidebar's Part V opens on. **The hub's second half is the
+  part's real payload**: `blocks-and-states` now draws the tail of a write as
+  one flowchart spanning `LevelChunk.setBlockState` and `Level.setBlock`,
+  with every server-only step and its flag gate marked, and the other six
+  pages link to that anchor instead of restating the shape-versus-neighbour
+  distinction — the fix for the notebook's finding that three of five Part V
+  pages had it subtly wrong. `block-interaction` and `block-breaking` are one
+  lecture in two halves, opening with an identical four-sentence statement of
+  the prediction contract and leaving the machinery to
+  `prediction-and-acks`; the landing page rules that Part V is watched
+  *before* it, resolving the circular dependency section 5 flagged.
+  `block-entities` kept the furnace and gained the tick bars it needed.
+  **`redstone` split three ways** — `signal-and-dust` (the cascade drawn as a
+  flowchart rather than a conversation, with the experimental evaluator as
+  its coda), `pistons-and-block-events` (block events as a general mechanism,
+  then the piston) and `diodes-and-observers` (the repeater, comparator and
+  observer as a comparison table of what each reads, how each books its turn
+  and how each outputs) — and the old URL redirects to the first. R7's
+  new-page allowance was not spent, so the coverage queue still stands at
+  fifteen.
+
+  **The session was interrupted and lost five drafting agents**, four pages
+  in. The four drafted pages were complete on disk, but **two of the four
+  agent reports did not survive**, which is the part that matters: a page
+  whose claim-diff never arrived cannot be said to have been diffed.
+  `pass4.md` records the four classes of evidence explicitly and tells pass 4
+  to treat `blocks-and-states` and `block-entities` as unaudited and to diff
+  them against their pass-2 versions in git. The three redstone pages were
+  then written by the session itself from the decompile, method by method,
+  with every diagram read separately from its prose.
+
+  **Nine corrections re-derived by the session.** The largest is that
+  **block events are not "a tick late"** — the old `redstone` diagram said so,
+  but packets are drained before `MinecraftServer.tickServer` and the
+  *blockEvents* phase precedes *entities*, so an event queued by a packet
+  handler or a scheduled tick drains in the same tick, and only the entity
+  and block-entity phases push one over the boundary. `reference/glossary.md`
+  already had it right, so the corpus had been contradicting itself.
+  Next: **`RepeaterBlock.LOCKED` does not survive on a client** and the old
+  page's stated reason for saying it did was backwards —
+  `RepeaterBlock.updateShape` and `ObserverBlock.startSignal` both refuse to
+  run client-side, and a client keeps no appointment book to fire into.
+  Also: `blocks-and-states`' new hook overclaimed *you get air* and was
+  narrowed, because `ClientboundBlockUpdatePacket.STREAM_CODEC` throws on an
+  unknown id where `Block.stateById` does not; dust powers the block **below**
+  it and never the one above; `LeverBlock.pull` is handed a null player so
+  the clicker hears the server's sound, unlike the door; a diode's `FACING`
+  points at its **input**; `PistonBaseBlock.checkIfExtend` resolves as a dry
+  run before it queues anything; `ComparatorBlock.checkTickOnNeighbor` books
+  on a condition the repeater has no analogue of; and `SignalGetter.getSignal`
+  is a maximum of weak and strong power rather than a choice between them.
+  The one agent report the session did fully re-derive,
+  `block-interaction`'s, found six more, including that a player mid-use has
+  their queued right-clicks **discarded** rather than delivered.
+
+  Thirteen lane rows added and four collisions lengthened;
+  `check_lanes --strict --pages src/systems/blocks` is clean, **122 diagrams
+  render**, 18,194 names resolve, the class index is regenerated, the old
+  `redstone` URL redirects, and four cross-part links plus three glossary
+  entries were re-pointed at the right half of the split. Seven pages at
+  243–388 lines — the first part to land inside the length brief rather than
+  over it. Hand-offs in pass3.md (the shared anchor six pages depend on, the
+  split seams other parts link across, two Reference candidates for session O,
+  the lane ledger), pass4.md and pass5.md.

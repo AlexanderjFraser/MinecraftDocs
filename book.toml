@@ -50,3 +50,5 @@ level = 0
 "/systems/world/level-data-and-rules.html" = "../../reference/level-data-and-rules.html"
 "/systems/world/block-ticks-and-fluids.html" = "scheduled-ticks.html"
 "/systems/world/game-events-and-poi.html" = "points-of-interest.html"
+# Pass-3 session F: redstone split three ways (signal · pistons · diodes).
+"/systems/blocks/redstone.html" = "signal-and-dust.html"

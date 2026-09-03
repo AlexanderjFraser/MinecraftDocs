@@ -73,7 +73,7 @@ its state (a chest's contents, a furnace's progress), stored on the chunk. → [
 **Block event** — a message from a block to itself (a piston push, a note
 block, a chest lid), queued on `ServerLevel` and drained at one fixed point
 in the level tick — so it lands late, usually within the same tick — and
-mirrored to nearby clients as a packet. → [redstone](../systems/blocks/redstone.md)
+mirrored to nearby clients as a packet. → [pistons and block events](../systems/blocks/pistons-and-block-events.md)
 
 **BlockState** — one immutable combination of a block's properties,
 interned in `Block.BLOCK_STATE_REGISTRY` and compared by identity. → [blocks and states](../systems/blocks/blocks-and-states.md)
@@ -291,7 +291,7 @@ final classes, read and written through `NbtIo` and reached by codecs through
 
 **Neighbour update** — the server-only notification a block sends its six
 neighbours after a change; distinct from a *shape update*, which runs on
-both sides. → [block interaction](../systems/blocks/block-interaction.md)
+both sides. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
 **NBT path** — a compiled query over a tag — compounds, indexed lists,
 filtered lists, wildcards — that `/data` uses to read and write, and which
@@ -391,7 +391,7 @@ fixed interval. → [AI](../systems/entities/ai-goals-and-brains.md)
 watching clients were last told, and what to send them next. → [what the client is told](../systems/networking/what-the-client-is-told.md)
 
 **Shape update** — the "your neighbour changed, recompute yourself" call
-that runs on both client and server, unlike a neighbour update. → [block interaction](../systems/blocks/block-interaction.md)
+that runs on both client and server, unlike a neighbour update. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
 **Signed message** — a chat message carrying a signature over its content
 and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md)

@@ -8,12 +8,14 @@ a one-word class as itself, and a few words for things that are not classes.
 | lane | class |
 |---|---|
 | `ACM` | `AbstractContainerMenu` |
+| `AFBE` | `AbstractFurnaceBlockEntity` |
 | `AP` | `AcquirePoi` |
 | `ATS` | `AttributeTrackSampler` |
 | `BEL` | `BlockableEventLoop` |
 | `BI` | `BucketItem` |
 | `BIR` | `BuiltInRegistries` |
 | `BLE` | `BlockLightEngine` |
+| `Block` | `Block` |
 | `Boot` | `Bootstrap` |
 | `Brain` | `Brain` |
 | `Camera` | `Camera` |
@@ -25,6 +27,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CHPL` | `ClientHandshakePacketListenerImpl` |
 | `CL` | `ClientLevel` |
 | `CM` | `ChunkMap` |
+| `CNU` | `CollectingNeighborUpdater` |
 | `Comp` | `Component` |
 | `Conn` | `Connection` |
 | `CPL` | `ClientPacketListener` |
@@ -32,10 +35,12 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CT` | `CombatTracker` |
 | `CTD` | `ChunkTaskDispatcher` |
 | `CU` | `ComponentUtils` |
+| `DB` | `DoorBlock` |
 | `DCP` | `DataComponentPatch` |
 | `DL` | `DirectoryLock` |
 | `DM` | `DistanceManager` |
 | `DMR` | `DefaultedMappedRegistry` |
+| `DRWE` | `DefaultRedstoneWireEvaluator` |
 | `DS` | `DedicatedServer` |
 | `DScr` | `DeathScreen` |
 | `EAP` | `EnvironmentAttributeProbe` |
@@ -46,6 +51,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `ETL` | `EntityTickList` |
 | `EVS` | `EnvironmentAttributeSystem.ValueSampler` |
 | `FF` | `FlowingFluid` |
+| `FM` | `FurnaceMenu` |
 | `Font` | `Font` |
 | `GED` | `GameEventDispatcher` |
 | `GR` | `GameRenderer` |
@@ -67,6 +73,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `LC` | `LevelChunk` |
 | `LCT` | `LoadingChunkTracker` |
 | `LCTs` | `LevelChunkTicks` |
+| `LevB` | `LeverBlock` |
 | `Level` | `Level` |
 | `LIF` | `LootItemFunctions` |
 | `LLSS` | `LayerLightSectionStorage` |
@@ -80,12 +87,14 @@ a one-word class as itself, and a few words for things that are not classes.
 | `MC` | `Minecraft` |
 | `MComp` | `MutableComponent` |
 | `Mob` | `Mob` |
+| `MPGM` | `MultiPlayerGameMode` |
 | `MPRM` | `MultiPackResourceManager` |
 | `MR` | `MappedRegistry` |
 | `MS` | `MinecraftServer` |
 | `NbtIo` | `NbtIo` |
 | `NS` | `NaturalSpawner` |
 | `Parrot` | `Parrot` |
+| `PBB` | `PistonBaseBlock` |
 | `PCS` | `PlayerChunkSender` |
 | `PDec` | `PacketDecoder` |
 | `PDM` | `PatchedDataComponentMap` |
@@ -95,10 +104,12 @@ a one-word class as itself, and a few words for things that are not classes.
 | `PL` | `PlayerList` |
 | `Player` | `Player` |
 | `PM` | `PoiManager` |
+| `PMBE` | `PistonMovingBlockEntity` |
 | `PN` | `PathNavigation` |
 | `PP` | `PacketProcessor` |
 | `PR` | `PackRepository` |
 | `PRL` | `PreparableReloadListener` |
+| `PSR` | `PistonStructureResolver` |
 | `PST` | `PrepareSpawnTask` |
 | `PTT` | `DistanceManager.PlayerTicketTracker` |
 | `RB` | `RepeaterBlock` |
@@ -111,6 +122,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `RS` | `RenderSystem` |
 | `RSR` | `ReloadableServerResources` |
 | `RSReg` | `ReloadableServerRegistries` |
+| `RSWB` | `RedStoneWireBlock` |
 | `RSyn` | `RegistrySynchronization` |
 | `SAI` | `SpatialAttributeInterpolator` |
 | `SC` | `StopCommand` |
@@ -128,6 +140,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `SL` | `ServerLevel` |
 | `SLPL` | `ServerLoginPacketListenerImpl` |
 | `SP` | `ServerPlayer` |
+| `SPGM` | `ServerPlayerGameMode` |
 | `SR` | `SkyRenderer` |
 | `SRI` | `SimpleReloadInstance` |
 | `SRT` | `SynchronizeRegistriesTask` |

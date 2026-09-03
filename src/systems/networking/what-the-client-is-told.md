@@ -373,7 +373,7 @@ the set:
 
 The rest of the block-shaped traffic:
 `ClientboundBlockEventPacket` from the deferred event set
-([redstone](../blocks/redstone.md)),
+([pistons and block events](../blocks/pistons-and-block-events.md)),
 `ClientboundBlockDestructionPacket` for other players' mining progress,
 `ClientboundBlockChangedAckPacket`, sent at most once per connection per
 tick and on any tick where the client sent a block action, a use-on or a

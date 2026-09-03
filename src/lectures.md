@@ -123,7 +123,39 @@ it is Reference, and this part and Part III both link into it.
 
 ## V · Blocks
 
-*Filled by session F.*
+Part V is a hub and six spokes, and the hub is watched first because the
+other six all reach back into the same figure in it: what `Level.setBlock`
+and `LevelChunk.setBlockState` do once the section has been written. Two of
+the six are one lecture in two halves.
+
+1. [Blocks and states](systems/blocks/blocks-and-states.md) — the state
+   table, built before any world exists, and the write. The most linked-to
+   figure in the part is in its second half.
+2. [Block interaction](systems/blocks/block-interaction.md) — the right
+   click: a door opened by hand, and no neighbour update anywhere.
+3. [Block breaking](systems/blocks/block-breaking.md) — the same lecture's
+   other half: two clocks, no packets between them, and the block that comes
+   back and vanishes again. Watch it immediately after, and never apart
+   from it.
+4. [Block entities](systems/blocks/block-entities.md) — a furnace that tells
+   nobody anything. Self-contained, and the part's most watchable lecture on
+   its own.
+5. [Signal and dust](systems/blocks/signal-and-dust.md) — a lever, two dust,
+   forty-two neighbour updates per wire, and a second implementation behind
+   a feature flag. Assumes [scheduled
+   ticks](systems/world/scheduled-ticks.md) only lightly.
+6. [Pistons and block events](systems/blocks/pistons-and-block-events.md) —
+   the part's one deferral mechanism, and the one place the client is handed
+   a re-simulation instead of a result.
+7. [Diodes and the observer](systems/blocks/diodes-and-observers.md) — the
+   closer. Assumes [scheduled ticks](systems/world/scheduled-ticks.md)
+   properly: a repeater's delay is an entry in that queue.
+
+Part V's two click lectures are the applications of [prediction and
+acknowledgement](systems/client/prediction-and-acks.md) in Part X, and that
+page's own scenario needs this part's vocabulary. The dependency is
+circular and this book cuts it here: both click pages open with the same
+statement of the contract, and the machinery waits for Part X.
 
 ## VI · Entities
 

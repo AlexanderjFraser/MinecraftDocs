@@ -1641,3 +1641,78 @@ writes one strikes it through; a session that rules one out says why, here.*
   session E spent no R7 allowance — its two new pages are the notebook's
   confirmed splits, not new coverage. The queue still stands at fifteen
   items.
+
+### Session F (Part V Blocks) — for later sessions
+
+**A part session can lose its drafting agents, and the recovery is cheap if
+the seams were written down first.** This session was interrupted with four
+of seven pages drafted; five agents were killed and could not be resumed. The
+four drafted pages were all complete on disk, but two of the four reports
+were lost, which is the real cost — a page whose claim-diff never arrived is
+a page pass 4 has to treat as unaudited (recorded in
+[pass4.md](pass4.md)). The three undrafted pages were then written by the
+session directly from the decompile, which cost about as much as reviewing
+three drafts would have. **The lesson for the remaining part sessions: the
+per-page seam rulings in the log are what made the recovery possible, so keep
+writing them before dispatching, and consider having agents report
+incrementally rather than only at the end.**
+
+**Part V's shape settled as a hub and six spokes, and the hub is the write,
+not the state table.** The notebook called `blocks-and-states` the hub
+because everything reaches back into it; what they actually reach for is the
+tail of `Level.setBlock` and `LevelChunk.setBlockState`, now drawn once as a
+single flowchart under the anchor
+`blocks-and-states.md#the-two-update-channels`. Six pages link to that
+anchor. **Any later session that moves or renames that section breaks six
+links**, and Parts VI, IX and X are all likely to want to link to it too.
+
+**The redstone split is executed and is three pages**, `signal-and-dust`
+(signal reading, the wire, both evaluators, the torch), `pistons-and-block-events`
+(the block-event mechanism in general, then the piston) and
+`diodes-and-observers` (repeater, comparator, observer as a comparison).
+`redstone.md` is deleted and redirects to the first. Note where the seams
+landed, because other parts link across them: **`pistons-and-block-events`
+owns block events as a general mechanism**, which nothing else in the corpus
+explains and which Part X's `what-the-client-is-told` and the glossary both
+point at now; **`signal-and-dust` owns weak versus strong power and the third
+direction order**; **`diodes-and-observers` owns
+`Level.updateNeighbourForOutputSignal`'s meaning**, though its call site is
+drawn in `blocks-and-states`' flowchart.
+
+**For session G (Part VI Entities).** `pistons-and-block-events` names
+`MoverType.PISTON` and `PistonMovingBlockEntity.moveCollidedEntities` and
+links to `movement-and-collision.md` for both — that link was re-pointed from
+the old `redstone.md` this session. `block-breaking` hands `ItemEntity` and
+`ExperienceOrb` to Part VI as before.
+
+**For session K (Part X The client).** `prediction-and-acks` is now the owner
+of the ledger for real: both Part V click pages carry an identical
+four-sentence preamble stating the contract and nothing else, and neither
+re-derives the machinery. **If session K changes what the contract says, the
+two preambles must change with it, and they must stay identical to each
+other.** Part V's landing page also rules that Part V is watched *before*
+`prediction-and-acks`, resolving the circular dependency the notebook flagged
+in section 5 — session P should carry that ruling into `lectures.md`'s
+cross-part section.
+
+**For session O (Reference).** Two catalogue candidates surfaced and were
+deliberately not written: the **block-event users** (four blocks and seven
+block entities, with their two int parameters), currently a paragraph in
+`pistons-and-block-events`; and the **update-flag bit table**, currently a
+ten-row table in `blocks-and-states` that four other pages reference in
+prose. The flag table is the stronger Reference candidate of the two — it is
+exactly the thing a viewer would pause the video to read.
+
+**The coverage queue is unchanged at fifteen items.** Part V has no entry in
+section 7 and session F spent no R7 allowance: its two extra pages are the
+notebook's confirmed split, not new coverage.
+
+**Lane ledger.** Thirteen rows added to the key in `TEMPLATE.md` (`Block`,
+`MPGM`, `SPGM`, `CNU`, `DB`, `AFBE`, `FM`, `LevB`, `RSWB`, `DRWE`, `PBB`,
+`PSR`, `PMBE`), all of them used by a diagram that exists. Four collisions
+were resolved by lengthening the later claimant and are recorded under the
+key: `LeverBlock` is `LevB` (`LB` is `LiquidBlock`), `BlockItem` would be
+`BItem` (`BI` is `BucketItem`), `BlockPlaceContext` would be `BPC` (`PC` is
+`ProtoChunk`), and `PistonStructureResolver` is `PSR` (`PR` is
+`PackRepository`). The last two of those are recorded but **not yet used by
+any page** — a later session may claim them or free them.
