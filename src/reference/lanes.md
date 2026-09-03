@@ -34,8 +34,10 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CHPL` | `ClientHandshakePacketListenerImpl` |
 | `CI` | `CraftingInput` |
 | `CL` | `ClientLevel` |
+| `CLis` | `ChatListener` |
 | `CM` | `ChunkMap` |
 | `CMap` | `ContextMap` |
+| `CMTE` | `ChunkMap.TrackedEntity` |
 | `CNU` | `CollectingNeighborUpdater` |
 | `Comp` | `Component` |
 | `Conn` | `Connection` |
@@ -44,6 +46,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `CR` | `CombatRules` |
 | `CraftM` | `CraftingMenu` |
 | `CS` | `ComponentSerialization` |
+| `CScr` | `ChatScreen` |
 | `CSync` | `ContainerSynchronizer` |
 | `CT` | `CombatTracker` |
 | `CTD` | `ChunkTaskDispatcher` |

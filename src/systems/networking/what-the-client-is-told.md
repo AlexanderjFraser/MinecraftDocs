@@ -2,543 +2,458 @@
 
 > Verified against **Minecraft 26.2** · Part IX · a creeper walks into view: everything the server decides to say, in order, and everything it decides not to.
 
-## Responsibility
+A creeper three chunks away steps across a section boundary, and inside that
+tick the server decides a player may know about it. One bundled packet goes
+out, and the position in that packet is not where the creeper is. It is where
+the creeper's tracker last *said* it was — stale by at least the entity's
+update interval and, for an entity sitting in a chunk that is loaded but not
+ticking, stale by no bounded amount at all. That is not a bug being
+tolerated. Every viewer has to start dead reckoning from an identical base,
+so **the server sends the base rather than the truth**, and the rest of this
+page is that trade made over and over: which chunks a player is sent and how
+fast, which entities they are told about, and what counts as a change worth
+a packet.
 
-The server has the world. The client has a copy, and the copy is
-deliberately incomplete. This page is about the choosing: which chunks a
-player is sent and how fast, which entities they are told about, what
-counts as a change worth a packet, and what the client invents to fill
-the gaps.
+## The cast
 
-The one sentence a player would recognise: *the world loads in, and mobs
-appear when they get close enough.*
+| class | what it decides | thread |
+|---|---|---|
+| `ChunkMap` | which players can see which chunks and which entities — it owns both maps | Server |
+| `ChunkMap.TrackedEntity` | one entity's audience, `ChunkMap.TrackedEntity.seenBy`, and the range test that fills it | Server |
+| `ServerEntity` | the change detector: the dead-reckoning baseline, the interval gate, the packet shape | Server |
+| `ChunkTrackingView` | which chunks a player has been sent, and what a movement turns into | Server |
+| `PlayerChunkSender` | how many chunks leave for one player this tick | Server |
+| `ChunkHolder` | the per-chunk block-change batch, one flush a tick | Server |
+| `EntityType` | the per-type tracking range, update interval and delta exclusion | static, from the builder |
+| `ChunkBatchSizeCalculator` | the client's answer — how many chunks a tick it wants | client Netty thread, and it never hops |
 
-The headline for a 1.21-era reader: **`ClientLevel` is not a cache, it is
-a fiction that is periodically corrected.** It never admits a chunk is
-missing, it ticks entities it does not own — while refusing to simulate
-their movement or their AI — it computes its own light, and it guesses at
-block placements and rolls them back. And the introduction packet for a
-new entity describes not where the entity *is* but where the tracker last
-*said* it was.
+## One entity's tick, and the gates it does not pass
 
-## The data it owns
+```mermaid
+flowchart TD
+    TICK["ChunkMap.tick walks every tracked entity, in the chunk-source phase, before entities tick"] --> SEC{"did the entity change section"}
+    SEC -- yes --> UP["ChunkMap.TrackedEntity.updatePlayer, once per player in the level"]
+    UP --> G1{"gate 1: three conjuncts, all required"}
+    G1 -- "horizontal range, and Entity.broadcastToPlayer, and ChunkMap.isChunkTracked" --> IN["seenBy gains the connection: ServerEntity.addPairing sends the introduction bundle"]
+    G1 -- "any one false" --> OUT["seenBy loses it: ClientboundRemoveEntitiesPacket"]
+    SEC -- no --> G2{"gate 2: is the change detector called at all"}
+    IN --> G2
+    OUT --> G2
+    G2 -- "changed section, or Entity.needsSync, or the chunk is in entity-ticking range" --> SC["ServerEntity.sendChanges"]
+    G2 -- "none of the three" --> MUTE["nothing, and the call counter does not advance"]
+    SC --> FREE["ungated: a changed passenger list, an item frame's map every tenth call, and Entity.hurtMarked knockback"]
+    SC --> G3{"gate 3: three disjuncts, any one opens it"}
+    G3 -- "the call count is a multiple of EntityType.updateInterval, or Entity.needsSync, or the synched data is dirty" --> D["three decisions"]
+    G3 -- "none of the three" --> WAIT["wait for a later call"]
+    D --> D1{"relative or absolute"}
+    D1 -- "the delta fits a short, and precision is not demanded, and the ground flag held, and the teleport delay is within ServerEntity.FORCED_TELEPORT_PERIOD" --> REL["ClientboundMoveEntityPacket.Pos, .Rot or .PosRot"]
+    D1 -- otherwise --> ABS["ClientboundEntityPositionSyncPacket, and the teleport delay resets"]
+    D --> D2["head yaw: its own ClientboundRotateHeadPacket, whenever it moved by a byte"]
+    D --> D3["velocity: ClientboundSetEntityMotionPacket, only for a tracked-delta type, a needsSync, or an elytra flight"]
+```
 
-### On the server
+The figure is the page. Three gates stand between an entity moving and a
+player hearing about it, and each is a three-term test: gate 1 is a
+conjunction, where all three must hold, and gates 2 and 3 are disjunctions,
+where any one term is enough. What comes out the bottom is not a description
+of the entity but a description of the *difference* between the entity and
+what this viewer was last told. The sections below are one per gate, then one
+per feed that does not go through them at all.
 
-- **`PlayerChunkSender`** — one per connection, reachable as
-  `ServerGamePacketListenerImpl.chunkSender`. It holds
-  `PlayerChunkSender.pendingChunks` (packed positions),
-  `PlayerChunkSender.desiredChunksPerTick` (what the *client* asked
-  for), `PlayerChunkSender.batchQuota` (a fractional budget
-  accumulator), and `PlayerChunkSender.unacknowledgedBatches` against
-  `PlayerChunkSender.maxUnacknowledgedBatches`. The clamps are
-  `PlayerChunkSender.MIN_CHUNKS_PER_TICK` and
-  `PlayerChunkSender.MAX_CHUNKS_PER_TICK`.
-- **`ChunkTrackingView`** — the set of chunks a player has been sent.
-  `ChunkTrackingView.Positioned` is a centre and a radius, and
-  `ChunkTrackingView.difference` is what turns a movement into an
-  enter/leave pair. It is round-cornered rather than
-  either a disc or a square: `ChunkTrackingView.isWithinDistance`
-  shrinks each axis delta by a small buffer *before* the squared compare,
-  so the region reaches a chunk further along each axis than it does
-  diagonally. `ChunkTrackingView.Positioned` iterates one chunk beyond
-  the view distance for exactly that reason.
-- **`ChunkMap.TrackedEntity`** — one per tracked entity, holding the
-  `ServerEntity`, the range in blocks, the last section, and
-  `ChunkMap.TrackedEntity.seenBy`, an identity set of connections. It
-  implements `ServerEntity.Synchronizer`, whose three verbs are
-  `ServerEntity.Synchronizer.sendToTrackingPlayers`,
-  `ServerEntity.Synchronizer.sendToTrackingPlayersAndSelf` and
-  `ServerEntity.Synchronizer.sendToTrackingPlayersFiltered`.
-- **`ServerEntity`** — the change detector. It owns the dead-reckoning
-  baseline: `ServerEntity.positionCodec` (a `VecDeltaCodec`),
-  `ServerEntity.lastSentYRot`, `ServerEntity.lastSentXRot`,
-  `ServerEntity.lastSentYHeadRot`, `ServerEntity.lastSentMovement`, plus `ServerEntity.tickCount`,
-  `ServerEntity.teleportDelay`, `ServerEntity.lastPassengers`,
-  `ServerEntity.wasRiding` and `ServerEntity.wasOnGround`. Its four
-  constants are `ServerEntity.TOLERANCE_LEVEL_POSITION`,
-  `ServerEntity.TOLERANCE_LEVEL_ROTATION`,
-  `ServerEntity.FORCED_POS_UPDATE_PERIOD` and
-  `ServerEntity.FORCED_TELEPORT_PERIOD`.
-- **`ChunkHolder`** — the per-chunk block-change batch:
-  `ChunkHolder.changedBlocksPerSection`, one short set per section,
-  plus `ChunkHolder.skyChangedLightSectionFilter` and
-  `ChunkHolder.blockChangedLightSectionFilter`. See
-  [tickets and loading](../world/tickets-and-loading.md).
+> **For a 1.21-era reader.** `PlayerChunkSender` is in `server/network`, not
+> `server/level`. And routine movement no longer travels as
+> `ClientboundTeleportEntityPacket`: that packet survives, but `ServerEntity`
+> never touches it, and an absolute position is
+> `ClientboundEntityPositionSyncPacket`.
 
-`ServerEntity.trackedDataValues` is the cached snapshot of the entity's
-non-default synched values, refreshed whenever dirty data is flushed; it
-is what a *new* viewer is replayed.
+### Gate 1: who is allowed to see it
 
-Per-entity tracking parameters are on the type:
-`EntityType.clientTrackingRange` (in chunks) and
-`EntityType.updateInterval` (in ticks), both builder values.
-`EntityType.trackDeltas` looks like a third but is a hardcoded exclusion
-list — players, llama spit, the wither, bats, item frames, leash knots,
-paintings, end crystals and evoker fangs are out, everything else is in.
+`ChunkMap.tick` re-tests visibility only when something moved between
+sections — the entity's own section against the tracker's last, and, for
+players who changed section, every entity against that player. `ChunkMap.move`
+does the same eagerly the moment a player crosses a boundary
+([tickets and loading](../world/tickets-and-loading.md)). The test itself is
+three conjuncts.
 
-Two flags on the entity itself override all of this, and both are public
-fields rather than anything ceremonious. **`Entity.needsSync`** forces
-the issue at three separate decisions — whether `ChunkMap` calls the
-change detector at all, whether the interval gate opens, and whether
-velocity is re-sent — and is set by being pushed, by being loaded from
-disk, and by a dozen classes for their own reasons.
-**`Entity.syncPosition`** does something subtler: it re-phases the call
-counter to the next interval boundary, so a bounced entity syncs at once
-rather than up to an interval late.
+**The distance is horizontal.** `ChunkMap.TrackedEntity.updatePlayer` compares
+squared *x/z* distance against the smaller of the entity's effective range and
+the player's view distance in blocks. **Y is ignored entirely** — an entity
+directly above you, at any height, is in range.
 
-### On the client
+**The range is the maximum over the whole vehicle stack.**
+`ChunkMap.TrackedEntity.getEffectiveRange` takes the largest
+`EntityType.clientTrackingRange` among the entity and all its indirect
+passengers, then scales it by `MinecraftServer.getScaledTrackingDistance`,
+which both server classes override: `DedicatedServer` applies the
+*entity-broadcast-range-percentage* property, and `IntegratedServer` applies
+the client's own **Entity Distance** video option. In singleplayer a graphics
+slider decides how far away mobs are tracked.
 
-- **`ClientPacketListener`** — applies everything. It holds
-  `ClientPacketListener.serverChunkRadius`,
-  `ClientPacketListener.serverSimulationDistance` and the
-  `ChunkBatchSizeCalculator`.
-- **`ChunkBatchSizeCalculator`** — the round-trip meter, with
-  `ChunkBatchSizeCalculator.aggregatedNanosPerChunk`,
-  `ChunkBatchSizeCalculator.oldSamplesWeight` against
-  `ChunkBatchSizeCalculator.MAX_OLD_SAMPLES_WEIGHT`, and
-  `ChunkBatchSizeCalculator.CLAMP_COEFFICIENT`.
-- **`ClientChunkCache`** and its nested `ClientChunkCache.Storage` — a
-  fixed **torus** of chunk slots, `ClientChunkCache.Storage.chunks`, an
-  atomic array of `(2r+1)²` entries indexed modulo the view range, with
-  volatile centre coordinates because the render thread reads them.
-- **`ClientLevel`** — `ClientLevel.tickingEntities`,
-  `ClientLevel.entityStorage` (a `TransientEntitySectionManager`, not
-  the server's persistent one), `ClientLevel.lightUpdateQueue`,
-  `ClientLevel.destroyingBlocks`, `ClientLevel.tintCaches`,
-  `ClientLevel.clientLevelData`, and the prediction ledger
-  `BlockStatePredictionHandler`.
+**And the chunk must already be there.** `Entity.broadcastToPlayer` is the
+per-entity veto a few types use to hide from some viewers, and
+`ChunkMap.isChunkTracked` is false while the chunk is still queued in
+`PlayerChunkSender`, so an entity is never sent before the ground it stands
+on — the ordering is guaranteed rather than hoped for.
 
-## When it runs
+One case never reaches the test at all: `ChunkMap.TrackedEntity.updatePlayer`
+returns immediately for the player's own entity. **You never track yourself.**
+That is why `ServerEntity.Synchronizer` has three verbs and not one —
+`ServerEntity.Synchronizer.sendToTrackingPlayers`,
+`ServerEntity.Synchronizer.sendToTrackingPlayersAndSelf` and
+`ServerEntity.Synchronizer.sendToTrackingPlayersFiltered` — and why damage,
+knockback and synched data must all reach for the self-directed one.
 
-Everything the server sends is decided on the **server main thread**, in
-a fixed order within the tick:
-
-1. `ServerLevel.tick` runs `ServerChunkCache.tick`, whose
-   `ServerChunkCache.tickChunks` calls
-   `ServerChunkCache.broadcastChangedChunks` — one flush of all block
-   changes accumulated this tick — and then `ChunkMap.tick`, which
-   re-evaluates entity visibility and calls `ServerEntity.sendChanges`.
-   Both run **before** the entity-tick phase — but well after the
-   scheduled block and fluid ticks, the random ticks and mob spawning.
-   So a broadcast carries this tick's block changes and the *previous*
-   tick's entity-driven ones.
-2. After every level has ticked, `MinecraftServer.tickChildren` runs the
-   chunk-sending phase: `PlayerChunkSender.sendNextChunks` once per
-   player.
-3. Flushing is suspended for the whole tick and resumed at the end of
-   that phase, so one tick of traffic to one player is one flush — see
-   [the connection](the-connection.md).
-
-On the client the cadence is the other way round.
-`PacketProcessor.processQueuedPackets` runs **once per frame**, inside
-`Minecraft.runTick` and *before* that frame's client ticks — of which
-there may be none, or as many as ten. So a burst of packets is applied in
-one lump, but the lump lands between frames, not between ticks: at a high
-frame rate the client applies the server's updates far more often than it
-ticks.
-
-Eight of `ClientPacketListener`'s handlers never hop at all and run on
-the Netty thread. Two of them are on the chunk path —
-`ClientPacketListener.handleChunkBatchStart` and
-`ClientPacketListener.handleChunkBatchFinished` — and the rest are the
-combat-state pair, the custom payload, the debug sample, the pong and
-the low-disk-space warning.
-
-## Chunk sending
-
-`ChunkMap.applyChunkTrackingView` diffs the player's old and new tracking
-discs; entering chunks are queued with
-`PlayerChunkSender.markChunkPendingToSend`; leaving chunks are dropped
-with `ClientboundForgetLevelChunkPacket` — unless they were still only
-pending, in which case they leave the queue and the client is told
-nothing, because it was never told anything.
-A chunk that only *becomes* ready is queued by
-`ChunkMap.onChunkReadyToSend`. When the centre moves, a
-`ClientboundSetChunkCacheCenterPacket` goes first. The radius is the
-client's requested view distance clamped between `ChunkMap.MIN_VIEW_DISTANCE`
-and the server's own.
-
-`PlayerChunkSender.sendNextChunks` then, each tick:
-
-- stops if too many batches are unacknowledged —
-  `PlayerChunkSender.maxUnacknowledgedBatches` **starts at one** and is
-  raised to ten on the first acknowledgement, so the first batch after
-  login is a hard round-trip barrier;
-- accumulates `PlayerChunkSender.batchQuota` by the client's desired
-  rate and stops if it is below one;
-- takes that many chunks, **nearest first**, from
-  `PlayerChunkSender.pendingChunks` — or, on a memory connection or
-  whenever fewer are pending than the budget allows, all of them at once;
-- brackets them with `ClientboundChunkBatchStartPacket` and
-  `ClientboundChunkBatchFinishedPacket`.
-
-The client times the batch in `ChunkBatchSizeCalculator`, clamps the
-sample against the running average, folds it into a weighted mean, and
-reports back a rate in `ServerboundChunkBatchReceivedPacket`. The server
-clamps that and uses it as next tick's budget. It is a closed control
-loop whose set point is **seven milliseconds of client time per tick**:
-`ChunkBatchSizeCalculator` divides that budget by its running estimate of
-nanoseconds per chunk. It starts pessimistic — two milliseconds a chunk,
-so the client's opening ask is three and a half chunks a tick against the
-server's starting nine.
-
-A chunk packet — `ClientboundLevelChunkWithLightPacket` — carries only
-the client-facing heightmaps (the worldgen ones never cross), every
-section's paletted block states and biomes, a block-entity entry per
-block entity holding `BlockEntity.getUpdateTag` rather than its save
-data, and the light layers. See
-[chunk anatomy](../world/chunk-anatomy.md) and
-[lighting](../world/lighting.md).
-
-## The trace: a creeper walks into view
+### The introduction is one bundle
 
 ```mermaid
 sequenceDiagram
     participant CM as ChunkMap
-    participant TE as ChunkMap.TrackedEntity
+    participant CMTE as ChunkMap.TrackedEntity
     participant SE as ServerEntity
     participant CPL as ClientPacketListener
-    participant CL as ClientLevel
 
-    CM->>TE: tick — the creeper changed section, so re-evaluate everyone
-    TE->>TE: horizontal distance only, against the smaller of range and view
-    TE->>TE: is the creeper's chunk already sent to this player?
-    TE->>SE: addPairing — the player is now in seenBy
-    SE->>CPL: one ClientboundBundlePacket, applied atomically
-    Note over SE,CPL: add entity · entity data · attributes · equipment · passengers
-    CPL->>CL: createEntityFromPacket, placed at the tracker's baseline
-    SE->>CPL: ClientboundMoveEntityPacket.PosRot — deltas in 1/4096 blocks
-    SE->>CPL: ClientboundRotateHeadPacket — always its own packet
-    CPL->>CL: moveOrInterpolateTo — smeared over three client ticks
-    SE->>CPL: ClientboundSetEntityDataPacket — only the dirty values
-    CL->>CL: Creeper.tick runs locally#59; the swell counter is the client's own
+    CM->>CMTE: the creeper changed section, so re-test every player
+    CMTE->>CMTE: range, veto and chunk-tracked all hold, so seenBy gains this connection
+    CMTE->>SE: addPairing
+    SE->>SE: sendPairingData fills one list, in a fixed order
+    SE->>CPL: one ClientboundBundlePacket
+    Note over SE,CPL: add-entity at the tracker baseline, then synched data, attributes, equipment, passengers, leash
+    CPL->>CPL: the bundle is applied inside one task, so nothing renders half-built
 ```
 
-Each arrow is a decision.
+`ServerEntity.sendPairingData` produces the list and `ServerEntity.addPairing`
+sends it as a single `ClientboundBundlePacket`, so the creeper can never be
+seen half-initialised. The synched values are not read fresh: they come from
+`ServerEntity.trackedDataValues`, the cached snapshot of the entity's
+non-default values, refreshed whenever dirty data is flushed
+([synched entity data](../entities/synched-entity-data.md)). Only the syncable
+attributes go ([attributes](../entities/attributes.md)), and equipment,
+passengers and leash links go only if there are any.
 
-**Visibility is re-evaluated when something moves.** `ChunkMap.tick`
-compares each tracked entity's section against its last, and on a change
-re-tests against every player. Players who changed section are re-tested
-against every entity. `ChunkMap.move` does the same eagerly when a player
-moves.
+The add packet is the page's hook, and it has two exceptions and one refusal.
+Paintings and item frames build their own `ClientboundAddEntityPacket` from
+their real position, bypassing `ServerEntity` entirely, because a
+block-attached entity has no dead reckoning to agree about. `Marker` throws
+outright if anyone asks — which nobody does, because its tracking range is
+zero and `ChunkMap` never tracks it. Everything else reads its position from
+`ServerEntity.getPositionBase` and its rotations and motion from the last-sent
+fields, however old they are.
 
-**The test is horizontal.** `ChunkMap.TrackedEntity.updatePlayer`
-compares squared *x/z* distance against the smaller of the entity's
-effective range and the player's view distance. **Y is ignored** — an
-entity directly above you at any height is in range.
+### Gate 2: whether the detector is called at all
 
-**Range is the maximum over the whole vehicle stack.**
-`ChunkMap.TrackedEntity.getEffectiveRange` takes the largest range among
-the entity and all its passengers, then scales it by
-`MinecraftServer.getScaledTrackingDistance`, which both server classes
-override: `DedicatedServer` applies the
-*entity-broadcast-range-percentage* property, and `IntegratedServer`
-applies the client's own **Entity Distance** video option. In
-singleplayer a graphics slider decides how far away mobs are tracked.
+`ChunkMap.tick` calls `ServerEntity.sendChanges` when *any* of three things is
+true: the entity changed section, `Entity.needsSync` is set, or its chunk is in
+entity-ticking range. Two public fields on `Entity` do the forcing.
+`Entity.needsSync` appears at this gate, again at gate 3 and again in the
+velocity decision — three of the cascade's terms are the same flag — and is
+set by being pushed, by being loaded from disk, and by a dozen classes for
+their own reasons. `Entity.syncPosition` is subtler: it re-phases the call
+counter to the next interval boundary, so a bounced entity syncs at once
+rather than up to an interval late.
 
-**An entity is never sent before its chunk.** The visibility test is
-three conjuncts, not two: the horizontal range, `ChunkMap.isChunkTracked`
-— false while the chunk is still pending, so the ordering is guaranteed
-rather than hoped for — and `Entity.broadcastToPlayer`, the per-entity
-veto that a few types use to hide themselves from some viewers.
+The two counters inside `ServerEntity` are deliberately out of step.
+`ServerEntity.tickCount` advances on every call, gate 3 open or shut, so
+`ServerEntity.FORCED_POS_UPDATE_PERIOD` counts *calls*.
+`ServerEntity.teleportDelay` advances only inside gate 3, so
+`ServerEntity.FORCED_TELEPORT_PERIOD` counts *gated* calls — the forced
+absolute sync is rarer than the forced position packet by however long the
+interval gate stays shut.
 
-**The introduction is one bundle.** `ServerEntity.addPairing` collects
-what `ServerEntity.sendPairingData` produces and sends it as a single
-`ClientboundBundlePacket`, which the client applies inside one task —
-so the creeper can never be rendered half-initialised. The order is:
-add-entity, then `ClientboundSetEntityDataPacket` with the non-default
-synched values ([synched entity data](../entities/synched-entity-data.md)),
-then `ClientboundUpdateAttributesPacket` with only the syncable
-attributes ([attributes](../entities/attributes.md)), then
-`ClientboundSetEquipmentPacket`, then passenger and leash links.
+This is also where a distant entity goes quiet, and the silence is
+conditional. Being out of entity-ticking range only suppresses the detector
+while the entity *also* stays inside its section and leaves `Entity.needsSync`
+clear. Either of those breaks it, which is why a far-off mob can freeze for a
+long time and then correct itself in one jump.
 
-**The add packet describes the tracker's baseline, not the entity — with
-two exceptions and one refusal.** Paintings and item frames build their
-own `ClientboundAddEntityPacket` from their real position, bypassing
-`ServerEntity` entirely, because a block-attached entity has no dead
-reckoning to agree about; and `Marker` throws outright if anyone tries,
-which nobody does, because its tracking range is zero and `ChunkMap`
-never tracks it. For everything else
-`ClientboundAddEntityPacket` reads position from
-`ServerEntity.getPositionBase` and rotations and motion from the
-last-sent fields. Those are stale by at least the update interval and,
-for an entity that is loaded but not being ticked and has not changed
-section, by no bounded amount at all. Every viewer therefore starts dead
-reckoning from an identical base, however old.
-
-**Then only changes, behind two gates that are not the one you would
-guess.** `ChunkMap.tick` calls `ServerEntity.sendChanges` at all when
-*any* of three things is true: the entity changed section, its
-`Entity.needsSync` flag is set, or its chunk is in entity-ticking range.
-Inside, the position work runs when *any* of three more is true: the
-call count is a multiple of `EntityType.updateInterval`,
-`Entity.needsSync` again, or the synched data is dirty. The call counter
-advances on every call, gate or no gate, so
-`ServerEntity.FORCED_POS_UPDATE_PERIOD` counts calls;
-`ServerEntity.teleportDelay` advances only inside the gate and so counts
-gated ones. Position goes relative
-(`ClientboundMoveEntityPacket` with short deltas of 1/4096 block) unless
-something forces an absolute `ClientboundEntityPositionSyncPacket`. Head
-yaw is always its own `ClientboundRotateHeadPacket`. Synched data and
-attributes go only when dirty.
-
-**The client interpolates the position — if the entity is one of the ten
-kinds that can.** `Entity.moveOrInterpolateTo` asks the entity for an
-`InterpolationHandler` and gets **null** by default, in which case it
-sets the position outright. `LivingEntity` supplies the standard
-three-tick handler, and `Display`, `ExperienceOrb`, `Shulker`,
-`FishingHook`, boats and minecarts supply their own; an arrow, a
-thrown potion, a primed TNT and a dropped item all snap. Where there is a
-handler it smears the update over three client ticks — the
-client does *not* re-run a tracked entity's physics to fill the gap
-(see [movement and collision](../entities/movement-and-collision.md)).
-What it does run is the rest of the tick: `ClientLevel.tickEntities`
-calls `Creeper.tick` locally, and the swell counter is the client's own:
-of the creeper's three synched values — swell direction, powered and
-ignited — none is the counter itself. The fuse length is never sent
-either, so the client always animates against the default.
-
-## Position sync in detail
+### Gate 3, and the position it chooses
 
 | condition | result |
 |---|---|
 | squared position delta below `ServerEntity.TOLERANCE_LEVEL_POSITION` and rotation within `ServerEntity.TOLERANCE_LEVEL_ROTATION` | nothing sent |
 | otherwise, and no forcing condition | `ClientboundMoveEntityPacket.Pos`, `.Rot` or `.PosRot` |
 | every `ServerEntity.FORCED_POS_UPDATE_PERIOD` gated calls | a position packet regardless |
-| delta beyond what a short can hold (about eight blocks) | absolute sync |
+| delta beyond what a short can hold — about eight blocks | absolute sync |
 | `ServerEntity.teleportDelay` past `ServerEntity.FORCED_TELEPORT_PERIOD` | absolute sync |
 | the entity just dismounted, or its ground flag flipped | absolute sync |
 | `Entity.getRequiresPrecisePosition` | absolute sync |
-| the entity is a passenger | rotation only; the base is silently re-set and the next free tick forces an absolute sync |
+| the entity is a passenger | rotation only — the base is silently re-set, and the next free call forces an absolute sync |
 
-Rotations are single bytes — one unit is a little over a degree. The
-dead-reckoning base advances only when something was actually sent,
-which is what keeps the two sides' arithmetic identical. An arrow is the
-one shape that never takes a partial path: `AbstractArrow` is excluded
-from the position-only and rotation-only branches, so every gate-open
-sends it a full position-and-rotation packet.
+Rotations are single bytes, so one unit is a little over a degree, and the
+dead-reckoning base advances only when something was actually sent: that is
+what keeps the two sides' arithmetic identical. An arrow never takes a partial
+path — `AbstractArrow` is excluded from the position-only and rotation-only
+branches, so every open gate sends it a full position-and-rotation packet. A
+minecart on the new movement behaviour skips the table altogether:
+`ServerEntity.handleMinecartPosRot` diverts it into
+`ClientboundMoveMinecartPacket`, which carries a list of steps rather than one
+position.
 
-**Velocity is a separate channel.** When the entity wants deltas — it is
-in the `EntityType.trackDeltas` set, `Entity.needsSync` is set, or it is
-a `LivingEntity` currently elytra-flying — `ServerEntity` compares the
+The first term in that decision has exactly one caller in the whole game, and
+it is a happy ghast. `Entity.setRequiresPrecisePosition` is asked for by a
+ghast on its still timeout and by nothing else — a large ridable platform is
+the one entity whose rounding error a player has to stand on.
+
+Velocity is the third decision and a separate channel. When the entity wants
+deltas — it is in the `EntityType.trackDeltas` set, `Entity.needsSync` is set,
+or it is a `LivingEntity` currently elytra-flying — `ServerEntity` compares the
 current delta movement against `ServerEntity.lastSentMovement` and sends
 `ClientboundSetEntityMotionPacket`, bundled with
 `ClientboundProjectilePowerPacket` for a hurtling projectile.
-`Entity.hurtMarked` sends the same packet outside every gate, to the
-trackers *and* the entity itself, which is why knockback is immediate.
+`EntityType.trackDeltas` looks like a third tracking parameter but is a
+hardcoded exclusion list: players, llama spit, the wither, bats, item frames,
+leash knots, paintings, end crystals and evoker fangs are out, everything else
+is in.
 
-**Minecarts have a parallel protocol.** A cart on the new movement
-behaviour is diverted by `ServerEntity.handleMinecartPosRot` into
-`ClientboundMoveMinecartPacket`, carrying a list of steps rather than one
-position, and never touches the decision table above.
+### What goes out around the gates
 
-**And one entity broadcasts outside its own audience.** Every ten ticks,
-an `ItemFrame` holding a map iterates *every player in the level* — not
-its trackers — to tick the map's carried state and push map updates.
+Four feeds ignore the cascade, and between them they explain most of what
+still feels responsive about a distant mob. `Entity.hurtMarked` sends a motion
+packet outside every gate, to the trackers
+*and* the entity itself, which is why knockback is immediate on a creeper
+whose position otherwise updates slowly. A changed passenger list is diffed on
+every call, ahead of gate 3, and goes out filtered so that a player mounting
+or dismounting is told from their own point of view. An `ItemFrame` holding a
+map iterates *every player in the level* — not its trackers — every tenth
+call, to tick the map's carried state and push map updates.
 
-## Block updates
+Equipment does not pass through `ServerEntity` at all.
+`ClientboundSetEquipmentPacket` comes from
+`LivingEntity.handleEquipmentChanges`, and it goes to the trackers *without*
+the self-directed variant, so a player is never sent their own equipment. A
+straight main-hand to off-hand swap does not even get that far:
+`LivingEntity.handleHandSwap` compresses it into a one-byte entity event. And
+damage crosses without a number — `ClientboundDamageEventPacket` carries the
+source, not the amount, and the health bar moves because of a separate synched
+value ([damage and death](../entities/damage-and-death.md)).
 
-`ServerLevel.sendBlockUpdated` does not send anything. It marks a section
-dirty on the `ChunkHolder` and adds the holder to a set on
-`ServerChunkCache` — unless the chunk is loaded but not ticking, in which
-case `ChunkHolder.blockChanged` records nothing and the change is never
-broadcast to anyone. Once per tick `ChunkHolder.broadcastChanges` drains
-the set:
+## Chunks arrive on a loop the client paces
 
-- **Light first, to a smaller audience.** If either light filter is
-  non-empty, one `ClientboundLightUpdatePacket` goes only to players for
-  whom this chunk is on the *border* of their sent region
-  (`ChunkMap.isChunkOnTrackedBorder`). A player in the middle of their
-  own loaded area is never sent light for the chunk they are standing in
-  — their own light engine is expected to derive it. See
-  [lighting](../world/lighting.md).
-- **Then blocks, to everyone tracking the chunk.** Exactly one changed
-  block in a section becomes a `ClientboundBlockUpdatePacket`; two or
-  more become a `ClientboundSectionBlocksUpdatePacket`. All changes
-  within one tick collapse into at most one packet per section.
-- **And block entities alongside the blocks, not after them.** The
-  block-entity check runs inside the same per-section loop, immediately
-  after that section's own update packet — interleaved, not a third
-  pass.
-  `ChunkHolder.broadcastBlockEntityIfNeeded` calls
-  `BlockEntity.getUpdatePacket`, which returns null by default. Only
-  overriding types produce a `ClientboundBlockEntityDataPacket`. And the
-  fallback is not "it rides the chunk packet instead": the chunk packet
-  carries `BlockEntity.getUpdateTag`, which is *also* empty by default,
-  and an empty tag is stored as nothing at all. A block entity that
-  overrides neither sends the client its position and its type and
-  nothing else — which is why chest contents are invisible until the
-  chest is opened. See [block entities](../blocks/block-entities.md).
+Chunk visibility is the same kind of decision one level up: made per player
+rather than per entity, and paced by a loop whose set point the client
+supplies.
 
-The rest of the block-shaped traffic:
-`ClientboundBlockEventPacket` from the deferred event set
+### Which chunks enter and leave
+
+`ChunkMap.applyChunkTrackingView` diffs the player's old and new
+`ChunkTrackingView`; entering chunks are queued with
+`PlayerChunkSender.markChunkPendingToSend`, leaving chunks are dropped with
+`ClientboundForgetLevelChunkPacket` — unless they were still only pending, in
+which case they leave the queue silently, because you cannot forget what was
+never delivered. A chunk that merely *becomes* ready is queued by
+`ChunkMap.onChunkReadyToSend`, and a moved centre sends
+`ClientboundSetChunkCacheCenterPacket` first.
+
+The region is neither a disc nor a square. `ChunkTrackingView.isWithinDistance`
+shrinks each axis delta by a small buffer *before* the squared compare, so it
+reaches a chunk further along each axis than it does diagonally, and
+`ChunkTrackingView.Positioned` iterates one chunk beyond the view distance for
+exactly that reason. `ChunkTrackingView.difference` is what turns a movement
+into an enter/leave pair.
+
+### The rate the client asks for
+
+Then, once per tick, `PlayerChunkSender.sendNextChunks` runs per player from
+the phase `MinecraftServer.tickChildren` reaches after every level has ticked
+([the server tick](../server/server-tick.md)):
+
+- it stops if too many batches are unacknowledged —
+  `PlayerChunkSender.maxUnacknowledgedBatches` **starts at one** and is raised
+  to `PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES` on the first reply, so the
+  first batch after login is a hard round-trip barrier;
+- it accumulates `PlayerChunkSender.batchQuota` by the client's desired rate
+  and stops if it is below one;
+- it takes that many chunks **nearest first** from
+  `PlayerChunkSender.pendingChunks` — or, on a memory connection, or whenever
+  fewer are pending than the budget allows, all of them at once;
+- and it brackets them with `ClientboundChunkBatchStartPacket` and
+  `ClientboundChunkBatchFinishedPacket`.
+
+The client times the bracket in `ChunkBatchSizeCalculator`, clamps the sample
+against the running average by `ChunkBatchSizeCalculator.CLAMP_COEFFICIENT`,
+folds it into a weighted mean against
+`ChunkBatchSizeCalculator.MAX_OLD_SAMPLES_WEIGHT`, and reports a rate back in
+`ServerboundChunkBatchReceivedPacket`. The server clamps that between
+`PlayerChunkSender.MIN_CHUNKS_PER_TICK` and
+`PlayerChunkSender.MAX_CHUNKS_PER_TICK` and uses it as next tick's budget. It
+is a closed control loop, and it is the client that sets the set point.
+
+**Seven milliseconds** — the client time per tick that
+`ChunkBatchSizeCalculator.getDesiredChunksPerTick` divides by its running
+estimate of nanoseconds per chunk. It starts pessimistic, at two milliseconds a
+chunk, so the opening ask is three and a half chunks a tick against
+`PlayerChunkSender.START_CHUNKS_PER_TICK`, nine.
+
+What is being measured is narrower than it looks.
+`ClientPacketListener.handleChunkBatchStart` and
+`ClientPacketListener.handleChunkBatchFinished` are among the handful of
+`ClientPacketListener` methods that never hop off the network thread, so the
+loop is timing packet decode, not mesh building
+([the connection](the-connection.md)).
+
+### What a chunk packet carries
+
+A chunk packet — `ClientboundLevelChunkWithLightPacket` — carries only the
+client-facing heightmaps, every section's paletted block states and biomes, a
+block-entity entry per block entity holding `BlockEntity.getUpdateTag` rather
+than its save data, and the light layers. See
+[chunk anatomy](../world/chunk-anatomy.md) and
+[lighting](../world/lighting.md).
+
+## Block changes: one flush a tick, two audiences
+
+`ServerLevel.sendBlockUpdated` sends nothing. It marks a section dirty on the
+`ChunkHolder` — in `ChunkHolder.changedBlocksPerSection`, one short set per
+section — and adds the holder to a set on `ServerChunkCache`, unless the chunk
+is loaded but not ticking, in which case nothing is recorded and the change is
+never broadcast to anyone. Once a tick
+`ServerChunkCache.broadcastChangedChunks` drains that set through
+`ChunkHolder.broadcastChanges`, early in the level tick and before entities
+move ([the level tick](../server/server-level-tick.md)) — so one broadcast
+carries this tick's block changes and the previous tick's entity-driven ones.
+
+**Light goes first, and to a strictly smaller audience.** If either of
+`ChunkHolder.skyChangedLightSectionFilter` and
+`ChunkHolder.blockChangedLightSectionFilter` is non-empty, one
+`ClientboundLightUpdatePacket` goes only to players for whom this chunk is on
+the *border* of their sent region (`ChunkMap.isChunkOnTrackedBorder`). A player
+standing in the middle of their own loaded area is never sent light for the
+chunk they are standing in: their own light engine is expected to derive it
+([lighting](../world/lighting.md)).
+
+**Then blocks, to everyone tracking the chunk.** Exactly one changed block in
+a section becomes a `ClientboundBlockUpdatePacket`, two or more become a
+`ClientboundSectionBlocksUpdatePacket`, and every change within the tick
+collapses into at most one packet per section.
+
+**And block entities alongside the blocks, not after them.** The check runs
+inside the same per-section loop, immediately after that section's own update
+packet — interleaved, not a third pass.
+`ChunkHolder.broadcastBlockEntityIfNeeded` calls `BlockEntity.getUpdatePacket`,
+which returns null by default, so only overriding types produce a
+`ClientboundBlockEntityDataPacket`. The fallback is not "it rides the chunk
+packet instead": the chunk packet carries `BlockEntity.getUpdateTag`, which is
+*also* empty by default, and an empty tag is stored as nothing at all. A block
+entity that overrides neither tells the client its position and its type and
+nothing else — which is why chest contents are invisible until the chest is
+opened ([block entities](../blocks/block-entities.md)).
+
+### The rest of the block-shaped traffic
+
+It is small: `ClientboundBlockEventPacket` from the deferred event set
 ([pistons and block events](../blocks/pistons-and-block-events.md)),
 `ClientboundBlockDestructionPacket` for other players' mining progress,
-`ClientboundBlockChangedAckPacket`, sent at most once per connection per
-tick and on any tick where the client sent a block action, a use-on or a
-use — **including an unsequenced abort, which produces an ack of zero and
-settles nothing** — and `ClientboundChunksBiomesPacket` when biomes are
-re-sent. The prediction rules themselves belong to
+`ClientboundChunksBiomesPacket` when biomes are re-sent, and
+`ClientboundBlockChangedAckPacket`, sent at most once per connection per tick
+and on any tick where the client sent a block action, a use-on or a use —
+**including an unsequenced abort, which produces an ack of zero and settles
+nothing**. The rules that receipt obeys belong to
 [prediction and acknowledgement](../client/prediction-and-acks.md).
 
-## The rest of the push
+## The level's own feeds
 
-Entities and chunks are the two big feeds; the level itself has several
-small ones, all on `ServerLevel` and all bypassing the change detectors
-entirely.
+Entities and chunks are the two big feeds. The level itself has several small
+ones, all on `ServerLevel` and all bypassing the change detectors entirely:
 
-- **Time**, once a second: `MinecraftServer.tickChildren` calls
-  `MinecraftServer.forceGameTimeSynchronization` every twentieth tick,
-  and the packet now carries a game time plus a map of clock updates
-  rather than a single day-time number
+- **Time**, once a second. `MinecraftServer.forceGameTimeSynchronization` runs
+  every twentieth tick, and the packet carries a game time plus a map of clock
+  updates rather than a single day-time number
   ([environment attributes and timelines](../world/environment-attributes-and-timelines.md)).
-- **Weather**, on change: `ServerLevel.advanceWeatherCycle` broadcasts
-  rain- and thunder-level changes and the start/stop pair as
-  `ClientboundGameEventPacket`s, and `PlayerList` re-sends the same set
-  to a joining player.
-- **Sounds, level events, particles and entity events**, each with its
-  own helper and its own audience. Two radii are worth naming because
-  they are not the tracking distance: another player's mining progress
-  reaches everyone within thirty-two blocks except the miner, and a block
-  event reaches sixty-four.
+- **Weather**, on change. `ServerLevel.advanceWeatherCycle` broadcasts rain-
+  and thunder-level changes and the start/stop pair as
+  `ClientboundGameEventPacket`s, and `PlayerList` re-sends the same set to a
+  joining player.
+- **Sounds, level events, particles and entity events**, each with its own
+  helper and its own audience. Two radii are worth naming because they are not
+  the tracking distance: another player's mining progress reaches everyone
+  within thirty-two blocks except the miner, and a block event reaches
+  sixty-four.
 - **View distances**, as `ClientboundSetChunkCacheRadiusPacket` and
-  `ClientboundSetSimulationDistancePacket` — the two integers that are
-  the client's entire knowledge of the ticket system. Receiving the first
-  also rebuilds the client's chunk storage array.
+  `ClientboundSetSimulationDistancePacket` — the two integers that are the
+  client's entire knowledge of the ticket system. Receiving the first also
+  rebuilds the client's chunk storage array.
 - **The debug feed.** `ServerLevel` owns a set of per-subscriber debug
-  synchronizers that push neighbour updates, POI state, chunk sends and
-  entity tracking to a client that has opted in. Everything in the next
-  section is invisible *except* through that channel.
+  synchronizers that push neighbour updates, POI state, chunk sends and entity
+  tracking to a client that has opted in. Everything in the next section is
+  invisible *except* through that channel.
 
 ## What the client is never told
 
-Named concretely, with the server-side owner:
+| what never crosses | the server-side owner | where it is explained |
+|---|---|---|
+| all AI — targets, goals, brains, paths | `Mob.goalSelector`, `Mob.targetSelector`, `Mob.getTarget`, `Brain`, `Mob.navigation` | [AI, goals and brains](../entities/ai-goals-and-brains.md) |
+| scheduled block and fluid ticks — the client's equivalents are empty | `ServerLevel.blockTicks`, `ServerLevel.fluidTicks` | [scheduled ticks](../world/scheduled-ticks.md) |
+| points of interest, except through the debug channel | `ChunkMap.poiManager` | [points of interest](../world/points-of-interest.md) |
+| the ticket graph — the client gets a radius and a simulation distance, as two integers | `TicketStorage`, `DistanceManager`, `ChunkHolder.ticketLevel`, `FullChunkStatus` | [tickets and loading](../world/tickets-and-loading.md) |
+| worldgen, and **the world seed** — `ClientLevel` gets only a biome zoom seed | `ChunkGenerator`, `RandomState`, `ServerLevel.structureManager`, `StructureStart` | [the generation pipeline](../world/chunk-generation-pipeline.md) |
+| the worldgen heightmaps, and any block-entity field outside `BlockEntity.getUpdateTag` | `BlockEntity` | [block entities](../blocks/block-entities.md) |
+| non-syncable attributes, loot tables and loot seeds, the natural spawn state, raids and the dragon fight | `AttributeMap`, `LootTable`, `NaturalSpawner` | [attributes](../entities/attributes.md) |
+| game rules — they reach the client only on request, and only for a player with the command permission | `GameRules` | [level data and rules](../../reference/level-data-and-rules.md) |
+| the creeper's fuse length and its swell counter — of its three synched values, none is the counter | `Creeper` | [synched entity data](../entities/synched-entity-data.md) |
+| everything outside the disc: entities past tracking range, chunks past the view, and every other level on the server | `ChunkMap`, `MinecraftServer.levels` | — |
 
-- **All AI.** `Mob.goalSelector`, `Mob.targetSelector`, `Mob.getTarget`,
-  the `Brain`, `Mob.navigation` and its `Path`. The client sees the
-  creeper's position and its swell direction; it has no idea what the
-  creeper is walking toward
-  ([AI, goals and brains](../entities/ai-goals-and-brains.md)).
-- **Scheduled ticks.** `ServerLevel.blockTicks` and
-  `ServerLevel.fluidTicks`. The client's equivalents are empty
-  black holes ([scheduled ticks](../world/scheduled-ticks.md)).
-- **Points of interest.** `ChunkMap.poiManager`, except through the
-  opt-in debug channel ([points of interest](../world/points-of-interest.md)).
-- **The ticket graph.** `TicketStorage`, `DistanceManager`,
-  `ChunkHolder.ticketLevel`, `FullChunkStatus`. The client is told only
-  a radius and a simulation distance, as two integers.
-- **Worldgen.** `ChunkGenerator`, `RandomState`,
-  `ServerLevel.structureManager`, every `StructureStart`. **The world
-  seed never crosses** — `ClientLevel` gets only a biome zoom seed.
-- **The worldgen heightmaps**, and any block-entity field not written
-  into `BlockEntity.getUpdateTag` — chest contents, hopper contents,
-  spawner internals.
-- **Non-syncable attributes**, loot tables and loot seeds, the natural
-  spawn state, raids and the dragon fight.
-- **Game rules.** They reach the client only on request and only for a
-  player with the command permission
-  ([level data and rules](../../reference/level-data-and-rules.md)). An
-  ordinary client does not know the game rules.
-- **Everything outside the disc**: entities beyond tracking range,
-  chunks outside the tracking view, and every other level on the server.
+## Questions players ask
 
-## What the client does on receipt
+**Why does a mob above me appear out of nowhere?** Because visibility ignores
+Y. The test is a horizontal disc, so an entity directly overhead is in range
+at any height, while one a few blocks further out is not, at any height.
 
-The client is not a passive applier. `ClientPacketListener.handleMoveEntity`
-asks `Entity.isLocalInstanceAuthoritative` first: for an entity the
-client owns — its own player — a movement packet updates only the dead
-reckoning base and **does not move anything**, because the client's own
-simulation is the authority and the server's copy is the stale one. For
-everything else it moves or interpolates, except that a jump of more than
-sixty-four blocks is snapped rather than smeared, because interpolating
-a teleport looks like flight. The authority predicates themselves belong
-to [movement and collision](../entities/movement-and-collision.md).
+**Why do I see mobs further away in singleplayer after changing a graphics
+setting?** `IntegratedServer` scales every tracking range by the client's
+Entity Distance video option. On a dedicated server the same hook reads the
+*entity-broadcast-range-percentage* property instead.
 
-## `ClientLevel` as a lossy copy
+**Why does a distant mob freeze and then jump?** Its chunk is out of
+entity-ticking range, so gate 2 is shut — until the mob crosses a section
+boundary or something sets `Entity.needsSync`, at which point one packet
+carries the whole accumulated difference.
 
-The counterpart to everything above is what the receiver does with it, and
-that belongs to Part X: the client fakes a great deal
-(`ClientLevel.hasChunk` is unconditionally true, `ClientLevel.explode` and
-its game-event dispatch are empty), simulates a great deal (its own clock,
-its own light engine, full entity ticks on entities it does not own), and
-guesses the rest through a sequence-numbered ledger. See
-[the client level](../client/the-client-level.md) and
-[prediction and acknowledgement](../client/prediction-and-acks.md).
+**Why is knockback instant when the same mob's walking looks choppy?**
+`Entity.hurtMarked` is checked outside every gate, while the position it is
+knocked into waits for the interval.
 
-The reason it matters here is the design constraint it puts on this page's
-subject: because the client will happily simulate in the absence of data,
-**the server's job is not to keep the client correct — it is to choose what
-the client is allowed to be wrong about.**
+**Why can I not see what is in a chest until I open it?** Because
+`BlockEntity.getUpdateTag` is empty by default, so the chunk packet carries the
+chest's position and type and nothing else, and `BlockEntity.getUpdatePacket`
+is null by default, so no update packet follows it.
 
-## Interfaces
+**Why does the first bit of world take a moment, and then the rest floods
+in?** The first chunk batch is a synchronous round trip: one batch in flight
+until the client's first acknowledgement, ten after it.
 
-- **Called by:** `ServerLevel.tick` and `MinecraftServer.tickChildren`.
-- **Calls into:** `ServerGamePacketListenerImpl.send`, and thence
-  [the connection](the-connection.md).
-- **Crosses the network as:** the clientbound half of the play protocol
-  — see [reference/packets.md](../../reference/packets.md).
-- **Data-driven by:** `EntityType`'s tracking range and update interval;
-  the server's view distance, simulation distance and broadcast-range
-  percentage.
+**Why do I never see my own armour appear on my own body?** Equipment goes to
+the trackers without the self-directed variant, and you are not one of your
+own trackers.
 
-## Invariants and surprises
+## Choosing what the client may be wrong about
 
-- **Light goes to a strictly smaller audience than blocks.** Border
-  chunks only. Server light is pushed at the seam, where the client's
-  own engine lacks the neighbouring data, and nowhere else.
-- **The first chunk batch is a synchronous round trip.** One batch, then
-  wait, then up to ten in flight.
-- **The chunk-rate loop is measured on the network thread.** The two
-  batch handlers are the only chunk-path handlers that do not hop, so
-  what is being timed is decode time, not the time to build meshes.
-- **The add-entity packet is deliberately stale.** It reports the
-  tracker's baseline so every viewer's dead reckoning agrees.
-- **An entity in a loaded but un-ticked chunk usually gets no updates —
-  but "usually" is doing real work.** The chunk being out of
-  entity-ticking range only suppresses the change detector while the
-  entity also stays inside its section and leaves `Entity.needsSync`
-  clear. Either of those breaks the silence, which is why a distant
-  entity can freeze for a long time and then correct itself in one jump.
-- **Visibility ignores Y entirely.** The test is a horizontal disc.
-- **You never track yourself.** `ChunkMap.TrackedEntity.updatePlayer`
-  returns immediately for the player's own entity — which is why the
-  self-directed variant of the broadcast verbs exists at all, and why
-  damage, knockback and synched data have to use it.
-- **`Entity.setRequiresPrecisePosition` has exactly one caller in the
-  whole game, and it is a happy ghast.** It is the first term in the
-  absolute-versus-relative decision, and the only thing that ever asks
-  for it is a ghast on its still timeout — which is a large ridable
-  platform, and therefore the one entity whose rounding error a player
-  would stand on.
-- **Routine movement never uses the teleport packet.**
-  `ClientboundTeleportEntityPacket` survives, but `ServerEntity` never
-  touches it; absolute position is
-  `ClientboundEntityPositionSyncPacket`. The teleport packet is only for
-  an explicit transition with riders.
-- **Knockback and passengers are checked outside the interval gate.**
-  `Entity.hurtMarked` and a changed passenger list are re-sent on every
-  call, not every third one — which is why knockback feels immediate on
-  an entity whose position otherwise updates slowly.
-- **Damage crosses without a number.** `ClientboundDamageEventPacket`
-  carries the source, not the amount; the health bar moves because of a
-  separate synched value ([damage and death](../entities/damage-and-death.md)).
-- **Equipment bypasses the change detector, and skips its wearer.**
-  `ClientboundSetEquipmentPacket` comes from
-  `LivingEntity.handleEquipmentChanges`, not from
-  `ServerEntity.sendChanges`, and it goes to the trackers *without* the
-  self-directed variant — a player is never sent their own equipment.
-  A straight main-hand/off-hand swap does not even get that far:
-  `LivingEntity.handleHandSwap` compresses it into a one-byte entity
-  event.
+Every gate above is a decision *not* to say something, and the server can
+afford them because the receiver is not passive. `ClientLevel` never admits a
+chunk is missing, runs its own light engine and its own clock, ticks entities
+it does not own — `Creeper.tick` runs locally, swell counter and all — and
+guesses at block placements through a sequence-numbered ledger. That half of
+the story is Part X's: [the client level](../client/the-client-level.md) for
+what the receiver fakes and simulates,
+[prediction and acknowledgement](../client/prediction-and-acks.md) for what it
+guesses, and [authority](../entities/authority.md) for which side is allowed
+to move what. The client also applies a whole burst of these packets once per
+frame, before that frame's ticks, so at a high frame rate it takes the
+server's updates far more often than it ticks — the two-loops figure in
+[anatomy](../anatomy/anatomy.md) is the shape,
+[the client loop](../client/the-client-loop.md) the detail.
+
+Which is the design constraint under all of it: because the client will
+happily simulate in the absence of data, **the server's job is not to keep the
+client correct — it is to choose what the client is allowed to be wrong
+about.**
 
 ## Where to look
 
-`PlayerChunkSender` · `ChunkTrackingView` · `ChunkMap` ·
-`ChunkMap.TrackedEntity` · `ServerEntity` · `VecDeltaCodec` ·
-`ChunkHolder` · `ServerChunkCache` · `ClientPacketListener` ·
-`ChunkBatchSizeCalculator` · `ClientChunkCache` · `ClientLevel` ·
-`BlockStatePredictionHandler` · `InterpolationHandler`
+`ChunkMap.tick` · `ChunkMap.TrackedEntity.updatePlayer` ·
+`ChunkMap.isChunkTracked` · `ServerEntity.addPairing` ·
+`ServerEntity.sendPairingData` · `ServerEntity.sendChanges` · `VecDeltaCodec` ·
+`ChunkTrackingView.difference` · `PlayerChunkSender.sendNextChunks` ·
+`ChunkBatchSizeCalculator` · `ChunkHolder.broadcastChanges` ·
+`ServerChunkCache.broadcastChangedChunks` · `ServerLevel.sendBlockUpdated`
 
 ---
 

@@ -372,7 +372,7 @@ sidebar order.
   `hunger-xp-and-effects`; the spear ruled (own lecture or
   `the-sword-swing`'s coda); `the-sword-swing`'s damage pipeline drawn as a
   flow over one number.
-- [ ] **Session J — Part IX Networking.** `the-connection` +
+- [x] **Session J — Part IX Networking.** *(done 2026-09-03)* `the-connection` +
   `packets-and-stream-codecs` taught as one lecture with one round-trip
   diagram (merge or shared trace — ruled with the pages open);
   `protocol-phases` from the pilot; `what-the-client-is-told` as a policy
@@ -1649,3 +1649,48 @@ missing it — and removes the comment. The owner confirms or reorders
   debug-subscription question is session K's, since `debugging-the-running-game`
   already lives in Part X), and the budget is better spent on the round-trip
   diagram.
+
+  **What was done.** Five pages, four rewritten, one landing page written,
+  no splits and no renames — so no redirects, and the sidebar changed only
+  in order: the wire pair is now adjacent and `protocol-phases` follows it
+  rather than sitting between its halves. `the-connection` (550→442) is the
+  trace and carries the round-trip diagram the merge was wanted for: six
+  lanes, four thread boundaries marked, a value leaving the client's main
+  thread and the reply arriving back at a drain that runs once per frame.
+  Its hook is the one the pair had been sitting on all along — **singleplayer
+  serialises every packet to bytes and parses them back**, through a real
+  encoder and a real decoder, with the in-memory pipeline differing only in
+  the framing and in never installing a cipher.
+  `packets-and-stream-codecs` (448→449) is the second half and a vocabulary
+  page: it does not redraw the journey, its figure is the codec composition,
+  and its hook is that **a packet's id is the position of one line in a chain
+  of registration calls** — so the same packet type is a different number in
+  each phase it appears in. `what-the-client-is-told` (546→461) became the
+  policy page it always was, the buried gate cascade drawn as a flowchart of
+  one entity's tick and the old trace reduced to the pairing bundle, which is
+  the only part of it that was really a conversation; its client half went to
+  Part X. `chat-and-signing` (365→316) is the adversary page: three ways to
+  say no, drawn, then eighteen checks in a table whose third column has
+  exactly three values — the message dies, the chain dies, or the connection
+  dies.
+  **The lane ruling was overruled once, correctly.** The session proposed
+  `PktE`/`PktD` for the packet encoder and decoder to avoid `PE`
+  (`ParticleEngine`); the drafting agent found the key already had
+  `PEnc`/`PDec` from `codecs-nbt-json`, satisfying the actual constraint, and
+  used those instead of putting two abbreviations on one class. Three
+  standing Part IX lane disagreements are now gone; the details are in
+  [pass3.md](pass3.md).
+  **What went wrong, and what it cost.** Two of the four drafting agents hit
+  the account's spend limit *after* writing their pages and *before*
+  reporting, so `packets-and-stream-codecs` and `chat-and-signing` were
+  accepted on the session's own checks — names, lanes, mermaid, budgets,
+  shape, and four load-bearing claims spot-checked by hand — without the
+  claim-by-claim diff against pass 2's text that step 4 of the protocol
+  requires. That is a real gap, it is written down as one at the head of
+  [pass4.md](pass4.md)'s session-J entry, and pass 4 re-checks those two
+  pages whole rather than targeting a list. The lesson for the remaining part
+  sessions: **an agent's page is worth nothing until its claim list is in
+  hand**, so ask for the list first and the prose second, or budget for
+  losing the last agent in a fan-out.
+  Checks at commit: 18,034 names resolve, 158 diagrams pass, Part IX clean
+  under `check_lanes.py --strict`, class index and lane index regenerated.

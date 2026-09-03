@@ -1920,3 +1920,57 @@ yet converted. Six lane rows were added for Part VIII (`Inv`, `FD`, `FP`,
 `CL` for `ServerGamePacketListenerImpl`, `PL` for `Player`, `CM` for
 `AbstractContainerMenu`, `IS` for `ItemStack`, `MG` for `MultiPlayerGameMode`
 — was corrected, which is most of what the old pages got wrong.
+
+### Part IX, after session J — what session K inherits
+
+*(session J, 2026-09-03)* `what-the-client-is-told` handed its client half
+to Part X and kept a one-paragraph link, per session G's guess. **Session K
+owns the following, and should check each one is actually present in
+`the-client-level` rather than assume the hand-off landed** — a fact that
+moves to a new owner must arrive there, not merely leave here:
+
+- The `ClientLevel` field inventory: `tickingEntities`, `entityStorage` as a
+  `TransientEntitySectionManager`, `lightUpdateQueue`, `destroyingBlocks`,
+  the tint caches, `clientLevelData` and `BlockStatePredictionHandler`.
+- `ClientChunkCache.Storage` as a torus — an atomic array of (2r+1)² indexed
+  modulo the view range, with volatile centre coordinates because the render
+  thread reads them. The page has a chunk-cache section; the atomic and
+  volatile details are what to confirm.
+- `ClientPacketListener.serverChunkRadius` and
+  `ClientPacketListener.serverSimulationDistance`.
+- **`Entity.moveOrInterpolateTo` and the interpolation table — this one has
+  no other owner in the corpus.** The default returns a null
+  `InterpolationHandler`; `LivingEntity`, `Display`, `ExperienceOrb`,
+  `Shulker`, `FishingHook`, boats and minecarts supply one; arrows, thrown
+  potions, primed TNT and dropped items snap. `movement-and-collision`
+  already owns the three-tick handler and the 64-block snap, but not the list
+  of who interpolates.
+- `ClientLevel.hasChunk` unconditionally true, and `ClientLevel.explode` and
+  its game-event dispatch empty.
+- The eight `ClientPacketListener` handlers that never hop, as an
+  enumeration. Session J softened its own wording to *among the handful* and
+  kept only the two chunk-batch handlers, because they are the ones on the
+  chunk path. The full eight belong either in `the-connection` or in
+  `reference/threads.md` — session O should be asked which.
+
+Two smaller notes for session K. `the-connection`'s round-trip diagram now
+asserts that the client's drain runs **once per frame** and links
+`anatomy#two-loops-and-a-wire-between-them` with `the-client-loop` as the
+deeper reference; if session K moves or renames that heading, three Part IX
+links break. And Part IX's landing page states that Part IX is a prerequisite
+of Part X — Part X's *before you start* has to agree, or one of the two is
+wrong about the watch order.
+
+**Lanes settled in Part IX** *(session J)*. The part's three key
+disagreements are gone: `Varint21FrameDecoder` no longer appears as a
+participant (the old diagram went with the rewrite, so no `VFD` row was
+needed), `ChunkMap.TrackedEntity` is now keyed as `CMTE` — outer initials
+plus its own, the nested-class rule, replacing an unkeyed `TE` — and
+`ChatScreen` is `CScr` beside the corpus's existing `EScr` and `DScr`, with
+`ChatListener` as `CLis`. `PacketEncoder`/`PacketDecoder` kept the key's
+existing `PEnc`/`PDec` rather than the session's proposed `PktE`/`PktD`: the
+rows already existed for `codecs-nbt-json`, they satisfy the real constraint
+(not `PE`, which is `ParticleEngine`), and adding a second abbreviation for
+one class would break the key's own rule of one meaning corpus-wide. Part IX
+is clean under `check_lanes.py --strict`; the corpus-wide count is still 25
+disagreements and 16 collisions, all in parts sessions K–N have not reached.

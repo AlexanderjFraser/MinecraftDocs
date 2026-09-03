@@ -197,6 +197,7 @@ never change an existing row's meaning.
 | `BEL` | `BlockableEventLoop` |
 | `SCC` | `ServerChunkCache` |
 | `CM` | `ChunkMap` |
+| `CMTE` | `ChunkMap.TrackedEntity` |
 | `CH` | `ChunkHolder` |
 | `DM` | `DistanceManager` |
 | `TS` | `TicketStorage` |
@@ -377,6 +378,8 @@ never change an existing row's meaning.
 | `KM` | `KeyMapping` |
 | `KI` | `KeyboardInput` |
 | `MEI` | `MobEffectInstance` |
+| `CScr` | `ChatScreen` |
+| `CLis` | `ChatListener` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |

@@ -481,3 +481,26 @@ was cut or moved, and why)*
   interface's role survives in the cast); and five `Connection` accessors
   named as names. If pass 6 misses any of these, the class index still has
   them and `reference/packets.md` is the catalogue.
+
+- **2026-09-03, session J, the rest of Part IX's cuts and its wording debt.**
+  From `what-the-client-is-told`, replaced by naming only what the story
+  touches: the `ServerEntity` field list (`lastSentYRot`, `lastSentXRot`,
+  `lastSentYHeadRot`, `lastPassengers`, `wasRiding`, `wasOnGround`) and the
+  `PlayerChunkSender` field list. Two facts were cut as *duplicates*, not
+  losses — the tick-long flush suspension (owned by `the-connection`) and the
+  `ChunkMap.MIN_VIEW_DISTANCE` clamp (owned by `tickets-and-loading`'s send
+  table) — and both now link instead. The `ClientboundTeleportEntityPacket`
+  invariant was not cut: it moved into the page's *for a 1.21-era reader*
+  blockquote.
+  **Wording debt.** Three of the four rewritten pages open in the second
+  person (*you swing*, *you stop the message on its way out*, *someone says
+  hello*), which continues the drift session I flagged in Part VIII — the
+  corpus-wide decision on the second person is now overdue and would touch
+  three parts at once. `chat-and-signing` uses *message*, *chain* and
+  *connection* as the names of its three failure outcomes throughout, in the
+  prose, the flowchart and the eighteen-row table; if pass 6 disagrees with
+  those three words they change everywhere at once, exactly as
+  `the-spear`'s *stab* and *charge* do. And `the-connection` and
+  `packets-and-stream-codecs` both call the codec table *the phase's one
+  codec*, which is precise but is the sort of phrase a viewer hears as a
+  singular file rather than a composed dispatcher.

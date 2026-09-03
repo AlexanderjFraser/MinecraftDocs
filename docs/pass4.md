@@ -1462,3 +1462,77 @@ entry first.
   **The landing page and `lectures.md`** claim that only the sword swing and
   the spear have an internal order, that Part VIII depends on Part VI's
   authority above everything, and that the spear needs `using-an-item`.
+
+- **2026-09-03, pass 3 session J — Part IX Networking.** Four of the five
+  pages rewritten (`the-connection` 550→442, `packets-and-stream-codecs`
+  448→449, `what-the-client-is-told` 546→461, `chat-and-signing` 365→316);
+  `src/systems/networking/README.md` new; `protocol-phases` unchanged except
+  three sentences of hand-off links. All five diagrams below are new or
+  redrawn.
+
+  **Two of the four pages have no list of introduced claims, and pass 4 must
+  treat them as unlisted.** The drafting agents for
+  `packets-and-stream-codecs` and `chat-and-signing` both finished writing
+  and then died on a rate limit before reporting, so the session accepted
+  two finished pages without the claim-by-claim diff the protocol requires.
+  The session's own checks passed on them (names, lanes, mermaid, budgets,
+  shape) and it spot-checked four load-bearing claims by hand —
+  `detectRateSpam`'s operator and singleplayer-host exemptions, the 4,096
+  pending-message disconnect threshold, the id-is-a-registration-position
+  hook, and the *three ways to say no* branch — but **the other pages'
+  guarantee that every reworded sentence was diffed against pass 2's text
+  does not hold for these two.** Re-check them whole, at the sentence level,
+  against `git show b597a2a~1:src/systems/networking/<page>.md`.
+  `chat-and-signing` is the higher risk of the two: it is a security page,
+  its central artefact is a new eighteen-row table of *which failure kills
+  the message, the chain, or the connection*, and every row is a claim about
+  a specific outcome that pass 2 never stated in that form.
+
+  **Claims introduced in `the-connection`, listed by its agent with cites.**
+  A handler touching no game state omits `PacketUtils.ensureRunningOnSameThread`
+  and runs on Netty (`handlePong` and `handleCustomPayload` are empty bodies
+  — the session verified this one). The `PacketProcessor` queue is unbounded
+  and each drain empties it (verified). The client's handling latency is a
+  frame, not a tick — the borrowed fact restated as this page's consequence.
+  The singleplayer host has neither the read timeout nor the keep-alive
+  running against it — a *composition* of two old-page facts and therefore
+  the one to re-derive. And the diagram's note that there is one encoder and
+  one decoder instance at each end.
+
+  **Claims introduced in `what-the-client-is-told`, listed by its agent.**
+  That the cascade is three gates and each is a three-term test (a
+  conjunction, then two disjunctions) — a synthesis across `ChunkMap` and
+  `ServerEntity`, and the assertion the new flowchart rests on, so it is the
+  first thing to check. `PlayerChunkSender.START_CHUNKS_PER_TICK` and
+  `MAX_UNACKNOWLEDGED_BATCHES` named as the constants behind "nine" and
+  "ten". Two `ChunkBatchSizeCalculator` constants attached to the clamp and
+  the weighted mean. That the forced absolute sync is rarer than the forced
+  position packet by however long the interval gate stays shut — an
+  inference from two counters, one inside the gate and one outside. That the
+  passenger-list packet is the filtered one, so a mounting player is told
+  from their own point of view. And that equipment, passengers and leash
+  links appear in the pairing bundle only when non-empty.
+
+  **The diagrams.** New: the round-trip sequence in `the-connection` (six
+  lanes, four thread boundaries marked, the reply returning to a second
+  drain — the pair's whole reason to exist, and every arrow an ordering
+  claim); the gate flowchart in `what-the-client-is-told`; the codec
+  composition flowchart in `packets-and-stream-codecs` (which asserts that
+  nothing above the `ProtocolInfoBuilder.addPacket` line knows about ids and
+  nothing below it knows about chat); the *three ways to say no* flowchart in
+  `chat-and-signing`; the part-shape flowchart on the landing page. Trimmed:
+  the pairing-bundle sequence, which is all that survives of
+  `what-the-client-is-told`'s old trace.
+
+  **Claims deleted rather than rewritten.** `what-the-client-is-told` lost
+  its whole client half to Part X (the list is in [pass3.md](pass3.md) for
+  session K). Check that nothing true was lost in that deletion and that the
+  surviving one-paragraph hand-off agrees with `the-client-level` and
+  `prediction-and-acks` once session K has been over them.
+
+  **The landing page and `lectures.md`** claim that the first two lectures
+  are one lecture in two halves, that lectures four and five are independent
+  of each other and both assume three, that Part IX assumes Part III and
+  Part I's two loops, and that Part IX is a prerequisite of Part X. Three
+  are orderings, which pass 2 found is where this corpus is most confidently
+  wrong.
