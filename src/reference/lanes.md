@@ -7,10 +7,14 @@ a one-word class as itself, and a few words for things that are not classes.
 
 | lane | class |
 |---|---|
+| `AA` | `AbstractArrow` |
+| `AB` | `AbstractBoat` |
 | `ACM` | `AbstractContainerMenu` |
 | `AFBE` | `AbstractFurnaceBlockEntity` |
 | `AP` | `AcquirePoi` |
 | `ATS` | `AttributeTrackSampler` |
+| `AttrI` | `AttributeInstance` |
+| `AttrM` | `AttributeMap` |
 | `BEL` | `BlockableEventLoop` |
 | `BI` | `BucketItem` |
 | `BIR` | `BuiltInRegistries` |
@@ -21,6 +25,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `Camera` | `Camera` |
 | `CBE` | `ChestBlockEntity` |
 | `CCPL` | `ClientConfigurationPacketListenerImpl` |
+| `CG` | `CollisionGetter` |
 | `CGT` | `ChunkGenerationTask` |
 | `CH` | `ChunkHolder` |
 | `CHelp` | `ContainerHelper` |
@@ -31,6 +36,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `Comp` | `Component` |
 | `Conn` | `Connection` |
 | `CPL` | `ClientPacketListener` |
+| `CR` | `CombatRules` |
 | `CS` | `ComponentSerialization` |
 | `CT` | `CombatTracker` |
 | `CTD` | `ChunkTaskDispatcher` |
@@ -45,9 +51,12 @@ a one-word class as itself, and a few words for things that are not classes.
 | `DScr` | `DeathScreen` |
 | `EAP` | `EnvironmentAttributeProbe` |
 | `EAS` | `EnvironmentAttributeSystem` |
+| `EffC` | `EffectCommands` |
 | `EH` | `EnchantmentHelper` |
 | `EM` | `EnchantmentMenu` |
 | `Entity` | `Entity` |
+| `ES` | `EntityStorage` |
+| `ET` | `EntityType` |
 | `ETL` | `EntityTickList` |
 | `EVS` | `EnvironmentAttributeSystem.ValueSampler` |
 | `FF` | `FlowingFluid` |
@@ -73,6 +82,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `LC` | `LevelChunk` |
 | `LCT` | `LoadingChunkTracker` |
 | `LCTs` | `LevelChunkTicks` |
+| `LE` | `LivingEntity` |
 | `LevB` | `LeverBlock` |
 | `Level` | `Level` |
 | `LIF` | `LootItemFunctions` |
@@ -86,12 +96,16 @@ a one-word class as itself, and a few words for things that are not classes.
 | `LTs` | `LevelTicks` |
 | `MC` | `Minecraft` |
 | `MComp` | `MutableComponent` |
+| `ME` | `MobEffect` |
 | `Mob` | `Mob` |
+| `MoveC` | `MoveControl` |
 | `MPGM` | `MultiPlayerGameMode` |
 | `MPRM` | `MultiPackResourceManager` |
 | `MR` | `MappedRegistry` |
 | `MS` | `MinecraftServer` |
+| `MTS` | `MoveToTargetSink` |
 | `NbtIo` | `NbtIo` |
+| `NE` | `NodeEvaluator` |
 | `NS` | `NaturalSpawner` |
 | `Parrot` | `Parrot` |
 | `PBB` | `PistonBaseBlock` |
@@ -101,11 +115,13 @@ a one-word class as itself, and a few words for things that are not classes.
 | `PDS` | `PlayerDataStorage` |
 | `PEnc` | `PacketEncoder` |
 | `PESM` | `PersistentEntitySectionManager` |
+| `PF` | `PathFinder` |
 | `PL` | `PlayerList` |
 | `Player` | `Player` |
 | `PM` | `PoiManager` |
 | `PMBE` | `PistonMovingBlockEntity` |
 | `PN` | `PathNavigation` |
+| `PNR` | `PathNavigationRegion` |
 | `PP` | `PacketProcessor` |
 | `PR` | `PackRepository` |
 | `PRL` | `PreparableReloadListener` |
@@ -133,7 +149,11 @@ a one-word class as itself, and a few words for things that are not classes.
 | `SCPL` | `ServerConfigurationPacketListenerImpl` |
 | `Screen` | `Screen` |
 | `SCT` | `SimulationChunkTracker` |
+| `SE` | `ServerEntity` |
+| `SED` | `SynchedEntityData` |
 | `SGPL` | `ServerGamePacketListenerImpl` |
+| `Shapes` | `Shapes` |
+| `Sheep` | `Sheep` |
 | `SHPL` | `ServerHandshakePacketListenerImpl` |
 | `SIB` | `SleepInBed` |
 | `SICF` | `SetItemCountFunction` |
@@ -146,6 +166,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `SRT` | `SynchronizeRegistriesTask` |
 | `SSB` | `SculkSensorBlock` |
 | `SSPL` | `ServerStatusPacketListenerImpl` |
+| `SumC` | `SummonCommand` |
 | `SW` | `ServerWatchdog` |
 | `TagP` | `TagParser` |
 | `TCTD` | `ThrottlingChunkTaskDispatcher` |
@@ -155,6 +176,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `TRM` | `ServerTickRateManager` |
 | `TS` | `TicketStorage` |
 | `TVO` | `TagValueOutput` |
+| `UAFS` | `UpdateActivityFromSchedule` |
 | `VNP` | `ValidateNearbyPoi` |
 | `VSel` | `VibrationSelector` |
 | `VSL` | `VibrationSystem.Listener` |
