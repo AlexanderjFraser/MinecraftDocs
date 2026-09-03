@@ -409,7 +409,7 @@ reader will not miss it, not a shrug.
 
 | what | size | ruling | where |
 |---|---|---|---|
-| `net/minecraft/gametest` | 47 classes, 5,514 lines | covered, which is why the treemap does not hatch it | [dialogs and tests](../commands/dialogs-and-tests.md) |
+| `net/minecraft/gametest` | 47 classes, 5,514 lines | covered, which is why the treemap does not hatch it | [game tests](../commands/game-tests.md) |
 | the debug cluster | four packages' worth | covered: the F3 entry registry, and the server-push subscriptions, sample loggers and debug renderers | [the HUD](../client/hud.md), [debugging the running game](../client/debugging-the-running-game.md) |
 | `com/mojang/blaze3d/platform` | 29 classes, 3,896 lines | covered | [the window](../rendering/the-window.md) |
 | `PostChain`, `PostChainConfig`, `PostPass`, `UniformValue` | 4 classes, 996 lines, and six shipped chains | covered — it was the only place in the game where user-authored shaders are first class | [post-processing](../rendering/post-processing.md) |

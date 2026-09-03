@@ -395,7 +395,7 @@ sidebar order.
   `structures` split into placement and jigsaw beside
   `hand-built-structures`; `worldgen-pipeline`'s nested cell loop drawn as
   nesting; the two halves (terrain · structures) on the landing page.
-- [ ] **Session N — Part XIII Commands and data packs.** The stack landing
+- [x] **Session N — Part XIII Commands and data packs.** *(done 2026-09-03)* The stack landing
   (parse → execute → what commands are for); the permission model out of
   `brigadier-and-commands`; `execution-and-functions` split into the engine
   and the function model, the queue drawn as snapshots; advancements'
@@ -2134,3 +2134,142 @@ missing it — and removes the comment. The owner confirms or reorders
   Checks at commit: 17,335 names resolve, 179 diagrams pass, Part XII clean
   under `check_lanes.py --strict`, class index and lane index regenerated,
   `mdbook build` clean and no broken internal links across `src/`.
+
+- **2026-09-03, session N — Part XIII Commands and data packs.** *(rulings
+  written before any editing, per protocol step 2.)*
+
+  **The part is a stack with three floors**, and the landing page says so:
+  *parse* (`brigadier-and-commands`, `permissions`) → *execute*
+  (`the-execution-engine`, `functions-and-macros`) → *what commands are for*
+  (`advancements`, `scoreboard-and-data`, `dialogs`, `game-tests`). The
+  dependency is strictly one-directional, which is why the third floor's four
+  pages are peers rather than a sequence.
+
+  **Nine pages where there were five**, with the shape and the hook decided
+  first:
+
+  | page | shape | hook |
+  |---|---|---|
+  | `README.md` | landing | — (the three floors, drawn) |
+  | `brigadier-and-commands` | trace — `/give` | the client parses every keystroke against a real dispatcher and throws the answer away; the round trip is the default, not the fallback (62 of 67 providers) |
+  | `permissions` **(new, the R7 spend)** | vocabulary | an op does not have everything: `LevelBasedPermissionSet` grants exactly one atom, and a permission failure is reported as an unknown command |
+  | `the-execution-engine` | trace + queue snapshots | `/return` deletes work out of a queue instead of unwinding a stack, and a fork creates no frames at all |
+  | `functions-and-macros` | pipeline — file → compiled → instantiated → queued | a macro function reached with no arguments fails silently, every tick, forever |
+  | `advancements` | trace — "Stone Age" | the subscription table only ever shrinks, and the client is told the requirements but never the criteria |
+  | `dialogs` | trace | a server can put a form in front of you *before you are in a world*, and the pause validation then runs on the client |
+  | `game-tests` | vocabulary | the annotations are gone, a batch **is** an environment, and the shipped jar contains exactly one test |
+  | `scoreboard-and-data` | trace — `execute store` | a player's score is keyed by their name and a mob's by its UUID, in one flat map |
+
+  **Three splits, all confirmed by the notebook and named in the schedule:**
+  `brigadier-and-commands` → + `permissions`; `execution-and-functions` →
+  `the-execution-engine` + `functions-and-macros`; `dialogs-and-tests` →
+  `dialogs` + `game-tests`, which is now safe because
+  [the data-driven type pattern](../src/systems/foundations/data-driven-types.md)
+  exists in Part II and owns the argument that held the page together.
+
+  **The R7 allowance is spent on `permissions`** — it is in the coverage
+  queue, it is the biggest API break in the corpus and four sessions running
+  named it as the cleanest seam. The function model and the dialogs/tests
+  split are executed as *splits* (§2's split table), not as coverage
+  additions. The **selector grammar** and **`GameTestHelper`** stay queued.
+
+  **Advancements' client screen stays a section**, and becomes the page's
+  closing one. It is six classes of user interface whose only mechanism —
+  a tree the server laid out and shipped — is already the page's subject; a
+  page of its own would be a screen tour, and Part X owns screens. What it
+  gets instead is the last word, where a viewer sees the data structure they
+  already know from playing.
+
+  **The predicate-shape library stays on `advancements`**, trimmed.
+  `contexts-and-predicates` (Part VII) owns the context machinery and does
+  not own `MinMaxBounds`, `CollectionPredicate`, `EntitySubPredicate` or
+  `DataComponentMatchers`; advancements is their biggest consumer, so they
+  stay where they are read and go to [pass3.md](pass3.md) §7 as a Reference
+  candidate for a later pass.
+
+  **`scoreboard-and-data` stays one page**, and the scoreboard stays in Part
+  XIII (R6). The scores/teams and paths/storage halves are joined by
+  `execute store`, which is the page's only trace; split them and neither
+  half has one.
+
+  **What was done.** Nine pages where there were five: eight system pages
+  and a landing page. Two splits executed (`execution-and-functions` →
+  `the-execution-engine` + `functions-and-macros`; `dialogs-and-tests` →
+  `dialogs` + `game-tests`), both redirected under R8; one page written from
+  nothing (`permissions`, the R7 spend); and the remaining four pages
+  rewritten end to end. Every page lost the seven-heading skeleton and every
+  diagram in the part is new or redrawn. The part now has **one bulleted
+  list in it** — a two-item list on the engine page — where it had eleven
+  bullet walls.
+
+  Lengths 131 to 371 against the 260–340 brief, and the distribution is the
+  honest result of the splits: `dialogs` (174), `game-tests` (178) and
+  `functions-and-macros` (189) undershoot because each now has exactly one
+  subject, and `scoreboard-and-data` (371) is the one page that overshoots —
+  which is the split this session declined, arguing back. The part's total is
+  2,129 lines against the old 2,150, so nothing grew; it redistributed.
+
+  **The R7 page is `permissions`, and writing it changed the claim.** The
+  queue promised "the biggest API break in the corpus" and that is true, but
+  the page's actual subject turned out to be an asymmetry nobody had named:
+  the server's permission model is **additive** — a rung, plus exactly one
+  hard-coded atom, unioned upward, and `LevelBasedPermissionSet.union` of two
+  level sets is just the higher of the two — while the client's chat model is
+  **subtractive**, starting from all four chat atoms granted and letting each
+  of four purely local `ChatRestriction`s remove some. No packet carries a
+  `PermissionSet` in either direction. The consequence is the page's second
+  half: the client can only ever learn *"this needed some permission"*, and
+  it learns even that by parsing the same string twice, once with its own set
+  and once with `PermissionSet.NO_PERMISSIONS`, and reading the difference.
+  One exception proves the rule — `GameModeCommand.PERMISSION_CHECK` is
+  exported so that `KeyboardHandler` and `GameModeSwitcherScreen` can run a
+  *server* check locally, which is why the F3+F4 switcher greys out.
+
+  **Rewriting found three count errors, which is five sessions in a row.**
+  Pass 2's "all ninety-four *requires* calls in the game use
+  `Commands.hasPermission`" was a true statement about the server made as a
+  statement about the game: `.requires(` appears 245 times, and 150 of those
+  are `ShapelessRecipeBuilder.requires`. There are **95**
+  `Commands.hasPermission` call sites — 94 server-side registrations plus
+  one on the *client*. `advancements` said the client half was "six classes
+  … (`net/minecraft/client/gui/screens/advancements`)", which counted
+  `package-info.java` and put `ClientAdvancements` in the wrong package; it
+  is five classes there plus `ClientAdvancements` in `client/multiplayer`,
+  about 1,240 lines. And the worst of the three, because a sentence's
+  argument rested on it: `scoreboard-and-data` said `execute store` has
+  **two** sinks "which are exactly the two models here". It has **three** —
+  `ExecuteCommand.wrapStores` builds score, boss bar, and the three data
+  providers. The generalisation to carry: pass 2 checked counts inside a
+  page's own scope and did not check counts used as *arguments for the page's
+  shape*, which are the ones a restructure leans on hardest.
+
+  **Two rulings the schedule asked for.** *Advancements' client screen* stays
+  a section and becomes the page's closing one — six classes of user
+  interface whose only mechanism is a tree the server laid out, which is
+  already the page's subject; a page of its own would be a screen tour, and
+  Part X owns screens. *`scoreboard-and-data` stays one page*, which also
+  answers §1's older question about whether the scoreboard belongs to Part
+  XIII at all: R6 said it stays, and the page's only trace is a command. The
+  boss bar and the statistics are still the two subjects with no owner
+  anywhere in the corpus.
+
+  **The lane gate is now green corpus-wide.** Twenty-six rows added, and
+  Part XIII took the three short forms Part XII deliberately left free (`SS`
+  for `ServerScoreboard`; `SP` stays `ServerPlayer`). Seven later claimants
+  lengthened (`CSug`, `CAdv`, `CallF`, `ContT`, `GTR`, `DlgS`, `CComPL`) and
+  four bare-initial lanes the old diagrams used were retired under the
+  two-letter rule (`C`, `M`, `T`, `R`). `python tools/check_lanes.py` reports
+  **537 participants, 0 disagreeing and 0 colliding, across the whole
+  corpus** — session P can turn `--strict` on unconditionally. One collision
+  is recorded and deliberately not drawn: `ExecuteCommand` names two
+  unrelated classes, and the key resolves simple names, so the engine page
+  names the task in prose and never as a lane.
+
+  Checks at commit: 17,056 names resolve, 184 diagrams pass, Part XIII **and
+  the whole corpus** clean under `check_lanes.py --strict`, class index and
+  lane index regenerated, `mdbook build` clean, and no broken internal links
+  across `src/`. Hand-offs written to [pass4.md](pass4.md) (the three count
+  corrections first, then thirteen new source-derived claims and every
+  redrawn figure), [pass5.md](pass5.md) (the cuts, and second person now five
+  parts wide) and [pass3.md](pass3.md) (two queue entries discharged, one
+  opened, and the notes for sessions O and P).

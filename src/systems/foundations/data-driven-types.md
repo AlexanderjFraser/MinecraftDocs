@@ -135,12 +135,12 @@ otherwise.
 | `BuiltInRegistries.ENCHANTMENT_VALUE_EFFECT_TYPE` | `EnchantmentValueEffect` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
 | `BuiltInRegistries.ENCHANTMENT_PROVIDER_TYPE` | `EnchantmentProvider` | | `Registries.ENCHANTMENT_PROVIDER` | [enchantments](../items/enchantments.md) |
 | `BuiltInRegistries.SPAWN_CONDITION_TYPE` | `SpawnCondition` | | inline in entity variants, through `SpawnPrioritySelectors.CODEC` | [entity lifecycle](../entities/entity-lifecycle.md) |
-| `BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE` | `TestEnvironmentDefinition` | | `Registries.TEST_ENVIRONMENT` | [dialogs and tests](../commands/dialogs-and-tests.md) |
-| `BuiltInRegistries.TEST_INSTANCE_TYPE` | `GameTestInstance` | | `Registries.TEST_INSTANCE` | [dialogs and tests](../commands/dialogs-and-tests.md) |
-| `BuiltInRegistries.DIALOG_TYPE` | `Dialog` | | `Registries.DIALOG` | [dialogs and tests](../commands/dialogs-and-tests.md) |
-| `BuiltInRegistries.DIALOG_ACTION_TYPE` | `Action` | | inline in dialogs | [dialogs and tests](../commands/dialogs-and-tests.md) |
-| `BuiltInRegistries.DIALOG_BODY_TYPE` | `DialogBody` | | inline in dialogs | [dialogs and tests](../commands/dialogs-and-tests.md) |
-| `BuiltInRegistries.INPUT_CONTROL_TYPE` | `InputControl` | | inline in dialogs, as a `MapCodec` (`Codec.dispatchMap`) | [dialogs and tests](../commands/dialogs-and-tests.md) |
+| `BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE` | `TestEnvironmentDefinition` | | `Registries.TEST_ENVIRONMENT` | [game tests](../commands/game-tests.md) |
+| `BuiltInRegistries.TEST_INSTANCE_TYPE` | `GameTestInstance` | | `Registries.TEST_INSTANCE` | [game tests](../commands/game-tests.md) |
+| `BuiltInRegistries.DIALOG_TYPE` | `Dialog` | | `Registries.DIALOG` | [dialogs](../commands/dialogs.md) |
+| `BuiltInRegistries.DIALOG_ACTION_TYPE` | `Action` | | inline in dialogs | [dialogs](../commands/dialogs.md) |
+| `BuiltInRegistries.DIALOG_BODY_TYPE` | `DialogBody` | | inline in dialogs | [dialogs](../commands/dialogs.md) |
+| `BuiltInRegistries.INPUT_CONTROL_TYPE` | `InputControl` | | inline in dialogs, as a `MapCodec` (`Codec.dispatchMap`) | [dialogs](../commands/dialogs.md) |
 | `BuiltInRegistries.PERMISSION_TYPE` | `Permission` | | inline in a permission check | [Brigadier and commands](../commands/brigadier-and-commands.md) |
 | `BuiltInRegistries.PERMISSION_CHECK_TYPE` | `PermissionCheck` | | only written, by `ArgumentUtils` into the command-tree report | [Brigadier and commands](../commands/brigadier-and-commands.md) |
 | `BuiltInRegistries.BLOCK_TYPE` | `Block` | | nothing loads it: every block is Java, and `BlockTypes.CODEC` is read by no one and written only by `BlockListReport` | [blocks and states](../blocks/blocks-and-states.md) |

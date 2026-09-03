@@ -151,7 +151,7 @@ position into a number; the graph in the registry is never the graph that
 actually runs. → [density functions](../systems/worldgen/density-functions.md)
 
 **Dialog** — a data-pack-defined form the server can put on a player's
-screen, whose submitted values come back as a packet. → [dialogs and tests](../systems/commands/dialogs-and-tests.md)
+screen, whose submitted values come back as a packet. → [dialogs](../systems/commands/dialogs.md)
 
 **Dimension** — one `ServerLevel` and its `DimensionType`: a height range,
 a set of environment attributes and its own chunk storage. → [level data and rules](level-data-and-rules.md)
@@ -192,7 +192,7 @@ is asked for. → [text and fonts](../systems/client/text-and-fonts.md)
 the targets each reads and writes, resolved before anything is drawn. → [visibility and the frame graph](../systems/rendering/visibility-and-the-frame-graph.md)
 
 **Function** — a `.mcfunction` file: a list of commands loaded as a
-`CommandFunction`, optionally with macro lines. → [execution and functions](../systems/commands/execution-and-functions.md)
+`CommandFunction`, optionally with macro lines. → [functions and macros](../systems/commands/functions-and-macros.md)
 
 ## G
 
@@ -204,7 +204,7 @@ listen for. → [game events and vibrations](../systems/world/game-events-and-vi
 with the world and sometimes sent to the client. → [level data and rules](level-data-and-rules.md)
 
 **Game test** — a data-driven test instance: a structure, an environment
-and a check the server runs and reports on. → [dialogs and tests](../systems/commands/dialogs-and-tests.md)
+and a check the server runs and reports on. → [game tests](../systems/commands/game-tests.md)
 
 **Goal** — one unit of the older mob AI: a priority, a start condition, and
 the set of controls it claims while running. → [AI](../systems/entities/ai-goals-and-brains.md)
@@ -274,7 +274,7 @@ a chest opened, a mob killed) into item stacks. → [loot tables](../systems/ite
 
 **Macro** — a function line beginning with a `$` substitution. The plain
 lines of the file are parsed once at load; a macro line is substituted and
-**re-parsed** per distinct argument tuple, cached only eight deep. → [execution and functions](../systems/commands/execution-and-functions.md)
+**re-parsed** per distinct argument tuple, cached only eight deep. → [functions and macros](../systems/commands/functions-and-macros.md)
 
 **Memory** — one typed, optionally expiring value in a `Brain`; behaviours
 are gated on which memories are present. → [AI](../systems/entities/ai-goals-and-brains.md)
@@ -324,7 +324,7 @@ drawn, used to interpolate everything the client shows. → [the frame](../syste
 **Permission level** — one rung of `PermissionLevel` (all, moderators,
 gamemasters, admins, owners), and only the *ordered* half of a permission: a
 command source carries a `PermissionSet` and a node requires a
-`PermissionCheck`, neither of which is an integer. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
+`PermissionCheck`, neither of which is an integer. → [permissions](../systems/commands/permissions.md)
 
 **PlacedFeature** — a configured feature plus an ordered list of placement
 modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)

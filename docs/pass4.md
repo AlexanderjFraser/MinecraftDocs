@@ -2057,3 +2057,156 @@ that Part IV's chunk-generation pipeline is a hard prerequisite; and that
 `world/level/levelgen` plus `world/level/biome` come to **423 classes and
 45,600 lines** (counted this session, one class per file, package markers
 excluded; pass 2 said 429 and 46,628 for a boundary it never stated).
+
+## Session N — Part XIII Commands and data packs *(2026-09-03)*
+
+Nine pages where there were five, and **every one of them was rewritten**.
+Two splits (`execution-and-functions` → `the-execution-engine` +
+`functions-and-macros`; `dialogs-and-tests` → `dialogs` + `game-tests`), one
+page written from nothing (`permissions`, the R7 spend), one landing page,
+and four whole-page reshapes. Nothing in the part survives unredrawn either:
+every diagram in Part XIII is new or redrawn.
+
+**Check first and hardest: the counts this session re-derived, because they
+disagree with pass 2 in three places and the disagreements are the kind pass
+2's lesson predicts.**
+
+- `permissions` says **95** `Commands.hasPermission` call sites, of which 94
+  are server-side command registrations and the ninety-fifth is
+  `ClientPacketListener`'s node builder. Pass 2 said "all ninety-four
+  *requires* calls in the game use it", which was a true statement about the
+  server and a false one about the total: `.requires(` appears 245 times in
+  `net/minecraft`, and the other 150 are `ShapelessRecipeBuilder.requires`,
+  an unrelated method. The re-derivation to run is
+  `.requires(Commands.hasPermission(` against every `Commands.hasPermission(`.
+- The per-level gate counts are stated as **66 gamemaster, 16 admin, 9
+  owner**, counted as `requires(Commands.hasPermission(Commands.LEVEL_X))`.
+  Raw occurrences of `Commands.LEVEL_GAMEMASTERS` are **68**, and the two
+  extra are the ternaries in `SeedCommand` and `VersionCommand`. Pass 2's 66
+  was right; the arithmetic that reconciles 95 = 66 + 16 + 9 + 2 (the
+  `LEVEL_ALL` ternaries) + 2 (the two non-constant checks) is new and should
+  be re-run as a whole.
+- The **two non-constant permission checks** are new material:
+  `ClientPacketListener.RESTRICTED_COMMAND_CHECK` and
+  `GameModeCommand.PERMISSION_CHECK`. The second carries a page-level claim —
+  that it is read by `KeyboardHandler`, `GameModeSwitcherScreen` and
+  `ServerGamePacketListenerImpl`, i.e. that the F3+F4 switcher greys out by
+  running a *server* permission check locally against `LocalPlayer`'s own
+  set. Five call sites; count them.
+- `advancements` now says the client half is **five classes in
+  `client/gui/screens/advancements` plus `ClientAdvancements` in
+  `client/multiplayer`, about 1,240 lines**. Pass 2 said "six classes and
+  about eleven hundred lines (`net/minecraft/client/gui/screens/advancements`)",
+  which counted `package-info.java` as a class and put `ClientAdvancements`
+  in the wrong package. The screens package is 1,112 lines over five classes;
+  `ClientAdvancements` is 128.
+- The landing page says the part is **442 classes and 43,800 lines** over
+  nine packages (`commands`, `server/commands`, `server/permissions`,
+  `advancements`, `world/scores`, `server/dialog`, `gametest`, and the two
+  client screen packages), counted one class per file with package markers
+  excluded, the way session M counted Part XII. Nothing in pass 2 states a
+  boundary for this part, so this is a new claim end to end.
+- `permissions` says `net/minecraft/server/permissions` is **eleven classes
+  and 398 lines**; the old page said "twelve files", which included
+  `package-info.java`.
+
+**New claims the rewrite introduced, from re-reading the source.** All of
+these are this session's, not pass 2's, and none has been checked by anyone
+else:
+
+- `PermissionSet` is a **functional interface** with one method, so every set
+  in the game except `ChatAbilities`' is a lambda or a tiny object, and there
+  is no set-of-permissions data structure anywhere else.
+- `LevelBasedPermissionSet.union` of two level-based sets returns **the
+  higher of the two** rather than a `PermissionSetUnion`. This is the
+  mechanism `functions-and-macros` then leans on for its "the method whose
+  name reads like a ceiling can only add" paragraph.
+- `PermissionLevel.byId` uses `ByIdMap.OutOfBoundsStrategy.CLAMP`, so an
+  *ops.json* hand-edited to level 9 is an owner and −1 is rung zero.
+- `Permission.CODEC` accepts an atom written as a **bare identifier** as well
+  as the full dispatched form.
+- `MinecraftServer.getProfilePermissions` returns a `LevelBasedPermissionSet`
+  in every branch, and `ServerPlayer.permissions` calls it afresh every time
+  — nothing is cached on the player. The cascade as restated: not on the op
+  list → `ALL`; on it → the op entry's own set, else singleplayer owner →
+  `OWNER`, else singleplayer → `OWNER` or `ALL` by the allow-cheats-for-others
+  toggle, else the *op-permission-level* property.
+- `PermissionSetUnion` holds a **reference** set (`ReferenceArraySet`), so
+  identity, not equality, decides whether unioning the same set twice
+  duplicates it.
+- `ChatAbilities` is built **by subtraction**: it starts from all four of
+  `Permissions.CHAT_PERMISSIONS` and each `ChatRestriction` removes some.
+  There are four restrictions and **all four are local decisions** (two chat
+  options, the launcher, the account profile) — no server grants a client
+  chat permission. This is a structural claim about the whole enum; check
+  that no fifth value and no server-driven route exists.
+- `ClientPacketListener`'s ordinary suggestions provider has the player's own
+  set **OR-ed with** the synthetic restricted atom, and
+  `restrictedSuggestionsProvider` is the `NO_PERMISSIONS` one — the field
+  name reads backwards from what it holds.
+- `ClientPacketListener.verifyCommand` has **four** outcomes
+  (`NO_ISSUES`, `PARSE_ERRORS`, `SIGNATURE_REQUIRED`, `PERMISSIONS_REQUIRED`)
+  and the flowchart on `permissions` asserts their order: parse with
+  permissions, then signable-argument test, then parse *without* permissions.
+  Every branch of that figure is an ordering claim.
+- `functions-and-macros` says `ServerFunctionManager.execute` swallows only
+  `FunctionInstantiationException` with an empty catch, and logs **any other
+  exception at warn**. Pass 2 recorded the empty catch and not the warn arm.
+- `ServerFunctionManager.getGameLoopSender` uses
+  `CommandSourceStack.withPermission` (a **replacement**) with gamemaster over
+  a server source that is `LevelBasedPermissionSet.OWNER`, while
+  `FunctionCommand` and `DebugCommand` use
+  `CommandSourceStack.withMaximumPermission` (a **union**). The page claims
+  the tick and load tags therefore run *lower* than the console does; check
+  both directions.
+- `game-tests` says `/test` sits at `Commands.LEVEL_GAMEMASTERS` and
+  `TestCommand.TEST_FULL_SEARCH_RADIUS` is 250, with the radius subcommand
+  clamping a user-supplied radius to 0–1024.
+- `the-execution-engine` restates `ContinuationTask.schedule`'s arithmetic
+  with the **two-element case made explicit** (nothing / one entry / *two
+  entries* / one self-entry), which the old page elided.
+- `scoreboard-and-data` adds that `ScoreContents` and `NbtContents` resolve
+  on the server and put the *result* on the wire — restated from pass 2's
+  invariant, now framed as a third route by which a score reaches a client.
+
+**Redrawn and new diagrams, each an ordering claim.**
+
+- `README.md`'s three-floor figure: that the dependency is strictly
+  one-directional and that the four top-floor pages are peers.
+- `brigadier-and-commands`'s six-lane trace, with the Netty-thread note moved
+  onto the diagram as a `Note over`.
+- `permissions`' containment figure (question / answer / check) and its
+  four-outcome `verifyCommand` cascade — both new.
+- `the-execution-engine`'s **queue-snapshot figure**, which is the most
+  load-bearing new diagram in the part: four panels claiming that
+  `BuildContexts` walks *all* non-execute stages inside entry one, that the
+  fan-out becomes a single `ContinuationTask`, and that element *i+1* is not
+  materialised until element *i* has finished. Check panel by panel.
+- `functions-and-macros`' four-stage pipeline flowchart, including the claim
+  that the TRIGGER arrow lands on *instantiate* rather than on *compile*.
+- `advancements`' trace, relaned and with a tick-boundary note added.
+- `dialogs`' trace (unchanged in substance, relaned) and `game-tests`' two
+  figures — a new containment flowchart (declaration / run / world) and the
+  old runner sequence, relaned.
+- `scoreboard-and-data`'s trace, relaned, with `EntityDataAccessor` folded
+  into `DataCommands`.
+
+**The landing page and `lectures.md`** claim: that Part XIII is a stack of
+three floors; that nothing in advancements, scoreboards, dialogs or game
+tests is needed to understand the parser or the engine, and that all four
+need both; that the four top-floor lectures are watchable in any order; and
+that the part's stated prerequisites are Part III's server tick (for two
+distinct reasons), Part II's codecs and data-driven type pattern, Part IX's
+connection, and Part VII's contexts and predicates for advancements alone.
+
+**Material that moved, and must not now be stated nowhere or twice.** The
+permission model left `brigadier-and-commands` entirely; that page keeps the
+tree's *serialisation* (templates, the unknown-argument-type stub, the one
+call site) and `permissions` took the *meaning* of the filtering (absent
+versus flagged, the null-source inspector, the client's two sources). Read
+the two together once. The `/schedule` gate, the two function tags and the
+compile-time permission set left the engine page for
+`functions-and-macros`. `dialogs-and-tests`' "the pattern, stated once"
+section was **deleted, not moved** — Part II's
+`foundations/data-driven-types.md` owns that argument and both new pages
+link to it; confirm nothing true was lost with it.

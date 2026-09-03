@@ -62,3 +62,7 @@ level = 0
 # and structures split into placement and the jigsaw/template assembler.
 "/systems/worldgen/worldgen-pipeline.html" = "terrain.html"
 "/systems/worldgen/structures.html" = "structure-placement.html"
+# Pass-3 session N: Part XIII's two splits — the engine from the function model,
+# and dialogs from game tests.
+"/systems/commands/execution-and-functions.html" = "the-execution-engine.html"
+"/systems/commands/dialogs-and-tests.html" = "dialogs.html"

@@ -482,7 +482,62 @@ most thoroughly data-driven system in the game.
 
 ## XIII · Commands and data packs
 
-*Filled by session N.*
+A stack of three floors, and the dependency runs strictly one way: *parse*,
+then *execute*, then the four systems built on both. The last four are peers
+rather than a sequence — watch them in any order, or only the ones you care
+about — but neither of the first two floors is optional for any of them.
+
+1. [Brigadier and commands](systems/commands/brigadier-and-commands.md) —
+   three parsers see one string and two of them throw the answer away. The
+   client runs a real dispatcher built from a tree the server sent, which is
+   why an item id completes instantly — and why sixty-two of the sixty-seven
+   suggestion providers ask the server anyway.
+2. [Permissions](systems/commands/permissions.md) — the biggest API break in
+   the book: a permission is no longer an integer. An operator does not have
+   everything, a permission failure is reported as a typo, and the client's
+   chat permissions are built by subtraction from four local reasons.
+3. [The execution engine](systems/commands/the-execution-engine.md) — a
+   command engine with no Java recursion. A fork creates no frames, a
+   hundred-player fan-out materialises one player at a time, and `/return`
+   deletes work out of a queue rather than unwinding a stack.
+4. [Functions and macros](systems/commands/functions-and-macros.md) — what a
+   `.mcfunction` becomes, in two steps, the second of which usually does
+   nothing. Compilation runs off the main thread against a null world, and a
+   macro function reached with no arguments fails silently every tick,
+   forever.
+5. [Advancements](systems/commands/advancements.md) — the game's
+   general-purpose "tell me when the player does X", as a per-player
+   subscription table that only ever shrinks. The tree is laid out on the
+   server and shipped; the client is told the requirements and never the
+   criteria.
+6. [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
+   — one number per thing, one query language for any tag, and the
+   `execute store` seam that joins them. One method override explains fake
+   players, the tab list and renaming.
+7. [Dialogs](systems/commands/dialogs.md) — a data pack puts a form on your
+   screen, possibly before you are in a world at all, and the input values
+   are read at the moment of the click rather than before it.
+8. [Game tests](systems/commands/game-tests.md) — the game's own test suite,
+   as a data pack. The annotations are gone, a batch *is* an environment, a
+   test can be written with no Java in it, and the shipped jar contains
+   exactly one.
+
+Two and three are the pair that most changes how a viewer reads everything
+else, and two is the one an existing mod author most needs. Five, six, seven
+and eight each assume one through four and nothing else in this part.
+
+Part XIII assumes Part III's [server tick](systems/server/server-tick.md)
+twice over — command functions are the first thing the server does to its
+children, and players tick after the levels, which is what puts an
+advancement trigger and a scoreboard criterion one tick from where you would
+expect. It assumes Part II's [codecs](systems/foundations/codecs-nbt-json.md)
+and [the data-driven type pattern](systems/foundations/data-driven-types.md),
+of which dialogs and game tests are the two clearest instances; Part IX's
+[connection](systems/networking/the-connection.md) for the Netty/server
+thread boundary the command packets cross two different ways; and, for
+advancements alone, Part VII's
+[contexts and predicates](systems/items/contexts-and-predicates.md), because
+a trigger's conditions are loot conditions.
 
 ## The dependencies between parts
 

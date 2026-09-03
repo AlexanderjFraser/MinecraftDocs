@@ -671,3 +671,82 @@ was cut or moved, and why)*
     `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud` —
     because the methods are all named *extract* and the concept reads better
     as *record*. The glossary has *extract*. One of the two should win.
+
+## Session N — Part XIII Commands and data packs *(2026-09-03)*
+
+**Cuts, with reasons.** Nine pages from five, and the reshapes dropped
+material rather than moving it in these places. None of it is wrong; all of
+it lost a fight for space against the page's own story.
+
+- `brigadier-and-commands` lost: `CommandSource` as a named object (the
+  output end alone — `CommandSource.NULL`, `CommandSource.acceptsSuccess`,
+  `CommandSource.shouldInformAdmins` — and the observation that a command
+  block, RCON and the console differ *only* there);
+  `Commands.CommandSelection` gating which commands exist at all on an
+  integrated versus a dedicated server; `CommandSourceStack`'s fourteen-field
+  inventory; the roll-call of the resource-argument family
+  (`ResourceArgument`, `ResourceKeyArgument`, `ResourceOrIdArgument`,
+  `ResourceOrTagArgument`, `ResourceSelectorArgument` and which of them takes
+  a glob); and the note that `IdentifierArgument` is the class a 1.21 reader
+  knows under another name, which `reference/naming-drift.md` owns anyway.
+  The `CommandSource` row is the one worth restoring if the page ever has
+  room — it is the whole answer to "why does a command block not spam chat".
+- `advancements` lost: the two `Advancement.validate` methods (a private
+  static one the codec runs, which cross-checks requirements against criteria
+  and **fails the load**, and a public one that walks each trigger instance
+  through a `ProblemReporter` and only *warns*); `AdvancementTree.remove` as
+  the recursive counterpart the client uses for the packet's removed ids;
+  `ServerAdvancementManager` as a `SimpleJsonResourceReloadListener` over
+  `Registries.ADVANCEMENT`, with the JSON parse off-thread and the tree build
+  and layout on the reload's main-thread executor; `AdvancementRewards.grant`
+  rolling its tables in the `LootContextParamSets.ADVANCEMENT_REWARD`
+  context; `DisplayInfo`'s field inventory; and the two call-site counts
+  ("seventy-nine gameplay sites across forty-nine files",
+  "`AdvancementCommands` is 312 lines"). The reload-listener sentence is the
+  loss that matters — the page now says the layout runs on the server without
+  saying *when*.
+- `the-execution-engine` lost `ExecutionControl` and the
+  `EntryAction` / `UnboundEntryAction` pair as named cast rows; both are now
+  only implied by `CommandQueueEntry`'s row.
+- `scoreboard-and-data` lost: `PlayerScores` (package-private, and the
+  observation that `Scoreboard.resetSinglePlayerScore` deletes the whole row
+  so the outer map never accumulates empties); `TeamColor`'s sixteen values
+  and the unrelated second `TeamColor` in `client/color/item`;
+  `DisplaySlot`'s nineteen enumerated; `ScoreHolder.fromGameProfile`; and the
+  command-class sizes (`ScoreboardCommand` at 620 lines is the fourth-largest
+  command class in the game, which was a nice number).
+- `dialogs` and `game-tests` lost the individual names of six packets
+  (`ClientboundClearDialogPacket` survives; `ClientboundTestInstanceBlockStatus`,
+  `ServerboundSetTestBlockPacket` and `ServerboundTestInstanceBlockActionPacket`
+  are now described rather than named). `reference/packets.md` has them.
+
+**Wording debt.**
+
+- **Second person is now five parts wide and past arguing about.** Every one
+  of this part's eight content pages opens in it — *type a slash*, *op
+  yourself to four*, *write a data pack*, *put a `$`-prefixed line*, *mine a
+  stone block*, *look at the sidebar*, *you click a server*, *run
+  `/test runall`*. Sessions I, J and K all flagged the drift as a question;
+  session N used it deliberately on every page because the shape of the
+  opening paragraph the template asks for (*start inside the scenario*)
+  pulls hard towards it. Pass 5 should ratify it or reverse it corpus-wide,
+  not page by page.
+- **The *questions players ask* device is on three more pages** —
+  `advancements`, `scoreboard-and-data`, and `the-execution-engine` where it
+  is called *questions a data-pack author asks*. That is session K's warning
+  coming true: the device is becoming the standard home for what used to be
+  the invariant wall, and a corpus where half the pages have one has just
+  re-invented the seven-heading template with better headings. Count them in
+  pass 5 and cap it.
+- **"The one sentence a player would recognise" is gone from all five old
+  pages** and was not replaced by anything with a fixed position — the
+  recognisable thing is now inside the opening paragraph where it belongs.
+  Worth checking the earlier parts still do the same.
+- `the-execution-engine` and `functions-and-macros` both explain
+  `ContinuationTask.schedule`. The engine page owns the arithmetic and the
+  functions page owns the consequence ("a hundred-line function and a
+  hundred-player fork are the same shape"), which is one sentence of overlap
+  and deliberate — but it is exactly the kind of duplication pass 5 hunts.
+- `permissions` and `brigadier-and-commands` both describe the command-tree
+  packet, deliberately from two sides (shape versus gating). Read them
+  together once for a seam that reads as a repetition.

@@ -466,6 +466,32 @@ never change an existing row's meaning.
 | `SStr` | `StrongholdStructure` |
 | `SPie` | `StrongholdPieces` |
 | `SPB` | `StructurePiecesBuilder` |
+| `Cmds` | `Commands` |
+| `CSug` | `CommandSuggestions` |
+| `CSP` | `ClientSuggestionProvider` |
+| `GC` | `GiveCommand` |
+| `EC` | `ExecutionContext` |
+| `BC` | `BuildContexts` |
+| `CallF` | `CallFunction` |
+| `ContT` | `ContinuationTask` |
+| `SFM` | `ServerFunctionManager` |
+| `SFL` | `ServerFunctionLibrary` |
+| `PA` | `PlayerAdvancements` |
+| `CAdv` | `ClientAdvancements` |
+| `ICT` | `InventoryChangeTrigger` |
+| `AR` | `AdvancementRewards` |
+| `DlgC` | `DialogCommand` |
+| `DlgS` | `DialogScreen` |
+| `CComPL` | `ClientCommonPacketListenerImpl` |
+| `TC` | `TestCommand` |
+| `GTR` | `GameTestRunner` |
+| `GTT` | `GameTestTicker` |
+| `GI` | `GameTestInfo` |
+| `RGL` | `ReportGameListener` |
+| `TIB` | `TestInstanceBlockEntity` |
+| `SS` | `ServerScoreboard` |
+| `SA` | `ScoreAccess` |
+| `DataC` | `DataCommands` |
 | `Game` | *the game's own code above Blaze3D, not a class* |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
@@ -549,3 +575,22 @@ adjacent pages, and Part XIII wants it for `ServerScoreboard`), **`ST`** and
 `StrongholdStructure` `SStr`, `StrongholdPieces` `SPie`, and the terrain and
 structure-placement pages now use flowcharts with no lanes at all.
 
+Part XIII (session N) added twenty-six rows and took the three short forms
+Part XII left free: `SS` is `ServerScoreboard`, and `SP` stays `ServerPlayer`
+throughout. Where this part is the later claimant it lengthened rather than
+reassigning: `CommandSuggestions` is `CSug` because `CS` is
+`ComponentSerialization`, `ClientAdvancements` is `CAdv` because `CA` is
+`ChunkAccess`, `CallFunction` is `CallF` because `CF` is `ConfiguredFeature`,
+`ContinuationTask` is `ContT` because `CT` is `CombatTracker`,
+`GameTestRunner` is `GTR` because `GR` is `GameRenderer`, `DialogScreen` is
+`DlgS` because `DScr` is `DeathScreen`, and
+`ClientCommonPacketListenerImpl` is `CComPL` because `CCPL` is
+`ClientConfigurationPacketListenerImpl`. Two lanes the part's old diagrams
+used as bare initials are gone under the two-letter rule: `Commands` is
+`Cmds`, `AbstractContainerMenu` takes the existing `ACM`,
+`InventoryChangeTrigger` is `ICT` and `AdvancementRewards` is `AR`. One
+collision is recorded and deliberately not drawn: **`ExecuteCommand` names
+two different classes** — the `/execute` command in
+`net/minecraft/server/commands` (the keyed `ExecC`, used by the scoreboard
+page) and the leaf task in `commands/execution/tasks`, which the engine page
+therefore names only in prose and never as a lane.

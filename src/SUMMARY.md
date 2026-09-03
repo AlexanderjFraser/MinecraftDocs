@@ -114,12 +114,15 @@
   - [Structure placement](systems/worldgen/structure-placement.md)
   - [Jigsaw and templates](systems/worldgen/jigsaw-and-templates.md)
   - [Hand-built structures](systems/worldgen/hand-built-structures.md)
-- [XIII · Commands and data packs]()
+- [XIII · Commands and data packs](systems/commands/README.md)
   - [Brigadier and commands](systems/commands/brigadier-and-commands.md)
-  - [Execution and functions](systems/commands/execution-and-functions.md)
+  - [Permissions](systems/commands/permissions.md)
+  - [The execution engine](systems/commands/the-execution-engine.md)
+  - [Functions and macros](systems/commands/functions-and-macros.md)
   - [Advancements](systems/commands/advancements.md)
-  - [Dialogs and game tests](systems/commands/dialogs-and-tests.md)
   - [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
+  - [Dialogs](systems/commands/dialogs.md)
+  - [Game tests](systems/commands/game-tests.md)
 
 # Reference
 
