@@ -204,7 +204,39 @@ Part V for what it collides with.
 
 ## VII · Items and inventories
 
-*Filled by session H.*
+Part VII is two tiers. The first three lectures are the vocabulary and are
+watched in order; the last five are three engines that assume all three and
+nothing of each other, so they can be watched in any order — though the two
+pairs below want to stay together.
+
+1. [Items and stacks](systems/items/items-and-stacks.md) — an `Item` holds
+   almost no data and an `ItemStack` holds a diff, against a prototype that
+   does not exist until the first data-pack load. Assumes [data
+   components](systems/foundations/data-components.md) completely.
+2. [Using an item](systems/items/using-an-item.md) — a meal and a bow as one
+   machine read two ways. The client's countdown never stops at zero.
+3. [Containers and menus](systems/items/containers-and-menus.md) — one
+   shift-click, one packet up, nothing down. Needs [the level
+   tick](systems/server/server-level-tick.md) for when a broadcast happens.
+4. [Recipes](systems/items/recipes.md) — no recipe ever crosses the wire,
+   and the client still holds the contents of every one it has unlocked.
+5. [Enchantments](systems/items/enchantments.md) — a named modifier that
+   holds no code, and the hook table that is its real interface.
+6. [Enchanting](systems/items/enchanting.md) — the five ways one lands on
+   an item. Watch it directly after *enchantments*.
+7. [Contexts and predicates](systems/items/contexts-and-predicates.md) —
+   the engine that answers *is this true here*, and the one page in this
+   part that Part XIII needs.
+8. [Loot tables](systems/items/loot-tables.md) — the worked example, and
+   the part's closer.
+
+Part VII assumes Part II for components, codecs and the reload, Part III for
+which tick phase a broadcast lands in, and Part V for how a chest gets
+opened. It must precede Part VIII, which is the player's own inventory and
+the swing that spends an item's durability. *Contexts and predicates* is a
+prerequisite of Part XIII's `/execute if predicate` and of the advancement
+system, and is the one lecture here a viewer coming for commands should
+watch out of order.
 
 ## VIII · The player
 

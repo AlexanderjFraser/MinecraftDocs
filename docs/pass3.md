@@ -1298,12 +1298,14 @@ knowing before the order is drafted.*
   `movement-and-collision` or `input-to-movement`? Sessions E and F
   disagree, and the answer depends on whether Part VI precedes Part VIII.
   *(session F)*
-- Is `loot-tables` renamed, split, or left with a title that undersells it?
-  *(session F)*
+- ~~Is `loot-tables` renamed, split, or left with a title that undersells
+  it?~~ **Split** by session H: `contexts-and-predicates` takes the engine,
+  `loot-tables` keeps the pools, the entries and the chest as its worked
+  example. *(session F, answered session H)*
 - Is the spear (`PiercingWeapon` / `KineticWeapon`) its own lecture, or two
   invariants on `the-sword-swing`? *(session F)*
-- Does *drawing a bow* exist as a trace, given the release half of the use
-  pipeline is currently one sentence? *(session F)*
+- ~~Does *drawing a bow* exist as a trace?~~ **Yes**, as the second half of
+  `using-an-item`, opposite the meal. *(session F, answered session H)*
 - Part VII/VIII diagram lanes use `MC`, `MPGM`/`MG`, `SGPL`/`CL`, `SPGM`,
   `IS`, `C`/`CO`, `LE`, `SP`, `FD`, `SCR`, `CM`, `RS`, `SYNC`, `LP`, `KM`,
   `KI`, `PL`, `IN`, `GM`. Two collisions the standard must resolve:
@@ -1374,8 +1376,12 @@ writes one strikes it through; a session that rules one out says why, here.*
   states, plus `renderer/special`, ~3,300 lines; the same extract/submit
   split as entities, which no page says. Part XI. *(session I)*
 - **How an item picks its model** — `renderer/item` and the 42 classes under
-  `item/properties/**`. Part VII or Part XI; decide the owner first.
-  *(session I)*
+  `item/properties/**`. **Owner ruled by session H: Part XI.** The trace
+  starts at an `ItemStack`, but everything it touches — `ItemModelResolver`,
+  the baked models, the atlas, the render state — is Part XI's, and Part VII
+  owns the stack rather than its appearance. Part VII links forward from
+  `items-and-stacks` and its landing page instead. Session L decides page or
+  section of `models-and-atlases`. *(session I, ruled session H)*
 - ~~**How a server dies**~~ — **written by session D** as
   `src/systems/server/how-a-server-dies.md`, a comparison page with the
   three endings as columns and the watchdog's self-deadlock drawn.
@@ -1383,8 +1389,12 @@ writes one strikes it through; a session that rules one out says why, here.*
 - **The spear** — `PiercingWeapon` / `KineticWeapon`, the 26.2 combat change
   a viewer most wants explained, currently two invariants. Part VIII.
   *(session F)*
-- **Drawing a bow** — the release half of the use pipeline, currently one
-  sentence. Part VII. *(session F)*
+- ~~**Drawing a bow**~~ — **written by session H** as the second half of
+  `src/systems/items/using-an-item.md`, the split of `items-and-stacks`'s
+  use pipeline: the meal and the bow as one machine read two ways. Writing
+  it settled what the queue entry could not: the release branch is not
+  selected by `ItemStack.useOnRelease` at all — only `CrossbowItem`
+  overrides it. *(session F, discharged session H)*
 - **Status effects** — own registry, instance model with the hidden-effect
   stack, packets, client blend. Part VIII, as a split of
   `hunger-xp-and-effects`. *(session F)*
@@ -1797,3 +1807,59 @@ Reference, and **nothing in the corpus says it now**.
 the three options the queue itself offered. R7's new-page allowance was
 therefore **not** spent: both of the part's extra pages are R6's owner page
 and the notebook's confirmed split.
+
+### Part VII, for the sessions that follow *(session H)*
+
+**The two-tier shape held, and it is a claim later sessions rely on.** The
+vocabulary (`items-and-stacks` → `using-an-item` → `containers-and-menus`)
+is a hard prerequisite of all five engine pages; the three engines
+(`recipes` · `enchantments` + `enchanting` · `contexts-and-predicates` +
+`loot-tables`) depend on each other not at all, and the landing page and
+`lectures.md` both say so. If a later part discovers a dependency between
+two engines, that is the claim to revisit.
+
+**`contexts-and-predicates` is now the page other parts should link to, and
+Part XIII in particular.** `/execute if predicate`, the entity selector's
+*predicate* option and the advancement predicate library all run on
+`ContextKeySet` and `LootContext`, and the page owns them, including the
+`/execute if predicate` trace. Session N should link rather than re-explain;
+`advancements` and `scoreboard-and-data` were already re-pointed there this
+session, as was `brigadier-and-commands`'s `EnchantCommand` sentence (now
+`enchanting`). **Twelve of the twenty-six parameter sets never roll a loot
+table** — the old page's "five" was wrong twice over — and the counted
+version is the one to quote.
+
+**Two Reference views are generated and both have a Part VII page behind
+them**: `enchantment-hooks` (every `EnchantmentHelper` entry point plus the
+classes that call it, scanned from the whole tree — the pattern generalises
+to any static seam class, and `Block`/`ItemStack` would answer the same way)
+and `loot-context-params` (the sets with their required and optional keys).
+Session O should keep both in the reference README and re-run
+`gen_reference.py all` after any decompile bump.
+
+**Session L inherits a ruling, not a question.** *How an item picks its
+model* is Part XI's (see §7); `items-and-stacks` and the Part VII landing
+page both link forward to `models-and-atlases`, so session L needs to make
+that link land on something — a page or a named section.
+
+**Session I (Part VIII) should read `using-an-item` first.** The spear's
+`Item.Properties.spear` override of `UseEffects`, the
+`ServerboundPlayerActionPacket.Action.STAB` path and `LivingEntity.stabAttack`
+are all named there in passing, and `the-sword-swing` should not re-derive
+the use pipeline to explain them. `hunger-xp-and-effects`' eating link was
+re-pointed to `using-an-item` this session.
+
+**Lanes.** Twenty-one rows added to the key, eleven of them the later
+claimant lengthened (`ChestM`, `CraftM`, `EScr`, `RemS`, `ResultS`,
+`ResultC`, `CSync`, `CMap`, `LootP`, `LootC`, `LPool`, `RCont`, `ExecC`,
+`Ench`). Part VII takes no single-letter lane at all, which resolves the
+`C`-is-`Container`-here collision session K recorded from the other side:
+`C` is free for `Commands` when session N converts Part XIII.
+
+**One page was not split although the notebook offered the seam.**
+`containers-and-menus` keeps the storage model, the click protocol and the
+exceptions in one lecture, because the protocol is unreadable without the
+model and the model is pointless without the protocol; the exceptions
+(creative's parallel protocol, the crafting-result side channel) are a named
+closing section instead. It is the part's longest page at 389 lines and the
+first candidate if pass 5 wants a split after all.

@@ -350,6 +350,27 @@ never change an existing row's meaning.
 | `PF` | `PathFinder` |
 | `PNR` | `PathNavigationRegion` |
 | `UAFS` | `UpdateActivityFromSchedule` |
+| `Cons` | `Consumable` |
+| `BowI` | `BowItem` |
+| `ChestM` | `ChestMenu` |
+| `CraftM` | `CraftingMenu` |
+| `RemS` | `RemoteSlot` |
+| `CSync` | `ContainerSynchronizer` |
+| `ResultS` | `ResultSlot` |
+| `ResultC` | `ResultContainer` |
+| `RM` | `RecipeManager` |
+| `CI` | `CraftingInput` |
+| `SRB` | `ServerRecipeBook` |
+| `Ench` | `Enchantment` |
+| `Ignite` | `Ignite` |
+| `EScr` | `EnchantmentScreen` |
+| `CMap` | `ContextMap` |
+| `LootP` | `LootParams` |
+| `LootC` | `LootContext` |
+| `LIC` | `LootItemCondition` |
+| `LPool` | `LootPool` |
+| `RCont` | `RandomizableContainer` |
+| `ExecC` | `ExecuteCommand` |
 | `Main` | *the JVM main thread, not a class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
@@ -379,6 +400,20 @@ is `StopCommand`, `AttributeMap` is `AttrM` because `AM` is `AtlasManager`
 (Part XI), `EffectCommands` is `EffC` because `EC` is `ExecutionContext`
 (Part XIII), and `AttributeInstance` follows its map to `AttrI` even though
 `AI` is free, because `AI` reads as the AI system on an entities page. Two one-word classes take their own name as a lane under the
-short-word rule, `Sheep` and `Shapes`. One collision is recorded and **not
+short-word rule, `Sheep` and `Shapes`.
+
+Part VII (session H) is the later claimant almost everywhere and lengthened
+eleven rows rather than reassigning one: `ChestMenu` is `ChestM`,
+`CraftingMenu` `CraftM` and `EnchantmentScreen` `EScr` because `CM` is
+`ChunkMap`, `CS` is `ComponentSerialization` and `ES` is `EntityStorage`;
+`RemoteSlot` is `RemS` and `ResultSlot` `ResultS` because `RS` is
+`RenderSystem`; `ResultContainer` is `ResultC`, `ContainerSynchronizer`
+`CSync`, `ContextMap` `CMap`, `LootParams` `LootP`, `LootContext` `LootC`,
+`LootPool` `LPool` (`LP` is `LocalPlayer`), `RandomizableContainer` `RCont`
+(`RC` is `ReloadCommand`), `ExecuteCommand` `ExecC` (`EC` is
+`ExecutionContext`) and `Enchantment` `Ench` (`EH` is `EnchantmentHelper`).
+`Consumable` and `BowItem` take `Cons` and `BowI` under the one-word and
+collision rules, and `Ignite` takes its own name. `CI`, `RM`, `SRB` and
+`LIC` were free. One collision is recorded and **not
 yet claimed**: `ES` is `EntityStorage`, so `EntitySection` would have to
 lengthen to `ESec` if a later page wants it.

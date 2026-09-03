@@ -273,7 +273,7 @@ from one list of three providers applied twice.
   `execute store`; `ServerPlayer` for the criteria-driven scores;
   `ScoreContents` and `NbtContents` when a text component resolves; the loot
   system through the score condition
-  ([loot tables](../items/loot-tables.md)); the entity selector's *scores* and
+  ([contexts and predicates](../items/contexts-and-predicates.md)); the entity selector's *scores* and
   *team* options.
 - **Reads it:** collision through `EntitySelector.pushableBy`; nametag
   visibility through `LivingEntityRenderer.shouldShowName`; invisibility

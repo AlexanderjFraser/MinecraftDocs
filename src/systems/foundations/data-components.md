@@ -281,7 +281,7 @@ chosen `EnchantmentInstance`. `ItemStack.enchant` hands the edit to
 `EnchantmentHelper.updateEnchantments`, which reads the current
 `ItemEnchantments`, edits a mutable copy and writes the immutable result
 back with `ItemStack.set`; the enchanting rules, the lapis, the seed and
-`/enchant` are [Part VII's](../items/enchantments.md). What matters here is
+`/enchant` are [Part VII's](../items/enchanting.md). What matters here is
 that enchantments are a value, not a list on the stack: one component, one
 write.
 

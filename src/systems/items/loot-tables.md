@@ -1,313 +1,316 @@
 # Loot tables
 
-> Verified against **Minecraft 26.2** · Part VII · A player opens a dungeon chest: the chest is genuinely empty on disk, the table rolls at the moment of opening, and whoever touches the block first — player or hopper — commits the roll.
+> Verified against **Minecraft 26.2** · Part VII · A player opens a dungeon chest for the first time, and every item in it comes into existence between the click and the screen.
 
-## Responsibility
+You break into a mossy cobblestone room, there is a chest against the wall,
+and you right-click it. Between that click and the inventory screen the server
+does something it will do exactly once for this chest: it looks up a loot
+table, rolls it, scatters the results across the empty slots, and throws the
+recipe away. Until that moment the chest is **genuinely empty on disk** — the
+region file holds a table key and a seed and no items at all. And the roll is a
+one-shot in the strictest sense: `RandomizableContainer.unpackLootTable` clears
+the stored key *before* it rolls, and the thing that triggers it is not "a
+player opens this chest" but "anything reads this container". A hopper
+underneath taking one item, or a comparator behind the wall asking how full it
+is, will commit the roll with **no player present, and therefore no luck, for
+good**.
 
-A loot table is a data-pack description of "roll some items". The system
-loads those descriptions into registries, evaluates them against a bag of
-typed parameters, and hands the results to whoever asked. Blocks, mobs,
-chests, fishing, brushing, bartering, villager gifts, advancements and
-commands all ask.
+The typed parameters the table is handed, the predicates it tests and the sets
+those belong to are not loot machinery — they are the general context engine
+that enchantment effects, advancement triggers, `/execute if predicate` and
+villager trade filters all run on, and
+[contexts and predicates](contexts-and-predicates.md) is where they are
+explained. Loot is that engine's oldest and largest client. This page is the
+worked example: what a table *is*, how one draw picks an item, and why the
+chest was empty.
 
-The one sentence a player recognises: *what a chest has in it, and what
-a mob drops.*
+## The cast
 
-The headline: **loot parameters are not loot-specific.** The keys and
-sets are the general-purpose `ContextKey`, `ContextKeySet` and
-`ContextMap`, living outside the loot package, and the same machinery is
-what [enchantments](enchantments.md) use to decide whether an effect
-fires. This is Minecraft's data-driven predicate and effect engine;
-generating items is one of its clients, and the others are named in the
-table below.
+| class | what it decides | thread |
+|---|---|---|
+| `LootTable` | the parameter set, an optional random sequence, the pools, and the two ways out — `LootTable.fill` into a container, `LootTable.getRandomItems` into a list | server main |
+| `LootPool` | whether the pool runs at all, and how many draws it makes | server main |
+| `LootPoolEntryContainer` | the entry algebra — `ComposableEntryContainer.expand` answers *did I contribute* | server main |
+| `LootPoolSingletonContainer` | weight and quality, the only place in the whole system where luck reaches a choice | server main |
+| `LootItemFunction` | forty-three stack-to-stack transforms, composed into one per level | server main |
+| `RandomizableContainer` | the stored table key and seed, and the one-shot unpack | server main |
+| `LootContext` | which random source this draw uses, and the recursion guard | server main |
+| `ReloadableServerRegistries` | loading the three loot registries and validating them | the background executor |
 
-## The data it owns
+## The chest was empty before you got there
 
-- **`LootTable`** — a parameter set, an optional random-sequence
-  identifier, a list of pools, table-level functions pre-composed into
-  one, and the container-filling entry points `LootTable.fill` and
-  `LootTable.getRandomItems`.
-- **`LootPool`** — entries, conditions, functions, and two number
-  providers: `LootPool.rolls` and `LootPool.bonusRolls`.
-- **`LootPoolEntryContainer`** and its expansion. `ComposableEntryContainer.expand`
-  returns a boolean — "did I contribute" — and that is what makes the
-  composites work: `AlternativesEntry` is an or, `SequentialEntry` is an
-  and, `EntryGroup` runs everything. The leaves are `LootItem`,
-  `TagEntry`, `NestedLootTable`, `DynamicLoot`, `EmptyLootItem` and
-  `SlotLoot`. `TagEntry` has two modes: expanded, where the tag becomes
-  one weighted entry per item, and unexpanded, where a single entry emits
-  *every* item in the tag.
-- **`LootPoolSingletonContainer`** — weight and quality.
-  `LootPoolSingletonContainer.EntryBase.getWeight` is
-  *weight + quality × luck*, floored at zero.
-- **`LootItemFunction`** — a function from stack to stack, extending
-  `LootContextUser` and a plain bi-function. Forty-three of them, from
-  `SetItemCountFunction` and `EnchantWithLevelsFunction` to
-  `SetContainerLootTable`, `ApplyBonusCount` and `ApplyExplosionDecay`.
-  `ApplyBonusCount`, `EnchantedCountIncreaseFunction`,
-  `BonusLevelTableCondition` and
-  `LootItemRandomChanceWithEnchantedBonusCondition` are between them
-  Fortune and Looting — and they key off
-  `LootContextParams.ENCHANTMENT_LEVEL` and `LootContextParams.TOOL`, not
-  luck.
-- **`LootItemCondition`** — a predicate over a `LootContext`. The usual
-  suspects plus `EnchantmentActiveCheck` and `EnvironmentAttributeCheck`.
-- **`NumberProvider`** — `ConstantValue`, `UniformGenerator`,
-  `BinomialDistributionGenerator`, `ScoreboardValue`, `StorageValue`,
-  `Sum`, `EnchantmentLevelProvider`, `EnvironmentAttributeValue`. A bare
-  float works wherever one is expected.
-- **`LootContext`** — the per-invocation state: the params, the chosen
-  random source, a resolver for references, and a **stack** of visited
-  elements used as the recursion guard.
-- **`LootParams`** — the immutable inputs: the level, a `ContextMap`, the
-  dynamic-drop callbacks and the luck value.
-- **`LootContextParams`** — the fifteen keys, including
-  `LootContextParams.THIS_ENTITY`, `LootContextParams.ORIGIN`,
-  `LootContextParams.BLOCK_STATE`, `LootContextParams.TOOL` (typed as
-  `ItemInstance`, the read-only item view),
-  `LootContextParams.DAMAGE_SOURCE`,
-  `LootContextParams.ATTACKING_ENTITY`,
-  `LootContextParams.EXPLOSION_RADIUS` and
-  `LootContextParams.ENCHANTMENT_LEVEL`.
-- **`LootContextParamSets`** — the twenty-six named sets. Notable ones:
-  `LootContextParamSets.BLOCK`, `LootContextParamSets.ENTITY`,
-  `LootContextParamSets.CHEST`, `LootContextParamSets.FISHING`,
-  `LootContextParamSets.ARCHAEOLOGY`, `LootContextParamSets.SHEARING`,
-  `LootContextParamSets.GIFT`, `LootContextParamSets.VAULT`,
-  `LootContextParamSets.EMPTY` and the catch-all
-  `LootContextParamSets.ALL_PARAMS`, which is what a table with no
-  declared type gets — and which is not actually *all* of them: it omits
-  the interacting and target entities and the two enchantment keys.
-- **`LootDataType`** — the three loot registries as data:
-  `LootDataType.TABLE`, `LootDataType.PREDICATE`,
-  `LootDataType.MODIFIER`.
-- **`BuiltInLootTables`** — the hardcoded keys for chests, gameplay,
-  shearing, brushing, equipment and spawners.
+Nothing wrote items into that chest at world generation. `MonsterRoomFeature`
+places the room, makes up to two attempts at a chest position — each needing an
+air block with exactly one solid horizontal neighbour — and for each one calls
+`RandomizableContainer.setBlockEntityLootTable` with
+`BuiltInLootTables.SIMPLE_DUNGEON` and a fresh long from the feature's own
+random. What lands on the live `ChestBlockEntity` is a **key and a seed**, and
+nothing else. Structure pieces do the same through `StructurePiece.createChest`
+and `StructurePiece.createDispenser`; `BuiltInLootTables` holds a hundred and
+seventeen named keys plus a per-dye-colour set for sheep, covering chests,
+dispensers, gameplay drops, shearing, brushing, decorated pots, equipment,
+archaeology and spawners.
 
-Loot tables **are a registry of data-pack objects**: `Registries.LOOT_TABLE`,
-with predicates and item modifiers as siblings. They live in the
-reloadable registry layer, and code reaches them through the server's
-reloadable-registry holder rather than a manager class. Tags work on all
-three, loaded per registry during the reload.
+The seed reaches disk on the next save, and from then on the emptiness is
+self-perpetuating. `RandomizableContainer.trySaveLootTable` writes the key —
+and the seed only when it is non-zero — and answers *yes, I handled this*, so
+`ChestBlockEntity.saveAdditional` never writes an item list.
+`RandomizableContainer.tryLoadLootTable` answers the same way on the way back
+in, and `ChestBlockEntity.loadAdditional` **skips reading items entirely**. A
+chest nobody has touched has no inventory in any file the game has ever
+written.
 
-### Named random sequences
-
-A table may declare a random-sequence identifier. When it does,
-`LootContext` resolves it through the server's per-world `RandomSequences`
-store rather than using the level's random — which is what makes "the same
-table, at the same place, in this world" reproducible across restarts.
-The villager trade path uses the same mechanism for its own selection.
-
-## When it runs
-
-**A background executor thread** for loading and validation.
-`ReloadableServerRegistries` schedules one load per loot data type,
-populates a registry each, freezes them and then validates.
-
-**Server main thread** for every roll. The mechanical guarantee is not a
-thread check but a type one: `LootParams` is built from a `ServerLevel`
-and `LootContext` dereferences the server off it, so a `ClientLevel`
-cannot produce one at all.
-
-**Chunk generation** writes the *seed*, onto the live block entity, when
-a structure piece places a container. The seed reaches NBT only on the
-next save — and from then on, loading that block entity finds a loot
-table key and **skips loading items entirely**. The chest on disk is
-empty by design.
-
-## The trace: a chest generates
+## From the click to the screen
 
 ```mermaid
 sequenceDiagram
     participant SPGM as ServerPlayerGameMode
-    participant CB as ChestBlock
+    participant CBE as ChestBlockEntity
     participant SP as ServerPlayer
-    participant RC as RandomizableContainer
+    participant RCont as RandomizableContainer
     participant LT as LootTable
-    participant LP as LootPool
-    participant CM as ChestMenu
+    participant LPool as LootPool
+    participant ChestM as ChestMenu
 
-    SPGM->>CB: useItemOn → useWithoutItem → getMenuProvider
-    CB->>SP: Player.openMenu
-    SP->>RC: createMenu → canOpen → unpackLootTable(player)
-    RC->>RC: setLootTable(null) BEFORE rolling — one shot
-    RC->>LT: fill(container, LootParams on the CHEST set, seed)
-    LT->>LP: addRandomItems per pool — rolls + floor(bonusRolls × luck)
-    LP->>LP: expand entries, weight = weight + quality × luck, pick
-    LT->>LT: shuffleAndSplitItems — split stacks across the free slots
-    SP->>CM: initMenu → ClientboundContainerSetContentPacket
+    SPGM->>CBE: ChestBlock.useWithoutItem resolves a menu provider, and a single chest is its own
+    CBE->>SP: Player.openMenu
+    SP->>CBE: createMenu, guarded by canOpen
+    CBE->>RCont: unpackLootTable, with the opening player
+    Note over RCont: setLootTable to null BEFORE the roll, one shot
+    RCont->>LT: fill, on the CHEST set, with the stored seed
+    LT->>LPool: addRandomItems, once per pool
+    LPool-->>LT: stacks, each through createStackSplitter
+    LT->>LT: getAvailableSlots then shuffleAndSplitItems then setItem
+    CBE->>ChestM: sixRows over the now-filled container
+    SP->>ChestM: ClientboundOpenScreenPacket goes first, then initMenu
+    ChestM-->>SP: sendAllDataToRemote, one ClientboundContainerSetContentPacket
 ```
 
-1. **The click.** `ServerPlayerGameMode.useItemOn` reaches
-   `ChestBlock.useWithoutItem`
-   ([block interaction](../blocks/block-interaction.md)), which resolves
-   a menu provider. A single chest is its own block entity; a double
-   chest gets an anonymous provider over a `CompoundContainer` that
-   requires *both* halves to unlock and unpacks *both* loot tables
-   itself, never entering the block entity's own menu factory.
-2. **Opening.** `ServerPlayer.openMenu` calls the provider. For the
-   single chest that is
-   `RandomizableContainerBlockEntity.createMenu`, which checks
-   `RandomizableContainerBlockEntity.canOpen` — a spectator is refused
-   while a table is still pending, and the lock check happens here too —
-   and then unpacks.
-3. **The unpack.** `RandomizableContainer.unpackLootTable` looks the
-   table up (a missing key yields `LootTable.EMPTY`, never null), fires
-   `CriteriaTriggers.GENERATE_LOOT` for a `ServerPlayer`, and **clears
-   the stored key before rolling**. It builds a `LootParams` with the
-   origin, and — only if a player is present — that player's luck and
-   entity.
-4. **The random source.** `LootTable.fill` uses the stored seed if it is
-   non-zero; a zero seed means "unseeded", falling back to the table's
-   named random sequence or the level's own random.
-   `LootTable.RANDOMIZE_SEED` names the zero, though nothing reads the
-   constant.
-5. **The pools.** Each pool tests its condition, then rolls
-   *rolls + floor(bonusRolls × luck)* times.
-6. **The draw.** Each roll expands every entry — this is where
-   `AlternativesEntry`, `TagEntry` and `NestedLootTable` fan out — keeps
-   the entries whose weight is above zero, sums, picks and walks. A pool
-   left with exactly one candidate takes it without consuming any
-   randomness at all.
-7. **The functions.** Entry functions, then pool functions, then table
-   functions, each short-circuiting on its own conditions.
-8. **The splitter.** `LootTable.createStackSplitter` drops
-   feature-disabled items and splits anything at or over its maximum
-   stack size. A nested table's own results are *not* split twice: the
-   nested entry deliberately calls the raw variant and lets the outer
-   splitter do it.
-9. **The scatter.** `LootTable.fill` does not simply place the results:
-   `LootTable.getAvailableSlots` shuffles the empty slots, and
-   `LootTable.shuffleAndSplitItems` repeatedly splits multi-count stacks —
-   each time taking a random amount up to half — until they roughly fill
-   the slot count. That is why one rolled stack of arrows arrives as
-   three partial ones. Running out of slots logs a warning **and silently
-   discards** everything still in hand.
-10. **The screen.** The menu is created, `ClientboundOpenScreenPacket`
-    goes out, and then `ServerPlayer.initMenu` attaches the synchronizer,
-    whose attachment sends the freshly rolled contents as one
-    `ClientboundContainerSetContentPacket`
-    ([containers and menus](containers-and-menus.md)).
+**The click** arrives as `ServerPlayerGameMode.useItemOn` and reaches
+`ChestBlock.useWithoutItem`
+([block interaction](../blocks/block-interaction.md)), which asks
+`ChestBlock.getMenuProvider` for something to open. A single chest *is* its own
+provider — the combiner hands back the `ChestBlockEntity`. A double chest is the
+interesting case: it gets an anonymous provider wrapped round a
+`CompoundContainer` that requires **both** halves to pass
+`RandomizableContainerBlockEntity.canOpen`, unpacks **both** loot tables
+itself, and never enters either block entity's own menu factory.
 
-## Interfaces
+**Opening** goes through `ServerPlayer.openMenu`, which closes whatever menu was
+already open, allocates a container id, and calls
+`RandomizableContainerBlockEntity.createMenu`. That is where the lock check and
+the spectator check live: `RandomizableContainerBlockEntity.canOpen` refuses a spectator *while a table is still
+pending*, so a spectator cannot commit the roll by peering into an unopened
+chest, though they can open one that has already been rolled.
 
-Who calls loot tables, and with which parameter set:
+**The unpack** is `RandomizableContainer.unpackLootTable`, and its order matters
+more than anything else on this page. It looks the key up through
+`ReloadableServerRegistries.Holder.getLootTable` — which answers
+`LootTable.EMPTY` for a missing key, never null — fires
+`CriteriaTriggers.GENERATE_LOOT` if a `ServerPlayer` is doing the opening, and
+**then clears the stored key**, before a single die is rolled. It builds the
+parameters with `LootContextParams.ORIGIN` at the block centre and, *only if a
+player is present*, that player's `Player.getLuck` and
+`LootContextParams.THIS_ENTITY`. Then it calls `LootTable.fill` with the
+container, those parameters and the stored seed.
 
-| caller | set | when |
-|---|---|---|
-| `BlockBehaviour.BlockStateBase.getDrops` | `LootContextParamSets.BLOCK` | any block break ([block breaking](../blocks/block-breaking.md)) |
-| `Block.dropFromBlockInteractLootTable` | `LootContextParamSets.BLOCK_INTERACT` | beehives, cave vines, carving a pumpkin, sweet berries |
-| `LivingEntity.dropFromLootTable` | `LootContextParamSets.ENTITY` | death ([damage and death](../entities/damage-and-death.md)) |
-| `LivingEntity.dropFromShearingLootTable` | `LootContextParamSets.SHEARING` | sheep, mooshrooms, snow golems, bogged |
-| `LivingEntity.dropFromGiftLootTable` | `LootContextParamSets.GIFT` | villager hero gifts, cat gifts, chicken eggs, sniffer digs |
-| `LivingEntity.dropFromEntityInteractLootTable` | `LootContextParamSets.ENTITY_INTERACT` | brushing an armadillo |
-| `RandomizableContainer.unpackLootTable` | `LootContextParamSets.CHEST` | first touch of a structure container |
-| `ContainerEntity.unpackChestVehicleLootTable` | `LootContextParamSets.CHEST` | first touch of a chest minecart or chest boat |
-| `FishingHook.retrieve` | `LootContextParamSets.FISHING` | reeling in; luck is the hook's plus the owner's |
-| `BrushableBlockEntity` | `LootContextParamSets.ARCHAEOLOGY` | brushing suspicious sand |
-| `PiglinAi.getBarterResponseItems` | `LootContextParamSets.PIGLIN_BARTER` | bartering |
-| `EquipmentUser.equip` | `LootContextParamSets.EQUIPMENT` | mob spawn equipment |
-| `VaultBlockEntity` | `LootContextParamSets.VAULT` | trial chamber vaults |
-| `TrialSpawner.ejectReward` | `LootContextParamSets.EMPTY` | a trial spawner's reward and its dispensed items |
-| `AdvancementRewards.grant` | `LootContextParamSets.ADVANCEMENT_REWARD` | advancement loot |
-| `Enchantment.damageContext` and its siblings | the four enchanted sets plus `LootContextParamSets.HIT_BLOCK` | an enchantment effect's condition |
-| `LootCommand` | block, entity, chest or fishing | `/loot` |
-| `ItemCommands.applyModifier` | `LootContextParamSets.COMMAND` | `/item … with` |
+**The screen** comes last and is no part of the roll. `ServerPlayer.openMenu`
+sends `ClientboundOpenScreenPacket` and then calls `ServerPlayer.initMenu`,
+which attaches the listener and the synchronizer; attaching a synchronizer runs
+`AbstractContainerMenu.sendAllDataToRemote`, and that is the single
+`ClientboundContainerSetContentPacket` carrying the freshly rolled contents
+([containers and menus](containers-and-menus.md)).
 
-Five sets have no loot caller at all, and they are the ones that show
-what the engine really is: `ExecuteCommand` uses
-`LootContextParamSets.COMMAND` for `/execute if predicate`,
-`EntitySelectorOptions` uses `LootContextParamSets.SELECTOR` for a
-selector's *predicate* argument, `EntityPredicate.matches` uses
-`LootContextParamSets.ADVANCEMENT_ENTITY`, the location triggers use
-`LootContextParamSets.ADVANCEMENT_LOCATION` and
-`LootContextParamSets.BLOCK_USE`, and `AbstractVillager` uses
-`LootContextParamSets.VILLAGER_TRADE` to filter trades.
+## One roll, drawn
 
-- **Crosses the network as:** nothing. The three loot registries live in
-  the reloadable layer, which is structurally excluded from registry
-  synchronisation, and no client class references the package at all.
-  What crosses is the *result* — container packets, item entities — and,
-  as a wrinkle, `DataComponents.CONTAINER_LOOT`: declared persistent with
-  no explicit network codec, it falls back to an NBT codec and therefore
-  *does* reach the client, which is how a picked-up shulker box can show
-  an unknown loot table in its tooltip.
-- **Data-driven by:** `Registries.LOOT_TABLE`, `Registries.PREDICATE`,
-  `Registries.ITEM_MODIFIER`, plus the type registries for entries,
-  functions, conditions and the three provider families.
+`LootTable.fill` runs every pool of the table, each pool makes some number of
+independent draws, and each draw picks at most one entry. That draw is the
+engine's smallest complete unit, and it is a funnel with three fan-outs in it.
 
-### Missing parameters, three ways
+```mermaid
+flowchart TD
+    A["LootPool.addRandomItems"] --> B{"the pool conditions, all of them"}
+    B -->|"any fails"| Z["the pool contributes nothing"]
+    B -->|"all pass"| C["draws equals rolls plus floor of bonusRolls times luck"]
+    C --> D["ONE DRAW, repeated that many times"]
+    D --> E["expand every entry container, in declaration order, into candidates"]
+    E --> F["AlternativesEntry, an or: stops at the first child that contributes"]
+    E --> G["SequentialEntry, an and: stops at the first child that does not"]
+    E --> H["EntryGroup: every child expands, contribution ignored"]
+    E --> I["TagEntry in expand mode: one candidate per item in the tag"]
+    E --> J["NestedLootTable: one candidate that will run another whole table"]
+    F --> K["weight is floor of weight plus quality times luck, clamped at zero"]
+    G --> K
+    H --> K
+    I --> K
+    J --> K
+    K --> L{"is that above zero?"}
+    L -->|"no"| M["dropped from this draw entirely"]
+    L -->|"yes"| N["kept, and added to the running total"]
+    N --> O{"how many candidates survived?"}
+    O -->|"none, or the total is zero"| Z2["this draw yields nothing"]
+    O -->|"exactly one"| P["taken, consuming no randomness at all"]
+    O -->|"two or more"| Q["one nextInt over the total, then walk subtracting weights"]
+    P --> R["the entry's own functions"]
+    Q --> R
+    R --> S["then the pool's functions"]
+    S --> T["then the table's functions"]
+    T --> U["once per fill: createStackSplitter drops disabled items and cuts oversized stacks"]
+    U --> V["getAvailableSlots shuffles the empty slot numbers"]
+    V --> W["shuffleAndSplitItems breaks multi-count stacks up until they roughly fill them"]
+    W --> X["setItem, or a logged warning and a silent discard once the slots run out"]
+```
 
-Building a `ContextMap` throws on both extra and absent required
-parameters — so the enforcement point is the *caller's* declared set, not
-the table's. Reading a required parameter that is not there throws;
-reading it optionally returns nothing, and most conditions and functions
-degrade quietly. And at load time the validator merely *reports* that an
-element referenced a parameter its set does not provide — logged as a
-warning.
+**The algebra is boolean, not weighted.** `ComposableEntryContainer.expand`
+returns a plain *did I contribute*, and `ComposableEntryContainer.and` and
+`ComposableEntryContainer.or` are what `CompositeEntryBase` folds a child list
+down with. So `AlternativesEntry` short-circuits like a boolean or and
+`SequentialEntry` like a boolean and — neither is a weighted choice between
+branches, and the validator reports an `AlternativesEntry` whose non-final
+children carry no conditions, because every later alternative is then
+unreachable. Nine entry types are registered in `LootPoolEntries`: the leaves
+`LootItem`, `EmptyLootItem`, `TagEntry`, `NestedLootTable`, `DynamicLoot` and
+`SlotLoot`, and the composites `AlternativesEntry`, `SequentialEntry` and
+`EntryGroup`. `TagEntry` has two modes and they are not variations on a theme:
+expanded, it becomes one weighted candidate *per item in the tag*; unexpanded,
+it is a single candidate that emits **every** item in the tag at once.
 
-## Invariants and surprises
+**Luck touches exactly two things**, and neither is what players think it is.
+`LootPool.bonusRolls` is multiplied by luck and floored to add whole extra
+draws, and `LootPoolSingletonContainer.EntryBase.getWeight` is
+*weight + quality × luck*, floored, then clamped at zero. Because a candidate
+whose weight comes out at zero or below is discarded rather than merely made
+rare, a **negative quality with enough luck removes an entry from the pool
+altogether**. Everything else players call luck is something else entirely:
+Fortune is `ApplyBonusCount` and `BonusLevelTableCondition`, both reading
+`LootContextParams.TOOL` and asking `EnchantmentHelper` for a level on it;
+Looting is `EnchantedCountIncreaseFunction` and
+`LootItemRandomChanceWithEnchantedBonusCondition`, both reading
+`LootContextParams.ATTACKING_ENTITY` and asking about the killer's gear.
 
-- **A table's declared type is never checked at runtime.** It is read
-  only during load-time validation; the roll itself never compares it
-  against the incoming parameters, and `TrialSpawner` passes the empty
-  set to chest-shaped tables.
-- **The loot table key is cleared *before* the roll**, and the container
-  read methods on a randomizable block entity unpack first — so a hopper
-  or a comparator generates the loot with **no player and no luck**,
-  permanently. The first observer wins, and need not be a player. Note
-  which methods those are: emptiness, item read, both removals and item
-  *write*. Clearing the container and asking its size do not unpack, and
-  neither does saving it — which is why `/data get block` on an unopened
-  chest reports the loot table key rather than committing the roll.
-- **A seed of zero means "unseeded"** and is indistinguishable from
-  having no seed at all, re-rolling freshly each time. It is also never
-  written to NBT.
-- **The recursion guard is a stack, not a ledger.** A table pushes itself
-  while it draws and pops afterwards, so referencing the same table twice
-  in one draw — from two pools, or across two rolls — yields items every
-  time. Only genuine re-entrancy trips it, and it is logged as an
-  infinite loop rather than passing silently.
-- **Luck touches exactly two things**: bonus rolls, and entry quality.
-  And because the weight is floored at zero and zero-weight entries are
-  discarded, a negative quality with high luck removes an entry from the
-  pool rather than merely making it rare.
-- **Composites are boolean short-circuits, not weighted choices** — and
-  the validator will tell you when an unconditioned alternative makes a
-  later one unreachable.
-- **`LootTable.fill` redistributes as well as places**, splitting stacks
-  to spread across the free slots.
-- **Validation failures are warnings, never errors.** A table that
-  references a missing predicate, uses a parameter it cannot have, or
-  recurses will load fine and misbehave later. The two hard validators
-  are the ones a codec applies: villager trades, and the enchantment
-  effect components.
-- **A missing table yields `LootTable.EMPTY`, never null** — and one
-  caller, the equipment path, compares against it by identity to skip
-  work.
-- **Standalone predicate and item-modifier files are validated against
-  the all-parameters set — which is not all of them.** A standalone
-  predicate that asks whether an enchantment is active, or about the
-  interacting or target entity, *is* flagged; most other conditions are
-  not, while the same condition inlined in a block table would be.
-- **Functions mutate the stack in place and return it.** Both styles work
-  because composition threads the return value, and it is safe because
-  the leaf entries construct fresh stacks — with one exception,
-  `DynamicLoot`, whose callback may hand back a live container stack
-  uncopied.
+**Functions apply innermost first.** Each level wraps the output consumer with
+`LootItemFunction.decorate` over its own `LootItemFunctions.compose`, so as the
+call stack unwinds a drop passes the entry's functions, then the pool's, then
+the table's. Forty-two of the forty-three registered functions extend
+`LootItemConditionalFunction`, whose `LootItemConditionalFunction.apply` is
+final and hands the stack back
+untouched when its own conditions fail — which is why a function with a failing
+condition is a no-op and not a veto on the drop. They also **mutate the stack in
+place and return it**, which is safe only because `LootItem` and `TagEntry`
+construct fresh stacks. `DynamicLoot` is the exception: it calls straight out to
+a callback the caller registered with `LootParams.Builder.withDynamicDrop`, and
+the one `ShulkerBoxBlock.getDrops` registers hands back the block entity's live
+stacks uncopied.
+
+## The scatter
+
+`LootTable.fill` does not simply place what it rolled.
+`LootTable.getAvailableSlots` collects the container's empty slot numbers and
+shuffles them; `LootTable.shuffleAndSplitItems` then pulls the multi-count
+stacks out of the result list and repeatedly splits one — taking a random amount
+between one and half its count — until the number of pieces roughly matches the
+slot count. That is why one rolled stack of arrows arrives as three partial ones
+in three unrelated slots. If the pieces outnumber the free slots, the remainder
+is **logged as a warning and silently discarded**.
+
+Above that sits `LootTable.createStackSplitter`, which every public
+`LootTable.getRandomItems` and `LootTable.fill` wraps its output in: it drops
+items the level's feature flags disable, and cuts anything at or over its
+maximum stack size into stack-sized pieces. `NestedLootTable` deliberately calls
+`LootTable.getRandomItemsRaw` instead, so a nested table's results are split
+once by the outer table rather than twice.
+
+## Where the randomness comes from
+
+`LootContext.Builder` resolves the random source in a fixed order, and the zero
+is load-bearing. `LootContext.Builder.withOptionalRandomSeed` installs a seeded
+source **only when the seed is non-zero**; failing that, the table's declared
+random sequence is fetched from the server's per-world `RandomSequences` through
+`MinecraftServer.getRandomSequence`; failing that, the level's own random is
+used. `LootTable.RANDOMIZE_SEED` names the zero, and nothing in the game reads
+the constant.
+
+So a seed of zero means *unseeded*, is indistinguishable from having no seed at
+all, and is never written to NBT — which is why a chest given a loot table by
+command re-rolls freshly every time while a structure chest does not. Named
+random sequences are the other half: a table that declares one draws from a
+stored, saved sequence rather than the level random, which is what keeps the
+same table in the same world reproducible across a restart. Villager trades use
+that mechanism from outside the loot package —
+`AbstractVillager.addOffersFromTradeSet` builds its context with
+`TradeSet.randomSequence`.
+
+Loading is the only part of any of this that is not on the server thread.
+`ReloadableServerRegistries.reload` schedules one load per `LootDataType` on the
+background executor, builds a registry for each, loads that registry's tags,
+freezes the layer and only then validates
+([the resource system](../foundations/resource-system.md)). Rolling is server
+main everywhere, and the guarantee is a type rather than a thread check: the
+parameters are built from a `ServerLevel`, so a `ClientLevel` cannot produce
+them at all. No client class references the loot package.
+
+## Questions players ask
+
+**Did I just lose the loot by putting a hopper under it?** Yes, and the answer
+is precise about which reads count.
+
+**Five** — the container methods `RandomizableContainerBlockEntity` overrides so
+that they unpack first: `RandomizableContainerBlockEntity.isEmpty`,
+`RandomizableContainerBlockEntity.getItem`,
+`RandomizableContainerBlockEntity.removeItem`,
+`RandomizableContainerBlockEntity.removeItemNoUpdate` and — the surprising one —
+`RandomizableContainerBlockEntity.setItem`.
+
+A comparator gets there through
+`AbstractContainerMenu.getRedstoneSignalFromContainer`, which walks
+`Container.getItem` over every slot. A hopper gets there the same way before it
+takes anything, and a hopper pointing *into* the chest commits the roll by
+writing. `Clearable.clearContent` and `Container.getContainerSize` do not
+unpack, and neither does saving — which is why `/data get block` on an unopened
+chest reports the loot table key instead of committing the roll.
+
+**Can I reference the same table twice?** Yes. The recursion guard in
+`LootContext` is a **stack, not a ledger**: `LootContext.pushVisitedElement`
+adds the table on the way in and `LootContext.popVisitedElement` takes it off on
+the way out, so two pools pointing at the same nested table each get items, and
+so do two rolls of one pool. Only genuine re-entrancy — a table inside itself —
+trips it, and it is logged as an infinite loop rather than passing silently.
+
+**Why does a shulker box in my inventory say the contents are unknown?**
+`DataComponents.CONTAINER_LOOT` carries a `SeededContainerLoot` and is declared
+persistent with no network codec of its own, so
+`ByteBufCodecs.fromCodecWithRegistries` supplies one from the persistence codec
+and the component **does** reach the client
+([data components](../foundations/data-components.md)). The client cannot
+resolve the table — it has no loot registry at all — so
+`SeededContainerLoot.addToTooltip` prints the unknown-contents line instead.
+
+**Does the type declared on the table do anything?** Not at roll time. A table's
+parameter set is read during load-time validation and never compared against the
+incoming parameters; whether a chest table works is entirely down to what the
+*caller* put in the map. That, and the twenty-six sets, are next door in
+[contexts and predicates](contexts-and-predicates.md).
+
+Two callers on the other side of that door are worth naming here:
+`BlockBehaviour.BlockStateBase.getDrops` for every block broken
+([block breaking](../blocks/block-breaking.md)) and
+`LivingEntity.dropFromLootTable` for every mob killed
+([damage and death](../entities/damage-and-death.md)).
+`EnchantWithLevelsFunction` and `EnchantRandomlyFunction` are the loot side of
+[enchanting](enchanting.md). And `EquipmentUser.equip` is the one caller that
+compares the looked-up table against `LootTable.EMPTY` **by identity** to decide
+whether to bother.
 
 ## Where to look
 
-`LootTable` · `LootPool` · `LootContext` · `LootParams` · `ContextMap` ·
-`ContextKeySet` · `LootContextParams` · `LootContextParamSets` ·
-`LootPoolEntryContainer` · `LootPoolSingletonContainer` ·
-`ComposableEntryContainer` · `AlternativesEntry` · `NestedLootTable` ·
-`DynamicLoot` · `TagEntry` ·
-`LootItemFunction` · `LootItemCondition` · `NumberProvider` ·
-`LootDataType` · `BuiltInLootTables` · `ReloadableServerRegistries` ·
-`RandomizableContainer` · `RandomizableContainerBlockEntity` ·
-`ContainerEntity` ·
-`SeededContainerLoot` · `LootCommand`
+`RandomizableContainer.unpackLootTable` · `RandomizableContainerBlockEntity` ·
+`ChestBlock.getMenuProvider` · `LootTable.fill` ·
+`LootTable.getRandomItemsRaw` · `LootPool.addRandomItems` ·
+`ComposableEntryContainer` · `LootPoolSingletonContainer.EntryBase` ·
+`AlternativesEntry` · `TagEntry` · `NestedLootTable` · `DynamicLoot` ·
+`LootItemFunctions` · `LootItemConditionalFunction` ·
+`LootTable.createStackSplitter` · `LootContext.Builder` · `RandomSequences` ·
+`BuiltInLootTables` · `ReloadableServerRegistries` · `SeededContainerLoot`
 
 ---
 

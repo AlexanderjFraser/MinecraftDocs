@@ -380,7 +380,7 @@ not this one:
   `ResourceOrIdArgument`, so an inline literal works where an id does
   ([loot tables](../items/loot-tables.md)).
 - **`EnchantCommand`** and **`ExperienceCommand`** — thin faces over
-  [enchantments](../items/enchantments.md) and
+  [enchanting](../items/enchanting.md) and
   [hunger, XP and effects](../player/hunger-xp-and-effects.md).
 - **`ExecuteCommand`** — not a command so much as the front end of the
   execution engine ([execution and functions](execution-and-functions.md)).

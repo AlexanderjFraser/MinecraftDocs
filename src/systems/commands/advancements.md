@@ -109,7 +109,8 @@ in `advancements/predicates/entity`). All 112 classes ship in both jars.
 
 `ContextAwarePredicate` wraps a list of `LootItemCondition` and evaluates
 them against a `LootContext`, so a trigger's conditions are exactly the loot
-conditions of [loot tables](../items/loot-tables.md), reached through
+conditions of [contexts and predicates](../items/contexts-and-predicates.md),
+reached through
 `EntityPredicate.createContext`. That is the whole of the connection, and it
 is where most descriptions of the system stop — but the predicates are not
 just a catalogue. Four shapes carry the weight, and each recurs everywhere in

@@ -11,6 +11,8 @@ enumerate.
 - [Game rules](gamerules.md) — every rule, type, category, default.
 - [Attributes](attributes.md) — every attribute: default, range, sentiment, and whether the client is ever told.
 - [Entity data serializers](entity-data-serializers.md) — all 43, in registration order, which is the wire id.
+- [Enchantment hooks](enchantment-hooks.md) — every `EnchantmentHelper` entry point and the classes that call it.
+- [Loot context parameter sets](loot-context-params.md) — all twenty-six, with the keys each one requires and allows.
 - [Damage outside `LivingEntity`](non-living-damage.md) — what each of the twenty-one non-living classes does when you hit it.
 - [Threads](threads.md) — every thread, who makes it, what may run on it.
 - [Math and primitives](math-and-primitives.md) — the coordinate spaces, packings, shapes and random sources every page assumes.

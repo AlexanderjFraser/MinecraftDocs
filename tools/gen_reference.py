@@ -8,6 +8,8 @@ Usage:
     python tools/gen_reference.py gamerules   # every game rule, type, category, default
     python tools/gen_reference.py entity-data-serializers   # every EntityDataSerializer, in wire-id order
     python tools/gen_reference.py attributes                # every attribute: default, range, syncable
+    python tools/gen_reference.py enchantment-hooks         # every EnchantmentHelper entry point and its callers
+    python tools/gen_reference.py loot-context-params       # every parameter set, with required and optional keys
     python tools/gen_reference.py all         # write every view into src/reference/
 
 Always regenerate with `all`, which writes each file as UTF-8 with LF. Do NOT
@@ -202,6 +204,96 @@ def attributes() -> str:
     return out
 
 
+# ------------------------------------------------- loot context parameter sets
+# The sets are declared as bare fields and assigned in the static block, each
+# from a register("id", builder -> builder.required(X).optional(Y)) call. The
+# lambda body is one line per set in the decompile, so the keys can be read off
+# it in declaration order — which is the order the builder was called in, not
+# the order LootContextParams declares them (session H).
+PARAM_SET = re.compile(r"(\w+) = register\(\"([\w/]+)\", \(\w+\) -> \{\s*(.*?)\s*\}\);", re.DOTALL)
+PARAM_KEY = re.compile(r"\.(required|optional)\(LootContextParams\.(\w+)\)")
+
+
+def loot_context_params() -> str:
+    src = read("world", "level", "storage", "loot", "parameters", "LootContextParamSets.java")
+    sets = PARAM_SET.findall(src)
+    out = header(
+        "Loot context parameter sets",
+        "Every `ContextKeySet` registered in `LootContextParamSets`, with the keys its "
+        "`ContextKeySet.Builder` declared. The set belongs to the **caller**, not to the loot table: "
+        "`ContextMap.Builder.create` throws both on a required key that is absent and on a key the set "
+        "does not declare at all, so this table is the contract each call site has to satisfy. A "
+        "required key can be read with `LootContext.getParameter`, an optional one only with "
+        "`LootContext.getOptionalParameter`. Twelve of these twenty-six sets never roll a `LootTable` at "
+        "all — the engine is older and wider than the loot package. See "
+        "[Contexts and predicates](../systems/items/contexts-and-predicates.md).",
+    )
+    out += f"{len(sets)} parameter sets\n\n"
+    out += "| set | id | required | optional |\n|---|---|---|---|\n"
+    for const, sid, body in sorted(sets, key=lambda r: r[1]):
+        keys = PARAM_KEY.findall(body)
+        req = [k for kind, k in keys if kind == "required"]
+        opt = [k for kind, k in keys if kind == "optional"]
+        fmt = lambda names: ", ".join(f"`LootContextParams.{n}`" for n in names) or "—"
+        out += f"| `LootContextParamSets.{const}` | *{sid}* | {fmt(req)} | {fmt(opt)} |\n"
+    return out
+
+
+# ------------------------------------------------------------ enchantment hooks
+# EnchantmentHelper is the seam between the enchantment system and everything
+# else: it holds no state, and the useful artefact is which class calls which
+# entry point. The declarations come off the class, the callers off a scan of
+# every other .java in the tree for a qualified call (session H).
+EH_DECL = re.compile(r"public static (?:<[^>]+> )?([\w.<>?\[\], ]+?) (\w+)\(")
+
+
+def _java_files(root: str):
+    for base, _dirs, files in os.walk(root):
+        for name in files:
+            if name.endswith(".java"):
+                yield os.path.join(base, name)
+
+
+def enchantment_hooks() -> str:
+    path = os.path.join(MC, "world", "item", "enchantment", "EnchantmentHelper.java")
+    with open(path, encoding="utf-8", errors="replace") as fh:
+        decl_src = fh.read()
+    methods: dict[str, int] = {}
+    for _ret, name in EH_DECL.findall(decl_src):
+        methods[name] = methods.get(name, 0) + 1
+    call = re.compile(r"EnchantmentHelper\.(\w+)\(")
+    callers: dict[str, set[str]] = {name: set() for name in methods}
+    for f in _java_files(ROOT):
+        if os.path.abspath(f) == os.path.abspath(path):
+            continue
+        with open(f, encoding="utf-8", errors="replace") as fh:
+            text = fh.read()
+        if "EnchantmentHelper." not in text:
+            continue
+        owner = os.path.basename(f)[:-5]
+        for name in call.findall(text):
+            if name in callers:
+                callers[name].add(owner)
+    used = sum(1 for n in callers if callers[n])
+    out = header(
+        "Enchantment hooks",
+        "Every public entry point of `EnchantmentHelper`, with the classes that call it. "
+        "The enchantment package barely calls anything and everything calls it, so this table is the "
+        "system's real interface: each row is a moment at which some other system asks whether an "
+        "enchantment wants to change what happens. Callers are the declaring files, one per class, "
+        "excluding `EnchantmentHelper` itself. See "
+        "[Enchantments](../systems/items/enchantments.md) for what an enchantment is and "
+        "[Enchanting](../systems/items/enchanting.md) for the selection half.",
+    )
+    out += f"{len(methods)} entry points, {used} of them called from outside the class\n\n"
+    out += "| entry point | overloads | called from |\n|---|---:|---|\n"
+    for name in sorted(methods):
+        who = sorted(callers[name])
+        cells = ", ".join(f"`{c}`" for c in who) if who else "*nothing outside the class*"
+        out += f"| `EnchantmentHelper.{name}` | {methods[name]} | {cells} |\n"
+    return out
+
+
 VIEWS = {
     "packets": packets,
     "registries": registries,
@@ -209,6 +301,8 @@ VIEWS = {
     "gamerules": gamerules,
     "entity-data-serializers": serializers,
     "attributes": attributes,
+    "loot-context-params": loot_context_params,
+    "enchantment-hooks": enchantment_hooks,
 }
 
 

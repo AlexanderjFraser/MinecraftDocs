@@ -1,458 +1,322 @@
 # Items and stacks
 
-> Verified against **Minecraft 26.2** · Part VII · A player right-clicks a piece of cooked beef and holds the button for thirty-two ticks: the client predicts the whole meal, the server sends one byte to say it finished, and the hunger bar arrives separately.
+> Verified against **Minecraft 26.2** · Part VII · A diamond pickaxe sits in a hotbar slot, is compared against its neighbours, is sent to a client, and finally loses its last point of durability.
 
-## Responsibility
+A diamond pickaxe is in your hotbar. The `Item` behind it,
+`Items.DIAMOND_PICKAXE`, is a single object shared by every diamond pickaxe
+that has ever existed on this server, and it holds four fields: a description
+id, a crafting remainder, a feature-flag set, and its own registry holder. Not
+the stack size. Not the mining speed. Not the durability. All of that is data
+components ([data components](../foundations/data-components.md)) — and they
+do not live on the `Item` either. They live on the item's `Holder.Reference`
+in `BuiltInRegistries.ITEM`, and the *stack* borrows that map as a read-only
+prototype and stores only the ways it differs from it. Two things follow, and
+they run through the whole page. **That prototype does not exist until the
+first data-pack load**: `Item.components` throws until a reload binds it, and
+`Item.CODEC_WITH_BOUND_COMPONENTS` exists purely to refuse an item whose
+components are not bound yet. And **a stack whose components equal its item's
+defaults carries an empty patch** — every item's prototype contains
+`DataComponents.ENCHANTMENTS` set to `ItemEnchantments.EMPTY`, so *enchanted
+with nothing* and *never enchanted* are not merely equal, they are the same
+object state, indistinguishable on disk and on the wire.
 
-An `Item` is a behaviour; an `ItemStack` is a count plus a bag of data
-components attached to one of those behaviours. Between them they cover
-every stack in the game — in a hand, in a chest, on the ground, in a
-recipe, on the wire. The system's job is to answer three questions
-cheaply: *what happens when this is used*, *are these two stacks the same
-thing*, and *what of this survives a save or a packet*.
+## The cast
 
-The one sentence a player recognises: *a stack of sixteen cooked beef and
-a stack of one enchanted sword are the same kind of object, and the
-difference between them is data, not code.*
+| class | what it decides | thread |
+|---|---|---|
+| `Item` | the behaviour hooks, and four fields that are not components | both main threads |
+| `Item.Properties` | the builder — which produces an *initializer*, never a component map | class-init, wherever the bootstrap runs |
+| `Holder.Reference` | where an item's default components actually live, and whether they exist yet | written on a main thread at reload |
+| `DataComponentInitializers` | the pile of pending default maps, one entry per registered item | built on the background executor |
+| `ItemStack` | a holder, a count, a pop time and a patched map — the mutable thing in a slot | both main threads |
+| `PatchedDataComponentMap` | prototype plus patch, and the copy-on-write flag that makes copying a stack free | wherever its stack is |
+| `ItemStackTemplate` | the immutable stack: what a stack looks like inside a component, a particle or a recipe | both |
+| `ItemEntity` | a stack that is an entity, with a five-minute clock and a merge rule | server main, mirrored on the client |
 
-The headline: **`Item` holds almost no data.** Its fields are a
-description id, a crafting remainder, a feature flag set and its own
-registry holder. Everything a stack is made of — stack size, durability,
-food, tool rules, equippability — is a data component
-([data components](../foundations/data-components.md)), and the default
-set for an item is not built until the first data-pack reload.
+## Four fields, and only one of them is really data
 
-## The data it owns
+`ItemStack` is a final class holding exactly four things: two ints, a registry
+holder, and the interesting one.
 
-- **`Item`** — the singleton behaviour object, one per registry entry, in
-  `BuiltInRegistries.ITEM`. It declares the hooks: `Item.use`,
-  `Item.useOn`, `Item.finishUsingItem`, `Item.releaseUsing`,
-  `Item.onUseTick`, `Item.inventoryTick`, `Item.mineBlock`,
-  `Item.hurtEnemy`, `Item.appendHoverText`. `Item.components` does not
-  return a field — it delegates to `Holder.Reference.components` on the
-  item's own registry holder.
-- **`Item.Properties`** — the builder used at class-init in `Items`. It
-  does not produce a component map; it produces a
-  `DataComponentInitializers.Initializer` that is registered and run
-  later. Its methods are the vocabulary of an item definition:
-  `Item.Properties.food`, `Item.Properties.stacksTo`,
-  `Item.Properties.durability`, `Item.Properties.tool`,
-  `Item.Properties.sword`, `Item.Properties.spear`,
-  `Item.Properties.humanoidArmor`, `Item.Properties.useCooldown`,
-  `Item.Properties.usingConvertsTo`, `Item.Properties.equippable`.
-- **`ItemStack`** — a final class holding exactly four things: a
-  `Holder<Item>`, an int count, a `PatchedDataComponentMap`, and
-  `ItemStack.getPopTime`. The pop time is ordinary shared state — both
-  sides decrement it in `ItemStack.inventoryTick`, and `Inventory` writes
-  it — it is simply that only the client has anything to do with the
-  number. `ItemStack` implements `DataComponentHolder` and
-  `ItemInstance`.
-- **`PatchedDataComponentMap`** — prototype plus patch, genuinely
-  copy-on-write: `PatchedDataComponentMap.copy` and
-  `PatchedDataComponentMap.asPatch` hand out a shared patch map and set a
-  flag, and the first mutation calls
-  `PatchedDataComponentMap.ensureMapOwnership` to fork it.
-  `PatchedDataComponentMap.set` **removes** the entry when the value
-  equals the prototype's, so a stack whose components happen to match its
-  item's defaults carries an empty patch.
-- **`ItemInstance`** — the read-only "an item, a count, some components"
-  contract shared by `ItemStack` and `ItemStackTemplate`. It declares
-  `ItemInstance.count` and `ItemInstance.getMaxStackSize` — which
-  defaults to **1** when `DataComponents.MAX_STACK_SIZE` is absent — and
-  it extends `TypedInstance` (five `TypedInstance.is` overloads, with
-  `ItemStack.is` adding a sixth) and `DataComponentGetter`.
-- **`ItemStackTemplate`** — an immutable record of a `Holder<Item>`, a
-  count and a `DataComponentPatch`, with `ItemStackTemplate.create` to
-  materialise a real stack. It is what particles, hover events,
-  `UseRemainder` and crafting remainders carry instead of a mutable
-  `ItemStack`. An invalid template does not throw at that point: it is
-  logged and yields `ItemStack.EMPTY`.
-- **`ItemCooldowns`** and `ServerItemCooldowns` — a per-player map keyed
-  by cooldown *group*, not by item. `ItemCooldowns.getCooldownGroup`
-  returns `UseCooldown.cooldownGroup` if the component names one, and the
-  item's registry `Identifier` otherwise. **Both sides own one**: the
-  client's is a real prediction, consulted before it will even attempt a
-  use.
-- **`ItemEntity`** — the dropped stack, holding its `ItemStack` in
-  `ItemEntity.DATA_ITEM` and merging with neighbours through
-  `ItemEntity.mergeWithNeighbours`. Blocks reach it through
-  `Block.popResource` ([block breaking](../blocks/block-breaking.md)).
+```mermaid
+flowchart LR
+    subgraph S["ItemStack — the object in the slot"]
+      CNT["count"]
+      POP["popTime"]
+      HOL["item, a Holder of Item"]
+      MAP["components"]
+    end
+    MAP --> PDM["PatchedDataComponentMap"]
+    PDM --> PATCH["the patch: only what differs, plus a tombstone per removal"]
+    PDM -. "prototype, borrowed and never written" .-> HR
+    HOL --> HR["Holder.Reference in BuiltInRegistries.ITEM"]
+    HR --> IT["Item — descriptionId, craftingRemainingItem, requiredFeatures, its own holder"]
+    HR --> DEF["DataComponentMap — the item's defaults, bound at reload"]
+```
 
-### Durability
+The dotted arrow is the shape of the whole system. A stack does not own its
+defaults and cannot change them: it points at a holder, and the holder owns
+one `DataComponentMap` shared by every stack of that item in both programs.
 
-Durability is three components acting together, not one.
-`ItemStack.isDamageableItem` requires `DataComponents.MAX_DAMAGE` to be
-present, `DataComponents.UNBREAKABLE` to be absent, and
-`DataComponents.DAMAGE` to be present. `ItemStack.hurtAndBreak` is the
-only way in and it demands a `ServerLevel` — the shared overloads
-silently do nothing on the client — running the amount through
-`EnchantmentHelper.processDurabilityChange` first
-([enchantments](enchantments.md)); when the item breaks it **shrinks the
-stack by one** and calls the break hook.
-`ItemStack.hurtWithoutBreaking` clamps one short of the maximum, and
-`ItemStack.hurtAndConvertOnBreak` transmutes instead. `Item.isBarVisible`,
-`Item.getBarWidth` and `Item.getBarColor` are the bar under the icon.
+`ItemStack.typeHolder` answers `Items.AIR`'s holder rather than null for an
+empty stack, which is why `ItemStack.getItem` never returns null either. The
+pop time is the odd one out: it is the five-tick squeeze the hotbar icon does
+when something lands in it, set to 5 by `Inventory` when a stack grows and by
+`ClientPacketListener.handleContainerSetSlot` when a slot update makes a
+hotbar stack larger, counted down by `ItemStack.inventoryTick` on **both**
+sides, and read by `GuiGraphicsExtractor` while it is above zero. It is
+ordinary shared state that only the client has any use for — and
+`ItemStack.copy` carries it across, so the animation survives being copied
+into a menu slot.
 
-### The consumable components
+`Item.Properties` is the builder used at class-init, and its output is not a
+component map. `Item.Properties.component` and every convenience over it —
+`Item.Properties.stacksTo`, `Item.Properties.durability`,
+`Item.Properties.food`, `Item.Properties.tool`, `Item.Properties.spear`,
+`Item.Properties.equippable`, `Item.Properties.useCooldown` — fold one more
+step onto a `DataComponentInitializers.Initializer`, a function that will be
+run against a `DataComponentMap.Builder` later, with a
+`HolderLookup.Provider` in hand.
 
-Eating is not implemented by a food item class. It is four components and
-one interface.
+## The map that does not exist yet
 
-- **`Consumable`** — `Consumable.consumeSeconds` (default
-  `Consumable.DEFAULT_CONSUME_SECONDS`, 1.6, so
-  `Consumable.consumeTicks` is **32**), `Consumable.animation` (an
-  `ItemUseAnimation`), `Consumable.sound`,
-  `Consumable.hasConsumeParticles` and `Consumable.onConsumeEffects`. The
-  presets are in `Consumables` — `Consumables.DEFAULT_FOOD`,
-  `Consumables.DEFAULT_DRINK`, `Consumables.GOLDEN_APPLE`,
-  `Consumables.CHORUS_FRUIT`, `Consumables.MILK_BUCKET` and the rest.
-  A consumer may override the sound per stack by implementing
-  `Consumable.OverrideConsumeSound`.
-- **`FoodProperties`** — `FoodProperties.nutrition`,
-  `FoodProperties.saturation`, `FoodProperties.canAlwaysEat`. It is not a
-  passive data bag: it *implements* `ConsumableListener`, and
-  `FoodProperties.onConsume` is what moves the food bar.
-- **`ConsumableListener`** — one method, `ConsumableListener.onConsume`,
-  found on the stack by `DataComponentHolder.getAllOfType`. Four things
-  implement it: `FoodProperties`, `PotionContents`,
-  `SuspiciousStewEffects` and `OminousBottleAmplifier`.
-- **`ConsumeEffect`** — a registry-dispatched effect
-  (`BuiltInRegistries.CONSUME_EFFECT_TYPE`) with five implementations:
-  `ApplyStatusEffectsConsumeEffect`, `RemoveStatusEffectsConsumeEffect`,
-  `ClearAllStatusEffectsConsumeEffect`, `TeleportRandomlyConsumeEffect`,
-  `PlaySoundConsumeEffect`.
-- **`UseRemainder`** (the empty bowl), **`UseCooldown`** (the seconds and
-  the group) and **`UseEffects`** — the last of which is the reason
-  eating slows you down: `UseEffects.canSprint`,
-  `UseEffects.interactVibrations` and `UseEffects.speedMultiplier`, with
-  `UseEffects.DEFAULT` being *(false, true, 0.2)* and sitting in
-  `DataComponents.COMMON_ITEM_COMPONENTS`, so every item has one.
-
-`FoodData` is the player's side of it: `FoodData.foodLevel`,
-`FoodData.saturationLevel`, `FoodData.exhaustionLevel`, ticked server-side
-in `FoodData.tick`, with the constants in `FoodConstants`
-(`FoodConstants.MAX_FOOD` is 20) — see
-[hunger, XP and effects](../player/hunger-xp-and-effects.md).
-
-## When it runs
-
-**The client's main thread — the one named *Render thread*
-([anatomy](../anatomy/anatomy.md)) — starts everything.**
-`Minecraft.handleKeybinds` sees the use key and calls
-`Minecraft.startUseItem` outright on the press; only the held-down branch
-consults `Minecraft.rightClickDelay`, and it also refuses while the
-player is already using an item. The delay and `LocalPlayer.isHandsBusy`
-are checked *inside* `Minecraft.startUseItem`, which then picks a hand and
-a target and hands off to `MultiPlayerGameMode.useItem` or
-`MultiPlayerGameMode.useItemOn`. Both open a prediction window
-(`MultiPlayerGameMode.startPrediction` → `BlockStatePredictionHandler`,
-see [block interaction](../blocks/block-interaction.md)), run the real
-logic locally, and *then* send the packet the prediction concludes with.
-
-**Server main thread** decides. `ServerGamePacketListenerImpl.handleUseItem`
-and `ServerGamePacketListenerImpl.handleUseItemOn` are bounced off the
-Netty thread by `PacketUtils.ensureRunningOnSameThread` — through the
-`ServerLevel` overload, which hands the work to the server's
-`PacketProcessor` ([the server tick](../server/server-tick.md)) — and
-call `ServerPlayerGameMode.useItem` / `ServerPlayerGameMode.useItemOn`.
-
-**Every tick, both sides**, `LivingEntity.tick` calls the private
-`LivingEntity.updatingUsingItem`, which is where the use is abandoned if
-the held item changed, and which then calls `LivingEntity.updateUsingItem`
-— `ItemStack.onUseTick` first, with the count *before* the decrement, and
-the decrement after. Only the server may act on reaching zero.
-
-**The item tick is server-only, and it has two callers.**
-`ItemStack.inventoryTick` decrements the pop time on both sides but
-forwards to `Item.inventoryTick` only for a `ServerLevel` — the hook's
-parameter is a `ServerLevel`, so it cannot be otherwise. `Inventory.tick`
-walks the thirty-six ordinary slots; `EntityEquipment.tick`, reached from
-`LivingEntity.aiStep`, walks the rest.
-
-**The same thread, later in the frame,** reads the results:
-`ItemInHandRenderer.applyEatTransform` bobs the model from
-`LivingEntity.getUseItemRemainingTicks`, and `Hud.extractFood` draws the
-bar from `FoodData.getFoodLevel`.
-
-## The trace: eating a piece of cooked beef
+Registration and definition happen at completely different times, on
+different threads, in different phases of the program.
 
 ```mermaid
 sequenceDiagram
-    participant MC as Minecraft
-    participant MPGM as MultiPlayerGameMode
-    participant SGPL as ServerGamePacketListenerImpl
-    participant SPGM as ServerPlayerGameMode
-    participant IS as ItemStack
-    participant C as Consumable
-    participant LE as LivingEntity
-    participant SP as ServerPlayer
-    participant FD as FoodData
+    participant Boot as Bootstrap
+    participant Items as Items
+    participant Item as Item
+    participant BIR as BuiltInRegistries
+    participant Worker as Worker
+    participant MS as MinecraftServer
 
-    MC->>MPGM: startUseItem — no block, no entity hit
-    MPGM->>IS: use — the client predicts first, locally
-    MPGM->>SGPL: ServerboundUseItemPacket(hand, sequence, yRot, xRot)
-    SGPL->>SPGM: useItem — the authoritative copy
-    SPGM->>IS: use → Item.use finds DataComponents.CONSUMABLE
-    IS->>C: startConsuming — canConsume asks Player.canEat
-    C->>LE: startUsingItem — useItemRemaining = 32
-    Note over LE: every tick, both sides: onUseTick → particles and chew sound
-    LE->>SP: tick 32, server only: completeUsingItem
-    SP->>SGPL: ClientboundEntityEventPacket(player, 9)
-    LE->>C: ItemStack.finishUsingItem → Consumable.onConsume
-    C->>FD: FoodProperties.onConsume → FoodData.eat
-    SP->>SGPL: ClientboundSetHealthPacket — the authoritative food value
+    Boot->>BIR: bootStrap, then createContents touches Items.AIR
+    BIR->>Items: the class loads, running 1177 static initialisers
+    Items->>Item: one constructor per field, each given an Item.Properties
+    Item->>BIR: DATA_COMPONENT_INITIALIZERS.add, one Initializer per item
+    Note over Item: every item now exists and NO item has components
+    Note over MS: much later — a world load, or a reload command
+    MS->>Worker: ReloadableServerResources.loadResources
+    Worker->>BIR: DataComponentInitializers.build against the reloaded registries and tags
+    Note over Worker: DataComponentMap.Builder.build runs each item validator here
+    Worker-->>MS: a PendingComponents per registry
+    Note over MS: back on the main thread
+    MS->>Item: PendingComponents.apply, then bindComponents on every holder
 ```
 
-1. **The click.** `Minecraft.handleKeybinds` fires `Minecraft.startUseItem`,
-   which loops both hands. Nothing is hit, so it falls through to
-   `MultiPlayerGameMode.useItem`, which refuses outright if the client's
-   own `ItemCooldowns` says the item is on cooldown, and otherwise runs
-   `ItemStack.use` **locally first** and hands the resulting
-   `ServerboundUseItemPacket` — carrying the player's rotation as well as
-   the hand and sequence number — back to
-   `MultiPlayerGameMode.startPrediction` to send. The prediction is
-   complete before a byte leaves the client.
-2. **The dispatch.** `Item.use` is not overridden by anything in the food
-   path; its default body is a component dispatch, and the
-   `DataComponents.CONSUMABLE` branch is first and exclusive — an item
-   that is both consumable and equippable is only ever eaten. It calls
-   `Consumable.startConsuming`. (The other branches are
-   `DataComponents.EQUIPPABLE` with a swappable flag,
-   `DataComponents.BLOCKS_ATTACKS`, and `DataComponents.KINETIC_WEAPON`.)
-3. **The refusal.** `Consumable.canConsume` consults `Player.canEat` only
-   when the stack has `DataComponents.FOOD` *and* the user is a player —
-   a potion or a milk bucket never looks at the food bar at all. For
-   ordinary food on a full bar the answer is `InteractionResult.FAIL` and
-   the trace stops here, unless the player's abilities are invulnerable,
-   in which case they can always eat.
-4. **Starting.** `LivingEntity.startUsingItem` does nothing if a use is
-   already in progress; otherwise it sets `LivingEntity.useItem` and
-   `LivingEntity.useItemRemaining` to 32. On the server it also **writes**
-   two bits of `LivingEntity.DATA_LIVING_ENTITY_FLAGS`
-   ([synched entity data](../entities/synched-entity-data.md)) — one set
-   to true for "using", the other *assigned* the hand, so for a main-hand
-   meal it is cleared — and fires `GameEvent.ITEM_INTERACT_START` through
-   `ItemStack.causeUseVibration`, gated on `UseEffects.interactVibrations`.
-   The result is `InteractionResult.CONSUME`, which carries
-   `InteractionResult.SwingSource.NONE` — **which is why eating does not
-   swing the arm.**
-5. **The client's own timer.** `LocalPlayer.isUsingItem` is backed by a
-   client-local flag, not by the synched bits;
-   `LocalPlayer.onSyncedDataUpdated` reconciles the two afterwards, and it
-   works in both directions — it will start a use the client never
-   predicted and stop one it did.
-6. **Chewing.** Each tick, `LivingEntity.updateUsingItem` calls
-   `ItemStack.onUseTick` with the count *before* it decrements, so a
-   thirty-two-tick meal is offered the numbers 32 down to 1 and never 0.
-   `Consumable.shouldEmitParticlesAndSounds` is true once more than
-   `Consumable.CONSUME_EFFECTS_START_FRACTION` of the duration has
-   elapsed and the remaining count is a multiple of
-   `Consumable.CONSUME_EFFECTS_INTERVAL` (4), and then
-   `Consumable.emitParticlesAndSounds` spawns five item particles via
-   `LivingEntity.spawnItemParticles` — behind
-   `Consumable.hasConsumeParticles`, which drinks turn off — and plays
-   the chew sound, which they do not. `Level.addParticle` does nothing on
-   the server, so the particles are pure client simulation.
-7. **The slowdown.** `LocalPlayer.modifyInput` scales the movement input
-   by `LocalPlayer.itemUseSpeedMultiplier` — which reads
-   `UseEffects.speedMultiplier` — unless the player is riding, and
-   `LocalPlayer.isSlowDueToUsingItem` blocks sprinting because
-   `UseEffects.canSprint` is false. The famous 20 % is a JSON default,
-   and `Item.Properties.spear` overrides it outright: a spear may sprint
-   and is not slowed at all.
-8. **Tick thirty-two.** The client's counter does not stop at zero — it
-   keeps running until the server's packet arrives, and only the arm
-   animation is clamped. The completion is guarded three ways: the count
-   reaching zero, being on the server, and the item not being a
-   release-on-use item. The server calls
-   `LivingEntity.completeUsingItem`, whose override
-   `ServerPlayer.completeUsingItem` first sends
-   `ClientboundEntityEventPacket` with event id 9.
-9. **The meal.** `ItemStack.finishUsingItem` → `Item.finishUsingItem` →
-   `Consumable.onConsume`, which emits a final burst of sixteen particles
-   and the sound, then — **for a `ServerPlayer` only** — awards
-   `Stats.ITEM_USED` and fires `CriteriaTriggers.CONSUME_ITEM`, then
-   walks `DataComponentHolder.getAllOfType` for `ConsumableListener`s,
-   finding `FoodProperties`, whose `FoodProperties.onConsume` plays the
-   eat and burp sounds and calls `FoodData.eat`; then applies each
-   `ConsumeEffect` in `Consumable.onConsumeEffects` **behind a
-   server-side guard**, fires `GameEvent.EAT` — a no-op on the client,
-   whose `ClientLevel.gameEvent` has an empty body — and finally
-   `ItemStack.consume` shrinks the stack, which a player with infinite
-   materials skips.
-10. **The leftovers.** `ItemStack.applyAfterUseComponentSideEffects` runs
-    against a copy taken at the *top of `ItemStack.finishUsingItem`* —
-    immediately before the meal, not at the start of the thirty-two
-    ticks — so it can still see the pre-shrink count.
-    `UseRemainder.convertIntoRemainder` makes the bowl or bottle unless
-    the player has infinite materials or the stack did not shrink, and
-    `UseCooldown.apply` starts the cooldown for a player, which
-    `ServerItemCooldowns.onCooldownStarted` mirrors as
-    `ClientboundCooldownPacket`. Then `LivingEntity.stopUsingItem` clears
-    the flag and fires `GameEvent.ITEM_INTERACT_FINISH`, both server-side;
-    only the field reset runs on the client.
-11. **The client replays it.** `Player.handleEntityEvent` turns event 9
-    back into `LivingEntity.completeUsingItem`, so the client re-runs
-    step 9 locally — particles, the chew sound, `FoodData.eat`, the
-    shrink. It does **not** run the `ConsumeEffect`s, which is why a
-    chorus fruit teleport is never predicted but the hunger bar jump is;
-    and it does not reproduce the `FoodProperties` eat and burp sounds
-    either, for the reason in the invariants below.
-12. **The correction.** `ServerPlayer.doTick` notices the food value
-    changed and sends `ClientboundSetHealthPacket` in the **same tick**,
-    overwriting the client's prediction outright. The stack count is
-    corrected by `AbstractContainerMenu.broadcastChanges`
-    ([containers and menus](containers-and-menus.md)) — which for this
-    player already ran, in the level's entity phase, before the meal — so
-    it arrives a tick later than the health packet.
+Between those two halves an `Item` is a live object whose `Item.components`
+call ends in a null check reading *Components not bound yet*;
+`Holder.Reference.areComponentsBound` is the polite way to ask, and
+`Item.CODEC_WITH_BOUND_COMPONENTS` refuses to name an unbound item at all. The
+client goes through the same gate on its own registries, in
+`RegistryDataCollector` while `ClientConfigurationPacketListenerImpl` finishes
+configuration — so a client on the title screen has componentless items too.
 
-## Interfaces
+Almost none of that map actually varies with the data pack. Every initializer
+starts by copying `DataComponents.COMMON_ITEM_COMPONENTS` — ten entries every
+item in the game gets, including the stack size of 64 and the empty
+enchantment list the hook rests on — and `Item.Properties.component` bakes
+literal Java values on top. Only `Item.Properties.delayedComponent` and
+`Item.Properties.delayedHolderComponent` read the context, and there are
+**twenty** call sites between them in the entire game, all in `Item` and
+`Items`: fire resistance resolving `DamageTypeTags.IS_FIRE`, the banner
+patterns, the goat horn, the jukebox songs, the egg variants, the spear's
+damage type. `Item.Properties.repairable` is the near miss — it takes a tag
+and is still eager, because it takes a lookup from
+`BuiltInRegistries.acquireBootstrapRegistrationLookup` at class-init and
+stores an unresolved `HolderSet` rather than waiting.
 
-- **Called by:** `Minecraft.handleKeybinds` and
-  `Minecraft.startUseItem` on the client;
-  `ServerGamePacketListenerImpl.handleUseItem`,
-  `ServerGamePacketListenerImpl.handleUseItemOn` and `ServerGamePacketListenerImpl.handlePlayerAction` on the server;
-  `LivingEntity.tick` every tick on both.
-- **Calls into:** `BlockBehaviour.BlockStateBase.useItemOn` and
-  `BlockBehaviour.BlockStateBase.useWithoutItem` for the block half
-  ([block interaction](../blocks/block-interaction.md)), `FoodData`,
-  `ItemCooldowns`, `GameEvent` for vibrations
-  ([game events](../world/game-events-and-vibrations.md)), and
-  `Level.playSeededSound`.
-- **Crosses the network as:** `ServerboundUseItemPacket`,
-  `ServerboundUseItemOnPacket`, `ServerboundPlayerActionPacket` (whose
-  `ServerboundPlayerActionPacket.Action` includes `ServerboundPlayerActionPacket.Action.STAB` for spears) and
-  `ServerboundSetCarriedItemPacket` upward;
-  `ClientboundBlockChangedAckPacket`, `ClientboundEntityEventPacket`
-  (event 9), `ClientboundSetEntityDataPacket` (the using-item flag —
-  which the eater's own client also receives, and reconciles against),
-  `ClientboundSetHealthPacket`, `ClientboundCooldownPacket`
-  and the container packets downward. An `ItemStack` itself travels as
-  `ItemStack.OPTIONAL_STREAM_CODEC` — count, item holder, then the
-  **patch only**, never the prototype.
-- **Data-driven by:** `BuiltInRegistries.ITEM`,
-  `BuiltInRegistries.DATA_COMPONENT_TYPE`,
-  `BuiltInRegistries.CONSUME_EFFECT_TYPE`, and — for the parts that need
-  registries or tags to exist — `DataComponentInitializers`, run at
-  reload from `ReloadableServerResources` on the server and
-  `RegistryDataCollector` on the client. Mining and repair are tags
-  (`BlockTags.SWORD_EFFICIENT`, `ItemTags`) rather than code.
+## A patch with tombstones, and a copy that copies nothing
 
-## Invariants and surprises
+`PatchedDataComponentMap` holds three things: the prototype, a patch map, and
+a copy-on-write flag. Reads consult the patch and fall through to the
+prototype. Writes are where the design shows.
+`PatchedDataComponentMap.set` compares the new value against the prototype's
+and, if they are equal, **removes** the entry rather than storing it — the
+patch never contains a value the item already had.
+`PatchedDataComponentMap.remove` does the opposite trick: when the prototype
+has the component, it cannot simply drop the key, so it writes an empty
+optional as a tombstone meaning *this one is deliberately gone*. A patch is
+therefore a diff in both directions, which is exactly what
+`DataComponentPatch` serialises: additions, then removals.
 
-- **An item's default components are reloadable state on a registry
-  holder.** `Item`'s constructor registers a
-  `DataComponentInitializers.Initializer` and walks away; the map is
-  built by `DataComponentInitializers.build` — on the **background
-  executor**, from `ReloadableServerResources.loadResources` — and
-  installed later, on the main thread, with
-  `Holder.Reference.bindComponents`. Until then `Item.components` throws,
-  `Holder.Reference.areComponentsBound` is the test, and
-  `Item.CODEC_WITH_BOUND_COMPONENTS` exists purely to refuse an item
-  whose components have not been bound. Only the *delayed* parts of a
-  definition actually vary with the data pack —
-  `Item.Properties.delayedComponent` and
-  `Item.Properties.delayedHolderComponent`, which is how a tag-dependent
-  value like fire resistance or repairability gets in; the eagerly set
-  values are fixed in Java.
-- **A stack stores a diff, not a map.** Setting a component back to its
-  prototype value removes it from the patch, so "enchanted with nothing"
-  and "never enchanted" are the same object state.
-  `ItemStack.isSameItemSameComponents` compares whole
-  `PatchedDataComponentMap`s — prototype and patch — which for two stacks
-  of the same item amounts to comparing the patches.
-  `ItemStack.matches` and `ItemStack.hashItemAndComponents` are the other
-  two members of the family.
-- **An instant use returns its result *through* the `InteractionResult`.**
-  `InteractionResult.Success.heldItemTransformedTo` is how a use replaces
-  the held item; both game modes unwrap it and write it back to the hand,
-  and `ItemStack.use` applies the side effects to the transformed stack
-  rather than the original.
-- **`ItemStack.use` only applies the remainder and the cooldown for
-  *instant, successful* uses.** `ItemStack.applyAfterUseComponentSideEffects`
-  needs both a zero use duration and an `InteractionResult.Success`; for
-  a timed use it runs later, from `ItemStack.finishUsingItem` or
-  `ItemStack.releaseUsing`.
-- **The completion of a multi-tick use is one byte.** There is no "you
-  ate this" packet: `ClientboundEntityEventPacket` with id 9 tells the
-  client to re-derive the outcome from components it already has, and
-  `ClientboundSetHealthPacket` corrects it afterwards.
-- **One meal, two different exactly-once sound strategies.** The chew
-  sound goes through `Player.playSound`, which names the eater as the
-  entity to *exclude*, so the server broadcasts it to everyone else and
-  the eater's own client plays it locally. The `FoodProperties` eat and
-  burp sounds pass no exclusion at all — and `ClientLevel.playSeededSound`
-  plays a sound only when it is excluding the local player, so those two
-  reach the eater as the server's broadcast alone.
-- **`Consumable.onConsume` runs on both sides; three parts of it do not.**
-  The stats and the advancement criterion need a `ServerPlayer`, the
-  `ConsumeEffect`s need a non-client level, and the game event is a no-op
-  on the client because `ClientLevel.gameEvent` has an empty body.
-  Particles, sound, the `ConsumableListener` and the stack shrink run on
-  both, and every one of those client mutations is later overwritten.
-- **Durability and stackability are mutually exclusive, enforced twice
-  and not by the same test.** The validator installed by
-  `Item.Properties.finalizeInitializer` rejects `DataComponents.DAMAGE`
-  on a stackable item, and it fires inside `DataComponentMap.Builder.build`
-  — i.e. at *reload*, not at class-init. `ItemStack.validateStrict`
-  rejects `DataComponents.MAX_DAMAGE` on a stackable item instead, and it
-  is reached from commands and templates, not from a network decode.
-- **The client's stacks are validated by re-encoding, not by a
-  validator.** Exactly one serverbound packet carries an `ItemStack` at
-  all — the creative-mode slot packet — and its
-  `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` is wrapped in
-  `ItemStack.validatedStreamCodec`, which proves the decoded stack by
-  running it back through `ItemStack.CODEC`.
-  `ItemStack.validateContainedItemSizes` means the check recurses into
-  `DataComponents.CONTAINER`, `DataComponents.BUNDLE_CONTENTS` and
-  `DataComponents.CHARGED_PROJECTILES`.
-- **The use is abandoned in `LivingEntity.updatingUsingItem`, not
-  `LivingEntity.updateUsingItem`.** The first is the private per-tick
-  entry point and holds the `ItemStack.isSameItem` comparison — so
-  swapping a bowl for a stew aborts eating, but a durability tick does
-  not; the second is the countdown itself.
-- **A durability change does not restart the swap animation.**
-  `DataComponents.DAMAGE` is declared with
-  `DataComponentType.Builder.ignoreSwapAnimation`, and
-  `ItemInHandRenderer.shouldInstantlyReplaceVisibleItem` compares with
-  `ItemStack.matchesIgnoringComponents`.
-- **`ItemStack.EMPTY` is not identified by reference.**
-  `ItemStack.isEmpty` also accepts `Items.AIR` and a count at or below
-  zero, so a stack shrunk to nothing is empty without being the
-  singleton.
-- **Cooldowns are grouped.** One `ClientboundCooldownPacket` names a
-  group, so a single cooldown can gate several items — and two items with
-  the same `UseCooldown.cooldownGroup` share one timer.
-- **72000 ticks is the "until released" duration, and it is spelled out
-  in several places.** `Item.APPROXIMATELY_INFINITE_USE_DURATION` names
-  it, and `Item.getUseDuration` returns it for
-  `DataComponents.BLOCKS_ATTACKS` and `DataComponents.KINETIC_WEAPON` —
-  but `BowItem`, `CrossbowItem` and `TridentItem` override
-  `Item.getUseDuration` and return the same hour of ticks regardless of
-  components, and `BrushItem`, `BundleItem`, `SpyglassItem`,
-  `EnderEyeItem` and `InstrumentItem` override it with numbers of their
-  own. `ItemStack.getUseDuration` is a pure delegate.
-- **`SpyglassItem.finishUsingItem` is the only override of
-  `Item.finishUsingItem` anywhere in the tree.** Everything else in the
-  consume path is component dispatch.
-- **The other half of the use pipeline is release, not completion.**
-  `ItemStack.useOnRelease` is the third term in the completion guard, and
-  an item for which it is true never finishes by counting down: the bow,
-  the crossbow and the trident are finished by
-  `ServerboundPlayerActionPacket`, through
-  `LivingEntity.releaseUsingItem` and `ItemStack.releaseUsing`.
+`ItemStack.copy` and `PatchedDataComponentMap.asPatch` both hand out the
+*same* patch map and set the copy-on-write flag on it, and every mutating
+method calls `PatchedDataComponentMap.ensureMapOwnership` first, which forks
+the map on the first write and clears the flag. Copying a stack — which menus,
+recipes, hover text and `ServerPlayerGameMode.destroyBlock` all do constantly
+— allocates one small object and copies no component data at all.
+
+The wire form falls straight out of it. `ItemStack.OPTIONAL_STREAM_CODEC`
+writes the count, then the item holder, then `PatchedDataComponentMap.asPatch`
+— **the patch only, never the prototype**, because the receiver already has
+the same prototype bound to the same holder. A count of zero is the whole
+encoding of an empty stack.
+
+## When two stacks are the same stack
+
+Five static methods on `ItemStack` answer five different versions of that
+question, and menus, recipes and the renderer each want a different one.
+
+| method | compares | used for |
+|---|---|---|
+| `ItemStack.isSameItem` | the item holder only | *is this the same kind of thing* |
+| `ItemStack.isSameItemSameComponents` | the item, then the whole `PatchedDataComponentMap` | stacking, and every *are these interchangeable* test |
+| `ItemStack.matches` | the count as well | container synchronisation ([containers and menus](containers-and-menus.md)) |
+| `ItemStack.matchesIgnoringComponents` | everything except the component types a predicate excuses | the held-item swap animation |
+| `ItemStack.hashItemAndComponents` | the item's hash and the effective component map's | keying stacks in maps |
+
+The second row is where the hook pays off. `PatchedDataComponentMap` compares
+by prototype **and** patch, so for two stacks of the same item it amounts to
+comparing the patches — and since a patch can never hold a value equal to the
+prototype's, two pickaxes with the same damage are equal whether one reached
+that state by being set explicitly or by never being touched.
+
+The fourth row exists for one component. `DataComponents.DAMAGE` is the only
+component type in the game declared with
+`DataComponentType.Builder.ignoreSwapAnimation`, and
+`ItemInHandRenderer.shouldInstantlyReplaceVisibleItem` passes exactly that
+flag as the predicate — which is why a pickaxe losing a point of durability
+does not re-play the lower-and-raise animation. And a trap sits under all five
+rows: `ItemStack.EMPTY` is a singleton but is not identified by reference,
+because `ItemStack.isEmpty` also answers true for `Items.AIR` and for any
+count at or below zero.
+
+## Two validators, one rule, two spellings
+
+Durability and stackability are mutually exclusive, and the game says so
+twice — in different places, at different times, against different
+components.
+
+| | the reload validator | `ItemStack.validateStrict` |
+|---|---|---|
+| installed by | `Item.Properties.finalizeInitializer` | — |
+| rejects | `DataComponents.DAMAGE` on a stackable item | `DataComponents.MAX_DAMAGE` on a stackable item, and a count over the maximum |
+| runs inside | `DataComponentMap.Builder.build` | `ItemInput`, `ItemStackTemplate.create`, `ItemStack.applyComponentsAndValidate` |
+| when | at reload, on the background executor | when a command, a template or a component patch builds a stack |
+| on failure | throws, failing the reload | logs, and yields `ItemStack.EMPTY` or restores the previous patch |
+
+Neither is reached from a network decode, and the client's stacks are proved a
+third way instead. Exactly **one** serverbound packet in the protocol carries
+an `ItemStack`: `ServerboundSetCreativeModeSlotPacket`, whose
+`ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` is wrapped in
+`ItemStack.validatedStreamCodec` — which runs no validator at all, but
+re-encodes the decoded stack through `ItemStack.CODEC` and throws if that
+fails. `ItemStack.validateContainedItemSizes` makes it recursive, into
+`DataComponents.CONTAINER`, `DataComponents.BUNDLE_CONTENTS` and
+`DataComponents.CHARGED_PROJECTILES`, so a shulker box full of impossible
+stacks is rejected at the door.
+
+## An item, a count, some components — said three ways
+
+`ItemInstance` is the read-only contract those validators are written
+against: `ItemInstance.count`, `ItemInstance.getMaxStackSize`, and — through
+`TypedInstance` and `DataComponentGetter` — five `TypedInstance.is` overloads
+for tags, holder sets, raw items, holders and resource keys, to which
+`ItemStack.is` adds a sixth taking a predicate. Its default
+`ItemInstance.getMaxStackSize` answers **1** when
+`DataComponents.MAX_STACK_SIZE` is missing — which for a bound item never
+happens, because the common set puts 64 there.
+
+Two classes implement it. `ItemStack` is the mutable one that lives in slots.
+`ItemStackTemplate` is an immutable record of a `Holder<Item>`, a count and a
+raw `DataComponentPatch` — what a stack becomes when it is stored *inside*
+something else: `ItemContainerContents` (so a shulker box's contents are
+templates, not stacks), `BundleContents`, `ChargedProjectiles`,
+`ItemParticleOption`, `HoverEvent`, `UseRemainder`, the recipe classes, and
+`Item`'s own crafting remainder. Its constructor refuses a count of zero or
+`Items.AIR`, so there is no empty template; but
+`ItemStackTemplate.create` and `ItemStackTemplate.apply`, which materialise a
+real stack, run `ItemStack.validateStrict` on the result and answer
+`ItemStack.EMPTY` with a log line rather than throwing.
+
+## A pickaxe's last point of durability
+
+Durability is not one component: `ItemStack.isDamageableItem` demands
+`DataComponents.MAX_DAMAGE` present, `DataComponents.UNBREAKABLE` absent, and
+`DataComponents.DAMAGE` present. Take a diamond pickaxe one block short of
+breaking, and mine that block.
+
+`ServerPlayerGameMode.destroyBlock` copies the held stack *before* touching it
+— that copy is what `Block.playerDestroy` later hands the loot table, so the
+drops are decided by the tool as it was — then calls `ItemStack.mineBlock`,
+which delegates to `Item.mineBlock` and awards `Stats.ITEM_USED` if the item
+claims the block. The base `Item.mineBlock` is pure component work: it reads
+`DataComponents.TOOL`, does nothing without one, and damages the stack by
+`Tool.damagePerBlock` only on a server level and only when the block's destroy
+speed is not zero — so instant-break plants cost a tool nothing.
+
+`ItemStack.hurtAndBreak` is the only way in, and the overload that does the
+work demands a `ServerLevel` outright. The overloads taking a `LivingEntity`
+pattern-match on the entity's level and **silently do nothing** on the client,
+which is why a client never predicts durability. The amount then goes through
+`EnchantmentHelper.processDurabilityChange`
+([enchantments](enchantments.md)), which is how Unbreaking turns a point of
+damage into no damage at all, and a player with `Player.hasInfiniteMaterials`
+short-circuits to zero before even that. If anything survives, the stack fires
+`CriteriaTriggers.ITEM_DURABILITY_CHANGED` for a real player, writes the new
+`DataComponents.DAMAGE`, and — this being the last point — finds
+`ItemStack.isBroken` true, **shrinks itself by one**, and calls the break hook
+it was handed. For equipment that hook is `LivingEntity.onEquippedItemBroken`,
+which strips the item's attribute modifiers and broadcasts an entity event
+(47 for the main hand); `ServerPlayer.onEquippedItemBroken` adds
+`Stats.ITEM_BROKEN` on top.
+
+The client is told in one byte. `LivingEntity.handleEntityEvent` turns event
+47 into `LivingEntity.breakItem`, which plays `DataComponents.BREAK_SOUND`
+from the stack still in that slot and spawns five item particles; the empty
+slot itself arrives separately, as a container update. Two siblings round the
+family out: `ItemStack.hurtWithoutBreaking` clamps one short of the maximum,
+and `ItemStack.hurtAndConvertOnBreak` transmutes rather than vanishing.
+
+What the player actually watched was three methods on `Item`.
+`Item.isBarVisible` is *is this stack damaged*, `Item.getBarWidth` scales the
+damage over `Item.MAX_BAR_WIDTH` — thirteen pixels — and `Item.getBarColor`
+sweeps a hue from green to red. `GuiGraphicsExtractor` draws the two-pixel bar
+under the icon from those three answers and nothing else.
+
+## The tick a stack gets, and the stack that is an entity
+
+`ItemStack.inventoryTick` runs on both sides and does exactly one thing there:
+decrement the pop time. It forwards to `Item.inventoryTick` only for a
+`ServerLevel` — the hook's parameter is declared as one, so it cannot be
+otherwise — and exactly two items override that hook, `CompassItem` and
+`MapItem`. It has two callers: `Inventory.tick`, from `Player.aiStep`, walks
+the thirty-six ordinary slots and tells the selected one it is the main hand;
+`EntityEquipment.tick`, from `LivingEntity.aiStep`, walks the worn and held
+slots of every living entity. A stack that leaves an inventory altogether
+becomes an `ItemEntity`, which keeps it in a synched data entry
+([synched entity data](../entities/synched-entity-data.md)) rather than a
+plain field, counts up to a 6000-tick lifetime, and folds itself into
+neighbours through `ItemEntity.mergeWithNeighbours` — a merge that keeps the
+*smaller* of the two ages, so a fresh drop rejuvenates an old one. Blocks
+reach it through `Block.popResource`
+([block breaking](../blocks/block-breaking.md)).
+
+## What this page hands off
+
+Everything a stack *does* when a player holds down the use key — the
+prediction, the countdown, the consumable and cooldown components, the
+completion packet — is the next lecture: [using an item](using-an-item.md).
+How two machines agree about a set of stacks in a screen is
+[containers and menus](containers-and-menus.md); the component system itself
+is [data components](../foundations/data-components.md), catalogued in the
+[components reference](../../reference/components.md). And how an item picks
+the model, texture and tint you see in the slot is **not** this part's subject
+at all: it is Part XI's, in
+[models and atlases](../rendering/models-and-atlases.md).
 
 ## Where to look
 
-`Item` · `Item.Properties` · `Items` · `ItemStack` · `ItemInstance` ·
-`ItemStackTemplate` · `PatchedDataComponentMap` ·
-`DataComponentInitializers` · `Consumable` · `Consumables` ·
-`ConsumableListener` · `FoodProperties` · `FoodData` · `ConsumeEffect` ·
-`UseRemainder` · `UseCooldown` · `UseEffects` · `ItemUseAnimation` ·
-`ItemCooldowns` · `LivingEntity.startUsingItem` ·
-`LivingEntity.completeUsingItem` · `LivingEntity.releaseUsingItem` ·
-`ServerPlayerGameMode.useItem` ·
-`MultiPlayerGameMode.useItem` · `ItemEntity` · `InteractionResult`
+`Item` · `Item.Properties` · `Items` · `BuiltInRegistries.ITEM` ·
+`DataComponentInitializers` · `Holder.Reference` ·
+`ReloadableServerResources.loadResources` · `ItemStack` ·
+`PatchedDataComponentMap` · `DataComponentPatch` · `ItemInstance` ·
+`TypedInstance` · `ItemStackTemplate` · `ItemContainerContents` ·
+`ServerPlayerGameMode.destroyBlock` · `ItemEntity` · `Inventory.tick` ·
+`EntityEquipment.tick` · `ServerboundSetCreativeModeSlotPacket`
 
 ---
 

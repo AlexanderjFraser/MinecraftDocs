@@ -362,7 +362,7 @@ sidebar order.
   spawner as a filter-cascade flowchart; `ai-goals-and-brains` ruled (three
   lectures — pathfinding is the strongest); the non-living `hurtServer` gap
   ruled (section, sibling page, or Reference table).
-- [ ] **Session H — Part VII Items and inventories.** The two-tier landing
+- [x] **Session H — Part VII Items and inventories.** *(done 2026-09-03)* The two-tier landing
   (vocabulary, then three engines); `loot-tables` split into *contexts and
   predicates* plus loot as its worked example; enchantment acquisition out
   of `enchantments`; the *drawing a bow* trace as the use pipeline's second
@@ -1322,3 +1322,165 @@ missing it — and removes the comment. The owner confirms or reorders
   send gate, and the brief's own roster of non-living damage classes, whose
   first entry — `ArmorStand` — is a `LivingEntity` — which is the protocol
   working: a ruling written before the pages are open is a hypothesis.
+- **2026-09-03, session H — Part VII Items and inventories.** *Rulings,
+  written before editing.* **Part VII is two tiers, and the part currently
+  pretends it is a chain.** Tier one is the vocabulary — what a stack *is*,
+  what happens when you use one, and how two machines agree about a set of
+  them — and every page of it is a hard prerequisite for everything above.
+  Tier two is three data-driven engines that produce or decorate stacks —
+  recipes, enchantments, loot — which depend on tier one completely and on
+  each other not at all. The landing page draws the two tiers rather than a
+  list, and says that the three engines may be watched in any order.
+  **The part goes from five pages to eight**, all three additions being
+  splits the notebook confirmed. `items-and-stacks` sheds the use pipeline
+  to **`using-an-item`**, which is also where R7's allowance is spent: the
+  coverage queue's *drawing a bow* is not a new subject but the **second
+  half** of that page, because the release branch and the completion branch
+  are one guard read two ways. `loot-tables` sheds its front to
+  **`contexts-and-predicates`**, so that Part XIII and the advancement
+  material depend on a page whose title describes what they need — the
+  notebook's own preferred option, because the dependants are in another
+  part. `enchantments` sheds its fourth section to **`enchanting`**, the
+  acquisition lecture, which is a menus story and belongs beside the anvil
+  and the grindstone rather than behind a hook table. No page changes URL,
+  so no redirects.
+  **The eight pages, their shapes and their hooks.**
+  **`items-and-stacks`** takes the **vocabulary** shape: a containment
+  figure of what a stack is made of, a tour by object, and one small trace
+  — a pickaxe losing its last point of durability — as the grounding. Hook:
+  an `Item` holds almost no data and an `ItemStack` holds a *diff*, against
+  a prototype map that does not exist until the first data-pack load.
+  **`using-an-item`** is new and takes the **comparison** shape: the meal
+  and the bow as two columns over one guard. Hook: the client's countdown
+  does not stop at zero, the meal ends because one byte arrives, and the
+  bow never ends that way at all — `ItemStack.useOnRelease` is the third
+  term of the completion guard, so a bow is finished by the packet the
+  eating path treats as an abandonment.
+  **`containers-and-menus`** keeps the **trace** shape (the shift-click)
+  and gains the resync ladder as a **flowchart**, because the page's
+  argument is a decision the server makes about the client's claim. Hook
+  stays: agreement is silence — one packet up and zero down, because the
+  server adopted the client's *belief object*, never its data, as the new
+  baseline. Not split: the model and the protocol are one lecture, and the
+  seam the notebook found is presentational.
+  **`recipes`** keeps the **trace** shape (eight planks) and gains a
+  figure of the load and its four derived indexes. Hook stays: no recipe
+  ever crosses the wire, and what the client is denied is the *identity*,
+  not the contents.
+  **`enchantments`** takes the **pattern** shape — one idea (a named
+  modifier is a map of effect components other systems ask about) with the
+  hooks as its instance table and Fire Aspect as the traced instance. The
+  thirty-odd-row `EnchantmentHelper` table goes to Reference **generated**
+  (R5), because "which class calls which hook" is a question the decompile
+  can answer on every version.
+  **`enchanting`** is new and takes the **comparison** shape: the table,
+  the anvil, the grindstone, the providers and `/enchant` as columns over
+  the same questions — what it costs, what it may add, what it checks.
+  Hook: the enchanting seed is per player, saved, sent to the client, and
+  re-rolled by nothing but the table itself. It absorbs the three
+  enchanting facts pass-5 recorded as homeless.
+  **`contexts-and-predicates`** is new and takes the **vocabulary** shape:
+  the five objects (`ContextKey`, `ContextKeySet`, `ContextMap`,
+  `LootParams`, `LootContext`), the twenty-six sets as a Reference table
+  **generated** from the decompile, and one small trace —
+  `/execute if predicate` — as the grounding. Hook: five of the
+  twenty-six sets have no loot caller at all, and the enforcement point is
+  the *caller's* declared set, never the table's.
+  **`loot-tables`** keeps the **trace** shape (the dungeon chest) and
+  becomes the worked example of the page above it, with the draw drawn as
+  a flowchart. Hook stays: the chest is empty on disk, the key is cleared
+  *before* the roll, and the first toucher — which need not be a player —
+  commits it with no luck, permanently.
+  **Two coverage-queue entries are answered.** *Drawing a bow* is
+  discharged inside `using-an-item`. *How an item picks its model* is
+  **ruled to Part XI** (session L's call to make it a page or a section of
+  `models-and-atlases`): the trace starts at an `ItemStack` but everything
+  it touches — `ItemModelResolver`, the baked models, the atlas, the
+  render state — is Part XI's, and Part VII owns the stack, not its
+  appearance. Part VII links forward instead.
+  **Lanes** go into the key after drafting, from the diagrams that exist;
+  Part VII is the later claimant everywhere, so `ItemStack` is `IStack`
+  (`IS` is `IntegratedServer`), the menus take word-plus-initial forms
+  (`ChestM`, `CraftM`, `InvM`, `AnvilM`) because `CM` is `ChunkMap`, and
+  `RemoteSlot`, `ResultSlot`, `LootPool` and `RandomizableContainer`
+  lengthen off `RS` (`RenderSystem`), `LP` (`LocalPlayer`) and `RC`
+  (`ReloadCommand`). `check_lanes.py --strict --pages src/systems/items`
+  before shipping.
+  *Done.* Part VII is eight pages in two tiers, drawn on a new landing page
+  the sidebar's Part VII opens on. **The three splits went in as ruled, and
+  each of the three new pages found its own reason to exist.**
+  **`using-an-item`** took the use pipeline out of `items-and-stacks` and
+  put the bow opposite the meal — and writing the bow settled the question
+  the coverage queue had been carrying: the release branch is not chosen by
+  `ItemStack.useOnRelease` at all. **`CrossbowItem` is its only override in
+  the tree**, and the bow and trident are release-ended only because their
+  duration is 72000 and their `Item.releaseUsing` does the work. What
+  `useOnRelease` actually buys is one *extra* tick — `LivingEntity.releaseUsingItem`
+  re-enters `LivingEntity.updatingUsingItem` when it is true, so a crossbow
+  gets a final `CrossbowItem.onUseTick` to latch its charge. The old page
+  named three items for a predicate that has one. **`contexts-and-predicates`**
+  took the front off `loot-tables` and, counting the call sites from
+  scratch, overruled this session's own hook: not five sets without a loot
+  caller but **twelve of the twenty-six that never roll a `LootTable`** —
+  the old sentence had listed six under a count of five and included a set
+  that does have one. **`enchanting`** took acquisition out of
+  `enchantments` and turned four paragraphs into the part's densest page:
+  the table charges the *slot index plus one* rather than the displayed
+  cost, the clue is a genuine member of the list you will receive, and every
+  one of the five paths ends on the same
+  `ItemStack.enchant` → `EnchantmentHelper.updateEnchantments` tail.
+  **`containers-and-menus` was not split**, against the notebook's offered
+  seam: the model and the protocol are one lecture. It gained the resync
+  ladder as a flowchart, which is where four of its six outcomes turn out
+  to be *nothing sent*.
+  **Two Reference catalogues, both generated.** `gen_reference.py` gained
+  `enchantment-hooks` — every `EnchantmentHelper` entry point with the
+  classes that call it, scanned across the whole tree, **50 entry points, 47
+  called from outside the class** — and `loot-context-params`, the
+  twenty-six sets with their required and optional keys. The hook table was
+  the largest artefact in the old Part VII and is now re-derivable on every
+  version; the page keeps a seven-row *families* table and the five
+  annotated highlights.
+  **Nine pass-2 errors found**, one of them audited twice. Besides the three
+  above: `Item.Properties.repairable` is **eager**, not delayed, so the old
+  page's example of a tag-dependent delayed component was wrong;
+  `Inventory.tick` is reached from `Player.aiStep`, not `Player.tick`;
+  `DecoratedPotRecipe` is a `CustomRecipe`, making **nine** of fourteen
+  crafting serializers special rather than eight, and eleven `SlotDisplay`
+  variants exist rather than eight; **twenty-four** of the thirty-one
+  enchantment effect components carry the decode-time validator, not ten;
+  `/enchant` does *not* skip the supported-items and level rules — it is
+  **stricter** about levels than the anvil, which clamps where the command
+  refuses; and Fortune and Looting do not read
+  `LootContextParams.ENCHANTMENT_LEVEL` at all — they read
+  `LootContextParams.TOOL` and `LootContextParams.ATTACKING_ENTITY`, and
+  `ENCHANTMENT_LEVEL` is written only by the five enchantment effect
+  contexts. `loot-tables`' trace also had two orderings wrong: a single
+  chest's menu provider **is** the block entity, and
+  `ClientboundOpenScreenPacket` precedes `ServerPlayer.initMenu`.
+  **The `useOnRelease` correction has two independent audits**: the session
+  read the release path in the decompile while the agents were drafting, and
+  the agent's report, arriving last, agreed line for line. That is session
+  G's cheap check repeated, and it worked the same way.
+  R7's allowance was spent on `using-an-item`, so the queue drops to
+  thirteen; *how an item picks its model* was **ruled to Part XI** rather
+  than written, with both Part VII references pointing forward at
+  `models-and-atlases` for session L to land.
+  Twenty-one lane rows added and fourteen later claimants lengthened, so
+  Part VII takes no single-letter lane at all —
+  `check_lanes --strict --pages src/systems/items` is clean, **148 diagrams
+  render**, 18,201 names resolve, every relative link in `src/` resolves,
+  and the class index is regenerated. Eight pages at 318–391 lines, all over
+  the length brief and logged in pass5.md with the names that left them.
+  Hand-offs in pass3.md §8 (the two-tier claim, `contexts-and-predicates` as
+  Part XIII's dependency, the item-model ruling for session L, what session
+  I should read first), pass4.md and pass5.md.
+  Process note: eight pages drafted by parallel Opus agents against one
+  shared brief, every report diffed by the session before acceptance. Three
+  agents overruled the session's rulings with evidence — the twelve-sets
+  count, the `useOnRelease` roster and `/enchant`'s real gates — which is
+  the protocol working for the second session running. The one thing to do
+  differently: eight concurrent agents each ran `mdbook build`, and they
+  raced each other's output directory; one agent hit a spurious `ENOENT` and
+  had to re-run with `--no-build`. A future session should tell agents to
+  verify names only and leave the build to the session.

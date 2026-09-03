@@ -376,3 +376,52 @@ was cut or moved, and why)*
   pass 5 should decide whether the form itself wants varying. Session P
   should check the device's distribution across all thirteen parts. The part's hooks all land on a bold or em-dashed final sentence,
   the same tic session C logged for Part II.
+
+- **2026-09-03, session H — Part VII Items and inventories.** Eight pages,
+  318–391 lines. **Nothing was cut except by moving it**, but a lot of
+  *names* left the pages when the field inventories went, and this is the
+  list, because the class index is now their only home.
+  **`containers-and-menus`**: the `Container` interface roll-call
+  (`Container.getContainerSize`, `Container.removeItem`,
+  `Container.startOpen` / `stopOpen`, `ContainerUser`), the guarded
+  mutations (`Slot.safeInsert`, `Slot.safeTake`, `Slot.tryRemove`,
+  `Slot.safeClone`, `Slot.onQuickCraft`, `Slot.isFake`), the `Slot`
+  subclasses (`ArmorSlot`, `FurnaceFuelSlot`, `NonInteractiveResultSlot`,
+  `ShulkerBoxSlot`), the `Inventory` slot constants, the
+  `AbstractContainerMenu` field list and
+  `AbstractContainerScreen.checkHotbarKeyPressed`.
+  **`recipes`**: the `Recipe.CommonInfo` / `Recipe.BookInfo` codec-fragment
+  paragraph, `NormalCraftingRecipe`'s memoisation, the seven `RecipeType`
+  constants enumerated, the `RecipeInput` three shapes
+  (`SingleRecipeInput`, `SmithingRecipeInput`), the
+  `Registries.RECIPE`-is-a-key-only note, the eleven `SlotDisplay` variants
+  and the five `RecipeDisplay` class names (both now counts plus the
+  exotic ones), and two recipe-book packets
+  (`ServerboundRecipeBookSeenRecipePacket`,
+  `ServerboundRecipeBookChangeSettingsPacket`).
+  **`enchantments`**: ten of the fifteen entity-effect class names,
+  `Enchantment.getFullname`. **`loot-tables`**: `LootDataType`'s three
+  constants enumerated, `ContainerEntity.unpackChestVehicleLootTable` and
+  the minecart parallel, `LootCommand` and `ItemCommands.applyModifier`
+  (all three moved with the caller table to `contexts-and-predicates`), and
+  `Registries.LOOT_TABLE` — now only implied through
+  `ReloadableServerRegistries`, which pass 5 may want named once.
+  **`using-an-item`** deliberately left the full `Item.getUseDuration`
+  override roster (`BrushItem`, `BundleItem`, `EnderEyeItem`,
+  `InstrumentItem` and their numbers) to nobody: neither it nor
+  `items-and-stacks` now carries it. It is a Reference-page candidate or a
+  sentence; it is currently lost prose, and this is the record of it.
+
+  **Length.** Every page is over the 200–320 brief: 318, 324, 332, 344,
+  346, 358, 389, 391. Five agents reported trimming twice and stopping
+  rather than cutting evidence. Part VII is now the longest part per page
+  in the corpus and is where pass 5's cutting should start.
+
+  **Wording.** `enchanting`'s comparison table and
+  `contexts-and-predicates`' caller table both carry long cells that want
+  to be prose. `using-an-item`'s two sequence diagrams are deliberately
+  isomorphic, which is the right call for the comparison but makes the
+  page's second half read as a repeat — worth a voice pass. Only
+  `loot-tables` reached for *Questions players ask*, so session G's
+  uniformity risk did not recur here; the eight section-heading sets are
+  genuinely different from one another, which is the test.

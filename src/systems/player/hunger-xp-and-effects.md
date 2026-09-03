@@ -219,7 +219,7 @@ ungated — and `Player.canEat` itself passes for *invulnerable abilities*,
 `Consumable.consumeTicks` is zero is consumed instantly with no
 animation. After the food lands, `ItemStack.finishUsingItem` applies
 `DataComponents.USE_REMAINDER` and `DataComponents.USE_COOLDOWN`
-([items and stacks](../items/items-and-stacks.md)).
+([using an item](../items/using-an-item.md)).
 
 `FoodData.tick` then runs one exhaustion rule and a three-way
 mutually exclusive chain. Exhaustion above 4.0 drains 4.0 into saturation, or into the food

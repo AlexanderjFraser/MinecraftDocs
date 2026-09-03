@@ -1207,3 +1207,184 @@ entry first.
   arrived — its non-living section, reduction pipeline, blocking path and
   `CombatRules` constants were re-derived here and the two accounts agree.
   That page is the one in the part with two independent audits.
+
+- **2026-09-03, session H — Part VII Items and inventories.** Eight pages,
+  five rewritten and three new, every one drafted by an agent against the
+  old page and diffed on arrival. **Fifteen figures, thirteen of them new or
+  redrawn.** The part's two Reference catalogues are generated
+  (`enchantment-hooks`, `loot-context-params`), so pass 4 should re-derive
+  one row of each by hand rather than reading the table.
+
+  **Nine pass-2 errors were found and corrected while rewriting.** These are
+  the corrected claims, and pass 4 should confirm the corrections rather
+  than the originals:
+  `items-and-stacks` — `Item.Properties.repairable` is **eager**, not a
+  delayed component (it takes a bootstrap registration lookup at class-init
+  and stores an unresolved `HolderSet`), and `Inventory.tick` is reached
+  from `Player.aiStep`, not `Player.tick`.
+  `using-an-item` — **`CrossbowItem.useOnRelease` is the only override of
+  `Item.useOnRelease` in the tree**; the old page said the bow, the crossbow
+  and the trident all take that branch. The bow and trident are
+  release-ended because their duration is 72000 and their
+  `Item.releaseUsing` does the work, not because a predicate says so. *This
+  one was audited twice: the session read it independently before the
+  agent's report arrived, and the two agree.*
+  `containers-and-menus` — the state id is compared before the click is
+  applied and **branched on after**; and the two `AbstractContainerMenu.doClick`
+  branches with no floor check are `ContainerInput.SWAP` and the painting
+  phase of `ContainerInput.QUICK_CRAFT`, not the four the old page implied.
+  `recipes` — `DecoratedPotRecipe` is a `CustomRecipe`, so **nine** of the
+  fourteen crafting serializers are special, not eight; and eleven
+  `SlotDisplay` variants are registered, not the eight listed.
+  `enchantments` — **twenty-four** of the thirty-one effect components carry
+  the decode-time validator, not ten; the three effect registries hold 6,
+  15 and 16 entries, so it is fifteen of the sixteen location-based effects
+  that are the entity effects, not fourteen of fifteen.
+  `enchanting` — `/enchant` does **not** skip the supported-items and level
+  rules: it rejects a level above the maximum outright (where the anvil
+  clamps) and applies the same `Enchantment.canEnchant` predicate. What it
+  skips is the *primary*-items filter, `DataComponents.ENCHANTABLE` and the
+  cost.
+  `loot-tables` — Fortune and Looting do **not** read
+  `LootContextParams.ENCHANTMENT_LEVEL`: `ApplyBonusCount` and
+  `BonusLevelTableCondition` read `LootContextParams.TOOL`,
+  `EnchantedCountIncreaseFunction` and
+  `LootItemRandomChanceWithEnchantedBonusCondition` read
+  `LootContextParams.ATTACKING_ENTITY`; `ENCHANTMENT_LEVEL` is written only
+  by the five enchantment effect contexts and read only by
+  `EnchantmentLevelProvider`. Also, the single chest's menu provider **is**
+  the block entity — the old trace drew `ChestBlock` handing to
+  `ServerPlayer`.
+  `contexts-and-predicates` — the old "five sets have no loot caller"
+  sentence listed six sets under a count of five and included
+  `LootContextParamSets.COMMAND`, which does have one
+  (`ItemCommands.applyModifier`). The replacement claim, which pass 4 should
+  re-count from scratch: **twelve of the twenty-six sets never roll a
+  `LootTable`**. And `EntityPredicate.matches` builds no context;
+  `EntityPredicate.createContext` does.
+
+  **Claims introduced, per page** — the rewrites' new material, which pass 4
+  checks hardest.
+  `items-and-stacks`: the pop time as the five-tick hotbar squeeze and its
+  writers; `DataComponents.COMMON_ITEM_COMPONENTS` as ten entries including
+  an empty `ItemEnchantments`; twenty `delayedComponent` call sites in the
+  whole game; `PatchedDataComponentMap.remove` storing an empty optional as
+  a **tombstone**; `DataComponents.DAMAGE` as the only
+  `ignoreSwapAnimation` component; the mining entry point
+  (`ServerPlayerGameMode.destroyBlock` → `ItemStack.mineBlock` →
+  `Tool.damagePerBlock`) and the copy taken before the damage; the break as
+  entity event 47 with `LivingEntity.breakItem` re-deriving
+  `DataComponents.BREAK_SOUND`; thirteen pixels of durability bar; exactly
+  two `Item.inventoryTick` overrides (`CompassItem`, `MapItem`); the client
+  binding components through `RegistryDataCollector`.
+  `using-an-item`: what `useOnRelease` actually buys (a final
+  `CrossbowItem.onUseTick` through the re-entry in
+  `LivingEntity.releaseUsingItem`); five further call sites of
+  `LivingEntity.releaseUsingItem`; the release carrying **no sequence
+  number and no acknowledgement**, and `handleUseItem` snapping the
+  rotation where `handlePlayerAction` does not — so the shot uses the
+  server's last-known rotation; the client's draw spending no ammo and
+  shooting nothing (`DataComponents.INTANGIBLE_PROJECTILE`);
+  `EnchantmentHelper.onProjectileSpawned` running twice when ammo and
+  weapon differ; the bow's shoot sound reaching the shooter only as the
+  server's broadcast; `ServerPlayerGameMode.useItem` skipping
+  `AbstractContainerMenu.sendAllDataToRemote` mid-use; the bow's three-stage
+  pull as *assets/minecraft/items/bow.json*; the bow inheriting
+  `UseEffects.DEFAULT` while `Item.Properties.spear` overrides it;
+  `EntityEvent.USE_ITEM_COMPLETE` as the name of event 9.
+  `containers-and-menus`: `HashedPatchMap.matches` owning the removed-set
+  and per-component comparison (not `HashedStack.matches`);
+  `HashOps.CRC32C_INSTANCE` and the 256-entry cache reaching each
+  `RemoteSlot.Synchronized` through `ContainerSynchronizer.createSlot`;
+  `CraftingMenu.finishPlacingRecipe` as a **third** caller of
+  `CraftingMenu.slotChangedCraftingGrid`; `TransientCraftingContainer`
+  calling back from `Container.setItem` always and `Container.removeItem`
+  only on a real removal (so "on every write" was too strong); the click
+  table's per-kind button semantics; the client never generating a state id;
+  the 128-slot cap as the codec's; the closing transfer's shared set stated
+  as the 36 main and hotbar slots (a derivation — check it).
+  `recipes`: no `CustomRecipe` overriding `Recipe.display`;
+  `TransmuteRecipe` returning one display per legal material count, so one
+  recipe occupies many consecutive ids; `RecipeDisplayEntry.canCraft`
+  returning false for an absent ingredient list and true for an empty one;
+  `AbstractCraftingMenu.finishPlacingRecipe` as the hint parameter's real
+  caller; the `RecipeCache` at ten entries, static on `CrafterBlock`;
+  exactly five `RecipeBookMenu` subclasses while `RecipeBookCategories`
+  still declares stonecutter and smithing; `Inventory.isUsableForCrafting`
+  gating the pull as well as the tally; `ClientboundUpdateRecipesPacket`
+  sent from exactly two places; `SelectableRecipe.SingleInputEntry.noRecipeCodec`
+  writing the ingredient **and** the display.
+  `enchantments`: forty-three vanilla enchantments; Fire Aspect's numbers
+  from its JSON; `TargetedConditionalEffect.equipmentDropsCodec` pinning the
+  affected target to `EnchantmentTarget.VICTIM`; the chain by which
+  `ItemStack.getDamageSource` always reaches the single-entity constructor,
+  which is why `DamageSource.isDirect` holds; `Player.itemAttackInteraction`
+  running only on a true return from `Entity.hurtOrSimulate`;
+  `Entity.baseTick` skipping the burn in lava and clearing fire for a
+  fire-immune entity; five client callers of `CrossbowItem.getChargeDuration`
+  (the old page said four); Fortune having **no** effect component and
+  Looting exactly one; `LivingEntity.activeLocationDependentEnchantments` as
+  the per-slot store; Lunge's impulse scaled flat.
+  `enchanting`: the table charging the **slot index plus one**, not the
+  displayed cost; the bottom slot's cost floored at twice the shelf count;
+  thirty-two bookshelf offsets; the clue being a genuine member of the list
+  you will receive, with the plain-book path deleting one entry at random
+  first; every path transmuting `Items.BOOK` before enchanting, which
+  changes which component the write lands in;
+  `ItemStack.enchant` → `EnchantmentHelper.updateEnchantments` as the shared
+  tail of all five paths; the anvil's four price components, the prior-work
+  tax on both inputs, the flat 40 firing only when an enchantment actually
+  transfers, the rename cap at 39 and the 40-and-over withholding; the
+  grindstone paying its refund as orbs at the block; five vanilla
+  enchantments declaring a narrower primary set; `SetEnchantmentsFunction`
+  as the only ceiling-breaker; `/enchant` accepting level 0 and doing
+  nothing; six of seven `VanillaEnchantmentProviders` entries being
+  `SingleEnchantment`, which never asks whether the item supports the
+  enchantment; villager trades running loot functions; `CreativeModeTabs` as
+  a sixth producer; the ten data slots' split (3 costs, 1 seed, 3
+  enchantment clues, 3 level clues); `EnchantmentNames.initSeed` running
+  once per frame.
+  `contexts-and-predicates`: validation comparing against
+  `ContextKeySet.allowed` rather than `required`, so an element reading an
+  optional key passes load-time validation and can still throw;
+  `LootContextParamSets.ALL_PARAMS` never building a `ContextMap` at all;
+  twenty-seven overriders of `getReferencedContextParams`; the two hard
+  validators building a resolver-less `ValidationContext`, so a
+  `ConditionReference` is rejected outright; `LootContextArg` and the three
+  target enums; the predicate resolved at parse time by
+  `ResourceOrIdArgument` where the selector option looks its own up and
+  returns a silent false; both command call sites pre-seeding the recursion
+  guard; the three-way random-sequence precedence on
+  `LootContext.Builder.create`; twenty condition types and eight number
+  providers, with the two codec-leniency rules; `SlotSource` as a third
+  `LootContextUser` family; the network exclusion restated as absence from
+  `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`.
+  `loot-tables`: forty-two of the forty-three functions extending
+  `LootItemConditionalFunction`, whose failed condition is a **no-op, not a
+  veto**; nine entry types; 117 named keys in `BuiltInLootTables` plus two
+  colour families; `MonsterRoomFeature`'s two chest attempts;
+  `StructurePiece.createChest` as the structure-side seed writer;
+  `trySaveLootTable` writing the seed only when non-zero; the weight being
+  floored **and then** discarded at or below zero, which are two steps;
+  `ByteBufCodecs.fromCodecWithRegistries` as the fallback that carries
+  `DataComponents.CONTAINER_LOOT` to the client;
+  `AbstractVillager.addOffersFromTradeSet` using `TradeSet.randomSequence`;
+  two callers of `MinecraftServer.getRandomSequence`;
+  `ShulkerBoxBlock.getDrops` and `DecoratedPotBlock` as the only dynamic
+  drops.
+
+  **The diagrams.** Fifteen figures: two containment and pattern flowcharts
+  (`items-and-stacks`, `enchantments`), five decision flowcharts (the
+  server's resync ladder, the ending guard, one roll, `selectEnchantment`,
+  the recipe load and its four indexes), and eight sequence diagrams. Check
+  arrow by arrow, and in particular: `loot-tables`' trace, whose two
+  orderings were corrected this session (the block entity is its own menu
+  provider; `ClientboundOpenScreenPacket` precedes `ServerPlayer.initMenu`);
+  `enchantments`' Fire Aspect trace, whose closing packet arrow became a
+  note because `SynchedEntityData` does not send through the packet
+  listener; and `using-an-item`'s two traces, which are deliberately
+  isomorphic — if one is wrong the other probably is too.
+
+  **The landing page and `lectures.md`** claim that the three engines depend
+  on the vocabulary and on nothing of each other, and that Part XIII needs
+  `contexts-and-predicates`. Both are orderings to check.
