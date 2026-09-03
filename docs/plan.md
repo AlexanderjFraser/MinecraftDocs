@@ -367,7 +367,7 @@ sidebar order.
   predicates* plus loot as its worked example; enchantment acquisition out
   of `enchantments`; the *drawing a bow* trace as the use pipeline's second
   half; item-model ownership settled with session L.
-- [ ] **Session I — Part VIII The player.** `player-anatomy` split into the
+- [x] **Session I — Part VIII The player.** *(done 2026-09-03)* `player-anatomy` split into the
   reference half and the two-phase-tick trace; status effects out of
   `hunger-xp-and-effects`; the spear ruled (own lecture or
   `the-sword-swing`'s coda); `the-sword-swing`'s damage pipeline drawn as a
@@ -1508,3 +1508,54 @@ missing it — and removes the comment. The owner confirms or reorders
   **The authority matrix leaves Part VIII entirely**: session G gave it a
   page, so `input-to-movement`'s four-method table and `player-anatomy`'s
   authority section are cut to a link, the way `movement-and-collision` was.
+  *Done.* **Part VIII is seven pages, up from four**, with a landing page the
+  sidebar's Part VIII now opens on. Both splits were free in the sense that
+  matters: the material was already written, inside a page doing something
+  else, and taking it out put both hosts inside the length brief.
+  **`the-two-phase-tick`** took the *when it runs* half and the
+  record–simulate–snap-back bracket out of `player-anatomy`, which is the one
+  thing on that page nobody would guess and was buried under a class ladder;
+  **`status-effects`** took the third of `hunger-xp-and-effects` that shared
+  nothing with the other two but a sentence, leaving
+  **`hunger-and-experience`** — a rename, so pass 3's first content-page
+  redirect. **`the-spear` was written from the decompile**, the session's one
+  piece of new research and the only page here pass 2 has never seen: two data
+  components (`PiercingWeapon`, `KineticWeapon`) on one item, two entry points
+  (a `ServerboundPlayerActionPacket.Action.STAB` carrying **no target id**,
+  and item *use* with a 72000-tick duration), one shared filter, and two
+  implementations of `stabAttack`. Writing it found the hook the coverage
+  queue could not: **`Player.stabAttack` applies the two cooldown curves only
+  when the player is not currently using an item in that slot**, so a stab is
+  charged like a sword swing and a charging spear ignores the attack cooldown
+  entirely. Also worth the trip: `KineticWeapon.forwardMovement` is a combat
+  component field read only by the first-person animation, and the non-player
+  action factor of 0.2 *lowers* the speed thresholds, so a zombie needs a
+  fifth of the closing speed a player does.
+  **One pass-2 error found while redrawing.** `the-sword-swing`'s numbered
+  damage list gave the crit gate as `Player.canCriticalAttack`; it is
+  `fullStrengthAttack && canCriticalAttack`, so the 0.9 scale is part of the
+  crit condition. The page's new figure — the damage as a **flow over one
+  number**, as the notebook asked — is what exposed it: drawing an ordering
+  forces you to say where each factor enters, and the old prose had not.
+  **The authority matrix is gone from Part VIII.** Session G gave it a page;
+  session I deleted the last two copies (`input-to-movement`'s four-method
+  table and `player-anatomy`'s section) in favour of a link plus the two
+  consequences each page's own story needs. That closes the notebook's
+  three-pages-in-two-parts finding and answers its open question with a
+  fourth answer: none of the three candidates — its own page.
+  **Lanes.** Six rows added (`Inv`, `FD`, `FP`, `KM`, `KI`, `MEI`) and five
+  mis-keyed lanes corrected in the old diagrams — `CL` meaning
+  `ServerGamePacketListenerImpl`, `PL` meaning `Player`, `CM` meaning
+  `AbstractContainerMenu`, `IS` meaning `ItemStack`, `MG` meaning
+  `MultiPlayerGameMode`, each of which already meant something else corpus-wide.
+  `check_lanes --strict --pages src/systems/player` is clean, **154 diagrams
+  render**, 18,240 names resolve, every relative link in `src/` resolves, and
+  the reference indexes are regenerated. Seven pages at 174–410 lines, six of
+  them inside the brief for the first time in pass 3; `input-to-movement` is
+  the outlier and its seam (client half / server judgement) is logged for
+  pass 5. Hand-offs in pass3.md §8, pass4.md and pass5.md.
+  Process note: written by the session directly rather than by parallel
+  drafting agents, because everything but `the-spear` was pass-2 prose being
+  re-cut and the diffing step is the expensive half of that protocol. The one
+  page that needed research was researched first, before any page was written,
+  which is what made the seven-page rewrite affordable.

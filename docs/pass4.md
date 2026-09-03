@@ -1388,3 +1388,77 @@ entry first.
   **The landing page and `lectures.md`** claim that the three engines depend
   on the vocabulary and on nothing of each other, and that Part XIII needs
   `contexts-and-predicates`. Both are orderings to check.
+
+- **Session I (Part VIII The player), 2026-09-03.** Seven pages: two rewritten
+  in place (`player-anatomy`, `the-sword-swing`), one edited hard
+  (`input-to-movement`), one renamed (`hunger-xp-and-effects` →
+  `hunger-and-experience`) and three new (`the-two-phase-tick`,
+  `status-effects`, `the-spear`), plus the landing page. Everything except
+  `the-spear` is pass-2 prose re-cut; **`the-spear` is entirely new material
+  and should be checked first and hardest**, because no pass-2 agent has ever
+  read those classes.
+
+  **`the-spear`'s claims, all from `PiercingWeapon`, `KineticWeapon`,
+  `Item.Properties.spear`, `LivingEntity.stabAttack`, `Player.stabAttack`,
+  `Minecraft.startAttack`, `MultiPlayerGameMode.piercingAttack`,
+  `ServerGamePacketListenerImpl.handlePlayerAction` and `ItemStack.onUseTick`:**
+  that `Item.Properties.spear` attaches nine components and the two attribute
+  modifiers listed in the table (check the `AttackRange` numbers 2.0 / 4.5 /
+  2.0 / 6.5 against the record's field order — `minReach`, `maxReach`,
+  `minCreativeReach`, `maxCreativeReach`, `hitboxMargin`, `mobFactor` — and
+  the seven materials); that the stab packet carries no entity id and dummy
+  position and direction; that `handleAttack` refuses a piercing weapon while
+  the `STAB` case requires a non-spectator and a five-tick
+  `Player.cannotAttackWithItem` tolerance; that `PiercingWeapon.attack` uses
+  the **attribute value** of `Attributes.ATTACK_DAMAGE` and hits every entity
+  along the ray under `ClipContext.Block.COLLIDER`; that
+  `PiercingWeapon.canHitEntity` is the shared filter for **both** components;
+  that `Item.getUseDuration` is 72000 for a kinetic weapon and
+  `LivingEntity.startUsingItem` allocates `recentKineticEnemies` server-side
+  only; that `ItemStack.onUseTick` **replaces** `Item.onUseTick` for a kinetic
+  weapon; that `KineticWeapon.damageEntities` uses the **base** value of
+  `Attributes.ATTACK_DAMAGE` and `Entity.getKnownSpeed` scaled by twenty,
+  taking the root vehicle for a non-player passenger; that the three
+  `KineticWeapon.Condition`s are independent and any one of them produces a
+  hit; that the non-player action factor is 0.2 and therefore *lowers* the
+  thresholds; that the hit feedback is entity event 2 → `LivingEntity.onKineticHit`,
+  throttled by `KineticWeapon.HIT_FEEDBACK_TICKS`; that
+  `CriteriaTriggers.SPEAR_MOBS_TRIGGER` counts living entities stabbed; and
+  the page's hook — **`Player.stabAttack` skips both cooldown curves when the
+  player is currently using an item in that slot**, so a charge is uncharged
+  and a stab is not. Also check the mob roster (`SpearUseGoal`,
+  `SpearApproach`, `SpearAttack`, `SpearRetreat`; `Zombie`, `ZombifiedPiglin`,
+  `PiglinAi`) and the claim that `KineticWeapon.forwardMovement` is read only
+  by `SpearAnimations`.
+
+  **One pass-2 claim was corrected while redrawing.** `the-sword-swing`'s old
+  numbered list gave `Player.canCriticalAttack` as the crit gate; the crit is
+  `fullStrengthAttack && canCriticalAttack`, so the attack-strength scale
+  above 0.9 is part of the crit condition and the page now says so. Re-derive
+  it, and with it the whole flowchart, which is the session's one figure that
+  asserts an arithmetic **order**: base and boost are scaled separately, the
+  item bonus is added to the base *before* the ×1.5, and the boost is added
+  after it.
+
+  **Claims moved rather than written.** The authority matrix was **deleted**
+  from `input-to-movement` and `player-anatomy` and replaced by a link to
+  `entities/authority.md` plus two named consequences (fall damage via
+  `Entity.doCheckFallDamage`; the ground flag). Check that nothing true was
+  lost in the deletion, and that the surviving two sentences agree with the
+  Part VI page. The record–simulate–snap-back bracket and the whole *when it
+  runs* material moved from `player-anatomy` to `the-two-phase-tick`; the
+  effects third of `hunger-xp-and-effects` moved whole to `status-effects`,
+  and `UseEffects` stayed with the hunger page while `the-spear` links to it.
+
+  **The diagrams.** Seven figures. New: the class ladder
+  (`player-anatomy`, a flowchart replacing an ASCII tree), the damage flow
+  (`the-sword-swing`), the two-entries-one-exit flowchart (`the-spear`), the
+  `FoodData.tick` chain (`hunger-and-experience`), the part-shape flowchart
+  (landing page). Redrawn: the two-phase sequence (lanes corrected, and it
+  now shows the bracket), the Poison trace (`status-effects`, new). Check the
+  `FoodData.tick` flowchart's *at most one of three* claim and the ordering
+  inside the two-phase diagram arrow by arrow.
+
+  **The landing page and `lectures.md`** claim that only the sword swing and
+  the spear have an internal order, that Part VIII depends on Part VI's
+  authority above everything, and that the spear needs `using-an-item`.

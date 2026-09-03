@@ -113,7 +113,12 @@ it is one version: 26.2. There are no version-difference sections and no
 **Verified means tested.** Every backticked name on every page is checked
 against the decompile before the site publishes, and every diagram is
 parsed by the same mermaid the site ships. A page that fails either check
-does not go up.
+does not go up. That is a narrow guarantee, and it is worth stating
+narrowly: it proves the names are real and current in 26.2, not that the
+sentence around them is true. The sentences are what the passes are for.
+Every claim has been fact-checked against the decompile once; the pages
+being restructured now are queued for a second check; and anything still
+wrong is a correction waiting to be filed.
 
 **How the system works, not how the code reads.** Object-level: this class
 owns that state, this call happens on that thread, this packet is sent
@@ -130,3 +135,19 @@ page of Part I, draws that boundary honestly — what each thing is, how big, wh
 server ships it, and the two or three class names to start at if you need
 it anyway — so a viewer knows the edge of the map before investing in
 thirteen parts.
+
+## Unofficial, and free to reuse
+
+This is an independent description of how the game works. It is not
+endorsed by, sponsored by or associated with Mojang Studios or Microsoft,
+and *Minecraft* is a trademark of Mojang Synergies AB.
+
+The book is [CC BY-SA
+4.0](https://creativecommons.org/licenses/by-sa/4.0/): take it, adapt it,
+teach from it — credit [minecraftdocs.dev](https://minecraftdocs.dev) and
+keep what you build under the same licence. That covers the writing and the
+figures, which are the only things here that are anyone's to license. It
+does not cover the game, its source, its assets or Mojang's mappings; none
+of those are in this book, which is why it names identifiers and never
+reproduces code. Corrections, and the repository the book is written in,
+are on [GitHub](https://github.com/AlexanderjFraser/MinecraftDocs).

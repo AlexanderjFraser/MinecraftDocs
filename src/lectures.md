@@ -240,7 +240,39 @@ watch out of order.
 
 ## VIII · The player
 
-*Filled by session I.*
+Part VIII is a trunk and four branches: two lectures on what a player is and
+when it runs, then four independent ones on what a player does. Only the
+last pair has an internal order — the spear is the sword swing's sequel.
+
+1. [Player anatomy](systems/player/player-anatomy.md) — the vocabulary
+   lecture: five classes, two game-mode objects, forty-three slots. `Avatar`
+   holds no state at all, and the main hand is not stored anywhere.
+2. [The two-phase tick](systems/player/the-two-phase-tick.md) — one player,
+   ticked twice by two callers. The connection records the position, runs
+   the whole physics pipeline and puts the player back; the velocity is what
+   it wanted. Watch it immediately after *player anatomy*.
+3. [Input to movement](systems/player/input-to-movement.md) — W is pressed,
+   and the server decides whether to believe it. A key shorter than a tick
+   never happened, and sending move packets faster makes the check stricter.
+4. [The sword swing](systems/player/the-sword-swing.md) — one integer on the
+   wire and a damage figure rebuilt from nothing. Two curves over one
+   cooldown, and the mace's fall bonus multiplied by the crit.
+5. [The spear](systems/player/the-spear.md) — the 26.2 combat change, and
+   the strongest single lecture in the part. Two components on one item, a
+   packet with no target in it, and a charge that ignores the cooldown.
+6. [Hunger and experience](systems/player/hunger-and-experience.md) — two
+   bars the server owns outright, meeting at the enchanting table. Walking
+   costs exactly zero exhaustion.
+7. [Status effects](systems/player/status-effects.md) — the closer. The
+   client never runs an effect; it counts down and spawns particles, and an
+   infinite effect is never re-sent at all.
+
+Part VIII assumes Part VI above everything — [authority](systems/entities/authority.md)
+in particular, which is where the whole part's premise is stated — and Part
+III for the tick phases the two-phase tick lives between. It assumes Part VII
+for the inventory and for [using an item](systems/items/using-an-item.md),
+which is the machinery the spear's charge runs on. Nothing later in the book
+is needed to watch it, but Part IX and Part X both come back to it.
 
 ## IX · Networking
 

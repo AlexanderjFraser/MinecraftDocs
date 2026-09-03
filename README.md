@@ -20,3 +20,37 @@ the current pass's charter and schedule, the session log).
 [TEMPLATE.md](TEMPLATE.md) is the page spec: the menu of shapes and the lane key. Built with mdBook
 (`mdbook serve`); deployed by `tools/deploy.sh` to
 [minecraftdocs.dev](https://minecraftdocs.dev).
+
+## Corrections
+
+Corrections are the contribution this project wants most. The pages are
+written in passes and every claim is fact-checked against the decompile, but
+pass 2 found at least one wrong claim on every page, so there are certainly
+more.
+
+**Open an issue**, and cite the decompile — the class and method that show
+the page is wrong. That is enough; the fix goes into the current pass.
+Pull requests that change prose are not merged, however right they are:
+nothing is published here that the owner has not read against the source
+and understood well enough to say out loud on video, and a merged patch
+skips that. Pull requests to `tools/` are welcome as normal.
+
+## Licence
+
+The book — everything in `src/`, its prose and its figures — is
+[CC BY-SA 4.0](LICENSE): reuse it, adapt it, quote it, credit
+[minecraftdocs.dev](https://minecraftdocs.dev), and keep derivatives under
+the same licence. The tooling in [`tools/`](tools/) is [MIT](tools/LICENSE).
+
+That covers the writing and the diagrams, which are the only things here
+that are anyone's to license. It does not cover Minecraft: not the game,
+not its source, not its assets, and not the Mojang mappings. Those are
+Mojang's, this repo contains none of them, and the pages name identifiers
+without reproducing code precisely because that is the line the mappings
+licence draws.
+
+## Not an official Mojang product
+
+Unofficial and unaffiliated. This is an independent description of how the
+game works, not endorsed by, sponsored by or associated with Mojang Studios
+or Microsoft. "Minecraft" is a trademark of Mojang Synergies AB.

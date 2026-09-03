@@ -1294,16 +1294,18 @@ knowing before the order is drafted.*
   Part III. The new page uses `Probe` and `Cam` for `EnvironmentAttributeProbe`
   and `Camera`, which are words rather than initials; the standard should
   rule on whether a short word is allowed. *(session C)*
-- Does the authority matrix live in `entity-anatomy`,
-  `movement-and-collision` or `input-to-movement`? Sessions E and F
-  disagree, and the answer depends on whether Part VI precedes Part VIII.
-  *(session F)*
+- ~~Does the authority matrix live in `entity-anatomy`,
+  `movement-and-collision` or `input-to-movement`?~~ **None of the three**:
+  session G gave it `entities/authority.md`, and session I deleted the last
+  two copies, from `input-to-movement` and `player-anatomy`.
+  *(session F, answered sessions G and I)*
 - ~~Is `loot-tables` renamed, split, or left with a title that undersells
   it?~~ **Split** by session H: `contexts-and-predicates` takes the engine,
   `loot-tables` keeps the pools, the entries and the chest as its worked
   example. *(session F, answered session H)*
-- Is the spear (`PiercingWeapon` / `KineticWeapon`) its own lecture, or two
-  invariants on `the-sword-swing`? *(session F)*
+- ~~Is the spear (`PiercingWeapon` / `KineticWeapon`) its own lecture, or two
+  invariants on `the-sword-swing`?~~ **Its own lecture**, and the strongest
+  in Part VIII. *(session F, answered session I)*
 - ~~Does *drawing a bow* exist as a trace?~~ **Yes**, as the second half of
   `using-an-item`, opposite the meal. *(session F, answered session H)*
 - Part VII/VIII diagram lanes use `MC`, `MPGM`/`MG`, `SGPL`/`CL`, `SPGM`,
@@ -1386,18 +1388,23 @@ writes one strikes it through; a session that rules one out says why, here.*
   `src/systems/server/how-a-server-dies.md`, a comparison page with the
   three endings as columns and the watchdog's self-deadlock drawn.
   *(session B, discharged session D)*
-- **The spear** — `PiercingWeapon` / `KineticWeapon`, the 26.2 combat change
-  a viewer most wants explained, currently two invariants. Part VIII.
-  *(session F)*
+- ~~**The spear**~~ — **written by session I** as
+  `src/systems/player/the-spear.md`, a comparison page: two components on one
+  item, a stab whose packet carries no target and a charge whose damage is
+  closing speed. Writing it found the hook the queue entry could not:
+  `Player.stabAttack` skips both cooldown curves while the player is using an
+  item in that slot, so a charging spear ignores the attack cooldown.
+  *(session F, discharged session I)*
 - ~~**Drawing a bow**~~ — **written by session H** as the second half of
   `src/systems/items/using-an-item.md`, the split of `items-and-stacks`'s
   use pipeline: the meal and the bow as one machine read two ways. Writing
   it settled what the queue entry could not: the release branch is not
   selected by `ItemStack.useOnRelease` at all — only `CrossbowItem`
   overrides it. *(session F, discharged session H)*
-- **Status effects** — own registry, instance model with the hidden-effect
-  stack, packets, client blend. Part VIII, as a split of
-  `hunger-xp-and-effects`. *(session F)*
+- ~~**Status effects**~~ — **written by session I** as
+  `src/systems/player/status-effects.md`, the split of `hunger-xp-and-effects`;
+  the remainder is `hunger-and-experience` (renamed, redirected).
+  *(session F, discharged session I)*
 - **The permission model** — `PermissionSet`, `Permission`,
   `PermissionCheck`, `LevelBasedPermissionSet`; the biggest API break in the
   corpus, a section today. Part XIII, as a split. *(sessions 12, K)*
@@ -1863,3 +1870,53 @@ model and the model is pointless without the protocol; the exceptions
 (creative's parallel protocol, the crafting-result side channel) are a named
 closing section instead. It is the part's longest page at 389 lines and the
 first candidate if pass 5 wants a split after all.
+
+### Part VIII, for the sessions that follow *(session I)*
+
+**The authority matrix now exists once, and Part VIII is the proof it can be
+deleted.** `input-to-movement` and `player-anatomy` each carried a copy; both
+are gone, replaced by a link to `entities/authority.md` and two named
+consequences (fall damage on the packet path, the ground flag). **Sessions J
+and K should do the same** — `what-the-client-is-told` and the client-tick
+material are the last two leaners — and the shape that worked is: link, then
+state only the consequences *this* page's story needs, in the paragraph that
+needs them, never as a table.
+
+**The part grew from four pages to seven, and both splits were free.** The
+two-phase tick and status effects were each already written, inside a page
+that was doing something else; splitting cost no new research and took both
+host pages under the length brief. That is now three sessions running
+(G, H, I) where the notebook's proposed seam was real. The one page session I
+did **not** split is `input-to-movement` at 410 lines, and its seam is
+visible: everything before *the trace* is the client, everything after is the
+server's judgement, and the second half is a policy page wearing a trace's
+clothes. Pass 5, or a later pass-3 session with budget, should look at it.
+
+**For session J (Part IX).** `the-two-phase-tick` now owns the sentence that
+the connection tick runs after every level has ticked, and
+`the-sword-swing` owns the attack packet's drain at the top of the tick,
+before `MinecraftServer.tickServer`. Both are Part III facts stated in Part
+VIII because the story needs them; Part IX restates the same two. If session
+J wants them stated once, Part III is the owner and these three pages are the
+callers.
+
+**For session K (Part X).** Part VIII links forward twice to
+`prediction-and-acks` — from `player-anatomy`, for the ledger
+`MultiPlayerGameMode` does not hold, and from the landing page — and
+`the-sword-swing` states `Minecraft.pick`'s per-frame versus per-tick split,
+which is a Part X fact. Check that all three land on something that agrees.
+
+**For session O (Reference).** `hunger-xp-and-effects.html` now redirects to
+`hunger-and-experience.html` — the first content-page rename in pass 3, as
+opposed to a move. Nothing else pointed at it but the generated class index
+and three body links, all repointed. Also: the spear's component table is the
+kind of thing `gen_reference.py` could generate for every `Item.Properties`
+helper, if a later session wants the *what makes an item a weapon* view.
+
+**A tool note.** `check_lanes.py --index` reports the corpus-wide state, and
+it is currently **28 disagreements and 17 collisions** across the parts not
+yet converted. Six lane rows were added for Part VIII (`Inv`, `FD`, `FP`,
+`KM`, `KI`, `MEI`); every Part VIII diagram that used a mis-keyed lane —
+`CL` for `ServerGamePacketListenerImpl`, `PL` for `Player`, `CM` for
+`AbstractContainerMenu`, `IS` for `ItemStack`, `MG` for `MultiPlayerGameMode`
+— was corrected, which is most of what the old pages got wrong.

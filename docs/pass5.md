@@ -425,3 +425,31 @@ was cut or moved, and why)*
   `loot-tables` reached for *Questions players ask*, so session G's
   uniformity risk did not recur here; the eight section-heading sets are
   genuinely different from one another, which is the test.
+
+- **Session I (Part VIII), 2026-09-03.** **Length**: 316, 174, 410, 285, 231,
+  250, 176 lines plus a 115-line landing page — six of the seven inside or
+  near the 200–320 brief, which is the first time in pass 3, and the splits
+  are why. The exception is **`input-to-movement` at 410**, which was not
+  split and now carries the longest single section in the part (the server
+  half of the trace); it is the part's first candidate if pass 5 wants a cut
+  or a split.
+  **Cuts and losses, recorded.** The old `player-anatomy` bullet inventory of
+  `Player`'s fields became a three-column table; nothing was dropped, but the
+  table's middle column is dense and is a candidate for prose or for the class
+  index. `hunger-xp-and-effects`' opening headline about `GameRules`' package
+  (`world/level/gamerules`, typed `GameRule` lookups) survives only as a
+  clause in `hunger-and-experience`; it was a Reference fact wearing a hook's
+  clothes. Two `the-sword-swing` sentences about `DataComponents.MINIMUM_ATTACK_CHARGE`
+  and `DataComponents.DAMAGE_TYPE` as *the rest of what makes an item a
+  weapon* were absorbed into `the-spear`'s component table, so the sword page
+  no longer names `MINIMUM_ATTACK_CHARGE` at all.
+  **Wording.** `input-to-movement` is the page most obviously mid-conversion:
+  its two data subsections are still a bullet wall under a renamed heading,
+  and the *what it calls, and what crosses the wire* section is the old
+  Interfaces list with a new title. It is the first place a pass-5 voice pass
+  should go in this part. `the-spear` uses *stab* and *charge* as the two
+  path names throughout; if pass 6 disagrees with those words, they are the
+  page's whole vocabulary and change everywhere at once. Three pages now open
+  with the second person (*you press W*, *you open your own inventory*, *you
+  drink a potion*), which reads well here and is worth a corpus-wide decision
+  rather than a per-part accident.
