@@ -19,6 +19,66 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session F — Part VI Entities (pass 4) *(2026-09-04)*
+
+**Rewrites logged for a re-read.** Every fix below replaced a sentence pass
+4 falsified; the wording is new and has not been read for voice.
+
+- **`pathfinding`'s hook** — "eight ticks later" became "a hundred ticks
+  later", which now agrees with the page's own second paragraph but repeats
+  its number in the first two sentences. Worth deciding which of the two says
+  it.
+- **`pathfinding`'s malus illustration** — the fire/spider pair became a
+  three-way lava example (`Strider` 0.0, `ZombifiedPiglin` 8.0, ordinary
+  piglin −1). Three species in one clause is a lot for a sentence that is
+  already carrying nine constants.
+- **`pathfinding`'s `MoveControl` paragraph** grew from four sentences to
+  seven, because "the single method" had to become "not the only method, not
+  a single call site, and here are both other entrances". It is the longest
+  paragraph on the page now and reads like a correction rather than an
+  explanation.
+- **`synched-entity-data`'s hook** was rewritten whole: the JVM
+  static-initialiser claim is gone and the replacement ("written nowhere in
+  `Sheep`; one new field on `Entity` would renumber every entity in the
+  game") is a better fact but a longer sentence, and it now says in the hook
+  what the section at L35-42 says again.
+- **`authority`'s fall-damage paragraph** is four sentences where it was
+  two, because the true statement needs both sides plus the
+  `ServerLevel`-gate reason.
+- **`ai-goals-and-brains`'s control-flag paragraph** now carries two
+  mechanisms (the five-tick refresh and the leash) where it carried one, and
+  the boat sentence has to distinguish *a mob is steering me* from *I am in
+  a boat*. Check whether the leash belongs here or in a sentence of its own.
+- **`entity-anatomy`'s registry paragraph** gained a second override
+  direction (`getOptional` calls `super`), which is the subtlest thing on the
+  page and is currently one clause.
+- **`damage-and-death`'s blocking sentence** now names `Hoglin` and
+  `Ravager` to prove who is knocked back. Good evidence, but it is an aside
+  inside an aside.
+
+**Structural findings, not acted on.**
+
+- **`authority` states its own subject with the wrong number in four
+  places** ("the four predicates" as a section heading, a closer heading, the
+  hook and the cast row). Pass 4 corrected all four to five, but a page whose
+  organising count changed is a page whose headings should be re-read
+  together.
+- **`entity-lifecycle`'s spawn-cascade figure gained a seventh rejection
+  edge** to put `isValidSpawnPostitionForType`'s tests in source order. It
+  is now sixteen edges and is the densest figure in the part.
+- **The *Questions players ask* device**: Part VI is 3 of 10 under the
+  literal heading (`ai-goals-and-brains`, `attributes`,
+  `synched-entity-data`), which is inside session P's at-most-half rule —
+  but two more pages carry the same device under a different name
+  (`authority`'s *What the predicates explain*, `pathfinding`'s *Why mobs
+  look stupid*), which makes 5 of 10 and is a data point for the *four
+  spellings* problem session A logged rather than for the count.
+- **`entity-anatomy` and `entity-lifecycle` both explain
+  `EntityType.create`'s feature-flag and Peaceful gates**, from opposite
+  ends — anatomy as *type to object*, lifecycle as the last filter before a
+  mob exists. Not a shared skeleton, but a paragraph pass 5 could cut from
+  one of them and cross-link.
+
 ## Session E — Part V Blocks (pass 4) *(2026-09-04)*
 
 Wording debt from sixty-one fact fixes across eight pages. Nothing here was

@@ -285,9 +285,23 @@ O is the close.
   `server/server-tick` added as a missing entry. **Seventh tool bug**:
   `pass4_queue.py` could not settle a numbered list item. Everything in
   [pass4.md](pass4.md).
-- [ ] **Session F — Part VI Entities.** The authority matrix; the spawner
-  cascade; the twenty-one non-living damage classes against the Reference
-  table.
+- [x] **Session F — Part VI Entities** *(2026-09-04)*. Nine pages and the
+  landing page, ten agents; **every one had at least one wrong claim**.
+  Sixty-two corrections. The part's own pass-3 checklist came back almost
+  clean — so the errors were in the *illustrations*, not in what pass 3 knew
+  it had changed. `authority` is wrong about your own player on the client
+  (`LocalPlayer.isLocalPlayer` is true, so `Entity.checkFallDamage` **does**
+  run there) and its *NoAI* closer is exactly backwards; the **0.98 coast
+  does not exist** on any page, because nothing applies that delta;
+  `pathfinding`'s hook invented an eight-tick give-up the page's own next
+  paragraph contradicts, and its fire/spider example is wrong on both halves.
+  `synched-entity-data`'s hook was falsified by its own next section — ids
+  are fixed by the superclass chain, not by initialiser order.
+  `points-of-interest` was a missing *before you start* entry. No tool bug —
+  the second such session. Instead the **queue was wrong once**
+  (`EntitySpawnRequest.ignoreChecks` **is** true, twice, exactly where
+  session G said it was not) and an **agent once** (the packet queue does
+  drain before `tickServer`). Everything in [pass4.md](pass4.md).
 - [ ] **Session G — Part VII Items and inventories.** The three engines;
   the five enchanting paths; the loot-context sets against the generated
   view.
@@ -575,3 +589,54 @@ missing it — and removes the comment. The owner confirms or reorders
   session F's four provenance classes could never be settled. Ten of the ten
   never-re-derived pass-3 leads on `block-breaking` came back CONFIRMED, and
   every count on `block-entities` was right. Everything in [pass4.md](pass4.md).
+- **2026-09-04, session F — Part VI Entities (Opus).** Nine pages and the
+  landing page, one adversarial agent each; the order work, the part-wide
+  notes and every *wrong* re-derived by the session before a sentence moved.
+  **All ten had at least one wrong claim** — pass 2's result for a seventh
+  time. Sixty-two corrections, and the shape of them is new: this part's
+  pass-3 checklist came back almost entirely clean (twenty of session G's
+  twenty-one corrections re-confirmed, every count on `attributes` and
+  `synched-entity-data` right, all fifteen figures checked arrow by arrow
+  with four arrows wrong), so the errors were not in what pass 3 knew it had
+  changed but in the **illustrations hung off mechanisms it had got right**.
+  The four that carry a lecture: `authority`'s "false for a player on **both**
+  sides — so no player anywhere takes fall damage from the mover" is false on
+  the client, where `LocalPlayer.isLocalPlayer` returns true and
+  `Entity.java:823` runs every tick (harmless only because
+  `LivingEntity.checkFallDamage` needs a `ServerLevel`) — and Part VIII's two
+  survivors of the deleted matrix were the correct ones all along, settling
+  session I's note the other way round; the same page's ***NoAI* answer is
+  exactly backwards**, because `LivingEntity.travel` is gated on
+  `Entity.isEffectiveAi` as well as `Entity.canSimulateMovement`, so a *NoAI*
+  mob does not even fall; the **0.98 coast does not exist**, on three pages'
+  worth of sentences, because nothing on the client applies that delta — a
+  tracked mob is moved only by `InterpolationHandler` and stands still when
+  it runs out; and `pathfinding`'s hook **invented its number** ("eight ticks
+  later"), which the page's own second paragraph contradicts with 100 and
+  ~260. Two more punchlines fell: `synched-entity-data`'s hook blamed JVM
+  static-initialiser order for a slot `ClassTreeIdRegistry` fixes from the
+  **superclass chain** alone, which the page says itself forty lines later;
+  and `pathfinding`'s "a zombified piglin walks through fire and a spider does
+  not" is wrong on both halves (the piglin overrides *lava*; the spider sets
+  no malus at all, so fire is passable-but-expensive). Addition 2 done in
+  full: all five entries used by a sentence, **`world/points-of-interest`
+  added** as a missing entry that `ai-goals-and-brains` spends throughout,
+  `world/chunk-anatomy` given the page-level link it lacked, and
+  `authority`'s Part X link moved from `the-client-loop` (which never
+  mentions authority) to `the-client-level` — which settles both halves of
+  session A's pass4.md:1517 and required the same correction in
+  `lectures.md`, where the whole *ledger's foundation* premise was wrong:
+  the prediction ledger is `BlockStatePredictionHandler`, keyed by `BlockPos`,
+  and has nothing to do with movement. **No tool bug** — the second pass-4
+  session without one. Instead the checklist itself was wrong once
+  (`EntitySpawnRequest.ignoreChecks` **is** true, at
+  `BaseSpawner.java:348` and `TrialSpawnerStateData.java:266`, both building
+  a display entity — exactly what session G struck as false), and an agent
+  once, rejected on re-derivation: `MinecraftServer.processPacketsAndTick`
+  does drain the packet queue at `:1122` before `tickServer` at `:1124`, so
+  `attributes`' sentence stands. Rulings: a hook that invents a number the
+  page then contradicts is replaced with the page's own number; an
+  illustration wrong on both halves is replaced rather than repaired; and a
+  "never" the page's own later text contradicts is narrowed to what the later
+  text says, the later text being the authority — three times this session.
+  Everything in [pass4.md](pass4.md).

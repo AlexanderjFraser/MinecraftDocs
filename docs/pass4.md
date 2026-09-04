@@ -87,6 +87,320 @@ entry first.
 
 ## Entries
 
+## Session F — Part VI Entities (pass 4) *(2026-09-04)*
+
+Nine pages and the landing page, one adversarial agent each; the order work,
+the part-wide notes and every *wrong* re-derived by the session before a
+sentence moved. **All ten had at least one wrong claim** — pass 2's result
+for a seventh time. Sixty-two corrections. The part's own session-G
+checklist came back almost entirely clean (twenty of its twenty-one
+corrections re-confirmed, every count on `attributes` and
+`synched-entity-data` right, all fifteen figures checked arrow by arrow with
+only four arrows wrong) — so this part's errors were not in what pass 3 knew
+it had changed, but in the *illustrations* attached to mechanisms it had got
+right.
+
+### The four that carry a lecture
+
+- **`authority` is wrong about the player on the client, and its closer is
+  wrong twice.** Page: "`Entity.isLocalInstanceAuthoritative` … is false for
+  a player on **both** sides — so no player anywhere takes fall damage from
+  the mover." Decompile: on the client `LocalPlayer.isLocalPlayer` returns
+  true (`client/player/LocalPlayer.java:394`), so
+  `Player.isLocalClientAuthoritative` (`Player.java:1259`) is true and
+  `Entity.java:823` calls `checkFallDamage` for your own player every tick;
+  it does no damage only because `LivingEntity.checkFallDamage` needs a
+  `ServerLevel` (`LivingEntity.java:346`). The page's own table row said as
+  much. Part VIII's two survivors of the deleted matrix
+  (`input-to-movement.md:33`, `the-two-phase-tick.md:146`) scope it to
+  `ServerPlayer` and are the correct ones — settling session I's pass4.md
+  note the other way round from how it was written.
+- **The *NoAI* answer was exactly backwards.** Page: "It does not stop
+  `LivingEntity.travel` … so a *NoAI* mob still falls." Decompile:
+  `LivingEntity.java:3311` gates `travel` on `canSimulateMovement() &&
+  isEffectiveAi()`, and `Mob.java:1425` makes the second false under *NoAI*
+  — with `travel` skipped nothing reaches `Entity.move`, so a *NoAI* mob
+  does not fall. The page's own gate list four paragraphs earlier had it
+  right.
+- **The 0.98 coast does not exist**, on three pages' worth of sentences.
+  `LivingEntity.java:3212` scales a tracked mob's stored `deltaMovement` by
+  0.98 when `canSimulateMovement` is false — and nothing then applies that
+  delta, because only `LivingEntity.travel` reaches `Entity.move` and it is
+  gated off. A tracked mob is moved **only** by `InterpolationHandler`, and
+  stands perfectly still when the interpolation runs out.
+- **`pathfinding`'s hook invented a number.** "…and eight ticks later it is
+  standing still against a fence": there is no eight-tick give-up anywhere.
+  The two timers are `> 100` ticks (`PathNavigation.java:310`) and three
+  times a per-node budget (`:338`), which the page's own second paragraph
+  states. → **a hundred ticks**.
+
+### Two more punchlines fell
+
+- **`synched-entity-data`'s hook was contradicted by its own next section.**
+  "The slot the wool lives in is decided by the order the JVM happens to run
+  static initialisers in" — but `ClassTreeIdRegistry.getLastIdFor`
+  (`util/ClassTreeIdRegistry.java:15-35`) walks only the **superclass**
+  chain, and the JLS fixes superclass-before-subclass, which the page says
+  at its own L40. 18 is fully determined by the hierarchy. → the hook now
+  states the true and sharper thing: the number is written nowhere in
+  `Sheep`, and one new field on `Entity` would renumber every entity in the
+  game.
+- **`pathfinding`'s malus illustration was wrong on both halves.** "a
+  zombified piglin walks through fire and a spider does not":
+  `ZombifiedPiglin.java:65` overrides `PathType.LAVA`, not `FIRE`, and
+  `Spider` sets no malus at all, so it uses the default `FIRE` = 16 —
+  passable, merely expensive. → rewritten around lava, where the same
+  constant is 0.0 for a `Strider` (`Strider.java:97`), 8.0 for a
+  `ZombifiedPiglin` and the default −1 for an ordinary piglin.
+
+### The queue itself was wrong once, and an agent once
+
+- **`EntitySpawnRequest.ignoreChecks` is not "never true".** Session G
+  struck the old page's claim that it builds the spawner's display mob; it
+  is true at exactly two sites, `BaseSpawner.java:348` and
+  `TrialSpawnerStateData.java:266`, **both building a display entity**. The
+  old page was right and the correction was wrong. No current page repeats
+  the error, so nothing needed fixing — but this is the second pass-4
+  session to find a *session-verified* pass-3 correction false.
+- **One agent finding rejected on re-derivation.** The `attributes` agent
+  reported "there is no packet queue at the top of the server tick;
+  `tickConnection` runs after the levels". `MinecraftServer.processPacketsAndTick`
+  calls `packetProcessor.processQueuedPackets()` at `:1122` and `tickServer`
+  at `:1124`, and `PacketUtils.ensureRunningOnSameThread` schedules onto
+  exactly that processor — so the page is right. The
+  `synched-entity-data` agent had confirmed the same ordering independently.
+
+### The rest, per page
+
+- **`README`** (landing page): the shape figure said "one of **five**
+  channels", `synched-entity-data` tables **six** → six. "The prediction
+  ledger behind your own **movement** is Part X" — the ledger is
+  `BlockStatePredictionHandler`, keyed by `BlockPos`; `prediction-and-acks`
+  says outright that movement is a different mechanism → *the blocks you
+  place*. The same wrong premise was in the *shape of the part* paragraph
+  and in `lectures.md:611`, both rewritten around the Part X page that does
+  lean on `authority` — `the-client-level`, which opens on "not an authority
+  either". The attribute-lateness reason turned on the wrong phase (it is
+  `ServerEntity.sendDirtyEntityData` inside *chunkSource*, plus the packet
+  drain before `tickServer`, not the block-change broadcast). "Whether an
+  entity ticks at all is a property of the chunk" — except `ServerPlayer`,
+  exempted at `ServerLevel.java:414`. Red-flash closer corrected to match
+  `LivingEntity.java:1283` (a weaker or equal hit does not drop health at
+  all).
+- **`authority`**: "four predicates" is **five** (`Entity.java:3857, 3861,
+  3867, 3873, 3877`) and `Player` overrides **four** of them, not three of
+  four; "two classes narrow the AI predicate" is three, and the page names
+  three; "six places in `Entity.move` and `LivingEntity.aiStep`, each a
+  different member" is **eight sites, nine reads**, three of which read the
+  same member — and the bullet list omitted the 0.98 gate, which is the one
+  the mob section is about. The boat row claimed `LivingEntity.travel`;
+  `AbstractBoat` is not a `LivingEntity` and runs `floatBoat`/`controlBoat`/
+  `move` (`AbstractBoat.java:241-246`). Figure 2's first two arrows had the
+  boat ticked by `LocalPlayer` (it is `ClientLevel.tickEntities`) and called
+  `travel`. `Entity.applyEffectsFromBlocks` was listed among the gates "in
+  `Entity.move`", which never calls it. The Part X link was
+  `the-client-loop`, a page that never mentions authority.
+- **`pathfinding`**: `PathNavigation.setMaxVisitedNodesMultiplier` does not
+  scale "one search" — it persists until
+  `PathNavigation.resetMaxVisitedNodesMultiplier`, and only `Bee` uses
+  either. "A villager can find a bed 48 blocks away because one **attribute**
+  is 48" — `Villager` never touches `Attributes.FOLLOW_RANGE`; 48 is its
+  `PathNavigation.setRequiredPathLength`, and the page's own closer had it
+  right. "Bounded by a node count, **not by a distance**" is false and the
+  page says so two sections earlier: `PathFinder.java:111` and `:121` both
+  bound by `maxPathLength`. "A null return means only that the node list
+  came out empty" — that branch is unreachable; a null means one of
+  `createPath`'s four early exits. "Ties go to the path with the fewest
+  nodes" — fewest-nodes is the *sole* comparator for reached targets and
+  only a tie-break for the rest. "`MoveControl.setWantedPosition` is the
+  single method where any decision becomes movement" — `MoveControl.strafe`
+  and `MoveControl.setWait` are two more entrances; "eight places" is twelve
+  call sites in eight classes; and the "tempted animal drifts in a straight
+  line" clause belongs to `TemptGoal.ForNonPathfinders`, used by two mobs,
+  not to the base `TemptGoal`, which path-finds. `BodyRotationControl`
+  swings the body **immediately** past fifteen degrees; it is the head that
+  waits ten stable ticks. The mover gets `zza` through `Mob.setSpeed`, and
+  `xxa` only in the strafe branch. Nine of the twenty-seven `PathType`
+  constants are −1, not the seven listed. Figure 2's arrow 11 had
+  `MoveControl.tick`'s three steps in reverse order.
+- **`movement-and-collision`**: "its client copy never reaches `Entity.move`
+  at all" — `PistonMovingBlockEntity.java:191` and
+  `ShulkerBoxBlockEntity.java:143` both call it from client-side block-entity
+  ticks. "The predicate that decides is
+  `Entity.isLocalInstanceAuthoritative`, **never** 'am I the client'" —
+  `Player`'s overrides are literally `!isClientSide() || isLocalPlayer()`,
+  and two gates the page quotes later are client-test-*or*-authority. "It
+  calls `Block.stepOn` first and **then** drains
+  `Entity.movementThisTick`" — reversed (`Entity.java:953-963` before
+  `:1007`). "Boats, shulkers and **minecarts**" answer
+  `Entity.canBeCollidedWith` — a minecart overrides `canCollideWith`, the
+  *mover's* side; the fourth declarer is `HappyGhast`. "Sixteen block visits
+  per segment" caps the sweep's *iteration index*, not blocks. Figure 2's
+  GATHER node said "once" (the step-up branch re-gathers block colliders
+  over a larger box) and its HEIGHTS node "every Y face". `checkBelowWorld`
+  does not kill a `LivingEntity`, which takes 4 damage a tick instead. The
+  jump branch is skipped on `LivingEntity.jumping`, before `onGround` is
+  consulted. `Blocks.FROSTED_ICE` was missing from the friction row; powder
+  snow from the `stuckSpeedMultiplier` pair; the PISTON exemption is from
+  the *multiply* only. `ServerEntity.wasOnGround` is "since the last
+  absolute sync", not "since the last send".
+- **`synched-entity-data`**: "the client cannot write to this channel at
+  all" — `ServerboundClientInformationPacket` reaches
+  `ServerPlayer.updateOptions` (`:1973-1974`), which sets the two slots the
+  page itself introduces. "Seven types set something else entirely" — 37
+  types set the interval explicitly; the seven are the ones that set
+  `Integer.MAX_VALUE`. `ClientboundTeleportEntityPacket` is not in
+  `ServerEntity`'s block at all (its only senders are `Entity.java:3366,
+  3368`); `ClientboundMoveMinecartPacket` is, and was missing.
+  `MultiPlayerGameMode.interact` sends **then** predicts. `CopperGolem`'s two
+  force-dirty writes are redundant (always a different value); only
+  `Display`'s is genuine. The `ItemFrame` bypass calls
+  `sendDirtyEntityData` only, not the position block, and two other *sends*
+  sit outside the gate. `Sheep.applyImplicitComponent` (singular) is where
+  the colour is written back.
+- **`attributes`**: the registry's default movement speed of 0.7 is not
+  "otherwise unused" — the wandering trader, the phantom and the slime are
+  registered through the bare `Mob`/`Monster` builders, neither of which
+  sets a speed. `Zombie.createAttributes` does not override "the movement
+  speed that came from two levels further up"; nothing set one. "Everything
+  in vanilla that might double up removes by id first" — three mobs and
+  `AttributeCommand` guard with `AttributeInstance.hasModifier` instead. A
+  dirty attribute set opens none of `ServerEntity.sendChanges`'s three gate
+  conditions, so it waits for the next *interval* multiple, not simply "the
+  next tick".
+- **`damage-and-death`**: "`AbstractArrow.onHitEntity` builds the number
+  before it builds the source" — backwards; the source is built at `:449`
+  and passed to `EnchantmentHelper.modifyDamage` at `:457`. "A non-projectile
+  block knocks the **attacker** back through `LivingEntity.blockedByItem`" —
+  the knockback lands on the **blocker** (`LivingEntity.java:1487, 1491`),
+  which is what `Hoglin` throwing the player who blocked it and `Ravager`
+  stunning itself both show. "No health is ever changed on a client" —
+  `handleEntityEvent` byte 3 and `LocalPlayer.hurtTo` both set it; the true
+  claim is that no damage is *calculated* there. "Every link owns exactly one
+  multiplication" — three of the eight are subtractions, by the figure's own
+  node text. "Something always lands" — Resistance IV multiplies by zero,
+  which the figure also says. `CombatTracker.recheckStatus` has four call
+  sites, not two. `DamageEffects` picks the hurt sound for **players only**.
+  The crit bonus is up to `damage/2 + 1`, not half again. `BlocksAttacks`
+  durability is charged for a blocking `Player` only. The `Entity.killedEntity`
+  veto does not exist when there is no causing entity. Figure 1's N7 listed
+  `setHealth` before `recordDamage`, the reverse of `LivingEntity.java:2089-2090`.
+- **`ai-goals-and-brains`**: "Into a goal selector, **one** thing" — the
+  leash is a second (`Mob.java:1404`, `PathfinderMob.java:67`). The boat
+  answer was wrong: `Mob.updateControlFlags` (`Mob.java:396-402`) takes
+  `MOVE` and `LOOK` from *is a `Mob` steering me* and only `JUMP` from the
+  boat test, so a mob alone in a boat keeps two of the three; the three-flag
+  shutdown is the ridden case. "`VillagerProfession` and `PoiType` are data"
+  — both are code-bootstrapped `BuiltInRegistries` (`:236, :237`) with no
+  directory under the built-in pack; only `Timeline` is data. "The one mob
+  with no goals at all" — a brain mob typically registers none. "There is one
+  exception" to the `*Ai` convention — there are two: eighteen `*Ai` classes
+  for twenty brain mobs, with `Zoglin` inline as well as
+  `VillagerGoalPackages`. "Four packages carry no such behaviour" — five of
+  ten (core, panic and hide have nothing at 99; pre-raid and raid have
+  `ResetRaidStatus`), and the punchline "nothing is asking the clock" is
+  false: `VillagerCalmDown` sits at priority 0 in the panic package and calls
+  `Brain.updateActivityFromSchedule` itself once the fear memories clear,
+  as `SetHiddenState` does for hide. The work `RunOne` is six entries, not
+  five (`StrollToPoiList` was missing). `GoalSelector` does not "seed" its
+  lock table — `NO_GOAL` is a `getOrDefault` default, never inserted. "On the
+  client, nothing above runs" contradicted the sentence above it.
+- **`entity-anatomy`**: "`DefaultedMappedRegistry` overrides **only**
+  `byId` and `getValue`" — it overrides nine methods, and one of them,
+  `getOptional`, is overridden precisely so it does **not** default (it calls
+  `super.getValue`); the untouched lookup `EntityType.CODEC` resolves through
+  is `Registry.get`. "Pose is **the one** synched value that changes physics"
+  — a dozen subclasses have their own. "The hook paintings and item frames
+  use to re-snap" is backwards: `BlockAttachedEntity.java:146` returns
+  **false**, the corpus's only override, so those are exactly the entities
+  that skip the extra `reapplyPosition`. "Nothing entity-related runs on a
+  worker pool" — `ChunkStatus.SPAWN` runs
+  `NaturalSpawner.spawnMobsForChunkGeneration` on the worldgen executor, so a
+  chunk's first animals are built and finalised off the main thread; no
+  entity is ever *ticked* there, which is the sentence's real point. "Only
+  three things refresh the dimension caches unasked" — two do it for every
+  entity and ten subclasses do it for a value of their own. `setPos` is not
+  the constructor's last act. The non-living branches are 66 of 191, a third,
+  not "the short half". `/summon` with no position uses the source's feet,
+  not a look ray. `Mob.updateControlFlags` is server-only, inside a section
+  headed *the tick both sides share*.
+- **`entity-lifecycle`**: "`Mob.removeWhenFarAway`, the per-species veto that
+  tamed animals, villagers and anything holding a job **override**" —
+  `Animal.removeWhenFarAway` returns false for *every* animal, tamed or not
+  (`animal/Animal.java:131`), and `Villager` for every villager (`:543`);
+  only `Cat` and `Ocelot` are tame-dependent. "Four mobs, unless a species
+  **raises** it" — three of the seven overrides *lower* it to 1 (`Ghast`,
+  `HappyGhast`, `Pillager`), and the sentence conflated
+  `Mob.getMaxSpawnClusterSize` (returns, killing all three group attempts)
+  with `Mob.isMaxGroupSizeReached` (breaks the current one). "Each
+  [`CustomSpawner`] stamps a **different** one of the nineteen
+  `EntitySpawnReason` constants" — phantoms and cats are both *natural*,
+  sieges and wandering traders both *event*. "Only `MAGIC_NUMBER` is
+  genuinely read" is contradicted by the next sentence. "Those **four**
+  callbacks" — the figure crosses five of `LevelCallback`'s seven. "Anything
+  trying to upgrade a removal silently does nothing" — only the reason
+  *field* is guarded; `Entity.setRemoved` still drops passengers and fires
+  `EntityInLevelCallback.onRemove` with the new reason. The three light tests
+  are `Monster.isDarkEnoughToSpawn`'s, not
+  `Monster.checkMonsterSpawnRules`'. The chicken-jockey rolls are `else if`,
+  and the box is 5 × 3 × 5. Figure 1's cascade had far-from-player third
+  where `NaturalSpawner.java:272` tests it second, and two exit-node labels
+  claimed the whole tick or the whole chunk where the code drops one
+  category's attempt.
+
+### Addition 2 — order and dependency
+
+Done in full. All five *before you start* entries are used by a sentence
+rather than merely linked, and **one entry was missing**:
+`world/points-of-interest`, which `ai-goals-and-brains` spends throughout —
+`PoiManager` is a diagram lane, and `AcquirePoi`, `PoiManager.take` and
+`ValidateNearbyPoi` carry the villager's day — and which `lectures.md:194`
+already said the lecture assumes. `world/chunk-anatomy` was used (the
+spawner's heightmap test) but had no page-level link; it now has one, which
+settles the Part VI half of session A's pass4.md:1517. The Part X half of the
+same note is settled too, by `authority`'s link moving from
+`the-client-loop` to `the-client-level`. The three cross-part links
+`check_deps.py` reports (`block-entities`, `pistons-and-block-events`,
+`codecs-nbt-json`) are all one-line asides, not dependencies. `check_deps.py`
+has no Part VI line left.
+
+### No tool bug this session
+
+The second pass-4 session without one, after session D. `pass4_queue.py`,
+`claims.py`, `diagram_arrows.py` and `check_deps.py` were all exercised over
+ten pages and behaved.
+
+### Rulings
+
+- **A hook that invents a number the page then contradicts is replaced with
+  the page's own number**, not merely softened (`pathfinding`'s eight ticks
+  → a hundred). Session D's precedent, now twice.
+- **An illustration wrong on both halves is replaced, not repaired.**
+  `pathfinding`'s fire/spider pair became a lava triple drawn from one
+  constant, because the mechanism sentence above it was right and needed an
+  example that shows the same table three ways.
+- **A "never" the page's own later text contradicts is narrowed to what the
+  later text says**, and the later text is the authority — three times this
+  session (`movement-and-collision`'s two, `authority`'s NoAI answer).
+- **A wrong fact on another part's page is logged, not fixed** (sessions A,
+  B and C's precedent): see *For other parts' sessions*.
+
+### For other parts' sessions
+
+- **Part VIII** — nothing to fix; `input-to-movement.md:33-37` and
+  `the-two-phase-tick.md:146-148` are **correct** and were the pages this
+  session's `authority` fix was checked against. Session I's pass4.md note
+  said the survivors agree with Part VI; they did not, and they were right.
+- **Part X** — `client/the-client-level.md` is now the Part X page Part VI
+  hands `authority` forward to, in both the landing page and `lectures.md`.
+  `client/prediction-and-acks.md` should be checked for whether it needs a
+  Part VI dependency at all: it never mentions authority, and its ledger is
+  `BlockStatePredictionHandler`, keyed by `BlockPos`.
+- **Session N (counts)** — `entity-anatomy`'s "18 direct subclasses and 191
+  descendants", `entity-lifecycle`'s 289 and 17², `attributes`' 40/8/26,
+  `synched-entity-data`'s 43/19/62/8 and `damage-and-death`'s 51/35/21 were
+  all re-counted this session and all hold.
+
 ## Session E — Part V Blocks (pass 4) *(2026-09-04)*
 
 Seven pages and the landing page, one adversarial agent each; the order work,
@@ -3501,9 +3815,7 @@ graph — seventeen edges, each a conversion claim); one added
     re-verified against the decompile this session.
   - **`introduction`**: the treemap's hatching is the tool's `SKIPPED`
     list; the "just under a third" now has its figure.
-  - **`entities/entity-anatomy.md`**: "193 descendants" (was 188, from
-    the old map that could not see nested classes); re-derive with the new
-    tool and by hand once.
+  - ~~**`entities/entity-anatomy.md`**: "193 descendants" (was 188, from the old map that could not see nested classes); re-derive with the new tool and by hand once.~~ Settled by session F: the page says **191**, which is what the fixed `map_source.py` and a hand count both give.
 
 - **2026-09-03, session G — Part VI Entities.** Nine pages, seven of them
   rewrites and two new, plus three Reference pages. Everything below is a
@@ -3512,126 +3824,36 @@ graph — seventeen edges, each a conversion claim); one added
   **Corrections this session made to pass-2 text — re-check the fix, not
   just the old claim.** Each was re-derived from the decompile by the
   session as well as by the drafting agent.
-  - `NaturalSpawner`: the biome **energy budget runs before the mob is
-    constructed**, as the second conjunct of the pre-construction guard in
-    `NaturalSpawner.spawnCategoryForPosition`, not after the
-    `Mob.checkSpawnRules` pair as the old page (and this session's own
-    ruling) said.
-  - `NaturalSpawner.INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK` is
-    `Mth.floor(8.0F / Mth.SQRT_OF_TWO)` = **5**, and its only reader is
-    `DistanceManager.hasPlayersNearby`, as the ≤5 fast-yes arm of a
-    `TriState` whose >8 arm is a literal. The old page said it "drives the
-    eight-chunk square".
-  - `EntitySpawnRequest.ignoreChecks` is **never true** anywhere in 26.2;
-    the old page said it was used to build the spawner's display mob.
-  - `EntityTypes.ITEM_FRAME`'s `EntityType.updateInterval` is
-    `Integer.MAX_VALUE` (seven types are), so the interval branch never
-    fires again after tick zero — which is *why* `ServerEntity.sendChanges`
-    has an item-frame bypass. The old page said the interval "is why an
-    item frame updates slower than a player".
-  - `ServerEntity.handleMinecartPosRot` does **not** bypass the send gate;
-    it is called from inside it. There is exactly **one** bypass, the
-    `ItemFrame` branch. The old page named two.
-  - `ServerLevel.tick`'s *chunkSource* phase is **after** block and fluid
-    ticks and before block events and entities — the old page said "near
-    its start". Session-verified from the profiler pushes.
-  - `LivingEntity.shouldTravelInFluid` reads the **cached** in-water and
-    in-lava flags; the live `FluidState` is used only by
-    `Entity.canStandOnFluid`. The old page said it reads the live state.
-  - `Attributes.FRICTION_MODIFIER` scales only the block-friction term;
-    both the 0.91 and the 0.98 are scaled by `Attributes.AIR_DRAG_MODIFIER`.
-  - `Attributes.DEFAULT_ATTACK_SPEED` has **no callers**; weapons write the
-    subtraction as a literal. The old page built a sentence on it.
-  - `Mob.getApproximateAttributeWith` is `ItemAttributeModifiers.compute`'s
-    only caller but is itself called from six sites, armour as well as
-    weapons.
-  - **Only `Villager` has a schedule.** `Brain.setSchedule` has two call
-    sites, both in `Villager`; the other **nineteen** brain mobs use
-    `Brain.setActiveActivityToFirstValid`. The old page framed that as the
-    exception used by three mobs. Session-verified by grepping every caller.
-  - The profiler listing's nesting: *jump* and *travel* are **siblings**
-    of *ai*, not children of it.
-  - `SummonCommand` goes through `ServerLevel.tryAddFreshEntityWithPassengers`,
-    which refuses on a duplicate UUID anywhere in the passenger stack — a
-    gate no page had.
-  - `entity-anatomy`'s subpackage table summed to 639 of a stated 716
-    (`world/entity` itself and `entity/schedule` were missing); rebuilt to
-    twelve rows summing to 716.
-  - The non-living `Entity.hurtServer` population is **21**, not "about
-    thirty"; 55 files declare the method and 33 of those are `LivingEntity`
-    descendants. `Entity.hurtServer` is **abstract**.
-  - `Sheep`'s `Shearable` siblings are five, not three (`CopperGolem` and
-    `SulfurCube` were missing).
-  - Eight direct callers of `MoveControl.setWantedPosition` bypass the
-    pathfinder, not six — `Fox` and `Rabbit` were missing.
-  - **`ArmorStand` is a `LivingEntity`**, so the old page's roster of
-    classes that "override `Entity.hurtServer` directly and never touch
-    armour, i-frames or the combat tracker" led with a class on the wrong
-    side of its own split; an armour stand does go through the reduction
-    pipeline, and the old page's closing claim that the armour-stand
-    damage-type tags "exist only for that code" went with it.
-  - `AbstractArrow.onHitEntity` applies `EnchantmentHelper.modifyDamage` to
-    `AbstractArrow.baseDamage` **first** and multiplies by speed after, so
-    Power raises the base rather than the product. The old page had the two
-    the other way round.
-  - `CombatTracker` expiry is **not** only a background timer:
-    `CombatTracker.recordDamage` calls `CombatTracker.recheckStatus` as its
-    first statement, so it is also a side effect of the next hit. The old
-    page said explicitly that it was not.
-  - The third genuinely positional damage source is `ExplodeEffect`, an
-    **enchantment** effect, positional only when it is not attributed to its
-    user — not "a loot-table explode effect".
-  - An ownerless `AbstractArrow` is its **own** causing entity, not a null
-    one, which is what `ServerPlayer.hurtServer`'s unwrap re-asks about.
+  - ~~`NaturalSpawner`: the biome **energy budget runs before the mob is constructed**, as the second conjunct of the pre-construction guard in `NaturalSpawner.spawnCategoryForPosition`, not after the `Mob.checkSpawnRules` pair as the old page (and this session's own ruling) said.~~
+  - ~~`NaturalSpawner.INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK` is `Mth.floor(8.0F / Mth.SQRT_OF_TWO)` = **5**, and its only reader is `DistanceManager.hasPlayersNearby`, as the ≤5 fast-yes arm of a `TriState` whose >8 arm is a literal. The old page said it "drives the eight-chunk square".~~
+  - ~~`EntitySpawnRequest.ignoreChecks` is **never true** anywhere in 26.2; the old page said it was used to build the spawner's display mob.~~
+  - ~~`EntityTypes.ITEM_FRAME`'s `EntityType.updateInterval` is `Integer.MAX_VALUE` (seven types are), so the interval branch never fires again after tick zero — which is *why* `ServerEntity.sendChanges` has an item-frame bypass. The old page said the interval "is why an item frame updates slower than a player".~~
+  - ~~`ServerEntity.handleMinecartPosRot` does **not** bypass the send gate; it is called from inside it. There is exactly **one** bypass, the `ItemFrame` branch. The old page named two.~~
+  - ~~`ServerLevel.tick`'s *chunkSource* phase is **after** block and fluid ticks and before block events and entities — the old page said "near its start". Session-verified from the profiler pushes.~~
+  - ~~`LivingEntity.shouldTravelInFluid` reads the **cached** in-water and in-lava flags; the live `FluidState` is used only by `Entity.canStandOnFluid`. The old page said it reads the live state.~~
+  - ~~`Attributes.FRICTION_MODIFIER` scales only the block-friction term; both the 0.91 and the 0.98 are scaled by `Attributes.AIR_DRAG_MODIFIER`.~~
+  - ~~`Attributes.DEFAULT_ATTACK_SPEED` has **no callers**; weapons write the subtraction as a literal. The old page built a sentence on it.~~
+  - ~~`Mob.getApproximateAttributeWith` is `ItemAttributeModifiers.compute`'s only caller but is itself called from six sites, armour as well as weapons.~~
+  - ~~**Only `Villager` has a schedule.** `Brain.setSchedule` has two call sites, both in `Villager`; the other **nineteen** brain mobs use `Brain.setActiveActivityToFirstValid`. The old page framed that as the exception used by three mobs. Session-verified by grepping every caller.~~
+  - ~~The profiler listing's nesting: *jump* and *travel* are **siblings** of *ai*, not children of it.~~
+  - ~~`SummonCommand` goes through `ServerLevel.tryAddFreshEntityWithPassengers`, which refuses on a duplicate UUID anywhere in the passenger stack — a gate no page had.~~
+  - ~~`entity-anatomy`'s subpackage table summed to 639 of a stated 716 (`world/entity` itself and `entity/schedule` were missing); rebuilt to twelve rows summing to 716.~~
+  - ~~The non-living `Entity.hurtServer` population is **21**, not "about thirty"; 55 files declare the method and 33 of those are `LivingEntity` descendants. `Entity.hurtServer` is **abstract**.~~
+  - ~~`Sheep`'s `Shearable` siblings are five, not three (`CopperGolem` and `SulfurCube` were missing).~~
+  - ~~Eight direct callers of `MoveControl.setWantedPosition` bypass the pathfinder, not six — `Fox` and `Rabbit` were missing.~~
+  - ~~**`ArmorStand` is a `LivingEntity`**, so the old page's roster of classes that "override `Entity.hurtServer` directly and never touch armour, i-frames or the combat tracker" led with a class on the wrong side of its own split; an armour stand does go through the reduction pipeline, and the old page's closing claim that the armour-stand damage-type tags "exist only for that code" went with it.~~
+  - ~~`AbstractArrow.onHitEntity` applies `EnchantmentHelper.modifyDamage` to `AbstractArrow.baseDamage` **first** and multiplies by speed after, so Power raises the base rather than the product. The old page had the two the other way round.~~
+  - ~~`CombatTracker` expiry is **not** only a background timer: `CombatTracker.recordDamage` calls `CombatTracker.recheckStatus` as its first statement, so it is also a side effect of the next hit. The old page said explicitly that it was not.~~
+  - ~~The third genuinely positional damage source is `ExplodeEffect`, an **enchantment** effect, positional only when it is not attributed to its user — not "a loot-table explode effect".~~
+  - ~~An ownerless `AbstractArrow` is its **own** causing entity, not a null one, which is what `ServerPlayer.hurtServer`'s unwrap re-asks about.~~
 
   **New pages, whose every claim is new.**
-  - **`authority.md`** — the whole page. Highest-risk items: that
-    `Entity.isLocalInstanceAuthoritative` is final and unoverridden; the
-    three-column table (a tracked mob, a player, a ridden boat, each read on
-    both sides) — **eight rows, each a separate claim**; that both base
-    client-authority predicates delegate to the controlling passenger, which
-    is the vehicle model; that `ClientboundMoveVehiclePacket` is sent only
-    on a **rejection** and that the client applies it only for a vehicle it
-    is authoritative for, then echoes back; that
-    `ClientPacketListener.handleEntityPositionSync` and
-    `ClientPacketListener.handleMoveEntity` update the position codec and do
-    **not** move a locally authoritative entity; that
-    `SweetBerryBushBlock.entityInside` picks its movement measure off
-    `Entity.isClientAuthoritative`; and the six-gate list at the end (each
-    gate names a different predicate — check them one at a time).
-  - **`pathfinding.md`** — the whole page. Highest-risk: the budget is
-    `Attributes.FOLLOW_RANGE`'s **base** value times sixteen at construction
-    and the **modified** value (or `PathNavigation.setRequiredPathLength`,
-    whichever is larger) times sixteen afterwards, and the same number is
-    the region radius plus an 8 or 16 offset; the seven classes that raise
-    the required length and their values; that the A\* **heuristic is
-    multiplied by 1.5**, so the search is deliberately greedy and the result
-    is not the shortest path; that a failed search still returns a
-    best-effort path with `Path.canReach` false; that the closed set is
-    accumulated only while something is subscribed to
-    `DebugSubscriptions.ENTITY_PATHS`; the two give-up timers and their
-    arithmetic (100-tick stuck check at speed times 100 times 0.25, with the
-    speed *squared* below 1.0; per-node timeout at three times distance over
-    speed times 20); and that `PathType`'s negative malus means impassable
-    across 27 constants.
-  - **`reference/non-living-damage.md`** — twenty-one rows, hand-kept, each
-    read one class at a time. Check the `ItemFrame` two-hit rule, the
-    `EndCrystal` dragon immunity, the `VehicleEntity` accumulator and its
-    creative-player discard, and the claim that `Player.attack` consults
-    `Entity.isAttackable` and `Entity.skipAttackInteraction` before
-    `Entity.hurtServer` is reached at all. `ShulkerBullet.hurtServer` checks
-    **nothing at all**, not even `Entity.isInvulnerableToBase`, and always
-    returns true — the one row with no guard.
-  - **`reference/attributes.md`** and
-    **`reference/entity-data-serializers.md`** are generated by two new
-    `gen_reference.py` views. Check the **regexes**, not only the output:
-    pass 2 found that three of the four existing views had silently dropped
-    rows to an over-narrow pattern. The attribute regex assumes every
-    registration is a single-line `new RangedAttribute(...)`; the serializer
-    view reads declaration order and registration order as two separate
-    lists and reports any declared-but-unregistered serializer.
+  - ~~**`authority.md`** — the whole page. Highest-risk items: that `Entity.isLocalInstanceAuthoritative` is final and unoverridden; the three-column table (a tracked mob, a player, a ridden boat, each read on both sides) — **eight rows, each a separate claim**; that both base client-authority predicates delegate to the controlling passenger, which is the vehicle model; that `ClientboundMoveVehiclePacket` is sent only on a **rejection** and that the client applies it only for a vehicle it is authoritative for, then echoes back; that `ClientPacketListener.handleEntityPositionSync` and `ClientPacketListener.handleMoveEntity` update the position codec and do **not** move a locally authoritative entity; that `SweetBerryBushBlock.entityInside` picks its movement measure off `Entity.isClientAuthoritative`; and the six-gate list at the end (each gate names a different predicate — check them one at a time).~~
+  - ~~**`pathfinding.md`** — the whole page. Highest-risk: the budget is `Attributes.FOLLOW_RANGE`'s **base** value times sixteen at construction and the **modified** value (or `PathNavigation.setRequiredPathLength`, whichever is larger) times sixteen afterwards, and the same number is the region radius plus an 8 or 16 offset; the seven classes that raise the required length and their values; that the A\* **heuristic is multiplied by 1.5**, so the search is deliberately greedy and the result is not the shortest path; that a failed search still returns a best-effort path with `Path.canReach` false; that the closed set is accumulated only while something is subscribed to `DebugSubscriptions.ENTITY_PATHS`; the two give-up timers and their arithmetic (100-tick stuck check at speed times 100 times 0.25, with the speed *squared* below 1.0; per-node timeout at three times distance over speed times 20); and that `PathType`'s negative malus means impassable across 27 constants.~~
+  - ~~**`reference/non-living-damage.md`** — twenty-one rows, hand-kept, each read one class at a time. Check the `ItemFrame` two-hit rule, the `EndCrystal` dragon immunity, the `VehicleEntity` accumulator and its creative-player discard, and the claim that `Player.attack` consults `Entity.isAttackable` and `Entity.skipAttackInteraction` before `Entity.hurtServer` is reached at all. `ShulkerBullet.hurtServer` checks **nothing at all**, not even `Entity.isInvulnerableToBase`, and always returns true — the one row with no guard.~~
+  - ~~**`reference/attributes.md`** and **`reference/entity-data-serializers.md`** are generated by two new `gen_reference.py` views. Check the **regexes**, not only the output: pass 2 found that three of the four existing views had silently dropped rows to an over-narrow pattern. The attribute regex assumes every registration is a single-line `new RangedAttribute(...)`; the serializer view reads declaration order and registration order as two separate lists and reports any declared-but-unregistered serializer.~~
 
-  **Rewritten pages: the hooks, which are the sharpest new claims.**
+  ~~**Rewritten pages: the hooks, which are the sharpest new claims.**
   `entity-anatomy` — the pig default reaches the network and not the save
   file, with the whole path (`ByteBufCodecs.registry` →
   `IdMap.byIdOrThrow` → `DefaultedMappedRegistry.byId` never null, versus
@@ -3651,9 +3873,9 @@ graph — seventeen edges, each a conversion claim); one added
   up **by position**, and the within-tick priority claim that
   `UpdateActivityFromSchedule` at priority 99 runs after every behaviour it
   could affect, so a switch never bites in the tick it lands.
-  `damage-and-death` — the silent-partial-hit flag, and the five families.
+  `damage-and-death` — the silent-partial-hit flag, and the five families.~~
 
-  **Every diagram in the part was redrawn.** Fifteen figures across nine
+  ~~**Every diagram in the part was redrawn.** Fifteen figures across nine
   pages, and each arrow is an ordering claim: check them arrow by arrow,
   separately from the prose. The three most load-bearing are
   `entity-lifecycle`'s **spawn filter cascade** (every rejection in source
@@ -3661,14 +3883,14 @@ graph — seventeen edges, each a conversion claim); one added
   `attributes`' two-dirty-set flowchart (which set a change lands in, and
   that they are not a partition), and `damage-and-death`'s reduction
   flowchart (a dozen links, each owning one multiplication, with the running
-  number on every edge).
+  number on every edge).~~
 
-  **Process note.** All seven rewrites arrived with a full claim-diff from
+  ~~**Process note.** All seven rewrites arrived with a full claim-diff from
   their drafting agent. `damage-and-death`'s came last and was **also**
   audited independently by the session against the decompile before it
   arrived — its non-living section, reduction pipeline, blocking path and
   `CombatRules` constants were re-derived here and the two accounts agree.
-  That page is the one in the part with two independent audits.
+  That page is the one in the part with two independent audits.~~
 
 - **2026-09-03, session H — Part VII Items and inventories.** Eight pages,
   five rewritten and three new, every one drafted by an agent against the
