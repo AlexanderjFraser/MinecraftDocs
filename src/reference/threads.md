@@ -71,14 +71,17 @@ them are real.
 | **Management server IO #n** | `ManagementServer`, built by `JsonRpc` in `server/Main` | a second, independent Netty event-loop group: the JSON-RPC/WebSocket management API and its heartbeat | Its own pipeline; management calls reach the game through the server's task queue. Dedicated only. |
 | Timer hack thread | `Util.startTimerHackThread` | sleeps forever | Nothing. Keeps the JVM's timer resolution high by existing. |
 
-## The seven client handlers that never hop
+## The nine client handlers that never hop
 
 `Connection.channelRead0` calls a packet's handler on the Netty thread, and
 a handler's first line is normally `PacketUtils.ensureRunningOnSameThread`,
 which re-posts it to the owning thread and aborts
-([the connection](../systems/networking/the-connection.md)). In
-`ClientPacketListener` all but seven packet handlers do that, so those seven
-run to completion on Netty and must touch nothing the Render thread owns.
+([the connection](../systems/networking/the-connection.md)). Nine handlers on the client's play listener omit it, so they run to completion
+on Netty and must touch nothing the Render thread owns. Seven are declared in
+`ClientPacketListener` itself; the last two are inherited from
+`ClientCommonPacketListenerImpl` and are the two that matter most, because a
+keep-alive is answered and a disconnect is acted on without the game thread
+being involved at all.
 
 | handler | what it does on the Netty thread |
 |---|---|
@@ -88,7 +91,9 @@ run to completion on Netty and must touch nothing the Render thread owns.
 | `ClientPacketListener.handleChunkBatchFinished` | stops it and sends `ServerboundChunkBatchReceivedPacket` with the chunks-per-tick it now wants — so the loop in [what the client is told](../systems/networking/what-the-client-is-told.md) times packet decode, not mesh building |
 | `ClientPacketListener.handleDebugSample` | hands the sample to `DebugScreenOverlay.logRemoteSample` |
 | `ClientPacketListener.handlePongResponse` | records the round trip in `PingDebugMonitor` |
-| `ClientPacketListener.handleLowDiskSpaceWarning` | calls `Minecraft.sendLowDiskSpaceWarning`, which posts the toast to the Render thread itself — the one of the seven that crosses after all, by `Minecraft.execute` rather than by the hop |
+| `ClientPacketListener.handleLowDiskSpaceWarning` | calls `Minecraft.sendLowDiskSpaceWarning`, which posts the toast to the Render thread itself — the one that crosses after all, by `Minecraft.execute` rather than by the hop |
+| `ClientCommonPacketListenerImpl.handleKeepAlive` | replies with `ServerboundKeepAlivePacket` through `ClientCommonPacketListenerImpl.sendWhen`, deferred while the window is frozen at `RenderSystem.isFrozenAtPollEvents` — so the answer that keeps a connection alive never waits for a frame |
+| `ClientCommonPacketListenerImpl.handleDisconnect` | calls `Connection.disconnect` straight from the event loop |
 
 ## Situational threads
 

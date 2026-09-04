@@ -1387,3 +1387,57 @@ session's own pages score 3 of 4 on the device it just flagged.
 - `player-anatomy` — the page says `Avatar` "exists for the renderer", but
   `Avatar` is a server class whose other content is the shared player hitbox;
   the renderer is one consumer, not the reason.
+
+## From pass-4 session I (Part IX Networking), 2026-09-04
+
+Wording debt from fixes made in place, and structural findings not acted on.
+
+- `networking/README.md` — the opening's four player-visible failures now
+  ends on "a grey bar down its left edge", which is true and duller than the
+  red line it replaces. The vivid true version is the *sender's* side —
+  `handleMessageDecodeFailure` sends the reason back in red — but that is a
+  different sentence about a different player. Re-read the paragraph whole.
+- `networking/README.md` — "one wire and three passengers" is still the
+  part's shape sentence, and the page contradicts it twenty lines later by
+  saying *protocol phases* **is** the wire rather than a passenger. Pass 4
+  softened the first sentence rather than choosing; the shape needs deciding.
+- `networking/README.md` — the traffic-volume clause added to the *shape*
+  section is a fact the section did not previously carry, and reads like a
+  footnote. It may belong in *what the client is told* instead.
+- `the-connection.md` — the `HandlerNames` paragraph existed to deliver "a
+  complete and correct index that no code reads". The index turned out to be
+  incomplete, so the paragraph now delivers "an index that has already
+  drifted", which is a different and slightly weaker point occupying the same
+  space. Consider cutting it to one clause.
+- `the-connection.md` — the kick answer is now four sentences where the
+  question deserves two. The mechanism took three of them.
+- `packets-and-stream-codecs.md` — the "three shapes of packet class"
+  paragraph now names all three, and the third (the `StreamCodec.unit`
+  singleton) is introduced twice on the page, here and in the bundle section.
+  Pick one home.
+- `packets-and-stream-codecs.md` — the JSON exception is now a four-line
+  aside inside a paragraph about the NBT bridge. It is a good fact and it is
+  in the wrong shape; it may want to be its own short paragraph.
+- `protocol-phases.md` — "Eight, not four: every phase but handshaking
+  declares one per direction" is a correction written as prose. Pass 5 should
+  fold the number into the sentence and drop the correction voice.
+- `what-the-client-is-told.md` — "Four feeds ignore gate 3" now carries a
+  second sentence walking back the scope, and the section heading still says
+  *What goes out around the gates*. Heading and content disagree in emphasis.
+- `chat-and-signing.md` — the unsigned-`Component` paragraph grew by four
+  lines to hold the `MessageArgument` finding, which is the best fact on the
+  page and is buried in a paragraph about a field. It may deserve promotion.
+
+Structural findings, not acted on:
+
+- `reference/threads.md` — the never-hop section's population is stated as
+  "`ClientPacketListener`", a class, when the honest population is "the
+  handlers a client play listener runs". Pass 4 fixed the count and left the
+  framing; a Reference section whose population is a class file rather than a
+  runtime object will drift again the next time a handler moves up or down
+  the hierarchy.
+- `networking/README.md` figure — arrows 3 and 4 (`PP → WCT`, `PP → CS`)
+  assert a dependency neither target page uses. Pass 4 corrected the prose
+  that made the same claim and left the arrows, because the figure is the
+  part's watch order rather than a prerequisite graph. If the shape sentence
+  above is redecided, the arrows go with it.

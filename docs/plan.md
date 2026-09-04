@@ -363,8 +363,38 @@ O is the close.
   session was wrong once, inventing a field that `verify_names.py` then caught —
   the verifier catching a *fix* rather than a page. Everything in
   [pass4.md](pass4.md).
-- [ ] **Session I — Part IX Networking.** The round-trip diagram; the phase
-  state machine against authlib; the seven handlers that never hop.
+- [x] **Session I — Part IX Networking** *(2026-09-04)*. Five pages and the
+  landing page, six agents; **every one had at least one wrong claim**, for a
+  tenth time. Forty-six corrections. Session J's checklist held on the numbers
+  and fell on the *taxonomies*: two shapes of packet class where there are
+  three, four protocol templates where there are eight, two exceptions and one
+  refusal where there are three and two. Four carry a lecture: the round-trip
+  figure had **the outbound pipeline backwards** — `"compress"` goes in with
+  `addAfter("prepender")` and outbound runs tail-to-head, so it is compress,
+  prepend, encrypt, and the page's own prose said so while the figure did not;
+  `chat-and-signing`'s **"vanilla never sends an unsigned `Component`"**, said
+  three times, is false because `MessageArgument.resolveChatMessage` sets one
+  on *every* message it resolves, having expanded the selectors — so a `/msg`
+  with a selector delivers text the signature does not cover;
+  `packets-and-stream-codecs`' bolded **"a `Codec` on the wire means a compound
+  tag"** has two exceptions that are the two packets a player sees most, the
+  server-list response and the login kick, both carrying JSON; and
+  `the-connection`'s **kick stall is not `Connection.disconnect`** but
+  `MinecraftServer.executeBlocking` a line later. Two more punchlines fell:
+  `Entity.broadcastToPlayer` is not a hiding hook used by "a few types" but has
+  exactly one override, and *what the client is told*'s four ungated feeds are
+  past **gate 3 only**, so the "knockback is instant" answer fails for exactly
+  the distant mob its question is about. **The session's named item was wrong
+  three ways and no agent got it right**: session A's eight→seven rename left
+  two dead anchors, one agent re-derived eight by counting a method that is not
+  a packet handler, and the true number for a client play listener is **nine** —
+  `handleKeepAlive` and `handleDisconnect` are inherited, unoverridden, and
+  never hop, so a keep-alive is answered with no game thread involved. Addition
+  2 done in full, with one order claim struck: *what the client is told* and
+  *chat and signing* do not "both assume three" — neither page mentions the
+  phase machinery, and `chat-and-signing` never uses the word. **No tool bug —
+  the fourth such session**; instead the agents were wrong twice and the page
+  was right against an agent once. Everything in [pass4.md](pass4.md).
 - [ ] **Session J — Part X The client.** The tick arithmetic; the
   prediction ledger's two columns; the sound engine's five threads.
 - [ ] **Session K — Part XI Rendering.** Probably two sessions: the frame's

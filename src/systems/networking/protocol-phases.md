@@ -4,8 +4,9 @@
 
 Click a server in the multiplayer list and one TCP connection opens, and
 over the next second it speaks four different languages in turn. Each is a
-`ConnectionProtocol`; each has its own packet set and its own listener on
-both ends; and each hands over to the next by a packet marked *terminal*,
+`ConnectionProtocol`; each has its own packet set, and all but handshaking a
+listener at both ends — handshaking is serverbound only, so the client has
+nothing to listen with; and each hands over to the next by a packet marked *terminal*,
 which tears its own codec out of the pipeline as it passes. What a
 1.21-era reader will not expect is where the work happens. Every
 server-side handler in the handshake and login phases runs on the Netty
@@ -73,7 +74,9 @@ there since startup and the rebind is only because the protocol changed.
 The serverbound play template is also the one protocol with a context
 object, `GameProtocols.Context`, whose single question is
 `GameProtocols.Context.hasInfiniteMaterials` — which is why it is an
-`UnboundProtocol` where the other four are a `SimpleUnboundProtocol`.
+`UnboundProtocol` where the other eight templates are a
+`SimpleUnboundProtocol`. Eight, not four: every phase but handshaking
+declares one per direction.
 
 Two listeners sit under the phases. `ServerCommonPacketListenerImpl` is the
 shared base of the server's configuration and play listeners and holds
@@ -99,9 +102,11 @@ and otherwise joins `ClientIntent.LOGIN` in
 `ServerHandshakePacketListenerImpl.beginLogin`, which compares the client's
 protocol version against this build's and refuses a mismatch —
 *outdated_client* below the 1.16.4 protocol number, *incompatible* above
-it. Every one of those refusals first installs the **login** clientbound
-protocol, purely so it can send `ClientboundLoginDisconnectPacket` and have
-the client render a reason.
+it. The two refusals on the login path first install the **login** clientbound
+protocol, purely so they can send `ClientboundLoginDisconnectPacket` and have
+the client render a reason. The status refusal is the exception and the
+rudest: the status clientbound protocol is installed before the branch, and
+then the connection is dropped with no packet at all.
 
 The client does not wait for any of that. Whichever of its three entry
 points opened the connection — `ConnectScreen` for a listed or direct
@@ -138,7 +143,7 @@ stateDiagram-v2
     WAITING_FOR_DUPE_DISCONNECT --> PROTOCOL_SWITCHING : tick, the old connection is gone
     PROTOCOL_SWITCHING --> ACCEPTED : ServerboundLoginAcknowledgedPacket, configuration begins
     NEGOTIATING : NEGOTIATING, declared and never assigned
-    note left of VERIFYING : the two tick transitions are the only server-thread work in the phase
+    note left of VERIFYING : the three tick transitions are the server-thread work that advances the login
 ```
 
 `ServerLoginPacketListenerImpl` has no thread hop anywhere, which is why its
@@ -204,8 +209,9 @@ capacity; the compression switch; and
 which the machine waits in
 `ServerLoginPacketListenerImpl.State.WAITING_FOR_DUPE_DISCONNECT` until the
 old connection has actually died. It also compares the authenticated profile
-against `Connection.getIntendedProfileId`, an embedder hook that nothing in
-vanilla sets.
+against `Connection.getIntendedProfileId`, which is set in exactly one place,
+`ServerConnectionListener.acceptChannel` — and nothing in the tree calls
+that, so it is an embedder's hook.
 
 **Login ends with a terminal packet in each direction**, and the two sides
 install their codecs in mirror order. `ClientboundLoginFinishedPacket` then
@@ -253,8 +259,9 @@ completion naming the wrong task type, and an exception out of any task
 disconnects the client.
 
 **Registry and tag sync.** The task begins with `ClientboundSelectKnownPacks`,
-a list of `KnownPack` records naming every pack the server's resource
-manager has, by namespace, id and version; the client matches them against
+a list of `KnownPack` records naming, by namespace, id and version, those of
+the server's packs that declare one — `PackLocationInfo.knownPackInfo` is an
+optional, so a world's own datapack is simply absent from the request; the client matches them against
 its bundled vanilla repository through `KnownPacksManager.trySelectingPacks`
 and replies with the subset it recognises. If that reply is not *exactly*
 the requested list — same packs, same order — the server discards the
@@ -264,8 +271,9 @@ walking `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, each element a
 `RegistrySynchronization.PackedRegistryEntry` whose data is omitted when the
 element came from a pack the client already has — the entire point of the
 negotiation — written as NBT with the registry's own element codec. Then
-one `ClientboundUpdateTagsPacket` covering **all** registries, static ones
-included ([tags](../foundations/tags.md)). On the client,
+one `ClientboundUpdateTagsPacket` covering the **networkable** registries and
+the static ones too — the surprise, since the data packets are dynamic-only —
+with empty payloads dropped ([tags](../foundations/tags.md)). On the client,
 `RegistryDataCollector` accumulates the contents and the tags and only
 resolves them at `ClientConfigurationPacketListenerImpl.handleConfigurationFinished`,
 loading them on a background executor against the negotiated packs — and
@@ -274,11 +282,12 @@ asynchronous — before constructing the `ClientPacketListener` with the
 finished `RegistryAccess`. In singleplayer the result is narrowed to the
 server's own objects, so both sides share instances.
 
-**The seam is not where it looks.** Three of the server's configuration
+**The seam is not where it looks.** Four of the server's configuration
 handlers hop to the main thread —
-`ServerConfigurationPacketListenerImpl.handleSelectKnownPacks`, the
-resource-pack response and
-`ServerConfigurationPacketListenerImpl.handleConfigurationFinished` —
+`ServerConfigurationPacketListenerImpl.handleSelectKnownPacks`,
+`ServerConfigurationPacketListenerImpl.handleConfigurationFinished` and, from
+the common base, the resource-pack response and
+`ServerCommonPacketListenerImpl.handleCustomClickAction` —
 while the client-information and code-of-conduct handlers, like the
 keep-alive and ping handlers they inherit, stay on the Netty thread. That
 last one is load-bearing: accepting a code of conduct finishes a task, which
@@ -300,9 +309,9 @@ arrives does `ServerConfigurationPacketListenerImpl.handleConfigurationFinished`
 swap the outbound protocol to play, re-run the duplicate-player check and
 `PlayerList.canPlayerLogin` — because a ban or a full server can arrive in
 the seconds a configuration takes — and call `PrepareSpawnTask.spawnPlayer`,
-which loads the save data a second time, constructs the `ServerPlayer` and
-hands it to `PlayerList.placeNewPlayer`, which installs the inbound play
-protocol. [Players and sessions](../server/players-and-sessions.md) owns the
+which constructs the `ServerPlayer`, reads the save data into it — a second
+read, the first having happened when the task started — and hands it to
+`PlayerList.placeNewPlayer`, which installs the inbound play protocol. [Players and sessions](../server/players-and-sessions.md) owns the
 rest of that story. Everything between the join task and that handler is a
 server holding a ticket on chunks for a player that does not exist.
 
@@ -313,7 +322,7 @@ and an exception while placing the player.
 ## Play, and the way back
 
 The play protocol is installed from two different places on each side: the
-server swaps outbound at the top of the finish handler and inbound inside
+server swaps outbound a line into the finish handler and inbound inside
 `PlayerList.placeNewPlayer`; the client swaps inbound, sends the finish
 packet, then swaps outbound. That is why the server can be encoding play
 packets while still nominally in the configuration listener. Chat session

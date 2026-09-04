@@ -87,6 +87,177 @@ entry first.
 
 ## Entries
 
+## Session I — Part IX Networking (pass 4) *(2026-09-04)*
+
+Five pages and the landing page, six agents; **every one had at least one
+wrong claim**, which is pass 2's finding for a tenth time. Forty-six
+corrections. Session J's own checklist held on the numbers and fell on the
+*shapes* — the counts pass 3 introduced were mostly right, and the taxonomies
+it introduced were mostly incomplete: two shapes of packet class where there
+are three, four protocol templates where there are eight, two exceptions and
+one refusal where there are three and two, two tick transitions against a
+figure that draws three. Four corrections carry a lecture:
+
+- **The round-trip figure had the outbound pipeline backwards.** Note 7 said
+  *prepender, compress, encrypt*; `"compress"` is inserted with
+  `addAfter("prepender", …)` (`Connection.java:601`) and outbound handlers run
+  tail-to-head, so the real order is **compress, prepend the length, encrypt**.
+  The page's own prose at L143 had it right, so the figure contradicted the
+  page. → fixed, `Connection.java:511,556-557,592,601`.
+- **The unsigned chat `Component` is not a non-vanilla feature.** The page
+  said "vanilla never sends one", three times, resting on
+  `ChatDecorator.PLAIN` being the identity. True of the *decorator* and false
+  of the game: `MessageArgument.resolveChatMessage` calls
+  `PlayerChatMessage.withUnsignedContent` on **every** message it resolves,
+  because it has expanded the entity selectors in the text — so a `/msg`
+  carrying a selector delivers a string the signature does not cover. →
+  `MessageArgument.java:54,56,67`, `ServerGamePacketListenerImpl.java:1697`.
+- **A `Codec` on the wire does not always mean a compound tag.** The page's
+  bolded conclusion rested on "all four public entry points pass the NBT ops";
+  there are **six** NBT entry points, and the format-agnostic combinator is
+  public and called with `JsonOps` by two packets — the server-list response
+  and the login kick, the two a player is likeliest to have seen. →
+  `ByteBufCodecs.java:337-379`, `ClientboundStatusResponsePacket.java:16-17`,
+  `ClientboundLoginDisconnectPacket.java:18-19`.
+- **The kick stall is not `Connection.disconnect`.** The page said `/kick` and
+  the ban commands call it from the game thread and wait. They call
+  `ServerCommonPacketListenerImpl.disconnect`, which defers
+  `Connection.disconnect` to a `PacketSendListener.thenRun` callback on the
+  event loop; what blocks the game thread is the next line,
+  `MinecraftServer.executeBlocking(connection::handleDisconnection)`. The
+  answer survives, the mechanism did not. →
+  `ServerCommonPacketListenerImpl.java:189-199`, `KickCommand.java:43`.
+
+Two more punchlines fell. `Entity.broadcastToPlayer` was described as "the
+per-entity veto a few types use to hide from some viewers"; it has **exactly
+one** override in the corpus, `ServerPlayer`'s spectator rule
+(`ServerPlayer.java:1293`) — a mechanism the game does not have as described.
+And *what the client is told*'s four ungated feeds are ungated only past
+**gate 3**: all four are inside `ServerEntity.sendChanges`, which gate 2
+decides whether to call, so the "knockback is instant" answer fails for
+exactly the distant mob its question is about — and the page's own figure
+(`SC --> FREE`) had this right while the prose did not.
+
+**The session's named item, "the seven handlers that never hop", was wrong in
+three different ways at once**, and no agent got it right either. Session A
+had renamed `threads.md`'s heading eight → seven and not grepped, so both
+Part IX pages linked a dead anchor (`#the-eight-…`) and still said *eight*.
+One agent re-derived *eight* by counting
+`ClientPacketListener.handleCustomPayload(CustomPacketPayload)`, which is not
+a packet handler at all — `ClientCommonPacketListenerImpl` hops first and
+dispatches to it after (`:163-174`), so the unknown-payload fallback, which
+*the-connection* used as its example of a never-hopping handler, runs on the
+main thread. Seven is right for the class file, but **nine** run on Netty on a
+client play listener: `handleKeepAlive` (`:150`) and `handleDisconnect`
+(`:362`) are inherited from `ClientCommonPacketListenerImpl`, unoverridden,
+and are the two that matter — a keep-alive is answered without the game thread
+being involved. `threads.md`, `the-connection.md` and
+`what-the-client-is-told.md` all corrected, with two new rows in the Reference
+table.
+
+Addition 2 done in full: `check_deps.py` green for Part IX, all six *before
+you start* entries used by a real sentence, and the fifteen cross-part links
+it lists as unlisted all judged parenthetical rather than prerequisite — no
+missing arrow. One order claim struck instead: the landing page said *what the
+client is told* and *chat and signing* "both assume three", and **neither page
+mentions the phase machinery at all** — `chat-and-signing.md` never uses the
+word *phase*. Two landing-page claims fell with their pages: the opening's
+"chat message that arrives with a red line through it" (the mark is a 2-px
+**grey** bar down the left edge, `GuiMessageTag.java:19-23`,
+`ChatComponent.java:193`; the only red is the sender's own error line), and
+"the player object built after the phase named for preparing it" — the phase
+is `CONFIGURATION`, the *task* is `prepare_spawn`. `lectures.md` carried the
+same two and was fixed with it.
+
+**No tool bug — the fourth such session.** Instead the agents were wrong twice
+(the never-hop count above, and one report calling the landing page's
+`PP → WCT` arrow unverifiable when the honest verdict is that it is
+editorial), and the *page* was right against an agent once: the red line to
+the sender on a signature failure is real —
+`ServerGamePacketListenerImpl.handleMessageDecodeFailure` sends the decode
+exception's component in `ChatFormatting.RED` (`:1756-1759`).
+
+### Corrections, page by page
+
+- **`networking/README.md`** — red line through chat → grey bar down its left
+  edge; "the other three all ride the wire" against the page's own next
+  paragraph saying *protocol phases* **is** the wire; "the two systems with
+  the most traffic" (chat is a few packets a minute against chunk and entity
+  tracking); "three of this part's claims" enumerating two; "the phase named
+  for preparing it" → the configuration task; "an adversary in the diagram" →
+  neither of the page's figures has one, it is the threat model; "both assume
+  three" struck.
+- **`the-connection.md`** — figure note 7's pipeline order; the never-hop
+  example and count; `makeReportedException`/`fillCrashReport` division of
+  labour (both steps are in `fillCrashReport`, `PacketUtils.java:43-58`);
+  `HandlerNames` called "complete and correct" when it has no *hackfix* and
+  carries an unused `LATENCY`; `ServerStatusPinger` "asks for a group" (it is
+  handed one, `ServerSelectionList.java:231`); "everything else is identical"
+  on the memory pipeline (`LatencySimulator` exists only there);
+  `Minecraft.runTick` ticks the pending connection → `Minecraft.tick`
+  (`:2066-2068`, tick rate, not frame rate); `SkipPacketException` "the one
+  exception class" → an empty interface with two implementors;
+  `Connection.setReadOnly` "then" → immediately, on both branches;
+  `LATENCY_CHECK_INTERVAL` cited as used when it is referenced nowhere
+  (`:127` uses the literal); "the only thing `Connection` does with a
+  `ConnectionProtocol`", self-contradicted twice on the same page; the kick
+  stall.
+- **`packets-and-stream-codecs.md`** — two shapes of packet class → three (the
+  `StreamCodec.unit` singleton, fourteen of them); "does every byte of the
+  work", contradicted by the page's own L221; the NBT entry points and the two
+  JSON packets; "a hundred" `FriendlyByteBuf` methods → over 150; "a class-load
+  failure" → a bind-time failure, which for play is the first connection's
+  switch, as the page says twenty lines earlier; `BundlerInfo.Bundler` "the
+  logic" → half of it is `BundlerInfo.unbundlePacket`; the untrusted stack
+  codec's comparand is `ItemStack.OPTIONAL_STREAM_CODEC`; "five codec tables
+  become five languages one connection speaks in turn" → **nine** tables (one
+  per direction per phase, bar handshaking) and **four** languages, since
+  `ClientIntent` branches status away from login at the handshake.
+- **`protocol-phases.md`** — "its own listener on both ends" (handshaking has
+  no clientbound protocol); "every one of those refusals first installs the
+  login clientbound protocol" — the status refusal installs *status* and sends
+  **no packet at all** (`ServerHandshakePacketListenerImpl.java:36-41`); the
+  state-machine note's "two tick transitions" against three drawn arrows and a
+  fourth thing `tick` does, the 600-tick slow-login timeout (`:86-88`); "the
+  other four are a `SimpleUnboundProtocol`" → eight; `getIntendedProfileId`
+  "nothing in vanilla sets" → set in `ServerConnectionListener.acceptChannel`,
+  which nothing in the tree calls; "every pack the resource manager has" →
+  only those declaring a `KnownPack` (`PackLocationInfo.knownPackInfo` is an
+  optional); the tags packet "covering all registries" → the networkable ones
+  plus static, empties dropped; "three of the server's configuration handlers
+  hop" → four, the fourth `handleCustomClickAction`; `spawnPlayer` "loads the
+  save data, constructs the `ServerPlayer`" → constructs first, loads into it
+  (`PrepareSpawnTask.java:229,235-240`); "at the top of the finish handler" →
+  a line into it.
+- **`what-the-client-is-told.md`** — `broadcastToPlayer`; "two exceptions and
+  one refusal" → three and two (`LeashFenceKnotEntity`, `EnderDragonPart`);
+  "a dozen classes" set `needsSync` → a couple of dozen;
+  `FORCED_POS_UPDATE_PERIOD` "gated calls" → every call, contradicting the
+  page's own prose; the four feeds' gating; the passenger filter, which
+  **excludes** the player who mounted rather than telling them "from their own
+  point of view" (`ServerEntity.java:97-99`, `ServerPlayer.java:2265,2288`);
+  "equipment does not pass through `ServerEntity` at all" → equipment
+  *changes* do not, the pairing bundle's equipment packet is built by
+  `ServerEntity` (`:333-349`); "all on `ServerLevel`" → time is
+  `MinecraftServer`'s and view distances are `PlayerList`'s; the opening ask
+  of 3.5 chunks a tick is never sent, because the client folds the first real
+  batch in before answering; the figure's four-conjunct relative-move label
+  (five, `!wasRiding` missing); the never-hop count and anchor.
+- **`chat-and-signing.md`** — "vanilla never sends one", three times; "every
+  unpack throws *chain broken*" → missing-key and expired-key throw first;
+  "gated in three places" naming two per-recipient gates and a pre-loop type
+  choice (the third is `ServerPlayer.shouldFilterMessageTo`); the
+  `enforceSecureProfile` row, which governs only the pre-session decoder;
+  `applyOffset`'s ceiling (tracked minus the window, and a negative offset is
+  rejected too); the trust level's unsigned copy; the delete packet "deferred
+  if the message is too fresh" → it drops the line from the player's own
+  *chatDelay* queue; the cast table's thread column (the chat-visibility
+  refusal is decided on Netty); `onlyShowSecureChat` runs **before**
+  `isBlocked`, not after.
+- **`reference/threads.md`** — the seven/nine handlers, with
+  `handleKeepAlive` and `handleDisconnect` added as rows.
+- **`lectures.md`** — the two landing-page claims it repeated.
+
 ## Session H — Part VIII The player (pass 4) *(2026-09-04)*
 
 Seven pages and the landing page, eight agents; **every one had at least one
@@ -2028,13 +2199,13 @@ but nine claims around it did not.
   seven later parts assume the tick pair (IV, V, VI, VII, VIII, IX, XIII),
   and Part III is the earliest of the six other parts that lean on the
   environment page (III, VI, IX, X, XI, XII).
-- **Rejected after re-derivation**: the agent called
-  `networking/protocol-phases` a missing dependency because the page "uses
-  phase vocabulary undefined here". It does not — *phase* appears on
-  `players-and-sessions` only in the cast row and in the hand-off paragraph
-  itself, which says outright "this page starts where that one hands over".
-  That is the pointer shape session A ruled belongs outside *before you
-  start*.
+- ~~**Rejected after re-derivation**: the agent called~~
+  ~~`networking/protocol-phases` a missing dependency because the page "uses~~
+  ~~phase vocabulary undefined here". It does not — *phase* appears on~~
+  ~~`players-and-sessions` only in the cast row and in the hand-off paragraph~~
+  ~~itself, which says outright "this page starts where that one hands over".~~
+  ~~That is the pointer shape session A ruled belongs outside *before you~~
+  ~~start*.~~
 
 ### The tool bug — the sixth of pass 4
 
@@ -2050,22 +2221,22 @@ four. Fixed: a unit split out of a struck parent inherits the strike.
 
 ### For other parts' sessions
 
-- **Part IX** — `protocol-phases` owns the login and configuration handlers
-  this part hands to. Nothing found here contradicts it, but session I
-  should know that `handleChat` and both chat-command packets are *not*
-  `ensureRunningOnSameThread` handlers, which is a claim about the phase's
-  thread discipline.
+- ~~**Part IX** — `protocol-phases` owns the login and configuration handlers~~
+  ~~this part hands to. Nothing found here contradicts it, but session I~~
+  ~~should know that `handleChat` and both chat-command packets are *not*~~
+  ~~`ensureRunningOnSameThread` handlers, which is a claim about the phase's~~
+  ~~thread discipline.~~
 - **Reference** — `reference/threads.md` marks RCON and query **non-daemon**
   and is right, but says nothing about `Util.ioPool`'s *IO-Worker* threads
   being non-daemon too, which is what makes "no non-daemon thread is left"
   depend on `Util.shutdownExecutors`. A completeness gap, not an error; for
   session O.
-- **The plan's session C line** said "the four-path comparison in
-  `players-and-sessions` against authlib". Those are two different things:
-  the four paths are join, death, dimension and disconnect and have no
-  authlib in them, and the page's only authlib surface is `GameProfile` (the
-  session-server round trip belongs to Part IX's `protocol-phases`). The
-  standing *library facts* item should name Part IX for that, not this page.
+- ~~**The plan's session C line** said "the four-path comparison in~~
+  ~~`players-and-sessions` against authlib". Those are two different things:~~
+  ~~the four paths are join, death, dimension and disconnect and have no~~
+  ~~authlib in them, and the page's only authlib surface is `GameProfile` (the~~
+  ~~session-server round trip belongs to Part IX's `protocol-phases`). The~~
+  ~~standing *library facts* item should name Part IX for that, not this page.~~
 
 ## Session B — Part I Anatomy · Part II Foundations (pass 4) *(2026-09-04)*
 
@@ -2774,8 +2945,8 @@ of it is *verified finding, unactioned*, not *unchecked*.
 
 ### For other parts' sessions
 
-- **Part IX** — `plan.md`'s session I line says "the eight handlers that never
-  hop"; it is seven (above).
+- ~~**Part IX** — `plan.md`'s session I line says "the eight handlers that never~~
+  ~~hop"; it is seven (above).~~
 - **Part VI** — `authority.md:27` says `Player` overrides "three of the four"
   predicates; it overrides four
   (`Player.java:1254,1259,1268,1273`), and the glossary's "four predicates"
@@ -3258,15 +3429,15 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
 
 **Claims introduced, check first.**
 
-- `threads.md`, *The eight client handlers that never hop*: "In
-  `ClientPacketListener` 115 handlers do that and eight do not" — counted by
-  splitting the class at every `public void handle…(` and testing each body
-  for `ensureRunningOnSameThread`; re-derive, and check the common
-  listener's thirteen handlers are correctly excluded (`handlePing` hops;
-  `the-connection` used to say the ping reply ran on Netty and was corrected
-  to *the pong bookkeeping*). Every row's "what it does" is one method body
-  read once; `handleLowDiskSpaceWarning` → `Minecraft.sendLowDiskSpaceWarning`
-  → `Minecraft.execute` is the row that makes a claim about a second class.
+- ~~`threads.md`, *The eight client handlers that never hop*: "In~~
+  ~~`ClientPacketListener` 115 handlers do that and eight do not" — counted by~~
+  ~~splitting the class at every `public void handle…(` and testing each body~~
+  ~~for `ensureRunningOnSameThread`; re-derive, and check the common~~
+  ~~listener's thirteen handlers are correctly excluded (`handlePing` hops;~~
+  ~~`the-connection` used to say the ping reply ran on Netty and was corrected~~
+  ~~to *the pong bookkeeping*). Every row's "what it does" is one method body~~
+  ~~read once; `handleLowDiskSpaceWarning` → `Minecraft.sendLowDiskSpaceWarning`~~
+  ~~→ `Minecraft.execute` is the row that makes a claim about a second class.~~
 - `math-and-primitives.md`, the coordinate-spaces figure: every edge is a
   named method and every shift count is a claim — `ChunkPos.containing`
   shift 4, `QuartPos.fromBlock` shift 2, `ChunkPos.getRegionX` shift 5 (the
@@ -4483,29 +4654,29 @@ graph — seventeen edges, each a conversion claim); one added
     `DistanceManager.runAllUpdates`) and that the crescents are marked
     before `runAllUpdates`. The two decision tables restate pass-2 facts;
     check each row's gate column as an "only" claim.
-  - **`protocol-phases`** (state-machine shape). Claims introduced: the
-    five-phase diagram — `STATUS` is a dead end, `PLAY` ⇄ `CONFIGURATION`,
-    "every transition packet is terminal" (the seven `isTerminal`
-    overrides are exactly the seven transition packets: intention, login
-    finished, login acknowledged, finish configuration ×2, start
-    configuration, configuration acknowledged); the login state diagram —
-    `HELLO → KEY` only for online mode over a socket, `HELLO → VERIFYING`
-    for the singleplayer profile or offline mode, `KEY → AUTHENTICATING` on
-    the key packet, `AUTHENTICATING → VERIFYING` from the thread,
-    `VERIFYING → WAITING_FOR_DUPE_DISCONNECT | PROTOCOL_SWITCHING` and
-    `WAITING → PROTOCOL_SWITCHING` in `tick`, `PROTOCOL_SWITCHING →
-    ACCEPTED` on the acknowledgement, `NEGOTIATING` never assigned (all read
-    from the state assignments this session); the three-lane handshake
-    sequence (joinServer before the key packet; ciphers attached to the
-    send; the server installs ciphers before its own session call); the
-    configuration flowchart (registries → code of conduct → resource pack →
-    prepare spawn → join world; the finish handler does outbound play, the
-    duplicate check, `canPlayerLogin`, then `spawnPlayer` — read from
-    `handleConfigurationFinished`); the two "what disconnects a …"
-    paragraphs are new syntheses of old facts; "the first
-    `PacketUtils.ensureRunningOnSameThread` in a connection's life is in
-    configuration" is borrowed from `anatomy`. The three client entry
-    points sentence is the old *Called by* bullet, kept.
+  - ~~**`protocol-phases`** (state-machine shape). Claims introduced: the~~
+    ~~five-phase diagram — `STATUS` is a dead end, `PLAY` ⇄ `CONFIGURATION`,~~
+    ~~"every transition packet is terminal" (the seven `isTerminal`~~
+    ~~overrides are exactly the seven transition packets: intention, login~~
+    ~~finished, login acknowledged, finish configuration ×2, start~~
+    ~~configuration, configuration acknowledged); the login state diagram —~~
+    ~~`HELLO → KEY` only for online mode over a socket, `HELLO → VERIFYING`~~
+    ~~for the singleplayer profile or offline mode, `KEY → AUTHENTICATING` on~~
+    ~~the key packet, `AUTHENTICATING → VERIFYING` from the thread,~~
+    ~~`VERIFYING → WAITING_FOR_DUPE_DISCONNECT | PROTOCOL_SWITCHING` and~~
+    ~~`WAITING → PROTOCOL_SWITCHING` in `tick`, `PROTOCOL_SWITCHING →~~
+    ~~ACCEPTED` on the acknowledgement, `NEGOTIATING` never assigned (all read~~
+    ~~from the state assignments this session); the three-lane handshake~~
+    ~~sequence (joinServer before the key packet; ciphers attached to the~~
+    ~~send; the server installs ciphers before its own session call); the~~
+    ~~configuration flowchart (registries → code of conduct → resource pack →~~
+    ~~prepare spawn → join world; the finish handler does outbound play, the~~
+    ~~duplicate check, `canPlayerLogin`, then `spawnPlayer` — read from~~
+    ~~`handleConfigurationFinished`); the two "what disconnects a …"~~
+    ~~paragraphs are new syntheses of old facts; "the first~~
+    ~~`PacketUtils.ensureRunningOnSameThread` in a connection's life is in~~
+    ~~configuration" is borrowed from `anatomy`. The three client entry~~
+    ~~points sentence is the old *Called by* bullet, kept.~~
   - **`introduction`** (new): "just under a third client-only" (2,206 of
     7,055, from `maps/packages.md` and `server-classes.txt`); "0 to 10
     ticks inside a frame" (from `the-frame`); the two-programs figure
@@ -4909,79 +5080,79 @@ graph — seventeen edges, each a conversion claim); one added
   the spear have an internal order, that Part VIII depends on Part VI's
   authority above everything, and that the spear needs `using-an-item`.~~
 
-- **2026-09-03, pass 3 session J — Part IX Networking.** Four of the five
-  pages rewritten (`the-connection` 550→442, `packets-and-stream-codecs`
-  448→449, `what-the-client-is-told` 546→461, `chat-and-signing` 365→316);
-  `src/systems/networking/README.md` new; `protocol-phases` unchanged except
-  three sentences of hand-off links. All five diagrams below are new or
-  redrawn.
+- ~~**2026-09-03, pass 3 session J — Part IX Networking.** Four of the five~~
+  ~~pages rewritten (`the-connection` 550→442, `packets-and-stream-codecs`~~
+  ~~448→449, `what-the-client-is-told` 546→461, `chat-and-signing` 365→316);~~
+  ~~`src/systems/networking/README.md` new; `protocol-phases` unchanged except~~
+  ~~three sentences of hand-off links. All five diagrams below are new or~~
+  ~~redrawn.~~
 
-  **Two of the four pages have no list of introduced claims, and pass 4 must
-  treat them as unlisted.** The drafting agents for
-  `packets-and-stream-codecs` and `chat-and-signing` both finished writing
-  and then died on a rate limit before reporting, so the session accepted
-  two finished pages without the claim-by-claim diff the protocol requires.
-  The session's own checks passed on them (names, lanes, mermaid, budgets,
-  shape) and it spot-checked four load-bearing claims by hand —
-  `detectRateSpam`'s operator and singleplayer-host exemptions, the 4,096
-  pending-message disconnect threshold, the id-is-a-registration-position
-  hook, and the *three ways to say no* branch — but **the other pages'
-  guarantee that every reworded sentence was diffed against pass 2's text
-  does not hold for these two.** Re-check them whole, at the sentence level,
-  against `git show b597a2a~1:src/systems/networking/<page>.md`.
-  `chat-and-signing` is the higher risk of the two: it is a security page,
-  its central artefact is a new eighteen-row table of *which failure kills
-  the message, the chain, or the connection*, and every row is a claim about
-  a specific outcome that pass 2 never stated in that form.
+  ~~**Two of the four pages have no list of introduced claims, and pass 4 must~~
+  ~~treat them as unlisted.** The drafting agents for~~
+  ~~`packets-and-stream-codecs` and `chat-and-signing` both finished writing~~
+  ~~and then died on a rate limit before reporting, so the session accepted~~
+  ~~two finished pages without the claim-by-claim diff the protocol requires.~~
+  ~~The session's own checks passed on them (names, lanes, mermaid, budgets,~~
+  ~~shape) and it spot-checked four load-bearing claims by hand —~~
+  ~~`detectRateSpam`'s operator and singleplayer-host exemptions, the 4,096~~
+  ~~pending-message disconnect threshold, the id-is-a-registration-position~~
+  ~~hook, and the *three ways to say no* branch — but **the other pages'~~
+  ~~guarantee that every reworded sentence was diffed against pass 2's text~~
+  ~~does not hold for these two.** Re-check them whole, at the sentence level,~~
+  ~~against `git show b597a2a~1:src/systems/networking/<page>.md`.~~
+  ~~`chat-and-signing` is the higher risk of the two: it is a security page,~~
+  ~~its central artefact is a new eighteen-row table of *which failure kills~~
+  ~~the message, the chain, or the connection*, and every row is a claim about~~
+  ~~a specific outcome that pass 2 never stated in that form.~~
 
-  **Claims introduced in `the-connection`, listed by its agent with cites.**
-  A handler touching no game state omits `PacketUtils.ensureRunningOnSameThread`
-  and runs on Netty (`handlePong` and `handleCustomPayload` are empty bodies
-  — the session verified this one). The `PacketProcessor` queue is unbounded
-  and each drain empties it (verified). The client's handling latency is a
-  frame, not a tick — the borrowed fact restated as this page's consequence.
-  The singleplayer host has neither the read timeout nor the keep-alive
-  running against it — a *composition* of two old-page facts and therefore
-  the one to re-derive. And the diagram's note that there is one encoder and
-  one decoder instance at each end.
+  ~~**Claims introduced in `the-connection`, listed by its agent with cites.**~~
+  ~~A handler touching no game state omits `PacketUtils.ensureRunningOnSameThread`~~
+  ~~and runs on Netty (`handlePong` and `handleCustomPayload` are empty bodies~~
+  ~~— the session verified this one). The `PacketProcessor` queue is unbounded~~
+  ~~and each drain empties it (verified). The client's handling latency is a~~
+  ~~frame, not a tick — the borrowed fact restated as this page's consequence.~~
+  ~~The singleplayer host has neither the read timeout nor the keep-alive~~
+  ~~running against it — a *composition* of two old-page facts and therefore~~
+  ~~the one to re-derive. And the diagram's note that there is one encoder and~~
+  ~~one decoder instance at each end.~~
 
-  **Claims introduced in `what-the-client-is-told`, listed by its agent.**
-  That the cascade is three gates and each is a three-term test (a
-  conjunction, then two disjunctions) — a synthesis across `ChunkMap` and
-  `ServerEntity`, and the assertion the new flowchart rests on, so it is the
-  first thing to check. `PlayerChunkSender.START_CHUNKS_PER_TICK` and
-  `MAX_UNACKNOWLEDGED_BATCHES` named as the constants behind "nine" and
-  "ten". Two `ChunkBatchSizeCalculator` constants attached to the clamp and
-  the weighted mean. That the forced absolute sync is rarer than the forced
-  position packet by however long the interval gate stays shut — an
-  inference from two counters, one inside the gate and one outside. That the
-  passenger-list packet is the filtered one, so a mounting player is told
-  from their own point of view. And that equipment, passengers and leash
-  links appear in the pairing bundle only when non-empty.
+  ~~**Claims introduced in `what-the-client-is-told`, listed by its agent.**~~
+  ~~That the cascade is three gates and each is a three-term test (a~~
+  ~~conjunction, then two disjunctions) — a synthesis across `ChunkMap` and~~
+  ~~`ServerEntity`, and the assertion the new flowchart rests on, so it is the~~
+  ~~first thing to check. `PlayerChunkSender.START_CHUNKS_PER_TICK` and~~
+  ~~`MAX_UNACKNOWLEDGED_BATCHES` named as the constants behind "nine" and~~
+  ~~"ten". Two `ChunkBatchSizeCalculator` constants attached to the clamp and~~
+  ~~the weighted mean. That the forced absolute sync is rarer than the forced~~
+  ~~position packet by however long the interval gate stays shut — an~~
+  ~~inference from two counters, one inside the gate and one outside. That the~~
+  ~~passenger-list packet is the filtered one, so a mounting player is told~~
+  ~~from their own point of view. And that equipment, passengers and leash~~
+  ~~links appear in the pairing bundle only when non-empty.~~
 
-  **The diagrams.** New: the round-trip sequence in `the-connection` (six
-  lanes, four thread boundaries marked, the reply returning to a second
-  drain — the pair's whole reason to exist, and every arrow an ordering
-  claim); the gate flowchart in `what-the-client-is-told`; the codec
-  composition flowchart in `packets-and-stream-codecs` (which asserts that
-  nothing above the `ProtocolInfoBuilder.addPacket` line knows about ids and
-  nothing below it knows about chat); the *three ways to say no* flowchart in
-  `chat-and-signing`; the part-shape flowchart on the landing page. Trimmed:
-  the pairing-bundle sequence, which is all that survives of
-  `what-the-client-is-told`'s old trace.
+  ~~**The diagrams.** New: the round-trip sequence in `the-connection` (six~~
+  ~~lanes, four thread boundaries marked, the reply returning to a second~~
+  ~~drain — the pair's whole reason to exist, and every arrow an ordering~~
+  ~~claim); the gate flowchart in `what-the-client-is-told`; the codec~~
+  ~~composition flowchart in `packets-and-stream-codecs` (which asserts that~~
+  ~~nothing above the `ProtocolInfoBuilder.addPacket` line knows about ids and~~
+  ~~nothing below it knows about chat); the *three ways to say no* flowchart in~~
+  ~~`chat-and-signing`; the part-shape flowchart on the landing page. Trimmed:~~
+  ~~the pairing-bundle sequence, which is all that survives of~~
+  ~~`what-the-client-is-told`'s old trace.~~
 
-  **Claims deleted rather than rewritten.** `what-the-client-is-told` lost
-  its whole client half to Part X (the list is in [pass3.md](pass3.md) for
-  session K). Check that nothing true was lost in that deletion and that the
-  surviving one-paragraph hand-off agrees with `the-client-level` and
-  `prediction-and-acks` once session K has been over them.
+  ~~**Claims deleted rather than rewritten.** `what-the-client-is-told` lost~~
+  ~~its whole client half to Part X (the list is in [pass3.md](pass3.md) for~~
+  ~~session K). Check that nothing true was lost in that deletion and that the~~
+  ~~surviving one-paragraph hand-off agrees with `the-client-level` and~~
+  ~~`prediction-and-acks` once session K has been over them.~~
 
-  **The landing page and `lectures.md`** claim that the first two lectures
-  are one lecture in two halves, that lectures four and five are independent
-  of each other and both assume three, that Part IX assumes Part III and
-  Part I's two loops, and that Part IX is a prerequisite of Part X. Three
-  are orderings, which pass 2 found is where this corpus is most confidently
-  wrong.
+  ~~**The landing page and `lectures.md`** claim that the first two lectures~~
+  ~~are one lecture in two halves, that lectures four and five are independent~~
+  ~~of each other and both assume three, that Part IX assumes Part III and~~
+  ~~Part I's two loops, and that Part IX is a prerequisite of Part X. Three~~
+  ~~are orderings, which pass 2 found is where this corpus is most confidently~~
+  ~~wrong.~~
 
 - **2026-09-03, pass 3 session K — Part X The client.** Twelve pages
   rewritten in shape, one page split into two, one landing page and one

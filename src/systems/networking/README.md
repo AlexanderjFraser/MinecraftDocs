@@ -9,15 +9,15 @@ through an in-memory channel — so the split is not a multiplayer feature
 bolted on the side, it is the shape of the program. A player recognises the
 part by its failures: the rubber-band after a laggy jump, the block that
 comes back, the *Connection lost* screen with a reason string on it, the
-chat message that arrives with a red line through it.
+chat message that arrives with a grey bar down its left edge.
 
 ## The shape of the part
 
 Part IX is **one wire and three passengers**. Two lectures carry bytes and
 are really one lecture in two halves — the transport, then what travels on
-it. The other three are unrelated systems that all happen to ride the wire,
-and each has a different shape: a state machine, a policy, and a protocol
-with an adversary in it.
+it. The other three are unrelated systems the wire carries or is, and each
+has a different shape: a state machine, a policy, and a protocol written
+against an adversary.
 
 ```mermaid
 flowchart TD
@@ -35,13 +35,15 @@ flowchart TD
 The spine is the pair at the top: read them together and the rest of the
 part is applications. *Protocol phases* is what the wire *is* over the life
 of a connection; *what the client is told* and *chat and signing* are the
-two systems with the most traffic on it, and neither needs the other.
+two the part spends longest on, and neither needs the other. They are not
+the same size of traffic: entity tracking and chunk sending are most of
+what a connection ever carries, and chat is a few packets a minute.
 
 ## Before you start
 
-[Part III](../server/README.md), and not optionally. Three of this part's
+[Part III](../server/README.md), and not optionally. Two of this part's
 claims are really facts about somebody else's loop, and Part IX states the
-consequence and links rather than teaching them a fourth time: [the server
+consequence and links rather than teaching them a third time: [the server
 tick](../server/server-tick.md) owns what happens after every level has
 ticked, and [the level tick](../server/server-level-tick.md) owns the phase
 in which broadcasts go out — before the entity phase, which is why one
@@ -74,16 +76,19 @@ the truth, it sends the client what it is not allowed to be wrong about.
    you have watched it travel.
 3. [Protocol phases](protocol-phases.md) — a login, from clicking a server
    in the list to standing in the world. Four languages over one socket, and
-   the player object built *after* the phase named for preparing it.
+   the player object built *after* the configuration task named for
+   preparing it has reported itself finished.
 4. [What the client is told](what-the-client-is-told.md) — a creeper walks
    into view. Not a trace but a policy: every gate a change passes before it
    becomes a packet, and the things the server decides never to say.
 5. [Chat and signing](chat-and-signing.md) — the part's closer, and the only
-   system in the book with an adversary in the diagram. What each check
+   system in the book designed against an adversary. What each check
    catches, and whether it kills the message, the chain, or the connection.
 
 One and two are the pair to keep together. Four and five can be watched in
-either order, and both assume three.
+either order, and neither strictly needs three: they are applications of the
+play phase and never name the phase machinery. Three comes first because it
+is where the wire's own story ends.
 
 ## Reference this part uses
 

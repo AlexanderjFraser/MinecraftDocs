@@ -69,14 +69,19 @@ not terminal.
 `PacketFlow.CLIENTBOUND`, with `PacketFlow.getOpposite` and
 `PacketFlow.id`.
 
-Two shapes of packet class coexist in the tree. The modern one is a record
+Three shapes of packet class coexist in the tree, and two of them carry the
+argument. The modern one is a record
 whose *STREAM_CODEC* is a `StreamCodec.composite` naming each component's
 codec and accessor — `ClientboundSystemChatPacket` is one. The older one is
 a plain class with a private buffer constructor and a private write method,
 joined into a codec by `Packet.codec`; `ServerboundSwingPacket`,
 `ClientboundKeepAlivePacket` and `ClientboundSetHealthPacket` are these,
-and `StreamMemberEncoder` exists solely so that second form can bind a
-member reference as its encoder half.
+and `StreamMemberEncoder` exists chiefly so that second form can bind a
+member reference as its encoder half — `CustomPacketPayload` is its one
+other client. The third shape is the one with no fields to serialise at all:
+a singleton whose codec is `StreamCodec.unit`, fourteen of them, of which
+`ServerboundFinishConfigurationPacket` is the one this part's login trace
+turns on.
 
 ## From two fields to a numbered blob
 
@@ -120,8 +125,9 @@ ciphers and the later hop to the game thread are
 
 ## The codec layer is small, and composition is all of it
 
-`net/minecraft/network/codec` is a handful of files and does every byte of
-the work. `StreamCodec` is one interface extending `StreamEncoder` and
+`net/minecraft/network/codec` is a handful of files and does all of the
+composing; the byte-level encodings themselves live outside it, in `VarInt`,
+`VarLong`, `Utf8String`, `LpVec3` and `FriendlyByteBuf`. `StreamCodec` is one interface extending `StreamEncoder` and
 `StreamDecoder`, so `StreamEncoder.encode` takes a buffer and a value and
 `StreamDecoder.decode` takes a buffer and returns one. It is deliberately
 *not* a `Codec`: a packet is written once, read once and must be small, so
@@ -164,9 +170,13 @@ absent and value-plus-one otherwise.
 The bridge to the disk-and-JSON codecs of Part II is
 `ByteBufCodecs.fromCodec` and its relatives, which run an ordinary `Codec`
 into a carrier format and put the result on the wire. The combinator
-underneath takes the ops as an argument and is format-agnostic, but all
-four public entry points pass the NBT ops, so in practice **a `Codec` on
-the wire means a compound tag**. Beneath it, `ByteBufCodecs.tagCodec` takes
+underneath takes the ops as an argument and is format-agnostic, and its six
+NBT entry points all pass `NbtOps`, so **a `Codec` on the wire almost always
+means a compound tag**. Almost: the combinator is public, and two packets
+call it with `JsonOps` and carry JSON strings instead — the server-list
+response, `ClientboundStatusResponsePacket`, and the login kick,
+`ClientboundLoginDisconnectPacket`. They are the two a player is likeliest
+to have seen. Beneath it, `ByteBufCodecs.tagCodec` takes
 an `NbtAccounter` supplier — which is exactly what *trusted* turns out to
 mean, below.
 
@@ -175,8 +185,10 @@ codecs: a list of serialisers, a type-to-int map, a var-int written in
 front and a delegation behind it. `IdDispatchCodec.DontDecorateException`
 is the marker meaning *rethrow me as I am, do not wrap me*, and
 `IdDispatchCodec.Builder.build` refuses a duplicate `PacketType` outright,
-so registering one type twice in a protocol is a class-load failure rather
-than a silently shadowed id.
+so registering one type twice in a protocol fails loudly rather than
+silently shadowing an id. Loudly, but not always early: the check runs when
+the template is bound, which for the four static phases is class-load and for
+play is the first connection's configuration-to-play switch.
 
 ## Which buffer, and why play needs its own
 
@@ -187,8 +199,8 @@ flowchart LR
     FBB --> RFBB["RegistryFriendlyByteBuf for play, adding one field, a RegistryAccess"]
 ```
 
-`FriendlyByteBuf` is a `ByteBuf` decorator carrying a hundred convenience
-readers and writers — `FriendlyByteBuf.readVarInt`,
+`FriendlyByteBuf` is a `ByteBuf` decorator carrying over a hundred and fifty
+convenience readers and writers — `FriendlyByteBuf.readVarInt`,
 `FriendlyByteBuf.writeUtf`, `FriendlyByteBuf.readIdentifier`,
 `FriendlyByteBuf.writeResourceKey`, `FriendlyByteBuf.readNbt`,
 `FriendlyByteBuf.readCollection`, `FriendlyByteBuf.readEnumSet`,
@@ -286,7 +298,9 @@ list, so a bundle on the wire is two empty markers with ordinary,
 individually numbered packets between them. `PacketBundleUnpacker` explodes
 an outgoing bundle into delimiter-packets-delimiter and
 `PacketBundlePacker` collects an incoming run back up; `BundlePacket` holds
-the sub-packets, `BundlerInfo.Bundler` the logic, and
+the sub-packets and `BundlerInfo` the logic, split between
+`BundlerInfo.unbundlePacket` outgoing and its nested `BundlerInfo.Bundler`
+incoming, with
 `BundlerInfo.BUNDLE_SIZE_LIMIT` caps a bundle at 4,096 sub-packets. Only
 the clientbound play protocol declares a bundle at all.
 
@@ -330,8 +344,9 @@ JSON](../foundations/codecs-nbt-json.md) has the serverbound half).
 
 **Exactly one packet lets a client hand the server an arbitrary item**, and
 it is fenced three ways. `ServerboundSetCreativeModeSlotPacket` uses
-`ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC`, which differs from the
-ordinary one only in using `DataComponentPatch.DELIMITED_STREAM_CODEC`:
+`ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC`, which differs from
+`ItemStack.OPTIONAL_STREAM_CODEC` only in using
+`DataComponentPatch.DELIMITED_STREAM_CODEC`:
 every component's payload is length-prefixed, and
 `ByteBufCodecs.lengthPrefixed` hands the inner codec a slice and advances
 the outer reader past the whole region before delegating, so a component
@@ -431,8 +446,9 @@ allocation. The hand-written shape is still in the tree, and
 
 Which packets a phase registers, and in what order, is therefore the whole
 definition of that phase — so the next page is [protocol
-phases](protocol-phases.md), where five codec tables become five languages
-one connection speaks in turn.
+phases](protocol-phases.md), where nine codec tables — one per direction per
+phase, bar handshaking's serverbound-only one — become the four languages a
+joining connection speaks in turn.
 
 ## Where to look
 

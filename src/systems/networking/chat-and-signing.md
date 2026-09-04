@@ -21,7 +21,7 @@ defended harder than the cryptography is**, and that is the right way round.
 
 | class | what it decides | thread |
 |---|---|---|
-| `ServerGamePacketListenerImpl` | the order the checks run in, and which failure closes the connection | Netty for the window and the characters, Server for everything after |
+| `ServerGamePacketListenerImpl` | the order the checks run in, and which failure closes the connection | Netty for the window, the characters and the chat-visibility refusal, Server for everything after |
 | `LastSeenMessagesValidator` | whether the client's twenty-slot acknowledgement still matches the server's mirror | Netty, inside a lock on itself |
 | `SignedMessageChain.Decoder` | whether this message continues the sender's chain — and whether the chain survives the answer | Server |
 | `PlayerChatMessage` | what a signature covers: the chain link, the content, the timestamp, the salt, the window | wherever a message is built |
@@ -37,12 +37,15 @@ where in the sender's chain it sits, a `MessageSignature`, a
 `SignedMessageBody` of exactly four fields, and — optionally — a `Component`
 to display *instead of* the signed string. That `Component` is Part II's
 subject ([text components](../foundations/text-components.md)); all this page
-needs from it is that it is a different object from the signed text, that the
-signature does not cover it, and that vanilla never sends one.
+needs from it is that it is a different object from the signed text and that
+the signature does not cover it. Vanilla's *decorator* never produces one:
 `MinecraftServer.getChatDecorator` is hard-coded to `ChatDecorator.PLAIN`, so
 `PlayerChatMessage.withUnsignedContent` always finds the decorated copy equal
-to the original and drops it. The entire decorate-and-display-something-else
-apparatus exists for servers that are not vanilla.
+to the original and drops it. But vanilla sends unsigned content by another
+road entirely — `MessageArgument.resolveChatMessage`, the message argument
+behind `/msg`, `/say` and `/tell`, sets it on every message it resolves,
+because it has expanded the entity selectors in the text. Type a selector into
+a whisper and the recipient sees a string the signature does not cover.
 
 ## One line, typed and delivered
 
@@ -91,7 +94,9 @@ delays delivery by however many ticks it takes
 future, decorates immediately and synchronously, and only then registers the
 continuation that joins the two. A decorator never sees filtered text.
 
-**Broadcast is per recipient, and gated in three places.**
+**Broadcast is per recipient, and gated in three places** — two before the
+message is built for that player, and `ServerPlayer.shouldFilterMessageTo`
+inside it.
 `PlayerList.broadcastChatMessage` logs the line — marked *Not Secure* by
 `PlayerList.verifyChatTrusted` if it has no signature or has expired — and
 then offers it to every player without testing anything. `ServerPlayer` drops
@@ -122,8 +127,9 @@ in the next section lands on exactly one of them.
 The **message** dies alone: it is dropped, the sender usually gets a red
 system line explaining why, and the next thing they send is judged on its own
 merits. The **chain** dies for the session: `SignedMessageChain` clears the
-link it was going to advance, and from then on every unpack throws *chain
-broken* — not to break the chain but *because* it is already broken. Only a
+link it was going to advance, and from then on no unpack can succeed — the
+*chain broken* error if the message is otherwise well-formed, and a missing-key
+or expired-key error before that if it is not. Only a
 new session key, announced with `ServerboundChatSessionUpdatePacket`, restores
 it. The **connection** dies immediately, and the player is back at the
 multiplayer list.
@@ -142,7 +148,7 @@ client can.
 | `LastSeenMessages.Update.verifyChecksum` | the two sides holding different signatures in slots whose bits agree — a desync the crypto would otherwise report as a bad signature | **connection**, unless the client sent `LastSeenMessages.Update.IGNORE_CHECKSUM` |
 | `ServerGamePacketListenerImpl.isChatMessageIllegal`, over `StringUtil.isAllowedChatCharacter` | section signs and control characters — formatting injected into everyone else's chat | **connection** |
 | `ServerPlayer.getChatVisibility`, non-commands only | a player who turned chat off and sent a line anyway | **message**, with a red *chat.disabled.options* back to the sender |
-| `SignedMessageChain.Decoder.unpack`, no signature present | an unsigned message where `MinecraftServer.enforceSecureProfile` demands one | **message** |
+| `SignedMessageChain.Decoder.unpack`, no signature present | an unsigned message once a chat session exists — unconditionally, whatever `MinecraftServer.enforceSecureProfile` says, which governs only the decoder used before one does | **message** |
 | the same, `ProfilePublicKey.Data.hasExpired` | a session key past its expiry still being used to sign | **message** |
 | the same, a timestamp before the last accepted one | a replayed or reordered message from this sender | **chain** |
 | the same, `PlayerChatMessage.verify` | content, timestamp, salt or window that do not match the signature — a forgery, or a proxy editing text in flight | **chain** |
@@ -179,7 +185,8 @@ is wrong.
 So the game ends the connection at the first sign of that divergence, and
 `LastSeenMessagesValidator` is written to be suspicious. It rejects an
 acknowledgement of a slot it does not hold, an *un*-acknowledgement of a slot
-it already acknowledged, an offset larger than the number of messages it has
+it already acknowledged, a negative offset, an offset larger than the number
+of tracked messages outside the window it has
 actually sent, and a bit set wider than the window; a checksum mismatch on top
 of all that says *the client and server must have desynced* in as many words.
 
@@ -209,12 +216,13 @@ That gap is what `ChatTrustLevel` exists to expose, and it tests for it
 crudely on purpose. `ChatTrustLevel.evaluate` calls a message *modified* the
 moment the rendered string does not **contain** the signed string — the limb
 that catches a server rewriting what someone said. Only if that passes does it
-look at style, and only inside the unsigned copy, which vanilla never sends. A
+look at style, and only inside the unsigned copy — which vanilla does send,
+for any command message carrying a selector. A
 message with no signature at all, or one older than seven minutes, is *not
 secure* instead. The tag is normally all that happens; with
 `Options.onlyShowSecureChat` on, a not-secure message is discarded rather than
-drawn, and `Minecraft.isBlocked` and `Minecraft.isFriendOnlyRestricted` can
-swallow it before that.
+drawn — that test runs first, and `Minecraft.isBlocked` and
+`Minecraft.isFriendOnlyRestricted` can swallow what survives it.
 
 The session key is signed one level up. `ProfilePublicKey.Data` carries an
 expiry, the public key and a signature over the profile id, the expiry **in
@@ -261,8 +269,9 @@ decorates. A player's own lines on an integrated server skip both tests and
 are secure by definition.
 
 **Can a server delete a message from my chat?** It has the packet for it:
-`ClientboundDeleteChatPacket` is registered, handled, and even deferred if the
-message is too fresh to vanish silently. Nothing in the game constructs it.
+`ClientboundDeleteChatPacket` is registered and handled, and the handler will
+pull the line out of the player's own chat-delay queue if their *chatDelay*
+option means it has not been drawn yet. Nothing in the game constructs it.
 
 **Why can I report some lines and not others?** `LoggedChatMessage.canReport`
 needs a signature from the player being reported, and system messages,

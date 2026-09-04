@@ -304,13 +304,14 @@ unrelated systems that ride the wire, and each has a different shape.
 3. [Protocol phases](systems/networking/protocol-phases.md) — a login, from
    clicking a server in the list to standing in the world. Four languages
    over one socket, and a `ServerPlayer` constructed *after* the client has
-   acknowledged that the phase named for preparing it is over.
+   acknowledged that configuration — the phase the task named for preparing it
+   runs in — is over.
 4. [What the client is told](systems/networking/what-the-client-is-told.md)
    — a creeper walks into view. A policy, not a trace: every gate a change
    passes before it becomes a packet, and the things the server chooses
    never to say at all.
 5. [Chat and signing](systems/networking/chat-and-signing.md) — the closer,
-   and the only lecture in the book with an adversary in the diagram. What
+   and the only lecture in the book designed against an adversary. What
    each check catches, and whether it kills the message, the chain, or the
    connection.
 
