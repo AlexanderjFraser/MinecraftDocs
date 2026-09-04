@@ -7,8 +7,8 @@ object; both tick it every twentieth of a second; both call the same
 `Entity.tick`. Only one of them works out where it goes. Standing next to
 the zombie is another player, and their copy is the other way up — and the
 boat you are sitting in is a third case again, authoritative on your machine
-and nowhere else. Four predicates on `Entity` decide all of it, and they
-invert the naive picture in **both** directions: **the client runs no physics
+and nowhere else. Five predicates on `Entity` — one of them final — decide
+all of it, and they invert the naive picture in **both** directions: **the client runs no physics
 at all for the mob chasing you, while the server runs your player's physics
 every tick and then overwrites the answer with a number your client sent.**
 
@@ -16,21 +16,21 @@ This is the single most error-prone idea in the entity part, and four other
 pages depend on it — [movement and collision](movement-and-collision.md)
 here, [input to movement](../player/input-to-movement.md) in Part VIII,
 [what the client is told](../networking/what-the-client-is-told.md) in Part
-IX, and [the client loop](../client/the-client-loop.md) in Part X. It is
-stated once, here.
+IX, and [the client level](../client/the-client-level.md) in Part X. It is
+stated in full once, here.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
 | `Entity` | the four predicates, and every gate inside `Entity.move` that reads them | both main threads |
-| `Player` | overrides three of the four, and is the reason the picture inverts | both |
-| `Mob` | narrows `Entity.isEffectiveAi` with `Mob.isNoAi` | server main |
+| `Player` | overrides four of the five, and is the reason the picture inverts | both |
+| `Mob` | narrows `Entity.isEffectiveAi` with `Mob.isNoAi` | both, but only the server's copy acts on the answer |
 | `LivingEntity` | `LivingEntity.aiStep`, which either simulates or coasts | both |
 | `ClientPacketListener` | whether an inbound position packet moves the entity or only updates a codec | client main |
 | `ServerGamePacketListenerImpl` | re-runs the client's numbers for the entities the client owns | server main |
 
-## The four predicates, and the one that is not a question about sides
+## Five predicates, and the final one the other four hang off
 
 `Entity.isLocalInstanceAuthoritative` is the root and it is **final** — no
 class overrides it. It asks a different question on each side: on the client,
@@ -62,7 +62,7 @@ That single line is the whole vehicle model. And `Player` overrides
 *different* from the root — *not a client, or I am the local player* — which
 is what lets the server simulate a player it is not authoritative for.
 
-Two classes narrow the AI predicate further and are worth naming because
+Three classes narrow the AI predicate further and are worth naming because
 they are the exceptions people trip over: `Mob.isEffectiveAi` adds
 `Mob.isNoAi`, which is where the *NoAI* tag actually bites, and both
 `ArmorStand.isEffectiveAi` and `Mannequin.isEffectiveAi` add a physics or
@@ -70,7 +70,7 @@ immovability flag of their own.
 
 ## Three cases, read on both sides
 
-The columns are the three shapes an entity can have; the rows are what each
+The columns are three shapes an entity can have; the rows are what each
 predicate answers and what follows from it.
 
 | | a tracked mob | a player | a boat you are riding |
@@ -80,14 +80,17 @@ predicate answers and what follows from it.
 | `Entity.isLocalInstanceAuthoritative`, **client** | false | true only on *your own* player | **true**, on your machine only |
 | `Entity.canSimulateMovement`, server | true | **true** — the override | false |
 | `LivingEntity.travel` runs on the server | yes | yes, and the result is overwritten | n/a |
-| `LivingEntity.travel` runs on the client | **never** | only for your own player | yes, driven by your input |
-| `Entity.checkFallDamage` inside `Entity.move` | server only | neither side — the packet path does it | client only |
-| what the other side does instead | coasts at 0.98 per tick | applies your movement packet | applies its own copy's packet |
+| `LivingEntity.travel` runs on the client | **never** | only for your own player | n/a — `AbstractBoat.floatBoat` and `AbstractBoat.controlBoat` do it instead |
+| `Entity.checkFallDamage` inside `Entity.move` | server only | **your own client only** — the server reaches it by the packet path | client only |
+| what the other side does instead | is interpolated, and stands still when the interpolation runs out | applies your movement packet | applies its own copy's packet |
 
 The row that surprises people is the last-but-one. `Entity.move` gates
-`Entity.checkFallDamage` on `Entity.isLocalInstanceAuthoritative`, which is
-false for a player on **both** sides — so no player anywhere takes fall
-damage from the mover. The server takes that path from
+`Entity.checkFallDamage` on `Entity.isLocalInstanceAuthoritative`, which for
+a player is true on your own client and **false on the server** — so the copy
+that runs it every tick is the one that cannot hurt you.
+`LivingEntity.checkFallDamage` needs a `ServerLevel` before it computes any
+damage, so your client only accumulates the fall distance and lets
+`Block.fallOn` fire. The server reaches fall damage from
 `Entity.doCheckFallDamage` instead, driven by the movement packet, which is
 [Part VIII's subject](../player/input-to-movement.md).
 
@@ -96,12 +99,14 @@ damage from the mover. The server takes that path from
 A client-side zombie fails `Entity.isLocalInstanceAuthoritative` because
 nothing is riding it, so `Entity.canSimulateMovement` is false and
 `LivingEntity.aiStep` never reaches `LivingEntity.travel`. What it does
-instead is the first thing `LivingEntity.aiStep` does: if an
-`InterpolationHandler` is running, step it; **otherwise scale the delta by
-0.98 and stop**. There is no collision, no gravity, no friction and no
-attempt at prediction. It is not simulating and being corrected — it is
-replaying what `ClientboundMoveEntityPacket` and
-`ClientboundEntityPositionSyncPacket` tell it, and coasting between them.
+instead is the branch `LivingEntity.aiStep` opens with: if an
+`InterpolationHandler` is running, step it; **otherwise scale the stored
+delta by 0.98** — and nothing then applies that delta, because the only thing
+that would is `Entity.move`, which on this side only `LivingEntity.travel`
+reaches. There is no collision, no gravity, no friction and no attempt at
+prediction. It is not simulating and being corrected — it is replaying what
+`ClientboundMoveEntityPacket` and `ClientboundEntityPositionSyncPacket` tell
+it, and standing perfectly still when the interpolation runs out.
 
 ### The player: simulated twice, believed once
 
@@ -129,11 +134,13 @@ Sit in a boat and the base delegation makes it yours. On your client
 `Entity.isLocalClientAuthoritative` walks to the controlling passenger, finds
 you, and returns true, so your machine simulates the boat for real. On the
 server the same delegation makes `Entity.isClientAuthoritative` true, so the
-server's copy is *not* authoritative and does not simulate. Every other
-client sees the boat as a tracked entity and coasts it.
+server's copy is *not* authoritative and does not simulate — it zeroes its
+own delta outright. Every other client's copy does the same, and is moved
+only by `AbstractBoat.interpolation`.
 
 ```mermaid
 sequenceDiagram
+    participant CL as ClientLevel
     participant LP as LocalPlayer
     participant AB as AbstractBoat
     participant Wire as Wire
@@ -141,8 +148,8 @@ sequenceDiagram
     participant SL as ServerLevel
     participant CPL as ClientPacketListener
 
-    LP->>AB: my client ticks the boat, isLocalInstanceAuthoritative is true
-    AB->>AB: travel, collide, move for real
+    CL->>AB: tickNonPassenger, and isLocalInstanceAuthoritative is true
+    AB->>AB: floatBoat, then controlBoat, then move for real
     LP->>Wire: ServerboundMoveVehiclePacket.fromEntity, once per client tick
     Wire->>SGPL: handleMoveVehicle
     SGPL->>AB: move with MoverType.PLAYER and my distance, then absSnapTo
@@ -162,15 +169,18 @@ only for a vehicle it is authoritative for, and then immediately echoes a
 per-entity position packets take the opposite branch:
 `ClientPacketListener.handleEntityPositionSync` and
 `ClientPacketListener.handleMoveEntity` both check
-`Entity.isLocalInstanceAuthoritative` and, when it holds, decode the value
-into the entity's position codec and **do not move the entity**. The server's
-opinion about where your boat is gets recorded and ignored.
+`Entity.isLocalInstanceAuthoritative` and, when it holds, **do not move the
+entity** — `ClientPacketListener.handleMoveEntity` decodes the delta into the
+entity's position codec and stops there, and
+`ClientPacketListener.handleEntityPositionSync` records the absolute position
+in the codec on either branch. The server's opinion about where your boat is
+gets recorded and ignored.
 
 ## Where the gates actually sit
 
-Authority is not one flag consulted once. It is read at six places in
-`Entity.move` and `LivingEntity.aiStep` alone, and each reads a different
-member of the family:
+Authority is not one flag consulted once. It is read at eight places in
+`Entity.move` and `LivingEntity.aiStep` alone, and three of those eight read
+the same member:
 
 - the vertical collision flags and `Entity.setOnGroundWithMovement` run if
   the entity moved vertically **or** is locally authoritative — the
@@ -180,10 +190,14 @@ member of the family:
   `Entity.canSimulateMovement`;
 - the step sound and `GameEvent.STEP` run if this is not a client **or** the
   instance is locally authoritative;
-- `Entity.applyEffectsFromBlocks` runs on the same condition;
+- in `LivingEntity.aiStep`, the 0.98 decay of the stored delta runs
+  precisely when `Entity.canSimulateMovement` is **false** — it is the
+  not-authoritative branch, not a fallback inside the authoritative one;
 - `Mob.serverAiStep` runs on `Entity.isEffectiveAi` **and** not client-side,
   and `LivingEntity.travel` on `Entity.canSimulateMovement` **and**
-  `Entity.isEffectiveAi`.
+  `Entity.isEffectiveAi`;
+- `Entity.applyEffectsFromBlocks` follows the travel fork, on the same
+  not-a-client-or-authoritative test as the step sound.
 
 The last one has a fork in front of it. If the controlling passenger is a
 `Player` and the mob is alive, `LivingEntity.travelRidden` runs instead —
@@ -191,13 +205,14 @@ and it has its own `Entity.canSimulateMovement` test, zeroing the delta
 outright when it fails. That is the path every horse, pig and happy ghast
 takes.
 
-## What the four predicates explain
+## What the predicates explain
 
-**Why does a mob rubber-band and my own player does not?** Because your
-player is the only entity your client simulates, and a mob is the only kind
-your client never simulates. There is nothing to reconcile in either case;
-what you see on a mob is the gap between position packets, filled by
-`InterpolationHandler` or by a 0.98 coast.
+**Why does a mob rubber-band and my own player does not?** Neither one is
+being corrected, and for opposite reasons. Your client does simulate your own
+player — and a boat or a horse you are riding, and a dropped item, which
+consult no predicate at all — but it never simulates a tracked mob, so there
+is nothing about the mob for the server to disagree with. What you see on a
+mob is the gap between position packets, walked by `InterpolationHandler`.
 
 **Why does a boat feel responsive and a horse feel heavy?** Both are ridden,
 and both are authoritative on your machine — but a horse is a `LivingEntity`
@@ -205,10 +220,11 @@ going through `LivingEntity.travelRidden`, which asks the mob for its own
 speed and drag, while a boat runs its own physics directly. The authority
 answer is the same; the layer above it is not.
 
-**Does *NoAI* stop a mob moving?** It stops `Mob.serverAiStep`, because
-`Mob.isEffectiveAi` is what `LivingEntity.aiStep` gates that call on. It does
-not stop `LivingEntity.travel`, which is gated on
-`Entity.canSimulateMovement` — so a *NoAI* mob still falls.
+**Does *NoAI* stop a mob moving?** Completely, and by more than the obvious
+route. It stops `Mob.serverAiStep`, because `Mob.isEffectiveAi` is what
+`LivingEntity.aiStep` gates that call on — and the same predicate is the
+second half of the gate on `LivingEntity.travel`, so nothing reaches
+`Entity.move` for that mob either. A *NoAI* mob does not even fall.
 
 ## Where to look
 
@@ -222,7 +238,8 @@ not stop `LivingEntity.travel`, which is gated on
 `ClientPacketListener.handleEntityPositionSync` ·
 `ClientPacketListener.handleMoveEntity` ·
 `ClientPacketListener.handleMoveVehicle` · `InterpolationHandler` ·
-`SweetBerryBushBlock.entityInside`
+`SweetBerryBushBlock.entityInside` · `AbstractBoat.floatBoat` ·
+`AbstractBoat.controlBoat`
 
 ---
 

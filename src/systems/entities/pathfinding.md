@@ -1,6 +1,6 @@
 # Pathfinding
 
-> Verified against **Minecraft 26.2** · Part VI · A villager decides to walk to its bed, and eight ticks later it is standing still against a fence, having formally given up.
+> Verified against **Minecraft 26.2** · Part VI · A villager decides to walk to its bed, and a hundred ticks later it is standing still against a fence, having formally given up.
 
 A behaviour has produced a position and stopped caring. Everything between
 that position and a mob actually leaning into a direction is this page: one
@@ -28,7 +28,7 @@ decision system asked.
 | `PathTypeCache` | the 4,096-entry memo that makes that affordable | server main, owned by `ServerLevel` |
 | `PathFinder` | the A\* itself, bounded by a node budget | server main |
 | `Path` | the node list, and whether it actually reaches the target | server main, with a stream codec for the debug channel only |
-| `MoveControl` | the one place a position becomes a yaw and a speed | server main |
+| `MoveControl` | where a wanted position becomes a yaw and a speed, and forgets it again the same tick | server main |
 
 Nothing here is asynchronous. There is not a future, an executor or a thread
 anywhere in the pathfinder, and every entry point takes a `ServerLevel` or a
@@ -88,15 +88,18 @@ sixteen times the larger of the *modified* follow range and
 `PathNavigation.setRequiredPathLength` — 16 by default, and raised by seven
 classes: 48 for `Villager`, `Allay`, `Bee`, `CopperGolem` and `HappyGhast`,
 40 for `Llama`, 32 for `Fox`. `PathNavigation.setMaxVisitedNodesMultiplier`
-scales the result for one search.
+scales the result, and keeps scaling it until
+`PathNavigation.resetMaxVisitedNodesMultiplier` puts it back: `Bee` is the
+only class that touches either.
 
 The same maximum path length becomes the **radius of the
 `PathNavigationRegion`**, plus an offset of 8 or 16 depending on which
 `PathNavigation.createPath` overload was used — and inside the search it appears twice more,
 as a test on the current node's distance from the start and on each
-neighbour's walked distance. A villager can find a bed 48 blocks away because
-one attribute is 48; it cannot find one 60 blocks away no matter how open the
-ground is.
+neighbour's walked distance. A villager can find a bed 48 blocks away because its *required path length*
+is 48 — it never touches `Attributes.FOLLOW_RANGE` at all, so its follow
+range is `Mob`'s default 16 and the larger of the two is the number it set
+itself; it cannot find one 60 blocks away no matter how open the ground is.
 
 That region is built by asking `ChunkSource.getChunkNow` for every chunk in
 the cube. **A path search never loads a chunk and never blocks** — an absent
@@ -107,18 +110,21 @@ chunk is a null entry that reads as air. This is the same discipline
 
 `NodeEvaluator` answers *what is this position, to this mob* with a
 `PathType`: 27 constants, each carrying a default cost, and **a negative cost
-means impassable, not expensive**. `PathType.BLOCKED`, `PathType.LAVA`,
-`PathType.FENCE`, `PathType.LEAVES`, the two closed doors and
-`PathType.POWDER_SNOW` are all −1; `PathType.WATER` is 8, `PathType.FIRE` 16,
+means impassable, not expensive**. Nine of the twenty-seven are −1 —
+`PathType.BLOCKED`, `PathType.LAVA`, `PathType.FENCE`, `PathType.LEAVES`,
+`PathType.POWDER_SNOW`, `PathType.DAMAGING`, `PathType.UNPASSABLE_RAIL` and
+the two closed doors; `PathType.WATER` is 8, `PathType.FIRE` 16,
 `PathType.OPEN` and `PathType.WALKABLE` 0. A mob overrides any of them for
 itself with `Mob.setPathfindingMalus`, read back through
-`Mob.getPathfindingMalus` — which is how a zombified piglin walks through
-fire and a spider does not.
+`Mob.getPathfindingMalus` — which is how the same lava is free ground to a
+`Strider`, merely expensive to a `ZombifiedPiglin`, and a wall to the
+ordinary `Piglin` that never overrides it.
 
-Four evaluators cover the movement modes: `WalkNodeEvaluator`, and the three
-that specialise it or replace it — `FlyNodeEvaluator` and
-`AmphibiousNodeEvaluator` extend the walker, `SwimNodeEvaluator` extends
-`NodeEvaluator` directly. Each `PathNavigation` subclass chooses one:
+Four evaluators in the pathfinder package cover the movement modes:
+`WalkNodeEvaluator`, and the three that specialise it or replace it —
+`FlyNodeEvaluator` and `AmphibiousNodeEvaluator` extend the walker,
+`SwimNodeEvaluator` extends `NodeEvaluator` directly. Two mobs subclass one
+further for themselves, `Frog` and `Creaking`. Each `PathNavigation` subclass chooses one:
 `GroundPathNavigation`, `FlyingPathNavigation`, `WaterBoundPathNavigation`,
 `AmphibiousPathNavigation`, and `WallClimberNavigation` on top of the ground
 one.
@@ -135,16 +141,20 @@ subject of the last section.
 `PathFinder.findPath` is plain A\* over a `BinaryHeap`, and three of its
 details decide what mobs feel like.
 
-**It is bounded by a node count, not by a distance.** The loop breaks as soon
-as it has popped its budget of nodes — `PathFinder.setMaxVisitedNodes`,
-scaled by the multiplier. A
-search through open ground reaches much further than the same budget spends
-in a maze.
+**It is bounded twice: by a node count and by a distance.** The loop breaks
+as soon as its visit counter reaches the budget —
+`PathFinder.setMaxVisitedNodes`, scaled by the multiplier — and inside the
+loop the maximum path length is the second bound, gating which nodes are
+expanded and which neighbours are admitted at all. Under the node budget
+alone a search through open ground would reach much further than the same
+budget spends in a maze; the distance bound is what stops it.
 
 **The heuristic is inflated.** Each neighbour's *h* is the best straight-line
 estimate multiplied by 1.5, which makes the search greedy: it finds a route
-sooner and the route it finds is not guaranteed to be the shortest. Ties, at
-the end, go to the path with the fewest nodes.
+sooner and the route it finds is not guaranteed to be the shortest. When
+several targets were reached, the winner is simply the path with the fewest
+nodes; when none was, it is the path that ends closest to a target, with
+fewest nodes as the tie-break.
 
 **A failed search still returns a path.** If no target came within
 the *reach range* — measured as a Manhattan distance from the popped node — the
@@ -152,8 +162,9 @@ finder reconstructs a path to the closest node it managed to reach and marks
 it *not reached*. That is what `Path.canReach` reports, and it is the number
 that matters rather than "was a path found": `AcquirePoi` tests it before
 claiming a point of interest, and `MoveToTargetSink` turns a false into a
-*cannot reach* memory. A null return means only that the node list came out
-empty.
+*cannot reach* memory. A null from `PathNavigation.createPath` means one of
+the four early exits rather than a search that came back empty-handed — the
+finder always has a best node to reconstruct towards.
 
 One more thing the search does not do unless asked: it accumulates its closed
 set, and attaches it to the `Path`, only while something is subscribed to
@@ -180,7 +191,7 @@ sequenceDiagram
     PN->>PN: trimPath, record the stuck-check position, keep the node index
     Note over PN,MoveC: every tick from here
     PN->>MoveC: setWantedPosition for the next node, at speedModifier
-    MoveC->>MoveC: tick — set yaw, set speed, reset the operation to WAIT
+    MoveC->>MoveC: tick — reset the operation to WAIT first, then set the yaw and the speed
 ```
 
 ## Following it, one tick at a time
@@ -192,23 +203,33 @@ It has to do that **every** tick, because `MoveControl.tick` sets its own
 the move — the control is a one-shot instruction, not a destination it
 remembers.
 
-`MoveControl.setWantedPosition` is the single method where any decision, goal
-or brain, becomes movement. It is not the single *call site*: eight places
-skip the pathfinder and drive the control directly — `TemptGoal`,
-`TryFindWaterGoal`, and the per-mob goals of `Bee`, `Fox`, `Rabbit`,
-`Blaze`, `Ghast` and `Vex` — which is why a tempted animal drifts towards you
-in a straight line through terrain a path search would have routed around.
+`MoveControl.setWantedPosition` is the main way a decision, goal or brain,
+becomes movement, but it is neither the only method nor a single call site.
+`MoveControl.strafe` is a second entrance, used by `RangedBowAttackGoal` and
+the brain behaviour `BackUpIfTooClose`; `MoveControl.setWait` is a third.
+`MoveControl.setWantedPosition` itself has twelve callers outside the navigations, in
+eight classes: the shared goals `TemptGoal.ForNonPathfinders` and
+`TryFindWaterGoal`, the per-mob goals of `Bee`, `Blaze`, `Ghast` and `Vex`,
+`Rabbit` from the mob itself rather than from a goal, and `Fox` to pin a
+sleeping fox where it lies. The first of those is why a happy ghast drifts
+towards you in a straight line through terrain a path search would have
+routed around — an ordinary tempted cow runs the base `TemptGoal`, which
+calls the navigation like anything else.
 
 Three more controls sit beside it and are the rest of what turns a decision
 into a pose. `LookControl` aims the head, `JumpControl` fires a jump the mover
 then executes, and `BodyRotationControl` swings the body to follow the head
-after a run of stable ticks. `BodyRotationControl.clientTick` is a leftover
+the moment the head is more than fifteen degrees off — it is the *reverse*
+move, easing the head back towards the front, that waits for ten stable
+ticks. `BodyRotationControl.clientTick` is a leftover
 name: `LivingEntity.tick` calls `Mob.tickHeadTurn` with no side check at all,
 so it runs on both sides every tick.
 
 The mover itself is Part VI's [movement and
-collision](movement-and-collision.md) — the control sets `LivingEntity.xxa`,
-`LivingEntity.zza` and the speed, and `LivingEntity.travel` does the rest.
+collision](movement-and-collision.md) — the control sets the yaw and calls
+`Mob.setSpeed`, which writes `LivingEntity.zza` with it, and
+`LivingEntity.travel` does the rest. `LivingEntity.xxa` is written only by
+the strafe branch, which pathfinding never takes.
 
 ## Giving up
 
@@ -241,9 +262,10 @@ position in the path-type cache **unconditionally**, and then — only if
 `Shapes.joinIsNotEmpty` says the collision shape actually changed — walks
 `ServerLevel.navigatingMobs`, asks each navigation
 `PathNavigation.shouldRecomputePath` about the position, and calls
-`PathNavigation.recomputePath` on the ones that say yes. The whole block is
-wrapped in a re-entrancy guard, because a recompute can itself change blocks;
-a recursive call logs and, in a development environment, pauses.
+`PathNavigation.recomputePath` on the ones that say yes. That last loop —
+and only that loop — is wrapped in a re-entrancy flag, because a recompute
+can itself change blocks; a call that arrives while the flag is set logs and,
+in a development environment, pauses.
 
 That is why closing a door in front of a mob re-routes it and repainting a
 block does not.
