@@ -93,9 +93,9 @@ run on a dimension with nobody in it.
 
 ## The cache that is dropped before the border
 
-The first statement of the tick, before the border and before the weather,
-is `EnvironmentAttributeSystem.invalidateTickCache`: last tick's resolved
-environment attributes are thrown away. That system
+The first thing the tick does to the world, before the border and before
+the weather, is `EnvironmentAttributeSystem.invalidateTickCache`: last tick's
+resolved environment attributes are thrown away. That system
 ([environment attributes](../world/environment-attributes-and-timelines.md))
 is where the old per-dimension and per-biome constants went, and
 `Level.updateSkyBrightness` later in this same tick reads
@@ -249,7 +249,9 @@ sieges answer only to `GameRules.SPAWN_MOBS`, which gates the whole call.
 
 ### The broadcast, which is why entities are a tick behind
 
-Nothing in the game sends a block update at the moment a block changes.
+Almost nothing in the game sends a block update at the moment a block
+changes — a landing `FallingBlockEntity` is the exception worth knowing, and
+it is dealt with at the end of this section.
 `ServerLevel.sendBlockUpdated` calls `ServerChunkCache.blockChanged`, which
 finds the `ChunkHolder`, records the position in that holder's per-section
 set, and — the first time a holder gains a changed section — adds it to
@@ -276,7 +278,7 @@ sequenceDiagram
     CH->>Wire: BlockEntity.getUpdatePacket beside any changed position that has one
     SCC->>CM: ChunkMap.tick, the movement of everything that moved last tick
     Note over SL,Wire: still this tick, several steps later
-    SL->>SL: EntityTickList.forEach, a piston extends and changes a block
+    SL->>SL: tickBlockEntities, PistonMovingBlockEntity finishes a push and changes a block
     SL->>SCC: sendBlockUpdated, marked, and it waits for the next tick
 ```
 
@@ -297,10 +299,18 @@ Then `ChunkMap.tick` runs — chunk tracking for each player, and
 `ChunkMap.TrackedEntity` for each entity, which is where
 `ServerEntity.sendChanges` turns last tick's movement into packets. Blocks
 first, entities second, and the entity loop only after both. The ordering is
-visible from a client: a `/setblock` lands in the tick the command was typed
-in, because commands are handled before `MinecraftServer.tickChildren` even
-starts, while a piston head or a falling sand block lands in the tick after
-the one that moved it. What the client does with all of this is
+visible from a client: a player's `/setblock` lands in the tick the command
+was typed in, because a command packet is handled before
+`MinecraftServer.tickChildren` even starts, while a piston head lands in the
+tick after the one that moved it.
+
+Falling sand is the exception that proves the rule, and it is deliberate.
+`FallingBlockEntity` calls `Level.setBlock` and then, on the very next line,
+`ChunkMap.sendToTrackingPlayers` with a `ClientboundBlockUpdatePacket` of its
+own — so the block the client sees appear is sent in the same tick the entity
+that placed it vanished, rather than a tick behind it. A handful of other
+places do the same thing to one player rather than to everyone tracking the
+chunk. What the client does with all of this is
 [what the client is told](../networking/what-the-client-is-told.md).
 
 ## Block events close the handlingTick window

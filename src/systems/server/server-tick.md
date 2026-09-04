@@ -100,8 +100,14 @@ so the frame a profiler shows includes the packets. Each entry in that
 thread decoded the packet, the handler called
 `PacketUtils.ensureRunningOnSameThread`, and that queued the pair here and
 aborted the Netty-side call by throwing `RunningOnDifferentThreadException`
-([anatomy](../anatomy/anatomy.md) has the crossing). This is the only point
-in a tick where player input enters the world.
+([anatomy](../anatomy/anatomy.md) has the crossing). This is where most
+player input enters the world, but not all of it: the handlers that never
+call `PacketUtils.ensureRunningOnSameThread` hop by the other door instead.
+`ServerGamePacketListenerImpl.handleChat` and both command packets run their
+work through `MinecraftServer.execute`, and filtered sign and book text comes
+back on a `CompletableFuture` completed against the server — so chat and
+commands arrive as *tasks*, drained by the event loop below, and not with the
+packets.
 
 Two gates sit on each queued pair. `PacketListener.shouldHandleMessage` is
 asked again at handling time, so a player who disconnected between arrival and
@@ -137,8 +143,9 @@ setting.
 
 ### What `MinecraftServer.tickChildren` runs, and in what order
 
-`MinecraftServer.tickChildren` is the tick. Each row below is its own
-profiler section, in this order:
+`MinecraftServer.tickChildren` is the tick, and the rows below are its
+order. All but the first are a profiler section of their own; suspending the
+flush has none, and the debug row is three:
 
 | in order | what it does | skipped when |
 |---|---|---|
@@ -148,7 +155,7 @@ profiler section, in this order:
 | time sync | `MinecraftServer.forceGameTimeSynchronization` broadcasts a `ClientboundSetTimePacket` | not a multiple of 20 ticks |
 | levels | `MinecraftServer.updateEffectiveRespawnData`, then `ServerLevel.tick` for each dimension in `MinecraftServer.getAllLevels` order, overworld first | never |
 | connection | `MinecraftServer.tickConnection` — every `Connection`, and each playing client's own tick | never |
-| players | `PlayerList.tick` broadcasts a latency-only `ClientboundPlayerInfoUpdatePacket` | not a multiple of `PlayerList.SEND_PLAYER_INFO_INTERVAL`, 600 ticks |
+| players | `PlayerList.tick` broadcasts a latency-only `ClientboundPlayerInfoUpdatePacket` | its own counter has not passed 600 — so every 601st call, not every 600th tick |
 | debug, game tests, tickables | `ServerDebugSubscribers.tick`, `GameTestTicker.tick`, the dedicated server GUI's refresh through `MinecraftServer.addTickable` | game tests alone, when frozen |
 | send chunks | `PlayerChunkSender.sendNextChunks`, then `ServerCommonPacketListenerImpl.resumeFlushing`, per player | never |
 
@@ -173,8 +180,10 @@ channel, and every twentieth tick recompute the packet-rate averages. For a
 playing client that listener is `ServerGamePacketListenerImpl`, whose
 `ServerGamePacketListenerImpl.tick` acknowledges pending block changes, runs
 `ServerPlayer.doTick` through `ServerGamePacketListenerImpl.tickPlayer`, and
-then the three spam throttles, the idle-timeout check and the fifteen-second
-keep-alive (`ServerCommonPacketListenerImpl.LATENCY_CHECK_INTERVAL`).
+then, only if that returns without having kicked anyone, three more things
+in this order: the fifteen-second keep-alive
+(`ServerCommonPacketListenerImpl.LATENCY_CHECK_INTERVAL`), the three spam
+throttles, and the idle-timeout check.
 
 So a movement packet is applied to the player before any level ticks, and the
 player *entity* takes its step after all of them. Entities see the player
@@ -183,8 +192,11 @@ already moved. A throw out of `Connection.tick` disconnects that client with
 *"Internal server error"* — except on an in-memory connection, where it is
 rethrown as *"Ticking memory connection"* and takes the integrated server down
 with it. On a dedicated server `DedicatedServer.tickConnection` adds
-`DedicatedServer.handleConsoleInputs`, the only way a console or RCON command
-reaches the Server thread. [Players and sessions](players-and-sessions.md) is
+`DedicatedServer.handleConsoleInputs`, which is how a command typed at the
+console reaches the Server thread. RCON does not come this way:
+`DedicatedServer.runCommand` puts the command on the task queue with
+`BlockableEventLoop.executeBlocking` and waits for the answer, so it runs
+wherever the queue next drains. [Players and sessions](players-and-sessions.md) is
 what happens inside that phase; [the
 connection](../networking/the-connection.md) is the channel underneath it.
 
@@ -255,8 +267,9 @@ where the rest of the book sends you for that machinery.
 
 ```mermaid
 flowchart TD
-    P["BlockableEventLoop.pollTask peeks the head of the queue"] --> B{"blocking depth above zero"}
-    B -- "inside managedBlock" --> RUN["run it"]
+    P["BlockableEventLoop.pollTask peeks the head of the queue"] --> E{"anything queued"}
+    E -- "a task" --> B{"blocking depth above zero"}
+    B -- "inside managedBlock" --> RUN["run it, and report true"]
     B -- "not blocked" --> S{"MinecraftServer.shouldRun"}
     S -- "queued more than MAX_TICK_LATENCY ticks ago" --> RUN
     S -- "otherwise, ask the budget" --> H{"MinecraftServer.haveTime"}
@@ -264,8 +277,10 @@ flowchart TD
     H -- "in the slack, now is before delayedTasksMaxNextTickTimeNanos" --> RUN
     H -- "inside the tick, now is before nextTickTimeNanos" --> RUN
     H -- "out of time" --> L["leave it queued"]
-    L --> W["waitForTasks parks until nextTickTimeNanos, and a schedule unparks it early"]
-    RUN --> C["pollTaskInternal then offers every level's chunk source a turn, when sprinting or blocked or in time"]
+    E -- "nothing" --> C{"only now does pollTaskInternal offer every level's chunk source a turn, when sprinting or blocked or in time"}
+    L --> C
+    C -- "one of them had work" --> RUN
+    C -- "none did" --> W["report false. Inside managedBlock, waitForTasks parks, and a schedule unparks it early"]
 ```
 
 ### Every runnable becomes a `TickTask`
@@ -351,8 +366,10 @@ them, and its memory grows while it is behind.
 
 After the tick, `MinecraftServer.waitUntilNextTick` spends the remaining
 milliseconds. `MinecraftServer.pollTaskInternal` polls the server's own queue
-first and then — when the loop is sprinting, or blocked, or still in time —
-offers every level's `ServerChunkCache.MainThreadExecutor.pollTask` a turn.
+first and, only if that queue had nothing to run, offers every level's
+`ServerChunkCache.MainThreadExecutor.pollTask` a turn — when the loop is
+sprinting, or blocked, or still in time. The levels get the leftovers of the
+leftovers.
 That executor keeps a policy of its own: its `ServerChunkCache.MainThreadExecutor.shouldRun` is unconditionally
 true, with no age rule, and its poll runs
 `ServerChunkCache.runDistanceManagerUpdates` first and returns at once if that
@@ -366,8 +383,10 @@ hands `MinecraftServer.tickServer` a constant *false* instead of
 stop for the length of the sprint — and yet `ServerTickRateManager.isSprinting`
 is the *first* term of the condition guarding the chunk-source poll, so every
 level's queue is drained on every poll regardless. A sprint therefore does
-more chunk work per wall-clock second than an ordinary server, not less, while
-doing none of the housekeeping that would let the results reach the disk.
+more chunk work per wall-clock second than an ordinary server, not less,
+while doing almost none of the housekeeping that would let the results reach
+the disk — the exception being the unload queue, which the two-thousand rider
+drains whether there is time or not.
 
 ## Questions players ask
 

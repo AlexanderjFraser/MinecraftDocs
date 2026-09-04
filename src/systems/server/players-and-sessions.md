@@ -21,7 +21,7 @@ that will keep answering questions all day.
 | `PlayerList` | who is admitted, who is in the tab list, and the exact order of the join burst | Server |
 | `ServerPlayer` | one player's world state, and what a new one inherits from an old one | Server |
 | `ServerGamePacketListenerImpl` | the session: the player it points at, the flush suspension, the load gate, the kicks | Netty to decode, Server to handle |
-| `ServerConfigurationPacketListenerImpl` | the strictly serial task queue a join is prepared in | Netty, with three handlers hopping to Server |
+| `ServerConfigurationPacketListenerImpl` | the strictly serial task queue a join is prepared in | Netty, with four handlers hopping to Server |
 | `PrepareSpawnTask` | where the player will stand, and when the `ServerPlayer` is finally constructed | Server |
 | `PlayerDataStorage` | the `.dat` file, its *.dat_old* twin and its corrupt-copy rescue | Server |
 | `PlayerChunkSender` | how many chunks a client is trusted with, starting at almost none | Server |
@@ -47,8 +47,10 @@ four questions in order — the ban list, the whitelist, the IP ban list, then
 capacity — and the two ways past it are not the ones a reader expects. The
 whitelist is bypassed by being an **op**: `PlayerList.isWhiteListed` is
 satisfied by presence in the op list, and `DedicatedPlayerList.isWhiteListed`
-overrides it to route through `PlayerList.isOp`, which also admits the
-singleplayer owner. The *bypassesPlayerLimit* flag in *ops.json* is a
+overrides it to route through `PlayerList.isOp`, which also asks whether
+the identity is the singleplayer owner — a branch that never fires here,
+because `DedicatedServer.isSingleplayerOwner` returns false for everyone.
+The *bypassesPlayerLimit* flag in *ops.json* is a
 separate thing entirely and reaches exactly one of the four questions:
 `ServerOpListEntry.bypassesPlayerLimit` is read only by
 `DedicatedPlayerList.canBypassPlayerLimit`, and only the capacity test calls
@@ -114,8 +116,12 @@ A player with no save file gets a search instead of a position.
 twenty-four, or fewer if `GameRules.RESPAWN_RADIUS` or the world border says
 so — in a coprime-strided order from a random offset, loading each
 candidate's chunk under a one-tick `TicketType.SPAWN_SEARCH` ticket and
-returning a future. The `ChunkLoadCounter` beside it feeds nothing but the
-client's progress bar, through `LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS`.
+returning a future. The `ChunkLoadCounter` beside it feeds only the
+server's `LevelLoadListener`, through
+`LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS` — the client's progress bar on
+an integrated server, and nothing a remote player ever sees on a dedicated
+one, where the listener is a `LoggingLevelLoadListener` that boot already
+closed.
 
 ## The save file is read twice, and both reads are the whole file
 
@@ -214,7 +220,10 @@ few lines earlier than it is sent, because
 differs from the one the name cache remembers, and the cache is overwritten
 at the top of the method.
 
-Entering the level is the last step and the one that starts the terrain.
+Entering the level is the step that starts the terrain, though it is not
+the last: the boss bars, the active effects, the inventory menu and the join
+notification all follow it, and `ServerCommonPacketListenerImpl.resumeFlushing`
+closes the single write.
 `ServerLevel.addNewPlayer` hands the player to
 `PersistentEntitySectionManager.addNewEntity`, whose callback adds it to
 `ServerLevel.players` and to the chunk source; `ChunkMap.updatePlayerStatus`
@@ -270,8 +279,11 @@ otherwise idle chunk still moves.
 
 The join is one story; what happens afterwards is a comparison. Three of
 these a player will meet tonight and the fourth exists for one debug
-command, but they are the four paths that take a player out of a
-`ServerLevel`, and they disagree about almost everything.
+command. They are not quite every way out of a `ServerLevel` — the end
+credits are a fifth, and `ServerPlayer.showEndCredits` removes the player
+with `Entity.RemovalReason.CHANGED_DIMENSION` on its way to the respawn
+below — but they are the four a session is built out of, and they disagree
+about almost everything.
 
 | | respawn | dimension change | disconnect | `ServerGamePacketListenerImpl.switchToConfig` |
 |---|---|---|---|---|
@@ -303,10 +315,12 @@ saved `ServerPlayer.RespawnConfig` — respawn data plus a *forced* flag —
 into one: a respawn anchor is found and a charge spent unless the point is
 forced, a bed is found and costs nothing,
 `TeleportTransition.missingRespawnBlock` says the block is gone, and
-`TeleportTransition.createDefault` falls back to the world spawn. That last
-branch is the expensive one. `ServerPlayer.adjustSpawnLocation` runs the same
-`PlayerSpawnFinder` search a join runs asynchronously, and blocks the Server
-thread on the future with `BlockableEventLoop.managedBlock`.
+`TeleportTransition.createDefault` falls back to the world spawn. Both of
+those last two are the expensive branch, not just the fallback: each builds
+its position with `TeleportTransition.findAdjustedSharedSpawnPos`, so each
+runs `ServerPlayer.adjustSpawnLocation` — the same `PlayerSpawnFinder` search
+a join runs asynchronously — and blocks the Server thread on the future with
+`BlockableEventLoop.managedBlock`.
 
 ### What comes across when you die
 
@@ -395,7 +409,8 @@ Very little, and only on the way out. A respawn and a dimension change send
 nothing to other clients about the player, because the identity a tab list
 is keyed on never changed. A disconnect sends one
 `ClientboundPlayerInfoRemovePacket` to everybody, and `PlayerList.tick`
-broadcasts a latency-only update for the whole list every six hundred ticks.
+broadcasts a latency-only update for the whole list on every six hundred and
+first call, counted by `PlayerList` rather than off the tick number.
 The rest of what other players see is entity tracking in `ChunkMap`, and the
 removal reasons in the table above have already told it what to do.
 
@@ -416,7 +431,9 @@ if the previous one is still unanswered, while an answer carrying the wrong
 id disconnects immediately rather than being ignored. The round trip it
 measures is smoothed three parts old to one part new, so a tab list lags a
 genuine latency change by several pings. The singleplayer owner is exempt
-from all of it.
+from the keep-alive, and from that alone: it is the only one of the three
+that asks `ServerCommonPacketListenerImpl.isSingleplayerOwner`, and the host
+can be kicked for idling or for flying like anyone else.
 
 > **For a 1.21-era reader.** Identity is a `NameAndId` record, not a
 > `GameProfile`, everywhere below the login handshake — the ban list, the op

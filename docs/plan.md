@@ -234,9 +234,31 @@ O is the close.
   stated criterion was not. Fifth tool bug: `gen_reference.py` missed one
   register helper and published 94 built-in registries for 95. Everything
   in [pass4.md](pass4.md).
-- [ ] **Session C — Part III The server.** The three endings; the startup
-  ordering; the four-path comparison in `players-and-sessions` against
-  authlib.
+- [x] **Session C — Part III The server** *(2026-09-04)*. Six pages, six
+  agents; **all six had at least one wrong claim**, which is pass 2's finding
+  for a fourth time — and this time on `server-tick` and `server-level-tick`,
+  the pair seven later parts assume. Twenty-eight corrections. Three carry a
+  lecture: `server-tick`'s **event-loop figure had two impossible edges**
+  (`pollTaskInternal` offers the chunk sources a turn only in the *else*, and
+  `waitForTasks` is reachable only from `managedBlock`, where no task is ever
+  left queued for want of budget); its **packet-drain punchline was false** —
+  chat and both command packets never call `ensureRunningOnSameThread` and
+  arrive as *tasks* through `MinecraftServer.execute`; and
+  `server-level-tick`'s "nothing sends a block update at the moment a block
+  changes" has a counter-example the page had been using as an *example*, a
+  landing `FallingBlockEntity` sending its own packet on the line after
+  `setBlock`. `how-a-server-dies` — the page pass 2 never saw — lost nine
+  claims around an argument that held, the sharpest being that the watchdog
+  **is** still armed through a crash teardown, because only
+  `MinecraftServer.halt` clears `running` and the crash path never calls it.
+  `starting-a-server`'s `forceDifficulty` note was exactly backwards. Addition
+  2 done in full: all five *before you start* entries are used by a sentence,
+  and one was missing (`foundations/resource-system`). **Sixth tool bug**,
+  again by suspecting the tool first: `pass4_queue.py` split a continuation
+  line opening on a page marker into its own unit without inheriting the
+  parent's strike, so a struck bullet's children came back on every later
+  checklist for ever. Two agent findings rejected on re-derivation.
+  Everything in [pass4.md](pass4.md).
 - [ ] **Session D — Part IV The world.** Probably two sessions: the
   conveyor's five pages arrow by arrow, then the five about the world.
   Tick boundaries hardest — this part's phase claims are what five other
@@ -399,3 +421,51 @@ missing it — and removes the comment. The owner confirms or reorders
   (session A's precedent), because the fix needs that part's argument open
   beside it. Four table cells on `data-driven-types` and one premise are
   the only findings left unactioned, and they are written out there.
+- **2026-09-04, session C — Part III The server (Opus).** Six pages, one
+  adversarial agent each; the order work, the part-wide notes and every
+  *wrong* re-derived by the session before a sentence moved. **All six pages
+  had at least one wrong claim** — pass 2's result for a fourth time, and the
+  first time it has landed on the pair the rest of the book leans on hardest:
+  seven later parts assume `server-tick` or `server-level-tick`. Twenty-eight
+  corrections. The three that carry a lecture: `server-tick`'s **event-loop
+  flowchart had two edges the code cannot take** — `pollTaskInternal` offers
+  the levels' chunk sources a turn only in the `else`, when the server's own
+  queue ran nothing, and `waitForTasks` is reachable only from `managedBlock`,
+  where `shouldRunAllTasks` is true and no task is ever left queued for want
+  of budget; the same page's **packet-drain punchline** ("the only point in a
+  tick where player input enters the world") is false, because
+  `handleChat` and both command packets never call
+  `ensureRunningOnSameThread` and post through `MinecraftServer.execute`
+  instead, arriving as tasks; and `server-level-tick`'s "nothing sends a block
+  update at the moment a block changes" is broken by a landing
+  `FallingBlockEntity`, which sends its own `ClientboundBlockUpdatePacket` on
+  the line after `setBlock` — the page had been offering falling sand as an
+  *example* of the rule it breaks, and the landing page repeated it.
+  `how-a-server-dies`, the page pass 2 never saw, kept its three-way argument
+  and lost nine claims around it, the sharpest being that the watchdog **is**
+  still armed all the way through a crash teardown (only
+  `MinecraftServer.halt` clears `running`, and the crash path never calls it)
+  and that weather and game rules have not been in `level.dat` since they
+  became `SavedData` — a 1.21-era fact that `reference/level-data-and-rules`
+  already had right, which is the second time this pass that one page's
+  correctness has convicted another's. `starting-a-server`'s `forceDifficulty`
+  aside was exactly backwards: the integrated server has no override and
+  `DedicatedServer` is the only one. Addition 2 done in full — all five
+  *before you start* entries are used by a sentence rather than merely
+  linked, `check_deps.py` green, and one entry missing
+  (`foundations/resource-system`, which `starting-a-server` leans on for the
+  staged load). **Sixth tool bug**, again from suspecting the tool before the
+  page: `pass4_queue.py` splits a continuation line that opens on a page
+  marker into its own unit — a feature — but did not give that unit its
+  parent's strike, so **striking a bullet could never settle it** and four of
+  session D's notes came back mid-sentence on every checklist. Fixed. Two
+  agent findings rejected on re-derivation, both worth recording: a
+  "missing dependency" on `protocol-phases` that is a pointer the page
+  explicitly disclaims needing, and — the session's own error, caught by
+  counting rather than by an agent — a pass-5 note asserting Part III is 5 of
+  5 on *Questions players ask* when it is 2 of 5. Rulings: a superlative the
+  page itself contradicts one sentence later is deleted, not re-scoped
+  (sessions A and B's precedent, now three times); a saved-data *file name* is
+  italics, not backticks, like any other non-identifier; and a diagram fixed
+  by adding an edge is fixed, not restructured — the arrow count going up is
+  pass 5's problem and is logged there.

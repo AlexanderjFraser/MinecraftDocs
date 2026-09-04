@@ -4,11 +4,14 @@
 
 The first run writes two files and exits: you have not agreed to the EULA.
 The second gets as far as *Preparing level "world"* and, a second or two
-later, *Done (1.284s)! For help, type "help"*. Between those two lines the
-server opened a data pack stack, built every registry the world is made of,
-took an operating-system lock on the save directory, rewrote `level.dat`,
-constructed a `ServerLevel` for every dimension the packs declare and started
-listening on 25565. And the step in the middle whose name promises the most —
+later, *Done (1.284s)! For help, type "help"*. By the time the second of
+those lines prints, the server has opened a data pack stack, built every
+registry the world is made of, taken an operating-system lock on the save
+directory, rewritten `level.dat`, constructed a `ServerLevel` for every
+dimension the packs declare and started listening on 25565 — and only the
+levels were built between the two lines. Everything else was over before the
+first one printed, which is why the elapsed time it reports is so short. And
+the step in the middle whose name promises the most —
 `MinecraftServer.prepareLevels`, the one whose progress line still reads
 *Preparing spawn area* — does the least: **on an ordinary world it loads no
 chunks at all.** All it does is re-arm the tickets the last shutdown wrote
@@ -45,12 +48,14 @@ sequenceDiagram
     Main->>LSA: validateAndCreateAccess. session.lock is taken in the constructor
     LSA-->>Main: level.dat parsed, or level.dat_old restored into its place
     Main->>WL: load, wrapped in Util.blockUntilDone, so this thread is now an executor
-    WL->>Worker: packs opened, static tags, worldgen then dimension registries, ReloadableServerResources
+    WL->>Main: createResourceManager opens the packs, handed to the main-thread executor
+    WL->>Worker: static tags, worldgen then dimension registries, ReloadableServerResources
     Worker-->>WL: the stages that must be single-threaded come back to main
     WL-->>Main: a WorldStem
     Main->>LSA: saveDataTag rewrites level.dat now, upgrade or no upgrade
-    Main->>DS: the constructor runs here, on this thread, and can throw
-    Main->>MS: spin makes the Server thread at priority 8 and starts it
+    Main->>MS: spin builds the Thread object and sets priority 8 above four processors
+    MS->>DS: the factory it was handed runs the constructor here, on this thread, and can throw
+    MS->>MS: only once there is a server to run does spin start the thread
     Note over Main,MS: main registers the shutdown hook and returns. Everything below is the Server thread
     MS->>DS: runServer calls initServer
     DS->>DS: the console daemon thread, the properties into fields, the key pair
@@ -66,8 +71,7 @@ sequenceDiagram
     MS->>MS: the icon and the status response are built, then the tick loop begins
 ```
 
-Only one diagram in this book has the JVM main thread as a lane, and this is
-it. Read the note bar as a wall: above it, one thread does all the work and
+Read the note bar as a wall: above it, one thread does all the work and
 the server object does not exist for most of it; below it, *main* has
 returned and everything that remains is the Server thread and the daemons
 arranged around it. [Anatomy](../anatomy/anatomy.md) draws the same hand-off
@@ -107,8 +111,9 @@ written both files on purpose.
 
 With the EULA agreed, `Services.create` builds the authentication services and
 the name cache in the universe directory, and `JsonRpc.create` starts a
-`ManagementServer` if *management-server-enabled* is set and the secret is
-forty alphanumeric characters: a Netty WebSocket listener with its own
+`ManagementServer` if *management-server-enabled* is set — and throws, ending
+the boot, if it is set and the secret is not forty alphanumeric characters
+rather than quietly going without one: a Netty WebSocket listener with its own
 event-loop group named *Management server IO*, TLS on by default, and a
 `JsonRpcNotificationService` registered on the `NotificationManager` that
 everything later in the boot reports through. It binds before `session.lock`
@@ -243,8 +248,10 @@ cache, and the log says *Preparing level "world"*.
 ## Building the levels
 
 `MinecraftServer.loadLevel` is three calls: `MinecraftServer.createLevels`,
-`MinecraftServer.forceDifficulty` (empty here, overridden by the integrated
-server) and `MinecraftServer.prepareLevels`.
+`MinecraftServer.forceDifficulty` — empty in the base class, and overridden
+only by `DedicatedServer.forceDifficulty`, which pushes *server.properties*'
+difficulty onto the world on every boot — and
+`MinecraftServer.prepareLevels`.
 
 `MinecraftServer.createLevels` builds the overworld first and by name, and it
 is the only level that is special. It gets the custom spawners — the
@@ -262,8 +269,9 @@ are one set of numbers every dimension shares
 A brand-new world takes one detour, and it is the detour that actually
 generates terrain at boot. When `ServerLevelData.isInitialized` is false,
 `MinecraftServer.setInitialSpawn` asks the biome sampler for a spawn chunk,
-reads the generator's spawn height, and walks a spiral over the chunks within
-`MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS` — five in each direction —
+reads the generator's spawn height, and walks a spiral over the chunks five
+in each direction — the value `MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS`
+names, though the method spells it as literals rather than reading it —
 calling `PlayerSpawnFinder.getSpawnPosInChunk` until one of them offers a
 standable block. The bonus chest is placed here if *--bonusChest* asked for
 one. Then the flag is set, and no later boot of that world repeats any of it.
@@ -353,8 +361,10 @@ the pools and the situational ones.
 
 Two rows carry a consequence for the other end of the story. `RconThread` and
 `QueryThreadGs4` are both `GenericThread`s, created from the Server thread and
-never marked daemon, so they are the only non-daemon threads besides the
-Server thread itself, and each polls its socket with a half-second timeout so
+never marked daemon, so they are the only non-daemon threads in this table
+besides the Server thread itself — `Util.ioPool`'s *IO-Worker* threads, made
+outside it and squarely in the boot path, are non-daemon too — and each polls
+its socket with a half-second timeout so
 that it notices `GenericThread.running` going false. And `RconThread.create`
 returns nothing — logging that RCON is disabled — when *rcon.password* is
 empty or *rcon.port* is out of range, so setting *enable-rcon* on its own

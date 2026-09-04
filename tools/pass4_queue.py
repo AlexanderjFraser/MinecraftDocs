@@ -171,9 +171,13 @@ def read_units() -> tuple[list[Unit], list[str]]:
         if cur is None or cur.level <= 6 or INLINE_PAGE_RE.match(raw):
             # a prose paragraph under a heading, or a continuation line that opens on a page
             # marker (`slug` — …, the style sessions H and I used inside one long bullet): its
-            # own unit, at the enclosing list item's level or at "paragraph" level
+            # own unit, at the enclosing list item's level or at "paragraph" level.
+            # A unit split out of a *struck* parent inherits the strike: striking a bullet
+            # settles the whole bullet, and without this a settled note whose continuation
+            # line happens to open on a slug comes back on every later checklist for ever.
             level = cur.level if cur is not None and cur.level >= 99 else 99
-            cur = Unit(i, level, raw, bool(STRUCK_RE.match(raw)), session, session_parts)
+            struck = bool(STRUCK_RE.match(raw)) or (cur is not None and cur.struck)
+            cur = Unit(i, level, raw, struck, session, session_parts)
             units.append(cur)
         else:
             cur.text += "\n" + raw

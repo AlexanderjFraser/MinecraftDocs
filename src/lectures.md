@@ -74,7 +74,7 @@ because they are only interesting once you know what they start and stop.
 
 Watch [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md) (Part IV)
-before *the level tick* if you want its first statement to mean anything.
+before *the level tick* if you want its opening to mean anything.
 It costs nothing to take out of order — it depends on nothing but registries
 and codecs — and Part III is the earliest of the six other parts that lean
 on it.

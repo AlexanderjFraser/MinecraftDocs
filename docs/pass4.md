@@ -87,6 +87,301 @@ entry first.
 
 ## Entries
 
+## Session C — Part III The server (pass 4) *(2026-09-04)*
+
+Six pages (five system pages and the landing page), one adversarial agent
+each, on Opus. **Every one of the six had at least one wrong claim** — pass
+2's finding holding for a fourth time, and this time on the two pages the
+rest of the book cites most. Twenty-eight corrections, three of them
+load-bearing enough to change what a lecture says. Every *wrong* was
+re-derived by the session from the decompile before a sentence moved, and
+two agent findings were rejected on that re-derivation.
+
+### The three findings that carry a lecture
+
+- ~~**The event-loop figure on `server-tick` had two impossible edges.** It
+  drew `RUN --> C` ("pollTaskInternal *then* offers every level's chunk
+  source a turn") and `L --> W` ("leave it queued" to `waitForTasks`).
+  `MinecraftServer.pollTaskInternal` offers the chunk sources a turn **only
+  in the else** — when `super.pollTask()` ran nothing
+  (`MinecraftServer.java:993-1011`); and `BlockableEventLoop.waitForTasks`
+  has exactly one call site, `managedBlock` (`BlockableEventLoop.java:149`),
+  which is the *blocked* side, where `shouldRunAllTasks()` is
+  `blockingCount > 0` and so no task is ever left queued for want of budget
+  (`:125-140`). The figure is redrawn with the queue-empty exit the old one
+  lacked, and the prose that repeated the "then" is fixed with it.~~
+- ~~**`server-tick`'s packet-drain punchline was false.** "This is the only
+  point in a tick where player input enters the world" —
+  `ServerGamePacketListenerImpl.handleChat` never calls
+  `PacketUtils.ensureRunningOnSameThread`; it runs on the Netty thread and
+  posts through `tryHandleChat` to `this.server.execute(chatHandler)`
+  (`ServerGamePacketListenerImpl.java:1678-1683, 1829-1838`), as do both
+  command packets (`:1707, :1729`). Chat and commands arrive as **tasks**,
+  drained by the event loop the same page documents two sections later.~~
+- ~~**`server-level-tick`'s "nothing sends a block update at the moment a
+  block changes" has a counter-example, and the page had made it an
+  example.** `FallingBlockEntity` calls `Level.setBlock` and on the next
+  line `ChunkMap.sendToTrackingPlayers` with its own
+  `ClientboundBlockUpdatePacket` (`FallingBlockEntity.java:206-207`), so
+  falling sand lands in the *same* tick. The page's one concrete
+  "visible from a client" test named a piston head **and** a falling sand
+  block; the piston half stands, the sand half is now the section's
+  exception. The landing page carried the same sentence and is fixed with it.~~
+
+### `server/server-tick.md`
+
+- ~~"This is the only point in a tick where player input enters the
+  world."~~ WRONG — above.
+- ~~"Each row below is its own profiler section."~~ WRONG. Row 1 (suspend
+  flushing) has no `profiler.push` at all and row 8 is three sections
+  (*debugSubscribers*, *gameTests*, *server gui refresh*);
+  `MinecraftServer.serverActivityMonitor` ticks after the final `pop`
+  (`MinecraftServer.java:1206-1286`). Now "all but the first are a profiler
+  section of their own; the debug row is three".
+- ~~The keep-alive's position in `ServerGamePacketListenerImpl.tick`.~~
+  WRONG: it runs **first** of the four, not last, and all four sit inside
+  `if (server.isPaused() || !tickPlayer())`
+  (`ServerGamePacketListenerImpl.java:300-315`).
+- ~~"`DedicatedServer.handleConsoleInputs`, the only way a console or RCON
+  command reaches the Server thread."~~ WRONG for RCON:
+  `RconClient` to `DedicatedServer.runCommand` to `executeBlocking`
+  (`DedicatedServer.java:780-786`, `RconClient.java:76`) — the task queue,
+  not the console list.
+- ~~"a sprint … doing none of the housekeeping".~~ Contradicted by the
+  page's own rider two sections earlier: `ChunkMap.processUnloads` drains
+  `unloadQueue.size() - 2000` entries whether `haveTime` is true or not
+  (`ChunkMap.java:496-501`). Now "almost none … the exception being the
+  unload queue".
+- ~~The player-info interval, "not a multiple of
+  `PlayerList.SEND_PLAYER_INFO_INTERVAL`, 600 ticks".~~ WRONG twice: it is
+  `if (++this.sendAllPlayerInfoIn > 600)` — a counter, not a `tickCount`
+  modulo, and therefore every 601st call (`PlayerList.java:493-497`). The
+  constant itself is declared and never referenced. Matching sentence on
+  `players-and-sessions` fixed.
+- ~~**Verified clean and worth keeping**: `MinecraftServer.haveTime`'s three
+  ways to yes and `shouldRun`'s age rule (`:942-943, :982-983`), the three
+  things the budget gates, the `tickChildren` row order, the two writes per
+  client, and `anatomy`'s compression (session B's open line) — the budget's
+  count and the sprint conclusion both survive.~~
+
+### `server/server-level-tick.md`
+
+- ~~"Nothing in the game sends a block update at the moment a block
+  changes."~~ WRONG — above; scoped to "almost nothing", with the exception
+  named where the page tests it.
+- ~~"a piston head or a falling sand block lands in the tick after the one
+  that moved it."~~ WRONG on the sand half — above.
+- ~~Figure 2's "EntityTickList.forEach, a piston extends and changes a
+  block".~~ WRONG lane of the tick: a piston moves from
+  `Level.tickBlockEntities` via `MovingPistonBlock.getTicker` to
+  `PistonMovingBlockEntity.tick` (`MovingPistonBlock.java:65-66`), and its
+  first half comes from `runBlockEvents`. The arrow's *conclusion* survives
+  — both run after the broadcast — so only the named step changed.
+- ~~"The first statement of the tick … is
+  `EnvironmentAttributeSystem.invalidateTickCache`."~~ WRONG: it is the
+  third, after `Profiler.get()` and `handlingTick = true`
+  (`ServerLevel.java:329-333`). "Before the border, before the weather" is
+  right (`:337-341`). Now "the first thing the tick does to the world". Same
+  wording fixed on the landing page and softened on `lectures.md:77`.
+
+### `server/players-and-sessions.md`
+
+- ~~"`TeleportTransition.createDefault` falls back to the world spawn. That
+  last branch is the expensive one."~~ WRONG on the second half — the
+  pass-2 shape exactly. `missingRespawnBlock` and `createDefault` differ in
+  one boolean and both build their position with `findAdjustedSharedSpawnPos`
+  to `ServerPlayer.adjustSpawnLocation` (`TeleportTransition.java:39-53`), so
+  both block the Server thread on the same search.
+- ~~"the four paths that take a player out of a `ServerLevel`."~~ There is a
+  fifth: `ServerPlayer.showEndCredits` removes the player with
+  `Entity.RemovalReason.CHANGED_DIMENSION` (`ServerPlayer.java:1197-1199`),
+  and it is the departure leg of the end-credits respawn the page makes its
+  centrepiece. Named, without disturbing the four-way comparison.
+- ~~"The `ChunkLoadCounter` … feeds nothing but the client's progress
+  bar."~~ Only true of the integrated server; on a dedicated server the
+  listener is the `LoggingLevelLoadListener` boot already closed
+  (`DedicatedServer.java:96`), and nothing reaches a remote client.
+- ~~"`PlayerList.isOp`, which also admits the singleplayer owner."~~ Dead
+  branch on the only list where `DedicatedPlayerList.isWhiteListed` runs:
+  `DedicatedServer.isSingleplayerOwner` returns constant `false`
+  (`DedicatedServer.java:795-797`).
+- ~~"The singleplayer owner is exempt from all of it" (the three kicks).~~
+  WRONG: only `ServerCommonPacketListenerImpl.keepConnectionAlive` asks
+  (`:127`); the idle kick and both flying kicks have no owner test
+  (`ServerGamePacketListenerImpl.java:311, 328, 347`).
+- ~~"three handlers hopping to Server" in the cast.~~ Four —
+  `ServerConfigurationPacketListenerImpl.java:151, 167` and the two it
+  inherits at `ServerCommonPacketListenerImpl.java:104, 110`.
+- ~~"Entering the level is the last step."~~ Five calls follow
+  `ServerLevel.addNewPlayer` inside `PlayerList.placeNewPlayer`
+  (`PlayerList.java:198-203`), the last of them `resumeFlushing` — and the
+  page's own Figure 2 already drew them.
+
+### `server/starting-a-server.md`
+
+- ~~The opening paragraph's frame: "Between those two lines the server
+  opened a data pack stack, built every registry … and started listening on
+  25565."~~ WRONG. Between *Preparing level* (`DedicatedServer.java:250`)
+  and *Done* (`:256`) exactly one statement runs — `loadLevel()` at `:251`.
+  Five of the six were over before the first line printed. The hook survives
+  and the frame is inverted; the rewrite is logged in `pass5.md`.
+- ~~"`MinecraftServer.forceDifficulty` (empty here, overridden by the
+  integrated server)."~~ **Backwards.** `IntegratedServer` has no override;
+  `DedicatedServer.forceDifficulty` is the sole one and pushes
+  *server.properties*' difficulty onto the world every boot
+  (`MinecraftServer.java:447`, `DedicatedServer.java:367-370`).
+  `reference/level-data-and-rules.md:266` already had this right.
+- ~~"they are the only non-daemon threads besides the Server thread
+  itself."~~ WRONG: `Util.IO_POOL = makeIoExecutor("IO-Worker-", false)` —
+  `false` is the daemon flag (`util/Util.java:110`), and the pool is
+  squarely in the boot path. `GenericThread.start` never sets the flag, so
+  the RCON/query half of the claim is right (`GenericThread.java:22-31`).
+- ~~"Only one diagram in this book has the JVM main thread as a lane."~~
+  Three do (`anatomy.md:50`, `identifiers-and-registries.md:119`, this
+  page) — and the page names `anatomy`'s one sentence later. Deleted rather
+  than re-scoped, per session A's and B's precedent.
+- ~~Figure arrow 7, "packs opened" on the Worker lane.~~ WRONG:
+  `WorldLoader.load` runs `PackConfig::createResourceManager` on the
+  **main-thread** executor (`WorldLoader.java:33`), which the page's own
+  prose says. Split into its own arrow.
+- ~~Figure arrows 11 and 12, the `DedicatedServer` constructor before
+  `spin`.~~ Inverted: the constructor is the factory `spin` calls, after it
+  has built the `Thread` and set priority 8 (`MinecraftServer.java:305-323`,
+  `server/Main.java:214-228`) — which the page's prose already said.
+- ~~`JsonRpc.create` **throws** `IllegalStateException` on a bad secret rather
+  than skipping the listener (`JsonRpc.java:26-29`) — it kills the boot; now
+  said. And `MinecraftServer.SPAWN_POSITION_SEARCH_RADIUS` is declared and
+  never referenced — `setInitialSpawn` spells 5 and 11 as literals
+  (`MinecraftServer.java:212, 536-541`); the value is right, the causal link
+  was not.~~
+
+### `server/how-a-server-dies.md`
+
+The page pass 2 never saw. Its three-way argument holds — `/stop` and a
+crash really do run the same `finally`, and the watchdog really does not —
+but nine claims around it did not.
+
+- ~~"A server stuck on *Saving chunks* is stuck with no watchdog left
+  watching it."~~ WRONG after a crash, which is one of the two endings the
+  sentence covers. `ServerWatchdog.run` loops on `isRunning()`, and
+  `MinecraftServer.running` is cleared **only** by `MinecraftServer.halt`
+  (`:771-772`) — which the crash path never calls. The drain loop resets
+  `nextTickTimeNanos` every pass (`:719`); the flush save that follows
+  resets nothing, so a slow enough save after a crash can be shot mid-write.
+  The durability answer now carries the asterisk.
+- ~~"the world clock, the weather, the spawn point and the game rules"
+  written by `level.dat`.~~ A 1.21-era fact. `PrimaryLevelData.setTagData`
+  writes no weather and no game rules (`PrimaryLevelData.java:95-118`);
+  weather is `WeatherData` (*weather*), rules are `GameRuleMap`
+  (*game_rules*), the clock is `ServerClockManager` (*world_clocks*), all
+  `SavedData` written by `SavedDataStorage` alongside. The conclusion
+  survives — `saveAllChunks` schedules that write on every call — and
+  `reference/level-data-and-rules.md:26-30, 47` already had it right.
+- ~~"a departing player's tickets go with them, which is what lets the next
+  step ever finish."~~ Unsupported: `PlayerList.removeAll` only calls
+  `connection.disconnect` (`PlayerList.java:765-770`), and its index loop
+  would skip players if `remove` ran inside it. What terminates the drain is
+  `ServerChunkCache.deactivateTicketsOnClosing` (`MinecraftServer.java:724`),
+  as the page says fifteen lines later.
+- ~~"Closing the game window … goes through the 'Client Shutdown Thread'
+  hook."~~ WRONG: `Window.shouldClose` to `Minecraft.stop`
+  (`Minecraft.java:1202-1203`) ends the frame loop and `Main` then calls
+  `exitWorldAndClose` (`client/main/Main.java:283`). The hook is the
+  kill-signal backstop and finds `singleplayerServer` already null
+  (`:240-251`).
+- ~~"every dirty chunk that has waited out its per-chunk spacing."~~
+  `ChunkMap.saveAllChunks`'s non-flush branch opens with
+  `nextChunkSaveTime.clear()` (`ChunkMap.java:453`), so the ten-second
+  spacing never gates an autosave. Makes the durability conclusion stronger.
+- ~~"Four other places call the same method."~~ Five on this side of the jar
+  — the page missed `GameTestServer.halt(false)` (`:230`) and named the
+  JSON-RPC entry point one layer too high
+  (`MinecraftServerStateServiceImpl.java:45`); the client adds three.
+- ~~`ChunkMap.hasWork`'s disjuncts.~~ Nine, not the eight listed: the page
+  omitted `unloadQueue` (`ChunkMap.java:479-481`).
+- ~~`SuppressedExceptionCollector` "accumulating every … since boot".~~ It
+  keeps the latest **eight** in full plus counts
+  (`SuppressedExceptionCollector.java:29-30`).
+- ~~The drain's ordering, in figure 1 arrow 9 and the prose.~~ The one
+  millisecond deadline is set **before** the per-level calls, not after
+  (`MinecraftServer.java:719-729`).
+- ~~*multiplayer.disconnect.server-shutdown*~~ is *server_shutdown*
+  (`PlayerList.java:767`). Italicised, so `verify_names.py` cannot see it.
+- ~~The cast's "two process-wide pools".~~ `Util` has three
+  (`BACKGROUND_EXECUTOR`, `IO_POOL`, `DOWNLOAD_POOL`); `shutdownExecutors`
+  stops two (`util/Util.java:109-111, 295-298`).
+- ~~**Verified clean**: both sequence diagrams arrow by arrow (19 of 19 and
+  11 of 11); `PacketProcessor.close` dropping packets already queued
+  (`PacketProcessor.java:34-46`) and being `stopServer`'s first statement
+  (`MinecraftServer.java:688`); `MinecraftServer.reportChunkSaveFailure`'s
+  four consequences (`:2500-2506`); `ServerWatchdog.exit`'s ten-second
+  `Runtime.halt` (`ServerWatchdog.java:108-124`).~~
+
+### `server/README.md` (the landing page)
+
+- ~~"a change an entity makes always reaches you a tick later than a change a
+  command makes."~~ WRONG at both ends. A console or RCON command runs in
+  `DedicatedServer.tickConnection`, which `tickChildren` calls **after** the
+  levels loop (`MinecraftServer.java:1251-1253`,
+  `DedicatedServer.java:469-471`), so it is exactly as late as a piston; and
+  falling sand sends its own packet immediately. Only a *player's* command
+  packet, handled in `processQueuedPackets` before `tickServer`, is early.
+- ~~Figure arrow 6, "the loop's finally, however it is reached".~~ Two of
+  the three endings reach it; the watchdog's `System.exit` leaves the Server
+  thread wedged inside the loop (`MinecraftServer.java:875-887`,
+  `ServerWatchdog.java:108-124`) — which is the page's own hook three lines
+  below.
+- ~~"`ServerLevel.tick` throws away in its very first statement."~~ Third —
+  above.
+- **Addition 2, done in full.** All five *before you start* entries are used
+  by a sentence, not merely linked (`tickets-and-loading` seven times,
+  `anatomy` four, `environment-attributes` twice, codecs and registries once
+  each), and `check_deps.py` is green. One entry was **missing**:
+  `starting-a-server.md:151` leans on `foundations/resource-system` for the
+  staged load, and the section named only codecs and registries, so it is
+  added. `lectures.md`'s two Part III counts re-derived and both right:
+  seven later parts assume the tick pair (IV, V, VI, VII, VIII, IX, XIII),
+  and Part III is the earliest of the six other parts that lean on the
+  environment page (III, VI, IX, X, XI, XII).
+- **Rejected after re-derivation**: the agent called
+  `networking/protocol-phases` a missing dependency because the page "uses
+  phase vocabulary undefined here". It does not — *phase* appears on
+  `players-and-sessions` only in the cast row and in the hand-off paragraph
+  itself, which says outright "this page starts where that one hands over".
+  That is the pointer shape session A ruled belongs outside *before you
+  start*.
+
+### The tool bug — the sixth of pass 4
+
+Found by suspecting the tool first, when four settled notes would not leave
+the checklist. `pass4_queue.py` deliberately splits a continuation line that
+opens on a page marker into its own unit, for the style sessions H and I
+used inside one long bullet. But it applied that to *any* continuation line
+beginning with a backticked slug and a dash — including one mid-sentence —
+and the split-off unit did not inherit its parent's strike. So **striking a
+bullet could never settle it**: the phantom child came back on every later
+checklist for ever, starting mid-sentence. Session D's entry alone spawned
+four. Fixed: a unit split out of a struck parent inherits the strike.
+
+### For other parts' sessions
+
+- **Part IX** — `protocol-phases` owns the login and configuration handlers
+  this part hands to. Nothing found here contradicts it, but session I
+  should know that `handleChat` and both chat-command packets are *not*
+  `ensureRunningOnSameThread` handlers, which is a claim about the phase's
+  thread discipline.
+- **Reference** — `reference/threads.md` marks RCON and query **non-daemon**
+  and is right, but says nothing about `Util.ioPool`'s *IO-Worker* threads
+  being non-daemon too, which is what makes "no non-daemon thread is left"
+  depend on `Util.shutdownExecutors`. A completeness gap, not an error; for
+  session O.
+- **The plan's session C line** said "the four-path comparison in
+  `players-and-sessions` against authlib". Those are two different things:
+  the four paths are join, death, dimension and disconnect and have no
+  authlib in them, and the page's only authlib surface is `GameProfile` (the
+  session-server round trip belongs to Part IX's `protocol-phases`). The
+  standing *library facts* item should name Part IX for that, not this page.
+
 ## Session B — Part I Anatomy · Part II Foundations (pass 4) *(2026-09-04)*
 
 Ten pages, one adversarial agent each on Opus; the order work, the tool
@@ -207,10 +502,13 @@ edge 5 named the second swap. All three fixed.
   `MinecraftServer.runServer` at `:783-834`), `spin`'s construct-then-start
   (`:305-323`), the 0-to-10 clamp, priority 10/8 above four cores, the
   8-player cap, *pause-when-empty-seconds* 60, and the memory channel.~~
-- **Still open**: pass4.md's session-D note asking whether `anatomy`'s
+- ~~**Still open**: pass4.md's session-D note asking whether `anatomy`'s
   compression of two `server-tick` invariants lost anything true. The
   `anatomy` half is checked — the pointer sentence was wrong and is fixed —
-  and the `server-tick` half is session C's, so the line is left unstruck.
+  and the `server-tick` half is session C's, so the line is left unstruck.~~
+  Settled by session C: the budget's count (three) and the sprint conclusion
+  both survive re-derivation on `server-tick`, so the compression lost
+  nothing true.'
 
 ### `anatomy/what-this-book-skips.md`
 
@@ -806,9 +1104,11 @@ of it is *verified finding, unactioned*, not *unchecked*.
   per file", but its 1,179 classes / 87,000 lines includes 133
   `package-info.java` markers, while Part XII's 423 excludes them. Two size
   claims, two rules.
-- **The queue tool** — a note written as a bare `` `README.md` `` routes to all
+- ~~**The queue tool** — a note written as a bare `` `README.md` `` routes to all
   fifteen landing pages; `pass4.md`'s Part V and Part XIII notes both landed on
-  `reference/README.md`. Qualify landing-page notes as `` `blocks/README.md` ``.
+  `reference/README.md`. Qualify landing-page notes as `` `blocks/README.md` ``.~~
+  Both notes qualified by session C, which also found the second half of this
+  bug (a struck bullet's continuation lines came back unstruck) and fixed it.
 
 
 ## Session P — The lecture order and the close *(2026-09-03)*
@@ -1241,8 +1541,10 @@ Paths relative to `reference/26.2/net/minecraft/`.
   "the world-deepening path that rides the same hooks".
 - `worldgen/biomes.md` — "The two wrappers in the second arrow only do
   anything beside chunks an older version generated".
-- `server/starting-a-server.md` — "where the stem was built, by a screen
-  or by *server.properties*".
+- ~~`server/starting-a-server.md` — "where the stem was built, by a screen
+  or by *server.properties*".~~ CONFIRMED (session C):
+  `Main.createNewWorldData` takes the `DedicatedServerSettings` and is the
+  no-world-data branch of `WorldLoader.load` (`server/Main.java:194, 243`).
 - `reference/level-data-and-rules.md` — "creating a world is who writes
   it".
 - `introduction.md` — the lane gate added to *Verified means tested*; the
@@ -1771,7 +2073,7 @@ graph — seventeen edges, each a conversion claim); one added
       block-entity pass runs after its entity pass and before
       `ClientLevel.tick`, in `Minecraft.tick`.
 
-  - **The landing page and the lecture order.** Part V's `README.md` claims
+  - **The landing page and the lecture order.** Part V's `blocks/README.md` claims
     the part is a hub and six spokes, that `blocks-and-states` is what the
     other six reach into, and that the interaction/breaking pair is one
     lecture in two halves. It also makes a **dependency ruling pass 4 should
@@ -2074,7 +2376,7 @@ graph — seventeen edges, each a conversion claim); one added
     position whose *type* changed between the record and the block.
 
 
-- **2026-09-02, session D — Part III The server.** Five pages: four
+- ~~**2026-09-02, session D — Part III The server.** Five pages: four
   rewritten (`server-tick`, `server-level-tick`, `players-and-sessions`,
   `starting-a-server` — the old `server-lifecycle`, renamed) and one written
   from the decompile (`how-a-server-dies`), plus a landing page and Part
@@ -2083,90 +2385,91 @@ graph — seventeen edges, each a conversion claim); one added
   list is the only record of where each sentence came from. Every rewrite
   was diffed against its old page from the agent's report before acceptance,
   and the corrections marked *(session-verified)* below were re-derived from
-  the decompile by the session itself.
-  - **Eighteen pass-2 errors found**, the largest crop since pass 2 itself,
+  the decompile by the session itself.~~ Settled in full by pass-4 session C
+  (2026-09-04).
+  - ~~**Eighteen pass-2 errors found**, the largest crop since pass 2 itself,
     which says the "every page has a wrong claim" result survives one
-    fact-check. Re-check each *fix*, not only the old claim.
-    - `server-tick` said `MinecraftServer.scheduleExecutables` "rejects new
+    fact-check. Re-check each *fix*, not only the old claim.~~
+    - ~~`server-tick` said `MinecraftServer.scheduleExecutables` "rejects new
       work with a *RejectedExecutionException*". It returns false, and
       `BlockableEventLoop.execute` then runs the task **inline on the
       caller's thread**; the exception belongs to the separate
-      `MinecraftServer.executeIfPossible`. *(session-verified)*
-    - `server-tick` said a server "consistently 40 % late never says so".
+      `MinecraftServer.executeIfPossible`. *(session-verified)*~~
+    - ~~`server-tick` said a server "consistently 40 % late never says so".
       `MinecraftServer.nextTickTimeNanos` advances by a fixed amount every
       lap whatever the work costs, so lateness accumulates and the
       two-second threshold falls in about a hundred laps: such a server
       warns and skips repeatedly. The page's hook — log and skip are one
       condition, so a server that warned recently stays behind — is
-      unaffected and stands. *(session-verified)*
-    - `server-tick`'s `BlockableEventLoop.delayCrash` framing: the crash
+      unaffected and stands. *(session-verified)*~~
+    - ~~`server-tick`'s `BlockableEventLoop.delayCrash` framing: the crash
       slot is a **static** field shared JVM-wide, the rethrow happens only
       on a loop built with *propagatesCrashes* (true for `DedicatedServer`,
       false for `IntegratedServer`), and every server-side caller uses
-      `BlockableEventLoop.relayDelayCrash`.
-    - `server-level-tick` drew and narrated `ServerLevel.runBlockEvents` as
+      `BlockableEventLoop.relayDelayCrash`.~~
+    - ~~`server-level-tick` drew and narrated `ServerLevel.runBlockEvents` as
       ungated. It is inside the freeze gate: a frozen world runs no block
-      events. *(session-verified in `ServerLevel.tick`)*
-    - `server-level-tick` gated `EnderDragonFight.tick` on the empty check
-      alone; it is also behind the freeze gate. *(session-verified)*
-    - `server-level-tick` mis-scoped both chunk-source gates. In
+      events. *(session-verified in `ServerLevel.tick`)*~~
+    - ~~`server-level-tick` gated `EnderDragonFight.tick` on the empty check
+      alone; it is also behind the freeze gate. *(session-verified)*~~
+    - ~~`server-level-tick` mis-scoped both chunk-source gates. In
       `ServerChunkCache.tick` the purge is freeze-gated and
       `ServerChunkCache.runDistanceManagerUpdates` is not; inside
       `ServerChunkCache.tickChunks`, `Level.isDebug` wraps the **whole**
       body including `ServerChunkCache.broadcastChangedChunks`, so a debug
       world drops the block-change broadcast — which no page had said.
-      *(session-verified)*
-    - `server-level-tick` said `NaturalSpawner.createState` counts mobs
+      *(session-verified)*~~
+    - ~~`server-level-tick` said `NaturalSpawner.createState` counts mobs
       "across `DistanceManager.getNaturalSpawnChunkCount` chunks". It walks
       `ServerLevel.getAllEntities`; the chunk count is only the cap's
-      divisor. *(session-verified)*
-    - `server-level-tick` had the light and block packets in the wrong
+      divisor. *(session-verified)*~~
+    - ~~`server-level-tick` had the light and block packets in the wrong
       order. `ChunkHolder.broadcastChanges` sends
       `ClientboundLightUpdatePacket` **first**, to the border players, before
       the changed-section walk begins. *(session-verified — and note that the
       drafting agent reported this correctly and then drew it wrongly in its
       own new diagram, which the session caught. Pass 4 should assume a
-      redrawn figure can contradict the prose beside it, and read both.)*
-    - `players-and-sessions` said `IntegratedPlayerList` "pins the view
+      redrawn figure can contradict the prose beside it, and read both.)*~~
+    - ~~`players-and-sessions` said `IntegratedPlayerList` "pins the view
       distance at 10, never sets a simulation distance at all (so a LAN
       world reports 0)". `IntegratedServer.tickServer` sets both from
       `Options` every unpaused tick, floored at 2, long before anyone joins.
-      The claim is cut. *(session-verified)*
-    - `players-and-sessions` said `MinecraftServer.getProfilePermissions`
-      returns a `PermissionSet`; it returns a `LevelBasedPermissionSet`.
-    - `players-and-sessions` said `PlayerList.respawn` chooses
+      The claim is cut. *(session-verified)*~~
+    - ~~`players-and-sessions` said `MinecraftServer.getProfilePermissions`
+      returns a `PermissionSet`; it returns a `LevelBasedPermissionSet`.~~
+    - ~~`players-and-sessions` said `PlayerList.respawn` chooses
       `Entity.RemovalReason.KILLED` or `CHANGED_DIMENSION`. The reason is its
       third **parameter**, chosen by
       `ServerGamePacketListenerImpl.handleClientCommand`, in the same call
-      that selects `ServerPlayer.restoreFrom`'s branch. *(session-verified)*
-    - `players-and-sessions` said a respawn "restarts the 60-tick timer".
+      that selects `ServerPlayer.restoreFrom`'s branch. *(session-verified)*~~
+    - ~~`players-and-sessions` said a respawn "restarts the 60-tick timer".
       Death sets `ServerGamePacketListenerImpl.markClientUnloadedAfterDeath`,
       a flag the countdown never clears; the give-up-after-60-ticks rule
-      belongs to the join alone.
-    - `players-and-sessions` attributed the *bypasses-player-limit* read to
+      belongs to the join alone.~~
+    - ~~`players-and-sessions` attributed the *bypasses-player-limit* read to
       `PlayerList.canBypassPlayerLimit`, a constant false on the base class;
-      only `DedicatedPlayerList` reads the op entry.
-    - `starting-a-server` said `DedicatedServer.convertOldUsers` returning
+      only `DedicatedPlayerList` reads the op entry.~~
+    - ~~`starting-a-server` said `DedicatedServer.convertOldUsers` returning
       false is the second way startup fails. It returns true if any of five
       conversions succeeded and only decides whether the name cache is
       saved; the boot-stopping gate is the separate
       `OldUsersConverter.areOldUserlistsRemoved`, over four files.
-      *(session-verified)*
-    - `starting-a-server` placed the *Done* log after query, RCON, the
+      *(session-verified)*~~
+    - ~~`starting-a-server` placed the *Done* log after query, RCON, the
       watchdog, JMX and the flush save. It is logged on the line after
       `MinecraftServer.loadLevel` returns, before all of them.
-      *(session-verified)*
-    - `starting-a-server` put `CrashReport.preload` "at the very top of
+      *(session-verified)*~~
+    - ~~`starting-a-server` put `CrashReport.preload` "at the very top of
       `server/Main`"; version detection, the option parser, *--help* and
       *--pidFile* all precede it. And "about twenty" mutable
-      `DedicatedServerProperties` fields is exactly nineteen.
-    - the old `server-lifecycle` credited
+      `DedicatedServerProperties` fields is exactly nineteen.~~
+    - ~~the old `server-lifecycle` credited
       `DedicatedServer.fillServerSystemReport` with the whole report; it
       sets two details and everything listed belongs to
       `MinecraftServer.fillSystemReport`. Its `SuppressedExceptionCollector`
       sentence named packet handlers only: chunk load and chunk save
-      failures feed it too.
-    - the old `server-lifecycle` implied `level.dat` is written by the flush
+      failures feed it too.~~
+    - ~~the old `server-lifecycle` implied `level.dat` is written by the flush
       save. `MinecraftServer.saveAllChunks` calls
       `LevelStorageSource.LevelStorageAccess.saveDataTag` on **every** call,
       so an ordinary autosave rewrites it. The new durability section rests
@@ -2175,8 +2478,8 @@ graph — seventeen edges, each a conversion claim); one added
       the only non-daemon thread left" holds only after
       `Util.shutdownExecutors`, because `Util.ioPool`'s *IO-Worker* threads
       are non-daemon while `Util.nonCriticalIoPool`'s are daemons.
-      *(session-verified)*
-  - **`server-tick`** — the hook (the log *is* the skip, and the missed
+      *(session-verified)*~~
+  - ~~**`server-tick`** — the hook (the log *is* the skip, and the missed
     ticks are never run); the warning gate read as fifteen seconds of
     *scheduled* time; the six-lane figure's ordering, and in particular that
     `ServerCommonPacketListenerImpl.resumeFlushing` itself calls
@@ -2194,8 +2497,8 @@ graph — seventeen edges, each a conversion claim); one added
     inversion; `MinecraftServer.emptyTicks` advancing only while not
     sprinting; *pause-when-empty-seconds* being zero on the base class; the
     in-memory connection rethrow; `IntegratedServer.isTickTimeLoggingEnabled`
-    being unconditionally true.
-  - **`server-level-tick`** — the hook (blocks broadcast before entities
+    being unconditionally true.~~
+  - ~~**`server-level-tick`** — the hook (blocks broadcast before entities
     tick, so an entity's change lands a tick behind a command's); **the
     guard flowchart, the page's primary figure, which asserts a gate on
     every one of its twenty-odd steps — check it against `ServerLevel.tick`
@@ -2209,8 +2512,8 @@ graph — seventeen edges, each a conversion claim); one added
     `Level.tickBlockEntities` pruning removed tickers even while frozen; the
     overworld-only *gameTime* flag being the level constructor's last
     argument; commands being handled before `MinecraftServer.tickChildren`
-    begins, which is what makes the hook's comparison exact.
-  - **`players-and-sessions`** — the hook (death replaces the object, a
+    begins, which is what makes the hook's comparison exact.~~
+  - ~~**`players-and-sessions`** — the hook (death replaces the object, a
     dimension change does not, and both keep the entity id and the same
     listener); **both join diagrams, replacing one nine-lane diagram whose
     implied concurrency was wrong** — especially the claim that the burst
@@ -2227,8 +2530,8 @@ graph — seventeen edges, each a conversion claim); one added
     `PlayerDataStorage.load` reading with an unlimited accounter;
     `ServerGamePacketListenerImpl.switchToConfig`'s round trip producing a
     new entity id and a new listener; the flying kick disabled at zero
-    gravity.
-  - **`starting-a-server`** — the hook (the boot step that loads the world's
+    gravity.~~
+  - ~~**`starting-a-server`** — the hook (the boot step that loads the world's
     chunks loads none of them: of nine ticket types only
     `TicketType.FORCED` and `TicketType.PORTAL` carry
     `TicketType.FLAG_PERSIST`, *session-verified against all nine*); **the
@@ -2244,8 +2547,8 @@ graph — seventeen edges, each a conversion claim); one added
     `LevelLoadListener.Stage.START_SERVER` being declared and fired by
     nothing; there being no *spawnChunkRadius* game rule in 26.2
     (`GameRuleRegistryFix` removes it from saves); and the claim that the
-    *menu.preparingSpawn* percentage line never runs on an ordinary world.
-  - **`how-a-server-dies`** — new, so all of it; the drafting report cites a
+    *menu.preparingSpawn* percentage line never runs on an ordinary world.~~
+  - ~~**`how-a-server-dies`** — new, so all of it; the drafting report cites a
     file and line per claim and pass 4 should walk that list. The
     load-bearing ones: the three-column comparison table, cell by cell; the
     `/stop` sequence diagram's order, which asserts players before chunks,
@@ -2262,16 +2565,16 @@ graph — seventeen edges, each a conversion claim); one added
     teardown has no watchdog left watching it, because the watchdog loops
     only while `MinecraftServer.running`; and
     `MinecraftServer.reportChunkSaveFailure` writing a
-    `ReportType.CHUNK_IO_ERROR` file under *debug/*.
-  - **The landing page and `lectures.md`** assert Part III's order and its
+    `ReportType.CHUNK_IO_ERROR` file under *debug/*.~~
+  - ~~**The landing page and `lectures.md`** assert Part III's order and its
     dependencies: that the part can be watched before Part IV because
     `server-level-tick` defines the three ranges itself, that
     `environment-attributes-and-timelines` is best watched before the level
     tick, and that Part I's *two loops* figure is the only earlier
-    prerequisite. Each is a claim.
-  - **`anatomy` lost two invariants to `server-tick`** — the budget's count
+    prerequisite. Each is a claim.~~
+  - ~~**`anatomy` lost two invariants to `server-tick`** — the budget's count
     and the sprint conclusion — and now carries a one-sentence pointer;
-    check that the compression lost nothing true.
+    check that the compression lost nothing true.~~
 
 - **2026-09-02, session C — Part I Anatomy · Part II Foundations.** Nine
   pages rewritten or written (two Part I, seven Part II), three moved to
@@ -3443,7 +3746,7 @@ else:
 
 **Redrawn and new diagrams, each an ordering claim.**
 
-- `README.md`'s three-floor figure: that the dependency is strictly
+- `commands/README.md`'s three-floor figure: that the dependency is strictly
   one-directional and that the four top-floor pages are peers.
 - `brigadier-and-commands`'s six-lane trace, with the Netty-thread note moved
   onto the diagram as a `Note over`.

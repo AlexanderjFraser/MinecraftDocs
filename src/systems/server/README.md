@@ -29,7 +29,7 @@ flowchart LR
     Level -- "the packets the tick decided to send" --> Tick
     Tick -- "the connection phase, after the levels" --> Players
     Players -- "a join, a respawn, a disconnect" --> Tick
-    Tick -- "the loop's finally, however it is reached" --> Death
+    Tick -- "the loop's finally, which two of the three endings reach" --> Death
 ```
 
 ## Before you start
@@ -40,7 +40,9 @@ as a game loop, that a packet is decoded on a Netty thread and handled on
 this one, and that the client's frame loop is a separate clock. Part II's
 [codecs](../foundations/codecs-nbt-json.md) and
 [registries](../foundations/identifiers-and-registries.md) are assumed
-wherever something is written to disk or sent on the wire.
+wherever something is written to disk or sent on the wire, and [the resource
+system](../foundations/resource-system.md) is assumed once, by *starting a
+server*, which runs its staged load for server data.
 
 Two pages from a later part are assumed, and they are cut two different
 ways. [Tickets and loading](../world/tickets-and-loading.md) owns what
@@ -48,9 +50,9 @@ ways. [Tickets and loading](../world/tickets-and-loading.md) owns what
 tick](server-level-tick.md) defines both in two sentences before it uses
 them, so that one keeps until Part IV. [Environment attributes and
 timelines](../world/environment-attributes-and-timelines.md) does not: it
-owns the per-position system whose cache `ServerLevel.tick` throws away in
-its very first statement — before the border, before the weather — and out
-of which `Level.updateSkyBrightness` later reads the sky light level rather
+owns the per-position system whose cache `ServerLevel.tick` throws away
+before it touches anything else — before the border, before the weather —
+and out of which `Level.updateSkyBrightness` later reads the sky light rather
 than deriving it from the time of day. That is the one page worth watching
 out of order before this part; everything else in Part IV can wait.
 
@@ -64,8 +66,10 @@ out of order before this part; everything else in Part IV can wait.
 2. [The level tick](server-level-tick.md) — one step of that lap, which is
    the whole world changing: weather, scheduled ticks, mob spawns, random
    ticks, every entity, every block entity. The block changes go out
-   *before* the entities move, so a change an entity makes always reaches
-   you a tick later than a change a command makes.
+   *before* the entities move, so a change a piston makes reaches you a tick
+   later than one a player's command makes — with falling sand the exception
+   that sends its own packet, and a console command the one that is as late
+   as the piston.
 3. [Players and sessions](players-and-sessions.md) — a join from the end of
    the login handshake to a player standing in a world with chunks on the
    way, and then the three ways that session changes: death, a dimension,

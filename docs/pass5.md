@@ -19,6 +19,73 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session C — Part III The server (pass 4) *(2026-09-04)*
+
+Wording debt from twenty-eight fact fixes. Nothing here was acted on; pass 4
+does not polish.
+
+**Rewrites to re-read.** Three fixes grew a sentence into a passage and each
+should be read again for rhythm rather than for truth:
+
+- `starting-a-server`'s **opening paragraph**. Its frame ("Between those two
+  lines the server …") was inverted — five of the six things listed happen
+  before *Preparing level* prints — and the fix adds a clause and a second
+  sentence to a paragraph that was already the page's densest. The hook is
+  untouched. Worth trying as two sentences instead of one long one.
+- `server-tick`'s **packet-drain paragraph** gained five lines explaining
+  that chat and commands arrive as tasks rather than as packets. It is true
+  and it matters, but it lands in the middle of a section whose subject is
+  the drain, and the event-loop section forty lines later is where the other
+  door is actually documented. Pass 5 should decide whether the sentence
+  points forward instead of explaining in place.
+- `server-level-tick`'s **falling-sand exception** is now its own paragraph
+  after "The ordering is visible from a client". That is the right place for
+  it factually, but it means the section's punchline is immediately
+  qualified. Consider leading with the exception and landing on the rule.
+
+**Repeated hedges introduced.** "Almost nothing", "almost none", "all but the
+first", "two of the three endings", "on this side of the jar" — five new
+qualifiers in one part, each earned individually. Read them together; if the
+part now reads as hedged, some of them want re-scoping into a positive claim
+instead ("`FallingBlockEntity` is the one place that …").
+
+**Structural findings, not acted on.**
+
+- **`how-a-server-dies` carries two subjects.** The three-endings comparison
+  is the lecture; *What you lose if you kill the process* is a durability
+  page hiding inside it, and it is where four of the session's nine
+  corrections landed — autosave spacing, what `level.dat` actually holds,
+  the `SavedData` files, the per-ending answer. It is the strongest material
+  on the page and the least connected to its figure. Pass 5 should decide
+  whether it is a section or a page.
+- **`server-tick`'s event-loop figure grew from eleven edges to fourteen**
+  when the two impossible ones were replaced by a truthful queue-empty exit.
+  It is now the densest flowchart in Part III and its `C` node label is long
+  enough to be a sentence. Correct, but worth redrawing for shape.
+- **`starting-a-server`'s sequence figure gained an arrow** (the pack-opening
+  stage moved onto the `Main` lane) and split `spin` into three. At 27 items
+  it is now the largest single diagram in the part — `server-level-tick` has
+  more in total (35) but across two figures.
+- **Part III is 2 of 5 on *Questions players ask*** (`server-tick`,
+  `server-level-tick`), which is *inside* session P's rule of thumb and one
+  of the better parts on the device — recorded here because the corpus-wide
+  pass needs the parts that are already fine as much as the ones that are
+  not. The session's own first guess at this number was five, and counting
+  it settled the matter; treat every per-part count in this file the same way.
+
+**Small.**
+
+- `players-and-sessions`'s section heading *Four ways the session changes*
+  now sits above a paragraph that names a fifth (the end credits). The
+  heading is still the right frame for the comparison, but the tension is
+  visible; a reader who counts will stop.
+- `server-tick`'s `tickChildren` table row about the player-info broadcast
+  now reads "its own counter has not passed 600 — so every 601st call, not
+  every 600th tick", which is two corrections in one cell and the longest
+  *skipped when* value in the table.
+- The em dash count in `how-a-server-dies`'s durability section went up by
+  four with the watchdog asterisk. Whole-page voice pass.
+
 ## Session B — Parts I and II (pass 4) *(2026-09-04)*
 
 Wording debt and structural findings from Part I and Part II's fact-check.
