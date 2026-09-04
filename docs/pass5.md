@@ -19,6 +19,93 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session E — Part V Blocks (pass 4) *(2026-09-04)*
+
+Wording debt from sixty-one fact fixes across eight pages. Nothing here was
+acted on; pass 4 does not polish.
+
+**Rewrites to re-read.** Five fixes grew a sentence into a passage:
+
+- `signal-and-dust`'s **hook**. The old one was a picture ("14, 13, 12, visibly")
+  and the true replacement is a picture plus a denial ("that staircase is the
+  whole cost of redstone, and nobody has ever seen it"). It reads well but it is
+  now the longest opening paragraph in the part, and the *why* — that the packet
+  is built once per tick from the world rather than from the writes — is
+  repeated three paragraphs later where the flowchart explains it. One of the two
+  should go.
+- `blocks/README.md`'s **opening**. Splitting the three feelings into "the first
+  is a prediction and Part X owns it" plus "the other two" costs a sentence and
+  puts a forward reference in the part's first paragraph. The alternative is to
+  drop the crosshair feeling and open on two, which is tighter but loses the one
+  a player notices first.
+- `pistons-and-block-events`' **flag table** went from four rows to five and
+  gained a *written by* column, because one of the four was not `moveBlocks`'s.
+  The table is now wide enough to want the `custom.css` treatment, and the
+  paragraph under it gained four lines explaining why the 82 row does not fire in
+  the page's own scenario — true, and a digression inside the page's punchline.
+- `block-breaking`'s **durability answer** grew from two sentences to five to
+  carry `Item.mineBlock`'s three conditions and the shears exception. It is the
+  page's best *Questions players ask* entry and it is now its longest.
+- `diodes-and-observers`' **comparator fan-out paragraph** now names two callers
+  and says which one the example uses, where it named one. The correction is
+  right and the paragraph has lost its shape: the interesting fact
+  (`BlockEntity.setChanged` is what makes a comparator notice a chest) is now
+  third in the sentence order rather than first.
+
+**The "three differences" tic, and the shape it hides.** `diodes-and-observers`'
+comparison table is introduced as five rows because it *has* five rows, which is
+honest and flat. The real structure underneath is two axes — repeater against
+comparator (four differences, all about arithmetic and priority) and diode
+against observer (one difference, the channel) — and the table flattens them into
+one grid where the observer column is mostly "nothing". Pass 5 should decide
+whether that is one table or two.
+
+**Ambiguities left standing.**
+
+- `diodes-and-observers` says `DiodeBlock.shouldPrioritize` holds for "a diode
+  whose own input is not on the far side of it". That is exact and hard to read.
+  The colloquial version — "a diode that is not pointing back at this one" — is
+  also exactly right, but only under the reading of *pointing* the page spends a
+  paragraph arguing against (FACING points at the **input**). Either the page
+  needs a word for the output direction or the sentence needs a diagram.
+- The same page says a diode "restricts `DiodeBlock.getSignal` to the one
+  direction it faces" two paragraphs before establishing that FACING is the
+  *input* side. Both sentences are true — the `direction` parameter of `getSignal`
+  is the direction from the asker to the answerer, so it equals FACING when the
+  output block asks — but a reader meets them in the order that makes them look
+  contradictory.
+- `block-interaction`'s bit-8 clause now carries a condition ("when the Chunk
+  Builder option asks for it") inside the sentence that is supposed to be the
+  page's payoff. It may want to be a parenthetical or a footnote instead.
+
+**Structural findings, not acted on.**
+
+- **`block-entities` is the part's odd page and the landing page now says so
+  awkwardly.** It is not about choosing a state, performing a write, or answering
+  a neighbour's write; the landing page's opening had to grow a fourth clause
+  ("or — once — about the state a position cannot hold at all") to cover it. The
+  cleaner reading is that Part V has a hub, two click lectures, a redstone trio,
+  and one page about state that outgrew a block state.
+- **`signal-and-dust` carries two subjects.** The default evaluator and the
+  experimental one are the same computation with different semantics, and the
+  page gives the second a full section plus a closing paragraph. It is the right
+  material; it is also the point at which the page stops being about a lever and
+  two dust.
+- **`blocks-and-states`' write flowchart now has eleven nodes and a subgraph**
+  after gaining the no-op branch. It is the most linked-to figure in the part and
+  the densest; it may want splitting into the chunk write and the tail, which are
+  already two subgraphs.
+- **Six Part V pages end on *Questions players ask*** (all but the landing page
+  and `blocks-and-states`), against session P's rule of thumb of at most half a
+  part. This part is the worst offender per page in the book.
+
+**Corpus-wide, found here.** The corpus has no settled word for the two update
+channels' *directions*. `block-interaction` says "the direction pointing from
+that neighbour back at the door"; `signal-and-dust`'s table says "which neighbour
+is told first"; `diodes-and-observers` says "the one direction it faces". Three
+pages, three conventions, one `Direction` parameter. A terminology sweep should
+fix the vocabulary before the pages.
+
 ## Session D — Part IV The world (pass 4) *(2026-09-04)*
 
 Wording debt from forty-nine fact fixes across eleven pages. Nothing here was

@@ -12,7 +12,7 @@ half follows anyway, down the *shape* channel, which is the half of the
 update machinery the client also runs. That is why a door feels instant on a
 laggy server and a redstone lamp does not.
 
-> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. When the receipt arrives the client compares what it remembered against what it has since been told, and rewrites the world where the two disagree. [Prediction and acknowledgement](../client/prediction-and-acks.md) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
+> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
 
 ## The cast
 
@@ -128,7 +128,8 @@ and the swing is part of it, not a separate decision.
 `InteractionResult.CONSUME` are all `InteractionResult.Success` values
 differing only in `InteractionResult.SwingSource`: the client animates and
 sends `ServerboundSwingPacket`, the server animates for the trackers, or
-nobody does. `InteractionResult.consumesAction` is what every branch tests,
+nobody does. `InteractionResult.consumesAction` is what the server's branches test — the
+client's own loop matches on the record types instead —
 but the record carries two more answers besides —
 `InteractionResult.Success.wasItemInteraction`, which decides whether
 `Stats.ITEM_USED` is awarded, and
@@ -142,16 +143,18 @@ answer is no, returns `InteractionResult.PASS` and lets the item try. For oak
 it is yes: `StateHolder.cycle` flips `DoorBlock.OPEN`, and `Level.setBlock`
 is called with flags **10** — `Block.UPDATE_CLIENTS` and
 `Block.UPDATE_IMMEDIATE`, with `Block.UPDATE_NEIGHBORS` **clear**. Then
-`DoorBlock.playSound`, `Level.gameEvent` with `GameEvent.BLOCK_OPEN` or
+`DoorBlock.playSound`, `LevelAccessor.gameEvent` with `GameEvent.BLOCK_OPEN` or
 `GameEvent.BLOCK_CLOSE` (posting is [game events and
 vibrations](../world/game-events-and-vibrations.md)), and
 `InteractionResult.SUCCESS`. Exactly this code runs on both sides.
 
 Ten is the whole story of the page. Bit 2 broadcasts, and on the client
 `LevelExtractor.blockChanged` reads bit 8 not as *immediate* but as
-*a player did this*, which buys the section a priority remesh. Bit 1 is
-absent, so `Level.setBlock` never reaches its neighbour fan-out — and on the
-client that would be a no-op anyway. What the flags then feed, and the rest of
+*a player did this*, which can buy the section a priority remesh — `LevelRenderer`
+acts on that mark only when the *Chunk Builder* option is set to prioritise
+nearby or player-affected sections, which the fancy graphics preset does and
+the default does not. Bit 1 is absent, so `Level.setBlock` never reaches its
+neighbour fan-out — and on the client that would be a no-op anyway. What the flags then feed, and the rest of
 what a write does, is the flowchart on [blocks and
 states](blocks-and-states.md#the-two-update-channels); everything below is
 the part of it the door
@@ -176,8 +179,11 @@ and therefore runs on both sides. Shape updates are predictable because the
 client genuinely runs them; neighbour updates are not because the client's
 copy does nothing.
 
-`DoorBlock.updateShape` has three outcomes, and the door's whole behaviour is
-in the choice between them. Asked from the matching vertical direction — up
+`DoorBlock.updateShape` answers four of its six callers with the state it was
+given: the whole method is behind a test for the vertical axis, so the four
+horizontals fall through to `BlockBehaviour.updateShape`, which returns the
+state unchanged. The other two directions are where the door lives, and there
+are three outcomes between them. Asked from the matching vertical direction — up
 for a lower half, down for an upper — it returns **the neighbour's own state
 with `DoorBlock.HALF` swapped to its own**, so open, facing, hinge and
 powered are copied wholesale, which is why the top half is already open by
@@ -235,14 +241,14 @@ one counts *recursion depth* and is what the door's 511 and 510 come from.
 
 `ServerGamePacketListenerImpl.handleUseItemOn` tests in this order, and the
 interesting column is the second one — the refusals do not answer alike, and
-two of them lie.
+one of them lies.
 
 | the gate | what the client gets when it fails |
 |---|---|
 | `ServerGamePacketListenerImpl.hasClientLoaded` | nothing, not even the receipt |
 | `ItemStack.isItemEnabled` on the held stack | nothing |
 | `Player.isWithinBlockInteractionRange`, with 1.0 of slack | nothing |
-| the hit location lying inside the clicked block | nothing, plus a server-side log line naming the player |
+| the hit location lying within one block of the clicked block's centre on every axis — a 2×2×2 box, not the block | nothing, plus a server-side log line naming the player |
 | above `LevelHeightAccessor.getMaxY` or below `LevelHeightAccessor.getMinY` | `ServerPlayer.sendBuildLimitMessage` — an action-bar line, and **no block update** |
 | `MinecraftServer.isUnderSpawnProtection` | `ServerPlayer.sendSpawnProtectionMessage`, plus both block updates |
 | a pending teleport, or `ServerLevel.mayInteract` refusing for the world border | `ServerPlayer.sendBuildLimitMessage` — you are told you are building too high, whatever the real reason |
@@ -261,7 +267,7 @@ changed positions in one section into a single
 `ServerGamePacketListenerImpl.ackBlockChangesUpTo` was called before any of
 the gates, and `ServerGamePacketListenerImpl.tick` emits the receipt when
 `MinecraftServer.tickChildren` reaches connections — after the levels have
-already broadcast.
+already broadcast ([the server tick](../server/server-tick.md)).
 
 ## Questions players ask
 
@@ -282,9 +288,9 @@ the two sides read that word oppositely: `ClientLevel.playSeededSound` plays
 the sound **only** when the except entity is the local player, while
 `ServerLevel.playSeededSound` broadcasts a `ClientboundSoundPacket` to
 everyone in range **but** them. So you hear your own prediction and never the
-server's copy — and since each side draws its own pitch and its own seed from
-`Level.soundSeedGenerator`, your door is genuinely a different sound from
-the one your friend heard.
+server's copy — and since each side draws its own pitch from its own
+`Level.getRandom` and its own seed from `Level.soundSeedGenerator`, your door
+is genuinely a different sound from the one your friend heard.
 
 **Why does breaking the bottom of a door remove the top on the server but
 not on my screen?** Because that removal is a *shape* update whose destroy
@@ -297,8 +303,9 @@ updates that `Level.destroyBlock` implies.
 
 **Why does opening a door lag a busy server when nothing is powered?**
 Because the write still reaches `ServerLevel.sendBlockUpdated`, which
-compares the old and new collision shapes and, when they differ, asks every
-`PathNavigation` in `ServerLevel` whose path crosses the position to
+compares the old and new collision shapes and, when they differ, walks
+`ServerLevel.navigatingMobs` — every tracked mob in the level, in full — asking
+each whether the position is near enough to its remaining path to be worth
 `PathNavigation.recomputePath`. A door changes shape every time it moves.
 None of that exists on the client, which is one more reason your half of the
 click is the fast half.

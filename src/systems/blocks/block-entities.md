@@ -56,8 +56,10 @@ packet, so its state travels only in a chunk send
 it broadcasts is the base class's empty tag.
 
 Everything else a client knows about a block entity it knows by consequence:
-the block state it can see, and a menu it has been given. That is the whole
-of the interface, and the trace below is what it costs.
+the block state it can see, a menu it has been given, and a block event — the
+third channel, and the one that swings a chest lid without either side saying
+what is inside ([pistons and block events](pistons-and-block-events.md)). The
+trace below is what the first two cost.
 
 ## One save hook, four ways out
 
@@ -68,10 +70,10 @@ subclass; everything else is bookkeeping the base class adds.
 | what runs | what it writes | who calls it |
 |---|---|---|
 | `BlockEntity.saveAdditional` | the subclass's own fields, and nothing else | nobody directly |
-| `BlockEntity.saveCustomOnly` | that alone | the pick-block path, which then strips the keys that are now components |
-| `BlockEntity.saveWithoutMetadata` | that plus *components* | the two below |
-| `BlockEntity.saveWithId` | that plus *id* | callers that already know the position |
-| `BlockEntity.saveWithFullMetadata` | that plus *id*, *x*, *y* and *z* | `LevelChunk.getBlockEntityNbtForSaving`, the chunk-save form |
+| `BlockEntity.saveCustomOnly` | that alone | thirteen of the nineteen `BlockEntity.getUpdateTag` overrides, and the pick-block path, which then strips the keys that are now components |
+| `BlockEntity.saveWithoutMetadata` | that plus *components* | the two below, plus the copy-NBT debug key, `BlockInput` and the falling block |
+| `BlockEntity.saveWithId` | that plus *id* | two callers that record their own position separately: `AdventureModePredicate` and `StructureTemplate` |
+| `BlockEntity.saveWithFullMetadata` | that plus *id*, *x*, *y* and *z* | `LevelChunk.getBlockEntityNbtForSaving`, the chunk-save form, and every command that reads a block's NBT |
 
 Reading back is `BlockEntity.loadWithComponents` (fields plus components) or
 `BlockEntity.loadCustomOnly` (fields only) over a `ValueInput`
@@ -83,19 +85,24 @@ a `ValueInput`, because no entity exists yet to own one. So
 the same tag in a `ValueInput` and loads it. Any of those three steps failing
 logs and returns null, and the position ends up with no entity at all.
 
-The network reuses that path exactly:
-`ClientPacketListener.handleBlockEntityData` finds the entity by position
-*and* type and hands the tag to `BlockEntity.loadWithComponents`. There is no
-separate network deserialiser. Where the chunk's *block_entities* list is
+The network joins that path at the end rather than reusing it whole:
+`ClientPacketListener.handleBlockEntityData` never reads *id* or constructs
+anything — it finds the existing entity by position *and* type and hands the tag
+to `BlockEntity.loadWithComponents`. There is no separate network
+deserialiser. Where the chunk's *block_entities* list is
 written and read is [chunk storage](../world/chunk-storage.md).
 
 ## Create, keep, replace, remove
 
-Every block entity in the game is created and destroyed inside one method:
-`LevelChunk.setBlockState`, after the section write, the heightmaps and the
-light checks ([what a write
-does](blocks-and-states.md#the-two-update-channels)). It makes two
-decisions, in this order.
+A block entity that appears because a *block* appeared is created and
+destroyed inside one method: `LevelChunk.setBlockState`, after the section
+write, the heightmaps and the light checks ([what a write
+does](blocks-and-states.md#the-two-update-channels)). That is the lifecycle
+path, and it makes two decisions, in this order. It is not the only way one
+comes into being: a chunk arriving from disk or from the network builds its
+entities from saved tags, and `LevelChunk.getBlockEntity` in its *immediate*
+mode constructs a missing one on a plain read — which is the mode every
+`Level.getBlockEntity` asks for.
 
 **Removal** happens only when the *block* changed, the old state had an
 entity, and the new state does not claim it through
@@ -107,10 +114,12 @@ not empty it. Removal is two halves with different gates. The side effects —
 `BlockEntity.preRemoveSideEffects`, which for anything implementing
 `Container` drops the contents through `Containers.dropContents` — run **only
 on the server** and only with `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS`
-clear. The bookkeeping, `LevelChunk.removeBlockEntity`, runs regardless: the
-map entry goes, the game-event listener is unregistered (server only), the
-entity is flagged removed, and its ticker is rebound to
-`LevelChunk.NULL_TICKER`.
+clear. The bookkeeping, `LevelChunk.removeBlockEntity`, runs regardless —
+though only the last of its four steps is itself unconditional. The map entry
+going, the game-event listener being unregistered and the entity being flagged
+removed all sit behind *is this chunk in a level*, which a chunk still being
+generated is not; the rebind of the ticker to `LevelChunk.NULL_TICKER` happens
+either way.
 
 **Creation** happens after `BlockBehaviour.BlockStateBase.onPlace`, and only
 if the state actually written still has a block entity. The chunk looks for
@@ -120,8 +129,10 @@ entity* warning, removes it and builds a fresh one from
 `EntityBlock.newBlockEntity` — the block's own factory, not
 `BlockEntityType.create`. Only a surviving match is kept, with its cached
 state refreshed and `LevelChunk.updateBlockEntityTicker` re-asking the block
-for a ticker. That is why flipping a furnace's *lit* property costs nothing:
-same block, valid state, same object.
+for a ticker. That is why flipping a furnace's *lit* property costs almost
+nothing: same block, valid state, same object — a fresh
+`LevelChunk.BoundTickingBlockEntity` rebound into the wrapper is the whole of
+the expense.
 
 Chunk load and unload use the ends of the same machinery.
 `ChunkStatusTasks.full` runs `LevelChunk.runPostLoad` to turn the saved tags
@@ -154,7 +165,7 @@ sequenceDiagram
     CH-->>CH: broadcastBlockEntity asks getUpdatePacket and gets nothing
     Note over SL,CPL: tick N plus 1, entities phase, players tick
     SP->>FM: broadcastChanges compares four data slots against remoteDataSlots
-    FM->>CPL: ClientboundContainerSetDataPacket for data 0 and 2, the arrow moves
+    FM->>CPL: ClientboundContainerSetDataPacket per changed slot: 0, 1 and 2 on this tick, 0 and 2 from the next
 ```
 
 The furnace's ticker is handed out by `AbstractFurnaceBlock.createFurnaceTicker`
@@ -219,16 +230,16 @@ keeps loaded and your simulation distance does not reach holds furnaces that
 do not smelt, and nothing about the block entity records this: it is simply
 never called. Below the gates,
 `LevelChunk.BoundTickingBlockEntity` adds its own — not removed, adopted by a
-level, inside the world border, chunk at `FullChunkStatus.BLOCK_TICKING` with
-its entities loaded — then re-reads the live state and ticks only while
-`BlockEntityType.isValid` still holds, logging once and skipping while it
-does not.
+level, inside the world border, and then, on a `ServerLevel` only, the chunk at
+`FullChunkStatus.BLOCK_TICKING` with its entities loaded — before re-reading
+the live state and ticking only while `BlockEntityType.isValid` still holds,
+logging once and skipping while it does not.
 
 The list is never searched. Removal rebinds the chunk's
 `LevelChunk.RebindableTickingBlockEntityWrapper` to `LevelChunk.NULL_TICKER`,
 whose `TickingBlockEntity.isRemoved` is permanently true, and the next pass of
-`Level.tickBlockEntities` drops it on the way past — an O(1) removal from a
-list that is walked every tick anyway. Additions made *during* the walk go to
+`Level.tickBlockEntities` drops it on the way past — no search, on a list that
+is walked every tick anyway. Additions made *during* the walk go to
 `Level.pendingBlockEntityTickers` and are folded in at the top of the next
 pass, so a block entity created by another block entity's tick starts ticking
 one tick later. The client runs the same method from `Minecraft.tick`, after

@@ -2,17 +2,19 @@
 
 > Verified against **Minecraft 26.2** · Part V · A lever on the floor is flipped, and two redstone dust to the east of it go to 15 and 14.
 
-You flip a lever, and the dust beside it turns bright. Flip it back and a long
-line does not go dark all at once — it counts down, 14, 13, 12, visibly, one
-value per wire. That staircase is not an animation and not a tick delay. It is
-the shape of the algorithm: each wire recomputes its own strength from
-scratch, writes it, and then **hand-issues seven `Level.updateNeighborsAt`
-calls — its own position and all six neighbours — which is forty-two neighbour
-updates for one wire that changed**, and the wire at the far end of the line
-is reached once per intermediate value on the way down. The game ships a
-second implementation of exactly this computation, behind a feature flag,
-which walks the whole connected network in two ordered phases and does not
-produce the staircase at all.
+You flip a lever, and the dust beside it turns bright. Flip it back and the
+line goes dark — in one tick, but not in one pass. Each wire recomputes its
+own strength from scratch, writes it, and then **hand-issues seven
+`Level.updateNeighborsAt` calls — its own position and all six neighbours —
+which is forty-two neighbour updates for one wire that changed**; and because
+the recursion stops on *value* rather than on distance, the wire at the far
+end is reached once for every intermediate value the near end passes through
+on the way down. That staircase is the whole cost of redstone, and **nobody
+has ever seen it**: the cascade finishes inside one packet handler, and the
+packet a client is sent is built later in the same tick from whatever the
+position holds by then. The game ships a second implementation of exactly this
+computation, behind a feature flag, which walks the whole connected network in
+two ordered phases and does not produce the staircase at all.
 
 **Forty-two** — neighbour updates issued by one wire whose power changed
 (`DefaultRedstoneWireEvaluator.updatePowerStrength`).
@@ -35,7 +37,7 @@ produce the staircase at all.
 Redstone has no scheduler and no graph. It is what happens when blocks answer
 two questions about their neighbours — *how much signal do you give me* and
 *did something near you change* — through the same `BlockBehaviour.neighborChanged`
-fan-out every block update uses. This is the whole of the default
+fan-out every *neighbour* update uses. This is the whole of the default
 implementation, from one update arriving to the next batch leaving.
 
 ```mermaid
@@ -55,10 +57,12 @@ flowchart TB
     OUT["forty-two neighbour updates, queued in CollectingNeighborUpdater.addedThisLayer and run before the caller's remaining directions"]
     IN --> CLIENT
     CLIENT -- "yes" --> NOTHING
-    CLIENT -- "no" --> SURV
+    CLIENT -- "no, and not a wire-sourced update under the feature flag" --> SURV
     SURV -- "no" --> DROP
     SURV -- "yes" --> BLK
-    BLK --> WIRE --> TARGET --> SAME
+    BLK -- "block signal under 15" --> WIRE --> TARGET
+    BLK -- "block signal 15, so the wires are never asked" --> TARGET
+    TARGET --> SAME
     SAME -- "yes" --> STOP
     SAME -- "no" --> WRITE --> FAN --> OUT
 ```
@@ -70,7 +74,11 @@ seven positions rather than one. And the recursion terminates on *value*, not
 on distance: a wire whose recomputed strength equals what it already holds
 writes nothing and tells nobody. A line going dark therefore re-enters every
 wire once per step of the descent, and each visit is the last one only when
-the value has stopped moving.
+the value has stopped moving. None of those intermediate writes is ever sent.
+`Level.sendBlockUpdated` only records the position in a set on the
+`ChunkHolder`, and `ChunkHolder.broadcastChanges` builds the packet once per
+tick by reading the level again — so a position written five times in a tick
+is broadcast once, with the value it ended on.
 
 ## What a block answers when it is asked for power
 
@@ -91,8 +99,11 @@ if that block is a redstone conductor**, takes the larger of it and
 position from any of its six neighbours. It is a maximum, not a choice between
 two modes: a powered conductor offers the greater of what it emits itself and
 what is being forced into it. That single line is what "strongly powered"
-means, and it is why a block with a lever on it powers the dust beside it
-while a block merely *touched* by dust does not.
+means, and it is why a block with a lever on it powers the dust beside it. A
+block a wire merely points into is strongly powered too — that is what a
+piston beside a line reads — but no *other dust* can see it, for a reason that
+has nothing to do with this line and everything to do with
+`RedStoneWireBlock.shouldSignal`, below.
 
 The lever shows both halves at once. `LeverBlock.ownSignal` is 15 in every
 direction when powered — that is the weak signal, and it is what the dust next
@@ -102,20 +113,22 @@ own right, and everything touching *that* block sees 15 too.
 
 ### Three direction orders, and only one of them is about reading
 
-The corpus has three fixed direction arrays and they are not interchangeable.
-Two decide who gets **told** something; the third decides what a block
-**reads**, and it is the one this page uses.
+Three fixed direction orders run through this page and they are not
+interchangeable. Two decide who gets **told** something; the third decides
+what a block **reads**, and it is the one this page uses.
 
 | array | order | what it governs |
 |---|---|---|
-| `SignalGetter.DIRECTIONS` | down, up, north, south, west, east | what a block reads — `SignalGetter.getBestNeighborSignal`, `SignalGetter.getDirectSignalTo` and `SignalGetter.hasNeighborSignal` all walk it, and all stop early on a 15 |
+| `SignalGetter.DIRECTIONS` | down, up, north, south, west, east | what a block reads. Only `SignalGetter.getBestNeighborSignal` walks the array; `SignalGetter.getDirectSignalTo` and `SignalGetter.hasNeighborSignal` are written out by hand in the same order |
 | `NeighborUpdater.UPDATE_ORDER` | west, east, down, up, north, south | which neighbour is told first about a change, on the neighbour channel |
 | `BlockBehaviour.UPDATE_SHAPE_ORDER` | west, east, north, south, down, up | which neighbour is asked first to re-fit, on the shape channel |
 
-The early exit on 15 is not a micro-optimisation with no consequences: it
-means a position saturated from one side never reads the others at all.
-`SignalGetter.DIRECTIONS` is plain `Direction` order, which is the only reason
-its first entry is *down*.
+All three stop early, and not on the same thing: the two that return a number
+stop at a 15, while `SignalGetter.hasNeighborSignal` — which returns a boolean
+— stops at the first answer above zero. That is not a micro-optimisation with
+no consequences: a position saturated from one side never reads the others at
+all. `SignalGetter.DIRECTIONS` is plain `Direction` order, which is the only
+reason its first entry is *down*.
 
 ## Dust, and how far it reaches
 
@@ -127,8 +140,10 @@ to its neighbours is `RedstoneWireEvaluator.getIncomingWireSignal`, and the
 of the wires it can see and subtracts one, floored at zero. The wires it can
 see are the four beside it, plus the wire on top of a conducting neighbour
 when nothing conducts above this position, plus the wire below a
-non-conducting neighbour — which is the whole of "dust climbs a block and
-falls down one".
+non-conducting neighbour — which is the *power* half of "dust climbs a block
+and falls down one". The drawing half is `RedStoneWireBlock.getConnectingSide`
+below, which asks `BlockBehaviour.BlockStateBase.isFaceSturdy` where this one asks
+about conduction.
 
 Two asymmetries follow from `RedStoneWireBlock.getSignal` and are worth
 stating plainly, because they are the two questions every redstone build
@@ -141,7 +156,9 @@ only if its connection on the opposite side is made.
 Connection itself is two rules and a completion pass.
 `RedStoneWireBlock.shouldConnectTo` is the real one: another wire always, a
 `Blocks.REPEATER` along its own axis, a `Blocks.OBSERVER` only from its facing
-side, and otherwise any block that says it is a signal source.
+side, and otherwise any block that says it is a signal source — that last
+clause only when a direction is supplied, which the vertical rules do not do,
+so up and down connect to wire and to nothing else.
 `RedStoneWireBlock.getConnectingSide` adds the vertical cases — up over a
 face-sturdy neighbour, down past a non-conducting one. And then
 `RedStoneWireBlock.getConnectionState` runs a completion pass that produces
@@ -176,22 +193,26 @@ sequenceDiagram
     participant DRWE as DefaultRedstoneWireEvaluator
     participant PBB as PistonBaseBlock
     Note over LevB,PBB: all of this is one call stack, inside one packet handler, before the level ticks
-    LevB->>SL: setBlock POWERED with flags 3, then updateNeighbours by hand
-    SL->>CNU: two MultiNeighborUpdates, this position and the block behind the lever
+    LevB->>SL: setBlock POWERED with flags 3
+    SL->>CNU: the write's own fan-out at the lever, drained on the spot
     CNU->>RSWB: neighborChanged at the first dust
     RSWB->>DRWE: getBlockSignal sees the lever at 15, so the target is 15
     DRWE->>SL: setBlock POWER 15 with flag 2, then seven updateNeighborsAt
     CNU->>RSWB: neighborChanged at the second dust, depth-first, ahead of the lever's other directions
     RSWB->>DRWE: block signal 0, incoming wire signal 15 minus 1
     DRWE->>SL: setBlock POWER 14 with flag 2, then seven more
-    CNU->>PBB: neighborChanged, and the piston reads the wire's east side at 14
+    CNU->>PBB: neighborChanged, and the piston asks only whether the wire's east side is above zero
     Note over CNU,PBB: the remaining dozens of updates run against blocks that do not care, and the count resets
+    LevB->>SL: updateNeighbours by hand, two more fan-outs: the lever and the block it stands on
 ```
 
-The lever is the one place in this trace where the client does nothing at all.
+The lever is the place in this trace where the client does not even try.
 `LeverBlock.useWithoutItem` writes no state on a `ClientLevel` — it spawns a
-particle and returns — so unlike a door, a lever is not predicted, and the
-client's dust changes colour only when the block updates arrive. The sound
+particle, and only when the lever is going *on* — so unlike a door, a lever is
+not predicted, and the client's dust changes colour only when the block
+updates arrive. The dust and the piston do nothing on the client either, but
+for the ordinary reason: nothing ever calls their
+`BlockBehaviour.neighborChanged` there. The sound
 follows the same split for a different reason: `LeverBlock.pull` is handed a
 null player, so nobody is excluded and the clicker hears the server's
 `ClientboundSoundPacket` like everyone else. Compare
@@ -199,10 +220,12 @@ null player, so nobody is excluded and the clicker hears the server's
 as *except* and they hear their own prediction instead.
 
 Two details in the diagram are worth naming. The lever's `Level.setBlock`
-uses flags 3, so `Block.UPDATE_NEIGHBORS` has already fanned out once before
-`LeverBlock.updateNeighbours` fans out again, at its own position and at the
-block it hangs on. And the ordering of the seven positions a wire updates is
-not fixed by anything: they come out of a hash set. The depth-first drain of
+uses flags 3, so `Block.UPDATE_NEIGHBORS` fans out once *before*
+`LeverBlock.updateNeighbours` fans out twice more, at the lever's own position
+and at the block it stands on — and because nothing was running when the first
+one was queued, it drains the entire dust cascade before the other two are
+even issued. And the ordering of the seven positions a wire updates is
+fixed by no array: they come out of a hash set. The depth-first drain of
 `CollectingNeighborUpdater` is [block interaction](block-interaction.md)'s
 subject, and it is what puts the second dust's whole cascade ahead of the
 lever's remaining directions.
@@ -219,7 +242,8 @@ under a non-conducting one — and calls
 
 ## The second implementation
 
-`FeatureFlags.REDSTONE_EXPERIMENTS` is a built-in data pack, and
+`FeatureFlags.REDSTONE_EXPERIMENTS` is a feature flag, turned on by a built-in
+data pack whose entire content is the line that enables it, and
 `RedStoneWireBlock.useExperimentalEvaluator` asks the level for it on **every
 call** — `RedStoneWireBlock.evaluator` is always the default one, and an
 `ExperimentalRedstoneWireEvaluator` is a fresh object per update, because it
@@ -234,17 +258,21 @@ has block power of its own. Phase two drains
 `ExperimentalRedstoneWireEvaluator.wiresToTurnOn`, raising each to its true
 value. Both phases spread through
 `ExperimentalRedstoneWireEvaluator.propagateChangeToNeighbors` and
-`ExperimentalRedstoneWireEvaluator.enqueueNeighborWire`, and every wire is
-recorded in `ExperimentalRedstoneWireEvaluator.updatedWires`, an
+`ExperimentalRedstoneWireEvaluator.enqueueNeighborWire`, and every wire they
+reach is recorded in `ExperimentalRedstoneWireEvaluator.updatedWires`, an
 insertion-ordered map of position to a packed orientation and power. Only then
-are the states written — with `Block.UPDATE_CLIENTS` plus
+are the states written — the write pass drops any entry whose stored power
+already matches, so what survives it is the wires that really changed — with
+`Block.UPDATE_CLIENTS` and, for every wire but sometimes the first,
 `Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE`, which
 `NeighborUpdater.executeShapeUpdate` honours by skipping any shape update
 whose **target** is dust, whatever the source.
 
 The fan-out is the other half of the difference.
 `ExperimentalRedstoneWireEvaluator.causeNeighborUpdates` issues one
-`Level.neighborChanged` per *connected* side per changed wire, in
+`Level.neighborChanged` per *connected* side per changed wire — connected
+meaning the four horizontals the wire's own state records, plus `Direction.DOWN`
+unconditionally and `Direction.UP` never — in
 `Orientation.getDirections` order — an order derived from where the update
 came from rather than from a fixed array — and, where that side is a redstone
 conductor, five more at that conductor's own sides. That is how the
@@ -255,11 +283,14 @@ evaluator does not, which is what opens it.
 
 ## Questions players ask
 
-**Why does a long line of dust flicker through every value when it turns
-off?** Because each wire recomputes independently and tells its neighbours
-only when its own number moved, so the far end is reached once for each value
-the near end passes through on the way down. The experimental evaluator exists
-to make that one ordered pass instead.
+**Does a long line of dust really count down through every value when it turns
+off?** Inside the tick, yes: each wire recomputes independently and tells its
+neighbours only when its own number moved, so the far end is reached once for
+each value the near end passes through on the way down. On screen, no.
+`ChunkHolder.broadcastChanges` builds one packet per changed position per tick
+by reading the level, so a position written five times sends the last value
+once. The staircase costs neighbour updates, not frames — and the experimental
+evaluator exists to make it one ordered pass instead.
 
 **Why does dust point into a block that cannot be powered?** Because the
 drawing rule and the powering rule are different rules.
@@ -276,14 +307,14 @@ lines in one method, and every "torch under the dust" contraption rests on
 them.
 
 **Does a redstone torch really burn out after a fixed number of flickers?**
-Yes, and the count is a literal rather than the constant beside it.
+Yes, and every number in the mechanism is a literal.
 `RedstoneTorchBlock.RECENT_TOGGLES` is a weak map from level to a list of
-toggles, pruned at the top of `RedstoneTorchBlock.tick` of anything older than
-60 ticks, and `RedstoneTorchBlock.isToggledTooFrequently` burns the torch out
-on the **eighth** surviving entry for that position.
-`RedstoneTorchBlock.MAX_RECENT_TOGGLES` and
-`RedstoneTorchBlock.RECENT_TOGGLE_TIMER` hold 8 and 60, and the method uses
-neither.
+toggles; `RedstoneTorchBlock.tick` prunes anything older than 60 ticks off the
+front of it, and `RedstoneTorchBlock.isToggledTooFrequently` burns the torch
+out on the **eighth** surviving entry for that position.
+`RedstoneTorchBlock.MAX_RECENT_TOGGLES`, `RedstoneTorchBlock.RECENT_TOGGLE_TIMER`
+and `RedstoneTorchBlock.RESTART_DELAY` hold 8, 60 and 160, and nothing in the
+corpus reads any of the three.
 
 ## Where to look
 

@@ -87,6 +87,331 @@ entry first.
 
 ## Entries
 
+## Session E — Part V Blocks (pass 4) *(2026-09-04)*
+
+Seven pages and the landing page, one adversarial agent each; the order work,
+the part-wide notes and every *wrong* re-derived by the session before a
+sentence moved. **All eight had at least one wrong claim** — pass 2's result for
+a sixth time, and this part had the worst provenance in the corpus: two of its
+pages were drafted by agents whose reports were lost, one by an agent whose
+twelve corrections were never re-derived, and three by the pass-3 session
+itself. Sixty-one corrections. The four gates are green and `check_deps.py` has
+no Part V line left.
+
+**The four that carry a lecture.**
+
+- **`signal-and-dust`'s staircase is real and invisible, and the page said you
+  could see it.** The hook was "a long line does not go dark all at once — it
+  counts down, 14, 13, 12, **visibly**, one value per wire", and the first
+  *Questions players ask* entry asked why it flickers. Nobody has ever seen it.
+  The whole cascade runs synchronously inside one packet handler
+  (`MinecraftServer.processPacketsAndTick` drains packets *before*
+  `tickServer`, `MinecraftServer.java:1122,1124`), and `Level.setBlock`'s
+  flag-2 broadcast only records the section-relative position in a
+  `ShortOpenHashSet` on the `ChunkHolder` (`ChunkHolder.java:130-149`). The
+  packet is built later in the same tick by `ChunkHolder.broadcastChanges`,
+  which re-reads `level.getBlockState(pos)` (`:219`) or the live section
+  (`:224`) — so a position written five times in a tick is sent **once**, with
+  the value it ended on. The number survives: seven `Level.updateNeighborsAt`
+  from a `Sets.newHashSet` (`DefaultRedstoneWireEvaluator.java:28-46`) times six
+  directions, because `ServerLevel.updateNeighborsAt` passes a null
+  *skipDirection* into `CollectingNeighborUpdater.MultiNeighborUpdate`
+  (`ServerLevel.java:1240`, `NeighborUpdater.java:19`), is **forty-two**. The
+  hook is now that the staircase costs neighbour updates rather than frames, and
+  the landing page's item 5 says the same.
+- **`pistons-and-block-events`' motion is off by one tick, all the way through.**
+  The diagram put the two motion ticks at N+1 and N+2 and the landing at N+3.
+  The placeholders' block entities are registered during the *blockEvents* phase
+  of tick N, and `Level.addBlockEntityTicker` puts a ticker straight into
+  `blockEntityTickers` whenever `tickingBlockEntities` is false
+  (`Level.java:424-426`) — which it is outside `tickBlockEntities` — so the
+  *blockEntities* phase later in **the same tick** already walks it. Motion is N
+  and N+1; the landing is N+2, when `progressO >= 1.0F` first holds
+  (`PistonMovingBlockEntity.java:311`). The *Questions players ask* answer
+  ("two ticks of motion afterwards, plus a third") went with it.
+- **The block-event census was wrong and the odd block out is the interesting
+  one.** "Four blocks raise events directly — `PistonBaseBlock`, `NoteBlock`,
+  `PotentSulfurBlock` and, through its block entity, `ComparatorBlock`" is
+  **three**. Grepping `.blockEvent(` across the decompile gives thirteen sites:
+  one client re-dispatch, three blocks and seven block entities.
+  **`ComparatorBlock` never raises one**; it declares a *receiving*
+  `triggerEvent` override (`ComparatorBlock.java:197-203`) that forwards to
+  `ComparatorBlockEntity`, which does not override `BlockEntity.triggerEvent`
+  (`BlockEntity.java:315-317`, `return false`) — so the override is dead in both
+  directions, and the page now says so.
+- **Quasi-connectivity is not the piston's alone.** "That upward reach is
+  implemented nowhere else in the game, which is why quasi-connectivity is a
+  piston quirk rather than a redstone rule" is **wrong**:
+  `DispenserBlock.neighborChanged:134` is
+  `level.hasNeighborSignal(pos) || level.hasNeighborSignal(pos.above())`,
+  inherited by `DropperBlock`, and `DoorBlock.getStateForPlacement:130` is the
+  same construct. Three blocks, each writing the reach out by hand, and the
+  piston's *form* — a per-direction sweep of the block above skipping DOWN — is
+  what is unique.
+
+**Two more punchlines that fell.**
+
+- **`diodes-and-observers`' comparison table is introduced as "exactly three
+  places" and has five rows**, every one of them a real difference, with about
+  fifteen more at override level; the observer is not even a `DiodeBlock` but a
+  `DirectionalBlock` with a six-way facing. Two absolutes beside it: the
+  comparator is **not** "the only redstone block with a block entity"
+  (`SculkSensorBlock.getAnalogOutputSignal:267` answers from
+  `SculkSensorBlockEntity`'s last vibration frequency, every container answers
+  from its contents, and `DaylightDetectorBlockEntity` stores nothing at all),
+  and `RepeaterBlock.LOCKED` is not "the only diode property not computed from a
+  redstone reading at tick time" — `POWERED` is the only one computed from a
+  reading at all, and LOCKED's distinction is that it is computed *outside* tick
+  time.
+- **`block-breaking`'s "nothing crosses the wire" is false in one direction.**
+  `Minecraft.java:1795` swings on every dig tick and `LocalPlayer.java:340` sends
+  a `ServerboundSwingPacket` for every swing. Server-to-breaker is genuinely
+  silent; client-to-server is not. The figure's loop label carried the same
+  claim. Its sibling: "the client's clock passes 1.0 first" is backwards — the
+  server's recomputed value runs a tick *ahead* throughout and its live branch
+  simply discards it (`ServerPlayerGameMode.java:135,141-143`); what is true is
+  that the client is the only side that acts on 1.0.
+
+**The rest, by page** — what the page said, then what the decompile says.
+
+- `blocks-and-states`: "the client runs the identical `BlockItem.place` … **what
+  differs is entirely inside the write**" → `BlockItem.place` branches on side
+  twice more after the write, at `updateCustomBlockEntityTag` (`:155-157`) and
+  the `CriteriaTriggers.PLACED_BLOCK` trigger (`:79-83`); neither affects the
+  state that lands, and the sentence now says so. · "several hundred statics" on
+  `Block` → **fifty-eight** (36 methods, 22 fields). · `BlockBehaviour.Properties`
+  "read once, in the `BlockBehaviour` constructor" → the constructor *keeps* the
+  object (`BlockBehaviour.java:115`) and reads it later at `:392,396,874,876,947`;
+  hardness and map colour are never copied out. Same error on the figure's first
+  arrow. · "the id order follows the sorted map, **which is why** the codec writes
+  properties alphabetically" → a non-sequitur (both come from walking the same
+  map), and the encoded form is not alphabetical: `CompoundTag` is a `HashMap`
+  written in hash order (`CompoundTag.java:186,197`); the one alphabetical form
+  is the *command* text, from `BlockStateParser`. · "a **stored**, sent or
+  serialised state" → on disk a state is `BlockState.CODEC`'s name and properties
+  plus packed *local* indices, never the global id. · "returns false in four
+  cases" → three `return false` statements, the third of which has three causes.
+  · The write flowchart drew **no edge out of `SEC`**, hiding the commonest route
+  to `FALSE`; it now has the no-op branch. · "all four heightmaps" → four of six,
+  the two worldgen ones untouched. · "which is why nothing generated during
+  worldgen is ever broadcast" → worldgen never reaches `Level.setBlock` at all.
+  · **"a door dropping its other half"** as the example of
+  `affectNeighborsAfterRemoval` → `DoorBlock` does not override it (29 classes
+  do; it is not among them); the top half goes down the *shape* channel, which is
+  `block-interaction`'s whole subject, and the hub page had it on the wrong one of
+  its own two channels. · `StateDefinition.Builder.add` rejects a fourth thing (a
+  *value* name breaking the pattern); `BlockItem.getPlacementState` refuses on two
+  conditions; `StairBlock.canTakeShape` probes a lateral third position, not "the
+  far side"; the half is measured against the position the stair goes into.
+- `block-interaction`: bit 8's "**buys the section a priority remesh**" → only
+  when the *Chunk Builder* option is `NEARBY` or `PLAYER_AFFECTED`
+  (`LevelRenderer.java:593-599`); the option defaults to `NONE` and the fancy
+  preset sets it. This is the payoff clause of "Ten is the whole story of the
+  page". · "`InteractionResult.consumesAction` is what every branch tests" →
+  `Minecraft` has no `consumesAction()` call site and matches on the record types.
+  · "`DoorBlock.updateShape` has three outcomes" → four of the six directions get
+  a fourth, `super.updateShape`, unchanged, because the method is behind a
+  vertical-axis test. · "two of them lie" → **one** of the eight gate rows carries
+  a false reason. · The hit-location gate is a 2×2×2 box round the centre, not the
+  block. · The sound *pitch* comes from `Level.getRandom`, only the seed from
+  `Level.soundSeedGenerator`. · `ServerLevel.sendBlockUpdated` scans all of
+  `ServerLevel.navigatingMobs` and asks a midpoint-sphere question, not "whose
+  path crosses the position". · `Level.gameEvent` is declared on `LevelAccessor`.
+  · `Minecraft.startAttack` hands off to `MultiPlayerGameMode.startDestroyBlock`,
+  which owns the prediction and the packet. · `MultiNeighborUpdate` is a mutable
+  class, not a record, because it resumes mid-walk. · **The duplicated swing
+  branch is real control flow**, not a decompiler artefact: the second guard
+  subsumes the first, the two run in sequence, and the shape occurs exactly once
+  in 7,055 classes — so a `SwingSource.SERVER` block use calls
+  `ServerPlayer.swing` twice and sends two `ClientboundAnimatePacket`s
+  (`LivingEntity.java:2142`'s guard admits the second because `swingTime` is
+  −1). The door is unaffected; the page describes the behaviour and needed no
+  change. Settled.
+- `block-breaking`: "**Swords are the item that uses all three rule shapes**" →
+  the sword uses `minesAndDrops` + `overrideSpeed` twice, and **no item in the
+  game** uses all three: `deniesDrops` and `overrideSpeed` never share a `Tool`.
+  The "one of exactly three whose `Tool.canDestroyBlocksInCreative` is false"
+  half is right (sword, mace, trident). · The durability answer was wrong twice:
+  `Item.mineBlock:289` also requires a `DataComponents.TOOL`, a
+  `Tool.damagePerBlock` above zero and the server side, and `ShearsItem` — the
+  only override — tests no hardness at all, so shears **do** pay on zero-hardness
+  grass; "grass" also had to be named (`Blocks.SHORT_GRASS`, not
+  `Blocks.GRASS_BLOCK` at 0.6). · "`ItemStack.mineBlock` runs unconditionally —
+  it awards `Stats.ITEM_USED`" → the call is unconditional, the award is not. ·
+  "only if the remembered answer was yes" → `if (changed && canDestroy)`. · "the
+  one input that could drift is which slot is selected" → one of several
+  client-reported inputs. · "the server never has to disagree" about a creative
+  sword → it does send a correcting block update; it is a no-op because the
+  client predicted nothing. · The figure's "the connection phase" label covers
+  three different phases and is now split. All ten of the never-re-derived
+  pass-3 leads at pass4.md:2326 came back CONFIRMED.
+- `block-entities`: "**Every block entity in the game is created and destroyed
+  inside one method**" → `LevelChunk.getBlockEntity` in `IMMEDIATE` mode creates
+  one on a *read* (`:417-421`), which is the mode every `Level.getBlockEntity`
+  asks for (`Level.java:498`); `promotePendingBlockEntity`, `replaceWithPacketData`
+  and `SerializableChunkData.postLoadChunk` create them too, and
+  `PistonMovingBlockEntity` destroys itself through `Level.removeBlockEntity`. ·
+  "that is the whole of the interface" → **block events are a third clientbound
+  channel**, and they drive the very chest lid the page discusses two sections
+  later. · The figure's last arrow said two `ClientboundContainerSetDataPacket`s
+  on the tick it traces; on that tick both lit fields move as well, so it is
+  **three** — the pass-2 page had this right and pass 3 replaced it with the
+  steady state. · "`LevelChunk.removeBlockEntity` runs regardless: [four things]"
+  → three of the four sit inside `if (isInLevel())`; only the ticker rebind is
+  unconditional. · `saveWithoutMetadata`'s "the two below" → six external callers
+  besides; `saveCustomOnly`'s caller is really thirteen of the nineteen
+  `getUpdateTag` overrides; `saveWithId` has two named callers. · "The network
+  reuses that path exactly" → it joins at `loadWithComponents` and never reads
+  *id*. · The `BoundTickingBlockEntity` gate list is four conditions of which two
+  are server-only. · **Every count on the page re-derived and right**: 19 packet
+  overriders, 49 registrations, 20 synced types, 2
+  `shouldChangedStateKeepBlockEntity` blocks, 8 `preRemoveSideEffects`
+  overriders, 200 ticks, 1600 for coal.
+- `signal-and-dust`, beyond the hook: "the corpus has three fixed direction
+  arrays" → 21 `Direction[]` constants, only two custom-ordered, and
+  `SignalGetter.DIRECTIONS` is `Direction.values()`. · "`getBestNeighborSignal`,
+  `getDirectSignalTo` and `hasNeighborSignal` **all walk it, and all stop early on
+  a 15**" → one walks the array, the other two are hand-unrolled in the same
+  order, and `hasNeighborSignal` stops at the first answer **above zero**. · "a
+  block merely *touched* by dust does not [power dust]" is true for the wrong
+  reason: such a block *is* strongly powered — that is why the piston fires — and
+  what hides it from other dust is `RedStoneWireBlock.shouldSignal`, seventy
+  lines later. · "the lever is the one place in this trace where the client does
+  nothing at all" contradicts the page's own Figure 1: the wire and the piston
+  both open on `!isClientSide()` too. · Figure 1 drew `BLK → WIRE`
+  unconditionally where `calculateTargetStrength` short-circuits on a block
+  signal of 15 — the page's own first dust — and omitted the wire-source gate. ·
+  Figure 2 attributed the first dust's `neighborChanged` to
+  `LeverBlock.updateNeighbours`; the flags-3 write fanned out first and, with
+  `count` at zero, drained the entire cascade before `updateNeighbours` issued
+  its two. · `FeatureFlags.REDSTONE_EXPERIMENTS` is a flag, not a data pack (a
+  pack that ships nothing else turns it on). · `updatedWires` is pruned before the
+  fan-out reads it; the 128 bit is omitted for the first wire on the place path;
+  "connected" in `causeNeighborUpdates` means the four horizontals plus DOWN
+  always and UP never. · The three redstone-torch constants are all dead and the
+  60 lives in a different method from the 8.
+- `pistons-and-block-events`, beyond the two above: the flag table said
+  `PistonBaseBlock.moveBlocks` "writes four kinds of position" and listed the
+  base-at-67, which `PistonBaseBlock.triggerEvent:200` writes after `moveBlocks`
+  returns, while omitting the 276 write at `:295`. · The **82 row never fires in
+  the page's own scenario**: `deleteAfterMove` is seeded with `toPush` and then
+  has every destination and the arm removed (`:346`, `:358`), which for a
+  straight push empties it. · The null-*except* `playSound` is
+  `triggerEvent`'s, not `moveBlocks`'s. · "The one thing the client does not do
+  is play the sound" → it also skips the crushed block's drops, the game event
+  and `affectNeighborsAfterRemoval`. · "A piston is the only block in the game
+  that cannot act when it is asked" → `NoteBlock` and `PotentSulfurBlock` do
+  nothing but raise an event either, and "every other block in Part V answers by
+  writing a state there and then" is false of the whole of
+  `diodes-and-observers`. · "a five-value record" → `BlockEventData` has four
+  components, as the page's own cast table says. · `NOCLIP` is set around one
+  entity's move and holds a `Direction`. · `MAX_PUSH_DEPTH` is dead, one of six
+  dead constants in the package. · `isPushable` also refuses a push down at the
+  world floor or up at its ceiling, and skips two of its tests for a piston. ·
+  `addBlockLine` walks backwards along the axis too and *fails* rather than
+  stopping. · `TRIGGER_DROP` also requires the moving piston to face the same way.
+  · `isSourcePiston` is set on the arm **and** on a contracting piston's own
+  placeholder.
+- `diodes-and-observers`, beyond the table: `Block.getStateForPlacement` was
+  credited with the horizontal reversal — it returns the default state;
+  `DiodeBlock.getStateForPlacement:168-170` does it. · "`Level.setBlock`'s own
+  fan-out never runs" on a flag-2 write → the *neighbour* fan-out does not, the
+  three shape passes do, on a page whose whole argument is that the two channels
+  are different. · The item-frame rule is wrong in both places it is stated: the
+  direction filter is applied *inside* `getEntitiesOfClass` and the `size() == 1`
+  test after it, so a second frame facing another way changes nothing. ·
+  Container fullness divides by `Container.getMaxStackSize(itemStack)`, the
+  smaller of the container's cap (99 by default) and the stack's own maximum. ·
+  `Level.updateNeighbourForOutputSignal` is **not** called "from the tail of every
+  `Level.setBlock`" — it sits inside the flag-1 branch and behind
+  `!isClientSide()` — and the page's own example, an item entering a chest, does
+  not go through `setBlock` at all: it goes through `BlockEntity.setChanged`,
+  which calls it unconditionally. · The reach-one-further branch is an *else*, not
+  an *and*. · `RepeaterBlock.updateShape`'s "off-axis — the two sides" is four
+  directions, up and down included. · `checkTickOnNeighbor` is wrapped in
+  `!isLocked`, which the page omitted for the diode and over-sold for the
+  comparator (which has no lock to consult). · The observer's own
+  `updateNeighborsInFront` differs from the diode's in its orientation hint.
+- `blocks/README.md` (the landing page): the **hook's first member was wrong** —
+  "the block that appears under the crosshair before the server has heard about
+  it" comes from `BlockStatePredictionHandler`, not from the neighbour/shape
+  split; the other two feelings do come from it, and the page now says which is
+  which. · "the one mechanism in the part that defers work to a named phase of
+  the tick" → scheduled ticks drain in *tickPending*, and the same landing page
+  calls the diode lecture "a change that books a turn"; `lectures.md` item 6
+  carried the same absolute and is fixed with it. · "The moving blocks are never
+  sent to anybody" → true of block updates only; `PistonMovingBlockEntity`
+  overrides `getUpdateTag`, so a chunk send carries the moved state. · "nothing
+  you do in between can stop it" → the block going to air does. · The **figure
+  drew four spokes for a hub and six**, and three of its labels named reaches the
+  pages do not make; `BS → PE`, `BS → DO` and `BE → PE` added, three labels
+  rewritten to what the target page actually reaches for, and
+  `diodes-and-observers` gained the two links (to `signal-and-dust` and
+  `block-entities`) that its two inter-spoke edges assert. · "Every page here is
+  either about choosing that state, about the write itself, or about a block that
+  reacts" → `block-entities` is none of the three. · Two smaller ones: only
+  `DataComponents.TOOL` of the three named data components is used by the part,
+  and `registries.md`'s rows are keyed `Registries.BLOCK`, not
+  `BuiltInRegistries.BLOCK`.
+
+**The shared preamble, and Part X.** The dependency ruling holds — the two click
+pages' contract statement is character-identical but for the self-reference, and
+it is sufficient for both lectures — but its **fourth sentence described a
+comparison that does not exist**. `BlockStatePredictionHandler.updateKnownServerState`
+*overwrites* the remembered state with the server's correction (`:27-36`), so by
+settle time there is one value, and `endPredictionsUpTo` hands that to
+`ClientLevel.syncBlockState`, which compares it against **the world**
+(`ClientLevel.java:219-231`). Rewritten on both pages, still four sentences, and
+`prediction-and-acks.md:82-90` already had the mechanism right.
+
+**Addition 2, done in full.** All four *before you start* entries are used by a
+sentence, and two of the reasons given were wrong: `world/fluids` is reached
+through `StateHolder` being shared with `FluidState` and through waterlogging,
+not through "the flowing block that this part keeps writing around", which
+matches no sentence in the part; and `world/chunk-anatomy` is used for the
+section write, the heightmaps and the light check, not for the palette. One entry
+was **missing**: `server/server-tick`, which `pistons-and-block-events` leans on
+for "packets are drained before the levels tick" and `block-interaction` for "the
+receipt goes out when `tickChildren` reaches connections" — both facts belong to
+that page and to no other, and both pages now link it. `check_deps.py` has no
+Part V line left. "Two Part IV pages are load-bearing" was three (chunk anatomy
+is Part IV as well) and now reads "two more".
+
+**The tool bug — the seventh of pass 4.** `pass4_queue.py`'s `STRUCK_RE` matched a
+strike only after a `-`/`*` bullet or a heading, so a **numbered** list item could
+never be settled: session F's four provenance classes are `1.`–`4.`, and striking
+them left the unit open for ever. The regex now takes `\d+[.)]` too. Found the
+same way as the previous six — by suspecting the tool when the queue disagreed
+with the file.
+
+**Verified by counting, and right.** Forty-two, and both its factors · seven
+positions, seven per `checkCornerChangeAt` · eighty stair states · 19 / 49 / 20 /
+2 / 8 on `block-entities` · the ten flag bits and 324 / 82 / 67 / 18 / 276 ·
+1,357 and 643 and twenty lines · 124 `BlockStateProperties` · three concrete
+`Property` kinds · eight `ServerboundPlayerActionPacket.Action`s · 30 and 100,
+level squared plus 1, 1 + 0.2 × (amplifier + 1), the four mining-fatigue factors,
+0.2, divide by five · 0.7 and 1.07 · 32, 64, 400 and every twentieth tick ·
+±0.25, 0.005, ten ticks · 12 · obsidian and its three relatives · five
+`deathTicks` · three priorities.
+
+**Rulings.** A hook falsified by an *observable* the code does not produce is
+replaced by the true statement of the same fact — the staircase is real, it is
+just not visible — rather than deleted, because the mechanism it introduced is
+still the page's subject. A figure that draws four edges for a claim of six is
+fixed by adding the two edges and correcting the labels, not by softening the
+claim, which the six links support (session C's precedent). A *before you start*
+entry whose stated reason no sentence supports has the reason rewritten to what
+the part actually leans on, rather than being struck (session D's precedent). And
+a pass-3 session's own provenance grading is a claim like any other: the ten
+never-re-derived leads on `block-breaking` were all correct, and the two pages
+whose reports were lost were the two carrying the worst errors in the part.
+
+**Left for other sessions.** `client/the-client-level.md:44` attributes
+`gameEvent` to `Level`; it is declared on `LevelAccessor` and `ClientLevel`
+overrides it — Part X's session. `pass4.md:1552` and `:1821` (session P's
+`entity-rendering` / `block-entity-rendering` siblings) are Part XI's; `:1850` is
+the Reference tier's. Wording debt is in [pass5.md](pass5.md).
+
 ## Session D — Part IV The world (pass 4) *(2026-09-04)*
 
 Ten pages and the landing page, one adversarial agent each; every *wrong*
@@ -1157,17 +1482,18 @@ lanes.
   same-words disambiguation, not a use, and was not counted). Part III's
   entry states the cut the way the lecture map states it: tickets and
   loading keeps until Part IV, the environment page does not.
-- **`lectures.md`:619 — the blocks and states row.** Table said Parts VI and
+- ~~**`lectures.md`:619 — the blocks and states row.** Table said Parts VI and
   VII; no page in Part VII links or leans on `blocks-and-states`, and Part
   VII's landing page assumes `block-interaction` instead — which is what
   the row's own gloss ("how a chest is opened") was describing. → **row
-  corrected to VI**, gloss narrowed to the collision shapes.
+  corrected to VI**, gloss narrowed to the collision shapes.~~ Re-derived and
+  CONFIRMED by session E.
 - **Three forward links in *before you start* with no dashed arrow.** All
   three were hand-forwards or pointers, not dependencies, so the fix was to
   move them out of the section, not to draw an arrow.
-  - Part IV listed `blocks-and-states` in a sentence that says outright
+  - ~~Part IV listed `blocks-and-states` in a sentence that says outright
     "It does hand two things forward" → moved to the end of *the shape of
-    the part*.
+    the part*.~~ CONFIRMED by session E.
   - Part VI listed `prediction-and-acks` to say the dependency runs the
     other way ("watch this part first") → moved to *the shape of the part*.
   - Part IX listed `the-client-loop` as "the deeper version" of anatomy's
@@ -1283,7 +1609,7 @@ views. Fixed in place this session:
   row's parts were out of numeric order; *every* `EnchantmentHelper` entry
   point is every **public** one; and the lanes and class-index rows oversold
   those pages the same way the pages did.
-- **`reference/block-update-flags.md`** and **`blocks-and-states.md`** — the
+- ~~**`reference/block-update-flags.md`** and **`blocks-and-states.md`** — the
   flag word is `Level.setBlock`'s **third** argument; the four-argument
   overload takes an update limit after it. Bit 16 has two readers, not one
   (`Level.setBlock` and `BlockInput.place`); bit 32 is masked out of the word
@@ -1291,7 +1617,9 @@ views. Fixed in place this session:
   the recursive write at `Block.java:245`), which is the interesting thing
   about it; and on the client bit 2's "broadcast" is
   `LevelExtractor.blockChanged`, a re-mesh
-  (`ClientLevel.java:832`).
+  (`ClientLevel.java:832`).~~ Every clause CONFIRMED by session E **except the
+  bit-16 count, which is three**: `WorldGenRegion.setBlock:337` reads it too,
+  to suppress the post-processing mark. `block-update-flags.md` corrected.
 - **`reference/threads.md`** — `ClientPacketListener.handleCustomPayload` was
   listed among the handlers that never leave the Netty thread. It is the
   *payload* dispatcher (`ClientPacketListener.java:2296`), and its caller runs
@@ -1891,9 +2219,10 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
   "an operator's level-based set grants exactly one [atom]", "No packet
   carries one in either direction", "the client parses twice more", and
   "`Minecraft` and `MinecraftServer` are both one" (event loop).
-- `block-update-flags.md`: the table moved verbatim; the new opening
+- ~~`block-update-flags.md`: the table moved verbatim; the new opening
   sentence claims `fluids` and `pistons-and-block-events` "mean the same
-  bits" when they pass a flag word.
+  bits" when they pass a flag word.~~ CONFIRMED for the Part V half by session
+  E: 324, 82, 67, 18 and 276 all decompose exactly as the table names them.
 
 **Standing item added.** The five hand-kept catalogues
 (`non-living-damage`, `hud-elements`, `submit-phases`,
@@ -2180,7 +2509,7 @@ graph — seventeen edges, each a conversion claim); one added
   this session could not reproduce it, and the page now states its own
   package set and counting rule rather than inheriting the number.
 
-- **2026-09-02, session F — Part V Blocks.** Seven pages: four rewritten
+- ~~**2026-09-02, session F — Part V Blocks.** Seven pages: four rewritten
   (`blocks-and-states`, `block-interaction`, `block-breaking`,
   `block-entities`) and three produced by the notebook's confirmed three-way
   split of `redstone` (`signal-and-dust`, `pistons-and-block-events`,
@@ -2188,28 +2517,28 @@ graph — seventeen edges, each a conversion claim); one added
   `lectures.md`. `redstone.md` is gone and its URL redirects to
   `signal-and-dust`.
 
-  **Read the provenance note before trusting anything below.** The session
+  ~~**Read the provenance note before trusting anything below.** The session
   was interrupted after four pages had been drafted: two of the four agent
   reports arrived, two did not, and the three redstone pages were then
   written by the session itself directly from the decompile. The pages divide
-  into four classes of evidence and pass 4 should weight them differently.
+  into four classes of evidence and pass 4 should weight them differently.~~
 
-  1. **`block-interaction`** — agent-drafted, report received, and every
-     correction in it **re-derived by the session** against the source.
-  2. **`block-breaking`** — agent-drafted, report received, corrections
+  1. ~~**`block-interaction`** — agent-drafted, report received, and every
+     correction in it **re-derived by the session** against the source.~~
+  2. ~~**`block-breaking`** — agent-drafted, report received, corrections
      **not** independently re-derived (the interrupt landed first). Treat its
-     twelve claimed corrections as unverified leads, not as findings.
-  3. **`blocks-and-states`** and **`block-entities`** — agent-drafted, **no
+     twelve claimed corrections as unverified leads, not as findings.~~
+  3. ~~**`blocks-and-states`** and **`block-entities`** — agent-drafted, **no
      report survived**, so nothing is recorded about what they changed
      relative to the old page beyond the session's own read of the finished
      text. These two need the full protocol, starting with a diff against
-     their pass-2 versions in git.
-  4. **The three redstone pages** — session-written, every claim derived from
+     their pass-2 versions in git.~~
+  4. ~~**The three redstone pages** — session-written, every claim derived from
      the decompile in this session, and every diagram read separately from
-     its prose.
+     its prose.~~
 
-  - **Corrections the session derived itself, method by method.**
-    - **Block events are not "a tick late".** The old `redstone` diagram
+  - ~~**Corrections the session derived itself, method by method.**~~
+    - ~~**Block events are not "a tick late".** The old `redstone` diagram
       carried a *next tick* bar over `ServerLevel.runBlockEvents`, and that is
       wrong for the common cases. `MinecraftServer.processPacketsAndTick`
       drains queued packets and *then* calls `MinecraftServer.tickServer` in
@@ -2222,8 +2551,8 @@ graph — seventeen edges, each a conversion claim); one added
       the next tick. `reference/glossary.md` already said "usually within the
       same tick", so the corpus contradicted itself.
       `pistons-and-block-events` now states all five cases.
-      **Re-derive the phase order and each case.**
-    - **`RepeaterBlock.LOCKED` does not survive on the client, and the old
+      **Re-derive the phase order and each case.**~~
+    - ~~**`RepeaterBlock.LOCKED` does not survive on the client, and the old
       page's reason for saying so was wrong.** It claimed locking "is a shape
       update, which is why it survives on a client that never runs neighbour
       updates". `RepeaterBlock.updateShape` recomputes the lock only when the
@@ -2232,40 +2561,40 @@ graph — seventeen edges, each a conversion claim); one added
       explicitly, and a client keeps no appointment book to fire into anyway.
       `diodes-and-observers` gives the real reason the shape channel is the
       right one: it carries a neighbour's state change even when the neighbour
-      issued no neighbour update.
-    - **`blocks-and-states`' opening overclaimed and was narrowed.** Its own
+      issued no neighbour update.~~
+    - ~~**`blocks-and-states`' opening overclaimed and was narrowed.** Its own
       closing question is right and its hook was not: `Block.getId` and
       `Block.stateById` are tolerant, but
       `ClientboundBlockUpdatePacket.STREAM_CODEC` reads the same table through
       `ByteBufCodecs.idMapper`, which is `IdMap.byIdOrThrow`. Check the
       narrowed sentence, and check the Q&A's account of which paths use which
-      lookup.
-    - **Dust powers the block below it and never the one above.**
+      lookup.~~
+    - ~~**Dust powers the block below it and never the one above.**
       `RedStoneWireBlock.getSignal` answers zero for `Direction.DOWN` and
       answers full power for `Direction.UP` with no connection test. This is
-      nowhere in the pass-2 corpus.
-    - **`LeverBlock.pull` is handed a null player**, so — unlike the door —
+      nowhere in the pass-2 corpus.~~
+    - ~~**`LeverBlock.pull` is handed a null player**, so — unlike the door —
       nobody is excluded from the sound and the clicker hears the server's
       copy. And `LeverBlock.useWithoutItem` writes no state at all on a
-      `ClientLevel`, so a lever is not predicted.
-    - **`PistonBaseBlock.checkIfExtend` runs a dry-run
+      `ClientLevel`, so a lever is not predicted.~~
+    - ~~**`PistonBaseBlock.checkIfExtend` runs a dry-run
       `PistonStructureResolver.resolve` before queueing** an extend event, so
-      a piston with an immovable wall in front of it queues nothing at all.
-    - **A diode's `HorizontalDirectionalBlock.FACING` points at its input**,
+      a piston with an immovable wall in front of it queues nothing at all.~~
+    - ~~**A diode's `HorizontalDirectionalBlock.FACING` points at its input**,
       and `DiodeBlock.updateNeighborsInFront` acts on the opposite side. Any
-      sentence in the corpus saying a diode "faces its output" is wrong.
-    - **`ComparatorBlock.checkTickOnNeighbor` books on a second condition**
+      sentence in the corpus saying a diode "faces its output" is wrong.~~
+    - ~~**`ComparatorBlock.checkTickOnNeighbor` books on a second condition**
       the repeater has no analogue of: whenever the computed output differs
       from the int held in the `ComparatorBlockEntity`, not only when the
-      powered flag disagrees with the input.
-    - **`SignalGetter.getSignal` is a maximum, not a choice.** For a redstone
+      powered flag disagrees with the input.~~
+    - ~~**`SignalGetter.getSignal` is a maximum, not a choice.** For a redstone
       conductor it takes the larger of the block's own weak signal and
       `SignalGetter.getDirectSignalTo`. Three Part V pages used to phrase this
-      as one *or* the other.
+      as one *or* the other.~~
 
-  - **Claims the rewrite introduced, per page.** Check these first and
-    hardest.
-    - **`signal-and-dust`** (session-written): *the number* — **forty-two**
+  - ~~**Claims the rewrite introduced, per page.** Check these first and
+    hardest.~~
+    - ~~**`signal-and-dust`** (session-written): *the number* — **forty-two**
       neighbour updates per changed wire, derived as seven
       `Level.updateNeighborsAt` calls (the position plus its six neighbours,
       collected in a hash set in
@@ -2279,8 +2608,8 @@ graph — seventeen edges, each a conversion claim); one added
       `RedstoneTorchBlock.isToggledTooFrequently` burning out on the eighth
       surviving entry using a literal rather than
       `RedstoneTorchBlock.MAX_RECENT_TOGGLES`. The flowchart asserts an
-      ordering from arrival to fan-out.
-    - **`pistons-and-block-events`** (session-written): the five-case tick
+      ordering from arrival to fan-out.~~
+    - ~~**`pistons-and-block-events`** (session-written): the five-case tick
       analysis above; the census of block-event users — four blocks
       (`PistonBaseBlock`, `NoteBlock`, `PotentSulfurBlock`,
       `ComparatorBlock`) plus seven block entities through
@@ -2296,8 +2625,8 @@ graph — seventeen edges, each a conversion claim); one added
       flags 3 and writes **air** for the source piston, against
       `PistonMovingBlockEntity.tick`'s 67; that
       `PistonMovingBlockEntity.TICKS_TO_EXTEND` is declared and never read.
-      The sequence diagram asserts four tick boundaries.
-    - **`diodes-and-observers`** (session-written): the whole comparison
+      The sequence diagram asserts four tick boundaries.~~
+    - ~~**`diodes-and-observers`** (session-written): the whole comparison
       table, which is a claim about *three* differences and no others; "a
       diode never writes into its target"; that the signal leaves through
       `DiodeBlock.onPlace` rather than through `Level.setBlock`'s fan-out,
@@ -2308,8 +2637,8 @@ graph — seventeen edges, each a conversion claim); one added
       comparator's way, else neither reading is taken); container fullness as
       each stack's count over **that stack's own** maximum; the claim that an
       observer sees a door opened by hand. The flowchart asserts which channel
-      each of the three listens on.
-    - **`block-interaction`** (agent, session-verified): bit 8 read as
+      each of the three listens on.~~
+    - ~~**`block-interaction`** (agent, session-verified): bit 8 read as
       *player-caused* by `LevelExtractor.blockChanged`; the copper door as
       proof the path never reads `BlockTags.WOODEN_DOORS`; `InteractWithDoor`
       reading `BlockTags.MOB_INTERACTABLE_DOORS` while the older goals read
@@ -2322,8 +2651,8 @@ graph — seventeen edges, each a conversion claim); one added
       branch** in `ServerGamePacketListenerImpl.handleUseItemOn` — the
       server-swing test appears twice in structurally identical arms — which
       reads like a decompiler artefact. The page describes the behaviour
-      rather than the shape. Settle it.
-    - **`block-breaking`** (agent, **not** session-verified): the plus-one
+      rather than the shape. Settle it.~~
+    - ~~**`block-breaking`** (agent, **not** session-verified): the plus-one
       identity, i.e. that `ServerPlayerGameMode.incrementDestroyProgress`'s
       *(elapsed + 1)* is exactly the client's first `Minecraft.continueAttack`
       in the same client tick as `Minecraft.startAttack`; "about two ticks of
@@ -2340,8 +2669,8 @@ graph — seventeen edges, each a conversion claim); one added
       is skipped because hardness is zero rather than because
       `Tool.damagePerBlock` is zero, and that three blocks override
       `BlockBehaviour.attack` rather than one. **None of these were
-      re-derived.**
-    - **`blocks-and-states`** and **`block-entities`** (agent, **no report**):
+      re-derived.**~~
+    - ~~**`blocks-and-states`** and **`block-entities`** (agent, **no report**):
       unknown. Diff both against their pass-2 versions in git before checking.
       Claims the session noticed while reading and did not verify: that
       exactly two blocks override
@@ -2355,16 +2684,16 @@ graph — seventeen edges, each a conversion claim); one added
       `ModelManager.requiresRender` says the two states look different. The
       session did verify one of `block-entities`' orderings: the client's
       block-entity pass runs after its entity pass and before
-      `ClientLevel.tick`, in `Minecraft.tick`.
+      `ClientLevel.tick`, in `Minecraft.tick`.~~
 
-  - **The landing page and the lecture order.** Part V's `blocks/README.md` claims
+  - ~~**The landing page and the lecture order.** Part V's `blocks/README.md` claims
     the part is a hub and six spokes, that `blocks-and-states` is what the
     other six reach into, and that the interaction/breaking pair is one
     lecture in two halves. It also makes a **dependency ruling pass 4 should
     test**: Part V is watched *before* Part X's `prediction-and-acks`, on the
     grounds that the two click pages' shared preamble is all either lecture
     needs. Check that the preamble is sufficient and that it contradicts
-    nothing in `prediction-and-acks`.
+    nothing in `prediction-and-acks`.~~
 
 
 - ~~**2026-09-02, session E — Part IV The world.** Ten pages: five rewritten

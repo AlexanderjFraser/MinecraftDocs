@@ -270,9 +270,21 @@ O is the close.
   `#6eb1ff`. No tool bug — the first session without one; instead **two of
   session E's own *session-verified* corrections were wrong**. Everything in
   [pass4.md](pass4.md).
-- [ ] **Session E — Part V Blocks.** The update-channels flowchart; the two
-  click pages' identical preambles against `prediction-and-acks`; the
-  redstone trio's neighbour-update counts.
+- [x] **Session E — Part V Blocks** *(2026-09-04)*. Eight pages, eight agents;
+  **every one had at least one wrong claim**, and this part had the worst
+  provenance in the corpus. Sixty-one corrections. `signal-and-dust`'s
+  **staircase is invisible** — the packet is built once a tick by re-reading the
+  level, so the 14, 13, 12 the hook promised is never sent; the forty-two
+  survived both factors. `pistons-and-block-events`' motion is **off by one
+  tick** the whole way through, its block-event census is three blocks not four,
+  and quasi-connectivity turns out to be three blocks' quirk rather than the
+  piston's. `diodes-and-observers` calls a five-row table "exactly three places".
+  `blocks-and-states`, the hub, had the door on the wrong update channel. The
+  **shared click-page preamble** described a comparison that does not exist, on
+  both pages and in `lectures.md`. Addition 2 done in full, with
+  `server/server-tick` added as a missing entry. **Seventh tool bug**:
+  `pass4_queue.py` could not settle a numbered list item. Everything in
+  [pass4.md](pass4.md).
 - [ ] **Session F — Part VI Entities.** The authority matrix; the spawner
   cascade; the twenty-one non-living damage classes against the Reference
   table.
@@ -522,3 +534,44 @@ missing it — and removes the comment. The owner confirms or reorders
   the right number is kept and *said to be dead* rather than deleted — four of
   them turned up in this one part, and the resulting tic is logged in pass 5.
   Everything in [pass4.md](pass4.md).
+- **2026-09-04, session E — Part V Blocks (Opus).** Seven pages and the landing
+  page, one adversarial agent each; the order work, the part-wide notes and every
+  *wrong* re-derived by the session before a sentence moved. **All eight had at
+  least one wrong claim** — pass 2's result for a sixth time, over the part with
+  the worst provenance in the corpus: two pages drafted by agents whose reports
+  were lost, one by an agent whose twelve corrections were never re-derived, and
+  three written by the pass-3 session itself. Sixty-one corrections. The four
+  that carry a lecture: `signal-and-dust`'s **staircase is invisible** — the
+  cascade finishes inside one packet handler and `ChunkHolder.broadcastChanges`
+  builds the packet once per tick by *re-reading the level*, so a position
+  written five times is sent once with its final value, and "it counts down, 14,
+  13, 12, visibly" was the page's hook (the **forty-two** survived, both factors
+  re-derived); `pistons-and-block-events`' **motion is off by one tick**, because
+  `Level.addBlockEntityTicker` puts a ticker straight into the live list whenever
+  `tickingBlockEntities` is false, so the placeholders move in the *blockEvents*
+  tick's own *blockEntities* phase and land at N+2, not N+3; the **block-event
+  census is three blocks, not four**, and `ComparatorBlock` — the fourth — raises
+  no event at all and owns a `triggerEvent` override that is dead in both
+  directions; and **quasi-connectivity is not the piston's alone**, since
+  `DispenserBlock` (hence `DropperBlock`) and `DoorBlock.getStateForPlacement`
+  read `hasNeighborSignal(pos.above())` the same way. Two more punchlines fell:
+  `diodes-and-observers` says its comparison table is "exactly three places" over
+  a table with **five rows** and calls the comparator "the only redstone block
+  with a block entity" (the sculk sensor answers from one, and the daylight
+  detector's stores nothing at all); and `block-breaking`'s "nothing crosses the
+  wire" is false client-to-server, where a `ServerboundSwingPacket` goes up every
+  dig tick. `blocks-and-states`, the hub, had the door on the wrong one of its own
+  two channels — `DoorBlock` does not override `affectNeighborsAfterRemoval` —
+  and its "what differs is entirely inside the write", the sentence that lets
+  Part X be watched later, is broken by two side-branches in `BlockItem.place`.
+  The **shared preamble's fourth sentence was a mechanism error** on both click
+  pages and in `lectures.md`: a correction *overwrites* the ledger entry rather
+  than being compared with it, and the settle compares that one value against the
+  world. Addition 2 done in full: all four entries used by a sentence, two of the
+  stated reasons rewritten to what the part actually leans on, and
+  `server/server-tick` added as a missing entry that two pages depend on and
+  neither linked. **Seventh tool bug**, again from suspecting the tool first:
+  `pass4_queue.py`'s strike regex did not recognise a **numbered** list item, so
+  session F's four provenance classes could never be settled. Ten of the ten
+  never-re-derived pass-3 leads on `block-breaking` came back CONFIRMED, and
+  every count on `block-entities` was right. Everything in [pass4.md](pass4.md).

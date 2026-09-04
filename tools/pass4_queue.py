@@ -41,7 +41,7 @@ ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.*)$")
 BULLET_RE = re.compile(r"^(\s*)[-*]\s+(.*)$")
-STRUCK_RE = re.compile(r"^\s*(?:[-*]\s+|#{1,6}\s+)?~~")
+STRUCK_RE = re.compile(r"^\s*(?:[-*]\s+|\d+[.)]\s+|#{1,6}\s+)?~~")
 SESSION_RE = re.compile(r"[Ss]ession\s+([A-P])\b")
 INLINE_PAGE_RE = re.compile(r"^\s*(?:\*\*)?`[a-z0-9][a-z0-9/-]*`(?:\*\*)?\s*(?:—|-|:)")
 PART_RE = re.compile(r"\bParts?\s+((?:[IVX]+(?:\s*[·,]\s*(?:and\s+)?)?)+)")

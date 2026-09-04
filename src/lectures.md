@@ -150,8 +150,9 @@ the six are one lecture in two halves.
    a feature flag. Assumes [scheduled
    ticks](systems/world/scheduled-ticks.md) only lightly.
 6. [Pistons and block events](systems/blocks/pistons-and-block-events.md) —
-   the part's one deferral mechanism, and the one place the client is handed
-   a re-simulation instead of a result.
+   deferral without a delay: the work waits for a named phase of the level
+   tick rather than for a number of ticks. Also the one place the client is
+   handed a re-simulation instead of a result.
 7. [Diodes and the observer](systems/blocks/diodes-and-observers.md) — the
    closer. Assumes [scheduled ticks](systems/world/scheduled-ticks.md)
    properly: a repeater's delay is an entry in that queue.

@@ -21,7 +21,7 @@ means the same bits.
 | 2 | `Block.UPDATE_CLIENTS` | `Level.sendBlockUpdated` — the broadcast on the server, a re-mesh on the client, where it is `LevelExtractor.blockChanged` |
 | 4 | `Block.UPDATE_INVISIBLE` | suppresses whichever of those the side does |
 | 8 | `Block.UPDATE_IMMEDIATE` | one place in the game: `LevelExtractor.blockChanged`, which marks the re-mesh as player-caused |
-| 16 | `Block.UPDATE_KNOWN_SHAPE` | two readers: `Level.setBlock`, where it suppresses all three shape passes, and `BlockInput.place`, where it decides whether the state is fixed up against its neighbours before the write |
+| 16 | `Block.UPDATE_KNOWN_SHAPE` | three readers: `Level.setBlock`, where it suppresses all three shape passes; `BlockInput.place`, where it decides whether the state is fixed up against its neighbours before the write; and `WorldGenRegion.setBlock`, where it suppresses the post-processing mark |
 | 32 | `Block.UPDATE_SUPPRESS_DROPS` | `Block.updateOrDestroy`, whose destroy branch drops resources unless it is set. A one-level flag: it is masked out of the word as it propagates, both to the neighbours and into the recursive write |
 | 64 | `Block.UPDATE_MOVE_BY_PISTON` | passed on as *movedByPiston*, and lets `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` run without bit 1 |
 | 128 | `Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE` | `NeighborUpdater.executeShapeUpdate`, which then skips redstone wire |

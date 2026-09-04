@@ -22,14 +22,14 @@ the two sides disagree about raises nothing at all. It quietly becomes air.
 
 | class | what it decides | thread |
 |---|---|---|
-| `Block` | one kind of thing: which properties it has, what its default state is, and — through several hundred statics — most of what any block does to the world | built at class-initialisation, read from every thread after |
+| `Block` | one kind of thing: which properties it has, what its default state is, and — through fifty-eight statics — the drops, the particles and the shape-update helpers the rest of the game calls | built at class-initialisation, read from every thread after |
 | `BlockBehaviour` | every hook a block may override, from `BlockBehaviour.onPlace` to `BlockBehaviour.updateShape`. `Block` extends it and adds registration | as above |
-| `BlockBehaviour.Properties` | hardness, sound, map colour, whether it ticks — and the `ResourceKey` without which no block can be built at all | read once, in the `BlockBehaviour` constructor |
+| `BlockBehaviour.Properties` | hardness, sound, map colour, whether it ticks — and the `ResourceKey` without which no block can be built at all | kept by the `BlockBehaviour` constructor and read from thereafter; hardness and map colour are never copied out |
 | `StateDefinition` | the table: which properties this block has, in which order, and the full product of their values | built in the `Block` constructor |
 | `Property` | one axis — a name, a value type, and where a value sits in that axis | immutable, shared between blocks |
 | `StateHolder` | one state's property values, and the table that answers *what state am I if this property becomes that value* | filled once by `StateDefinition`, read-only after |
 | `BlockBehaviour.BlockStateBase` | everything a state can answer without going to the block, and the caches that make collision and occlusion cheap | half-built in its constructor, finished by `BlockBehaviour.BlockStateBase.initCache` |
-| `Block.BLOCK_STATE_REGISTRY` | the integer that a stored, sent or serialised state actually is | appended once per state, in the `Blocks` class initialiser |
+| `Block.BLOCK_STATE_REGISTRY` | the integer a state is on the wire and in a section's global palette — never on disk, where a state is its name and its properties | appended once per state, in the `Blocks` class initialiser |
 
 ## Twelve classes and one Cartesian product
 
@@ -48,7 +48,7 @@ flowchart TB
     BS["BlockState: twenty lines. A constructor, asState, and CODEC"]
     REG["Block.BLOCK_STATE_REGISTRY: an IdMapper over every state of every block"]
 
-    PROPS -- "read once, by the BlockBehaviour constructor" --> BB
+    PROPS -- "kept by the BlockBehaviour constructor and read from thereafter" --> BB
     BB -- "extended by" --> BLOCK
     PROP -- "extended by, and only by these three" --> BOOL
     PROP --> INT
@@ -84,8 +84,9 @@ constructor dispatch and hardness, sound and map colour never serialise.
 
 Each `Block` constructor calls its own `Block.createBlockStateDefinition`,
 collecting properties through `StateDefinition.Builder.add` — which rejects a
-name outside lower-case, digits and underscore, a property with fewer than
-two values, and a duplicate name — and then `StateDefinition.Builder.create`
+name outside lower-case, digits and underscore, a *value* name that breaks the
+same pattern, a property with fewer than two values, and a duplicate name — and
+then `StateDefinition.Builder.create`
 builds every state the block will ever have. Zero properties gives one
 singleton state, one property gives a row, and two or more gives the full
 Cartesian product of every property's values, each cell constructed through
@@ -96,11 +97,14 @@ two waterlogged values, every one of them a distinct object built before any
 world existed.
 
 `StateDefinition.propertiesByName` is a sorted map, so the axes are ordered
-by property *name*, not by the order the block added them. For stairs that is
-*facing, half, shape, waterlogged*. Two things follow. The order of the
-global state ids follows it, which is why `BlockState.CODEC` and
-`StateDefinition.propertiesCodec` — the form a state takes in a palette, a
-structure file or a command — write properties alphabetically. And
+by property *name*, not by the order the block added them — for stairs the two
+orders happen to coincide, at *facing, half, shape, waterlogged*. Two things
+follow. The order of the global state ids follows it, because the product is
+built by walking that map. And so does the field order of `BlockState.CODEC`
+and `StateDefinition.propertiesCodec` — which is not the same as saying a
+state is written alphabetically anywhere: NBT is a hash map on disk, and the
+one alphabetical form is the *command* text, which `BlockStateParser` builds
+without going near the codec. And
 `StateDefinition.any` is the first cell of the product, which the `Block`
 constructor installs as the default state unless the block calls
 `Block.registerDefaultState` itself. Since `BooleanProperty.VALUES` lists
@@ -189,7 +193,10 @@ ordering, the packet and the ack — belongs to
 [prediction and acks](../client/prediction-and-acks.md). One sentence of it
 matters here: the client runs the identical `BlockItem.place` under a
 prediction, so the write below happens twice, once on each side, from the
-same code. What differs is entirely inside the write.
+same code. Almost everything that differs is inside the write; what
+`BlockItem.place` itself does differently afterwards is to skip the
+block-entity tag and the advancement trigger on the client, and the state that
+lands is not affected by either.
 
 `BlockItem.placeBlock` calls `Level.setBlock` with flags **11**,
 `Block.UPDATE_ALL_IMMEDIATE`.
@@ -209,8 +216,9 @@ flowchart TB
     IN --> SEC
 
     subgraph CHUNK["inside LevelChunk.setBlockState"]
-        SEC["write the section. Nothing at all happens if the section held only air and the state is air, or if that exact state is already there"]
-        HM["update all four heightmaps: MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES, OCEAN_FLOOR, WORLD_SURFACE"]
+        SEC["write the section"]
+        NOOP{"was the section all air and the state air, or is that exact state already there"}
+        HM["update the four live heightmaps: MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES, OCEAN_FLOOR, WORLD_SURFACE. The two worldgen ones are not touched"]
         LIGHT["if the section's emptiness flipped, tell the light engine and the chunk source. If the light properties differ, update the sky-light sources and queue LevelLightEngine.checkBlock"]
         PRE["server only, flag 256 clear, and only when the block changed and the new state does not keep the old block entity: BlockEntity.preRemoveSideEffects. The removal itself runs on both sides"]
         AFT["server only, flag 1 set or flag 64 set, and only when the block changed or the new block is a rail: affectNeighborsAfterRemoval"]
@@ -218,7 +226,10 @@ flowchart TB
         ONP["server only, flag 512 clear: BlockBehaviour.BlockStateBase.onPlace"]
         BE["create, keep or replace the block entity, then ChunkAccess.markUnsaved"]
         NOTHING["return nothing"]
-        SEC --> HM --> LIGHT --> PRE --> AFT --> GUARD
+        SEC --> NOOP
+        NOOP -- "yes" --> NOTHING
+        NOOP -- "no" --> HM
+        HM --> LIGHT --> PRE --> AFT --> GUARD
         GUARD -- "no" --> NOTHING
         GUARD -- "yes" --> ONP --> BE
     end
@@ -252,8 +263,11 @@ server, and it needs `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` clear; the
 removal that follows it happens either way, on both sides
 ([block entities](block-entities.md)).
 `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` is how the
-outgoing block tells its neighbours it is gone — a door dropping its other
-half, a piston head taking its base. It is easy to put in the wrong place:
+outgoing block tells its neighbours it is gone — a piston head taking its base,
+a broken lever telling the block it powered. It is *not* how a door drops its
+other half:
+`DoorBlock` does not override it, and the top half goes down the shape channel
+instead ([block interaction](block-interaction.md)). It is easy to put in the wrong place:
 it runs **inside** the chunk write, before the new state is even confirmed,
 not in `Level.setBlock`'s tail with the other neighbour work. It needs the
 server, it needs `Block.UPDATE_NEIGHBORS` set *or* the moved-by-piston bit,
@@ -277,8 +291,10 @@ The first two steps of the tail are how the change becomes visible.
 broadcast that follows is gated on `Block.UPDATE_CLIENTS`, and then on
 opposite conditions per side: the client also needs
 `Block.UPDATE_INVISIBLE` clear, the server also needs the chunk to be at
-`FullChunkStatus.BLOCK_TICKING` or better, which is why nothing generated
-during worldgen is ever broadcast.
+`FullChunkStatus.BLOCK_TICKING` or better, so a write into a chunk that is
+loaded but not yet simulating tells nobody. Worldgen is silent for a different
+reason again: it never reaches `Level.setBlock` at all, writing through
+`WorldGenRegion` instead.
 
 The last three are the two update channels proper, and the difference
 between them is the fact the rest of this part rests on:
@@ -332,13 +348,13 @@ shape cascade.
 **Why did `Level.setBlock` say false when the block is right there?** It
 returns true whenever the chunk accepted the write, even if the state was
 changed again immediately afterwards and the whole tail was skipped. It
-returns false in four cases, and only one of them is a real failure: a
-position out of bounds, the server side of a debug world, a chunk write that
-found nothing to do, or a side effect inside the chunk write that replaced
-the block before the write could be confirmed. *Nothing to do* is the common
-one, and it means writing the state that is already there — states being
-interned, that is an identity comparison — or writing air into a section
-that holds only air.
+returns false from three statements: a position out of bounds, the server side
+of a debug world, and the chunk write coming back with nothing. That last one
+has three causes of its own, and only the third is a real failure — writing air
+into a section that holds only air, writing the state that is already there
+(states being interned, that is an identity comparison), or a side effect
+inside the chunk write having replaced the block before it could be confirmed.
+The first two are the common ones.
 
 **Why does my property lookup throw when the property looks identical?**
 Because states match properties by *identity* and properties match each other
