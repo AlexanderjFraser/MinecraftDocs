@@ -41,23 +41,32 @@ flowchart BT
     H -- "and everything above can be ended by one abstract method" --> I
 ```
 
+One dependency runs forward instead of back, and it is Part X's rather than
+this part's: [prediction and acknowledgement](../client/prediction-and-acks.md)
+rests on the player half of [authority](authority.md) — the ledger's
+foundation, not its consequence — so this part is watched first, and nothing
+here waits on Part X.
+
 ## Before you start
 
 [The level tick](../server/server-level-tick.md), because half this part's
 surprises are claims about *which phase* something ran in — the entity phase
 runs after the block-change broadcast and before block entities, and that one
 ordering explains why an attribute change is a tick late and a sheared sheep
-is not. [Chunk anatomy](../world/chunk-anatomy.md) and [tickets and
+is not. [Tickets and
 loading](../world/tickets-and-loading.md), because whether an entity ticks at
-all is a property of the chunk it is standing in. [Blocks and
+all is a property of the chunk it is standing in, and [chunk
+anatomy](../world/chunk-anatomy.md) for the heightmaps that decide where a
+mob may spawn. [Blocks and
 states](../blocks/blocks-and-states.md) for the shapes that entities collide
-with, and [scheduled ticks](../world/scheduled-ticks.md) is *not* needed —
-entities keep no appointment book.
+with, and Part IV's *scheduled ticks* is *not* needed — entities keep no
+appointment book.
 
-One dependency runs forward instead of back. [Prediction and
-acknowledgement](../client/prediction-and-acks.md) is Part X, and the player
-half of authority is its foundation rather than its consequence; watch this
-part first.
+One more Part IV page, for one lecture: [environment attributes and
+timelines](../world/environment-attributes-and-timelines.md) before [goals
+and brains](ai-goals-and-brains.md). A villager's schedule is a data-pack
+`Timeline` looked up at a position, and this part asks that system a
+question rather than teaching it.
 
 ## Watch in this order
 

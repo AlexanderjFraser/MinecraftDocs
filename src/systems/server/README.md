@@ -42,12 +42,17 @@ this one, and that the client's frame loop is a separate clock. Part II's
 [registries](../foundations/identifiers-and-registries.md) are assumed
 wherever something is written to disk or sent on the wire.
 
-One page from a later part is assumed and cannot be moved earlier without
-moving all of Part IV: [tickets and
-loading](../world/tickets-and-loading.md) owns what *entity-ticking* and
-*block-ticking* range mean. [The level tick](server-level-tick.md) defines
-both in two sentences before it uses them, so you can watch this part
-first and Part IV second.
+Two pages from a later part are assumed, and they are cut two different
+ways. [Tickets and loading](../world/tickets-and-loading.md) owns what
+*entity-ticking* and *block-ticking* range mean, and [the level
+tick](server-level-tick.md) defines both in two sentences before it uses
+them, so that one keeps until Part IV. [Environment attributes and
+timelines](../world/environment-attributes-and-timelines.md) does not: it
+owns the per-position system whose cache `ServerLevel.tick` throws away in
+its very first statement — before the border, before the weather — and out
+of which `Level.updateSkyBrightness` later reads the sky light level rather
+than deriving it from the time of day. That is the one page worth watching
+out of order before this part; everything else in Part IV can wait.
 
 ## Watch in this order
 

@@ -152,7 +152,10 @@ def gamerules() -> str:
 # pushes into a CrudeIncrementalIntIdentityHashBiMap that hands out the next
 # int. The declaration lines carry the value type, the static block carries the
 # order, and the two are not in the same order — read both (session G).
-SERIALIZER_DECL = re.compile(r"EntityDataSerializer<(.+?)>\s+(\w+)\s*=\s*EntityDataSerializer\.(\w+)\(")
+# A serializer is declared either through a factory (EntityDataSerializer.forValueType(...)) or,
+# for ITEM_STACK alone in 26.2, as an anonymous subclass. The second form used to fall through to
+# ("?", "?") and reach the published page (pass-4 session A).
+SERIALIZER_DECL = re.compile(r"EntityDataSerializer<(.+?)>\s+(\w+)\s*=\s*(?:EntityDataSerializer\.(\w+)\(|new\s+EntityDataSerializer<)")
 SERIALIZER_ORDER = re.compile(r"registerSerializer\(EntityDataSerializers\.(\w+)\)")
 
 
@@ -165,7 +168,12 @@ def serializers() -> str:
     out += "| id | constant | value type | built by |\n|---:|---|---|---|\n"
     for i, const in enumerate(order):
         typ, kind = decl.get(const, ("?", "?"))
-        kind = "for value type" if kind == "forValueType" else f"`EntityDataSerializer.{kind}`"
+        if kind == "forValueType":
+            kind = "for value type"
+        elif kind == "":
+            kind = "an anonymous subclass"
+        else:
+            kind = f"`EntityDataSerializer.{kind}`"
         out += f"| {i} | `EntityDataSerializers.{const}` | `{typ}` | {kind} |\n"
     missing = sorted(set(decl) - set(order))
     if missing:

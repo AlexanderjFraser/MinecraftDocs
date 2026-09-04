@@ -4,9 +4,10 @@
 
 Java Minecraft is one codebase that runs as two programs. The **server** is
 the world: a loop that ticks twenty times a second, owns every chunk, entity
-and block, and is the only thing allowed to change them. The **client** is a
+and block, and is the only copy allowed to decide what they are. The **client** is a
 window, a loop that draws a frame as often as it can, and a copy of the
-world it is *told about*. They talk over a real Netty connection even when
+world it is *told about* — which it will happily change on its own and be
+overruled about. They talk over a real Netty connection even when
 both run in the same process — in singleplayer the connection never touches
 a socket, but the packets are real, and an `IntegratedServer` is a
 `MinecraftServer` with the client half attached rather than absent. Almost
@@ -50,7 +51,7 @@ leaves out.
 
 Four threads carry nearly all of it — the Render thread, which is also the
 client's game thread; the Server thread; the Netty event loop; and a shared
-worker pool — and the first page of the book,
+worker pool — and the first lecture of the book,
 [Anatomy](systems/anatomy/anatomy.md), is those four threads and the two
 loops.
 
@@ -70,16 +71,16 @@ figure is the artefact — a sequence diagram whose lanes are class names, a
 state machine, a flowchart of a decision. Every diagram enlarges on click.
 Each part only assumes the ones before it, and the
 [lecture map](lectures.md) says where that is not quite true. The picture
-below is the whole of that: an arrow is *watch before*, the two shared
-foundations — Part I for the threads, Part II for codecs and registries —
-are left off because they would touch every box, and the two dashed arrows
-are the only places a part reaches forward, each cut by a definition rather
-than a reordering.
+below is the whole of that: an arrow is *watch before*, the two
+dependencies every part shares — Part I for the threads, Part II for codecs
+and registries — are left off because their arrows would reach almost every
+box, and the two dashed arrows are the only places a part reaches forward,
+each cut on purpose rather than solved by reordering.
 
 {{#include figures/parts-dependency.md}}
 
-**Maps** are looked at once. The [atlas](maps/README.md) is four figures
-generated from the decompile on every build — [where the code
+**Maps** are looked at once. The [atlas](maps/README.md) is four views
+generated from the decompile on every deploy — [where the code
 is](maps/packages.md), [where the mass is](maps/biggest.md), [what
 everything imports](maps/fanin.md) and [what extends
 what](maps/hierarchy.md) — each with a page of prose and the table it was
@@ -121,7 +122,9 @@ it is one version: 26.2. There are no version-difference sections and no
 against the decompile before the site publishes, every diagram is parsed
 by the same mermaid the site ships, and every lane in every diagram is
 checked against the one [key](reference/lanes.md) the whole book uses. A
-page that fails any of the three does not go up. That is a narrow
+page that fails any of those three does not go up, and neither does a change
+that puts the landing pages, the lecture map and the dependency figure out
+of step with each other. That is a narrow
 guarantee, and it is worth stating narrowly: it proves the names are real
 and current in 26.2, not that the sentence around them is true. The
 sentences are what the passes are for.
@@ -136,9 +139,10 @@ then. Never line-level. Code makes boring video and dates fast.
 
 ## What this book skips
 
-Save migration (the `util/datafix` tree, which is version-difference code by
-definition), Realms, telemetry, the profiler, the management server, RCON,
-the data generators and a few packages nobody will
+Save migration (the `util/datafix` and `util/filefix` trees, which are
+version-difference code by definition), Realms, telemetry, the profiler, the
+management server, RCON, the data generators, statistics and the recipe book,
+the OpenAL audio backend and two packages nobody will
 recognise are all in the jar and not in the parts.
 [What this book skips](systems/anatomy/what-this-book-skips.md), the closing
 page of Part I, draws that boundary honestly — what each thing is, how big, whether the dedicated

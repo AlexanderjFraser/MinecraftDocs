@@ -2,7 +2,7 @@
 
 > Verified against **Minecraft 26.2** · Maps · The widest inheritance trees, four of them drawn with the number of descendants on every node.
 
-`Block` has 293 subclasses and `Entity` 193, and those are the two trees a
+`Block` has 293 subclasses and `Entity` 191, and those are the two trees a
 reader of this book will climb most often. But neither is the widest
 hierarchy in the game. That is `FeatureElement`, with 386 descendants from
 seven implementers — and it is not a hierarchy at all. It is a marker
@@ -21,7 +21,7 @@ class table is where the real trees are, and four of them are drawn below.
 </figure>
 
 The shape is a spine with a few branches. `LivingEntity` holds 124 of the
-193, `Mob` 114 of those, `PathfinderMob` 108 of those: a mob is four
+191, `Mob` 114 of those, `PathfinderMob` 108 of those: a mob is four
 classes deep before it is a species, and Part VI's
 [entity anatomy](../systems/entities/entity-anatomy.md) is that spine.
 The non-living entities are two families and a scattering — `Projectile`
@@ -65,11 +65,11 @@ is this shape.
 <figcaption>The <code>Screen</code> tree to three levels; 60 of its 72 direct subclasses have no subclasses of their own. Click to enlarge.</figcaption>
 </figure>
 
-`Screen` (157) is `Block`'s shape again — 72 direct subclasses, 60 of
+`Screen` (158) is `Block`'s shape again — 72 direct subclasses, 60 of
 them terminal — with one deep branch, `AbstractContainerScreen` (27), the
 screens that show a menu, and one branch that is not in this book,
 `RealmsScreen` (23). The row above it in the table,
-`AbstractContainerEventHandler` at 158, is `Screen`'s parent with `Screen`
+`AbstractContainerEventHandler` at 159, is `Screen`'s parent with `Screen`
 as its only subclass, the same one-class-higher effect as
 `BlockBehaviour`.
 
@@ -77,8 +77,8 @@ as its only subclass, the same one-class-higher effect as
 
 `Goal` has 200 descendants from 99 direct subclasses, and 130 of the 200
 are nested classes inside the mob they serve — a fox's goals are declared
-in `Fox`, not in `world/entity/ai/goal`. `Packet` is an interface with 227
-direct implementers and almost nothing below them: the packet catalogue is
+in `Fox`, not in `world/entity/ai/goal`. `Packet` is an interface with 236 descendants from 227
+direct implementers, and almost nothing below them: the packet catalogue is
 flat, and the [packets](../reference/packets.md) reference is its list.
 
 ## The tables

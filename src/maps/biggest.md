@@ -36,17 +36,20 @@ they are the pages a reader of Part VI should expect to be long.
 
 **The switchboards.** `ClientPacketListener` is a handler method for every
 clientbound play packet, and `ServerGamePacketListenerImpl` is the same for
-every serverbound one; between them they are the whole of what the wire
+every serverbound one — the packets both phases share are handled one class
+up, in `ClientCommonPacketListenerImpl` and `ServerCommonPacketListenerImpl`; between them they are the whole of what the wire
 can say, which is why Part IX's pages keep coming back to them.
 `FriendlyByteBuf` is the buffer both read from.
 
 **The catalogues written as code.** `SoundEvents`, `Blocks`, `Items` and
 `CreativeModeTabs` are registries populated one constant per line;
-`DensityFunctions` is the vanilla noise graph; `DataFixers` is the
+`DensityFunctions` is the node types the vanilla noise graph is built from —
+the graph itself is `NoiseRouterData` and the worldgen JSON; `DataFixers` is the
 migration history; `OceanMonumentPieces` and `StrongholdPieces` are
 structures built by hand, room by room, in Java rather than in a template;
-`Options` is every setting the client has, and `Hud` is everything drawn
-over the world. These are long because they are lists. None is hard.
+`Options` is every setting the client has, and `Hud` is the in-world overlay
+— the crosshair, the hotbar, the bars — inside the wider `Gui` that also
+draws screens, toasts and the loading overlay. These are long because they are lists. None is hard.
 
 ## The table
 

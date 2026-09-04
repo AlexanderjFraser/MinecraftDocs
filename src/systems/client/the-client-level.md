@@ -11,7 +11,8 @@ that consults the level therefore gets a wrong answer rather than an error,
 and anything that reschedules itself looks inert until the server speaks.
 
 That is the shape of the whole class. `ClientLevel` is not a passive receiver
-and not an authority either: it simulates hard — every block entity ticks
+and not an authority either ([authority](../entities/authority.md) is where
+the four predicates that word stands for are set out): it simulates hard — every block entity ticks
 regardless of distance, every local block change is relit locally, it keeps
 its own clock and free-runs between corrections — while inheriting a set of
 shared `Level` methods that have been quietly reduced to constants. Reading

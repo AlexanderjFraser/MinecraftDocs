@@ -139,7 +139,7 @@ is at most four blocks in both width and height.
 
 ## The tree, and the class that was inserted into it
 
-`Entity` has **18** direct subclasses and 193 descendants. The non-living
+`Entity` has **18** direct subclasses and 191 descendants. The non-living
 branches are the short half.
 
 <figure class="map">
@@ -149,7 +149,7 @@ branches are the short half.
 
 The full drawing, with the block, item and screen trees beside it, is in
 [what extends what](../../maps/hierarchy.md). What matters here is the shape:
-a long spine and a scattering. `LivingEntity` holds 124 of the 193 and has
+a long spine and a scattering. `LivingEntity` holds 124 of the 191 and has
 exactly **three** direct subclasses — `Avatar`, `ArmorStand` and `Mob` —
 which is worth saying plainly, because it means **an armour stand is a living
 entity with no AI at all**: no `GoalSelector`, no `PathNavigation`, both of

@@ -57,9 +57,9 @@ what the rest of the book lives inside, and the beginning and the end last,
 because they are only interesting once you know what they start and stop.
 
 1. [The server tick](systems/server/server-tick.md) — one 50 ms lap of the
-   Server thread. The most load-bearing lecture in the book after
-   *Anatomy*: Parts IV to VIII all assume it, and it is the first place a
-   viewer sees a named thread do a full lap.
+   Server thread. The most load-bearing pair in the book after *Anatomy*:
+   seven later parts assume this lecture or the next one, and this is the
+   first place a viewer sees a named thread do a full lap.
 2. [The level tick](systems/server/server-level-tick.md) — one step of that
    lap, which is the entire world changing. Watched immediately after, and
    never apart from it.
@@ -74,23 +74,25 @@ because they are only interesting once you know what they start and stop.
 
 Watch [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md) (Part IV)
-before *the level tick* if you want its first statement to mean anything;
-it is the page with the most dependants in the book and Part III is the
-earliest of them.
+before *the level tick* if you want its first statement to mean anything.
+It costs nothing to take out of order — it depends on nothing but registries
+and codecs — and Part III is the earliest of the six other parts that lean
+on it.
 
 ## IV · The world
 
 Part IV is a conveyor: five pages that hand a chunk along a line, and five
-more about the world the line delivers. The first five must be watched in
-order — nothing later in the chain can be watched first — and the rest can
-be watched in any order once the vocabulary page is done.
+more about the world the line delivers. The conveyor is lectures 2 to 6 and
+must be watched in that order — nothing later in the chain can be watched
+first. Lecture 1 is off the line on purpose, and the last four can be
+watched in any order once the vocabulary page is done.
 
 1. [Environment attributes and
    timelines](systems/world/environment-attributes-and-timelines.md) —
    what the place and the hour decide, resolved through four layers on the
    server and the same four plus two kinds of smoothing on the client. It
    is listed first here for the reason Part III already gave: it depends on
-   nothing but registries and codecs, and six pages across four parts
+   nothing but registries and codecs, and nine pages in six other parts
    depend on it.
 2. [Chunk anatomy](systems/world/chunk-anatomy.md) — the vocabulary page:
    sections, palettes, bit storage, heightmaps, and the four shapes a
@@ -100,7 +102,7 @@ be watched in any order once the vocabulary page is done.
    the four `FullChunkStatus` values buys.
 4. [The chunk generation
    pipeline](systems/world/chunk-generation-pipeline.md) — *EMPTY* to
-   *FULL* in twelve steps, and the pyramid of neighbour requirements that
+   *FULL* through twelve statuses, and the pyramid of neighbour requirements that
    turns one request into 529. Part XII is the cargo on this conveyor and
    cannot be watched before it.
 5. [Lighting](systems/world/lighting.md) — a torch, a flood on a worker,
@@ -164,7 +166,7 @@ statement of the contract, and the machinery waits for Part X.
 
 Part VI is a ladder, and the second rung carries the rest of it. Nothing in
 the part can be reordered without breaking something, and the one page most
-often skipped — *authority* — is the one four later parts link back to.
+often skipped — *authority* — is the one three later parts link back to.
 
 1. [Entity anatomy](systems/entities/entity-anatomy.md) — one `EntityType`
    from the registry, through a factory, to a live object the level ticks.
@@ -244,8 +246,9 @@ watch out of order.
 ## VIII · The player
 
 Part VIII is a trunk and four branches: two lectures on what a player is and
-when it runs, then four independent ones on what a player does. Only the
-last pair has an internal order — the spear is the sword swing's sequel.
+when it runs, then five more on what a player does, in four independent
+groups. Only one group has an internal order — the spear is the sword
+swing's sequel.
 
 1. [Player anatomy](systems/player/player-anatomy.md) — the vocabulary
    lecture: five classes, two game-mode objects, forty-three slots. `Avatar`
@@ -428,9 +431,10 @@ two;
 the window is the lecture a viewer is most likely to skip and least likely
 to regret.
 
-Part XI assumes Part X's [client loop](systems/client/the-client-loop.md),
-and only that page — it is the one thing that says when a frame happens.
-Lecture six assumes Part II's [resource
+Part XI assumes two pages of Part X: the [client
+loop](systems/client/the-client-loop.md), which is what says when a frame
+happens, and [the client level](systems/client/the-client-level.md), for
+what the thing being drawn actually is. Lecture six assumes Part II's [resource
 system](systems/foundations/resource-system.md); lecture nine assumes Part
 IV's [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md), which
@@ -497,8 +501,10 @@ pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the
 only page that says when any of this runs and what the twelve statuses are,
 and every lecture here opens by naming one. It also assumes Part IV's
 [chunk anatomy](systems/world/chunk-anatomy.md) for what is being written
-into, and Part II's codec and registry lectures, because worldgen is the
-most thoroughly data-driven system in the game.
+into, and three Part II lectures — codecs, registries and [the data-driven
+type pattern](systems/foundations/data-driven-types.md), which this part
+alone instantiates five times — because worldgen is the most thoroughly
+data-driven system in the game.
 
 ## XIII · Commands and data packs
 
@@ -569,8 +575,8 @@ a trigger's conditions are loot conditions.
 
 Every arrow below is a *before you start* entry on a landing page: the part
 at the tail is one the part at the head assumes, and not optionally. The
-two dependencies every part shares are left off the figure because they
-would touch every node — Part I's [anatomy](systems/anatomy/anatomy.md), for
+two dependencies every part shares are drawn as boxes but not as edges,
+because their arrows would reach almost every node — Part I's [anatomy](systems/anatomy/anatomy.md), for
 the threads every diagram's lanes are on, and Part II's
 [codecs](systems/foundations/codecs-nbt-json.md) and
 [registries](systems/foundations/identifiers-and-registries.md), assumed
@@ -592,8 +598,8 @@ about the day-night cycle rests on [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md). The first
 is cut by definition — the level tick defines both ranges in two sentences
 before it uses them — and the second by order: the environment page depends
-on nothing but registries and codecs, so it is listed first in Part IV and
-is the one lecture worth watching before its part.
+on nothing but registries and codecs, so Part IV's own watch order
+lists it first, and it is the one lecture worth watching before its part.
 
 **Part V and Part X assume each other.** The two click lectures in Part V
 are the applications of [prediction and
@@ -606,21 +612,22 @@ the player half of [authority](systems/entities/authority.md) is the
 ledger's foundation, not its consequence — so the whole of Parts V and VI is
 watched before that one Part X lecture.
 
-Nine pages carry most of the graph. A viewer who has watched these nine can
-take the parts they belong to in almost any order; a viewer who skips one of
-them will find a later part's first surprise unexplained.
+Ten pages carry most of the graph — nine rows below, because the two server
+ticks are one dependency in two lectures. A viewer who has watched these ten
+can take the parts they belong to in almost any order; a viewer who skips one
+of them will find a later part's first surprise unexplained.
 
 | the page | its part | the parts whose landing pages assume it |
 |---|---|---|
-| [The server tick](systems/server/server-tick.md) and [the level tick](systems/server/server-level-tick.md) | III | IV, V, VI, VII, VIII, IX, XIII — every part that lives on the Server thread, for *which phase* something ran in |
+| [The server tick](systems/server/server-tick.md) and [the level tick](systems/server/server-level-tick.md) | III | IV, V, VI, VII, VIII, IX, XIII — seven of the eight later parts that run on the Server thread, for *which phase* something ran in |
 | [Chunk anatomy](systems/world/chunk-anatomy.md) | IV | V, VI, XII — a block state's home, a ticking entity's chunk, and what terrain is written into |
 | [Tickets and loading](systems/world/tickets-and-loading.md) | IV | III, VI — what *entity-ticking* means |
 | [Environment attributes and timelines](systems/world/environment-attributes-and-timelines.md) | IV | III, VI, XI — the clock, the schedule, and the colour of the sky |
-| [Blocks and states](systems/blocks/blocks-and-states.md) | V | VI, VII — collision shapes, and how a chest is opened |
+| [Blocks and states](systems/blocks/blocks-and-states.md) | V | VI — the collision shapes entities are pushed out of |
 | [Authority](systems/entities/authority.md) | VI | VIII, IX, X — the premise under every page about a player, and under *what the client is told* |
 | [Contexts and predicates](systems/items/contexts-and-predicates.md) | VII | XIII — an advancement trigger's conditions are loot conditions |
 | [The connection](systems/networking/the-connection.md) | IX | X, XIII — the thread boundary every packet crosses |
-| [The client loop](systems/client/the-client-loop.md) | X | XI, and IX's deeper version — the only page that says when a frame happens |
+| [The client loop](systems/client/the-client-loop.md) | X | XI — the page that says when a frame happens, and how many ticks ran before it |
 
 Watched straight through, the sidebar order needs one departure from
 itself: *environment attributes and timelines* before *the level tick*. A

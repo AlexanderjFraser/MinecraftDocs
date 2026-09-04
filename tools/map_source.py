@@ -21,9 +21,11 @@ How things are counted, because the pages say so and pass 4 re-derives them:
 a *class* is one .java file (nested types are not counted); a *line* is one
 line of the decompiled file; a class is *shared* if the server jar also ships
 it (reference/<ver>/server-classes.txt) and *client-only* otherwise; *fan-in*
-is the number of files whose import statements name the class; a *descendant*
+is the number of files whose `net.minecraft` or `com.mojang` import statements
+name the class (the JDK and the annotations are not counted); a *descendant*
 is any type reachable through `extends`/`implements` declarations, nested
-types included. MC_SOURCE points at the decompile (default reference/26.2).
+types included, resolved per file so that two classes of the same simple name
+stay two classes. MC_SOURCE points at the decompile (default reference/26.2).
 
 The SVGs carry classes only (svg.mapfig, .shared, .client, .lib, .skip); every
 colour, font and theme lives in custom.css, and text is currentColor so the
@@ -143,35 +145,58 @@ def fanin_rows(files, top=60):
 
 
 def parse_decls(files):
-    """name -> (kind, parents, rel, shared) for every top-level and nested type.
+    """(rel, name) -> (kind, raw parents, rel, shared) for every top-level and nested type.
 
-    Types are keyed by simple name because that is how `extends` names them. When a
-    nested type shares a simple name with a top-level class (blaze3d has a nested
-    `Block`, many classes a nested `Builder`), the top-level one wins; among nested
-    ones the first file wins."""
+    Keyed by file *and* simple name. Keying by simple name alone — which is what this did
+    until pass-4 session A — silently merges the two `WarningScreen`s and the two `Pos`
+    packets, and sends every `Outer.Inner` parent to whatever top-level class happens to own
+    the simple name `Inner`. The parent strings are kept whole here and resolved below."""
     decls = {}
     for rel, text, shared in files:
-        top = rel.rsplit("/", 1)[-1][:-5]
         for m in DECL.finditer(text):
             kind, name, ext, impl = m.groups()
             parents = []
             for chunk in (ext, impl):
                 if chunk:
                     chunk = re.sub(r"<[^<>]*(?:<[^<>]*>[^<>]*)*>", "", chunk)
-                    parents += [c.strip().split(".")[-1] for c in chunk.split(",") if c.strip()]
-            if name == top or name not in decls:
-                decls[name] = (kind, parents, rel, shared)
+                    parents += [c.strip() for c in chunk.split(",") if c.strip()]
+            decls.setdefault((rel, name), (kind, parents, rel, shared))
     return decls
 
 
 def hierarchy(files):
-    """decls, children map, descendant-count map."""
+    """decls, children map, descendant-count map — all keyed by (rel, name)."""
     decls = parse_decls(files)
+    byname = defaultdict(list)
+    toplevel = {}
+    for key in decls:
+        rel, name = key
+        byname[name].append(key)
+        if rel.rsplit("/", 1)[-1][:-5] == name:
+            toplevel[name] = key
+
+    def resolve(rel, ref):
+        """A parent reference as written, to the type it names: a nested type of its
+        qualifier's file, else one declared in the same file, else the top-level class."""
+        segs = ref.split(".")
+        last = segs[-1]
+        if len(segs) > 1:
+            for owner in ([toplevel[segs[-2]]] if segs[-2] in toplevel else []) + byname.get(segs[-2], []):
+                if (owner[0], last) in decls:
+                    return (owner[0], last)
+        if (rel, last) in decls:
+            return (rel, last)
+        if last in toplevel:
+            return toplevel[last]
+        candidates = byname.get(last)
+        return candidates[0] if candidates and len(candidates) == 1 else None
+
     children = defaultdict(set)
-    for name, (_k, parents, _r, _s) in decls.items():
-        for p in parents:
-            if p in decls:
-                children[p].add(name)
+    for key, (_k, parents, rel, _s) in decls.items():
+        for ref in parents:
+            p = resolve(rel, ref)
+            if p is not None:
+                children[p].add(key)
     memo = {}
 
     def descendants(root, stack=()):
@@ -185,16 +210,16 @@ def hierarchy(files):
         memo[root] = seen
         return seen
 
-    counts = {name: len(descendants(name)) for name in decls}
+    counts = {key: len(descendants(key)) for key in decls}
     return decls, children, counts
 
 
 def hierarchy_rows(files, kinds, top=30, min_desc=15):
     decls, children, counts = hierarchy(files)
     rows = []
-    for name, (kind, _p, rel, _s) in decls.items():
-        if kind in kinds and counts[name] >= min_desc and children.get(name):
-            rows.append((counts[name], len(children[name]), name, kind, os.path.dirname(rel)))
+    for key, (kind, _p, rel, _s) in decls.items():
+        if kind in kinds and counts[key] >= min_desc and children.get(key):
+            rows.append((counts[key], len(children[key]), key[1], kind, os.path.dirname(rel)))
     rows.sort(key=lambda r: (-r[0], -r[1], r[2]))
     return rows[:top]
 
@@ -417,15 +442,16 @@ def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_
     rows = []  # terminal nodes in draw order, each (depth, label, cls)
     nodes = []  # (depth, y, label, cls, parent_index)
 
-    def order(name):
-        return (-counts[name], name)
+    def order(key):
+        return (-counts[key], key[1])
 
-    def layout(name, depth, parent):
+    def layout(key, depth, parent):
+        name = key[1]
         idx = len(nodes)
-        kids = sorted(children.get(name, ()), key=order)
+        kids = sorted(children.get(key, ()), key=order)
         internal = [k for k in kids if counts[k] > 0]
         leaves = [k for k in kids if counts[k] == 0]
-        label = f"{name} ({counts[name]})" if counts[name] else name
+        label = f"{name} ({counts[key]})" if counts[key] else name
         if depth >= max_depth or not kids:
             nodes.append([depth, len(rows) * row_h, label, "node", parent])
             rows.append(name)
@@ -437,10 +463,11 @@ def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_
             first = c if first is None else first
             last = c
         if leaves:
+            leaf_names = [k[1] for k in leaves]
             if len(leaves) == 1:
-                lab, cls = leaves[0], "node"
+                lab, cls = leaf_names[0], "node"
             else:
-                names = ", ".join(leaves[:3]) + (", …" if len(leaves) > 3 else "")
+                names = ", ".join(leaf_names[:3]) + (", …" if len(leaves) > 3 else "")
                 lab, cls = f"{len(leaves)} with no subclasses: {names}", "fold"
             nodes.append([depth + 1, len(rows) * row_h, lab, cls, idx])
             rows.append(lab)
@@ -459,7 +486,7 @@ def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_
         xs[d] = x
         x += max(depth_w[d], col_w) if d < max(depth_w) else depth_w[d]
     W, H = int(x) + 4, len(rows) * row_h + 8
-    out = svg_open(W, H, f"The class hierarchy under {root}: each node shows how many types descend from it")
+    out = svg_open(W, H, f"The class hierarchy under {root[1]}: each node shows how many types descend from it")
     for d, y, label, cls, p in nodes:
         px, py = xs[d], y + 12
         if p is not None:
@@ -499,9 +526,10 @@ def main():
     write("biggest.svg", svg_biggest(files))
     write("fanin.svg", svg_fanin(files))
     decls, children, counts = hierarchy(files)
+    tops = {name: key for key in decls for name in [key[1]] if key[0].rsplit("/", 1)[-1][:-5] == name}
     for root in TREE_ROOTS:
-        if root in decls:
-            write(f"tree-{root}.svg", svg_tree(root, decls, children, counts))
+        if root in tops:
+            write(f"tree-{root}.svg", svg_tree(tops[root], decls, children, counts))
         else:
             print(f"no such root: {root}", file=sys.stderr)
 

@@ -1,10 +1,13 @@
 # What everything imports
 
-> Verified against **Minecraft 26.2** · Maps · The thirty most-imported classes: how many files name each one in an import statement.
+> Verified against **Minecraft 26.2** · Maps · The thirty most-imported Mojang classes: how many files name each one in an import statement.
 
 One file in six imports `BlockPos`. That is the least surprising fact on
-this page; the next one is not. The second most-imported type in Java
-Minecraft is not Minecraft's: it is `Codec`, from Mojang's DataFixerUpper
+this page; the next one is not. The chart counts Mojang imports only —
+*net.minecraft* and *com.mojang* — because the JDK's `List` and `Optional`
+and the nullability annotation outrank everything on it and say nothing
+about the game. Under that rule the second most-imported type is not
+Minecraft's: it is `Codec`, from Mojang's DataFixerUpper
 library, imported by 987 files, with `MapCodec` third and
 `RecordCodecBuilder` sixth. Three of the six classes the game most depends
 on are the serialisation vocabulary that turns objects into NBT and JSON
@@ -13,7 +16,7 @@ see.
 
 <figure class="map">
 {{#include ../generated/fanin.svg}}
-<figcaption>The thirty most-imported classes of 26.2. Blue ships in both jars, orange is client-only, grey is a library outside the decompile. Click to enlarge.</figcaption>
+<figcaption>The thirty most-imported Mojang classes of 26.2; JDK and annotation imports are not counted. Blue ships in both jars, orange is client-only, grey is a library outside the decompile. Click to enlarge.</figcaption>
 </figure>
 
 ## The vocabulary Part II teaches

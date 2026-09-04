@@ -47,6 +47,13 @@ flowchart TD
     EA -- "read by all four, and by Part III" --> LC
 ```
 
+What the part hands forward, and what it does not: [blocks and
+states](../blocks/blocks-and-states.md) in Part V assumes the section and
+palette model [chunk anatomy](chunk-anatomy.md) defines, and Part XII's
+terrain generation is the cargo on the conveyor [the generation
+pipeline](chunk-generation-pipeline.md) describes. Neither is a dependency
+of this part; both are parts that depend on it.
+
 ## Before you start
 
 [The server tick](../server/server-tick.md) and [the level
@@ -57,16 +64,13 @@ Part II's [codecs](../foundations/codecs-nbt-json.md) and
 [registries](../foundations/identifiers-and-registries.md) are assumed
 wherever a chunk is written to disk or a type is looked up by name.
 
-Nothing in this part needs Part V or beyond. It does hand two things
-forward: [blocks and states](../blocks/blocks-and-states.md) assumes the
-section and palette model this part defines, and Part XII's terrain
-generation is the cargo on the conveyor [the generation
-pipeline](chunk-generation-pipeline.md) describes.
+Nothing in this part needs Part V or beyond.
 
 ## Watch in this order
 
-The first five are a chain — nothing later in it can be watched first — and
-the last five can be watched in any order once you have the first.
+Lectures two to six are the chain — nothing later in it can be watched
+first. The first is off the chain on purpose, and the last four can be
+watched in any order once you have the vocabulary page.
 
 1. [Environment attributes and timelines](environment-attributes-and-timelines.md)
    — the one page here that depends on nothing else in the part, and the

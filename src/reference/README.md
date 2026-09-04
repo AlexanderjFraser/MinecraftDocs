@@ -4,10 +4,10 @@
 
 A lecture explains one thing at a time, and it cannot stop to list the 43
 entity-data serializers or the ten bits of a flag word without losing the
-room. The rule for this tier is the one the plan set: *would a viewer pause
+room. The rule for this tier is the one pass 3 set: *would a viewer pause
 the video to read this?* If yes, it lives here and the page links to it.
-Twenty-one pages, and the useful way to tell them apart is not by subject
-but by **how each one is kept** — because a catalogue is only as good as
+Twenty pages on the shelf and this one in front of them, and the useful way
+to tell the twenty apart is not by subject but by **how each one is kept** — because a catalogue is only as good as
 the version it was read from, and the first question to ask of any page on
 this shelf is *what regenerates it.*
 
@@ -41,13 +41,13 @@ flowchart LR
 
 | page | what it lists | kept by | the parts whose landing pages point at it |
 |---|---|---|---|
-| [Packets](packets.md) | every packet, by protocol group and direction | generated | V, VI, VII, VIII, IX, X, XIII, III |
+| [Packets](packets.md) | every packet, by protocol group and direction | generated | III, V, VI, VII, VIII, IX, X, XIII |
 | [Registries](registries.md) | every registry key: built-in, data-pack, synced | generated | II, V, VI, VII, IX, XII, XIII |
 | [Data components](components.md) | every `DataComponentType`, persistent and synced | generated | II, V, VII, VIII, IX |
 | [Game rules](gamerules.md) | every rule, type, category, default | generated | III, IV, V, VI, VIII |
 | [Attributes](attributes.md) | every attribute: default, range, sentiment, syncable | generated | VI, VIII |
 | [Entity data serializers](entity-data-serializers.md) | all 43, in registration order, which is the wire id | generated | VI |
-| [Enchantment hooks](enchantment-hooks.md) | every `EnchantmentHelper` entry point and its callers | generated | VII |
+| [Enchantment hooks](enchantment-hooks.md) | every public `EnchantmentHelper` entry point and its callers | generated | VII |
 | [Loot context parameter sets](loot-context-params.md) | all twenty-six, with required and optional keys | generated | VII, XIII |
 | [Block update flags](block-update-flags.md) | the ten bits of `Level.setBlock`'s flag word | hand-kept | V |
 | [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-one non-living classes does when hit | hand-kept | VI |
@@ -59,8 +59,8 @@ flowchart LR
 | [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | IV, VIII, XII |
 | [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.2 calls it | hand-kept | I, II, XI, XII |
 | [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | X, XI, XII, XIII |
-| [Diagram lanes](lanes.md) | every lane abbreviation and the class it means | generated from the lane key | every part |
-| [Class index](class-index.md) | every class a page names, and the pages that name it | generated from the pages | — |
+| [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the nine that mean a thread instead | generated from the lane key | every part |
+| [Class index](class-index.md) | every class backticked on a page, and the pages that name it | generated from the pages | — |
 
 *Generated* means `python tools/gen_reference.py all` rewrites the file
 from the decompile's declaration lines, so a version bump re-derives it

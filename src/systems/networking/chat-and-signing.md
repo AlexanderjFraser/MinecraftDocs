@@ -52,8 +52,9 @@ sequenceDiagram
     participant CPL as ClientPacketListener
     participant SGPL as ServerGamePacketListenerImpl
     participant PL as PlayerList
-    participant RCPL as (recipient) ClientPacketListener
+    participant RCPL as ClientPacketListener
     participant CLis as ChatListener
+    Note over RCPL: RCPL is the recipient's client, CPL the sender's
 
     CScr->>CPL: whitespace squeezed, cut to 256 characters
     CPL->>CPL: timestamp, salt, the last-seen window, then sign

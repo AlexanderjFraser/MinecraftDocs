@@ -38,10 +38,10 @@ PARTICIPANT = re.compile(r"^\s*(?:participant|actor)\s+([A-Za-z0-9_]+)(?:\s+as\s
 WORD_LANE_MARK = "not a class"
 
 
-def read_key(template: str) -> tuple[dict[str, str], set[str], list[str]]:
-    """lane -> class for class lanes; the set of word lanes; problems found in the key itself."""
+def read_key(template: str) -> tuple[dict[str, str], dict[str, str], list[str]]:
+    """lane -> class for class lanes; lane -> gloss for word lanes; problems found in the key itself."""
     classes: dict[str, str] = {}
-    words: set[str] = set()
+    words: dict[str, str] = {}
     problems: list[str] = []
     in_key = False
     with open(template, encoding="utf-8") as fh:
@@ -66,10 +66,13 @@ def read_key(template: str) -> tuple[dict[str, str], set[str], list[str]]:
             cm = CLASS_CELL.match(cell)
             if cm:
                 classes[lane] = cm.group(1)
-            elif WORD_LANE_MARK in cell:
-                words.add(lane)
+            elif cell.startswith("*") and cell.endswith("*"):
+                # a word lane: something that is not one class, glossed in italics. The gloss is
+                # kept and printed, because it is the only thing the row carries (pass-4 session A;
+                # the marker used to be the literal phrase "not a class", which was false of `Main`).
+                words[lane] = cell.strip("*").strip()
             else:
-                problems.append(f"{template}:{n}: lane `{lane}` is neither a backticked class nor marked '{WORD_LANE_MARK}'")
+                problems.append(f"{template}:{n}: lane `{lane}` is neither a backticked class nor an italic gloss")
     if not classes:
         problems.append(f"{template}: no lane key found (expected rows under '### The lane key')")
     return classes, words, problems
@@ -131,6 +134,7 @@ def check_pages(src: str, classes: dict[str, str], words: set[str], only: list[s
                     if expansion != classes[lane]:
                         mismatches.append(f"{rel}:{n}: `{lane}` is `{expansion}` here, `{classes[lane]}` in the key")
                     continue
+                mismatches.append(f"{rel}:{n}: `{lane}` (`{expansion}`) is not in the lane key")
                 seen.setdefault(lane, {}).setdefault(expansion, set()).add(rel)
     collisions = []
     for lane, by_class in sorted(seen.items()):
@@ -140,14 +144,27 @@ def check_pages(src: str, classes: dict[str, str], words: set[str], only: list[s
     return mismatches, collisions, count
 
 
-def write_index(path: str, classes: dict[str, str], words: set[str], template: str) -> None:
+def write_index(path: str, classes: dict[str, str], words: dict[str, str], template: str) -> None:
+    tmpl = os.path.basename(template)
     out = [
         "# Diagram lanes",
         "",
-        "Every lane in a sequence diagram is a class name abbreviated once for the whole",
-        f"corpus. This is the key, generated from `{os.path.basename(template)}` by",
-        "`python tools/check_lanes.py --index`; the initials of the class's CamelCase words,",
-        "a one-word class as itself, and a few words for things that are not classes.",
+        f"> Generated from `{tmpl}`'s lane key by `python tools/check_lanes.py --index`. "
+        "Do not edit by hand.",
+        "",
+        "Almost every lane in a sequence diagram is a class, and a lane means the same thing on",
+        f"every page: the key in `{tmpl}` is the authority, and `check_lanes.py` fails a deploy on",
+        "a page that disagrees with it. The last rows are the exceptions — lanes that stand for a",
+        "thread or a boundary rather than for one class.",
+        "",
+        f"{len(classes)} lanes are classes and {len(words)} are not. A lane is normally the initials of",
+        "the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other",
+        "rules make about a third of them: a short one-word class is its own lane (`Player`,",
+        "`Sheep`), a longer one-word class",
+        "takes a fixed prefix (`Connection` is `Conn`, `Enchantment` is `Ench`), and a collision is",
+        "resolved by lengthening the **later** claimant, never by reassigning a row — which is why",
+        "`ChestMenu` is `ChestM` and not `CM` (`ChunkMap` had it first). Derive nothing from a lane;",
+        "read it off this table.",
         "",
         "| lane | class |",
         "|---|---|",
@@ -155,7 +172,7 @@ def write_index(path: str, classes: dict[str, str], words: set[str], template: s
     for lane in sorted(classes, key=str.lower):
         out.append(f"| `{lane}` | `{classes[lane]}` |")
     for lane in sorted(words, key=str.lower):
-        out.append(f"| `{lane}` | *{lane}: not a class* |")
+        out.append(f"| `{lane}` | *{words[lane]}* |")
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join(out) + "\n")
     print(f"wrote {path}: {len(classes)} class lanes, {len(words)} word lanes")

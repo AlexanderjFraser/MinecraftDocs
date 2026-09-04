@@ -5,7 +5,7 @@
 Java Minecraft is 7,055 classes and 719,302 lines of decompiled Java 25,
 and the first surprise in it is which half is bigger. Everything a player
 sees — every screen, the HUD, the whole renderer, the entity models, both
-GPU back-ends, the sound engine, Realms — is the orange quarter of this
+GPU back-ends, the sound engine, Realms — is the orange near-third of this
 picture. The blue three quarters ship in both jars, and the biggest box
 of all, `world/level`, is a fifth of the game by itself: blocks, block
 states, chunks, lighting and world generation, all of it code the
@@ -23,7 +23,7 @@ clean: the 2,206 client-only classes live in exactly four packages —
 `net/minecraft/client` (1,864 classes), `com/mojang/blaze3d` (211),
 `com/mojang/realmsclient` (127) and `net/minecraft/realms` (4). Every other
 package in the table below ships in both jars, class for class; no
-sub-package at this depth is mixed. The client-only quarter is 212,242
+sub-package at this depth is mixed. The client-only side is 212,242
 lines, 29.5% of the total, which is the "just under a third" the
 introduction quotes.
 
@@ -37,7 +37,8 @@ behind it is `server-classes.txt`.
 
 **world — 42%.** `world/level` (146,417 lines, 1,312 classes) is Parts
 IV, V and XII: chunks, block states, lighting and, under
-`world/level/levelgen`, the whole of world generation. `world/entity`
+`world/level/levelgen`, most of world generation — `world/level/biome` is
+its sibling rather than part of it. `world/entity`
 (109,061 lines, 716 classes) is Parts VI and VIII: the entity hierarchy,
 its AI and the player. `world/item` and `world/inventory` (36,363 lines
 between them) are Part VII.
@@ -57,9 +58,9 @@ left is the toolbox every part uses — `Mth`, `RandomSource`, `Util` — and
 the parsing and debug packages.
 
 **server — 7%.** `server/commands` (12,781) is Part XIII's command
-implementations; `server/level` is 42 classes and 11,977 lines, the
-smallest package with the largest classes (`ServerLevel`, `ChunkMap`,
-`ServerPlayer`), Parts III and IV; `server/network` is the serverbound
+implementations; `server/level` is 42 classes and 11,977 lines — 285 lines a class, nearly
+three times the map's average, in a package small enough to list
+(`ServerLevel`, `ChunkMap`, `ServerPlayer`), Parts III and IV; `server/network` is the serverbound
 packet handlers, Part IX; `server/packs` is the pack system, Part II;
 `server/jsonrpc`, the management server, is skipped.
 
@@ -73,9 +74,14 @@ than the OpenGL one (`blaze3d/opengl`, 5,627).
 
 Below 3% the boxes are Part II's foundations — `net/minecraft/core`,
 `net/minecraft/nbt`, `net/minecraft/tags`, `net/minecraft/resources`,
-`net/minecraft/commands` (Brigadier's argument types, Part XIII) and
-`net/minecraft/advancements` — plus the skipped `net/minecraft/data` package, which is the program
-that writes the vanilla data pack rather than anything that runs in a game.
+`net/minecraft/commands` (the command source, the argument types and the
+execution engine, Part XIII) and `net/minecraft/advancements`, plus
+`com/mojang/realmsclient` and the skipped `net/minecraft/data`. That last one
+is the program that writes the vanilla data pack — and it is not build-time
+only: the dedicated server ships all 163 classes, and `Blocks` and
+`MinecraftServer` both read `data/worldgen` constants at run time ([what this
+book skips](../systems/anatomy/what-this-book-skips.md) has the three
+exceptions).
 
 ## Where each part lives
 

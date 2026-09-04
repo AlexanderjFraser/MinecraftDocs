@@ -386,6 +386,7 @@ never change an existing row's meaning.
 | `MEI` | `MobEffectInstance` |
 | `CScr` | `ChatScreen` |
 | `CLis` | `ChatListener` |
+| `RCPL` | `ClientPacketListener` |
 | `CCC` | `ClientChunkCache` |
 | `LLE` | `LevelLightEngine` |
 | `LX` | `LevelExtractor` |
@@ -510,7 +511,7 @@ never change an existing row's meaning.
 | `WCUS` | `WorldCreationUiState` |
 | `WOF` | `WorldOpenFlows` |
 | `Game` | *the game's own code above Blaze3D, not a class* |
-| `Main` | *the JVM main thread, not a class* |
+| `Main` | *the JVM main thread, running whichever program's Main the diagram is about — the server's or the client's, so not one class* |
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
 | `Auth` | *the User Authenticator thread, not a class* |
@@ -525,7 +526,10 @@ Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
 `CM` is `ChunkMap` (the menus take their own initials); `CH` is `ChunkHolder`
 (the client handshake listener is `CHPL`); `GR` is `GameRenderer`
 (`GuiRenderer` lengthens to `GuiR`); `TD` is retired in favour of `CTD` /
-`TCTD`. Part V (session F) lengthened four later claimants rather than
+`TCTD` — and `TreeDecorator` itself is `TDec`. One class has two lanes on
+purpose: `RCPL` is also `ClientPacketListener`, because the chat diagram shows
+the sender's client and the recipient's at once and a note in the figure says
+which is which. Part V (session F) lengthened four later claimants rather than
 reassigning a row: `LeverBlock` is `LevB` because `LB` is `LiquidBlock`,
 `BlockItem` would be `BItem` because `BI` is `BucketItem`,
 `BlockPlaceContext` would be `BPC` because `PC` is `ProtoChunk`, and

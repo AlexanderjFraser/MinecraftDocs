@@ -1,6 +1,6 @@
 <svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1758 344" width="1758" height="344" role="img" aria-label="The class hierarchy under Entity: each node shows how many types descend from it">
 <title>The class hierarchy under Entity: each node shows how many types descend from it</title>
-<text class="node" x="4.0" y="200.0" font-size="12">Entity (193)</text>
+<text class="node" x="4.0" y="200.0" font-size="12">Entity (191)</text>
 <path class="edge" d="M93.5 196.0 H204.0 V60.0 H211.0"/>
 <text class="node" x="214.0" y="64.0" font-size="12">LivingEntity (124)</text>
 <path class="edge" d="M345.3 60.0 H715.2 V28.0 H722.2"/>
@@ -64,9 +64,9 @@
 <path class="edge" d="M380.1 288.0 H715.2 V300.0 H722.2"/>
 <text class="node" x="725.2" y="304.0" font-size="12">LeashFenceKnotEntity</text>
 <path class="edge" d="M93.5 196.0 H204.0 V316.0 H211.0"/>
-<text class="node" x="214.0" y="320.0" font-size="12">Display (5)</text>
+<text class="node" x="214.0" y="320.0" font-size="12">Display (3)</text>
 <path class="edge" d="M296.6 316.0 H715.2 V316.0 H722.2"/>
-<text class="fold" x="725.2" y="320.0" font-size="12">5 with no subclasses: BlockDisplay, Hidden, ItemDisplay, …</text>
+<text class="fold" x="725.2" y="320.0" font-size="12">3 with no subclasses: BlockDisplay, ItemDisplay, TextDisplay</text>
 <path class="edge" d="M93.5 196.0 H204.0 V332.0 H211.0"/>
 <text class="fold" x="214.0" y="336.0" font-size="12">13 with no subclasses: AreaEffectCloud, EndCrystal, EnderDragonPart, …</text>
 </svg>

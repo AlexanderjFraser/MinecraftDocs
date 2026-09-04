@@ -44,7 +44,7 @@ sequenceDiagram
     participant RootP as RootPlacer
     participant TP as TrunkPlacer
     participant FolP as FoliagePlacer
-    participant TD as TreeDecorator
+    participant TDec as TreeDecorator
     participant WGL as WorldGenLevel
 
     TF->>TP: getTreeHeight — two random draws
@@ -60,8 +60,8 @@ sequenceDiagram
         TF->>FolP: createFoliage(clipped height, attachment, foliageHeight, leafRadius)
         FolP->>WGL: leaves, DISTANCE 7 as provided
     end
-    TF->>TD: place(Context) — logs, leaves and roots, each sorted by Y
-    TD->>WGL: hives, vines, podzol, propagules
+    TF->>TDec: place(Context) — logs, leaves and roots, each sorted by Y
+    TDec->>WGL: hives, vines, podzol, propagules
     TF->>WGL: updateLeaves — a bucketed walk that rewrites every DISTANCE
 ```
 

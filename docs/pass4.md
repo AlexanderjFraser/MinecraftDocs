@@ -18,15 +18,21 @@ entry first.
 
 ## Standing items
 
-- The landing pages and `lectures.md` are claims about order and
+- ~~The landing pages and `lectures.md` are claims about order and
   dependency: check that every *before you start* link is actually assumed
-  by the part, and that nothing earlier depends on something later.
+  by the part, and that nothing earlier depends on something later.~~ Done
+  in full by session A (2026-09-04); `tools/check_deps.py` is the fourth
+  deploy gate and green, and the six remaining report-only entries are
+  judged in session A's entry below.
 - Every redrawn diagram: arrow by arrow, and every tick-boundary bar.
-- The eight generated Reference views (pass 3 added serializers,
+- ~~The eight generated Reference views (pass 3 added serializers,
   attributes, enchantment hooks and loot-context sets to the four pass 2
   had; the glossary stayed hand-kept): re-derive one sample by hand per
   view — pass 2 found bugs in both generators, and one had reached the
-  prose.
+  prose.~~ Session A re-derived one sample and one population count per
+  view; all eight confirmed (listed in its entry below). The hand-written
+  *blurbs* on those pages are not generated and are not covered by this —
+  their counts go to session N.
 - ~~The lane key in `TEMPLATE.md`: every lane's expansion is a class that
   exists.~~ `tools/check_lanes.py` checks it on every deploy, `--strict`
   corpus-wide since session P.
@@ -72,13 +78,108 @@ entry first.
   struck units, so the next session's checklist is only what is open.
   Corrections logged by a pass-4 session go under a `## Session X — Part N
   (pass 4)` heading at the top of *Entries*.
-- **`tools/check_deps.py`'s first run** (2026-09-03) is session A's opening
+- ~~**`tools/check_deps.py`'s first run** (2026-09-03) is session A's opening
   list: two lecture-table rows the landing pages do not support, three
   forward links with no dashed arrow, and per part the *before you start*
   entries no page in the part links or names — all in the plan's schedule
-  line for session A.
+  line for session A.~~ All settled by session A; the checker is green and
+  is now `deploy.sh`'s fourth gate.
 
 ## Entries
+
+## Session A — The frame (pass 4) *(2026-09-04)*
+
+The introduction, the atlas, `lectures.md`, the parts-dependency figure, the
+thirteen landing pages as claims about order, and the Reference tier. The
+order work (the charter's addition 2) and the generated views' one-sample
+check were the session's own; one adversarial agent per page did the rest.
+
+### Addition 2 — order and dependency, done in full
+
+`tools/check_deps.py` opened with two failures and three forward-link
+reports. All five were real, and all five are fixed. The checker is green
+and is now `tools/deploy.sh`'s **fourth gate**, after names, mermaid and
+lanes.
+
+- **`lectures.md`:618 — the environment attributes row.** Table said the
+  page is assumed by Parts III, VI and XI; the landing pages said only XI.
+  The table was right and two landing pages were missing the entry.
+  Part III uses it: `server-level-tick.md` opens the tick on
+  `EnvironmentAttributeSystem.invalidateTickCache`
+  (`ServerLevel.tick`, `server/level/ServerLevel.java:333` — the statement
+  before the world border and the weather) and has
+  `Level.updateSkyBrightness` read `EnvironmentAttributes.SKY_LIGHT_LEVEL`
+  out of it rather than deriving sky light from the time of day
+  (`world/level/Level.java:532-534`). Part VI uses it:
+  `ai-goals-and-brains.md` takes the villager schedule from a data-pack
+  `Timeline` and says the page "only asks it a question". → **added to both
+  landing pages** (`entities/attributes.md`'s mention is a
+  same-words disambiguation, not a use, and was not counted). Part III's
+  entry states the cut the way the lecture map states it: tickets and
+  loading keeps until Part IV, the environment page does not.
+- **`lectures.md`:619 — the blocks and states row.** Table said Parts VI and
+  VII; no page in Part VII links or leans on `blocks-and-states`, and Part
+  VII's landing page assumes `block-interaction` instead — which is what
+  the row's own gloss ("how a chest is opened") was describing. → **row
+  corrected to VI**, gloss narrowed to the collision shapes.
+- **Three forward links in *before you start* with no dashed arrow.** All
+  three were hand-forwards or pointers, not dependencies, so the fix was to
+  move them out of the section, not to draw an arrow.
+  - Part IV listed `blocks-and-states` in a sentence that says outright
+    "It does hand two things forward" → moved to the end of *the shape of
+    the part*.
+  - Part VI listed `prediction-and-acks` to say the dependency runs the
+    other way ("watch this part first") → moved to *the shape of the part*.
+  - Part IX listed `the-client-loop` as "the deeper version" of anatomy's
+    two-loops figure. Both Part IX pages that name it cite anatomy as the
+    shape and the client loop as "the detail" / "the arithmetic"
+    (`the-connection.md:105`, `what-the-client-is-told.md:442`) — a pointer,
+    not a prerequisite → de-linked in that section, and
+    **`lectures.md`:623's third column lost "and IX's deeper version"**.
+- **A fourth: Part VI's *before you start* linked `scheduled-ticks` only to
+  say it is *not* needed.** An anti-dependency read by the tool as a
+  dependency → de-linked (the words stay).
+- **A count, in the sentence over the dependency table.** "Nine pages carry
+  most of the graph … a viewer who has watched these nine" — the table has
+  nine rows but ten pages, because the first row is the server tick *and*
+  the level tick. → **ten**, with the reason said.
+- **`tools/check_deps.py` had a bug** (suspect the tool first): the
+  *unlisted* half excluded `/README` targets and the *unused* half did not,
+  so every "read Part N first" entry — six of them — was reported as an
+  unused dependency by construction, because no page in a part ever links
+  another part's landing page. Fixed.
+- **The six remaining report-only entries are judged real**, and are
+  unlinked rather than unused: Part X ← `anatomy/anatomy` (the-client-loop
+  is about nothing else) and `entities/authority` (`the-client-level` opens
+  on "not an authority either"); Part VI ← `world/chunk-anatomy`
+  (`entity-lifecycle` spends the chunk model throughout — spawnable chunks,
+  "no ticking chunk there", the unload queue); Part IV ←
+  `identifiers-and-registries` and Part XII ← that and `codecs-nbt-json`
+  (both parts use them on most pages). `mentions()` sees a link or a
+  backticked slug and none of these has one; **adding the missing
+  cross-links is pass-5 work** and is logged there.
+
+### The eight generated Reference views — one sample each, all confirmed
+
+Re-derived by hand from the decompile, against `tools/gen_reference.py`'s
+output. Paths relative to `reference/26.2/net/minecraft/`.
+
+| view | sample re-derived | verdict |
+|---|---|---|
+| packets | `login` group: 5 clientbound, 4 serverbound (`network/protocol/login/LoginPacketTypes.java:10-18`) | CONFIRMED |
+| registries | 148 keys, and `attribute_type` → `AttributeType<?>`, built-in (`core/registries/Registries.java:182`; `BuiltInRegistries`). The 149th `ResourceKey<Registry<` in the file is `createRegistryKey`'s own signature | CONFIRMED |
+| components | 111 registrations, and `max_damage` → `Integer`, persistent **and** synced (`core/component/DataComponents.java:116-118` — `persistent(…).networkSynchronized(…)`) | CONFIRMED |
+| gamerules | 59 rules (47 `registerBoolean` + 12 `registerInteger`), and `command_block_output` → Boolean, chat, default `true` (`world/level/gamerules/GameRules.java:31`) | CONFIRMED |
+| entity data serializers | wire id 3 = `FLOAT`, from the static block's registration order (`network/syncher/EntityDataSerializers.java:149-152`) | CONFIRMED |
+| attributes | 40 registrations, 32 `setSyncable(true)`, and `attack_damage` default 2 / min 0 / max 2048 and **not** syncable (`world/entity/ai/attributes/Attributes.java:14`) | CONFIRMED |
+| loot context param sets | 26 sets, and `ADVANCEMENT_LOCATION` requires THIS_ENTITY, ORIGIN, TOOL, BLOCK_STATE and nothing optional (`world/level/storage/loot/parameters/LootContextParamSets.java:116-118`) | CONFIRMED |
+| enchantment hooks | `EnchantmentHelper.canStoreEnchantments` called from `AnvilMenu` and nothing else (corpus grep for the qualified call) | CONFIRMED |
+
+The *blurbs* on those pages are hand-written into `gen_reference.py` and are
+**not** covered by this check. One is a count worth a look in session N:
+loot-context-params says "Twelve of these twenty-six sets never roll a
+`LootTable` at all".
+
 
 ## Session P — The lecture order and the close *(2026-09-03)*
 
@@ -89,36 +190,56 @@ has been checked once by the session and never by an adversary.
 
 ### `lectures.md` and `src/figures/parts-dependency.md` — claims about order
 
-- **Every solid arrow in the figure is a landing page's *before you start*
+- ~~**Every solid arrow in the figure is a landing page's *before you start*
   entry**, and the section says so; check each of the twenty-two arrows
   against the landing page it came from, and each landing-page entry
   against a sentence in the part that uses it (the charter's addition 2).
   The two omitted foundations (Part I anatomy, Part II codecs and
-  registries) are asserted to be assumed by every part.
-- **"No solid arrow points at an earlier part"** — true by construction of
+  registries) are asserted to be assumed by every part.~~ CONFIRMED after
+  four fixes (session A) — `check_deps.py` proves the arrows and the entries
+  match each other; the entries were judged against the parts by hand.
+- ~~**"No solid arrow points at an earlier part"** — true by construction of
   the figure; the claim to check is that no landing page lists a later
   part's page that the figure left out. Candidates: Part IX names *the
   client loop* (Part X) as "the deeper version" and the session drew that
-  as no arrow.
-- **The two dashed arrows**: Part III → Part IV (tickets and loading; the
+  as no arrow.~~ WRONG in three places, all fixed (session A): Parts IV, VI
+  and IX each listed a later part's page under *before you start* with no
+  arrow. Drawing the arrow would have been wrong in all three — each was a
+  hand-forward or a pointer, not a dependency — so each moved out of the
+  section instead.
+- ~~**The two dashed arrows**: Part III → Part IV (tickets and loading; the
   environment page), cut "by definition" — `server-level-tick.md` defines
   entity-ticking and block-ticking range before using them — and "by
   order"; Part X → Part V (prediction), cut at Part V by the two identical
-  preambles. Both restate landing-page rulings by sessions D/E and F/K.
-- **The nine-page table**: each row's "parts whose landing pages assume it"
+  preambles. Both restate landing-page rulings by sessions D/E and F/K.~~
+  The Part X → Part V arrow CONFIRMED. The Part III → Part IV arrow named
+  two pages and Part III's landing page listed only one; the environment
+  half is now on the landing page with the cut stated the way the lecture
+  map states it (session A).
+- ~~**The nine-page table**: each row's "parts whose landing pages assume it"
   was read off the landing pages by the session; re-derive the column by
   grep. In particular: *environment attributes* ← III, VI, XI (Part X's
   `what-makes-a-sound` also names it and Part X's landing page does not);
-  *the connection* ← X, XIII; *chunk anatomy* ← V, VI, XII.
-- **"Watched straight through, the sidebar order needs one departure from
+  *the connection* ← X, XIII; *chunk anatomy* ← V, VI, XII.~~ Two rows
+  WRONG, both fixed (session A); the count above the table was wrong too
+  (nine rows, ten pages). *The connection* ← X, XIII and *chunk anatomy* ←
+  V, VI, XII CONFIRMED. The Part X parenthetical CONFIRMED and its
+  conclusion with it: both Part X links are see-also pointers inside
+  naming-drift asides, not dependencies.
+- ~~**"Watched straight through, the sidebar order needs one departure from
   itself"** — that the environment page is the only backward dependency a
-  straight viewer meets.
-- **The Part I ruling**: *what this book skips* second, game tests last
+  straight viewer meets.~~ CONFIRMED (session A): it is the only *before you
+  start* entry pointing at a later part that is not cut by definition or by
+  a shared preamble, and it is `watch in this order` item 1 in Part IV, so
+  the departure is one lecture long.
+- ~~**The Part I ruling**: *what this book skips* second, game tests last
   "because nothing later depends on them" — check that no landing page
-  assumes `game-tests`.
-- The intro sentence "Nothing in Reference is watched, and nothing in the
+  assumes `game-tests`.~~ CONFIRMED (session A); it is `check_deps.py`'s
+  check 5 and is now a deploy gate.
+- ~~The intro sentence "Nothing in Reference is watched, and nothing in the
   maps is" — check no landing page lists a Reference page in *watch in this
-  order* (session O's note).
+  order* (session O's note).~~ CONFIRMED (session A); it is
+  `check_deps.py`'s check 4 and is now a deploy gate.
 
 ### `rendering/block-entity-rendering.md` — new, 332 lines, comparison
 

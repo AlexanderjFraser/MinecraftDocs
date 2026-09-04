@@ -278,8 +278,11 @@ def main() -> int:
     # 6. report: unused before-you-start entries, and cross-part links the landing page does not list
     for d, v in P.items():
         outlinks = page_links(d, v["pages"])
+        # a link to another part's landing page is a dependency on the whole part, and no page in
+        # this part will ever link it, so it can never satisfy mentions(); the unlisted half below
+        # excludes READMEs for the same reason.
         unused = [k for k in v["before"] if k.startswith("systems/") and not k.startswith(f"systems/{d}/")
-                  and not mentions(d, v["pages"], k)]
+                  and not k.endswith("/README") and not mentions(d, v["pages"], k)]
         unlisted = {k: srcs for k, srcs in outlinks.items() if k not in v["before"] and not k.endswith("/README")}
         lines = [f"Part {NUMERAL[v['num']]} · {v['title']} — before you start: "
                  + ", ".join(k.split('/', 1)[1] for k in v["before"] if k.startswith("systems/"))]

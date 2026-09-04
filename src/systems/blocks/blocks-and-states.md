@@ -317,7 +317,8 @@ on the client, which then waits to be told.
 
 ### The flag word
 
-The last argument to `Level.setBlock` is a bit set, tagged in signatures by
+The flag word is `Level.setBlock`'s third argument — its last, except on the
+four-argument overload that takes an update limit after it. It is a bit set, tagged in signatures by
 `Block.UpdateFlags`, an annotation that carries no values of its own. The
 flowchart above names its bits by number; the ten bits, what reads each one
 and the four named combinations are in

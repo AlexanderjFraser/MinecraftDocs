@@ -15,7 +15,7 @@ Every `EntityDataSerializer` in `EntityDataSerializers`, in **registration order
 | 4 | `EntityDataSerializers.STRING` | `String` | for value type |
 | 5 | `EntityDataSerializers.COMPONENT` | `Component` | for value type |
 | 6 | `EntityDataSerializers.OPTIONAL_COMPONENT` | `Optional<Component>` | for value type |
-| 7 | `EntityDataSerializers.ITEM_STACK` | `?` | `EntityDataSerializer.?` |
+| 7 | `EntityDataSerializers.ITEM_STACK` | `ItemStack` | an anonymous subclass |
 | 8 | `EntityDataSerializers.BOOLEAN` | `Boolean` | for value type |
 | 9 | `EntityDataSerializers.ROTATIONS` | `Rotations` | for value type |
 | 10 | `EntityDataSerializers.BLOCK_POS` | `BlockPos` | for value type |

@@ -51,9 +51,10 @@ entity movement.
 [Part I's anatomy](../anatomy/anatomy.md) for the two-loops figure: the
 client's frame loop and the server's tick loop are different clocks, and the
 client drains its inbound packets once per **frame**, not once per tick.
-That one fact is behind half of what looks like network jitter.
-[The client loop](../client/the-client-loop.md) in Part X is the deeper
-version.
+That one fact is behind half of what looks like network jitter. Part X's
+*client loop* is the deeper version of it, and this part does not wait for
+that page: where the arithmetic matters, the pages here state the
+consequence and link forward.
 
 Then [Part II](../foundations/README.md) for two objects this part assumes
 whole: [codecs](../foundations/codecs-nbt-json.md), because a packet codec

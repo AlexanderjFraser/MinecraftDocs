@@ -1,9 +1,20 @@
 # Diagram lanes
 
-Every lane in a sequence diagram is a class name abbreviated once for the whole
-corpus. This is the key, generated from `TEMPLATE.md` by
-`python tools/check_lanes.py --index`; the initials of the class's CamelCase words,
-a one-word class as itself, and a few words for things that are not classes.
+> Generated from `TEMPLATE.md`'s lane key by `python tools/check_lanes.py --index`. Do not edit by hand.
+
+Almost every lane in a sequence diagram is a class, and a lane means the same thing on
+every page: the key in `TEMPLATE.md` is the authority, and `check_lanes.py` fails a deploy on
+a page that disagrees with it. The last rows are the exceptions — lanes that stand for a
+thread or a boundary rather than for one class.
+
+332 lanes are classes and 9 are not. A lane is normally the initials of
+the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
+rules make about a third of them: a short one-word class is its own lane (`Player`,
+`Sheep`), a longer one-word class
+takes a fixed prefix (`Connection` is `Conn`, `Enchantment` is `Ench`), and a collision is
+resolved by lengthening the **later** claimant, never by reassigning a row — which is why
+`ChestMenu` is `ChestM` and not `CM` (`ChunkMap` had it first). Derive nothing from a lane;
+read it off this table.
 
 | lane | class |
 |---|---|
@@ -238,6 +249,7 @@ a one-word class as itself, and a few words for things that are not classes.
 | `RB` | `RepeaterBlock` |
 | `RC` | `ReloadCommand` |
 | `RCont` | `RandomizableContainer` |
+| `RCPL` | `ClientPacketListener` |
 | `RDC` | `RegistryDataCollector` |
 | `RDL` | `RegistryDataLoader` |
 | `RemS` | `RemoteSlot` |
@@ -338,12 +350,12 @@ a one-word class as itself, and a few words for things that are not classes.
 | `ZM` | `ZombieModel` |
 | `ZR` | `ZombieRenderer` |
 | `ZS` | `ZombieRenderState` |
-| `Auth` | *Auth: not a class* |
-| `Disk` | *Disk: not a class* |
-| `Game` | *Game: not a class* |
-| `Hook` | *Hook: not a class* |
-| `JVM` | *JVM: not a class* |
-| `Main` | *Main: not a class* |
-| `Netty` | *Netty: not a class* |
-| `Wire` | *Wire: not a class* |
-| `Worker` | *Worker: not a class* |
+| `Auth` | *the User Authenticator thread, not a class* |
+| `Disk` | *the save on disk, not a class* |
+| `Game` | *the game's own code above Blaze3D, not a class* |
+| `Hook` | *the Server Shutdown Thread JVM hook, not a class* |
+| `JVM` | *the process itself, not a class* |
+| `Main` | *the JVM main thread, running whichever program's Main the diagram is about — the server's or the client's, so not one class* |
+| `Netty` | *the Netty event loop, not a class* |
+| `Wire` | *the network between the two programs, not a class* |
+| `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
