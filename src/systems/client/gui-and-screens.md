@@ -1,12 +1,16 @@
 # GUI and screens
 
-> Verified against **Minecraft 26.2** · Part X · pressing E: a screen the server is never told about, opened onto a menu that was built when you spawned.
+> Verified against **Minecraft 26.2** · Part X · pressing E: a screen the server is not told about until you close it, opened onto a menu that was built when you spawned.
 
 Press E in survival and no packet is sent, no packet is received, and nothing
 on the server changes. `Player.inventoryMenu` has existed since the player
 object was constructed, it has **no `MenuType` at all**, and `MenuScreens`
 could therefore never build an `InventoryScreen` from a packet even if one
-arrived. The screen is entirely a client-side event.
+arrived. The *opening* is entirely a client-side event. Press E again and the
+symmetry breaks: `LocalPlayer.closeContainer` sends
+`ServerboundContainerClosePacket`, and the server empties your 2×2 crafting
+grid on the way out. The screen the server is never told about is one the
+server is told about exactly once, at the end.
 
 The menu underneath it is not symmetric in the same way, and the qualification
 matters: `InventoryMenu` is constructed on both sides, and its crafting
@@ -26,11 +30,11 @@ GUI render tree](the-gui-render-tree.md); how a `Component` becomes glyphs is
 | `Gui` | which screen and which overlay exist, and what an absent screen means | Render thread |
 | `Screen` | one screen's lifecycle, children, focus and narration | Render thread |
 | `AbstractWidget` | the final outer shape of a widget, and one inner hook per subclass | Render thread |
-| `Layout` over `LayoutElement` | where widgets end up, resolved once per `Screen.init` | Render thread |
+| `Layout` over `LayoutElement` | where widgets end up, re-arranged on most screens whenever the window changes | Render thread |
 | `AbstractContainerScreen` | a screen mirroring a server-side menu, and the slot geometry | Render thread |
 | `MenuScreens` | `MenuType` to screen class — the only registry of screens in the game | Render thread |
-| `Overlay` | the one thing that can suppress a screen entirely | Render thread |
-| `ScreenNarrationCollector` | which single widget gets narrated, and when | Render thread |
+| `Overlay` | suppresses the screen's record pass, its mouse and its typing — but not its key presses | Render thread |
+| `ScreenNarrationCollector` | what has already been said, so it is not said twice | Render thread |
 
 ## The objects, and what contains what
 
@@ -101,13 +105,13 @@ it. Nothing draws both. `LoadingOverlay` is the only implementation of
 
 ## The lifecycle, and what is final
 
-`Screen.init` is **final**. It runs the overridable init hook only the first
-time, and takes `Screen.repositionElements` on every later call — so
-`Screen.init` does not "run again on a resize". A resize calls
-`Screen.resize`, whose *default* implementation falls back to rebuilding
-every widget through `Screen.rebuildWidgets`, but forty screens override it
-and keep their widgets. "Everything is rebuilt on resize" is true of a plain
-screen and false of most interesting ones.
+`Screen.init` is **final**, and a resize goes through `Screen.resize` to
+`Screen.repositionElements`. The default `Screen.repositionElements` rebuilds
+every widget through `Screen.rebuildWidgets`, which does re-enter the
+overridable `Screen.init` hook — so on a plain screen everything really is rebuilt.
+Forty screens override `Screen.repositionElements` instead and keep their
+widgets, most of them just re-arranging their `Layout`. "Everything is rebuilt
+on resize" is true of a plain screen and false of most interesting ones.
 
 The rest of the lifecycle is `Screen.added`, `Screen.tick`, `Screen.removed`
 and `Screen.onClose`, and the record entry point is the final
@@ -156,9 +160,9 @@ sequenceDiagram
     MC->>MPGM: isServerControlledInventory? false for a player on foot
     MC->>MC: Tutorial.onOpenInventory
     MC->>Gui: setScreen(new InventoryScreen(player))
+    Gui->>Gui: MouseHandler.releaseMouse, then KeyMapping.releaseAll — both before init
     Gui->>InvS: removed on the old screen, then added, then Screen.init
     InvS->>InvS: init — creative? replace myself with CreativeModeInventoryScreen
-    Gui->>Gui: MouseHandler.releaseMouse, then KeyMapping.releaseAll
     Note over Gui: next frame, record
     Gui->>InvS: extractRenderStateWithTooltipAndSubtitles
     InvS->>InvS: extractBackground — in-game UI, so a gradient, no blur, no panorama
@@ -201,11 +205,12 @@ quick-play launch. And `Minecraft.setScreenAndShow` sets a screen and then
 renders one frame on the spot — synchronously — which is how progress appears
 during blocking main-thread work such as a world load, a data fix or a save.
 
-Narration, finally, is timed rather than immediate.
-`Screen.handleDelayedNarration` fires from `Gui.update` once two clocks have
-passed — one delay after a mouse move, a shorter one after a keyboard action,
-and a two-second suppression after a screen is built — and then picks a
-*single* widget to narrate, by tab-order group and priority.
+Narration, finally, is mostly timed rather than immediate — mostly, because
+`Screen.init` narrates the new screen at once before arming anything.
+Thereafter `Screen.handleDelayedNarration` fires from `Gui.update` once two
+clocks have passed — one delay after a mouse move, a shorter one after a
+keyboard action, and a two-second suppression after a screen is built — and
+then picks a *single* widget to narrate, by tab-order group and priority.
 
 > **For a 1.21-era reader.** `Minecraft.screen` is gone: the current screen
 > belongs to `Gui`, which is now the screen-and-overlay manager rather than
@@ -224,7 +229,8 @@ ends of a screen's life. `Screen.init` and `Screen.resize` for the lifecycle,
 `Screen.extractRenderStateWithTooltipAndSubtitles` for the record pass, and
 `Gui.extractRenderState` for the frame's contributor order.
 `AbstractContainerScreen.extractContents` for the busiest screen in the game,
-and `MenuScreens` for the only screen registry there is.
+and `MenuScreens` for the screen registry the menu types use — `DialogScreens`
+is the second one.
 
 ---
 

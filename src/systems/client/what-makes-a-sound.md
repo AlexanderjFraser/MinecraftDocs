@@ -2,21 +2,24 @@
 
 > Verified against **Minecraft 26.2** · Part X · you break a block and you hear it: three doors a sound can come through, and only one of them says what the sound is.
 
-Place a block and the server sends `ClientboundSoundPacket`, naming the
-sound. Break the same block and it sends nothing of the kind:
-`Level.destroyBlock` fires a **level event**, and
+Watch someone place a block and the server sends `ClientboundSoundPacket`,
+naming the sound. Watch them break the same block and it sends nothing of the
+kind: `Block.spawnDestroyParticles` fires a **level event**, and
 `ClientboundLevelEventPacket` carries an int and a block-state id. The client
 decides for itself what that int means — for a break, `SoundType.getBreakSound`
 from the block's own `SoundType` — and plays the result locally. So the two
 halves of one interaction reach you by different mechanisms, and the second
 one is not a sound at all until your client makes it one.
 
-Then there is the third door, the one people are most surprised by: your own
-sounds are never sent to you. `Player.playSound` calls `Level.playSound` with
-itself as the *excluded* entity; the server broadcasts to everyone but you,
-and on your client `ClientLevel.playSeededSound` notices that the excluded
-player is the local one and plays it at once, locally. **A laggy connection
-delays what you hear of other people and never what you hear of yourself.**
+Then there is the third door, the one people are most surprised by. Both of
+those calls name the acting player as the *excluded* entity, so neither packet
+is sent to whoever did it — and they do not need to be, because the same
+shared code runs on that player's own client, where
+`ClientLevel.playSeededSound` plays a sound exactly when the excluded entity
+*is* the local player. Your own place and break are predicted, not delivered.
+The rule does not generalise, though: `Player.playServerSideSound`, which
+plays the five attack sounds, excludes nobody, so your own critical hit is one
+of the sounds that does travel the whole way out and back.
 
 This page is the content model and those three doors. The machine that turns
 any of them into an OpenAL source is [the sound engine](sound-engine.md).
@@ -42,10 +45,10 @@ flowchart TD
     NAMED["Level.playSound — the server names a SoundEvent"]
     EVENT["Level.levelEvent — the server sends an int and a block-state id"]
     CLIENTONLY["nothing is sent at all"]
-    P1["ClientboundSoundPacket or ClientboundSoundEntityPacket"]
+    P1["ClientboundSoundPacket, ClientboundSoundEntityPacket, or the sound inside ClientboundExplodePacket"]
     P2["ClientboundLevelEventPacket"]
     LEH["LevelEventHandler decides what the int means, using this client's block data"]
-    LOCAL["ClientLevel.playSeededSound — but if the excluded player is you, played locally instead"]
+    LOCAL["ClientLevel.playSeededSound — which plays only when the excluded entity is the local player, so the same call is the prediction path too"]
     AMB["BiomeAmbientSoundsHandler, MusicManager, the underwater and bubble-column handlers"]
     SM["SoundManager.play"]
     SERVER --> NAMED --> P1 --> LOCAL --> SM
@@ -68,9 +71,11 @@ but a packet may carry an **inline** `SoundEvent`, so a server can name a
 sound that is in no registry at all. The two statements are both true and are
 usually run together into a false one.
 
-The other clientbound member of the family is
-`ClientboundStopSoundPacket`, which `/stopsound` sends. There is **no
-serverbound sound packet** anywhere: the server infers what you did from
+The other clientbound members of the family are
+`ClientboundSoundEntityPacket`, which follows a moving entity,
+`ClientboundStopSoundPacket`, which `/stopsound` sends, and
+`ClientboundExplodePacket`, which carries its own sound alongside everything
+else an explosion needs. There is **no serverbound sound packet** anywhere: the server infers what you did from
 other packets and tells everyone else about the sound.
 
 ## What a sound *is*, as data
@@ -94,12 +99,14 @@ entries are **appended** to the lower pack's list, so a pack that adds one
 variant gets a mix rather than an override. A redirect entry multiplies
 volume and pitch through and ORs the streaming flag.
 
-And there are two kinds of silence. A `sounds.json` entry may point at
-`SoundManager.INTENTIONALLY_EMPTY_SOUND`, which silences an event with no
-log warning — the resource-pack way to remove a sound — as distinct from an
-unresolvable event, which logs. `SharedConstants.DEBUG_SUBTITLES` and
-`SoundEngine.MISSING_SOUND` are the development counterpart, which make a
-missing sound *audible* instead.
+And there are two kinds of silence. The identifier
+`SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION` is short-circuited by name
+in `AbstractSoundInstance.resolve` before the registry is consulted at all, so
+anything asking for it is silenced with no log warning — as distinct from an
+event that simply does not resolve, which logs. A pack that empties an event's
+list gets the warning, not the silence. `SoundEngine.MISSING_SOUND` is the
+development counterpart, which makes a missing sound *audible*, and
+`SharedConstants.DEBUG_SUBTITLES` the one that makes every sound *visible*.
 
 `SoundSource` is the volume category and each one is an options slider:
 `SoundSource.MASTER`, `SoundSource.MUSIC`, `SoundSource.RECORDS`,
@@ -123,11 +130,14 @@ The position is quantised on the way:
 `ClientboundSoundPacket.LOCATION_ACCURACY` is eight, so the wire carries
 three ints in eighths of a block.
 
-And **sound has a speed**. `ClientLevel.playSound` defers a local sound more
-than ten blocks away by its distance over a fixed rate, through
-`SoundManager.playDelayed` into `SoundEngine.queuedSounds`. It is the only
-place in the game where propagation delay is modelled — and it is why thunder
-arrives late with nobody sending a timestamp. `LocalPlayer.playSound` goes
+And **sound has a speed**, for the few callers that ask for it.
+`ClientLevel.playLocalSound` takes a distance-delay flag, and when it is set
+and the source is more than ten blocks off the sound is deferred by its
+distance over a fixed rate, through `SoundManager.playDelayed` into
+`SoundEngine.queuedSounds`. Firework explosions and a handful of level events
+set it. Thunder, the sound everyone assumes is the reason it exists, does not:
+`LightningBolt` passes the flag as false and the crack is instant.
+`LocalPlayer.playSound` goes
 the other way and calls `ClientLevel.playLocalSound` directly, skipping even
 the exclusion check.
 

@@ -332,7 +332,7 @@ first and then take the rest in any order that suits — except the two pairs
 noted below.
 
 1. [The client loop](systems/client/the-client-loop.md) — the hub, and the
-   shortest page in the part. One turn of `Minecraft.run`: how much
+   page every other page in the part leans on. One turn of `Minecraft.run`: how much
    simulated time a frame owes, and what happens to the time it cannot
    afford. A frame that earns fifteen ticks runs ten and loses five.
 2. [The client level](systems/client/the-client-level.md) — the same `Level`
@@ -349,8 +349,8 @@ noted below.
    Saving *is* the event system, and a cycle button broadcasts your client
    information on every click.
 6. [GUI and screens](systems/client/gui-and-screens.md) — what a screen is,
-   grounded in pressing E: a screen the server is never told about, over a
-   menu with no `MenuType`.
+   grounded in pressing E: opening it tells the server nothing, closing it
+   sends a packet, and the menu underneath has no `MenuType`.
 7. [The GUI render tree](systems/client/the-gui-render-tree.md) — nothing in
    the 2D UI draws anything. Layering is inferred from bounding boxes, which
    is what makes the batching possible.
@@ -364,16 +364,17 @@ noted below.
     one OpenAL device. A sound always starts at least one hop after the
     packet, even on a cache hit.
 11. [What makes a sound happen](systems/client/what-makes-a-sound.md) — three
-    doors, and only one of them names the sound. Your own sounds never round
-    trip.
+    doors, and only one of them names the sound. Your own block sounds are
+    predicted rather than delivered — your own sword swing is not.
 12. [Debugging the running game](systems/client/debugging-the-running-game.md)
     — the closer, and the part's one *pattern* lecture: sixteen instances of
-    one subscription mechanism, all shipped and none of them on.
+    one subscription mechanism, all shipped and fifteen of them behind a JVM
+    flag.
 
 Six to nine are the part's one internal pipeline — a screen records, the
 tree sorts and batches, the text becomes glyphs — and are watched
 consecutively. Two and three are the other pair: the ledger lives on
-`ClientLevel` and is reached through three of its methods.
+`ClientLevel` and is reached through four of its methods.
 
 Part X assumes [Part IX](systems/networking/README.md), which is the same
 wire watched from the sending end, and Part I's

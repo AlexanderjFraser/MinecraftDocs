@@ -39,8 +39,9 @@ flowchart TD
     N1["Node"]
     N2["Node — above"]
     N3["Node — above that"]
-    EL["elements: BlitRenderState, ColoredRectangleRenderState, GuiItemRenderState, PanoramaRenderState, the PictureInPictureRenderState family"]
+    EL["elements: BlitRenderState, TiledBlitRenderState, ColoredRectangleRenderState — the list the sort works on"]
     GL["glyphs: GlyphRenderState, in a second list the sort never touches"]
+    OTH["and three more lists beside them: items, text, pictures in picture"]
     NEW["a new element arrives"]
     FAST{"does the previous element's box contain it?"}
     UP["up one node — no intersection test at all"]
@@ -52,6 +53,7 @@ flowchart TD
     S2 --> N1 --> N2 --> N3
     N2 --> EL
     N2 --> GL
+    N2 --> OTH
     NEW --> NONE
     NONE -- "no" --> DROP
     NONE -- "yes" --> FAST
@@ -61,11 +63,12 @@ flowchart TD
 
 Three consequences fall straight out of that picture.
 
-**An element with no bounds is silently discarded.** Every add verb is
-conditional on the tree finding a node, and finding a node requires bounds.
-Glyph states deliberately have none — which is exactly why they are added
-through the layer-bypassing verb, `GuiRenderState.addGlyphToCurrentLayer`,
-and emitted after their node's geometry. **Glyphs are never sorted**, and
+**An element with no bounds is silently discarded.** Every *recording* add
+verb is conditional on the tree finding a node, and finding a node requires
+bounds. Glyph states deliberately have none — which is exactly why they are
+added through the layer-bypassing verb,
+`GuiRenderState.addGlyphToCurrentLayer`, which the draw pass calls rather than
+the record pass, and emitted after their node's geometry. **Glyphs are never sorted**, and
 that is the whole mechanism behind "text draws on top of its own background".
 
 **The search never descends below the current stratum**, which is what makes
@@ -104,7 +107,7 @@ flowchart TD
     PIP["pictures-in-picture: 3D content rendered to textures"]
     ITEM["items: models rendered into GuiItemAtlas, once each, then reused"]
     TEXT["text: prepared text expanded into per-glyph states"]
-    SORT["sortElements — per node, by pipeline, then scissor, then texture"]
+    SORT["sortElements — per node, by scissor, then pipeline, then texture"]
     MESH["addElementToMesh — a new Draw only when pipeline, scissor or texture changes"]
     DRAW["GuiRenderer.draw"]
     BEFORE["everything before the blur"]
@@ -122,9 +125,9 @@ draw pass — see [text and fonts](text-and-fonts.md).
 
 The three sort comparators, `GuiRenderer.ELEMENT_SORT_COMPARATOR`,
 `GuiRenderer.SCISSOR_COMPARATOR` and `GuiRenderer.TEXTURE_COMPARATOR`, are
-what turns a node's element list into as few `GuiRenderer.Draw`s as possible;
-`GuiRenderer.prepare` and `GuiRenderer.draw` are the two halves either side of
-them.
+what turns a node's element list into as few `GuiRenderer.Draw`s as possible.
+Both the sort and the coalescing happen inside `GuiRenderer.prepare`;
+`GuiRenderer.draw` only replays the list they produced.
 
 ## Blur is a barrier, and it is fussy
 
@@ -137,10 +140,12 @@ pause menu blurs the world and a chest does not.
 
 ## Questions a reader asks
 
-**Does the item atlas ever get expensive?** Only when it is invalidated.
-Changing the GUI scale throws it away, and an atlas that cannot grow logs
-that some items will be skipped. Animated models are the exception to
-residency: they are redrawn every frame. The aging that evicts a slot happens
+**Does the item atlas ever get expensive?** Whenever a slot is not already
+resident and current — a slot that has gone stale, or was never filled, is
+redrawn with no invalidation involved. Wholesale invalidation is the loud
+case: changing the GUI scale throws the atlas away, and an atlas that cannot
+grow logs that some items will be skipped. Animated models are the exception
+to residency: they are redrawn every frame. The aging that evicts a slot happens
 in `GuiRenderer.endFrame`, which `GameRenderer` calls — not
 `GuiRenderer.render`.
 
@@ -149,11 +154,12 @@ drawing ones. The scissor stack is real state, and the cursor shape requested
 during the record pass is applied to the window at the end of it. It also
 holds the deferred tooltip and the pre-edit overlay.
 
-**Can a 2D flag change how the world is drawn?** Yes, and it is the one place
-this system reaches backwards. The HUD's hidden flag and a clear-colour
-override live on `GuiRenderState` and are read by `GameRenderer`. The tree
-also belongs to `GameRenderState` rather than to `Gui`: the GUI holds a
-reference to it, and the *level* renderer reads two fields back out of it.
+**Can a 2D flag change how the world is drawn?** Yes. The HUD's hidden flag
+and a clear-colour override live on `GuiRenderState` and are read by
+`GameRenderer` — every site is `GameRenderer`'s, not `LevelRenderer`'s. The
+tree also belongs to `GameRenderState` rather than to `Gui`: the GUI holds a
+reference to it. Nor is this the only reach backwards: the HUD's boss bar
+reads world fog, the lightmap and the level render state as well.
 
 **What if the batching sort were wrong?** There are debug switches for
 exactly that. One promotes every element into its own layer and outlines it;

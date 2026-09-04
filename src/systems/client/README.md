@@ -107,8 +107,8 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
    part's second policy page: what is drawn over the world, in what order,
    and under exactly which conditions.
 10. [Sound: the engine](sound-engine.md) — the page in the part with the
-    most threads in it. From a packet to an OpenAL source, across five of
-    them, and one hop the sound cannot skip.
+    most threads in it: five take part, a block placed near you crosses four
+    of them on its way to an OpenAL source, and one hop it cannot skip.
 11. [What makes a sound happen](what-makes-a-sound.md) — the content model:
     three doors a sound comes through, only one of which names it.
 12. [Debugging the running game](debugging-the-running-game.md) — the

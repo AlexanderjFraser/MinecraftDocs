@@ -47,15 +47,20 @@ flowchart TD
     GUI["GuiRenderer expands it into GlyphRenderState"]
     WORLD["SubmitNodeCollection.submitText and submitNameTag feed the world renderers"]
     C --> RUNS --> DEC --> WRAP --> BIDI --> RESOLVE --> BAKE --> EMIT
+    WRAP -. "measuring a codepoint resolves and bakes it too" .-> RESOLVE
     EMIT --> GUI
     EMIT --> WORLD
 ```
 
-Stages one to three run whenever the text changes. Stages four to six run
-inside `Font.prepareText`, which the GUI calls **during the record pass**,
-because [the render tree](the-gui-render-tree.md) needs the text's bounds
-before it can place it. Only the expansion into per-glyph states waits for
-the draw pass.
+The numbering is the order the stages *matter* in, not a pipeline anything
+walks straight through. Stages one to three run whenever the text changes, and
+four to six run inside `Font.prepareText`, which the GUI calls **during the
+record pass**, because [the render tree](the-gui-render-tree.md) needs the
+text's bounds before it can place it. But four and five are also reached from
+*two*: the width function `Font` hands its `StringSplitter` asks the glyph
+source for each codepoint, and that call resolves the provider and forces the
+bake. Measuring a string you never draw still uploads its glyphs. Only the
+expansion into per-glyph states waits for the draw pass.
 
 All of it is on the Render thread, glyph baking and GPU uploads included. The
 only work that leaves the thread is *loading*: `FontManager`'s prepare phase
@@ -84,9 +89,10 @@ provider is what bakes. `Font.width`, `Font.split`,
 `Font.splitIgnoringLanguage`, `Font.wordWrapHeight` and `Font.getSplitter`
 are the public face of it.
 
-**Wrapping never touches styles.** It cuts at a character offset and rebuilds
-each line from runs that still carry their own style, which is why a colour
-code before a wrap point still colours the continuation line. And
+**Wrapping preserves styles rather than ignoring them.** It cuts at a
+character offset, captures the style in force at the cut, and re-applies it to
+the continuation — which is why a colour code before a wrap point still
+colours the line after it. And
 `Font.split` reorders while `Font.splitIgnoringLanguage` does not — anything
 that will re-measure or re-wrap must use the second.
 
@@ -99,7 +105,8 @@ algorithm over it, and re-emits each run through
 `SubStringSource.substring`. `MutableComponent.getVisualOrderText` caches
 the result against the identity of the current `Language`.
 `Font.bidirectionalShaping` is a separate, much smaller thing: it shapes a
-bare string, and the sign editor is its only caller.
+bare string, and beside `Font.prepareText`'s own use of it the sign editor is
+the only caller.
 
 ### 4 · Resolve
 
@@ -113,7 +120,8 @@ holding the provider list, the codepoint cache (`CodepointMap`), a
 `FontDescription.AtlasSprite` or `FontDescription.PlayerSprite` resolves
 instead to a `SingleSpriteSource` from `AtlasGlyphProvider` or
 `PlayerGlyphProvider` — a one-glyph font that returns the same sprite for
-every codepoint, and never touches a `FontSet` or a texture sheet at all.
+every codepoint, with no texture sheet of its own; `FontManager` still keeps a
+`FontSet` behind it as the fallback.
 
 Below that: `GlyphProvider` implementations chosen by `GlyphProviderType` —
 bitmap, TrueType, space, unihex, reference — declared in *font/* JSON as
@@ -170,12 +178,13 @@ sequenceDiagram
     end
     Note over GuiR: same frame, draw
     GuiR->>GuiR: walk the PreparedText with a Font.GlyphVisitor
-    GuiR->>GuiR: one GlyphRenderState per glyph, then the shadow pass, the bold copy, the italic shear
+    GuiR->>GuiR: one GlyphRenderState per glyph — the shadow pass, the bold copy and the italic shear are the glyph's own, inside BakedGlyph.renderChar
 ```
 
 Two moments beyond the baking are worth pausing on. **Translation is lazy and
-cached on the language object**, so the first time a message is measured it
-is also translated. And the continuation indent on a wrapped chat line is a
+cached on the `TranslatableContents` itself**, so the first thing to visit a
+message is what translates it — usually a measure, sometimes a log line one
+statement earlier. And the continuation indent on a wrapped chat line is a
 **literal space codepoint** prepended by `ComponentRenderUtils` — the one
 place in the pipeline where a character is invented rather than derived.
 
@@ -221,9 +230,10 @@ that hovering the space inside a hover-event run still finds the style. Glyph
 areas deliberately extend to the full advance, so there are no dead gaps
 between characters.
 
-**Are the caches safe?** They are keyed on identity, not content, and none of
-them is synchronised, because none is meant to be touched off the Render
-thread. A component's cached visual order is invalidated by the `Language`
+**Are the caches safe?** Mostly by being single-threaded rather than by
+being locked: they are meant to be touched only on the Render thread. It is
+not a clean rule — some are keyed on identity and some on equality, and the
+glyph layer does use *volatile* fields and a Guava cache. A component's cached visual order is invalidated by the `Language`
 object changing, and a translatable component's decomposition likewise. The
 one place that leaks: the sign block entity caches its rendered lines on a
 class the *server* also ships, and that cache does not notice a font reload.
@@ -246,7 +256,8 @@ class the *server* also ships, and that cache does not notice a font reload.
 for how a `FontDescription` becomes a `GlyphSource`, and
 `GlyphStitcher.stitch` for the moment a glyph acquires a texture.
 `StringSplitter.splitLines` for how a line break preserves styles, and
-`FormattedBidiReorder.reorder` for the one place ICU is used.
+`FormattedBidiReorder.reorder` for the heaviest of the four places ICU is
+used.
 
 ---
 

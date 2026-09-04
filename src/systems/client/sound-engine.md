@@ -45,7 +45,7 @@ list before the trace.
 | **Render** (the client game thread) | receives the packet, builds a `SoundInstance`, calls `SoundManager.play`. Also everything OpenAL that is *not* per-source: opening and closing the device and context, resetting the `Listener`, deleting buffers. |
 | **Sound engine** | every per-source AL call: channel acquisition, parameter setting and release through `ChannelAccess`, plus the listener transform, which `SoundEngine.updateSource` posts to the executor directly. |
 | **`Util.nonCriticalIoPool`** (the *Download-* threads) | reads and decodes `.ogg` files with `JOrbisAudioStream` into a `SoundBuffer`, inside `SoundBufferLibrary.getCompleteBuffer`. |
-| **`Util.ioPool`** (the *IO-Worker-* threads) | device enumeration — `AbstractDeviceTracker.tick` dispatches `DeviceList.query` there so polling the ALC device list never stalls a frame. |
+| **`Util.ioPool`** (the *IO-Worker-* threads) | device enumeration — `AbstractDeviceTracker.tick` dispatches `DeviceList.query` there, so the periodic poll of the ALC device list does not stall a frame. A forced refresh still queries on the Render thread. |
 
 And one the game does not own: OpenAL Soft's own event-callback thread,
 which invokes the callback `CallbackDeviceTracker` installs to notice that
@@ -75,7 +75,7 @@ sequenceDiagram
     PL-->>CPL: ClientboundSoundPacket — a holder, a position in eighths of a block, a seed
     CPL->>CL: handleSoundEvent, then playSeededSound, after ensureRunningOnSameThread
     CL->>SndE: SoundManager.play(SimpleSoundInstance) — seeded, so every client picks the same variant
-    SndE->>SndE: resolve, pick by weight, tell every SoundEventListener, then calculateVolume
+    SndE->>SndE: resolve, pick by weight, calculateVolume, tell every SoundEventListener, then drop a silent one
     SndE->>ChanA: createHandle(STATIC or STREAMING limit) — a task on the sound thread
     ChanA->>Library: acquireChannel — generate an OpenAL source, or null if the limit is reached
     SndE->>ChanA: ChannelHandle.execute — setPitch, setVolume, linearAttenuation, setSelfPosition
@@ -92,9 +92,9 @@ The four beats worth narrating.
 `Identifier` is looked up in the `SoundManager` registry for a
 `WeighedSoundEvents`, and `WeighedSoundEvents.getSound` rolls the weighted
 choice — following event-to-event redirects — to a concrete `Sound`. Then, in
-this order: the unknown-event and empty-sound cases return early; every
-registered `SoundEventListener` is told; and only *then* is the volume
-computed and a zero-volume sound possibly abandoned. So a sound whose
+this order: the unknown-event and empty-sound cases return early; the volume
+is computed; every registered `SoundEventListener` is told; and only *then* is
+a zero-volume sound abandoned. So a sound whose
 category is muted still produces a **subtitle**, and a sound with no
 `sounds.json` entry does not. `SubtitleOverlay` is the only
 `SoundEventListener` in the game, and that ordering is what it is for.
@@ -136,16 +136,17 @@ rather than queued. **The game does not steal channels by priority.**
 Nor does muting free one. `SoundEngine.refreshCategoryVolume` pushes the new
 volume to every playing channel of that category and stops nothing, so a
 looping sound muted to zero holds its OpenAL source until it ends on its own.
-Muting suppresses *new* allocations; it does not reclaim old ones. And a
-channel is never reclaimed in its first second regardless:
-`SoundEngine.MIN_SOURCE_LIFETIME` holds a handle for twenty ticks even if
-OpenAL already reports the source stopped, which is also what
-`SoundEngine.isActive` answers on.
+Muting suppresses *new* allocations; it does not reclaim old ones. The
+OpenAL source itself, though, goes back the moment the channel reports
+stopped: `ChannelAccess.scheduleTick` releases it with no lifetime gate at
+all. `SoundEngine.MIN_SOURCE_LIFETIME` holds something else for twenty ticks
+— the engine's *bookkeeping* entry for the instance, long after the source it
+named has been deleted.
 
 `SoundEngine`'s own state is `SoundEngine.instanceToChannel`,
 `SoundEngine.instanceBySource`, `SoundEngine.queuedSounds` (delayed),
 `SoundEngine.tickingSounds`, `SoundEngine.gainBySource` and
-`SoundEngine.soundBuffers`. Every entry point returns a
+`SoundEngine.soundBuffers`. `SoundEngine.play` returns a
 `SoundEngine.PlayResult` — started, started silently, or not started — and
 `SoundManager.play` passes it through; `MusicManager` is the only caller that
 reads it.
@@ -213,10 +214,13 @@ the default device changed. All three tear the OpenAL context down in
 
 **Is the sound thread the mixer?** No. `SoundEngineExecutor` does nothing but
 run tasks; OpenAL, the native library, does the mixing on its own threads.
-The Java thread exists only so that per-source AL calls are serialised and
-never made from the Render thread. Confusingly, the *device* is not the sound
-thread's: opening and closing it, resetting the listener and deleting buffers
-all happen on the Render thread, and teardown happens deliberately **after**
+The Java thread exists so that per-source AL calls are serialised, and almost
+all of them go through it — the exceptions are the bulk teardowns,
+`ChannelAccess.clear` and `Library.cleanup`, which release handles directly on
+the Render thread once the sound thread is already joined. Confusingly, the
+*device* is not the sound thread's either: opening and closing it, resetting
+the listener and deleting buffers all happen on the Render thread, and
+teardown happens deliberately **after**
 `SoundEngineExecutor.shutDown` has joined the sound thread — which makes
 `SoundEngine.stopAll` the longer of the two places the game thread blocks on
 it.

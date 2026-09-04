@@ -6,9 +6,10 @@
 hidden-gated blocks, and one element sits *between* them: the sleep fade. So
 F1 hides the hearts, the hotbar, the crosshair, chat and the tab list, and
 does not hide the black screen that comes over you when you get into bed.
-Three more elements are outside `Hud` altogether — the saving indicator,
-toasts and the debug overlay are recorded by `Gui`, after the screen, and
-only the first of them ignores the flag.
+Four more elements are recorded by `Gui`, after the screen rather than with
+the rest of the HUD — the saving indicator, the debug overlay, the deferred
+subtitles and the toasts — and only the toasts are outside `Hud`'s own
+methods. Only the saving indicator ignores the flag.
 
 That is what this page is: not a tour of hearts and hotbars but a **policy**.
 What is drawn over the world, in what order, under exactly which conditions,
@@ -68,9 +69,11 @@ game is not paused.
 ## The hidden flag travels two ways
 
 The interesting one is the smaller. `GuiRenderState.isHudHidden` is read by
-`GameRenderer` in three places, to suppress the held item, the screen effects
-and the three-dimensional crosshair — so a 2D flag changes how the *world* is
-drawn. But `Hud.isHidden` itself is read directly by six other places across
+`GameRenderer` in three places, to suppress the held item, the
+three-dimensional crosshair and — the smallest of the three — the totem-pop
+animation. The block-in-eyes, water and fire overlays are drawn whatever F1
+says. So a 2D flag does change how the *world* is drawn, in three narrow
+ways. But `Hud.isHidden` itself is read directly by six other places across
 the client, including two entity renderers that suppress name tags.
 
 ## Four bars, one slot, and an asymmetric rule
@@ -81,8 +84,8 @@ which every frame. It is a rule, not a state machine, and the rule is not
 symmetric. With waypoints present, a jumping vehicle or a *recently changed*
 experience total beats the locator; with no waypoints, a jumpable vehicle
 beats experience unconditionally — so **mounting a horse silently takes your
-XP bar away.** The level number is drawn inside the bar's own record pass
-rather than after it, and so survives whichever bar wins.
+XP bar away.** The level number is recorded separately from the bar, so it
+survives whichever bar wins.
 
 The three implementations are `ExperienceBar`, `LocatorBar` — backed by
 `ClientWaypointManager` and styled by `Hud.waypointStyles`, a
@@ -125,7 +128,7 @@ recorded inside `Hud.extractPlayerHealth`, which is gated on the game mode
 being able to hurt you — which is why creative has no armour bar either. Food
 and mount health share a slot, and the air bubbles shift up when either is
 drawn. And the HUD makes a sound: `Hud.playAirBubblePoppedSound` ramps its
-volume and pitch with how many bubbles are left.
+volume and pitch with how many bubbles are *gone*, so it climbs as you drown.
 
 ## Questions players ask
 
@@ -135,8 +138,8 @@ play — read from five places between the frame, the fog environment and the
 lightmap. The bar itself interpolates against wall-clock time inside
 `LerpingBossEvent`, so discrete packet progress becomes a smooth bar.
 
-**Why do subtitles appear under an open chest?** They are the only deferred
-element. The deferral fires when there is no screen at all *or* the screen
+**Why do subtitles appear under an open chest?** They are deferred past the
+screen, along with the tooltip and the pre-edit overlay the extractor holds. The deferral fires when there is no screen at all *or* the screen
 declares itself in-game UI — the common case, not the rare one — and the
 deferred call is made from a screen's background pass.
 
@@ -191,7 +194,7 @@ any list of fields.
 hidden-gated blocks are visible at a glance. Then `Hud.extractPlayerHealth`
 for the most-loved twenty lines in the client,
 `Hud.nextContextualInfoState` for the bar arbitration, `Gui.extractRenderState`
-for the four elements that are not `Hud`'s, `DebugScreenEntries` for the F3
+for the four recorded after the screen, `DebugScreenEntries` for the F3
 registry, and `ChatComponent` for the message list.
 
 ---

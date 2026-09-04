@@ -19,6 +19,77 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session J — Part X The client (pass 4) *(2026-09-04)*
+
+### Wording to re-read (a fact fix rewrote the sentence around it)
+
+- **`the-client-loop`'s opening paragraph.** "The server never does this. It
+  runs late; the client runs *short*" was a clean two-clause contrast and it
+  was false. The replacement — the server drops ticks too, but only past the
+  overload threshold and never quietly — is three clauses longer and buries
+  the punchline ("and says nothing") at the end. The *fact* is now right; the
+  sentence is the flabbiest thing on the shortest-feeling page in the part.
+  Worth a second look for a shorter true contrast.
+- **`input-and-keybinds`' opening paragraph.** "None of that involves the
+  tick. All of it has already happened before the tick that observes it runs"
+  became a qualified version that has to concede the inventory case mid-hook.
+  The concession is the more interesting fact — the drain is inside the tick —
+  and pass 5 might be better off building the hook *on* it rather than
+  apologising for it.
+- **`gui-and-screens`' hook and verified line.** Both now carry "until you
+  close it". The page's title promise (a screen the server is never told
+  about) survives only for the opening, and the new last sentence — "the
+  screen the server is never told about is one the server is told about
+  exactly once, at the end" — is a good line that arrives after two
+  qualifications. Consider leading with the asymmetry.
+- **`what-makes-a-sound`'s third door.** The old paragraph was one mechanism
+  stated confidently and wrongly; the new one states the mechanism *and* its
+  exception (attack sounds do round trip) in the same breath, which makes the
+  "three doors" framing land more slowly. The verified line still promises
+  three doors and only one naming the sound, which is still true.
+- **`prediction-and-acks`' state-diagram labels.** Both client exits were
+  relabelled and are now long enough to crowd the figure — "endPredictionsUpTo(n),
+  syncBlockState writes the absorbed state, which is a no-op if it is already
+  on screen" is a sentence, not a label. The *diagram* is now true; it is also
+  now the wordiest figure in Part X. Same page: the hook lost "in the same
+  tick" and gained a because-clause.
+- **`the-client-level`'s two weather Q&As.** "Why does thunder arrive late?"
+  and "Why does rain stop and start so abruptly?" were both questions whose
+  premises the code denies, so both became questions with different subjects
+  ("Does the client model the speed of sound?", "Who decides how hard it is
+  raining?"). Neither is a question a player actually asks, which is what the
+  section is for — pass 5 should either find the player-facing version or move
+  the material into the body.
+- **The landing page's opening sentence** now spends a clause and two class
+  names on the scheduler exception before reaching "no render thread", which
+  is the sentence people will quote. Consider a footnote-shaped fix.
+
+### Structural findings (logged, not acted on)
+
+- **The GUI stack is watched in a different order from the one it runs in.**
+  The three pages are `gui-and-screens` → `the-gui-render-tree` →
+  `text-and-fonts`, but at runtime the text becomes glyphs *before* the tree
+  is sorted and batched. The landing page now says so out loud, which is
+  honest and clumsy — a part-shape sentence should not have to apologise for
+  the watch order. Either the order changes in pass 6, or the sentence gets
+  shorter.
+- **`hud-elements` now has the contextual bar on two rows** (14 background, 16
+  foreground) with the experience level between them, because that is the
+  record order. Correct and hard to read; a merged row with a note might serve
+  the reader better, if the ordering fact survives the merge.
+- **`prediction-and-acks` has two figures that both explain the same
+  mechanism** — a state diagram of the two machines and a sequence of the
+  refusal — and the fact-check found the argument living in the prose both
+  times. One of the two may be redundant.
+- **The Part X landing page's verified line says "seven systems"** (the
+  figure's seven spokes) over a part of twelve pages. Both are true and the
+  reader meets the mismatch immediately.
+- **`anatomy/anatomy` is a Part X dependency that no Part X page links.**
+  Session A logged the cross-link as pass-5 work (pass4.md:2765); this session
+  re-derived that it is genuinely used — `the-client-loop`'s hook contrasts
+  the two loops — so the link belongs in that hook's paragraph.
+
+
 ## Session G — Part VII Items and inventories (pass 4) *(2026-09-04)*
 
 ### Wording to re-read (a fact fix rewrote the sentence around it)

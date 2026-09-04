@@ -121,14 +121,21 @@ def page_patterns(pages: dict) -> dict:
     pats = {}
     for key, (part, _num, _path) in pages.items():
         slug = key.split("/", 1)[1] if "/" in key else key
-        alts = [rf"`{re.escape(slug)}`", rf"`{re.escape(key)}`", rf"`{re.escape(key)}\.md`",
-                rf"\b{re.escape(key)}\.md\b", rf"`{re.escape(slug)}\.md`"]
+        # A landing page is named only part-qualified. The bare slug is `README` for
+        # all thirteen of them, so accepting it routes every note that says "the
+        # landing page" to whichever part the queue happens to be building — which
+        # mis-routed notes onto three separate sessions' checklists before it was fixed.
+        if slug == "README":
+            alts = [rf"`{re.escape(key)}`", rf"`{re.escape(key)}\.md`",
+                    rf"\b{re.escape(key)}\.md\b",
+                    rf"`{re.escape(part)}/README(?:\.md)?`"]
+        else:
+            alts = [rf"`{re.escape(slug)}`", rf"`{re.escape(key)}`", rf"`{re.escape(key)}\.md`",
+                    rf"\b{re.escape(key)}\.md\b", rf"`{re.escape(slug)}\.md`"]
         for old in ALIASES.get(key, []):
             alts += [rf"`{re.escape(old)}`", rf"`{re.escape(old)}\.md`"]
         if key in ("introduction", "lectures"):
             alts.append(rf"\b{slug}\.md\b")
-        if slug == "README":
-            alts.append(rf"`{re.escape(part)}/README(?:\.md)?`")
         pats[key] = re.compile("|".join(alts))
     return pats
 

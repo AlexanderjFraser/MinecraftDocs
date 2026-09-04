@@ -395,8 +395,34 @@ O is the close.
   phase machinery, and `chat-and-signing` never uses the word. **No tool bug —
   the fourth such session**; instead the agents were wrong twice and the page
   was right against an agent once. Everything in [pass4.md](pass4.md).
-- [ ] **Session J — Part X The client.** The tick arithmetic; the
-  prediction ledger's two columns; the sound engine's five threads.
+- [x] **Session J — Part X The client** *(2026-09-04)*. Twelve pages, the
+  landing page and the part's own Reference catalogue, fourteen agents;
+  **every one had at least one wrong claim**, for an eleventh time.
+  Seventy-one corrections. The named item was wrong and the session found it
+  first: `prediction-and-acks`' headline state diagram had **both client exits
+  backwards** — the ledger holds *what the server is known to have*, and
+  `endPredictionsUpTo` hands every removed entry to `syncBlockState`, so an
+  entry nothing corrected is the **rollback** and the vindicated case is the
+  corrected one; its server column's idle value is **minus one, not zero**,
+  which the page's own zero-ack answer depends on. Four more carry a lecture:
+  `the-client-loop`'s hook (**the server drops ticks too**, on the "Can't keep
+  up!" path) and its divisor, limiter, profiler, startup and teardown claims;
+  `the-client-level`'s **volatile pair is one thread** — the real second reader
+  is the section-compile worker resolving tint live — and its "next tick / next
+  frame" notes are both the same `runTick`; `input-and-keybinds`' hook, whose
+  own inventory example is drained **inside** the tick; and
+  `what-makes-a-sound`'s "your own sounds are never sent to you", false of the
+  five attack sounds. Two weather Q&As fell whole (**thunder is not
+  distance-delayed**; rain is ramped a hundredth a tick and broadcast every
+  changed tick). Three landing-page counts were wrong and each was mirrored on
+  a second page — four predicates is **five**, two applications is **six
+  windows**, three methods is **four** — and the closer's "none of them on" is
+  **fifteen of sixteen**, because one subscription sits outside the debug guard
+  and an F3 key reaches it. Addition 2 done in full, with one order claim
+  struck: the landing page told the reader to watch a Part X page before a Part
+  IX page the part requires in full. **No tool bug — the fifth such session**;
+  instead `pass4_queue.py` routed a bare `README` note to the wrong part for a
+  third time, and an agent was wrong once. Everything in [pass4.md](pass4.md).
 - [ ] **Session K — Part XI Rendering.** Probably two sessions: the frame's
   nine zones and five partial ticks; the six post chains against the JSON;
   `block-entity-rendering` (addition 8).
@@ -788,3 +814,37 @@ missing it — and removes the comment. The owner confirms or reorders
   of; and a superlative the page's own later text contradicts is narrowed to
   what the later text says — four times this session, which is sessions D, E and
   F's precedent again. Everything in [pass4.md](pass4.md).
+
+- **2026-09-04, session J — Part X The client (Opus).** Twelve pages, the
+  landing page and `reference/hud-elements.md` — fourteen agents, the order
+  work and the part-wide notes done by the session while they ran, and every
+  *wrong* re-derived from the decompile before a sentence moved. The findings
+  are in the schedule line above and in full in [pass4.md](pass4.md). What is
+  worth carrying forward is method rather than fact. **The session's own
+  re-derivation beat the agent to the named item**: `prediction-and-acks`'
+  state diagram was read against `BlockStatePredictionHandler` before any
+  report arrived, and both client exits turned out to be labelled backwards —
+  the agent later agreed independently, which is the first time this pass that
+  the session and the agent found the same load-bearing error separately. It
+  is also the clearest case yet of pass 2's lesson that **a page's own prose
+  is the best falsifier of its own figure**: four pages this session had a
+  diagram contradicting the paragraph beneath it (`prediction-and-acks`'
+  exits, the landing page's spokes-versus-stages, `text-and-fonts`' linear
+  stage chain against its own hook, `the-client-loop`'s frame-limiter node),
+  and in every case the prose was right. Worth making an explicit step in
+  session N and O's briefs: read the figure against the section under it
+  before reading either against the source.
+
+  Rulings. A *cadence* label on a landing-page figure is a claim with a
+  population like any other — four of Part X's seven were wrong or loose once
+  the population was named — so a hub-and-spokes figure is checked arrow by
+  arrow exactly as a sequence is. A hook whose two halves are a contrast
+  ("the server never does this; the client does") is checked as two claims,
+  and this session's fell on the half nobody would think to look at. Where a
+  count on a landing page is a compression of a *different* count on the page
+  it points at — "three methods" for "the three writes" — the fix belongs on
+  the landing page and the page it compressed stays as it is, unless the page
+  is also wrong, which here it was. And a Reference catalogue row that names a
+  method is checked for *which* method as well as for position: the
+  `hud-elements` contextual-bar row named the later of two calls in the
+  earlier of two slots, which no count or ordering check alone would catch.

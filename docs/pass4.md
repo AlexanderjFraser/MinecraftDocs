@@ -87,6 +87,213 @@ entry first.
 
 ## Entries
 
+## Session J — Part X The client (pass 4) *(2026-09-04)*
+
+Twelve pages, the landing page and the part's own Reference catalogue
+(`reference/hud-elements.md`) — fourteen agents; **every one had at least one
+wrong claim**, which is pass 2's finding for an eleventh time. Seventy-one
+corrections. The part's own pass-3 checklist (session K) held on almost
+everything it knew it had changed, so — as in Parts VI, VII and VIII — the
+errors were in the illustrations and the confident asides.
+
+**The session's named item was wrong, and the session found it before the
+agent did.** `prediction-and-acks`' two-column state diagram is the page's
+headline figure and it had **both client exits backwards**. The ledger stores
+*what the server is known to have* (`ClientLevel.setBlock` files the state
+that was there **before**, `ClientLevel.java:239-247`), and
+`BlockStatePredictionHandler.endPredictionsUpTo` hands **every** removed
+entry to `syncBlockState`, not only the corrected ones (`BSPH.java:45-50`).
+So an entry the server never corrected still holds the pre-prediction state
+and the settle **reverts** it — that transition is the rollback, not the
+"guess was right" case the figure labelled it. The vindicated case is
+Retained → Corrected → exit, where the server's own echo made the recorded
+state equal what is on screen and `syncBlockState`'s difference test fails.
+The page's prose (L128) had it right all along, so the figure contradicted
+the section under it. Third error in the same figure: **the server counter's
+idle value is minus one, not zero** (`ServerGamePacketListenerImpl.java:246`,
+emit test `> -1`, reset at `:301-303`) — and that is load-bearing, because the
+page's own *"why did that ack arrive with a zero in it?"* answer is only
+possible when zero is a real sequence and the sentinel is minus one.
+
+**Four more that carry a lecture.**
+
+- `the-client-loop`'s hook, *"The server never does this. It runs late; the
+  client runs short"* — **false**. `MinecraftServer.runServer` discards owed
+  ticks outright on the "Can't keep up!" path (`MinecraftServer.java:802-810`,
+  `nextTickTimeNanos += ticks * thisTickNanos`). The true contrast is the
+  threshold and the log line, not the behaviour. Same page: the Timer divides
+  by `targetMsptProvider.apply(msPerTick)` and not by `msPerTick`
+  (`DeltaTracker.java:60`) — contradicting its own next section; the frame
+  limiter is **not** the last thing `renderFrame` does (*fpsUpdate* follows,
+  `Minecraft.java:1479-1491`); `isHeavilyThrottled` is `ContinuousProfiler`'s
+  *suppressWarnings* argument and skips nothing; `Minecraft.running` is set
+  **inside** the constructor (`:444`), six statements after the options are
+  read (`:438`), which is why the listener-skip still happens; the freeze gate
+  on textures, `animateTick` and particles is `TickRateManager.runsNormally`
+  read directly, not the Timer's frozen flag; and the teardown's last three
+  try statements were described as the finally.
+- `the-client-level`'s volatile paragraph named a thread pair that is **one
+  thread** — client packet handlers *are* the Render thread. The real second
+  reader is the **section-compile worker**: `RenderSectionRegion.getBlockTint`
+  resolves tint *live* through `ClientLevel.getBlockTint` from a background
+  task, which is why `BlockTintCache` carries a `ThreadLocal` and a
+  `ReentrantReadWriteLock`. Same page: the figure's "next tick" and "next
+  frame" notes are both **the same `runTick`** (packets `:1226`, ticks
+  `:1253`, `renderFrame` `:1309`, `level.update()` `:1391`), and above 20 fps
+  the frame owes no tick at all — so "block entities tick before the light is
+  applied" is false. Two Q&As fell whole: **thunder is not distance-delayed**
+  (`LightningBolt.java:88` passes the flag as false; the real users are
+  fireworks and a handful of level events) and **rain is ramped by a hundredth
+  a tick and broadcast on every changed tick** (`ServerLevel.java:781-804`),
+  not set wholesale.
+- `input-and-keybinds`' hook, *"None of that involves the tick"* — the
+  paragraph's own inventory example is drained **inside** `Minecraft.tick`
+  (`:2000` to `:2119-2126`). And *"not one class on this page sends a packet"*
+  is false twice over: `KeyboardHandler` sends
+  `ServerboundChangeGameModePacket` on F3+N (`KeyboardHandler.java:244`) and
+  `Minecraft.handleKeybinds` sends swap-offhand out of the drain (`:2136`).
+- `what-makes-a-sound`'s *"your own sounds are never sent to you"* — true of
+  the place and break sounds, which name the acting player as excluded, and
+  **false of the five attack sounds**: `Player.playServerSideSound` passes
+  `except = null` (`Player.java:994`), so your own critical hit does round
+  trip. The page also named `Level.destroyBlock` for a player break, which
+  goes through `Block.spawnDestroyParticles` (`Block.java:494-499`), and
+  described `INTENTIONALLY_EMPTY_SOUND` as a *sounds.json* entry when it is an
+  identifier short-circuited in `AbstractSoundInstance.resolve:46-49`.
+
+**Three counts on the landing page, each mirrored on a second page.** "The
+four predicates" is **five** (`Entity.java:3857-3877`; `authority.md`'s own
+heading says five and its cast row said four — fixed there too); "the ledger's
+two applications" is **six windows** (`MultiPlayerGameMode` 167, 187, 247,
+273, 350, 417 — Part V's landing page mirrored it and is fixed); "reached
+through three of its methods" is **four**, because
+`ClientLevel.handleBlockChangedAck` is the ledger's only entry point from the
+network and the page had compressed *the three writes* into it.
+
+**The closer's punchline was wrong by one, in three places.** "Sixteen
+instances… none of them on": `DEDICATED_SERVER_TICK_TIME` sits **outside** the
+`DEBUG_ENABLED` guard (`ClientDebugSubscriber.java:49`), gated only on the FPS
+charts, so an ordinary player turns it on with F3. Fifteen are behind the
+flag, not fourteen as `debugging-the-running-game` said twice.
+
+**Other corrections, by page.**
+
+- **`client/README`, the landing page** — "no scheduler, no timer callbacks" is false of
+  `PeriodicNotificationManager` (a `java.util.Timer`) and
+  `RemoteFriendListUpdateHandler` (a `ScheduledExecutorService`), both of
+  which hop back before touching anything; "the spokes are not stages —
+  nothing hands off to anything" contradicted the GUI-stack sentence 25 lines
+  later; the GUI stack's stages were in the **wrong order** (`prepareText` at
+  `GuiRenderer.java:161`, `sortElements` at `:162` — the text becomes glyphs
+  *before* the sort); "the shortest page in the part" is the **longest** (2,046
+  words against `the-gui-render-tree`'s 1,329); "the sound engine's own thread
+  is named there and nowhere else in the book" is false — `sound-engine.md`
+  names it eleven times; "watch this before … Part IX's *what the client is
+  told*" created a cycle against the part's own *before you start*; four of
+  the seven cadence labels were wrong or loose (mouse input runs **after** the
+  tick, `Minecraft.java:1286-1289`; only cycle options save on click; two of
+  the six prediction windows open with no click; the debug arrow was not a
+  cadence at all); and the *where the part stops* boundary put
+  `ClientLevel.update` — a Part X cadence — inside Part XI's method, when the
+  true seam is the *extract* zone.
+- **`options`** — "nothing the server sends is an answer to a
+  client-information packet" is false (a changed hat bit broadcasts
+  `ClientboundPlayerInfoUpdatePacket`); "neither travels as client
+  information" is false of render distance, which is field two of the record
+  in singleplayer as much as out of it; only **three** options in the game
+  defer their value at all, and render distance is one of them, so the 600 ms
+  is not the general slider behaviour; the render-distance maximum comes from
+  a plain `IntRange` computed from `Runtime.maxMemory`, not from
+  `ClampingLazyMaxIntRange`, which is GUI scale's; **seven** of the sixteen
+  other quality options reach the extractor and **nine** do exactly what
+  render distance does; GUI scale resizes the open screen, not every screen;
+  the dumped subset goes to the profiling report; and the 1.21 box's own
+  example does not compile — the accessor is `Options.sensitivity`, and
+  `Options.keyMappings` is still a public field.
+- **`gui-and-screens`** — the hook: pressing E again sends
+  `ServerboundContainerClosePacket` (`LocalPlayer.java:348-352`) and the
+  server empties the 2x2 grid, so "a screen the server is never told about" is
+  true of the opening only. `MenuScreens` is not the only screen registry
+  (`DialogScreens`); an `Overlay` does not suppress a screen *entirely* (key
+  presses still reach it); the resize paragraph named `Screen.resize` where
+  the override is `Screen.repositionElements`, and the default one **does**
+  re-enter `init`; `Screen.init` narrates immediately before arming the
+  delay; and figure 2 put `releaseMouse` and `releaseAll` after `Screen.init`
+  when `Gui.java:299-301` runs them before it.
+- **`the-gui-render-tree`** — the sort key is **scissor, then pipeline, then
+  texture** (`GuiRenderer.java:71`), not pipeline first; both the sort and the
+  coalescing run inside `prepare`, so `prepare` and `draw` are not "the two
+  halves either side of" the comparators; a `Node` keeps five lists and the
+  figure put three of five names in the wrong one while omitting
+  `TiledBlitRenderState`; the two layer-bypassing add verbs are called by the
+  *draw* pass, not the record pass; the item atlas redraws stale slots with no
+  invalidation; and the boss bar reaches backwards in four more places.
+- **`text-and-fonts`** — the six stages are not a straight chain: `Font`'s
+  `StringSplitter` width function calls `getGlyph`, which forces the bake
+  (`FontSet.java:229-231`), so **measuring resolves and bakes** — which is what
+  the page's own hook says and its stage-split sentence denied. Also:
+  `Font.prepareText` calls `bidirectionalShaping` too; ICU is used in four
+  files; translation caches on `TranslatableContents`, not the language
+  object; wrapping *captures and re-applies* the style rather than never
+  touching one; a sprite font still has a `FontSet` behind it; and the shadow,
+  bold and italic passes are inside `BakedGlyph.renderChar`, not
+  `GuiRenderer`.
+- **`hud`** — the third `isHudHidden` read guards only the totem-pop
+  animation, not the screen effects; subtitles are not the only deferred
+  element; three of the four things `Gui` records after the screen are `Hud`'s
+  own methods; the bubble-pop sound ramps with bubbles **gone**, not left; and
+  the level number is recorded separately from the bar rather than inside its
+  pass.
+- **`sound-engine`** — "a channel is never reclaimed in its first second" is
+  backwards: `ChannelAccess.scheduleTick` releases the OpenAL source the moment
+  the channel reports stopped, with no lifetime gate, and
+  `MIN_SOURCE_LIFETIME` holds only the bookkeeping entry. "Per-source AL calls
+  are never made from the Render thread" is false of `ChannelAccess.clear` and
+  `Library.cleanup`. The volume is computed **before** the listener loop
+  (`SoundEngine.java:423` then `:428`); only the zero-volume abandon follows
+  it, which is what actually saves the subtitle. Only `SoundEngine.play`
+  returns a `PlayResult`.
+- **`hud-elements`** (the part's Reference catalogue, checked row by row) —
+  the contextual bar is recorded **twice**, `extractBackground` before the
+  experience level and `extractRenderState` after it, and the table had one
+  row naming the later method in the earlier slot; the missing row is now 16
+  and everything below is renumbered. The crosshair's condition omitted the F3
+  three-dimensional-crosshair test; the saving indicator omitted
+  `Options.showAutosaveIndicator`; and "every element in it is behind a
+  condition" is false of the bar, which is unconditional and made empty by a
+  no-op state object instead.
+
+**Addition 2 done in full.** `check_deps.py` green. All six *before you start*
+entries are used by a sentence; `anatomy/anatomy` is used by
+`the-client-loop`'s hook but linked by no page, which session A had already
+judged real-but-unlinked (pass4.md:2765) and routed the cross-link to pass 5 —
+that ruling stands. Every "linked but not listed" target was judged a pointer
+or a scope boundary rather than a dependency. Session A's ruling on
+`what-makes-a-sound` and *environment attributes* was re-examined against the
+page and left standing: the section summarises the layer stack inline rather
+than assuming it. One order claim struck: the landing page's instruction to
+watch `the-client-loop` before Part IX's *what the client is told*, which
+contradicts the part's own hard dependency on Part IX and survived session A's
+fix to Part IX's own landing page.
+
+**No corpus-affecting tool bug — the fifth such session.** Instead the
+**queue tool routed a bare `README` note to the wrong part for a third time**
+(pass4.md:479 and :978 are Part VI's landing page, not Part X's), which is
+three sessions paying for the same ten minutes — so this session spent them.
+`pass4_queue.py` now matches a landing page only part-qualified
+(`client/README`), because the bare slug is `README` for all thirteen of them
+and matched whichever part the queue happened to be building. Non-landing-page
+routing is byte-identical; the thirteen landing-page counts are now the real
+ones. **A note about a landing page must name it as `<part>/README` to be
+routed at all** — sessions K onward, write it that way. And an agent was
+wrong once: "three pages here begin at a packet that has already arrived" was
+called WRONG on a count of two, having read the pages' subtitles rather than
+their traces — `the-client-level`'s figure opens on
+`handleLevelChunkWithLight`, "already hopped to the client thread", so the
+three are the client level, the sound engine and what makes a sound. Claim
+kept.
+
+
 ## Session I — Part IX Networking (pass 4) *(2026-09-04)*
 
 Five pages and the landing page, six agents; **every one had at least one
@@ -477,9 +684,10 @@ session's own first draft of that fix then invented a field
 page.
 
 **The bare-`README` routing wart bit again** (session G's
-`docs/pass4.md:583`, still open): session F's note on **Part VI's** landing
-page came back on this part's checklist. Unchanged verdict — the tool should
-refuse a bare `README` — and nothing on this page followed from it.
+`docs/pass4.md:583`): session F's note on **Part VI's** landing page came back
+on this part's checklist. Unchanged verdict — the tool should refuse a bare
+`README` — and nothing on this page followed from it. *Fixed by session J*,
+which was bitten by the same note a third time.
 
 
 ## Session G — Part VII Items and inventories (pass 4) *(2026-09-04)*
@@ -979,7 +1187,9 @@ One **routing** wart recorded rather than fixed: a note written as a bare
 `` `README` `` in session F's entry matched Part VII's landing page as well as
 Part VI's, because the alias table matches the bare word. Session A's ruling
 already says to qualify a landing-page note as `` `items/README.md` ``; the
-queue tool could also refuse a bare `README`.
+queue tool could also refuse a bare `README`. *Session J did exactly that* —
+`page_patterns` now gives a `README` slug only the part-qualified
+alternatives.
 
 The **checklist was wrong once** — session H recorded
 `MonsterRoomFeature`'s "two chest attempts", which is two chests of up to three
@@ -5155,106 +5365,106 @@ graph — seventeen edges, each a conversion claim); one added
   ~~wrong.~~
 
 - **2026-09-03, pass 3 session K — Part X The client.** Twelve pages
-  rewritten in shape, one page split into two, one landing page and one
-  Reference page written. The whole part is on this list; below is what
-  pass 4 should check *hardest*, being what the rewrite introduced.
+  ~~rewritten in shape, one page split into two, one landing page and one~~
+  ~~Reference page written. The whole part is on this list; below is what~~
+  ~~pass 4 should check *hardest*, being what the rewrite introduced.~~
 
-  **One ordering the rewrite corrected, which is the first thing to
-  re-check.** `the-client-loop`'s old sequence diagram put
-  `FramerateLimiter.limitDisplayFPS` after the *Post render* section, i.e.
-  at the end of `Minecraft.runTick`. It is not there: it is inside
-  `Minecraft.renderFrame`, after the present and before *Post render*, and
-  it is gated on `GameRenderState`'s framerate limit being below 260 rather
-  than on the tracker being asked again at that moment. The new flowchart
-  says so. Confirm both halves of that correction.
+  ~~**One ordering the rewrite corrected, which is the first thing to~~
+  ~~re-check.** `the-client-loop`'s old sequence diagram put~~
+  ~~`FramerateLimiter.limitDisplayFPS` after the *Post render* section, i.e.~~
+  ~~at the end of `Minecraft.runTick`. It is not there: it is inside~~
+  ~~`Minecraft.renderFrame`, after the present and before *Post render*, and~~
+  ~~it is gated on `GameRenderState`'s framerate limit being below 260 rather~~
+  ~~than on the tracker being asked again at that moment. The new flowchart~~
+  ~~says so. Confirm both halves of that correction.~~
 
-  **The hooks, one per page, all new or newly load-bearing.** The frame that
-  earns fifteen ticks runs ten and loses five (`the-client-loop` — the claim
-  was in the old page's invariants, it is now the opening paragraph). The
-  client's tick lists accept a schedule and then answer *no* when asked
-  whether one is pending, so a predicted repeater looks inert
-  (`the-client-level` — the *repeater* is the session's example and is not
-  in the decompile as such: check that a repeater actually reschedules
-  itself through the black-holed path). The receipt is for a number and is
-  sent for refusals (`prediction-and-acks`, unchanged in substance). A
-  toggle-sneak press flips the mapping and the *release* is swallowed
-  entirely, and a screen closing turns the toggle back on
-  (`input-and-keybinds` — new scenario this session, read from
-  `ToggleKeyMapping` and `KeyMapping.restoreToggleStatesOnScreenClosed`). A
-  cycle button broadcasts your `ClientInformation` on every click
-  (`options`, unchanged). Pressing E sends and receives nothing
-  (`gui-and-screens`, unchanged). Layering is inferred from bounding boxes
-  (`the-gui-render-tree`, unchanged). Measuring bakes (`text-and-fonts`,
-  unchanged). F1 does not hide the sleep fade (`hud`, unchanged). A sound
-  always starts at least one hop after the packet (`sound-engine`,
-  unchanged). Most world sounds are an int (`what-makes-a-sound`,
-  unchanged). Nothing is stripped from the shipped jar
-  (`debugging-the-running-game`, unchanged).
+  ~~**The hooks, one per page, all new or newly load-bearing.** The frame that~~
+  ~~earns fifteen ticks runs ten and loses five (`the-client-loop` — the claim~~
+  ~~was in the old page's invariants, it is now the opening paragraph). The~~
+  ~~client's tick lists accept a schedule and then answer *no* when asked~~
+  ~~whether one is pending, so a predicted repeater looks inert~~
+  ~~(`the-client-level` — the *repeater* is the session's example and is not~~
+  ~~in the decompile as such: check that a repeater actually reschedules~~
+  ~~itself through the black-holed path). The receipt is for a number and is~~
+  ~~sent for refusals (`prediction-and-acks`, unchanged in substance). A~~
+  ~~toggle-sneak press flips the mapping and the *release* is swallowed~~
+  ~~entirely, and a screen closing turns the toggle back on~~
+  ~~(`input-and-keybinds` — new scenario this session, read from~~
+  ~~`ToggleKeyMapping` and `KeyMapping.restoreToggleStatesOnScreenClosed`). A~~
+  ~~cycle button broadcasts your `ClientInformation` on every click~~
+  ~~(`options`, unchanged). Pressing E sends and receives nothing~~
+  ~~(`gui-and-screens`, unchanged). Layering is inferred from bounding boxes~~
+  ~~(`the-gui-render-tree`, unchanged). Measuring bakes (`text-and-fonts`,~~
+  ~~unchanged). F1 does not hide the sleep fade (`hud`, unchanged). A sound~~
+  ~~always starts at least one hop after the packet (`sound-engine`,~~
+  ~~unchanged). Most world sounds are an int (`what-makes-a-sound`,~~
+  ~~unchanged). Nothing is stripped from the shipped jar~~
+  ~~(`debugging-the-running-game`, unchanged).~~
 
-  **Facts added this session, which had no owner before.**
-  `Entity.moveOrInterpolateTo` and the seven overrides of
-  `Entity.getInterpolation` — `LivingEntity`, `Display`, `ExperienceOrb`,
-  `Shulker`, `FishingHook`, `AbstractBoat`, `AbstractMinecart` — against a
-  default that returns null and therefore snaps; the page's *snaps* column
-  names `AbstractArrow`, `PrimedTnt`, `ItemEntity` and `FallingBlockEntity`
-  as examples of the default, which is an inference from *does not override*
-  and should be spot-checked. `ClientPacketListener.serverChunkRadius` and
-  `ClientPacketListener.serverSimulationDistance`, seeded at login and handed
-  to each new `ClientLevel`. `ClientChunkCache.Storage` as an
-  `AtomicReferenceArray` with volatile centre coordinates, and the claim
-  that the reason is the render thread reading them — a *why*, and therefore
-  weaker than the *what*. `Entity.isInterpolating` being read by
-  `ServerboundMoveVehiclePacket` and `PositionMoveRotation`. And
-  `DebugSubscriptions.DEDICATED_SERVER_TICK_TIME` named properly, replacing
-  the old page's awkward reference to a `RemoteDebugSampleType` constant; the
-  count of sixteen was re-derived by counting the fields, and the four
-  expiring kinds now carry their tick counts (60, 100, 200, 200).
+  ~~**Facts added this session, which had no owner before.**~~
+  ~~`Entity.moveOrInterpolateTo` and the seven overrides of~~
+  ~~`Entity.getInterpolation` — `LivingEntity`, `Display`, `ExperienceOrb`,~~
+  ~~`Shulker`, `FishingHook`, `AbstractBoat`, `AbstractMinecart` — against a~~
+  ~~default that returns null and therefore snaps; the page's *snaps* column~~
+  ~~names `AbstractArrow`, `PrimedTnt`, `ItemEntity` and `FallingBlockEntity`~~
+  ~~as examples of the default, which is an inference from *does not override*~~
+  ~~and should be spot-checked. `ClientPacketListener.serverChunkRadius` and~~
+  ~~`ClientPacketListener.serverSimulationDistance`, seeded at login and handed~~
+  ~~to each new `ClientLevel`. `ClientChunkCache.Storage` as an~~
+  ~~`AtomicReferenceArray` with volatile centre coordinates, and the claim~~
+  ~~that the reason is the render thread reading them — a *why*, and therefore~~
+  ~~weaker than the *what*. `Entity.isInterpolating` being read by~~
+  ~~`ServerboundMoveVehiclePacket` and `PositionMoveRotation`. And~~
+  ~~`DebugSubscriptions.DEDICATED_SERVER_TICK_TIME` named properly, replacing~~
+  ~~the old page's awkward reference to a `RemoteDebugSampleType` constant; the~~
+  ~~count of sixteen was re-derived by counting the fields, and the four~~
+  ~~expiring kinds now carry their tick counts (60, 100, 200, 200).~~
 
-  **The new Reference page is thirty rows of gate, and every row is a
-  claim.** `src/reference/hud-elements.md` was read one method at a time out
-  of `Hud.extractRenderState` and `Gui.extractRenderState`. Two rows are
-  inferences rather than transcriptions and should be checked first: row 13,
-  that mount health sits *outside* the can-hurt-you block and so shows in
-  creative; and row 26, the two different paths by which subtitles are
-  recorded when the HUD is hidden. Also check the preamble's claim that
-  `GuiRenderState.isHudHidden` is published before the loading-screen
-  short-circuit.
+  ~~**The new Reference page is thirty rows of gate, and every row is a~~
+  ~~claim.** `src/reference/hud-elements.md` was read one method at a time out~~
+  ~~of `Hud.extractRenderState` and `Gui.extractRenderState`. Two rows are~~
+  ~~inferences rather than transcriptions and should be checked first: row 13,~~
+  ~~that mount health sits *outside* the can-hurt-you block and so shows in~~
+  ~~creative; and row 26, the two different paths by which subtitles are~~
+  ~~recorded when the HUD is hidden. Also check the preamble's claim that~~
+  ~~`GuiRenderState.isHudHidden` is published before the loading-screen~~
+  ~~short-circuit.~~
 
-  **The diagrams.** New and asserting orderings: the one-turn flowchart in
-  `the-client-loop` (every edge is an ordering claim, and the clamp is a
-  decision node); the two-column `stateDiagram-v2` in `prediction-and-acks`
-  (five client transitions and three server ones, and the claim that no
-  transition anywhere is "the server said no"); the setting-change flowchart
-  in `options`; the containment flowchart in `gui-and-screens`; two
-  flowcharts in `the-gui-render-tree`, one of the data and one of the draw
-  pass; the six-stage pipeline flowchart in `text-and-fonts`; the record-order
-  flowchart in `hud`, which asserts exactly where the sleep fade sits; the
-  three-doors flowchart in `what-makes-a-sound`; the hub-and-spokes figure on
-  the landing page, whose seven arrow labels are cadence claims. Redrawn:
-  the sneak trace in `input-and-keybinds` (a different scenario from the old
-  page's, so it is a new diagram not an edited one). Kept and re-checked:
-  the chunk-arrival sequence in `the-client-level`, the refusal sequence in
-  `prediction-and-acks`, the inventory sequence in `gui-and-screens`, the
-  chat-line sequence in `text-and-fonts`, the hearts sequence in `hud`, the
-  villager-brain sequence in `debugging-the-running-game`, and the
-  block-placed sequence now in `sound-engine`.
+  ~~**The diagrams.** New and asserting orderings: the one-turn flowchart in~~
+  ~~`the-client-loop` (every edge is an ordering claim, and the clamp is a~~
+  ~~decision node); the two-column `stateDiagram-v2` in `prediction-and-acks`~~
+  ~~(five client transitions and three server ones, and the claim that no~~
+  ~~transition anywhere is "the server said no"); the setting-change flowchart~~
+  ~~in `options`; the containment flowchart in `gui-and-screens`; two~~
+  ~~flowcharts in `the-gui-render-tree`, one of the data and one of the draw~~
+  ~~pass; the six-stage pipeline flowchart in `text-and-fonts`; the record-order~~
+  ~~flowchart in `hud`, which asserts exactly where the sleep fade sits; the~~
+  ~~three-doors flowchart in `what-makes-a-sound`; the hub-and-spokes figure on~~
+  ~~the landing page, whose seven arrow labels are cadence claims. Redrawn:~~
+  ~~the sneak trace in `input-and-keybinds` (a different scenario from the old~~
+  ~~page's, so it is a new diagram not an edited one). Kept and re-checked:~~
+  ~~the chunk-arrival sequence in `the-client-level`, the refusal sequence in~~
+  ~~`prediction-and-acks`, the inventory sequence in `gui-and-screens`, the~~
+  ~~chat-line sequence in `text-and-fonts`, the hearts sequence in `hud`, the~~
+  ~~villager-brain sequence in `debugging-the-running-game`, and the~~
+  ~~block-placed sequence now in `sound-engine`.~~
 
-  **The split.** `sound.md` became `sound-engine.md` and
-  `what-makes-a-sound.md`. Nothing was cut in the split, but material moved
-  across the seam and pass 4 should read the two together once: the engine
-  page keeps `SoundInstance`, the threads, the channel limits, the volume
-  arithmetic, looping and the device, and the content page keeps
-  `SoundEvent`, `SoundSource`, `sounds.json`, level events, the local-player
-  prediction, propagation delay and the environment-attribute music model.
-  The one claim that was *sharpened* rather than moved: a server can name a
-  sound in no registry (inline `SoundEvent` in the stream codec) while data
-  packs cannot register one — the old page said this in passing and the new
-  one makes it a table row.
+  ~~**The split.** `sound.md` became `sound-engine.md` and~~
+  ~~`what-makes-a-sound.md`. Nothing was cut in the split, but material moved~~
+  ~~across the seam and pass 4 should read the two together once: the engine~~
+  ~~page keeps `SoundInstance`, the threads, the channel limits, the volume~~
+  ~~arithmetic, looping and the device, and the content page keeps~~
+  ~~`SoundEvent`, `SoundSource`, `sounds.json`, level events, the local-player~~
+  ~~prediction, propagation delay and the environment-attribute music model.~~
+  ~~The one claim that was *sharpened* rather than moved: a server can name a~~
+  ~~sound in no registry (inline `SoundEvent` in the stream codec) while data~~
+  ~~packs cannot register one — the old page said this in passing and the new~~
+  ~~one makes it a table row.~~
 
-  **The landing page and `lectures.md`** claim that Part X is a hub and
-  spokes rather than a pipeline, that only the GUI stack is internally
-  ordered, that Part IX and Part V are both prerequisites, and that
-  `the-client-loop` is a prerequisite of Part XI. All four are orderings.
+  ~~**The landing page and `lectures.md`** claim that Part X is a hub and~~
+  ~~spokes rather than a pipeline, that only the GUI stack is internally~~
+  ~~ordered, that Part IX and Part V are both prerequisites, and that~~
+  ~~`the-client-loop` is a prerequisite of Part XI. All four are orderings.~~
 
 ---
 

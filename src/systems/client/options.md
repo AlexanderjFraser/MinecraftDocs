@@ -36,7 +36,7 @@ Four decisions, and none of them is "run the listener and be done".
 flowchart TD
     CHANGE["a widget changes a value"]
     KIND{"slider or cycle?"}
-    ARM["slider: arm a delay of about 600 ms, checked during the extract pass"]
+    ARM["slider that opted out of applying immediately: arm 600 ms, checked during the extract pass"]
     EARLY{"screen dismissed inside the window?"}
     SET["OptionInstance.set"]
     RUNNING{"is Minecraft.running true?"}
@@ -90,13 +90,16 @@ toggles, is not persisted anywhere.
 `Options.processOptions` is worth naming twice: it is the file format and the
 field list in one method, which is why it is the first place to look for
 anything about *options.txt*. `Options.dumpOptionsForReport` and
-`Options.processDumpedOptions` are the smaller subset that goes into crash
-reports and telemetry.
+`Options.processDumpedOptions` are the smaller subset that goes into the
+profiling report.
 
 ## The delay, and why the world rebuilds anyway
 
 The render-distance slider's listener does exactly one thing: it marks the
-graphics preset custom. It does not invalidate a single chunk.
+graphics preset custom. It does not invalidate a single chunk. It is also one
+of only three options in the game that defer their value at all — with
+simulation distance and biome blend, it is built to *not* apply immediately,
+which is what arms the 600 ms; every other slider applies on release.
 
 The world rebuilds because `LevelExtractor` notices, on the *next frame*,
 that `Options.getEffectiveRenderDistance` differs from the last value it saw,
@@ -104,16 +107,18 @@ and calls its own full invalidation — tint caches cleared, the tracker
 rebuilt, all geometry dirty. The setting and the consequence are joined by a
 poll, not by a callback.
 
-Most *other* graphics options are the opposite way round: their listeners
-call straight into the level extractor, the window, the sound manager or the
-font manager. `Options.graphicsPreset` and
+Seven of the other quality options are the opposite way round: their
+listeners reach straight into the level extractor. Nine are not — their
+listeners do nothing but flip the preset back to custom, exactly as render
+distance's does. Elsewhere in the file the immediate listeners are real
+enough: the window, the sound device and the font manager all have one. `Options.graphicsPreset` and
 `Options.setGraphicsPresetToCustom` are the preset machinery — a preset
 writes a batch of settings at once, and almost every graphics listener flips
 the preset back to custom, which is how "Custom" appears without anyone
 selecting it.
 
 Some of those listeners are far more interesting than their options. GUI
-scale resizes every screen. Vsync invalidates the surface configuration.
+scale resizes whichever screen is open. Vsync invalidates the surface configuration.
 Fullscreen toggles the window and then writes the option back from what the
 window actually did. The unicode-font toggle throws away every glyph atlas.
 High contrast adds and removes a resource pack.
@@ -130,8 +135,10 @@ packet rather than a play one: the first is sent during configuration,
 straight from `ClientHandshakePacketListenerImpl`, before the play phase
 exists. Every later one comes from `Options.broadcastOptions`.
 
-**There is no reply, and the absence is the point.** Nothing the server sends
-is an answer to a client-information packet. The only thing that ever sets
+**There is no acknowledgement, and the absence is the point.** The one thing
+a client-information packet can provoke is a hat-visibility broadcast to the
+whole player list, and nothing in it tells you what happened to what you
+asked for. The only thing that ever sets
 `Options.serverRenderDistance` is the server announcing its *own* view
 distance — in the login packet, or by broadcasting
 `ClientboundSetChunkCacheRadiusPacket` when an operator changes it. Your
@@ -141,25 +148,31 @@ itself, with `Options.getEffectiveRenderDistance`.
 `ClientboundSetSimulationDistancePacket` is likewise an announcement, not a
 reply.
 
-Singleplayer bypasses the whole conversation. `IntegratedServer.tickServer`
-reads both the simulation and render sliders off the client's options every
-server tick and pushes them into the player list — so in singleplayer both
-sliders drive the server directly and neither travels as client information.
-"Simulation distance is never sent to the server" is true, and true because
-in the one case where it matters it does not need to be.
+Singleplayer short-circuits half of it. `IntegratedServer.tickServer` reads
+both the simulation and render sliders off the client's options every unpaused
+server tick and pushes them into the player list, so both drive the server
+directly without waiting for a packet. Render distance travels as client
+information anyway — it is field two of the record, sent over the memory
+connection exactly as over a socket — and simulation distance never does, in
+singleplayer or out of it, because that is the one number the client has no
+say in.
 
 ## Questions players ask
 
-**Why does my render-distance slider stop short?** The option is a lazily
-clamped range and the clamp reads the JVM's maximum memory. Its maximum
-depends on your heap, not on your graphics card.
+**Why does my render-distance slider stop short?** Its maximum is computed
+once, from the JVM's maximum memory, and the option is a plain
+`OptionInstance.IntRange` built around that bound. It depends on your heap,
+not on your graphics card. (The genuinely lazy
+`OptionInstance.ClampingLazyMaxIntRange` is GUI scale's, and reads the
+window.)
 
 **Why did none of my settings' side effects run at startup?** Because
 `Minecraft.running` is still false. `OptionInstance.set` checks it and, when
 the game is not running, assigns the field and skips both the equality test
 and the listener. That is not a special path for loading — it silences *any*
 set performed before the loop starts, and loading happens in the `Options`
-constructor, which runs inside the `Minecraft` constructor.
+constructor, which runs inside the `Minecraft` constructor six statements
+before `Minecraft.running` is set.
 
 **Which settings really need a restart?** Two, and they say so. The graphics
 backend and exclusive fullscreen are compared against snapshots taken at
@@ -181,9 +194,12 @@ game starting. The file carries a version line and is run through the data
 fixer on load.
 
 > **For a 1.21-era reader.** *Options.mouseSensitivity* and the other bare
-> public fields are gone — the modern settings are private with accessor
-> methods of the same name, so the name you remember is now a call. So is
-> *Options.keyBindings*.
+> public fields are gone — most settings are now private with an accessor of
+> the same name, so `Options.fov` and `Options.guiScale` are calls. Two traps:
+> mouse sensitivity was *renamed* as well as encapsulated, to
+> `Options.sensitivity` (only *options.txt* still says *mouseSensitivity*);
+> and *Options.keyBindings* was renamed to `Options.keyMappings` but is still
+> a public field, not a call.
 
 ## Where to look
 
