@@ -20,7 +20,7 @@ currently using.
 |---|---|---|
 | `PiercingWeapon` | the stab: who can be hit along a ray, and what a hit does | server main (sounds: both) |
 | `KineticWeapon` | the charge: three speed conditions, and the damage from closing speed | server main |
-| `Item.Properties.spear` | the seven spears, and every component that makes one | — |
+| `Item.Properties.spear` | the seven spears, and the combat components that make one | — |
 | `Minecraft` / `MultiPlayerGameMode` | the client's short-circuit, and the packet with no target | client main |
 | `ServerGamePacketListenerImpl` | `ServerboundPlayerActionPacket.Action.STAB`, and the piercing rejection in the ordinary attack handler | server main |
 | `LivingEntity.stabAttack` | the shared tail: damage, two knockbacks, dismount, durability | server main |
@@ -30,8 +30,9 @@ currently using.
 ## What an item needs to be a spear
 
 `Item.Properties.spear` is one builder call per material, and the seven
-spears — `Items.WOODEN_SPEAR` through `Items.NETHERITE_SPEAR` — differ only
-in the numbers it is given. What it attaches is the interesting part,
+spears — `Items.WOODEN_SPEAR` through `Items.NETHERITE_SPEAR` — differ
+almost only in the numbers it is given; the wooden one gets its own sounds
+and the netherite one is additionally fire-resistant. What it attaches is the interesting part,
 because it is *both* weapons at once plus the reach to use them:
 
 | component | what the spear gets |
@@ -96,22 +97,26 @@ confused for one another even by a client that tries.
 the weapon in the given slot and `LivingEntity.getAttackRangeWith`, and
 walks `ProjectileUtil.getHitEntitiesAlong` with the block-collider clip
 context — so a wall stops the ray, but a crowd does not. **Every** entity
-along it is stabbed, in order, each through
-`LivingEntity.stabAttack` with the same damage figure.
+along it is stabbed — in the order the ray walk happened to append them,
+which is not sorted by distance — each through `LivingEntity.stabAttack`
+with the same damage figure.
 
 `PiercingWeapon.canHitEntity` is the filter, and it is a projectile-shaped
 test rather than a melee one: the target must not be
 `Entity.isInvulnerableToPiercingWeapon`, must be alive, and must satisfy
-`Entity.canBeHitByProjectile` — except an `Interaction`, which is always
-hittable. Player against player defers to `Player.canHarmPlayer`, and an
-entity riding the same vehicle as the attacker is never hit.
+`Entity.canBeHitByProjectile`. Player against player defers to
+`Player.canHarmPlayer`, and an entity riding the same vehicle as the
+attacker is not hit. An `Interaction` short-circuits the whole filter to
+*hittable* before any of those tests, same vehicle included.
 
-Afterwards the weapon plays `PiercingWeapon.makeHitSound` if anything was
-hit and `PiercingWeapon.makeSound` regardless, and the attacker gets
-`LivingEntity.onAttack` — which on a `Player` resets the attack-strength
-ticker — and `LivingEntity.postPiercingAttack`, the hook that runs
-`EnchantmentHelper.doPostPiercingAttackEffects`. The client half already did
-its own copy of all three, one round trip earlier.
+Afterwards the attacker gets `LivingEntity.onAttack` — which on a `Player`
+resets the attack-strength ticker — and `LivingEntity.postPiercingAttack`,
+the hook that runs `EnchantmentHelper.doPostPiercingAttackEffects`; only
+then does the weapon play `PiercingWeapon.makeHitSound` if anything was hit
+and `PiercingWeapon.makeSound` regardless, and swing the arm. The client
+half did the swing and `LivingEntity.onAttack` itself a round trip earlier,
+but not `LivingEntity.postPiercingAttack`, which does nothing off a
+`ServerLevel`.
 
 ## The charge
 
@@ -144,17 +149,24 @@ argument, not a swing:
 
 Three independent `KineticWeapon.Condition`s then decide what the hit *is*:
 `KineticWeapon.dismountConditions`, `KineticWeapon.knockbackConditions` and
-`KineticWeapon.damageConditions`, each a maximum duration, a minimum
-absolute speed and a minimum relative speed. A spear's three come from the
-builder with different windows, so a charge that has run too long can still
-knock a target off a horse while no longer doing damage. If any of the three
+`KineticWeapon.damageConditions`, each a maximum duration and a speed bar —
+measured against the attacker's own projected speed for the first two, and
+against the closing speed for damage. A spear's three come from the builder
+with different windows, and for all seven materials they nest the same way:
+damage has the longest window and the lowest bar, dismount the shortest
+window and much the highest. So a charge that has run too long can still
+hurt when it can no longer knock a target off a horse — a wooden spear
+dismounts for five seconds, knocks back for ten and damages for fifteen. If any of the three
 passes, the damage is the attacker's **base** `Attributes.ATTACK_DAMAGE`
 plus the floor of relative speed × `KineticWeapon.damageMultiplier` — base
 value, so the modifiers a sword swing would pick up are not in it.
 
-A landed charge broadcasts an entity event, which is the only thing the
-attacker's own client is told: `LivingEntity.onKineticHit` plays a local hit
-sound, throttled to once per `KineticWeapon.HIT_FEEDBACK_TICKS`, and
+A landed charge broadcasts an entity event, and it is the part of the
+telling that is *about the charge*, alongside the ordinary damage sync,
+knockback and durability every hit sends: `LivingEntity.onKineticHit` plays a local hit
+sound, throttled to ten ticks by a bare literal in
+`LivingEntity.onKineticHit` — the `KineticWeapon.HIT_FEEDBACK_TICKS`
+constant that names that number is read by nothing — and
 `LivingEntity.getTicksSinceLastKineticHitFeedback` feeds the animation. A
 `ServerPlayer` also trips `CriteriaTriggers.SPEAR_MOBS_TRIGGER` with the
 number of living entities stabbed this charge.
@@ -186,8 +198,9 @@ two, `Player.itemAttackInteraction` applies the durability cost, and
 **Why does the server never ask which mob I stabbed?** Because it does not
 trust the answer and does not need it. The stab packet is an action, not a
 target: the server raycasts from the player's own look vector with the
-weapon's `AttackRange`, and hits everything on the line. That also makes the
-stab the one melee attack whose hit count is not one.
+weapon's `AttackRange`, and hits everything on the line. That also puts the stab
+in the small company of melee attacks whose hit count is not one, beside the
+sword's sweep and the spear's own charge.
 
 **Does a spear work while I am moving?** It is the only weapon that
 *requires* it. The charge's damage is built from closing speed, and the
@@ -208,13 +221,14 @@ a crossbow when deciding what it is holding. Both read
 thresholds are easier for them: the speed conditions are scaled by an action
 factor of **0.2** for anything that is not a player, against 1.0 for you.
 
-**Is any of this data-driven?** All of it. `PiercingWeapon` and
-`KineticWeapon` are ordinary data components with codecs and stream codecs,
-so both weapons are configuration rather than code, and
-`KineticWeapon.Condition` is three numbers. One field is not a combat number
-at all: `KineticWeapon.forwardMovement` — 0.38 for a spear — is read
-**only** by `SpearAnimations`, the first-person model animation, which is a
-rendering offset living in the middle of a combat component.
+**Is any of this data-driven?** The shape is; the values are not.
+`PiercingWeapon` and `KineticWeapon` are ordinary data components with
+codecs and stream codecs, so a data pack can describe a weapon without code
+— but every built-in spear's numbers are hard-coded in
+`Item.Properties.spear`, not read from JSON. One field is not a combat
+number at all: `KineticWeapon.forwardMovement` — 0.38 for a spear — is read
+**only** by `SpearAnimations`, and only by its *third-person* methods, which
+is a rendering offset living in the middle of a combat component.
 
 ## Where to look
 

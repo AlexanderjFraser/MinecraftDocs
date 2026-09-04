@@ -1,14 +1,14 @@
 # VIII · The player
 
-> Verified against **Minecraft 26.2** · Part VIII · The one entity a human is steering: what it is made of, when it runs, and the four things it does that nothing else in the world does.
+> Verified against **Minecraft 26.2** · Part VIII · The one entity a human is steering: what it is made of, when it runs, and the four things it does that the rest of the world does differently.
 
 Everything in Parts IV to VII happens to the world. This part is about the
 one object in it that argues back. A player is an entity like any other —
 same base class, same tick, same synched data — and then almost every rule
 is bent for it: it is ticked twice instead of once, it is the only thing the
-server simulates and then contradicts, its inventory is a container that
-lies about one slot, and its melee combat has three separate entry points of
-which the famous one is the least interesting. A player recognises the part
+server simulates and then contradicts, its inventory reports seven slots it
+does not store and aliases an eighth, and its melee combat has three
+separate entry points of which the famous one is the least interesting. A player recognises the part
 by the friction: the snap back after a laggy jump, the swing that does more
 damage if you wait, the food bar that empties from sprinting and not from
 walking, the effect timer that keeps counting while the connection is down.
@@ -29,7 +29,7 @@ flowchart TD
     SP["The spear — the same hit, twice, neither through Player.attack"]
     HE["Hunger and experience — two bars the server owns"]
     SE["Status effects — a list of things happening to you"]
-    PA -- "five classes, forty-three slots" --> TT
+    PA -- "eight classes, forty-three slots" --> TT
     TT -- "phase two is where the player acts" --> IM
     TT --> SS
     TT --> HE
@@ -41,11 +41,12 @@ flowchart TD
 
 [Part VI](../entities/README.md) is the hard prerequisite, and two of its
 pages in particular. [Entity anatomy](../entities/entity-anatomy.md),
-because a player is a `LivingEntity` with three rungs added and this part
-never re-teaches the base; and **[authority](../entities/authority.md)**,
-because every page here rests on it — a `Player` is client-authoritative on
-*both* sides, which is why the server simulates your movement and then
-overwrites the answer with a number you sent it. If you watch one page from
+because a player is a `LivingEntity` with three rungs added on the server
+and four on the client, and this part never re-teaches the base; and
+**[authority](../entities/authority.md)**, because every page here rests on
+it — a `Player` is client-authoritative on *both* sides, which is why the
+server's own answer for your movement is thrown away in favour of the
+number you sent it. If you watch one page from
 another part first, watch that one.
 
 Then [the server tick](../server/server-tick.md) and [the level
@@ -59,16 +60,17 @@ particular, because the spear is an item you *use*.
 
 ## Watch in this order
 
-1. [Player anatomy](player-anatomy.md) — the vocabulary page: five classes,
-   two game-mode objects, forty-three slots. There is an abstract class
-   between `LivingEntity` and `Player` with no fields at all, and the main
-   hand is not stored anywhere — it is the selected hotbar slot, aliased.
+1. [Player anatomy](player-anatomy.md) — the vocabulary page: eight
+   classes, two game-mode objects, forty-three slots. There is an abstract
+   class between `LivingEntity` and `Player` — `Avatar` — with no instance
+   fields at all, and the main-hand *item* is not stored anywhere: it is the
+   selected hotbar slot, aliased.
 2. [The two-phase tick](the-two-phase-tick.md) — one player, one tick,
    twice. The connection records where you are, runs the whole physics
    pipeline, and then puts you back: the server keeps the velocity and
    throws the position away.
-3. [Input to movement](input-to-movement.md) — W is pressed. A key shorter
-   than a tick never happened, sending move packets faster makes the
+3. [Input to movement](input-to-movement.md) — W is pressed. A movement key
+   held for less than a tick never happened, sending move packets faster makes the
    anti-cheat *stricter*, and the packet that reports your key presses
    cannot move you but can move a minecart.
 4. [The sword swing](the-sword-swing.md) — left-click on a pig. The attack
@@ -80,12 +82,13 @@ particular, because the spear is an item you *use*.
    no target in it, and a charge whose damage comes from closing speed and
    which ignores the attack cooldown entirely.
 6. [Hunger and experience](hunger-and-experience.md) — two bars the server
-   owns outright. Walking costs exactly zero exhaustion, and the file of
-   named thresholds the system is built on is referenced by nothing.
+   owns outright. Walking costs exactly zero exhaustion, and not one of the
+   named thresholds in the file the system is built on is read by anything —
+   `FoodData` writes every number as a literal instead.
 7. [Status effects](status-effects.md) — the part's closer, and the cleanest
-   statement of the server/client split in the book: the client never runs
-   an effect, only counts it down — and an infinite effect is never re-sent,
-   because −1 never satisfies the re-send test.
+   statement of the server/client split in the book: the client never runs a
+   single one of an effect's hooks, only counts it down — and an infinite
+   effect is never re-sent, because −1 never satisfies the re-send test.
 
 Watched as lectures, one and two are the pair to keep together, and four and
 five are the other pair. Six and seven can be watched in either order, or
@@ -94,11 +97,12 @@ skipped and returned to.
 ## Reference this part uses
 
 [Attributes](../../reference/attributes.md), because reach, attack damage,
-attack speed, sweeping ratio and knockback are all attributes and four of
-them are not synced to the client. [Packets](../../reference/packets.md) for
-the movement, attack and health packets by name. [Data
-components](../../reference/components.md) for the six components that make
-an item a weapon. Then [game rules](../../reference/gamerules.md), [level
+attack speed, sweeping ratio and knockback are all attributes — and attack
+damage and knockback, the two that decide what a hit is worth, are not
+synced to the client at all. [Packets](../../reference/packets.md) for the
+movement, attack and health packets by name. [Data
+components](../../reference/components.md) for the components that make an
+item a weapon — eight of them on a spear. Then [game rules](../../reference/gamerules.md), [level
 data and rules](../../reference/level-data-and-rules.md) and [diagram
 lanes](../../reference/lanes.md).
 

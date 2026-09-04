@@ -27,8 +27,9 @@ the bar will not move.
 Both halves hang off `ServerPlayer.doTick`, the connection-driven half of
 [the two-phase tick](the-two-phase-tick.md); the level's entity tick touches
 essentially none of it. The order inside that half matters: item use is
-resolved, then `Player.aiStep` runs `ServerPlayer.tickRegeneration`, the
-Peaceful refill and the orb pickup, then **`FoodData.tick`**, and then the
+resolved, then `Player.aiStep` runs `ServerPlayer.tickRegeneration` — which
+*is* the Peaceful refill, its whole body gated on that difficulty — and the
+orb pickup, then **`FoodData.tick`**, and then the
 change-detection block that emits the packets. So a meal eaten this tick and
 a Hunger effect's exhaustion from this tick are both visible to
 `FoodData.tick` in the same tick, and the resulting health and food reach
@@ -66,10 +67,10 @@ three-way mutually exclusive chain:
 ```mermaid
 flowchart TD
     EX["exhaustion above 4.0?"]
-    EX -- "yes" --> DRAIN["drain 4.0 into saturation, or into the food bar once saturation is spent and the difficulty is not Peaceful"]
+    EX -- "yes" --> DRAIN["spend 4.0 of exhaustion, and take 1.0 off saturation — or one off the food bar once saturation is spent and the difficulty is not Peaceful"]
     EX -- "no" --> CHAIN
     DRAIN --> CHAIN["then at most one of the three"]
-    CHAIN --> FAST["heal fast: every 10 ticks, at a full bar, hurt, and the game rule on"]
+    CHAIN --> FAST["heal fast: every 10 ticks, at a full bar, hurt, with saturation left and the game rule on — the heal is funded by that saturation"]
     CHAIN --> SLOW["heal slowly: every 80 ticks, at 18 or more food, hurt, and the game rule on"]
     CHAIN --> STARVE["starve: every 80 ticks at zero food, and not gated on the game rule at all"]
 ```
@@ -113,12 +114,12 @@ sequenceDiagram
     participant CPL as ClientPacketListener
 
     LE->>LE: updateUsingItem — the zero check is server side only
+    SP->>CPL: ClientboundEntityEventPacket(9) — sent first, so the client replays the meal
     LE->>IStack: finishUsingItem — the item decides what finishing means
     IStack->>Cons: onConsume — walks every ConsumableListener on the stack
     Cons->>FP: onConsume — the food component is one such listener
     FP->>FD: eat — nutrition and pre-multiplied saturation, clamped
     Cons->>Cons: onConsumeEffects — server only#59; then consume(1)
-    SP->>CPL: ClientboundEntityEventPacket(9) — the client replays the meal
     SP->>FD: tick — exhaustion drain, then regen or starvation
     SP->>CPL: ClientboundSetHealthPacket — when health, food or zero-saturation changed
 ```
@@ -137,9 +138,11 @@ the server announces it with an entity event, `Player.handleEntityEvent`
 turns that back into `LivingEntity.completeUsingItem`, and the client
 therefore runs `FoodProperties.onConsume` and its `FoodData.eat` locally,
 with no side guard on it. `ClientPacketListener.handleSetHealth` then
-overwrites all three values outright. The client also *reads* its food data
-for two decisions of its own: sprinting is gated on having more than six
-food, and the HUD's food-bar jitter reads saturation.
+overwrites food and saturation outright, and routes health through
+`LocalPlayer.hurtTo`, which works out the delta first so the damage flash
+still plays. The client also *reads* its food data for two decisions of its
+own: sprinting is gated on having more than six food *or* being able to
+fly, and the HUD's food-bar jitter reads saturation.
 
 Eating slowdown is a third component again. **`UseEffects`**
 (`DataComponents.USE_EFFECTS`) is on *every* item —
@@ -156,7 +159,8 @@ whether using an item emits a game event.
 
 `Player.experienceLevel`, `Player.experienceProgress`,
 `Player.totalExperience` and `Player.enchantmentSeed`, plus
-`Player.takeXpDelay`, are the whole of it. The arithmetic is
+`Player.takeXpDelay` and `Player.lastLevelUpTime` — which exists only to
+throttle the level-up sound — are the whole of it. The arithmetic is
 `Player.giveExperiencePoints`, `Player.giveExperienceLevels` and
 `Player.getXpNeededForNextLevel` — the three-segment curve with corners at
 levels 15 and 30.
@@ -164,14 +168,18 @@ levels 15 and 30.
 Where orbs come from is worth naming, because two game rules gate it:
 `LivingEntity.dropExperience` requires the experience not to have been
 consumed already, and either an always-dropper or a recent player kill with
-`GameRules.MOB_DROPS` on; a player's own death drop is
+`GameRules.MOB_DROPS` on and the entity's own
+`LivingEntity.shouldDropExperience` agreeing; a player's own death drop is
 `Player.getBaseExperienceReward`, seven per level capped at 100, unless
-`GameRules.KEEP_INVENTORY`.
+`GameRules.KEEP_INVENTORY` — or unless you are a spectator, which drops
+nothing.
 
 **`ExperienceOrb`** is an `Entity` with `ExperienceOrb.DATA_VALUE` synched
 and `ExperienceOrb.count`, `ExperienceOrb.age`, `ExperienceOrb.health` and
-`ExperienceOrb.followingPlayer` unsynched — though the last two are still
-mutated by the client's own tick, which runs the follow behaviour locally.
+`ExperienceOrb.followingPlayer` unsynched — though `ExperienceOrb.age` and
+`ExperienceOrb.followingPlayer` are still mutated by the client's own tick,
+which runs the follow behaviour locally. `ExperienceOrb.health` is not: only
+`ExperienceOrb.hurtServer` ever writes it.
 `ExperienceOrb.awardWithDirection` splits an amount into denominations via
 `ExperienceOrb.getExperienceValue` (a fixed ladder from 2477 down to 1) and
 calls `ExperienceOrb.tryMergeToExisting` for each; `ExperienceOrb.award` is

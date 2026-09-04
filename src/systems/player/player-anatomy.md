@@ -7,8 +7,9 @@ everything on this page follows from that sentence: the class ladder exists
 to separate *what any living thing does* from *what a thing with an
 inventory and a game mode does* from *what a thing with a connection does*.
 But two of the rungs are not where a reader expects them. **There is an
-abstract class between `LivingEntity` and `Player` that holds no state at
-all**, and **the main hand is not stored anywhere** — the hotbar slot you
+abstract class between `LivingEntity` and `Player` that holds no instance
+state at all**, and **the main-hand item is not stored anywhere** — the
+hotbar slot you
 are looking at and the item `LivingEntity.getMainHandItem` returns are the
 same bytes, aliased through the equipment container a horse also has.
 
@@ -92,8 +93,9 @@ subclass with somewhere to send a packet overrides them.
 | the odds and ends | `Player.gameProfile`, `Player.lastDeathLocation`, `Player.fishing`, `Player.reducedDebugInfo`, `Player.lastItemInMainHand`, `Player.hurtDir`, `Player.jumpTriggerTime`, `Player.wasUnderwater` | — |
 
 None of those four synched values is the hand, which went up to `Avatar`;
-and the *skin* is not synched data at all. It arrives out of band — from the
-tab-list entry for a player, from `Mannequin.DATA_PROFILE` for a mannequin.
+and a *player's* skin is not synched data at all: it arrives out of band,
+from the tab-list entry. A mannequin's does travel as synched data, in
+`Mannequin.DATA_PROFILE`.
 
 **Reach is two attributes, not one.** `Player.blockInteractionRange` and
 `Player.entityInteractionRange` read `Attributes.BLOCK_INTERACTION_RANGE`
@@ -178,8 +180,10 @@ call it — the server from `ServerPlayerGameMode`, the client from
 | attacking | — (`ServerGamePacketListenerImpl` handles it) | `MultiPlayerGameMode.attack`, `MultiPlayerGameMode.interact` |
 | containers | — | `MultiPlayerGameMode.handleContainerInput` |
 
-Neither object is held by the player. `Minecraft.gameMode` holds the client
-one; `ServerPlayer.gameMode` holds the server one. [Block
+Neither object is held by `Player` itself, and only one of them is held by
+a player at all: `Minecraft.gameMode` holds the client one — `LocalPlayer`
+has no such field — while `ServerPlayer.gameMode` is a field on the server
+player. [Block
 interaction](../blocks/block-interaction.md) and [block
 breaking](../blocks/block-breaking.md) own the block halves of both columns,
 and [prediction and acknowledgement](../client/prediction-and-acks.md) owns
@@ -199,10 +203,11 @@ loading](../world/tickets-and-loading.md)) —
 `ServerPlayer.respawnConfig`, `ServerPlayer.camera`,
 `ServerPlayer.textFilter`, `ServerPlayer.wardenSpawnTracker`,
 `ServerPlayer.enderPearls`, `ServerPlayer.containerSynchronizer`, and a row
-of *last sent* fields — `ServerPlayer.lastSentHealth`,
-`ServerPlayer.lastSentFood`, `ServerPlayer.lastSentExp`,
-`ServerPlayer.lastRecordedArmor` and friends — that exist only so the
-server can notice a change and send one packet. It also remembers what the
+of mirror fields that exist so the server can notice a change: the
+`ServerPlayer.lastSentHealth`, `ServerPlayer.lastSentFood` and
+`ServerPlayer.lastSentExp` trio, which turn a difference into one packet,
+and a second row led by `ServerPlayer.lastRecordedArmor`, which turns one
+into a scoreboard criterion update instead. It also remembers what the
 client *said*: `ServerPlayer.lastClientInput` (an `Input`) and
 `ServerPlayer.lastKnownClientMovement`, both explained by [input to
 movement](input-to-movement.md). [Players and
@@ -249,20 +254,28 @@ is read *before* the entity exists, by the configuration-phase spawn task.
 
 **Why does the creative flag not come from my abilities?**
 `Player.isCreative` and `Player.isSpectator` do not read `Abilities` at all;
-they compare `Player.gameMode` against `GameType` constants. Of the ability
-flags, only `Abilities.instabuild` has a narrow readership —
-`Player.hasInfiniteMaterials` and `Player.preventsBlockDrops` — while the
-others are read all over, by `Player.mayBuild`, `Player.isSwimming`,
-`Player.isPushedByFluid` and the pose and damage paths.
+they compare `Player.gameMode` against `GameType` constants. The flags
+themselves are read almost entirely through two accessors on `Player`:
+`Player.hasInfiniteMaterials`, which reads `Abilities.instabuild`, has more
+call sites than every other ability accessor combined — it is the most
+widely read of them, not the narrowest — with `Player.preventsBlockDrops`
+next and `Player.mayBuild`, `Player.isSwimming` and
+`Player.isPushedByFluid` well behind.
 
-**Why does another player's game mode arrive late, and mine not at all?**
-On the client a player's mode comes from the tab list:
+**Whose game mode arrives late — and why is it yours?**
+On the client every player's mode comes from the tab list:
 `AbstractClientPlayer.gameMode` resolves through
-`AbstractClientPlayer.getPlayerInfo`, so it is null until
-`ClientboundPlayerInfoUpdatePacket` has arrived. Your own has a second,
-independent source — `MultiPlayerGameMode.localPlayerMode`, set from the
-spawn info on login and respawn and from the game-event packet — and it is
-the one that drives `Abilities`, block breaking and the creative screen.
+`AbstractClientPlayer.getPlayerInfo`, and returns null when there is no
+entry. For *another* player that window cannot be observed —
+`ClientPacketListener` refuses to spawn a `RemotePlayer` whose `PlayerInfo`
+has not arrived, and a `PlayerInfo` starts at `GameType.DEFAULT_MODE`, so
+their mode is survival until an update packet says otherwise, never null.
+The one player who really does have a null window is **you**: `LocalPlayer`
+is built during login, before your own tab-list entry is sent. What covers
+it is a second, independent source — `MultiPlayerGameMode.localPlayerMode`,
+set from the spawn info on login and respawn and from the game-event packet
+— and that is the one that drives `Abilities`, block breaking and the
+creative screen.
 
 **Why does building permission survive a packet that says otherwise?**
 `Abilities.mayBuild` never goes on the wire, and nothing recomputes it on
@@ -280,8 +293,9 @@ the misspelled constant: `Abilities.DEFAULY_FLYING`.
 **Why does item ticking need two callers?** Because of the forty-three
 slots. `Inventory.tick` runs over the thirty-six ordinary ones from
 `Player.aiStep`, and `EntityEquipment.tick` covers the other seven from
-`LivingEntity.aiStep`; `ServerPlayer.synchronizeSpecialItemUpdates` walks
-all forty-three.
+`LivingEntity.aiStep`; and phase two walks all forty-three separately,
+offering each stack to `ServerPlayer.synchronizeSpecialItemUpdates` for the
+map-update packet a filled map needs.
 
 **What crosses the wire about the player itself?**
 `ClientboundLoginPacket` and `ClientboundRespawnPacket`, both carrying a

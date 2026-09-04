@@ -330,8 +330,39 @@ O is the close.
   `pass4_queue.py` lost a struck bullet's strike across a **blank line**, so
   only the first paragraph of a long entry could ever be settled. Everything in
   [pass4.md](pass4.md).
-- [ ] **Session H — Part VIII The player.** The two-phase tick's callers;
-  the damage pipeline's one number; the spear's two cooldown curves.
+- [x] **Session H — Part VIII The player** *(2026-09-04)*. Seven pages and the
+  landing page, eight agents; **every one had at least one wrong claim**, for a
+  ninth time. Fifty-one corrections. Session I's own checklist came back almost
+  entirely confirmed — so, as in Parts VI and VII, the errors were in what pass
+  3 did not know it had changed, except on `the-spear`, the one page no pass-2
+  agent had ever read, which took twelve. Four carry a lecture: `the-spear`'s
+  **windows are backwards** — for all seven materials `damageTime >
+  knockbackTime > dismountTime`, so an over-long charge loses dismount *first*
+  and damage last, the mirror image of the sentence the "different windows"
+  paragraph existed to deliver; `status-effects`' **stream codec is recursive**
+  and does carry the hidden-effect chain, so the reason the client never sees a
+  masked effect is that `ClientboundUpdateMobEffectPacket` never uses that codec
+  at all, and its `applyInstantaneousEffect` row is wrong twice over (never
+  called from the tick; instantaneous effects pulse *every* tick, and the effect
+  that fires on its last is `RaidOmenMobEffect`); `the-two-phase-tick`'s
+  **"Netty threads never touch player state"** is false of all three chat
+  handlers, which read `getChatVisibility` and call `resetLastActionTime`
+  off-thread, and its two halves are not disjoint — they share a literal
+  duplicated `stillValid`/`closeContainer` block; and `the-sword-swing`'s
+  **one-flush claim** is falsified by its own preceding sentence, session C's
+  packet-drain finding arriving on a Part VIII page. Two hooks fell:
+  `status-effects`' "the client never runs a status effect", refuted by three
+  unguarded movement reads, and the landing page's "the four things it does that
+  nothing else in the world does" — status effects are on every `LivingEntity`
+  and mobs stab with spears. The landing page compressed five separate things
+  into falsehood, including **four attributes unsynced when it is two**, against
+  the book's own generated Reference table. Addition 2 done in full; all eight
+  *before you start* entries used, nine cross-part links judged and none a
+  missing arrow. **No tool bug — the third such session.** Instead the agent was
+  wrong once (the hit-feedback literal is `contactCooldownTicks`) and the
+  session was wrong once, inventing a field that `verify_names.py` then caught —
+  the verifier catching a *fix* rather than a page. Everything in
+  [pass4.md](pass4.md).
 - [ ] **Session I — Part IX Networking.** The round-trip diagram; the phase
   state machine against authlib; the seven handlers that never hop.
 - [ ] **Session J — Part X The client.** The tick arithmetic; the

@@ -7,8 +7,8 @@ what you are looking at — earlier in this same tick — checks a handful of
 reasons not to swing, and sends the smallest packet in melee combat:
 **`ServerboundAttackPacket` is a record of one int, the entity id.** No
 hand, no sneak flag, no hit position, no damage. Everything else the server
-re-derives: the weapon from your main hand, the geometry from two bounding
-boxes, and the damage from an attribute, a cooldown curve applied twice in
+re-derives: the weapon from your main hand, the geometry from the target's
+bounding box measured against your eye, and the damage from an attribute, a cooldown curve applied twice in
 two different shapes, and a multiplication order in which the mace's fall
 bonus lands *before* the critical hit and is therefore multiplied by it.
 
@@ -18,9 +18,9 @@ bonus lands *before* the critical hit and is therefore multiplied by it.
 |---|---|---|
 | `Minecraft` | what you are looking at, and whether the click swings at all | client main |
 | `LocalPlayer` | the raycast, and which range each candidate is judged against | client main |
-| `MultiPlayerGameMode` | sends the attack, and predicts nothing | client main |
+| `MultiPlayerGameMode` | sends the attack, and predicts almost nothing | client main |
 | `ServerGamePacketListenerImpl` | resolves the id, re-checks the range and the item | server main |
-| `Player` | `Player.attack`: one method, and the order inside it is load-bearing | server main |
+| `Player` | `Player.attack`: one method, and the order inside it is load-bearing | both (only the server's answer counts) |
 | `LivingEntity` | the swing animation state, and the two attack clocks | both |
 | `AttackRange` | a weapon's own reach, with a minimum as well as a maximum | — |
 
@@ -91,10 +91,12 @@ The packet is drained from `PacketProcessor` at the **top** of the tick,
 before `MinecraftServer.tickServer` and therefore before any level ticks.
 That ordering matters: `Player.attack` runs before the victim's
 `LivingEntity.baseTick` decrements `Entity.invulnerableTime` for the tick.
-(The counter is declared on `Entity`, decremented in
-`LivingEntity.baseTick`, and skipped entirely for a `ServerPlayer`.) All the
-resulting feedback packets leave in one flush, because the connection
-suspends flushing across `MinecraftServer.tickChildren`.
+(The counter is declared on `Entity` and decremented in
+`LivingEntity.baseTick`, which skips a `ServerPlayer` — because
+`ServerPlayer.tick` decrements it itself, in phase one.) Each of the
+resulting feedback packets is written and flushed on its own: the
+connection suspends flushing only across `MinecraftServer.tickChildren`,
+and the attack was handled before that bracket opened.
 
 ## The trace: one click, one integer, one round trip
 
@@ -186,7 +188,7 @@ durability cost is applied. `Weapon` (`DataComponents.WEAPON`) is a pair:
 that cost, and `Weapon.disableBlockingForSeconds`, the axe's shield-breaking
 rule, read back through `LivingEntity.getSecondsToDisableBlocking`.
 
-`Player.doSweepAttack` damages everything in a box around the **primary
+`Player.doSweepAttack` damages every *living* entity in a box around the **primary
 target** inflated by (1, 0.25, 1), for candidates within three blocks of the
 **attacker**, excluding the attacker, the primary target, allies and marker
 armour stands. Each takes `1.0 + Attributes.SWEEPING_DAMAGE_RATIO × base`,
@@ -210,9 +212,13 @@ declared on `LivingEntity` but read, reset and incremented only from
 `Player`; `Player.getCurrentItemAttackStrengthDelay` is twenty divided by
 `Attributes.ATTACK_SPEED`; `Player.resetAttackStrengthTicker` clears both
 clocks and `Player.resetOnlyAttackStrengthTicker` clears one. `Player.tick`
-also resets them when the main-hand *item* changes — which is what the swap
-ticker is for. The ticker also resets mid-method, and the client resets it a
-*second* time after `Player.attack` returns, while the server resets it once.
+also resets both when the main-hand *item type* changes; what distinguishes
+the swap ticker is that `Player.onAttack` clears the attack ticker and
+leaves it alone, because it exists only to drive the held-item swap
+animation. Both sides then reset twice: once mid-`Player.attack`, and once
+more after it — the client in `MultiPlayerGameMode.attack`, the server on
+the swing packet that follows, because `ServerPlayer.swing` resets the
+ticker too.
 
 **Why does my sword make no sound until the server answers?**
 `ClientLevel.playSeededSound` plays a sound only when the excluded player
@@ -225,13 +231,16 @@ one round trip late.
 overrides it, so on the client `Entity.hurtOrSimulate` reports that the hit
 did not land and the entire block after it is skipped: no predicted
 knockback, no sweep, no visual effects, no durability, no exhaustion. The
-exception is another *player* — `RemotePlayer` overrides it and returns
-true, so the whole block runs locally against them. `Player.getEnchantedDamage`
-does nothing on `Player` either; it returns its argument unchanged and only
-`ServerPlayer` overrides it. With `Attributes.ATTACK_DAMAGE` not being
-client-syncable ([attributes](../entities/attributes.md)), the client's
-damage figure is never authoritative and is not applied to anything but a
-`RemotePlayer` anyway.
+exceptions are the eight classes that do override it, and every one of them
+is something you can hit that is not a mob: another *player*
+(`RemotePlayer`), a boat or minecart (`VehicleEntity`), a painting or leash
+knot (`BlockAttachedEntity`), an item frame, an end crystal, a shulker
+bullet, a dropped item and an experience orb. Against those the whole block
+runs locally. `Player.getEnchantedDamage` does nothing on `Player` either;
+it returns its argument unchanged and only `ServerPlayer` overrides it. With
+`Attributes.ATTACK_DAMAGE` not being client-syncable
+([attributes](../entities/attributes.md)), the client's damage figure is
+never authoritative wherever that block does run.
 
 **Can a weapon be too close to swing?** On the client, yes — `AttackRange`
 has a minimum. On the server, no: the 3.0-block leniency is subtracted from

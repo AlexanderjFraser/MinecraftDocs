@@ -1338,3 +1338,52 @@ worth stopping on") is a list in prose clothing and could be three
 bold-led paragraphs. All four use the *For a 1.21-era reader* blockquote;
 none uses the myth table; three carry a *Questions* closer, so the
 session's own pages score 3 of 4 on the device it just flagged.
+
+## From pass-4 session H — Part VIII The player *(2026-09-04)*
+
+**Openings rewritten around a corrected fact — re-read for voice:**
+
+- `status-effects` — the hook was "The client never runs a status effect …
+  and that is all", which is false of the movement consequences. It is now
+  "The client never runs a `MobEffect` hook", followed by three named
+  unguarded reads (`getJumpBoostPower`, the slow-falling gravity clamp,
+  levitation in `travel`). The paragraph is longer and the "and that is all"
+  cadence is gone; find a shorter shape that keeps the distinction.
+- `player-anatomy` — the *whose game mode arrives late* question was
+  inverted and is now roughly twice as long, because the true version has to
+  say why the other player's window cannot be observed before it can say the
+  window is yours. It reads as an argument rather than an answer.
+- `the-two-phase-tick` — the Netty-threads paragraph grew from an absolute
+  plus a throwaway ("a handful that touch nothing") to a count plus an
+  exception plus the chat mechanism. Correct, but it is now the longest
+  paragraph in a short section.
+- `the-spear` — the *different windows* payoff sentence was replaced by its
+  mirror image with the wooden spear's 5/10/15 as illustration. Check the
+  numbers earn the extra clause.
+
+**Structural findings (not acted on):**
+
+- `status-effects` names `LivingEntity.effectsDirty` and never says what
+  reads it. The consumer is `updateDirtyEffects` ← `updateDataBeforeSync` ←
+  `ServerEntity`, i.e. the server's entity-sync pass — which is the actual
+  mechanism behind the page's own "swirls and no numbers" answer. Naming a
+  field with no reader is the pattern; either say what reads it or drop it.
+- `status-effects` lists `MobEffectCategory` in *Where to look* and never
+  explains it, though it is why the HUD splits icons into two rows.
+- `status-effects` — `MobEffectInstance.compareTo` orders the HUD icons
+  reversed and the inventory list un-reversed, so the two surfaces list
+  effects in opposite orders. One clause, and it is the kind of thing a
+  player notices.
+- `the-sword-swing` — `LivingEntity.getSecondsToDisableBlocking` is
+  presented as an unconditional read-back; it returns the `Weapon` value
+  only when the weapon is also the attacker's *active* item.
+- `the-spear` — the component table is headed "every component that makes
+  one" (now softened to "the combat components"); the durability three,
+  `REPAIRABLE` and `ENCHANTABLE` are still absent. Either the table is
+  complete or the header says which subset it is.
+- `input-to-movement` — "floating" is used without ever defining the
+  condition `clientIsFloating` records, and the jump-inference paragraph sits
+  before the field it depends on is introduced.
+- `player-anatomy` — the page says `Avatar` "exists for the renderer", but
+  `Avatar` is a server class whose other content is the shared player hitbox;
+  the renderer is one consumer, not the reason.

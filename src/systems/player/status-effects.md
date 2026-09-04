@@ -1,15 +1,18 @@
 # Status effects
 
-> Verified against **Minecraft 26.2** · Part VIII · You drink a potion of Poison: the server starts hurting you on a rhythm, and your client does nothing but count and spawn swirls.
+> Verified against **Minecraft 26.2** · Part VIII · You drink a potion of Poison: the server starts hurting you on a rhythm, and your client never runs a single one of the effect's hooks.
 
 Poison II lands. Your health starts dropping in steps, the swirls appear,
 the icon in the corner counts down, and if the connection stutters the
 number in the corner keeps counting anyway. That last part is the whole
-page. **The client never runs a status effect.** It counts durations down,
-advances a blend factor, unhides a masked effect and spawns particles from a
-list the server synched — and that is all. Every attribute modifier, every
-pulse of damage, every regeneration tick happens on the server behind an
-explicit server-side guard, and the client's copy of the duration is
+page. **The client never runs a `MobEffect` hook.** It counts durations
+down, advances a blend factor, unhides a masked effect and spawns particles
+from a list the server synched. It does *read* the effects it holds — jump
+boost in `LivingEntity.getJumpBoostPower`, slow falling in
+`LivingEntity.getEffectiveGravity`, levitation inside `LivingEntity.travel`
+— because that is shared movement code your own player runs unguarded. But
+every attribute modifier, every pulse of damage, every regeneration tick
+happens on the server behind an explicit server-side guard, and the client's copy of the duration is
 corrected by a re-send every six hundred ticks. An **infinite** effect is
 never re-sent at all, because its duration is −1 and −1 never satisfies the
 test.
@@ -18,7 +21,7 @@ test.
 
 | class | what it decides | thread |
 |---|---|---|
-| `MobEffect` | what the effect *does*, and on what rhythm | server main (client: nothing) |
+| `MobEffect` | what the effect *does*, and on what rhythm | server main (the client reads only its colour and blend durations) |
 | `MobEffectInstance` | duration, amplifier, flags, and the masked effect underneath | both main threads |
 | `MobEffects` | the forty built-in holders | — |
 | `LivingEntity` | `LivingEntity.activeEffects`, the tick, and the three server-guarded hooks | both |
@@ -36,8 +39,9 @@ hooks are the interesting part, because one of them is false by default.
 |---|---|
 | `MobEffect.shouldApplyEffectTickThisTick` | every tick, to ask whether this is a pulse — **false by default** |
 | `MobEffect.applyEffectTick` | on a pulse; returning false ends the effect |
-| `MobEffect.applyInstantaneousEffect` | for the instant effects, which pulse on their last tick |
-| `MobEffect.onEffectStarted` / `MobEffect.onEffectAdded` | when it lands |
+| `MobEffect.applyInstantaneousEffect` | never from the tick — only from the splash potion, the lingering cloud and the drink |
+| `MobEffect.onEffectAdded` | when it lands on an entity that did not already have it |
+| `MobEffect.onEffectStarted` | on every successful add, a refresh of an existing effect included |
 | `MobEffect.onMobHurt` | when the holder takes damage |
 | `MobEffect.onMobRemoved` | when the holder goes |
 
@@ -76,8 +80,9 @@ inventory screen uses.
 
 ## The trace: Poison II, on both sides at once
 
-Effects are ticked from `LivingEntity.tickEffects`, the **last** thing
-`LivingEntity.baseTick` does — which for a player means inside
+Effects are ticked from `LivingEntity.tickEffects`, the last call
+`LivingEntity.baseTick` makes before it copies this tick's rotations into
+last tick's — which for a player means inside
 `ServerPlayer.doTick`, the connection-driven half of [the two-phase
 tick](the-two-phase-tick.md), not the level's entity tick.
 
@@ -90,16 +95,16 @@ sequenceDiagram
     participant SP as ServerPlayer
     participant CPL as ClientPacketListener
 
-    LE->>MEI: addEffect — update masks any weaker instance as hiddenEffect
-    LE->>ME: onEffectAdded — server-guarded, like onEffectUpdated and onEffectsRemoved
+    LE->>MEI: update — masks any weaker instance as hiddenEffect
+    LE->>ME: addAttributeModifiers — from LivingEntity.onEffectAdded, server-guarded
     ME->>AttrI: addPermanentModifier — amount linear in amplifier + 1
-    SP->>CPL: ClientboundUpdateMobEffectPacket — one instance, four flag bits
+    SP->>CPL: ClientboundUpdateMobEffectPacket — amplifier, duration, four flag bits
     Note over LE: every tick after this
     LE->>MEI: tickServer — count down, and ask for a pulse
     MEI->>ME: shouldApplyEffectTickThisTick — every 25 ≫ amplifier for poison
-    ME->>LE: applyEffectTick — the pulse itself, and false here ends the effect
-    Note over CPL: the client, in the same tick
-    CPL->>MEI: tickClient — count down, unhide, advance the blend, spawn particles
+    MEI->>ME: applyEffectTick — the pulse itself, and false here ends the effect
+    Note over LE: the client, in its own tick
+    LE->>MEI: tickClient — count down, unhide, advance the blend
 ```
 
 The client branch of `LivingEntity.tickEffects` never calls
@@ -126,11 +131,14 @@ synched particle list, which is why other entities have swirls and no
 numbers.
 
 **Where did my weaker effect go?** Under the stronger one.
-`MobEffectInstance.hiddenEffect` is a stack, and it survives a save:
-the save codec *is* recursive. The **stream codec is not** —
-`ClientboundUpdateMobEffectPacket` carries one instance plus flag bits for
-ambient, visible, icon and blend, and never the chain — so the client
-learns about the masked effect only when it surfaces.
+`MobEffectInstance.hiddenEffect` is a stack, and both of its codecs are
+recursive, so both the save and the wire *can* carry the chain. The packet
+does not: **`ClientboundUpdateMobEffectPacket` never uses that stream codec
+at all**, writing an entity id, a `MobEffect` holder, an amplifier, a
+duration and a flags byte by hand — so the client rebuilds an instance with
+no hidden effect under it, and learns about the masked one only when
+`MobEffectInstance.downgradeToHiddenEffect` surfaces it and triggers a
+re-send.
 
 **Why does Nausea swim in and out, but Poison just starts?** Blending is a
 pure render quantity: `MobEffectInstance`'s blend state ticks only on the
@@ -139,10 +147,14 @@ client, is never saved and never sent, and only `MobEffects.NAUSEA` and
 first added — an update clears it, and the client responds by skipping the
 blend.
 
-**Why are a beacon's swirls so faint?** Ambient does not choose different
-particles; it makes them rarer. The client spawns one particle from the
-synched list with a probability that an invisible entity divides by about
-four and an ambient effect by a further five.
+**Why are a beacon's swirls so faint?** Twice over. The default particle
+factory bakes ambience into the `ParticleOptions` itself — alpha 38 of 255
+instead of opaque — so an ambient effect really does synch a different,
+fainter particle; and it also makes them rarer, because the client spawns
+one particle from the synched list with a probability that an invisible
+entity divides by about four and a further five when **every** effect on
+the entity is ambient, which is what `LivingEntity.DATA_EFFECT_AMBIENCE_ID`
+records.
 
 **Does an effect pulse on its own clock or the world's?** Both, depending on
 whether it ends. `MobEffectInstance.tickServer` counts an infinite-duration
@@ -157,8 +169,9 @@ removes another quietly aborts the loop it was in.
 `ClientboundRemoveMobEffectPacket` for the effects you hold, and
 `LivingEntity.DATA_EFFECT_PARTICLES` through [synched entity
 data](../entities/synched-entity-data.md) for everyone else's swirls.
-Effects themselves are data-driven through `BuiltInRegistries.MOB_EFFECT`,
-and the ways they land — `PotionContents`, `SuspiciousStewEffects`,
+Effects themselves are code, registered into `BuiltInRegistries.MOB_EFFECT`
+by `MobEffects` with no JSON behind them; what is data-driven is the ways
+they land — `PotionContents`, `SuspiciousStewEffects`,
 `ApplyStatusEffectsConsumeEffect` and its siblings — are [using an
 item](../items/using-an-item.md) and [hunger and
 experience](hunger-and-experience.md).

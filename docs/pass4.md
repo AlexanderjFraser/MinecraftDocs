@@ -87,6 +87,230 @@ entry first.
 
 ## Entries
 
+## Session H — Part VIII The player (pass 4) *(2026-09-04)*
+
+Seven pages and the landing page, eight agents; **every one had at least one
+wrong claim**, which is pass 2's finding for a ninth time. Fifty-one
+corrections. Session I's own checklist came back almost entirely confirmed —
+the class ladder, the crit gate, the `AttackRange` numbers, the nine
+components, the spear hook, the mob roster, the deleted authority matrix,
+the `FoodData.tick` *at most one of three* — so, as in Parts VI and VII, the
+errors were in what pass 3 did not know it had changed. The exception is
+`the-spear`, flagged in the queue as *check first and hardest* because no
+pass-2 agent had ever read those classes: it took twelve.
+
+**`the-spear` — the windows are the wrong way round.** The page said a
+charge that has run too long "can still knock a target off a horse while no
+longer doing damage". It is exactly backwards. `Item.Properties.spear` takes
+`dismountTime, dismountThreshold, knockbackTime, knockbackThreshold,
+damageTime, damageThreshold` in that order (`world/item/Item.java:509-510`),
+and for all seven materials `damageTime > knockbackTime > dismountTime` —
+wooden 15.0 > 10.0 > 5.0 seconds, netherite 8.75 > 5.5 > 2.5
+(`world/item/Items.java:1417-1423`). Dismount has the shortest window *and*
+the highest speed bar (9.0–14.0 against 5.1 and 4.6), so an over-long charge
+loses dismount first and damage last. → the paragraph now says a long charge
+can still hurt when it can no longer dismount, with the wooden spear's
+5/10/15 as the illustration.
+
+Four more on the same page. **`KineticWeapon.HIT_FEEDBACK_TICKS` is read by
+nothing** — the throttle is a bare `10L` in `LivingEntity.onKineticHit`
+(`world/entity/LivingEntity.java:2282`); the constant that names the number
+has no reader. → said outright. **`KineticWeapon.forwardMovement` is read by
+`SpearAnimations`' *third-person* methods**, not its first-person one: the
+two reads are at `client/…/SpearAnimations.java:62` and `:86`, inside
+`thirdPersonUseItem` and `thirdPersonAttackItem`. → corrected. **"All of it
+[is data-driven]"** → the components are codec-backed, but every built-in
+spear's numbers are hard-coded in `Item.Properties.spear`, not read from
+JSON. **"the one melee attack whose hit count is not one"** → the sword's
+sweep and the spear's own charge both hit many. Also: the stab tail runs
+`onAttack` and `postPiercingAttack` *before* the sounds, not after
+(`world/item/component/PiercingWeapon.java:91-96`); the ray-walk hit list is
+not sorted by distance; an `Interaction` short-circuits the filter before
+the same-vehicle test, so that "never" was false; and the seven materials
+differ in more than numbers — netherite is `.fireResistant()` and wood has
+its own sounds.
+
+**`status-effects` — the reason the client never sees a masked effect was
+false, and the answer it explains was right anyway.** The page said "the
+stream codec is not [recursive]". `MobEffectInstance.Details.STREAM_CODEC`
+**is** built with `StreamCodec.recursive` and does carry the hidden-effect
+chain (`world/effect/MobEffectInstance.java:402-404`); what is true is that
+`ClientboundUpdateMobEffectPacket` never uses it, writing an entity id,
+holder, amplifier, duration and a flags byte by hand
+(`network/protocol/game/ClientboundUpdateMobEffectPacket.java:58-64`). →
+rewritten around the packet, with `downgradeToHiddenEffect` as the re-send
+trigger. The hook-table row for **`MobEffect.applyInstantaneousEffect`** was
+wrong twice: it is never called from the tick (its three call sites are
+`ThrownSplashPotion`, `AreaEffectCloud` and `PotionContents`), and
+instantaneous effects pulse on *every* tick they have duration left
+(`world/effect/InstantaneousMobEffect.java:15-17`) — the effect that fires
+on its last tick is `RaidOmenMobEffect` (`:16-17`). **The hook itself
+overreached**: "the client never runs a status effect" is false of the
+movement consequences — `LivingEntity.getJumpBoostPower` (`:2511`),
+`getEffectiveGravity`'s slow-falling clamp (`:2558`) and levitation inside
+`travel` (`:2606`) are unguarded shared code the local player runs. → "the
+client never runs a `MobEffect` hook", with the three reads named.
+`MobEffectInstance.tickClient` does **not** spawn particles (`:222-229`) —
+the particle block is in `LivingEntity.tickEffects` after the loop
+(`:904-913`), and its caller is that method, not `ClientPacketListener`; the
+Poison trace's closing arrow named the wrong class twice. `tickEffects` is
+not "the last thing `LivingEntity.baseTick` does" — four rotation copies and
+a profiler pop follow it (`:494-499`). Ambient does **not** only make swirls
+rarer: `MobEffect`'s default particle factory bakes alpha 38 of 255 into the
+`ParticleOptions` itself (`world/effect/MobEffect.java:60-64`), so it synchs
+a fainter particle *and* thins them — and the ×5 applies only when **every**
+effect on the entity is ambient. And effects are not "data-driven through
+`BuiltInRegistries.MOB_EFFECT`": that is a code registry with no JSON behind
+it.
+
+**`the-two-phase-tick` — four of the trunk's confident sentences.**
+"`tickPlayer` is three statements around one call" → it is eight statements
+plus the floating-too-long kick and the vehicle record-and-check, all in the
+same method (`server/network/ServerGamePacketListenerImpl.java:318-364`).
+"Nothing reaches the socket until the end of the server tick" →
+`Connection.tick` calls `channel.flush()` on the line after it runs the
+listener that called `doTick` (`network/Connection.java:399-401`). "Netty
+threads never touch player state: the handlers all begin by deferring" → 52
+of the 61 game handlers defer; all three chat handlers reach
+`ServerGamePacketListenerImpl.tryHandleChat`, which reads
+`ServerPlayer.getChatVisibility` and calls `resetLastActionTime` **on the
+Netty thread** before `MinecraftServer.execute` (`:1829-1836`). And the two
+halves are not "disjoint": `ServerPlayer.tick`
+(`server/level/ServerPlayer.java:662-665`) and `doTick` (`:729-732`) run the
+identical `stillValid`/`closeContainer` block. → all four corrected in
+place, and the *which half* question now says the menu's **change
+broadcast** is phase one.
+
+**`the-sword-swing` — the packet-drain punchline again, from the other
+side.** "All the resulting feedback packets leave in one flush, because the
+connection suspends flushing across `MinecraftServer.tickChildren`" is
+falsified by the page's own preceding sentence: `handleAttack` defers with
+`ensureRunningOnSameThread` and therefore runs in `processQueuedPackets`
+(`server/MinecraftServer.java:1122`) *before* `tickServer` (`:1124`), so
+`suspendFlushingOnServerThread` is false and each packet is a
+`writeAndFlush` (`server/network/ServerCommonPacketListenerImpl.java:171`).
+This is session C's finding arriving on a Part VIII page. Also: "the server
+resets it once" → `ServerPlayer.swing` calls `resetAttackStrengthTicker`
+(`ServerPlayer.java:2082-2085`), so the swing packet resets it a second time
+exactly as the client does; "the exception is another *player*" → **eight**
+classes override `Entity.hurtClient` and every one is something attackable
+that is not a mob (`RemotePlayer`, `VehicleEntity`, `BlockAttachedEntity`,
+`ItemFrame`, `EndCrystal`, `ShulkerBullet`, `ItemEntity`, `ExperienceOrb`);
+"`MultiPlayerGameMode` predicts nothing" → it calls `Player.attack` locally
+and resets the ticker that drives the attack indicator; "skipped entirely
+for a `ServerPlayer`" → `ServerPlayer.tick` decrements `invulnerableTime`
+itself (`:657-658`); "the geometry from two bounding boxes" → the server
+measures one, the target's, against the attacker's eye
+(`ServerGamePacketListenerImpl.java:2028-2031`); and the sweep damages every
+*living* entity in the box, not everything.
+
+**`player-anatomy` — the closer had two sentences backwards.** "Why does
+another player's game mode arrive late, and mine not at all?" is the wrong
+way round: a `RemotePlayer` **cannot** exist without its `PlayerInfo`
+(`ClientPacketListener.createEntityFromPacket` refuses to spawn one,
+`:617-624`) and `PlayerInfo.gameMode` starts at `GameType.DEFAULT_MODE`
+(`client/multiplayer/PlayerInfo.java:19,28`), so another player's mode is
+survival until told otherwise, never null. The player with a real null
+window is **you** — `LocalPlayer` is built during login, before your own
+tab-list entry is sent. → the question is now "whose game mode arrives late
+— and why is it yours". Second: "only `Abilities.instabuild` has a narrow
+readership" inverts the counts — `Player.hasInfiniteMaterials` has 52 call
+sites against `preventsBlockDrops` 8, `mayBuild` 6, `isSwimming` 16 and
+`isPushedByFluid` 2; it is the *most* widely read ability accessor. Third, a
+pass-3 regression on a correct pass-2 sentence: "**Neither object is held by
+the player**" is false of `ServerPlayer.gameMode`, a field
+(`ServerPlayer.java:233`) — only the client half holds. Also:
+`lastRecordedArmor` sends no packet, it fires a scoreboard criterion
+(`:780-782`); a *player's* skin is not synched data but a mannequin's is
+(`Mannequin.DATA_PROFILE`); and `synchronizeSpecialItemUpdates` takes one
+stack — it is `doTick` that walks the forty-three.
+
+**`input-to-movement` — a dead test and a wrong sender.** "refuses to
+interpolate a jump of more than 4096 blocks squared" describes a branch the
+player path never reaches: `ClientPacketListener.handleMovePlayer` passes
+`interpolate` as a literal `false` (`:841`), so the 4096 test at `:852`
+gates nothing here and your own player is always snapped. → said as such.
+`Player.tryToStartFallFlying` **sends nothing** — it tests three conditions
+and sets a flag (`world/entity/player/Player.java:1438-1445`), and is the
+method the *server* runs on receipt; the send is `LocalPlayer.aiStep`
+(`client/player/LocalPlayer.java:907-909`). The page's opening line called a
+tick "a fiftieth of a second"; 20 TPS makes it a **twentieth**. Sprint
+particles do not read `getKnownMovement` at all
+(`Entity.spawnSprintParticle` uses `getDeltaMovement`, `:1812-1817`); the
+real consumers are sweep eligibility, the kinetic weapon, projectile
+inheritance and leash physics. Two absolutes narrowed: "the only place the
+server position advances" and "the authoritative position only ever moves in
+`handleMovePlayer` or through a teleport" are both broken by riding, where
+`Entity.rideTick` → `positionRider` moves you every tick — which the page
+itself describes three sections later.
+
+**`hunger-and-experience` — both figures.** The `FoodData.tick` flowchart's
+drain node said "drain 4.0 into saturation"; 4.0 leaves *exhaustion* and
+saturation loses **1.0** (`world/food/FoodData.java:39-45`). The eat
+sequence put `ClientboundEntityEventPacket(9)` after the eat chain;
+`ServerPlayer.completeUsingItem` sends it **before**
+`super.completeUsingItem()` (`ServerPlayer.java:1705-1711`). In prose:
+`ExperienceOrb.health` is never touched client-side — only `hurtServer`
+writes it — so the two the client's tick mutates are `age` and
+`followingPlayer`; `handleSetHealth` does not overwrite health outright, it
+routes through `LocalPlayer.hurtTo`; sprinting is gated on enough food
+**or** `Abilities.mayfly`; `ServerPlayer.tickRegeneration` *is* the Peaceful
+refill, not a third thing beside it; `Player.lastLevelUpTime` is a sixth XP
+field; and both drop conditions had a conjunct missing
+(`shouldDropExperience`, and spectators drop nothing). The page's strongest
+claim held: every constant in `FoodConstants` is dead and only
+`saturationByModifier` has callers.
+
+**The landing page compressed five things into falsehood.** "Four of them
+are not synced to the client", of reach, attack damage, attack speed,
+sweeping ratio and knockback → **two**: only `ATTACK_DAMAGE` and
+`ATTACK_KNOCKBACK` lack `setSyncable(true)`
+(`world/entity/ai/attributes/Attributes.java:14-15`), which the book's own
+generated `reference/attributes.md` already said. "The four things it does
+that nothing else in the world does" → status effects live on every
+`LivingEntity` and mobs stab with spears (`SpearUseGoal`, `SpearAttack`);
+now "that the rest of the world does differently". "An abstract class with
+no fields at all" → `Avatar` declares eleven, all static: **no instance
+fields**. "The six components that make an item a weapon" → no population
+yields six; the spear carries eight. "The file of named thresholds is
+referenced by nothing" → `FoodConstants` has two callers; it is its
+*constants* that are dead. Also "five classes" (the anatomy page's cast is
+eight), "three rungs added" (three on the server, four on the client), "a
+key shorter than a tick" (movement keys only), the inventory's "lies about
+one slot" (it reports seven it does not store and aliases an eighth), and
+the causal inversion in *before you start*: client authority is why the
+server's answer is **thrown away**, not why the pipeline runs — that is the
+separate `Player.canSimulateMovement` override. `lectures.md` carried four
+of these and is fixed with it.
+
+**Addition 2 done in full.** All eight *before you start* entries are used
+by a sentence in the part (`entity-anatomy` at `player-anatomy.md:43`,
+`authority` on three pages, `server-tick` and `server-level-tick` on
+`the-two-phase-tick`, `players-and-sessions` at `player-anatomy.md:209`,
+`using-an-item` on four pages, and the two part-level READMEs).
+`check_deps.py` is green for Part VIII with nothing unused. The nine
+cross-part links it reports as *linked but not listed* were each judged and
+none is a missing arrow: all are hand-offs ("owns this", "from there it is
+ordinary movement and collision") into a part already named as the hard
+prerequisite.
+
+**No tool bug — the third such session.** Instead the **agent was wrong once
+and the session was wrong once**. The agent claimed `Item.Properties.spear`
+"passes the hit-feedback throttle as a literal"; the literal `10` in that
+constructor call is `contactCooldownTicks`, the record's *first* component
+(`KineticWeapon.java:31`) — the throttle literal is in
+`LivingEntity.onKineticHit` instead, which is what the page now says. The
+session's own first draft of that fix then invented a field
+`KineticWeapon.hitFeedbackTicks` that does not exist, and
+`verify_names.py` caught it — the verifier catching a *fix* rather than a
+page.
+
+**The bare-`README` routing wart bit again** (session G's
+`docs/pass4.md:583`, still open): session F's note on **Part VI's** landing
+page came back on this part's checklist. Unchanged verdict — the tool should
+refuse a bare `README` — and nothing on this page followed from it.
+
+
 ## Session G — Part VII Items and inventories (pass 4) *(2026-09-04)*
 
 Eight pages and the landing page, one adversarial agent each; the order work,
@@ -4611,16 +4835,16 @@ graph — seventeen edges, each a conversion claim); one added
   on the vocabulary and on nothing of each other, and that Part XIII needs
   `contexts-and-predicates`. Both are orderings to check.
 
-- **Session I (Part VIII The player), 2026-09-03.** Seven pages: two rewritten
+~~- **Session I (Part VIII The player), 2026-09-03.** Seven pages: two rewritten
   in place (`player-anatomy`, `the-sword-swing`), one edited hard
   (`input-to-movement`), one renamed (`hunger-xp-and-effects` →
   `hunger-and-experience`) and three new (`the-two-phase-tick`,
   `status-effects`, `the-spear`), plus the landing page. Everything except
   `the-spear` is pass-2 prose re-cut; **`the-spear` is entirely new material
   and should be checked first and hardest**, because no pass-2 agent has ever
-  read those classes.
+  read those classes.~~
 
-  **`the-spear`'s claims, all from `PiercingWeapon`, `KineticWeapon`,
+  ~~**`the-spear`'s claims, all from `PiercingWeapon`, `KineticWeapon`,
   `Item.Properties.spear`, `LivingEntity.stabAttack`, `Player.stabAttack`,
   `Minecraft.startAttack`, `MultiPlayerGameMode.piercingAttack`,
   `ServerGamePacketListenerImpl.handlePlayerAction` and `ItemStack.onUseTick`:**
@@ -4651,18 +4875,18 @@ graph — seventeen edges, each a conversion claim); one added
   and a stab is not. Also check the mob roster (`SpearUseGoal`,
   `SpearApproach`, `SpearAttack`, `SpearRetreat`; `Zombie`, `ZombifiedPiglin`,
   `PiglinAi`) and the claim that `KineticWeapon.forwardMovement` is read only
-  by `SpearAnimations`.
+  by `SpearAnimations`.~~
 
-  **One pass-2 claim was corrected while redrawing.** `the-sword-swing`'s old
+  ~~**One pass-2 claim was corrected while redrawing.** `the-sword-swing`'s old
   numbered list gave `Player.canCriticalAttack` as the crit gate; the crit is
   `fullStrengthAttack && canCriticalAttack`, so the attack-strength scale
   above 0.9 is part of the crit condition and the page now says so. Re-derive
   it, and with it the whole flowchart, which is the session's one figure that
   asserts an arithmetic **order**: base and boost are scaled separately, the
   item bonus is added to the base *before* the ×1.5, and the boost is added
-  after it.
+  after it.~~
 
-  **Claims moved rather than written.** The authority matrix was **deleted**
+  ~~**Claims moved rather than written.** The authority matrix was **deleted**
   from `input-to-movement` and `player-anatomy` and replaced by a link to
   `entities/authority.md` plus two named consequences (fall damage via
   `Entity.doCheckFallDamage`; the ground flag). Check that nothing true was
@@ -4670,20 +4894,20 @@ graph — seventeen edges, each a conversion claim); one added
   Part VI page. The record–simulate–snap-back bracket and the whole *when it
   runs* material moved from `player-anatomy` to `the-two-phase-tick`; the
   effects third of `hunger-xp-and-effects` moved whole to `status-effects`,
-  and `UseEffects` stayed with the hunger page while `the-spear` links to it.
+  and `UseEffects` stayed with the hunger page while `the-spear` links to it.~~
 
-  **The diagrams.** Seven figures. New: the class ladder
+  ~~**The diagrams.** Seven figures. New: the class ladder
   (`player-anatomy`, a flowchart replacing an ASCII tree), the damage flow
   (`the-sword-swing`), the two-entries-one-exit flowchart (`the-spear`), the
   `FoodData.tick` chain (`hunger-and-experience`), the part-shape flowchart
   (landing page). Redrawn: the two-phase sequence (lanes corrected, and it
   now shows the bracket), the Poison trace (`status-effects`, new). Check the
   `FoodData.tick` flowchart's *at most one of three* claim and the ordering
-  inside the two-phase diagram arrow by arrow.
+  inside the two-phase diagram arrow by arrow.~~
 
-  **The landing page and `lectures.md`** claim that only the sword swing and
+  ~~**The landing page and `lectures.md`** claim that only the sword swing and
   the spear have an internal order, that Part VIII depends on Part VI's
-  authority above everything, and that the spear needs `using-an-item`.
+  authority above everything, and that the spear needs `using-an-item`.~~
 
 - **2026-09-03, pass 3 session J — Part IX Networking.** Four of the five
   pages rewritten (`the-connection` 550→442, `packets-and-stream-codecs`

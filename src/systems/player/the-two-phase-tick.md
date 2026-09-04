@@ -5,7 +5,9 @@
 Every other entity on the server is ticked once, by the level it stands in.
 A player is ticked twice: once from the level's entity loop, and once from
 its own connection, after every level in the game has finished. The two
-halves share no work — the first never calls up into `Player.tick` at all —
+halves share almost no work — the first never calls up into `Player.tick`
+at all, and the one block they have in common is the container-validity
+check —
 and the second half is stranger still. **The connection records where the
 player is, runs the entire physics pipeline, and then puts the player back
 where it found them.** The server simulates your movement in full, every
@@ -17,7 +19,7 @@ is the number the anti-cheat compares your reported motion against.
 | class | what it decides | thread |
 |---|---|---|
 | `ServerLevel` | phase one: ticks the player in entity order, inside the level tick | server main |
-| `ServerPlayer` | both halves — `ServerPlayer.tick` and `ServerPlayer.doTick` are disjoint | server main |
+| `ServerPlayer` | both halves — `ServerPlayer.tick` and `ServerPlayer.doTick` overlap in one block only | server main |
 | `ServerGamePacketListenerImpl` | phase two: the record–simulate–snap-back bracket | server main |
 | `Player` | `Player.tick` and `Player.aiStep`, reached only from phase two | both |
 | `Inventory` | the thirty-six ordinary slots' per-tick item hook | both |
@@ -94,11 +96,13 @@ sequenceDiagram
 
 ## The bracket, and what survives it
 
-`ServerGamePacketListenerImpl.tickPlayer` is three statements around one
-call. It **records** the player's current position into the `firstGood…`
-and `lastGood…` fields, runs `ServerPlayer.doTick`, and then snaps the
-player back to the recorded position with `Entity.absSnapTo`, keeping only
-the rotation. The authoritative position moves in
+`ServerGamePacketListenerImpl.tickPlayer` is a bracket around one call.
+It **records** the player's current position into the `firstGood…` and
+`lastGood…` fields, runs `ServerPlayer.doTick`, and then snaps the player
+back to the recorded position with `Entity.absSnapTo`, keeping only the
+rotation. The rest of the method is the anti-cheat that rides along in the
+same bracket: the *floating too long* kick, and the same record-and-check
+done again for the vehicle the player is steering. The authoritative position moves in
 `ServerGamePacketListenerImpl.handleMovePlayer` or in a teleport, never
 here.
 
@@ -108,9 +112,9 @@ movement](input-to-movement.md)) — plus everything non-positional the tick
 did: drowning, burning, effects, hunger, the last-sent diffs. Both halves
 run every tick whether or not a packet arrived, and packets are drained
 before either of them. Everything the client must be *told* about its own
-player is written during phase two, but nothing reaches the socket until the
-end of the server tick, when flushing resumes ([the server
-tick](../server/server-tick.md)).
+player is written during phase two, and it leaves at once: `Connection.tick`
+flushes the channel on the line after it has run the listener that called
+`ServerPlayer.doTick` ([the server tick](../server/server-tick.md)).
 
 The pairing that makes this necessary is [Part VI's
 authority](../entities/authority.md): `Player.isClientAuthoritative` is an
@@ -129,17 +133,22 @@ inside `LocalPlayer.aiStep`, so input is **sampled inside the tick**, not
 pushed from the key callback — though the method doing the sampling is
 `KeyboardInput.tick`; `ClientInput.tick` itself is empty.
 
-Netty threads never touch player state: the handlers that read or write it
-all begin by deferring to the owning thread ([the server
-tick](../server/server-tick.md) covers the mechanism). A
-handful that touch nothing — the ping reply, an empty custom-payload hook —
-do not bother.
+Netty threads mostly do not touch player state: fifty-two of the sixty-one
+game handlers open by deferring to the owning thread ([the server
+tick](../server/server-tick.md) covers the mechanism). The exceptions are
+worth knowing, because they are not all trivial. Two really do touch
+nothing — the ping reply and an empty custom-payload hook. But all three
+chat handlers reach `ServerGamePacketListenerImpl.tryHandleChat`, which
+reads `ServerPlayer.getChatVisibility` and calls
+`ServerPlayer.resetLastActionTime` **on the Netty thread** before handing
+the rest to `MinecraftServer.execute`.
 
 ## Questions players ask
 
 **If the server ticks my player from the connection, does a silent client
 stop being ticked?** No. `ServerPlayer.doTick` runs every tick regardless of
-traffic, and so does `ServerPlayer.tick`. What stops a silent client moving
+traffic, and so does `ServerPlayer.tick`; the one thing that stops phase two
+is `MinecraftServer.isPaused`, which only an integrated server reports. What stops a silent client moving
 is not a missing tick — it is the snap-back, which undoes every position the
 simulation produced.
 
@@ -150,8 +159,8 @@ which is false for a `ServerPlayer`. The damage is applied instead by
 client's own reported delta.
 
 **Which half does the thing I am looking for?** If it is the world acting on
-the player — the menu, the breaking timer, the spectator camera, the
-advancement criteria — phase one. If it is the player acting — physics,
+the player — the menu's change broadcast, the breaking timer, the spectator
+camera, the advancement criteria — phase one. If it is the player acting — physics,
 hunger, effects, item ticking, the packets that report a changed number —
 phase two.
 

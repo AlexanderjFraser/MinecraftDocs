@@ -2,7 +2,7 @@
 
 > Verified against **Minecraft 26.2** · Part VIII · W is pressed: the key becomes a boolean, the boolean becomes a velocity, the velocity becomes a packet, and the server decides whether to believe it.
 
-You press W. Nothing happens for up to a fiftieth of a second, because the
+You press W. Nothing happens for up to a twentieth of a second, because the
 key was not pushed anywhere — it was written into a boolean that the next
 tick will read. That tick turns seven booleans into a velocity, the velocity
 into a position, and the position into a packet; the server then decides
@@ -18,7 +18,7 @@ because that is the number the anti-cheat subtracts from what you reported.
 
 | class | what it decides | thread |
 |---|---|---|
-| `KeyboardHandler` | that a key went down — and nothing else | client main |
+| `KeyboardHandler` | that a key went down, when nothing is in the way of it | client main |
 | `KeyMapping` | what that key is bound to, and whether it is held | client main |
 | `KeyboardInput` | seven booleans and a normalised vector, once per tick | client main |
 | `LocalPlayer` | the movement itself, and what is worth sending | client main |
@@ -124,9 +124,11 @@ checks are inline literals; the only named ones nearby are
 
 Keys are **sampled inside the tick, not pushed from the callback.** The
 GLFW callback builds a `KeyEvent` and immediately defers to the client's
-main thread with `BlockableEventLoop.execute`; `KeyboardHandler.keyPress`
-only sets `KeyMapping.isDown` and bumps `KeyMapping.clickCount` — and
-only when no screen is open. Releases are always delivered, which is the
+main thread with `BlockableEventLoop.execute`; the *movement* half of
+`KeyboardHandler.keyPress` sets `KeyMapping.isDown` and bumps
+`KeyMapping.clickCount`, and does even that only when no screen is open.
+Everything else the method does — the screen's own key handling, the debug
+keys, the pause — never reaches a `KeyMapping` at all. Releases are always delivered, which is the
 asymmetry the toggle-restoring machinery above exists to repair. The read
 happens once per game tick, deep inside `LocalPlayer.aiStep`, which calls
 `ClientInput.tick`.
@@ -169,7 +171,7 @@ sequenceDiagram
     LP->>SGPL: ServerboundPlayerInputPacket — only when the key set changed
     LP->>SGPL: ServerboundMovePlayerPacket.PosRot — sendPosition decides which variant
     SGPL->>SGPL: moved too quickly? — squared delta vs getDeltaMovement, budget 100 or 300
-    SGPL->>SP: move(MoverType.PLAYER) — the only place the server position advances
+    SGPL->>SP: move(MoverType.PLAYER) — where the server applies the position you reported
     SGPL->>SGPL: moved wrongly? — residual over 0.0625, or a new collider
     SGPL->>LP: ClientboundPlayerPositionPacket — rubber-band, awaiting an ack
     SGPL->>SP: doTick — simulate the whole tick, then absSnapTo(firstGood…) and discard
@@ -272,9 +274,11 @@ behalf.
 **Where velocity comes from.** The reported delta is stored by
 `ServerPlayer.setKnownMovement`, and
 `ServerGamePacketListenerImpl.handleClientTickEnd` zeroes it if no move
-packet arrived that tick. That is what everything downstream — attack
-strength, sprint particles — actually reads, and it is why a client that
-stops sending is treated as stationary rather than as still coasting.
+packet arrived that tick. That is what everything downstream reads when it
+wants the player's velocity — whether a swing sweeps, what a spear's charge
+does, the speed a fired projectile inherits, leash physics — and it is why a
+client that stops sending is treated as stationary rather than as still
+coasting.
 
 **The teleport handshake.** `ServerGamePacketListenerImpl.teleport` bumps
 `ServerGamePacketListenerImpl.awaitingTeleport`, moves the player with `Entity.teleportSetPosition`,
@@ -289,13 +293,16 @@ with `ServerboundAcceptTeleportationPacket` *and* an immediate
 `BlockStatePredictionHandler.onTeleport` to drop its outstanding block
 predictions ([block interaction](../blocks/block-interaction.md)). On the
 receiving end `ClientPacketListener.handleMovePlayer` applies the position
-only when the player is not a passenger, and refuses to interpolate a jump
-of more than 4096 blocks squared. `ClientboundPlayerRotationPacket` is the
-rotation-only sibling.
+only when the player is not a passenger, and never interpolates: it passes
+the interpolate flag as a literal false, so your own player is always
+snapped, and the 4096-blocks-squared jump test that gates interpolation is
+reached only on the entity-teleport path.
+`ClientboundPlayerRotationPacket` is the rotation-only sibling.
 
-**Elytra** is its own round trip:
-`Player.tryToStartFallFlying` sends
-`ServerboundPlayerCommandPacket.Action.START_FALL_FLYING`, the server may
+**Elytra** is its own round trip: `LocalPlayer.aiStep` asks
+`Player.tryToStartFallFlying` and, if it says yes, sends
+`ServerboundPlayerCommandPacket.Action.START_FALL_FLYING` — the server runs
+the same method on receipt. The server may
 disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
 `LivingEntity.updateFallFlying` and `LivingEntity.travelFallFlying`.
 
@@ -336,9 +343,10 @@ the `firstGood…` and `lastGood…` fields, calls `ServerPlayer.doTick` — the
 whole `LivingEntity.aiStep` / `LivingEntity.travel` / `Entity.move` pipeline
 runs server-side — and then puts the player back with `Entity.absSnapTo`,
 keeping the rotation. The simulation exists for `Entity.getDeltaMovement`,
-the *expected* distance the check subtracts. The authoritative position only
-ever moves in `ServerGamePacketListenerImpl.handleMovePlayer` or through a
-teleport. [The two-phase tick](the-two-phase-tick.md) is that bracket seen
+the *expected* distance the check subtracts. On foot the authoritative
+position moves only in `ServerGamePacketListenerImpl.handleMovePlayer` or
+through a teleport; the exception is riding, where the vehicle repositions
+you through `Entity.rideTick` every tick. [The two-phase tick](the-two-phase-tick.md) is that bracket seen
 from the other side.
 
 **If `ServerboundPlayerInputPacket` never moves me, what is it for?**
