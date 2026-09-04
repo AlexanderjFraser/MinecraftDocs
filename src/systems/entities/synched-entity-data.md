@@ -9,11 +9,13 @@ that spends four bytes after the entity id. That array is `SynchedEntityData`,
 the channel the server uses to describe an entity to the clients that see it: the
 health bar over another player, a sneaking crouch, an armour stand's pose,
 an item frame's item, this sheep's wool. It is a numbered array, and the
-numbers are the surprising part. **The slot the wool lives in is decided by
-the order the JVM happens to run static initialisers in.** Ids are ordinals
-handed out down the class tree by a single shared `ClassTreeIdRegistry` as
-each entity class initialises: `Entity` takes 0 to 7, `LivingEntity` 8 to
-14, `Mob` 15, `AgeableMob` 16 and 17, and `Sheep`, last to load, gets 18.
+numbers are the surprising part. **The slot the wool lives in is not written
+anywhere in `Sheep`: it is 18 because eighteen slots were handed out above
+`Sheep` in its superclass chain, and one new field on `Entity` would renumber
+every entity in the game.** Ids are ordinals handed out down the class tree
+by a single shared `ClassTreeIdRegistry`, which walks only the *superclass*
+chain: `Entity` takes 0 to 7, `LivingEntity` 8 to 14, `Mob` 15, `AgeableMob`
+16 and 17, and `Sheep`, last in the chain, gets 18.
 Nothing names these numbers, nothing writes them down, and they stop at 254
 — because on the wire, 255 means *end of packet*.
 
@@ -95,7 +97,7 @@ and aggressive behind `Mob.setNoAi`, `Mob.setLeftHanded` and
 and *sheared* into bit four — `Sheep.getColor`, `Sheep.setColor`,
 `Sheep.isSheared`, `Sheep.setSheared`, and the same storage read out as
 `DataComponents.SHEEP_COLOR` by `Sheep.get` and written back through
-`Sheep.applyImplicitComponents`.
+`Sheep.applyImplicitComponent`.
 
 The numbering belongs to the class, not to the concept. `Avatar` — the class
 26.2 inserts between `LivingEntity` and `Player` — owns
@@ -165,8 +167,9 @@ sequenceDiagram
 **The click.** `MultiPlayerGameMode.interact` sends a
 `ServerboundInteractPacket` — a flat record of entity id, hand, an
 *entity-relative* hit location and the secondary-action flag, attacks having
-left for `ServerboundAttackPacket` — and *also* runs the interaction
-locally as a prediction, unless the local game mode is spectator.
+left for `ServerboundAttackPacket` — and *then*, on the next line, runs the
+interaction locally as a prediction, unless the local game mode is spectator.
+The packet goes first.
 
 **The server checks the geometry, not the outcome.**
 `ServerGamePacketListenerImpl.handleInteract` confirms the thread with
@@ -245,9 +248,9 @@ never the sheared flag, so a sheared coloured sheep still draws its undercoat.
 ```mermaid
 flowchart TD
     IN["ChunkMap.tick: section changed, or Entity.needsSync, or the chunk is in entity-ticking range"] --> SC["ServerEntity.sendChanges, opening with Entity.updateDataBeforeSync"]
-    SC -->|"an ItemFrame, every tenth tick — the only bypass"| SEND
+    SC -->|"an ItemFrame, every tenth tick — the map bypass"| DATA["ServerEntity.sendDirtyEntityData"]
     SC --> GATE{"tickCount is a multiple of EntityType.updateInterval, or Entity.needsSync, or SynchedEntityData.isDirty"}
-    GATE -->|"yes"| SEND["position, rotation and motion, then ServerEntity.sendDirtyEntityData"]
+    GATE -->|"yes"| SEND["position, rotation and motion"] --> DATA
     GATE -->|"no"| HOLD["nothing goes out, and the dirty flags survive to the next tick"]
 ```
 
@@ -263,16 +266,20 @@ a latency channel for movement.
 
 The interval comes from `EntityType.updateInterval`, fixed when
 `ChunkMap.TrackedEntity` constructs the `ServerEntity`. `EntityTypes.PLAYER`
-sets 2 and `EntityType.Builder` defaults to 3, but seven types — item frames,
-paintings, leash knots and their kin — set something else entirely.
+sets 2 and `EntityType.Builder` defaults to 3. Thirty-seven types set the
+interval explicitly, most of them at 10 or 20 — and seven of those, item
+frames, paintings, leash knots and their kin, set *Integer.MAX_VALUE*.
 
 **Integer.MAX_VALUE** — the update interval of `EntityTypes.ITEM_FRAME`,
 which is to say its interval branch never fires again after tick zero.
 
 That is exactly why `ServerEntity.sendChanges` has an `ItemFrame` special
 case that calls `ServerEntity.sendDirtyEntityData` every tenth tick *before*
-the gate: it is the only bypass in the method, and without it a map in a
-frame would update only when something else set `Entity.needsSync`.
+the gate: it is the only path to the synched-data flush that skips the
+interval test, and without it a map in a frame would update only when
+something else set `Entity.needsSync`. (Two *sends* also sit outside the
+gate — the passengers packet and the `Entity.hurtMarked` motion packet — but
+neither touches the data channel.)
 `ServerEntity.handleMinecartPosRot` calls it too, but from inside the gate,
 not around it. `Entity.syncPosition` is the other lever: it
 realigns the tracker's own counter so the very next evaluation lands on a
@@ -290,8 +297,11 @@ goes on to read the flag.
 
 Synched data is one of six clientbound descriptions of an entity, and
 knowing which one a fact travels on answers most *why does the client not
-know that* questions. There is no serverbound counterpart to any of them:
-the client cannot write to this channel at all.
+know that* questions. There is no serverbound counterpart to any of them.
+The client cannot write to the channel directly — though one of its packets
+does move two slots by proxy: `ServerboundClientInformationPacket` reaches
+`ServerPlayer.updateOptions`, which sets the skin-customisation byte and the
+main hand.
 
 | channel | packets | note |
 |---|---|---|
@@ -299,7 +309,7 @@ the client cannot write to this channel at all.
 | attributes | `ClientboundUpdateAttributesPacket` | flushed by the same `ServerEntity.sendDirtyEntityData` ([attributes](attributes.md)) |
 | equipment | `ClientboundSetEquipmentPacket` | incremental updates bypass `ServerEntity` entirely — `LivingEntity.handleEquipmentChanges` sends them, to trackers only, not the wearer |
 | mob effects | `ClientboundUpdateMobEffectPacket`, `ClientboundRemoveMobEffectPacket` | the authoritative list, unlike the swirl in `LivingEntity.DATA_EFFECT_PARTICLES` |
-| position and motion | `ClientboundMoveEntityPacket`, `ClientboundEntityPositionSyncPacket`, `ClientboundTeleportEntityPacket`, `ClientboundRotateHeadPacket`, `ClientboundSetEntityMotionPacket` | the block the synched-data gate shares |
+| position and motion | `ClientboundMoveEntityPacket`, `ClientboundEntityPositionSyncPacket`, `ClientboundRotateHeadPacket`, `ClientboundSetEntityMotionPacket`, `ClientboundMoveMinecartPacket` | the block the synched-data gate shares; `ClientboundTeleportEntityPacket` is the exception, sent from `Entity` itself |
 | one-shot events | `ClientboundEntityEventPacket` | a single byte from `ServerLevel.broadcastEntityEvent`, dispatched by `Entity.handleEntityEvent` — `EntityEvent` declares 62 of them |
 
 Pairing a new viewer runs the same machinery once. `ServerEntity.addPairing`
@@ -329,8 +339,10 @@ the last one sent: setting A then B then A within a tick dirties the item
 twice and then sends A, a value the client already had. The only thing that
 never dirties is setting a slot to what it already holds — and even that can
 be overridden, because `SynchedEntityData.set` has a three-argument
-force-dirty form that skips the comparison entirely. `CopperGolem` uses it to
-re-trigger a weathering animation and `Display` to restart an interpolation.
+force-dirty form that skips the comparison entirely. `Display` uses it to
+restart an interpolation whose delay was re-set to the same number;
+`CopperGolem`'s two uses of it are redundant, because the value it writes is
+always the previous weather state and so always different.
 
 **Why does my client-side change never reach the server?** Nothing stops
 `SynchedEntityData.set` on the client — `LocalPlayer` prediction does it

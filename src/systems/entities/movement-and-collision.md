@@ -32,12 +32,15 @@ the blocks came in.
 
 ## Who is allowed to run this at all
 
-A tracked mob is simulated on the server and merely *coasted* on the client
-— its client copy never reaches `Entity.move` at all — while a player is the
+A tracked mob is simulated on the server and merely *carried* on the client
+— nothing in its own tick reaches `Entity.move`, though a piston or a shulker
+box can still shove it there from a block entity — while a player is the
 other way up, client-authoritative on both sides, so the client simulates for
 real and the server re-runs it as a check. The predicate that decides is
-`Entity.isLocalInstanceAuthoritative`, never "am I the client", and
-`Entity.canSimulateMovement` and `Entity.isEffectiveAi` default to it. Which
+`Entity.isLocalInstanceAuthoritative` rather than a bare "am I the client",
+and `Entity.canSimulateMovement` and `Entity.isEffectiveAi` default to it —
+though several of the gates below are written as *not a client **or**
+authoritative*, and `Player` overrides both predicates to exactly that. Which
 call site reads which, and why a mob and a player invert, is
 [authority](authority.md); this page notes each gate where the trace hits it.
 
@@ -82,7 +85,9 @@ heights and accumulated current. Everything downstream — `Entity.isInWater`,
 `Entity.isInLava`, `Entity.getFluidHeight`, `Entity.isEyeInFluid` — reads
 that snapshot and never the live world. Fire ticks after it, lava *halves*
 `Entity.fallDistance` rather than clearing it, and `Entity.checkBelowWorld`
-kills anything 64 below the world floor.
+discards anything 64 below the world floor — except a `LivingEntity`, which
+overrides the hook and takes four points of *fell out of the world* damage a
+tick instead.
 
 `LivingEntity.aiStep` is the order of every mob's tick and worth memorising:
 interpolate-or-coast, head turn, equipment, a deadzone that zeroes any delta
@@ -92,7 +97,8 @@ movement control, which set `LivingEntity.xxa` and `LivingEntity.zza`
 ([AI](ai-goals-and-brains.md), [pathfinding](pathfinding.md)) — the jump
 branch, gliding, the travel branch, `Entity.applyEffectsFromBlocks`,
 animation, freezing, `LivingEntity.pushEntities`. Our zombie's jump branch
-is skipped because `Entity.onGround` is false.
+is skipped before `Entity.onGround` is ever consulted, because the branch is
+gated on `LivingEntity.jumping` and a falling zombie is not asking to jump.
 
 The travel branch is a fork, not a call. If the controlling passenger is a
 `Player` and the mob is alive it is `LivingEntity.travelRidden` — the path
@@ -133,7 +139,7 @@ four block properties ([blocks and states](../blocks/blocks-and-states.md)):
 
 | property | default | who changes it |
 |---|---|---|
-| `Block.getFriction` | 0.6 | 0.98 on ice and packed ice, 0.989 on blue ice, 0.8 on `Blocks.SLIME_BLOCK` |
+| `Block.getFriction` | 0.6 | 0.98 on ice, packed ice and `Blocks.FROSTED_ICE`, 0.989 on blue ice, 0.8 on `Blocks.SLIME_BLOCK` |
 | `Block.getSpeedFactor` | 1.0 | 0.4 on soul sand and honey |
 | `Block.getJumpFactor` | 1.0 | 0.5 on honey |
 | `Block.getBounceRestitution` | 0.0 | 1.0 on `Blocks.SLIME_BLOCK`, 0.75 on beds |
@@ -141,8 +147,8 @@ four block properties ([blocks and states](../blocks/blocks-and-states.md)):
 `MoverType` names who is moving you, in five constants. `MoverType.PISTON` is
 the one with real machinery — `Entity.limitPistonMovement` collapses the
 vector to a single axis, `Entity.applyPistonMovementRestriction` clamps it to
-±0.51 per game tick, and that path alone is exempt from
-`Entity.stuckSpeedMultiplier`
+±0.51 per game tick, and that path alone is exempt from the *multiply* by
+`Entity.stuckSpeedMultiplier` — it still clears the field
 ([pistons](../blocks/pistons-and-block-events.md)). `MoverType.SHULKER_BOX`
 makes a `Shulker` teleport rather than move, and `MoverType.SELF` and
 `MoverType.PLAYER` are read together by `Player.maybeBackOffFromEdge` ([input
@@ -153,14 +159,14 @@ to movement](../player/input-to-movement.md)).
 `Entity.move` opens with two things that are easy to miss.
 `Entity.stuckSpeedMultiplier` is applied to the delta and *cleared* in the
 same breath, zeroing `Entity.deltaMovement` with it — that pair is the whole
-cobweb and berry-bush model — and `Entity.noPhysics` is an escape hatch above
+cobweb, berry-bush and powder-snow model — and `Entity.noPhysics` is an escape hatch above
 even it: an entity with it set skips collision entirely and has all four
 booleans cleared.
 
 ```mermaid
 flowchart TD
     COLLIDE["Entity.collide"]
-    GATHER["collect the colliders once: every entity box, the world border if you are near it, then BlockCollisions over the swept box"]
+    GATHER["collect the colliders: every entity box, the world border if you are near it, then BlockCollisions over the swept box"]
     RESOLVE["Entity.collideWithShapes"]
     AXIS["Direction.axisStepOrder — Y first, always, then the larger horizontal axis, then the smaller. Each axis clips the box already displaced by the earlier ones"]
     TEST{"step height above zero, colliding horizontally, and on or hitting the ground?"}
@@ -188,7 +194,7 @@ ever asks for the first. The second is that most entities are not colliders
 at all: `EntityGetter.getEntityCollisions` wraps with `Shapes.create` the
 box of every entity that answers `Entity.canBeCollidedWith`, and the base
 class answers **false** — so the mob standing next to you contributes
-nothing, while boats, shulkers and minecarts do. (Pushing is a different
+nothing, while boats, living shulkers and happy ghasts do. (Pushing is a different
 predicate, `Entity.isPushable`, and belongs to the crowding pass below.)
 `BlockCollisions` walks the box with a `Cursor3D`, reads chunks through
 `CollisionGetter.getChunkForCollisions` — a full chunk if it is already
@@ -198,8 +204,10 @@ blocking the tick. A full cube short-circuits to a box intersection;
 anything else goes through `Shapes.joinIsNotEmpty`.
 
 The step-up loop in the figure is the part worth slowing down for. It does
-not guess a height and it does not pick the best one. It harvests every Y
-coordinate of every candidate shape within `Entity.maxUpStep`, sorts them
+not guess a height and it does not pick the best one. It harvests the Y
+coordinates of the candidate shapes that lie above the entity's feet and
+within `Entity.maxUpStep`, skipping the height the flat attempt already
+tried, sorts them
 ascending, and retries the *whole* resolve at each until one yields any more
 horizontal distance than the flat attempt — and returns that one. It is the
 lowest step that helps, which is also why an entity can step onto a shape's
@@ -305,11 +313,12 @@ cancels the fall damage in the same tick that entered it.
 ## What did I pass through
 
 `Entity.applyEffectsFromBlocks` runs on the same gate as the step sound —
-not client-side, or authoritative. It calls `Block.stepOn` for the block
-underfoot first, gated on `Entity.onGround`, and then drains
-`Entity.movementThisTick` into `Entity.finalMovementsThisTick`, appending a
-final segment if the entity ended somewhere the last recorded segment did
-not.
+not client-side, or authoritative. It drains `Entity.movementThisTick` into
+`Entity.finalMovementsThisTick` first — substituting a single old-position-to-
+position segment when the deque is empty, and appending a final segment when
+the entity ended somewhere the last recorded one did not — and only then runs
+the replay, which opens by calling `Block.stepOn` for the block underfoot,
+gated on `Entity.onGround`.
 
 Each segment is replayed in the *same axis order the collision used* —
 `Direction.axisStepOrder` again, over the segment's stored pre-collision
@@ -320,10 +329,13 @@ rather than a static overlap at the destination, and calling
 `BlockBehaviour.BlockStateBase.entityInside`, `Entity.onInsideBlock` and
 `FluidState.entityInside` on what it finds. `Entity.visitedBlocks` is the
 deduplicator: a block is visited at most once across the whole replay,
-however many segments cross it. Two budgets bound the work — sixteen block
-visits per segment, with one final visit at the destination if the budget
-runs out, and `Entity.movementThisTick` merges its two oldest entries once
-it reaches a hundred, buying bounded memory with a little precision.
+however many segments cross it. Two budgets bound the work — sixteen sweep
+steps per segment, which is not sixteen blocks, because every block the box
+covers at one end of the sweep shares a single step index; and
+`Entity.movementThisTick` merges its two oldest entries once it reaches a
+hundred, buying bounded memory with a little precision. A segment that
+exhausts its steps gets one last zero-length visit at the destination, which
+covers every block the box ends up inside.
 
 Nothing found is applied inline. Each effect is queued into the
 `InsideBlockEffectApplier.StepBasedCollector`, which flushes a step's worth
@@ -355,8 +367,8 @@ loop ([the level tick](../server/server-level-tick.md)) — so this tick's
 movement is broadcast at the start of the next one. It becomes a short delta,
 `ClientboundMoveEntityPacket.Pos`, only when it can: not too big for a
 short, no more than 400 ticks since the last teleport, not riding, the
-entity does not demand precision, **and `Entity.onGround` has not changed
-since the last send**. That last condition is the common case, and it is a
+entity does not demand precision, **and `Entity.onGround` still matches what
+the last absolute sync recorded**. That last condition is the common case, and it is a
 real cost: every landing and every step off a ledge forces a full
 `ClientboundEntityPositionSyncPacket`. `Entity.syncPosition` forces the next
 send outright, and `ClientboundSetEntityMotionPacket` carries the delta

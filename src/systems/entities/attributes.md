@@ -115,7 +115,8 @@ twenty-six-entry base, `Mob.createMobAttributes` adds
 finishes the job. `AttributeSupplier.Builder.build` keeps the **last** entry
 for a repeated attribute, which is how `Zombie.createAttributes` overrides
 the attack damage the monster builder added, the follow range the mob builder
-added and the movement speed that came from two levels further up. Anything
+added and the follow range the mob builder added — the movement speed it
+also declares has no earlier entry to beat. Anything
 outside `MobCategory.MISC` with no supplier at all is logged by
 `DefaultAttributes.validate`.
 
@@ -130,8 +131,10 @@ is why `LivingEntity.getAttribute` is nullable and
 class ([entity anatomy](entity-anatomy.md)) owns the player-shaped hitbox and
 the skin data but not the attribute set, so `Mannequin` — the other `Avatar` —
 is registered with `LivingEntity.createLivingAttributes` and gets the plain
-living set, including the registry's otherwise unused default movement speed
-of 0.7 rather than a player's 0.1.
+living set, including the registry's default movement speed of 0.7 rather
+than a player's 0.1. The default is not a dead value: the wandering trader,
+the phantom and the slime are registered with the bare `Mob` and `Monster`
+builders, neither of which sets a speed either.
 
 ## The map, and which set a change lands in
 
@@ -153,7 +156,10 @@ phase — **before** the *entities* phase ([the level
 tick](../server/server-level-tick.md)). An attribute dirtied during an
 entity's own tick (equipment, an effect, sprinting, powder snow, anything in
 `ServerPlayer.updatePlayerAttributes`) has therefore already missed this
-tick's send and goes out on the next one. Only a mutation made *before* the
+tick's send — and a dirty *attribute* set is not one of the three things that
+open `ServerEntity.sendChanges`'s gate, so it waits for the next tick whose
+count is a multiple of the entity's update interval: the tick after next for a
+player, the third for the default. Only a mutation made *before* the
 level tick — a command, an interaction handled out of the packet queue at the
 top of the server tick — reaches the wire in the tick that produced it. It is
 the same phase ordering that puts a block entity's writes a tick late
@@ -198,8 +204,9 @@ UUID and no name — so two systems that pick the same identifier for the same
 attribute collide, and `AttributeInstance.addTransientModifier` and
 `AttributeInstance.addPermanentModifier` **throw** rather than silently
 overwrite. `AttributeInstance.addOrUpdateTransientModifier` and
-`AttributeInstance.addOrReplacePermanentModifier` are the safe forms, and
-everything in vanilla that might double up removes by id first.
+`AttributeInstance.addOrReplacePermanentModifier` are the safe forms. Most of
+vanilla removes by id before it adds; three mobs and `AttributeCommand`
+instead guard with `AttributeInstance.hasModifier` and never remove at all.
 
 Transient versus permanent is *purely* about saving: both kinds sit in the
 same indices, both affect the value identically, both go on the wire, and
