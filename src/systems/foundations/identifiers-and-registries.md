@@ -15,8 +15,10 @@ entry's numeric id is its position — so the wire id of a diamond sword is
 where its line falls in `Items`, reordering two lines in `Blocks` changes a
 block's wire id, and a resource pack cannot. A dynamic registry, a biome
 from a data pack, gets its numbers the other way: its elements are decoded
-in parallel but registered in sorted order of their ids, which is exactly
-why the client can rebuild the same numbers from the same list of names.
+in parallel but registered in sorted order of their ids, so the server's
+numbering does not depend on which file finished first. The client does not
+re-derive those numbers at all — it registers what the server sent, in the
+order the packet lists them.
 
 ## The cast
 
@@ -32,9 +34,11 @@ why the client can rebuild the same numbers from the same list of names.
 | `LayeredRegistryAccess` | which layer may see which: four `RegistryLayer`s on the server, two `ClientRegistryLayer`s on the client | the server thread owns `MinecraftServer.registries`; the client thread owns its own stack |
 
 All of this is server *and* client: `MappedRegistry`, `BuiltInRegistries`
-and `RegistryDataLoader` ship in the dedicated server jar. Only
-`ClientRegistryLayer`, `RegistryDataCollector` and `KnownPacksManager` are
-client-only.
+and `RegistryDataLoader` ship in the dedicated server jar. Client-only, of
+the classes this page names, are `ClientRegistryLayer`,
+`RegistryDataCollector` and `KnownPacksManager` — and, less surprisingly,
+`ClientPacketListener`, `ClientConfigurationPacketListenerImpl` and
+`IntegratedServer`.
 
 ## The name
 
@@ -121,7 +125,7 @@ sequenceDiagram
 
     Note over Main,DMR: the launching thread, before any server or client object exists
     Main->>Boot: bootStrap, early, after argument parsing: isBootstrapped is set before any registry is touched
-    Boot->>BIR: class init: one empty registry per Registries key, each registered into WRITABLE_REGISTRY, each with a loader in LOADERS
+    Boot->>BIR: class init: one empty registry per built-in key, 95 of the 148 in Registries, each registered into WRITABLE_REGISTRY, each with a loader in LOADERS
     Boot->>BIR: bootStrap, then createContents: run every loader
     BIR->>Items: class init (the ITEM loader touches Items.AIR)
     Items->>Items: registerItem(ItemIds.DIAMOND_SWORD, properties): Item.Properties.setId stores the key
@@ -144,8 +148,11 @@ is frozen and any `WritableRegistry.register` throws.
 **Registries exist before their contents.** `BuiltInRegistries` class init
 creates every registry empty and records the loader that fills it in
 `BuiltInRegistries.LOADERS`, an insertion-ordered map. `Bootstrap.bootStrap`
-then runs `BuiltInRegistries.createContents` — the loaders in that order —
-which forces the class init of `Items`, `Blocks`, `EntityType` and the rest.
+then runs `BuiltInRegistries.createContents` — the loaders in that order.
+By then `Items`, `Blocks` and `EntityTypes` are already initialised:
+`Bootstrap.bootStrap` reaches `FireBlock.bootStrap`, `EntityTypes.PLAYER`
+and `CauldronInteractions.bootStrap` before it calls
+`BuiltInRegistries.bootStrap`, and each of those touches its catalogue.
 `Bootstrap.checkBootstrapCalled` is the guard that makes "touched `Blocks`
 from a static initialiser" a crash rather than a silent empty registry; it
 works because the bootstrap flag is set *before* the registries are touched,
@@ -255,10 +262,11 @@ task's getter to every other, so `Biome.DIRECT_CODEC` decoding on one
 worker can ask for a configured carver that another worker is still
 registering — the getter returns an unbound `Holder.Reference`, and the
 reference is bound when that registry freezes. Forward references cost
-nothing; cycles are impossible because layers order the registries. Most
-dynamic registries also carry a `RegistryValidator` in their
-`RegistryDataLoader.RegistryData`, run after the freeze — commonly "not
-empty".
+nothing; cycles are impossible because layers order the registries.
+Thirteen of the forty-seven dynamic registries also carry a
+`RegistryValidator` in their `RegistryDataLoader.RegistryData`, run after
+the freeze — every one an entity-variant registry, and every one the same
+check, `RegistryValidator.nonEmpty`.
 
 **Provenance is recorded per entry, and it is coarser than it looks.**
 `ResourceManagerRegistryLoadTask` gives each element a `RegistrationInfo`
@@ -310,8 +318,8 @@ exception to the first sentence is one of the two things in the second.
 `MappedRegistry.freeze` is a proof, not a switch. It binds every holder's
 value and throws if any holder is still unbound, if any intrusive holder
 was created but never registered, or if any tag declared by a `TagKey` was
-never bound. The tag half of that proof is why there are **two tag tables,
-not one**: `MappedRegistry.frozenTags` is the registration-time map of
+never bound. The tag half of that proof works because there are **two tag
+tables, not one**: `MappedRegistry.frozenTags` is the registration-time map of
 declared `HolderSet.Named` objects, and `MappedRegistry.allTags` (a
 `MappedRegistry.TagSet`) is the bound view, which starts as
 `MappedRegistry.TagSet.unbound`, where every read throws. The freeze
@@ -321,7 +329,9 @@ first binds the tags the bootstrap actually asked for to empty
 (`MappedRegistry.bindAllTagsToEmpty`) and the proof passes on empty sets.
 The freeze also builds `MappedRegistry.componentLookup`. After it, the
 `MappedRegistry.frozen` flag makes `MappedRegistry.validateWrite` throw on
-every mutation.
+every ordinary write. Two things still change: `MappedRegistry.prepareTagReload`
+*requires* the frozen flag, and the component prototypes are rebound beside
+the tags ([data components](data-components.md)).
 
 What changes afterwards changes through two doors. **Tags:** a world load
 swaps the tag tables of the static registries, and `/reload` does more
@@ -344,15 +354,18 @@ same static initialisers — but their *tags* do, and dynamic elements do:
 then `ClientboundUpdateTagsPacket`, which is a **common** packet and arrives
 again mid-play after a server `/reload`; and every registry element,
 built-in or dynamic, crosses inside other packets as a bare varint id
-resolved against the buffer's registry access, with id 0 reserved so that
-an inline `Holder.Direct` can be sent instead. On disk, every key in
+resolved against the buffer's registry access. Only one variant shifts that
+numbering: `ByteBufCodecs.holder` reserves 0 for an inline `Holder.Direct`
+and writes every registry id one higher, where `ByteBufCodecs.holderRegistry`
+— which `Item.STREAM_CODEC` uses — writes the raw id. On disk, every key in
 `RegistryDataLoader.WORLDGEN_REGISTRIES` and
 `RegistryDataLoader.DIMENSION_REGISTRIES` reads
 `data/<namespace>/<registry path>/*.json` (`Registries.elementsDirPath`)
 through `FileToIdConverter.registry` over a `ResourceManager`
 ([the resource system](resource-system.md)), its tags live under
-`Registries.tagsDirPath`, there is a third data-driven directory besides
-those two — `Registries.componentsDirPath` — and the reloadable set (loot
+`Registries.tagsDirPath` — there is a third path builder,
+`Registries.componentsDirPath`, but it names a *reports* directory the data
+generator writes and nothing in the running game reads — and the reloadable set (loot
 tables, predicates, item modifiers) comes through
 `ReloadableServerRegistries`. Which registry is which kind is
 [reference/registries](../../reference/registries.md).

@@ -146,8 +146,9 @@ for an atlas sprite, *[name head]* for a player.
 `Style.clickEvent`, `Style.hoverEvent`, `Style.insertion` and `Style.font`
 (a `FontDescription`). Null means *inherit*, which is what makes
 `Style.applyTo` a merge: a field the child sets wins, a field it leaves
-null falls through to the parent. Every setter returns a new `Style`, and
-the codec and the setters collapse a style with nothing left set to the
+null falls through to the parent. A setter returns a new `Style` only when
+the value changes — set bold to what it already is and the same object comes back —
+and the codec and the setters collapse a style with nothing left set to the
 shared `Style.EMPTY`, so `Style.isEmpty` is an identity check. `ChatFormatting`
 is the legacy vocabulary — `Style.applyFormat` sets one boolean or, for a
 colour code, `TextColor.fromLegacyFormat`, and `ChatFormatting.RESET`
@@ -274,8 +275,9 @@ message argument, behind a permission, which is why `/say @a` names people
 and a chat line saying the same thing does not. The resolved text becomes
 the message's *unsigned* content. The mechanics: `MessageArgument.Message.parseText`
 refuses more than 256 characters and, if the source may use selectors at
-all (`EntitySelectorParser.allowSelectors`), parses every `@` into a
-`MessageArgument.Part`; at execution the permission is
+all (`EntitySelectorParser.allowSelectors`), tries every `@` as a selector
+and keeps the ones that parse as a `MessageArgument.Part` — an `@` that
+fails on a missing or unknown selector type is left as ordinary text; at execution the permission is
 `Permissions.COMMANDS_ENTITY_SELECTORS`, and each part becomes
 `EntitySelector.joinNames` of what it finds. A raw component argument —
 `/tellraw`'s — is a `ComponentArgument`, parsed with the full codec from
@@ -327,9 +329,12 @@ the victim), with *.item* when the killer's held item has a
 `DataComponents.CUSTOM_NAME` — and builds `Component.translatable` with
 the victim's and the killer's display names as arguments.
 `DeathMessageType.FALL_VARIANTS` and `DeathMessageType.INTENTIONAL_GAME_DESIGN`
-take the other two branches, the second of them attaching a
-`ClickEvent.OpenUrl` to a bracketed link. The key is a line in
-*en_us.json*; the tracker never sees the line.
+take two more branches, the second of them attaching a
+`ClickEvent.OpenUrl` to a bracketed link — and the fall branch only when
+`CombatTracker.getMostSignificantFall` actually found one, so a fall-typed
+source with no recorded fall drops back to the ordinary message. A fourth
+branch comes first: an empty combat log is *death.attack.generic*. The key
+is a line in *en_us.json*; the tracker never sees the line.
 
 The killer's name is itself a component, and often a translatable one.
 `Entity.getDisplayName` is `PlayerTeam.formatNameForTeam` over
@@ -361,6 +366,12 @@ The server reads the message once, for its log:
 `PlayerList.broadcastSystemMessage` starts with
 `MinecraftServer.sendSystemMessage`, which logs `Component.getString`, and
 the walk visits the translatable contents and asks `Language.getInstance`.
+That is the ordinary path only. A victim on a team whose death-message
+visibility is not `Team.Visibility.ALWAYS` goes through
+`PlayerList.broadcastSystemToTeam` or
+`PlayerList.broadcastSystemToAllExceptTeam` instead, neither of which
+logs — and `Team.Visibility.NEVER` matches neither branch, so the message
+reaches nobody and is never read at all.
 On a server that is
 `Language.DEFAULT_INSTANCE`, loaded once from the *en_us.json* on the
 classpath, and nothing on the server ever calls `Language.inject`. A

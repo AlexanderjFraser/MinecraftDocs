@@ -4,7 +4,7 @@
 
 Every registry key declared in `Registries`. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLDGEN_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).
 
-148 keys · 94 built-in · 47 data-pack · 29 synced
+148 keys · 95 built-in · 47 data-pack · 29 synced
 
 | key | element type | kind | synced |
 |---|---|---|---|
@@ -14,7 +14,7 @@ Every registry key declared in `Registries`. **Built-in** registries are populat
 | `attribute_type` (`Registries.ATTRIBUTE_TYPE`) | `AttributeType<…>` | built-in |  |
 | `banner_pattern` (`Registries.BANNER_PATTERN`) | `BannerPattern` | data-pack | yes |
 | `block` (`Registries.BLOCK`) | `Block` | built-in |  |
-| `block_entity_type` (`Registries.BLOCK_ENTITY_TYPE`) | `BlockEntityType<…>` | — |  |
+| `block_entity_type` (`Registries.BLOCK_ENTITY_TYPE`) | `BlockEntityType<…>` | built-in |  |
 | `block_predicate_type` (`Registries.BLOCK_PREDICATE_TYPE`) | `BlockPredicateType<…>` | built-in |  |
 | `block_type` (`Registries.BLOCK_TYPE`) | `MapCodec<…>` | built-in |  |
 | `cat_sound_variant` (`Registries.CAT_SOUND_VARIANT`) | `CatSoundVariant` | data-pack | yes |

@@ -58,8 +58,10 @@ exactly one question — *does the dedicated server have this class* — so it
 can prove "client-only" and it can prove "both jars", and it cannot prove
 "dedicated server only". Two rows are labelled that way on the strength of a
 different check: nothing under `net/minecraft/client` or `com/mojang/blaze3d`
-references them, and the only callers are the server's own entry point and
-`DedicatedServer`.
+references them. *rcon* is reached from `DedicatedServer` alone; *jsonrpc*
+from six files, and two of them — `BuiltInRegistries` and `Registries` — are
+classes the client loads at bootstrap, so the package's *types* are on the
+client and the server it configures is not.
 
 ## Save migration, and the fixer that moves files
 
@@ -76,14 +78,14 @@ A version number becomes a chain of fixes through `DataFixTypes`, an enum
 of about thirty type references (level, chunk, player, entity chunk, POI
 chunk, options, stats, advancements, and a long tail of saved-data kinds).
 `DataFixTypes.updateToCurrentVersion` takes the data version as an
-argument — every one of its fifteen callers reads the version itself — and
+argument — every one of its thirteen callers reads the version itself — and
 asks the fixer to compose every rule from there to now.
 `DataFixTypes.wrapCodec` is the one that reads the version *out of the tag*:
 it wraps an ordinary codec so decoding pulls the data version, runs the
-chain, and encoding stamps the current version back in. That wrapper is how
-the version number reaches the fixer without every call site remembering —
-you will see it in [chunk storage](../world/chunk-storage.md), in player
-data, and in [advancements](../commands/advancements.md). The rules are
+chain, and encoding stamps the current version back in. It is the rarer
+door — two callers, `PlayerAdvancements` and `DebugScreenEntryList` — while
+[chunk storage](../world/chunk-storage.md) and player data take the first
+one and read the version themselves. The rules are
 pre-compiled on a dedicated bootstrap thread, and that thread is built with
 some care to cost nothing: one thread, daemon, at minimum priority, with a
 single caller in the client's entry point, optimising exactly one type (the
@@ -104,8 +106,8 @@ It stays safe by working somewhere else: the whole upgrade runs against a
 **custom copy-on-write file system** rooted at a scratch directory, and the
 result is swapped in at the end. Exactly how safe depends on the filesystem
 underneath. Where hard links are available it uses them. Where they are not,
-it writes a move journal and a marker file, and an interrupted upgrade
-resumes from it while an aborted one reverts. And where atomic move is
+it writes one file, *upgrade_in_progress.json*, recording the moves, and an
+interrupted upgrade resumes from it while an aborted one reverts. And where atomic move is
 unavailable it refuses to run at all rather than risk a half-moved world.
 
 The client does not grey out a world that needs the upgrade — it relabels
@@ -290,13 +292,14 @@ cost nothing.
 It is a set of **id-constant tables**, and the split is not the one the
 package names suggest: `BlockIds` holds the keys for blocks with **no item
 form** (water, lava, wall torches, piston heads, wall signs), `ItemIds` the
-items with no block, and `BlockItemIds` — six times the size of either — the
-pairs. Look for stone in `BlockIds` and it is not there. They exist to break
+items with no block, and `BlockItemIds` — seven times `BlockIds` and not
+quite twice `ItemIds` — the pairs. Look for stone in `BlockIds` and it is not there. They exist to break
 a class-initialisation cycle: exactly **ten** files outside the package name
 it, and they are precisely the ones that need to name a block or item
 *before* the block and item classes are loaded — `Blocks` and `Items`
-themselves, three blocks that reference another block during that
-initialisation, and the five tag providers. A resource key is a registry plus
+themselves, `GrassBlock` and `MyceliumBlock`, which name another block
+during that initialisation, `DecoratedPotPatterns` beside them, and the five
+tag providers. A resource key is a registry plus
 an [identifier](../foundations/identifiers-and-registries.md), so it can be
 built with nothing loaded. Practically, it is the canonical machine-readable
 list of *block and item* ids, and a better starting point than the block and

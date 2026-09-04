@@ -25,7 +25,7 @@ flowchart LR
         SND["Sound engine<br/>SoundEngineExecutor: the OpenAL calls"]
     end
     subgraph Shared["shared by both halves"]
-        NET["Netty IO<br/>Connection: split, decode, encode, plus the whole handshake and login"]
+        NET["Netty IO<br/>Connection: split, decode, encode, plus the handshake and login handlers"]
         WK["Worker-Main-n<br/>Util.backgroundExecutor: generation, lighting, meshing"]
     end
     subgraph ServerSide["the server"]
@@ -60,7 +60,7 @@ them are real.
 |---|---|---|---|
 | **Render thread** (client) | the JVM main thread, renamed in `client/main/Main` | `Minecraft.run` → `Minecraft.runTick` once per frame; `Minecraft.tick` 0–10 times inside it | Everything client-side: `ClientLevel`, `LocalPlayer`, the GPU (`RenderSystem.assertOnRenderThread`), screens, options. It is also the client's event loop (`Minecraft` is a `ReentrantBlockableEventLoop`), so packet handlers run here after `PacketUtils.ensureRunningOnSameThread`. |
 | **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` → `MinecraftServer.processPacketsAndTick` every `TickRateManager.nanosecondsPerTick` (50 ms by default); `MinecraftServer.waitUntilNextTick` drains the task queue in the slack | Every `ServerLevel`, every chunk, entity and block entity, the `PlayerList`. Serverbound *play* packet handlers run here, not on Netty. One per server; singleplayer has exactly one. |
-| **Netty IO** (`Netty NIO IO #n`, `Netty Epoll IO #n`, `Netty Kqueue IO #n`, `Netty Local IO #n`) | `EventLoopGroupHolder` | the `Connection` pipeline: split, decrypt, decompress, decode; encode, compress, encrypt — **and the whole handshake and login state machines** | Bytes and `Packet` objects — plus, in handshake and login, the login flow itself: `ServerHandshakePacketListenerImpl` and `ServerLoginPacketListenerImpl` never hop. A *play* handler that needs game state re-posts to the owning thread. *Local* is the in-process channel of singleplayer. |
+| **Netty IO** (`Netty NIO IO #n`, `Netty Epoll IO #n`, `Netty Kqueue IO #n`, `Netty Local IO #n`) | `EventLoopGroupHolder` | the `Connection` pipeline: split, decrypt, decompress, decode; encode, compress, encrypt — **and the handshake and login handlers** | Bytes and `Packet` objects — plus, in handshake and login, the handlers themselves: `ServerHandshakePacketListenerImpl` and `ServerLoginPacketListenerImpl` never hop. The login *state machine* is not all theirs, though: `ServerLoginPacketListenerImpl` is a `TickablePacketListener`, so the Server thread advances it once a tick through `MinecraftServer.tickConnection`. A *play* handler that needs game state re-posts to the owning thread. *Local* is the in-process channel of singleplayer. |
 | **Worker-Main-n** | `Util.backgroundExecutor` — a `ForkJoinPool` sized to `availableProcessors()` minus one, clamped by `Util.maxAllowedExecutorThreads` and capped by the *max.bg.threads* property (`Util.getMaxThreads`) | chunk generation and lighting via `ChunkTaskDispatcher`; section meshing via `SectionRenderDispatcher`; resource-reload *prepare* phases; chunk serialisation | Its own inputs. Results return to the owning thread as a `CompletableFuture` completed onto that thread's executor. Never `Level` state directly. |
 | **IO-Worker-n** | `Util.ioPool` | region file reads and writes through `IOWorker`, one `PriorityConsecutiveExecutor` per storage so writes to one file stay ordered | Files. `Util.nonCriticalIoPool` (`Download-n`) is the same shape for downloads, telemetry and sound decoding. |
 | **Sound engine** | `SoundEngineExecutor` | a `BlockableEventLoop` that owns the per-source OpenAL calls | The `SoundEngine`'s channels; see [the sound engine](../systems/client/sound-engine.md). Device open/close and buffer deletion stay on the Render thread. |
@@ -71,7 +71,7 @@ them are real.
 | **Management server IO #n** | `ManagementServer`, built by `JsonRpc` in `server/Main` | a second, independent Netty event-loop group: the JSON-RPC/WebSocket management API and its heartbeat | Its own pipeline; management calls reach the game through the server's task queue. Dedicated only. |
 | Timer hack thread | `Util.startTimerHackThread` | sleeps forever | Nothing. Keeps the JVM's timer resolution high by existing. |
 
-## The eight client handlers that never hop
+## The seven client handlers that never hop
 
 `Connection.channelRead0` calls a packet's handler on the Netty thread, and
 a handler's first line is normally `PacketUtils.ensureRunningOnSameThread`,
@@ -97,9 +97,13 @@ login, for the session-server call), *Chat-Filter-Worker*, *Server Pinger* and
 *Server Connector* (the multiplayer screen), *Telemetry-Sender*,
 `LanServerPinger` and its detector, *World Upgrader*, *Datafixer Bootstrap*
 (priority 1, so it yields to everything), the client and server shutdown
-hooks with `ClientShutdownWatchdog` behind them, and Swing's event dispatch
+hooks with `ClientShutdownWatchdog` behind them, Swing's event dispatch
 thread when a dedicated server is started without *--nogui* and runs its
-`MinecraftServerGui`.
+`MinecraftServerGui`, the *Friends List* fetcher behind the social screen,
+and `ChaseServer`'s two threads and `ChaseClient`'s one, which exist only
+behind `SharedConstants.DEBUG_CHASE_COMMAND` and the */chase* command it
+registers. Realms starts six more, and is out of scope with the rest of
+*com/mojang/realmsclient*.
 
 ## The rules that follow
 
@@ -109,7 +113,9 @@ thread when a dedicated server is started without *--nogui* and runs its
   pause, view distance, publishing — do cross by direct call; see Anatomy.)
 - **Handlers hop.** A play packet is decoded on Netty and *handled* on the
   owning game thread; `PacketUtils.ensureRunningOnSameThread` is the hop.
-  Handshake and login are the exception and run to completion on Netty.
+  Handshake and login are the exception: their handlers run to completion on
+  Netty. The login state machine is still advanced from the Server thread,
+  which ticks the listener once a tick.
 - **Workers compute, owners commit.** Chunk generation, lighting and meshing
   produce results on the worker pool; only the owning thread installs them.
 - **Waiting drains.** An owning thread never blocks idle: `BlockableEventLoop.managedBlock`

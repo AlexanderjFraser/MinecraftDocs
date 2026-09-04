@@ -88,7 +88,7 @@ def packets() -> str:
 
 # ------------------------------------------------------------- registries
 REGKEY = re.compile(r"ResourceKey<Registry<(.+?)>>\s+(\w+)\s*=\s*createRegistryKey\(\"([\w/]+)\"\)")
-BUILTIN = re.compile(r"=\s*register(?:Simple|Defaulted|DefaultedWithIntrusiveHolders)?\(Registries\.(\w+)")
+BUILTIN = re.compile(r"=\s*register\w*\(Registries\.(\w+)")
 LOADER_LIST = re.compile(r"List<RegistryDataLoader\.RegistryData<\?>>\s+(\w+)\s*=\s*List\.of\((.*?)\);", re.S)
 
 

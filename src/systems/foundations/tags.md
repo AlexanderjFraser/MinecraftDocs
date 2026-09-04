@@ -14,13 +14,16 @@ naming any specific block. [The registries page](identifiers-and-registries.md)
 ended on a promise: a frozen registry's *contents* never change. Its tags
 do. Type `/reload` with a data pack that adds a block to *logs* and the
 parrot perches on it a moment later — with `BuiltInRegistries.BLOCK` frozen
-since before the title screen. The tag table is the one part of a frozen
-registry that is swapped after the freeze, through `Registry.PendingTags`,
-in three ordered steps with no lock: `MappedRegistry.prepareTagReload`
+since before the title screen. The tag table is one of the two things a
+frozen registry still lets you swap — the other is the component prototype
+on each `Holder.Reference`, applied on the very next line of
+`ReloadableServerResources.updateComponentsAndStaticRegistryTags` — and it
+goes through `Registry.PendingTags` in three ordered steps with no lock:
+`MappedRegistry.prepareTagReload`
 builds the new table off to the side, and `Registry.PendingTags.apply`
 binds each `HolderSet.Named`, swaps the `MappedRegistry.TagSet`, then
-rebinds every holder's tag set. It is safe because the server thread runs
-it start to finish with nothing else looking, not because it is atomic.
+rebinds every holder's tag set. It is safe because one thread runs it start
+to finish with nothing else looking, not because it is atomic.
 
 ## The cast
 
@@ -30,7 +33,7 @@ it start to finish with nothing else looking, not because it is atomic.
 | `TagFile` · `TagEntry` | the on-disk shape: a list of entries, each an element or a reference to another tag, and the *replace* flag | — |
 | `TagLoader` | reads every pack's copy of every file and resolves them in dependency order; what an id resolves to is its `TagLoader.ElementLookup` | Worker at world load, Server on `/reload` |
 | `MappedRegistry` | the tag half: `MappedRegistry.frozenTags`, one `HolderSet.Named` per freeze-time key, and `MappedRegistry.allTags`, the bound `MappedRegistry.TagSet` | Server; Render on the client |
-| `Registry.PendingTags` | a loaded table not yet installed, with a `Registry.PendingTags.lookup` that answers as if it were | built on a worker, applied on the owning thread |
+| `Registry.PendingTags` | a loaded table not yet installed, with a `Registry.PendingTags.lookup` that answers as if it were | built on a worker at world load, on the server thread for `/reload`, on the client's game thread from the packet; applied on the owning thread |
 | `HolderSet.Named` | one tag's contents, rebound in place on every reload | — |
 | `Holder.Reference` | one element's own `Set` of `TagKey`s — the thing a membership test reads | — |
 | `TagNetworkSerialization` | the wire form: tag id to a list of registry ints | Server encodes, client decodes |
@@ -58,8 +61,9 @@ is no plural-name fallback — so *tags/block*, *tags/item*,
 *tags/entity_type*, *tags/worldgen/biome*. Vanilla's own files are written
 by the data generator (`TagsProvider`, `TagBuilder`), which the running game
 never calls, and players reach tags through the *#tag* syntax of
-`ResourceOrTagArgument`, `ResourceOrTagKeyArgument` and
-`ResourceSelectorArgument` (Part XIII).
+`ResourceOrTagArgument` and `ResourceOrTagKeyArgument` (Part XIII).
+`ResourceSelectorArgument`, beside them, is a glob over ids and takes no
+tag at all.
 
 Between the two sits `TagLoader`, generic over what an id resolves to: a
 `Holder` for a registry, a `CommandFunction` for function tags. It has two
@@ -107,8 +111,10 @@ A data-pack registry loads its tags inside its own load task.
 `ResourceManagerRegistryLoadTask` reads them after its elements, with
 `TagLoader.ElementLookup.fromGetters`, and `RegistryLoadTask.registerTags`
 binds them under the registry's write lock before it freezes. The
-reloadable layer has tags too: `ReloadableServerRegistries` calls
-`TagLoader.loadTagsForRegistry` for every `LootDataType`.
+reloadable layer reads tags too — `ReloadableServerRegistries` calls
+`TagLoader.loadTagsForRegistry` for every `LootDataType` — but that is the
+*void* overload, which throws the result away: nothing binds them, so a
+loot registry answers empty for every tag key.
 
 The fourth moment is the client's. One `ClientboundUpdateTagsPacket`
 covering every synced registry is sent by `SynchronizeRegistriesTask` after
@@ -137,7 +143,7 @@ sequenceDiagram
     TL->>TL: build, DependencySorter orders oak_logs before logs_that_burn before logs, tryBuildTag resolves ids through ElementLookup.fromFrozenRegistry
     TL->>MR: prepareTagReload with the LoadResult, a Registry.PendingTags, nothing visible yet
     Note over WL,RSR: worldgen and loot codecs resolve the logs tag through PendingTags.lookup, via buildUpdatedLookups
-    Note over MR,RSR: the server thread, after the last reload listener has applied
+    Note over MR,RSR: the thread driving the load — launching thread on a dedicated server, Render thread on the client — after the last reload listener has applied
     RSR->>MR: PendingTags.apply, bind every HolderSet.Named, swap allTags, refreshTagsInHolders rebinds the tag set of every Block holder
     Note over RSR,CCPL: configuration, a client joins, SynchronizeRegistriesTask sends ClientboundUpdateTagsPacket after the registry data, registry ints not names
     CCPL->>CCPL: handleUpdateTags, RegistryDataCollector.appendTags, buffered until handleConfigurationFinished
@@ -165,13 +171,14 @@ reference into a `DependencySorter` and resolves the leaves first. A tag
 with **any** failing entry — a missing required element as much as a
 missing required tag reference — is dropped whole, not loaded minus the
 entry, and is then absent from `Registry.getTags`, so neither the network
-payload nor a lookup will find it. Optional entries (*required: false*)
-resolve to nothing. There is a wrinkle: for a **static** registry the
-lookup is `TagLoader.ElementLookup.fromFrozenRegistry`, which ignores the
-required flag entirely and simply asks the registry — so an unknown element
-id kills the tag whether or not it was marked optional. Only the
-`TagLoader.ElementLookup.fromGetters` path, used by data-pack registries,
-honours the flag, by routing a required id through the registration lookup.
+payload nor a lookup will find it. An optional entry (*required: false*)
+resolves to nothing and the tag still builds: `TagEntry.build` answers *not
+required* on a miss, whichever lookup it was handed. What the two lookups
+differ on is **where a required id is looked up** —
+`TagLoader.ElementLookup.fromGetters`, used by data-pack registries, sends a
+required id through the registration lookup and an optional one through the
+immutable lookup, while `TagLoader.ElementLookup.fromFrozenRegistry`, used
+for a static registry, asks the frozen registry either way.
 
 **Prepared, then applied.** This is where the hook pays off.
 `MappedRegistry.prepareTagReload` refuses a registry that is not frozen and
@@ -181,9 +188,13 @@ back answers as if the new table were installed, which is what the worldgen
 and loot codecs are given while they load. `Registry.PendingTags.apply` is
 then **three ordered steps**: bind each `HolderSet.Named`, swap the
 `MappedRegistry.TagSet`, then rebind every holder's tag set. There is no
-lock and no single-reference swap; it is safe because the server thread
-runs it start to finish with nothing else looking, not because it is
-atomic.
+lock and no single-reference swap; it is safe because one thread runs it
+start to finish with nothing else looking, not because it is atomic. Which
+thread depends on the occasion: at world load the Server thread does not
+exist yet, so the apply runs on whichever thread is driving the load — the
+launching thread on a dedicated server, through `Util.blockUntilDone`, and
+the Render thread on the client. Only `/reload` applies on the Server
+thread.
 
 **The client gets integers.**
 `TagNetworkSerialization.serializeTagsToNetwork` walks
@@ -241,7 +252,7 @@ from the table, so `Registry.get` for it answers empty and
 `state.is(BlockTags.LOGS)` answers **false**. The window in which a tag
 read genuinely *throws* is narrower than it looks: it is during
 `BuiltInRegistries.bootStrap` itself, before `MappedRegistry.freeze`
-installs a bound `MappedRegistry.TagSet`. The two throws even come from
+installs a bound `MappedRegistry.TagSet`. The throws even come from
 different places — an unbound `Holder.Reference` complains that tags are
 not bound, while `MappedRegistry.TagSet.unbound` guards the registry-level
 lookups.
@@ -273,15 +284,18 @@ while `HolderSet.Named.contains` — which delegates to the holder's
 refreshed tag set — answers false, and `Registry.get` for the key answers
 empty.
 
-**What if two tags reference each other?** The cycle is broken silently.
-`DependencySorter.addDependencyIfNotCyclic` drops any edge that would close
-a cycle, so *a* referencing *b* referencing *a* loads in an arbitrary order
-with no diagnostic at all.
+**What if two tags reference each other?** Both are dropped, and both are
+logged. `DependencySorter.addDependencyIfNotCyclic` drops the edge that
+would close the cycle, so an order exists and the sort does not hang — but
+whichever tag is built first asks for a tag that is not in the new table
+yet, gets nothing, and fails as a missing required reference; the second
+then asks for the first, which failed, and fails the same way. Two
+*Couldn't load tag* lines, and neither tag exists.
 
 **Which tags does the client never hear about?** Those of
 `RegistryLayer.RELOADABLE`-layer registries (loot tables, predicates) and
-of non-synced worldgen registries (configured features, structures) — even
-though those tags exist and are loaded. On the receiving side, ids the
+of non-synced worldgen registries (configured features, structures). The
+reloadable ones are not even kept — see below. On the receiving side, ids the
 client's registry does not know are dropped from the payload silently.
 
 **Is picking a random element from a tag deterministic?** Yes, per pack

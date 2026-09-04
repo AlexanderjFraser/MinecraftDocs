@@ -54,7 +54,8 @@ What comes in is a set of `RepositorySource`s (`server/packs/repository`),
 each a place packs are found. `ClientPackSource` and `ServerPacksSource`
 are the built-ins, both extending `BuiltInPackSource`, which also lists the
 packs bundled *inside* the vanilla pack — the art packs, the accessibility
-packs, the test pack and every feature pack; `FolderRepositorySource` is a
+packs and every feature pack (`BuiltInPackSource.TESTS_ID` is declared and
+referenced nowhere, so the *tests* pack is a development leftover); `FolderRepositorySource` is a
 directory of user packs; `DownloadedPackSource` is server-sent packs, client
 only. `PackRepository.reload` re-runs every source into the *available*
 map and then rebuilds the *selected* list: prior choices are kept, and a
@@ -82,10 +83,10 @@ source with `PackResources.getResource`, `PackResources.listResources` and
 assets and data; `FilePackResources` a zip; `PathPackResources` a
 directory; `CompositePackResources` a pack plus its *overlays*
 subdirectories, which the `Pack.ResourcesSupplier` assembles for zip and
-folder packs (built-ins never produce one). Discovery is guarded:
+folder packs (the vanilla pack never produces one). Discovery is guarded:
 `DirectoryValidator`, `ForbiddenSymlinkInfo` and `PackDetector` decide
-what a folder is allowed to be, `allowed_symlinks.txt` is read through
-`DirectoryValidator`, and `packs/linkfs` is the exploded-pack filesystem
+what a folder is allowed to be, `allowed_symlinks.txt` is parsed into a
+`DirectoryValidator` by `LevelStorageSource.parseValidator`, and `packs/linkfs` is the exploded-pack filesystem
 used in development.
 
 ### What *pack.mcmeta* says
@@ -127,8 +128,9 @@ old world stays up until the last apply, but the old files do not: on the
 client, `ReloadableResourceManager.createReload` closes the previous
 `MultiPackResourceManager` — with every file handle it held — before
 building the new one. What is frozen is *which packs are in the stack*; a
-`Resource` still opens its file when it is read, so a pack edited on disk
-mid-reload is absolutely observable.
+`Resource` still opens its file when it is read, so a **folder** pack
+edited on disk mid-reload is observable. A zip is not: `FilePackResources`
+holds its zip open for the life of the pack.
 
 A `Resource` is what a lookup returns: its source pack, an `IoSupplier` for
 the bytes — opened lazily, at read time — and a lazily-read
@@ -183,7 +185,10 @@ listener's. So listener N's apply runs only after *every* listener has
 reached its barrier *and* listener N−1 has finished entirely — apply
 included — and a listener that never reaches its barrier holds every apply
 behind it. The futures are sequenced fail-fast: the first listener to throw
-aborts the whole reload rather than letting the rest finish.
+fails the reload as a whole. It does not stop the others — `Util.sequenceFailFast`
+completes the outer future exceptionally and leaves every prepare running;
+`Util.sequenceFailFastAndCancel`, which would cancel them, is not the one
+used here. What never happens is the applies.
 
 ```mermaid
 flowchart LR
@@ -234,7 +239,8 @@ already-async chain.
 Prepare never touches live state. That is the whole contract, and it is
 one-directional: a listener that reads from the manager in
 `SimplePreparableReloadListener.apply` is reading the *new* snapshot and
-that is fine (`TextureManager` does exactly this), while one that mutates
+that is fine (`TextureManager` does exactly this, from its own
+`PreparableReloadListener.reload`), while one that mutates
 live state in `SimplePreparableReloadListener.prepare` is racing the
 Render thread. Nothing a listener owns is torn down when a reload starts;
 the client keeps rendering with the old atlases while the new ones bake.
@@ -304,11 +310,11 @@ sequenceDiagram
     KH->>MC: handleDebugKeys matches keyDebugReloadResourcePacks, reloadResourcePacks
     MC->>PR: reload, then openAllSelected: rediscover, keep the selection, open it
     MC->>RRM: createReload: close the old MultiPackResourceManager, build the new snapshot
+    MC->>LO: setOverlay, in the same statement: logo and a smoothed bar from getActualProgress
     RRM->>SRI: create: prepareSharedState on every listener, then reload on each, in order
     SRI->>Worker: every listener's prepare, all at once
     Worker-->>MC: each barrier resolved on the Render thread once every prepare is in and the previous listener has applied
     MC->>MC: apply, one listener per registration slot, between frames
-    MC->>LO: setOverlay: logo and a smoothed bar from getActualProgress
     Note over LO: a later tick
     LO->>MC: isDone, checkExceptions, then allChanged on success or rollbackResourcePacks on failure
 ```
@@ -364,7 +370,7 @@ A server pushes a pack with `ClientboundResourcePackPushPacket` (id, URL,
 hash, required, prompt) and withdraws one with
 `ClientboundResourcePackPopPacket`, sent by
 `ServerResourcePackConfigurationTask` in the configuration phase and by
-`ServerPackCommand` (`/resourcepack push|pop`) at any time in play; the
+`ServerPackCommand` (*/serverpack push|pop*) at any time in play; the
 client answers with a `ServerboundResourcePackPacket` and its
 `ServerboundResourcePackPacket.Action`. Packs are keyed by UUID and stack,
 and a server-sent pack pins itself to the top of the selection.
@@ -372,7 +378,7 @@ and a server-sent pack pins itself to the top of the selection.
 client that declines — but the "required" it consults is
 `MinecraftServer.isResourcePackRequired`, a **server-wide**
 *server.properties* setting, not the flag on the individual pack, so a
-declined `/resourcepack push` can disconnect you on a server whose
+declined */serverpack push* can disconnect you on a server whose
 properties pack is required.
 
 The system is data-driven by *pack.mcmeta* (`PackMetadataSection`, with

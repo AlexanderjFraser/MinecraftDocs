@@ -174,16 +174,21 @@ registries do — an item's `DataComponents.JUKEBOX_PLAYABLE` or
 
 The maps are *built* with full registry context — tags, damage types,
 jukebox songs resolvable — by `DataComponentInitializers.build` on the
-reload worker, and *installed* with `Holder.Reference.bindComponents` on
-the owning thread: on the server in
+reload worker on the server, and *installed* with
+`Holder.Reference.bindComponents` on the owning thread: on the server in
 `ReloadableServerResources.updateComponentsAndStaticRegistryTags` (server
 thread, after every reload including `/reload`), on the client in
 `RegistryDataCollector` at the end of configuration. A `/reload` therefore
 rebinds every item's prototype. Every registry element gets a component
 map (`DataComponentMap.EMPTY` if it had no initializer), so `EntityType`
-holders have one too — though on a **multiplayer** client the binding is
-applied only for networkable registries, so a client's non-networkable
-elements stay unbound.
+holders have one too — with one asymmetry, and it runs the way round you
+would not guess. `ClientConfigurationPacketListenerImpl` passes
+`Connection.isMemoryConnection` into `RegistryDataCollector.collectGameRegistries`,
+which negates it, so a **singleplayer** client binds only the registries
+`RegistrySynchronization.isNetworkable` accepts and a **multiplayer** client
+binds every one. Singleplayer can skip the rest because it shares
+`BuiltInRegistries` with the integrated server, whose own apply has already
+bound them.
 
 Before binding, reading a registry element's components throws, and the
 failure is a null-check, not a friendly error: `Item.components` merely
@@ -263,10 +268,10 @@ sequenceDiagram
     Note over EM: server thread, ServerboundContainerButtonClickPacket has arrived
     EM->>IStack: transmuteCopy(Items.ENCHANTED_BOOK) if the input is a book, same patch over a new prototype
     EM->>IStack: enchant(holder, level) for each chosen EnchantmentInstance
-    IStack->>IStack: EnchantmentHelper.updateEnchantments, then set(DataComponents.ENCHANTMENTS, value)
+    IStack->>IStack: EnchantmentHelper.updateEnchantments, then set of STORED_ENCHANTMENTS for a book, ENCHANTMENTS otherwise
     IStack->>PDM: set: ensureMapOwnership clones the shared map, the value differs from the prototype's empty set, so patch.put
     Note over PDM: patch is now {minecraft:enchantments to {sharpness: 3}}
-    Note over ACM: the next ServerPlayer.tick
+    Note over ACM: still inside the packet handler, which calls broadcastChanges itself once the click is accepted
     ACM->>ACM: broadcastChanges, RemoteSlot.Synchronized.matches fails for this slot
     ACM->>CPL: ClientboundContainerSetSlotPacket: count, item id, DataComponentPatch.STREAM_CODEC
     CPL->>CPL: decode: new ItemStack(holder, count, patch), fromPatch against the client's own bound prototype
@@ -293,9 +298,13 @@ gains its single entry. A book that was transmuted a moment earlier carries
 the same patch over a different prototype, which is the whole meaning of
 `ItemStack.transmuteCopy`.
 
-**Once a tick, the menu compares.** `AbstractContainerMenu.broadcastChanges`
-runs from `ServerPlayer.tick` and compares every slot against what the
-client was last told (`RemoteSlot.Synchronized`). The sword's slot no longer
+**The menu compares, and here it does not wait for the tick.**
+`AbstractContainerMenu.broadcastChanges` compares every slot against what
+the client was last told (`RemoteSlot.Synchronized`). It runs from
+`ServerPlayer.tick` in the ordinary case — but a menu-button click is not
+the ordinary case: `ServerGamePacketListenerImpl.handleContainerButtonClick`
+calls it directly, in the same handler, as soon as
+`AbstractContainerMenu.clickMenuButton` accepts. The sword's slot no longer
 matches, so `ClientboundContainerSetSlotPacket` goes out, and only the patch
 crosses: `ItemStack.OPTIONAL_STREAM_CODEC` writes the count,
 `Item.STREAM_CODEC` (a registry id) and the patch. The client answers later

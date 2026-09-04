@@ -222,10 +222,18 @@ O is the close.
   regex, `check_deps.py`'s README asymmetry, `check_lanes.py`'s
   single-page unkeyed lane). What it did not reach is written out under
   *Open* in [pass4.md](pass4.md).
-- [ ] **Session B — Part I Anatomy · Part II Foundations.** The threads
-  table and the two-loops figure; DFU semantics in `codecs-nbt-json`
-  (addition 6); the freeze rule across `identifiers-and-registries` and
-  `tags`; the data-driven-types page's count of instances.
+- [x] **Session B — Part I Anatomy · Part II Foundations** *(2026-09-04)*.
+  Ten pages, ten agents; **every one had at least one wrong claim**. The
+  freeze rule was wrong on three pages at once — a frozen registry swaps
+  the tag table *and* the component prototypes, on consecutive lines of
+  `ReloadableServerResources`. The two-loops figure and the threads table
+  survived arrow by arrow except for one thing, and it is corpus-wide: the
+  **login state machine is advanced from the Server thread**, because
+  `ServerLoginPacketListenerImpl` is a `TickablePacketListener`; only the
+  handlers stay on Netty. `data-driven-types`' fifty-six is right and its
+  stated criterion was not. Fifth tool bug: `gen_reference.py` missed one
+  register helper and published 94 built-in registries for 95. Everything
+  in [pass4.md](pass4.md).
 - [ ] **Session C — Part III The server.** The three endings; the startup
   ordering; the four-path comparison in `players-and-sessions` against
   authlib.
@@ -245,7 +253,7 @@ O is the close.
 - [ ] **Session H — Part VIII The player.** The two-phase tick's callers;
   the damage pipeline's one number; the spear's two cooldown curves.
 - [ ] **Session I — Part IX Networking.** The round-trip diagram; the phase
-  state machine against authlib; the eight handlers that never hop.
+  state machine against authlib; the seven handlers that never hop.
 - [ ] **Session J — Part X The client.** The tick arithmetic; the
   prediction ledger's two columns; the sound engine's five threads.
 - [ ] **Session K — Part XI Rendering.** Probably two sessions: the frame's
@@ -360,3 +368,34 @@ missing it — and removes the comment. The owner confirms or reorders
   twenty pages are settled; the five with findings still open are listed
   under *Open* in [pass4.md](pass4.md), with what belongs to Parts VI, IX,
   XI, XII and XIII.
+- **2026-09-04, session B — Parts I and II (Opus).** Ten pages, one
+  adversarial agent each; the order work, the tool audit and every *wrong*
+  re-derived by the session before a sentence moved. **All ten pages had at
+  least one wrong claim**, which is pass 2's finding holding for a third
+  time — and the two pages pass 2 never saw (`text-components`,
+  `data-driven-types`) were not the worst of them. Three findings crossed
+  pages: the **freeze rule** (a frozen registry swaps two things, not one —
+  the tag table and the component prototypes, applied on consecutive lines
+  of `ReloadableServerResources.updateComponentsAndStaticRegistryTags`),
+  the **login state machine** (advanced from the Server thread through
+  `MinecraftServer.tickConnection`, not run start to finish on Netty; wrong
+  on `anatomy`, on `reference/threads.md` in three places, and still wrong
+  on Part IX's `protocol-phases`), and the **`ComponentSerialization`
+  superlative**, which no population supports and which is now gone from
+  both pages that carried it. Two inversions worth remembering: the
+  homogeneous-numeric-list section of `codecs-nbt-json` had the collectors
+  backwards, and `data-components` had the component-binding asymmetry the
+  wrong way round — it is the *singleplayer* client that binds only the
+  synchronized registries, and as written no multiplayer client could
+  decode a stack. **Fifth tool bug**, again by suspecting the tool first:
+  `gen_reference.py`'s built-in regex spelled the register helpers out and
+  missed `registerSimpleWithIntrusiveHolders`, so `registries.md` published
+  94 built-in registries for 95 and left `block_entity_type` unclassified.
+  Rulings: a superlative no population supports is deleted rather than
+  re-scoped (session A's lines-per-class precedent, now twice); a stale
+  pass4.md note is corrected in the settling session's entry rather than
+  edited in place; and a wrong fact found on another part's page is logged
+  under *For other parts' sessions* rather than fixed across the boundary
+  (session A's precedent), because the fix needs that part's argument open
+  beside it. Four table cells on `data-driven-types` and one premise are
+  the only findings left unactioned, and they are written out there.

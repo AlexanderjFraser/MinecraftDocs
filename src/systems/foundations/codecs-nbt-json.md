@@ -7,8 +7,10 @@ chest, logs out, comes back and clicks the slot. In those few seconds the
 same sword has been written four times into four different shapes: parsed
 out of the square brackets, written into the chunk file the chest lives in,
 sent down a socket as bytes, and sent back up when the slot was clicked.
-The fourth is the one worth stopping on. **The click carries no item data at
-all.** For each component on the sword it sends one 32-bit checksum,
+The fourth is the one worth stopping on. **The click carries no component
+data at all.** It names the item and the count in the clear —
+`HashedStack.ActualItem` is a `Holder<Item>`, an int and a hashed patch —
+and for each component on the sword it sends one 32-bit checksum,
 produced by running that component's own codec into a `DynamicOps` whose
 output is a hash rather than a document — `HashOps`. And it is the same
 codec every time. The codec that hashed the damage value is the codec that
@@ -173,9 +175,10 @@ the combinators in `ExtraCodecs`, a thousand lines of vocabulary in
 `net/minecraft/util`; the [class index](../../reference/class-index.md) is
 where to look one of them up.
 
-Two of the four ops in the table above are not formats at all. `HashOps`
+Two of the game's ops are not formats at all. `HashOps`, in the cast above,
 answers every question a codec asks and returns a checksum instead of a
-document. `NullOps` returns `Unit`: it encodes to nothing, and exists so
+document. `NullOps`, which the cast does not list, returns `Unit`: it
+encodes to nothing, and exists so
 that a codec can be *run for its errors alone*, which is exactly what
 `ItemStack.validatedStreamCodec` does to a creative-mode stack.
 
@@ -195,10 +198,11 @@ A codec that names an entry of a **dynamic** registry cannot resolve it on
 its own. `RegistryFileCodec`, `RegistryFixedCodec` and `HolderSetCodec` all
 demand a `RegistryOps`, a `DelegatingOps` carrying a
 `RegistryOps.RegistryInfoLookup` beside whatever real ops it wraps. There
-are two ways to make one: `HolderLookup.Provider.createSerializationContext`,
+are two routes worth knowing: `HolderLookup.Provider.createSerializationContext`,
 which is what nearly every caller uses, and `RegistryDataLoader.createContext`,
 used during registry loading itself, when the registries are still being
-built ([identifiers and registries](identifiers-and-registries.md)).
+built ([identifiers and registries](identifiers-and-registries.md)). Both
+end at `RegistryOps.create`, which a handful of callers reach directly.
 
 A codec over a **built-in** registry is a different case:
 `Registry.holderByNameCodec` — and so `Item.CODEC` — resolves against the
@@ -243,12 +247,14 @@ key, with `ListTag.addAndUnwrap` the exact inverse on read. This is not a
 legacy artefact left lying around — it is written today, and it is the whole
 reason mixed lists are legal at all.
 
-**A homogeneous numeric list is not a list.** `NbtOps`' list collectors
-start specialised: a list of bytes, ints or longs is collected into a
-`ByteArrayTag`, `IntArrayTag` or `LongArrayTag` and only degrades to a
-generic `ListTag` on the first mismatched element. So the arrays on disk are
-mostly not written as arrays by anyone — they are what a plain list of
-numbers becomes.
+**A numeric array stays an array, but nothing turns a list into one.**
+`NbtOps.createCollector` hands back a `NbtOps.GenericListCollector` for an empty
+list and only reaches for `NbtOps.ByteListCollector`, `NbtOps.IntListCollector` or
+`NbtOps.LongListCollector` when it is handed an existing `ByteArrayTag`,
+`IntArrayTag` or `LongArrayTag` — and those degrade back to the generic
+collector the moment an element does not fit. A codec building a fresh list
+gets a `ListTag`, whatever is in it; the arrays on disk are written by the
+codecs that asked for arrays.
 
 **A whole file need not be read to answer a question about it.**
 `StreamTagVisitor` and the visitors beside it let `NbtIo.parse` pull two
@@ -266,8 +272,11 @@ charged as the per-type read strategy in `TagType` walks the stream, with
 *region-file-compression*, a `RegionFile` captures it once for **writing**,
 but every chunk carries its own version byte and reads honour that — so one
 world can hold chunks in several compressions at once.
-`RegionFileVersion.VERSION_CUSTOM` is the marker meaning a chunk grew too
-big and lives in its own external file, and `NbtIo.writeCompressed` (GZIP)
+`RegionFileVersion.VERSION_CUSTOM` (id 127) is the marker for a chunk
+written with a compression the game does not name; the marker for a chunk
+that grew too big and lives in its own external file is a different one —
+`RegionFile`'s external-stream flag, 128, set in the version byte. And
+`NbtIo.writeCompressed` (GZIP)
 is for the standalone files, *level.dat* and player data.
 
 The text form is `TagParser`, and it is generic over its *output* ops
@@ -291,8 +300,9 @@ shared provider and the empty instances. The `CompoundTag`-returning methods
 on `BlockEntity` are final shells that build one of these, and they differ
 only in how much metadata they add: `BlockEntity.saveCustomOnly` none,
 `BlockEntity.saveWithoutMetadata` the block entity's own *components* as a
-full `DataComponentMap`, `BlockEntity.saveWithId` the id, and
-`BlockEntity.saveWithFullMetadata` the id and x, y and z.
+full `DataComponentMap`, and `BlockEntity.saveWithFullMetadata` the id and
+x, y and z. `BlockEntity.saveWithId` adds the id too, but only in the
+`ValueOutput` form — it has no `CompoundTag` shell.
 
 The point of the façade is that **an encode failure is reported, not
 thrown**. Everything goes through a `ProblemReporter`, and
@@ -318,8 +328,8 @@ here.
 
 "Trusted" on this wire means *the server wrote it*, and it is a statement
 about the read budget, not about direction. `ByteBufCodecs.TRUSTED_COMPOUND_TAG`
-reads with an unlimited accounter and carries block-entity update payloads,
-chat components and dialogs; plain `ByteBufCodecs.COMPOUND_TAG` reads under
+reads with an unlimited accounter and has exactly one call site,
+`ClientboundBlockEntityDataPacket`; plain `ByteBufCodecs.COMPOUND_TAG` reads under
 the 2 MiB default and carries `CustomData` and predicates.
 `ByteBufCodecs.TRUSTED_TAG` also exists and has no call sites at all, so
 build no mental model on it.
@@ -338,8 +348,8 @@ on the wire it survives in exactly two places, both outside the play phase:
 sent through `ByteBufCodecs.lenientJson`. That is why the game ships two
 JSON parsers — `LenientJsonParser` for the wire and `StrictJsonParser` for
 data packs. Chat text itself is NBT by the time it reaches the play phase:
-`ComponentSerialization` is the most-used codec in the game and holds the
-whole matrix in one class ([text components](text-components.md)).
+`ComponentSerialization` holds that whole matrix in one class
+([text components](text-components.md)).
 
 ## Questions players ask
 

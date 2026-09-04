@@ -4,16 +4,16 @@
 
 Part I is the vocabulary the other twelve parts speak. Java Minecraft is one
 codebase running as two programs — a server that ticks and a client that
-draws — on four threads worth memorising, and every diagram in this book
-has lanes that assume you know which thread each one is on. A player
-recognises this part by its symptom: the game that keeps drawing while the
-world freezes, because the server thread stalled and the render thread did
-not.
+draws — on four threads worth memorising, and every sequence diagram in this
+book has lanes that name classes and assume you know which thread each class
+is on. A player recognises this part by its symptom: the game that keeps
+drawing while the world freezes, because the server thread stalled and the
+render thread did not.
 
 ## The shape of the part
 
-Part I is a root. It has one lecture, and every part after it starts from a
-thread that lecture names.
+Part I is a root. Its first lecture names four threads, and every part after
+it starts from one of them.
 
 ```mermaid
 flowchart TD
@@ -21,7 +21,7 @@ flowchart TD
     A -- "the Server thread" --> S["III The server, IV The world, V Blocks, VI Entities, VII Items, VIII The player, XIII Commands"]
     A -- "the Netty event loop" --> N["IX Networking"]
     A -- "the Render thread" --> C["X The client, XI Rendering"]
-    A -- "the worker pool" --> W["IV The world, XI Rendering, XII World generation"]
+    A -- "the worker pool" --> W["II Foundations, IV The world, XI Rendering, XII World generation"]
     A --> X["What this book skips: the edge of the map"]
 ```
 
@@ -34,8 +34,8 @@ the game.
 
 1. [Anatomy](anatomy.md) — from `main()` to a running singleplayer world:
    the Render thread that is also the game thread, the Server thread that
-   is the world, the Netty threads that run more than bytes, and the one
-   worker pool that everything else is serialised onto.
+   is the world, the Netty threads that run more than bytes, and the one CPU
+   pool that chunk generation, lighting and section meshing all share.
 2. [What this book skips](what-this-book-skips.md) — the boundary, drawn
    honestly on the treemap of the jar: save migration, Realms, telemetry,
    the profiler, the management server, the data generators, and where to
@@ -46,8 +46,8 @@ the game.
 [Threads](../../reference/threads.md) — every thread, who makes it and what
 may run on it. [Naming drift](../../reference/naming-drift.md) — the 1.21-era
 names that have moved. [Diagram lanes](../../reference/lanes.md) — the
-abbreviations every diagram uses. The [maps](../../maps/README.md) — where
-the mass is.
+abbreviations every sequence diagram uses. The
+[maps](../../maps/README.md) — where everything is.
 
 ---
 

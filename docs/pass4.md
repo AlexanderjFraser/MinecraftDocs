@@ -87,6 +87,464 @@ entry first.
 
 ## Entries
 
+## Session B — Part I Anatomy · Part II Foundations (pass 4) *(2026-09-04)*
+
+Ten pages, one adversarial agent each on Opus; the order work, the tool
+audit and every *wrong* re-derived by the session before a sentence moved.
+Session C's eleven per-page bullets are struck below. **Every one of the ten
+pages had at least one wrong claim**, pass 2's finding holding for a third
+time.
+
+### The finding that crossed three pages
+
+**A frozen registry has two things swapped after the freeze, not one.**
+`tags.md:17`, `foundations/README.md`'s figure edge 4 and — by implication —
+`identifiers-and-registries.md`'s freeze section all said the tag table was
+*the one part*. It is not:
+`ReloadableServerResources.updateComponentsAndStaticRegistryTags` applies
+the pending tags on one line and the pending **component prototypes** on the
+next (`server/ReloadableServerResources.java:83-86`), and
+`Holder.Reference.bindComponents` (`core/Holder.java:263`) carries no frozen
+guard. Found independently by the `tags` and `foundations/README` agents and
+verified by the session; the figure was self-contradictory, since its own
+edge 5 named the second swap. All three fixed.
+
+### `anatomy/README.md`
+
+- ~~"It has **one** lecture" → Part I has two; `lectures.md:21-25` numbers
+  both and `:640` calls the second "the second lecture". Now "its first
+  lecture names four threads".~~
+- ~~The hook, "**every diagram** in this book has lanes that assume you know
+  which thread each one is on" → 195 mermaid blocks, of which 89 are
+  sequence diagrams; and a lane is a **class**, not a thread
+  (`reference/lanes.md`: 332 class lanes, 9 word lanes). Now "every sequence
+  diagram … lanes that name classes and assume you know which thread each
+  class is on". Same error in the *Diagram lanes* blurb.~~
+- ~~"the **one worker pool** that everything else is serialised onto" →
+  `util/Util.java:109-111` declares three pools, and `IOWorker.java:45`
+  serialises region-file IO onto `Util.ioPool()`. The page's own lecture
+  says "the pools". Now "the one CPU pool that chunk generation, lighting
+  and section meshing all share" (`ChunkMap.java:187,190`;
+  `LevelRenderer.java:772`).~~
+- ~~The root figure claimed to cover every later part and omitted **Part
+  II**, whose own landing page starts from the worker pool (reload *prepare*
+  on `Util.backgroundExecutor()`, `Minecraft.java:698,1071`). Part II added
+  to that arrow.~~
+- ~~"The maps — *where the mass is*" is the title of `maps/biggest.md`, not
+  of the atlas → "where everything is".~~
+
+### `anatomy/anatomy.md`
+
+- ~~**The login state machine does not run start to finish on Netty.**
+  `ServerLoginPacketListenerImpl` is a `TickablePacketListener`
+  (`server/network/ServerLoginPacketListenerImpl.java:50`) whose `tick()`
+  (`:77-89`) finishes verification, does the dupe-disconnect wait and counts
+  the 600-tick slow-login timeout — driven from the **Server thread** by
+  `MinecraftServer.tickConnection` (`MinecraftServer.java:1295`) →
+  `Connection.tick` (`network/Connection.java:391`). The *handlers* never
+  hop, which is the true and narrower claim. Fixed on the figure's arrow and
+  the Netty table row; **`reference/threads.md` said it in three places and
+  is fixed too**. `networking/protocol-phases.md:11` and `:372` still say it
+  — see *For other parts' sessions*.~~
+- ~~The bootstrap ordering: "After argument parsing and crash-report
+  preloading, `SharedConstants.tryDetectVersion` reads *version.json*" →
+  `tryDetectVersion` is the **first statement of both mains**
+  (`client/main/Main.java:64`, `server/Main.java:76`), before the option
+  parser exists; `loadLibraries` (`:134`) precedes `CrashReport.preload`
+  (`:168`); and `ClientBootstrap.bootstrap` (`:172`) runs **between**
+  `Bootstrap.bootStrap` (`:171`) and `Bootstrap.validate` (`:174`), so the
+  figure's arrow had the last two swapped. Both fixed.~~
+- ~~"A background thread that dies reports through
+  `BlockableEventLoop.delayCrash`, which parks the exception for the owning
+  thread so the crash surfaces where the state it damaged lives" → wrong
+  method and backwards rationale. The path is `Util.onThreadException`
+  (`util/Util.java:326`) → `BlockableEventLoop.relayDelayCrash` (`:344`),
+  and the delayed crash is a **single static slot**
+  (`util/thread/BlockableEventLoop.java:29`) rethrown only where
+  *propagatesCrashes* is set — `Minecraft` (`Minecraft.java:382`) and
+  `DedicatedServer` (`DedicatedServer.java:96`), never `IntegratedServer`
+  (`:77`). So a worker that dies in singleplayer surfaces on the
+  **client**.~~
+- ~~"nothing in the play path knows it is singleplayer" →
+  `ClientPacketListener.handleUpdateTags` branches on
+  `!connection.isMemoryConnection()` at `ClientPacketListener.java:1900`.
+  Now "almost nothing", with the exception named.~~
+- ~~"`IntegratedServer` … **disables native transport**" → it returns the
+  client's own option (`IntegratedServer.java:230-232`), default **true**
+  (`Options.java:1071`). And the packet rate limit is **not** relaxed:
+  `IntegratedServer.getRateLimitPacketsPerSecond` returns 0 and
+  `DedicatedServerProperties.java:150` defaults *rate-limit* to 0 as well.
+  The chat and command spam thresholds *are* relaxed (0 against 10,
+  `DedicatedServerProperties.java:152`). Sentence rebuilt around what is
+  true.~~
+- ~~"Everything else that matters is serialised onto **one of the four**" →
+  broken by the page's own example: `IOWorker` runs on `Util.ioPool()`, its
+  own *IO-Worker-n* pool. Reworded to "serialised onto a pool rather than
+  given a thread".~~
+- ~~The "Can't keep up" thresholds are **not** inside
+  `processPacketsAndTick` or `waitUntilNextTick`; they are decided in
+  `MinecraftServer.runServer` itself (`MinecraftServer.java:803-810`) from
+  how far behind the deadline already is. The pointer sentence to *the
+  server tick* now says so.~~
+- ~~"One of **five**" entry points → the tree has six *main* methods; the
+  sixth, `SnbtDatafixer`, starts nothing, and the page now says so.
+  `client/data/Main` adds four providers, not three — `AtlasProvider` was
+  missing.~~
+- ~~"**Three** of `Minecraft`'s fields are nullable" reads as a count of the
+  class's nullable fields, of which there are ten; reworded to "three of
+  `Minecraft`'s nullable fields between them mean". The cast table's "in
+  four fields, whether we are in a world at all" → three, since
+  `Minecraft.singleplayerServer` answers *am I the host*.~~
+- ~~`RenderSystem.initBackendSystem` does not install the clock: it
+  **returns** it, and `Minecraft.java:460` calls `Util.setTimeSource`. The
+  "entire notion of time" is a client fact, now scoped.~~
+- ~~The cast's `BlockableEventLoop` thread cell said "one instance per
+  owning thread"; the Server thread owns `MinecraftServer` **and** one
+  `ServerChunkCache.MainThreadExecutor` per level, which the page says
+  itself twenty lines later.~~
+- ~~Verified clean and worth keeping: both loops arrow by arrow
+  (`Minecraft.runTick` at `Minecraft.java:1216-1252`;
+  `MinecraftServer.runServer` at `:783-834`), `spin`'s construct-then-start
+  (`:305-323`), the 0-to-10 clamp, priority 10/8 above four cores, the
+  8-player cap, *pause-when-empty-seconds* 60, and the memory channel.~~
+- **Still open**: pass4.md's session-D note asking whether `anatomy`'s
+  compression of two `server-tick` invariants lost anything true. The
+  `anatomy` half is checked — the pointer sentence was wrong and is fixed —
+  and the `server-tick` half is session C's, so the line is left unstruck.
+
+### `anatomy/what-this-book-skips.md`
+
+- ~~`DataFixTypes.wrapCodec`'s examples were inverted: chunk storage and
+  player data read the version themselves and never call it. Its only two
+  callers are `PlayerAdvancements.java:75` and
+  `DebugScreenEntryList.java:43`. And `updateToCurrentVersion` has **13**
+  call sites outside its own declaration, not fifteen.~~
+- ~~"the only callers are the server's own entry point and `DedicatedServer`"
+  → true of *rcon*, which only `DedicatedServer` reaches; *jsonrpc* is
+  referenced by six files including `BuiltInRegistries` and `Registries`,
+  which the client loads at bootstrap. Rewritten to say which is which.~~
+- ~~`BlockItemIds` is "six times the size of either" → 770 keys against
+  `BlockIds`' 111 (7×) and `ItemIds`' 438 (1.8×).~~
+- ~~The ten external users of `net/minecraft/references` are right in number
+  and wrong in composition: `Blocks`, `Items`, five tag providers,
+  `GrassBlock`, `MyceliumBlock` and `DecoratedPotPatterns` — two blocks and
+  a block-entity class, not "three blocks".~~
+- ~~The file-fixer "writes a move journal and a marker file" → one file,
+  *upgrade_in_progress.json*
+  (`util/filefix/FileFixerUpper.java:60,127,310`).~~
+- ~~Session C's note that the treemap hatches "twelve of the fourteen" is
+  **stale**: `net/minecraft/gizmos` and `com/mojang/realmsclient` both carry
+  skip rects in the current `src/generated/packages-treemap.svg`. The one
+  toured package still not drawn is `client/multiplayer/chat/report`, at
+  depth 5. The figcaption stands.~~
+- ~~Verified clean: all 16 sizes-table rows, all 15 side labels,
+  7,055/719,302, 300 schemas / 420 fixes, the six post-effect chains, 996
+  `PostChain` lines and the whole gizmos/rcon/legacy-ping/realms/audio
+  section.~~
+
+### `foundations/README.md`
+
+- ~~"the other **eleven** parts" → twelve (thirteen parts, minus this one);
+  `anatomy/README.md` gets the parallel sentence right.~~
+- ~~"the *type* line at the top of **every** JSON file in a data pack" → tag
+  files have no *type* (`data/minecraft/tags/block/logs.json` is a bare
+  *values* list), and the direct-codec worldgen files (*biome*,
+  *dimension_type*, *noise*) have none either. → "most of".~~
+- ~~Figure edge 1, "**every** registry element is decoded by a codec" → 95
+  of the 148 registries are built-in and their elements are constructed in
+  Java (`Items.java:1692`). → "every **data-pack** registry element".~~
+- ~~Figure edge 4 — the freeze finding above.~~
+- ~~Figure edge 6, "**every** component value has a codec" → three of the
+  111 `DataComponentType`s are transient and their codec is null:
+  *creative_slot_lock*, *additional_trade_cost*, *map_post_processing* (the
+  three `DataComponents` registrations with no persistent codec). → "every
+  **persistent** component value".~~
+- ~~Figure edge 7 and `codecs-nbt-json.md:341`, "`ComponentSerialization`
+  is the **most-used codec in the game**" → unsupportable under any
+  population the session tried: by files, `Codec.STRING` 96 >
+  `Identifier.CODEC` 84 > `ComponentSerialization` 79; by raw occurrences
+  the order flips, which is what makes it a superlative rather than a fact.
+  Dropped on both pages, the substance kept.~~
+- ~~Figure edge 10's second half, "the element registry is dynamic" → only
+  11 of the 56 have a dynamic element registry at all; the rest are written
+  inline. → "the elements come from the packs".~~
+- ~~Teaser 1, "**The click sends no item data at all**" →
+  `HashedStack.ActualItem` is a `Holder<Item>`, an int count and a
+  `HashedPatchMap` (`network/HashedStack.java:44-46`): the item and the
+  count cross in the clear and only the component values are hashed. The
+  linked page said "component" and the teaser had degraded it. Fixed on
+  both.~~
+- ~~Teaser 3, "A failed reload deselects every pack" sat after a clause
+  about the **server**, where a failed reload deselects nothing
+  (`MinecraftServer.java:1700` is inside the success continuation). Scoped
+  to the client.~~
+- ~~Teaser 7, "the whole reason a pack can compose the game's behaviours" →
+  at least four of the fifty-six are unreachable from a data pack. → "are
+  why".~~
+
+### `foundations/codecs-nbt-json.md`
+
+- ~~"**A homogeneous numeric list is not a list.** `NbtOps`' list collectors
+  start specialised" → backwards. `NbtOps.createCollector`
+  (`nbt/NbtOps.java:697-734`) returns a generic collector for an empty list
+  and reaches for the array collectors only when handed an existing array
+  tag, and those degrade back to generic on a mismatch (`:842`). A codec
+  building a fresh list gets a `ListTag`. Sub-section rewritten.~~
+- ~~"`RegionFileVersion.VERSION_CUSTOM` is the marker meaning a chunk grew
+  too big and lives in its own external file" → `VERSION_CUSTOM` is id 127,
+  a custom-**compression** marker (`RegionFileVersion.java:43`,
+  `RegionFile.java:186`); the external-file marker is `RegionFile`'s 128
+  flag (`RegionFile.java:38`).~~
+- ~~`BlockEntity.saveWithId` listed among the `CompoundTag`-returning final
+  shells → it has only the `ValueOutput` form
+  (`world/level/block/entity/BlockEntity.java:143`); the three with a
+  `CompoundTag` shell are `saveWithFullMetadata` (`:114`),
+  `saveWithoutMetadata` (`:148`) and `saveCustomOnly` (`:177`).~~
+- ~~`ByteBufCodecs.TRUSTED_COMPOUND_TAG` "carries block-entity update
+  payloads, chat components and dialogs" → **one** call site,
+  `ClientboundBlockEntityDataPacket.java:18`.~~
+- ~~"Two of the **four ops in the table above**" named `NullOps`, which is
+  in no table on the page.~~
+- ~~"There are **two ways** to make a `RegistryOps`" → the two named are
+  routes; both end at `RegistryOps.create`
+  (`resources/RegistryOps.java:22,26`), which other callers reach
+  directly.~~
+- ~~The hook, as on the landing page.~~
+
+### `foundations/identifiers-and-registries.md`
+
+- ~~**The hook's causal clause.** "registered in sorted order of their ids,
+  which is exactly why the client can rebuild the same numbers from the same
+  list of names" → the server sorts
+  (`ResourceManagerRegistryLoadTask.java:54`), and the client **does not**:
+  `NetworkRegistryLoadTask.load`
+  (`resources/NetworkRegistryLoadTask.java:45-64`) iterates the entries in
+  the order the packet lists them and registers them in that order.
+  Rewritten: the sort makes the *server's* numbering independent of which
+  file finished first.~~
+- ~~"`BuiltInRegistries.createContents` … **forces the class init** of
+  `Items`, `Blocks`, `EntityType` and the rest" → all three are already
+  initialised: `Bootstrap.bootStrap` (`server/Bootstrap.java:46-66`) runs
+  `FireBlock.bootStrap`, `EntityTypes.PLAYER` and
+  `CauldronInteractions.bootStrap` **before** `BuiltInRegistries.bootStrap`.
+  The registering class is `EntityTypes`, not `EntityType`.~~
+- ~~"there is a **third data-driven directory** …
+  `Registries.componentsDirPath`" → it is a datagen **reports** path with
+  one caller (`data/PackOutput.java:38`) and no directory under
+  `reference/26.2/data/`.~~
+- ~~"with **id 0 reserved** so that an inline `Holder.Direct` can be sent
+  instead", said of every registry element → true only of
+  `ByteBufCodecs.holder` (`network/codec/ByteBufCodecs.java:647-670`), which
+  writes id + 1. `ByteBufCodecs.holderRegistry` (`:643`), which
+  `Item.STREAM_CODEC` uses, writes the raw id — as the page's own hook
+  requires.~~
+- ~~"**Only** `ClientRegistryLayer`, `RegistryDataCollector` and
+  `KnownPacksManager` are client-only" → six of the page's classes are,
+  adding `ClientPacketListener`, `ClientConfigurationPacketListenerImpl` and
+  `IntegratedServer` (checked against `server-classes.txt`).~~
+- ~~"**Most** dynamic registries also carry a `RegistryValidator`" → **13 of
+  47**, every one an entity-variant registry and every one
+  `RegistryValidator.nonEmpty` (enumerated from
+  `resources/RegistryDataLoader.java`'s registry-data entries).~~
+- ~~The figure's "one empty registry per `Registries` key" → 95 registries
+  for 148 keys.~~
+- ~~"`MappedRegistry.validateWrite` throws on **every mutation**" after the
+  freeze → `MappedRegistry.prepareTagReload` requires the frozen flag, and
+  the components are rebound beside the tags. Softened to "every ordinary
+  write" with both exceptions named.~~
+- ~~"The tag half of that proof is **why** there are two tag tables" →
+  causality reversed; the two tables are what make the proof possible.~~
+- ~~Counts re-derived and **all three confirmed**: 148 keys, 147 distinct
+  strings (*dimension* is `DIMENSION` and `LEVEL_STEM`), five intrusive
+  registries (five intrusive-holder registrations, five
+  `createIntrusiveHolder` callers).~~
+
+### `foundations/resource-system.md`
+
+- ~~The command is **/serverpack push|pop**, not */resourcepack*
+  (`server/commands/ServerPackCommand.java:22`); no */resourcepack* exists.
+  Both occurrences fixed.~~
+- ~~Figure 3 placed `setOverlay` after the prepare and apply;
+  `Minecraft.java:1071` sets it in the same statement as `createReload`.~~
+- ~~"the first listener to throw **aborts the whole reload rather than
+  letting the rest finish**" → `Util.sequenceFailFast`
+  (`util/Util.java:753`) cancels nothing; the game has
+  `Util.sequenceFailFastAndCancel` (`:760`) and does not use it here. What
+  never happens is the applies.~~
+- ~~"a pack edited on disk mid-reload is **absolutely observable**" → true
+  of a folder pack; `FilePackResources` holds its zip open.~~
+- ~~"the test pack" among the built-ins → `BuiltInPackSource.TESTS_ID`
+  (`:29`) is referenced nowhere else.~~
+- ~~"(built-ins never produce one)" of `CompositePackResources` → true of
+  the vanilla pack only.~~
+- ~~"*allowed_symlinks.txt* is read through `DirectoryValidator`" →
+  `LevelStorageSource.parseValidator` reads it (`Minecraft.java:403`).~~
+- ~~"`TextureManager` does exactly this" in a sentence about
+  `SimplePreparableReloadListener` → `TextureManager` implements
+  `PreparableReloadListener` (`TextureManager.java:29`).~~
+- ~~The count of **twenty** client reload listeners, the registration order,
+  the barrier semantics, the *.mcmeta* rule, both pack-format pairs and the
+  server's three listeners all re-derive exactly.~~
+
+### `foundations/tags.md`
+
+- ~~The hook — the freeze finding above.~~
+- ~~The cast's `Registry.PendingTags` row said "built on a worker" → only at
+  world load; `/reload` builds on the server thread
+  (`MinecraftServer.java:1688`) and the client on its game thread
+  (`ClientPacketListener.java:1889`). The row contradicted the `TagLoader`
+  row above it.~~
+- ~~**The apply does not run on the Server thread at world load.**
+  `WorldLoader.load` applies on its main-thread executor
+  (`server/WorldLoader.java:54-56`), which is `Util.blockUntilDone`'s queue
+  on a dedicated server (`server/Main.java:183`) — the Server thread does
+  not exist yet — and `Minecraft` on the client
+  (`WorldOpenFlows.java:196`). Only `/reload` applies on the Server thread.
+  The diagram's bar and both "it is safe because the server thread…"
+  sentences fixed.~~
+- ~~The required-flag wrinkle was the wrong wrinkle: `TagEntry.build`
+  (`tags/TagEntry.java:65-85`) returns *not required* on a miss
+  **whichever** lookup it was given, so an optional entry never kills a tag.
+  What the two element lookups differ on is where a *required* id is looked
+  up (`tags/TagLoader.java:223-237`).~~
+- ~~"**The cycle is broken silently** … with no diagnostic at all" → both
+  tags are dropped and both are logged. `TagLoader.build`'s tag lookup reads
+  the new-tags map, which the not-yet-built partner is absent from, so each
+  fails as a missing required reference and logs *Couldn't load tag*
+  (`tags/TagLoader.java:125-153`).~~
+- ~~"the reloadable layer has tags too" → `ReloadableServerRegistries.java:66`
+  calls the **void** overload (`tags/TagLoader.java:168-170`), which
+  discards the map; nothing binds them, so a loot registry answers empty for
+  every tag key.~~
+- ~~"The **two throws**" → three distinct messages.~~
+- ~~`ResourceSelectorArgument` listed among the *#tag* argument types → it
+  is a glob over ids (`commands/arguments/ResourceSelectorArgument.java:30`,
+  examples *minecraft:\**) and contains no hash at all.~~
+- ~~Confirmed: the 3/9/4 *logs* JSON counts, the twenty key catalogues, the
+  three ordered apply steps, `AxeItem.STRIPPABLES`, and 12 of the 14 diagram
+  arrows.~~
+
+### `foundations/data-components.md`
+
+- ~~**The binding asymmetry is inverted.** The page said a *multiplayer*
+  client binds only networkable registries. It is the **singleplayer**
+  client that does: `ClientConfigurationPacketListenerImpl.java:177` passes
+  `connection.isMemoryConnection()` into
+  `RegistryDataCollector.collectGameRegistries`, whose parameter is
+  *tagsAndComponentsForSynchronizedRegistriesOnly* and which negates it into
+  the *includeSharedRegistries* of `updateComponents`
+  (`RegistryDataCollector.java:142-167`). As written, no multiplayer client
+  could decode a stack. Fixed, with the reason singleplayer can skip them.~~
+- ~~Figure 2's "the next `ServerPlayer.tick`" and the "**Once a tick**, the
+  menu compares" heading → for this trace,
+  `ServerGamePacketListenerImpl.handleContainerButtonClick` (`:2271-2275`)
+  calls `broadcastChanges` synchronously as soon as
+  `AbstractContainerMenu.clickMenuButton` accepts.~~
+- ~~The trace's set of `DataComponents.ENCHANTMENTS` → for the enchanted
+  book the diagram itself transmutes to,
+  `EnchantmentHelper.getComponentType` (`:91-93`) writes
+  `DataComponents.STORED_ENCHANTMENTS`.~~
+- ~~"built … on the reload worker" is a server fact; the client binds during
+  configuration.~~
+- ~~All ten counts re-derived clean (111 component types, 3 transient, 29
+  slash ids, 10 common, 15 predicate kinds).~~
+
+### `foundations/text-components.md` *(never fact-checked before)*
+
+- ~~"`DeathMessageType.FALL_VARIANTS` and `INTENTIONAL_GAME_DESIGN` take the
+  other **two** branches" → `CombatTracker.getDeathMessage`
+  (`world/damagesource/CombatTracker.java:92-112`) has four: an empty combat
+  log is *death.attack.generic*, and the fall branch is taken only when
+  `CombatTracker.getMostSignificantFall` returns non-null.~~
+- ~~"parses **every** at-sign into a `MessageArgument.Part`" →
+  `MessageArgument.java:146-165` skips one whose selector parse fails on a
+  missing or unknown selector type and leaves it as text.~~
+- ~~"**Every setter** returns a new `Style`" → `Style.withBold` and its
+  siblings return the same object when the value is unchanged
+  (`network/chat/Style.java:123-129`).~~
+- ~~"The server reads the message once, for its log" → only on the
+  `PlayerList.broadcastSystemMessage` path. A victim on a team whose
+  death-message visibility is not *always* goes through
+  `PlayerList.broadcastSystemToTeam` or
+  `PlayerList.broadcastSystemToAllExceptTeam`
+  (`ServerPlayer.java:997-1004`), neither of which logs, and
+  `Team.Visibility.NEVER` matches neither branch, so the message reaches
+  nobody at all.~~
+- ~~**Both claims session C flagged as unverified are settled.** The **top**
+  of the pack stack wins a language key —
+  `FallbackResourceManager.getResourceStack` returns the reversed list and
+  `ClientLanguage.appendFrom` puts in that order, so later overwrites
+  earlier. And the dedicated server **does** bundle *en_us.json*:
+  `net/minecraft/locale/Language` is in `server-classes.txt` and its static
+  default instance reads the file off the classpath.~~
+- ~~All 26 counts re-counted correct; the "never a *type* key on encode"
+  absolute confirmed down to `NbtOps.compressMaps`.~~
+
+### `foundations/data-driven-types.md` *(never fact-checked before)*
+
+- ~~**The fifty-six is right and its stated criterion was not.** Re-derived
+  by the session: a `Registry.byNameCodec` dispatch on a `BuiltInRegistries`
+  field has **57** distinct registries. The page's three tables list 56; the
+  difference is `GAME_RULE` and `STAT_TYPE` (in the grep, filed under *what
+  does not follow the pattern* because the registry name is a map **key**,
+  not a field's value) and `TRIGGER_TYPES` (in the tables, dispatching
+  through `ExtraCodecs.dispatchOptionalValue` instead). The criterion is now
+  stated as *the value of a field*, with both exclusions named. The 31/23/2
+  split stands.~~
+- ~~"**Four** of the instances accept a bare value" → seven: the page's four
+  plus `FloatProviders.CODEC` (`valueproviders/FloatProviders.java:12`),
+  `NbtProviders.CODEC` and `ScoreboardNameProviders.CODEC`. "**Two** accept
+  a bare list" → three, adding `SlotSources` through
+  `GroupSlotSource.INLINE_CODEC` (`world/item/slot/SlotSources.java:21`),
+  which is not a loot instance.~~
+- ~~"the ones that are not fall into **three groups**" → four registries sit
+  outside all three (`TICKET_TYPE`, `MAP_DECORATION_TYPE`,
+  `POINT_OF_INTEREST_TYPE`, `VILLAGER_TYPE`), now named.~~
+- ~~`BuiltInRegistries.ATTRIBUTE_TYPE` listed as "a key, not a kind" →
+  `AttributeTypes.CODEC` (`world/attribute/AttributeTypes.java:38`) has **no
+  reader in the tree**; the attribute name a file uses as a key belongs to
+  `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE`
+  (`world/attribute/EnvironmentAttributeMap.java:20`).~~
+- **Not acted on, for the record**: the agent also reports
+  `LOOT_SCORE_PROVIDER_TYPE`'s and `SLOT_SOURCE_TYPE`'s *where the elements
+  live* cells wrong, `POSITION_SOURCE_TYPE`'s "one enchantment effect" a
+  name collision with `SpawnParticlesEffect`'s own nested position source,
+  the *features and placement* trace not walking "all nine" tree
+  sub-objects, and 13 of the 29 synchronized registries using a distinct
+  network codec rather than the direct codec. Four table cells and one
+  premise; **left for session N or a follow-up**, since each needs the
+  owning part's page open beside it.
+
+### The tool bug — the fifth of pass 4
+
+`tools/gen_reference.py`'s built-in regex spelled the register helpers out
+and so missed `registerSimpleWithIntrusiveHolders`, the one
+`BuiltInRegistries.BLOCK_ENTITY_TYPE` uses (`BuiltInRegistries.java:202`).
+`src/reference/registries.md` therefore published **94 built-in** and a
+blank *kind* cell for *block_entity_type*. The regex now matches any
+register helper, the count is **95**, and the row is right. No page cited
+the 94. Found by re-deriving the population behind the landing page's figure
+edge 1 — the tool suspected first, as the charter asks.
+
+### Order and dependency (addition 2)
+
+`check_deps.py` green. Part I's *before you start* is "Nothing" and its four
+cross-part links are all forward hand-offs in `anatomy.md`'s body, which
+session A's ruling puts outside the section. Part II's single entry
+(`anatomy/anatomy`) is used at `identifiers-and-registries.md:139`. Both
+parts' `lectures.md` sections match their landing pages' order and hooks.
+
+### For other parts' sessions
+
+- ~~**Part IX** — `networking/protocol-phases.md:11` ("every server-side
+  handler in the handshake and login phases runs on the Netty thread") and
+  `:372` ("handshake and login listeners run to completion on the Netty
+  thread") carry the login-tick error corrected on `anatomy.md` and
+  `reference/threads.md` above. The fix is the same: the *handlers* never
+  hop; the login listener's `tick` runs on the Server thread.~~
+- ~~**Part VII** — `data-driven-types`'s four wrong table cells (above) point
+  at the loot and slot pages.~~
+
 ## Session A — The frame (pass 4) *(2026-09-04)*
 
 The introduction, the atlas, `lectures.md`, the parts-dependency figure, the
@@ -1822,7 +2280,7 @@ graph — seventeen edges, each a conversion claim); one added
   below are the ones that report listed as *introduced* or *reworded*, and
   the two pass-2 errors found on the way. Check the two new pages hardest —
   nothing on them was fact-checked in pass 2.
-  - **Two pass-2 errors found.** `tags` said "an axe strips anything in
+  - ~~**Two pass-2 errors found.** `tags` said "an axe strips anything in
     `#minecraft:logs`". It does not: `AxeItem.STRIPPABLES` is a hard-coded
     `Map` of block to block and stripping never consults a tag; the page
     now opens on the parrot (`Parrot.ParrotWanderGoal` recognises leaves by
@@ -1836,8 +2294,8 @@ graph — seventeen edges, each a conversion claim); one added
     running game reads the generated JSON from the built-in pack. Verified
     by the session. The surviving runtime call is
     `NoiseRouterData.peaksAndValleys` → `TerrainProvider` on the F3 biome
-    line and in `OverworldBiomeBuilder`'s parameter spans.
-  - **`anatomy`** (trace, two figures). The two-loops flowchart is the
+    line and in `OverworldBiomeBuilder`'s parameter spans.~~
+  - ~~**`anatomy`** (trace, two figures). The two-loops flowchart is the
     figure Parts III, IX and X now link to; it asserts `Minecraft.runTick`
     = advance the `DeltaTracker` → drain the `PacketProcessor` → run own
     tasks → 0 to 10 ticks → render, and `MinecraftServer.runServer` = set
@@ -1853,8 +2311,8 @@ graph — seventeen edges, each a conversion claim); one added
     (was "at the very start"). Moved, not cut: `Minecraft.isPaused`'s
     three-part condition now lives only on `the-client-loop`;
     `tickPaused`'s "or the player list is empty" and "one save on the
-    transition" only on `server-tick`.
-  - **`what-this-book-skips`** (the old `out-of-scope-tour`, moved to
+    transition" only on `server-tick`.~~
+  - ~~**`what-this-book-skips`** (the old `out-of-scope-tour`, moved to
     Part I, the treemap included, the gaps as one table). New: the F3
     biome line runs through `NoiseRouterData.peaksAndValleys` into
     `TerrainProvider`; `NoiseRouterData` and `NoiseGeneratorSettings` are
@@ -1868,8 +2326,8 @@ graph — seventeen edges, each a conversion claim); one added
     `src/generated/` and matches. The figcaption's "hatched boxes are the
     packages this page tours" is true of twelve of the fourteen: `gizmos`
     and `realms` are too small for the tool to hatch (a tool limitation,
-    logged in pass3.md), and `client/multiplayer/chat/report` is depth 5.
-  - **`codecs-nbt-json`** (comparison). New: both sides wrap
+    logged in pass3.md), and `client/multiplayer/chat/report` is depth 5.~~
+  - ~~**`codecs-nbt-json`** (comparison). New: both sides wrap
     `HashOps.CRC32C_INSTANCE` in a `RegistryOps` (`ClientPacketListener`
     from the received registries, `ServerPlayer` from its own) "because a
     component value can name a registry entry" — the motive is the agent's
@@ -1886,8 +2344,8 @@ graph — seventeen edges, each a conversion claim); one added
     `CompoundTag` in the block entity; the wire path is `StreamCodec` all
     the way with the `NullOps` re-encode on exactly one packet; the server
     re-hashes its own stack rather than decoding; the text path builds its
-    `TagParser` for the parser's own `RegistryOps`.
-  - **`identifiers-and-registries`** (trace, both diagrams kept). The
+    `TagParser` for the parser's own `RegistryOps`.~~
+  - ~~**`identifiers-and-registries`** (trace, both diagrams kept). The
     world-load diagram's `replaceFrom` arrow now comes from `WorldLoader`,
     not `RegistryDataLoader` (read from `WorldLoader.load`), and
     `RegistryDataLoader.load` is given lookups built by
@@ -1896,8 +2354,8 @@ graph — seventeen edges, each a conversion claim); one added
     server and NBT from the wire on the client (`NetworkRegistryLoadTask`).
     The freeze rule is now stated in one section and justified nowhere on
     this page; `Registry.PendingTags` and `prepareTagReload` are named only
-    on `tags`. Counts unchanged: 148 keys, 147 objects, five intrusive.
-  - **`resource-system`** (pipeline, `/reload` as a comparison table).
+    on `tags`. Counts unchanged: 148 keys, 147 objects, five intrusive.~~
+  - ~~**`resource-system`** (pipeline, `/reload` as a comparison table).
     New, all from `SimpleReloadInstance`, `Minecraft`, `LoadingOverlay`,
     `MinecraftServer.reloadResources`, `ReloadCommand`,
     `MultiPackResourceManager`, `Pack.Position`: the first listener's
@@ -1921,8 +2379,8 @@ graph — seventeen edges, each a conversion claim); one added
     at the front, past any pack already fixed there" (was "at index 0").
     The lattice figure asserts every apply waits on all preparations *and*
     the previous apply, and that the only prepare-to-prepare edge is
-    `AtlasManager` → `ModelManager` through shared state.
-  - **`tags`** (trace). New: the vanilla *logs* file is three tag
+    `AtlasManager` → `ModelManager` through shared state.~~
+  - ~~**`tags`** (trace). New: the vanilla *logs* file is three tag
     references (*logs_that_burn*, *crimson_stems*, *warped_stems*),
     *logs_that_burn* nine references including *oak_logs*, *oak_logs* four
     blocks — so *oak_logs* is a grandchild of *logs*, not a direct entry
@@ -1931,8 +2389,8 @@ graph — seventeen edges, each a conversion claim); one added
     tree on a play-phase tags packet; `Holder.Reference.is` is a
     set-contains on the bound tag set; `FileToIdConverter.json` over the tag
     directory. The diagram's five `Note over` bars (worker pool → server
-    thread → configuration → play → a server tick) are ordering claims.
-  - **`data-components`** (vocabulary). New: `DataComponentLookup` reads the
+    thread → configuration → play → a server tick) are ordering claims.~~
+  - ~~**`data-components`** (vocabulary). New: `DataComponentLookup` reads the
     same bound prototypes and is meaningless before the first reload (check
     that its lazy population reads `Holder.components`); "set the
     enchantments back to empty and the entry vanishes" (a worked instance of
@@ -1942,8 +2400,8 @@ graph — seventeen edges, each a conversion claim); one added
     prototype + `Optional` patch + `copyOnWrite`; the trace asserts click →
     `transmuteCopy` → `enchant` → `set` → `ensureMapOwnership` → the next
     `ServerPlayer.tick`'s `broadcastChanges` → `ClientboundContainerSetSlotPacket`
-    → `fromPatch`.
-  - **`text-components`** (new, vocabulary; every claim is new). The hook:
+    → `fromPatch`.~~
+  - ~~**`text-components`** (new, vocabulary; every claim is new). The hook:
     the death message is sent twice (`ClientboundPlayerCombatKillPacket` to
     the victim, system chat to everyone — verified by the session from
     `ServerPlayer.die`; a team visibility of `NEVER` broadcasts nothing,
@@ -1966,8 +2424,8 @@ graph — seventeen edges, each a conversion claim); one added
     each with a file in the agent's report; two the agent flagged as
     unverified: "merged in stack order" (which end of the pack stack wins
     for language files) and that the dedicated server jar bundles
-    *en_us.json*.
-  - **`data-driven-types`** (new, pattern; every claim is new). The count
+    *en_us.json*.~~
+  - ~~**`data-driven-types`** (new, pattern; every claim is new). The count
     — **fifty-six** registries in `BuiltInRegistries` that some codec
     dispatches on through `Registry.byNameCodec`: thirty-one bare
     `MapCodec` registries, twenty-three type-object registries, two where
@@ -1990,10 +2448,10 @@ graph — seventeen edges, each a conversion claim); one added
     `DataComponentPredicate`; `ENTITY_SUB_PREDICATE_TYPE` holds a plain
     `Codec`; `RECIPE_TYPE` versus `RECIPE_SERIALIZER`; `BLOCK_TYPE` read by
     nothing but `BlockListReport`; `RegistryDataLoader` fails the whole
-    load where `scanDirectory` skips one file.
-  - **`systems/foundations/README.md`** (new, landing page): the stack
+    load where `scanDirectory` skips one file.~~
+  - ~~**`systems/foundations/README.md`** (new, landing page): the stack
     figure's ten edges are dependency claims; *before you start* names only
-    `anatomy`; the seven teasers restate the seven hooks.
+    `anatomy`; the seven teasers restate the seven hooks.~~
   - **`chat-and-signing`**: its `Component` section is now a one-paragraph
     pointer; the three facts it keeps (NBT on the wire, the `OPEN_FILE`
     filter, chat never resolves) are unchanged. **`reference/threads.md`**:

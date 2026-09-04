@@ -22,16 +22,16 @@ deep in the options menu you are.
 
 | class | what it decides | thread |
 |---|---|---|
-| `Minecraft` | the client: the `Window`, the resource system, the renderers, input and `Options` — and, in four fields, whether we are in a world at all | Render |
+| `Minecraft` | the client: the `Window`, the resource system, the renderers, input and `Options` — and, in three fields, whether we are in a world at all | Render |
 | `MinecraftServer` | the world and the loop that advances it. Abstract, with three concrete subclasses: `IntegratedServer`, `DedicatedServer`, and `GameTestServer`, the headless harness the gametest entry point launches | Server |
 | `IntegratedServer` | everything singleplayer does differently: the pause, LAN publishing, the player cap, the relaxed limits | Server |
-| `BlockableEventLoop` | the queue-and-thread pairing both loops are — `Minecraft` and `MinecraftServer` each extend `ReentrantBlockableEventLoop` | one instance per owning thread |
+| `BlockableEventLoop` | the queue-and-thread pairing both loops are — `Minecraft` and `MinecraftServer` each extend `ReentrantBlockableEventLoop` | one per queue, and a thread may own more than one |
 | `Connection` | one channel, and which `PacketListener` is currently on it | Netty |
 | `ServerConnectionListener` | which channels the server listens on, including the in-memory one singleplayer uses | Server, binding into Netty |
 | `PacketProcessor` | which decoded packets are waiting to be handled on the thread that owns their state | filled from Netty, drained by the owner |
 | `Util` | the pools everything else is serialised onto: `Util.backgroundExecutor`, `Util.ioPool`, `Util.nonCriticalIoPool` | — |
 
-Three of `Minecraft`'s fields are nullable and between them mean "we are in a
+Three of `Minecraft`'s nullable fields between them mean "we are in a
 world": `Minecraft.level` (a `ClientLevel`), `Minecraft.player` (a
 `LocalPlayer`) and `Minecraft.gameMode` (a `MultiPlayerGameMode`). A fourth,
 `Minecraft.singleplayerServer`, holds the `IntegratedServer` when one is
@@ -55,7 +55,7 @@ sequenceDiagram
     participant SCL as ServerConnectionListener
     participant Conn as Connection
 
-    Main->>Main: tryDetectVersion, loadLibraries, DataFixers.optimize in the background, bootStrap, validate, ClientBootstrap
+    Main->>Main: tryDetectVersion, loadLibraries, DataFixers.optimize in the background, bootStrap, ClientBootstrap, validate
     Main->>RS: initRenderThread — this thread is the Render thread from here on
     Main->>MC: the constructor — initBackendSystem, a backend, a Window, every reload listener registered
     MC->>MC: the first ReloadInstance — prepare on the workers, apply here, LoadingOverlay on screen
@@ -66,27 +66,28 @@ sequenceDiagram
     MC->>MC: managedBlock — draw a frame, drain the queue, repeat, until MinecraftServer.isReady
     MC->>SCL: startMemoryChannel — a Netty local address, no socket anywhere
     MC->>Conn: connectToLocalServer — the client's end of that same channel
-    Conn->>SCL: handshake, then login, both start to finish on the Netty thread
+    Conn->>SCL: handshake, then login — the handlers run on Netty, the login tick on the Server thread
     Conn->>SCL: configuration, then play — from here the client is a client like any other
     Note over MC,IS: two loops, one wire
 ```
 
-**Bootstrap before anything exists.** After argument parsing and crash-report
-preloading, `SharedConstants.tryDetectVersion` reads *version.json*,
-`NativeLibrariesBootstrap.loadLibraries` unpacks the natives,
+**Bootstrap before anything exists.** `SharedConstants.tryDetectVersion`
+reads *version.json* as the first statement of both *main* methods, before
+the option parser exists; `NativeLibrariesBootstrap.loadLibraries` unpacks
+the natives, `CrashReport.preload` warms the reporter, and
 `Bootstrap.bootStrap` builds and freezes the static registries — blocks,
 items, entity types, the things that cannot be data-driven because the data
-loader itself needs them — and `Bootstrap.validate` checks the result;
-`ClientBootstrap` does the client-only equivalents. `DataFixers.optimize` is
-kicked off concurrently before the registries are built and joined much
-later. That ordering is why nothing in `world/` can be touched from a static
-initialiser.
+loader itself needs them. `ClientBootstrap` does the client-only equivalents
+between that and `Bootstrap.validate`, which checks the result.
+`DataFixers.optimize` is kicked off concurrently before the registries are
+built and joined much later. That ordering is why nothing in `world/` can be
+touched from a static initialiser.
 
 **The GPU backend is chosen in the constructor.**
-`RenderSystem.initBackendSystem` runs first and, among other things, installs
-GLFW's clock through `Util.setTimeSource` — the game's entire notion of time
-comes from the windowing library. Then `PreferredGraphicsApi` from `Options`
-decides the order `PreferredGraphicsApi.getBackendsToTry` returns: OpenGL
+`RenderSystem.initBackendSystem` runs first and returns GLFW's clock, which
+`Minecraft` installs through `Util.setTimeSource` — on the client, the game's
+entire notion of time comes from the windowing library. Then
+`PreferredGraphicsApi` from `Options` decides the order `PreferredGraphicsApi.getBackendsToTry` returns: OpenGL
 first by default, Vulkan first only if the player opts in. The first
 `GpuBackend` that can create a `Window` wins — `GlBackend` or
 `VulkanBackend` — and from then on the renderer only ever sees the
@@ -113,8 +114,12 @@ textbook case of *waiting drains*.
 `Connection.connectToLocalServer` connects to it; the client then walks
 handshake, login, configuration and play through
 `ClientHandshakePacketListenerImpl` exactly as it would against a remote
-server, and nothing in the play path knows it is singleplayer.
-[Protocol phases](../networking/protocol-phases.md) is that walk in full.
+server. Almost nothing in the play path knows it is singleplayer: the
+exceptions are the handful of places that ask `Connection.isMemoryConnection`
+directly, among them `ClientPacketListener.handleUpdateTags`, which skips
+applying the tags it was sent because the server's registries are already
+the client's. [Protocol phases](../networking/protocol-phases.md) is that
+walk in full.
 
 ## Two loops, and a wire between them
 
@@ -167,9 +172,11 @@ whatever `/tick rate` says otherwise, and zero while sprinting — and calls
 and then runs `MinecraftServer.tickServer`. Afterwards
 `MinecraftServer.waitUntilNextTick` spends the slack running queued tasks and
 then parks until the next tick is due. There is no frame and no partial tick
-here at all. [The server tick](../server/server-tick.md) owns everything
-inside those two calls: the tick budget, the deferrable work, the
-"Can't keep up!" thresholds and the flush bracket around outbound packets.
+here at all. The "Can't keep up!" warning is `MinecraftServer.runServer`'s
+own, decided
+before either call from how far behind the deadline already is; [the server
+tick](../server/server-tick.md) owns what is inside them — the tick budget,
+the deferrable work and the flush bracket around outbound packets.
 
 **Both are event loops first and game loops second.** `Minecraft` and
 `MinecraftServer` both extend `ReentrantBlockableEventLoop` — the same base
@@ -196,7 +203,7 @@ channel's event loop if it is not already on it.
 |---|---|---|---|
 | **Render thread** | the JVM main thread, renamed in `client/main/Main` | `Minecraft.run` | Also the client's game thread: `Minecraft.gameThread` is this thread. Priority 10 on machines with more than four cores. |
 | **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` | One per server, so singleplayer has exactly one. Priority 8, on the same more-than-four-cores condition. |
-| **Netty IO** | `EventLoopGroupHolder` | the `Connection` pipeline | Named *Netty NIO IO n* — Epoll or Kqueue when native transport is on, *Netty Local IO n* for the in-process singleplayer channel. Decode, decrypt, decompress — and, unlike the play phase, the whole handshake and login state machines, whose first hop to a game thread does not come until configuration. |
+| **Netty IO** | `EventLoopGroupHolder` | the `Connection` pipeline | Named *Netty NIO IO n* — Epoll or Kqueue when native transport is on, *Netty Local IO n* for the in-process singleplayer channel. Decode, decrypt, decompress — and, unlike the play phase, the handshake and login *handlers*, which never call `PacketUtils.ensureRunningOnSameThread`; the first handler that hops is in configuration. The login state machine is still advanced from the Server thread, because `ServerLoginPacketListenerImpl` is a `TickablePacketListener` and `MinecraftServer.tickConnection` ticks it. |
 | **Worker-Main-n** | `Util.backgroundExecutor` | a `ForkJoinPool` sized to `availableProcessors()` minus one | `Util.maxAllowedExecutorThreads` clamps it, and `Util.getMaxThreads` reads a *max.bg.threads* system property that overrides the ceiling. The shared CPU pool: chunk generation and lighting (`ChunkMap` through `ChunkTaskDispatcher`), section meshing (`SectionRenderDispatcher`), resource-reload *prepare* phases, chunk serialisation. |
 
 That is the set worth memorising, not the set that exists. The IO workers,
@@ -217,11 +224,12 @@ calls `ClientLevel.tickEntities`, and block entities tick too — but nothing it
 concludes is authoritative, and the server's packets overwrite whatever the
 prediction got wrong.
 
-Everything else that matters is *serialised onto* one of the four. The two
-`ConsecutiveExecutor` classes in `util/thread` are the mechanism: a queue that
-promises to run its tasks one at a time on a pool that otherwise runs many,
-which is how "worldgen", "light" and the IO workers stay ordered without
-owning a thread of their own. `PriorityConsecutiveExecutor` adds a priority to
+Everything else that matters is *serialised onto* a pool rather than given a
+thread. The two `ConsecutiveExecutor` classes in `util/thread` are the
+mechanism: a queue that promises to run its tasks one at a time on a pool
+that otherwise runs many, which is how "worldgen" and "light" stay ordered on
+the worker pool, and how the `IOWorker` stays ordered on `Util.ioPool` —
+which is its own pool of *IO-Worker-n* threads, not one of the four. `PriorityConsecutiveExecutor` adds a priority to
 the same idea. And `ServerChunkCache.MainThreadExecutor` is a further event
 loop layered on the server thread, which is why a tick that waits on a chunk
 does not deadlock the chunk that needs the tick.
@@ -243,9 +251,10 @@ packet" as a rule about the *world*, not about the process.
 
 Singleplayer differs in more than pausing, too. Beyond the pause and the
 distances following `Options`, `IntegratedServer` caps the player list at
-eight, owns LAN publishing and the `LanServerPinger`, relaxes the packet rate
-limit and the chat and command spam thresholds, disables native transport,
-and answers the operator-permission questions differently.
+eight, owns LAN publishing and the `LanServerPinger`, drops the chat and
+command spam thresholds to zero where a dedicated server defaults to ten,
+takes native transport from the client's own option rather than a server
+property, and answers the operator-permission questions differently.
 
 ## Questions players ask
 
@@ -269,14 +278,20 @@ effect on it.
 
 **What happens when something throws?** It is collected, not thrown. Both
 loops catch everything, wrap it in a `CrashReport` and, on the client, try
-`Minecraft.emergencySaveAndCrash` first. A background thread that dies
-reports through `BlockableEventLoop.delayCrash`, which parks the exception
-for the owning thread so the crash surfaces where the state it damaged lives.
+`Minecraft.emergencySaveAndCrash` first. A background thread that dies goes
+through `Util.onThreadException` into `BlockableEventLoop.relayDelayCrash`,
+which parks the report in one **static** slot; the next loop to check it
+rethrows — but only a loop constructed to propagate crashes, which is
+`Minecraft` and `DedicatedServer` and never `IntegratedServer`. So a worker
+that dies in singleplayer surfaces on the client, not on the server thread
+whose work it was doing.
 
 **Which entry point starts all this?** One of five. `client/main/Main` for the
 client, `server/Main` for the dedicated server, `data/Main` for the data
 generator, `client/data/Main` for the generated client assets — models,
-equipment assets, waypoint styles — and `gametest/Main` for `GameTestServer`.
+atlases, equipment assets, waypoint styles — and `gametest/Main` for
+`GameTestServer`. The tree holds a sixth *main*, `SnbtDatafixer`, which
+converts files and starts nothing.
 The client reads *options.txt* through `Options`, the dedicated server
 *server.properties* through `DedicatedServerProperties`, and both read
 *version.json* through `SharedConstants`.

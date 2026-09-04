@@ -85,14 +85,17 @@ feature's configuration codec under that key, and
 `ConfiguredFeature.DIRECT_CODEC` dispatches to it. `WorldCarver` and
 `ConfiguredWorldCarver.DIRECT_CODEC` are the same shape.
 
-Four of the instances accept a bare value in place of the object:
-`IntProviders.CODEC` and `NumberProviders.CODEC` read a plain number as a
-constant, `DensityFunctions.DIRECT_CODEC` reads a plain number as
-`DensityFunctions.Constant`, and a height provider reads a bare anchor.
-And two of the loot instances accept a bare **list**:
+Seven of the instances accept a bare value in place of the object:
+`IntProviders.CODEC`, `FloatProviders.CODEC` and `NumberProviders.CODEC`
+read a plain number as a constant, `DensityFunctions.DIRECT_CODEC` reads a
+plain number as `DensityFunctions.Constant`, a height provider reads a bare
+anchor, and `NbtProviders.CODEC` and `ScoreboardNameProviders.CODEC` read a
+bare string as the context form. Three accept a bare **list**:
 `LootItemFunctions.ROOT_CODEC` tries `LootItemFunctions.TYPED_CODEC` and
 falls back to `SequenceFunction.INLINE_CODEC`, so a JSON array where one
-function was expected is a sequence of them.
+function was expected is a sequence of them; `LootItemCondition` does the
+same through `AllOfCondition.INLINE_CODEC`, and `SlotSources` through
+`GroupSlotSource.INLINE_CODEC`.
 
 > **For a 1.21-era reader.** The loot package has no type-object class any
 > more: there is no *LootItemFunctionType* record wrapping a `MapCodec`,
@@ -103,11 +106,15 @@ function was expected is a sequence of them.
 
 ## Fifty-six of them
 
-**Fifty-six** — registries in `BuiltInRegistries` that some codec in the
-decompile dispatches on through `Registry.byNameCodec`, counted at the
-dispatch sites: thirty-one bare, twenty-three type-object, two where the
-type is the behaviour. The dispatch key is *type* unless the row says
-otherwise.
+**Fifty-six** — registries in `BuiltInRegistries` that a codec dispatches
+on from the **value** of a field, counted at the dispatch sites:
+thirty-one bare, twenty-three type-object, two where the type is the
+behaviour. The dispatch key is *type* unless the row says otherwise. The
+criterion is the value, not `Registry.byNameCodec` itself: two more
+registries dispatch through it and are not here —
+`BuiltInRegistries.GAME_RULE` and `BuiltInRegistries.STAT_TYPE`, where the
+registry name is the *key* of a map rather than the value of a field, and
+which are among the exceptions below.
 
 ### The bare spelling: the registry holds a `MapCodec`
 
@@ -285,12 +292,21 @@ chest.
 ## What does not follow the pattern
 
 Not every registry in `BuiltInRegistries` whose name ends in *type* is a
-registry of kinds, and the ones that are not fall into three groups.
+registry of kinds, and most of the ones that are not fall into three
+groups. A few fall outside them altogether — `BuiltInRegistries.TICKET_TYPE`,
+`BuiltInRegistries.MAP_DECORATION_TYPE`,
+`BuiltInRegistries.POINT_OF_INTEREST_TYPE` and
+`BuiltInRegistries.VILLAGER_TYPE` are registries of ordinary things whose
+names happen to end in *type*, dispatching nothing, and
+`BuiltInRegistries.ATTRIBUTE_TYPE` has a `Registry.byNameCodec` —
+`AttributeTypes.CODEC` — that nothing in the tree reads; the attribute name
+a file actually uses as a key belongs to
+`BuiltInRegistries.ENVIRONMENT_ATTRIBUTE`.
 
 **A key, not a kind.** `BuiltInRegistries.DATA_COMPONENT_TYPE`,
 `BuiltInRegistries.ENCHANTMENT_EFFECT_COMPONENT_TYPE`,
-`BuiltInRegistries.GAME_RULE`, `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` and
-`BuiltInRegistries.ATTRIBUTE_TYPE` each hold objects that carry a codec for
+`BuiltInRegistries.GAME_RULE` and `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE`
+each hold objects that carry a codec for
 their *value*, and a file uses them as JSON **keys**: `GameRuleMap.CODEC`
 and `DataComponentPredicate.CODEC` are `Codec.dispatchedMap`, a map whose
 key codec is `Registry.byNameCodec` and whose value codec depends on the

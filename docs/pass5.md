@@ -19,6 +19,66 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session B — Parts I and II (pass 4) *(2026-09-04)*
+
+Wording debt and structural findings from Part I and Part II's fact-check.
+Every factual fix is in `docs/pass4.md`; nothing below was acted on.
+
+**Wording to re-read** (a hook or an argument was rewritten around a
+correction):
+
+- `src/systems/anatomy/README.md` — the opening hook and the first *Watch in
+  this order* teaser were both rewritten mid-sentence. The hook now says
+  "every sequence diagram … lanes that name classes and assume you know
+  which thread each class is on", which is true and two clauses longer than
+  the sentence it replaced.
+- `src/systems/anatomy/anatomy.md` — four paragraphs grew a qualifying
+  clause each: the bootstrap ordering, the crash relay, the singleplayer
+  differences and *Everything else that matters is serialised onto*. The
+  crash paragraph is now the longest answer under *Questions players ask*
+  and carries three class names it did not before.
+- `src/systems/foundations/identifiers-and-registries.md` — the opening
+  paragraph's last sentence was the hook's causal clause and is now two
+  sentences. It is true; it no longer lands.
+- `src/systems/foundations/tags.md` — the hook's first sentence now carries
+  a parenthetical about component prototypes before it reaches
+  `Registry.PendingTags`, which is the thing the page is about. Consider
+  moving the second swap to *Prepared, then applied* and leaving the hook a
+  single clause.
+- `src/systems/foundations/data-driven-types.md` — the *Fifty-six of them*
+  paragraph gained the criterion's two exclusions and is now the densest
+  paragraph on the page. The number is right; the sentence explaining it
+  reads like a footnote promoted.
+- `src/systems/foundations/codecs-nbt-json.md` — the *homogeneous numeric
+  list* sub-section was inverted, so its bolded lead sentence is now a
+  double negative ("A numeric array stays an array, but nothing turns a list
+  into one"). Worth one more pass.
+
+**Structural findings**, logged and not acted on:
+
+- **`anatomy/README.md`'s root figure is not homogeneous.** Four of its five
+  edges point at *parts*; the fifth points at a *page* of Part I (*what this
+  book skips*). Either is defensible; the mix is what a reader notices.
+- **`anatomy/README.md`'s hook says "a server that ticks and a client that
+  draws".** The client ticks too — 0 to 10 times a frame, which is the
+  lecture's own first arithmetic. The shorthand is deliberate and the
+  lecture unpacks it two pages later, but as the sentence a reader memorises
+  it plants the wrong idea. A pass-5 judgement, not a fact fix.
+- **`identifiers-and-registries`'s "the wire id is the line number".** True
+  as a metaphor for the ordinal of the registration statement and false
+  read literally (`Items.DIAMOND_SWORD` is at `Items.java:993` and its raw
+  id is nowhere near 993). The lecture unpacks it in the next two sentences;
+  the landing-page teaser and the verified line do not. Decide whether the
+  teaser keeps the metaphor.
+- **`reference/class-index.md` is still blind to diagrams** (session A's
+  finding) and Parts I and II are among the worst affected: every lane in
+  the anatomy, tags and data-components figures is a `participant X as
+  ClassName` the index cannot see.
+- **Cross-links session A judged missing** and left to pass 5 touch this
+  part: Part X ← `anatomy/anatomy`, Part IV and Part XII ←
+  `identifiers-and-registries` and `codecs-nbt-json`. Each is a real
+  dependency with no link or backticked slug on the depending page.
+
 ## Session A — The frame (pass 4) *(2026-09-04)*
 
 Wording debt and structural findings from the frame's fact-check. Nothing
