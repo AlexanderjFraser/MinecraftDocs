@@ -141,6 +141,10 @@ def read_units() -> tuple[list[Unit], list[str]]:
     session, session_parts = "?", ()
     in_standing = False
     cur: Unit | None = None
+    # The enclosing top-level list item, kept across the blank lines that separate the
+    # paragraphs of one long bullet (the style sessions H and I used). `cur` is reset by a
+    # blank line, so without this a struck bullet's later paragraphs lose the strike.
+    owner: Unit | None = None
     for i, raw in enumerate(lines, 1):
         h = HEADING_RE.match(raw)
         b = BULLET_RE.match(raw)
@@ -153,6 +157,7 @@ def read_units() -> tuple[list[Unit], list[str]]:
                     session, session_parts = m.group(1), parts_in(title)
             cur = Unit(i, len(h.group(1)), raw, bool(STRUCK_RE.match(raw)), session, session_parts)
             units.append(cur)
+            owner = None              # a heading ends the enclosing list item
             continue
         if in_standing:
             standing.append(raw)
@@ -164,6 +169,7 @@ def read_units() -> tuple[list[Unit], list[str]]:
                     session, session_parts = m.group(1), parts_in(b.group(2)[:200])
             cur = Unit(i, 100 + indent, raw, bool(STRUCK_RE.match(raw)), session, session_parts)
             units.append(cur)
+            owner = cur if indent == 0 else owner
             continue
         if raw.strip() == "":
             cur = None                # a blank line ends a list item's or paragraph's continuation
@@ -176,7 +182,8 @@ def read_units() -> tuple[list[Unit], list[str]]:
             # settles the whole bullet, and without this a settled note whose continuation
             # line happens to open on a slug comes back on every later checklist for ever.
             level = cur.level if cur is not None and cur.level >= 99 else 99
-            struck = bool(STRUCK_RE.match(raw)) or (cur is not None and cur.struck)
+            parent = cur if cur is not None else (owner if raw[:1] in " 	" else None)
+            struck = bool(STRUCK_RE.match(raw)) or (parent is not None and parent.struck)
             cur = Unit(i, level, raw, struck, session, session_parts)
             units.append(cur)
         else:

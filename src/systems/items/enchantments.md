@@ -27,7 +27,7 @@ about at a well-defined moment.
 | `ConditionalEffect` / `TargetedConditionalEffect` | whether this effect fires here, and on whom | server main |
 | `EnchantmentEntityEffect` | the thing that finally happens | server main only — the signature demands a `ServerLevel` |
 | `ItemEnchantments` | the id-to-level map on the stack, under one of two components | both sides |
-| `EnchantedItemInUse` | the stack, its slot, its owner and a break callback, handed to every effect | server main |
+| `EnchantedItemInUse` | the stack, its slot, its owner and a break callback, built by the slot-aware walk and handed to the effects that act on the world | server main |
 
 ## A record with a definition and a bag of components
 
@@ -132,17 +132,21 @@ comes off.
 
 ## How one hook fires
 
-Every row of that table is the same shape underneath. A system reaches a
-moment and asks `EnchantmentHelper`; the helper picks which stacks to walk
-and filters by slot; the record picks which effect entries apply; a loot
-condition decides whether this one fires. Only then does anything happen.
+Six of those seven rows are the same shape underneath. A system reaches a
+moment and asks `EnchantmentHelper`; the helper picks which stacks to walk,
+filtering by slot if it was given one; the record picks which effect entries
+apply; a loot condition decides whether this one fires. Only then does
+anything happen. The flag row is the exception and is the reason the shape is
+worth drawing: `EnchantmentHelper.has` and `EnchantmentHelper.hasTag` build no
+context and run no condition — they ask the record whether the key is present
+at all.
 
 ```mermaid
 flowchart TD
     Caller["a system reaches a moment: Player.itemAttackInteraction, Block.tryDropExperience, LivingEntity.baseTick"]
     Caller --> EH["an EnchantmentHelper entry point"]
     EH --> Walk["walk one stack, or every EquipmentSlot of one entity"]
-    Walk --> Slot["keep entries whose Enchantment.matchingSlot accepts this slot"]
+    Walk --> Slot["on the slot-aware walk, keep entries whose Enchantment.matchingSlot accepts this slot"]
     Slot --> Comp["read the list under one EnchantmentEffectComponents key"]
     Comp --> Target["for the targeted keys, keep entries whose enchanted target matches this pass"]
     Target --> Ctx["build a LootContext on that hook's parameter set"]
@@ -159,7 +163,7 @@ locations and block hits, one per parameter set the components name.
 
 ## Fire Aspect, from the click to the flame
 
-Fire Aspect as data is thirty-odd lines of JSON: supported and primary items
+Fire Aspect as data is forty-three lines of JSON: supported and primary items
 are tags, weight 2, maximum level 2, anvil cost 4, dynamic cost curves, one
 slot (*mainhand*), and **one effect** — a
 `EnchantmentEffectComponents.POST_ATTACK` entry whose enchanted target is
@@ -268,10 +272,11 @@ takes only a `RandomSource`, and its two users are
 `CrossbowItem.getChargeDuration` is called by three entity renderers, by
 `ItemInHandRenderer` and by the `CrossbowPull` item property, so **Quick
 Charge is evaluated on the render thread every frame a crossbow is being
-drawn**; and `MultiPlayerGameMode.useItem` runs `TridentItem.use` locally,
-which asks `EnchantmentHelper.getTridentSpinAttackStrength`, so **Riptide's
-strength is computed client-side too** — which is what lets the riptide
-push be predicted at all. Everything else the client does is drawing:
+drawn**; and `MultiPlayerGameMode.releaseUsingItem` runs
+`TridentItem.releaseUsing` on the client's own copy, which asks
+`EnchantmentHelper.getTridentSpinAttackStrength`, so **Riptide's strength is
+computed client-side too** — which is what lets the riptide push be predicted
+at all. Everything else the client does is drawing:
 `ItemEnchantments.addToTooltip` for the tooltip, `ItemStack.hasFoil` for the
 glint, and `EnchantmentHelper.forEachModifier` for the attribute lines —
 which means the client evaluates the `LevelBasedValue` curve itself.
@@ -291,15 +296,19 @@ pack's custom or overridden enchantments. Beyond that,
 reads `DataComponents.ENCHANTMENTS` and nothing else. A book's set lives
 under `DataComponents.STORED_ENCHANTMENTS`, and the routing between the two,
 in `EnchantmentHelper.getComponentType`, is keyed on the exact item
-`Items.ENCHANTED_BOOK`. No other item can be made to behave like one.
+`Items.ENCHANTED_BOOK`. The *component* is not so exclusive: `ItemStack` puts
+`DataComponents.STORED_ENCHANTMENTS` in any stack's tooltip, and `AnvilMenu`
+decides it is being handed a book by testing for that component rather than
+for the item — so a data pack can make a stick priced like one, but never make
+it behave like one.
 
 **Is the main hand really the main hand?** No — it is a label.
 `EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak` and
 `EnchantmentHelper.doPostPiercingAttackEffects` both hand
 `EquipmentSlot.MAINHAND` to the slot filter regardless of where the weapon
-came from, and `PiercingWeapon.attack` will happily call
-`LivingEntity.stabAttack` for an off-hand slot. An off-hand spear's
-enchantments are therefore tested against the main-hand slot group.
+came from, and `KineticWeapon.damageEntities` reaches
+`LivingEntity.stabAttack` with whichever slot the *use* was in. An off-hand
+spear's enchantments are therefore tested against the main-hand slot group.
 
 **Three more small ones.** `ItemStack.isEnchantable` reads *two*
 components: `DataComponents.ENCHANTABLE` must be present, and
@@ -315,17 +324,19 @@ helper beside it is `EnchantmentHelper.modifyArmorEffectiveness`.
 **And does Fire Aspect cook the loot?** Not through the enchantment. That
 is a loot-table condition on `EnchantmentTags.SMELTS_LOOT`, a tag whose only
 member is Fire Aspect ([loot tables](loot-tables.md)). `EnchantmentTags`
-holds twenty-nine tags in five families — the seven exclusivity sets, the
-tooltip order, pool membership for the table and for mob, trade and loot
-equipment, the behaviour flags (curse, smelts-loot and the four *prevents*
-tags), and the seven biome trade tables.
+holds twenty-nine tags. Twenty-five fall into five families — the seven
+exclusivity sets, the tooltip order, pool membership for the table and for
+mob, trade and loot equipment, the behaviour flags (curse, smelts-loot and the
+four *prevents* tags), and the seven biome trade tables — and the last four
+are the trading and treasure axes the villager and the loot tables sort on.
 
 **What does a whole enchantment look like, then?** `Enchantments.LUNGE` is
 the only user of `EnchantmentEffectComponents.POST_PIERCING_ATTACK` in the
 game, and its single effect is an `AllOf.EntityEffects` of four — a
 `ChangeItemDamage`, an `ApplyExhaustion` scaled per level, an
 `ApplyEntityImpulse` forward with its vertical component scaled away, and a
-`PlaySoundEffect` picking one of three sounds — behind a four-clause
+`PlaySoundEffect` holding three sounds, indexed by level rather than
+shuffled — behind a four-clause
 condition checking that the user is not riding, not elytra-flying, not in
 water, and either not a player, in creative, or fed. One JSON file, four
 effect objects, four predicates, no Java. That is what an enchantment is.

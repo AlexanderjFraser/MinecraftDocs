@@ -22,9 +22,9 @@ the client's belief object, never the client's data.
 | `Container` | storage, and nothing about who is looking at it — `Container.getItem`, `Container.setItem`, `Container.stillValid` | wherever its owner runs |
 | `AbstractContainerMenu` | the slot list, the cursor, the state id, the click state machine, and the two baselines (one for listeners, one for the wire) | both main threads |
 | `Slot` | GUI policy — `Slot.mayPlace`, `Slot.mayPickup`, `Slot.getMaxStackSize` — and the guarded mutations a click goes through | both main threads |
-| `Inventory` | the player's own storage, present as slots in every menu that opens | both main threads |
+| `Inventory` | the player's own storage, present as slots in nearly every menu that opens — the lectern's one book slot is the exception | both main threads |
 | `MenuType` / `MenuProvider` | the registry entry with the *screen-side* constructor, and the server-side factory a block hands to `ServerPlayer.openMenu` | client / server main |
-| `ContainerSynchronizer` | the only thing that writes menu state to the connection — one per `ServerPlayer`, shared by every menu that player opens | server main |
+| `ContainerSynchronizer` | the diffing channel to the connection, and every menu's writer but one — one per `ServerPlayer`, shared by every menu that player opens | server main |
 | `RemoteSlot` | what the server believes the client is holding in one slot, as either a stack or a hash | server main (`RemoteSlot.PLACEHOLDER` on the client) |
 | `HashedStack` | the client's claim about one slot after its own click | created on the client, matched on the server |
 
@@ -39,17 +39,22 @@ anonymous provider. The client's `ChestMenu` is built
 from `MenuType`'s screen-side constructor by `MenuScreens`, and that
 constructor makes a **fresh `SimpleContainer`**. The client's chest contents
 have no connection to the block entity beyond the packet stream. Its
-`AbstractContainerMenu.stillValid` is a lie for the same reason —
-`SimpleContainer.stillValid` returns true unconditionally — so a client never
-closes its own menu because it walked away.
+`AbstractContainerMenu.stillValid` would be a lie for the same reason —
+`SimpleContainer.stillValid` returns true unconditionally — but the question is
+never put to it: every call site of `AbstractContainerMenu.stillValid` in the
+game is on the server. A client never closes its own menu because it walked
+away.
 
 The other half of that asymmetry is the synchronizer. Only
 `ServerPlayer.initMenu` ever calls
 `AbstractContainerMenu.setSynchronizer`, so a client menu has none, and
 every one of its `RemoteSlot`s stays `RemoteSlot.PLACEHOLDER`, whose
-`RemoteSlot.matches` always answers true. The client still runs
-`AbstractContainerMenu.broadcastChanges` every frame it is asked to; on the
-client it is a no-op by construction.
+`RemoteSlot.matches` always answers true, so the *wire* half of
+`AbstractContainerMenu.broadcastChanges` is inert on the client by
+construction. The listener half is not: `BeaconScreen`, `ItemCombinerScreen`,
+`LecternScreen` and the creative inventory all register a real
+`ContainerListener`, which is how the anvil's rename field repopulates itself
+after a slot changes.
 
 Three smaller facts about the model that a reader will otherwise trip over.
 A menu with a null `MenuType` cannot be opened over the network at all —
@@ -166,8 +171,14 @@ own stack** and nothing is sent.
 The advancement channel sees one state per click, not one per slot touched:
 `AbstractContainerMenu.triggerSlotListeners` runs only from
 `AbstractContainerMenu.broadcastChanges` and
-`AbstractContainerMenu.broadcastFullState`, and no mutation during a click
-reaches either, because nothing calls back into the menu (below). It runs
+`AbstractContainerMenu.broadcastFullState` — and for a chest nothing calls
+back into the menu mid-click to reach either. That is a fact about the chest,
+not about menus: `CrafterSlot`, the anvil's and the smithing table's
+`ItemCombinerMenu` slots and the crafting grid all call
+`AbstractContainerMenu.slotsChanged` from `Container.setChanged`, and the base
+`AbstractContainerMenu.slotsChanged` is a bare
+`AbstractContainerMenu.broadcastChanges`. The click's
+own broadcast runs
 *after* `AbstractContainerMenu.resumeRemoteUpdates`, so suppression is not
 in force by then, and `ServerPlayer`'s `ContainerListener` filters to slots
 that are not a `ResultSlot` and whose container is the player's own
@@ -209,9 +220,11 @@ accepts `AbstractContainerMenu.SLOT_CLICKED_OUTSIDE`, and otherwise only
 asks whether the index is below the slot count — so **every negative index
 passes it**. The branches that need a floor test for it themselves; the two
 that do not, `ContainerInput.SWAP` and the painting phase of
-`ContainerInput.QUICK_CRAFT`, index the list directly and are caught by the
-click's own try/catch. An out-of-range click is therefore neither corrected
-nor fatal, and it closes nothing:
+`ContainerInput.QUICK_CRAFT`, index the list directly, and the click's own
+try/catch turns the failure into a `ReportedException` rather than swallowing
+it: what swallows it is `PacketProcessor`, which logs a game-listener error and
+carries on. An out-of-range click is therefore neither corrected nor fatal, but
+it is loudly logged, and it closes nothing:
 `ServerGamePacketListenerImpl.handleContainerClose` for its part validates
 nothing at all, not even the container id, and goes straight to
 `ServerPlayer.doCloseContainer`.
@@ -258,8 +271,10 @@ whole game. Two are inside `ServerPlayer`'s synchronizer, behind
 `ContainerSynchronizer.sendInitialData` and
 `ContainerSynchronizer.sendSlotChange`;
 `ContainerSynchronizer.sendCarriedChange` and
-`ContainerSynchronizer.sendDataChange` do not bump it and their packets
-carry no id at all. The third is `CraftingMenu.slotChangedCraftingGrid`,
+`ContainerSynchronizer.sendDataChange` do not bump it — and
+`ClientboundSetCursorItemPacket` carries no id whatever, while
+`ClientboundContainerSetDataPacket` carries the container's but never a state
+id. The third is `CraftingMenu.slotChangedCraftingGrid`,
 below. The client never generates one: `AbstractContainerMenu.setItem` and
 `AbstractContainerMenu.initializeContents` simply store whatever arrived and
 quote it back on the next click. A click quoting a stale id means
@@ -282,8 +297,9 @@ So the distance test happens twice a tick and only the first is accompanied
 by a broadcast. A hopper that pushes an item into a chest whose menu is open
 therefore runs in the block-entity phase, after that tick's only broadcast,
 and **nothing calls back into the menu to say so** —
-`SimpleContainer.setChanged` is empty, `BlockEntity.setChanged` only marks
-the chunk, `Inventory.setChanged` only bumps a counter. You see the hopper's
+`SimpleContainer.setChanged` is empty, `BlockEntity.setChanged` marks the chunk
+and re-derives the comparator output and stops there,
+`Inventory.setChanged` only bumps a counter. You see the hopper's
 item one tick late.
 
 Closing has its own surprise. The cursor belongs to the menu, not the
@@ -295,9 +311,9 @@ makes that safe. The rescue sends one `ClientboundSetPlayerInventoryPacket`
 per slot it fills, and runs *before* `AbstractContainerMenu.transferState`,
 which copies both the listener baseline and the remote beliefs across every
 container-and-slot pair the closing menu and `InventoryMenu` share. For a
-chest that is the 36 main and hotbar slots — not armour, not the offhand,
-not the 2×2 grid — so changes to those three are re-sent and nothing else
-is.
+chest that is the 36 main and hotbar slots — not armour, not the offhand, not
+the 2×2 grid, not the crafting result — so changes to those four are re-sent
+and nothing else is.
 
 ## The seven click kinds
 
@@ -312,7 +328,7 @@ intercepts a click before ordinary slot logic runs.
 | value | the gesture | what the button number means | packets per gesture |
 |---|---|---|---|
 | `ContainerInput.PICKUP` | the ordinary click | 0 left, 1 right — and on `AbstractContainerMenu.SLOT_CLICKED_OUTSIDE`, drop all or drop one | 1 |
-| `ContainerInput.QUICK_MOVE` | shift-click | 0 or 1, both behave the same | 1, or one per matching slot for the shift-double-click sweep |
+| `ContainerInput.QUICK_MOVE` | shift-click | 0 or 1, the same in a real slot — and outside the window, the drop-all and drop-one of `ContainerInput.PICKUP` | 1, or one per matching slot for the shift-double-click sweep |
 | `ContainerInput.SWAP` | a hotbar key, or `Inventory.SLOT_OFFHAND` for the offhand key | the destination index: 0–8, or 40 | 1 |
 | `ContainerInput.CLONE` | creative middle-click | ignored, but the player must pass `Player.hasInfiniteMaterials` | 1 |
 | `ContainerInput.THROW` | Q over a slot, cursor empty — and also a click *outside* the window with an empty cursor, which the server's branch then ignores because it demands a non-negative index | 0 drops one, 1 (control-Q) drops the stack and keeps going while the slot yields the same item | 1 |
@@ -329,7 +345,8 @@ built with a zero-out-of-bounds strategy, so a malformed click **decodes as
 `CreativeModeInventoryScreen` overrides
 `AbstractContainerScreen.slotClicked` and drives a menu of its own, and its
 writes go up as `ServerboundSetCreativeModeSlotPacket`. That is the one
-packet in the game whose *data* the server adopts:
+packet in the game whose *item* data the server adopts — a rename, a sign and a
+jigsaw block are adopted as text:
 `ServerGamePacketListenerImpl.handleSetCreativeModeSlot` takes the client's
 `ItemStack` verbatim into the slot through `Slot.setByPlayer`, behind only a
 `Player.hasInfiniteMaterials` check, a feature-flag check, a slot range of
@@ -356,7 +373,8 @@ Everything else on the wire is bookkeeping around those two:
 `ClientboundOpenScreenPacket` and `ClientboundContainerClosePacket` for the
 lifetime, `ClientboundContainerSetContentPacket` and
 `ClientboundSetCursorItemPacket` for a resync,
-`ServerboundContainerButtonClickPacket` for lectern and enchanting buttons,
+`ServerboundContainerButtonClickPacket` for the lectern, enchanting, loom and
+stonecutter buttons,
 `ServerboundContainerSlotStateChangedPacket` for crafter toggles,
 `ServerboundSelectBundleItemPacket` for a bundle, and
 `ServerboundSetCarriedItemPacket` with `ClientboundSetHeldSlotPacket` for the

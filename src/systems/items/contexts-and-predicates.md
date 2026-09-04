@@ -27,13 +27,15 @@ flowchart TD
     subgraph L["net/minecraft/world/level/storage/loot"]
         LPar["LootParams, the immutable inputs"]
         LCtx["LootContext, one invocation"]
-        Users["LootItemCondition, NumberProvider, LootItemFunction, SlotSource"]
+        Users["LootItemCondition, NumberProvider, LootItemFunction"]
     end
+    Slot["SlotSource, in world/item/slot"]
     CK -->|"declared required or optional by ContextKeySet.Builder"| CKS
     CKS -->|"ContextMap.Builder.create validates against it"| CMap
     CMap -->|"wrapped, with a ServerLevel beside it"| LPar
     LPar -->|"plus a random source and a resolver"| LCtx
     LCtx -->|"getParameter and getOptionalParameter"| Users
+    LCtx -->|"the same interface, from outside the package"| Slot
 ```
 
 The dividing line is the whole argument of this page. `ContextKey`,
@@ -42,7 +44,9 @@ The dividing line is the whole argument of this page. `ContextKey`,
 or loot. Everything below them is in the loot package, and everything
 *above* them is whoever wants a question answered. A loot table is one such
 caller. The others are commands, entity selectors, advancement triggers,
-villager trades and every enchantment effect.
+villager trades, every enchantment effect — and, on the *client*,
+`SlotDisplayContext`, which builds a `ContextMap` of its own so a recipe book
+entry can resolve itself into stacks.
 
 ## The cast
 
@@ -50,7 +54,7 @@ villager trades and every enchantment effect.
 |---|---|---|---|
 | `ContextKey` | *util/context* | one parameter's name and its Java type, and nothing else | — |
 | `ContextKeySet` | *util/context* | which keys a call site must supply, and which it may | built once at class-init |
-| `ContextMap` | *util/context* | the values, and the only place the contract is enforced | server main |
+| `ContextMap` | *util/context* | the values, and the only place the contract is enforced | server main for loot; the client builds its own for a recipe display |
 | `LootParams` | *storage/loot* | the `ServerLevel`, the map, the dynamic-drop callbacks, the luck | server main |
 | `LootContext` | *storage/loot* | one invocation: the random source, the reference resolver, the visited stack | server main |
 | `LootItemCondition` | *storage/loot/predicates* | a predicate over a `LootContext` — the boolean answer | server main |
@@ -68,8 +72,9 @@ villager trades and every enchantment effect.
 
 `ContextKey` is an `Identifier` and a phantom type parameter. It has no
 value, no default, no validation and no registry — `ContextKey.vanilla`
-just makes one in the *minecraft* namespace, and the fifteen that exist
-are the static fields of `LootContextParams`. The type parameter is what
+just makes one in the *minecraft* namespace, and only seventeen exist: the
+fifteen static fields of `LootContextParams`, plus the two on
+`SlotDisplayContext` that let a client draw a recipe. The type parameter is what
 makes the rest of the system safe: `LootContextParams.ORIGIN` is a key of
 `Vec3`, `LootContextParams.TOOL` a key of `ItemInstance` (the read-only
 item view), `LootContextParams.ENCHANTMENT_LEVEL` a key of a boxed *int*, and
@@ -138,9 +143,10 @@ can still take path 2 at runtime. And what
 `ReloadableServerRegistries.validateLootRegistries` does with the collected
 problems is **log them as warnings**: a predicate that asks for a parameter
 it cannot have loads fine and misbehaves later. The same validation is a
-hard error in exactly two places, both applied by a codec through
-`Validatable.validatorForContext` — `VillagerTrade` and every conditional
-effect in `EnchantmentEffectComponents`. Those two build a
+hard error in exactly two places, both applied by a codec —
+`Validatable.validatorForContext` for `VillagerTrade`, and its list form
+`Validatable.listValidatorForContext` for every conditional effect in
+`EnchantmentEffectComponents`. Those two build a
 `ValidationContext` with no resolver, so `ValidationContext.allowsReferences`
 is false and a `ConditionReference` inside a trade or an enchantment effect
 is rejected outright.
@@ -180,7 +186,8 @@ seeded-chest half of the story belongs to [loot tables](loot-tables.md).
 
 ## What reads a context
 
-Two families, both extending `LootContextUser`, both reached by codec
+`LootContextUser` — *what did you read out of the map* — has seven
+sub-interfaces, and two of them carry the traffic, both reached by codec
 through a registry of types. `LootItemCondition` is a predicate over a
 `LootContext` with twenty registered types, from
 `LootItemEntityPropertyCondition` and `LocationCheck` to
@@ -196,11 +203,12 @@ interface from outside the loot package.
 
 `ContextAwarePredicate` is the bridge the advancement system uses: a list
 of `LootItemCondition` composed into one predicate, entered through
-`ContextAwarePredicate.matches`. Everything in
-`net/minecraft/advancements/predicates` — `EntityPredicate`,
-`LocationPredicate`, `ItemPredicate` and the entity sub-predicates — ends
-up as one of these, `EntityPredicate.wrap` folding the entity half into a
-`LootItemEntityPropertyCondition`.
+`ContextAwarePredicate.matches`. The *player* half of every trigger goes
+through it — `EntityPredicate.wrap` folds an `EntityPredicate` into a
+`LootItemEntityPropertyCondition` — but the rest of
+`net/minecraft/advancements/predicates` need not: a trigger instance can hold
+an `ItemPredicate` or a `LocationPredicate` outright and test it with no
+context at all, which `ConsumeItemTrigger` and `DistanceTrigger` both do.
 
 ## Who asks, and with which set
 
@@ -307,8 +315,8 @@ so a missing predicate there is a silent false, not a syntax error.
 registry key with a codec and a `LootDataType.ContextGetter` — the function
 that says which `ContextKeySet` an element of that type is validated
 against. Predicates and item modifiers get the constant
-`LootContextParamSets.ALL_PARAMS`; tables get `LootTable.getParamSet`, whose
-only other reader is the builder that set it. That is the sense in which a
+`LootContextParamSets.ALL_PARAMS`; tables get `LootTable.getParamSet`, and that
+context getter is its only caller in the game. That is the sense in which a
 table's declared type is never checked at runtime.
 
 All three live in `RegistryLayer.RELOADABLE`, loaded by

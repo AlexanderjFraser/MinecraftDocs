@@ -87,6 +87,544 @@ entry first.
 
 ## Entries
 
+## Session G — Part VII Items and inventories (pass 4) *(2026-09-04)*
+
+Eight pages and the landing page, one adversarial agent each; the order work,
+the part-wide notes and every *wrong* re-derived by the session before a
+sentence moved. **All nine had at least one wrong claim** — pass 2's result for
+an eighth time. Sixty corrections. Session H's checklist held almost entirely
+(every one of its nine pass-2 corrections re-confirmed, and most of its
+introduced claims), so — as in Part VI — the errors were not where pass 3 knew
+it had changed something.
+
+### The four that carry a lecture
+
+- **`enchanting`'s shared tail does not exist.** The section *The one line all
+  five end on* rested on "All of them end at `ItemStack.enchant`", and three of
+  the five do: the table (`EnchantmentMenu.java:191`), `/enchant`
+  (`EnchantCommand.java:71`) and `EnchantRandomlyFunction` (`:93`). The
+  grindstone and the providers call `EnchantmentHelper.updateEnchantments`
+  themselves (`GrindstoneMenu.java:200,217`; `EnchantmentHelper.java:712`), and
+  the **anvil is outside even that** — it builds an `ItemEnchantments.Mutable`
+  and writes with `EnchantmentHelper.setEnchantments`
+  (`AnvilMenu.java:138,291`). What all five *do* share is one private line,
+  `EnchantmentHelper.getComponentType` (`EnchantmentHelper.java:91-93`), which
+  both `setEnchantments` (`:84`) and `updateEnchantments` (`:63`) call — and it
+  is the routing-by-item-identity the section was about, so the argument
+  survives and the section is now named for the question rather than the
+  method.
+- **`loot-tables`' trace opens the wrong menu.** Figure 1 arrow 10 said
+  `ChestMenu.sixRows`; a single chest — which arrow 1 establishes as the
+  scenario — opens `ChestMenu.threeRows` (`ChestBlockEntity.java:229-231`,
+  `getContainerSize()` = 27), and `sixRows` has exactly one caller in the game,
+  `ChestBlock.java:111`, inside the **double**-chest anonymous provider. The
+  arrow contradicted its own figure.
+- **`contexts-and-predicates` undercounts its own keys, and the missing two
+  make its argument.** "The fifteen that exist are the static fields of
+  `LootContextParams`" — there are **seventeen** `ContextKey`s;
+  `SlotDisplayContext.FUEL_VALUES` and `.REGISTRIES`
+  (`world/item/crafting/display/SlotDisplayContext.java:12-13`) are the other
+  two, and `SlotDisplayContext.fromLevel` builds a `ContextMap` from **six
+  client files** (recipe book, stonecutter screen, recipe toast, search trees).
+  So the page's *util/context knows nothing about loot* thesis has a second,
+  client-side user it never named — and the cast table's "server main" for
+  `ContextMap` was wrong.
+- **`recipes`' reload window is not what the page says, and cannot be
+  observed.** "Between the swap and that call the four derived indexes still
+  describe the recipe set that was there before — a window that is short and,
+  on a reload, real." A reload builds a **fresh** `RecipeManager`
+  (`ReloadableServerResources.java:39`), whose constructor sets all four to
+  their *empty* values (`RecipeManager.java:84-89`); and the swap
+  (`MinecraftServer.java:1700`) and `finalizeRecipeLoading` (`:1706`) are five
+  statements apart in one synchronous main-thread lambda.
+
+### Two more punchlines fell
+
+- **`items-and-stacks`' creative-slot door does not check contained sizes.**
+  "`ItemStack.validateContainedItemSizes` makes it recursive … so a shulker box
+  full of impossible stacks is rejected at the door" — the method is reached
+  only from `ItemStack.validateComponents` (`ItemStack.java:245-288`), itself
+  reached only from `ItemStack.validateStrict` (`:130-131`), which the same
+  paragraph had just excluded from the network path.
+  `ItemStack.validatedStreamCodec` (`:169-187`) re-encodes through
+  `ItemStack.CODEC` and runs no validator. It is also one level deep, not
+  recursive.
+- **`enchantments`' "No other item can be made to behave like one" is false.**
+  Only `EnchantmentHelper.getComponentType` keys on `Items.ENCHANTED_BOOK`.
+  `ItemStack.java:924` puts `DataComponents.STORED_ENCHANTMENTS` in *any*
+  stack's tooltip, and `AnvilMenu.java:145` sets `usingBook` from the
+  **component**, not the item — which relaxes the same-item rule and halves the
+  fee for anything carrying it.
+
+### The order work (addition 2)
+
+`check_deps.py` green throughout; Part VII had no *entries no page links* line.
+All six *before you start* entries are used by a sentence, not merely linked:
+`foundations/data-components` (`items-and-stacks:10`, `enchanting:77`,
+`loot-tables:284`), `foundations/codecs-nbt-json` (`containers-and-menus:226`,
+`recipes:255`), `foundations/identifiers-and-registries` and
+`foundations/resource-system` (`contexts-and-predicates:318`, `recipes:37`,
+`loot-tables:247`), `server/server-level-tick` (`containers-and-menus:277`) and
+`blocks/block-interaction` (`containers-and-menus:35`, `loot-tables:91`,
+`using-an-item:34`).
+
+**One missing entry: `server/server-tick`**, added. `containers-and-menus`'
+whole *Where in the tick a broadcast happens* section rests on "packets are
+drained **before any level ticks**", which is `server-tick`'s fact, and
+`lectures.md:239` already said Part VII assumes Part III — the landing page
+listed only the level tick. Same finding as session E's on Part V.
+
+Judged **pointers rather than dependencies** and left out: `foundations/tags`
+(`enchanting:227`, `recipes:245` — two parentheticals), `blocks/block-breaking`
+(`items-and-stacks:296`, `loot-tables:296`, `contexts-and-predicates:209` — all
+*who calls this* pointers) and `blocks/block-entities`
+(`containers-and-menus:148`).
+
+Three **order claims on the landing page and `lectures.md` were wrong**, and
+all three are fixed in the same commit:
+
+- "every later page assumes **all three**" of the vocabulary pages. No engine
+  page links all three; `enchantments` and `contexts-and-predicates` link
+  *none* of them (corpus grep, zero hits each), and
+  `contexts-and-predicates`' trace is a command, not a stack.
+- "all three engines are **reload-time citizens of the same machinery**".
+  Recipes are a reload listener (`RecipeManager` is a
+  `SimplePreparableReloadListener`); loot tables are the
+  `RegistryLayer.RELOADABLE` layer; **enchantments are neither** —
+  `Registries.ENCHANTMENT` is in `RegistryDataLoader.WORLDGEN_REGISTRIES`
+  (`:84`) and `SYNCHRONIZED_REGISTRIES` (`:86`), a world-load dynamic registry
+  that `MinecraftServer.reloadResources` never re-reads. **`/reload` does not
+  change an enchantment.**
+- "four and five are the pair to keep together" — in the page's own numbered
+  list four is *Recipes*; the pair is five and six, as `lectures.md:229-232`
+  already had it.
+
+The landing-page figure's arrows 4 and 5 carried *items-and-stacks* and
+*loot-tables* justifications on `CM → EN` and `CM → CP`; the modifier edge is
+re-sourced from `IS` and the unsupported `CM → CP` edge is gone, which is what
+the fact-check found and what the prose now says.
+
+### The rest, per page
+
+**`items/README.md`** (landing page)
+
+- ~~"every later page assumes all three" · "all three engines are reload-time
+  citizens" · "four and five are the pair" · figure arrows 4 and 5~~ — all four
+  above.
+- ~~"half this part's timing surprises are claims about which phase something
+  ran in" — one page, two lines (`containers-and-menus:276,283`).~~ Narrowed to
+  the hopper's late delivery.
+- ~~"the five ways one lands on an item" — one of the five (the grindstone) is a
+  *removal*, and `RepairItemRecipe.java:77-88` is a sixth writer, copying every
+  curse from both inputs onto the combined tool.~~ Fixed here, in
+  `lectures.md`, and in `enchanting`'s own title and opening.
+- ~~"the ledger behind the click you have already seen happen is *prediction and
+  acknowledgement*" — the same shape session F fixed on Part VI's landing page.
+  `ServerboundContainerClickPacket` has **no sequence field** (`:14`) and
+  `prediction-and-acks.md:173` says every container verb opens no window.~~
+  Replaced with the distinction itself.
+- **Not acted on:** "the one where the two programs disagree most often and
+  most cheaply" is unverifiable — no population, no measure. Left as rhetoric;
+  for pass 5 if it grates.
+
+**`items/items-and-stacks.md`**
+
+- ~~`validateContainedItemSizes` at the network door and "recursive"~~ — above.
+- ~~"read by `GuiGraphicsExtractor` while it is above zero" — the pop time's
+  only reader is `Hud.extractSlot` (`client/gui/Hud.java:1220-1236`,
+  `1.0F + pop / 5.0F`); `GuiGraphicsExtractor` draws the icon and, separately,
+  the bar.~~
+- ~~"`ItemStack.hurtAndBreak` is the **only** way in" —
+  `ItemStack.hurtWithoutBreaking` (`:477-491`) reaches `applyDamage` directly,
+  and `Mob.burnUndead` (`Mob.java:539-553`) is a second break path entirely, via
+  `setDamageValue` plus `onEquippedItemBroken`. The page names
+  `hurtWithoutBreaking` itself two paragraphs later.~~ Narrowed.
+- ~~Figure 1's dotted "prototype, borrowed and never written" arrow pointed at
+  `Holder.Reference`; the prototype is the `DataComponentMap` one node on.~~
+- ~~The validator table's *on failure* cell said "logs, and yields
+  `ItemStack.EMPTY`" for all three `validateStrict` sites; `ItemInput`
+  **throws** (`ItemInput.java:29-33`).~~
+- ~~`Item.mineBlock` has a third condition the page omitted:
+  `tool.damagePerBlock() > 0` (`Item.java:289`).~~
+- ~~`Item.MAX_BAR_WIDTH` is a **dead constant** — `Item.getBarWidth` (`:250-252`)
+  spells 13 out and nothing reads it. Kept and said to be dead (session D's
+  ruling, now five times).~~
+- ~~Every count re-derived clean: 1177 `Items` fields, 4 + 4 instance fields, ten
+  `COMMON_ITEM_COMPONENTS` entries, twenty `delayedComponent` call sites (4 in
+  `Item`, 16 in `Items`), two `inventoryTick` overrides, entity event 47, five
+  break particles, the 6000-tick lifetime, and the single serverbound
+  `ItemStack` packet.~~
+
+**`items/using-an-item.md`**
+
+- ~~"The bow, the trident and the spyglass … their `Item.getUseDuration` is an
+  hour long" — `SpyglassItem.getUseDuration` returns **1200**
+  (`SpyglassItem.java:21-23`), which the page's own closing paragraph says. The
+  spyglass genuinely completes by countdown.~~
+- ~~"refuses outright if … on cooldown, **and otherwise** opens a prediction
+  window" — reversed. `MultiPlayerGameMode.useItem` calls `startPrediction`
+  first (`:417`); the cooldown test is at `:420` *inside* the lambda, and the
+  packet is built at `:418` and returned and sent either way (`:422`). The
+  cooldown suppresses the local `ItemStack.use`, not the report.~~
+- ~~Cast row `ProjectileWeaponItem` "only ever on the server" — `draw` and
+  `useAmmo` run on the client, outside `BowItem.releaseUsing`'s `ServerLevel`
+  test (`BowItem.java:41-42`), which is the whole basis of the page's own
+  `DataComponents.INTANGIBLE_PROJECTILE` paragraph.~~
+- ~~"four enchantment hooks" on the server path — **five**;
+  `ItemStack.hurtAndBreak` reaches `EnchantmentHelper.processDurabilityChange`,
+  and the page names `hurtAndBreak` in the next sentence.~~
+- ~~"Everything the client learns about its own shot arrives … on **later
+  ticks**: the arrow as a spawn packet …" — the arrow is not later.
+  `ChunkMap.addEntity` calls `TrackedEntity.updatePlayers` immediately
+  (`ChunkMap.java:1293-1294`), inside the same handler, and the packet drain
+  precedes `tickServer` (`MinecraftServer.java:1121-1124`). Only the container
+  update and the entity data wait.~~
+- ~~Figure 2's "tick 32, the server only" bar spanned a `Wire→LP` arrow.~~
+  Reworded to what the bar actually marks.
+- ~~"the one item that can end either way" for the spyglass — narrowed to what
+  the single `Item.finishUsingItem` override is for.~~
+- ~~The session-H checklist held in full: `CrossbowItem.useOnRelease` the sole
+  override, the five extra `LivingEntity.releaseUsingItem` call sites
+  (`completeUsingItem`, `CrossbowAttack`, `RangedCrossbowAttackGoal`,
+  `BrushItem` twice), the unacked release, the phantom client arrow, the double
+  `onProjectileSpawned`, the skipped `sendAllDataToRemote`, *items/bow.json*,
+  and the spear's `UseEffects`.~~
+- **For pass 5:** `Consumable.emitParticlesAndSounds` is called with **5** per
+  tick (`ItemStack.java:1174`) and **16** at completion (`Consumable.java:62`);
+  the page gives only the five. And 26.2's `KINETIC_WEAPON` branch in
+  `ItemStack.onUseTick` (`:1177-1182`) means "the base body is empty" no longer
+  covers every stack, though it still covers the bow.
+
+**`items/containers-and-menus.md`** — the checklist and **both figures came back
+clean, arrow by arrow**; every error was in prose the checklist did not cover.
+
+- ~~"no mutation during a click reaches either, because **nothing calls back
+  into the menu**" — `AbstractContainerMenu.slotsChanged` is a bare
+  `broadcastChanges` (`:720-722`), and `CrafterSlot.setChanged` (`:21-23`) and
+  `ItemCombinerMenu`'s input and result slots (`:21-30,104-113`, the anvil and
+  the smithing table) all call it. True of the chest, not of menus.~~ Scoped.
+- ~~"on the client it is a **no-op by construction**" — only the wire half is.
+  `BeaconScreen`, `ItemCombinerScreen`, `LecternScreen` and the creative
+  inventory register real `ContainerListener`s; the anvil's rename field
+  repopulates through one.~~
+- ~~`ContainerSynchronizer` as "**the only** thing that writes menu state to the
+  connection" — `CraftingMenu.java:69` sends its own packet, which the page says
+  itself two sections later.~~
+- ~~"`SimpleContainer.stillValid` returns true unconditionally — **so** a client
+  never closes its own menu" — both halves true, the causal false: every call
+  site of `AbstractContainerMenu.stillValid` is on the server.~~
+- ~~`Inventory` "present as slots in **every** menu that opens" — `LecternMenu`
+  adds one slot, the book.~~
+- ~~The out-of-range click "caught by the click's own try/catch" — that
+  try/catch **rethrows** as a `ReportedException`; `PacketProcessor` swallows it
+  and logs at ERROR, so the path is loudly logged, at odds with the section's
+  "nothing logged" framing. "Neither corrected nor fatal" stands.~~
+- ~~"their packets carry **no id at all**" —
+  `ClientboundContainerSetDataPacket` carries a container id; only the state id
+  is absent.~~
+- ~~"`BlockEntity.setChanged` only marks the chunk" — it also re-derives the
+  comparator output, which the page states correctly a hundred lines earlier.~~
+- ~~The closing transfer's shared set is **four** slot ranges, not three — the
+  crafting result is a fourth unshared pair.~~
+- ~~"the one packet in the game whose *data* the server adopts" — true of *item*
+  data only; a rename, a sign and a jigsaw block are adopted as text.~~
+- ~~`ContainerInput.QUICK_MOVE`'s "0 or 1, both behave the same" — false at
+  `AbstractContainerMenu.SLOT_CLICKED_OUTSIDE`, where it shares `PICKUP`'s
+  drop-all/drop-one branch (`:473-484`).~~
+- ~~`ServerboundContainerButtonClickPacket` is the **loom's and the
+  stonecutter's** too, not just the lectern's and the enchanting table's — four
+  `clickMenuButton` overrides.~~
+- ~~Every count re-derived clean: seven `ContainerInput` values, three
+  `incrementStateId` call sites, the 15-bit mask, `containerCounter % 100 + 1`,
+  `Container.getMaxStackSize` = 99, the 128-slot codec cap, the 256-entry hash
+  cache.~~
+
+**`items/recipes.md`**
+
+- ~~The reload window~~ — above.
+- ~~"one button in the book cycles through **six** kinds of plank" — **twelve**
+  recipes carry `"group": "planks"`, all in the *building* category, so all
+  twelve land in one `RecipeCollection`.~~
+- ~~"a single recipe can occupy a **dozen** consecutive ids" —
+  `TransmuteRecipe.MAX_MATERIAL_COUNT` is **8**.~~
+- ~~`AbstractFurnaceMenu` "or `RecipePropertySet.CAMPFIRE_INPUT`" — that set
+  reaches no menu; its only reader is `CampfireBlock.java:97`, on a right-click.
+  Campfires have no menu.~~
+- ~~Cast row `Recipe` "read on both sides" — no client class imports `Recipe` or
+  `RecipeHolder`, which is the page's own hook.~~
+- ~~"a result leaves **only** through `Recipe.assemble` or `Recipe.display`" —
+  `StonecutterRecipe.resultDisplay` is read straight by
+  `RecipeManager.java:132-133` and shipped to the client.~~
+- ~~"which is why the next thing `ResultSlot.onTake` does is look the recipe up
+  all over again: the holder … no longer exists" —
+  `ResultSlot.getRemainingItems` (`:83-89`) never reads the stored holder on any
+  path, and runs identically for special recipes, where the holder is not
+  nulled.~~
+- ~~Figure 2 arrows 9 and 10 landed in the `SRB` lane; `checkTakeAchievements` is
+  `ResultSlot`'s own and `awardUsedRecipes` and the nulling are the
+  `ResultContainer`'s — a lane the diagram already had.~~
+- ~~`CraftingContainer.asCraftInput` "with the offset remembered" — it
+  *discards* the offset (`:16-18`); `asPositionedCraftInput` keeps it, and that
+  is what `ResultSlot.onTake` uses.~~
+- ~~Gate six tests `PlacementInfo.isImpossibleToPlace`, not identity with
+  `PlacementInfo.NOT_PLACEABLE`.~~
+- ~~The auto-fill's hint comes from `CraftingMenu.finishPlacingRecipe`; the base
+  `AbstractCraftingMenu.finishPlacingRecipe` is a no-op, so the 2×2 grid never
+  gets one.~~
+- ~~`StackedContents.RecipePicker` is private; `ShapelessRecipe.matches` reaches
+  it through `StackedItemContents.canCraft`.~~
+- ~~`ServerRecipeBook` stores **four** things, not three — the display resolver
+  is a field (`ServerRecipeBook.java:33`).~~
+- ~~Every count re-derived clean: 21 serializers, 14 crafting, 9 `CustomRecipe`,
+  11 `SlotDisplay`, 5 `RecipeDisplay`, 4 `RecipeBookType` values, 5 concrete
+  `RecipeBookMenu` menus, 7 gates, `RecipeCache(10)` static on `CrafterBlock`,
+  and `ClientboundUpdateRecipesPacket` from exactly two sites, both in
+  `PlayerList` (`:171`, `:949`).~~
+
+**`items/enchantments.md`** — all twelve checklist lines CONFIRMED, and the Fire
+Aspect trace clean arrow by arrow.
+
+- ~~"No other item can be made to behave like one"~~ — above.
+- ~~"**Every** row of that table is the same shape underneath" — the flag row is
+  not: `EnchantmentHelper.has` and `.hasTag` build no `LootContext` and run no
+  condition. Figure 1's `Enchantment.matchingSlot` node has the same defect —
+  the one-stack walk (`EnchantmentHelper.java:146`), used by `modifyDamage`,
+  `modifyKnockback` and `has`, applies **no** slot filter.~~
+- ~~Cast row `EnchantedItemInUse` "handed to **every** effect" —
+  `EnchantmentValueEffect.process(int, RandomSource, float)` never receives one,
+  and neither does `DamageImmunity`. It is built only by the slot-aware walk
+  (`:163`).~~
+- ~~"`PiercingWeapon.attack` will happily call `LivingEntity.stabAttack` for an
+  off-hand slot" — its only caller hardcodes `EquipmentSlot.MAINHAND`
+  (`ServerGamePacketListenerImpl.java:1427`). The off-hand path is
+  `KineticWeapon.damageEntities` from `ItemStack.onUseTick` (`:1180`). The
+  paragraph's conclusion is right by a different route.~~
+- ~~"`MultiPlayerGameMode.useItem` runs `TridentItem.use` locally, which asks
+  `EnchantmentHelper.getTridentSpinAttackStrength`" — `TridentItem.use` does no
+  such thing; the read is in `TridentItem.releaseUsing` (`:68`), reached through
+  `MultiPlayerGameMode.releaseUsingItem`.~~
+- ~~"thirty-odd lines of JSON" for Fire Aspect — forty-three.~~
+- ~~"twenty-nine tags in five families" — the 29 is right; the five families
+  account for 25, leaving `TRADEABLE`, `DOUBLE_TRADE_PRICE`, `TREASURE` and
+  `NON_TREASURE` unplaced.~~
+- ~~"a `PlaySoundEffect` **picking** one of three sounds" — indexed by level
+  (`PlaySoundEffect.java:28`), not shuffled.~~
+- **An agent finding rejected on re-derivation:** "could not verify the *render
+  thread* half of the Quick Charge claim". `reference/threads.md:61` names the
+  client's JVM main thread the **Render thread** corpus-wide; the claim is in
+  the book's own vocabulary and stands.
+- ~~Every count re-derived clean: 43 enchantments (keys and JSON files), 31
+  effect components with 24 conditional lists and 7 plain, the 6/15/16
+  registries with `EnchantmentAttributeEffect` the odd one out, 29
+  `EnchantmentTags`, and Fire Aspect's whole JSON.~~
+
+**`items/enchanting.md`**
+
+- ~~The shared tail~~ — above.
+- ~~"only the grindstone and `SetEnchantmentsFunction` reach for
+  `ItemEnchantments.Mutable.set`" — the grindstone never calls it (it uses
+  `upgrade` and `removeIf`); the **anvil** does, at `AnvilMenu.java:227`, where
+  it clamps an over-maximum level down.~~
+- ~~"**Only** the table's selection path uses the narrow one
+  [`Enchantment.isPrimaryItem`]" —
+  `EnchantmentHelper.getAvailableEnchantmentResults` is `selectEnchantment`'s
+  own, so the cost-based providers and chest loot use it too. The page's own
+  table row and its providers section said so.~~
+- ~~"**Only** the table and the provider and loot paths roll dice" — the anvil
+  rolls for the chip (`AnvilMenu.java:108`) and the grindstone for the refund
+  bonus (`GrindstoneMenu.java:108`), as the page says a hundred lines earlier.
+  The table's *randomness* row said "none" for both.~~
+- ~~"**Three** different predicates are doing the work" — two.
+  `Enchantment.isSupportedItem` reduces to the same test as
+  `Enchantment.canEnchant` and has no caller but `isPrimaryItem`.~~
+- ~~"above a cost of **forty-nine** the first extra is certain" — certain *at*
+  49: `random.nextInt(50) <= enchantmentCost` (`EnchantmentHelper.java:646`).~~
+- ~~The grindstone refund's bonus is up to *half minus one*
+  (`halfAmount + nextInt(halfAmount)`), not "up to that half again".~~
+- ~~The prior-work spiral doubles the **larger** of the two inputs'
+  `DataComponents.REPAIR_COST` (`AnvilMenu.java:281-287`), not the result's own,
+  and a pure rename skips the step.~~
+- ~~"the plain book, which has one random entry deleted from its list" — guarded
+  by `list.size() > 1` (`EnchantmentMenu.java:234`), so a one-entry list
+  survives whole.~~
+- ~~"that lookup is the **only reason** the enchantment registry has to be
+  synchronised at all" — `ItemEnchantments.STREAM_CODEC` composes
+  `Enchantment.STREAM_CODEC` (`ItemEnchantments.java:39`,
+  `Enchantment.java:68`), so every enchanted stack sent to a client needs it.~~
+- ~~Figure 1 arrow 7: the ten `ClientboundContainerSetDataPacket` values go out
+  at menu open, through `ContainerSynchronizer.sendInitialData`; the
+  post-`slotsChanged` broadcast **diffs**, and sends at most nine.~~
+- ~~The providers-and-loot column's gate and filter cells missed
+  `EnchantRandomlyFunction`, a second exception to `DataComponents.ENCHANTABLE`
+  that filters with `Enchantment.canEnchant`.~~
+- ~~"`GrindstoneMenu` | the only removal in the game" — `SetEnchantmentsFunction`
+  at level 0 removes too.~~
+- ~~Every count re-derived clean: 32 bookshelf offsets (the outer ring of a 5×5
+  at two heights, `|x| == 2 || |z| == 2`), exactly five narrower primary sets
+  with the axes/mace/Thorns split holding, 6 of 7 `SingleEnchantment` providers,
+  the ten data slots (3 costs, 1 seed, 3 enchantment clues, 3 level clues),
+  `buttonId + 1` as the charge, the seed's whole lifecycle, and the anvil's
+  40/39.~~
+
+**`items/contexts-and-predicates.md`**
+
+- ~~The seventeen keys and the client's `ContextMap`~~ — above; the callers list
+  and the cast row's thread cell both fixed.
+- ~~"`LootTable.getParamSet`, whose only **other** reader is the builder that set
+  it" — `LootDataType.java:20` is its only caller in the game;
+  `LootTable.Builder` never reads it.~~
+- ~~"**Everything** in `net/minecraft/advancements/predicates` … ends up as one
+  of these" — false for `ItemPredicate` and `LocationPredicate`, which trigger
+  instances hold and test directly with no `LootContext`
+  (`ConsumeItemTrigger.java:31,50`; `DistanceTrigger.java:31,50`). The
+  `EntityPredicate.wrap` half stands.~~
+- ~~"both applied by a codec through `Validatable.validatorForContext`" — the
+  enchantment effects use the list form, `Validatable.listValidatorForContext`
+  (`EnchantmentEffectComponents.java:124`); only `VillagerTrade` uses the
+  singular (`VillagerTrade.java:52`).~~
+- ~~"**Two** families, both extending `LootContextUser`" — seven sub-interfaces;
+  two carry the traffic, and the page names a third one sentence later.~~
+- ~~Figure 1 drew `SlotSource` inside the loot-package subgraph while the prose
+  says it is outside it.~~
+- ~~**The re-count the charter asked for.** "Twelve of the twenty-six parameter
+  sets never roll a loot table" — **CONFIRMED**, derived twice independently
+  (once by the session from the page's own caller table, once by the agent from
+  a per-set grep across the decompile, minus `net/minecraft/data/**`). The
+  twelve: `COMMAND`, `SELECTOR`, `VILLAGER_TRADE`, `ADVANCEMENT_ENTITY`,
+  `ADVANCEMENT_LOCATION`, `BLOCK_USE`, `ALL_PARAMS` and the five enchantment
+  sets. The 6 + 5 + 1 breakdown is exact, and the same sentence on
+  `reference/loot-context-params.md:5` is confirmed with it — settling the count
+  session A left for session N.~~
+- ~~The rest re-derived clean: 27 `getReferencedContextParams` overriders (29
+  files less the `LootContextUser` declaration and the `ValidationContext`
+  caller), 20 conditions, 8 number providers, `ALL_PARAMS`' eleven required keys
+  and the four it omits, both codec-leniency rules, the three-way random
+  precedence, and both figures arrow by arrow.~~
+
+**`items/loot-tables.md`**
+
+- ~~Figure 1 arrow 10~~ — above.
+- ~~"makes up to **two** attempts at a chest position" —
+  `MonsterRoomFeature.java:104` `while (dx < 2)` is two *chests*; `:108`
+  `if (dy < 3)` is up to **three** position attempts each. pass4.md's "two chest
+  attempts" carried the same conflation.~~
+- ~~"plus **a** per-dye-colour set for sheep" — two: `BuiltInLootTables.SHEEP`
+  (`:78`) and `SHEAR_DYED_SHEEP` (`:123`). The checklist had it right and the
+  page did not. The category list also missed four of the thirteen path
+  prefixes.~~
+- ~~"`ComposableEntryContainer.and` and `.or` are what `CompositeEntryBase` folds
+  a child list down with" — `CompositeEntryBase.compose` is **abstract**
+  (`:45`); each subclass switches on child count and uses `and`/`or` only in the
+  exactly-two case (`AlternativesEntry.java:46`, `SequentialEntry.java:34`).
+  Zero and one children take other paths, three or more a hand-written loop, and
+  `EntryGroup` never uses either. The boolean-not-weighted argument survives on
+  `ComposableEntryContainer.expand`'s return type.~~
+- ~~Cast row "the **only** place in the whole system where luck reaches a choice"
+  — `LootPool.java:111` is the second, as the page's own *Luck touches exactly
+  two things* says.~~
+- ~~Cast row "the **two** ways out" — `LootTable.getRandomItemsRaw` (`:89,93`) is
+  a third public exit, and the page uses it itself.~~
+- ~~"That is where the **lock check** and the spectator check live:
+  `RandomizableContainerBlockEntity.canOpen`" — the lock check is
+  `BaseContainerBlockEntity.canOpen` (`:72-74`), reached through `super`.~~
+- ~~"safe **only** because `LootItem` and `TagEntry` construct fresh stacks" —
+  `SlotLoot.createItemStack` emits `itemCopies()` and is equally safe.~~
+- ~~"arrives as **three** partial ones in three unrelated slots" — an
+  illustration stated as fact; nothing fixes the piece count.~~
+- ~~"a chest given a loot table by command **re-rolls freshly every time**" — no
+  chest rolls twice; the key is nulled on the first unpack either way. The claim
+  is about reproducibility.~~
+- ~~"The client cannot resolve the table … **so**
+  `SeededContainerLoot.addToTooltip` prints the unknown-contents line instead" —
+  it prints it unconditionally (`SeededContainerLoot.java:20-23`), on either
+  side. No resolve attempt, no fallback.~~
+- ~~"a hopper pointing *into* the chest commits the roll **by writing**" — it
+  reads first, `HopperBlockEntity.java:164` → `container.getItem`, so the unpack
+  fires on the read.~~
+- ~~An expanded `TagEntry`'s per-item candidates are built bare
+  (`TagEntry.java:59-68`) and skip the entry's own functions — the one exception
+  to Figure 2's *the entry's own functions* node.~~
+- ~~Every count re-derived clean: 43 function types with 42 extending
+  `LootItemConditionalFunction` (`SequenceFunction` the odd one out), 9 entry
+  types, 117 `BuiltInLootTables` keys, 3 loot registries, 5 unpacking overrides,
+  26 parameter sets, two luck sites, two `MinecraftServer.getRandomSequence`
+  callers, and the clear-before-roll and
+  `ClientboundOpenScreenPacket`-before-`initMenu` orderings.~~
+
+### The Reference catalogues, a second sample each
+
+Session H asked pass 4 to re-derive a row of each of the part's two generated
+views by hand rather than reading the table; session A had already done one
+sample each. Both re-confirmed:
+
+- **`reference/loot-context-params.md`** — 26 sets re-counted from
+  `LootContextParamSets.java:74-150`. `LootContextParamSets.SHEARING`: required
+  `ORIGIN`, `THIS_ENTITY`, `TOOL`; no optional. Matches.
+- **`reference/enchantment-hooks.md`** — 50 distinct public entry points in
+  `EnchantmentHelper`, three of them marked *nothing outside the class*, so 47.
+  Three rows re-derived: `doPostAttackEffectsWithItemSource` (1 overload,
+  `AbstractArrow` + `Player`), `enchantItemFromProvider` (1, five callers) and
+  `enchantItem` (2 overloads, `EnchantWithLevelsFunction` only). All match.
+
+### The tool bug — the eighth of pass 4
+
+Found by suspecting the tool first, when striking session H's entry made the
+part's checklists *grow*. `pass4_queue.py` resets its "current unit" on a blank
+line — correct, because a blank line ends a paragraph — but session H and
+session I wrote their entries as **one long bullet with blank-line-separated
+paragraphs**, and each paragraph after the first therefore lost the parent's
+strike. Session C fixed the same inheritance *within* an unbroken run; this is
+the same bug across a blank line, and it meant striking session H's bullet
+settled only its first paragraph. The splitter now keeps the enclosing
+top-level list item across blank lines and an indented continuation inherits
+its strike; the corpus-wide effect is exactly Part VII's nine pages and one
+`lectures.md` line and nothing else (620 open units → 596, all in this part).
+
+One **routing** wart recorded rather than fixed: a note written as a bare
+`` `README` `` in session F's entry matched Part VII's landing page as well as
+Part VI's, because the alias table matches the bare word. Session A's ruling
+already says to qualify a landing-page note as `` `items/README.md` ``; the
+queue tool could also refuse a bare `README`.
+
+The **checklist was wrong once** — session H recorded
+`MonsterRoomFeature`'s "two chest attempts", which is two chests of up to three
+attempts each — and an **agent once**, rejected on re-derivation: the arrow's
+spawn packet does leave on the release tick, because `ChunkMap.addEntity`
+broadcasts inside the handler; the report reasoned from `level.tick()` running
+before `tickConnection()`, which is not the drain point that matters.
+
+### Rulings
+
+- A hook or a section title whose named mechanism is wrong but whose *argument*
+  is right is renamed for the argument, not deleted: `enchanting`'s *The one
+  line all five end on* became *The one question all five ask*, and the section
+  is stronger for it.
+- A figure edge whose label justifies a **different** edge is re-sourced to the
+  edge the label is true of, rather than relabelled — the landing page's
+  modifier arrow now leaves `IS`, where the mechanism lives.
+- A count or superlative that a page's own later text contradicts is narrowed to
+  what the later text says. Four times this session (the luck superlative, the
+  two ways out, the only-way-in, the reload-time citizens), which is sessions D,
+  E and F's precedent again.
+
+### For other parts' sessions
+
+- **Part X** — `client/prediction-and-acks.md:173` ("every container verb open
+  no window at all") is **correct** and was the page this session's landing-page
+  fix was checked against. `ServerboundContainerClickPacket` has no sequence
+  field. Session J should keep that sentence.
+- **Part XIII** — `contexts-and-predicates` is the page Part XIII comes back
+  for, and its `LootContextParamSets.COMMAND` / `SELECTOR` rows and the
+  parse-time-versus-silent-false contrast were all re-confirmed here; session M
+  can lean on them.
+- **Session N (counts)** — every count on all eight pages plus the landing page
+  was re-counted this session and is struck above; the only number left open is
+  the landing page's "the four ways one stack is serialised", which is a count
+  of *destinations* named on `foundations/codecs-nbt-json` and of nothing in the
+  decompile (`ItemStack` declares seven public serialisers). Judged fine as a
+  cross-reference and left.
+
+
 ## Session F — Part VI Entities (pass 4) *(2026-09-04)*
 
 Nine pages and the landing page, one adversarial agent each; the order work,
@@ -3892,7 +4430,7 @@ graph — seventeen edges, each a conversion claim); one added
   `CombatRules` constants were re-derived here and the two accounts agree.
   That page is the one in the part with two independent audits.~~
 
-- **2026-09-03, session H — Part VII Items and inventories.** Eight pages,
+- ~~**2026-09-03, session H — Part VII Items and inventories.** Eight pages,
   five rewritten and three new, every one drafted by an agent against the
   old page and diffed on arrival. **Fifteen figures, thirteen of them new or
   redrawn.** The part's two Reference catalogues are generated

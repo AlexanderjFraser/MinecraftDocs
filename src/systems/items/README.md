@@ -17,10 +17,12 @@ empty until the moment somebody opens it.
 
 Part VII is **two tiers**, not a chain. The first three pages are the
 vocabulary — what a stack is, what using one does, and how a set of them is
-kept in agreement across the wire — and every later page assumes all three.
-The last five are three independent data-driven engines that produce or
-decorate stacks: they depend on the vocabulary completely and on each other
-not at all, so they can be watched in any order.
+kept in agreement across the wire. The last five are three independent
+data-driven engines that produce or decorate stacks. Recipes, enchanting and
+loot tables lean on the vocabulary and hand each other nothing;
+*contexts and predicates* is the outlier, because its subject is not a stack
+at all — it is the question engine the other engines happen to run on, and it
+can be watched first.
 
 ```mermaid
 flowchart TD
@@ -35,10 +37,9 @@ flowchart TD
     IS -- "a stack is a diff over a prototype" --> UI
     UI -- "and a slot is where one lives" --> CM
     CM -- "an arrangement in a grid" --> RE
-    CM -- "a modifier on the stack" --> EN
-    CM -- "a container the world filled" --> CP
+    IS -- "a modifier on the stack" --> EN
     EN --> EC
-    CP --> LO
+    CP -- "which needs no stack at all" --> LO
 ```
 
 ## Before you start
@@ -50,13 +51,17 @@ JSON](../foundations/codecs-nbt-json.md) for the four ways one stack is
 serialised, and [identifiers and
 registries](../foundations/identifiers-and-registries.md) and [the resource
 system](../foundations/resource-system.md) for where recipes, enchantments
-and loot tables come from and when — all three engines are reload-time
-citizens of the same machinery.
+and loot tables come from and when. They come from three different places, and
+the difference bites: recipes are a reload listener and loot tables a
+reloadable registry layer, so `/reload` rebuilds both — while enchantments are
+a world-load dynamic registry that `/reload` never re-reads at all.
 
-Two ordering facts matter more than they look. [The level
+Three ordering facts matter more than they look. [The server
+tick](../server/server-tick.md) drains the packet queue before any level ticks,
+which is why a click and its correction land in the same tick; [the level
 tick](../server/server-level-tick.md) decides *when* a menu's changes are
-broadcast, so half this part's timing surprises are claims about which
-phase something ran in; and [block interaction](../blocks/block-interaction.md)
+broadcast, which is what makes a hopper's delivery visibly late; and [block
+interaction](../blocks/block-interaction.md)
 is how a chest gets opened in the first place, which is where two of these
 pages start.
 
@@ -79,7 +84,8 @@ The first three in order, then the engines in any order you like.
 5. [Enchantments](enchantments.md) — there are no enchantment subclasses.
    Fire Aspect is a data-pack record whose "melee only" rule is one loot
    condition, and the burn that follows belongs to something else entirely.
-6. [Enchanting](enchanting.md) — the five ways one lands on an item. The
+6. [Enchanting](enchanting.md) — the five paths that change what an item is
+   enchanted with, one of which runs backwards. The
    seed is per player, saved, and sent to the client, which is why the
    Standard Galactic gibberish is stable and why an anvil never changes
    what the table is offering.
@@ -91,7 +97,7 @@ The first three in order, then the engines in any order you like.
    closer. A dungeon chest is genuinely empty on disk, and the first thing
    to touch it — a hopper will do — commits the roll with no luck at all.
 
-Watched as lectures, four and five are the pair to keep together: *what an
+Watched as lectures, five and six are the pair to keep together: *what an
 enchantment is* and *how you get one*. Seven and eight are the other pair,
 and seven is the one Part XIII comes back for.
 
@@ -112,9 +118,11 @@ The part stops at the slot. What a player's own inventory is, and how the
 hand relates to the equipment slots, is [player
 anatomy](../player/player-anatomy.md) in Part VIII; how a held stack picks
 the model you actually see is Part XI's, in [models and
-atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model); and the ledger behind the
-click you have already seen happen is [prediction and
-acknowledgement](../client/prediction-and-acks.md) in Part X.
+atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model). The
+container click is *not* on the prediction ledger — it carries no sequence
+number and opens no window — and [prediction and
+acknowledgement](../client/prediction-and-acks.md) in Part X is where that
+distinction is drawn.
 
 ---
 

@@ -28,10 +28,10 @@ chest was empty.
 
 | class | what it decides | thread |
 |---|---|---|
-| `LootTable` | the parameter set, an optional random sequence, the pools, and the two ways out — `LootTable.fill` into a container, `LootTable.getRandomItems` into a list | server main |
+| `LootTable` | the parameter set, an optional random sequence, the pools, the table's own functions, and the ways out — `LootTable.fill` into a container, `LootTable.getRandomItems` into a list, and the unsplit `LootTable.getRandomItemsRaw` a nested table uses | server main |
 | `LootPool` | whether the pool runs at all, and how many draws it makes | server main |
 | `LootPoolEntryContainer` | the entry algebra — `ComposableEntryContainer.expand` answers *did I contribute* | server main |
-| `LootPoolSingletonContainer` | weight and quality, the only place in the whole system where luck reaches a choice | server main |
+| `LootPoolSingletonContainer` | weight and quality — one of the two places luck reaches anything | server main |
 | `LootItemFunction` | forty-three stack-to-stack transforms, composed into one per level | server main |
 | `RandomizableContainer` | the stored table key and seed, and the one-shot unpack | server main |
 | `LootContext` | which random source this draw uses, and the recursion guard | server main |
@@ -40,16 +40,18 @@ chest was empty.
 ## The chest was empty before you got there
 
 Nothing wrote items into that chest at world generation. `MonsterRoomFeature`
-places the room, makes up to two attempts at a chest position — each needing an
-air block with exactly one solid horizontal neighbour — and for each one calls
+places the room, then places up to two chests, giving each up to three tries
+at a position — every try needing an air block with exactly one solid
+horizontal neighbour — and for each chest that lands calls
 `RandomizableContainer.setBlockEntityLootTable` with
 `BuiltInLootTables.SIMPLE_DUNGEON` and a fresh long from the feature's own
 random. What lands on the live `ChestBlockEntity` is a **key and a seed**, and
 nothing else. Structure pieces do the same through `StructurePiece.createChest`
 and `StructurePiece.createDispenser`; `BuiltInLootTables` holds a hundred and
-seventeen named keys plus a per-dye-colour set for sheep, covering chests,
-dispensers, gameplay drops, shearing, brushing, decorated pots, equipment,
-archaeology and spawners.
+seventeen named keys plus two per-dye-colour sets for sheep, spread over
+thirteen path prefixes — chests and dispensers, gameplay drops, shearing and
+brushing, harvesting and carving, decorated pots, equipment, archaeology,
+spawners and a charged creeper's.
 
 The seed reaches disk on the next save, and from then on the emptiness is
 self-perpetuating. `RandomizableContainer.trySaveLootTable` writes the key —
@@ -73,7 +75,7 @@ sequenceDiagram
     participant ChestM as ChestMenu
 
     SPGM->>CBE: ChestBlock.useWithoutItem resolves a menu provider, and a single chest is its own
-    CBE->>SP: Player.openMenu
+    CBE->>SP: openMenu, whose body is ServerPlayer's
     SP->>CBE: createMenu, guarded by canOpen
     CBE->>RCont: unpackLootTable, with the opening player
     Note over RCont: setLootTable to null BEFORE the roll, one shot
@@ -81,7 +83,7 @@ sequenceDiagram
     LT->>LPool: addRandomItems, once per pool
     LPool-->>LT: stacks, each through createStackSplitter
     LT->>LT: getAvailableSlots then shuffleAndSplitItems then setItem
-    CBE->>ChestM: sixRows over the now-filled container
+    CBE->>ChestM: threeRows over the now-filled container
     SP->>ChestM: ClientboundOpenScreenPacket goes first, then initMenu
     ChestM-->>SP: sendAllDataToRemote, one ClientboundContainerSetContentPacket
 ```
@@ -98,10 +100,12 @@ itself, and never enters either block entity's own menu factory.
 
 **Opening** goes through `ServerPlayer.openMenu`, which closes whatever menu was
 already open, allocates a container id, and calls
-`RandomizableContainerBlockEntity.createMenu`. That is where the lock check and
-the spectator check live: `RandomizableContainerBlockEntity.canOpen` refuses a spectator *while a table is still
-pending*, so a spectator cannot commit the roll by peering into an unopened
-chest, though they can open one that has already been rolled.
+`RandomizableContainerBlockEntity.createMenu`. Both gates on opening are in one
+predicate: `RandomizableContainerBlockEntity.canOpen` adds a spectator clause to
+the lock check it inherits from `BaseContainerBlockEntity.canOpen`, and the
+spectator half bites only *while a table is still pending* — so a spectator
+cannot commit the roll by peering into an unopened chest, though they can open
+one that has already been rolled.
 
 **The unpack** is `RandomizableContainer.unpackLootTable`, and its order matters
 more than anything else on this page. It looks the key up through
@@ -162,9 +166,11 @@ flowchart TD
 ```
 
 **The algebra is boolean, not weighted.** `ComposableEntryContainer.expand`
-returns a plain *did I contribute*, and `ComposableEntryContainer.and` and
-`ComposableEntryContainer.or` are what `CompositeEntryBase` folds a child list
-down with. So `AlternativesEntry` short-circuits like a boolean or and
+returns a plain *did I contribute*, and each composite folds its children into
+one of those in its own `CompositeEntryBase.compose` — the two-child case
+literally calling `ComposableEntryContainer.or` or
+`ComposableEntryContainer.and`, and the longer cases a hand-written loop with
+the same short-circuit. So `AlternativesEntry` behaves like a boolean or and
 `SequentialEntry` like a boolean and — neither is a weighted choice between
 branches, and the validator reports an `AlternativesEntry` whose non-final
 children carry no conditions, because every later alternative is then
@@ -172,8 +178,10 @@ unreachable. Nine entry types are registered in `LootPoolEntries`: the leaves
 `LootItem`, `EmptyLootItem`, `TagEntry`, `NestedLootTable`, `DynamicLoot` and
 `SlotLoot`, and the composites `AlternativesEntry`, `SequentialEntry` and
 `EntryGroup`. `TagEntry` has two modes and they are not variations on a theme:
-expanded, it becomes one weighted candidate *per item in the tag*; unexpanded,
-it is a single candidate that emits **every** item in the tag at once.
+expanded, it becomes one weighted candidate *per item in the tag* — and those
+candidates are built bare, so the entry's own functions never run on them;
+unexpanded, it is a single candidate that emits **every** item in the tag at
+once, with its functions intact.
 
 **Luck touches exactly two things**, and neither is what players think it is.
 `LootPool.bonusRolls` is multiplied by luck and floored to add whole extra
@@ -196,8 +204,9 @@ the table's. Forty-two of the forty-three registered functions extend
 final and hands the stack back
 untouched when its own conditions fail — which is why a function with a failing
 condition is a no-op and not a veto on the drop. They also **mutate the stack in
-place and return it**, which is safe only because `LootItem` and `TagEntry`
-construct fresh stacks. `DynamicLoot` is the exception: it calls straight out to
+place and return it**, which is safe because every leaf hands out something of
+its own: `LootItem` and `TagEntry` construct fresh stacks and `SlotLoot` emits
+copies. `DynamicLoot` is the exception: it calls straight out to
 a callback the caller registered with `LootParams.Builder.withDynamicDrop`, and
 the one `ShulkerBoxBlock.getDrops` registers hands back the block entity's live
 stacks uncopied.
@@ -209,8 +218,8 @@ stacks uncopied.
 shuffles them; `LootTable.shuffleAndSplitItems` then pulls the multi-count
 stacks out of the result list and repeatedly splits one — taking a random amount
 between one and half its count — until the number of pieces roughly matches the
-slot count. That is why one rolled stack of arrows arrives as three partial ones
-in three unrelated slots. If the pieces outnumber the free slots, the remainder
+slot count. That is why one rolled stack of arrows arrives as several partial
+ones in unrelated slots — how many depends on how much of the chest is free. If the pieces outnumber the free slots, the remainder
 is **logged as a warning and silently discarded**.
 
 Above that sits `LootTable.createStackSplitter`, which every public
@@ -232,7 +241,9 @@ the constant.
 
 So a seed of zero means *unseeded*, is indistinguishable from having no seed at
 all, and is never written to NBT — which is why a chest given a loot table by
-command re-rolls freshly every time while a structure chest does not. Named
+command rolls unpredictably where a structure chest, carrying a seed, rolls the
+same contents whoever opens it and whenever. Neither rolls twice: the key is
+gone after the first unpack either way. Named
 random sequences are the other half: a table that declares one draws from a
 stored, saved sequence rather than the level random, which is what keeps the
 same table in the same world reproducible across a restart. Villager trades use
@@ -264,8 +275,9 @@ that they unpack first: `RandomizableContainerBlockEntity.isEmpty`,
 A comparator gets there through
 `AbstractContainerMenu.getRedstoneSignalFromContainer`, which walks
 `Container.getItem` over every slot. A hopper gets there the same way before it
-takes anything, and a hopper pointing *into* the chest commits the roll by
-writing. `Clearable.clearContent` and `Container.getContainerSize` do not
+takes anything, and so does a hopper pointing *into* the chest — it asks
+whether the destination is full before it pushes, so that one commits the roll
+by reading as well. `Clearable.clearContent` and `Container.getContainerSize` do not
 unpack, and neither does saving — which is why `/data get block` on an unopened
 chest reports the loot table key instead of committing the roll.
 
@@ -281,9 +293,10 @@ trips it, and it is logged as an infinite loop rather than passing silently.
 persistent with no network codec of its own, so
 `ByteBufCodecs.fromCodecWithRegistries` supplies one from the persistence codec
 and the component **does** reach the client
-([data components](../foundations/data-components.md)). The client cannot
-resolve the table — it has no loot registry at all — so
-`SeededContainerLoot.addToTooltip` prints the unknown-contents line instead.
+([data components](../foundations/data-components.md)). What it cannot carry is
+the contents: the client has no loot registry at all, and
+`SeededContainerLoot.addToTooltip` does not try — it prints the
+unknown-contents line and nothing else, on either side.
 
 **Does the type declared on the table do anything?** Not at roll time. A table's
 parameter set is read during load-time validation and never compared against the

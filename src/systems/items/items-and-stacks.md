@@ -48,7 +48,7 @@ flowchart LR
     end
     MAP --> PDM["PatchedDataComponentMap"]
     PDM --> PATCH["the patch: only what differs, plus a tombstone per removal"]
-    PDM -. "prototype, borrowed and never written" .-> HR
+    PDM -. "prototype, borrowed and never written" .-> DEF
     HOL --> HR["Holder.Reference in BuiltInRegistries.ITEM"]
     HR --> IT["Item — descriptionId, craftingRemainingItem, requiredFeatures, its own holder"]
     HR --> DEF["DataComponentMap — the item's defaults, bound at reload"]
@@ -64,7 +64,8 @@ pop time is the odd one out: it is the five-tick squeeze the hotbar icon does
 when something lands in it, set to 5 by `Inventory` when a stack grows and by
 `ClientPacketListener.handleContainerSetSlot` when a slot update makes a
 hotbar stack larger, counted down by `ItemStack.inventoryTick` on **both**
-sides, and read by `GuiGraphicsExtractor` while it is above zero. It is
+sides, and read by `Hud.extractSlot`, which scales the icon while it is above
+zero and hands the drawing to `GuiGraphicsExtractor` either way. It is
 ordinary shared state that only the client has any use for — and
 `ItemStack.copy` carries it across, so the animation survives being copied
 into a menu slot.
@@ -196,7 +197,7 @@ components.
 | rejects | `DataComponents.DAMAGE` on a stackable item | `DataComponents.MAX_DAMAGE` on a stackable item, and a count over the maximum |
 | runs inside | `DataComponentMap.Builder.build` | `ItemInput`, `ItemStackTemplate.create`, `ItemStack.applyComponentsAndValidate` |
 | when | at reload, on the background executor | when a command, a template or a component patch builds a stack |
-| on failure | throws, failing the reload | logs, and yields `ItemStack.EMPTY` or restores the previous patch |
+| on failure | throws, failing the reload | depends on the caller: `ItemInput` throws a command syntax error, the other two log and yield `ItemStack.EMPTY` or restore the previous patch |
 
 Neither is reached from a network decode, and the client's stacks are proved a
 third way instead. Exactly **one** serverbound packet in the protocol carries
@@ -204,10 +205,12 @@ an `ItemStack`: `ServerboundSetCreativeModeSlotPacket`, whose
 `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` is wrapped in
 `ItemStack.validatedStreamCodec` — which runs no validator at all, but
 re-encodes the decoded stack through `ItemStack.CODEC` and throws if that
-fails. `ItemStack.validateContainedItemSizes` makes it recursive, into
-`DataComponents.CONTAINER`, `DataComponents.BUNDLE_CONTENTS` and
-`DataComponents.CHARGED_PROJECTILES`, so a shulker box full of impossible
-stacks is rejected at the door.
+fails. The contents of a container stack are checked one level down, but on
+the other path: `ItemStack.validateContainedItemSizes` runs inside
+`ItemStack.validateStrict`, over `DataComponents.CONTAINER`,
+`DataComponents.BUNDLE_CONTENTS` and `DataComponents.CHARGED_PROJECTILES` — so
+a shulker box full of impossible stacks is caught by a command, not at the
+creative slot's door.
 
 ## An item, a count, some components — said three ways
 
@@ -245,11 +248,13 @@ drops are decided by the tool as it was — then calls `ItemStack.mineBlock`,
 which delegates to `Item.mineBlock` and awards `Stats.ITEM_USED` if the item
 claims the block. The base `Item.mineBlock` is pure component work: it reads
 `DataComponents.TOOL`, does nothing without one, and damages the stack by
-`Tool.damagePerBlock` only on a server level and only when the block's destroy
-speed is not zero — so instant-break plants cost a tool nothing.
+`Tool.damagePerBlock` only on a server level, only when that number is above
+zero, and only when the block's destroy speed is not zero — so instant-break
+plants cost a tool nothing, and neither does a tool that declares no per-block
+damage.
 
-`ItemStack.hurtAndBreak` is the only way in, and the overload that does the
-work demands a `ServerLevel` outright. The overloads taking a `LivingEntity`
+`ItemStack.hurtAndBreak` is the way in for almost everything, and the overload
+that does the work demands a `ServerLevel` outright. The overloads taking a `LivingEntity`
 pattern-match on the entity's level and **silently do nothing** on the client,
 which is why a client never predicts durability. The amount then goes through
 `EnchantmentHelper.processDurabilityChange`
@@ -273,7 +278,9 @@ and `ItemStack.hurtAndConvertOnBreak` transmutes rather than vanishing.
 
 What the player actually watched was three methods on `Item`.
 `Item.isBarVisible` is *is this stack damaged*, `Item.getBarWidth` scales the
-damage over `Item.MAX_BAR_WIDTH` — thirteen pixels — and `Item.getBarColor`
+damage over thirteen pixels — the width `Item.MAX_BAR_WIDTH` names, though
+`Item.getBarWidth` spells the number out and nothing reads the constant — and
+`Item.getBarColor`
 sweeps a hue from green to red. `GuiGraphicsExtractor` draws the two-pixel bar
 under the icon from those three answers and nothing else.
 

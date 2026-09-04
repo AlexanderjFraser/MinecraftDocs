@@ -302,9 +302,34 @@ O is the close.
   (`EntitySpawnRequest.ignoreChecks` **is** true, twice, exactly where
   session G said it was not) and an **agent once** (the packet queue does
   drain before `tickServer`). Everything in [pass4.md](pass4.md).
-- [ ] **Session G — Part VII Items and inventories.** The three engines;
-  the five enchanting paths; the loot-context sets against the generated
-  view.
+- [x] **Session G — Part VII Items and inventories** *(2026-09-04)*. Eight pages
+  and the landing page, nine agents; **every one had at least one wrong claim**,
+  which is pass 2's finding for an eighth time. Sixty corrections, and session
+  H's own checklist held almost entirely — so, as in Part VI, the errors were in
+  what pass 3 did not know it had changed. Four carry a lecture:
+  `enchanting`'s **shared tail does not exist** (only three of the five paths
+  reach `ItemStack.enchant`, and the anvil is outside `updateEnchantments` too —
+  what all five share is `EnchantmentHelper.getComponentType`, which is the
+  routing-by-item-identity the section was actually about);
+  `loot-tables`' trace **opens the wrong menu**, since a single chest is
+  `ChestMenu.threeRows` and `sixRows` has one caller in the game, the double
+  chest's; `contexts-and-predicates` says "the fifteen [`ContextKey`s] that
+  exist" when there are **seventeen**, and the missing two are a *client* user
+  of `ContextMap` that makes the page's own two-packages argument; and
+  `recipes`' reload window holds **empty** indexes, not the previous recipe set,
+  and is five statements of one synchronous lambda wide. Two more punchlines
+  fell: `items-and-stacks`' contained-size check is not at the creative-slot
+  door at all, and `enchantments`' "no other item can be made to behave like
+  one" is false of the *component*, which the anvil keys on. Addition 2 in full:
+  all six *before you start* entries used by a sentence, **`server/server-tick`
+  added** as a missing one, and three order claims on the landing page and
+  `lectures.md` corrected — including that **`/reload` does not change an
+  enchantment**, because `Registries.ENCHANTMENT` is a world-load dynamic
+  registry and not a reload citizen at all. **Eighth tool bug**, found by
+  suspecting the tool when striking session H's entry made the checklists grow:
+  `pass4_queue.py` lost a struck bullet's strike across a **blank line**, so
+  only the first paragraph of a long entry could ever be settled. Everything in
+  [pass4.md](pass4.md).
 - [ ] **Session H — Part VIII The player.** The two-phase tick's callers;
   the damage pipeline's one number; the spear's two cooldown curves.
 - [ ] **Session I — Part IX Networking.** The round-trip diagram; the phase
@@ -640,3 +665,65 @@ missing it — and removes the comment. The owner confirms or reorders
   "never" the page's own later text contradicts is narrowed to what the later
   text says, the later text being the authority — three times this session.
   Everything in [pass4.md](pass4.md).
+- **2026-09-04, session G — Part VII Items and inventories (Opus).** Eight pages
+  and the landing page, one adversarial agent each; the order work, the
+  part-wide notes and every *wrong* re-derived by the session before a sentence
+  moved. **All nine had at least one wrong claim** — pass 2's result for an
+  eighth time. Sixty corrections, and the shape is Part VI's again: session H's
+  own checklist held almost entirely (all nine of its pass-2 corrections
+  re-confirmed, every count on `items-and-stacks`, `containers-and-menus`,
+  `enchantments` and `loot-tables` right, both `containers-and-menus` figures
+  clean arrow by arrow), so the errors were in what pass 3 did not know it had
+  changed. The four that carry a lecture: `enchanting`'s **shared tail does not
+  exist** — the section rested on "All of them end at `ItemStack.enchant`" and
+  only three of the five do, the grindstone and the providers calling
+  `EnchantmentHelper.updateEnchantments` themselves and the anvil writing with
+  `EnchantmentHelper.setEnchantments` outside even that; what all five share is
+  the private `EnchantmentHelper.getComponentType`, which *is* the
+  routing-by-item-identity the section was about, so the argument survives under
+  a new name. `loot-tables`' trace **opens the wrong menu**: a single chest —
+  which arrow 1 of the same figure establishes as the scenario — opens
+  `ChestMenu.threeRows`, and `ChestMenu.sixRows` has exactly one caller in the
+  game, inside the double chest's anonymous provider.
+  `contexts-and-predicates` says "the fifteen [`ContextKey`s] that exist are the
+  static fields of `LootContextParams`" when there are **seventeen** —
+  `SlotDisplayContext.FUEL_VALUES` and `.REGISTRIES` are the other two, and
+  `SlotDisplayContext.fromLevel` builds a `ContextMap` from six *client* files,
+  which is a second user for the page's own *util/context knows nothing about
+  loot* thesis and makes the cast table's "server main" wrong. And `recipes`'
+  reload window is not what the page says: a reload builds a **fresh**
+  `RecipeManager` whose four derived indexes start *empty*, and the swap and
+  `finalizeRecipeLoading` are five statements apart in one synchronous
+  main-thread lambda, so the "short and, on a reload, real" window is neither.
+  Two more punchlines fell: `items-and-stacks`' contained-size check is reached
+  only from `ItemStack.validateStrict` and so is **not** at the creative-slot
+  door the paragraph puts it at (and is one level deep, not recursive), and
+  `enchantments`' "no other item can be made to behave like one" is false of the
+  *component* — `AnvilMenu` keys `usingBook` on `STORED_ENCHANTMENTS`, not on
+  `Items.ENCHANTED_BOOK`. Addition 2 done in full: all six *before you start*
+  entries are used by a sentence, **`server/server-tick` added** as a missing
+  one that `containers-and-menus`' whole tick section rests on (session E's Part
+  V finding, again), and three order claims corrected across the landing page
+  and `lectures.md` — "every later page assumes all three" (no engine page links
+  all three, and two link none), "four and five are the pair" (it is five and
+  six), and **"all three engines are reload-time citizens of the same
+  machinery"**, which is false for enchantments: `Registries.ENCHANTMENT` is a
+  world-load dynamic registry, so `/reload` does not change an enchantment.
+  **Eighth tool bug**, again from suspecting the tool before the page — striking
+  session H's entry made the part's checklists *grow*, because
+  `pass4_queue.py` resets its current unit on a blank line and session H wrote
+  one long bullet of blank-line-separated paragraphs, so only the first
+  paragraph of a struck entry could ever be settled. Session C fixed the same
+  inheritance within an unbroken run; this is the same bug across the blank
+  line, and the fix moves exactly this part's nine pages and one `lectures.md`
+  line (620 open units to 596) and nothing else. The checklist itself was wrong
+  once (`MonsterRoomFeature`'s "two chest attempts" is two chests of up to three
+  attempts each) and an agent once, rejected on re-derivation: the arrow's spawn
+  packet *does* leave on the release tick, because `ChunkMap.addEntity`
+  broadcasts inside the handler and the packet drain precedes `tickServer`.
+  Rulings: a section title whose named mechanism is wrong but whose argument is
+  right is renamed for the argument rather than deleted; a figure edge whose
+  label justifies a *different* edge is re-sourced to the edge the label is true
+  of; and a superlative the page's own later text contradicts is narrowed to
+  what the later text says — four times this session, which is sessions D, E and
+  F's precedent again. Everything in [pass4.md](pass4.md).

@@ -19,6 +19,76 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session G — Part VII Items and inventories (pass 4) *(2026-09-04)*
+
+### Wording to re-read (a fact fix rewrote the sentence around it)
+
+- **`enchanting`'s title and its opening section.** The H1 was *Enchanting: five
+  ways onto an item* and is now *Enchanting: the five paths, and what each one
+  is allowed to do*, because the grindstone is a removal; the section *The one
+  line all five end on* became *The one question all five ask*, because the
+  shared method does not exist and the shared *decision* does. Both are longer
+  than what they replace. The verified line still says "picks up enchantments
+  four other ways", which is now the only place the old framing survives — check
+  it reads right beside the new title.
+- **`items/README.md`'s shape paragraph.** "every later page assumes all three"
+  was false, and the replacement admits that *contexts and predicates* is the
+  outlier and could be watched first. That is a truer paragraph and a wordier
+  one; it also now half-contradicts the numbered list's "the first three in
+  order, then the engines in any order you like", which was already loose.
+- **`items/README.md`'s *before you start*** grew from two ordering facts to
+  three when `server/server-tick` was added. The paragraph is now the longest on
+  the page.
+- **`containers-and-menus`' advancement-channel paragraph.** The claim "nothing
+  calls back into the menu" had to be scoped to the chest and the exceptions
+  named, which turned one clean sentence into four.
+- **`loot-tables`' world-gen paragraph** and its `BuiltInLootTables` category
+  list: the list was incomplete and is now longer. It is nine items in a book
+  whose budget is seven.
+- **`recipes`' reload-window paragraph**, rewritten from "a window that is short
+  and, on a reload, real" to an explanation of why nothing can observe it. The
+  punchline is gone and the paragraph is longer; it may want cutting to a
+  sentence.
+
+### Structural findings (logged, not acted on)
+
+- **`items-and-stacks`' *Two validators, one rule, two spellings* table** now has
+  an *on failure* cell that is three clauses long, because the three
+  `ItemStack.validateStrict` call sites do not agree. It is the only cell in the
+  corpus that has to disambiguate its own row.
+- **`enchanting`'s five-path table** is doing too much: after this session two of
+  its cells carry three clauses each (the providers-and-loot gate and filter).
+  Either the table narrows to the three columns that behave alike, or
+  `EnchantRandomlyFunction` gets a sentence of its own.
+- **`items/README.md`'s figure** lost an edge (`CM → CP`) and re-sourced another,
+  so the second tier now has one node with no incoming arrow. That is *true* —
+  contexts and predicates depends on none of the vocabulary — but a flowchart
+  with an orphan node reads like an omission. Pass 5 should decide whether the
+  figure wants a second, disconnected cluster or a note.
+- **`contexts-and-predicates`' figure 1** gained a node outside both subgraphs
+  (`SlotSource`). Same question: three groups, or two and a stray.
+
+### Counts that are fine but say nothing
+
+- **`items/README.md`:47** "the four ways one stack is serialised" is a count of
+  *destinations* borrowed from `foundations/codecs-nbt-json`, not of anything in
+  the decompile — `ItemStack` declares seven public serialisers. Correct as a
+  cross-reference, meaningless as a number. Pass 5 may want to drop the number.
+
+### The closer device
+
+Part VII is **2 of 9** on *Questions players ask* (`loot-tables` and
+`enchantments`), which is under session P's rule of thumb and needs nothing.
+
+### For the terminology sweep
+
+- The part says *the wire*, *the connection* and *the network* for the same
+  thing, sometimes in one page (`containers-and-menus` uses all three).
+- *Prototype* means the item's default `DataComponentMap` on `items-and-stacks`
+  and nothing else anywhere; the glossary has it, but it reads as jargon on
+  first use in `enchanting`.
+
+
 ## Session F — Part VI Entities (pass 4) *(2026-09-04)*
 
 **Rewrites logged for a re-read.** Every fix below replaced a sentence pass

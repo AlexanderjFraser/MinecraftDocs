@@ -27,7 +27,7 @@ action, that the meal would read as *the player changed their mind*.
 | `ItemStack` | the dispatch into the item, and the after-use side effects | both |
 | `Item` | `Item.use`, `Item.getUseDuration`, `Item.releaseUsing`, `Item.useOnRelease` | both |
 | `Consumable` | everything the meal does, on both sides | both |
-| `ProjectileWeaponItem` | ammo, spread and the arrow — and only ever on the server | server main |
+| `ProjectileWeaponItem` | ammo, spread and the arrow — the counting on both sides, the spawning only on the server | both, but only the server's counts |
 
 The block-target branch of a use — right-clicking a chest rather than the
 air — leaves at `MultiPlayerGameMode.useItemOn` and belongs to
@@ -52,24 +52,26 @@ air — leaves at `MultiPlayerGameMode.useItemOn` and belongs to
 The last-but-one row is the one that looks wrong. `ItemStack.useOnRelease`
 is the third term of the completion guard and it is the obvious name for
 "this item is finished by letting go" — but **`CrossbowItem.useOnRelease` is
-its only override in the tree**. The bow, the trident and the spyglass all
-return `Item.useOnRelease`'s default false. They are release-ended not
-because a predicate says so, but because their `Item.getUseDuration` is an
-hour long and their `Item.releaseUsing` does the work.
+its only override in the tree**. The bow and the trident return
+`Item.useOnRelease`'s default false. They are release-ended not because a
+predicate says so, but because their `Item.getUseDuration` is an hour long and
+their `Item.releaseUsing` does the work. The spyglass returns the default too
+and is not release-ended at all: at 1200 ticks its countdown really can run
+out.
 
 ## Starting: the client finishes before it speaks
 
 `Minecraft.handleKeybinds` sees the press and calls `Minecraft.startUseItem`,
 which sets the four-tick `Minecraft.rightClickDelay` itself, refuses while
 `LocalPlayer.isHandsBusy`, and walks both hands for a target. With nothing
-under the crosshair it reaches `MultiPlayerGameMode.useItem`, which refuses
-outright if the client's own `ItemCooldowns` says the item is on cooldown,
-and otherwise opens a prediction window
+under the crosshair it reaches `MultiPlayerGameMode.useItem`, which opens a prediction window first
 (`MultiPlayerGameMode.startPrediction`,
-[prediction and acks](../client/prediction-and-acks.md)), runs
-`ItemStack.use` **locally first**, and hands the resulting
-`ServerboundUseItemPacket` — hand, sequence number and both rotations — back
-to be sent. The prediction is complete before a byte leaves the client, for
+[prediction and acks](../client/prediction-and-acks.md)) and does everything
+else inside it: it builds the `ServerboundUseItemPacket` — hand, sequence
+number and both rotations — then consults the client's own `ItemCooldowns`,
+and runs `ItemStack.use` **locally first** only if the item is off cooldown.
+The packet goes up either way; the cooldown suppresses the prediction, not the
+report of it. The prediction is complete before a byte leaves the client, for
 the meal and the bow alike. Both answer `InteractionResult.CONSUME`, whose
 `InteractionResult.SwingSource.NONE` is why neither swings the arm, although
 `ItemInHandRenderer.itemUsed` still runs — the small dip the item makes as
@@ -244,7 +246,7 @@ sequenceDiagram
     Note over MC,Cons: ticks 1 to 31, both sides
     LP->>LP: ItemStack.onUseTick, five particles every fourth tick and the chew sound
     SP->>SP: the same call, particles discarded, sound broadcast to everyone else
-    Note over MC,Cons: tick 32, the server only
+    Note over MC,Cons: tick 32, the count reaching zero on the server alone
     SP->>Wire: ClientboundEntityEventPacket, EntityEvent.USE_ITEM_COMPLETE
     SP->>Cons: ItemStack.finishUsingItem, Consumable.onConsume, FoodData.eat
     Wire->>LP: Player.handleEntityEvent replays completeUsingItem locally
@@ -323,7 +325,7 @@ inside a `ServerLevel` test — so **on the client the draw produces a single
 phantom arrow marked `DataComponents.INTANGIBLE_PROJECTILE`, spends nothing
 and shoots nothing.**
 
-On the server it is four enchantment hooks and one ordering worth
+On the server it is five enchantment hooks and one ordering worth
 remembering. `EnchantmentHelper.processProjectileSpread` fans a multishot
 volley, and each arrow is aimed by `BowItem.shootProjectile` through
 `Projectile.shootFromRotation` using the **server's** rotation — which the
@@ -356,10 +358,12 @@ The release is the least-answered packet in the pipeline.
 `ServerboundPlayerActionPacket.Action.RELEASE_USE_ITEM` in one line — call
 `LivingEntity.releaseUsingItem`, return — with no ack, no sequence number
 consumed, not even a spectator check. Everything the client learns about its
-own shot arrives as ordinary world traffic on later ticks: the arrow as a
-spawn packet, the spent ammo and the bow's damage as a container slot update
-([containers and menus](containers-and-menus.md)), the cleared using-flag as
-entity data it has already acted on. The shoot sound is broadcast with no
+own shot arrives as ordinary world traffic. The arrow is the quick one: adding
+it to the level starts its tracking inside the same call, so the spawn packet
+leaves on that tick. The spent ammo and the bow's damage wait for a container
+slot update ([containers and menus](containers-and-menus.md)) and the cleared
+using-flag for entity data it has already acted on, both a tick or more
+later. The shoot sound is broadcast with no
 exclusion, so — by the same rule as the burp — the shooter hears the
 server's copy and never their own.
 
@@ -368,8 +372,8 @@ tells the client to re-derive the outcome from components it already holds,
 and `ClientboundSetHealthPacket` corrects whatever it got wrong. The single
 override of `Item.finishUsingItem` in the whole tree is
 `SpyglassItem.finishUsingItem`, which plays a sound — the spyglass being the
-one item that can end either way, at its 1200-tick duration or the moment
-you let go.
+one item whose completion is worth a sound of its own — reached either at its
+1200-tick duration or, like any use, the moment you let go.
 
 ## Where to look
 
