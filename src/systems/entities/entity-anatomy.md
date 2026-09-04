@@ -2,23 +2,25 @@
 
 > Verified against **Minecraft 26.2** · Part VI · What an entity *is*: one `EntityType` from the registry, through a factory, to a live object the level ticks.
 
-You type */summon pig*, and by the next tick there is a pig where you were
-looking. Between the command and the animal are three objects and one factory
+You type */summon pig*, and by the next tick there is a pig standing where
+you are. Between the command and the animal are three objects and one factory
 call: a `ResourceKey` in `EntityTypeIds`, the `EntityType` that `EntityTypes`
 built from it before any world existed, and the `Entity` that the type's
 `EntityType.EntityFactory` returns. This page is the vocabulary of that chain,
 and the rest of Part VI is built on it. The surprise is what happens when the
 name is *wrong*, because that depends entirely on which door the name came
 through. `Registries.ENTITY_TYPE` is one of the few **defaulted** registries
-and its default is *pig* — but `DefaultedMappedRegistry` overrides only the
-lookups that have to answer with a value, `DefaultedMappedRegistry.byId` and
-`DefaultedMappedRegistry.getValue`. So an entity-type id the client has never
+and its default is *pig* — and `DefaultedMappedRegistry` overrides nine
+lookups to hand it back, `DefaultedMappedRegistry.byId` and
+`DefaultedMappedRegistry.getValue` among them. So an entity-type id the client has never
 heard of, arriving inside a `ClientboundAddEntityPacket`, is decoded by
 `ByteBufCodecs.registry` through `IdMap.byIdOrThrow` — which cannot throw
 here, because `DefaultedMappedRegistry.byId` never returns null — and a pig
-walks out of the packet. The `Optional`-returning lookups are left alone, and
-`EntityType.CODEC` is `Registry.byNameCodec`, which resolves through one of
-those. The same unknown name in a region file therefore yields nothing at
+walks out of the packet. One lookup is overridden the other way:
+`DefaultedMappedRegistry.getOptional` calls the *superclass* method and so
+still answers empty. `EntityType.CODEC` is `Registry.byNameCodec`, which
+resolves through the plain `Registry.get`, untouched here. The same unknown
+name in a region file therefore yields nothing at
 all: `EntityType.create` logs *Skipping Entity with id …* and leaves a hole
 where the entity was. The default reaches the network and never reaches your
 save file.
@@ -29,7 +31,7 @@ save file.
 |---|---|---|
 | `EntityType` | one registered kind: its factory, category, frozen dimensions, feature flags, and the two numbers that decide how it reaches clients | built in a class initialiser, read from both game threads after |
 | `EntityTypes` | which 158 kinds exist and what every one of them is *sized* like — the most useful single table in the package | class initialiser, once |
-| `Entity` | position, box, network id, synched values, vehicle, removal reason. Deliberately thin on behaviour | the tick thread of whichever level owns it, never a worker |
+| `Entity` | position, box, network id, synched values, vehicle, removal reason. Deliberately thin on behaviour | the tick thread of whichever level owns it |
 | `EntityDimensions` | width, height, eye height, attachment points, and whether `Attributes.SCALE` may touch them | immutable record, shared by every entity of a type |
 | `SynchedEntityData` | which of the entity's fields the other side is told about ([synched entity data](synched-entity-data.md)) | written on the owning side, applied on the receiving one |
 | `EntityInLevelCallback` | whether the object is *in* a world or merely on the heap | installed by the level's entity manager |
@@ -124,7 +126,9 @@ the rest are single-mob animation states such as `Pose.EMERGING` and
 `Pose.DIGGING`. `Pose.BY_ID` is built with
 `ByIdMap.OutOfBoundsStrategy.ZERO`, so a pose id outside the range decodes
 silently to `Pose.STANDING` rather than failing the connection. Pose is the
-one synched value that changes physics, and the loop is worth stating
+synched value on the *base* class that changes physics — a dozen subclasses
+have their own, from a pufferfish's puff state to a slime's size — and the
+loop is worth stating
 because everything else on this page hangs off it: `Entity.setPose` writes the
 value, `SynchedEntityData.set` calls `Entity.onSyncedDataUpdated`
 **inside the setter**, before anything is marked dirty, and that sees
@@ -139,8 +143,9 @@ is at most four blocks in both width and height.
 
 ## The tree, and the class that was inserted into it
 
-`Entity` has **18** direct subclasses and 191 descendants. The non-living
-branches are the short half.
+`Entity` has **18** direct subclasses and 191 descendants. `LivingEntity` and
+its 124 descendants are two thirds of that; the non-living branches are the
+other 66.
 
 <figure class="map">
 {{#include ../../generated/tree-Entity.svg}}
@@ -257,15 +262,17 @@ into its cache, and builds the synched-data container: eight accessors defined
 inline — the shared flags byte, air supply, custom name and its visibility,
 silence, no-gravity, pose and frozen ticks — and *then* the abstract
 `Entity.defineSynchedData`, which contributes nothing on the base class and
-exists only for the subclasses. Its last act is `Entity.setPos` at the origin,
+exists only for the subclasses. It then calls `Entity.setPos` at the origin,
 so a fresh entity already has a full-size box rather than the zero-size
 `Entity.INITIAL_AABB` the field initialiser gave it.
 
 **Tag to state.** `Entity.load` reads position (clamped to ±3.0000512E7
 horizontally), motion, rotation and UUID, then calls the abstract
 `Entity.readAdditionalSaveData`, then `Entity.reapplyPosition` again if
-`Entity.repositionEntityAfterLoad` says so — the hook paintings and item
-frames use to re-snap. The save twin is `Entity.addAdditionalSaveData`, and
+`Entity.repositionEntityAfterLoad` says so — which everything says except
+`BlockAttachedEntity`, the corpus's one override, so paintings, item frames
+and leash knots are precisely the entities that *skip* it and keep the
+position their own load computed. The save twin is `Entity.addAdditionalSaveData`, and
 passengers save inside their vehicle: `Entity.save` returns false for anything
 currently riding, and the vehicle writes them into its *Passengers* list
 through `Entity.saveAsPassenger`, using `Entity.getEncodeId`, which is null
@@ -303,8 +310,12 @@ command asks for it, and it never touches the Y offset.
 calls `Entity.tick` — through `Level.guardEntityTick`, which turns any
 exception into a crash report with the entity's details attached.
 `ClientLevel.tickEntities` does the same, through the same guard, having first
-skipped anything removed, riding or frozen by the tick-rate manager. Nothing
-entity-related runs on a worker pool and `Entity` is not thread-safe.
+skipped anything removed, riding or frozen by the tick-rate manager. No
+entity is ever *ticked* on a worker pool, and `Entity` is not thread-safe —
+though entities are constructed on one: `ChunkStatus.SPAWN` runs
+`NaturalSpawner.spawnMobsForChunkGeneration` on the worldgen executor, so a
+chunk's first animals are built and finalised off the main thread before the
+chunk ever becomes live.
 
 `Entity.tick` on the base class is one line: call `Entity.baseTick`.
 Everything readers remember happening "in tick" is in `Entity.baseTick` — the
@@ -312,7 +323,9 @@ dead-vehicle check, the boarding cooldown, the portal handling, the fluid
 snapshot, swimming, fire ticking, the lava halving of fall distance, the
 below-world check, the leash — or in an override. `LivingEntity.tick` calls up
 and then runs `LivingEntity.aiStep`, and `Mob.tick` calls up and refreshes its
-goal-control flags every five ticks through `Mob.updateControlFlags`.
+goal-control flags through `Mob.updateControlFlags` every five ticks — and
+only on the server, which is the one line of this section the client does not
+run.
 
 What differs between the sides is not the tick but what the tick is allowed to
 *do*, and that is exactly the subject of the next page,
@@ -340,9 +353,11 @@ client-side entity has no id, and therefore no equality and no hash.
 
 **Why did the hitbox not change when I changed the size?** Because
 `Entity.dimensions`, `Entity.eyeHeight` and `Entity.bb` are caches, and only
-three things refresh them unasked: a pose change on the base class,
-`LivingEntity.onAttributeUpdated` on `Attributes.SCALE`, and `AgeableMob` on
-the baby bit. Everything else has to call `Entity.refreshDimensions` itself.
+two things refresh them unasked for every entity: a pose change on the base
+class and `LivingEntity.onAttributeUpdated` on `Attributes.SCALE`. Ten
+subclasses do the same for a value of their own — `AgeableMob` on the baby
+bit among them — and everything else has to call `Entity.refreshDimensions`
+itself.
 The two eye-height accessors disagree while a cache is stale:
 `Entity.getEyeHeight` with no argument reads the cache, the `Pose` overload
 recomputes.

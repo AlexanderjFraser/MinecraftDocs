@@ -40,7 +40,7 @@ an arrow leaving the path.
 flowchart TD
     T["ServerChunkCache.tickChunks, once a tick"] --> ST["NaturalSpawner.createState walks every entity in the level, skipping MISC and persistent mobs"]
     ST --> CAT{"NaturalSpawner.getFilteredSpawningCategories"}
-    CAT -->|"a monster category, and the monster game rules are off"| X1["no category spawns anywhere this tick"]
+    CAT -->|"a monster category, and the monster game rules are off"| X1["this category is dropped from the tick's list"]
     CAT -->|"a persistent category, and game time is not a multiple of 400"| X1
     CAT -->|"already at the global cap for the category"| X1
     CAT -->|"eligible"| CH{"ChunkMap.collectSpawningChunks, then shuffled"}
@@ -64,26 +64,29 @@ flowchart TD
     D --> PICK{"NaturalSpawner.getRandomSpawnMobAt, weighted, once per group"}
     PICK -->|"the list is empty, or a reduced-water-ambient biome, 98 per cent of the time"| X3
     PICK --> TY{"NaturalSpawner.isValidSpawnPostitionForType, the typo is Mojang's"}
-    TY -->|"MISC, unsummonable, or the species is no longer in the list at this exact block"| X3
+    TY -->|"the category is MISC"| X3
     TY -->|"too far out for a type that cannot spawn far from a player"| X3
+    TY -->|"unsummonable, or the species is no longer in the list at this exact block"| X3
     TY -->|"SpawnPlacements.isSpawnPositionOk fails on the placement type"| X3
     TY -->|"SpawnPlacements.checkSpawnRules fails, and this is where the light test lives"| X3
     TY -->|"the type's spawn box collides with the world"| X3
     TY --> BUD{"NaturalSpawner.SpawnState.canSpawn, the biome energy budget"}
     BUD -->|"over budget"| X3
     BUD --> MAKE["EntityType.create, and ONLY NOW does a Mob object exist"]
-    MAKE -->|"feature-flagged off, or Peaceful and not allowed there"| X4["the whole chunk attempt returns"]
+    MAKE -->|"feature-flagged off, or Peaceful and not allowed there"| X4["this category's attempt on this chunk returns"]
     MAKE --> OBS{"Mob.checkSpawnRules and Mob.checkSpawnObstruction, on the real object"}
     OBS -->|"either fails, or it would despawn instantly anyway"| X3
     OBS --> FIN["Mob.finalizeSpawn, then addFreshEntityWithPassengers, then SpawnState.afterSpawn"]
 ```
 
 The boundary that matters is the one marked **only now**. Everything above it
-is decided against the `EntityType` — the placement type, the heightmap, the
-light rule, the collision box — because constructing a mob to ask it costs
+is decided against the `EntityType` — the placement type, the heightmap
+([chunk anatomy](../world/chunk-anatomy.md)), the light rule, the collision
+box — because constructing a mob to ask it costs
 more than answering from the type. Nothing above that line has an object to
 call a method on. `Monster.checkMonsterSpawnRules` is the light rule for a
-zombie, and it is three tests in a row: sky light against a random draw from
+zombie, and it hands the light half to `Monster.isDarkEnoughToSpawn`, three
+tests in a row: sky light against a random draw from
 zero to 31, then the dimension's `DimensionType.monsterSpawnBlockLightLimit`
 if that limit is below 15, then the local brightness against a sample of
 `DimensionType.monsterSpawnLightTest`. The last of those is where storms come
@@ -98,7 +101,7 @@ Construction is itself a filter, and the harshest-tempered one:
 difficulty is Peaceful and the type is not `EntityType.isAllowedInPeaceful`,
 and `NaturalSpawner.spawnCategoryForPosition` answers a null by returning
 outright — not by trying the next position. On Peaceful the spawner does all
-the work up to construction and then abandons the chunk.
+the work up to construction and then abandons this category's attempt.
 
 ### The two caps, and where 289 comes from
 
@@ -131,8 +134,8 @@ fact and not two.
 `NaturalSpawner.SPAWN_DISTANCE_CHUNK` 8 and
 `NaturalSpawner.SPAWN_DISTANCE_BLOCK` 128, and **not one of the three is read
 anywhere in the game** — the live values are the literals 576.0 and 16384.0
-at their use sites, both already squared. Only `NaturalSpawner.MAGIC_NUMBER`
-is genuinely read. The other live constant,
+at their use sites, both already squared. The two that *are* read are
+`NaturalSpawner.MAGIC_NUMBER` and one more. That one,
 `NaturalSpawner.INSCRIBED_SQUARE_SPAWN_DISTANCE_CHUNK`, is neither 8 nor 24:
 it is the floor of 8 divided by the square root of two, so **5**, and
 `DistanceManager.hasPlayersNearby` uses it as the fast *yes* of a three-way
@@ -149,10 +152,14 @@ difficulty, equipment and its enchantments, and — the part players notice —
 returns a `Zombie.ZombieGroupData` that the loop feeds back into the *next*
 mob of the same group. Baby-or-adult is decided once, by the first zombie, and
 inherited by the rest: a spawn group is all-baby or all-adult, never mixed. A
-baby gets two 5 % rolls at a chicken to ride, the first looking for an
-existing unridden `Chicken` within five blocks and the second creating one.
-The group ends at `Mob.isMaxGroupSizeReached`, or at four mobs, which is what
-`Mob.getMaxSpawnClusterSize` returns unless a species raises it.
+baby gets a 5 % roll at an existing unridden `Chicken` in a box five blocks
+wide and three tall, and *only if that roll fails* a second 5 % roll to
+create one.
+Two different limits end it. `Mob.isMaxGroupSizeReached` breaks the current
+group and lets the next of the three attempts start; `Mob.getMaxSpawnClusterSize`
+returns outright and kills all three. The base value is four, and seven
+species change it — horses to 6, fish and wolves to 8, and ghasts, happy
+ghasts and pillagers **down** to 1.
 
 ## The other ways in
 
@@ -163,8 +170,9 @@ chambers ([block entities](../blocks/block-entities.md)); `SpawnEggItem` and
 babies; and five `CustomSpawner` implementations — `PhantomSpawner`,
 `PatrolSpawner`, `CatSpawner`, `WanderingTraderSpawner` and `VillageSiege` —
 are ticked as a list by `ServerLevel.tickCustomSpawners` after the chunks.
-Each stamps a different one of the nineteen `EntitySpawnReason` constants, and
-that reason never leaves the server: nothing about *why* something spawned
+Each stamps one of the nineteen `EntitySpawnReason` constants, though not a
+distinct one — phantoms and cats both count as *natural*, sieges and
+wandering traders both as *event* — and that reason never leaves the server: nothing about *why* something spawned
 crosses the wire.
 
 ## Entry: what addFreshEntity actually does
@@ -212,7 +220,8 @@ sequenceDiagram
     PESM->>ES: storeEntities, and only then UNLOADED_TO_CHUNK
 ```
 
-`ServerLevel.EntityCallbacks` is the class those four callbacks land in, and
+`ServerLevel.EntityCallbacks` is the class those callbacks land in — five of
+`LevelCallback`'s seven appear in the figure — and
 it is where a surprising amount of the level hangs: the scoreboard entry, the
 players list and the sleeping-player recount, waypoint tracking, the
 navigating-mob set the block-change notifier walks, the `EnderDragonPart` id
@@ -298,9 +307,11 @@ a mob alone in a world never despawns by distance. Beyond
 discarded on a 1-in-800 roll, but only once `LivingEntity.noActionTime` has
 passed 600; inside that 32 the same method resets that counter to zero, so
 standing near a mob keeps it alive. Both distance branches also require
-`Mob.removeWhenFarAway`, the per-species veto that tamed animals, villagers
-and anything holding a job override — which is why *128 blocks and it is
-gone* is a species-dependent rule and not a universal one. What both branches
+`Mob.removeWhenFarAway`, the per-species veto — and it is broader than people
+expect: `Animal` returns false for *every* animal, tamed or not, and
+`Villager` for every villager, so a wild cow on a hilltop never despawns by
+distance at all. That is why *128 blocks and it is gone* is a species-dependent
+rule and not a universal one. What both branches
 call is `Entity.discard`, which destroys and does not save.
 
 ## Ending two: the chunk goes away
@@ -348,8 +359,9 @@ discarded mob still sitting in a section out of the file.
 the waypoint go. An unloading zombie keeps all of it, because
 `Entity.RemovalReason.UNLOADED_TO_CHUNK` does not destroy. The five are not a
 state machine: `Entity.setRemoved` writes the reason **only if none is set**,
-so the first one wins and anything trying to upgrade a removal silently does
-nothing. It drops its passengers unconditionally, but dismounts the entity
+so the first one wins and a second call cannot change it — though the rest of
+`Entity.setRemoved` still runs, dropping passengers and firing
+`EntityInLevelCallback.onRemove` with the *new* reason. It drops its passengers unconditionally, but dismounts the entity
 from its own vehicle only when the reason destroys. The one link that survives
 a removal by design is an `EntityReference` held by somebody else — it keeps a
 UUID, upgrades to the object on first resolution, and falls back to the UUID

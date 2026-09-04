@@ -608,10 +608,11 @@ acknowledgement](systems/client/prediction-and-acks.md), and that page's own
 scenario is a block placed against a wall, which needs Part V's vocabulary.
 The cut is at Part V: both click pages open with the same four-sentence
 statement of the ledger's contract, which is all either needs, and the
-machinery waits for Part X. Part VI states the same thing from its side —
-the player half of [authority](systems/entities/authority.md) is the
-ledger's foundation, not its consequence — so the whole of Parts V and VI is
-watched before that one Part X lecture.
+machinery waits for Part X, so the whole of Parts V and VI is watched before
+that one Part X lecture. Part VI hands something forward to a *different*
+Part X page: [the client level](systems/client/the-client-level.md) opens by
+saying it is not an authority either, which needs
+[authority](systems/entities/authority.md) behind it.
 
 Ten pages carry most of the graph — nine rows below, because the two server
 ticks are one dependency in two lectures. A viewer who has watched these ten

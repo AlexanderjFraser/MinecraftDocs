@@ -46,7 +46,7 @@ asks it a question.
 | **what decides** | `Goal.canUse`, re-asked on every other tick | `Behavior.hasRequiredMemories` then `Behavior.checkExtraStartConditions`, asked once a tick |
 | **what arbitrates** | the flag table. Lower priority number wins a contested flag, and a non-interruptable incumbent wins outright | the active activity. A behaviour whose activity is not active is not asked at all |
 | **what persists across a save** | nothing. Not the running set, not the flags | 53 of the 116 memories, through `Brain.Packed` |
-| **what the world can push in** | `Mob.updateControlFlags`, every five ticks, disabling flags on one selector only | the schedule attribute, POI claims, hostiles seen by sensors, `Attributes.FOLLOW_RANGE` |
+| **what the world can push in** | `Mob.updateControlFlags` every five ticks, and the leash, both on one selector only | the schedule attribute, POI claims, hostiles seen by sensors, `Attributes.FOLLOW_RANGE` |
 | **which mobs use it** | every `Mob`. 58 goal classes and 10 targeting ones | 20 classes override `LivingEntity.makeBrain` — but only `Villager` sets a schedule |
 
 Every row below is one of those lines, taken in turn.
@@ -76,7 +76,9 @@ what it wraps in *server side and effective AI* is the one call to
 `Mob.serverAiStep`, not the jump and travel sections beneath it.
 `Mob.isEffectiveAi` is the more interesting half of the condition, because
 `Mob` narrows it with `Mob.isNoAi` — which is where the *NoAI* tag takes
-effect. On the client, nothing above runs but the debug renderers.
+effect. On the client neither selector nor brain is ticked at all — only the
+jump, travel and head-turn sections beneath the gate, and the debug
+renderers.
 
 ## What holds the state
 
@@ -204,10 +206,11 @@ whatever their numbers, and two that share one never do.
 `WrappedGoal.canBeReplacedBy` is the whole rule: the incumbent must answer
 `Goal.isInterruptable`, and the challenger's number must be strictly lower.
 
-There is a small piece of craft in how that is arranged. `GoalSelector` seeds
-its lock table with a sentinel `WrappedGoal` of maximum priority that reports
-itself not running, so *this flag is free* and *this flag is held by someone
-worse than me* are the same `WrappedGoal.canBeReplacedBy` call.
+There is a small piece of craft in how that is arranged. `GoalSelector` never
+puts a placeholder in its lock table; it reads the table with a *default* — a
+sentinel `WrappedGoal` of maximum priority that reports itself not running —
+so *this flag is free* and *this flag is held by someone worse than me* are
+the same `WrappedGoal.canBeReplacedBy` call on an entry that may not exist.
 
 On the brain side the arbiter is the active set, and the fallback is silent.
 `Brain.setActiveActivityIfPossible` checks the target activity's memory
@@ -241,14 +244,17 @@ that; so does growing up, which is how a baby swaps
 
 ## What the world can push in
 
-Into a goal selector, one thing: `Mob.updateControlFlags`, called from
-`Mob.tick` on the server every five ticks. It enables or disables
-`Goal.Flag.MOVE`, `Goal.Flag.JUMP` and `Goal.Flag.LOOK` according to whether
-something else is steering — a controlling `Mob` passenger, an
-`AbstractBoat` — and it touches **`Mob.goalSelector` only**.
-`Mob.targetSelector` is never disabled. `GoalSelector.tick` then stops any
-running goal holding a disabled flag and refuses to start another. That is
-the entire mechanism by which a ridden or boated mob stops driving itself.
+Into a goal selector, two things. The first is `Mob.updateControlFlags`,
+called from `Mob.tick` on the server every five ticks. It sets
+`Goal.Flag.MOVE` and `Goal.Flag.LOOK` from one question — *is a `Mob`
+steering me* — and `Goal.Flag.JUMP` from that **and** *am I in an
+`AbstractBoat`*. So a mob a mob is riding loses all three, and a mob sitting
+in a boat by itself loses only the jump. The second is the leash:
+`Mob.leashTooFarBehaviour` disables `Goal.Flag.MOVE` outright and
+`PathfinderMob.closeRangeLeashBehaviour` puts it back. Both touch
+**`Mob.goalSelector` only**; `Mob.targetSelector` is never disabled.
+`GoalSelector.tick` then stops any running goal holding a disabled flag and
+refuses to start another.
 
 Into a brain, rather more: the schedule attribute, whose value comes from the
 world; hostiles, players, items, beds and golems, all written by sensors that
@@ -267,8 +273,10 @@ every mob, and `DebugSubscriptions.BRAINS` only for one that is not
 brain-dead.
 
 Nor is either of them data-driven. The villager's day is data
-(`Timelines.VILLAGER_SCHEDULE` in `Registries.TIMELINE`), and so are
-`VillagerProfession` and `PoiType` — but **behaviours and goals are code**,
+(`Timelines.VILLAGER_SCHEDULE` in `Registries.TIMELINE`) — but
+`VillagerProfession` and `PoiType` are not: both are `BuiltInRegistries`
+bootstrapped from code, with no directory under the built-in data pack. And
+**behaviours and goals are code** too,
 plain Java lists in `VillagerGoalPackages` and the `*Ai` classes, not
 registered and not addressable from a data pack.
 
@@ -278,9 +286,12 @@ Every `Mob` has both fields, and almost every mob uses exactly one. Twenty
 classes override `LivingEntity.makeBrain` — `Villager`, `Piglin`, `Warden`,
 `Hoglin`, `Frog`, `Allay`, `Axolotl`, `Goat` and twelve more — and each keeps
 its behaviour lists in a class named for the mob: `PiglinAi`, `WardenAi`,
-`FrogAi`. There is one exception, and it is not a typo:
-`VillagerGoalPackages` is genuinely the 26.2 name, the last survivor of the
-old convention, sitting on the one mob with no goals at all.
+`FrogAi`. There are eighteen such classes for twenty mobs, and the two
+exceptions are worth naming. `Zoglin` keeps its lists inline, in the mob
+itself. And `Villager`'s live in `VillagerGoalPackages` — genuinely the 26.2
+name, and not a typo: it is the last survivor of the old convention, on a
+mob that has no goals at all. Nor do most of the other nineteen: a brain mob
+typically registers none.
 
 **One** — brain mobs with a schedule. `Brain.setSchedule` has exactly two
 call sites and both are in `Villager`, picking the adult attribute or the
@@ -327,10 +338,15 @@ so the activity a villager switches to is never the one the rest of *this*
 tick runs: the switch lands and the next tick acts on it. And it is only
 consulted when a behaviour asks — `Brain.updateActivityFromSchedule` refuses
 if fewer than 21 ticks have passed since the last one (the test is a strict
-*greater than* 20). Four packages carry no such behaviour: panic and hide
-have nothing at 99, pre-raid and raid have `ResetRaidStatus` there instead,
-and that omission is exactly how they pin the villager. A panicking villager
-cannot be reclaimed by the clock because nothing is asking the clock.
+*greater than* 20). Five of the ten packages carry no such behaviour: core,
+panic and hide have nothing at 99, pre-raid and raid have `ResetRaidStatus`
+there instead. The omission is how they pin the
+villager, and each of the three carries its own way out rather than leaving it
+to the clock: `VillagerCalmDown` sits at priority 0 in the panic package and
+calls `Brain.updateActivityFromSchedule` itself the moment the fear memories
+clear, `SetHiddenState` does the same for hide, and `ResetRaidStatus` for the
+two raid packages. Nothing is asking the clock on a schedule; the escape
+hatch asks once, on its own terms.
 
 The rest of the day hangs off that. **Claiming a job site** is `AcquirePoi`
 from the core package: it asks `PoiManager.findAllClosestFirstWithType` for
@@ -345,8 +361,9 @@ of that position, then erases the memory, writes `MemoryModuleType.JOB_SITE`
 and sets the profession — which is why walking to the workstation is a
 required step and not decoration.
 
-**Work** is a weighted `RunOne` over `WorkAtPoi` (or `WorkAtComposter`),
-`StrollAroundPoi`, `StrollToPoi`, `HarvestFarmland` and `UseBonemeal`;
+**Work** is a weighted `RunOne` over six: `WorkAtPoi` (or `WorkAtComposter`),
+`StrollAroundPoi`, `StrollToPoi`, `StrollToPoiList`, `HarvestFarmland` and
+`UseBonemeal`;
 `WorkAtPoi` wants 300 ticks since the last check and 1.73 blocks or less to
 the workstation. **Walking anywhere** is `MoveToTargetSink`, entered on *walk
 target present, path absent*: it turns a `MemoryModuleType.WALK_TARGET` into
@@ -385,11 +402,12 @@ for, and brain mobs source theirs from `Mob.getTargetFromBrain` instead.
 
 ## Questions players ask
 
-**Why does a mob in a boat stop moving on its own but still glare at me?**
+**Why does a ridden mob stop moving on its own but still glare at me?**
 Because `Mob.updateControlFlags` disables `Goal.Flag.MOVE`, `Goal.Flag.JUMP`
 and `Goal.Flag.LOOK` on `Mob.goalSelector` and never touches
 `Mob.targetSelector`. Target selection is a separate `GoalSelector` with its
-own lock table, and nothing in the game switches it off.
+own lock table, and nothing in the game switches it off. A boat alone does
+less than people expect: it costs the mob only `Goal.Flag.JUMP`.
 
 **Why did the villager ignore a perfectly good workstation?** Either it could
 not reach it — `AcquirePoi` pathfinds before it claims, and an unreachable
