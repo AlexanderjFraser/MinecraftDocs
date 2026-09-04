@@ -4,7 +4,7 @@
 
 A player right-clicks a torch onto stone. The block goes into its
 `LevelChunkSection` immediately, the heightmaps move, and then
-`LevelChunk.setBlockState` does exactly one thing about light: it calls
+`LevelChunk.setBlockState` reaches the light engine at all only to call
 `LevelLightEngine.checkBlock`, which on the server computes nothing at all.
 It wraps the call in a runnable and puts it on a queue that nothing in the
 level tick will ever drain. There is no light thread and no light phase of
@@ -53,7 +53,7 @@ sequenceDiagram
     LLSS->>LLSS: markNewInconsistencies, then swapSectionMap publishes a copy
     LLSS->>SCC: onLightUpdate once per affected section
     Note over SCC,CH: back on the server thread, whenever the posted task is polled
-    SCC->>CH: sectionLightChanged sets a bit and marks the chunk unsaved
+    SCC->>CH: sectionLightChanged, which bails on a chunk not yet at INITIALIZE_LIGHT and otherwise marks it unsaved and sets a bit
     Note over SCC,CH: end of ServerChunkCache.tickChunks, normally the next tick
     SCC->>CH: broadcastChangedChunks reaches broadcastChanges
     CH->>CL: ClientboundLightUpdatePacket to players this chunk borders, put on lightUpdateQueue by ClientPacketListener
@@ -96,8 +96,9 @@ has-data bit and a five-bit count of how many of its 26 neighbours have data
 (`LayerLightSectionStorage.SectionState`). A byte of zero means no storage,
 so a section of pure air beside a built-up one is allocated and a section in
 the middle of nothing is not. Above the sky column's top section there is no
-storage at all, and `SkyLightSectionStorage.getLightValue` walks upward until
-it finds data or runs past the top, where it answers 15.
+storage at all, and `SkyLightSectionStorage.getLightValue` answers 15 without
+looking; the upward walk it is known for happens *below* the top, when a
+section inside the column has no `DataLayer` and the search climbs for one.
 
 ## The write that queues nothing but a task
 
@@ -105,7 +106,7 @@ it finds data or runs past the top, where it answers 15.
 flipped between all-air and not — the torch is the first block into an empty
 section, or the last one out — `LevelLightEngine.updateSectionStatus` goes in.
 Then, if `LightEngine.hasDifferentLightProperties` says the old and new states
-disagree on emission, on dampening, or on whether either uses a shape for
+differ in emission or in dampening, or if *either* of them uses a shape for
 light occlusion, two things happen. The first is `ChunkSkyLightSources.update`
 on the chunk's own table, and it runs **inline, on the server thread**, inside
 the block write: the sky column's *lowest source Y* for that one *(x, z)* is
@@ -140,15 +141,16 @@ updates first and calls `ThreadedLevelLightEngine.tryScheduleUpdate` only if
 they had nothing to do — so light propagates in the gaps of a tick that
 finished early, after the ticket system is quiescent
 ([tickets](tickets-and-loading.md)). The other caller is
-`ChunkMap.scheduleUnload`, kicking the engine once a chunk's data has been
-nulled out. `ThreadedLevelLightEngine.scheduled`, an `AtomicBoolean`, keeps
+`ChunkMap.scheduleUnload`, kicking the engine right after it has *queued* the
+nulling of an unloading chunk's data. `ThreadedLevelLightEngine.scheduled`, an `AtomicBoolean`, keeps
 exactly one batch in flight.
 
 If nobody kicks, the queue is still not unbounded:
-`ThreadedLevelLightEngine.addTask` runs a batch inline the moment
-`ThreadedLevelLightEngine.lightTasks` reaches
-`ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE`, a thousand — still on the light
-executor, still never on the server thread.
+`ThreadedLevelLightEngine.addTask` runs a batch inline as soon as
+`ThreadedLevelLightEngine.lightTasks` has reached a thousand — the value
+`ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE` names, though the test is
+written as a literal — still on the light executor, still never on the server
+thread.
 
 ## One batch, and what it publishes
 
@@ -168,7 +170,7 @@ flowchart TD
     S -.-> VIS["visibleSectionData, volatile, and what every other thread reads"]
 ```
 
-The two maps are why nothing else in the game ever waits on the light engine.
+The two maps are why no reader of light ever waits on the light engine.
 `LayerLightSectionStorage.updatingSectionData` is the engine's scratch copy
 and no other thread reads it; `LayerLightSectionStorage.visibleSectionData`
 is volatile and is what every reader, saver and packet builder sees.
@@ -310,13 +312,16 @@ no `DataLayer` at all appears in neither mask. The same
 `ClientboundLevelChunkWithLightPacket` with both filters null — every section
 — when `PlayerChunkSender.sendChunk` first sends a chunk.
 
-**Up to 27** — sections one torch can dirty, and not because a write marks
+**Up to 14** — sections one torch can dirty, and not because a write marks
 its neighbours. `LayerLightSectionStorage.setStoredLevel` marks only the
 sections within one block of the position written
 (`SectionPos.aroundAndAtBlockPos`): one for an interior block, up to eight
-for a block on a corner. The 27 comes from the flood, which writes as far as
-thirteen blocks away, so the marked sections span up to three per axis —
-across as many as nine chunk holders. The real 3×3×3
+for a block on a corner. The 14 comes from the flood, which writes as far as
+thirteen blocks away in taxicab distance. Grow that octahedron by the
+one-block halo and it reaches three sections deep on one axis or another, but
+never on all three at once — three per axis would be 27, and a corner section
+needs a diagonal the octahedron does not have. Fourteen sections, across as
+many as seven chunk columns. The real 3×3×3
 marking, `LayerLightSectionStorage.markSectionAndNeighborsAsAffected`, fires
 only when a section is first given a `DataLayer`.
 
@@ -329,7 +334,7 @@ is a plain one, and its `LightChunkGetter.onLightUpdate` goes straight to
 converges at your framerate. `ClientPacketListener.handleLightUpdatePacket`
 applies nothing; it pushes a closure onto `ClientLevel.lightUpdateQueue`, and
 `ClientLevel.pollLightUpdates` runs a bounded number of them per frame — the
-larger of ten and a tenth of the backlog, or the whole backlog once it passes
+larger of ten and a tenth of the backlog, or the whole backlog once it reaches
 a thousand — so a burst of chunk loads is spread over frames instead of
 stalling one. Each closure is `ClientPacketListener.applyLightData`:
 `ClientPacketListener.readSectionList` turns every masked section into a
@@ -340,9 +345,9 @@ dirties it with its neighbours, and then the chunk's column is enabled with
 queued layers in and swapping the map exactly as the server does.
 
 Enabling a column is a separate thing from lighting it, and on the client it
-gates geometry. `SectionUpdateTracker.hasAllNeighbors` asks
-`LevelLightEngine.lightOnInColumn` about each of the eight surrounding
-columns, and `LevelExtractor` queues a never-yet-meshed section for rebuild
+gates geometry. `SectionUpdateTracker.hasAllNeighbors` asks for each of the eight
+surrounding columns both that the chunk is there and that
+`LevelLightEngine.lightOnInColumn` is true for it, and `LevelExtractor` queues a never-yet-meshed section for rebuild
 only when they all answer yes — a light flag deciding whether a section may
 have a mesh at all ([section meshing](../rendering/section-meshing.md)).
 Meanwhile the client had already lit this torch itself:
@@ -357,8 +362,9 @@ client computed a frame or two earlier.
 > *LightTexture* is `Lightmap` (Part XI).
 > `DynamicGraphMinFixedPoint`, `LeveledPriorityQueue` and `SpatialLongSet`
 > still live in `world/level/lighting`, but no light engine uses them any
-> more: their only callers are `ChunkTracker` and `SectionTracker`
-> ([tickets](tickets-and-loading.md)).
+> more. `DynamicGraphMinFixedPoint` survives for `ChunkTracker` and
+> `SectionTracker` ([tickets](tickets-and-loading.md)) and takes
+> `LeveledPriorityQueue` with it; `SpatialLongSet` has no callers at all.
 
 ## Questions players ask
 
@@ -369,8 +375,8 @@ is posted back to the server thread, and the packet is built at the end of
 
 **Why does breaking one block re-light half a room?** A block-light change
 propagates thirteen blocks, and every written position marks the sections
-within one block of it — up to 27 sections across nine chunks, each of which
-the client must re-mesh.
+within one block of it — up to fourteen sections across seven chunk columns,
+each of which the client must re-mesh.
 
 **Does an empty sky section cost anything?** No. A `DataLayer` with no array
 is homogeneous zero, `SerializableChunkData.copyOf` skips it on disk, and the
@@ -382,11 +388,13 @@ not enabled yet, and enabling is a separate step from lighting: until
 `LevelLightEngine.lightOnInColumn` is true for a section's eight neighbouring
 columns, `LevelExtractor` will not build that section's first mesh at all.
 
-**Why do the F3 light numbers not match what I see?** They are two numbers.
-`BlockAndLightGetter.getBrightness` reports each layer raw, while what
-renders comes from `LevelLightEngine.getRawBrightness` — the maximum of block
-light and sky light *after* the time-of-day darkening that
-`LevelReader.getSkyDarken` supplies.
+**Why do the F3 light numbers not match what I see?** They are three
+numbers, and none of them is the one you are looking at. `DebugEntryLight`
+prints a combined figure and then the two raw layers, and the combined figure
+is `LevelLightEngine.getRawBrightness` called with the time-of-day darkening
+argument set to **zero** — so even it is a noon answer. What renders is the
+two layers looked up in the `Lightmap` texture, which is where the hour, the
+dimension and the mob effects arrive ([the lightmap](../rendering/lightmap-fog-and-sky.md)).
 
 ## Where to look
 

@@ -259,10 +259,17 @@ O is the close.
   parent's strike, so a struck bullet's children came back on every later
   checklist for ever. Two agent findings rejected on re-derivation.
   Everything in [pass4.md](pass4.md).
-- [ ] **Session D — Part IV The world.** Probably two sessions: the
-  conveyor's five pages arrow by arrow, then the five about the world.
-  Tick boundaries hardest — this part's phase claims are what five other
-  parts cite.
+- [x] **Session D — Part IV The world** *(2026-09-04)*. Done in one, not two:
+  eleven pages, eleven agents; **every one had at least one wrong claim**.
+  Forty-nine corrections, and the numbers five other parts cite were where the
+  worst of them lived — `tickets-and-loading`'s **eleven is thirteen**,
+  `chunk-generation-pipeline`'s own derivation of the 11 came to 10, and
+  `lighting`'s **27 sections is 14**, a figure geometry forbids. Two hooks fell:
+  `points-of-interest`'s, contradicted by its own state diagram, and
+  `environment-attributes-and-timelines`' orange badlands sky, which is
+  `#6eb1ff`. No tool bug — the first session without one; instead **two of
+  session E's own *session-verified* corrections were wrong**. Everything in
+  [pass4.md](pass4.md).
 - [ ] **Session E — Part V Blocks.** The update-channels flowchart; the two
   click pages' identical preambles against `prediction-and-acks`; the
   redstone trio's neighbour-update counts.
@@ -469,3 +476,49 @@ missing it — and removes the comment. The owner confirms or reorders
   italics, not backticks, like any other non-identifier; and a diagram fixed
   by adding an edge is fixed, not restructured — the arrow count going up is
   pass 5's problem and is logged there.
+- **2026-09-04, session D — Part IV The world (Opus).** Ten pages and the
+  landing page, one adversarial agent each; the order work, the part-wide notes
+  and every *wrong* re-derived by the session before a sentence moved. **All
+  eleven had at least one wrong claim** — pass 2's result for a fifth time, and
+  it did not spare the numbers five other parts cite. Forty-nine corrections.
+  The four that carry a lecture: `tickets-and-loading`'s **eleven is thirteen**
+  (eleven is the reach past a level-**33** chunk, and a `PLAYER_LOADING` ticket
+  sits at 31), and the same page's level-44 holder is at
+  `ChunkStatus.STRUCTURE_STARTS`, not "the first noise pass" — replaying
+  `ChunkStep.Builder` over the pyramid gives the FULL step's twelve entries as
+  *SPAWN, INITIALIZE_LIGHT, CARVERS, BIOMES, STRUCTURE_STARTS × 8*, with
+  *NOISE* on the list nowhere; `chunk-generation-pipeline`'s **own derivation of
+  the 11 came to 10**, because three radius-1 rows widen the accumulated list and
+  the page named two — the missing one is *LIGHT* wanting *INITIALIZE_LIGHT*, and
+  `getRadiusOfParent` is why *SURFACE* and *SPAWN* contribute nothing;
+  `lighting`'s **"up to 27 sections across nine chunks" is 14 across seven**, and
+  27 is not merely wrong but impossible — an exhaustive enumeration over all
+  4,096 placements settles it, and the two opposite corner sections need the
+  torch's section coordinates to sum to at most 13 and at least 32 at once; and
+  `points-of-interest`'s **hook was falsified by its own state diagram**, since
+  `ValidateNearbyPoi` reads `BedBlock.OCCUPIED` and releases the ticket, so the
+  true statement is that the flag can only take a claim away, never make one.
+  Two more punchlines fell: the **badlands sky is blue** (`#6eb1ff`, bluer than
+  taiga's `#7da3ff`; no overworld biome declares an orange sky), and the day
+  timeline's Bézier makes the sun **slowest at its zenith**, not at the horizon —
+  which is why a day is about 13,564 ticks of sun against 10,436 of night, a
+  better fact than the one it replaced. `chunk-storage` lost thirteen claims
+  around an argument that held, the sharpest being that a flush is submitted at
+  *foreground* priority like any store and that a no-save world does let go of
+  its chunks, on `/save-all flush` and on shutdown. Addition 2 done in full:
+  all four *before you start* entries are used by a sentence,
+  `foundations/identifiers-and-registries` gained the page-level link it had been
+  missing (settling the Part IV half of session A's note), `foundations/tags` was
+  a missing entry, and `check_deps.py` has no Part IV line left. **No tool bug
+  this session** — the first pass-4 session without one. Instead the queue itself
+  was wrong twice: two of session E's *session-verified* pass-3 corrections are
+  false (`/tick sprint` **does** clear the freeze flag through
+  `ServerTickRateManager.requestGameToSprint`, and
+  `DynamicGameEventListener.move` does not "do nothing" on a half-loaded pair —
+  it guards its two halves separately and can drop a listener out of the world),
+  which is the re-derive rule earning its place against the checklist rather than
+  against an agent. Rulings: a hook a page's own figure contradicts is replaced,
+  and the replacement states what the figure draws; a dead constant that names
+  the right number is kept and *said to be dead* rather than deleted — four of
+  them turned up in this one part, and the resulting tic is logged in pass 5.
+  Everything in [pass4.md](pass4.md).

@@ -23,9 +23,10 @@ tick, the priority and the sub-order are no part of it — and
 `LevelChunkTicks.ticksPerPosition`, did not already hold that pair. The
 booking that loses is not queued, not merged and not logged, which is why so
 many blocks ask before they book: `DiodeBlock`, `ComparatorBlock` and
-`RedstoneTorchBlock` consult `LevelTickAccess.willTickThisTick`, and
-`ObserverBlock`, `TargetBlock`, `LightningRodBlock`, `TripWireBlock` and
-`SculkSensorBlock` consult `TickAccess.hasScheduledTick`.
+`RedstoneTorchBlock` consult `LevelTickAccess.willTickThisTick`, and seven
+blocks — `ObserverBlock`, `TargetBlock`, `LightningRodBlock`, `TripWireBlock`,
+`SculkSensorBlock`, `DriedGhastBlock` and `SpeleothemBlock` — consult
+`TickAccess.hasScheduledTick`.
 
 ## The cast
 
@@ -34,13 +35,13 @@ many blocks ask before they book: `DiodeBlock`, `ComparatorBlock` and
 | `ScheduledTick` | the appointment itself — type, position, trigger tick, `TickPriority`, sub-order — and the comparisons the system sorts and dedups by | a record, no thread |
 | `LevelChunkTicks` | one chunk's queue and its dedup set: whether a booking is new, and which of its ticks is next | Server |
 | `LevelTicks` | the per-level scheduler: which chunks are due, which ticks run this level tick, and where the budget falls | Server |
-| `ScheduledTickAccess` | the write side every block sees, so no block knows which of the four containers it is booking into | any — worldgen workers book through it |
+| `ScheduledTickAccess` | the write side every block sees, so no block knows which container it is booking into | any — worldgen workers book through it |
 | `ServerLevel` | when the drain runs, the per-chunk gate it runs under, and the type re-check that makes a tick cancellable | Server |
 | `SavedTick` | the disk form: a *relative* delay in place of an absolute time | Server, written by the IO worker |
 | `ProtoChunkTicks` | a generating chunk's bookings, all at delay zero | worldgen workers |
-| `BlackholeTickAccess` | the client's answer to the whole system: accept every booking, run nothing | Render |
+| `BlackholeTickAccess` | accept every booking and run nothing — the client's answer to the whole system, and also an `ImposterProtoChunk`'s | Render, and the server thread |
 
-Those four containers implement one small interface stack — `TickAccess`
+Those containers implement one small interface stack — `TickAccess`
 (schedule, ask, count), `TickContainerAccess` per chunk, `LevelTickAccess` per
 level, which also answers `LevelTickAccess.willTickThisTick`, and
 `SerializableTickContainer` for one that can `SerializableTickContainer.pack`
@@ -61,7 +62,7 @@ flowchart TD
     W --> SC["LevelTicks.sortContainersToTick walks the index for containers due this tick"]
     SC -- "chunk fails ServerLevel.isPositionTickingWithEntitiesLoaded" --> W
     SC --> DR["LevelTicks.drainContainers polls the best container, LevelChunkTicks.poll frees the dedup slot"]
-    DR -- "budget MAX_SCHEDULED_TICKS_PER_TICK spent" --> RL["rescheduleLeftoverContainers returns the rest to the index, still due next tick"]
+    DR --> RL["rescheduleLeftoverContainers, which always runs and has work only when the budget MAX_SCHEDULED_TICKS_PER_TICK cut the drain short: the rest go back to the index, still due next tick"]
     DR --> RUN["LevelTicks.runCollectedTicks hands each position and type to ServerLevel.tickBlock or ServerLevel.tickFluid"]
     RUN -- "the block books again from inside its own run" --> D
     RUN --> CL["LevelTicks.cleanupAfterTick empties toRunThisTick, containersToTick, alreadyRunThisTick"]
@@ -74,7 +75,7 @@ Everything below is one stage of that figure.
 A block calls one of the `ScheduledTickAccess.scheduleTick` defaults with a
 delay in ticks and, optionally, a `TickPriority`. The default asks the level
 for `LevelAccessor.createTick`, which stamps the appointment with
-`Level.getGameTime` plus the delay, the priority (`TickPriority.NORMAL` if
+`LevelAccessor.getGameTime` plus the delay, the priority (`TickPriority.NORMAL` if
 none was given) and a fresh sub-order from `LevelAccessor.nextSubTickCount`,
 then hands it to `ScheduledTickAccess.getBlockTicks` or
 `ScheduledTickAccess.getFluidTicks`. Two type parameters, two parallel
@@ -102,8 +103,10 @@ those ticks then *do* is [fluids](fluids.md).
 
 > **For a 1.21-era reader.** `BlockBehaviour.updateShape` no longer takes a
 > `LevelAccessor`. It takes a `LevelReader` and a separate
-> `ScheduledTickAccess` — the interface that carries
-> `ScheduledTickAccess.scheduleTick` and nothing else.
+> `ScheduledTickAccess` — a small interface whose whole job is booking:
+> `ScheduledTickAccess.createTick`, `ScheduledTickAccess.getBlockTicks`,
+> `ScheduledTickAccess.getFluidTicks` and four `ScheduledTickAccess.scheduleTick`
+> overloads that compose them.
 
 ## Where an appointment waits
 
@@ -168,20 +171,25 @@ one that passes moves into `LevelTicks.containersToTick`, a priority queue of
 hands to `LevelTicks.drainFromCurrentContainer`, which keeps pulling from that
 same container while its next tick is still due and still beats the next-best
 container's head — containers are re-heaped only when the winner stops
-winning. A container spent or overtaken goes back into the container queue if
-it still has something due and into the index otherwise, and
+winning. A container that is overtaken, or that still has something due when the
+budget is spent, goes back into the container queue; one merely overdue goes
+back to the index; one drained empty goes to neither. And
 `LevelTicks.rescheduleLeftoverContainers` returns whatever the budget cut off
-to the index at its head's trigger time, already in the past, so the next
-level tick collects it first.
+to the index at its head's trigger time, already in the past — which gets it
+*collected* next tick but buys it no place in the order, because
+`LevelTicks.CONTAINER_DRAIN_ORDER` compares priority and sub-order and has no
+time term at all.
 
 **Run.** `LevelTicks.runCollectedTicks` drains `LevelTicks.toRunThisTick` in
 order, moving each entry to `LevelTicks.alreadyRunThisTick` and handing its
 position and type to `ServerLevel.tickBlock` or `ServerLevel.tickFluid`. Both
 re-read the world there and run `BlockBehaviour.BlockStateBase.tick` or
 `FluidState.tick` only if the block or fluid is still the one the appointment
-named. **A tick is a promise to a type**, and that check is the entire
-cancellation mechanism: break the block and its pending ticks evaporate with
-no cancellation code anywhere. **Clean up** is
+named. **A tick is a promise to a type**, and that check is the whole of
+cancellation for anything a block does: break the block and its pending ticks
+evaporate with no cancellation code anywhere. The only code that removes a
+pending tick outright is bulk — `LevelChunkTicks.removeIf`, through
+`LevelTicks.clearArea`, forty lines below. **Clean up** is
 `LevelTicks.cleanupAfterTick`, emptying all four working collections including
 `LevelTicks.toRunThisTickSet`, which is built lazily and only if somebody
 actually asks `LevelTicks.willTickThisTick`.
@@ -353,7 +361,9 @@ at the game time the chunk started ticking.
 
 **I rescheduled the tick for sooner and nothing changed. Why?** Because
 `LevelChunkTicks.schedule` dedups on type and position only, and the first
-booking wins. Nothing in the game moves or cancels a pending tick — ask
+booking wins. No block moves or cancels a pending tick — only `/clone` and the gametest
+framework do, in bulk, through `LevelTicks.copyAreaFrom` and
+`LevelTicks.clearArea`. So ask
 `TickAccess.hasScheduledTick` whether one is already booked, or
 `LevelTickAccess.willTickThisTick` whether one is about to run in this very
 level tick, which reads the already-collected list that
@@ -364,11 +374,14 @@ A tick names a type. The appointment stays in the queue and still runs, but
 `ServerLevel.tickBlock` re-reads the position, finds a different block, and
 runs it to nothing.
 
-**Does `/tick freeze` stop scheduled ticks?** Yes, and it is the only thing
-that does. `TickRateManager.runsNormally` returns
-`TickRateManager.runGameElements`, recomputed every tick as *not frozen, or
-stepping* — so `/tick step` runs the *tickPending* section normally for the
-ticks it steps, and `/tick sprint` does not touch it at all.
+**Does `/tick freeze` stop scheduled ticks?** Yes, and among the tick
+commands it is the only one that does — a debug world skips the section too.
+`TickRateManager.runsNormally` returns `TickRateManager.runGameElements`,
+recomputed every tick as *not frozen, or stepping* — so `/tick step` runs the
+*tickPending* section normally for the ticks it steps, and `/tick sprint`
+clears the freeze flag outright for the length of the sprint
+(`ServerTickRateManager.requestGameToSprint`) and puts back whatever it found
+when the sprint ends.
 
 **Where do my ticks go when a chunk stops ticking?** Nowhere. They sit in the
 chunk's own queue, the index entry is left untouched, and the moment the chunk

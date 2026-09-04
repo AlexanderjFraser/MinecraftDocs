@@ -18,8 +18,9 @@ two of them are settings.**
 
 Part IV is a conveyor with a vocabulary page in front of it. Four pages are
 the conveyor and they hand a chunk to each other in order; the fifth page
-defines the thing being handed. The last four are not on the line at all —
-they are about the world the conveyor delivers.
+defines the thing being handed. The other five are not on the line at all —
+one is what the place and the hour decide, and four are about the world the
+conveyor delivers.
 
 ```mermaid
 flowchart TD
@@ -44,7 +45,7 @@ flowchart TD
     ST -- "one customer, big enough for its own page" --> FL
     LC --> GV
     LC --> PI
-    EA -- "read by all four, and by Part III" --> LC
+    EA -- "read by fluids and by the villagers, and by Part III" --> LC
 ```
 
 What the part hands forward, and what it does not: [blocks and
@@ -57,12 +58,15 @@ of this part; both are parts that depend on it.
 ## Before you start
 
 [The server tick](../server/server-tick.md) and [the level
-tick](../server/server-level-tick.md). Everything here happens either on the
-Server thread inside that loop, or on a worker the loop is waiting for, and
-the level tick is where the chunk source is asked to do its five things.
+tick](../server/server-level-tick.md). Almost everything here happens on the Server
+thread inside that loop, or on a worker the loop is waiting for — the IO lane
+below is the exception the storage page is about — and the level tick is where
+the chunk source is asked to do its five things.
 Part II's [codecs](../foundations/codecs-nbt-json.md) and
 [registries](../foundations/identifiers-and-registries.md) are assumed
-wherever a chunk is written to disk or a type is looked up by name.
+wherever a chunk is written to disk or a type is looked up by name, and
+[tags](../foundations/tags.md) wherever a behaviour is defined by a set the
+data pack owns — which is most of what the last two pages do.
 
 Nothing in this part needs Part V or beyond.
 
@@ -92,9 +96,8 @@ watched in any order once you have the vocabulary page.
    a worker and published as a copy. There is no light thread, and no light
    phase of the tick.
 6. [Chunk storage](chunk-storage.md) — a chunk nobody needs is copied,
-   encoded and written, on three different threads, and the server thread
-   waits for none of it. Most of your world's writes are ones nobody asked
-   for.
+   encoded and written, on three different threads, and the save path waits
+   for none of it. Most of your world's writes are ones nobody asked for.
 7. [Scheduled ticks](scheduled-ticks.md) — how anything happens *later*: an
    appointment book of two queues per chunk, and a dedup rule that quietly
    drops the second appointment even when it is sooner.
@@ -105,19 +108,21 @@ watched in any order once you have the vocabulary page.
    reaches a sculk sensor, through a cascade of tests that is most of the
    lecture. The sensor hears you one tick late by design.
 10. [Points of interest](points-of-interest.md) — a villager claims a bed
-    from 48 blocks away, the moment a path to it exists. The claim and the
-    *occupied* flag never speak to each other.
+    from 48 blocks away, the moment a path to it exists. Going to sleep in it
+    tells the index nothing, and the one behaviour that reads the flag back
+    can only take a claim away.
 
 ## Reference this part uses
 
 [Level data and rules](../../reference/level-data-and-rules.md) — who owns
 the seed, the spawn, the rules, the border and the dimensions, and which
-file remembers each. [Game rules](../../reference/gamerules.md) — most of
+file remembers each. [Game rules](../../reference/gamerules.md) — five of
 which this part reads. [Math and
-primitives](../../reference/math-and-primitives.md) — `ChunkPos`,
-`SectionPos`, `QuartPos` and the packings every page here assumes.
-[Threads](../../reference/threads.md) — the worker pool, the IO lane and
-the two consecutive executors. [Diagram lanes](../../reference/lanes.md).
+primitives](../../reference/math-and-primitives.md) — `ChunkPos` and
+`SectionPos`, and the packings the conveyor pages assume. [Block update
+flags](../../reference/block-update-flags.md) — the flag word three pages here
+spend. [Threads](../../reference/threads.md) — the worker pool and the IO
+lane. [Diagram lanes](../../reference/lanes.md).
 
 ---
 

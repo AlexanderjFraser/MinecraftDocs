@@ -28,9 +28,9 @@ whole and never explains.
 | `Fluid` | the registry object: its `Fluid.stateDefinition`, and every per-fluid number as an overridable method | built at bootstrap, read anywhere |
 | `FluidState` | one interned combination of `FlowingFluid.FALLING` and `FlowingFluid.LEVEL` — what a block reports and what a tick names | immutable |
 | `FlowingFluid` | the whole algorithm: what a position should hold, whether to go down or sideways, and which sides win | Server |
-| `WaterFluid` | water's four numbers, and whether two sources may make a third | Server |
-| `LavaFluid` | lava's four numbers, plus three overrides that turn liquid into rock | Server |
-| `LiquidBlock` | the block form of a fluid, and every place a fluid tick is booked | Server |
+| `WaterFluid` | water's numbers, and whether two sources may make a third | Server |
+| `LavaFluid` | lava's numbers, and the one override that turns liquid into rock | Server |
+| `LiquidBlock` | the block form of a fluid, and where a fluid tick is booked from when the fluid is the block | Server |
 | `SimpleWaterloggedBlock` | that a stair can be full of water without being a water block | Server |
 | `BucketItem` | where a source comes from, and the one attribute that stops it arriving | Server, with a client prediction |
 
@@ -53,8 +53,9 @@ flowing twin).
 Each fluid being *two* registry objects is not bookkeeping. `Fluids.WATER` is a
 `WaterFluid.Source` whose `WaterFluid.Source.getAmount` returns 8 and whose
 `WaterFluid.Source.isSource` returns true without consulting any property;
-`Fluids.FLOWING_WATER` is a `WaterFluid.Flowing` that reads both from
-`FlowingFluid.LEVEL`. `WaterFluid.isSame` answers true for either, which is how
+`Fluids.FLOWING_WATER` is a `WaterFluid.Flowing` whose
+`WaterFluid.Flowing.getAmount` reads `FlowingFluid.LEVEL` and whose
+`WaterFluid.Flowing.isSource` returns false without consulting anything either. `WaterFluid.isSame` answers true for either, which is how
 the algorithm treats water as one substance no matter which object it is
 holding. The scheduler does not: a scheduled tick is keyed on the fluid object,
 so `Fluids.WATER` and `Fluids.FLOWING_WATER` are two different appointments and
@@ -137,6 +138,9 @@ that will take water — that is the waterlogging path — and does
 attribute, so there the bucket plays a hiss, throws eight smoke particles and
 returns success having placed nothing: this page's whole trace never happens in
 the Nether ([environment attributes](environment-attributes-and-timelines.md)).
+The first question only decides whether the position is a legal target; the
+evaporation branch returns before the waterlogging is actually done, so a
+bucket on a Nether stair hisses too.
 On overworld stone it destroys and drops whatever was there and calls
 `Level.setBlock` with the source's `FluidState.createLegacyBlock` and the flag
 word 11 — `Block.UPDATE_NEIGHBORS`, `Block.UPDATE_CLIENTS`,
@@ -147,24 +151,32 @@ The appointment is the *block's* doing, not the fluid's.
 `LevelChunk.setBlockState` writes the section and then, server-side and unless
 `Block.UPDATE_SKIP_ON_PLACE` is set, calls `LiquidBlock.onPlace`, which asks
 `LiquidBlock.shouldSpreadLiquid` (always true for water) and schedules a tick
-for `Fluids.WATER` at `WaterFluid.getTickDelay`, five ticks out. Three other
-places book the same appointment: `LiquidBlock.neighborChanged` when a
-neighbouring block changes, `LiquidBlock.updateShape` when either this state or
-the neighbour's is a source, and `SimpleWaterloggedBlock.placeLiquid`. Nothing
-in `FlowingFluid` books its own future except the single line in
-`FlowingFluid.tick` that follows a state change.
+for `Fluids.WATER` at `WaterFluid.getTickDelay`, five ticks out. `LiquidBlock.neighborChanged` and
+`LiquidBlock.updateShape` book the same appointment when something next door
+moves, and so does `SimpleWaterloggedBlock.placeLiquid` — but the habit is not
+`LiquidBlock`'s alone. Sixty-one call sites across fifty-two classes schedule a
+fluid tick, because every waterloggable block books water's tick from its own
+override of `BlockBehaviour.updateShape`, `WaterloggedTransparentBlock`
+included. Nothing in `FlowingFluid`
+books its own future except the single line in `FlowingFluid.tick` that follows
+a state change.
 
 The client is told none of this, because there is nothing to tell. The placing
 player's client ran `BucketItem.use` itself inside
 `MultiPlayerGameMode.startPrediction`, so the source appears locally with no
-round trip, and every block the water later touches arrives as an ordinary
-`ClientboundBlockUpdatePacket`. `LevelChunk.setBlockState` skips
+round trip, and the blocks the water later touches arrive the way any
+run of block changes does: one `ClientboundBlockUpdatePacket` when a section
+changed exactly one block that tick, and a single
+`ClientboundSectionBlocksUpdatePacket` for the rest — which, for a spreading
+flow, is the ordinary case. `LevelChunk.setBlockState` skips
 `LiquidBlock.onPlace` off the server, and `ClientLevel.getFluidTicks` hands out
-a `BlackholeTickAccess` that accepts every appointment and keeps none. The only
-fluid code a client runs is `FluidState.animateTick` from
-`ClientLevel.doAnimateTick`: ambient sound, underwater particles and
-`Fluid.getDripParticle`. Flowing water on a client is a stream of block updates
-and nothing more.
+a `BlackholeTickAccess` that accepts every appointment and keeps none. No client ever runs the
+spread. What it does run is `FluidState.animateTick` from
+`ClientLevel.doAnimateTick` — ambient sound and particles, with
+`Fluid.getDripParticle` fetched separately just after — and
+`FluidState.getFlow`, which both the fluid mesher and shared entity physics
+need to know which way the surface leans. Flowing water on a client is a stream
+of block updates and a direction.
 
 Five ticks on, `LevelTicks` drains the fluid queue and hands the position back
 through `ServerLevel.tickFluid`, which re-reads the block and fires
@@ -287,7 +299,8 @@ source's four neighbours all refuse, the map comes back empty, and
 
 `FlowingFluid.spreadTo` does the placing and is deliberately dumb. A
 `LiquidBlockContainer` gets `LiquidBlockContainer.placeLiquid`; anything else
-has `FlowingFluid.beforeDestroyingBlock` run over it —
+that is not air — air, the usual target, is skipped — has
+`FlowingFluid.beforeDestroyingBlock` run over it —
 `WaterFluid.beforeDestroyingBlock` drops the block's items through
 `Block.dropResources`, `LavaFluid` plays a fizz — and then
 `LevelWriter.setBlock` with flags 3. It schedules nothing at all. Every new
@@ -310,9 +323,11 @@ The loud one is what happens when the source is taken back.
 cannot fill a bucket from flowing water — the flag word runs
 `Level.updateNeighborsAt`, each neighbouring `LiquidBlock.neighborChanged` books
 a fluid tick, and five ticks later those blocks compute
-`FlowingFluid.getNewLiquid` with no source in reach, get empty, and turn to air,
-which books *their* neighbours in turn. The pool drains outward one ring per
-tick delay, and each ring's last act is to schedule nothing.
+`FlowingFluid.getNewLiquid` with no source in reach. Only the outermost block
+of the flow comes back empty and turns to air; every ring behind it comes back
+one level *lower* than the ring beyond, writes that, and books itself again. So
+the pool re-levels repeatedly on its way out, one ring per tick delay, and each
+ring's last act is to schedule nothing.
 
 ## Lava is water with worse numbers, and three exceptions
 
@@ -339,10 +354,11 @@ does not creep — it creeps unevenly, and the unevenness is rolled fresh on eac
 tick.
 
 The three exceptions are where lava stops behaving like a fluid.
-`LavaFluid.spreadTo` intercepts a downward spread onto water: if the target is a
-`LiquidBlock` holding water it becomes `Blocks.STONE`, the fizz plays, and
-nothing spreads, so a lavafall into a pool builds a plug rather than replacing
-the water. The other two are in `LiquidBlock.shouldSpreadLiquid`, called from
+`LavaFluid.spreadTo` intercepts a downward spread onto water: the fizz plays
+and nothing spreads, whatever the water is in, and the target becomes
+`Blocks.STONE` when — and only when — it was a `LiquidBlock`. So a lavafall into
+a pool builds a plug rather than replacing the water, while a lavafall onto a
+waterlogged stair is merely stopped. The other two are in `LiquidBlock.shouldSpreadLiquid`, called from
 `LiquidBlock.onPlace` and `LiquidBlock.neighborChanged`: for lava it walks
 `LiquidBlock.POSSIBLE_FLOW_DIRECTIONS` and tests each direction's *opposite*, so
 the faces it inspects are the top and the four sides and never the bottom. Water

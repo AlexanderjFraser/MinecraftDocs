@@ -4,9 +4,9 @@
 
 At tick 12542 on the overworld clock the sun goes under, and three things a
 player would never connect happen at once: the sky over a taiga slides from
-pale blue towards black, the sky over a badlands slides from orange towards
-black by the same proportion, and every mob in the open stops being in danger
-of burning at dawn. In 26.2 those are one mechanism. An **environment
+its pale blue towards black, the sky over a pale garden slides from its grey
+towards black by the same proportion, and every mob in the open stops being
+in danger of burning at dawn. In 26.2 those are one mechanism. An **environment
 attribute** is a named, typed, registered property of the world —
 `EnvironmentAttributes` puts 48 of them in
 `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` — and the world answers one for a
@@ -60,8 +60,9 @@ flowchart BT
 
 `EnvironmentAttributeSystem.Builder.addDefaultLayers` stacks those four in
 that order and only that order. There is no priority number anywhere and no
-ordering data: a biome cannot run before its dimension, and weather always
-gets the last word. The stack is *per attribute*, too — an attribute nothing
+ordering data: a biome cannot run before its dimension, and weather is the
+last word on the server — on the client the two lightning-flash layers sit
+above it. The stack is *per attribute*, too — an attribute nothing
 in the level mentions has no `EnvironmentAttributeSystem.ValueSampler` at
 all, and `EnvironmentAttributeSystem.getValue` hands back its default. And it
 is baked once: the whole thing is built in the `ServerLevel` and
@@ -128,7 +129,7 @@ of it can meet.
 
 | lerp slot | used when |
 |---|---|
-| `AttributeType.keyframeLerp` | between two keyframes of a timeline track |
+| `AttributeType.keyframeLerp` | between two keyframes of a timeline track that overrides the value — a track of *modifier arguments* uses the modifier's own `AttributeModifier.argumentKeyframeLerp` instead |
 | `AttributeType.stateChangeLerp` | fading weather in and out |
 | `AttributeType.spatialLerp` | across a biome boundary |
 | `AttributeType.partialTickLerp` | between two client ticks, inside a frame |
@@ -274,20 +275,26 @@ still governs where it is read: it is what
 `EnvironmentAttributeCheck` and `EnvironmentAttributeValue` declare
 `LootContextParams.ORIGIN` a required parameter, and what makes
 `EnvironmentAttributeSystem.getDimensionValue` throw in a development build
-if asked for a positional attribute at all. Exactly three call sites read
+if asked for a positional attribute at all. Three call sites name an attribute and read it
 that positionless way: `Level.updateSkyBrightness` for
 `EnvironmentAttributes.SKY_LIGHT_LEVEL`, and `LavaFluid.isFastLava` and
 `Entity` for `EnvironmentAttributes.FAST_LAVA` — the only two attributes
 built `EnvironmentAttribute.Builder.notPositional`, and the pair that decides
-[how fast lava flows](fluids.md).
+[how fast lava flows](fluids.md). A fourth site names none:
+`EnvironmentAttributeReader` sends any non-positional attribute down this road
+when a loot context asks for one.
 
 `KeyframeTrackSampler.sample` is where the period matters: for a periodic
 track it bakes two extra segments, last keyframe to first on either side of
-the loop, so a value interpolates *across* midnight instead of snapping, and
-it reduces the clock's total ticks with a floor-mod before choosing one.
-`EasingType` supplies the curve, and the day timeline's sun, moon and star
-angles share one symmetric cubic Bézier — which is why the sun visibly slows
-near the horizon.
+the loop, so a value interpolates *across the wrap* — tick 0, which on this
+clock is dawn — instead of snapping, and it reduces the clock's total ticks
+with a floor-mod before choosing one. `EasingType` supplies the curve, and
+the day timeline's sun, moon and star angles share one symmetric cubic
+Bézier whose two keyframes both sit at tick 6000, so the baked segment runs
+noon to noon. The sun therefore turns slowest at its zenith — two thirds of
+the linear rate — and fastest at midnight, at about six fifths of it. That is
+why a Minecraft day is not two equal halves: the sun spends roughly 13,560
+ticks above the horizon against 10,440 below.
 
 ### The same value on the client
 
@@ -326,9 +333,12 @@ answer beside this tick's and returns `AttributeType.partialTickLerp` between
 them — and prunes itself, dropping any value nobody read during a tick.
 
 The probe lives on `Camera`, ticked from `Camera.tick` and emptied by
-`Camera.reset`, and every consumer of a visual attribute goes through it:
+`Camera.reset`, and six consumers go through it:
 `SkyRenderer`, `LightmapRenderStateExtractor`, `AtmosphericFogEnvironment`,
 `WaterFogEnvironment`, `LevelExtractor` for clouds and `Minecraft` for music.
+It is not a wall: the clock item reads *sun_angle* and *moon_phase* off
+`ClientLevel.environmentAttributes` directly, and so does `ClientLevel` itself
+for ambient particles.
 That is why [lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)
 never touches `EnvironmentAttributeSystem` directly.
 

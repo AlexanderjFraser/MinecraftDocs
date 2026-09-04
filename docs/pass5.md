@@ -19,6 +19,73 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session D — Part IV The world (pass 4) *(2026-09-04)*
+
+Wording debt from forty-nine fact fixes across eleven pages. Nothing here was
+acted on; pass 4 does not polish.
+
+**Rewrites to re-read.** Four fixes grew a sentence into a passage:
+
+- `points-of-interest`'s **hook**. The old one was a clean negative ("two facts
+  that never speak to each other") and the true replacement is a direction
+  ("speak in one direction only … can only take a claim away"), which costs a
+  clause and a sentence in the page's densest paragraph. It is now three
+  sentences where it was two. Worth trying as one.
+- `environment-attributes-and-timelines`' **easing paragraph** gained four lines
+  and three numbers (0.67×, 1.19×, 13,564 against 10,436). The day-length fact
+  is the better punchline and probably wants to be *in the hook* rather than two
+  thirds of the way down a page whose hook is about colour — a structural call,
+  not a wording one.
+- `chunk-generation-pipeline`'s **radius-11 derivation** now explains
+  `ChunkStep.Builder.getRadiusOfParent` in the middle of a paragraph that was
+  already the page's most arithmetical. The true rule ("a debt counts only when
+  the step's own parent already sits a ring out") may deserve to be its own
+  sentence, or a row in the table above it.
+- `chunk-storage`'s **IOWorker priority paragraph** gained five lines saying what
+  the shutdown barrier is and why a flush still waits. The section's subject is
+  "why the server thread never waits", and this is a digression inside it.
+
+**The dead-constant tic.** Four fixes in this part took the same shape: *the
+number is right, the constant that names it has no readers*, so the prose now
+says so — `AcquirePoi.SCAN_RANGE`, `SculkSensorBlock.ACTIVE_TICKS`,
+`LevelChunkSection.BIOME_CONTAINER_BITS`,
+`ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE`, plus
+`ChunkStatus.MAX_STRUCTURE_DISTANCE` which the pipeline page already flagged.
+Five instances of one aside in one part is a tic. Pass 5 should pick one voice
+for it and use it everywhere in the corpus, and probably drop the aside on the
+pages where the constant is not otherwise mentioned.
+
+**Named-qualifier debt.** The count corrections replaced round motifs with
+awkward ones: "eleven chunks past the edge of view" became "thirteen chunks past
+the ticket that asked for it", and "up to 27 sections across nine chunks" became
+"up to fourteen sections across seven chunk columns". Both are true and neither
+scans. `tickets-and-loading`'s header line was rewritten for the same reason and
+lost its scenario ("a chunk eleven chunks away becomes a ticking part of the
+world" → "a column of chunks thirteen past the edge of view is asked for"); the
+header should get its ticking image back around the true number.
+
+**Structural findings, not acted on.**
+
+- `chunk-anatomy`'s "packing buys a smaller palette, not narrower entries"
+  contradicts its own "can demote a container a whole rung" a few lines later.
+  Both are true of different cases; the sentence needs splitting, not correcting.
+- `lighting` says `SkyLightEngine.checkNode` "only decides what to enqueue" in
+  one paragraph and describes it writing stored levels in the next. A clash
+  between two paragraphs, not an error in either.
+- Part IV's landing page still calls the part "the four side-systems that make
+  the world they hold feel alive" in its header while its shape paragraph now
+  counts five pages off the conveyor. The header's four is the four
+  *side-systems*; environment attributes is a fifth thing and the header does
+  not account for it.
+- `points-of-interest` describes `PoiManager.isVillageCenter`'s predicate without
+  saying it reads through the **non-loading** `SectionStorage.get`, so an
+  unloaded section is never a village source whatever is on disk. A real fact the
+  page is missing rather than a wrong one — one sentence, and it belongs next to
+  the "an unclaimed bed makes no village" callout.
+- The cross-links session A logged here as pass-5 work are half done:
+  `chunk-anatomy` now links `foundations/identifiers-and-registries` (pass 4
+  needed it for addition 2). Part XII's two are still open.
+
 ## Session C — Part III The server (pass 4) *(2026-09-04)*
 
 Wording debt from twenty-eight fact fixes. Nothing here was acted on; pass 4

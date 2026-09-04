@@ -103,8 +103,10 @@ change without scanning. Its `LevelChunk.getPersistedStatus` is always
 holder for "the chunk at status X" and must be handed something
 `ProtoChunk`-typed even when that chunk is already live. Reads delegate to
 `ImposterProtoChunk.getWrapped`; writes are dropped unless *allowWrites*,
-and heightmaps, structure starts and references and block-entity NBT are
-dropped even then. `ImposterProtoChunk.getSections` hands back the wrapped
+which both of the two places that construct one pass as **false**, so in
+26.2 every write to an imposter is dropped — heightmaps, structure starts and
+references and block-entity NBT unconditionally, and the rest for want of the
+flag. `ImposterProtoChunk.getSections` hands back the wrapped
 chunk's array unconditionally — only the single-section
 `ImposterProtoChunk.getSection` is gated — while
 `ImposterProtoChunk.markUnsaved` and `ImposterProtoChunk.setLightCorrect`
@@ -158,12 +160,15 @@ load from disk recounts: `LevelChunkSection.recalcBlockCounts` runs from the
 two-container constructor, whose only caller is `SerializableChunkData`.
 
 Biomes share the section but are coarse and read-only.
-`LevelChunkSection.BIOME_CONTAINER_BITS` is 2 — two bits per axis, 64
-entries of 4×4×4 blocks each — and the field is a `PalettedContainerRO` that
-is never mutated: `LevelChunkSection.fillBiomesFromNoise`,
+Two bits per axis, 64 entries of 4×4×4 blocks each — the number
+`LevelChunkSection.BIOME_CONTAINER_BITS` names, though nothing reads that
+constant and the 2 that matters is the literal in
+`Strategy.createForBiomes`. The field is a `PalettedContainerRO` and the
+*published* one is never mutated: `LevelChunkSection.fillBiomesFromNoise`,
 `LevelChunkSection.read` and `LevelChunkSection.readBiomes` each build a
-replacement through `PalettedContainerRO.recreate` and swap the reference.
-Only block states resize in place.
+replacement through `PalettedContainerRO.recreate`, fill it, and swap the
+reference. The block-state container is the only one anything writes to in
+place.
 
 Two different copies leave a section. The saver takes
 `LevelChunkSection.copy`, a deep copy of both containers and all four
@@ -181,13 +186,19 @@ and `LevelChunkSection.release`.
 A `PalettedContainer`'s whole state is one *volatile* record,
 `PalettedContainer.Data`, holding a `Configuration`, a `Palette` and a
 `BitStorage`. `PalettedContainer.get` reads the record once into a local and
-takes no lock; a resize and a `PalettedContainer.read` from the wire each
-swap in a whole new record. Which record a given entry count deserves is
+takes no lock, because a resize swaps in a whole new record rather than
+editing the old one. `PalettedContainer.read` from the wire is the exception
+that proves it: `PalettedContainer.createOrReuseData` hands back the *existing*
+record whenever the incoming bit count wants the same configuration, and the
+palette and the long array are then overwritten in place — which is the
+ordinary case on a client, where `ClientChunkCache` reuses the live
+`LevelChunk`. Which record a given entry count deserves is
 decided by a top-level `Strategy` — no longer nested inside the container —
 whose `Strategy.createForBlockStates` and `Strategy.createForBiomes` are
 called once per level by `PalettedContainerFactory.create` over
-`Block.BLOCK_STATE_REGISTRY` and the biome registry, which is why the global
-palette's width is a runtime number and not a constant.
+`Block.BLOCK_STATE_REGISTRY` and the biome registry
+([registries](../foundations/identifiers-and-registries.md)), which is why the
+global palette's width is a runtime number and not a constant.
 
 `Strategy.getConfigurationForBitCount` is the ladder, and block states and
 biomes climb different ones:
@@ -290,7 +301,7 @@ order matters more than any single step in it:
 | 3 | the old state is compared to the new | identical state returns null, and nothing below runs |
 | 4 | all four heightmaps take `Heightmap.update` | — |
 | 5 | if the section's emptiness flipped: `LevelLightEngine.updateSectionStatus` and `ChunkSource.onSectionEmptinessChanged` | when it did not flip |
-| 6 | if `LightEngine.hasDifferentLightProperties`: `ChunkSkyLightSources.update`, then `LevelLightEngine.checkBlock` | when opacity and emission are unchanged |
+| 6 | if `LightEngine.hasDifferentLightProperties`: `ChunkSkyLightSources.update`, then `LevelLightEngine.checkBlock` | when opacity and emission are unchanged **and** neither state uses a shape for light occlusion |
 | 7 | the old block entity is dropped, preceded on the server by `BlockEntity.preRemoveSideEffects` | when the block did not change, had no block entity, or `BlockBehaviour.BlockStateBase.shouldChangedStateKeepBlockEntity` — the side effects alone are skipped on the client and under `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` |
 | 8 | `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` | when the block did not change and the new one is no `BaseRailBlock`, off the server, or without `Block.UPDATE_NEIGHBORS` and not moved by a piston |
 | 9 | the section is re-read — if step 8 changed the block again, the call returns null | — |
@@ -342,9 +353,9 @@ loser re-throws the same report the instant it acquires the permit. Both
 threads die, deliberately: an interleaved section write would be a corrupt
 world rather than a crash. Exactly one thread writes a section at a time —
 the server thread for a live chunk, and on the worker pool whoever holds
-`LevelChunkSection.acquire`, either `NoiseBasedChunkGenerator` for its own
-section or a `BulkSectionAccess` holding every section a feature such as
-`OreFeature` touches until it closes. Those hold the permit already, so they
+`LevelChunkSection.acquire`, either `NoiseBasedChunkGenerator`, which holds every
+section across its noise range, or the `BulkSectionAccess` that `OreFeature` — its only user — holds over
+every section it touches until it closes. Those hold the permit already, so they
 write through the unchecked five-argument `LevelChunkSection.setBlockState`
 and `PalettedContainer.getAndSetUnchecked`.
 

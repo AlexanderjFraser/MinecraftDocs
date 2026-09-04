@@ -10,12 +10,11 @@ around the one being built, so the first thing `ChunkGenerationTask.create`
 does is walk out to Chebyshev distance 11 and take a claim on every holder in
 that square: **asking for one chunk asks for 529 of them, and the eleven
 rings it claims will never, on this task's account, become chunks you could
-stand on.** Eleven is not a tuning constant. It is the length of
-`ChunkStep.accumulatedDependencies` for the FULL step, counted:
-`ChunkLevel.RADIUS_AROUND_FULL_CHUNK` reads it off the pyramid, and
-`ChunkLevel.MAX_LEVEL`, 44, is 33 plus it. Change the pyramid and the world's
-loading radius changes with it — as does, further down this page, how far
-from spawn you are allowed to build at all.
+stand on.** Eleven is not a tuning constant. It is the index of the last entry of
+`ChunkStep.accumulatedDependencies` for the FULL step — a twelve-entry list,
+one per ring from the centre out: `ChunkLevel.RADIUS_AROUND_FULL_CHUNK` reads
+that radius off the pyramid, and `ChunkLevel.MAX_LEVEL`, 44, is 33 plus it.
+Change the pyramid and the world's loading radius changes with it.
 
 ## The cast
 
@@ -90,18 +89,24 @@ resolved in:
 | *LIGHT* | *INITIALIZE_LIGHT* within 1 | — |
 | *SPAWN* | *LIGHT* at 0, *BIOMES* at 1 | — |
 
-The rows that do the work are the radius-1 ones. *NOISE* wanting *BIOMES* a
-chunk away, and *FEATURES* wanting *CARVERS* a chunk away, are what force a
-neighbour to run one step ahead of the chunk being built, and stacking those
-one-chunk debts on top of *STRUCTURE_STARTS* out to 8 is where the 11 comes
-from. `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and never read —
+The rows that do the work are the radius-1 ones: they force a neighbour to
+run one step ahead of the chunk being built. Five requirements in the pyramid
+have radius 1, but only three of them widen the accumulated list, because
+`ChunkStep.Builder.getRadiusOfParent` counts a debt only when the step's own
+parent already sits a ring out. *NOISE* wanting *BIOMES*, *FEATURES* wanting
+*CARVERS* and *LIGHT* wanting *INITIALIZE_LIGHT* each add one; *SURFACE* and
+*SPAWN*, which also ask for *BIOMES* within 1, add nothing. Three ones on top
+of *STRUCTURE_STARTS* out to 8 is where the 11 comes from. `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and never read —
 the pyramid writes the literal each time.
 
 The same arithmetic sets the edge of the world. `ChunkPyramid.SAFETY_MARGIN_CHUNKS`
 is 32 plus the twelve accumulated entries plus one, doubled — 90 chunks —
 subtracted from the coordinate maximum to give
 `ChunkPyramid.MAX_CHUNK_COORDINATE_VALUE`, which `ChunkPos.isValid` enforces
-and the `GenerationChunkHolder` constructor throws on.
+and the `GenerationChunkHolder` constructor throws on. It is a guard against
+arithmetic, not against players: at about 33.5 million blocks it sits three
+and a half million blocks *outside* `Level.MAX_LEVEL_SIZE`, the ±30 000 000
+nobody can build past anyway.
 
 ## A ticket sets a ceiling, and a separate call names the target
 
@@ -175,7 +180,7 @@ setting).
 Overlap comes from yielding, not from threads.
 `ChunkGenerationTask.runUntilWait` returns the moment a layer holds a future
 that is not yet done; `ChunkMap.runGenerationTask` chains a resubmit onto
-that future and the executor moves to another chunk's task at once. No thread
+that future and the executor moves to another chunk's task at once. No worldgen thread
 ever blocks waiting for a neighbour, and a task parked on a biome fork costs
 nothing.
 
@@ -331,10 +336,12 @@ equal to the target, and calls `ChunkGenerationTask.releaseClaim`:
 completes its save-sync future, and the square is free to be saved or dropped
 as its own tickets dictate — which the outer rings, only ever raised to the
 status their distance demanded, mostly are.
-Separately and later, `ChunkHolder.scheduleFullChunkPromotion` confirms the
-promotion on the server thread and `ChunkMap.onFullChunkStatusChange` tells
+`ChunkHolder.scheduleFullChunkPromotion` was called back in
+`ChunkHolder.updateFutures`, long before any of this; what happens now is its
+confirmation landing on the server thread and `ChunkMap.onFullChunkStatusChange` tells
 the entity manager. `ChunkLoadCounter` watches this from outside — it counts
-holders that reach *FULL* for the spawn progress bar, and drives nothing.
+holders that reach *FULL* for the spawn progress bar, and that count is what
+`MinecraftServer.prepareLevels` loops on until it is zero.
 
 ## The whole walk, once
 
@@ -373,9 +380,10 @@ sequenceDiagram
 
 **Why does adding cores not speed up world generation?** Because a dimension's
 worldgen is one `ConsecutiveExecutor` running one task at a time, and the
-dispatcher in front of it releases one chunk's work at a time. The pool only
-gets used in parallel for the biome and noise forks, the disk parse, and the
-second dimension. There is no thread-count setting for generation.
+dispatcher in front of it releases one chunk's work at a time. The pool is busy in parallel with plenty else — the *light*
+executor beside it, the disk read and its datafix, the POI prefetch, the biome
+and noise forks, the second dimension — but none of that is a second worldgen
+lane. There is no thread-count setting for generation.
 
 **Why does a chunk I have visited before still take work to load?** It walks
 all twelve steps. Seven of them pass through and cost nothing, but the disk
@@ -388,10 +396,12 @@ ticket level puts the ceiling below *FULL*.
 chunk sits at *STRUCTURE_STARTS* or *BIOMES*, correct and unfinished, for as
 long as the level says so.
 
-**Why is there a limit on how far out I can build?** The pyramid's depth sets
-it. `ChunkPyramid.SAFETY_MARGIN_CHUNKS` reserves 90 chunks at the coordinate
-maximum so that a chunk at the edge still has its radius-11 square to
-generate in, and `ChunkPos.isValid` refuses a holder outside it.
+**Why is there a limit on how far out I can build?** Not because of the
+pyramid. `ChunkPyramid.SAFETY_MARGIN_CHUNKS` does reserve 90 chunks at the
+coordinate maximum so that a chunk at the edge still has its radius-11 square
+to generate in, and `ChunkPos.isValid` refuses a holder outside it — but that
+edge is three and a half million blocks further out than
+`Level.MAX_LEVEL_SIZE`, which is the ±30 000 000 a player actually meets.
 
 ## Where to look
 

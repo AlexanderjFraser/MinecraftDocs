@@ -54,11 +54,12 @@ pack fails loudly; only the raw lookup silently becomes a step.
 
 ## Listeners live in the chunk, one registry per section
 
-A `GameEventListener` is three methods: a `PositionSource`
+A `GameEventListener` is four methods: a `PositionSource`
 (`BlockPositionSource` for a block, `EntityPositionSource` for a mob, the
 latter resolving a stored UUID against the level the first time it is
-asked), a `GameEventListener.getListenerRadius` and
-`GameEventListener.handleGameEvent`. They are stored per chunk section in
+asked), a `GameEventListener.getListenerRadius`,
+`GameEventListener.handleGameEvent` and a
+`GameEventListener.getDeliveryMode`. They are stored per chunk section in
 `LevelChunk.gameEventListenerRegistrySections`
 ([chunk anatomy](chunk-anatomy.md)), and `LevelChunk.getListenerRegistry`
 creates an `EuclideanGameEventListenerRegistry` for a section Y the first
@@ -80,8 +81,10 @@ it was filed under. `Entity.updateDynamicGameEventListener` is empty on
 `Entity` and overridden by `Warden` and by `Allay`, which hands over two.
 `ServerLevel.EntityCallbacks` drives it — `DynamicGameEventListener.add`,
 `DynamicGameEventListener.remove`, and `DynamicGameEventListener.move` on
-every section change, which does nothing at all if either chunk is not
-loaded to `ChunkStatus.FULL`.
+every section change. Its two halves are guarded separately and its record of
+where it was advances either way, so a move whose *old* chunk is not loaded to
+`ChunkStatus.FULL` leaves a stale registration behind, and one whose *new*
+chunk is not takes the listener out of the world entirely.
 
 ## The dispatcher never queues
 
@@ -148,9 +151,10 @@ The order is not the one a player would guess. The busy check comes first,
 so a sensor already carrying a vibration ignores everything without
 evaluating a single tag, and the occlusion raycast — much the most
 expensive gate — comes last, after every cheap refusal has had its chance.
-Before any of it, `Entity.vibrationAndSoundEffectsFromBlock` decides
-whether the event exists at all, which is why walking emits a footstep per
-stride rather than per tick. Two gates ask the *user* rather than the
+Before any of it, `Entity.applyMovementEmissionAndPlaySound` decides
+whether there is an event to post, by accumulating `Entity.moveDist` and firing
+only when it passes `Entity.nextStep` — which is why walking emits a footstep
+per stride rather than per tick. Two gates ask the *user* rather than the
 system: `VibrationSystem.User.getListenableEvents` supplies the tag
 `VibrationSystem.User.isValidVibration` tests first, and
 `SculkSensorBlockEntity.VibrationUser.canReceiveVibration` refuses
@@ -194,7 +198,7 @@ sequenceDiagram
     VSel-->>VST: the VibrationInfo, then startOver clears the slot
     VST->>SL: sendParticles, one VibrationParticleOption with the destination and the tick count
     Note over VST,SSB: the countdown starts in this same tick, one block per tick
-    VST->>SSB: onReceiveVibration, the frequency and the redstone power
+    VST->>SSB: onReceiveVibration on SculkSensorBlockEntity's VibrationSystem.User — the event, the entities and the arrival distance
     SSB->>SL: setBlock PHASE active with POWER, scheduleTick 30, gameEvent SCULK_SENSOR_TENDRILS_CLICKING
     Note over Entity,SSB: 30 ticks later deactivate, then 10 more before inactive
 ```
@@ -262,7 +266,9 @@ float stored when the candidate was made.
 
 `SculkSensorBlock.activate` sets `SculkSensorBlock.PHASE` to
 `SculkSensorPhase.ACTIVE` with that power, schedules a block tick
-`SculkSensorBlock.ACTIVE_TICKS` (30) out, runs
+`SculkSensorBlock.getActiveTicks` out — 30 for a plain sensor, 10 for a
+calibrated one, and never the constant `SculkSensorBlock.ACTIVE_TICKS`, which
+nothing reads — runs
 `SculkSensorBlock.tryResonateVibration` — which, for each of the six
 neighbours in `BlockTags.VIBRATION_RESONATORS`, posts the matching
 `GameEvent.RESONATE_1` … `GameEvent.RESONATE_15` at the *neighbour's*
@@ -284,7 +290,7 @@ for inactive.
 | listener | radius | what it listens to | what a vibration does |
 |---|---:|---|---|
 | `SculkSensorBlockEntity` | 8 | `GameEventTags.VIBRATIONS` | activates for 30 ticks, power by distance, frequency on the comparator |
-| `CalibratedSculkSensorBlockEntity` | 16 | `GameEventTags.VIBRATIONS` | the same, but when the block behind `CalibratedSculkSensorBlock.FACING` gives a redstone signal, only that exact frequency is accepted |
+| `CalibratedSculkSensorBlockEntity` | 16 | `GameEventTags.VIBRATIONS` | the same, but active for 10 ticks rather than 30, and when the block behind `CalibratedSculkSensorBlock.FACING` gives a redstone signal, only that exact frequency is accepted |
 | `SculkShriekerBlockEntity` | 8 | `GameEventTags.SHRIEKER_CAN_LISTEN` | needs a player behind the event, then `SculkShriekerBlockEntity.tryShriek` — warning level, darkness, and a warden at level 4 |
 | `Warden` | 16 | `GameEventTags.WARDEN_CAN_LISTEN` | anger through `Warden.increaseAngerAt`, a 40-tick `MemoryModuleType.VIBRATION_COOLDOWN`, and a disturbance location for `WardenAi` |
 | `Allay` | 16 | `GameEventTags.ALLAY_CAN_LISTEN`, note blocks only | `AllayAi.hearNoteblock` stores `MemoryModuleType.LIKED_NOTEBLOCK_POSITION`, after which it accepts that block and no other |
@@ -295,7 +301,9 @@ The tags are where the personalities live, and they are data
 ([tags](../foundations/tags.md)): `GameEventTags.WARDEN_CAN_LISTEN` covers
 shrieks and tendril clicks that `GameEventTags.VIBRATIONS` leaves out, and
 leaves out the flap that sensors hear. The warden is also the one entity
-whose `Entity.dampensVibrations` is true — invisible to every other
+whose `Entity.dampensVibrations` is *unconditionally* true — a dropped item
+answers true too, but only while it holds something in
+`ItemTags.DAMPENS_VIBRATIONS` — so the warden is invisible to every other
 listener while being the most sensitive one on the list, and the one entity
 `SculkSensorBlock.stepOn` refuses by name. Its brain and the allay's are
 [Part VI](../entities/ai-goals-and-brains.md).
@@ -334,7 +342,9 @@ stop all six.
 silent: `GameEventDispatcher.post` skips any column
 `ServerChunkCache.getChunkNow` does not already have, and a sensor whose
 3 by 3 neighbourhood is not ticking holds a finished vibration until it is.
-Both are visible on the debug channel — `DebugSubscriptions.GAME_EVENTS`
+The second is visible on the debug channel; the first is not, because the
+broadcast happens only where a listener was actually visited —
+`DebugSubscriptions.GAME_EVENTS`
 and `DebugSubscriptions.GAME_EVENT_LISTENERS`, broadcast through
 `ServerLevel.debugSynchronizers`
 ([debugging the running game](../client/debugging-the-running-game.md)).
