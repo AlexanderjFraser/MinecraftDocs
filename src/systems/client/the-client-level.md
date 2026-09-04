@@ -12,7 +12,7 @@ and anything that reschedules itself looks inert until the server speaks.
 
 That is the shape of the whole class. `ClientLevel` is not a passive receiver
 and not an authority either ([authority](../entities/authority.md) is where
-the four predicates that word stands for are set out): it simulates hard — every block entity ticks
+the five predicates that word stands for are set out): it simulates hard — every block entity ticks
 regardless of distance, every local block change is relit locally, it keeps
 its own clock and free-runs between corrections — while inheriting a set of
 shared `Level` methods that have been quietly reduced to constants. Reading
@@ -26,38 +26,42 @@ shared `Level` methods that have been quietly reduced to constants. Reading
 | `ClientChunkCache` | which chunks exist, in a fixed-size array indexed modulo the view diameter | Render thread |
 | `ClientLevel.ClientLevelData` | the client's own game time, difficulty, horizon height and void darkness | Render thread |
 | `LevelLightEngine` | the light the client computes for itself, unbudgeted | Render thread |
-| `LevelExtractor` | the only route from the level to the renderer — pushed *and* pulled | Render thread |
+| `LevelExtractor` | the main route from the level to the renderer — pushed *and* pulled | Render thread |
 | `ClientPacketListener` | the view radius and simulation distance the server announced | Render thread |
 | `TransientEntitySectionManager` | entity storage with no persistence, no chunk save, no index to disk | Render thread |
 | `Entity` | whether a position update is a snap or an interpolation | Render thread |
 
 ## Where the two levels differ
 
-The comparison is the page. Every row is a shared `Level` or `LevelReader`
-method that both sides inherit and one side has hollowed out.
+The comparison is the page. Every row but the last is a method both sides
+inherit from the shared hierarchy — `Level` itself, or one of the interfaces
+above it — and that one side has hollowed out; the last row is a field.
 
 | shared method | on the server | on `ClientLevel` |
 |---|---|---|
 | `Level.shouldTickBlocksAt` | ticket range | inherited — unconditionally true |
 | `ScheduledTickAccess.scheduleTick` | real `LevelTicks` | both lists are `BlackholeTickAccess` |
 | `Level.explode` | the real thing | empty override — particles arrive by packet |
-| `Level.gameEvent` | vibrations, sculk | empty override |
+| `LevelAccessor.gameEvent` | vibrations, sculk | empty override |
 | `LevelReader.getUncachedNoiseBiome` | generates | returns plains |
-| `Level.hasChunk` | asks the source | unconditionally true |
+| `LevelReader.hasChunk` | asks the source | unconditionally true |
 | `Level.setBlocksDirty` | empty | the renderer notification |
 | `Level.shouldTickDeath` | true | **stricter** — within the server's simulation distance |
-| entity storage | persistent, UUID-indexed | transient, no disk |
+| entity storage | persistent: a disk store, known UUIDs, per-chunk load states | transient: the same lookup, none of the bookkeeping |
 
-Three of those deserve their own sentence. `Level.hasChunk` returning true
-unconditionally means shared code cannot use the client to ask whether a
-column is loaded. `Level.explode` doing nothing is why an explosion you can
-see is a set of particles and sounds that arrived separately, not a
-simulation. And `Level.shouldTickDeath` is the only row where the *client*
+Three of those deserve their own sentence. `LevelReader.hasChunk` returning
+true unconditionally means that particular question is useless on the client —
+though `Level.isLoaded` still works, because it goes through the chunk source
+instead. `Level.explode` doing nothing is why an explosion you can see is not
+a simulation: one `ClientboundExplodePacket` carries the sound, the particle
+and the knockback, and the handler plays all of it. And `Level.shouldTickDeath` is the only row where the *client*
 is the stricter of the two: it uses the server's announced simulation
 distance to decide whether a dying mob plays its death animation.
 
-**Two** — the number of things on the client that read simulation distance
-at all. That one, and `LevelExtractor`'s render-stats string. The value only
+**Two** — the number of things that read the server's announced simulation
+distance off `ClientLevel`. That one, and `LevelExtractor`'s render-stats
+string. (The client's own `Options.simulationDistance`, which is a different
+number, has its own readers.) The value only
 ever arrives from the server, on
 `ClientPacketListener.serverSimulationDistance`, beside
 `ClientPacketListener.serverChunkRadius`; both are seeded at login, updated
@@ -113,19 +117,21 @@ sequenceDiagram
     CCC->>CL: unload(old) if the torus slot was occupied
     CCC->>CL: onChunkLoaded — four tint caches invalidated, entityStorage.startTicking
     CPL->>CL: queueLightUpdate(lambda) — light later
-    Note over CL: next tick
+    Note over CL: any ticks this frame owes, which above 20 fps is usually none
     CL->>CL: tickEntities, then Level.tickBlockEntities — the new chunk's block entities tick at once
-    Note over CL: next frame
+    Note over CL: still inside the same runTick, in renderFrame
     CL->>CL: update, then pollLightUpdates — the queued lambda finally runs
-    CL->>LLE: applyLightData, enableChunkLight, then runLightUpdates (unbounded)
-    CL->>LX: setSectionRangeDirty over the column
+    CPL->>LLE: applyLightData, then enableChunkLight, whose last act is setSectionRangeDirty over a 3x3 of columns
+    CL->>LLE: runLightUpdates (unbounded)
     CCC->>LX: onLightUpdate, then setSectionDirty — straight to the extractor, bypassing the level
 ```
 
 Three things about the shape. **Blocks and light are separated in the
 handler**, so a chunk exists, ticks and can be walked on before it is lit.
-**The two cadences are visible as two notes**: the chunk's block entities
-tick before its light is applied. And **the renderer is reached two ways** —
+**The separation is not a wait**: both notes fall inside the one
+`Minecraft.runTick` that handled the packet, and above twenty frames a second
+the frame usually owes no tick at all, so the light is applied with nothing
+having ticked in between. And **the renderer is reached two ways** —
 the level pushes (`ClientLevel.sendBlockUpdated`, `ClientLevel.setBlocksDirty`,
 `ClientLevel.setSectionRangeDirty`), but the chunk cache and one packet
 handler call `LevelExtractor` directly, and the extractor also *pulls*:
@@ -142,14 +148,19 @@ ticking its entities, and a light removal is queued for a later frame.
 `ClientChunkCache` is not a map. `ClientChunkCache.Storage` is a flat
 `AtomicReferenceArray` whose side is the view diameter, indexed by the chunk
 coordinates *modulo* that diameter — so moving the origin evicts the ring
-behind you by overwriting it. The array is atomic and the two centre
-coordinates are declared *volatile* for one reason: the render thread reads them while
-the packet handlers write them, and this is one of the few places on the
-client where two threads look at the same field.
+behind you by overwriting it. The array is atomic, the two centre coordinates
+are declared *volatile*, and so is the reference to the
+`ClientChunkCache.Storage` itself,
+because the packet handlers are not the only readers. The section-compile
+workers are: a `RenderSectionRegion` resolves biome tint *live* rather than
+from its snapshot, so `RenderSectionRegion.getBlockTint` goes through
+`ClientLevel.getBlockTint` into the chunk cache from a background thread while
+the main thread is moving the origin. The `ThreadLocal` and the read-write
+lock inside `BlockTintCache` are the same contract said out loud.
 
 `ClientChunkCache.calculateStorageRange` makes the array a few rings wider
-than the view distance, `ClientChunkCache.inRange` and
-`ClientChunkCache.getIndex` decide where a chunk lands, and
+than the view distance, `ClientChunkCache.Storage.inRange` and
+`ClientChunkCache.Storage.getIndex` decide where a chunk lands, and
 `ClientChunkCache.updateViewCenter` moves the origin by assigning two
 integers. Its verbs are `ClientChunkCache.replaceWithPacketData`,
 `ClientChunkCache.drop`, `ClientChunkCache.replaceBiomes`,
@@ -181,8 +192,8 @@ is opted into by exactly seven overrides.
 
 That table is the reason a dropped item's movement looks different from a
 mob's over the same connection: nothing is smoothing it. The handler itself
-— its three-tick window and the 64-block distance past which it gives up and
-snaps anyway — belongs to [movement and
+— its three-tick window, and the 64-block distance past which
+`ClientPacketListener` does not hand it the move at all and snaps instead — belongs to [movement and
 collision](../entities/movement-and-collision.md); what this page owns is
 *who has one*. `Entity.isInterpolating` is the question
 `ServerboundMoveVehiclePacket` and `PositionMoveRotation` both ask before
@@ -191,21 +202,29 @@ current position.
 
 ## Questions players ask
 
-**Why does thunder arrive late?** `ClientLevel.playSeededSound` defers a
-distant sound by a number of ticks derived from its distance. Nobody sends a
-timestamp; the client invents the delay. It is the only place in the game
-where propagation delay is modelled — see [the sound
-engine](sound-engine.md).
+**Does the client model the speed of sound?** For a few sounds, yes — and
+not for the one you would expect. `ClientLevel.playLocalSound` takes a
+*distance delay* flag, and when it is set and the source is more than ten
+blocks away the sound is deferred by its distance over a fixed rate. Firework
+explosions set it, and so do a handful of level events — the trial spawner,
+the vault, a cobweb placed. Thunder does **not**: `LightningBolt` passes the
+flag as false, so the crack is instant and what makes it feel late is the
+lightning being drawn first. See [the sound engine](sound-engine.md).
 
 **Why do I hear my own footsteps instantly on a laggy server?**
 `ClientLevel.playSeededSound` plays a sound locally when the *excluded*
 player is the local one. The server tells everyone else and the client
 produces its own copy. What lags is what you hear of other people.
 
-**Why does rain stop and start so abruptly?** Weather on the client is
-presentation only. `ClientLevel.tickWeatherEffects` spawns rain particles and
-picks rain sounds, but the rain and thunder *levels* are set wholesale by
-game-event packets, with no interpolation on either side.
+**Who decides how hard it is raining?** The server, one hundredth at a
+time. Weather on the client is presentation only:
+`ClientLevel.tickWeatherEffects` spawns rain particles and picks rain sounds,
+while the rain and thunder *levels* are ramped on the server by ±0.01 a tick
+and broadcast on every tick they change — about a hundred packets across a
+five-second transition. What the client does not do is interpolate *within* a
+tick: `Level.setRainLevel` writes the old and new values to the same number,
+so the partial tick buys nothing and the level steps twenty times a second
+rather than smoothly.
 
 **Why does the clock in a screenshot disagree with the server's?** The
 client keeps its own. `ClientLevel.tickTime` increments
@@ -228,25 +247,33 @@ setting further.
 
 ## What else it holds, and what it will not tell you
 
-`ClientLevel.tickingEntities` is an `EntityTickList` over
-`ClientLevel.entityStorage`, a `TransientEntitySectionManager`.
+`ClientLevel.tickingEntities` is an `EntityTickList`, fed by the callbacks
+`ClientLevel.entityStorage` — a `TransientEntitySectionManager` — invokes when
+a chunk starts or stops ticking.
 `ClientLevel.tintCaches` holds four `BlockTintCache`s — grass, foliage, dry
 foliage, water. `ClientLevel.globallyRenderedBlockEntities` is the set that
 draws from anywhere, populated by `ClientLevel.onBlockEntityAdded`.
-`ClientLevel.explosionTracker` is a `ClientExplosionTracker`, a queue of
-delayed block particles. `ClientLevel.blockStatePredictionHandler` is the
+`ClientLevel.explosionTracker` is a `ClientExplosionTracker`, a per-tick
+budget of at most 512 block particles that empties itself every tick rather
+than deferring anything. `ClientLevel.blockStatePredictionHandler` is the
 ledger [prediction and acknowledgement](prediction-and-acks.md) owns, and
 `ClientLevel.levelExtractor` is the push half of the route to the renderer.
 
 The client runs a real light engine — block light always, sky light only
 where the dimension has it — and every client-side `Level.setBlock` relights,
-but only when the new state actually differs in emission or opacity; a
-cosmetic state change queues nothing. Its collision world, on the other hand,
+but only when `LightEngine.hasDifferentLightProperties` says so — which is
+emission or dampening differing, *or* either state using its shape for light
+occlusion, so a purely cosmetic change to a stair or a slab relights anyway.
+The test is in shared `LevelChunk` code, so the server applies it too. Its
+collision world, on the other hand,
 is one entity wide: `ClientLevel.getPushableEntities` returns at most the
 local player.
 
 And `ClientLevel` never notifies `LevelRenderer`. It has no reference to it,
-and `LevelRenderer` has no invalidation API left at all.
+and not one per-block or per-section dirty method is left on `LevelRenderer` —
+they are all on `LevelExtractor` now. What `LevelRenderer` keeps is
+whole-world invalidation, `LevelRenderer.invalidateCompiledGeometry` and its
+neighbours, which the extractor calls.
 
 > **For a 1.21-era reader.** Gone: *ClientLevel.levelRenderer*, every dirty
 > method on *LevelRenderer* (now on `LevelExtractor`),

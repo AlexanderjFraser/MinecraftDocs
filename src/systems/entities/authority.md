@@ -23,7 +23,7 @@ stated in full once, here.
 
 | class | what it decides | thread |
 |---|---|---|
-| `Entity` | the four predicates, and every gate inside `Entity.move` that reads them | both main threads |
+| `Entity` | the five predicates, and every gate inside `Entity.move` that reads them | both main threads |
 | `Player` | overrides four of the five, and is the reason the picture inverts | both |
 | `Mob` | narrows `Entity.isEffectiveAi` with `Mob.isNoAi` | both, but only the server's copy acts on the answer |
 | `LivingEntity` | `LivingEntity.aiStep`, which either simulates or coasts | both |

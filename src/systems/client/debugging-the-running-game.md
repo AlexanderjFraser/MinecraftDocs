@@ -1,14 +1,15 @@
 # Debugging the running game
 
-> Verified against **Minecraft 26.2** · Part X · a villager's brain drawn over its head: one subscription mechanism, sixteen instances, all of them in the jar you downloaded and none of them on.
+> Verified against **Minecraft 26.2** · Part X · a villager's brain drawn over its head: one subscription mechanism, sixteen instances, all of them in the jar you downloaded and fifteen of them unreachable without a JVM flag.
 
-Every one of these sixteen debug views is compiled into the shipped client
-and the shipped dedicated server. Every subscription is in the registry,
-every packet is in the protocol, every producer call site is there. Nothing
-is stripped. **The client simply never asks** — fourteen of the sixteen are
-behind a JVM system property read at startup, and the server has to agree
-besides. The cost of all this while idle is one emptiness check per level per
-tick.
+Every one of these sixteen debug subscriptions is compiled into the shipped
+client and the shipped dedicated server. Every subscription is in the
+registry, every packet is in the protocol, every producer call site is there.
+Nothing is stripped. **The client simply never asks** — fifteen of the sixteen
+are behind a JVM system property read at startup, and the server has to agree
+besides. The idle cost is small but it is not nothing: the producers check for
+a subscriber before they work, and the server sweeps every online player's
+permissions once a tick whether or not anyone has asked for anything.
 
 That is the pattern the page is about: a registry of subscription kinds, a
 per-level engine that sleeps until somebody asks, a poll-and-diff sender, and
@@ -136,7 +137,7 @@ pass.
 
 Every pattern page's real content.
 
-**Two gates, and the second is not a flag.** Fourteen of the sixteen kinds
+**Two gates, and the second is not a flag.** Fifteen of the sixteen kinds
 are behind `SharedConstants.DEBUG_ENABLED` *and* an individual flag, both
 read from JVM system properties at startup — the only subscription an F3 key
 can reach is the dedicated server's tick time, through the FPS charts. And
@@ -148,28 +149,37 @@ IDE. On a normal singleplayer world that means cheats must be on.
 **Producers check before they work.** Path finding only records its open and
 closed node sets when somebody wants paths; entities only collect block
 intersections when somebody wants them; the neighbour updater's debug
-listener is only installed while someone is subscribed. The gate is
-`LevelDebugSynchronizers.hasAnySubscriberFor`, and it is why this costs
-nothing when idle. The change detection, by contrast, is *record equality*: a
+listener is only installed while someone is subscribed. There are two gates
+of that name and the producers do not agree on which to use: path finding and
+block intersections ask `ServerDebugSubscribers.hasAnySubscriberFor`, the live
+map, while the neighbour updater asks
+`LevelDebugSynchronizers.hasAnySubscriberFor`, which reads the level's
+snapshot from the previous tick. The change detection, by contrast, is
+*record equality*: a
 brain dump is rebuilt every tick per villager and compared with the last one
 sent — so the saving is in bandwidth, not in server time.
 
 **About half the renderers do not use this system at all.** The chunk debug
-renderer and the entity hitbox renderer reach directly into
-`Minecraft.getSingleplayerServer`, so they show nothing in multiplayer; and a
+renderer reaches directly into `Minecraft.getSingleplayerServer` and shows
+nothing in multiplayer; the entity hitbox renderer reaches for it too, but
+only for its optional *server* hitbox — its ordinary client hitboxes are
+drawn for every visible entity, on any server, from an F3 entry rather than a
+flag. And a
 whole family of them — chunk borders, light, collision boxes, height maps,
 the section octree — are purely client-side views that need no server.
 
-**One flag combination silently under-delivers.** The POI renderer reads
-brain data to label ticket holders, but the client only subscribes to brains
-under the brain flag — so running with the POI flag alone gives POI boxes
-with no names. The bee flag avoids the same trap by explicitly also
-requesting goal selectors.
+**One flag combination under-delivers, and says so.** The POI renderer's
+ticket-holder rows are behind an explicit `SharedConstants.DEBUG_BRAIN` test,
+so running with the POI flag alone gives POI boxes with their own two labels
+and none of the brain ones. The bee flag avoids needing the test at all by
+explicitly also requesting goal selectors.
 
 **Subscriptions survive a dimension change and a death, but not a
-reconnect.** `ServerPlayer.restoreFrom` copies the requested set to the new
-player object; a fresh login starts empty, and the client re-sends on its next
-tick because `ClientDebugSubscriber` was cleared at login.
+reconnect.** A dimension change keeps the same `ServerPlayer`, so the set is
+simply never touched; a respawn builds a new one and `ServerPlayer.restoreFrom`
+copies the requested set across. A fresh login starts empty, and the client
+re-sends on its next tick because `ClientDebugSubscriber` was cleared at
+login.
 
 ## The sample path, which shares only the subscriber map
 
@@ -201,9 +211,10 @@ for a system that used to have one per subject.
 > of one packet type per kind of debug information there is one
 > `DebugSubscription` registry and three generic value packets that dispatch
 > on the registry id. The debug *screen* is a different system again — the F3
-> entry registry described in [the HUD](hud.md) — and the two touch at
-> exactly two points: the renderer list is rebuilt when the enabled-entry
-> version changes, and the FPS charts gate the tick-time subscription.
+> entry registry described in [the HUD](hud.md) — and it is not a light
+> touch: the F3 entries decide whether eleven of the twenty-five renderers
+> exist at all when the list is rebuilt, and the FPS charts gate the tick-time
+> subscription.
 
 ## Where to look
 

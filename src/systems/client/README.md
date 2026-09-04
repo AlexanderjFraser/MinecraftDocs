@@ -2,10 +2,13 @@
 
 > Verified against **Minecraft 26.2** · Part X · One thread, one loop, and seven systems that differ mainly in how often the loop gets round to them.
 
-Everything in this part happens on one thread. The client has no scheduler,
-no timer callbacks and — despite the name printed in every stack trace — no
-render thread: the thread called *Render thread* is the main thread, and it
-is the same thread that ticks the world, applies packets, handles your
+Everything in this part that touches the game happens on one thread. Nothing
+in the client's simulation is driven by a scheduler or a timer callback —
+the two classes that own one, `PeriodicNotificationManager` and
+`RemoteFriendListUpdateHandler`, hop back to the game thread before they
+touch anything — and, despite the name printed in every stack trace, there
+is no render thread: the thread called *Render thread* is the main thread,
+and it is the same thread that ticks the world, applies packets, handles your
 keyboard, decides what a screen looks like and asks the GPU to draw it. A
 player recognises the part by its symptoms of that arrangement: the stutter
 where the world moves on without you, the block that appears and then
@@ -14,8 +17,9 @@ arrives a beat after the packet.
 
 ## The shape of the part
 
-Part X is a **hub and its spokes**, and the spokes are not stages — nothing
-hands off to anything. `the-client-loop` is the hub because it is the one
+Part X is a **hub and its spokes**, and the spokes are cadences rather than
+stages: with one exception, noted below, nothing here hands off to anything.
+`the-client-loop` is the hub because it is the one
 page that says *when* anything on the client runs, and every other page in
 the part answers the same question about itself: **when in that loop does
 this happen?** Read the labels on the arrows as cadences, not as an order.
@@ -31,20 +35,22 @@ flowchart TD
     SND["Sound — the engine, and what makes a sound happen"]
     DBG["Debugging the running game"]
     LOOP -- "per tick, and light per frame" --> LEVEL
-    LOOP -- "per click, in one synchronous window" --> PRED
-    LOOP -- "per GLFW callback, before the tick" --> INPUT
-    LOOP -- "per save, which is per change" --> OPT
+    LOOP -- "per action, in one synchronous window" --> PRED
+    LOOP -- "per GLFW callback, keys before the tick" --> INPUT
+    LOOP -- "per save, which a cycle button does on click" --> OPT
     LOOP -- "per frame, recorded then drawn" --> GUI
-    LOOP -- "per event, then four more threads" --> SND
-    LOOP -- "per subscription, if anyone asks" --> DBG
+    LOOP -- "per event, then three more threads of its own" --> SND
+    LOOP -- "per tick, and a packet only when the set changes" --> DBG
 ```
 
 The one genuine pipeline inside the part is the GUI stack: a screen records
-itself into a tree, the tree is sorted and batched into draws, and the text
-in it becomes glyphs. Those three are three stages of one journey and are
-watched consecutively, with the HUD after them as the other thing that
-records into the same tree. Everything else in the part is independent of
-everything else in the part.
+itself into a tree, the text in it becomes glyphs, and the tree is then
+sorted and batched into draws. Those three are three stages of one journey
+and are watched in a different order from the one they run in — the tree
+before the text, because the text's stages are easier to follow once you know
+what they are recording into — with the HUD after them as the other thing
+that records into the same tree. Everything else in the part is independent
+of everything else in the part.
 
 ## Before you start
 
@@ -60,22 +66,23 @@ consequence of one of them waiting on the other.
 
 [Authority](../entities/authority.md) from Part VI, because "what the client
 is allowed to decide" is the question `the-client-level` and
-`prediction-and-acks` are both answering, and neither re-derives the four
+`prediction-and-acks` are both answering, and neither re-derives the five
 predicates.
 
 Two smaller ones, each for one page. [Part V](../blocks/README.md) before
-[prediction and acknowledgement](prediction-and-acks.md): the ledger's two
-applications are a block placed and a block broken, and Part V's landing
+[prediction and acknowledgement](prediction-and-acks.md): the ledger's six
+windows open around rather more than a block placed and a block broken, but
+those two are the ones a viewer needs to have seen, and Part V's landing
 page already rules that its pages are watched first. And [text
 components](../foundations/text-components.md) from Part II before [text and
 fonts](text-and-fonts.md), which starts from "you have a `Component`".
 
 ## Watch in this order
 
-1. [The client loop](the-client-loop.md) — the hub, and the shortest page in
-   the part. How much simulated time a frame owes, what it spends it on, and
-   what happens to the time it cannot afford. Watch this before anything
-   else in Parts X and XI, and before Part IX's *what the client is told*.
+1. [The client loop](the-client-loop.md) — the hub, and the one page every
+   other page in the part leans on. How much simulated time a frame owes,
+   what it spends it on, and what happens to the time it cannot afford.
+   Watch this before anything else in Parts X and XI.
 2. [The client level](the-client-level.md) — the same `Level` class the
    server runs, with its authority removed. A comparison: what the client
    really simulates, and what it only pretends to.
@@ -94,8 +101,8 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
    same journey. Nothing in the 2D UI draws anything; it all appends to a
    tree that infers its own layering from bounding boxes.
 8. [Text and fonts](text-and-fonts.md) — the third stage, and a pipeline of
-   its own: a `Component` at one end, a quad with a glyph on it at the
-   other, six stages in between.
+   its own: six stages from a `Component` at one end to a quad with a glyph
+   on it at the other.
 9. [The HUD](hud.md) — the other thing that records into that tree, and the
    part's second policy page: what is drawn over the world, in what order,
    and under exactly which conditions.
@@ -106,27 +113,31 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
     three doors a sound comes through, only one of which names it.
 12. [Debugging the running game](debugging-the-running-game.md) — the
     closer, and the part's one *pattern* lecture: one subscription
-    mechanism, sixteen instances, all of them shipped and none of them on.
+    mechanism, sixteen instances, all of them shipped and fifteen of them
+    unreachable without a JVM flag.
 
 Two and three are a pair — the ledger lives on `ClientLevel` and is reached
-through three of its methods — and six to nine are the GUI stack, watched
+through four of its methods — and six to nine are the GUI stack, watched
 together. Ten and eleven are the two halves of sound and can be watched in
 either order; the engine first is the easier way round.
 
 ## Reference this part uses
 
 [Diagram lanes](../../reference/lanes.md) for the abbreviations these pages'
-figures use, and [the threads](../../reference/threads.md) — the sound
-engine's own thread is named there and nowhere else in the book. [HUD
+figures use, and [the threads](../../reference/threads.md), which is where
+the sound engine's own thread sits among the rest of the game's. [HUD
 elements](../../reference/hud-elements.md) is the gate table [the
 HUD](hud.md) is built on, in record order.
 [Packets](../../reference/packets.md) for everything arriving from Part IX,
 and [the glossary](../../reference/glossary.md) for *partial tick*,
 *prediction ledger* and *extract*.
 
-Where the part stops: what happens inside `Minecraft.renderFrame` is Part XI,
-which begins where [the client loop](the-client-loop.md) ends — at [the
-frame](../rendering/the-frame.md), and the acquired surface. What the *server*
+Where the part stops: `Minecraft.renderFrame` from its *extract* zone onwards
+is Part XI, which begins where [the client loop](the-client-loop.md) ends —
+at [the frame](../rendering/the-frame.md), and the acquired surface. The
+handful of statements before that zone are still this part's, which is why
+the per-frame light pass is a Part X cadence even though it runs inside the
+render method. What the *server*
 chose to send is [what the client is
 told](../networking/what-the-client-is-told.md) in Part IX.
 

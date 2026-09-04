@@ -8,8 +8,10 @@ times as the clock says it owes. The clock is asked once per iteration, it
 answers in whole ticks, and the loop then runs at most **ten** of them. A
 frame that earned fifteen runs ten and loses five: they are already gone from
 the residual, nothing will ever run them, and the world you are standing in
-has skipped forward without simulating the gap. The server never does this.
-It runs late; the client runs *short*.
+has skipped forward without simulating the gap. The server drops ticks too,
+but only once it is more than the overload threshold plus twenty ticks behind
+— and it logs *Can't keep up!* when it does. The client does it on any frame
+that needs to, at a ceiling of ten, and says nothing.
 
 Everything on this page is one thread. The thread named `"Render thread"` is
 the main thread — `Main.main` renames it and `RenderSystem.initRenderThread`
@@ -43,12 +45,12 @@ flowchart TD
     PRE["Pre render: Window.shouldClose, then any pending resource reload"]
     ASK["DeltaTracker.Timer.advanceGameTime — how many whole ticks has the clock owed since last time?"]
     DRAIN["PacketProcessor.processQueuedPackets, then BlockableEventLoop.runAllTasks"]
-    TEX["TextureManager.tick — once, and only if the level is running normally"]
+    TEX["TextureManager.tick — once, and only if ticks are owed and the level is running normally"]
     CLAMP{"more than ten ticks owed?"}
     DROP["the excess is already out of the residual — nothing will ever run it"]
     TICK["Minecraft.tick, up to ten times"]
     PREFRAME["SoundManager.updateSource, then MouseHandler.handleAccumulatedMovement"]
-    FRAME["Render: renderFrame — and, at its end, FramerateLimiter.limitDisplayFPS"]
+    FRAME["Render: renderFrame — its frameLimiter zone parks for the cap, then fpsUpdate samples the counters"]
     POST["Post render: recompute Minecraft.pause, update the timer's pause and freeze"]
     POLL --> PRE --> ASK --> DRAIN --> TEX --> CLAMP
     CLAMP -- "yes" --> DROP --> TICK
@@ -67,14 +69,15 @@ The quoted phrases are `Window.setErrorSection` calls, the crash report's
 breadcrumb, so a client that dies takes *Pre render*, *Render* or *Post
 render* to the report with it. What happens inside the frame is [the
 frame](../rendering/the-frame.md); this page stops at the profiler's *frame*
-zone. Note where the frame limiter sits: it is the last thing
-`Minecraft.renderFrame` does, after the present, and *before* the pause is
-recomputed.
+zone. Note where the frame limiter sits: inside `Minecraft.renderFrame`,
+after the present, with only the *fpsUpdate* zone after it, and *before* the
+pause is recomputed.
 
 ## The ten, and the arithmetic behind it
 
 `DeltaTracker.Timer.advanceGameTime` takes the elapsed milliseconds, divides
-by `DeltaTracker.Timer.msPerTick`, adds the result to
+by whatever `DeltaTracker.Timer.targetMsptProvider` returns for
+`DeltaTracker.Timer.msPerTick`, adds the result to
 `DeltaTracker.Timer.deltaTickResidual`, takes the whole part out and returns
 it. The fraction that stays behind is the partial tick everything
 interpolates against. The clamp then happens in the loop, not in the Timer —
@@ -91,18 +94,22 @@ target from `DeltaTracker.Timer.targetMsptProvider`, which is
 for `TickRateManager.millisecondsPerTick` whenever it
 `TickRateManager.runsNormally`. **`/tick rate` is a server command that
 changes the arithmetic inside the client's frame loop.** `/tick freeze` is
-the same lever pulled the other way: the Timer's frozen state is what stops
-`TextureManager.tick` — which is why freezing the world freezes the water
-texture — and what gates `ClientLevel.animateTick` and `ParticleEngine.tick`
-inside the tick.
+the same lever pulled the other way, and the loop reads it directly rather
+than through the Timer: `Minecraft.isLevelRunningNormally` asks the level's
+`TickRateManager` again, and that is what stops `TextureManager.tick` — which
+is why freezing the world freezes the water texture — and what gates
+`ClientLevel.animateTick` and `ParticleEngine.tick` inside the tick. The
+Timer is *told* the same answer at the end of the iteration, through
+`DeltaTracker.Timer.updateFrozenState`, so that the partial tick it hands out
+stops moving too.
 
 Alongside the game clock the Timer runs a second, unpausable one.
 `DeltaTracker.Timer.advanceRealTime` produces
 `DeltaTracker.getRealtimeDeltaTicks`, which is what a menu animates against
-while the world is stopped. The two constant implementations behind
-`DeltaTracker.ZERO` and `DeltaTracker.ONE` exist so that code which needs a
-partial tick can be handed *no* interpolation or *complete* interpolation
-without a branch.
+while the world is stopped. The two constants `DeltaTracker.ZERO` and
+`DeltaTracker.ONE` — two instances of the one nested `DeltaTracker.DefaultValue`
+— exist so that code which needs a partial tick can be handed *no*
+interpolation or *complete* interpolation without a branch.
 
 ## What a tick is, in order
 
@@ -115,14 +122,17 @@ with the result; the GUI block (`TextInputManager`, then `Gui.tick`, with
 **only** when there is neither an overlay nor a screen; then
 `GameRenderer.tick`, `ClientLevel.tickEntities` and `Level.tickBlockEntities`;
 then the music and sound managers, which sit *outside* the level check and
-run with no world at all; then the level block (`Tutorial.tick` and
-`ClientLevel.tick`, wrapped in a crash-report handler); then
+run with no world at all; then the level block — the first-server toast,
+`Tutorial.tick`, and then `ClientLevel.tick` alone inside a crash-report
+handler; then
 `ClientLevel.animateTick` and `ParticleEngine.tick`, both additionally gated
 on the level running normally; then `ServerboundClientTickEndPacket`; and
 last of all `KeyboardHandler.tick`, where the F3+C crash countdown lives.
 
-With no level that whole middle collapses to one branch: the pending
-connection is ticked instead, and any post-effect is cleared.
+With no level that whole middle collapses, but not into one branch: two
+separate *else* arms at two points in the method clear any post-effect and
+tick the pending connection, with the unconditional music and sound managers
+running between them.
 
 Two orderings in that list are load-bearing elsewhere in the book.
 `ServerboundClientTickEndPacket` goes out once per unpaused client tick that
@@ -143,15 +153,20 @@ Four queues and one re-entry that is not a queue.
   single fact is behind most of what looks like network jitter; [the
   connection](../networking/the-connection.md) is the other side of it.
 - **Tasks** from other threads land in *scheduledExecutables* through
-  `BlockableEventLoop.execute`. From *this* thread the same call does not
-  queue at all: it runs inline. GLFW callbacks, dispatched inside
-  `RenderSystem.pollEvents`, therefore execute *before* the tick that will
-  observe them — see [input and keybinds](input-and-keybinds.md).
+  `BlockableEventLoop.execute`. From *this* thread the same call usually runs
+  inline instead of queueing — but not while a queued task is already running,
+  because `ReentrantBlockableEventLoop.scheduleExecutables` returns true for
+  the whole of `ReentrantBlockableEventLoop.doRunTask`, which is what stops a
+  task from re-entering itself. GLFW callbacks, dispatched inside
+  `RenderSystem.pollEvents`, are not inside one, so they execute *before* the
+  tick that will observe them — see [input and keybinds](input-and-keybinds.md).
 - **Section meshing** goes to `Util.backgroundExecutor` and is collected by
   `SectionRenderDispatcher` (Part XI).
 - **GPU work** registered with `RenderSystem.queueFencedTask` is picked up by
   `RenderSystem.executePendingTasks`, which stops at the first unsignalled
-  fence rather than waiting.
+  fence rather than waiting. It looks general and is not: the one thing in
+  the tree that queues a fenced task is the OpenGL backend's asynchronous
+  texture readback.
 - And `BlockableEventLoop.managedBlock` pumps tasks while the loop is
   *blocked* waiting for the integrated server — the mechanism
   [`server-tick`](../server/server-tick.md) owns.
@@ -160,8 +175,9 @@ The profiler wraps all of it. `Minecraft.constructProfiler` picks per
 iteration between `InactiveProfiler`, the frame-profile `ContinuousProfiler`
 behind the F3 pie chart, the `MetricsRecorder` and a `SingleTickProfiler`,
 and `Minecraft.finishProfilers` closes it. `RenderSystem.pollEvents` is
-inside the profiler scope but outside `Minecraft.runTick`, so **input
-polling appears in no pie slice at all**. That is not why
+inside the profiler scope but outside `Minecraft.runTick`, so **input polling
+lands in no named zone** and shows up on the pie chart as unspecified time.
+That is not why
 `RenderSystem.isFrozenAtPollEvents` exists, though: its one caller is
 `ClientCommonPacketListenerImpl.handleKeepAlive`, which defers the keep-alive
 reply while the poll is blocked, so that dragging the window does not look to
@@ -191,14 +207,16 @@ is set to the AFK behaviour, and the iconified test wins over both.
 `FramerateLimiter.limitDisplayFPS` is skipped entirely at or above 260 — the
 option's own maximum, i.e. "unlimited"; below it, it parks for most of the
 remainder, correcting for how much the JDK's park habitually overshoots, and
-busy-spins the last fraction. The profiler notices too: the frame-profile
-profiler is skipped while `FramerateLimitTracker.isHeavilyThrottled`, because
-an idle client should not pay to measure itself.
+busy-spins the last fraction. The profiler notices too, though it does not
+stop: `FramerateLimitTracker.isHeavilyThrottled` is the `ContinuousProfiler`'s
+*suppress warnings* predicate, so a throttled client still measures itself but
+stops complaining that its frames are slow.
 
 The numbers on the F3 screen are three different measurements and it is worth
 knowing which is which. `Minecraft.fps` is a static field sampled once a
-second. `Minecraft.frameTimeNs` is the real per-frame CPU span and is read by
-nothing but telemetry. The graph uses wall-clock between frames, measured
+second. `Minecraft.frameTimeNs` is a CPU span that stops at the blit, before
+the present and before the limiter, and is read by nothing but telemetry. The
+graph uses wall-clock between frames, measured
 *after* the limiter, so it includes the sleep.
 
 ## Starting, and the three ways of stopping
@@ -206,10 +224,12 @@ nothing but telemetry. The graph uses wall-clock between frames, measured
 `Main.main` builds a `GameConfig` from the command line, installs a shutdown
 hook, renames the thread, calls `RenderSystem.initRenderThread` and
 constructs `Minecraft`; a `SilentInitException` out of that constructor exits
-quietly rather than crashing. `Minecraft.running` is set true *after* the
-constructor returns — which is why every `OptionInstance.set` performed while
-loading *options.txt* silently skips its listener (see [options](options.md)).
-`Main.main` finishes by calling `Minecraft.exitWorldAndClose`.
+quietly rather than crashing. `Minecraft.running` is set true inside that
+constructor, but six statements *after* the `Options` are read from disk —
+which is why every `OptionInstance.set` performed while loading *options.txt*
+silently skips its listener (see [options](options.md)). `Main.main` then
+calls `Minecraft.exitWorldAndClose`, and its last statement arms
+`ClientShutdownWatchdog.startShutdownWatchdog` over what follows.
 
 Stopping has three doors and one corridor. `Minecraft.stop` sets
 `Minecraft.running` false, and is what `Window.shouldClose` triggers at the
@@ -222,12 +242,13 @@ advancing game time altogether — GUI only, no ticks, no packets, no world —
 after an emergency save; a second one rethrows.
 
 The corridor is `Minecraft.exitWorldAndClose` and then `Minecraft.close`,
-which tears down in a fixed order — the time source, the timer query,
-telemetry, the atlas and font managers, the game and level renderers, the
-shader manager, the sound manager, textures, resources, the Tracy capture,
-the narrator, FreeType — and then, in a finally block, the executors, the
-surface, the renderer, the window and the monitor manager. There is no
-*Minecraft.destroy*.
+which tears down in a fixed order — the time source first, outside the try,
+then the friends list, the timer query, telemetry, compliancies, the atlas and
+font managers, the game renderer, the shader manager, the level renderer, the
+sound manager, the two texture managers, resources, the Tracy capture, the
+narrator, FreeType, the executors, the surface and the renderer — and then, in
+a finally block, only the window, the monitor manager and GLFW's own termination.
+There is no *Minecraft.destroy*.
 
 > **For a 1.21-era reader.** Names to stop hunting for:
 > *Minecraft.getPartialTick*, *Minecraft.noRender*, *Minecraft.tell*,

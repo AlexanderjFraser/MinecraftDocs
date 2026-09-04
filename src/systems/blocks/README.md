@@ -61,8 +61,9 @@ waterlogging this part keeps writing around.
 
 One dependency runs the other way. [Prediction and
 acknowledgement](../client/prediction-and-acks.md) is Part X, and the two
-click lectures here are its two applications — but its own scenario is a
-block placed against a wall, which needs this part's vocabulary. So watch
+click lectures here are the two of its six windows a viewer needs to have
+seen — but its own scenario is a block placed against a wall, which needs
+this part's vocabulary. So watch
 Part V first: both click pages open with the same four-sentence statement of
 the contract, which is all either lecture needs, and the machinery keeps
 until Part X.
