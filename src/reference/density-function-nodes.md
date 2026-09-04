@@ -100,8 +100,10 @@ instead of on every sample.
 ## Bounds
 
 Every node answers `DensityFunction.minValue` and `DensityFunction.maxValue`
-without a position, and the answers are computed at construction and
-propagated upward. The rules worth knowing:
+without a position. The arithmetic family — the two-argument nodes, the
+mapped ones and *clamp* — stores its bounds as record components filled once
+at construction; every other node answers by delegating to its input or by
+walking its list again on each call. The rules worth knowing:
 
 The arithmetic bounds are **sign-aware** and eager: *mul* takes the four
 cross products and picks by the signs of the operands' ends, and *min* and

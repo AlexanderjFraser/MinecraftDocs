@@ -183,5 +183,7 @@ node and a one-time `npm install` in `tools/` (see its header comment).
   (`SGPL`, `CPL`, `MC`, `MS`, `SL`); the key lives in `TEMPLATE.md`.
 - Reasoning > sensing > measuring; the owner judges what lands.
 - `verify_names.py`, `check_mermaid.js` and `check_lanes.py --strict`
-  before every commit that touches a page; `deploy.sh` runs all three and
-  refuses to publish on a failure.
+  before every commit that touches a page, and `check_deps.py` when a
+  landing page, `lectures.md` or the dependency figure changes; `deploy.sh`
+  runs all four — after regenerating the atlas and the eight Reference
+  views — and refuses to publish on a failure.

@@ -90,7 +90,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *doEntityDrops* | `GameRules.ENTITY_DROPS` |
 | *doImmediateRespawn* | `GameRules.IMMEDIATE_RESPAWN` |
 | *doInsomnia* | `GameRules.SPAWN_PHANTOMS` |
-| *doLimitedCrafting* | `GameRules.LIMITED_CRAFTING` |
+| *doLimitedCrafting* | `GameRules.LIMITED_CRAFTING` — the name survives elsewhere, as a component of `ClientboundLoginPacket` and a field on `LocalPlayer` |
 | *doPatrolSpawning* / *doTraderSpawning* / *doWardenSpawning* | `GameRules.SPAWN_PATROLS` / `GameRules.SPAWN_WANDERING_TRADERS` / `GameRules.SPAWN_WARDENS` |
 | *doVinesSpread* | `GameRules.SPREAD_VINES` |
 | *enableCommandBlocks* **and** *commandBlocksEnabled* | one rule, `GameRules.COMMAND_BLOCKS_WORK` |
@@ -190,7 +190,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *ClientboundSetSlotPacket* | `ClientboundContainerSetSlotPacket` |
 | *ClientboundHorseScreenOpenPacket* | `ClientboundMountScreenOpenPacket` |
 | *Container.startOpen(Player)* | `Container.startOpen(ContainerUser)` |
-| *Recipe.getResultItem* / *getIngredients* | gone — `Recipe.assemble` / `PlacementInfo` |
+| *Recipe.getResultItem* / *getIngredients* | `Recipe.assemble` / `PlacementInfo`. The first is gone outright; the second is off the `Recipe` interface and survives only as a test-visible method on `ShapedRecipe` |
 | *Ingredient.EMPTY* | gone — `Ingredient.CODEC` rejects an empty literal list, but a tag that resolves to nothing still yields an empty one, hence `Ingredient.isEmpty` |
 | *ClientboundUpdateRecipesPacket* carrying recipes | property sets + the stonecutter input set; the book gets `RecipeDisplayEntry`s |
 | *net.minecraft.advancements.CriteriaTriggers* | `CriteriaTriggers`, moved to `net/minecraft/advancements/triggers` |
@@ -219,7 +219,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *GameRenderer.pick* | `Minecraft.pick` → `LocalPlayer.raycastHitResult` |
 | *ServerboundInteractPacket.Action.ATTACK* | `ServerboundAttackPacket` (a record of one int) |
 | *GameRules.NATURAL_REGENERATION* | `GameRules.NATURAL_HEALTH_REGENERATION` |
-| *Player.isCritArrow* / *Player.sweepAttack* | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack` |
+| *isCritArrow* / *Player.sweepAttack* | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack`, all three private. *isCritArrow* was never a `Player` method and is still live on `AbstractArrow` |
 | *LivingEntity.eat* / *Player.eat* | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` |
 | *MobEffect.createModifier* | `MobEffect.createModifiers` (plural) |
 

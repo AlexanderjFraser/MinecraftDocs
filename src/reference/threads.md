@@ -77,19 +77,18 @@ them are real.
 a handler's first line is normally `PacketUtils.ensureRunningOnSameThread`,
 which re-posts it to the owning thread and aborts
 ([the connection](../systems/networking/the-connection.md)). In
-`ClientPacketListener` 115 handlers do that and eight do not, so these eight
+`ClientPacketListener` all but seven packet handlers do that, so those seven
 run to completion on Netty and must touch nothing the Render thread owns.
 
 | handler | what it does on the Netty thread |
 |---|---|
 | `ClientPacketListener.handlePlayerCombatEnter` | nothing — the body is empty |
 | `ClientPacketListener.handlePlayerCombatEnd` | nothing — the body is empty |
-| `ClientPacketListener.handleCustomPayload` | the play-phase fallback for a payload no handler claimed: `ClientPacketListener.handleUnknownCustomPayload` logs a warning |
 | `ClientPacketListener.handleChunkBatchStart` | starts the `ChunkBatchSizeCalculator`'s clock |
 | `ClientPacketListener.handleChunkBatchFinished` | stops it and sends `ServerboundChunkBatchReceivedPacket` with the chunks-per-tick it now wants — so the loop in [what the client is told](../systems/networking/what-the-client-is-told.md) times packet decode, not mesh building |
 | `ClientPacketListener.handleDebugSample` | hands the sample to `DebugScreenOverlay.logRemoteSample` |
 | `ClientPacketListener.handlePongResponse` | records the round trip in `PingDebugMonitor` |
-| `ClientPacketListener.handleLowDiskSpaceWarning` | calls `Minecraft.sendLowDiskSpaceWarning`, which posts the toast to the Render thread itself — the one of the eight that crosses after all, by `Minecraft.execute` rather than by the hop |
+| `ClientPacketListener.handleLowDiskSpaceWarning` | calls `Minecraft.sendLowDiskSpaceWarning`, which posts the toast to the Render thread itself — the one of the seven that crosses after all, by `Minecraft.execute` rather than by the hop |
 
 ## Situational threads
 

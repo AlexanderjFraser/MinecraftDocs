@@ -180,6 +180,178 @@ The *blurbs* on those pages are hand-written into `gen_reference.py` and are
 loot-context-params says "Twelve of these twenty-six sets never roll a
 `LootTable` at all".
 
+### The pages, corrected
+
+Twenty agents, one per page: the introduction, `lectures.md`, the five atlas
+pages and the thirteen Reference pages that are not pure `gen_reference.py`
+views. Fixed in place this session:
+
+- **`introduction.md`** — "the two shared foundations are left off [the
+  figure]" (the figure draws both boxes and three of their arrows; what is left
+  off is their *other* edges); "each cut by a definition rather than a
+  reordering" (`lectures.md` says the second is cut *by order*); "the atlas is
+  four figures ... and the table it was drawn from" (four *views* over four
+  pages, seven figures, six tables); "a page that fails any of the three"
+  (there are four gates now); "the only thing allowed to change" a chunk
+  (the client changes its copy freely — it is the only copy allowed to
+  *decide*); "the first page of the book, Anatomy" (the first *lecture*);
+  and the skip list, which called `stats`, `blaze3d/audio` and `util/filefix`
+  "packages nobody will recognise" — only `gizmos` and `references` are.
+- **`lectures.md`** — the six fixes listed above, plus: *authority* is linked
+  back by three later parts, not four (the page says three thirty lines
+  later); Part VIII is "a trunk and four branches" over **five** lectures;
+  Part XI assumes **two** Part X pages (`the-client-loop` and
+  `the-client-level`), not "only that page"; Part XII also assumes the
+  data-driven type pattern; "*EMPTY* to *FULL* in twelve steps" (twelve
+  statuses, eleven steps); the client-loop row's "the only page that says when
+  a frame happens" (Part I's anatomy says it too).
+- **`maps/packages.md`** — `net/minecraft/data` "writes the vanilla data pack
+  rather than anything that runs in a game": the dedicated server ships all
+  163 classes and both `Blocks` and `MinecraftServer` read `data/worldgen`
+  constants at run time — `what-this-book-skips.md` says so in bold, so two
+  pages of the book disagreed. Also the quarter/third slide against the page's
+  own 29.5%; `world/level/biome` is `levelgen`'s sibling, not part of it;
+  `net/minecraft/commands` is more than Brigadier's argument types;
+  `realmsclient` restored to the below-3% list. `server/level` "the smallest
+  package with the largest classes" was replaced with a rate — **the session's
+  own first replacement was wrong too** (it is fourth by lines per class, not
+  first), which is the re-derive rule catching the session rather than an agent.
+- **`maps/fanin.md`** and **`maps/README.md`** — the fan-in chart counts
+  *net.minecraft* and *com.mojang* imports only; unrestricted, the nullability
+  annotation (1,668) and `List` (1,455) outrank its number one, so the page's
+  hook rested on a filter it did not mention. Stated on the page, in the figure
+  caption and in the tool's docstring. The counting-rules table also now says
+  that a class is a `.java` file including the 542 `package-info.java` markers,
+  and states the new descendant rule.
+- **`maps/hierarchy.md`** and **`entity-anatomy.md`** — `Entity` 193 to **191**,
+  `Screen` 157 to **158**, `AbstractContainerEventHandler` 158 to **159**,
+  `Packet` "227 direct implementers" to **236 descendants from 227**, after the
+  resolver fix. Everything else the prose quotes survived re-derivation:
+  `FeatureElement` 386/7, `ItemLike` 366, `LivingEntity` 124, `Mob` 114,
+  `PathfinderMob` 108, `BaseEntityBlock` 64, `AbstractContainerScreen` 27,
+  `RealmsScreen` 23, `Projectile` 26, `VehicleEntity` 15, `Goal` 200/99, and
+  the thirteen terminal direct subclasses of `Entity`.
+- **`maps/biggest.md`** — three attributions: `DensityFunctions` is the node
+  types, not the vanilla noise graph (that is `NoiseRouterData` and the JSON);
+  `Hud` is the in-world overlay inside the wider `Gui`; the two packet
+  switchboards do not handle the packets their phases share, which are one
+  class up in the two common listener impls.
+- **`reference/README.md`** — the shelf figure said the eight views are
+  "rewritten on every deploy" and nothing ran `gen_reference.py` on a deploy;
+  it does now, which makes the label true. Also: the rule is pass 3's, not
+  `plan.md`'s; twenty rows classify twenty pages, not twenty-one; the packets
+  row's parts were out of numeric order; *every* `EnchantmentHelper` entry
+  point is every **public** one; and the lanes and class-index rows oversold
+  those pages the same way the pages did.
+- **`reference/block-update-flags.md`** and **`blocks-and-states.md`** — the
+  flag word is `Level.setBlock`'s **third** argument; the four-argument
+  overload takes an update limit after it. Bit 16 has two readers, not one
+  (`Level.setBlock` and `BlockInput.place`); bit 32 is masked out of the word
+  as it propagates (`& -34` to the neighbours at `Level.java:249`, `& -33` into
+  the recursive write at `Block.java:245`), which is the interesting thing
+  about it; and on the client bit 2's "broadcast" is
+  `LevelExtractor.blockChanged`, a re-mesh
+  (`ClientLevel.java:832`).
+- **`reference/threads.md`** — `ClientPacketListener.handleCustomPayload` was
+  listed among the handlers that never leave the Netty thread. It is the
+  *payload* dispatcher (`ClientPacketListener.java:2296`), and its caller runs
+  `PacketUtils.ensureRunningOnSameThread`
+  (`ClientCommonPacketListenerImpl.java:165`) before delegating at `:172`, so
+  it is on the Render thread. Seven handlers, not eight — **`plan.md`'s session
+  I line still says eight**.
+- **`reference/naming-drift.md`** — three rows whose "old" name is still live
+  in 26.2: *doLimitedCrafting* (a `ClientboundLoginPacket` component and a
+  `LocalPlayer` field), *Recipe.getIngredients* (off the interface, still on
+  `ShapedRecipe`), and *isCritArrow*, which was never a `Player` method and is
+  live on `AbstractArrow`.
+- **`reference/math-and-primitives.md`** — `AABB` has **six** public final
+  doubles, not eight; `Vec2` as a look direction is (xRot, yRot), and only the
+  *Rotation* NBT tag stores it the other way (`Entity.java:2207` against
+  `:2779`); `Mth.nextGaussian` does not exist (it is
+  `RandomSource.nextGaussian`, and `verify_names.py` passed it because the
+  token appears inside `Mth.java`); `Rotations` has one user.
+- **`reference/density-function-nodes.md`** — "the answers are computed at
+  construction and propagated upward" is true only of the arithmetic family,
+  which stores them as record components; every other node recomputes on each
+  call, by delegation or by walking its list again.
+- **`reference/glossary.md`** and **`creating-a-world.md`** — *world gen
+  settings* is written to *data/minecraft/world_gen_settings.dat* (namespaced,
+  as `level-data-and-rules.md` already had it), and the same path was wrong
+  twice on `creating-a-world.md`, once inside a diagram. *Permission set* (the
+  client carries a level-based set too), *unattended command* (a clean one is
+  sent with no prompt) and *window* (six window callbacks; the input ones are
+  registered elsewhere) each contradicted their own owner page.
+
+### Open — what session A did not reach
+
+The reports are not committed, so what is still open is written out here. All
+of it is *verified finding, unactioned*, not *unchecked*.
+
+- **`reference/math-and-primitives.md`** — the figure's thesis at L14 ("every
+  conversion is a named static method on the type you are converting *to*") is
+  broken by six of its seventeen edges; `breadthFirstTraversal` allocates and
+  is not an iterator (L60-61); the occlusion shape is not in the `Cache`, which
+  is skipped for dynamic-shape blocks (L133-137); `MinecartCollisionContext` is
+  an `EntityCollisionContext` from `CollisionContext.of` (L142-143); Xoroshiro
+  does not share `BitRandomSource` and not every implementation is in
+  `levelgen` (L149-152); "the other seven" (L112). Plus eight MISLEADINGs, the
+  sharpest being that four of the seven built-in noise settings opt into the
+  legacy random source, so "the default for world generation" (L162) is not.
+- **`reference/hud-elements.md`**, **`reference/level-data-and-rules.md`**,
+  **`reference/non-living-damage.md`**, **`reference/submit-phases.md`** — each
+  checked row by row with findings outstanding. `non-living-damage` needs a
+  `hurtClient` column (seven of the twenty-one override it, two returning an
+  unconditional `true`), and `Entity.hurtOrSimulate` is the dispatcher most
+  callers actually invoke; four of the twenty-one also return false from
+  `Entity.isAttackable`, which makes their `hurtServer` unreachable from melee.
+  `submit-phases` is complete as a list — fifteen phases, thirteen renderers,
+  both re-derived and confirmed — and is missing `SubmitNodeStorage`, the two
+  marker interfaces, `PhaseSubmitGrouper` and
+  `RenderType.canConsolidateConsecutiveGeometry`, without which "order bucket"
+  and "may be reordered" are unexplained.
+- **`reference/glossary.md`** — four WRONGs fixed; about a dozen MISLEADINGs
+  open, each named with its owner page in the report and worth settling when
+  that part's session runs: *world clock*, *integrated server*, *objective*,
+  *authority*, *connection*, *selector head*, *blending data*, *heightmap*,
+  *activity*, *ticket*, *world gen settings*, *environment attribute*.
+- **`reference/class-index.md`** — the index is blind to diagrams: **135
+  class/page pairs and 112 distinct classes** are named only inside a mermaid
+  block, 26 of them with no row at all, and 51 are `participant X as ClassName`
+  declarations. The page now says so; teaching the generator to read mermaid
+  blocks would add at least 51 cells and 6 rows, and is **pass-5 work**.
+- **`verify_names.py` has a hole**: its token pattern excludes `(`, so the 19
+  backticks of the form *Class.method(Arg)* in the corpus are neither verified
+  nor indexed. Session O.
+- **The lane key** — 45 of its 340 rows are claimed by no page, and three
+  (`PTT`, `TCTD`, `TDec` before this session) appear nowhere but `lanes.md`,
+  against session E's ruling that the key is pruned to lanes in use. `PTT` is
+  the documented nested-class exception in `TEMPLATE.md`, and its pilot page is
+  now a flowchart with no lanes. Logged in `pass5.md`.
+
+### For other parts' sessions
+
+- **Part IX** — `plan.md`'s session I line says "the eight handlers that never
+  hop"; it is seven (above).
+- **Part VI** — `authority.md:27` says `Player` overrides "three of the four"
+  predicates; it overrides four
+  (`Player.java:1254,1259,1268,1273`), and the glossary's "four predicates"
+  framing needs settling with `authority.md:26,34`.
+- **Part XII** — `blending.md:121` says the measurement is taken from "the
+  neighbour's" blocks; `BlendingData` measures the chunk that owns it.
+- **Part XIII** — `lectures.md:513` and `commands/README.md:83` both say
+  "sixty-two of the sixty-seven suggestion providers ask the server". **Neither
+  number could be reproduced** under five populations tried
+  (`SuggestionProviders` registers three; `.suggests(` has 65 call sites, none
+  naming `ASK_SERVER`; `ArgumentTypeInfos` has 59 registrations). Session M
+  must state the population or the claim goes.
+- **Part XI** — `rendering/README.md:15-19` states its size rule as "one class
+  per file", but its 1,179 classes / 87,000 lines includes 133
+  `package-info.java` markers, while Part XII's 423 excludes them. Two size
+  claims, two rules.
+- **The queue tool** — a note written as a bare `` `README.md` `` routes to all
+  fifteen landing pages; `pass4.md`'s Part V and Part XIII notes both landed on
+  `reference/README.md`. Qualify landing-page notes as `` `blocks/README.md` ``.
+
 
 ## Session P — The lecture order and the close *(2026-09-03)*
 

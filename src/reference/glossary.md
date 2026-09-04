@@ -392,9 +392,9 @@ command source carries a `PermissionSet` and a node requires a
 `PermissionCheck`, neither of which is an integer. → [permissions](../systems/commands/permissions.md)
 
 **Permission set** — what a command source carries and a node's check is
-asked against: on the server a level-based set (a rung plus one atom), on
-the client a chat set built by subtraction from all four chat atoms. No
-packet carries one in either direction. → [permissions](../systems/commands/permissions.md)
+asked against: on the server a level-based set (a rung plus one atom); the
+client holds one of those too, rebuilt from the op level it is told, beside a
+chat set built by subtraction. No packet carries a `PermissionSet` itself. → [permissions](../systems/commands/permissions.md)
 
 **PlacedFeature** — a configured feature plus an ordered list of placement
 modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)
@@ -523,8 +523,9 @@ state that something happened, by sweeping that player's listener map for
 this trigger. Nothing broadcasts. → [advancements](../systems/commands/advancements.md)
 
 **Unattended command** — a command the player did not type — a dialog
-button, a click event, a sign — which the client parses twice more and
-confirms with the player before it leaves the machine. → [dialogs](../systems/commands/dialogs.md)
+button, a click event, a sign. The client re-parses it and asks the player
+first when it needs a signature or a permission the client believes it lacks;
+a clean one goes without a prompt. → [dialogs](../systems/commands/dialogs.md)
 
 ## V
 
@@ -534,14 +535,14 @@ a set of boxes with fast merge and sweep operations. → [math and primitives](m
 ## W
 
 **Window** — the GLFW handle the whole client hangs off: the framebuffer
-size, the GUI scale, fullscreen, and the callbacks every OS event arrives
-through. → [the window](../systems/rendering/the-window.md)
+size, the GUI scale, fullscreen, and the six window callbacks — not the input
+ones, which `KeyboardHandler` and `MouseHandler` register. → [the window](../systems/rendering/the-window.md)
 
 **World clock** — the counter a timeline is sampled against; there is more
 than one, and they do not all advance at the same rate. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md)
 
 **World gen settings** — `WorldGenSettings`: the seed and the map of
-dimensions, a `SavedData` written to *data/world_gen_settings.dat*, and the
+dimensions, a `SavedData` written to *data/minecraft/world_gen_settings.dat*, and the
 input every Part XII page reads. → [creating a world](../systems/worldgen/creating-a-world.md)
 
 **World preset** — a `WorldPreset` registry entry holding one `LevelStem`

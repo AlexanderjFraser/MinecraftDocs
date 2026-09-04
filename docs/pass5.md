@@ -19,6 +19,68 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session A — The frame (pass 4) *(2026-09-04)*
+
+Wording debt and structural findings from the frame's fact-check. Nothing
+here was acted on; every factual fix is in `docs/pass4.md`.
+
+**Wording to re-read** (a hook or an argument was rewritten around a
+correction):
+
+- `src/introduction.md` — the figure paragraph and the skip-list sentence were
+  both rewritten mid-sentence; the skip list is now a longer list and reads
+  like one.
+- `src/lectures.md` — the Part III "watch the environment page first"
+  paragraph lost its superlative ("the page with the most dependants in the
+  book") and gained a cost argument. It is true now; it is not as good a
+  sentence.
+- `src/systems/server/README.md` — the *before you start* section grew a long
+  second paragraph to carry the environment-attributes dependency and the two
+  different cuts. It is the longest *before you start* in the corpus.
+- `src/maps/fanin.md` — the hook now spends three lines on what the chart does
+  not count before it gets to the surprise.
+- `src/maps/packages.md` — the `net/minecraft/data` clause became a
+  four-line aside with a cross-link.
+
+**Structural findings** (not acted on, per the charter):
+
+- **The nine-page dependency table's membership rule is unstated and
+  inconsistent.** By its own criterion — a page two or more landing pages
+  assume — three Part II pages qualify and are absent (`resource-system`:
+  VII and XI; `text-components`: IX and X; `data-driven-types`: XII and XIII),
+  while a one-part dependency (*contexts and predicates*, XIII only) is in it
+  and `world/chunk-generation-pipeline` (XII, called "hard" by the page) is
+  not. State the rule or fix the membership.
+- **Part IV's sidebar order disagrees with its own landing page.**
+  `src/SUMMARY.md` lists *environment attributes and timelines* sixth in Part
+  IV; `world/README.md`'s *watch in this order* and `lectures.md` both list it
+  first. Part IV is the only part where the three orders differ (checked for
+  all thirteen). `lectures.md` was reworded this session to say "Part IV's own
+  watch order lists it first", which is true but papers over the split.
+- **The class index labels every landing page "README".** Eleven distinct
+  pages render under that one word; 26 rows carry at least one and nine carry
+  two or more — in the `LivingEntity` row the reader sees "README" three times
+  with nothing to tell them apart. Label by part.
+- **Teach the class index to read diagrams.** 135 class/page pairs and 112
+  classes are named only inside mermaid blocks (51 of them as
+  `participant X as ClassName`), and 26 of those classes have no row at all.
+  The page now states the limitation; removing it is the better fix.
+- **The lane key carries 45 rows no page claims**, against session E's ruling
+  that it is pruned to lanes in use. Three appear nowhere but `lanes.md`:
+  `PTT`, `TCTD` and (until this session) `TDec`. `PTT` is `TEMPLATE.md`'s
+  worked example of the nested-class rule and its pilot page has since become
+  a flowchart with no lanes, so the rule's only illustration is unused.
+- **Two lanes for one class, on purpose.** `RCPL` and `CPL` are both
+  `ClientPacketListener`, because the chat diagram shows the sender's client
+  and the recipient's at once. Recorded in `TEMPLATE.md`'s collision prose and
+  in a note inside the figure; if pass 5 dislikes it, the alternative is two
+  identically-labelled lanes.
+- **`reference/submit-phases.md` is a catalogue that needs a paragraph.** Its
+  "order bucket" and "may be reordered" language is unexplained without
+  `SubmitNodeStorage` and `PhaseSubmitGrouper`; that is a page shape question,
+  not a fact.
+
+
 - **2026-09-03, session M — Part XII.** Eight system pages plus a landing
   page and a Reference page. **Every page landed inside the 260–340 brief or
   below it** — 204 to 288, with the landing page at 143 and the Reference

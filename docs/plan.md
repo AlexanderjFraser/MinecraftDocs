@@ -58,7 +58,9 @@ not how the code reads · newest version only (26.2) · trace-driven ·
 `python tools/verify_names.py` clean before every commit that touches a page
 · claims come from the decompile, never from model memory of 1.21 · every
 diagram passes `node tools/check_mermaid.js` · every lane passes
-`python tools/check_lanes.py --strict`. `tools/deploy.sh` runs all three
+`python tools/check_lanes.py --strict` · the landing pages, the lecture map
+and the dependency figure agree under `python tools/check_deps.py` (the
+fourth gate, added by pass-4 session A). `tools/deploy.sh` runs all four
 and refuses to publish on any failure.
 
 ---
@@ -210,20 +212,16 @@ Each part session:
 Tick as done. Session A is the frame; B–N are the parts in sidebar order;
 O is the close.
 
-- [ ] **Session A — The frame.** The introduction, the atlas prose, the
-  thirteen landing pages and `lectures.md` as claims about order (addition
-  2, in full, once), the parts-dependency figure, and Reference's ten
-  hand-kept pages (addition 7). The generated views' one-sample-per-view
-  check. Opens with `python tools/check_deps.py`, which already reports:
-  two rows of the lecture table that the landing pages do not support
-  (*environment attributes* says III, VI, XI and only XI's landing page
-  links it; *blocks and states* says VI, VII and the landing pages say IV,
-  VI); three forward links in *before you start* sections with no dashed
-  arrow (IV → blocks and states, VI → prediction, IX → the client loop —
-  the one session P named); and per part the entries no page in the part
-  links or names (Part X: anatomy, authority; Part VI: chunk anatomy,
-  scheduled ticks, prediction; Part XII: codecs, registries). When the
-  checker is green, add it to `tools/deploy.sh` as the fourth gate.
+- [x] **Session A — The frame** *(2026-09-04)*. Addition 2 done in full:
+  `check_deps.py`'s two failures and three forward links were all real and
+  are fixed, the checker is green, and it is now `tools/deploy.sh`'s
+  **fourth gate**. The generated views' one-sample check: all eight
+  confirmed. Twenty agents over the introduction, `lectures.md`, the atlas
+  and the Reference tier; four tool bugs found by suspecting the tool first
+  (`map_source.py`'s hierarchy resolver, `gen_reference.py`'s serializer
+  regex, `check_deps.py`'s README asymmetry, `check_lanes.py`'s
+  single-page unkeyed lane). What it did not reach is written out under
+  *Open* in [pass4.md](pass4.md).
 - [ ] **Session B — Part I Anatomy · Part II Foundations.** The threads
   table and the two-loops figure; DFU semantics in `codecs-nbt-json`
   (addition 6); the freeze rule across `identifiers-and-registries` and
@@ -335,3 +333,30 @@ missing it — and removes the comment. The owner confirms or reorders
   what it hands forward; the session decides which it is. A note in
   pass4.md written under a renamed page's old name is routed to the new
   page(s) by an alias table in `pass4_queue.py`.
+- **2026-09-04, session A — the frame (Opus).** Addition 2 in full, the
+  Reference tier, the atlas, the introduction and the lecture map. All five
+  of `check_deps.py`'s opening findings were real: two lecture-table rows
+  (the environment row was right and two landing pages were missing the
+  entry; the blocks-and-states row claimed a part that assumes *block
+  interaction* instead) and three *before you start* links to later parts,
+  every one a hand-forward or a pointer rather than a dependency, so each
+  moved out of the section instead of gaining an arrow. The checker is green
+  and is the fourth deploy gate. **Four tool bugs**, each found by suspecting
+  the tool before the page: `map_source.py` resolved every *Outer.Inner*
+  parent by its last segment and keyed types by simple name (222
+  mis-resolutions; `Entity` 193 to 191, `Screen` 157 to 158, `Packet` 232 to
+  236, 21 of 60 hierarchy rows), `gen_reference.py` published a `?` for the
+  one serializer declared as an anonymous subclass, `check_deps.py` called
+  every "read Part N first" entry unused, and `check_lanes.py --strict`
+  passed any unkeyed lane used on a single page — which is how a retired
+  lane and an unkeyed one survived. The session's own first replacement for
+  a corrected sentence was itself wrong (a lines-per-class superlative),
+  which is the re-derive rule earning its place against the session rather
+  than against an agent. Rulings: a hand-forward belongs outside *before you
+  start* rather than on a dashed arrow; a word lane in the key is marked by
+  an italic cell rather than by the literal phrase "not a class", because
+  that phrase was false of `Main`; a landing-page link is a whole-part
+  dependency and cannot satisfy a page-level mention check. Fifteen of the
+  twenty pages are settled; the five with findings still open are listed
+  under *Open* in [pass4.md](pass4.md), with what belongs to Parts VI, IX,
+  XI, XII and XIII.

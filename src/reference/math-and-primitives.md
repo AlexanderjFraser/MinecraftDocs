@@ -48,9 +48,9 @@ flowchart LR
 | **region** | 32 chunks | none — methods on `ChunkPos` | the `.mca` file grid | `ChunkPos.getRegionX`, `ChunkPos.getRegionLocalX`, `ChunkPos.minFromRegion`; `ChunkPos.REGION_SIZE` |
 | **dimension-qualified block** | — | `GlobalPos` — record of a `Level` key and a `BlockPos` | compass targets, beds, portals | `GlobalPos.of` |
 | **integer box** | blocks | `BoundingBox` for structures; `BlockBox` is a newer record that nothing yet uses | structure bounds, piece placement | `BoundingBox.intersects`, `BoundingBox.encapsulate`; `BlockBox.aabb`, `BlockBox.contains` |
-| **double box** | blocks | `AABB` (a class of eight public final doubles) | entity bounding boxes, block shapes' bounds | `AABB.move`, `AABB.inflate`, `AABB.intersects`, `AABB.clip` |
-| **pitch / yaw** | degrees, float | `Vec2` | look direction, as (yRot, xRot) | `Direction.fromYRot`, `Direction.toYRot`; `Vec3.xRot`, `Vec3.yRot` |
-| **pose rotation** | degrees, float ×3 | `Rotations` | armour stand and similar poses | — |
+| **double box** | blocks | `AABB` (a class of six public final doubles) | entity bounding boxes, block shapes' bounds | `AABB.move`, `AABB.inflate`, `AABB.intersects`, `AABB.clip` |
+| **pitch / yaw** | degrees, float | `Vec2` | look direction, as (xRot, yRot) — except the *Rotation* NBT tag, which stores it the other way round | `Direction.fromYRot`, `Direction.toYRot`; `Vec3.xRot`, `Vec3.yRot` |
+| **pose rotation** | degrees, float ×3 | `Rotations` | `ArmorStand` poses, and nothing else | — |
 | **model / render space** | float | JOML `Vector3f`, `Matrix4f`, `Quaternionf` (external) | everything under `client/renderer` | `Vec3.toVector3f`; `Direction.step`, `Direction.getRotation`; `com/mojang/math` `Axis` builds quaternions |
 
 `Position` is the three-double interface `Vec3` implements. `Vec3i` is the
@@ -181,8 +181,8 @@ streams derived from the world seed, which is what makes a loot table and
 `RandomSource` at all: `LinearCongruentialGenerator`, the bare mixer
 `BiomeManager` uses for biome fuzzing.
 
-`Mth.nextGaussian` is produced by `MarsagliaPolarGaussian`, which caches a
-spare value — which is why reseeding a source must reset it.
+`RandomSource.nextGaussian` is produced by `MarsagliaPolarGaussian`, which
+caches a spare value — which is why reseeding a source must reset it.
 
 ## `Mth` and `Util`
 

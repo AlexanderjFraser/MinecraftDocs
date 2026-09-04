@@ -84,7 +84,7 @@ re-rolling a new random world every time you touch it.
 
 > **For a 1.21-era reader.** The seed has left *level.dat*. `WorldGenSettings`
 > extends `SavedData` and carries its own `SavedDataType`, so it is written to
-> *data/world_gen_settings.dat* beside *raids.dat* — and the game rules to
+> *data/minecraft/world_gen_settings.dat* beside *raids.dat* — and the game rules to
 > *data/game_rules.dat* — by the ordinary saved-data machinery rather than by
 > the level-data writer. `PrimaryLevelData` keeps the old key name only as the
 > constant `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS`.
@@ -211,7 +211,7 @@ sequenceDiagram
     MC->>MS: new IntegratedServer with the WorldStem and the screen's GameRules
     MS->>MS: savedDataStorage.set marks WorldGenSettings dirty
     Note over MS,Disk: server thread, first save
-    MS->>Disk: data/world_gen_settings.dat and data/game_rules.dat
+    MS->>Disk: data/minecraft/world_gen_settings.dat and data/minecraft/game_rules.dat
 ```
 
 Three details in that order are worth stopping on. `CreateWorldScreen.onCreate`
