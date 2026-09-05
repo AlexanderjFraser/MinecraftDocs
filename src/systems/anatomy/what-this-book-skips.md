@@ -1,6 +1,6 @@
 # What this book skips
 
-> Verified against **Minecraft 26.2** · Part I · A reader opens the atlas, sees a dozen boxes hatched, and asks what is in them and why they are not taught.
+> Verified against **Minecraft 26.2** · Part I · A reader opens the atlas, sees fourteen packages hatched, and asks what is in them and why they are not taught.
 
 Open the atlas and part of the jar is drawn hatched. That hatching is this
 page. Java Minecraft is 7,055 classes and 719,302 lines, and the parts do
@@ -426,7 +426,7 @@ reader will not miss it, not a shrug.
 | `net/minecraft/client/data` | 28 classes, 6,176 lines | declined — build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
 | the catalogues | ~230 mob models, ~73 particles, 101 render states, 50 render layers, 16 animation definitions, 61 of 63 worldgen features, 50 tree kits, the entity sub-predicates | declined — each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
 | `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | a few classes each | declined — no mechanism a lecture needs | — |
-| `net/minecraft/data/worldgen` as content | 52 classes, 5,353 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
+| `net/minecraft/data/worldgen` as content | 56 classes, 5,369 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
 
 Three of those rows need a sentence more. `client/animation` comes with a
 warning owed to anyone who measures it, because *lines* is the wrong unit

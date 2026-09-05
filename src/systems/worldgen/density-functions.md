@@ -233,7 +233,7 @@ one and an infinite one — so a fold decided above a blend node was decided on
 the wrong range. `DensityFunctions.HolderHolder` reports infinities while
 its holder is unbound, which is what lets forward references parse at all.
 And `DensityFunction.NoiseHolder` answers a maximum of 2.0 while its noise is
-still null, where every one of the sixty-one shipped noise definitions comes
+still null, where every one of the sixty-three shipped noise definitions comes
 out between 2.57 and 7.32 once seeded — so the freshly parsed graph reports
 noise bounds that are too **narrow**, and seeding widens them.
 

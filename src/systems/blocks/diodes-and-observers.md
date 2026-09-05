@@ -28,7 +28,7 @@ same trick for its lock.
 | `ObserverBlock` | that a neighbour's *state* changed, on a channel the other two do not use for input | Server |
 | `Level` | that any write of a state with an analog output pokes the comparators around it | Server |
 
-## Three blocks, five columns
+## Three blocks, five rows
 
 Five rows are the whole of what a redstone circuit sees them do differently.
 
@@ -210,8 +210,8 @@ The other half of making comparators work is
 `Level.updateNeighbourForOutputSignal`. It walks the four horizontals and
 notifies any `Blocks.COMPARATOR` it finds; failing that, where the neighbour is
 a redstone conductor, it reaches one further and notifies a comparator there
-instead, mirroring the comparator's own reach in the opposite direction. Two
-callers reach it, and the second is the one that matters here.
+instead, mirroring the comparator's own reach in the opposite direction. Twelve
+call sites reach it, and the two general ones are the pair that matters here.
 `Level.setBlock` calls it on the server for a write that carries
 `Block.UPDATE_NEIGHBORS` and whose new state has an analog output — but an item
 entering a chest is not a write at all. That path is `BlockEntity.setChanged`,

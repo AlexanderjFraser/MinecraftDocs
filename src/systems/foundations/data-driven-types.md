@@ -110,11 +110,15 @@ same through `AllOfCondition.INLINE_CODEC`, and `SlotSources` through
 on from the **value** of a field, counted at the dispatch sites:
 thirty-one bare, twenty-three type-object, two where the type is the
 behaviour. The dispatch key is *type* unless the row says otherwise. The
-criterion is the value, not `Registry.byNameCodec` itself: two more
-registries dispatch through it and are not here —
-`BuiltInRegistries.GAME_RULE` and `BuiltInRegistries.STAT_TYPE`, where the
-registry name is the *key* of a map rather than the value of a field, and
-which are among the exceptions below.
+criterion is the value *in the data this book is about*, not
+`Registry.byNameCodec` itself: four more registries dispatch through it and are
+not here. `BuiltInRegistries.GAME_RULE` and `BuiltInRegistries.STAT_TYPE`
+spell the registry name as the *key* of a map rather than the value of a
+field. `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` and
+`BuiltInRegistries.DATA_COMPONENT_TYPE` do both: they are keys everywhere a
+data pack meets them, and each also backs exactly one field dispatch —
+`EnvironmentAttributeCheck.MAP_CODEC` on *attribute*, and one client
+item-model property on *component*. All four are among the exceptions below.
 
 ### The bare spelling: the registry holds a `MapCodec`
 

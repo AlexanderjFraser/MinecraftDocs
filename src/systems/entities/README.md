@@ -104,7 +104,7 @@ question rather than teaching it.
    mob you watch walk into a wall and then wander off is running a scheduled
    surrender.
 9. [Damage and death](damage-and-death.md) — the part's closer. An arrow, a
-   dozen multiplications and one abstract method. A hit that lands inside the
+   dozen owners of one number, and one abstract method. A hit that lands inside the
    red flash usually does nothing at all, and when it is stronger than the
    last, only its excess lands — silently.
 

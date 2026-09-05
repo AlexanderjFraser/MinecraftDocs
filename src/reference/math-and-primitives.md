@@ -57,8 +57,10 @@ flowchart LR
 mutable-under-the-hood int triple with the arithmetic (`Vec3i.offset`,
 `Vec3i.relative`, `Vec3i.distSqr`, `Vec3i.distManhattan`); `BlockPos` adds
 the iteration helpers (`BlockPos.betweenClosed`, `BlockPos.withinManhattan`,
-`BlockPos.spiralAround`, `BlockPos.breadthFirstTraversal`), each of which
-walks a single reused `BlockPos.MutableBlockPos` rather than allocating.
+`BlockPos.spiralAround`), each of which walks a single reused
+`BlockPos.MutableBlockPos` rather than allocating.
+`BlockPos.breadthFirstTraversal` is the exception in the same class: it is not
+an iterator at all, and allocates a queue of nodes and a set of visited longs.
 `Cursor3D` is a *different* allocation-free box cursor — the one that also
 classifies each position as inside, face, edge or corner
 (`Cursor3D.TYPE_INSIDE`, `Cursor3D.TYPE_FACE`, `Cursor3D.TYPE_EDGE`,
@@ -109,7 +111,10 @@ which maps onto `OctahedralGroup` (`com/mojang/math`) — the 48-element
 symmetry group of a cube, each element a permutation plus three inversion
 flags. That group is not decoration: `Shapes.rotate`, `Shapes.rotateAll`,
 `Shapes.rotateHorizontal` and `Shapes.rotateAttachFace` are how a block
-declares one shape and gets the other seven. `Transformation` wraps a JOML
+declares one shape and is handed the rest — three more from
+`Shapes.rotateHorizontal`, five from `Shapes.rotateAll`, and eleven from
+`Shapes.rotateAttachFace`, which is `Shapes.rotateHorizontal` run once per
+`AttachFace`. `Transformation` wraps a JOML
 matrix and lazily decomposes it into translation, left rotation, scale and
 right rotation for model JSON.
 

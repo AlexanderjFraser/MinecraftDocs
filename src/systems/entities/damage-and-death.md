@@ -327,7 +327,7 @@ entity's health to zero and runs `LivingEntity.die` locally, so the twenty
 tick animation in `LivingEntity.tickDeath` is client-driven, not a
 consequence of a health update. And **`CombatTracker` clears itself** — after
 `CombatTracker.RESET_DAMAGE_STATUS_TIME` out of combat or
-`CombatTracker.RESET_COMBAT_STATUS_TIME` in it — from two places: a twenty
+`CombatTracker.RESET_COMBAT_STATUS_TIME` in it — from four places: a twenty
 tick timer in `LivingEntity.tick`, the top of `CombatTracker.recordDamage`,
 and both of `LivingEntity.die` and `ServerPlayer.die`, so a hit after a long lull discards the old log before
 filing its entry.
@@ -353,7 +353,8 @@ in `LivingEntity.baseTick`. **Freezing and cramming are not**: freezing is in
 
 `Entity.hurtServer` is abstract: there is no default behaviour at all, so
 every branch of the tree answers for itself, and the answers have nothing to
-do with anything above. **Fifty-five** files declare the method, thirty-three
+do with anything above. **Fifty-four** files override it — a fifty-fifth,
+`Entity` itself, only declares it — thirty-three
 of them `LivingEntity` descendants — `ArmorStand` among them, a
 `LivingEntity` despite having no AI — and **twenty-one** not. Those
 twenty-one never touch armour, i-frames, absorption or the combat tracker,

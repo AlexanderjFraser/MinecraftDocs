@@ -59,7 +59,7 @@ flowchart LR
 | [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | IV, VIII, XII |
 | [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.2 calls it | hand-kept | I, II, XI, XII |
 | [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | X, XI, XII, XIII |
-| [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the nine that mean a thread instead | generated from the lane key | every part |
+| [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the nine that mean a thread, a process or a boundary instead | generated from the lane key | every part |
 | [Class index](class-index.md) | every class backticked on a page, and the pages that name it | generated from the pages | — |
 
 *Generated* means `python tools/gen_reference.py all` rewrites the file

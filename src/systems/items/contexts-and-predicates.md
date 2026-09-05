@@ -186,7 +186,7 @@ seeded-chest half of the story belongs to [loot tables](loot-tables.md).
 
 ## What reads a context
 
-`LootContextUser` — *what did you read out of the map* — has seven
+`LootContextUser` — *what did you read out of the map* — has six
 sub-interfaces, and two of them carry the traffic, both reached by codec
 through a registry of types. `LootItemCondition` is a predicate over a
 `LootContext` with twenty registered types, from

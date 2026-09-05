@@ -94,7 +94,7 @@ overlay.
 `KeyMapping.matches` and `KeyMapping.matchesMouse` are the third way, used
 where no counter is wanted: they test an event against the binding directly,
 which is what screens do, and what `KeyboardHandler.handleDebugKeys` does
-twenty times over for the F3 combinations. `KeyMapping.same`,
+nineteen times over for the F3 combinations. `KeyMapping.same`,
 `KeyMapping.isDefault` and
 `KeyMapping.isUnbound` are what the binding screen asks.
 

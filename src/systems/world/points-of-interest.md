@@ -273,8 +273,8 @@ clears and the ticket does not.
 
 `PoiManager.DistanceTracker` is a `SectionTracker` — the same
 `DynamicGraphMinFixedPoint` flood the ticket system's two graphs use
-([tickets and loading](tickets-and-loading.md)), and the only other place in
-the game that uses it — over chunk sections instead of chunks. Its sources are the sections where
+([tickets and loading](tickets-and-loading.md)), and the only one of the five
+outside `server/level` — over chunk sections instead of chunks. Its sources are the sections where
 `PoiManager.isVillageCenter` holds: at least one record whose type is in
 `PoiTypeTags.VILLAGE` and whose `PoiManager.Occupancy` is *IS_OCCUPIED*. They
 sit at level 0 and the flood runs out to `PoiManager.MAX_VILLAGE_DISTANCE`,

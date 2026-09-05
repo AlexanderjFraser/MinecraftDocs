@@ -263,10 +263,11 @@ worker can ask for a configured carver that another worker is still
 registering — the getter returns an unbound `Holder.Reference`, and the
 reference is bound when that registry freezes. Forward references cost
 nothing; cycles are impossible because layers order the registries.
-Thirteen of the forty-seven dynamic registries also carry a
+Fourteen of the forty-seven dynamic registries also carry a
 `RegistryValidator` in their `RegistryDataLoader.RegistryData`, run after
-the freeze — every one an entity-variant registry, and every one the same
-check, `RegistryValidator.nonEmpty`.
+the freeze — thirteen of them entity-variant registries running the same
+check, `RegistryValidator.nonEmpty`, and the fourteenth `Registries.TIMELINE`,
+whose `Timeline.validateRegistry` is its own.
 
 **Provenance is recorded per entry, and it is coarser than it looks.**
 `ResourceManagerRegistryLoadTask` gives each element a `RegistrationInfo`

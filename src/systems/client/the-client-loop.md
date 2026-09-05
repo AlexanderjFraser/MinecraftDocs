@@ -225,7 +225,7 @@ graph uses wall-clock between frames, measured
 hook, renames the thread, calls `RenderSystem.initRenderThread` and
 constructs `Minecraft`; a `SilentInitException` out of that constructor exits
 quietly rather than crashing. `Minecraft.running` is set true inside that
-constructor, but six statements *after* the `Options` are read from disk —
+constructor, but five statements *after* the `Options` are read from disk —
 which is why every `OptionInstance.set` performed while loading *options.txt*
 silently skips its listener (see [options](options.md)). `Main.main` then
 calls `Minecraft.exitWorldAndClose`, and its last statement arms

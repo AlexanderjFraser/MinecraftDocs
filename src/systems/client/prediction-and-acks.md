@@ -261,8 +261,8 @@ end; it is under a hundred lines and every one of them matters, including
 `BlockStatePredictionHandler.currentSequence`,
 `BlockStatePredictionHandler.isPredicting` and
 `BlockStatePredictionHandler.close`. `ClientLevel.setBlock`,
-`ClientLevel.setServerVerifiedBlockState` and `ClientLevel.syncBlockState`
-for the three writes. `ServerGamePacketListenerImpl.ackBlockChangesUpTo` and
+`ClientLevel.setServerVerifiedBlockState`, `ClientLevel.handleBlockChangedAck`
+and `ClientLevel.syncBlockState` for the four writes. `ServerGamePacketListenerImpl.ackBlockChangesUpTo` and
 `ServerGamePacketListenerImpl.tick` for the receipt — the field and the
 method that raises it share a name.
 

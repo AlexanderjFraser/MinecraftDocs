@@ -154,7 +154,7 @@ The appointment is the *block's* doing, not the fluid's.
 for `Fluids.WATER` at `WaterFluid.getTickDelay`, five ticks out. `LiquidBlock.neighborChanged` and
 `LiquidBlock.updateShape` book the same appointment when something next door
 moves, and so does `SimpleWaterloggedBlock.placeLiquid` — but the habit is not
-`LiquidBlock`'s alone. Sixty-one call sites across fifty-two classes schedule a
+`LiquidBlock`'s alone. Sixty-three call sites across fifty-six classes schedule a
 fluid tick, because every waterloggable block books water's tick from its own
 override of `BlockBehaviour.updateShape`, `WaterloggedTransparentBlock`
 included. Nothing in `FlowingFluid`

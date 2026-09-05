@@ -200,7 +200,7 @@ often skipped — *authority* — is the one three later parts link back to.
    same lecture, and watchable on its own once *goals and brains* has said
    where the wanted position comes from.
 9. [Damage and death](systems/entities/damage-and-death.md) — the closer.
-   An arrow, a dozen multiplications, and the twenty-one classes that
+   An arrow, a dozen owners of one number, and the twenty-one classes that
    implement being hurt some other way entirely.
 
 Part VI must precede Part VIII, which is the player half of nearly every
@@ -425,8 +425,8 @@ one frame end to end has a reason to care what a `GpuDevice` is.
    part's *pattern* lecture: one question asked five times over, by
    renderers that mostly no longer know what time it is.
 10. [Particles](systems/rendering/particles.md) — the part's *policy*
-    lecture: five gates that disagree with each other, and a break puff that
-    passes through none of them.
+    lecture: three distance rules and three readers of one setting, all
+    disagreeing, and a break puff that answers to almost none of them.
 11. [Post-processing](systems/rendering/post-processing.md) — the closer.
     Six JSON-declared shader chains, and a pack can rewrite all six and add
     none. Two of them append passes to the frame graph lecture four builds
@@ -511,7 +511,7 @@ it is a tree of everything they explain.
 Part XII assumes Part IV's [chunk generation
 pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the
 only page that says when any of this runs and what the twelve statuses are,
-and seven of the ten lectures here name one. It also assumes Part IV's
+and eight of the ten lectures here name one. It also assumes Part IV's
 [chunk anatomy](systems/world/chunk-anatomy.md) for what is being written
 into and Part IV's [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md) for lecture

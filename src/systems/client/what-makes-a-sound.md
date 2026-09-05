@@ -18,7 +18,7 @@ shared code runs on that player's own client, where
 `ClientLevel.playSeededSound` plays a sound exactly when the excluded entity
 *is* the local player. Your own place and break are predicted, not delivered.
 The rule does not generalise, though: `Player.playServerSideSound`, which
-plays the five attack sounds, excludes nobody, so your own critical hit is one
+plays the six attack sounds, excludes nobody, so your own critical hit is one
 of the sounds that does travel the whole way out and back.
 
 This page is the content model and those three doors. The machine that turns

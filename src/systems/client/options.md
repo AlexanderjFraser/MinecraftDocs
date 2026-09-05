@@ -171,7 +171,7 @@ window.)
 the game is not running, assigns the field and skips both the equality test
 and the listener. That is not a special path for loading — it silences *any*
 set performed before the loop starts, and loading happens in the `Options`
-constructor, which runs inside the `Minecraft` constructor six statements
+constructor, which runs inside the `Minecraft` constructor five statements
 before `Minecraft.running` is set.
 
 **Which settings really need a restart?** Two, and they say so. The graphics

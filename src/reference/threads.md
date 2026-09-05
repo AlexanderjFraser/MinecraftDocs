@@ -107,7 +107,7 @@ thread when a dedicated server is started without *--nogui* and runs its
 `MinecraftServerGui`, the *Friends List* fetcher behind the social screen,
 and `ChaseServer`'s two threads and `ChaseClient`'s one, which exist only
 behind `SharedConstants.DEBUG_CHASE_COMMAND` and the */chase* command it
-registers. Realms starts six more, and is out of scope with the rest of
+registers. Realms starts nine more, and is out of scope with the rest of
 *com/mojang/realmsclient*.
 
 ## The rules that follow

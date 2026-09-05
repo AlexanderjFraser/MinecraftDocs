@@ -47,7 +47,7 @@ server*, which runs its staged load for server data.
 Two pages from a later part are assumed, and they are cut two different
 ways. [Tickets and loading](../world/tickets-and-loading.md) owns what
 *entity-ticking* and *block-ticking* range mean, and [the level
-tick](server-level-tick.md) defines both in two sentences before it uses
+tick](server-level-tick.md) defines both in one sentence before it uses
 them, so that one keeps until Part IV. [Environment attributes and
 timelines](../world/environment-attributes-and-timelines.md) does not: it
 owns the per-position system whose cache `ServerLevel.tick` throws away

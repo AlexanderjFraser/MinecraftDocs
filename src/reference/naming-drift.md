@@ -39,9 +39,9 @@ each part explains it.
 Every row here was found the same way: a fact-sheet agent reading the 26.2
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. Two hundred and forty-four rows, and the distribution is
+corpus needed. Two hundred and forty-three rows, and the distribution is
 itself a finding: the three biggest tables are **commands** (36), **the
-server** (32) and **items** (30), and the fourth is **rendering** (27). The
+server** (31) and **items** (30), and the fourth is **rendering** (27). The
 client was rewritten around extract-then-render, which is why almost nothing
 at the top of the render stack kept its name — but the permission rewrite and
 the game-rule registry moved more names than the renderer did.
@@ -129,7 +129,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *DimensionType.hasRaids* | `EnvironmentAttributes.CAN_START_RAID` |
 | *DimensionType.natural* | `EnvironmentAttributes.NETHER_PORTAL_SPAWNS_PIGLINS` and neighbours |
 | *DimensionType.fixedTime* | `DimensionType.hasFixedTime`, a bare boolean — the time itself moved to `WorldClock` and `Timelines.OVERWORLD_DAY` |
-| *DimensionType.ambientLight* | unchanged; it is the one visual field that did not become an attribute |
+| *DimensionType.ambientLight* | unchanged; one of the three visual fields that did not become an attribute, with `DimensionType.skybox` and `DimensionType.cardinalLightType` |
 | *Schedule* (the villager's) | `EnvironmentAttributes.VILLAGER_ACTIVITY` on `Timelines.VILLAGER_SCHEDULE` |
 | *Level.dayTime* | `ServerClockManager`, keyed by `WorldClock` |
 | *data/&lt;id&gt;.dat* | *data/&lt;namespace&gt;/&lt;id&gt;.dat* — every saved-data file gained a namespace folder |
@@ -378,7 +378,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 ## The shape changes, not just the names
 
 A rename table flatters the reader: it suggests that if you learn the two
-hundred and forty-four rows above you can read the tree. You cannot, because a dozen of these rows are one
+hundred and forty-three rows above you can read the tree. You cannot, because a dozen of these rows are one
 design change each, and the change is what the corresponding page is about.
 The recurring ones:
 

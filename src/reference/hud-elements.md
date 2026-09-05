@@ -40,7 +40,7 @@ current even when nothing is recorded.
 | 13 | mount health | `Hud.extractVehicleHealth` | yes | a ridden `LivingEntity` with a non-zero heart count — **outside** the health block, so creative shows it |
 | 14 | contextual bar, background | `ContextualBar.extractBackground` | yes | always recorded, but which of four states it is in is re-decided every frame by `Hud.nextContextualInfoState` |
 | 15 | experience level | `ContextualBar.extractExperienceLevel` | yes | the game mode has experience **and** the level is above zero — recorded between the bar's two passes, so it survives whichever bar wins |
-| 16 | contextual bar, foreground | `ContextualBar.extractRenderState` | yes | always recorded; empty in `ExperienceBar` and `JumpableVehicleBar`, so for two of the four states it draws nothing |
+| 16 | contextual bar, foreground | `ContextualBar.extractRenderState` | yes | always recorded; empty in `ContextualBar.EMPTY`, `ExperienceBar` and `JumpableVehicleBar`, so `LocatorBar` is the only one of the four states that draws anything here |
 | 17 | selected item name | `Hud.extractSelectedItemName` | yes | not a spectator, `Hud.toolHighlightTimer` above zero, and the stack is not empty |
 | 18 | status effects | `Hud.extractEffects` | yes | the player has effects, no screen is showing them itself, and the instance sets `MobEffectInstance.showIcon` |
 | 19 | boss bars | `BossHealthOverlay` | yes | the overlay has events |

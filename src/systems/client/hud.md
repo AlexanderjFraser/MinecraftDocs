@@ -76,7 +76,7 @@ says. So a 2D flag does change how the *world* is drawn, in three narrow
 ways. But `Hud.isHidden` itself is read directly by six other places across
 the client, including two entity renderers that suppress name tags.
 
-## Four bars, one slot, and an asymmetric rule
+## Four states, one slot, and an asymmetric rule
 
 `Hud.contextualInfoBar` holds one of four states — nothing, experience, the
 locator, a jumpable vehicle — and `Hud.nextContextualInfoState` re-decides
@@ -192,7 +192,7 @@ any list of fields.
 
 `Hud.extractRenderState` — the whole HUD is one ordered method, and the two
 hidden-gated blocks are visible at a glance. Then `Hud.extractPlayerHealth`
-for the most-loved twenty lines in the client,
+for the most-loved fifty-seven lines in the client,
 `Hud.nextContextualInfoState` for the bar arbitration, `Gui.extractRenderState`
 for the four recorded after the screen, `DebugScreenEntries` for the F3
 registry, and `ChatComponent` for the message list.

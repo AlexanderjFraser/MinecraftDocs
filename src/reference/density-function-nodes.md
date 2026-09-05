@@ -130,7 +130,7 @@ different scale from every other node in the table.
 
 One more, on the unseeded graph: `DensityFunction.NoiseHolder` answers a
 maximum of 2.0 while its `NormalNoise` is still null. Every one of the
-sixty-one shipped noise definitions computes a maximum between 2.57 and 7.32
+sixty-three shipped noise definitions computes a maximum between 2.57 and 7.32
 once seeded, so a freshly parsed router reports noise bounds that are too
 **narrow**, and seeding widens them.
 

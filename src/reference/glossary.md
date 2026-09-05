@@ -259,9 +259,9 @@ renderers qualify. → [block-entity rendering](../systems/rendering/block-entit
 **Goal** — one unit of the older mob AI: a priority, a start condition, and
 the set of controls it claims while running. → [AI](../systems/entities/ai-goals-and-brains.md)
 
-**GpuDevice** — the one interface both graphics backends implement;
-everything the client draws goes through it, or through the `CommandEncoder`
-it hands out. → [Blaze3D](../systems/rendering/blaze3d.md)
+**GpuDevice** — the one class the client draws through; both graphics
+backends sit behind it as `GpuDeviceBackend` implementations, and everything
+drawn goes through it or through the `CommandEncoder` it hands out. → [Blaze3D](../systems/rendering/blaze3d.md)
 
 **GuiRenderState** — the 2D render tree: strata of nodes that infer their own
 layering from bounding boxes and are batched into draw calls at the end of the

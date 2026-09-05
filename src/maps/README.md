@@ -33,7 +33,7 @@ pages follows.
 
 | number | how it is counted |
 |---|---|
-| a class | one `.java` file in the decompile — nested types are not counted as classes, and the 542 one-line `package-info.java` markers are counted like any other file |
+| a class | one `.java` file in the decompile — nested types are not counted as classes, and the 542 four-line `package-info.java` markers are counted like any other file |
 | a line | one line of the decompiled file, so counts are comparable with each other and not with Mojang's own source |
 | client-only | the file is not listed in `server-classes.txt`; *shared* means it is |
 | fan-in | how many files have a *net.minecraft* or *com.mojang* import statement naming the class — the JDK is not counted, and same-package use needs no import |

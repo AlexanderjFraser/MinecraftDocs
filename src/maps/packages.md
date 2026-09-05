@@ -6,7 +6,7 @@ Java Minecraft is 7,055 classes and 719,302 lines of decompiled Java 25,
 and the first surprise in it is which half is bigger. Everything a player
 sees — every screen, the HUD, the whole renderer, the entity models, both
 GPU back-ends, the sound engine, Realms — is the orange near-third of this
-picture. The blue three quarters ship in both jars, and the biggest box
+picture. The blue seven tenths ship in both jars, and the biggest box
 of all, `world/level`, is a fifth of the game by itself: blocks, block
 states, chunks, lighting and world generation, all of it code the
 dedicated server runs with no window attached.

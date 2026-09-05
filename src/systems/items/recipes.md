@@ -140,7 +140,7 @@ crafting overrides of it end in the same static,
 `CraftingMenu.slotChangedCraftingGrid`. They reach it differently:
 `CraftingMenu.slotsChanged` goes through `ContainerLevelAccess.execute`, while
 `InventoryMenu.slotsChanged` calls the static directly, gated only on having a
-`ServerLevel`. A `CraftingMenu` built with the single-argument constructor holds
+`ServerLevel`. A `CraftingMenu` built with the two-argument constructor holds
 `ContainerLevelAccess.NULL`, whose `ContainerLevelAccess.execute` runs nothing — and that instance is
 the client's copy, which is why the client never matches anything.
 

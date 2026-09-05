@@ -109,7 +109,7 @@ it. Nothing draws both. `LoadingOverlay` is the only implementation of
 `Screen.repositionElements`. The default `Screen.repositionElements` rebuilds
 every widget through `Screen.rebuildWidgets`, which does re-enter the
 overridable `Screen.init` hook — so on a plain screen everything really is rebuilt.
-Forty screens override `Screen.repositionElements` instead and keep their
+Forty-one screens override `Screen.repositionElements` instead and keep their
 widgets, most of them just re-arranging their `Layout`. "Everything is rebuilt
 on resize" is true of a plain screen and false of most interesting ones.
 
