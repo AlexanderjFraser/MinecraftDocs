@@ -255,8 +255,8 @@ back if the feature fails.
 records its species; a leaf's only per-block state is
 `BlockStateProperties.DISTANCE` and `BlockStateProperties.WATERLOGGED`, the
 first written by the feature's own breadth-first pass and the second taken
-from what was already in the world. A log carries an `AXIS` the trunk placer
-chooses, and that is the whole of it. `FoliagePlacer.tryPlaceLeaf` also refuses to overwrite a leaf a
+from what was already in the world. A log carries a `BlockStateProperties.AXIS` the trunk
+placer chooses, and that is the whole of it. `FoliagePlacer.tryPlaceLeaf` also refuses to overwrite a leaf a
 player placed, by testing the persistent flag.
 
 **Is any of this shared with the rest of decoration?** The clearance idea,
