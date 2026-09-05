@@ -8,7 +8,7 @@ a class named only inside a diagram, because the index reads backticked names an
 mermaid label is not one, and the generated views, whose backticks are registry and packet
 ids rather than class names.
 
-2731 names across 131 pages. A row is a
+2732 names across 131 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -115,6 +115,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `AtmosphericFogEnvironment` | [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `AttachedToLeavesDecorator` | [trees](../systems/worldgen/trees.md) |
 | `AttachedToLogsDecorator` | [trees](../systems/worldgen/trees.md) |
+| `AttachFace` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `Attackable` | [entity-anatomy](../systems/entities/entity-anatomy.md) |
 | `AttackRange` | [data-components](../systems/foundations/data-components.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
 | `Attribute` | [attributes](../systems/entities/attributes.md) |
@@ -613,7 +614,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ComponentPredicateParser` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `ComponentRenderUtils` | [text-and-fonts](../systems/client/text-and-fonts.md) |
 | `ComponentSerialization` | [naming-drift](../reference/naming-drift.md), [entity-selectors](../systems/commands/entity-selectors.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [text-components](../systems/foundations/text-components.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
-| `ComponentUtils` | [naming-drift](../reference/naming-drift.md), [text-components](../systems/foundations/text-components.md), [chat-and-signing](../systems/networking/chat-and-signing.md) |
+| `ComponentUtils` | [naming-drift](../reference/naming-drift.md), [text-components](../systems/foundations/text-components.md) |
 | `ComposableEntryContainer` | [loot-tables](../systems/items/loot-tables.md) |
 | `CompositeEntryBase` | [loot-tables](../systems/items/loot-tables.md) |
 | `CompositePackResources` | [resource-system](../systems/foundations/resource-system.md) |
@@ -957,7 +958,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `EntityRenderState` | [submit-phases](../reference/submit-phases.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md), [entity-rendering](../systems/rendering/entity-rendering.md), [particles](../systems/rendering/particles.md) |
 | `EntitySection` | [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
 | `EntitySectionStorage` | [entity-selectors](../systems/commands/entity-selectors.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
-| `EntitySelector` | [glossary](../reference/glossary.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [permissions](../systems/commands/permissions.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md), [text-components](../systems/foundations/text-components.md) |
+| `EntitySelector` | [glossary](../reference/glossary.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [permissions](../systems/commands/permissions.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md), [text-components](../systems/foundations/text-components.md), [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `EntitySelectorOptions` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `EntitySelectorParser` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [permissions](../systems/commands/permissions.md), [text-components](../systems/foundations/text-components.md) |
 | `EntitySpawnReason` | [naming-drift](../reference/naming-drift.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
@@ -974,7 +975,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `EntryGroup` | [loot-tables](../systems/items/loot-tables.md) |
 | `EnumProperty` | [blocks-and-states](../systems/blocks/blocks-and-states.md) |
 | `EnvironmentAttribute` | [naming-drift](../reference/naming-drift.md), [the-client-level](../systems/client/the-client-level.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md) |
-| `EnvironmentAttributeCheck` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
+| `EnvironmentAttributeCheck` | [data-driven-types](../systems/foundations/data-driven-types.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `EnvironmentAttributeLayer` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `EnvironmentAttributeMap` | [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [biomes](../systems/worldgen/biomes.md) |
 | `EnvironmentAttributeProbe` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [the-frame](../systems/rendering/the-frame.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [biomes](../systems/worldgen/biomes.md) |
@@ -1054,11 +1055,11 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `FloatSampleSource` | [sound-engine](../systems/client/sound-engine.md) |
 | `FloatWithAlpha` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `FlowingFluid` | [fluids](../systems/world/fluids.md) |
-| `Fluid` | [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `Fluid` | [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `FluidModel` | [naming-drift](../reference/naming-drift.md), [section-meshing](../systems/rendering/section-meshing.md) |
 | `FluidRenderer` | [naming-drift](../reference/naming-drift.md), [section-meshing](../systems/rendering/section-meshing.md) |
 | `Fluids` | [blocks-and-states](../systems/blocks/blocks-and-states.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
-| `FluidState` | [README](../systems/blocks/README.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [tags](../systems/foundations/tags.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `FluidState` | [README](../systems/blocks/README.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [tags](../systems/foundations/tags.md), [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `FluidStateModelSet` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `FluidTags` | [block-breaking](../systems/blocks/block-breaking.md), [tags](../systems/foundations/tags.md), [fluids](../systems/world/fluids.md) |
 | `FlyingPathNavigation` | [pathfinding](../systems/entities/pathfinding.md) |
@@ -1191,7 +1192,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `GpuBuffer` | [naming-drift](../reference/naming-drift.md), [blaze3d](../systems/rendering/blaze3d.md), [post-processing](../systems/rendering/post-processing.md) |
 | `GpuBufferSlice` | [naming-drift](../reference/naming-drift.md), [blaze3d](../systems/rendering/blaze3d.md) |
 | `GpuDevice` | [lectures](../lectures.md), [packages](../maps/packages.md), [glossary](../reference/glossary.md), [anatomy](../systems/anatomy/anatomy.md), [README](../systems/rendering/README.md), [blaze3d](../systems/rendering/blaze3d.md), [the-window](../systems/rendering/the-window.md) |
-| `GpuDeviceBackend` | [blaze3d](../systems/rendering/blaze3d.md) |
+| `GpuDeviceBackend` | [glossary](../reference/glossary.md), [blaze3d](../systems/rendering/blaze3d.md) |
 | `GpuFence` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `GpuFormat` | [naming-drift](../reference/naming-drift.md), [blaze3d](../systems/rendering/blaze3d.md) |
 | `GpuOutOfMemoryException` | [blaze3d](../systems/rendering/blaze3d.md) |
@@ -1485,7 +1486,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LocateCommand` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [points-of-interest](../systems/world/points-of-interest.md) |
 | `LocationCheck` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `LocationPredicate` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
-| `LocatorBar` | [hud](../systems/client/hud.md) |
+| `LocatorBar` | [hud-elements](../reference/hud-elements.md), [hud](../systems/client/hud.md) |
 | `LodestoneTracker` | [points-of-interest](../systems/world/points-of-interest.md) |
 | `LoggedChatMessage` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `LoggingLevelLoadListener` | [players-and-sessions](../systems/server/players-and-sessions.md), [starting-a-server](../systems/server/starting-a-server.md) |
@@ -2546,7 +2547,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `TickThrottler` | [chat-and-signing](../systems/networking/chat-and-signing.md), [input-to-movement](../systems/player/input-to-movement.md) |
 | `TiledBlitRenderState` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md) |
 | `TimeCommand` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
-| `Timeline` | [naming-drift](../reference/naming-drift.md), [README](../systems/entities/README.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
+| `Timeline` | [naming-drift](../reference/naming-drift.md), [README](../systems/entities/README.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `Timelines` | [naming-drift](../reference/naming-drift.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [points-of-interest](../systems/world/points-of-interest.md) |
 | `TimelineTags` | [tags](../systems/foundations/tags.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `TimerQueue` | [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md) |
