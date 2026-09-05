@@ -120,9 +120,10 @@ it is one version: 26.2. There are no version-difference sections and no
 
 **Verified means tested.** Every backticked name on every page is checked
 against the decompile before the site publishes, every diagram is parsed
-by the same mermaid the site ships, and every lane in every diagram is
-checked against the one [key](reference/lanes.md) the whole book uses. A
-page that fails any of those three does not go up, and neither does a change
+by the same mermaid the site ships, every lane in every diagram is
+checked against the one [key](reference/lanes.md) the whole book uses, and
+every link and anchor between pages is checked to land. A
+page that fails any of those does not go up, and neither does a change
 that puts the landing pages, the lecture map and the dependency figure out
 of step with each other. That is a narrow
 guarantee, and it is worth stating narrowly: it proves the names are real

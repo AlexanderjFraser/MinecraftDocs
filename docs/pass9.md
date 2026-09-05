@@ -45,3 +45,36 @@ Strike nothing here; pass 9 strikes.
 ## Entries
 
 *(pass-5 sessions append below, newest first)*
+
+## Planning session — between passes 4 and 5 (2026-09-05)
+
+No system page rewritten. Three claims introduced, all in the frame and the
+atlas:
+
+- `src/introduction.md` — the *Verified means tested* paragraph now says
+  "every link and anchor between pages is checked to land" and "a page that
+  fails any of those does not go up": the claim is that `tools/check_links.py`
+  runs in `tools/deploy.sh` before the build and exits non-zero on a broken
+  link, anchor, include, `SUMMARY.md` entry or redirect (`tools/deploy.sh`,
+  the line after `check_deps.py`).
+- `src/maps/packages.md` — the *Where each part lives* table is now
+  `src/generated/parts.md`, written from `map_source.py`'s `PARTS`. The
+  mapping is a set of claims about which packages each part covers, and it
+  differs from the hand table it replaced: Part IV adds `world/level/material`,
+  `world/attribute`, `world/timeline`, `world/clock`, `world/level/border`;
+  Part VI adds `world/damagesource`, `world/effect` and subtracts
+  `world/entity/player`; Part II adds `world/flag`; Part IX subtracts
+  `network/syncher` (Part VI's); Part X adds `client/input`, `client/server`
+  and counts `net/minecraft/client` itself only; Part XI adds
+  `client/particle`; Part XIII adds `server/permissions`, `server/bossevents`
+  and `client/gui/screens/dialog`. The paragraph above the table says how
+  it is counted (no prefix, *itself only*, shared packages counted twice,
+  skipped packages left out) — check each against `map_source.in_part`.
+  Every landing page's size sentence will quote its row once the part
+  sessions switch them to the include; until then a landing page's hand
+  count and its row may differ (Part XIII: 473 / 43,900 by hand, 470 /
+  43,126 by the atlas).
+- `docs/pass5-brief.md` Part 4 — the measured tables (coverage per part, the
+  queue by kind, the duplication pairs) are the tools' output on 2026-09-05
+  and are claims about the corpus on that day, not about the game; pass 9
+  need not check them.

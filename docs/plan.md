@@ -40,10 +40,12 @@ pass has **one lens**, since pass 4 showed that a session sees what it is
 looking for and nothing else: what the writing session knew it had changed
 came back clean, and what it did not know was where the errors lived.
 
-**Pass 5 — the book — is next.** Its charter is below at the level of
-intent. Its detailed brief, its tools and its session runbook are written by
-the planning session before it starts, the way the 2026-09-03 planning
-session built pass 4's ([pass4-brief.md](pass4-brief.md) is the model).
+**Pass 5 — the book — is next, and planned.** Its charter is below at the
+level of intent; its brief, runbook, standard and schedule are
+[pass5-brief.md](pass5-brief.md), written by the 2026-09-05 planning session
+with the tools it names (`pass5_dups.py`, `pass5_coverage.py`,
+`check_links.py`, `pass5_queue.py`, `pass5_prompts.py`, and `map_source.py`'s
+`PARTS`), each measured against the corpus before the first session runs.
 
 ## The passes
 
@@ -55,7 +57,7 @@ session built pass 4's ([pass4-brief.md](pass4-brief.md) is the model).
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | **next** — charter below; queue [pass5.md](pass5.md) |
 | **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts; a page that reads as one lecture's notes | the reader with only the page | after 5 |
-| **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the fifth gate, names inside mermaid blocks | the picture | after 6 |
+| **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
 | **10 — the last polish** | pass 9's debt, the frame against the finished book, links, the last cuts, the release | the reader, once more | after 9; then the site is finished |
@@ -66,11 +68,11 @@ runs whenever the owner likes and whose questions the current pass answers.
 
 The rules stand for every pass: names never code · how the system works,
 not how the code reads · newest version only (26.2) · trace-driven · claims
-come from the decompile, never from model memory of 1.21 · the four gates —
+come from the decompile, never from model memory of 1.21 · the five gates —
 `python tools/verify_names.py`, `node tools/check_mermaid.js`,
-`python tools/check_lanes.py --strict`, `python tools/check_deps.py` — clean
-before every commit that touches a page, and `tools/deploy.sh` refuses to
-publish on any failure. Reasoning over sensing over measuring: no count in a
+`python tools/check_lanes.py --strict`, `python tools/check_deps.py`,
+`python tools/check_links.py` — clean before every commit that touches a
+page, and `tools/deploy.sh` refuses to publish on any failure. Reasoning over sensing over measuring: no count in a
 queue is a target, and the owner judges what lands.
 
 ## Why this order
@@ -151,8 +153,10 @@ Standing rules for passes 5 to 8, the restructuring and refining passes:
   passes 5 to 7 rewrite what [pass5.md](pass5.md) describes, and an entry
   that is already overtaken is struck with a word saying so (pass 4's rule —
   an item handed forward is checked, not applied).
-- **The four gates stand and grow only by truth**: pass 7 adds the fifth
-  (names inside mermaid blocks); nothing that measures prose is a gate.
+- **The gates stand and grow only by truth**: the link checker joined them
+  in pass 5's planning session because it was clean on its first run and a
+  link resolving is a fact; pass 7 adds names inside mermaid blocks; nothing
+  that measures prose is a gate.
 - **Commit your own files by name; never `add -A`** while another session
   may be open (session I of pass 3 swept another session's half-written
   change into an unrelated commit).
@@ -240,25 +244,34 @@ the book.
    from `players-and-sessions`; `chunk-storage`'s proposed hand-off of the
    null-parse branch. A move changes `SUMMARY.md`, the landing page,
    `lectures.md`, the glossary and `book.toml` in one commit.
-7. **Is every page a lecture?** The book says one page per lecture and has
-   102 pages. The owner decides whether the series records all of them or a
-   tier of them; pass 5 proposes the tiering if asked (a page can be the
-   notes a lecture links to without being an episode), and the site is
-   complete either way.
+7. **The site stands alone** — the owner's ruling of 2026-09-05, replacing
+   the question of whether every page is a lecture. Readers today have only
+   the textbook, so nothing on a page may lean on a lecture to make sense;
+   the lecture order and any tiering of episodes are the owner's own work,
+   not this pass's. The page count is whatever the book needs — a merge or a
+   split is judged by the reader who has only the page, never by the number
+   of episodes. Everything inside the current scope is explained, concisely:
+   the coverage question is real, its answer is usually a section, a
+   Reference row or a sentence, and concision governs *how* a thing is
+   explained, not *whether*.
 
 **What pass 5 does not do:** it does not reshape a page's internal skeleton
 or vary a device (6); it does not redraw a figure for legibility (7); it
 does not hunt a tic or settle a count's wording (8); it changes no fact
 without the decompile open (the standing rule).
 
-**Sessions.** A — the standard: the landing-page role written into
-`TEMPLATE.md`, the through-lines list, the duplication finder's corpus-wide
-report routed to parts, the exemplar landing page, the frame's own seams.
-B–N — the parts, one session each, reading the part end to end and every
-page it links into. O — the close: the frame and the summarisers against
-the finished parts, the lecture map re-derived, the glossary's owner links,
-the moves' redirects, [pass9.md](pass9.md)'s entries checked for shape, and
-pass 6's charter detail.
+**Sessions** — the runbook and the schedule are in
+[pass5-brief.md](pass5-brief.md). A — the standard: the ownership rule and
+the landing-page role written into `TEMPLATE.md`, the through-lines' owners
+and citation forms, the duplication report routed, Part XIII's landing page
+as the exemplar, the frame's own seams. B–N — the parts in sidebar order,
+one session each (B takes I and II; N takes Reference and the maps), reading
+the part end to end in watching order before changing anything, one
+reader-of-the-book agent per page, the part's Reference pages included. O —
+the close: the frame and the summarisers against the finished parts, the
+lecture map re-derived, the glossary's owner links, the moves' redirects
+under the link gate, [pass9.md](pass9.md)'s entries checked for shape, the
+pass's own strikes audited, and pass 6's charter detail.
 
 ## Pass 6 — the lecture
 
@@ -303,7 +316,7 @@ on `prediction-and-acks`); the lanes (at most seven; the 45 key rows no page
 claims, pruned; the one class with two lanes); labels that are sentences;
 density (the sixteen-edge spawn cascade, the fourteen-edge event loop, the
 27-item start-up sequence); whether figures carry captions; the
-tick-boundary bars. **The fifth gate:** names inside mermaid blocks — 453
+tick-boundary bars. **The gate over figures:** names inside mermaid blocks — 453
 tokens no gate has seen, and the same parser gives the class index its 135
 missing page pairs — built by the planning session, report-only through the
 pass, a deploy gate at its close. `TEMPLATE.md`'s mermaid rules corrected to
@@ -369,7 +382,7 @@ Pass 9's wording debt; the frame — introduction, lecture map, the maps' and
 Reference's front pages — against the finished book; every internal link
 and anchor under the link checker as a gate; the last cuts; the owner's
 remaining questions answered and the lecture order confirmed; the
-introduction's *verified* paragraph made true of three checks; the release —
+introduction's *verified* paragraph made true of every gate; the release —
 a git tag, the site verified against whatever version is current, the
 second edition's seed written into §7 and *what this book skips*. Then
 nothing more is done to the site except version passes and the corrections
@@ -480,3 +493,38 @@ plan as it stood at its close)*
   get lost; a published page never names a pass number as a promise about
   the future (the rot rule); the coverage question is asked in pass 5 and
   never again, because passes 9 and 10 add nothing.
+- **2026-09-05, planning session (Fable), the second sitting — pass 5
+  planned.** No system page's content touched. **The brief**:
+  [pass5-brief.md](pass5-brief.md) — Part 1 the agent's brief (a reader of
+  the book with no source, five questions: ownership, seams, through-lines,
+  coverage, moves), Part 2 the runbook, Part 3 session A's standard (the
+  ownership rule, the landing page's role, the through-lines with their
+  measured spread and proposed owners, the routing rule for cross-part
+  pairs, the frame's seams), Part 4 the schedule with what the tools found
+  per part. **The owner's ruling** recorded as job 7 above: the site stands
+  alone, the page count is the book's to decide, everything in scope is
+  explained concisely, the lectures are the owner's. **The tools**, each
+  with a `--probe`: `pass5_dups.py` (rare shared names between page pairs,
+  weighted 1/df; near-duplicate sentences by shared 5-grams, summariser
+  echoes labelled; `--terms` for a through-line's spread), `pass5_coverage.py`
+  (the coverage question per part with the atlas as the population),
+  `check_links.py` (links, anchors as mdBook slugifies them — validated
+  against all 1,318 built heading ids — includes, `SUMMARY.md` both ways,
+  `book.toml` redirects; `--inbound` for the seams), `pass5_queue.py`
+  (pass5.md routed by kind and page, kinds guessed from section priors and
+  words, `[kind=…]` tags win), `pass5_prompts.py`, and `map_source.py`'s
+  `PARTS` mapping writing `parts.md` and thirteen `part-<dir>.md` size
+  phrases — the *where each part lives* table on `maps/packages.md` is now
+  generated from it, and its packages were widened where the hand table
+  was short (Part IV gains `material`, `attribute`, `timeline`, `clock`,
+  `border`; VI `damagesource`, `effect`; II `world/flag`; X `input`,
+  `server`; XI `particle`; XIII `permissions`, `bossevents`, the dialog
+  screens). **Measured**: 7,510 links and 12 anchors, none broken, so
+  `check_links.py` went into `deploy.sh` as the fifth gate at once (a ruling:
+  the gates grow by truth, and it was clean on day one); the queue holds 348
+  open units — 114 pass 5's, 75 pass 6's, 28 pass 7's, 131 pass 8's, 185 of
+  them guessed; coverage by lines named runs from 40% (Part V) to 100% (Part
+  I), the low parts being families of one class each; the top duplicate
+  pair in the book is `data-components` ↔ `items-and-stacks`, and the
+  charter's named duplicates all surface in the top forty. The introduction's
+  gate sentence now names the link check (logged in [pass9.md](pass9.md)).

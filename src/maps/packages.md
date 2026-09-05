@@ -86,24 +86,16 @@ exceptions).
 ## Where each part lives
 
 The parts follow the tree, but not one box each. This table is the map
-from the book's order to the jar's; a part's landing page says the same
-thing with the classes named.
+from the book's order to the jar's, and it is the one table on this page
+that is a decision rather than a measurement: the packages are assigned by
+hand, in the tool that draws the atlas, and the counts follow. A package
+under `net/minecraft` is written without that prefix; *itself only* means
+the files directly in the package and not its sub-packages; a package two
+parts share is counted in both, which is why the total row is more than the
+jar. A part's landing page quotes its own row of this table as its size,
+and everything the book skips is left out of every row.
 
-| part | packages |
-|---|---|
-| I · Anatomy | `client/main`, `net/minecraft/server` (the two `Main`s, `MinecraftServer`), `net/minecraft/client` (`Minecraft`) |
-| II · Foundations | `net/minecraft/core`, `net/minecraft/resources`, `net/minecraft/tags`, `net/minecraft/nbt`, `core/component`, `server/packs`, `net/minecraft/util` |
-| III · The server | `net/minecraft/server`, `server/level`, `server/players`, `server/dedicated` |
-| IV · The world | `world/level/chunk`, `world/level/chunk/storage`, `world/level/lighting`, `world/ticks`, `world/level/gameevent`, `world/level/entity`, `server/level` |
-| V · Blocks | `world/level/block`, `world/level/block/state`, `world/level/block/entity`, `world/level/redstone` |
-| VI · Entities | `world/entity`, `world/entity/ai`, `world/entity/ai/attributes`, `network/syncher`, `world/level/pathfinder` |
-| VII · Items and inventories | `world/item`, `world/inventory`, `world/item/crafting`, `world/item/enchantment`, `world/level/storage/loot` |
-| VIII · The player | `world/entity/player`, `world/food`, `server/level` (`ServerPlayer`), `client/player` |
-| IX · Networking | `net/minecraft/network`, `network/protocol`, `network/codec`, `network/chat`, `server/network`, `client/multiplayer` |
-| X · The client | `net/minecraft/client`, `client/gui`, `client/multiplayer`, `client/sounds`, `client/resources`, `client/player` |
-| XI · Rendering | `client/renderer`, `client/model`, `client/particle`, `com/mojang/blaze3d` |
-| XII · World generation | `world/level/levelgen`, `world/level/biome`, `world/level/levelgen/structure` |
-| XIII · Commands and data packs | `net/minecraft/commands`, `server/commands`, `server/dialog`, `net/minecraft/advancements`, `net/minecraft/gametest`, `world/scores` |
+{{#include ../generated/parts.md}}
 
 ## The table
 

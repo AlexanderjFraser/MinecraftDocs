@@ -20,8 +20,13 @@ entry is taken by the pass its kind belongs to:*
 *A session strikes an entry (`~~…~~`) when it settles it, whichever pass it
 is in; an entry a later pass finds already overtaken by an earlier pass's
 rewrite is struck with a word saying so. Every claim a session introduces
-while acting on an entry goes to [pass9.md](pass9.md). Below: the original
-preface, the standing items, then the entries, newest first.*
+while acting on an entry goes to [pass9.md](pass9.md). `tools/pass5_queue.py`
+reads this file by kind and by page, guessing each entry's kind from the
+section it sits under and its words and marking a guess with `?`; a tag
+`[kind=book]`, `[kind=lecture]`, `[kind=figure]` or `[kind=voice]` anywhere
+in an entry settles its kind, and a session tags the entries it finds
+misrouted as it reads them. Below: the original preface, the standing items,
+then the entries, newest first.*
 
 ---
 

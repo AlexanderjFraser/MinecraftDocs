@@ -6,13 +6,16 @@ figures that the pages under src/maps/ include.
 Usage:
     python tools/map_source.py             # (re)write everything under src/generated/
     python tools/map_source.py packages    # print one view's table to stdout instead
-    python tools/map_source.py biggest | fanin | hierarchy
+    python tools/map_source.py biggest | fanin | hierarchy | parts
 
 What is written (nothing under src/generated/ is hand-edited):
     packages-depth3.md, packages-depth4.md   class + line counts per package, client-only vs shared
     biggest.md                               the largest classes by line count
     fanin.md                                 the most-imported classes (the hubs), libraries included
     hierarchy-classes.md, hierarchy-interfaces.md   the widest inheritance trees, by root kind
+    parts.md                                 the thirteen parts as package sets (PARTS below), with their totals
+    part-<dir>.md                            one phrase per part, "**N classes and M lines**", no trailing
+                                             newline, for a landing page to {{#include}} mid-sentence
     packages-treemap.svg                     the jar as a treemap: area = lines, colour = jar, hatch = skipped
     biggest.svg, fanin.svg                   the two tables above as bars
     tree-<Root>.svg                          the class hierarchy under each root in TREE_ROOTS, with counts
@@ -56,6 +59,95 @@ SKIPPED = (
 # The hierarchies drawn as trees, in the order the parts teach them.
 TREE_ROOTS = ("Entity", "Block", "Item", "Screen", "EntityRenderState")
 TREE_DEPTH = 3
+
+# The thirteen parts as sets of packages — the *where each part lives* table on
+# src/maps/packages.md, made the authority (pass-5 planning session). Each entry
+# is a directory under src/systems, the part's numeral and title, and what the
+# part covers: `pkg` is the package and everything under it, `pkg/.` only the
+# files directly in it, `path/Class.java` one file, and `-pkg` subtracts a
+# sub-package another part owns. SKIPPED packages are never counted. A package two
+# parts share (server/level is Parts III and IV; client/multiplayer is IX and X)
+# is counted in both, and parts.md says so. From this one mapping the atlas writes
+# parts.md (the table) and part-<dir>.md (one phrase per part, "N classes and M
+# lines", for a landing page to {{#include}} inside its size sentence), and
+# tools/pass5_coverage.py reads the same mapping for the coverage question, so a
+# landing page's count and the coverage population can never disagree.
+PARTS = (
+    ("anatomy", "I", "Anatomy",
+     ("net/minecraft/client/main", "net/minecraft/client/Minecraft.java",
+      "net/minecraft/server/Main.java", "net/minecraft/server/MinecraftServer.java")),
+    ("foundations", "II", "Foundations",
+     ("net/minecraft/core", "net/minecraft/resources", "net/minecraft/tags", "net/minecraft/nbt",
+      "net/minecraft/server/packs", "net/minecraft/util", "net/minecraft/world/flag")),
+    ("server", "III", "The server",
+     ("net/minecraft/server/.", "net/minecraft/server/level", "net/minecraft/server/players",
+      "net/minecraft/server/dedicated")),
+    ("world", "IV", "The world",
+     ("net/minecraft/world/level/chunk", "net/minecraft/world/level/lighting", "net/minecraft/world/ticks",
+      "net/minecraft/world/level/gameevent", "net/minecraft/world/level/entity",
+      "net/minecraft/world/level/material", "net/minecraft/world/attribute", "net/minecraft/world/timeline",
+      "net/minecraft/world/clock", "net/minecraft/world/level/border", "net/minecraft/server/level")),
+    ("blocks", "V", "Blocks",
+     ("net/minecraft/world/level/block", "net/minecraft/world/level/redstone")),
+    ("entities", "VI", "Entities",
+     ("net/minecraft/world/entity", "-net/minecraft/world/entity/player", "net/minecraft/network/syncher",
+      "net/minecraft/world/level/pathfinder", "net/minecraft/world/damagesource", "net/minecraft/world/effect")),
+    ("items", "VII", "Items and inventories",
+     ("net/minecraft/world/item", "net/minecraft/world/inventory", "net/minecraft/world/level/storage/loot")),
+    ("player", "VIII", "The player",
+     ("net/minecraft/world/entity/player", "net/minecraft/world/food",
+      "net/minecraft/server/level/ServerPlayer.java", "net/minecraft/client/player")),
+    ("networking", "IX", "Networking",
+     ("net/minecraft/network", "-net/minecraft/network/syncher", "net/minecraft/server/network",
+      "net/minecraft/client/multiplayer")),
+    ("client", "X", "The client",
+     ("net/minecraft/client/.", "net/minecraft/client/gui", "net/minecraft/client/multiplayer",
+      "net/minecraft/client/sounds", "net/minecraft/client/resources", "net/minecraft/client/player",
+      "net/minecraft/client/input", "net/minecraft/client/server")),
+    ("rendering", "XI", "Rendering",
+     ("net/minecraft/client/renderer", "net/minecraft/client/model", "net/minecraft/client/particle",
+      "com/mojang/blaze3d")),
+    ("worldgen", "XII", "World generation",
+     ("net/minecraft/world/level/levelgen", "net/minecraft/world/level/biome")),
+    ("commands", "XIII", "Commands and data packs",
+     ("net/minecraft/commands", "net/minecraft/server/commands", "net/minecraft/server/dialog",
+      "net/minecraft/server/permissions", "net/minecraft/server/bossevents", "net/minecraft/advancements",
+      "net/minecraft/gametest", "net/minecraft/world/scores", "net/minecraft/client/gui/screens/dialog")),
+)
+
+
+def in_part(rel: str, spec: tuple) -> bool:
+    """Is the file at `rel` (e.g. net/minecraft/world/level/chunk/LevelChunk.java) in the part?"""
+    if is_skipped(rel.rsplit("/", 1)[0]):
+        return False
+    hit = False
+    for entry in spec:
+        neg = entry.startswith("-")
+        e = entry[1:] if neg else entry
+        if e.endswith(".java"):
+            match = rel == e
+        elif e.endswith("/."):
+            match = rel.rsplit("/", 1)[0] == e[:-2]
+        else:
+            match = rel == e or rel.startswith(e + "/")
+        if match:
+            hit = not neg
+    return hit
+
+
+def part_files(files, spec: tuple):
+    """[(rel, text, shared)] of the decompile that the part covers."""
+    return [(rel, text, shared) for rel, text, shared in files if in_part(rel, spec)]
+
+
+def part_rows(files):
+    """[(dir, numeral, title, classes, client_only, lines, spec)] in book order."""
+    rows = []
+    for d, numeral, title, spec in PARTS:
+        mine = part_files(files, spec)
+        rows.append((d, numeral, title, len(mine), sum(0 if s else 1 for _r, _t, s in mine),
+                     sum(t.count("\n") for _r, t, _s in mine), spec))
+    return rows
 
 DECL = re.compile(
     r"^[ \t]*(?:public |protected |private |abstract |final |static |sealed |non-sealed )*"
@@ -262,6 +354,38 @@ def md_hierarchy(files, kinds):
     out = ["| root | descendants | direct | kind | where |", "|---|---:|---:|---|---|"]
     out += [f"| `{name}` | {d} | {c} | {kind} | `{where}` |" for d, c, name, kind, where in hierarchy_rows(files, kinds)]
     return "\n".join(out) + "\n"
+
+
+def spec_text(spec: tuple) -> str:
+    """The part's package set as the table shows it: `pkg`, `pkg` (itself only), `Class`, minus `pkg`."""
+    out = []
+    for entry in spec:
+        neg = entry.startswith("-")
+        e = entry[1:] if neg else entry
+        short = e.replace("net/minecraft/", "")
+        if e.endswith(".java"):
+            cell = f"`{short[:-5].rsplit('/', 1)[-1]}`"
+        elif e.endswith("/."):
+            cell = f"`{short[:-2]}` (itself only)"
+        else:
+            cell = f"`{short}`"
+        out.append(("minus " if neg else "") + cell)
+    return ", ".join(out)
+
+
+def md_parts(files):
+    out = ["| part | packages | classes | client-only | lines |", "|---|---|---:|---:|---:|"]
+    total = [0, 0, 0]
+    for d, numeral, title, n, c, l, spec in part_rows(files):
+        out.append(f"| {numeral} · {title} | {spec_text(spec)} | {fmt(n)} | {fmt(c)} | {fmt(l)} |")
+        total[0] += n; total[1] += c; total[2] += l
+    out.append(f"| **the thirteen parts, with the shared packages counted twice** | | {fmt(total[0])} | {fmt(total[1])} | {fmt(total[2])} |")
+    return "\n".join(out) + "\n"
+
+
+def part_phrase(n: int, l: int) -> str:
+    """The size sentence's payload, for a landing page to include: `**473 classes and 43,896 lines**`."""
+    return f"**{fmt(n)} classes and {fmt(l)} lines**"
 
 
 # ----------------------------------------------------------------------------
@@ -523,6 +647,19 @@ def main():
             print(md_fanin(files))
         elif view == "hierarchy":
             print(md_hierarchy(files, ("class",))); print(md_hierarchy(files, ("interface",)))
+        elif view == "parts":
+            print(md_parts(files))
+        elif view == "probe":
+            # the PARTS grammar does what its comment says: recursive, itself-only, one file, subtract, skipped
+            spec = ("net/minecraft/server/.", "net/minecraft/world/entity", "-net/minecraft/world/entity/player",
+                    "net/minecraft/client/Minecraft.java")
+            cases = [("net/minecraft/server/MinecraftServer.java", True), ("net/minecraft/server/level/ServerLevel.java", False),
+                     ("net/minecraft/world/entity/Entity.java", True), ("net/minecraft/world/entity/monster/Zombie.java", True),
+                     ("net/minecraft/world/entity/player/Player.java", False), ("net/minecraft/client/Minecraft.java", True),
+                     ("net/minecraft/client/Options.java", False), ("net/minecraft/util/datafix/Old.java", False)]
+            bad = [(rel, want) for rel, want in cases if in_part(rel, spec) != want]
+            print("probe: OK" if not bad else f"PROBE FAILED: {bad}")
+            sys.exit(1 if bad else 0)
         else:
             sys.exit(__doc__)
         return
@@ -532,6 +669,13 @@ def main():
     write("fanin.md", md_fanin(files))
     write("hierarchy-classes.md", md_hierarchy(files, ("class",)))
     write("hierarchy-interfaces.md", md_hierarchy(files, ("interface",)))
+    write("parts.md", md_parts(files))
+    for d, _numeral, _title, n, _c, l, _spec in part_rows(files):
+        # no trailing newline: the phrase is included mid-sentence by a landing page
+        os.makedirs(GEN, exist_ok=True)
+        with open(os.path.join(GEN, f"part-{d}.md"), "w", encoding="utf-8", newline="\n") as fh:
+            fh.write(part_phrase(n, l))
+        print(f"wrote src/generated/part-{d}.md")
     write("packages-treemap.svg", svg_treemap(files))
     write("biggest.svg", svg_biggest(files))
     write("fanin.svg", svg_fanin(files))
