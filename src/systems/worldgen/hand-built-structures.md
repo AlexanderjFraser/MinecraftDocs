@@ -35,7 +35,7 @@ constructing its own neighbours.
 | class | its role |
 |---|---|
 | `StructurePiece` | the base, and the reason the system holds together: a **mutable** `BoundingBox`, an orientation, a mirror, a rotation, a depth, and a piece type |
-| `StructurePiece.placeBlock` | the single write choke point — converts to world coordinates, drops anything outside the chunk box it was handed, applies the piece's mirror and rotation *to the block state*, and schedules a fluid tick if it displaced one |
+| `StructurePiece.placeBlock` | the conventional write path — converts to world coordinates, drops anything outside the chunk box it was handed, applies the piece's mirror and rotation *to the block state*, and schedules a tick for whatever fluid is at the position **after** the write. Not a choke point: the structure classes call `LevelWriter.setBlock` on the level directly two dozen times |
 | `StructurePiece.BlockSelector` | a stateful per-block state chooser, and the entire visual character of a structure |
 | `StructurePieceAccessor` | eleven lines, two methods, and `StructurePiece.findCollisionPiece` is a **linear scan returning the first overlapping box**. There is no spatial index |
 | `StructurePiecesBuilder` | accumulates the pieces, and can move all of them vertically at once |
@@ -85,7 +85,9 @@ of a stronghold. `JungleTemplePiece.MossStoneSelector` is the other one.
 All of this runs at `ChunkStatus.STRUCTURE_STARTS`, inside the same
 `Structure.GenerationStub` consumer the jigsaw assembler runs in — so the
 whole graph is built in memory, on a worldgen worker, with no world access
-and no blocks written.
+and no blocks written. One structure skips the consumer:
+`MineshaftStructure.findGenerationPoint` hands the stub a builder it has
+already filled, which is the only *Either.right* in the game.
 
 ```mermaid
 sequenceDiagram
@@ -146,7 +148,7 @@ and a stronghold library falls back from its tall variant to its short one.
 |---|---|---|
 | **procedural piece graphs** | the pieces write their own blocks and construct their own neighbours — the pattern in its pure form | `StrongholdPieces`, `MineshaftPieces`, `NetherFortressPieces` |
 | **grid and graph solvers** | a layout is *solved* first and pieces are emitted afterwards, so neither ever calls `StructurePieceAccessor.findCollisionPiece` — the layout **is** the collision guarantee | `WoodlandMansionPieces`, `OceanMonumentPieces` |
-| **template-backed pieces** | procedural placement, `.nbt` content, and therefore the same processors and the same `StructureTemplate.placeInWorld` the jigsaw path uses | `EndCityPieces`, `RuinedPortalPiece`, `OceanRuinPieces`, `ShipwreckPieces`, `IglooPieces`, `NetherFossilPieces`, `BuriedTreasurePieces` |
+| **template-backed pieces** | procedural placement, `.nbt` content, and therefore the same processors and the same `StructureTemplate.placeInWorld` the jigsaw path uses | `EndCityPieces`, `RuinedPortalPiece`, `OceanRuinPieces`, `ShipwreckPieces`, `IglooPieces`, `NetherFossilPieces`, `WoodlandMansionPieces` |
 | **one-shot surface buildings** | no graph and no children: one box, dropped on the ground, over `ScatteredFeaturePiece` | `DesertPyramidPiece`, `JungleTemplePiece`, `SwampHutPiece` |
 
 The nether fortress is the most elaborate of the first family: it runs *two*
@@ -194,16 +196,25 @@ likelier the longer the bridge gets, with at most one per city.
 **Ruined portal decay is a processor stack, not code.** The rot, the
 gold-block gaps, the lava-to-magma substitutions and the mossiness are
 `StructureProcessor`s assembled per portal and stored in the saved piece, so
-decay reproduces exactly on reload — and every one of those processors is
-shared with the jigsaw path
-([jigsaw and templates](jigsaw-and-templates.md)).
+decay reproduces exactly on reload. Only some of that stack is shared with the
+jigsaw path ([jigsaw and templates](jigsaw-and-templates.md)):
+`BlockAgeProcessor` — which is the mossiness, not a separate step —
+`LavaSubmergedBlockProcessor` and `BlackstoneReplaceProcessor` are built in
+`RuinedPortalPiece` and appear in no data pack at all. The forty shipped
+processor lists between them use four types: rule, protected blocks, block rot
+and capped.
 
 ## Questions players ask
 
-**Why does `/locate stronghold` point at the portal rather than the
-entrance?** Because the portal room's entire `StructurePiece.addChildren`
-body is a record of itself on the start piece — and that record is both the
-regeneration loop's exit condition and what the command reports.
+**Does `/locate stronghold` point at the portal?** No — at the corner of the
+start chunk. `ChunkGenerator.findNearestMapStructure` returns
+`StructurePlacement.getLocatePos`, which is the chunk's minimum block plus the
+placement's own offset, and the eye of ender takes the same answer. The
+stronghold *does* keep a portal-room pointer —
+`StrongholdPieces.StartPiece.getLocatorPosition` overrides the base method to
+return it — but nothing in 26.2 calls that method. What the pointer is really
+for is the regeneration loop's exit condition: the portal room's entire
+`StructurePiece.addChildren` body is a record of itself on the start piece.
 
 **Would two strongholds generating at once interfere?** In principle, yes,
 and visibly so. `StrongholdPieces` keeps its remaining-piece list, its
