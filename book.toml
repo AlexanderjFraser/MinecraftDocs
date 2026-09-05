@@ -17,6 +17,10 @@ command = "mdbook-mermaid"
 default-theme = "light"
 preferred-dark-theme = "navy"
 git-repository-url = "https://github.com/AlexanderjFraser/MinecraftDocs"
+# Makes the 404 page's links and assets absolute, so a miss under a nested URL
+# (Cloudflare Pages serves 404.html for any missing path) is still styled and
+# navigable. Every other page is unaffected.
+site-url = "/"
 additional-js = ["mermaid.min.js", "mermaid-init.js", "diagram-zoom.js", "site-footer.js"]
 # Wider column for tables/diagrams, prose capped at 800px, identifiers wrap
 # in table cells (pass 3, planning session).

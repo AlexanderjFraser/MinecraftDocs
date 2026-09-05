@@ -1,0 +1,12 @@
+<!-- Open Graph and Twitter-card metadata, so a page shared in Discord, Reddit
+     or X unfurls with a title and a description. mdBook 0.5 includes
+     theme/head.hbs inside <head> on every page; everything else in the theme
+     is mdBook's default. {{ title }} is "page - book"; {{ description }} is
+     book.toml's, since mdBook has no per-page description. -->
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="How Java Minecraft Works">
+<meta property="og:title" content="{{ title }}">
+<meta property="og:description" content="{{ description }}">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{{ title }}">
+<meta name="twitter:description" content="{{ description }}">

@@ -13,9 +13,12 @@ version (26.2), written as the notes for a video lecture series.
   `tools/verify_names.py` proves every named identifier exists there, and
   `tools/check_mermaid.js` proves every diagram renders.
 
-The work is in passes: a rough draft, an adversarial fact-check of every
-claim, a restructuring pass (current), a second fact-check, polish, and the
-owner's own read. [docs/plan.md](docs/plan.md) is the roadmap (the passes,
+The work is in ten passes: a rough draft, an adversarial fact-check of
+every claim, a restructuring pass and a second fact-check (all four done);
+then four passes of restructuring and refinement with one lens each — the
+book, the lecture, the figures, the voice (the book pass is next) — a third
+fact-check, and a last polish, after which the site is finished. The owner
+reads alongside. [docs/plan.md](docs/plan.md) is the roadmap (the passes,
 the current pass's charter and schedule, the session log).
 [TEMPLATE.md](TEMPLATE.md) is the page spec: the menu of shapes and the lane key. Built with mdBook
 (`mdbook serve`); deployed by `tools/deploy.sh` to
@@ -25,8 +28,8 @@ the current pass's charter and schedule, the session log).
 
 Corrections are the contribution this project wants most. The pages are
 written in passes and every claim is fact-checked against the decompile, but
-pass 2 found at least one wrong claim on every page, so there are certainly
-more.
+passes 2 and 4 each found at least one wrong claim on every page, so there
+are certainly more.
 
 **Open an issue**, and cite the decompile — the class and method that show
 the page is wrong. That is enough; the fix goes into the current pass.

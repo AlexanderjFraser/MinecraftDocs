@@ -5,8 +5,8 @@ stable content. Each part's landing page lists its lectures in watching
 order; this page assembles them and states the dependencies between parts
 — where a later part is assumed by an earlier one, and what to watch first
 because of it. It was drafted in pass 3, one part per session, and is
-confirmed by the owner in pass 6 after reading every part with the
-decompile open. Nothing in [Reference](reference/README.md) is watched, and
+confirmed by the owner, who reads every part with the
+decompile open, before anything is recorded. Nothing in [Reference](reference/README.md) is watched, and
 nothing in the [maps](maps/README.md) is: the maps are looked at once, the
 reference pages are looked up, and a lecture links into them wherever a
 viewer would pause the video to read a table.

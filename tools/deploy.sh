@@ -14,4 +14,5 @@ python tools/check_deps.py --quiet   # the landing pages, the lecture table and 
 mdbook build
 node tools/check_mermaid.js --no-build   # every diagram parses under the site's own mermaid (needs `npm install` in tools/ once)
 python tools/llms_full.py   # book/llms-full.txt: the whole corpus in one file for agents
+python tools/site_index.py   # book/sitemap.xml (for search engines; src/robots.txt points at it) and book/llms.txt (the index form, one line per page)
 wrangler pages deploy book --project-name=minecraftdocs --branch="${1:-main}" --commit-dirty=true

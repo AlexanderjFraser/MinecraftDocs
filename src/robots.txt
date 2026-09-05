@@ -1,0 +1,9 @@
+# Everything here is meant to be read, by people and by agents: the book is
+# CC BY-SA 4.0 and the whole of it is one file at /llms-full.txt (index at
+# /llms.txt). Cloudflare prepends its content-signals preamble to this file
+# at the edge; the signals themselves are unset, which grants and restricts
+# nothing. mdBook copies this file from src/ into the built site.
+User-agent: *
+Allow: /
+
+Sitemap: https://minecraftdocs.dev/sitemap.xml
