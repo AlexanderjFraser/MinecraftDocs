@@ -531,8 +531,8 @@ about — but neither of the first two floors is optional for any of them.
 1. [Brigadier and commands](systems/commands/brigadier-and-commands.md) —
    three parsers see one string and two of them throw the answer away. The
    client runs a real dispatcher built from a tree the server sent, which is
-   why an item id completes instantly — and why the fifty-nine argument nodes
-   that do ask the server feel like all three hundred and fifty-nine.
+   why an item id completes instantly — and why the sixty-two argument nodes
+   that do ask the server feel like all four hundred and fifty-nine.
 2. [Permissions](systems/commands/permissions.md) — the biggest API break in
    the book: a permission is no longer an integer. An operator does not have
    everything, a permission failure is reported as a typo, and the client's

@@ -13,8 +13,8 @@ on every keystroke, throws the parse away, and sends the string.
 Which raises the question this page exists to answer: if the client can
 parse the command, why is completing an item id instant and completing a
 loot table not? Because the tree the client rebuilt says, node by node, who
-is allowed to answer. Vanilla registers **359 argument nodes**, and only
-**59** of them serialise as *ask the server* — so the local path is the
+is allowed to answer. Vanilla registers **459 argument nodes**, and only
+**62** of them serialise as *ask the server* — so the local path is the
 rule, not the exception. What makes the round trip feel ubiquitous is
 *which* nodes take it: they are the ones that complete over data the client
 was never sent.
@@ -82,10 +82,10 @@ that the round trip is common, but that opting *in* to a provider is what
 costs you one. `SuggestionProviders.getName` returns the registered name for
 a `SuggestionProviders.RegisteredSuggestion` and *ask_server* **for
 everything else**, so any node whose suggestions come from a plain lambda
-serialises as a request. Of the **64** vanilla nodes that attach a provider
-at all, five name one of the three registered providers and the other **59**
+serialises as a request. Of the **67** vanilla nodes that attach a provider
+at all, five name one of the three registered providers and the other **62**
 become *ask_server*. That is how `/function`, `/datapack`, `/bossbar`,
-`/scoreboard`, `/team`, `/schedule` and `/whitelist` complete. The other 295
+`/scoreboard`, `/team`, `/schedule` and `/whitelist` complete. The other 392
 argument nodes attach nothing and fall back to their argument type's own
 suggestions — which is why `/give`, the command in the line at the top of
 this page, never asks the server anything. A second route reaches the same packet:
@@ -249,7 +249,7 @@ here is the index.
 
 | command | what it really reaches | where that lives |
 |---|---|---|
-| `LocateCommand` | two barely related halves: `LocateCommand.locateStructure` can **drive world generation on the server thread**, because deciding whether a structure is at a chunk means asking the structure check; `LocateCommand.locateBiome` asks the biome source and never reads a stored palette | [structure placement](../worldgen/structure-placement.md), [biomes](../worldgen/biomes.md) |
+| `LocateCommand` | three barely related parts: `LocateCommand.locateStructure` can **drive world generation on the server thread**, because deciding whether a structure is at a chunk means asking the structure check; `LocateCommand.locateBiome` asks the biome source and never reads a stored palette; `LocateCommand.locatePoi` asks the POI index | [structure placement](../worldgen/structure-placement.md), [biomes](../worldgen/biomes.md) |
 | `FillBiomeCommand` | writes the biome palette of the affected sections and resends them — the only command that edits a chunk's biomes | [chunk anatomy](../world/chunk-anatomy.md) |
 | `PlaceCommand` | four doors: a configured feature with no placement layer, a whole structure, jigsaw assembly directly, and a structure template with rotation, mirror, integrity and a seed | [features and placement](../worldgen/features-and-placement.md), [jigsaw and templates](../worldgen/jigsaw-and-templates.md) |
 | `LootCommand`, `ItemCommands` | `ItemCommands.applyModifier` runs a loot *function* over an existing stack — `/item modify`, and the `from … <modifier>` form of `/item replace`. Both take a table or modifier through `ResourceOrIdArgument`, so an inline literal works where an id does | [loot tables](../items/loot-tables.md) |

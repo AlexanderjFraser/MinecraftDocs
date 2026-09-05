@@ -29,7 +29,7 @@ one layer among several rather than the owner
 | `LevelChunkSection` | where the answer lives: a second `PalettedContainer` keyed by biome holder, two bits per axis | written once, saved, shipped |
 | `BiomeManager` | the jitter — which biome this *block* gets, as opposed to which cell it is in | every gameplay read |
 | `Biome` | five things: climate settings, an `EnvironmentAttributeMap`, `BiomeSpecialEffects`, generation settings and mob settings | — |
-| `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music and the gameplay switches — as *modifiers*, not values. Twenty gameplay attributes exist; a vanilla biome file sets three of them | per attribute, per read |
+| `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music and the gameplay switches — as *modifiers*, not values. Twenty gameplay attributes exist; the sixty-six vanilla biome files touch three of them between them, and fifty-one touch none | per attribute, per read |
 
 ## The trace: a chunk's biomes
 

@@ -82,7 +82,7 @@ machine.
 
 1. [Brigadier and commands](brigadier-and-commands.md) — three parsers for
    one string, and a tab-completion whose fast path never leaves the
-   machine. Also: which fifty-nine of the three hundred and fifty-nine
+   machine. Also: which sixty-two of the four hundred and fifty-nine
    argument nodes do leave it, and why they feel like all of them.
 2. [Permissions](permissions.md) — the biggest API break in the game since
    the flattening. A permission is no longer an integer, an operator does

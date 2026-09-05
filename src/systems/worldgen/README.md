@@ -67,16 +67,16 @@ to watch. They disagree on purpose — and the dashed arrow disagrees most, sinc
 the world was created before a single chunk was, and its page is told tenth. A structure is *decided* two statuses
 before the biomes and the terrain it will stand in exist — it asks the
 generator directly for the numbers it needs rather than reading a chunk — and
-it writes its blocks four statuses after the terrain is cut, inside the
+it writes its blocks three statuses after the terrain is cut, inside the
 decoration step. Putting
 the three structure pages last keeps that whole arc in one place, at the cost
-of one forward topic: five of the six pages before them reach for the
-beardifier — three by link, two by name — before the page that owns it.
+of one forward topic: three of the six pages before them reach for the
+beardifier — two by link, one by name — before the page that owns it.
 
-The substrate arrow means *is made of*, not *happens before*. Four of the
-nine pages below it are consumers of the density graph — the biome sampler is
-six of its functions, the aquifer is four more, ore veins are three, and the
-beardifier is a node the chunk splices in. The decoration and structure
+The substrate arrow means *is made of*, not *happens before*. Four consumers,
+spread over three of the nine pages below it, take the density graph — the
+biome sampler is six of its functions, the aquifer is four more, ore veins are
+three, and the beardifier is a node the chunk splices in. The decoration and structure
 packages never mention `DensityFunction` at all; they reach the substrate only
 through the beardifier and the heights the generator hands them.
 
@@ -92,8 +92,8 @@ forward ones.
 [The chunk generation pipeline](../world/chunk-generation-pipeline.md) from
 Part IV, and not optionally. It is the only page that says *when* any of this
 runs, what the twelve chunk statuses are, how the dependency pyramid keeps
-neighbours out of each other's way, and which thread each step is on. Seven
-of the ten pages here name a status, and four of them open on one.
+neighbours out of each other's way, and which thread each step is on. Eight
+of the ten pages here name a status, and two of them open on one.
 
 [Chunk anatomy](../world/chunk-anatomy.md), for what is being written into —
 sections, the two paletted containers, and the heightmaps the terrain steps
