@@ -29,16 +29,16 @@ against is [the window](the-window.md), the frame [the frame](the-frame.md).
 | `RenderPass` | that the pipeline matches the attachments before a draw is allowed | Render thread |
 | `GpuSurface` | how a finished frame reaches the screen, and what vsync means | Render thread |
 | `RenderPipeline` | how to rasterise: shaders, blend, depth, cull, topology — declared, never called | declaration only, read on the Render thread |
-| `BufferBuilder` | vertex data, and the one part of Blaze3D not on the render thread | worker threads |
+| `BufferBuilder` | vertex data — on the render thread, except the one instance chunk meshing runs | Render thread, and the meshing workers |
 
-## Four objects with a façade, and one without
+## Four objects the game only touches through a façade
 
 Four concrete, validating classes sit in `blaze3d/systems`, each over one thin
 per-backend interface: the game holds the left column below, never the right.
 
 ```mermaid
 flowchart TB
-    GB["GpuBackend — GLFW window hints, window-creation errors, and it creates the device. The one interface with no facade"]
+    GB["GpuBackend — GLFW window hints, window-creation errors, and it creates the device. The one the game names and never wraps"]
     subgraph F["what the game holds: the facade in blaze3d/systems, concrete and validating"]
       GD["GpuDevice"]
       CE["CommandEncoder"]
@@ -91,7 +91,10 @@ nothing.
 Underneath, the backend throws on its own account: `GlBuffer` for a buffer
 mapped without persistent-mapping support, unreadably, unwritably or over two
 gigabytes, and `GlDevice` `GpuOutOfMemoryException` on a failed allocation.
-Those are not development-only, as several of the façade's own checks are.
+And it is the backends, not the façade, that keep the development-only
+checks: the only validation in this whole tree gated on running from an IDE
+is in `GlRenderPass` and `VulkanRenderPass`. Everything the façade asserts,
+it asserts in a shipped game.
 
 The thread assertions are not where a reader expects them either.
 `RenderSystem.assertOnRenderThread` is called from eleven classes, eight of
@@ -111,8 +114,10 @@ leaks upward in two places, not one: `RenderPass` imports two Vulkan
 indirect-command structs to use their size when validating an indirect buffer,
 and the loader probe imports Vulkan too, while `BackendCreationException` in
 `blaze3d/systems` carries seven Vulkan-named failure reasons. The two exemptions
-are one, granted twice. Graphics is not all of it either: `com/mojang/blaze3d/audio`
-is the OpenAL wrapper — see [the sound engine](../client/sound-engine.md).
+are one, granted twice. Graphics is not all of it either, and neither is the
+render thread: `com/mojang/blaze3d/audio` is the OpenAL wrapper and runs on
+the sound engine's own thread — see [the sound
+engine](../client/sound-engine.md).
 
 ## Vulkan is not a stub
 
@@ -126,7 +131,7 @@ extensions, nine required features, and vendor-specific GPU crash breadcrumbs in
 `VulkanBackend.checkBackendAvailable` says why it is unavailable, though only
 the default preference consults it.
 
-The backends differ in six of the seven `DeviceFeatures` flags, and only one
+The backends differ in **all seven** `DeviceFeatures` flags, and only one
 difference is symmetric: Vulkan hardcodes five flags true that OpenGL derives
 from extensions, and the mirrored pair is the two direct multi-draw flavours,
 where OpenGL has the separate one and never the interleaved one and Vulkan the
@@ -188,17 +193,20 @@ quad buffer, a line buffer with different winding, and a one-to-one buffer.
 
 Per-draw uniform data does not come from per-draw uniform calls; it is carved
 out of ring buffers. `DynamicUniforms` and `DynamicUniformStorage` hand out
-`GpuBufferSlice`s of a `MappableRingBuffer` reset once a frame,
-`GlobalSettingsUniform` and `ProjectionMatrixBuffer` do the same for the
-frame-wide values, and per-frame scratch comes from `TransientMemory` — one
+`GpuBufferSlice`s of a `MappableRingBuffer` reset once a frame, while
+`GlobalSettingsUniform` and `ProjectionMatrixBuffer` hold one buffer apiece
+and rewrite it in place, which is all a frame-wide value needs. Per-frame
+scratch comes from `TransientMemory` — one
 interface, two large implementations over the shared `TransientBlockAllocator`.
 Blocks are packed by hand with `Std140Builder`, sized by `Std140SizeCalculator`.
 
 Vertex data is described by `VertexFormat` and `VertexFormatElement` (a plain
 record of name, offset and `GpuFormat`) with the standard layouts in
 `DefaultVertexFormat`, and built with `ByteBufferBuilder` and `BufferBuilder`
-into a `MeshData`. This is the one part of Blaze3D not on the render thread:
-chunk meshing runs `BufferBuilder` on worker threads and stages the result
+into a `MeshData`. Most `BufferBuilder`s are on the render thread like
+everything else here; the exception is the one that matters most for
+throughput, because chunk meshing runs `BufferBuilder` on worker threads and
+stages the result
 through `StagedVertexBuffer` and `UberGpuBuffer` into a `StagingBuffer`, which
 is why `SectionRenderDispatcher` has a spin-wait guarded by
 `RenderSystem.isOnRenderThread`. Render targets are `RenderTarget`,
@@ -210,9 +218,10 @@ frame graph](visibility-and-the-frame-graph.md).
 ## Shaders, and the reflection that checks them
 
 `ShaderManager` loads shader sources and hands them to a backend through
-`ShaderSource`, and before either backend sees one the shared
-`GlslPreprocessor` resolves its *moj_import* directives and injects the
-`ShaderDefines`. The Vulkan side goes further than compiling: `GlslCompiler`
+`ShaderSource`. `ShaderManager` resolves the *moj_import* directives at load
+time, before a backend sees anything; the `ShaderDefines` are injected later
+and inside each backend, by the same shared `GlslPreprocessor` at the moment
+a program is compiled. The Vulkan side goes further than compiling: `GlslCompiler`
 runs the GLSL through shaderc to SPIR-V and `IntermediaryShaderModule`
 *reflects* the result with spirv-cross, enumerating `SpvUniformBuffer`s and
 `SpvSampler`s — which is what lets a declared `BindGroupLayout` be checked
@@ -246,8 +255,8 @@ sequenceDiagram
     GlCE->>GlCE: glDrawElementsInstancedBaseVertex
     Game->>RP: close — debug groups must balance
     RP->>CE: submitRenderPass
-    Note over GpuS: end of frame
-    Game->>GpuS: acquireNextTexture, blitFromTexture of the main target, present
+    Note over GpuS: the surface, at the two ends of the frame
+    Game->>GpuS: acquireNextTexture at the top of renderFrame, then blitFromTexture of the main target and present at the bottom
 ```
 
 Everything above the `GlCommandEncoder` lane is validation or declaration.
