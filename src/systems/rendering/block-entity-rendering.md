@@ -32,7 +32,7 @@ differences, and they are larger than the shared machinery suggests.
 | `ClientLevel` | membership of the globally-rendered set, decided once when the block entity is added | Render thread |
 | `SpecialModelRenderer` | the thirteen shapes an item model cannot express, drawn without a block entity | Render thread |
 | `SpecialModelWrapper` | how an item model reaches one — the item road into `renderer/special` | Render thread |
-| `BuiltInBlockModels` | how a *block state* reaches one, in a model table terrain never reads | startup, once |
+| `BuiltInBlockModels` | how a *block state* reaches one, in a model table terrain never reads | a worker thread, on every resource reload |
 
 ## Three roads to the same collector
 
@@ -131,11 +131,14 @@ packs, and it is the one `SectionCompiler` reads: a chest is empty in it.
 `BuiltInBlockModels.createBlockModels`, which attaches a
 `SpecialBlockModelWrapper` to every state of every chest, banner, skull,
 shulker box, conduit, decorated pot, bell, enchanting table and end portal in
-the game. Nothing in terrain ever reads that table; `BlockModelResolver` does,
-and its callers are all entity renderers — item frames, block displays,
-minecart contents, the block an enderman is carrying. The same baked model
-therefore draws a full chest for a block display and nothing at all for
-terrain, because the terrain path takes only the quads.
+the game. Nothing in terrain ever reads that table — that is the whole of the
+separation, and it is membership rather than behaviour. `BlockModelResolver`
+is its one reader, and its callers are all entity renderers: item frames,
+block displays, minecart contents, the block an enderman is carrying. When one
+of them draws a chest it gets the quads **and** the special renderer, both,
+because that road draws whatever it finds; terrain simply never asks this
+table, and reads `BlockStateModelSet` instead, where the chest's entry is
+empty.
 
 ## Culling by section, not by frustum
 
@@ -156,11 +159,11 @@ about twenty-eight blocks of the camera or one that was empty before, so the
 gate only bites on distant terrain, which is exactly where you would blame the
 draw distance for it.
 
-The second is a distance test with the same name as the entity one and none of
-its behaviour. `EntityRenderer.shouldRender` takes a frustum and answers
-whether a box intersects it. `BlockEntityRenderer.shouldRender` takes a camera
-position and answers whether the block's centre is within
-`BlockEntityRenderer.getViewDistance`.
+The second is a distance test with the same name as the entity one and only
+half of its behaviour. `EntityRenderer.shouldRender` does a size-scaled
+distance test *and* a frustum intersection. `BlockEntityRenderer.shouldRender`
+keeps the distance half alone: a camera position, and whether the block's
+centre is within `BlockEntityRenderer.getViewDistance`.
 
 **Sixty-four blocks** — the default, taken by nineteen of the twenty-four
 renderer classes, and it does not scale with your render distance the way
@@ -216,16 +219,19 @@ bed renderer, and a corpus-wide search for the name finds only its own file.
 It is the only orphan in the package.
 
 Five states carry another pipeline's snapshot inside them, which is where the
-machines actually touch. `SpawnerRenderState.displayEntity` is a whole
+machines actually touch — and **two** of the five carry an *entity* state, not
+an item one. `SpawnerRenderState.displayEntity` is a whole
 `EntityRenderState`, extracted through `EntityRenderDispatcher` from a display
 entity the spawner creates client-side — a mob that `LevelExtractor` never
 sees, never frustum-tests, and whose light the spawner overwrites with the
-block's. The other four hold items: `ShelfRenderState.items` is an array of
-three `ItemStackRenderState`, so a chest resting on a shelf reaches
+block's. `VaultRenderState.displayItem` reads like the item cases and is not
+one: it is an `ItemClusterRenderState`, which extends `EntityRenderState`, and
+the vault submits it through `ItemEntityRenderer` — the same renderer that
+draws a dropped item lying on the ground. The three genuine item carriers are
+`ShelfRenderState.items`, an array of three `ItemStackRenderState` that reaches
 `ChestSpecialRenderer` from inside a block-entity render state, and
-`CampfireRenderState.items`, `BrushableBlockRenderState.itemState` and
-`VaultRenderState.displayItem` do the same for what is cooking, what is buried
-and what is on offer.
+`CampfireRenderState.items` and `BrushableBlockRenderState.itemState` for what
+is cooking and what is buried.
 
 One live handle survives into a snapshot, and it is not unique to this side:
 `MovingBlockRenderState` is a one-block fake world that holds the level's

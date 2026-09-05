@@ -12,8 +12,10 @@ arrives the scene goes grey and streaked. Five renderers make those colours —
 attribute worth, here, now?* The surprise is who they ask. **Most of them no
 longer know what time it is.** They ask a probe for a named value at a
 position and a partial tick, and the day/night curve behind it is keyframes in
-a data pack. Only two still read the raw world clock: the clouds, because they
-drift, and the weather, whose streaks are seeded from it.
+a data pack. Only one still reads the raw world clock — the clouds, because
+they drift — and the weather does not ask anybody: it seeds each column of
+rain from that column's own *coordinates*, and touches no attribute and no
+probe at all.
 
 ## The cast
 
@@ -55,14 +57,16 @@ by the renderer — which is why the sky colour slides and
 different curve must ask for a different attribute.
 
 **`ClientLevel` adds two layers of its own** on top of the four, and both are
-the **lightning** flash: one whitens `EnvironmentAttributes.SKY_COLOR`, the
+the **lightning** flash: one lerps `EnvironmentAttributes.SKY_COLOR` a fifth
+of the way towards a pale blue-white, the
 other pins `EnvironmentAttributes.SKY_LIGHT_FACTOR` to one while the flash
 lasts. Neither has anything to do with the End's sky flash, which never
 enters the stack at all.
 
 ### What the dimension type and the biome still carry
 
-Two record fields survived the migration. `DimensionType.skybox` is a
+Some of the old per-dimension and per-biome data survived the migration
+unchanged. `DimensionType.skybox` is a
 three-valued `DimensionType.Skybox` — `DimensionType.Skybox.NONE`,
 `DimensionType.Skybox.OVERWORLD`, `DimensionType.Skybox.END` — and it is a
 *branch*, not a colour. `BiomeSpecialEffects` still exists, hollowed out to
@@ -100,9 +104,9 @@ sequenceDiagram
 
     Note over Time,EAS: per client tick
     Time->>EAS: the keyframe tracks for this world time — SUN_ANGLE, SKY_COLOR, SKY_LIGHT_FACTOR
-    EAS->>EAS: invalidateTickCache — every non-positional value recomputes once
-    EAS->>EAP: tick — Gaussian biome blend, last becomes new, unread attributes evicted
+    EAP->>EAP: tick — Gaussian biome blend, last becomes new, unread attributes evicted, driven from Camera.tick
     LRSE->>LRSE: tick — flicker walk, then needsUpdate is raised
+    EAS->>EAS: invalidateTickCache, the last statement of ClientLevel.tick — marks the non-positional values stale, recomputing none of them
 
     Note over EAP,SR: per frame, extract
     LRSE->>EAP: getValue(SKY_LIGHT_FACTOR, BLOCK_LIGHT_TINT, AMBIENT_LIGHT_COLOR)
@@ -195,13 +199,16 @@ distances — a start and an end each for the medium and the horizon, then
 `EnvironmentAttributes.WATER_FOG_COLOR`,
 `EnvironmentAttributes.WATER_FOG_START_DISTANCE` and
 `EnvironmentAttributes.WATER_FOG_END_DISTANCE` instead. It owns one ring
-buffer, `FogRenderer.regularBuffer`, and a static `FogRenderer.emptyBuffer`
-filled with *infinitely far* for when fog is off.
+buffer, `FogRenderer.regularBuffer`, and beside it a second buffer of its
+own, `FogRenderer.emptyBuffer`, filled with *infinitely far* for when fog is
+off.
 
 **There is one fog UBO for the whole frame, not one per pass.**
 `LevelRenderer.render` takes a single slice and hands the same one to the
-sky, main, weather and always-on-top passes — and hands the clouds pass no
-fog at all. The sky and cloud fog ends are separate fields *inside that one
+sky, main, weather and always-on-top passes, and does not hand it to the
+clouds pass — which reads a cloud fog end out of the same buffer anyway,
+because the binding is sticky and the shader simply keeps reading what was
+last bound. The sky and cloud fog ends are separate fields *inside that one
 block*, which the shaders choose between, so what a player sees as
 per-element fog is a shader decision and not a binding.
 
@@ -212,9 +219,11 @@ The colour and the darkening come from different places.
 priority: `LavaFogEnvironment`, `PowderedSnowFogEnvironment`,
 `BlindnessFogEnvironment`, `DarknessFogEnvironment`, `WaterFogEnvironment`,
 and `AtmosphericFogEnvironment` **last**, which is what makes it the
-guaranteed fallback. `FogRenderer.computeFogColor` walks that list twice —
-once for the first environment whose `FogEnvironment.providesColor` is true,
-separately for the first whose `FogEnvironment.modifiesDarkness` is — whereas
+guaranteed fallback. `FogRenderer.computeFogColor` makes **one** pass down
+that list carrying two independent latches — it takes the colour from the
+first environment whose `FogEnvironment.providesColor` is true and the
+darkness from the first whose `FogEnvironment.modifiesDarkness` is, which need
+not be the same one — whereas
 `FogEnvironment.setupFog` stops at the first applicable one, and it and
 `FogEnvironment.isApplicable` are the class's only abstract methods.
 `MobEffectFogEnvironment` declares `FogEnvironment.providesColor` false on
@@ -255,21 +264,26 @@ End-flash fields: the sun angle, the moon phase, the sky colour and the dark
 disc are never sampled. And `EndFlashState` is not the dragon fight — it is a
 free-running flash on a six-hundred-tick cycle, seeded per interval for its
 offset, duration and angles, advanced by `EndFlashState.tick` in any dimension
-whose skybox is the End's. The sky is also skipped five ways:
-`LevelRenderer.addSkyPass` bails in lava, in powder snow, under blindness,
-under darkness, and when `DimensionType.Skybox` is *NONE* — the Nether — and
-`GameRenderer.renderLevel` suppresses it when a boss bar wants world fog,
-with `AtmosphericFogEnvironment.setupFog` clamping the fog hard in that case.
+whose skybox is the End's. The sky is also skipped five ways, four of them in one method:
+`LevelRenderer.addSkyPass` bails in lava, in powder snow, when
+`CameraRenderState` reports that a mob effect blocks the sky — which is
+blindness and darkness folded into one boolean before the method is entered —
+and when `DimensionType.Skybox` is *NONE*, which is the Nether. The fifth is
+outside it: `GameRenderer.renderLevel` suppresses the sky when a boss bar
+wants world fog, with `AtmosphericFogEnvironment.setupFog` clamping the fog
+hard in that case.
 
 ### The clouds, which get no fog and no texture
 
 The clouds are the first of the two exceptions: their colour and height are
 `EnvironmentAttributes.CLOUD_COLOR` and `EnvironmentAttributes.CLOUD_HEIGHT`,
 but their *drift* is raw world time. **And the cloud texture is never bound as
-a texture.** `CloudRenderer.prepare` reads the image on a worker and
-`CloudRenderer.apply` bakes it into `CloudRenderer.TextureData` through
+a texture.** `CloudRenderer.prepare` does the whole job on a worker — reading
+the image and baking it into `CloudRenderer.TextureData` through
 `CloudRenderer.packCellData`, one 64-bit word per pixel with the colour in the
-high bits and four neighbour-emptiness flags in the low four.
+high bits and four neighbour-emptiness flags in the low four — and
+`CloudRenderer.apply` is three lines on the client thread that install the
+result and raise the rebuild flag.
 `CloudRenderer.buildMesh` walks cells of `CloudRenderer.CELL_SIZE_IN_BLOCKS`,
 writing three bytes per face through `CloudRenderer.encodeFace` — a compressed
 *face list*, expanded to quads in the shader, with
@@ -299,13 +313,16 @@ next to `ClientLevel.animateTick`, which scatters
 ## What is not an attribute
 
 The migration was not total, which is why *everything is an attribute now*
-needs a qualifier. `DimensionType.ambientLight` — the floor under the
-lightmap's curve — and `DimensionType.cardinalLightType` are plain record
-fields, read directly. Block tint never moved at all: grass, foliage and water
+needs a qualifier. `DimensionType.ambientLight` and
+`DimensionType.cardinalLightType` are plain record fields, read directly —
+and the first of the two no longer reaches the lightmap at all: its two readers are
+`Lightmap.getBrightness`, the CPU-side duplicate this page has already said
+the shader does not use, and one deprecated method on `LevelReader`. Block tint never moved at all: grass, foliage and water
 are still `BiomeColors` reading `BiomeSpecialEffects` through the four
-`ColorResolver`s, with no probe and no layer stack in it. And the clouds and
-the weather still read the world clock, because a value sampled at the camera
-and lerped by partial tick is the wrong shape for a drift or a seed.
+`ColorResolver`s, with no probe and no layer stack in it. And the clouds still
+read the world clock, because a value sampled at the camera and lerped by
+partial tick is the wrong shape for a drift — while the weather reads neither
+clock nor attribute, seeding each column from its own coordinates.
 
 > **For a 1.21-era reader.** Nearly every per-dimension, per-biome,
 > per-time-of-day visual constant is an environment attribute now, so the
