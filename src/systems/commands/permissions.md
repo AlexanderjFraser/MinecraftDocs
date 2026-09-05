@@ -235,8 +235,8 @@ and read again by `ServerGamePacketListenerImpl` when the packet arrives.
 One constant, five references in four classes, two sides of the network: the
 exception that shows what the rule costs.
 
-> **For a 1.21-era reader.** `ServerPlayer.hasPermissions(int)` and
-> `CommandSourceStack.hasPermission(int)` are gone. The nearest thing is
+> **For a 1.21-era reader.** *ServerPlayer.hasPermissions(int)* and
+> *CommandSourceStack.hasPermission(int)* are gone. The nearest thing is
 > `PermissionSet.hasPermission(Permission)` reached through
 > `ServerPlayer.permissions` or `CommandSourceStack.permissions`, and the
 > names that survived the rewrite unchanged — `Commands.LEVEL_GAMEMASTERS`

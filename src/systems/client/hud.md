@@ -182,8 +182,7 @@ any list of fields.
 > **For a 1.21-era reader.** `Gui` is not the HUD any more. The class that
 > drew the hotbar and hearts is `Hud`; the name `Gui` was reused for the
 > screen and overlay manager that used to be fields on `Minecraft`. The
-> canonical path is `Gui.hud`. Every `Gui.render*` method is now
-> `Hud.extract*`, and gone with them: *LayeredDraw*, *Minecraft.screen*,
+> canonical path is `Gui.hud`. Every *render\** method on `Gui` is now an *extract\** on `Hud`, and gone with them: *LayeredDraw*, *Minecraft.screen*,
 > *Minecraft.getToastManager*, *Minecraft.fpsString*, *Options.hideGui*, and
 > *DebugScreenOverlay.render* along with its two information-gathering
 > methods — the line content moved out into the entry registry.

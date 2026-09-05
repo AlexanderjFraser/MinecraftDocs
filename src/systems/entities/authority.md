@@ -143,7 +143,7 @@ sequenceDiagram
     participant CL as ClientLevel
     participant LP as LocalPlayer
     participant AB as AbstractBoat
-    participant Wire as Wire
+    participant Wire as the network
     participant SGPL as ServerGamePacketListenerImpl
     participant SL as ServerLevel
     participant CPL as ClientPacketListener

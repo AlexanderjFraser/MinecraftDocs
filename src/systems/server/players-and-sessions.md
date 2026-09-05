@@ -165,7 +165,7 @@ sequenceDiagram
     participant SGPL as ServerGamePacketListenerImpl
     participant SL as ServerLevel
     participant CM as ChunkMap
-    participant Wire as the wire
+    participant Wire as the network
 
     Note over PL,Wire: in the scheduled packet processing at the top of a tick
     PL->>SGPL: new listener, inbound protocol to play, suspendFlushing

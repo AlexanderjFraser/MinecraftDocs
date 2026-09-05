@@ -258,7 +258,7 @@ before assuming a rename happened.
 returns a fresh JOML vector while `Direction.getUnitVec3f` returns the read-
 only shared one.
 
-**`SectionPos` has `x()` and `x(long)`,** instance and static, same name.
+**`SectionPos` has `SectionPos.x` as both an instance and a static method,** instance and static, same name.
 
 **`BlockUtil` is in `net/minecraft/util`, not `net/minecraft/core`;**
 `BlockBox`, `BlockMath` and `Cursor3D` are in `net/minecraft/core`.

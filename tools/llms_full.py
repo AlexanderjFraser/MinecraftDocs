@@ -19,7 +19,15 @@ def expand(text: str, page_dir: str) -> str:
         target = m.group(1).strip()
         path = os.path.normpath(os.path.join(page_dir, target))
         if target.endswith(".svg"):
-            return f"*(figure: {os.path.basename(target)} — a generated SVG on the site; the table below carries the same data)*"
+            # The claim used to be unconditional, and two pages carry no such table
+            # (the treemap on the introduction, the EntityRenderState tree). Where a
+            # sibling table exists, inline it; otherwise say the figure is only on the site.
+            sibling = path[:-4] + ".md"
+            if os.path.exists(sibling):
+                with open(sibling, encoding="utf-8") as fh:
+                    return (f"*(figure: {os.path.basename(target)} — a generated SVG on the site; its data follows)*"
+                            + "\n\n" + fh.read().rstrip("\n"))
+            return f"*(figure: {os.path.basename(target)} — a generated SVG, not reproduced here)*"
         with open(path, encoding="utf-8") as fh:
             return fh.read().rstrip("\n")
     return INCLUDE.sub(sub, text)

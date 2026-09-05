@@ -173,7 +173,8 @@ delivers one — the default `PermissionSet.union` builds a `PermissionSetUnion`
 But `LevelBasedPermissionSet` overrides it, and the override returns the
 **lower**-levelled set on both of its branches
 ([permissions](permissions.md)). So for the sets a player or the console
-actually carries it is a *minimum*, and `withMaximumPermission(GAMEMASTER)`
+actually carries it is a *minimum*, and `CommandSourceStack.withMaximumPermission`
+at gamemaster
 over an owner's source yields gamemaster too. Both routes land on the same
 rung: there is no way to reach a function body above gamemaster, and the
 method named for a ceiling is the one that enforces it.

@@ -54,7 +54,7 @@ the block in front of it.
 A diode's `HorizontalDirectionalBlock.FACING` points at the **input**.
 `DiodeBlock.getStateForPlacement` takes the player's horizontal direction and
 reverses it, so the output is at
-`FACING.getOpposite()`, and that is the position
+`Direction.getOpposite` of its *facing*, and that is the position
 `DiodeBlock.updateNeighborsInFront` acts on. It does two things there: a
 direct `Level.neighborChanged` on the output block, and a
 `Level.updateNeighborsAtExceptFromFacing` around that same block, skipping the

@@ -32,7 +32,7 @@ the game.
 
 ## Watch in this order
 
-1. [Anatomy](anatomy.md) — from `main()` to a running singleplayer world:
+1. [Anatomy](anatomy.md) — from *main* to a running singleplayer world:
    the Render thread that is also the game thread, the Server thread that
    is the world, the Netty threads that run more than bytes, and the one CPU
    pool that chunk generation, lighting and section meshing all share.

@@ -178,7 +178,12 @@ function mermaidFences(md) {
   return fences;
 }
 
-const norm = (s) => s.replace(/\r/g, '').split('\n').map((l) => l.trimEnd()).join('\n').trim();
+const norm = (s) => {
+  const ls = s.replace(/\r/g, '').split('\n').map((l) => l.trimEnd());
+  const indents = ls.filter((l) => l.trim()).map((l) => l.match(/^ */)[0].length);
+  const cut = indents.length ? Math.min(...indents) : 0;
+  return ls.map((l) => l.slice(cut)).join('\n').trim();
+};
 
 // mermaid counts error lines against the text after its own preprocessing
 // (leading blank lines gone, YAML front matter cut, `%%` comment lines and the
@@ -264,7 +269,6 @@ async function main() {
     if (REPEAT_PAGES.has(inBook)) continue;
     const pageDom = new JSDOM(fs.readFileSync(html, 'utf8'), { virtualConsole: quiet });
     const nodes = Array.from(pageDom.window.document.querySelectorAll('.mermaid'));
-    if (nodes.length === 0) continue;
 
     let mdRel = 'src/' + inBook.replace(/\.html$/, '.md');
     let mdPath = path.join(ROOT, mdRel);
@@ -275,7 +279,22 @@ async function main() {
     }
     let fences = null;
     if (fs.existsSync(mdPath)) fences = mermaidFences(fs.readFileSync(mdPath, 'utf8'));
-    else console.error(`warning: ${rel} has diagrams but there is no ${mdRel}; reporting HTML positions`);
+    else if (nodes.length) console.error(`warning: ${rel} has diagrams but there is no ${mdRel}; reporting HTML positions`);
+    // A mermaid fence inside a *tight* HTML block never converts: it publishes as literal
+    // backticks, and a gate that reads only the converted nodes never sees it. An include can
+    // add nodes a page has no fence for, so only a shortfall is a failure. (session O)
+    if (fences && fences.length > nodes.length) {
+      const rendered = nodes.map((n) => norm(diagramText(n, scratchDocument)));
+      const short = fences.length - nodes.length;
+      const missing = fences.filter((f) => !rendered.includes(norm(f.body)));
+      const blame = missing.length === short ? missing : fences.slice(nodes.length);
+      for (const f of blame) {
+        checked++;
+        failed++;
+        console.log(`${mdRel}:${f.line + 1}: this \`\`\`mermaid fence did not become a diagram — it publishes as literal backticks. An HTML block ends at a blank line, so a fence inside <figure> or <details> needs a blank line around it.`);
+      }
+    }
+    if (nodes.length === 0) continue;
 
     for (let i = 0; i < nodes.length; i++) {
       const text = diagramText(nodes[i], scratchDocument);

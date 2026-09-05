@@ -4,7 +4,7 @@
 
 A parrot is looking for somewhere to sit. `Parrot.ParrotWanderGoal` scans
 the blocks around it and asks the block state beneath each one a single
-question, `state.is(BlockTags.LOGS)` — a leaves block it recognises by
+question, *is this state in `BlockTags.LOGS`* — a leaves block it recognises by
 class, a log only by tag. Nothing in that goal names oak, or spruce, or the
 block a data pack added an hour ago; the tutorial toast that tells a new
 player to punch a tree asks the same question. A tag is a named set of
@@ -50,7 +50,7 @@ including `DamageTypeTags`, `EnchantmentTags`, `StructureTags`,
 `PoiTypeTags` and the two 26.2 arrivals `FeatureTags` and `TimelineTags`.
 A key that a block and its item share is declared once as a
 `BlockItemTagId` in `BlockItemTags` and projected into both catalogues:
-`BlockTags.LOGS` is `BlockItemTags.LOGS.block()`.
+`BlockTags.LOGS` is the block half of `BlockItemTags.LOGS`.
 
 On disk a tag is a `TagFile`: a list of `TagEntry` and a *replace* flag.
 Each entry is an element id or a *#*-prefixed reference to another tag,
@@ -249,7 +249,7 @@ The same idea appears in data: `TagKey.hashedCodec`, `HolderSetCodec` and
 `BuiltInRegistries` binds to empty only the tags the bootstrap actually
 asked for through its registration lookup; every other tag is simply absent
 from the table, so `Registry.get` for it answers empty and
-`state.is(BlockTags.LOGS)` answers **false**. The window in which a tag
+the same `BlockBehaviour.BlockStateBase.is` answers **false**. The window in which a tag
 read genuinely *throws* is narrower than it looks: it is during
 `BuiltInRegistries.bootStrap` itself, before `MappedRegistry.freeze`
 installs a bound `MappedRegistry.TagSet`. The throws even come from

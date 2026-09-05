@@ -36,7 +36,7 @@ sequenceDiagram
     participant CPL as ClientPacketListener
     participant Conn as Connection
     participant PEnc as PacketEncoder
-    participant Wire as the wire
+    participant Wire as the network
     participant PDec as PacketDecoder
     participant SGPL as ServerGamePacketListenerImpl
 

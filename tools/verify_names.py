@@ -54,7 +54,11 @@ ALLOW = {
 }
 FILE_EXT = (".py", ".sh", ".json", ".txt", ".properties", ".mcmeta", ".nbt", ".dat", ".mca", ".png", ".ogg", ".fsh", ".vsh", ".glsl", ".lock", ".dat_old")
 
-TICK = re.compile(r"`([A-Za-z_][A-Za-z0-9_./$]*)`")
+# A span containing a character this pattern cannot match is skipped in *silence*, so the
+# pattern is the gate's real boundary. It admits an argument list and a trailing `*` because
+# the corpus writes both (`Class.method(Arg)`, `Gui.render*`); session A recorded that hole
+# as settled without fixing it, and session O found two dead 1.21 names living in it.
+TICK = re.compile(r"`([A-Za-z_][A-Za-z0-9_./$]*(?:\*|\([A-Za-z0-9_.,<>\[\] ]*\))?)`")
 
 
 def load_index(root: str, libs: str | None = None):
@@ -142,8 +146,10 @@ def main() -> int:
                         continue
                     bad.append(f"{page}: `{name}` (no such package or class)")
                     continue
+                name = name.rstrip("*")
                 cls, _, member = name.partition(".")
-                cls = cls.split("$")[0]
+                nested = cls.split("$")
+                cls = nested[0]
                 if cls not in classes:
                     bad.append(f"{page}: `{name}` (no class {cls})")
                     continue
@@ -153,13 +159,22 @@ def main() -> int:
                         member_cache[cls] = members_of(classes[cls])
                     # `Outer.Inner.member`: every segment must be declared somewhere in Outer's file
                     # (nested classes live in the same file, so one member set covers them all).
-                    missing = [seg for seg in member.split("(")[0].split(".") if seg not in member_cache[cls]]
+                    segs = nested[1:] + member.split("(")[0].split(".")
+                    missing = [seg for seg in segs if seg not in member_cache[cls]]
                     if missing:
                         bad.append(f"{page}: `{name}` (no member {missing[0]} on {cls})")
     if bad:
         print("\n".join(bad))
         print(f"\n{len(bad)} unresolved of {checked} names")
         return 1
+    if checked == 0:
+        print(f"no pages under {args.src}", file=sys.stderr)
+        return 2
+    ambiguous = sorted(c for c in mentions if len(classes[c]) > 1)
+    if ambiguous:
+        print(f"note: {len(ambiguous)} names are ambiguous (two files share the simple name), "
+              f"so a member resolves against either: {', '.join(ambiguous[:8])}"
+              + (" ..." if len(ambiguous) > 8 else ""))
     print(f"all {checked} names resolve against {args.mc_source}")
     if args.index:
         write_index(os.path.join(args.src, "reference", "class-index.md"), mentions)

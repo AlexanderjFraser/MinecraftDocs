@@ -65,7 +65,7 @@ an inline object or a bare number, because every child slot is typed
 `DensityFunctions.Marker`, a record of a `DensityFunctions.Marker.Type` and a
 wrapped function; the seven transforms are all `DensityFunctions.Mapped`; the
 four arithmetic ids share `DensityFunctions.TwoArgumentSimpleFunction`. In
-each case the *enum constant* carries its own codec, and the node's `codec()`
+each case the *enum constant* carries its own codec, and the node's *codec()*
 returns its type's — which is how a re-serialised graph comes back with the
 right id. `DensityFunctions.MulOrAdd` is the specialisation
 `DensityFunctions.TwoArgumentSimpleFunction.create` picks when the id is

@@ -34,7 +34,14 @@ from verify_names import load_index, members_of  # noqa: E402
 
 KEY_ROW = re.compile(r"^\|\s*`([A-Za-z0-9_]+)`\s*\|\s*(.+?)\s*\|\s*$")
 CLASS_CELL = re.compile(r"^`([A-Za-z_][A-Za-z0-9_.]*)`$")
-PARTICIPANT = re.compile(r"^\s*(?:participant|actor)\s+([A-Za-z0-9_]+)(?:\s+as\s+(.+?))?\s*$")
+PARTICIPANT = re.compile(r"^\s*(?:create\s+|destroy\s+)?(?:participant|actor)\s+([A-Za-z0-9_]+)(?:\s+as\s+(.+?))?\s*$")
+# Anything the pattern above cannot parse used to fall through in silence — a `create
+# participant`, a punctuated lane id. This catches the line so it fails loudly instead.
+PARTICIPANT_LOOSE = re.compile(r"^\s*(?:create\s+|destroy\s+)?(?:participant|actor)\s+\S")
+# Mermaid creates a participant implicitly on first use, so a lane can be used in an arrow
+# and never declared — invisible to a gate that reads declarations only.
+ARROW = re.compile(r"^\s*([A-Za-z0-9_]+)\s*(?:-{1,2}>>?|-{1,2}[x\)]|--?>)\s*[+-]?([A-Za-z0-9_]+)\s*:")
+FENCE = re.compile(r"^\s*(?:```|~~~)\s*(\w*)")
 WORD_LANE_MARK = "not a class"
 
 
@@ -120,15 +127,38 @@ def check_pages(src: str, classes: dict[str, str], words: set[str], only: list[s
     mismatches: list[str] = []
     seen: dict[str, dict[str, set[str]]] = {}  # lane -> class -> pages
     count = 0
+    word_forms: dict[str, dict[str, set[str]]] = {}   # word lane -> expansion -> pages
     for path, rel in walk_pages(src, only):
         with open(path, encoding="utf-8") as fh:
-            for n, line in enumerate(fh, 1):
-                m = PARTICIPANT.match(line)
-                if not m:
-                    continue
+            lines = fh.readlines()
+        in_fence, in_seq, declared, used = False, False, set(), []
+        for n, line in enumerate(lines, 1):
+            f = FENCE.match(line)
+            if f:
+                if in_seq:                                   # the block ends: what was used but never declared?
+                    for lane, ln in used:
+                        if lane not in declared:
+                            mismatches.append(f"{rel}:{ln}: `{lane}` is used in an arrow and never declared")
+                in_fence, in_seq, declared, used = f.group(1) == "mermaid", False, set(), []
+                continue
+            if in_fence and not in_seq and line.strip():
+                in_seq = line.strip().startswith("sequenceDiagram")   # only a sequence has lanes
+                if not in_seq:
+                    in_fence = False
+            if in_seq and ARROW.match(line):
+                used += [(g, n) for g in ARROW.match(line).groups()]
+            m = PARTICIPANT.match(line)
+            if not m:
+                if PARTICIPANT_LOOSE.match(line):
+                    mismatches.append(f"{rel}:{n}: participant line the gate cannot parse: {line.strip()}")
+                continue
+            if True:
                 lane, expansion = m.group(1), (m.group(2) or m.group(1)).strip()
+                declared.add(lane)
                 count += 1
                 if lane in words:
+                    # a word lane's expansion is prose, but rule 7 still says one meaning
+                    word_forms.setdefault(lane, {}).setdefault(expansion, set()).add(rel)
                     continue
                 if lane in classes:
                     if expansion != classes[lane]:
@@ -137,6 +167,10 @@ def check_pages(src: str, classes: dict[str, str], words: set[str], only: list[s
                 mismatches.append(f"{rel}:{n}: `{lane}` (`{expansion}`) is not in the lane key")
                 seen.setdefault(lane, {}).setdefault(expansion, set()).add(rel)
     collisions = []
+    for lane, forms in sorted(word_forms.items()):
+        if len(forms) > 1:
+            detail = "; ".join(f"*{e}* in {', '.join(sorted(pages))}" for e, pages in sorted(forms.items()))
+            collisions.append(f"word lane `{lane}` is written {len(forms)} ways: {detail}")
     for lane, by_class in sorted(seen.items()):
         if len(by_class) > 1:
             detail = "; ".join(f"`{cls}` in {', '.join(sorted(pages))}" for cls, pages in sorted(by_class.items()))
@@ -202,7 +236,10 @@ def main() -> int:
     for line in mismatches + collisions:
         print(line)
     scope = f" in {' '.join(args.pages)}" if args.pages else ""
-    print(f"{count} participants{scope}: {len(mismatches)} disagree with the key, {len(collisions)} unkeyed lanes collide")
+    print(f"{count} participants{scope}: {len(mismatches)} disagree with the key, {len(collisions)} lanes mean two things")
+    if count == 0:
+        print(f"no participants found under {args.src}{scope}", file=sys.stderr)
+        return 2
     if args.index:
         write_index(os.path.join(args.src, "reference", "lanes.md"), classes, words, args.template)
     if args.strict and (mismatches or collisions):

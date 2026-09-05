@@ -178,7 +178,7 @@ sequenceDiagram
     end
     Note over GuiR: same frame, draw
     GuiR->>GuiR: walk the PreparedText with a Font.GlyphVisitor
-    GuiR->>GuiR: one GlyphRenderState per glyph — the shadow pass, the bold copy and the italic shear are the glyph's own, inside BakedGlyph.renderChar
+    GuiR->>GuiR: one GlyphRenderState per glyph — the shadow pass, the bold copy and the italic shear are the glyph's own, inside BakedSheetGlyph.renderChar
 ```
 
 Two moments beyond the baking are worth pausing on. **Translation is lazy and

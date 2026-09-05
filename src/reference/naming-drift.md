@@ -259,7 +259,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Gui* (the HUD) | `Hud`, held as `Gui.hud`; the name `Gui` now means the screen/overlay manager |
 | *Minecraft.screen* / *Minecraft.setScreen* | `Gui.screen` / `Gui.setScreen` |
 | *GuiGraphics* | `GuiGraphicsExtractor` (records states; does not draw) |
-| *Screen.render* / every *render** on *Gui* | `Screen.extractRenderState` / `Hud.extract*` |
+| *Screen.render* / every *render** on *Gui* | `Screen.extractRenderState` / every *extract\** on `Hud` |
 | *LayeredDraw* | call order plus `GuiRenderState.nextStratum` |
 | *Options.hideGui* | `Hud.isHidden`, published as `GuiRenderState.isHudHidden` |
 | *Minecraft.getPartialTick*, *Timer* | `DeltaTracker.Timer` and its three questions |

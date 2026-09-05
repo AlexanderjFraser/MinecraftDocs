@@ -111,7 +111,7 @@ def part_of(key: str, byslug: dict) -> str | None:
     return m.group(1) if m else None
 
 
-def figure() -> tuple[set, set]:
+def figure() -> tuple[set, set, list]:
     text = read(os.path.join(SRC, "figures", "parts-dependency.md"))
     ids = {m.group(1): ROMAN[m.group(2)] for m in re.finditer(r"^\s*(P\d+)\[\"([IVX]+)\s", text, re.M)}
     solid, dashed = set(), set()
@@ -127,7 +127,19 @@ def figure() -> tuple[set, set]:
             for a, b in zip(chain, chain[1:]):
                 if a in ids and b in ids:
                     solid.add((ids[a], ids[b]))
-    return solid, dashed
+    unread = []
+    for n, line in enumerate(text.split(chr(10)), 1):
+        t = line.strip()
+        if t.startswith("%%") or "```" in t:
+            continue
+        if re.search(r"^\s*P\d+[\[\(\{'\"]", t) and not re.match(r'^\s*P\d+\["[IVX]+\s', t):
+            unread.append(f"figure line {n}: node declaration the checker cannot read: {t}")
+        elif re.search(r"-\.?-?>|==>", t):
+            names = re.findall(r"P\d+", t)
+            if len(names) >= 2 and not any((ids.get(a), ids.get(b)) in (solid | dashed)
+                                           for a, b in zip(names, names[1:])):
+                unread.append(f"figure line {n}: arrow the checker cannot read: {t}")
+    return solid, dashed, unread
 
 
 def lecture_table() -> list[tuple[list[str], int, set[int], int]]:
@@ -166,7 +178,7 @@ def page_links(pdir: str, pages: list[str]) -> dict[str, dict[str, list[str]]]:
     """target key -> {from page key: [contexts]} for links out of the part's pages to other parts' pages"""
     out: dict[str, dict[str, list[str]]] = {}
     base = os.path.join(SRC, "systems", pdir)
-    for key in pages:
+    for key in list(pages) + [f"systems/{pdir}/README"]:
         if key.endswith("/what-this-book-skips"):
             continue   # its links are pointers to owner pages by design, not dependencies
         text = read(os.path.join(SRC, key + ".md"))
@@ -183,6 +195,8 @@ def mentions(pdir: str, pages: list[str], target: str) -> bool:
     slug = target.rsplit("/", 1)[1]
     pat = re.compile(rf"\]\([^)]*{re.escape(slug)}\.md|`{re.escape(slug)}`")
     for key in pages:
+        if key.endswith("/what-this-book-skips"):
+            continue   # excluded as a link source above; exclude it as evidence too
         if pat.search(read(os.path.join(SRC, key + ".md"))):
             return True
     return False
@@ -197,8 +211,8 @@ def main() -> int:
 
     P = parts()
     bynum = {v["num"]: k for k, v in P.items()}
-    solid, dashed = figure()
-    fails: list[str] = []
+    solid, dashed, unread = figure()
+    fails: list[str] = list(unread)
     reports: list[str] = []
 
     def numof(key: str) -> int | None:

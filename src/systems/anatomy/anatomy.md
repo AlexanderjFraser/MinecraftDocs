@@ -3,7 +3,7 @@
 > Verified against **Minecraft 26.2** · Part I · Clicking Singleplayer, picking a world, and standing in it a few seconds later.
 
 A player clicks Singleplayer, picks a world from the list and waits. One
-thread has been running since `main()`; by the time the world appears there
+thread has been running since *main*; by the time the world appears there
 are two that matter, and the second was created by the first, mid-frame,
 while the first went on drawing. They are two programs sharing a JVM. The
 server is the world — every chunk, entity and block, and the only thing
@@ -43,7 +43,7 @@ running, and is the client's answer to "am I the host".
 > separate `Hud` class held as `Gui.hud`. Reach for `Gui` expecting the
 > health bar and you want `Hud`.
 
-## From `main()` to a world
+## From *main* to a world
 
 ```mermaid
 sequenceDiagram
@@ -204,7 +204,7 @@ channel's event loop if it is not already on it.
 | **Render thread** | the JVM main thread, renamed in `client/main/Main` | `Minecraft.run` | Also the client's game thread: `Minecraft.gameThread` is this thread. Priority 10 on machines with more than four cores. |
 | **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` | One per server, so singleplayer has exactly one. Priority 8, on the same more-than-four-cores condition. |
 | **Netty IO** | `EventLoopGroupHolder` | the `Connection` pipeline | Named *Netty NIO IO n* — Epoll or Kqueue when native transport is on, *Netty Local IO n* for the in-process singleplayer channel. Decode, decrypt, decompress — and, unlike the play phase, the handshake and login *handlers*, which never call `PacketUtils.ensureRunningOnSameThread`; the first handler that hops is in configuration. The login state machine is still advanced from the Server thread, because `ServerLoginPacketListenerImpl` is a `TickablePacketListener` and `MinecraftServer.tickConnection` ticks it. |
-| **Worker-Main-n** | `Util.backgroundExecutor` | a `ForkJoinPool` sized to `availableProcessors()` minus one | `Util.maxAllowedExecutorThreads` clamps it, and `Util.getMaxThreads` reads a *max.bg.threads* system property that overrides the ceiling. The shared CPU pool: chunk generation and lighting (`ChunkMap` through `ChunkTaskDispatcher`), section meshing (`SectionRenderDispatcher`), resource-reload *prepare* phases, chunk serialisation. |
+| **Worker-Main-n** | `Util.backgroundExecutor` | a `ForkJoinPool` sized to the JDK's available-processor count minus one | `Util.maxAllowedExecutorThreads` clamps it, and `Util.getMaxThreads` reads a *max.bg.threads* system property that overrides the ceiling. The shared CPU pool: chunk generation and lighting (`ChunkMap` through `ChunkTaskDispatcher`), section meshing (`SectionRenderDispatcher`), resource-reload *prepare* phases, chunk serialisation. |
 
 That is the set worth memorising, not the set that exists. The IO workers,
 the sound engine's event loop, the dedicated server's watchdog, console,

@@ -199,7 +199,7 @@ sequenceDiagram
     participant ETL as EntityTickList
     participant Mob as Mob
     participant ES as EntityStorage
-    participant Wire as Wire
+    participant Wire as the network
 
     Note over SL: the tick it is created
     SL->>SL: addFreshEntityWithPassengers walks getSelfAndPassengers, vehicle first
