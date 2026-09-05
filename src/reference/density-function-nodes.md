@@ -81,7 +81,7 @@ would re-serialise unchanged.
 
 | marker type | installed | keyed on |
 |---|---|---|
-| `DensityFunctions.Marker.Type.Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell. Requires the context to *be* the `NoiseChunk`, and throws if sampled outside the loop |
+| `DensityFunctions.Marker.Type.Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell. Serves a foreign context by delegating to the wrapped function; only a sample whose context *is* the `NoiseChunk` throws outside the loop |
 | `DensityFunctions.Marker.Type.FlatCache` | `NoiseChunk.FlatCache` | **position**, at quart resolution: one array entry per 4×4 block column group, filled at construction |
 | `DensityFunctions.Marker.Type.Cache2D` | `NoiseChunk.Cache2D` | **position**, one entry — the packed XZ of the last sample |
 | `DensityFunctions.Marker.Type.CacheOnce` | `NoiseChunk.CacheOnce` | **a counter** — `NoiseChunk.interpolationCounter` for the scalar, a second counter for the array form |
@@ -102,8 +102,9 @@ instead of on every sample.
 Every node answers `DensityFunction.minValue` and `DensityFunction.maxValue`
 without a position. The arithmetic family — the two-argument nodes, the
 mapped ones and *clamp* — stores its bounds as record components filled once
-at construction; every other node answers by delegating to its input or by
-walking its list again on each call. The rules worth knowing:
+at construction, and so does `BlendedNoise`; a few answer with literals of
+their own and the rest delegate to their input or walk their list again on
+each call. The rules worth knowing:
 
 The arithmetic bounds are **sign-aware** and eager: *mul* takes the four
 cross products and picks by the signs of the operands' ends, and *min* and
@@ -111,10 +112,12 @@ cross products and picks by the signs of the operands' ends, and *min* and
 or a *max* over two ranges that cannot overlap logs a warning and proceeds.
 `DensityFunctions.Mapped.create` transforms the child's two endpoints, with
 *abs* and *square* clamping the minimum up to zero and *invert* reporting
-**±infinity** whenever the child's range straddles zero. *clamp* is the one
-node whose bounds are not derived from its child at all: its record
-components are literally named *minValue* and *maxValue*, so the codec's
-*min* and *max* fields *are* the interface's bound methods.
+**±infinity** whenever the child's range straddles zero. *clamp* is the clearest of the nodes
+whose bounds are not derived from a child: its record components are
+literally named *minValue* and *maxValue*, so the codec's *min* and *max*
+fields *are* the interface's bound methods. *shifted_noise* takes its bounds
+from the noise and ignores all three of its children, and *blend_density*
+reports infinity whatever its child says.
 
 Three nodes report bounds that are not densities or not final.
 `DensityFunctions.Marker` passes its child's bounds through except when its
@@ -126,14 +129,16 @@ bound's maximum, which are **Y coordinates** — this node's range is on a
 different scale from every other node in the table.
 
 One more, on the unseeded graph: `DensityFunction.NoiseHolder` answers a
-maximum of 2.0 while its `NormalNoise` is still null, so a freshly parsed
-router reports wider noise bounds than the seeded one it becomes.
+maximum of 2.0 while its `NormalNoise` is still null. Every one of the
+sixty-one shipped noise definitions computes a maximum between 2.57 and 7.32
+once seeded, so a freshly parsed router reports noise bounds that are too
+**narrow**, and seeding widens them.
 
 ## What vanilla actually uses
 
 Thirty-five JSON files ship under *worldgen/density_function* — four at the
 top level plus the per-dimension directories — and between them they use
-twenty-five of the thirty-four ids. Four more appear only inline, in the
+twenty-five of the thirty-four ids. Five more appear only inline, in the
 seven `Registries.NOISE_SETTINGS` files: *blend_density* and *squeeze* in all
 seven, and *square*, *invert* and *find_top_surface* in the three overworld
 variants.
