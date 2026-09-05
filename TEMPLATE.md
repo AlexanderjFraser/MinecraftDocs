@@ -5,7 +5,119 @@
 `src/systems/networking/protocol-phases.md` (a state machine). The old
 seven-heading skeleton is gone; a page takes the shape of its story, and the
 budgets below are the enforceable part. Ruling R2 in section 9 of `docs/pass3.md` is the
-authority; this file is its working form.*
+authority; this file is its working form. Pass-5 session A (2026-09-05) added
+the two sections below it — "One home per mechanism" and "The landing page" —
+which are rules about the book rather than about a page; the rulings behind
+them are in `docs/pass5-brief.md` Part 3.*
+
+## One home per mechanism
+
+The corpus is one book, written by thirty sessions that each saw one page.
+This is the rule that makes it read as one, and it is the rule pass 5
+applies everywhere.
+
+**A mechanism is explained on one page** — the page whose scenario the
+mechanism is the answer to — and every other page that needs it spends at
+most one sentence and a link. *Explained* is not *named*: a backticked name
+in passing is a mention; two paragraphs that would teach a reader the same
+thing are the duplicate. When two pages both have a claim, in this order:
+
+1. **The scenario decides.** The owner is the page whose story the mechanism
+   answers. The prediction ledger belongs to `client/prediction-and-acks`
+   even though Part V meets it first, because the block that appears and
+   then disappears is that page's whole scenario.
+2. **Within a part, the page whose figure draws it** owns it.
+3. **A vocabulary page owns what a thing *is*; a trace owns what
+   *happens*.**
+4. **Between parts, where none of the above decides, the earlier part owns
+   it** — later parts assume earlier ones, so a link back costs the reader
+   nothing while a link forward is a promise.
+
+**A Reference page owns an enumeration.** It may carry the one paragraph
+that makes its table readable, never an explanation a lecture should give.
+The converse binds the lecture: a page names the three or four rows its
+scenario touches and links the rest, and never reproduces the catalogue.
+
+**A link points from the page that assumes to the page that explains**, at
+first use. A link into a *later* part is allowed in two forms only: a
+declared dependency — a landing page's *before you start*, which is a dashed
+arrow on the parts figure and a paragraph in `src/lectures.md` — or a
+sentence that says the later page pays it off. Anything else is a promise
+nobody keeps.
+
+**A summariser never explains.** The thirteen landing pages, the lecture
+map, the glossary and the introduction restate pages by design. Three rules
+follow: a summariser is never a fact's only home; where a summariser
+disagrees with its page the page wins, and the summariser is corrected in
+the same session, after the page; and where the same thing is said in both,
+the summariser is the copy that gets shorter.
+
+**A pair the book declares stays a pair.** Where a landing page or
+`src/lectures.md` calls two pages one lecture in two halves, or one the
+sequel of the other, a shared preamble is deliberate: it is checked for
+drift between the two copies and never merged away. The list of declared
+pairs is in `docs/pass5-brief.md` Part 3.
+
+### The citation form
+
+The book's citation is the parenthetical link at the end of the sentence
+that needs it — *…so a click and its correction land in the same tick (the
+server tick)* — and it carries **the anchor of the section that is the
+answer**, so that the reader lands on the paragraph and not on the top of a
+four-hundred-line page. One sentence saying what the mechanism means *here*,
+then the link, and nothing else. Where the losing explanation says something
+the owner's lacks, that is a move and not a cut: the sentence goes to the
+owner first.
+
+Seven ideas cross parts — the tick and its phases, the four threads, the
+wire and the hop, authority and prediction, the registry freeze and the
+reload, the data-driven type pattern, the ledger. Each has one owner page
+and one anchor, and every other page cites it in that form; the table is in
+`docs/pass5-brief.md` Part 3.
+
+## The landing page
+
+A landing page is a part's **argument**, not a summary of its pages. It is
+what the folding sidebar opens on, so it is the first thing a reader of that
+part sees and the thing they come back to. Six things, in this order:
+
+**The argument** — one paragraph saying what the part claims about its
+system and what a reader will be able to explain afterwards. It starts
+inside a scenario like any other page and ends on the part's hook. It is not
+a list of what is coming.
+
+**The size**, where size is part of the argument (Part XI is the largest
+thing on the client by a distance; Part XII is a system with no entity and
+no tick in it). The number is never hand-counted: it comes from
+`{{#include ../../generated/part-<dir>.md}}`, which `tools/map_source.py`
+writes from the same `PARTS` mapping the atlas prints and
+`tools/pass5_coverage.py` reads, so a landing page's count and the coverage
+population cannot disagree; the prose names the packages the way
+`src/generated/parts.md` does. A part whose size is not part of its argument
+says nothing and leaves the number to the atlas.
+
+**The shape** — *a hub and six spokes*, *a stack of three floors*, *a
+conveyor* — as a sentence and as a figure of the part's own pages.
+
+***Before you start*** — true dependencies only, each with the sentence that
+says what the part uses it for. A hand-forward, where this part gives a
+later one something, lives outside this section: `tools/check_deps.py` reads
+every cross-part link here as a dependency and every dependency as an arrow
+on the parts figure.
+
+***Watch in this order*** — the pages, with one line each saying what the
+page is. **This is the only place that line is written.** `SUMMARY.md`
+copies the order, `src/lectures.md` copies the order and adds only what is
+about the order, and neither repeats the line. The order itself is the
+part's argument in miniature, and `check_deps.py` fails if the three
+disagree.
+
+**The Reference it uses** — one line per page, what the part reads it for.
+
+Then the rules footer. No trace, no cast, and no figure but the part's own
+shape. Everything except the watch order runs to about a hundred lines; a
+landing page much longer than that is arguing twice, and the fix is the
+argument rather than the trim.
 
 ## What every page keeps
 
@@ -59,7 +171,7 @@ truth is a graph, do not draw a conversation.
 | **the comparison** | two or three paths that differ | a table with the paths as columns; one diagram per path, or one with `alt` | a section per point of difference, not per path | — |
 | **the vocabulary page** | the objects and their relations | a figure of the data (`classDiagram`, a containment `flowchart`), then one small trace | a tour by object, each grounded in the trace | — |
 | **the pattern** | one idea, many instances | the instances as a table; one instance traced | the idea, the table, the trace, the exceptions | — |
-| **the landing page** | a part | the part's shape as a figure of its pages | one paragraph · the figure · *before you start* · *watch in this order* · the Reference pages it uses; under a hundred lines, no trace | `src/systems/anatomy/README.md` |
+| **the landing page** | a part | the part's shape as a figure of its pages | the argument · the size · the figure · *before you start* · *watch in this order* · the Reference pages it uses — the section [The landing page](#the-landing-page) above has the role in full | `src/systems/commands/README.md` |
 
 A page may borrow one section from another shape (the policy pilot keeps a
 six-lane trace; the state-machine pilot keeps a three-lane sequence for the

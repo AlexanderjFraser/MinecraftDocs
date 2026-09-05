@@ -12,6 +12,7 @@ that actually *uses* each dependency). Four sources, read from the pages:
   figure    `src/figures/parts-dependency.md` — solid and dashed arrows
   table     `lectures.md`'s dependency table — page, its part, the parts
             whose landing pages assume it — and each part's section of the map
+  sidebar   `SUMMARY.md`'s order within each part
   links     every cross-part link from every system page
 
 Checks (F = fails, exit 1; R = report only, for the session to judge):
@@ -23,6 +24,12 @@ Checks (F = fails, exit 1; R = report only, for the session to judge):
      from the landing pages
   F  each part's section of lectures.md lists the same pages in the same order
      as the part's *watch in this order*
+  F  SUMMARY.md lists each part's pages in the same order as its *watch in this
+     order* — pass 5, session A: the landing page's watch order is the book's
+     order, and the sidebar and the lecture map follow it
+  F  the lecture table's membership, by the rule the page states: a page two or
+     more landing pages name under *before you start*, less the three every part
+     assumes (they are the boxes the figure draws without edges)
   F  nothing in *watch in this order* is a Reference or maps page or another part's
   F  no landing page assumes `game-tests`
   R  per part: *before you start* pages that no page in the part links or names
@@ -32,6 +39,7 @@ Checks (F = fails, exit 1; R = report only, for the session to judge):
 Usage:
     python tools/check_deps.py            # the checks; exit 1 on any F
     python tools/check_deps.py --quiet    # failures only
+    python tools/check_deps.py --probe    # prove the two pass-5 checks on synthetic input
 """
 from __future__ import annotations
 
@@ -46,6 +54,11 @@ ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 
          "X": 10, "XI": 11, "XII": 12, "XIII": 13, "XIV": 14}
 NUMERAL = {v: k for k, v in ROMAN.items()}
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
+# The three pages every part assumes. `lectures.md`'s paragraph above the figure names them and
+# says why they are drawn as boxes and not as edges; the dependency table excludes them for the
+# same reason, so listing them here is the tool reading the page's own stated rule.
+UNIVERSAL_PAGES = ("systems/anatomy/anatomy", "systems/foundations/codecs-nbt-json",
+                   "systems/foundations/identifiers-and-registries")
 
 
 def read(path: str) -> str:
@@ -174,6 +187,89 @@ def lecture_sections() -> dict[int, list[str]]:
     return out
 
 
+def summary_order() -> dict[str, list[str]]:
+    """part dir -> the part's pages in SUMMARY.md order (the sidebar)."""
+    out: dict[str, list[str]] = {}
+    cur = None
+    for line in read(os.path.join(SRC, "SUMMARY.md")).split("\n"):
+        m = LINK.search(line)
+        if not m:
+            continue
+        k = norm(SRC, m.group(1))
+        if not k or not k.startswith("systems/"):
+            continue
+        d, slug = k.split("/")[1], k.rsplit("/", 1)[1]
+        if slug == "README":
+            cur = d
+            out.setdefault(d, [])
+        elif cur == d:
+            out.setdefault(d, []).append(k)
+    return out
+
+
+def sidebar_failures(P: dict, sidebar: dict[str, list[str]]) -> list[str]:
+    """SUMMARY.md's order within a part against the landing page's watch order."""
+    out = []
+    for d, v in P.items():
+        watch = [k for k in v["watch"] if k.startswith(f"systems/{d}/")]
+        side = sidebar.get(d, [])
+        if watch != side:
+            out.append(f"Part {NUMERAL[v['num']]}: SUMMARY.md and *watch in this order* disagree\n"
+                       f"      landing: {' · '.join(k.rsplit('/', 1)[1] for k in watch)}\n"
+                       f"      sidebar: {' · '.join(k.rsplit('/', 1)[1] for k in side)}")
+    return out
+
+
+def membership_failures(dependents: dict[str, set[int]], table_pages: set[str]) -> list[str]:
+    """The lecture table holds exactly the pages two or more landing pages name under
+    *before you start*, less the three every part assumes."""
+    out = []
+    for k in sorted(set(dependents) | table_pages):
+        n = len(dependents.get(k, ()))
+        if k in UNIVERSAL_PAGES:
+            if k in table_pages:
+                out.append(f"lectures.md: {k} is a dependency every part shares — the paragraph above the "
+                           f"figure says so and the figure draws it without edges — so it does not take a table row")
+            continue
+        if n >= 2 and k not in table_pages:
+            out.append(f"lectures.md: {k} is named under *before you start* by {n} parts "
+                       f"({', '.join(NUMERAL[x] for x in sorted(dependents[k]))}) and has no row in the dependency table")
+        if n < 2 and k in table_pages:
+            out.append(f"lectures.md: {k} has a row in the dependency table and is named under "
+                       f"*before you start* by {n} part{'' if n == 1 else 's'}")
+    return out
+
+
+def probe() -> int:
+    """Prove the two pass-5 checks fail on the constructs they are for, and pass otherwise."""
+    P = {"world": {"num": 4, "watch": ["systems/world/a", "systems/world/b", "systems/world/c"]}}
+    checks = [
+        ("the sidebar agreeing with the watch order passes",
+         sidebar_failures(P, {"world": ["systems/world/a", "systems/world/b", "systems/world/c"]}) == []),
+        ("a reordered sidebar fails",
+         len(sidebar_failures(P, {"world": ["systems/world/b", "systems/world/a", "systems/world/c"]})) == 1),
+        ("a sidebar missing a page fails",
+         len(sidebar_failures(P, {"world": ["systems/world/a", "systems/world/b"]})) == 1),
+        ("a page two parts assume, with a row, passes",
+         membership_failures({"systems/world/x": {5, 6}}, {"systems/world/x"}) == []),
+        ("a page two parts assume, with no row, fails",
+         len(membership_failures({"systems/world/x": {5, 6}}, set())) == 1),
+        ("a row for a page one part assumes fails",
+         len(membership_failures({"systems/world/x": {5}}, {"systems/world/x"})) == 1),
+        ("a row for a page nobody assumes fails",
+         len(membership_failures({}, {"systems/world/x"})) == 1),
+        ("a universal with no row passes though six parts assume it",
+         membership_failures({UNIVERSAL_PAGES[0]: {3, 4, 5, 6, 7, 8}}, set()) == []),
+        ("a universal with a row fails",
+         len(membership_failures({UNIVERSAL_PAGES[0]: {3, 4}}, {UNIVERSAL_PAGES[0]})) == 1),
+    ]
+    bad = [name for name, ok in checks if not ok]
+    for name, ok in checks:
+        print(("  ok  " if ok else "  FAIL ") + name)
+    print("probe: OK" if not bad else f"probe: {len(bad)} FAILED")
+    return 1 if bad else 0
+
+
 def page_links(pdir: str, pages: list[str]) -> dict[str, dict[str, list[str]]]:
     """target key -> {from page key: [contexts]} for links out of the part's pages to other parts' pages"""
     out: dict[str, dict[str, list[str]]] = {}
@@ -205,9 +301,13 @@ def mentions(pdir: str, pages: list[str], target: str) -> bool:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--quiet", action="store_true", help="failures only")
+    ap.add_argument("--probe", action="store_true",
+                    help="prove the sidebar and membership checks on synthetic input")
     args = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
+    if args.probe:
+        return probe()
 
     P = parts()
     bynum = {v["num"]: k for k, v in P.items()}
@@ -282,6 +382,18 @@ def main() -> int:
         for k in v["watch"]:
             if not k.startswith(f"systems/{d}/"):
                 fails.append(f"Part {NUMERAL[v['num']]}: *watch in this order* lists {k}, which is not one of its pages")
+
+    # 4b. SUMMARY.md's order within a part is the landing page's watch order (pass 5, session A)
+    fails += sidebar_failures(P, summary_order())
+
+    # 4c. the lecture table's membership, by the rule lectures.md states above it
+    table_pages = {k for keys, _p, _a, _l in lecture_table() for k in keys}
+    dependents: dict[str, set[int]] = {}
+    for d, v in P.items():
+        for k in v["before"]:
+            if k.startswith("systems/") and not k.endswith("/README") and numof(k) != v["num"]:
+                dependents.setdefault(k, set()).add(v["num"])
+    fails += membership_failures(dependents, table_pages)
 
     # 5. nobody assumes game-tests
     for d, v in P.items():

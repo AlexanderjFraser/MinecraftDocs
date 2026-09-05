@@ -16,11 +16,12 @@ version (26.2), written as the notes for a video lecture series.
 The work is in ten passes: a rough draft, an adversarial fact-check of
 every claim, a restructuring pass and a second fact-check (all four done);
 then four passes of restructuring and refinement with one lens each — the
-book, the lecture, the figures, the voice (the book pass is next) — a third
+book, the lecture, the figures, the voice (the book pass is running) — a third
 fact-check, and a last polish, after which the site is finished. The owner
 reads alongside. [docs/plan.md](docs/plan.md) is the roadmap (the passes,
 the current pass's charter and schedule, the session log).
-[TEMPLATE.md](TEMPLATE.md) is the page spec: the menu of shapes and the lane key. Built with mdBook
+[TEMPLATE.md](TEMPLATE.md) is the page spec: the menu of shapes, the ownership
+rule and the lane key. Built with mdBook
 (`mdbook serve`); deployed by `tools/deploy.sh` to
 [minecraftdocs.dev](https://minecraftdocs.dev).
 

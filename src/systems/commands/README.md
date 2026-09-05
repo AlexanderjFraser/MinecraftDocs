@@ -11,14 +11,19 @@ in this part rides that machinery: an advancement is a subscription
 delivered by a trigger and edited by `/advancement`, a scoreboard is a
 number written by `/scoreboard` or by `execute store`, a dialog is a
 data-pack form opened by `/dialog`, and a game test is a data-pack test run
-by `/test`.
+by `/test`. **None of those four needs any of the others.** What they need
+is the parse and the queue, and a reader who has those two can explain any
+of the four from them.
 
-Counting the seven server packages and the two client ones — one class per
-file, one line per line of decompiled source, the way
-[the atlas](../../maps/README.md) counts everything else — that is **473
-classes and 43,900 lines**, of which the command catalogue itself is a
-little under a third: a hundred command classes and 12,800 lines, each a
-thin lambda over machinery some other part of this book owns.
+Counting the nine packages [the atlas](../../maps/packages.md#where-each-part-lives)
+lists for this part, the way it counts everything else, that is
+{{#include ../../generated/part-commands.md}} — of which the command
+catalogue alone (`net/minecraft/server/commands`) is 102 classes and 12,800
+lines, each of them a thin lambda over machinery some other part of this
+book owns. So what a command *does* once dispatched is almost always another
+part's page, and [Brigadier and commands](brigadier-and-commands.md) carries
+the list of which; the statistics, which are criteria, are in [what this
+book skips](../anatomy/what-this-book-skips.md).
 
 ## The shape of the part
 
@@ -56,22 +61,23 @@ optional for any of the four.
 
 ## Before you start
 
-[The server tick](../server/server-tick.md) from Part III, because *when*
-turns out to matter twice: command functions run near the top of
-`MinecraftServer.tickChildren`, before any level ticks, and the **connection**
-phase — where `ServerGamePacketListenerImpl.tick` calls `ServerPlayer.doTick`
-— runs *after* the levels, which is what puts a periodic advancement trigger
-one tick behind the packet that should have carried it.
+[The server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
+from Part III, because *when* turns out to matter twice: command functions
+run near the top of `MinecraftServer.tickChildren`, before any level ticks,
+and the **connection** phase — where `ServerGamePacketListenerImpl.tick`
+calls `ServerPlayer.doTick` — runs *after* the levels, which is what puts a
+periodic advancement trigger one tick behind the packet that should have
+carried it.
 
 [Codecs, NBT and JSON](../foundations/codecs-nbt-json.md) and
-[the data-driven type pattern](../foundations/data-driven-types.md) from
-Part II. Dialogs and game tests are the pattern's clearest two instances —
-a form and a test suite, both reduced to JSON dispatching on a registry of
-types — and the pattern page is where that argument is made.
+[the data-driven type pattern](../foundations/data-driven-types.md#the-idea-stated-once)
+from Part II. Dialogs and game tests are the pattern's clearest two
+instances — a form and a test suite, both reduced to JSON dispatching on a
+registry of types — and the pattern page is where that argument is made.
 
-[The connection](../networking/the-connection.md) from Part IX, for the
-Netty-thread / server-thread boundary that the command packets cross in two
-different ways on purpose.
+[The connection](../networking/the-connection.md#the-threads-underneath-it)
+from Part IX, for the Netty-thread / server-thread boundary that the command
+packets cross in two different ways on purpose.
 
 [Contexts and predicates](../items/contexts-and-predicates.md) from Part
 VII, if you are here for advancements: a trigger's conditions are loot
@@ -126,14 +132,6 @@ sets an advancement trigger and an advancement reward run in.
 use, and [the glossary](../../reference/glossary.md) for *Brigadier*,
 *selector head*, *world-limited*, *criterion*, *objective*, *macro*, *dialog*
 and *game test*.
-
-Where the part stops: what a command *does* once it has been dispatched is
-almost always another part's page, and
-[Brigadier and commands](brigadier-and-commands.md) carries a list of
-which. The statistics — which are criteria, and one of only two parts of a
-save that go through the data fixer as JSON, the other being advancement
-progress — are in
-[what this book skips](../anatomy/what-this-book-skips.md).
 
 ---
 

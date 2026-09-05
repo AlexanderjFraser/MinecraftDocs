@@ -21,7 +21,7 @@ protocol over everything pass 3 rewrote (each archived whole in
 Passes 5–8 are four passes of restructuring and refinement with one lens
 each: **5 the book** (across pages — ownership, seams, through-lines, the
 landing pages as the part's argument, the coverage question, the last
-moves; **next**), **6 the lecture** (one page at a time — the devices that
+moves; **running — session A, the standard, done 2026-09-05**), **6 the lecture** (one page at a time — the devices that
 became slots, the twin skeletons, the cuts), **7 the figures** (every figure
 as rendered; the gate over names inside mermaid blocks), **8 the voice**
 (one voice, the tics, the terminology, the ambiguous counts). Then **9** the
@@ -115,7 +115,12 @@ Naming drift a 1.21-era reader will trip on: `ResourceLocation` is now
 policy · comparison · vocabulary · pattern · landing page), written by
 pass-3 session A from two pilots — `tickets-and-loading` (policy) and
 `protocol-phases` (state machine) — with the devices, the budgets, the
-mermaid rules and **the lane key** (rule 7). Over the 102 system pages the
+mermaid rules and **the lane key** (rule 7). Pass-5 session A added the two
+rules that are about the book rather than a page: **one home per mechanism**
+(who owns a mechanism, what the other page keeps, and the citation form — a
+parenthetical link carrying the owner's *anchor*) and **the landing page's
+role** (the argument · the size · the shape · before you start · watch in
+this order · the Reference it uses). Over the 102 system pages the
 shapes fell out as trace 31, vocabulary 25, pipeline 19, comparison 11,
 policy 7, pattern 7, state machine 2; the *Questions players ask* closer is
 on 69 of them, which is pass 6's first job. What every page keeps: the
@@ -150,7 +155,8 @@ tools and brief — pass 4's were the model: [docs/pass4-brief.md](docs/pass4-br
 and `tools/pass4_prompts.py` (one prompt file per page from
 `pass4_queue.py`, `claims.py` and `diagram_arrows.py`); **pass 5's are
 [docs/pass5-brief.md](docs/pass5-brief.md)** (the agent's brief, the runbook,
-session A's standard, the schedule with what the tools measured) and
+Part 3 — the record of session A's rulings — and the schedule with what the
+tools measured) and
 `tools/pass5_prompts.py`, fed by `pass5_queue.py` (the queue by kind),
 `pass5_dups.py` (the duplication finder), `pass5_coverage.py` (the coverage
 question per part over the atlas's `PARTS` mapping) and `check_links.py` —
@@ -214,12 +220,15 @@ touch Web Analytics, which is not enabled and is the owner's click.
   a queue is a target.
 - `verify_names.py`, `check_mermaid.js`, `check_lanes.py --strict` and
   `check_links.py` before every commit that touches a page, and
-  `check_deps.py` when a landing page, `lectures.md` or the dependency
-  figure changes; `deploy.sh` runs all five — after regenerating the atlas
+  `check_deps.py` when a landing page, `SUMMARY.md`, `lectures.md` or the
+  dependency figure changes; `deploy.sh` runs all five — after regenerating the atlas
   and the eight Reference views — and refuses to publish on a failure.
-- A landing page's size comes from `{{#include ../../generated/part-<dir>.md}}`,
-  which the atlas writes from `map_source.py`'s `PARTS` mapping (the same
-  mapping `pass5_coverage.py` reads); no landing page hand-counts.
+- A landing page states a size only where size is part of its argument, and
+  then from `{{#include ../../generated/part-<dir>.md}}`, which the atlas
+  writes from `map_source.py`'s `PARTS` mapping (the same mapping
+  `pass5_coverage.py` reads); no landing page hand-counts. The order in
+  *watch in this order* is the book's: `SUMMARY.md` and `lectures.md` follow
+  it, and `check_deps.py` fails when the three disagree.
 - A published page never names a pass number as a promise about the
   future; when a pass closes, grep `README.md`, this file, `TEMPLATE.md`
   and the frame pages for the old numbers.

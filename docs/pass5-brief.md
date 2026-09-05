@@ -78,12 +78,14 @@ change no fact.
    A shared backticked name is a hint, not a finding; two paragraphs that
    would teach a reader the same thing are the finding. For each: both
    locations as `page:line` with the sentences quoted; which page should own
-   it under the ownership rule (the page whose scenario the mechanism is the
-   answer to; between parts, the earlier one; within a part, the page whose
-   figure draws it; a vocabulary page owns what a thing *is*, a trace owns what
-   *happens*; Reference owns lists); and what the other page keeps, which is at
-   most one sentence and a link. If the second explanation says something the
-   owner lacks, say so: that is a move, not a cut.
+   it under the ownership rule, applied in this order — the page whose
+   scenario the mechanism is the answer to; within a part, the page whose
+   figure draws it; a vocabulary page owns what a thing *is* and a trace owns
+   what *happens*; and only then, between parts, the earlier one. Reference
+   owns lists, and a lecture never reproduces one. Then: what the other page
+   keeps, which is at most one sentence and a link to the owner's **anchor**.
+   If the second explanation says something the owner lacks, say so: that is
+   a move, not a cut.
 2. **The seams.** Every dependency without a link: a term, a mechanism or a
    class this page assumes the reader knows, explained on another page and not
    linked at first use here. Every link that lands on the wrong page — the
@@ -124,9 +126,12 @@ change no fact.
 - **A summariser is not a duplicate.** The part's landing page, the lecture
   map, the glossary and the introduction restate pages by design. Report them
   only where they *disagree* with the page, under *Summariser drift*.
-- **The deliberate pairs stay.** Two pages that share a preamble on purpose
-  (the two click lectures of Part V) are one lecture in two halves; report a
-  drift between the two copies, not the copy.
+- **The deliberate pairs stay.** Where a landing page or `src/lectures.md`
+  calls two pages one lecture in two halves, a sequel, or a pair to keep
+  together, a shared preamble between them is deliberate; report a drift
+  between the two copies, never the copy. The fifteen declared pairs are
+  listed in `docs/pass5-brief.md` Part 3 (A4), and the rule is in
+  `TEMPLATE.md` under *One home per mechanism*.
 - **Do not rewrite the page.** Report; the session decides; the owner judges.
 - **Cover the whole page.** A report that stops early says where.
 
@@ -300,128 +305,271 @@ Commit your own files by name, never `add -A`.
 
 ## Part 3 — Session A: the standard
 
-Session A makes the rulings once so that thirteen part sessions apply them
-rather than re-deciding them. Its outputs are edits to `TEMPLATE.md`, to this
-file (Part 3's tables, filled in), to the frame, and to one exemplar landing
-page. Its checklist:
+*Done 2026-09-05. Session A makes the rulings once so that thirteen part
+sessions apply them rather than re-deciding them. What follows is what it
+ruled, not what it was asked; where it amended the planning session's draft
+the amendment is marked. Its edits landed in `TEMPLATE.md` (A1, A2),
+`src/systems/commands/README.md` (the exemplar), `src/lectures.md` and
+`src/SUMMARY.md` (A5), and `tools/check_deps.py` and
+`tools/verify_names.py` (the two checks A5 turned into gates).*
 
-### A1. The ownership rule, written into `TEMPLATE.md`
+### A1. The ownership rule — in `TEMPLATE.md`, under *One home per mechanism*
 
-The planning session's draft, for session A to confirm or amend:
+The planning session's draft stands, with three amendments.
 
-> **One home per mechanism.** A mechanism is explained on one page — the
-> page whose scenario the mechanism is the answer to — and every other page
-> that needs it spends at most one sentence and a link to the owner's anchor.
-> Between two candidates in different parts, the earlier part owns it,
-> because later parts assume earlier ones and a link back costs the reader
-> nothing while a link forward is a promise. Within a part, the page whose
-> figure draws the mechanism owns it. A vocabulary page owns what a thing
-> *is*; a trace owns what *happens*. A Reference page owns an enumeration
-> and may carry the one paragraph that makes its table readable, never an
-> explanation a lecture should give. **A link points from the page that
-> assumes to the page that explains**, at first use; a link into a later part
-> is allowed only as a declared dependency (a landing page's *before you
-> start*, drawn dashed on the figure) or in a sentence that says the later
-> page pays it off. **A summariser never explains**: the landing pages, the
-> lecture map, the glossary and the introduction restate pages, and when one
-> disagrees with its page the page wins and the summariser is corrected in
-> the same session, after the page.
+**Amendment 1 — the tie-break is a tie-break.** The draft read as though the
+earlier part owned a shared mechanism. It does not: the first rule is *the
+page whose scenario the mechanism is the answer to*, and the earlier part
+decides only when that leaves a tie. The counter-example is in the book
+already — the prediction ledger belongs to `client/prediction-and-acks`
+though Part V meets it first, because the block that appears and then
+disappears is that page's whole scenario, and the two circular cuts (A5)
+exist precisely so it can. The four rules are now numbered in priority
+order: the scenario · the figure, within a part · vocabulary owns *is* and a
+trace owns *happens* · the earlier part, last.
 
-### A2. The landing page's role, written into `TEMPLATE.md`
+**Amendment 2 — the Reference rule binds both ways.** The draft bound the
+Reference page (an enumeration, never an explanation); it now also binds the
+lecture, which names the three or four rows its scenario touches and links
+the rest and never reproduces the catalogue. That is the rule the
+`entity-rendering` ↔ `submit-phases` and `density-functions` ↔
+`density-function-nodes` pairs are decided under (sessions K and L).
 
-The shape table's row today says: *one paragraph · the figure · before you
-start · watch in this order · the Reference pages it uses; under a hundred
-lines, no trace*. Session A expands it into the role the charter names, with
-the exemplar beside it:
+**Amendment 3 — three rules under *a summariser never explains*.** A
+summariser is never a fact's only home; where a summariser disagrees with
+its page the page wins and the summariser is corrected in the same session,
+after the page; and where both say the same thing, **the summariser is the
+copy that gets shorter**. The third is new, and it is what A5's blurb ruling
+applies.
 
-- **The argument** — one paragraph that says what the part claims about its
-  system and what the reader will be able to explain afterwards; the part's
-  hook, not a summary of its pages. Starts inside a scenario like any page.
-- **The size** — one sentence, its number from
-  `{{#include ../../generated/part-<dir>.md}}`, naming the packages the way
-  `src/generated/parts.md` does; and the sentence that says what the part
-  declines, pointing at *what this book skips*.
-- **The shape** — the part's shape as a figure of its pages (a chain, a hub, a
-  stack, a ladder), with the sentence that names the shape.
-- ***Before you start*** — only true dependencies, each with the sentence that
-  says what the part uses it for; a hand-forward lives outside this section.
-- ***Watch in this order*** — the pages with a one-sentence blurb each; the
-  order is the part's argument in miniature, and `lectures.md` copies it
-  (session A decides whether the lecture map keeps blurbs at all — the
-  planning session's recommendation is that it keeps the order and the
-  dependencies and drops the blurbs, which duplicate every landing page and
-  drift every pass).
-- **The Reference it uses** — one line per page, what the part reads it for.
-- Under a hundred lines; no trace; no cast; the rules footer.
+Added beside them: **a pair the book declares stays a pair** (A4's list),
+and **the citation form** as its own subsection, because the rule "one
+sentence and a link" was silent on what the link points at.
 
-**The exemplar**: Part XIII's landing page is the best-argued today (*a stack
-of three floors*, and the dependency runs one way); session A rewrites it to
-the role above as the model, size sentence included, and the part sessions
-follow it.
+### A2. The landing page's role — in `TEMPLATE.md`, under *The landing page*
 
-### A3. The through-lines: owners and the citation form
+Six things in order — the argument · the size · the shape · *before you
+start* · *watch in this order* · the Reference it uses — then the rules
+footer. Three rulings inside it:
 
-Seven ideas cross parts. The planning session measured how many pages carry
-each (mentions, by `pass5_dups.py --terms`; the sets are in
-`pass5_prompts.py`'s `THROUGH_LINES`, and session A refines them):
+**The size is conditional, and never hand-counted.** The charter's
+requirement is that no landing page hand-counts; it does not follow that
+every landing page carries a number. Three do today (XI, XII, XIII) and each
+uses size *as* part of its argument. A part whose size is not part of its
+argument says nothing and leaves the number to the atlas, whose
+`maps/packages.md` carries the per-part table and is generated. Where a
+landing page does state a size it is
+`{{#include ../../generated/part-<dir>.md}}` and the prose names the
+packages the way `src/generated/parts.md` does.
 
-| through-line | pages carrying its terms | where it is told most | proposed owner |
-|---|---:|---|---|
-| the tick and its phases | 26 | `server-tick` (18), `server-level-tick`, `input-to-movement`, `anatomy` | `server/server-tick` — the phase table is the citation target |
-| the four threads | 72 | `how-a-server-dies` (25), `anatomy` (24), `reference/threads` (23), `resource-system` | `anatomy/anatomy`, with `reference/threads` as the table |
-| the wire and the hop | 28 | `the-connection` (24), `reference/threads`, `anatomy`, `server-tick`, `sound-engine` | `networking/the-connection` |
-| authority and prediction | 35 | `authority` (52), `prediction-and-acks` (31), `movement-and-collision`, the glossary | `entities/authority` for authority; `client/prediction-and-acks` for prediction |
-| the registry freeze and the reload | 39 | `resource-system` (29), `identifiers-and-registries` (27), `tags` (25), `data-driven-types` | `identifiers-and-registries` for the freeze; `resource-system` for the reload |
-| the data-driven type pattern | measured loosely (the terms are common words) | `data-driven-types` (47) and then every part that has an instance | `foundations/data-driven-types` |
-| the ledger | 18 | `prediction-and-acks` (35), then the two click lectures at 3 each | `client/prediction-and-acks` |
+**The blurb has one home: *watch in this order*.** `SUMMARY.md` copies the
+order, `lectures.md` copies the order and adds only what is about the order,
+and neither repeats the line. This is A5's blurb ruling stated from the
+landing page's side.
 
-Session A confirms the owners, decides whether the introduction, `anatomy` or
-a new page is *lecture zero* for the ones every part uses (the planning
-session's recommendation: no new page — `anatomy` already is lecture zero for
-the threads, the loops and the wire, and the introduction stays short), and
-writes into this table the **citation form** each other page uses — the one
-sentence and the anchor — so the part sessions cut retellings to it.
+**The budget is measured, not wished.** "Under a hundred lines" was true of
+three of the thirteen pages and of neither the best-argued one nor the
+exemplar, so it was not a budget. Measured without the watch order — which
+is one blurb per page and grows with the part — the thirteen run 45 · 61 ·
+71 · 84 · 89 · 89 · 90 · 94 · 95 · 104 · 106 · 124 · 144. **The rule is
+therefore about a hundred lines plus the watch order**, and it names two
+outliers rather than eleven: `rendering/README` (124) and `worldgen/README`
+(144), for sessions K and L to judge.
+
+**The exemplar is `src/systems/commands/README.md`**, rewritten this session
+to the role: the argument now ends on the claim rather than on the list of
+four systems; the size sentence is the include (its hand-count said 473
+classes and 43,900 lines against the mapping's 470 and 43,126, because it
+counted a different set of packages); the scope statement — what the part
+declines — moved up beside the size, where it belongs; and one sentence was
+cut under A1 rather than moved, the statistics-and-the-data-fixer claim,
+because `anatomy/what-this-book-skips`:252 owns it and the landing page
+already links there. The three *before you start* links that had an owner
+section to land on now carry its anchor, which is the citation form (A3).
+
+### A3. The through-lines: owners, anchors and the citation form
+
+The owners the planning session proposed are confirmed; every anchor below
+was checked against the built page's heading id.
+
+| through-line | owner and anchor | the other pages' form |
+|---|---|---|
+| the tick and its phases | `server/server-tick`<br>`#what-minecraftservertickchildren-runs-and-in-what-order` | one clause naming the phase, then *(the server tick)* with the anchor. The event loop is the same page at `#the-event-loop-and-what-a-ticks-spare-time-buys`. |
+| the four threads | `anatomy/anatomy`<br>`#four-threads-worth-memorising` | name the thread and link; the roster is `reference/threads#the-threads-a-lecture-leans-on` and no page reproduces it |
+| the wire and the hop | `networking/the-connection`<br>`#the-pipeline-in-both-directions` for the wire, `#the-threads-underneath-it` for the hop | *…deferred to the game thread (the connection)* — one clause, never the mechanism |
+| authority and prediction | authority: `entities/authority`<br>`#five-predicates-and-the-final-one-the-other-four-hang-off`<br>prediction: `client/prediction-and-acks`<br>`#two-state-machines-running-against-each-other` | the premise in one sentence in the page's own terms, then the link. Part V's two click pages are the declared exception (A4). |
+| the registry freeze and the reload | freeze: `foundations/identifiers-and-registries`<br>`#the-freeze-rule-stated`<br>reload: `foundations/resource-system`<br>`#reload-the-same-pipeline-on-the-server` | *…because the registry is frozen by then (the freeze rule)* — the consequence here, the rule there |
+| the data-driven type pattern | `foundations/data-driven-types`<br>`#the-idea-stated-once` | name the instance, link the pattern; the page that owns the instance never restates the pattern |
+| the ledger | `client/prediction-and-acks`<br>`#the-four-writes` | the sequence number and what it buys, in one sentence; the four writes are the owner's |
+
+**Lecture zero is `anatomy/anatomy`, and no new page is written.** It already
+carries the four threads (24 term hits, the most of any page that is not
+about a thread dying), the two loops and the wire, and the introduction stays
+short. The tick, authority, prediction, the freeze, the reload, the pattern
+and the ledger each belong to a page inside a part, and a reader meets each
+where it does work.
+
+**The citation form, stated once** (and copied into `TEMPLATE.md`): the
+parenthetical link at the end of the sentence that needs it, carrying **the
+anchor of the section that is the answer**. The book already writes the
+parenthetical — 34 inbound links to `server-tick` from 26 pages, almost all
+in that shape — and what pass 5 adds is the anchor, so that a reader lands on
+the paragraph rather than the top of a four-hundred-line page. **The eight
+owner pages above take 169 inbound links, and three carried an anchor before
+this session** (`check_links.py --inbound` prints them); the exemplar added
+three more. That is the work, and it is a part session's, one link at a
+time.
+
+**Measured spread, for the part sessions** (`pass5_dups.py --terms`; a hit is
+a mention, not a retelling): tick 26 pages · threads 72 · wire and hop 28 ·
+authority and prediction 35 · freeze and reload 39 · the pattern 11 · the
+ledger 18. Two notes fall out of the measurement and are pass 8's, logged in
+[pass5.md](pass5.md): *ledger* is used for three unrelated things (the
+prediction ledger; `server-tick`'s three closing ledgers; a metaphor on two
+`items/` pages), and *the data-driven type pattern*'s terms are ordinary
+words, so its 11 is a floor and not a count.
 
 ### A4. The duplication report, routed
 
-`python tools/pass5_dups.py --summary --top 100` is the corpus-wide list.
-The routing rule: **a cross-part pair is resolved by the later part's
-session**, which reads the earlier page as it then stands; a within-part pair
-by the part's session; a pair with a Reference page by the part whose landing
-page points at that Reference page. Session A writes the routed list into
-Part 4 (the planning session's first cut is there already) and notes any pair
-it thinks is a link doing its job, so a part session does not spend an agent
-on it.
+**The routing rule stands**, with one addition: a cross-part pair is
+resolved by the later part's session; a within-part pair by the part's
+session; a pair with a Reference page by the part whose landing page points
+at that Reference page; and **a pair between the frame (`lectures.md`, a
+landing page, the glossary) and a system page is the part's session too** —
+the landing page belongs to the part, and session O re-syncs the frame at
+the close. The routed list in Part 4 stands as the planning session wrote
+it.
+
+**The declared pairs — checked, not merged.** These are the pairs a landing
+page or `lectures.md` calls one lecture in two halves, a sequel, or a pair to
+keep together. A shared preamble between them is deliberate; the finding is a
+*drift between the two copies*, never the copy. No session merges one of
+these without saying so in [pass9.md](pass9.md).
+
+| pair | declared by |
+|---|---|
+| `server-tick` ↔ `server-level-tick` | `lectures.md` III: *never apart from it* — the landing page does not say it |
+| `block-interaction` ↔ `block-breaking` | V: *one lecture in two halves*, and the figure's own edge label |
+| `synched-entity-data` ↔ `attributes` | `lectures.md` VI: *the contrast between the two is the lesson* — the landing page does not say it |
+| `ai-goals-and-brains` ↔ `pathfinding` | VI: *the other half of the same lecture* |
+| `enchantments` ↔ `enchanting` | VII: *the pair to keep together* |
+| `contexts-and-predicates` ↔ `loot-tables` | VII: *the other pair* |
+| `player-anatomy` ↔ `the-two-phase-tick` | VIII: *the pair to keep together* |
+| `the-sword-swing` ↔ `the-spear` | VIII: *the spear is the sword swing's sequel* |
+| `the-connection` ↔ `packets-and-stream-codecs` | IX: *one lecture in two halves* |
+| `the-client-level` ↔ `prediction-and-acks` | X: *a pair — the ledger lives on `ClientLevel`* |
+| `gui-and-screens` → `the-gui-render-tree` → `text-and-fonts` → `hud` | X: *the GUI stack, watched together* |
+| `sound-engine` ↔ `what-makes-a-sound` | X: *the two halves of sound* |
+| `visibility-and-the-frame-graph` ↔ `section-meshing` | XI: *one journey seen from its two ends* |
+| `entity-rendering` ↔ `block-entity-rendering` | XI: *the second written as the differences from the first* |
+| Part V's two click pages ↔ `prediction-and-acks` | V: both open with *the same four-sentence statement of the contract*, which is the V ↔ X cut (A5) |
+
+**A finding that falls out of building the list**: a part's ordering
+paragraph is on its landing page *and* in its section of `lectures.md`, and
+the two have already drifted, in both directions. The landing page has pairs
+the map does not (Part X's ten and eleven, the two halves of sound; Part
+VII's seven and eight; Part VIII's six and seven); the map has pairs the
+landing page does not (Part III's *never apart from it*, Part VI's
+*attributes* against *synched entity data*); and `lectures.md`:296 and
+`rendering/README`:140 were near-verbatim until this session shortened the
+first. Under A1 the ordering claim belongs to the landing page and the
+summariser is the copy that gets shorter, so a claim the map has and the
+page lacks **moves to the page**. Each part session re-syncs its own at the
+end; session O checks the thirteen.
 
 ### A5. The frame's own seams
 
-The introduction, `lectures.md`, the maps' and Reference's front pages, and
-`SUMMARY.md` — read as the book's argument:
+**The dependency table has a rule now, and a gate.** The rule the table was
+groping for is mechanical: *a page two or more landing pages name under
+**before you start***, less the three every part assumes — `anatomy`,
+`codecs-nbt-json` and `identifiers-and-registries` — which are exactly the
+boxes the figure draws without edges, for the reason the paragraph above it
+already gives. Membership by that rule loses `blocks-and-states`,
+`contexts-and-predicates` and `the-client-loop` (one dependent part each,
+and the last two are named in the paragraph below the table instead) and
+gains `resource-system` (III, VII, XI), `data-driven-types` (XII, XIII) and
+`text-components` (IX, X). Nine rows and ten pages, as before.
+`check_deps.py` now fails on a page that qualifies and has no row, on a row
+that does not qualify, and on a universal that takes a row, and
+`check_deps.py --probe` proves both new checks on synthetic input — the
+first probe on a tool built before pass 5, added because these two checks
+are the session's own work and a tool is suspected first.
 
-- The **nine-page dependency table** on `lectures.md`: state its membership
-  rule (pass-4 session A's finding — by its own criterion three Part II pages
-  qualify and are absent, a one-part dependency is in, and
-  `chunk-generation-pipeline` is not) and fix the membership to the rule.
-- **Part IV's three orders**: `SUMMARY.md`, `world/README.md` and
-  `lectures.md` disagree on where *environment attributes and timelines* sits
-  — the only part where they do. Rule which order is the book's and make the
-  three agree (session D applies it if it is the sidebar that moves).
-- **The two circular cuts** (III ↔ IV, V ↔ X): re-judged with the pages in
-  front of you; `check_deps.py` stays green.
-- The **lecture map's blurbs** (A2); the **glossary**: whether it does
-  disambiguation at all (*Occlusion*, four meanings, no owner) and whether an
-  entry may point at two owners (six do); the **class index** labelling every
-  landing page *README* (a `verify_names.py --index` change: label by part).
-- The published gate sentence: `introduction.md`'s *Verified means tested*
-  paragraph now lists the link check (done by the planning session); confirm
-  it reads right.
+**Part IV's three orders: the landing page's *watch in this order* is the
+book's order, and `SUMMARY.md` and `lectures.md` follow it.** That is the
+general rule; applied, it moves *environment attributes and timelines* to
+first in Part IV's sidebar block, which is where the part's own landing page
+and the lecture map have always had it. `check_deps.py` already forced
+`lectures.md` to agree with the landing page; it now forces `SUMMARY.md` too,
+and Part IV was the only part of the thirteen where they differed. Session D
+may re-judge the order itself when it reads the part whole; it may not leave
+the three disagreeing.
 
-### A6. What session A does not do
+**The lecture map keeps the order and drops the blurbs.** The planning
+session's recommendation is taken. `lectures.md` carried a one-line
+description of each of the 102 pages, in different words from the same
+description on the part's landing page: two copies of one claim, which is
+the drift machine pass 4 found errors in, and 102 of them. The page's own
+first paragraph says its subject is the *ordering*, so what stays is
+everything about the order — each part's shape paragraph, the ordering
+claims that were inside the blurbs (*watched immediately after and never
+apart from it*, *assumes scheduled ticks only lightly*, *Part XII is the
+cargo on this conveyor*), the cross-part dependency paragraphs, the graph
+and the table — and what goes is the description of content, which the
+landing page owns. 662 lines to 469, and a new second paragraph tells the
+reader where the descriptions are. Two open queue entries were settled by the
+cut and are struck as overtaken; one published sentence that named a pass
+number went with it.
 
-It does not read a part (that is B–N), it does not rewrite a system page, and
-it makes no ruling a part session could make better with the pages open.
+**The two circular cuts stand, re-judged with the pages open.**
+III ↔ IV is *better* cut than it was: the environment page is now the first
+lecture of Part IV in all three orders, so the one departure a straight-
+through viewer makes is as small as it can be, and the ranges half is cut by
+definition — which under A1 means `server-level-tick`'s two sentences must
+read as a citation of `tickets-and-loading`, not as a second explanation
+(session D). V ↔ X stands unchanged, and A4 records the shared preamble as a
+declared pair rather than a duplicate.
 
----
+**The glossary: one owner per sense.** An entry has one owner link. Where a
+word names two different things the entry says so and gives one link per
+*sense* — which is what `Component`, `Level` and `Tick` already do, and they
+keep both links. Where one thing is explained on a page and enumerated on a
+Reference page, the owner is the page that explains and the Reference page is
+named in the sentence as where the list is: that reduces `Render state`,
+`Quart` and `Submit node` to one owner each. **Yes, the glossary
+disambiguates**, but only for a word the corpus itself uses in more than one
+sense, and the entry *is* the disambiguation: one line per sense, each with
+the page that uses it that way. *Occlusion* (four senses over nine pages, no
+owner) is therefore written, by session N, after the parts have settled — as
+are the five headwords the corpus does not use and `Blending data` →
+`BlendingData`, under the page's own class-name rule.
+
+**The class index labels a landing page by its title.** Eleven distinct
+pages rendered as *README*, three of them in one row. `verify_names.py`'s
+index now labels any `README.md` with its own `#` heading — *VI · Entities*,
+*Reference*, *The atlas* — which is general, self-maintaining and needs no
+table in the tool.
+
+**The introduction's gate sentence is right.** *Verified means tested* now
+names all five gates — names, diagrams, lanes, links and anchors, and the
+landing-page/lecture-map/figure check — and says narrowly what the guarantee
+covers. No change.
+
+**The licence footer stays doubled on the introduction.** The queue entry
+proposed having `site-footer.js` skip the introduction. Ruled out: the JS
+footer never reaches `llms-full.txt`, the prose does, and duplication in
+favour of the licence being visible is the right way to err. Struck with the
+reason.
+
+### A6. What session A did not do
+
+It did not read a part, did not rewrite a system page, and made no ruling a
+part session could make better with the pages open. Three questions it was
+handed were left where they belong: `reference/README.md`'s hand-written
+*parts* column (session N — it is a Reference page, not a frame ruling), the
+lane key's 45 unclaimed rows (pass 7 prunes lanes, and the key is only
+authority until then), and the two-lanes-for-one-class case, `RCPL` and
+`CPL`, which the chat figure needs and pass 7 owns.
 
 ## Part 4 — The schedule
 
@@ -525,7 +673,7 @@ bridge. Each page's prompt file lists its own.
 
 | session | part | pages | queue (book) | named nowhere | the charter's named items, and what the tools add |
 |---|---|---:|---:|---:|---|
-| **A** | the standard | — | 24 (frame + Reference) | — | Part 3 above, whole |
+| **A** — *done 2026-09-05* | the standard | — | 24 (frame + Reference) | — | Part 3 above, whole. Five queue entries struck, six findings logged back to [pass5.md](pass5.md), two checks added to `check_deps.py`. |
 | **B** | I · Anatomy, II · Foundations | 2 + 7 | 3 + 4 | 0 + 173 | The owners of four through-lines live here (A3). `anatomy` ↔ `reference/threads` (6.07): the page keeps the four threads, the table is Reference's. **Feature flags and `FeatureFlagSet`** (§7): backticked on twelve pages, explained on none — a section on `identifiers-and-registries` (it gates registry contents) or `resource-system`; `world/flag` is in Part II's packages now. Part II's coverage is 173 classes / 12.9k lines: read the sub-package table (`util` is the toolbox every part uses; `core/component` and `server/packs` are the part's own). `identifiers-and-registries` ↔ `tags` (12.45) and ↔ `data-driven-types` (7.07). `text-components` ↔ `chat-and-signing` twins at 270/235. The *not X but Y* and the second person are pass 8's and 6's; leave them. |
 | **C** | III · The server | 5 | 6 | 25 | **`how-a-server-dies`' two subjects** (the three endings; the durability page inside it): section or page, decided. `how-a-server-dies` ↔ `starting-a-server` (11.43) and ↔ `server-tick` (6.03). **The three homeless items** from `players-and-sessions`: the `ServerPlayerGameMode` paragraph (→ `player-anatomy`, session H receives it), the view-distance packets (→ `what-the-client-is-told`, session I), `PlayerDataStorage`'s rescue (→ `level-data-and-rules`, session D). `server-tick`'s packet-drain paragraph: point forward to the event-loop section instead of explaining in place. The event-loop machinery (`BlockableEventLoop`, `TickTask`, `managedBlock`) — four parts cite it; confirm `server-tick` owns it and the others cite. **The abstract `Level`** (§7): decide with session D whether it is a section of `server-level-tick`, of `chunk-anatomy`, or a Reference page; the glossary asserts it with nowhere to send the reader. Coverage: `ServerBossEvent` is Part XIII's (session M); `DemoMode`, `ChunkResult`, `ServerEntityGetter` are this part's to place or decline. |
 | **D** | IV · The world | 10 | 14 | 27 | **Part IV's three orders**, applied as session A ruled. **`chunk-storage`'s proposed hand-off** of the null-parse branch and `ChunkMap.handleChunkLoadFailure` to `chunk-generation-pipeline`: do it or drop it. The five within-part pairs (`chunk-generation-pipeline` ↔ `tickets-and-loading` 8.30, `chunk-anatomy` ↔ `chunk-generation-pipeline` 7.40, `chunk-anatomy` ↔ `lighting` 6.85) and the three with Part III (`server-level-tick` ↔ `scheduled-ticks` 8.67, ↔ `tickets-and-loading` 6.53, `how-a-server-dies` ↔ `chunk-storage` 6.35): the tick page defines the three ranges by the circular cut and cites the rest. `points-of-interest`'s missing sentence on `PoiManager.isVillageCenter` reading through the non-loading `SectionStorage.get` — a fact, so decompile open. `WorldBorder` (573 lines) is named only on `level-data-and-rules` and `server-level-tick`: a home, or a declared Reference-only. `level-data-and-rules` (this part's Reference page): `DirectoryLock`, `LevelVersion`, `LevelSummary`'s states, the four `LevelResource` paths, the per-player files, `MinecraftServer.saveAllChunks`, and the seven table rows with no prose (pass-4 session O's list). Receives `PlayerDataStorage`'s rescue from C. The landing page's *four side-systems* against five pages off the conveyor. |

@@ -40,12 +40,17 @@ pass has **one lens**, since pass 4 showed that a session sees what it is
 looking for and nothing else: what the writing session knew it had changed
 came back clean, and what it did not know was where the errors lived.
 
-**Pass 5 — the book — is next, and planned.** Its charter is below at the
-level of intent; its brief, runbook, standard and schedule are
+**Pass 5 — the book — is running.** Its charter is below at the level of
+intent; its brief, runbook, standard and schedule are
 [pass5-brief.md](pass5-brief.md), written by the 2026-09-05 planning session
 with the tools it names (`pass5_dups.py`, `pass5_coverage.py`,
 `check_links.py`, `pass5_queue.py`, `pass5_prompts.py`, and `map_source.py`'s
-`PARTS`), each measured against the corpus before the first session runs.
+`PARTS`), each measured against the corpus before the first session ran.
+**Session A is done** (2026-09-05): the ownership rule and the landing page's
+role are in `TEMPLATE.md`, the through-lines have owners and anchors, the
+lecture map has been cut back to the order, and two more checks stand in
+`check_deps.py`. Part 3 of the brief is now the record of what was ruled, and
+sessions B–N apply it.
 
 ## The passes
 
@@ -55,7 +60,7 @@ with the tools it names (`pass5_dups.py`, `pass5_coverage.py`,
 | **2 — completeness and accuracy** | every claim adversarially fact-checked; gaps filled; pages split and added freely | the adversary with the source | done, 2026-09-01 — [pass2.md](pass2.md) |
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
-| **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | **next** — charter below; queue [pass5.md](pass5.md) |
+| **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | **running** — session A done 2026-09-05; charter below; queue [pass5.md](pass5.md) |
 | **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts; a page that reads as one lecture's notes | the reader with only the page | after 5 |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
@@ -528,3 +533,53 @@ plan as it stood at its close)*
   pair in the book is `data-components` ↔ `items-and-stacks`, and the
   charter's named duplicates all surface in the top forty. The introduction's
   gate sentence now names the link check (logged in [pass9.md](pass9.md)).
+- **2026-09-05, session A — the standard (pass 5).** The rulings the thirteen
+  part sessions apply, made once and written into
+  [pass5-brief.md](pass5-brief.md) Part 3, which is now a record of what was
+  decided rather than a list of what to decide. **`TEMPLATE.md` gained two
+  sections** that are rules about the book rather than about a page: *One home
+  per mechanism* (the ownership rule, with the planning session's draft
+  amended three ways — the earlier-part rule demoted to a tie-break under *the
+  page whose scenario the mechanism answers*; the Reference rule made to bind
+  the lecture as well as the catalogue; and *a summariser never explains* given
+  three consequences, of which **the summariser is the copy that gets shorter**
+  is the new one) and *The landing page* (the argument · the size · the shape ·
+  before you start · watch in this order · the Reference it uses). **The
+  citation form** is stated for the first time: the parenthetical link the book
+  already writes, now carrying **the anchor of the section that is the
+  answer** — the eight through-line owner pages take 169 inbound links and
+  three carried an anchor. The seven through-lines' owners are confirmed with
+  an anchor each, every one checked against the built heading id;
+  `anatomy/anatomy` is lecture zero and no new page is written. **Three
+  published pages changed.** `src/lectures.md` lost its 102 per-page blurbs
+  (662 lines to 469): each was a second copy of a line on a landing page, in
+  different words — the drift machine pass 4 found errors in, a hundred times
+  over — and what stays is everything about the *order*, including every
+  ordering claim that was inside a blurb. Its dependency table has a stated,
+  mechanical membership rule at last (two or more landing pages, less the three
+  every part assumes), which loses three rows and gains three.
+  `src/SUMMARY.md` moves *environment attributes and timelines* to first in
+  Part IV, under the general ruling that **the landing page's watch order is
+  the book's order and the sidebar and the lecture map follow it**; Part IV was
+  the only part of thirteen where they differed. `src/systems/commands/README.md`
+  is the exemplar landing page, rewritten to the role, its hand-counted size
+  replaced by the include (473 / 43,900 by hand against 470 / 43,126 by the
+  atlas) and one sentence cut under the ownership rule rather than moved.
+  **The gates grew by truth again**: `check_deps.py` now fails when
+  `SUMMARY.md` and a landing page's watch order disagree and when the
+  dependency table's membership breaks its own rule — the second reproduced
+  pass-4 session A's hand-found list exactly before anything was edited, which
+  is the evidence it reads the pages right — and `verify_names.py --index`
+  labels a landing page by its own title instead of *README*, which eleven
+  pages shared. **Rulings the part sessions inherit**: fifteen declared pairs
+  are checked for drift and never merged; the glossary keeps one owner per
+  *sense* and does disambiguate, so *Occlusion* gets an entry from session N;
+  the landing-page budget is about a hundred lines plus the watch order
+  (measured: 45 to 144, median 90), which names two outliers instead of
+  eleven; a landing page states a size only where size is part of its
+  argument, and then only through the include. Five queue entries struck (two
+  overtaken by the blurb cut, two done, one ruled out — the doubled licence
+  footer, for the entry's own reason), six findings logged back to
+  [pass5.md](pass5.md) and the session's claims to [pass9.md](pass9.md), where
+  it recorded **no corrections**: nothing it read was wrong, because every
+  finding was about where a claim lives rather than whether it is true.

@@ -181,8 +181,26 @@ def main() -> int:
     return 0
 
 
+def page_label(src: str, rel: str) -> str:
+    """The name a page goes by in the index. A README is labelled by its own title
+    ("VI · Entities", "Reference", "The atlas"), because eleven distinct pages are
+    called README and a reader cannot tell them apart."""
+    stem = os.path.splitext(os.path.basename(rel))[0]
+    if stem != "README":
+        return stem
+    try:
+        with open(os.path.join(src, rel), encoding="utf-8") as fh:
+            for line in fh:
+                if line.startswith("# "):
+                    return line[2:].strip()
+    except OSError:
+        pass
+    return stem
+
+
 def write_index(path: str, mentions: dict[str, set[str]]) -> None:
     """class -> every page that names it, as a table under src/reference/."""
+    src = os.path.dirname(os.path.dirname(path))
     out = [
         "# Class index",
         "",
@@ -202,9 +220,7 @@ def write_index(path: str, mentions: dict[str, set[str]]) -> None:
         "|---|---|",
     ]
     for cls in sorted(mentions, key=str.lower):
-        links = ", ".join(
-            f"[{os.path.splitext(os.path.basename(p))[0]}](../{p})" for p in sorted(mentions[cls])
-        )
+        links = ", ".join(f"[{page_label(src, p)}](../{p})" for p in sorted(mentions[cls]))
         out.append(f"| `{cls}` | {links} |")
     with open(path, "w", encoding="utf-8", newline="\n") as fh:
         fh.write("\n".join(out) + "\n")

@@ -49,6 +49,65 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session A — the standard (pass 5) *(2026-09-05)*
+
+*What the standard turned up on its way through the frame. The rulings are in
+[pass5-brief.md](pass5-brief.md) Part 3; these are the pieces of work they
+create, routed by kind.*
+
+### For the part sessions (pass 5)
+
+- **The ordering paragraph is on two pages, and the two have drifted.** Every
+  part states its internal order twice — in its landing page's closing
+  ordering paragraph and in its section of `lectures.md` — and neither is a
+  copy of the other. The landing page has pairs the map lacks (Part X's ten
+  and eleven, *the two halves of sound*; Part VII's seven and eight; Part
+  VIII's six and seven) and the map has pairs the landing page lacks (Part
+  III's *never apart from it*; Part VI's *attributes* against *synched entity
+  data*). Under the ownership rule the landing page owns the ordering claim,
+  so a claim the map has and the page lacks **moves to the page**, and the map
+  keeps the shorter copy. Each part session re-syncs its own; session O checks
+  the thirteen. [kind=book]
+- **The citation form is a link's worth of work per page.** The eight
+  through-line owner pages take **169 inbound links, and three carried an
+  anchor** before session A (`check_links.py --inbound` prints them; the
+  exemplar added three more). A part session's cheapest structural win is to
+  put the owner's anchor on the through-line links out of its own pages —
+  `server-tick#what-minecraftservertickchildren-runs-and-in-what-order` and
+  the rest are tabulated in the brief's A3. [kind=book]
+- **Two landing pages hand-count a size the atlas now generates**, and one of
+  them counts a different population: `worldgen/README`:27 says *451 classes
+  and 45,700 lines* against the generated 451 / 45,749 (the same packages,
+  rounded — a straight switch to `{{#include}}`), and `rendering/README`:20
+  says *1,179 classes and 87,000 lines* for three packages against the
+  mapping's 1,254 / 93,012 for four, because `map_source.PARTS` gives Part XI
+  `client/particle` as well. Session K decides which population Part XI's
+  argument is about and then uses the include. The other ten landing pages
+  carry no size sentence, which A2 allows. [kind=book]
+- **Two landing pages are over the measured budget** — everything but the
+  watch order: `rendering/README` 124 lines and `worldgen/README` 144,
+  against a corpus median of 90. Sessions K and L judge; the fix is the
+  argument, not the trim. [kind=book]
+- **`lectures.md`:296 and `rendering/README`:140 were near-verbatim**, and
+  session A shortened the first under the summariser rule. Session K reads
+  the pair once to check nothing was lost. [kind=book]
+
+### For pass 8, the voice
+
+- ***Ledger* names three unrelated things.** The prediction ledger
+  (`client/prediction-and-acks`, 18 uses), `server-tick`'s *three ledgers* at
+  the bottom of a tick, and a loose metaphor on `items/loot-tables` and
+  `items/contexts-and-predicates`. The through-line owns the first; the other
+  two want a different word or an explicit one. [kind=voice]
+- **`rendering/README`:140 says "they were one page until pass 3".** A
+  published page naming a pass number a reader cannot resolve; the same
+  sentence in `lectures.md` was fixed this session ("two pages that were
+  one"). [kind=voice]
+- **The data-driven type pattern's terms are ordinary words**, so
+  `pass5_dups.py --terms` gives it 11 pages where the other six through-lines
+  get 18 to 72. Eleven is a floor, not a count, and no session should quote it
+  as one. [kind=voice]
+
 ## Session O — the close (pass 4) *(2026-09-05)*
 
 The glossary sweep, the four unactioned Reference catalogues and the tool
@@ -253,11 +312,18 @@ drop the number.
 - `maps/fanin.md:24` — "the **thirty** hubs … they are **seven**" has the right
   seven idea rows, but the table's class list is 32 classes, only 24 of them in
   the thirty; six of the thirty appear in no row.
-- `lectures.md:220` — "**Two** components on one item" is the two *weapon*
-  components; `the-spear`'s own cast lists eight `DataComponents` on it.
-- `lectures.md:228` — "**four** languages" is four in a login trace;
+- ~~`lectures.md:220` — "**Two** components on one item" is the two *weapon*
+  components; `the-spear`'s own cast lists eight `DataComponents` on it.~~
+  **Overtaken** (pass 5, session A): `lectures.md`'s per-page blurbs are cut,
+  and that sentence with them. The count is not settled — it survives on
+  `player/README`'s watch-order line for *the spear*, which is session H's.
+  [kind=book]
+- ~~`lectures.md:228` — "**four** languages" is four in a login trace;
   `ConnectionProtocol` has five values and the page's own section is
-  *The five phases*.
+  *The five phases*.~~ **Overtaken** (pass 5, session A): the blurb is cut.
+  The count is not settled — it survives in `networking/README`'s verified
+  line ("One socket, four languages") and in Part IX's watch order, which is
+  session I's. [kind=book]
 
 - `rendering/post-processing.md:204` — "every chain this game will ever load is
   named by a **constant** in Java, and there are only six of those". Six ids is
@@ -1032,23 +1098,38 @@ correction):
 
 **Structural findings** (not acted on, per the charter):
 
-- **The nine-page dependency table's membership rule is unstated and
+- ~~**The nine-page dependency table's membership rule is unstated and
   inconsistent.** By its own criterion — a page two or more landing pages
   assume — three Part II pages qualify and are absent (`resource-system`:
   VII and XI; `text-components`: IX and X; `data-driven-types`: XII and XIII),
   while a one-part dependency (*contexts and predicates*, XIII only) is in it
   and `world/chunk-generation-pipeline` (XII, called "hard" by the page) is
-  not. State the rule or fix the membership.
-- **Part IV's sidebar order disagrees with its own landing page.**
+  not. State the rule or fix the membership.~~ **Done** (pass 5, session A):
+  the rule is stated above the table — two or more landing pages, less the
+  three every part assumes — the membership fixed to it (in:
+  `resource-system`, `data-driven-types`, `text-components`; out:
+  `blocks-and-states`, `contexts-and-predicates`, `the-client-loop`, each now
+  named in the paragraph below the table), and `check_deps.py` fails on a
+  mismatch either way. `chunk-generation-pipeline` stays out: only Part XII
+  names it. [kind=book]
+- ~~**Part IV's sidebar order disagrees with its own landing page.**
   `src/SUMMARY.md` lists *environment attributes and timelines* sixth in Part
   IV; `world/README.md`'s *watch in this order* and `lectures.md` both list it
   first. Part IV is the only part where the three orders differ (checked for
   all thirteen). `lectures.md` was reworded this session to say "Part IV's own
-  watch order lists it first", which is true but papers over the split.
-- **The class index labels every landing page "README".** Eleven distinct
+  watch order lists it first", which is true but papers over the split.~~
+  **Done** (pass 5, session A): ruled that the landing page's *watch in this
+  order* is the book's order and the sidebar and the lecture map follow it;
+  `SUMMARY.md` moved, `lectures.md`'s papering-over sentence replaced, and
+  `check_deps.py` now fails when the three disagree. Session D may re-judge
+  the order itself; it may not leave the three disagreeing. [kind=book]
+- ~~**The class index labels every landing page "README".** Eleven distinct
   pages render under that one word; 26 rows carry at least one and nine carry
   two or more — in the `LivingEntity` row the reader sees "README" three times
-  with nothing to tell them apart. Label by part.
+  with nothing to tell them apart. Label by part.~~ **Done** (pass 5, session
+  A): `verify_names.py --index` labels any `README.md` with its own `#`
+  heading — *VI · Entities*, *Reference*, *The atlas* — which needs no table
+  in the tool and follows a retitling. [kind=book]
 - **Teach the class index to read diagrams.** 135 class/page pairs and 112
   classes are named only inside mermaid blocks (51 of them as
   `participant X as ClassName`), and 26 of those classes have no row at all.
@@ -1622,7 +1703,7 @@ was cut or moved, and why)*
   drink a potion*), which reads well here and is worth a corpus-wide decision
   rather than a per-part accident.
 
-- **2026-09-03, out of band — the licence footer says it twice on one page.**
+- ~~**2026-09-03, out of band — the licence footer says it twice on one page.**
   `site-footer.js` puts the disclaimer and the CC BY-SA line on every page,
   and the introduction now also closes on *Unofficial, and free to reuse*,
   which says the same two things in prose. Everywhere else the footer is the
@@ -1632,7 +1713,11 @@ was cut or moved, and why)*
   guaranteed to carry the prose version), rather than cutting the prose —
   the prose is what reaches an agent through `llms-full.txt`, which the JS
   footer never does. Not urgent; nobody has complained, and duplication in
-  favour of the licence being visible is the right way round to err.
+  favour of the licence being visible is the right way round to err.~~
+  **Ruled out** (pass 5, session A), for the entry's own reason: the JS
+  footer never reaches `llms-full.txt` and the prose does, so the two copies
+  are not the same copy, and erring towards the licence being visible is
+  right. [kind=book]
 
 - **2026-09-03, pass 3 session J — what Part IX's reshape cut.** Logged per
   R7: nothing left a page except by moving or by this entry.
