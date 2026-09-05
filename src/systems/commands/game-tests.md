@@ -1,6 +1,6 @@
 # Game tests
 
-> Verified against **Minecraft 26.2** · Part XIII · Run `/test runall` on a vanilla server and one test runs, and passes. The suite is not in the game — a test is a data-pack file, the Java body is a value the JSON points at, and the shipped jar declares exactly one of each.
+> Verified against **Minecraft 26.2** · Part XIII · Run `/test run *` on a vanilla server and one test runs, and passes. The suite is not in the game — a test is a data-pack file, the Java body is a value the JSON points at, and the shipped jar declares exactly one of each.
 
 Game tests are how Mojang checks that a piston still pushes and a hopper
 still pulls: a small structure is pasted into a spare corner of a world, a
@@ -19,15 +19,15 @@ body for it, and `GameTestEnvironments`' default environment — an empty
 test sources, not in the game you downloaded.
 
 This is [the data-driven type pattern](../foundations/data-driven-types.md)
-again, and game tests are its most complete instance: three data-pack
-registries and one built-in type registry between them.
+again, and game tests are its most complete instance: two data-pack
+registries and two built-in type registries between them.
 
 ## The cast
 
 | class | what it decides |
 |---|---|
 | `GameTestInstance` | the registry element. `GameTestInstance.run` takes a `GameTestHelper` and is the body — `BlockBasedTestInstance` needs no Java at all, `FunctionGameTestInstance` invokes a `Registries.TEST_FUNCTION` entry |
-| `TestData` | the declaration record every instance delegates to: environment, structure, tick budgets, required, rotation, manual-only, `RetryOptions`, sky access, padding |
+| `TestData` | the declaration record every instance delegates to: environment, structure, tick budgets, required, rotation, manual-only, the two retry counts, sky access, padding |
 | `TestEnvironmentDefinition` | the seven ways to bend the world for a test, shaped as an **undo log** |
 | `GameTestBatch` | a group of tests keyed by their environment holder. A batch *is* an environment |
 | `GameTestRunner` | owns the batches and the structure spawner, and re-queues a failure when the retry options say so |
@@ -93,13 +93,14 @@ sequenceDiagram
     participant RGL as ReportGameListener
 
     TC->>GTR: build one GameTestInfo per test, batched by environment
-    GTR->>TIB: placeStructure, then encaseStructure — a barrier shell round the test
+    GTR->>GI: spawn each info — prepareTestStructure
+    GI->>TIB: placeStructure, then encaseStructure — a barrier shell round the test
     GTR->>GTR: TestEnvironmentDefinition.setup — returns the undo log
-    GTR->>GTT: add every info to the ticker
+    GTR->>GTT: add every info whose structure was placed to the ticker
     GTT->>GI: tick — counting up from NEGATIVE: the setup ticks run before tick zero
     GI->>GI: GameTestInstance.run(helper) at tick zero, and sequences tick after
     GI->>RGL: succeed, or a GameTestException — a timeout is just another one
-    RGL->>TIB: setSuccess or markError — the beam turns green, red or orange
+    RGL->>TIB: setSuccess or setErrorMessage — the beam turns green, red or orange
     RGL->>RGL: say to chat, and GlobalTestReporter to the log or to JUnit XML
 ```
 
@@ -109,20 +110,21 @@ and the debug subscribers, before the server GUI refresh and chunk sending —
 and only when the tick-rate manager reports the game running normally, so
 `/tick freeze` suspends them.
 
-**Setup ticks run before tick zero.** `GameTestInfo` starts its counter
-*negative* by the declared setup ticks, so the body runs when the count
-reaches zero. `GameTestSequence` is the "do this, wait, then assert that"
+**Setup ticks run before tick zero.** `GameTestInfo.startExecution` starts
+its counter *negative* — by the declared setup ticks, plus the spawner's own
+tick delay, plus one — so the body runs when the count reaches zero. `GameTestSequence` is the "do this, wait, then assert that"
 chain — `GameTestSequence.thenExecuteAfter`,
 `GameTestSequence.thenWaitUntil`, `GameTestSequence.thenSucceed` — and it
 uses an exception as ordinary control flow, at most one thrown and swallowed
 per sequence per tick, and only for an assertion failure. A timeout is not
 caught there.
 
-**Reporting is a listener chain, and it writes to three places.**
-`ReportGameListener` is what says something in chat; `MultipleTestTracker`
-is the progress bar, with five states including a space for *not started*;
-and `GlobalTestReporter` dispatches to `LogTestReporter` or
-`JUnitLikeTestReporter`.
+**Reporting is a listener chain, and it writes to four places.**
+`ReportGameListener` is what says something in chat and what writes the
+outcome back to the `TestInstanceBlockEntity` that owns the beam;
+`MultipleTestTracker` is the progress bar, with five states including a
+space for *not started*; and `GlobalTestReporter` dispatches to
+`LogTestReporter` or `JUnitLikeTestReporter`.
 
 ## A test with no Java in it
 
@@ -139,8 +141,10 @@ practical: `TestInstanceBlockEditScreen` and `TestBlockEditScreen` are how a
 test is authored in game, `TestInstanceRenderer` draws the bounding box, and
 `GameTestBlockHighlightRenderer` is the sole consumer of
 `ClientboundGameTestHighlightPosPacket`. Both serverbound test packets are
-sent *by* the client — this is the one system in Part XIII where the client
-writes.
+sent *by* the client, from those screens: this is the one system in the part
+whose *declaration* a client edits, though far from the only one whose
+client talks back — commands, suggestions, dialog clicks and advancement tab
+switches are all serverbound too.
 
 ## Two things a running server should know
 

@@ -157,23 +157,26 @@ Everything else that runs a function is a short and exhaustive list:
 
 ## The two permission verbs, three lines apart
 
-Functions are the one place a command source's permission set is
-deliberately rewritten, and the game does it in two opposite directions with
-two similarly-named methods.
+A function body is one of the places a command source's permission set is
+deliberately rewritten, and the game reaches the same answer down two
+differently-named routes.
 
 `ServerFunctionManager.getGameLoopSender` takes the server's own source —
 which is `LevelBasedPermissionSet.OWNER` — and calls
-`CommandSourceStack.withPermission` with gamemaster. That is a
-**replacement**, so the tick and load tags run *lower* than the console
-does.
+`CommandSourceStack.withPermission` with gamemaster. That is a flat
+**replacement**: the tick and load tags run at gamemaster.
 
 `FunctionCommand` and `DebugCommand` instead call
-`CommandSourceStack.withMaximumPermission`, which is
-`PermissionSet.union` — and a union of two level-based sets is simply the
-higher of the two ([permissions](permissions.md)). So the method whose name
-reads like a ceiling can only ever **add**: a `/function` run by an owner
-stays an owner's function. The name reads exactly backwards, and the method
-that does cap is the one that does not say so.
+`CommandSourceStack.withMaximumPermission`, which is `PermissionSet.union`.
+The name promises a widening, and for two sets that are *not* level-based it
+delivers one — the default `PermissionSet.union` builds a `PermissionSetUnion` that ORs.
+But `LevelBasedPermissionSet` overrides it, and the override returns the
+**lower**-levelled set on both of its branches
+([permissions](permissions.md)). So for the sets a player or the console
+actually carries it is a *minimum*, and `withMaximumPermission(GAMEMASTER)`
+over an owner's source yields gamemaster too. Both routes land on the same
+rung: there is no way to reach a function body above gamemaster, and the
+method named for a ceiling is the one that enforces it.
 
 ## Where to look
 

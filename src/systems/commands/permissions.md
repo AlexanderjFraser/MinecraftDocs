@@ -84,12 +84,15 @@ case written into the method, and returns **false to every other atom**.
 An operator does not have everything; an operator has a number and one
 exception.
 
-Union has a special case of its own that runs the same way.
-`LevelBasedPermissionSet.union` of two level-based sets is not a
-`PermissionSetUnion` at all — it is whichever of the two is higher. So
-raising a function body to "at least gamemaster" ([functions and
-macros](functions-and-macros.md)) can only ever *add*, and a more privileged
-caller is never lowered.
+Union has a special case of its own, and it runs the opposite way to its
+name. `LevelBasedPermissionSet.union` of two level-based sets is not a
+`PermissionSetUnion` at all, and it is not the higher of the two: both
+branches of the override return the **lower**-levelled set, so it is a
+minimum. `CommandSourceStack.withMaximumPermission` is that union, which
+means "raising" a function body to gamemaster ([functions and
+macros](functions-and-macros.md)) *caps* an owner's source at gamemaster
+rather than leaving it alone. Only for sets that are not level-based does
+`PermissionSet.union` fall through to `PermissionSetUnion`, which does OR the two.
 
 ## Where a set comes from
 
@@ -174,18 +177,24 @@ dispatcher: the ordinary one, whose set is the player's own **OR-ed with**
 that atom, so restricted nodes still highlight and complete; and a
 no-permission one. `ChatAbilities` is the other client-only set, and it is
 built the opposite way round from everything else here — it starts from all
-four chat atoms *granted* and lets each `ChatRestriction` remove some. All
-four restrictions are local decisions: two chat options, the launcher, and
-the account profile. The client's chat permissions are never granted by a
-server; they are only ever taken away by the machine you are sitting at.
+four chat atoms *granted* and lets each `ChatRestriction` remove some. Three
+of the four are decisions the machine you are sitting at makes — two chat
+options and a launcher flag — and the fourth, `ChatRestriction.DISABLED_BY_PROFILE`, comes
+from the account service: a user flag fetched with your profile. The
+client's chat permissions are never granted by the *game* server; they are
+only ever taken away, and only ever from outside it.
 
 ## Asking a question the client cannot answer
 
 Put those two client sources together and you get the one thing the client
 *can* diagnose: it can tell "you would need permission for this" apart from
 "that is a typo", for a command it was asked to send on your behalf. A
-dialog button, a chat click event and a sign all route through
-`ClientPacketListener.sendUnattendedCommand`, which never sends blind.
+dialog button and a chat click event both route through
+`ClientPacketListener.sendUnattendedCommand`, whose one caller is
+`Screen.clickCommandAction`. A **sign does not**: `SignBlockEntity`
+runs its click command on the server, through a `CommandSourceStack` it
+builds itself at a hard-coded `LevelBasedPermissionSet.GAMEMASTER`, and the
+client is never consulted.
 
 ```mermaid
 flowchart TB
@@ -206,19 +215,24 @@ flowchart TB
 sources and reads the *difference*. Succeeding with your set and failing
 without it means some node on the path was gated — which is as much as the
 client can ever know, because it was never told which permission or whose.
-Three of the four outcomes pop a confirmation screen, so nothing a data
-pack, a book or a sign wrote reaches the server without you agreeing to it
-once.
+Three of the four outcomes pop a confirmation screen; the fourth,
+`ClientPacketListener.CommandCheckResult` *NO_ISSUES*, sends with no screen at all. So an unattended command that is
+merely *unusual* is always shown to you first — but a clean one goes
+straight out, and a waxed sign's command never came this way to begin
+with.
 
-And there is one place the client runs a *server* permission check locally
-and acts on the answer. `GameModeCommand.PERMISSION_CHECK` — a
-`PermissionCheck.Require` for gamemaster, exported from the command class —
-is read by `KeyboardHandler` and by `GameModeSwitcherScreen` against
-`LocalPlayer`'s own set, which is why the F3+F4 switcher greys out when you
-are not opped, and it is read again by
-`ServerGamePacketListenerImpl` when the packet arrives. One constant, three
-readers, two sides of the network: the exception that shows what the rule
-costs.
+The client runs *server* permission checks against its own set in several
+places — `WorldOptionsScreen` gates the hardcore and gamemode buttons on
+`Permissions.COMMANDS_OWNER` and `Permissions.COMMANDS_GAMEMASTER`,
+`KeyboardHandler` gates three debug keys — but only one of those checks is a
+constant the server itself uses. `GameModeCommand.PERMISSION_CHECK`, a
+`PermissionCheck.Require` for gamemaster exported from the command class, is
+read twice by `KeyboardHandler` and once by `GameModeSwitcherScreen` against
+`LocalPlayer`'s own set — which is why F3+F4 refuses to open the switcher at
+all, with *debug.gamemodes.error*, rather than opening a greyed-out one —
+and read again by `ServerGamePacketListenerImpl` when the packet arrives.
+One constant, five references in four classes, two sides of the network: the
+exception that shows what the rule costs.
 
 > **For a 1.21-era reader.** `ServerPlayer.hasPermissions(int)` and
 > `CommandSourceStack.hasPermission(int)` are gone. The nearest thing is
