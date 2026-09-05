@@ -44,6 +44,9 @@ entry first.
   `rendering/block-entity-rendering`, `commands/entity-selectors`,
   `worldgen/blending`, `worldgen/creating-a-world`. Their claims lists are
   under session P's entry; they get pass 2's completeness question too.
+  *Three done: `block-entity-rendering` by session K, and `blending` and
+  `creating-a-world` by session L, both with the completeness question.
+  `commands/entity-selectors` is session M's.*
 - **The parts-dependency figure** (`src/figures/parts-dependency.md`,
   included by the introduction and `lectures.md`) and the dependency table
   on `lectures.md` are claims: every arrow is a landing page's *before you
@@ -86,6 +89,324 @@ entry first.
   is now `deploy.sh`'s fourth gate.
 
 ## Entries
+
+## Session L — Part XII World generation (pass 4) *(2026-09-05)*
+
+Ten system pages, the landing page and the part's own Reference catalogue
+(`reference/density-function-nodes.md`) — twelve agents; **every one had at
+least one wrong claim**, which is pass 2's finding for a thirteenth time.
+Ninety-four corrections, and Part XII was done in one session where the
+charter allowed two.
+
+**The session's sharpest finding is that pass 3's own correction was the
+error.** Session M of pass 3 recorded, as the first of its two "errors found
+while rewriting", that `features-and-placement` said sixty-three features are
+registered into `BuiltInRegistries.FEATURE` and that it is 61. It is **63**.
+`Feature.java` has 63 `register("…")` call sites and 63 distinct ids, and the
+two the count dropped — `SEAGRASS` (`:95`) and `BONUS_CHEST` (`:111`) — put a
+cast between the `=` and the call, so a `= register(` grep misses exactly
+those two. The page had the right number before pass 3 and the wrong one
+after, in two places. **The session reproduced the same grep and got 61
+before the agent caught it**, which is the clearest case yet for the
+charter's rule that the population is enumerated and quoted, not counted.
+
+**The landing page was the worst page in the part, as in Part XI**, and its
+two premise claims were both wrong.
+
+- **"The data packs loaded when the world was created."** `WorldLoader.load`
+  re-reads the worldgen registries out of the *currently enabled* packs on
+  every open — `WorldOpenFlows.java:196` for an existing save,
+  `Main.java:185` for a dedicated server, `CreateWorldScreen` only for a new
+  one. Only the seed and the dimension list are persisted.
+- **"It holds because nothing here reads the world it is building, with one
+  deliberate exception."** `PlacementContext` hands every placed feature
+  `getBlockState`, `getHeight` and `getCarvingMask` straight off the
+  `WorldGenLevel` (`:27-36`); `BlockPredicateFilter` tests against it;
+  `applyBiomeDecoration` and `buildSurface` both read the 3×3 neighbourhood's
+  biome palettes. The claim that holds is the determinism one — everything
+  read is itself a function of seed and packs — which is also what makes
+  blending the exception rather than a counter-example.
+
+Six more on the same page, every one re-derived by the session before it was
+touched:
+
+| the page said | the decompile says |
+|---|---|
+| the cargo of **six** statuses | **seven** (`ChunkStatus.java:21-27`), and its own figure names all seven |
+| **423** classes / 45,600 lines, "the way the atlas counts everything else" | the atlas counts `package-info.java` (no exclusion in `map_source.py`): **451** / 45,749. 423 is the marker-excluded count, and Part XI's 1,179 includes them — session A's open *two size claims, two rules* item, settled |
+| the data-driven type pattern "names **five** of its instances in this part alone" | **26** of its 56 rows name a Part XII page as owner |
+| naming drift has **thirteen** rows for this part | **twelve** (`naming-drift.md:319-330`) |
+| the **dozen** worldgen registries a data pack writes into | **fourteen** *worldgen/* data-pack keys, all in `RegistryDataLoader.WORLDGEN_REGISTRIES` |
+| "**every page** here begins by naming a status" | three never name one (`density-functions`, `trees`, `creating-a-world`); four open on one |
+
+And three claims about the part's own shape: two and three are **not**
+independent statuses that ignore each other (`ChunkPyramid` makes *BIOMES* a
+requirement of both *NOISE* and *SURFACE*, the `NoiseChunk` is built *at*
+*BIOMES*, and `SurfaceSystem` reads `BiomeManager.getBiome` at `:103,114`);
+four does **not** stop at three (`Blender.generateBorderTicks` runs at
+*FEATURES*, `ChunkStatusTasks.java:123`, which `blending.md`'s own figure
+draws); and "every other page is a consumer of the density graph" is four of
+nine, because *placement/*, *feature/* and *structure/* never mention
+`DensityFunction` at all. The figure called `density-functions` the page with
+no chunk in it, where it says *chunk* thirty times and `trees` says it never;
+and its last arrow put *creating a world* after *FEATURES* under "read the
+outer chain as the order the game runs", where the world was created before
+any chunk existed. Every one of these was duplicated verbatim in
+`lectures.md` and fixed there in the same commit.
+
+### The five that carry a lecture
+
+- **`jigsaw-and-templates`' central invariant is the wrong way round.** The
+  page said the fallback pool is offered "when the target pool is not on the
+  table — at the depth limit, and only then". `JigsawPlacement.java:261-267`
+  appends the fallback's shuffled templates **unconditionally, at every
+  depth**, and drops the *target* pool when the depth equals the maximum. So a
+  street ends in terminators wherever the street pieces stop fitting, and the
+  depth limit only removes the alternative. The page's own figure had it right
+  and its prose did not. **The hook fell with it for a second reason**: the
+  four plains terminator *.nbt* palettes decode to air, dirt path, jigsaw and
+  structure void — there is no lamp post in any of them; *plains_lamp_1* is a
+  *decor* element and decor falls back to *minecraft:empty*.
+- **`structure-placement`'s verified line promised "a layout that may be
+  computed twice". It is computed once.** `Structure.generate` takes the
+  `Structure.GenerationStub` back from `Structure.findValidGenerationPoint`
+  and calls `Structure.GenerationStub.getPiecesBuilder` on it three lines
+  later (`Structure.java:92-95`), and `StructureCheck.canCreateStructure` asks
+  only whether `findValidGenerationPoint` returned a present `Optional`
+  (`StructureCheck.java:110`) — the deferred child expansion is never run for
+  the check, which is what the deferral is *for*. `Structure.generate` also
+  returns a `StructureStart`, not a stub, so the figure's fourth and fifth
+  arrows were a lane out.
+- **`trees`' hook describes something no shipped tree can do.** The mechanism
+  is real — `TreeFeature` derives `FoliagePlacer.foliageHeight` and
+  `FoliagePlacer.foliageRadius` from the *proposed* height at `:66-69` and
+  runs the clearance scan at `:78` — but "a fancy oak clipped to six grows a
+  six-block trunk with a fourteen-block-tree's crown" cannot happen.
+  `FancyFoliagePlacer` overrides neither crown method, so its blob is
+  fixed-size at any height, and `FancyTrunkPlacer` computes its cluster count
+  from the **clipped** height (`:42-49`), so clipping makes the crown
+  *smaller*. The one placer whose foliage height reads the tree height is
+  `SpruceFoliagePlacer`, and no spruce declares a *min_clipped_height*, so it
+  abandons instead. The true statement is better: the asymmetry is in the code
+  and vanilla data cannot express it.
+- **`density-functions`' bounds claim is backwards.** An unbound
+  `DensityFunction.NoiseHolder` answers 2.0 (`DensityFunction.java:174-175`);
+  computing `NormalNoise.maxValue` from the shipped amplitudes for all
+  **sixty-one** vanilla noise files gives 2.571 to 7.315, every one above 2.0.
+  Seeding *widens* the bounds, and that sentence was the point of its
+  paragraph. Same sentence, same fix, on `reference/density-function-nodes.md`.
+- **`hand-built-structures`' `/locate stronghold` answer rests on dead code.**
+  `StrongholdPieces.StartPiece.getLocatorPosition` (`:1323-1324`) has zero
+  callers in 26.2. `/locate` and the eye of ender both come out of
+  `ChunkGenerator.findNearestMapStructure`, which returns
+  `StructurePlacement.getLocatePos` (`:79-81`) — the start chunk's minimum
+  block plus the placement offset. The portal-room pointer is real and is only
+  the regeneration loop's exit condition.
+
+### Two more hooks fell
+
+- **`blending`'s measurement is of the chunk that owns it, not of a
+  neighbour** — session A's standing Part XII item, settled against the page.
+  `BlendingData.getOrUpdateBlendingData` fetches one chunk and calls
+  `BlendingData.calculateData` on that chunk's own data (`:96-106`), and
+  `BlendingData.sideByGenerationAge` fills only the sides facing chunks that
+  are *not* old, which the page's own next paragraph already said. Wrong in
+  three places, and mirrored on the landing page and in `lectures.md`.
+- **`creating-a-world`'s "the water in *Water World* arrives as a feature"** —
+  `FlatLevelGeneratorSettings.adjustGenerationSettings` converts a layer only
+  when it fails `Heightmap.Types.MOTION_BLOCKING`'s opacity test, which is
+  *blocks motion or holds a fluid*; water passes. The layers that do leave are
+  *The Void*'s air and *Snowy Kingdom*'s snow. Its own hook, "every widget is
+  an edit to `WorldGenSettings`", is falsified by the page's next section.
+
+### The rest, per page
+
+- **`worldgen/README.md`** — the eleven above, plus "what the client is told is
+  finished blocks and nothing else" (the packet carries the biome palette, the
+  heightmaps and the block entities) and "at the cost of one forward
+  reference" (one topic, five references).
+- **`biomes.md`** — the world spawn is two searches, not one: `MinecraftServer`
+  keeps only the *chunk* `Climate.SpawnFinder` returns (`:519`) and then runs
+  an 11×11 chunk spiral of `PlayerSpawnFinder.getSpawnPosInChunk` (`:530-556`),
+  so "not a terrain search" and "answers the origin exactly" both fall. "Five
+  things, and two of them are read only by worldgen" is contradicted by the
+  page's own next two paragraphs (`NaturalSpawner` every tick,
+  `GrassBlock.java:76`). `OverworldBiomeBuilder.addUndergroundBiomes` places
+  **four** and the page was enumerating the 1.21 three — `Biomes.SULFUR_CAVES`
+  (`:344`) was missing from a page whose header says 26.2. The cast called
+  `Climate.Sampler` "the cacheless copy" while its own figure said the chunk's
+  *cached* one fills the biomes; both exist and the row now says which is
+  which. `Climate.ParameterList.findValue` is the list's (`:251`), not
+  `Climate.RTree`'s (`:284`) — new lane key row `CPList`. Only four of
+  `BiomeSpecialEffects`' five fields are optional; `/locate biome` spirals to
+  **6,400** blocks; twenty gameplay attributes exist and a vanilla biome file
+  sets three.
+- **`terrain.md`** — every pass4.md checklist item confirmed (768 cells, 1,225
+  corner samples, the six-deep loop order, both figures), and the prose around
+  them wrong four ways. "`NoiseChunk` only ever evaluates the expensive density
+  terms at cell corners" is contradicted thirty lines later: the aquifer's
+  barrier noise and *vein_gap* are bare *minecraft:noise* in the overworld
+  router and are sampled per block. Resolving every reference in that router
+  gives **eight** *interpolated* markers, not "the 3-D base noise and the
+  ore-vein trio" — and *vein_gap* is not one of them, so there is no trio. The
+  dependency-pyramid sentence is wrong three ways:
+  `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared at `:17` and read nowhere,
+  six steps declare the literal 8, and the accumulated pyramid is wider.
+  `ChunkGenerator.createBiomes` forks to *init_biomes* in the **base** class,
+  so `FlatLevelSource` and `DebugLevelSource` fork too. The surface rule tree
+  is the dimension's, not the biome's. `NoiseGeneratorSettings.useLegacyRandomSource`
+  does not reach the legacy nether biome noises (`RandomState.java:65-70`
+  builds those from a `LegacyRandomSource` unconditionally).
+  `Aquifer.FluidStatus.at` cannot return null. An interpolator throws after
+  `NoiseChunk.stopInterpolation` only when the `NoiseChunk` itself is the
+  context.
+- **`density-functions.md`** — "in vanilla *cache_2d* always sits inside a flat
+  cache": of the twenty-four in the shipped files, eleven do and thirteen do
+  not, and no *noise_settings* file contains a *flat_cache* at all. "Which of
+  these nodes reads the world? Exactly one family" is **two**: `Beardifier` is
+  a registered node type and `Beardifier.forStructuresInChunk` goes through
+  `StructureManager.startsForStructure`, which reads a chunk at
+  *STRUCTURE_REFERENCES* (`:58`). The "three exceptions" to trustworthy bounds
+  misses two that run the *other* way — `DensityFunctions.BlendAlpha` and
+  `DensityFunctions.BlendOffset` parse as the constants 1 and 0 and become
+  `NoiseChunk.BlendAlpha` and `NoiseChunk.BlendOffset` with ranges of zero to
+  one and infinite, so a fold above a blend node was decided on the wrong
+  range. The opening misread its own example: *overworld/depth.json* is eleven
+  lines with neither cache in it; both are in *overworld/offset.json*, which is
+  1,522. And the 1.21 box said six functions have two names each where its own
+  next sentence names three.
+- **`features-and-placement.md`** — beyond the 63: "five of the … place no
+  blocks at all" is **six** (`NoOpFeature.place` returns true and writes
+  nothing); the supporting-value-types paragraph was exactly inverted, since
+  `WorldGenerationContext` is two ints and `BlockPredicate` extends a
+  bi-predicate over a `WorldGenLevel` and a `BlockPos`; the cascading radius is
+  **eight**, not nine; what stops two neighbours writing into a chunk at once
+  is the single-threaded *worldgen* `ConsecutiveExecutor` and not the
+  dependency graph, which fixes only the order; `ChunkGenerator.featuresPerStep`
+  is forced at `ChunkGenerator.java:329`, **before**
+  `WorldgenRandom.setDecorationSeed` and the biome union; the surviving
+  positions return to `PlacedFeature`, whose loop calls the
+  `ConfiguredFeature`; and the index the seed is derived from is per step, with
+  the step number multiplied by ten thousand.
+- **`structure-placement.md`** — the `Beardifier` is built at *BIOMES*, with
+  the `NoiseChunk`, and the noise step only reuses the memoised one; wrong in
+  the cast row, the prose and the figure. The two examples of unconditional
+  beardifier contribution were the two that never reach it:
+  `Beardifier.forStructuresInChunk` filters on a terrain adaptation that is not
+  `TerrainAdjustment.NONE`, and a structure naming no *terrain_adaptation*
+  defaults to `NONE` — twenty-three of thirty-four shipped structure files,
+  desert pyramid and mineshaft among them. "Why can two treasure maps never
+  point at the same monument" names the one map family for which it is false:
+  *skip_existing_chunks* defaults to true and all three buried-treasure map
+  tables set it false. And the reference position from piece zero does not seed
+  the processors' randomness — `StructurePlaceSettings.getRandom` seeds from
+  the block position (`:121`); the reference is the origin a `PosRuleTest`
+  measures from. **The jigsaw agent confirmed that last claim and was wrong**,
+  which is the session's one agent-versus-agent case; the code settled it.
+- **`jigsaw-and-templates.md`** — a `StructureTemplatePool` has two parts, not
+  three: its codec is *fallback* plus *elements* and all 188 shipped pool files
+  carry exactly those keys, while `StructureTemplatePool.Projection` is a field
+  of each `StructurePoolElement`, so one pool can mix them.
+  `JigsawPlacement.Placer` does not hold the free-space shape. `ProcessorRule`
+  has **two** block tests with different subjects — the template's block and
+  the world's — not one. `BlockIgnoreProcessor`'s three presets name the
+  structure block and air and **never** structure void.
+  `LegacySinglePoolElement` — every vanilla village piece — pops its ignore
+  processor and re-appends a wider one at the **end**, so the stated processor
+  order is wrong for the pieces a player sees. Pool aliases are
+  trial-chambers-only and swap which mobs the spawners hold. The editor is not
+  the only way to watch the assembler (`/place jigsaw`) nor the only network
+  exception (`DebugSubscriptions.STRUCTURES`).
+- **`hand-built-structures.md`** — "every one of those processors is shared
+  with the jigsaw path" is false for half the ruined portal's stack:
+  `BlockAgeProcessor`, `LavaSubmergedBlockProcessor` and
+  `BlackstoneReplaceProcessor` exist only in `RuinedPortalPiece` and the type
+  registry, and the forty shipped *processor_list* files use four types (rule
+  39, protected blocks 7, block rot 6, capped 4). The four-item list also
+  double-counted, since `BlockAgeProcessor` *is* the mossiness. The family
+  table filed `BuriedTreasurePieces` under template-backed pieces where
+  `BuriedTreasurePieces.BuriedTreasurePiece` extends `StructurePiece` with no
+  *.nbt* — replaced with `WoodlandMansionPieces`. `StructurePiece.placeBlock`
+  is not the single write choke point (two dozen direct `LevelWriter.setBlock`
+  calls in *structures/*), and its fluid tick is for whatever is at the
+  position **after** the write. `MineshaftStructure` is the one structure whose
+  pieces are built outside the stub consumer.
+- **`creating-a-world.md`** — `WorldDimensions.checkStability` checks the noise
+  *settings* as well as the type and biome source and returns false for any key
+  outside the built-in three, and *Flat (all dimensions)* fails it on both the
+  nether and the end, so "every shipped preset passes" is wrong and so is the
+  conclusion drawn from it. *game_rules.dat* is namespaced like
+  *world_gen_settings.dat*, which the page's own diagram already had right.
+  *server.properties* does carry one game rule, the legacy
+  *announce-player-achievements* mapping to `GameRules.SHOW_ADVANCEMENT_MESSAGES`
+  (`DedicatedServer.java:257-258`). The temp *mcworld-* directory is removed on
+  the *Create* path too. And the figure's "take its lifecycle" named work
+  `CreateWorldScreen` does not do.
+- **`reference/density-function-nodes.md`** — all 34 rows, the registration
+  order and every argument list confirmed against `DensityFunctions.bootstrap`
+  (4 + 6 markers + 9 + 7 mapped + 4 arithmetic + 4 last), and the 35-file /
+  25-id / 4-never-written counts too. "Four more appear only inline" is
+  **five** — the sentence's own list names five, and with four the page's
+  arithmetic summed to 33 for a table of 34. Session A's replacement claim was
+  over-broad: `BlendedNoise` fills a bounds field in its constructor exactly
+  like the arithmetic family. `NoiseChunk.NoiseInterpolator` does not require
+  the context to be the `NoiseChunk` — a foreign context is served by
+  delegation. And *clamp* is not the only node whose bounds ignore its child:
+  *shifted_noise* takes them from the noise and *blend_density* reports
+  infinity.
+
+### Addition 2 — order and dependency
+
+Done in full. Both *before you start* entries `check_deps.py` reported as
+unlinked are genuinely **used** — `codecs-nbt-json` by
+`density-functions.md:92` (`RegistryFileCodec`'s three JSON forms) and
+`creating-a-world.md:166-168`, `identifiers-and-registries` by
+`density-functions.md:91` and `creating-a-world.md:51-62`'s two-pass registry
+load — so neither is struck. **One missing entry added**:
+`world/environment-attributes-and-timelines`, which lecture two's whole
+"`Biome` has been hollowed out" framing rests on. `check_deps.py` caught the
+lecture table's row for that page still reading "III, VI, XI" and it is now
+"III, VI, XI, XII". Seven before eight and nine confirmed: both structure
+assemblers link back to `structure-placement` and to each other, so they are
+alternatives and not a sequence.
+
+### Session A's two Part XII glossary items, settled
+
+Both **confirmed as written**. *Blending data* — sixteen columns (seven inside
+indices plus nine outside), heights, densities and biomes, "measured out of an
+old chunk's blocks", which is exactly what `blending.md:121` got wrong and the
+glossary got right. *Old chunk* — `ChunkAccess.isOldNoiseGeneration` returns
+whether the blending data is non-null (`:388-390`) and the save key is
+*blending_data* (`SerializableChunkData.java:106,404`). One nuance for whoever
+polishes the entry: `IOWorker.java:130` also treats a data version below 4882
+as old regardless of the compound.
+
+### No tool bug — the seventh such session
+
+Instead, three of the session's own fixes were caught by its own gates:
+`verify_names.py` twice (an unqualified `BlockStateProperties.AXIS`, and
+*use_expansion_hack* set in backticks where it is a JSON key and wants
+italics) and `check_deps.py` once (the lecture table row). One agent finding
+was rejected on re-derivation — the beardifier forward reference *is* on
+`terrain.md:234-246`, and the session's own first grep missed it to a `head`.
+Two agents disagreed about the reference position and the code settled it.
+
+### For other parts' sessions
+
+- **Part IV** — `chunk-generation-pipeline` is the hard dependency of every
+  page in Part XII and is not a row in `lectures.md`'s dependency table, which
+  lists `chunk-anatomy` instead. Not a `check_deps.py` failure, because the
+  table claims only that ten pages carry *most* of the graph. Worth a ruling
+  in session O.
+- **Session N** — Part XII's counts were re-derived page by page here, but
+  three are worth a second look because they are inferences rather than
+  literals: `terrain`'s 1,225 corner samples (the five-slice count is read off
+  the loop structure), `blending`'s 193 positions (which includes the chunk
+  itself, so it is 192 neighbours), and `hand-built-structures`' "30 classes
+  and about 10,000 lines" for *levelgen/structure/structures*, which is 31
+  real classes and 10,169 lines under the marker-excluded rule and 32 under
+  the atlas's.
+
 
 ## Session K — Part XI Rendering (pass 4) *(2026-09-04)*
 
@@ -3139,10 +3460,10 @@ check were the session's own; one adversarial agent per page did the rest.
 
 ### Addition 2 — order and dependency, done in full
 
-`tools/check_deps.py` opened with two failures and three forward-link
+~~`tools/check_deps.py` opened with two failures and three forward-link
 reports. All five were real, and all five are fixed. The checker is green
 and is now `tools/deploy.sh`'s **fourth gate**, after names, mermaid and
-lanes.
+lanes.~~
 
 - **`lectures.md`:618 — the environment attributes row.** Table said the
   page is assumed by Parts III, VI and XI; the landing pages said only XI.
@@ -3166,9 +3487,9 @@ lanes.
   the row's own gloss ("how a chest is opened") was describing. → **row
   corrected to VI**, gloss narrowed to the collision shapes.~~ Re-derived and
   CONFIRMED by session E.
-- **Three forward links in *before you start* with no dashed arrow.** All
+- ~~**Three forward links in *before you start* with no dashed arrow.** All
   three were hand-forwards or pointers, not dependencies, so the fix was to
-  move them out of the section, not to draw an arrow.
+  move them out of the section, not to draw an arrow.~~
   - ~~Part IV listed `blocks-and-states` in a sentence that says outright
     "It does hand two things forward" → moved to the end of *the shape of
     the part*.~~ CONFIRMED by session E.
@@ -3183,15 +3504,15 @@ lanes.
 - **A fourth: Part VI's *before you start* linked `scheduled-ticks` only to
   say it is *not* needed.** An anti-dependency read by the tool as a
   dependency → de-linked (the words stay).
-- **A count, in the sentence over the dependency table.** "Nine pages carry
+- ~~**A count, in the sentence over the dependency table.** "Nine pages carry
   most of the graph … a viewer who has watched these nine" — the table has
   nine rows but ten pages, because the first row is the server tick *and*
-  the level tick. → **ten**, with the reason said.
-- **`tools/check_deps.py` had a bug** (suspect the tool first): the
+  the level tick. → **ten**, with the reason said.~~
+- ~~**`tools/check_deps.py` had a bug** (suspect the tool first): the
   *unlisted* half excluded `/README` targets and the *unused* half did not,
   so every "read Part N first" entry — six of them — was reported as an
   unused dependency by construction, because no page in a part ever links
-  another part's landing page. Fixed.
+  another part's landing page. Fixed.~~
 - **The six remaining report-only entries are judged real**, and are
   unlinked rather than unused: Part X ← `anatomy/anatomy` (the-client-loop
   is about nothing else) and `entities/authority` (`the-client-level` opens
@@ -3205,10 +3526,10 @@ lanes.
 
 ### The eight generated Reference views — one sample each, all confirmed
 
-Re-derived by hand from the decompile, against `tools/gen_reference.py`'s
-output. Paths relative to `reference/26.2/net/minecraft/`.
+~~Re-derived by hand from the decompile, against `tools/gen_reference.py`'s
+output. Paths relative to `reference/26.2/net/minecraft/`.~~
 
-| view | sample re-derived | verdict |
+~~| view | sample re-derived | verdict |
 |---|---|---|
 | packets | `login` group: 5 clientbound, 4 serverbound (`network/protocol/login/LoginPacketTypes.java:10-18`) | CONFIRMED |
 | registries | 148 keys, and `attribute_type` → `AttributeType<?>`, built-in (`core/registries/Registries.java:182`; `BuiltInRegistries`). The 149th `ResourceKey<Registry<` in the file is `createRegistryKey`'s own signature | CONFIRMED |
@@ -3217,12 +3538,12 @@ output. Paths relative to `reference/26.2/net/minecraft/`.
 | entity data serializers | wire id 3 = `FLOAT`, from the static block's registration order (`network/syncher/EntityDataSerializers.java:149-152`) | CONFIRMED |
 | attributes | 40 registrations, 32 `setSyncable(true)`, and `attack_damage` default 2 / min 0 / max 2048 and **not** syncable (`world/entity/ai/attributes/Attributes.java:14`) | CONFIRMED |
 | loot context param sets | 26 sets, and `ADVANCEMENT_LOCATION` requires THIS_ENTITY, ORIGIN, TOOL, BLOCK_STATE and nothing optional (`world/level/storage/loot/parameters/LootContextParamSets.java:116-118`) | CONFIRMED |
-| enchantment hooks | `EnchantmentHelper.canStoreEnchantments` called from `AnvilMenu` and nothing else (corpus grep for the qualified call) | CONFIRMED |
+| enchantment hooks | `EnchantmentHelper.canStoreEnchantments` called from `AnvilMenu` and nothing else (corpus grep for the qualified call) | CONFIRMED |~~
 
-The *blurbs* on those pages are hand-written into `gen_reference.py` and are
+~~The *blurbs* on those pages are hand-written into `gen_reference.py` and are
 **not** covered by this check. One is a count worth a look in session N:
 loot-context-params says "Twelve of these twenty-six sets never roll a
-`LootTable` at all".
+`LootTable` at all".~~
 
 ### The pages, corrected
 
@@ -3316,22 +3637,22 @@ views. Fixed in place this session:
   `:2779`); `Mth.nextGaussian` does not exist (it is
   `RandomSource.nextGaussian`, and `verify_names.py` passed it because the
   token appears inside `Mth.java`); `Rotations` has one user.
-- **`reference/density-function-nodes.md`** — "the answers are computed at
+- ~~**`reference/density-function-nodes.md`** — "the answers are computed at
   construction and propagated upward" is true only of the arithmetic family,
   which stores them as record components; every other node recomputes on each
-  call, by delegation or by walking its list again.
-- **`reference/glossary.md`** and **`creating-a-world.md`** — *world gen
+  call, by delegation or by walking its list again.~~
+- ~~**`reference/glossary.md`** and **`creating-a-world.md`** — *world gen
   settings* is written to *data/minecraft/world_gen_settings.dat* (namespaced,
   as `level-data-and-rules.md` already had it), and the same path was wrong
   twice on `creating-a-world.md`, once inside a diagram. *Permission set* (the
   client carries a level-based set too), *unattended command* (a clean one is
   sent with no prompt) and *window* (six window callbacks; the input ones are
-  registered elsewhere) each contradicted their own owner page.
+  registered elsewhere) each contradicted their own owner page.~~
 
 ### Open — what session A did not reach
 
-The reports are not committed, so what is still open is written out here. All
-of it is *verified finding, unactioned*, not *unchecked*.
+~~The reports are not committed, so what is still open is written out here. All
+of it is *verified finding, unactioned*, not *unchecked*.~~
 
 - **`reference/math-and-primitives.md`** — the figure's thesis at L14 ("every
   conversion is a named static method on the type you are converting *to*") is
@@ -3365,9 +3686,9 @@ of it is *verified finding, unactioned*, not *unchecked*.
   block, 26 of them with no row at all, and 51 are `participant X as ClassName`
   declarations. The page now says so; teaching the generator to read mermaid
   blocks would add at least 51 cells and 6 rows, and is **pass-5 work**.
-- **`verify_names.py` has a hole**: its token pattern excludes `(`, so the 19
+- ~~**`verify_names.py` has a hole**: its token pattern excludes `(`, so the 19
   backticks of the form *Class.method(Arg)* in the corpus are neither verified
-  nor indexed. Session O.
+  nor indexed. Session O.~~
 - **The lane key** — 45 of its 340 rows are claimed by no page, and three
   (`PTT`, `TCTD`, `TDec` before this session) appear nowhere but `lanes.md`,
   against session E's ruling that the key is pruned to lanes in use. `PTT` is
@@ -3403,10 +3724,10 @@ of it is *verified finding, unactioned*, not *unchecked*.
 
 ## Session P — The lecture order and the close *(2026-09-03)*
 
-Session P wrote no part; it wrote the lecture map's dependency section and
+~~Session P wrote no part; it wrote the lecture map's dependency section and
 the parts-dependency figure, four coverage pages, and one sentence or link
 on each of eleven sibling pages. Everything below is new to the corpus and
-has been checked once by the session and never by an adversary.
+has been checked once by the session and never by an adversary.~~
 
 ### `lectures.md` and `src/figures/parts-dependency.md` — claims about order
 
@@ -3643,7 +3964,7 @@ is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
 
 ### `worldgen/blending.md` — new, 346 lines, pattern
 
-Drafted by an agent from the decompile; the session re-derived the 193
+~~Drafted by an agent from the decompile; the session re-derived the 193
 positions (enumerated dx, dz in −7..7 with dx²+dz² ≤ 64; `Blender.java:76-82`),
 the three blendable router functions and their targets
 (`NoiseRouterData.java:34-35, 120-123`), the absence of any
@@ -3651,15 +3972,15 @@ the three blendable router functions and their targets
 *false* (`BlendingData.java:101, 108`), and the data-pack counts
 (*blend_density* in all 7 noise settings; *blend_alpha* in 9 density
 function files; *blend_offset* in 3). Everything else is the agent's
-evidence. Paths relative to `reference/26.2/net/minecraft/`.
+evidence. Paths relative to `reference/26.2/net/minecraft/`.~~
 
-- **The hook**: "The three splines that shape overworld terrain are swapped
+- ~~**The hook**: "The three splines that shape overworld terrain are swapped
   out for a ground height the game read off the old chunk's blocks…, the
   constant ten, and zero" — `NoiseRouterData.java:34, 35, 120, 121, 123,
   324`; `Blender.java:119-121` (alpha 0 on an exact hit) and 148-150 (alpha
   → 0 as distance → 0). Session-confirmed the targets; the "hardly generated
-  at all" framing is the agent's.
-- Counts and constants: inner 3×3 for density (`Blender.java:59, 87-89`);
+  at all" framing is the agent's.~~
+- ~~Counts and constants: inner 3×3 for density (`Blender.java:59, 87-89`);
   radius seven derived from the 27-cell range (`Blender.java:56-57`;
   `core/QuartPos.java:25, 29`); 27 cells / 108 blocks and smoothstep over
   28 (132, 148-150); inverse fourth power (137); density lerp within two
@@ -3673,8 +3994,8 @@ evidence. Paths relative to `reference/26.2/net/minecraft/`.
   scan and cache (`world/level/chunk/storage/IOWorker.java:41, 86, 97-113`);
   *DataVersion* below 4882 or a *blending_data* compound (129-131); four Y
   levels across 256 columns (`Blender.java:287-296`); within four blocks of
-  the box after shift noise ×4 (358-363); box eight wide (395-397).
-- Orderings: `NoiseChunk` created at *BIOMES* and cached
+  the box after shift noise ×4 (358-363); box eight wide (395-397).~~
+- ~~Orderings: `NoiseChunk` created at *BIOMES* and cached
   (`NoiseBasedChunkGenerator.java:92-94`; `ChunkAccess.java:438-443`; no
   `noiseChunk = null` anywhere); the flat caches filled before
   `router.mapAll` (`NoiseChunk.java:120-135` vs 141-142); identity swap
@@ -3682,8 +4003,8 @@ evidence. Paths relative to `reference/26.2/net/minecraft/`.
   child (117, 138-140, 458-459); `ChunkStatusTasks.generateFeatures` primes
   heightmaps before decorating and calls `generateBorderTicks` after
   (`ChunkStatusTasks.java:115, 120, 123`; read at `Blender.java:307`);
-  `Blender.of` asks the save first (69-72).
-- Only/never/not: `ChunkAccess.blendingData` is `protected final`
+  `Blender.of` asks the save first (69-72).~~
+- ~~Only/never/not: `ChunkAccess.blendingData` is `protected final`
   (`ChunkAccess.java:74`), `isOldNoiseGeneration` returns its presence
   (388-390); a neighbour yields data only with a `BlendingData` and
   `getHighestGeneratedStatus` ≥ *BIOMES* (`BlendingData.java:100`); only
@@ -3702,59 +4023,59 @@ evidence. Paths relative to `reference/26.2/net/minecraft/`.
   (`ChunkStatusTasks.java:70, 77`; `NoiseBasedChunkGenerator.java:237, 274`);
   the biome answer is a holder or null (267); three cave biomes in
   `BelowZeroRetrogen` (44; resolver 104-116); *Blending: Old* on the debug
-  screen (`client/gui/components/debug/DebugEntryChunkGeneration.java:65-66`).
-- Deliberately softened: seven "sits inside" the radius-eight window
+  screen (`client/gui/components/debug/DebugEntryChunkGeneration.java:65-66`).~~
+- ~~Deliberately softened: seven "sits inside" the radius-eight window
   (`ChunkPyramid.java:19`; `WorldGenRegion.java:126-133`) — eight would fit
-  too, so no claim that seven is maximal.
-- **Unsettled by the agent**: how a chunk first acquires *blending_data*
+  too, so no claim that seven is maximal.~~
+- ~~**Unsettled by the agent**: how a chunk first acquires *blending_data*
   (three fixers under `util/datafix/fixes/`, out of scope by rule 3; one
   strips the key outside the overworld, so blending is in practice
   overworld-only — a fact the page does *not* state; pass 4 rules whether it
   is sayable); three declared-but-unused constants in `Blender` and a
   cluster in `BlendingData`; the cost of the region scan (asserted as what
-  the code does, not measured).
-- **Where the queue entry and the brief were wrong**: `ProtoChunk.setBlendingData`
+  the code does, not measured).~~
+- ~~**Where the queue entry and the brief were wrong**: `ProtoChunk.setBlendingData`
   does not exist; `ChunkSerializer` is `SerializableChunkData`; there are
   five consumers, not three; `generateBorderTicks` fires on the *old* chunk,
-  not the new one. 858 lines confirmed (439 + 419).
-- Siblings: `terrain.md`'s boundary question now points here (and lost the
+  not the new one. 858 lines confirmed (439 + 419).~~
+- ~~Siblings: `terrain.md`'s boundary question now points here (and lost the
   phrase "from four years ago"); `density-functions.md` gained two links;
   `biomes.md` one sentence; `chunk-generation-pipeline.md` and
   `chunk-anatomy.md` one link each; `what-this-book-skips.md` dropped the
-  three now-written systems from *Named for a later pass to place*.
+  three now-written systems from *Named for a later pass to place*.~~
 
 ### `worldgen/creating-a-world.md` — new, 300 lines, pipeline with a comparison
 
-Drafted by an agent from the decompile; the session re-derived the parked
+~~Drafted by an agent from the decompile; the session re-derived the parked
 main thread (`CreateWorldScreen.openCreateWorldScreen` →
 `Minecraft.managedBlock`), the live layer list behind *Cancel*
 (`PresetEditor.EDITORS` passes `FlatLevelSource.settings()`;
 `CreateFlatWorldScreen`'s Cancel calls only `onClose` and `updateLayers`)
 and `WorldGenSettings extends SavedData` with its own `SavedDataType`.
 Everything else below is the agent's evidence, unchecked by the session.
-Paths relative to `reference/26.2/net/minecraft/`.
+Paths relative to `reference/26.2/net/minecraft/`.~~
 
-- **The hook**: "Before the screen can draw a single widget the game has
+- ~~**The hook**: "Before the screen can draw a single widget the game has
   already run a complete server-side data-pack load … with the client's
   main thread parked on `BlockableEventLoop.managedBlock`" —
-  `client/gui/screens/worldselection/CreateWorldScreen.java:150-168`.
-- "`WorldLoader.load` … calls it **after** the worldgen registries and the
+  `client/gui/screens/worldselection/CreateWorldScreen.java:150-168`.~~
+- ~~"`WorldLoader.load` … calls it **after** the worldgen registries and the
   `Registries.LEVEL_STEM` registry are loaded and **before**
-  `ReloadableServerResources.loadResources` runs" — `server/WorldLoader.java:38-48`.
-- "The registry set that recipes, loot tables and functions are then parsed
+  `ReloadableServerResources.loadResources` runs" — `server/WorldLoader.java:38-48`.~~
+- ~~"The registry set that recipes, loot tables and functions are then parsed
   against includes the dimension registry that callback produced" —
-  `WorldLoader.java:45-47`.
-- "*level.dat* is written by the client, in `Minecraft.doWorldLoad`, before
+  `WorldLoader.java:45-47`.~~
+- ~~"*level.dat* is written by the client, in `Minecraft.doWorldLoad`, before
   the server thread exists — while the settings file is written by the
   server after it starts" — `client/Minecraft.java:2223-2240`;
-  `server/MinecraftServer.java:355`, `646-648`.
-- "`CreateWorldScreen.onCreate` bakes the dimensions to decide the
+  `server/MinecraftServer.java:355`, `646-648`.~~
+- ~~"`CreateWorldScreen.onCreate` bakes the dimensions to decide the
   lifecycle … but the `WorldGenSettings` it stores holds the **unbaked**
-  selection" — `CreateWorldScreen.java:245-268`.
-- "the `MinecraftServer` constructor … builds a fresh rule set from the
+  selection" — `CreateWorldScreen.java:245-268`.~~
+- ~~"the `MinecraftServer` constructor … builds a fresh rule set from the
   saved-data default and then overlays the screen's values" —
-  `MinecraftServer.java:367-370`.
-- Counts: three experiments (`data/minecraft/datapacks/`, `FeatureFlags.java:42-45`);
+  `MinecraftServer.java:367-370`.~~
+- ~~Counts: three experiments (`data/minecraft/datapacks/`, `FeatureFlags.java:42-45`);
   five presets in the *normal* tag, plus *debug_all_block_states* in
   *extended*; seven world presets as JSON (`WorldPresets.java:39-45`);
   `PresetEditor.EDITORS` two entries; nine flat presets as JSON and ten keys
@@ -3765,56 +4086,56 @@ Paths relative to `reference/26.2/net/minecraft/`.
   `SelectWorldScreen` (79-106; the debug re-create button is in the header);
   `WorldOpenFlows.openWorld` a chain of eight (`WorldOpenFlows.java:248, 257,
   295, 409, 444, 463, 487, 508`); seven listeners in `CreateWorldScreen`;
-  `WorldGenSettings` fifty-one lines.
-- **"The *Cancel* button on the layer editor does not undo a layer
+  `WorldGenSettings` fifty-one lines.~~
+- ~~**"The *Cancel* button on the layer editor does not undo a layer
   deletion"** — `CreateFlatWorldScreen.java:100-103, 177-187`;
   `FlatLevelSource.java:60-62`. Session-confirmed. The agent's further
   inference, *not* on the page: the mutated settings object is the one held
   by the `WORLD_PRESET` registry's `LevelStem`. Pass 4 should say whether
-  the next reload rebuilds it.
-- "`WorldCreationUiState.setWorldType` … replaces **all** the dimensions";
+  the next reload rebuilds it.~~
+- ~~"`WorldCreationUiState.setWorldType` … replaces **all** the dimensions";
   "the overworld only. Nothing in the create screen can edit the nether or
   the end" — `PresetEditor.flatWorldConfigurator` / `fixedBiomeConfigurator`
-  both call `WorldDimensions.replaceOverworldGenerator`.
-- "shows `ConfirmExperimentalFeaturesScreen` only when the requested flags
+  both call `WorldDimensions.replaceOverworldGenerator`.~~
+- ~~"shows `ConfirmExperimentalFeaturesScreen` only when the requested flags
   are experimental **and** the caller was the data-pack screen" —
-  `CreateWorldScreen.java:362, 380, 384-397`.
-- "`WorldOptions.parseSeed` … otherwise returns the Java string hash" and
+  `CreateWorldScreen.java:362, 380, 384-397`.~~
+- ~~"`WorldOptions.parseSeed` … otherwise returns the Java string hash" and
   "an empty box is re-rolling a new random world every time you touch it" —
-  `WorldOptions.java:71-88`; `CreateWorldScreen.java:747-749`.
-- **"`WorldDimensions.checkStability` only asks whether each of the three
+  `WorldOptions.java:71-88`; `CreateWorldScreen.java:747-749`.~~
+- ~~**"`WorldDimensions.checkStability` only asks whether each of the three
   built-in keys carries the vanilla dimension type and biome source; every
   shipped preset passes"** — `WorldDimensions.java:120-190`. An inference
   from what the method does *not* check (`isStableOverworld` examines noise
-  parameters only for `MultiNoiseBiomeSource`); re-derive adversarially.
-- "*generator-settings* JSON, parsed … **only when the preset is**
+  parameters only for `MultiNoiseBiomeSource`); re-derive adversarially.~~
+- ~~"*generator-settings* JSON, parsed … **only when the preset is**
   `WorldPresets.FLAT`" — `server/dedicated/DedicatedServerProperties.java:310-322`;
-  "*server.properties* has no rules" — no game-rule read there.
-- "Nothing in the family edits an existing world's `WorldGenSettings` in
-  place" — `EditWorldScreen.java:44-52`; `WorldSelectionList.java:692-728`.
-- "`WorldOpenFlows.recreateWorldData` reads the old world with a
-  deliberately **empty** `LevelStem` registry" — `WorldOpenFlows.java:168-170`.
-- "an NBT parse that deliberately skips the *Data/Player* and
-  *Data/WorldGenSettings* subtrees" — `world/level/storage/LevelStorageSource.java:418-420`.
-- "the water in *Water World* arrives as a feature, not as terrain" —
+  "*server.properties* has no rules" — no game-rule read there.~~
+- ~~"Nothing in the family edits an existing world's `WorldGenSettings` in
+  place" — `EditWorldScreen.java:44-52`; `WorldSelectionList.java:692-728`.~~
+- ~~"`WorldOpenFlows.recreateWorldData` reads the old world with a
+  deliberately **empty** `LevelStem` registry" — `WorldOpenFlows.java:168-170`.~~
+- ~~"an NBT parse that deliberately skips the *Data/Player* and
+  *Data/WorldGenSettings* subtrees" — `world/level/storage/LevelStorageSource.java:418-420`.~~
+- ~~"the water in *Water World* arrives as a feature, not as terrain" —
   `FlatLevelGeneratorSettings.java:165-173`; preset at
-  `FlatLevelGeneratorPresets.java:82`.
-- "the only thing that ever selects it is `CreateWorldScreen.testWorld`" —
-  grep of `FLAT_ALL_DIMENSIONS`; `client/gui/screens/TitleScreen.java:183-188`.
-- "`WorldGenSettings.CODEC` encodes … to JSON using the old registries as
+  `FlatLevelGeneratorPresets.java:82`.~~
+- ~~"the only thing that ever selects it is `CreateWorldScreen.testWorld`" —
+  grep of `FLAT_ALL_DIMENSIONS`; `client/gui/screens/TitleScreen.java:183-188`.~~
+- ~~"`WorldGenSettings.CODEC` encodes … to JSON using the old registries as
   context, and re-parses that JSON against the new ones" —
-  `CreateWorldScreen.java:411-425`.
-- `getDifficulty` hard in hardcore; `isAllowCommands` true in debug, false
-  in hardcore; `isBonusChest` false in both — `WorldCreationUiState.java`.
-- The *mcworld-* temp directory copied in or deleted —
-  `CreateWorldScreen.java:74, 342-355, 464-499, 508-560`.
-- **Unsettled by the agent**: whether enabling an experiment makes any
+  `CreateWorldScreen.java:411-425`.~~
+- ~~`getDifficulty` hard in hardcore; `isAllowCommands` true in debug, false
+  in hardcore; `isBonusChest` false in both — `WorldCreationUiState.java`.~~
+- ~~The *mcworld-* temp directory copied in or deleted —
+  `CreateWorldScreen.java:74, 342-355, 464-499, 508-560`.~~
+- ~~**Unsettled by the agent**: whether enabling an experiment makes any
   registry lifecycle non-stable (so whether the create-time warning ever
   fires for an experiment alone); whether the registry-held flat settings
   mutation survives the next reload; the exact save at which
   *data/world_gen_settings.dat* first hits disk (the page says "the first
   save"). `LevelStorageSource.writeWorldGenSettings` and `writeGameRules`
-  exist with no callers under `net/` and are not on the page.
+  exist with no callers under `net/` and are not on the page.~~
 
 ### Sibling sentences the session wrote (one line each, all new claims)
 
@@ -3827,10 +4148,10 @@ Paths relative to `reference/26.2/net/minecraft/`.
 - `commands/brigadier-and-commands.md` — the selector paragraph now says
   "thirteen final fields" and "resolved against a `CommandSourceStack` much
   later".
-- `worldgen/terrain.md` — the boundary answer now calls `BelowZeroRetrogen`
-  "the world-deepening path that rides the same hooks".
-- `worldgen/biomes.md` — "The two wrappers in the second arrow only do
-  anything beside chunks an older version generated".
+- ~~`worldgen/terrain.md` — the boundary answer now calls `BelowZeroRetrogen`
+  "the world-deepening path that rides the same hooks".~~
+- ~~`worldgen/biomes.md` — "The two wrappers in the second arrow only do
+  anything beside chunks an older version generated".~~
 - ~~`server/starting-a-server.md` — "where the stem was built, by a screen
   or by *server.properties*".~~ CONFIRMED (session C):
   `Main.createNewWorldData` takes the `DedicatedServerSettings` and is the
@@ -3840,13 +4161,13 @@ Paths relative to `reference/26.2/net/minecraft/`.
 - `introduction.md` — the lane gate added to *Verified means tested*; the
   dependency-figure caption ("each cut by a definition rather than a
   reordering").
-- The glossary gained fifteen entries (five per Part XII page, three each
+- ~~The glossary gained fifteen entries (five per Part XII page, three each
   for the other two, one shared): *experiment*, *flat level generator
   preset*, *world gen settings*, *world preset*, *world stem*, *compiled
   query*, *selector head*, *world-limited*, *built-in block model*,
   *globally-rendered block entity*, *special model renderer*, *blending
   data*, *blend alpha*, *border tick*, *old chunk*. Each is one sentence
-  written from the agent's report; check each against its owner page.
+  written from the agent's report; check each against its owner page.~~
 
 ## Session O — Reference *(2026-09-03)*
 
@@ -3858,7 +4179,7 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
 (headings only), `reference/block-update-flags.md` (new, extracted from
 `blocks/blocks-and-states.md`, which now links to it).
 
-**Claims introduced, check first.**
+~~**Claims introduced, check first.**~~
 
 - ~~`threads.md`, *The eight client handlers that never hop*: "In~~
   ~~`ClientPacketListener` 115 handlers do that and eight do not" — counted by~~
@@ -3902,12 +4223,12 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
   bits" when they pass a flag word.~~ CONFIRMED for the Part V half by session
   E: 324, 82, 67, 18 and 276 all decompose exactly as the table names them.
 
-**Standing item added.** The five hand-kept catalogues
+~~**Standing item added.** The five hand-kept catalogues
 (`non-living-damage`, `hud-elements`, `submit-phases`,
 `density-function-nodes`, `block-update-flags`) are name-verified from this
 session on but have had one reader each; re-sweep every row against the
 decompile, hardest on the two that are declaration orders. Strike the
-"glossary if generated" clause above — it is hand-kept.
+"glossary if generated" clause above — it is hand-kept.~~
 
 **Diagrams redrawn.** One added (`math-and-primitives`, the coordinate
 graph — seventeen edges, each a conversion claim); one added
@@ -5054,11 +5375,11 @@ graph — seventeen edges, each a conversion claim); one added
     `com/mojang/blaze3d/audio` added to `SKIPPED` so the treemap hatches
     what the tour tours.
 
-- **2026-09-02, session A (the frame)** — two pilot pages rewritten in new
+- ~~**2026-09-02, session A (the frame)** — two pilot pages rewritten in new
   shapes, the introduction and Part I's landing page written, the lane key
   seeded. The standing item on the lane key is discharged:
   `tools/check_lanes.py` verifies every key expansion against the decompile
-  and runs in `deploy.sh`.
+  and runs in `deploy.sh`.~~
   - **`tickets-and-loading`** (policy shape). *Corrected from pass 2:* the
     keep-dimension-active flag (`TicketType.FLAG_KEEP_DIMENSION_ACTIVE`, 8)
     is on `PLAYER_SIMULATION` (flags 12), `FORCED` (15), `PORTAL` (15) and
@@ -5117,14 +5438,14 @@ graph — seventeen edges, each a conversion claim); one added
     claim. **`lectures.md`**: Part I's two entries and the two known
     cross-part dependencies (from the pass-3 notebook).
 
-- **2026-09-02, planning session** — the mermaid syntax fixes were
+- ~~**2026-09-02, planning session** — the mermaid syntax fixes were
   syntax-only (labels reworded around `;` and `#`, see the commit diff); no
-  claim changed. Nothing to check beyond a glance at that diff.
+  claim changed. Nothing to check beyond a glance at that diff.~~
 
-- **2026-09-02, session B — maps: the atlas.** The atlas is new prose over
+- ~~**2026-09-02, session B — maps: the atlas.** The atlas is new prose over
   regenerated numbers, and the tool that makes the numbers changed; check
-  the tool first, then the prose against a fresh run.
-  - **`tools/map_source.py`** (rewritten): the declaration regex now matches
+  the tool first, then the prose against a fresh run.~~
+  - ~~**`tools/map_source.py`** (rewritten): the declaration regex now matches
     indented (nested) declarations and record headers, which the old one
     silently did not — every hierarchy count changed (`Entity` 188 → 193,
     `Goal` 70 → 200, `Screen` 153 → 157, `Packet` unlisted → 232), and a
@@ -5133,7 +5454,7 @@ graph — seventeen edges, each a conversion claim); one added
     `com.mojang` import, so `Codec`, `MapCodec`, `RecordCodecBuilder`,
     `Schema`, `DSL` and *LogUtils* appear. Re-derive one number of each
     kind by hand (a package's line count, one class's importers, one root's
-    descendants) before trusting the rest.
+    descendants) before trusting the rest.~~
   - **`maps/packages.md`**: 2,206 client-only classes in exactly four
     packages and no mixed depth-4 package (read off the table's client-only
     column: every row is 0 or all); 212,242 client-only lines = 29.5%;
@@ -5144,14 +5465,14 @@ graph — seventeen edges, each a conversion claim); one added
     `world/level/pathfinder` are guesses from package names, not from
     pages); the `SKIPPED` list in the tool must agree with *what this book
     skips* (gametest is deliberately not hatched: covered in Part XIII).
-  - **`maps/biggest.md`**: `BlockModelGenerators`' only caller is
+  - ~~**`maps/biggest.md`**: `BlockModelGenerators`' only caller is
     `ModelProvider` (one grep hit); nothing outside `util/datafix` reads
     `BlockStateData` (seven files, all datafix); the sum 62,935 = 8.7%;
     "`Fox` and `Bee`, the two with the most bespoke behaviour" is a
     judgement stated as fact — verify or soften; "`Options` is every
     setting" and "`Hud` is everything drawn over the world" are glosses;
     `OceanMonumentPieces` and `StrongholdPieces` "built by hand in Java
-    rather than a template" rests on `hand-built-structures`.
+    rather than a template" rests on `hand-built-structures`.~~
   - **`maps/fanin.md`**: one file in six (1,221 of 7,055); all but ten
     `Schema` importers in `util/datafix` (389, 10 outside); `Minecraft`
     twenty-ninth and the only client-only class in the thirty; the hub →
@@ -5691,77 +6012,77 @@ graph — seventeen edges, each a conversion claim); one added
 
 ## Session M — Part XII World generation *(2026-09-03)*
 
-**Two errors found while rewriting, which is four part-sessions in a row.**
+~~**Two errors found while rewriting, which is four part-sessions in a row.**
 Both are counts, and both had survived pass 2 because nobody had recounted
-them against the registration site.
+them against the registration site.~~
 
-- **`features-and-placement` said sixty-three features are registered into
+- ~~**`features-and-placement` said sixty-three features are registered into
   `BuiltInRegistries.FEATURE`. It is 61** (`Feature.java`, counting the
   registering assignments). Fixed in place. The page's separate observation
   that being a `Feature` subclass does not imply being registered — the
-  dragon fight's podium feature — is unchanged and still true.
-- **The same page called `CountOnEveryLayerPlacement` "the fifteenth" of the
+  dragon fight's podium feature — is unchanged and still true.~~
+- ~~**The same page called `CountOnEveryLayerPlacement` "the fifteenth" of the
   fifteen placement modifier types.** There are fifteen, but it is **ninth**
   in `PlacementModifierType`'s declaration order, so "the fifteenth" reads
   as an ordinal and is wrong. Reworded to "one of the fifteen". Pass 4
-  should treat every *ordinal* in the corpus the way it treats counts.
+  should treat every *ordinal* in the corpus the way it treats counts.~~
 
-**Claims this session introduced, hardest first.**
+~~**Claims this session introduced, hardest first.**~~
 
-- **The overworld noise cell is four blocks wide, four deep and eight tall,
+- ~~**The overworld noise cell is four blocks wide, four deep and eight tall,
   and a chunk holds 768 of them** (`terrain`, stated as *the number*).
   Derived from `NoiseSettings.OVERWORLD_NOISE_SETTINGS` (horizontal size 1,
   vertical size 2) through `NoiseSettings.getCellWidth` and
   `NoiseSettings.getCellHeight`, which multiply by four via
   `QuartPos.toBlock`, and from `NoiseBasedChunkGenerator.fillFromNoise`'s
   cell counts (16 / 4 = 4 each way, 384 / 8 = 48 up). No page said any of
-  this before.
-- **1,225 corner samples per interpolated density term, per chunk**
+  this before.~~
+- ~~**1,225 corner samples per interpolated density term, per chunk**
   (`terrain`, the second *number*). Five slices, five Z, forty-nine Y: read
   off `NoiseChunk.fillSlice` (which loops the horizontal cell count plus
   one) and the slice-filling context provider (which loops the vertical cell
   count plus one), plus the five slices that
   `NoiseChunk.initializeForFirstCellX` and four `NoiseChunk.advanceCellX`
   calls fill. Check the slice count first: it is the one step in the
-  arithmetic that is an inference from loop structure rather than a literal.
-- **The six-deep nesting figure in `terrain`** asserts the exact loop order
+  arithmetic that is an inference from loop structure rather than a literal.~~
+- ~~**The six-deep nesting figure in `terrain`** asserts the exact loop order
   of the noise fill: cell X, cell Z, cell Y *descending*, block Y
   *descending*, block X, block Z — and that `NoiseChunk.advanceCellX` fills
   the next slice while `NoiseChunk.swapSlices` drops the old one at the end
-  of each X column. Every level of that nesting is an ordering claim.
-- **The three-forms figure in `density-functions`** asserts what survives
+  of each X column. Every level of that nesting is an ordering claim.~~
+- ~~**The three-forms figure in `density-functions`** asserts what survives
   each rewrite: that `RandomState`'s wiring visitor fills noise holders and
   rebuilds `BlendedNoise` and the end-islands node while leaving
   `DensityFunctions.Marker` and `DensityFunctions.HolderHolder` **intact**,
   and that only `NoiseChunk.wrapNew` resolves those two. It also asserts
   that the parsed form is sampled by nothing at all — the F3 readout samples
   `RandomState.router`, the *once*-rewritten form, which corrects the old
-  page's framing rather than its facts.
-- **`DensityFunctions.FindTopSurface` is a node type the corpus had never
+  page's framing rather than its facts.~~
+- ~~**`DensityFunctions.FindTopSurface` is a node type the corpus had never
   named**, and it is the thirty-fourth and last registration. The claims to
   check: that there are exactly **34** registered types (four by name, six
   markers, nine by name, seven mapped, four arithmetic, four last), and that
   its declared bounds are **Y coordinates rather than densities**, which
   makes it the one node whose range is on a different scale from the rest of
-  the catalogue.
-- **`DensityFunctions.shift` — the three-dimensional domain warp — has no
+  the catalogue.~~
+- ~~**`DensityFunctions.shift` — the three-dimensional domain warp — has no
   callers and appears in no shipped file** (`density-functions`, and the
   Reference page's closing section). Also: *constant*, *cache_all_in_cell*
   and *beardifier* are never written as typed objects in vanilla data, the
-  last two being added in code by `NoiseChunk`'s constructor.
-- **`DensityFunction.NoiseHolder` reports a maximum of 2.0 while its noise
+  last two being added in code by `NoiseChunk`'s constructor.~~
+- ~~**`DensityFunction.NoiseHolder` reports a maximum of 2.0 while its noise
   is null**, so the parsed graph reports wider noise bounds than the seeded
-  graph it becomes. New, and the kind of claim one test would settle.
-- **`DensityFunctions.Spline` has a hand-written equality that ignores its
+  graph it becomes. New, and the kind of claim one test would settle.~~
+- ~~**`DensityFunctions.Spline` has a hand-written equality that ignores its
   derived sampler**, offered as the *mechanism* behind the old page's "the
   rewrite memo is structural, not by reference". The old claim was about
   records generally; this names the one node that is not a record and still
-  merges.
-- **`NoiseChunk.BlendOffset` reports infinite bounds where the data-side
+  merges.~~
+- ~~**`NoiseChunk.BlendOffset` reports infinite bounds where the data-side
   `DensityFunctions.BlendOffset` reports zero** — in the Reference page
-  only, and never checked by pass 2.
+  only, and never checked by pass 2.~~
 
-**`trees` is a new page and every claim in it is new.** It was written from a
+~~**`trees` is a new page and every claim in it is new.** It was written from a
 source inventory of `TreeFeature`, `TreeConfiguration`, the four placer
 packages, the feature-size package, `TreeFeatures` and `TreeGrower`, and
 five of its claims were re-read against the decompile by hand before
@@ -5776,9 +6097,9 @@ the *corner hole chance* field a getter returning the **wide bottom layer**
 field, so any encode writes one value into both; and that
 `TreeGrower.DARK_OAK` declares only a mega tree, which is why a lone
 dark-oak sapling never grows, with `TreeGrower.PALE_OAK` doing the same and
-pointing at the decorator-free bone-meal variant.
+pointing at the decorator-free bone-meal variant.~~
 
-The rest of that page is inventory-sourced and wants checking row by row:
+~~The rest of that page is inventory-sourced and wants checking row by row:
 the nine trunk placers, the eleven foliage placers, the ten decorators, the
 five-species table with its numeric configurations, the mangrove root
 recursion that "succeeds by failing" (and the muddy-roots branch that skips
@@ -5786,9 +6107,9 @@ its moss carpet), and the bucketed leaf-distance walk whose pre-marked
 decoration and root sets *block* propagation. Counts to re-derive: 9 trunk
 placers, 11 foliage placers, 1 root placer, 2 feature sizes, 10 decorators —
 and the claim that `MegaJungleFoliagePlacer` is registered under a *jungle*
-id rather than a *mega jungle* one.
+id rather than a *mega jungle* one.~~
 
-**The split, and where material crossed the seam.** `structures.md` became
+~~**The split, and where material crossed the seam.** `structures.md` became
 `structure-placement.md` (redirected) and `jigsaw-and-templates.md`. Read the
 two together once: placement keeps the lottery,
 `ChunkGeneratorStructureState`, `Structure`, `StructureStart`, the reference
@@ -5804,9 +6125,9 @@ the reference position comes from **piece zero**, that
 idempotent. Two facts moved *off* `terrain` because
 `features-and-placement` already owned them better — the minus-one default
 write radius and `WorldGenRegion.getChunk` throwing — and pass 4 should
-confirm they are not now stated nowhere.
+confirm they are not now stated nowhere.~~
 
-**Diagrams, all of them new or redrawn.** The status-ladder figure on the
+~~**Diagrams, all of them new or redrawn.** The status-ladder figure on the
 landing page, whose whole point is that the lecture order runs *against* the
 execution order — every subgraph placement is a claim about which status owns
 which page. The four-status hand-off flowchart and the six-deep nesting
@@ -5820,7 +6141,7 @@ four-decision flowchart in `structure-placement`, which asserts that
 two read paths moved out of the diagram into a comparison table) and the
 village and stronghold traces (relabelled, and the village one now stops at
 the pieces rather than running on into the blocks). Nothing in the part
-survives unredrawn.
+survives unredrawn.~~
 
 **The landing page and `lectures.md`** claim: that the part is a substrate, a
 pipeline and a wing; that the structure wing is decided at
