@@ -49,6 +49,185 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session C — Part III · The server (pass 5) *(2026-09-05)*
+
+*What six page reads and one end-to-end reading of Part III turned up and
+session C did not act on, routed by kind. The claims it introduced and the
+six corrections it made are in [pass9.md](pass9.md).*
+
+### For other part sessions (pass 5)
+
+- **Session I (IX) — the handover between `players-and-sessions` and
+  `protocol-phases` is declared twice and in two places.** `players-and-sessions`:30-34
+  says "This page starts where that one hands over: with `PlayerList` deciding
+  whether the login is allowed at all"; `protocol-phases`:313-315 says it
+  hands over at `PlayerList.placeNewPlayer`. The span between the two seams is
+  exactly the material both pages explain — the two-run admission gate
+  (`players-and-sessions`:59-70 against `protocol-phases`:204-211 and
+  308-311), the strictly serial configuration queue
+  (`players-and-sessions`:97-104 against `protocol-phases`:248-259, both with
+  a figure of the same six steps), and `PrepareSpawnTask`'s two states
+  (`players-and-sessions`:106-111 against `protocol-phases`:299-306). Session
+  C's recommendation, not applied because the pair is the later part's under
+  A4: the gate is `players-and-sessions`' by the scenario rule (*who is
+  admitted* is its first section, and it alone has the asymmetry — the
+  newcomer wins at login and loses at the second check); the queue and the two
+  states are `protocol-phases`' by the same rule, since its hook *is* the
+  player being constructed after configuration ends. Two sentences on
+  `players-and-sessions` are moves rather than cuts if that split is taken:
+  that the client sits in configuration with no idea a world is being
+  assembled for it, and that without `PrepareSpawnTask.keepAlive` a slow
+  client would arrive to find its spawn chunks expired. Whatever is decided,
+  the two handover sentences and `server/README`:91-92 must name one line.
+- **Session I (IX) — keep-alive.** `players-and-sessions`:426-433 and
+  `the-connection`:370-380 both explain it; the connection owns it (it runs in
+  configuration too). Two moves come with the cut: the wrong-id disconnect is
+  "immediate rather than ignored" only here, and the latency smoothing —
+  three parts old to one part new, so a tab list lags a real change by several
+  pings — is on no other page in the book. What `players-and-sessions` keeps
+  is the asymmetry its section is actually about: keep-alive is the only one
+  of the three kicks that exempts the singleplayer host.
+- **Session H (VIII) — the flying kick.** `players-and-sessions`:421-426
+  against `input-to-movement`:375-383, which has the gravity scaling, the
+  vehicle copy and six suppressions this page lacks; the movement page owns
+  it and this one keeps a clause. Note that the idle timeout beside it
+  (`MinecraftServer.playerIdleTimeout` and its end-credits exemption) has no
+  other home in the book and must stay wherever that section ends up.
+- **Session I (IX) — the chunk-batch pacing on a join.**
+  `players-and-sessions`:239-245 against
+  `what-the-client-is-told`:266-285, which owns both halves of the loop; the
+  join page keeps "a joining client is trusted with one batch".
+- **Session F (VI) — an inbound link that lands on the wrong page.**
+  `damage-and-death`:322 says "[player anatomy] owns the object that comes
+  back". It does not: `player-anatomy`:213-216 itself says
+  `players-and-sessions` owns it, and the object is
+  `players-and-sessions#the-object-and-the-reference-that-outlives-it`.
+- **Session D (IV) — `reference/level-data-and-rules` is now the declared
+  owner of the `level.dat` write path** (session C's ruling: three tellings
+  cut to one, and both Part III pages now cite
+  `#what-is-left-in-leveldat`). Nothing to do unless D disagrees; if it does,
+  the two Part III citations move with it. Beside it: `starting-a-server`
+  keeps `DirectoryLock` whole, so the Reference row for
+  `LevelResource.LOCK_FILE` should cite
+  `starting-a-server#taking-the-lock-and-fixing-leveldat-twice` rather than
+  explain the lock, and `PlayerDataStorage`'s rescue is now explained on
+  `players-and-sessions` rather than wanting a Reference entry (pass5.md:1553's
+  third homeless item, discharged).
+- **Session D (IV) — three Part III classes that are Part IV's.**
+  `ChunkResult` (110 lines, the success/fail wrapper chunk futures carry) and
+  `PlayerMap` (`ChunkMap`'s player index, which
+  `players-and-sessions`:233-237 makes a "two player lists" point without
+  naming a third) are named nowhere in the book and are Part IV's scope, not
+  Part III's; `server/README` now says so under *where the part stops*.
+- **Session E (V) — the hopper's transfer cooldown.**
+  `HopperBlockEntity.MOVE_ITEM_SPEED` is 8, and the only place the book said
+  so was Part III's landing page, which is a summariser. Cut from there;
+  `block-entities` is where a ticker's cadence belongs if session E wants it.
+- **Session F (VI) — `ServerEntityGetter`** (132 lines, `server/level`), the
+  server-side entity-query interface `ServerLevel` implements, is named
+  nowhere in the book and is Part VI's vocabulary.
+- **Session H (VIII) — `DemoMode`** (102 lines) extends
+  `ServerPlayerGameMode` and is named nowhere; `player-anatomy`'s game-mode
+  comparison is where it would go, or a declared decline.
+- **Session M (XIII) — `ServerBossEvent`** (166 lines, `server/level`) is
+  still Part XIII's, as the schedule says; `players-and-sessions`:180 sends
+  "boss events" in the join burst without naming a class.
+- **Session M (XIII) — a live disagreement.**
+  `scoreboard-and-data`:277-278 says "a score set and a crash a tick later is
+  a score lost"; `how-a-server-dies` says a tick-loop crash reaches the same
+  *finally* and writes what `/stop` writes, and `scoreboard-and-data`:145-146
+  puts `ServerScoreboard.storeToSaveDataIfDirty` inside
+  `MinecraftServer.saveAllChunks`, which the crash path calls. Either the
+  sentence means a watchdog kill or a *kill -9*, or one of the two pages is
+  wrong. Also in [pass9.md](pass9.md).
+- **Session N (Reference) — `reference/threads` wants three things Part III
+  has and it lacks**: a *daemon* column; that `RconThread` and
+  `QueryThreadGs4` are `GenericThread`s polling on a half-second timeout so
+  they notice `GenericThread.running`; and that `RconThread.create` returns
+  nothing when *rcon.password* is empty **or** *rcon.port* is out of range,
+  where its row states only the password half. Session C left all three on
+  `starting-a-server` rather than move them into a Reference page mid-pass.
+- **Session N (Reference) — `reference/README`'s parts column.** Session C
+  added III to *Level data and rules*' row, because Part III's landing page
+  now points there. The column is still hand-kept and is the one A6 left to
+  session N.
+- **Session L (XII) — the initial spawn search is split and neither half
+  links the other.** `starting-a-server`:269-277 owns *when* it runs (the
+  `ServerLevelData.isInitialized` gate, the bonus chest, the flag that stops
+  it repeating); `biomes`:194-204 owns the search itself, with
+  `Climate.findSpawnPosition` and the 2,048-block cap. One clause each.
+
+### For pass 6 — the lecture
+
+- `server-level-tick` — the falling-sand exception (pass 4's finding at
+  pass5.md:1081, still live and re-checked): :304-307 delivers the section's
+  punchline and :309-316 immediately qualifies it. Lead with the exception
+  and land on the rule. [kind=lecture]
+- `players-and-sessions` has no *Questions players ask* closer and is one of
+  the pages that most obviously wants one: three of the four `###` sub-heads
+  under *Four ways the session changes* are already player questions in
+  disguise (why the ender chest survives death, why the Nether keeps effects,
+  where the llama goes). [kind=lecture]
+- `players-and-sessions`:280-286 — the heading *Four ways the session
+  changes* sits above a paragraph naming a fifth (the end credits). Session C
+  ruled the heading stays: it names the comparison's four columns and the
+  concession is what makes the paragraph honest. Recorded as pass 6's to
+  re-judge with the section in hand, not as an open defect. [kind=lecture]
+- `how-a-server-dies`:336-369 — *Ctrl-C, the window, and a singleplayer
+  world* carries three subjects and the heading promises all three; the
+  client's own window-close road is the client loop's. Session C left the
+  paragraph because the cut would take the "after an ordinary exit it finds
+  `Minecraft.singleplayerServer` already null" fact with it, which the client
+  loop lacks. [kind=lecture]
+- `starting-a-server`:5-18 — the opening paragraph (pass 4's finding at
+  pass5.md:1070) is still the page's densest and now carries one more clause.
+  Its "everything else was over before the first one printed" is true of the
+  things it enumerates and reads as a claim about the whole boot, which the
+  *Done* section then contradicts for query, RCON, the watchdog and JMX.
+  Worth two sentences. [kind=lecture]
+- `server-tick` — the *Questions players ask* section is where the autosave
+  arithmetic now lives, which makes it load-bearing rather than a closer.
+  [kind=lecture]
+
+### For pass 7 — the figures
+
+- `server-tick`'s event-loop flowchart (pass5.md:1092's list, re-checked and
+  still live): fourteen edges, and its `C` node label is a sentence.
+  [kind=figure]
+- `starting-a-server`'s sequence figure: 27 items, the largest single diagram
+  in the part. [kind=figure]
+- `server/README`'s part figure runs Start → Tick → Level → Players → Death,
+  which is the runtime order and not the watch order (Tick, Level, Players,
+  Start, Death), and the shape sentence above it offers a third ordering. The
+  exemplar (`commands/README`) numbers its nodes to the watch order. Session
+  C left the figure alone because it is drawing the *runtime* relationship,
+  which is the part's shape; pass 7 should decide whether numbering or a
+  caption settles it. [kind=figure]
+- `server-level-tick` now names the tick's profiler zones in prose. If pass 7
+  wants them in the flowchart's node labels instead, the prose sentence is
+  the copy to cut. [kind=figure]
+
+### For pass 8 — the voice
+
+- Part III's five pages all end their opening paragraph on a bolded or dashed
+  sentence — the tic pass 4's session C logged and this session left.
+  [kind=voice]
+- `players-and-sessions` calls the packet drain "the scheduled packet
+  processing" twice (:170, :192-193), which is the profiler zone's name; the
+  book's term is *the drain* (`server-tick`:94-110). One voice, one name.
+  [kind=voice]
+- `how-a-server-dies` uses *the number* device twice (**Ten seconds** and
+  **One millisecond**) where once is the convention; pass5.md:1553's version
+  of this entry named the comparison table's "differ in one cell" as the
+  second instance and is **overtaken** — that cell now reads "three of the
+  eight rows". [kind=voice]
+- `server-tick`'s `tickChildren` table has one cell reading "its own counter
+  has not passed 600 — so every 601st call, not every 600th tick", the
+  longest *skipped when* value in the table. [kind=voice]
+- The repeated hedges pass 4's session C logged ("almost nothing", "all but
+  the first", "two of the three endings") are unchanged and now joined by
+  "over half of those lines" on the landing page. [kind=voice]
+
 ## Session B — Parts I and II (pass 5) *(2026-09-05)*
 
 *What eleven page reads and one end-to-end reading of both parts turned up
@@ -1072,16 +1251,17 @@ should be read again for rhythm rather than for truth:
   before *Preparing level* prints — and the fix adds a clause and a second
   sentence to a paragraph that was already the page's densest. The hook is
   untouched. Worth trying as two sentences instead of one long one.
-- `server-tick`'s **packet-drain paragraph** gained five lines explaining
-  that chat and commands arrive as tasks rather than as packets. It is true
-  and it matters, but it lands in the middle of a section whose subject is
-  the drain, and the event-loop section forty lines later is where the other
-  door is actually documented. Pass 5 should decide whether the sentence
-  points forward instead of explaining in place.
+- ~~`server-tick`'s **packet-drain paragraph**~~ **— overtaken. Checked by
+  session C of pass 5 against the page: it is three lines, not five, and it
+  already points forward ("so chat and commands arrive as *tasks*, drained by
+  the event loop below, and not with the packets"). The exception belongs
+  beside the rule it qualifies; nothing to move.**
 - `server-level-tick`'s **falling-sand exception** is now its own paragraph
   after "The ordering is visible from a client". That is the right place for
   it factually, but it means the section's punchline is immediately
   qualified. Consider leading with the exception and landing on the rule.
+  *(Re-checked by session C of pass 5 and still live; it is a section-order
+  finding, so pass 6's.)* [kind=lecture]
 
 **Repeated hedges introduced.** "Almost nothing", "almost none", "all but the
 first", "two of the three endings", "on this side of the jar" — five new
@@ -1091,13 +1271,15 @@ instead ("`FallingBlockEntity` is the one place that …").
 
 **Structural findings, not acted on.**
 
-- **`how-a-server-dies` carries two subjects.** The three-endings comparison
-  is the lecture; *What you lose if you kill the process* is a durability
-  page hiding inside it, and it is where four of the session's nine
-  corrections landed — autosave spacing, what `level.dat` actually holds,
-  the `SavedData` files, the per-ending answer. It is the strongest material
-  on the page and the least connected to its figure. Pass 5 should decide
-  whether it is a section or a page.
+- ~~**`how-a-server-dies` carries two subjects.**~~ **Ruled by session C of
+  pass 5: a section, not a page.** *What you lose if you kill the process* is
+  the answer to the page's own question — it says what each of the three
+  endings costs you, which is the comparison table's payoff and exists
+  nowhere else in the book, so it cannot leave. What it also held has gone to
+  its owners: the autosave cadence to `server-tick`, the per-chunk save
+  spacing to `chunk-storage`, `session.lock`'s nature to `starting-a-server`.
+  A durability page built from what is left would be a page of other pages'
+  material.
 - **`server-tick`'s event-loop figure grew from eleven edges to fourteen**
   when the two impossible ones were replaced by a truthful queue-empty exit.
   It is now the densest flowchart in Part III and its `C` node label is long
@@ -1210,9 +1392,12 @@ correction):
   paragraph lost its superlative ("the page with the most dependants in the
   book") and gained a cost argument. It is true now; it is not as good a
   sentence.
-- `src/systems/server/README.md` — the *before you start* section grew a long
-  second paragraph to carry the environment-attributes dependency and the two
-  different cuts. It is the longest *before you start* in the corpus.
+- ~~`src/systems/server/README.md` — the *before you start* section grew a long
+  second paragraph~~ **— done by session C of pass 5, in the rewrite to the
+  landing-page role. The environment-attributes paragraph is cut from three
+  sentences of mechanism to one sentence and an anchored link (the mechanism
+  is that page's), and the count was wrong anyway: at 200 words it was third,
+  behind `networking/README` at 222 and `blocks/README` at 210.**
 - `src/maps/fanin.md` — the hook now spends three lines on what the chart does
   not count before it gets to the surprise.
 - `src/maps/packages.md` — the `net/minecraft/data` clause became a
@@ -1551,16 +1736,14 @@ was cut or moved, and why)*
   across six narrated steps is now the flowchart, which is what pass 2
   predicted would let it be cut.
   **`players-and-sessions`**: the `PlayerList` and `ServerPlayer` field
-  inventories go. **Three items need a home and have none yet** — the
-  `ServerPlayerGameMode` paragraph (block-breaking state,
-  `ServerPlayerGameMode.changeGameModeForPlayer`,
-  `ServerPlayer.storeGameTypes`), which belongs with `player-anatomy` or a
-  game-mode page; `ClientboundSetChunkCacheRadiusPacket` /
-  `ClientboundSetSimulationDistancePacket` on a view-distance change, which
-  is server reconfiguration rather than a session event (candidate home:
-  `what-the-client-is-told`); and `PlayerDataStorage`'s *.dat_old* and
-  *corrupted* rescue, compressed here into one cast-table cell and wanting a
-  save-format Reference entry. The `ClientboundSetHealthPacket`
+  inventories go. ~~**Three items need a home and have none yet**~~ — **all three settled.
+  Checked by session C of pass 5: the `ServerPlayerGameMode` paragraph landed
+  on `player-anatomy`:174-179 as the two-sided comparison table, and the
+  view-distance packets on `what-the-client-is-told`:381-382, both before
+  pass 5 began; `PlayerDataStorage`'s *.dat_old* and corrupt-copy rescue is
+  now a passage on `players-and-sessions` itself, where the save file is
+  being read, rather than a Reference entry — the cast cell had promised it
+  for two passes.** The `ClientboundSetHealthPacket`
   saturation-crossing detail moves to `player-anatomy` by reference; the
   login state machine, the 600-tick login timeout, the auth thread and
   `CommonListenerCookie`'s travel move to `protocol-phases`, linked; the

@@ -116,13 +116,18 @@ connections accepted through it. Live sessions are severed one step later by
 `PlayerList.removeAll`, with the *multiplayer.disconnect.server_shutdown*
 reason. A connection still in handshake, login or configuration has no
 `ServerPlayer` and is in neither list, so it is closed by neither, and simply
-dies with the process ([players and sessions](players-and-sessions.md)).
+dies with the process ([protocol
+phases](../networking/protocol-phases.md#configuration): a session exists only
+once configuration is acknowledged).
 
-`MinecraftServer.stopped` also changes how work is accepted:
-`MinecraftServer.executeIfPossible` rejects anything new outright, and
-`MinecraftServer.scheduleExecutables` reports false, so a caller reaching
-`BlockableEventLoop.execute` from another thread runs its task inline rather
-than queueing it for a loop that has stopped looping.
+`MinecraftServer.stopped` also changes how work is accepted, and the two
+doors answer differently. `MinecraftServer.executeIfPossible` throws a
+*RejectedExecutionException* outright. `MinecraftServer.scheduleExecutables`
+merely reports false, so a caller reaching `BlockableEventLoop.execute` from
+another thread runs its task inline on its own thread rather than queueing it
+for a loop that has stopped looping ([the server
+tick](server-tick.md#every-runnable-becomes-a-ticktask) is the same two doors
+while the server runs).
 
 ### Players before chunks, and never `MinecraftServer.saveEverything`
 
@@ -159,15 +164,13 @@ that millisecond.
 proceed while the main-thread queue keeps taking chunk results.
 
 `TicketStorage.deactivateTicketsOnClosing` moves every ticket except
-`TicketType.UNKNOWN` into a parked map. Parked tickets stop holding chunks —
-`TicketStorage.hasTickets` counts only the live map, which is how the loop
-ends — but they are not forgotten. `TicketStorage.packTickets` writes both
-maps, and the types that `TicketType.persist`, forced and portal, go into the
-level's *chunk_tickets* saved data. On the next boot they load back parked
-and `TicketStorage.activateAllDeactivatedTickets` re-arms them during
-`MinecraftServer.prepareLevels`
-([tickets and loading](../world/tickets-and-loading.md),
-[starting a server](starting-a-server.md)).
+`TicketType.UNKNOWN` into a parked map, and that is what ends the loop:
+`TicketStorage.hasTickets` counts only the live map, so parking a ticket stops
+it holding a chunk. Parked is not forgotten — which of them survive to the
+next boot, and what re-arms them there, is [tickets and
+loading](../world/tickets-and-loading.md#what-a-ticket-asks-for)'s and
+[starting a
+server](starting-a-server.md#preparing-the-levels-which-prepares-nothing)'s.
 
 ### The flush save
 
@@ -181,17 +184,18 @@ with `BlockableEventLoop.managedBlock` until `ChunkHolder.isReadyForSaving`,
 repeated until a whole round saves nothing new — and then
 `SectionStorage.flushAll` for the POI sections, the unloads processed, and
 `SimpleRegionStorage.synchronize` joined so that the `IOWorker` has actually
-put the bytes down ([chunk storage](../world/chunk-storage.md)). Entities
+put the bytes down ([chunk
+storage](../world/chunk-storage.md#the-four-moments-a-chunk-is-written)). Entities
 follow, through the level's `PersistentEntitySectionManager`.
 
-`level.dat` is written the same way at every save, flush or not:
-`LevelStorageSource.LevelStorageAccess.saveDataTag` builds the tag from
-`PrimaryLevelData.createTag`, wraps it under *Data*, writes it gzipped to a
-temp file in the world directory with `NbtIo.writeCompressed`, and
-`Util.safeReplaceFile` swaps it in, rotating the previous file to
-`level.dat_old`. Only after that does the *server-wide* `SavedDataStorage`
-get its `SavedDataStorage.saveAndJoin`. There are two tiers of saved data,
-and they are flushed at opposite ends of this section.
+`level.dat` is written next, the same way at every save, flush or not —
+`LevelStorageSource.LevelStorageAccess.saveDataTag`, a gzipped temp file
+through `NbtIo.writeCompressed`, and an atomic replace that keeps the previous
+copy ([level data and
+rules](../../reference/level-data-and-rules.md#what-is-left-in-leveldat) has
+the path and the retries). Only after that does the *server-wide*
+`SavedDataStorage` get its `SavedDataStorage.saveAndJoin`. There are two tiers
+of saved data, and they are flushed at opposite ends of this section.
 
 ### The closes, and the last thread
 
@@ -217,7 +221,7 @@ which `GenericThread.stop` joins here in one-second slices, and the IO
 pool's workers, which went a step earlier with `Util.shutdownExecutors`. So
 when `MinecraftServer.runServer` returns, the Server thread is the last one
 left, and the JVM ends because there is nothing to keep it
-([the thread reference](../../reference/threads.md)).
+([the thread reference](../../reference/threads.md#the-threads-a-lecture-leans-on)).
 
 ## The crash that saves
 
@@ -254,7 +258,8 @@ suppresses the new one under a report already parked. The next
 throws it as a `ReportedException`, and the dedicated server is constructed
 that way. So a worker that dies does not die silently: it dies as a
 tick-loop crash, on the Server thread, at whatever moment that thread next
-looks for a task ([the server tick](server-tick.md)). The integrated server
+looks for a task ([the server
+tick](server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)). The integrated server
 is constructed with propagation off and hands its report to the client
 instead, through `IntegratedServer.onServerCrash`.
 
@@ -355,7 +360,7 @@ the LAN pinger. The client then puts up a `GenericMessageScreen` reading
 `MinecraftServer.isShutdown` is false. The "Saving world" screen is not a
 progress bar and is not driven by the server: it is a render loop spinning on
 one question, *is the Server thread dead yet*
-([the client loop](../client/the-client-loop.md)). Closing the game window
+([the client loop](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping)). Closing the game window
 reaches the same place by a different road: `Window.shouldClose` makes
 `Minecraft.runTick` call `Minecraft.stop`, which ends the frame loop, and
 `Main` then calls `Minecraft.exitWorldAndClose` on its way out. The client's
@@ -374,9 +379,10 @@ own life, long after the world is closed.
 the only one of the three that anything sets in order to stop the server.
 `MinecraftServer.stopped` is a plain field set in the *finally* just before
 teardown, read from other threads through `MinecraftServer.isStopped`, and
-it is what closes the task queue. `MinecraftServer.isReady` is volatile, set
-at the bottom of every loop iteration, and is not what prints *Done* — that
-is logged in `DedicatedServer.initServer`, before the loop is entered.
+it is what closes the task queue. `MinecraftServer.isReady` is volatile and set
+at the bottom of every loop iteration, which makes it the one of the three
+that has nothing to do with dying — and it is not what prints *Done*
+([starting a server](starting-a-server.md#done-comes-before-the-loop)).
 
 `MinecraftServer.isShutdown` is the odd one out, and is not a field at all:
 it asks whether the Server thread is still alive. Nothing sets it, nothing
@@ -388,12 +394,14 @@ of teardown, when nothing has been saved yet.
 ## What you lose if you kill the process
 
 Ordinary autosave is `MinecraftServer.saveEverything` with neither *flush*
-nor *force*, every 6000 ticks — five minutes of game clock, floored at 100
-ticks. It writes every player, every dirty chunk — `ChunkMap.saveAllChunks`
-clears `ChunkMap.nextChunkSaveTime` on the way in, so the ten-second per-chunk
-spacing that throttles ordinary saving never gates an autosave — and,
-unconditionally, `level.dat`, followed by a scheduled write of the level's
-`SavedData`. Between the two, the spawn point and the world time (in
+nor *force*, on the countdown the tick keeps at the bottom of every lap
+([the server tick](server-tick.md#the-bookkeeping-at-the-bottom)) — five
+wall-clock minutes, whatever the tick rate. It writes every player, every
+dirty chunk — under none of the per-chunk spacing that throttles ordinary
+saving, because the sweep clears it on the way in ([chunk
+storage](../world/chunk-storage.md#the-four-moments-a-chunk-is-written)) —
+and, unconditionally, `level.dat`, followed by a scheduled write of the
+level's `SavedData`. Between the two, the spawn point and the world time (in
 `level.dat`) and the weather, the game rules and the world clocks (each its
 own `SavedData` file — *weather*, *game_rules*, *world_clocks*) on disk are
 never more than one autosave stale, even on a server nobody ever stops
@@ -411,11 +419,11 @@ watchdog kill, or a
 anything still queued inside the `IOWorker` — those writes run on
 `Util.ioPool`, and `Runtime.halt` does not wait for a pool.
 
-What you never lose is access to the world. `session.lock` is an OS advisory
-lock taken with `FileChannel.tryLock`, not a file whose contents mean
-anything, and the operating system releases it when the process dies however
-it dies. A world left behind by a killed server opens on the next start.
-Copying a world directory copies a `session.lock` that means nothing at all.
+What you never lose is access to the world. The lock the boot took is an
+operating-system one ([starting a
+server](starting-a-server.md#taking-the-lock-and-fixing-leveldat-twice)), and
+an operating system drops it when the process dies however it dies — so a
+world left behind by a killed server opens on the next start.
 
 Individual failures are quieter than any of this. A chunk that cannot be
 written calls `MinecraftServer.reportChunkSaveFailure`: logged, added to the

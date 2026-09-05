@@ -100,7 +100,8 @@ so the frame a profiler shows includes the packets. Each entry in that
 thread decoded the packet, the handler called
 `PacketUtils.ensureRunningOnSameThread`, and that queued the pair here and
 aborted the Netty-side call by throwing `RunningOnDifferentThreadException`
-([anatomy](../anatomy/anatomy.md) has the crossing). This is where most
+([the connection](../networking/the-connection.md#the-threads-underneath-it)
+has the crossing, in both directions). This is where most
 player input enters the world, but not all of it: the handlers that never
 call `PacketUtils.ensureRunningOnSameThread` hop by the other door instead.
 `ServerGamePacketListenerImpl.handleChat` and both command packets run their
@@ -165,7 +166,9 @@ details as *"Exception ticking world"* and rethrown as a `ReportedException`
 list is wrapped. Two things a reader looks for here are elsewhere: the
 `/schedule` queue is a `TimerQueue` the server owns and persists
 (`MinecraftServer.getScheduledEvents`) but ticks from inside
-`ServerLevel.tickTime`, with the dimension's own game time, and the last
+`ServerLevel.tickTime`, which runs in the overworld alone and off the
+overworld's *gameTime* ([the level
+tick](server-level-tick.md#sleeping-is-the-one-thing-a-freeze-cannot-stop)), and the last
 statement of `MinecraftServer.tickChildren` is `ServerActivityMonitor.tick`,
 a rate-limited nudge to the `NotificationManager` rather than anything the
 world can see.
@@ -196,9 +199,10 @@ with it. On a dedicated server `DedicatedServer.tickConnection` adds
 console reaches the Server thread. RCON does not come this way:
 `DedicatedServer.runCommand` puts the command on the task queue with
 `BlockableEventLoop.executeBlocking` and waits for the answer, so it runs
-wherever the queue next drains. [Players and sessions](players-and-sessions.md) is
+wherever the queue next drains. [Players and sessions](players-and-sessions.md#the-three-kicks-that-come-from-the-tick) is
 what happens inside that phase; [the
-connection](../networking/the-connection.md) is the channel underneath it.
+connection](../networking/the-connection.md#connectiontick-the-one-call-from-a-game-thread)
+is the channel underneath it.
 
 ### The two writes each client gets
 
@@ -219,7 +223,8 @@ the server's own tickables and last the chunks.
 after the chunks.
 
 The pacing of that second write is [tickets and
-loading](../world/tickets-and-loading.md)'s subject. `PlayerChunkSender`
+loading](../world/tickets-and-loading.md#what-the-player-is-sent-and-when)'s
+subject. `PlayerChunkSender`
 answers to the client's own acknowledgements, so a slow client throttles its
 own chunks without slowing the tick.
 
@@ -293,12 +298,10 @@ lets a task run when there is time left, *or* when it is older than
 drains its queue, late but in order and without unbounded growth. Submitting
 from the Server thread does not mean running inline:
 `ReentrantBlockableEventLoop.scheduleExecutables` reports true while another
-task is running, so re-entrant work queues instead of nesting. Once the server
-has stopped, `MinecraftServer.scheduleExecutables` reports false and a
-submitted task runs *inline on the caller's thread*; it is the separate
-`MinecraftServer.executeIfPossible` door that refuses with a
-*RejectedExecutionException*, and `PacketProcessor.scheduleIfPossible` that
-refuses a late packet the same way.
+task is running, so re-entrant work queues instead of nesting. Both of those
+doors answer differently once the server has stopped, which is [how a server
+dies](how-a-server-dies.md#the-front-door-closes-the-guests-do-not-leave)'s
+first move.
 
 A task that throws is not the loop's problem either.
 `BlockableEventLoop.doRunTask` logs the failure under the fatal marker and
@@ -306,18 +309,13 @@ returns, rethrowing only what `BlockableEventLoop.isNonRecoverable` calls
 unrecoverable — an *OutOfMemoryError* or a `StackOverflowError`, unwrapped
 through any `ReportedException` around it.
 
-A worker thread that dies surfaces here too. `Util`'s uncaught-exception
-handler and `GenerationChunkHolder.applyStep` both park the report through
-`BlockableEventLoop.relayDelayCrash`, and the next
-`BlockableEventLoop.pollTask` on a loop built to propagate crashes rethrows
-it. The dedicated server is such a loop and the integrated server is not: in
-singleplayer it is `Minecraft`'s loop that propagates, and
-`IntegratedServer.onServerCrash` relays the server's own crash into the same
-slot so the client picks it up. What happens next belongs to [how a server
-dies](how-a-server-dies.md) — the crash report, the shutdown the loop's
+A worker thread that dies surfaces here too, as a throw out of
+`BlockableEventLoop.pollTask` rather than out of anything the tick called:
+that is [how a server dies](how-a-server-dies.md#the-crash-that-saves)'s
+relay, and what it becomes — the crash report, the shutdown the loop's
 *finally* performs, and the watchdog that reads
 `MinecraftServer.getNextTickTime` from outside the loop and halts the JVM
-without saving.
+without saving — is that page's whole subject.
 
 ### The budget, and where it stops applying
 
@@ -423,15 +421,19 @@ refreeze after.
 **Why is an empty Nether nearly free?** Because a dimension that nothing holds
 a simulation ticket in stops ticking entities and block entities after 300
 ticks of `ServerLevel.emptyTime`, while still running its chunk-source work.
-That is [the level tick](server-level-tick.md)'s rule, and [tickets and
-loading](../world/tickets-and-loading.md) owns which ticket resets it.
+That is [the level
+tick](server-level-tick.md#an-empty-dimension-skips-exactly-three-things)'s
+rule, and [tickets and
+loading](../world/tickets-and-loading.md#when-a-ticket-dies) owns which ticket
+resets it.
 
 The loop itself is written once. `IntegratedServer` and
 `DedicatedServer` override pieces of the tick, never the loop:
 `DedicatedServer.tickServer` adds the JSON-RPC `ManagementServer.tick`,
 `DedicatedServer.tickConnection` the console, `IntegratedServer.tickServer`
-the pause. [Starting a server](starting-a-server.md) is how the thread that runs
-`MinecraftServer.runServer` comes to exist.
+the pause. [Starting a
+server](starting-a-server.md#minecraftserverspin-and-the-last-thing-main-does)
+is how the thread that runs `MinecraftServer.runServer` comes to exist.
 
 ## Where to look
 

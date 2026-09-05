@@ -90,9 +90,16 @@ sets a block of heap aside and one throwaway report is formatted and
 discarded, so that the crash-report path is warm and has memory of its own
 even when the reason for the crash is that there is none left.
 `Bootstrap.bootStrap` and `Bootstrap.validate` build and freeze the static
-registries ([identifiers and registries](../foundations/identifiers-and-registries.md)),
+registries ([identifiers and
+registries](../foundations/identifiers-and-registries.md#before-the-game-exists)),
 and `Util.startTimerHackThread` starts a daemon that sleeps forever and
-touches nothing.
+touches nothing. The last thing `Bootstrap.bootStrap` does is quieter and
+matters later: it puts a `LoggedPrintStream` over `System.out` and
+`System.err` — a `DebugLoggedPrintStream` when debug logging is on — so that
+anything printed from here on goes through the logger, and the original
+stream survives only as `Bootstrap.STDOUT`. That is the stream a crash report
+uses when the logger cannot be trusted ([how a server
+dies](how-a-server-dies.md#the-watchdog-that-does-not)).
 
 Only then does the server read its own configuration. `DedicatedServerSettings`
 parses `server.properties`, and `DedicatedServerSettings.forceSave` writes it
@@ -112,9 +119,13 @@ written both files on purpose.
 With the EULA agreed, `Services.create` builds the authentication services and
 the name cache in the universe directory, and `JsonRpc.create` starts a
 `ManagementServer` if *management-server-enabled* is set — and throws, ending
-the boot, if it is set and the secret is not forty alphanumeric characters
-rather than quietly going without one: a Netty WebSocket listener with its own
-event-loop group named *Management server IO*, TLS on by default, and a
+the boot, if the secret it finds is not forty alphanumeric characters. A
+*missing* secret is not that failure: `DedicatedServerProperties` resolves
+*management-server-secret* to a freshly generated key when the file has none,
+and the properties rewrite above puts that key in the file — so what stops a
+boot is a malformed secret, not an absent one. What starts is a Netty
+WebSocket listener with its own event-loop group named *Management server
+IO*, TLS on by default, and a
 `JsonRpcNotificationService` registered on the `NotificationManager` that
 everything later in the boot reports through. It binds before `session.lock`
 is taken, and `DedicatedServer.onServerExit` stops it last, so the management
@@ -177,9 +188,10 @@ Two things then happen before the server object exists. With *--forceUpgrade*
 or *--recreateRegionFiles*, a `WorldUpgrader` rewrites every region file while
 *main* polls it once a second and logs a percentage. And either way
 `LevelStorageSource.LevelStorageAccess.saveDataTag` writes `level.dat` back
-out through a temp file, rotating the previous copy into `level.dat_old`. That
-is unconditional: a server started and killed one second later has already
-rewritten its world data.
+out, by the same atomic replace every later save uses ([level data and
+rules](../../reference/level-data-and-rules.md#what-is-left-in-leveldat)).
+That is unconditional: a server started and killed one second later has
+already rewritten its world data.
 
 ## `MinecraftServer.spin`, and the last thing *main* does
 
@@ -222,7 +234,8 @@ like every other command.
 
 Then the properties become fields: online mode, the local IP, the default game
 type, the port. `MinecraftServer.initializeKeyPair` generates the RSA pair that
-login encryption uses ([players and sessions](players-and-sessions.md)), and
+login encryption uses ([protocol
+phases](../networking/protocol-phases.md#login)), and
 `ServerConnectionListener.startTcpServerListener` binds the port with a Netty
 server bootstrap. Two things can end the boot at this point, and they end it
 identically.
@@ -261,10 +274,14 @@ and the `WanderingTraderSpawner` — and its `ServerLevelData` is the real
 `LinkedHashMap`, so it stays first for every later walk over the levels), the
 scoreboard, the `CommandStorage` and the `Stopwatches` come out of the
 server-wide saved data. Every other `LevelStem` in the registry then gets a
-`ServerLevel` over a `DerivedLevelData`, a view of the overworld's data —
-which is why the time of day, the weather, the difficulty and the world spawn
-are one set of numbers every dimension shares
-([level data and rules](../../reference/level-data-and-rules.md)).
+`ServerLevel` over a `DerivedLevelData`, which forwards the overworld's game
+time, difficulty, game mode and hardcore flag and swallows every setter but
+the spawn. That is why the difficulty is one number every dimension shares.
+The other world-wide numbers a reader would expect to find here are not its
+doing: the time of day belongs to `ServerClockManager`, the weather to one
+server-wide `WeatherData`, and the spawn a level reports to
+`MinecraftServer.effectiveRespawnData`
+([level data and rules](../../reference/level-data-and-rules.md#the-spawn-every-level-reports-is-the-servers-not-each-levels)).
 
 A brand-new world takes one detour, and it is the detour that actually
 generates terrain at boot. When `ServerLevelData.isInitialized` is false,
@@ -282,11 +299,12 @@ one. Then the flag is set, and no later boot of that world repeats any of it.
 `ChunkLoadCounter` records which chunks are already `ChunkStatus.FULL`, calls
 `TicketStorage.activateAllDeactivatedTickets`, runs the distance manager again
 and counts what is new. The tickets it replays are the ones the last shutdown
-parked rather than dropped, and of the nine `TicketType`s exactly two carry
+parked rather than dropped, and two of the nine `TicketType`s carry
 `TicketType.FLAG_PERSIST` — `TicketType.FORCED`, from */forceload*, and
 `TicketType.PORTAL` — so those two are the only entries a *chunk_tickets* file
-contains ([tickets and loading](../world/tickets-and-loading.md)). The world
-spawn is kept by nothing.
+contains ([tickets and
+loading](../world/tickets-and-loading.md#what-a-ticket-asks-for) has the nine).
+The world spawn is kept by nothing.
 
 **Zero** — chunks `MinecraftServer.prepareLevels` loads on a world with no
 forceloads and no live portal ticket.
@@ -295,7 +313,7 @@ What follows is `MinecraftServer.waitUntilNextTick` with the deadline set
 `MinecraftServer.PREPARE_LEVELS_DEFAULT_DELAY_NANOS` — 10 ms — out, repeated
 while `ChunkLoadCounter.pendingChunks` is above zero: the Server thread
 pumping its own queue in slices, the same way a tick waits for a chunk
-([the server tick](server-tick.md)). With a total of zero it runs once and
+([the server tick](server-tick.md#the-budget-and-where-it-stops-applying)). With a total of zero it runs once and
 leaves. `MinecraftServer.updateMobSpawningFlags` and the effective respawn
 data are recomputed, and the step is over.
 
@@ -312,7 +330,7 @@ gets a chance to run. Of the four values `LevelLoadListener.Stage` declares,
 `LevelLoadListener.Stage.PREPARE_GLOBAL_SPAWN` fires only on a world's first
 boot, `LevelLoadListener.Stage.LOAD_PLAYER_CHUNKS` belongs to a player joining
 rather than to boot — `PrepareSpawnTask`, in the configuration phase
-([players and sessions](players-and-sessions.md)) — and
+([players and sessions](players-and-sessions.md#preparing-a-place-to-stand)) — and
 `LevelLoadListener.Stage.START_SERVER` is declared and fired by nothing.
 
 > **For a 1.21-era reader.** There is no *spawnChunkRadius* game rule:
@@ -346,8 +364,10 @@ iteration, one tick later still.
 ## The threads startup leaves behind
 
 Boot creates every thread on this list and then hands the process to one of
-them. [Threads](../../reference/threads.md) has the complete set, including
-the pools and the situational ones.
+them; the column that matters here is *daemon*, because it decides which of
+them can hold the JVM open. What each may touch is the thread reference's,
+which has the complete set including the pools and the situational ones
+([threads](../../reference/threads.md#the-threads-a-lecture-leans-on)).
 
 | thread | made by | daemon | what it may touch |
 |---|---|---|---|
@@ -364,8 +384,9 @@ Two rows carry a consequence for the other end of the story. `RconThread` and
 never marked daemon, so they are the only non-daemon threads in this table
 besides the Server thread itself — `Util.ioPool`'s *IO-Worker* threads, made
 outside it and squarely in the boot path, are non-daemon too — and each polls
-its socket with a half-second timeout so
-that it notices `GenericThread.running` going false. And `RconThread.create`
+its socket with a half-second timeout so that it notices
+`GenericThread.running` going false. What that costs at the other end is [how
+a server dies](how-a-server-dies.md#the-closes-and-the-last-thread)'s. And `RconThread.create`
 returns nothing — logging that RCON is disabled — when *rcon.password* is
 empty or *rcon.port* is out of range, so setting *enable-rcon* on its own
 starts no thread at all.

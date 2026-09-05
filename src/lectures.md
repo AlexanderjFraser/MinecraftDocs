@@ -54,11 +54,9 @@ Part III is a line into a loop and out again: the loop first, because it is
 what the rest of the book lives inside, and the beginning and the end last,
 because they are only interesting once you know what they start and stop.
 
-1. [The server tick](systems/server/server-tick.md) — with the next, the
-   most load-bearing pair in the book after *Anatomy*: seven later parts
-   assume one lecture or the other.
+1. [The server tick](systems/server/server-tick.md)
 2. [The level tick](systems/server/server-level-tick.md) — watched
-   immediately after, and never apart from it.
+   immediately after the first, and never apart from it.
 3. [Players and sessions](systems/server/players-and-sessions.md)
 4. [Starting a server](systems/server/starting-a-server.md)
 5. [How a server dies](systems/server/how-a-server-dies.md)
@@ -408,11 +406,11 @@ rather than solved by reordering.
 **Part III assumes two pages of Part IV.** [The level
 tick](systems/server/server-level-tick.md) uses *entity-ticking* and
 *block-ticking* range, which [tickets and
-loading](systems/world/tickets-and-loading.md) owns, and its first statement
-about the day-night cycle rests on [environment attributes and
+loading](systems/world/tickets-and-loading.md) owns, and its first step
+throws away a cache belonging to [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md). The first
-is cut by definition — the level tick defines both ranges in two sentences
-before it uses them — and the second by order: the environment page depends
+is cut by definition — the level tick defines both ranges before it uses
+them — and the second by order: the environment page depends
 on nothing but registries and codecs, so it is the first page of Part IV in
 the sidebar, in that part's watch order and in the list above, and it is the
 one lecture worth watching before its part.

@@ -39,12 +39,22 @@ Identity here is a `NameAndId`: a record of a UUID and a name, made from the
 authenticated `GameProfile`, and the key that every stored-user list, every
 op lookup and every save file is addressed by. `UserNameToIdResolver`,
 reached through `MinecraftServer.services`, is the cache that maps between
-the two halves, and comparing its remembered name against the profile's is
-how the server notices a player has been renamed since their last visit.
+the two halves — a `CachedUserNameToIdResolver` over *usercache.json*, with a
+`ProfileResolver` behind it for the lookups the file cannot answer — and
+comparing its remembered name against the profile's is how the server notices
+a player has been renamed since their last visit.
 
 `PlayerList.canPlayerLogin` returns the reason to refuse, or null. It asks
 four questions in order — the ban list, the whitelist, the IP ban list, then
-capacity — and the two ways past it are not the ones a reader expects. The
+capacity — and the first three ask the same kind of object. A `StoredUserList`
+is a JSON file of `StoredUserEntry` records keyed by identity, rewritten whole
+on every change, and there are four of them: `UserBanList`, `IpBanList`,
+`UserWhiteList` and the `ServerOpList` the next paragraph turns on. The two
+ban lists share a `BanListEntry` carrying a source, a reason and an expiry,
+and nothing sweeps that expiry on a schedule: `StoredUserList.get` drops what
+has lapsed before it answers, so a temporary ban ends the moment somebody
+asks about it. The two ways past the gate are not the ones a reader expects.
+The
 whitelist is bypassed by being an **op**: `PlayerList.isWhiteListed` is
 satisfied by presence in the op list, and `DedicatedPlayerList.isWhiteListed`
 overrides it to route through `PlayerList.isOp`, which also asks whether
@@ -149,7 +159,18 @@ object in, the player is snapped to the prepared position,
 `ServerPlayer.loadAndSpawnParentVehicle` put back what the player was
 carrying and sitting on when they left.
 
-One rescue is wired into the read. `PlayerList.loadPlayerData` checks
+Two rescues are wired into the read, and the first is the file's own.
+`PlayerDataStorage.load` tries *\<uuid\>.dat*; if that comes back with
+nothing — the file is missing, or `NbtIo.readCompressed` threw and logged
+*Failed to load player data* — it copies whatever is there aside as
+*\<uuid\>_corrupted_\<timestamp\>.dat* and then tries *\<uuid\>.dat_old*,
+the twin the previous write rotated out. So a corrupted file is kept — under
+the *corrupted* name, for whoever wants to look at it — and the player loses
+one session rather than everything; a player with no readable file and no
+twin is built from nothing, which is a new spawn rather than an error. Only
+what survives that is datafixed.
+
+The second rescue is about identity. `PlayerList.loadPlayerData` checks
 whether the joining identity is the singleplayer owner and, if the world
 records a *singleplayer_uuid* in its level data, loads **that** file rather
 than the one named for the joining id. It works once: the save writes under
@@ -182,16 +203,14 @@ sequenceDiagram
     Note over SL,Wire: at the end of the same tick, the first chunk batch, and only one
 ```
 
-The whole method sits inside one suspension.
-`ServerCommonPacketListenerImpl.suspendFlushing` sets a flag that every send
-from the Server thread consults, queuing packets unflushed, and
-`ServerCommonPacketListenerImpl.resumeFlushing` clears it and calls
-`Connection.flushChannel` once. Everything above — a login packet, a command
-tree, a scoreboard, a tab list, a world border — leaves as a single write.
-It is the same bracket [the server tick](server-tick.md) puts around every
-client every tick, opened by hand here because a join is handled in the
-scheduled packet processing that runs *before* `MinecraftServer.tickChildren`
-opens the tick's own.
+The whole method sits inside one suspension, so everything above — a login
+packet, a command tree, a scoreboard, a tab list, a world border — leaves as a
+single write. It is the same
+`ServerCommonPacketListenerImpl.suspendFlushing` bracket [the server
+tick](server-tick.md#the-two-writes-each-client-gets) puts around every client
+every tick, and the one place in the game it is opened by hand: a join is
+handled in the scheduled packet processing that runs *before*
+`MinecraftServer.tickChildren` opens the tick's own.
 
 `ClientboundLoginPacket` is where the client learns the entity id it is
 about to be given, the hardcore flag, every dimension key the server has,
@@ -207,8 +226,8 @@ The permission level arrives twice over, as a `ClientboundEntityEventPacket`
 carrying one of five event ids and as the whole command tree from
 `Commands.sendCommands`, both from `PlayerList.sendPlayerPermissionLevel`
 resolving a `LevelBasedPermissionSet` out of
-`MinecraftServer.getProfilePermissions`. The model behind that set is
-[Brigadier and commands](../commands/brigadier-and-commands.md); all a join
+`MinecraftServer.getProfilePermissions`. Where such a set comes from is
+[permissions](../commands/permissions.md#where-a-set-comes-from); all a join
 needs to know is that both halves are re-sent whenever `PlayerList.op` or
 `PlayerList.deop` changes it.
 
@@ -269,8 +288,9 @@ the sixty ticks again. The death screen is held open by the same field the
 
 That the countdown ticks from `ServerPlayer.tick` while the food, health and
 stat sync tick from `ServerPlayer.doTick` is the whole reason a player is
-ticked from two places every tick; [player
-anatomy](../player/player-anatomy.md) is the lecture on that. The fact worth
+ticked from two places every tick; [the two-phase
+tick](../player/the-two-phase-tick.md#the-trace-one-player-one-tick-twice) is
+the lecture on that. The fact worth
 carrying out of here is that the level's entity loop ticks players
 *regardless* of entity-ticking range, which is how a player standing in an
 otherwise idle chunk still moves.
@@ -334,8 +354,11 @@ set. That is the End-portal return, not *keepInventory*.
 
 An ordinary death takes the other branch. Health is reset to maximum,
 effects are gone, and `GameRules.KEEP_INVENTORY` — or having died as a
-spectator — decides only whether `ServerPlayer.transferInventoryXpAndScore`
-runs, moving the inventory, the experience and the score and nothing else.
+spectator — decides only whether `ServerPlayer.restoreFrom` runs
+`ServerPlayer.transferInventoryXpAndScore`, which moves the inventory, the
+experience and the score and nothing else. What the same rule decided on the
+way *out*, when the old player died, is [damage and
+death](../entities/damage-and-death.md#the-death-screen-and-what-the-client-does-alone)'s.
 Outside the branch, and so true of every death, a long tail is copied
 unconditionally: the ender chest, the enchantment seed, both game modes,
 base attribute values, the recipe book, the warden spawn tracker, the chat
@@ -348,8 +371,10 @@ Because nothing is copied. `ServerPlayer.teleport` across a dimension
 boundary sets `ServerPlayer.isChangingDimension`, sends the client a
 `ClientboundRespawnPacket` marked `ClientboundRespawnPacket.KEEP_ALL_DATA`,
 removes the entity from the old level with
-`Entity.RemovalReason.CHANGED_DIMENSION` — a reason that neither destroys
-the entity nor writes it into a chunk — immediately calls
+`Entity.RemovalReason.CHANGED_DIMENSION` — one of the two reasons that
+neither destroy an entity nor write it into a chunk ([entity
+lifecycle](../entities/entity-lifecycle.md#five-reasons-one-label) has the
+five) — immediately calls
 `Entity.unsetRemoved`, points it at the new level with
 `ServerPlayer.setServerLevel`, and adds it back with
 `ServerLevel.addDuringTeleport`. It is one object the whole way. The effects
@@ -368,7 +393,9 @@ discarded and no respawn packet sent.
 
 The channel closes on a Netty thread and nothing happens until
 `ServerConnectionListener.tick`, in the connection step of the server tick,
-notices and calls `Connection.handleDisconnection`. That reaches
+notices and calls `Connection.handleDisconnection` ([the
+connection](../networking/the-connection.md#how-a-connection-dies) is the
+channel's own account of dying). That reaches
 `ServerGamePacketListenerImpl.removePlayerFromWorld`: the leave message,
 `ServerPlayer.disconnect` to eject passengers and stop sleeping, and
 `PlayerList.remove`.
@@ -378,9 +405,9 @@ The order inside `PlayerList.remove` is the answer to the question. The
 and `ServerPlayer.saveParentVehicle` writes the entire root vehicle into it
 under *RootVehicle* — but only if that vehicle has exactly one player
 passenger. The same test then decides whether the vehicle chain is removed
-from the world with `Entity.RemovalReason.UNLOADED_WITH_PLAYER`, the removal
-reason that neither destroys an entity nor saves it into a chunk, which is
-exactly what you want for something already written into a different file.
+from the world with `Entity.RemovalReason.UNLOADED_WITH_PLAYER` — the other
+of those two non-destroying reasons, which is exactly what you want for
+something already written into a different file.
 In-flight ender pearls go the same way, saved into the file and removed from
 the world. So the llama leaves the world with you, rides in your save, and
 is put back by `ServerPlayer.loadAndSpawnParentVehicle` after your next
@@ -408,9 +435,10 @@ flag and the client's options across at all.
 Very little, and only on the way out. A respawn and a dimension change send
 nothing to other clients about the player, because the identity a tab list
 is keyed on never changed. A disconnect sends one
-`ClientboundPlayerInfoRemovePacket` to everybody, and `PlayerList.tick`
-broadcasts a latency-only update for the whole list on every six hundred and
-first call, counted by `PlayerList` rather than off the tick number.
+`ClientboundPlayerInfoRemovePacket` to everybody, and the only other thing a
+tab list hears about anyone is the latency sweep `PlayerList.tick` broadcasts
+on its own slow counter ([the server
+tick](server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)).
 The rest of what other players see is entity tracking in `ChunkMap`, and the
 removal reasons in the table above have already told it what to do.
 

@@ -48,7 +48,7 @@ ALLOW = {
     # JDK names Part XIII names as concepts.
     "Predicate", "StackOverflowError", "Instant", "java.nio",
     "ConcurrentLinkedQueue", "LinkedHashMap", "LockSupport", "FileChannel", "FileChannel.tryLock",
-    "System.exit", "System.in", "Runtime.halt", "DiscontinuousFrame", "TracyClient",
+    "System.exit", "System.in", "System.out", "System.err", "Runtime.halt", "DiscontinuousFrame", "TracyClient",
     # JDK collections / fastutil a page names as concepts (Part IV).
     "EnumMap", "BitSet", "AtomicReferenceArray", "ShortList", "AtomicLong", "AtomicReference", "CompletableFuture.allOf", "LongSet", "PriorityQueue", "ArrayDeque", "Semaphore", "AtomicBoolean", "AtomicInteger",
 }

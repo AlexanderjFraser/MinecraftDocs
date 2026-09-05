@@ -55,6 +55,11 @@ nine pages rewritten, six mechanisms cut to a citation, the feature-flag
 coverage gap discharged, both landing pages rewritten to the role — Part I's
 figure had been drawing the book rather than the part — two corrections and
 one tool bug.
+**Session C is done** (2026-09-05, Part III): all six pages rewritten, five
+mechanisms cut to a citation, the abstract `Level` written, the landing page
+given an argument and a *where the part stops* — and **six corrections**,
+four of them pages disagreeing with each other, which is the finding pass 5
+was chartered on.
 
 ## The passes
 
@@ -646,3 +651,64 @@ plan as it stood at its close)*
   Five gates green. Six queue entries struck, one §7 entry discharged, and
   what the reading raised for sessions D, E, G, J, K, M and N and for passes 6
   and 8 appended to [pass5.md](pass5.md) rather than left in the log.
+- **2026-09-05, session C — Part III · The server (pass 5).** Six pages read
+  by one agent each, the part read end to end in watching order first. **All
+  six rewritten**, and this was the session where the lens paid twice: five
+  mechanisms cut to a citation, and **six corrections** — the most any pass-5
+  session has found, all of them at a seam. Reading two pages side by side is
+  what a page-at-a-time check cannot do, and four of the six were pages
+  disagreeing with each other: `how-a-server-dies` had the autosave at "every
+  6000 ticks, five minutes of game clock" where `server-tick` and
+  `chunk-storage` both had wall clock (the countdown is
+  `tickrate × 300`, floored at 100); `starting-a-server` had a missing
+  JSON-RPC secret killing the boot where `what-this-book-skips` had it
+  generated (the property's default *is* a generated key, and the throw is
+  for a malformed one); `server-tick` had the `/schedule` queue ticking "with
+  the dimension's own game time" where its own declared pair had overworld
+  only (`ServerLevel.tickTime` is wholly inside the overworld flag); and
+  `server-level-tick` had `NaturalSpawner.createState` skipping only
+  persistent mobs where `entity-lifecycle` also had `MobCategory.MISC`. The
+  other two were unforced: `DerivedLevelData` was credited with sharing the
+  time of day, the weather and the world spawn between dimensions, and it
+  causes none of the three (they belong to `ServerClockManager`, a
+  server-wide `WeatherData`, and `MinecraftServer.effectiveRespawnData`); and
+  `ChunkMap.forEachBlockTickingChunk`'s second filter was missing. Six more
+  suspicions were re-derived and **found sound**, and are recorded as such,
+  because a strike is a claim. **Ownership:** the crash relay cut to a
+  citation (session B's ruling, applied), the stopped server's two task doors
+  moved to shutdown with *RejectedExecutionException* carried across,
+  `session.lock` given wholly to `starting-a-server`, the `level.dat` write
+  path ruled the Reference page's and cut from three tellings to one, the
+  ticket-persistence half given to `tickets-and-loading` while
+  `how-a-server-dies` keeps the sentence that says why its drain loop ends,
+  *Done* given to `starting-a-server`, and the flush bracket and the latency
+  sweep given to `server-tick`. **Seams:** twenty-eight outbound links gained
+  the owner's anchor (Part III had none before this session), and three
+  hand-forwards were repointed at pages that actually keep them — login
+  encryption to `protocol-phases`, the two-place player tick to
+  `the-two-phase-tick`, the permission model to `permissions`.
+  **Coverage:** `server/players`' ten-class stored-user-list family and
+  `CachedUserNameToIdResolver` — the part's largest unnamed class — get a
+  passage on `players-and-sessions`, which was already explaining what those
+  files do without naming what reads them; `PlayerDataStorage`'s corrupt-copy
+  rescue, promised by a cast cell for two passes, is finally written; and
+  `Bootstrap`'s `LoggedPrintStream` explains why `Bootstrap.realStdoutPrintln`
+  exists. **The §7 gap closed: the abstract `Level`**, as a paragraph on
+  `server-level-tick` rather than a section or a page, because
+  `the-client-level` already had half the answer and what was missing was the
+  join. The other new passage is the tick's **profiler zone names** in order —
+  ten pages in five parts cite the level tick's phases by those names and no
+  page defined them. **The landing page**, rewritten last to the role: it now
+  argues that almost everything surprising about a server's timing is the
+  order of one method, states its size through the include, carries the pair
+  claim that `lectures.md` had been keeping for it, and gains a *where the
+  part stops* section — 2,522 lines of the part's own packages are taught in
+  six other parts and it said nothing about that. **Rulings:**
+  `how-a-server-dies`' durability section is a section and not a page (it is
+  the comparison table's payoff, and what did not belong to it has gone to
+  its owners); `players-and-sessions`' *four ways* heading stands over a
+  paragraph naming a fifth, because the concession is what makes it honest.
+  Five gates green. Six queue entries struck, one §7 entry discharged, and
+  what the reading raised for sessions D, E, F, H, I, L, M and N and for
+  passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather than left in the
+  log.

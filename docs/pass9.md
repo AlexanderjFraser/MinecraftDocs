@@ -298,3 +298,217 @@ rewritten (`anatomy/README.md`, `anatomy/anatomy.md`,
   published. Both tools now say which population they mean, and the false
   comment is gone. Every part with a `package-info.java` reads one class
   larger in the atlas than in its coverage report.
+
+## Pass 5, session C — Part III · The server *(2026-09-05)*
+
+All six pages of Part III touched: `src/systems/server/README.md` (rewritten
+to the landing-page role), `server-tick.md`, `server-level-tick.md`,
+`players-and-sessions.md`, `starting-a-server.md`, `how-a-server-dies.md`.
+Also one line each in `src/lectures.md` and `src/reference/README.md`.
+
+### Corrections — re-derived against the decompile before the fix
+
+- **`how-a-server-dies`: the autosave interval.** The page said the autosave
+  runs "every 6000 ticks — five minutes of game clock, floored at 100 ticks".
+  The decompile: `MinecraftServer.ticksUntilAutosave` starts at 6000 ticks
+  (`MinecraftServer.java`:337) and is thereafter
+  `computeNextAutosaveInterval` = `Math.max(100, (int)(ticksPerSecond *
+  300.0F))` (`MinecraftServer.java`:1149-1162), i.e. **300 seconds of wall
+  clock at the current rate**, not 6000 ticks and not game clock. Now "on the
+  countdown the tick keeps … five wall-clock minutes, whatever the tick
+  rate", citing `server-tick#the-bookkeeping-at-the-bottom`, which owns the
+  arithmetic. This agrees with `server-tick`:403-412 and
+  `chunk-storage`:311-316, which were already right.
+- **`starting-a-server`: a missing management secret.** The page said
+  `JsonRpc.create` "throws, ending the boot, if it is set and the secret is
+  not forty alphanumeric characters rather than quietly going without one",
+  which reads as *absent secret kills the boot*. The decompile:
+  `DedicatedServerProperties`:132 resolves *management-server-secret* with
+  `SecurityConfig.generateSecretKey()` as its **default**, and `Settings.get`
+  puts the resolved value back into the properties map, which
+  `DedicatedServerSettings.forceSave` writes — so an absent secret is
+  generated and saved. `JsonRpc.create` throws only when the secret present
+  fails `SecurityConfig.isValid` (non-empty, exactly forty alphanumerics —
+  `SecurityConfig.java`:9-11). This also settles the disagreement with
+  `what-this-book-skips`:180-181 ("generating one if absent"), which was the
+  right half.
+- **`starting-a-server`: what `DerivedLevelData` causes.** The page said the
+  derived data is "why the time of day, the weather, the difficulty and the
+  world spawn are one set of numbers every dimension shares". The decompile:
+  `DerivedLevelData.java`:18-80 forwards game time, level name, game type,
+  hardcore, allow-commands, initialised, difficulty and the difficulty lock,
+  and swallows every setter but `setSpawn`. It carries **no** day time and
+  **no** weather — day time is `ServerClockManager`'s and weather is one
+  server-wide `WeatherData` — and the spawn a level reports comes from
+  `MinecraftServer.effectiveRespawnData` through `ServerLevel.getRespawnData`
+  (`ServerLevel.java`:1523-1524, `MinecraftServer.java`:1289-1292,
+  1884-1885). Three of the four attributions were wrong; the paragraph now
+  claims difficulty (and the rest of the forwarded set) and names the real
+  owners of the other three, citing
+  `level-data-and-rules#the-spawn-every-level-reports-is-the-servers-not-each-levels`.
+- **`server-tick`: what ticks the `/schedule` queue.** The page said it
+  "ticks from inside `ServerLevel.tickTime`, with the dimension's own game
+  time". The decompile: `ServerLevel.tickTime` is wholly inside
+  `if (this.tickTime)` (`ServerLevel.java`:458-466), the flag only the
+  overworld is constructed with, and it passes the overworld's incremented
+  game time to `getScheduledEvents().tick`. Now "which runs in the overworld
+  alone and off the overworld's *gameTime*", citing the level tick. This was
+  a disagreement with its own declared pair (`server-level-tick`:135-141),
+  which was right.
+- **`server-level-tick`: what the mob count walks.** The page said
+  `NaturalSpawner.createState` walks every entity "skipping mobs that require
+  persistence". The decompile (`NaturalSpawner.createState`) also skips every
+  entity whose category is `MobCategory.MISC` — items, projectiles, armour
+  stands — which is most entities in a busy world. Now states both skips.
+  `entity-lifecycle`:41 had both and was right.
+- **`server-level-tick`: the second chunk set.** The page said
+  `ChunkMap.forEachBlockTickingChunk` walks the entity-ticking set and "each
+  of those chunks gets `ServerLevel.tickChunk`". The decompile: it also drops
+  any position whose `ChunkHolder` is absent or whose
+  `ChunkHolder.getTickingChunk` is null. Now "keeps only those whose
+  `ChunkHolder` has a live `ChunkHolder.getTickingChunk`".
+  `scheduled-ticks`:295-297 had the filter.
+
+**Re-derived and found sound** (a strike is a claim, so these are recorded
+too): `starting-a-server`'s "the tickets the last shutdown parked" —
+`TicketStorage.fromPacked` loads every persisted ticket into the
+*deactivated* map, so "parked" is exactly the loaded state;
+`players-and-sessions`' "`MinecraftServer.saveAllChunks` stamps the current
+owner's id into the level data" — `MinecraftServer.java`:642-644 passes
+`getSingleplayerProfile().id()` to `saveDataTag`; `server-level-tick`'s
+`Player.isAlwaysTicking` — declared on `EntityAccess`, false on `Entity`,
+overridden true on `Player` alone, so both this page's and
+`entity-lifecycle`'s spellings are right; `server-level-tick`'s ticket-purge
+gate — `ServerChunkCache.java`:328 is `runsNormally() || !tickChunks`, and
+the page's scope is the level tick, where `tickChunks` is true;
+`server-tick`'s *clocks* and *command functions* table rows — both guards are
+inside the called method (`ServerClockManager.tick`,
+`ServerFunctionManager.tick`), which is what the *skipped when* column
+describes; the landing page's "five side threads" — `reference/threads.md`
+has exactly five dedicated-only rows.
+
+### Claims introduced
+
+- **`src/systems/server/README.md` rewritten to the landing-page role.** New
+  claims: the part's argument, that "almost everything surprising about a
+  server's timing is the order of one method", and that a reader who finishes
+  can answer *when* for four named things; the size paragraph, which is the
+  atlas include plus "over half of those lines are
+  `net/minecraft/server/level`'s forty-two classes, at nearly three hundred
+  lines apiece" (42 / 11,977 from `map_source.py packages`); the pair claim
+  moved in from `lectures.md` ("seven later parts assume one of them or the
+  other"), which is `lectures.md`'s own count and is now stated once; a new
+  *where the part stops* section, asserting that `ChunkGenerationTask`,
+  `ChunkTaskDispatcher`, `ChunkTaskPriorityQueue` and `WorldGenRegion` belong
+  to Part IV, `ServerPlayerGameMode` to Parts V and VIII, `ServerScoreboard`,
+  `ServerFunctionLibrary` and `ServerAdvancementManager` to Part XIII, and
+  `ReloadableServerRegistries` to Part II (each from the coverage report's
+  *named on pages of other parts* table); and the *Game rules* line, now "the
+  fourteen these five pages name, out of fifty-nine" — counted by grep over
+  the five pages and against `gamerules.md`'s own 59.
+  **Cut:** "a hopper moves one item per eight of them", which was true
+  (`HopperBlockEntity.MOVE_ITEM_SPEED` is 8) and had no home but this
+  summariser; logged to [pass5.md](pass5.md) for session E.
+  **Moved out:** "a console command … is as late as the piston", now a
+  sentence on `server-level-tick`'s broadcast section, where the rule it
+  qualifies lives.
+- **`server-level-tick`: two new passages.** A paragraph after the cast on
+  what the abstract `Level` holds and leaves abstract, and what `ServerLevel`
+  adds — the §7 gap, discharged; every member named was read
+  (`Level.java`:110-134 for the fields, its nineteen abstract declarations,
+  `ServerLevel.java`:202-216 for the four additions), and `getChunkSource` is
+  deliberately *not* claimed for `Level`, because it is declared on
+  `LevelAccessor`. And a sentence naming the tick's profiler zones in order —
+  *world border*, *weather*, *tickPending* (*blockTicks*, *fluidTicks*),
+  *raid*, *chunkSource*, *blockEvents*, *entities* (*dragonFight*,
+  *checkDespawn*, *tick*), *blockEntities*, *entityManagement*,
+  *debugSynchronizers* — read off `ServerLevel.tick`'s own `push`/`popPush`
+  calls. Ten pages in five parts already cite these names; this is the first
+  page that defines them.
+- **`players-and-sessions`: three coverage additions.** The stored-user-list
+  family (`StoredUserList` as a JSON file of `StoredUserEntry` records,
+  subclassed as `UserBanList`, `IpBanList`, `ServerOpList`, `UserWhiteList`;
+  `BanListEntry`'s source, reason and expiry; and **the expiry swept on
+  read** — `StoredUserList.get` calls `removeExpired` before answering, so a
+  temporary ban lapses when somebody asks rather than on a timer). The
+  identity cache named as `CachedUserNameToIdResolver` over *usercache.json*
+  with `ProfileResolver` behind it (`Services.java`:17-22). And
+  `PlayerDataStorage`'s rescue, which the cast cell had promised and the page
+  never gave: a failed *.dat* read copies the file aside under a
+  *_corrupted_* name and then tries the *.dat_old* twin
+  (`PlayerDataStorage.java`:69-114). The clause that a player with neither is
+  "built from nothing, which is a new spawn rather than an error" is the
+  session's inference from `load` returning empty, and is the line on this
+  page to check hardest.
+- **`starting-a-server`: one coverage addition.** `Bootstrap.bootStrap`'s
+  last act installs `LoggedPrintStream` (or `DebugLoggedPrintStream` when
+  debug logging is on) over `System.out` and `System.err`, keeping the
+  original as `Bootstrap.STDOUT` — `Bootstrap.java`:39, 63-64, 146-155. That
+  is why `Bootstrap.realStdoutPrintln` exists for the watchdog report.
+- **Ownership cuts, each now one sentence and an anchored link.** The crash
+  relay, from `server-tick` to `how-a-server-dies#the-crash-that-saves`
+  (session B's ruling, applied); what a stopped server does with a submitted
+  task, from `server-tick` to
+  `how-a-server-dies#the-front-door-closes-the-guests-do-not-leave`, with
+  *RejectedExecutionException* **moved** into that page rather than dropped;
+  `session.lock`'s nature, from `how-a-server-dies` to
+  `starting-a-server#taking-the-lock-and-fixing-leveldat-twice`; the
+  `level.dat` write path, from both Part III pages to
+  `level-data-and-rules#what-is-left-in-leveldat` (three tellings to one, and
+  `how-a-server-dies` keeps `NbtIo.writeCompressed`, which the Reference page
+  lacks); the ticket-persistence half, from `how-a-server-dies` to
+  `tickets-and-loading#what-a-ticket-asks-for`, keeping only *why the drain
+  loop ends*; *Done* against `MinecraftServer.isReady`, from
+  `how-a-server-dies` to `starting-a-server#done-comes-before-the-loop`; the
+  flush bracket and the 601st-call latency sweep, from `players-and-sessions`
+  to `server-tick`; the per-chunk save spacing, from `how-a-server-dies` to
+  `chunk-storage#the-four-moments-a-chunk-is-written`; the thread table's
+  *what it may touch* framing, from `starting-a-server` to
+  `reference/threads#the-threads-a-lecture-leans-on`. **Every trimmed
+  sentence is a new claim** — pass 4's finding — and these are where to look
+  first.
+- **Seams repointed, which are claims about who owns what.**
+  `starting-a-server`'s login-encryption hand-forward now goes to
+  `protocol-phases#login` instead of `players-and-sessions`, which never
+  explained it; `players-and-sessions`' two-place tick hand-forward now goes
+  to `the-two-phase-tick#the-trace-one-player-one-tick-twice` instead of
+  `player-anatomy`, which does not contain `ServerPlayer.doTick`; its
+  permission-model link now goes to `permissions#where-a-set-comes-from`
+  instead of `brigadier-and-commands`, which owns the packet and not the set;
+  and `how-a-server-dies`' claim about connections with no `ServerPlayer` now
+  cites `protocol-phases#configuration` rather than `players-and-sessions`.
+- **`players-and-sessions`: `GameRules.KEEP_INVENTORY` re-scoped.** "decides
+  only whether `ServerPlayer.transferInventoryXpAndScore` runs" is now
+  "decides only whether `ServerPlayer.restoreFrom` runs" it, with a link to
+  `damage-and-death` for what the same rule decides on the way out. The rule
+  is read in three places (`ServerPlayer.java`:1749, `Player.java`:551 and
+  `Player.java`:1609); the *only* was true of `restoreFrom` and read as
+  global.
+- **Anchors on twenty-eight outbound links across the six pages.** An anchor
+  asserts that the named section is the answer; `check_links.py` proves the
+  heading exists and not that it answers.
+- **`src/lectures.md`** loses the pair claim (moved to the landing page), and
+  its III-to-IV paragraph now says the level tick's first step "throws away a
+  cache" rather than that its "first statement about the day-night cycle"
+  rests on the environment page — the page's dependency is the cache, per
+  `server-level-tick`:94-105. **`src/reference/README.md`** adds III to
+  *Level data and rules*' parts column, which the landing page now points at.
+
+### For pass 9's attention, found and not fixed
+
+- `server-tick`:403-412 says the autosave countdown "starts at
+  `MinecraftServer.AUTOSAVE_INTERVAL` (6000)". The value is right and the
+  constant exists, but the constructor writes the literal 6000
+  (`MinecraftServer.java`:337) and nothing reads `AUTOSAVE_INTERVAL` — a dead
+  constant the page presents as the source of the number.
+- `server-tick`:211-212 has `Connection.tick` flushing "at the end of the
+  connection phase"; the flush is inside each connection's own tick, so it is
+  true of the phase as a whole and not of any one call.
+- `server-tick`'s *clocks* row gives *skipped when* as "frozen, or
+  `GameRules.ADVANCE_TIME` is off", where only the first is a skip of the
+  call and the second is a no-op inside it. Same shape as the *command
+  functions* row, so the two are at least consistent.
+- `commands/scoreboard-and-data`:277-278 says "a score set and a crash a tick
+  later is a score lost", which contradicts `how-a-server-dies`' hook (a
+  tick-loop crash writes what `/stop` writes) unless it means a watchdog kill
+  or a *kill -9*. Session M's page, flagged in [pass5.md](pass5.md).

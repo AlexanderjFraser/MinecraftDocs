@@ -1396,14 +1396,15 @@ closer, because the boundary is drawn before the investment, and
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
-- **The abstract `Level` itself** *(pass 4, session O)*. `server-level-tick`
-  owns `ServerLevel` and `the-client-level` owns `ClientLevel`; the base both
-  extend is named in passing on one page and explained on none. The glossary
-  has to assert "the two share an abstract `Level`" with nowhere to send the
-  reader, and `the-client-level`'s whole thesis — that reading `ClientLevel` is
-  a matter of noticing which inherited overrides are empty — is a claim about a
-  class the book never describes. Small: what `Level` holds, what it leaves
-  abstract, and which of its methods are constants on one side.
+- ~~**The abstract `Level` itself**~~ — **written by session C of pass 5** as
+  a paragraph after `server-level-tick`'s cast: what `Level` holds on both
+  sides, what it leaves abstract, and what `ServerLevel` adds, ending on the
+  link to `the-client-level#where-the-two-levels-differ`, which already
+  carried the table of the overrides the client hollows out. A paragraph
+  rather than a section, because the two halves of the answer were already
+  written and what was missing was the join. The glossary's *Level* entry now
+  has somewhere to send the reader; session N should point it at the new
+  paragraph.
 - ~~**Feature flags and `FeatureFlagSet`** *(pass 4, session O)*. Backticked on
   nine system pages and three Reference pages, explained on none —
   `resource-system` and `creating-a-world` both mention it in passing, and the
