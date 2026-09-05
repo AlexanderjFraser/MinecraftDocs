@@ -3,9 +3,10 @@
 > Verified against **Minecraft 26.2** · Part XII · One number out of one point: how a JSON file becomes "stone or air", and why the graph you can read in the registry is never the graph that runs.
 
 Open the overworld's *depth* function in a data pack and you can read the
-shape of the world out of it: a gradient down the Y axis, added to an offset
-built from continents and erosion, all of it wrapped in things called
-*flat_cache* and *cache_2d*. It is a small, honest, readable file. And the
+shape of the world out of it in eleven lines: a gradient down the Y axis,
+added to *overworld/offset* — which is fifteen hundred lines of continents and
+erosion wrapped in things called *flat_cache* and *cache_2d*. Both files are
+honest and readable. And the
 object it parses into is never sampled by anything: it is rewritten once per
 dimension, and again per chunk, and only the third form ever computes a
 number for a block. **The caches named in that file cache nothing.** They are
@@ -136,8 +137,8 @@ climate functions only, to build `RandomState.sampler`. That is the
 `Climate.Sampler` [biomes](biomes.md) reads — a copy of the climate half of
 the graph with no caches and no indirection in it at all.
 
-> **For a 1.21-era reader.** The same six functions have two names each.
-> `NoiseRouter` calls them *vegetation*, *ridges* and *continents*;
+> **For a 1.21-era reader.** Three of the six climate functions have two
+> names. `NoiseRouter` calls them *vegetation*, *ridges* and *continents*;
 > `Climate.Sampler` calls the same three *humidity*, *weirdness* and
 > *continentalness*. Neither vocabulary is wrong and both ship.
 
@@ -194,8 +195,10 @@ The resolutions are worth saying once. The *interpolated* marker sits on the
 expensive three-dimensional terms and is evaluated at cell corners.
 *flat_cache* is **not** exact per column: it fills its array by sampling at
 the quart corner with y = 0, so one value serves a four-by-four block group.
-Only *cache_2d* is genuinely per column, and in vanilla it always sits
-*inside* a flat cache.
+Only *cache_2d* is genuinely per column, and vanilla is not consistent about
+where it puts one: of the twenty-four in the shipped files, eleven sit inside
+a flat cache and thirteen do not — and no *noise_settings* file contains a
+*flat_cache* at all.
 
 ## Questions players ask
 
@@ -219,14 +222,20 @@ hand-written equality that compares only the spline and ignores the derived
 sampler beside it, so two identical splines from two different files become
 one node with one cache.
 
-**Are the bounds trustworthy?** Mostly, with three exceptions worth knowing.
-`DensityFunctions.Marker` passes its child's bounds through *except* when its
-type is *blend_density*, where it reports infinities — the one place a marker
-is not transparent. `DensityFunctions.HolderHolder` reports infinities while
+**Are the bounds trustworthy?** Mostly, with exceptions worth knowing, and
+they run in both directions. `DensityFunctions.Marker` passes its child's
+bounds through *except* when its type is *blend_density*, where it reports
+infinities — the one place a marker is not transparent. The two blend leaves
+under-report before the wrap and not after: `DensityFunctions.BlendAlpha` and
+`DensityFunctions.BlendOffset` parse as the constants 1 and 0, and become
+`NoiseChunk.BlendAlpha` and `NoiseChunk.BlendOffset` with a range of zero to
+one and an infinite one — so a fold decided above a blend node was decided on
+the wrong range. `DensityFunctions.HolderHolder` reports infinities while
 its holder is unbound, which is what lets forward references parse at all.
 And `DensityFunction.NoiseHolder` answers a maximum of 2.0 while its noise is
-still null, so the freshly parsed graph reports wider noise bounds than the
-seeded graph it becomes.
+still null, where every one of the sixty-one shipped noise definitions comes
+out between 2.57 and 7.32 once seeded — so the freshly parsed graph reports
+noise bounds that are too **narrow**, and seeding widens them.
 
 **Is there anything in here that does not work?** Three things.
 `DensityFunctions.TransformerWithContext` is the shape a position-dependent
@@ -240,13 +249,16 @@ two-dimensional warps, and those two read the *same* noise parameters with
 their axes swapped, behind a registry id that is called *offset* rather than
 *shift*.
 
-**Which of these nodes reads the world?** Exactly one family. The three blend
-nodes reach `BlendingData` harvested from **neighbouring chunks**, which is
-the single exception to "a density function reads nothing"
-([blending at the old-chunk border](blending.md)). Everything
-else — every noise, spline, selector and cache in the catalogue — reads no
-blocks, no chunks and no level, which is why the whole system can run on a
-worldgen worker with nothing loaded.
+**Which of these nodes reads the world?** Two, and both do it the same way —
+by harvesting what they need from neighbouring chunks at construction and
+never touching a chunk afterwards. The three blend nodes reach `BlendingData`
+([blending at the old-chunk border](blending.md)); the *beardifier* marker
+becomes a `Beardifier`, whose `Beardifier.forStructuresInChunk` reads the
+structure references out of chunks at `ChunkStatus.STRUCTURE_REFERENCES`
+([structure placement](structure-placement.md)). Everything else — every
+noise, spline, selector and cache in the catalogue — reads no blocks, no
+chunks and no level, which is why the whole system can run on a worldgen
+worker with nothing loaded.
 
 ## Where to look
 
