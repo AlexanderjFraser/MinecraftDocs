@@ -23,7 +23,7 @@ in Java, and there are only six of those.
 | `UniformValue` | the seven types a JSON-declared uniform may have, and how each is packed | Render thread |
 | `LevelTargetBundle` | the seven names the level's targets answer to, and which set a chain may ask for | Render thread |
 | `LevelRenderer` | the two chains that become passes in the world's own frame graph | Render thread |
-| `GameRenderer` | the two chains that get a frame graph of their own, built and thrown away on the spot | Render thread |
+| `GameRenderer` | the four chains that get a frame graph of their own, built and thrown away on the spot | Render thread |
 
 ## From a file on disk to a pass in a graph
 
@@ -55,8 +55,10 @@ output target, a list of inputs and a map of uniform blocks. An input is one
 of exactly two shapes: `PostChainConfig.TargetInput` names another target and
 may ask for its depth attachment rather than its colour, and
 `PostChainConfig.TextureInput` names a PNG under *textures/effect* with its
-dimensions. Both carry a *sampler name*, both are rejected at load if two
-inputs on one pass share it, and that name is the contract with the GLSL —
+dimensions. Both carry a *sampler name*, and two inputs on one pass sharing
+one is rejected by the codec while the file is being parsed — so the chain
+never reaches the config map at all, rather than failing later when something
+asks for it — and that name is the contract with the GLSL —
 `PostChain` appends *Sampler* to it when it builds the pass's
 `BindGroupLayout`, so an input called *In* is the shader's *InSampler*.
 
@@ -104,7 +106,7 @@ pack that broke the game. Closing the old cache, meanwhile, closes every
 `PostPass`'s uniform buffers: a reload does not rebuild the chains, it
 forgets them.
 
-## A pass is three vertices, and its uniforms are frozen before the frame starts
+## A pass is three vertices, and its uniforms are written once, at load
 
 `PostPass.addToFrame` adds one `FrameGraphBuilder.addPass` named after its
 pipeline's location. Every target input becomes a `FramePass.reads`, the
@@ -144,11 +146,11 @@ through the global block, whose seven members are fixed in Java.
 | chain | who declares it | what it reads | what a player sees |
 |---|---|---|---|
 | *blur* | `GameRenderer.processBlurEffect`, called from inside `GuiRenderer.draw` | the main target and one internal target, six passes alternating between them | the world going soft behind a pause or options screen |
-| *creeper* | `GameRenderer.render`, when the camera entity is a `Creeper` | the main target | luminance collapsed into the green channel, then posterised and mosaicked |
+| *creeper* | `GameRenderer.render`, when the camera entity is a `Creeper` | the main target, and one internal target it bounces through | luminance collapsed into the green channel, then posterised and mosaicked |
 | *spider* | `GameRenderer.render`, when it is a `Spider` | the main target and four internal targets | the view repeated through several skewed, blurred, red-tinted lobes |
-| *invert* | `GameRenderer.render`, when it is an `EnderMan` | the main target | colours inverted, four fifths of the way |
+| *invert* | `GameRenderer.render`, when it is an `EnderMan` | the main target, and one internal target it bounces through | colours inverted, four fifths of the way |
 | *entity_outline* | `LevelRenderer.render`, when anything submitted an outline this frame | the entity-outline target — and never the main one | the coloured halo around a glowing mob |
-| *transparency* | `LevelRenderer.render`, when improved transparency is on | the main target and five internal ones, colour **and** depth | water, particles, clouds and rain layered in the right order |
+| *transparency* | `LevelRenderer.render`, when improved transparency is on | **six** of the caller's targets, colour **and** depth, and just one internal target of its own | water, particles, clouds and rain layered in the right order |
 
 Only one of those is a screen effect. *blur* runs over whatever is currently
 on the main target, world and GUI alike, because `GuiRenderer.draw` splits
@@ -191,7 +193,7 @@ sequenceDiagram
     LR->>FGB: importExternal — the entity outline target, which the main pass has just drawn into
     LR->>ShadM: getPostChain for entity_outline, allowing main and entity_outline
     ShadM-->>LR: the cached chain, or four freshly compiled pipelines
-    Note over LR,ShadM: skipped entirely when PreparedFrame.hasAnyOutline is false
+    Note over LR,ShadM: the lookup runs every level frame — only addToFrame is skipped when hasAnyOutline is false
     LR->>PChain: addToFrame with the screen size and the level's target bundle
     PChain->>FGB: createInternal — the chain's own swap target, at screen size
     PChain->>PPass: addToFrame, four times, in declared order
@@ -235,8 +237,11 @@ a `FrameGraphBuilder` of its own, imports one target as *main*, adds the
 chain, executes it and throws it away. Both its callers are in
 `GameRenderer`: the camera-entity effect at the end of the world block, and
 `GameRenderer.processBlurEffect` in the middle of the GUI.
-Neither passes an inspector, so **the blur and the spectator shaders appear
-in no slice of the F3 pie chart at all**. The graphs are throwaway but the
+Neither passes an inspector, so **the blur and the spectator shaders never
+get a slice of the F3 pie chart to themselves**: their cost is folded into
+whichever enclosing zone they ran under, *render → world* for the spectator
+effects and *render → gui → draw* for the blur, and no name in the chart
+tells you a post chain is what you are looking at. The graphs are throwaway but the
 memory is not: both doors take internal targets from the one
 `CrossFrameResourcePool`, which holds a released target for three frames in
 case something asks again for that size and format.
@@ -253,12 +258,13 @@ running fragment programs it also ships under *shaders/post* — a real and
 underused amount of rope.
 
 **Why does the creeper effect vanish when I press F5?** Because third person
-clears it. `Minecraft.setCameraEntity` calls
-`GameRenderer.checkEntityPostEffect` with whatever you are now spectating,
-which switches on its class, sets `GameRenderer.postEffectId` for a creeper,
-a spider or an enderman, and clears it for anything else — including for no
-entity at all, which is what the perspective key hands it whenever you leave
-first person. F4 (`Options.keyToggleSpectatorShaderEffects`) is a separate
+clears it, and the perspective key does it directly.
+`GameRenderer.checkEntityPostEffect` switches on the camera entity's class,
+sets `GameRenderer.postEffectId` for a creeper, a spider or an enderman, and
+clears it for anything else — including for no entity at all. The perspective
+key calls it straight out of `Minecraft.handleKeybinds`;
+`Minecraft.setCameraEntity` is the other door into the same method, for when
+what you are spectating changes rather than how. F4 (`Options.keyToggleSpectatorShaderEffects`) is a separate
 switch, flipping `GameRenderer.effectActive` without forgetting which chain
 was chosen, and the F3 screen names the survivor through
 `DebugEntryPostEffect`.
@@ -271,17 +277,20 @@ old targets are not handed back, and `LevelRenderer.resize` resizes the
 entity-outline target it owns. The compiled pipelines never mention a
 resolution, so they are untouched.
 
-> **For a 1.21-era reader.** *ShaderInstance*, *EffectInstance*, *Effect*,
-> *Uniform* and *AbstractUniform* are gone: a post pass's uniforms are
+> **For a 1.21-era reader.** *ShaderInstance*, *EffectInstance*, *Effect* and
+> *AbstractUniform* are gone, and `Uniform` survives only as an OpenGL-backend
+> detail no post chain ever names: a post pass's uniforms are
 > `UniformValue` records packed into a `GpuBuffer` with `Std140Builder`, and
 > everything else is bound by `RenderSystem.bindDefaultUniforms`.
 > *PostChain.process* still exists, but it is deprecated and both its callers
 > build a throwaway frame graph — `PostChain.addToFrame` is the real one.
 > *PostChain.resize*, *PostChain.getTempTarget* and `PostChain`'s whole
 > bookkeeping of named render targets are gone, because the frame graph
-> allocates them now. And there is no *Fabulous* graphics setting: the
-> transparency chain has its own boolean, `Options.improvedTransparency`,
-> which `GraphicsPreset` sets alongside the rest.
+> allocates them now. And *Fabulous* is no longer a mode anything reads: it
+> survives as one of four `GraphicsPreset` values, but a preset only *writes*
+> the individual options and is then forgotten, so what actually gates the
+> transparency chain is `Options.improvedTransparency` — which
+> `GraphicsPreset.FABULOUS` sets true everywhere except macOS.
 
 ## Where to look
 
@@ -291,7 +300,7 @@ comes from and how long it lives, `PostChain.load` for the validation that
 decides whether it loads at all, and `PostChain.addToFrame` for the only
 thing a chain does. `PostPass` is one pass and one draw. For the callers,
 `LevelRenderer.render` declares two chains into the world's frame graph,
-`GameRenderer.render` and `GameRenderer.processBlurEffect` run two more
+`GameRenderer.render` and `GameRenderer.processBlurEffect` run the other four
 through the deprecated door, and `LevelTargetBundle` names what any may ask.
 
 ---
