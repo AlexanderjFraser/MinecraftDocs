@@ -322,8 +322,8 @@ turns into a chest.
 
 ## Where to look
 
-`BlockEntityRenderDispatcher.tryExtractRenderState` first — it is twenty lines
-and it contains both visibility gates. Then
+`BlockEntityRenderDispatcher.tryExtractRenderState` first — it is twenty-one
+lines and it contains both visibility gates. Then
 `LevelExtractor.extractVisibleBlockEntities` for the two lists it is called
 from, and `ChestRenderer` as the clearest renderer in the package, since it is
 the one with a counterpart in `renderer/special` to compare against. For the

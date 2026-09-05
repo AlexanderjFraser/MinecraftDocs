@@ -12,10 +12,10 @@ arrives the scene goes grey and streaked. Five renderers make those colours —
 attribute worth, here, now?* The surprise is who they ask. **Most of them no
 longer know what time it is.** They ask a probe for a named value at a
 position and a partial tick, and the day/night curve behind it is keyframes in
-a data pack. Only one still reads the raw world clock — the clouds, because
-they drift — and the weather does not ask anybody: it seeds each column of
-rain from that column's own *coordinates*, and touches no attribute and no
-probe at all.
+a data pack. Two still read the raw world clock — the clouds, because they
+drift, and the rain, whose texture scrolls — but the weather asks nobody for a
+colour: it seeds each column of rain from that column's own *coordinates*, and
+touches no attribute and no probe at all.
 
 ## The cast
 
@@ -283,7 +283,7 @@ a texture.** `CloudRenderer.prepare` does the whole job on a worker — reading
 the image and baking it into `CloudRenderer.TextureData` through
 `CloudRenderer.packCellData`, one 64-bit word per pixel with the colour in the
 high bits and four neighbour-emptiness flags in the low four — and
-`CloudRenderer.apply` is three lines on the client thread that install the
+`CloudRenderer.apply` is two statements on the client thread that install the
 result and raise the rebuild flag.
 `CloudRenderer.buildMesh` walks cells of `CloudRenderer.CELL_SIZE_IN_BLOCKS`,
 writing three bytes per face through `CloudRenderer.encodeFace` — a compressed
