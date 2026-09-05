@@ -1,6 +1,6 @@
 # Structure placement
 
-> Verified against **Minecraft 26.2** · Part XII · A village is decided: a lottery that never looks at the world, a layout that may be computed twice, an absence stored as a hole, and a command that generates chunks to answer a question.
+> Verified against **Minecraft 26.2** · Part XII · A village is decided: a lottery that never looks at the world, a layout that is deferred and then run by the method that deferred it, an absence stored as a hole, and a command that generates chunks to answer a question.
 
 Type `/locate structure village` and one of two things happens. Usually the
 answer is instant, from a couple of thousand blocks away, in a direction you
@@ -34,7 +34,7 @@ for the other fifteen types.
 | `StructureStart` | the answer: a structure, the chunk it started in, a `PiecesContainer`, a reference count and a cached box | stored on the chunk |
 | `StructureManager` | the per-level view of starts and references | worldgen and main thread |
 | `StructureCheck` | the presence cache — two caches over a partial-NBT reader — and the thing `/locate` actually asks | **main thread only**, unsynchronised |
-| `Beardifier` | how much the terrain bends, as a density term | `ChunkStatus.NOISE` |
+| `Beardifier` | how much the terrain bends, as a density term | built with the `NoiseChunk` at `ChunkStatus.BIOMES` |
 
 ## Four decisions, on four different clocks
 
@@ -43,7 +43,7 @@ flowchart TB
     W["world start, main thread: filter the structure sets to biomes this dimension can host, fire the stronghold ring searches"]
     W --> S1["STRUCTURE_STARTS — the lottery, then the layout. No blocks, no neighbours read"]
     S1 --> S2["STRUCTURE_REFERENCES — each chunk scans the 17x17 around itself for starts overlapping it"]
-    S2 --> N["NOISE — Beardifier reads those references and bends the density field"]
+    S2 --> N["BIOMES and NOISE — the Beardifier is built with the NoiseChunk, and bends the density field"]
     N --> F["FEATURES — StructureStart.placeInChunk writes blocks, before that step's features"]
 ```
 
@@ -91,13 +91,15 @@ and the cell stays empty: the slot still exists, the village does not.
 
 ## Whether it is worth laying out
 
-`Structure.generate` does not return pieces. It returns a
+`Structure.findGenerationPoint` does not return pieces. It returns a
 `Structure.GenerationStub`, and the stub holds the *child expansion* as an
-unexecuted consumer. That is what lets `StructureCheck` answer "a village
-exists here" without laying the village out — and it means
-`Structure.generate` may run the layout **twice**, once for the check and
-once for real. Both runs agree, because the generation context rebuilds its
-`WorldgenRandom` from the seed and the chunk position.
+unexecuted consumer. `Structure.generate` then calls
+`Structure.GenerationStub.getPiecesBuilder` on the same line it takes the stub
+back, so on the generation path the deferral lasts one statement. What the
+deferral is actually for is `StructureCheck.canCreateStructure`, which calls
+`Structure.findValidGenerationPoint` and asks only whether the result is
+present: the presence question is answered without ever expanding the
+children, so the layout is run **once** and never twice.
 
 What is *not* deferred is the centre: the start template, its rotation and
 its ground height are all resolved before the stub comes back.
@@ -142,23 +144,30 @@ validation.
 
 ## The ground bends, and then the blocks arrive
 
-At `ChunkStatus.NOISE`, `Beardifier.forStructuresInChunk` reads those
-references and turns the nearby pieces into `Beardifier.Rigid` boxes plus
-their junctions. **No blocks are edited.** The flat shelf under a village is
+`Beardifier.forStructuresInChunk` reads those references and turns the nearby
+pieces into `Beardifier.Rigid` boxes plus their junctions. It is built with
+the `NoiseChunk`, which the *biomes* step creates and the noise step only
+reuses, so the beardifier exists a status before the density field it bends. **No blocks are edited.** The flat shelf under a village is
 the density field being told to be solid there
 ([terrain](terrain.md)), and `TerrainAdjustment` picks the shape: only two of
 its five values use the kernel the name *beard* refers to — the two beard
 modes, where junctions contribute at half the weight of the pieces, which is
 where the smooth shoulders under village streets come from. *Bury* and
 *encapsulate* use a plain linear distance falloff instead. The *rigid* filter
-applies only to jigsaw pieces, which have a projection to test; a desert
-pyramid or a mineshaft corridor contributes unconditionally.
+applies only to jigsaw pieces, which have a projection to test; a
+hand-built piece contributes unconditionally. Neither example is a desert
+pyramid or a mineshaft, because a structure that names no *terrain_adaptation*
+defaults to `TerrainAdjustment.NONE` and is filtered out before its pieces are
+looked at — twenty-three of the thirty-four shipped structure files, those two
+among them. The hand-built pieces that do reach the branch belong to the stronghold
+and the nether fossil.
 
 Then at `ChunkStatus.FEATURES`, `ChunkGenerator.applyBiomeDecoration` places
 structures at their declared decoration step, *before* that step's features.
 `StructureStart.placeInChunk` derives a reference position from **piece
-zero** — piece order is semantic, not cosmetic, and that position seeds the
-processors' randomness — and calls `StructurePiece.postProcess` on every
+zero** — piece order is semantic, not cosmetic, and every `PosRuleTest`
+measures its distances from that point — and calls `StructurePiece.postProcess`
+on every
 piece overlapping this chunk's writable area. Every chunk the structure
 touches does this with its own box, so a house straddling four chunks is
 written in four slices, at four different times, and a piece's
@@ -173,10 +182,14 @@ candidate chunk — and on a result of `StructureCheckResult.CHUNK_LOAD_NEEDED`
 it loads the chunk to structure starts, **synchronously**, for up to a
 hundred expanding rings of grid cells.
 
-**Why can two treasure maps never point at the same monument?**
-`StructureStart.getMaxReferences` is one. An exploration map asks for an
-*unreferenced* structure and takes a reference when it finds one, and the
-reference count is exactly what `StructureCheck`'s first cache stores.
+**Why do two exploration maps usually not point at the same monument?**
+`StructureStart.getMaxReferences` is one, and `ExplorationMapFunction`
+defaults *skip_existing_chunks* to true, so a map asks for an *unreferenced*
+structure and takes a reference when it finds one — and the reference count is
+exactly what `StructureCheck`'s first cache stores. It is a default, not a
+guarantee: the three buried-treasure map tables, in shipwrecks and both ocean
+ruins, set the flag to false and will happily send two players to the same
+chest.
 
 **Do structures override the biome for mob spawning?** Yes, and first.
 `ChunkGenerator.getMobsAt` consults `Structure.spawnOverrides` before
