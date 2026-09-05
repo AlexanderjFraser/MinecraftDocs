@@ -423,9 +423,43 @@ O is the close.
   IX page the part requires in full. **No tool bug — the fifth such session**;
   instead `pass4_queue.py` routed a bare `README` note to the wrong part for a
   third time, and an agent was wrong once. Everything in [pass4.md](pass4.md).
-- [ ] **Session K — Part XI Rendering.** Probably two sessions: the frame's
-  nine zones and five partial ticks; the six post chains against the JSON;
-  `block-entity-rendering` (addition 8).
+- [x] **Session K — Part XI Rendering** *(2026-09-04)*. Done in one, not two:
+  eleven pages, the landing page and the part's own Reference catalogue
+  (`reference/submit-phases.md`), thirteen agents; **every one had at least
+  one wrong claim**, for a twelfth time. Ninety-one corrections. The named
+  item was `post-processing`, the one page in the corpus written from nothing
+  and never checked, and the session found its worst error first: **there
+  *is* a Fabulous graphics setting** — `GraphicsPreset.FABULOUS` is one of
+  four stored preset values, and it still switches the transparency chain on,
+  as `improvedTransparency = Util.getPlatform() != Util.OS.OSX`. What is true
+  is that no preset is read at render time. Five more carry a lecture:
+  `the-frame`'s minimize answer is wrong by ninety per cent of the work
+  (iconification is `FramerateLimitTracker`'s *first* test and caps the client
+  at **ten frames a second**), and its five partial ticks are **six**, with
+  the screens row attached to a value screens never see;
+  `visibility-and-the-frame-graph`'s spine is **a phase out** —
+  `LevelExtractor.applyFrustum` runs in *extract*, before `GameRenderer.render`
+  is entered, which the sibling page had right all along; the same page's
+  bucketing is backwards in both directions (**both backends still issue one
+  draw per section**, and translucent sections merge into **one** bucket
+  rather than none, which is what preserves the order the list is reversed
+  against); and `entity-rendering`'s hook promises a fourth pose no entity
+  ever gets, because the only crumbling overlay in the game is built in the
+  *block-entity* loop. **The landing page was the worst page in the part** —
+  nine wrong promises, most of them about pages rather than code: not the
+  largest system (`world/level` is bigger on both measures), not all inside
+  `renderFrame`, not cited by every page (the window by two of ten), and the
+  client loop is the joint *longest* page in Part X where it was sold as the
+  shortest. Three hooks fell: the weather is seeded from **position**, not
+  the clock, and asks for no attribute at all; the chunk-layer scan **does**
+  have a setting (`Material.forceTranslucent`, 110 shipped models); and the
+  water animation does not stop when you pause — the guard is `/tick freeze`.
+  Addition 2 done in full, with the landing page's "three ways
+  `LevelExtractor` is reached" corrected to the **two** the page it points at
+  states. **No tool bug — the sixth such session**; instead the verifier and
+  the mermaid checker each caught one of the session's own fixes, and two
+  agent findings were rejected on re-derivation. Everything in
+  [pass4.md](pass4.md).
 - [ ] **Session L — Part XII World generation.** Probably two sessions:
   the density graph and its caches against the data; the tree kit's
   placer counts; `blending` and `creating-a-world` (addition 8).

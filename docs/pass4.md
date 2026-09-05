@@ -87,6 +87,227 @@ entry first.
 
 ## Entries
 
+## Session K — Part XI Rendering (pass 4) *(2026-09-04)*
+
+Eleven system pages, the landing page and the part's own Reference catalogue
+(`reference/submit-phases.md`) — thirteen agents; **every one had at least one
+wrong claim**, which is pass 2's finding for a twelfth time. Ninety-one
+corrections, and Part XI was done in one session where the charter allowed
+two. The pattern of Parts VI–X repeated once more: session L's own checklist
+held on most of what it knew it had changed, and the errors were in the
+*illustrations* — the tables, the one-line summaries, the Q&A answers and the
+confident asides.
+
+**The session's named item was `post-processing`, and its worst error was one
+the session found before the agent.** The page's 1.21 box said "there is no
+*Fabulous* graphics setting". `GraphicsPreset` is an enum of four values and
+`FABULOUS` is one of them — a real, stored, saved option, default FANCY,
+applied at `Minecraft.java:562` and flipped to CUSTOM by any individual
+change. What is true is narrower and better: *Fabulous* is no longer a mode
+anything **reads** at render time. It is a preset that writes the individual
+options and is then forgotten, and the one it writes for this chain is
+`improvedTransparency` — set true by `GraphicsPreset.FABULOUS` **everywhere
+except macOS** (`GraphicsPreset.java:95`, `Util.getPlatform() != Util.OS.OSX`).
+Part X's `options` was checked and describes the preset machinery correctly,
+so the contradiction was on this page alone.
+
+**Five more that carry a lecture.**
+
+- `the-frame`'s *Questions players ask* answer to **does minimizing save any
+  work** was wrong by about ninety per cent of the work. The page said "three
+  calls' worth… the limiter is paid in full".
+  `FramerateLimitTracker.getThrottleReason` tests iconification **first**,
+  ahead of idleness and the menu (`FramerateLimitTracker.java:56-57`), and
+  `getFramerateLimit` maps that to **ten** (`:11,34-36`), snapshotted at
+  `Minecraft.java:1398` and spent at `:1476`. A minimized client draws its
+  unseen frames at about ten a second. `Minecraft.pauseIfInactive`
+  (`:1500-1508`) then stops a singleplayer world outright after half a second
+  of lost focus.
+- `the-frame`'s partial-tick table: **there are six values, not five**, and
+  the row that was wrong was wrong twice over. Screens and overlays are handed
+  `DeltaTracker.getGameTimeDeltaTicks` (`Gui.java:187,202`), not
+  `getRealtimeDeltaTicks`, whose only two consumers corpus-wide are the
+  autosave indicator (`Hud.java:1392`) and the title-screen panorama
+  (`Panorama.java:29`). The clamp the row described (past seven ticks, to a
+  half — `DeltaTracker.java:114`) is real and belongs to the row that was
+  missing. Mirrored on the landing page and fixed there.
+- `visibility-and-the-frame-graph`'s **spine was a phase out**. "That one
+  method decides what is visible" — but `LevelExtractor.applyFrustum` runs at
+  `LevelExtractor.java:134-135`, inside `LevelExtractor.extract`, which
+  `GameRenderer.extract` calls at `:416`; that is the *extract* half of the
+  frame, and `gameRenderer.render` is not entered until `Minecraft.java:1422`.
+  The sibling page `section-meshing` had the phase right all along. Two
+  consequences on the same page: `LevelExtractor` **is** the class that reads
+  the world (it holds the `ClientLevel`), so "nothing in that table reads the
+  world" was false of row four; and `SectionOcclusionGraph.runPartialUpdate`
+  **does** edit the published `GraphState` in place — only the full rebuild
+  swaps the `AtomicReference`.
+- `visibility`'s **bucketing claim was backwards in both directions**.
+  `ChunkSectionsToRender` is not a GPU multi-draw: both backends loop one draw
+  per section (`GlCommandEncoder.java:548-555`,
+  `VulkanRenderPass.java:285-302`), so a view of terrain is *not* "a handful
+  of draw calls" — what a bucket saves is the buffer rebinding between them.
+  And translucent sections do not refuse to share buckets: the hash stays at
+  the seed 173 for TRANSLUCENT (`LevelRenderer.java:529-554`), so they all
+  merge into **one**, and that is precisely what preserves the visit order the
+  draw list is then reversed against.
+- `entity-rendering`'s hook promised the zombie is posed **"four [times] if
+  you are mining through it"**. It never is: the only non-null
+  `ModelFeatureRenderer.CrumblingOverlay` in the game is built in
+  `LevelExtractor`'s *block-entity* loop (`LevelExtractor.java:286`), so the
+  fourth pose belongs to a chest being mined and no entity ever reaches it.
+
+**The landing page was the worst single page in the part** — nine wrong
+promises, most of them about *pages* rather than about code, which is the
+shape a landing page fails in. "The largest system in the game"
+(`world/level` is 1,312 classes / 146,417 lines against the renderer's 1,179
+/ 87,219, and `world/entity` is bigger on lines too); "everything in this
+part happens inside `Minecraft.renderFrame`" (particles tick from the tick,
+meshing is on a background pool, atlases are a reload); "every other page in
+the part cites them" of the substrate (Blaze3D is cited by eight of ten, the
+window by **two**); the client loop is "the shortest page in Part X" when at
+272 lines it is the joint **longest**, which inverts the "cheap dependency"
+reassurance; "the only page that says when a frame happens" (`anatomy` and
+`reference/threads` say it too); "an octree whose asymmetry" (the octree is
+storage — the asymmetry is uncompiled-versus-empty *in the walk*, which
+`lectures.md` states correctly and the landing page did not); "five gates"
+for particles, a number that appears nowhere on `particles` and that no
+population yields; "no area of the game was renamed harder", contradicted by
+`reference/naming-drift.md:43-47`, which puts rendering **fourth** at 27 rows
+and says the game-rule registry moved more names; and a glossary promise
+naming ***chunk layer***, which has no entry. The size counts themselves —
+1,179 / 87,000 and 420 / 53,000 — were re-derived by the session and by the
+agent independently and are exact.
+
+**Addition 2, done in full.** All four *before you start* entries are used by
+a sentence: `the-client-loop` at `the-frame.md:20`, `resource-system` at
+`models-and-atlases.md:18`, `environment-attributes-and-timelines` at
+`lightmap-fog-and-sky.md:39`, `the-client-level` at `section-meshing.md:291`.
+`check_deps.py` is green for the part and all nine cross-part links point at
+*earlier* parts, so none is a missing arrow. One order claim corrected: the
+landing page promised "the three ways `LevelExtractor` is reached" where
+`the-client-level.md:133` — checked by session J the day before — says
+**two**, push and pull. The landing page now matches the page it points at.
+
+**The counts that were wrong, and the ones that were not.**
+
+- `particles`: "**eight** call sites bypass it entirely" → **four** outside
+  the particle package (`ClientLevel.addDestroyBlockEffect`,
+  `ClientLevel.addBreakingBlockEffect`, the firework starter at
+  `ClientLevel.java:767`, `ClientPacketListener.java:1037`) plus one inside
+  (`FireworkParticles.java:138`). The page's own examples named routes that do
+  not exist — "block-break particles by both of their routes, both crack
+  effects" is one of each. This was flagged in pass4.md as *carried over and
+  not re-verified*, and it was wrong.
+- `models-and-atlases`: the fan-out is **eighteen** root tasks, not sixteen.
+  `ModelManager.reload` opens **five** futures on the task executor
+  (`ModelManager.java:106-112`), not three — `EntityModelSet::vanilla` and
+  `BuiltInBlockModels.createBlockModels` were missing from the heading, the
+  prose and the figure. Thirteen stitches plus five is eighteen.
+- `blaze3d`: the backends differ in **all seven** `DeviceFeatures` flags, not
+  six — and the page's own breakdown (five hardcoded, plus a mirrored pair)
+  already summed to seven.
+- `lightmap-fog-and-sky`: `LevelRenderer.addSkyPass` has **four** conditions,
+  not five — blindness and darkness are one precomputed boolean,
+  `CameraRenderState.doesMobEffectBlockSky` — and the boss bar outside it is
+  the fifth. The page's five was right for the wrong reasons; the queue asked
+  which reading was correct, and the answer is four-plus-one.
+- `the-window`: **seven** callbacks, not six — `glfwSetWindowCloseCallback` at
+  `Window.java:611`; and **four** of the six constructor callbacks write a
+  field and stop, not three, because `onFocus` was omitted from the pass-3
+  note the page inherited. The page's own figure drew four and its prose said
+  three. `Window.isMinimized` was listed among their fields and belongs to
+  `onFramebufferResize`, one of the two that *do* reach the handler.
+- Re-derived and **confirmed**: the six chains' twenty-six passes (blur 6,
+  spider 10, entity_outline 4, creeper 2, invert 2, transparency 2, counted
+  from `assets/minecraft/post_effect/`), spider's four internal targets, the
+  fifteen submit phases and thirteen feature renderers in declaration and
+  registration order, the fifteen `LevelEvent.PARTICLES_DESTROY_BLOCK` call
+  sites of which exactly three pass a source, the thirteen atlases, the 98/70
+  in `tree-EntityRenderState.svg` (the generator labels *descendants*; the
+  subtree is 99 including the root), `Math.max(visibleSections.size() / 8, 15)`
+  at `LevelRenderer.java:815`, and the two hard-coded `CardinalLighting`
+  records with `DimensionType.cardinalLightType` as the only datapack lever.
+
+**Three hooks fell and were replaced.**
+
+- `lightmap-fog-and-sky`: "Only two still read the raw world clock: the
+  clouds… and the weather, whose streaks are seeded from it." The weather is
+  seeded from **position** — `x*x*3121 + x*45238971 ^ z*z*418711 + z*13761`
+  (`WeatherEffectRenderer.java:86`) — and reads the clock only as a scroll
+  phase. `WeatherEffectRenderer` in fact touches no attribute and no probe at
+  all, which also falsified the page's "every renderer here goes through the
+  probe" and Part IV's six-consumer list. One renderer of the five asks nobody
+  anything.
+- `models-and-atlases`: "the most surprising decision in the pipeline is the
+  one nobody configures… There is no setting for this and no warning." There
+  is one setting: `Material.forceTranslucent`, from a *force_translucent* key
+  beside the sprite name, read at `FaceBakery.java:59` **before** the pixel
+  scan, and **110** shipped model files use it. The pixel scan survives as the
+  default; the hook now names its one escape hatch.
+- `models-and-atlases`' *Questions players ask*: "Why does the water texture
+  freeze when I pause?" — **it does not**. `Minecraft.java:1247` gates
+  `TextureManager.tick` on `isLevelRunningNormally`, which is `/tick freeze`
+  (`:2076`), and `DeltaTracker.Timer.advanceGameTime` keeps producing ticks
+  with the menu open. The question's premise was false; it is now asked about
+  lag and `/tick freeze`, which is what the mechanism actually explains.
+
+**Two Q&A answers on `the-window` were wrong end to end.**
+`Window.setAllowCursorChanges` is not a platform work-around for cursor
+changes during a drag — it is a **player option** on the mouse-settings screen
+(`Options.java:1096-1100`, `Minecraft.java:680`). And `ClientShutdownWatchdog`
+does not "wait a grace period so a crash report has time to be written": after
+its fifteen-second sleep it **writes the report itself**, and the window-close
+arming passes `forceShutdown = false` (`Minecraft.java:545`) so it cannot end
+the process at all — only `Main.java:291`'s post-main arming can, and that
+runs after the main thread has already finished. The causality was inverted.
+
+**`block-entity-rendering`, one of the four pages nothing had ever checked**,
+came back better than expected: three outright errors against sixty-two
+verified counts and twenty-one confirmed diagram arrows.
+`VaultRenderState.displayItem` is an `ItemClusterRenderState`, which extends
+`EntityRenderState`, so **two** of the five embedded states carry an entity
+snapshot and not one — the count of five survives and the grouping falls.
+`BuiltInBlockModels` is dated "startup, once" and runs on a **worker thread on
+every resource reload** (`ModelManager.java:109-111`). And the stated *cause*
+of the empty chest — "because the terrain path takes only the quads" — is not
+in the code: terrain never touches that table at all (one caller of
+`ModelManager.getBlockModelSet` corpus-wide), and the block road draws quads
+**and** the special renderer. The difference is table membership, not
+behaviour. The agent's completeness sweep listed nineteen in-scope classes the
+page never mentions; they go to pass 5.
+
+**Two things the queue asked to settle, settled.** Pass 3's drafter suspected
+two sentences on `entity-rendering` and was right about one and a half.
+"Batching is by feature type, then by `RenderType`" holds for only **two of
+the thirteen** submit kinds — only `ModelFeatureRenderer.Submit` and
+`CustomFeatureRenderer.Submit` implement `BatchableSubmit`; everything else
+keeps submission order and merges by adjacency. But "translucency opts out of
+reordering rather than of merging" is **backwards, not merely misnamed**: the
+translucent phase's whole purpose is to reorder, by depth sort, and what
+`strictlyOrdered` suppresses is `RenderTypeFeatureRenderer.Group`'s draw
+consolidation — the merging. Both pages now say the same thing. A third
+`submit-phases` finding is its own: the last column is not a draw order, since
+sweep 1 drains shadows, translucent models, see-through name tags, name tags,
+texts and translucent custom geometry *in that order*, so a see-through name
+tag is drawn **before** the opaque one — the row order reversed.
+
+**No tool bug — the sixth such session.** The verifier caught two of the
+session's own fixes (a backticked `if`, a bare `ambientLight`) and the mermaid
+checker caught a third (a semicolon in a note, rule 6 exactly as written), all
+three in fixes rather than in pages. The agents were wrong twice on
+re-derivation: `submit-phases`' three/twelve split and every sweep number
+survived a challenge, and `blaze3d`'s "one interface with no façade" is
+defensible on the narrower reading the page intended, so it was reworded
+rather than corrected.
+
+**Left for later.** `reference/glossary.md` has no ***chunk layer*** entry
+though the term is load-bearing across four Part XI pages — the landing page's
+false promise is removed, and **session O should add the entry** in its
+glossary-against-the-corpus sweep. The completeness findings on
+`block-entity-rendering`, the smaller misleading items on every page, and the
+structural notes are in `docs/pass5.md`.
+
 ## Session J — Part X The client (pass 4) *(2026-09-04)*
 
 Twelve pages, the landing page and the part's own Reference catalogue
@@ -3692,7 +3913,7 @@ decompile, hardest on the two that are declaration orders. Strike the
 graph — seventeen edges, each a conversion claim); one added
 (`reference/README.md`, the shelf — asserts which tool writes which page).
 
-- **2026-09-03, session L — Part XI Rendering.** Twelve pages: eight
+- ~~**2026-09-03, session L — Part XI Rendering.** Twelve pages: eight
   rewritten (`the-frame`, `the-window`, `blaze3d`, `models-and-atlases`,
   `entity-rendering`, `lightmap-fog-and-sky`, `particles`, and
   `level-rendering` in the act of splitting), two produced by that split
@@ -3702,10 +3923,10 @@ graph — seventeen edges, each a conversion claim); one added
   `lectures.md`. `level-rendering.md` is gone and its URL redirects to the
   visibility half.
 
-  **Two errors were found by redrawing, and both are already fixed in the
+  ~~**Two errors were found by redrawing, and both are already fixed in the
   pages — check the fixes, not the old claims.**
 
-  1. **`the-window` said three of the six operating-system callbacks reach
+  1. ~~**`the-window` said three of the six operating-system callbacks reach
      the game through `WindowEventHandler`. Only two do.** `Window`
      registers six GLFW callbacks; `onFramebufferResize` calls
      `WindowEventHandler.framebufferSizeChanged` and `onEnter` calls
@@ -3718,7 +3939,7 @@ graph — seventeen edges, each a conversion claim); one added
      The old claim was an inference from three method names lining up with
      three callbacks; verify the new one against `Window`'s registrations
      and its `eventHandler` call sites.
-  2. **`level-rendering` conflated two different triggers.** It said
+  2. ~~**`level-rendering` conflated two different triggers.** It said
      `LevelExtractor.applyFrustum` re-runs when "the occlusion graph
      invalidates on a camera move quantised to eight blocks, on a
      field-of-view change and on the smart-cull toggle". Those three are the
@@ -3733,7 +3954,7 @@ graph — seventeen edges, each a conversion claim); one added
      are one — `MINIMUM_ADVANCED_CULLING_SECTION_DISTANCE` is
      `MINIMUM_ADVANCED_CULLING_DISTANCE` converted to section coordinates.
 
-  **The split.** `level-rendering` became `visibility-and-the-frame-graph`
+  ~~**The split.** `level-rendering` became `visibility-and-the-frame-graph`
   and `section-meshing`. Nothing was cut, but the material was divided, and
   pass 4 should read the two together once against the old page, which is in
   git history at commit `03712d1`. The seam: visibility owns `LevelRenderer`,
@@ -3748,21 +3969,21 @@ graph — seventeen edges, each a conversion claim); one added
   and must not have drifted: *only visible sections are re-meshed*, and
   *terrain is drawn before the sections queued this frame are compiled*.
 
-  **Claims introduced, by page.** These are what the rewrites added that the
+  ~~**Claims introduced, by page.** These are what the rewrites added that the
   old pages did not contain. Each was checked against the decompile before
   the session accepted it, which is exactly the level of checking pass 2
   proved insufficient.
 
-  - `the-window`: the candidate loop ends in `MessageBox.error` and the game
+  - ~~`the-window`: the candidate loop ends in `MessageBox.error` and the game
     never starts; `RenderSystem.initRenderer` happens *inside* the loop on
     the success path, not after it; `GpuBackend.handleWindowCreationErrors`
     is handed a captured GLFW error and throws `BackendCreationException`;
     the two-of-six callback pairing above; `ClientShutdownWatchdog` is
     started from the window-close callback. Flagged as unverified by the
     drafter: where `Window.getRefreshRate`'s number originates.
-  - `the-frame`: the blit is described as going *to the acquired surface
+  - ~~`the-frame`: the blit is described as going *to the acquired surface
     texture*, where the old page said only "from the main render target".
-  - `blaze3d`: two numbers were **corrected**, not introduced. The old page
+  - ~~`blaze3d`: two numbers were **corrected**, not introduced. The old page
     compared the backends at "7,461 lines against 5,623"; measured today the
     two trees are **7,477 and 5,627** (40 classes and 28), and 7,477 is also
     what `what-this-book-skips` already claimed for the Vulkan tree, so the
@@ -3775,7 +3996,7 @@ graph — seventeen edges, each a conversion claim); one added
     Graphics API setting needs a restart (`Options.preferredGraphicsBackend`
     adds `Options.TOOLTIP_NEEDS_RESTART` when it differs from the value at
     startup).
-  - `visibility-and-the-frame-graph`: the walk may step into a neighbour only
+  - ~~`visibility-and-the-frame-graph`: the walk may step into a neighbour only
     if the two faces can see each other through that section's geometry
     (`SectionOcclusionGraph.runUpdates`); `FrameGraphBuilder.execute` culls
     before it orders; the *clear* pass wipes colour and depth on the main
@@ -3788,7 +4009,7 @@ graph — seventeen edges, each a conversion claim); one added
     on top* pass are conditional too, which the old page's flat "in
     declaration order" list obscured. **Check the conditionality of all four
     passes.**
-  - `section-meshing`:
+  - ~~`section-meshing`:
     `SectionUpdateTracker.SectionDirtyState.isDirtyFromPlayer` is what
     *prioritise chunk updates* keys off, travelling through
     `SectionUpdateRenderState` to `LevelRenderer`'s synchronous-rebuild
@@ -3804,7 +4025,7 @@ graph — seventeen edges, each a conversion claim); one added
     on each side; and that `LevelExtractor.allChanged` also clears tint
     caches and rebuilds `SectionUpdateTracker` at the current render
     distance.
-  - `models-and-atlases`: the whole *How an item picks its model* section is
+  - ~~`models-and-atlases`: the whole *How an item picks its model* section is
     new — `ItemModelResolver` reading `DataComponents.ITEM_MODEL`, both
     lookups falling back rather than failing, `ClientItem.Properties`
     carrying the hand-swap animation and the GUI-overflow flag, and
@@ -3814,7 +4035,7 @@ graph — seventeen edges, each a conversion claim); one added
     described as **sixteen** parallel pieces of work — thirteen stitches plus
     three listings — where the old page said thirteen stitches "plus" the
     listings without counting them together.
-  - `entity-rendering` and `reference/submit-phases.md`: the Reference page
+  - ~~`entity-rendering` and `reference/submit-phases.md`: the Reference page
     is almost entirely new fact and is the largest single body of unchecked
     claims this session produced — the declaration order of the fifteen
     phases, which three are a `TranslucentFeatureRenderPhase` (and that
@@ -3832,7 +4053,7 @@ graph — seventeen edges, each a conversion claim); one added
     adjacency), and that "translucency opts out of reordering rather than of
     merging" (the translucent phase does reorder, by depth-sorting; what it
     opts out of is the *grouper's* reordering).
-  - `particles`: the destroy event is raised on the server side too, so the
+  - ~~`particles`: the destroy event is raised on the server side too, so the
     trace gains a server-side arrow — `Block.playerWillDestroy` is called
     from both `MultiPlayerGameMode` and `ServerPlayerGameMode`; the broadcast
     is 64 blocks, same dimension, excluding the source when it is a `Player`
@@ -3845,7 +4066,7 @@ graph — seventeen edges, each a conversion claim); one added
     storm degrade gradually rather than hit a wall. Carried over verbatim and
     **not** re-verified: "eight call sites in all" bypass
     `ClientLevel.addParticle`.
-  - `lightmap-fog-and-sky`: dissolving the attribute enumeration meant
+  - ~~`lightmap-fog-and-sky`: dissolving the attribute enumeration meant
     pinning each constant to the thing that reads it, and those *mappings*
     are new even though the constants are not — which fog environment reads
     which of the eight fog attributes (`AtmosphericFogEnvironment` and
@@ -3862,7 +4083,7 @@ graph — seventeen edges, each a conversion claim); one added
     `LevelRenderer.addSkyPass`'s own conditions and makes the boss bar a
     separate sixth. Confirm which reading is right.
 
-  - **`post-processing` is entirely new and nothing has ever checked it.**
+  - ~~**`post-processing` is entirely new and nothing has ever checked it.**
     It is the one page in the corpus written from the decompile with no
     pass-2 history behind it, so pass 4 should treat it as a pass-2 subject
     rather than a pass-3 one: falsify every sentence, not just the ones
@@ -3884,7 +4105,7 @@ graph — seventeen edges, each a conversion claim); one added
     with `Std140Builder` and uploaded in `PostPass`'s **constructor**, so
     they are written once at load and never again.
 
-    Everything else on the page is unchecked, and these are the claims most
+    ~~Everything else on the page is unchecked, and these are the claims most
     worth attacking because the page's argument rests on them: that a
     JSON-declared uniform's per-entry *name* is read by no codec and members
     match the GLSL positionally; that *blur.json* declares a radius of zero
@@ -3913,7 +4134,7 @@ graph — seventeen edges, each a conversion claim); one added
     table's *what a player sees* column is interpretation of GLSL the book
     does not quote, and should be read as such.
 
-    One consequence for other pages: `post-processing` states that the
+    ~~One consequence for other pages: `post-processing` states that the
     transparency chain is gated on `OptionsRenderState.improvedTransparency`
     and not on any graphics preset, and that there is no *Fabulous* setting
     any more. If that is right, check whether `options` in Part X says
@@ -3922,7 +4143,7 @@ graph — seventeen edges, each a conversion claim); one added
     its id alone and not by the allowed target set it was validated against,
     so two callers wanting one chain under different permissions would share
     whichever object was built first. No two callers do today.
-  **What `lightmap-fog-and-sky` gave back to Part IV.** The page's opening
+  ~~**What `lightmap-fog-and-sky` gave back to Part IV.** The page's opening
   hundred lines re-taught `EnvironmentAttribute`, its flags and builder, a
   twenty-four-item enumeration of `EnvironmentAttributes` constants,
   `EnvironmentAttributeSystem`'s layer stack, `Timeline`, `Timelines` and
@@ -3937,7 +4158,7 @@ graph — seventeen edges, each a conversion claim); one added
   layers are the lightning flash, `DimensionType.skybox` and its three
   values, and `BiomeSpecialEffects` hollowed out to water, grass and foliage.
 
-  **The diagrams.** Every figure in the part is new or redrawn, and each one
+  ~~**The diagrams.** Every figure in the part is new or redrawn, and each one
   asserts an ordering. New flowcharts: the substrate-under-pipeline figure on
   the landing page, whose arrow labels are hand-off claims; the backend retry
   loop and the six-callback figure in `the-window`; the façade-over-backend
@@ -3954,7 +4175,7 @@ graph — seventeen edges, each a conversion claim); one added
   of them living — come from `map_source.py` and want re-deriving like the
   atlas's other numbers.
 
-  **The landing page and `lectures.md`** claim that Part XI is a substrate
+  ~~**The landing page and `lectures.md`** claim that Part XI is a substrate
   under a pipeline; that `the-frame` is watchable before the substrate it
   stands on; that the only hard prerequisite is Part X's `the-client-loop`,
   with `resource-system` (Part II) and `environment-attributes-and-timelines`

@@ -19,6 +19,94 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session K — Part XI Rendering (pass 4) *(2026-09-04)*
+
+**Hooks and openings rewritten around a corrected fact — re-read all of
+these for voice.** Six paragraphs were rewritten because the fact under them
+fell, and none has had a wording pass:
+
+- `the-frame`'s acquire-failure paragraph and its minimize Q&A (the answer
+  went from "three calls' worth" to a paragraph about the ten-frame limiter,
+  and it is now the longest Q&A on the page).
+- `the-frame`'s partial-tick table gained a sixth row and lost the "five
+  partial ticks" heading; the section is now called *six clocks in one frame*,
+  which is accurate and may not be the best title.
+- `models-and-atlases`' chunk-layer hook, which now carries a nine-line
+  qualifier about `force_translucent` where the point is one sentence long.
+  **This is the clearest over-long fix in the session.**
+- `models-and-atlases`' water-animation Q&A, whose *question* changed — it
+  now asks two things at once ("why does lag slow it but the pause menu not
+  stop it"), which is a compound question in a slot that wants a simple one.
+- `lightmap-fog-and-sky`'s opening, where "only two still read the raw world
+  clock" became "only one… and the weather does not ask anybody". The new
+  clause is true and the rhythm of the sentence is worse.
+- `visibility-and-the-frame-graph`'s opening, which no longer resolves to one
+  method and now has to say "not quite at one method" — an admission in a
+  position that wants a promise.
+
+**Structural findings (not acted on).**
+
+- `the-window`'s seventh callback (the window-close one) is introduced in a
+  section titled *Six callbacks are the entire surface* and then explained
+  three sections later, under the shutdown watchdog. Either the heading or the
+  ordering is wrong; pass 5 should decide which. Same page: the "rest of the
+  package" list omits seven of the package's twenty-six classes, including
+  `Transparency` and `TextureUtil`, and the error callback is swapped at least
+  four times where the page implies two.
+- `block-entity-rendering`'s completeness sweep — the page had never been
+  checked, and nineteen in-scope classes and mechanisms go unmentioned. The
+  ones worth a sentence each, in the agent's priority order:
+  `BlockEntityRendererProvider.Context`, `WallAndGroundTransformations`,
+  `BlockModelRenderState`, the crumbling-overlay source, and
+  `BlockEntityWithBoundingBoxRenderer`'s game-master permission gate. Also
+  unmentioned: `END_GATEWAY` and `COPPER_GOLEM_STATUE` in the built-in special
+  list, the `EmptyBlockModel`/`SelectBlockModel` entries in the same table, and
+  the five blocks that get a bare wrapper rather than a composite — which is
+  why a block-displayed enchanting table is a book with no table under it.
+- `entity-rendering` and `reference/submit-phases.md` overlap more than they
+  should now that the catalogue is corrected: the lecture names four of the
+  fifteen phases and exactly one of the thirteen renderers, so the "three or
+  four examples from" framing the Reference page used was already generous.
+  Pass 5 should decide whether the lecture wants more of the catalogue or the
+  catalogue wants less of a preamble.
+- `post-processing`'s per-chain table has a *what a player sees* column that
+  is interpretation of GLSL the book does not quote. It survived the
+  fact-check because it is not falsifiable from the sources the book uses.
+  Pass 5 should decide whether to keep it, and if so to say in the caption
+  that it is a reading rather than a citation.
+- The landing page's pipeline figure no longer claims to be frame order, and
+  the paragraph under it now spends four lines saying what the arrows are
+  *not*. That is honest and it is also the longest caption in the part.
+
+**Smaller misleading items, verified but left as they are** (each is true as
+written and imprecise in a way that costs a reader nothing at this pass):
+`the-frame`'s "all of this is one thread" against a client that has several;
+`models-and-atlases`' "twelve separate layers" where the prose enumerates
+eleven and the code has more, and its "at different coordinates" for a
+same-size sprite replacement that `Stitcher` puts back in the same place;
+`blaze3d`'s "applied when the pipeline is bound", its "downgrades twice" for
+an if/else-if, and "every drawing class comes through this one shape" naming
+two classes that never open a pass; `particles`' "one particle escapes this
+system entirely", where only the *draw* escapes; `section-meshing`'s
+start-up-only OOM shrink offered as the runtime answer to buffer exhaustion,
+and its `hasAllNeighbors` rationale, which explains four cardinal columns
+where the check demands eight plus a light test; `visibility`'s walk-trigger
+list, which omits `LevelRenderer.resize` and `ViewArea.repositionCamera`;
+`block-entity-rendering`'s "the two gates every extraction passes", where
+there is a third at `BlockEntityRenderDispatcher.java:67`, and its "nothing
+reaches back into the world", which `SignRenderState`'s live `SignText`
+references break.
+
+**On-spec material pass 5 may cut**, carried forward from pass 2's session I
+and still true after this pass: `the-window` in its entirety (it is a real
+gap and a real lecture, and it is also the page a viewer is most likely to
+skip — the landing page now says so in as many words); `blaze3d`'s *What
+replaced RenderStateShard* and *Resources and uniforms* sections, both of
+which are naming-drift work rather than a lecture's; `particles`' explosion
+section, a second trace on a page that already has one; and
+`entity-rendering`'s thirteen-renderer and fifteen-phase lists, which now
+duplicate a Reference page that has been checked row by row.
+
 ## Session J — Part X The client (pass 4) *(2026-09-04)*
 
 ### Wording to re-read (a fact fix rewrote the sentence around it)
