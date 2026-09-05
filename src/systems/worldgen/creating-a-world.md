@@ -14,8 +14,11 @@ load** — the same `WorldLoader.load` a dedicated server runs at startup — on
 background thread, with the client's main thread parked on
 `BlockableEventLoop.managedBlock` until it finishes. The object the screen
 exists to edit, `WorldGenSettings`, was built halfway through that load, out
-of registries the load had just filled. Every widget is an edit to it. Two of
-the buttons throw the whole load away and run it again. And *Create* barely
+of registries the load had just filled. Every widget on the *World* tab is an
+edit to it — the name, the game mode, the difficulty, Allow Commands and the
+game rules go somewhere else entirely, into the `LevelSettings` and the
+`GameRules` that ride beside it. Two of the buttons throw the whole load away
+and run it again. And *Create* barely
 touches it: by the time you press the button, the world's generation settings
 have existed in memory for as long as the screen has.
 
@@ -85,7 +88,7 @@ re-rolling a new random world every time you touch it.
 > **For a 1.21-era reader.** The seed has left *level.dat*. `WorldGenSettings`
 > extends `SavedData` and carries its own `SavedDataType`, so it is written to
 > *data/minecraft/world_gen_settings.dat* beside *raids.dat* — and the game rules to
-> *data/game_rules.dat* — by the ordinary saved-data machinery rather than by
+> *data/minecraft/game_rules.dat* — by the ordinary saved-data machinery rather than by
 > the level-data writer. `PrimaryLevelData` keeps the old key name only as the
 > constant `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS`.
 
@@ -143,10 +146,13 @@ value, and read by nothing in the game.
 
 One thing the flat generator does not do is place all its own blocks.
 `FlatLevelGeneratorSettings.adjustGenerationSettings` walks the built layer
-stack and, for every layer whose block is not opaque, replaces it with a null
-and re-adds it as an inline `Feature.FILL_LAYER` placed feature in the
-*TOP_LAYER_MODIFICATION* decoration step. The water in *Water World* arrives as
-[a feature](features-and-placement.md), not as terrain.
+stack and, for every layer whose block fails
+`Heightmap.Types.MOTION_BLOCKING`'s opacity test, replaces it with a null and
+re-adds it as an inline `Feature.FILL_LAYER` placed feature in the
+*TOP_LAYER_MODIFICATION* decoration step. That test is *blocks motion or holds
+a fluid*, so the water in *Water World* stays terrain; what leaves it are the
+air of *The Void* and the snow layer on top of *Snowy Kingdom*, which arrive
+as [features](features-and-placement.md).
 
 ## An experiment is a data pack, so switching one on reloads everything
 
@@ -183,8 +189,9 @@ Data packs added here do not go into a world folder that does not exist yet.
 `CreateWorldScreen.getOrCreateTempDataPackDir` makes a temporary directory
 prefixed *mcworld-*, the pack browser is pointed at that, and the directory is
 copied into the new world's *datapacks* folder by
-`CreateWorldScreen.createNewWorldDirectory` at the very end — or deleted, on
-every other exit from the screen.
+`CreateWorldScreen.createNewWorldDirectory` at the very end. It is then deleted
+on **every** exit including that one: `CreateWorldScreen.removeTempDataPackDir`
+runs on the line after the create callback returns.
 
 ## What *Create* does
 
@@ -200,7 +207,7 @@ sequenceDiagram
     Note over CWS,Disk: render thread
     CWS->>WCUS: read the context one last time
     WCUS-->>CWS: WorldOptions and the selected WorldDimensions
-    CWS->>CWS: WorldDimensions.bake into a frozen LEVEL_STEM registry, take its lifecycle
+    CWS->>CWS: WorldDimensions.bake into a frozen LEVEL_STEM registry, then allRegistriesLifecycle plus the feature flags'
     CWS->>WOF: confirmWorldCreation with that lifecycle
     WOF-->>CWS: proceed, or an experimental or deprecated warning first
     CWS->>Disk: create the world directory, copy the temp datapacks in
@@ -219,10 +226,13 @@ bakes the dimensions to decide the *lifecycle* and the
 `PrimaryLevelData.SpecialWorldProperty`, but the `WorldGenSettings` it stores
 holds the **unbaked** selection — the bake is what runs, the selection is what
 is saved. The warning is skipped when the world is not a re-create and the baked
-registries are stable, and `WorldDimensions.checkStability` only asks whether
-each of the three built-in keys carries the vanilla dimension type and biome
-source; every shipped preset passes, so the experimental warning at this point
-comes from data packs, not from the world type. And *level.dat* is written by
+registries are stable, and `WorldDimensions.checkStability` asks, per key,
+whether the built-in three carry the vanilla dimension type, the vanilla noise
+settings **and** the vanilla biome source — anything under a fourth key is
+experimental by construction. Not every shipped preset passes: *Flat (all
+dimensions)* gives the nether and the end flat generators, which fail on the
+noise settings, so this warning does come from a world type as well as from
+data packs. And *level.dat* is written by
 the client, in `Minecraft.doWorldLoad`, **before the server thread exists** —
 while the settings file is written by the server after it starts, because
 `MinecraftServer`'s constructor is the first thing to hand the object to
@@ -246,7 +256,7 @@ way to see which parts of this page are the subject and which are its interface.
 | the seed | the seed box, per keystroke | *level-seed*, once, in the `DedicatedServerProperties` constructor | copied from the old world's settings |
 | the dimensions | a `WorldPreset` plus screen edits | *level-type* as a world-preset id, with *default* and *largebiomes* as legacy aliases | the old world's saved `LevelStem` map |
 | customising | `PresetEditor`, overworld only | *generator-settings* JSON, parsed by `FlatLevelGeneratorSettings.CODEC` **and only when the preset is** `WorldPresets.FLAT` | the create screen again |
-| game rules | `WorldCreationGameRulesScreen` | nothing — *server.properties* has no rules | read back from *game_rules.dat* |
+| game rules | `WorldCreationGameRulesScreen` | one, and it is a legacy key: *announce-player-achievements* sets `GameRules.SHOW_ADVANCEMENT_MESSAGES` | read back from *game_rules.dat* |
 | when | only if the folder is new | only if there is no *level.dat* | always a new folder |
 
 Both seed paths are the same method. `DedicatedServerProperties` calls
