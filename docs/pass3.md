@@ -1396,6 +1396,18 @@ closer, because the boundary is drawn before the investment, and
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
+- **The world border has no lecture, and this is the ruling that says so.**
+  *(pass 5, session D.)* `WorldBorder` is 573 lines in Part IV's packages and
+  the book's only explanation of it is a section of
+  `reference/level-data-and-rules`, which A1's Reference rule forbids: a
+  Reference page owns an enumeration, never an explanation a lecture should
+  give. Session D **declined to write the page** and declared the border
+  Reference-only instead, on Part IV's landing page and on the Reference page
+  itself, with the reason stated in both: the border sits on no conveyor, is
+  none of the four side-systems, advances one call a tick, and what a reader
+  needs of it is a set of numbers, two extents and a list of packets — an
+  enumeration, not a story followed through the system. A second edition with a
+  wider scope may disagree; nothing before pass 10 should.
 - ~~**The abstract `Level` itself**~~ — **written by session C of pass 5** as
   a paragraph after `server-level-tick`'s cast: what `Level` holds on both
   sides, what it leaves abstract, and what `ServerLevel` adds, ending on the

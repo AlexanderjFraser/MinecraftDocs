@@ -110,12 +110,12 @@ nobody can build past anyway.
 
 ## A ticket sets a ceiling, and a separate call names the target
 
-Two different numbers reach a holder from the ticket system
-([tickets and loading](tickets-and-loading.md)). `DistanceManager.runAllUpdates`
-first gives every touched holder `GenerationChunkHolder.updateHighestAllowedStatus`,
-which is `ChunkLevel.generationStatus` of the new ticket level — 33 is *FULL*,
-34 is *INITIALIZE_LIGHT*, 35 *CARVERS*, 36 *BIOMES*, 37 through 44
-*STRUCTURE_STARTS*, and 45 is no status at all. That is a ceiling, not a
+Two different numbers reach a holder from the ticket system.
+`DistanceManager.runAllUpdates` first gives every touched holder
+`GenerationChunkHolder.updateHighestAllowedStatus`, which is
+`ChunkLevel.generationStatus` of the new ticket level — the number line that
+maps 34 through 44 onto ever-earlier statuses is [the number
+line](tickets-and-loading.md#the-number-line)'s. That is a ceiling, not a
 goal: `GenerationChunkHolder.isStatusDisallowed` gates every request against
 it and hands back `GenerationChunkHolder.UNLOADED_CHUNK_FUTURE` for anything
 above. Then `ChunkHolder.updateFutures` crosses `FullChunkStatus.FULL`,
@@ -130,12 +130,12 @@ fails every pending future between the new ceiling and the old with
 highest status anyone is still waiting for. Nothing is interrupted; a worker
 mid-step finishes it and finds nobody listening.
 
-The other way in is synchronous. `ServerChunkCache.getChunk` from the server
-thread adds a `TicketType.UNKNOWN` ticket, runs the distance updates inline
-so the holder exists, and then `BlockableEventLoop.managedBlock`s on the
-future — with `ServerChunkCache.MainThreadExecutor.pollTask` overridden to
-drain chunk work while it waits, so the thread that is blocked on generation
-is also the thread finishing it.
+The other way in is synchronous: `ServerChunkCache.getChunk` from the server
+thread manufactures its own ticket and then blocks on the future it arms
+([when the graphs run](tickets-and-loading.md#when-the-graphs-run)). What
+matters to this page is the consequence — the thread that is blocked on
+generation is also the thread finishing it, because the executor it blocks on
+drains chunk work while it waits.
 
 ## The task claims its 529 before it runs anything
 
@@ -153,7 +153,8 @@ file claims all 529 holders first.
 The claim is a reference count. `GenerationChunkHolder.increaseGenerationRefCount`
 on the first claim arms `GenerationChunkHolder.generationSaveSyncFuture` and
 hangs it off the holder's save dependency, so nothing in the square can be
-saved or unloaded while the task lives ([chunk storage](chunk-storage.md)).
+saved or unloaded while the task lives ([a chunk nobody needs any
+more](chunk-storage.md#a-chunk-nobody-needs-any-more)).
 The task itself waits in `ChunkMap.pendingGenerationTasks` until
 `ChunkMap.runGenerationTasks`, at the end of the same
 `ServerChunkCache.runDistanceManagerUpdates` that created it.
@@ -170,9 +171,11 @@ buckets — 46, `ChunkLevel.MAX_LEVEL` plus two — keyed by the holder's queue
 level, and `ChunkTaskDispatcher.scheduleForExecution` hands over one chunk's
 runnables at a time, polling again only when they have all completed. So all
 worldgen for a dimension is a single file, however many `Worker-Main-n`
-threads the pool has (`Util.maxAllowedExecutorThreads`: cores minus one,
-capped by the *max.bg.threads* property; there is no generation thread
-setting).
+threads the shared pool has ([four threads worth
+memorising](../anatomy/anatomy.md#four-threads-worth-memorising) sizes it, and
+serialising onto a pool is what a `ConsecutiveExecutor` is for). **There is no
+generation thread setting**: the only knob is the pool's, and widening the pool
+widens everything else that shares it instead.
 
 **One** — worldgen runnables executing at a time per dimension
 (`ChunkMap.worldgenTaskDispatcher`, over a single `ConsecutiveExecutor`).
@@ -206,7 +209,19 @@ thread**. What comes out is a `ProtoChunk` at whatever status the file
 recorded, an `ImposterProtoChunk` wrapping a real `LevelChunk` if the file
 was already at *FULL*, or `ChunkMap.createEmptyChunk` when there was no file.
 The futures are not done, so the task yields and is re-entered when they land
-([chunk storage](chunk-storage.md)).
+([chunk storage](chunk-storage.md#the-way-back-in)).
+
+A file that will not parse takes the same fourth road, which is the one branch
+worth naming. `SerializableChunkData.parse` returning null logs *missing level
+data* and empties the optional, so the step falls through to
+`ChunkMap.createEmptyChunk` exactly as though the file had never existed; and
+anything thrown along the way reaches `ChunkMap.handleChunkLoadFailure` on the
+server thread, which re-throws a JVM *Error* as a crash report and otherwise
+reports the failure through `MinecraftServer.reportChunkLoadFailure` and hands
+back an empty chunk. Either way the position is marked replaceable in
+`ChunkMap.chunkTypeCache`, which is what licenses the generator to build over
+it — **an unreadable chunk is regenerated, not skipped, and the old bytes stay
+on disk until something writes over them**.
 
 Now `ChunkGenerationTask.canLoadWithoutGeneration` decides. It wants the
 centre persisted at or past the target, and every chunk in the loading
@@ -272,7 +287,8 @@ every worldgen task in the dimension is serialised behind the one
 running at once. The ordinary cross-chunk write is the plain
 `ChunkAccess.setBlockState`, which takes and releases the section per write;
 only `OreFeature` holds a section open across many writes, through
-`BulkSectionAccess` ([chunk anatomy](chunk-anatomy.md)).
+`BulkSectionAccess` ([sections and their four
+counters](chunk-anatomy.md#sections-and-their-four-counters)).
 
 ### A read too far crashes, a read too wide only warns
 
@@ -294,13 +310,12 @@ block changes to the engine — and then hands the chunk to
 with `ThreadedLevelLightEngine.lightChunk`. Both queue through the *light*
 `ChunkTaskDispatcher` onto the *light* `ConsecutiveExecutor`, and the future
 each returns is completed by a later task on that same executor, so the
-generation task genuinely parks here ([lighting](lighting.md)).
+generation task genuinely parks here ([what actually kicks
+it](lighting.md#what-actually-kicks-it)).
 
-Both are passed a *lighted* flag from `ChunkStatusTasks.isLighted`: persisted
-status at or past *LIGHT* **and** `ChunkAccess.isLightCorrect`. When it is
-true, `ThreadedLevelLightEngine.lightChunk` skips propagation entirely and
-only marks the chunk correct again. Light saved on disk is re-enabled, never
-recomputed.
+Both are passed a *lighted* flag from `ChunkStatusTasks.isLighted`, and what
+it decides — that light saved on disk is re-enabled rather than recomputed — is
+[lit before you ever see it](lighting.md#lit-before-you-ever-see-it)'s.
 
 ## FULL is assembled on the server thread
 
@@ -324,8 +339,8 @@ into real entities through `ServerLevel.addWorldGenChunkEntities`,
 `GenerationChunkHolder.completeFuture` publishes it at *FULL*.
 
 Nothing here crosses the network. A chunk reaches a client only after the
-separate promotion to `FullChunkStatus.BLOCK_TICKING`
-([tickets and loading](tickets-and-loading.md)).
+separate promotion to `FullChunkStatus.BLOCK_TICKING` ([which chunks a player
+is owed](tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)).
 
 ## Release, and what the ring is left as
 

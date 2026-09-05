@@ -140,7 +140,7 @@ and re-registers itself. Two callers ever start a batch on it.
 updates first and calls `ThreadedLevelLightEngine.tryScheduleUpdate` only if
 they had nothing to do — so light propagates in the gaps of a tick that
 finished early, after the ticket system is quiescent
-([tickets](tickets-and-loading.md)). The other caller is
+([when the graphs run](tickets-and-loading.md#when-the-graphs-run)). The other caller is
 `ChunkMap.scheduleUnload`, kicking the engine right after it has *queued* the
 nulling of an unloading chunk's data. `ThreadedLevelLightEngine.scheduled`, an `AtomicBoolean`, keeps
 exactly one batch in flight.
@@ -182,8 +182,9 @@ a new visible map at the end. A reader on another thread sees the state
 before the batch or the state after it, never a half-propagated flood.
 
 Inside a layer the order is fixed. Every position from
-`LightEngine.blockNodesToCheck` goes through `LightEngine.checkNode`, which only decides
-what to enqueue; then `LightEngine.propagateDecreases` runs the decrease
+`LightEngine.blockNodesToCheck` goes through `LightEngine.checkNode`, which
+zeroes the stored level where the light that is there must go and enqueues the
+rest as work; then `LightEngine.propagateDecreases` runs the decrease
 queue to empty, then `LightEngine.propagateIncreases` runs the increase queue
 to empty. Decreases always finish first because a decrease discovers brighter
 neighbours and enqueues them as *increase back toward me* refills — running
@@ -263,7 +264,7 @@ what stops a half-lit chunk shipping is the pyramid, because
 `ChunkPyramid.GENERATION_PYRAMID` gives `ChunkStatus.LIGHT` a requirement of
 `ChunkStatus.INITIALIZE_LIGHT` at radius 1, so a chunk cannot climb to
 `ChunkStatus.FULL` until its neighbours have their sections marked
-([the generation pipeline](chunk-generation-pipeline.md)). The one real send
+([the pyramid, drawn](chunk-generation-pipeline.md#the-pyramid-drawn)). The one real send
 dependency, `ChunkMap.waitForLightBeforeSending` →
 `ThreadedLevelLightEngine.waitForPendingTasks` → `ChunkHolder.addSendDependency`,
 has exactly one caller: `EnderDragonFight`, grafting an exit portal's light
@@ -272,7 +273,7 @@ onto chunks the client already holds.
 Unloading is the mirror: `ChunkMap.scheduleUnload` calls
 `ThreadedLevelLightEngine.updateChunkStatus`, which disables the column,
 drops the retain flag and nulls every section's data
-([chunk storage](chunk-storage.md)). On load `SerializableChunkData.read`
+([a chunk nobody needs any more](chunk-storage.md#a-chunk-nobody-needs-any-more)). On load `SerializableChunkData.read`
 calls `LevelLightEngine.retainData` once and then
 `LevelLightEngine.queueSectionData` for each saved `DataLayer`.
 
@@ -333,10 +334,11 @@ is a plain one, and its `LightChunkGetter.onLightUpdate` goes straight to
 `Minecraft.renderFrame` calls once a **frame**, not once a tick, so light
 converges at your framerate. `ClientPacketListener.handleLightUpdatePacket`
 applies nothing; it pushes a closure onto `ClientLevel.lightUpdateQueue`, and
-`ClientLevel.pollLightUpdates` runs a bounded number of them per frame — the
-larger of ten and a tenth of the backlog, or the whole backlog once it reaches
-a thousand — so a burst of chunk loads is spread over frames instead of
-stalling one. Each closure is `ClientPacketListener.applyLightData`:
+`ClientLevel.pollLightUpdates` runs a bounded number of them per frame, so a
+burst of chunk loads is spread over frames instead of stalling one ([what it
+does simulate: the two
+cadences](../client/the-client-level.md#what-it-does-simulate-the-two-cadences)
+owns that budget). Each closure is `ClientPacketListener.applyLightData`:
 `ClientPacketListener.readSectionList` turns every masked section into a
 cloned or empty `DataLayer` through `LevelLightEngine.queueSectionData` and
 dirties it with its neighbours, and then the chunk's column is enabled with
@@ -344,12 +346,12 @@ dirties it with its neighbours, and then the chunk's column is enabled with
 `ClientLevel.update` call `LevelLightEngine.runLightUpdates`, splicing the
 queued layers in and swapping the map exactly as the server does.
 
-Enabling a column is a separate thing from lighting it, and on the client it
-gates geometry. `SectionUpdateTracker.hasAllNeighbors` asks for each of the eight
-surrounding columns both that the chunk is there and that
-`LevelLightEngine.lightOnInColumn` is true for it, and `LevelExtractor` queues a never-yet-meshed section for rebuild
-only when they all answer yes — a light flag deciding whether a section may
-have a mesh at all ([section meshing](../rendering/section-meshing.md)).
+Enabling a column is a separate thing from lighting it, and on the client that
+distinction reaches all the way to the geometry: a section is not meshed at all
+until `LevelLightEngine.lightOnInColumn` is true for each of its eight
+surrounding columns, so **a light flag decides whether a section may have a
+mesh** ([a click, and the flag it leaves
+behind](../rendering/section-meshing.md#a-click-and-the-flag-it-leaves-behind)).
 Meanwhile the client had already lit this torch itself:
 `MultiPlayerGameMode.startPrediction` runs the placement locally through the
 same `LevelChunk.setBlockState`, so the packet mostly confirms what the

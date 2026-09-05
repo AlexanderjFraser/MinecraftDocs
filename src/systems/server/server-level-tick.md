@@ -169,21 +169,15 @@ overworld *gameTime* and stands still while the world is frozen.
 `ServerLevel.MAX_SCHEDULED_TICKS_PER_TICK`, 65536, and both skipped entirely
 in a debug world. Each call collects every `LevelChunkTicks` container whose
 head is due and whose chunk passes
-`ServerLevel.isPositionTickingWithEntitiesLoaded`, drains them in
-`ScheduledTick.INTRA_TICK_DRAIN_ORDER` — priority, then submission order,
-with no time term, because a container is only collected once its head is
-already due, and `ScheduledTick.DRAIN_ORDER`, which does compare times,
-orders each chunk's own queue — and hands each drained tick to
-`ServerLevel.tickBlock` or `ServerLevel.tickFluid`.
-
-Both of those check that what is at the position is *still* what the tick was
-scheduled for: `ServerLevel.tickBlock` the `Block`, before
-`BlockBehaviour.BlockStateBase.tick`; `ServerLevel.tickFluid` the `Fluid`,
-before `FluidState.tick`.
-That check is the whole cancellation mechanism: replace a block and its
-pending ticks evaporate, with nothing anywhere removing them. The queue
-itself, and what schedules into it, is
-[scheduled ticks](../world/scheduled-ticks.md).
+`ServerLevel.isPositionTickingWithEntitiesLoaded`, drains what the budget
+allows, and hands each drained tick to `ServerLevel.tickBlock` or
+`ServerLevel.tickFluid` — both of which check that what is at the position is
+*still* what the tick named before running it. The order the drain uses, the
+dedup rule that decides what was ever queued, and why that re-check is the
+whole of cancellation are [scheduled
+ticks](../world/scheduled-ticks.md#what-one-drain-actually-does)'; what
+belongs to this page is that the two calls happen here, in this order, under
+this budget.
 
 ## The chunk source does five things in one call
 
@@ -243,8 +237,9 @@ set, level 31 and below — and keeps only those whose `ChunkHolder` has a live
 
 ### Random ticks are counted per section, and empty sections are free
 
-`ServerLevel.tickChunk` does two things with one number,
-`GameRules.RANDOM_TICK_SPEED` (default 3). It rolls that many 1-in-48
+`ServerChunkCache.tickChunks` reads `GameRules.RANDOM_TICK_SPEED` (default 3,
+minimum 0) **once per level tick** and hands it down, and
+`ServerLevel.tickChunk` does two things with it. It rolls that many 1-in-48
 chances at `ServerLevel.tickPrecipitation` — the ice and snow layer, using
 `Biome.shouldFreeze`, `Biome.shouldSnow` and
 `GameRules.MAX_SNOW_ACCUMULATION_HEIGHT` — and then, for every

@@ -70,10 +70,11 @@ on it.
 
 ## IV · The world
 
-Part IV is a conveyor: five pages that hand a chunk along a line, and five
-more about the world the line delivers. The conveyor is lectures 2 to 6 and
-must be watched in that order — nothing later in the chain can be watched
-first. Lecture 1 is off the line on purpose, and the last four can be
+Part IV is a conveyor with a vocabulary page in front of it: four pages hand
+a chunk along a line, a fifth defines the thing being handed, and five more
+are about the world the line delivers. Lectures 2 to 6 are the vocabulary page
+and the conveyor, and must be watched in that order — nothing later in the
+chain can be watched first. Lecture 1 is off the line on purpose, and the last four can be
 watched in any order once the vocabulary page is done.
 
 1. [Environment attributes and
@@ -86,7 +87,8 @@ watched in any order once the vocabulary page is done.
 4. [The chunk generation
    pipeline](systems/world/chunk-generation-pipeline.md) — Part XII is the
    cargo on this conveyor and cannot be watched before it.
-5. [Lighting](systems/world/lighting.md) — self-contained.
+5. [Lighting](systems/world/lighting.md) — inside the chain, but nothing
+   later in this part assumes it; Part XI does.
 6. [Chunk storage](systems/world/chunk-storage.md)
 7. [Scheduled ticks](systems/world/scheduled-ticks.md) — Part V's redstone
    lecture assumes this one, and so does the next.

@@ -60,6 +60,15 @@ mechanisms cut to a citation, the abstract `Level` written, the landing page
 given an argument and a *where the part stops* — and **six corrections**,
 four of them pages disagreeing with each other, which is the finding pass 5
 was chartered on.
+**Session D is done** (2026-09-05, Part IV): all eleven pages and the part's
+Reference page rewritten, seven mechanisms cut to a citation and two moved,
+thirty-seven anchors where the part had none, and **nine corrections** — five
+of them again one page contradicting another. It also found the pass's first
+tool bug that was *hiding* failures rather than publishing one: the link gate
+could not see a link whose text wrapped across a newline, so 243 links had
+never been checked and one was broken. The §7 entry on its row was **ruled
+out rather than written** — the world border gets no lecture, and the ruling
+says why.
 
 ## The passes
 
@@ -712,3 +721,72 @@ plan as it stood at its close)*
   what the reading raised for sessions D, E, F, H, I, L, M and N and for
   passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather than left in the
   log.
+- **2026-09-05, session D — Part IV · The world (pass 5).** Eleven pages plus
+  the part's Reference page, one agent each, the part read end to end in
+  watching order first. **All twelve rewritten**, and four pages in three other
+  parts edited because a Part IV page disagreed with them. **Nine corrections**
+  — the most of any pass-5 session — of which **five were one page contradicting
+  another**, which is now the shape three sessions running: `chunk-anatomy` and
+  `chunk-storage` gave incompatible accounts of what an `ImposterProtoChunk`
+  delegates (all three of `markUnsaved`, `isLightCorrect` and `setLightCorrect`
+  pass through; the two flat falses are `canBeSerialized` and `tryMarkSaved`);
+  `lightmap-fog-and-sky` had the lightning lerp at "a fifth" where the owner had
+  22% and the decompile has `0.22F`; `what-the-client-is-told` had the
+  once-a-second time sync carrying "a map of clock updates" where
+  `MinecraftServer.forceGameTimeSynchronization` sends `Map.of()`;
+  `server-level-tick` and `scheduled-ticks` named different readers of
+  `GameRules.RANDOM_TICK_SPEED` (it is read once per level tick in
+  `ServerChunkCache.tickChunks` and handed down); and `level-data-and-rules`
+  sent the reader to `server-tick` for day time while the environment page
+  claimed it pointed here. The four unforced ones were all *within* a page:
+  `chunk-anatomy` said packing "buys a smaller palette, **not** narrower
+  entries" and then gave two cases where it narrows them; `lighting` said
+  `LightEngine.checkNode` "only decides what to enqueue" and then described it
+  writing stored levels — both engines' do; `scheduled-ticks` said "two type
+  parameters" where every class declares one; and `chunk-storage` said loading
+  "changes hands four times" where four stages share three lanes. **Six more
+  suspicions were re-derived and found sound** and are recorded as such,
+  including two fours a reader meets four pages apart that really are different
+  constants. **Ownership:** seven mechanisms cut to a citation — the ticker
+  wrappers to `block-entities`, the random-tick walk and the level tick's own
+  second telling of the drain, the worker-pool sizing and *what a
+  `ConsecutiveExecutor` is* to `anatomy`, the level→status line and the
+  synchronous ask to `tickets-and-loading`, `ChunkStatusTasks.isLighted` to
+  `lighting`, the mesh gate and the poll budget out of `lighting`'s client coda,
+  and the whole chunk-batch pacing out of `tickets-and-loading` to Part IX,
+  which already owned it and said it better. Two mechanisms moved rather than
+  cut: the `SavedDataStorage` write path off the Reference shelf onto
+  `chunk-storage`, where the copy-encode-write shape already lives, and the
+  read path's failure branch — `ChunkMap.handleChunkLoadFailure` and the
+  null parse, homeless since pass 3 proposed the move — onto
+  `chunk-generation-pipeline`, which settles the last open proposal in the
+  part. **Seams:** Part IV carried **no anchor at all** on any outbound link
+  before this session and now carries thirty-seven. **Coverage:** the part was
+  already 96% named, so the work was the mechanisms rather than the names —
+  `ChunkResult` and `PlayerMap` (session C's routing) on `tickets-and-loading`,
+  the `world/clock` trio and what the client's copy of a clock does *not*
+  receive on the environment page, `util/worldupdate` taken rather than declined
+  as *Optimize World* on `chunk-storage`, `LiquidBlockContainer` on `fluids`,
+  and the fact the brief asked for with the decompile open: `PoiManager.isVillageCenter`
+  reads through the **non-loading** `SectionStorage.get`, so **a village is made
+  of loaded sections only**. **The §7 entry the schedule set is a decline, not a
+  discharge**: `WorldBorder` is 573 lines whose only explanation is a Reference
+  page, and rather than invent a lecture for a mechanism with no scenario,
+  session D declared it Reference-only in both places with the reason stated,
+  and wrote the ruling into §7 for the second edition to disagree with. **The
+  landing page**, rewritten last, gains a *where the part stops* section (2,900
+  lines of its own packages taught in six other parts), loses the superlative
+  its own figure contradicted, and has five blurbs re-synced word for word to
+  the pages they summarise; `lectures.md` follows it on the conveyor's length
+  and drops *self-contained* from a page inside a chain. **One tool bug, the
+  seventeenth of the project and the first that was hiding failures rather than
+  publishing a falsehood:** `check_links.py` scanned line by line, so it could
+  not see a link whose text wrapped across a newline — **243 of 7,811 links had
+  never been checked**, the gate called this session's own broken anchor clean,
+  and on the first run after the fix it caught two real breaks, one of them an
+  anchor this session had invented. The number of anchors the gate actually
+  checks went from 12 to 174, which is pass 5's own anchor work finally coming
+  under it; `--probe` now proves the wrapped case both ways. Five gates green.
+  Twelve queue entries struck, one §7 entry ruled out with its reason, and what
+  the reading raised for sessions E, F, I, K and N and for passes 6, 7 and 8
+  appended to [pass5.md](pass5.md) rather than left in the log.

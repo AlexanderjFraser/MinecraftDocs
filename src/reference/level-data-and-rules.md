@@ -13,9 +13,11 @@ under [who owns what](#who-owns-what) is the page; the sections after it are
 the prose behind the rows that need it, and the rest are one line each because
 one line is all there is.
 
-[Part IV](../systems/world/README.md) is where these things are used;
-[the level tick](../systems/server/server-level-tick.md) is where most of
-them are read.
+Four parts point here — [III](../systems/server/README.md) for what a boot
+reads, [IV](../systems/world/README.md) for what the world is made of,
+[VIII](../systems/player/README.md) for the spawn and
+[XII](../systems/worldgen/README.md) for the seed — and [the level
+tick](../systems/server/server-level-tick.md) is where most of them are read.
 
 ## Who owns what
 
@@ -44,7 +46,8 @@ them are read.
 small: `LevelData.getRespawnData`, `LevelData.getGameTime`,
 `LevelData.isHardcore`, `LevelData.getDifficulty` and
 `LevelData.isDifficultyLocked`. No day time — that has left level data
-entirely for `ServerClockManager` ([the server tick](../systems/server/server-tick.md)) —
+entirely for `ServerClockManager` ([who owns the
+clock](../systems/world/environment-attributes-and-timelines.md#who-owns-the-clock)) —
 no weather, no rules, no border. `LevelData.RespawnData` is the world
 spawn as a `GlobalPos` with yaw *and* pitch — it carries a dimension, so
 `/setworldspawn` can point anywhere. `WritableLevelData` adds
@@ -109,14 +112,13 @@ recomputed one where it is not.
 
 `SavedData` is one flag, `SavedData.dirty` (`SavedData.setDirty`); a
 `SavedDataType` is an id, a constructor, a `Codec` and a `DataFixTypes`.
-`SavedDataStorage` — the class that *was* *DimensionDataStorage* — caches
-them per folder (`SavedDataStorage.computeIfAbsent`, `SavedDataStorage.get`,
-`SavedDataStorage.set`), writes `<id>.dat` as *{ data, DataVersion }*,
-gzip-compressed, and saves through `SavedDataStorage.scheduleSave`: dirty
-entries are encoded on the caller's thread and written on `Util.ioPool` in
-at most `Util.maxAllowedExecutorThreads` tasks, chained through
-`SavedDataStorage.pendingWriteFuture`; `SavedDataStorage.saveAndJoin`
-waits.
+`SavedDataStorage` caches them per folder
+(`SavedDataStorage.computeIfAbsent`, `SavedDataStorage.get`,
+`SavedDataStorage.set`) and writes `<id>.dat` as *{ data, DataVersion }*,
+gzip-compressed. How a dirty entry reaches the disk — encoded on the caller's
+thread, written on the IO pool, and joined at shutdown — is the same
+copy-then-encode-then-write shape a chunk takes, and it is [chunk
+storage](../systems/world/chunk-storage.md#the-other-store-under-data)'s.
 
 The id is an `Identifier`, so every saved-data file lives under a namespace
 folder — the path is *data/\<namespace\>/\<path\>.dat* — and vanilla's are
@@ -144,13 +146,13 @@ border and the dragon fight are per dimension, the overworld's under
 `GameRule.argument` (a Brigadier type), `GameRule.valueCodec`,
 `GameRule.defaultValue` and `GameRule.requiredFeatures`. Ids are
 snake_case and namespaceable — `GameRules.ADVANCE_TIME`, `GameRules.SPAWN_MOBS`,
-`GameRules.SPAWN_MONSTERS`, `GameRules.KEEP_INVENTORY`, `GameRules.RANDOM_TICK_SPEED`
-(3), `GameRules.PLAYERS_SLEEPING_PERCENTAGE` (100), `GameRules.RESPAWN_RADIUS`
-(10), `GameRules.MAX_ENTITY_CRAMMING` (24), `GameRules.MAX_SNOW_ACCUMULATION_HEIGHT`
-(1), `GameRules.MAX_MINECART_SPEED` (feature-gated) … fifty-nine of them,
-all in [the reference](gamerules.md). The 1.21 names
-(*doDaylightCycle*, *doMobSpawning*) and the *GameRules.BooleanValue* /
-*IntegerValue* / *Key* classes are gone.
+`GameRules.SPAWN_MONSTERS`, `GameRules.KEEP_INVENTORY`,
+`GameRules.RANDOM_TICK_SPEED`, `GameRules.PLAYERS_SLEEPING_PERCENTAGE`,
+`GameRules.RESPAWN_RADIUS`, `GameRules.MAX_ENTITY_CRAMMING`,
+`GameRules.MAX_SNOW_ACCUMULATION_HEIGHT`,
+`GameRules.MAX_MINECART_SPEED` (feature-gated) … fifty-nine of them, with
+their defaults, in [the generated table](gamerules.md); the old names and the
+nested value classes have rows in [naming drift](naming-drift.md).
 
 The values are saved data, not level data: a `GameRuleMap` — `SavedData`,
 *game_rules.dat*, server-global — wrapped by the `GameRules` instance in
@@ -186,6 +188,12 @@ back as `ServerboundSetGameRulePacket` → `ServerGamePacketListenerImpl.handleS
 (gated on `Permissions.COMMANDS_GAMEMASTER`).
 
 ## The border is per dimension
+
+*The border has no lecture.* It is the one mechanism in Part IV's packages
+whose home is this page rather than a page of the part: it sits on no
+conveyor, it belongs to none of the four side-systems, and what a reader needs
+of it is a set of numbers, a pair of extents and a list of packets — which is
+what a Reference page is for. Part IV's landing page declares it as such.
 
 `WorldBorder` is `SavedData` — *world_border.dat*, **per dimension**,
 fetched by `ServerLevel.getWorldBorder` through the cache on every call.
@@ -232,12 +240,14 @@ now, not hard-wired to `Level.END`), `DimensionType.coordinateScale`,
 `DimensionType.infiniburn`, `DimensionType.ambientLight`,
 `DimensionType.monsterSettings`, `DimensionType.skybox` (`DimensionType.Skybox`),
 `DimensionType.cardinalLightType`, `DimensionType.attributes` (an
-`EnvironmentAttributeMap` — where *ultrawarm*, *natural*, *bed_works*,
-*respawn_anchor_works*, *piglin_safe*, *has_raids* and the fast-lava flag
-went), `DimensionType.timelines` and `DimensionType.defaultClock` (a
-`WorldClock` holder; `WorldClocks.OVERWORLD`, `WorldClocks.THE_END`). That
-is where `DimensionType` lost its booleans: to the attribute map and the
-timelines. `DimensionType.getStorageFolder` names the on-disk folder.
+`EnvironmentAttributeMap`), `DimensionType.timelines` and
+`DimensionType.defaultClock` (a
+`WorldClock` holder; `WorldClocks.OVERWORLD`, `WorldClocks.THE_END`). The
+gameplay booleans a 1.21-era reader will look for here went to the first of
+those three ([the stack a value falls
+through](../systems/world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)),
+and [naming drift](naming-drift.md) has the row for each.
+`DimensionType.getStorageFolder` names the on-disk folder.
 Defaults are `DimensionDefaults` (`DimensionDefaults.OVERWORLD_MIN_Y` −64,
 `DimensionDefaults.OVERWORLD_LEVEL_HEIGHT` 384,
 `DimensionDefaults.NETHER_LOGICAL_HEIGHT` 128); the built-in keys are

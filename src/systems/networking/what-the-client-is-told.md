@@ -366,9 +366,10 @@ though time comes from `MinecraftServer` and the view distances from
 `PlayerList`:
 
 - **Time**, once a second. `MinecraftServer.forceGameTimeSynchronization` runs
-  every twentieth tick, and the packet carries a game time plus a map of clock
-  updates rather than a single day-time number
-  ([environment attributes and timelines](../world/environment-attributes-and-timelines.md)).
+  every twentieth tick, and the packet it broadcasts carries the overworld's
+  game time and an **empty** clock map: clock state travels only when a clock
+  is changed or a player joins
+  ([what crosses the wire](../world/environment-attributes-and-timelines.md#what-crosses-the-wire)).
 - **Weather**, on change. `ServerLevel.advanceWeatherCycle` broadcasts rain-
   and thunder-level changes and the start/stop pair as
   `ClientboundGameEventPacket`s, and `PlayerList` re-sends the same set to a

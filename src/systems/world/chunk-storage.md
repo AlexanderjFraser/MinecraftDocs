@@ -67,8 +67,7 @@ store (*chunk*, *entities* or *poi*) so that
 `MinecraftServer.reportChunkSaveFailure` can say which one broke. Only
 *chunk* belongs to `ChunkMap` itself; `EntityStorage` and `SectionStorage`
 each *hold* a `SimpleRegionStorage` rather than being one. *data/* is not a
-region store at all — it is `SavedDataStorage`, on [its own
-page](../../reference/level-data-and-rules.md).
+region store at all, and it is the section below.
 
 A `LevelChunk`'s entities are **not** in *region/*. The
 `SerializableChunkData.entities` list is written only when the chunk's
@@ -78,6 +77,22 @@ the same way. A full chunk's entities live in *entities/*, one file per
 chunk, holding a *Position* and an *Entities* list. If an old save still has
 entities inside a full chunk's *region/* entry,
 `ServerLevel.addLegacyChunkEntities` adopts them on load.
+
+### The other store under *data/*
+
+`SavedDataStorage` is the fourth folder and the one that is not a region
+store: no sectors, no LRU of open files, one gzipped `<id>.dat` per thing
+that has state. It saves on the same principle as a chunk, and for the same
+reason. `SavedDataStorage.scheduleSave` encodes every dirty entry **on the
+caller's thread** — the server thread, inside the save it was asked for —
+and hands the finished tags to `Util.ioPool`, at most
+`Util.maxAllowedExecutorThreads` writes at a time, chaining each onto
+`SavedDataStorage.pendingWriteFuture` so that two saves of one file cannot
+race. `SavedDataStorage.saveAndJoin` is the only place anything waits, and it
+is shutdown. Copy while the world is still, encode and write while it moves:
+the same bargain the chunk path makes, over a much smaller object. Which
+file holds what is [level data and
+rules](../../reference/level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds)'.
 
 ## The four moments a chunk is written
 
@@ -170,7 +185,8 @@ removed.
 Two other things leave with the chunk, both after the snapshot is taken:
 `ServerLevel.unload` clears its block entities and unregisters its tick
 containers, and `ThreadedLevelLightEngine.updateChunkStatus` queues the
-light engine to forget its layers ([lighting](lighting.md)).
+light engine to forget its layers ([lit before you ever see
+it](lighting.md#lit-before-you-ever-see-it)).
 
 ## Why the server thread never waits, and the three times it does
 
@@ -278,24 +294,39 @@ name and so can be read but never chosen, and
 
 ## The way back in
 
-Loading is the same road driven backwards, and it changes hands four times.
+Loading is the same road driven backwards, in four stages across three lanes.
 `ChunkMap.scheduleChunkLoad` starts with `IOWorker.loadAsync` on the IO
 lane; `ChunkMap.readChunk` then hops to `Util.backgroundExecutor` under the
-name *upgradeChunk* for `SimpleRegionStorage.upgradeChunkTag`, which is
+name *upgradeChunk* for `ChunkMap.upgradeChunkTag`, which is
 where datafixing happens; `SerializableChunkData.parse` runs on the same
-pool under *parseChunk*; and `SerializableChunkData.read` runs on the server
+pool under *parseChunk*, so those two stages share a lane; and
+`SerializableChunkData.read` runs on the server
 thread, where the sections are installed, the saved light is queued into the
 light engine, and `PoiManager.checkConsistencyWithBlocks` re-derives each
 section's points of interest from its blocks. Running beside all of it,
 `SectionStorage.prefetch` pulls the POI file in, and the two are joined
 before the server-thread step — which is exactly why that step's
-`SectionStorage.getOrLoad` calls do not block. From there the
-[generation pipeline](chunk-generation-pipeline.md) takes over.
+`SectionStorage.getOrLoad` calls do not block. From there the [generation
+pipeline](chunk-generation-pipeline.md#the-empty-step-asks-the-only-question-that-changes-the-walk)
+takes over — including what happens when the bytes will not parse.
 
 Entities come back the same shape but land differently: `EntityStorage`
 schedules both the datafix and `EntityType.loadEntitiesRecursive` on
 `EntityStorage.entityDeserializerQueue`, a `ConsecutiveExecutor` over the
 **server** main-thread executor, so only the NBT read is off-thread.
+
+### Doing all of it at once, with no server running
+
+*Optimize World* in the world-select screen is the same read and the same
+write with the game in between removed. `WorldUpgrader` starts a single daemon
+thread named *World Upgrader* and hands each of the three stores to a
+`RegionStorageUpgrader`, which walks every *r.X.Z.mca* file in the folder,
+datafixes each chunk tag and writes it back — optionally into fresh region
+files, which is what compacts a save whose sectors have fragmented.
+`UpgradeProgress` is the counter the screen reads. Nothing here loads a chunk,
+generates one, or consults a status: the world is a folder of tags, and the
+button's whole promise is that every tag is at the current data version before
+a server ever opens the save.
 
 ## Questions players ask
 
@@ -317,7 +348,7 @@ its recent tick times imply — floored at `MinecraftServer.MIMINUM_AUTOSAVE_TIC
 `MinecraftServer.onTickRateChanged` recomputes it on every `/tick rate`, but
 assigns the result only when it is **smaller** than the pending countdown,
 so changing the rate can bring the next autosave forward and can never push
-it back. [The server tick](../server/server-tick.md) has the rest of that
+it back. [The server tick](../server/server-tick.md#the-bookkeeping-at-the-bottom) has the rest of that
 loop.
 
 **Can a half-generated chunk overwrite my base?** The guard is best effort.
@@ -330,9 +361,12 @@ away has already been marked clean and will not be offered again. A proto
 chunk still at `ChunkStatus.EMPTY` with no valid structure start is dropped
 by the same block, and an `ImposterProtoChunk` never reaches any of it:
 `ImposterProtoChunk.tryMarkSaved` and `ImposterProtoChunk.canBeSerialized`
-both answer false — not because the wrapper defers to the `LevelChunk` it
-wraps, which only `ImposterProtoChunk.markUnsaved` does, but because it
-refuses to be serialised at all.
+both answer false. It is not that the wrapper stops deferring to the
+`LevelChunk` it wraps — `ImposterProtoChunk.markUnsaved`,
+`ImposterProtoChunk.isLightCorrect` and `ImposterProtoChunk.setLightCorrect`
+all pass straight through ([chunk anatomy](chunk-anatomy.md#the-four-shapes-a-chunk-takes)) —
+but that these two are flat falses: an imposter refuses to be serialised at
+all, because the `LevelChunk` under it is what the saver will be handed.
 
 **Why is my *entities/* folder full of files with nothing in them?** It is
 not — but emptying a chunk costs one write. `EntityStorage.storeEntities`
@@ -365,9 +399,9 @@ Next door: [tickets and loading](tickets-and-loading.md) raises the level,
 [chunk anatomy](chunk-anatomy.md) owns what `LevelChunkSection.copy` copies,
 [lighting](lighting.md) owns the layers the unload throws away, [points of
 interest](points-of-interest.md) owns the *poi/* store, [the server
-tick](../server/server-tick.md) owns the budget every method here is handed,
+tick](../server/server-tick.md#the-budget-and-where-it-stops-applying) owns the budget every method here is handed,
 [how a server dies](../server/how-a-server-dies.md) is the save that does
-not happen, and [entity lifecycle](../entities/entity-lifecycle.md) is what
+not happen, and [entity lifecycle](../entities/entity-lifecycle.md#ending-two-the-chunk-goes-away) is what
 `Entity.RemovalReason.UNLOADED_TO_CHUNK` means to a mob.
 
 ---

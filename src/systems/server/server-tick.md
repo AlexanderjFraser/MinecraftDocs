@@ -223,7 +223,7 @@ the server's own tickables and last the chunks.
 after the chunks.
 
 The pacing of that second write is [tickets and
-loading](../world/tickets-and-loading.md#what-the-player-is-sent-and-when)'s
+loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s
 subject. `PlayerChunkSender`
 answers to the client's own acknowledgements, so a slow client throttles its
 own chunks without slowing the tick.

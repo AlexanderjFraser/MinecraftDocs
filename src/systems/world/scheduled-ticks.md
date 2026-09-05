@@ -78,9 +78,11 @@ for `LevelAccessor.createTick`, which stamps the appointment with
 `LevelAccessor.getGameTime` plus the delay, the priority (`TickPriority.NORMAL` if
 none was given) and a fresh sub-order from `LevelAccessor.nextSubTickCount`,
 then hands it to `ScheduledTickAccess.getBlockTicks` or
-`ScheduledTickAccess.getFluidTicks`. Two type parameters, two parallel
-worlds: a `Block` tick and a `Fluid` tick never meet, and `ServerLevel` owns
-one `LevelTicks` of each.
+`ScheduledTickAccess.getFluidTicks`. Two type *arguments*, two parallel
+worlds: every class here — `LevelTicks`, `LevelChunkTicks`, `ScheduledTick` —
+declares one parameter, and it is filled with `Block` in one world and `Fluid`
+in the other, so a block tick and a fluid tick never meet and `ServerLevel`
+owns one `LevelTicks` of each.
 
 The sub-order is the FIFO tie-breaker for two ticks at the same time and
 priority, and it carries the one threading fact of this page.
@@ -112,7 +114,8 @@ those ticks then *do* is [fluids](fluids.md).
 
 Every `LevelChunk` owns exactly two containers, `LevelChunk.blockTicks` and
 `LevelChunk.fluidTicks`, and they are the only place a pending tick ever lives
-([chunk anatomy](chunk-anatomy.md)): a priority queue,
+([what placing a block actually
+does](chunk-anatomy.md#what-placing-a-block-actually-does)): a priority queue,
 `LevelChunkTicks.tickQueue`, in `ScheduledTick.DRAIN_ORDER`, beside the dedup
 set that decides what gets into it.
 
@@ -149,7 +152,7 @@ accident, noted only so it does not confuse you.)
 section, blocks first and then fluids, each with the current game time and a
 budget of `ServerLevel.MAX_SCHEDULED_TICKS_PER_TICK`, 65536 — a budget per
 call, so 65536 block ticks *and* 65536 fluid ticks ([the level
-tick](../server/server-level-tick.md)). The whole section is skipped in a
+tick](../server/server-level-tick.md#scheduled-ticks-twice-and-a-promise-to-the-same-block)). The whole section is skipped in a
 debug world and whenever `TickRateManager.runsNormally` is false. Each call
 is three phases.
 
@@ -161,8 +164,8 @@ is `ServerLevel.isPositionTickingWithEntitiesLoaded`, asked about the
 **chunk**, not the position, and true only when the chunk is in
 `DistanceManager.inBlockTickingRange`, its
 `ChunkHolder.getTickingChunkFuture` has already succeeded, and
-`PersistentEntitySectionManager.areEntitiesLoaded` holds ([tickets and
-loading](tickets-and-loading.md)). A chunk that fails keeps its index entry
+`PersistentEntitySectionManager.areEntitiesLoaded` holds ([two graphs, one
+store](tickets-and-loading.md#two-graphs-one-store)). A chunk that fails keeps its index entry
 untouched and is asked again next tick — its ticks are late, never lost — and
 one that passes moves into `LevelTicks.containersToTick`, a priority queue of
 *containers* ordered by `LevelTicks.CONTAINER_DRAIN_ORDER`, on their heads.
@@ -277,8 +280,9 @@ cancel the repeater: `DiodeBlock.tick` finds `DiodeBlock.POWERED` false, turns
 it on anyway, and — because the input is already gone — books its own turn-off
 one delay later. Pulse extension is two entries in this queue.
 
-**Nothing here uses `Block.UPDATE_NEIGHBORS`.** `DiodeBlock.tick` writes with
-`Block.UPDATE_CLIENTS` alone, and the signal leaves through
+**Nothing here uses `Block.UPDATE_NEIGHBORS`** ([block update
+flags](../../reference/block-update-flags.md) has the bits). `DiodeBlock.tick`
+writes with `Block.UPDATE_CLIENTS` alone, and the signal leaves through
 `DiodeBlock.onPlace` — which `LevelChunk.setBlockState` runs on the server for
 any write without `Block.UPDATE_SKIP_ON_PLACE` — calling
 `DiodeBlock.updateNeighborsInFront`. The rest is [diodes and the
@@ -290,36 +294,31 @@ The appointment book is one of two ways a block gets a turn, and the contrast
 is what defines it: a random tick is booked by nobody, aimed at no block, and
 carries no promise.
 
-It also reaches a different set of chunks. `ServerChunkCache.tickChunks` reads
-`GameRules.RANDOM_TICK_SPEED` — default 3, minimum 0 — **once per level
-tick**, then walks `ChunkMap.forEachBlockTickingChunk`, which despite its name
-is `DistanceManager.forEachEntityTickingChunk` filtered to chunks with a live
-`ChunkHolder.getTickingChunk`. The scheduled-tick gate,
+It also reaches a different set of chunks, and the difference is one ring.
+Random ticks walk `ChunkMap.forEachBlockTickingChunk`, which despite its name
+is the *entity*-ticking set; the scheduled-tick gate,
 `ServerLevel.isPositionTickingWithEntitiesLoaded`, reads the wider
-block-ticking radius instead, so random ticks stop one ring sooner than
-scheduled ticks do.
+block-ticking radius instead. So at the edge of a player's simulation distance
+there is a ring of chunks where appointments still come due and nothing is
+ever chosen at random. How the level tick then spends the rule's number, and
+why a section of solid stone costs nothing, is [the level
+tick](../server/server-level-tick.md#random-ticks-are-counted-per-section-and-empty-sections-are-free)'s.
 
-Inside such a chunk, `ServerLevel.tickChunk` skips every section where
-`LevelChunkSection.isRandomlyTicking` is false — a pair of counters,
-`LevelChunkSection.tickingBlockCount` and
-`LevelChunkSection.tickingFluidCount`, maintained on every block write, so
-solid stone is skipped without one position being generated. In each surviving
-section it picks that many positions and rolls
-`BlockBehaviour.BlockStateBase.randomTick` where
-`BlockBehaviour.BlockStateBase.isRandomlyTicking` — a flag baked into the
+Two things about that walk belong here, because they are about what a *promise*
+is worth. The first is that the eligible blocks are decided at bootstrap, not
+per tick: `BlockBehaviour.BlockStateBase.isRandomlyTicking` is baked into the
 state at `BlockBehaviour.BlockStateBase.initCache` from
-`BlockBehaviour.Properties.randomTicks` — and then, separately,
-`FluidState.randomTick` where `FluidState.isRandomlyTicking`.
+`BlockBehaviour.Properties.randomTicks`, so unlike an appointment, which names
+a type and is checked against the world when it comes due, a random tick's
+eligibility is settled before the world exists.
 
-**Lava gets its random tick twice.** `LiquidBlock.isRandomlyTicking` and
+The second is that **lava gets its random tick twice.** `LiquidBlock.isRandomlyTicking` and
 `LiquidBlock.randomTick` both delegate straight to the fluid, so a chosen lava
 position runs `LavaFluid.randomTick` once through the block branch of that
 loop and again through the fluid branch. It is the only fluid it happens to:
 `Fluid.isRandomlyTicking` is false by default and `LavaFluid.isRandomlyTicking`
 is the sole override. Water is never randomly ticked at all — every inch of
-its motion is a scheduled tick. The same number also drives the ice-and-snow
-pass, so zeroing the rule freezes crops, fire, leaf decay and precipitation
-together ([the level tick](../server/server-level-tick.md)).
+its motion is a scheduled tick.
 
 ## Appointments that survive a restart
 
@@ -329,8 +328,9 @@ world closed and reopened a month later still fires its ticks on schedule:
 `SavedTick.unpack` adds the new one on the way back. `LevelChunkTicks.pack`
 writes the pending list first and then the live queue sorted by
 `LevelChunkTicks.SUB_TICK_ORDERING`, and `SerializableChunkData` stores the two
-lists under *block_ticks* and *fluid_ticks* through `SavedTick.codec` ([chunk
-storage](chunk-storage.md)). On the way in,
+lists under *block_ticks* and *fluid_ticks* through `SavedTick.codec` ([copy on
+the server, encode on a worker, write on the IO
+lane](chunk-storage.md#copy-on-the-server-encode-on-a-worker-write-on-the-io-lane)). On the way in,
 `SavedTick.filterTickListForChunk` discards any saved tick whose position is
 not in the chunk being loaded.
 

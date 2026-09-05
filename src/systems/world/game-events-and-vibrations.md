@@ -74,7 +74,7 @@ runs from `LevelChunk.addAndRegisterBlockEntity` on placement and from
 `LevelChunk.registerAllBlockEntitiesAfterLevelLoad` when the chunk comes
 back, asking `EntityBlock.getListener` — whose default returns the listener
 of any block entity implementing `GameEventListener.Provider` ([block
-entities](../blocks/block-entities.md)). A sensor's section is fixed for
+entities](../blocks/block-entities.md#create-keep-replace-remove)). A sensor's section is fixed for
 the life of the block. Entities move, so they carry a
 `DynamicGameEventListener` instead: a listener plus the last `SectionPos`
 it was filed under. `Entity.updateDynamicGameEventListener` is empty on
@@ -298,7 +298,7 @@ for inactive.
 | `SculkCatalystBlockEntity.CatalystListener` | 8 | not a vibration at all | on `GameEvent.ENTITY_DIE`, takes the mob's experience as sculk cursors and blooms |
 
 The tags are where the personalities live, and they are data
-([tags](../foundations/tags.md)): `GameEventTags.WARDEN_CAN_LISTEN` covers
+([tags](../foundations/tags.md#a-tag-is-a-key-and-a-file)): `GameEventTags.WARDEN_CAN_LISTEN` covers
 shrieks and tendril clicks that `GameEventTags.VIBRATIONS` leaves out, and
 leaves out the flap that sensors hear. The warden is also the one entity
 whose `Entity.dampensVibrations` is *unconditionally* true — a dropped item
@@ -368,7 +368,7 @@ then [entity anatomy](../entities/entity-anatomy.md) for
 [registries](../../reference/registries.md) for
 `BuiltInRegistries.GAME_EVENT`. The other index the world keeps about
 itself — where things worth walking to are, rather than what just happened
-— is [points of interest](points-of-interest.md).
+— is [points of interest](points-of-interest.md#a-ticket-is-a-claim-nothing-enforces).
 
 ---
 

@@ -58,10 +58,9 @@ by the renderer — which is why the sky colour slides and
 different curve must ask for a different attribute.
 
 **`ClientLevel` adds two layers of its own** on top of the four, and both are
-the **lightning** flash: one lerps `EnvironmentAttributes.SKY_COLOR` a fifth
-of the way towards a pale blue-white, the
-other pins `EnvironmentAttributes.SKY_LIGHT_FACTOR` to one while the flash
-lasts. Neither has anything to do with the End's sky flash, which never
+the **lightning** flash ([the stack a value falls
+through](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)).
+Neither has anything to do with the End's sky flash, which never
 enters the stack at all.
 
 ### What the dimension type and the biome still carry

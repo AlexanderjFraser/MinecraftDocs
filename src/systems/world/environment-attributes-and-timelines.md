@@ -164,9 +164,19 @@ token in the `Registries.WORLD_CLOCK` registry, and vanilla registers two,
 in `ServerClockManager.ClockInstance` — a total tick count, a fractional
 partial tick, a rate and a paused flag — and the manager holding those is a
 `SavedData` under `ServerClockManager.TYPE`, saved once for the whole server
-as *world_clocks*. **`ServerClockManager` is the owner of day time**; both
+as *world_clocks*.
+
+The live instance is a mutable object, so the same four numbers exist twice
+more as records: `ClockState` is the saved form and `PackedClockStates` the
+map of them a save file holds, while `ClockNetworkState` is the wire form. The
+difference between the two is the whole of what the client does not get — a
+`ClockState` carries the paused flag and a `ClockNetworkState` does not.
+`ClockManager` is the one thing the two managers share, an interface with a
+single method: *what is the total tick count of this clock*. Everything a
+reader of an attribute needs from a clock is behind that method, which is why
+`AttributeTrackSampler` can be the same class on both sides. **`ServerClockManager` is the owner of day time**; both
 [level data and rules](../../reference/level-data-and-rules.md) and
-[the level tick](../server/server-level-tick.md) point here for it.
+[the level tick](../server/server-level-tick.md#the-cache-that-is-dropped-before-the-border) point here for it.
 
 `MinecraftServer` calls `ServerClockManager.tick` once per server tick,
 inside the *clocks* profiler zone and only while the tick-rate manager runs

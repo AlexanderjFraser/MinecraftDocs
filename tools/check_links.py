@@ -7,7 +7,10 @@ link and anchor, a tool in pass 5 and a gate by pass 10. This walks `src/**/*.md
 
   link     `[text](target.md)` and `[text](target.md#anchor)` — the target file
            exists, relative to the page (or to the including page, for a file
-           under src/figures/ that reaches the site only through {{#include}})
+           under src/figures/ that reaches the site only through {{#include}}).
+           Matched against the whole page outside its fences, not line by line,
+           because the corpus hard-wraps and a link's text often crosses a
+           newline; a link is reported on the line its `[` sits on
   html     `<a href="…">` inside HTML blocks (figcaptions) — a `.html` target
            maps back to a `.md` that exists
   anchor   `#anchor`, on the same page or another — a heading on the target page
@@ -81,6 +84,24 @@ def outside_fences(text: str):
             continue
         if not fence:
             yield i, line
+
+
+def prose_of(text: str) -> tuple[str, list[int]]:
+    """The page outside its fences as one string, with the source line of every character.
+
+    Links are matched against this rather than line by line: the corpus hard-wraps its
+    prose, so `[tickets and<newline>loading](...)` is a link no line-by-line scan can see.
+    243 of the corpus's 7,811 links were wrapped that way when this was written, and one
+    of them was broken, which is how the blind spot was found.
+    """
+    buf: list[str] = []
+    line_of: list[int] = []
+    for i, line in outside_fences(text):
+        buf.append(line)
+        buf.append("\n")
+        line_of.extend([i] * (len(line) + 1))
+    line_of.append(line_of[-1] if line_of else 1)
+    return "".join(buf), line_of
 
 
 def anchors_of(path: str, cache: dict) -> set[str]:
@@ -185,9 +206,12 @@ def check(pages: list[str], quiet: bool, toml: str | None = None) -> tuple[list[
         # a file that only reaches the site through {{#include}} has its links resolved from each includer
         contexts = includers.get(rel, [rel]) if rel.startswith("figures/") else [rel]
         text = read(os.path.join(SRC, rel))
-        for n, line in outside_fences(text):
-            hits = [(m.group(2), "link") for m in LINK.finditer(line)] + [(m.group(1), "html") for m in HTML_HREF.finditer(line)]
-            for target, kind in hits:
+        prose, line_of = prose_of(text)
+        hits = [(m.start(), m.group(2), "link") for m in LINK.finditer(prose)]
+        hits += [(m.start(), m.group(1), "html") for m in HTML_HREF.finditer(prose)]
+        for at, target, kind in sorted(hits):
+            n = line_of[at]
+            if True:
                 if target.startswith(EXTERNAL):
                     stats["external"] += 1
                     continue
@@ -266,8 +290,14 @@ def inbound(target_rel: str):
 
 def probe() -> int:
     """The tool fails on what it should: a missing file, a missing anchor, a missing include, a
-    SUMMARY entry with no file, an unlisted page, a redirect to nowhere — and passes the rest,
-    including an anchor with an underscore in it and a link that reaches a page through an include."""
+    SUMMARY entry with no file, an unlisted page, a redirect to nowhere, and a bad anchor on a
+    link whose text is wrapped across a newline — and passes the rest, including an anchor with
+    an underscore in it and a link that reaches a page through an include.
+
+    The wrapped case is the one that matters: the tool scanned line by line until 2026-09-05 and
+    could not see a wrapped link at all, so 243 of the corpus's links had never been checked and
+    one was broken. A probe that only ever writes links on one line proves nothing about a book
+    that hard-wraps its prose."""
     import tempfile
     global SRC
     old = SRC
@@ -279,7 +309,10 @@ def probe() -> int:
         w("SUMMARY.md", "- [a](a.md)\n- [b](systems/p/b.md)\n- [ghost](ghost.md)\n")
         w("a.md", "# A\n\n[ok](systems/p/b.md) [ok](systems/p/b.md#one-set_count-under-two) "
                   "[bad](systems/p/b.md#nope) [gone](nope.md) {{#include figures/f.md}} {{#include figures/none.md}}\n"
-                  "<a href=\"systems/p/b.html\">html</a> [ext](https://example.org)\n")
+                  "<a href=\"systems/p/b.html\">html</a> [ext](https://example.org)\n\n"
+                  "A wrapped link the old line-by-line scan could not see: [one good\n"
+                  "wrapped](systems/p/b.md#dup) and [one bad\n"
+                  "wrapped](systems/p/b.md#wrapped-nope).\n")
         w("systems/p/b.md", "# B\n\n## One `set_count` under _two_\n\n## Dup\n\n## Dup\n\n[up](../../a.md#a) [dup](#dup-1)\n")
         w("figures/f.md", "[from a figure](systems/p/b.md)\n")
         w("orphan.md", "# not in SUMMARY\n")
@@ -288,7 +321,7 @@ def probe() -> int:
         fails, stats = check(corpus_pages(), True, toml)
     SRC = old
     want = ["anchor #nope", "nope.md — no such file", "include figures/none.md", "SUMMARY.md lists ghost.md",
-            "orphan.md is not in SUMMARY.md", "redirect /older.html"]
+            "orphan.md is not in SUMMARY.md", "redirect /older.html", "anchor #wrapped-nope"]
     missed = [x for x in want if not any(x in f for f in fails)]
     extra = [f for f in fails if not any(x in f for x in want)]
     for f in fails:

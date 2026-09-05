@@ -85,7 +85,7 @@ dimension alive is the player's *simulation* ticket, not the loading
 tickets: `TicketStorage.shouldKeepDimensionActive` feeds
 `ServerChunkCache.hasActiveTickets`, which resets `ServerLevel.emptyTime`,
 the counter that past 300 makes a dimension skip its entity loop and its
-block entities ([the level tick](../server/server-level-tick.md)). And only
+block entities ([the level tick](../server/server-level-tick.md#an-empty-dimension-skips-exactly-three-things)). And only
 two types come back after a restart: `TicketStorage.packTickets` writes the
 types that `TicketType.persist`, so forced and portal tickets are in the
 dimension's *chunk_tickets* file and everything else evaporates. On
@@ -175,8 +175,15 @@ once. Every one is wrapped by `ChunkHolder.scheduleFullChunkPromotion`, so
 that success fires `ChunkMap.onFullChunkStatusChange` on the main thread,
 and chained into `ChunkHolder.addSaveDependency`, so the chunk cannot be
 saved or unloaded mid-promotion. Under the hood each future is a
-`GenerationChunkHolder.scheduleChunkGenerationTask` — the
-[generation pipeline](chunk-generation-pipeline.md).
+`GenerationChunkHolder.scheduleChunkGenerationTask` — [the task claims its 529
+before it runs anything](chunk-generation-pipeline.md#the-task-claims-its-529-before-it-runs-anything).
+
+What those futures carry is a `ChunkResult` — a two-case result type of
+`ChunkResult.Success` or `ChunkResult.Fail`, the second holding a string
+supplier rather than an exception. Every one of the holder's three futures is
+completed with one, and `ChunkHolder.UNLOADED_LEVEL_CHUNK` is simply the shared
+failure whose message is *Unloaded level chunk*. A chunk that never arrives is
+not an error anyone throws; it is a value the waiter is handed.
 
 Demotion is the asymmetry. A threshold crossed downward completes the
 matching future with `ChunkHolder.UNLOADED_LEVEL_CHUNK` and
@@ -304,22 +311,31 @@ western column past 44 → `ChunkMap.toDrop` → the futures complete with
 `ChunkHolder.UNLOADED_LEVEL_CHUNK` and the demotion fires at once → the next
 `ChunkMap.tick` with the time supplier runs `ChunkMap.processUnloads` →
 `ChunkMap.scheduleUnload`, save and `ServerLevel.unload`
-([chunk storage](chunk-storage.md)). If a ticket re-adopts the chunk first,
+([a chunk nobody needs any more](chunk-storage.md#a-chunk-nobody-needs-any-more)). If a ticket re-adopts the chunk first,
 `ChunkMap.updateChunkScheduling` pulls it back out of
 `ChunkMap.pendingUnloads` and the unload task finds nothing to do.
 
-## What the player is sent, and when
+## Which chunks a player is owed, and what makes one eligible
 
-| the moment | what goes out | the gate |
+Sending is Part IX's ([chunks arrive on a loop the client
+paces](../networking/what-the-client-is-told.md#chunks-arrive-on-a-loop-the-client-paces)
+has the batches, the acknowledgement limit and the rate the client asks for).
+What belongs here is the other half: which chunks are in a player's set at
+all, and what makes one *eligible* to go — because both are answers the
+ticket system gives.
+
+| the moment | what the ticket system decides | the gate |
 |---|---|---|
-| the player crosses a section boundary | `ClientboundSetChunkCacheCenterPacket` | only if the chunk column changed — `ChunkMap.updateChunkTracking` returns early on the same centre and view distance, and `ChunkMap.applyChunkTrackingView` sends the packet only when the centre moved |
-| a chunk enters the view | `ChunkMap.markChunkPendingToSend` | only if `ChunkMap.getChunkToSend` already has a ticking chunk; a fresh chunk waits for its promotion |
-| a chunk reaches BLOCK_TICKING | `ChunkMap.onChunkReadyToSend` → pending for every player whose view holds it | `ChunkHolder.sendSync`, which starts complete; the one thing that delays it is `ChunkMap.waitForLightBeforeSending`, whose single caller is `EnderDragonFight` after building the exit portal |
-| once a tick, from `MinecraftServer.tickChildren` | `ClientboundChunkBatchStartPacket`, up to the quota of `ClientboundLevelChunkWithLightPacket` nearest first, `ClientboundChunkBatchFinishedPacket` | under the acknowledgement limit: one batch until the first reply, then `PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`, 10 |
-| the client replies | `ServerboundChunkBatchReceivedPacket` carries how many chunks per tick it wants | clamped `PlayerChunkSender.MIN_CHUNKS_PER_TICK` 0.01 … `PlayerChunkSender.MAX_CHUNKS_PER_TICK` 64, starting at `PlayerChunkSender.START_CHUNKS_PER_TICK` 9 |
+| the player crosses a section boundary | the two crescents: which chunks entered the view and which left | `ChunkMap.updateChunkTracking` returns early on the same centre and view distance, and `ChunkMap.applyChunkTrackingView` sends `ClientboundSetChunkCacheCenterPacket` only when the centre moved |
+| a chunk enters the view | `ChunkMap.markChunkPendingToSend`, but only for a chunk that already exists | `ChunkMap.getChunkToSend` wants a ticking chunk; a fresh one waits for its promotion instead |
+| a chunk reaches BLOCK_TICKING | `ChunkMap.onChunkReadyToSend` makes it pending for every player whose view holds it | `ChunkHolder.sendSync`, which starts complete; the one thing that delays it is `ChunkMap.waitForLightBeforeSending`, whose single caller is `EnderDragonFight` after building the exit portal |
 | a chunk leaves the view | `ClientboundForgetLevelChunkPacket` | only if it was not still pending, and only to a living player — you cannot forget what was never delivered |
-| a block changes in a chunk not yet delivered | nothing | `ChunkMap.isChunkTracked` is false while the chunk sits in `PlayerChunkSender.pendingChunks`; the full chunk will carry it |
-| the settings change | `ClientboundSetChunkCacheRadiusPacket` · `ClientboundSetSimulationDistancePacket` | `PlayerList.setViewDistance` · `PlayerList.setSimulationDistance`, which swaps every simulation ticket's level through `TicketStorage.replaceTicketLevelOfType` |
+| a block changes in a chunk not yet delivered | nothing at all | `ChunkMap.isChunkTracked` is false while the chunk sits in `PlayerChunkSender.pendingChunks`; the full chunk will carry it |
+| the settings change | both radii move at once | `PlayerList.setViewDistance` and `PlayerList.setSimulationDistance`, the second swapping every simulation ticket's level through `TicketStorage.replaceTicketLevelOfType` |
+
+**The third row is the join between the two systems**, and it is why this
+table is here: a chunk becomes sendable at the same threshold that makes its
+blocks tick, so nothing is ever sent that the server is not also simulating.
 
 Two shapes hide in that table. The view is a rounded square, not a disc:
 `ChunkTrackingView.isWithinDistance` subtracts a buffer of two from each
@@ -328,10 +344,8 @@ along the axes and nine on the diagonal. And view distance shapes what is
 *sent*, not what is loaded: `ChunkMap.getPlayerViewDistance` clamps a
 player's request to the server's, but the ticket tracker's radius comes from
 the **server** view distance through `DistanceManager.updatePlayerTickets`.
-Singleplayer skips the size cap, not the pacing: `PlayerChunkSender` still
-wants an acknowledgement slot and a whole chunk of quota before it builds a
-batch, but on an in-memory connection the batch it then builds is the whole
-pending set.
+Singleplayer skips the size cap and not the pacing, which is Part IX's to
+explain.
 
 ## When a ticket dies
 
@@ -372,7 +386,12 @@ throttle, not a bug.
 
 **Do spectators load chunks?** Only if `GameRules.SPECTATORS_GENERATE_CHUNKS`
 says so: `ChunkMap.skipPlayer` is the gate, and a skipped player is still
-sent chunks that exist, but places no tickets that would generate them.
+sent chunks that exist, but places no tickets that would generate them. The
+gate is remembered rather than re-asked — `ChunkMap` keeps its players in a
+`PlayerMap` that records each one as ignored or not at the moment it joins
+(`PlayerMap.ignorePlayer`, `PlayerMap.ignoredOrUnknown`), so entering and
+leaving spectator mode is what adds and removes the player from the distance
+manager, and everything else reads the remembered answer.
 
 ## Where to look
 

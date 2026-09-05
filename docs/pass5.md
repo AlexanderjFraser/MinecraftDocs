@@ -49,6 +49,125 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session D — Part IV · The world (pass 5) *(2026-09-05)*
+
+What this session's reading raised for the sessions and passes that come after
+it. Everything it acted on itself is struck in place above, or logged in
+[pass9.md](pass9.md).
+
+**Routed to a later part's session.**
+
+- **Session E (V) — the ticker wrappers, now cited rather than told twice.**
+  `chunk-anatomy`'s *double indirection* section explained
+  `LevelChunk.BoundTickingBlockEntity`, `LevelChunk.RebindableTickingBlockEntityWrapper`
+  and `LevelChunk.NULL_TICKER` in full, and `block-entities`:222-246 explains
+  all three better. Cut to what the chunk owns — one wrapper per position, for
+  the life of the chunk — and a citation of
+  `block-entities#loaded-is-not-enough-to-tick`. If session E reshapes that
+  section, the citation's anchor moves with it.
+- **Session E (V) — the repeater's booking is still told twice.**
+  `scheduled-ticks`:230-285 and `diodes-and-observers`:119 are the 10.00
+  duplication pair and session E's to resolve. Session D deliberately did not
+  act: the sequence diagram is `scheduled-ticks`' artefact and the prose after
+  it is what overlaps, so the cut is on the diode page's side of the seam or on
+  the three bold paragraphs here, and E should judge with both pages open.
+- **Session F (VI) — local difficulty has no lecture.**
+  `reference/level-data-and-rules`:283-289 is the book's **only** explanation of
+  `DifficultyInstance` and `ServerLevel.getCurrentDifficultyAt`, built from
+  `ChunkAccess.getInhabitedTime`, the overworld clock and the moon phase. That
+  is a mechanism on the shelf, which A1's Reference rule forbids, and its
+  consumers are Part VI's mobs. Part IV names `ChunkAccess.inhabitedTime` and
+  cites the level tick for it; Part VI should take the explanation, or say why
+  not.
+- **Session I (IX) — the send table is now half a table.**
+  `tickets-and-loading`'s *What the player is sent, and when* restated the batch
+  pacing, the acknowledgement limit and four `PlayerChunkSender` constants that
+  `what-the-client-is-told`:260-301 owns and explains better. Cut to the rows
+  the ticket system actually decides — which chunks are in a player's set, and
+  what makes one eligible — with the promotion row called out as the join
+  between the two systems. Nothing was moved *to* Part IX, because Part IX
+  already had all of it; session I should check that the three inbound
+  citations (`server-tick`:225, `players-and-sessions`:266,
+  `player-anatomy`:196) now point where the reader needs.
+- **Session K (XI) — the flash layers are a citation now.**
+  `lightmap-fog-and-sky`:60-65 explained the two `ClientLevel` lightning layers,
+  which is `environment-attributes-and-timelines`' stack, and gave the lerp as
+  "a fifth" where the owner says 22%. The decompile says `0.22F`
+  (`ClientLevel.java:274`), so the rendering page's copy was both a duplicate
+  and wrong; it is now one clause and a link. Session K should confirm the page
+  still reads whole where it was cut.
+- **Session N (Reference) — three things the shelf is carrying for a lecture.**
+  The `SavedDataStorage` write path has moved to `chunk-storage` (the Reference
+  page keeps the folder table and what a `SavedData` *is*). Still open:
+  `MapItemSavedData`, `MapIndex`, `CustomBossEvents` and `WanderingTraderData`
+  are named on `level-data-and-rules` and nowhere else in the corpus outside the
+  class index; and the table has a *player data* row but none for the per-player
+  *stats/* and *advancements/* files, which are the same kind of fact and have
+  owner pages to cite.
+
+**For pass 6, the lecture.**
+
+- `chunk-generation-pipeline` tells the world's edge twice —
+  `ChunkPyramid.SAFETY_MARGIN_CHUNKS`, `ChunkPos.isValid` and the
+  three-and-a-half-million-block gap appear in the body and again as the fourth
+  *Questions players ask*. One of the two is redundant with itself. [kind=lecture]
+- `chunk-anatomy`'s *four shapes* section carries two subjects in one paragraph:
+  `EmptyLevelChunk`, which the figure draws, and the client chunk cache, which
+  no figure on the page draws. [kind=lecture]
+- `chunk-storage`'s *Why the server thread never waits, and the three times it
+  does* is two sections under one heading: the `IOWorker`'s priorities and
+  write-behind map, and the three blocking joins. The heading promises one.
+  [kind=lecture]
+- `lighting`:145 — "`ThreadedLevelLightEngine.scheduled`, an `AtomicBoolean`,
+  keeps exactly one batch in flight" is two sentences away from the
+  `tryScheduleUpdate` it qualifies and reads as though it qualified the unload
+  kick. A placement fix, not a fact. [kind=lecture]
+- `points-of-interest`:233-270 mixes the ticket story with walk-target
+  mechanics — the Manhattan rule, the 150-block threshold,
+  `MemoryModuleType.LAST_SLEPT`, `WakeUp`'s priority. Every sentence that takes,
+  releases or leaves a ticket alone is the page's; the rest is the brain's.
+  [kind=lecture]
+- `scheduled-ticks`:192's "forty lines below" points at the page's own layout,
+  which reads at first as a pointer into the source. [kind=lecture]
+
+**For pass 7, the figures.**
+
+- Part IV's landing figure had `GP -- "a chunk that still needs its light
+  finished" --> LI`, which draws lighting as happening *after* the pipeline when
+  both light steps are steps nine and ten of the twelve. Session D relabelled it
+  *steps nine and ten, on the other executor*; pass 7 should judge whether the
+  edge belongs at all, since the conveyor's other edges are hand-offs and this
+  one is an inclusion. [kind=figure]
+- `chunk-anatomy`'s section figure draws the two containers and the four
+  counters but not the light, and the glossary's *Section* entry has to say
+  "its light lives in the light engine's own storage, not on the section"
+  because no figure does. [kind=figure]
+
+**For pass 8, the voice.**
+
+- `scheduled-ticks`:368 asks the reader to call `TickAccess.hasScheduledTick`
+  and :370 says `LevelTicks.hasScheduledTick` "can no longer see" — the same
+  method under two names in one paragraph. [kind=voice]
+- `scheduled-ticks`:377 — "**Does `/tick freeze` stop scheduled ticks?** Yes,
+  and among the tick commands it is the only one that does" is a claim about a
+  command set no page enumerates. Re-derived and found *sound* this session
+  against `TickRateManager.runsNormally`, but the population is unnamed, which
+  is the shape pass 8 is hunting. [kind=voice]
+- `tickets-and-loading` names *thirteen* from three different anchors — the
+  header line, the walk, and the level-31 ticket. Already logged above as pass-8
+  wording debt; still true after this session's edits. [kind=voice]
+- `points-of-interest`:192, 228 and 333 spell entity events as bare numbers
+  ("entity event 14") where `synched-entity-data`:313 says `EntityEvent`
+  declares all 62. The one place the book prefers a magic number to a name.
+  [kind=voice]
+
+**A coverage question this session could not close.**
+
+- `world/level/entity`'s six unnamed classes (98 lines) and `server/level`'s
+  `ServerEntityGetter` are declared in Part IV's *where the part stops* as Part
+  VI's, but Part VI names only four of the seven. Session F decides whether the
+  section index wants a passage on `entity-lifecycle` or a declined sentence.
+
 ## Session C — Part III · The server (pass 5) *(2026-09-05)*
 
 *What six page reads and one end-to-end reading of Part III turned up and
@@ -112,13 +231,18 @@ six corrections it made are in [pass9.md](pass9.md).*
   `starting-a-server#taking-the-lock-and-fixing-leveldat-twice` rather than
   explain the lock, and `PlayerDataStorage`'s rescue is now explained on
   `players-and-sessions` rather than wanting a Reference entry (pass5.md:1553's
-  third homeless item, discharged).
+  third homeless item, discharged). ~~Open.~~ **Agreed, session D (pass 5)** —
+  D does not disagree, so the two Part III citations stand as C left them.
 - **Session D (IV) — three Part III classes that are Part IV's.**
   `ChunkResult` (110 lines, the success/fail wrapper chunk futures carry) and
   `PlayerMap` (`ChunkMap`'s player index, which
   `players-and-sessions`:233-237 makes a "two player lists" point without
   naming a third) are named nowhere in the book and are Part IV's scope, not
   Part III's; `server/README` now says so under *where the part stops*.
+  ~~Open.~~ **Done, session D (pass 5)**: both landed on `tickets-and-loading`
+  — `ChunkResult` where the three futures are armed (its failure case *is*
+  `ChunkHolder.UNLOADED_LEVEL_CHUNK`), `PlayerMap` in the spectator answer,
+  where the point is that the skip is remembered at join rather than re-asked.
 - **Session E (V) — the hopper's transfer cooldown.**
   `HopperBlockEntity.MOVE_ITEM_SPEED` is 8, and the only place the book said
   so was Part III's landing page, which is a summariser. Cut from there;
@@ -247,6 +371,11 @@ the corrections it made are in [pass9.md](pass9.md).*
   `anatomy.md#four-threads-worth-memorising`. Same page's
   `ConsecutiveExecutor` paragraph: anatomy owns *what it is*, the pipeline
   keeps `AbstractConsecutiveExecutor.run`'s re-registration. **Session D.**
+  ~~Open.~~ **Done, session D (pass 5)**: the sizing and *what a
+  `ConsecutiveExecutor` is* both cut to a citation of
+  `anatomy#four-threads-worth-memorising`; the page keeps "there is no
+  generation thread setting" and the consequence that the only knob is the
+  shared pool's.
 - **`data-components` ↔ `items-and-stacks` is the same lecture twice**, and
   worse than the 17.00 score suggests: the same hook and nine duplicated
   mechanisms (the prototype built at reload, the sanitising patch,
@@ -325,7 +454,11 @@ the corrections it made are in [pass9.md](pass9.md).*
   `UpgradeProgress`) is named nowhere in the book. It is the *Optimize World*
   button, and it is the last sizeable unowned mechanism in Part II's packages.
   Session B's judgement: it belongs beside `world/chunk-storage`, not in
-  Foundations. **Session D** to take or decline.
+  Foundations. **Session D** to take or decline. ~~Open.~~ **Taken, session D
+  (pass 5)**: a section on `chunk-storage`, *Doing all of it at once, with no
+  server running* — `WorldUpgrader`'s daemon thread, `RegionStorageUpgrader`'s
+  walk of every region file, the optional recreate that compacts a save, and
+  `UpgradeProgress` as the bar's counter.
 - `util/eventlog` and `util/monitoring/jmx` (571 lines) belong to the skips
   page's boundary, not to a lecture. Session B named `JsonEventLog` in
   passing on `resource-system` and left the rest.
@@ -536,13 +669,12 @@ drop the number.
   method.
 - `client/hud.md` — the heading is now *Four states*, and three of the four
   draw. If pass 5 wants "bars" back, the number is three.
-- `world/scheduled-ticks.md:81` — "**Two** type parameters" is right for the
+- ~~`world/scheduled-ticks.md:81` — "**Two** type parameters" is right for the
   two type *arguments* in play (`Block`, `Fluid`); every class involved
-  (`LevelTicks`, `LevelTickAccess`, `LevelChunkTicks`, `ScheduledTick`)
-  declares exactly one.
-- `world/chunk-storage.md:281` — "it changes hands **four** times" names four
-  stages but only three thread changes: `ChunkSerializer.upgradeChunk` and
-  `ChunkSerializer.parseChunk` are both on `Util.backgroundExecutor`.
+  declares exactly one.~~ **Done, session D (pass 5)**, as a correction.
+- ~~`world/chunk-storage.md:281` — "it changes hands **four** times" names four
+  stages but only three thread changes.~~ **Done, session D (pass 5)**: "four
+  stages across three lanes", with the shared lane said out loud.
 - `player/README.md:32,63` — "**eight** classes" is the cast table's eight
   *rows*, which name nine classes (one row holds `ServerPlayerGameMode` /
   `MultiPlayerGameMode`).
@@ -553,9 +685,11 @@ drop the number.
 
 **A superlative that is true only of the sub-population the page stands in.**
 
-- `world/chunk-storage.md:323` — "which **only** `ImposterProtoChunk.markUnsaved`
+- ~~`world/chunk-storage.md:323` — "which **only** `ImposterProtoChunk.markUnsaved`
   does" is true among the saving flags; `ImposterProtoChunk.setLightCorrect`
-  delegates unconditionally too, which `chunk-anatomy:102` says itself.
+  delegates unconditionally too, which `chunk-anatomy:102` says itself.~~
+  **Done, session D (pass 5)** — a correction, and the two pages had also given
+  incompatible *reasons* for the same false. Both now say the same thing.
 - `client/text-and-fonts.md:184` — "the one place in the pipeline where a
   character is invented" is true of the wrap path;
   `ComponentRenderUtils.clipText` in the same class appends
@@ -568,10 +702,11 @@ drop the number.
 - `entities/authority.md:181` — "three of those eight read the same member"
   holds for `Entity.canSimulateMovement` (3);
   `Entity.isLocalInstanceAuthoritative` is read at four of the eight.
-- `world/README.md:79` — "the one page here that depends on nothing else in
+- ~~`world/README.md:79` — "the one page here that depends on nothing else in
   the part" is one under *off the conveyor chain*; the part's own figure gives
-  two pages no inbound edge (`chunk-anatomy` and
-  `environment-attributes-and-timelines`).
+  two pages no inbound edge.~~ **Done, session D (pass 5)**: the superlative is
+  gone, replaced by *off the conveyor, ahead of it*, which is what the figure
+  draws.
 - `world/chunk-storage.md:203` — "**Three** places do make the server thread
   wait on a disk": a fourth blocking join at `ServerChunkCache.java:126`/`149`
   can end at the disk, though it drives the main-thread queue rather than
@@ -1218,22 +1353,29 @@ header should get its ticking image back around the true number.
 
 **Structural findings, not acted on.**
 
-- `chunk-anatomy`'s "packing buys a smaller palette, not narrower entries"
+- ~~`chunk-anatomy`'s "packing buys a smaller palette, not narrower entries"
   contradicts its own "can demote a container a whole rung" a few lines later.
-  Both are true of different cases; the sentence needs splitting, not correcting.
-- `lighting` says `SkyLightEngine.checkNode` "only decides what to enqueue" in
+  Both are true of different cases; the sentence needs splitting, not correcting.~~
+  **Done, session D (pass 5)** — and it was a correction, not only a split: the
+  head clause is false, because `PalettedContainer.pack` measures the shrunken
+  palette against the same ladder and *does* narrow entries in two cases.
+  Logged in [pass9.md](pass9.md).
+- ~~`lighting` says `SkyLightEngine.checkNode` "only decides what to enqueue" in
   one paragraph and describes it writing stored levels in the next. A clash
-  between two paragraphs, not an error in either.
-- Part IV's landing page still calls the part "the four side-systems that make
+  between two paragraphs, not an error in either.~~ **Done, session D (pass 5)**
+  — and the general sentence was the wrong one: both engines' `checkNode` writes
+  a stored level. Corrected, logged in [pass9.md](pass9.md).
+- ~~Part IV's landing page still calls the part "the four side-systems that make
   the world they hold feel alive" in its header while its shape paragraph now
-  counts five pages off the conveyor. The header's four is the four
-  *side-systems*; environment attributes is a fifth thing and the header does
-  not account for it.
-- `points-of-interest` describes `PoiManager.isVillageCenter`'s predicate without
-  saying it reads through the **non-loading** `SectionStorage.get`, so an
-  unloaded section is never a village source whatever is on disk. A real fact the
-  page is missing rather than a wrong one — one sentence, and it belongs next to
-  the "an unclaimed bed makes no village" callout.
+  counts five pages off the conveyor.~~ **Done, session D (pass 5)** — the header
+  now names the environment page separately from the four side-systems, and
+  `lectures.md`'s conveyor count was made to follow the landing page's.
+- ~~`points-of-interest` describes `PoiManager.isVillageCenter`'s predicate without
+  saying it reads through the **non-loading** `SectionStorage.get`.~~ **Done,
+  session D (pass 5)** — written as its own callout under *What makes a village*,
+  re-derived against `PoiManager.java:195` and `SectionStorage.java:121`, with
+  the reason it is deliberate (the flood settles every tick and must not touch
+  the disk).
 - The cross-links session A logged here as pass-5 work are half done:
   `chunk-anatomy` now links `foundations/identifiers-and-registries` (pass 4
   needed it for addition 2). Part XII's two are still open.

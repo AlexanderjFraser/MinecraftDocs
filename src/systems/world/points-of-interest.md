@@ -105,7 +105,7 @@ the nearest one fast: the bee's hive search asks for `PoiTypeTags.BEE_HOME`
 within 20 blocks and then filters through `Bee.doesHiveHaveSpace`, which asks
 the `BeehiveBlockEntity` whether it is full. The index answers *where* and
 something else answers *whether*. Three tags cut across the catalogue
-([tags](../foundations/tags.md)): `PoiTypeTags.ACQUIRABLE_JOB_SITE` for the
+([tags](../foundations/tags.md#a-tag-is-a-key-and-a-file)): `PoiTypeTags.ACQUIRABLE_JOB_SITE` for the
 thirteen professions, `PoiTypeTags.BEE_HOME` for the two hives, and
 `PoiTypeTags.VILLAGE` for those thirteen plus `PoiTypes.HOME` and
 `PoiTypes.MEETING` — fifteen types whose occupied records are what a village
@@ -113,7 +113,8 @@ thirteen professions, `PoiTypeTags.BEE_HOME` for the two hives, and
 
 ## Where the index lives, and how it repairs itself
 
-`PoiManager` extends `SectionStorage` ([chunk storage](chunk-storage.md)), so
+`PoiManager` extends `SectionStorage` ([three folders, and the one thing that
+is not in *region/*](chunk-storage.md#three-folders-and-the-one-thing-that-is-not-in-region)), so
 the unit of storage is a chunk section and the unit of file a region:
 `ChunkMap` builds it on the dimension's *poi/* folder with
 `DataFixTypes.POI_CHUNK`, and `PoiSection.Packed` is the on-disk shape — a
@@ -123,7 +124,7 @@ memories of them, and nothing on load reconciles the two.
 
 `ChunkMap.tick` runs `PoiManager.tick` under the profiler's *poi*, which
 writes dirty chunks for as long as the tick has time and then settles the
-village graph ([the level tick](../server/server-level-tick.md) owns the
+village graph ([the level tick](../server/server-level-tick.md#the-chunk-source-does-five-things-in-one-call) owns the
 budget). Reads are the interesting half. The query family is a dozen shapes of
 the same walk — `PoiManager.getInSquare` over a chunk range, `PoiManager.getInRange`
 narrowing it to a sphere, and `PoiManager.findClosest`, `PoiManager.getRandom`,
@@ -142,8 +143,8 @@ for positions that still have a POI, so **a repair does not reset anybody's
 tickets**. If it is not in storage, one is created and scanned. Both scans are
 short-circuited by `PoiManager.mayHavePoi`, which asks
 `LevelChunkSection.maybeHas` whether the palette holds any state
-`PoiTypes.hasPoi` recognises ([chunk anatomy](chunk-anatomy.md) has the
-palette), so a section of plain stone is dismissed without one block read. The
+`PoiTypes.hasPoi` recognises ([the palette and the ladder it
+climbs](chunk-anatomy.md#the-palette-and-the-ladder-it-climbs)), so a section of plain stone is dismissed without one block read. The
 *Valid* flag's codec defaults to **false**: anything not explicitly written as
 validated gets rescanned.
 
@@ -273,12 +274,23 @@ clears and the ticket does not.
 
 `PoiManager.DistanceTracker` is a `SectionTracker` — the same
 `DynamicGraphMinFixedPoint` flood the ticket system's two graphs use
-([tickets and loading](tickets-and-loading.md)), and the only one of the five
+([two graphs, one store](tickets-and-loading.md#two-graphs-one-store)), and the
+only one of the five
 outside `server/level` — over chunk sections instead of chunks. Its sources are the sections where
 `PoiManager.isVillageCenter` holds: at least one record whose type is in
 `PoiTypeTags.VILLAGE` and whose `PoiManager.Occupancy` is *IS_OCCUPIED*. They
 sit at level 0 and the flood runs out to `PoiManager.MAX_VILLAGE_DISTANCE`,
 six sections, past which the level is simply absent from the map.
+
+**A village is made of loaded sections only.** Alone in the query family,
+`PoiManager.isVillageCenter` reads through `SectionStorage.get` rather than
+`SectionStorage.getOrLoad` — the getter that answers null for a section not in
+memory instead of pulling it off the disk — and it treats that null as *not a
+centre*. So the graph is not a picture of what is in the save; it is a picture
+of what is loaded right now, and it shrinks as chunks unload. That is
+deliberate: the flood is settled every tick from `PoiManager.tick`, and a
+version of it that could touch the disk would turn the village graph into an
+IO source in the middle of the level tick.
 
 **An unclaimed bed makes no village.** A hundred empty beds are a hundred
 records and zero sources; one villager taking one ticket lights the section up.
@@ -358,7 +370,7 @@ The other index in this corner of the tree — the fire-and-forget broadcast
 sculk sensors listen to — is
 [game events and vibrations](game-events-and-vibrations.md). The brain belongs
 to [goals and brains](../entities/ai-goals-and-brains.md), death and
-conversion to [the entity lifecycle](../entities/entity-lifecycle.md), the bed
+conversion to [the entity lifecycle](../entities/entity-lifecycle.md#five-reasons-one-label), the bed
 block to [blocks and states](../blocks/blocks-and-states.md).
 
 ---

@@ -44,6 +44,227 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session D — Part IV · The world *(2026-09-05)*
+
+Eleven Part IV pages plus `reference/level-data-and-rules`, read by one agent
+each; the part read end to end in watching order first. Four pages outside the
+part were edited, each because a Part IV page disagreed with it:
+`server/server-level-tick`, `server/server-tick`,
+`networking/what-the-client-is-told`, `rendering/lightmap-fog-and-sky`. One
+tool bug, and it had been hiding broken links.
+
+### Corrections — every one re-derived against the decompile
+
+- `world/chunk-anatomy`:247 said "Packing therefore buys a smaller palette,
+  **not narrower entries**: unreferenced entries are dropped, which can demote
+  a container a whole rung, and a `Configuration.Global` container shrinks from
+  `Configuration.bitsInMemory` to `Configuration.bitsInStorage`." The head
+  clause is false and the two tails contradict it.
+  `PalettedContainer.pack` (`PalettedContainer.java:255-281`) re-encodes into a
+  fresh `HashMapPalette`, asks `Strategy.getConfigurationForPaletteSize` for
+  the *shrunken* palette's configuration, and writes at
+  `Configuration.bitsInStorage`. `Configuration.Simple` reports one width for
+  both (`Configuration.java:40-47`) and `Configuration.Global` two, so packing
+  narrows entries in exactly two cases: a smaller palette landing a rung lower,
+  and a global container's storage width. **Now:** what packing recomputes is
+  the palette, and narrower entries are the consequence in those two cases,
+  each named.
+- `world/chunk-storage`:334 said `ImposterProtoChunk` "does not defer to the
+  `LevelChunk` it wraps, which **only** `ImposterProtoChunk.markUnsaved` does".
+  `ImposterProtoChunk.java:157-158, 248-254`: `markUnsaved`, `isLightCorrect`
+  **and** `setLightCorrect` all delegate unconditionally, which
+  `chunk-anatomy`:112 already said — the two pages disagreed. The two flat
+  falses are `canBeSerialized` and `tryMarkSaved`
+  (`ImposterProtoChunk.java:162-169`). **Now:** all three delegating members are
+  named, both pages say the same thing, and `chunk-storage` cites
+  `chunk-anatomy`'s anchor.
+- `world/chunk-storage`:281 said loading "changes hands **four** times" and
+  then named four stages. `ChunkMap.java:582-610` and `997-1001`: the stages are
+  the IO lane, *upgradeChunk* and *parseChunk* on `Util.backgroundExecutor`, and
+  `SerializableChunkData.read` on the main-thread executor — four stages across
+  **three** lanes, two of them sharing one. **Now:** "four stages across three
+  lanes", with the shared lane said out loud. The same sentence's
+  `SimpleRegionStorage.upgradeChunkTag` is now `ChunkMap.upgradeChunkTag`, which
+  is the call `ChunkMap.readChunk` actually makes (`ChunkMap.java:999`), so the
+  two Part IV pages name one member for one hop.
+- `world/scheduled-ticks`:81 said "**Two type parameters**, two parallel
+  worlds". `LevelTicks.java:34`, `LevelChunkTicks.java:17`,
+  `LevelTickAccess.java:5` and `ScheduledTick.java:8` each declare exactly one
+  parameter. **Now:** "Two type *arguments*", with the one-parameter fact stated
+  and `Block` and `Fluid` named as what fills it.
+- `world/lighting`:184 said `LightEngine.checkNode` "only decides what to
+  enqueue", two paragraphs before describing the sky engine writing stored
+  levels. Both engines' `checkNode` writes: `BlockLightEngine.java:36`
+  (`setStoredLevel(blockNode, 0)` when emission dropped below the stored level)
+  and `SkyLightEngine.java:73`, plus `updateSourcesInColumn` →
+  `removeSourcesBelow`/`addSourcesAbove` at `SkyLightEngine.java:108, 135`.
+  **Now:** "zeroes the stored level where the light that is there must go and
+  enqueues the rest as work".
+- `world/fluids`:275 attributed lava's slope numbers through
+  `WaterFluid.getSlopeFindDistance` while its own table at :338 used
+  `FlowingFluid.getSlopeFindDistance`. `FlowingFluid.java:353` declares it
+  abstract; `WaterFluid.java:86` and `LavaFluid.java:154` override.
+  **Now:** `FlowingFluid.getSlopeFindDistance` in both places.
+- `rendering/lightmap-fog-and-sky`:61 said the lightning layer lerps
+  `EnvironmentAttributes.SKY_COLOR` "**a fifth** of the way";
+  `environment-attributes-and-timelines`:92 says 22%. `ClientLevel.java:274` is
+  `ARGB.srgbLerp(0.22F, …)`, so the owner page is right. **Now:** the rendering
+  page's whole duplicate paragraph is one clause and a link, so the number is
+  stated once.
+- `networking/what-the-client-is-told`:368 said the once-a-second time sync
+  "carries a game time plus **a map of clock updates**".
+  `MinecraftServer.java:1299-1305` broadcasts
+  `new ClientboundSetTimePacket(this.overworld().getGameTime(), Map.of())` — an
+  **empty** map, which is what `environment-attributes-and-timelines`:221 says.
+  **Now:** the networking page says the map is empty and that clock state travels
+  only on a change or a join, with the owner's anchor.
+- `reference/level-data-and-rules`:47 sent the reader to `server/server-tick`
+  for day time; that page does not own it, `environment-attributes-and-timelines`
+  does, and the environment page was claiming this Reference page pointed at it.
+  **Now:** repointed to `#who-owns-the-clock`, so the hand-forward is paid.
+
+### Suspicions re-derived and found sound — a strike is a claim
+
+- `chunk-generation-pipeline`:190's "the dispatcher's own **four-slot** queue"
+  is real: `ChunkTaskDispatcher.DISPATCHER_PRIORITY_COUNT` is 4 and the four
+  users are resort 0, release 1, submit 2, poll 3
+  (`ChunkTaskDispatcher.java:18, 38, 51, 63, 80`), so a re-sort really does
+  outrank a new submission. Unchanged, and it is a *different* four from the
+  ticket throttle's.
+- `chunk-generation-pipeline`:211's two requirements on the centre chunk are
+  both real and not in conflict: `ChunkGenerationTask.java:92-118` wants the
+  persisted status at or past the target **and** every chunk of the loading
+  pyramid's square at or past what its distance requires. Unchanged.
+- `tickets-and-loading`:346's purge gate — "unless the level is frozen and
+  chunk ticking is on" — is exactly `ServerChunkCache.java:328`
+  (`runsNormally() || !tickChunks`). Unchanged; `server-level-tick`'s shorter
+  "running" is a table compressing it.
+- `scheduled-ticks`:364's "only `/clone` and the gametest framework do, in bulk"
+  distributes correctly: `CloneCommands.java:248` calls `copyAreaFrom`, which
+  only reads (`LevelTicks.java:301-326`), and `GameTestInfo.java:81` /
+  `StructureUtils.java:107` call `clearArea`, which removes. Unchanged.
+- `chunk-anatomy`:126's double-buffered added and removed sets really are
+  `ClientChunkCache.Storage`'s fields (`ClientChunkCache.java:220-221`), with
+  the accessors and `flipUpdateTrackingSets` on the cache. Unchanged.
+- `points-of-interest`:316's "`PoiManager.loadedChunks` never forgets" holds:
+  `PoiManager.java:49, 263` is a `LongSet` only ever added to. Unchanged.
+
+### Claims introduced
+
+- `world/README` — the header now says "the five pages off that line — what the
+  place and the hour decide, and the four systems that make the world the line
+  delivers feel alive", which is a claim that the environment page is neither
+  conveyor nor side-system. A new ***Where the part stops*** section claims that
+  about 2,900 lines of the part's packages are taught in six other parts, and
+  names each family and its owner part; and it **declares the world border
+  Reference-only**, with the reason (no scenario, and what a reader needs of it
+  is enumerable). *Watch in this order* entry 1 no longer claims the environment
+  page is "the one page here that depends on nothing else in the part" — it says
+  *off the conveyor, ahead of it*, which is what the figure draws. Five blurbs
+  re-synced word for word to their pages (fluids' two halves, chunk storage's
+  "almost every write", the sensor's "at least one tick", the tickets page's
+  "nothing asks for a chunk *because* it is loaded", chunk anatomy's *distinct*).
+  The Reference list gains `reference/registries.md` with the claim that three
+  of the part's mechanisms are registry-backed.
+- `src/lectures.md` — Part IV's shape paragraph now counts the conveyor the way
+  the landing page does (four pages plus a vocabulary page, not five), and
+  lighting's blurb no longer says *self-contained*: it says nothing later in the
+  part assumes it and Part XI does.
+- `world/tickets-and-loading` — a new paragraph claims `ChunkResult` is the
+  two-case type all three holder futures carry and that
+  `ChunkHolder.UNLOADED_LEVEL_CHUNK` is simply its shared failure, whose message
+  is *Unloaded level chunk*. The spectator answer gains a claim that the skip is
+  **remembered** in a `PlayerMap` at join rather than re-asked. The renamed
+  section *Which chunks a player is owed, and what makes one eligible* claims
+  that the BLOCK_TICKING row is the join between the two systems — nothing is
+  sent that the server is not also simulating.
+- `world/chunk-generation-pipeline` — a new paragraph on the *EMPTY* step
+  claims that a null parse and a thrown load both end at
+  `ChunkMap.createEmptyChunk`, that the position is marked replaceable in
+  `ChunkMap.chunkTypeCache`, and therefore that **an unreadable chunk is
+  regenerated, not skipped**. Three passages cut to citations now claim their
+  owners: the level→status line to `tickets-and-loading#the-number-line`, the
+  synchronous ask to `#when-the-graphs-run`, the pool sizing to
+  `anatomy#four-threads-worth-memorising` with the new claim that "the only knob
+  is the pool's, and widening the pool widens everything else that shares it".
+- `world/chunk-storage` — a new section *The other store under* data/ claims
+  `SavedDataStorage` encodes on the caller's thread and writes on the IO pool,
+  at most `Util.maxAllowedExecutorThreads` at a time, chained through
+  `SavedDataStorage.pendingWriteFuture`, with `SavedDataStorage.saveAndJoin` the
+  only wait — moved from `reference/level-data-and-rules`, which now cites it.
+  A new section *Doing all of it at once, with no server running* claims
+  `WorldUpgrader` runs one daemon thread named *World Upgrader*, hands each of
+  the three stores to a `RegionStorageUpgrader`, optionally recreates region
+  files (which compacts a fragmented save), and reports through
+  `UpgradeProgress` — and that nothing there loads, generates or consults a
+  status.
+- `world/environment-attributes-and-timelines` — a new paragraph claims
+  `ClockState` is the saved form and `PackedClockStates` the saved map,
+  `ClockNetworkState` the wire form, that **the difference between the two is
+  the paused flag**, and that `ClockManager` is a one-method interface which is
+  why `AttributeTrackSampler` is the same class on both sides.
+- `world/points-of-interest` — a new callout, ***A village is made of loaded
+  sections only***, claims `PoiManager.isVillageCenter` alone in the query
+  family reads through the non-loading `SectionStorage.get`, treats its null as
+  *not a centre*, and that this is deliberate because the flood settles every
+  tick and must not touch the disk.
+- `world/scheduled-ticks` — the random-tick section is cut to the contrast and
+  now claims two things as its own: that at the edge of simulation distance
+  there is **a ring of chunks where appointments come due and nothing is chosen
+  at random**, and that a random tick's eligibility is baked in at
+  `BlockBehaviour.BlockStateBase.initCache` **before the world exists**, unlike
+  an appointment, which is checked against the world when it comes due.
+- `world/chunk-anatomy` — the ticker section, renamed *What step 11 leaves
+  behind, and what the chunk goes on holding*, claims the handle belongs to the
+  chunk and outlives the block entity in it. The step-8/9 paragraph now claims
+  step 9 is "the only step whose whole job is to notice that the world moved
+  underneath it".
+- `world/fluids` — claims `LiquidBlockContainer` is the interface
+  `SimpleWaterloggedBlock` narrows to water, and that the client holds the
+  predicted bucket write until the acknowledgement arrives (a citation of
+  `prediction-and-acks#the-six-windows`, added where the page previously said
+  only "with no round trip").
+- `world/lighting` — claims a section is not meshed at all until
+  `LevelLightEngine.lightOnInColumn` is true for each of its eight surrounding
+  columns, so a light flag decides whether a section may have a mesh (the same
+  claim as before, now stated once and cited rather than told twice).
+- `server/server-level-tick` — now claims `ServerChunkCache.tickChunks` reads
+  `GameRules.RANDOM_TICK_SPEED` once per level tick and hands it down (the page
+  previously attributed the read to `ServerLevel.tickChunk`); and its
+  scheduled-tick section claims only what belongs to the tick — the two calls,
+  their order and their budget — citing `scheduled-ticks` for the drain order
+  and the cancellation rule.
+- `reference/level-data-and-rules` — claims four parts point at it (III, IV,
+  VIII, XII) where it previously named only Part IV and the level tick; claims
+  *the border has no lecture* and says why. Its game-rule ids no longer carry
+  hand-copied defaults, because `gamerules.md` generates them.
+- **Eighteen cross-part and nineteen within-part citations gained the owner's
+  anchor.** Part IV carried **none** before this session. Each anchor is a claim
+  that the named section is the answer; pass 9 should spot-check that the
+  section under each anchor says what the citing sentence says it says.
+
+### The tool bug — the seventeenth of the project, and the first that was hiding failures
+
+`tools/check_links.py` scanned each page **line by line**, and its link regex
+cannot match across a newline. The corpus hard-wraps its prose, so a link
+written as `[tickets and\nloading](…)` was invisible to the gate: **243 of the
+corpus's 7,811 links had never been checked**, and one of them was broken by
+this session's own heading rename — `server/server-tick`:225 pointed at
+`tickets-and-loading#what-the-player-is-sent-and-when` after the heading
+changed, and the gate said clean. Fixed by matching against the whole page
+outside its fences with a character-to-line map, so a link is still reported on
+the line its `[` sits on. On the first run the fixed gate caught **two** real
+broken anchors — that one and `world/README`'s `#packing-a-position`, an anchor
+this session had invented and which the old gate would have published. The
+number of anchors the gate actually checks went from 12 at pass 5's planning
+session to 174, which is mostly this pass's own anchor work finally coming under
+the gate. `--probe` now writes a wrapped link with a bad anchor and a wrapped
+link with a good one, and fails if either is misjudged.
+
+**For pass 9:** every anchor added by pass-5 sessions A, B and C was written
+while the gate was blind to wrapped links. They are checked now, but they were
+not checked when they were written.
+
 *(pass-5 sessions append below, newest first)*
 
 ## Session A — the standard (pass 5) *(2026-09-05)*

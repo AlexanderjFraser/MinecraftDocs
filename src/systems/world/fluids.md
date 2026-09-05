@@ -18,8 +18,8 @@ goes.**
 This page is the fluid model: the two registry objects behind each fluid, the
 block that carries them, what one fluid tick decides and where it sends the
 result. The queue that appointment sits in — booked, deduped, drained, saved and
-reloaded — is [scheduled ticks](scheduled-ticks.md), which this page borrows
-whole and never explains.
+reloaded — is [scheduled ticks](scheduled-ticks.md#the-pipeline-end-to-end),
+which this page borrows whole and never explains.
 
 ## The cast
 
@@ -37,7 +37,9 @@ whole and never explains.
 ## Two registry objects, one substance
 
 `Fluid` is to `FluidState` what `Block` is to `BlockState`, and it is literally
-the same machinery: `StateHolder`, a `StateDefinition` built in the constructor,
+the same machinery ([the state, a twenty-line
+leaf](../blocks/blocks-and-states.md#the-state-a-twenty-line-leaf)): `StateHolder`, a
+`StateDefinition` built in the constructor,
 and one interned instance per combination of properties, so two `FluidState`s
 can be compared by identity. `FlowingFluid` puts `FlowingFluid.FALLING` on every
 state it defines, and the flowing subclasses — `WaterFluid.Flowing`,
@@ -71,7 +73,7 @@ column is not full of seams.
 ## The block underneath the water
 
 Nothing in the world stores a `FluidState`. A chunk section stores `BlockState`s
-([chunk anatomy](chunk-anatomy.md)), and
+([sections and their four counters](chunk-anatomy.md#sections-and-their-four-counters)), and
 `BlockBehaviour.BlockStateBase.getFluidState` returns a field —
 `BlockBehaviour.BlockStateBase.fluidState`, filled once by
 `BlockBehaviour.BlockStateBase.initCache` at bootstrap by asking the block.
@@ -131,8 +133,9 @@ sequenceDiagram
 ```
 
 `BucketItem.use` picks the position, then `BucketItem.emptyContents` asks two
-questions before it places anything. Is the block there a `LiquidBlockContainer`
-that will take water — that is the waterlogging path — and does
+questions before it places anything. Is the block there a `LiquidBlockContainer` —
+the interface `SimpleWaterloggedBlock` narrows to water, and the waterlogging
+path — and does
 `EnvironmentAttributes.WATER_EVAPORATES` hold at this position, read through
 `EnvironmentAttributeReader.getValue`? The Nether's dimension type sets that
 attribute, so there the bucket plays a hiss, throws eight smoke particles and
@@ -144,8 +147,8 @@ bucket on a Nether stair hisses too.
 On overworld stone it destroys and drops whatever was there and calls
 `Level.setBlock` with the source's `FluidState.createLegacyBlock` and the flag
 word 11 — `Block.UPDATE_NEIGHBORS`, `Block.UPDATE_CLIENTS`,
-`Block.UPDATE_IMMEDIATE` ([blocks and states](../blocks/blocks-and-states.md),
-[items and stacks](../items/items-and-stacks.md)).
+`Block.UPDATE_IMMEDIATE` ([the flag word](../blocks/blocks-and-states.md#the-flag-word),
+enumerated in [block update flags](../../reference/block-update-flags.md)).
 
 The appointment is the *block's* doing, not the fluid's.
 `LevelChunk.setBlockState` writes the section and then, server-side and unless
@@ -163,15 +166,17 @@ a state change.
 
 The client is told none of this, because there is nothing to tell. The placing
 player's client ran `BucketItem.use` itself inside
-`MultiPlayerGameMode.startPrediction`, so the source appears locally with no
-round trip, and the blocks the water later touches arrive the way any
-run of block changes does: one `ClientboundBlockUpdatePacket` when a section
-changed exactly one block that tick, and a single
-`ClientboundSectionBlocksUpdatePacket` for the rest — which, for a spreading
-flow, is the ordinary case. `LevelChunk.setBlockState` skips
-`LiquidBlock.onPlace` off the server, and `ClientLevel.getFluidTicks` hands out
-a `BlackholeTickAccess` that accepts every appointment and keeps none. No client ever runs the
-spread. What it does run is `FluidState.animateTick` from
+`MultiPlayerGameMode.startPrediction`, holding the write until the server's
+acknowledgement arrives ([the six
+windows](../client/prediction-and-acks.md#the-six-windows)), so the source appears
+locally with no round trip; the blocks the water later touches arrive the way any
+run of block changes does ([one flush a tick, two
+audiences](../networking/what-the-client-is-told.md#block-changes-one-flush-a-tick-two-audiences)),
+which for a spreading flow means a single
+`ClientboundSectionBlocksUpdatePacket`. `LevelChunk.setBlockState` skips
+`LiquidBlock.onPlace` off the server, and the client's fluid queue is a black
+hole ([where an appointment waits](scheduled-ticks.md#where-an-appointment-waits)),
+so no client ever runs the spread. What it does run is `FluidState.animateTick` from
 `ClientLevel.doAnimateTick` — ambient sound and particles, with
 `Fluid.getDripParticle` fetched separately just after — and
 `FluidState.getFlow`, which both the fluid mesher and shared entity physics
@@ -273,7 +278,7 @@ A candidate that is itself a hole scores 0 with no search at all. Otherwise
 `FlowingFluid.getSlopeDistance` searches outward from it: a depth-first walk
 that tries the three horizontal directions other than the one it arrived from,
 returns the pass number the moment it finds a hole, and recurses only while the
-pass is still below `WaterFluid.getSlopeFindDistance` — 4 for water, 2 for lava,
+pass is still below `FlowingFluid.getSlopeFindDistance` — 4 for water, 2 for lava,
 4 for lava in the Nether. A search that finds nothing returns 1000. So a side's
 score is 0 to 4, or 1000 for *nowhere to fall from here*, and a score of 4 means
 the hole is four steps past the block the water is about to fill. Three
@@ -395,7 +400,9 @@ winners' map on the way past.
 **Why is the wall test worth caching?** Because it runs constantly.
 `FlowingFluid.canPassThroughWall` short-circuits the easy cases — either side a
 full cube is a no, both sides empty is a yes — and otherwise merges the two
-collision shapes with `Shapes.mergedFaceOccludes` and memoises the answer in
+collision shapes with `Shapes.mergedFaceOccludes` ([shapes and
+collision](../../reference/math-and-primitives.md#shapes-and-collision)) and
+memoises the answer in
 `FlowingFluid.OCCLUSION_CACHE`, a thread-local 200-entry map keyed by
 `FlowingFluid.BlockStatePairKey`, which hashes both states by identity and is
 skipped entirely when either block has a dynamic shape
