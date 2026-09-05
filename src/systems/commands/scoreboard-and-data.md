@@ -45,7 +45,7 @@ Every write is a command.
 | `Score` | four mutable fields: the value, a lock bit, a display component and a number format. `ReadOnlyScoreInfo`, `PlayerScoreEntry` and `ScoreAccess` are the other three faces of it | both |
 | `ScoreHolder` | the interface `Entity` implements, with `ScoreHolder.forNameOnly` minting anonymous ones — the most consequential class on the page | both |
 | `PlayerTeam` | the **only** subclass of `Team`: the mutable state, the setters, a precomputed display style, and friendly-fire plus see-invisibles packed into one wire byte | both |
-| `ServerScoreboard` | three fields — the server, `ServerScoreboard.trackedObjectives`, and one dirty boolean — and eleven hook overrides that each conditionally broadcast, then mark dirty | server |
+| `ServerScoreboard` | three fields — the server, `ServerScoreboard.trackedObjectives`, and one dirty boolean — and thirteen overrides across ten hooks, each conditionally broadcasting, then marking dirty. It lives in `net/minecraft/server`, not beside `Scoreboard` | server |
 | `NbtPathArgument` | 874 lines, the largest argument type in the game, and a whole query language: six node kinds and a depth limit of 512 | both |
 | `DataCommands` | `/data`, over three `DataAccessor`s — `BlockDataAccessor`, `EntityDataAccessor` and `StorageDataAccessor` | server |
 
@@ -107,8 +107,9 @@ why a per-tick `/data get` on a busy entity is a measurable expense.
 **Four rules collapse a tag to one integer.** A numeric tag floors its double
 value; a collection and a compound both yield their *size*; a string yields
 its length. Nothing yields the value you might have meant:
-`data get entity @s Inventory` returns 36 because that is how many slots
-there are. A path matching more than one tag is an error; a path matching
+`data get entity @s Inventory` returns the number of stacks you are
+carrying, not 36 — `Inventory.save` writes only the non-empty slots, so the
+collection whose size you get is as short as your inventory is empty. A path matching more than one tag is an error; a path matching
 none is a different error.
 
 **The write can be a silent no-op, and may never reach the wire at all.**
@@ -161,8 +162,9 @@ the right half in that stat type's own registry.
 `minecraft.mined:minecraft.stone` is not a special case; it is the
 statistics registry addressed through a string. Nine stat types over the
 block, item, entity-type and custom-stat registries make thousands of valid
-criteria names, which is why `/scoreboard objectives add` suggests
-forty-three and accepts far more.
+criteria names, which is why `/scoreboard objectives add` accepts far
+more than the forty-three bare criteria names — its suggestions offer those
+*and* every stat name in every stat type's registry.
 
 The identity-keyed reverse index is what makes that cheap.
 `Scoreboard.objectivesByCriteria` is an **identity** map from criteria to
@@ -174,9 +176,10 @@ Criteria-driven scores are the one part of this page with a schedule, and it
 is narrower than it sounds. `Scoreboard.forAllObjectives` has **seven call
 sites and every one is in `ServerPlayer`**: the six read-only criteria, the
 death count, two kill counts, the two team-kill criteria and the two
-statistics hooks. Nothing in `Entity`, `LivingEntity` or `Mob` ever touches
-the scoreboard, so a skeleton killing a zombie increments nobody's kill
-count. The six read-only criteria are change-detection diffs — six
+statistics hooks. No *criterion* is driven from `Entity`, `LivingEntity` or
+`Mob`, so a skeleton killing a zombie increments nobody's kill count —
+though `LivingEntity` does reach the scoreboard once, calling
+`Scoreboard.addPlayerToTeam` when it reads its own saved team back. The six read-only criteria are change-detection diffs — six
 consecutive comparisons against remembered fields — living in
 `ServerPlayer.doTick`, which runs in the **connection** phase, after the
 levels have ticked ([the level tick](../server/server-level-tick.md)). So
@@ -215,11 +218,13 @@ because it is not the scoreboard: collision through
 `EntitySelector.pushableBy`; nametag visibility through
 `LivingEntityRenderer.shouldShowName`; invisibility through
 `Entity.isInvisibleTo`; friendly fire through `Player.canHarmPlayer`; and
-death-message routing through `ServerPlayer.die`. Every one of those five
-has **exactly one call site in the game**. The locator bar is a sixth
+death-message routing through `ServerPlayer.die`. Only `ServerPlayer.die` and
+`LivingEntityRenderer.shouldShowName` are reached from anywhere near one
+place; `EntitySelector.pushableBy` and `Player.canHarmPlayer` have six call
+sites each and `Entity.isInvisibleTo` two. The locator bar is a sixth
 reader, reached the other way round: every team join, leave and modification
 calls through to `ServerWaypointManager` to remake the connections and
-re-colour the icons — a class in the scores package driving a waypoint
+re-colour the icons — the team system driving a waypoint
 system.
 
 Two team behaviours are worth pinning. `Team.isAlliedTo` is **reference
@@ -268,8 +273,9 @@ reference ([text components](../foundations/text-components.md)). A
 `/tellraw` is a photograph, not a subscription.
 
 Saving is one boolean for the entire scoreboard, cleared by re-packing the
-whole thing, and it happens only from the server's autosave: **a score set
-and a crash a tick later is a score lost.** `ScoreboardSaveData` sits under
+whole thing, and it happens only when the world is saved — the autosave,
+`/save-all`, or shutdown: **a score set and a crash a tick later is a score
+lost.** `ScoreboardSaveData` sits under
 `minecraft:scoreboard` beside the world, with one command-storage file per
 namespace, both through the data fixer
 ([level data and rules](../../reference/level-data-and-rules.md)). The NBT
@@ -286,8 +292,9 @@ entirely, so the token is taken as a literal name; and in the sidebar
 `PlayerScoreEntry.isHidden` filters the row out. One character, two
 mechanisms, and together they are the whole hidden-fake-player idiom. (The
 argument type has four resolution branches in order — the wildcard, a `#`
-name, a UUID searched across every level, an online player — and every one
-of them falls back to a bare name.)
+name, a UUID searched across every level, an online player — and the last
+three fall back to a bare name. The wildcard does not: with no tracked
+holders at all it throws.)
 
 **Why is my sidebar not `DisplaySlot.SIDEBAR`?** If the local player is on a
 team *with a colour*, `Hud` uses that colour's own display slot and falls
@@ -348,13 +355,16 @@ syncable, default ten, maximum 512, so a server can change how far away a
 player's below-name score is legible, per entity
 ([attributes](../entities/attributes.md)).
 
-One thing this corpus cannot settle from the decompile: **what a *failing*
-command writes under `store result`.** For the custom-executor path the
-answer is visible and explicit — `CustomCommandExecutor.WithErrorHandling`
-reports failure through the callback and a failure result is a zero, so a
-failing `/function` under `store result` writes 0. For an ordinary leaf the
-result consumer is driven by Brigadier, which is outside the game's own
-packages. The mechanism is named here; the value is not asserted.
+**A failing command under `store result` writes 0**, whichever kind it is.
+For the custom-executor path the answer is in the game's own packages —
+`CustomCommandExecutor.WithErrorHandling` reports failure through the
+callback and a failure result is a zero, so a failing `/function` writes 0.
+For an ordinary leaf the result consumer is driven by Brigadier, and
+`ContextChain.runExecutable` catches the `CommandSyntaxException` and calls
+the consumer with *success false, result 0* before rethrowing. The game
+hands that consumer straight through from the source's own callback, so the
+two paths agree: a store target written by a command that threw holds zero,
+not its previous value.
 
 ## Where to look
 

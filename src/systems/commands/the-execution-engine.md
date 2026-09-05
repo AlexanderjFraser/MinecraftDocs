@@ -21,7 +21,7 @@ that one decision.
 
 | class | what it decides | notes |
 |---|---|---|
-| `ExecutionContext` | one per outermost command: the queue, the staging list, the budget, the fork limit, the tracer | the whole engine is thirty lines of this class |
+| `ExecutionContext` | one per outermost command: the queue, the staging list, the budget, the fork limit, the tracer | 153 lines, and the whole engine is in its `ExecutionContext.runCommandQueue` loop |
 | `CommandQueueEntry` | a `Frame` and an `EntryAction`. That is the entire unit of work | — |
 | `Frame` | **not** a stack frame: a depth, a `CommandResultCallback` a `/return` feeds, and a `Frame.FrameControl` that knows how to delete this frame's pending work | one object shared by reference across a whole function body |
 | `BuildContexts` | walks the stages of a parsed chain, forking sources as it goes | `BuildContexts.TopLevel`, `BuildContexts.Continuation` and `BuildContexts.Unbound` |
@@ -153,9 +153,10 @@ rather than Brigadier's plain "return an int" —
 `DebugCommand.TraceCustomExecutor`,
 `ExecuteCommand.ExecuteIfFunctionCustomModifier` and
 `ReturnCommand.ReturnFromCommandCustomModifier` — and
-`CustomCommandExecutor.WithErrorHandling` is the shared base that routes a
-thrown `CommandSyntaxException` to both the source's error handler and its
-callback.
+`CustomCommandExecutor.WithErrorHandling` is the base *two* of the six use —
+`FunctionCommand.FunctionCustomExecutor` and `DebugCommand.TraceCustomExecutor` —
+routing a thrown `CommandSyntaxException` to both the source's error handler
+and its callback. The other four handle their own.
 
 ## Two ways to die, and they are not the same event
 
@@ -215,8 +216,11 @@ without queueing even a `FallthroughTask`, so a `/return run` chain that
 hits the fork limit yields nothing at all rather than a failure. The limits
 are `GameRules.MAX_COMMAND_FORKS` and
 `GameRules.MAX_COMMAND_SEQUENCE_LENGTH`, both 65536 by default — and both
-are read **once**, from the outermost command's level, so an `/execute in`
-into another dimension does not pick up that dimension's rules.
+are read **once**, by the outermost command, so a `/gamerule` changed part
+way through a long fan-out does not take effect until the next top-level
+command. (There is nothing dimensional in this: `ServerLevel.getGameRules`
+returns the server's one `GameRules` instance, so no level has rules of its
+own to pick up.)
 
 **Does a nested command get its own budget?** No.
 `Commands.CURRENT_EXECUTION_CONTEXT` is a thread-local: a command that
@@ -243,7 +247,7 @@ function's chat output lands in the trace file alongside the call lines.
 
 ## Where to look
 
-`ExecutionContext` and `Frame` first — thirty lines of each explain the
+`ExecutionContext` and `Frame` first — 153 lines and 24 explain the
 whole design. Then `BuildContexts` for how a parse becomes work,
 `ContinuationTask` for the laziness both the fan-out and the function body
 ride on, and `ExecutionCommandSource` for why none of it names a command

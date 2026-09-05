@@ -15,18 +15,19 @@ by `/test`.
 
 Counting the seven server packages and the two client ones — one class per
 file, one line per line of decompiled source, the way
-[the atlas](../../maps/README.md) counts everything else — that is **442
-classes and 43,800 lines**, of which more than half is the command
-catalogue itself: a hundred command classes that are each a thin lambda over
-machinery some other part of this book owns.
+[the atlas](../../maps/README.md) counts everything else — that is **473
+classes and 43,900 lines**, of which the command catalogue itself is a
+little under a third: a hundred command classes and 12,800 lines, each a
+thin lambda over machinery some other part of this book owns.
 
 ## The shape of the part
 
-Part XIII is **a stack of three floors**, and unlike most parts the
-dependency runs strictly one way. The parser knows nothing about
-advancements; the engine knows nothing about scoreboards; all four systems
-on the top floor need both of the floors below and none of them needs
-another.
+Part XIII is **a stack of three floors**, and for a watcher the dependency
+runs one way: all four systems on the top floor need both of the floors
+below, and none of them needs another. The code is less tidy than the
+lecture order — a selector's *advancements=* and *scores=* options reach
+straight up into two of the top-floor systems — but nothing on the top floor
+reaches sideways.
 
 ```mermaid
 flowchart TB
@@ -56,10 +57,11 @@ optional for any of the four.
 ## Before you start
 
 [The server tick](../server/server-tick.md) from Part III, because *when*
-turns out to matter twice: command functions are the very first thing the
-server does to its children each tick, and players tick **after** the
-levels, which is what puts an advancement trigger and a scoreboard criterion
-one tick apart from where you would expect them.
+turns out to matter twice: command functions run near the top of
+`MinecraftServer.tickChildren`, before any level ticks, and the **connection**
+phase — where `ServerGamePacketListenerImpl.tick` calls `ServerPlayer.doTick`
+— runs *after* the levels, which is what puts a periodic advancement trigger
+one tick behind the packet that should have carried it.
 
 [Codecs, NBT and JSON](../foundations/codecs-nbt-json.md) and
 [the data-driven type pattern](../foundations/data-driven-types.md) from
@@ -80,12 +82,13 @@ machine.
 
 1. [Brigadier and commands](brigadier-and-commands.md) — three parsers for
    one string, and a tab-completion whose fast path never leaves the
-   machine. Also: which sixty-two of the sixty-seven do leave it.
+   machine. Also: which fifty-nine of the three hundred and fifty-nine
+   argument nodes do leave it, and why they feel like all of them.
 2. [Permissions](permissions.md) — the biggest API break in the game since
    the flattening. A permission is no longer an integer, an operator does
    not have everything, and a permission failure is reported as a typo.
 3. [Entity selectors](entity-selectors.md) — a selector is a compiled
-   query, and four of its twenty-one options are not filters but the query
+   query, and eight of its twenty-one options are not filters but the query
    plan. Why *@p* crosses dimensions, why *sort=nearest* is what takes your
    *limit* away, and why one permission is checked twice.
 4. [The execution engine](the-execution-engine.md) — a command engine with
@@ -97,7 +100,8 @@ machine.
    The one that fails silently every tick, forever.
 6. [Advancements](advancements.md) — the game's general-purpose "tell me
    when the player does X", built as a per-player subscription table that
-   only ever shrinks. The tree is laid out on the server and shipped.
+   shrinks as criteria are met and is rebuilt when one is revoked. The tree
+   is laid out on the server and shipped.
 7. [Scores, teams and stored data](scoreboard-and-data.md) — one number per
    thing, one query language for any tag, and the `execute store` seam that
    joins them. Why fake players exist.
@@ -125,7 +129,7 @@ and *game test*.
 
 Where the part stops: what a command *does* once it has been dispatched is
 almost always another part's page, and
-[Brigadier and commands](brigadier-and-commands.md) ends with a list of
+[Brigadier and commands](brigadier-and-commands.md) carries a list of
 which. The statistics — which are criteria, and one of only two parts of a
 save that go through the data fixer as JSON, the other being advancement
 progress — are in

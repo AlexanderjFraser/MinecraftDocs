@@ -531,14 +531,14 @@ about — but neither of the first two floors is optional for any of them.
 1. [Brigadier and commands](systems/commands/brigadier-and-commands.md) —
    three parsers see one string and two of them throw the answer away. The
    client runs a real dispatcher built from a tree the server sent, which is
-   why an item id completes instantly — and why sixty-two of the sixty-seven
-   suggestion providers ask the server anyway.
+   why an item id completes instantly — and why the fifty-nine argument nodes
+   that do ask the server feel like all three hundred and fifty-nine.
 2. [Permissions](systems/commands/permissions.md) — the biggest API break in
    the book: a permission is no longer an integer. An operator does not have
    everything, a permission failure is reported as a typo, and the client's
    chat permissions are built by subtraction from four local reasons.
 3. [Entity selectors](systems/commands/entity-selectors.md) — a selector is
-   a compiled query, and four of its twenty-one options are not filters but
+   a compiled query, and eight of its twenty-one options are not filters but
    the query plan. *@p* crosses dimensions, *sort=nearest* is what takes
    your *limit* away, and one permission is checked twice for two reasons.
 4. [The execution engine](systems/commands/the-execution-engine.md) — a
@@ -552,7 +552,8 @@ about — but neither of the first two floors is optional for any of them.
    forever.
 6. [Advancements](systems/commands/advancements.md) — the game's
    general-purpose "tell me when the player does X", as a per-player
-   subscription table that only ever shrinks. The tree is laid out on the
+   subscription table that shrinks as criteria are met and is rebuilt when
+   one is revoked. The tree is laid out on the
    server and shipped; the client is told the requirements and never the
    criteria.
 7. [Scores, teams and stored data](systems/commands/scoreboard-and-data.md)
@@ -574,10 +575,10 @@ four. Six, seven, eight and nine each assume one through five and nothing
 else in this part.
 
 Part XIII assumes Part III's [server tick](systems/server/server-tick.md)
-twice over — command functions are the first thing the server does to its
-children, and players tick after the levels, which is what puts an
-advancement trigger and a scoreboard criterion one tick from where you would
-expect. It assumes Part II's [codecs](systems/foundations/codecs-nbt-json.md)
+twice over — command functions run near the top of `MinecraftServer.tickChildren`, before any
+level ticks, and the connection phase that calls `ServerPlayer.doTick` runs
+after the levels, which is what puts a periodic advancement trigger one tick
+behind the packet that should have carried it. It assumes Part II's [codecs](systems/foundations/codecs-nbt-json.md)
 and [the data-driven type pattern](systems/foundations/data-driven-types.md),
 of which dialogs and game tests are the two clearest instances; Part IX's
 [connection](systems/networking/the-connection.md) for the Netty/server

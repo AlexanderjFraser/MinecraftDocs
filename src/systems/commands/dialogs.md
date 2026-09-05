@@ -22,7 +22,7 @@ making everywhere — take something that used to be a Java class and make it
 a registry element loaded from a data pack. That argument is made once, for
 all its instances, in
 [the data-driven type pattern](../foundations/data-driven-types.md); this
-page assumes it. Six of the pattern's registries are dialog registries.
+page assumes it. Four of the pattern's registries are dialog registries.
 
 ## The cast
 
@@ -95,8 +95,9 @@ button.
 is the obvious caller. The interesting ones are the click events, because
 "a component with a click event" is not the same as "a component whose click
 events are dispatched". There are three places on the client where they
-actually are — chat, a book, and any screen's own click handling — and one
-route that is not a click dispatch at all: `SignBlockEntity` reads the event
+actually are — chat, a book, and `DialogScreen` itself, which dispatches its
+own buttons and body text — and one route that is not a click dispatch at
+all: `SignBlockEntity` reads the event
 **server-side** and calls `ServerPlayer.openDialog` directly. An item's name
 or lore is tooltip text and dispatches nothing.
 
@@ -134,15 +135,18 @@ reveals a Back button after a second and enables it after five.
 **Pausing is validated by the codec, wherever it decodes.** A dialog that
 pauses the game with an after-action that never unpauses is rejected,
 because it would strand the player in a paused world. The check sits on
-`CommonDialogData`'s codec rather than on the loader — so for a dialog sent
-inline in the configuration phase it runs on the **client**.
+`CommonDialogData`'s codec rather than on the loader, and `MapCodec.validate` is
+applied to both directions of the codec — so it runs on the server as it
+encodes *and* on the client as it decodes, which is what covers a dialog sent
+inline in the configuration phase.
 
 **A button that runs a command is not simply a chat command.** It goes
 through `ClientPacketListener.sendUnattendedCommand`, which parses the string
-twice more and pops a confirmation screen if the command fails to parse,
-needs a signature, or needs a permission the client believes it lacks
-([permissions](permissions.md)). The player is asked before an unattended
-command leaves the machine. And the configuration-phase
+once — and a second time, against a no-permission source, only if that first
+parse succeeded and needs no signature — and pops a confirmation screen if
+the command fails to parse, needs a signature, or needs a permission the
+client believes it lacks ([permissions](permissions.md)). A command with
+none of those problems is sent with no screen at all. And the configuration-phase
 `DialogConnectionAccess` refuses to run commands at all, logging a warning
 instead.
 
@@ -152,11 +156,12 @@ instead.
 The entire custom-action mechanism — an arbitrary id plus an arbitrary NBT
 payload, sent by a screen the server described — exists for data packs and
 server software to build on. The game itself only defines the transport, and
-defends it with a 32 KB NBT accounter and a 64 KB frame cap.
+defends it with a 32 KB NBT accounter and a 64 KB cap on the payload's own length prefix.
 
 The same is true one level up: the only vanilla sender of a
 configuration-phase dialog is `DebugConfigCommand`, which is gated on
-`SharedConstants.DEBUG_DEV_COMMANDS` **and** dedicated-server-only. A server
+`SharedConstants.DEBUG_DEV_COMMANDS` *or* `SharedConstants.IS_RUNNING_IN_IDE`,
+**and** dedicated-server-only. A server
 really can put a form in front of you before you are in the world. Vanilla
 never does.
 

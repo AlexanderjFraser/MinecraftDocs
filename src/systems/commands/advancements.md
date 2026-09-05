@@ -156,13 +156,14 @@ reuses.
 | shape | what it generalises | where else it turns up |
 |---|---|---|
 | `MinMaxBounds` | the numeric range, with both a codec **and** a `StringReader` grammar | `3..7` means the same in a predicate, an entity selector and `/random` |
-| `CollectionPredicate` | one generic "N of these match", composing `CollectionContentsPredicate` and `CollectionCountsPredicate` | the item, slot and effect predicates instantiate it rather than reimplementing it |
+| `CollectionPredicate` | one generic "N of these match", composing `CollectionContentsPredicate` and `CollectionCountsPredicate` | its only users are the six component predicates in `core/component/predicates` |
 | `EntitySubPredicate` | a per-mob test as a **registry element** instead of a code branch | the twenty-odd small entity predicates are each a record, a codec and nothing else |
 | `DataComponentMatchers` | testing a stack's components without knowing what any of them are | [data components](../foundations/data-components.md) |
 
 Two details change behaviour rather than shape.
 `EntityPredicate.ADVANCEMENT_CODEC` accepts *either* a condition list or a
-bare entity predicate, which is why vanilla's JSON writes the short form.
+bare entity predicate — though vanilla's own JSON takes the long form every
+time, so the short one exists for pack authors rather than for the game.
 And `EntityPredicate` declares an explicit type-check-first, NBT-last
 ordering for its own sub-tests — a performance invariant hiding inside a
 predicate class.
@@ -230,9 +231,10 @@ a hard failure: granting an advancement the player already has throws rather
 than reporting zero. `AdvancementCommands.Mode` — *only*, *through*,
 *from*, *until*, *everything* — is a graph traversal collecting parents or
 children or both, and `/advancement grant … everything` calls
-`PlayerAdvancements.flushDirty` before and after the loop with the packet's
-"show advancements" flag **false**, which is the only purpose that flag has:
-suppressing a toast storm.
+`PlayerAdvancements.flushDirty` before the loop with the packet's "show
+advancements" flag **true** and after it with the flag **false**, which is
+the only purpose that flag has: suppressing a toast storm from the batch it
+just granted.
 
 Three smaller surprises, for completeness. `ImpossibleTrigger` has no
 trigger method at all — it is the one trigger implementing `CriterionTrigger`
@@ -243,11 +245,11 @@ which is a scoreboard feature.) `DisplayInfo`'s announce-to-chat flag is
 **write-only on the wire**: the serialiser packs three flags into an int and
 omits it, and the reader hard-codes it false while the codec defaults it
 true, so the client's copy is wrong for the common case rather than merely
-unused. And `PlayerAdvancements.checkForAutomaticTriggers` is dead code that
-would not do what its name says: it runs a full pass over every advancement
-on every player load, awarding the *empty string* as a criterion name, which
-no progress object contains — so the award always fails while the rewards
-are granted anyway.
+unused. And `PlayerAdvancements.checkForAutomaticTriggers` is dead code in the
+strictest sense: it walks every advancement on every player load, but its
+whole body sits behind *this advancement has no criteria at all*, and
+`Advancement`'s criteria codec rejects an empty map outright. No loaded
+advancement can satisfy the guard, so the loop never does anything.
 
 ## The screen at the other end
 
