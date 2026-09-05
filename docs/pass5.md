@@ -1662,3 +1662,59 @@ Structural findings, not acted on:
   that made the same claim and left the arrows, because the figure is the
   part's watch order rather than a prerequisite graph. If the shape sentence
   above is redecided, the arrows go with it.
+
+### Part XIII, after session M of pass 4 *(2026-09-05)*
+
+Wording debt, all of it created by a fact fix:
+
+- `brigadier-and-commands.md` — the **hook and the whole round-trip section
+  were rewritten**, because the page's central claim ("the round trip is not
+  the fallback, it is the default") was backwards and its verified-line
+  scenario asks the server nothing. The replacement carries three numbers —
+  359, 64, 59 — where the old one carried two, and the "why they feel like
+  all of them" turn is doing a lot of work in one clause. Pass 5 should read
+  the opening and the *A node that asks for suggestions by hand* section
+  together and decide whether the argument now takes one paragraph too many.
+- `entity-selectors.md` — the **opening scenario was replaced** (a command
+  block, because a player typing `/tp @p` always selects themselves) and now
+  carries a parenthetical explaining why the obvious version does not work.
+  The parenthetical is a correction in the voice of a correction; pass 5
+  should either fold it into the paragraph or cut it.
+- `entity-selectors.md` — the orphaned "**Four** —" paragraph is now a
+  four-line "the query plan is written by eight of the twenty-one names"
+  paragraph. It is accurate and it is the third place on the page that
+  enumerates the box options. Pass 5 should decide which of the three keeps
+  the enumeration.
+- `functions-and-macros.md` / `permissions.md` — the union paragraph on both
+  pages grew to hold the level-based-versus-not distinction, which is a real
+  and necessary qualifier and reads like a footnote promoted into the body.
+  The fact belongs on `permissions`; `functions-and-macros` may be able to
+  cite it in a clause.
+- `permissions.md` — *Asking a question the client cannot answer* now says
+  three things the section did not previously have to say (the sign is not on
+  this path; `NO_ISSUES` sends silently; the client checks permissions in
+  several other places). The section's own punchline — that the client can
+  tell "no permission" from "typo" — is now the fourth idea in it.
+- `scoreboard-and-data.md` — the "one thing this corpus cannot settle"
+  paragraph became an answer, so a paragraph that existed to mark a limit is
+  now a paragraph of fact sitting where a caveat used to close a section.
+  Check it still belongs at the end.
+- `game-tests.md` — the client-writes sentence now ends on a list of four
+  serverbound packets that belong to other pages. True, and long. Pass 5
+  should consider cutting it back to the narrow claim.
+- `commands/README.md` — the *before you start* server-tick entry is now the
+  longest of the five and names three classes, because the short version was
+  wrong about which phase. It may be shortenable now that it is right.
+
+Structural findings, not acted on:
+
+- `entity-selectors.md` — the page is one of the longest in the part and its
+  *Resolve* section carries five bolded claims in a row, three of which are
+  about cost rather than about the trace. The page's shape is a pipeline with
+  a policy figure; the cost material may want to be a table.
+- `commands/README.md` — the part's size sentence now needs nine package
+  names to be reproducible and gives none, which is what let a wrong pair
+  stand through two passes. Every other landing page has the same shape. A
+  standing fix would be for the atlas to generate the per-part totals rather
+  than each landing page hand-counting them — that is a tooling change, and
+  it belongs to whoever revisits `map_source.py`.

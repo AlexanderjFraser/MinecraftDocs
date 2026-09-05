@@ -499,9 +499,51 @@ O is the close.
   verifier caught two of the session's own fixes and `check_deps.py` a third,
   one agent finding was rejected on re-derivation, and two agents disagreed
   with each other. Everything in [pass4.md](pass4.md).
-- [ ] **Session M — Part XIII Commands and data packs.** Probably two
-  sessions: the three parsers against Brigadier; the engine's queue
-  snapshots; `entity-selectors` (addition 8).
+- [x] **Session M — Part XIII Commands and data packs** *(2026-09-05)*. Done in
+  one, not two: nine pages and the landing page, ten agents (the part has no
+  Reference catalogue of its own); **every one had at least one wrong claim**,
+  for a fourteenth time. Sixty-eight corrections. The named item was the three
+  parsers against Brigadier, and it broke the page that owns them:
+  `brigadier-and-commands`' central claim is **backwards** — vanilla registers
+  359 argument nodes and only **59** serialise as *ask_server*, so the local
+  path is the rule, not the exception — and its verified line asks the server
+  nothing at all, because `GiveCommand` attaches no suggestion provider to any
+  node and `@p`, the item id and the component all complete from the client's
+  own tab list and registries. The corpus-wide "sixty-two of the sixty-seven",
+  on three pages, is **59 of 64**. Four more carry a lecture:
+  **`LevelBasedPermissionSet.union` is a *minimum*** — both branches of the
+  override return the lower-levelled set — so `withMaximumPermission` caps
+  rather than widens, every route into a function body lands on gamemaster,
+  and `functions-and-macros` and `permissions` had it exactly backwards on
+  consecutive pages; `entity-selectors` (the last of the four session-P pages,
+  never checked by anyone) had **both headline scenarios impossible** — `/tp
+  @p` typed by a player is a no-op teleport to self, and `/kill @e` cannot
+  trigger the shape rejection its Q&A is about, though both *mechanisms* were
+  right; `advancements`' `checkForAutomaticTriggers` is unreachable rather
+  than merely futile, because its whole body sits behind a guard the criteria
+  codec forbids; and the charter's standing **`execute store` item is
+  settled** from Brigadier 1.3.10 — `ContextChain.runExecutable` calls the
+  consumer with *(false, 0)* on a throw, so a failing leaf writes 0. Two hooks
+  fell: `game-tests`' verified line runs **`/test runall`, a command that does
+  not exist** (the working form is `/test run *`), and its "the one system in
+  Part XIII where the client writes" is false of four serverbound packets
+  named on three other pages of the same part. **The landing page was the
+  worst page in the part for a third part running** — 473 classes and 43,914
+  lines against its 442 / 43,800, with a brute force over every candidate
+  package subset showing **no set reproduces the page's pair**; "more than
+  half is the command catalogue" is 29% and impossible at any population; and
+  its "strictly one way" dependency is falsified by the selector's
+  *advancements=* and *scores=* options. Addition 2 done in full: all five
+  *before you start* entries used by a sentence, all eight glossary terms
+  present, `check_deps.py` green, and `lectures.md` corrected for the three
+  claims it mirrors. **No tool bug — the eighth such session.** Instead **two
+  agents disagreed** on the part's size and the session's own brute force
+  settled it; **the session was wrong once** and caught it by re-deriving (it
+  had used the wrong package set and excluded the package markers the atlas
+  counts); and `verify_names.py` **caught seven of the session's own fixes**,
+  including a method that does not exist — the verifier catching fixes rather
+  than pages for the second session running. Everything in
+  [pass4.md](pass4.md).
 - [ ] **Session N — The corpus-wide count sweep.** Every number on every
   page, in one pass with one brief, because a count checked inside a page's
   argument is checked by a reader who already believes the argument.

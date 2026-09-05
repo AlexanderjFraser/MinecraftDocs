@@ -40,13 +40,14 @@ entry first.
   pass-3 sessions K, L, M and N each found a wrong count while redrawing a
   page, three of them load-bearing. Session N of pass 4 is a corpus-wide
   count sweep with one brief.
-- **The four session-P pages have never been checked** —
+- ~~**The four session-P pages have never been checked** —
   `rendering/block-entity-rendering`, `commands/entity-selectors`,
   `worldgen/blending`, `worldgen/creating-a-world`. Their claims lists are
-  under session P's entry; they get pass 2's completeness question too.
-  *Three done: `block-entity-rendering` by session K, and `blending` and
-  `creating-a-world` by session L, both with the completeness question.
-  `commands/entity-selectors` is session M's.*
+  under session P's entry; they get pass 2's completeness question too.~~
+  **All four done**: `block-entity-rendering` by session K, `blending` and
+  `creating-a-world` by session L, and `commands/entity-selectors` by session
+  M — each with the completeness question. Session M's completeness findings
+  for `entity-selectors` are in `pass3.md` §7 and `pass5.md`.
 - **The parts-dependency figure** (`src/figures/parts-dependency.md`,
   included by the introduction and `lectures.md`) and the dependency table
   on `lectures.md` are claims: every arrow is a landing page's *before you
@@ -65,10 +66,13 @@ entry first.
   and `scoreboard-and-data` (parse, suggestions, `ContextChain`, the result
   consumer), `models-and-atlases` and `text-and-fonts` (the atlas and font
   JSON), and `post-processing` (the six chains' JSON).
-- **The `execute store` question** on `scoreboard-and-data` — what a failing
+- ~~**The `execute store` question** on `scoreboard-and-data` — what a failing
   ordinary leaf command writes — is now answerable from Brigadier 1.3.10;
   settle it and remove the page's "cannot be settled from the decompile"
-  note.
+  note.~~ Settled by session M: `ContextChain.runExecutable` calls the result
+  consumer with *(false, 0)* in its `CommandSyntaxException` catch, so a
+  failing leaf writes **0**, exactly as a failing `/function` does. The
+  page's caveat paragraph is replaced by the answer.
 
 - **The tooling reads this file** *(planning session, 2026-09-03)*.
   `tools/pass4_queue.py` cuts it into units (a heading, or a list item with
@@ -89,6 +93,297 @@ entry first.
   is now `deploy.sh`'s fourth gate.
 
 ## Entries
+
+## Session M — Part XIII Commands and data packs (pass 4) *(2026-09-05)*
+
+Nine system pages and the landing page, ten agents; **every one had at least
+one wrong claim**, for a fourteenth time. Part XIII has no Reference
+catalogue of its own. Done in one, not two.
+
+### The five that carry a lecture
+
+- **`functions-and-macros`, `permissions` — the union is a minimum, and both
+  pages said the opposite.** `LevelBasedPermissionSet.union` reads
+  `this.level().isEqualOrHigherThan(otherSet.level()) ? otherSet : this`
+  (`server/permissions/LevelBasedPermissionSet.java:27`) — **both branches
+  return the lower-levelled set**, so it is a `min`.
+  `CommandSourceStack.withMaximumPermission` is that union
+  (`commands/CommandSourceStack.java:128-130`), so
+  `withMaximumPermission(GAMEMASTER)` over the console's `OWNER` source
+  (`MinecraftServer.java:1861`) yields **gamemaster**. Both call sites pass
+  gamemaster (`FunctionCommand.java:117`, `DebugCommand.java:127`), and
+  `ServerFunctionManager.getGameLoopSender` replaces with gamemaster
+  (`ServerFunctionManager.java:108`). So every route into a function body
+  lands on the same rung. `functions-and-macros` had claimed the tick and
+  load tags run *lower* than the console and that "the name reads exactly
+  backwards"; `permissions` had claimed union is "whichever of the two is
+  higher" and "a more privileged caller is never lowered". Both rewritten.
+  Only for sets that are *not* level-based does `PermissionSet.union` fall
+  through to `PermissionSetUnion`, which does OR
+  (`server/permissions/PermissionSet.java:14-16`). **Three independent
+  derivations agreed** — two agents and the session.
+- **`brigadier-and-commands` — the round trip is not the default, and the
+  hook's own example never leaves the machine.** Vanilla registers **359**
+  `Commands.argument(` nodes; **64** attach a suggestion provider, of which
+  5 name a registered one, so **59** serialise as *ask_server* — 16% of the
+  argument nodes, not "the default". And `GiveCommand` attaches **zero**
+  providers, so `/give @p diamond_sword[...]` — the string in the verified
+  line — asks the server nothing: `@p` completes from
+  `EntityArgument.listSuggestions` over the client's own tab list
+  (`EntityArgument.java:127-151`) and the item and component from
+  `ItemParser`. Hook and the whole "but the round trip is the default"
+  section replaced. The "sixty-two of the sixty-seven", repeated on the
+  landing page and `lectures.md`, is **59 of 64** by call site.
+- **`entity-selectors` — both headline scenarios are impossible.** (The page
+  session P wrote and nobody had ever checked; addition 8.) `/tp @p` typed
+  by a player cannot teleport you to someone in the Nether, because a
+  player's source position is their own (`ServerPlayer.java:1910-1911`) and
+  they are in `PlayerList.getPlayers()` at squared distance 0, so
+  `ORDER_NEAREST` always picks the typist. Replaced with a command block,
+  whose source is the block's own centre and which is not itself a candidate
+  (`CommandBlockEntity.java:52-56`). And *"Why did `/kill @e` complain
+  before it touched the world?"* rests on a rejection that cannot fire:
+  `/kill` takes `EntityArgument.entities()` (`KillCommand.java:21`), so
+  neither shape test at `EntityArgument.java:111/119` applies. Replaced with
+  `/damage @e 1`, which does take the single-entity shape. **Both
+  mechanisms were right; only the demonstrations fell.**
+- **The landing page was the worst page in the part, for a third part
+  running.** The part is **473 classes / 43,914 lines** over the seven
+  server packages the nine pages own (`commands`, `server/commands`,
+  `advancements`, `gametest`, `world/scores`, `server/dialog`,
+  `server/permissions`) plus `client/gui/screens/advancements` and
+  `client/gui/screens/dialog` — not 442 / 43,800. A brute-force search over
+  every 7-of-10 candidate subset found **no set reproducing the page's
+  pair**: the only 442 comes to 43,333 lines and drops `world/scores` and
+  `server/dialog`, which the part owns outright. "More than half is the
+  command catalogue" is **29%** (12,781 of 43,914) and impossible at any
+  population — the catalogue plus the whole of `commands/arguments` is
+  21,628 against a half of 21,957 — and the book's own
+  `brigadier-and-commands` already said "a hundred classes and 12,800
+  lines". Its "strictly one way" dependency is falsified by the selector's
+  *advancements=* and *scores=* options, which read `PlayerAdvancements`
+  (`EntitySelectorOptions.java:488,567`) and the scoreboard; recast as a
+  watching order.
+- **`scoreboard-and-data` — the charter's standing `execute store` item,
+  settled.** Brigadier 1.3.10's `ContextChain.runExecutable` catches the
+  `CommandSyntaxException` and calls
+  `resultConsumer.onCommandComplete(contextToUse, false, 0)`
+  (`libs/brigadier-1.3.10/.../ContextChain.java:76-79`), and the game hands
+  that consumer through from the source's own callback. **A failing ordinary
+  leaf writes 0**, exactly as a failing `/function` does. The page's "one
+  thing this corpus cannot settle from the decompile" paragraph is replaced
+  by the answer — pass 4's addition 6 in action, on a library fact pass 2
+  took on trust.
+
+### Two more hooks fell
+
+- **`game-tests`' verified line ran a command that does not exist.** There
+  is no `/test runall`: `TestCommand.register` registers `run`,
+  `runmultiple`, `runthese`, `runclosest`, `runthat`, `runfailed`, `verify`,
+  `locate`, `pos`, `create`, `stop`, the three `clear*`, the three `reset*`
+  and — only under `IS_RUNNING_IN_IDE` — the four `export*`. No `runall`
+  anywhere in the source and no `commands.test.runall` translation key. The
+  working equivalent is `/test run *`. Everything else the line claims (one
+  shipped test, `minecraft:always_pass`, and it passes) is true.
+- **`game-tests`' "the one system in Part XIII where the client writes"** is
+  false on the part's own traffic: `ServerboundChatCommandPacket`,
+  `ServerboundCommandSuggestionPacket`, `ServerboundCustomClickActionPacket`
+  and `ServerboundSeenAdvancementsPacket` are all client-written and all
+  named on three other pages of this part. What is true is narrower — game
+  tests are the one system whose *declaration* a client edits.
+
+### The rest, per page
+
+**`commands/README.md`** — 442 → **473** classes, 43,800 → **43,900**
+lines; "more than half" → a little under a third, with the 12,800; "strictly
+one way" recast; the *before you start* tick justification was wrong on the
+phase — the post-levels `players` row is `PlayerList.tick`, whose whole body
+is a latency broadcast every 601st call (`PlayerList.java:493-499`), while
+player *entities* tick inside the levels row and what actually runs after
+them is the **connection** phase (`MinecraftServer.java:1254-1256`);
+"sixty-two of the sixty-seven" → 59 of 359; "four of its twenty-one options"
+→ **eight**; "only ever shrinks" → shrinks and is rebuilt, because
+`PlayerAdvancements.revoke` re-registers listeners
+(`PlayerAdvancements.java:244-252`); "ends with a list" → "carries a list"
+(two sections follow it).
+
+**`brigadier-and-commands`** — hook and round-trip section rewritten (above);
+`SwizzleArgument` is used by `/execute align` **alone**, not `/clone` and
+`/spreadplayers` (`ExecuteCommand` is its only user outside
+`ArgumentTypeInfos`); `LocalCoordinates` is **not an argument type** and both
+`Vec3Argument` and `BlockPosArgument` can produce one, so "the one argument
+type that depends on eye height" is recast; `Commands.validate` runs only
+under `SharedConstants.IS_RUNNING_IN_IDE` (`Bootstrap.java:136-140`), so it
+is a dev check and not a start-up gate; "six argument types" using packrat is
+**five** (`ComponentPredicateParser` is not an `ArgumentType`); "the two LAN
+toggles" is **four** callers of
+`IntegratedServer.updateCommandsAllowedForOtherPlayers` (`:278, :321, :330,
+:360`); "seven commands take a signed argument" is seven *classes* but **ten
+literals** (`/tell`, `/w`, `/tm` redirect); figure arrow 10 said the lambda
+builds the `ItemInput` when parsing does — it reads it back.
+
+**`entity-selectors`** — both scenarios (above); "a *distance* is the only
+thing that ever narrows the search itself" (said twice) is false of dx/dy/dz,
+which the page's own paragraph describes; `EntitySelector` has **four** find
+methods, not five; `LevelEntityGetterAdapter` has **six** methods, not four;
+`EntitySelectorParser` is not "the only class that ever touches the syntax"
+(`EntitySelectorOptions` parses the *scores* and *advancements* brace
+grammars itself); figure 2 had the two player lookups' costs **backwards** —
+`PlayerList.getPlayerByName` is an O(n) `equalsIgnoreCase` scan
+(`PlayerList.java:644-656`) and the UUID branch is the map; the 1.21 box's
+"four state objects" is **eight** (four `InvertableSetOptionState` and four
+`SetOnceOptionState`); the orphaned "**Four** —" paragraph was miscounted and
+missing its question, rewritten as the eight plan-writing options. *Session
+verified independently: 21 options, 7 `setWorldLimited` callers, 32 parser
+fields, 13 selector fields, 4 set-once options, 5 classes / 1,717 lines — all
+exact.*
+
+**`permissions`** — the union paragraph (above); "all four chat restrictions
+are local decisions" is false of `ChatRestriction.DISABLED_BY_PROFILE`, which
+comes from `userProperties().flag(UserFlag.CHAT_ALLOWED)` — an
+account-service flag (`Minecraft.java:2596-2598`); "a dialog button, a chat
+click event and a sign all route through `sendUnattendedCommand`" is false of
+the sign, which runs its command **server-side** through a
+`CommandSourceStack` it builds at a hard-coded
+`LevelBasedPermissionSet.GAMEMASTER` (`SignBlockEntity.java:223, 243-247`) —
+`Screen.clickCommandAction` is `sendUnattendedCommand`'s only caller; "three
+of the four outcomes pop a confirmation, so nothing … reaches the server
+without you agreeing to it once" is false twice over, because `NO_ISSUES`
+sends with no screen; "one place the client runs a server permission check
+locally" is at least five in four classes (`WorldOptionsScreen:82,106`,
+`KeyboardHandler:235,242,258`, `GameModeSwitcherScreen:115`,
+`LocalPlayer:438-439`); the F3+F4 switcher does not "grey out" — it refuses
+to open, showing *debug.gamemodes.error* (`KeyboardHandler.java:257-262`);
+"three readers" of `GameModeCommand.PERMISSION_CHECK` is **five references in
+four classes**. *Session verified independently, and every part-wide note
+settled in the page's favour: 95 `Commands.hasPermission` call sites = 66
+gamemaster + 16 admin + 9 owner + 2 `LEVEL_ALL` ternaries (`SeedCommand`,
+`VersionCommand`) + 2 non-constant checks; raw `Commands.LEVEL_GAMEMASTERS`
+68; CLAMP in `PermissionLevel.byId`; the `ReferenceArraySet`; the
+bare-identifier codec; the whole `getProfilePermissions` cascade; the
+backwards-reading `restrictedSuggestionsProvider`.*
+
+**`the-execution-engine`** — "both are read once, from the outermost
+command's level, **so** an `/execute in` into another dimension does not pick
+up that dimension's rules" has a true premise and a fabricated consequence:
+`ServerLevel.getGameRules` is `this.server.getGameRules()`
+(`ServerLevel.java:1967-1969` → `MinecraftServer.java:2448-2450`), so **no
+level has rules of its own**. Recast around what "read once" actually buys.
+`ExecutionContext` is **153 lines**, not thirty (said twice);
+`CustomCommandExecutor.WithErrorHandling` is the base of **two** of the six,
+not "the shared base". *The prompt's flagged mechanisms all held:
+`ContinuationTask.schedule`'s arithmetic, the three frame-opening sites, the
+three `incrementCost` sites, the ten-million cap, the fork limit's
+off-by-one, and the `/return run function` chaining.*
+
+**`scoreboard-and-data`** — the `execute store` answer (above);
+`data get entity @s Inventory` returns the count of **non-empty** stacks,
+because `Inventory.save` skips empty slots (`Inventory.java:412-421`);
+"`/scoreboard objectives add` suggests forty-three and accepts far more" is
+**backwards** — it suggests the forty-three *and* every stat name in every
+stat-type registry (`ObjectiveCriteriaArgument.java:56-73`); "every one of
+those five [team readers] has exactly one call site" fails on three
+(`pushableBy` 6, `canHarmPlayer` 6, `isInvisibleTo` 2); `ServerScoreboard`
+lives in `net/minecraft/server`, not the scores package; "eleven hook
+overrides" is **thirteen overrides across ten hooks**; "Nothing in `Entity`,
+`LivingEntity` or `Mob` ever touches the scoreboard" is false of
+`LivingEntity.readAdditionalSaveData`, which calls
+`Scoreboard.addPlayerToTeam` — narrowed to *no criterion is driven from
+there*, which is the sentence's real point; "only from the server's autosave"
+omits `/save-all` and shutdown; "every one of them falls back to a bare name"
+is false of the `*` branch, which throws `ERROR_NO_RESULTS`
+(`ScoreHolderArgument.java:121-126`).
+
+**`advancements`** — `PlayerAdvancements.checkForAutomaticTriggers` is dead
+in the strictest sense: both the `award(holder, "")` and the
+`rewards().grant(player)` sit inside `if (advancement.criteria().isEmpty())`
+(`PlayerAdvancements.java:110-123`) and `Advancement`'s `CRITERIA_CODEC`
+rejects an empty map (`Advancement.java:32-36`), so **the loop body is
+unreachable** — the page had it running and half-failing;
+`CollectionPredicate`'s users are the six `core/component/predicates`
+classes, not "the item, slot and effect predicates"; "which is why vanilla's
+JSON writes the short form" is backwards — vanilla writes the long form in
+all 233 occurrences; `/advancement grant … everything` flushes with the flag
+**true** before the loop and false after (`AdvancementCommands.java:271` vs
+`:285`), not false both times.
+
+**`dialogs`** — "six of the pattern's registries are dialog registries" is
+**four** (`DIALOG_TYPE`, `DIALOG_ACTION_TYPE`, `INPUT_CONTROL_TYPE`,
+`DIALOG_BODY_TYPE`, `BuiltInRegistries.java:339-342`); the landing page's
+"six type registries dialogs **and tests** dispatch on" is right, as 4 + 2;
+"any screen's own click handling" is `DialogScreen` specifically — every
+other screen that reads a click event handles only `OpenUrl`;
+`sendUnattendedCommand` "parses the string twice more" parses once, or twice
+in total, and only on the success-and-unsignable path
+(`ClientPacketListener.java:2852-2864`); "the player is asked before an
+unattended command leaves the machine" is contradicted by `NO_ISSUES`; the
+"64 KB frame cap" is a per-field length prefix; `DebugConfigCommand` is gated
+on `DEBUG_DEV_COMMANDS` **or** `IS_RUNNING_IN_IDE` (`Commands.java:280`), not
+the flag alone; the pause validation is `MapCodec.validate`, which fires on
+the server's encode as well as the client's decode, so "it runs on the
+client" is not exclusive.
+
+**`game-tests`** — the verified line and the client-writes claim (above);
+"three data-pack registries and one built-in type registry" is **two and
+two** (`TEST_ENVIRONMENT` and `TEST_INSTANCE` in
+`RegistryDataLoader.java:84`; `TEST_ENVIRONMENT_DEFINITION_TYPE` and
+`TEST_INSTANCE_TYPE` in `BuiltInRegistries.java:336-337` — `TEST_FUNCTION` at
+`:348` is a `Registry<Consumer<GameTestHelper>>`, a value registry, not a
+codec dispatch); the cast table attributed **`RetryOptions` to `TestData`**,
+which has `maxAttempts`/`requiredSuccesses` instead (`TestData.java:12`);
+figure 2 arrow 2 routed `placeStructure`/`encaseStructure` from
+`GameTestRunner` when `GameTestInfo` makes both calls; arrow 4's "every info"
+is the successfully-spawned subset; arrow 8's `markError` is a conditional
+secondary call — the pass/fail pair is `setSuccess`/`setErrorMessage`; the
+setup-tick counter starts at `-(setupTicks + tickDelay + 1)`; "writes to
+three places" omitted the block entity, making four. *All counts held: 44
+classes, 7 environment kinds, 5-of-7, 50, 1353, 551, 5 tracker states, 4
+modes, 250.*
+
+### Addition 2 — order and dependency
+
+Done in full. All five *before you start* entries are used by a sentence in
+the part (`server/server-tick` twice, at `advancements.md:139` and
+`functions-and-macros.md:132`; `codecs-nbt-json` at
+`brigadier-and-commands.md:192`; `data-driven-types` at `dialogs.md:24` and
+`game-tests.md:21`; `the-connection` at `brigadier-and-commands.md:119`;
+`contexts-and-predicates` at `advancements.md:149`). `check_deps.py` green
+before and after. The cross-part links it reports as "linked but not listed"
+are all pointer-links from `brigadier-and-commands`' *commands that are a
+door to somewhere else* table — judged, none a missing arrow. All eight
+glossary terms the landing page names exist with the right owner page, and
+the glossary's *world-limited* entry ("any of seven positional selector
+options") is correct. `lectures.md` corrected in the same commit for the
+three claims it mirrors and for the tick justification.
+
+### No tool bug — the eighth such session
+
+Instead: **two agents disagreed** on the part's size — one reported the
+page's 442 / 43,800 as re-deriving "exactly", the other derived 473 / 43,914
+— and the session's own brute force over every candidate package subset
+settled it against the page. **The session was wrong once and caught it by
+re-deriving**: its first package set used `server/advancements` where the
+part actually owns `server/permissions`, and excluded `package-info.java`
+against the page's own stated atlas convention. And `verify_names.py`
+**caught seven of the session's own fixes** — `union`,
+`DISABLED_BY_PROFILE`, `Screen.handleCommandClick` (a method that does not
+exist; the real one is `Screen.clickCommandAction`), `NO_ISSUES`,
+`runCommandQueue`, `validate` and `tickChildren` — the verifier catching
+fixes rather than pages for the second session running.
+
+### For other parts' sessions
+
+- **`LevelBasedPermissionSet.union` is a minimum.** Any page anywhere that
+  describes `withMaximumPermission` as widening is wrong. Grepped
+  corpus-wide: only the two Part XIII pages said so, both fixed.
+- **Game rules are server-wide.** `ServerLevel.getGameRules` delegates to
+  `MinecraftServer`, and there is one instance. Any page claiming a
+  per-dimension game rule is wrong; session N should sweep for it.
+- **The `players` profiler row after the levels is not where players tick.**
+  `PlayerList.tick` is a latency broadcast every 601st call; player entities
+  tick inside the levels row, and `ServerPlayer.doTick` runs in the
+  **connection** phase. Part III's `server-tick` wants checking against this
+  wording, and Part VIII may lean on it.
 
 ## Session L — Part XII World generation (pass 4) *(2026-09-05)*
 
@@ -3887,14 +4182,14 @@ walk in `EntitySelector.findPlayers`, and the seven reads of
 `Permissions.COMMANDS_ENTITY_SELECTORS` plus the one grant. Everything else
 is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
 
-- **The hook**: "*@p* is not 'the nearest player in this world' … chosen
+- ~~**The hook**: "*@p* is not 'the nearest player in this world' … chosen
   from the list of everybody on the server" — case `'p'` sets no
   `worldLimited` (`EntitySelectorParser.java:274-279`); `findPlayers` with
   `isWorldLimited()` false walks `PlayerList.getPlayers()`
   (`EntitySelector.java:240-254`); `ORDER_NEAREST` is `distanceToSqr` with
   no dimension term (`EntitySelectorParser.java:64-68`). Session-confirmed
-  the walk; the "raw x, y, z" wording is the agent's.
-- Counts: twenty-one names (`EntitySelectorOptions.bootStrap` 92-615);
+  the walk; the "raw x, y, z" wording is the agent's.~~
+- ~~Counts: twenty-one names (`EntitySelectorOptions.bootStrap` 92-615);
   seven world-limiting options (lines 117, 138, 144, 150, 156, 162, 168);
   three always-available options *tag*, *nbt*, *predicate* (393, 428, 613);
   four `SetOnceOptionState` options *limit*, *sort*, *scores*,
@@ -3907,14 +4202,14 @@ is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
   `MessageArgument.java:101`, `ScoreHolderArgument.java:41`,
   `EntitySelector.java:108`, `EntitySelectorParser.java:130, 143`) and the
   grant at `LevelBasedPermissionSet.java:20`; eight `EnderDragonPart`
-  sub-entities (`EnderDragon.java:100-108`).
-- Orderings: `finalizePredicates` adds rotation and level tests last
+  sub-entities (`EnderDragon.java:100-108`).~~
+- ~~Orderings: `finalizePredicates` adds rotation and level tests last
   (190-214, called at 525); `EntitySelector.getPredicate` appends
   feature-flag, exact box, range in that order (265-300); `Util.allOf`
   evaluates in order and short-circuits, so the range test runs after an
   *nbt* comparison; `EntitySelectorOptions.get` (628-638) refuses a
-  repeated option before its handler runs (`parseOptions:379`).
-- Only/never: six heads and the default throws (239-293); only *@e* and
+  repeated option before its handler runs (`parseOptions:379`).~~
+- ~~Only/never: six heads and the default throws (239-293); only *@e* and
   *@n* add `isAlive` (266, 272, applied 295); `LivingEntity.isAlive`
   (1848-1850) vs `Entity.isAlive` (2386-2388); **no index by entity type**
   (`world/level/entity/EntityLookup.java:23-37` iterates `byId.values()`
@@ -3931,8 +4226,8 @@ is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
   (`client/multiplayer/ServerStatusPinger.java:51-53`;
   `SelectorContents.java:33-36` returns empty); all five classes in
   `server-classes.txt`; the name `EntitySelector` used twice
-  (`world/entity/EntitySelector.java`).
-- X-not-Y: `getResultLimit` returns the parsed limit only for arbitrary
+  (`world/entity/EntitySelector.java`).~~
+- ~~X-not-Y: `getResultLimit` returns the parsed limit only for arbitrary
   order (192-194), consumed at 180 and 235; the box path offers
   `EnderDragon.getSubEntities()` (`Level.java:602-635`) and the walk does
   not (`ServerLevel.java:978-989`); the two structures behind
@@ -3947,20 +4242,20 @@ is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
   `ClientSuggestionProvider.getSelectedEntities` (77-79); `ORDER_RANDOM` is
   `Collections.shuffle` with no `RandomSource` (73-75); `Bootstrap.bootStrap`
   fills the options once (`server/Bootstrap.java:59`); *gamemode*, *level*,
-  *advancements* call `setIncludesEntities(false)` (275, 133, 585).
-- **Unsettled by the agent**: whether `Collections.shuffle(List)` is
+  *advancements* call `setIncludesEntities(false)` (275, 133, 585).~~
+- ~~**Unsettled by the agent**: whether `Collections.shuffle(List)` is
   unseeded per call (JDK source not in the tree; the page says only that no
   world seed reaches it); whether any vanilla writer puts a
   `SelectorContents` in a status description; whether option-suggestion
   order is stable (Brigadier's `Suggestions.create` sorts, so it should
   be). Two field names for one fact — `EntitySelector.usesSelector` and
   `EntitySelectorParser.usesSelectors` — are both correct and should not be
-  "fixed" to match.
-- **The queue entry's count was wrong**: "six classes, ~2,136 lines" is
-  five classes and 1,717 lines (seven files and 1,725 with the stubs).
-- Sibling: `brigadier-and-commands.md`'s selector paragraph shrank to a
+  "fixed" to match.~~
+- ~~**The queue entry's count was wrong**: "six classes, ~2,136 lines" is
+  five classes and 1,717 lines (seven files and 1,725 with the stubs).~~
+- ~~Sibling: `brigadier-and-commands.md`'s selector paragraph shrank to a
   link, dropping four backticked selector strings and the "667 lines"
-  aside; its claim "thirteen final fields" is the new page's.
+  aside; its claim "thirteen final fields" is the new page's.~~
 
 ### `worldgen/blending.md` — new, 346 lines, pattern
 
@@ -6166,125 +6461,125 @@ every diagram in Part XIII is new or redrawn.
 disagree with pass 2 in three places and the disagreements are the kind pass
 2's lesson predicts.**
 
-- `permissions` says **95** `Commands.hasPermission` call sites, of which 94
+- ~~`permissions` says **95** `Commands.hasPermission` call sites, of which 94
   are server-side command registrations and the ninety-fifth is
   `ClientPacketListener`'s node builder. Pass 2 said "all ninety-four
   *requires* calls in the game use it", which was a true statement about the
   server and a false one about the total: `.requires(` appears 245 times in
   `net/minecraft`, and the other 150 are `ShapelessRecipeBuilder.requires`,
   an unrelated method. The re-derivation to run is
-  `.requires(Commands.hasPermission(` against every `Commands.hasPermission(`.
-- The per-level gate counts are stated as **66 gamemaster, 16 admin, 9
+  `.requires(Commands.hasPermission(` against every `Commands.hasPermission(`.~~
+- ~~The per-level gate counts are stated as **66 gamemaster, 16 admin, 9
   owner**, counted as `requires(Commands.hasPermission(Commands.LEVEL_X))`.
   Raw occurrences of `Commands.LEVEL_GAMEMASTERS` are **68**, and the two
   extra are the ternaries in `SeedCommand` and `VersionCommand`. Pass 2's 66
   was right; the arithmetic that reconciles 95 = 66 + 16 + 9 + 2 (the
   `LEVEL_ALL` ternaries) + 2 (the two non-constant checks) is new and should
-  be re-run as a whole.
-- The **two non-constant permission checks** are new material:
+  be re-run as a whole.~~
+- ~~The **two non-constant permission checks** are new material:
   `ClientPacketListener.RESTRICTED_COMMAND_CHECK` and
   `GameModeCommand.PERMISSION_CHECK`. The second carries a page-level claim —
   that it is read by `KeyboardHandler`, `GameModeSwitcherScreen` and
   `ServerGamePacketListenerImpl`, i.e. that the F3+F4 switcher greys out by
   running a *server* permission check locally against `LocalPlayer`'s own
-  set. Five call sites; count them.
-- `advancements` now says the client half is **five classes in
+  set. Five call sites; count them.~~
+- ~~`advancements` now says the client half is **five classes in
   `client/gui/screens/advancements` plus `ClientAdvancements` in
   `client/multiplayer`, about 1,240 lines**. Pass 2 said "six classes and
   about eleven hundred lines (`net/minecraft/client/gui/screens/advancements`)",
   which counted `package-info.java` as a class and put `ClientAdvancements`
   in the wrong package. The screens package is 1,112 lines over five classes;
-  `ClientAdvancements` is 128.
-- The landing page says the part is **442 classes and 43,800 lines** over
+  `ClientAdvancements` is 128.~~
+- ~~The landing page says the part is **442 classes and 43,800 lines** over
   nine packages (`commands`, `server/commands`, `server/permissions`,
   `advancements`, `world/scores`, `server/dialog`, `gametest`, and the two
   client screen packages), counted one class per file with package markers
   excluded, the way session M counted Part XII. Nothing in pass 2 states a
-  boundary for this part, so this is a new claim end to end.
-- `permissions` says `net/minecraft/server/permissions` is **eleven classes
+  boundary for this part, so this is a new claim end to end.~~
+- ~~`permissions` says `net/minecraft/server/permissions` is **eleven classes
   and 398 lines**; the old page said "twelve files", which included
-  `package-info.java`.
+  `package-info.java`.~~
 
 **New claims the rewrite introduced, from re-reading the source.** All of
 these are this session's, not pass 2's, and none has been checked by anyone
 else:
 
-- `PermissionSet` is a **functional interface** with one method, so every set
+- ~~`PermissionSet` is a **functional interface** with one method, so every set
   in the game except `ChatAbilities`' is a lambda or a tiny object, and there
-  is no set-of-permissions data structure anywhere else.
-- `LevelBasedPermissionSet.union` of two level-based sets returns **the
+  is no set-of-permissions data structure anywhere else.~~
+- ~~`LevelBasedPermissionSet.union` of two level-based sets returns **the
   higher of the two** rather than a `PermissionSetUnion`. This is the
   mechanism `functions-and-macros` then leans on for its "the method whose
-  name reads like a ceiling can only add" paragraph.
-- `PermissionLevel.byId` uses `ByIdMap.OutOfBoundsStrategy.CLAMP`, so an
-  *ops.json* hand-edited to level 9 is an owner and −1 is rung zero.
-- `Permission.CODEC` accepts an atom written as a **bare identifier** as well
-  as the full dispatched form.
-- `MinecraftServer.getProfilePermissions` returns a `LevelBasedPermissionSet`
+  name reads like a ceiling can only add" paragraph.~~
+- ~~`PermissionLevel.byId` uses `ByIdMap.OutOfBoundsStrategy.CLAMP`, so an
+  *ops.json* hand-edited to level 9 is an owner and −1 is rung zero.~~
+- ~~`Permission.CODEC` accepts an atom written as a **bare identifier** as well
+  as the full dispatched form.~~
+- ~~`MinecraftServer.getProfilePermissions` returns a `LevelBasedPermissionSet`
   in every branch, and `ServerPlayer.permissions` calls it afresh every time
   — nothing is cached on the player. The cascade as restated: not on the op
   list → `ALL`; on it → the op entry's own set, else singleplayer owner →
   `OWNER`, else singleplayer → `OWNER` or `ALL` by the allow-cheats-for-others
-  toggle, else the *op-permission-level* property.
-- `PermissionSetUnion` holds a **reference** set (`ReferenceArraySet`), so
+  toggle, else the *op-permission-level* property.~~
+- ~~`PermissionSetUnion` holds a **reference** set (`ReferenceArraySet`), so
   identity, not equality, decides whether unioning the same set twice
-  duplicates it.
-- `ChatAbilities` is built **by subtraction**: it starts from all four of
+  duplicates it.~~
+- ~~`ChatAbilities` is built **by subtraction**: it starts from all four of
   `Permissions.CHAT_PERMISSIONS` and each `ChatRestriction` removes some.
   There are four restrictions and **all four are local decisions** (two chat
   options, the launcher, the account profile) — no server grants a client
   chat permission. This is a structural claim about the whole enum; check
-  that no fifth value and no server-driven route exists.
-- `ClientPacketListener`'s ordinary suggestions provider has the player's own
+  that no fifth value and no server-driven route exists.~~
+- ~~`ClientPacketListener`'s ordinary suggestions provider has the player's own
   set **OR-ed with** the synthetic restricted atom, and
   `restrictedSuggestionsProvider` is the `NO_PERMISSIONS` one — the field
-  name reads backwards from what it holds.
-- `ClientPacketListener.verifyCommand` has **four** outcomes
+  name reads backwards from what it holds.~~
+- ~~`ClientPacketListener.verifyCommand` has **four** outcomes
   (`NO_ISSUES`, `PARSE_ERRORS`, `SIGNATURE_REQUIRED`, `PERMISSIONS_REQUIRED`)
   and the flowchart on `permissions` asserts their order: parse with
   permissions, then signable-argument test, then parse *without* permissions.
-  Every branch of that figure is an ordering claim.
-- `functions-and-macros` says `ServerFunctionManager.execute` swallows only
+  Every branch of that figure is an ordering claim.~~
+- ~~`functions-and-macros` says `ServerFunctionManager.execute` swallows only
   `FunctionInstantiationException` with an empty catch, and logs **any other
-  exception at warn**. Pass 2 recorded the empty catch and not the warn arm.
-- `ServerFunctionManager.getGameLoopSender` uses
+  exception at warn**. Pass 2 recorded the empty catch and not the warn arm.~~
+- ~~`ServerFunctionManager.getGameLoopSender` uses
   `CommandSourceStack.withPermission` (a **replacement**) with gamemaster over
   a server source that is `LevelBasedPermissionSet.OWNER`, while
   `FunctionCommand` and `DebugCommand` use
   `CommandSourceStack.withMaximumPermission` (a **union**). The page claims
   the tick and load tags therefore run *lower* than the console does; check
-  both directions.
-- `game-tests` says `/test` sits at `Commands.LEVEL_GAMEMASTERS` and
+  both directions.~~
+- ~~`game-tests` says `/test` sits at `Commands.LEVEL_GAMEMASTERS` and
   `TestCommand.TEST_FULL_SEARCH_RADIUS` is 250, with the radius subcommand
-  clamping a user-supplied radius to 0–1024.
-- `the-execution-engine` restates `ContinuationTask.schedule`'s arithmetic
+  clamping a user-supplied radius to 0–1024.~~
+- ~~`the-execution-engine` restates `ContinuationTask.schedule`'s arithmetic
   with the **two-element case made explicit** (nothing / one entry / *two
-  entries* / one self-entry), which the old page elided.
-- `scoreboard-and-data` adds that `ScoreContents` and `NbtContents` resolve
+  entries* / one self-entry), which the old page elided.~~
+- ~~`scoreboard-and-data` adds that `ScoreContents` and `NbtContents` resolve
   on the server and put the *result* on the wire — restated from pass 2's
-  invariant, now framed as a third route by which a score reaches a client.
+  invariant, now framed as a third route by which a score reaches a client.~~
 
 **Redrawn and new diagrams, each an ordering claim.**
 
-- `commands/README.md`'s three-floor figure: that the dependency is strictly
-  one-directional and that the four top-floor pages are peers.
-- `brigadier-and-commands`'s six-lane trace, with the Netty-thread note moved
-  onto the diagram as a `Note over`.
-- `permissions`' containment figure (question / answer / check) and its
-  four-outcome `verifyCommand` cascade — both new.
-- `the-execution-engine`'s **queue-snapshot figure**, which is the most
+- ~~`commands/README.md`'s three-floor figure: that the dependency is strictly
+  one-directional and that the four top-floor pages are peers.~~
+- ~~`brigadier-and-commands`'s six-lane trace, with the Netty-thread note moved
+  onto the diagram as a `Note over`.~~
+- ~~`permissions`' containment figure (question / answer / check) and its
+  four-outcome `verifyCommand` cascade — both new.~~
+- ~~`the-execution-engine`'s **queue-snapshot figure**, which is the most
   load-bearing new diagram in the part: four panels claiming that
   `BuildContexts` walks *all* non-execute stages inside entry one, that the
   fan-out becomes a single `ContinuationTask`, and that element *i+1* is not
-  materialised until element *i* has finished. Check panel by panel.
-- `functions-and-macros`' four-stage pipeline flowchart, including the claim
-  that the TRIGGER arrow lands on *instantiate* rather than on *compile*.
-- `advancements`' trace, relaned and with a tick-boundary note added.
-- `dialogs`' trace (unchanged in substance, relaned) and `game-tests`' two
+  materialised until element *i* has finished. Check panel by panel.~~
+- ~~`functions-and-macros`' four-stage pipeline flowchart, including the claim
+  that the TRIGGER arrow lands on *instantiate* rather than on *compile*.~~
+- ~~`advancements`' trace, relaned and with a tick-boundary note added.~~
+- ~~`dialogs`' trace (unchanged in substance, relaned) and `game-tests`' two
   figures — a new containment flowchart (declaration / run / world) and the
-  old runner sequence, relaned.
-- `scoreboard-and-data`'s trace, relaned, with `EntityDataAccessor` folded
-  into `DataCommands`.
+  old runner sequence, relaned.~~
+- ~~`scoreboard-and-data`'s trace, relaned, with `EntityDataAccessor` folded
+  into `DataCommands`.~~
 
 **The landing page and `lectures.md`** claim: that Part XIII is a stack of
 three floors; that nothing in advancements, scoreboards, dialogs or game

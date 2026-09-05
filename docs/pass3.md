@@ -1396,6 +1396,20 @@ closer, because the boundary is drawn before the investment, and
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
+- **The two other selector-capable argument types** —
+  `GameProfileArgument` and `ScoreHolderArgument` both compile and resolve an
+  `EntitySelector` and neither is named anywhere in the book.
+  `GameProfileArgument` is the one that resolves a selector to *profiles*, so
+  it falls back to the server's name-to-id cache and can name a player who is
+  offline — which is how `/ban` and `/whitelist` take a name nobody is
+  currently carrying. `ScoreHolderArgument` adds the `*` wildcard and lets a
+  selector sit beside a fake score holder, which is the seam
+  `scoreboard-and-data`'s fake-player section stops just short of.
+  `entity-selectors` names `EntityArgument` alone and says "four argument
+  shapes", meaning `EntityArgument`'s own four. Not a whole page — a short
+  section on `entity-selectors`, or a row in its cast, for pass 5 or later.
+  *(session M of pass 4, 2026-09-05)*
+
 - **The expansion hack, dimension padding and liquid settings** — three of
   `JigsawStructure`'s ten data-pack fields that no page names, and one of them
   is load-bearing for why a village street stops:
