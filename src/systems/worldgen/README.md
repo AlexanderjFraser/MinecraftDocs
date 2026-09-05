@@ -38,6 +38,8 @@ this part is the cargo of seven of them.
 
 ```mermaid
 flowchart TB
+    CW["10 · Creating a world — where the seed and the packs were chosen, before any of this"]
+    CW -.-> DF
     DF["1 · Density functions — the substrate, and the only page that is not a chunk step"]
     DF --> SS
     subgraph SS["STRUCTURE_STARTS, STRUCTURE_REFERENCES — first in the game, last in the lectures"]
@@ -58,14 +60,15 @@ flowchart TB
         direction LR
         L4["5 · Features and placement"] --> L5["6 · Trees"]
     end
-    FE --> CW["10 · Creating a world — the origin, told last: where the seed and the packs were chosen"]
 ```
 
-Read the outer chain as the order the game runs, and the numbers as the order
-to watch. They disagree on purpose. A structure is *decided* two statuses
+Read the solid chain as the order the game runs, and the numbers as the order
+to watch. They disagree on purpose — and the dashed arrow disagrees most, since
+the world was created before a single chunk was, and its page is told tenth. A structure is *decided* two statuses
 before the biomes and the terrain it will stand in exist — it asks the
 generator directly for the numbers it needs rather than reading a chunk — and
-it writes its blocks four statuses later, inside the decoration step. Putting
+it writes its blocks four statuses after the terrain is cut, inside the
+decoration step. Putting
 the three structure pages last keeps that whole arc in one place, at the cost
 of one forward topic: five of the six pages before them reach for the
 beardifier — three by link, two by name — before the page that owns it.
