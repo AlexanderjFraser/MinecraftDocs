@@ -71,7 +71,14 @@ TREE_DEPTH = 3
 # parts.md (the table) and part-<dir>.md (one phrase per part, "N classes and M
 # lines", for a landing page to {{#include}} inside its size sentence), and
 # tools/pass5_coverage.py reads the same mapping for the coverage question, so a
-# landing page's count and the coverage population can never disagree.
+# landing page's count and the coverage population cover the same packages.
+# They do not report the same number, and pass-5 session B found out the hard
+# way when Part I read 7 classes here and 6 there. The counts here are *files*,
+# the convention systems/anatomy/what-this-book-skips.md states for its own
+# table; pass5_coverage.py drops package-info.java, because its population is
+# what a page could name and a package-info is not nameable. Every part with a
+# package-info.java in one of its directories therefore reads one class and a
+# few lines larger here. Keep both, and say which you mean.
 PARTS = (
     ("anatomy", "I", "Anatomy",
      ("net/minecraft/client/main", "net/minecraft/client/Minecraft.java",

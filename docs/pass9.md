@@ -171,3 +171,130 @@ atlas:
   queue by kind, the duplication pairs) are the tools' output on 2026-09-05
   and are claims about the corpus on that day, not about the game; pass 9
   need not check them.
+
+## Pass 5, session B — Parts I and II *(2026-09-05)*
+
+Eleven pages read by one agent each, both parts read end to end, nine pages
+rewritten (`anatomy/README.md`, `anatomy/anatomy.md`,
+`anatomy/what-this-book-skips.md`, `foundations/README.md`,
+`foundations/identifiers-and-registries.md`, `foundations/resource-system.md`,
+`foundations/tags.md`, `foundations/codecs-nbt-json.md`,
+`foundations/data-driven-types.md`) plus one-clause link edits on
+`data-components.md` and `text-components.md`.
+
+### Corrections — re-derived against the decompile before the fix
+
+- `foundations/identifiers-and-registries.md` — said `MappedRegistry` "is
+  keyed three ways (`byKey`, `byLocation` and the insertion-ordered
+  `byId`)". **There are four.** `MappedRegistry.java:40` declares
+  `private final Map<T, Holder.Reference<T>> byValue`, an `IdentityHashMap`
+  built at :65 and written at :129; `getKey` (:141) and `getResourceKey`
+  (:148) both read it, so the object-to-name direction goes through `byValue`
+  and not through the three the page named. `toId` (:37) is the parallel
+  identity map to the number. Now: four indexes, one per lookup direction.
+- `foundations/codecs-nbt-json.md` — said `StreamTagVisitor` and its
+  neighbours "let `NbtIo.parse` pull **two** fields out of a region chunk",
+  then named three consumers. Two is right for one of them only:
+  `IOWorker.java:105` builds a `CollectFields` of two `FieldSelector`s
+  (*DataVersion*, *blending_data*); `StructureCheck.java:113` builds one of
+  three (*DataVersion*, *Level/Structures/Starts*, *structures/starts*). Now
+  stated as the mechanism — a `CollectFields` over whatever selectors the
+  caller wants — with both counts attributed.
+- **Checked and found correct, so no change:** `data-components.md`:183-191
+  and `identifiers-and-registries.md`:306-311 were reported as contradicting
+  each other on the singleplayer component binding. They do not.
+  `ClientConfigurationPacketListenerImpl.java:177` passes
+  `connection.isMemoryConnection()` as
+  `tagsAndComponentsForSynchronizedRegistriesOnly`, and
+  `RegistryDataCollector.java:166` negates it into `updateComponents`'
+  `includeSharedRegistries` (:142-148), so a memory connection binds only the
+  `RegistrySynchronization.isNetworkable` registries. Both pages say that.
+
+### Claims introduced
+
+- **A new section, `identifiers-and-registries.md` §*Feature flags: the same
+  registry, narrowed*** — the largest new claim of the session, discharging
+  a coverage entry. Each sentence, with where it came from:
+  `FeatureFlagSet` is a *long* mask plus a `FeatureFlagUniverse`, cap
+  `MAX_CONTAINER_SIZE` = 64 (`FeatureFlagSet.java:9-18`); one universe,
+  *main*, and four flags — `VANILLA`, `TRADE_REBALANCE`,
+  `REDSTONE_EXPERIMENTS`, `MINECART_IMPROVEMENTS` (`FeatureFlags.java:37-48`);
+  `isExperimental` is "not a subset of `VANILLA_SET`" (:34-36);
+  `FeatureElement` has one method and seven implementors — `Item`,
+  `BlockBehaviour`, `EntityType`, `GameRule`, `MenuType`, `Potion`,
+  `MobEffect`; `FILTERED_REGISTRIES` names those seven registries
+  (`FeatureElement.java:10`);
+  `HolderLookup.RegistryLookup.filterFeatures` returns *this* for a registry
+  not in the set and a filtering delegate for one that is
+  (`HolderLookup.java:82-87`); **"the registry underneath is not touched, and
+  neither is its numbering — a disabled item keeps its wire id"** is the
+  inference from that delegation and is the sentence most worth re-deriving;
+  the consumers are `CommandBuildContext.java:22`, `GameRules.java:109`,
+  `MinecraftServer.java:373` and `LevelReader.java:232-235`; the set is
+  `WorldDataConfiguration.enabledFeatures`.
+- **`resource-system.md`, the two `server/packs` corners** the skips page had
+  been promising it: *linkfs* as `LinkFileSystem` / `LinkFSProvider` /
+  `LinkFSPath`, and `DownloadQueue` — one directory per pack UUID, one at a
+  time on a `ConsecutiveExecutor` over `Util.nonCriticalIoPool`, a
+  `JsonEventLog` per attempt, and `DownloadCacheCleaner.vacuumCacheDir` at
+  construction trimming to `MAX_KEPT_PACKS` = 20 (`DownloadQueue.java:37-47`,
+  `DownloadCacheCleaner.java:30-60`). **"newest kept, one per directory
+  before any directory's second"** is a reading of `prioritizeFilesInDirs` and
+  the two comparators, and is the claim here to check.
+- **`anatomy.md`, the packet-drain contrast.** The hop paragraph now ends
+  "so a client at 200 frames a second takes the server's updates ten times
+  more often than it ticks" — arithmetic over the page's own 20 Hz tick, and
+  a restatement of `what-the-client-is-told.md`:442. Check the framing, not
+  the numbers.
+- **`anatomy.md`, the 1.21-era callout** was replaced: out went the
+  `Gui`/`Hud` box (owned by `client/hud` and `reference/naming-drift`), in
+  came `DeltaTracker` was *Timer*, which restates
+  `reference/naming-drift.md`:52 and :68.
+- **`anatomy.md`, `GameConfig`** — new clause: the client's `Main` parses its
+  command line into a `GameConfig` the `Minecraft` constructor is built from.
+  Closes the part's one coverage gap; check against `client/main/Main`.
+- **`anatomy/README.md` is rewritten to the landing-page role** and its
+  figure redrawn from the twelve other parts to the part's own two pages.
+  New claims: that the part's argument is the two loops rather than "a server
+  that ticks and a client that draws"; that the boundary page is second
+  because a boundary is drawn before the investment (moved from
+  `lectures.md`:466-468, which keeps it as an ordering claim); and *where the
+  part stops*, which asserts that Parts III, IX and X take the three threads
+  onward. The lane sentence is now "nearly every lane ... is a class, and the
+  handful that are not stand for a thread", which is
+  `reference/lanes.md`:5-10 and `check_lanes.py`'s own count (333 and 9).
+- **`foundations/README.md`** — "Part II is not a stack but a fan ... the
+  figure has two roots and no single column" replaces "Part II is a stack".
+  A claim about the figure directly above it, and checkable against it.
+- **`what-this-book-skips.md`, three reframings.** `com/mojang/blaze3d/audio`
+  is no longer presented as skipped — `client/sound-engine` teaches all of it
+  (its cast carries `Library` and `AbstractDeviceTracker`; :129 the thirty
+  channels, :240 HRTF), so the section keeps only the address argument. The
+  statistics page's criterion-parse paragraph became a citation of
+  `scoreboard-and-data`:158-162, which owns it. The recipe book is stated as
+  `items/recipes`' rather than as skipped. **The hatching in the generated
+  treemap was not changed to match**, so the figure and the prose should be
+  read together at pass 9.
+- **Ownership moves that changed what a page asserts** (each now one sentence
+  and a link where it was an explanation): the two tag tables, from
+  `identifiers-and-registries` to `tags`; the GPU-backend retry order, to
+  `rendering/the-window`; the crash relay, to `how-a-server-dies`; the
+  empty-server pause, to `server-tick`; `MinecraftServer.spin`'s order, to
+  `starting-a-server`; the Netty hop's mechanism, to `the-connection`. In
+  each case check that the surviving sentence is still true on its own — a
+  trimmed sentence is a new claim.
+- **Outbound links gained anchors** across the nine pages. An anchor is a
+  claim that the named section is the answer; all resolve under
+  `check_links.py`, which proves the heading exists and not that it answers.
+
+### Tool bug
+
+- `tools/map_source.py` and `tools/pass5_coverage.py` reported different
+  populations for the same packages — Part I as 7 classes / 6,770 lines and
+  6 / 6,766 — while `map_source.py`'s own comment claimed they "can never
+  disagree". The difference is `package-info.java`, which the atlas counts as
+  a file and the coverage tool drops. No published page states either number
+  today (Part I's landing page carries no size), so nothing false was
+  published. Both tools now say which population they mean, and the false
+  comment is gone. Every part with a `package-info.java` reads one class
+  larger in the atlas than in its coverage report.

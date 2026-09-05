@@ -10,7 +10,7 @@ block a data pack added an hour ago; the tutorial toast that tells a new
 player to punch a tree asks the same question. A tag is a named set of
 registry entries, defined in data-pack JSON and tested against by key, and
 it is how data reaches into hard-coded behaviour without the behaviour
-naming any specific block. [The registries page](identifiers-and-registries.md)
+naming any specific block. [The registries page](identifiers-and-registries.md#the-freeze-rule-stated)
 ended on a promise: a frozen registry's *contents* never change. Its tags
 do. Type `/reload` with a data pack that adds a block to *logs* and the
 parrot perches on it a moment later — with `BuiltInRegistries.BLOCK` frozen
@@ -90,7 +90,8 @@ by `Holder.Reference.bindTags`; that set, not the registry, is what
 
 ## The four moments tags are loaded
 
-World load comes first, on the worker pool.
+World load comes first, on the worker pool — the shared one
+([anatomy](../anatomy/anatomy.md#four-threads-worth-memorising)).
 `TagLoader.loadTagsForExistingRegistries` runs *before* the reload
 listeners, over the `RegistryLayer.STATIC` layer, and produces a
 `Registry.PendingTags` for every static registry that has at least one tag
@@ -154,7 +155,7 @@ sequenceDiagram
 ```
 
 **Every pack's file, lowest first.** `TagLoader.load` asks
-[the resource system](resource-system.md) for resource *stacks* — a
+[the resource system](resource-system.md#snapshot-the-manager) for resource *stacks* — a
 `FileToIdConverter.json` over the tag directory, listed with
 `FileToIdConverter.listMatchingResourceStacks` — so every copy of
 *tags/block/logs.json* across the enabled packs is visited in priority
@@ -223,7 +224,7 @@ copies of the remote dynamic registries.
 **The check is a field read.** `BlockBehaviour.BlockStateBase` is a
 `TypedInstance`; `TypedInstance.is` asks the type holder — for a block,
 `Block.builtInRegistryHolder`, the intrusive holder from
-[identifiers-and-registries](identifiers-and-registries.md) — and
+[identifiers-and-registries](identifiers-and-registries.md#before-the-game-exists) — and
 `Holder.Reference.is` is set-contains on an interned `TagKey`. No registry
 is consulted. `Parrot` (the perch search), `TrunkPlacer` (worldgen) and the
 client's `PunchTreeTutorialStepInstance` all ask this way; `FluidState`,

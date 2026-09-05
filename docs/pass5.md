@@ -49,6 +49,113 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session B — Parts I and II (pass 5) *(2026-09-05)*
+
+*What eleven page reads and one end-to-end reading of both parts turned up
+and session B did not act on, routed by kind. The claims it introduced and
+the corrections it made are in [pass9.md](pass9.md).*
+
+### For other part sessions (pass 5)
+
+- **`client/the-client-loop` still does not link `anatomy`** (the session-A
+  entry, re-derived): its hook contrasts the two loops and links neither
+  `anatomy` nor `server-tick`. The anchor is
+  `anatomy.md#two-loops-and-a-wire-between-them`. **Session J.**
+- **`world/chunk-generation-pipeline` repeats anatomy's worker-pool sizing**
+  (`Util.maxAllowedExecutorThreads`, the *max.bg.threads* property) and links
+  no anatomy page. It should keep only "there is no generation thread
+  setting", which anatomy does not say, and cite
+  `anatomy.md#four-threads-worth-memorising`. Same page's
+  `ConsecutiveExecutor` paragraph: anatomy owns *what it is*, the pipeline
+  keeps `AbstractConsecutiveExecutor.run`'s re-registration. **Session D.**
+- **`data-components` ↔ `items-and-stacks` is the same lecture twice**, and
+  worse than the 17.00 score suggests: the same hook and nine duplicated
+  mechanisms (the prototype built at reload, the sanitising patch,
+  copy-on-write, equality, the ten common components, the two validators, the
+  wire form), against `items/README`:47's promise that Part VII "never
+  re-teaches the component system". One clause is a move to
+  `containers-and-menus`: `handleContainerButtonClick` calling
+  `broadcastChanges` directly, out of the ordinary tick. **Session G**, which
+  the routing rule gives the pair.
+- **`data-driven-types`' trace runs a page too far.** L278–294 — the roll, the
+  scatter, and the three-level function composition — is `items/loot-tables`'
+  explanation retold. The pattern page should stop at the object existing.
+  **Session G**, with the pair above.
+- **Eleven of the fifty-six rows send the reader to a page that never names
+  the element**: `Permission` and `PermissionCheck` → Brigadier when
+  `commands/permissions` owns them; `EnchantmentProvider` → enchantments when
+  `items/enchanting` owns it; `SlotSource`, `ConsumeEffect`, `SpawnCondition`
+  and `BLOCK_TYPE` land on pages silent on them. Each *taught in* cell is a
+  claim about another part's page, so each part session should check its own
+  rows. **Sessions E, G, M** between them.
+- **`Gizmos` is explained only on `what-this-book-skips`** and linked from
+  none of the pages whose traces end in a debug renderer. The skips page is
+  the owner by default and should not be; either a later part takes it or the
+  pages that use it cite the skips page. **Sessions J and K.**
+- **`text-components`' selector expansion is told three times** — here,
+  `networking/chat-and-signing` and `commands/entity-selectors` — and the
+  death-message game rule twice, on two pages that never link each other
+  (`entities/damage-and-death`). **Sessions F and I.**
+- **`codecs-nbt-json` explains five mechanisms other parts own**: the wire
+  buffer, region compression, the `BlockEntity` save shells, the serverbound
+  fence and the trusted-tag constants. Session B left them: each is one
+  column of the page's own four-path table, and cutting them needs the
+  owning part's session in the room. **Sessions D, G and I** to judge from
+  their side, then the citation form here.
+- **`reference/registries` says 153 registry keys and
+  `identifiers-and-registries` says 148.** Two populations or one wrong
+  number; session B did not re-derive it because the Reference page is
+  session N's. **Session N**, and pass 9 if it survives.
+
+### For pass 6 (the lecture)
+
+- `tags`' pay-off, *Prepared, then applied*, is a bold lead-in with no
+  heading, so a citation aimed at it lands on a hundred-line section instead.
+  Three pages now cite that section. [kind=lecture]
+- `tags`' opening paragraph states the three-step apply and the "one thread,
+  start to finish" sentence, and L192 states both again nearly verbatim. The
+  hook should keep the promise and the section the mechanism. [kind=lecture]
+- The *A player recognises this part by its symptom* device opens eight of
+  the thirteen landing pages. Session B varied Part I's away from it and left
+  Part II's. [kind=lecture]
+- `what-this-book-skips` is 476 lines of fifteen tours plus a fifteen-row
+  ruling table, and it is the second lecture a reader meets. Its length is a
+  cut worth judging as a whole. [kind=lecture]
+- `anatomy`'s *Where to look* is twenty names for a page whose cast is eight.
+  [kind=lecture]
+
+### For pass 8 (the voice)
+
+- `identifiers-and-registries`' hook says the wire id "is a line number",
+  which is a metaphor for the ordinal of the registration statement and false
+  read literally. The lecture unpacks it in the next two sentences; the
+  landing-page teaser and the verified line do not, and session B left all
+  three alone because the metaphor is the page's best sentence. [kind=voice]
+  (This restates an open session-A entry; both should be settled together.)
+- *the two tag tables* survives as a cast-row phrase on
+  `identifiers-and-registries` after the explanation moved to `tags`. Check
+  the phrase still earns its place. [kind=voice]
+
+### Coverage routed, not acted on
+
+- `core/dispenser` (13 classes, 1,090 lines) is in Part II's packages by the
+  atlas's `PARTS` mapping and is Part V's subject. Either the mapping moves it
+  or `blocks/` names the family. **Session E**, with the mapping change if it
+  wants one.
+- `util/worldupdate` (5 classes, 736 lines — `RegionStorageUpgrader`,
+  `UpgradeProgress`) is named nowhere in the book. It is the *Optimize World*
+  button, and it is the last sizeable unowned mechanism in Part II's packages.
+  Session B's judgement: it belongs beside `world/chunk-storage`, not in
+  Foundations. **Session D** to take or decline.
+- `util/eventlog` and `util/monitoring/jmx` (571 lines) belong to the skips
+  page's boundary, not to a lecture. Session B named `JsonEventLog` in
+  passing on `resource-system` and left the rest.
+- `GsonHelper` (608 lines, the largest unnamed class in Part II) is the JSON
+  reading toolbox; `codecs-nbt-json` names `StrictJsonParser` and
+  `LenientJsonParser` and not it. One clause on that page would close it.
+  [kind=book]
+
+
 ## Session A — the standard (pass 5) *(2026-09-05)*
 
 *What the standard turned up on its way through the frame. The rulings are in
@@ -293,10 +400,16 @@ drop the number.
 - `client/the-client-level.md:129` — "the chunk cache and **one** packet
   handler call `LevelExtractor` directly" is right for the dirty-marking path;
   three `ClientPacketListener` sites touch `levelExtractor` in all.
-- `foundations/identifiers-and-registries.md:75` — "keyed **three** ways"
-  names three maps; `MappedRegistry.byValue` is a fourth index.
-- `foundations/codecs-nbt-json.md:259` — "**two** fields" is true of the
-  `IOWorker` case cited; `StructureCheck`, in the same sentence, uses three.
+- ~~`foundations/identifiers-and-registries.md:75` — "keyed **three** ways"
+  names three maps; `MappedRegistry.byValue` is a fourth index.~~ **Done,
+  session B** [kind=book] — not an ambiguous count but a wrong one, so it was
+  fixed with the decompile open and logged in pass9.md. `byValue` is an
+  identity map and is what `Registry.getKey` reads.
+- ~~`foundations/codecs-nbt-json.md:259` — "**two** fields" is true of the
+  `IOWorker` case cited; `StructureCheck`, in the same sentence, uses three.~~
+  **Done, session B** — re-derived (`IOWorker.java:105` two `FieldSelector`s,
+  `StructureCheck.java:113` three) and rewritten to name the mechanism
+  (`CollectFields` over the selectors the caller wants) rather than a number.
 - `blocks/signal-and-dust.md:27,126` — "the three answers a state gives" is
   three of six signal delegators on `BlockBehaviour.BlockStateBase`; "All three
   stop early" is true of the reading methods and false of the direction arrays
@@ -1050,14 +1163,21 @@ correction):
 
 **Structural findings**, logged and not acted on:
 
-- **`anatomy/README.md`'s root figure is not homogeneous.** Four of its five
+- ~~**`anatomy/README.md`'s root figure is not homogeneous.** Four of its five
   edges point at *parts*; the fifth points at a *page* of Part I (*what this
-  book skips*). Either is defensible; the mix is what a reader notices.
-- **`anatomy/README.md`'s hook says "a server that ticks and a client that
+  book skips*). Either is defensible; the mix is what a reader notices.~~
+  **Done, session B** — redrawn as the part's own two pages, which is what
+  `TEMPLATE.md`'s landing-page rule requires and what the other twelve do. The
+  book-shaped graph it used to draw was a third statement of Part I's place in
+  the parts graph, and it disagreed with the other two.
+- ~~**`anatomy/README.md`'s hook says "a server that ticks and a client that
   draws".** The client ticks too — 0 to 10 times a frame, which is the
   lecture's own first arithmetic. The shorthand is deliberate and the
   lecture unpacks it two pages later, but as the sentence a reader memorises
-  it plants the wrong idea. A pass-5 judgement, not a fact fix.
+  it plants the wrong idea. A pass-5 judgement, not a fact fix.~~
+  **Done, session B** — the hook now contrasts the two *loops* rather than
+  ticking against drawing: "a server whose whole life is a tick loop, and a
+  client whose life is a frame loop with ticks inside it".
 - **`identifiers-and-registries`'s "the wire id is the line number".** True
   as a metaphor for the ordinal of the registration statement and false
   read literally (`Items.DIAMOND_SWORD` is at `Items.java:993` and its raw
@@ -1069,7 +1189,9 @@ correction):
   the anatomy, tags and data-components figures is a `participant X as
   ClassName` the index cannot see.
 - **Cross-links session A judged missing** and left to pass 5 touch this
-  part: Part X ← `anatomy/anatomy`, Part IV and Part XII ←
+  part: ~~Part X ← `anatomy/anatomy`~~ (still open, and session J's: the link
+  belongs on `the-client-loop`, not here — session B re-derived it and it is
+  the depending page that must change), Part IV and Part XII ←
   `identifiers-and-registries` and `codecs-nbt-json`. Each is a real
   dependency with no link or backticked slug on the depending page.
 
@@ -1520,10 +1642,13 @@ was cut or moved, and why)*
   (`text-components`), the `RegistrySynchronization` case
   (`protocol-phases`), `CODEC_WITH_BOUND_COMPONENTS` (`data-components`),
   `RemoteSlot`'s either-or (`containers-and-menus`).
-  **`identifiers-and-registries`**: `MappedRegistry.byValue` cut;
-  `TagLoader` named only as `TagLoader.buildUpdatedLookups`.
+  **`identifiers-and-registries`**: ~~`MappedRegistry.byValue` cut~~
+  (restored, session B — the cut is what made the "keyed three ways" count
+  wrong); `TagLoader` named only as `TagLoader.buildUpdatedLookups` — carried,
+  the tags page names the rest and the registries page cites it.
   **`resource-system`**: `RegistryDataLoader` dropped from its calls-into
-  (the registries page owns it). **`tags`**: nothing cut.
+  (the registries page owns it) — carried, correct under the ownership rule.
+  **`tags`**: nothing cut.
   **`data-components`**: the hashing detail (`HashedStack`,
   `HashedPatchMap`, `RemoteSlot.Synchronized`'s either-or and promotion,
   the creative double guard) moved to `codecs-nbt-json` and

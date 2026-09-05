@@ -50,7 +50,11 @@ with the tools it names (`pass5_dups.py`, `pass5_coverage.py`,
 role are in `TEMPLATE.md`, the through-lines have owners and anchors, the
 lecture map has been cut back to the order, and two more checks stand in
 `check_deps.py`. Part 3 of the brief is now the record of what was ruled, and
-sessions B–N apply it.
+sessions B–N apply it. **Session B is done** (2026-09-05, Parts I and II):
+nine pages rewritten, six mechanisms cut to a citation, the feature-flag
+coverage gap discharged, both landing pages rewritten to the role — Part I's
+figure had been drawing the book rather than the part — two corrections and
+one tool bug.
 
 ## The passes
 
@@ -583,3 +587,62 @@ plan as it stood at its close)*
   [pass5.md](pass5.md) and the session's claims to [pass9.md](pass9.md), where
   it recorded **no corrections**: nothing it read was wrong, because every
   finding was about where a claim lives rather than whether it is true.
+- **2026-09-05, session B — Parts I and II (pass 5).** Eleven pages read by
+  one agent each, both parts read end to end in watching order first. **Nine
+  pages rewritten.** The session's shape was the one pass 5 was chartered
+  for: almost nothing found was wrong, and almost everything found was in the
+  wrong place. **Ownership:** six mechanisms cut to a sentence and a link —
+  the two tag tables (to `tags`, whose scenario *is* the swap on a frozen
+  registry, leaving `identifiers-and-registries` the freeze proof it owns),
+  the GPU-backend retry order (to `rendering/the-window`), the crash relay (to
+  `how-a-server-dies`), the empty-server pause (to `server-tick`),
+  `MinecraftServer.spin`'s construct-then-start order (to
+  `starting-a-server`), and the Netty hop's mechanism (to `the-connection`,
+  `anatomy` keeping only the drain-timing contrast its own figure draws).
+  `anatomy`'s one 1.21-era callout was spent on `Gui`/`Hud`, a Part X subject
+  the page never returns to and which `client/hud` and `reference/naming-drift`
+  both already carry; it now spends it on `DeltaTracker`, which the page uses
+  three times. On `what-this-book-skips`, three of fifteen "skipped" tours
+  were not skips at all — `com/mojang/blaze3d/audio` is taught whole by
+  `client/sound-engine`, the statistics criterion parse is
+  `scoreboard-and-data`'s near word for word, and the recipe book is
+  `items/recipes`' — each reframed as an *address* finding, which is what the
+  page is actually for. **Seams:** the citation form applied across both
+  parts, with the anchor; the two parts' four through-line owner pages take 75
+  inbound links between them and one carried an anchor before this session.
+  Three pages assumed a page they never linked (`data-driven-types` leans on
+  `resource-system`'s `scanDirectory` four times; `tags` and `codecs-nbt-json`
+  name the four threads and never link `anatomy`). Two hand-forwards made
+  *to* `resource-system` were unpaid and are now paid: *linkfs* and
+  `DownloadQueue` with `DownloadCacheCleaner`. **Coverage:** the charter's
+  §7 entry discharged — **feature flags** get a section on
+  `identifiers-and-registries`, because what a flag does is filter a
+  `HolderLookup.RegistryLookup` over the seven registries in
+  `FeatureElement.FILTERED_REGISTRIES`, which is that page's subject; the pack
+  half stays on `resource-system` and links it. `GameConfig`, Part I's one
+  gap, closed in a clause. **The landing pages, rewritten last.**
+  `anatomy/README` was the worst page in its part, for the reason pass 4 found
+  three parts running: its figure drew the *book* — the twelve other parts
+  fanning off four threads — rather than the part's own two pages, breaking
+  `TEMPLATE.md`'s rule and standing as a third, disagreeing statement of Part
+  I's place in the parts graph. Redrawn to its two pages; the hook that said
+  "a server that ticks and a client that draws" now contrasts the two loops;
+  the opening sentence no longer collides with Part II's (both claimed to be
+  "the vocabulary the other twelve parts speak", back to back); a *where the
+  part stops* paragraph added; and the reason the boundary page is second
+  moved in from `lectures.md`. Part II's shape sentence called the part a
+  stack while its own figure drew a two-rooted fan. **Two corrections**, both
+  re-derived with the decompile open and logged in [pass9.md](pass9.md):
+  `MappedRegistry` is keyed **four** ways, not three — `byValue` is an
+  identity map and is what `Registry.getKey` reads — and `StreamTagVisitor`'s
+  "two fields" is two for `IOWorker` and three for `StructureCheck`. One
+  reported contradiction was re-derived and found to be none. **One tool bug**,
+  the sixteenth of the project and the first this pass: `map_source.py` and
+  `pass5_coverage.py` gave different populations for the same packages (Part I
+  as 7 classes and as 6) under a comment in `map_source.py` claiming they
+  "can never disagree" — `package-info.java`, counted as a file by the atlas
+  and dropped by the coverage tool. Nothing false was published, because no
+  landing page states a Part I size; both tools now name their population.
+  Five gates green. Six queue entries struck, one §7 entry discharged, and
+  what the reading raised for sessions D, E, G, J, K, M and N and for passes 6
+  and 8 appended to [pass5.md](pass5.md) rather than left in the log.

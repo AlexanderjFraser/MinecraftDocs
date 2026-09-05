@@ -12,9 +12,12 @@ in seconds.
 
 ## The shape of the part
 
-Part II is a stack. Each page is the machinery the page above it takes for
-granted, so it is watched bottom-up, and the last page is the pattern the
-whole stack exists to make possible.
+Part II is not a stack but a fan. Codecs and registries are underneath
+everything else here, and the five pages above them are largely independent
+of one another — which is why the figure has two roots and no single column.
+Watch it bottom-up all the same: every arrow points from the machinery to
+what takes it for granted, and the last page is the pattern the rest exists
+to make possible.
 
 ```mermaid
 flowchart BT
@@ -39,7 +42,8 @@ flowchart BT
 
 ## Before you start
 
-[Anatomy](../anatomy/anatomy.md), for the threads: registries are frozen
+[Anatomy](../anatomy/anatomy.md#four-threads-worth-memorising), for the
+threads: registries are frozen
 before either program exists, data-pack loading runs on the worker pool
 with hops back to the owning thread, and a reload's *apply* phase runs on
 whichever thread owns the state being replaced.
@@ -81,6 +85,10 @@ it was a Part II page and is now looked up, not watched.
 data-pack, synced. [Data components](../../reference/components.md) — every
 `DataComponentType`. [Naming drift](../../reference/naming-drift.md) —
 `Identifier` was *ResourceLocation*. [Diagram lanes](../../reference/lanes.md).
+The [glossary](../../reference/glossary.md) is worth more here than in any
+other part: this is where most of the book's vocabulary is defined, and it is
+the page to check when a later part uses one of these words in a second
+sense.
 
 ---
 

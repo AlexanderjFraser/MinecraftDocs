@@ -409,7 +409,8 @@ Signing and chat delivery — the `PlayerChatMessage`, the session, the
 Everything after `Component.visit` — `StringDecomposer`,
 `FormattedCharSequence`, wrapping, reordering, glyphs — is
 [text and fonts](../client/text-and-fonts.md). What a `Codec` is, and how
-NBT and JSON differ under one, is [codecs, NBT and JSON](codecs-nbt-json.md).
+NBT and JSON differ under one, is
+[codecs, NBT and JSON](codecs-nbt-json.md#one-abstraction-and-the-ops-that-are-not-formats).
 
 ## Questions players ask
 

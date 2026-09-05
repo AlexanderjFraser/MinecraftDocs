@@ -9,8 +9,9 @@ game reads from a file goes through — textures, models, sounds, language
 strings, recipes, advancements, loot tables, tags, worldgen JSON: a **stack
 of packs** is discovered, merged into a **resource manager** that is a
 snapshot of the stack, and a list of **reload listeners** each rebuild
-their world from it, every one of them reading on the worker pool at once
-and swapping their live state on the owning thread in the order they were
+their world from it, every one of them reading on the shared worker pool at
+once ([anatomy](../anatomy/anatomy.md#four-threads-worth-memorising)) and
+swapping their live state on the owning thread in the order they were
 registered. The client's stack is resource packs (`PackType.CLIENT_RESOURCES`,
 the *assets* tree); the server's is data packs (`PackType.SERVER_DATA`, the
 *data* tree) — same classes, two instances, two directories, and `/reload`
@@ -86,8 +87,19 @@ subdirectories, which the `Pack.ResourcesSupplier` assembles for zip and
 folder packs (the vanilla pack never produces one). Discovery is guarded:
 `DirectoryValidator`, `ForbiddenSymlinkInfo` and `PackDetector` decide
 what a folder is allowed to be, `allowed_symlinks.txt` is parsed into a
-`DirectoryValidator` by `LevelStorageSource.parseValidator`, and `packs/linkfs` is the exploded-pack filesystem
-used in development.
+`DirectoryValidator` by `LevelStorageSource.parseValidator`. Two corners of
+`server/packs` are worth a sentence each. `packs/linkfs` is a synthetic
+read-only file system — `LinkFileSystem`, `LinkFSProvider` and a `LinkFSPath`
+that is a name in a tree rather than a name on disk — which lets a
+development checkout's scattered directories present as one pack root, so
+the game can open a pack that was never assembled. And `DownloadQueue` is
+the client's cache for server-sent packs: one directory per pack UUID under
+a cache root, downloads run one at a time on a `ConsecutiveExecutor` over
+`Util.nonCriticalIoPool`, every attempt appended to a `JsonEventLog` beside
+them, and the constructor calls `DownloadCacheCleaner.vacuumCacheDir` to
+trim the root to `DownloadQueue.MAX_KEPT_PACKS` — twenty files, newest kept,
+one per directory before any directory's second. A server you visited
+twenty packs ago has been evicted.
 
 ### What *pack.mcmeta* says
 
@@ -113,7 +125,9 @@ automatically. `MinecraftServer.enableForcedFeaturePacks` force-selects the
 ones matching the world's forced features, and the world's flag set is the
 selected packs' requested flags joined with those forced ones. Turning on
 an experiment is enabling a data pack — through a different door than
-ordinary packs use.
+ordinary packs use. What the resulting `FeatureFlagSet` then *gates* is a
+registry lookup, and that is
+[identifiers and registries](identifiers-and-registries.md#feature-flags-the-same-registry-narrowed).
 
 What goes out of the stage is `PackRepository.openAllSelected`: the
 selected `Pack`s opened into a list of `PackResources`, in order.
@@ -350,7 +364,7 @@ server-sent pack is just one more `RepositorySource`, so
 | the manager | a façade swap: `ReloadableResourceManager.createReload` closes the old `MultiPackResourceManager` and holds the new one | a fresh `MultiPackResourceManager` inside a new `MinecraftServer.ReloadableResources`; the old one is closed only when the new one is installed, and the new one is closed if the reload fails |
 | which thread applies, and whether it blocks | the Render thread, between frames; nothing blocks | the Server thread; if `/reload` is issued *from* the server thread the method blocks it with `BlockableEventLoop.managedBlock` until done — `/reload` stalls the tick |
 | how many listeners | twenty, in registration order | three — `RecipeManager`, `ServerFunctionLibrary`, `ServerAdvancementManager` (`ReloadableServerResources.listeners`) |
-| what is a registry instead | nothing; the client's registries arrive over the wire | tags are read *before* the reload instance by `TagLoader.loadTagsForExistingRegistries` and applied after it ([tags](tags.md)); loot tables, predicates and item modifiers load as the `RegistryLayer.RELOADABLE` layer in `ReloadableServerRegistries.reload` ([identifiers and registries](identifiers-and-registries.md)); item component prototypes rebind through `BuiltInRegistries.DATA_COMPONENT_INITIALIZERS` ([data components](data-components.md)) |
+| what is a registry instead | nothing; the client's registries arrive over the wire | tags are read *before* the reload instance by `TagLoader.loadTagsForExistingRegistries` and applied after it ([tags](tags.md#the-four-moments-tags-are-loaded)); loot tables, predicates and item modifiers load as the `RegistryLayer.RELOADABLE` layer in `ReloadableServerRegistries.reload` ([identifiers and registries](identifiers-and-registries.md#when-a-world-opens)); item component prototypes rebind through `BuiltInRegistries.DATA_COMPONENT_INITIALIZERS` ([data components](data-components.md#the-prototype-and-why-it-is-built-at-reload)) |
 | when success is reported | when the overlay's poll finds the instance done with no exception | **before** the reload runs — the success message is sent first, and a failure arrives later, asynchronously |
 | what happens on completion | `LevelExtractor.allChanged` · `ResourceLoadStateTracker.finishReload` · `DownloadedPackSource.onReloadSuccess` · `Minecraft.onResourceLoadFinished` | close the old `MinecraftServer.ReloadableResources` · install the new · `PackRepository.setSelected` · write the new `WorldDataConfiguration` into level data · `ReloadableServerResources.updateComponentsAndStaticRegistryTags` · `RecipeManager.finalizeRecipeLoading` · `PlayerList.saveAll` · `PlayerList.reloadResources` — which re-reads every player's advancements and broadcasts `ClientboundUpdateTagsPacket` and `ClientboundUpdateRecipesPacket` · `ServerFunctionManager.replaceLibrary` · `StructureTemplateManager.onResourceManagerReload` · a rebuilt fuel table |
 | what happens on failure | `Minecraft.rollbackResourcePacks` | the new manager is closed, the old resources stay installed, and the command source is told |

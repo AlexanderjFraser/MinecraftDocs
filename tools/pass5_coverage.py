@@ -115,7 +115,8 @@ def report(files, part_dir: str, ticks: dict, figs: dict, min_lines: int, part_o
 
     out = [f"# Coverage — Part {numeral} · {title}", "",
            f"Population: {len(rows)} classes and {map_source.fmt(total)} lines in {map_source.spec_text(spec)} "
-           f"(the atlas's `PARTS` mapping; skipped packages excluded). Pages read: {len(part_pages)}.", "",
+           f"(the atlas's `PARTS` mapping; skipped packages and `package-info.java` excluded, so this runs "
+           f"a little under the atlas's file count for the same packages). Pages read: {len(part_pages)}.", "",
            "| named on a page of the part | named on a page elsewhere in the book | named only inside a figure | named nowhere |",
            "|---:|---:|---:|---:|",
            f"| {by['part'][0]} classes, {map_source.fmt(by['part'][1])} lines | {by['book'][0]}, {map_source.fmt(by['book'][1])} | "

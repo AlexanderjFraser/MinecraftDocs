@@ -1404,13 +1404,21 @@ writes one strikes it through; a session that rules one out says why, here.*
   a matter of noticing which inherited overrides are empty — is a claim about a
   class the book never describes. Small: what `Level` holds, what it leaves
   abstract, and which of its methods are constants on one side.
-- **Feature flags and `FeatureFlagSet`** *(pass 4, session O)*. Backticked on
+- ~~**Feature flags and `FeatureFlagSet`** *(pass 4, session O)*. Backticked on
   nine system pages and three Reference pages, explained on none —
   `resource-system` and `creating-a-world` both mention it in passing, and the
   three shipped experiments are data packs with one `features.enabled` id each.
   It gates registry contents, recipes, blocks, items and at least one game rule
   (`max_minecart_speed`, whose gate the generated view now prints), so a reader
-  meets the phrase long before anything defines it.
+  meets the phrase long before anything defines it.~~
+  **Discharged, pass 5 session B**, as a section on
+  `foundations/identifiers-and-registries` — *Feature flags: the same
+  registry, narrowed* — because what a flag does is filter a
+  `HolderLookup.RegistryLookup`, and that is the registries page's subject.
+  `resource-system` keeps the pack half (a feature pack is a built-in pack
+  with a `FeatureFlagsMetadataSection`, not auto-selected) and now links the
+  new section for what the resulting set gates. The claims are logged in
+  [pass9.md](pass9.md).
 
 - **The two other selector-capable argument types** —
   `GameProfileArgument` and `ScoreHolderArgument` both compile and resolve an

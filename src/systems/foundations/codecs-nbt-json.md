@@ -30,7 +30,9 @@ brackets. One description of a type, and the format is an argument.
 | `TagValueOutput` · `TagValueInput` | the only `ValueOutput` and `ValueInput` there are — a `CompoundTag` plus its ops, and what save code actually sees | whichever thread saves |
 | `ProblemReporter` | that a codec failure inside a save is a logged path, not an exception in the tick | the failing thread |
 
-All of it ships in both jars.
+All of it ships in both jars. The thread column is the four of
+[anatomy](../anatomy/anatomy.md#four-threads-worth-memorising), and which one
+holds a codec matters only where the same codec runs on two of them.
 
 ## The four paths, side by side
 
@@ -201,7 +203,7 @@ demand a `RegistryOps`, a `DelegatingOps` carrying a
 are two routes worth knowing: `HolderLookup.Provider.createSerializationContext`,
 which is what nearly every caller uses, and `RegistryDataLoader.createContext`,
 used during registry loading itself, when the registries are still being
-built ([identifiers and registries](identifiers-and-registries.md)). Both
+built ([identifiers and registries](identifiers-and-registries.md#when-a-world-opens)). Both
 end at `RegistryOps.create`, which a handful of callers reach directly.
 
 A codec over a **built-in** registry is a different case:
@@ -257,10 +259,12 @@ gets a `ListTag`, whatever is in it; the arrays on disk are written by the
 codecs that asked for arrays.
 
 **A whole file need not be read to answer a question about it.**
-`StreamTagVisitor` and the visitors beside it let `NbtIo.parse` pull two
-fields out of a region chunk without materialising the chunk — which is how
-an IO worker reads a chunk's data version, and how `StructureCheck` and the
-world-list screen answer without loading a world.
+`StreamTagVisitor` and the visitors beside it let `NbtIo.parse` pull a named
+handful of fields out of a region chunk without materialising the chunk: a
+`CollectFields` is built from the `FieldSelector`s the caller wants, two for
+the `IOWorker` reading a chunk's data version and its blending data, three
+for `StructureCheck`, which is how it and the world-list screen answer
+without loading a world.
 
 Every read that came from outside carries a budget. `NbtAccounter` is
 charged as the per-type read strategy in `TagType` walks the stream, with
@@ -313,7 +317,7 @@ codec produces. A component that will not serialise costs you the component,
 not the tick. The deliberate exceptions to the façade are `CustomData` and
 `TypedEntityData`, the two components that carry a `CompoundTag` verbatim so
 that data packs have an escape hatch
-([data components](data-components.md)).
+([data components](data-components.md#the-key-datacomponenttype)).
 
 Migration is the one thing that runs before any of this. `DataFixTypes` is
 the enum of every kind of file the game owns — `DataFixTypes.CHUNK`,
@@ -349,7 +353,7 @@ sent through `ByteBufCodecs.lenientJson`. That is why the game ships two
 JSON parsers — `LenientJsonParser` for the wire and `StrictJsonParser` for
 data packs. Chat text itself is NBT by the time it reaches the play phase:
 `ComponentSerialization` holds that whole matrix in one class
-([text components](text-components.md)).
+([text components](text-components.md#serialisation-one-codec-three-shapes)).
 
 ## Questions players ask
 

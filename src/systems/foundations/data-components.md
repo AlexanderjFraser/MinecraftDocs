@@ -152,7 +152,7 @@ On the network the patch travels inside every `ItemStack` in
 `ClientboundSetCursorItemPacket`, `ClientboundSetPlayerInventoryPacket` and
 `ClientboundSetEquipmentPacket`; the client answers ordinary clicks with
 hashes, not stacks, and the creative slot alone sends a full, re-validated
-stack — [codecs, NBT and JSON](codecs-nbt-json.md) owns the four
+stack — [codecs, NBT and JSON](codecs-nbt-json.md#the-four-paths-side-by-side) owns the four
 serialisations of a stack, and [containers and menus](../items/containers-and-menus.md)
 owns what the server does with a hash. On disk an item is saved as a
 *patch* (`ItemStack.MAP_CODEC`'s "components", with transient types
@@ -309,7 +309,7 @@ matches, so `ClientboundContainerSetSlotPacket` goes out, and only the patch
 crosses: `ItemStack.OPTIONAL_STREAM_CODEC` writes the count,
 `Item.STREAM_CODEC` (a registry id) and the patch. The client answers later
 clicks with a `HashedStack` of CRC32C checksums rather than stacks
-([codecs, NBT and JSON](codecs-nbt-json.md) for the hashing,
+([codecs, NBT and JSON](codecs-nbt-json.md#checksum-a-hash-instead-of-a-stack) for the hashing,
 [containers and menus](../items/containers-and-menus.md) for the click
 protocol).
 

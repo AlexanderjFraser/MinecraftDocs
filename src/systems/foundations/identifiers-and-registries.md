@@ -79,10 +79,13 @@ is also an int-to-object table. `WritableRegistry` adds
 `WritableRegistry.register` and `WritableRegistry.bindTags`;
 `DefaultedRegistry` answers a default entry — *air* for items and blocks —
 instead of null. `MappedRegistry` is the one real implementation, with
-`DefaultedMappedRegistry` its only subclass. It is keyed three ways
-(`MappedRegistry.byKey`, `MappedRegistry.byLocation` and the
-insertion-ordered `MappedRegistry.byId`), it maps values back to their
-numbers in `MappedRegistry.toId`, and it carries the `MappedRegistry.frozen`
+`DefaultedMappedRegistry` its only subclass. It holds the same entries in
+four indexes at once and every lookup direction is one of them:
+`MappedRegistry.byKey` and `MappedRegistry.byLocation` from a name, the
+insertion-ordered `MappedRegistry.byId` from a number, and
+`MappedRegistry.byValue` from the object itself — an identity map that is
+what answers `Registry.getKey`, with `MappedRegistry.toId` the parallel
+identity map to the number. It carries the `MappedRegistry.frozen`
 flag that `MappedRegistry.validateWrite` checks on every mutation.
 
 A `Holder` is the seam between a registry and the code that names its
@@ -107,7 +110,7 @@ registries, and `RegistryAccess.Frozen` is a bare marker for the finished
 kind. Every static initialiser writes through `Registry.register`; every
 codec that names a *dynamic* entry — `RegistryFileCodec`,
 `RegistryFixedCodec`, `RegistryCodecs.homogeneousList`, `HolderSetCodec` —
-resolves through a `RegistryOps` ([codecs, NBT and JSON](codecs-nbt-json.md));
+resolves through a `RegistryOps` ([codecs, NBT and JSON](codecs-nbt-json.md#where-the-registry-context-comes-from));
 and at runtime `MinecraftServer.registryAccess` and
 `ClientPacketListener.registryAccess` are where anything that must resolve a
 key goes.
@@ -140,7 +143,7 @@ sequenceDiagram
 
 Both `Main` classes do this early — after argument parsing and crash-report
 preload, and after a handful of non-registry bootstraps
-([anatomy](../anatomy/anatomy.md)) — on the launching thread, before any
+([anatomy](../anatomy/anatomy.md#from-main-to-a-world)) — on the launching thread, before any
 server or client object exists. `Bootstrap.bootStrap` calls
 `BuiltInRegistries.bootStrap`, and after it returns every built-in registry
 is frozen and any `WritableRegistry.register` throws.
@@ -173,7 +176,7 @@ Registration then binds the key to *that* holder rather than creating a
 new one, so `Item.builtInRegistryHolder` and the registry's own holder are
 the same object, and a tag check on a block or item is a set lookup on the
 holder's own bound tag set with no registry hop
-([tags](tags.md)). `Holder.Reference.createIntrusive` is marked
+([tags](tags.md#from-json-to-a-parrots-decision)). `Holder.Reference.createIntrusive` is marked
 deprecated — the mechanism is load-bearing but not encouraged.
 
 **The numeric id is the line number.** `MappedRegistry.register` appends
@@ -244,7 +247,7 @@ pool, joined on the client thread — before it will accept play packets.
 is given lookups built from `LayeredRegistryAccess.getAccessForLoading` —
 built by `TagLoader.buildUpdatedLookups`, so that the static registries'
 freshly read tags are visible to the worldgen codecs before they are
-applied ([tags](tags.md)) — so a biome JSON may reference a placed feature
+applied ([tags](tags.md#the-four-moments-tags-are-loaded)) — so a biome JSON may reference a placed feature
 (same layer) or a sound event (`RegistryLayer.STATIC`) but never a level
 stem (`RegistryLayer.DIMENSIONS`, which loads after). The lists
 `RegistryDataLoader.WORLDGEN_REGISTRIES`,
@@ -297,7 +300,7 @@ generation and mob-spawn settings the client never needs.
 `RegistryDataCollector.collectGameRegistries` runs when configuration
 finishes. The `ClientRegistryLayer.REMOTE` layer is rebuilt wholesale and
 frozen — but the **static** registries cannot be rebuilt, so their tags are
-applied in place, through the mechanism [tags](tags.md) owns, and when no
+applied in place, through the mechanism [tags](tags.md#the-four-moments-tags-are-loaded) owns, and when no
 registry data arrived at all the collector takes a tags-only path that
 patches and returns the original registries untouched. The result is a
 `RegistryAccess.Frozen` in `CommonListenerCookie` that every
@@ -319,12 +322,10 @@ exception to the first sentence is one of the two things in the second.
 `MappedRegistry.freeze` is a proof, not a switch. It binds every holder's
 value and throws if any holder is still unbound, if any intrusive holder
 was created but never registered, or if any tag declared by a `TagKey` was
-never bound. The tag half of that proof works because there are **two tag
-tables, not one**: `MappedRegistry.frozenTags` is the registration-time map of
-declared `HolderSet.Named` objects, and `MappedRegistry.allTags` (a
-`MappedRegistry.TagSet`) is the bound view, which starts as
-`MappedRegistry.TagSet.unbound`, where every read throws. The freeze
-checks the first and installs the second. For the static registries the
+never bound. The tag half of that proof works because a registry keeps its
+*declared* tags apart from its *bound* ones, which is the split
+[tags](tags.md#a-tag-is-a-key-and-a-file) is built on: the freeze checks the
+declared table and installs the bound one. For the static registries the
 real tags do not exist until a data pack is read, so `BuiltInRegistries.freeze`
 first binds the tags the bootstrap actually asked for to empty
 (`MappedRegistry.bindAllTagsToEmpty`) and the proof passes on empty sets.
@@ -339,11 +340,45 @@ swaps the tag tables of the static registries, and `/reload` does more
 than refill the `RegistryLayer.RELOADABLE` layer — it re-reads and
 re-applies tags for **every** registry in the server's composite access.
 How a frozen registry's tags are swapped is the pay-off of
-[tags](tags.md), and the mechanics of the reload itself belong to
-[the resource system](resource-system.md). **Components:** every registry
+[tags](tags.md#from-json-to-a-parrots-decision), and the mechanics of the reload
+itself belong to [the resource system](resource-system.md#reload-the-same-pipeline-on-the-server). **Components:** every registry
 element's `DataComponentMap` is bound after the freeze by
 `Holder.Reference.bindComponents`, and `/reload` rebinds every one of them;
-[data components](data-components.md) owns how.
+[data components](data-components.md#the-prototype-and-why-it-is-built-at-reload) owns how.
+
+## Feature flags: the same registry, narrowed
+
+A frozen registry's contents never change — but what a *lookup* will show you
+can be narrower than what the registry holds, and that is the whole of the
+feature-flag mechanism. `FeatureFlagSet` is a bitmask: a 64-bit *long* and the
+`FeatureFlagUniverse` it belongs to, with `FeatureFlagSet.MAX_CONTAINER_SIZE`
+at 64 flags. There is one universe, *main*, and `FeatureFlags` declares four
+flags in it — `FeatureFlags.VANILLA` and the three experiments,
+`FeatureFlags.TRADE_REBALANCE`, `FeatureFlags.REDSTONE_EXPERIMENTS` and
+`FeatureFlags.MINECART_IMPROVEMENTS`. A set that is not a subset of
+`FeatureFlags.VANILLA_SET` is what `FeatureFlags.isExperimental` reports, and
+what puts the warning on a world.
+
+What carries a flag is a registry element. `FeatureElement` is an interface
+with one method, `FeatureElement.requiredFeatures`, implemented by exactly
+seven types — `Item`, `BlockBehaviour`, `EntityType`, `GameRule`, `MenuType`,
+`Potion` and `MobEffect` — and `FeatureElement.FILTERED_REGISTRIES` names the
+seven registries those live in. `HolderLookup.RegistryLookup.filterFeatures`
+is the filter: handed the world's enabled set, it returns the same lookup
+untouched for any registry not in that set of seven, and a delegating lookup
+that hides the disabled elements for one that is. The registry underneath is
+not touched, and neither is its numbering — a disabled item keeps its wire id.
+
+That is why an experiment is enabled per world and not per install. The set
+is `WorldDataConfiguration.enabledFeatures`, read from *level.dat*, and the
+filtered lookup is what `CommandBuildContext` hands every argument type, so
+`/give` cannot name a disabled item and `/setblock` cannot name a disabled
+block; `GameRules` builds its map from the filtered `BuiltInRegistries.GAME_RULE`,
+so a disabled rule is not merely refused but absent; and `LevelReader.holderLookup`
+filters for anything that asks a level for a registry. Where the flags come
+*from* is the pack stack — a feature pack is a built-in pack carrying a
+`FeatureFlagsMetadataSection`, and turning on an experiment is enabling a
+data pack ([the resource system](resource-system.md#discover-the-repository-and-its-packs)).
 
 ## What crosses the wire, and where the files are
 
@@ -363,7 +398,7 @@ and writes every registry id one higher, where `ByteBufCodecs.holderRegistry`
 `RegistryDataLoader.DIMENSION_REGISTRIES` reads
 `data/<namespace>/<registry path>/*.json` (`Registries.elementsDirPath`)
 through `FileToIdConverter.registry` over a `ResourceManager`
-([the resource system](resource-system.md)), its tags live under
+([the resource system](resource-system.md#snapshot-the-manager)), its tags live under
 `Registries.tagsDirPath` — there is a third path builder,
 `Registries.componentsDirPath`, but it names a *reports* directory the data
 generator writes and nothing in the running game reads — and the reloadable set (loot
@@ -406,7 +441,7 @@ reload, on the client at the end of configuration. Do not confuse that with
 `MappedRegistry.componentLookup`, which is a `DataComponentLookup` built
 *at* freeze: a lazily-populated **reverse** index answering "which elements
 have this component value?", used by things like finding the spawn egg for
-an entity type ([data components](data-components.md)).
+an entity type ([data components](data-components.md#the-reverse-index-datacomponentlookup)).
 
 **What does a `RegistrationInfo` say?** Per entry, a `Lifecycle` and the
 `KnownPack` it came from; `RegistrationInfo.BUILT_IN` is what every static

@@ -37,11 +37,11 @@ world": `Minecraft.level` (a `ClientLevel`), `Minecraft.player` (a
 `Minecraft.singleplayerServer`, holds the `IntegratedServer` when one is
 running, and is the client's answer to "am I the host".
 
-> **For a 1.21-era reader.** `Gui` is not the HUD. In 26.2 `Gui` is the whole
-> 2D layer — it owns the current `Screen` (`Gui.screen`), the overlay,
-> toasts, chat and the render state — and the hearts and the hotbar are a
-> separate `Hud` class held as `Gui.hud`. Reach for `Gui` expecting the
-> health bar and you want `Hud`.
+> **For a 1.21-era reader.** The client's clock is `DeltaTracker`, which was
+> *Timer*, and the partial tick is a `DeltaTracker.Timer` you ask rather than
+> a float you are handed — it appears in the frame loop below and on every
+> renderer in Part XI. The rest of the drift a 1.21 reader will trip on is
+> [naming drift](../../reference/naming-drift.md).
 
 ## From *main* to a world
 
@@ -71,13 +71,19 @@ sequenceDiagram
     Note over MC,IS: two loops, one wire
 ```
 
+That is the book's first sequence diagram, and its lanes are abbreviated the
+way every later one is: two or more letters of a class name, one meaning
+throughout. The key is [diagram lanes](../../reference/lanes.md).
+
 **Bootstrap before anything exists.** `SharedConstants.tryDetectVersion`
 reads *version.json* as the first statement of both *main* methods, before
 the option parser exists; `NativeLibrariesBootstrap.loadLibraries` unpacks
 the natives, `CrashReport.preload` warms the reporter, and
 `Bootstrap.bootStrap` builds and freezes the static registries — blocks,
 items, entity types, the things that cannot be data-driven because the data
-loader itself needs them. `ClientBootstrap` does the client-only equivalents
+loader itself needs them
+([identifiers and registries](../foundations/identifiers-and-registries.md#before-the-game-exists)
+is what the freeze proves). `ClientBootstrap` does the client-only equivalents
 between that and `Bootstrap.validate`, which checks the result.
 `DataFixers.optimize` is kicked off concurrently before the registries are
 built and joined much later. That ordering is why nothing in `world/` can be
@@ -86,25 +92,26 @@ touched from a static initialiser.
 **The GPU backend is chosen in the constructor.**
 `RenderSystem.initBackendSystem` runs first and returns GLFW's clock, which
 `Minecraft` installs through `Util.setTimeSource` — on the client, the game's
-entire notion of time comes from the windowing library. Then
-`PreferredGraphicsApi` from `Options` decides the order `PreferredGraphicsApi.getBackendsToTry` returns: OpenGL
-first by default, Vulkan first only if the player opts in. The first
-`GpuBackend` that can create a `Window` wins — `GlBackend` or
-`VulkanBackend` — and from then on the renderer only ever sees the
-`GpuDevice` abstraction in `com/mojang/blaze3d`.
+entire notion of time comes from the windowing library. Then a `GpuBackend` is
+chosen by trying candidates in an order `Options` sets until one of them
+makes a `Window` — there are two, `GlBackend` and `VulkanBackend`
+([the window](../rendering/the-window.md#trying-backends-until-one-of-them-makes-a-window))
+— and from then on the renderer only ever sees the `GpuDevice` abstraction
+in `com/mojang/blaze3d`.
 
 **Construction registers, it does not load.** The constructor creates each
 manager and registers it on the `ReloadableResourceManager`; the loading is
 one `ReloadInstance` whose *prepare* phases run on `Util.backgroundExecutor`
 and whose *apply* phases run on the Render thread, with the `LoadingOverlay`
 on screen. Pressing F3+T re-runs exactly that path — see
-[the resource system](../foundations/resource-system.md).
+[the resource system](../foundations/resource-system.md#f3t-end-to-end).
 
 **Opening a world spins a server.** `Minecraft.doWorldLoad` calls
-`MinecraftServer.spin`, which makes the thread object, constructs the
-`IntegratedServer` *on the caller's thread* around it, and only then starts
-it; the new thread's body is `MinecraftServer.runServer`, which calls
-`IntegratedServer.initServer` and enters the loop. Meanwhile the Render
+`MinecraftServer.spin`, which constructs the `IntegratedServer` *on the
+caller's thread* before starting the new one
+([starting a server](../server/starting-a-server.md#minecraftserverspin-and-the-last-thing-main-does)
+has that order in full); the new thread's body is `MinecraftServer.runServer`,
+which calls `IntegratedServer.initServer` and enters the loop. Meanwhile the Render
 thread keeps drawing frames and draining its own queue through
 `BlockableEventLoop.managedBlock` until `MinecraftServer.isReady` — the
 textbook case of *waiting drains*.
@@ -163,7 +170,8 @@ usually zero or one, at most ten are run — and `Minecraft.tick` is called that
 many times. The fractional remainder is the partial tick the renderers
 interpolate with. So the client *has* a 20 Hz tick, but it is a sub-step of
 the frame loop rather than a loop of its own; [the client
-loop](../client/the-client-loop.md) is the arithmetic in detail.
+loop](../client/the-client-loop.md#the-ten-and-the-arithmetic-behind-it) is the
+arithmetic in detail.
 
 **The tick loop.** `MinecraftServer.runServer` re-reads this tick's length
 every iteration from `TickRateManager.nanosecondsPerTick` — 50 ms by default,
@@ -175,7 +183,8 @@ then parks until the next tick is due. There is no frame and no partial tick
 here at all. The "Can't keep up!" warning is `MinecraftServer.runServer`'s
 own, decided
 before either call from how far behind the deadline already is; [the server
-tick](../server/server-tick.md) owns what is inside them — the tick budget,
+tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
+owns what is inside them — the tick budget,
 the deferrable work and the flush bracket around outbound packets.
 
 **Both are event loops first and game loops second.** `Minecraft` and
@@ -190,12 +199,14 @@ keeps draining its own queue while it waits.
 arrives on a Netty IO thread and `Connection.channelRead0` hands it to the
 current `PacketListener`; a handler that touches game state calls
 `PacketUtils.ensureRunningOnSameThread`, which, when it is off-thread, queues
-the packet on the owning side's `PacketProcessor` and aborts the handler with
-`RunningOnDifferentThreadException`. That queue is drained first thing in
-`MinecraftServer.processPacketsAndTick` and early in `Minecraft.runTick` —
-after the delta tracker advances, before the ticks. Sending is the reverse:
-`Connection.send` writes and flushes from any thread, re-posting to the
-channel's event loop if it is not already on it.
+the packet on the owning side's `PacketProcessor` instead of running it —
+[the connection](../networking/the-connection.md#the-threads-underneath-it)
+is that crossing in both directions. What matters here is *when* the queue is
+drained, because the two loops do not agree: first thing in
+`MinecraftServer.processPacketsAndTick`, but on the client early in
+`Minecraft.runTick`, after the delta tracker advances and before the ticks —
+so a client at 200 frames a second takes the server's packets ten times more
+often than it ticks.
 
 ## Four threads worth memorising
 
@@ -222,7 +233,10 @@ game thread: `Minecraft.gameThread` and the thread `RenderSystem` guards with
 What that thread does with a world is animate and predict one — `Minecraft.tick`
 calls `ClientLevel.tickEntities`, and block entities tick too — but nothing it
 concludes is authoritative, and the server's packets overwrite whatever the
-prediction got wrong.
+prediction got wrong — which is a claim about the *world*, and the client's
+own player is the exception the book spends Part VIII and
+[prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)
+on.
 
 Everything else that matters is *serialised onto* a pool rather than given a
 thread. The two `ConsecutiveExecutor` classes in `util/thread` are the
@@ -258,10 +272,10 @@ property, and answers the operator-permission questions differently.
 
 ## Questions players ask
 
-**Does a dedicated server pause?** Yes. With *pause-when-empty-seconds*
-(default 60) elapsed and nobody online, `MinecraftServer.tickServer` returns
-after ticking connections alone. Pausing is not a singleplayer concept — only
-the client-decides-it half is.
+**Does a dedicated server pause?** Yes — an empty server stops ticking on
+its own ([the server tick](../server/server-tick.md#an-empty-server-stops-ticking)
+has the counter and what still runs). Pausing is not a singleplayer concept;
+only the client-decides-it half is.
 
 **Is twenty ticks a second a constant?** No, it is a server field.
 `ServerTickRateManager`, over the shared `TickRateManager`, owns the
@@ -273,18 +287,19 @@ manipulates, and the client mirrors it in `ClientLevel` so the
 `MinecraftServer.haveTime` travels from `MinecraftServer.tickServer` down
 through every level, and what it actually gates is a short list that does
 not include loading or generating a chunk. [The server
-tick](../server/server-tick.md) has that list, and the sprint's inverted
-effect on it.
+tick](../server/server-tick.md#what-the-budget-actually-gates) has that list,
+and the sprint's inverted effect on it.
 
 **What happens when something throws?** It is collected, not thrown. Both
-loops catch everything, wrap it in a `CrashReport` and, on the client, try
-`Minecraft.emergencySaveAndCrash` first. A background thread that dies goes
-through `Util.onThreadException` into `BlockableEventLoop.relayDelayCrash`,
-which parks the report in one **static** slot; the next loop to check it
-rethrows — but only a loop constructed to propagate crashes, which is
-`Minecraft` and `DedicatedServer` and never `IntegratedServer`. So a worker
-that dies in singleplayer surfaces on the client, not on the server thread
-whose work it was doing.
+loops catch everything and wrap it in a `CrashReport`; a background thread
+that dies has its report parked for a loop to pick up
+([how a server dies](../server/how-a-server-dies.md#the-crash-that-saves)
+owns that relay, and
+[the client loop](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping)
+the client's own three exits). The Part I consequence is the asymmetry: only
+a loop constructed to propagate crashes rethrows a parked report, and
+`IntegratedServer` is not one — so a worker that dies in singleplayer
+surfaces on the *client*, not on the server thread whose work it was doing.
 
 **Which entry point starts all this?** One of five. `client/main/Main` for the
 client, `server/Main` for the dedicated server, `data/Main` for the data
@@ -292,13 +307,18 @@ generator, `client/data/Main` for the generated client assets — models,
 atlases, equipment assets, waypoint styles — and `gametest/Main` for
 `GameTestServer`. The tree holds a sixth *main*, `SnbtDatafixer`, which
 converts files and starts nothing.
-The client reads *options.txt* through `Options`, the dedicated server
-*server.properties* through `DedicatedServerProperties`, and both read
-*version.json* through `SharedConstants`.
+Each parses its own command line — the client's into a `GameConfig` the
+`Minecraft` constructor is built from — and then reads its own settings file:
+*options.txt* through `Options` on the client, *server.properties* through
+`DedicatedServerProperties` on the dedicated server, and *version.json*
+through `SharedConstants` on both. The two generator entry points are
+build-time programs and
+[what this book skips](what-this-book-skips.md#the-data-generators-and-why-data-driven-is-both-true-and-misleading)
+says how far that is true.
 
 ## Where to look
 
-`client/main/Main` · `Minecraft` · `Gui` · `Hud` · `DeltaTracker` ·
+`client/main/Main` · `GameConfig` · `Minecraft` · `DeltaTracker` ·
 `MinecraftServer` · `IntegratedServer` · `server/Main` · `DedicatedServer` ·
 `GameTestServer` · `BlockableEventLoop` · `ReentrantBlockableEventLoop` ·
 `Util` (the executors) · `PacketProcessor` · `PacketUtils` ·

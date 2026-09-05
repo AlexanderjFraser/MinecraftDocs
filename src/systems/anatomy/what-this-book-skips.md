@@ -183,8 +183,9 @@ forty-character alphanumeric secret, generating one if absent.
 What it exposes is the administrator's surface, not the game's: allow-list,
 bans and IP bans, players and kicks, operators, game rules, server status,
 save and stop, system messages, and a family of live server settings —
-including the idle-pause window, whose actual behaviour is documented in
-[anatomy](anatomy.md), because a dedicated server pauses too.
+including the idle-pause window, whose actual behaviour is
+[the server tick](../server/server-tick.md#an-empty-server-stops-ticking)'s,
+because a dedicated server pauses too.
 Implementations sit behind service interfaces so the wire layer never
 touches the server object directly, and an executor service marshals calls
 onto the server thread.
@@ -254,18 +255,17 @@ fixer as *JSON* rather than NBT — the other is advancement progress
 
 **The scoreboard link** is why the package is worth a paragraph — and note
 that the class doing the linking is not in it: `ObjectiveCriteria` lives in
-`net/minecraft/world/scores/criteria`
-([scores, teams and stored data](../commands/scoreboard-and-data.md)).
-It parses a criterion name containing a colon by looking the left half up in
-the stat-type registry and the right half in *that stat type's* registry,
-then wrapping the resulting stat as a criterion. So
-*minecraft.mined:minecraft.stone* is not a special case — it is the
-statistics registry addressed through a string.
+`net/minecraft/world/scores/criteria`, which is why a scoreboard objective
+can name a statistic and why this package is reachable from a command at all
+([scores, teams and stored data](../commands/scoreboard-and-data.md#what-a-criterion-can-be-which-is-nearly-anything)
+is how the name is parsed).
 
-**The recipe book** is the second concern, here for historical reasons
-rather than architectural ones: `RecipeBook`, `RecipeBookSettings` and
-`ServerRecipeBook`, which [recipes](../items/recipes.md) and
-[advancements](../commands/advancements.md) both reach into.
+**The recipe book** is the second concern, and it is in this package for
+historical reasons rather than architectural ones — `RecipeBook`,
+`RecipeBookSettings` and `ServerRecipeBook` are not skipped, they are
+[recipes](../items/recipes.md)', with [advancements](../commands/advancements.md)
+reaching in from the other side. The address is the only thing surprising
+about them.
 
 ## Two packages nobody will recognise
 
@@ -367,23 +367,18 @@ because it is typed and cross-referenced where the JSON is not, a point
 providers are how you get machine-readable dumps of exactly the tables this
 book's own [reference layer](../../reference/README.md) covers.
 
-## The audio backend lives in Blaze3D
+## The audio backend lives in Blaze3D, and is not skipped
 
-**`com/mojang/blaze3d/audio`** wraps OpenAL — and what is worth flagging is
-the *location*. The binding sits inside Blaze3D, beside the GPU
-abstraction, not in the client's sound package where the engine, the
-manager, the channel pool and the Ogg decoding live
-([the sound engine](../client/sound-engine.md)). Blaze3D is the platform layer for both
-devices, not only the graphics one.
-
-`Library` owns the device and context and splits a default thirty channels
-into static and streaming pools; a `Channel` is one source, with either a
-whole buffer or a small streaming queue. Binaural rendering needs the
-platform's HRTF extension **and** the Directional Audio option — it is never
-switched on behind the player's back. And there is a whole device-hotplug
-apparatus with both callback and polling implementations, so plugging in
-headphones mid-game moves the audio without a restart. Detecting a device
-*disconnect* needs a second extension again.
+**`com/mojang/blaze3d/audio`** is the one package in this tour that is
+hatched for its *address* rather than for being unread. It wraps OpenAL, and
+it sits inside Blaze3D, beside the GPU abstraction, rather than in the
+client's sound package where the engine, the manager, the channel pool and
+the Ogg decoding live. That is the boundary fact: Blaze3D is the platform
+layer for both devices, not only the graphics one, and a reader looking for
+the sound code under `client/sounds` will not find the half that talks to the
+driver. Everything the package does — the device and context, the channel
+pools, binaural rendering, hot-plugging a headset mid-game — is taught, in
+Part X, by [the sound engine](../client/sound-engine.md).
 
 ## Player reporting
 
@@ -456,12 +451,12 @@ development checkout's scattered directories present as one pack root, and
 `DownloadQueue` with `DownloadCacheCleaner`, the server-resource-pack
 download queue and its cache eviction.
 
-**Named for a later pass to place.** These are real systems with real
-lectures in them, found by the coverage sweeps and not written:
-the carver tunnel walk; the dragon fight
-(`EnderDragonFight`); the advancements screen; and `client/multiplayer`'s
-joining-a-server tail. Each is recorded with a size and a recommendation in
-the coverage queue in the project's restructuring notebook.
+**Named, and not yet written.** These are real systems with real lectures
+in them, found by the coverage sweeps and not covered by any ruling above:
+the carver tunnel walk; the dragon fight (`EnderDragonFight`); the
+advancements screen; and `client/multiplayer`'s joining-a-server tail. They
+are named here so that a reader who wants one knows the book knows it is
+missing, and knows where to start.
 
 ## Where to look
 

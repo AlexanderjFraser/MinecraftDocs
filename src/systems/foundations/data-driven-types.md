@@ -37,7 +37,10 @@ game's behaviours endlessly and never add a new one.
 A codec built by `Codec.dispatch` reads one field of a JSON object — *type*
 unless the caller names another — decodes it with a codec for the *kind*,
 and asks that kind for a `MapCodec` to read the remaining fields. The class
-that does it is DataFixerUpper's `KeyDispatchCodec`, which is why the
+that does it is DataFixerUpper's `KeyDispatchCodec` — a `Codec` and a
+`DynamicOps` being the two halves of every read in this part
+([codecs, NBT and JSON](codecs-nbt-json.md#one-abstraction-and-the-ops-that-are-not-formats)) —
+which is why the
 `MapCodec` a kind supplies is a *map* codec: it reads a set of fields from
 the same object the type key came from, so the file looks flat. When the
 kind codec is `Registry.byNameCodec` over a registry in `BuiltInRegistries`,
@@ -241,10 +244,12 @@ on first start — calls `ReloadableServerResources.loadResources`, whose first
 act is `ReloadableServerRegistries.reload` on the background executor. It
 builds a `RegistryOps` over `JsonOps.INSTANCE` from a
 `HolderLookup.Provider` that already carries the updated tags, so a loot
-condition can name an item tag while it decodes. For each of the three
+condition can name an item tag while it decodes
+([tags](tags.md#the-four-moments-tags-are-loaded)). For each of the three
 `LootDataType`s it creates a new `MappedRegistry` and calls
-`SimpleJsonResourceReloadListener.scanDirectory`, whose lister is
-`FileToIdConverter.registry` over `Registries.elementsDirPath` — the
+`SimpleJsonResourceReloadListener.scanDirectory` — the every-JSON-file-in-a-directory
+listener shape ([the resource system](resource-system.md#prepare-every-listener-at-once)) —
+whose lister is `FileToIdConverter.registry` over `Registries.elementsDirPath` — the
 directory *is* the registry's path, *loot_table* — and which parses every
 file with the type's codec. A file that fails to parse is logged and
 skipped, and a duplicate id is an error, so one bad table costs one table.
