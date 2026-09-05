@@ -129,6 +129,28 @@ drop the number.
 - `rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
   (`ClientLevel.java:274`), stated as a fraction rather than hedged.
 
+- `commands/functions-and-macros.md:158` — "**three** lines apart" is three
+  lines *between* the two declarations (`CommandSourceStack.java` 124 and 128),
+  a delta of four.
+- `commands/scoreboard-and-data.md:215` — `Player.canHarmPlayer` "**six** call
+  sites" is six counting `ServerPlayer`'s own `super.canHarmPlayer`, five
+  counting external callers.
+- `commands/scoreboard-and-data.md:230` — death-message visibility has "a
+  **single** reader" in the behavioural sense (`ServerPlayer.die`, which calls
+  the getter three times), plus `TeamCommand`'s unchanged-check: four call
+  sites in all.
+- `commands/scoreboard-and-data.md:245` — "All **five** go through
+  `PlayerList.broadcastAll`" is true of all five, and three of them also ship
+  through explicit per-player loops
+  (`ServerScoreboard.startTrackingObjective` / `stopTrackingObjective`,
+  `PlayerList.updateEntireScoreboard`).
+- `commands/permissions.md:224` — "only **one** of those checks is a constant
+  the server itself uses" is one under *shared `PermissionCheck` constant*, two
+  if `Permissions.COMMANDS_GAMEMASTER` counts, which the server reads inside
+  `Commands.LEVEL_GAMEMASTERS`.
+- `commands/scoreboard-and-data.md:371` — "the nicest **ten** lines" is not
+  verifiable at that precision; decompiled formatting is not the source's.
+
 **Two same-page phrasings of one constant.** `world/points-of-interest.md:235`
 says "more than twenty ticks have passed" and
 `entities/ai-goals-and-brains.md:335` says "fewer than 21 ticks have passed"
@@ -172,6 +194,23 @@ which the same page states at :388;
 states and four branches;
 `blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
 is four *named* steps over five statements.
+
+**Two rules for the word *classes*, corpus-wide.** A package's class count is
+one number under two rules — `package-info.java` counted, or not — and the
+corpus uses both without always saying which. `anatomy/what-this-book-skips.md`
+states the split it uses (tables count files, prose counts classes) and is the
+only page that does. Part XIII follows the same split by accident:
+`commands/game-tests.md:38` "forty-four classes" and
+`commands/permissions.md:33` "eleven classes and 398 lines" exclude the marker
+(the atlas says 45 and 12 / 402), while
+`commands/scoreboard-and-data.md:52` "sixteen **files** and 1,442 lines"
+includes both markers and matches the atlas exactly. But
+`worldgen/README.md:27` says **451 classes** and explicitly adopts the atlas
+rule ("one class per file … the way the atlas counts everything else"), so
+*classes* means the opposite there. Session A logged this as "two size claims,
+two rules"; session L settled the Part XII half by adopting the atlas rule; the
+corpus still has both. **Pass 5 (or session O) should pick one and say it once**
+— the natural rule is the one `what-this-book-skips` already states.
 
 **One editorial number worth a look.**
 `world/environment-attributes-and-timelines.md:5` opens on "at tick 12542 … the

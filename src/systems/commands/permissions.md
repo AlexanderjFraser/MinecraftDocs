@@ -190,8 +190,9 @@ Put those two client sources together and you get the one thing the client
 *can* diagnose: it can tell "you would need permission for this" apart from
 "that is a typo", for a command it was asked to send on your behalf. A
 dialog button and a chat click event both route through
-`ClientPacketListener.sendUnattendedCommand`, whose one caller is
-`Screen.clickCommandAction`. A **sign does not**: `SignBlockEntity`
+`ClientPacketListener.sendUnattendedCommand`, whose two callers are
+`Screen.clickCommandAction` and an adapter `ClientPacketListener` builds for
+itself. A **sign does not**: `SignBlockEntity`
 runs its click command on the server, through a `CommandSourceStack` it
 builds itself at a hard-coded `LevelBasedPermissionSet.GAMEMASTER`, and the
 client is never consulted.
