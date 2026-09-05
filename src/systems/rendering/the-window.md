@@ -30,7 +30,7 @@ exists. All three of them start here.
 | `MonitorManager` | which monitor the window is considered to be on | Render thread |
 | `Monitor` | which `VideoMode` an exclusive fullscreen switch takes | Render thread |
 | `WindowEventHandler` | which of the six operating-system callbacks reach the game | Render thread |
-| `FramerateLimitTracker` | what an unfocused, idle or iconified window is allowed to cost | Render thread |
+| `FramerateLimitTracker` | what an iconified, idle or menu-bound window is allowed to cost | Render thread |
 | `NativeImage` | the CPU-side pixels between a file and a texture | native memory, closed by its owner |
 
 All of it lives in *com/mojang/blaze3d/platform*, and none of it exists on the
@@ -76,21 +76,28 @@ comes back, if anything comes back, is a `Window` holding a `Window.handle`
 and a `Window.backend` — and never a `GpuDevice`. The window knows which
 backend made it and nothing about what that backend went on to build.
 
-Below GLFW and STB, reached through LWJGL, this package calls nothing else in
-the game. Above it, `Minecraft` drives startup and the two per-frame calls
+Below GLFW and STB, reached through LWJGL, the window itself calls almost
+nothing else in the game — the exceptions are the three classes that have to
+report a failure upward, which reach for `Minecraft`, `CrashReport` and the
+server's watchdog. Above it, `Minecraft` drives startup and the two per-frame calls
 below, `KeyboardHandler` and `MouseHandler` take the input callbacks and the
 clipboard, `VideoSettingsScreen` drives the fullscreen and video-mode
 controls, and `Screenshot` and `TextureManager` want `NativeImage`. What the
-player's saved choices reach is `Options`: the window size and position, the
+player's saved choices reach is `Options`: an override width and height, the
 fullscreen flag and video-mode string, exclusive fullscreen, the GUI scale,
-and the graphics-API preference that ordered the loop above.
+and the graphics-API preference that ordered the loop above. The window's
+*position* is not among them — it is a field the move callback keeps and
+nobody saves.
 
 ## Six callbacks are the entire surface, and the game hears two
 
-Once the window exists, the operating system has exactly six things it can
-say to it. `WindowEventHandler` — a three-method interface that `Minecraft`
-implements — is the whole of what a window is allowed to say back to the
-game, and the window only ever reaches for two of those three methods.
+Once the window exists, `Window`'s constructor registers six GLFW callbacks,
+and they are almost the whole of what the operating system can say to it —
+a seventh, the close callback, is added later by `Minecraft` and is the
+subject of the last section. `WindowEventHandler` — a three-method interface
+that `Minecraft` implements — is the whole of what a window is allowed to say
+back to the game, and the window only ever reaches for two of those three
+methods.
 
 ```mermaid
 flowchart LR
@@ -113,11 +120,14 @@ flowchart LR
 
 `WindowEventHandler.framebufferSizeChanged` and
 `WindowEventHandler.cursorEntered` are the two. A window resize, a window
-move, a focus change and an iconify all end in a field —
-`Window.getX`, `Window.getY`, `Window.isFocused`, `Window.isIconified` and
-`Window.isMinimized` are what anyone asks instead, whenever they get round to
-it — so three of the six events the operating system reports are things the
-game is never *told*, only things it can look up.
+move, a focus change and an iconify all end in a field — `Window.getX`,
+`Window.getY`, `Window.isFocused` and `Window.isIconified` are what anyone
+asks instead, whenever they get round to it — so four of the six events the
+operating system reports are things the game is never *told*, only things it
+can look up. `Window.isMinimized` is the one that reads like a fifth and is
+not: it is set by the framebuffer callback, which fires with a zero-by-zero
+size when the window goes away, and cleared by the same callback when a real
+size comes back.
 
 The third method on the interface is the odd one.
 `WindowEventHandler.resizeGui` is never called by `Window` at all: its callers
@@ -141,11 +151,13 @@ keybinds](../client/input-and-keybinds.md).
 | screen | `Window.getScreenWidth`, `Window.getScreenHeight` | the window as the operating system reports it, which under DPI scaling is not the framebuffer |
 | GUI-scaled | `Window.getGuiScaledWidth`, `Window.getGuiScaledHeight` | the framebuffer divided by an integer scale |
 
-The integer scale is the part with a policy in it. `Window.setGuiScale` takes
-what the option asked for and `Window.calculateScale` decides what is
-actually possible, measuring the framebuffer against the two constants
-`Window.BASE_WIDTH` and `Window.BASE_HEIGHT` and applying a floor when the
-font needs unicode. A high-DPI display is what makes the first two rows
+The integer scale is the part with a policy in it, and the two methods run
+the other way round from their names. `Window.calculateScale` is handed what
+the option asked for as a *ceiling* and decides what is actually possible,
+counting upward while the framebuffer still divides by the two constants
+`Window.BASE_WIDTH` and `Window.BASE_HEIGHT`, then rounding *up* to an even
+number when the font needs unicode. `Window.setGuiScale` takes that answer
+and stores it, computing the two scaled sizes from it. A high-DPI display is what makes the first two rows
 diverge, and a GUI element that lands in the wrong place is nearly always
 code that read one of the three and meant another.
 
@@ -163,15 +175,17 @@ window does is a callback firing.
 `Window.setPreferredFullscreenVideoMode` negotiate what exclusive fullscreen
 turns into. Dragging the window to the other monitor is the same machinery
 approached from the other end: `MonitorManager.findBestMonitor` decides which
-monitor a window is on *by overlap*, and `Monitor.getPreferredVidMode` picks
-the closest available mode to the saved preference. A `Monitor` is a record —
+monitor a window is on *by overlap*, and `Monitor.getPreferredVidMode` looks
+for the saved preference among the modes this monitor actually offers, taking
+the monitor's current mode when there is no exact match — it never
+approximates. A `Monitor` is a record —
 a name, a handle, its list of `VideoMode`s, the current one and its position —
 and `Window.getRefreshRate` is the number that comes out of the mode.
 
 The one thing on this page that runs continuously is
-`FramerateLimitTracker`, which watches focus and idle time and overrides the
-frame limit: ten frames a second for an iconified or long-idle window, thirty
-for a short idle, sixty in a menu with no level. [The frame](the-frame.md) is
+`FramerateLimitTracker`, which watches iconification and idle time — not
+focus — and overrides the frame limit: ten frames a second for an iconified
+or long-idle window, thirty for a short idle, sixty in a menu with no level. [The frame](the-frame.md) is
 where that limit gets spent.
 
 ## `NativeImage`, the seam between a file and a texture
@@ -211,18 +225,21 @@ running, and a null on close. `Window.setErrorSection` tags whatever GLFW
 complains about with what the game was busy with when it complained, so a
 driver's error message arrives attached to a phase rather than floating free.
 
-**Why does the mouse cursor stop changing shape sometimes?**
-`Window.setAllowCursorChanges` exists because a cursor change part-way
-through a drag misbehaves on some platforms, so the game turns them off
-rather than risk it. `CursorType.createStandardCursor` takes a fallback for
-the shapes a given platform does not provide, which is the other half of the
-same problem.
+**Why does the mouse cursor stop changing shape sometimes?** Because you
+turned it off, or never turned it on. `Window.setAllowCursorChanges` is
+driven by a player option on the mouse-settings screen and nothing else, and
+with it clear every request is answered with the default arrow. The other
+half of the problem is the platform's: `CursorType.createStandardCursor`
+takes a fallback for the shapes a given system does not provide.
 
-**Why does the game sometimes die a moment after I close it?** Because a
-shutdown that hangs is killed from outside. `ClientShutdownWatchdog` starts a
-thread that forces the process down if the main thread does not finish
-stopping, and it waits a fixed grace period first, so a crash report still has
-time to be written.
+**Why does the game sometimes leave a crash report behind after I close
+it?** Because a shutdown that hangs is reported from outside.
+`ClientShutdownWatchdog` starts a daemon thread that sleeps fifteen seconds
+and, if the shutdown has not claimed the counter by then, builds the crash
+report itself from the main thread's stack. It is armed twice with different
+powers: the window-close callback arms it to *report only*, while the one
+`Minecraft.run` has already returned from arms it to report and then take the
+process down.
 
 **What is the rest of the package?** The corners the story above does not pass
 through: `ClipboardManager` and `TextInputManager` for copy, paste and IME

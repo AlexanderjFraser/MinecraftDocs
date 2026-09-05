@@ -31,12 +31,13 @@ and the barrier this rides on — and at no other time.
 | `TextureManager` | who owns each `AbstractTexture`, and when an animation advances | client thread |
 | `ItemModelResolver` | which `ItemModel` a given `ItemStack` draws with | client thread, every frame |
 
-## The shape of the work: sixteen fans, one barrier
+## The shape of the work: eighteen fans, one barrier
 
-This is the clearest fan-out-and-barrier in the client. Sixteen independent
-pieces of work start on worker threads at once — thirteen atlas stitches
-and three directory listings, each itself a fan of one task per file — and
-they converge exactly once.
+This is the clearest fan-out-and-barrier in the client. Eighteen independent
+pieces of work start on worker threads at once — thirteen atlas stitches and
+the five roots `ModelManager.reload` opens, three of them directory listings
+that are each themselves a fan of one task per file — and they converge
+exactly once.
 
 ```mermaid
 flowchart TD
@@ -47,16 +48,17 @@ flowchart TD
     L1["listing of models/, one task per file"]
     L2["listing of blockstates/, one task per file"]
     L3["listing of items/, one task per file"]
+    L4["EntityModelSet.vanilla and BuiltInBlockModels.createBlockModels"]
     RES["ModelDiscovery interns and resolves, ModelGroupCollector groups the states"]
     BAKE["ModelBakery.bakeModels in batches: one bake per BlockState, one per item file"]
     BAR["the barrier"]
     UP["client thread: TextureAtlas.upload, then ModelManager.apply"]
     INV["LevelExtractor.allChanged raises a flag the next frame reads"]
     RL --> HS
-    HS --> S1 & S2 & L1 & L2 & L3
+    HS --> S1 & S2 & L1 & L2 & L3 & L4
     L1 & L2 & L3 --> RES
     S1 & RES --> BAKE
-    BAKE & S2 --> BAR
+    BAKE & S2 & L4 --> BAR
     BAR --> UP --> INV
 ```
 
@@ -86,7 +88,8 @@ block atlas asks for mipmaps, the other twelve stitch flat. And sprite
 padding derives from the mip level *and* the anisotropic filtering setting,
 with the UVs computed inside the padded box, so anisotropy changes the
 layout and every UV in the game. The mipmap slider is blunter still: it
-rebuilds `AtlasManager`.
+writes the new level onto `AtlasManager` and schedules a texture reload, so
+every sprite in the game is decoded and stitched again.
 
 Meanwhile `BlockStateModelLoader` parses *blockstates/* into a
 `BlockStateModel.UnbakedRoot` per `BlockState`, through
@@ -100,7 +103,8 @@ has to: baking cannot resolve a texture slot without knowing where the
 sprite landed. `PreparableReloadListener.prepareSharedState` runs for
 *every* listener on the client thread before *any* reload task starts, and
 `AtlasManager` uses its turn to publish thirteen pending stitches under
-`AtlasManager.PENDING_STITCH`, which `ModelManager` then simply awaits.
+`AtlasManager.PENDING_STITCH`, of which `ModelManager` awaits the two it
+bakes against — the blocks atlas and the items atlas.
 The *ordering* was always guaranteed anyway — the reload chains each
 listener's barrier onto the previous one, and `AtlasManager` is registered
 before `ModelManager` — so what the handshake buys is not order but the
@@ -163,9 +167,9 @@ whether they need sorting or re-uploading without reading a quad.
 
 ### A quad's chunk layer is read out of the sprite's pixels
 
-The most surprising decision in the pipeline is the one nobody configures.
-`FaceBakery.bakeQuad` does not take the render layer from the model, the
-block or the pack: it asks `SpriteContents` what transparency actually
+The most surprising decision in the pipeline is the one nobody has to make.
+`FaceBakery.bakeQuad` does not take the render layer from the block or from
+any per-face declaration: it asks `SpriteContents` what transparency actually
 exists inside *that quad's UV rectangle*, and picks solid, cutout or
 translucent from the answer.
 
@@ -174,7 +178,13 @@ out of the solid layer (`FaceBakery`, asking `SpriteContents`).
 
 A pack author who softens one edge of a texture has changed which chunk
 layer that face draws in, and so when it is sorted and how it blends with
-everything behind it. There is no setting for this and no warning.
+everything behind it. There is no warning, and only one way out: a
+`Material` may set `Material.forceTranslucent`, from a *force_translucent*
+key beside the sprite name, which skips the scan and takes the translucent
+layer whatever the pixels say. A hundred and ten of the shipped models use
+it — the stained glass, mostly — and it is the exception that shows the
+rule, because it exists for textures whose alpha the scan would read
+correctly and whose author wants them sorted anyway.
 
 ## A dozen ways to fail soft, and the two that crash
 
@@ -227,8 +237,8 @@ from the new model sets and queues every section for re-meshing — see
 consumer of `BlockStateModelSet.get` but far from the only one: the
 block-breaking overlay, moving blocks, the in-wall screen effect, the
 nether-portal sprite on the loading screen, `TerrainParticle` and
-`BlockMarker` all read it too, with `BlockEntityRenderDispatcher` and
-`ItemModelResolver` covering the rest. The path from a set to triangles is
+`BlockMarker` all read it too, with the HUD, `LevelExtractor` and
+`FeatureRenderDispatcher` covering the rest. The path from a set to triangles is
 `BlockStateModel.collectParts` then `BlockStateModelPart.getQuads`, over
 `SingleVariant`, `WeightedVariants` or `MultiPartModel` with
 `SimpleModelWrapper` as the usual concrete part. None of it crosses the
@@ -273,24 +283,26 @@ stacks](../items/items-and-stacks.md).
 
 ## Questions players ask
 
-**Why does the water texture freeze when I pause?** Because animations do
-not advance once per tick. `TextureManager.tick` sits outside the client's
-catch-up tick loop and is gated on the level running normally, so a laggy
-client advances every animation by one frame however many ticks it just
-ran, and a paused single-player game stops them dead.
+**Why does lag slow the water down but the pause menu not stop it?** Because
+animations do not advance once per tick. `TextureManager.tick` sits outside
+the client's catch-up tick loop, so a laggy client advances every animation
+by one frame however many ticks it just owed. Pausing does not touch it —
+`DeltaTracker` keeps handing out ticks with the menu open — and the one thing
+that does stop the water is `/tick freeze`, because the guard on that call is
+`Minecraft.isLevelRunningNormally` and nothing else.
 
 **Why does an item frame sometimes look different from the block in it?**
 Because blocks have two model layers with different jobs. `BlockStateModel`
 is the quad source for the mesher and for particles, while `BlockModel` — a
 different interface in a different package, reached through
 `ModelManager.getBlockModelSet` — is the *display* model used by item
-frames, block entities and a dozen entity renderers. Tints and a transform
+frames, block entities and ten entity renderers. Tints and a transform
 belong to its usual implementation, `BlockStateModelWrapper`, not to the
 interface.
 
 **Can I look at the atlas?** Yes. A debug keybind writes every atlas to
-disk, and with a shared-constant flag set, a text listing of every sprite's
-position and size beside it.
+disk, each with a text listing of every sprite's position and size beside it;
+a shared-constant flag makes the game dump one at upload time as well.
 
 **Why do some block updates cost nothing to draw?** Because two states that
 look identical share a group id from `ModelGroupCollector`, and
