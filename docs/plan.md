@@ -460,9 +460,45 @@ O is the close.
   the mermaid checker each caught one of the session's own fixes, and two
   agent findings were rejected on re-derivation. Everything in
   [pass4.md](pass4.md).
-- [ ] **Session L — Part XII World generation.** Probably two sessions:
-  the density graph and its caches against the data; the tree kit's
-  placer counts; `blending` and `creating-a-world` (addition 8).
+- [x] **Session L — Part XII World generation** *(2026-09-05)*. Done in one,
+  not two: ten pages, the landing page and the part's own Reference catalogue
+  (`reference/density-function-nodes.md`), twelve agents; **every one had at
+  least one wrong claim**, for a thirteenth time. Ninety-four corrections. The
+  sharpest finding is the one the charter's addition 4 was written for: **pass
+  3's own correction was the error.** Session M of pass 3 "fixed"
+  `features-and-placement`'s sixty-three registered features to sixty-one; it
+  is **63**, and the two it lost put a cast between the `=` and the call, so a
+  `= register(` grep misses exactly those two — *and the session reproduced
+  that grep and got 61 before an agent caught it*. **The landing page was the
+  worst page in the part for a second part running**, and both halves of the
+  part's premise fell: the worldgen registries are re-read from the *currently
+  enabled* packs on every open (`WorldOpenFlows`, `Main`), not fixed at
+  creation; and "nothing here reads the world it is building" is false of the
+  decoration step, which hands every placed feature `getBlockState`,
+  `getHeight` and `getCarvingMask` — what is true is the determinism. Six
+  counts with it, including six statuses that are seven and five data-driven
+  instances that are twenty-six, plus **session A's "two size claims, two
+  rules" item settled** (423 excludes the package markers the atlas counts;
+  451). Five more carry a lecture: `jigsaw-and-templates`' **central invariant
+  runs the other way** — the fallback pool is appended at *every* depth and it
+  is the target pool that is dropped at the limit, so a street ends wherever
+  its pieces stop fitting — and its hook's lamp post is not in any terminator
+  template; `structure-placement`'s verified line promised a layout "computed
+  twice" that is computed **once**, because the check never runs the deferred
+  expansion; `trees`' hook describes a top-heavy tree **no shipped tree can
+  grow**, since the fancy oak's crown is fixed-size and its cluster count comes
+  from the *clipped* height; `density-functions`' unseeded bounds are
+  **narrower, not wider** (2.0 against 2.57–7.32 across all sixty-one shipped
+  noises); and `hand-built-structures`' `/locate stronghold` answer **rests on
+  a method with zero callers**. Two more hooks fell: `blending` measures the
+  chunk that **owns** the data, not a neighbour (session A's standing item,
+  settled against the page), and the water in *Water World* is **not** a
+  feature. Addition 2 done in full, with `world/environment-attributes-and-timelines`
+  added as a missing entry and the lecture table's row for it corrected — caught
+  by `check_deps.py`. **No tool bug — the seventh such session**; instead the
+  verifier caught two of the session's own fixes and `check_deps.py` a third,
+  one agent finding was rejected on re-derivation, and two agents disagreed
+  with each other. Everything in [pass4.md](pass4.md).
 - [ ] **Session M — Part XIII Commands and data packs.** Probably two
   sessions: the three parsers against Brigadier; the engine's queue
   snapshots; `entity-selectors` (addition 8).
@@ -882,3 +918,72 @@ missing it — and removes the comment. The owner confirms or reorders
   method is checked for *which* method as well as for position: the
   `hud-elements` contextual-bar row named the later of two calls in the
   earlier of two slots, which no count or ordering check alone would catch.
+
+- **2026-09-05, session L (Opus) — Part XII World generation.** Twelve
+  agents: ten system pages, the landing page and
+  `reference/density-function-nodes.md`, the part's own catalogue. Every one
+  came back with at least one wrong claim, which is pass 2's finding for a
+  thirteenth time and now holds on 96 of the 96 pages pass 4 has read.
+  Ninety-four corrections in eleven commits, one page each. Part XII was done
+  in one session where the charter allowed two, for the same reason Part XI
+  was: the *counts* on the landing page and the *illustrations* on the pages
+  were where the errors lived, and both are fast to settle once the
+  population is named.
+
+  The named item for this session was the density graph against the data, and
+  it did produce a finding — thirteen of the twenty-four shipped `cache_2d`
+  nodes are not inside a flat cache, against a page that said all of them
+  were, and no *noise_settings* file contains a *flat_cache* at all. But the
+  session's sharpest finding came from somewhere the charter did point: **the
+  first thing addition 4 asks for is the population, and pass 3's own
+  correction had been made without one.** `features-and-placement` had
+  sixty-three registered features before pass 3 and sixty-one after, because
+  session M grepped `= register(` and `Feature.java` puts a cast between the
+  `=` and the call on two of its sixty-three lines. **The session reproduced
+  that grep and got 61 too**, and only the agent's `register("` count and its
+  distinct-id count caught it. A correction is a claim; a claim needs a
+  population; a grep is not a population.
+
+  Two other shapes recurred from earlier sessions. The **landing page was the
+  worst page in the part** for a second part running, and this time both
+  halves of the part's stated premise fell — the packs are re-read on every
+  open, and the decoration step does read the world through
+  `PlacementContext`. And **five pages contradicted themselves**, in each case
+  with the figure right and the prose wrong: the jigsaw figure said the target
+  pool is skipped at the limit while the prose said the fallback is added
+  there; `blending`'s figure drew the FEATURES consumer the landing page said
+  did not exist; `terrain` said the expensive terms are only sampled at cell
+  corners thirty lines above naming a per-block one; `biomes`' figure said the
+  *cached* climate sampler where its cast row said the cacheless one;
+  `creating-a-world`'s diagram had the namespaced *game_rules.dat* path its
+  1.21 box did not. Session J's suggestion — read the figure against the
+  section under it before reading either against the source — paid for itself
+  five times, and should be in session N and O's briefs.
+
+  Rulings. **A hook that survives as a mechanism but not as an illustration
+  is still a wrong hook**, and the fix is the mechanism, not a new
+  illustration: `trees`' clipped fancy oak is real in the code and impossible
+  in the data, and the honest sentence says exactly that. **A claim about
+  where a class does its work is a claim about the status that builds it**,
+  not the status that uses it — the `Beardifier` is built with the
+  `NoiseChunk` at *BIOMES* and merely reused at *NOISE*, and the page had said
+  *NOISE* in three places including a figure node. **Two agents disagreeing
+  is settled by the code and by nothing else**: the jigsaw agent confirmed
+  that the reference position seeds the processors' randomness and the
+  structure-placement agent denied it; `StructurePlaceSettings.getRandom`
+  seeds from the block position, so the second was right. And **an item handed
+  forward from an earlier session is checked, not applied**: session A's
+  `blending.md:121` finding was right, but the session re-derived it from
+  `BlendingData.getOrUpdateBlendingData` before touching the sentence, and
+  that re-derivation is what found the two further places the same
+  misattribution appears.
+
+  Housekeeping. The seventy-one pass-3 queue lines this session settles are
+  struck, so the Part XII checklists are now only this session's own entry;
+  the session-P standing item says which three of its four pages are done;
+  `pass5.md` has seven rewritten hooks and five structural findings;
+  `pass3.md` §7 has one new coverage entry (the expansion hack, dimension
+  padding and liquid settings). `TEMPLATE.md` and `reference/lanes.md` gained
+  one lane row, `CPList` for `Climate.ParameterList`. No tool bug — the
+  seventh such session; instead all four gates caught something, three of them
+  the session's own fixes.
