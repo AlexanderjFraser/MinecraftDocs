@@ -463,8 +463,12 @@ plan as it stood at its close)*
   `book/llms.txt` (the index form of the llms.txt convention, one line per
   page with its verified-line scenario) beside `llms-full.txt`; `site-url`
   set so the 404 page keeps absolute links under nested paths. Found and
-  recorded: Cloudflare prepends a content-signals preamble to `robots.txt`
-  at the edge, with the signals unset; the Pages project has **no Web
+  recorded: before the site shipped a `robots.txt`, Cloudflare served its
+  own content-signals one for the domain (signals unset); Cloudflare Pages
+  serves **clean URLs** and answers every `.html` address with a 308 to the
+  extension-less one, so the sitemap and `llms.txt` list the clean form
+  (the first deploy listed redirects, fixed the same evening); the Pages
+  project has **no Web
   Analytics enabled**, and the token cannot enable it (refused on RUM, zone
   settings and bot management; it verifies, edits Pages, and reads the zone
   and DNS), so that click and Google Search Console are the owner's; DNS for

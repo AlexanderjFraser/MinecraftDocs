@@ -27,10 +27,13 @@ if not os.path.isdir(BOOK):
 
 
 def html_url(md: str) -> str:
-    """mdBook publishes README.md as index.html and every other page as .html."""
+    """The page's canonical live URL. mdBook publishes README.md as index.html
+    and every other page as .html, but Cloudflare Pages serves clean URLs and
+    answers the .html form with a 308 to the extension-less one, so an index
+    that listed .html addresses would be an index of redirects."""
     if os.path.basename(md) == "README.md":
-        return f"{SITE}/{md[:-len('README.md')]}index.html"
-    return f"{SITE}/{md[:-3]}.html"
+        return f"{SITE}/{md[:-len('README.md')]}"
+    return f"{SITE}/{md[:-3]}"
 
 
 def lastmod(md: str) -> str:
