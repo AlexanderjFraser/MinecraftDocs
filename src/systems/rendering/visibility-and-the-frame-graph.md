@@ -14,10 +14,13 @@ compiled mesh that happens to have no draws in it. Terrain reveals itself
 outward because the walk can only reach as far as the meshes that already
 exist.
 
-[The frame](the-frame.md) ends where this page begins, at
-`LevelRenderer.render`. That one method decides what is visible, gathers what
-was submitted, declares the passes of a frame, draws the terrain and schedules
-translucency work for a later frame — in that order, and the order is the
+[The frame](the-frame.md) ends where this page begins — but not quite at one
+method. The first stage runs on the *extract* side of the wall:
+`LevelExtractor.applyFrustum` trims the reached sections to the visible list
+before `GameRenderer.render` is called at all. The other four are
+`LevelRenderer.render`, which gathers what was submitted, declares the passes
+of a frame, draws the terrain, schedules translucency work for a later frame
+and re-runs the walk on its way out — in that order, and the order is the
 page.
 
 ## The cast
@@ -26,24 +29,26 @@ page.
 |---|---|---|
 | `LevelRenderer` | which sections are visible, which passes the frame declares, and how terrain is finally drawn | Render thread |
 | `SectionOcclusionGraph` | which sections the walk can reach from the camera at all | full walk on `Util.backgroundExecutor`, partial walk here |
-| `SectionOcclusionGraph.GraphState` | the published result of a walk — swapped, never edited in place | written by a worker, read here |
+| `SectionOcclusionGraph.GraphState` | the published result of a walk — swapped whole on a rebuild, extended in place by a partial walk | rebuilt by a worker, extended and read here |
 | `LevelExtractor` | whether the frustum is re-applied this frame, and so whether the visible list is rebuilt or reused | Render thread |
 | `Frustum` | which of the reached sections survive into `LevelRenderer.visibleSections` | Render thread |
 | `FrameGraphBuilder` | which passes exist, what each reads and writes, and what order they execute in | Render thread |
 | `LevelTargetBundle` | the named render targets the passes hand between them | Render thread |
-| `ChunkSectionsToRender` | one multi-draw per bucket instead of one draw per section | Render thread |
+| `ChunkSectionsToRender` | one bucket per buffer set, so sections that share buffers share a binding | Render thread |
 
-Nothing in that table reads the world. `LevelRenderer` holds exactly one
-`ClientLevel` reference and it is a *parameter*, to
-`LevelRenderer.invalidateCompiledGeometry` — the reload path, not the frame
-path. Everything the frame knows about the world came across the wall in the
-snapshot; what the renderer still owns is geometry, targets and order.
+Only one of those reads the world, and it is the one on the extract side:
+`LevelExtractor` holds the `ClientLevel` and is the class that carries it
+across the wall. `LevelRenderer` does not — its single `ClientLevel`
+reference is a *parameter*, to `LevelRenderer.invalidateCompiledGeometry`,
+which is the reload path and not the frame path. Everything the drawing half
+knows about the world came across in the snapshot; what the renderer still
+owns is geometry, targets and order.
 
 ## Five stages, and the first one decides the other four
 
 ```mermaid
 flowchart TD
-    S1["1. what is visible — SectionOcclusionGraph reaches sections outward from the camera, then LevelExtractor.applyFrustum keeps the ones the Frustum admits and caches them as LevelRenderer.visibleSections"]
+    S1["1. what is visible, in extract — SectionOcclusionGraph reaches sections outward from the camera, then LevelExtractor.applyFrustum keeps the ones the Frustum admits and caches them as LevelRenderer.visibleSections"]
     S2["2. what is submitted — LevelRenderer.submitFeatures gathers entities and block entities, and FeatureRenderDispatcher.prepareFrame groups them, all before a pass exists"]
     S3["3. what passes exist — FrameGraphBuilder.addPass declares each pass with its reads and writes, then FrameGraphBuilder.execute orders and runs them"]
     S4["4. how terrain is drawn — LevelRenderer.prepareChunkRenders buckets the visible sections and ChunkSectionsToRender multi-draws each bucket, inside the main pass"]
@@ -53,16 +58,19 @@ flowchart TD
     S6 -. "next frame" .-> S1
 ```
 
-Read it as **reach, gather, declare, draw, defer**. Only stage four touches a
-vertex buffer. Stages one and five are bookkeeping that decides what stage
-four will have to do, and both of them are budgeted rather than complete.
+Read it as **reach, gather, declare, draw, defer**, and note that stage one
+has already happened when `LevelRenderer.render` is entered — it is the last
+thing *extract* does. Stages one and five are bookkeeping that decides what
+the drawing stages will have to do, and both are budgeted rather than
+complete.
 
 ## The walk that decides what exists, and the frustum that only trims it
 
 Visibility here is *reachability*, not a frustum test. `SectionOcclusionGraph`
 starts at the camera's own section and walks outward one neighbour at a time,
-and it may step from a section into a neighbour only if the two faces involved
-can see each other through that section's geometry. That per-section answer is
+and — with smart cull on, which is the default — it may step from a section
+into a neighbour only if the two faces involved can see each other through
+that section's geometry. That per-section answer is
 a `VisibilitySet`, computed by `VisGraph` when the section was meshed — so the
 question *can you see through this section* is decided once at compile time
 and then read for free thousands of times a frame. A wall of stone does not
@@ -71,15 +79,17 @@ because the walk cannot get past.
 
 The reached sections live in an `Octree` inside
 `SectionOcclusionGraph.GraphState`, alongside the queue of sections whose
-neighbours still need visiting. That state is never edited in place: the whole
-of it is published through an `AtomicReference`, because
+neighbours still need visiting. A *rebuilt* state is never edited into the
+old one: the whole of it is published through an `AtomicReference`, because
 `SectionOcclusionGraph.scheduleFullUpdate` runs the complete rebuild on
 `Util.backgroundExecutor` and the client thread has to keep reading the old
-graph until the new one is ready. Only
-`SectionOcclusionGraph.runPartialUpdate` is on the client thread, and all it
-does is drain the propagation queue — the sections that
+graph until the new one is ready. Everything else happens on the client
+thread, including `SectionOcclusionGraph.runPartialUpdate`, which does edit
+the published state in place — it walks outward again from the sections that
 `SectionOcclusionGraph.schedulePropagationFrom` flagged, typically because a
-new mesh landed for them and their neighbours are worth trying again.
+new mesh landed for them and their neighbours are worth trying again — which
+is a real walk, not a drain, and it is where the outward reveal actually
+advances.
 `SectionOcclusionGraph.update`, at the very end of `LevelRenderer.render`, is
 what runs both.
 
@@ -208,33 +218,42 @@ only reason the five internal targets are ever created.
 
 **The graph culls passes, and culls none of these.**
 `FrameGraphBuilder.execute` keeps only the passes that transitively feed an
-imported external resource and drops the rest before it orders anything. In a
-stock game every pass `LevelRenderer` declares reaches the main target, so
-none is ever dropped. The clouds pass is absent from a clouds-off frame for a
+imported external resource and drops the rest before it orders anything. Note
+the plural: it seeds from *every* imported resource, not from the main target
+alone, which is what saves the entity-outline chain — none of its four passes
+ever writes to main, and all four survive because the glow target is imported
+too. With that seeding, no pass `LevelRenderer` declares is ever dropped in a
+stock game. The clouds pass is absent from a clouds-off frame for a
 different and much cheaper reason: `LevelRenderer.render` never *adds* it. The
 declaration is the branch; the culling machinery is insurance against a
 declaration that has become pointless, not the mechanism the game uses to turn
 features off.
 
-## One multi-draw per bucket, not one draw per section
+## One bucket per buffer set, and what bucketing actually buys
 
 `LevelRenderer.prepareChunkRenders` runs before the main pass is declared, and
 its output is what that pass will execute. It walks
 `LevelRenderer.visibleSections` and, for each layer a section has geometry in,
 computes a hash of the buffers that geometry lives in and files the draw under
 that hash. Sections sharing buffers land in the same bucket, and
-`ChunkSectionsToRender` then issues **one multi-draw per bucket**, with each
-section's transform arriving as a slice of a uniform buffer rather than as a
-per-draw state change. A view full of terrain is a handful of draw calls, not
-one per section. The two groups the main pass renders are
+`ChunkSectionsToRender` then issues one `RenderPass.drawMultipleIndexed` per
+bucket, with each section's transform arriving as a slice of a uniform buffer
+rather than as a per-draw state change. **The saving is not the draw calls.**
+Both backends still loop and issue one GPU draw per section — what the bucket
+removes is the buffer rebinding and the per-draw state change between them,
+which is the expensive part on this side of the driver. The two groups the
+main pass renders are
 `ChunkSectionLayerGroup.OPAQUE` and `ChunkSectionLayerGroup.TRANSLUCENT`; the
 layers underneath them belong to [section meshing](section-meshing.md).
 
-The translucent layer deliberately breaks its own batching. Its grouping hash
-omits the buffer contribution entirely, so translucent sections never merge
-into shared buckets — they stay in visit order and are drawn reversed, back to
-front. Correct blending beats fewer draw calls, and the code pays for that on
-purpose.
+The translucent layer inverts the rule, and it inverts it in the direction
+nobody guesses. Its grouping hash omits the buffer contribution entirely, so
+the hash never changes — **every** translucent section files into one bucket
+instead of being spread across several. That is exactly what preserves the
+visit order inside it, and the visit order is what the draw list is then
+reversed against, so the far sections blend before the near ones. Correct
+blending is bought here by refusing to *distinguish* the buffers, not by
+refusing to share them.
 
 **Directional shading is per dimension, and it is not data.** How bright a
 face is by direction comes from a `CardinalLighting` record, and there are

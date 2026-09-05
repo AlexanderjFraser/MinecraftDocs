@@ -44,7 +44,7 @@ sequenceDiagram
     CL->>LX: blockChanged, player-changed or not, read off the update flags
     LX->>SUT: dirty over a 3x3x3 block halo, one section or up to eight on a boundary
 
-    Note over LX,SUT: next frame, the extract pass
+    Note over LX,SUT: the same frame's extract pass, which runs after the tick that handled the click
     LX->>LR: walk the visible sections, and only those
     LX->>LX: RenderRegionCache builds a 27-section snapshot
     LX->>SUT: the flag is cleared as the work is taken
@@ -61,8 +61,10 @@ sequenceDiagram
 ```
 
 Read it in three beats: a change makes a flag, a frame turns some flags into
-work, and a much later frame publishes the result. Nothing in the middle
-runs on the client thread, and nothing at either end runs off it.
+work, and a much later frame publishes the result. The middle beat is the one
+that leaves the client thread, and it does not always — a synchronous rebuild
+compiles inline where it stands, and an empty mesh is published by the worker
+that found it empty.
 
 ## A click, and the flag it leaves behind
 
@@ -92,9 +94,12 @@ positions*, not sections. This is the number to keep straight. A 3×3×3
 neighbourhood of blocks maps to exactly **one** section for any block that is
 not on a section boundary, and to at most eight when it is — a corner block
 touching seven neighbours plus its own. Only the mesher's *read* region,
-much later on, is genuinely twenty-seven sections. And a state change does
-not always mark anything at all: `ModelManager.requiresRender` is asked
-first, so a change no model reacts to costs nothing.
+much later on, is genuinely twenty-seven sections. There *is* a gate on one
+of the two doors — `ModelManager.requiresRender` guards
+`LevelExtractor.setBlockDirty`, so a state change no model reacts to marks
+nothing through that route — but it is not the route a placed block takes.
+`Level.setBlock` goes through both, and the second,
+`LevelExtractor.blockChanged`, marks the halo whatever the models say.
 
 ### The flag belongs to a slot, not to a section
 
@@ -232,8 +237,9 @@ uploaded. There is no frame in which a rebuilt section is missing, no flicker
 and no hole — the price being that the section you can see is, for a few
 frames, deliberately out of date. `SectionRenderDispatcher.RenderSection.reset`
 is the other end of that lifecycle, and
-`SectionRenderDispatcher.RenderSection.getVisibility` is what the reachability
-walk asks once the swap has happened.
+`SectionRenderDispatcher.RenderSection.getVisibility` is not part of it at
+all despite the name — it is the fade the next section explains, an alpha
+that climbs from nothing to one over the upload's fade duration.
 `SectionRenderDispatcher.RenderSection.resortTransparency` is the cheap path
 that reorders an existing translucent mesh without recompiling anything;
 [visibility and the frame graph](visibility-and-the-frame-graph.md) owns the
@@ -258,8 +264,9 @@ frame outright.
 
 **What happens when the buffer pool runs out?** Nothing visible, which is the
 design. The worker that cannot acquire a `SectionBufferBuilderPack` puts its
-section back on `SectionTaskDynamicQueue` and the section stays dirty, so the
-only symptom is terrain arriving more slowly. The pool is also allowed to
+section back on `SectionTaskDynamicQueue` — the *task* is requeued, not the
+flag, which was cleared when the work was taken — so the only symptom is
+terrain arriving more slowly. The pool is also allowed to
 shrink itself: if it hits an out-of-memory error while allocating, it comes
 back smaller and the game keeps going with fewer concurrent meshes.
 
