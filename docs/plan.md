@@ -1,1262 +1,478 @@
 # The plan — the passes
 
-*Rewritten 2026-09-02 at the start of pass 3, again 2026-09-03 at its close,
-and again 2026-09-05 at pass 4's. This is the document every session reads
+*Rewritten 2026-09-02 at the start of pass 3, 2026-09-03 at its close,
+2026-09-05 at pass 4's close, and again the same evening by the planning
+session that set the ten-pass plan. This is the document every session reads
 first and ticks last. Each finished pass is archived whole in its own file —
 [pass1.md](pass1.md), [pass2.md](pass2.md), [pass3.md](pass3.md),
-[pass4.md](pass4.md) (the charter, rulings, protocol, schedule and log) — and
-each future pass has a file that earlier passes fill in as they go:
-[pass5.md](pass5.md) is the queue polish works from.*
+[pass4.md](pass4.md): the charter, rulings, protocol, schedule and log, and
+at the end of pass4.md the plan as it stood at pass 4's close. The queues:
+[pass5.md](pass5.md), opened as the polish queue and now the queue passes
+5–8 draw on, each entry taken by the pass its kind belongs to;
+[pass9.md](pass9.md), where every pass-5-to-8 session lists the claims it
+introduced; [pass3.md](pass3.md) §7, the coverage queue.*
 
 ## Where we are
 
-**Pass 4 is done** (2026-09-05, sessions A–O): everything the book says has now
-been read against the decompile twice. Fifteen sessions, one adversarial agent
-per page, over the 102 system pages, the 13 landing pages, the 21 Reference
-pages, the introduction, the lecture map and the atlas: **836 corrections in
-the thirteen sessions that counted them**, plus sessions A and B, which did
-not. Pass 2's finding held to the end — **every page had at least one wrong
-claim**, for a fifteenth consecutive session — and the only whole parts to
-survive any check clean were Part VIII and Part IV's chunk group, under session
-N's count sweep. Four gates now stand between a page and the site:
-every backticked name resolves in the decompile, every diagram parses under the
-site's own mermaid, every lane means what the one key says, and the landing
-pages, the lecture map and the dependency figure agree. The full record — the
-evidence, the rulings, the per-session log — is in [pass4.md](pass4.md).
+**Pass 4 is done** (2026-09-05, sessions A–O): everything the book says has
+been read against the decompile twice. Fifteen sessions, one adversarial
+agent per page, over the 102 system pages, the 13 landing pages, the 21
+Reference pages, the introduction, the lecture map and the atlas; 836
+corrections in the thirteen sessions that counted them; **every page had at
+least one wrong claim**, for a fifteenth consecutive session; fifteen tool
+bugs, six of which had published a falsehood. Four gates stand between a
+page and the site. The record, the rulings and the log are in
+[pass4.md](pass4.md), and so are the three findings that shape everything
+below: the errors were never where the writing session expected them (the
+checklists came back clean from Part VI on; the errors were in the
+illustrations — tables, summaries, Q&A answers, asides, landing pages); a
+correction is a claim and a strike is a claim (pass 4 got three of its own
+wrong); and the tools are suspected first.
 
-Three findings shape what comes next:
+**The ten-pass plan** was set the same day by the owner with the planning
+session. Ten passes leave the site finished; a second edition, with a wider
+scope, would be a separate project seeded by [pass3.md](pass3.md) §7 and
+*what this book skips*. Passes 9 and 10 are the owner's fixed points — the
+last fact-check and the last polish. Passes 5 to 8 are four passes of
+restructuring and refinement, because pass 3 was the most productive pass so
+far and pass 4 left a precise list of where the book is still weak. Each
+pass has **one lens**, since pass 4 showed that a session sees what it is
+looking for and nothing else: what the writing session knew it had changed
+came back clean, and what it did not know was where the errors lived.
 
-- **The errors were never where the session expected.** Every part session was
-  given the list of claims its pass-3 rewrite had introduced, and from Part VI
-  on that list came back almost clean every time: the errors were in the
-  *illustrations* — the tables, the one-line summaries, the Q&A answers, the
-  confident asides — which is to say in what the writing session did not know it
-  had changed. The landing page was the worst page in its part three parts
-  running.
-- **A correction is a claim, and pass 4 got three of its own wrong.** Session L
-  found pass 3's correction was the error; session N found the number session M
-  replaced was right; session O found session K's correction backwards on two
-  pages and a strike that had settled nothing. Suspect the tool, then the agent,
-  then the page — and now also the fix.
-- **The tools had fifteen bugs, and six of them published a falsehood.** Pass 2
-  found a bug in both of its generators; pass 4 found fifteen more, including a
-  registry count short by five, a game rule published with an unbalanced
-  parenthesis, a packet total printed in the wrong column, and a gate that had
-  been silently skipping eighteen names since pass 1. Every one was found by
-  suspecting the tool before the page.
-
-**Pass 5 is current**: the corpus is true, and now it has to read like one book.
-Its charter is below, and its largest single job is the one pass 3 predicted —
-the *Questions players ask* closer is on 69 of 102 pages, a device that became a
-slot.
+**Pass 5 — the book — is next.** Its charter is below at the level of
+intent. Its detailed brief, its tools and its session runbook are written by
+the planning session before it starts, the way the 2026-09-03 planning
+session built pass 4's ([pass4-brief.md](pass4-brief.md) is the model).
 
 ## The passes
 
-| pass | what | status |
-|---|---|---|
-| **1 — rough draft** | every page drafted from the decompile, names verified | done — [pass1.md](pass1.md) |
-| **2 — completeness and accuracy** | every claim adversarially fact-checked; gaps filled; pages split and added freely | done, 2026-09-01 — [pass2.md](pass2.md) |
-| **3 — restructuring** | the site became a book: each part the shape of its system, each page the shape of its story; the frame, the introduction, the maps and the reference tier redone; the lecture order drafted | done, 2026-09-03 — [pass3.md](pass3.md) |
-| **4 — the second fact-check** | pass 2's protocol again, over everything pass 3 rewrote, redrew or added; the claims pass 3 introduced checked first | done, 2026-09-05 — charter below; the record in [pass4.md](pass4.md) |
-| **5 — polish** | wording, voice, consistency, cuts | **current** — charter below; queue in [pass5.md](pass5.md) |
-| **6+ — the owner reads** | part by part with the decompile open; `<!-- Q: … -->` answered in the prose; lecture order confirmed; then voice and recording | after 5 |
+| pass | what | lens | status |
+|---|---|---|---|
+| **1 — rough draft** | every page drafted from the decompile, names verified | — | done — [pass1.md](pass1.md) |
+| **2 — completeness and accuracy** | every claim adversarially fact-checked; gaps filled; pages split and added freely | the adversary with the source | done, 2026-09-01 — [pass2.md](pass2.md) |
+| **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
+| **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
+| **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | **next** — charter below; queue [pass5.md](pass5.md) |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts; a page that reads as one lecture's notes | the reader with only the page | after 5 |
+| **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the fifth gate, names inside mermaid blocks | the picture | after 6 |
+| **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
+| **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
+| **10 — the last polish** | pass 9's debt, the frame against the finished book, links, the last cuts, the release | the reader, once more | after 9; then the site is finished |
+
+Beside the passes, unnumbered: **the version pass**, chartered below and
+run once between passes on each release; and **the owner's read**, which
+runs whenever the owner likes and whose questions the current pass answers.
 
 The rules stand for every pass: names never code · how the system works,
-not how the code reads · newest version only (26.2) · trace-driven ·
-`python tools/verify_names.py` clean before every commit that touches a page
-· claims come from the decompile, never from model memory of 1.21 · every
-diagram passes `node tools/check_mermaid.js` · every lane passes
-`python tools/check_lanes.py --strict` · the landing pages, the lecture map
-and the dependency figure agree under `python tools/check_deps.py` (the
-fourth gate, added by pass-4 session A). `tools/deploy.sh` runs all four
-and refuses to publish on any failure.
+not how the code reads · newest version only (26.2) · trace-driven · claims
+come from the decompile, never from model memory of 1.21 · the four gates —
+`python tools/verify_names.py`, `node tools/check_mermaid.js`,
+`python tools/check_lanes.py --strict`, `python tools/check_deps.py` — clean
+before every commit that touches a page, and `tools/deploy.sh` refuses to
+publish on any failure. Reasoning over sensing over measuring: no count in a
+queue is a target, and the owner judges what lands.
+
+## Why this order
+
+- **Structure before words.** Pass 3 rewrote the prose of nearly every page
+  to change its shape, and pass 4 then found 836 errors, most of them in
+  sentences the restructuring had written. Polish done before a restructure
+  is paid for twice: its sentences are rewritten, and the errors of the
+  rewrite have to be found anyway. So the two structural passes (5, 6) come
+  first, the wording pass (8) after them, and the fact-check (9) after the
+  wording pass, because every pass that touches a sentence puts errors in —
+  pass 4's finding, fifteen times over — and the last polish (10) is then
+  light enough to put in few.
+- **Across before within.** Pass 5 decides what each page owns, what moves
+  and what is said once, so that pass 6's work on a page is not undone by a
+  move. The summarisers — the thirteen landing pages, `lectures.md`, the
+  glossary — are the exception that proves it: they drift every time their
+  pages change (session O found five glossary entries written from
+  sentences pass 4 had since corrected), so pass 5 gives them their role and
+  each later pass re-syncs them at the end of its part session.
+- **The figures get a pass of their own** because the diagram is the
+  lecture's artefact (rule 4) and nobody has yet looked at one *rendered*:
+  every check so far was parse and arrow-by-arrow truth, not shape or
+  legibility. That pass also builds the gate over names inside mermaid
+  blocks — 453 tokens no gate has ever seen — so that pass 9 checks figures
+  under a gate.
+- **Two polishes mirror two fact-checks**: the heavy one before the check,
+  the light one after; the heavy one (8) is where the tics and the
+  terminology are hunted corpus-wide, and the light one (10) is what the
+  fact-check leaves.
+- **One lens per pass.** A session briefed to fix everything fixes what it
+  expects to find. Pass 3's sessions were told to reshape and did; the
+  errors went into what they were not told to look at. A pass with one
+  question finds what the previous pass could not see.
+
+## The rhythm of a pass
+
+Every pass runs the same way, because it has worked twice:
+
+1. **A planning session** (Fable, between passes): reads the queue, builds
+   the pass's tools and writes its brief and runbook — one prompt file per
+   page or figure, so the sessions do no planning of their own — and
+   measures what the queue actually contains before the first session
+   spends anything on it.
+2. **Session A — the standard**: the frame, the exemplar, the rulings the
+   part sessions will apply (pass 3's session A wrote `TEMPLATE.md` from two
+   pilots; pass 4's did the frame and made `check_deps.py` a gate).
+3. **Sessions B–N — the parts**, in sidebar order, one part per session on
+   Opus: read the charter, this pass's rulings and every queue entry that
+   names the part; read the part end to end in watching order before
+   changing anything; one background agent per page (never per part — a
+   part-wide brief hit the spend limit in pass 3); the session does its own
+   work while they run, then re-derives every finding it acts on; the four
+   gates; commit `pass N, session X — Part M: <summary>`; deploy; log.
+4. **Session O — the close**: the frame against the finished parts, the
+   pass's own work audited (a strike is a claim), the pass archived whole
+   into its file, the next pass's charter detail written, and a verdict on
+   whether the pass was productive — the owner's test for spending more.
+
+Standing rules for passes 5 to 8, the restructuring and refining passes:
+
+- **A fact is not changed without the decompile open.** Agents in passes 5,
+  6 and 8 have no source in their briefs — an agent given the source
+  re-litigates instead of reading; pass 7's have the figure and its section.
+  A session that finds a real error stops, re-derives it against the
+  decompile itself, fixes it, and logs the correction in
+  [pass9.md](pass9.md) the way a pass-4 session logged one: what the page
+  said, what the decompile says, file and line.
+- **Every claim a session introduces goes to [pass9.md](pass9.md)** — a
+  hook, a moved paragraph, a redrawn arrow, a re-scoped count, a landing
+  page's new argument. This is the rule pass 3 kept for pass 4, and it is
+  what made pass 4 checkable. A session that cannot say what it changed on
+  purpose has not finished.
+- **Nothing is dropped except by moving it or logging the cut** with the
+  reason (the budget rule in `TEMPLATE.md`); a moved page keeps its URL
+  through `book.toml`'s redirects; after pass 5 no page moves again.
+- **Every queue entry is checked against the page before it is acted on**:
+  passes 5 to 7 rewrite what [pass5.md](pass5.md) describes, and an entry
+  that is already overtaken is struck with a word saying so (pass 4's rule —
+  an item handed forward is checked, not applied).
+- **The four gates stand and grow only by truth**: pass 7 adds the fifth
+  (names inside mermaid blocks); nothing that measures prose is a gate.
+- **Commit your own files by name; never `add -A`** while another session
+  may be open (session I of pass 3 swept another session's half-written
+  change into an unrelated commit).
+- **The version pass interrupts nothing**: a release that lands mid-pass
+  waits for the pass to close.
 
 ---
 
-## Pass 4 — the second fact-check (done, 2026-09-05)
+## Pass 5 — the book (next)
 
-**Goal:** everything the restructured corpus says is true. Pass 2 proved
-that every page had at least one wrong claim and that the errors live in
-the confident sentences — orderings, "only" and "never", counts, and "X,
-not Y". Pass 3 then rewrote the prose of nearly every page, redrew most of
-the figures, wrote thirteen landing pages, a lecture map and twenty-three
-new pages, and on pass 2's evidence that put errors back. Pass 4 runs pass
-2's protocol again over the whole corpus, checks the claims pass 3
-introduced first, and does nothing else. Nothing gets polished that has not
-been checked twice.
+**Goal:** the corpus reads as one book. Every idea has one home and one
+name and every other mention is a sentence and a link; every seam between
+pages is a link in the right direction; every part's landing page is the
+part's argument rather than a summary of its pages; nothing in a part's
+scope is unmentioned by accident; and after this pass no page moves again.
 
-### The protocol
+**Why first:** pass 4 read pages one at a time and found what a page-at-a-
+time reading finds. Its two findings that no per-page check could have made
+were both cross-page: session N's contradiction check (one phrase, two
+numbers, two pages — three times), and session O's glossary sweep (entries
+written from sentences another session had corrected). The landing page was
+the worst page in its part three parts running, for the same reason: it
+summarises, and summaries drift. The corpus is 290,000 words of system
+pages written by thirty sessions, and the thing none of them could see is
+the book.
 
-Pass 2's, archived in [pass2.md](pass2.md) under *The pass-2 charter and
-protocol*, with its lessons under *Verifier lessons* and in the session
-log: **one adversarial agent per page**, given the page and
-`reference/26.2`, briefed to *falsify* — re-derive from the decompile every
-checkable claim and return a discrepancy list: **wrong** (the decompile
-disagrees), **unverifiable** (the agent could not find it), **misleading**
-(true, but the emphasis implies something false). An empty list from an
-agent that quotes no decompile evidence is a failed check, not a pass. Pass
-3 makes eight additions:
+### The jobs
 
-1. **The pass4.md entry is the opening checklist.** Every pass-3 session
-   listed, per page, the claims its rewrite introduced. The agent gets that
-   list first and reports on every line of it, with the file and line that
-   settles each, before it reads the rest of the page.
-2. **Order and dependency are claims.** The thirteen landing pages,
-   `lectures.md` and the parts-dependency figure assert that part B needs
-   page A. For every *before you start* entry and every arrow, find the
-   sentence in the part that actually uses it; a dependency no page uses is
-   struck, and a page that uses something its part's landing page does not
-   list is a missing arrow.
-3. **Diagrams, arrow by arrow.** `check_mermaid.js` proves a diagram
-   parses, not that it is true. Every sequence diagram's arrows are checked
-   in order against the code that makes the calls, every tick-boundary bar
-   against the tick phase it names, every flowchart branch against the
-   condition that decides it, every state transition against its trigger.
-4. **Every count is re-counted.** "Twenty-one option names", "fifteen
-   phases", "sixty-two of the sixty-seven": the agent lists the population
-   from the decompile and quotes the listing. Pass 3's sessions K, L, M and
-   N each found a count wrong while redrawing, and in three of the four it
-   carried the sentence's argument.
-5. **The population behind every only, never, all and none is named**, as
-   in pass 2 — the claim is checked against the whole population, and the
-   report says which population.
-6. **Libraries and data are checkable now and were not.** `reference/libs/`
-   holds Brigadier, DataFixerUpper and authlib; `reference/26.2/data/` and
-   `assets/` hold the jar's data packs, models, atlases, fonts, shaders and
-   post-effect chains. Pass 2 took every claim about them on trust. Hardest
-   on: `codecs-nbt-json` (DFU semantics), `protocol-phases` and
-   `players-and-sessions` (authlib), `chat-and-signing` (signatures),
-   `brigadier-and-commands`, `the-execution-engine` and
-   `functions-and-macros` (Brigadier), `post-processing`,
-   `models-and-atlases` and `text-and-fonts` (assets), and every Part XII
-   page (worldgen JSON).
-7. **Reference is checked like the parts.** The ten hand-kept pages one
-   row at a time (the four catalogues the part sessions wrote, the block
-   update flags, threads, math and primitives, level data and rules, naming
-   drift, and the glossary against each entry's owner page); the eight
-   generated views by re-deriving one sample per view by hand, because pass
-   2 found bugs in both of the generators it had.
-8. **The four session-P pages have been checked zero times, not once.**
-   `block-entity-rendering`, `entity-selectors`, `blending` and
-   `creating-a-world` get pass 2's completeness question as well — *what is
-   in this page's scope in the decompile that the page never mentions* —
-   and their pass4.md claims lists are the longest in the file.
+1. **Ownership.** Every mechanism explained in one place. The known
+   duplicates: the lattice fact three times across `terrain` and
+   `density-functions`; `ContinuationTask.schedule` on the engine page and
+   the functions page; `EntityType.create`'s gates on `entity-anatomy` and
+   `entity-lifecycle`; the command-tree packet on `permissions` and
+   `brigadier-and-commands`; `entity-rendering` against
+   `reference/submit-phases.md`; the staircase's *why* said twice on
+   `signal-and-dust`; the two update channels, owned once by
+   `blocks-and-states` and to be checked on the six pages that link to it.
+   The planning session builds a **duplication finder** (shared backticked
+   identifiers between page pairs, ranked) so the sessions start from a list
+   rather than from memory.
+2. **The seams.** The cross-links session A of pass 4 judged missing and
+   left (Part X ← `anatomy/anatomy`; Parts IV and XII ← `identifiers-and-
+   registries` and `codecs-nbt-json`, Part XII's two still open); the
+   hand-forwards; the nine-page dependency table's unstated membership rule;
+   Part IV's three orders (`SUMMARY.md`, its landing page and `lectures.md`
+   disagree, the only part where they do); the two circular cuts (III ↔ IV,
+   V ↔ X) re-judged. `check_deps.py` stays green; a **link checker** over
+   every internal link and anchor becomes a tool here and a gate by pass 10.
+3. **The through-lines.** The ideas that cross parts — the tick and its
+   phases, the four threads, the wire and the hop, authority and
+   prediction, the registry freeze and the reload, the data-driven type
+   pattern, the ledger — each told once at full length and named the same
+   way everywhere else. Whether the introduction, `anatomy`, or a new page
+   becomes lecture zero for them is pass 5's decision, made in session A
+   with the list in hand.
+4. **The summarisers.** The thirteen landing pages get a stated role — the
+   part's shape as a figure, its argument in a paragraph, *before you
+   start*, the watch order, the Reference it uses, under a hundred lines —
+   and are rewritten to it from the pages as they stand, in the part's own
+   session, after the part has been read whole. `lectures.md`'s blurbs, the
+   glossary's owner links, the maps' and Reference's front pages likewise.
+   Session M's finding stands: a landing page's size sentence needs nine
+   package names to be reproducible and gives none, so **the atlas generates
+   the per-part totals** (a `map_source.py` change for the planning session)
+   and no landing page hand-counts again.
+5. **The coverage question, once per part** (pass 2's lesson: ask it with a
+   tool, per scope). With the atlas as the population — what in the part's
+   packages does no page in the part mention, ranked by size — and
+   [pass3.md](pass3.md) §7's open entries as the known answers: the abstract
+   `Level`, feature flags and `FeatureFlagSet`, `GameProfileArgument` and
+   `ScoreHolderArgument`, `JigsawStructure`'s three unnamed fields, the boss
+   bar as `execute store`'s third sink, the predicate shape library, the
+   three Reference views `gen_reference.py` does not yet have, and the
+   material pass 3 cut and gave no home (the `Item.getUseDuration` roster,
+   the fortress spawn list and `Structure.spawnOverrides`, the
+   fall-attribution threshold, `RenderSystem`'s output overrides, the two
+   `endFrame` ring buffers). A section or a Reference row for most; a page
+   only where a part's argument has a hole.
+6. **The last moves.** Merges, splits, renames and reorders, each decided
+   and either done or ruled out: `how-a-server-dies`' two subjects (the
+   three endings and the durability page inside it); `signal-and-dust`'s two
+   (the lever and the second evaluator); `the-gui-render-tree`'s title;
+   `terrain`'s; the GUI stack watched in a different order from the one it
+   runs in; `block-entities` as Part V's odd page; the three homeless items
+   from `players-and-sessions`; `chunk-storage`'s proposed hand-off of the
+   null-parse branch. A move changes `SUMMARY.md`, the landing page,
+   `lectures.md`, the glossary and `book.toml` in one commit.
+7. **Is every page a lecture?** The book says one page per lecture and has
+   102 pages. The owner decides whether the series records all of them or a
+   tier of them; pass 5 proposes the tiering if asked (a page can be the
+   notes a lecture links to without being an episode), and the site is
+   complete either way.
 
-### What pass 4 does not do
+**What pass 5 does not do:** it does not reshape a page's internal skeleton
+or vary a device (6); it does not redraw a figure for legibility (7); it
+does not hunt a tic or settle a count's wording (8); it changes no fact
+without the decompile open (the standing rule).
 
-It does not restructure, it does not add pages, and it does not polish. A
-wrong fact is fixed in place, and that includes a hook: a hook the decompile
-contradicts is replaced by a true one even when the opening paragraph has
-to be rewritten around it, and that rewrite is logged in
-[pass5.md](pass5.md) as wording to re-read. A structural finding — a page
-carrying two subjects, a figure in the wrong shape — is logged in
-[pass5.md](pass5.md) and not acted on; a system with no owner page goes to
-[pass3.md](pass3.md) §7, which stays the coverage queue. A fix that changes
-what a landing page, `lectures.md` or the glossary says about the page
-changes those in the same commit, because a landing page is a claim about
-order and pass 4 has just checked it.
+**Sessions.** A — the standard: the landing-page role written into
+`TEMPLATE.md`, the through-lines list, the duplication finder's corpus-wide
+report routed to parts, the exemplar landing page, the frame's own seams.
+B–N — the parts, one session each, reading the part end to end and every
+page it links into. O — the close: the frame and the summarisers against
+the finished parts, the lecture map re-derived, the glossary's owner links,
+the moves' redirects, [pass9.md](pass9.md)'s entries checked for shape, and
+pass 6's charter detail.
 
-### The tooling
+## Pass 6 — the lecture
 
-Built 2026-09-03 by the planning session between the passes, so that
-fifteen Opus sessions run the same check the same way. All in `tools/`,
-all read-only over the corpus, none a deploy gate yet:
+**Goal:** each page is one lecture's notes — in the shape of its story,
+opening inside the scenario on a hook that holds, its trace the spine and
+its figure the artefact, reading differently from its neighbours, speakable
+in a sitting.
 
-- `pass4_queue.py` — every pass4.md note that names a page (either entry
-  format, either page name, renamed pages aliased), as one checklist per
-  page; reads `~~strikes~~`, so checklists shrink as sessions settle lines.
-  `--summary` is the corpus-wide count.
-- `claims.py` — a page's confident sentences by category: count, absolute,
-  order, contrast, side. About 5,000 count sentences and 4,700 absolutes
-  corpus-wide; `--all --counts --out DIR` is session N's queue.
-- `diagram_arrows.py` — every diagram as a numbered list of arrows, notes
-  and bars (195 diagrams, 2,442 items, none unparsed), so an arrow-by-arrow
-  report has one verdict per number and a gap is visible.
-- `check_deps.py` — the mechanical half of addition 2: landing pages, the
-  figure, the lecture table and every cross-part link against each other.
-  Exit 1 on a contradiction; a report for the rest.
-- `pass4_prompts.py` — the four above assembled into one prompt file per
-  page behind the brief in [pass4-brief.md](pass4-brief.md), which is also
-  the session runbook.
+**The jobs:** the devices that became slots — the *Questions players ask*
+closer on 69 of the 102 pages in five spellings (four parts use it on every
+page; session P's rule of thumb, at most half a part, stands until a session
+says why not), the literal `## The trace: …` heading on twenty pages, the
+bold or dashed sentence that ends the opening paragraph on most of the
+corpus, the *for a 1.21-era reader* blockquote as a fixed slot, and the
+second person, which opens more than half the pages and is ratified or
+reversed corpus-wide in session A, not page by page; the skeleton groups
+session P listed, varied one of each; the section order, where a fact fix
+left the exception before the rule or the concession inside the hook; the
+cuts — the length bill pass 2 deferred and pass 3 recorded page by page,
+with each drafter's own cheapest cut already logged and Parts IV and VII
+fattest; the completeness lists for the four Reference catalogues; every
+page-shape finding in [pass5.md](pass5.md). The agent is **a reader with
+nothing but the page**, asked four questions — where did you get lost, what
+did you have to read twice, what did the page assume you already knew, and
+what did you skip — and the session decides. Each part session ends by
+re-syncing the landing page's and `lectures.md`'s blurbs to the pages as
+they now stand.
 
-### Session protocol
+**Not:** facts; a figure beyond what a reshaped section needs; voice.
 
-One session = one part (Parts IV, XI, XII and XIII may take two), plus a
-first session on the frame and a closing session. The step-by-step
-version, with the commands, is [pass4-brief.md](pass4-brief.md) Part 2.
-Each part session:
+## Pass 7 — the figures
 
-1. **Read** this charter, `CLAUDE.md`, [pass2.md](pass2.md)'s protocol and
-   lessons, every [pass4.md](pass4.md) entry that names the part (grep it —
-   sessions other than the part's own left notes, and session O's standing
-   items apply to every part), and the part's landing page.
-2. **Check.** One agent per page, in parallel, on Opus, each given the
-   prompt file `python tools/pass4_prompts.py --part <part> --out DIR`
-   writes for its page: the brief ([pass4-brief.md](pass4-brief.md) Part
-   1), the page's pass4.md checklist, its confident sentences by category
-   and its diagrams arrow by arrow. The part's page-less notes land in
-   `_part-notes.md` for the session to route. Fact-check output is not
-   committed.
-3. **Re-derive before rewording.** Suspect the tool once, then the agent
-   once, before the page: pass 2's verifier and both generators had bugs,
-   and pass 3's drafting agents were wrong in about a third of their own
-   corrections. The session opens the decompile for every *wrong* before
-   it changes a sentence.
-4. **Fix**, in place, with the landing page, `lectures.md` and the glossary
-   kept in step. Strike the pass4.md lines as they are settled and log each
-   correction under the part's entry — what the page said, what the
-   decompile says, the file and line — so pass 6 can see what changed and
-   why.
-5. **Verify and ship.** `python tools/verify_names.py` ·
-   `node tools/check_mermaid.js` · `python tools/check_lanes.py --strict` ·
-   `mdbook build` clean · commit `pass 4, session X — Part N: <summary>` ·
-   deploy.
-6. **Log and hand off.** The session log below; [pass5.md](pass5.md) for
-   wording debt and structural findings; [pass3.md](pass3.md) §7 for a
-   gap with no owner.
+**Goal:** every figure is the true picture of its system, legible at the
+column width and on a slide, and every name in it is under a gate.
 
-### Schedule
+**The jobs:** render every diagram — the 195 mermaid blocks, the generated
+SVGs, the parts-dependency figure — and put each beside the section under it
+in front of an agent that has the picture and the section and not the
+source: is this the shape (a trace whose truth is a graph; a secondary state
+diagram that is really the page's picture; two figures for one mechanism, as
+on `prediction-and-acks`); the lanes (at most seven; the 45 key rows no page
+claims, pruned; the one class with two lanes); labels that are sentences;
+density (the sixteen-edge spawn cascade, the fourteen-edge event loop, the
+27-item start-up sequence); whether figures carry captions; the
+tick-boundary bars. **The fifth gate:** names inside mermaid blocks — 453
+tokens no gate has seen, and the same parser gives the class index its 135
+missing page pairs — built by the planning session, report-only through the
+pass, a deploy gate at its close. `TEMPLATE.md`'s mermaid rules corrected to
+what 11.6.0 actually rejects (session O of pass 4 measured it). The
+generated Reference views' table shapes. Rendering needs a real browser, not
+jsdom, and the planning session chooses one.
 
-Tick as done. Session A is the frame; B–N are the parts in sidebar order;
-O is the close.
+**Not:** facts (an arrow found wrong is re-derived and logged as a
+correction); prose beyond a caption.
 
-- [x] **Session A — The frame** *(2026-09-04)*. Addition 2 done in full:
-  `check_deps.py`'s two failures and three forward links were all real and
-  are fixed, the checker is green, and it is now `tools/deploy.sh`'s
-  **fourth gate**. The generated views' one-sample check: all eight
-  confirmed. Twenty agents over the introduction, `lectures.md`, the atlas
-  and the Reference tier; four tool bugs found by suspecting the tool first
-  (`map_source.py`'s hierarchy resolver, `gen_reference.py`'s serializer
-  regex, `check_deps.py`'s README asymmetry, `check_lanes.py`'s
-  single-page unkeyed lane). What it did not reach is written out under
-  *Open* in [pass4.md](pass4.md).
-- [x] **Session B — Part I Anatomy · Part II Foundations** *(2026-09-04)*.
-  Ten pages, ten agents; **every one had at least one wrong claim**. The
-  freeze rule was wrong on three pages at once — a frozen registry swaps
-  the tag table *and* the component prototypes, on consecutive lines of
-  `ReloadableServerResources`. The two-loops figure and the threads table
-  survived arrow by arrow except for one thing, and it is corpus-wide: the
-  **login state machine is advanced from the Server thread**, because
-  `ServerLoginPacketListenerImpl` is a `TickablePacketListener`; only the
-  handlers stay on Netty. `data-driven-types`' fifty-six is right and its
-  stated criterion was not. Fifth tool bug: `gen_reference.py` missed one
-  register helper and published 94 built-in registries for 95. Everything
-  in [pass4.md](pass4.md).
-- [x] **Session C — Part III The server** *(2026-09-04)*. Six pages, six
-  agents; **all six had at least one wrong claim**, which is pass 2's finding
-  for a fourth time — and this time on `server-tick` and `server-level-tick`,
-  the pair seven later parts assume. Twenty-eight corrections. Three carry a
-  lecture: `server-tick`'s **event-loop figure had two impossible edges**
-  (`pollTaskInternal` offers the chunk sources a turn only in the *else*, and
-  `waitForTasks` is reachable only from `managedBlock`, where no task is ever
-  left queued for want of budget); its **packet-drain punchline was false** —
-  chat and both command packets never call `ensureRunningOnSameThread` and
-  arrive as *tasks* through `MinecraftServer.execute`; and
-  `server-level-tick`'s "nothing sends a block update at the moment a block
-  changes" has a counter-example the page had been using as an *example*, a
-  landing `FallingBlockEntity` sending its own packet on the line after
-  `setBlock`. `how-a-server-dies` — the page pass 2 never saw — lost nine
-  claims around an argument that held, the sharpest being that the watchdog
-  **is** still armed through a crash teardown, because only
-  `MinecraftServer.halt` clears `running` and the crash path never calls it.
-  `starting-a-server`'s `forceDifficulty` note was exactly backwards. Addition
-  2 done in full: all five *before you start* entries are used by a sentence,
-  and one was missing (`foundations/resource-system`). **Sixth tool bug**,
-  again by suspecting the tool first: `pass4_queue.py` split a continuation
-  line opening on a page marker into its own unit without inheriting the
-  parent's strike, so a struck bullet's children came back on every later
-  checklist for ever. Two agent findings rejected on re-derivation.
-  Everything in [pass4.md](pass4.md).
-- [x] **Session D — Part IV The world** *(2026-09-04)*. Done in one, not two:
-  eleven pages, eleven agents; **every one had at least one wrong claim**.
-  Forty-nine corrections, and the numbers five other parts cite were where the
-  worst of them lived — `tickets-and-loading`'s **eleven is thirteen**,
-  `chunk-generation-pipeline`'s own derivation of the 11 came to 10, and
-  `lighting`'s **27 sections is 14**, a figure geometry forbids. Two hooks fell:
-  `points-of-interest`'s, contradicted by its own state diagram, and
-  `environment-attributes-and-timelines`' orange badlands sky, which is
-  `#6eb1ff`. No tool bug — the first session without one; instead **two of
-  session E's own *session-verified* corrections were wrong**. Everything in
-  [pass4.md](pass4.md).
-- [x] **Session E — Part V Blocks** *(2026-09-04)*. Eight pages, eight agents;
-  **every one had at least one wrong claim**, and this part had the worst
-  provenance in the corpus. Sixty-one corrections. `signal-and-dust`'s
-  **staircase is invisible** — the packet is built once a tick by re-reading the
-  level, so the 14, 13, 12 the hook promised is never sent; the forty-two
-  survived both factors. `pistons-and-block-events`' motion is **off by one
-  tick** the whole way through, its block-event census is three blocks not four,
-  and quasi-connectivity turns out to be three blocks' quirk rather than the
-  piston's. `diodes-and-observers` calls a five-row table "exactly three places".
-  `blocks-and-states`, the hub, had the door on the wrong update channel. The
-  **shared click-page preamble** described a comparison that does not exist, on
-  both pages and in `lectures.md`. Addition 2 done in full, with
-  `server/server-tick` added as a missing entry. **Seventh tool bug**:
-  `pass4_queue.py` could not settle a numbered list item. Everything in
-  [pass4.md](pass4.md).
-- [x] **Session F — Part VI Entities** *(2026-09-04)*. Nine pages and the
-  landing page, ten agents; **every one had at least one wrong claim**.
-  Sixty-two corrections. The part's own pass-3 checklist came back almost
-  clean — so the errors were in the *illustrations*, not in what pass 3 knew
-  it had changed. `authority` is wrong about your own player on the client
-  (`LocalPlayer.isLocalPlayer` is true, so `Entity.checkFallDamage` **does**
-  run there) and its *NoAI* closer is exactly backwards; the **0.98 coast
-  does not exist** on any page, because nothing applies that delta;
-  `pathfinding`'s hook invented an eight-tick give-up the page's own next
-  paragraph contradicts, and its fire/spider example is wrong on both halves.
-  `synched-entity-data`'s hook was falsified by its own next section — ids
-  are fixed by the superclass chain, not by initialiser order.
-  `points-of-interest` was a missing *before you start* entry. No tool bug —
-  the second such session. Instead the **queue was wrong once**
-  (`EntitySpawnRequest.ignoreChecks` **is** true, twice, exactly where
-  session G said it was not) and an **agent once** (the packet queue does
-  drain before `tickServer`). Everything in [pass4.md](pass4.md).
-- [x] **Session G — Part VII Items and inventories** *(2026-09-04)*. Eight pages
-  and the landing page, nine agents; **every one had at least one wrong claim**,
-  which is pass 2's finding for an eighth time. Sixty corrections, and session
-  H's own checklist held almost entirely — so, as in Part VI, the errors were in
-  what pass 3 did not know it had changed. Four carry a lecture:
-  `enchanting`'s **shared tail does not exist** (only three of the five paths
-  reach `ItemStack.enchant`, and the anvil is outside `updateEnchantments` too —
-  what all five share is `EnchantmentHelper.getComponentType`, which is the
-  routing-by-item-identity the section was actually about);
-  `loot-tables`' trace **opens the wrong menu**, since a single chest is
-  `ChestMenu.threeRows` and `sixRows` has one caller in the game, the double
-  chest's; `contexts-and-predicates` says "the fifteen [`ContextKey`s] that
-  exist" when there are **seventeen**, and the missing two are a *client* user
-  of `ContextMap` that makes the page's own two-packages argument; and
-  `recipes`' reload window holds **empty** indexes, not the previous recipe set,
-  and is five statements of one synchronous lambda wide. Two more punchlines
-  fell: `items-and-stacks`' contained-size check is not at the creative-slot
-  door at all, and `enchantments`' "no other item can be made to behave like
-  one" is false of the *component*, which the anvil keys on. Addition 2 in full:
-  all six *before you start* entries used by a sentence, **`server/server-tick`
-  added** as a missing one, and three order claims on the landing page and
-  `lectures.md` corrected — including that **`/reload` does not change an
-  enchantment**, because `Registries.ENCHANTMENT` is a world-load dynamic
-  registry and not a reload citizen at all. **Eighth tool bug**, found by
-  suspecting the tool when striking session H's entry made the checklists grow:
-  `pass4_queue.py` lost a struck bullet's strike across a **blank line**, so
-  only the first paragraph of a long entry could ever be settled. Everything in
-  [pass4.md](pass4.md).
-- [x] **Session H — Part VIII The player** *(2026-09-04)*. Seven pages and the
-  landing page, eight agents; **every one had at least one wrong claim**, for a
-  ninth time. Fifty-one corrections. Session I's own checklist came back almost
-  entirely confirmed — so, as in Parts VI and VII, the errors were in what pass
-  3 did not know it had changed, except on `the-spear`, the one page no pass-2
-  agent had ever read, which took twelve. Four carry a lecture: `the-spear`'s
-  **windows are backwards** — for all seven materials `damageTime >
-  knockbackTime > dismountTime`, so an over-long charge loses dismount *first*
-  and damage last, the mirror image of the sentence the "different windows"
-  paragraph existed to deliver; `status-effects`' **stream codec is recursive**
-  and does carry the hidden-effect chain, so the reason the client never sees a
-  masked effect is that `ClientboundUpdateMobEffectPacket` never uses that codec
-  at all, and its `applyInstantaneousEffect` row is wrong twice over (never
-  called from the tick; instantaneous effects pulse *every* tick, and the effect
-  that fires on its last is `RaidOmenMobEffect`); `the-two-phase-tick`'s
-  **"Netty threads never touch player state"** is false of all three chat
-  handlers, which read `getChatVisibility` and call `resetLastActionTime`
-  off-thread, and its two halves are not disjoint — they share a literal
-  duplicated `stillValid`/`closeContainer` block; and `the-sword-swing`'s
-  **one-flush claim** is falsified by its own preceding sentence, session C's
-  packet-drain finding arriving on a Part VIII page. Two hooks fell:
-  `status-effects`' "the client never runs a status effect", refuted by three
-  unguarded movement reads, and the landing page's "the four things it does that
-  nothing else in the world does" — status effects are on every `LivingEntity`
-  and mobs stab with spears. The landing page compressed five separate things
-  into falsehood, including **four attributes unsynced when it is two**, against
-  the book's own generated Reference table. Addition 2 done in full; all eight
-  *before you start* entries used, nine cross-part links judged and none a
-  missing arrow. **No tool bug — the third such session.** Instead the agent was
-  wrong once (the hit-feedback literal is `contactCooldownTicks`) and the
-  session was wrong once, inventing a field that `verify_names.py` then caught —
-  the verifier catching a *fix* rather than a page. Everything in
-  [pass4.md](pass4.md).
-- [x] **Session I — Part IX Networking** *(2026-09-04)*. Five pages and the
-  landing page, six agents; **every one had at least one wrong claim**, for a
-  tenth time. Forty-six corrections. Session J's checklist held on the numbers
-  and fell on the *taxonomies*: two shapes of packet class where there are
-  three, four protocol templates where there are eight, two exceptions and one
-  refusal where there are three and two. Four carry a lecture: the round-trip
-  figure had **the outbound pipeline backwards** — `"compress"` goes in with
-  `addAfter("prepender")` and outbound runs tail-to-head, so it is compress,
-  prepend, encrypt, and the page's own prose said so while the figure did not;
-  `chat-and-signing`'s **"vanilla never sends an unsigned `Component`"**, said
-  three times, is false because `MessageArgument.resolveChatMessage` sets one
-  on *every* message it resolves, having expanded the selectors — so a `/msg`
-  with a selector delivers text the signature does not cover;
-  `packets-and-stream-codecs`' bolded **"a `Codec` on the wire means a compound
-  tag"** has two exceptions that are the two packets a player sees most, the
-  server-list response and the login kick, both carrying JSON; and
-  `the-connection`'s **kick stall is not `Connection.disconnect`** but
-  `MinecraftServer.executeBlocking` a line later. Two more punchlines fell:
-  `Entity.broadcastToPlayer` is not a hiding hook used by "a few types" but has
-  exactly one override, and *what the client is told*'s four ungated feeds are
-  past **gate 3 only**, so the "knockback is instant" answer fails for exactly
-  the distant mob its question is about. **The session's named item was wrong
-  three ways and no agent got it right**: session A's eight→seven rename left
-  two dead anchors, one agent re-derived eight by counting a method that is not
-  a packet handler, and the true number for a client play listener is **nine** —
-  `handleKeepAlive` and `handleDisconnect` are inherited, unoverridden, and
-  never hop, so a keep-alive is answered with no game thread involved. Addition
-  2 done in full, with one order claim struck: *what the client is told* and
-  *chat and signing* do not "both assume three" — neither page mentions the
-  phase machinery, and `chat-and-signing` never uses the word. **No tool bug —
-  the fourth such session**; instead the agents were wrong twice and the page
-  was right against an agent once. Everything in [pass4.md](pass4.md).
-- [x] **Session J — Part X The client** *(2026-09-04)*. Twelve pages, the
-  landing page and the part's own Reference catalogue, fourteen agents;
-  **every one had at least one wrong claim**, for an eleventh time.
-  Seventy-one corrections. The named item was wrong and the session found it
-  first: `prediction-and-acks`' headline state diagram had **both client exits
-  backwards** — the ledger holds *what the server is known to have*, and
-  `endPredictionsUpTo` hands every removed entry to `syncBlockState`, so an
-  entry nothing corrected is the **rollback** and the vindicated case is the
-  corrected one; its server column's idle value is **minus one, not zero**,
-  which the page's own zero-ack answer depends on. Four more carry a lecture:
-  `the-client-loop`'s hook (**the server drops ticks too**, on the "Can't keep
-  up!" path) and its divisor, limiter, profiler, startup and teardown claims;
-  `the-client-level`'s **volatile pair is one thread** — the real second reader
-  is the section-compile worker resolving tint live — and its "next tick / next
-  frame" notes are both the same `runTick`; `input-and-keybinds`' hook, whose
-  own inventory example is drained **inside** the tick; and
-  `what-makes-a-sound`'s "your own sounds are never sent to you", false of the
-  five attack sounds. Two weather Q&As fell whole (**thunder is not
-  distance-delayed**; rain is ramped a hundredth a tick and broadcast every
-  changed tick). Three landing-page counts were wrong and each was mirrored on
-  a second page — four predicates is **five**, two applications is **six
-  windows**, three methods is **four** — and the closer's "none of them on" is
-  **fifteen of sixteen**, because one subscription sits outside the debug guard
-  and an F3 key reaches it. Addition 2 done in full, with one order claim
-  struck: the landing page told the reader to watch a Part X page before a Part
-  IX page the part requires in full. **No tool bug — the fifth such session**;
-  instead `pass4_queue.py` routed a bare `README` note to the wrong part for a
-  third time, and an agent was wrong once. Everything in [pass4.md](pass4.md).
-- [x] **Session K — Part XI Rendering** *(2026-09-04)*. Done in one, not two:
-  eleven pages, the landing page and the part's own Reference catalogue
-  (`reference/submit-phases.md`), thirteen agents; **every one had at least
-  one wrong claim**, for a twelfth time. Ninety-one corrections. The named
-  item was `post-processing`, the one page in the corpus written from nothing
-  and never checked, and the session found its worst error first: **there
-  *is* a Fabulous graphics setting** — `GraphicsPreset.FABULOUS` is one of
-  four stored preset values, and it still switches the transparency chain on,
-  as `improvedTransparency = Util.getPlatform() != Util.OS.OSX`. What is true
-  is that no preset is read at render time. Five more carry a lecture:
-  `the-frame`'s minimize answer is wrong by ninety per cent of the work
-  (iconification is `FramerateLimitTracker`'s *first* test and caps the client
-  at **ten frames a second**), and its five partial ticks are **six**, with
-  the screens row attached to a value screens never see;
-  `visibility-and-the-frame-graph`'s spine is **a phase out** —
-  `LevelExtractor.applyFrustum` runs in *extract*, before `GameRenderer.render`
-  is entered, which the sibling page had right all along; the same page's
-  bucketing is backwards in both directions (**both backends still issue one
-  draw per section**, and translucent sections merge into **one** bucket
-  rather than none, which is what preserves the order the list is reversed
-  against); and `entity-rendering`'s hook promises a fourth pose no entity
-  ever gets, because the only crumbling overlay in the game is built in the
-  *block-entity* loop. **The landing page was the worst page in the part** —
-  nine wrong promises, most of them about pages rather than code: not the
-  largest system (`world/level` is bigger on both measures), not all inside
-  `renderFrame`, not cited by every page (the window by two of ten), and the
-  client loop is the joint *longest* page in Part X where it was sold as the
-  shortest. Three hooks fell: the weather is seeded from **position**, not
-  the clock, and asks for no attribute at all; the chunk-layer scan **does**
-  have a setting (`Material.forceTranslucent`, 110 shipped models); and the
-  water animation does not stop when you pause — the guard is `/tick freeze`.
-  Addition 2 done in full, with the landing page's "three ways
-  `LevelExtractor` is reached" corrected to the **two** the page it points at
-  states. **No tool bug — the sixth such session**; instead the verifier and
-  the mermaid checker each caught one of the session's own fixes, and two
-  agent findings were rejected on re-derivation. Everything in
-  [pass4.md](pass4.md).
-- [x] **Session L — Part XII World generation** *(2026-09-05)*. Done in one,
-  not two: ten pages, the landing page and the part's own Reference catalogue
-  (`reference/density-function-nodes.md`), twelve agents; **every one had at
-  least one wrong claim**, for a thirteenth time. Ninety-four corrections. The
-  sharpest finding is the one the charter's addition 4 was written for: **pass
-  3's own correction was the error.** Session M of pass 3 "fixed"
-  `features-and-placement`'s sixty-three registered features to sixty-one; it
-  is **63**, and the two it lost put a cast between the `=` and the call, so a
-  `= register(` grep misses exactly those two — *and the session reproduced
-  that grep and got 61 before an agent caught it*. **The landing page was the
-  worst page in the part for a second part running**, and both halves of the
-  part's premise fell: the worldgen registries are re-read from the *currently
-  enabled* packs on every open (`WorldOpenFlows`, `Main`), not fixed at
-  creation; and "nothing here reads the world it is building" is false of the
-  decoration step, which hands every placed feature `getBlockState`,
-  `getHeight` and `getCarvingMask` — what is true is the determinism. Six
-  counts with it, including six statuses that are seven and five data-driven
-  instances that are twenty-six, plus **session A's "two size claims, two
-  rules" item settled** (423 excludes the package markers the atlas counts;
-  451). Five more carry a lecture: `jigsaw-and-templates`' **central invariant
-  runs the other way** — the fallback pool is appended at *every* depth and it
-  is the target pool that is dropped at the limit, so a street ends wherever
-  its pieces stop fitting — and its hook's lamp post is not in any terminator
-  template; `structure-placement`'s verified line promised a layout "computed
-  twice" that is computed **once**, because the check never runs the deferred
-  expansion; `trees`' hook describes a top-heavy tree **no shipped tree can
-  grow**, since the fancy oak's crown is fixed-size and its cluster count comes
-  from the *clipped* height; `density-functions`' unseeded bounds are
-  **narrower, not wider** (2.0 against 2.57–7.32 across all sixty-one shipped
-  noises); and `hand-built-structures`' `/locate stronghold` answer **rests on
-  a method with zero callers**. Two more hooks fell: `blending` measures the
-  chunk that **owns** the data, not a neighbour (session A's standing item,
-  settled against the page), and the water in *Water World* is **not** a
-  feature. Addition 2 done in full, with `world/environment-attributes-and-timelines`
-  added as a missing entry and the lecture table's row for it corrected — caught
-  by `check_deps.py`. **No tool bug — the seventh such session**; instead the
-  verifier caught two of the session's own fixes and `check_deps.py` a third,
-  one agent finding was rejected on re-derivation, and two agents disagreed
-  with each other. Everything in [pass4.md](pass4.md).
-- [x] **Session M — Part XIII Commands and data packs** *(2026-09-05)*. Done in
-  one, not two: nine pages and the landing page, ten agents (the part has no
-  Reference catalogue of its own); **every one had at least one wrong claim**,
-  for a fourteenth time. Sixty-eight corrections. The named item was the three
-  parsers against Brigadier, and it broke the page that owns them:
-  `brigadier-and-commands`' central claim is **backwards** — vanilla registers
-  359 argument nodes and only **59** serialise as *ask_server*, so the local
-  path is the rule, not the exception — and its verified line asks the server
-  nothing at all, because `GiveCommand` attaches no suggestion provider to any
-  node and `@p`, the item id and the component all complete from the client's
-  own tab list and registries. The corpus-wide "sixty-two of the sixty-seven",
-  on three pages, is **59 of 64**. Four more carry a lecture:
-  **`LevelBasedPermissionSet.union` is a *minimum*** — both branches of the
-  override return the lower-levelled set — so `withMaximumPermission` caps
-  rather than widens, every route into a function body lands on gamemaster,
-  and `functions-and-macros` and `permissions` had it exactly backwards on
-  consecutive pages; `entity-selectors` (the last of the four session-P pages,
-  never checked by anyone) had **both headline scenarios impossible** — `/tp
-  @p` typed by a player is a no-op teleport to self, and `/kill @e` cannot
-  trigger the shape rejection its Q&A is about, though both *mechanisms* were
-  right; `advancements`' `checkForAutomaticTriggers` is unreachable rather
-  than merely futile, because its whole body sits behind a guard the criteria
-  codec forbids; and the charter's standing **`execute store` item is
-  settled** from Brigadier 1.3.10 — `ContextChain.runExecutable` calls the
-  consumer with *(false, 0)* on a throw, so a failing leaf writes 0. Two hooks
-  fell: `game-tests`' verified line runs **`/test runall`, a command that does
-  not exist** (the working form is `/test run *`), and its "the one system in
-  Part XIII where the client writes" is false of four serverbound packets
-  named on three other pages of the same part. **The landing page was the
-  worst page in the part for a third part running** — 473 classes and 43,914
-  lines against its 442 / 43,800, with a brute force over every candidate
-  package subset showing **no set reproduces the page's pair**; "more than
-  half is the command catalogue" is 29% and impossible at any population; and
-  its "strictly one way" dependency is falsified by the selector's
-  *advancements=* and *scores=* options. Addition 2 done in full: all five
-  *before you start* entries used by a sentence, all eight glossary terms
-  present, `check_deps.py` green, and `lectures.md` corrected for the three
-  claims it mirrors. **No tool bug — the eighth such session.** Instead **two
-  agents disagreed** on the part's size and the session's own brute force
-  settled it; **the session was wrong once** and caught it by re-deriving (it
-  had used the wrong package set and excluded the package markers the atlas
-  counts); and `verify_names.py` **caught seven of the session's own fixes**,
-  including a method that does not exist — the verifier catching fixes rather
-  than pages for the second session running. Everything in
-  [pass4.md](pass4.md).
-- [x] **Session N — The corpus-wide count sweep** *(2026-09-05)*. **5,196
-  numbered sentences across the 133 hand-kept pages**, in twenty-five agent
-  bundles behind one brief that forbids the agent the argument around the
-  number. **Sixty-four corrections.** The named finding lands on pass 4's own
-  session M: its `359 argument nodes` and `64 that attach a provider` are
-  `grep -c` **line** counts, and the call-site counts are **459** and **67** —
-  so 62 serialise as *ask_server*, and **the number session M replaced was
-  right**, because 62 of 67 is what those three pages said before it. Session
-  L's finding, *the correction was the error*, repeating inside pass 4. Four
-  more findings are the same trap at one remove: 61 shipped noise definitions
-  are **63** (two live in a `nether/` subdirectory, and session L's log carried
-  the 61), 61 fluid `scheduleTick` sites are **63** (two pass a `Fluid` without
-  naming one — **and the session's own first classifier reproduced the 61**),
-  40 `repositionElements` overrides are **41**, and two callers of
-  `Level.updateNeighbourForOutputSignal` are **twelve**. Three cross-page
-  contradictions found by the session's own check, which no per-part agent can
-  run: `ClientboundDamageEventPacket` carries three entity ids and one page said
-  two; `server/README` promised three ways a session changes over a page headed
-  *Four*; and "a dozen multiplications" on two pages is the damage page's "a
-  dozen **owners**". Every item earlier sessions handed to N is settled, and the
-  glossary lost two wrong counts of its own. **Two parts came back clean** —
-  Part VIII and Part IV's chunk group, the first whole parts to survive a
-  pass-4 check without a wrong claim. **No tool bug — the ninth such session**;
-  the bug was in a method three sessions shared. About fifty counts that are
-  right under one reading of their population and wrong under another are in
-  [pass5.md](pass5.md), with the finding that **"declared and never read" is
-  unverifiable of any primitive constant**, because `javac` inlines them.
-  Everything in [pass4.md](pass4.md).
-- [x] **Session O — The close** *(2026-09-05)*. Twelve agents; **every one had
-  at least one wrong claim**, for a fifteenth time. Ninety-one corrections. The
-  named finding is that **two of pass 4's own entries were false**: session A's
-  strike recording `verify_names.py`'s `Class.method(Arg)` hole as settled — the
-  pattern was never changed, and eighteen backticks had been checked by nothing,
-  two of them dead 1.21 names; and **session K's correction on `submit-phases`,
-  which was backwards and had been copied onto `entity-rendering`** —
-  `strictlyOrdered` leaves consecutive merging alone and suppresses only the
-  fold into a *non-adjacent* earlier draw, which is the merge that reorders. The
-  glossary was checked twice over, against the decompile and against each
-  entry's owner page as pass 4 left it: fifty corrections, four entries wrong
-  outright (`Packet` is an interface; `Path` linked to a page that never
-  mentions it; `World clock` holds nothing; a sign is not an unattended
-  command), five contradicting the page pass 4 had just corrected, the whole
-  page re-sorted, and thirteen entries added for terms with nowhere to look them
-  up. The four Reference catalogues session A verified and never fixed are
-  fixed, and the earlier agent was wrong or short in four of its own findings.
-  **Six tool bugs, three of them published as fact** — 148 registry keys for
-  153, a game rule with an unbalanced parenthesis, and the packet grand total
-  printed in the serverbound column. The pass-3 queue is 259 units and all 259
-  are struck. Pass 5's charter and the version pass are written above; 26.3 has
-  **not** landed (26.3-pre-2, 2026-09-04), so the version pass is chartered and
-  triggers on the release. Everything in [pass4.md](pass4.md).
+## Pass 8 — the voice
 
-### Hand-off rules
+**Goal:** one voice, one vocabulary, no tics, and every number says what it
+counts.
 
-Two files. [pass4.md](pass4.md) — the corrections, per part, struck through
-as settled, and anything the next pass-4 session must know.
-[pass5.md](pass5.md) — wording debt, cuts, structural findings. A gap with
-no owner page goes to [pass3.md](pass3.md) §7. Anything left for later is
-written when it is found, not at the end.
+**The jobs:** the exemplar page and the voice note, chosen in session A; the
+tics — "not X but Y", the named-qualifier hedge, the dead-constant aside,
+the em-dash chain, the correction written in the voice of a correction,
+*record* against *extract*, the three words for an update channel's
+direction; the terminology sweep with the glossary as the checklist, and the
+glossary's own five headwords, *Occlusion*, and the six two-owner entries;
+the fifty-odd counts whose population admits two readings — pick the
+reading, say it, or drop the number; the two rules for the word *classes*;
+how data keys are typeset; the wording debt logged per part in
+[pass5.md](pass5.md), hooks first, wherever passes 5 to 7 have not already
+rewritten it; the register of the 1.21 blockquote. Reader agents again, now
+with the exemplar. Every changed sentence's claims to [pass9.md](pass9.md).
+The planning session builds the tic finders and a terminology checker.
 
----
+**Not:** structure (a structural finding is ruled out or goes to pass 10's
+notes); facts.
 
-## Pass 5 — polish (current)
+## Pass 9 — the third fact-check
 
-**Goal:** the corpus is true; make it read like one book. Pass 2 proved every
-page had a wrong claim and pass 4 proved it again over everything pass 3
-rewrote — 800-odd corrections across fifteen sessions, and a great many of them
-are sentences written to be *true* rather than to be *heard*. Pass 5 is the
-first pass that reads a page as a viewer would.
+Pass 4's charter, protocol and brief (archived in [pass4.md](pass4.md) and
+[pass4-brief.md](pass4-brief.md)) run again over the corpus passes 5 to 8
+rewrote, with what pass 4 learned made into steps:
 
-Three problems, in the order they cost the most:
+1. [pass9.md](pass9.md) first — the claims passes 5 to 8 introduced, and
+   their corrections confirmed as fixes rather than re-litigated as
+   originals.
+2. The illustrations before the mechanisms: tables, one-line summaries, Q&A
+   answers, asides, landing pages, the glossary — where pass 4 found the
+   errors.
+3. **A fix is a claim.** Every correction is re-derived by a second reading
+   before it lands, and the close audits the pass's own strikes and
+   corrections (session O's job, made a step).
+4. The figure against the section under it before either against the
+   source.
+5. Populations, not rows, for every generated page; call sites, not lines,
+   for every count; the population named for every absolute.
+6. The names inside figures are under the gate by then; the 23 ambiguous
+   simple names settled or the resolver taught which file a page means.
+7. The summarisers re-read after their pages are fixed.
+8. Pass 9 adds nothing; a gap goes to [pass3.md](pass3.md) §7 for the second
+   edition.
 
-1. **The devices became slots.** Sixty-nine of the 102 system pages carry a
-   *Questions players ask* closer, sixty-five of them as the last content
-   section, in five spellings; four parts use it on every page. Twenty pages
-   head a section with the literal `## The trace: …`. Seven groups of pages
-   share a skeleton, which the charter's own rule says means neither is done.
-   Session P's counts and its rule of thumb — at most half the pages in a part
-   — are in [pass5.md](pass5.md); the rule is a rule of thumb, and a session
-   that breaks it says why.
-2. **The wording debt pass 4 left.** Every fix that rewrote the sentence around
-   it is logged per session in [pass5.md](pass5.md), hooks first. A hook
-   replaced under time pressure is the most likely thing in the corpus to read
-   badly.
-3. **The numbers whose population is ambiguous** — about fifty, session N's
-   largest output. Each is right under one reading and wrong under another, and
-   the page never says which. Pick the reading, say it, or drop the number.
+Its planning session rewrites `pass4_prompts.py` to read pass9.md.
 
-Under those: the terminology sweep with the glossary as the checklist (it is
-now correct and complete, which is what made it a checklist), one voice sweep
-against the best page, the "not X but Y" tic and the named-qualifier hedge, the
-length bill pass 2 deferred, and links and cross-references complete.
+## Pass 10 — the last polish
 
-### What pass 5 does not do
+Pass 9's wording debt; the frame — introduction, lecture map, the maps' and
+Reference's front pages — against the finished book; every internal link
+and anchor under the link checker as a gate; the last cuts; the owner's
+remaining questions answered and the lecture order confirmed; the
+introduction's *verified* paragraph made true of three checks; the release —
+a git tag, the site verified against whatever version is current, the
+second edition's seed written into §7 and *what this book skips*. Then
+nothing more is done to the site except version passes and the corrections
+readers file.
 
-**It does not change a fact.** Pass 4 read every page against the decompile;
-pass 5 has no decompile in its briefs, deliberately, because an agent given the
-source re-litigates instead of reading. If polish wants to change a claim, the
-sentence stays and the claim goes to a note — and a session that finds a real
-error stops, re-derives it against the decompile itself, and logs the
-correction the way a pass-4 session did. It does not restructure a part, add a
-page or move material between pages; a structural finding goes to the pass-6
-notes, and a system with no owner page still goes to [pass3.md](pass3.md) §7.
+## The version pass — rule 3's re-read (chartered, runs on each release)
 
-### The protocol inverts
+Rule 3 says newest version only, and every page carries `verified against
+26.2` as a test rather than a claim. **As of 2026-09-05 the latest release
+is still 26.2; 26.3 is at pre-release 2 (2026-09-04)** — checked against
+Mojang's version manifest, not assumed. This pass triggers on a release and
+runs once, in one session, between passes; a release that lands mid-pass
+waits for the pass to close. It will most likely run first inside pass 5,
+and again if 26.4 lands before pass 10.
 
-Pass 4's agent was an adversary with the source. **Pass 5's is a reader with
-nothing but the page**, asked four questions: where did you get lost, what did
-you have to read twice, what did the page assume you already knew, and what did
-you skip? It reports; the session decides; the owner judges what lands. No
-count in [pass5.md](pass5.md) is a target — reasoning over sensing over
-measuring, and a metric that becomes a goal stops measuring.
-
-Per part, one session:
-
-1. **Read** this charter and every [pass5.md](pass5.md) entry that names the
-   part — the wording debt first, because it is where pass 4 knows it left
-   rough edges.
-2. **Read the part end to end in watching order**, in one sitting, before
-   changing anything. This is the first pass that can: the facts are settled.
-3. **One reader agent per page**, in parallel, given the page and no source.
-4. **Cut, vary, and re-word** — the closer device broken up, the skeletons
-   varied one of each pair, the ambiguous counts settled, the tics hunted.
-5. **Verify and ship**: the four gates, `mdbook build` clean, commit
-   `pass 5, session X — Part N: <summary>`, deploy.
-6. **Log**: the session log in this file, the pass-6 notes for anything a
-   reading raises that polish cannot settle.
-
-### The gates
-
-The four stand and pass 5 adds none: they are about truth, and nothing that
-measures prose belongs beside them. Two of them grew teeth in session O and
-will now catch things a pass-5 edit can easily introduce — a lane used in an
-arrow but never declared, and a mermaid fence tucked inside a `<figure>` with
-no blank line around it.
-
-### Sessions
-
-A — the standard: choose the exemplar page, write the voice note, rule on the
-closer device, the trace heading, the cast table and the 1.21 blockquote, and
-set the cut budget. B–N — the parts in sidebar order. O — the close: the
-terminology sweep against the glossary, the two cross-part skeleton pairs, the
-frame re-read against the finished parts, and pass 6's charter.
-
-## The version pass — rule 3's re-read (chartered, not scheduled)
-
-Rule 3 says newest version only, and every page carries `verified against 26.2`
-as a test rather than a claim. **As of 2026-09-05 the latest release is still
-26.2; 26.3 is at pre-release 2 (2026-09-04).** So this pass is chartered here
-and triggers on the release, whenever it lands — most likely inside pass 5.
-
-One session, between passes:
-
-1. Fetch and decompile 26.3 into `reference/26.3/` beside 26.2, with its
-   `data/`, `assets/` and `server-classes.txt`, and re-run
-   `tools/fetch_libs.sh`.
+1. Fetch and decompile the release into `reference/<version>/` beside the
+   old tree, with its `data/`, `assets/` and `server-classes.txt`, and
+   re-run `tools/fetch_libs.sh` (26.3 snapshots already use authlib 10.0.77
+   and Brigadier 1.3.11).
 2. **`verify_names.py` against the new tree is the mechanical half**: every
    name that stops resolving is a rename or a removal, and the failures name
    the pages that need re-reading. That is the whole point of the gate.
-3. Regenerate: `gen_reference.py all`, `map_source.py`, the two indexes. Diff
-   every generated page against 26.2's and read the diff — a population that
-   changed is a page that changed.
+3. Regenerate: `gen_reference.py all`, `map_source.py`, the two indexes.
+   Diff every generated page against the old version's and read the diff — a
+   population that changed is a page that changed.
 4. `claims.py --all --counts` over the pages the first two steps touched: a
    count whose population moved is wrong now.
-5. The header line on every page, and `CLAUDE.md`.
+5. The header line on every page, `CLAUDE.md`, the introduction, `llms.txt`.
 
-A re-read, rarely a rewrite. A system that changed shape rather than names is a
-pass-3 finding, not a version one, and goes to [pass3.md](pass3.md) §7.
+A re-read, rarely a rewrite. A system that changed shape rather than names
+is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
+to §7.
 
-## Pass 6+ — the owner reads
+## The owner's read
 
-Unchanged from the original conception: part by part, decompile open,
-questions left **in the page** as `<!-- Q: … -->` comments; a session
-answers each in the prose — if the owner had to ask, the page was wrong or
-missing it — and removes the comment. The owner confirms or reorders
-`lectures.md`. Then voice and cuts, and recording.
+Unnumbered and parallel: the owner reads a part with the decompile open
+whenever they like, and leaves questions **in the page** as `<!-- Q: … -->`
+comments. The next session that touches the page — whatever pass it is in —
+answers each question in the prose (if the owner had to ask, the page was
+wrong or missing it) and removes the comment; every part session greps its
+part for them at the start. The owner confirms or reorders `lectures.md`
+before pass 9, so that pass 9 checks the confirmed order. Nothing is recorded
+that the owner has not understood; recording is after pass 10.
 
 ## Risks
 
-- **Confirming instead of falsifying.** An agent that likes the page
-  returns an empty list. The rule stands: no quoted evidence, no pass. Brief
-  per page, not per part, so the spend limit does not end a check halfway
-  (session O's glossary audit hit it).
-- **A fix that is a rewrite.** A wrong hook tempts a new opening, and a new
-  opening is where the next error goes. Fix the sentence; log the rest.
-- **A count checked from inside the argument.** Session N's sweep exists
-  because a reader who has followed the page's reasoning counts what the
-  page told them to expect.
-- **The tools.** The verifier, the generators, the lane key and the mermaid
-  checker each had a bug in pass 2; suspect them first.
-- **26.3 lands mid-pass.** Finish on 26.2; re-verify once, in one session,
-  between passes.
+- **A restructuring pass puts errors back** — pass 3 did, by the hundred.
+  [pass9.md](pass9.md) is the answer, and the rule that a session lists what
+  it changed on purpose so that pass 9 can read the rest harder.
+- **A pass that finds nothing.** A lens that returns clean is a lens too
+  wide or an agent that liked the page. Brief per page, evidence for every
+  finding, and the close says honestly whether the pass earned its cost.
+- **The queue is stale by the time a pass reaches it.** Passes 5 to 7
+  rewrite what [pass5.md](pass5.md) describes; every entry is checked
+  against the page before it is acted on.
+- **A release lands mid-pass.** Finish the pass; run the version pass
+  between passes; the final site is verified against whatever is current
+  at pass 10.
+- **The tools.** Fifteen bugs in pass 4, six of them published; suspect the
+  tool first, and every new tool ships with a probe that proves it fails on
+  the construct it should.
+- **Cost.** About fifteen sessions a pass, about eighty more in all. The
+  owner accepts that while passes are productive, and a pass's close is
+  where that is judged.
 
-## Session log — pass 4 onward
+## Session log — pass 5 onward
 
-*(newest last; pass 3's log is in [pass3.md](pass3.md) §10)*
+*(newest last; pass 4's log is at the end of [pass4.md](pass4.md), with the
+plan as it stood at its close)*
 
-- **2026-09-03, planning session (Fable, between passes 3 and 4).** No
-  page touched. Read the charter, the queue and pass 2's protocol; built
-  the five tools under *The tooling* above and wrote
-  [pass4-brief.md](pass4-brief.md) — the agent brief (one report shape,
-  nine steps in order, evidence for every verdict) and the session
-  runbook (nine steps, each a command or a rule) — so sessions A–O on
-  Opus do no planning of their own. Measured while building: the queue
-  is 562 page-attributed notes and 82 part-wide ones; the corpus has
-  about 5,000 count sentences and 4,700 absolutes for session N; all
-  195 diagrams parse into 2,442 checkable items. `check_deps.py` found
-  session A's first findings (listed in its schedule line). Rulings:
-  `check_deps.py` treats Parts I and II as universally assumed (session
-  P's figure omits them on purpose) and reports a forward link rather
-  than failing it, because a landing page may link a later part to say
-  what it hands forward; the session decides which it is. A note in
-  pass4.md written under a renamed page's old name is routed to the new
-  page(s) by an alias table in `pass4_queue.py`.
-- **2026-09-04, session A — the frame (Opus).** Addition 2 in full, the
-  Reference tier, the atlas, the introduction and the lecture map. All five
-  of `check_deps.py`'s opening findings were real: two lecture-table rows
-  (the environment row was right and two landing pages were missing the
-  entry; the blocks-and-states row claimed a part that assumes *block
-  interaction* instead) and three *before you start* links to later parts,
-  every one a hand-forward or a pointer rather than a dependency, so each
-  moved out of the section instead of gaining an arrow. The checker is green
-  and is the fourth deploy gate. **Four tool bugs**, each found by suspecting
-  the tool before the page: `map_source.py` resolved every *Outer.Inner*
-  parent by its last segment and keyed types by simple name (222
-  mis-resolutions; `Entity` 193 to 191, `Screen` 157 to 158, `Packet` 232 to
-  236, 21 of 60 hierarchy rows), `gen_reference.py` published a `?` for the
-  one serializer declared as an anonymous subclass, `check_deps.py` called
-  every "read Part N first" entry unused, and `check_lanes.py --strict`
-  passed any unkeyed lane used on a single page — which is how a retired
-  lane and an unkeyed one survived. The session's own first replacement for
-  a corrected sentence was itself wrong (a lines-per-class superlative),
-  which is the re-derive rule earning its place against the session rather
-  than against an agent. Rulings: a hand-forward belongs outside *before you
-  start* rather than on a dashed arrow; a word lane in the key is marked by
-  an italic cell rather than by the literal phrase "not a class", because
-  that phrase was false of `Main`; a landing-page link is a whole-part
-  dependency and cannot satisfy a page-level mention check. Fifteen of the
-  twenty pages are settled; the five with findings still open are listed
-  under *Open* in [pass4.md](pass4.md), with what belongs to Parts VI, IX,
-  XI, XII and XIII.
-- **2026-09-04, session B — Parts I and II (Opus).** Ten pages, one
-  adversarial agent each; the order work, the tool audit and every *wrong*
-  re-derived by the session before a sentence moved. **All ten pages had at
-  least one wrong claim**, which is pass 2's finding holding for a third
-  time — and the two pages pass 2 never saw (`text-components`,
-  `data-driven-types`) were not the worst of them. Three findings crossed
-  pages: the **freeze rule** (a frozen registry swaps two things, not one —
-  the tag table and the component prototypes, applied on consecutive lines
-  of `ReloadableServerResources.updateComponentsAndStaticRegistryTags`),
-  the **login state machine** (advanced from the Server thread through
-  `MinecraftServer.tickConnection`, not run start to finish on Netty; wrong
-  on `anatomy`, on `reference/threads.md` in three places, and still wrong
-  on Part IX's `protocol-phases`), and the **`ComponentSerialization`
-  superlative**, which no population supports and which is now gone from
-  both pages that carried it. Two inversions worth remembering: the
-  homogeneous-numeric-list section of `codecs-nbt-json` had the collectors
-  backwards, and `data-components` had the component-binding asymmetry the
-  wrong way round — it is the *singleplayer* client that binds only the
-  synchronized registries, and as written no multiplayer client could
-  decode a stack. **Fifth tool bug**, again by suspecting the tool first:
-  `gen_reference.py`'s built-in regex spelled the register helpers out and
-  missed `registerSimpleWithIntrusiveHolders`, so `registries.md` published
-  94 built-in registries for 95 and left `block_entity_type` unclassified.
-  Rulings: a superlative no population supports is deleted rather than
-  re-scoped (session A's lines-per-class precedent, now twice); a stale
-  pass4.md note is corrected in the settling session's entry rather than
-  edited in place; and a wrong fact found on another part's page is logged
-  under *For other parts' sessions* rather than fixed across the boundary
-  (session A's precedent), because the fix needs that part's argument open
-  beside it. Four table cells on `data-driven-types` and one premise are
-  the only findings left unactioned, and they are written out there.
-- **2026-09-04, session C — Part III The server (Opus).** Six pages, one
-  adversarial agent each; the order work, the part-wide notes and every
-  *wrong* re-derived by the session before a sentence moved. **All six pages
-  had at least one wrong claim** — pass 2's result for a fourth time, and the
-  first time it has landed on the pair the rest of the book leans on hardest:
-  seven later parts assume `server-tick` or `server-level-tick`. Twenty-eight
-  corrections. The three that carry a lecture: `server-tick`'s **event-loop
-  flowchart had two edges the code cannot take** — `pollTaskInternal` offers
-  the levels' chunk sources a turn only in the `else`, when the server's own
-  queue ran nothing, and `waitForTasks` is reachable only from `managedBlock`,
-  where `shouldRunAllTasks` is true and no task is ever left queued for want
-  of budget; the same page's **packet-drain punchline** ("the only point in a
-  tick where player input enters the world") is false, because
-  `handleChat` and both command packets never call
-  `ensureRunningOnSameThread` and post through `MinecraftServer.execute`
-  instead, arriving as tasks; and `server-level-tick`'s "nothing sends a block
-  update at the moment a block changes" is broken by a landing
-  `FallingBlockEntity`, which sends its own `ClientboundBlockUpdatePacket` on
-  the line after `setBlock` — the page had been offering falling sand as an
-  *example* of the rule it breaks, and the landing page repeated it.
-  `how-a-server-dies`, the page pass 2 never saw, kept its three-way argument
-  and lost nine claims around it, the sharpest being that the watchdog **is**
-  still armed all the way through a crash teardown (only
-  `MinecraftServer.halt` clears `running`, and the crash path never calls it)
-  and that weather and game rules have not been in `level.dat` since they
-  became `SavedData` — a 1.21-era fact that `reference/level-data-and-rules`
-  already had right, which is the second time this pass that one page's
-  correctness has convicted another's. `starting-a-server`'s `forceDifficulty`
-  aside was exactly backwards: the integrated server has no override and
-  `DedicatedServer` is the only one. Addition 2 done in full — all five
-  *before you start* entries are used by a sentence rather than merely
-  linked, `check_deps.py` green, and one entry missing
-  (`foundations/resource-system`, which `starting-a-server` leans on for the
-  staged load). **Sixth tool bug**, again from suspecting the tool before the
-  page: `pass4_queue.py` splits a continuation line that opens on a page
-  marker into its own unit — a feature — but did not give that unit its
-  parent's strike, so **striking a bullet could never settle it** and four of
-  session D's notes came back mid-sentence on every checklist. Fixed. Two
-  agent findings rejected on re-derivation, both worth recording: a
-  "missing dependency" on `protocol-phases` that is a pointer the page
-  explicitly disclaims needing, and — the session's own error, caught by
-  counting rather than by an agent — a pass-5 note asserting Part III is 5 of
-  5 on *Questions players ask* when it is 2 of 5. Rulings: a superlative the
-  page itself contradicts one sentence later is deleted, not re-scoped
-  (sessions A and B's precedent, now three times); a saved-data *file name* is
-  italics, not backticks, like any other non-identifier; and a diagram fixed
-  by adding an edge is fixed, not restructured — the arrow count going up is
-  pass 5's problem and is logged there.
-- **2026-09-04, session D — Part IV The world (Opus).** Ten pages and the
-  landing page, one adversarial agent each; the order work, the part-wide notes
-  and every *wrong* re-derived by the session before a sentence moved. **All
-  eleven had at least one wrong claim** — pass 2's result for a fifth time, and
-  it did not spare the numbers five other parts cite. Forty-nine corrections.
-  The four that carry a lecture: `tickets-and-loading`'s **eleven is thirteen**
-  (eleven is the reach past a level-**33** chunk, and a `PLAYER_LOADING` ticket
-  sits at 31), and the same page's level-44 holder is at
-  `ChunkStatus.STRUCTURE_STARTS`, not "the first noise pass" — replaying
-  `ChunkStep.Builder` over the pyramid gives the FULL step's twelve entries as
-  *SPAWN, INITIALIZE_LIGHT, CARVERS, BIOMES, STRUCTURE_STARTS × 8*, with
-  *NOISE* on the list nowhere; `chunk-generation-pipeline`'s **own derivation of
-  the 11 came to 10**, because three radius-1 rows widen the accumulated list and
-  the page named two — the missing one is *LIGHT* wanting *INITIALIZE_LIGHT*, and
-  `getRadiusOfParent` is why *SURFACE* and *SPAWN* contribute nothing;
-  `lighting`'s **"up to 27 sections across nine chunks" is 14 across seven**, and
-  27 is not merely wrong but impossible — an exhaustive enumeration over all
-  4,096 placements settles it, and the two opposite corner sections need the
-  torch's section coordinates to sum to at most 13 and at least 32 at once; and
-  `points-of-interest`'s **hook was falsified by its own state diagram**, since
-  `ValidateNearbyPoi` reads `BedBlock.OCCUPIED` and releases the ticket, so the
-  true statement is that the flag can only take a claim away, never make one.
-  Two more punchlines fell: the **badlands sky is blue** (`#6eb1ff`, bluer than
-  taiga's `#7da3ff`; no overworld biome declares an orange sky), and the day
-  timeline's Bézier makes the sun **slowest at its zenith**, not at the horizon —
-  which is why a day is about 13,564 ticks of sun against 10,436 of night, a
-  better fact than the one it replaced. `chunk-storage` lost thirteen claims
-  around an argument that held, the sharpest being that a flush is submitted at
-  *foreground* priority like any store and that a no-save world does let go of
-  its chunks, on `/save-all flush` and on shutdown. Addition 2 done in full:
-  all four *before you start* entries are used by a sentence,
-  `foundations/identifiers-and-registries` gained the page-level link it had been
-  missing (settling the Part IV half of session A's note), `foundations/tags` was
-  a missing entry, and `check_deps.py` has no Part IV line left. **No tool bug
-  this session** — the first pass-4 session without one. Instead the queue itself
-  was wrong twice: two of session E's *session-verified* pass-3 corrections are
-  false (`/tick sprint` **does** clear the freeze flag through
-  `ServerTickRateManager.requestGameToSprint`, and
-  `DynamicGameEventListener.move` does not "do nothing" on a half-loaded pair —
-  it guards its two halves separately and can drop a listener out of the world),
-  which is the re-derive rule earning its place against the checklist rather than
-  against an agent. Rulings: a hook a page's own figure contradicts is replaced,
-  and the replacement states what the figure draws; a dead constant that names
-  the right number is kept and *said to be dead* rather than deleted — four of
-  them turned up in this one part, and the resulting tic is logged in pass 5.
-  Everything in [pass4.md](pass4.md).
-- **2026-09-04, session E — Part V Blocks (Opus).** Seven pages and the landing
-  page, one adversarial agent each; the order work, the part-wide notes and every
-  *wrong* re-derived by the session before a sentence moved. **All eight had at
-  least one wrong claim** — pass 2's result for a sixth time, over the part with
-  the worst provenance in the corpus: two pages drafted by agents whose reports
-  were lost, one by an agent whose twelve corrections were never re-derived, and
-  three written by the pass-3 session itself. Sixty-one corrections. The four
-  that carry a lecture: `signal-and-dust`'s **staircase is invisible** — the
-  cascade finishes inside one packet handler and `ChunkHolder.broadcastChanges`
-  builds the packet once per tick by *re-reading the level*, so a position
-  written five times is sent once with its final value, and "it counts down, 14,
-  13, 12, visibly" was the page's hook (the **forty-two** survived, both factors
-  re-derived); `pistons-and-block-events`' **motion is off by one tick**, because
-  `Level.addBlockEntityTicker` puts a ticker straight into the live list whenever
-  `tickingBlockEntities` is false, so the placeholders move in the *blockEvents*
-  tick's own *blockEntities* phase and land at N+2, not N+3; the **block-event
-  census is three blocks, not four**, and `ComparatorBlock` — the fourth — raises
-  no event at all and owns a `triggerEvent` override that is dead in both
-  directions; and **quasi-connectivity is not the piston's alone**, since
-  `DispenserBlock` (hence `DropperBlock`) and `DoorBlock.getStateForPlacement`
-  read `hasNeighborSignal(pos.above())` the same way. Two more punchlines fell:
-  `diodes-and-observers` says its comparison table is "exactly three places" over
-  a table with **five rows** and calls the comparator "the only redstone block
-  with a block entity" (the sculk sensor answers from one, and the daylight
-  detector's stores nothing at all); and `block-breaking`'s "nothing crosses the
-  wire" is false client-to-server, where a `ServerboundSwingPacket` goes up every
-  dig tick. `blocks-and-states`, the hub, had the door on the wrong one of its own
-  two channels — `DoorBlock` does not override `affectNeighborsAfterRemoval` —
-  and its "what differs is entirely inside the write", the sentence that lets
-  Part X be watched later, is broken by two side-branches in `BlockItem.place`.
-  The **shared preamble's fourth sentence was a mechanism error** on both click
-  pages and in `lectures.md`: a correction *overwrites* the ledger entry rather
-  than being compared with it, and the settle compares that one value against the
-  world. Addition 2 done in full: all four entries used by a sentence, two of the
-  stated reasons rewritten to what the part actually leans on, and
-  `server/server-tick` added as a missing entry that two pages depend on and
-  neither linked. **Seventh tool bug**, again from suspecting the tool first:
-  `pass4_queue.py`'s strike regex did not recognise a **numbered** list item, so
-  session F's four provenance classes could never be settled. Ten of the ten
-  never-re-derived pass-3 leads on `block-breaking` came back CONFIRMED, and
-  every count on `block-entities` was right. Everything in [pass4.md](pass4.md).
-- **2026-09-04, session F — Part VI Entities (Opus).** Nine pages and the
-  landing page, one adversarial agent each; the order work, the part-wide
-  notes and every *wrong* re-derived by the session before a sentence moved.
-  **All ten had at least one wrong claim** — pass 2's result for a seventh
-  time. Sixty-two corrections, and the shape of them is new: this part's
-  pass-3 checklist came back almost entirely clean (twenty of session G's
-  twenty-one corrections re-confirmed, every count on `attributes` and
-  `synched-entity-data` right, all fifteen figures checked arrow by arrow
-  with four arrows wrong), so the errors were not in what pass 3 knew it had
-  changed but in the **illustrations hung off mechanisms it had got right**.
-  The four that carry a lecture: `authority`'s "false for a player on **both**
-  sides — so no player anywhere takes fall damage from the mover" is false on
-  the client, where `LocalPlayer.isLocalPlayer` returns true and
-  `Entity.java:823` runs every tick (harmless only because
-  `LivingEntity.checkFallDamage` needs a `ServerLevel`) — and Part VIII's two
-  survivors of the deleted matrix were the correct ones all along, settling
-  session I's note the other way round; the same page's ***NoAI* answer is
-  exactly backwards**, because `LivingEntity.travel` is gated on
-  `Entity.isEffectiveAi` as well as `Entity.canSimulateMovement`, so a *NoAI*
-  mob does not even fall; the **0.98 coast does not exist**, on three pages'
-  worth of sentences, because nothing on the client applies that delta — a
-  tracked mob is moved only by `InterpolationHandler` and stands still when
-  it runs out; and `pathfinding`'s hook **invented its number** ("eight ticks
-  later"), which the page's own second paragraph contradicts with 100 and
-  ~260. Two more punchlines fell: `synched-entity-data`'s hook blamed JVM
-  static-initialiser order for a slot `ClassTreeIdRegistry` fixes from the
-  **superclass chain** alone, which the page says itself forty lines later;
-  and `pathfinding`'s "a zombified piglin walks through fire and a spider does
-  not" is wrong on both halves (the piglin overrides *lava*; the spider sets
-  no malus at all, so fire is passable-but-expensive). Addition 2 done in
-  full: all five entries used by a sentence, **`world/points-of-interest`
-  added** as a missing entry that `ai-goals-and-brains` spends throughout,
-  `world/chunk-anatomy` given the page-level link it lacked, and
-  `authority`'s Part X link moved from `the-client-loop` (which never
-  mentions authority) to `the-client-level` — which settles both halves of
-  session A's pass4.md:1517 and required the same correction in
-  `lectures.md`, where the whole *ledger's foundation* premise was wrong:
-  the prediction ledger is `BlockStatePredictionHandler`, keyed by `BlockPos`,
-  and has nothing to do with movement. **No tool bug** — the second pass-4
-  session without one. Instead the checklist itself was wrong once
-  (`EntitySpawnRequest.ignoreChecks` **is** true, at
-  `BaseSpawner.java:348` and `TrialSpawnerStateData.java:266`, both building
-  a display entity — exactly what session G struck as false), and an agent
-  once, rejected on re-derivation: `MinecraftServer.processPacketsAndTick`
-  does drain the packet queue at `:1122` before `tickServer` at `:1124`, so
-  `attributes`' sentence stands. Rulings: a hook that invents a number the
-  page then contradicts is replaced with the page's own number; an
-  illustration wrong on both halves is replaced rather than repaired; and a
-  "never" the page's own later text contradicts is narrowed to what the later
-  text says, the later text being the authority — three times this session.
-  Everything in [pass4.md](pass4.md).
-- **2026-09-04, session G — Part VII Items and inventories (Opus).** Eight pages
-  and the landing page, one adversarial agent each; the order work, the
-  part-wide notes and every *wrong* re-derived by the session before a sentence
-  moved. **All nine had at least one wrong claim** — pass 2's result for an
-  eighth time. Sixty corrections, and the shape is Part VI's again: session H's
-  own checklist held almost entirely (all nine of its pass-2 corrections
-  re-confirmed, every count on `items-and-stacks`, `containers-and-menus`,
-  `enchantments` and `loot-tables` right, both `containers-and-menus` figures
-  clean arrow by arrow), so the errors were in what pass 3 did not know it had
-  changed. The four that carry a lecture: `enchanting`'s **shared tail does not
-  exist** — the section rested on "All of them end at `ItemStack.enchant`" and
-  only three of the five do, the grindstone and the providers calling
-  `EnchantmentHelper.updateEnchantments` themselves and the anvil writing with
-  `EnchantmentHelper.setEnchantments` outside even that; what all five share is
-  the private `EnchantmentHelper.getComponentType`, which *is* the
-  routing-by-item-identity the section was about, so the argument survives under
-  a new name. `loot-tables`' trace **opens the wrong menu**: a single chest —
-  which arrow 1 of the same figure establishes as the scenario — opens
-  `ChestMenu.threeRows`, and `ChestMenu.sixRows` has exactly one caller in the
-  game, inside the double chest's anonymous provider.
-  `contexts-and-predicates` says "the fifteen [`ContextKey`s] that exist are the
-  static fields of `LootContextParams`" when there are **seventeen** —
-  `SlotDisplayContext.FUEL_VALUES` and `.REGISTRIES` are the other two, and
-  `SlotDisplayContext.fromLevel` builds a `ContextMap` from six *client* files,
-  which is a second user for the page's own *util/context knows nothing about
-  loot* thesis and makes the cast table's "server main" wrong. And `recipes`'
-  reload window is not what the page says: a reload builds a **fresh**
-  `RecipeManager` whose four derived indexes start *empty*, and the swap and
-  `finalizeRecipeLoading` are five statements apart in one synchronous
-  main-thread lambda, so the "short and, on a reload, real" window is neither.
-  Two more punchlines fell: `items-and-stacks`' contained-size check is reached
-  only from `ItemStack.validateStrict` and so is **not** at the creative-slot
-  door the paragraph puts it at (and is one level deep, not recursive), and
-  `enchantments`' "no other item can be made to behave like one" is false of the
-  *component* — `AnvilMenu` keys `usingBook` on `STORED_ENCHANTMENTS`, not on
-  `Items.ENCHANTED_BOOK`. Addition 2 done in full: all six *before you start*
-  entries are used by a sentence, **`server/server-tick` added** as a missing
-  one that `containers-and-menus`' whole tick section rests on (session E's Part
-  V finding, again), and three order claims corrected across the landing page
-  and `lectures.md` — "every later page assumes all three" (no engine page links
-  all three, and two link none), "four and five are the pair" (it is five and
-  six), and **"all three engines are reload-time citizens of the same
-  machinery"**, which is false for enchantments: `Registries.ENCHANTMENT` is a
-  world-load dynamic registry, so `/reload` does not change an enchantment.
-  **Eighth tool bug**, again from suspecting the tool before the page — striking
-  session H's entry made the part's checklists *grow*, because
-  `pass4_queue.py` resets its current unit on a blank line and session H wrote
-  one long bullet of blank-line-separated paragraphs, so only the first
-  paragraph of a struck entry could ever be settled. Session C fixed the same
-  inheritance within an unbroken run; this is the same bug across the blank
-  line, and the fix moves exactly this part's nine pages and one `lectures.md`
-  line (620 open units to 596) and nothing else. The checklist itself was wrong
-  once (`MonsterRoomFeature`'s "two chest attempts" is two chests of up to three
-  attempts each) and an agent once, rejected on re-derivation: the arrow's spawn
-  packet *does* leave on the release tick, because `ChunkMap.addEntity`
-  broadcasts inside the handler and the packet drain precedes `tickServer`.
-  Rulings: a section title whose named mechanism is wrong but whose argument is
-  right is renamed for the argument rather than deleted; a figure edge whose
-  label justifies a *different* edge is re-sourced to the edge the label is true
-  of; and a superlative the page's own later text contradicts is narrowed to
-  what the later text says — four times this session, which is sessions D, E and
-  F's precedent again. Everything in [pass4.md](pass4.md).
-
-- **2026-09-04, session J — Part X The client (Opus).** Twelve pages, the
-  landing page and `reference/hud-elements.md` — fourteen agents, the order
-  work and the part-wide notes done by the session while they ran, and every
-  *wrong* re-derived from the decompile before a sentence moved. The findings
-  are in the schedule line above and in full in [pass4.md](pass4.md). What is
-  worth carrying forward is method rather than fact. **The session's own
-  re-derivation beat the agent to the named item**: `prediction-and-acks`'
-  state diagram was read against `BlockStatePredictionHandler` before any
-  report arrived, and both client exits turned out to be labelled backwards —
-  the agent later agreed independently, which is the first time this pass that
-  the session and the agent found the same load-bearing error separately. It
-  is also the clearest case yet of pass 2's lesson that **a page's own prose
-  is the best falsifier of its own figure**: four pages this session had a
-  diagram contradicting the paragraph beneath it (`prediction-and-acks`'
-  exits, the landing page's spokes-versus-stages, `text-and-fonts`' linear
-  stage chain against its own hook, `the-client-loop`'s frame-limiter node),
-  and in every case the prose was right. Worth making an explicit step in
-  session N and O's briefs: read the figure against the section under it
-  before reading either against the source.
-
-  Rulings. A *cadence* label on a landing-page figure is a claim with a
-  population like any other — four of Part X's seven were wrong or loose once
-  the population was named — so a hub-and-spokes figure is checked arrow by
-  arrow exactly as a sequence is. A hook whose two halves are a contrast
-  ("the server never does this; the client does") is checked as two claims,
-  and this session's fell on the half nobody would think to look at. Where a
-  count on a landing page is a compression of a *different* count on the page
-  it points at — "three methods" for "the three writes" — the fix belongs on
-  the landing page and the page it compressed stays as it is, unless the page
-  is also wrong, which here it was. And a Reference catalogue row that names a
-  method is checked for *which* method as well as for position: the
-  `hud-elements` contextual-bar row named the later of two calls in the
-  earlier of two slots, which no count or ordering check alone would catch.
-
-- **2026-09-05, session L (Opus) — Part XII World generation.** Twelve
-  agents: ten system pages, the landing page and
-  `reference/density-function-nodes.md`, the part's own catalogue. Every one
-  came back with at least one wrong claim, which is pass 2's finding for a
-  thirteenth time and now holds on 96 of the 96 pages pass 4 has read.
-  Ninety-four corrections in eleven commits, one page each. Part XII was done
-  in one session where the charter allowed two, for the same reason Part XI
-  was: the *counts* on the landing page and the *illustrations* on the pages
-  were where the errors lived, and both are fast to settle once the
-  population is named.
-
-  The named item for this session was the density graph against the data, and
-  it did produce a finding — thirteen of the twenty-four shipped `cache_2d`
-  nodes are not inside a flat cache, against a page that said all of them
-  were, and no *noise_settings* file contains a *flat_cache* at all. But the
-  session's sharpest finding came from somewhere the charter did point: **the
-  first thing addition 4 asks for is the population, and pass 3's own
-  correction had been made without one.** `features-and-placement` had
-  sixty-three registered features before pass 3 and sixty-one after, because
-  session M grepped `= register(` and `Feature.java` puts a cast between the
-  `=` and the call on two of its sixty-three lines. **The session reproduced
-  that grep and got 61 too**, and only the agent's `register("` count and its
-  distinct-id count caught it. A correction is a claim; a claim needs a
-  population; a grep is not a population.
-
-  Two other shapes recurred from earlier sessions. The **landing page was the
-  worst page in the part** for a second part running, and this time both
-  halves of the part's stated premise fell — the packs are re-read on every
-  open, and the decoration step does read the world through
-  `PlacementContext`. And **five pages contradicted themselves**, in each case
-  with the figure right and the prose wrong: the jigsaw figure said the target
-  pool is skipped at the limit while the prose said the fallback is added
-  there; `blending`'s figure drew the FEATURES consumer the landing page said
-  did not exist; `terrain` said the expensive terms are only sampled at cell
-  corners thirty lines above naming a per-block one; `biomes`' figure said the
-  *cached* climate sampler where its cast row said the cacheless one;
-  `creating-a-world`'s diagram had the namespaced *game_rules.dat* path its
-  1.21 box did not. Session J's suggestion — read the figure against the
-  section under it before reading either against the source — paid for itself
-  five times, and should be in session N and O's briefs.
-
-  Rulings. **A hook that survives as a mechanism but not as an illustration
-  is still a wrong hook**, and the fix is the mechanism, not a new
-  illustration: `trees`' clipped fancy oak is real in the code and impossible
-  in the data, and the honest sentence says exactly that. **A claim about
-  where a class does its work is a claim about the status that builds it**,
-  not the status that uses it — the `Beardifier` is built with the
-  `NoiseChunk` at *BIOMES* and merely reused at *NOISE*, and the page had said
-  *NOISE* in three places including a figure node. **Two agents disagreeing
-  is settled by the code and by nothing else**: the jigsaw agent confirmed
-  that the reference position seeds the processors' randomness and the
-  structure-placement agent denied it; `StructurePlaceSettings.getRandom`
-  seeds from the block position, so the second was right. And **an item handed
-  forward from an earlier session is checked, not applied**: session A's
-  `blending.md:121` finding was right, but the session re-derived it from
-  `BlendingData.getOrUpdateBlendingData` before touching the sentence, and
-  that re-derivation is what found the two further places the same
-  misattribution appears.
-
-  Housekeeping. The seventy-one pass-3 queue lines this session settles are
-  struck, so the Part XII checklists are now only this session's own entry;
-  the session-P standing item says which three of its four pages are done;
-  `pass5.md` has seven rewritten hooks and five structural findings;
-  `pass3.md` §7 has one new coverage entry (the expansion hack, dimension
-  padding and liquid settings). `TEMPLATE.md` and `reference/lanes.md` gained
-  one lane row, `CPList` for `Climate.ParameterList`. No tool bug — the
-  seventh such session; instead all four gates caught something, three of them
-  the session's own fixes.
-- **2026-09-05, session N — the corpus-wide count sweep (Opus).** One session,
-  one brief, every number in the book. `python tools/claims.py --all --counts`
-  gave 5,196 numbered sentences over 133 pages; twenty-five bundles of 128–274
-  claims went out with only step 3 and the *Counts* report shape, plus the
-  traps this pass had already been caught by. The brief's rule is the charter's
-  reason for the session: *do not read the page to find out what the number
-  should be.* Sixty-four corrections, on pages thirteen part sessions had
-  already read with the decompile open. **The named finding is that the trap
-  the brief lists first had already taken a pass-4 session**: session M counted
-  `Commands.argument(` and `.suggests(` with `grep -c`, which counts lines, and
-  a hundred lines hold two calls — 359 is 459 and 64 is 67, so 62 nodes ask the
-  server, which is the number session M had replaced. Three more counts fell to
-  the same shape of search, including two the session had to catch in its own
-  work: its first `scheduleTick` classifier reproduced the page's wrong 61
-  exactly, and two agents reproduced session L's 61 shipped noises by not
-  looking in a subdirectory. Rulings: a count of the *book's own pages* is a
-  claim and is checked like any other (five of the six worldgen landing-page
-  errors were of that kind); a method's length is stated in **statements**
-  rather than lines, because decompiled formatting is not the source's; and a
-  number that is right under one reading of its population and wrong under
-  another is **left alone and logged in pass 5**, not re-scoped — about fifty of
-  them, which is the session's largest single output. Two agent findings
-  rejected on re-derivation, and `verify_names.py` caught none of the session's
-  own fixes, the first pass-4 session where it caught nothing. Everything in
-  [pass4.md](pass4.md); the wording debt and the corpus-wide *two rules for the
-  word "classes"* finding in [pass5.md](pass5.md).
-
-- **2026-09-05, session O — the close (Opus).** Twelve agents: five over the
-  glossary's 141 entries, three over the seven tools, four over the Reference
-  catalogues session A had verified and never fixed. Ninety-one corrections in
-  three commits. The findings are in the schedule line above and in full in
-  [pass4.md](pass4.md); what is worth carrying forward is method.
-
-  **The close's job turned out to be checking pass 4 itself, and pass 4 was
-  wrong twice.** A strike in `pass4.md` recorded `verify_names.py`'s
-  `Class.method(Arg)` hole as settled by session A; `git log -S` on the token
-  pattern shows it was never touched, and the anticipating code one function
-  down had been dead since pass 1. Eighteen backticks in the corpus had been
-  checked by nothing, and two of them were names that do not exist. Separately,
-  session K's correction to `submit-phases`' merging paragraph was backwards,
-  and had been copied onto `entity-rendering` in the same session. That is
-  session L's finding — *the correction was the error* — for a third time, and
-  the second time inside pass 4. **A fix is a claim; nothing in fifteen sessions
-  had checked one, and nothing had ever checked a strike.**
-
-  The glossary sweep is worth repeating as a shape. Each entry was checked
-  *twice* — against the decompile, and against its owner page as pass 4 left it
-  — and five of the fifty corrections were invisible to the first check and
-  obvious to the second, because the entry had been written from a sentence
-  pass 4 later corrected. A page that other pages summarise needs its
-  summarisers re-read after it is fixed, and the glossary is the corpus's
-  summariser of last resort. The same reasoning is why the close added thirteen
-  entries: two of them (`LocalPlayer`, `MultiPlayerGameMode`) are diagram lanes
-  on nineteen pages each with no definition anywhere in the book.
-
-  The tool re-read paid better than any other session's. Three of the six bugs
-  were **published falsehoods on generated pages that nobody could have caught
-  by reading**: a registry view short by five keys, a game rule rendered with an
-  unbalanced parenthesis and its maximum labelled a minimum, and the packet
-  table's grand total printed under *serverbound*. Session A had confirmed one
-  sample row from each of the eight generated views and all three survived it,
-  which is the ruling: **a generated page's population is checked by re-deriving
-  the population, never by re-deriving a row.** The three checkers each had a
-  hole of the same shape — a construct they could not parse and therefore
-  skipped in silence — and every one is now a failure with a probe to prove it:
-  a lane used in an arrow and never declared, a mermaid fence inside a tight
-  HTML block that publishes as literal backticks, an arrow form the dependency
-  figure's parser cannot read.
-
-  Rulings, beyond the two above. A term the corpus does not use is not a
-  glossary entry however true its sentence — *noise cell* became *Cell*. A
-  catalogue whose preamble promises alphabetical order is checked for
-  alphabetical order. And an agent's brief is as suspect as everything else: the
-  session told its glossary agent there were four chunk layers, the agent found
-  three and said so.
-
-  Housekeeping. The pass-3 queue is 259 page-attributed units and all 259 are
-  struck, so `pass4_queue.py` now reports only pass 4's own correction records —
-  a record is not a task, and the file is an archive from here. `pass4.md` opens
-  with *What is open at the close*: the remainder is in `pass5.md`, in
-  `pass3.md` §7 (two coverage gaps, the abstract `Level` and feature flags), and
-  in the version pass. Pass 5's charter and the version pass's are in this file;
-  26.3 has not landed, so the latter is chartered and triggers on the release.
-  `CLAUDE.md` and the introduction's *Verified means tested* both say pass 4 is
-  finished.
+- **2026-09-05, planning session (Fable, between passes 4 and 5).** No page's
+  content touched. **The ten-pass plan** set with the owner and written
+  above: 5 the book, 6 the lecture, 7 the figures, 8 the voice, 9 the third
+  fact-check, 10 the last polish; the version pass and the owner's read
+  beside them; one lens per pass, structure before words, across before
+  within, the heavy polish before the fact-check and the light one after.
+  Pass 5's detailed brief and tools are the next planning session's.
+  **Housekeeping:** the old `plan.md` archived whole into `pass4.md` with
+  its headings demoted (this file is now the current charter and the passes
+  to come); `pass5.md` retitled as the queue passes 5–8 draw on, with a
+  routing preface by kind; `pass9.md` opened with its standing items;
+  `CLAUDE.md`, `README.md` and `TEMPLATE.md` brought current (the template
+  pointed rewrites at `pass4.md` and rulings at `plan.md`); two published
+  sentences that named pass numbers made true (`lectures.md`'s "confirmed in
+  pass 6"); the memory culled — five sibling-project memories deleted, seven
+  rewritten. **Site admin**, since the owner asked: Open Graph and
+  Twitter-card meta on every page through `theme/head.hbs` (mdBook 0.5's
+  head partial — the only theme override); `src/robots.txt` pointing at a
+  sitemap; `tools/site_index.py`, run by `deploy.sh`, writing
+  `book/sitemap.xml` (144 URLs with git last-modified dates) and
+  `book/llms.txt` (the index form of the llms.txt convention, one line per
+  page with its verified-line scenario) beside `llms-full.txt`; `site-url`
+  set so the 404 page keeps absolute links under nested paths. Found and
+  recorded: Cloudflare prepends a content-signals preamble to `robots.txt`
+  at the edge, with the signals unset; the Pages project has **no Web
+  Analytics enabled**, and the token cannot enable it (refused on RUM, zone
+  settings and bot management; it verifies, edits Pages, and reads the zone
+  and DNS), so that click and Google Search Console are the owner's; DNS for
+  minecraftdocs.dev is done (a proxied CNAME), which voids an older note.
+  26.3 confirmed unreleased from the version manifest (pre-2, 2026-09-04).
+  Tag `pass-4-close` on `5cad2d5`. **Rulings:** a queue file keeps its name
+  when a pass is renumbered, and a routing preface says which pass takes
+  what, because moving 2,000 lines of entries between files is how entries
+  get lost; a published page never names a pass number as a promise about
+  the future (the rot rule); the coverage question is asked in pass 5 and
+  never again, because passes 9 and 10 add nothing.

@@ -10,22 +10,25 @@ who'd rather fetch the whole corpus at once.
 
 **Owner:** Alexander Fraser (`AlexanderjFraser`). The owner has to *learn*
 each system to record it, so the work is in passes (the owner is the "meat
-proxy": starts sessions, approves nothing technical): **pass 1** — Claude
-drafted every page from the decompile (done; `docs/pass1.md`); **pass 2** —
-completeness and accuracy: every claim adversarially fact-checked against
-the decompile, and every page had at least one wrong claim (done;
-`docs/pass2.md`); **pass 3** — restructuring: the site became a book — each
-part the shape of its system, each page one of eight shapes, the frame,
-introduction, maps and reference tier redone, the lecture order drafted
-(done; `docs/pass3.md`); **pass 4** — the second fact-check, pass 2's
-protocol over everything pass 3 rewrote (done, 836 corrections in the thirteen
-sessions that counted them; every page had at least one wrong claim, for a
-fifteenth session running; `docs/pass4.md`); **pass 5** — polish: wording,
-voice, consistency, cuts, and the closer device that became a slot
-(**current**; charter in `docs/plan.md`, queue in `docs/pass5.md`); **pass 6+**
-— the owner reads each page against the source, asks questions in the page, and
-confirms the lecture order; then voice and cuts.
-Nothing is recorded that the owner hasn't understood.
+proxy": starts sessions, approves nothing technical, judges what lands).
+**Ten passes leave the site finished.** Passes 1–4 are done: **1** the rough
+draft from the decompile; **2** every claim adversarially fact-checked;
+**3** restructuring — the site became a book, each part the shape of its
+system, each page one of eight shapes, the frame, maps and Reference tier
+redone, the lecture order drafted; **4** the second fact-check, pass 2's
+protocol over everything pass 3 rewrote (each archived whole in
+`docs/passN.md`; every page had at least one wrong claim in both checks).
+Passes 5–8 are four passes of restructuring and refinement with one lens
+each: **5 the book** (across pages — ownership, seams, through-lines, the
+landing pages as the part's argument, the coverage question, the last
+moves; **next**), **6 the lecture** (one page at a time — the devices that
+became slots, the twin skeletons, the cuts), **7 the figures** (every figure
+as rendered; the fifth gate, names inside mermaid blocks), **8 the voice**
+(one voice, the tics, the terminology, the ambiguous counts). Then **9** the
+third fact-check and **10** the last polish. Beside them, a **version pass**
+runs between passes on each release, and the owner reads whenever they
+like, leaving `<!-- Q: … -->` in a page for the next session that touches
+it. Nothing is recorded that the owner hasn't understood.
 
 ## The rules
 
@@ -110,37 +113,43 @@ pass-3 session A from two pilots — `tickets-and-loading` (policy) and
 `protocol-phases` (state machine) — with the devices, the budgets, the
 mermaid rules and **the lane key** (rule 7). Over the 102 system pages the
 shapes fell out as trace 31, vocabulary 25, pipeline 19, comparison 11,
-policy 7, pattern 7, state machine 2 (session P's audit); the *Questions
-players ask* closer is on 69 of the 102, and the literal heading
-`## The trace: …` on 20 — both of which pass 5 thins. What
-every page keeps:
-the verified line with the part and scenario; an opening paragraph that
-starts inside the scenario and ends on the hook (the surprising true thing
-the page explains); a cast of at most eight classes instead of field
-inventories; at least one figure; headings that say what the section says,
-not which template slot it fills; *Where to look*; the rules footer.
-Budgets: a list is at most seven items of at most two sentences, at most
-three lists a page; anything explanatory is prose, anything enumerative
-beyond seven is a table or a Reference page.
+policy 7, pattern 7, state machine 2; the *Questions players ask* closer is
+on 69 of them, which is pass 6's first job. What every page keeps: the
+verified line with the part and scenario; an opening paragraph that starts
+inside the scenario and ends on the hook (the surprising true thing the page
+explains); a cast of at most eight classes instead of field inventories; at
+least one figure; headings that say what the section says, not which
+template slot it fills; *Where to look*; the rules footer. Budgets: a list
+is at most seven items of at most two sentences, at most three lists a
+page; anything explanatory is prose, anything enumerative beyond seven is a
+table or a Reference page.
 
 ## The plan
 
-[docs/plan.md](docs/plan.md) — the passes, the current pass's charter,
-session protocol and schedule, and the session log. **Read it first; tick it
-last.** [docs/pass5.md](docs/pass5.md) is the queue pass 5 works from: per
-pass-4 session, the wording debt, the ambiguous counts, the cuts and the
-structural findings. [docs/pass3.md](docs/pass3.md) §7 is the coverage queue (a
-system with no owner page) and stays live. **A session that leaves something
-for later appends to the right one of those, not only to the log.**
-`docs/pass1.md` through `docs/pass4.md` are the archived passes (charter,
-protocol, rulings, queue, log — still worth grepping; pass 2's and pass 4's
-fact-check protocol and lessons are what any later check runs), with
-`docs/pass4-brief.md` the agent brief and `tools/pass4_prompts.py` the tool
-that assembles one prompt per page — both dormant until the version pass, which
-`docs/plan.md` charters and 26.3's release triggers. `docs/outline.md` is the
-archived fourteen-lecture map. The lecture order is drafted
-(`src/lectures.md`, with the parts-dependency figure) and confirmed by the
-owner in pass 6.
+[docs/plan.md](docs/plan.md) — the ten passes, why they are in that order,
+the rhythm every pass follows, the current pass's charter, the standing
+rules for passes 5–8, the version pass, the owner's read, and the session
+log from pass 5 on. **Read it first; tick it last.** Each finished pass is
+archived whole in `docs/passN.md` (charter, rulings, protocol, schedule,
+log — still worth grepping; pass 2's fact-check protocol and lessons and
+pass 4's additions are what pass 9 runs; the plan as it stood at pass 4's
+close is at the end of `docs/pass4.md`). The queues: [docs/pass5.md](docs/pass5.md)
+is what passes 5–8 draw on — structural findings to 5, page-shape findings
+to 6, figure findings to 7, wording debt to 8, each struck as settled;
+[docs/pass9.md](docs/pass9.md) is where every pass-5-to-8 session lists the
+claims it introduced and the corrections it made, so pass 9 checks them
+first; [docs/pass3.md](docs/pass3.md) §7 is the coverage queue (a system
+with no owner page) and seeds a second edition. **A session that leaves
+something for later appends to the right one of those, not only to the
+log.** Each pass starts with a planning session (Fable) that builds its
+tools and brief — pass 4's are the model: [docs/pass4-brief.md](docs/pass4-brief.md)
+and `tools/pass4_prompts.py` (one prompt file per page from
+`pass4_queue.py`, `claims.py` and `diagram_arrows.py`) — and then runs
+sessions A–O on Opus; `tools/check_deps.py` checks the landing pages, the
+lecture table and the parts-dependency figure against each other.
+`docs/outline.md` is the archived fourteen-lecture map. The lecture order
+is drafted (`src/lectures.md`, with the parts-dependency figure) and
+confirmed by the owner before pass 9.
 
 ## Site
 
@@ -160,16 +169,25 @@ look-up pages, which `verify_names.py` checks like any system page — its
 README is the tier's landing page); `src/figures/` (a hand-kept mermaid
 figure two pages share through `{{#include}}` — today the parts-dependency
 graph, on the introduction and `lectures.md`); `src/lectures.md` (the
-lecture order and the dependencies between parts). `custom.css` widens
-the column for tables, diagrams and figures and caps prose at 800px;
-`diagram-zoom.js` opens any diagram at viewport size on click.
-Moved pages keep their URLs through `[output.html.redirect]` in `book.toml`.
-`tools/deploy.sh` verifies names, checks diagrams, builds, writes
-`llms-full.txt` (the whole corpus in one file, via `tools/llms_full.py`) and
-deploys to Cloudflare Pages project `minecraftdocs`
-(https://minecraftdocs.pages.dev, custom domain **minecraftdocs.dev**) using
-the token at `~/.cloudflare/pvpmod.token`. `tools/check_mermaid.js` needs
-node and a one-time `npm install` in `tools/` (see its header comment).
+lecture order and the dependencies between parts); `src/robots.txt` (ships
+with the build; points at the sitemap). `theme/head.hbs` is the only theme
+override — Open Graph and Twitter-card meta on every page. `custom.css`
+widens the column for tables, diagrams and figures and caps prose at 800px;
+`diagram-zoom.js` opens any diagram at viewport size on click;
+`site-footer.js` puts the licence and the disclaimer on every page.
+Moved pages keep their URLs through `[output.html.redirect]` in `book.toml`;
+`site-url = "/"` keeps the 404 page's links absolute under nested paths.
+`tools/deploy.sh` regenerates the atlas and the eight Reference views, runs
+the four gates, builds, writes `llms-full.txt` (the whole corpus in one
+file, `tools/llms_full.py`) and `sitemap.xml` + `llms.txt` (the index form,
+`tools/site_index.py`), and deploys to Cloudflare Pages project
+`minecraftdocs` (https://minecraftdocs.pages.dev, custom domain
+**minecraftdocs.dev**, a full Cloudflare zone with DNS done) using the token
+at `~/.cloudflare/pvpmod.token` — stored wrapped in quotes, which
+`deploy.sh` strips. The token edits Pages and reads the zone; it cannot
+touch Web Analytics, which is not enabled and is the owner's click.
+`tools/check_mermaid.js` needs node and a one-time `npm install` in `tools/`
+(see its header comment).
 
 ## Conventions
 
@@ -180,9 +198,15 @@ node and a one-time `npm install` in `tools/` (see its header comment).
   and for figures no mermaid type draws; never a hand-drawn or raster image.
 - Lanes are class initials, at least two letters, one meaning corpus-wide
   (`SGPL`, `CPL`, `MC`, `MS`, `SL`); the key lives in `TEMPLATE.md`.
-- Reasoning > sensing > measuring; the owner judges what lands.
+- Reasoning > sensing > measuring; the owner judges what lands; no count in
+  a queue is a target.
 - `verify_names.py`, `check_mermaid.js` and `check_lanes.py --strict`
   before every commit that touches a page, and `check_deps.py` when a
   landing page, `lectures.md` or the dependency figure changes; `deploy.sh`
   runs all four — after regenerating the atlas and the eight Reference
   views — and refuses to publish on a failure.
+- A published page never names a pass number as a promise about the
+  future; when a pass closes, grep `README.md`, this file, `TEMPLATE.md`
+  and the frame pages for the old numbers.
+- Commit your own files by name, never `add -A`: two sessions are often
+  open at once and pass sessions sweep the tree.

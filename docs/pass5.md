@@ -1,6 +1,31 @@
-# Pass 5 — polish (queue; opened 2026-09-02)
+# Passes 5–8 — the queue (opened 2026-09-02 as the polish queue)
 
-*Pass 5 is the wording pass — voice, consistency, cuts. Its inputs: the
+*Opened when polish was pass 5 and kept under that name. The ten-pass plan of
+2026-09-05 ([plan.md](plan.md)) splits polish into four passes with one lens
+each, and this file is the queue all four draw on. Nothing here moves; each
+entry is taken by the pass its kind belongs to:*
+
+- *a structural finding — a page carrying two subjects, material that belongs
+  on another page, an explanation given twice, a missing cross-link, a
+  landing page's shape, a coverage gap — is **pass 5's, the book**;*
+- *a page-shape finding — a device become a slot, a shared skeleton, a section
+  in the wrong order, a cut, a list that wants to be prose, a heading that
+  names a slot — is **pass 6's, the lecture**;*
+- *a figure finding — a diagram the wrong shape or too dense, a label that is
+  a sentence, an orphan node, two figures for one mechanism, a lane — is
+  **pass 7's, the figures**;*
+- *wording debt — a hook rewritten around a fix, a tic, a hedge, a term, an
+  ambiguous count, a data key's typesetting — is **pass 8's, the voice**.*
+
+*A session strikes an entry (`~~…~~`) when it settles it, whichever pass it
+is in; an entry a later pass finds already overtaken by an earlier pass's
+rewrite is struck with a word saying so. Every claim a session introduces
+while acting on an entry goes to [pass9.md](pass9.md). Below: the original
+preface, the standing items, then the entries, newest first.*
+
+---
+
+*(The original preface, 2026-09-02.)* Pass 5 is the wording pass — voice, consistency, cuts. Its inputs: the
 on-spec material and wording debt every pass-2 session logged in
 [pass2.md](pass2.md)'s hand-off section (written when polish was still
 numbered pass 4 — read "pass 4" there as pass 5), and what passes 3 and 4

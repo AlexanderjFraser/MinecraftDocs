@@ -4,7 +4,7 @@
 `src/systems/world/tickets-and-loading.md` (a policy page) and
 `src/systems/networking/protocol-phases.md` (a state machine). The old
 seven-heading skeleton is gone; a page takes the shape of its story, and the
-budgets below are the enforceable part. Ruling R2 in `docs/plan.md` is the
+budgets below are the enforceable part. Ruling R2 in section 9 of `docs/pass3.md` is the
 authority; this file is its working form.*
 
 ## What every page keeps
@@ -99,7 +99,7 @@ The enforceable part.
 - Nothing is dropped from a page except by moving it (Reference, another
   page) or by logging the cut in `docs/pass5.md` with the reason.
 - Every claim a rewrite introduces — a hook, a redrawn ordering, a new
-  section — is listed in `docs/pass4.md` by the session that wrote it.
+  section — is listed in `docs/pass9.md` by the session that wrote it.
 
 ## Figures
 
