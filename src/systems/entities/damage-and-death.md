@@ -248,7 +248,7 @@ sequenceDiagram
     Note over LE,CPL: twenty ticks later, for a mob — tickDeath broadcasts byte 60 and removes it
 ```
 
-`ServerLevel.broadcastDamageEvent` sends the type, the two entity ids and an
+`ServerLevel.broadcastDamageEvent` sends the type, the three entity ids and an
 optional position to every tracking player *and the victim*, and it runs
 **before** the knockback, not after. A successful block replaces it entirely:
 if the blocking component absorbed anything, `BlocksAttacks.onBlocked` plays

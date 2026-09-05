@@ -43,7 +43,7 @@ client-syncable at all. → [attributes](../systems/entities/attributes.md)
 
 **Authority** — which side's copy of an entity does the arithmetic for it:
 the server for a mob, the owning client for its own player and for the boat
-that player is steering. Four predicates on `Entity` decide it, starting
+that player is steering. Five predicates on `Entity` decide it, starting
 with `Entity.isLocalInstanceAuthoritative`. → [authority](../systems/entities/authority.md)
 
 **Avatar** — the class between `LivingEntity` and `Player`; a `Mannequin`
@@ -245,7 +245,7 @@ function body, and deliberately *not* a stack frame. → [the execution engine](
 position (a block placed, a door opened) that sculk sensors and mobs
 listen for. → [game events and vibrations](../systems/world/game-events-and-vibrations.md)
 
-**Game rule** — one typed, per-world switch or number in `GameRules`, saved
+**Game rule** — one typed, server-wide switch or number in `GameRules`, saved
 with the world and sometimes sent to the client. → [level data and rules](level-data-and-rules.md)
 
 **Game test** — a data-driven test instance: a structure, an environment

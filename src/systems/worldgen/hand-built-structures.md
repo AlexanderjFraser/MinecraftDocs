@@ -14,7 +14,7 @@ game that regenerates itself until it likes the result.
 village is a jigsaw: pieces come from a data-pack registry and find each
 other through connector blocks. That is one of the sixteen structure types.
 **The other fifteen use an older assembler that is still the majority of the
-code** — 30 classes and about 10,000 lines under
+code** — 32 classes and about 10,200 lines under
 `levelgen/structure/structures`, against roughly 1,300 for the whole jigsaw
 package. Strongholds, mineshafts, nether fortresses, ocean monuments,
 woodland mansions, end cities, ruined portals, igloos, shipwrecks, ocean

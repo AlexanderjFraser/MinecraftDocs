@@ -72,8 +72,9 @@ out of order before this part; everything else in Part IV can wait.
    as the piston.
 3. [Players and sessions](players-and-sessions.md) — a join from the end of
    the login handshake to a player standing in a world with chunks on the
-   way, and then the three ways that session changes: death, a dimension,
-   a disconnect. Dying replaces your player object; the Nether does not.
+   way, and then the four ways that session changes: death, a dimension,
+   a disconnect, and a debug command that sends the player back to the
+   configuration phase. Dying replaces your player object; the Nether does not.
 4. [Starting a server](starting-a-server.md) — *java -jar server.jar* to
    the word *Done*: the EULA, the lock on `session.lock`, the packs and
    registries, the thread, the levels. The step that loads the world's
