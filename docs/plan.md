@@ -544,9 +544,34 @@ O is the close.
   including a method that does not exist — the verifier catching fixes rather
   than pages for the second session running. Everything in
   [pass4.md](pass4.md).
-- [ ] **Session N — The corpus-wide count sweep.** Every number on every
-  page, in one pass with one brief, because a count checked inside a page's
-  argument is checked by a reader who already believes the argument.
+- [x] **Session N — The corpus-wide count sweep** *(2026-09-05)*. **5,196
+  numbered sentences across the 133 hand-kept pages**, in twenty-five agent
+  bundles behind one brief that forbids the agent the argument around the
+  number. **Sixty-four corrections.** The named finding lands on pass 4's own
+  session M: its `359 argument nodes` and `64 that attach a provider` are
+  `grep -c` **line** counts, and the call-site counts are **459** and **67** —
+  so 62 serialise as *ask_server*, and **the number session M replaced was
+  right**, because 62 of 67 is what those three pages said before it. Session
+  L's finding, *the correction was the error*, repeating inside pass 4. Four
+  more findings are the same trap at one remove: 61 shipped noise definitions
+  are **63** (two live in a `nether/` subdirectory, and session L's log carried
+  the 61), 61 fluid `scheduleTick` sites are **63** (two pass a `Fluid` without
+  naming one — **and the session's own first classifier reproduced the 61**),
+  40 `repositionElements` overrides are **41**, and two callers of
+  `Level.updateNeighbourForOutputSignal` are **twelve**. Three cross-page
+  contradictions found by the session's own check, which no per-part agent can
+  run: `ClientboundDamageEventPacket` carries three entity ids and one page said
+  two; `server/README` promised three ways a session changes over a page headed
+  *Four*; and "a dozen multiplications" on two pages is the damage page's "a
+  dozen **owners**". Every item earlier sessions handed to N is settled, and the
+  glossary lost two wrong counts of its own. **Two parts came back clean** —
+  Part VIII and Part IV's chunk group, the first whole parts to survive a
+  pass-4 check without a wrong claim. **No tool bug — the ninth such session**;
+  the bug was in a method three sessions shared. About fifty counts that are
+  right under one reading of their population and wrong under another are in
+  [pass5.md](pass5.md), with the finding that **"declared and never read" is
+  unverifiable of any primitive constant**, because `javac` inlines them.
+  Everything in [pass4.md](pass4.md).
 - [ ] **Session O — The close.** The glossary against the corpus; the
   tools (the verifier, the generators, the lane key, the mermaid checker)
   re-read for the bug pass 2 found in each; the queue in pass4.md struck
@@ -1029,3 +1054,29 @@ missing it — and removes the comment. The owner confirms or reorders
   one lane row, `CPList` for `Climate.ParameterList`. No tool bug — the
   seventh such session; instead all four gates caught something, three of them
   the session's own fixes.
+- **2026-09-05, session N — the corpus-wide count sweep (Opus).** One session,
+  one brief, every number in the book. `python tools/claims.py --all --counts`
+  gave 5,196 numbered sentences over 133 pages; twenty-five bundles of 128–274
+  claims went out with only step 3 and the *Counts* report shape, plus the
+  traps this pass had already been caught by. The brief's rule is the charter's
+  reason for the session: *do not read the page to find out what the number
+  should be.* Sixty-four corrections, on pages thirteen part sessions had
+  already read with the decompile open. **The named finding is that the trap
+  the brief lists first had already taken a pass-4 session**: session M counted
+  `Commands.argument(` and `.suggests(` with `grep -c`, which counts lines, and
+  a hundred lines hold two calls — 359 is 459 and 64 is 67, so 62 nodes ask the
+  server, which is the number session M had replaced. Three more counts fell to
+  the same shape of search, including two the session had to catch in its own
+  work: its first `scheduleTick` classifier reproduced the page's wrong 61
+  exactly, and two agents reproduced session L's 61 shipped noises by not
+  looking in a subdirectory. Rulings: a count of the *book's own pages* is a
+  claim and is checked like any other (five of the six worldgen landing-page
+  errors were of that kind); a method's length is stated in **statements**
+  rather than lines, because decompiled formatting is not the source's; and a
+  number that is right under one reading of its population and wrong under
+  another is **left alone and logged in pass 5**, not re-scoped — about fifty of
+  them, which is the session's largest single output. Two agent findings
+  rejected on re-derivation, and `verify_names.py` caught none of the session's
+  own fixes, the first pass-4 session where it caught nothing. Everything in
+  [pass4.md](pass4.md); the wording debt and the corpus-wide *two rules for the
+  word "classes"* finding in [pass5.md](pass5.md).

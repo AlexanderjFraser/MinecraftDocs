@@ -32,14 +32,19 @@ entry first.
   prose.~~ Session A re-derived one sample and one population count per
   view; all eight confirmed (listed in its entry below). The hand-written
   *blurbs* on those pages are not generated and are not covered by this —
-  their counts go to session N.
+  their counts go to session N. ~~Done by session N: three numbers, all
+  confirmed — five `Main`s, "about a third" of the lanes (109 of 333), and
+  loot's "twelve of these twenty-six", already settled by session G.~~
 - ~~The lane key in `TEMPLATE.md`: every lane's expansion is a class that
   exists.~~ `tools/check_lanes.py` checks it on every deploy, `--strict`
   corpus-wide since session P.
-- **Every count is re-counted** (session P's addition 4 in the charter):
+- ~~**Every count is re-counted** (session P's addition 4 in the charter):
   pass-3 sessions K, L, M and N each found a wrong count while redrawing a
   page, three of them load-bearing. Session N of pass 4 is a corpus-wide
-  count sweep with one brief.
+  count sweep with one brief.~~ **Done** (2026-09-05): 5,196 numbered
+  sentences over 133 pages, 64 corrections, in this file under *Session N*.
+  What is left is not a wrong number but a number whose population admits two
+  readings — about fifty of those, in [pass5.md](pass5.md).
 - ~~**The four session-P pages have never been checked** —
   `rendering/block-entity-rendering`, `commands/entity-selectors`,
   `worldgen/blending`, `worldgen/creating-a-world`. Their claims lists are
@@ -93,6 +98,395 @@ entry first.
   is now `deploy.sh`'s fourth gate.
 
 ## Entries
+
+## Session N — the corpus-wide count sweep (pass 4) *(2026-09-05)*
+
+**Every number on every page, in one pass with one brief.** The queue was
+`python tools/claims.py --all --counts` — **5,196 numbered sentences across the
+133 hand-kept pages** — split into twenty-five agent bundles of 128 to 274
+claims each, behind a brief that gives the agent the sentence and the decompile
+and forbids it the argument: *do not read the page to find out what the number
+should be.* That is the charter's whole reason for a separate session, and it
+paid: the sweep found wrong counts on pages that the thirteen part sessions had
+already read with the decompile open, and **two of them were numbers an earlier
+pass-4 session had derived and logged as settled.**
+
+Two parts came back with **no wrong number at all** — Part VIII and Part IV's
+chunk group (`world/README`, `chunk-anatomy`, `chunk-generation-pipeline`,
+`chunk-storage`) — the first whole parts to survive a pass-4 check clean.
+
+### The session's named finding: session M's numbers were line counts
+
+~~**`grep -c` counts lines, not matches** — the first trap in the session-N
+brief, and it had already taken pass 4's own session M.~~ Over exactly session
+M's population (`net/minecraft/server/commands` + `net/minecraft/gametest/framework`):
+
+```
+grep -rc "Commands.argument("  | sum -> 359      grep -ro ... | wc -l -> 459
+grep -rc ".suggests("          | sum ->  64      grep -ro ... | wc -l ->  67
+```
+
+A hundred lines hold two `Commands.argument(` calls; two `ScoreboardCommand`
+lines and one `ExecuteCommand` line hold two `.suggests(` each. Five call sites
+name a registered provider (`ExecuteCommand`, `PlaySoundCommand`,
+`StopSoundCommand` twice, `SummonCommand`), so **62 of 459 argument nodes
+serialise as *ask_server*** and **392 attach nothing**. Corrected on the three
+pages that carry it — `commands/brigadier-and-commands.md:16,85,88`,
+`commands/README.md:85`, `lectures.md:534`.
+
+**And the number session M replaced was right.** "Sixty-two of the sixty-seven
+suggestion providers ask the server" is what those pages said before session M
+corrected it to 59 of 64; 62 of 67 is what the call sites give. Session A had
+flagged the original as unreproducible and asked session M to state the
+population or drop the claim; session M stated a population and counted it
+wrong. This is session L's finding — *pass 3's own correction was the error* —
+repeating inside pass 4. The page's **argument** survives every reading: the
+local path is the rule at 62 of 459 as it was at 59 of 359.
+
+Call sites are still not tree nodes, and the report says so: `ExecuteCommand`
+runs `addConditionals` and `wrapStores` twice each, `TimeCommand.addClockNodes`
+and `RandomCommand.drawRandomValueTree` twice each, and
+`StorageDataAccessor.PROVIDER.wrap` — one `.suggests(` call site — yields about
+36 distinct nodes through `DataCommands`. **Only the five is right under all
+three readings.** The pages now count call sites and the ratio holds at 13–20%
+under every one.
+
+### The shape of the other misses: a grep that cannot see its own blind spot
+
+Four more findings are session L's `= register(` trap wearing different
+clothes — a search for the obvious spelling that misses the cases
+spelled otherwise, and a number that looks right because the search looked
+thorough.
+
+- ~~**Sixty-one shipped noise definitions is sixty-three.**~~
+  `data/minecraft/worldgen/noise` holds 61 JSON files at the top level and two
+  more under `nether/` (*temperature*, *vegetation*). The bounds the sentence
+  rests on hold over all 63: re-deriving every maximum from
+  `PerlinNoise.edgeValue` and `NormalNoise`'s value factor gives 2.571 for
+  *cave_entrance* and 7.315 for *continentalness_large*, with the two nether
+  noises at 4.44, inside the range. Wrong on `reference/density-function-nodes.md:133`
+  and `worldgen/density-functions.md:236`, **and in session L's own log entry**,
+  which recorded "2.57–7.32 across all sixty-one shipped noises".
+- ~~**"Sixty-one call sites across fifty-two classes schedule a fluid tick" is
+  63 across 56** (`world/fluids.md:157`).~~ The two the obvious grep misses name
+  no fluid in the call text at all: `SpringFeature.java:78` passes
+  `config.state.getType()` off a `FluidState`, and `UpgradeData.java:136` passes
+  a `Fluid` local declared two lines above. **The session's own first classifier
+  reproduced the page's 61 exactly** before the difference was found — the
+  re-derive rule catching the session, not an agent.
+- ~~**Forty screens override `Screen.repositionElements` is forty-one**
+  (`client/gui-and-screens.md:112`).~~ 41 declarations in 40 files;
+  `ConfirmExperimentalFeaturesScreen` holds two, the second in a nested
+  `Screen` subclass.
+- ~~**Twelve call sites reach `Level.updateNeighbourForOutputSignal`, not two**
+  (`blocks/diodes-and-observers.md:213`).~~ The two the page names
+  (`Level.setBlock`, `BlockEntity.setChanged`) are the two general ones; the
+  other ten are `ItemFrame`, `CommandBlock`, `EnderEyeItem`, `DetectorRailBlock`,
+  `Containers`, `CopperGolemStatueBlock`, `CreakingHeartBlockEntity` and
+  `ServerLevel`.
+
+### The items earlier sessions handed to session N, settled
+
+- ~~**Session M's game-rule sweep.** `ServerLevel.getGameRules` returns
+  `this.server.getGameRules()` (`ServerLevel.java:1967-1968`), so rules are
+  server-wide.~~ One page said otherwise: `reference/glossary.md:248` called a
+  game rule "per-world", and the same glossary defines *Level* as "a world", so
+  it read as per-dimension. Now **server-wide**.
+  `commands/brigadier-and-commands.md:59` says "the level's game rules" and is
+  kept: `Commands.java:411` literally reads
+  `context.getLevel().getGameRules()`.
+- ~~**Session A's Part VI item** — `authority.md:27` "three of the four"
+  predicates.~~ The page was fixed by session F and now says *four of the five*,
+  which is right (`Player` overrides `isClientAuthoritative`,
+  `isLocalClientAuthoritative`, `canSimulateMovement`, `isEffectiveAi`; the
+  fifth, `Entity.isLocalInstanceAuthoritative`, is final). **The glossary had not
+  been fixed with it** and still said "Four predicates on `Entity` decide it" —
+  now five.
+- ~~**Session L's three second-look counts.** `terrain`'s **1,225** is right~~ —
+  `NoiseChunk.fillSlice` runs `cellCountXZ + 1` = 5 times over 5 z-columns, and
+  `fillArray` loops `cellCountY + 1` = 49 (overworld: cellWidth 4, cellHeight 8,
+  height 384), so 5 x 5 x 49. ~~`blending`'s **193** is right as written~~ — the
+  sweep of ±7 clipped by `dx² + dz² <= Mth.square(7 + 1)` gives exactly 193, and
+  the page says *positions*, not neighbours, so the centre chunk does not break
+  it. ~~`hand-built-structures`' "30 classes and about 10,000 lines" is **32 and
+  about 10,200**~~ under the atlas rule the part's own landing page states
+  (`levelgen/structure/structures`: 32 files, 10,173 lines; 31 and 10,169 with
+  the marker excluded).
+- ~~**The generated views' hand-written blurbs** (a standing item).~~ Three
+  numbers in them, all confirmed: five `Main`s in the tree
+  (`client/data`, `client/main`, `data`, `gametest`, `server`); "about a third"
+  of the 333 class lanes made by the three non-initials rules (109, 32.7%); and
+  loot's "twelve of these twenty-six", already settled by session G.
+
+### The session's own check: one phrase, two numbers, two pages
+
+No per-part agent can see a contradiction between parts, so the session ran one
+itself — every numeral in the corpus grouped by the words that follow it, and
+every group where two pages give the same phrase two different numbers. Three
+were real:
+
+- ~~`ClientboundDamageEventPacket` carries **three** entity ids
+  (`entityId`, `sourceCauseId`, `sourceDirectId`), not two.~~
+  `entities/damage-and-death.md:251` said two; `player/the-sword-swing.md:250`
+  said three and was right.
+- ~~`server/README.md:75` promises "the three ways that session changes" over a
+  page whose own heading is *Four ways the session changes*~~ — respawn,
+  dimension change, disconnect, and `switchToConfig` behind `DebugConfigCommand`.
+- ~~"An arrow, **a dozen multiplications**" on `entities/README.md:106` and
+  `lectures.md:203` is a mis-transcription of the page's own heading, *One
+  number, a dozen **owners***~~; `damage-and-death.md:106` says "five
+  multiplications and three subtractions" two lines later.
+
+### The rest, per page
+
+**The frame and the atlas.**
+- ~~`maps/README.md:36` — the 542 `package-info.java` markers are **four-line**
+  files, not one-line (2,168 lines / 542).~~
+- ~~`maps/packages.md:9` — "The blue **three quarters** ship in both jars" is
+  seven tenths, and the same sentence pair calls the other side a
+  "near-third".~~ Shared is 4,849 of 7,055 classes (68.7%) and 507,060 of
+  719,302 lines (70.5%).
+- ~~`lectures.md:428` — particles is not "five gates": it is three distance
+  rules and three readers of one setting, which is what
+  `rendering/README.md:131` says.~~
+- ~~`lectures.md:514` — **eight** of the ten Part XII lectures name a
+  `ChunkStatus`, not seven~~ (all but `creating-a-world` and `trees`).
+
+**Reference.**
+- ~~`naming-drift.md:42,381` — **243** rows, not 244, twice; and the server
+  table is **31**, not 32.~~ Counted per section, headers and separators
+  excluded; Part XI's stated 27 is right.
+- ~~`naming-drift.md:132` — `DimensionType.ambientLight` is one of **three**
+  visual fields that did not become an attribute~~, with `DimensionType.skybox`
+  and `DimensionType.cardinalLightType` (`DimensionType.java:29`).
+- ~~`threads.md:110` — Realms starts **nine** more threads, not six~~ (9
+  `new Thread(` sites in `com/mojang/realmsclient`, five of them named).
+- ~~`hud-elements.md` row 16 — the contextual bar's foreground is empty in
+  **three** of the four states, not two~~: `ContextualBar.EMPTY`'s
+  `extractRenderState` is empty too, so `LocatorBar` is the only one that draws.
+- ~~`math-and-primitives.md:59` — `BlockPos.breadthFirstTraversal` does **not**
+  walk a reused `MutableBlockPos`~~; it allocates an `ArrayDeque` of nodes and a
+  `LongOpenHashSet` (`BlockPos.java:509-511`). Session A's finding, unactioned
+  until now.
+- ~~`math-and-primitives.md:110` — no `Shapes` helper hands a block "the other
+  seven"~~: `rotateHorizontal` returns four directions, `rotateAll` six, and
+  `rotateAttachFace` is `rotateHorizontal` once per `AttachFace`, so twelve.
+  Also session A's.
+- ~~`README.md:62` — of the nine word lanes only **five** mean a thread~~
+  (`Auth`, `Hook`, `Main`, `Netty`, `Worker`); the others are a process, a
+  disk, a wire and a layer, which is what `lanes.md`'s own blurb says.
+- ~~`glossary.md:262` — `GpuDevice` is a **class**~~; the interface both
+  backends implement is `GpuDeviceBackend` (`GlDevice`, `VulkanDevice`), which
+  `rendering/blaze3d.md` had right.
+- ~~`submit-phases.md:11` — "everything else here is only here" is false of
+  three renderers~~ the book's own class index puts on two pages each.
+
+**Parts I and II.**
+- ~~`what-this-book-skips.md:3` — "a dozen boxes hatched" is **fourteen
+  packages**~~ (`map_source.py`'s `SKIPPED`), drawn as 29 hatched rects.
+- ~~`what-this-book-skips.md:429` — `net/minecraft/data/worldgen` is given as
+  56 / 5,369 in the first table and 52 / 5,353 in the rulings table.~~ The page
+  states its rule ("the counts in the table are files"), every other row of the
+  second table follows it, and this one did not; now 56 / 5,369.
+- ~~`identifiers-and-registries.md:266` — **fourteen** of the forty-seven
+  dynamic registries carry a `RegistryValidator`, not thirteen.~~ Thirteen are
+  `RegistryValidator.nonEmpty` on entity-variant registries; the fourteenth is
+  `Registries.TIMELINE` with `Timeline.validateRegistry`, which is neither.
+- ~~`data-driven-types.md:107` — the **fifty-six** stands and its criterion did
+  not.~~ Session B restated the criterion as *the value of a field* and named
+  `GAME_RULE` and `STAT_TYPE` as the registries that dispatch and are excluded.
+  Two more do: `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` through
+  `EnvironmentAttributeCheck.MAP_CODEC` (`dispatchMap("attribute", …)` on
+  `EnvironmentAttributes.CODEC`, itself a `byNameCodec`), and
+  `BuiltInRegistries.DATA_COMPONENT_TYPE` through one client item-model
+  property (`ComponentContents.java:20-25`). Both are keys everywhere a data
+  pack meets them, which is why the tables are right; all four exclusions are
+  now named.
+
+**Part III.**
+- ~~`server/README.md:50` — the level tick defines both ranges in **one**
+  sentence, not two~~ (`server-level-tick.md:25-27`, in a three-sentence
+  section).
+- ~~`server-level-tick.md:157` — "Both of those check that the block … is still
+  the `Block` … before `BlockBehaviour.BlockStateBase.tick`" is false of the
+  fluid half~~: `ServerLevel.tickFluid` checks the `Fluid` and calls
+  `FluidState.tick`.
+
+**Part IV.**
+- ~~`points-of-interest.md:274` — `PoiManager.DistanceTracker` is not "the only
+  other place in the game" that uses `DynamicGraphMinFixedPoint`~~; there are
+  five concrete subclasses and it is the only one outside `server/level`
+  (`LoadingChunkTracker`, `SimulationChunkTracker`,
+  `DistanceManager.FixedPlayerDistanceChunkTracker`,
+  `DistanceManager.PlayerTicketTracker` are the others, and
+  `tickets-and-loading:280` names the fourth as its own graph).
+- ~~`world/README.md:112` — three AI behaviours read `BedBlock.OCCUPIED`~~;
+  only `ValidateNearbyPoi` acts on the index, which is what the sentence meant
+  and now says.
+
+**Part V.**
+- ~~`blocks/README.md:64` — the two click lectures use **three** of
+  `prediction-and-acks`' six windows, not two~~ (`startDestroyBlock` survival,
+  `continueDestroyBlock` at full progress, `useItemOn`).
+- ~~`diodes-and-observers.md:31` — "Three blocks, five **columns**" over a table
+  with five rows and four columns; the next line says "Five rows".~~
+- ~~`block-interaction.md:204` — the four `NeighborUpdates` implementations are
+  not all records~~: `CollectingNeighborUpdater.MultiNeighborUpdate` is a class.
+
+**Part VI.**
+- ~~`entity-anatomy.md:355` — **twelve** subclasses refresh their dimension
+  caches from a synched value of their own, not ten~~ — eleven call
+  `Entity.refreshDimensions` straight out of `Entity.onSyncedDataUpdated` and
+  `Phantom` does it through `Phantom.updatePhantomSizeInfo`. Twelve is also what
+  the same page says at :129 ("a dozen subclasses").
+- ~~`damage-and-death.md:330` — `CombatTracker` clears itself from **four**
+  places, not two~~, and the sentence already named four
+  (`LivingEntity.java:1584`, `CombatTracker.java:38`, `LivingEntity.java:2941`,
+  `ServerPlayer.java:1035`).
+- ~~`damage-and-death.md:356` — 33 + 21 is 54~~: fifty-five files carry
+  `hurtServer`, and the fifty-fifth is `Entity`'s abstract declaration, which is
+  neither half.
+- ~~`attributes.md:209` — "three mobs and `AttributeCommand` … never remove at
+  all" is false of two of the three~~ (`EnderMan.java:126`,
+  `ZombifiedPiglin.java:103` both remove in the other branch); the
+  guard-before-adding claim is what survives.
+
+**Part VII.**
+- ~~`contexts-and-predicates.md:188` — `LootContextUser` has **six**
+  sub-interfaces, not seven~~ (`SlotSource`, `LootItemFunction`,
+  `LootItemCondition`, `NbtProvider`, `NumberProvider`,
+  `ScoreboardNameProvider`); the seventh direct subtype, `IntRange`, is a class.
+- ~~`recipes.md:143` — the `CraftingMenu` constructor that pins
+  `ContainerLevelAccess.NULL` takes **two** arguments, not one~~
+  (`CraftingMenu.java:35`).
+
+**Part IX.**
+- ~~`chat-and-signing.md:243` — `MessageArgument` never mentions
+  `ComponentUtils`.~~ What `MessageArgument.Message.toComponent` runs behind the
+  permission is its own `MessageArgument.Part.toComponent`, which is
+  `EntitySelector.joinNames`. The mechanism was right and the method was not —
+  the class of error `verify_names.py` cannot catch, because
+  `ComponentUtils.resolve` exists elsewhere.
+- ~~`packets-and-stream-codecs.md:202` — "over a hundred and fifty convenience
+  readers and writers" is 152 declarations~~, 31 of them plain pass-throughs to
+  the buffer underneath; 121 add a wire format.
+
+**Part X.**
+- ~~`what-makes-a-sound.md:21` — `Player.playServerSideSound` plays **six**
+  attack sounds, not five~~: five call sites, and `Player.java:1041` is a
+  ternary carrying `PLAYER_ATTACK_STRONG` and `PLAYER_ATTACK_WEAK`.
+- ~~`the-client-loop.md:228` and `options.md:174` — `Minecraft.running` is set
+  **five** statements after the `Options` are read, not six~~
+  (`Minecraft.java:438` to `:444`, four intervening).
+- ~~`input-and-keybinds.md:97` — `KeyboardHandler.handleDebugKeys` does the
+  `matches` test **nineteen** times, not twenty.~~
+- ~~`hud.md:79` — "Four **bars**" over four *states*, one of which is
+  `ContextualBar.EMPTY`~~; three of the four draw. Heading now *Four states*,
+  which is what the section's own first line says.
+- ~~`hud.md:193` — `Hud.extractPlayerHealth` is **fifty-seven** lines
+  (854-910), not twenty.~~
+- ~~`prediction-and-acks.md:265` — *Where to look* named three writes under a
+  section headed *The four writes*~~; `ClientLevel.handleBlockChangedAck` was
+  the one missing.
+
+**Part XI.**
+- ~~`lightmap-fog-and-sky.md:15` — "Only one still reads the raw world clock"
+  is **two**.~~ `LevelRenderer.java:434` hands `CloudRenderer.render` the game
+  time, and `WeatherEffectRenderer.extractRenderState` passes
+  `level.getGameTime()` into both column builders (`:93`, `:95`), where
+  `createRainColumnInstance` scrolls the texture off it. Session K's finding
+  survives whole: the column is still *seeded* from its own coordinates
+  (`x * x * 3121 + …`) and still asks for no attribute and no probe. The landing
+  page's and `lectures.md`'s "mostly no longer know what time it is" holds at
+  three of five.
+- ~~`lightmap-fog-and-sky.md:286` — `CloudRenderer.apply` is four lines and two
+  statements~~; now stated as statements, which does not depend on the
+  decompiler's formatting.
+- ~~`block-entity-rendering.md:325` —
+  `BlockEntityRenderDispatcher.tryExtractRenderState` is **twenty-one** lines
+  (62-82), not twenty.~~
+- ~~`particles.md:139` — `ParticleType.getOverrideLimiter` has **three**
+  readers, not four~~ (`ClientLevel.java:901`, `:906`, `:916`); all client-side,
+  which is the sentence's point.
+
+**Part XII.**
+- ~~`worldgen/README.md:70` — a structure writes its blocks **three** statuses
+  after the terrain is cut, not four~~ (`ChunkStatus.NOISE` index 4 to
+  `ChunkStatus.FEATURES` index 7).
+- ~~`worldgen/README.md:73` — **three** of the six pages before the structure
+  trio reach for the beardifier, not five~~: `density-functions` and `terrain`
+  by link, `blending` by name.
+- ~~`worldgen/README.md:76` — the four density-graph consumers live on **three**
+  of the nine pages~~, because the aquifer and the ore veins are both on
+  `terrain`.
+- ~~`worldgen/README.md:95` — **eight** of the ten pages name a status, not
+  seven~~ (all but `creating-a-world` and `trees`), ~~and **two** open on one~~
+  (`terrain`, `features-and-placement`), not four. The same seven-for-eight is
+  corrected on `lectures.md:514`.
+- ~~`worldgen/biomes.md:32` — "a vanilla biome file sets **three** of the twenty
+  gameplay attributes" conflates two populations.~~ Of the 66 biome files, 51
+  set none, 14 set one and one sets two; three *distinct* gameplay attributes
+  are used in the whole data pack
+  (*increased_fire_burnout*, *snow_golem_melts*, *can_pillager_patrol_spawn*).
+  Twenty is right (`EnvironmentAttributes` registers 20 under `gameplay/`).
+- ~~`worldgen/trees.md:151` — `DarkOakFoliagePlacer` places **two** rows on a
+  single trunk~~ and three or four on a double one; the false arm is reachable
+  because `DarkOakTrunkPlacer` emits side attachments with *doubleTrunk* false.
+- ~~`worldgen/trees.md:118` — `DarkOakTrunkPlacer`'s lean is
+  `2 - random.nextInt(3)`, which is nothing exactly **one time in three**~~, not
+  "usually nothing at all".
+
+**Part XIII.**
+- ~~`commands/brigadier-and-commands.md:252` — `LocateCommand` has **three**
+  barely related parts, not two halves~~: `LocateCommand.locateStructure`,
+  `LocateCommand.locateBiome` and `LocateCommand.locatePoi`.
+- ~~`commands/permissions.md:193` — `ClientPacketListener.sendUnattendedCommand`
+  has **two** callers, not one~~: `Screen.clickCommandAction`
+  (`Screen.java:448`) and an adapter `ClientPacketListener` builds for itself
+  (`:2980`).
+
+### Two agent findings rejected on re-derivation
+
+- `synched-entity-data.md:280` — "(Two *sends* also sit outside the gate …)".
+  The *also* excludes the `ItemFrame` send the preceding sentence is entirely
+  about, so two is the right count of the others.
+- `what-the-client-is-told.md:213` — "Four feeds ignore gate 3". Three
+  *branches* sit before the gate at `ServerEntity.java:138`, but the `ItemFrame`
+  branch carries two sends and the page names them separately, which is four
+  feeds.
+
+### No tool bug — the ninth such session, and the method bug instead
+
+`claims.py` extracted 5,196 count sentences with no miss the session found, and
+`pass4_queue.py`, `check_deps.py`, `check_lanes.py` and `check_mermaid.js` were
+all clean. **The bug was in a method, not a tool, and it was in three pass-4
+sessions' hands**: `grep -c` for a population count. Session M's 359 and 64,
+session L's 61 shipped noises, and this session's own first 61 fluid call sites
+are all the same mistake at one remove — a search that looks exhaustive,
+counted by a flag that does not count what the sentence claims.
+
+Beside it: **the session was wrong once** (its `scheduleTick` classifier
+reproduced the page's own 61 before the two unnamed fluid arguments were
+found); **two agents derived 61 shipped noises** and missed the `nether/`
+subdirectory, as session L had; **two agent findings were rejected**; and
+**`verify_names.py` stayed green through every fix**, the first pass-4 session
+where it caught none of the session's own.
+
+### For session O
+
+- The **"declared and never read"** form is unverifiable of any primitive
+  constant, because `javac` inlines them at their use sites. It is used in the
+  corpus and is written up in `pass5.md` with the known instances; session D's
+  dead-constant ruling needs the weaker wording *no reader survives the
+  decompile*.
+- `reference/class-index.md`'s blurb count ("2731 names across 131 pages") and
+  `reference/lanes.md`'s ("333 lanes are classes and 9 are not") are generated
+  and were re-derived here; the hand-written halves of both blurbs were checked
+  and hold.
+- Everything else the sweep found and did not fix is in
+  [pass5.md](pass5.md) under this session's entry: about fifty counts that are
+  right under one reading of their population and wrong under another.
+
 
 ## Session M — Part XIII Commands and data packs (pass 4) *(2026-09-05)*
 
