@@ -2,11 +2,15 @@
 
 > Verified against **Minecraft 26.2** · Part XIII · you type */kill @e[type=!player,distance=..8,sort=nearest,limit=1]*, and the characters inside the brackets decide, between them, which levels are searched and which of two entirely different data structures answers.
 
-Stand in the Overworld with one other player in the Nether and run */tp @p*.
-You may well teleport to them. *@p* is not "the nearest player in this
-world": it is the player whose raw *x*, *y* and *z* are nearest, chosen from
-the list of everybody on the server, compared as though the dimensions were
-stacked in the same coordinate space. Nothing in a selector is confined to
+Put a command block at the Overworld origin and give it */tp @p 0 100 0*.
+One player is two hundred blocks away across the Overworld; another is
+standing on the Nether roof directly "above" the block, at the Nether's own
+*0, 128, 0*. The command block teleports the one in the Nether. *@p* is not
+"the nearest player in this world": it is the player whose raw *x*, *y* and
+*z* are nearest, chosen from the list of everybody on the server, compared as
+though the dimensions were stacked in the same coordinate space. (Type the
+same command yourself and you always win it — a player's own source sits at
+distance zero from a player's own position.) Nothing in a selector is confined to
 one level unless you write one of **seven** options that says so — and the
 cheapest of those seven, *distance*, is also the one that decides whether the
 game walks every entity in the level or asks the chunk sections for a box.
@@ -19,7 +23,7 @@ filters at all: they are the query plan. This page is about which is which.
 
 | class | what it decides | when it runs |
 |---|---|---|
-| `EntitySelectorParser` | the reader, the grammar and thirty-two half-built fields. The only class that ever touches the syntax | parse time |
+| `EntitySelectorParser` | the reader, the grammar and thirty-two half-built fields. It owns the selector's own syntax; the brace grammars of *scores* and *advancements* are read by the handlers themselves | parse time |
 | `EntitySelectorOptions` | the name-to-handler map — twenty-one entries, filled once by `Bootstrap.bootStrap` and never again | class init |
 | `InvertableSetOptionState` | the three-state machine behind *type=!zombie,!skeleton*: one positive assertion **or** any number of negations and tags, never both | parse time |
 | `SetOnceOptionState` | one boolean, for the four options that may appear at most once | parse time |
@@ -33,9 +37,9 @@ and every one of them is in the server jar *and* the client jar. That matters
 later.
 
 > **For a 1.21-era reader.** The parser's crowd of *hasNameEquals* /
-> *hasNameNotEquals* / *hasGamemodeEquals* booleans is gone, replaced by four
-> `InvertableSetOptionState` and `SetOnceOptionState` objects that enforce the
-> same rules structurally. *ResourceLocation* is `Identifier`. And the check
+> *hasNameNotEquals* / *hasGamemodeEquals* booleans is gone, replaced by
+> eight state objects — four `InvertableSetOptionState` and four
+> `SetOnceOptionState` — that enforce the same rules structurally. *ResourceLocation* is `Identifier`. And the check
 > that used to be an op-level comparison is now an atom,
 > `Permissions.COMMANDS_ENTITY_SELECTORS` ([permissions](permissions.md)).
 
@@ -170,8 +174,8 @@ flowchart TB
     A["findEntities, on the server thread"] --> B{"non-players in scope?"}
     B -- no --> P["findPlayers — a linear walk of a player list, always"]
     B -- yes --> C{"a bare name or a UUID?"}
-    C -- name --> N["PlayerList.getPlayerByName — one lookup, done"]
-    C -- UUID --> U["every level asked for that id, first hit wins"]
+    C -- name --> N["PlayerList.getPlayerByName — a linear case-insensitive scan"]
+    C -- UUID --> U["PlayerList.getPlayer — the id map, one lookup"]
     C -- neither --> D{"is it the source itself?"}
     D -- yes --> S["test the source's own entity, or return nothing"]
     D -- no --> E{"world-limited?"}
@@ -198,8 +202,8 @@ accessible non-empty 16-cubes the box overlaps. Without one,
 `ServerLevel.getEntities` goes through `EntityLookup`, which walks the level's
 entire visible-entity map and calls `EntityTypeTest.tryCast` on each. **There
 is no index by entity type.** *type=zombie* narrows nothing structurally; it
-is a cast applied one entity at a time, ahead of the tests. A *distance* is
-the only thing that ever narrows the search itself.
+is a cast applied one entity at a time, ahead of the tests. Only the seven
+box options narrow the search itself, and only when they add up to a box.
 
 **And the box path finds things the walk cannot.** `Level.getEntities` also
 offers each ender dragon's eight `EnderDragonPart` sub-entities to the type
@@ -221,8 +225,10 @@ collects every match in range, sorts the list and throws all but one away.
 *@n* and *@p* live permanently in the second mode: their heads set the nearest
 order, so they always collect first and cut afterwards.
 
-**Four** — options that decide the query plan rather than filter the result
-(*distance*, *dx*, *dy*, *dz*), plus *sort*, which un-decides part of it.
+**So the query plan is written by eight of the twenty-one names.** Seven of
+them build the box and world-limit the search — *distance*, *x*, *y*, *z*,
+*dx*, *dy* and *dz* — and the eighth, *sort*, un-decides part of it by taking
+the limit away. The other thirteen only filter what the plan returns.
 
 ## One permission, checked in two places, for two different reasons
 
@@ -276,11 +282,14 @@ that might contain a selector is `ServerStatusPinger`, whose
 `ResolutionContext` deliberately carries no source, so a server-list
 description containing a selector renders as nothing at all.
 
-**Why did */kill @e* complain before it touched the world?** Because
+**Why did */damage @e 1* complain before it touched the world?** Because
 `EntityArgument` rejects on the compiled selector's *shape*, during the parse:
-a limit above one in a single-target slot, or non-players in a players-only
-slot. *@s* is exempt from the second test, so */msg @s* parses and then finds
-nobody when the source is not a player.
+a limit above one in a single-target slot — which is what `/damage`, `/ride`
+and `/data get entity` all take — or non-players in a players-only slot, as
+in */msg @e*. Note that */kill @e* is fine: `/kill` takes the many-entities
+shape, so neither rejection can fire on it. *@s* is exempt from the second
+test, so */msg @s* parses and then finds nobody when the source is not a
+player.
 
 **What does the client suggest for an entity argument?** Online player names,
 plus — from `ClientSuggestionProvider.getSelectedEntities` — the UUID of
@@ -299,10 +308,10 @@ distances against pre-squared bounds and so never takes a square root.
 
 ## Where to look
 
-`EntitySelector` first — thirteen fields and five find methods, and the design
+`EntitySelector` first — thirteen fields and four find methods, and the design
 is in them. Then `EntitySelectorParser.getSelector` for the one place those
 thirteen are decided, and `EntitySelectorOptions.bootStrap` for the grammar
-players actually write. `LevelEntityGetterAdapter` is four methods long and is
+players actually write. `LevelEntityGetterAdapter` is six methods long and is
 where the cost of every selector is settled. Note that the name
 `EntitySelector` is used twice in the game: this one, and an unrelated bag of
 predicate constants in `world/entity` that the mob AI and the hoppers use.

@@ -1,6 +1,6 @@
 # Brigadier and commands
 
-> Verified against **Minecraft 26.2** · Part XIII · You type `/give @p diamond_sword[minecraft:damage=5]` into the chat box: three parsers see that string, two of them throw their answer away, and the completion you accepted came back over the network without you noticing.
+> Verified against **Minecraft 26.2** · Part XIII · You type `/give @p diamond_sword[minecraft:damage=5]` into the chat box: three parsers see that string, two of them throw their answer away — and not one of the completions you accepted along the way left your machine.
 
 Open the chat box and type a slash. Before you have finished the word, the
 text is coloured, a grey hint has appeared behind the cursor and a
@@ -13,9 +13,11 @@ on every keystroke, throws the parse away, and sends the string.
 Which raises the question this page exists to answer: if the client can
 parse the command, why is completing an item id instant and completing a
 loot table not? Because the tree the client rebuilt says, node by node, who
-is allowed to answer — and **sixty-two of the sixty-seven** suggestion
-providers on vanilla's nodes say *ask the server*. The round trip is not the
-fallback. It is the default, and the local fast path is the exception.
+is allowed to answer. Vanilla registers **359 argument nodes**, and only
+**59** of them serialise as *ask the server* — so the local path is the
+rule, not the exception. What makes the round trip feel ubiquitous is
+*which* nodes take it: they are the ones that complete over data the client
+was never sent.
 
 ## The cast
 
@@ -55,7 +57,7 @@ sequenceDiagram
     SGPL->>Cmds: hand to the server thread, then parse again with the player's real source
     Cmds->>Cmds: the node requirement is consulted inside the parse
     Cmds->>Cmds: performCommand — one queue, limits read from the level's game rules
-    Cmds->>GC: the registered lambda — resolve the selector, build the ItemInput
+    Cmds->>GC: the registered lambda — resolve the selector, read back the ItemInput
     GC->>GC: Inventory.add, then sendSuccess and a broadcast to admins
 ```
 
@@ -74,15 +76,19 @@ and a real `BlockStateParser` against its own registries. Item ids, data
 components and block properties complete locally, and so does every argument
 type whose suggestion method reads a synced registry.
 
-**But the round trip is the default.** This is the fact the shape of the
-code invites you to get backwards. `SuggestionProviders.getName` returns the
-registered name for a `SuggestionProviders.RegisteredSuggestion` and
-*ask_server* **for everything else** — so any node whose suggestions come
-from a plain lambda serialises as a request. Of the sixty-seven suggestion
-providers attached to vanilla nodes, five name one of the three registered
-providers; the other sixty-two become *ask_server*. That is how `/function`,
-`/datapack`, `/bossbar`, `/scoreboard`, `/team`, `/schedule` and `/whitelist`
-complete. A second route reaches the same packet:
+**A node that asks for suggestions by hand almost always asks the server.**
+This is the part the shape of the code invites you to get backwards — not
+that the round trip is common, but that opting *in* to a provider is what
+costs you one. `SuggestionProviders.getName` returns the registered name for
+a `SuggestionProviders.RegisteredSuggestion` and *ask_server* **for
+everything else**, so any node whose suggestions come from a plain lambda
+serialises as a request. Of the **64** vanilla nodes that attach a provider
+at all, five name one of the three registered providers and the other **59**
+become *ask_server*. That is how `/function`, `/datapack`, `/bossbar`,
+`/scoreboard`, `/team`, `/schedule` and `/whitelist` complete. The other 295
+argument nodes attach nothing and fall back to their argument type's own
+suggestions — which is why `/give`, the command in the line at the top of
+this page, never asks the server anything. A second route reaches the same packet:
 `ClientSuggestionProvider.suggestRegistryElements` failing to find a
 server-only registry — loot tables, advancements, recipes — and falling
 through. Two mechanisms, one packet.
@@ -150,9 +156,10 @@ why one parsed command means different things at different links of an
 something different at every link and a single parsed argument yields N
 positions in a forked execution. `LocalCoordinates` (`^ ^ ^`) is the
 interesting one: it builds a basis from the source's rotation *and* its
-`EntityAnchorArgument.Anchor`, making it the one argument type that depends
-on eye height. `SwizzleArgument` parses an axis subset (*xz*) for `/clone`
-and `/spreadplayers`.
+`EntityAnchorArgument.Anchor`, so it is the only `Coordinates` shape that
+depends on eye height — it is not itself an argument type, and both
+`Vec3Argument` and `BlockPosArgument` can produce one. `SwizzleArgument`
+parses an axis subset (*xz*), and `/execute align` is its only user.
 
 **`EntitySelector` is a compiled query, not a parse tree** — thirteen final
 fields with no reader and no grammar in them, assembled by
@@ -170,7 +177,7 @@ execution — which is what lets a function be compiled against a null server
 
 ## The parser under the parser
 
-Six argument types and the whole SNBT reader are not hand-written
+Five argument types and the whole SNBT reader are not hand-written
 `StringReader` walks. They are grammars, written against
 `net/minecraft/util/parsing/packrat` — Mojang's own parser-combinator
 framework, with `Term` as the combinator algebra, `Dictionary` and
@@ -204,8 +211,10 @@ single / players-only pair, sometimes a registry key. The client then
 `CommandBuildContext`, which is why a data pack's biomes and dialogs are
 parseable on the client for free.
 
-`Commands.validate` is what keeps that honest: it throws at start-up if any
-registered argument type is missing from `ArgumentTypeInfos`. **Thirty-eight**
+`Commands.validate` is what keeps that honest — though only in development:
+`Bootstrap` calls it under `SharedConstants.IS_RUNNING_IN_IDE` alone, so a
+shipped client never runs it. It throws if any registered argument type is
+missing from `ArgumentTypeInfos`. **Thirty-eight**
 argument-type classes live in the top `net/minecraft/commands/arguments`
 package, plus the *blocks*, *item*, *coordinates* and *selector*
 subpackages; **fifty-seven** are registered on the wire.
@@ -213,7 +222,7 @@ subpackages; **fifty-seven** are registered on the wire.
 Two things about that packet surprise people. It has exactly **one call
 site**, `PlayerList.sendPlayerPermissionLevel`, so the tree and the op-level
 entity event are always sent together — on join, respawn, a dimension
-*change*, op and deop, and the two LAN toggles, and **not** after `/reload`.
+*change*, op and deop, and the four LAN toggles, and **not** after `/reload`.
 And an **unknown argument type deletes the node, not its children**: a
 modded type reaching a vanilla client decodes to a null stub,
 `ClientboundCommandsPacket.NodeResolver` substitutes a bare
@@ -265,8 +274,10 @@ non-command completions into the tab list, add / remove / set.
 ## Signed arguments, in one paragraph
 
 `MessageArgument` is the **only** signed argument in the game — the sole
-implementor of `SignedArgument` — and seven commands take one: `/ban-ip`,
-`/ban`, `/me`, `/kick`, `/msg`, `/say` and `/teammsg`. All of
+implementor of `SignedArgument` — and seven command classes register it
+under ten literals a player can type: `/ban-ip`, `/ban`, `/me`, `/kick`,
+`/say`, `/msg` with its `/tell` and `/w` redirects, and `/teammsg` with
+`/tm`. All of
 `SignableCommand`, `ArgumentSignatures`, `ArgumentVisitor` and
 `CommandSigningContext` exists to serve them: `ArgumentVisitor.visitArguments`
 walks a parse to find which arguments need a signature, and the map carries
