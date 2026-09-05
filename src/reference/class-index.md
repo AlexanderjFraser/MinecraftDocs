@@ -1521,7 +1521,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LpVec3` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `MacosUtil` | [the-window](../systems/rendering/the-window.md) |
 | `MacroFunction` | [naming-drift](../reference/naming-drift.md), [functions-and-macros](../systems/commands/functions-and-macros.md) |
-| `Main` | [packages](../maps/packages.md), [the-client-loop](../systems/client/the-client-loop.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
+| `Main` | [the-client-loop](../systems/client/the-client-loop.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `MainTarget` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `ManagementServer` | [threads](../reference/threads.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [server-tick](../systems/server/server-tick.md), [starting-a-server](../systems/server/starting-a-server.md) |
 | `MangroveRootPlacement` | [trees](../systems/worldgen/trees.md) |
