@@ -128,7 +128,7 @@ a page in this part.
    stream of positions folded through filters, in an order the whole
    dimension agreed on before any chunk existed.
 6. [Trees](trees.md) — one algorithm with five slots in it, and the
-   clearance scan that shortens the trunk and not the crown.
+   clearance scan that runs after the crown has been sized.
 7. [Structure placement](structure-placement.md) — the part's policy page.
    A lottery that never looks at the world, an absence stored as a hole, and
    a command that generates chunks to answer a question.

@@ -480,7 +480,7 @@ costs one forward reference and buys a whole arc in one place.
    the whole dimension agreed on before any chunk existed. Two biomes that
    disagree about that order make the world refuse to open.
 6. [Trees](systems/worldgen/trees.md) — one algorithm with five pluggable
-   slots, and a clearance scan that shortens the trunk and not the crown.
+   slots, and a clearance scan that runs after the crown has been sized.
    The dark-oak sapling that will never grow alone is an `Optional` left
    empty.
 7. [Structure placement](systems/worldgen/structure-placement.md) — the

@@ -1,6 +1,6 @@
 # Trees
 
-> Verified against **Minecraft 26.2** · Part XII · One sapling grows: five pluggable parts over one algorithm, a ceiling that shortens the trunk and not the crown, and the dark-oak sapling that will never grow on its own.
+> Verified against **Minecraft 26.2** · Part XII · One sapling grows: five pluggable parts over one algorithm, a ceiling the crown's size was decided before, and the dark-oak sapling that will never grow on its own.
 
 Plant a single dark-oak sapling, feed it bone meal until you run out, and
 nothing happens. Nothing is wrong with the sapling; there is simply no tree
@@ -12,7 +12,8 @@ them, the mega tree. The single-sapling slot is left empty, and
 the game is implemented as an absence.**
 
 Which is a good introduction to this page, because the whole tree kit works
-like that: sixty-odd trees are one algorithm, `TreeFeature`, with five slots
+like that: the thirty-nine configured tree features are one algorithm,
+`TreeFeature`, with five slots
 in it, and almost everything you can say about how a cherry differs from a
 mangrove is a statement about what is in the slots.
 [Features and placement](features-and-placement.md) is how a tree gets a
@@ -68,14 +69,17 @@ sequenceDiagram
 Four things in that diagram are the page's real content.
 
 **The crown is sized before the ceiling is measured.** `TreeFeature` samples
-the trunk placer's proposed height, derives the foliage height and the leaf
-radius from *that* number, and only then runs the clearance scan. The scan's
-answer, the *clipped* height, is what `TrunkPlacer.placeTrunk` and
-`FoliagePlacer.createFoliage` both receive — and every one of the eleven
-foliage placers ignores that argument. So a fancy oak that proposed fourteen
-blocks and is clipped to six grows a six-block trunk with a
-fourteen-block-tree's crown on it. The top-heavy trees under overhangs are
-this asymmetry.
+the trunk placer's proposed height, derives `FoliagePlacer.foliageHeight` and
+`FoliagePlacer.foliageRadius` from *that* number, and only then runs the
+clearance scan. The scan's answer, the *clipped* height, is passed on to
+`TrunkPlacer.placeTrunk` and `FoliagePlacer.createFoliage` — but the two crown
+numbers travel beside it, already decided. It is a real asymmetry that no
+shipped tree can express: the only species vanilla lets survive a clipping is
+the fancy oak, and `FancyTrunkPlacer` derives its cluster count from the
+clipped height, so a clipped fancy oak gets a *smaller* crown, not a bigger
+one. The one placer whose foliage height reads the tree height at all is
+`SpruceFoliagePlacer`, and no spruce declares a minimum clipped height, so a
+spruce under an overhang abandons itself instead.
 
 **Clipping usually kills the tree instead.** `FeatureSize.minClippedHeight`
 is the only thing that permits a clipped tree at all, and in vanilla exactly
@@ -109,7 +113,7 @@ and returns attachments.
 |---|---|
 | `StraightTrunkPlacer` | one column, one attachment one block *above* the top log |
 | `ForkingTrunkPlacer` | leans near the top, then grows a side branch in a second random direction — and if that direction happens to equal the first, the branch is skipped and the draw is spent anyway. The main fork's attachment carries a radius nudge of +1 |
-| `GiantTrunkPlacer` | a 2×2 column, four dirt blocks beneath it, and only the (0,0) column placed on the very top layer. Its attachment is the one that sets *double trunk* |
+| `GiantTrunkPlacer` | a 2×2 column, four dirt blocks beneath it, and only the (0,0) column placed on the very top layer. Its attachment sets *double trunk*, as `DarkOakTrunkPlacer`'s does |
 | `MegaJungleTrunkPlacer` | the giant trunk, plus side branches laid along a random angle every few levels, each attachment nudged **−2** |
 | `DarkOakTrunkPlacer` | a leaning 2×2 trunk whose lean is two minus a draw from three and is therefore usually nothing at all, plus a ring of downward log stubs on a one-in-three roll per position — placed relative to the *original* trunk, not the leaned one. Its main attachment sits on the top log rather than above it |
 | `FancyTrunkPlacer` | see below |
@@ -138,7 +142,7 @@ the radius changes with height and which positions inside a row it *skips*.
 
 | type | how it differs |
 |---|---|
-| `BlobFoliagePlacer` | the plain oak blob: radius tapers by half the row index, corners clipped on a coin flip and always clipped on the widest row |
+| `BlobFoliagePlacer` | the plain oak blob: radius tapers by half the row index, corners clipped on a coin flip and always clipped on the row at *y* = 0 |
 | `FancyFoliagePlacer` | the blob's subclass, but the skip test is a genuine circle rather than a corner roll |
 | `BushFoliagePlacer` | the blob with a much steeper taper — the full row index, not half of it |
 | `SpruceFoliagePlacer` | the saw-tooth: a radius that grows a block per row and resets to nothing whenever it reaches a ceiling that is itself climbing. The only placer whose row loop is bounded by the foliage height alone rather than the offset |
@@ -188,10 +192,11 @@ Ten types, in four groups. The ones that hang things off the tree are
 `TrunkVineDecorator` and `LeaveVineDecorator` (vine curtains),
 `PaleMossDecorator`, `CocoaDecorator` and `AttachedToLeavesDecorator` — that
 last one blacklists an exclusion box around each placement so the propagules
-cannot crowd each other. The ones that *change* a block already placed are
-`CreakingHeartDecorator`, which converts the first log completely surrounded
-by other logs, and `BeehiveDecorator`, which places a nest and populates its
-block entity with two or three bees on the spot
+cannot crowd each other. The one that *changes* a block already placed is `CreakingHeartDecorator`,
+which shuffles the tree's logs and converts one that is completely surrounded
+by other logs — a random such log, not the first. `BeehiveDecorator` looks
+like a third but is not: it hangs its nest in an air block beside a log, and
+populates the block entity with two or three bees on the spot
 ([block entities](../blocks/block-entities.md)). The ones that write on the
 ground around the tree are `AlterGroundDecorator` (the podzol discs under a
 mega spruce, which reach several blocks beyond the trunk) and
@@ -247,9 +252,11 @@ stranger — it clears all four saplings with no-update writes and puts them
 back if the feature fails.
 
 **Do leaves know which tree they came from?** No. Nothing in the placed tree
-records its species; the only per-block state is `BlockStateProperties.DISTANCE` and
-`BlockStateProperties.WATERLOGGED`, and both are set from what was already in the world at that
-position. `FoliagePlacer.tryPlaceLeaf` also refuses to overwrite a leaf a
+records its species; a leaf's only per-block state is
+`BlockStateProperties.DISTANCE` and `BlockStateProperties.WATERLOGGED`, the
+first written by the feature's own breadth-first pass and the second taken
+from what was already in the world. A log carries an `AXIS` the trunk placer
+chooses, and that is the whole of it. `FoliagePlacer.tryPlaceLeaf` also refuses to overwrite a leaf a
 player placed, by testing the persistent flag.
 
 **Is any of this shared with the rest of decoration?** The clearance idea,
