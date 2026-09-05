@@ -19,6 +19,145 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session N — the corpus-wide count sweep (pass 4) *(2026-09-05)*
+
+The sweep's job was numbers, and what it turned up beside them is one tic with
+many faces: **a count that is right under one reading of its population and
+wrong under another, with the page never saying which**. None of these is a
+wrong number, so none was fixed. Pass 5 should pick the reading, say it, or
+drop the number.
+
+**A count of one thing described as a count of another.**
+
+- `blocks/blocks-and-states.md:25` — "through **fifty-eight** statics — the
+  drops, the particles and the shape-update helpers". 58 is every `static`
+  declaration in `Block.java` (23 fields, 34 methods, one nested record); the
+  things listed are static *methods*, of which there are 34. And "the
+  particles" is `Block.spawnDestroyParticles`, a `protected` **instance**
+  method.
+- `client/hud.md` — the heading is now *Four states*, and three of the four
+  draw. If pass 5 wants "bars" back, the number is three.
+- `world/scheduled-ticks.md:81` — "**Two** type parameters" is right for the
+  two type *arguments* in play (`Block`, `Fluid`); every class involved
+  (`LevelTicks`, `LevelTickAccess`, `LevelChunkTicks`, `ScheduledTick`)
+  declares exactly one.
+- `world/chunk-storage.md:281` — "it changes hands **four** times" names four
+  stages but only three thread changes: `ChunkSerializer.upgradeChunk` and
+  `ChunkSerializer.parseChunk` are both on `Util.backgroundExecutor`.
+- `player/README.md:32,63` — "**eight** classes" is the cast table's eight
+  *rows*, which name nine classes (one row holds `ServerPlayerGameMode` /
+  `MultiPlayerGameMode`).
+- `networking/README.md:35` — "the two the part spends longest on" names
+  *what the client is told* and *chat and signing*; by line count the two
+  longest are `what-the-client-is-told` (474) and `packets-and-stream-codecs`
+  (465), and `chat-and-signing` (326) is the shortest page in the part.
+
+**A superlative that is true only of the sub-population the page stands in.**
+
+- `world/chunk-storage.md:323` — "which **only** `ImposterProtoChunk.markUnsaved`
+  does" is true among the saving flags; `ImposterProtoChunk.setLightCorrect`
+  delegates unconditionally too, which `chunk-anatomy:102` says itself.
+- `client/text-and-fonts.md:184` — "the one place in the pipeline where a
+  character is invented" is true of the wrap path;
+  `ComponentRenderUtils.clipText` in the same class appends
+  `CommonComponents.ELLIPSIS`.
+- `world/points-of-interest.md:124` — "**a dozen** shapes" of read-only query
+  is 13 method names / 14 methods. The hedge covers it; *thirteen* reads better.
+- `entities/ai-goals-and-brains.md:381,390` — "everything it will ever do" /
+  "the twelve": a door-breaking `Zombie` gains a thirteenth goal at
+  `Zombie.java:158`, outside `Mob.registerGoals`.
+- `entities/authority.md:181` — "three of those eight read the same member"
+  holds for `Entity.canSimulateMovement` (3);
+  `Entity.isLocalInstanceAuthoritative` is read at four of the eight.
+- `world/README.md:79` — "the one page here that depends on nothing else in
+  the part" is one under *off the conveyor chain*; the part's own figure gives
+  two pages no inbound edge (`chunk-anatomy` and
+  `environment-attributes-and-timelines`).
+- `world/chunk-storage.md:203` — "**Three** places do make the server thread
+  wait on a disk": a fourth blocking join at `ServerChunkCache.java:126`/`149`
+  can end at the disk, though it drives the main-thread queue rather than
+  raw-joining the IO lane.
+- `client/the-client-level.md:129` — "the chunk cache and **one** packet
+  handler call `LevelExtractor` directly" is right for the dirty-marking path;
+  three `ClientPacketListener` sites touch `levelExtractor` in all.
+- `foundations/identifiers-and-registries.md:75` — "keyed **three** ways"
+  names three maps; `MappedRegistry.byValue` is a fourth index.
+- `foundations/codecs-nbt-json.md:259` — "**two** fields" is true of the
+  `IOWorker` case cited; `StructureCheck`, in the same sentence, uses three.
+- `blocks/signal-and-dust.md:27,126` — "the three answers a state gives" is
+  three of six signal delegators on `BlockBehaviour.BlockStateBase`; "All three
+  stop early" is true of the reading methods and false of the direction arrays
+  the previous paragraph counts.
+- `reference/math-and-primitives.md:116` — "two things called `Axis`" is two
+  in scope; there is a third in the datafix tree, which rule 3 excludes.
+- `items/loot-tables.md:130` — "a funnel with **three** fan-outs" describes the
+  page's own figure, which has four branch nodes.
+
+- `maps/biggest.md:29` — "only **two** concrete mobs make the list" is true of
+  the figure's thirty and false of the table's forty (`Panda` 37th,
+  `SulfurCube` 40th).
+- `maps/fanin.md:24` — "the **thirty** hubs … they are **seven**" has the right
+  seven idea rows, but the table's class list is 32 classes, only 24 of them in
+  the thirty; six of the thirty appear in no row.
+- `lectures.md:220` — "**Two** components on one item" is the two *weapon*
+  components; `the-spear`'s own cast lists eight `DataComponents` on it.
+- `lectures.md:228` — "**four** languages" is four in a login trace;
+  `ConnectionProtocol` has five values and the page's own section is
+  *The five phases*.
+
+**Two same-page phrasings of one constant.** `world/points-of-interest.md:235`
+says "more than twenty ticks have passed" and
+`entities/ai-goals-and-brains.md:335` says "fewer than 21 ticks have passed"
+for the same test, `Brain.java:389` (`gameTime - lastScheduleUpdate > 20L`).
+Both are true; one wording should win.
+
+**A claim a decompile cannot settle, corpus-wide.** `javac` inlines primitive
+`static final` constants at their use sites, so **"declared and never read" is
+unverifiable of any primitive constant** — `Channel.attachBufferStream` writes
+bare `1` and `4` where the source wrote its two named constants. Session D's
+ruling (a dead constant is kept and *said to be dead*) needs the weaker wording
+*no reader survives the decompile*. Known instances:
+`client/the-client-loop.md:87`, `SoundEngine.MIN_SOURCE_LIFETIME`,
+`ClientLevel.NORMAL_LIGHT_UPDATES_PER_FRAME`,
+`ClientExplosionTracker.MAX_PARTICLES_PER_TICK`, and
+`SharedConstants.TICKS_PER_SECOND` / `SharedConstants.MILLIS_PER_TICK`, which
+`anatomy.md:266`'s *Is twenty ticks a second a constant?* answers "no, it is a
+server field" without mentioning that both are declared at
+`SharedConstants.java:149-150` and that nothing in the tree reads either.
+
+**Hedges that came back a little short.** `client/options.md:80` "a dozen
+others" is ten under the enumeration available;
+`client/the-gui-render-tree.md:179` "the layering rule is thirty lines" is 27
+or 52 depending on the grouping, and decompiled formatting is not the source's;
+`player/status-effects.md:150` "divides by about four" is exactly 3.75;
+`player/the-spear.md:46` "the one item that lets you run while using it" is one
+`Item.Properties.spear` builder across seven items;
+`player/player-anatomy.md:3` "five classes deep" is five on the server chain and
+six on the client chain the page's own scenario is in;
+`player/hunger-and-experience.md:23` lists the enchanting seed twice — it *is*
+one of the four experience fields, which `player-anatomy.md:243` words correctly;
+`entities/entity-lifecycle.md:131` "the **four** constants that are not the
+numbers" is four if `NaturalSpawner.MAGIC_NUMBER` is excluded, five if not;
+`entities/entity-anatomy.md:5` "`DefaultedMappedRegistry` overrides **nine**
+lookups to hand it back" is nine overrides, six of which hand the default back;
+`world/chunk-generation-pipeline.md:211` "passes **seven** of the twelve steps
+straight through" is eight literal pass-throughs in `ChunkPyramid`, and seven
+only because `ChunkMap.applyStep` turns `ChunkStatus.EMPTY` into the disk read —
+which the same page states at :388;
+`blocks/block-interaction.md:182` "three outcomes" is three distinct returned
+states and four branches;
+`blocks/block-entities.md:107` "four steps" of `LevelChunk.removeBlockEntity`
+is four *named* steps over five statements.
+
+**One editorial number worth a look.**
+`world/environment-attributes-and-timelines.md:5` opens on "at tick 12542 … the
+sun goes under". 12542 is a real keyframe (*monsters_burn*,
+*bees_stay_in_hive*), but the geometric horizon crossing the page's own
+sun-angle Bézier implies is ~12782, and sunrise ~23218 against the 23460
+keyframe. The gameplay flip is about 240 ticks inside the geometric day at each
+end — a better sentence than the one there, if pass 5 wants it.
+
+
 ## Session L — Part XII World generation (pass 4) *(2026-09-05)*
 
 **Hooks and openings rewritten around a corrected fact — re-read all of these
