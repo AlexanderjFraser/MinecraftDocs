@@ -7,8 +7,11 @@ Everything drawn in a level that is not terrain arrives as a *submit node*.
 `SubmitNodeCollection` sorts those nodes into fifteen named phases as they
 come in, and thirteen feature renderers turn them into vertices. The lecture
 that frames both is [entity rendering](../systems/rendering/entity-rendering.md),
-which names four of the phases and one of the renderers; everything else here
-is only here.
+which names four of the phases and one of the renderers. Three more renderers
+are named elsewhere — `TextFeatureRenderer` and `NameTagFeatureRenderer` on
+[text and fonts](../systems/client/text-and-fonts.md), `QuadParticleFeatureRenderer`
+on [particles](../systems/rendering/particles.md) — and everything else here is
+only here.
 
 ## The fifteen phases
 

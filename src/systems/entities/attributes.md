@@ -206,7 +206,7 @@ attribute collide, and `AttributeInstance.addTransientModifier` and
 overwrite. `AttributeInstance.addOrUpdateTransientModifier` and
 `AttributeInstance.addOrReplacePermanentModifier` are the safe forms. Most of
 vanilla removes by id before it adds; three mobs and `AttributeCommand`
-instead guard with `AttributeInstance.hasModifier` and never remove at all.
+instead guard with `AttributeInstance.hasModifier` before adding.
 
 Transient versus permanent is *purely* about saving: both kinds sit in the
 same indices, both affect the value identically, both go on the wire, and

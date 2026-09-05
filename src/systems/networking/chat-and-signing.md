@@ -240,9 +240,10 @@ something does, it sends `ServerboundChatCommandSignedPacket` with
 index, all of them sharing one timestamp, salt and window. *Signable* means
 the argument type implements `SignedArgument`, and in 26.2 exactly one type
 does — `MessageArgument`, behind the message-shaped commands. Its
-`MessageArgument.Message.toComponent` is also the one place chat text gets
-`ComponentUtils.resolve` run over it, behind a permission, which is why
-`/say @a` names people and a chat line saying the same thing does not.
+`MessageArgument.Message.toComponent` is also the one place chat text has its
+selectors expanded — each `MessageArgument.Part` resolved by
+`EntitySelector.joinNames`, behind a permission — which is why `/say @a` names
+people and a chat line saying the same thing does not.
 
 The server re-parses its own copy and looks each signature up **by argument
 name**, which is where two rows of the table above come from: a name its parse

@@ -354,7 +354,7 @@ client-side entity has no id, and therefore no equality and no hash.
 **Why did the hitbox not change when I changed the size?** Because
 `Entity.dimensions`, `Entity.eyeHeight` and `Entity.bb` are caches, and only
 two things refresh them unasked for every entity: a pose change on the base
-class and `LivingEntity.onAttributeUpdated` on `Attributes.SCALE`. Ten
+class and `LivingEntity.onAttributeUpdated` on `Attributes.SCALE`. Twelve
 subclasses do the same for a value of their own — `AgeableMob` on the baby
 bit among them — and everything else has to call `Entity.refreshDimensions`
 itself.

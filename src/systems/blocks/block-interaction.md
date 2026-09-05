@@ -201,8 +201,8 @@ top pops".
 
 Every `Level` builds one `Level.neighborUpdater`, a
 `CollectingNeighborUpdater`, in its constructor — on the client too. Requests
-arrive as small records implementing
-`CollectingNeighborUpdater.NeighborUpdates`:
+arrive as four small implementations of
+`CollectingNeighborUpdater.NeighborUpdates`, three of them records:
 `CollectingNeighborUpdater.ShapeUpdate` for the door's case,
 `CollectingNeighborUpdater.SimpleNeighborUpdate` and
 `CollectingNeighborUpdater.FullNeighborUpdate` for a single neighbour, and

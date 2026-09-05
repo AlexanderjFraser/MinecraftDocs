@@ -154,8 +154,10 @@ already due, and `ScheduledTick.DRAIN_ORDER`, which does compare times,
 orders each chunk's own queue — and hands each drained tick to
 `ServerLevel.tickBlock` or `ServerLevel.tickFluid`.
 
-Both of those check that the block at the position is *still* the `Block`
-the tick was scheduled for before `BlockBehaviour.BlockStateBase.tick` runs.
+Both of those check that what is at the position is *still* what the tick was
+scheduled for: `ServerLevel.tickBlock` the `Block`, before
+`BlockBehaviour.BlockStateBase.tick`; `ServerLevel.tickFluid` the `Fluid`,
+before `FluidState.tick`.
 That check is the whole cancellation mechanism: replace a block and its
 pending ticks evaporate, with nothing anywhere removing them. The queue
 itself, and what schedules into it, is

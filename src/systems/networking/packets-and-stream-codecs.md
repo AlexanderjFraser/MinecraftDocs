@@ -199,8 +199,9 @@ flowchart LR
     FBB --> RFBB["RegistryFriendlyByteBuf for play, adding one field, a RegistryAccess"]
 ```
 
-`FriendlyByteBuf` is a `ByteBuf` decorator carrying over a hundred and fifty
-convenience readers and writers — `FriendlyByteBuf.readVarInt`,
+`FriendlyByteBuf` is a `ByteBuf` decorator declaring a hundred and fifty-two
+readers and writers, a hundred and twenty-one of which add a wire format the
+plain buffer knows nothing about — `FriendlyByteBuf.readVarInt`,
 `FriendlyByteBuf.writeUtf`, `FriendlyByteBuf.readIdentifier`,
 `FriendlyByteBuf.writeResourceKey`, `FriendlyByteBuf.readNbt`,
 `FriendlyByteBuf.readCollection`, `FriendlyByteBuf.readEnumSet`,

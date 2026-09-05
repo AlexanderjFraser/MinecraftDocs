@@ -109,8 +109,8 @@ watched in any order once you have the vocabulary page.
    lecture. The sensor hears you one tick late by design.
 10. [Points of interest](points-of-interest.md) — a villager claims a bed
     from 48 blocks away, the moment a path to it exists. Going to sleep in it
-    tells the index nothing, and the one behaviour that reads the flag back
-    can only take a claim away.
+    tells the index nothing, and the one behaviour that acts on the flag can
+    only take a claim away.
 
 ## Reference this part uses
 
