@@ -15,7 +15,7 @@ off the old chunk's blocks a moment earlier, the constant ten, and zero.
 This is the deliberate exception [the part's premise](README.md) names.
 Everywhere else in world generation, a chunk is a function of the seed and the
 data packs. Here it is a function of the seed, the data packs, **and the
-blocks in up to a hundred and ninety-three of its neighbours** — which the
+blocks measured by up to a hundred and ninety-three chunks around it** — which the
 game does not remember and has to go and measure, one column at a time.
 
 ## The flag is a nullable field, and looking for it costs a disk read
@@ -76,7 +76,7 @@ resolver returned as given.
 ## One measurement, five consumers
 
 `BlendingData` is gathered once and then read by five unrelated pieces of
-machinery at four chunk statuses — three inside the density graph, two nowhere
+machinery at four chunk statuses — two inside the density graph, three nowhere
 near it.
 
 ```mermaid
@@ -89,8 +89,10 @@ flowchart TB
     B --> R1["BIOMES: getBiomeResolver returns the nearest old biome, or defers"]
     B --> R2["BIOMES and NOISE: blend_alpha and blend_offset, two flat caches filled in the NoiseChunk constructor"]
     B --> R3["NOISE: blend_density, a marker wrapped round the final slide"]
-    B --> R4["CARVERS: an extra carving mask, so carvers skip old ground"]
-    B --> R5["FEATURES: border ticks on leaves and fluids, on the old chunk only"]
+    BD --> R4["CARVERS: an extra carving mask, so carvers skip old ground"]
+    BD --> R5["FEATURES: border ticks on leaves and fluids, on the old chunk only"]
+    R4 -.- SN["static on Blender, straight off each chunk's BlendingData — the two maps are not consulted"]
+    R5 -.- SN
 ```
 
 Two maps, not one. `Blender.of` sweeps the square from seven chunks west to
@@ -118,8 +120,10 @@ trip `WorldGenRegion.getChunk`'s out-of-range crash.
 ## Sixteen columns, read out of blocks
 
 `BlendingData` does not store a copy of the old terrain. It stores sixteen
-columns in a ring round the chunk's edge, measured from the neighbour's blocks
-the first time anyone asks. Seven of them are *inside*
+columns in a ring round the chunk's edge, measured out of that same old
+chunk's own blocks the first time anyone asks —
+`BlendingData.getOrUpdateBlendingData` fetches one chunk and hands it to its
+own `BlendingData.calculateData`. Seven of them are *inside*
 indices — the corner and three more along the north edge, three along the
 west — at block coordinates 0, 4, 8 and 12. The other nine are *outside*
 indices, sampled at block coordinate 15 along the east and south edges, which
@@ -142,7 +146,8 @@ Each filled column gets three things. **A height**:
 `BlendingData.getHeightAtXZ` starts at the *WORLD_SURFACE_WG* heightmap if the
 chunk has one primed and at the top of the old area if not, then walks
 straight down looking for one of eleven block types — podzol, gravel, grass,
-stone, coarse dirt, sand, red sand, mycelium, snow, terracotta or dirt — and
+stone, coarse dirt, sand, red sand, mycelium, a snow *block*, terracotta or
+dirt — and
 returns the first Y at which it finds one, or the bottom of the old area if it
 never does. **A density profile**: for each eight-block-tall cell,
 `BlendingData` reads fifteen consecutive blocks downward, scoring each plus or
@@ -151,14 +156,14 @@ not air, not a leaf, not a log, not a mushroom block and with a non-empty
 collision shape, so a cave counts as air and a tree does not count as terrain.
 One more pass rewrites the two cells straddling the measured height so the
 surface lands where the height said it did. And **a biome column**: one
-`Biome` holder per four-block layer of the old area, read straight out of the
-neighbour's biome container.
+`Biome` holder per four-block layer of the old area, read straight out of that
+chunk's own biome container.
 
 Of those three, **only the heights are saved.** `BlendingData.pack` writes the
 minimum section, the maximum section and the sixteen doubles, and omits the
 heights entirely if none of them was ever measured; the density array is
 declared *transient* and the biome list is not in the codec at all. Unload the
-region and come back and the game re-reads the neighbour's blocks to rebuild
+region and come back and the game re-reads the old chunk's blocks to rebuild
 both.
 
 ## Following one chunk through
@@ -214,7 +219,8 @@ blends.
 
 **Height, as an alpha and an offset.** `Blender.blendOffsetAndFactor` first
 checks whether the sample point sits exactly on a measured column; if it does,
-it returns alpha zero and the old height, converted by a fixed cubic. If not,
+it returns alpha zero and the old height, put through
+`Blender.heightToOffset` — a rational function, not a polynomial. If not,
 it walks every measured height in the height map, keeps those within
 twenty-seven quart cells — a hundred and eight blocks — and averages them
 weighted by the inverse fourth power of distance, with alpha the smoothstep of
@@ -261,13 +267,14 @@ hard line at roughly half the terrain blending distance, roughened by noise —
 one biome or the other, never a mixture, which is the only answer a palette of
 biome holders can represent.
 
-## The two consumers that are not density functions
+## The two consumers that never touch the noise router
 
 **Carvers are told to stay out.** At *CARVERS*,
 `Blender.addAroundOldChunksCarvingMaskFilter` collects the `BlendingData` of
 all eight `Direction8` neighbours plus the chunk's own, turns each into a
-`Blender.DistanceGetter` measuring distance to a box eight blocks in X and Z
-and as tall as that chunk's old area, and installs the minimum of them as a
+`Blender.DistanceGetter` measuring distance to a box eight blocks either side
+of the chunk centre in X and Z — a whole chunk wide — and as tall as that
+chunk's old area, and installs the minimum of them as a
 `CarvingMask.Mask` on the chunk's carving mask. A position within four blocks
 of any such box — after each axis is displaced by the same shift noise,
 scaled by four — reads as already carved. Since `WorldCarver.carveEllipsoid`
@@ -324,8 +331,11 @@ surface rules can change block for block along a line while the terrain under
 them is still sloping.
 
 **Does any of this happen in a brand-new world?** The lookup does, the work
-does not — `Blender.of` runs its region scan for every chunk in every world
-and returns the empty blender when nothing is old. Development builds can
+does not — every chunk asks `Blender.of` whether an old chunk is near, and it
+returns the empty blender when none is. Even the lookup is cheap after the
+first time: the per-region bitset it consults is memoised behind
+`IOWorker.getOrCreateOldDataForRegion`, so the scan runs once per region and
+not once per chunk. Development builds can
 switch the whole thing off with the `SharedConstants.DEBUG_DISABLE_BLENDING`
 flag, which short-circuits `Blender.of`, the carving-mask filter and the
 border ticks alike.
