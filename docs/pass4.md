@@ -24,7 +24,14 @@ entry first.
   in full by session A (2026-09-04); `tools/check_deps.py` is the fourth
   deploy gate and green, and the six remaining report-only entries are
   judged in session A's entry below.
-- Every redrawn diagram: arrow by arrow, and every tick-boundary bar.
+- ~~Every redrawn diagram: arrow by arrow, and every tick-boundary bar.~~
+  **Done** — addition 3 was step 2 of every part session's brief, and sessions
+  A–M between them cover all thirteen parts, the frame, the atlas and the
+  Reference tier. `diagram_arrows.py` counts **195 diagrams and 2,472 arrows,
+  notes and bars, none unparsed**, at the close. The finding worth carrying is
+  sessions J and L's: **read the figure against the section under it before
+  reading either against the source** — nine pages this pass had a diagram
+  contradicting the paragraph beneath it, and the prose was right every time.
 - ~~The eight generated Reference views (pass 3 added serializers,
   attributes, enchantment hooks and loot-context sets to the four pass 2
   had; the glossary stayed hand-kept): re-derive one sample by hand per
@@ -53,13 +60,24 @@ entry first.
   `creating-a-world` by session L, and `commands/entity-selectors` by session
   M — each with the completeness question. Session M's completeness findings
   for `entity-selectors` are in `pass3.md` §7 and `pass5.md`.
-- **The parts-dependency figure** (`src/figures/parts-dependency.md`,
+- ~~**The parts-dependency figure** (`src/figures/parts-dependency.md`,
   included by the introduction and `lectures.md`) and the dependency table
   on `lectures.md` are claims: every arrow is a landing page's *before you
-  start* entry, and every entry must be used by a sentence in the part.
+  start* entry, and every entry must be used by a sentence in the part.~~
+  **Done** — session A did addition 2 over the whole frame and made
+  `check_deps.py` the fourth deploy gate; every part session then did it for
+  its own part, and the sessions that found something (C, E, F, G, I, J, K, L,
+  M) each added a missing entry, struck an unused one or corrected the lecture
+  table. `check_deps.py` is green at the close.
 - Pass 2's twelve lessons apply unchanged; the shape to watch remains the
   confident sentence — orderings, "only", "never", counts, and "X, not Y".
-- **Library facts are checkable now and were not in pass 2.**
+- ~~**Library facts are checkable now and were not in pass 2.**~~ **Done** —
+  every page on the hardest-on list below was checked by its part's session
+  with `reference/libs/` and `reference/26.2/data|assets/` in hand, and the
+  library work produced two of the pass's sharpest findings: session M settled
+  the standing `execute store` question from Brigadier 1.3.10's
+  `ContextChain.runExecutable`, and found `brigadier-and-commands`' central
+  claim backwards against the same tree. The original note:
   `reference/libs/` holds Brigadier, DataFixerUpper and authlib sources
   (`tools/fetch_libs.sh`) and `reference/26.2/assets/` the atlas, font,
   shader and post-effect JSON. Pass 2 took every claim about them on trust;
@@ -4388,22 +4406,32 @@ of it is *verified finding, unactioned*, not *unchecked*.~~
 
 - ~~**Part IX** — `plan.md`'s session I line says "the eight handlers that never~~
   ~~hop"; it is seven (above).~~
-- **Part VI** — `authority.md:27` says `Player` overrides "three of the four"
+- ~~**Part VI** — `authority.md:27` says `Player` overrides "three of the four"
   predicates; it overrides four
   (`Player.java:1254,1259,1268,1273`), and the glossary's "four predicates"
-  framing needs settling with `authority.md:26,34`.
-- **Part XII** — `blending.md:121` says the measurement is taken from "the
-  neighbour's" blocks; `BlendingData` measures the chunk that owns it.
-- **Part XIII** — `lectures.md:513` and `commands/README.md:83` both say
+  framing needs settling with `authority.md:26,34`.~~ Settled by session F —
+  the page says **five** predicates throughout, and session O confirms the
+  glossary entry says five with it.
+- ~~**Part XII** — `blending.md:121` says the measurement is taken from "the
+  neighbour's" blocks; `BlendingData` measures the chunk that owns it.~~
+  Settled by session L, which re-derived it from
+  `BlendingData.getOrUpdateBlendingData` before touching the sentence and
+  found two further places the same misattribution appears.
+- ~~**Part XIII** — `lectures.md:513` and `commands/README.md:83` both say
   "sixty-two of the sixty-seven suggestion providers ask the server". **Neither
   number could be reproduced** under five populations tried
   (`SuggestionProviders` registers three; `.suggests(` has 65 call sites, none
   naming `ASK_SERVER`; `ArgumentTypeInfos` has 59 registrations). Session M
-  must state the population or the claim goes.
-- **Part XI** — `rendering/README.md:15-19` states its size rule as "one class
+  must state the population or the claim goes.~~ Settled twice: session M
+  stated a population and counted it with `grep -c`, and session N found the
+  flag counts lines rather than calls. The population is **argument nodes**,
+  and the pages now say sixty-two of four hundred and fifty-nine.
+- ~~**Part XI** — `rendering/README.md:15-19` states its size rule as "one class
   per file", but its 1,179 classes / 87,000 lines includes 133
   `package-info.java` markers, while Part XII's 423 excludes them. Two size
-  claims, two rules.
+  claims, two rules.~~ Settled by session L: Part XII is **451**, both landing
+  pages now name the atlas's rule in the sentence, and session O confirms the
+  two read identically.
 - ~~**The queue tool** — a note written as a bare `` `README.md` `` routes to all
   fifteen landing pages; `pass4.md`'s Part V and Part XIII notes both landed on
   `reference/README.md`. Qualify landing-page notes as `` `blocks/README.md` ``.~~
@@ -4473,7 +4501,7 @@ has been checked once by the session and never by an adversary.~~
 
 ### `rendering/block-entity-rendering.md` — new, 332 lines, comparison
 
-Drafted by an agent from the decompile; the session re-derived the 26
+~~Drafted by an agent from the decompile; the session re-derived the 26
 registrations against 49 `BlockEntityTypes` and the 13 `ID_MAPPER.put`
 calls (`grep -c`), the 0.3 fade gate (`LevelExtractor.java:274`), the
 equality gate in `BlockEntityRenderDispatcher.tryExtractRenderState`, the
@@ -4482,17 +4510,17 @@ when frozen and not ignored; `Camera.getCameraEntityPartialTicks` passes
 `true`; `GameRenderer.extract` passes `false`), and the three Christmas
 implementations (`ChestRenderer` constructor, `IsXmas`, *items/chest.json*'s
 *local_time*). Everything else is the agent's evidence. Paths relative to
-`reference/26.2/net/minecraft/client/`.
+`reference/26.2/net/minecraft/client/`.~~
 
-- **The hook**: "the two are drawn at different partial ticks and only one
+- ~~**The hook**: "the two are drawn at different partial ticks and only one
   of them respects the freeze" — `renderer/GameRenderer.java:407, 416`,
   `renderer/extract/LevelExtractor.java:175, 262` (one world partial tick
   for every block entity); `LevelExtractor.java:222` (per-entity
   `isEntityFrozen`); `Camera.java:138-140`; `GameRenderer.java:619`;
   `world/TickRateManager.java:72-74` (never freezes a `Player`).
   Session-confirmed the three partial-tick sources; "keeps swaying with
-  your view bob" is the agent's phrasing of the consequence.
-- Counts: 26 of 49 (`BlockEntityRenderers.java` static block;
+  your view bob" is the agent's phrasing of the consequence.~~
+- ~~Counts: 26 of 49 (`BlockEntityRenderers.java` static block;
   `BlockEntityTypes.java`); 24 renderer classes (`ChestRenderer` serves
   three types); the other 23 include FURNACE, HOPPER, BARREL, BEEHIVE; 26
   state classes (27 files with `package-info`); `BedRenderState` the only
@@ -4505,8 +4533,8 @@ implementations (`ChestRenderer` constructor, `IsXmas`, *items/chest.json*'s
   overridden in exactly three (`BeaconRenderer.java:128`,
   `BlockEntityWithBoundingBoxRenderer.java:172`,
   `TestInstanceRenderer.java:77`); five states carry another pipeline's
-  snapshot (Spawner, Shelf, Campfire, BrushableBlock, Vault).
-- Orderings and mechanism: never frustum-tested (`LevelExtractor.java:262-300`
+  snapshot (Spawner, Shelf, Campfire, BrushableBlock, Vault).~~
+- ~~Orderings and mechanism: never frustum-tested (`LevelExtractor.java:262-300`
   vs `isEntityVisible` 242-256); fade zeroed within √768 ≈ 27.7 blocks or
   for a previously empty section (`renderer/LevelRenderer.java:588-606`;
   ramp `renderer/chunk/SectionRenderDispatcher.java:253-257`); the chest
@@ -4536,45 +4564,45 @@ implementations (`ChestRenderer` constructor, `IsXmas`, *items/chest.json*'s
   the pose pre-translated (`LevelRenderer.java:653-659` vs 634-639); the
   held chest in `handAndScreenSubmitNodeStorage`
   (`GameRenderer.java:367-386, 619-622`); a layer has quads or a special
-  renderer, never both (`item/ItemStackRenderState.java:242-253`).
-- The Christmas triple: `ChestRenderer.java:46-56` and
+  renderer, never both (`item/ItemStackRenderState.java:242-253`).~~
+- ~~The Christmas triple: `ChestRenderer.java:46-56` and
   `BlockEntityRenderDispatcher.java:101-105` (constructor runs only on
   reload); *items/chest.json* and `renderer/item/properties/select/LocalTime.java:25`
   (`UPDATE_INTERVAL_MS`); `BuiltInBlockModels.createXmasChest`,
   `block/model/properties/conditional/IsXmas.java`,
   `ConditionalBlockModel.java:22-25`. **"Two of the three notice midnight
   almost at once. The one you are standing in front of does not"** is the
-  page's most inference-shaped sentence; check it hardest.
-- Editorial: the *why* column of the view-distance table (68 = "a moving
+  page's most inference-shaped sentence; check it hardest.~~
+- ~~Editorial: the *why* column of the view-distance table (68 = "a moving
   block starts outside the block it is drawn from"; the structure block;
-  the gateway) is the agent's reasoning, not a source comment.
-- **Unsettled by the agent**: whether the 0.3 gate is observable at the
+  the gateway) is the agent's reasoning, not a source comment.~~
+- ~~**Unsettled by the agent**: whether the 0.3 gate is observable at the
   default *chunk section fade-in time*; whether `EnchantTableRenderer`'s
   book and `BuiltInBlockModels.createEnchantingTable`'s `BookSpecialRenderer`
   can both draw for one object; whether a block entity added before the
   first resource reload can be permanently excluded from the global set
-  (`ClientLevel.onBlockEntityAdded` with a null renderer).
-- **Where the queue entry and session L were wrong**: "26 render states"
+  (`ClientLevel.onBlockEntityAdded` with a null renderer).~~
+- ~~**Where the queue entry and session L were wrong**: "26 render states"
   is a file count and 25 are reachable; the territory is ~4,300 lines
   (3,353 + 973), not ~3,300; the extract/submit split is *shorter* than the
   entity side (no finalize); `renderer/special` is reached by two roads
   (item model and block state via `SpecialBlockModelWrapper` in a table
   terrain never reads), which no page said; "a stricter visibility rule
   enforced twice" conflated the section walk + fade + flat radius with the
-  off-screen flag's double-draw guard.
-- Siblings: `entity-rendering.md`'s *Block entities* paragraph cut to one
+  off-screen flag's double-draw guard.~~
+- ~~Siblings: `entity-rendering.md`'s *Block entities* paragraph cut to one
   sentence and a link; `block-entities.md` (Part V) and
-  `models-and-atlases.md` gained a link each.
+  `models-and-atlases.md` gained a link each.~~
 
 ### `commands/entity-selectors.md` — new, 313 lines, pipeline with a policy figure
 
-Drafted by an agent from the decompile; the session re-derived the seven
+~~Drafted by an agent from the decompile; the session re-derived the seven
 `setWorldLimited` callers and the twenty-one `register` calls
 (`grep -c`), the box rule in `EntitySelectorParser.getSelector`, the six
 heads' `selectOnlyAlive` / `includesEntities` settings, the linear player
 walk in `EntitySelector.findPlayers`, and the seven reads of
 `Permissions.COMMANDS_ENTITY_SELECTORS` plus the one grant. Everything else
-is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.
+is the agent's evidence. Paths relative to `reference/26.2/net/minecraft/`.~~
 
 - ~~**The hook**: "*@p* is not 'the nearest player in this world' … chosen
   from the list of everybody on the server" — case `'p'` sets no
@@ -4828,15 +4856,15 @@ Paths relative to `reference/26.2/net/minecraft/`.~~
 
 ### Sibling sentences the session wrote (one line each, all new claims)
 
-- `rendering/entity-rendering.md` — *Block entities* paragraph replaced by
+- ~~`rendering/entity-rendering.md` — *Block entities* paragraph replaced by
   one sentence: "a different visibility policy, a different partial tick
-  and an empty block model".
-- `blocks/block-entities.md` — "why a chest's block model is empty".
-- `rendering/models-and-atlases.md` — "where those thirteen get their
-  geometry".
-- `commands/brigadier-and-commands.md` — the selector paragraph now says
+  and an empty block model".~~
+- ~~`blocks/block-entities.md` — "why a chest's block model is empty".~~
+- ~~`rendering/models-and-atlases.md` — "where those thirteen get their
+  geometry".~~
+- ~~`commands/brigadier-and-commands.md` — the selector paragraph now says
   "thirteen final fields" and "resolved against a `CommandSourceStack` much
-  later".
+  later".~~
 - ~~`worldgen/terrain.md` — the boundary answer now calls `BelowZeroRetrogen`
   "the world-deepening path that rides the same hooks".~~
 - ~~`worldgen/biomes.md` — "The two wrappers in the second arrow only do
@@ -4847,9 +4875,9 @@ Paths relative to `reference/26.2/net/minecraft/`.~~
   no-world-data branch of `WorldLoader.load` (`server/Main.java:194, 243`).
 - `reference/level-data-and-rules.md` — "creating a world is who writes
   it".
-- `introduction.md` — the lane gate added to *Verified means tested*; the
+- ~~`introduction.md` — the lane gate added to *Verified means tested*; the
   dependency-figure caption ("each cut by a definition rather than a
-  reordering").
+  reordering").~~
 - ~~The glossary gained fifteen entries (five per Part XII page, three each
   for the other two, one shared): *experiment*, *flat level generator
   preset*, *world gen settings*, *world preset*, *world stem*, *compiled
@@ -4895,11 +4923,20 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
   to be shared by every level" (a causal sentence built from two old ones),
   and "So every level reports the same spawn, and it is not the one
   *level.dat* holds" (the old text said "not the stored one").
-- `reference/README.md`, the table's last column: which parts' landing
+- ~~`reference/README.md`, the table's last column: which parts' landing
   pages link each reference page, read off the landing pages today (grep
   `reference/` in `src/systems/*/README.md`); a landing-page edit in a
   later session silently dates it. And "two of these pages (submit phases,
-  density-function nodes) are nothing but declaration order".
+  density-function nodes) are nothing but declaration order".~~ **The
+  prediction came true and session O caught it.** Re-derived by grepping
+  `\.\./\.\./reference/<slug>\.md` over the thirteen `src/systems/*/README.md`:
+  nineteen of the twenty rows still hold, and **block update flags is now
+  `IV, V`, not `V`** — pass 4's own session D added the Part IV landing
+  page's link (`world/README.md:123`, commit f72383e) and nothing told this
+  table. Fixed. The rest of the page's numbers re-derived with it: 43
+  serializers, twenty-six loot context parameter sets, thirty-four
+  density-function nodes, ten flag bits, twenty pages on the shelf, and
+  `gen_reference.py all` is the command the page names.
 - `glossary.md`, the eleven new entries — *authority*, *batch*, *event
   loop*, *frame*, *noise cell*, *permission atom*, *permission set*,
   *quart*, *staging buffer*, *submit node*, *unattended command* — each
@@ -6056,20 +6093,20 @@ graph — seventeen edges, each a conversion claim); one added
   - ~~**`systems/foundations/README.md`** (new, landing page): the stack
     figure's ten edges are dependency claims; *before you start* names only
     `anatomy`; the seven teasers restate the seven hooks.~~
-  - **`chat-and-signing`**: its `Component` section is now a one-paragraph
+  - ~~**`chat-and-signing`**: its `Component` section is now a one-paragraph
     pointer; the three facts it keeps (NBT on the wire, the `OPEN_FILE`
     filter, chat never resolves) are unchanged. **`reference/threads.md`**:
     one clause added — Swing's thread appears only when the dedicated
     server is started without *--nogui*. **`tools/map_source.py`**:
     `com/mojang/blaze3d/audio` added to `SKIPPED` so the treemap hatches
-    what the tour tours.
+    what the tour tours.~~
 
 - ~~**2026-09-02, session A (the frame)** — two pilot pages rewritten in new
   shapes, the introduction and Part I's landing page written, the lane key
   seeded. The standing item on the lane key is discharged:
   `tools/check_lanes.py` verifies every key expansion against the decompile
   and runs in `deploy.sh`.~~
-  - **`tickets-and-loading`** (policy shape). *Corrected from pass 2:* the
+  - ~~**`tickets-and-loading`** (policy shape). *Corrected from pass 2:* the
     keep-dimension-active flag (`TicketType.FLAG_KEEP_DIMENSION_ACTIVE`, 8)
     is on `PLAYER_SIMULATION` (flags 12), `FORCED` (15), `PORTAL` (15) and
     `ENDER_PEARL` (14) — **not** on `PLAYER_LOADING` (2); the old invariant
@@ -6094,7 +6131,7 @@ graph — seventeen edges, each a conversion claim); one added
     tracker → two passes over `chunksToUpdateFutures` (read from
     `DistanceManager.runAllUpdates`) and that the crescents are marked
     before `runAllUpdates`. The two decision tables restate pass-2 facts;
-    check each row's gate column as an "only" claim.
+    check each row's gate column as an "only" claim.~~
   - ~~**`protocol-phases`** (state-machine shape). Claims introduced: the~~
     ~~five-phase diagram — `STATUS` is a dead end, `PLAY` ⇄ `CONFIGURATION`,~~
     ~~"every transition packet is terminal" (the seven `isTerminal`~~
@@ -6118,14 +6155,14 @@ graph — seventeen edges, each a conversion claim); one added
     ~~`PacketUtils.ensureRunningOnSameThread` in a connection's life is in~~
     ~~configuration" is borrowed from `anatomy`. The three client entry~~
     ~~points sentence is the old *Called by* bullet, kept.~~
-  - **`introduction`** (new): "just under a third client-only" (2,206 of
+  - ~~**`introduction`** (new): "just under a third client-only" (2,206 of
     7,055, from `maps/packages.md` and `server-classes.txt`); "0 to 10
     ticks inside a frame" (from `the-frame`); the two-programs figure
-    asserts that workers feed both levels.
-  - **`systems/anatomy/README.md`** (new, landing page): the root figure is
+    asserts that workers feed both levels.~~
+  - ~~**`systems/anatomy/README.md`** (new, landing page): the root figure is
     a claim about which thread each part starts from — check as an ordering
     claim. **`lectures.md`**: Part I's two entries and the two known
-    cross-part dependencies (from the pass-3 notebook).
+    cross-part dependencies (from the pass-3 notebook).~~
 
 - ~~**2026-09-02, planning session** — the mermaid syntax fixes were
   syntax-only (labels reworded around `;` and `#`, see the commit diff); no
@@ -6144,7 +6181,7 @@ graph — seventeen edges, each a conversion claim); one added
     `Schema`, `DSL` and *LogUtils* appear. Re-derive one number of each
     kind by hand (a package's line count, one class's importers, one root's
     descendants) before trusting the rest.~~
-  - **`maps/packages.md`**: 2,206 client-only classes in exactly four
+  - ~~**`maps/packages.md`**: 2,206 client-only classes in exactly four
     packages and no mixed depth-4 package (read off the table's client-only
     column: every row is 0 or all); 212,242 client-only lines = 29.5%;
     `world/level` a fifth of the game; two thirds of `util` skipped (34,176
@@ -6153,7 +6190,7 @@ graph — seventeen edges, each a conversion claim); one added
     checked per part as the parts convert (`server/dialog` and
     `world/level/pathfinder` are guesses from package names, not from
     pages); the `SKIPPED` list in the tool must agree with *what this book
-    skips* (gametest is deliberately not hatched: covered in Part XIII).
+    skips* (gametest is deliberately not hatched: covered in Part XIII).~~
   - ~~**`maps/biggest.md`**: `BlockModelGenerators`' only caller is
     `ModelProvider` (one grep hit); nothing outside `util/datafix` reads
     `BlockStateData` (seven files, all datafix); the sum 62,935 = 8.7%;
@@ -6162,13 +6199,13 @@ graph — seventeen edges, each a conversion claim); one added
     setting" and "`Hud` is everything drawn over the world" are glosses;
     `OceanMonumentPieces` and `StrongholdPieces` "built by hand in Java
     rather than a template" rests on `hand-built-structures`.~~
-  - **`maps/fanin.md`**: one file in six (1,221 of 7,055); all but ten
+  - ~~**`maps/fanin.md`**: one file in six (1,221 of 7,055); all but ten
     `Schema` importers in `util/datafix` (389, 10 outside); `Minecraft`
     twenty-ninth and the only client-only class in the thirty; the hub →
     page table sends `Component` to "Part II", which has no page until
     session C writes one (R6) — fix the link then; "same-package use is
-    not counted" is Java, not a claim about the game.
-  - **`maps/hierarchy.md`**: `FeatureElement`'s seven implementers
+    not counted" is Java, not a claim about the game.~~
+  - ~~**`maps/hierarchy.md`**: `FeatureElement`'s seven implementers
     (grep-verified: `BlockBehaviour`, `Item`, `EntityType`, `MenuType`,
     `MobEffect`, `Potion`, `GameRule`); `ItemLike` = `Block` + `Item`; the
     per-tree numbers (193/18, 124, 114, 108, thirteen terminal; 293/92, 61
@@ -6179,16 +6216,16 @@ graph — seventeen edges, each a conversion claim); one added
     exists so that behaviour and registry identity can be separate
     classes" is a motive, not a fact — check or cut; `Goal` 130 of 200
     nested; `Packet` 227 direct implementers versus the packets reference's
-    count (packet *types* and packet *classes* differ; say which).
-  - **`reference/threads.md`** (new figure): every edge asserts a
+    count (packet *types* and packet *classes* differ; say which).~~
+  - ~~**`reference/threads.md`** (new figure): every edge asserts a
     direction and a kind (posted task / completed future / hopped handler)
     — "serverbound packets written on the caller's thread", region I/O as
     posted task and completed future through `IOWorker`, sound as posted
     tasks to `SoundEngineExecutor`, console/RCON/query/management as
     posted command lines; all drawn from the page's own table, none
-    re-verified against the decompile this session.
-  - **`introduction`**: the treemap's hatching is the tool's `SKIPPED`
-    list; the "just under a third" now has its figure.
+    re-verified against the decompile this session.~~
+  - ~~**`introduction`**: the treemap's hatching is the tool's `SKIPPED`
+    list; the "just under a third" now has its figure.~~
   - ~~**`entities/entity-anatomy.md`**: "193 descendants" (was 188, from the old map that could not see nested classes); re-derive with the new tool and by hand once.~~ Settled by session F: the page says **191**, which is what the fixed `map_source.py` and a hand count both give.
 
 - **2026-09-03, session G — Part VI Entities.** Nine pages, seven of them
@@ -6832,7 +6869,7 @@ village and stronghold traces (relabelled, and the village one now stops at
 the pieces rather than running on into the blocks). Nothing in the part
 survives unredrawn.~~
 
-**The landing page and `lectures.md`** claim: that the part is a substrate, a
+~~**The landing page and `lectures.md`** claim: that the part is a substrate, a
 pipeline and a wing; that the structure wing is decided at
 `ChunkStatus.STRUCTURE_STARTS` and written at `ChunkStatus.FEATURES`; that
 biomes and terrain are independent statuses and can be watched in either
@@ -6840,16 +6877,16 @@ order; that jigsaw and hand-built are alternatives rather than a sequence;
 that Part IV's chunk-generation pipeline is a hard prerequisite; and that
 `world/level/levelgen` plus `world/level/biome` come to **423 classes and
 45,600 lines** (counted this session, one class per file, package markers
-excluded; pass 2 said 429 and 46,628 for a boundary it never stated).
+excluded; pass 2 said 429 and 46,628 for a boundary it never stated).~~
 
 ## Session N — Part XIII Commands and data packs *(2026-09-03)*
 
-Nine pages where there were five, and **every one of them was rewritten**.
+~~Nine pages where there were five, and **every one of them was rewritten**.
 Two splits (`execution-and-functions` → `the-execution-engine` +
 `functions-and-macros`; `dialogs-and-tests` → `dialogs` + `game-tests`), one
 page written from nothing (`permissions`, the R7 spend), one landing page,
 and four whole-page reshapes. Nothing in the part survives unredrawn either:
-every diagram in Part XIII is new or redrawn.
+every diagram in Part XIII is new or redrawn.~~
 
 **Check first and hardest: the counts this session re-derived, because they
 disagree with pass 2 in three places and the disagreements are the kind pass
@@ -6975,15 +7012,15 @@ else:
 - ~~`scoreboard-and-data`'s trace, relaned, with `EntityDataAccessor` folded
   into `DataCommands`.~~
 
-**The landing page and `lectures.md`** claim: that Part XIII is a stack of
+~~**The landing page and `lectures.md`** claim: that Part XIII is a stack of
 three floors; that nothing in advancements, scoreboards, dialogs or game
 tests is needed to understand the parser or the engine, and that all four
 need both; that the four top-floor lectures are watchable in any order; and
 that the part's stated prerequisites are Part III's server tick (for two
 distinct reasons), Part II's codecs and data-driven type pattern, Part IX's
-connection, and Part VII's contexts and predicates for advancements alone.
+connection, and Part VII's contexts and predicates for advancements alone.~~
 
-**Material that moved, and must not now be stated nowhere or twice.** The
+~~**Material that moved, and must not now be stated nowhere or twice.** The
 permission model left `brigadier-and-commands` entirely; that page keeps the
 tree's *serialisation* (templates, the unknown-argument-type stub, the one
 call site) and `permissions` took the *meaning* of the filtering (absent
@@ -6993,4 +7030,4 @@ compile-time permission set left the engine page for
 `functions-and-macros`. `dialogs-and-tests`' "the pattern, stated once"
 section was **deleted, not moved** — Part II's
 `foundations/data-driven-types.md` owns that argument and both new pages
-link to it; confirm nothing true was lost with it.
+link to it; confirm nothing true was lost with it.~~

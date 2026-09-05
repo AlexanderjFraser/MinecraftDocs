@@ -245,10 +245,12 @@ becomes vertices. **Only two of the thirteen kinds of submit can be batched at
 all** — a model and a piece of custom geometry — and everything else keeps
 the order it was submitted in and merges only with its immediate neighbour.
 Where the zombies of the world do collapse into one draw, that is the group
-finding they all want the same `RenderType`. Translucency opts out of
-*merging*, not of ordering — a translucent phase marks its group strictly
-ordered, which switches off the consolidation of consecutive draws, while the
-phase itself still reorders by depth, which is the whole point of it.
+finding they all want the same `RenderType`. A translucent phase marks its
+group strictly ordered, and that switches off exactly one of the group's two
+merges: consecutive submits of one render type still share a draw, and what
+stops is the fold into a *non-adjacent* earlier draw — which is the merge that
+would move geometry ahead of everything between, and so undo the depth sort
+the phase exists for.
 
 ### Why the zombie is animated more than once
 

@@ -96,8 +96,8 @@ have radius 1, but only three of them widen the accumulated list, because
 parent already sits a ring out. *NOISE* wanting *BIOMES*, *FEATURES* wanting
 *CARVERS* and *LIGHT* wanting *INITIALIZE_LIGHT* each add one; *SURFACE* and
 *SPAWN*, which also ask for *BIOMES* within 1, add nothing. Three ones on top
-of *STRUCTURE_STARTS* out to 8 is where the 11 comes from. `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and never read —
-the pyramid writes the literal each time.
+of *STRUCTURE_STARTS* out to 8 is where the 11 comes from. `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and the pyramid writes
+the literal each time — no reader of the constant survives the decompile.
 
 The same arithmetic sets the edge of the world. `ChunkPyramid.SAFETY_MARGIN_CHUNKS`
 is 32 plus the twelve accumulated entries plus one, doubled — 90 chunks —

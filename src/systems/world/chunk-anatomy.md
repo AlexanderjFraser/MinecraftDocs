@@ -161,9 +161,9 @@ two-container constructor, whose only caller is `SerializableChunkData`.
 
 Biomes share the section but are coarse and read-only.
 Two bits per axis, 64 entries of 4×4×4 blocks each — the number
-`LevelChunkSection.BIOME_CONTAINER_BITS` names, though nothing reads that
-constant and the 2 that matters is the literal in
-`Strategy.createForBiomes`. The field is a `PalettedContainerRO` and the
+`LevelChunkSection.BIOME_CONTAINER_BITS` names, though the 2 that matters is
+the literal in `Strategy.createForBiomes` and no reader of the constant
+survives the decompile. The field is a `PalettedContainerRO` and the
 *published* one is never mutated: `LevelChunkSection.fillBiomesFromNoise`,
 `LevelChunkSection.read` and `LevelChunkSection.readBiomes` each build a
 replacement through `PalettedContainerRO.recreate`, fill it, and swap the

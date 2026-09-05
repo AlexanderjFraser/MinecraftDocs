@@ -3,20 +3,24 @@
 > Verified against **Minecraft 26.2** · Reference · Hand-kept from
 > `net/minecraft/world/entity/**`.
 
-`Entity.hurtServer` is **abstract**. There is no default behaviour for being
-hurt anywhere in the tree, so every branch has to answer for itself, and the
-twenty-one classes below answer with rules that share nothing with
+`Entity.hurtServer` is **abstract**, so every branch has to answer for itself.
+(`Entity.hurtClient`, the other half of the pair, does have a default: it
+returns false, and twelve of the rows below inherit it unchanged.) The
+twenty-one classes are every non-`LivingEntity` class that declares
+`Entity.hurtServer`, and they answer with rules that share nothing with
 `LivingEntity`'s — no armour, no invulnerability window, no `CombatTracker`,
 no death sequence. The lecture that frames them is [damage and
 death](../systems/entities/damage-and-death.md); this is the per-class table.
 
-Two things happen before any of them. `Player.attack` asks
-`Entity.isAttackable` and then `Entity.skipAttackInteraction`, either of
-which consumes the click without `Entity.hurtServer` ever being called —
-`Interaction` uses that hook to record who hit it, `ArmorStand` and
-`BlockAttachedEntity` to run their own rules. And a *false* return is not
-"the hit missed": it is "nothing was damaged", which is what stops a
-creative-mode swing from being counted.
+Two things happen before any of them. `Player.cannotAttack` asks
+`Entity.isAttackable` and then `Entity.skipAttackInteraction`, either of which
+can end the swing before the entity is asked anything — `Interaction` uses that
+hook to record who hit it and `BlockAttachedEntity` to re-enter through
+`Entity.hurtOrSimulate` with zero damage. `Entity.hurtOrSimulate` is what
+`Player.attack` calls, and it picks `Entity.hurtServer` or `Entity.hurtClient`
+off the level;
+its answer is not "did the hit land" but "was anything damaged", and it is what
+gates the knockback, the sweep, the durability loss and the hit particles.
 
 | class | what it checks first | what it does | returns |
 |---|---|---|---|
@@ -29,7 +33,7 @@ creative-mode swing from being counted.
 | `PrimedTnt` | — | nothing: a lit TNT block cannot be shot out of the air | false |
 | `EvokerFangs` | — | nothing | false |
 | `EyeOfEnder` | — | nothing | false |
-| `AbstractHurtingProjectile` | — | nothing: fireballs, wind charges and the rest are unhittable | false |
+| `AbstractHurtingProjectile` | — | nothing — but a fireball or a wind charge is *deflected* before this is reached, since `Player.attack` calls `Player.deflectProjectile` first for anything in `EntityTypeTags.REDIRECTABLE_PROJECTILE`; the rest are unhittable by `Entity.isPickable` | false |
 | `Projectile` | `Entity.isInvulnerableToBase` | `Entity.markHurt` only, so the client sees a flinch and nothing changes | false |
 | `FallingBlockEntity` | `Entity.isInvulnerableToBase` | `Entity.markHurt` only | false |
 | `ExperienceOrb` | `Entity.isInvulnerableToBase` | subtracts the damage from an int of health, `Entity.discard` at zero | true |
@@ -40,13 +44,15 @@ creative-mode swing from being counted.
 | `ShulkerBullet` | — | plays `SoundEvents.SHULKER_BULLET_HURT`, spawns fifteen `ParticleTypes.CRIT`, destroys itself | true |
 | `EnderDragonPart` | `Entity.isInvulnerableToBase` | forwards the whole call to `EnderDragon.hurt` with itself as the part that was hit | the parent's answer |
 | `VehicleEntity` | already removed, then `Entity.isInvulnerableToBase` | flips `VehicleEntity.getHurtDir`, sets ten ticks of hurt time, adds *damage × 10* to `VehicleEntity.getDamage`, and destroys past 40 — a creative player skips to `Entity.discard` | true |
-| `MinecartTNT` | a **burning** `AbstractArrow` as the direct entity explodes it, scaled by the arrow's speed | then everything `VehicleEntity` does | true |
+| `MinecartTNT` | a **burning** `AbstractArrow` as the direct entity explodes it, scaled by the arrow's speed | on that path, nothing else: the explosion calls `Entity.discard`, so `VehicleEntity.hurtServer` returns at its already-removed test. Any other source falls through to everything `VehicleEntity` does | true |
 
-Five patterns account for all of it: *nothing happens* (ten classes), *a
+Six patterns account for all of it: *nothing happens* (ten classes), *a
 flinch and nothing else* (two), *an int of health with no armour and no
-window* (two), *one hit destroys* (five), and *an accumulator* (two). The
-only class that reads the damage **amount** at all beyond the accumulator is
-the pair with an int of health; everything else is a yes-or-no.
+window* (two), *one hit destroys* (four), *an accumulator* (two), and
+*forward it to something else* (one, the dragon part). The classes that read
+the damage **amount** at all are the pair with an int of health, the
+accumulator pair, and `EnderDragonPart`, which hands the number to the dragon;
+everything else is a yes-or-no.
 
 ---
 

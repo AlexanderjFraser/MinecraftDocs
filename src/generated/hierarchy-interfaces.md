@@ -2,14 +2,14 @@
 |---|---:|---:|---|---|
 | `FeatureElement` | 386 | 7 | interface | `net/minecraft/world/flag` |
 | `ItemLike` | 366 | 2 | interface | `net/minecraft/world/level` |
-| `TabOrderedElement` | 322 | 2 | interface | `net/minecraft/client/gui/components` |
-| `GuiEventListener` | 320 | 5 | interface | `net/minecraft/client/gui/components/events` |
+| `TabOrderedElement` | 323 | 2 | interface | `net/minecraft/client/gui/components` |
+| `GuiEventListener` | 321 | 5 | interface | `net/minecraft/client/gui/components/events` |
 | `Renderable` | 262 | 7 | interface | `net/minecraft/client/gui/components` |
 | `TypedInstance` | 251 | 5 | interface | `net/minecraft/core` |
 | `DebugValueSource` | 247 | 3 | interface | `net/minecraft/util/debug` |
 | `Packet` | 236 | 227 | interface | `net/minecraft/network/protocol` |
 | `SlotProvider` | 230 | 2 | interface | `net/minecraft/world/entity` |
-| `ContainerEventHandler` | 218 | 3 | interface | `net/minecraft/client/gui/components/events` |
+| `ContainerEventHandler` | 219 | 3 | interface | `net/minecraft/client/gui/components/events` |
 | `Nameable` | 211 | 6 | interface | `net/minecraft/world` |
 | `DataComponentGetter` | 199 | 4 | interface | `net/minecraft/core/component` |
 | `ItemOwner` | 194 | 3 | interface | `net/minecraft/world/entity` |
@@ -17,8 +17,8 @@
 | `EntityAccess` | 192 | 1 | interface | `net/minecraft/world/level/entity` |
 | `ScoreHolder` | 192 | 1 | interface | `net/minecraft/world/scores` |
 | `SyncedDataHolder` | 192 | 1 | interface | `net/minecraft/network/syncher` |
-| `LayoutElement` | 164 | 4 | interface | `net/minecraft/client/gui/layouts` |
-| `StringRepresentable` | 161 | 160 | interface | `net/minecraft/util` |
+| `LayoutElement` | 165 | 4 | interface | `net/minecraft/client/gui/layouts` |
+| `StringRepresentable` | 163 | 162 | interface | `net/minecraft/util` |
 | `NarrationSupplier` | 138 | 3 | interface | `net/minecraft/client/gui/narration` |
 | `Waypoint` | 131 | 2 | interface | `net/minecraft/world/waypoints` |
 | `Attackable` | 126 | 2 | interface | `net/minecraft/world/entity` |

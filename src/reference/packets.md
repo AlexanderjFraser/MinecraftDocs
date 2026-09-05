@@ -14,7 +14,7 @@ Every packet the game defines, by the `PacketTypes` class that declares it. `com
 | `login` (`LoginPacketTypes`) | 5 | 4 |
 | `ping` (`PingPacketTypes`) | 1 | 1 |
 | `status` (`StatusPacketTypes`) | 1 | 1 |
-| **total** | | **232** |
+| **total** | **154** | **78** |
 
 ## `common` — `CommonPacketTypes` — shared across phases
 

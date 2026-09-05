@@ -227,8 +227,8 @@ entities with `PistonMovingBlockEntity.moveStuckEntities`. The
 `PistonMovingBlockEntity.NOCLIP` thread-local is set around each entity's own
 move — and holds the push `Direction` rather than a flag — so that a pushed
 entity may pass through the very block pushing it.
-`PistonMovingBlockEntity.TICKS_TO_EXTEND` is declared as 2 and never read —
-the 0.5 is a literal.
+`PistonMovingBlockEntity.TICKS_TO_EXTEND` is declared as 2, and the 0.5 is
+written as a literal — no reader of the constant survives the decompile.
 
 The tick *after* progress reaches 1 is the landing. The entity is removed, and
 `Block.updateFromNeighbourShapes` re-fits the moved state to its new

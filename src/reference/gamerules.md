@@ -2,7 +2,7 @@
 
 > Generated from the **26.2** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their minimum after the default where one is declared. Values live per world in a `GameRuleMap` on the level data. See [Level data and rules](level-data-and-rules.md).
+Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and default. Integer rules list their bounds and any feature gate after the default. Values live in a `GameRuleMap` — a `SavedData` at *data/minecraft/game_rules.dat*, one set for the whole server rather than one per level. See [Level data and rules](level-data-and-rules.md).
 
 59 rules
 
@@ -26,7 +26,7 @@ Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and d
 | `max_block_modifications` (`GameRules.MAX_BLOCK_MODIFICATIONS`) | Integer | misc | `32768 (min 1)` |
 | `max_command_forks` (`GameRules.MAX_COMMAND_FORKS`) | Integer | misc | `65536 (min 0)` |
 | `max_command_sequence_length` (`GameRules.MAX_COMMAND_SEQUENCE_LENGTH`) | Integer | misc | `65536 (min 0)` |
-| `max_minecart_speed` (`GameRules.MAX_MINECART_SPEED`) | Integer | misc | `8 (min 1, 1000, FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS)` |
+| `max_minecart_speed` (`GameRules.MAX_MINECART_SPEED`) | Integer | misc | `8 (min 1, max 1000, requires FeatureFlags.MINECART_IMPROVEMENTS)` |
 | `reduced_debug_info` (`GameRules.REDUCED_DEBUG_INFO`) | Boolean | misc | `false` |
 | `spawner_blocks_work` (`GameRules.SPAWNER_BLOCKS_WORK`) | Boolean | misc | `true` |
 | `tnt_explodes` (`GameRules.TNT_EXPLODES`) | Boolean | misc | `true` |
@@ -63,7 +63,7 @@ Every rule declared in `GameRules`, with its category (`GameRuleCategory`) and d
 | `advance_weather` (`GameRules.ADVANCE_WEATHER`) | Boolean | updates | `true` |
 | `fire_spread_radius_around_player` (`GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER`) | Integer | updates | `128 (min -1)` |
 | `lava_source_conversion` (`GameRules.LAVA_SOURCE_CONVERSION`) | Boolean | updates | `false` |
-| `max_snow_accumulation_height` (`GameRules.MAX_SNOW_ACCUMULATION_HEIGHT`) | Integer | updates | `1 (min 0, 8)` |
+| `max_snow_accumulation_height` (`GameRules.MAX_SNOW_ACCUMULATION_HEIGHT`) | Integer | updates | `1 (min 0, max 8)` |
 | `random_tick_speed` (`GameRules.RANDOM_TICK_SPEED`) | Integer | updates | `3 (min 0)` |
 | `spread_vines` (`GameRules.SPREAD_VINES`) | Boolean | updates | `true` |
 | `water_source_conversion` (`GameRules.WATER_SOURCE_CONVERSION`) | Boolean | updates | `true` |

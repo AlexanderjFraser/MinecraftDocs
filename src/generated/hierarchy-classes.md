@@ -24,8 +24,8 @@
 | `Feature` | 66 | 60 | class | `net/minecraft/world/level/levelgen/feature` |
 | `BaseEntityBlock` | 64 | 40 | class | `net/minecraft/world/level/block` |
 | `StructurePiece` | 63 | 8 | class | `net/minecraft/world/level/levelgen/structure` |
+| `Entry` | 59 | 2 | class | `net/minecraft/client/gui/components` |
 | `Behavior` | 58 | 53 | class | `net/minecraft/world/entity/ai/behavior` |
-| `Entry` | 58 | 2 | class | `net/minecraft/client/gui/components` |
 | `BlockEntity` | 52 | 35 | class | `net/minecraft/world/level/block/entity` |
 | `AgeableMob` | 52 | 4 | class | `net/minecraft/world/entity` |
 | `RenderLayer` | 48 | 39 | class | `net/minecraft/client/renderer/entity/layers` |

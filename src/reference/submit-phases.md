@@ -29,12 +29,16 @@ Three phases are a `TranslucentFeatureRenderPhase` and the other twelve a
 `SimpleFeatureRenderPhase`. The simple phase groups its nodes by feature type
 and then by batch key — which only two of the thirteen submit kinds have, a
 model and a piece of custom geometry, everything else grouping by adjacency —
-and leaves `RenderTypeFeatureRenderer.Group` free to consolidate consecutive
-draws. The translucent phase keeps every node, sorts them back to front by
-squared distance to the camera, and marks the group strictly ordered, which
-switches that consolidation off. Note that the *sorting* is the translucent
-phase's whole purpose: what strict ordering suppresses is the merging, not the
-reordering.
+and leaves `RenderTypeFeatureRenderer.Group` free to fold a node's geometry
+into **any** earlier draw of the same render type, not only the adjacent one.
+The translucent phase keeps every node, sorts them back to front by squared
+distance to the camera, and marks the group strictly ordered. That does not
+stop merging: consecutive submits of one render type still share a draw, on a
+test that never consults the flag. What it stops is the fold into a
+*non-adjacent* earlier draw — the one merge that would move geometry ahead of
+the draws between it and its target, and so undo the sort. A render type whose
+primitives are chained opts out of both, through
+`RenderType.canConsolidateConsecutiveGeometry`.
 
 | # | phase | what lands in it | drained by |
 |---:|---|---|---|

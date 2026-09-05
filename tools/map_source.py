@@ -160,7 +160,11 @@ def parse_decls(files):
                 if chunk:
                     chunk = re.sub(r"<[^<>]*(?:<[^<>]*>[^<>]*)*>", "", chunk)
                     parents += [c.strip() for c in chunk.split(",") if c.strip()]
-            decls.setdefault((rel, name), (kind, parents, rel, shared))
+            key, n = (rel, name), 1
+            while key in decls:            # two types of one simple name in one file are two types
+                n += 1
+                key = (rel, f"{name}#{n}")
+            decls[key] = (kind, parents, rel, shared)
     return decls
 
 
@@ -180,13 +184,19 @@ def hierarchy(files):
         qualifier's file, else one declared in the same file, else the top-level class."""
         segs = ref.split(".")
         last = segs[-1]
+        if len(segs) > 1 and segs[0] in ("net", "com", "java", "javax", "org", "it", "io"):
+            path = "/".join(segs) + ".java"       # fully qualified: resolve by path, not by name
+            return (path, last) if (path, last) in decls else None
         if len(segs) > 1:
             for owner in ([toplevel[segs[-2]]] if segs[-2] in toplevel else []) + byname.get(segs[-2], []):
                 if (owner[0], last) in decls:
                     return (owner[0], last)
         if (rel, last) in decls:
             return (rel, last)
-        if last in toplevel:
+        same_pkg = (rel.rsplit("/", 1)[0] + "/" + last + ".java", last)
+        if same_pkg in decls:
+            return same_pkg
+        if last in toplevel and len([k for k in byname.get(last, ()) if k == toplevel[last]]) == 1                 and len([k for k in byname.get(last, ()) if k[0].endswith("/" + last + ".java")]) == 1:
             return toplevel[last]
         candidates = byname.get(last)
         return candidates[0] if candidates and len(candidates) == 1 else None

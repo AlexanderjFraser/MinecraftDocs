@@ -49,7 +49,7 @@ flowchart LR
 | [Entity data serializers](entity-data-serializers.md) | all 43, in registration order, which is the wire id | generated | VI |
 | [Enchantment hooks](enchantment-hooks.md) | every public `EnchantmentHelper` entry point and its callers | generated | VII |
 | [Loot context parameter sets](loot-context-params.md) | all twenty-six, with required and optional keys | generated | VII, XIII |
-| [Block update flags](block-update-flags.md) | the ten bits of `Level.setBlock`'s flag word | hand-kept | V |
+| [Block update flags](block-update-flags.md) | the ten bits of `Level.setBlock`'s flag word | hand-kept | IV, V |
 | [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-one non-living classes does when hit | hand-kept | VI |
 | [What the HUD draws, and when](hud-elements.md) | every HUD element and the condition it is behind | hand-kept | X |
 | [Submit phases and feature renderers](submit-phases.md) | the fifteen phases and the thirteen renderers, in declaration order | hand-kept | XI |

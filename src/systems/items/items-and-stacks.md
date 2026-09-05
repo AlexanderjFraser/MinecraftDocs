@@ -279,7 +279,8 @@ and `ItemStack.hurtAndConvertOnBreak` transmutes rather than vanishing.
 What the player actually watched was three methods on `Item`.
 `Item.isBarVisible` is *is this stack damaged*, `Item.getBarWidth` scales the
 damage over thirteen pixels — the width `Item.MAX_BAR_WIDTH` names, though
-`Item.getBarWidth` spells the number out and nothing reads the constant — and
+`Item.getBarWidth` spells the number out and no reader of the constant
+survives the decompile — and
 `Item.getBarColor`
 sweeps a hue from green to red. `GuiGraphicsExtractor` draws the two-pixel bar
 under the icon from those three answers and nothing else.

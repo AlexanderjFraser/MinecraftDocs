@@ -84,9 +84,11 @@ interpolates against. The clamp then happens in the loop, not in the Timer —
 so the ticks above ten are not deferred to the next frame, because they left
 the residual when they were counted.
 
-**Ten** — the ceiling, written as `Minecraft.MAX_TICKS_PER_UPDATE` and
-never read. The constant has no callers anywhere in the tree; the clamp in
-`Minecraft.runTick` is a literal. It is documentation, not code.
+**Ten** — the ceiling, named by `Minecraft.MAX_TICKS_PER_UPDATE`, though the
+clamp in `Minecraft.runTick` is written as a literal and no reader of the
+constant survives the decompile. *javac* inlines a `static final int` at
+every use site, so a decompile can never tell a documented constant from a
+dead one; what it does show is that the number the loop obeys is the literal.
 
 The divisor is not the client's to choose. `DeltaTracker.Timer` gets its
 target from `DeltaTracker.Timer.targetMsptProvider`, which is

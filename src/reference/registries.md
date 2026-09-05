@@ -4,7 +4,7 @@
 
 Every registry key declared in `Registries`. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLDGEN_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).
 
-148 keys · 95 built-in · 47 data-pack · 29 synced
+153 keys · 95 built-in · 47 data-pack · 29 synced
 
 | key | element type | kind | synced |
 |---|---|---|---|
@@ -23,6 +23,7 @@ Every registry key declared in `Registries`. **Built-in** registries are populat
 | `chicken_sound_variant` (`Registries.CHICKEN_SOUND_VARIANT`) | `ChickenSoundVariant` | data-pack | yes |
 | `chicken_variant` (`Registries.CHICKEN_VARIANT`) | `ChickenVariant` | data-pack | yes |
 | `chunk_status` (`Registries.CHUNK_STATUS`) | `ChunkStatus` | built-in |  |
+| `clock_time_marker` (`ClockTimeMarkers.ROOT_ID`) | `ClockTimeMarker` | — |  |
 | `command_argument_type` (`Registries.COMMAND_ARGUMENT_TYPE`) | `ArgumentTypeInfo<…>` | built-in |  |
 | `consume_effect_type` (`Registries.CONSUME_EFFECT_TYPE`) | `ConsumeEffect.Type<…>` | built-in |  |
 | `cow_sound_variant` (`Registries.COW_SOUND_VARIANT`) | `CowSoundVariant` | data-pack | yes |
@@ -52,9 +53,11 @@ Every registry key declared in `Registries`. **Built-in** registries are populat
 | `entity_sub_predicate_type` (`Registries.ENTITY_SUB_PREDICATE_TYPE`) | `Codec<…>` | built-in |  |
 | `entity_type` (`Registries.ENTITY_TYPE`) | `EntityType<…>` | built-in |  |
 | `environment_attribute` (`Registries.ENVIRONMENT_ATTRIBUTE`) | `EnvironmentAttribute<…>` | built-in |  |
+| `equipment_asset` (`EquipmentAssets.ROOT_ID`) | `EquipmentAsset` | — |  |
 | `float_provider_type` (`Registries.FLOAT_PROVIDER_TYPE`) | `MapCodec<…>` | built-in |  |
 | `fluid` (`Registries.FLUID`) | `Fluid` | built-in |  |
 | `frog_variant` (`Registries.FROG_VARIANT`) | `FrogVariant` | data-pack | yes |
+| `function` (`ServerFunctionLibrary.TYPE_KEY`) | `CommandFunction<…>` | — |  |
 | `game_event` (`Registries.GAME_EVENT`) | `GameEvent` | built-in |  |
 | `game_rule` (`Registries.GAME_RULE`) | `GameRule<…>` | built-in |  |
 | `height_provider_type` (`Registries.HEIGHT_PROVIDER_TYPE`) | `HeightProviderType<…>` | built-in |  |
@@ -92,6 +95,7 @@ Every registry key declared in `Registries`. **Built-in** registries are populat
 | `recipe` (`Registries.RECIPE`) | `Recipe<…>` | — |  |
 | `recipe_book_category` (`Registries.RECIPE_BOOK_CATEGORY`) | `RecipeBookCategory` | built-in |  |
 | `recipe_display` (`Registries.RECIPE_DISPLAY`) | `RecipeDisplay.Type<…>` | built-in |  |
+| `recipe_property_set` (`RecipePropertySet.TYPE_KEY`) | `RecipePropertySet` | — |  |
 | `recipe_serializer` (`Registries.RECIPE_SERIALIZER`) | `RecipeSerializer<…>` | built-in |  |
 | `recipe_type` (`Registries.RECIPE_TYPE`) | `RecipeType<…>` | built-in |  |
 | `rule_block_entity_modifier` (`Registries.RULE_BLOCK_ENTITY_MODIFIER`) | `RuleBlockEntityModifierType<…>` | built-in |  |
@@ -118,6 +122,7 @@ Every registry key declared in `Registries`. **Built-in** registries are populat
 | `villager_profession` (`Registries.VILLAGER_PROFESSION`) | `VillagerProfession` | built-in |  |
 | `villager_trade` (`Registries.VILLAGER_TRADE`) | `VillagerTrade` | data-pack |  |
 | `villager_type` (`Registries.VILLAGER_TYPE`) | `VillagerType` | built-in |  |
+| `waypoint_style_asset` (`WaypointStyleAssets.ROOT_ID`) | `WaypointStyleAsset` | — |  |
 | `wolf_sound_variant` (`Registries.WOLF_SOUND_VARIANT`) | `WolfSoundVariant` | data-pack | yes |
 | `wolf_variant` (`Registries.WOLF_VARIANT`) | `WolfVariant` | data-pack | yes |
 | `world_clock` (`Registries.WORLD_CLOCK`) | `WorldClock` | data-pack | yes |
