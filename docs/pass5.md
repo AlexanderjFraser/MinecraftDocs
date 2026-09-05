@@ -19,6 +19,68 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session L — Part XII World generation (pass 4) *(2026-09-05)*
+
+**Hooks and openings rewritten around a corrected fact — re-read all of these
+for voice.** Seven were rewritten because the fact under them fell:
+
+- `worldgen/README.md`'s **opening paragraph**, which now carries a
+  three-clause qualification ("not because nothing here reads the world … but
+  because everything it reads is itself a function of that seed and those
+  packs"). It is accurate and it is the longest sentence on the page. The
+  premise deserves a shorter shape.
+- `jigsaw-and-templates`' **opening**, whose lamp post is gone and whose
+  mechanism now needs four sentences where the false version needed two. The
+  clause "What the depth limit does is stop offering the asked-for pool at
+  all" is doing a lot of work in one line.
+- `trees`' **crown paragraph**, which now ends on "the asymmetry is in the
+  code and vanilla data cannot express it" — true, and a stranger note to end
+  a section on than the section was written for. Its header line
+  ("a ceiling the crown's size was decided before") is grammatically awkward
+  and was chosen for accuracy, not sound; so were the two blurbs that repeat
+  it in `worldgen/README.md` and `lectures.md`.
+- `structure-placement`'s **verified line** and its *Whether it is worth
+  laying out* section, which now explain a deferral that lasts one statement.
+  The section's title still promises a decision the section no longer
+  describes.
+- `density-functions`' **opening**, which now names two files where it named
+  one, and loses some of the "small, honest, readable" rhythm it had.
+- `biomes`' **world-spawn answer**, which went from two sentences to five and
+  is now the longest *Questions players ask* answer on the page.
+- `creating-a-world`'s **hook**, whose "every widget is an edit to it" became
+  a clause plus an exception list. The exception list is the kind of
+  named-qualifier hedge this pass is meant to hunt.
+
+**Structural findings, not acted on.**
+
+- `worldgen/README.md`'s *Watch in this order* closer now carries three
+  separate order rulings (two before three, four reaching forward into five
+  and six's status, seven before eight and nine) where it used to carry a
+  clean pair. It reads as a list of caveats rather than an instruction.
+- `blending`'s **first figure gained a dashed annotation node** to say that
+  two of the five consumers never touch the two maps. That is prose smuggled
+  into a flowchart, and the page's own text says the same thing thirty lines
+  below. One of the two should go.
+- `features-and-placement`'s *A feature that is a tree of features* section is
+  now about six features of which one is unrelated to the section's subject
+  (`Feature.NO_OP` writes nothing but is not a selector). The count and the
+  subject want separating.
+- `hand-built-structures`' `StructurePiece.placeBlock` cast row is now three
+  clauses long and contains a negation ("not a choke point"), which is the
+  *not X but Y* tic in a table cell.
+- **The *Questions players ask* closer** is on nine of the eleven Part XII
+  pages, well over session P's at-most-half rule of thumb. `terrain`,
+  `biomes` and `structure-placement` have five, five and six answers each.
+
+**Wording debt of the session's own making.** Several fixes name a file path
+or a JSON key in italics where the surrounding prose uses backticks for
+everything else (*terrain_adaptation*, *use_expansion_hack*,
+*skip_existing_chunks*, *min_clipped_height*, *blending_data*). The convention
+is right — `verify_names.py` rejects them backticked — but the mixture inside
+one paragraph reads unevenly, and a corpus-wide look at how data keys are
+typeset is worth one pass-5 sweep.
+
+
 ## Session K — Part XI Rendering (pass 4) *(2026-09-04)*
 
 **Hooks and openings rewritten around a corrected fact — re-read all of

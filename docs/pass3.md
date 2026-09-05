@@ -1396,6 +1396,17 @@ closer, because the boundary is drawn before the investment, and
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
+- **The expansion hack, dimension padding and liquid settings** — three of
+  `JigsawStructure`'s ten data-pack fields that no page names, and one of them
+  is load-bearing for why a village street stops:
+  `JigsawPlacement.Placer` inflates a candidate's bounding box upward by the
+  tallest piece its own child pools could need before the collision test, and
+  all five villages set *use_expansion_hack* true. `DimensionPadding` rejects
+  a start piece too near the world's Y limits and shrinks the growth box;
+  `LiquidSettings` decides per structure or per element whether placed blocks
+  inherit waterlogging. `jigsaw-and-templates` names one of the three in
+  passing after pass 4 and owns none of them. Not a whole page — a section on
+  that page, for pass 5 or later. *(session L of pass 4, 2026-09-05)*
 - ~~**Post-processing**~~ — **written by session L** as
   `src/systems/rendering/post-processing.md`, the part's closer and its R7
   spend: 996 lines in four classes, six shipped chains, written against the
