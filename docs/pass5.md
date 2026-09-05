@@ -19,6 +19,130 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session O — the close (pass 4) *(2026-09-05)*
+
+The glossary sweep, the four unactioned Reference catalogues and the tool
+re-read each produced material the close verified and deliberately did not act
+on. Nothing here is a wrong fact; everything here is a page that is thinner,
+looser or more repetitive than it should be.
+
+### The generators' blind spots, now measured
+
+- **`verify_names.py` cannot see inside a mermaid block, and that is the
+  corpus's largest unchecked surface.** 453 distinct class-shaped tokens appear
+  only in a diagram and in no backtick on their page. Session O found one real
+  error in them by hand (`BakedGlyph.renderChar`, which is
+  `BakedSheetGlyph`'s) and fixed it; the other 452 are unchecked. Session A
+  logged the *index* half of this — 135 class/page pairs and 112 distinct
+  classes the class index cannot see, 26 with no row at all. **One parser
+  serves both**, and the work is: tokenize dotted `Class.member` forms inside
+  ```` ```mermaid ```` fences, feed them to the same resolver, and let the index
+  read them too. It will fail on lane ids and nested simple names, so it wants a
+  pass over the first run's output, which is why it is pass-5 work and not a
+  gate change.
+- **23 simple names are shared by two files**, so a `Class.member` backtick
+  resolves against the union of both — `Connection` (99 corpus backticks,
+  `network/` against `server/jsonrpc/`), `AttributeModifier` (13, and the two
+  classes have genuinely different member sets), `EntitySelector`,
+  `StructureCheck`, `Input`. The verifier now prints the list on every run. Pass
+  5 should either disambiguate the pages or teach the resolver which file a page
+  means.
+- **`map_source.py`'s line counts are 18.4% blank lines** — 132,608 of 719,302
+  — and neither the tool's docstring nor `src/maps/README.md` says so. "719k
+  lines" is 587k non-blank. One clause on the atlas's counting rule fixes it.
+- **`TEMPLATE.md:112` is stricter than mermaid.** A `;` and a `#` in a
+  *flowchart* label both parse and render correctly under 11.6.0; the rule that
+  forbids them everywhere is true only of sequence diagrams (`#`) and state
+  diagrams (`;`, which silently splits a label into extra states). Relax the
+  rule to name the two places it is real — and note that the state-diagram case
+  is now a gate, so the rule has teeth where it needs them.
+
+### Completeness, verified and not acted on
+
+Pass 4 does not add material, so these are the classes and mechanisms an
+agent's completeness sweep found in a page's scope that the page never
+mentions.
+
+- **`reference/non-living-damage.md` wants a `hurtClient` column.** Seven of
+  the twenty-one declare one, two return an unconditional `true`, and
+  `MinecartTNT` inherits a third; twelve inherit `Entity`'s false. The full
+  column, one verified value per row, is in session O's agent report and can be
+  re-derived in a minute from `grep -rn "boolean hurtClient("`. It also wants
+  one sentence on `Entity.isPickable`, which defaults to **false** and so keeps
+  ten of the twenty-one off the crosshair entirely, and on
+  `ServerGamePacketListenerImpl.handleAttack`, which rejects an `ItemEntity` or
+  an `ExperienceOrb` target by **disconnecting the client**.
+- **`reference/submit-phases.md`** is missing three things its own sentences
+  depend on: `SubmitNodeStorage` (the *order bucket* the page names with no
+  antecedent — it is the outer loop of every sweep), `TranslucentSubmit` (the
+  marker five of the thirteen records implement, which is why the phase can sort
+  by distance at all) and `RenderType.canConsolidateConsecutiveGeometry` (which
+  gates **both** merges, independently of `strictlyOrdered`, and is now the
+  thing the corrected merging paragraph turns on). `PhaseSubmitGrouper` is
+  machinery this page can leave out.
+- **`reference/hud-elements.md`** has no row for `SpectatorGui.extractAction`
+  (the *else* branch of row 17), and never names `Gui.overlay`/`Gui.screen`, the
+  two things recorded between the HUD and rows 28–31, nor the three or four
+  strata a screen contributes there.
+- **`reference/level-data-and-rules.md`** never names `DirectoryLock` (what
+  `session.lock` is for), `LevelVersion` (the *Version* compound and
+  *DataVersion* the world-select row reads), `LevelSummary`'s corrupted and
+  symlink states, four more `LevelResource` paths (*generated/*, *datapacks/*,
+  the world resource pack, the icon), the per-player *advancements/* and
+  *stats/* files, or `MinecraftServer.saveAllChunks` — the method that drives
+  all three save paths the page describes.
+- Seven of that page's eighteen table rows get no prose at all — the
+  scoreboard, maps, raids, chunk tickets, the dragon fight, five of the
+  boss-bar row's six owners, and player data.
+
+### The glossary's headwords
+
+Five entries are titled with a phrase the corpus does not use, against the
+page's own rule that "where a term is a class name, the class name is the
+entry":
+
+- **Blend alpha** — the corpus writes plain "alpha" or the JSON name
+  *blend_alpha*.
+- **Staging buffer** — used once outside the glossary, on its owner page, and
+  once elsewhere for an unrelated thing (`section-meshing`'s worker buffer).
+  The class-shaped headword is `ExecutionContext.newTopCommands`.
+- **Flat level generator preset** — the lowercase phrase appears nowhere; the
+  corpus names only the plural bootstrap class, twice, on one page.
+- **Batch** — claimed for the game-test meaning, while a reader is likelier to
+  have met *chunk batching* in Part IX. Retitle, or add the chunk one beside it.
+- **Permission atom** — the two-word phrase appears nowhere; the corpus writes
+  "an atom", "the chat atoms", "the entity-selector atom".
+
+Beside them: **Blending data** should be `BlendingData` by the same rule, and
+*Occlusion* is a word the corpus uses for four unrelated things across nine
+pages with no page owning it — the session left it out rather than write a
+five-way pointer, and pass 5 should decide whether the glossary does
+disambiguation at all.
+
+### Two counts in this file that were wrong
+
+Session P's own pass-5 notes carry two numbers the close re-derived:
+
+- **The literal `## The trace: …` heading is on twenty pages in eight parts**,
+  not "twelve pages in four parts" — and session P's own list named three
+  parts while saying four. Both numbers were already true at pass 3's close
+  (`git grep -c` at `0255661` gives 20), so pass 4 changed nothing here; the
+  note was simply wrong. Parts II, IV, VI, VII, VIII, XI, XII and XIII.
+- **The closer device is on 69 of the 102 system pages**, 65 of them as the
+  last content section. By part: I 1/2 · II 6/7 · III 2/5 · IV 10/10 · V 7/7 ·
+  VI 3/9 · VII 2/8 · VIII 7/7 · IX 3/5 · X 7/12 · XI 6/11 · XII 9/10 ·
+  XIII 2/9. Four parts still use it on every page.
+
+### Wording the close rewrote and pass 5 should re-read
+
+Every entry the glossary sweep corrected is a sentence written to be true
+rather than to read well, and the five long ones are worth a second pass:
+*Packet*, *Permission set*, *Prediction ledger*, *Unattended command* and
+*World clock*. The same is true of `math-and-primitives`' coordinate-spaces
+paragraph, which lost its thesis and has not yet gained a replacement idea, and
+of `submit-phases`' merging paragraph, which is now correct and three sentences
+long where it was two.
+
 ## Session N — the corpus-wide count sweep (pass 4) *(2026-09-05)*
 
 The sweep's job was numbers, and what it turned up beside them is one tic with

@@ -18,10 +18,13 @@ the decompile, and every page had at least one wrong claim (done;
 part the shape of its system, each page one of eight shapes, the frame,
 introduction, maps and reference tier redone, the lecture order drafted
 (done; `docs/pass3.md`); **pass 4** — the second fact-check, pass 2's
-protocol over everything pass 3 rewrote, the claims pass 3 introduced
-checked first (**current**; charter in `docs/plan.md`, queue in
-`docs/pass4.md`); **pass 5** — polish: wording, consistency, cuts; **pass 6+** — the owner reads each page against the source, asks
-questions in the page, and confirms the lecture order; then voice and cuts.
+protocol over everything pass 3 rewrote (done, 836 corrections in the thirteen
+sessions that counted them; every page had at least one wrong claim, for a
+fifteenth session running; `docs/pass4.md`); **pass 5** — polish: wording,
+voice, consistency, cuts, and the closer device that became a slot
+(**current**; charter in `docs/plan.md`, queue in `docs/pass5.md`); **pass 6+**
+— the owner reads each page against the source, asks questions in the page, and
+confirms the lecture order; then voice and cuts.
 Nothing is recorded that the owner hasn't understood.
 
 ## The rules
@@ -108,7 +111,8 @@ pass-3 session A from two pilots — `tickets-and-loading` (policy) and
 mermaid rules and **the lane key** (rule 7). Over the 102 system pages the
 shapes fell out as trace 31, vocabulary 25, pipeline 19, comparison 11,
 policy 7, pattern 7, state machine 2 (session P's audit); the *Questions
-players ask* closer is on two pages in three, which pass 5 thins. What
+players ask* closer is on 69 of the 102, and the literal heading
+`## The trace: …` on 20 — both of which pass 5 thins. What
 every page keeps:
 the verified line with the part and scenario; an opening paragraph that
 starts inside the scenario and ends on the hook (the surprising true thing
@@ -122,26 +126,21 @@ beyond seven is a table or a Reference page.
 ## The plan
 
 [docs/plan.md](docs/plan.md) — the passes, the current pass's charter,
-session protocol and schedule, and the session log. **Read it first; tick
-it last.** [docs/pass4-brief.md](docs/pass4-brief.md) is pass 4's agent
-brief and session runbook; `python tools/pass4_prompts.py --part <part>
---out DIR` writes one prompt file per page from it (the page's pass4.md
-checklist via `pass4_queue.py`, its confident sentences via `claims.py`,
-its diagrams arrow by arrow via `diagram_arrows.py`), and
-`tools/check_deps.py` checks the landing pages, the lecture table and the
-parts-dependency figure against each other. [docs/pass4.md](docs/pass4.md)
-is the queue pass 4 works from: per pass-3 session, every claim its
-rewrite introduced, newest entry first, struck through as settled (the
-queue tool reads the strikes); [docs/pass5.md](docs/pass5.md) collects wording
-debt, cuts and structural findings; [docs/pass3.md](docs/pass3.md) §7 is
-the coverage queue (a system with no owner page) and stays live. **A
-session that leaves something for later appends to the right one of those,
-not only to the log.** `docs/pass1.md`, `docs/pass2.md` and `docs/pass3.md`
-are the archived passes (charter, protocol, rulings, queue, log — still
-worth grepping; pass 2's fact-check protocol and lessons are what pass 4
-runs); `docs/outline.md` is the archived fourteen-lecture map. The lecture
-order is drafted (`src/lectures.md`, with the parts-dependency figure) and
-confirmed by the owner in pass 6.
+session protocol and schedule, and the session log. **Read it first; tick it
+last.** [docs/pass5.md](docs/pass5.md) is the queue pass 5 works from: per
+pass-4 session, the wording debt, the ambiguous counts, the cuts and the
+structural findings. [docs/pass3.md](docs/pass3.md) §7 is the coverage queue (a
+system with no owner page) and stays live. **A session that leaves something
+for later appends to the right one of those, not only to the log.**
+`docs/pass1.md` through `docs/pass4.md` are the archived passes (charter,
+protocol, rulings, queue, log — still worth grepping; pass 2's and pass 4's
+fact-check protocol and lessons are what any later check runs), with
+`docs/pass4-brief.md` the agent brief and `tools/pass4_prompts.py` the tool
+that assembles one prompt per page — both dormant until the version pass, which
+`docs/plan.md` charters and 26.3's release triggers. `docs/outline.md` is the
+archived fourteen-lecture map. The lecture order is drafted
+(`src/lectures.md`, with the parts-dependency figure) and confirmed by the
+owner in pass 6.
 
 ## Site
 

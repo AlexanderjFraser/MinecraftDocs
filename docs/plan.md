@@ -1,46 +1,54 @@
 # The plan — the passes
 
-*Rewritten 2026-09-02 at the start of pass 3 and again 2026-09-03 at its
-close. This is the document every session reads first and ticks last. Each
-finished pass is archived whole in its own file — [pass1.md](pass1.md),
-[pass2.md](pass2.md), [pass3.md](pass3.md) (the notebook, then the charter,
-rulings, protocol, schedule and log) — and each future pass has a file
-that earlier passes fill in as they go: [pass4.md](pass4.md) is the queue
-the second fact-check works from, [pass5.md](pass5.md) collects polish
-debt.*
+*Rewritten 2026-09-02 at the start of pass 3, again 2026-09-03 at its close,
+and again 2026-09-05 at pass 4's. This is the document every session reads
+first and ticks last. Each finished pass is archived whole in its own file —
+[pass1.md](pass1.md), [pass2.md](pass2.md), [pass3.md](pass3.md),
+[pass4.md](pass4.md) (the charter, rulings, protocol, schedule and log) — and
+each future pass has a file that earlier passes fill in as they go:
+[pass5.md](pass5.md) is the queue polish works from.*
 
 ## Where we are
 
-**Pass 3 is done** (2026-09-03, sessions A–P): the site is a book.
-Thirteen parts, each opening on a landing page that draws the part's shape
-and rules its watching order; **102 system pages** where pass 2 left 79,
-each in one of eight shapes from `TEMPLATE.md`'s menu instead of the one
-seven-heading template; a Reference tier of twenty-one pages, eight of them
-generated; the introduction as a front door, the maps as an atlas, and the
-lecture map assembled with the dependency graph between parts drawn. Three
-gates now stand between a page and the site: every backticked name resolves
-in the decompile, every diagram parses under the site's own mermaid, and
-every diagram lane means what the one corpus-wide key says. The full record
-— the evidence, the rulings, the per-session log — is in
-[pass3.md](pass3.md).
+**Pass 4 is done** (2026-09-05, sessions A–O): everything the book says has now
+been read against the decompile twice. Fifteen sessions, one adversarial agent
+per page, over the 102 system pages, the 13 landing pages, the 21 Reference
+pages, the introduction, the lecture map and the atlas: **836 corrections in
+the thirteen sessions that counted them**, plus sessions A and B, which did
+not. Pass 2's finding held to the end — **every page had at least one wrong
+claim**, for a fifteenth consecutive session — and the only whole parts to
+survive any check clean were Part VIII and Part IV's chunk group, under session
+N's count sweep. Four gates now stand between a page and the site:
+every backticked name resolves in the decompile, every diagram parses under the
+site's own mermaid, every lane means what the one key says, and the landing
+pages, the lecture map and the dependency figure agree. The full record — the
+evidence, the rulings, the per-session log — is in [pass4.md](pass4.md).
 
-Two findings from the restructure shape what comes next:
+Three findings shape what comes next:
 
-- **Pass 3 put errors back, as predicted, and wrote down where.** Nearly
-  every page was rewritten and most figures redrawn; every session listed
-  the claims its rewrite introduced in [pass4.md](pass4.md) — hooks,
-  orderings, counts, new sections, and the landing pages' dependency lists
-  — and that file is over two thousand lines. Four sessions in a row found
-  a wrong *count* while redrawing a page, three of them load-bearing for
-  the sentence around them.
-- **The menu held; the closing device did not.** Session P's audit found
-  the trace is the plurality shape and not the majority — thirty-one of
-  the hundred and two pages, with twenty-five vocabulary pages, nineteen
-  pipelines, eleven comparisons, seven policies, seven patterns and two
-  state machines making up the rest — but sixty-six pages end on a
-  *Questions players ask* section and four more carry one, which is one
-  device become a slot. That is pass 5's problem, and it is written down there with the
-  counts and the seven pairs of pages that share a skeleton.
+- **The errors were never where the session expected.** Every part session was
+  given the list of claims its pass-3 rewrite had introduced, and from Part VI
+  on that list came back almost clean every time: the errors were in the
+  *illustrations* — the tables, the one-line summaries, the Q&A answers, the
+  confident asides — which is to say in what the writing session did not know it
+  had changed. The landing page was the worst page in its part three parts
+  running.
+- **A correction is a claim, and pass 4 got three of its own wrong.** Session L
+  found pass 3's correction was the error; session N found the number session M
+  replaced was right; session O found session K's correction backwards on two
+  pages and a strike that had settled nothing. Suspect the tool, then the agent,
+  then the page — and now also the fix.
+- **The tools had fifteen bugs, and six of them published a falsehood.** Pass 2
+  found a bug in both of its generators; pass 4 found fifteen more, including a
+  registry count short by five, a game rule published with an unbalanced
+  parenthesis, a packet total printed in the wrong column, and a gate that had
+  been silently skipping eighteen names since pass 1. Every one was found by
+  suspecting the tool before the page.
+
+**Pass 5 is current**: the corpus is true, and now it has to read like one book.
+Its charter is below, and its largest single job is the one pass 3 predicted —
+the *Questions players ask* closer is on 69 of 102 pages, a device that became a
+slot.
 
 ## The passes
 
@@ -49,8 +57,8 @@ Two findings from the restructure shape what comes next:
 | **1 — rough draft** | every page drafted from the decompile, names verified | done — [pass1.md](pass1.md) |
 | **2 — completeness and accuracy** | every claim adversarially fact-checked; gaps filled; pages split and added freely | done, 2026-09-01 — [pass2.md](pass2.md) |
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page the shape of its story; the frame, the introduction, the maps and the reference tier redone; the lecture order drafted | done, 2026-09-03 — [pass3.md](pass3.md) |
-| **4 — the second fact-check** | pass 2's protocol again, over everything pass 3 rewrote, redrew or added; the claims pass 3 introduced checked first | **current** — charter below; queue in [pass4.md](pass4.md) |
-| **5 — polish** | wording, voice, consistency, cuts | after 4 — queue in [pass5.md](pass5.md) |
+| **4 — the second fact-check** | pass 2's protocol again, over everything pass 3 rewrote, redrew or added; the claims pass 3 introduced checked first | done, 2026-09-05 — charter below; the record in [pass4.md](pass4.md) |
+| **5 — polish** | wording, voice, consistency, cuts | **current** — charter below; queue in [pass5.md](pass5.md) |
 | **6+ — the owner reads** | part by part with the decompile open; `<!-- Q: … -->` answered in the prose; lecture order confirmed; then voice and recording | after 5 |
 
 The rules stand for every pass: names never code · how the system works,
@@ -65,7 +73,7 @@ and refuses to publish on any failure.
 
 ---
 
-## Pass 4 — the second fact-check (current)
+## Pass 4 — the second fact-check (done, 2026-09-05)
 
 **Goal:** everything the restructured corpus says is true. Pass 2 proved
 that every page had at least one wrong claim and that the errors live in
@@ -572,11 +580,29 @@ O is the close.
   [pass5.md](pass5.md), with the finding that **"declared and never read" is
   unverifiable of any primitive constant**, because `javac` inlines them.
   Everything in [pass4.md](pass4.md).
-- [ ] **Session O — The close.** The glossary against the corpus; the
-  tools (the verifier, the generators, the lane key, the mermaid checker)
-  re-read for the bug pass 2 found in each; the queue in pass4.md struck
-  through or carried; pass 5's charter written; if 26.3 has landed, the
-  re-verification session scheduled before it.
+- [x] **Session O — The close** *(2026-09-05)*. Twelve agents; **every one had
+  at least one wrong claim**, for a fifteenth time. Ninety-one corrections. The
+  named finding is that **two of pass 4's own entries were false**: session A's
+  strike recording `verify_names.py`'s `Class.method(Arg)` hole as settled — the
+  pattern was never changed, and eighteen backticks had been checked by nothing,
+  two of them dead 1.21 names; and **session K's correction on `submit-phases`,
+  which was backwards and had been copied onto `entity-rendering`** —
+  `strictlyOrdered` leaves consecutive merging alone and suppresses only the
+  fold into a *non-adjacent* earlier draw, which is the merge that reorders. The
+  glossary was checked twice over, against the decompile and against each
+  entry's owner page as pass 4 left it: fifty corrections, four entries wrong
+  outright (`Packet` is an interface; `Path` linked to a page that never
+  mentions it; `World clock` holds nothing; a sign is not an unattended
+  command), five contradicting the page pass 4 had just corrected, the whole
+  page re-sorted, and thirteen entries added for terms with nowhere to look them
+  up. The four Reference catalogues session A verified and never fixed are
+  fixed, and the earlier agent was wrong or short in four of its own findings.
+  **Six tool bugs, three of them published as fact** — 148 registry keys for
+  153, a game rule with an unbalanced parenthesis, and the packet grand total
+  printed in the serverbound column. The pass-3 queue is 259 units and all 259
+  are struck. Pass 5's charter and the version pass are written above; 26.3 has
+  **not** landed (26.3-pre-2, 2026-09-04), so the version pass is chartered and
+  triggers on the release. Everything in [pass4.md](pass4.md).
 
 ### Hand-off rules
 
@@ -588,17 +614,112 @@ written when it is found, not at the end.
 
 ---
 
-## Pass 5 — polish (sketch)
+## Pass 5 — polish (current)
 
-Per page: does it read well, is everything needed explained and nothing
-more? This is where pass 2's "don't worry about length" bill comes due —
-cut what over-grew, using the on-spec logs in [pass2.md](pass2.md)'s
-hand-off and [pass5.md](pass5.md). Corpus-wide: one terminology sweep (the
-glossary is the checklist), one voice sweep against the best page, links
-and cross-references complete, the "not X but Y" tic and the
-named-qualifier tic hunted, and the *Questions players ask* slot broken up
-— session P's rule of thumb, at most half the pages in a part, is in
-[pass5.md](pass5.md) with the counts.
+**Goal:** the corpus is true; make it read like one book. Pass 2 proved every
+page had a wrong claim and pass 4 proved it again over everything pass 3
+rewrote — 800-odd corrections across fifteen sessions, and a great many of them
+are sentences written to be *true* rather than to be *heard*. Pass 5 is the
+first pass that reads a page as a viewer would.
+
+Three problems, in the order they cost the most:
+
+1. **The devices became slots.** Sixty-nine of the 102 system pages carry a
+   *Questions players ask* closer, sixty-five of them as the last content
+   section, in five spellings; four parts use it on every page. Twenty pages
+   head a section with the literal `## The trace: …`. Seven groups of pages
+   share a skeleton, which the charter's own rule says means neither is done.
+   Session P's counts and its rule of thumb — at most half the pages in a part
+   — are in [pass5.md](pass5.md); the rule is a rule of thumb, and a session
+   that breaks it says why.
+2. **The wording debt pass 4 left.** Every fix that rewrote the sentence around
+   it is logged per session in [pass5.md](pass5.md), hooks first. A hook
+   replaced under time pressure is the most likely thing in the corpus to read
+   badly.
+3. **The numbers whose population is ambiguous** — about fifty, session N's
+   largest output. Each is right under one reading and wrong under another, and
+   the page never says which. Pick the reading, say it, or drop the number.
+
+Under those: the terminology sweep with the glossary as the checklist (it is
+now correct and complete, which is what made it a checklist), one voice sweep
+against the best page, the "not X but Y" tic and the named-qualifier hedge, the
+length bill pass 2 deferred, and links and cross-references complete.
+
+### What pass 5 does not do
+
+**It does not change a fact.** Pass 4 read every page against the decompile;
+pass 5 has no decompile in its briefs, deliberately, because an agent given the
+source re-litigates instead of reading. If polish wants to change a claim, the
+sentence stays and the claim goes to a note — and a session that finds a real
+error stops, re-derives it against the decompile itself, and logs the
+correction the way a pass-4 session did. It does not restructure a part, add a
+page or move material between pages; a structural finding goes to the pass-6
+notes, and a system with no owner page still goes to [pass3.md](pass3.md) §7.
+
+### The protocol inverts
+
+Pass 4's agent was an adversary with the source. **Pass 5's is a reader with
+nothing but the page**, asked four questions: where did you get lost, what did
+you have to read twice, what did the page assume you already knew, and what did
+you skip? It reports; the session decides; the owner judges what lands. No
+count in [pass5.md](pass5.md) is a target — reasoning over sensing over
+measuring, and a metric that becomes a goal stops measuring.
+
+Per part, one session:
+
+1. **Read** this charter and every [pass5.md](pass5.md) entry that names the
+   part — the wording debt first, because it is where pass 4 knows it left
+   rough edges.
+2. **Read the part end to end in watching order**, in one sitting, before
+   changing anything. This is the first pass that can: the facts are settled.
+3. **One reader agent per page**, in parallel, given the page and no source.
+4. **Cut, vary, and re-word** — the closer device broken up, the skeletons
+   varied one of each pair, the ambiguous counts settled, the tics hunted.
+5. **Verify and ship**: the four gates, `mdbook build` clean, commit
+   `pass 5, session X — Part N: <summary>`, deploy.
+6. **Log**: the session log in this file, the pass-6 notes for anything a
+   reading raises that polish cannot settle.
+
+### The gates
+
+The four stand and pass 5 adds none: they are about truth, and nothing that
+measures prose belongs beside them. Two of them grew teeth in session O and
+will now catch things a pass-5 edit can easily introduce — a lane used in an
+arrow but never declared, and a mermaid fence tucked inside a `<figure>` with
+no blank line around it.
+
+### Sessions
+
+A — the standard: choose the exemplar page, write the voice note, rule on the
+closer device, the trace heading, the cast table and the 1.21 blockquote, and
+set the cut budget. B–N — the parts in sidebar order. O — the close: the
+terminology sweep against the glossary, the two cross-part skeleton pairs, the
+frame re-read against the finished parts, and pass 6's charter.
+
+## The version pass — rule 3's re-read (chartered, not scheduled)
+
+Rule 3 says newest version only, and every page carries `verified against 26.2`
+as a test rather than a claim. **As of 2026-09-05 the latest release is still
+26.2; 26.3 is at pre-release 2 (2026-09-04).** So this pass is chartered here
+and triggers on the release, whenever it lands — most likely inside pass 5.
+
+One session, between passes:
+
+1. Fetch and decompile 26.3 into `reference/26.3/` beside 26.2, with its
+   `data/`, `assets/` and `server-classes.txt`, and re-run
+   `tools/fetch_libs.sh`.
+2. **`verify_names.py` against the new tree is the mechanical half**: every
+   name that stops resolving is a rename or a removal, and the failures name
+   the pages that need re-reading. That is the whole point of the gate.
+3. Regenerate: `gen_reference.py all`, `map_source.py`, the two indexes. Diff
+   every generated page against 26.2's and read the diff — a population that
+   changed is a page that changed.
+4. `claims.py --all --counts` over the pages the first two steps touched: a
+   count whose population moved is wrong now.
+5. The header line on every page, and `CLAUDE.md`.
+
+A re-read, rarely a rewrite. A system that changed shape rather than names is a
+pass-3 finding, not a version one, and goes to [pass3.md](pass3.md) §7.
 
 ## Pass 6+ — the owner reads
 
@@ -1080,3 +1201,62 @@ missing it — and removes the comment. The owner confirms or reorders
   own fixes, the first pass-4 session where it caught nothing. Everything in
   [pass4.md](pass4.md); the wording debt and the corpus-wide *two rules for the
   word "classes"* finding in [pass5.md](pass5.md).
+
+- **2026-09-05, session O — the close (Opus).** Twelve agents: five over the
+  glossary's 141 entries, three over the seven tools, four over the Reference
+  catalogues session A had verified and never fixed. Ninety-one corrections in
+  three commits. The findings are in the schedule line above and in full in
+  [pass4.md](pass4.md); what is worth carrying forward is method.
+
+  **The close's job turned out to be checking pass 4 itself, and pass 4 was
+  wrong twice.** A strike in `pass4.md` recorded `verify_names.py`'s
+  `Class.method(Arg)` hole as settled by session A; `git log -S` on the token
+  pattern shows it was never touched, and the anticipating code one function
+  down had been dead since pass 1. Eighteen backticks in the corpus had been
+  checked by nothing, and two of them were names that do not exist. Separately,
+  session K's correction to `submit-phases`' merging paragraph was backwards,
+  and had been copied onto `entity-rendering` in the same session. That is
+  session L's finding — *the correction was the error* — for a third time, and
+  the second time inside pass 4. **A fix is a claim; nothing in fifteen sessions
+  had checked one, and nothing had ever checked a strike.**
+
+  The glossary sweep is worth repeating as a shape. Each entry was checked
+  *twice* — against the decompile, and against its owner page as pass 4 left it
+  — and five of the fifty corrections were invisible to the first check and
+  obvious to the second, because the entry had been written from a sentence
+  pass 4 later corrected. A page that other pages summarise needs its
+  summarisers re-read after it is fixed, and the glossary is the corpus's
+  summariser of last resort. The same reasoning is why the close added thirteen
+  entries: two of them (`LocalPlayer`, `MultiPlayerGameMode`) are diagram lanes
+  on nineteen pages each with no definition anywhere in the book.
+
+  The tool re-read paid better than any other session's. Three of the six bugs
+  were **published falsehoods on generated pages that nobody could have caught
+  by reading**: a registry view short by five keys, a game rule rendered with an
+  unbalanced parenthesis and its maximum labelled a minimum, and the packet
+  table's grand total printed under *serverbound*. Session A had confirmed one
+  sample row from each of the eight generated views and all three survived it,
+  which is the ruling: **a generated page's population is checked by re-deriving
+  the population, never by re-deriving a row.** The three checkers each had a
+  hole of the same shape — a construct they could not parse and therefore
+  skipped in silence — and every one is now a failure with a probe to prove it:
+  a lane used in an arrow and never declared, a mermaid fence inside a tight
+  HTML block that publishes as literal backticks, an arrow form the dependency
+  figure's parser cannot read.
+
+  Rulings, beyond the two above. A term the corpus does not use is not a
+  glossary entry however true its sentence — *noise cell* became *Cell*. A
+  catalogue whose preamble promises alphabetical order is checked for
+  alphabetical order. And an agent's brief is as suspect as everything else: the
+  session told its glossary agent there were four chunk layers, the agent found
+  three and said so.
+
+  Housekeeping. The pass-3 queue is 259 page-attributed units and all 259 are
+  struck, so `pass4_queue.py` now reports only pass 4's own correction records —
+  a record is not a task, and the file is an archive from here. `pass4.md` opens
+  with *What is open at the close*: the remainder is in `pass5.md`, in
+  `pass3.md` §7 (two coverage gaps, the abstract `Level` and feature flags), and
+  in the version pass. Pass 5's charter and the version pass's are in this file;
+  26.3 has not landed, so the latter is chartered and triggers on the release.
+  `CLAUDE.md` and the introduction's *Verified means tested* both say pass 4 is
+  finished.

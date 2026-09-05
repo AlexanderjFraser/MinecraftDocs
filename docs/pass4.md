@@ -16,6 +16,50 @@ each, quoting the sentence); the diagrams redrawn (which orderings they
 assert); anything an agent drafted that the old page did not say. Newest
 entry first.
 
+## What is open at the close *(session O, 2026-09-05)*
+
+Pass 4 is done. Every one of the 102 system pages, 13 landing pages, 21
+Reference pages, the introduction, the lecture map and the atlas has been read
+against the decompile by an adversarial agent and corrected; every count has
+been re-derived once corpus-wide; every diagram has been checked arrow by arrow;
+every dependency claim is under a gate. **From here this file is an archive.**
+`pass4_queue.py` still reports "open" units, and they are pass 4's own
+correction records — a record is not a task, and the tool cannot tell them
+apart. The genuine remainder is this list and nothing else.
+
+**Carried to pass 5** (all of it in [pass5.md](pass5.md), with the evidence):
+
+- About fifty counts that are right under one reading of their population and
+  wrong under another — session N's largest single output. Pick the reading,
+  say it, or drop the number.
+- The wording debt: every sentence a fact fix rewrote in place, per session.
+- The devices become slots — the *Questions players ask* closer on 69 of 102
+  pages, the literal `## The trace: …` heading on 20, the seven groups of pages
+  sharing a skeleton.
+- Two generator jobs that are page-shaped, not gate-shaped: teaching one parser
+  to read identifiers inside mermaid blocks (453 tokens no gate has ever seen,
+  and the class index's 135 missing pairs are the same parser), and the 23
+  ambiguous simple names the verifier now prints on every run.
+- The completeness lists for `non-living-damage` (the `hurtClient` column,
+  drafted in full), `submit-phases`, `hud-elements` and `level-data-and-rules`.
+- Five glossary headwords the corpus does not use, and the *Occlusion*
+  disambiguation question.
+
+**Carried to [pass3.md](pass3.md) §7**, the coverage queue — a system with no
+owner page:
+
+- The abstract `Level` itself. `server-level-tick` owns `ServerLevel` and
+  `the-client-level` owns `ClientLevel`; the shared base is asserted by the
+  glossary and explained by no page.
+- Feature flags and `FeatureFlagSet`: backticked on nine system pages and three
+  Reference pages, explained on none — `resource-system` and `creating-a-world`
+  both mention it in passing.
+
+**Carried to the version pass** (chartered in [plan.md](plan.md)): rule 3's
+re-read, triggered by 26.3's release. As of 2026-09-05 the latest release is
+still 26.2 and 26.3 is at pre-release 2, so the pass is chartered and not
+scheduled.
+
 ## Standing items
 
 - ~~The landing pages and `lectures.md` are claims about order and
@@ -116,6 +160,188 @@ entry first.
   is now `deploy.sh`'s fourth gate.
 
 ## Entries
+
+## Session O — the close (pass 4) *(2026-09-05)*
+
+The charter's five jobs: the glossary against the corpus, the tools re-read for
+the bug pass 2 found in each, the queue struck through or carried, pass 5's
+charter written, and the re-verification scheduled if 26.3 has landed. Twelve
+agents — five over the glossary's 141 entries, three over the seven tools, four
+over the Reference catalogues session A left unactioned. **Ninety-one
+corrections.** Every one of the twelve came back with at least one wrong claim,
+which is pass 2's finding for a fifteenth time and now holds on every page pass
+4 has read.
+
+### The named finding: a strike that was wrong, and a correction that was the error
+
+Two of pass 4's own entries were false, and both were found by suspecting them.
+
+**`docs/pass4.md:4378` records `verify_names.py`'s `Class.method(Arg)` hole as
+settled by session A. It was never fixed.** `git log -S` on the token pattern
+returns only the seed commit; the anticipating code at `verify_names.py:156`
+(`member.split("(")[0]`) has been dead since pass 1, because the pattern can
+never hand it a `(`. A span the pattern cannot match is skipped in **silence**,
+so eighteen backticks in the corpus had been checked by nothing. Two were dead
+names — *ServerPlayer.hasPermissions(int)* and
+*CommandSourceStack.hasPermission(int)*, both 1.21 names inside a *For a
+1.21-era reader* box, where every other page uses italics. The rule this
+settles: **a strike is a claim, and the close checks the strikes.**
+
+**Session K's correction on `submit-phases` was itself the error, and it had
+been copied onto `entity-rendering`.** Both pages said that marking a
+translucent group strictly ordered "switches off the consolidation of
+consecutive draws". `RenderTypeFeatureRenderer.Group` has two merges:
+`getVertexBuilder` reuses the last draw for consecutive geometry of one render
+type on a test that **never reads the flag**, and `getOrAddDraw` searches back
+through `drawRenderTypes` for a *non-adjacent* earlier draw only when
+`canReorder`, which is `!strictlyOrdered`. So strict ordering suppresses
+exactly the merge that would move geometry ahead of the draws between it and
+its target — the one that undoes the depth sort. Session L's finding, *pass 3's
+own correction was the error*, and session N's, *the number session M replaced
+was right*, for a third time and now inside pass 4 twice over.
+
+### The four catalogues session A verified and never fixed
+
+`math-and-primitives`, `hud-elements`, `level-data-and-rules` and
+`non-living-damage` were checked row by row by session A and left as *verified
+finding, unactioned*; the last two had not been edited since pass 3. All four
+are fixed, and **the earlier agent was wrong or short in four of its own
+findings**: the coordinate figure's thesis is broken by **eight** of seventeen
+edges, not six; `MinecartCollisionContext` *is* an `EntityCollisionContext`, so
+the "two cases that are neither" is one; `Entity.hurtOrSimulate` is the
+dispatcher **six** callers invoke against fifty-eight direct `hurtServer` sites,
+not "most" — what is true is that the melee path is one of the six; and
+`submit-phases` is not "complete as a list", since row 1 omits moving blocks and
+the opaque half of every quad-particle group.
+
+Four more that carry a lecture:
+
+- **`level-data-and-rules`' spawn section is backwards.**
+  `Level.getWorldBorderAdjustedRespawnData` returns the stored spawn *unchanged*
+  when it is inside the border, so "the spawn every level reports is not the
+  stored one" is false of every ordinary world. The true claim — every level
+  reports the *server's* spawn, recomputed through the border and the dimension
+  check — is the interesting one and survives.
+- The same page says "the client has no game-rules object" and then, twenty
+  lines later, describes the client's two `GameRules` objects.
+- **Four of the seven shipped noise settings opt into the legacy random
+  source**, and two of them are dimensions of an ordinary world (*nether*,
+  *end*), so `math-and-primitives`' "the default for world generation" is not,
+  and its "seed parity applies to the second family only" is false —
+  `PositionalRandomFactory.parityConfigString` is implemented by both.
+- **`submit-phases`' opening absolute** — "everything drawn in a level that is
+  not terrain arrives as a submit node" — is false of the sky, the clouds, the
+  weather and the world border, each its own frame-graph pass.
+
+### The glossary against the corpus
+
+Fifty corrections over 141 entries, and the sweep's shape was the one the
+charter predicted: **an entry written from one sentence of a page pass 4 has
+since corrected**. Five entries contradicted their own owner page —
+*Prediction ledger* (the settle **is** a rollback), *Extract* (the wall leaks at
+the top of the render half, and the states are re-filled), *Blending data* (the
+chunk that owns it), *Submit node* (written in *submit*, not *extract*),
+*Ticket* (there is no *loaded* `FullChunkStatus`). Four were wrong against the
+decompile outright: **`Packet` is an interface**, not a record, and its
+`PacketType` carries a direction and a name and no phase; **`Path`** linked to a
+page that never mentions it; **`World clock`** described state that lives on
+`ServerClockManager.ClockInstance`, the record itself holding nothing;
+**`Unattended command`** named a sign, which runs server-side at gamemaster and
+never asks the client, and gave two confirmation cases where there are three.
+**`Enchantment`** said the enchantment never crosses the wire, and
+`Registries.ENCHANTMENT` is in `SYNCHRONIZED_REGISTRIES`.
+
+Structure, against the page's own promise of "the terms, alphabetically": the S
+run was out of order, `DamageSource` sat after `Data pack`, `Frame` after
+`Frame graph`, and `Unattended command` sat under `## T` because there was no
+`## U`. The page is re-sorted and every letter has its own heading.
+
+**Thirteen entries added** for terms the corpus leans on with nowhere to look
+them up: *chunk layer* (session K's ask — and it is **three** layers, not the
+four the session's own brief asserted; the agent caught the session),
+`CommandSourceStack` (which the *Permission set* entry already leaned on),
+`Fluid`, `KeyMapping` (there was no K section at all), `LocalPlayer`,
+`MultiPlayerGameMode` (both of them diagram lanes on nineteen pages),
+`NoiseRouter`, *reload listener*, `RenderType` (which the corrected
+*RenderPipeline* entry now points at), *simulation distance*, `StructureStart`,
+*view distance* and the watchdog.
+
+### The tools: seven read, six with a bug
+
+The tenth through fifteenth tool bugs of pass 4.
+
+- **`gen_reference.py`** published **148 registry keys for 153**: `REGKEY` read
+  only `Registries.java` and only the private helper, so the five registries
+  keyed from their own class with `ResourceKey.createRegistryKey` were invisible
+  (*function*, *clock_time_marker*, *recipe_property_set*, *equipment_asset*,
+  *waypoint_style_asset*). Its game-rule regex swallowed the maximum and the
+  feature gate into one "min" group and published an **unbalanced parenthesis**:
+  `8 (min 1, 1000, FeatureFlagSet.of(FeatureFlags.MINECART_IMPROVEMENTS)`. And
+  the packets **grand total was printed in the serverbound column** — 232 where
+  78 are serverbound and 154 clientbound. Three published falsehoods in one
+  generator, none of which a one-sample-per-view check could see, which is why
+  session A's check passed them.
+- **The same generator's hand-written blurb** said game-rule values "live per
+  world in a `GameRuleMap` on the level data" — wrong twice, and
+  `level-data-and-rules` says so on its own page.
+- **`map_source.py`** keyed declarations by simple name within a file, so the
+  four nested enums called *Type* in `DensityFunctions.java` collapsed into one
+  and `StringRepresentable` published **161/160 where it is 163/162**; and
+  `resolve` had no same-package rule, so `RateKickingConnection`'s `Connection`
+  resolved to `server/jsonrpc`. Five more hierarchy rows recover a lost
+  descendant.
+- **`check_lanes.py`** never saw a lane used in an arrow and never declared —
+  mermaid creates one implicitly, so rule 7 had a hole exactly the width of a
+  forgotten `participant` line. It never checked a word lane's expansion at all
+  (`Wire` was written three ways over ten diagrams), silently dropped `create
+  participant` and punctuated ids, and read an empty run as clean.
+- **`check_mermaid.js`** could not see a mermaid fence inside a *tight* HTML
+  block, which publishes as literal backticks — the figure idiom `TEMPLATE.md`
+  teaches. Its content matcher had also never fired once in 196 diagrams,
+  because `norm` did not dedent where the extractor did, so every diagram was
+  located positionally and one skipped fence misreported all the rest.
+- **`check_deps.py`** knew two arrow forms and one node shape, and dropped a
+  labelled arrow, an unlabelled dashed arrow, a thick arrow and five node shapes
+  with no output at all.
+- **`llms_full.py`** promised every agent that "the table below carries the same
+  data" under every figure, on two pages that have no such table.
+
+`claims.py`, `diagram_arrows.py` and `pass4_queue.py` were read and no bug
+found, which session N had also concluded. Every fix is demonstrated against a
+probe the old gate passed and the new one fails.
+
+### The queue, struck through or carried
+
+The pass-3 queue is **259 units naming a page, and all 259 are struck**. What
+the tool still counts as open is pass 4's own correction records, which are a
+record and not a task — `pass4_queue.py` cannot tell them apart, and after
+fifteen sessions that is what its `--summary` mostly measures. From this entry
+the file is an archive: what is genuinely still open is under *What is open at
+the close* at the top, and everything else is in [pass5.md](pass5.md) or
+[pass3.md](pass3.md) §7.
+
+### Rulings
+
+- **A strike is a claim.** Session A's `verify_names.py` entry was struck as
+  settled and the code was never changed; nothing in fifteen sessions checked a
+  strike. The close does, and any future pass should.
+- **A generated page's population is checked by re-deriving the population,
+  never by re-deriving a row.** Session A confirmed one sample from each of the
+  eight views and all three of `gen_reference.py`'s published errors survived
+  it.
+- **A glossary entry is checked twice** — against the decompile and against its
+  owner page as it now reads. Five of the sweep's fifty corrections were
+  invisible to the first check and obvious to the second.
+- **A term the corpus does not use is not an entry**, however true its sentence:
+  *noise cell* is re-filed as *Cell*, which is the word the pages use.
+
+### For the version pass
+
+`verify_names.py` against a 26.3 tree is the mechanical half of rule 3: every
+name that stops resolving is a rename or a removal, and it names the pages that
+need re-reading. The eight generated views and the atlas re-derive themselves.
+What needs a human read is the numbers — `claims.py --all --counts` — and the
+diagrams whose orderings a version can change.
 
 ## Session N — the corpus-wide count sweep (pass 4) *(2026-09-05)*
 
@@ -4873,8 +5099,8 @@ Paths relative to `reference/26.2/net/minecraft/`.~~
   or by *server.properties*".~~ CONFIRMED (session C):
   `Main.createNewWorldData` takes the `DedicatedServerSettings` and is the
   no-world-data branch of `WorldLoader.load` (`server/Main.java:194, 243`).
-- `reference/level-data-and-rules.md` — "creating a world is who writes
-  it".
+- ~~`reference/level-data-and-rules.md` — "creating a world is who writes
+  it".~~ **WRONG, and settled by session O**: nothing in world creation writes it. The `MinecraftServer` constructor pushes `WorldGenSettings` into the storage on every boot, and the only direct writer is the Realms upload flow. The page now says so.
 - ~~`introduction.md` — the lane gate added to *Verified means tested*; the
   dependency-figure caption ("each cut by a definition rather than a
   reordering").~~
@@ -4888,13 +5114,13 @@ Paths relative to `reference/26.2/net/minecraft/`.~~
 
 ## Session O — Reference *(2026-09-03)*
 
-**Pages rewritten or reshaped.** `reference/README.md` (new, a landing
+~~**Pages rewritten or reshaped.** `reference/README.md` (new, a landing
 page), `reference/level-data-and-rules.md` (reshaped around its table),
 `reference/math-and-primitives.md` (figure added, surprises list dissolved
 to prose), `reference/threads.md` (a new section), `reference/glossary.md`
 (eleven entries added, one reordered), `reference/naming-drift.md`
 (headings only), `reference/block-update-flags.md` (new, extracted from
-`blocks/blocks-and-states.md`, which now links to it).
+`blocks/blocks-and-states.md`, which now links to it).~~ Settled by session O: `README` and `threads` by session A, `naming-drift` and `block-update-flags` with them, and `level-data-and-rules`, `math-and-primitives` and `glossary` in this session — all three had errors.
 
 ~~**Claims introduced, check first.**~~
 
@@ -4907,7 +5133,7 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
   ~~to *the pong bookkeeping*). Every row's "what it does" is one method body~~
   ~~read once; `handleLowDiskSpaceWarning` → `Minecraft.sendLowDiskSpaceWarning`~~
   ~~→ `Minecraft.execute` is the row that makes a claim about a second class.~~
-- `math-and-primitives.md`, the coordinate-spaces figure: every edge is a
+- ~~`math-and-primitives.md`, the coordinate-spaces figure: every edge is a
   named method and every shift count is a claim — `ChunkPos.containing`
   shift 4, `QuartPos.fromBlock` shift 2, `ChunkPos.getRegionX` shift 5 (the
   old page said "32 chunks" and never "shift 5"), `SectionPos.of` from a
@@ -4916,13 +5142,13 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
   Also the new intro sentences: "each a power of two apart from its
   neighbour" and "every conversion is a named static method on the type you
   are converting *to*" — a generalisation the old page did not make; check
-  it against every edge in the figure.
-- `level-data-and-rules.md`: no new facts, but eleven surprises were
+  it against every edge in the figure.~~ Settled by session O: every shift count and bit width confirmed, and **the sentence wrapping the figure is what fell** — eight of the seventeen edges break its thesis.
+- ~~`level-data-and-rules.md`: no new facts, but eleven surprises were
   merged into the sections; the drafting agent's report listed every
   rewording. Two to read closely: "That forwarding is how game time comes
   to be shared by every level" (a causal sentence built from two old ones),
   and "So every level reports the same spawn, and it is not the one
-  *level.dat* holds" (the old text said "not the stored one").
+  *level.dat* holds" (the old text said "not the stored one").~~ Settled by session O: the first sentence holds; the second was **wrong** — the effective spawn *is* the stored one wherever the stored one is inside the border.
 - ~~`reference/README.md`, the table's last column: which parts' landing
   pages link each reference page, read off the landing pages today (grep
   `reference/` in `src/systems/*/README.md`); a landing-page edit in a
@@ -4937,13 +5163,13 @@ to prose), `reference/threads.md` (a new section), `reference/glossary.md`
   serializers, twenty-six loot context parameter sets, thirty-four
   density-function nodes, ten flag bits, twenty pages on the shelf, and
   `gen_reference.py all` is the command the page names.
-- `glossary.md`, the eleven new entries — *authority*, *batch*, *event
+- ~~`glossary.md`, the eleven new entries — *authority*, *batch*, *event
   loop*, *frame*, *noise cell*, *permission atom*, *permission set*,
   *quart*, *staging buffer*, *submit node*, *unattended command* — each
   written from one sentence of its owner page; the confident ones are
   "an operator's level-based set grants exactly one [atom]", "No packet
   carries one in either direction", "the client parses twice more", and
-  "`Minecraft` and `MinecraftServer` are both one" (event loop).
+  "`Minecraft` and `MinecraftServer` are both one" (event loop).~~ Settled by session O: two of the eleven were wrong (*submit node*, *unattended command*), two were misleading (*permission set*, *event loop*), and *noise cell* names a term the corpus does not use.
 - ~~`block-update-flags.md`: the table moved verbatim; the new opening
   sentence claims `fluids` and `pistons-and-block-events` "mean the same
   bits" when they pass a flag word.~~ CONFIRMED for the Part V half by session
@@ -4956,9 +5182,9 @@ session on but have had one reader each; re-sweep every row against the
 decompile, hardest on the two that are declaration orders. Strike the
 "glossary if generated" clause above — it is hand-kept.~~
 
-**Diagrams redrawn.** One added (`math-and-primitives`, the coordinate
+~~**Diagrams redrawn.** One added (`math-and-primitives`, the coordinate
 graph — seventeen edges, each a conversion claim); one added
-(`reference/README.md`, the shelf — asserts which tool writes which page).
+(`reference/README.md`, the shelf — asserts which tool writes which page).~~ Settled by session O: the shelf figure holds and its table had drifted (block update flags is `IV, V`); the coordinate graph holds edge by edge and its caption did not.
 
 - ~~**2026-09-03, session L — Part XI Rendering.** Twelve pages: eight
   rewritten (`the-frame`, `the-window`, `blaze3d`, `models-and-atlases`,
@@ -5702,10 +5928,10 @@ graph — seventeen edges, each a conversion claim); one added
     mob-spawning radius are three different radii of which only two are
     settings. Each is checkable.~~
 
-  - **`level-data-and-rules` moved to Reference** and its body was *not*
+  - ~~**`level-data-and-rules` moved to Reference** and its body was *not*
     re-verified this session — only its header, its links and its framing
     changed. Pass 2 found eleven wrong file paths on it; re-check the paths
-    and the who-owns-what table again.
+    and the who-owns-what table again.~~ Settled by session O: all sixteen `SavedDataType` paths re-derived and right; one row gave a path with no namespace segment, and three rows overstated what the client is told.
 
   - ~~**Two claims their own authors flagged as unverified**, both worth a
     direct read: `scheduled-ticks`' delay-0 cross-queue inference, and

@@ -128,10 +128,11 @@ of step with each other. That is a narrow
 guarantee, and it is worth stating narrowly: it proves the names are real
 and current in 26.2, not that the sentence around them is true. The
 sentences are what the passes are for.
-Every claim has been fact-checked against the decompile once; the pages
-were then restructured into the book you are reading, and a second check
-over all of them is the pass in progress; anything still wrong is a
-correction waiting to be filed.
+Every claim has been fact-checked against the decompile twice — once as
+drafted, and once again after the pages were restructured into the book you are
+reading. Both times, every page had something wrong on it. What is left is a
+correction waiting to be filed, and the [repository](https://github.com/AlexanderjFraser/MinecraftDocs)
+is where to file it.
 
 **How the system works, not how the code reads.** Object-level: this class
 owns that state, this call happens on that thread, this packet is sent
