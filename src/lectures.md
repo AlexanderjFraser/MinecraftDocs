@@ -471,9 +471,10 @@ costs one forward reference and buys a whole arc in one place.
    whose water was decided before the cave was: a carver chooses the shape
    and the aquifer chooses the material.
 4. [Blending at the old-chunk border](systems/worldgen/blending.md) — the
-   part's *pattern* lecture, and the one place world generation reads the
-   world. One measurement of a neighbour's blocks, five consumers at four
-   statuses, and a seam where the terrain splines are switched off entirely.
+   part's *pattern* lecture, and the one place world generation reads an
+   older version's work. One measurement an old chunk takes of its own
+   blocks, five consumers at four statuses, and a seam where the terrain
+   splines are switched off entirely.
 5. [Features and placement](systems/worldgen/features-and-placement.md) —
    decoration as a stream of positions folded through filters, in an order
    the whole dimension agreed on before any chunk existed. Two biomes that
@@ -488,7 +489,7 @@ costs one forward reference and buys a whole arc in one place.
    generates chunks to answer a question.
 8. [Jigsaw and templates](systems/worldgen/jigsaw-and-templates.md) — how a
    village assembles itself, and how any piece becomes blocks. The growth
-   limit works by offering the wrong pool.
+   limit works by taking the right pool away.
 9. [Hand-built structures](systems/worldgen/hand-built-structures.md) — the
    older assembler, which is still most of the code. Four families of piece
    grammar, and the one structure that throws itself away and starts again
@@ -499,8 +500,10 @@ costs one forward reference and buys a whole arc in one place.
     carried across a reload by being serialised to JSON, and a Cancel button
     that does not undo.
 
-Two and three can be watched in either order — they are independent statuses
-and neither reads the other; four needs both and nothing after it. Seven
+Two comes before three: `ChunkPyramid` makes `ChunkStatus.BIOMES` a
+requirement of both `ChunkStatus.NOISE` and `ChunkStatus.SURFACE`, and the
+surface pass reads the biome. Four needs both, and reaches one status forward
+into five and six's. Seven
 comes before eight and nine, which are alternatives to each other rather
 than a sequence. Ten is the object the other nine read, told last because
 it is a tree of everything they explain.
@@ -508,11 +511,14 @@ it is a tree of everything they explain.
 Part XII assumes Part IV's [chunk generation
 pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the
 only page that says when any of this runs and what the twelve statuses are,
-and every lecture here opens by naming one. It also assumes Part IV's
+and seven of the ten lectures here name one. It also assumes Part IV's
 [chunk anatomy](systems/world/chunk-anatomy.md) for what is being written
-into, and three Part II lectures — codecs, registries and [the data-driven
-type pattern](systems/foundations/data-driven-types.md), which this part
-alone instantiates five times — because worldgen is the most thoroughly
+into and Part IV's [environment attributes and
+timelines](systems/world/environment-attributes-and-timelines.md) for lecture
+two, where `Biome` has been hollowed out into one layer of a modifier stack;
+and three Part II lectures — codecs, registries and [the data-driven type
+pattern](systems/foundations/data-driven-types.md), whose fifty-six instances
+this part owns twenty-six of — because worldgen is the most thoroughly
 data-driven system in the game.
 
 ## XIII · Commands and data packs
@@ -632,7 +638,7 @@ of them will find a later part's first surprise unexplained.
 | [The server tick](systems/server/server-tick.md) and [the level tick](systems/server/server-level-tick.md) | III | IV, V, VI, VII, VIII, IX, XIII — seven of the eight later parts that run on the Server thread, for *which phase* something ran in |
 | [Chunk anatomy](systems/world/chunk-anatomy.md) | IV | V, VI, XII — a block state's home, a ticking entity's chunk, and what terrain is written into |
 | [Tickets and loading](systems/world/tickets-and-loading.md) | IV | III, VI — what *entity-ticking* means |
-| [Environment attributes and timelines](systems/world/environment-attributes-and-timelines.md) | IV | III, VI, XI — the clock, the schedule, and the colour of the sky |
+| [Environment attributes and timelines](systems/world/environment-attributes-and-timelines.md) | IV | III, VI, XI, XII — the clock, the schedule, and the colour of the sky |
 | [Blocks and states](systems/blocks/blocks-and-states.md) | V | VI — the collision shapes entities are pushed out of |
 | [Authority](systems/entities/authority.md) | VI | VIII, IX, X — the premise under every page about a player, and under *what the client is told* |
 | [Contexts and predicates](systems/items/contexts-and-predicates.md) | VII | XIII — an advancement trigger's conditions are loot conditions |
