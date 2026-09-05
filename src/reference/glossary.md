@@ -94,9 +94,10 @@ property set and its state table. One `Block`, many `BlockState`s. → [blocks a
 its state (a chest's contents, a furnace's progress), stored on the chunk. → [block entities](../systems/blocks/block-entities.md)
 
 **Block event** — a message from a block to itself (a piston push, a note
-block, a chest lid), queued on `ServerLevel` and drained at one fixed point
-in the level tick — so it lands late, usually within the same tick — and
-mirrored to nearby clients as a packet. → [pistons and block events](../systems/blocks/pistons-and-block-events.md)
+block, a chest lid), queued on `ServerLevel` and drained at one named phase of
+the level tick — a wait for a phase rather than a delay, so it usually runs in
+the very tick it was raised — and mirrored to nearby clients as a packet.
+→ [pistons and block events](../systems/blocks/pistons-and-block-events.md#the-queue-and-which-tick-it-drains-in)
 
 **BlockState** — one combination of a block's property values, built once by
 the block's `StateDefinition` and compared by identity;

@@ -69,6 +69,17 @@ could not see a link whose text wrapped across a newline, so 243 links had
 never been checked and one was broken. The §7 entry on its row was **ruled
 out rather than written** — the world border gets no lecture, and the ruling
 says why.
+**Session E is done** (2026-09-05, Part V): all seven pages and the part's
+Reference page rewritten, seven mechanisms cut to a citation and one moved the
+other way, thirty-seven anchors where the part again had none, and **six
+corrections** — four of them one page contradicting another, the shape four
+sessions running. The queue's standing question came back *yes*: one of the six
+spokes had started re-explaining the hub's two update channels. Part V is the
+book's lowest-covered part at 40% of lines named, and the session's finding is
+that the number is right to be low and no page said so — the landing page now
+does, five family sentences discharge what a sentence can reach, and four
+mechanisms too big for one (the hopper first among them) go to §7. **No tool
+bug**, the first pass-5 part session without one.
 
 ## The passes
 
@@ -790,3 +801,89 @@ plan as it stood at its close)*
   Twelve queue entries struck, one §7 entry ruled out with its reason, and what
   the reading raised for sessions E, F, I, K and N and for passes 6, 7 and 8
   appended to [pass5.md](pass5.md) rather than left in the log.
+- **2026-09-05, session E — Part V · Blocks (pass 5).** Seven pages plus the
+  part's Reference page, one agent each, the part read end to end in watching
+  order first. **All eight rewritten**, and four pages in three other parts
+  edited because a Part V page's owner or duplicate lived there. **Six
+  corrections**, of which four were again one page contradicting another — the
+  shape four sessions running. The Reference page said
+  `Block.UPDATE_INVISIBLE` suppressed the broadcast on either side; bit 4 has
+  exactly one reader in the game and the test sits inside the client-side arm,
+  so a server write carrying it still broadcasts — and `blocks-and-states` had
+  it right all along, which makes this a catalogue contradicting its own
+  lecture. `scheduled-ticks` had `DiodeBlock.shouldPrioritize`'s condition
+  **inverted** (it fires when the diode in front *is* pointing back, not when
+  it is not), and the copy that survived the session's own cut is the correct
+  one. `block-interaction` had `Minecraft.startUseItem`'s `isDestroying` test
+  as a condition on setting the four-tick delay where it wraps the whole method
+  body, understating what `prediction-and-acks` already had right. And the
+  glossary said a block event "lands late", which inverts the page's argument
+  that the queue is a wait for a named phase rather than a delay. The two
+  unforced ones were within a page: `diodes-and-observers` said
+  `RepeaterBlock.LOCKED` was the only property computed from a redstone reading
+  *outside* tick time and then that `DiodeBlock.POWERED` was the only one
+  computed from a reading at all — each clause denying the other, where the
+  truth is two properties differing in *when* — and `signal-and-dust`'s "all
+  three stop early" hung on a table of three direction *arrays*, two of which
+  are fan-out orders that never stop early; the claim is true of the three
+  reading methods inside the first row. **Seven suspicions were re-derived and
+  found sound** and are recorded as such, including two the agents read as
+  contradictions and are not: a client write reaches the renderer through
+  **two** doors, only one of which is gated on `ModelManager.requiresRender`,
+  and `Block.UPDATE_LIMIT` and `CollectingNeighborUpdater.maxChainedNeighborUpdates`
+  are genuinely two budgets over two cascades. **Ownership:** the queue's
+  standing question — whether any of the six spokes had started re-explaining
+  the hub's two update channels — came back **yes**, and
+  `block-interaction`:174-180 was restating all three method bodies verbatim;
+  cut to the door's consequence and the anchor. Six more mechanisms cut to a
+  citation: `Block.updateOrDestroy`'s server-gated destroy (told three times,
+  and the flags-3 detail *moved* to the hub rather than dropped), the flag
+  word's definition and `Block.UPDATE_LIMIT`'s (the Reference page's own
+  opening, reproduced sentence for sentence), the neighbour channel's direction
+  order, `SignalGetter.getSignal`'s conductor gate (to `signal-and-dust`), the
+  *except*-entity sound rule (to `what-makes-a-sound`), and the block-event
+  queue's four rules, which `server-level-tick` and the piston page both
+  stated in full and which now live once. The 10.00 duplication pair session D
+  handed over — the repeater's booking, near-verbatim on two pages — was cut on
+  `scheduled-ticks`' side, because rule 1 gives all three of its bold
+  paragraphs to the diode page and rule 4 therefore never applies; what stayed
+  is the queue's own half, that a booking cannot be called off. One mechanism
+  moved the other way: the fact that `ChunkHolder.broadcastChanges` reads the
+  level *again* when it builds the packet — which is what
+  `signal-and-dust`'s hook rests on and which its owner in Part IX did not have.
+  **Seams:** Part V carried **no anchor on any cross-part link** before this
+  session and now carries thirty-seven; one link was landing on the wrong page
+  entirely (`blocks-and-states` cited `signal-and-dust` for
+  `Level.updateNeighbourForOutputSignal`, a method that page never names).
+  **Coverage:** Part V is the book's lowest at 40% of lines named, and the
+  session's finding is that the number is mostly right to be low — the 344
+  unnamed classes are one `Block` subclass each — but that **no page said so**.
+  The landing page now does, and five family sentences discharge what a
+  sentence can reach: the three `block/state/` sub-packages and
+  `InstantNeighborUpdater`, the redstone sources, the seven block-event raisers
+  and `PistonMath`, the `block/entity` family with the hopper's cadence, and
+  the use-hook family — for which the count [pass5.md](pass5.md):1734 asked to
+  be restored was re-derived (25 blocks override `BlockBehaviour.useItemOn`, 52
+  `BlockBehaviour.useWithoutItem`). Four mechanisms are declared too big for a
+  sentence and go to §7 for the second edition: **the hopper**, which three
+  pages gesture at and none explains; the sculk *spread* machine; the structure
+  and command blocks, named nowhere in `src/`; and the beacon, conduit,
+  trial-spawner and vault state machines, half-adopted by Parts VI and VII.
+  **The §7 block-event entry is discharged and its count corrected** — three
+  blocks, not four; the fourth was `ComparatorBlock`, whose override the page
+  itself shows is dead. **The landing page**, rewritten last to the role: it now
+  opens inside two scenarios rather than on book furniture (a door that swings
+  both halves, a lamp that waits), states its size through the include, names
+  the four kinds of answer its verified line had promised and no page
+  enumerated, and gains a *where the part stops* section — about ten thousand
+  lines of its own packages are taught in six other parts. **Rulings:**
+  `signal-and-dust`'s experimental evaluator stays as the page's counterfactual
+  (no other page can own it, and it answers the question the page's own
+  scenario raises), with a pass-6 note to run the same lever and two dust
+  through it; `block-entities` needs no fourth clause on the landing page, so
+  the queue's *odd page* entry is settled by rewriting the argument rather than
+  the part. **The tools found nothing wrong this session** — the first pass-5
+  part session with no tool bug. Five gates green. Eight queue entries struck,
+  one §7 entry discharged with a corrected count, and what the reading raised
+  for sessions G, H, I and K and for passes 6, 7 and 8 appended to
+  [pass5.md](pass5.md) rather than left in the log.

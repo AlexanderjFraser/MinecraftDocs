@@ -341,14 +341,11 @@ chunk. What the client does with all of this is
 
 `ServerLevel.runBlockEvents` drains `ServerLevel.blockEvents` — the
 note-block plays, piston pushes and chest-lid counts raised anywhere in this
-tick — completely, calling `BlockBehaviour.BlockStateBase.triggerEvent`
-after re-checking that the block at the position is still the one the event
-was raised for, the same promise a scheduled tick makes. When the block
-returns true, a `ClientboundBlockEventPacket` goes to players within 64
-blocks. Because the set is a linked hash set, two identical events in one
-tick collapse into one; and an event whose chunk is not block-ticking is
-parked on `ServerLevel.blockEventsToReschedule` and re-queued rather than
-dropped.
+tick — completely, and this is the only point in the tick at which it happens.
+What the queue promises the blocks in it, and why a piston told about a change
+by a packet handler still moves in the same tick this phase belongs to, is
+[pistons and block
+events](../blocks/pistons-and-block-events.md#the-queue-and-which-tick-it-drains-in).
 
 `ServerLevel.handlingTick` went true at the very top of the tick and goes
 false here, so the whole entity half runs outside that window. Its one

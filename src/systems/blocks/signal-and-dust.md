@@ -24,7 +24,7 @@ two ordered phases and does not produce the staircase at all.
 | class | what it decides | thread |
 |---|---|---|
 | `SignalGetter` | every question about power: what a position emits, what reaches it, and the direction order the answers are gathered in | a `Level` interface, either side |
-| `BlockBehaviour.BlockStateBase` | the three answers a state gives — is it a source, what is its weak signal per face, what is its strong signal | either side |
+| `BlockBehaviour.BlockStateBase` | the three answers this trace asks a state for — is it a source, what is its weak signal per face, what is its strong signal. The analog pair beside them is the comparator's | either side |
 | `LeverBlock` | the trace's source: 15 in every direction, and 15 *strongly* into one block only | server — the client's copy writes nothing |
 | `RedStoneWireBlock` | which sides a wire connects to, what it emits through them, and the mutable flag that stops it counting itself | server |
 | `RedstoneWireEvaluator` | *minus one per block*: what the neighbouring wires are worth to this one | server |
@@ -68,17 +68,17 @@ flowchart TB
 ```
 
 The two facts that make the staircase are both in that figure. The write uses
-`Block.UPDATE_CLIENTS` **alone**, so the fan-out is not the one
+`Block.UPDATE_CLIENTS` **alone** ([block update
+flags](../../reference/block-update-flags.md)), so the fan-out is not the one
 `Level.setBlock` would have done — it is issued afterwards, by hand, over
 seven positions rather than one. And the recursion terminates on *value*, not
 on distance: a wire whose recomputed strength equals what it already holds
 writes nothing and tells nobody. A line going dark therefore re-enters every
 wire once per step of the descent, and each visit is the last one only when
-the value has stopped moving. None of those intermediate writes is ever sent.
-`Level.sendBlockUpdated` only records the position in a set on the
-`ChunkHolder`, and `ChunkHolder.broadcastChanges` builds the packet once per
-tick by reading the level again — so a position written five times in a tick
-is broadcast once, with the value it ended on.
+the value has stopped moving. None of those intermediate writes is ever sent: `Level.sendBlockUpdated`
+records the position and nothing else, and the once-a-tick flush reads the
+level back to build the packet ([what the client is
+told](../networking/what-the-client-is-told.md#block-changes-one-flush-a-tick-two-audiences)).
 
 ## What a block answers when it is asked for power
 
@@ -111,6 +111,15 @@ to the lever reads. `LeverBlock.getDirectSignal` is 15 only into the one block
 the lever is attached to. So the block behind a lever becomes a source in its
 own right, and everything touching *that* block sees 15 too.
 
+Every other source in the game answers the same three questions and differs
+only in what it answers and when it changes its mind: `ButtonBlock` books a
+scheduled tick to turn itself off, `BasePressurePlateBlock` and its two
+subclasses re-read what is standing on them, `DetectorRailBlock` and
+`TripWireHookBlock` watch for entities, `DaylightDetectorBlock` reads the sky,
+and `RedstoneTorchBlock` and `RedstoneWallTorchBlock` invert whatever they are
+attached to. None of them needs a section of its own, because the contract
+above is the whole of what a circuit sees.
+
 ### Three direction orders, and only one of them is about reading
 
 Three fixed direction orders run through this page and they are not
@@ -123,12 +132,15 @@ what a block **reads**, and it is the one this page uses.
 | `NeighborUpdater.UPDATE_ORDER` | west, east, down, up, north, south | which neighbour is told first about a change, on the neighbour channel |
 | `BlockBehaviour.UPDATE_SHAPE_ORDER` | west, east, north, south, down, up | which neighbour is asked first to re-fit, on the shape channel |
 
-All three stop early, and not on the same thing: the two that return a number
-stop at a 15, while `SignalGetter.hasNeighborSignal` — which returns a boolean
-— stops at the first answer above zero. That is not a micro-optimisation with
-no consequences: a position saturated from one side never reads the others at
-all. `SignalGetter.DIRECTIONS` is plain `Direction` order, which is the only
-reason its first entry is *down*.
+Only the first row is walked as an array at all, and the three *reading*
+methods in it stop early, not on the same thing: the two that return a number —
+`SignalGetter.getBestNeighborSignal` and `SignalGetter.getDirectSignalTo` —
+stop at a 15, while `SignalGetter.hasNeighborSignal`, which returns a boolean,
+stops at the first answer above zero. That is not a micro-optimisation with no
+consequences: a position saturated from one side never reads the others at all.
+The other two rows are orders in which something is *told*, and a fan-out
+never stops early. `SignalGetter.DIRECTIONS` is plain `Direction` order, which
+is the only reason its first entry is *down*.
 
 ## Dust, and how far it reaches
 
@@ -216,7 +228,7 @@ for the ordinary reason: nothing ever calls their
 follows the same split for a different reason: `LeverBlock.pull` is handed a
 null player, so nobody is excluded and the clicker hears the server's
 `ClientboundSoundPacket` like everyone else. Compare
-[block interaction](block-interaction.md), where the door passes the clicker
+[block interaction](block-interaction.md#the-door-writes-ten), where the door passes the clicker
 as *except* and they hear their own prediction instead.
 
 Two details in the diagram are worth naming. The lever's `Level.setBlock`
@@ -226,7 +238,7 @@ and at the block it stands on — and because nothing was running when the first
 one was queued, it drains the entire dust cascade before the other two are
 even issued. And the ordering of the seven positions a wire updates is
 fixed by no array: they come out of a hash set. The depth-first drain of
-`CollectingNeighborUpdater` is [block interaction](block-interaction.md)'s
+`CollectingNeighborUpdater` is [block interaction](block-interaction.md#the-updater-underneath-a-stack-drained-depth-first)'s
 subject, and it is what puts the second dust's whole cascade ahead of the
 lever's remaining directions.
 
@@ -242,8 +254,10 @@ under a non-conducting one — and calls
 
 ## The second implementation
 
-`FeatureFlags.REDSTONE_EXPERIMENTS` is a feature flag, turned on by a built-in
-data pack whose entire content is the line that enables it, and
+`FeatureFlags.REDSTONE_EXPERIMENTS` is a feature flag ([identifiers and
+registries](../foundations/identifiers-and-registries.md#feature-flags-the-same-registry-narrowed)),
+turned on by a built-in data pack whose entire content is the line that enables
+it ([the resource system](../foundations/resource-system.md#discover-the-repository-and-its-packs)), and
 `RedStoneWireBlock.useExperimentalEvaluator` asks the level for it on **every
 call** — `RedStoneWireBlock.evaluator` is always the default one, and an
 `ExperimentalRedstoneWireEvaluator` is a fresh object per update, because it
@@ -263,8 +277,11 @@ reach is recorded in `ExperimentalRedstoneWireEvaluator.updatedWires`, an
 insertion-ordered map of position to a packed orientation and power. Only then
 are the states written — the write pass drops any entry whose stored power
 already matches, so what survives it is the wires that really changed — with
-`Block.UPDATE_CLIENTS` and, for every wire but sometimes the first,
-`Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE`, which
+`Block.UPDATE_CLIENTS` and, for every wire the pass touches,
+`Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE` — the sole exception being the wire an
+evaluation *started* from, and then only when the caller was
+`RedStoneWireBlock.onPlace`, which asks for the shape updates around a
+newly placed wire. The flag is what
 `NeighborUpdater.executeShapeUpdate` honours by skipping any shape update
 whose **target** is dust, whatever the source.
 
@@ -286,11 +303,10 @@ evaluator does not, which is what opens it.
 **Does a long line of dust really count down through every value when it turns
 off?** Inside the tick, yes: each wire recomputes independently and tells its
 neighbours only when its own number moved, so the far end is reached once for
-each value the near end passes through on the way down. On screen, no.
-`ChunkHolder.broadcastChanges` builds one packet per changed position per tick
-by reading the level, so a position written five times sends the last value
-once. The staircase costs neighbour updates, not frames — and the experimental
-evaluator exists to make it one ordered pass instead.
+each value the near end passes through on the way down. On screen, no — the
+tick's once-only flush sends the value the position ended on. The staircase
+costs neighbour updates, not frames, and the experimental evaluator exists to
+make it one ordered pass instead.
 
 **Why does dust point into a block that cannot be powered?** Because the
 drawing rule and the powering rule are different rules.

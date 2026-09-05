@@ -39,19 +39,19 @@ differently: the server always defers, the client never does.
 
 The drain is `ServerLevel.runBlockEvents`, in the *blockEvents* section of
 `ServerLevel.tick`, after *tickPending* and *chunkSource* and before
-*entities* ([the level tick](../server/server-level-tick.md)). It is worth
+*entities* ([the level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates)). It is worth
 being exact about what that timing means, because "a block event is a tick
 late" is only sometimes true:
 
 - **Queued by a packet handler — the same tick.**
   `MinecraftServer.processPacketsAndTick` drains the queued packets and *then*
   calls `MinecraftServer.tickServer` in the same lap ([the server
-  tick](../server/server-tick.md)), so a lever a player flipped is handled
+  tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)), so a lever a player flipped is handled
   before the level ticks at all, and the event it raised is drained in that
   same level tick.
 - **Queued by a scheduled tick — the same tick.** *tickPending* runs before
   *blockEvents*, so a repeater firing into a piston is also drained
-  immediately ([scheduled ticks](../world/scheduled-ticks.md)).
+  immediately ([scheduled ticks](../world/scheduled-ticks.md#what-one-drain-actually-does)).
 - **Queued by another block event — the same tick.**
   `ServerLevel.runBlockEvents` drains until the set is empty, so an event
   raised while the drain is running is taken by the same drain.
@@ -74,9 +74,13 @@ event named — the same promise a scheduled tick makes. When
 The piston is the mechanism's most demanding customer but not its only one.
 Three blocks raise events directly — `PistonBaseBlock`, `NoteBlock` and
 `PotentSulfurBlock` — and seven block entities raise their own, reaching
-themselves back through `BaseEntityBlock.triggerEvent`, which is how a chest
-lid, an ender chest, a shulker box, a bell, a decorated pot, a spawner and an
-end gateway all get animated on clients that own no copy of their state.
+themselves back through `BaseEntityBlock.triggerEvent`: `ChestBlockEntity`,
+`EnderChestBlockEntity`, `ShulkerBoxBlockEntity`, `BellBlockEntity`,
+`DecoratedPotBlockEntity`, `SpawnerBlockEntity` and `TheEndGatewayBlockEntity`
+— a chest lid, an ender chest, a shulker box, a bell, a decorated pot, a
+spawner and an end gateway, all animated on clients that own no copy of their
+state. The other forty-odd block entities in the game raise none, which is
+why a block event is a small channel rather than a general one.
 `ComparatorBlock` is the odd one out and worth a moment: it overrides
 `BlockBehaviour.BlockStateBase.triggerEvent` to forward to its block entity,
 but `ComparatorBlockEntity` overrides nothing and nothing anywhere raises a
@@ -126,16 +130,17 @@ own position *or* at the one above it, and `DropperBlock` inherits that, and
 the reach out by hand, and no other block in the game has it. That is why
 quasi-connectivity is a short list of block-by-block quirks rather than a
 redstone rule. What signal means, and how the wire beside the piston comes to
-be connected to it at all, is [signal and dust](signal-and-dust.md).
+be connected to it at all, is [signal and dust](signal-and-dust.md#dust-and-how-far-it-reaches).
 
 Between the two loops sits a third question — `SignalGetter.hasSignal` at the
-piston's *own* position, looking down — and it can never return true.
-`SignalGetter.getSignal` consults the strong power pushed into a position only
-when the block there is a redstone conductor, and `Blocks.pistonProperties`
-declares a piston never to be one; `PistonBaseBlock` overrides no signal
-method of its own, so its weak answer is zero. Strong power reaches a piston
-the ordinary way, through its conducting neighbours, in the first loop. The
-middle call is dead.
+piston's *own* position, looking down — and it can never return true. A
+position answers with strong power only if the block standing there is a
+redstone conductor ([signal and
+dust](signal-and-dust.md#what-a-block-answers-when-it-is-asked-for-power)), and
+`Blocks.pistonProperties` declares a piston never to be one; `PistonBaseBlock`
+overrides no signal method of its own either, so its weak answer is zero as
+well. Strong power reaches a piston the ordinary way, through its conducting
+neighbours, in the first loop. The middle call is dead.
 
 `PistonBaseBlock.checkIfExtend` turns the answer into one of three events.
 Powered and not extended raises `PistonBaseBlock.TRIGGER_EXTEND` — but only if
@@ -146,7 +151,9 @@ raises `PistonBaseBlock.TRIGGER_CONTRACT`, or
 flight: the block two ahead is still a `Blocks.MOVING_PISTON` facing the same
 way and extending, and either its progress is under half, or it was ticked this very
 game tick, or `ServerLevel.isHandlingTick` says the level is still inside the
-window that closes when the block-event drain ends.
+window that opens at the top of the tick and closes when this drain ends ([the
+level
+tick](../server/server-level-tick.md#block-events-close-the-handlingtick-window)).
 
 ## What moves, and what is simply gone
 
@@ -192,16 +199,19 @@ what is [blocks and states](blocks-and-states.md#the-two-update-channels).
 | a destroyed block, set to air | `PistonBaseBlock.moveBlocks` | 18 | `Block.UPDATE_KNOWN_SHAPE`, `Block.UPDATE_CLIENTS` |
 | the piston base, now extended | `PistonBaseBlock.triggerEvent` | 67 | `Block.UPDATE_MOVE_BY_PISTON`, `Block.UPDATE_CLIENTS`, `Block.UPDATE_NEIGHBORS` |
 
-The vacated row is rarer than it looks. `PistonBaseBlock.moveBlocks` starts
-with every pushed position marked for deletion and then unmarks each
-destination and, on an extension, the arm — so for a straight push down a line
-every origin is somebody's destination and the set empties. In this page's
-trace nothing is written at 82 at all: the client is told that the base is
-extended, and **nothing** about the two positions now holding placeholders.
-Each placeholder's `PistonMovingBlockEntity` is injected by hand
-with `Level.setBlockEntity` — `MovingPistonBlock.newBlockEntity` returns null,
-because a moving piston is never created by the ordinary block-entity path —
-and carries the real block as `PistonMovingBlockEntity.movedState`.
+In this page's trace nothing is written at 82 at all — every origin down a
+straight push is somebody else's destination, so the vacated set empties — and
+the reader should take the table's point from the two rows that do fire here:
+the client is told that the base is extended, and **nothing** about the two
+positions now holding placeholders. Each placeholder's
+`PistonMovingBlockEntity` is injected by hand with `Level.setBlockEntity` —
+`MovingPistonBlock.newBlockEntity` returns null, because a moving piston is
+never created by the ordinary block-entity path ([block
+entities](block-entities.md#create-keep-replace-remove)) — and carries the real
+block as `PistonMovingBlockEntity.movedState`. That state is also the one thing
+about a push that *does* travel as data: `PistonMovingBlockEntity` overrides
+`BlockEntity.getUpdateTag`, so a player who loads the chunk mid-push receives
+the placeholder and its cargo in the chunk packet rather than as an update.
 
 `ClientPacketListener.handleBlockEvent` hands the packet to the base
 `Level.blockEvent`, which runs `PistonBaseBlock.triggerEvent` immediately
@@ -209,10 +219,10 @@ against the `ClientLevel`: the same resolver, the same placeholders, the same
 injected block entities. What the client's copy does not do is the
 server's-side-only work — no drops for a crushed block, no game event, no
 `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` — and, most
-audibly, no sound. `PistonBaseBlock.triggerEvent` passes a null *except*
-entity, and `ClientLevel.playSeededSound` plays a sound only when *except* is
-the local player — so the piston you hear is the server's
-`ClientboundSoundPacket`, arriving beside the event. The particles of a crushed
+audibly, no sound. `PistonBaseBlock.triggerEvent` passes a **null** *except*
+entity, so nobody is excluded and there is no local prediction to hear: the
+piston you hear is the server's `ClientboundSoundPacket`, arriving beside the
+event ([what makes a sound](../client/what-makes-a-sound.md#who-hears-it)). The particles of a crushed
 block are the mirror image: the level event that spawns them is raised inside
 `PistonBaseBlock.moveBlocks` on the **client** side only, and only for a block
 outside `BlockTags.FIRE`.
@@ -221,8 +231,8 @@ outside `BlockTags.FIRE`.
 
 `PistonMovingBlockEntity.tick` runs in the block-entity phase on both sides
 and does one thing per tick: add 0.5 to `PistonMovingBlockEntity.progress`,
-after shoving whatever is in the swept slab with
-`PistonMovingBlockEntity.moveCollidedEntities` and dragging honey-stuck
+after shoving whatever is in the swept slab — `PistonMath` is the class that
+computes it — with `PistonMovingBlockEntity.moveCollidedEntities` and dragging honey-stuck
 entities with `PistonMovingBlockEntity.moveStuckEntities`. The
 `PistonMovingBlockEntity.NOCLIP` thread-local is set around each entity's own
 move — and holds the push `Direction` rather than a flag — so that a pushed

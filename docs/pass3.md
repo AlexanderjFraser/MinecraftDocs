@@ -1592,10 +1592,16 @@ writes one strikes it through; a session that rules one out says why, here.*
   `Item.Properties` weapon helpers — the components that make an item a
   weapon, for every item (session I); the `Structure.spawnOverrides`
   spawn-list override, which nothing in the corpus states (session G, cut
-  from `entity-lifecycle`). And the **block-event users** — four blocks and
-  seven block entities with their two int parameters — stay a paragraph on
-  `pistons-and-block-events` (session F's weaker candidate; declined by
-  session O because the page's argument needs them in place). Reference,
+  from `entity-lifecycle`). And the **block-event users** — *three*
+  blocks and seven block entities with their two int parameters — stay a
+  paragraph on `pistons-and-block-events` (session F's weaker candidate;
+  declined by session O because the page's argument needs them in place).
+  **Discharged by pass 5's session E**, which named all seven block entities
+  individually and re-derived the count: three blocks override
+  `BlockBehaviour.BlockStateBase.triggerEvent` directly (`PistonBaseBlock`,
+  `NoteBlock`, `PotentSulfurBlock`), and the *four* recorded here was carrying
+  `ComparatorBlock`, whose override the page itself shows is dead in both
+  directions. Reference,
   generated where possible. *(sessions F, G, I; ruled session O)*
 
 ---

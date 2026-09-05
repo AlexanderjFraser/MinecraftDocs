@@ -44,6 +44,208 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session E — Part V · Blocks *(2026-09-05)*
+
+Pages rewritten: all seven of Part V (`blocks/README`, `blocks-and-states`,
+`block-interaction`, `block-breaking`, `block-entities`, `signal-and-dust`,
+`pistons-and-block-events`, `diodes-and-observers`) and the part's Reference
+page `reference/block-update-flags`. Four pages in three other parts edited
+because a Part V page's owner or duplicate lived there: `world/scheduled-ticks`,
+`server/server-level-tick`, `networking/what-the-client-is-told`,
+`reference/glossary`, plus `src/lectures.md`.
+
+### Corrections — decompile open
+
+- **`reference/block-update-flags`, bit 4.** The row said
+  `Block.UPDATE_INVISIBLE` "suppresses whichever of those the side does",
+  i.e. on both sides. `Level.java`:237 is the only reader of bit 4 in the
+  game and the test sits inside the client-side arm:
+  `(updateFlags & 2) != 0 && (!isClientSide() || (updateFlags & 4) == 0) &&
+  (isClientSide() || chunk.getFullStatus()…)`. The server's extra condition is
+  the chunk status, never bit 4, so a *server* write carrying bit 4 still
+  broadcasts. The row now says so. `blocks-and-states`:291-295 already had it
+  right, so this was a Reference page contradicting its own lecture.
+- **`world/scheduled-ticks`, `DiodeBlock.shouldPrioritize`.** The deleted
+  paragraph said `TickPriority.EXTREMELY_HIGH` is picked "when the block it
+  powers is itself a diode **that is not pointing straight back at it**".
+  `DiodeBlock.java`:214-219 returns `isDiode(oppositeState) &&
+  oppositeState.getValue(FACING) != direction`, where `direction` is the way
+  this diode outputs and a diode's *FACING* points at its **input**. A diode
+  pointing straight back at this one has *FACING* equal to
+  `direction.getOpposite()`, so it satisfies the test — the condition was
+  inverted, and the excluded case is the diode aimed the *same* way. The
+  surviving copy, `diodes-and-observers`:123-126 ("a diode whose own input is
+  not on the far side of it"), is right and stands.
+- **`blocks/diodes-and-observers`:177-179 was self-contradicting.** It said
+  `RepeaterBlock.LOCKED` "is the only diode property computed from a redstone
+  reading *outside* tick time — `DiodeBlock.POWERED` is the only one computed
+  from a reading at all", which denies its own first clause.
+  `RepeaterBlock.java`:98 declares four properties and exactly two are computed
+  from a reading: *POWERED* at tick time (`DiodeBlock.tick`) and *LOCKED* inside
+  `RepeaterBlock.updateShape`:61-62. Rewritten to say two, and that the
+  difference between them is *when*.
+- **`blocks/block-interaction`, the `isDestroying` gate.** The page had
+  `Minecraft.rightClickDelay` set "only when `MultiPlayerGameMode.isDestroying`
+  is false", which reads as a condition on the assignment.
+  `Minecraft.java`:1880-1883 wraps the **whole method body** in
+  `if (!this.gameMode.isDestroying())`, so a use press arriving mid-dig is
+  discarded entirely rather than merely losing its delay.
+  `client/prediction-and-acks`:243-244 already said "gated on", so this was a
+  Part V page understating what a Part X page had right.
+- **`blocks/signal-and-dust`, "All three stop early".** The sentence followed a
+  table whose three rows are three *direction arrays*, two of which
+  (`NeighborUpdater.UPDATE_ORDER`, `BlockBehaviour.UPDATE_SHAPE_ORDER`) do not
+  stop early at all — they are fan-out orders. The claim is true of the three
+  *reading methods* named inside the first row:
+  `SignalGetter.getBestNeighborSignal` and `SignalGetter.getDirectSignalTo`
+  return at ≥ 15 (`SignalGetter.java`:22-30, 86-88) and
+  `SignalGetter.hasNeighborSignal` at > 0 (:73-74). The antecedent is now the
+  methods, and the sentence says explicitly that a fan-out never stops early.
+  This is [pass5.md](pass5.md):727's second half, confirmed.
+- **`reference/glossary`, *Block event*.** Said the queue means a block event
+  "lands late, usually within the same tick", which inverts
+  `pistons-and-block-events`' argument ("a block event is a tick late" is only
+  sometimes true; the queue is a wait for a named phase, not a delay). The
+  entry now says a wait for a phase, and carries the owner's anchor. The page
+  won, per the summariser rule.
+
+### Suspicions re-derived and found sound — a strike is a claim
+
+- `blocks-and-states`:288-290's re-mesh gate. An agent read it against
+  `rendering/section-meshing` as a contradiction. Both are true: a client write
+  goes through **two** doors — `Level.setBlocksDirty` →
+  `LevelExtractor.setBlockDirty`, gated on `ModelManager.requiresRender`
+  (`LevelExtractor.java`:463-466), and the bit-2 `sendBlockUpdated` →
+  `LevelExtractor.blockChanged`, ungated (:437-438). The sentence is true of the
+  method it names. Not changed.
+- `blocks-and-states`'s `Block.UPDATE_LIMIT` against
+  `block-interaction`'s `CollectingNeighborUpdater.maxChainedNeighborUpdates`.
+  Genuinely two budgets: the first is the shape cascade's recursion depth,
+  passed down `Level.setBlock`/`Block.updateOrDestroy` (`Level.java`:248-253),
+  the second counts *requests* into the updater (`CollectingNeighborUpdater.java`:57-60).
+  Both pages right; both now say which cascade they mean.
+- `block-interaction`:151-156's priority-remesh claim. `LevelRenderer.java`:595-598
+  is what reads `PrioritizeChunkUpdates` and sets `rebuildSync`; `Options.java`:952
+  defaults it to *NONE* and `GraphicsPreset.java` sets *PLAYER_AFFECTED* in both
+  fancy presets. The class and the preset claim are both right; a Part XI page
+  describes the same switch differently and is the one to change (logged in
+  [pass5.md](pass5.md) for session K).
+- `block-entities`' three counts. `getUpdatePacket` overriders: **19**
+  (20 files under `block/entity/` less the base). `getUpdateTag` overriders:
+  **19** as well (18 under `block/entity/` plus `PistonMovingBlockEntity` under
+  `block/piston/`; `TrialSpawnerStateData.getUpdateTag(TrialSpawnerState)` is a
+  different signature, not an override). The two lists differ by exactly two,
+  and they are the two the page names. Of the nineteen tag overriders,
+  **thirteen** call `BlockEntity.saveCustomOnly`. `getUpdatePacket` has exactly
+  **one** call site in the game (`ChunkHolder.java`:251). All four counts stand.
+- `pistons-and-block-events`' *three blocks raise events directly*.
+  `PistonBaseBlock`, `NoteBlock`, `PotentSulfurBlock` override
+  `triggerEvent`, plus `BaseEntityBlock` (which forwards) and `ComparatorBlock`
+  (dead, as the page says). Three is right; [pass3.md](pass3.md) §7's "four
+  blocks" is the stale count and was carrying `ComparatorBlock`.
+- `pistons-and-block-events`' `PistonMovingBlockEntity.deathTicks` of five.
+  `PistonMovingBlockEntity.java`:312-313, `entity.deathTicks < 5`. Sound.
+- `signal-and-dust`'s "for every wire but sometimes the first". True, and now
+  precise: `ExperimentalRedstoneWireEvaluator.java`:48 sets bit 128 unless
+  `shapeUpdateWiresAroundInitialPosition && initialWire`, and of the three call
+  sites only `RedStoneWireBlock.onPlace`:302 passes true.
+
+### Claims introduced
+
+- **`blocks/README` — a new argument, and two new sections.** The opening now
+  claims that a door's other half and a lamp's delay "are the same event
+  underneath" and differ only by channel; that seven lectures is the fewest of
+  any part this size *on purpose*; and that "the four kinds of answer a block
+  can give" are a neighbour update, a shape update, a block event and a
+  scheduled tick — a four the verified line already promised and no page
+  enumerated. A *Where the part stops* section claims "about ten thousand
+  lines" of the part's own two packages are taught elsewhere (the coverage
+  tool's figure is 59 classes / 10,535 lines named only on other parts' pages)
+  and names six destinations. The size sentence is now the include.
+- **`blocks-and-states`** gains: the *state/properties* sub-package is "the axes
+  and their values" and nothing else; `BlockPattern`/`BlockPatternBuilder` match
+  an arrangement of `BlockInWorld` and are "how the game recognises a built
+  wither or an iron golem"; `BlockStatePredicate` is "a `StateDefinition` turned
+  into a test"; `InstantNeighborUpdater` is the other `NeighborUpdater` and is
+  "used by nothing the game ships"; and the rail exception to
+  `affectNeighborsAfterRemoval` is explained for the first time — a rail carries
+  its geometry in a property, and `BaseRailBlock.affectNeighborsAfterRemoval`
+  (`BaseRailBlock.java`:136-148) updates above when the old shape was a slope,
+  and its own position and below when the rail is straight. It also receives
+  the flags-3 and `GameEvent.BLOCK_DESTROY` detail moved off `block-interaction`.
+- **`block-interaction`** gains the use-hook family: **25** blocks override
+  `BlockBehaviour.useItemOn` and **52** `BlockBehaviour.useWithoutItem`
+  (counted as files declaring the signature under `world/level/block/`, less the
+  base declaration in `BlockBehaviour.java`), with six named examples and the
+  claim that a block overriding neither "is not interactive at all". This
+  restores the count [pass5.md](pass5.md):1734 asked for.
+- **`block-breaking`** gains a paragraph claiming the two click lectures answer
+  the same two gates oppositely, and that the reason is the pipeline: a
+  placement's two corrective updates sit in one branch below the build-height
+  test and go out for every outcome that reaches it, while a break has no such
+  branch and each refusal decides for itself — three of the four sending the
+  true state (`ServerPlayerGameMode.java`:165, 178, 189) and spawn protection
+  sending only its message (:172-174).
+- **`block-entities`** gains the hopper's cadence — one item then a cooldown,
+  "two and a half items a second however often it is ticked", the eight written
+  as a literal at both sites (`HopperBlockEntity.java`:130, 415) while
+  `HopperBlockEntity.MOVE_ITEM_SPEED` is read nowhere — and the claim that every
+  other block entity in the sub-package is the shapes on that page with
+  different fields in the middle.
+- **`signal-and-dust`** gains the sources family: `ButtonBlock` books a
+  scheduled tick to turn off, `BasePressurePlateBlock` and its two subclasses
+  re-read what stands on them, `DetectorRailBlock` and `TripWireHookBlock` watch
+  for entities, `DaylightDetectorBlock` reads the sky
+  (`DaylightDetectorBlock.java`:57-58 uses `getEffectiveSkyBrightness` and
+  *SUN_ANGLE*), and the two torches invert what they are attached to — "none of
+  them needs a section of its own". Its cast row is re-scoped to "the three
+  answers *this trace* asks a state for", naming the analog pair as the
+  comparator's ([pass5.md](pass5.md):727's first half).
+- **`pistons-and-block-events`** names the seven block-entity raisers
+  individually, claims "the other forty-odd block entities in the game raise
+  none", names `PistonMath` as what computes the swept box
+  (`PistonMath.getMovementArea`), and adds that `PistonMovingBlockEntity`'s
+  `getUpdateTag` override means a player loading the chunk mid-push receives the
+  placeholder and its cargo in the chunk packet — which pays off
+  `block-entities`:52-54's citation, previously landing on a page that did not
+  carry the fact.
+- **`reference/block-update-flags`** gains a second table decomposing all four
+  named combinations (3 = 1+2, 11 = 1+2+8, 260 = 4+256, 816 = 16+32+256+512,
+  all read off `Block.java`:95-108) with a *where the book meets it* column
+  claiming 260 and 816 are spent nowhere in the corpus; bit 128's row now says
+  the skip is keyed on the **target** and that only the experimental evaluator
+  sets it; and `Block.UPDATE_LIMIT`'s paragraph now names the distinction from
+  the chain budget. Its opener stops enumerating three of the seven pages that
+  spend a flag word.
+- **`networking/what-the-client-is-told`** receives the fact that
+  `ChunkHolder.broadcastChanges` "reads the level again when it builds the
+  packet", so the set holds positions and not values and a whole cascade is
+  broadcast as one state per position — moved from `signal-and-dust`, which
+  stated it twice and now cites it once.
+- **`world/scheduled-ticks`** now claims "a booking cannot be called off:
+  nothing in the game cancels a single scheduled tick, the only removals being
+  the bulk area operations" — `LevelTicks.clearArea`/`copyAreaFrom`, which the
+  page describes thirty lines above. It also says a block *chooses* its
+  priority from seven (`TickPriority.java`:7 declares seven values), where the
+  page previously implied five.
+- **`server/server-level-tick`**'s block-event section is cut to the phase
+  claim plus a citation; it no longer states the queue's four rules.
+
+### Anchors and citations
+
+Thirty-seven links across Part V gained the owner's anchor — the part carried
+none on any cross-part link before this session, the same shape session D found
+in Part IV. One link was landing on the wrong page:
+`blocks-and-states`:308-310 cited `signal-and-dust` for
+`Level.updateNeighbourForOutputSignal`, which that page never names; it now
+points at `diodes-and-observers#one-int-and-the-fan-out-that-exists-to-deliver-it`.
+Six missing backward links added (feature flags from two pages, the level tick
+from `block-entities`, `tickets-and-loading`'s number line, `pathfinding`'s
+*one place the world pushes back*, `what-makes-a-sound`'s *who hears it*). Each
+anchor asserts that the named section is the answer; `check_links.py` proves
+only that the heading exists.
+
+
 ## Pass 5, session D — Part IV · The world *(2026-09-05)*
 
 Eleven Part IV pages plus `reference/level-data-and-rules`, read by one agent

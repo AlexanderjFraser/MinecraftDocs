@@ -2,24 +2,45 @@
 
 > Verified against **Minecraft 26.2** · Part V · Everything that happens at the moment one block state replaces another: the click that asks for it, the write that performs it, and the four kinds of block that answer back.
 
-Part IV built the container. This part is about what is *in* it, and it has
-one moment at its centre: a position in a chunk section stops holding one
-block state and starts holding another. Every page here is about choosing
-that state, about the write itself, about a block that answers a write near
-it, or — once — about the state a position cannot hold at all. A player
-recognises the part by how it *feels* — the block that appears under the
-crosshair before the server has heard about it, the door whose top half
-swings with the bottom, the redstone lamp that does not light until the
-server says so. The first of those is a prediction and Part X
-owns it. The other two come from one distinction, and it is this part's:
-**there are two entirely different ways a block hears that its neighbour
-changed, and the client runs only one of them.**
+You open a door and both halves swing. You flip a lever and the lamp across
+the room stays dark for a moment longer than you expected. Both are the same
+event underneath — a position in a chunk section stops holding one block state
+and starts holding another — and the difference between them is the whole of
+this part: **there are two entirely different ways a block hears that its
+neighbour changed, and the client runs only one of them.** The door's other
+half comes down the channel your own client also runs, so it moves before the
+server has been asked; the lamp waits on the channel that exists only on the
+server. Everything here is either choosing the state that goes in, performing
+the write, or being a block that answers one.
+
+Counting the two packages [the atlas](../../maps/packages.md#where-each-part-lives)
+lists for this part, that is {{#include ../../generated/part-blocks.md}} — and
+seven lectures is the fewest of any part this size, on purpose. Most of those
+classes are one `Block` subclass each, filling in two or three of the hooks
+[blocks and states](blocks-and-states.md) enumerates, and the four kinds of
+answer a block can give are what this part teaches instead of the blocks that
+give them: a neighbour update, a shape update, a block event and a scheduled
+tick. A reader who has those four can read any of the three hundred.
+
+## Where the part stops
+
+Part V owns the write and the four answers; it does not own most of the
+*blocks*. About ten thousand lines of its own two packages are taught in other
+parts, because a block is usually the place some other system surfaces: the
+sculk family is [game events and
+vibrations](../world/game-events-and-vibrations.md)', `LiquidBlock` is
+[fluids](../world/fluids.md)', the containers and their menus are [Part
+VII](../items/README.md), signs and chests as things that are *drawn* are
+[Part XI](../rendering/README.md), and the command and structure blocks are
+[Part XIII](../commands/README.md)'s. What comes back here is the moment any
+of them writes a state.
 
 ## The shape of the part
 
 Part V is a hub and six spokes. The hub is `blocks-and-states`, and what the
 spokes reach back into it for is not the state table — it is the tail of a
-write, drawn there once as a flowchart and linked to from everywhere else.
+write, drawn there as the part's one flowchart and linked to from everywhere
+else.
 
 ```mermaid
 flowchart TD
@@ -45,28 +66,35 @@ flowchart TD
 
 ## Before you start
 
-[Chunk anatomy](../world/chunk-anatomy.md), because the first half of every
+[Chunk anatomy](../world/chunk-anatomy.md#what-placing-a-block-actually-does), because the first half of every
 write in this part is a section write with four heightmaps and a light check
-behind it, and [the level tick](../server/server-level-tick.md), because half
+behind it, and [the level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates), because half
 of this part's surprises are really claims about which phase of a tick
-something ran in — with [the server tick](../server/server-tick.md) behind
+something ran in — with [the server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order) behind
 it, for the two claims this part makes about what happens *outside* the level
 tick: that a packet handler runs before the levels do, and that a connection
 is flushed after they have. Two more Part IV pages are load-bearing here
 rather than merely adjacent: [scheduled
-ticks](../world/scheduled-ticks.md) is how a block gets a turn *later*, which
-is the whole of the diode lecture, and [fluids](../world/fluids.md) owns the
+ticks](../world/scheduled-ticks.md#booking-a-type-a-position-a-time-and-a-tie-breaker) is how a block gets a turn *later*, which
+is the whole of the diode lecture, and [fluids](../world/fluids.md#two-registry-objects-one-substance) owns the
 `FluidState` that shares a `StateHolder` with every block state, and the
 waterlogging this part keeps writing around.
 
+[Identifiers and
+registries](../foundations/identifiers-and-registries.md#the-freeze-rule-stated)
+is assumed rather than used: every block state in the world was built into one
+table before any world existed, which is the freeze rule seen from the inside,
+and the hub page rests on it throughout.
+
 One dependency runs the other way. [Prediction and
-acknowledgement](../client/prediction-and-acks.md) is Part X, and the two
-click lectures here use three of its six windows between them — but its own
-scenario is a block placed against a wall, which needs
-this part's vocabulary. So watch
-Part V first: both click pages open with the same four-sentence statement of
-the contract, which is all either lecture needs, and the machinery keeps
-until Part X.
+acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)
+is Part X, and the two click lectures here use three of its six windows between
+them — but its own scenario is a block placed against a wall, which needs this
+part's vocabulary. So watch Part V first: both click pages open with the same
+four-sentence statement of the contract, which is all either lecture needs, and
+the machinery keeps until Part X. That is also where the third thing a player
+notices about this part lives — the block that appears under the crosshair
+before the server has heard about it.
 
 ## Watch in this order
 
@@ -92,10 +120,10 @@ until Part X.
 6. [Pistons and block events](pistons-and-block-events.md) — the part's
    deferral with no delay in it: the work waits for one named phase of the
    level tick rather than for a number of ticks, and usually gets it in the
-   same tick. Also the one place the client is handed a re-simulation instead
-   of a result: no block update is ever sent for the moving blocks.
+   same tick — and the one place the client is handed a re-simulation rather
+   than a result.
 7. [Diodes and the observer](diodes-and-observers.md) — the part's closer.
-   Three blocks that read their neighbours three different ways, and the one
+   Three blocks that learn about their neighbours three different ways, and the one
    whose entire job is noticing change turns out not to be listening on the
    channel that carries it.
 
@@ -108,10 +136,13 @@ until Part X.
 acknowledgement in one table. [Data
 components](../../reference/components.md) — `DataComponents.TOOL`, which
 decides how fast a stack mines and whether the block drops. [Game
-rules](../../reference/gamerules.md). [Math and
+rules](../../reference/gamerules.md) — `GameRules.BLOCK_DROPS`, which decides
+whether a broken block leaves anything behind. [Math and
 primitives](../../reference/math-and-primitives.md) — `BlockPos`,
-`Direction` and the packings every page here assumes. [Diagram
-lanes](../../reference/lanes.md).
+`Direction` and the packings every page here assumes. [Glossary](../../reference/glossary.md) —
+*block*, *block state*, *block entity*, *block event*, *neighbour update* and
+*shape update* are all defined from pages in this part. [Diagram
+lanes](../../reference/lanes.md) — for the abbreviations these figures use.
 
 ---
 

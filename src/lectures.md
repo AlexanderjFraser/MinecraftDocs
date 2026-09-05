@@ -111,7 +111,8 @@ the six are one lecture in two halves.
 2. [Block interaction](systems/blocks/block-interaction.md)
 3. [Block breaking](systems/blocks/block-breaking.md) — the same lecture's
    other half. Watch it immediately after, and never apart from it.
-4. [Block entities](systems/blocks/block-entities.md) — self-contained.
+4. [Block entities](systems/blocks/block-entities.md) — reaches forward once,
+   to Part VII, for the menu a furnace's progress travels in.
 5. [Signal and dust](systems/blocks/signal-and-dust.md) — assumes [scheduled
    ticks](systems/world/scheduled-ticks.md) only lightly.
 6. [Pistons and block events](systems/blocks/pistons-and-block-events.md)

@@ -263,30 +263,27 @@ sequenceDiagram
     RB->>LTs: shouldTurnOn is false now, so book the turn-off at TickPriority.VERY_HIGH
 ```
 
-**A repeater almost never books at `TickPriority.NORMAL`.**
-`DiodeBlock.checkTickOnNeighbor` picks `TickPriority.HIGH` to turn on,
-`TickPriority.VERY_HIGH` to turn off and `TickPriority.EXTREMELY_HIGH` when
-`DiodeBlock.shouldPrioritize` holds — when the block it powers is itself a
-diode that is not pointing straight back at it. So a diode's turn-off beats
-another's turn-on due on the same tick, and a diode feeding a diode beats
-both. The single `TickPriority.NORMAL` booking a repeater makes is
-`DiodeBlock.setPlacedBy`, delay 1, when you place it into a powered spot.
+**The booking is a priority the block chooses, not one this queue assigns.**
+The repeater above asks for `TickPriority.HIGH` to turn on and
+`TickPriority.VERY_HIGH` to turn off, and which of the seven each redstone
+block asks for in which situation — and why a comparator cannot ask for the
+two most urgent at all — is [diodes and the
+observer](../blocks/diodes-and-observers.md#booking-a-turn-and-why-a-repeater-turns-off-first).
+What this page supplies is what the priority then buys: the sub-tick order
+above.
 
-**The pending appointment is immune to the input changing.**
-`DiodeBlock.checkTickOnNeighbor` books only when the *current*
-`DiodeBlock.POWERED` disagrees with the *current* input, and nothing anywhere
-removes a booked tick. A pulse shorter than the delay therefore does not
-cancel the repeater: `DiodeBlock.tick` finds `DiodeBlock.POWERED` false, turns
-it on anyway, and — because the input is already gone — books its own turn-off
-one delay later. Pulse extension is two entries in this queue.
+**A booking cannot be called off.** Nothing in the game cancels a single
+scheduled tick: the only removals are the bulk area operations above, for
+`/clone` and the gametest framework. So a booking made while the input was
+present survives the input going away, and the block finds out only when its
+turn comes. That is the queue's half of pulse extension; what a repeater does
+when it gets that turn is the diode page's.
 
 **Nothing here uses `Block.UPDATE_NEIGHBORS`** ([block update
-flags](../../reference/block-update-flags.md) has the bits). `DiodeBlock.tick`
-writes with `Block.UPDATE_CLIENTS` alone, and the signal leaves through
-`DiodeBlock.onPlace` — which `LevelChunk.setBlockState` runs on the server for
-any write without `Block.UPDATE_SKIP_ON_PLACE` — calling
-`DiodeBlock.updateNeighborsInFront`. The rest is [diodes and the
-observer](../blocks/diodes-and-observers.md).
+flags](../../reference/block-update-flags.md) has the bits), so the write in
+the diagram above fans out through no channel `Level.setBlock` opened. How a
+diode's signal leaves instead is [diodes and the
+observer](../blocks/diodes-and-observers.md#a-diode-never-writes-into-its-target).
 
 ## The other kind of turn: random ticks
 

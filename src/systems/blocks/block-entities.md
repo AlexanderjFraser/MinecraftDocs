@@ -14,7 +14,8 @@ nobody anything: `BlockEntity.getUpdatePacket` returns null for it,
 *does* see — the fire in the world and the arrow in the GUI — are a block
 state and four ints from a menu, both of which arrive on the tick **after**
 the smelting step that produced them, because block entities tick in the
-level's last content phase, after the broadcast has already gone out.
+level's last content phase, after the broadcast has already gone out ([the
+level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates)).
 
 ## The cast
 
@@ -51,14 +52,14 @@ The overriders of the packet and the overriders of the tag are not the same
 list, and the two classes that differ are instructive.
 `PistonMovingBlockEntity` overrides `BlockEntity.getUpdateTag` but not the
 packet, so its state travels only in a chunk send
-([pistons and block events](pistons-and-block-events.md)).
+([pistons and block events](pistons-and-block-events.md#the-write-nobody-is-told-about)).
 `CopperGolemStatueBlockEntity` overrides the packet but not the tag, so what
 it broadcasts is the base class's empty tag.
 
 Everything else a client knows about a block entity it knows by consequence:
 the block state it can see, a menu it has been given, and a block event — the
 third channel, and the one that swings a chest lid without either side saying
-what is inside ([pistons and block events](pistons-and-block-events.md)). The
+what is inside ([pistons and block events](pistons-and-block-events.md#the-queue-and-which-tick-it-drains-in)). The
 trace below is what the first two cost.
 
 ## One save hook, four ways out
@@ -77,7 +78,7 @@ subclass; everything else is bookkeeping the base class adds.
 
 Reading back is `BlockEntity.loadWithComponents` (fields plus components) or
 `BlockEntity.loadCustomOnly` (fields only) over a `ValueInput`
-([codecs, NBT and JSON](../foundations/codecs-nbt-json.md)) — but something
+([codecs, NBT and JSON](../foundations/codecs-nbt-json.md#save-code-never-sees-a-compoundtag)) — but something
 has to decide *which class* to construct first, and that cannot come through
 a `ValueInput`, because no entity exists yet to own one. So
 `BlockEntity.loadStatic` reads *id* off the raw `CompoundTag` with
@@ -90,7 +91,7 @@ The network joins that path at the end rather than reusing it whole:
 anything — it finds the existing entity by position *and* type and hands the tag
 to `BlockEntity.loadWithComponents`. There is no separate network
 deserialiser. Where the chunk's *block_entities* list is
-written and read is [chunk storage](../world/chunk-storage.md).
+written and read is [chunk storage](../world/chunk-storage.md#copy-on-the-server-encode-on-a-worker-write-on-the-io-lane).
 
 ## Create, keep, replace, remove
 
@@ -179,7 +180,7 @@ slot, check that the result slot can take the output, and, if the fire is out
 but fuel is present, light it: both lit fields take `FuelValues.burnDuration`
 for that item — 1600 for coal — and one fuel item is consumed. Then
 `AbstractFurnaceBlockEntity.cookingTimer` advances by one. Where the recipe
-comes from is [recipes](../items/recipes.md).
+comes from is [recipes](../items/recipes.md#loading-one-scan-one-swap-and-four-indexes-built-later).
 
 Two writes leave the block entity, and neither leaves the server this tick.
 The first is the fire: lit-ness is a *block state*, so the ticker calls
@@ -206,7 +207,7 @@ over data 3, read by `AbstractFurnaceMenu.getLitProgress` and
 `AbstractFurnaceMenu.getBurnProgress`. While smelting, only 0 and 2 change,
 so it is two packets a tick per open screen and none at all with no viewer.
 How a menu is opened, synchronised and closed is
-[containers and menus](../items/containers-and-menus.md).
+[containers and menus](../items/containers-and-menus.md#the-chest-you-see-is-not-the-chest).
 
 At the end, `AbstractFurnaceBlockEntity.burn` moves the ingot into the result
 slot and `AbstractFurnaceBlockEntity.setRecipeUsed` adds one to a counter map
@@ -225,7 +226,8 @@ under two gates the tickers themselves never see.
 block entity in the game. `Level.shouldTickBlocksAt` is the second, and it is
 where the interesting asymmetry lives: on `Level` it is always true, on
 `ServerLevel` it is `DistanceManager.inBlockTickingRange` — the
-**simulation** chunk tracker, not the loading one. A chunk your view distance
+**simulation** chunk tracker, not the loading one ([tickets and
+loading](../world/tickets-and-loading.md#the-number-line)). A chunk your view distance
 keeps loaded and your simulation distance does not reach holds furnaces that
 do not smelt, and nothing about the block entity records this: it is simply
 never called. Below the gates,
@@ -244,6 +246,16 @@ is walked every tick anyway. Additions made *during* the walk go to
 pass, so a block entity created by another block entity's tick starts ticking
 one tick later. The client runs the same method from `Minecraft.tick`, after
 its entity pass and before `ClientLevel.tick`, and only while unpaused.
+
+A ticker's cadence is its own business, and the hopper is the one worth
+knowing: `HopperBlockEntity` moves one item and then sets a cooldown, so a
+hopper chain runs at two and a half items a second however often it is ticked.
+The eight ticks are written as a literal at both sites that set it;
+`HopperBlockEntity.MOVE_ITEM_SPEED` holds the same number and nothing reads it.
+Every other block entity in
+the sub-package is one of the shapes on this page — four hooks, a ticker handed
+out per level, one of the five save shells, and the create-keep-replace-remove
+lifecycle — with different fields in the middle.
 
 ## Questions players ask
 
@@ -289,7 +301,7 @@ menu is gone, and the furnace goes on smelting with no packets at all.
 `AbstractFurnaceBlockEntity.serverTick` · `AbstractFurnaceMenu.getBurnProgress`
 
 How a block entity is *drawn* — and why a chest's block model is empty — is
-[block-entity rendering](../rendering/block-entity-rendering.md), in Part XI.
+[block-entity rendering](../rendering/block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them), in Part XI.
 
 ---
 

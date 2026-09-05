@@ -57,20 +57,20 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **Routed to a later part's session.**
 
-- **Session E (V) — the ticker wrappers, now cited rather than told twice.**
-  `chunk-anatomy`'s *double indirection* section explained
-  `LevelChunk.BoundTickingBlockEntity`, `LevelChunk.RebindableTickingBlockEntityWrapper`
-  and `LevelChunk.NULL_TICKER` in full, and `block-entities`:222-246 explains
-  all three better. Cut to what the chunk owns — one wrapper per position, for
-  the life of the chunk — and a citation of
-  `block-entities#loaded-is-not-enough-to-tick`. If session E reshapes that
-  section, the citation's anchor moves with it.
-- **Session E (V) — the repeater's booking is still told twice.**
-  `scheduled-ticks`:230-285 and `diodes-and-observers`:119 are the 10.00
-  duplication pair and session E's to resolve. Session D deliberately did not
-  act: the sequence diagram is `scheduled-ticks`' artefact and the prose after
-  it is what overlaps, so the cut is on the diode page's side of the seam or on
-  the three bold paragraphs here, and E should judge with both pages open.
+- ~~**Session E (V) — the ticker wrappers, now cited rather than told twice.**~~
+  **Overtaken** — session D had already cut `chunk-anatomy` to the citation, and
+  session E checked the anchor `#loaded-is-not-enough-to-tick` still names the
+  section it points at. It does; nothing moved.
+- ~~**Session E (V) — the repeater's booking is still told twice.**~~ **Done** —
+  the cut fell on `scheduled-ticks`' three bold paragraphs, not on the diode
+  page: rule 1 gives each of the three to `diodes-and-observers` (the priorities
+  are the row its comparison table draws, the flag-2 exit is the payoff of *A
+  diode never writes into its target*), so rule 4 never applied. What stayed on
+  `scheduled-ticks` is the queue's own half — that a booking cannot be called
+  off, the only removals being the bulk area operations — and the sequence
+  diagram, untouched. The cut also turned up a **correction**: the deleted copy
+  had `DiodeBlock.shouldPrioritize`'s condition inverted (logged in
+  [pass9.md](pass9.md)).
 - **Session F (VI) — local difficulty has no lecture.**
   `reference/level-data-and-rules`:283-289 is the book's **only** explanation of
   `DifficultyInstance` and `ServerLevel.getCurrentDifficultyAt`, built from
@@ -243,7 +243,11 @@ six corrections it made are in [pass9.md](pass9.md).*
   — `ChunkResult` where the three futures are armed (its failure case *is*
   `ChunkHolder.UNLOADED_LEVEL_CHUNK`), `PlayerMap` in the spectator answer,
   where the point is that the skip is remembered at join rather than re-asked.
-- **Session E (V) — the hopper's transfer cooldown.**
+- ~~**Session E (V) — the hopper's transfer cooldown.**~~ **Done** — written into
+  `block-entities`' *Loaded is not enough to tick* as the one ticker cadence
+  worth knowing, with the fact `HopperBlockEntity.MOVE_ITEM_SPEED` is declared
+  and read nowhere (both call sites write the literal 8).
+  *(original entry)* 
   `HopperBlockEntity.MOVE_ITEM_SPEED` is 8, and the only place the book said
   so was Part III's landing page, which is a summariser. Cut from there;
   `block-entities` is where a ticker's cadence belongs if session E wants it.
@@ -1233,12 +1237,14 @@ acted on; pass 4 does not polish.
   is built once per tick from the world rather than from the writes — is
   repeated three paragraphs later where the flowchart explains it. One of the two
   should go.
-- `blocks/README.md`'s **opening**. Splitting the three feelings into "the first
+- ~~`blocks/README.md`'s **opening**.~~ **Done** — a third option, taken: the landing page now opens inside the two scenarios (a door, a lamp) rather than on book furniture, and the *first of those is a prediction and Part X owns it* clause moved down into the paragraph that is about the V-to-X cut, which is what motivates it. All three feelings survive and the part's first paragraph carries no forward reference.
+  *(original entry follows)*  Splitting the three feelings into "the first
   is a prediction and Part X owns it" plus "the other two" costs a sentence and
   puts a forward reference in the part's first paragraph. The alternative is to
   drop the crosshair feeling and open on two, which is tighter but loses the one
   a player notices first.
-- `pistons-and-block-events`' **flag table** went from four rows to five and
+- ~~`pistons-and-block-events`' **flag table**~~ **Half done** — the paragraph under the table is cut from six lines to two, and the digression about why the 82 row does not fire is folded into the sentence that lands on the placeholders. The table's width is a `custom.css` question and stays for pass 7.
+  *(original entry follows)*  went from four rows to five and
   gained a *written by* column, because one of the four was not `moveBlocks`'s.
   The table is now wide enough to want the `custom.css` treatment, and the
   paragraph under it gained four lines explaining why the 82 row does not fire in
@@ -1280,13 +1286,15 @@ whether that is one table or two.
 
 **Structural findings, not acted on.**
 
-- **`block-entities` is the part's odd page and the landing page now says so
-  awkwardly.** It is not about choosing a state, performing a write, or answering
+- **~~`block-entities` is the part's odd page and the landing page now says so
+  awkwardly.**~~ **Done** — the fourth clause is gone. The landing page's argument is now the two channels seen through a door and a lamp, and the part is described as choosing a state, performing a write, or being a block that answers one; `block-entities` is the page about state that outgrew a block state, which needs no clause of its own.
+  *(original entry follows)*  It is not about choosing a state, performing a write, or answering
   a neighbour's write; the landing page's opening had to grow a fourth clause
   ("or — once — about the state a position cannot hold at all") to cover it. The
   cleaner reading is that Part V has a hub, two click lectures, a redstone trio,
   and one page about state that outgrew a block state.
-- **`signal-and-dust` carries two subjects.** The default evaluator and the
+- **~~`signal-and-dust` carries two subjects.**~~ **Ruled: it stays, as the page's counterfactual.** No other page can own the experimental evaluator — the flag pages own the flag, not the evaluator — and the question it answers (why the staircase is avoidable) is the one this page's scenario raises. What made it read as a second subject was that it stopped using the trace; a pass-6 note is logged to run the same lever and two dust through it.
+  *(original entry follows)*  The default evaluator and the
   experimental one are the same computation with different semantics, and the
   page gives the second a full section plus a closing paragraph. It is the right
   material; it is also the point at which the page stops being about a lever and
@@ -1754,7 +1762,8 @@ correction):
   every item is recoverable from the pass-2 `redstone.md` in git.
 
   **Wording debt.**
-  - Three pages used to say some version of "shape updates run on both sides,
+  - ~~Three pages used to say some version of "shape updates run on both sides,~~ **Checked, and one had.** `block-interaction`:174-180 was stating all three method bodies over again, verbatim in places. Cut to the door's consequence plus the anchor. The `signal-and-dust` figure node is a mention inside the page's own artefact and stays; the `diodes-and-observers` flowchart draws which channel each block listens on, which is that page's subject.
+  *(original entry follows)* 
     neighbour updates are server-only, and here is the exception". That is now
     owned once, by `blocks-and-states`' *The two update channels* section, and
     the other six link to the anchor. **Check in pass 5 that none of them has
@@ -2609,3 +2618,133 @@ Structural findings, not acted on:
   standing fix would be for the atlas to generate the per-part totals rather
   than each landing page hand-counting them — that is a tooling change, and
   it belongs to whoever revisits `map_source.py`.
+
+---
+
+## From pass 5, session E (Part V · Blocks), 2026-09-05
+
+*What the reading raised and this session did not act on, tagged by the pass
+that takes it. Everything session E did act on is struck above or logged in
+[pass9.md](pass9.md).*
+
+**Routed to a later part's session.**
+
+- **Session I (IX) — `what-the-client-is-told` names the wrong hop.** Its
+  :340 has `ChunkHolder.broadcastBlockEntityIfNeeded` calling
+  `BlockEntity.getUpdatePacket`; the decompile has the *IfNeeded* form testing
+  whether the state has a block entity and delegating to
+  `ChunkHolder.broadcastBlockEntity`, which is the one call site.
+  `block-entities` names the inner one and is right. Not false enough to fix
+  from Part V, but the two pages should name the same method. Session I also
+  owns the third copy of the empty-chest answer: `what-the-client-is-told`
+  states the two sync defaults at :340-347 *and* again in its Q&A at :428-431,
+  and `block-entities#a-furnace-tells-nobody-anything` owns them.
+- **Session G (VII) — three pages reach into `containers-and-menus` and one
+  chain stops short.** `containers-and-menus`:150-153 cites `block-entities`
+  for the comparator re-derivation, and `block-entities` is itself a
+  one-sentence citation with no onward link, so the reader stops one page short
+  of the owner (`diodes-and-observers#one-int-and-the-fan-out-that-exists-to-deliver-it`).
+  Session G should also decide whether `DataSlot` wants a citation *from*
+  `block-entities`, which today links containers-and-menus only for *opening* a
+  menu. And `items/loot-tables`:275-278 explains that a comparator reading an
+  unopened chest commits its loot roll, in substance, without linking either
+  redstone page.
+- **Session H (VIII) or a ruling — reach has no backward link from either
+  click page.** `block-interaction` and `block-breaking` both use
+  `Player.isWithinBlockInteractionRange` and its slack without saying what a
+  reach range is; `player-anatomy` (Part VIII) owns it and is later. Both
+  halves of a declared pair have the same hole, so it wants one ruling rather
+  than two per-page fixes.
+- **Session K (XI) — `section-meshing` and `block-interaction` describe one
+  switch two ways.** Session E re-derived it: `LevelRenderer` is the class that
+  reads `PrioritizeChunkUpdates` and decides `rebuildSync`, and the default is
+  *NONE* while both fancy presets set *PLAYER_AFFECTED* — so
+  `block-interaction` is right on both counts. `section-meshing` attributes the
+  same decision to `SectionRenderDispatcher.RenderSection.compileSync` and names
+  the option differently; session K should make the two agree, with
+  `section-meshing` owning it and Part V citing.
+
+**For pass 6, the lecture.**
+
+- `signal-and-dust`'s *The second implementation* stops using the page's trace:
+  the lever and the two dust vanish and the section walks
+  `ExperimentalRedstoneWireEvaluator`'s fields in call order. Run the same lever
+  and two dust through it and cut to the two differences the hook names. The
+  same page's torch answer arrives cold — no torch appears anywhere earlier on
+  the page — and its staircase is stated three times (hook, figure coda, Q&A).
+- `pistons-and-block-events`' *How a piston decides, and the line that cannot
+  fire* carries three subjects under a heading that promises two; splitting the
+  trigger paragraph would also give `PistonBaseBlock.TRIGGER_DROP` a heading for
+  *two ways to end* to point back at.
+- `pistons-and-block-events`' cast promises `PistonHeadBlock` "the arm once the
+  motion is over, and forwarding neighbour updates back to the base" and the
+  body never returns to it. Deliver it or drop the row; the cast is at its
+  ceiling of eight.
+- `blocks-and-states` carries two subjects — the state table and the write —
+  and its verified line and opening hook promise only the first, so the
+  server-gated destroy at the end arrives unheralded. The page should not be
+  split (all six sibling links land on its second half, which is the part's
+  hub), but the header line and one clause in the opening would carry the
+  reader across the seam.
+- `block-interaction`'s Q&A entry on breaking a door's bottom half teaches the
+  same thing as the body four sections earlier, with the same three method
+  names. It is the page's only genuine internal duplicate.
+- The *constant nobody reads* device appears several times in Part V
+  (`PistonStructureResolver.MAX_PUSH_DEPTH`, `PistonMovingBlockEntity.TICKS_TO_EXTEND`,
+  `HopperBlockEntity.MOVE_ITEM_SPEED`, plus the torch's three) and the page that
+  explains why a decompile cannot tell is `client/the-client-loop`. None of the
+  uses cites it.
+
+**For pass 7, the figures.**
+
+- `pistons-and-block-events`' flag table is five rows with a *written by* column
+  and wants the `custom.css` wide treatment.
+- `block-entities`' sequence diagram uses three names for one menu — the lane
+  *FM as FurnaceMenu*, then `AbstractContainerMenu.broadcastChanges`, then
+  `AbstractFurnaceMenu.getLitProgress` — which reads as three objects.
+- `diodes-and-observers`' channel flowchart re-derives the two update channels
+  in its node labels rather than citing them; that is legitimate for a figure
+  that must be readable alone, but the citation is seventy-odd lines away and
+  pass 7 should decide whether the labels shorten.
+
+**For pass 8, the voice.**
+
+- Part V says *flags 3* repeatedly and never names `Block.UPDATE_ALL`; the
+  catalogue now decomposes all four combinations, so the pages could use either
+  form consistently.
+- `blocks-and-states`' *The two update channels* heading is cited by six sibling
+  pages and by three Part IV pages; if pass 8 rewords it, every one of those
+  anchors moves. Same for `block-entities#loaded-is-not-enough-to-tick`.
+
+**Coverage, for [pass3.md](pass3.md) §7 and the second edition.**
+
+- **The hopper is the largest unowned mechanism in Part V.**
+  `HopperBlockEntity` (547) with `HopperBlock` (182): the book gestures at it
+  from three pages — `containers-and-menus` uses it as *the* example of the
+  block-entity phase, `diodes-and-observers` as the thing a comparator notices,
+  and `loot-tables` as a way into a chest — and nothing anywhere explains the
+  transfer, the five slots, the push-versus-pull asymmetry or the ordering.
+  Session E named its cadence on `block-entities` and declined the rest: it is a
+  lecture, not a sentence.
+- **The sculk spread machine has no home.** `SculkSpreader` (387),
+  `SculkBlock` (109), `SculkVeinBlock` (211).
+  `world/game-events-and-vibrations` owns the sensor, the shrieker and the
+  catalyst; the charge-and-spread machine is named nowhere in the book.
+- **Structure and command blocks are named nowhere in `src/`.**
+  `StructureBlockEntity` (582), `StructureBlock` (109), `CommandBlock` (261),
+  `CommandBlockEntity` (205) — only their two serverbound packets appear, as
+  rows in `reference/packets`. Part XIII is the natural home for the command
+  block; the structure block belongs beside `jigsaw-and-templates`.
+- **Four state machines are half-adopted by other parts.**
+  `BeaconBlockEntity` (434), `ConduitBlockEntity` (300), and the *trialspawner*
+  (642 unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
+  named on Part VI and Part VII pages while their state machines are explained
+  nowhere.
+- Session E discharged what a sentence could reach: the *state/properties*,
+  *state/pattern* and *state/predicate* sub-packages and `InstantNeighborUpdater`
+  on `blocks-and-states`; the redstone source blocks on `signal-and-dust`; the
+  seven block-event raisers and `PistonMath` on `pistons-and-block-events`; the
+  *block/entity* family and the hopper's cadence on `block-entities`; the
+  use-hook family, with the count the queue asked for restored (25 override
+  `BlockBehaviour.useItemOn`, 52 `BlockBehaviour.useWithoutItem`), on
+  `block-interaction`. The four items above are what a sentence cannot reach.

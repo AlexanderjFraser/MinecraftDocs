@@ -332,7 +332,13 @@ chunk they are standing in: their own light engine is expected to derive it
 **Then blocks, to everyone tracking the chunk.** Exactly one changed block in
 a section becomes a `ClientboundBlockUpdatePacket`, two or more become a
 `ClientboundSectionBlocksUpdatePacket`, and every change within the tick
-collapses into at most one packet per section.
+collapses into at most one packet per section. What collapses them is that the
+set holds *positions*, not values: `ChunkHolder.broadcastChanges` reads the
+level again when it builds the packet, so a position written five times in one
+tick is sent once, carrying the value it ended on and none of the four it
+passed through. A whole redstone cascade can therefore run, settle and be
+broadcast as a single state per position ([signal and
+dust](../blocks/signal-and-dust.md#what-one-neighbour-update-to-a-wire-costs)).
 
 **And block entities alongside the blocks, not after them.** The check runs
 inside the same per-section loop, immediately after that section's own update

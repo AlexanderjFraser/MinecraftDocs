@@ -24,7 +24,7 @@ same trick for its lock.
 | `DiodeBlock` | everything the repeater and the comparator share: what counts as input, what counts as a side input, and how output leaves | Server |
 | `RepeaterBlock` | a delay in two-tick units, and whether it is locked | Server |
 | `ComparatorBlock` | one arithmetic operation, and how far in front of itself it can see | Server |
-| `ComparatorBlockEntity` | one integer — the comparator's whole reason for having a [block entity](block-entities.md) at all | Server |
+| `ComparatorBlockEntity` | one integer — the comparator's whole reason for having a [block entity](block-entities.md#create-keep-replace-remove) at all | Server |
 | `ObserverBlock` | that a neighbour's *state* changed, on a channel the other two do not use for input | Server |
 | `Level` | that any write of a state with an analog output pokes the comparators around it | Server |
 
@@ -65,7 +65,8 @@ without either of them knowing what the other is.
 
 The signal leaves by an unexpected door. `DiodeBlock.tick` writes
 `DiodeBlock.POWERED` with `Block.UPDATE_CLIENTS` alone — flags 2, no
-neighbour bit — so `Level.setBlock`'s neighbour fan-out never runs, though its
+neighbour bit ([block update
+flags](../../reference/block-update-flags.md)) — so `Level.setBlock`'s neighbour fan-out never runs, though its
 three shape passes still do. What actually
 propagates the change is `DiodeBlock.onPlace`, which
 `LevelChunk.setBlockState` runs on the server for any write without
@@ -110,11 +111,10 @@ count read very differently.
 ## Booking a turn, and why a repeater turns off first
 
 All three answer a change by booking a turn rather than acting on it; the
-queue itself,
-its dedup rule and the drain are [scheduled
-ticks](../world/scheduled-ticks.md), which traces a repeater in full. What
-belongs here is *which priority each one asks for*, because that is where the
-two diodes stop agreeing.
+queue itself, its dedup rule and the drain are [scheduled
+ticks](../world/scheduled-ticks.md#a-repeater-appointment-by-appointment),
+which traces a repeater in full. What belongs here is *which priority each one
+asks for*, because that is where the two diodes stop agreeing.
 
 `DiodeBlock.checkTickOnNeighbor` books only when the diode is not locked, only
 when the current `DiodeBlock.POWERED` disagrees with the current input, and
@@ -170,13 +170,15 @@ pulses through `ObserverBlock.updateNeighborsInFront`. The shape channel is
 the right one for the job because it carries *your neighbour's state changed*
 regardless of whether the neighbour told anybody: a door opened by hand writes
 with flags 10 and issues no neighbour update at all, and the observer still
-sees it ([block interaction](block-interaction.md)), and dust the observer is watching
-carries the same news through [signal and dust](signal-and-dust.md)'s
+sees it ([block interaction](block-interaction.md#the-shape-channel-which-both-sides-run)), and dust the observer is watching
+carries the same news through [signal and dust](signal-and-dust.md#what-one-neighbour-update-to-a-wire-costs)'s
 flag-2 writes.
 
-`RepeaterBlock.LOCKED` works the same way, and it is the only diode property
-computed from a redstone reading *outside* tick time — `DiodeBlock.POWERED` is
-the only one computed from a reading at all.
+`RepeaterBlock.LOCKED` works the same way, and it is one of exactly two diode
+properties computed from a redstone reading at all: `DiodeBlock.POWERED` is the
+other, and the difference between them is *when*. `DiodeBlock.POWERED` is
+written at tick time, from the appointment the block booked; `RepeaterBlock.LOCKED`
+is written inside a shape update, with no appointment anywhere.
 `RepeaterBlock.updateShape` recomputes it whenever a neighbour **off the
 facing axis** changes, which is the two sides and, harmlessly, up and down; the
 value itself comes from the two sides alone. So locking follows a neighbouring

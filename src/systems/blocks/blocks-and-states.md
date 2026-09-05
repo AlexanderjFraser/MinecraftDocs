@@ -114,16 +114,26 @@ for every boolean it has. That is why `StairBlock` sets
 are born full of water.
 
 There are exactly three concrete kinds of `Property` and no
-*DirectionProperty* — facing is an `EnumProperty` over `Direction`.
+*DirectionProperty* — facing is an `EnumProperty` over `Direction`
+([naming drift](../../reference/naming-drift.md)).
 `BlockStateProperties` is the shared pool of **124** of them, and several
 share a serialised name while being different objects:
 `BlockStateProperties.FACING`, `BlockStateProperties.FACING_HOPPER` and
 `BlockStateProperties.HORIZONTAL_FACING` are all *facing* on disk.
 
+That pool and the `StringRepresentable` enums its `EnumProperty`s range over —
+`ChestType`, `WoodType`, `NoteBlockInstrument`, `RotationSegment` and two dozen
+more — are the whole of the `state/properties` sub-package: no behaviour, just
+the axes and their values. Two smaller neighbours sit beside it and are not
+part of a state at all: `BlockPattern` with `BlockPatternBuilder`, which match
+a three-dimensional arrangement of `BlockInWorld` — how the game recognises a
+built wither or an iron golem — and `BlockStatePredicate`, a `StateDefinition`
+turned into a test.
+
 ### The state, a twenty-line leaf
 
 `StateHolder` is the generic state, shared with `FluidState`
-([fluids](../world/fluids.md)). It holds its owner, two parallel arrays of
+([fluids](../world/fluids.md#two-registry-objects-one-substance)). It holds its owner, two parallel arrays of
 property keys and values, and `StateHolder.neighbors` — a two-dimensional
 table, property index by value index, answering *what state am I if this
 property becomes that value*. `StateHolder.setValue` walks the key array
@@ -189,8 +199,8 @@ how a straight stair turns into a corner when you build next to it.
 
 Everything in front of that — the click, the reach check, the block-then-item
 ordering, the packet and the ack — belongs to
-[block interaction](block-interaction.md) and
-[prediction and acks](../client/prediction-and-acks.md). One sentence of it
+[block interaction](block-interaction.md#block-then-empty-hand-then-item) and
+[prediction and acks](../client/prediction-and-acks.md#two-state-machines-running-against-each-other). One sentence of it
 matters here: the client runs the identical `BlockItem.place` under a
 prediction, so the write below happens twice, once on each side, from the
 same code. Almost everything that differs is inside the write; what
@@ -254,25 +264,30 @@ flowchart TB
 ### Inside the chunk write
 
 The section write, the four heightmaps and the light checks are the same on
-both sides — that is [chunk anatomy](../world/chunk-anatomy.md)'s territory.
+both sides — that is [chunk anatomy](../world/chunk-anatomy.md#what-placing-a-block-actually-does)'s territory.
 Three things after them are not.
 
 `BlockEntity.preRemoveSideEffects` is the block entity's last word before it
 is unregistered — the chest scattering its contents, say. It needs the
 server, and it needs `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` clear; the
 removal that follows it happens either way, on both sides
-([block entities](block-entities.md)).
+([block entities](block-entities.md#create-keep-replace-remove)).
 `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` is how the
 outgoing block tells its neighbours it is gone — a piston head taking its base,
 a broken lever telling the block it powered. It is *not* how a door drops its
 other half:
 `DoorBlock` does not override it, and the top half goes down the shape channel
-instead ([block interaction](block-interaction.md)). It is easy to put in the wrong place:
+instead ([block interaction](block-interaction.md#the-shape-channel-which-both-sides-run)). It is easy to put in the wrong place:
 it runs **inside** the chunk write, before the new state is even confirmed,
 not in `Level.setBlock`'s tail with the other neighbour work. It needs the
 server, it needs `Block.UPDATE_NEIGHBORS` set *or* the moved-by-piston bit,
 and it also needs the *block* to have changed — a write that only changes a
-property does not fire it, unless the new block is a `BaseRailBlock`.
+property does not fire it, unless the new block is a `BaseRailBlock`. Rails are
+the exception because a rail carries its own geometry in a property: changing
+just the shape leaves the block the same and still moves the track, and
+`BaseRailBlock.affectNeighborsAfterRemoval` is what tells the positions that
+geometry reaches — above it when the old shape was a slope, and its own and the
+one below when the rail is a straight one.
 
 Then the chunk re-reads its own section. If a side effect has already
 replaced what was just written, `LevelChunk.setBlockState` returns nothing at
@@ -302,12 +317,15 @@ between them is the fact the rest of this part rests on:
 **Neighbour updates are server-only.** `Level.updateNeighborsAt` and
 `Level.neighborChanged` are empty methods on `Level`, overridden only by
 `ServerLevel`. Gated on `Block.UPDATE_NEIGHBORS`, the server hands the
-position to its `CollectingNeighborUpdater`, which visits the six neighbours
+position to its `NeighborUpdater` — a `CollectingNeighborUpdater` on every
+real level, the alternative `InstantNeighborUpdater` being used by nothing
+the game ships — which visits the six neighbours
 in `NeighborUpdater.UPDATE_ORDER` — west, east, down, up, north, south —
 calling each one's `BlockBehaviour.neighborChanged`. Beside it,
 `Level.updateNeighbourForOutputSignal` reaches the comparators in the four
 horizontal directions, directly or through one redstone conductor
-([signal and dust](signal-and-dust.md)).
+([diodes and the
+observer](diodes-and-observers.md#one-int-and-the-fan-out-that-exists-to-deliver-it)).
 
 **Shape updates run on both sides.** `Level.neighborShapeChanged` is
 implemented on `Level`, and both a `ServerLevel` and a `ClientLevel` own a
@@ -323,25 +341,25 @@ down, up, a *different* order from the neighbour channel — each asked for a
 new state through `BlockBehaviour.BlockStateBase.updateShape` and then
 handed to `Block.updateOrDestroy`. The indirect passes are the hook a block
 uses to reach past its six neighbours. `Block.UPDATE_LIMIT`, 512, is the
-budget that stops the cascade.
+budget that stops *this* cascade — a recursion depth, and not the far larger
+per-request budget over the neighbour channel ([block
+interaction](block-interaction.md#the-updater-underneath-a-stack-drained-depth-first)).
 
 And there is the catch. `Block.updateOrDestroy` writes the new state on
 either side — but when the new state is air its destroy branch is
-server-gated, going through `Level.destroyBlock`. So a shape update that
-turns a block into nothing deletes it on the server and does nothing at all
-on the client, which then waits to be told.
+server-gated, going through `Level.destroyBlock`, which writes with flags 3
+and posts `GameEvent.BLOCK_DESTROY`. So a shape update that turns a block into
+nothing deletes it on the server, with a neighbour fan-out of its own, and
+does nothing at all on the client, which then waits to be told.
 
 ### The flag word
 
-The flag word is `Level.setBlock`'s third argument — its last, except on the
-four-argument overload that takes an update limit after it. It is a bit set, tagged in signatures by
-`Block.UpdateFlags`, an annotation that carries no values of its own. The
-flowchart above names its bits by number; the ten bits, what reads each one
-and the four named combinations are in
-[block update flags](../../reference/block-update-flags.md). Placement's
-**11** is `Block.UPDATE_ALL_IMMEDIATE`, and `Block.UPDATE_LIMIT` is also 512
-without being a bit at all — it is the default recursion budget for the
-shape cascade.
+The flowchart above names the flag word's bits by number, because that is how
+a write reads them. What each number is called, what reads it and how the four
+named combinations decompose are the catalogue's: [block update
+flags](../../reference/block-update-flags.md). Two of them do work on this
+page — placement's **11** is `Block.UPDATE_ALL_IMMEDIATE`, and
+`Block.UPDATE_LIMIT` is a 512 that is not a bit at all.
 
 ## Questions players ask
 

@@ -17,7 +17,7 @@ dutifully puts the stone back — and then watches it vanish a second time when
 the server's own clock finishes the job, with nothing the player can do in
 between.
 
-> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md) owns that machinery; [block interaction](block-interaction.md) and this page are its two applications.
+> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; [block interaction](block-interaction.md) and this page are its two applications.
 
 ## The cast
 
@@ -179,6 +179,18 @@ and no block update whatsoever. Every one of those exits is named in a string
 behind `SharedConstants.DEBUG_BLOCK_BREAK`, which is the best map of this state
 machine there is.
 
+Worth holding the two click lectures side by side here, because the same two
+gates answer oppositely. Breaking above the build height sends the true state
+back; *placing* above it sends an action-bar line and no block update at all.
+Breaking inside spawn protection sends the message and no block update;
+placing there sends the message *and* both updates ([block
+interaction](block-interaction.md#the-gate-list-and-what-each-refusal-answers-with)).
+The rule is not the gate but the pipeline. A placement's two corrective updates
+sit in one branch below the build-height test and go out for every outcome that
+reaches it, refusal or not. A break has no such branch: each refusal decides
+for itself, and three of the four send the true state back while spawn
+protection sends only its message.
+
 ## Speed and drops are two scans of one list
 
 `DataComponents.TOOL` holds a `Tool`: a list of `Tool.Rule`, a
@@ -242,7 +254,7 @@ anything: `ItemStack.canDestroyBlock`, then `GameMasterBlock` against
 captures the `BlockEntity` first, because the write is about to destroy it.
 Then `Block.playerWillDestroy` — particles and sound to everyone else, piglins
 angered for `BlockTags.GUARDED_BY_PIGLINS`, and a `GameEvent.BLOCK_DESTROY`
-posted for sculk ([game events](../world/game-events-and-vibrations.md)).
+posted for sculk ([game events](../world/game-events-and-vibrations.md#the-dispatcher-never-queues)).
 
 The write itself is `Level.removeBlock`, not `Level.destroyBlock`. It puts the
 *fluid* that was in the block back — water for a waterlogged block, air here —
@@ -258,7 +270,7 @@ not: `Item.mineBlock` awards `Stats.ITEM_USED` and spends
 `Tool.damagePerBlock` only on the server, only for a stack that carries a
 `DataComponents.TOOL` at all, only when that tool's damage per block is above
 zero, and only when the block's hardness is non-zero
-([items and stacks](../items/items-and-stacks.md)). Only then, and only if the
+([items and stacks](../items/items-and-stacks.md#a-pickaxes-last-point-of-durability)). Only then, and only if the
 write succeeded and the remembered answer was yes, does `Block.playerDestroy`
 run: `Stats.BLOCK_MINED`, 0.005 of food exhaustion, and `Block.dropResources`.
 
@@ -270,7 +282,7 @@ time: `BlockBehaviour.Properties.effectiveDrops` resolves the block's id under
 *blocks/* once, when the block is constructed. What *blocks/stone* then does is
 two lines of JSON — a silk-touch alternative, else cobblestone if it survives
 an explosion — rolled from a seeded per-table sequence rather than the level
-random ([loot tables](../items/loot-tables.md)). Each surviving stack goes to
+random ([loot tables](../items/loot-tables.md#where-the-randomness-comes-from)). Each surviving stack goes to
 `Block.popResource`, which respects `GameRules.BLOCK_DROPS`, jitters the
 position ±0.25 on all three axes around the block centre, gives the
 `ItemEntity` its small upward kick in the constructor and a ten-tick pickup

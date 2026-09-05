@@ -12,7 +12,7 @@ half follows anyway, down the *shape* channel, which is the half of the
 update machinery the client also runs. That is why a door feels instant on a
 laggy server and a redstone lamp does not.
 
-> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
+> **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; this page and [block breaking](block-breaking.md) are its two applications.
 
 ## The cast
 
@@ -68,9 +68,11 @@ sequenceDiagram
 and no overlay is open. Every queued press of the use key becomes its own
 `Minecraft.startUseItem`, unthrottled; `Minecraft.rightClickDelay` gates the
 held-down auto-repeat alone, and `Minecraft.startUseItem` is what sets it, to
-four ticks, and only when `MultiPlayerGameMode.isDestroying` is false. A
-player already using an item (drawing a bow, eating) never reaches that
-branch at all: the queued presses are drained and discarded.
+four ticks. The whole of that method sits behind one test —
+`MultiPlayerGameMode.isDestroying` — so a use press arriving mid-dig does not
+merely skip the delay, it is discarded entirely. A player already using an item
+(drawing a bow, eating) gets no further either: the queued presses are drained
+and thrown away one level in, at `LocalPlayer.isHandsBusy`.
 
 Inside, after `LocalPlayer.isHandsBusy`, the hands are tried in the order
 `InteractionHand.MAIN_HAND` then `InteractionHand.OFF_HAND`. Each hand's
@@ -108,7 +110,9 @@ empty-handed sneak still opens the door.
 
 Three things differ between the two copies, and none of them is the inner
 order. The server tests the block's `BlockBehaviour.requiredFeatures` through
-`FeatureElement.isEnabled` as its very first statement, while the client
+`FeatureElement.isEnabled` as its very first statement — a feature flag
+narrowing the registry the click may reach ([identifiers and
+registries](../foundations/identifiers-and-registries.md#feature-flags-the-same-registry-narrowed)) — while the client
 tests the same thing through `ClientPacketListener.isFeatureEnabled` inside
 the not-sneaking branch. A spectator gets a flat
 `InteractionResult.CONSUME` on the client, but on the server is routed to
@@ -118,6 +122,17 @@ container. And the advancement triggers exist only on the server:
 `CriteriaTriggers.DEFAULT_BLOCK_USE` when the empty-hand hook did, and
 `CriteriaTriggers.ANY_BLOCK_USE` from the packet handler for anything that
 consumed.
+
+Those two hooks are how every right-clickable block in the game is written, and
+the split between them is lopsided: **25** blocks override
+`BlockBehaviour.useItemOn`, the ones that care what you are holding —
+`ComposterBlock` taking bone meal, `LecternBlock` taking a book,
+`ChiseledBookShelfBlock` reading the hit vector to pick a slot,
+`JukeboxBlock`, `CakeBlock`, `RespawnAnchorBlock` — while **52** override
+`BlockBehaviour.useWithoutItem`, the ones that only care that you clicked, of
+which the door is one. A block that does neither is not interactive at all.
+That is the whole family, and this door is an instance of it rather than a
+special case.
 
 The result is the vocabulary the whole pipeline turns on.
 `InteractionResult` is a sealed interface of four records —
@@ -145,7 +160,7 @@ is called with flags **10** — `Block.UPDATE_CLIENTS` and
 `Block.UPDATE_IMMEDIATE`, with `Block.UPDATE_NEIGHBORS` **clear**. Then
 `DoorBlock.playSound`, `LevelAccessor.gameEvent` with `GameEvent.BLOCK_OPEN` or
 `GameEvent.BLOCK_CLOSE` (posting is [game events and
-vibrations](../world/game-events-and-vibrations.md)), and
+vibrations](../world/game-events-and-vibrations.md#the-dispatcher-never-queues)), and
 `InteractionResult.SUCCESS`. Exactly this code runs on both sides.
 
 Ten is the whole story of the page. Bit 2 broadcasts, and on the client
@@ -172,12 +187,10 @@ fits. Note which direction travels: for the block above, the level is handed
 door*. Each hop costs one from the limit, so the upper half is written at 511
 and asks its own neighbours at 510.
 
-The whole distinction rests on three method bodies. `Level.updateNeighborsAt`
-and `Level.neighborChanged` are **empty on `Level`** and overridden only by
-`ServerLevel`; `Level.neighborShapeChanged` is implemented on `Level` itself
-and therefore runs on both sides. Shape updates are predictable because the
-client genuinely runs them; neighbour updates are not because the client's
-copy does nothing.
+That is why the door is predictable and the redstone lamp is not: the shape
+channel is the half of the update machinery a `ClientLevel` genuinely runs,
+and the neighbour channel is the half whose methods are empty there ([blocks
+and states](blocks-and-states.md#the-two-update-channels)).
 
 `DoorBlock.updateShape` answers four of its six callers with the state it was
 given: the whole method is behind a test for the vertical axis, so the four
@@ -190,12 +203,12 @@ powered are copied wholesale, which is why the top half is already open by
 the time it is written. Asked from that same direction when the neighbour is
 *not* the other half, it returns `Blocks.AIR`. And a lower half asked from
 `Direction.DOWN` returns air when `DoorBlock.canSurvive` fails — the block
-beneath must be face-sturdy upward. `Block.updateOrDestroy` then compares:
-a different non-air state becomes a `Level.setBlock` at the inherited limit,
-and air becomes a `Level.destroyBlock`, **but only when the level is not the
-client's**. That server-gated destroy branch, which writes with flags 3 and
-posts `GameEvent.BLOCK_DESTROY`, is the whole of "break the bottom and the
-top pops".
+beneath must be face-sturdy upward. `Block.updateOrDestroy` then compares: a
+different non-air state becomes a `Level.setBlock` at the inherited limit, and
+air becomes a `Level.destroyBlock` — which the hub's flowchart shows is the one
+branch of a shape update the client does not run ([blocks and
+states](blocks-and-states.md#the-two-update-channels)). That is the whole of
+"break the bottom and the top pops".
 
 ## The updater underneath: a stack, drained depth-first
 
@@ -207,8 +220,8 @@ arrive as four small implementations of
 `CollectingNeighborUpdater.SimpleNeighborUpdate` and
 `CollectingNeighborUpdater.FullNeighborUpdate` for a single neighbour, and
 `CollectingNeighborUpdater.MultiNeighborUpdate`, one request that walks up to
-six directions in `NeighborUpdater.UPDATE_ORDER` — a different order from the
-shape one, west, east, down, up, north, south.
+six directions in `NeighborUpdater.UPDATE_ORDER` — the neighbour channel's own
+order, and not the shape one this door walks.
 
 `CollectingNeighborUpdater.addAndRun` decides where a request goes by whether
 a cascade is already running. The first one is pushed on
@@ -267,7 +280,7 @@ changed positions in one section into a single
 `ServerGamePacketListenerImpl.ackBlockChangesUpTo` was called before any of
 the gates, and `ServerGamePacketListenerImpl.tick` emits the receipt when
 `MinecraftServer.tickChildren` reaches connections — after the levels have
-already broadcast ([the server tick](../server/server-tick.md)).
+already broadcast ([the server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)).
 
 ## Questions players ask
 
@@ -303,17 +316,17 @@ updates that `Level.destroyBlock` implies.
 
 **Why does opening a door lag a busy server when nothing is powered?**
 Because the write still reaches `ServerLevel.sendBlockUpdated`, which
-compares the old and new collision shapes and, when they differ, walks
-`ServerLevel.navigatingMobs` — every tracked mob in the level, in full — asking
-each whether the position is near enough to its remaining path to be worth
-`PathNavigation.recomputePath`. A door changes shape every time it moves.
-None of that exists on the client, which is one more reason your half of the
-click is the fast half.
+compares the old and new collision shapes and, when they differ, walks every
+navigating mob in the level asking whether the change is worth a re-route —
+the one place the world pushes back on pathfinding, and unbounded by distance
+([pathfinding](../entities/pathfinding.md#the-one-place-the-world-pushes-back)).
+A door changes shape every time it moves. None of that exists on the client,
+which is one more reason your half of the click is the fast half.
 
 Left-click is the same contract with a different pipeline:
 `Minecraft.startAttack` opens its own prediction and sends a
 `ServerboundPlayerActionPacket` instead, and the block hook is
-`BlockBehaviour.BlockStateBase.attack`. [Block breaking](block-breaking.md)
+`BlockBehaviour.BlockStateBase.attack`. [Block breaking](block-breaking.md#the-button-is-not-the-switch)
 takes it from there.
 
 ## Where to look
@@ -323,7 +336,7 @@ takes it from there.
 `InteractionResult` · `BlockBehaviour.BlockStateBase.useItemOn` ·
 `BlockBehaviour.BlockStateBase.useWithoutItem` · `DoorBlock.useWithoutItem` ·
 `Level.setBlock` · `BlockBehaviour.BlockStateBase.updateNeighbourShapes` ·
-`Level.neighborShapeChanged` · `CollectingNeighborUpdater.addAndRun` ·
+`CollectingNeighborUpdater.addAndRun` ·
 `CollectingNeighborUpdater.runUpdates` ·
 `NeighborUpdater.executeShapeUpdate` · `DoorBlock.updateShape` ·
 `Block.updateOrDestroy` · `ServerGamePacketListenerImpl.handleUseItemOn` ·
