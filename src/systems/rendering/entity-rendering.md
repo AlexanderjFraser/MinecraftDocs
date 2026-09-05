@@ -3,13 +3,13 @@
 > Verified against **Minecraft 26.2** · Part XI · a zombie is drawn: extract, submit, prepare, execute.
 
 A zombie shuffles out of the dark towards you, you hit it, and for a moment it
-flashes red. Between that zombie and those pixels stand four stages that never
-share an object: the live mob is read into a fresh value object, the value
-object is described as things that *ought* to be drawn, the descriptions are
-sorted and batched, and only then does anything write a vertex. Which is why
-`EntityRenderer` has no *render* method — nothing on this page draws anything
-— and why the zombie is posed **at least twice** in the frame you are looking
-at, three times if it is glowing and four if you are mining through it, an
+flashes red. Between that zombie and those pixels stand four stages, each
+handing the next a value object rather than a shared one: the live mob is read
+into a fresh render state, the state is described as things that *ought* to be
+drawn, the descriptions are sorted and batched, and only then does anything
+write a vertex. Which is why `EntityRenderer` has no *render* method — nothing
+on this page draws anything — and why the zombie is posed **at least twice**
+in the frame you are looking at, three times if it is glowing, an
 arrangement that is only sound because `Model.setupAnim` resets every part to
 its baked pose before it starts.
 
@@ -25,7 +25,7 @@ everything drawn is a redrawing of what the server already told the client
 | class | what it decides | thread |
 |---|---|---|
 | `LevelExtractor` | which entities are visible at all, and when their states are built | Render thread |
-| `EntityRenderDispatcher` | which `EntityRenderer` an entity gets, and what light it is lit by | Render thread |
+| `EntityRenderDispatcher` | which `EntityRenderer` an entity gets, and the hand's own lighting | Render thread |
 | `EntityRenderer` | what goes into the render state, and what gets submitted — it never draws | Render thread |
 | `EntityRenderState` | one entity's whole frame, copied by value, holding no `Entity` and no `Level` | a value object |
 | `RenderLayer` | the extras — armour, held items, eyes, capes — each submitting at its own order | Render thread |
@@ -33,14 +33,14 @@ everything drawn is a redrawing of what the server already told the client
 | `FeatureRenderDispatcher` | the grouping, the batching, and where the vertices are finally written | Render thread |
 | `ModelFeatureRenderer` | the one feature renderer that walks a `ModelPart` tree | Render thread |
 
-## Four stages that never share an object
+## Four stages, and what each hands the next
 
 ```mermaid
 flowchart TD
     E["Extract: LevelExtractor walks the visible entities and fills one fresh render state per entity"]
     S["Submit: LevelRenderer walks the states, and each renderer describes what should be drawn"]
     P["Prepare: FeatureRenderDispatcher sorts every submit, groups it, and builds the vertices"]
-    X["Execute: the frame graph's passes drain the phases and issue the draws"]
+    X["Execute: the frame graph's passes issue the draws the prepare already built"]
     E -- "value objects, no Entity, no Level" --> S
     S -- "submit nodes in SubmitNodeStorage, bucketed by order" --> P
     P -- "one PreparedFrame of batched draws" --> X
@@ -98,12 +98,17 @@ Visibility is **two tests in two places**. The frustum test is
 `EntityRenderer.shouldRender`, on the renderer; the "is the section this entity
 stands in actually compiled and visible" test belongs to `LevelExtractor`, and
 block entities must additionally clear a separate section threshold to count at
-all. Two things escape the frustum entirely: anything indirectly carrying the
-local player, and the four renderers that declare themselves unculled.
+all. Several things escape the frustum entirely: anything indirectly carrying
+the local player, the three renderers that declare themselves unculled, a
+`Display` that sets its own no-culling flag, and — the ones nobody expects —
+an entity on the other end of a visible leash, an end crystal with a beam
+target and a guardian firing one, each of which is drawn because something
+*else* in view is attached to it.
 
 Light is not read at draw time. It comes from
-`EntityRenderDispatcher.getPackedLightCoords` during extract, and that method
-returns full brightness for a burning entity. Shadows are sampled here too,
+`EntityRenderer.getPackedLightCoords` during extract — the dispatcher has a
+method of the same name, but its one caller is the first-person hand — and
+that method returns full brightness for a burning entity. Shadows are sampled here too,
 and never past sixteen blocks: the renderer walks the blocks under the entity,
 computes an alpha for each, and stores the shapes and alphas in the state, so
 that the feature renderer three stages later only has to turn them into quads.
@@ -141,7 +146,9 @@ It starts as `LivingEntity.hurtTime` — or `LivingEntity.deathTime` — and
 becomes the boolean `LivingEntityRenderState.hasRedOverlay` here, at extract.
 At submit, `LivingEntityRenderer.getOverlayCoords` packs that boolean into an
 `OverlayTexture` coordinate alongside a separate white-flash axis, the one
-creepers and the wither use. That packed integer rides through the submit node
+the creeper's fuse uses — and, besides the creeper, only a primed TNT minecart
+and the sulfur cube's inner layer. The wither is not on that list: it flashes
+by swapping to a second texture. That packed integer rides through the submit node
 untouched and lands, at execute, as a **per-vertex attribute**. Nothing along
 the way is ever tinted red.
 
@@ -154,8 +161,9 @@ the way is ever tinted red.
 `LevelRenderer.submitEntities` walks the states and calls
 `EntityRenderDispatcher.submit` for each, after
 `EntityRenderDispatcher.prepare` has set the camera for the frame.
-`LivingEntityRenderer.submit` then poses the model, describes the body, and
-lets every `RenderLayer` describe its own extra through `RenderLayer.submit`.
+`LivingEntityRenderer.submit` then describes the body, poses the model, and
+lets every `RenderLayer` describe its own extra through `RenderLayer.submit` —
+in that order, because the pose is only needed by the layers.
 
 The description API is `SubmitNodeCollector` and its ordered form:
 `OrderedSubmitNodeCollector.submitModel`, `.submitItem`, `.submitText`,
@@ -173,7 +181,9 @@ one means *after every entity's order-zero body in the whole world*, not
 "after this entity's body". That is how the eyes layer, the armour layers and
 the enchantment glint stack correctly across a crowd instead of interleaving
 one mob's helmet with another's head. Armour claims consecutive orders as it
-goes, so a dyed, enchanted, trimmed helmet occupies three, and exactly one
+goes, so a dyed, enchanted, trimmed helmet occupies four — leather is the
+only dyeable helmet and its equipment definition has two layers of its own —
+and exactly one
 layer in the game asks for a **negative** order, to get underneath everything.
 
 The pose stack is transient, and half of it is dropped. A submit *copies* the
@@ -231,12 +241,14 @@ the fallback — and held or worn items through `ItemModelResolver` and
 `FeatureRenderDispatcher.prepareFrame` drains every phase of every order
 bucket, groups the nodes, and lets the thirteen feature renderers build
 geometry — `ModelFeatureRenderer` being where a `ModelPart` tree finally
-becomes vertices. Batching is by feature type first, then by `RenderType`: all
-the zombies in the world collapse into one draw. Translucency opts out of
-*reordering* rather than of *merging* — a translucent phase marks its group
-strictly ordered, which stops a submit merging backwards into a
-non-consecutive earlier draw, while consecutive same-type submits still merge
-unless the render type itself forbids it.
+becomes vertices. **Only two of the thirteen kinds of submit can be batched at
+all** — a model and a piece of custom geometry — and everything else keeps
+the order it was submitted in and merges only with its immediate neighbour.
+Where the zombies of the world do collapse into one draw, that is the group
+finding they all want the same `RenderType`. Translucency opts out of
+*merging*, not of ordering — a translucent phase marks its group strictly
+ordered, which switches off the consolidation of consecutive draws, while the
+phase itself still reorders by depth, which is the whole point of it.
 
 ### Why the zombie is animated more than once
 
@@ -246,8 +258,12 @@ Once during **submit** — but only because it has layers, and
 **prepare** time, because the submit node carried the model and the state but
 not a pose for every part. A glowing zombie is animated three times, since the
 outline is a second submission of the same model into
-`SubmitNodeCollection.outline`; one inside a block-breaking overlay, four.
-That is only sound because `Model.setupAnim` **resets every part to its baked
+`SubmitNodeCollection.outline`. A fourth pass exists in the machinery — the
+crumbling overlay — but no entity ever reaches it: the only non-null
+`ModelFeatureRenderer.CrumblingOverlay` in the game is built in
+`LevelExtractor`'s *block-entity* loop, so it is a chest being mined that
+gets a fourth pose, never a mob. That the repeats are sound at all is only
+because `Model.setupAnim` **resets every part to its baked
 pose first**, so each call is idempotent from a known base — not because the
 model is stateless, which it emphatically is not.
 
