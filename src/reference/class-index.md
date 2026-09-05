@@ -8,7 +8,7 @@ a class named only inside a diagram, because the index reads backticked names an
 mermaid label is not one, and the generated views, whose backticks are registry and packet
 ids rather than class names.
 
-2750 names across 131 pages. A row is a
+2756 names across 131 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -184,7 +184,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BitRandomSource` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `BitSetDiscreteVoxelShape` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `BitStorage` | [math-and-primitives](../reference/math-and-primitives.md), [chunk-anatomy](../systems/world/chunk-anatomy.md) |
-| `BlackholeTickAccess` | [the-client-level](../systems/client/the-client-level.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `BlackholeTickAccess` | [the-client-level](../systems/client/the-client-level.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `BlackstoneReplaceProcessor` | [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
 | `Blaze` | [pathfinding](../systems/entities/pathfinding.md) |
 | `BlendedNoise` | [density-function-nodes](../reference/density-function-nodes.md), [density-functions](../systems/worldgen/density-functions.md), [terrain](../systems/worldgen/terrain.md) |
@@ -212,7 +212,6 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BlockEntityRenderer` | [glossary](../reference/glossary.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `BlockEntityRenderers` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `BlockEntityRenderState` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
-| `BlockEntityTicker` | [chunk-anatomy](../systems/world/chunk-anatomy.md) |
 | `BlockEntityType` | [block-entities](../systems/blocks/block-entities.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `BlockEntityTypes` | [block-entities](../systems/blocks/block-entities.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `BlockEntityWithBoundingBoxRenderer` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
@@ -379,6 +378,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ChunkMap` | [introduction](../introduction.md), [biggest](../maps/biggest.md), [packages](../maps/packages.md), [anatomy](../systems/anatomy/anatomy.md), [options](../systems/client/options.md), [attributes](../systems/entities/attributes.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [III · The server](../systems/server/README.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [lighting](../systems/world/lighting.md), [points-of-interest](../systems/world/points-of-interest.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [tickets-and-loading](../systems/world/tickets-and-loading.md), [blending](../systems/worldgen/blending.md), [terrain](../systems/worldgen/terrain.md) |
 | `ChunkPos` | [math-and-primitives](../reference/math-and-primitives.md), [naming-drift](../reference/naming-drift.md), [IV · The world](../systems/world/README.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md) |
 | `ChunkPyramid` | [lectures](../lectures.md), [math-and-primitives](../reference/math-and-primitives.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [lighting](../systems/world/lighting.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ChunkResult` | [tickets-and-loading](../systems/world/tickets-and-loading.md) |
 | `ChunkScanAccess` | [chunk-storage](../systems/world/chunk-storage.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `ChunkSectionLayer` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [models-and-atlases](../systems/rendering/models-and-atlases.md), [section-meshing](../systems/rendering/section-meshing.md) |
 | `ChunkSectionLayerGroup` | [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md) |
@@ -410,12 +410,12 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundBlockDestructionPacket` | [block-breaking](../systems/blocks/block-breaking.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundBlockEntityDataPacket` | [block-entities](../systems/blocks/block-entities.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundBlockEventPacket` | [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [server-level-tick](../systems/server/server-level-tick.md) |
-| `ClientboundBlockUpdatePacket` | [block-breaking](../systems/blocks/block-breaking.md), [block-entities](../systems/blocks/block-entities.md), [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md) |
+| `ClientboundBlockUpdatePacket` | [block-breaking](../systems/blocks/block-breaking.md), [block-entities](../systems/blocks/block-entities.md), [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [server-level-tick](../systems/server/server-level-tick.md) |
 | `ClientboundBundleDelimiterPacket` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `ClientboundBundlePacket` | [synched-entity-data](../systems/entities/synched-entity-data.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundChangeDifficultyPacket` | [level-data-and-rules](../reference/level-data-and-rules.md) |
-| `ClientboundChunkBatchFinishedPacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
-| `ClientboundChunkBatchStartPacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ClientboundChunkBatchFinishedPacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
+| `ClientboundChunkBatchStartPacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundChunksBiomesPacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [biomes](../systems/worldgen/biomes.md) |
 | `ClientboundClearDialogPacket` | [dialogs](../systems/commands/dialogs.md) |
 | `ClientboundCommandsPacket` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [permissions](../systems/commands/permissions.md) |
@@ -449,7 +449,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundInitializeBorderPacket` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `ClientboundKeepAlivePacket` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `ClientboundLevelChunkPacketData` | [chunk-anatomy](../systems/world/chunk-anatomy.md) |
-| `ClientboundLevelChunkWithLightPacket` | [naming-drift](../reference/naming-drift.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [lighting](../systems/world/lighting.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ClientboundLevelChunkWithLightPacket` | [naming-drift](../reference/naming-drift.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [lighting](../systems/world/lighting.md) |
 | `ClientboundLevelEventPacket` | [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [particles](../systems/rendering/particles.md) |
 | `ClientboundLevelParticlesPacket` | [particles](../systems/rendering/particles.md) |
 | `ClientboundLightUpdatePacket` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [server-level-tick](../systems/server/server-level-tick.md), [lighting](../systems/world/lighting.md) |
@@ -494,7 +494,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundSetBorderWarningDelayPacket` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `ClientboundSetBorderWarningDistancePacket` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `ClientboundSetChunkCacheCenterPacket` | [naming-drift](../reference/naming-drift.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
-| `ClientboundSetChunkCacheRadiusPacket` | [naming-drift](../reference/naming-drift.md), [options](../systems/client/options.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ClientboundSetChunkCacheRadiusPacket` | [naming-drift](../reference/naming-drift.md), [options](../systems/client/options.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundSetCursorItemPacket` | [naming-drift](../reference/naming-drift.md), [data-components](../systems/foundations/data-components.md), [containers-and-menus](../systems/items/containers-and-menus.md) |
 | `ClientboundSetDefaultSpawnPositionPacket` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `ClientboundSetDisplayObjectivePacket` | [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
@@ -508,7 +508,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundSetPlayerInventoryPacket` | [data-components](../systems/foundations/data-components.md), [containers-and-menus](../systems/items/containers-and-menus.md), [player-anatomy](../systems/player/player-anatomy.md) |
 | `ClientboundSetPlayerTeamPacket` | [level-data-and-rules](../reference/level-data-and-rules.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
 | `ClientboundSetScorePacket` | [level-data-and-rules](../reference/level-data-and-rules.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
-| `ClientboundSetSimulationDistancePacket` | [options](../systems/client/options.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ClientboundSetSimulationDistancePacket` | [options](../systems/client/options.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `ClientboundSetTimePacket` | [level-data-and-rules](../reference/level-data-and-rules.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ClientboundShowDialogPacket` | [dialogs](../systems/commands/dialogs.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `ClientboundSoundEntityPacket` | [what-makes-a-sound](../systems/client/what-makes-a-sound.md) |
@@ -557,7 +557,9 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `Climate` | [biomes](../systems/worldgen/biomes.md), [density-functions](../systems/worldgen/density-functions.md) |
 | `ClipBlockStateContext` | [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
 | `ClipboardManager` | [the-window](../systems/rendering/the-window.md) |
+| `ClockManager` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ClockNetworkState` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
+| `ClockState` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ClockTimeMarker` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ClockTimeMarkers` | [server-level-tick](../systems/server/server-level-tick.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `CloneCommands` | [scheduled-ticks](../systems/world/scheduled-ticks.md) |
@@ -1061,11 +1063,11 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `FloatSampleSource` | [sound-engine](../systems/client/sound-engine.md) |
 | `FloatWithAlpha` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `FlowingFluid` | [glossary](../reference/glossary.md), [fluids](../systems/world/fluids.md) |
-| `Fluid` | [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `Fluid` | [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `FluidModel` | [naming-drift](../reference/naming-drift.md), [section-meshing](../systems/rendering/section-meshing.md) |
 | `FluidRenderer` | [naming-drift](../reference/naming-drift.md), [section-meshing](../systems/rendering/section-meshing.md) |
 | `Fluids` | [blocks-and-states](../systems/blocks/blocks-and-states.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
-| `FluidState` | [glossary](../reference/glossary.md), [V · Blocks](../systems/blocks/README.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [tags](../systems/foundations/tags.md), [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `FluidState` | [glossary](../reference/glossary.md), [V · Blocks](../systems/blocks/README.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [tags](../systems/foundations/tags.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `FluidStateModelSet` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `FluidTags` | [block-breaking](../systems/blocks/block-breaking.md), [tags](../systems/foundations/tags.md), [fluids](../systems/world/fluids.md) |
 | `FlyingPathNavigation` | [pathfinding](../systems/entities/pathfinding.md) |
@@ -1137,7 +1139,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `GameRuleCommand` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `GameRuleMap` | [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `GameRuleRegistryFix` | [naming-drift](../reference/naming-drift.md), [starting-a-server](../systems/server/starting-a-server.md) |
-| `GameRules` | [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [non-living-damage](../reference/non-living-damage.md), [block-breaking](../systems/blocks/block-breaking.md), [advancements](../systems/commands/advancements.md), [the-execution-engine](../systems/commands/the-execution-engine.md), [damage-and-death](../systems/entities/damage-and-death.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [text-components](../systems/foundations/text-components.md), [recipes](../systems/items/recipes.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [input-to-movement](../systems/player/input-to-movement.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [starting-a-server](../systems/server/starting-a-server.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [tickets-and-loading](../systems/world/tickets-and-loading.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
+| `GameRules` | [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [non-living-damage](../reference/non-living-damage.md), [block-breaking](../systems/blocks/block-breaking.md), [advancements](../systems/commands/advancements.md), [the-execution-engine](../systems/commands/the-execution-engine.md), [damage-and-death](../systems/entities/damage-and-death.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [text-components](../systems/foundations/text-components.md), [recipes](../systems/items/recipes.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [input-to-movement](../systems/player/input-to-movement.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [starting-a-server](../systems/server/starting-a-server.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md), [tickets-and-loading](../systems/world/tickets-and-loading.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `GameRuleType` | [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md) |
 | `GameRuleTypeVisitor` | [naming-drift](../reference/naming-drift.md) |
 | `GameTestBatch` | [game-tests](../systems/commands/game-tests.md) |
@@ -1728,6 +1730,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `Pack` | [resource-system](../systems/foundations/resource-system.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `PackCompatibility` | [resource-system](../systems/foundations/resource-system.md) |
 | `PackDetector` | [resource-system](../systems/foundations/resource-system.md) |
+| `PackedClockStates` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `Packet` | [fanin](../maps/fanin.md), [hierarchy](../maps/hierarchy.md), [threads](../reference/threads.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [the-connection](../systems/networking/the-connection.md) |
 | `PacketBundlePacker` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [the-connection](../systems/networking/the-connection.md) |
 | `PacketBundleUnpacker` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [the-connection](../systems/networking/the-connection.md) |
@@ -1838,6 +1841,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `PlayerGlyphProvider` | [text-and-fonts](../systems/client/text-and-fonts.md) |
 | `PlayerInfo` | [chat-and-signing](../systems/networking/chat-and-signing.md), [player-anatomy](../systems/player/player-anatomy.md) |
 | `PlayerList` | [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [threads](../reference/threads.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [advancements](../systems/commands/advancements.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md), [resource-system](../systems/foundations/resource-system.md), [tags](../systems/foundations/tags.md), [text-components](../systems/foundations/text-components.md), [recipes](../systems/items/recipes.md), [chat-and-signing](../systems/networking/chat-and-signing.md), [protocol-phases](../systems/networking/protocol-phases.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-tick](../systems/server/server-tick.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `PlayerMap` | [tickets-and-loading](../systems/world/tickets-and-loading.md) |
 | `PlayerModel` | [player-anatomy](../systems/player/player-anatomy.md) |
 | `PlayerPredicate` | [advancements](../systems/commands/advancements.md), [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `PlayerRideableJumping` | [entity-anatomy](../systems/entities/entity-anatomy.md) |
@@ -1991,6 +1995,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `RegionFileStorage` | [chunk-storage](../systems/world/chunk-storage.md) |
 | `RegionFileVersion` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [starting-a-server](../systems/server/starting-a-server.md), [chunk-storage](../systems/world/chunk-storage.md) |
 | `RegionStorageInfo` | [chunk-storage](../systems/world/chunk-storage.md) |
+| `RegionStorageUpgrader` | [chunk-storage](../systems/world/chunk-storage.md) |
 | `RegistrationInfo` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
 | `Registries` | [fanin](../maps/fanin.md), [density-function-nodes](../reference/density-function-nodes.md), [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [V · Blocks](../systems/blocks/README.md), [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [game-tests](../systems/commands/game-tests.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [attributes](../systems/entities/attributes.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [recipes](../systems/items/recipes.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [creating-a-world](../systems/worldgen/creating-a-world.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
 | `Registry` | [entity-anatomy](../systems/entities/entity-anatomy.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md) |
@@ -2090,7 +2095,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ScaleExponentially` | [enchantments](../systems/items/enchantments.md) |
 | `ScatteredFeaturePiece` | [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
 | `ScheduleCommand` | [functions-and-macros](../systems/commands/functions-and-macros.md) |
-| `ScheduledTick` | [server-level-tick](../systems/server/server-level-tick.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `ScheduledTick` | [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `ScheduledTickAccess` | [the-client-level](../systems/client/the-client-level.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `Schema` | [fanin](../maps/fanin.md) |
 | `Scope` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
@@ -2154,7 +2159,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ServerboundChatCommandSignedPacket` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `ServerboundChatPacket` | [text-components](../systems/foundations/text-components.md) |
 | `ServerboundChatSessionUpdatePacket` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
-| `ServerboundChunkBatchReceivedPacket` | [threads](../reference/threads.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [players-and-sessions](../systems/server/players-and-sessions.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ServerboundChunkBatchReceivedPacket` | [threads](../reference/threads.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `ServerboundClientCommandPacket` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `ServerboundClientInformationPacket` | [options](../systems/client/options.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [protocol-phases](../systems/networking/protocol-phases.md) |
 | `ServerboundClientTickEndPacket` | [the-client-loop](../systems/client/the-client-loop.md), [input-to-movement](../systems/player/input-to-movement.md) |
@@ -2196,7 +2201,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ServerboundSwingPacket` | [block-interaction](../systems/blocks/block-interaction.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `ServerboundUseItemOnPacket` | [block-interaction](../systems/blocks/block-interaction.md), [prediction-and-acks](../systems/client/prediction-and-acks.md) |
 | `ServerboundUseItemPacket` | [block-interaction](../systems/blocks/block-interaction.md), [prediction-and-acks](../systems/client/prediction-and-acks.md), [using-an-item](../systems/items/using-an-item.md) |
-| `ServerChunkCache` | [level-data-and-rules](../reference/level-data-and-rules.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [block-entities](../systems/blocks/block-entities.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [input-to-movement](../systems/player/input-to-movement.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [lighting](../systems/world/lighting.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `ServerChunkCache` | [level-data-and-rules](../reference/level-data-and-rules.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [block-entities](../systems/blocks/block-entities.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [input-to-movement](../systems/player/input-to-movement.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [lighting](../systems/world/lighting.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
 | `ServerClockManager` | [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [starting-a-server](../systems/server/starting-a-server.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ServerCommonPacketListenerImpl` | [biggest](../maps/biggest.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [resource-system](../systems/foundations/resource-system.md), [protocol-phases](../systems/networking/protocol-phases.md), [the-connection](../systems/networking/the-connection.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-tick](../systems/server/server-tick.md) |
 | `ServerConfigurationPacketListenerImpl` | [protocol-phases](../systems/networking/protocol-phases.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
@@ -2555,8 +2560,8 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `TickContainerAccess` | [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `Ticket` | [tickets-and-loading](../systems/world/tickets-and-loading.md) |
 | `TicketStorage` | [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [server-level-tick](../systems/server/server-level-tick.md), [starting-a-server](../systems/server/starting-a-server.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
-| `TicketType` | [glossary](../reference/glossary.md), [protocol-phases](../systems/networking/protocol-phases.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [starting-a-server](../systems/server/starting-a-server.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
-| `TickingBlockEntity` | [block-entities](../systems/blocks/block-entities.md), [chunk-anatomy](../systems/world/chunk-anatomy.md) |
+| `TicketType` | [glossary](../reference/glossary.md), [protocol-phases](../systems/networking/protocol-phases.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [starting-a-server](../systems/server/starting-a-server.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
+| `TickingBlockEntity` | [block-entities](../systems/blocks/block-entities.md) |
 | `TickPriority` | [diodes-and-observers](../systems/blocks/diodes-and-observers.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `TickRateManager` | [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [block-entities](../systems/blocks/block-entities.md), [the-client-loop](../systems/client/the-client-loop.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [input-to-movement](../systems/player/input-to-movement.md), [block-entity-rendering](../systems/rendering/block-entity-rendering.md), [the-frame](../systems/rendering/the-frame.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `TickTask` | [server-tick](../systems/server/server-tick.md) |
@@ -2629,6 +2634,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `Unstitcher` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `UpdateActivityFromSchedule` | [points-of-interest](../systems/world/points-of-interest.md) |
 | `UpgradeData` | [chunk-anatomy](../systems/world/chunk-anatomy.md) |
+| `UpgradeProgress` | [chunk-storage](../systems/world/chunk-storage.md) |
 | `UpwardsBranchingTrunkPlacer` | [trees](../systems/worldgen/trees.md) |
 | `UseBonemeal` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `UseCooldown` | [using-an-item](../systems/items/using-an-item.md) |
@@ -2640,7 +2646,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `UserNameToIdResolver` | [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `UserWhiteList` | [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `Utf8String` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
-| `Util` | [packages](../maps/packages.md), [level-data-and-rules](../reference/level-data-and-rules.md), [math-and-primitives](../reference/math-and-primitives.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [sound-engine](../systems/client/sound-engine.md), [the-client-loop](../systems/client/the-client-loop.md), [entity-selectors](../systems/commands/entity-selectors.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [resource-system](../systems/foundations/resource-system.md), [tags](../systems/foundations/tags.md), [recipes](../systems/items/recipes.md), [chat-and-signing](../systems/networking/chat-and-signing.md), [section-meshing](../systems/rendering/section-meshing.md), [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `Util` | [packages](../maps/packages.md), [level-data-and-rules](../reference/level-data-and-rules.md), [math-and-primitives](../reference/math-and-primitives.md), [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [sound-engine](../systems/client/sound-engine.md), [the-client-loop](../systems/client/the-client-loop.md), [entity-selectors](../systems/commands/entity-selectors.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [resource-system](../systems/foundations/resource-system.md), [tags](../systems/foundations/tags.md), [recipes](../systems/items/recipes.md), [chat-and-signing](../systems/networking/chat-and-signing.md), [section-meshing](../systems/rendering/section-meshing.md), [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md), [chunk-storage](../systems/world/chunk-storage.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `UUIDUtil` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [protocol-phases](../systems/networking/protocol-phases.md) |
 | `Validatable` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchantments](../systems/items/enchantments.md) |
 | `ValidateNearbyPoi` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [points-of-interest](../systems/world/points-of-interest.md) |
@@ -2750,7 +2756,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `WorldSelectionList` | [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `WorldSessionTelemetryManager` | [advancements](../systems/commands/advancements.md) |
 | `WorldStem` | [glossary](../reference/glossary.md), [starting-a-server](../systems/server/starting-a-server.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
-| `WorldUpgrader` | [starting-a-server](../systems/server/starting-a-server.md) |
+| `WorldUpgrader` | [starting-a-server](../systems/server/starting-a-server.md), [chunk-storage](../systems/world/chunk-storage.md) |
 | `WrappedGoal` | [glossary](../reference/glossary.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `WritableLevelData` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `WritableRegistry` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
