@@ -4,8 +4,8 @@
 
 The oak in the middle of a plains chunk was not placed by the plains biome.
 It was placed by a list that every biome in the dimension contributed to,
-sorted once at world load into a single global order, with an index per entry
-that the random seed for each feature is derived from. That is how the same
+sorted once at world load into one order per decoration step, with an index
+per entry that the random seed for each feature is derived from. That is how the same
 seed grows the same forest — and it is also why **two biomes that list the
 same two features in opposite orders make the world refuse to open.** The
 order is a topological sort of a graph, and a graph can have a cycle.
@@ -22,10 +22,10 @@ biggest single feature, the tree, has its own page
 
 | class | its job | notes |
 |---|---|---|
-| `Feature` | the algorithm, with one method: `Feature.place`, which returns whether it wrote anything | **61** registered into `BuiltInRegistries.FEATURE` |
+| `Feature` | the algorithm, with one method: `Feature.place`, which returns whether it wrote anything | **63** registered into `BuiltInRegistries.FEATURE` |
 | `FeatureConfiguration` | its parameters, per feature type | `NoneFeatureConfiguration` for the ones that need none |
 | `ConfiguredFeature` | a feature plus its configuration, and **no position logic at all** | the unit a sapling grows |
-| `PlacedFeature` | a configured feature plus an ordered list of modifiers | the unit a biome names — the only one of the three that knows about position |
+| `PlacedFeature` | a configured feature plus an ordered list of modifiers | the unit a biome names — the only one of the three that owns placement modifiers |
 | `PlacementModifier` | one function from a position to a *stream* of positions | 15 registered types |
 | `GenerationStep.Decoration` | the eleven steps, in order, from raw generation to top-layer modification | a biome's list is a list of lists, by ordinal |
 | `FeatureSorter` | flattens every possible biome's per-step lists into one sorted list per step, with an index lookup | once per generator, memoised |
@@ -44,14 +44,15 @@ sequenceDiagram
     participant CF as ConfiguredFeature
 
     CST->>ChunkG: applyBiomeDecoration — write radius 1, four final heightmaps primed
+    ChunkG->>FS: featuresPerStep — one sorted list per step, and an index per PlacedFeature
     ChunkG->>WR: setDecorationSeed(level seed, chunk corner)
     ChunkG->>ChunkG: union the biome palettes of the 3x3 chunks, intersect with possibleBiomes
-    ChunkG->>FS: featuresPerStep — a global index per PlacedFeature
-    Note over ChunkG: per step: structures first, then features in global index order
-    ChunkG->>WR: setFeatureSeed(decoration seed, global index, step)
+    Note over ChunkG: per step: structures first, then features in sorted index order
+    ChunkG->>WR: setFeatureSeed(decoration seed, feature index, step)
     ChunkG->>PlacedF: placeWithBiomeCheck, from the chunk's minimum corner
     PlacedF->>PMod: fold — each modifier flat-maps one position into zero or more
-    PMod-->>CF: the surviving positions
+    PMod-->>PlacedF: the surviving positions
+    PlacedF->>CF: place, once per surviving position
     CF->>CF: Feature.place — ensureCanWrite checked once, for the origin
 ```
 
@@ -63,15 +64,16 @@ offset; the scatter comes later, from a modifier.
 then reseeded absolutely, twice, before anything uses it.
 `WorldgenRandom.setDecorationSeed` derives a per-chunk seed from the world
 seed and the chunk corner, and each feature then gets
-`WorldgenRandom.setFeatureSeed` from that seed, its **global** index and the
-step. Features in a step therefore do *not* share a random stream: every one
+`WorldgenRandom.setFeatureSeed` from that seed, its index within the step and
+the step number, which the seed multiplies by ten thousand to keep the steps
+apart. Features in a step therefore do *not* share a random stream: every one
 is reseeded absolutely before it runs, so an extra draw inside a feature
 perturbs the rest of *that* feature and nothing after it.
 
 **Who wants what.** The biome palettes of the surrounding 3×3 chunks are
 unioned and intersected with the biome source's possible biomes. Every placed
-feature any of those biomes lists for this step is collected by its global
-index, and the indices are **sorted** — that sort is the execution order, and
+feature any of those biomes lists for this step is collected by its index in
+that step's list, and the indices are **sorted** — that sort is the execution order, and
 it is the same for every chunk *in that dimension*, because
 `ChunkGenerator.featuresPerStep` is memoised per generator and built from
 that generator's possible biomes. The Nether's order has nothing to do with
@@ -133,9 +135,10 @@ scan inside `PlacementModifier.getPositions`.
 
 ## A feature that is a tree of features
 
-Five of the sixty-one registered features place no blocks at all. They take
-other placed features and choose between them, which is how a data pack
-builds decoration out of decoration rather than out of algorithms:
+Six of the sixty-three registered features write no blocks. `Feature.NO_OP`
+is a deliberate nothing; the other five take other placed features and choose
+between them, which is how a data pack builds decoration out of decoration
+rather than out of algorithms:
 `RandomSelectorFeature` walks a weighted list rolling each entry's chance and
 falls back to a default; `SimpleRandomSelectorFeature` picks a uniform index;
 `WeightedRandomSelectorFeature` draws from a weighted list;
@@ -169,14 +172,17 @@ environment — and does not write. A canopy that would reach two chunks out is
 only warned about by `WorldGenRegion.warnIfReadOutsideWriteZone` and still
 happens. What makes cascading worldgen structurally impossible is one level
 further out: `WorldGenRegion.getChunk` **throws** rather than loading once the
-request passes the step's declared dependency radius — nine chunks of
+request passes the step's declared dependency radius — eight chunks of
 chessboard distance at this step — and what it may legally see there is a
 chunk at `ChunkStatus.STRUCTURE_STARTS`.
 
-The supporting value types are worth naming because only two of them can see
-the world at all: `HeightProvider.sample` and `VerticalAnchor.resolveY` take
-a `WorldGenerationContext`, while an `IntProvider` needs only a random source
-and a `BlockPredicate` is a predicate over a level and a position.
+The supporting value types are worth naming because they are handed three
+different amounts of world. An `IntProvider` gets a random source and nothing
+else. `HeightProvider.sample` and `VerticalAnchor.resolveY` get a
+`WorldGenerationContext`, which despite the name is two integers — the world's
+minimum Y and its height. Only `BlockPredicate` sees the world itself: it
+extends `BiPredicate<WorldGenLevel, BlockPos>`, and that is why a placement
+can ask what block is under the sapling.
 
 ## Questions players ask
 
@@ -193,9 +199,12 @@ catches the exception and offers safe mode. A dedicated server never calls
 crash report wrapped around the first chunk that tries to decorate.
 
 **Why does a chunk keep changing after it has decorated?** Because all eight
-neighbours write into it when *they* decorate. What makes that safe is the
-dependency graph rather than any locking: lighting requires the whole ring to
-have decorated first.
+neighbours write into it when *they* decorate. What makes that safe is not
+locking and not the dependency graph: every decoration step in a level runs on
+the single-threaded `ConsecutiveExecutor` named *worldgen*, so no two
+neighbours are ever inside the centre chunk at once. The dependency graph
+fixes the *order* — lighting requires the whole ring to have decorated
+first — not the exclusion.
 
 **Does a sapling grow the same way a worldgen tree does?** No — it skips this
 whole page. `SaplingBlock.advanceTree` and bone meal run on the **server main
