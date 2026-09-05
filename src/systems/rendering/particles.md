@@ -21,19 +21,20 @@ survives a series of gates that disagree about what they are gating.**
 | `ServerLevel` | which players are told about a particle at all — on dimension and distance, nothing else | Server |
 | `ParticleType` | the type's identity in the registry, and `ParticleType.getOverrideLimiter`, the "ignore the limits" flag baked into it | either |
 | `ClientLevel` | the gated entry point, `ClientLevel.doAddParticle` — and the ungated ones beside it | Client |
-| `ParticleResources` | which provider and which `SpriteSet` a type gets, rebuilt on every resource reload | load off-thread, bind on Client |
+| `ParticleResources` | which provider a type gets, registered once at construction, and which `SpriteSet` — rebound on every reload | load off-thread, bind on Client |
 | `ParticleEngine` | the groups, the one-tick admission queue, the emitters, the per-type counts | Client |
 | `ParticleGroup` | whether there is room: the per-render-type cap and the probabilistic reservoir | Client |
 | `ClientExplosionTracker` | how many explosion particles happen this tick, and where — the client's own budgeted generator | Client |
 | `SingleQuadParticle.Layer` | which of three atlases a quad reads, and which of two pipelines draws it | Client |
 
-Everything below the first row runs on the client thread, and the only
+Everything below the second row runs on the client thread, and the only
 off-thread work in the system is the load half of `ParticleResources.reload`
 — the bind that rebuilds each `SpriteSet` comes back to the client thread.
-Three things cross the network and none of them is a particle: a
-`ClientboundLevelParticlesPacket` is an explicit request carrying count,
-spread, speed and two override flags, a `ClientboundLevelEventPacket` is an
-event the client interprets, and a `ClientboundExplodePacket` is a
+Several things cross the network and none of them is a particle. Three carry
+the bulk of it: a `ClientboundLevelParticlesPacket` is an explicit request
+carrying count, spread, speed and two override flags, a
+`ClientboundLevelEventPacket` is an event the client interprets, and a
+`ClientboundExplodePacket` is a
 description the client expands itself.
 
 ## Does the particle happen at all?
@@ -74,10 +75,12 @@ event, not in what the client then does with it.
 
 And the breaker is not always a player.
 `LevelEvent.PARTICLES_DESTROY_BLOCK` has fifteen call sites and only three
-pass a source at all. A fox eating a berry bush, a rabbit trampling a crop,
-a sheep eating grass, a brush finishing on a suspicious block and
-`Level.destroyBlock` itself all raise it with a null source — which means
-the server broadcasts it to *everybody*, including whoever caused it.
+pass a source at all — a bed, a tall plant, and `Block.playerWillDestroy`
+itself. A fox faceplanting into snow, a rabbit eating a carrot down one age,
+a sheep eating grass, a zombie breaking a door, a suspicious block that fell
+and shattered, and `Level.destroyBlock` itself all raise it with a null source
+— which means the server broadcasts it to *everybody*, including whoever
+caused it.
 
 **Sixty-four** — quads in a full cube's puff, because
 `ClientLevel.addDestroyBlockEffect` walks every box of
@@ -120,9 +123,9 @@ which is the only reason you can see them.
 There are three distance rules, they are enforced by three different pieces
 of code, and two of them happen to be the same number.
 
-| the gate | measured from | the distance | what `ParticleType.getOverrideLimiter` does to it |
+| the gate | measured from | the distance | what an override does to it |
 |---|---|---|---|
-| the server choosing whom to send a `ClientboundLevelParticlesPacket` to | the receiving player | 32 blocks | *widens* it, to 512 |
+| the server choosing whom to send a `ClientboundLevelParticlesPacket` to | the receiving player | 32 blocks | *widens* it, to 512 — but from the caller's own boolean, in practice `/particle … force`, and never from the particle type |
 | the client deciding whether to build the particle at all, in `ClientLevel.doAddParticle` | the **camera** | 32 blocks | skips the check entirely |
 | the server broadcasting a level event — the break puff's second route | the receiving player | 64 blocks | not consulted: a level event carries no particle type |
 | `ClientLevel.addDestroyBlockEffect`, and everything else that hands `ParticleEngine.add` a finished particle | — | none | nothing to override |
@@ -131,9 +134,11 @@ The two thirty-twos are independent, not one check written twice. A particle
 that clears the server's test can still be dropped by the client's, because
 the client measures from where you are *looking* rather than from where your
 feet are, and a packet that took a tick to arrive is measured against a
-camera that has since moved. The override flag is the tell that these are
-separate mechanisms: one of them it deletes outright, the other it multiplies
-by sixteen.
+camera that has since moved. And the two overrides are not one flag either:
+the client's comes off the particle type, through
+`ParticleType.getOverrideLimiter`, whose four readers are all client-side,
+while the server's is a boolean the caller passes in. One deletes a check
+outright; the other multiplies a different check by sixteen.
 
 The 64-block radius is the third rule, and nothing overrides it in either
 direction. Once a level event lands the client asks no further questions,
@@ -149,13 +154,13 @@ agrees with the others about what its values mean.
 |---|---|
 | `ClientLevel.doAddParticle` | *decreased* is rewritten to *minimal* about a third of the time, and *minimal* drops everything — except that the always-show flag rescues a *minimal* setting one time in ten, and the rescue lands on *decreased*, which is then re-rolled |
 | `ClientExplosionTracker` | anything below *All* is off. The pending explosions are cleared unused, and there is no decreased tier for explosion block particles at all |
-| `ClientLevel.tickWeatherEffects` | on *decreased*, halves its column count. Rain does not stop, it thins |
+| `ClientLevel.tickWeatherEffects` | on *decreased*, halves its column count — rain thins rather than stopping; on *minimal* it breaks out before adding anything, and there it does stop |
 
 Only the first of those is the gate everything is nominally supposed to go
-through, and **eight call sites bypass it entirely** by handing a
-constructed particle straight to `ParticleEngine.add`: block-break particles
-by both of their routes, both crack effects, firework starters and
-item-pickup particles among them. The same puff arriving as a particle
+through, and **four call sites outside the particle package bypass it
+entirely** by handing a constructed particle straight to `ParticleEngine.add`:
+the break puff, the crack effect, the firework starter and the item-pickup
+streak. A fifth is inside the system, a firework spark spawning more sparks. The same puff arriving as a particle
 *packet* would be distance-culled and might be diced away by the setting.
 Arriving as a level event, it is unconditional.
 
@@ -188,7 +193,8 @@ flowchart TD
     A["a constructed particle reaches ParticleEngine.add"] --> B{"does Particle.getParticleLimit name a ParticleLimit"}
     B -- "no limit, the overwhelming majority" --> D
     B -- "SPORE_BLOSSOM, already at its count" --> X["dropped"]
-    B -- "SPORE_BLOSSOM, under its count" --> D{"the ParticleGroup for the particle's ParticleRenderType"}
+    B -- "SPORE_BLOSSOM, under its count" --> Q["queued in particlesToAdd until the next ParticleEngine.tick"]
+    Q --> D{"then ParticleGroup.add, for the particle's ParticleRenderType"}
     D -- "at ParticleGroup.MAX_PARTICLES" --> X
     D -- "past ParticleGroup.RESERVOIR_START" --> E["kept with probability equal to the square of the fraction of RESERVOIR_SIZE still free"]
     D -- "below RESERVOIR_START" --> K["kept"]
@@ -210,9 +216,11 @@ The per-type machinery beside it is the strangest thing in the system.
 particle, a count map in `ParticleEngine.trackedParticleCounts`, a decrement
 when a group refuses a particle the limit had already accepted — and it has
 **exactly one instance**, `ParticleLimit.SPORE_BLOSSOM`. The whole mechanism
-exists to hold down one kind of falling petal. The counts it keeps are
-totalled by `ParticleEngine.countParticles`, whose only consumer is
-`DebugEntryParticleRenderStats` on the debug screen.
+exists to hold down one kind of falling petal, and
+`ParticleEngine.hasSpaceInParticleLimit` is the only thing that ever reads the
+map. The number on the debug screen is a different count:
+`ParticleEngine.countParticles` walks the live render-type groups, and
+`DebugEntryParticleRenderStats` is its only consumer.
 
 ## When does it move, and when is it drawn?
 

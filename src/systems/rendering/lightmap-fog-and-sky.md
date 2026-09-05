@@ -48,8 +48,9 @@ camera. `EnvironmentAttributeProbe.tick` re-samples the biome neighbourhood
 once per client tick and rolls each probed value's new answer down into last
 tick's; `EnvironmentAttributeProbe.getValue` fetches the fresh one lazily,
 during the frame, and interpolates between the two by partial tick; and any
-attribute nobody asked for during a tick is evicted. Every renderer here goes
-through the probe, never through the system.
+attribute nobody asked for during a tick is evicted. Every renderer here that
+asks for an attribute at all goes through the probe and never through the
+system — and one of the five asks for none.
 
 **Whether a value smooths or steps is declared on the attribute**, not chosen
 by the renderer — which is why the sky colour slides and
