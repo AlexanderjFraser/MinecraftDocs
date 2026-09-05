@@ -136,7 +136,7 @@ the client measures from where you are *looking* rather than from where your
 feet are, and a packet that took a tick to arrive is measured against a
 camera that has since moved. And the two overrides are not one flag either:
 the client's comes off the particle type, through
-`ParticleType.getOverrideLimiter`, whose four readers are all client-side,
+`ParticleType.getOverrideLimiter`, whose three readers are all client-side,
 while the server's is a boolean the caller passes in. One deletes a check
 outright; the other multiplies a different check by sixteen.
 

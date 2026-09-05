@@ -105,6 +105,30 @@ drop the number.
   `ConnectionProtocol` has five values and the page's own section is
   *The five phases*.
 
+- `rendering/post-processing.md:204` — "every chain this game will ever load is
+  named by a **constant** in Java, and there are only six of those". Six ids is
+  right; only three are `static final` fields
+  (`GameRenderer.BLUR_POST_CHAIN_ID`,
+  `LevelRenderer.ENTITY_OUTLINE_POST_CHAIN_ID`,
+  `LevelRenderer.TRANSPARENCY_POST_CHAIN_ID`) and the other three are inline
+  literals in `GameRenderer.checkEntityPostEffect`'s switch. The count holds;
+  *constant* does not.
+- `rendering/the-window.md:244` — "(**both** reached from `KeyboardHandler`)".
+  `ClipboardManager` is a `KeyboardHandler` field; `TextInputManager` is
+  `Minecraft.textInputManager` and is reached from `Gui`,
+  `AbstractSignEditScreen` and `IMEPreeditOverlay` as well.
+- `rendering/entity-rendering.md:189,255` — "half" and "4x4" are right but the
+  enumeration is short (`SubmitNodeCollector.submitMovingBlock` also copies only
+  the `Matrix4f`; `submitFlame`, `submitShapeOutline` and `submitCustomGeometry`
+  also copy the full pose); and "half a dozen others" is seven layers that hang
+  something off a posed part, thirteen that call `RenderLayer.getParentModel`
+  at all.
+- `rendering/models-and-atlases.md:191` — "**twelve** separate layers" of
+  fallback: the prose names eleven distinct failure kinds, and twelve only if
+  "bakes that throw" counts as its two `ModelBakery` catches.
+- `rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
+  (`ClientLevel.java:274`), stated as a fraction rather than hedged.
+
 **Two same-page phrasings of one constant.** `world/points-of-interest.md:235`
 says "more than twenty ticks have passed" and
 `entities/ai-goals-and-brains.md:335` says "fewer than 21 ticks have passed"
