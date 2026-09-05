@@ -23,13 +23,13 @@ one layer among several rather than the owner
 | class | what it decides | when |
 |---|---|---|
 | `BiomeSource` | which biome a quart cell gets. Four implementations, and `BiomeSource.possibleBiomes` is the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on a worldgen worker |
-| `Climate.Sampler` | the six climate numbers at a point — the cacheless copy of the router's climate half ([density functions](density-functions.md)) | per quart cell |
+| `Climate.Sampler` | the six climate numbers at a point. Filling a chunk uses `NoiseChunk.cachedClimateSampler`, the chunk-wrapped copy; `RandomState.sampler` is the flattened, cacheless one everything outside a chunk asks ([density functions](density-functions.md)) | per quart cell |
 | `Climate.ParameterList` | the search space: one `Climate.ParameterPoint` per biome, indexed by a `Climate.RTree` | built once per world |
 | `OverworldBiomeBuilder` | the overworld's parameter table, in Java — temperature, humidity, erosion and continentalness bands over six tables of biome keys | build time |
 | `LevelChunkSection` | where the answer lives: a second `PalettedContainer` keyed by biome holder, two bits per axis | written once, saved, shipped |
 | `BiomeManager` | the jitter — which biome this *block* gets, as opposed to which cell it is in | every gameplay read |
 | `Biome` | five things: climate settings, an `EnvironmentAttributeMap`, `BiomeSpecialEffects`, generation settings and mob settings | — |
-| `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music and a dozen gameplay switches — as *modifiers*, not values | per attribute, per read |
+| `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music and the gameplay switches — as *modifiers*, not values. Twenty gameplay attributes exist; a vanilla biome file sets three of them | per attribute, per read |
 
 ## The trace: a chunk's biomes
 
@@ -41,17 +41,19 @@ sequenceDiagram
     participant LCS as LevelChunkSection
     participant MNBS as MultiNoiseBiomeSource
     participant ClimS as Climate.Sampler
+    participant CPList as Climate.ParameterList
     participant CRT as Climate.RTree
 
-    CST->>NBC: createBiomes — ChunkStatus.BIOMES, before NOISE and independent of it
+    CST->>NBC: createBiomes — ChunkStatus.BIOMES, which NOISE and SURFACE both require
     NBC->>NBC: fork to init_biomes, wrap the resolver in Blender and BelowZeroRetrogen
     NBC->>CA: fillBiomesFromNoise, with the chunk's cached climate sampler
     CA->>LCS: fillBiomesFromNoise — rebuild the container, 64 cells per section
     loop per quart cell
-        LCS->>MNBS: getNoiseBiome(quartX, quartY, quartZ)
+        LCS->>MNBS: getNoiseBiome — quart coordinates and the sampler
         MNBS->>ClimS: sample — six functions, each multiplied by 10,000 and truncated
         ClimS-->>MNBS: a Climate.TargetPoint of six longs
-        MNBS->>CRT: findValue — nearest neighbour over seven dimensions
+        MNBS->>CPList: findValue — the parameter list owns the search
+        CPList->>CRT: findValueIndex — nearest neighbour over seven dimensions
         CRT-->>LCS: a biome holder, into the palette
     end
     Note over LCS: saved under "biomes", shipped inside the chunk payload
@@ -105,8 +107,9 @@ incorrect: the remembered leaf is only a starting bound.
 
 One thing the parameter table does *not* have is a separate underground
 system. `OverworldBiomeBuilder.addUndergroundBiomes` and
-`OverworldBiomeBuilder.addBottomBiome` place dripstone caves, lush caves and
-the deep dark into the same seven-dimensional table by their *depth* band. A
+`OverworldBiomeBuilder.addBottomBiome` place dripstone caves, lush caves,
+sulfur caves and the deep dark into the same seven-dimensional table by their
+*depth* band. A
 cave biome is an ordinary entry that happens to win only below the surface.
 
 ## The two borders
@@ -145,7 +148,9 @@ The server never interpolates at all — it passes no interpolator.
 
 ## What a biome still owns
 
-Five things, and two of them are read only by worldgen.
+Five things, and none of them stops being read once the chunk is generated —
+`NaturalSpawner` asks the mob settings every tick and a bone-mealed grass block
+asks the generation settings.
 
 `Biome.climateSettings` is precipitation, a base temperature, a
 `Biome.TemperatureModifier` and downfall. Temperature is the interesting one:
@@ -158,10 +163,12 @@ grows. Most of the public surface is the questions rather than the number:
 unadjusted escape hatch.
 
 `BiomeSpecialEffects` is, in 26.2, **only block tint** — five fields, all of
-them colours or a grass-colour modifier. Fog, sky, clouds, ambient sound,
-music and particles have all left it for the attribute stack
-([lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)). And when
-those five are silent, the tint does not come from the biome at all: grass
+them colours or a grass-colour modifier, and only the water colour is
+mandatory. Fog, sky, clouds, ambient sound, music and particles have all left
+it for the attribute stack
+([lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)). And when the
+four optional ones are silent, the tint does not come from the biome at all:
+grass
 and foliage colour are a lookup into the colormap images by temperature and
 downfall, through `GrassColor`, `FoliageColor` and `DryFoliageColor`. "The
 biome's grass colour" is usually just the two climate numbers that index a
@@ -184,13 +191,17 @@ constructor silently rewrites any miscellaneous-category entity type to pig.
 
 ## Questions players ask
 
-**Why do I always spawn near the origin?** Because the world spawn is a
-climate search, not a terrain search. `Climate.SpawnFinder` and
-`Climate.findSpawnPosition` look for the point whose climate best matches the
-noise settings' spawn target, in two spiral passes out to a maximum radius of
-2,048 blocks, with depth pinned to zero and the fitness deliberately biased
-toward the origin so that a tie lands near 0,0. A dimension whose settings
-name no spawn target skips the search and answers the origin exactly.
+**Why do I always spawn near the origin?** Because the *chunk* is chosen by a
+climate search. `Climate.SpawnFinder` and `Climate.findSpawnPosition` look for
+the point whose climate best matches the noise settings' spawn target, in two
+spiral passes out to a maximum radius of 2,048 blocks, with depth pinned to
+zero and the fitness deliberately biased toward the origin so that a tie lands
+near 0,0. `MinecraftServer` then keeps only that answer's chunk and does a
+terrain search inside it: an eleven-by-eleven chunk spiral of
+`PlayerSpawnFinder.getSpawnPosInChunk`, over a first guess taken from
+`ChunkGenerator.getSpawnHeight` or, failing that, the *WORLD_SURFACE*
+heightmap. A dimension whose settings name no spawn target skips the climate
+half and starts that spiral at the origin chunk.
 
 **Why does `/locate biome` find biomes in chunks I have never visited?**
 Because it asks the generator, not the world. `BiomeSource.findClosestBiome3d`
@@ -198,7 +209,7 @@ spirals through `BiomeSource.getNoiseBiome` with the live sampler and never
 reads a palette — so it finds biomes in ungenerated chunks and will **never**
 find one placed by `/fillbiome`. It pre-filters against
 `BiomeSource.possibleBiomes`, so asking for an impossible biome fails
-instantly rather than after six thousand blocks of spiral.
+instantly rather than after a spiral out to six thousand four hundred blocks.
 
 **Can a data pack change the overworld's biome layout?** Not the vanilla
 preset. `OverworldBiomeBuilder` is hardcoded, and the data-pack element that

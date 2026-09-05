@@ -452,6 +452,7 @@ never change an existing row's meaning.
 | `LCS` | `LevelChunkSection` |
 | `MNBS` | `MultiNoiseBiomeSource` |
 | `ClimS` | `Climate.Sampler` |
+| `CPList` | `Climate.ParameterList` |
 | `CRT` | `Climate.RTree` |
 | `FS` | `FeatureSorter` |
 | `WR` | `WorldgenRandom` |
