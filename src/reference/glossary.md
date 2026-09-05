@@ -137,6 +137,11 @@ caches keyed on it mean nothing outside the cell loop. → [terrain](../systems/
 **Chunk** — a 16-by-16 column of the world's full height: sections,
 heightmaps, block entities, tick queues and a status. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
+**Chunk layer** — which of the three `ChunkSectionLayer` buffers a block's
+quads are meshed into — solid, cutout or translucent — decided at bake time
+from the alpha inside that quad's own patch of its sprite rather than from the
+block. → [models and atlases](../systems/rendering/models-and-atlases.md), [section meshing](../systems/rendering/section-meshing.md)
+
 **ChunkHolder** — the server's per-chunk record of the *level* the two graphs
 computed for it, a future per threshold and status, and what changed in it this
 tick; which tickets asked for that level is `TicketStorage`'s business, not the
@@ -154,6 +159,10 @@ erosion, depth, weirdness) a biome is chosen by. → [biomes](../systems/worldge
 
 **Codec** — a DataFixerUpper object that both encodes and decodes one type
 against any `DynamicOps`; the corpus's universal serialisation vocabulary. → [codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md)
+
+**CommandSourceStack** — *who is running this command, and from where*:
+position, rotation, level, entity, a `PermissionSet` and an output sink,
+immutable, so every `with…` returns a copy. → [Brigadier and commands](../systems/commands/brigadier-and-commands.md)
 
 **Compiled query** — the immutable `EntitySelector` a parse produces:
 thirteen fields, no reader and no grammar, resolvable any number of times
@@ -252,6 +261,10 @@ which positions it is offered. → [features and placement](../systems/worldgen/
 item plus a `FlatLevelGeneratorSettings`, one row of the Superflat *Presets*
 screen. → [creating a world](../systems/worldgen/creating-a-world.md)
 
+**Fluid** — the registry object behind a `FluidState`, a source and a flowing
+instance per liquid, with `FlowingFluid` holding the spread algorithm and
+`LiquidBlock` the block form. → [fluids](../systems/world/fluids.md)
+
 **Font** — a resource-pack-defined glyph source plus the measuring and
 wrapping API on top of it; a glyph is baked into a texture the first time it
 is asked for. → [text and fonts](../systems/client/text-and-fonts.md)
@@ -344,6 +357,12 @@ would be wrong. → [items and stacks](../systems/items/items-and-stacks.md)
 **Jigsaw** — the structure-assembly system that grows a village out of
 template pieces by matching connector blocks. → [jigsaw and templates](../systems/worldgen/jigsaw-and-templates.md)
 
+## K
+
+**KeyMapping** — one bindable action: whether its key is down, plus a counter
+of owed clicks that `KeyMapping.consumeClick` **drains** rather than
+edge-detects. → [input and keybinds](../systems/client/input-and-keybinds.md)
+
 ## L
 
 **Level** — a world: `ServerLevel` on the server, `ClientLevel` on the
@@ -351,6 +370,9 @@ client, sharing an abstract `Level` and remarkably little else. → [the level t
 
 **Lightmap** — the small texture the client samples to turn a block-light /
 sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md)
+
+**LocalPlayer** — the `Player` a human steers: its own `ClientInput`, its own
+prediction, and the last input and position it sent. → [player anatomy](../systems/player/player-anatomy.md)
 
 **Loot table** — the data-driven roll that turns an event (a block broken, a
 mob killed, anything at all reading a container that has not been rolled yet)
@@ -367,6 +389,10 @@ are gated on which memories are present. → [AI](../systems/entities/ai-goals-a
 
 **Menu** — the server-authoritative object behind an open container screen:
 slots, a synchroniser and a state id. → [containers and menus](../systems/items/containers-and-menus.md)
+
+**MultiPlayerGameMode** — the client's only channel for acting on the world:
+every break, place, use and attack goes through it, and the ones that predict
+open a prediction window before they send. → [prediction and acknowledgement](../systems/client/prediction-and-acks.md)
 
 ## N
 
@@ -387,6 +413,10 @@ both sides. → [blocks and states](../systems/blocks/blocks-and-states.md)
 **NoiseChunk** — the per-chunk machine that fills the noise lattice and
 installs the caches the density-function graph asked for. → [density functions](../systems/worldgen/density-functions.md)
 
+**NoiseRouter** — the density functions a generator asks for, as one record;
+`NoiseRouter.mapAll` rebuilds them all at once, which is how a whole graph gets
+its caches installed in one pass. → [density functions](../systems/worldgen/density-functions.md)
+
 ## O
 
 **Objective** — a named scoreboard column: a criterion, a display name, a
@@ -397,7 +427,6 @@ for commands; every other one — including every statistic in the game, since
 **Old chunk** — a chunk whose `ChunkAccess.blendingData` is non-null, which
 is to say one whose save data carried a *blending_data* compound;
 `ChunkAccess.isOldNoiseGeneration` is the test. → [blending at the old-chunk border](../systems/worldgen/blending.md)
-
 
 ## P
 
@@ -452,6 +481,8 @@ rolling the block back if none did. → [prediction and acknowledgement](../syst
 **Protocol phase** — one of handshake, status, login, configuration and
 play; each has its own packet table and its own listener. → [protocol phases](../systems/networking/protocol-phases.md)
 
+## Q
+
 **Quart** — a four-block cell, the resolution biomes are stored and
 sampled at; `QuartPos` is the arithmetic. → [biomes](../systems/worldgen/biomes.md), [math and primitives](math-and-primitives.md)
 
@@ -468,14 +499,22 @@ addressed by a sector table at its head. → [chunk storage](../systems/world/ch
 built into the jar, some are loaded from data packs, some are sent to the
 client. → [identifiers and registries](../systems/foundations/identifiers-and-registries.md)
 
-**RenderPipeline** — the client's declaration of how to rasterise: shaders,
-blend, depth, cull, vertex format, topology. It says nothing about which
-textures to bind or which target to draw into; that is `RenderType`. → [Blaze3D](../systems/rendering/blaze3d.md)
+**Reload listener** — the unit of a reload: one object that reads what it
+needs off the worker pool and swaps its live state on the owning thread, every
+apply running in order behind a `PreparableReloadListener.PreparationBarrier`. → [the resource system](../systems/foundations/resource-system.md)
 
 **Render state** — the write-once snapshot of what to draw, produced by the
 extract half of the frame and consumed by the drawing half. The property that
 matters is that the drawing half reads no game object, not that the state is
 an immutable value. → [the frame](../systems/rendering/the-frame.md), [entity rendering](../systems/rendering/entity-rendering.md)
+
+**RenderPipeline** — the client's declaration of how to rasterise: shaders,
+blend, depth, cull, vertex format, topology. It says nothing about which
+textures to bind or which target to draw into; that is `RenderType`. → [Blaze3D](../systems/rendering/blaze3d.md)
+
+**RenderType** — a `RenderPipeline` plus everything a pipeline does not say:
+which target to draw into, which textures to bind, and the layering and
+batching rules. → [Blaze3D](../systems/rendering/blaze3d.md)
 
 **Resource pack** — a pack of assets; the client half of the same pack
 machinery data packs use. → [the resource system](../systems/foundations/resource-system.md)
@@ -521,6 +560,10 @@ that runs on both client and server, unlike a neighbour update. → [blocks and 
 **Signed message** — a chat message carrying a signature over its content
 and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md)
 
+**Simulation distance** — how far the world *ticks*, as against how far you
+can see: the radius behind `TicketType.PLAYER_SIMULATION`, deciding which
+chunks tick blocks, fluids and entities. → [tickets and loading](../systems/world/tickets-and-loading.md)
+
 **Special model renderer** — a hand-written submitter for a shape no cuboid
 model can express, reached from an item model or a block state rather than
 from a block entity; thirteen of them. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
@@ -540,6 +583,10 @@ hand-built half it is a Java class that writes its own blocks and constructs its
 own neighbours, chosen by no pool; the jigsaw half's `PoolElementStructurePiece`
 is one too. Every piece carries a registered `StructurePieceType`, which is how
 it comes back off disk. → [hand-built structures](../systems/worldgen/hand-built-structures.md)
+
+**StructureStart** — one decided structure: the `Structure`, the chunk it
+started in, a `PiecesContainer`, a reference count and a cached bounding box,
+stored on the chunk it began in. → [structure placement](../systems/worldgen/structure-placement.md)
 
 **Submit node** — one thing to draw that is not terrain, written into
 `SubmitNodeStorage` by the *submit* pass out of the render states extract left
@@ -587,10 +634,19 @@ gamemaster level and the client is never asked. → [permissions](../systems/com
 
 ## V
 
+**View distance** — how far the *server* sends chunks. A client's
+render-distance request only clamps what it is sent; the ticket radius comes
+from the server's own number. Not *simulation distance*, which is how far
+the world ticks. → [tickets and loading](../systems/world/tickets-and-loading.md)
+
 **VoxelShape** — the collision or outline volume of a block state, held as
 a set of boxes with fast merge and sweep operations. → [math and primitives](math-and-primitives.md)
 
 ## W
+
+**Watchdog** — `ServerWatchdog`, the daemon that treats a tick longer than
+*max-tick-time* as a dead server: it writes a crash report, calls `System.exit`,
+and halts the JVM ten seconds later whether the shutdown finished or not. → [how a server dies](../systems/server/how-a-server-dies.md)
 
 **Window** — the GLFW handle the whole client hangs off: the framebuffer
 size, the GUI scale, fullscreen, and the six window callbacks — not the input
@@ -623,6 +679,7 @@ level instead of every level on the server. → [entity selectors](../systems/co
 **WorldGenRegion** — the bounded, write-guarded view of the world a
 generation step is given; it throws rather than loading a chunk, which is
 why cascading worldgen cannot happen. → [the chunk generation pipeline](../systems/world/chunk-generation-pipeline.md)
+
 
 ---
 

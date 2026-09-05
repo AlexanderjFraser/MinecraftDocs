@@ -13,8 +13,9 @@ tree](../systems/client/the-gui-render-tree.md) infers layering from call
 order and bounding boxes.
 
 Three gates sit above everything below and none of them belongs to `Hud`:
-`GameRenderer.extract` asks for the HUD only when resources are loaded, the
-frame advances game time, and a level exists. `Hud.extractRenderState` then
+`GameRenderer.extract` computes them — resources loaded, the frame advancing
+game time, a level existing — and `Gui.extractRenderState` is what applies
+them, calling into `Hud` only when they hold. `Hud.extractRenderState` then
 short-circuits entirely while a `LevelLoadingScreen` is up — but it publishes
 `GuiRenderState.isHudHidden` **before** that check, so the flag is always
 current even when nothing is recorded.
@@ -51,18 +52,19 @@ current even when nothing is recorded.
 | 24 | title and subtitle | `Hud.extractTitle` | yes | `Hud.title` is set and `Hud.titleTime` is above zero |
 | 25 | chat | `ChatComponent.extractRenderState` | yes | a player exists and the chat *screen* is not focused |
 | 26 | tab list | `PlayerTabOverlay.extractRenderState` | yes | `Options.keyPlayerList` is down, and either this is not a local server, or more than one player is listed, or a `DisplaySlot.LIST` objective exists |
-| 27 | subtitles | `SubtitleOverlay` | see note | deferred when there is no screen or the screen declares itself in-game UI — and recorded even while hidden, if a screen declaring itself in-game UI is up |
+| 27 | subtitles | `SubtitleOverlay` | `Options.showSubtitles` is on and something audible is playing | deferred when there is no screen or the screen declares itself in-game UI — and recorded even while hidden, if a screen declaring itself in-game UI is up |
 
-The four elements a reader expects at the end of that list are not on `Hud`'s
-list at all. `Gui.extractRenderState` records them, after the overlay or
-screen:
+The four elements a reader expects at the end of that list are not on
+`Hud.extractRenderState`'s list at all — three of them are still `Hud` methods,
+and only the toasts are outside `Hud`. `Gui.extractRenderState` records them,
+after the overlay or screen:
 
 | # | element | its own condition | hidden by F1? |
 |---:|---|---|---|
-| 28 | saving indicator | `Options.showAutosaveIndicator` is on, and the frame is drawing a level | **no** |
+| 28 | saving indicator | `Options.showAutosaveIndicator` is on, the frame is drawing a level, and a save is still animating | **no** |
 | 29 | toasts | resources are loaded | checks the flag itself |
 | 30 | debug overlay | the current screen is not `DebugOptionsScreen` | checks the flag itself |
-| 31 | deferred subtitles | row 27 deferred them | — |
+| 31 | deferred subtitles | row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, and this call then finds nothing left | — |
 
 Two consequences worth carrying away. Toasts and the debug overlay are always
 **above** a screen, because `Gui` records them after it. And the deferred

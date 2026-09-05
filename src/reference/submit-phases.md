@@ -3,7 +3,10 @@
 > Verified against **Minecraft 26.2** · Reference · Hand-kept from
 > `SubmitNodeCollection` and the `FeatureRenderDispatcher` constructor.
 
-Everything drawn in a level that is not terrain arrives as a *submit node*.
+Everything an entity, block entity, particle or debug renderer draws in a
+level arrives as a *submit node* — the sky, the clouds, the weather and the
+world border are drawn by their own renderers in their own frame-graph passes,
+and terrain by its chunk sections.
 `SubmitNodeCollection` sorts those nodes into fifteen named phases as they
 come in, and thirteen feature renderers turn them into vertices. The lecture
 that frames both is [entity rendering](../systems/rendering/entity-rendering.md),
@@ -42,7 +45,7 @@ primitives are chained opts out of both, through
 
 | # | phase | what lands in it | drained by |
 |---:|---|---|---|
-| 1 | `SubmitNodeCollection.solid` | the opaque default: models and block models whose `RenderType` does not blend, items with no translucent quad, custom geometry that neither blends nor outlines, plus every flame and every leash | `.executeSolid` |
+| 1 | `SubmitNodeCollection.solid` | the opaque default: models and block models whose `RenderType` does not blend, moving blocks whose model does not declare the translucent material flag, items with no translucent quad, custom geometry that neither blends nor outlines, the opaque half of every quad-particle group, plus every flame and every leash | `.executeSolid` |
 | 2 | `SubmitNodeCollection.shadows` | one node per `SubmitNodeCollection.submitShadow`, carrying the radius and the `EntityRenderState.ShadowPiece` list sampled at extract | `.executeTranslucent`, sweep 1 |
 | 3 | `SubmitNodeCollection.nameTags` | every name tag gets a node here, see-through or not — a see-through one lands with an emission bump on its light, opaque white, and no background | `.executeTranslucent`, sweep 1 |
 | 4 | `SubmitNodeCollection.seeThroughNameTags` | the *second* node a see-through name tag emits, in `Font.DisplayMode.SEE_THROUGH` with the background restored | `.executeTranslucent`, sweep 1 |
@@ -56,12 +59,13 @@ primitives are chained opts out of both, through
 | 12 | `SubmitNodeCollection.waterMask` | models submitted with the water-mask render type | `.executeTranslucent`, sweep 3 |
 | 13 | `SubmitNodeCollection.afterTerrain` | outlines flagged after-terrain, plus the translucent half of every quad-particle group | `.executeTranslucentAfterTerrain` |
 | 14 | `SubmitNodeCollection.alwaysOnTop` | gizmo groups flagged on top | `.executeAlwaysOnTop` |
-| 15 | `SubmitNodeCollection.outline` | a second copy of any model, block model, moving block or item whose outline colour was non-zero, re-typed to the outline variant — plus custom geometry, which is not a second copy at all: an outline render type routes the *only* copy here | `.executeOutline`, which `FeatureRenderDispatcher.renderAllFeatures` never calls — `LevelRenderer` does, into its own target |
+| 15 | `SubmitNodeCollection.outline` | a second copy of a model, block model, moving block or item whose outline colour was non-zero — a model or block model only where its render type has an outline variant, and a moving block or item with its ordinary type, re-typed inside the feature renderer or dropped there — plus custom geometry, which is not a second copy at all: an outline render type routes the *only* copy here | `.executeOutline`, which `FeatureRenderDispatcher.renderAllFeatures` never calls — `LevelRenderer` does, into its own target |
 
 Two rows are worth reading twice. A quad-particle group is submitted **once**
 and lands in two phases at once, *solid* and *afterTerrain*, with a flag that
 picks which of its layers each half draws. And *outline* is not simply *solid*
-submitted twice: the glow is a second submission for a model, a block model or
+submitted twice: the glow is a second submission for a model, a block model, a
+moving block or
 an item, but flames, leashes and quad particles never reach it at all, a
 blending model pairs its outline copy with *translucentModels* rather than
 *solid*, and custom geometry goes to one phase or the other and never both.

@@ -5,15 +5,15 @@
 Every system in the game speaks in a handful of value types: an integer
 block position, a chunk column, a 16³ section, a double-precision world
 position, a direction, a box, a collision shape, a random source. They are
-the most-imported classes in the codebase — `BlockPos` alone has 1,221
-importers — and most of what is confusing about "which coordinate is this"
+the types the codebase reaches for most — `BlockPos` alone has 1,221
+importers, more than any other Minecraft class — and most of what is confusing
+about "which coordinate is this"
 is answered by knowing which type a method takes.
 
 ## The coordinate spaces
 
-Six integer spaces and one double one, each a power of two apart from its
-neighbour, and every conversion is a named static method on the type you
-are converting *to* — which is the figure: the spaces as nodes, the
+Six integer spaces and one double one, and every conversion is a named method
+— which is the figure: the spaces as nodes, the
 conversions as the edges between them, and the three that also pack to a
 long key.
 
@@ -40,7 +40,7 @@ flowchart LR
 
 | space | unit | type | owner / notes | conversions |
 |---|---|---|---|---|
-| **block** | 1 block, int | `BlockPos` (extends `Vec3i`) | immutable; `BlockPos.MutableBlockPos` for loops | `BlockPos.containing` floors a double position; `BlockPos.asLong` / `BlockPos.of` pack to a long |
+| **block** | 1 block, int | `BlockPos` (extends `Vec3i`) | immutable; `BlockPos.MutableBlockPos` for loops | `BlockPos.containing` floors a double position; `BlockPos.asLong` packs to a long and `BlockPos.of` unpacks one |
 | **world position** | 1 block, double | `Vec3` (implements `Position`) | entity positions, ray casts, velocities | `Vec3.atCenterOf`, `Vec3.atLowerCornerOf`, `Vec3.atBottomCenterOf` from a `Vec3i`; `Vec3.directionFromRotation` from pitch/yaw |
 | **chunk column** | 16 blocks | `ChunkPos` — a **record** of x and z | the key of every chunk map | `ChunkPos.containing` from a `BlockPos`; `ChunkPos.pack` / `ChunkPos.unpack`; `ChunkPos.getMinBlockX`, `ChunkPos.getWorldPosition` |
 | **section** | 16³ cube | `SectionPos` (extends `Vec3i`) | lighting, entity sections, render sections | `SectionPos.of` from block/chunk/entity; `SectionPos.blockToSectionCoord` (shift 4), `SectionPos.sectionToBlockCoord`, `SectionPos.sectionRelative` (mask 15); `SectionPos.asLong` |
@@ -138,23 +138,31 @@ when all three merge evenly.
 Shape queries are cheap because they are mostly not computed:
 `BlockBehaviour.BlockStateBase.initCache` builds a
 `BlockBehaviour.BlockStateBase.Cache` per block state holding the collision
-shape, the occlusion shape, whether the collision shape is a full block, and
-a per-face sturdiness array.
+shape, the large-collision shape, whether the collision shape is a full block,
+and a per-face sturdiness array — but **only for a block whose shape is not
+dynamic**, and the occlusion shape is not in it. That one is a field on
+`BlockBehaviour.BlockStateBase` itself, built whether the cache is or not, and
+a dynamic-shape block answers every collision query live.
 
 `CollisionContext` is what a shape query knows about who is asking:
 `CollisionContext.of` an entity (`EntityCollisionContext` — descending,
 bottom Y, held item, whether fluids collide), `CollisionContext.empty`,
-`CollisionContext.placementContext`, plus `PositionCollisionContext` and
-`MinecartCollisionContext` for the two cases that are neither. Ray casts
+`CollisionContext.placementContext` — all three of which are
+`EntityCollisionContext`s, as is the `MinecartCollisionContext`
+`CollisionContext.of` returns for a minecart under the experimental movement
+flag. The one case that is neither is `PositionCollisionContext`, from
+`CollisionContext.positionContext`. Ray casts
 return a `HitResult`: `BlockHitResult` (position, face, inside,
 world-border) or `EntityHitResult`.
 
 ## Two random families, and two that are neither
 
-`RandomSource` (`net/minecraft/util`) is the interface; the implementations live in
-`world/level/levelgen` and share `BitRandomSource`, which defines
-`RandomSource.nextInt` and friends on top of a raw bit generator. Two
-families coexist in one process:
+`RandomSource` (`net/minecraft/util`) is the interface. Most implementations
+live in `world/level/levelgen`, and the legacy family shares `BitRandomSource`,
+which defines `RandomSource.nextInt` and friends on top of a raw bit generator;
+`XoroshiroRandomSource` implements `RandomSource` directly, and
+`RandomSequences` keeps one more in `world/`. Two families coexist in one
+process:
 
 - **Legacy LCG** — `LegacyRandomSource` (the java.util.Random algorithm),
   `SingleThreadedRandomSource` (same, no atomics), `ThreadSafeLegacyRandomSource`.
@@ -165,9 +173,14 @@ families coexist in one process:
   `SingleThreadedRandomSource` and is what `ClientLevel.animateTick` uses for
   block animation, and `LevelRenderer` for the block-destroy overlay.
 - **Xoroshiro** — `XoroshiroRandomSource` (128-bit state via
-  `RandomSupport.Seed128bit`), the default for world generation:
+  `RandomSupport.Seed128bit`), the newer of the two and the one a noise
+  settings file gets unless it asks otherwise:
   `NoiseGeneratorSettings.getRandomSource` returns
   `WorldgenRandom.Algorithm.XOROSHIRO` unless the settings opt into legacy.
+  **Four of the seven shipped noise settings do opt in**, and two of them are
+  dimensions of an ordinary world — *nether* and *end*, alongside *caves* and
+  *floating_islands* — so most of a new world's generation is legacy, not
+  Xoroshiro.
   `RandomState` forks it positionally (`PositionalRandomFactory.at`,
   `PositionalRandomFactory.fromHashOf`) for the named noise consumers — the
   aquifer and the ore placer each get their own deterministic stream from
@@ -224,15 +237,17 @@ storing a mutable one.
 
 **`Level.random` deliberately crashes on cross-thread use.**
 `LegacyRandomSource` holds an atomic seed not for safety but as a
-*detector*: a concurrent reseed fails the compare-and-set and raises a
-`ThreadingDetector` exception. The genuinely safe variant,
+*detector*: any concurrent use fails the compare-and-set and raises a
+`ThreadingDetector` exception — both the reseed and every draw test it. The genuinely safe variant,
 `ThreadSafeLegacyRandomSource`, and `RandomSource.createThreadSafe` are both
 deprecated. Touching a level's random from a worker is meant to be loud.
 
 **Tick randomness and worldgen randomness are different generators.** The
-LCG drives every `Level` and `Entity`; Xoroshiro drives terrain **and** the
-saved `RandomSequences` behind loot and `/random`. Seed-parity guarantees
-apply to the second family only.
+LCG drives every `Level` and `Entity`; the saved `RandomSequences` behind loot
+and `/random` are Xoroshiro, and so is terrain wherever the noise settings have
+not opted into legacy — which the nether and the end have.
+`PositionalRandomFactory.parityConfigString` is implemented by **both**
+families, so the parity dumps cover whichever one a dimension is on.
 
 **`BlockBox` is declared and unused.** It is a tidy `BlockPos`-pair record
 in `net/minecraft/core`, and in 26.2 nothing calls it; structure bounds are

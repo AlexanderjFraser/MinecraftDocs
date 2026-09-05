@@ -4,13 +4,14 @@
 
 The facts about a world that are not blocks or entities: its seed and
 dimensions, its spawn, its game time, its difficulty, its rules, its
-border, its scoreboard and maps. In 26.2 almost none of them live in
-*level.dat* any more — `PrimaryLevelData` is a stub and everything else is
+border, its scoreboard and maps. In 26.2 about half of them have left
+*level.dat* — `PrimaryLevelData` is a stub and everything else is
 a `SavedData` file under a *data/* folder, one server-global and one per
 dimension — so the question this page answers is always the same one:
 *which file remembers this, and who is allowed to change it.* The table
-under [who owns what](#who-owns-what) is the page; the sections after it
-are the prose behind its rows.
+under [who owns what](#who-owns-what) is the page; the sections after it are
+the prose behind the rows that need it, and the rest are one line each because
+one line is all there is.
 
 [Part IV](../systems/world/README.md) is where these things are used;
 [the level tick](../systems/server/server-level-tick.md) is where most of
@@ -20,12 +21,12 @@ them are read.
 
 | datum | owner | saved as | told to the client by |
 |---|---|---|---|
-| seed, structures, bonus chest, dimension list | `WorldGenSettings` (`MinecraftServer.getWorldGenSettings`) | *data/minecraft/world_gen_settings.dat* | `CommonPlayerSpawnInfo`, `ClientboundLoginPacket` |
+| seed, structures, bonus chest, dimension list | `WorldGenSettings` (`MinecraftServer.getWorldGenSettings`) | *data/minecraft/world_gen_settings.dat* | the obfuscated seed in `CommonPlayerSpawnInfo`, the dimension list in `ClientboundLoginPacket`; structures and the bonus chest, nothing |
 | world spawn | `PrimaryLevelData.respawnData` | *level.dat* | `ClientboundSetDefaultSpawnPositionPacket` |
 | game time | `PrimaryLevelData.gameTime` (shared by every level) | *level.dat* | `ClientboundSetTimePacket` |
 | day time | `ServerClockManager` | *data/minecraft/world_clocks.dat* | `ClientboundSetTimePacket` |
 | difficulty, lock, hardcore | `LevelSettings.DifficultySettings` | *level.dat* | `ClientboundChangeDifficultyPacket` — hardcore alone rides in `ClientboundLoginPacket` |
-| game type, allow-commands, name, data packs | `LevelSettings` | *level.dat* | `CommonPlayerSpawnInfo`; configuration phase |
+| game type, allow-commands, name, data packs | `LevelSettings` | *level.dat* | the game type only as a new player's default, through `CommonPlayerSpawnInfo`; the enabled features at the configuration phase; the name and allow-commands, nothing |
 | game rules | `GameRuleMap` via `GameRules` | *data/minecraft/game_rules.dat* | five rules only, plus `ClientboundGameRuleValuesPacket` on request |
 | weather | `WeatherData` | *data/minecraft/weather.dat* | `ClientboundGameEventPacket` |
 | world border | `WorldBorder`, one per `ServerLevel` | *dimensions/minecraft/…/data/minecraft/world_border.dat* | `ClientboundInitializeBorderPacket` and the five `ClientboundSetBorder…` packets |
@@ -34,7 +35,7 @@ them are read.
 | raids | `Raids` per level | *dimensions/minecraft/…/data/minecraft/raids.dat* | boss bars |
 | chunk tickets | `TicketStorage` per level ([tickets](../systems/world/tickets-and-loading.md)) | *dimensions/minecraft/…/data/minecraft/chunk_tickets.dat* | — |
 | dragon fight | `EnderDragonFight`, where `DimensionType.hasEnderDragonFight` | *dimensions/minecraft/…/data/minecraft/ender_dragon_fight.dat* | boss bars |
-| boss bars, scheduled functions, random sequences, stopwatches, trader timers, command storage | `CustomBossEvents`, `TimerQueue`, `RandomSequences`, `Stopwatches`, `WanderingTraderData`, `CommandStorage` | *data/\<id\>.dat* | boss bars only |
+| boss bars, scheduled functions, random sequences, stopwatches, trader timers, command storage | `CustomBossEvents`, `TimerQueue`, `RandomSequences`, `Stopwatches`, `WanderingTraderData`, `CommandStorage` | *data/minecraft/\<id\>.dat*, and one *data/\<namespace\>/command_storage.dat* per namespace | boss bars only |
 | player data | `PlayerDataStorage` | *players/data/\<uuid\>.dat* | — |
 
 ## What is left in *level.dat*
@@ -47,8 +48,9 @@ entirely for `ServerClockManager` ([the server tick](../systems/server/server-ti
 no weather, no rules, no border. `LevelData.RespawnData` is the world
 spawn as a `GlobalPos` with yaw *and* pitch — it carries a dimension, so
 `/setworldspawn` can point anywhere. `WritableLevelData` adds
-`WritableLevelData.setSpawn`; `ServerLevelData` adds the game type,
-`ServerLevelData.isInitialized`, `ServerLevelData.isAllowCommands` and
+`WritableLevelData.setSpawn`; `ServerLevelData` adds eight more — the level
+name, the game type and its setter, `ServerLevelData.isInitialized` and its
+setter, `ServerLevelData.isAllowCommands` and its setter, and
 `ServerLevelData.setGameTime`; `WorldData` is the server-wide view
 (`WorldData.getLevelSettings`, `WorldData.getDataConfiguration`,
 `WorldData.enabledFeatures`, `WorldData.wasModded`,
@@ -72,9 +74,12 @@ under *Data*; `PrimaryLevelData.parse` reads it back.
 
 `DerivedLevelData` is what every other `ServerLevel` gets, built in
 `MinecraftServer.createLevels`: spawn, game time and initialised state
-forwarded to the overworld's data, name and difficulty from the
-`WorldData`; `DerivedLevelData.setGameTime` and
-`DerivedLevelData.setGameType` are no-ops. That forwarding is how game
+forwarded to the overworld's data, and everything the whole server shares —
+name, game type, hardcore, allow-commands, difficulty and its lock — read
+straight off the `WorldData`. Only `DerivedLevelData.setSpawn` writes
+anything; `DerivedLevelData.setGameTime`, `DerivedLevelData.setGameType`,
+`DerivedLevelData.setAllowCommands` and `DerivedLevelData.setInitialized` are
+no-ops. That forwarding is how game
 time comes to be shared by every level.
 
 The file is written by `LevelStorageSource.LevelStorageAccess.saveDataTag`
@@ -87,7 +92,7 @@ the temp into place, ten retries per step with a rollback. `LevelSummary`
 `LevelResource.PLAYER_DATA_DIR` (*players/data/*, a new sub-folder),
 `LevelResource.LOCK_FILE`.
 
-### The spawn every level reports is not the stored one
+### The spawn every level reports is the server's, not each level's
 
 `ServerLevel.getRespawnData` forwards to `MinecraftServer.getRespawnData`,
 which returns `MinecraftServer.effectiveRespawnData` — recomputed by
@@ -95,8 +100,10 @@ which returns `MinecraftServer.effectiveRespawnData` — recomputed by
 `Level.getWorldBorderAdjustedRespawnData`, which **relocates a spawn that
 has fallen outside the border** to the border centre's surface, and by
 `MinecraftServer.findRespawnDimension`, which falls back to the overworld
-when the stored dimension no longer exists. So every level reports the
-same spawn, and it is not the one *level.dat* holds.
+when the stored dimension no longer exists. So every level reports the same
+spawn, and it need not be the one *level.dat* holds: it is the stored one
+wherever that is still inside the border and its dimension still exists, and a
+recomputed one where it is not.
 
 ## Two saved-data storages, neither of them the overworld's
 
@@ -149,7 +156,9 @@ The values are saved data, not level data: a `GameRuleMap` — `SavedData`,
 *game_rules.dat*, server-global — wrapped by the `GameRules` instance in
 `MinecraftServer.gameRules`. `ServerLevel.getGameRules` returns the
 server's: **one set for every dimension**, and `Level` has no rules
-accessor at all, so the client has no game-rules object. The accessors are
+accessor at all, so no `ClientLevel` can read a rule — the client's only
+`GameRules` objects belong to the two rules screens, and neither drives
+gameplay. The accessors are
 `GameRules.get`, `GameRules.set` (which calls
 `MinecraftServer.onGameRuleChanged`) and `GameRules.visitGameRuleTypes`
 (how `GameRuleCommand.register` builds **two** literals per rule — the
@@ -157,17 +166,18 @@ bare id and the namespaced one).
 
 ### What the client hears
 
-Five rules, and everything else is server-only. `GameRules.REDUCED_DEBUG_INFO`
-goes as a `ClientboundEntityEventPacket`; `GameRules.LIMITED_CRAFTING` and
-`GameRules.IMMEDIATE_RESPAWN` as `ClientboundGameEventPacket`
-(`ClientboundGameEventPacket.LIMITED_CRAFTING`, `ClientboundGameEventPacket.IMMEDIATE_RESPAWN`)
-and as fields of `ClientboundLoginPacket` (`GameRules.IMMEDIATE_RESPAWN`
-inverted, as *showDeathScreen*); `GameRules.LOCATOR_BAR` through
+Five rules, and everything else is server-only. All three of
+`GameRules.REDUCED_DEBUG_INFO`, `GameRules.LIMITED_CRAFTING` and
+`GameRules.IMMEDIATE_RESPAWN` ride in `ClientboundLoginPacket` at join (the
+last inverted, as *showDeathScreen*); a change afterwards goes as a
+`ClientboundEntityEventPacket` for the first and a `ClientboundGameEventPacket`
+for the other two (`ClientboundGameEventPacket.LIMITED_CRAFTING`,
+`ClientboundGameEventPacket.IMMEDIATE_RESPAWN`); `GameRules.LOCATOR_BAR` through
 `ServerWaypointManager`; and `GameRules.ADVANCE_TIME`, which broadcasts a
 full clock sync because a paused clock is expressed on the wire as rate 0
 ([environment attributes](../systems/world/environment-attributes-and-timelines.md)).
-`MinecraftServer.updateMobSpawningFlags` sends nothing; it only flips
-`ServerChunkCache.setSpawnSettings`.
+`MinecraftServer.updateMobSpawningFlags` sends nothing; it only calls
+`Level.setSpawnSettings`, which forwards to `ServerChunkCache.setSpawnSettings`.
 
 New is an in-game editor: `ServerboundClientCommandPacket.Action.REQUEST_GAMERULE_VALUES`
 → `ServerGamePacketListenerImpl.sendGameRuleValues` →
@@ -243,16 +253,20 @@ the latter, and `Level.dimension` / `Level.dimensionType` are the
 accessors. `Level.canHaveWeather` is sky light, no ceiling, not the End.
 
 The seed and the dimension list are `WorldGenSettings` — `SavedData`,
-*world_gen_settings.dat*, server-global; [creating a
-world](../systems/worldgen/creating-a-world.md) is who writes it — holding
+*world_gen_settings.dat*, server-global, and written not at world creation but
+by the `MinecraftServer` constructor, which pushes it into the storage on every
+boot ([creating a world](../systems/worldgen/creating-a-world.md) is where it
+comes from) — holding
 `WorldOptions`
 (`WorldOptions.seed`, `WorldOptions.generateStructures`,
 `WorldOptions.generateBonusChest`) and `WorldDimensions` (the stem map;
 `WorldDimensions.bake` produces the registry). It is read before the
 server exists by `LevelStorageSource.getLevelDataAndDimensions` and
 pushed in with `SavedDataStorage.set`; if the file is missing or
-unreadable the loader logs an error and substitutes a **random seed**,
-then carries on loading the world. `MinecraftServer.createLevels` makes one
+unreadable the loader logs an error and substitutes a whole default
+`WorldGenSettings` — a random seed, structures on, no bonus chest, and the
+data packs' dimension list in place of the saved one — then carries on loading
+the world. `MinecraftServer.createLevels` makes one
 `ServerLevel` per stem; `MinecraftServer.levelKeys` go out in
 `ClientboundLoginPacket`, the dimension type via registry sync, and the
 biome-zoom-obfuscated seed in `CommonPlayerSpawnInfo`.
