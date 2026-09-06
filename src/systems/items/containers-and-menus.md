@@ -201,7 +201,8 @@ slots offering each to `AbstractContainerMenu.triggerSlotListeners` for
 advancements and to `AbstractContainerMenu.synchronizeSlotToRemote` for the
 wire, then the cursor, then the data slots. Where the hash agrees,
 `RemoteSlot.Synchronized` **promotes it to a concrete copy of the server's
-own stack** and nothing is sent.
+own stack** and nothing is sent; where it disagrees, that one slot gets a
+`ClientboundContainerSetSlotPacket` of its own with a fresh state id.
 
 The advancement channel sees one state per click, not one per slot touched:
 `AbstractContainerMenu.triggerSlotListeners` runs only from
