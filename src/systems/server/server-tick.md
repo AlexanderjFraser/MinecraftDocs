@@ -100,7 +100,7 @@ so the frame a profiler shows includes the packets. Each entry in that
 thread decoded the packet, the handler called
 `PacketUtils.ensureRunningOnSameThread`, and that queued the pair here and
 aborted the Netty-side call by throwing `RunningOnDifferentThreadException`
-([the connection](../networking/the-connection.md#the-threads-underneath-it)
+([the connection](../networking/the-connection.md#one-packet-there-and-one-back)
 has the crossing, in both directions). This is where most
 player input enters the world, but not all of it: the handlers that never
 call `PacketUtils.ensureRunningOnSameThread` hop by the other door instead.
@@ -183,9 +183,11 @@ world can see.
 
 The connection phase runs *after* every level.
 `ServerConnectionListener.tick` walks its synchronized list and, for each live
-`Connection`, calls `Connection.tick`: flush the deferred send queue, tick the
-`TickablePacketListener`, drop the connection if it has died, flush the
-channel, and every twentieth tick recompute the packet-rate averages. For a
+`Connection`, calls `Connection.tick`: drain `Connection.pendingActions`, the
+one queue a `Connection` owns and which holds closures rather than packets;
+tick the
+`TickablePacketListener`; drop the connection if it has died; flush the
+channel; and every twentieth tick recompute the packet-rate averages. For a
 playing client that listener is `ServerGamePacketListenerImpl`, whose
 `ServerGamePacketListenerImpl.tick` acknowledges pending block changes, runs
 `ServerPlayer.doTick` through `ServerGamePacketListenerImpl.tickPlayer`, and
@@ -197,10 +199,10 @@ throttles, and the idle-timeout check.
 So a movement packet is applied to the player before any level ticks, and the
 player *entity* takes its step after all of them. Entities see the player
 where the packets put her; the player then ticks against a world that has
-already moved. A throw out of `Connection.tick` disconnects that client with
-*"Internal server error"* — except on an in-memory connection, where it is
-rethrown as *"Ticking memory connection"* and takes the integrated server down
-with it. On a dedicated server `DedicatedServer.tickConnection` adds
+already moved. A throw out of `Connection.tick` does not end the tick either,
+but what it does end depends on the channel rather than on the fault ([the
+connection](../networking/the-connection.md#questions-players-ask)). On a
+dedicated server `DedicatedServer.tickConnection` adds
 `DedicatedServer.handleConsoleInputs`, which is how a command typed at the
 console reaches the Server thread. RCON does not come this way:
 `DedicatedServer.runCommand` puts the command on the task queue with
@@ -218,9 +220,9 @@ is the channel underneath it.
 but only for sends made on the Server thread, because the flag is tested
 together with `BlockableEventLoop.isSameThread`, so anything sent from another
 thread flushes on its own as before. Two things then empty the buffer.
-`Connection.tick` flushes the channel unconditionally at the end of the
-connection phase, carrying everything the levels and the player's own tick
-produced. `ServerCommonPacketListenerImpl.resumeFlushing`, after the chunk
+`Connection.tick` flushes the channel unconditionally, in the middle of its
+own body and so inside the connection phase, carrying everything the levels
+and the player's own tick produced. `ServerCommonPacketListenerImpl.resumeFlushing`, after the chunk
 batch, both clears the flag and calls `Connection.flushChannel` itself,
 carrying the player-list update, the debug subscribers, the game-test ticker,
 the server's own tickables and last the chunks.
@@ -228,9 +230,11 @@ the server's own tickables and last the chunks.
 **Two** — writes to the socket per client per tick: one after the levels, one
 after the chunks.
 
-The pacing of that second write is [tickets and
-loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s
-subject. `PlayerChunkSender`
+The pacing of that second write is [what the client is
+told](../networking/what-the-client-is-told.md#the-rate-the-client-asks-for)'s
+subject; which chunks are eligible to be in it is [tickets and
+loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s.
+`PlayerChunkSender`
 answers to the client's own acknowledgements, so a slow client throttles its
 own chunks without slowing the tick.
 

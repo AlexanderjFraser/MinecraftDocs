@@ -242,8 +242,10 @@ either: `MultiPlayerGameMode.startPrediction` reaches for
 the client has been sent ([what the client is
 told](../networking/what-the-client-is-told.md#chunks-arrive-on-a-loop-the-client-paces)) —
 `ServerPlayer.respawnConfig`, `ServerPlayer.camera`,
-`ServerPlayer.textFilter`, the `ProfileKeyPair` behind message signing
-([chat and signing](../networking/chat-and-signing.md)),
+`ServerPlayer.textFilter`, `ServerPlayer.chatSession` — a `RemoteChatSession`,
+the *public* half of message signing, since the key pair never leaves the
+client ([chat and
+signing](../networking/chat-and-signing.md#what-the-signature-covers)),
 `ServerPlayer.wardenSpawnTracker`,
 `ServerPlayer.enderPearls`, `ServerPlayer.containerSynchronizer`, and a row
 of mirror fields that exist so the server can notice a change: the

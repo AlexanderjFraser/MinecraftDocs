@@ -44,6 +44,345 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session I — Part IX · Networking *(2026-09-06)*
+
+*Five pages plus the landing page, one reader-of-the-book agent each; the part
+read end to end in watching order first. All six rewritten, and eleven pages
+in seven other parts edited because a Part IX page's owner or duplicate lived
+there. Everything below is either a claim this session introduced or a
+correction it made with the decompile open; the corrections come first.*
+
+### Corrections — what the page said, what the decompile says
+
+1. **`networking/the-connection`:236 — the flush bracket's scope.** The page
+   said "The bracket is opened around the whole server tick".
+   `MinecraftServer.suspendFlushing` is called at the top of
+   `MinecraftServer.tickChildren` (`MinecraftServer.java`:1209-1211) and
+   `resumeFlushing` at its end (:1281), so the packet drain that runs before
+   `tickChildren` is **outside** the bracket — which is what
+   `server-tick`:215 and `players-and-sessions`:212-213 both turn on. Page
+   against two other pages. The section is now cut to a citation and says the
+   bracket opens at the top of `tickChildren`.
+2. **`networking/the-connection`:122-124 — `PacketListener.onPacketError`.**
+   The page said it "by default raises a reported crash", which is the
+   interface default (`PacketListener.java`:19-21) and is reached by **no
+   listener a drained packet arrives at**: `ServerPacketListener`
+   (`ServerPacketListener.java`:13-16) overrides it to log *"suppressing
+   error"* and return, `ServerCommonPacketListenerImpl` (:78-81) adds
+   `MinecraftServer.reportPacketHandlingException`, and
+   `ClientCommonPacketListenerImpl` (:113-120) overrides it the other way,
+   storing a disconnection report and calling `Connection.disconnect`. A
+   reader of the page alone concluded a bad packet crashes the server. Page
+   against `server-tick`:122-126.
+3. **`server/server-tick`:221-222 — where `Connection.tick` flushes.** The
+   page said "at the end of the connection phase". `Connection.tick`
+   (`Connection.java`:387-411) flushes fourth of six steps, after the
+   disconnect check and before `tickSecond` — which its own step list at
+   :186-188 already had right and `the-connection`:241 states as the point.
+   Page against itself and against Part IX. (This was logged for pass 9 by
+   session C at [pass9.md](pass9.md); it is fixed rather than carried.)
+4. **`server/server-tick`:186 — "flush the deferred send queue".**
+   `Connection.tick`'s first step is `Connection.flushQueue`, which drains
+   `Connection.pendingActions`, a queue of **closures** (`Connection.java`:388);
+   `Connection` holds no outbound packet queue at all, which is
+   `the-connection`:406-408's own claim. The step is now named for what it
+   drains.
+5. **`networking/what-the-client-is-told`:213 — "**Four** feeds ignore gate
+   3".** Outside the gate-3 block of `ServerEntity.sendChanges`
+   (`ServerEntity.java`:92-271) there are **three** sends — the passenger diff
+   (:96-101), the `ItemFrame` tenth-call branch (:105-131) and
+   `Entity.hurtMarked` (:266-269) — plus `Entity.updateDataBeforeSync` (:93),
+   which is a hook and not a feed. The page's own figure named three and
+   `synched-entity-data`:281-283 counts the sends as two with the item frame
+   called out separately. Corrected to three, with
+   `Entity.updateDataBeforeSync` named in front of them.
+6. **`networking/what-the-client-is-told`:346 — the block-entity hop.** The
+   page had `ChunkHolder.broadcastBlockEntityIfNeeded` calling
+   `BlockEntity.getUpdatePacket`. `ChunkHolder.java`:240-245 has *IfNeeded*
+   testing `BlockState.hasBlockEntity` and delegating to
+   `ChunkHolder.broadcastBlockEntity` (:247-258), which is the one call site
+   of `getUpdatePacket`. `block-entities` named the inner one and was right.
+   Page against page.
+7. **`networking/what-the-client-is-told`:317 — "Once a tick".**
+   `ServerChunkCache.broadcastChangedChunks` is called from
+   `ServerChunkCache.tickChunks` (`ServerChunkCache.java`:345-362), inside the
+   `!level.isDebug()` guard and only when the caller passed `tickChunks`, so
+   it is once per *chunk-ticking* tick and never in a debug world — which
+   `lighting`:293-295 and `server-level-tick`:86 both carry and this page did
+   not. Page against two pages.
+8. **`networking/what-the-client-is-told`:214-215 — "none of them helps a mob
+   outside entity-ticking range".** Gate 2 is a disjunction, so a mob out of
+   entity-ticking range still passes it on a section change or with
+   `Entity.needsSync` set — which the page states twice below (:167-170,
+   :430-432). Page against itself; the sentence now names the mob that fails
+   *all three* disjuncts.
+9. **`networking/chat-and-signing`:266-268 — "vanilla never sends one".** The
+   Q&A said no unsigned copy is ever sent, contradicting the page's own
+   :44-46 and :219-220. `MessageArgument.resolveChatMessage`
+   (`MessageArgument.java`:46-58) calls `PlayerChatMessage.withUnsignedContent`
+   with the resolved component on every message-argument command. Page against
+   itself; the claim is now that the *decorator* never produces one.
+10. **`networking/chat-and-signing`:44-46 — "sets it on every message it
+    resolves".** `PlayerChatMessage.withUnsignedContent`
+    (`PlayerChatMessage.java`:44-48) keeps the copy only when it differs from
+    `Component.literal(signedContent)`, so a command message with no selector
+    in it carries none. Corrected to "differs exactly when a selector
+    expanded".
+11. **`player/player-anatomy`:245 — `ProfileKeyPair` on a `ServerPlayer`.**
+    There is no `ProfileKeyPair` anywhere under `net/minecraft/server`; what
+    `ServerPlayer` holds is `ServerPlayer.chatSession`, a `RemoteChatSession`
+    (`ServerPlayer.java`:281), and the key pair lives on the client inside a
+    `LocalChatSession`. Page against `chat-and-signing`:286-290.
+    `player/README`:143 said the same thing and is corrected with it.
+12. **`networking/packets-and-stream-codecs`:367-375 — an absolute "never".**
+    "Client-supplied component *contents* never cross the wire at all" is
+    falsified twenty lines above by the creative slot, which the same page
+    calls the one packet that carries an arbitrary item. Scoped to the
+    container click.
+13. **`networking/packets-and-stream-codecs`:302-305 — a broken sentence** on
+    a numeric claim ("with `BundlerInfo.BUNDLE_SIZE_LIMIT` caps a bundle at
+    4,096"). Rewritten; 4,096 re-derived (`BundlerInfo.java`:13), and
+    `BundlePacket`'s relation to `ClientboundBundlePacket` stated (abstract
+    class and its one subclass, `ClientboundBundlePacket.java`:7).
+14. **`networking/packets-and-stream-codecs`:335-344 — trust and direction.**
+    The paragraph said trust is "about the read budget rather than about
+    direction" and then "The rule is direction". Both halves are true of
+    different things and the page asserted and denied one claim; now the
+    *mechanism* is a budget and the *rule for choosing* is direction.
+15. **`networking/README`:84-86 — "the only system in the book designed
+    against an adversary".** False against page two of its own part, which has
+    a section headed *What stops a hostile sender*. Narrowed to a *lying*
+    peer against a malformed one, which is the real difference.
+16. **`networking/README`:78-80 against :106-108 — an internal
+    contradiction.** The watch-order line said the player object is built in
+    this part; *where the part stops* said how a `ServerPlayer` comes to exist
+    is Part III's. Both now say the same thing.
+17. **`networking/protocol-phases`:60 — a table cell naming the wrong kind of
+    thing.** The status row's clientbound listener was "reached from
+    `ServerStatusPinger`" where every other cell names a listener; it is an
+    anonymous `ClientStatusPacketListener` inside that class
+    (`ServerStatusPinger.java`:71).
+
+**Four suspicions re-derived and found sound**, recorded because a strike is a
+claim: `IdDispatchCodec`'s "not a table the encoder walks" (it is a
+`Object2IntMap` lookup and then an indexed list, `IdDispatchCodec.java`:46-67 —
+no walk, so the sentence stands); the five-minute server and seven-minute
+client chat expiries (`PlayerChatMessage.java`:30-31, exactly 5 and 5+2);
+`ServerEntity.FORCED_TELEPORT_PERIOD` as 400 gated calls
+(`ServerEntity.java`:59); and the two places the join reads the whole save
+file, which `protocol-phases` put in `spawnPlayer` and `players-and-sessions`
+in `PrepareSpawnTask.Ready` — both right, since `spawnPlayer` delegates to
+`Ready.spawn` (`PrepareSpawnTask.java`:123-131, 225-240); the two pages now
+name it the same way.
+
+### Claims introduced
+
+**`networking/README` (rewritten to the role).**
+- The part's shape sentence is now "**the wire three times, and two things it
+  carries**", replacing "one wire and three passengers", which the page
+  contradicted twenty lines below and which `lectures.md` carried in its
+  un-softened form. The claim is that lectures 1–3 are all descriptions of the
+  wire and 4–5 are applications of the play phase.
+- **The figure is redrawn** to two subgraphs — *the wire, described three
+  ways* over the chain `TC → PSC → PP`, and *what it carries* over `WCT` and
+  `CS` — with one labelled edge between them replacing the two unlabelled
+  arrows `PP --> WCT` and `PP --> CS`, which asserted a dependency the page's
+  own :88-91 denies. Verified before redrawing that neither target page names
+  `protocol-phases`, `ConnectionProtocol` or `ProtocolInfo`.
+- The opening's four player-visible failures are replaced: two of the old four
+  (the rubber-band, the block that comes back) are paid off only in Parts VIII
+  and X, and one (the grey bar) nowhere in the book. The new four —
+  *Connection lost*, the mob that freezes and jumps, the chest that says
+  nothing until opened, the red chat line that takes the rest of the session
+  with it — are each answered on a page of this part.
+- The traffic-volume clause is kept and re-purposed as the reason two of five
+  lectures take most of the part's length.
+- **A new *Where the part stops* section** with the size through
+  `{{#include ../../generated/part-networking.md}}`, and the coverage
+  argument: **this part owns the wire, not everything in `network/`** —
+  `network/chat` is Part II's, much of `client/multiplayer` is Part X's, and
+  the largest block is the packet classes, which are catalogued and not
+  narrated. Three systems are named and declined with a reason: player
+  reporting (already out of scope on `what-this-book-skips`), the server list
+  and its screen (Part XI's to draw), and the boss-bar feed, whose sending
+  side has no owner anywhere in the book.
+- *Reference this part uses* now lists `level-data-and-rules`, which a page of
+  the part actually cites, and drops nothing.
+
+**`networking/the-connection`.**
+- Keep-alive is stated as the *common* listener's, so it runs in
+  configuration, and takes in two facts from `players-and-sessions`: that a
+  wrong-id answer disconnects immediately rather than being ignored, and that
+  the round trip is smoothed three parts old to one part new, so a tab list
+  lags a real latency change by several pings.
+- The memory-connection crash answer takes both disconnect strings in from
+  `server-tick` and states them as one catch with two branches.
+- **New coverage passage**: `client/multiplayer/resolver` —
+  `ServerAddress.parseString`, `ServerNameResolver`, `ServerRedirectHandler`'s
+  `_minecraft._tcp` SRV lookup, `AddressCheck` and `ResolvedServerAddress` —
+  written from `ServerNameResolver.java`:21-38 and
+  `ServerRedirectHandler.java`:42. Plus `ServerList`/`ServerData` named in the
+  clause that already described them, `LegacyServerPinger` as the client half
+  of the legacy-query row, and `Varint21LengthFieldPrepender` named in the
+  outbound pipeline list where only the string `"prepender"` stood.
+
+**`networking/packets-and-stream-codecs`.**
+- **New passage on the per-phase listener interfaces** —
+  `ClientGamePacketListener` and `ServerGamePacketListener` (390 lines
+  between them), the common pair, the six phase pairs and the two roots — as
+  what `Packet.handle` targets, which the page asserted and never named. The
+  claim that a listener of the wrong shape is the cast failure
+  `the-connection` describes.
+- **New clause on the login-phase payload family** (`CustomQueryPayload`,
+  `CustomQueryAnswerPayload` and the discarding forms), because the section
+  called `CustomPacketPayload` "the one seam" and the login twin exists.
+- The trusted pairs now carry their call-site counts, moved in from
+  `codecs-nbt-json`: `TRUSTED_COMPOUND_TAG` has exactly one
+  (`ClientboundBlockEntityDataPacket`), `TRUSTED_TAG` none at all, and
+  `ComponentSerialization.TRUSTED_STREAM_CODEC` is used by every clientbound
+  chat packet — which pays off `text-components`:236's inbound promise and is
+  the codec the page's own figure draws (verified against
+  `ClientboundSystemChatPacket.java`:13 and
+  `ClientboundPlayerChatPacket.java`:22).
+- The three-layer serverbound defence, moved in from `codecs-nbt-json`, and
+  `ItemStack.CODEC` named as what the validating re-encode runs;
+  `ServerGamePacketListenerImpl` named as the server's creative context.
+- **"the other *eight* templates — nine in all"** stated once here, where the
+  page had "every other template" and `protocol-phases` had a bare correction.
+
+**`networking/protocol-phases`.**
+- The registry-and-tag-sync passage is cut to what belongs to a *phase* — the
+  order and the count of packets — with the mechanism cited to
+  `identifiers-and-registries#when-a-world-opens`. The claim retained here is
+  that nothing is applied as it arrives.
+- The play-binding paragraph is cut to one sentence whose claim is new in this
+  form: the configuration-to-play switch is **the only transition in a
+  connection's life that changes what a packet number means as well as which
+  packets are legal**.
+- `PrepareSpawnTask`'s internals are cut to the two states and the hook, with
+  the page keeping "everything between the join task and that handler is a
+  server holding a ticket on chunks for a player that does not exist" as its
+  own.
+- `ClientboundCodeOfConductPacket` and `ServerboundAcceptCodeOfConductPacket`
+  named, and `ServerboundCustomQueryAnswerPacket` named where the page had
+  only the request side.
+- The creative filter and the compression asymmetry are cut to one clause and
+  a citation each.
+
+**`networking/what-the-client-is-told`.**
+- **`Entity.updateDataBeforeSync` added to the prose and the figure**, ahead
+  of the gate-3 branch, with the claim that an effect expiring this tick can
+  dirty the container and open its own gate in the same call.
+- **New paragraph after the gate-3 table**: the interval gate covers the
+  synched-data flush as well as the position block; the `ItemFrame` branch is
+  the *only* path to that flush which skips the interval test; and
+  `ServerEntity.handleMinecartPosRot` reaches it from inside the gate. All
+  three moved from `synched-entity-data` (session F's routed list, discharged).
+- Two table rows gain the numbers `movement-and-collision` had and this page
+  did not: `FORCED_TELEPORT_PERIOD` as four hundred *gated* calls, "at least
+  1,200 ticks on the default interval", and that the ground-flag row is the
+  common case.
+- `VecDeltaCodec` named in the prose as the object holding the dead-reckoning
+  base, where it had appeared only in *Where to look*;
+  `ClientboundSetPassengersPacket` and `ClientboundSetEntityLinkPacket` named
+  in the feeds and the pairing bundle.
+- The chunk enter/leave section and the view's shape are cut to two sentences
+  citing `tickets-and-loading`, keeping only `ChunkTrackingView.Positioned`,
+  which no other page names; the light audience is cut to one sentence citing
+  `lighting`; both block-entity default statements are cut to the consequence
+  citing `block-entities`.
+
+**`networking/chat-and-signing`.**
+- **New passage on the text filter** — `TextFilter`, `TextFilter.DUMMY`,
+  `MinecraftServer.createTextFilterForPlayer`,
+  `ServerTextFilter.createFromConfig` and its two implementations,
+  `FilteredText` and `Filterable` — with the claim that a vanilla server has
+  no filter at all and that filtering here is never destructive, because a
+  `FilterMask` travels with the message and is applied per recipient. Written
+  from `ServerTextFilter.java`:72-108, `TextFilter.java`:9-19,
+  `FilteredText.java`, `Filterable.java`:11 and `MinecraftServer.java`:2290
+  against `DedicatedServer.java`:826-828.
+- `ChatTypeDecoration` named as the translation key and argument list behind
+  the *someone said* wrapper, with the claim that the phrasing around a line
+  is data and the line is not.
+- `LastSeenTrackedEntry` named as the twenty slots, and `LocalChatSession` as
+  what holds the key pair on the client.
+- The selector-expansion fact is given one home on the page — the *Commands*
+  section — with the mechanism cited to `text-components` and the enumeration
+  of which commands to `brigadier-and-commands`; the opening keeps only the
+  security consequence.
+- The `ChatAbilities` paragraph is cut to a sentence and a link, with the four
+  atoms' effects moved to `commands/permissions`.
+
+**Pages in other parts, edited because they held or contradicted Part IX
+material.**
+- `server/players-and-sessions`: the chunk-batch pacing cut to "a joining
+  client is trusted with one batch" plus the claim that the first batch is a
+  hard round trip; the keep-alive mechanism cut to a citation, keeping the
+  asymmetry the section is about; the reconfigure cut to *a leave that keeps
+  the socket* with the phase half cited to `protocol-phases`.
+- `server/server-tick`: `Connection.tick`'s step list corrected (above), the
+  chunk-pacing citation repointed from `tickets-and-loading` to
+  `what-the-client-is-told#the-rate-the-client-asks-for` (the first of the two
+  citations `pass5.md`:89-95 left for this session; the second is
+  `players-and-sessions`:266, done above), and the memory-connection sentence
+  cut to a citation.
+- `foundations/identifiers-and-registries`: takes two facts from
+  `protocol-phases` — that `PackLocationInfo.knownPackInfo` is an optional, so
+  a world's own datapack is absent from the request, and that the client's
+  load is dispatched to a background executor and then blocked on.
+- `foundations/codecs-nbt-json`: the *Trusted, untrusted and validated*
+  section rewritten to what this page owns — that the serverbound path is the
+  only one of its four where a codec is run for its errors rather than its
+  output, and that the persistent codec is used as a validator for the wire
+  one. The trusted-pair enumeration and the three fences moved to Part IX.
+- `commands/permissions`: gains what the four chat atoms *do*
+  (`ChatAbilities.java`:71-83).
+- `commands/brigadier-and-commands`: the fourth telling of the chat Netty hop
+  cut to a citation of `server-tick` and `chat-and-signing`, keeping the claim
+  that matters for a command — the validation that can disconnect you runs
+  before the parse.
+- `commands/dialogs`:8-9 repointed: `ClientboundShowDialogPacket`'s two
+  protocols are `packets-and-stream-codecs`', not `protocol-phases`'.
+- `entities/entity-anatomy`:38's `ServerEntity` row repointed from gate 1 to
+  gate 3, which is the section that answers it.
+- `anatomy/anatomy`:128 now sends the memory channel to `the-connection` as
+  well as the phase walk; `reference/threads` gains a link to
+  `protocol-phases#login` for the state machine it was explaining.
+- `player/player-anatomy` and `player/README`: correction 11.
+- `src/lectures.md` and `src/reference/glossary.md` re-synced: the Part IX
+  shape paragraph follows the landing page, the jitter clause follows its
+  owner (`the-client-loop` says *most*), *Protocol phase* spells
+  *handshaking* as the page does, and *Packet* drops the unsupported "roughly
+  half the implementations are records" for "three shapes", which is what the
+  owner says. Six glossary owner links gain anchors.
+
+**Anchors.** Part IX carried **7 anchors on 62 cross-part links** before this
+session — the sixth part running to arrive with almost none — and carries 67
+now, plus 23 within the part. Each asserts that the named section is the
+answer; `check_links.py` proves only that the heading exists.
+
+### For pass 9's attention, found and not fixed
+
+- `reference/glossary`:437-440 previously said "roughly half the
+  implementations [of `Packet`] are records", which no page supports; it now
+  says "three shapes", which the owner page does support but does not count.
+  A count either page could state and neither does.
+- `chat-and-signing`:139-140 counts "the first fifteen rows" of its check
+  table by hand; correct as it stands, and wrong the moment a row is added.
+- `chat-and-signing`:100-101 uses "expired" for `hasExpiredServer`, which is
+  five minutes; the number appears only in the Q&A at :262-263. True but
+  stated in two places in two vocabularies.
+- Whether a respawn clears a broken chat chain. `ServerPlayer.restoreFrom`
+  copies `chatSession` (`ServerPlayer.java`:1729) but the chain decoder lives
+  on `ServerGamePacketListenerImpl` (:274), which survives a respawn — so a
+  broken chain almost certainly survives dying. Not written, because it is a
+  new claim and the page did not raise it; logged in
+  [pass5.md](pass5.md) for pass 6.
+- `foundations/text-components` tells the `/say @a` punchline twice on its own
+  page (:274-275 body and :425-432 Q&A). Part II's, and a page-shape finding;
+  logged for pass 6.
+
 ## Pass 5, session H — Part VIII · The player *(2026-09-06)*
 
 All seven pages of Part VIII touched plus the landing page:

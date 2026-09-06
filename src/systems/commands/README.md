@@ -75,7 +75,7 @@ from Part II. Dialogs and game tests are the pattern's clearest two
 instances — a form and a test suite, both reduced to JSON dispatching on a
 registry of types — and the pattern page is where that argument is made.
 
-[The connection](../networking/the-connection.md#the-threads-underneath-it)
+[The connection](../networking/the-connection.md#one-packet-there-and-one-back)
 from Part IX, for the Netty-thread / server-thread boundary that the command
 packets cross in two different ways on purpose.
 

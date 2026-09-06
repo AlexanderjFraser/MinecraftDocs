@@ -117,6 +117,24 @@ page disagreeing with a Reference page, plus four suspicions re-derived and
 found sound. Part VIII is the fifth part running to arrive with **no anchors
 at all**; seventy-one were added. **No tool bug**, the third pass-5 part
 session without one.
+**Session I is done** (2026-09-06, Part IX): all five pages and the landing
+page rewritten, eleven pages in seven other parts edited, and **seventeen
+corrections** — eight of them one page contradicting another and **five a page
+contradicting itself**, which is the new high. Four of the eight were the one
+seam, Part IX against Part III's tick: the flush bracket's scope, what
+`PacketListener.onPacketError` actually does, where `Connection.tick` flushes,
+and what its first queue holds. The part's shape sentence, open since pass 4,
+is decided — *the wire three times, and two things it carries* — and the
+landing figure's two arrows, which asserted a dependency the page's own prose
+denied, are redrawn with it. Part IX arrived with **7 anchors on 62
+cross-part links**, the sixth part running; three pages in three parts had
+been citing `the-connection` for the thread hop at an anchor **session A
+itself declared** and which is about something else, so the brief's A3 row is
+corrected with the reason. The coverage answer is that 84% named is legible
+only once the landing page says the part owns the wire and not everything in
+`network/`; three passages were written for what is neither a packet nor a
+`Component` — the text filter, the per-phase listener interfaces and the
+address resolver. **No tool bug.**
 
 ## The passes
 
@@ -1065,3 +1083,103 @@ plan as it stood at its close)*
   entries struck or settled, two §7 entries discharged and one written, and what
   the reading raised for sessions H, I, J, M and N and for passes 6, 7 and 8
   appended to [pass5.md](pass5.md) rather than left in the log.
+- **2026-09-06, session H — Part VIII · The player (pass 5).** Seven pages plus
+  the landing page, one agent each, the part read end to end in watching order
+  first. **All eight rewritten**, and nine pages in six other parts edited,
+  because almost everything a Part VIII page reaches for is owned elsewhere.
+  The part's own duplicate was the largest: the two trunk pages opened on the
+  same surprising fact and both explained the record-simulate-snap-back bracket
+  at length, two lectures apart; `the-two-phase-tick` owns it now, taking the
+  riding qualifier with it, and `input-to-movement`'s opening ends on its own
+  three surprises. Across the seam with Part VII, `Consumable` **split along
+  rule 1 rather than routing whole** — the field roster and the five
+  `ConsumeEffect`s to `using-an-item`, the `ConsumableListener` walk kept on
+  `hunger-and-experience` because it is that page's own hook — with the session
+  writing down why the routing rule's default was declined. The pass's largest
+  single move: `Player.cannotAttack`'s two hooks and projectile deflection off
+  `reference/non-living-damage`, where a Reference page had been holding the
+  book's only explanation of `Player.attack`'s own first two gates, onto
+  `the-sword-swing`; the sharper reading came back the other way, that the
+  wrapper's boolean means *was anything damaged*, not *did the hit land*.
+  **Eight corrections**, three of them a page disagreeing with another page and
+  two a page disagreeing with a Reference page: `Avatar` does not exist for the
+  renderer (it is a server class, and it is what `Player` and `Mannequin`
+  share); `postPiercingAttack` is `LivingEntity`'s, which the page's own
+  declared pair already said; `getSecondsToDisableBlocking` is conditional, on
+  two pages; `MobEffectInstance.compareTo` orders both surfaces and in opposite
+  directions; the ambient-particle bound is four and fifteen, not "about four";
+  the flying kick's vehicle half runs a second counter; `Player.HELD_ITEM_SLOT`
+  is the cursor; `DemoMode` reads the level's clock. Four suspicions re-derived
+  and found sound. **Coverage:** the part is small enough that the question came
+  back *yes* — 97% of Part VIII's lines are named somewhere — and the landing
+  page now makes that its argument instead of leaving it unsaid. Part VIII is
+  the fifth part running to arrive with **no anchors at all**; seventy-one were
+  added. **No tool bug**, the third pass-5 part session without one. Five gates
+  green.
+- **2026-09-06, session I — Part IX · Networking (pass 5).** Five pages plus the
+  landing page, one agent each, the part read end to end in watching order
+  first. **All six rewritten**, and eleven pages in seven other parts edited.
+  **Seventeen corrections**, the second-most of any pass-5 session, of which
+  **eight were one page contradicting another** and **five a page contradicting
+  itself** — the shape seven sessions running, and the self-contradictions are
+  the new high. Four of the eight cross-page ones were about the same seam,
+  Part IX against Part III: `the-connection` had the flush bracket "around the
+  whole server tick" where `MinecraftServer.suspendFlushing` opens it at the
+  top of `tickChildren`, so the packet drain is outside it — the thing
+  `players-and-sessions` turns on; it had `PacketListener.onPacketError`
+  "by default raising a reported crash", which is the interface default and is
+  reached by **no listener a drained packet ever arrives at** (the server logs
+  and suppresses, the client disconnects), so a reader of that page alone had
+  the outcome backwards; and `server-tick` had `Connection.tick` flushing "at
+  the end of the connection phase" against its own step list, and called
+  `Connection.pendingActions` a "deferred send queue" when it holds closures and
+  `Connection` keeps no packet queue at all. The five self-contradictions:
+  `what-the-client-is-told` counted "**four** feeds ignore gate 3" over a
+  section and a figure naming three, and said gate 2 keeps every distant mob
+  silent where its own Q&A says otherwise twice; `packets-and-stream-codecs`
+  said trust is "not about direction" and then "the rule is direction", and
+  said client-supplied component contents "never cross the wire at all" twenty
+  lines under the packet it calls the one that carries an arbitrary item;
+  `chat-and-signing` answered that vanilla "never sends" an unsigned copy on a
+  page that says twice above that it does. Beside them: the block-entity
+  broadcast named the wrong method; the block broadcast was "once a tick"
+  where it is inside `ServerChunkCache.tickChunks` and never in a debug world;
+  and `player-anatomy` and `player/README` both put a `ProfileKeyPair` on a
+  `ServerPlayer`, where there is no such field anywhere in `server/` — what it
+  holds is the public half, a `RemoteChatSession`. **Four suspicions re-derived
+  and found sound**, including two pages naming the same save read in two
+  places, which turn out to be one place. **Ownership:** four mechanisms cut to
+  a citation on the Part IX side (the flush bracket, the memory-connection
+  crash's sibling copy, the registry-and-tag sync, `PrepareSpawnTask`'s
+  internals) and four the other way (keep-alive, the chunk-batch loop, the
+  trusted constants and the creative slot's three fences from
+  `codecs-nbt-json`), with the chat hop's **fourth** telling cut from
+  `brigadier-and-commands`. **The shape sentence, open since pass 4, is
+  decided**: Part IX is *the wire three times, and two things it carries*, and
+  the landing figure's two unlabelled arrows — which asserted a dependency the
+  page's own prose denied and neither target page uses — are redrawn with it.
+  **Seams:** Part IX carried **7 anchors on 62 cross-part links** before this
+  session, the sixth part running to arrive with almost none, and carries 67
+  now plus 23 inside the part; three pages in three parts had been citing
+  `the-connection` for the thread hop at an anchor that is about
+  `EventLoopGroupHolder`'s event-loop groups — **an anchor session A itself
+  declared**, and the brief's A3 row is corrected with the reason. **Coverage:**
+  Part IX is 84% named, and the session's finding is that the number is
+  legible only once the landing page says **this part owns the wire, not
+  everything in `network/`** — `network/chat` is Part II's, much of
+  `client/multiplayer` is Part X's, and the largest block is the packet
+  classes, which are catalogued rather than narrated. Three passages were
+  written for what is none of those: **the text filter**, ~750 lines in the
+  part's own `server/network` that `chat-and-signing`'s trace runs straight
+  through without naming a class; **the per-phase listener interfaces**, ~700
+  lines that are what `Packet.handle` targets and were named nowhere; and
+  **`client/multiplayer/resolver`**, the six classes that turn a typed address
+  into a socket, where the part's own scenario begins. Three more systems are
+  named and declined with a reason on the landing page, and the **boss-bar
+  feed** — the part's largest unnamed class, whose sending side has no owner
+  anywhere in the book — is written into §7 beside the `execute store` sink it
+  is the other end of. **No tool bug**, the fourth pass-5 part session without
+  one. Five gates green. Twelve queue entries struck or settled, one §7 entry
+  widened, and what the reading raised for sessions J, K, M and N and for
+  passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather than left in the
+  log.

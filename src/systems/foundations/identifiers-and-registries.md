@@ -285,7 +285,12 @@ what the "experimental features" warning on world open reads.
 
 **The client is told what it does not already have.**
 `SynchronizeRegistriesTask` first asks the client which `KnownPack`s it has
-(`ClientboundSelectKnownPacks`). The comparison is **all or nothing**: the
+(`ClientboundSelectKnownPacks`). The request lists only the server's packs
+that *declare* one — `PackLocationInfo.knownPackInfo` is an optional, so a
+world's own datapack is simply absent from it — and the client matches them
+against its bundled vanilla repository through
+`KnownPacksManager.trySelectingPacks`. The comparison is **all or nothing**:
+the
 client's answer must equal the request exactly, or every element of every
 synced registry is sent in full. On a match,
 `RegistrySynchronization.packRegistries` sends every element's *id* but
@@ -298,7 +303,9 @@ generation and mob-spawn settings the client never needs.
 **The client rebuilds one layer and patches the other.**
 `RegistryDataCollector` accumulates the packets, and
 `RegistryDataCollector.collectGameRegistries` runs when configuration
-finishes. The `ClientRegistryLayer.REMOTE` layer is rebuilt wholesale and
+finishes — dispatching the load onto a background executor against the
+negotiated packs and then blocking on the result, so the work leaves the
+network thread without the phase becoming asynchronous. The `ClientRegistryLayer.REMOTE` layer is rebuilt wholesale and
 frozen — but the **static** registries cannot be rebuilt, so their tags are
 applied in place, through the mechanism [tags](tags.md#the-four-moments-tags-are-loaded) owns, and when no
 registry data arrived at all the collector takes a tags-only path that

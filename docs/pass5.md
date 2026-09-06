@@ -91,8 +91,10 @@ it. Everything it acted on itself is struck in place above, or logged in
   `player-anatomy`:196) now point where the reader needs. *Session H did the
   third: the target was right and the gloss was not —* what the client has been
   sent *is Part IX's, so it now points at*
-  `what-the-client-is-told#chunks-arrive-on-a-loop-the-client-paces`. *Two
-  left for I.*
+  `what-the-client-is-told#chunks-arrive-on-a-loop-the-client-paces`.
+  ~~*Two left for I.*~~ **Done, session I:** both were pointing at
+  `tickets-and-loading`, which bounces the reader straight back; both now point
+  at `what-the-client-is-told#the-rate-the-client-asks-for`.
 - **Session K (XI) — the flash layers are a citation now.**
   `lightmap-fog-and-sky`:60-65 explained the two `ClientLevel` lightning layers,
   which is `environment-attributes-and-timelines`' stack, and gave the lerp as
@@ -202,14 +204,11 @@ six corrections it made are in [pass9.md](pass9.md).*
   assembled for it, and that without `PrepareSpawnTask.keepAlive` a slow
   client would arrive to find its spawn chunks expired. Whatever is decided,
   the two handover sentences and `server/README`:91-92 must name one line.
-- **Session I (IX) — keep-alive.** `players-and-sessions`:426-433 and
-  `the-connection`:370-380 both explain it; the connection owns it (it runs in
-  configuration too). Two moves come with the cut: the wrong-id disconnect is
-  "immediate rather than ignored" only here, and the latency smoothing —
-  three parts old to one part new, so a tab list lags a real change by several
-  pings — is on no other page in the book. What `players-and-sessions` keeps
-  is the asymmetry its section is actually about: keep-alive is the only one
-  of the three kicks that exempts the singleplayer host.
+- ~~**Session I (IX) — keep-alive.** `players-and-sessions`:426-433 and
+  `the-connection`:370-380 both explain it…~~ **Done, session I (pass 5)**
+  exactly as written: the connection owns it, both moves went with the cut,
+  and `players-and-sessions` keeps the singleplayer-host asymmetry and a
+  citation.
 - ~~**Session H (VIII) — the flying kick.**~~ *Done, session H: the mechanism
   is `input-to-movement`'s and Part III keeps a clause; the vehicle's separate
   counter moved to the owner and the idle timeout stayed where it was, in*
@@ -220,10 +219,11 @@ six corrections it made are in [pass9.md](pass9.md).*
   it and this one keeps a clause. Note that the idle timeout beside it
   (`MinecraftServer.playerIdleTimeout` and its end-credits exemption) has no
   other home in the book and must stay wherever that section ends up.
-- **Session I (IX) — the chunk-batch pacing on a join.**
-  `players-and-sessions`:239-245 against
-  `what-the-client-is-told`:266-285, which owns both halves of the loop; the
-  join page keeps "a joining client is trusted with one batch".
+- ~~**Session I (IX) — the chunk-batch pacing on a join.**
+  `players-and-sessions`:239-245 against `what-the-client-is-told`:266-285…~~
+  **Done, session I (pass 5)**: cut to "a joining client is trusted with one
+  batch" plus the claim that makes it a *join* fact — the first batch is a
+  hard round trip — with the loop and the eligible set cited to their owners.
 - ~~**Session F (VI) — an inbound link that lands on the wrong page.**
   `damage-and-death`:322 says "[player anatomy] owns the object that comes
   back". It does not: `player-anatomy`:213-216 itself says
@@ -431,8 +431,14 @@ the corrections it made are in [pass9.md](pass9.md).*
   none of the pages whose traces end in a debug renderer. The skips page is
   the owner by default and should not be; either a later part takes it or the
   pages that use it cite the skips page. **Sessions J and K.**
-- **`text-components`' selector expansion is told three times** — here,
-  `networking/chat-and-signing` and `commands/entity-selectors`. **Session I.**
+- ~~**`text-components`' selector expansion is told three times** — here,
+  `networking/chat-and-signing` and `commands/entity-selectors`. **Session
+  I.**~~ **Done, session I (pass 5)**, and it was told *four* times: three of
+  them on `chat-and-signing` alone. `text-components` owns the mechanism (it
+  has the parse machinery the others lack), `chat-and-signing` keeps the
+  security consequence in one place, and `entity-selectors` is **not** a
+  duplicate — it owns the permission's failure mode, which neither other page
+  states.
   ~~And the death-message game rule twice, on two pages that never link each
   other (`entities/damage-and-death`).~~ **The death-message half is done,
   session F (pass 5)**: not a duplicate after all — `text-components` owns the
@@ -444,8 +450,15 @@ the corrections it made are in [pass9.md](pass9.md).*
   buffer, region compression, the `BlockEntity` save shells, the serverbound
   fence and the trusted-tag constants. Session B left them: each is one
   column of the page's own four-path table, and cutting them needs the
-  owning part's session in the room. **Sessions D, G and I** to judge from
-  their side, then the citation form here.
+  owning part's session in the room. **Sessions D, G and ~~I~~** to judge from
+  their side, then the citation form here. *Session I judged its two: the*
+  **serverbound fence** *and the* **trusted-tag constants** *both go to*
+  `packets-and-stream-codecs`, *whose scenario is what stops a hostile
+  sender, and Part II keeps the one thing behind them that is its own — that
+  the serverbound path is the only one of its four where a codec is run for
+  its errors rather than its output. The* **wire buffer** *stays: it is a
+  column of the comparison and the page states it as a contrast, not an
+  explanation. Two left, for D and G.*
 - **`reference/registries` says 153 registry keys and
   `identifiers-and-registries` says 148.** Two populations or one wrong
   number; session B did not re-derive it because the Reference page is
@@ -2682,18 +2695,23 @@ it made are in [pass9.md](pass9.md).*
 
 Wording debt from fixes made in place, and structural findings not acted on.
 
-- `networking/README.md` — the opening's four player-visible failures now
-  ends on "a grey bar down its left edge", which is true and duller than the
-  red line it replaces. The vivid true version is the *sender's* side —
-  `handleMessageDecodeFailure` sends the reason back in red — but that is a
-  different sentence about a different player. Re-read the paragraph whole.
-- `networking/README.md` — "one wire and three passengers" is still the
-  part's shape sentence, and the page contradicts it twenty lines later by
-  saying *protocol phases* **is** the wire rather than a passenger. Pass 4
-  softened the first sentence rather than choosing; the shape needs deciding.
-- `networking/README.md` — the traffic-volume clause added to the *shape*
-  section is a fact the section did not previously carry, and reads like a
-  footnote. It may belong in *what the client is told* instead.
+- ~~`networking/README.md` — the opening's four player-visible failures now
+  ends on "a grey bar down its left edge"…~~ **Done, session I (pass 5)**: the
+  paragraph was re-read whole and all four failures replaced, because two of
+  the old four were paid off only in Parts VIII and X and the grey bar is
+  explained nowhere in the book (`GuiMessageTag` is named on no page). The new
+  four are each answered on a page of this part.
+- ~~`networking/README.md` — "one wire and three passengers" is still the
+  part's shape sentence, and the page contradicts it twenty lines later…~~
+  **Decided, session I (pass 5)**: the shape is **the wire three times, and
+  two things it carries**. The figure votes for it, `README`:88-91 votes for
+  it, and it is what makes the part's last two lectures applications rather
+  than passengers. `lectures.md` follows.
+- ~~`networking/README.md` — the traffic-volume clause added to the *shape*
+  section… may belong in *what the client is told* instead.~~ **Ruled,
+  session I (pass 5)**: it stays, because with the shape decided it is no
+  longer a footnote — it is the reason two of five lectures take most of the
+  part's length, which is an argument and therefore the landing page's.
 - `the-connection.md` — the `HandlerNames` paragraph existed to deliver "a
   complete and correct index that no code reads". The index turned out to be
   incomplete, so the paragraph now delivers "an index that has already
@@ -2701,36 +2719,50 @@ Wording debt from fixes made in place, and structural findings not acted on.
   space. Consider cutting it to one clause.
 - `the-connection.md` — the kick answer is now four sentences where the
   question deserves two. The mechanism took three of them.
-- `packets-and-stream-codecs.md` — the "three shapes of packet class"
-  paragraph now names all three, and the third (the `StreamCodec.unit`
-  singleton) is introduced twice on the page, here and in the bundle section.
-  Pick one home.
+- ~~`packets-and-stream-codecs.md` — the "three shapes of packet class"
+  paragraph… the third is introduced twice on the page.~~ **Done, session I
+  (pass 5)**, half overtaken: the bundle section's `StreamCodec.unit` is a
+  *use*, not a second introduction; only its four-word gloss ("an id and a
+  zero-byte body") duplicated, and that is cut.
 - `packets-and-stream-codecs.md` — the JSON exception is now a four-line
   aside inside a paragraph about the NBT bridge. It is a good fact and it is
   in the wrong shape; it may want to be its own short paragraph.
-- `protocol-phases.md` — "Eight, not four: every phase but handshaking
-  declares one per direction" is a correction written as prose. Pass 5 should
-  fold the number into the sentence and drop the correction voice.
-- `what-the-client-is-told.md` — "Four feeds ignore gate 3" now carries a
-  second sentence walking back the scope, and the section heading still says
-  *What goes out around the gates*. Heading and content disagree in emphasis.
-- `chat-and-signing.md` — the unsigned-`Component` paragraph grew by four
-  lines to hold the `MessageArgument` finding, which is the best fact on the
-  page and is buried in a paragraph about a field. It may deserve promotion.
+- ~~`protocol-phases.md` — "Eight, not four: every phase but handshaking
+  declares one per direction" is a correction written as prose.~~ **Done,
+  session I (pass 5)**, by cutting rather than rewording: the whole paragraph
+  was `packets-and-stream-codecs`' under the ownership rule, and the count now
+  stands once, on that page, as "the other eight templates — nine in all".
+  (It had also collided with a second, different *eight* on the line above.)
+- ~~`what-the-client-is-told.md` — "Four feeds ignore gate 3" now carries a
+  second sentence walking back the scope…~~ **Half done, session I (pass 5)**:
+  the count was wrong (three, not four — see [pass9.md](pass9.md)) and the
+  walk-back was itself wrong about gate 2; both are fixed. The heading *What
+  goes out around the gates* still says *gates* where the content says gate 3.
+  [kind=lecture]
+- ~~`chat-and-signing.md` — the unsigned-`Component` paragraph grew by four
+  lines to hold the `MessageArgument` finding… It may deserve promotion.~~
+  **Done, session I (pass 5)**, and the promotion is *downward*: the fact was
+  told three times on this page and a fourth on `text-components`. It now has
+  one home, the *Commands* section whose subject is `MessageArgument`, and the
+  opening keeps only the security consequence — the sentence the entry was
+  really about.
 
 Structural findings, not acted on:
 
-- `reference/threads.md` — the never-hop section's population is stated as
-  "`ClientPacketListener`", a class, when the honest population is "the
-  handlers a client play listener runs". Pass 4 fixed the count and left the
-  framing; a Reference section whose population is a class file rather than a
-  runtime object will drift again the next time a handler moves up or down
-  the hierarchy.
-- `networking/README.md` figure — arrows 3 and 4 (`PP → WCT`, `PP → CS`)
-  assert a dependency neither target page uses. Pass 4 corrected the prose
-  that made the same claim and left the arrows, because the figure is the
-  part's watch order rather than a prerequisite graph. If the shape sentence
-  above is redecided, the arrows go with it.
+- ~~`reference/threads.md` — the never-hop section's population is stated as
+  "`ClientPacketListener`", a class…~~ **Overtaken, checked session I (pass
+  5)**: the section already reads "Nine handlers on the client's play listener
+  omit it… Seven are declared in `ClientPacketListener` itself; the last two
+  are inherited", which is the runtime population the entry asked for. Session
+  I added the two links the section was missing (to `the-connection`'s hop and
+  to `protocol-phases#login`); the page itself is session N's.
+- ~~`networking/README.md` figure — arrows 3 and 4 (`PP → WCT`, `PP → CS`)
+  assert a dependency neither target page uses.~~ **Done, session I (pass
+  5)**, with the shape: the figure is redrawn as two subgraphs — the wire's
+  three lectures and the two applications — joined by one labelled edge. It
+  was verified first that neither target page contains `protocol-phases`,
+  `ConnectionProtocol` or `ProtocolInfo`, and that the real traffic runs the
+  other way (`protocol-phases`:331 links forward to `chat-and-signing`).
 
 ### Part XIII, after session M of pass 4 *(2026-09-05)*
 
@@ -2798,8 +2830,13 @@ that takes it. Everything session F did act on is struck above or logged in
 
 **Routed to a later part's session.**
 
-- **Session I (IX) — the send gate is explained twice and neither page links
-  the other.** `synched-entity-data`:246-294 (*The gate that holds a packet
+- ~~**Session I (IX) — the send gate is explained twice and neither page
+  links the other.**~~ **Decided, session I (pass 5):** `what-the-client-is-told`
+  owns the cascade (its figure draws it and the page says "the figure is the
+  page"); `synched-entity-data` keeps the *data channel's* passage through it,
+  which is its own scenario, and all four of the facts below moved to the
+  owner. The original entry follows.
+  `synched-entity-data`:246-294 (*The gate that holds a packet
   back*, with its own flowchart) and
   `what-the-client-is-told`:146-225 (gates 2 and 3) are the same mechanism.
   Under the routing rule the later part resolves it, so session I decides;
@@ -2814,10 +2851,13 @@ that takes it. Everything session F did act on is struck above or logged in
   its own container in the same call — absent from the owner entirely.
   [kind=book]
 - **Session I (IX) — a count that disagrees across the seam.**
-  `what-the-client-is-told`:213 says "**Four** feeds ignore gate 3" and then
+  ~~`what-the-client-is-told`:213 says "**Four** feeds ignore gate 3" and then
   names three; `synched-entity-data`:280-282 names two plus the item frame.
   The candidate for the fourth is `Entity.updateDataBeforeSync`. Re-derive with
-  the decompile. [kind=book]
+  the decompile.~~ **Done, session I (pass 5)**: it is **three**.
+  `Entity.updateDataBeforeSync` opens the method but sends nothing, so it is a
+  hook and not a feed; it is now named as such, in the prose and in the figure.
+  [kind=book]
 - **Session I (IX) — `entity-anatomy` now cites
   `what-the-client-is-told#gate-3-and-the-position-it-chooses` for
   `EntityType.trackDeltas`.** The list moved there in principle; check that
@@ -2848,7 +2888,10 @@ that takes it. Everything session F did act on is struck above or logged in
   settles, `authority` should cite `prediction-and-acks#two-state-machines-running-against-each-other`
   at the two places a reader asks *then where does prediction live*
   (`authority`:106-107 and :210-215). [kind=book]
-- **Sessions ~~H~~, I and J — the anchors on `authority`'s inbound links.** Twenty-two
+- **Sessions ~~H~~, ~~I~~ and J — the anchors on `authority`'s inbound
+  links.** *Session I did `what-the-client-is-told`'s and the Part IX landing
+  page's, both on*
+  `#five-predicates-and-the-final-one-the-other-four-hang-off`. Twenty-two
   links from sixteen pages, none carrying an anchor. Part VI's own are done;
   *Part VIII's four are done in session H, two of them on*
   `#three-cases-read-on-both-sides` *because the fall-damage gate is the
@@ -2965,7 +3008,11 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **Routed to a later part's session.**
 
-- **Session I (IX) — `what-the-client-is-told` names the wrong hop.** Its
+- ~~**Session I (IX) — `what-the-client-is-told` names the wrong hop.**~~
+  **Done, session I (pass 5)**, and it was a correction rather than a
+  cosmetic disagreement — the decompile is as this entry says, and the third
+  copy of the empty-chest answer is cut to the consequence with the anchor.
+  The original entry follows. Its
   :340 has `ChunkHolder.broadcastBlockEntityIfNeeded` calling
   `BlockEntity.getUpdatePacket`; the decompile has the *IfNeeded* form testing
   whether the state has a block entity and delegating to
@@ -3250,3 +3297,134 @@ corrections it made are in [pass9.md](pass9.md).*
   everything calls it"); the Reference prose lives in `gen_reference.py`, so
   the page is the copy that should vary. [kind=voice]
 
+---
+
+## From pass 5, session I (Part IX · Networking), 2026-09-06
+
+*What the reading raised and this session did not act on, tagged by the pass
+that takes it. Everything session I did act on is struck above or logged in
+[pass9.md](pass9.md).*
+
+**Routed to a later part's session.**
+
+- **Session J (X) — `GuiMessageTag` and the chat-GUI family.** `client/multiplayer/chat`
+  holds `GuiMessage`, `GuiMessageTag`, `GuiMessageSource`, `ChatLog` and
+  `LoggedChatEvent` (219 lines, none named in the book). `GuiMessageTag` is
+  what draws the coloured bar beside a chat line — the thing the Part IX
+  landing page used to promise in its opening and no longer does, because
+  nothing explains it. `client/hud`:155 draws the line at "this page owns
+  display only", which makes the tag `hud`'s if it is anyone's. Either name it
+  there or decline it. [kind=book]
+- **Session K (XI) — the multiplayer server list.** `ServerList` (204),
+  `ServerData` (196), `SessionSearchTrees` (141) and `CacheSlot`, in Part IX's
+  own `client/multiplayer`. Session I named `ServerList`/`ServerData` in the
+  clause on `the-connection` that already described them and wrote the family
+  into the landing page's *where the part stops* as **Part XI's to draw**, on
+  the ground that the interesting half is a screen. Session K should take it or
+  say why not; the address resolver underneath it is written and is Part IX's.
+  [kind=book]
+- **Session M (XIII) — the boss-bar feed has no owner.** `ClientboundBossEventPacket`
+  is 309 lines and the largest unnamed class in Part IX's packages; `client/hud`
+  draws the bar, `players-and-sessions` sends them on join,
+  `reference/level-data-and-rules` stores them, and no page says what the feed
+  *is*. §7 already has *the boss bar as `execute store`'s third sink* routed to
+  M; this is the same object from the wire's end, and M should settle both
+  together or decline both. Session I named the gap on the landing page rather
+  than inventing a home for it. [kind=book]
+- **Session N (Reference) — `reference/threads` is the never-hop table's home
+  and the login state machine's second telling.** Session I added the two links
+  it lacked (to `the-connection`'s hop paragraph and to `protocol-phases#login`)
+  and left the prose; a Reference page that explains a state machine in three
+  sentences is N's to judge. [kind=book]
+
+**For pass 6 (the lecture).**
+
+- `what-the-client-is-told` — the heading *What goes out around the gates*
+  still says *gates* where its content, now corrected, says gate 3 only. The
+  pass-4 entry above is half-struck for exactly this. [kind=lecture]
+- `what-the-client-is-told` — *The level's own feeds* is five bullets of which
+  one is a forward reference and one is really a client-state fact. If a sixth
+  is ever added (boss bars, waypoints) it should become a table like the
+  *never told* one above it. [kind=lecture]
+- `packets-and-stream-codecs` — the verified line promises a trace ("someone
+  says hello in chat, and you stop the message on its way out") and the chat
+  message is followed for a quarter of the page and then dropped; the rest is
+  vocabulary, the numbering rule, bundles, the defences and custom payloads.
+  The landing page and `lectures.md` both describe it as *what the thing
+  crossing the wire is*, which is the pattern reading and is the honest one.
+  A verified-line change, not a restructure. [kind=lecture]
+- `packets-and-stream-codecs` — the buffer-binding material is split across
+  *Which buffer, and why play needs its own* and *When the description is
+  built*, a hundred lines apart. One subject, two sections. [kind=lecture]
+- `the-connection` — the page's second half (*A phase change is a message
+  written down the pipeline*, *Compression and encryption*, *How a connection
+  dies*) is the channel's life-cycle rather than the round trip its verified
+  line promises. Not a move — `protocol-phases` explicitly hands the pipeline
+  surgery here — but either the opening should say the page is the channel's
+  whole life or the sections should be marked as its second movement.
+  [kind=lecture]
+- `the-connection` — the read timeout's absence on the local pipeline is
+  stated twice, in the singleplayer list and again as the keep-alive section's
+  payoff. The second is the better one. [kind=lecture]
+- `the-connection` — two standing pass-4 entries above are still true as
+  written and were not touched: the `HandlerNames` paragraph is six lines
+  delivering one clause, and the kick answer is four sentences for a
+  two-sentence question. [kind=lecture]
+- `protocol-phases` — *What the phases leave unused* is now two paragraphs
+  after session I cut the two that belonged to sibling pages, and the terminal
+  count in it describes the state figure four sections above. Move the count
+  to the figure and the section becomes honestly titled: cookies, transfers
+  and the chat reset are proxy hooks. [kind=lecture]
+- `protocol-phases` — the opening promises *four languages* while the table
+  and the figure carry five phases; *Status, the phase nobody logs in through*
+  is what reconciles them and reads as an aside. [kind=lecture]
+- `protocol-phases` — the cast table is eight rows and omits
+  `ServerCommonPacketListenerImpl` and `CommonListenerCookie`, both of which
+  the page explains in prose and lists in *Where to look*. [kind=lecture]
+- `chat-and-signing` — the first four rows of *Every check, and what it costs*
+  are an **ordering** claim delivered as a table, and the figure above draws
+  only two of the four. One sentence before the table fixes both.
+  [kind=lecture]
+- `chat-and-signing` — three members appear only in *Where to look* and never
+  in the body: `ServerGamePacketListenerImpl.unpackAndApplyLastSeen`,
+  `MessageSignatureCache.push`, `OutgoingChatMessage.create`. (Session H found
+  the same shape on `status-effects`.) [kind=lecture]
+- `chat-and-signing` — a question the page raises and does not answer: does
+  dying clear a broken chain? It does not — `ServerPlayer.restoreFrom` copies
+  the chat session and the chain decoder lives on the listener, which survives
+  a respawn — but this is a new claim and session I did not add it. A good
+  *Questions players ask* entry for whoever writes one. [kind=lecture]
+- `foundations/text-components` tells the `/say @a` punchline twice on its own
+  page, in the body and again in the Q&A, and it is the sentence
+  `chat-and-signing` now cites rather than repeats. Part II's page, one home.
+  [kind=lecture]
+
+**For pass 7 (the figures).**
+
+- `networking/README`'s figure now uses two subgraphs with a subgraph-to-
+  subgraph edge carrying a long label. It renders and it is true; whether a
+  fourteen-word edge label is legible at column width is pass 7's.
+  [kind=figure]
+- `what-the-client-is-told`'s cascade figure is sixteen nodes and carries the
+  page's whole argument, and session I added a name to it. It is the densest
+  figure in the part. [kind=figure]
+- `packets-and-stream-codecs`' *From two fields to a numbered blob* is a
+  seven-node vertical chain whose labels are sentences of up to twenty words.
+  [kind=figure]
+
+**For pass 8 (the voice).**
+
+- `chat-and-signing`:139-140 hand-counts "the first fifteen rows" of its own
+  table. Correct today, fragile forever. [kind=voice]
+- `chat-and-signing` says a message "has expired" in one section and gives the
+  five- and seven-minute numbers in another; one vocabulary, one place.
+  [kind=voice]
+- `reference/glossary`'s **Packet** entry said "roughly half the
+  implementations are records", which no page supports; session I replaced it
+  with "three shapes", which the owner page supports but does not count.
+  Either the page states the proportion or the glossary keeps the shapes.
+  [kind=voice]
+- The word *phase* means two unrelated things inside Part IX — a
+  `ConnectionProtocol` and a step of the server tick — and `the-connection`
+  uses both, one of them inside a figure note where no link can go.
+  [kind=voice]

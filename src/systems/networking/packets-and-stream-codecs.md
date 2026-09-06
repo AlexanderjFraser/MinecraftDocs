@@ -2,7 +2,7 @@
 
 > Verified against **Minecraft 26.2** · Part IX · Someone says hello in chat, and you stop the message on its way out of the server to ask what it actually is.
 
-[The connection](the-connection.md) hands you a frame: a length, then a run
+[The connection](the-connection.md#one-packet-there-and-one-back) hands you a frame: a length, then a run
 of bytes that a handler on a Netty thread is about to turn into a method
 call on the other side. This page is what is inside that frame. A chat line
 leaving the server is a `ClientboundSystemChatPacket` — a record of a
@@ -45,7 +45,7 @@ types across the eight `*PacketTypes` classes that declare them.
 | member | what it says |
 |---|---|
 | `Packet.type` | the `PacketType`, always a constant from one of the eight `*PacketTypes` classes |
-| `Packet.handle` | hands this packet to one named method on the phase's listener interface |
+| `Packet.handle` | hands this packet to one named method on the phase's listener interface — see below |
 | `Packet.isSkippable` | default false. True for the chat-shaped packets, so a failure to encode one is dropped rather than fatal |
 | `Packet.isTerminal` | default false. True for the seven packets that end a protocol phase |
 | `Packet.codec` | a static convenience: `StreamCodec.ofMember` under a friendlier name |
@@ -57,11 +57,28 @@ chat-shaped packets — `ClientboundSystemChatPacket`,
 `ClientboundPlayerChatPacket`, `ClientboundDisguisedChatPacket`,
 `ClientboundPlayerCombatKillPacket` and `ClientboundTagQueryPacket`. The
 terminal set is exactly the seven transition packets drawn on
-[protocol phases](protocol-phases.md) and no others; what the flag *does*
-to the pipeline is [the connection](the-connection.md)'s business. Beware
+[protocol phases](protocol-phases.md#the-five-phases) and no others; what the
+flag *does*
+to the pipeline is [the
+connection](the-connection.md#getting-back-to-unconfigured-which-nobody-asks-for)'s
+business. Beware
 the namesake: `ServerboundResourcePackPacket.Action.isTerminal` asks
 whether a resource-pack *response* is a final answer, and that packet is
 not terminal.
+
+**The interface `Packet.handle` targets is per phase and per direction**, and
+those interfaces are the quietest large family in the part: `ClientGamePacketListener`
+and `ServerGamePacketListener` are the two big ones — one method per packet,
+which is why the play pair is four hundred lines of signatures — with
+`ClientCommonPacketListener` and `ServerCommonPacketListener` above them and a
+pair each for handshake, status, login, configuration, cookie and ping, all
+rooted in `ClientboundPacketListener` and `ServerboundPacketListener`. Nothing
+in them decides anything: they are the vocabulary a phase's `*Impl` class
+promises to implement, and a packet arriving at a listener that implements the
+wrong one is the cast failure and *invalid_packet* kick
+[the connection](the-connection.md#one-packet-there-and-one-back) describes
+([protocol phases](protocol-phases.md#the-five-phases) tabulates which `*Impl`
+serves which phase).
 
 **`PacketType` is a record of two things** — a `PacketFlow` and an
 `Identifier`. A direction and a name; no number, no version, no size.
@@ -121,19 +138,19 @@ it is caught at the one point where the answer is still knowable. All of
 that runs on the Netty event loop, inside `PacketEncoder` and
 `PacketDecoder`, never on a game thread; the framing, the compression, the
 ciphers and the later hop to the game thread are
-[the connection](the-connection.md)'s.
+[the connection](the-connection.md#the-pipeline-in-both-directions)'s.
 
 ## The codec layer is small, and composition is all of it
 
 `net/minecraft/network/codec` is a handful of files and does all of the
-composing; the byte-level encodings themselves live outside it, in `VarInt`,
-`VarLong`, `Utf8String`, `LpVec3` and `FriendlyByteBuf`. `StreamCodec` is one interface extending `StreamEncoder` and
+composing; the byte-level encodings themselves live outside it, and are
+named below. `StreamCodec` is one interface extending `StreamEncoder` and
 `StreamDecoder`, so `StreamEncoder.encode` takes a buffer and a value and
 `StreamDecoder.decode` takes a buffer and returns one. It is deliberately
 *not* a `Codec`: a packet is written once, read once and must be small, so
 it gets hand-laid bytes rather than a document in some format — the
 distinction is [codecs, NBT and
-JSON](../foundations/codecs-nbt-json.md)'s.
+JSON](../foundations/codecs-nbt-json.md#one-abstraction-and-the-ops-that-are-not-formats)'s.
 
 The constructors and combinators are `StreamCodec.of`,
 `StreamCodec.ofMember`, `StreamCodec.unit`, `StreamCodec.map`,
@@ -218,13 +235,13 @@ free.
 exists because a numeric registry id means nothing on its own — item number
 37 is only an item relative to the registry set the server sent during
 configuration ([identifiers and
-registries](../foundations/identifiers-and-registries.md)). Every codec
+registries](../foundations/identifiers-and-registries.md#what-crosses-the-wire-and-where-the-files-are)). Every codec
 that writes a registry id needs one: `ByteBufCodecs.registry`,
 `ByteBufCodecs.holderRegistry`, `ByteBufCodecs.holder`,
 `ByteBufCodecs.holderSet`, `ByteBufCodecs.fromCodecWithRegistries` and
 `ByteBufCodecs.registryFriendlyLengthPrefixed` — and therefore
 `ItemStack.STREAM_CODEC`, `DataComponentPatch.STREAM_CODEC`
-([data components](../foundations/data-components.md)),
+([data components](../foundations/data-components.md#the-patch-on-the-wire-and-on-disk)),
 `ComponentSerialization.STREAM_CODEC` and `HashedStack.STREAM_CODEC`. The
 wrapper is a throwaway, not a pipeline object: `ProtocolInfoBuilder`
 applies the decorator — `RegistryFriendlyByteBuf.decorator` for play —
@@ -276,9 +293,10 @@ context-or-not: `ProtocolInfoBuilder.serverboundProtocol`,
 codec ask the *connection* a question, and in 26.2 exactly one protocol
 uses one: `GameProtocols.SERVERBOUND_TEMPLATE`, whose context is
 `GameProtocols.Context` and whose only question is
-`GameProtocols.Context.hasInfiniteMaterials`. Every other template is a
-`SimpleUnboundProtocol`; `CodecModifier` is the hook a context-aware codec
-is installed through.
+`GameProtocols.Context.hasInfiniteMaterials`. The other **eight** templates —
+nine in all, one per direction per phase bar handshaking's serverbound-only
+one — are a `SimpleUnboundProtocol`; `CodecModifier` is the hook a
+context-aware codec is installed through.
 
 **When the description is built** splits the same way. Handshaking, status,
 login and configuration bind their buffers eagerly at class-load — and the
@@ -293,17 +311,16 @@ because the protocol changed, not because the registries arrived.
 
 `ClientboundBundlePacket` has a `PacketType` and **no wire id at all**.
 `ProtocolInfoBuilder.withBundlePacket` registers only the *delimiter*,
-`ClientboundBundleDelimiterPacket`, serialised with `StreamCodec.unit` — an
-id and a zero-byte body — and records a `BundlerInfo` beside the codec
-list, so a bundle on the wire is two empty markers with ordinary,
+`ClientboundBundleDelimiterPacket`, serialised with `StreamCodec.unit`, and
+records a `BundlerInfo` beside the codec list, so a bundle on the wire is two empty markers with ordinary,
 individually numbered packets between them. `PacketBundleUnpacker` explodes
 an outgoing bundle into delimiter-packets-delimiter and
-`PacketBundlePacker` collects an incoming run back up; `BundlePacket` holds
-the sub-packets and `BundlerInfo` the logic, split between
+`PacketBundlePacker` collects an incoming run back up. `BundlePacket` is the
+abstract class that holds the sub-packets and `ClientboundBundlePacket` its one
+subclass; `BundlerInfo` is the logic, split between
 `BundlerInfo.unbundlePacket` outgoing and its nested `BundlerInfo.Bundler`
-incoming, with
-`BundlerInfo.BUNDLE_SIZE_LIMIT` caps a bundle at 4,096 sub-packets. Only
-the clientbound play protocol declares a bundle at all.
+incoming, and `BundlerInfo.BUNDLE_SIZE_LIMIT` caps a bundle at 4,096
+sub-packets. Only the clientbound play protocol declares a bundle at all.
 
 **What a bundle buys is atomicity against the client's tick.**
 `ClientPacketListener.handleBundlePacket` hops to the main thread once for
@@ -312,7 +329,7 @@ never tick or render with half a bundle applied. There are only two
 senders, both in `ServerEntity`: `ServerEntity.addPairing`, which collects
 what `ServerEntity.sendPairingData` writes into a list and sends the result
 as one bundle, so an entity never appears mid-initialisation ([what the
-client is told](what-the-client-is-told.md)); and the motion-plus-power
+client is told](what-the-client-is-told.md#the-introduction-is-one-bundle)); and the motion-plus-power
 pair sent for a hurtling projectile.
 
 ## What stops a hostile sender
@@ -320,7 +337,7 @@ pair sent for a hurtling projectile.
 The frame limit does most of the work, and it is not on this page: a frame
 length is at most three var-int bytes, and `Varint21FrameDecoder` refuses a
 wider prefix or a zero length before any codec sees anything
-([the connection](the-connection.md)). Above that sit two separate
+([the connection](the-connection.md#one-packet-there-and-one-back)). Above that sit two separate
 collection defences, and only the second is famous.
 `ByteBufCodecs.readCount` is the first — it compares the declared count
 against the codec's own maximum and refuses outright, which is what makes
@@ -332,16 +349,23 @@ force a huge array up front. `ByteBufCodecs.lengthPrefixed` bounds the
 bytes instead of the count, handing the inner codec a slice it physically
 cannot read past.
 
-*Trusted* is a real distinction in the codec library, and a statement about
-the read budget rather than about direction:
-`ByteBufCodecs.fromCodecTrusted` gives the NBT reader an unlimited heap
-quota where plain `ByteBufCodecs.fromCodec` gives it the default. Hence the
-pairs `ByteBufCodecs.TAG` / `ByteBufCodecs.TRUSTED_TAG`,
-`ByteBufCodecs.COMPOUND_TAG` / `ByteBufCodecs.TRUSTED_COMPOUND_TAG` and
+*Trusted* is a real distinction in the codec library, and **the mechanism is a
+read budget**: `ByteBufCodecs.fromCodecTrusted` gives the NBT reader an
+unlimited heap quota where plain `ByteBufCodecs.fromCodec` gives it the
+default two mebibytes at depth 512. **The rule for choosing between them is
+direction** — the server wrote it, so the client may trust it — which is why
+the trusted half of each pair is clientbound only. Hence
+`ByteBufCodecs.COMPOUND_TAG` / `ByteBufCodecs.TRUSTED_COMPOUND_TAG` — the
+plain one carries `CustomData` and the predicates, and the trusted one has
+exactly one call site in the game, `ClientboundBlockEntityDataPacket`;
+`ByteBufCodecs.TAG` / `ByteBufCodecs.TRUSTED_TAG`, whose trusted form has none
+at all and is a pair only on paper; and
 `ComponentSerialization.STREAM_CODEC` /
-`ComponentSerialization.TRUSTED_STREAM_CODEC`. The rule is direction: the
-server wrote it, so the client may trust it ([codecs, NBT and
-JSON](../foundations/codecs-nbt-json.md) has the serverbound half).
+`ComponentSerialization.TRUSTED_STREAM_CODEC`, the live one — **every
+clientbound chat packet uses the trusted variant**, which is the codec this
+page's own opening figure draws on a `ClientboundSystemChatPacket`'s
+`Component` field ([text
+components](../foundations/text-components.md#on-the-wire-nbt-and-two-budgets)).
 
 **Exactly one packet lets a client hand the server an arbitrary item**, and
 it is fenced three ways. `ServerboundSetCreativeModeSlotPacket` uses
@@ -354,25 +378,32 @@ the outer reader past the whole region before delegating, so a component
 that lies about its own length cannot mis-frame the ones after it. That is
 containment, not recovery — nothing catches a component that throws, and
 one bad component still fails the whole packet. It is then wrapped in
-`ItemStack.validatedStreamCodec`, which re-encodes the decoded stack
-against `NullOps` purely to collect its errors. And the registration
+`ItemStack.validatedStreamCodec`, which re-encodes the decoded stack through
+`ItemStack.CODEC` against `NullOps` purely to collect its errors — the output
+is thrown away, and the point is to prove that the *persistent* codec would
+have accepted it. And the registration
 carries `GameProtocols.HAS_INFINITE_MATERIALS`, a `CodecModifier` that
 refuses the packet whenever its context says the connection is not in
 creative — a `SkipPacketDecoderException` one way and a
 `SkipPacketEncoderException` the other, landing on one side only because
 the client's context answers `GameProtocols.Context.hasInfiniteMaterials`
-true unconditionally while the server's answers from the real player. The
+true unconditionally while the server's context is
+`ServerGamePacketListenerImpl`, answering from the real player. The
 packet is refused **in the decoder**, before any handler exists to fool.
 
+**Serverbound defence is layered, and the three layers sit on three different
+packets.** Full re-validation is the creative slot above.
+`ServerboundCustomClickActionPacket` takes the second: it builds its own,
+much tighter `NbtAccounter` and length-prefixes its payload, so a custom
+click's tag is bounded rather than checked. And the third is the strongest,
+because there is nothing to check.
+
 The ordinary container click is defended by carrying nothing to validate.
-`ServerboundContainerClickPacket` sends a `HashedStack` — either
-`HashedStack.EMPTY` or `HashedStack.ActualItem`, with an item holder, a
-count and a `HashedPatchMap`, itself two halves rather than one:
-`HashedPatchMap.addedComponents`, a map of component type to a hash, and
-`HashedPatchMap.removedComponents`, a bare set. A removal is as much a part
-of the claim as an addition, and `HashedStack.matches` checks both.
-Client-supplied component *contents* never cross the wire at all; see
-[containers and menus](../items/containers-and-menus.md).
+`ServerboundContainerClickPacket` sends a `HashedStack`, which is a hash per
+component rather than a component, so on *that* packet no client-supplied
+component content crosses the wire at all. What the shape is and what the
+server does with the claim is [containers and
+menus](../items/containers-and-menus.md#why-hashes-and-why-only-in-one-direction)'s.
 
 The limits in one table:
 
@@ -405,6 +436,13 @@ identifier and **nothing else**. Its decoder checks the remaining length
 against a per-direction maximum and then skips every byte, and its encoder
 writes nothing. The payload is discarded, not held.
 
+The login phase has its own parallel set — `CustomQueryPayload`,
+`CustomQueryAnswerPayload` and the discarding implementations of each — because
+the play-phase seam does not exist yet when a login is negotiated. Vanilla
+decodes every one of them to the discarding form and answers nothing, which is
+why an unexpected answer is a disconnect ([protocol
+phases](protocol-phases.md#login)).
+
 ## Questions players ask
 
 **Why do packet ids move — between versions, and between phases?** Because
@@ -436,7 +474,7 @@ the rest of the frame and **rethrows**, because the frame was already
 delimited and nothing was ever misaligned, so the drain only satisfies
 Netty's bookkeeping. What keeps the connection alive is
 `Connection.exceptionCaught` logging it and returning
-([the connection](the-connection.md)).
+([the connection](the-connection.md#how-a-connection-dies)).
 
 **Is a modern packet safer than an old one?** Measurably.
 `FriendlyByteBuf.readCollection` applies its constructor to the raw decoded
@@ -447,7 +485,7 @@ allocation. The hand-written shape is still in the tree, and
 
 Which packets a phase registers, and in what order, is therefore the whole
 definition of that phase — so the next page is [protocol
-phases](protocol-phases.md), where nine codec tables — one per direction per
+phases](protocol-phases.md#the-five-phases), where nine codec tables — one per direction per
 phase, bar handshaking's serverbound-only one — become the four languages a
 joining connection speaks in turn.
 

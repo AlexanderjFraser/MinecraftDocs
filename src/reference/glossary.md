@@ -175,7 +175,7 @@ component* on an item stack, and a `Component` of chat text. → [data component
 
 **Connection** — the tail handler of one Netty pipeline plus the channel it
 holds, with exactly one packet listener at a time, swapped when the protocol
-phase changes. → [the connection](../systems/networking/the-connection.md)
+phase changes. → [the connection](../systems/networking/the-connection.md#one-packet-there-and-one-back)
 
 **Container** — the interface a thing with item slots implements (a chest,
 a hopper, an inventory), as distinct from the *menu* a player interacts
@@ -434,10 +434,10 @@ is to say one whose save data carried a *blending_data* compound;
 ## P
 
 **Packet** — an interface: a `PacketType`, which is a name and a direction,
-and one handler method. Roughly half the implementations are records, the
-wire form is a `StreamCodec` the phase's protocol description holds rather
-than something the class owns, and a few types are registered into more than
-one phase. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md)
+and one handler method. It comes in three shapes, the wire form is a
+`StreamCodec` the phase's protocol description holds rather than something the
+class owns, and a few types are registered into more than
+one phase. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md#a-packet-is-a-value-a-name-and-a-direction)
 
 **PalettedContainer** — the bit-packed storage a chunk section keeps its
 block states and biomes in, with a palette that grows as the section gets
@@ -481,8 +481,8 @@ optimistically. The ack is a receipt for a number, not a verdict — it settles
 every entry at or below it, writing back a correction if one arrived and
 rolling the block back if none did. → [prediction and acknowledgement](../systems/client/prediction-and-acks.md)
 
-**Protocol phase** — one of handshake, status, login, configuration and
-play; each has its own packet table and its own listener. → [protocol phases](../systems/networking/protocol-phases.md)
+**Protocol phase** — one of handshaking, status, login, configuration and
+play; each has its own packet table and its own listener. → [protocol phases](../systems/networking/protocol-phases.md#the-five-phases)
 
 ## Q
 
@@ -555,13 +555,13 @@ two instead add an aliveness test. → [entity selectors](../systems/commands/en
 fixed interval. → [AI](../systems/entities/ai-goals-and-brains.md)
 
 **ServerEntity** — the server's per-tracked-entity bookkeeping: what the
-watching clients were last told, and what to send them next. → [what the client is told](../systems/networking/what-the-client-is-told.md)
+watching clients were last told, and what to send them next. → [what the client is told](../systems/networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
 
 **Shape update** — the "your neighbour changed, recompute yourself" call
 that runs on both client and server, unlike a neighbour update. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
 **Signed message** — a chat message carrying a signature over its content
-and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md)
+and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md#what-the-signature-covers)
 
 **Simulation distance** — how far the world *ticks*, as against how far you
 can see: the radius behind `TicketType.PLAYER_SIMULATION`, deciding which
@@ -576,7 +576,7 @@ commands to, spliced onto the *head* of the queue after it runs — which is
 what makes an `ArrayDeque` behave as a call stack. → [the execution engine](../systems/commands/the-execution-engine.md)
 
 **StreamCodec** — the wire counterpart of a `Codec`: encodes to and decodes
-from a `ByteBuf`, with no schema and no field names. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md)
+from a `ByteBuf`, with no schema and no field names. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md#the-codec-layer-is-small-and-composition-is-all-of-it)
 
 **Structure** — a generated building or landmark: a placement lottery, a
 start assembled in memory, and pieces written a chunk at a time. → [structure placement](../systems/worldgen/structure-placement.md)

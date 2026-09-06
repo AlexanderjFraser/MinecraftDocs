@@ -217,9 +217,10 @@ it.
 
 ## IX · Networking
 
-Part IX is one wire and three passengers. The first two lectures are one
-lecture in two halves and should be watched together; the last three are
-unrelated systems that ride the wire, and each has a different shape.
+Part IX is the wire three times, and two things it carries. The first two
+lectures are one lecture in two halves and should be watched together; the
+third finishes the wire's own story, and the last two are applications of the
+play phase which need neither it nor each other.
 
 1. [The connection](systems/networking/the-connection.md)
 2. [Packets and stream codecs](systems/networking/packets-and-stream-codecs.md)
@@ -229,9 +230,9 @@ unrelated systems that ride the wire, and each has a different shape.
 5. [Chat and signing](systems/networking/chat-and-signing.md)
 
 Part IX assumes Part III for the tick phases its traffic is timed against,
-and Part I's [anatomy](systems/anatomy/anatomy.md) for the two loops — the
-client drains packets once per *frame*, and that single fact explains most
-of what looks like network jitter. It assumes Part II for codecs and for
+and Part I's [anatomy](systems/anatomy/anatomy.md#two-loops-and-a-wire-between-them)
+for the two loops, which is the fact most of what looks like network jitter
+comes back to. It assumes Part II for codecs and for
 `Component`, and Part VI's [authority](systems/entities/authority.md) for
 the premise under lecture four. It is a prerequisite of Part X, which is the
 same wire watched from the receiving end.

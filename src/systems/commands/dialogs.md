@@ -6,7 +6,8 @@ A dialog is a data pack's form: a title, some body text, some inputs and
 some buttons, decoded from JSON and put on your screen. Nothing about that
 is surprising until you notice which protocol phase it works in.
 `ClientboundShowDialogPacket` is registered in **both** the play and the
-configuration protocols ([protocol phases](../networking/protocol-phases.md)),
+configuration protocols, with a different codec in each ([packets and stream
+codecs](../networking/packets-and-stream-codecs.md#questions-players-ask)),
 so a server can interrupt the join handshake to ask you something. Vanilla
 only ever does it from a dev-flag-gated command — but the machinery is
 there, complete, in the shipped jar.

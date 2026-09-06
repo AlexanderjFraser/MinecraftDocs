@@ -255,16 +255,15 @@ it, while `ServerLevel.players` is *whose entity is in this level* and only
 the entity manager's tracking callbacks write it. A player halfway through a
 dimension change is in the first and in neither copy of the second.
 
-A joining client is trusted with one batch. `PlayerChunkSender` starts with a
-budget of a single unacknowledged batch and a guess of nine chunks a tick;
-the first `ServerboundChunkBatchReceivedPacket` raises the budget to ten
-(`PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`) and replaces the guess with
-the client's own measured rate, clamped between
-`PlayerChunkSender.MIN_CHUNKS_PER_TICK` and
-`PlayerChunkSender.MAX_CHUNKS_PER_TICK`. Batches go out nearest chunk first,
-in the *send chunks* step at the very end of
-`MinecraftServer.tickChildren`. [Tickets and
-loading](../world/tickets-and-loading.md) picks up from there.
+**A joining client is trusted with one batch**, which is the only thing about
+the chunk-sending loop that is a fact about *joining*: `PlayerChunkSender`
+starts with a budget of a single unacknowledged batch, so the first batch a
+player ever receives is a hard round trip before the second can leave. The
+loop it then settles into — the client's measured rate, the clamps and the
+nearest-first order — is [what the client is
+told](../networking/what-the-client-is-told.md#the-rate-the-client-asks-for)'s,
+and which chunks are in the player's set at all is [tickets and
+loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)'s.
 
 ## Loaded is something the client says
 
@@ -421,14 +420,13 @@ dies](how-a-server-dies.md), which owns `PlayerList.saveAll` and
 
 `ServerGamePacketListenerImpl.switchToConfig` is that same removal with the
 connection left alive. It runs `ServerGamePacketListenerImpl.removePlayerFromWorld` — leave message,
-saved file, tab-list removal and all — sends
-`ClientboundStartConfigurationPacket` and swaps the outbound protocol back;
-the acknowledgement builds a fresh `ServerConfigurationPacketListenerImpl`,
-and `ServerConfigurationPacketListenerImpl.returnToWorld` exists separately
-from `ServerConfigurationPacketListenerImpl.startConfiguration` precisely so
-the second visit re-queues the spawn and join tasks without re-sending
-registries. It is also why `CommonListenerCookie` carries the transferred
-flag and the client's options across at all.
+saved file, tab-list removal and all — which is the half that belongs here:
+as far as this page's four ways are concerned, a reconfigure *is* a leave
+that keeps the socket. What the connection then does with the phase, and why
+no registry is re-sent on the way back, is [protocol
+phases](../networking/protocol-phases.md#play-and-the-way-back)'. It is also
+why `CommonListenerCookie` carries the transferred flag and the client's
+options across at all.
 
 ### What everyone else is told
 
@@ -451,17 +449,16 @@ client reports itself airborne for too long is kicked for flying, on a budget
 that stretches as gravity falls and against a list of exemptions the movement
 page owns ([input to
 movement](../player/input-to-movement.md#questions-players-ask)). And
-keep-alive is a strict pair:
-`ServerCommonPacketListenerImpl.keepConnectionAlive` sends one every
-`ServerCommonPacketListenerImpl.LATENCY_CHECK_INTERVAL` milliseconds and
-disconnects with `ServerCommonPacketListenerImpl.TIMEOUT_DISCONNECTION_MESSAGE`
-if the previous one is still unanswered, while an answer carrying the wrong
-id disconnects immediately rather than being ignored. The round trip it
-measures is smoothed three parts old to one part new, so a tab list lags a
-genuine latency change by several pings. The singleplayer owner is exempt
-from the keep-alive, and from that alone: it is the only one of the three
-that asks `ServerCommonPacketListenerImpl.isSingleplayerOwner`, and the host
-can be kicked for idling or for flying like anyone else.
+keep-alive disconnects a client that has stopped answering — a mechanism that
+belongs to the connection rather than to the session, because it runs in the
+configuration phase too ([the
+connection](../networking/the-connection.md#how-a-connection-dies)).
+
+The asymmetry is what this section is about. **The singleplayer owner is
+exempt from the keep-alive, and from that alone**: it is the only one of the
+three kicks that asks
+`ServerCommonPacketListenerImpl.isSingleplayerOwner`, and the host can be
+kicked for idling or for flying like anyone else.
 
 > **For a 1.21-era reader.** Identity is a `NameAndId` record, not a
 > `GameProfile`, everywhere below the login handshake — the ban list, the op

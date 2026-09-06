@@ -140,8 +140,9 @@ told](../networking/what-the-client-is-told.md#one-entitys-tick-and-the-gates-it
 in Part IX; the ledger behind the block you already saw break is [prediction
 and acknowledgement](../client/prediction-and-acks.md#the-four-writes) in
 Part X; drawing a player, its skin and its model parts is Part XI's; and the
-signing key a `ServerPlayer` carries is [chat and
-signing](../networking/chat-and-signing.md)'s. The two game-mode objects are
+chat session a `ServerPlayer` carries — the public half of message signing, the
+key itself never leaving the client — is [chat and
+signing](../networking/chat-and-signing.md#what-the-signature-covers)'s. The two game-mode objects are
 the sharpest of those borders: this part says what they hold, and what they
 *do* with a block is Part V's two click pages.
 

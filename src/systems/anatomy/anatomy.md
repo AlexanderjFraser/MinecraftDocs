@@ -125,8 +125,10 @@ server. Almost nothing in the play path knows it is singleplayer: the
 exceptions are the handful of places that ask `Connection.isMemoryConnection`
 directly, among them `ClientPacketListener.handleUpdateTags`, which skips
 applying the tags it was sent because the server's registries are already
-the client's. [Protocol phases](../networking/protocol-phases.md) is that
-walk in full.
+the client's. [The
+connection](../networking/the-connection.md#singleplayer-runs-the-same-pipeline)
+has what the local channel does and does not install, and [protocol
+phases](../networking/protocol-phases.md#the-five-phases) is the walk in full.
 
 ## Two loops, and a wire between them
 
@@ -200,7 +202,7 @@ arrives on a Netty IO thread and `Connection.channelRead0` hands it to the
 current `PacketListener`; a handler that touches game state calls
 `PacketUtils.ensureRunningOnSameThread`, which, when it is off-thread, queues
 the packet on the owning side's `PacketProcessor` instead of running it —
-[the connection](../networking/the-connection.md#the-threads-underneath-it)
+[the connection](../networking/the-connection.md#one-packet-there-and-one-back)
 is that crossing in both directions. What matters here is *when* the queue is
 drained, because the two loops do not agree: first thing in
 `MinecraftServer.processPacketsAndTick`, but on the client early in

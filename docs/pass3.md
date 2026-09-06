@@ -1594,7 +1594,13 @@ writes one strikes it through; a session that rules one out says why, here.*
   `ServerBossEvent`, `CustomBossEvents`) and wants a section of
   `scoreboard-and-data`, which pass 5 can add without a new page; the
   predicate catalogue is a generation candidate with the shape library
-  below. *(session K, half-corrected session N, carried session P)*
+  below. **Pass 5, session I adds the wire end of the same gap**: the *sending*
+  side, `ClientboundBossEventPacket`, is 309 lines and the largest unnamed
+  class in Part IX's packages, and no page in the book says what that feed is
+  either. Session I named the gap on `networking/README`'s *where the part
+  stops* rather than inventing a home for it; session M should settle the sink
+  and the feed together, or decline both. *(session K, half-corrected session
+  N, carried session P, widened session I of pass 5)*
 - ~~**The predicate *shape* library**~~ — `MinMaxBounds`, `CollectionPredicate`
   with its contents/counts pair, `EntitySubPredicate` as registry-dispatched
   extension, and `DataComponentMatchers`. Four shapes the whole data-driven

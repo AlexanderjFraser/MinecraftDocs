@@ -103,11 +103,12 @@ follows, then a registry id that resolves because the buffer is a
 `ItemStack.STREAM_CODEC` is the same codec that refuses an empty stack.
 Serverbound is a different animal:
 `ServerboundSetCreativeModeSlotPacket` uses `ItemStack.validatedStreamCodec`
-over `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC`, where
-`DataComponentPatch.DELIMITED_STREAM_CODEC` length-prefixes every component
-value, and the decoded stack is then re-encoded through `ItemStack.CODEC`
+over `ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC`, and the decoded stack is
+re-encoded through `ItemStack.CODEC`
 into `NullOps` — output thrown away, only the errors kept — to prove that
-the persistent codec would have accepted it.
+the persistent codec would have accepted it. Why that packet in particular is
+fenced, and what the other two fences are, is [packets and stream
+codecs](../networking/packets-and-stream-codecs.md#what-stops-a-hostile-sender)'.
 
 ### Checksum: a hash instead of a stack
 
@@ -191,8 +192,9 @@ catalogue of primitives is `ByteBufCodecs`. A packet is written once, read
 once and must be small, so it gets hand-laid bytes rather than a document
 in some format. The two worlds meet at `ByteBufCodecs.fromCodec` and
 `ByteBufCodecs.fromCodecWithRegistries`, which run an ordinary `Codec` into
-NBT and put the tag on the wire, and at `IdDispatchCodec`, the packet-id
-table itself.
+NBT and put the tag on the wire; the composing vocabulary on the far side of
+that meeting is [packets and stream
+codecs](../networking/packets-and-stream-codecs.md#the-codec-layer-is-small-and-composition-is-all-of-it)'.
 
 ## Where the registry context comes from
 
@@ -330,21 +332,19 @@ here.
 
 ## Trusted, untrusted and validated
 
-"Trusted" on this wire means *the server wrote it*, and it is a statement
-about the read budget, not about direction. `ByteBufCodecs.TRUSTED_COMPOUND_TAG`
-reads with an unlimited accounter and has exactly one call site,
-`ClientboundBlockEntityDataPacket`; plain `ByteBufCodecs.COMPOUND_TAG` reads under
-the 2 MiB default and carries `CustomData` and predicates.
-`ByteBufCodecs.TRUSTED_TAG` also exists and has no call sites at all, so
-build no mental model on it.
-
-Serverbound defence is layered rather than singular, and the three layers
-sit on three different packets. Full re-validation through
-`ItemStack.validatedStreamCodec` is unique to the creative-mode slot.
-`ServerboundCustomClickActionPacket` builds its own, much tighter
-`NbtAccounter` and length-prefixes its payload. And the ordinary container
-click sends no component data at all, only the hashes above — the strongest
-defence of the three, because there is nothing to validate.
+The wire's own vocabulary for *how far to trust a document* is
+[packets and stream
+codecs](../networking/packets-and-stream-codecs.md#what-stops-a-hostile-sender)':
+the trusted/plain pairs are a read budget chosen by direction, and the
+creative slot is the one packet that carries an arbitrary stack and is fenced
+three ways for it. What belongs here is the fact that stands *behind* those
+fences: this page's four paths run one `ItemStack` through four ops, and the
+serverbound path is the only one where the codec is run for its **errors**
+rather than its output. `ItemStack.validatedStreamCodec` re-encodes a decoded
+stack through `ItemStack.CODEC` into `NullOps` and keeps nothing but the
+problems — the persistent codec is used as a validator for the wire one,
+which is why a creative-mode stack cannot carry a component the *disk* would
+reject.
 
 JSON is the format with the smallest footprint. It is the data packs, and
 on the wire it survives in exactly two places, both outside the play phase:

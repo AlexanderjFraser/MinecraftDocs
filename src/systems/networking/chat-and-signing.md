@@ -36,16 +36,19 @@ A message on the wire is a `PlayerChatMessage`: a `SignedMessageLink` saying
 where in the sender's chain it sits, a `MessageSignature`, a
 `SignedMessageBody` of exactly four fields, and — optionally — a `Component`
 to display *instead of* the signed string. That `Component` is Part II's
-subject ([text components](../foundations/text-components.md)); all this page
+subject ([text
+components](../foundations/text-components.md#a-component-is-three-things)); all this page
 needs from it is that it is a different object from the signed text and that
 the signature does not cover it. Vanilla's *decorator* never produces one:
 `MinecraftServer.getChatDecorator` is hard-coded to `ChatDecorator.PLAIN`, so
 `PlayerChatMessage.withUnsignedContent` always finds the decorated copy equal
-to the original and drops it. But vanilla sends unsigned content by another
-road entirely — `MessageArgument.resolveChatMessage`, the message argument
-behind `/msg`, `/say` and `/tell`, sets it on every message it resolves,
-because it has expanded the entity selectors in the text. Type a selector into
-a whisper and the recipient sees a string the signature does not cover.
+to the original and drops it — that method keeps a copy only when it *differs*
+from the signed text. Vanilla still reaches it by another road:
+`MessageArgument.resolveChatMessage`, behind the message-shaped commands, hands
+it the resolved text, which differs exactly when a selector expanded. **Type a
+selector into a whisper and the recipient sees a string the signature does not
+cover** — the security half of a mechanism the *Commands* section below picks
+up.
 
 ## One line, typed and delivered
 
@@ -82,13 +85,30 @@ context the sender had in front of them — which is what makes a report show
 what a message was a reply *to*.
 
 **The hop is deliberate.** `ServerGamePacketListenerImpl.handleChat` never
-calls the usual same-thread guard: the window and the character check run on
+calls the usual same-thread guard ([the
+connection](the-connection.md#one-packet-there-and-one-back) has what that
+guard normally does): the window and the character check run on
 the Netty thread, and only then does
 `ServerGamePacketListenerImpl.tryHandleChat` post the rest to the server. That
 posted task, and the `FutureChain` continuation that joins the text filter to
 it, drain with every other queued server task — so a slow filter service
 delays delivery by however many ticks it takes
-([the server tick](../server/server-tick.md)).
+([the server tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)).
+
+**The filter is an HTTP service, and usually there is none.** `TextFilter` is
+the per-player interface every message — and every book page, sign line and
+anvil name — passes through, and `MinecraftServer.createTextFilterForPlayer`
+hands out `TextFilter.DUMMY`, which passes everything, unless the server is a
+dedicated one whose *text-filtering-config* property names an endpoint.
+`ServerTextFilter.createFromConfig` reads that property at startup ([starting a
+server](../server/starting-a-server.md#the-server-thread-wakes-up-and-can-still-fail-twice)) and
+builds either a `LegacyTextFilter` or a `PlayerSafetyServiceTextFilter`
+depending on the configured version, each a pool of *Chat-Filter-Worker*
+threads posting JSON to that endpoint. What comes back is a `FilteredText` —
+the raw string and a `FilterMask` of which characters were objected to — so
+the filter is never destructive here and never binary: the mask travels with
+the message and is applied per recipient, later. `Filterable` is the same idea
+frozen into saved data, a raw value beside an optional filtered one.
 
 **Decoration is not sequenced after filtering.** The handler starts the filter
 future, decorates immediately and synchronously, and only then registers the
@@ -131,8 +151,9 @@ link it was going to advance, and from then on no unpack can succeed — the
 *chain broken* error if the message is otherwise well-formed, and a missing-key
 or expired-key error before that if it is not. Only a
 new session key, announced with `ServerboundChatSessionUpdatePacket`, restores
-it. The **connection** dies immediately, and the player is back at the
-multiplayer list.
+it. The **connection** dies immediately — through the same funnel as any other
+fault ([the connection](the-connection.md#how-a-connection-dies)) — and the
+player is back at the multiplayer list.
 
 ## Every check, and what it costs
 
@@ -175,7 +196,8 @@ bad signature costs a sender their voice until a key rotation, not one line.
 ## Why losing the window is worse than losing the signature
 
 The asymmetry looks backwards until you notice what the window is *for*. The
-last-seen list is signed **in full** but sent as `MessageSignature.Packed`
+last-seen list — twenty `LastSeenTrackedEntry` slots on the tracker — is
+signed **in full** but sent as `MessageSignature.Packed`
 indices into a cache both sides maintain identically. If those caches ever
 diverge, the receiver reconstructs a different `SignedMessageBody`, and every
 signature after that fails for a reason no cryptographic error message can
@@ -208,7 +230,10 @@ the link — sender id, session id, index — then the body: the salt, the
 timestamp **in seconds**, the length of the content, the content bytes, the
 count of last-seen signatures and each one's raw bytes. Not fed to it: the
 decorated `Component`, the `FilterMask`, the `ChatType.Bound` that supplies the
-*someone said* wrapper, and the global index the receiving client checks. A
+*someone said* wrapper — a `ChatType` is a data-pack registry entry and
+`ChatTypeDecoration` is the translation key and argument list that turns a
+message into *<name> said this*, so the phrasing around a line is data and the
+line is not — and the global index the receiving client checks. A
 server is free to change any of those. The signature is over what the player
 typed and what they had seen when they typed it, and nothing else.
 
@@ -239,11 +264,15 @@ something does, it sends `ServerboundChatCommandSignedPacket` with
 `ArgumentSignatures`: one signature per argument, each consuming its own chain
 index, all of them sharing one timestamp, salt and window. *Signable* means
 the argument type implements `SignedArgument`, and in 26.2 exactly one type
-does — `MessageArgument`, behind the message-shaped commands. Its
-`MessageArgument.Message.toComponent` is also the one place chat text has its
-selectors expanded — each `MessageArgument.Part` resolved by
-`EntitySelector.joinNames`, behind a permission — which is why `/say @a` names
-people and a chat line saying the same thing does not.
+does — `MessageArgument`, behind the message-shaped commands, and the
+enumeration of which commands register it is [brigadier and
+commands](../commands/brigadier-and-commands.md#signed-arguments-in-one-paragraph)'.
+`MessageArgument` is also the one route by which chat text has its selectors
+expanded, which is how a command message comes to carry unsigned content at
+all: the expansion itself, its permission and its parse are [text
+components](../foundations/text-components.md#resolution-what-a-server-does-to-a-component-before-it-sends-it)'.
+What matters here is only that the expanded string is the one the recipient
+reads and the signature does not cover it.
 
 The server re-parses its own copy and looks each signature up **by argument
 name**, which is where two rows of the table above come from: a name its parse
@@ -264,15 +293,17 @@ there too. Two machines whose clocks are a few minutes apart will flag
 perfectly honest messages, and the server says so in its log.
 
 **Why does a custom font not flag every line on my server?** Because the style
-test only looks inside the unsigned, decorated copy — and vanilla never sends
-one. The font check is dead on a vanilla server and live on a server that
-decorates. A player's own lines on an integrated server skip both tests and
-are secure by definition.
+test only looks inside the unsigned copy, and vanilla's *decorator* never
+produces one. For ordinary chat the font check is therefore dead, and it comes
+alive on a server that decorates — or on a command message that carried a
+selector, which is the one unsigned copy vanilla does send. A player's own
+lines on an integrated server skip both tests and are secure by definition.
 
 **Can a server delete a message from my chat?** It has the packet for it:
 `ClientboundDeleteChatPacket` is registered and handled, and the handler will
 pull the line out of the player's own chat-delay queue if their *chatDelay*
-option means it has not been drawn yet. Nothing in the game constructs it.
+option means it has not been drawn yet ([the HUD](../client/hud.md#the-order-and-the-two-blocks) owns what
+that queue draws). Nothing in the game constructs it.
 
 **Why can I report some lines and not others?** `LoggedChatMessage.canReport`
 needs a signature from the player being reported, and system messages,
@@ -284,17 +315,20 @@ re-verified independently, with
 backwards for the conversation around it.
 
 **Where does my signing key live?** Nowhere, in a shipped client:
-`AccountProfileKeyPairManager` writes the key file only when
+the client's `LocalChatSession` holds the pair for as long as a session
+lasts and `AccountProfileKeyPairManager` writes the key file only when
 `SharedConstants.IS_RUNNING_IN_IDE` and deletes it otherwise, so each launch
 re-fetches from the account service — and only if
-`ClientboundLoginPacket.onlineMode` said the server was in online mode.
+`ClientboundLoginPacket.onlineMode` said the server was in online mode — the
+packet that opens the play phase ([protocol
+phases](protocol-phases.md#play-and-the-way-back)).
 
-**Why can I not chat here even though nothing is wrong?** `ChatAbilities` and
-`ChatRestriction` are a client-side layer the server has no part in: game
-options, launcher policy and the account profile each strip permissions
-independently, and what survives decides whether this client will send
-messages, send commands, or accept player or system messages at all.
-`ChatVisiblity` is only the sliver of that the server is told about, and it
+**Why can I not chat here even though nothing is wrong?** Because a client can
+refuse before the server is ever asked. `ChatAbilities` is a client-side
+permission set the server has no part in, stripped independently by game
+options, launcher policy and the account profile, and it decides whether this
+client will send or accept anything at all ([permissions](../commands/permissions.md#what-the-client-is-allowed-to-believe)).
+`ChatVisiblity` is the sliver of that the server *is* told about, and it
 has three values, not two — `ChatVisiblity.HIDDEN` still lets action-bar text
 through.
 

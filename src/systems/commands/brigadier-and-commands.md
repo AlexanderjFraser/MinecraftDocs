@@ -113,18 +113,14 @@ parsed twice more before anything is sent
 **The two inbound packets cross the thread boundary differently, on
 purpose.** `ServerboundCommandSuggestionPacket` goes through
 `PacketUtils.ensureRunningOnSameThread`, so its parse happens on the main
-thread. `ServerboundChatCommandPacket` does not:
-`ServerGamePacketListenerImpl.tryHandleChat` runs the character-legality
-check on the Netty thread — and may disconnect from there — before handing
-the body to `MinecraftServer.execute`, calling
-`ServerPlayer.resetLastActionTime` on the way past, so a little
-`ServerPlayer` state really is written off the main thread. The signed
-variant does more still: `ServerGamePacketListenerImpl.handleSignedChatCommand`
-unpacks the last-seen message set under a lock, and can disconnect for
-chat-validation failure, before the legality check runs. This is the
-principle [the connection](../networking/the-connection.md) describes —
-cheap validation early — with the honest qualifier that "cheap" here
-includes two disconnect paths and one field write.
+thread; the command packets are among the handful that do real work on the
+Netty thread first ([the server
+tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)
+counts them, and [chat and
+signing](../networking/chat-and-signing.md#three-ways-to-say-no) says what each
+of those checks catches). What matters for a *command* is only that the
+validation which can disconnect you runs before the parse does — so a command
+whose text is illegal never reaches the dispatcher at all.
 
 **The authoritative parse is the server's**, with a `CommandSourceStack`
 from `ServerPlayer.createCommandSourceStack` carrying the real permission

@@ -7,10 +7,13 @@ over the next second it speaks four different languages in turn. Each is a
 `ConnectionProtocol`; each has its own packet set, and all but handshaking a
 listener at both ends — handshaking is serverbound only, so the client has
 nothing to listen with; and each hands over to the next by a packet marked *terminal*,
-which tears its own codec out of the pipeline as it passes. What a
+which tears its own codec out of the pipeline as it passes ([the
+connection](the-connection.md#getting-back-to-unconfigured-which-nobody-asks-for)). What a
 1.21-era reader will not expect is where the work happens. Every
 server-side handler in the handshake and login phases runs on the Netty
-event loop, and the thing that actually advances a login is a **tick**. And
+event loop ([the connection](the-connection.md#one-packet-there-and-one-back)
+has the hop every other phase makes), and the thing that actually advances a
+login is a **tick**. And
 the `ServerPlayer` — the object, its save data, its position, the chunks
 under it — is *prepared* during configuration, by a task named for it, and
 **constructed after the client has already acknowledged that configuration
@@ -57,26 +60,23 @@ handles it.
 | phase | serverbound listener | clientbound listener | `ProtocolInfo` |
 |---|---|---|---|
 | `ConnectionProtocol.HANDSHAKING` | `ServerHandshakePacketListenerImpl`, or `MemoryServerHandshakePacketListenerImpl` in singleplayer | none — there is no clientbound handshake protocol | `HandshakeProtocols.SERVERBOUND`, one packet |
-| `ConnectionProtocol.STATUS` | `ServerStatusPacketListenerImpl` | reached from `ServerStatusPinger` | `StatusProtocols.SERVERBOUND` binds a **raw buffer**; `StatusProtocols.CLIENTBOUND` a `FriendlyByteBuf` |
+| `ConnectionProtocol.STATUS` | `ServerStatusPacketListenerImpl` | an anonymous `ClientStatusPacketListener` inside `ServerStatusPinger` | `StatusProtocols.SERVERBOUND` binds a **raw buffer**; `StatusProtocols.CLIENTBOUND` a `FriendlyByteBuf` |
 | `ConnectionProtocol.LOGIN` | `ServerLoginPacketListenerImpl` | `ClientHandshakePacketListenerImpl` | `LoginProtocols.SERVERBOUND` / `LoginProtocols.CLIENTBOUND` |
 | `ConnectionProtocol.CONFIGURATION` | `ServerConfigurationPacketListenerImpl` | `ClientConfigurationPacketListenerImpl` | `ConfigurationProtocols.SERVERBOUND` / `ConfigurationProtocols.CLIENTBOUND` |
 | `ConnectionProtocol.PLAY` | `ServerGamePacketListenerImpl` | `ClientPacketListener` | **not pre-bound** — `GameProtocols.SERVERBOUND_TEMPLATE` and `GameProtocols.CLIENTBOUND_TEMPLATE` are bound per connection |
 
 The bindings in the last column are the per-phase codec tables that
-[packets and stream codecs](packets-and-stream-codecs.md) builds, and the
-swap itself is the pipeline surgery [the connection](the-connection.md)
-performs; this page is what the swaps are *for*. The first four bind their
-buffers once, at class load, because they need no registries. Play cannot: its codecs write registry ids, so both templates are
-bound per connection with `RegistryFriendlyByteBuf.decorator` at the
-configuration-to-play switch. On the client that is genuinely the first
-moment a `RegistryAccess` exists; on the server the registries have been
-there since startup and the rebind is only because the protocol changed.
-The serverbound play template is also the one protocol with a context
-object, `GameProtocols.Context`, whose single question is
-`GameProtocols.Context.hasInfiniteMaterials` — which is why it is an
-`UnboundProtocol` where the other eight templates are a
-`SimpleUnboundProtocol`. Eight, not four: every phase but handshaking
-declares one per direction.
+[packets and stream
+codecs](packets-and-stream-codecs.md#where-a-packets-number-comes-from) builds,
+and the
+swap itself is the pipeline surgery [the
+connection](the-connection.md#a-phase-change-is-a-message-written-down-the-pipeline)
+performs; this page is what the swaps are *for*. The one thing about the
+column that is a fact about the *phases* is that play is the only row not
+pre-bound: its codecs write registry ids, so its two templates are built per
+connection at the configuration-to-play switch, which is the only transition
+in a connection's life that changes what a packet number means as well as
+which packets are legal.
 
 Two listeners sit under the phases. `ServerCommonPacketListenerImpl` is the
 shared base of the server's configuration and play listeners and holds
@@ -151,7 +151,9 @@ stateDiagram-v2
 run on the Netty thread and set the state, and
 `ServerLoginPacketListenerImpl.tick` — reached from
 `MinecraftServer.tickConnection` through `ServerConnectionListener.tick`
-and `Connection.tick` — reads it on the server thread and does the login.
+and `Connection.tick`, the one call a connection gets from a game thread ([the
+connection](the-connection.md#connectiontick-the-one-call-from-a-game-thread))
+— reads it on the server thread and does the login.
 The tick is also where `ServerLoginPacketListenerImpl.MAX_TICKS_BEFORE_LOGIN`,
 six hundred ticks, is enforced: a client that has not reached the end of
 the phase in thirty seconds is disconnected for a slow login.
@@ -220,7 +222,9 @@ configuration when the acknowledgement arrives, in
 `ServerLoginPacketListenerImpl.handleLoginAcknowledgement`, whereas the
 client installs *inbound* configuration before sending it and outbound
 immediately after. Both packets are terminal, so the codecs tear themselves
-out as they pass ([the connection](the-connection.md)). The client then
+out as they pass ([the
+connection](the-connection.md#getting-back-to-unconfigured-which-nobody-asks-for)).
+The client then
 volunteers two packets straight away: its own `BrandPayload` and
 `ServerboundClientInformationPacket`, which is where the server learns the
 language it will pick a code of conduct in.
@@ -229,8 +233,8 @@ What disconnects a login: a version mismatch, a ban, a full whitelist-only
 server, a failed session check on a non-singleplayer host, an unexpected
 custom-query answer (`ServerLoginPacketListenerImpl.State.NEGOTIATING` is
 declared and never assigned — `ClientboundCustomQueryPacket` decodes every
-payload as `DiscardedQueryPayload`, and an answer just disconnects), or six
-hundred ticks.
+payload as `DiscardedQueryPayload`, and a `ServerboundCustomQueryAnswerPacket`
+just disconnects), or six hundred ticks.
 
 ## Configuration
 
@@ -250,7 +254,9 @@ queue around it is strictly serial. `ServerConfigurationPacketListenerImpl.start
 sends three things outside the queue — the server's `BrandPayload`,
 `ClientboundServerLinksPacket` if there are links, and
 `ClientboundUpdateEnabledFeaturesPacket` — then queues the registry task, a
-code-of-conduct task if the server has one and a resource-pack task if it
+code-of-conduct task if the server has one — `ServerCodeOfConductConfigurationTask`,
+whose two packets are `ClientboundCodeOfConductPacket` and the client's
+`ServerboundAcceptCodeOfConductPacket` — and a resource-pack task if it
 has one, before `ServerConfigurationPacketListenerImpl.returnToWorld`
 appends `PrepareSpawnTask` and `JoinWorldTask` and starts the first. Each
 `ConfigurationTask` finishes before the next begins:
@@ -258,29 +264,22 @@ appends `PrepareSpawnTask` and `JoinWorldTask` and starts the first. Each
 completion naming the wrong task type, and an exception out of any task
 disconnects the client.
 
-**Registry and tag sync.** The task begins with `ClientboundSelectKnownPacks`,
-a list of `KnownPack` records naming, by namespace, id and version, those of
-the server's packs that declare one — `PackLocationInfo.knownPackInfo` is an
-optional, so a world's own datapack is simply absent from the request; the client matches them against
-its bundled vanilla repository through `KnownPacksManager.trySelectingPacks`
-and replies with the subset it recognises. If that reply is not *exactly*
-the requested list — same packs, same order — the server discards the
-negotiation and re-sends everything; it is all or nothing, never a per-pack
-intersection. Then one `ClientboundRegistryDataPacket` **per registry**,
-walking `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, each element a
-`RegistrySynchronization.PackedRegistryEntry` whose data is omitted when the
-element came from a pack the client already has — the entire point of the
-negotiation — written as NBT with the registry's own element codec. Then
-one `ClientboundUpdateTagsPacket` covering the **networkable** registries and
-the static ones too — the surprise, since the data packets are dynamic-only —
-with empty payloads dropped ([tags](../foundations/tags.md)). On the client,
-`RegistryDataCollector` accumulates the contents and the tags and only
-resolves them at `ClientConfigurationPacketListenerImpl.handleConfigurationFinished`,
-loading them on a background executor against the negotiated packs — and
-blocking on the result, so the load is dispatched away rather than genuinely
-asynchronous — before constructing the `ClientPacketListener` with the
-finished `RegistryAccess`. In singleplayer the result is narrowed to the
-server's own objects, so both sides share instances.
+**Registry and tag sync** is why this phase exists, and *what* crosses is
+[identifiers and
+registries](../foundations/identifiers-and-registries.md#when-a-world-opens)' —
+the known-pack negotiation, the all-or-nothing comparison, the empty payloads
+for elements the client can re-read from its own jar, and the two layers the
+client rebuilds. What belongs to the *phase* is the order and the count: one
+`ClientboundSelectKnownPacks` and its reply, then one
+`ClientboundRegistryDataPacket` **per registry**, then a single
+`ClientboundUpdateTagsPacket` that covers the **networkable** registries and
+the static ones too — the surprise, since the data packets are dynamic-only,
+and the reason a tag has to land before any play traffic does
+([tags](../foundations/tags.md#the-other-way-tags-cross-the-wire)). None of it
+is applied as it arrives: `RegistryDataCollector` accumulates the whole
+exchange and only resolves it at
+`ClientConfigurationPacketListenerImpl.handleConfigurationFinished`, which is
+the last thing before the `ClientPacketListener` is constructed.
 
 **The seam is not where it looks.** Four of the server's configuration
 handlers hop to the main thread —
@@ -297,23 +296,25 @@ resolve a spawn position. `ServerConfigurationPacketListenerImpl.tick` runs
 each tick to drive the current task and keep the spawn chunks loaded.
 
 **`PrepareSpawnTask` is two states, and the player is born in neither.**
-Its `PrepareSpawnTask.Preparing` state reads the save file for a stored
-position, resolves a level, runs `PlayerSpawnFinder.findSpawn`, takes a
-`TicketType.PLAYER_SPAWN` ticket at `PrepareSpawnTask.PREPARE_CHUNK_RADIUS`
-and waits — which is what `ConfigurationTask.tick` exists for. When the
-chunks arrive it becomes `PrepareSpawnTask.Ready`, reports itself finished
-and does nothing further except re-arm the ticket every tick through
-`PrepareSpawnTask.keepAlive`. `JoinWorldTask` then sends the terminal
-packet. Only when the *client's* `ServerboundFinishConfigurationPacket`
+Its `PrepareSpawnTask.Preparing` state finds somewhere to stand, tickets the
+chunks and then reports *not finished* from `ConfigurationTask.tick` until
+they arrive; `PrepareSpawnTask.Ready` reports finished and does nothing at
+all until it is asked to spawn. How it finds the spawn, why the ticket has
+to be re-armed every tick, and what the two whole-file reads cost are
+[players and
+sessions](../server/players-and-sessions.md#preparing-a-place-to-stand)'.
+`JoinWorldTask` then sends the terminal
+packet, and only when the *client's* `ServerboundFinishConfigurationPacket`
 arrives does `ServerConfigurationPacketListenerImpl.handleConfigurationFinished`
-swap the outbound protocol to play, re-run the duplicate-player check and
-`PlayerList.canPlayerLogin` — because a ban or a full server can arrive in
-the seconds a configuration takes — and call `PrepareSpawnTask.spawnPlayer`,
-which constructs the `ServerPlayer`, reads the save data into it — a second
-read, the first having happened when the task started — and hands it to
-`PlayerList.placeNewPlayer`, which installs the inbound play protocol. [Players and sessions](../server/players-and-sessions.md) owns the
-rest of that story. Everything between the join task and that handler is a
-server holding a ticket on chunks for a player that does not exist.
+swap the outbound protocol to play, run the admission gate a second time
+([admission is a `Component` or
+nothing](../server/players-and-sessions.md#admission-is-a-component-or-nothing)
+— a ban or a full server can arrive in the seconds a configuration takes) and
+call `PrepareSpawnTask.spawnPlayer`, which is where the `ServerPlayer` is
+finally constructed and handed to `PlayerList.placeNewPlayer`.
+**Everything between the join task and that handler is a
+server holding a ticket on chunks for a player that does not exist** — which
+is the phase's own oddity, and the reason this page opens on it.
 
 What disconnects a configuration: a task that throws on start or on tick, a
 completion for the wrong task, a ban or a full server at the second check,
@@ -328,7 +329,7 @@ packet, then swaps outbound. That is why the server can be encoding play
 packets while still nominally in the configuration listener. Chat session
 keys are not part of any of this: they are negotiated in play, after the
 client learns the server's mode from `ClientboundLoginPacket`
-([chat and signing](chat-and-signing.md)).
+([chat and signing](chat-and-signing.md#what-the-signature-covers)).
 
 **A reconfigure does not re-run configuration.**
 `ServerGamePacketListenerImpl.switchToConfig` removes the player from the
@@ -353,15 +354,10 @@ bracket configuration; `ClientIntentionPacket` is one of the seven, so the
 very first packet of a connection already tears out the codec that decoded
 it.
 
-**The creative-inventory packet is filtered at the codec, asymmetrically.**
-`GameProtocols.HAS_INFINITE_MATERIALS` refuses to encode or decode the
-packet when its context says the connection is not in creative — but the
-client's own context answers `GameProtocols.Context.hasInfiniteMaterials`
-true unconditionally, while the server's is `ServerGamePacketListenerImpl`
-answering from the real player, so the symmetric modifier bites on exactly
-one side ([packets and stream codecs](packets-and-stream-codecs.md)).
-Compression is asymmetric the same way: the server validates that a
-compressed frame really was above the threshold; the client does not.
+**One packet in the play phase is filtered at the codec rather than at a
+handler**, and because it is filtered symmetrically against an asymmetric
+question it bites on one side only — the creative-inventory slot, at [packets
+and stream codecs](packets-and-stream-codecs.md#what-stops-a-hostile-sender).
 
 **Cookies, transfers and the chat reset are proxy hooks.** A
 `ServerboundCookieResponsePacket` arriving at any server listener is an

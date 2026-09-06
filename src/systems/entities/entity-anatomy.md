@@ -35,7 +35,7 @@ save file.
 | `EntityDimensions` | width, height, eye height, attachment points, and whether `Attributes.SCALE` may touch them | immutable record, shared by every entity of a type |
 | `SynchedEntityData` | which of the entity's fields the other side is told about ([synched entity data](synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from)) | one container per side; the owning side's writes are the ones that travel |
 | `EntityInLevelCallback` | whether the object is *in* a world or merely on the heap | installed by the level's entity manager |
-| `ServerEntity` | when a tracked entity's state becomes packets ([what the client is told](../networking/what-the-client-is-told.md#gate-1-who-is-allowed-to-see-it)) | server main thread |
+| `ServerEntity` | when a tracked entity's state becomes packets ([what the client is told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)) | server main thread |
 | `EntityReference` | how one entity remembers another across a chunk unload | wherever it is resolved |
 
 Only one packet is this page's own: `ClientboundAddEntityPacket`, the birth

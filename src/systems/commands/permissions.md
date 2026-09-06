@@ -177,7 +177,11 @@ dispatcher: the ordinary one, whose set is the player's own **OR-ed with**
 that atom, so restricted nodes still highlight and complete; and a
 no-permission one. `ChatAbilities` is the other client-only set, and it is
 built the opposite way round from everything else here — it starts from all
-four chat atoms *granted* and lets each `ChatRestriction` remove some. Three
+four chat atoms *granted* and lets each `ChatRestriction` remove some. The
+four are what this client will do at all: send messages, send commands,
+accept messages from other players, and accept system messages; a client with
+the first taken away refuses before the server is ever asked ([chat and
+signing](../networking/chat-and-signing.md#questions-players-ask)). Three
 of the four are decisions the machine you are sitting at makes — two chat
 options and a launcher flag — and the fourth, `ChatRestriction.DISABLED_BY_PROFILE`, comes
 from the account service: a user flag fetched with your profile. The
