@@ -52,8 +52,9 @@ overwrites its answer with the number your client sent. Five predicates on
 `Entity` decide it, starting with the final
 `Entity.isLocalInstanceAuthoritative`. → [authority](../systems/entities/authority.md)
 
-**Avatar** — the class between `LivingEntity` and `Player`; a `Mannequin`
-is an `Avatar` that is not a player, and `AvatarRenderer` draws both. → [player anatomy](../systems/player/player-anatomy.md)
+**Avatar** — the class between `LivingEntity` and `Player`, holding the
+player-shaped body and nothing else; a `Mannequin` is an `Avatar` that is not
+a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-and-the-class-262-put-in-the-middle)
 
 ## B
 
@@ -372,8 +373,9 @@ client, sharing an abstract `Level` and remarkably little else. → [the level t
 **Lightmap** — the small texture the client samples to turn a block-light /
 sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md)
 
-**LocalPlayer** — the `Player` a human steers: its own `ClientInput`, its own
-prediction, and the last input and position it sent. → [player anatomy](../systems/player/player-anatomy.md)
+**LocalPlayer** — the `Player` a human steers: its own `ClientInput`, and the
+last input and position it sent. The block predictions it seems to own are
+the level's. → [player anatomy](../systems/player/player-anatomy.md#the-three-sides-of-one-player)
 
 **Loot table** — the data-driven roll that turns an event (a block broken, a
 mob killed, anything at all reading a container that has not been rolled yet)

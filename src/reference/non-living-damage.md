@@ -17,15 +17,12 @@ declare their own and `MinecartTNT` inherits `VehicleEntity`'s. It never reads
 the damage amount, because there is none on that side: it answers only whether
 a client-side swing should play its own effects.
 
-Two things happen before any of them. `Player.cannotAttack` asks
-`Entity.isAttackable` and then `Entity.skipAttackInteraction`, either of which
-can end the swing before the entity is asked anything — `Interaction` uses that
-hook to record who hit it and `BlockAttachedEntity` to re-enter through
-`Entity.hurtOrSimulate` with zero damage. `Entity.hurtOrSimulate` is what
-`Player.attack` calls, and it picks `Entity.hurtServer` or `Entity.hurtClient`
-off the level;
-its answer is not "did the hit land" but "was anything damaged", and it is what
-gates the knockback, the sweep, the durability loss and the hit particles.
+Two gates run before any of them is asked anything — `Player.cannotAttack`
+and `Player.deflectProjectile` — and they are why several rows below read
+*nothing*: the class was never reached ([the sword
+swing](../systems/player/the-sword-swing.md#the-damage-one-number-two-curves-one-order)
+owns both). `Entity.hurtOrSimulate` is what `Player.attack` calls after them,
+and it picks `Entity.hurtServer` or `Entity.hurtClient` off the level.
 
 | class | what it checks first | what it does | returns | `Entity.hurtClient` |
 |---|---|---|---|---|
@@ -38,7 +35,7 @@ gates the knockback, the sweep, the durability loss and the hit particles.
 | `PrimedTnt` | — | nothing: a lit TNT block cannot be shot out of the air | false | false |
 | `EvokerFangs` | — | nothing | false | false |
 | `EyeOfEnder` | — | nothing | false | false |
-| `AbstractHurtingProjectile` | — | nothing — but a fireball or a wind charge is *deflected* before this is reached, since `Player.attack` calls `Player.deflectProjectile` first for anything in `EntityTypeTags.REDIRECTABLE_PROJECTILE`; the rest are unhittable by `Entity.isPickable` | false | false |
+| `AbstractHurtingProjectile` | — | nothing — a fireball or a wind charge is deflected before this is reached, and the rest are unhittable by `Entity.isPickable` | false | false |
 | `Projectile` | `Entity.isInvulnerableToBase` | `Entity.markHurt` only, so the client sees a flinch and nothing changes | false | false |
 | `FallingBlockEntity` | `Entity.isInvulnerableToBase` | `Entity.markHurt` only | false | false |
 | `ExperienceOrb` | `Entity.isInvulnerableToBase` | subtracts the damage from an int of health, `Entity.discard` at zero | true | not invulnerable |

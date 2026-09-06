@@ -18,7 +18,9 @@ walking, the effect timer that keeps counting while the connection is down.
 Part VIII is a trunk and four branches. Two pages say what a player *is* and
 when it runs; everything after them is one thing a player *does*, and they
 are independent of each other — except the spear, which is the sword swing's
-sequel and should not be watched before it.
+sequel and should not be watched before it. The inventory is on the trunk:
+Part VII stops at the slot, and the container the slots sit in is this
+part's.
 
 ```mermaid
 flowchart TD
@@ -26,7 +28,7 @@ flowchart TD
     TT["The two-phase tick — when it runs, and what is thrown away"]
     IM["Input to movement — walking, and being believed"]
     SS["The sword swing — one integer, and a number rebuilt"]
-    SP["The spear — the same hit, twice, neither through Player.attack"]
+    SP["The spear — two attacks on one item, neither through Player.attack"]
     HE["Hunger and experience — two bars the server owns"]
     SE["Status effects — a list of things happening to you"]
     PA -- "eight classes, forty-three slots" --> TT
@@ -40,23 +42,32 @@ flowchart TD
 ## Before you start
 
 [Part VI](../entities/README.md) is the hard prerequisite, and two of its
-pages in particular. [Entity anatomy](../entities/entity-anatomy.md),
+pages in particular. [Entity
+anatomy](../entities/entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it),
 because a player is a `LivingEntity` with three rungs added on the server
 and four on the client, and this part never re-teaches the base; and
-**[authority](../entities/authority.md)**, because every page here rests on
-it — a `Player` is client-authoritative on *both* sides, which is why the
-server's own answer for your movement is thrown away in favour of the
-number you sent it. If you watch one page from
-another part first, watch that one.
+**[authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)**,
+because every page here rests on it — a `Player` is client-authoritative on
+*both* sides, which is why the server's own answer for your movement is
+thrown away in favour of the number you sent it. If you watch one page from
+another part first, watch that one. Three more of Part VI's are assumed
+rather than re-taught: [attributes](../entities/attributes.md#forty-numbers-every-one-of-them-clamped),
+because reach and every number a hit is worth is one; [synched entity
+data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from);
+and [movement and collision](../entities/movement-and-collision.md#the-tick),
+the pipeline *input to movement* feeds and never repeats.
 
-Then [the server tick](../server/server-tick.md) and [the level
-tick](../server/server-level-tick.md), because half this part's timing
-claims are about which phase something ran in — including the fact that a
-player's own physics run *after* every level has finished. [Players and
-sessions](../server/players-and-sessions.md) owns how a `ServerPlayer` comes
-to exist at all. And [Part VII](../items/README.md) for the inventory this
-part stops at the edge of: [using an item](../items/using-an-item.md) in
-particular, because the spear is an item you *use*.
+Then [the server tick](../server/server-tick.md#where-a-players-own-tick-actually-happens)
+and [the level tick](../server/server-level-tick.md#every-entity-and-then-its-riders),
+because half this part's timing claims are about which phase something ran in
+— including the fact that a player's own physics run *after* every level has
+finished. [Players and
+sessions](../server/players-and-sessions.md#preparing-a-place-to-stand) owns
+how a `ServerPlayer` comes to exist at all, and how the session it belongs to
+ends. From [Part VII](../items/README.md), [using an
+item](../items/using-an-item.md#the-two-paths-side-by-side), because the
+spear's charge is an item you *use* and the meal in *hunger and experience*
+is that same machinery from the eater's end.
 
 ## Watch in this order
 
@@ -102,16 +113,48 @@ damage and knockback, the two that decide what a hit is worth, are not
 synced to the client at all. [Packets](../../reference/packets.md) for the
 movement, attack and health packets by name. [Data
 components](../../reference/components.md) for the components that make an
-item a weapon — eight of them on a spear. Then [game rules](../../reference/gamerules.md), [level
-data and rules](../../reference/level-data-and-rules.md) and [diagram
+item a weapon. [Damage outside
+`LivingEntity`](../../reference/non-living-damage.md) for what a swing meets
+when the target is not a mob. Then [game
+rules](../../reference/gamerules.md), [level data and
+rules](../../reference/level-data-and-rules.md) and [diagram
 lanes](../../reference/lanes.md).
 
-The part stops where the player stops being a player: how a hit is resolved
-once it lands is [damage and death](../entities/damage-and-death.md) in Part
-VI, what your client is *told* about everyone else is [what the client is
-told](../networking/what-the-client-is-told.md) in Part IX, and the ledger
-behind the block you already saw break is [prediction and
-acknowledgement](../client/prediction-and-acks.md) in Part X.
+## Where the part stops
+
+Part VIII is the smallest part of the book —
+{{#include ../../generated/part-player.md}} in `world/entity/player`,
+`world/food`, `ServerPlayer` and `client/player` — and almost the only part
+where a size is not a warning: 97% of those lines are named somewhere in the
+book, because a player is a small object surrounded by large ones. Nearly
+everything a page here reaches for lives in another part, so the borders are
+worth stating.
+
+Upward, the part starts at `Avatar` rather than at `Entity`: what a player
+*inherits* is [Part VI](../entities/README.md)'s, including the `Mannequin`
+that shares the rung. Outward, it stops where the player stops being a
+player. How a hit is resolved once it lands is [damage and
+death](../entities/damage-and-death.md#the-number-the-arrow-decides) in Part
+VI; what your client is *told* about everyone else is [what the client is
+told](../networking/what-the-client-is-told.md#one-entitys-tick-and-the-gates-it-does-not-pass)
+in Part IX; the ledger behind the block you already saw break is [prediction
+and acknowledgement](../client/prediction-and-acks.md#the-four-writes) in
+Part X; drawing a player, its skin and its model parts is Part XI's; and the
+signing key a `ServerPlayer` carries is [chat and
+signing](../networking/chat-and-signing.md)'s. The two game-mode objects are
+the sharpest of those borders: this part says what they hold, and what they
+*do* with a block is Part V's two click pages.
+
+Two things inside these packages are nobody's, and both are declined rather
+than missed. `Hotbar` and `HotbarManager` are the nine *saved* creative
+hotbars, which belong to the creative inventory screen this book does not
+cover. And sleep is half-explained on purpose: [player
+anatomy](player-anatomy.md#what-player-owns) names the fields and the
+refusals a bed answers with, and the *everyone is asleep* half — the night
+skip and the weather reset — is [the level
+tick](../server/server-level-tick.md#sleeping-is-the-one-thing-a-freeze-cannot-stop)'s.
+Nobody explains the walk between them: what one player lying down does over
+the hundred ticks that follow.
 
 ---
 

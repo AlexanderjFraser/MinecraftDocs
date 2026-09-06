@@ -44,6 +44,268 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session H — Part VIII · The player *(2026-09-06)*
+
+All seven pages of Part VIII touched plus the landing page:
+`src/systems/player/README.md` (rewritten to the landing-page role, gaining a
+*where the part stops*), `player-anatomy.md`, `the-two-phase-tick.md`,
+`input-to-movement.md`, `the-sword-swing.md`, `the-spear.md`,
+`hunger-and-experience.md`, `status-effects.md`. Nine pages in six other parts
+edited because a Part VIII page's owner or duplicate lived there:
+`entities/README.md`, `entities/attributes.md`, `entities/damage-and-death.md`,
+`blocks/block-interaction.md`, `server/players-and-sessions.md`,
+`server/server-tick.md`, `items/using-an-item.md`,
+`foundations/data-driven-types.md`, `reference/non-living-damage.md`. Plus
+`reference/glossary.md`, the Part VIII block of `src/lectures.md` and
+`reference/level-data-and-rules.md`'s *four parts* paragraph. Part VIII has no
+hand-kept Reference page of its own; `reference/non-living-damage.md` is Part
+VI's and was edited here only to take an explanation off it.
+
+### Corrections — the page was wrong, and the decompile says so
+
+- **`player-anatomy`: `Avatar` does not exist for the renderer.** The page
+  said "It exists for the renderer", and `Avatar` is in
+  `server-classes.txt` (line 2363) — a server class. `Avatar.java` is 57
+  lines holding the player-shaped `POSES`/dimensions, the 1.62 eye height,
+  the two cosmetic synched values and the abstract `Avatar.getProfile`, and
+  its two subclasses are `Player` (`Player.java`:129) and `Mannequin`
+  (`Mannequin.java`:28). `AvatarRenderer` (`AvatarRenderer.java`:52) being
+  generic over `Avatar & ClientAvatarEntity` is a consequence of the rung,
+  not its cause. Rewritten to say the rung is what `Player` and `Mannequin`
+  share, and reconciled with the other two accounts in the book
+  (`entity-anatomy`:185 "its point is `Mannequin`", `attributes`:132 "the
+  player-shaped hitbox but not the attribute set").
+- **`the-sword-swing`: `Player.postPiercingAttack` is `LivingEntity`'s.**
+  The method is declared once, at `LivingEntity.java`:1799, and `Player` has
+  no override; `Player.java`:989 calls it. `the-spear` and
+  `items/enchantments` already spelled it `LivingEntity.postPiercingAttack`,
+  so the page disagreed with its own declared pair. Fixed, with a clause
+  saying why a *piercing* hook closes an ordinary swing.
+- **`the-sword-swing` and `entities/damage-and-death`:
+  `LivingEntity.getSecondsToDisableBlocking` is conditional.**
+  `LivingEntity.java`:4238-4243 returns `Weapon.disableBlockingForSeconds`
+  only when `weaponItem == this.getActiveItem()`; both pages presented it as
+  an unconditional read-back. Fixed on both, in the same wording. (Confirmed
+  the practical scope: `getActiveItem` is the main-hand stack when nothing is
+  being used, so an ordinary axe swing still disables a shield; the condition
+  bites while the attacker is using something else.)
+- **`player-anatomy`: `Player.HELD_ITEM_SLOT` is the cursor, not the selected
+  slot.** Written new this session and corrected before it landed:
+  `Player.java`:1710-1726 makes 499 the `containerMenu` carried stack.
+- **`status-effects`: `MobEffectInstance.compareTo` orders both surfaces, in
+  opposite directions.** The page said it "orders the icons in the HUD".
+  `Hud.java`:537 sorts with `Ordering.natural().reverse()`;
+  `EffectsInInventory.java`:66 sorts with `Ordering.natural()`. Corrected
+  and the consequence stated. (Carried the standing queue entry at
+  `pass5.md`:2536.)
+- **`status-effects`: the ambient-particle numbers are exact.** "divides by
+  about four" was 3.75. `LivingEntity.java`:908-911 has
+  `bound = isInvisible() ? 15 : 4` and `ambientFactor = isAmbient ? 5 : 1`,
+  rolled as `nextInt(bound * ambientFactor) == 0`. Rewritten as the two
+  bounds and their product. (Carried `pass5.md`:858's Part VIII row.)
+- **`server/players-and-sessions`: the flying kick's numbers moved, and the
+  vehicle half was incomplete on both pages.**
+  `ServerGamePacketListenerImpl.java`:346-355 runs a second counter,
+  `aboveGroundVehicleTickCount`, against its own `getMaximumFlyingTicks(vehicle)`
+  and only for the controlling passenger. `input-to-movement` now says so and
+  Part III keeps a clause. (Carried `pass5.md`:209.)
+- **`player-anatomy`: `DemoMode` written from the source.** Introduced this
+  session, so listed as a claim: `MinecraftServer.java`:2295 constructs it
+  (not `PlayerList`), and `DemoMode.java`:26-90 reads the level's *gameTime*,
+  not a clock of its own; past `TOTAL_PLAY_TICKS` it overrides
+  `handleBlockBreakAction` and `useItem` to answer with a reminder.
+
+### Suspicions re-derived and found sound — no change made
+
+- `the-two-phase-tick`:151, "the one thing that stops phase two is
+  `MinecraftServer.isPaused`". `ServerGamePacketListenerImpl.java`:306 is
+  `if (this.server.isPaused() || !this.tickPlayer())`. The claim stands.
+- `input-to-movement`, "position must have moved by more than 2×10⁻⁴ blocks".
+  `LocalPlayer.java`:285 compares `Mth.lengthSquared(...)` against
+  `Mth.square(2.0E-4D)`, so the threshold really is 2×10⁻⁴ of distance, not
+  of its square.
+- `input-to-movement`:131, "Releases are always delivered".
+  `KeyboardHandler.java`:602-603 calls `KeyMapping.set(key, false)` outside
+  the `handlesGameInput` gate that presses sit behind. The claim stands, and
+  it does not contradict `client/input-and-keybinds`, whose "swallowed
+  release" is `ToggleKeyMapping`'s and a screen's `KeyMapping.releaseAll`.
+- `the-spear`'s figure node "server side only" against
+  `using-an-item`:8-9's "runs every tick on both sides".
+  `ItemStack.java`:1170-1184 shows both: the method runs on both sides, and
+  the divert to `KineticWeapon.damageEntities` is server-gated. No
+  contradiction; logged for pass 7 as a compressed label.
+
+### Claims introduced — the ownership cuts
+
+Every trimmed sentence is a new claim, and every anchor asserts that the
+named section is the answer. The cuts, each *from* → *to*:
+
+- **The record–simulate–snap-back bracket**, from `input-to-movement`'s
+  Q&A to `the-two-phase-tick#the-bracket-and-what-survives-it` — the page
+  named after it. The riding qualifier (`Entity.rideTick` repositions a
+  passenger every tick, so "never here" is an *on foot* claim) **moved** to
+  the owner, and so did the naming of the pipeline
+  (`LivingEntity.aiStep` / `LivingEntity.travel` / `Entity.move`).
+- **The twin hook.** `the-two-phase-tick` and `input-to-movement` opened on
+  the same surprising fact, two consecutive lectures apart.
+  `input-to-movement`'s opening now ends on its own three surprises, which
+  were already on the page.
+- **The authority preamble**, told three times in the book. Both Part VIII
+  copies cut to one sentence plus
+  `authority#five-predicates-and-the-final-one-the-other-four-hang-off`;
+  the fall-damage gate — its third full telling, `pass5.md`:2710 — cut to
+  one sentence plus `authority#three-cases-read-on-both-sides` on both
+  `the-two-phase-tick` and `input-to-movement`.
+- **The Netty-thread survey**, from `the-two-phase-tick` to
+  `server-tick#every-packet-since-last-time-in-one-drain`, which owns the
+  rule. The count **moved** with it and was re-derived:
+  `ServerGamePacketListenerImpl` declares 61 `public void handle*` methods
+  and 52 call `PacketUtils.ensureRunningOnSameThread`; the nine that do not
+  are `handleEditBook`, `handleChat`, `handleChatCommand`,
+  `handleSignedChatCommand`, `handleChatAck`, `handlePingRequest`,
+  `handleSignUpdate`, `handleConfigurationAcknowledged` and
+  `handleCustomPayload`.
+- **`Player.cannotAttack`'s two hooks and `Player.deflectProjectile`**, from
+  `reference/non-living-damage` — where a Reference page held the book's
+  only explanation, against `TEMPLATE.md` — **onto** `the-sword-swing`'s gate
+  paragraph, with `Entity.isAttackable`, `Entity.skipAttackInteraction`,
+  `Interaction`, `BlockAttachedEntity`, `EntityTypeTags.REDIRECTABLE_PROJECTILE`
+  and the ghast fireball. The Reference page keeps one sentence and a link,
+  and its `AbstractHurtingProjectile` row lost the same explanation.
+  (`pass5.md`:2700, the oldest open entry on the page.)
+- **`Entity.hurtOrSimulate`'s boolean**, the reverse move: the Reference
+  page's sharper reading — *was anything damaged*, not *did the hit land* —
+  is now on `the-sword-swing`, and both of that page's figures say the same.
+- **The `hurtClient` roll-call**, cut from eight names to its count and its
+  pattern, with the table cited. **The four-step client-tick order**, cut to
+  its consequence with `the-client-loop#what-a-tick-is-in-order` cited.
+  **The excluded-player sound rule** (its fourth telling), cut to a citation
+  of `what-makes-a-sound`. **The i-frame counter's decrementers**, cut to a
+  citation of `damage-and-death`.
+- **`UseEffects`**, from `hunger-and-experience` to
+  `using-an-item#moving-while-you-use`. Its vibration half **moved** with it
+  and was written from the source: `ItemStack.causeUseVibration`
+  (`ItemStack.java`:781-788) gates `Entity.gameEvent` on
+  `UseEffects.interactVibrations`, called by `LivingEntity` at both ends of a
+  use and by `FishingRodItem` and `BoneMealItem` for themselves.
+  (`pass5.md`:2980.)
+- **`Consumable`'s field roster and the five `ConsumeEffect` implementations**,
+  from `hunger-and-experience` to `using-an-item`, which spends the component
+  through its whole lecture and never defined it. `hunger-and-experience`
+  keeps the *walk* — `ConsumableListener` and `Consumable.onConsume` — because
+  the walk is its hook, and keeps `FoodProperties` and `FoodData.eat`. The
+  ruling is written out in `pass5.md`. `foundations/data-driven-types`:184's
+  `CONSUME_EFFECT_TYPE` row now points at the section that names them.
+  (`pass5.md`:2969.)
+- **The client replay of a meal**, cut on `hunger-and-experience` to a clause
+  plus `using-an-item#the-meal-tick-by-tick`; the page keeps
+  `ClientPacketListener.handleSetHealth`, which is the overwrite and its own.
+- **Item ticking's two callers** and **the one-orb-per-tick sweep**, cut on
+  `the-two-phase-tick` to their placement plus links to `player-anatomy` and
+  `hunger-and-experience`. Session G's ruling that `player-anatomy` owns the
+  forty-three-slot reason is kept; the page-VIII reader agent's counter-call
+  for `items-and-stacks` was declined, in writing, in `pass5.md`.
+- **The effect→attribute reload sentence**, the one move *into* Part VIII:
+  `attributes`:213 explained that effects are restored from NBT without the
+  apply hook running. `status-effects` now has a section for it, written from
+  `LivingEntity.java`:762-765 and :818-828, and `attributes` keeps the
+  half-sentence it needs.
+
+### Claims introduced — coverage and new material
+
+- `status-effects`: the per-effect `MobEffect` subclass family (`world/effect`
+  holds nineteen classes, of which sixteen are one small subclass per effect
+  plus `InstantaneousMobEffect`); `MobEffectCategory`'s three constants and
+  its two readers (`PotionContents.java`:189 for tooltip colour,
+  `Hud.java`:551 for the two-row split, which asks `MobEffect.isBeneficial`
+  and so puts *neutral* on the bottom row with a blue tooltip); the reader of
+  `LivingEntity.effectsDirty` (`LivingEntity.updateDirtyEffects`, from
+  `Entity.updateDataBeforeSync` at the top of `ServerEntity.sendChanges`,
+  `ServerEntity.java`:93 and :310); and the six-hundred-tick re-send named at
+  last (`LivingEntity.java`:888, a bare literal).
+- `player-anatomy`: the skin family — `PlayerSkin` (four textures, a
+  `PlayerModelType` of `SLIM` or `WIDE`, a *secure* flag) and
+  `PlayerModelPart`'s seven bits, read through
+  `Avatar.DATA_PLAYER_MODE_CUSTOMISATION`; `DemoMode`; `Player.getSlot`'s
+  command-facing addressing; `LocalPlayerResolver` as the tab-list-first
+  profile lookup; `ProfileKeyPair` cross-linked to `chat-and-signing`; and
+  `StackedContents` named as `items/recipes`' though it lives in this
+  package.
+- `the-spear`: the component table now says which subset it is — the nine
+  are the *weapon*, and `Item.Properties.spear` also calls
+  `durability`, `repairable` and `enchantable` from the material
+  (`Item.java`:510). The spear's `UseEffects` row now states all three
+  fields, which is its own component. And the charge's targets are named in
+  prose for the first time — `KineticWeapon.damageEntities`
+  (`KineticWeapon.java`:74-76) walks `ProjectileUtil.getHitEntitiesAlong`
+  with `PiercingWeapon.canHitEntity` and the block-collider clip, exactly as
+  the stab does; only the figure had said so. (`pass5.md`:2543.)
+- `entities/README`: one clause declaring that `world/effect` is in Part VI's
+  packages and its lecture is Part VIII's — the ruling is below.
+- `player/README`: a *where the part stops* section, which the part had none
+  of, with the size include, the upward border at `Avatar`, five outward
+  borders, and two declared declines (`Hotbar`/`HotbarManager` as the
+  creative screen's; the player half of sleep as a real gap, sent to §7).
+
+### Seams repointed, which are claims about who owns what
+
+- `input-to-movement`'s `BlockStatePredictionHandler.onTeleport` link went to
+  `block-interaction`, which never names the handler; now
+  `prediction-and-acks#the-six-windows`.
+- `player-anatomy`'s `ServerPlayer.chunkTrackingView` link went to
+  `tickets-and-loading`; what the client *has been sent* is Part IX's, so it
+  now points at `what-the-client-is-told#chunks-arrive-on-a-loop-the-client-paces`.
+- `player-anatomy`'s slot-addressing row hand-forwarded to "commands and
+  containers" in plain text, and no page named `Player.getSlot`; the page now
+  pays it off itself.
+- `status-effects`' hand-forward for `PotionContents` and its siblings went
+  to `using-an-item`, which names none of them; split between the machinery
+  (`using-an-item#the-meal-tick-by-tick`) and the components
+  (`hunger-and-experience#eating-is-a-component-walk`).
+- `block-interaction`'s reach gate now cites `player-anatomy#what-player-owns`
+  — the ruling for `pass5.md`:2861, taken once on the first half of the
+  declared pair rather than twice.
+- **Anchors on 71 of Part VIII's links, where the part had none at all** —
+  the fifth part running to arrive with zero. Plus the anchors on the six
+  cross-part edits above.
+
+### Summariser drift corrected
+
+- `player/README`:57-59 said Part VII owns the inventory; `items/README`:38-41
+  and `player-anatomy` say Part VIII does. The landing page and
+  `src/lectures.md`:211-212 both fixed in Part VIII's favour. (`pass5.md`:2983.)
+- `reference/glossary.md`: **Avatar** led on the renderer, which the page no
+  longer says; **LocalPlayer** claimed "its own prediction", which
+  `player-anatomy`:190 explicitly denies (`MultiPlayerGameMode.startPrediction`
+  reaches `ClientLevel.getBlockStatePredictionHandler` per call). Both
+  rewritten to the pages, with anchors.
+- `reference/level-data-and-rules`:16-19 sent readers to Part VIII "for the
+  spawn"; no Part VIII page explains spawn or respawn. Repointed to what
+  Part VIII actually reads there — the two movement game rules.
+- `player/README`'s figure node called the spear "the same hit, twice"; the
+  page says two different attacks sharing a tail. Node reworded.
+
+### For pass 9's attention, found and not fixed
+
+- `Weapon.AXE_DISABLES_BLOCKING_FOR_SECONDS` (5.0) is declared at
+  `Weapon.java`:12 and read by nothing — `ToolMaterial.java`:37 passes the
+  value through a parameter. Another dead constant, of the shape
+  `FoodConstants` and `MinecraftServer.AUTOSAVE_INTERVAL` already have.
+- `LivingEntity.TAG_ACTIVE_EFFECTS` (`LivingEntity.java`:145) is likewise
+  declared and unread; `:764` and `:820` write the literal *active_effects*.
+  The new `status-effects` section names the tag, not the constant, for that
+  reason.
+- `the-sword-swing` names `Player.attackVisualEffects` and
+  `Player.damageStatsAndHearts` in the tail order and no page in the book
+  explains either. `ServerPlayer.wardenSpawnTracker` and `ServerPlayer.camera`
+  are named on `player-anatomy` and explained nowhere. All four sent to
+  `pass3.md` §7 rather than written here.
+- `the-sword-swing`:219-221's three attack-ticker resets were re-derived as a
+  set and reconcile (`Player.java`:1834 `Player.onAttack` →
+  `resetOnlyAttackStrengthTicker`; `MultiPlayerGameMode.java`:462;
+  `ServerPlayer.java`:2085), but it is three named resets on two sides in one
+  answer and is worth a second reading.
+
 ## Pass 5, session G — Part VII · Items and inventories *(2026-09-05)*
 
 All eight pages of Part VII touched plus the landing page:

@@ -26,13 +26,13 @@ bonus lands *before* the critical hit and is therefore multiplied by it.
 
 ## Picking: what is under the crosshair
 
-`Minecraft.pick` runs once per tick inside `Minecraft.tick`, in this order:
-`MultiPlayerGameMode.tick` → **`Minecraft.pick`** → the GUI →
-`Minecraft.handleKeybinds`, which drains `Options.keyAttack` into
-`Minecraft.startAttack` and finishes with `Minecraft.continueAttack` for
-held-down mining. So the hit result a click uses was computed *earlier in
-the same tick*. `Minecraft.pick` also runs per frame, for the crosshair and
-the block outline, but that value is not what the attack sees.
+`Minecraft.pick` runs before `Minecraft.handleKeybinds` in the client tick
+([the client
+loop](../client/the-client-loop.md#what-a-tick-is-in-order)), and the keybind
+drain is what turns `Options.keyAttack` into `Minecraft.startAttack` — so
+**the hit result a click uses was computed earlier in the same tick**.
+`Minecraft.pick` also runs per frame, for the crosshair and the block
+outline, but that value is not what the attack sees.
 
 It asks the camera entity, and for the local player that is
 `LocalPlayer.raycastHitResult`. If the **active** item — the one being used,
@@ -46,8 +46,9 @@ view direction and inflated by one, each candidate inflated by
 entity wins only if it is strictly nearer than the block. Then
 `LocalPlayer.filterHitResult` discards each against *its own* range:
 `Attributes.ENTITY_INTERACTION_RANGE` (3.0) for the entity,
-`Attributes.BLOCK_INTERACTION_RANGE` (4.5) for the block. That is where the
-two reaches diverge.
+`Attributes.BLOCK_INTERACTION_RANGE` (4.5) for the block — the two reaches a
+player carries ([player anatomy](player-anatomy.md#what-player-owns)). This
+is where they diverge: one raycast, two verdicts.
 
 `AttackRange` is worth a second look, because it is a reach *floor* as well
 as a ceiling: a minimum and a maximum, separate creative values, a hitbox
@@ -68,7 +69,7 @@ when the item carries `DataComponents.PIERCING_WEAPON` — [the
 spear](the-spear.md) — and the tail of the hit-result switch: entity to
 `MultiPlayerGameMode.attack`, block to
 `MultiPlayerGameMode.startDestroyBlock` ([block
-breaking](../blocks/block-breaking.md)), a miss on an air block to
+breaking](../blocks/block-breaking.md#one-dig-end-to-end)), a miss on an air block to
 `Player.resetAttackStrengthTicker` and the ten-tick miss time. Even the
 entity branch is conditional — a weapon with its own `AttackRange` that the
 hit falls outside of swings but sends no attack packet at all. The miss time
@@ -90,10 +91,9 @@ rejection; failing the range check is a silent drop.
 The packet is drained from `PacketProcessor` at the **top** of the tick,
 before `MinecraftServer.tickServer` and therefore before any level ticks.
 That ordering matters: `Player.attack` runs before the victim's
-`LivingEntity.baseTick` decrements `Entity.invulnerableTime` for the tick.
-(The counter is declared on `Entity` and decremented in
-`LivingEntity.baseTick`, which skips a `ServerPlayer` — because
-`ServerPlayer.tick` decrements it itself, in phase one.) Each of the
+invulnerability counter comes down for the tick ([damage and
+death](../entities/damage-and-death.md#ten-ticks-in-which-nothing-shows-and-ten-that-protect-nothing)
+owns `Entity.invulnerableTime` and who decrements it when). Each of the
 resulting feedback packets is written and flushed on its own: the
 connection suspends flushing only across `MinecraftServer.tickChildren`,
 and the attack was handled before that bracket opened.
@@ -116,7 +116,7 @@ sequenceDiagram
     LP->>SGPL: ServerboundSwingPacket — from the branches that swing at all
     SGPL->>SGPL: isWithinAttackRange — AttackRange plus a 3.0 buffer both ways
     SGPL->>Player: attack — the server recomputes damage from nothing but the id
-    Player->>LE: hurtOrSimulate — into Part VI#59; returns did-it-land
+    Player->>LE: hurtOrSimulate — into Part VI#59; returns was-anything-damaged
     Player->>Player: causeExtraKnockback, doSweepAttack, itemAttackInteraction
     SL->>MC: ClientboundDamageEventPacket — a damage type and three ids, no amount
 ```
@@ -138,7 +138,7 @@ flowchart TD
     ITEM["plus Item.getAttackDamageBonus — the mace's fall bonus lands here"]
     CRIT["× 1.5 if full strength and Player.canCriticalAttack"]
     TOTAL["total = that, plus the linear boost"]
-    HURT["Entity.hurtOrSimulate — its boolean gates the knockback, sweep and durability"]
+    HURT["Entity.hurtOrSimulate — was anything damaged? that gates the knockback, sweep and durability"]
     S --> BL
     S --> BQ
     BOOST --> BL
@@ -153,16 +153,26 @@ flowchart TD
 ```
 
 Read that picture for the two things it makes obvious. **The cooldown is
-applied twice, differently** — a quadratic ramp on the base damage, a linear
-one on the enchantment bonus, both from the same scale read with the same
-0.5 partial tick. And **the item bonus is inside the crit**, because
+applied twice, differently** — `Player.baseDamageScaleFactor` is the
+quadratic ramp on the base damage, and a plain multiplication is the linear
+one on the enchantment bonus, both from the same scale read with the same 0.5
+partial tick. And **the item bonus is inside the crit**, because
 `Item.getAttackDamageBonus` is added between the sprint check and the
 multiplication.
 
-The gates along the way are as particular as the arithmetic.
-`Player.cannotAttack` comes first: the target must be attackable and must
-not claim the interaction for itself. `Player.deflectProjectile` can end the
-attack outright. Sprint knockback needs the scale above 0.9, plays a sound,
+The gates along the way are as particular as the arithmetic, and the first
+two run before the target is asked anything at all.
+**`Player.cannotAttack`** puts two questions to it: `Entity.isAttackable`,
+which `Entity.isPickable` backs and which is false by default for most things
+that are not mobs, and `Entity.skipAttackInteraction`, the hook by which a
+thing claims the swing for itself — an `Interaction` block uses it to record
+who hit it, and a `BlockAttachedEntity` to re-enter through
+`Entity.hurtOrSimulate` with zero damage. Either answer ends the swing
+([damage outside `LivingEntity`](../../reference/non-living-damage.md) has
+the per-class table). Then **`Player.deflectProjectile`**, which is why a
+ghast fireball can be batted back: anything in
+`EntityTypeTags.REDIRECTABLE_PROJECTILE` is turned around here rather than
+damaged, and the attack ends. Sprint knockback needs the scale above 0.9, plays a sound,
 and adds a flat **0.5** to the knockback later. `Player.canCriticalAttack`
 needs falling, not on the ground, not climbing, not in water, not
 mobility-restricted, not a passenger, **not sprinting**, a `LivingEntity`
@@ -176,17 +186,23 @@ cancelled, using `LivingEntity.getKnockback` computed from
 `Attributes.ATTACK_KNOCKBACK` through the enchantments and halved — then
 `Player.doSweepAttack`, `Player.attackVisualEffects`,
 `LivingEntity.setLastHurtMob`, `Player.itemAttackInteraction`,
-`Player.damageStatsAndHearts`, and `Player.causeFoodExhaustion` of 0.1. If
-it did not land, a no-damage sound. Either way `Player.postPiercingAttack`
-runs at the end.
+`Player.damageStatsAndHearts`, and `Player.causeFoodExhaustion` of 0.1
+([hunger and experience](hunger-and-experience.md#questions-players-ask)). If
+it did not land, a no-damage sound. Either way `LivingEntity.postPiercingAttack`
+runs at the end — the same hook a stab ends on, which is why the name says
+*piercing* on a method that closes an ordinary swing ([the
+spear](the-spear.md#the-stab)).
 
 `Player.itemAttackInteraction` is itself three steps in a particular order:
 `ItemStack.hurtEnemy` (the item's own hook and the use statistic, *not*
-durability), then `EnchantmentHelper.doPostAttackEffectsWithItemSource`,
+durability), then `EnchantmentHelper.doPostAttackEffectsWithItemSource`
+([enchantments](../items/enchantments.md)),
 then `ItemStack.postHurtEnemy`, which is where `Weapon`'s per-attack
 durability cost is applied. `Weapon` (`DataComponents.WEAPON`) is a pair:
 that cost, and `Weapon.disableBlockingForSeconds`, the axe's shield-breaking
-rule, read back through `LivingEntity.getSecondsToDisableBlocking`.
+rule. `LivingEntity.getSecondsToDisableBlocking` reads it back, but only when
+the weapon in the attacker's hand is also their *active* item — so an axe
+swung while the other hand is using something disables no shield.
 
 `Player.doSweepAttack` damages every *living* entity in a box around the **primary
 target** inflated by (1, 0.25, 1), for candidates within three blocks of the
@@ -198,9 +214,14 @@ unguarded; the damage and the `ParticleTypes.SWEEP_ATTACK` particles sit
 behind the server check.
 
 `Entity.hurtOrSimulate` is the wrapper that branches on the side —
-`Entity.hurtServer` on the server, `Entity.hurtClient` on the client. Armour,
-invulnerability frames, `DataComponents.BLOCKS_ATTACKS` and knockback
-resistance are all [damage and death](../entities/damage-and-death.md).
+`Entity.hurtServer` on the server, `Entity.hurtClient` on the client ([damage
+and death](../entities/damage-and-death.md#everything-that-calls-it) owns the
+wrapper itself). What it returns is worth reading carefully, because it is not
+the obvious thing: the boolean means *was anything damaged*, not *did the hit
+land*, and that is what gates the knockback, the sweep, the durability and
+the hit particles below. Armour, invulnerability frames,
+`DataComponents.BLOCKS_ATTACKS` and knockback resistance are all [damage and
+death](../entities/damage-and-death.md#armour-and-why-big-hits-punch-through-it).
 
 ## Questions players ask
 
@@ -220,27 +241,28 @@ more after it — the client in `MultiPlayerGameMode.attack`, the server on
 the swing packet that follows, because `ServerPlayer.swing` resets the
 ticker too.
 
-**Why does my sword make no sound until the server answers?**
-`ClientLevel.playSeededSound` plays a sound only when the excluded player
-*is* the local player, and `Player.playServerSideSound` excludes nobody — so
-every hit sound the attacker hears arrives as a `ClientboundSoundPacket`,
-one round trip late.
+**Why does my sword make no sound until the server answers?** Because the
+attack sounds are the counter-example to the client's own prediction rule:
+`Player.playServerSideSound` excludes nobody, so every hit sound the attacker
+hears arrives as a `ClientboundSoundPacket`, one round trip late ([what makes
+a sound](../client/what-makes-a-sound.md)).
 
 **Does the client predict any of this against a mob?** Almost none.
 `Entity.hurtClient` returns false and neither `LivingEntity` nor `Mob`
 overrides it, so on the client `Entity.hurtOrSimulate` reports that the hit
 did not land and the entire block after it is skipped: no predicted
 knockback, no sweep, no visual effects, no durability, no exhaustion. The
-exceptions are the eight classes that do override it, and every one of them
-is something you can hit that is not a mob: another *player*
-(`RemotePlayer`), a boat or minecart (`VehicleEntity`), a painting or leash
-knot (`BlockAttachedEntity`), an item frame, an end crystal, a shulker
-bullet, a dropped item and an experience orb. Against those the whole block
-runs locally. `Player.getEnchantedDamage` does nothing on `Player` either;
+exceptions are the eight classes that do override it, and the pattern is the
+answer: **every one of them is something you can hit that is not a mob** — a
+`RemotePlayer`, a vehicle, a hanging thing, an orb ([damage outside
+`LivingEntity`](../../reference/non-living-damage.md) has the roll-call).
+Against those the whole block runs locally. `Player.getEnchantedDamage` does nothing on `Player` either;
 it returns its argument unchanged and only `ServerPlayer` overrides it. With
 `Attributes.ATTACK_DAMAGE` not being client-syncable
 ([attributes](../entities/attributes.md)), the client's damage figure is
-never authoritative wherever that block does run.
+never authoritative wherever that block does run. That the client may not
+decide a hit at all is [authority](../entities/authority.md#three-cases-read-on-both-sides)'s
+rule, applied to combat.
 
 **Can a weapon be too close to swing?** On the client, yes — `AttackRange`
 has a minimum. On the server, no: the 3.0-block leniency is subtracted from
@@ -251,8 +273,10 @@ the round trip.
 `ClientboundDamageEventPacket` carries no amount at all — a damage-type
 holder, three entity ids and an optional source position — and the victim's
 red flash, hurt sound and invulnerability window are reconstructed from
-that. Health bars come from [synched entity
-data](../entities/synched-entity-data.md).
+that ([damage and
+death](../entities/damage-and-death.md#telling-everyone-and-what-a-block-replaces)
+owns the packet). Health bars come from [synched entity
+data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from).
 
 **Are sweep and knockback enchantment effects?** They are attributes.
 `Attributes.SWEEPING_DAMAGE_RATIO` defaults to zero, so a vanilla sweep does

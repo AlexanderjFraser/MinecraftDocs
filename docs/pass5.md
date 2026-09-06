@@ -88,7 +88,11 @@ it. Everything it acted on itself is struck in place above, or logged in
   between the two systems. Nothing was moved *to* Part IX, because Part IX
   already had all of it; session I should check that the three inbound
   citations (`server-tick`:225, `players-and-sessions`:266,
-  `player-anatomy`:196) now point where the reader needs.
+  `player-anatomy`:196) now point where the reader needs. *Session H did the
+  third: the target was right and the gloss was not —* what the client has been
+  sent *is Part IX's, so it now points at*
+  `what-the-client-is-told#chunks-arrive-on-a-loop-the-client-paces`. *Two
+  left for I.*
 - **Session K (XI) — the flash layers are a citation now.**
   `lightmap-fog-and-sky`:60-65 explained the two `ClientLevel` lightning layers,
   which is `environment-attributes-and-timelines`' stack, and gave the lerp as
@@ -206,7 +210,11 @@ six corrections it made are in [pass9.md](pass9.md).*
   pings — is on no other page in the book. What `players-and-sessions` keeps
   is the asymmetry its section is actually about: keep-alive is the only one
   of the three kicks that exempts the singleplayer host.
-- **Session H (VIII) — the flying kick.** `players-and-sessions`:421-426
+- ~~**Session H (VIII) — the flying kick.**~~ *Done, session H: the mechanism
+  is `input-to-movement`'s and Part III keeps a clause; the vehicle's separate
+  counter moved to the owner and the idle timeout stayed where it was, in*
+  players-and-sessions' *three-kicks section, which is that page's scenario.*
+  `players-and-sessions`:421-426
   against `input-to-movement`:375-383, which has the gravity scaling, the
   vehicle copy and six suppressions this page lacks; the movement page owns
   it and this one keeps a clause. Note that the idle timeout beside it
@@ -255,7 +263,9 @@ six corrections it made are in [pass9.md](pass9.md).*
 - **Session F (VI) — `ServerEntityGetter`** (132 lines, `server/level`), the
   server-side entity-query interface `ServerLevel` implements, is named
   nowhere in the book and is Part VI's vocabulary.
-- **Session H (VIII) — `DemoMode`** (102 lines) extends
+- ~~**Session H (VIII) — `DemoMode`**~~ *Done, session H: written as a
+  paragraph in* player-anatomy's *game-mode section, from the source.*
+  (102 lines) extends
   `ServerPlayerGameMode` and is named nowhere; `player-anatomy`'s game-mode
   comparison is where it would go, or a declared decline.
 - **Session M (XIII) — `ServerBossEvent`** (166 lines, `server/level`) is
@@ -2087,7 +2097,9 @@ was cut or moved, and why)*
   ±3.0000512E7 clamp, `Entity.setBoundingBox`'s public callers,
   `Entity.getKnownMovement`, `Entity.flyDist`) — these are
   `entity-anatomy`'s or `authority`'s and are currently on **neither**;
-  half the outbound packet list and the whole inbound one, which
+  half the outbound packet list and the whole inbound one *(checked in session
+  H: `input-to-movement` carries both directions in* What it calls, and what
+  crosses the wire*, so that half is discharged)*, which
   `input-to-movement` owns; the data-driven tag inventory.
   **`ai-goals-and-brains`**: the behaviour-package roster cut to eight named
   classes plus a count; `VillagerType`.
@@ -2526,30 +2538,145 @@ session's own pages score 3 of 4 on the device it just flagged.
 
 **Structural findings (not acted on):**
 
-- `status-effects` names `LivingEntity.effectsDirty` and never says what
-  reads it. The consumer is `updateDirtyEffects` ← `updateDataBeforeSync` ←
+- ~~`status-effects` names `LivingEntity.effectsDirty` and never says what
+  reads it.~~ *Done, session H, with the seam to* synched-entity-data *the
+  entry predicted.* [kind=book]  The consumer is `updateDirtyEffects` ← `updateDataBeforeSync` ←
   `ServerEntity`, i.e. the server's entity-sync pass — which is the actual
   mechanism behind the page's own "swirls and no numbers" answer. Naming a
   field with no reader is the pattern; either say what reads it or drop it.
-- `status-effects` lists `MobEffectCategory` in *Where to look* and never
-  explains it, though it is why the HUD splits icons into two rows.
-- `status-effects` — `MobEffectInstance.compareTo` orders the HUD icons
-  reversed and the inventory list un-reversed, so the two surfaces list
-  effects in opposite orders. One clause, and it is the kind of thing a
-  player notices.
-- `the-sword-swing` — `LivingEntity.getSecondsToDisableBlocking` is
-  presented as an unconditional read-back; it returns the `Weapon` value
-  only when the weapon is also the attacker's *active* item.
-- `the-spear` — the component table is headed "every component that makes
-  one" (now softened to "the combat components"); the durability three,
-  `REPAIRABLE` and `ENCHANTABLE` are still absent. Either the table is
-  complete or the header says which subset it is.
-- `input-to-movement` — "floating" is used without ever defining the
-  condition `clientIsFloating` records, and the jump-inference paragraph sits
-  before the field it depends on is introduced.
-- `player-anatomy` — the page says `Avatar` "exists for the renderer", but
-  `Avatar` is a server class whose other content is the shared player hitbox;
-  the renderer is one consumer, not the reason.
+- ~~`status-effects` lists `MobEffectCategory` in *Where to look* and never
+  explains it~~ *Done, session H: three constants, two readers — and the
+  entry's own gloss needed correcting, since the HUD splits on*
+  `MobEffect.isBeneficial`*, so* NEUTRAL *sits with the harmful ones.* [kind=book]
+- ~~`status-effects` — `MobEffectInstance.compareTo` orders the HUD icons
+  reversed and the inventory list un-reversed~~ *Done, session H, re-derived
+  against* `Hud.java`:537 *and* `EffectsInInventory.java`:66*.* [kind=book]
+- ~~`the-sword-swing` — `LivingEntity.getSecondsToDisableBlocking` is
+  presented as an unconditional read-back~~ *Done, session H: re-derived
+  against* `LivingEntity.java`:4238 *and corrected on* the-sword-swing *and on*
+  damage-and-death:143, *which had the same silence.* [kind=book]
+- ~~`the-spear` — the component table's completeness~~ *Done, session H: the
+  table is declared as the* weapon *components and a sentence after it names
+  the three the material adds — durability, repairable, enchantable — with
+  their owners in Part VII.* [kind=book]
+- ~~`input-to-movement` — "floating" is used without ever defining the
+  condition `clientIsFloating` records~~ *Overtaken in part: the definition
+  is there, at the end of the Q&A that owns it. What stands is that a Part III
+  page now links here for the mechanism and the only landing spot is a
+  question, so the answer wants a heading — pass 6's.* [kind=lecture]
+- ~~`player-anatomy` — the page says `Avatar` "exists for the renderer"~~
+  *Done, session H: confirmed against* `server-classes.txt` *and rewritten;
+  the three accounts of* `Avatar` *in the book now agree.* [kind=book]
+
+## From pass-5 session H (Part VIII, the player), 2026-09-06
+
+*What the eight reader agents and the whole-part read raised that session H
+did not act on, routed by kind. The claims it introduced and the corrections
+it made are in [pass9.md](pass9.md).*
+
+### For other part sessions (pass 5)
+
+- **Session J (X) — `input-to-movement` spends thirty-nine lines on Part X's
+  input system.** The `KeyMapping` / `ToggleKeyMapping` / `Options` bullets
+  and the press-gauntlet paragraph are `client/input-and-keybinds`' subject —
+  that page declares the seam itself — and Part VIII linked it nowhere at all
+  until session H added the citation. Four names would move to the owner with
+  the cut: `ToggleKeyMapping.shouldRestoreStateOnScreenClosed`,
+  `Options.toggleCrouch` / `Options.toggleSprint`, `SmoothDouble` and the two
+  invert options. This is the routed pair at 7.73 and it is session J's to
+  resolve; session H left the Part VIII half intact deliberately, so that J
+  decides how much of it survives. [kind=book]
+- **Session J (X) — `input-to-movement`'s deferral framing.** Its
+  "the GLFW callback ... immediately defers to the client's main thread with
+  `BlockableEventLoop.execute`" is the exact reading `input-and-keybinds`:16-22
+  exists to refute (on the game thread that call runs the task rather than
+  queueing it). Session H cut the clause and cited the owner; check the owner's
+  version is the one a reader lands on. [kind=book]
+- **Session J (X) — the sound rule's fourth telling.**
+  `the-sword-swing` now cites `client/what-makes-a-sound` for the
+  excluded-player rule, but the rule sits in that page's opening, above any
+  heading, so the citation cannot carry an anchor. `blocks/block-interaction`:299
+  and `client/the-client-level`:215 are the other two copies. Session J owns
+  the page; a heading there would pay off three citations. [kind=book]
+- **Session K (XI) — the skin pipeline's drawing half.**
+  `player-anatomy` now names `PlayerSkin`, `PlayerModelType` and
+  `PlayerModelPart` and declares that drawing them is Part XI's. Check
+  `rendering/entity-rendering` or `models-and-atlases` pays that off; if no
+  page draws a player's skin, it is a §7 row rather than a link. [kind=book]
+- **Session M (XIII) — `Player.getSlot`'s addressing has a reader in Part
+  XIII.** `player-anatomy` now explains the 200/499/500 decoding and says it
+  is the map behind a slot argument. The command that consumes it
+  (`/item replace entity`, `SlotArgument`) is Part XIII's, and no Part XIII
+  page names `Player.getSlot`. One link each way. [kind=book]
+- **Session N (Reference) — `reference/threads` has no server-side
+  never-hop list.** It enumerates the nine client handlers that never hop and
+  has no counterpart for the server, though `server-tick` now carries the
+  52-of-61 count and names the nine. Either the Reference page takes the list
+  or the count stays prose. [kind=book]
+
+### For pass 6, the lecture
+
+- `status-effects` — the closer carries eight questions and three of the
+  page's real explanations (the hidden-effect stack and the packet that
+  cannot carry it, the blend state, the ambient-particle probability). The
+  trace is thirty lines and the closer is over sixty; the page's substance
+  sits in its Q&A. Promoting the hidden-effect answer into *What an effect is*,
+  which introduces `MobEffectInstance.hiddenEffect` and then drops it, is the
+  first move. [kind=lecture]
+- `status-effects` — the verified line promises "You drink a potion of
+  Poison" and the trace opens with the effect already ticking; the drink is
+  handed to two other pages. Either the scenario line becomes the tick or the
+  trace gains a bridge from `PotionContents` to `LivingEntity.addEffect`.
+  [kind=lecture]
+- `input-to-movement` — the page's three most-cited paragraphs are bold
+  sentences rather than headings, so nothing can anchor to them, and the
+  floating definition now has a Part III page linking at it with only
+  `#questions-players-ask` to land on. The same shape as the
+  `what-makes-a-sound` entry above. [kind=lecture]
+- `the-two-phase-tick` — the Netty paragraph that session H cut sat under the
+  heading *The client's single tick* while being about the server's threads.
+  The heading is now honest, but the section is two sentences shorter than it
+  was and may want rebalancing against the two phase sections. [kind=lecture]
+- `hunger-and-experience` — the verified line promises the two bars "meet in
+  the enchanting table" and the page never stages that meeting; and the
+  change-detection paragraph, which is the joint between the two halves and
+  the page's own hook, is the fourth *Questions players ask*. [kind=lecture]
+- `the-spear` — the tail section hands off to four pages in five consecutive
+  clauses. Session H added the links; whether five hand-offs in a row is a
+  section or a list is pass 6's. [kind=lecture]
+- `player-anatomy` — *The three sides of one player* is a field inventory of
+  about forty lines, and sixteen names appear only there and only in a list.
+  The page promises no field inventories. [kind=lecture]
+
+### For pass 7, the figures
+
+- `the-spear`'s flowchart node reads "every use tick: ItemStack.onUseTick,
+  server side only". Re-derived in session H and sound — the method runs on
+  both sides and only the divert to `KineticWeapon.damageEntities` is
+  server-gated — but the label compresses the two into one and reads as a
+  contradiction of `using-an-item`:8-9. A label, not a fact. [kind=figure]
+- `player/README`'s part figure gives the two trunk pages one edge label
+  ("eight classes, forty-three slots") and the four branch edges none; the
+  spear edge is the only labelled branch. [kind=figure]
+- `status-effects`' trace has a `Note over LE` for each side and no
+  tick-boundary bar, so the client and server branches read as sequential.
+  [kind=figure]
+
+### For pass 8, the voice
+
+- `player-anatomy`:3 "five classes deep" — five on the server chain, six on
+  the client chain the page's own scenario is in. Already logged at :858;
+  repeated here because the session left it deliberately, the figure being
+  the thing that settles it. [kind=voice]
+- Part VIII uses three spellings for the same idea in three pages: *the
+  server simulates and throws the answer away* (`the-two-phase-tick`), *runs
+  the whole physics pipeline and deletes the result* (same page, the hook),
+  and *simulated twice, believed once* (`authority`'s heading, which Part VIII
+  now cites twice). One of the three should win. [kind=voice]
+- `the-sword-swing` — "the two attack clocks", "the two combat clocks" and
+  "both clocks" all name `LivingEntity.attackStrengthTicker` and
+  `LivingEntity.itemSwapTicker`, across this page and `player-anatomy`.
+  [kind=voice]
 
 ## From pass-4 session I (Part IX Networking), 2026-09-04
 
@@ -2697,8 +2824,12 @@ that takes it. Everything session F did act on is struck above or logged in
   page's own version names the same set (it has nine categories where
   `entity-anatomy` had ten types, "item frames" plural covering two).
   [kind=book]
-- **Session H (VIII) — `the-sword-swing` owes two things a Reference page is
-  carrying.** `reference/non-living-damage`:20-28 holds the book's only
+- ~~**Session H (VIII) — `the-sword-swing` owes two things a Reference page is
+  carrying.**~~ *Done, session H: both moved onto the gate paragraph, with the
+  hooks, the two users, the tag and the ghast fireball; the Reference page
+  keeps one sentence and a link, and its `AbstractHurtingProjectile` row lost
+  the same explanation. The reverse move came with it —* was anything damaged,
+  not did the hit land *is now the lecture's, and both of its figures say so.* `reference/non-living-damage`:20-28 holds the book's only
   explanation of `Player.cannotAttack`'s two hooks (`Entity.isAttackable`,
   `Entity.skipAttackInteraction`) and its only explanation of projectile
   deflection (`Player.deflectProjectile`,
@@ -2707,8 +2838,8 @@ that takes it. Everything session F did act on is struck above or logged in
   explanation. Session F left them because moving them means writing Part VIII
   prose. Also `Entity.isPickable` defaulting to false, and the
   `handleAttack` disconnect (see the struck entry above). [kind=book]
-- **Session H (VIII) — `the-two-phase-tick`:155-159 is the third full telling
-  of the fall-damage gate.** `authority` owns it and now says so; that page's
+- ~~**Session H (VIII) — `the-two-phase-tick`:155-159 is the third full telling
+  of the fall-damage gate.**~~ *Done, session H, on both Part VIII pages.* `authority` owns it and now says so; that page's
   version should become one sentence carrying
   `authority#three-cases-read-on-both-sides`. [kind=book]
 - **Session J (X) — `the-client-level` and `prediction-and-acks` both answer
@@ -2717,10 +2848,12 @@ that takes it. Everything session F did act on is struck above or logged in
   settles, `authority` should cite `prediction-and-acks#two-state-machines-running-against-each-other`
   at the two places a reader asks *then where does prediction live*
   (`authority`:106-107 and :210-215). [kind=book]
-- **Sessions H, I and J — the anchors on `authority`'s inbound links.** Twenty-two
+- **Sessions ~~H~~, I and J — the anchors on `authority`'s inbound links.** Twenty-two
   links from sixteen pages, none carrying an anchor. Part VI's own are done;
-  the ones from `input-to-movement`, `the-two-phase-tick`, `player-anatomy`,
-  `what-the-client-is-told`, `the-client-level` and the three landing pages want
+  *Part VIII's four are done in session H, two of them on*
+  `#three-cases-read-on-both-sides` *because the fall-damage gate is the
+  section that answers them;* the ones from
+  `what-the-client-is-told`, `the-client-level` and the two remaining landing pages want
   `authority#five-predicates-and-the-final-one-the-other-four-hang-off`.
   [kind=book]
 - **Session M (XIII) — `entity-selectors` can now cite an owner for the two
@@ -2858,8 +2991,11 @@ that takes it. Everything session E did act on is struck above or logged in
   menu. And `items/loot-tables`:275-278 explains that a comparator reading an
   unopened chest commits its loot roll, in substance, without linking either
   redstone page.
-- **Session H (VIII) or a ruling — reach has no backward link from either
-  click page.** `block-interaction` and `block-breaking` both use
+- ~~**Session H (VIII) or a ruling — reach has no backward link from either
+  click page.**~~ *Ruled, session H: one link, on* block-interaction*, in the
+  gate list where the range check is asserted — the first half of the declared
+  pair carries it, and* block-breaking*'s single passing* not reach *does not
+  need its own.* `block-interaction` and `block-breaking` both use
   `Player.isWithinBlockInteractionRange` and its slack without saying what a
   reach range is; `player-anatomy` (Part VIII) owns it and is later. Both
   halves of a declared pair have the same hole, so it wants one ruling rather
@@ -2966,8 +3102,19 @@ corrections it made are in [pass9.md](pass9.md).*
 
 ### For other part sessions (pass 5)
 
-- **Session H (VIII) — `Consumable`, `FoodProperties` and `ConsumableListener`
-  are defined on a Part VIII page and spent whole by a Part VII one.**
+- ~~**Session H (VIII) — `Consumable`, `FoodProperties` and `ConsumableListener`
+  are defined on a Part VIII page and spent whole by a Part VII one.**~~
+  *Done, session H, split rather than moved whole. Rule 1 cuts through the
+  middle of the family:* `Consumable` *answers* what happens while and after
+  you hold right-click*, which is* using-an-item's *scenario, so its field
+  roster and the five* `ConsumeEffect` *implementations moved there — and
+  `data-driven-types`' `CONSUME_EFFECT_TYPE` row, which pointed at a page
+  naming none of them, now lands on the section that does.* `FoodProperties`
+  *and* `FoodData.eat` *answer* why did that meal not fill me*, so they stayed.
+  The* `ConsumableListener` *walk stayed too, against the routing rule's
+  default, because it is* hunger-and-experience's *own hook —* there is no
+  method called eat *— and moving it would have gutted the page's opening;*
+  using-an-item *cites it, as session G had already made it do.*
   `using-an-item` runs its entire first scenario on the `Consumable` family and
   the only definition in the book is `player/hunger-and-experience`:88-104.
   `PotionContents` (252 lines, `world/item/alchemy`) and
@@ -2975,25 +3122,36 @@ corrections it made are in [pass9.md](pass9.md).*
   shape — a `world/item` component family living on a Part VIII page. Session H
   decides whether the definition moves to Part VII or `using-an-item` cites it;
   the routing rule gives the pair to the later part.
-- **Session H (VIII) — `UseEffects` is explained twice.** `using-an-item`:165-176
+- ~~**Session H (VIII) — `UseEffects` is explained twice.**~~ *Done, session H:*
+  using-an-item *owns it, the vibration half moved there and was written from
+  the source, and* hunger-and-experience *and* the-spear *both cite it.* `using-an-item`:165-176
   owns the slowdown half (it is that page's scenario) and
   `hunger-and-experience`:147-156 states the component and its three fields,
   including the `UseEffects.interactVibrations` half that `using-an-item` only
   gestures at. One owner, one citation, and the vibration half is a move.
-- **Session H (VIII) — two landing pages hand `Inventory` to each other.**
+- ~~**Session H (VIII) — two landing pages hand `Inventory` to each other.**~~
+  *Done, session H, in Part VIII's favour, on the landing page and in*
+  lectures.md*, which carried the same loose claim.*
   `player/README`:57-59 says Part VII owns "the inventory this part stops at
   the edge of"; `items/README` says the part stops at the slot and Part VIII
   owns the inventory. `player/player-anatomy`:122-137 settles it in Part
   VIII's favour, so Part VIII's sentence is the loose one.
-- **Session H (VIII) — `ItemStack.inventoryTick`'s two callers.**
+- ~~**Session H (VIII) — `ItemStack.inventoryTick`'s two callers.**~~ *Done,
+  session H, as session G ruled. The Part VIII reader agent argued for*
+  items-and-stacks *on the grounds that it is the only page saying what the
+  tick then does; declined, because the mechanism in question is* why there are
+  two callers*, and the answer is the forty-three slots, which is*
+  player-anatomy's *subject. A third telling on* the-two-phase-tick *was cut to
+  its placement.*
   `items-and-stacks`:293-297 and `player/player-anatomy`:293-298 both explain
   why item ticking needs two callers. `player-anatomy` owns it (the forty-three
   slots are its subject); `items-and-stacks` keeps what the method itself does.
   Left for session H because the cut is on the Part VIII side of a Part VIII
   claim. `items-and-stacks` adds "tells the selected one it is the main hand",
   which is a move.
-- **Session H (VIII) — `using-an-item`:180 pointed at `the-sword-swing` for the
-  spear and now points at `the-spear`.** Session H should check the round trip:
+- ~~**Session H (VIII) — `using-an-item`:180 pointed at `the-sword-swing` for the
+  spear and now points at `the-spear`.**~~ *Checked, session H: the round trip
+  is paid off in both directions and both ends now carry anchors.* Session H should check the round trip:
   `player/README`:57-59 sends readers to Part VII *for* the spear.
 - **Session I (IX) — `packets-and-stream-codecs`:368-373 describes the
   `HashedStack` shape, which `containers-and-menus` owns.** The packet page

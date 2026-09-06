@@ -41,7 +41,8 @@ flowchart TD
     M --> CM["ClientMannequin"]
 ```
 
-`Entity` and `LivingEntity` belong to [Part VI](../entities/entity-anatomy.md).
+`Entity` and `LivingEntity` belong to [Part
+VI](../entities/entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it).
 The rung above them, **`Avatar`** (`world/entity`), is fifty-seven lines
 and **no instance fields at all**. It owns the player-shaped dimensions
 (`Avatar.POSES`, `Avatar.STANDING_DIMENSIONS`, `Avatar.CROUCH_BB_HEIGHT`,
@@ -52,10 +53,19 @@ read back through `Avatar.getMainArm` and `Avatar.isModelPartShown`, and
 one abstract method, `Avatar.getProfile`, returning a `ResolvableProfile`.
 That is the whole class.
 
-It exists for the renderer. `AvatarRenderer` is generic over *an `Avatar`
-that is also a `ClientAvatarEntity`*, and exactly two classes satisfy that:
-`AbstractClientPlayer` and **`ClientMannequin`**. The swap is worth knowing,
-because it is the same server/client split `Player` has, one class lower:
+It exists because two things in the game are shaped like a person and only
+one of them is a player. `Avatar` ships in the server jar, and what it holds
+is what `Player` and **`Mannequin`** both need and nothing else does: the
+body, the eye height, the arm you favour and the model parts you have turned
+off. Everything a *player* has on top of that — the inventory, the abilities,
+the hunger, the attribute set — is `Player`'s, which is why
+`Player.createAttributes` is on `Player` and a mannequin gets the plain
+living set ([attributes](../entities/attributes.md#the-prototype-frozen-at-class-init)).
+The renderer follows the same line rather than drawing it: `AvatarRenderer`
+is generic over *an `Avatar` that is also a `ClientAvatarEntity`*, and exactly
+two classes satisfy that, `AbstractClientPlayer` and **`ClientMannequin`**.
+That pairing is worth knowing, because it is the same server/client split
+`Player` has, one class lower:
 `Mannequin` (`world/entity/decoration`) holds a mutable static factory,
 `Mannequin.constructor`, and `ClientMannequin.registerOverrides` replaces it
 during client startup, so a mannequin spawned into a `ClientLevel` is really
@@ -81,15 +91,15 @@ subclass with somewhere to send a packet overrides them.
 | what | the fields | who explains it |
 |---|---|---|
 | storage | `Player.inventory`, `Player.enderChestInventory` (a `PlayerEnderChestContainer`) | below |
-| the open window | `Player.inventoryMenu` (final) and `Player.containerMenu`, which *is* `Player.inventoryMenu` when nothing is open | [containers and menus](../items/containers-and-menus.md) |
+| the open window | `Player.inventoryMenu` (final) and `Player.containerMenu`, which *is* `Player.inventoryMenu` when nothing is open | [containers and menus](../items/containers-and-menus.md#the-chest-you-see-is-not-the-chest) |
 | what the mode allows | `Player.abilities` | below |
-| the food bar | `Player.foodData` | [hunger and experience](hunger-and-experience.md) |
-| experience | `Player.experienceLevel`, `Player.experienceProgress`, `Player.totalExperience`, `Player.enchantmentSeed`, `Player.lastLevelUpTime`, `Player.takeXpDelay` | [hunger and experience](hunger-and-experience.md) |
+| the food bar | `Player.foodData` | [hunger and experience](hunger-and-experience.md#the-food-bar-is-four-numbers-and-a-pile-of-literals) |
+| experience | `Player.experienceLevel`, `Player.experienceProgress`, `Player.totalExperience`, `Player.enchantmentSeed`, `Player.lastLevelUpTime`, `Player.takeXpDelay` | [hunger and experience](hunger-and-experience.md#the-other-bar) |
 | sleep | `Player.sleepCounter`, `Player.startSleepInBed` / `Player.stopSleepInBed`, the `Player.BedSleepingProblem` refusals, `Player.SLEEP_DURATION` (100) and `Player.WAKE_UP_DURATION` (10) | `ServerLevel` owns the *everyone is asleep* half |
-| the two combat clocks | `LivingEntity.attackStrengthTicker` and `LivingEntity.itemSwapTicker`, declared one rung up but read, reset and incremented only here | [the sword swing](the-sword-swing.md) |
-| cooldowns | `Player.cooldowns`, built by `Player.createItemCooldowns`, which only `ServerPlayer` overrides | [using an item](../items/using-an-item.md) |
-| four synched values | `Player.DATA_PLAYER_ABSORPTION_ID`, `Player.DATA_SCORE_ID`, `Player.DATA_SHOULDER_PARROT_LEFT`, `Player.DATA_SHOULDER_PARROT_RIGHT` | [synched entity data](../entities/synched-entity-data.md) |
-| addressing | `Player.ENDER_SLOT_OFFSET` (200), `Player.HELD_ITEM_SLOT` (499), `Player.CRAFTING_SLOT_OFFSET` (500), decoded by `Player.getSlot` | commands and containers |
+| the two combat clocks | `LivingEntity.attackStrengthTicker` and `LivingEntity.itemSwapTicker`, declared one rung up but read, reset and incremented only here | [the sword swing](the-sword-swing.md#questions-players-ask) |
+| cooldowns | `Player.cooldowns`, built by `Player.createItemCooldowns`, which only `ServerPlayer` overrides | [using an item](../items/using-an-item.md#the-ending-in-one-picture) |
+| four synched values | `Player.DATA_PLAYER_ABSORPTION_ID`, `Player.DATA_SCORE_ID`, `Player.DATA_SHOULDER_PARROT_LEFT`, `Player.DATA_SHOULDER_PARROT_RIGHT` | [synched entity data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from) |
+| addressing | `Player.ENDER_SLOT_OFFSET` (200), `Player.HELD_ITEM_SLOT` (499), `Player.CRAFTING_SLOT_OFFSET` (500), decoded by `Player.getSlot` — the numbering `/item` and `/replaceitem` speak | below |
 | the odds and ends | `Player.gameProfile`, `Player.lastDeathLocation`, `Player.fishing`, `Player.reducedDebugInfo`, `Player.lastItemInMainHand`, `Player.hurtDir`, `Player.jumpTriggerTime`, `Player.wasUnderwater` | — |
 
 None of those four synched values is the hand, which went up to `Avatar`;
@@ -97,10 +107,21 @@ and a *player's* skin is not synched data at all: it arrives out of band,
 from the tab-list entry. A mannequin's does travel as synched data, in
 `Mannequin.DATA_PROFILE`.
 
+The skin itself is a small closed family in the same package, and it is
+worth naming because none of it is on the entity. **`PlayerSkin`** is a
+record of four textures — body, cape, elytra — plus a `PlayerModelType`
+(`PlayerModelType.SLIM` or `PlayerModelType.WIDE`, the two arm widths) and a
+*secure* flag saying whether the textures came signed. It lives on the
+tab-list entry, not on the player, which is why a skin can change without an
+entity packet. **`PlayerModelPart`** is the other half: the seven toggles in
+the skin-customisation screen, each a bit in the byte
+`Avatar.DATA_PLAYER_MODE_CUSTOMISATION` carries, read back through
+`Avatar.isModelPartShown`. Drawing any of it is Part XI's.
+
 **Reach is two attributes, not one.** `Player.blockInteractionRange` and
 `Player.entityInteractionRange` read `Attributes.BLOCK_INTERACTION_RANGE`
 and `Attributes.ENTITY_INTERACTION_RANGE`
-([attributes](../entities/attributes.md)), whose defaults — 4.5 and 3.0 —
+([attributes](../entities/attributes.md#forty-numbers-every-one-of-them-clamped)), whose defaults — 4.5 and 3.0 —
 live on the attributes themselves. `Player.DEFAULT_BLOCK_INTERACTION_RANGE`
 and `Player.DEFAULT_ENTITY_INTERACTION_RANGE` name the same two numbers and
 are read by nothing. The checks the server makes are
@@ -144,10 +165,19 @@ in a player: `Inventory.add`, `Inventory.getFreeSlot`,
 `Inventory.contains`, `Inventory.removeItem`,
 `Inventory.clearOrCountMatchingItems`, `Inventory.dropAll`,
 `Inventory.getSuitableHotbarSlot`, `Inventory.addAndPickItem` and
-`Inventory.pickSlot` (pick-block), and `Inventory.fillStackedContents` (the
-recipe book). `Inventory.save` and `Inventory.load` cover the thirty-six —
+`Inventory.pickSlot` (pick-block), and `Inventory.fillStackedContents`, which
+hands the whole inventory to `StackedContents` — the 470-line matcher that
+lives in this package and belongs to [recipes](../items/recipes.md#the-cast). `Inventory.save` and `Inventory.load` cover the thirty-six —
 the equipment half is persisted by `LivingEntity` — and
 `Inventory.setSelectedSlot` throws rather than accept a non-hotbar index.
+
+Those forty-three are not the numbering a command speaks. `Player.getSlot`
+decodes a second, sparser addressing over the same storage and past it: an
+index inside the thirty-six is an ordinary slot, `Player.ENDER_SLOT_OFFSET`
+plus *n* reaches the ender chest, `Player.CRAFTING_SLOT_OFFSET` plus *n* the
+four crafting-grid slots, `Player.HELD_ITEM_SLOT` is the stack on the cursor
+rather than any stored slot, and anything else falls through to the equipment
+slots one rung up. That is the map behind a slot argument in a command.
 
 ## `Abilities`, `GameType`, and the one method that connects them
 
@@ -180,13 +210,24 @@ call it — the server from `ServerPlayerGameMode`, the client from
 | attacking | — (`ServerGamePacketListenerImpl` handles it) | `MultiPlayerGameMode.attack`, `MultiPlayerGameMode.interact` |
 | containers | — | `MultiPlayerGameMode.handleContainerInput` |
 
+`ServerPlayerGameMode` has exactly one subclass, **`DemoMode`**, which
+`MinecraftServer` hands a player instead when the server is in demo mode. It
+watches the level's own *gameTime* rather than a clock of its own: it fires
+the tutorial prompts on the first morning, a message on each of the
+`DemoMode.DEMO_DAYS`, and past `DemoMode.TOTAL_PLAY_TICKS` it overrides the
+block-break and use hooks to answer with a reminder instead of doing
+anything. It is the only place in the game where the game-mode *object*,
+rather than the `GameType`, decides what you may do.
+
 Neither object is held by `Player` itself, and only one of them is held by
 a player at all: `Minecraft.gameMode` holds the client one — `LocalPlayer`
 has no such field — while `ServerPlayer.gameMode` is a field on the server
 player. [Block
-interaction](../blocks/block-interaction.md) and [block
-breaking](../blocks/block-breaking.md) own the block halves of both columns,
-and [prediction and acknowledgement](../client/prediction-and-acks.md) owns
+interaction](../blocks/block-interaction.md#the-gate-list-and-what-each-refusal-answers-with)
+and [block breaking](../blocks/block-breaking.md#the-button-is-not-the-switch)
+own the block halves of both columns,
+and [prediction and
+acknowledgement](../client/prediction-and-acks.md#the-four-writes) owns
 the ledger they share — which, note, `MultiPlayerGameMode` does not hold
 either: `MultiPlayerGameMode.startPrediction` reaches for
 `ClientLevel.getBlockStatePredictionHandler` per call.
@@ -198,10 +239,12 @@ either: `MultiPlayerGameMode.startPrediction` reaches for
 `ServerPlayer.gameMode`, `ServerPlayer.advancements`, `ServerPlayer.stats`,
 `ServerPlayer.recipeBook` (a `ServerRecipeBook`),
 `ServerPlayer.chunkTrackingView` and `ServerPlayer.lastSectionPos` — what
-the client has been sent ([tickets and
-loading](../world/tickets-and-loading.md)) —
+the client has been sent ([what the client is
+told](../networking/what-the-client-is-told.md#chunks-arrive-on-a-loop-the-client-paces)) —
 `ServerPlayer.respawnConfig`, `ServerPlayer.camera`,
-`ServerPlayer.textFilter`, `ServerPlayer.wardenSpawnTracker`,
+`ServerPlayer.textFilter`, the `ProfileKeyPair` behind message signing
+([chat and signing](../networking/chat-and-signing.md)),
+`ServerPlayer.wardenSpawnTracker`,
 `ServerPlayer.enderPearls`, `ServerPlayer.containerSynchronizer`, and a row
 of mirror fields that exist so the server can notice a change: the
 `ServerPlayer.lastSentHealth`, `ServerPlayer.lastSentFood` and
@@ -210,13 +253,17 @@ and a second row led by `ServerPlayer.lastRecordedArmor`, which turns one
 into a scoreboard criterion update instead. It also remembers what the
 client *said*: `ServerPlayer.lastClientInput` (an `Input`) and
 `ServerPlayer.lastKnownClientMovement`, both explained by [input to
-movement](input-to-movement.md). [Players and
-sessions](../server/players-and-sessions.md) owns this object's lifecycle;
+movement](input-to-movement.md#what-each-side-holds). [Players and
+sessions](../server/players-and-sessions.md#preparing-a-place-to-stand) owns this object's lifecycle;
 it is constructed during the *configuration* phase by `PrepareSpawnTask`,
 before the play listener exists.
 
 **`AbstractClientPlayer`** adds the tab-list entry
-(`AbstractClientPlayer.playerInfo`, fetched lazily from the connection), the
+(`AbstractClientPlayer.playerInfo`, fetched lazily from the connection) —
+which is enough of a directory that the client registers
+`LocalPlayerResolver` in front of the ordinary profile lookup, so a name
+typed into a command resolves out of the tab list before anything asks a
+server. It also adds the
 per-frame animation state `AvatarRenderer` reads
 (`AbstractClientPlayer.clientAvatarState`), `AbstractClientPlayer.getSkin`
 and the field-of-view modifier. **`LocalPlayer`** is the one the human
@@ -234,9 +281,11 @@ interpolates through `RemotePlayer.lerpDeltaMovement`, and has an **empty
 not derived.
 
 Which of the three is allowed to decide anything is [Part VI's
-authority](../entities/authority.md), stated once there: a `Player` is
-client-authoritative on *both* sides, and the server runs the physics
-anyway. [The two-phase tick](the-two-phase-tick.md) is what that costs.
+authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off),
+stated once there: a `Player` is client-authoritative on *both* sides, and
+the server runs the physics anyway. [The two-phase
+tick](the-two-phase-tick.md#the-bracket-and-what-survives-it) is what that
+costs.
 
 ## What a player is on disk
 

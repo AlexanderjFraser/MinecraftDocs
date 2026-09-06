@@ -60,6 +60,17 @@ release-ended not because a predicate says so, but because their
 work. The spyglass takes the default too and is not release-ended at all: at
 1200 ticks its countdown really can run out.
 
+**`Consumable`** (`DataComponents.CONSUMABLE`) is the component all of that
+hangs off, and it holds the whole of the *use* half: `Consumable.consumeSeconds`,
+with `Consumable.consumeTicks` derived from it; the `ItemUseAnimation` the
+arm plays; the sound; the particles; and a list of `ConsumeEffect`s to apply
+at the end — `ApplyStatusEffectsConsumeEffect`,
+`RemoveStatusEffectsConsumeEffect`, `ClearAllStatusEffectsConsumeEffect`,
+`TeleportRandomlyConsumeEffect` and `PlaySoundConsumeEffect`, registered
+through `Registries.CONSUME_EFFECT_TYPE`. What it does *not* hold is what the
+food is worth, which is a second component and Part VIII's ([hunger and
+experience](../player/hunger-and-experience.md#eating-is-a-component-walk)).
+
 Duration is where the real answer lives, and the whole roster is eight
 overrides and one default. `Item.getUseDuration`'s base body reads
 `Consumable.consumeTicks` off the stack if there is a `Consumable` on it, and
@@ -194,7 +205,18 @@ by exactly as much as eating does, through exactly the same field.**
 `Item.Properties.spear` is the definition that overrides it outright, with a
 `UseEffects` that permits sprinting, suppresses vibrations and multiplies
 speed by one; the attack that ends *that* use is a different packet again
-([the spear](../player/the-spear.md)).
+([the spear](../player/the-spear.md#the-charge)).
+
+The component's third field is not about movement at all, and it is the half
+that runs on the server. `UseEffects.interactVibrations` is what
+`ItemStack.causeUseVibration` consults before letting a use emit a game
+event, so an item whose component clears the flag starts and finishes
+silently as far as a sculk sensor is concerned. `LivingEntity` calls it at
+both ends of a use — `GameEvent.ITEM_INTERACT_START` when the timer opens and
+`GameEvent.ITEM_INTERACT_FINISH` when it closes — and `FishingRodItem` and
+`BoneMealItem` call it for themselves, because neither ends through the use
+timer ([game events and
+vibrations](../world/game-events-and-vibrations.md#questions-players-ask)).
 
 ## The ending, in one picture
 

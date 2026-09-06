@@ -9,10 +9,13 @@ into a position, and the position into a packet; the server then decides
 whether to believe the packet. It usually does. The player is the one entity
 the server does not control, and everything here exists to reconcile that.
 
-The surprising part is what the server does while deciding. **It runs the
-whole physics pipeline for your player every tick and throws the position
-away.** It simulates in order to know what your velocity *ought* to be,
-because that is the number the anti-cheat subtracts from what you reported.
+The surprising part is what *deciding* costs you. **Sending move packets
+faster makes the check stricter, not looser**, a key held for less than a
+tick never happened at all, and the packet that reports your key presses
+cannot move you — though it can move a minecart. The server has an expected
+velocity to compare yours against because it simulates your player every tick
+and throws the answer away ([the two-phase
+tick](the-two-phase-tick.md#the-bracket-and-what-survives-it)).
 
 ## The cast
 
@@ -26,15 +29,15 @@ because that is the number the anti-cheat subtracts from what you reported.
 | `ServerPlayer` | what the client last said: the input, and the known movement | server main |
 
 Who is *allowed* to decide any of this is [Part VI's
-authority](../entities/authority.md), and this page assumes it: a `Player`
-is client-authoritative on both sides, which denies a `ServerPlayer`
-local-instance authority, while `Entity.canSimulateMovement` and
-`Entity.isEffectiveAi` are overridden true on the server anyway. Two
-consequences run through everything below — `Entity.checkFallDamage` inside
-`Entity.move` is gated on local-instance authority and therefore never
-fires for a `ServerPlayer`, so `Entity.doCheckFallDamage` on the packet path
-does the work; and the ground flag is only updated unconditionally for an
-authoritative instance, so on the server it needs real vertical motion.
+authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off),
+and this page assumes it: the server simulates your player and is not allowed
+to believe the result. Two consequences of that run through everything below
+— `Entity.doCheckFallDamage` on the packet path does the fall damage, because
+the branch inside `Entity.move` is gated on an authority a `ServerPlayer`
+does not have ([three cases, read on both
+sides](../entities/authority.md#three-cases-read-on-both-sides)); and the
+ground flag needs real vertical motion on the server, because only an
+authoritative instance updates it unconditionally.
 
 ## What each side holds
 
@@ -123,14 +126,15 @@ checks are inline literals; the only named ones nearby are
 ## Sampled once a tick, judged once a tick
 
 Keys are **sampled inside the tick, not pushed from the callback.** The
-GLFW callback builds a `KeyEvent` and immediately defers to the client's
-main thread with `BlockableEventLoop.execute`; the *movement* half of
-`KeyboardHandler.keyPress` sets `KeyMapping.isDown` and bumps
-`KeyMapping.clickCount`, and does even that only when no screen is open.
-Everything else the method does — the screen's own key handling, the debug
-keys, the pause — never reaches a `KeyMapping` at all. Releases are always delivered, which is the
-asymmetry the toggle-restoring machinery above exists to repair. The read
-happens once per game tick, deep inside `LocalPlayer.aiStep`, which calls
+*movement* half of `KeyboardHandler.keyPress` sets `KeyMapping.isDown` and
+bumps `KeyMapping.clickCount`, and does even that only when no screen is
+open; everything else the method does — the screen's own key handling, the
+debug keys, the pause — never reaches a `KeyMapping` at all. Releases are
+always delivered, which is the asymmetry the toggle-restoring machinery above
+exists to repair. When the callback runs, and why *deferred* is the wrong
+word for it, is [input and
+keybinds](../client/input-and-keybinds.md#the-cast). The read happens once
+per game tick, deep inside `LocalPlayer.aiStep`, which calls
 `ClientInput.tick`.
 
 Mouse look is the exception: `MouseHandler.handleAccumulatedMovement` runs
@@ -187,7 +191,7 @@ slowdown (from `LocalPlayer.itemUseSpeedMultiplier`),
 `Attributes.SNEAKING_SPEED` when moving slowly, and
 `LocalPlayer.modifyInputSpeedForSquareMovement`, the diagonal correction.
 From there it is ordinary
-[movement and collision](../entities/movement-and-collision.md):
+[movement and collision](../entities/movement-and-collision.md#the-tick):
 `Player.travel` — a real override, handling passengers, the swimming look
 nudge and the creative-flight damping — then `LivingEntity.travel` →
 `LivingEntity.travelInAir` →
@@ -291,7 +295,8 @@ every incoming move packet contributes rotation only. The client replies
 with `ServerboundAcceptTeleportationPacket` *and* an immediate
 `ServerboundMovePlayerPacket.PosRot`, then calls
 `BlockStatePredictionHandler.onTeleport` to drop its outstanding block
-predictions ([block interaction](../blocks/block-interaction.md)). On the
+predictions ([prediction and
+acknowledgement](../client/prediction-and-acks.md#the-six-windows)). On the
 receiving end `ClientPacketListener.handleMovePlayer` applies the position
 only when the player is not a passenger, and never interpolates: it passes
 the interpolate flag as a literal false, so your own player is always
@@ -312,9 +317,11 @@ disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
   `Minecraft.handleKeybinds`); `PacketProcessor` and
   `MinecraftServer.tickChildren` (server).
 - **Calls into:** `LivingEntity.travel` and `Entity.move`
-  ([movement and collision](../entities/movement-and-collision.md));
+  ([movement and
+  collision](../entities/movement-and-collision.md#building-the-delta));
   `ServerChunkCache.move`, which is what makes chunks load as you walk
-  ([tickets and loading](../world/tickets-and-loading.md)).
+  ([tickets and
+  loading](../world/tickets-and-loading.md#which-chunks-a-player-is-owed-and-what-makes-one-eligible)).
 - **Crosses the network as:** `ServerboundMovePlayerPacket` and its four
   variants, `ServerboundPlayerInputPacket`,
   `ServerboundPlayerCommandPacket` (whose
@@ -332,22 +339,17 @@ disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
   `ClientboundMoveVehiclePacket`.
 - **Data-driven by:** almost nothing —
   `GameRules.PLAYER_MOVEMENT_CHECK` and `GameRules.ELYTRA_MOVEMENT_CHECK`
-  ([level data and rules](../../reference/level-data-and-rules.md)), plus the
+  ([level data and
+  rules](../../reference/level-data-and-rules.md#game-rules-are-a-registry)), plus the
   movement attributes.
 
 ## Questions players ask
 
-**Why does the server bother simulating me at all?**
-`ServerGamePacketListenerImpl.tickPlayer` records the player's position into
-the `firstGood…` and `lastGood…` fields, calls `ServerPlayer.doTick` — the
-whole `LivingEntity.aiStep` / `LivingEntity.travel` / `Entity.move` pipeline
-runs server-side — and then puts the player back with `Entity.absSnapTo`,
-keeping the rotation. The simulation exists for `Entity.getDeltaMovement`,
-the *expected* distance the check subtracts. On foot the authoritative
-position moves only in `ServerGamePacketListenerImpl.handleMovePlayer` or
-through a teleport; the exception is riding, where the vehicle repositions
-you through `Entity.rideTick` every tick. [The two-phase tick](the-two-phase-tick.md) is that bracket seen
-from the other side.
+**Why does the server bother simulating me at all?** For one number:
+`Entity.getDeltaMovement`, the *expected* distance the speed check subtracts
+from what you reported. Everything else the simulation produces — the
+position above all — is thrown away a line later, which is [the two-phase
+tick](the-two-phase-tick.md#the-bracket-and-what-survives-it).
 
 **If `ServerboundPlayerInputPacket` never moves me, what is it for?**
 Two things. `ServerPlayer.setLastClientInput` feeds
@@ -380,7 +382,12 @@ only upward. `ServerGamePacketListenerImpl.clientIsFloating` is separately
 suppressed by spectator mode, `Abilities.mayfly`, the server's own
 allow-flight setting, `MobEffects.LEVITATION`, fall-flying and riptide — and
 the condition that actually defines *floating* is having no blocks anywhere
-below.
+below. A floating *vehicle* runs a second copy of the whole check —
+`ServerGamePacketListenerImpl.clientVehicleIsFloating` against
+`ServerGamePacketListenerImpl.aboveGroundVehicleTickCount`, on its own budget
+and only for the controlling passenger — so a rider and the thing they are
+riding are judged separately and either can end the session ([players and
+sessions](../server/players-and-sessions.md#the-three-kicks-that-come-from-the-tick)).
 
 **Why did my quick tap do nothing?** Movement polls `KeyMapping.isDown` once
 a tick, so a press shorter than a tick never happened. The keys that use

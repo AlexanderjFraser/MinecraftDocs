@@ -142,7 +142,10 @@ it and a `Ravager` stuns itself while shoving them. An arrow with any piercing l
 it before the angle is computed. `ShieldItem` still exists, the statistic is
 still `Stats.DAMAGE_BLOCKED_BY_SHIELD`, and the axe-disables-shield rule
 survives as `LivingEntity.getSecondsToDisableBlocking` — which `Warden`
-overrides — feeding `Player.blockUsingItem` and `BlocksAttacks.disable`. None
+overrides, and which reads the attacker's `Weapon` component only while that
+weapon is also their *active* item ([the sword
+swing](../player/the-sword-swing.md#the-damage-one-number-two-curves-one-order))
+— feeding `Player.blockUsingItem` and `BlocksAttacks.disable`. None
 of it is shield-specific code any more.
 
 The two multipliers after it almost never fire and are both pure tag lookups:

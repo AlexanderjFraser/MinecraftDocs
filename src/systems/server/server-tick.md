@@ -104,11 +104,17 @@ aborted the Netty-side call by throwing `RunningOnDifferentThreadException`
 has the crossing, in both directions). This is where most
 player input enters the world, but not all of it: the handlers that never
 call `PacketUtils.ensureRunningOnSameThread` hop by the other door instead.
+**Fifty-two of `ServerGamePacketListenerImpl`'s sixty-one game handlers open
+on that call**, and the nine that do not divide into three kinds. Two really
+touch nothing — the ping reply and an empty custom-payload hook.
 `ServerGamePacketListenerImpl.handleChat` and both command packets run their
 work through `MinecraftServer.execute`, and filtered sign and book text comes
 back on a `CompletableFuture` completed against the server — so chat and
 commands arrive as *tasks*, drained by the event loop below, and not with the
-packets.
+packets. And the chat family does a little real work before it hands over:
+`ServerGamePacketListenerImpl.tryHandleChat` reads the sender's chat
+visibility and resets its last-action time **on the Netty thread**, which is
+the one place player state is written off the main thread by design.
 
 Two gates sit on each queued pair. `PacketListener.shouldHandleMessage` is
 asked again at handling time, so a player who disconnected between arrival and

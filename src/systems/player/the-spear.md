@@ -8,7 +8,8 @@ raycast and hits *everything* along the ray. Hold right-click and you
 **charge**: the spear becomes an item you are using, like a bow, except that
 what it does each tick is look for entities in front of you and hurt them in
 proportion to the closing speed. Neither path goes anywhere near
-`Player.attack`, the method [the sword swing](the-sword-swing.md) is about,
+`Player.attack`, the method [the sword
+swing](the-sword-swing.md#the-damage-one-number-two-curves-one-order) is about,
 and the second one has a property no other melee attack in the game has —
 **a charging spear ignores the attack-strength cooldown entirely**, because
 the code that applies the cooldown curves is skipped for the item you are
@@ -43,14 +44,22 @@ because it is *both* weapons at once plus the reach to use them:
 | `DataComponents.MINIMUM_ATTACK_CHARGE` | 1.0: no partial-charge stab |
 | `DataComponents.SWING_ANIMATION` | `SwingAnimationType.STAB`, with a per-material duration |
 | `DataComponents.DAMAGE_TYPE` | `DamageTypes.SPEAR`, as a delayed holder component |
-| `DataComponents.USE_EFFECTS` | `UseEffects.canSprint` **true** — the one item that lets you run while using it |
+| `DataComponents.USE_EFFECTS` | the whole component overridden: sprint allowed, vibrations off, speed multiplier one — the only item in the game that does not slow you down while you hold it out |
 | `DataComponents.WEAPON` | a durability cost of one per attack |
 | attribute modifiers | `Attributes.ATTACK_DAMAGE` from the material, and an `Attributes.ATTACK_SPEED` derived from the swing duration |
 
+Those nine are what makes a spear a *weapon*. The ordinary tool components
+come from the material and are not in the table:
+`Item.Properties.spear` also calls `Item.Properties.durability`,
+`Item.Properties.repairable` and `Item.Properties.enchantable`, so a spear
+takes damage, mends on an anvil and accepts enchantments the way any tool
+does ([items and stacks](../items/items-and-stacks.md#the-cast) and
+[enchanting](../items/enchanting.md#the-one-question-all-five-ask)).
+
 That `UseEffects` override is why a spear feels unlike every other held-down
-item: [hunger and experience](hunger-and-experience.md) explains the
-component, and `LocalPlayer.isSlowDueToUsingItem` is the reader that a spear
-turns off.
+item — `LocalPlayer.isSlowDueToUsingItem` is the reader it turns off, and
+[using an item](../items/using-an-item.md#moving-while-you-use) explains what
+the component does for everything else.
 
 ## Two entries, one exit
 
@@ -124,7 +133,8 @@ A kinetic weapon is *used*, not swung. `Item.use` sees
 `DataComponents.KINETIC_WEAPON`, calls `LivingEntity.startUsingItem` and
 plays the sound; `Item.getUseDuration` returns **72000** for it, the same
 effectively-endless duration a bow gets, so the charge ends only when you
-release ([using an item](../items/using-an-item.md)). Starting also
+release ([using an
+item](../items/using-an-item.md#the-bow-tick-by-tick)). Starting also
 allocates `LivingEntity.recentKineticEnemies`, a server-side map of who has
 been hit and when, which `LivingEntity.stopUsingItem` throws away.
 
@@ -139,13 +149,20 @@ argument, not a swing:
   `KineticWeapon.getMotion` reads `Entity.getKnownSpeed` — the *reported*
   movement from [input to movement](input-to-movement.md) — scaled to
   blocks per second, taking the **root vehicle's** motion for a
-  non-player passenger.
+  non-player passenger ([input to
+  movement](input-to-movement.md#the-trace-w-is-pressed)).
 - **How fast the gap is closing.** The target's own projected speed is
   subtracted, floored at zero, and that relative speed is what the damage
   is built from.
 - **Whether you already hit them.** `LivingEntity.wasRecentlyStabbed`
   against `KineticWeapon.contactCooldownTicks` — ten for a spear — is why
   running through a crowd does not hit the same mob every tick.
+
+Who is in front of you is answered exactly as it is for the stab:
+`ProjectileUtil.getHitEntitiesAlong` walks the weapon's `AttackRange` with
+the block-collider clip context and `PiercingWeapon.canHitEntity` filters
+what it finds. The two attacks differ in what they compute, never in what
+they can reach.
 
 Three independent `KineticWeapon.Condition`s then decide what the hit *is*:
 `KineticWeapon.dismountConditions`, `KineticWeapon.knockbackConditions` and
@@ -176,10 +193,12 @@ number of living entities stabbed this charge.
 Both paths end in a method called *stabAttack*, which exists twice.
 `LivingEntity.stabAttack` is the general one: it returns false off a
 `ServerLevel`, runs the damage through `EnchantmentHelper.modifyDamage`,
-calls `Entity.hurtServer`, applies two knockbacks — a flat one and
-`LivingEntity.getKnockback` — dismounts the target if the caller asked,
-runs `ItemStack.hurtEnemy` and the post-attack enchantment effects, and
-plays the attack sound.
+calls `Entity.hurtServer` — into the same pipeline a sword swing ends in
+([damage and death](../entities/damage-and-death.md#the-number-the-arrow-decides))
+— applies two knockbacks, a flat one and `LivingEntity.getKnockback`,
+dismounts the target if the caller asked, runs `ItemStack.hurtEnemy` and the
+post-attack enchantment effects
+([enchantments](../items/enchantments.md)), and plays the attack sound.
 
 `Player.stabAttack` overrides it, and the override is where the spear
 becomes strange. It computes the enchantment boost the way `Player.attack`
@@ -191,7 +210,8 @@ you are holding the spear out, both curves are skipped and every tick's hit
 lands at full base damage. The rest of the override is the familiar tail —
 `Player.deflectProjectile` can still end it, the knockbacks are the same
 two, `Player.itemAttackInteraction` applies the durability cost, and
-`Player.causeFoodExhaustion` charges the same 0.1 a sword does.
+`Player.causeFoodExhaustion` charges the same 0.1 a sword does ([hunger and
+experience](hunger-and-experience.md#questions-players-ask)).
 
 ## Questions players ask
 
@@ -212,9 +232,10 @@ halves of the same design.
 allocated when you start using the spear and dropped when you stop, so
 releasing and re-charging clears everyone.
 
-**Can a mob do this?** Yes, both ways round. `SpearUseGoal` drives the
-charge for a goal-based mob and `SpearApproach`, `SpearAttack` and
-`SpearRetreat` do it for a brain-based one — zombies, zombified piglins and
+**Can a mob do this?** Yes, both ways round, and the split is the ordinary
+one ([goals and brains](../entities/ai-goals-and-brains.md#what-holds-the-state)).
+`SpearUseGoal` drives the charge for a goal-based mob and `SpearApproach`,
+`SpearAttack` and `SpearRetreat` do it for a brain-based one — zombies, zombified piglins and
 piglins are the users in the tree, and `Piglin` treats a kinetic weapon like
 a crossbow when deciding what it is holding. Both read
 `KineticWeapon.computeDamageUseDuration` to know how long to hold it. The

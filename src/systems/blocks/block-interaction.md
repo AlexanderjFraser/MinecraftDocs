@@ -254,7 +254,9 @@ one counts *recursion depth* and is what the door's 511 and 510 come from.
 
 `ServerGamePacketListenerImpl.handleUseItemOn` tests in this order, and the
 interesting column is the second one — the refusals do not answer alike, and
-one of them lies.
+one of them lies. The reach the first of them measures is an attribute, and
+players have two of them — one for blocks and a shorter one for entities
+([player anatomy](../player/player-anatomy.md#what-player-owns)).
 
 | the gate | what the client gets when it fails |
 |---|---|

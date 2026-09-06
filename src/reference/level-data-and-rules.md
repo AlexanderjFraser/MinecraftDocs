@@ -15,7 +15,8 @@ one line is all there is.
 
 Four parts point here — [III](../systems/server/README.md) for what a boot
 reads, [IV](../systems/world/README.md) for what the world is made of,
-[VIII](../systems/player/README.md) for the spawn and
+[VIII](../systems/player/README.md) for the two game rules that decide
+whether the server checks your movement, and
 [XII](../systems/worldgen/README.md) for the seed — and [the level
 tick](../systems/server/server-level-tick.md) is where most of them are read.
 

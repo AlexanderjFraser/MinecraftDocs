@@ -99,6 +99,24 @@ paragraphs below it. Part VII is the fourth part running to have arrived with
 almost no anchors. The part's coverage answer is four families and four systems
 that are nobody's — villager trading, brewing, the creative tabs and armour
 trims — all four declined in writing. **No tool bug.**
+**Session H is done** (2026-09-06, Part VIII): all seven pages and the landing
+page rewritten, and this is the session where the part was small enough that
+the coverage question came back *yes* — 97% of Part VIII's lines are named
+somewhere, and the landing page now makes that its argument instead of leaving
+it unsaid. Nine pages in six other parts were edited, because almost
+everything a Part VIII page reaches for is owned elsewhere: the
+record-and-discard bracket settled between the part's own two trunk pages,
+which had been opening on the same surprise two lectures apart; `Consumable`
+split with Part VII along rule 1 rather than moved whole, with the session
+writing down why the routing rule's default was declined; and the pass's
+largest single move so far, `Player.cannotAttack`'s two hooks and projectile
+deflection off `reference/non-living-damage`, where a Reference page had been
+holding the book's only explanation of a lecture's own method. **Eight
+corrections**, three of them a page disagreeing with another page and two a
+page disagreeing with a Reference page, plus four suspicions re-derived and
+found sound. Part VIII is the fifth part running to arrive with **no anchors
+at all**; seventy-one were added. **No tool bug**, the third pass-5 part
+session without one.
 
 ## The passes
 

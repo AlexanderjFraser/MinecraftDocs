@@ -206,12 +206,14 @@ swing's sequel.
 6. [Hunger and experience](systems/player/hunger-and-experience.md)
 7. [Status effects](systems/player/status-effects.md)
 
-Part VIII assumes Part VI above everything — [authority](systems/entities/authority.md)
+Part VIII assumes Part VI above everything — [authority](systems/entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
 in particular, which is where the whole part's premise is stated — and Part
 III for the tick phases the two-phase tick lives between. It assumes Part VII
-for the inventory and for [using an item](systems/items/using-an-item.md),
-which is the machinery the spear's charge runs on. Nothing later in the book
-is needed to watch it, but Part IX and Part X both come back to it.
+for [using an item](systems/items/using-an-item.md#the-two-paths-side-by-side),
+which is the machinery both the spear's charge and the meal run on; the
+inventory itself is Part VIII's, and Part VII stops at the slot. Nothing later
+in the book is needed to watch it, but Part IX and Part X both come back to
+it.
 
 ## IX · Networking
 

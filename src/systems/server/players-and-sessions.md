@@ -447,11 +447,11 @@ removal reasons in the table above have already told it what to do.
 `ServerGamePacketListenerImpl.tick` ends sessions of its own accord. An idle
 player is disconnected after `MinecraftServer.playerIdleTimeout` minutes
 with no action, unless they are sitting on the end credits. A player whose
-client reports itself airborne for longer than
-`ServerGamePacketListenerImpl.MAXIMUM_FLYING_TICKS` — eighty ticks, scaled
-up when gravity is reduced and disabled entirely when gravity is zero — is
-kicked for flying, and a floating vehicle is counted separately from a
-floating rider. And keep-alive is a strict pair:
+client reports itself airborne for too long is kicked for flying, on a budget
+that stretches as gravity falls and against a list of exemptions the movement
+page owns ([input to
+movement](../player/input-to-movement.md#questions-players-ask)). And
+keep-alive is a strict pair:
 `ServerCommonPacketListenerImpl.keepConnectionAlive` sends one every
 `ServerCommonPacketListenerImpl.LATENCY_CHECK_INTERVAL` milliseconds and
 disconnects with `ServerCommonPacketListenerImpl.TIMEOUT_DISCONNECTION_MESSAGE`

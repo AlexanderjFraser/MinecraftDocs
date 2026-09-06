@@ -25,7 +25,9 @@ the bar will not move.
 | `ServerPlayer` | the change detection that turns any of this into a packet | server main |
 
 Both halves hang off `ServerPlayer.doTick`, the connection-driven half of
-[the two-phase tick](the-two-phase-tick.md); the level's entity tick touches
+[the two-phase
+tick](the-two-phase-tick.md#phase-two-what-this-player-would-do-if-it-simulated-itself);
+the level's entity tick touches
 essentially none of it. The order inside that half matters: item use is
 resolved, then `Player.aiStep` runs `ServerPlayer.tickRegeneration` — which
 *is* the Peaceful refill, its whole body gated on that difficulty — and the
@@ -77,7 +79,7 @@ flowchart TD
 
 The game rule is `GameRules.NATURAL_HEALTH_REGENERATION`, which lives in
 `world/level/gamerules` with typed `GameRule` lookups ([level data and
-rules](../../reference/level-data-and-rules.md)). The starvation hit only
+rules](../../reference/level-data-and-rules.md#game-rules-are-a-registry)). The starvation hit only
 lands if health is above five hearts, or above half a heart on Normal, or
 unconditionally on Hard: five hearts is the floor on Easy and Peaceful, half
 a heart on Normal, and death on Hard. `DamageTypes.STARVE` is declared with
@@ -86,20 +88,19 @@ zero exhaustion, so starving does not feed itself.
 ## Eating is a component walk
 
 **`FoodProperties`** (`DataComponents.FOOD`) is three things: nutrition,
-saturation and *can always eat*. The duration is not on it — that lives on
-**`Consumable`** (`DataComponents.CONSUMABLE`), which owns
-`Consumable.consumeSeconds` (with `Consumable.consumeTicks` derived from
-it), the `ItemUseAnimation`, the sound, the particles and a list of
-`ConsumeEffect`s: `ApplyStatusEffectsConsumeEffect`,
-`RemoveStatusEffectsConsumeEffect`, `ClearAllStatusEffectsConsumeEffect`,
-`TeleportRandomlyConsumeEffect`, `PlaySoundConsumeEffect`.
+saturation and *can always eat*. That is the whole of what a meal is *worth*.
+Everything about how long it takes, what it looks like and what else it
+applies is a different component on the same stack — `Consumable`, and [using
+an item](../items/using-an-item.md#the-two-paths-side-by-side) owns it.
 
-`FoodProperties` reaches the player by implementing **`ConsumableListener`**,
+The two meet through an interface, and that is the answer to the missing
+*eat* method. `FoodProperties` reaches the player by implementing
+**`ConsumableListener`**,
 and `Consumable.onConsume` walks every component of that type on the stack.
 It is not the only implementation — `PotionContents`,
 `SuspiciousStewEffects` and `OminousBottleAmplifier` implement it too, and
 `PotionContents` is how drinking applies an effect, which is where this page
-and [status effects](status-effects.md) meet in one method. Two routes reach
+and [status effects](status-effects.md#what-an-effect-is) meet in one method. Two routes reach
 `FoodData.eat` without any of that: `CakeBlock.eat`, and the saturation
 effect, both using the raw nutrition-and-saturation overload.
 
@@ -131,29 +132,25 @@ ungated — and `Player.canEat` itself passes for *invulnerable abilities*,
 `Consumable.consumeTicks` is zero is consumed instantly with no animation.
 After the food lands, `ItemStack.finishUsingItem` applies
 `DataComponents.USE_REMAINDER` and `DataComponents.USE_COOLDOWN` ([using an
-item](../items/using-an-item.md)).
+item](../items/using-an-item.md#the-ending-in-one-picture)).
 
-The *decision* to finish is server-only, but the client replays the meal:
-the server announces it with an entity event, `Player.handleEntityEvent`
-turns that back into `LivingEntity.completeUsingItem`, and the client
-therefore runs `FoodProperties.onConsume` and its `FoodData.eat` locally,
-with no side guard on it. `ClientPacketListener.handleSetHealth` then
-overwrites food and saturation outright, and routes health through
+The *decision* to finish is server-only, but the client replays the meal on
+an entity event and runs `FoodProperties.onConsume` and its `FoodData.eat`
+locally, with no side guard on it — which is why the hunger bar's jump is
+predicted while a chorus fruit's teleport is not ([using an
+item](../items/using-an-item.md#the-meal-tick-by-tick)). The prediction lasts
+one tick: `ClientPacketListener.handleSetHealth` overwrites food and
+saturation outright, and routes health through
 `LocalPlayer.hurtTo`, which works out the delta first so the damage flash
 still plays. The client also *reads* its food data for two decisions of its
 own: sprinting is gated on having more than six food *or* being able to
 fly, and the HUD's food-bar jitter reads saturation.
 
-Eating slowdown is a third component again. **`UseEffects`**
-(`DataComponents.USE_EFFECTS`) is on *every* item —
-`UseEffects.canSprint`, `UseEffects.interactVibrations`,
-`UseEffects.speedMultiplier` — and its slowdown half is genuinely
-client-side: `LocalPlayer.isSlowDueToUsingItem` and
-`LocalPlayer.itemUseSpeedMultiplier` are its only readers, which is how a
-spear overrides the component and lets you sprint while charging ([the
-spear](the-spear.md)). The vibration half is not client-side:
-`ItemStack.causeUseVibration` reads the same component server-side to decide
-whether using an item emits a game event.
+Eating slowdown is a third component again — `UseEffects`, on *every* item,
+which is why a meal and a drawn bow cost you exactly the same speed ([using
+an item](../items/using-an-item.md#moving-while-you-use)). It has nothing to
+do with the food: it is read while any item is held out, and a spear is the
+one definition that turns it off ([the spear](the-spear.md#what-an-item-needs-to-be-a-spear)).
 
 ## The other bar
 
@@ -232,8 +229,8 @@ that purpose.
 `Player.onEnchantmentPerformed` subtracts the level cost *and* re-rolls
 `Player.enchantmentSeed`, while `AnvilMenu` — which also spends levels,
 through `Player.giveExperienceLevels` — does not. A seed that loads back as
-zero is re-rolled on read. [Enchanting](../items/enchanting.md) owns what
-the seed is for.
+zero is re-rolled on read. [Enchanting](../items/enchanting.md#where-the-randomness-comes-from)
+owns what the seed is for.
 
 **What crosses the wire?** `ClientboundSetHealthPacket` (health, food and
 saturation together, to that player only), `ClientboundSetExperiencePacket`
@@ -246,8 +243,8 @@ rules above.
 
 ## Where to look
 
-`FoodData` · `FoodConstants` · `FoodProperties` · `Consumable` ·
-`ConsumableListener` · `ConsumeEffect` · `UseEffects` · `Foods` ·
+`FoodData` · `FoodConstants` · `FoodProperties` · `Foods` ·
+`ConsumableListener` · `Consumable.onConsume` ·
 `Player.giveExperiencePoints` · `ExperienceOrb` ·
 `ServerPlayer.tickRegeneration` · `ClientboundSetHealthPacket` ·
 `ClientboundSetExperiencePacket`

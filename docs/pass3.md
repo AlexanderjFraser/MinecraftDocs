@@ -1631,6 +1631,38 @@ writes one strikes it through; a session that rules one out says why, here.*
   should take them, and villager trading is the one that most looks like a
   page of its own.
 
+- **Part VIII's coverage answer, which is mostly *yes*** *(pass 5, session H)*.
+  Part VIII is the smallest part in the book — 29 classes and 8,135 lines —
+  and 97% of those lines are named somewhere, so the coverage question comes
+  back almost clean and the landing page now says so out loud. Six classes
+  were named nowhere and session H took five of them: `PlayerSkin`,
+  `PlayerModelType` and `PlayerModelPart` as the skin family on
+  `player-anatomy`, `LocalPlayerResolver` as the tab-list-first profile
+  lookup, and `ProfileKeyPair` cross-linked to `chat-and-signing`. Two things
+  are declined in writing on `player/README`, and one of them is a real gap.
+  **Declined:** `Hotbar` and `HotbarManager`, the nine *saved* creative
+  hotbars, which belong to the creative inventory screen — the same screen
+  session G declined with the creative tabs, so this is that decline reaching
+  a second part. **The gap:** *the player half of sleep*. `player-anatomy`
+  names `Player.sleepCounter`, `Player.startSleepInBed` /
+  `Player.stopSleepInBed`, the `Player.BedSleepingProblem` refusals and the
+  two durations; `server-level-tick` owns the *everyone is asleep* half — the
+  night skip, `SleepStatus`, the weather reset. Nothing explains the walk
+  between them: what one player lying down does over the following hundred
+  ticks, which refusal a bed answers with and why, and how the two halves
+  meet. It is a section on a Part VIII page or a short page of its own, and it
+  is the one thing in these packages a reader will look for and not find.
+
+- **Four names Part VIII carries and no page explains** *(pass 5, session H)*.
+  Each is a method or field named in a list on a page that promises no
+  inventories, with no owner anywhere: `Player.attackVisualEffects` and
+  `Player.damageStatsAndHearts`, both steps in `Player.attack`'s tail on
+  `the-sword-swing`; `ServerPlayer.wardenSpawnTracker`, which no page says
+  what accumulates into or what reads; and `ServerPlayer.camera` with the
+  camera-entity handoff behind `/spectate`, which has no owner page at all.
+  The last is the largest — a spectator's camera entity is a real mechanism
+  and Part VIII, Part X and Part XIII each touch it and none explains it.
+
 - **Reference views `gen_reference.py` does not yet have** — three
   catalogues the part sessions named and session O declined to hand-keep,
   because each is a declaration order the tool could read: the nineteen

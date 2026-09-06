@@ -213,9 +213,9 @@ instead guard with `AttributeInstance.hasModifier` before adding.
 Transient versus permanent is *purely* about saving: both kinds sit in the
 same indices, both affect the value identically, both go on the wire, and
 only the permanent ones are packed. Mob-effect modifiers are added
-permanently, and that is the only reason they survive a reload — effects are
-restored from NBT straight into the active list without going through the
-apply path, so the hook that would add the modifier never runs on load. On
+permanently, and that is the only reason an effect's modifier survives a
+reload ([status
+effects](../player/status-effects.md#what-survives-a-save-and-why-the-modifiers-do)). On
 the client, meanwhile, *every* modifier is transient, because
 `ClientPacketListener.handleUpdateAttributes` sets the base value, wipes the
 whole modifier list and re-adds the incoming ones with

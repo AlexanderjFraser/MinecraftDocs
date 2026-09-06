@@ -38,7 +38,10 @@ take them; this one names them and says so.
 The part also stops at `Avatar`, the rung 26.2 inserted **above** `Player`:
 everything player-shaped is Part VIII, drawing an entity is Part XI, and the
 prediction ledger behind the blocks you place is [Part
-X](../client/prediction-and-acks.md#the-four-writes).
+X](../client/prediction-and-acks.md#the-four-writes). `world/effect` is the
+one package in the list above whose lecture is not here: an effect is a thing
+that happens to a `LivingEntity`, but the split it demonstrates is the
+player's, so [status effects](../player/status-effects.md) is Part VIII's.
 
 ## The shape of the part
 
