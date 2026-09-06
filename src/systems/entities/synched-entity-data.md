@@ -99,8 +99,8 @@ and *sheared* into bit four — `Sheep.getColor`, `Sheep.setColor`,
 `DataComponents.SHEEP_COLOR` by `Sheep.get` and written back through
 `Sheep.applyImplicitComponent`.
 
-The numbering belongs to the class, not to the concept. `Avatar` — the class
-26.2 inserts between `LivingEntity` and `Player` — owns
+The numbering belongs to the class, not to the concept. `Avatar` — the class 26.2 inserts between `LivingEntity` and `Player`
+([entity anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)) — owns
 `Avatar.DATA_PLAYER_MAIN_HAND` and `Avatar.DATA_PLAYER_MODE_CUSTOMISATION`,
 so the skin-part toggles belong to every avatar, while
 `Player.DATA_PLAYER_ABSORPTION_ID`, `Player.DATA_SCORE_ID` and the two
@@ -204,7 +204,7 @@ marks the item and the container dirty. `Sheep` does not override the hook,
 and the base implementation reacts to exactly one accessor, `Entity.DATA_POSE`,
 by calling `Entity.refreshDimensions`. Back in `Sheep.mobInteract`:
 `Entity.gameEvent` with `GameEvent.SHEAR` for the sculk listeners
-([game events](../world/game-events-and-vibrations.md)),
+([game events](../world/game-events-and-vibrations.md#a-game-event-is-one-number)),
 `ItemStack.hurtAndBreak` on the shears, and `InteractionResult.SUCCESS_SERVER`.
 
 **The send, in the same tick.** `MinecraftServer.processPacketsAndTick`
@@ -254,24 +254,25 @@ flowchart TD
     GATE -->|"no"| HOLD["nothing goes out, and the dirty flags survive to the next tick"]
 ```
 
-Two tests stand between a dirty byte and the wire. `ChunkMap.tick` decides
-whether `ServerEntity.sendChanges` is called at all; an entity that is
-tracked but outside entity-ticking range, and not moving between sections,
-simply is not asked, and keeps its dirty data until one of the three
-conditions becomes true. Inside `ServerEntity.sendChanges`, the interval gate
+Two tests stand between a dirty byte and the wire, and the first is not this
+page's: `ChunkMap.tick` decides whether `ServerEntity.sendChanges` is called
+at all, on three conditions [what the client is
+told](../networking/what-the-client-is-told.md#gate-2-whether-the-detector-is-called-at-all)
+sets out. An entity that fails them keeps its dirty data until one of the
+three becomes true. What matters to a byte is the second test.
+Inside `ServerEntity.sendChanges`, the interval gate
 covers the position block *and* the usual
 `ServerEntity.sendDirtyEntityData` call, which is why shearing a sheep also
 sends that sheep's position delta this tick: synched data is, incidentally,
 a latency channel for movement.
 
-The interval comes from `EntityType.updateInterval`, fixed when
-`ChunkMap.TrackedEntity` constructs the `ServerEntity`. `EntityTypes.PLAYER`
-sets 2 and `EntityType.Builder` defaults to 3. Thirty-seven types set the
-interval explicitly, most of them at 10 or 20 — and seven of those, item
-frames, paintings, leash knots and their kin, set *Integer.MAX_VALUE*.
-
-**Integer.MAX_VALUE** — the update interval of `EntityTypes.ITEM_FRAME`,
-which is to say its interval branch never fires again after tick zero.
+The interval comes from `EntityType.updateInterval`, fixed on the type at
+registration and copied when `ChunkMap.TrackedEntity` constructs the
+`ServerEntity` — 2 for a player, 3 by default, and *Integer.MAX_VALUE* for
+seven types including `EntityTypes.ITEM_FRAME`, whose interval branch
+therefore never fires again after tick zero ([entity
+anatomy](entity-anatomy.md#the-id-the-box-and-the-numbers-on-the-type) has the
+seven and the other number beside it).
 
 That is exactly why `ServerEntity.sendChanges` has an `ItemFrame` special
 case that calls `ServerEntity.sendDirtyEntityData` every tenth tick *before*
@@ -348,7 +349,8 @@ always the previous weather state and so always different.
 `SynchedEntityData.set` on the client — `LocalPlayer` prediction does it
 constantly — but `ServerEntity.sendDirtyEntityData` is the only caller of
 `SynchedEntityData.packDirty` in the whole tree. The client's dirty flag is read by no one, and
-the next server value overwrites the slot ([authority](authority.md)). The
+the next server value overwrites the slot
+([authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)). The
 container is not useless to the client, though: `ClientPacketListener.handleRespawn`
 copies the old player's non-default values straight into the new one, the
 single client-to-client use of the channel.
@@ -363,11 +365,11 @@ its bounds test — an id exactly equal to the array length slips past and dies
 on the array write instead.
 
 **Does any of this affect the physics the client simulates?** One value does.
-`Entity.DATA_POSE` travels on its own `EntityDataSerializers.POSE`, and
-`Entity.onSyncedDataUpdated` turns an incoming pose into
-`Entity.refreshDimensions` — a synched value resizing a hitbox on both sides.
-Everything else on the channel is cosmetic to the client, or read back by
-gameplay code that already knew.
+`Entity.DATA_POSE` travels on its own `EntityDataSerializers.POSE`, and the
+hook the setter calls resizes the hitbox on whichever side just received it
+([entity anatomy](entity-anatomy.md#dimensions-attachments-and-pose) has what
+the resize costs). Everything else on the channel is cosmetic to the client,
+or read back by gameplay code that already knew.
 
 Two details that are only visible from the whole tree. The batch overload
 `SyncedDataHolder.onSyncedDataUpdated`, fired by

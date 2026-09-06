@@ -1559,6 +1559,24 @@ writes one strikes it through; a session that rules one out says why, here.*
   is **21** non-living classes, not ~30, and `Entity.hurtServer` is
   *abstract*, so there is no default behaviour anywhere in the tree.
   *(session E, discharged session G)*
+- **Four mechanisms in Part VI's packages that are bigger than a sentence.**
+  *(pass 5, session F.)* Part VI is 40% named by lines, and session F's finding
+  is that the number is right to be low — the bulk is one class per species,
+  and a species is the part's nine pages instantiated. Four things in those
+  packages are not that, and are explained nowhere: **the minecart's two
+  movement models** (`MinecartBehavior`, `NewMinecartBehavior`,
+  `OldMinecartBehavior`, `AbstractMinecart` — about 1,800 lines that four pages
+  name and none explains, and the second instance of the vehicle delegation
+  `authority` draws entirely with a boat); **the ender dragon's flight phases**
+  (`world/entity/boss/enderdragon/phases`, sixteen classes and 1,283 lines,
+  named nowhere in the book, and the one genuine state machine in the part);
+  **a raid** (`Raid` 898 lines and `Raider` 619, named only on
+  `points-of-interest` and `level-data-and-rules`, and a spawn source
+  `entity-lifecycle`'s *other ways in* now names but does not explain); and
+  **villager gossip** (`GossipContainer`, 274 lines, no owner anywhere — not
+  `ai-goals-and-brains`' scenario and not `points-of-interest`'). The landing
+  page declares all four rather than leaving the silence unexplained. A second
+  edition should take them; nothing before pass 10 should.
 - **Commands that are algorithms** — `SpreadPlayersCommand`,
   `CloneCommands`, `ChaseCommand` (a debug socket protocol between two game
   instances). Part XIII, or Reference. **Session P: carried.** Three
@@ -1591,8 +1609,15 @@ writes one strikes it through; a session that rules one out says why, here.*
   `EntitySpawnReason` constants with what each gates (session G); the
   `Item.Properties` weapon helpers — the components that make an item a
   weapon, for every item (session I); the `Structure.spawnOverrides`
-  spawn-list override, which nothing in the corpus states (session G, cut
-  from `entity-lifecycle`). And the **block-event users** — *three*
+  spawn-list override, ~~which nothing in the corpus states~~ — **the
+  mechanism is now stated, by pass 5's session F, on
+  `entity-lifecycle#a-spawn-attempt-is-a-filter-not-a-conversation`: the
+  override replaces the biome's list for the first structure at the position
+  that declares one for the category, and `NaturalSpawner.isInNetherFortressBounds`
+  gets in front of it with a hard-coded list over a wider box. What is still
+  missing is the *table* of which structures override what, which is the view;
+  session N builds it and both citers exist** (session G, cut from
+  `entity-lifecycle`). And the **block-event users** — *three*
   blocks and seven block entities with their two int parameters — stay a
   paragraph on `pistons-and-block-events` (session F's weaker candidate;
   declined by session O because the page's argument needs them in place).

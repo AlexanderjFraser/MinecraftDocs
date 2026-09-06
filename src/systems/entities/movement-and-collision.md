@@ -32,17 +32,13 @@ the blocks came in.
 
 ## Who is allowed to run this at all
 
-A tracked mob is simulated on the server and merely *carried* on the client
-— nothing in its own tick reaches `Entity.move`, though a piston or a shulker
-box can still shove it there from a block entity — while a player is the
-other way up, client-authoritative on both sides, so the client simulates for
-real and the server re-runs it as a check. The predicate that decides is
-`Entity.isLocalInstanceAuthoritative` rather than a bare "am I the client",
-and `Entity.canSimulateMovement` and `Entity.isEffectiveAi` default to it —
-though several of the gates below are written as *not a client **or**
-authoritative*, and `Player` overrides both predicates to exactly that. Which
-call site reads which, and why a mob and a player invert, is
-[authority](authority.md); this page notes each gate where the trace hits it.
+The trace below is the *authoritative* copy's tick, and which copy that is
+inverts between a mob and a player: nothing in a client-side mob's own tick
+reaches `Entity.move`, while your own player is simulated on your machine for
+real. The predicate that decides is `Entity.isLocalInstanceAuthoritative`
+rather than a bare "am I the client", and it is stated in full once, at
+[authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off);
+this page notes each gate where the trace hits it.
 
 ## The tick
 
@@ -94,7 +90,7 @@ interpolate-or-coast, head turn, equipment, a deadzone that zeroes any delta
 component under 0.003 (a squared-horizontal test instead, for players),
 `LivingEntity.applyInput`, `Mob.serverAiStep` — the goal selector and the
 movement control, which set `LivingEntity.xxa` and `LivingEntity.zza`
-([AI](ai-goals-and-brains.md), [pathfinding](pathfinding.md)) — the jump
+([AI](ai-goals-and-brains.md#what-decides), [pathfinding](pathfinding.md#following-it-one-tick-at-a-time)) — the jump
 branch, gliding, the travel branch, `Entity.applyEffectsFromBlocks`,
 animation, freezing, `LivingEntity.pushEntities`. Our zombie's jump branch
 is skipped before `Entity.onGround` is ever consulted, because the branch is
@@ -129,13 +125,13 @@ discards the whole vector if it is not finite, so NaN never enters the
 physics state.
 
 Every knob on the entity's side is a syncable attribute
-([attributes](attributes.md)): `Attributes.GRAVITY` (0.08),
+([attributes](attributes.md#forty-numbers-every-one-of-them-clamped)): `Attributes.GRAVITY` (0.08),
 `Attributes.STEP_HEIGHT` (0.6), `Attributes.MOVEMENT_SPEED` (0.7),
 `Attributes.JUMP_STRENGTH` (0.42), `Attributes.SAFE_FALL_DISTANCE` (3.0),
 `Attributes.FALL_DAMAGE_MULTIPLIER`, `Attributes.MOVEMENT_EFFICIENCY`,
 `Attributes.WATER_MOVEMENT_EFFICIENCY`, `Attributes.AIR_DRAG_MODIFIER`,
 `Attributes.FRICTION_MODIFIER`, `Attributes.BOUNCINESS`. The world's half is
-four block properties ([blocks and states](../blocks/blocks-and-states.md)):
+four block properties ([blocks and states](../blocks/blocks-and-states.md#four-decisions-four-lookups)):
 
 | property | default | who changes it |
 |---|---|---|
@@ -149,10 +145,10 @@ the one with real machinery — `Entity.limitPistonMovement` collapses the
 vector to a single axis, `Entity.applyPistonMovementRestriction` clamps it to
 ±0.51 per game tick, and that path alone is exempt from the *multiply* by
 `Entity.stuckSpeedMultiplier` — it still clears the field
-([pistons](../blocks/pistons-and-block-events.md)). `MoverType.SHULKER_BOX`
+([pistons](../blocks/pistons-and-block-events.md#one-push-tick-by-tick)). `MoverType.SHULKER_BOX`
 makes a `Shulker` teleport rather than move, and `MoverType.SELF` and
-`MoverType.PLAYER` are read together by `Player.maybeBackOffFromEdge` ([input
-to movement](../player/input-to-movement.md)).
+`MoverType.PLAYER` are read together by `Player.maybeBackOffFromEdge`, which
+is what stops a crouching player walking off a ledge.
 
 ## Resolving one axis at a time
 
@@ -245,7 +241,7 @@ It adds the downward movement to `Entity.fallDistance` and, on landing, calls
 `LivingEntity.calculateFallPower` subtracts
 `Attributes.SAFE_FALL_DISTANCE` and `LivingEntity.calculateFallDamage`
 multiplies by `Attributes.FALL_DAMAGE_MULTIPLIER` and checks
-`EntityTypeTags.FALL_DAMAGE_IMMUNE` ([damage](damage-and-death.md)). Our
+`EntityTypeTags.FALL_DAMAGE_IMMUNE` ([damage](damage-and-death.md#the-number-the-arrow-decides)). Our
 two-block fall is 2 − 3 < 0, so the power is zero and **nothing at all**
 happens: the landing particles are gated on a positive power and the fall
 sound on positive damage, so only the game event and the reset fire. That
@@ -263,7 +259,7 @@ code. It reflects the horizontal components, and for a downward hit combines
 non-living entities, gated on the impact being at least one tick of gravity
 — which is why nothing jitters at rest on a slime block — and opted out of
 by `BlockTags.SUPPRESSES_BOUNCE` or by crouching. A bounce posts
-`GameEvent.BOUNCE` ([game events](../world/game-events-and-vibrations.md))
+`GameEvent.BOUNCE` ([game events](../world/game-events-and-vibrations.md#a-game-event-is-one-number))
 and sets `Entity.syncPosition`. `Entity.applyMovementEmissionAndPlaySound`
 follows, gated on *not client-side or authoritative*: it accumulates
 `Entity.moveDist` and fires `Entity.playStepSound` plus `GameEvent.STEP`
@@ -363,21 +359,30 @@ block.
 
 Nothing has crossed the network yet. `ServerEntity.sendChanges` runs in the
 chunk-source phase of `ServerLevel.tick`, which comes *before* the entity
-loop ([the level tick](../server/server-level-tick.md)) — so this tick's
+loop ([the level tick](../server/server-level-tick.md#the-broadcast-which-is-why-entities-are-a-tick-behind)) — so this tick's
 movement is broadcast at the start of the next one. It becomes a short delta,
 `ClientboundMoveEntityPacket.Pos`, only when it can: not too big for a
-short, no more than 400 ticks since the last teleport, not riding, the
+short, no more than 400 **gated evaluations** since the last absolute sync —
+`ServerEntity.teleportDelay` is incremented inside the gate, so for an entity
+on the default interval that is at least 1,200 ticks — not riding, the
 entity does not demand precision, **and `Entity.onGround` still matches what
-the last absolute sync recorded**. That last condition is the common case, and it is a
-real cost: every landing and every step off a ledge forces a full
-`ClientboundEntityPositionSyncPacket`. `Entity.syncPosition` forces the next
-send outright, and `ClientboundSetEntityMotionPacket` carries the delta
-separately. On the receiving side,
+the last absolute sync recorded**. The last condition is the one that fails
+most often, and it is a real cost: every landing and every step off a ledge
+forces a full `ClientboundEntityPositionSyncPacket`. Setting the entity's
+`Entity.syncPosition` flag re-phases the tracker's own counter to the next
+interval boundary, so the send happens at the next evaluation rather than up
+to an interval late, and `ClientboundSetEntityMotionPacket` carries the delta
+separately ([what the client is
+told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
+owns the choice between the two shapes). On the receiving side,
 `ClientPacketListener.handleEntityPositionSync` moves only an entity that is
-*not* locally authoritative, and snaps rather than interpolates past 64
+*not* locally authoritative
+([authority](authority.md#the-boat-authoritative-on-exactly-one-machine)), and
+snaps rather than interpolates past 64
 blocks of correction — otherwise it feeds `InterpolationHandler`, three
-steps by default, which is the coast branch of `LivingEntity.aiStep` doing
-its real job.
+steps by default, which is the *interpolate* half of the fork
+`LivingEntity.aiStep` opens with; the coast branch is what runs when there is
+no handler.
 
 ## Where to look
 

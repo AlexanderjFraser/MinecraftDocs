@@ -216,11 +216,12 @@ six corrections it made are in [pass9.md](pass9.md).*
   `players-and-sessions`:239-245 against
   `what-the-client-is-told`:266-285, which owns both halves of the loop; the
   join page keeps "a joining client is trusted with one batch".
-- **Session F (VI) — an inbound link that lands on the wrong page.**
+- ~~**Session F (VI) — an inbound link that lands on the wrong page.**
   `damage-and-death`:322 says "[player anatomy] owns the object that comes
   back". It does not: `player-anatomy`:213-216 itself says
   `players-and-sessions` owns it, and the object is
-  `players-and-sessions#the-object-and-the-reference-that-outlives-it`.
+  `players-and-sessions#the-object-and-the-reference-that-outlives-it`.~~
+  **Done, session F (pass 5)**: repointed, with the anchor.
 - **Session D (IV) — `reference/level-data-and-rules` is now the declared
   owner of the `level.dat` write path** (session C's ruling: three tellings
   cut to one, and both Part III pages now cite
@@ -405,9 +406,14 @@ the corrections it made are in [pass9.md](pass9.md).*
   the owner by default and should not be; either a later part takes it or the
   pages that use it cite the skips page. **Sessions J and K.**
 - **`text-components`' selector expansion is told three times** — here,
-  `networking/chat-and-signing` and `commands/entity-selectors` — and the
-  death-message game rule twice, on two pages that never link each other
-  (`entities/damage-and-death`). **Sessions F and I.**
+  `networking/chat-and-signing` and `commands/entity-selectors`. **Session I.**
+  ~~And the death-message game rule twice, on two pages that never link each
+  other (`entities/damage-and-death`).~~ **The death-message half is done,
+  session F (pass 5)**: not a duplicate after all — `text-components` owns the
+  assembling and `damage-and-death` the consequence of the rule being off (an
+  empty component in a packet that still goes) — but the two now link each
+  other, and `damage-and-death` gained the fall-attribution rule
+  `text-components` was citing without an owner.
 - **`codecs-nbt-json` explains five mechanisms other parts own**: the wire
   buffer, region compression, the `BlockEntity` save shells, the serverbound
   fence and the trusted-tag constants. Session B left them: each is one
@@ -575,15 +581,17 @@ Pass 4 does not add material, so these are the classes and mechanisms an
 agent's completeness sweep found in a page's scope that the page never
 mentions.
 
-- **`reference/non-living-damage.md` wants a `hurtClient` column.** Seven of
+- ~~**`reference/non-living-damage.md` wants a `hurtClient` column.** Seven of
   the twenty-one declare one, two return an unconditional `true`, and
-  `MinecartTNT` inherits a third; twelve inherit `Entity`'s false. The full
-  column, one verified value per row, is in session O's agent report and can be
-  re-derived in a minute from `grep -rn "boolean hurtClient("`. It also wants
-  one sentence on `Entity.isPickable`, which defaults to **false** and so keeps
-  ten of the twenty-one off the crosshair entirely, and on
-  `ServerGamePacketListenerImpl.handleAttack`, which rejects an `ItemEntity` or
-  an `ExperienceOrb` target by **disconnecting the client**.
+  `MinecartTNT` inherits a third; twelve inherit `Entity`'s false.~~ **Done,
+  session F (pass 5)** [kind=book], with the count corrected: **thirteen**
+  inherit the default, not twelve (7 + 1 + 13 = 21, and the twelve left one row
+  unaccounted for). The other two asks were **declined**: the
+  `ServerGamePacketListenerImpl.handleAttack` disconnect is already owned and
+  better told at `the-sword-swing`:86-88, and writing it here would create the
+  duplicate this session was removing; `Entity.isPickable` is named in the
+  `AbstractHurtingProjectile` row, and the general *defaults to false* fact is
+  the swing's, not the catalogue's. **Session H** should take both.
 - **`reference/submit-phases.md`** is missing three things its own sentences
   depend on: `SubmitNodeStorage` (the *order bucket* the page names with no
   antecedent — it is the outer loop of every sweep), `TranslucentSubmit` (the
@@ -700,12 +708,17 @@ drop the number.
   `CommonComponents.ELLIPSIS`.
 - `world/points-of-interest.md:124` — "**a dozen** shapes" of read-only query
   is 13 method names / 14 methods. The hedge covers it; *thirteen* reads better.
-- `entities/ai-goals-and-brains.md:381,390` — "everything it will ever do" /
+- ~~`entities/ai-goals-and-brains.md:381,390` — "everything it will ever do" /
   "the twelve": a door-breaking `Zombie` gains a thirteenth goal at
-  `Zombie.java:158`, outside `Mob.registerGoals`.
-- `entities/authority.md:181` — "three of those eight read the same member"
+  `Zombie.java:158`, outside `Mob.registerGoals`.~~ **Done, session F (pass
+  5)**: re-derived and corrected; the zombie is now the page's own example of
+  the exception its general section already allowed for.
+- ~~`entities/authority.md:181` — "three of those eight read the same member"
   holds for `Entity.canSimulateMovement` (3);
-  `Entity.isLocalInstanceAuthoritative` is read at four of the eight.
+  `Entity.isLocalInstanceAuthoritative` is read at four of the eight.~~
+  **Done, session F (pass 5)**: re-counted in the source and all three members
+  given their number, because the sentence read as a maximum its own list
+  denied.
 - ~~`world/README.md:79` — "the one page here that depends on nothing else in
   the part" is one under *off the conveyor chain*; the part's own figure gives
   two pages no inbound edge.~~ **Done, session D (pass 5)**: the superlative is
@@ -1189,10 +1202,14 @@ Part VII is **2 of 9** on *Questions players ask* (`loot-tables` and
 - **`authority`'s fall-damage paragraph** is four sentences where it was
   two, because the true statement needs both sides plus the
   `ServerLevel`-gate reason.
-- **`ai-goals-and-brains`'s control-flag paragraph** now carries two
+- ~~**`ai-goals-and-brains`'s control-flag paragraph** now carries two
   mechanisms (the five-tick refresh and the leash) where it carried one, and
   the boat sentence has to distinguish *a mob is steering me* from *I am in
-  a boat*. Check whether the leash belongs here or in a sentence of its own.
+  a boat*. Check whether the leash belongs here or in a sentence of its own.~~
+  **Done, session F (pass 5)**: a sentence of its own, and the answer to the
+  question is that the leash is not a control flag at all — it is a second
+  lever on the same lock table, and the page now says so. `Leashable` stays
+  `entity-anatomy`'s.
 - **`entity-anatomy`'s registry paragraph** gained a second override
   direction (`getOptional` calls `super`), which is the subtlest thing on the
   page and is currently one clause.
@@ -2620,6 +2637,167 @@ Structural findings, not acted on:
   it belongs to whoever revisits `map_source.py`.
 
 ---
+
+## From pass 5, session F (Part VI · Entities), 2026-09-05
+
+*What the reading raised and this session did not act on, tagged by the pass
+that takes it. Everything session F did act on is struck above or logged in
+[pass9.md](pass9.md).*
+
+**Routed to a later part's session.**
+
+- **Session I (IX) — the send gate is explained twice and neither page links
+  the other.** `synched-entity-data`:246-294 (*The gate that holds a packet
+  back*, with its own flowchart) and
+  `what-the-client-is-told`:146-225 (gates 2 and 3) are the same mechanism.
+  Under the routing rule the later part resolves it, so session I decides;
+  session F added the missing forward link and left the section standing. Four
+  things the Part VI copy has that the owner lacks, and they are moves rather
+  than cuts: that the interval gate covers the **data** flush as well as the
+  position block (so shearing a sheep sends that sheep's position delta too);
+  the `ItemFrame` bypass being the only path to the flush that skips the
+  interval test; `ServerEntity.handleMinecartPosRot` calling it from *inside*
+  the gate; and `Entity.updateDataBeforeSync`, the hook that opens
+  `ServerEntity.sendChanges` ahead of the gate and lets `LivingEntity` dirty
+  its own container in the same call — absent from the owner entirely.
+  [kind=book]
+- **Session I (IX) — a count that disagrees across the seam.**
+  `what-the-client-is-told`:213 says "**Four** feeds ignore gate 3" and then
+  names three; `synched-entity-data`:280-282 names two plus the item frame.
+  The candidate for the fourth is `Entity.updateDataBeforeSync`. Re-derive with
+  the decompile. [kind=book]
+- **Session I (IX) — `entity-anatomy` now cites
+  `what-the-client-is-told#gate-3-and-the-position-it-chooses` for
+  `EntityType.trackDeltas`.** The list moved there in principle; check that
+  page's own version names the same set (it has nine categories where
+  `entity-anatomy` had ten types, "item frames" plural covering two).
+  [kind=book]
+- **Session H (VIII) — `the-sword-swing` owes two things a Reference page is
+  carrying.** `reference/non-living-damage`:20-28 holds the book's only
+  explanation of `Player.cannotAttack`'s two hooks (`Entity.isAttackable`,
+  `Entity.skipAttackInteraction`) and its only explanation of projectile
+  deflection (`Player.deflectProjectile`,
+  `EntityTypeTags.REDIRECTABLE_PROJECTILE` — batting a ghast fireball back,
+  named on no other page). `TEMPLATE.md` forbids a Reference page owning an
+  explanation. Session F left them because moving them means writing Part VIII
+  prose. Also `Entity.isPickable` defaulting to false, and the
+  `handleAttack` disconnect (see the struck entry above). [kind=book]
+- **Session H (VIII) — `the-two-phase-tick`:155-159 is the third full telling
+  of the fall-damage gate.** `authority` owns it and now says so; that page's
+  version should become one sentence carrying
+  `authority#three-cases-read-on-both-sides`. [kind=book]
+- **Session J (X) — `the-client-level` and `prediction-and-acks` both answer
+  `authority`'s question and only one is named there.** `client/README`:67-70
+  says both do; `authority`:19 names only the client level. When Part X
+  settles, `authority` should cite `prediction-and-acks#two-state-machines-running-against-each-other`
+  at the two places a reader asks *then where does prediction live*
+  (`authority`:106-107 and :210-215). [kind=book]
+- **Sessions H, I and J — the anchors on `authority`'s inbound links.** Twenty-two
+  links from sixteen pages, none carrying an anchor. Part VI's own are done;
+  the ones from `input-to-movement`, `the-two-phase-tick`, `player-anatomy`,
+  `what-the-client-is-told`, `the-client-level` and the three landing pages want
+  `authority#five-predicates-and-the-final-one-the-other-four-hang-off`.
+  [kind=book]
+- **Session M (XIII) — `entity-selectors` can now cite an owner for the two
+  lookups.** `entity-lifecycle#findable-ticking-or-neither` defines
+  `EntitySection`, `EntitySectionStorage` and `EntityLookup` as of this
+  session; `entity-selectors`:199-212 explains the *query* fork and should
+  point back rather than introduce them. [kind=book]
+- **Session M (XIII) — the `EntitySpawnReason` and `Structure.spawnOverrides`
+  Reference views ([pass3.md](pass3.md) §7) have their citers now.** The
+  nineteen reasons are named on `entity-lifecycle#the-other-ways-in`, which is
+  what a view of *what each one gates* would hang off; the spawn-override
+  table is what `entity-lifecycle`'s new species-list passage cites for *which
+  structures override what*. Session N builds the views. [kind=book]
+- **Session K (XI) — `synched-entity-data`:238-244 walks the extract and layer
+  pipeline with no link.** `entity-rendering` links *here* at its :16 and gets
+  nothing back. The sheep-specific payoff (a layer skipped, not a model swap;
+  the undercoat ignores the sheared flag) stays; the pipeline should cite
+  `entity-rendering#extract-the-live-entity-becomes-a-snapshot`. [kind=book]
+
+**Coverage, routed rather than written.**
+
+- **Four mechanisms in Part VI's packages are bigger than a sentence and are
+  explained nowhere**, declared as such on the landing page and carried to
+  [pass3.md](pass3.md) §7: the minecart's two movement models
+  (`MinecartBehavior`, `NewMinecartBehavior`, `OldMinecartBehavior`,
+  `AbstractMinecart` — 1,800 lines that four pages name and none explains); the
+  ender dragon's sixteen flight phases (`world/entity/boss/enderdragon/phases`,
+  1,283 lines, named nowhere); a raid (`Raid` 898 lines, `Raider` 619, named
+  only on `points-of-interest` and `level-data-and-rules`); and villager gossip
+  (`GossipContainer`, 274 lines, no owner anywhere). [kind=book]
+- **`ConversionType` (195 lines) is named nowhere**, and
+  `points-of-interest`:372-373 sends "death and **conversion**" to
+  `entity-lifecycle#five-reasons-one-label`, which covers death and not
+  conversion. A mob converting is one entity removed and another created, so it
+  is lifecycle-shaped; session F left it because the page's cascade is about a
+  mob being *born*, not swapped. Second edition, or a later pass with the
+  budget. [kind=book]
+- **`foundations/data-driven-types`:151 names `entity-lifecycle` as the home of
+  `BuiltInRegistries.SPAWN_CONDITION_TYPE`, `SpawnCondition` and
+  `SpawnPrioritySelectors`.** The page mentions none of them, and the
+  `world/entity/variant` sub-package (11 classes) is unnamed. The variant pick
+  runs at `Mob.finalizeSpawn`, so the hand-forward is plausible; it is
+  unpaid today. [kind=book]
+- **`entity-lifecycle`:168 hands `SpawnerBlockEntity`, `BaseSpawner` and
+  `TrialSpawner` to `blocks/block-entities`, which names none of the three.**
+  Either that page owes them a sentence or the link goes. Part V is closed, so
+  this is pass 10's or a §7 note. [kind=book]
+
+**Pass 6 — the lecture.**
+
+- `ai-goals-and-brains` is 438 lines against a 240–390 target even after this
+  session's three cuts, and its verified line still promises *meet at the
+  bell*, which the trace never delivers.
+- `entity-lifecycle` and `damage-and-death` are the two pages in the part with
+  no *Questions players ask* closer, and three of `entity-lifecycle`'s best
+  facts are already question-shaped (*name it and it stays*, *a mob alone in a
+  world never despawns*, *a wild cow on a hilltop never despawns*).
+- `pathfinding`'s verified line promises "a villager decides to walk to its
+  bed" — the third consecutive page to open on the same villager — while the
+  page's own hook is the mob against the fence. The two halves of the line
+  could swap without touching a fact.
+- `authority`'s *Where the gates actually sit* is an eight-site inventory in a
+  seven-item list, one bullet carrying two. A table with a *which member*
+  column is the obvious shape.
+- `movement-and-collision`'s *Off it goes* carries two subjects joined only by
+  "the tick ends": the crowding pass, which is the trace's last step, and the
+  network paragraph, which is two other pages' material cited from here.
+- `pathfinding` has three enumerations over the seven-item budget (eleven
+  `PathType` constants with costs, seven required-path-length values, twelve
+  `MoveControl` callers in eight classes). A fourth Reference page for the 27
+  `PathType`s with their default costs and the per-mob malus overrides would
+  let the section keep the three sentences that matter.
+
+**Pass 7 — the figures.**
+
+- `authority`'s boat sequence declares `participant SL as ServerLevel` and
+  sends no message on that lane; it appears only inside a `Note over`.
+- `entity-anatomy`'s figcaption for the generated `Entity` tree omits the key
+  `maps/hierarchy`:20 gives the same SVG, so a reader landing here first
+  cannot read the numbers.
+
+**Pass 8 — the voice.**
+
+- Three pages phrase the same schedule rule three ways:
+  `ai-goals-and-brains`:339 "fewer than 21 ticks", `points-of-interest`:236
+  "more than twenty ticks", `environment-attributes-and-timelines`:384 "more
+  than 20 game ticks". (This is already logged at :805-809; the third
+  spelling is new.)
+- `pathfinding`:33-35 and `ai-goals-and-brains`:135-138 share the sentence
+  *there is not a future, an executor or a thread anywhere in…* verbatim. The
+  two are a declared pair, so the repetition may be deliberate; it reads as an
+  accident.
+- `client/the-client-level`:195 calls the interpolation window "three-tick"
+  where `movement-and-collision`:379 says "three steps". One number, two names.
+- `entity-anatomy` uses *frozen* for three unrelated things on one page: the
+  registry freeze, an `EntityType`'s frozen dimensions, and
+  `Entity.DATA_TICKS_FROZEN`.
+- `reference/naming-drift`:414-415 lists *Entity.hurt* as a 1.21 name that is
+  gone; `damage-and-death`:337 has it live as a deprecated wrapper. The row
+  wants the *still live* form the page already uses elsewhere.
+- `maps/biggest.md`:33-34 says `Fox` and `Bee` "are the pages a reader of Part
+  VI should expect to be long". Part VI has no `Fox` page and no `Bee` page.
 
 ## From pass 5, session E (Part V · Blocks), 2026-09-05
 

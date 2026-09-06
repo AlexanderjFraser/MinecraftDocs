@@ -44,6 +44,237 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session F — Part VI · Entities *(2026-09-05)*
+
+Pages rewritten: all nine of Part VI (`entities/README`, `entity-anatomy`,
+`authority`, `entity-lifecycle`, `synched-entity-data`, `attributes`,
+`movement-and-collision`, `ai-goals-and-brains`, `pathfinding`,
+`damage-and-death`) and the part's Reference page
+`reference/non-living-damage`. Four pages in three other parts edited because
+a Part VI page's owner or duplicate lived there: `server/server-level-tick`,
+`world/points-of-interest`, `foundations/text-components`, plus
+`src/lectures.md`.
+
+### Corrections — every one re-derived against the decompile
+
+- **`authority`:113-122 put a player's own physics in the wrong phase.** The
+  page had the server's copy running `LivingEntity.travel` "during the entity
+  phase of its tick". `ServerPlayer.tick` — the half the level's entity loop
+  calls — does **not** call the superclass tick (`ServerPlayer.java`:653); the
+  half that does is `ServerPlayer.doTick` (`:725`, calling up at `:728`), whose
+  only caller is `ServerGamePacketListenerImpl.tickPlayer`
+  (`ServerGamePacketListenerImpl.java`:323), which runs in the *connection*
+  phase — `MinecraftServer.tickChildren` ticks every level and only then calls
+  `tickConnection` (`MinecraftServer.java`:1228-1254). `the-two-phase-tick`
+  had it right all along, which makes this a page contradicting its own owner.
+- **`authority`:121-122 misattributed the discard.** It had the next
+  `ServerboundMovePlayerPacket` overwriting the server's simulated position.
+  The discard is inside the bracket: `tickPlayer` records the position, calls
+  `doTick`, then snaps straight back to the recorded one with `Entity.absSnapTo`
+  (`ServerGamePacketListenerImpl.java`:319-325). Both are cut to a citation of
+  `the-two-phase-tick#the-bracket-and-what-survives-it`.
+- **`authority`:181-183, "three of those eight read the same member".** True
+  but the weaker of two readings, and the page's own bullet list shows the
+  stronger. Counted in the source: `Entity.move` reads
+  `Entity.isLocalInstanceAuthoritative` three times and
+  `Entity.canSimulateMovement` once; `LivingEntity.aiStep` reads
+  `canSimulateMovement` twice, `Entity.isEffectiveAi` twice and
+  `isLocalInstanceAuthoritative` once — eight call sites, one of which reads a
+  pair, so **four** read the root predicate, three `canSimulateMovement`, two
+  `isEffectiveAi`. (This is [pass5.md](pass5.md):706, struck.)
+- **`authority`:104-106 was too strong about `Entity.move`.** "the only thing
+  that would is `Entity.move`, which on this side only `LivingEntity.travel`
+  reaches" — `PistonMovingBlockEntity.java`:191 and
+  `ShulkerBoxBlockEntity.java`:143 both call the mover directly, and block
+  entities tick on the client. Scoped to *nothing in the mob's own tick*, which
+  is what `movement-and-collision`:36-37 already said; the two pages disagreed.
+- **`attributes`:116-119 said the same clause twice and got the third wrong.**
+  "overrides the attack damage the monster builder added, the follow range the
+  mob builder added and the follow range the mob builder added — the movement
+  speed it also declares has no earlier entry to beat".
+  `Zombie.createAttributes` (`Zombie.java`:132-134) names five;
+  `LivingEntity.createLivingAttributes` (`LivingEntity.java`:334-336) already
+  contains **both** `Attributes.MOVEMENT_SPEED` and `Attributes.ARMOR`, so four
+  of the five are overrides and only `Attributes.SPAWN_REINFORCEMENTS_CHANCE`
+  is new. The page contradicted itself fifteen lines later, where `Mannequin`
+  gets "the plain living set, including the registry's default movement speed".
+- **`damage-and-death`:158-161 had the invulnerability window backwards.** It
+  said the red flash is "only half the window" and "the other half is the
+  silent one". `LivingEntity.hurtServer` takes the partial branch on
+  `invulnerableTime` still being above ten (`LivingEntity.java`:1281), and a
+  full hit sets that counter to 20 and the flash to 10 together — so the excess
+  rule applies in exactly the ten ticks the flash is *showing*, and the second
+  ten protect nothing at all. The page's own hook, its figure node N3 and the
+  landing page all had it right; this paragraph alone had it inverted.
+- **`entity-anatomy`:212 glossed `entity/schedule` as "villager day plans".**
+  The package holds `Activity.java` and `package-info.java` and nothing else;
+  the day plan is a `Timeline`. The gloss read as the opposite of
+  `ai-goals-and-brains`' hook, which is that *Schedule* does not exist in 26.2.
+- **`reference/non-living-damage`:8, "twelve of the rows below inherit it
+  unchanged".** Thirteen. There are nine declarations of `Entity.hurtClient`,
+  one of them the base default; seven of the eight overriders are rows in this
+  table (`RemotePlayer` is a `LivingEntity`), `MinecartTNT` inherits
+  `VehicleEntity`'s, and 21 − 7 − 1 = 13. ([pass5.md](pass5.md):578 carried the
+  same wrong arithmetic and is corrected in place.)
+- **`reference/non-living-damage`:46 compressed the creative branch past
+  truth.** "a creative player skips to `Entity.discard`" —
+  `VehicleEntity.hurtServer` (`VehicleEntity.java`:36-73) applies the hurt
+  direction, the hurt timer, `Entity.markHurt` and the ×10 accumulator *before*
+  the creative test, which only redirects the destruction.
+  `damage-and-death`:384-386 had it right; the catalogue contradicted its own
+  lecture.
+- **`ai-goals-and-brains`:383 said "everything it will ever do".** A zombie
+  gains a thirteenth goal outside `Mob.registerGoals`:
+  `Zombie.setCanBreakDoors` inserts a `BreakDoorGoal` at priority 1
+  (`Zombie.java`:152-166), rolled at spawn against local difficulty (`:493`).
+  The page's own general section eleven lines earlier already allowed for
+  "the few mobs that add or remove a goal on a state change".
+  ([pass5.md](pass5.md):703, struck.)
+- **`ai-goals-and-brains`:341-348 had a dangling *the three*.** Five of the ten
+  villager packages carry no `UpdateActivityFromSchedule`: core, panic and hide
+  have nothing at priority 99, pre-raid and raid have `ResetRaidStatus` there
+  (`VillagerGoalPackages.java`:35-101). The page then gave three escape hatches
+  for what read as those five. Core needs none — it is always active alongside
+  one other activity — so the pinning applies to the other four.
+- **`movement-and-collision`:369 counted ticks where the code counts gated
+  calls.** `ServerEntity.teleportDelay` is incremented at
+  `ServerEntity.java`:170, inside the interval gate that opens at `:137`, and
+  tested against 400 at `:182`. `what-the-client-is-told`:161-164 already said
+  so; for an entity on the default interval the real bound is at least 1,200
+  ticks.
+- **`movement-and-collision`:379-380 named the wrong branch.**
+  `LivingEntity.aiStep` opens with an interpolate branch and an *else if* that
+  scales the stored delta by 0.98 — the handler is the interpolate branch and
+  the 0.98 decay is the coast branch, which `authority`:102-106 had right.
+- **`damage-and-death`:322 handed the respawned object to the wrong page.**
+  `player-anatomy`:213-216 itself says `players-and-sessions` owns it; the
+  section is
+  `players-and-sessions#the-object-and-the-reference-that-outlives-it`.
+  ([pass5.md](pass5.md):220, struck.)
+
+### Suspicions re-derived and found sound — a strike is a claim
+
+- `synched-entity-data`:284-287 on `Entity.syncPosition` ("realigns the
+  tracker's own counter") against `movement-and-collision`:373 ("forces the
+  next send outright"). Both describe `ServerEntity.java`:133-135, which
+  re-phases the tracker's tick count to the next multiple of the interval
+  immediately before the gate — so the send does happen at that evaluation.
+  Not a contradiction; `movement-and-collision` now uses the owner's wording.
+- `synched-entity-data`:270-271's "seven of those… set *Integer.MAX_VALUE*"
+  against `entity-anatomy`:383's `EntityTypes.AREA_EFFECT_CLOUD`. Both true:
+  the seven are the area-effect cloud, the end crystal, both item frames, the
+  leash knot, the lightning bolt and the painting, and 37 types set an interval
+  at all. The gloss "item frames, paintings, leash knots and their kin" was
+  loose, not wrong; the list now lives once, on `entity-anatomy`.
+- `entity-lifecycle` "spends the chunk model throughout and links it nowhere"
+  ([pass5-brief.md](pass5-brief.md) Part 4, session F's row): **overtaken**.
+  The page links `chunk-anatomy` at :83 for the heightmap, and now with the
+  anchor.
+- `pathfinding`:99-102's villager follow range against `entity-lifecycle`:148's
+  `Mob.finalizeSpawn` bonus: the sentence was about which of two numbers
+  `PathNavigation.updatePathfinderMaxVisitedNodes` takes the larger of, and 48
+  wins either way. Reworded to say the constructor sets it rather than that the
+  attribute is untouched.
+- `SleepInBed` "never times out": `SleepInBed.timedOut` returns false and the
+  class overrides `Behavior.canStillUse` (`SleepInBed.java`:58, :95-98). Sound,
+  and it is the page's own counter-example to the default.
+
+### Claims introduced
+
+- **`entity-anatomy`.** The non-living half of the tree, which the page had
+  left to the atlas: `Projectile` with 26 descendants, `VehicleEntity` with 15,
+  thirteen childless direct subclasses (the numbers are `maps/hierarchy`'s).
+  `TamableAnimal` named as a rung, with an owner reference and a tame bit. The
+  `Avatar` paragraph cut to the tree fact plus a citation of `player-anatomy`.
+  The eight base synched accessors cut to a citation. `EntityType.trackDeltas`'
+  ten-type list cut to a citation of `what-the-client-is-told` — the page's own
+  cast promises it will not carry the packets after the first — and the seven
+  *Integer.MAX_VALUE* intervals named in its place. The section heading *Three
+  things about the id* renamed *The id, the box, and the numbers on the type*:
+  it carried seven questions and only two were about the id (no page linked the
+  old anchor).
+- **`authority`.** "four other pages depend on it" replaced by four *parts* and
+  the measured sixteen. `Player.isClientAuthoritative` named for the first time
+  on the page three others cite for it. The `travelRidden` fork cut to the
+  ninth predicate reading, the fork itself cited.
+- **`entity-lifecycle`.** Two new passages. The species list has a data-driven
+  override and a hard-coded one in front of it: `ChunkGenerator.getMobsAt`
+  (`ChunkGenerator.java`:481-511) replaces the biome's list with a structure's
+  `StructureSpawnOverride` for the first structure at the position that
+  declares one for the category, by piece or by whole start; ahead of it
+  `NaturalSpawner.isInNetherFortressBounds` (`NaturalSpawner.java`:305-315)
+  returns `NetherFortressStructure.FORTRESS_ENEMIES` for `MobCategory.MONSTER`
+  on `Blocks.NETHER_BRICKS` anywhere inside a fortress's bounds — a wider box
+  than the fortress's own override, which declares the same list. And
+  *findable* is now defined: entities live in `EntitySection`s keyed by
+  `SectionPos`, held by `EntitySectionStorage`, each section carrying its own
+  `Visibility` and a `ClassInstanceMultiMap`. Also: a raid named as a spawn
+  source in *the other ways in*, and the overworld-only fact moved in from
+  `server-level-tick`.
+- **`ai-goals-and-brains`.** The leash given its own paragraph (it is a lever
+  that takes `Goal.Flag.MOVE` away, not a control flag), with
+  `Leashable.tickLeash` cited to `entity-anatomy`. A family paragraph for the
+  two big libraries: 103 behaviour classes, 61 goal classes, 26 sensors,
+  eighteen `*Ai` classes, each an instance of a shape the page has already
+  described. `AcquirePoi`'s mechanics and `SleepInBed`'s entry conditions cut
+  to citations of `points-of-interest`; the job-site half kept, because it is
+  the villager's day, and `SleepInBed`'s never-times-out kept, because it is
+  this page's counter-example.
+- **`pathfinding`.** The budget's trigger, which the owner could not state:
+  `Mob.onAttributeUpdated` on `Attributes.FOLLOW_RANGE` **or**
+  `Attributes.TEMPT_RANGE`. `PathComputationType`'s three values, and that the
+  four controls implement `Control` and re-specialise by movement mode the way
+  the evaluators do. "unbounded by distance" moved in from `block-interaction`.
+- **`damage-and-death`.** The non-living roster cut from five families naming
+  all twenty-one classes to the argument plus four classes, and the heading
+  renamed *Twenty-one classes with no pipeline at all* — the lecture and the
+  catalogue had been partitioning the same twenty-one two ways (five families
+  against six patterns, the lecture filing a forwarder under *destroys*). New
+  section *Who gets the credit for a fall*, discharging the homeless
+  fall-attribution threshold: `CombatTracker.getMostSignificantFall`
+  (`CombatTracker.java`:114-150) credits the entry *before* the biggest fall
+  unless the fall is first, keeps a `FallLocation`-carrying alternative, and
+  returns nothing unless the fall exceeded five blocks or the alternative's
+  damage did. The `Entity.hurtServer` side-enforcement stated in place instead
+  of handed forward to `authority`, which never explained it.
+- **`reference/non-living-damage`.** An `Entity.hurtClient` column, twenty-one
+  rows, from the seven declarations plus the inherited default.
+- **`server-level-tick`.** The census kept as the tick's own cost ("walking
+  every entity in the dimension is what this step costs, once a tick") with the
+  cap arithmetic cut to a citation.
+- **`entities/README`, rewritten to the role.** New argument: five surprises,
+  one question, asked about everything not in the grid. A *where the part
+  stops* section with the size through the include — the largest part of the
+  book — and the coverage answer: about 40% of its lines are named nowhere and
+  that is right, because the bulk is one class per species. Four mechanisms
+  declared too big for a sentence and sent to §7. `Avatar` corrected from
+  "below `Player`" to **above** (four other pages say between `LivingEntity`
+  and `Player`). The attribute-lag blurb corrected from "a tick late" to what
+  `attributes` actually says, and the ids-stop-at-254 blurb from "the packet
+  stops at 254". The pair claim for *synched entity data* ↔ *attributes* moved
+  in from `lectures.md`, whose "first of the two channels" contradicted both
+  the page and the landing figure's *one of six*.
+
+### Anchors and citations
+
+Part VI carried **no anchor on any of its 69 outbound links** before this
+session — the same shape as Parts IV and V. Every link out of the nine pages
+and the landing page now carries the owner's anchor where one answers the
+sentence. The 22 inbound links to `authority` from sixteen pages are still
+bare; the ones from Parts VIII, IX and X are sessions H, I and J's.
+
+### The tool bug — the eighteenth of the project
+
+`map_source.spec_text` rendered a part's package set inline, so a subtracted
+package followed by additions read as though *minus* governed the whole tail.
+Part VI printed as "`world/entity`, minus `world/entity/player`,
+`network/syncher`, `world/level/pathfinder`, `world/damagesource`,
+`world/effect`" — four packages the part **includes**, shown as exclusions —
+and Part IX had the same shape. Published on `maps/packages.md` and copied
+into every part's coverage report header, where two agents caught it
+independently. Subtractions now come last and share one *minus*, and
+`map_source.py --probe` proves the three shapes.
+
 ## Pass 5, session E — Part V · Blocks *(2026-09-05)*
 
 Pages rewritten: all seven of Part V (`blocks/README`, `blocks-and-states`,

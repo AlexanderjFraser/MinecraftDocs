@@ -332,7 +332,10 @@ the victim's and the killer's display names as arguments.
 take two more branches, the second of them attaching a
 `ClickEvent.OpenUrl` to a bracketed link — and the fall branch only when
 `CombatTracker.getMostSignificantFall` actually found one, so a fall-typed
-source with no recorded fall drops back to the ordinary message. A fourth
+source with no recorded fall drops back to the ordinary message. Which entry
+counts as the significant fall, and the five-block threshold under it, is
+[damage and
+death](../entities/damage-and-death.md#who-gets-the-credit-for-a-fall)'s. A fourth
 branch comes first: an empty combat log is *death.attack.generic*. The key
 is a line in *en_us.json*; the tracker never sees the line.
 

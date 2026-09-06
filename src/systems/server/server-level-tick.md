@@ -205,16 +205,12 @@ says.
 entity in the dimension except the ones in `MobCategory.MISC`, which is items,
 projectiles and armour stands, and except mobs that require persistence — and
 counts the rest per `MobCategory`, using the chunk each one stands in to charge a
-spawn-potential field and to feed a `LocalMobCapCalculator`. That count is
-then read two different ways. Globally,
-`NaturalSpawner.SpawnState.canSpawnForCategoryGlobal` allows a category
-while its count is under `MobCategory.getMaxInstancesPerChunk` ×
-`DistanceManager.getNaturalSpawnChunkCount` ÷ 289
-(`NaturalSpawner.MAGIC_NUMBER`, 17²) — the mob cap everyone argues about.
-Locally, `LocalMobCapCalculator.canSpawn` applies the raw, unscaled
-`MobCategory.getMaxInstancesPerChunk` per player close enough to the chunk,
-so a category can sit well under the server-wide cap and still refuse to
-spawn beside one crowded player. Persistent categories — the animals — are
+spawn-potential field and to feed a `LocalMobCapCalculator`. Walking every
+entity in the dimension is what this step costs, once a tick, before any
+spawn is attempted; the two caps that census feeds — a server-wide one
+scaled by the spawnable-chunk count and a per-player one that is not — are
+[entity lifecycle](../entities/entity-lifecycle.md#the-two-caps-and-where-289-comes-from)'s.
+Persistent categories — the animals — are
 considered only on a tick where *gameTime* divides by 400, and the whole
 spawning half is behind `GameRules.SPAWN_MOBS`.
 
@@ -261,12 +257,12 @@ also what the ice and snow rolls, the lightning roll and the spawning-chunk
 shuffle use.
 
 The custom spawners come last inside this step.
-`ServerLevel.tickCustomSpawners` runs the overworld's `PhantomSpawner`,
-`PatrolSpawner`, `CatSpawner`, `VillageSiege` and `WanderingTraderSpawner` —
-a list only the overworld is constructed with. Three of the five carry a
-game rule of their own (`GameRules.SPAWN_PHANTOMS`,
-`GameRules.SPAWN_PATROLS`, `GameRules.SPAWN_WANDERING_TRADERS`); cats and
-sieges answer only to `GameRules.SPAWN_MOBS`, which gates the whole call.
+`ServerLevel.tickCustomSpawners` runs the five a level was constructed with,
+which in practice means the overworld's ([the other ways
+in](../entities/entity-lifecycle.md#the-other-ways-in) names them). Three of
+the five carry a game rule of their own (`GameRules.SPAWN_PHANTOMS`,
+`GameRules.SPAWN_PATROLS`, `GameRules.SPAWN_WANDERING_TRADERS`); the other two
+answer only to `GameRules.SPAWN_MOBS`, which gates the whole call.
 
 ### The broadcast, which is why entities are a tick behind
 

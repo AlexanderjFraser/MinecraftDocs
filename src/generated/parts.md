@@ -5,10 +5,10 @@
 | III · The server | `server` (itself only), `server/level`, `server/players`, `server/dedicated` | 95 | 0 | 21,779 |
 | IV · The world | `world/level/chunk`, `world/level/lighting`, `world/ticks`, `world/level/gameevent`, `world/level/entity`, `world/level/material`, `world/attribute`, `world/timeline`, `world/clock`, `world/level/border`, `server/level` | 218 | 0 | 30,950 |
 | V · Blocks | `world/level/block`, `world/level/redstone` | 478 | 0 | 60,403 |
-| VI · Entities | `world/entity`, minus `world/entity/player`, `network/syncher`, `world/level/pathfinder`, `world/damagesource`, `world/effect` | 755 | 0 | 110,407 |
+| VI · Entities | `world/entity`, `network/syncher`, `world/level/pathfinder`, `world/damagesource`, `world/effect`, minus `world/entity/player` | 755 | 0 | 110,407 |
 | VII · Items and inventories | `world/item`, `world/inventory`, `world/level/storage/loot` | 507 | 0 | 45,289 |
 | VIII · The player | `world/entity/player`, `world/food`, `ServerPlayer`, `client/player` | 29 | 9 | 8,135 |
-| IX · Networking | `network`, minus `network/syncher`, `server/network`, `client/multiplayer` | 496 | 63 | 39,434 |
+| IX · Networking | `network`, `server/network`, `client/multiplayer`, minus `network/syncher` | 496 | 63 | 39,434 |
 | X · The client | `client` (itself only), `client/gui`, `client/multiplayer`, `client/sounds`, `client/resources`, `client/player`, `client/input`, `client/server` | 689 | 689 | 93,640 |
 | XI · Rendering | `client/renderer`, `client/model`, `client/particle`, `com/mojang/blaze3d` | 1,254 | 1,254 | 93,012 |
 | XII · World generation | `world/level/levelgen`, `world/level/biome` | 451 | 0 | 45,749 |

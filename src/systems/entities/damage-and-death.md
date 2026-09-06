@@ -24,7 +24,7 @@ signal. It is all in `LivingEntity.hurtServer`.
 | `DamageTypeTags` | almost every behavioural branch on the path below | read on the server main thread |
 | `LivingEntity` | the whole reduction pipeline, the i-frames, the flash, the two attribution references and death | server main thread |
 | `CombatRules` | the two pieces of arithmetic — armour and enchantment protection | stateless statics |
-| `CombatTracker` | what killed you, and the sentence that says so | server main, cleared on its own timer |
+| `CombatTracker` | what killed you, and which entry gets the credit | server main, cleared on its own timer |
 | `ServerPlayer` | PvP, the death screen packet, the death message, the inventory drop | server main thread |
 | `Entity` | that `Entity.hurtServer` is **abstract** — there is no default behaviour to inherit | — |
 
@@ -32,9 +32,10 @@ Everything above is server-side, and `LivingEntity` declares no
 `Entity.hurtClient` at all: no damage is ever *calculated* on a client. A
 client does set health — from `LivingEntity.DATA_HEALTH_ID`, from
 `ClientboundSetHealthPacket`, and to zero on the death event — but it never
-decides a number. See
-[authority](authority.md) for why `Entity.hurtServer` takes a `ServerLevel`,
-so the compiler enforces that and not a convention.
+decides a number, and the signature says so: `Entity.hurtServer` takes a
+`ServerLevel`, so the side is enforced by the compiler rather than by a
+convention. Which side is allowed to decide *anything* is
+[authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off).
 
 ## The number the arrow decides
 
@@ -150,15 +151,21 @@ The two multipliers after it almost never fire and are both pure tag lookups:
 `DamageTypeTags.DAMAGES_HELMET` against a helmeted victim calls
 `LivingEntity.hurtHelmet` and multiplies by 0.75.
 
-## Ten ticks in which nothing shows
+## Ten ticks in which nothing shows, and ten that protect nothing
 
 `Entity.invulnerableTime` is set to 20 by a hit that lands in full and counted
 down once a tick — from `LivingEntity.baseTick` for everything except a
 `ServerPlayer`, and from `ServerPlayer.tick` for players, earlier in the tick.
 `LivingEntity.hurtDuration` and `LivingEntity.hurtTime` are set to 10, so the
-red flash is only half the window.
+red flash covers half of it.
 
-The other half is the silent one. Inside it, unless the type carries
+**It is the flashing half that is invulnerable.** The test is
+`Entity.invulnerableTime` still being *above* ten, which is exactly the ten
+ticks the flash is showing; once the counter falls to ten the next hit takes
+the ordinary branch, lands in full, and resets both numbers. The second half
+of what everyone calls the invulnerability window protects nothing at all.
+
+Inside the first half, then, unless the type carries
 `DamageTypeTags.BYPASSES_COOLDOWN`, the incoming damage is compared against
 `LivingEntity.lastHurt` — what the last hit was worth — and only the excess
 is applied. A hit that is not bigger returns before any sound, packet,
@@ -312,14 +319,17 @@ and piglins do drop. `LivingEntity.shouldDropExperience` mirrors it. Only
 from the combat log at the top and calls `CombatTracker.recheckStatus` at the
 bottom, so the log survives long enough to be read.
 `GameRules.SHOW_DEATH_MESSAGES` gates more than the chat line: with the rule
-off the message is never assembled and `ClientboundPlayerCombatKillPacket`
+off the message is never assembled ([text
+components](../foundations/text-components.md#built-on-the-server-in-no-language)
+owns the assembling) and `ClientboundPlayerCombatKillPacket`
 carries an **empty** component, so the death screen still opens and says
 nothing. `ServerPlayer.die` also forgives neutral mobs under
 `GameRules.FORGIVE_DEAD_PLAYERS`, drops the inventory through
 `Player.dropEquipment` unless `GameRules.KEEP_INVENTORY`, and calls
 `ServerGamePacketListenerImpl.markClientUnloadedAfterDeath`. `DeathScreen`
-opens unless `GameRules.IMMEDIATE_RESPAWN`, and
-[player anatomy](../player/player-anatomy.md) owns the object that comes back.
+opens unless `GameRules.IMMEDIATE_RESPAWN`, and the object that comes back —
+a new `ServerPlayer` wearing the old one's id and connection — is [players and
+sessions](../server/players-and-sessions.md#the-object-and-the-reference-that-outlives-it)'s.
 
 Two things then happen without a packet. **The client kills mobs on its own,
 from one byte**: `LivingEntity.handleEntityEvent` for byte 3 sets a non-player
@@ -331,6 +341,24 @@ consequence of a health update. And **`CombatTracker` clears itself** — after
 tick timer in `LivingEntity.tick`, the top of `CombatTracker.recordDamage`,
 and both of `LivingEntity.die` and `ServerPlayer.die`, so a hit after a long lull discards the old log before
 filing its entry.
+
+### Who gets the credit for a fall
+
+The log is not read in order, and the rule that reads it is the reason for
+*was doomed to fall by*. `CombatTracker.getMostSignificantFall` walks the
+entries looking for the biggest fall, and when it finds one it credits **the
+entry before it** — whatever hit you just before you left the ground — taking
+the fall entry itself only when the fall is the first thing in the log. It
+keeps a second candidate beside that, the biggest-damage entry that carries a
+`FallLocation`. Then the threshold: the fall counts only if it was **more than
+five** blocks, and the alternative only if *its damage* was more than five;
+below both, the tracker returns nothing and the death message falls back to
+the ordinary one for the killing blow. So a two-block drop after a skeleton
+shot you is a death by arrow, and a ten-block one is a death by skeleton —
+same two entries, one number apart. The `FallLocation` is what turns the
+credited entry into the wording (*fell out of the world*, *fell off a ladder*,
+*fell while climbing*), and building the sentence out of it is [text
+components](../foundations/text-components.md#built-on-the-server-in-no-language)'.
 
 ## Everything that calls it
 
@@ -349,45 +377,28 @@ in `LivingEntity.baseTick`. **Freezing and cramming are not**: freezing is in
 `LivingEntity.pushEntities`, called at the end of the same method under
 `GameRules.MAX_ENTITY_CRAMMING`.
 
-## The five families of non-living damage
+## Twenty-one classes with no pipeline at all
 
-`Entity.hurtServer` is abstract: there is no default behaviour at all, so
-every branch of the tree answers for itself, and the answers have nothing to
-do with anything above. **Fifty-four** files override it — a fifty-fifth,
-`Entity` itself, only declares it — thirty-three
-of them `LivingEntity` descendants — `ArmorStand` among them, a
-`LivingEntity` despite having no AI — and **twenty-one** not. Those
-twenty-one never touch armour, i-frames, absorption or the combat tracker,
-and fall into five families:
+Everything above this line is `LivingEntity`'s, and none of it is inherited.
+`Entity.hurtServer` is **abstract**: there is no default behaviour anywhere in
+the tree, so every branch answers for itself. **Fifty-four** files override it
+— a fifty-fifth, `Entity` itself, only declares it — thirty-three of them
+`LivingEntity` descendants, `ArmorStand` among them, a `LivingEntity` despite
+having no AI ([entity
+anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)).
+The other **twenty-one** are not living entities at all, and they never touch
+armour, i-frames, absorption, the combat tracker or the death sequence.
 
-- **Nothing happens.** `Entity.hurtServer` returns false, no side effect:
-  `AreaEffectCloud`, `Display`, `Interaction`, `LightningBolt`, `Marker`,
-  `OminousItemSpawner`, `PrimedTnt`, `EvokerFangs`, `EyeOfEnder` and
-  `AbstractHurtingProjectile`.
-- **A flinch and nothing else.** `FallingBlockEntity` and `Projectile` call
-  `Entity.markHurt` so the client sees the shove, then still return false.
-- **An int of health, no armour, no i-frames.** `ItemEntity` and
-  `ExperienceOrb` keep a plain integer and subtract the damage from it.
-  `ItemEntity` adds two rules: a `Mob` source is refused under
-  `GameRules.MOB_GRIEFING`, and the stack itself is asked
-  `ItemStack.canBeHurtBy`.
-- **One hit destroys.** `BlockAttachedEntity` kills itself and drops its item
-  (mob-griefing gated too), `ShulkerBullet` is destroyed with particles
-  without checking invulnerability at all, `EndCrystal` explodes and is
-  **immune to the `EnderDragon` that eats it**, and `EnderDragonPart` forwards
-  the whole call to `EnderDragon.hurt` on its parent. `ItemFrame` takes two
-  hits — the first pops the item, the second falls through to
-  `BlockAttachedEntity` and breaks the frame — while a *fixed* frame answers
-  only to `DamageTypeTags.BYPASSES_INVULNERABILITY` or a creative player.
-- **An accumulator.** `VehicleEntity` adds *damage × 10* to a field through
-  `VehicleEntity.setDamage` and destroys itself past 40. A creative player
-  gets the hurt direction, the hurt timer and the accumulator all the same;
-  the flag only redirects the destruction to `Entity.discard`, which drops
-  nothing. `MinecartTNT` adds one rule on top: a *burning* `AbstractArrow`
-  explodes it before the accumulator is even reached.
-
-The per-class detail is in [the non-living damage
-table](../../reference/non-living-damage.md).
+Six patterns cover all twenty-one, and the sharpest are the ones that read the
+damage *number* — only four classes do. `ItemEntity` and `ExperienceOrb` keep a
+plain integer of health and subtract from it; `VehicleEntity` adds *damage ×
+10* to an accumulator and breaks past 40, which is why a minecart takes a
+fixed number of hits rather than a fixed amount of damage. For the other
+seventeen the answer is a yes or a no: ten do nothing whatever, two flinch,
+four are destroyed by one hit of any size — an `EndCrystal` among them, and it
+is **immune to the `EnderDragon` that eats it** — and `EnderDragonPart`
+forwards the whole call to its parent. Which class does which is [the
+non-living damage table](../../reference/non-living-damage.md).
 
 ## Where to look
 
@@ -402,8 +413,8 @@ table](../../reference/non-living-damage.md).
 `ServerPlayer.die` · `LivingEntity.dropAllDeathLoot` · `Entity.killedEntity` ·
 `LivingEntity.tickDeath` · `CombatTracker` · `CombatEntry` · `FallLocation` ·
 `ClientboundDamageEventPacket` · `ClientboundPlayerCombatKillPacket` ·
-`VehicleEntity` · `ItemFrame` — and [attributes](attributes.md) for armour,
-toughness and knockback resistance as attribute values.
+`VehicleEntity` · `ItemFrame` — and [attributes](attributes.md#forty-numbers-every-one-of-them-clamped)
+for armour, toughness and knockback resistance as attribute values.
 
 ---
 

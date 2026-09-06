@@ -14,7 +14,8 @@ mob has covered a quarter of the ground its speed says it should have. The
 mob you watch walk into a wall and then wander off is running a scheduled
 surrender.
 
-Above the waterline is [goals and brains](ai-goals-and-brains.md), which
+Above the waterline is [goals and
+brains](ai-goals-and-brains.md#what-decides), which
 decides *where*; this page is *how*, and it is the same machinery whichever
 decision system asked.
 
@@ -84,10 +85,16 @@ One number governs both how hard the search may work and how much world it
 may look at. `PathNavigation` builds its `PathFinder` with
 `Attributes.FOLLOW_RANGE`'s **base** value times sixteen, and
 `PathNavigation.updatePathfinderMaxVisitedNodes` later recomputes it as
-sixteen times the larger of the *modified* follow range and
-`PathNavigation.setRequiredPathLength` — 16 by default, and raised by seven
-classes: 48 for `Villager`, `Allay`, `Bee`, `CopperGolem` and `HappyGhast`,
-40 for `Llama`, 32 for `Fox`. `PathNavigation.setMaxVisitedNodesMultiplier`
+sixteen times the larger of the *modified* follow range
+([attributes](attributes.md#the-instance-three-indices-and-one-cached-number)
+owns the difference between the two) and
+`PathNavigation.setRequiredPathLength` — 16 by default, raised in seven
+classes' constructors: 48 for `Villager`, `Allay`, `Bee`, `CopperGolem` and
+`HappyGhast`, 40 for `Llama`, 32 for `Fox`. The recompute has exactly one
+trigger, and it is not the pathfinder's: `Mob.onAttributeUpdated` calls it
+when either `Attributes.FOLLOW_RANGE` or `Attributes.TEMPT_RANGE` changes, so
+a mob that is tempted or angered searches a different amount of world from
+the one it woke up with. `PathNavigation.setMaxVisitedNodesMultiplier`
 scales the result, and keeps scaling it until
 `PathNavigation.resetMaxVisitedNodesMultiplier` puts it back: `Bee` is the
 only class that touches either.
@@ -96,10 +103,12 @@ The same maximum path length becomes the **radius of the
 `PathNavigationRegion`**, plus an offset of 8 or 16 depending on which
 `PathNavigation.createPath` overload was used — and inside the search it appears twice more,
 as a test on the current node's distance from the start and on each
-neighbour's walked distance. A villager can find a bed 48 blocks away because its *required path length*
-is 48 — it never touches `Attributes.FOLLOW_RANGE` at all, so its follow
-range is `Mob`'s default 16 and the larger of the two is the number it set
-itself; it cannot find one 60 blocks away no matter how open the ground is.
+neighbour's walked distance. A villager can find a bed 48 blocks away because its constructor set its
+*required path length* to 48, and the larger of the two numbers wins; it
+cannot find one 60 blocks away no matter how open the ground is. That is the
+budget behind [a villager claiming a
+bed](../world/points-of-interest.md#the-trace-a-villager-claims-a-bed), whose
+scan radius is the same 48 for exactly this reason.
 
 That region is built by asking `ChunkSource.getChunkNow` for every chunk in
 the cube. **A path search never loads a chunk and never blocks** — an absent
@@ -118,7 +127,10 @@ the two closed doors; `PathType.WATER` is 8, `PathType.FIRE` 16,
 itself with `Mob.setPathfindingMalus`, read back through
 `Mob.getPathfindingMalus` — which is how the same lava is free ground to a
 `Strider`, merely expensive to a `ZombifiedPiglin`, and a wall to the
-ordinary `Piglin` that never overrides it.
+ordinary `Piglin` that never overrides it. The question a block is *asked* is
+narrower than the answer: `PathComputationType` has three values — land,
+water and air — and a block's own pathability hook sees only which of the
+three is being planned, never which mob is planning it.
 
 Four evaluators in the pathfinder package cover the movement modes:
 `WalkNodeEvaluator`, and the three that specialise it or replace it —
@@ -217,7 +229,10 @@ routed around — an ordinary tempted cow runs the base `TemptGoal`, which
 calls the navigation like anything else.
 
 Three more controls sit beside it and are the rest of what turns a decision
-into a pose. `LookControl` aims the head, `JumpControl` fires a jump the mover
+into a pose — all four implementing `Control`, and all four re-specialised by
+movement mode the way the evaluators are, so a `SmoothSwimmingMoveControl` or
+a `FlyingMoveControl` is the same object with different arithmetic.
+`LookControl` aims the head, `JumpControl` fires a jump the mover
 then executes, and `BodyRotationControl` swings the body to follow the head
 the moment the head is more than fifteen degrees off — it is the *reverse*
 move, easing the head back towards the front, that waits for ten stable
@@ -226,7 +241,7 @@ name: `LivingEntity.tick` calls `Mob.tickHeadTurn` with no side check at all,
 so it runs on both sides every tick.
 
 The mover itself is Part VI's [movement and
-collision](movement-and-collision.md) — the control sets the yaw and calls
+collision](movement-and-collision.md#building-the-delta) — the control sets the yaw and calls
 `Mob.setSpeed`, which writes `LivingEntity.zza` with it, and
 `LivingEntity.travel` does the rest. `LivingEntity.xxa` is written only by
 the strafe branch, which pathfinding never takes.
@@ -260,7 +275,8 @@ Everything above is AI asking the world questions. `ServerLevel.sendBlockUpdated
 is the single call in the other direction. It invalidates the changed
 position in the path-type cache **unconditionally**, and then — only if
 `Shapes.joinIsNotEmpty` says the collision shape actually changed — walks
-`ServerLevel.navigatingMobs`, asks each navigation
+`ServerLevel.navigatingMobs` — every navigating mob in the level, **unbounded
+by distance** — asks each navigation
 `PathNavigation.shouldRecomputePath` about the position, and calls
 `PathNavigation.recomputePath` on the ones that say yes. That last loop —
 and only that loop — is wrapped in a re-entrancy flag, because a recompute

@@ -80,6 +80,16 @@ that the number is right to be low and no page said so — the landing page now
 does, five family sentences discharge what a sentence can reach, and four
 mechanisms too big for one (the hopper first among them) go to §7. **No tool
 bug**, the first pass-5 part session without one.
+**Session F is done** (2026-09-05, Part VI): all nine pages and the part's
+Reference page rewritten, and this is the session where the lens paid hardest —
+**thirteen corrections**, the most of any pass-5 session, of which **eight were
+one page contradicting another** and three were a page contradicting itself.
+`authority` had a player's own physics in the wrong phase of the tick, against
+its owner in Part VIII. Part VI is the book's largest part and its second
+lowest-covered; the session's finding is that the low number is right, because
+the bulk is one class per species, and that four things in those packages are
+not species and are explained nowhere. **One tool bug**, the eighteenth: the
+atlas printed four packages Part VI *includes* as exclusions.
 
 ## The passes
 
@@ -887,3 +897,74 @@ plan as it stood at its close)*
   one §7 entry discharged with a corrected count, and what the reading raised
   for sessions G, H, I and K and for passes 6, 7 and 8 appended to
   [pass5.md](pass5.md) rather than left in the log.
+- **2026-09-05, session F — Part VI · Entities (pass 5).** Nine pages plus the
+  part's Reference page, one agent each, the part read end to end in watching
+  order first. **All ten rewritten**, and three pages in three other parts
+  edited because a Part VI page's owner or duplicate lived there. **Thirteen
+  corrections**, the most of any pass-5 session, of which **eight were one page
+  contradicting another** — the shape five sessions running — and three were a
+  page contradicting *itself*. The sharpest is the part's own through-line
+  owner getting a phase wrong: `authority` had a `ServerPlayer`'s physics
+  running "during the entity phase of its tick", where `ServerPlayer.tick` does
+  not call up at all and `ServerPlayer.doTick` runs in the **connection** phase,
+  after every level has ticked — and it credited the discard to the next
+  movement packet, where the bracket itself snaps the player back the moment
+  `doTick` returns. `the-two-phase-tick` had both right, so the page four other
+  parts cite for the premise was the one telling it wrong. Beside it:
+  `damage-and-death` had the invulnerability window **inverted** (the excess
+  rule applies in the ten ticks the red flash is showing, not the ten after
+  them, and the second ten protect nothing); `attributes` repeated one clause
+  twice and got the third wrong, because `Attributes.MOVEMENT_SPEED` and
+  `Attributes.ARMOR` are both already in the living base a zombie overrides;
+  the Reference page said twelve of the twenty-one inherit `Entity.hurtClient`
+  where it is thirteen, and compressed `VehicleEntity`'s creative branch into
+  the opposite of what its own lecture says; `authority` said "three of those
+  eight read the same member" over a list showing four; `ai-goals-and-brains`
+  said "everything it will ever do" of a zombie that gains a thirteenth goal
+  when it learns to break doors; and `entity-anatomy` glossed `entity/schedule`
+  as "villager day plans" when the package holds `Activity` and nothing else —
+  the exact opposite of the AI page's hook. **Five suspicions were re-derived
+  and found sound**, including the brief's own claim that `entity-lifecycle`
+  links `chunk-anatomy` nowhere, which was overtaken. **Ownership:** eight
+  mechanisms cut to a citation — `EntityType.create`'s gates (the charter's
+  named duplicate, settled to `entity-anatomy` with the spawner's *consequence*
+  kept on `entity-lifecycle`), `EntityReference`, the eight base synched
+  accessors, `EntityType.trackDeltas`' ten-type list (which the page's own cast
+  had promised not to carry), the pose loop's third telling, the two mob caps
+  and the custom-spawner roster off `server-level-tick`, and `AcquirePoi`'s
+  mechanics and `SleepInBed`'s conditions off `ai-goals-and-brains` to Part IV,
+  which owns the claim as its scenario. Two moved the other way: the update
+  intervals to `entity-anatomy`, which owns the type's numbers, and
+  "unbounded by distance" into `pathfinding`, which owns the walk. **Seams:**
+  Part VI carried **no anchor on any of its 69 outbound links** before this
+  session — the third part running — and now carries them throughout; one
+  hand-forward pointed at a page that disclaims the thing (`damage-and-death`
+  → `player-anatomy` for the respawned object) and one at a page that never
+  owned it (`points-of-interest` → `ai-goals-and-brains` for the pathfinder).
+  **Coverage:** Part VI is the book's largest part and 61% named by lines, and
+  the session's answer is that the shortfall is species — one `Mob` subclass
+  each, and the 164 classes of the two AI libraries are one shape each, now
+  said once. Three passages were written for what is *not* species: the
+  structure spawn-list override and the hard-coded Nether-fortress list in
+  front of it (**§7's `Structure.spawnOverrides` entry half-discharged** — the
+  mechanism is stated, the table is still session N's view); what an
+  `EntitySection` is, so that *findable* means something; and the
+  fall-attribution threshold, homeless since pass 3, which is why a death
+  message says *was doomed to fall by*. Four mechanisms are declared too big
+  for a sentence and go to §7: the minecart's two movement models, the ender
+  dragon's sixteen phases, a raid, and villager gossip. **The landing page**,
+  rewritten last to the role: it opens on five surprises and one question
+  rather than on a book transition, states its size through the include as the
+  largest part of the book, gains a *where the part stops* that says why 40% of
+  its lines are named nowhere, and corrects `Avatar` from "below `Player`" to
+  above — four other pages say between `LivingEntity` and `Player`. **One tool
+  bug, the eighteenth of the project:** `map_source.spec_text` rendered a
+  part's package set inline, so a subtracted package followed by additions read
+  as though *minus* governed the whole tail — Parts VI and IX each printed four
+  packages they **include** as exclusions, on `maps/packages.md` and in every
+  part's coverage-report header. Two agents caught it independently.
+  Subtractions now come last and share one *minus*; `--probe` proves three
+  shapes. Five gates green. Six queue entries struck, one §7 entry half-
+  discharged and one written, and what the reading raised for sessions H, I, J,
+  K, M and N and for passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather
+  than left in the log.

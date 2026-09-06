@@ -21,8 +21,8 @@ track reads *10 idle, 2000 work, 9000 meet, 11000 idle, 12000 rest* beside a
 baby track that swaps *play* in — and because the lookup takes a position,
 the day can in principle differ by location. That system is [environment
 attributes and
-timelines](../world/environment-attributes-and-timelines.md); this page only
-asks it a question.
+timelines](../world/environment-attributes-and-timelines.md#the-four-timelines);
+this page only asks it a question.
 
 ## The cast
 
@@ -74,9 +74,11 @@ LivingEntity.tick
 Note the scope of that guard. `LivingEntity.aiStep` runs on the client too;
 what it wraps in *server side and effective AI* is the one call to
 `Mob.serverAiStep`, not the jump and travel sections beneath it.
-`Mob.isEffectiveAi` is the more interesting half of the condition, because
-`Mob` narrows it with `Mob.isNoAi` — which is where the *NoAI* tag takes
-effect. On the client neither selector nor brain is ticked at all — only the
+`Mob.isEffectiveAi` is the more interesting half of the condition, and what
+it is — one of five predicates that decide which copy of an entity may do
+anything — is
+[authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)'s.
+What belongs here is the guard's *scope*. On the client neither selector nor brain is ticked at all — only the
 jump, travel and head-turn sections beneath the gate, and the debug
 renderers.
 
@@ -244,14 +246,22 @@ that; so does growing up, which is how a baby swaps
 
 ## What the world can push in
 
-Into a goal selector, two things. The first is `Mob.updateControlFlags`,
+Into a goal selector, two things, and both of them work by switching a flag
+off rather than by asking for anything. The first is `Mob.updateControlFlags`,
 called from `Mob.tick` on the server every five ticks. It sets
 `Goal.Flag.MOVE` and `Goal.Flag.LOOK` from one question — *is a `Mob`
 steering me* — and `Goal.Flag.JUMP` from that **and** *am I in an
 `AbstractBoat`*. So a mob a mob is riding loses all three, and a mob sitting
-in a boat by itself loses only the jump. The second is the leash:
-`Mob.leashTooFarBehaviour` disables `Goal.Flag.MOVE` outright and
-`PathfinderMob.closeRangeLeashBehaviour` puts it back. Both touch
+in a boat by itself loses only the jump.
+
+The second is the lead in your hand. `Leashable.tickLeash` runs from
+`Entity.baseTick` ([entity
+anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)
+puts it among the capability interfaces), and when the mob is too far from
+whatever holds it, `Mob.leashTooFarBehaviour` disables `Goal.Flag.MOVE`
+outright — so a leashed mob at the end of its rope is not *choosing* to stand
+still, it has had the flag its movement goals need taken away —
+until `PathfinderMob.closeRangeLeashBehaviour` puts it back. Both levers touch
 **`Mob.goalSelector` only**; `Mob.targetSelector` is never disabled.
 `GoalSelector.tick` then stops any running goal holding a disabled flag and
 refuses to start another.
@@ -259,10 +269,11 @@ refuses to start another.
 Into a brain, rather more: the schedule attribute, whose value comes from the
 world; hostiles, players, items, beds and golems, all written by sensors that
 query the level; and POI claims, which go through the shared `PoiManager`
-([points of interest](../world/points-of-interest.md)). Beyond that, a change
-to `Attributes.FOLLOW_RANGE` or `Attributes.TEMPT_RANGE` reaches
-`Mob.onAttributeUpdated`, which recomputes the pathfinder's node budget
-([attributes](attributes.md), [pathfinding](pathfinding.md)).
+([points of interest](../world/points-of-interest.md#a-ticket-is-a-claim-nothing-enforces)). And one attribute change reaches into the machinery
+itself: a new `Attributes.FOLLOW_RANGE` re-ranges the shared targeting
+conditions above and, through `Mob.onAttributeUpdated`, resizes how far the
+pathfinder may search
+([pathfinding](pathfinding.md#the-budget-which-is-also-the-map)).
 
 **Neither of them crosses the network.** There is no AI packet. What a client
 sees are consequences — head rotations, motion, position deltas, pose
@@ -272,10 +283,22 @@ nothing until someone subscribes: `Mob.registerDebugValues` registers
 every mob, and `DebugSubscriptions.BRAINS` only for one that is not
 brain-dead.
 
+Neither library is small, and neither is anything but more of the same. There
+are 103 classes under `world/entity/ai/behavior` and 61 under
+`world/entity/ai/goal`, and every one is an instance of the two shapes above:
+a `Behavior` with its required memories and its start conditions, or a `Goal`
+with its flags and its `Goal.canUse`. Reading a third is reading the first
+twice. The sensors are the same — 26 classes, each a `Sensor` with a scan
+rate and a list of memories it writes, from `TemptingSensor` to
+`PiglinSpecificSensor` — and so are the eighteen `*Ai` classes, which are
+nothing but the lists.
+
 Nor is either of them data-driven. The villager's day is data
 (`Timelines.VILLAGER_SCHEDULE` in `Registries.TIMELINE`) — but
-`VillagerProfession` and `PoiType` are not: both are `BuiltInRegistries`
-bootstrapped from code, with no directory under the built-in data pack. And
+`VillagerProfession` is not — a `BuiltInRegistries` entry bootstrapped from
+code, with no directory under the built-in data pack, and neither is the
+`PoiType` it names ([points of
+interest](../world/points-of-interest.md#the-catalogue)). And
 **behaviours and goals are code** too,
 plain Java lists in `VillagerGoalPackages` and the `*Ai` classes, not
 registered and not addressable from a data pack.
@@ -339,9 +362,11 @@ tick runs: the switch lands and the next tick acts on it. And it is only
 consulted when a behaviour asks — `Brain.updateActivityFromSchedule` refuses
 if fewer than 21 ticks have passed since the last one (the test is a strict
 *greater than* 20). Five of the ten packages carry no such behaviour: core,
-panic and hide have nothing at 99, pre-raid and raid have `ResetRaidStatus`
-there instead. The omission is how they pin the
-villager, and each of the three carries its own way out rather than leaving it
+panic and hide have nothing at 99 at all, and pre-raid and raid have
+`ResetRaidStatus` there instead. Core is never the activity a villager is
+stuck in, because it is always active alongside one other; the omission is how
+the other four pin the
+villager, and each carries its own way out rather than leaving it
 to the clock: `VillagerCalmDown` sits at priority 0 in the panic package and
 calls `Brain.updateActivityFromSchedule` itself the moment the fear memories
 clear, `SetHiddenState` does the same for hide, and `ResetRaidStatus` for the
@@ -349,12 +374,12 @@ two raid packages. Nothing is asking the clock on a schedule; the escape
 hatch asks once, on its own terms.
 
 The rest of the day hangs off that. **Claiming a job site** is `AcquirePoi`
-from the core package: it asks `PoiManager.findAllClosestFirstWithType` for
-free points of interest matching the profession within 48 blocks, takes the
-best five, and runs a single pathfind with all five as targets at once — and
-it claims only one the villager can actually *reach*, testing `Path.canReach`
-before `PoiManager.take` ([pathfinding](pathfinding.md)). A bell across a
-ravine is invisible to a villager. What it writes is
+from the core package, and the claim itself — the scan, the best five, the
+one pathfind that decides which of them is reachable — is [points of
+interest](../world/points-of-interest.md#the-trace-a-villager-claims-a-bed)'s,
+told there against a bed. A bell across a
+ravine is invisible to a villager. What is this page's is what the memory
+then means: `AcquirePoi` writes
 `MemoryModuleType.POTENTIAL_JOB_SITE`, not the job site itself;
 `AssignProfessionFromJobSite` waits until the villager is within two blocks
 of that position, then erases the memory, writes `MemoryModuleType.JOB_SITE`
@@ -369,23 +394,28 @@ the workstation. **Walking anywhere** is `MoveToTargetSink`, entered on *walk
 target present, path absent*: it turns a `MemoryModuleType.WALK_TARGET` into
 a path, hands it to the navigation, and records a failure as
 `MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE`. Below that hand-off is
-[pathfinding](pathfinding.md) and then [movement and
-collision](movement-and-collision.md). **Bed** is `SleepInBed`: a bed within
-two blocks, unoccupied, in the right dimension, at least 100 ticks since it
-was last woken. It never times out — it ends because `Brain.isActive` for
-`Activity.REST` goes false at dawn and the core `WakeUp` behaviour calls
-`LivingEntity.stopSleeping`.
+[pathfinding](pathfinding.md#the-pipeline) and then [movement and
+collision](movement-and-collision.md#the-tick). **Bed** is `SleepInBed`, whose entry
+conditions are [the night shift](../world/points-of-interest.md#after-the-claim-the-night-shift)'s.
+What matters here is that it is this page's counter-example: it never times
+out, because it overrides `Behavior.canStillUse`, so unlike almost every
+behaviour it is still running on the tick after the one that started it. It
+ends when `Brain.isActive` for `Activity.REST` goes false at dawn.
 
 ## The goal selector's trace: the zombie
 
 A `Zombie` has a `Brain`, because every `LivingEntity` does, but it is the
 base one — no memories, no sensors, no behaviours, `Brain.isBrainDead` true.
-Everything it will ever do comes out of `Mob.registerGoals`, run once in the
-constructor: **seven** goals in `Mob.goalSelector` — a turtle-egg attack
+Almost everything it will ever do comes out of `Mob.registerGoals`, run once
+in the constructor: **seven** goals in `Mob.goalSelector` — a turtle-egg attack
 goal, a `SpearUseGoal`, a `ZombieAttackGoal`, a `MoveThroughVillageGoal`, a
 `WaterAvoidingRandomStrollGoal`, a `LookAtPlayerGoal` and a
 `RandomLookAroundGoal` — and **five** in `Mob.targetSelector`, one
-`HurtByTargetGoal` and four `NearestAttackableTargetGoal`s.
+`HurtByTargetGoal` and four `NearestAttackableTargetGoal`s. *Almost*, because
+a zombie is one of the few mobs that adds a goal later:
+`Zombie.setCanBreakDoors`, rolled against local difficulty at spawn, inserts a
+thirteenth — a `BreakDoorGoal` at priority 1, above everything the
+constructor registered — and takes it out again when the flag is cleared.
 
 Every other tick each of the twelve is re-asked, and the flag table settles
 it. The target goals hold `Goal.Flag.TARGET` and write `Mob.setTarget`. The

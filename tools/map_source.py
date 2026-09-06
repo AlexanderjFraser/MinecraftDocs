@@ -364,20 +364,29 @@ def md_hierarchy(files, kinds):
 
 
 def spec_text(spec: tuple) -> str:
-    """The part's package set as the table shows it: `pkg`, `pkg` (itself only), `Class`, minus `pkg`."""
-    out = []
-    for entry in spec:
-        neg = entry.startswith("-")
-        e = entry[1:] if neg else entry
-        short = e.replace("net/minecraft/", "")
-        if e.endswith(".java"):
-            cell = f"`{short[:-5].rsplit('/', 1)[-1]}`"
-        elif e.endswith("/."):
-            cell = f"`{short[:-2]}` (itself only)"
-        else:
-            cell = f"`{short}`"
-        out.append(("minus " if neg else "") + cell)
-    return ", ".join(out)
+    """The part's package set as the table shows it: `pkg`, `pkg` (itself only), `Class`, minus `pkg`.
+
+    The subtractions come last, after every addition, and share one *minus*. Written
+    inline a subtraction used to sit where it appears in the spec, so a `-pkg` followed
+    by more packages read as though *minus* governed the whole tail — Parts VI and IX
+    each looked as if they excluded four packages they include.
+    """
+    def cell(entry: str) -> str:
+        short = entry.replace("net/minecraft/", "")
+        if entry.endswith(".java"):
+            return f"`{short[:-5].rsplit('/', 1)[-1]}`"
+        if entry.endswith("/."):
+            return f"`{short[:-2]}` (itself only)"
+        return f"`{short}`"
+
+    add = [cell(e) for e in spec if not e.startswith("-")]
+    sub = [cell(e[1:]) for e in spec if e.startswith("-")]
+    text = ", ".join(add)
+    if len(sub) == 1:
+        text += ", minus " + sub[0]
+    elif sub:
+        text += ", minus " + ", ".join(sub[:-1]) + " and " + sub[-1]
+    return text
 
 
 def md_parts(files):
@@ -665,6 +674,13 @@ def main():
                      ("net/minecraft/world/entity/player/Player.java", False), ("net/minecraft/client/Minecraft.java", True),
                      ("net/minecraft/client/Options.java", False), ("net/minecraft/util/datafix/Old.java", False)]
             bad = [(rel, want) for rel, want in cases if in_part(rel, spec) != want]
+            # and spec_text puts every subtraction after every addition, sharing one "minus":
+            # inline, a `-pkg` with packages after it read as excluding them too (Parts VI and IX)
+            phrases = [(spec, "`server` (itself only), `world/entity`, `Minecraft`, minus `world/entity/player`"),
+                       (("net/minecraft/world/item",), "`world/item`"),
+                       (("net/minecraft/a", "-net/minecraft/b", "net/minecraft/c", "-net/minecraft/d"),
+                        "`a`, `c`, minus `b` and `d`")]
+            bad += [(s, want, spec_text(s)) for s, want in phrases if spec_text(s) != want]
             print("probe: OK" if not bad else f"PROBE FAILED: {bad}")
             sys.exit(1 if bad else 0)
         else:

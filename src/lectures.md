@@ -128,22 +128,18 @@ statement of the contract, and the machinery waits for Part X.
 
 ## VI · Entities
 
-Part VI is a ladder, and the second rung carries the rest of it. Nothing in
-the part can be reordered without breaking something, and the one page most
-often skipped — *authority* — is the one three later parts link back to.
+Part VI is a ladder, and nothing in it can be reordered without breaking
+something.
 
-1. [Entity anatomy](systems/entities/entity-anatomy.md) — the vocabulary the
-   other eight lectures use.
-2. [Authority](systems/entities/authority.md) — short, and Parts VIII, IX
-   and X all assume it rather than re-deriving it.
+1. [Entity anatomy](systems/entities/entity-anatomy.md)
+2. [Authority](systems/entities/authority.md) — short, and the one page most
+   often skipped.
 3. [Entity lifecycle](systems/entities/entity-lifecycle.md) — assumes
    [tickets and loading](systems/world/tickets-and-loading.md) for what
    *entity-ticking* means.
-4. [Synched entity data](systems/entities/synched-entity-data.md) — the
-   first of the two channels that describe an entity.
-5. [Attributes](systems/entities/attributes.md) — the second. Watch it after
-   *synched entity data*, because the contrast between the two is the
-   lesson.
+4. [Synched entity data](systems/entities/synched-entity-data.md)
+5. [Attributes](systems/entities/attributes.md) — watched immediately after
+   *synched entity data*, the two being a pair.
 6. [Movement and collision](systems/entities/movement-and-collision.md) —
    needs *authority* in front of it, and [blocks and
    states](systems/blocks/blocks-and-states.md) for what a collision shape
@@ -154,8 +150,7 @@ often skipped — *authority* — is the one three later parts link back to.
    schedule and [points of
    interest](systems/world/points-of-interest.md) for the bed.
 8. [Pathfinding](systems/entities/pathfinding.md) — the other half of the
-   same lecture, and watchable on its own once *goals and brains* has said
-   where the wanted position comes from.
+   same lecture, watchable on its own once *goals and brains* has run.
 9. [Damage and death](systems/entities/damage-and-death.md)
 
 Part VI must precede Part VIII, which is the player half of nearly every

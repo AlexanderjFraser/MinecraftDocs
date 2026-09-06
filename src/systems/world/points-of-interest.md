@@ -210,8 +210,8 @@ is in `BlockTags.BEDS` and not already `BedBlock.OCCUPIED`. Then
 `PathNavigation.createPath` as one target set, at the reach range from
 `PoiType.validRange` — one, for a bed. A villager's constructor raises
 `PathNavigation.setRequiredPathLength` to 48 so that this search can span the
-scan range ([goals and brains](../entities/ai-goals-and-brains.md) owns the
-pathfinder). Beds that failed before are held off by
+scan range ([pathfinding](../entities/pathfinding.md#the-budget-which-is-also-the-map)
+owns that budget). Beds that failed before are held off by
 `AcquirePoi.JitteredLinearRetry`, whose delay is **cumulative**: each attempt
 adds another 40 to 79 ticks to that position's own counter, capped at
 `AcquirePoi.JitteredLinearRetry.MAX_RETRY_PATHFINDING_INTERVAL`, 400. A bed
@@ -240,8 +240,10 @@ anything, reads the villager's schedule *attribute* —
 `EnvironmentAttributes.BABY_VILLAGER_ACTIVITY` for a child — at the villager's
 own position, and `Timelines.VILLAGER_SCHEDULE` puts the `Activity.REST`
 keyframe at tick 12000 of a 24000-tick period
-([environment attributes](environment-attributes-and-timelines.md) owns the
-mechanism; the old *Schedule* class is gone). Only then does the bed half of
+([environment attributes](environment-attributes-and-timelines.md#the-four-timelines)
+owns the mechanism, [goals and
+brains](../entities/ai-goals-and-brains.md#the-brains-trace-a-villagers-day)
+the pull that reads it; the old *Schedule* class is gone). Only then does the bed half of
 the brain exist at all: `VillagerGoalPackages.getRestPackage` is where
 `SetWalkTargetFromBlockMemory`, `ValidateNearbyPoi` for `PoiTypes.HOME` and
 `SleepInBed` live, while the core package validates the *job site* and not the

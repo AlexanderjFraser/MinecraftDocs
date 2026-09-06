@@ -19,7 +19,7 @@ it otherwise.
 > **A different system with the same words.** `world/attribute` is
 > *environment* attributes — per-position world properties like sky darkness
 > ([environment attributes and
-> timelines](../world/environment-attributes-and-timelines.md)) — with its own
+> timelines](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)) — with its own
 > registries and its own class also named `AttributeModifier`. Nothing on this
 > page refers to it.
 
@@ -113,10 +113,12 @@ twenty-six-entry base, `Mob.createMobAttributes` adds
 `Attributes.FOLLOW_RANGE` at 16, `Monster.createMonsterAttributes` adds
 `Attributes.ATTACK_DAMAGE` and nothing else, and each species' own builder
 finishes the job. `AttributeSupplier.Builder.build` keeps the **last** entry
-for a repeated attribute, which is how `Zombie.createAttributes` overrides
-the attack damage the monster builder added, the follow range the mob builder
-added and the follow range the mob builder added — the movement speed it
-also declares has no earlier entry to beat. Anything
+for a repeated attribute, so a species builder does not have to know what its
+ancestors declared: of the five attributes `Zombie.createAttributes` names,
+four are already in the chain and are simply overwritten — attack damage from
+the monster builder, follow range from the mob builder, movement speed and
+armour from the twenty-six-entry living base — and only
+`Attributes.SPAWN_REINFORCEMENTS_CHANCE` is new. Anything
 outside `MobCategory.MISC` with no supplier at all is logged by
 `DefaultAttributes.validate`.
 
@@ -128,8 +130,8 @@ is why `LivingEntity.getAttribute` is nullable and
 `LivingEntity.getAttributeValue` is not.
 
 `Player.createAttributes` is on `Player`, not on `Avatar`. That intermediate
-class ([entity anatomy](entity-anatomy.md)) owns the player-shaped hitbox and
-the skin data but not the attribute set, so `Mannequin` — the other `Avatar` —
+class ([entity anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it))
+owns the player-shaped hitbox but not the attribute set, so `Mannequin` — the other `Avatar` —
 is registered with `LivingEntity.createLivingAttributes` and gets the plain
 living set, including the registry's default movement speed of 0.7 rather
 than a player's 0.1. The default is not a dead value: the wandering trader,
@@ -153,7 +155,7 @@ The two sets drain in different phases of the same tick, and that is where
 the visible lag comes from. `ServerEntity.sendDirtyEntityData` is reached
 from `ChunkMap.tick`, which runs inside `ServerLevel.tick`'s *chunkSource*
 phase — **before** the *entities* phase ([the level
-tick](../server/server-level-tick.md)). An attribute dirtied during an
+tick](../server/server-level-tick.md#the-broadcast-which-is-why-entities-are-a-tick-behind)). An attribute dirtied during an
 entity's own tick (equipment, an effect, sprinting, powder snow, anything in
 `ServerPlayer.updatePlayerAttributes`) has therefore already missed this
 tick's send — and a dirty *attribute* set is not one of the three things that
@@ -163,7 +165,7 @@ player, the third for the default. Only a mutation made *before* the
 level tick — a command, an interaction handled out of the packet queue at the
 top of the server tick — reaches the wire in the tick that produced it. It is
 the same phase ordering that puts a block entity's writes a tick late
-([block entities](../blocks/block-entities.md)).
+([block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything)).
 
 The update set drains in the entities phase, in
 `LivingEntity.refreshDirtyAttributes`, which calls
@@ -176,7 +178,7 @@ change, and register or unregister the transmitted waypoint with the
 pair, and `Mob.onAttributeUpdated` recomputes the pathfinder's node budget
 through `PathNavigation.updatePathfinderMaxVisitedNodes` on a change to
 `Attributes.FOLLOW_RANGE` **or** `Attributes.TEMPT_RANGE`
-([pathfinding](pathfinding.md) owns that budget).
+([pathfinding](pathfinding.md#the-budget-which-is-also-the-map) owns that budget).
 
 `LivingEntity.refreshDirtyAttributes` is called from `LivingEntity.tick` with
 no side check, so the **client** runs `LivingEntity.onAttributeUpdated` too,
@@ -340,7 +342,7 @@ runs: the addition bucket holds the sword's *base_attack_damage* modifier
 from `DataComponents.ATTRIBUTE_MODIFIERS` and the effect's +6, the two
 multiplication buckets are empty, the clamp passes, the result is cached. The
 rest of the swing — cooldown scale, enchantment bonuses, the crit — belongs
-to [the sword swing](../player/the-sword-swing.md). Expiry runs it backwards:
+to [the sword swing](../player/the-sword-swing.md#the-damage-one-number-two-curves-one-order). Expiry runs it backwards:
 `LivingEntity.onEffectsRemoved` calls `MobEffect.removeAttributeModifiers`,
 which removes by id from all three indices and dirties one last time.
 
@@ -375,7 +377,7 @@ attributes it was never told, and for the rest it was told a tick or more
 late. The client is authoritative about none of it: it reads its own
 `Attributes.MOVEMENT_SPEED` in `AbstractClientPlayer.getFieldOfViewModifier`
 and its own reach through `Player.blockInteractionRange` from whatever the
-last packet left in the map ([movement](movement-and-collision.md)).
+last packet left in the map ([authority](authority.md#three-cases-read-on-both-sides)).
 
 ## Where to look
 

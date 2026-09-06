@@ -81,7 +81,7 @@ flowchart TD
 
 The boundary that matters is the one marked **only now**. Everything above it
 is decided against the `EntityType` — the placement type, the heightmap
-([chunk anatomy](../world/chunk-anatomy.md)), the light rule, the collision
+([chunk anatomy](../world/chunk-anatomy.md#the-six-heightmaps)), the light rule, the collision
 box — because constructing a mob to ask it costs
 more than answering from the type. Nothing above that line has an object to
 call a method on. `Monster.checkMonsterSpawnRules` is the light rule for a
@@ -97,11 +97,29 @@ not a constant, and `EntitySpawnReason.ignoresLightRequirements` exempts
 exactly one reason, `EntitySpawnReason.TRIAL_SPAWNER`.
 
 Construction is itself a filter, and the harshest-tempered one:
-`EntityType.create` returns null when the type is feature-flagged off or the
-difficulty is Peaceful and the type is not `EntityType.isAllowedInPeaceful`,
-and `NaturalSpawner.spawnCategoryForPosition` answers a null by returning
-outright — not by trying the next position. On Peaceful the spawner does all
-the work up to construction and then abandons this category's attempt.
+`EntityType.create` can return null ([entity
+anatomy](entity-anatomy.md#from-a-registry-entry-to-a-live-object) has the two
+gates it checks and the one request flag that skips them). What the spawner
+does with a null is its own: `NaturalSpawner.spawnCategoryForPosition` returns
+outright, not trying the next position. On Peaceful the spawner does all the
+work up to construction and then abandons this category's attempt on this
+chunk.
+
+The species it was about to build came from a list, and that list has a
+hard-coded exception in front of it. `NaturalSpawner.mobsAt` asks
+`ChunkGenerator.getMobsAt`, which walks the structures at the position and,
+for the first one declaring a `StructureSpawnOverride` for this category,
+**replaces the biome's list entirely** with the structure's — inside a piece
+or inside the whole start, depending on the override's
+`StructureSpawnOverride.BoundingBoxType`. That is how an ocean monument spawns
+guardians and empties itself of axolotls, and it is a data-pack field
+(*spawn_overrides*) on the structure. Ahead of all of it sits
+`NaturalSpawner.isInNetherFortressBounds`, which is not data-driven at all:
+if the category is `MobCategory.MONSTER` and the block below is
+`Blocks.NETHER_BRICKS` and the position is anywhere inside a fortress's
+bounds, the list is the constant `NetherFortressStructure.FORTRESS_ENEMIES`.
+The fortress declares the same list as an override too — the code path just
+gets there first, over a wider box.
 
 ### The two caps, and where 289 comes from
 
@@ -165,11 +183,15 @@ ghasts and pillagers **down** to 1.
 
 Natural spawning is one caller of `LevelWriter.addFreshEntity` among many.
 `BaseSpawner` drives the `SpawnerBlockEntity` and `TrialSpawner` the trial
-chambers ([block entities](../blocks/block-entities.md)); `SpawnEggItem` and
+chambers ([block entities](../blocks/block-entities.md#loaded-is-not-enough-to-tick)
+owns the block half of both); `SpawnEggItem` and
 `SummonCommand` are the deliberate ones; `AgeableMob.getBreedOffspring` makes
-babies; and five `CustomSpawner` implementations — `PhantomSpawner`,
+babies; a raid spawns its waves through `Raid` and its `Raider`s; and five
+`CustomSpawner` implementations — `PhantomSpawner`,
 `PatrolSpawner`, `CatSpawner`, `WanderingTraderSpawner` and `VillageSiege` —
-are ticked as a list by `ServerLevel.tickCustomSpawners` after the chunks.
+are ticked as a list by `ServerLevel.tickCustomSpawners` after the chunks,
+a list only the overworld is constructed with
+([the level tick](../server/server-level-tick.md#the-chunk-source-does-five-things-in-one-call)).
 Each stamps one of the nineteen `EntitySpawnReason` constants, though not a
 distinct one — phantoms and cats both count as *natural*, sieges and
 wandering traders both as *event* — and that reason never leaves the server: nothing about *why* something spawned
@@ -186,7 +208,7 @@ never touches `PersistentEntitySectionManager` at all. That is the
 `EntitySpawnReason.CHUNK_GENERATION` path — worldgen mobs are parked in the
 proto-chunk as NBT and only enter the manager later, when the chunk is
 promoted and `PersistentEntitySectionManager.addWorldGenChunkEntities` is
-handed them ([the generation pipeline](../world/chunk-generation-pipeline.md)).
+handed them ([the generation pipeline](../world/chunk-generation-pipeline.md#full-is-assembled-on-the-server-thread)).
 On the client the only way in is `ClientLevel.addEntity`, called from the
 packet handler, and it begins by *removing* whatever already holds that
 network id.
@@ -226,15 +248,26 @@ it is where a surprising amount of the level hangs: the scoreboard entry, the
 players list and the sleeping-player recount, waypoint tracking, the
 navigating-mob set the block-change notifier walks, the `EnderDragonPart` id
 registrations, and the dynamic `DynamicGameEventListener` registration
-([game events](../world/game-events-and-vibrations.md)).
+([game events](../world/game-events-and-vibrations.md#listeners-live-in-the-chunk-one-registry-per-section)).
 
 ## Findable, ticking, or neither
+
+*Findable* means findable in the entity grid, which is a second grid: entities
+live in `EntitySection`s of 16³ blocks keyed by `SectionPos`, held by an
+`EntitySectionStorage` that is nothing to do with the block sections of the
+same size ([chunk anatomy](../world/chunk-anatomy.md#sections-and-their-four-counters)).
+A section holds a `ClassInstanceMultiMap`, so *every arrow in this box* costs
+one class lookup rather than a walk, and — the part that matters here — a
+section carries its own `Visibility`, which is why status is a property of a
+section and not of an entity. Beside it `EntityLookup` keeps the flat
+id-and-UUID index; which of the two a query uses is [Part XIII's
+subject](../commands/entity-selectors.md).
 
 `Visibility` is the whole idea in three constants, and
 `Visibility.fromFullChunkStatus` is the projection: `FullChunkStatus.FULL`
 makes a chunk's entities findable, `FullChunkStatus.ENTITY_TICKING` makes them
 tick, anything less hides them
-([tickets and loading](../world/tickets-and-loading.md)).
+([tickets and loading](../world/tickets-and-loading.md#the-four-statuses)).
 
 ```mermaid
 stateDiagram-v2
@@ -331,7 +364,7 @@ data is still being read back off disk is deferred to a future tick. A chunk
 that has entities to save but has *never been read* is **loaded first**, so
 the two sets can be merged — the unload triggers a load. Only then does
 `EntityStorage.storeEntities` write the *Entities* list and a *Position* into
-the *entities/* region files ([chunk storage](../world/chunk-storage.md)),
+the *entities/* region files ([chunk storage](../world/chunk-storage.md#a-chunk-nobody-needs-any-more)),
 which are separate from the block *region/* files and which remember the
 chunks that came back empty so they are never re-read. Each saved entity and
 its passengers then take `Entity.RemovalReason.UNLOADED_TO_CHUNK` and drop
@@ -362,10 +395,10 @@ state machine: `Entity.setRemoved` writes the reason **only if none is set**,
 so the first one wins and a second call cannot change it — though the rest of
 `Entity.setRemoved` still runs, dropping passengers and firing
 `EntityInLevelCallback.onRemove` with the *new* reason. It drops its passengers unconditionally, but dismounts the entity
-from its own vehicle only when the reason destroys. The one link that survives
-a removal by design is an `EntityReference` held by somebody else — it keeps a
-UUID, upgrades to the object on first resolution, and falls back to the UUID
-when the target goes, which is how *who last hurt me* survives a chunk unload.
+from its own vehicle only when the reason destroys. The one link a removal
+does not break is an `EntityReference` somebody else is holding ([entity
+anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)),
+which decays back to a UUID rather than to nothing.
 
 ## Where to look
 
@@ -379,8 +412,9 @@ when the target goes, which is how *who last hurt me* survives a chunk unload.
 `Level.guardEntityTick` · `EntityStorage` · `Entity.RemovalReason` ·
 `Entity.setRemoved` · `TransientEntitySectionManager`
 
-Before this page: [authority](authority.md), on which side is allowed to
-decide any of it. After it: [synched entity data](synched-entity-data.md) —
+Before this page: [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off),
+on which side is allowed to decide any of it. After it: [synched entity
+data](synched-entity-data.md#five-more-channels-all-keyed-by-the-same-entity-id) —
 what the `ClientboundAddEntityPacket` bundle above is carrying, and how it
 stays current.
 

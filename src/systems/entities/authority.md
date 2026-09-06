@@ -12,12 +12,12 @@ all of it, and they invert the naive picture in **both** directions: **the clien
 at all for the mob chasing you, while the server runs your player's physics
 every tick and then overwrites the answer with a number your client sent.**
 
-This is the single most error-prone idea in the entity part, and four other
-pages depend on it — [movement and collision](movement-and-collision.md)
-here, [input to movement](../player/input-to-movement.md) in Part VIII,
-[what the client is told](../networking/what-the-client-is-told.md) in Part
-IX, and [the client level](../client/the-client-level.md) in Part X. It is
-stated in full once, here.
+This is the single most error-prone idea in the entity part, and four later
+parts rest on it — [movement and collision](movement-and-collision.md#who-is-allowed-to-run-this-at-all)
+here, every page in Part VIII about a player, [what the client is
+told](../networking/what-the-client-is-told.md#gate-1-who-is-allowed-to-see-it)
+in Part IX, and [the client level](../client/the-client-level.md) in Part X.
+Sixteen pages link back to this one. It is stated in full once, here.
 
 ## The cast
 
@@ -60,11 +60,15 @@ answers false to both, and an entity with a rider inherits the rider's answer.
 That single line is the whole vehicle model. And `Player` overrides
 `Entity.canSimulateMovement` and `Entity.isEffectiveAi` to something
 *different* from the root — *not a client, or I am the local player* — which
-is what lets the server simulate a player it is not authoritative for.
+is what lets the server simulate a player it is not authoritative for. The
+member three later pages quote for that is `Player.isClientAuthoritative`, an
+unconditional true.
 
 Three classes narrow the AI predicate further and are worth naming because
 they are the exceptions people trip over: `Mob.isEffectiveAi` adds
-`Mob.isNoAi`, which is where the *NoAI* tag actually bites, and both
+`Mob.isNoAi`, which is where the *NoAI* tag actually bites (what the guard
+around it does and does not wrap is [goals and
+brains](ai-goals-and-brains.md#where-both-of-them-sit-in-one-mob-tick)), and both
 `ArmorStand.isEffectiveAi` and `Mannequin.isEffectiveAi` add a physics or
 immovability flag of their own.
 
@@ -92,7 +96,7 @@ that runs it every tick is the one that cannot hurt you.
 damage, so your client only accumulates the fall distance and lets
 `Block.fallOn` fire. The server reaches fall damage from
 `Entity.doCheckFallDamage` instead, driven by the movement packet, which is
-[Part VIII's subject](../player/input-to-movement.md).
+[Part VIII's subject](../player/input-to-movement.md#the-trace-w-is-pressed).
 
 ### The mob: the client is not correcting, it is replaying
 
@@ -102,8 +106,12 @@ nothing is riding it, so `Entity.canSimulateMovement` is false and
 instead is the branch `LivingEntity.aiStep` opens with: if an
 `InterpolationHandler` is running, step it; **otherwise scale the stored
 delta by 0.98** — and nothing then applies that delta, because the only thing
-that would is `Entity.move`, which on this side only `LivingEntity.travel`
-reaches. There is no collision, no gravity, no friction and no attempt at
+that would is `Entity.move`, which nothing in the mob's own tick reaches on
+this side. (A piston or a shulker box can still drive a client-side mob into
+`Entity.move`, with a vector of their own rather than its stored delta —
+[movement and collision](movement-and-collision.md#building-the-delta) has the
+five `MoverType` constants that say who is pushing.) There is no collision, no
+gravity, no friction and no attempt at
 prediction. It is not simulating and being corrected — it is replaying what
 `ClientboundMoveEntityPacket` and `ClientboundEntityPositionSyncPacket` tell
 it, and standing perfectly still when the interpolation runs out.
@@ -112,14 +120,15 @@ it, and standing perfectly still when the interpolation runs out.
 
 A `ServerPlayer` passes `Entity.canSimulateMovement` and
 `Entity.isEffectiveAi` — both true on the server by `Player`'s override — so
-the server's copy runs the whole of `LivingEntity.travel` during the entity
-phase of its tick. It also fails `Entity.isLocalInstanceAuthoritative`, so
-none of the consequences that gate on it fire. Then the next
-`ServerboundMovePlayerPacket` arrives, and
-`ServerGamePacketListenerImpl.handleMovePlayer` moves the player again with
-`MoverType.PLAYER` and the *client's* distance, and finishes with
-`Entity.absSnapTo` at the client's claimed position. The server's own
-simulation is a sanity check that produced a number nobody uses.
+the server's copy runs the whole of `LivingEntity.travel`. It also fails
+`Entity.isLocalInstanceAuthoritative`, so none of the consequences that gate
+on it fire. The predicates are why a copy that is not authoritative simulates
+at all; what the server then does with the answer is [the two-phase
+tick](../player/the-two-phase-tick.md#the-bracket-and-what-survives-it) —
+the physics run in the connection phase, after every level has ticked, inside
+a bracket that puts the player straight back where it found them, and the
+authoritative position moves in the movement packet instead. The server's own
+simulation is a sanity check whose position nobody uses.
 
 One consequence reaches a block. `SweetBerryBushBlock.entityInside` needs to
 know how far the entity moved this tick, and it asks
@@ -179,8 +188,9 @@ gets recorded and ignored.
 ## Where the gates actually sit
 
 Authority is not one flag consulted once. It is read at eight places in
-`Entity.move` and `LivingEntity.aiStep` alone, and three of those eight read
-the same member:
+`Entity.move` and `LivingEntity.aiStep` alone — four of them reading
+`Entity.isLocalInstanceAuthoritative` itself, three `Entity.canSimulateMovement`
+and two `Entity.isEffectiveAi`, one place consulting a pair:
 
 - the vertical collision flags and `Entity.setOnGroundWithMovement` run if
   the entity moved vertically **or** is locally authoritative — the
@@ -199,11 +209,11 @@ the same member:
 - `Entity.applyEffectsFromBlocks` follows the travel fork, on the same
   not-a-client-or-authoritative test as the step sound.
 
-The last one has a fork in front of it. If the controlling passenger is a
-`Player` and the mob is alive, `LivingEntity.travelRidden` runs instead —
-and it has its own `Entity.canSimulateMovement` test, zeroing the delta
-outright when it fails. That is the path every horse, pig and happy ghast
-takes.
+The last one has a fork in front of it — the ridden branch, which [movement
+and collision](movement-and-collision.md#building-the-delta) walks. What
+belongs here is that `LivingEntity.travelRidden` carries a ninth reading of
+its own: an `Entity.canSimulateMovement` test that zeroes the delta outright
+when it fails.
 
 ## What the predicates explain
 
