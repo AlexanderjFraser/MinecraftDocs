@@ -44,6 +44,228 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session G — Part VII · Items and inventories *(2026-09-05)*
+
+All eight pages of Part VII touched plus the landing page:
+`src/systems/items/README.md` (rewritten to the landing-page role),
+`items-and-stacks.md`, `using-an-item.md`, `containers-and-menus.md`,
+`recipes.md`, `enchantments.md`, `enchanting.md`, `contexts-and-predicates.md`,
+`loot-tables.md`. Five pages in three other parts edited because a Part VII
+page's owner or duplicate lived there: `foundations/data-components.md`,
+`foundations/data-driven-types.md`, `foundations/resource-system.md`,
+`blocks/block-breaking.md`, `blocks/block-entities.md`. Plus the Part VII block
+of `src/lectures.md`. Both of the part's Reference pages
+(`reference/enchantment-hooks.md`, `reference/loot-context-params.md`) are
+generated and were not edited.
+
+### Corrections — re-derived against the decompile before the fix
+
+- **`enchanting`: which paths roll in `EnchantmentHelper.selectEnchantment`.**
+  The page said "only the table and the provider and loot paths roll one to
+  decide *what you get*, and they roll it in the same place:
+  `EnchantmentHelper.selectEnchantment`", and then contradicted itself twice
+  below. The decompile: `selectEnchantment` has four callers —
+  `EnchantmentMenu.java`:232, `EnchantmentsByCost.java`:28,
+  `EnchantmentsByCostWithDifficulty.java`:31 and `EnchantmentHelper.enchantItem`
+  (`EnchantmentHelper.java`:610, which `EnchantWithLevelsFunction.java`:72
+  calls). `SingleEnchantment.enchant` samples a level for a named enchantment
+  and never selects (`SingleEnchantment.java`:22-24), and
+  `EnchantRandomlyFunction.run` picks with `Util.getRandomSafe` off
+  `LootContext.getRandom` (`EnchantRandomlyFunction.java`:65-87). Now: four
+  callers named, and the two that roll their own said so.
+- **`loot-tables`: where `LootTable.createStackSplitter` sits in the call.**
+  The sequence diagram put it on the pool's return ("stacks, each through
+  createStackSplitter"). The decompile: `LootTable.fill` calls the private
+  `getRandomItems(context)` (`LootTable.java`:157 → :137-143), which calls
+  `getRandomItems(context, result::add)` (:121-123), which wraps the consumer
+  in `createStackSplitter` and hands it to `getRandomItemsRaw` — where the
+  *table's* composite function is layered inside it (:93-103). The splitter is
+  therefore the outermost wrapper, applied once per fill and after the table's
+  own functions, which is what the flowchart and the prose already said. The
+  diagram now says so, and the load-bearing consequence (a nested table is
+  split once) is unchanged.
+- **`containers-and-menus`: the size of a click's traffic.** The page said "the
+  traffic is 128 integers rather than 128 full `DataComponentPatch`es". A
+  `HashedStack.ActualItem` carries an item holder, a count, one CRC32C integer
+  per *added* component and the plain set of removed ones — the page says so
+  itself two sentences earlier — so 128 claimed slots is not 128 integers.
+  `ServerboundContainerClickPacket.java`:16-17 caps the map at 128 entries.
+  Now: "each claimed slot costs an integer per component rather than a
+  re-encoded `DataComponentPatch`".
+- **`using-an-item`: which method has one override.** The page said
+  "**`CrossbowItem.useOnRelease` is its only override in the tree**" of
+  `ItemStack.useOnRelease`. `ItemStack.useOnRelease` (`ItemStack.java`:790-791)
+  delegates to `Item.useOnRelease` (`Item.java`:367), and it is the latter that
+  `CrossbowItem.java`:264 overrides. Now: the delegation is stated and the
+  count attaches to the hook.
+- **`loot-tables`: the thirteen path prefixes.** The count is right — the
+  literal `register` calls in `BuiltInLootTables` fall under thirteen top-level
+  prefixes (chests, gameplay, shearing, charged_creeper, archaeology,
+  spawners, harvest, equipment, dispensers, pots, entities, carve, brush) — but
+  the list beside it named twelve, missing `entities`, which is the sheep
+  colour set (`BuiltInLootTables.java`:78-80). The list now names it.
+- **`contexts-and-predicates`: the keys `ALL_PARAMS` omits.** L109-112 names
+  the four keys the set leaves out and the consequence sentence beneath it
+  named three, silently dropping `LootContextParams.ENCHANTMENT_LEVEL`.
+  `LootContextParams` declares fifteen keys and `ALL_PARAMS` requires eleven
+  (`LootContextParamSets.java`), so all four behave alike. The consequence now
+  names four.
+- **`enchanting` against `enchantments`: the anvil's two book tests.**
+  `enchanting`:158 said the anvil tests `Items.ENCHANTED_BOOK` by identity;
+  `enchantments`:300 said it tests `DataComponents.STORED_ENCHANTMENTS`
+  instead. Both are true of *different slots*: `AnvilMenu.java`:204 tests
+  `input.is(Items.ENCHANTED_BOOK)` on the left-hand target, and
+  `AnvilMenu.java`:145 tests `addition.has(DataComponents.STORED_ENCHANTMENTS)`
+  on the right-hand addition for the halved price. Neither page said which
+  side; both now do.
+- **`enchantments`: what cooks the loot.** "That is a loot-table condition on
+  `EnchantmentTags.SMELTS_LOOT`" named the guard, not the mechanism. In the
+  data the cooking is the `minecraft:furnace_smelt` function
+  (`SmeltItemFunction`) behind an `any_of` condition testing *this* entity's
+  on-fire flag or the direct attacker's main-hand enchantment tag
+  (`data/minecraft/loot_table/entities/cow.json` and its siblings, built by
+  `EntityLootSubProvider.java`:60). `EnchantmentTags.SMELTS_LOOT` has one
+  member, Fire Aspect (`VanillaEnchantmentTagsProvider.java`:35). Now the
+  function is named and the condition is described as the guard.
+- **`foundations/resource-system`: a missing step in the reload's completion
+  list.** The row said `PlayerList.reloadResources` "re-reads every player's
+  advancements and broadcasts `ClientboundUpdateTagsPacket` and
+  `ClientboundUpdateRecipesPacket`". It also calls
+  `ServerRecipeBook.sendInitialRecipeBook` for every player
+  (`PlayerList.java`:956), which is what makes `recipes`:74's claim about
+  shifted display ids true. The step is now in the list.
+- **`items/README`: two claims the part's own pages contradict.** "the three
+  engines … hand each other nothing" — two of enchanting's five paths are loot
+  functions (`enchanting`:332-347), `RepairItemRecipe` carries curses
+  (`enchanting`:21-23), and the recipe auto-fill refuses enchanted stacks
+  (`recipes`:320-327). And "the sword that swings before the server has heard
+  about it" is `player/the-sword-swing`'s hook, in Part VIII, and no page of
+  this part pays it off. Both replaced.
+- **`using-an-item`: `Item.APPROXIMATELY_INFINITE_USE_DURATION` "in all but
+  name".** The constant exists (`Item.java`:119) and has no reader in the tree;
+  `BowItem.getUseDuration` and the base body both write the literal. Now stated
+  that way, in the new roster paragraph.
+
+### Suspicions re-derived and found sound (a strike is a claim)
+
+- `items-and-stacks`' *two spellings*: the reload-time validator installed by
+  `Item.Properties.finalizeInitializer` reads `DataComponents.DAMAGE`
+  (`Item.java`, the `addValidator` lambda), and `ItemStack.validateComponents`
+  reads `DataComponents.MAX_DAMAGE` (`ItemStack.java`:245-247). The two really
+  are different components, and the section's hook stands.
+- `containers-and-menus`' mount-menu generalisation:
+  `AbstractMountInventoryMenu.java`:20 passes `(MenuType) null` to super, and
+  `ServerPlayer.openHorseInventory` sends `ClientboundMountScreenOpenPacket`.
+  `AbstractChestBoat.openCustomInventoryScreen` calls `player.openMenu(this)`
+  and is not a mount menu, which the page now says so a reader crossing to
+  `client/gui-and-screens`' wider `HasCustomInventoryScreen` claim is not
+  confused.
+- `recipes`' "the server re-sends the player's whole book": true, and the gap
+  was on `resource-system` (above).
+- `using-an-item`'s two `completeUsingItem` spellings:
+  `ServerPlayer.completeUsingItem` sends event 9 and calls super
+  (`ServerPlayer.java`:1704-1711); `Player.handleEntityEvent` calls
+  `completeUsingItem` on id 9 (`Player.java`:404-407). Both sentences correct.
+- `enchantments`' `RegistrySynchronization.packRegistry`: a real private
+  per-registry method (`RegistrySynchronization.java`:34) beside the public
+  `packRegistries` loop (:28). Two methods, two pages, no drift.
+- `enchanting`'s "the grindstone and the providers call
+  `EnchantmentHelper.updateEnchantments` themselves": the provider path reaches
+  it through `EnchantmentHelper.enchantItemFromProvider`
+  (`EnchantmentHelper.java`:708-717), which is inside the helper. The
+  three-way split of write entry points stands.
+- `items/README`'s "enchantments are a world-load dynamic registry that
+  `/reload` never re-reads": `Registries.ENCHANTMENT` and
+  `Registries.ENCHANTMENT_PROVIDER` are both in
+  `RegistryDataLoader.WORLDGEN_REGISTRIES` and neither is in
+  `RegistryLayer.RELOADABLE`. Sound — and the claim now has a home on
+  `enchantments`, which is the new claim below.
+
+### Claims this session introduced
+
+- **`items-and-stacks`' new hook**: durability is the one thing a client never
+  predicts, because `ItemStack.hurtAndBreak`'s working overload demands a
+  `ServerLevel` and the `LivingEntity` overloads silently do nothing without
+  one. (The page already carried the fact at its old L256-259; it is now the
+  opening claim.)
+- **`items-and-stacks`**: `ItemStackTemplate` holds a raw, never-sanitised
+  patch, so it is the one thing that can carry a value equal to the item's own
+  default and send it verbatim (moved from `data-components`, which stated the
+  premise without the consequence). The validator section gains the
+  one-level/nesting-not-followed rule and the bundle-weight test, both moved
+  from `data-components`. New family sentence: the ninety-eight remaining
+  `world/item` classes exist for a behaviour hook no component can express,
+  and `AxeItem`/`ShovelItem`/`HoeItem` survive for block-side verbs.
+- **`data-components`**: the twenty `delayedComponent` call sites and their
+  roster, `Item.Properties.repairable` as the eager near miss, and the
+  class-init half of the two-phase build (all moved from `items-and-stacks`);
+  the claim that the deferral exists for twenty entries and everything else is
+  deferred with them because the map is built in one pass.
+- **`containers-and-menus`**: `ContainerLevelAccess.NULL` runs nothing and
+  returns an empty optional, so a client menu's body is skipped wholesale and
+  only the guard in front of it is real (moved in from `recipes` and
+  `enchanting`); the menu-open sequence in order (moved in from `loot-tables`);
+  a menu-button click is the third place a broadcast happens and does not wait
+  for a phase (moved in from `data-components`); the twenty-nine-menu family
+  sentence; `AbstractMountInventoryMenu` and the chest-boat exception; a
+  `DataSlot` is either a `shared` view or a `standalone` int and each costs its
+  own packet (moved in from `enchanting`).
+- **`recipes`**: the nine `CustomRecipe`s named (verified against the tree —
+  `BannerDuplicateRecipe`, `BookCloningRecipe`, `DecoratedPotRecipe`,
+  `FireworkRocketRecipe`, `FireworkStarFadeRecipe`, `FireworkStarRecipe`,
+  `MapExtendingRecipe`, `RepairItemRecipe`, `ShieldDecorationRecipe`), with
+  `RepairItemRecipe`'s curse behaviour named so `enchanting`'s hand-forward is
+  paid; `SingleItemRecipe`, `SmithingTransformRecipe` and `SmithingTrimRecipe`
+  named as the stations' recipe shapes; the claim that the ordinary route into
+  the recipe book is an advancement reward rather than a craft.
+- **`using-an-item`**: the whole `Item.getUseDuration` roster — the base body's
+  three-way answer (a `Consumable`'s ticks, else the hour for
+  `BLOCKS_ATTACKS`/`KINETIC_WEAPON`, else zero) and the eight overrides with
+  their numbers, `EnderEyeItem`'s zero making it the one item instant by
+  declaration. (§7's *lost prose* entry, discharged.)
+- **`enchantments`**: the new reload paragraph (above); the anvil's
+  addition-side test named as such; `SmeltItemFunction` named;
+  `LootItemRandomChanceWithEnchantedBonusCondition` moved in from `loot-tables`
+  so the Fortune/Looting answer names all four classes.
+- **`enchanting`**: the four `selectEnchantment` callers and the two paths that
+  roll their own (the correction above, stated positively); the anvil's
+  left-slot/right-slot split; `Registries.ENCHANTMENT_PROVIDER` as a
+  world-load registry and `EnchantmentProviderTypes` as its dispatch;
+  *local difficulty* replacing *regional difficulty*, which is the book's term
+  everywhere else.
+- **`contexts-and-predicates`**: the six `LootContextUser` sub-interfaces named
+  (verified: `SlotSource`, `LootItemFunction`, `LootItemCondition`,
+  `NbtProvider`, `NumberProvider`, `ScoreboardNameProvider`); the `SlotSource`
+  family — six registered kinds, answering a `SlotCollection`, with `SlotLoot`
+  its one consumer; `LootContext.popVisitedElement` and
+  `LootContext.Builder.withOptionalRandomSeed` moved in from `loot-tables`;
+  `AbstractVillager.addOffersFromTradeSet` moved into the sequence sentence;
+  the claim that a registry's tags load before its elements are validated, so a
+  predicate naming an item tag has it resolved by validation time.
+- **`loot-tables`**: `SequenceFunction` named as the forty-third function, the
+  one that is not a `LootItemConditionalFunction` (verified against
+  `LootItemFunctions`); `LootPoolEntry` named as the candidate the funnel
+  weighs; `SetContainerLootTable` and `SetContainerContents` named as where a
+  `SeededContainerLoot` comes from; the claim that no client class references
+  the loot package at all (moved from a clause to the section's punchline).
+- **`items/README`**: the whole *Where the part stops* section is new — the
+  size through the include, the four family sentences, the four declines
+  (villager trading, brewing, the creative tabs, armour identity and trims),
+  and the *an item is where another system surfaces* claim with its five
+  examples. The shape paragraph's engines-touch-at-the-boundaries claim, with
+  its three crossings, replaces "hand each other nothing".
+- **`data-driven-types`**: *The run half* now stops at the object existing and
+  cites `loot-tables#one-roll-drawn`; seven *taught in* cells re-pointed
+  (`LOOT_CONDITION_TYPE`, `LOOT_NUMBER_PROVIDER_TYPE`, `LOOT_NBT_PROVIDER_TYPE`,
+  `LOOT_SCORE_PROVIDER_TYPE` and `SLOT_SOURCE_TYPE` to
+  `contexts-and-predicates`; `ENCHANTMENT_PROVIDER_TYPE` to `enchanting`;
+  `CONSUME_EFFECT_TYPE` to `using-an-item`). Each cell is a claim about which
+  page names the element; each was checked by grep before it moved.
+- **Anchors**: forty-six cross-part links in Part VII carried two anchors before
+  this session and now carry them throughout. Every anchor is an implied claim
+  that the named section is the answer; `check_links.py` proves the anchor
+  exists, not that it answers.
+
 ## Pass 5, session F — Part VI · Entities *(2026-09-05)*
 
 Pages rewritten: all nine of Part VI (`entities/README`, `entity-anatomy`,

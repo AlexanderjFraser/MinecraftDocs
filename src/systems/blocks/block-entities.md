@@ -190,8 +190,11 @@ turns dirty holders into packets, `ServerChunkCache.broadcastChangedChunks`,
 lives in the chunk-source phase, which ran before entities and long before
 block entities. The second is progress: `BlockEntity.setChanged` marks the
 chunk unsaved and pokes comparators through
-`Level.updateNeighbourForOutputSignal`, and that is all it does. It sends
-nothing.
+`Level.updateNeighbourForOutputSignal` — the unconditional half of that walk,
+and the reason a comparator notices a hopper filling a chest ([one int, and the
+fan-out that exists to deliver
+it](diodes-and-observers.md#one-int-and-the-fan-out-that-exists-to-deliver-it))
+— and that is all it does. It sends nothing.
 
 So a viewer sees both a tick late, by two different routes. Next tick's drain
 sends the `ClientboundBlockUpdatePacket` and then — for every broadcast

@@ -1,6 +1,6 @@
 # Enchanting: the five paths, and what each one is allowed to do
 
-> Verified against **Minecraft 26.2** · Part VII · A player reads three offers off an enchanting table and buys one, and then the same sword picks up enchantments four other ways — an anvil, a grindstone running backwards, a spawning pillager, and a command.
+> Verified against **Minecraft 26.2** · Part VII · A player reads three offers off an enchanting table and buys one, and then the same sword meets the four other paths that change what it is enchanted with — an anvil, a grindstone running backwards, a spawning pillager, and a command.
 
 A sword goes in the left slot of an enchanting table and three lapis in the
 right, and the table answers with three lines of Standard Galactic Alphabet,
@@ -20,9 +20,10 @@ four of them adding and the grindstone taking away — and they differ far more
 than the shared vocabulary suggests. This page is about those differences. A
 sixth writer hides outside all of them, in the crafting grid: `RepairItemRecipe`
 carries every curse from both inputs onto the tool it makes
-([recipes](recipes.md)). What an enchantment *is* — the record, the effect
+([recipes](recipes.md#it-is-not-only-shaped-and-shapeless)). What an enchantment *is* — the record, the effect
 components, the hooks that fire in combat — is
-[the next page along](enchantments.md) and is not re-taught here.
+[the next page along](enchantments.md#a-record-with-a-definition-and-a-bag-of-components)
+and is not re-taught here.
 
 ## The cast
 
@@ -82,8 +83,10 @@ and the levels would land in the active component and the book would start
 `DataComponents.ENCHANTMENTS` from `DataComponents.COMMON_ITEM_COMPONENTS`,
 so the case only arises when an item definition replaces the default
 component initializer or a patch removes the component from a stack — and
-then the four paths through it become a no-op, with no error anywhere
-([data components](../foundations/data-components.md)).
+then every path but the anvil's — which writes with
+`EnchantmentHelper.setEnchantments` instead — becomes a no-op, with no error
+anywhere ([data
+components](../foundations/data-components.md#the-prototype-and-why-it-is-built-at-reload)).
 
 The merge itself is `ItemEnchantments.Mutable.upgrade`: keep the higher
 level, cap at 255, ignore a level of zero. Only
@@ -130,7 +133,8 @@ stripped level, halved upward with a random bonus of up to one less than that
 half again,
 and it arrives as orbs from `ExperienceOrb.award` at the block — on the
 ground, not in the player
-([hunger and experience](../player/hunger-and-experience.md)).
+([hunger and
+experience](../player/hunger-and-experience.md#the-other-bar)).
 
 ## What each path is allowed to add
 
@@ -155,9 +159,13 @@ table has ever offered Sharpness on an axe while every anvil will put it
 there. A fourth does the same to the mace, and the fifth is Thorns, offered
 only on a chestplate and wearable anywhere.
 
-The anvil uses `Enchantment.canEnchant`, overridden to true when the target
-is an `Items.ENCHANTED_BOOK` or the player has infinite materials, so books
-collect anything. Its arithmetic per transferred enchantment is short: the
+The anvil uses `Enchantment.canEnchant` on its **left** slot, overridden to
+true when that target is an `Items.ENCHANTED_BOOK` or the player has infinite
+materials, so books collect anything. Its **right** slot is judged
+differently, and by a different question: whether the addition is a book, for
+the halved price, is `DataComponents.STORED_ENCHANTMENTS` being present rather
+than the item being `Items.ENCHANTED_BOOK`. One side tests the item, the other
+tests the component. Its arithmetic per transferred enchantment is short: the
 same level on both sides merges to one higher, different levels take the
 maximum, and the winner is clamped to `Enchantment.getMaxLevel`. An
 enchantment the target cannot take is dropped and **costs nothing**; one
@@ -191,10 +199,14 @@ enchantment against itself.
 ## Where the randomness comes from
 
 The anvil and the grindstone roll a die each — for the chip and for the refund
-— but only the table and the provider and loot paths roll one to decide *what
-you get*, and they roll it in the same place:
-`EnchantmentHelper.selectEnchantment`, a short method
-with four distinct sources of variance stacked on one another.
+— and everything else rolls one to decide *what you get*. But not in the same
+place. Four callers reach `EnchantmentHelper.selectEnchantment`: the table,
+the two cost-based providers, and `EnchantWithLevelsFunction` through
+`EnchantmentHelper.enchantItem`. The other two roll their own and much more
+simply — `SingleEnchantment` samples a level for an enchantment it already
+knows, and `EnchantRandomlyFunction` picks one at random off the level's
+random source. So the arithmetic below is the *cost-based* path, and it is a
+short method with four distinct sources of variance stacked on one another.
 
 ```mermaid
 flowchart TD
@@ -240,7 +252,7 @@ offsets, the outer ring of a five-by-five footprint at two heights — and
 `EnchantingTableBlock.isValidBookShelf` requires the block at the offset to
 be in `BlockTags.ENCHANTMENT_POWER_PROVIDER` **and** the block between it
 and the table to be in `BlockTags.ENCHANTMENT_POWER_TRANSMITTER`
-([tags](../foundations/tags.md)). That between position halves the X and Z
+([tags](../foundations/tags.md#a-tag-is-a-key-and-a-file)). That between position halves the X and Z
 offsets but leaves Y alone, so the upper ring's gap is checked at the
 bookshelf's own height, not the table's. The clamp to fifteen happens
 inside `EnchantmentHelper.getEnchantmentCost`, not in the walk.
@@ -296,8 +308,10 @@ the entire enchanting body is skipped, and what the client really evaluates
 is the guard in front of it: the lapis count, the level requirement, and
 `Player.hasInfiniteMaterials`. The affordability check is real on both
 sides; the enchanting is real on one.
-[Containers and menus](containers-and-menus.md) has the data-slot and
-button-click machinery in general.
+[Containers and menus](containers-and-menus.md#the-other-channel-dataslot-and-why-it-is-never-silent)
+has the data-slot channel, and
+[where a broadcast happens](containers-and-menus.md#where-in-the-tick-a-broadcast-happens)
+has the button click's own timing.
 
 The ten slots are ordinary `DataSlot` entries — three `DataSlot.shared`
 views onto the cost array, one `DataSlot.standalone` holding the seed — and
@@ -317,10 +331,16 @@ fixed list in the *alt* font — same seed, same three lines, every time.
 
 ## The paths that never show a player anything
 
-The provider path runs at spawn. `Mob.enchantSpawnedEquipment` calls
+The provider path runs at spawn. `Mob.enchantSpawnedEquipment`
+([entity lifecycle](../entities/entity-lifecycle.md#what-finalizespawn-settles-for-the-whole-pack))
+calls
 `EnchantmentHelper.enchantItemFromProvider`, which looks a provider up in
 `Registries.ENCHANTMENT_PROVIDER` and hands the stack's mutable enchantment
-map to `EnchantmentProvider.enchant`. `EnchantmentsByCost` and
+map to `EnchantmentProvider.enchant`. `Registries.ENCHANTMENT_PROVIDER` is a world-load dynamic registry like
+`Registries.ENCHANTMENT` itself and `EnchantmentProviderTypes` is the dispatch
+of kinds inside it ([data-driven
+types](../foundations/data-driven-types.md#the-idea-stated-once)).
+`EnchantmentsByCost` and
 `EnchantmentsByCostWithDifficulty` go through
 `EnchantmentHelper.selectEnchantment`, so a mob's gear is rolled by exactly
 the arithmetic the table uses, with the regional difficulty widening the
@@ -339,8 +359,9 @@ the trade if the result somehow is not an enchanted book.
 `SetEnchantmentsFunction` is the deterministic one. Both random ones can set
 `DataComponents.ADDITIONAL_TRADE_COST` when the context offers
 `LootContextParams.ADDITIONAL_COST_COMPONENT_ALLOWED`, which is how a strong
-enchantment makes a trade dearer ([loot tables](loot-tables.md),
-[contexts and predicates](contexts-and-predicates.md)).
+enchantment makes a trade dearer ([loot tables](loot-tables.md#one-roll-drawn),
+[contexts and
+predicates](contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)).
 `EnchantedCountIncreaseFunction` sits in the same package and is the odd one
 out: it adds nothing, reading a level off the killer with
 `EnchantmentHelper.getEnchantmentLevel` to multiply a drop count. It

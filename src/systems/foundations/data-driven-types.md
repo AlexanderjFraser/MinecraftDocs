@@ -129,11 +129,11 @@ item-model property on *component*. All four are among the exceptions below.
 |---|---|---|---|---|
 | `BuiltInRegistries.LOOT_POOL_ENTRY_TYPE` | `LootPoolEntryContainer` | | inline in loot tables | [loot tables](../items/loot-tables.md) |
 | `BuiltInRegistries.LOOT_FUNCTION_TYPE` | `LootItemFunction` | *function* | `Registries.ITEM_MODIFIER` (reloadable), and inline in tables, pools and entries | [loot tables](../items/loot-tables.md) |
-| `BuiltInRegistries.LOOT_CONDITION_TYPE` | `LootItemCondition` | *condition* | `Registries.PREDICATE` (reloadable), and inline | [loot tables](../items/loot-tables.md) |
-| `BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE` | `NumberProvider` | | inline; a bare number is a constant | [loot tables](../items/loot-tables.md) |
-| `BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE` | `NbtProvider` | | inline in loot functions | [loot tables](../items/loot-tables.md) |
-| `BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE` | `ScoreboardNameProvider` | | inline in loot conditions | [loot tables](../items/loot-tables.md) |
-| `BuiltInRegistries.SLOT_SOURCE_TYPE` | `SlotSource` | | inline in `SlotLoot` entries and container-modifying functions | [loot tables](../items/loot-tables.md) |
+| `BuiltInRegistries.LOOT_CONDITION_TYPE` | `LootItemCondition` | *condition* | `Registries.PREDICATE` (reloadable), and inline | [contexts and predicates](../items/contexts-and-predicates.md) |
+| `BuiltInRegistries.LOOT_NUMBER_PROVIDER_TYPE` | `NumberProvider` | | inline; a bare number is a constant | [contexts and predicates](../items/contexts-and-predicates.md) |
+| `BuiltInRegistries.LOOT_NBT_PROVIDER_TYPE` | `NbtProvider` | | inline in loot functions | [contexts and predicates](../items/contexts-and-predicates.md) |
+| `BuiltInRegistries.LOOT_SCORE_PROVIDER_TYPE` | `ScoreboardNameProvider` | | inline in loot conditions | [contexts and predicates](../items/contexts-and-predicates.md) |
+| `BuiltInRegistries.SLOT_SOURCE_TYPE` | `SlotSource` | | inline in `SlotLoot` entries and container-modifying functions | [contexts and predicates](../items/contexts-and-predicates.md) |
 | `BuiltInRegistries.INT_PROVIDER_TYPE` | `IntProvider` | | inline in feature configs and elsewhere; a bare integer is a constant | [features and placement](../worldgen/features-and-placement.md) |
 | `BuiltInRegistries.FLOAT_PROVIDER_TYPE` | `FloatProvider` | | inline; a bare float is a constant | [features and placement](../worldgen/features-and-placement.md) |
 | `BuiltInRegistries.DENSITY_FUNCTION_TYPE` | `DensityFunction` | | `Registries.DENSITY_FUNCTION`, and inline; a bare number is a constant | [density functions](../worldgen/density-functions.md) |
@@ -147,7 +147,7 @@ item-model property on *component*. All four are among the exceptions below.
 | `BuiltInRegistries.ENCHANTMENT_ENTITY_EFFECT_TYPE` | `EnchantmentEntityEffect` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
 | `BuiltInRegistries.ENCHANTMENT_LOCATION_BASED_EFFECT_TYPE` | `EnchantmentLocationBasedEffect` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
 | `BuiltInRegistries.ENCHANTMENT_VALUE_EFFECT_TYPE` | `EnchantmentValueEffect` | | inline in `Registries.ENCHANTMENT` | [enchantments](../items/enchantments.md) |
-| `BuiltInRegistries.ENCHANTMENT_PROVIDER_TYPE` | `EnchantmentProvider` | | `Registries.ENCHANTMENT_PROVIDER` | [enchantments](../items/enchantments.md) |
+| `BuiltInRegistries.ENCHANTMENT_PROVIDER_TYPE` | `EnchantmentProvider` | | `Registries.ENCHANTMENT_PROVIDER` | [enchanting](../items/enchanting.md) |
 | `BuiltInRegistries.SPAWN_CONDITION_TYPE` | `SpawnCondition` | | inline in entity variants, through `SpawnPrioritySelectors.CODEC` | [entity lifecycle](../entities/entity-lifecycle.md) |
 | `BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE` | `TestEnvironmentDefinition` | | `Registries.TEST_ENVIRONMENT` | [game tests](../commands/game-tests.md) |
 | `BuiltInRegistries.TEST_INSTANCE_TYPE` | `GameTestInstance` | | `Registries.TEST_INSTANCE` | [game tests](../commands/game-tests.md) |
@@ -181,7 +181,7 @@ item-model property on *component*. All four are among the exceptions below.
 | `BuiltInRegistries.RECIPE_SERIALIZER` | `RecipeSerializer` | `Recipe` | | the `RecipeMap` that `RecipeManager` builds from *data/&lt;ns&gt;/recipe/* — a reload listener, not a registry | [recipes](../items/recipes.md) |
 | `BuiltInRegistries.RECIPE_DISPLAY` | `RecipeDisplay.Type` | `RecipeDisplay` | | inline, mostly on the wire to the recipe book | [recipes](../items/recipes.md) |
 | `BuiltInRegistries.SLOT_DISPLAY` | `SlotDisplay.Type` | `SlotDisplay` | | inline in recipe displays | [recipes](../items/recipes.md) |
-| `BuiltInRegistries.CONSUME_EFFECT_TYPE` | `ConsumeEffect.Type` | `ConsumeEffect` | | inline in the `Consumable` and `DeathProtection` components | [data components](data-components.md) |
+| `BuiltInRegistries.CONSUME_EFFECT_TYPE` | `ConsumeEffect.Type` | `ConsumeEffect` | | inline in the `Consumable` and `DeathProtection` components | [using an item](../items/using-an-item.md) |
 | `BuiltInRegistries.TRIGGER_TYPES` | `CriterionTrigger` | `Criterion` | *trigger*, with the fields under *conditions* (`ExtraCodecs.dispatchOptionalValue`) | advancements, loaded by `ServerAdvancementManager` — a reload listener, not a registry | [advancements](../commands/advancements.md) |
 | `BuiltInRegistries.PARTICLE_TYPE` | `ParticleType` | `ParticleOptions` | | inline in biome ambient particles (`AmbientParticle`) and area effect clouds | [particles](../rendering/particles.md) |
 | `BuiltInRegistries.NUMBER_FORMAT_TYPE` | `NumberFormatType` | `NumberFormat` | | inline in `Objective` and `Score` — save data and commands, no pack | [scoreboard and data](../commands/scoreboard-and-data.md) |
@@ -280,23 +280,15 @@ against the finished lookup. Validation **warns** — problems are logged,
 the element stays registered. Every element in these three registries is
 `Lifecycle.experimental`.
 
-**The run half.** `RandomizableContainerBlockEntity.getItem` — like the
-other container methods on that class — calls
-`RandomizableContainer.unpackLootTable`, which asks
-`MinecraftServer.reloadableRegistries` for the table by `ResourceKey`; an
-unknown key is `LootTable.EMPTY`, never an exception. `LootTable.fill` rolls
-`LootTable.getRandomItems` with a `LootContextParamSets.CHEST` context and
-`LootTable.shuffleAndSplitItems` spreads the result over the slots. On the
-way out, each level wraps the consumer: `LootTable.getRandomItemsRaw`
-decorates the output with the table's composite function, `LootPool.addRandomItems`
-with the pool's, and `LootPoolSingletonContainer.EntryBase` with the
-entry's, each through `LootItemFunction.decorate`. `LootItem.createItemStack`
-makes a stack of one, and it passes through
-`LootItemConditionalFunction.apply`, which tests the conditions and, if they
-pass, calls `SetItemCountFunction.run` — `ItemStack.setCount` with
-`NumberProvider.getInt`, added to the current count if *add* was set. The
-object the pack described by a string is now a method call on a stack in a
-chest.
+**The run half.** The pack described a function with a string, and the string
+is now an object hanging off a `LootPool`. What runs it is the ordinary
+machinery of a draw — `RandomizableContainer.unpackLootTable` asking
+`MinecraftServer.reloadableRegistries` for the table, the pools rolling, the
+three levels of composed functions wrapping the output consumer one inside the
+other, and `SetItemCountFunction.run` finally calling `ItemStack.setCount` with
+a number a `NumberProvider` produced ([loot
+tables](../items/loot-tables.md#one-roll-drawn)). None of that is the pattern;
+the pattern ended the moment the object existed.
 
 ## What does not follow the pattern
 

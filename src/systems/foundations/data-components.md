@@ -87,8 +87,8 @@ them to use.
 Two more flags live on the builder. `DataComponentType.Builder.cacheEncoding`
 routes a type's encodes through `EncoderCache` (`DataComponents.ENCODER_CACHE`).
 `DataComponentType.Builder.ignoreSwapAnimation` is set on exactly one type,
-`DataComponents.DAMAGE` — so durability ticking down does not replay the
-held-item swap on the client. Underneath, `DataComponentType.PERSISTENT_CODEC`
+`DataComponents.DAMAGE`, and the renderer that reads it is [items and
+stacks](../items/items-and-stacks.md#when-two-stacks-are-the-same-stack)'. Underneath, `DataComponentType.PERSISTENT_CODEC`
 and `DataComponentType.VALUE_MAP_CODEC` are the shared dispatch machinery
 that `DataComponentMap.CODEC` and the predicates are built on.
 
@@ -144,8 +144,9 @@ value travels alone.
 **The wire patch never contains defaults — for a real stack.** Because
 `PatchedDataComponentMap` sanitises on every write, a value equal to the
 prototype's is dropped rather than sent. `ItemStackTemplate` is the
-exception: it holds a raw `DataComponentPatch` straight from the builder,
-which does no such comparison, and sends it verbatim.
+exception, and [items and
+stacks](../items/items-and-stacks.md#an-item-a-count-some-components--said-three-ways)
+says why.
 
 On the network the patch travels inside every `ItemStack` in
 `ClientboundContainerSetSlotPacket`, `ClientboundContainerSetContentPacket`,
@@ -161,8 +162,12 @@ two are not symmetric.
 
 ## The prototype, and why it is built at reload
 
-An `Item` constructor registers its initializer in
-`BuiltInRegistries.DATA_COMPONENT_INITIALIZERS`. `Item.Properties.component`
+The first half happens at class-init, long before a world exists.
+`BuiltInRegistries.bootStrap` touches `Items.AIR`, the `Items` class loads and
+runs its static initialisers, and each one builds an `Item` — so every item in
+the game exists, and no item has components. An `Item` constructor registers
+its initializer in `BuiltInRegistries.DATA_COMPONENT_INITIALIZERS` and nothing
+more. `Item.Properties.component`
 and its convenience methods (`Item.Properties.durability`,
 `Item.Properties.food`, `Item.Properties.equippable`, `Item.Properties.sword`,
 …) only *record* a `DataComponentInitializers.Initializer`; nothing is a
@@ -172,9 +177,20 @@ deferred: they name registry entries that do not exist until a world's
 registries do — an item's `DataComponents.JUKEBOX_PLAYABLE` or
 `DataComponents.DAMAGE_RESISTANT` names an entry a data pack can change.
 
+They are also **rare**. Between them the two methods have twenty call sites in
+the entire game, all inside `Item` and `Items`: fire resistance resolving
+`DamageTypeTags.IS_FIRE`, the banner patterns, the goat horn, the jukebox
+songs, the egg variants and the spear's damage type. Everything else is baked
+literal. `Item.Properties.repairable` is the near miss that shows where the
+line runs — it takes a tag, which sounds like context, and is still eager,
+because it asks `BuiltInRegistries.acquireBootstrapRegistrationLookup` at
+class-init and stores an unresolved `HolderSet` instead of waiting for one.
+So the deferral exists for twenty entries, and everything else is deferred
+along with them because the map is built in one pass.
+
 The maps are *built* with full registry context — tags, damage types,
-jukebox songs resolvable — by `DataComponentInitializers.build` on the
-reload worker on the server, and *installed* with
+jukebox songs resolvable — by `DataComponentInitializers.build`, reached from
+`ReloadableServerResources.loadResources` on the reload worker on the server, and *installed* with
 `Holder.Reference.bindComponents` on the owning thread: on the server in
 `ReloadableServerResources.updateComponentsAndStaticRegistryTags` (server
 thread, after every reload including `/reload`), on the client in
@@ -203,15 +219,11 @@ on every item, which is what `ItemStack.isEnchantable` depends on: it gates
 first on `DataComponents.ENCHANTABLE` being present, and *then* on
 `DataComponents.ENCHANTMENTS` being present and empty.
 
-**There are two structural rules, at two different times.** At
-prototype-build time a validator installed by `Item.Properties` rejects an
-item that is both damageable and stackable. At stack time
-`ItemStack.validateStrict` rejects a `DataComponents.MAX_DAMAGE` alongside a
-`DataComponents.MAX_STACK_SIZE` above one, a count above the stack's own
-maximum, an over-weight bundle, and contained items whose counts exceed
-their own limits. That last check reaches exactly **one** level into
-containers, bundles and charged projectiles and does not re-run the full
-validation there — nesting is not followed.
+**A prototype can carry a validator.** `DataComponentMap.Builder.addValidator`
+is where a structural rule is installed, and `Item.Properties` installs one:
+an item may not be both damageable and stackable. The stack-time twin of that
+rule, and the rest of what `ItemStack.validateStrict` refuses, is [items and
+stacks](../items/items-and-stacks.md#two-validators-one-rule-two-spellings)'.
 
 ## The reverse index: `DataComponentLookup`
 
@@ -227,8 +239,9 @@ holders carry, so it too is meaningless before the first reload.
 and has a map, and is implemented only by `ItemStack`, which is where
 `DataComponentHolder.get`, `DataComponentHolder.getOrDefault` and
 `DataComponentHolder.has` come from. `ItemInstance` is the read-only face
-over `ItemStack` and `ItemStackTemplate` (item, count, patch — a record)
-that predicates and recipes take. Beyond item behaviour, the callers are
+over `ItemStack` and `ItemStackTemplate` that predicates and recipes take
+([items and
+stacks](../items/items-and-stacks.md#an-item-a-count-some-components--said-three-ways)). Beyond item behaviour, the callers are
 loot functions (`CopyComponentsFunction`) and the `/give` and `/item`
 commands.
 
@@ -298,15 +311,12 @@ gains its single entry. A book that was transmuted a moment earlier carries
 the same patch over a different prototype, which is the whole meaning of
 `ItemStack.transmuteCopy`.
 
-**The menu compares, and here it does not wait for the tick.**
-`AbstractContainerMenu.broadcastChanges` compares every slot against what
-the client was last told (`RemoteSlot.Synchronized`). It runs from
-`ServerPlayer.tick` in the ordinary case — but a menu-button click is not
-the ordinary case: `ServerGamePacketListenerImpl.handleContainerButtonClick`
-calls it directly, in the same handler, as soon as
-`AbstractContainerMenu.clickMenuButton` accepts. The sword's slot no longer
-matches, so `ClientboundContainerSetSlotPacket` goes out, and only the patch
-crosses: `ItemStack.OPTIONAL_STREAM_CODEC` writes the count,
+**The menu compares, and here it does not wait for the tick.** A menu-button
+click is the exception to the broadcast's ordinary timing ([containers and
+menus](../items/containers-and-menus.md#where-in-the-tick-a-broadcast-happens)),
+so the correction leaves inside the handler that accepted the click. The
+sword's slot no longer matches what the client was last told, so
+`ClientboundContainerSetSlotPacket` goes out, and only the patch crosses: `ItemStack.OPTIONAL_STREAM_CODEC` writes the count,
 `Item.STREAM_CODEC` (a registry id) and the patch. The client answers later
 clicks with a `HashedStack` of CRC32C checksums rather than stacks
 ([codecs, NBT and JSON](codecs-nbt-json.md#checksum-a-hash-instead-of-a-stack) for the hashing,

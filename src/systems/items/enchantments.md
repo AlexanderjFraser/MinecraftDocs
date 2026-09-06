@@ -58,7 +58,7 @@ is changed only through `ItemEnchantments.Mutable`, whose
 `EnchantmentInstance.weight` delegate, is what the weighted selection path
 is built on — and that path, along with the table, the anvil, the
 grindstone, the providers and `/enchant`, is a separate machine with its own
-arithmetic, on [enchanting](enchanting.md).
+arithmetic, on [enchanting](enchanting.md#the-five-paths-at-a-glance).
 
 ## Thirty-one keys, three registries and one curve
 
@@ -79,7 +79,7 @@ has fifteen and does something to an entity — `Ignite`, `DamageEntity`,
 And it *extends* `EnchantmentLocationBasedEffect`, whose registry has
 sixteen entries: those same fifteen ids plus one. The odd one out is
 *attribute*, `EnchantmentAttributeEffect`, which installs an
-`AttributeModifier` ([attributes](../entities/attributes.md)) and is the
+`AttributeModifier` ([attributes](../entities/attributes.md#where-the-modifiers-come-from)) and is the
 only effect that is location-based without also being an entity effect.
 
 `LevelBasedValue` turns a level into a number, and six shapes are in its
@@ -97,12 +97,13 @@ and which side it *lands on* (`TargetedConditionalEffect.affected`) —
 except for the equipment-drops variant, whose codec reads only the first and
 pins the second to `EnchantmentTarget.VICTIM`.
 
-Both implement `Validatable`, and this is where the effect codecs do
-something unusual: those twenty-four list components wrap their element
-codec in `Validatable.listValidatorForContext`, so a condition is checked
-**at decode time** against the parameter set the hook will actually supply.
-A *post_attack* effect asking about a block state fails to load rather than
-failing quietly at runtime.
+Both implement `Validatable`, and the effect codecs are one of only two places
+in the game where a context mismatch is a **hard error at decode time**
+rather than a logged warning ([contexts and
+predicates](contexts-and-predicates.md#three-ways-a-parameter-can-be-missing)).
+The consequence here is worth the trip: a *post_attack* effect asking about a
+block state fails to load, rather than failing quietly at runtime a thousand
+hits later.
 
 ## Seven families of moment
 
@@ -159,7 +160,8 @@ The `LootContext` in the middle is the same machinery loot tables and
 `/execute if predicate` use, and `Enchantment` builds five of them —
 `Enchantment.damageContext` plus four private siblings for items, entities,
 locations and block hits, one per parameter set the components name.
-[Contexts and predicates](contexts-and-predicates.md) owns that half.
+[Contexts and predicates](contexts-and-predicates.md#who-asks-and-with-which-set)
+owns that half.
 
 ## Fire Aspect, from the click to the flame
 
@@ -198,8 +200,8 @@ sequenceDiagram
 `ServerGamePacketListenerImpl.handleAttack` runs the range checks and calls
 `Player.attack` — unless the main-hand item has
 `DataComponents.PIERCING_WEAPON`, in which case the packet is dropped and
-none of this happens (see [the sword swing](../player/the-sword-swing.md)
-for the spear's path). `Player.createAttackSource` then asks
+none of this happens (see [the spear](../player/the-spear.md)
+for its own path). `Player.createAttackSource` then asks
 `ItemStack.getDamageSource`, and every branch of it reaches the
 single-entity `DamageSource` constructor — the one that sets the direct
 entity and the causing entity to the same object, making
@@ -212,7 +214,7 @@ never fires through a bow.
 override, not `Player`'s base version, which returns its argument unchanged
 — folds Sharpness and friends in through `EnchantmentHelper.modifyDamage`,
 and the hit goes through `Entity.hurtOrSimulate` to `LivingEntity.hurtServer`
-([damage and death](../entities/damage-and-death.md)). Only if that returned
+([damage and death](../entities/damage-and-death.md#one-number-a-dozen-owners)). Only if that returned
 true does `Player.itemAttackInteraction` call
 `EnchantmentHelper.doPostAttackEffectsWithItemSource`.
 
@@ -244,7 +246,9 @@ nothing except thaw it. No damage happens here. `Entity.baseTick` deals it,
 one point every twentieth tick, on a `ServerLevel`, skipped in lava and
 replaced by `Entity.clearFire` for a fire-immune entity. The same method
 sets shared flag zero through `Entity.setSharedFlagOnFire`
-([synched entity data](../entities/synched-entity-data.md)), which becomes
+([synched entity
+data](../entities/synched-entity-data.md#five-more-channels-all-keyed-by-the-same-entity-id)),
+which becomes
 `Entity.displayFireAnimation` on the client — whose own `Entity.baseTick`,
 finding no `ServerLevel`, clears the fire counter instead of burning.
 
@@ -254,9 +258,10 @@ finding no `ServerLevel`, clears the fire counter instead of burning.
 `ApplyBonusCount` and `BonusLevelTableCondition` read the *tool* parameter
 out of a `LootContext` and call `EnchantmentHelper.getItemEnchantmentLevel`
 on it — a level, not an effect. Looting is the same trick from the other
-end: `EnchantedCountIncreaseFunction` reads the *attacking entity* parameter
-and calls `EnchantmentHelper.getEnchantmentLevel`, the overload that walks a
-`LivingEntity`'s equipment and keeps the best. Fortune has no effect
+end, twice: `EnchantedCountIncreaseFunction` and
+`LootItemRandomChanceWithEnchantedBonusCondition` both read the *attacking
+entity* parameter and call `EnchantmentHelper.getEnchantmentLevel`, the
+overload that walks a `LivingEntity`'s equipment and keeps the best. Fortune has no effect
 component whatsoever, and Looting's only one is an *equipment_drops* entry
 that has nothing to do with mob loot. Mending inverts it once more:
 `ExperienceOrb.repairPlayerItems` asks `EnchantmentHelper.getRandomItemWith`
@@ -281,6 +286,15 @@ at all. Everything else the client does is drawing:
 glint, and `EnchantmentHelper.forEachModifier` for the attribute lines —
 which means the client evaluates the `LevelBasedValue` curve itself.
 
+**When is an enchantment loaded, and does `/reload` re-read it?** At world
+load, and no. `Registries.ENCHANTMENT` and `Registries.ENCHANTMENT_PROVIDER`
+are both in `RegistryDataLoader.WORLDGEN_REGISTRIES`, the dynamic registries
+built once when a world opens ([identifiers and
+registries](../foundations/identifiers-and-registries.md#when-a-world-opens)) —
+not in `RegistryLayer.RELOADABLE`, where the loot tables and predicates live.
+`/reload` rebuilds those and every recipe and leaves the enchantments exactly
+as the world found them; changing one takes a restart.
+
 **What actually crosses the wire?** Usually an id and nothing else.
 `Registries.ENCHANTMENT` is in `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`
 with the full `Enchantment.DIRECT_CODEC`, but
@@ -297,10 +311,11 @@ reads `DataComponents.ENCHANTMENTS` and nothing else. A book's set lives
 under `DataComponents.STORED_ENCHANTMENTS`, and the routing between the two,
 in `EnchantmentHelper.getComponentType`, is keyed on the exact item
 `Items.ENCHANTED_BOOK`. The *component* is not so exclusive: `ItemStack` puts
-`DataComponents.STORED_ENCHANTMENTS` in any stack's tooltip, and `AnvilMenu`
-decides it is being handed a book by testing for that component rather than
-for the item — so a data pack can make a stick priced like one, but never make
-it behave like one.
+`DataComponents.STORED_ENCHANTMENTS` in any stack's tooltip, and the anvil
+prices its right-hand input as a book by testing for that component rather
+than for the item ([enchanting](enchanting.md#what-each-path-is-allowed-to-add))
+— so a data pack can make a stick priced like one, but never make it behave
+like one.
 
 **Is the main hand really the main hand?** No — it is a label.
 `EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak` and
@@ -310,10 +325,7 @@ came from, and `KineticWeapon.damageEntities` reaches
 `LivingEntity.stabAttack` with whichever slot the *use* was in. An off-hand
 spear's enchantments are therefore tested against the main-hand slot group.
 
-**Three more small ones.** `ItemStack.isEnchantable` reads *two*
-components: `DataComponents.ENCHANTABLE` must be present, and
-`DataComponents.ENCHANTMENTS` must be present *and empty*, so an item with
-no enchantments component at all is not enchantable either. The two
+**Two more small ones.** The two
 `EnchantmentHelper.forEachModifier` overloads test different things — the
 `EquipmentSlot` one asks `Enchantment.matchingSlot`, the `EquipmentSlotGroup`
 one asks whether the definition declares that exact group — and
@@ -321,9 +333,12 @@ one asks whether the definition declares that exact group — and
 spelled `Enchantment.modifyArmorEffectivness`, Mojang's typo, while the
 helper beside it is `EnchantmentHelper.modifyArmorEffectiveness`.
 
-**And does Fire Aspect cook the loot?** Not through the enchantment. That
-is a loot-table condition on `EnchantmentTags.SMELTS_LOOT`, a tag whose only
-member is Fire Aspect ([loot tables](loot-tables.md)). `EnchantmentTags`
+**And does Fire Aspect cook the loot?** Not through the enchantment. The cooking
+is `SmeltItemFunction`, an ordinary loot function on the mob's own table,
+behind a condition that passes when the victim is on fire *or* the direct
+attacker's main hand carries an enchantment in `EnchantmentTags.SMELTS_LOOT` —
+a tag whose only member is Fire Aspect ([loot
+tables](loot-tables.md#one-roll-drawn)). `EnchantmentTags`
 holds twenty-nine tags. Twenty-five fall into five families — the seven
 exclusivity sets, the tooltip order, pool membership for the table and for
 mob, trade and loot equipment, the behaviour flags (curse, smelts-loot and the

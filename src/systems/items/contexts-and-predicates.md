@@ -110,11 +110,11 @@ It declares eleven of the fifteen keys, all of them required, and omits
 `LootContextParams.INTERACTING_ENTITY`, `LootContextParams.TARGET_ENTITY`,
 `LootContextParams.ENCHANTMENT_LEVEL` and
 `LootContextParams.ENCHANTMENT_ACTIVE`. The practical consequence: a
-standalone predicate file that asks about the interacting or target
-entity, or about whether an enchantment is active, *is* flagged at load;
-one that asks about a block state or a damage source is not, even though
-`LootContextParamSets.COMMAND` — the set `/execute if predicate` actually
-builds — carries neither.
+standalone predicate file that asks about the interacting or target entity,
+or about an enchantment's level or whether it is active, *is* flagged at
+load; one that asks about a block state or a damage source is not, even
+though `LootContextParamSets.COMMAND` — the set `/execute if predicate`
+actually builds — carries neither.
 
 ## Three ways a parameter can be missing
 
@@ -166,29 +166,36 @@ for the registries, so a `ClientLevel` cannot produce a context at all.
 and a set of `LootContext.VisitedEntry` used as a recursion guard.
 `LootContext.pushVisitedElement` returns false when the element is already
 present, which is how `ConditionReference` detects a cycle — it logs an
-infinite loop and answers false. The guard is a stack, not a ledger: the
-entry is popped afterwards, so naming the same predicate twice in one
-evaluation is fine, and only genuine re-entrancy trips it. Both command
+infinite loop and answers false. The guard is a **stack, not a ledger**:
+`LootContext.popVisitedElement` takes the entry off again on the way out, so
+naming the same predicate twice in one evaluation is fine and only genuine
+re-entrancy trips it. Both command
 call sites seed it with the top-level predicate before testing, so a
 predicate that references itself by name is caught on the first hop.
 
 **Named random sequences belong to the context, not to the table.**
 `LootContext.Builder.create` takes an optional `Identifier` and picks a
-random source three ways, in order: an explicit source or non-zero seed
-handed to the builder, else `MinecraftServer.getRandomSequence` for the
-named sequence, else `Level.getRandom`. `RandomSequences` is a `SavedData`
-that derives each sequence's seed from the world seed, a salt and the
-sequence id, which is what makes a named sequence reproducible across
-restarts. A loot table supplies that identifier from its own field — and so
-does `TradeSet.randomSequence`, which is why a villager's trade selection
-is reproducible by the same mechanism and has nothing to do with loot. The
-seeded-chest half of the story belongs to [loot tables](loot-tables.md).
+random source three ways, in order: an explicit source or a **non-zero** seed
+handed to `LootContext.Builder.withOptionalRandomSeed`, else
+`MinecraftServer.getRandomSequence` for the named sequence, else
+`Level.getRandom`. `RandomSequences` is a `SavedData` ([level data and
+rules](../../reference/level-data-and-rules.md)) that derives each sequence's
+seed from the world seed, a salt and the sequence id, which is what makes a
+named sequence reproducible across restarts. A loot table supplies that
+identifier from its own field — and so does `TradeSet.randomSequence`, read
+by `AbstractVillager.addOffersFromTradeSet`, which is why a villager's trade
+selection is reproducible by the same mechanism and has nothing to do with
+loot. What the zero in the middle of that order means for a chest is [loot
+tables](loot-tables.md#where-the-randomness-comes-from)'.
 
 ## What reads a context
 
 `LootContextUser` — *what did you read out of the map* — has six
-sub-interfaces, and two of them carry the traffic, both reached by codec
-through a registry of types. `LootItemCondition` is a predicate over a
+sub-interfaces: `LootItemCondition`, `NumberProvider`, `LootItemFunction`,
+`NbtProvider`, `ScoreboardNameProvider` and `SlotSource`. Each is a
+data-driven type with its own registry of kinds ([data-driven
+types](../foundations/data-driven-types.md#the-idea-stated-once)), and two of
+them carry the traffic. `LootItemCondition` is a predicate over a
 `LootContext` with twenty registered types, from
 `LootItemEntityPropertyCondition` and `LocationCheck` to
 `EnchantmentActiveCheck` and `ConditionReference`; `NumberProvider`
@@ -197,9 +204,16 @@ to `EnchantmentLevelProvider`. Their codecs are forgiving in the same
 shape: `LootItemCondition.DIRECT_CODEC` accepts a bare *list* as an
 implicit `AllOfCondition`, and `NumberProviders.CODEC` accepts a bare
 number as a `ConstantValue` and an untagged object as a
-`UniformGenerator`. A third family, `SlotSource` in
-`net/minecraft/world/item/slot`, reads a context through the same
-interface from outside the loot package.
+`UniformGenerator`. `NbtProvider` and `ScoreboardNameProvider` are the two small ones — a tag out
+of an entity, a block entity or command storage, and a scoreboard name out of
+a context target — and `LootItemFunction` belongs to [loot
+tables](loot-tables.md#one-roll-drawn). The sixth lives outside the loot
+package altogether: `SlotSource`, in `net/minecraft/world/item/slot`, answers
+a `SlotCollection` rather than a boolean or a number, and its six registered
+kinds compose — `GroupSlotSource`, `FilteredSlotSource`, `RangeSlotSource`,
+`LimitSlotSource`, `ContentsSlotSource` and `EmptySlotSource`. Its one
+consumer in the game is the `SlotLoot` entry, which is how a loot table names
+a slot of the entity it is rolling for.
 
 `ContextAwarePredicate` is the bridge the advancement system uses: a list
 of `LootItemCondition` composed into one predicate, entered through
@@ -214,9 +228,9 @@ context at all, which `ConsumeItemTrigger` and `DistanceTrigger` both do.
 
 | caller | set | when |
 |---|---|---|
-| `BlockBehaviour.BlockStateBase.getDrops` | `LootContextParamSets.BLOCK` | any block break ([block breaking](../blocks/block-breaking.md)) |
+| `BlockBehaviour.BlockStateBase.getDrops` | `LootContextParamSets.BLOCK` | any block break ([block breaking](../blocks/block-breaking.md#remove-damage-roll-drop)) |
 | `Block.dropFromBlockInteractLootTable` | `LootContextParamSets.BLOCK_INTERACT` | beehives, cave vines, carving a pumpkin, sweet berries |
-| `LivingEntity.dropFromLootTable` | `LootContextParamSets.ENTITY` | death ([damage and death](../entities/damage-and-death.md)) |
+| `LivingEntity.dropFromLootTable` | `LootContextParamSets.ENTITY` | death ([damage and death](../entities/damage-and-death.md#death-or-not)) |
 | `LivingEntity.dropFromShearingLootTable` | `LootContextParamSets.SHEARING` | sheep, mooshrooms, snow golems, bogged |
 | `LivingEntity.dropFromGiftLootTable` | `LootContextParamSets.GIFT` | hero gifts, cat gifts, chicken eggs, sniffer digs |
 | `LivingEntity.dropFromEntityInteractLootTable` | `LootContextParamSets.ENTITY_INTERACT` | brushing an armadillo |
@@ -229,7 +243,7 @@ context at all, which `ConsumeItemTrigger` and `DistanceTrigger` both do.
 | `VaultBlockEntity` | `LootContextParamSets.VAULT` | a trial chamber vault's display item and its reward |
 | `TrialSpawner.ejectReward`, `TrialSpawnerStateData.getDispensingItems` | `LootContextParamSets.EMPTY` | a trial spawner's reward and its dispensed items |
 | `AdvancementRewards.grant` | `LootContextParamSets.ADVANCEMENT_REWARD` | advancement loot |
-| `Enchantment.damageContext` and its four siblings | the four enchanted sets plus `LootContextParamSets.HIT_BLOCK` | [an enchantment effect's condition](enchantments.md) |
+| `Enchantment.damageContext` and its four siblings | the four enchanted sets plus `LootContextParamSets.HIT_BLOCK` | [an enchantment effect's condition](enchantments.md#how-one-hook-fires) |
 | `LootCommand` | block, entity, chest or fishing | `/loot` |
 | `ItemCommands.applyModifier` | `LootContextParamSets.COMMAND` | `/item … with` |
 | **`ExecuteCommand`** | `LootContextParamSets.COMMAND` | **`/execute if predicate`** |
@@ -319,21 +333,24 @@ against. Predicates and item modifiers get the constant
 context getter is its only caller in the game. That is the sense in which a
 table's declared type is never checked at runtime.
 
-All three live in `RegistryLayer.RELOADABLE`, loaded by
-`ReloadableServerRegistries.reload` on a background executor — one task per
-type, each scanning the data packs, registering, loading that registry's
-tags, and only then validating ([the resource
-system](../foundations/resource-system.md), [identifiers and
-registries](../foundations/identifiers-and-registries.md), and
-[codecs](../foundations/codecs-nbt-json.md) for the files themselves). None
+All three live in `RegistryLayer.RELOADABLE` and are rebuilt by every reload
+([the resource
+system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)),
+which is what makes them the reachable half of the data-driven game: a
+predicate a pack changed is live after `/reload`. One step of that rebuild
+matters here — a registry's **tags are loaded before its elements are
+validated**, so a predicate naming an item tag has it resolved by the time
+`ValidationContext.validateContextUsage` asks what the predicate reads. None
 of the three appears in `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, the
 list `RegistrySynchronization.isNetworkable` tests, so none is ever packed
 for a client. What crosses the wire is only the *result* — a container
 packet, an item entity, a command's success.
 
 The two dependants outside this part are Part XIII's commands, which own
-`/execute if predicate` and the selector argument, and the advancement
-system, whose triggers build a context per tested entity.
+`/execute if predicate` and [the selector
+argument](../commands/entity-selectors.md), and [the advancement
+system](../commands/advancements.md), whose triggers build a context per
+tested entity.
 
 ## Where to look
 

@@ -90,6 +90,15 @@ lowest-covered; the session's finding is that the low number is right, because
 the bulk is one class per species, and that four things in those packages are
 not species and are explained nowhere. **One tool bug**, the eighteenth: the
 atlas printed four packages Part VI *includes* as exclusions.
+**Session G is done** (2026-09-05, Part VII): all eight pages and the landing
+page rewritten, and the book's top duplication pair settled — Part II owns the
+component system, Part VII owns the stack, and `items-and-stacks`' own hook had
+been Part II's. **Twelve corrections**, four of them page-against-page and three
+a page against itself, including a page that denied its own claim twice in the
+paragraphs below it. Part VII is the fourth part running to have arrived with
+almost no anchors. The part's coverage answer is four families and four systems
+that are nobody's — villager trading, brewing, the creative tabs and armour
+trims — all four declined in writing. **No tool bug.**
 
 ## The passes
 
@@ -968,3 +977,73 @@ plan as it stood at its close)*
   discharged and one written, and what the reading raised for sessions H, I, J,
   K, M and N and for passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather
   than left in the log.
+- **2026-09-05, session G — Part VII · Items and inventories (pass 5).** Eight
+  pages plus the landing page, one agent each, the part read end to end in
+  watching order first. **All nine rewritten**, and five pages in three other
+  parts edited because a Part VII page's owner or duplicate lived there. This
+  is the session that settled **the top duplication pair in the book**:
+  `data-components` ↔ `items-and-stacks` at 17.00, which the queue described as
+  the same lecture twice and which was worse than that — `items-and-stacks`'
+  own opening hook was Part II's mechanism, twice over. The line drawn is that
+  **Part II owns the component system's machinery** (the type, the maps, the
+  patch's sanitising and copy-on-write, the prototype's two-phase build) and
+  **Part VII owns the stack as an object** (its four fields, the five identity
+  methods, the two validators, `ItemStackTemplate`, durability, the tick, the
+  `ItemEntity`); six mechanisms were cut to a citation on the Part VII side and
+  three moved *to* Part II, while the validators, `ItemStackTemplate` and
+  `ignoreSwapAnimation` moved the other way and `data-components` was cut to a
+  clause on each. The page's hook is now the one thing only it can say — that
+  durability is what a client never predicts — and `items/README`:47's promise
+  that this part "never re-teaches the component system" is true for the first
+  time. **Twelve corrections**, of which **four were one page contradicting
+  another** and three were a page contradicting *itself*. The sharpest is
+  `enchanting`'s claim that the table, the providers and the loot paths all
+  roll in `EnchantmentHelper.selectEnchantment`, which the same page denies
+  twice below: the method has four callers, and `SingleEnchantment` — six of
+  the seven vanilla providers — and `EnchantRandomlyFunction` roll their own.
+  Beside it: `loot-tables`' sequence diagram put `LootTable.createStackSplitter`
+  on the pool's return where it wraps the whole fill outside the table's own
+  functions (its flowchart and its prose both had it right, so the page
+  disagreed with itself in two figures); `containers-and-menus` compared a
+  click's traffic as "128 integers" where a `HashedStack` carries one integer
+  per *component*; `using-an-item` attached "its only override" to
+  `ItemStack.useOnRelease` where `Item.useOnRelease` is the hook; `enchanting`
+  and `enchantments` gave flatly opposed accounts of how the anvil decides it
+  is holding a book, and both were right about **different slots**, neither
+  saying which; `loot-tables` counted thirteen path prefixes and listed twelve;
+  `contexts-and-predicates` named three of the four keys `ALL_PARAMS` omits;
+  `enchantments` named the guard rather than `SmeltItemFunction` as what cooks
+  the loot; `resource-system`'s reload list was short the per-player recipe-book
+  re-send that makes a Part VII claim true; and the landing page carried two
+  claims its own pages contradict — that the three engines "hand each other
+  nothing", and a sword-swing symptom that is Part VIII's hook. **Seven
+  suspicions were re-derived and found sound**, including the *two spellings*
+  hook (`DataComponents.DAMAGE` at reload time against
+  `DataComponents.MAX_DAMAGE` at stack time — genuinely two components) and the
+  landing page's unhomed claim that `/reload` never re-reads an enchantment,
+  which is true and now has a home on `enchantments`. **Seams:** Part VII
+  carried **two anchors on forty-six cross-part links** before this session —
+  the fourth part running to start with almost none — and now carries them
+  throughout; seven *taught in* cells on `data-driven-types` were re-pointed at
+  pages that actually name the element, five of them Part VII's rows, two of
+  which had been sending readers to a page where *no* page named the class.
+  **Coverage:** Part VII is 64% named by lines, and the answer is four families
+  (the `world/item` subclasses, the twenty-nine menus, the loot functions and
+  conditions, the special crafting recipes) each said once on the page that
+  teaches the machine — plus **four systems that are not a family and are
+  explained nowhere**: villager trading (the part's largest unnamed class),
+  brewing, the creative tabs, and armour identity and trims, all four named and
+  declined on the landing page and written into §7. Two §7 entries were
+  discharged: the `Item.getUseDuration` roster, lost prose since pass 3, is now
+  a sentence on `using-an-item` with the base method's own three-way answer in
+  front of it (a Reference row declined — eight overrides is not a catalogue);
+  and the predicate shape library was **ruled rather than moved**, staying a
+  table on `advancements` with `contexts-and-predicates` gaining the citation
+  it owed. **The landing page**, rewritten last to the role: it gains a *where
+  the part stops* section with the size through the include, replaces a Part
+  VIII symptom in its argument with one of its own, and stops claiming the
+  engines are independent. **The tools found nothing wrong this session** — the
+  second pass-5 part session with no tool bug. Five gates green. Eight queue
+  entries struck or settled, two §7 entries discharged and one written, and what
+  the reading raised for sessions H, I, J, M and N and for passes 6, 7 and 8
+  appended to [pass5.md](pass5.md) rather than left in the log.

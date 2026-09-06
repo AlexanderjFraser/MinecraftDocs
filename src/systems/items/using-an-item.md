@@ -31,8 +31,9 @@ action, that the meal would read as *the player changed their mind*.
 
 The block-target branch of a use — right-clicking a chest rather than the
 air — leaves at `MultiPlayerGameMode.useItemOn` and belongs to
-[block interaction](../blocks/block-interaction.md); the stack itself is
-[items and stacks](items-and-stacks.md).
+[block interaction](../blocks/block-interaction.md#block-then-empty-hand-then-item);
+the stack itself is [items and
+stacks](items-and-stacks.md#four-fields-and-only-one-of-them-is-really-data).
 
 ## The two paths, side by side
 
@@ -40,7 +41,7 @@ air — leaves at `MultiPlayerGameMode.useItemOn` and belongs to
 |---|---|---|
 | what `Item.use` does | the default body finds `DataComponents.CONSUMABLE` and calls `Consumable.startConsuming` | `BowItem.use` overrides it, checks `Player.getProjectile`, calls `LivingEntity.startUsingItem` |
 | the refusal | `Consumable.canConsume` asks `Player.canEat`, for food only | no arrow anywhere and no infinite materials — `InteractionResult.FAIL` |
-| `Item.getUseDuration` | `Consumable.consumeTicks`, **32** for `Consumables.DEFAULT_FOOD` | **72000**, `Item.APPROXIMATELY_INFINITE_USE_DURATION` in all but name |
+| `Item.getUseDuration` | `Consumable.consumeTicks`, **32** for `Consumables.DEFAULT_FOOD` | **72000** — an hour, and `BowItem`'s own override |
 | what `ItemStack.onUseTick` does | particles and the chew sound, on both sides | nothing — `BowItem` does not override `Item.onUseTick` |
 | how it ends | the count reaches zero on the server | the use key comes up on the client |
 | the packet that ends it | `ClientboundEntityEventPacket`, downward | `ServerboundPlayerActionPacket`, upward |
@@ -49,15 +50,29 @@ air — leaves at `MultiPlayerGameMode.useItemOn` and belongs to
 | `ItemStack.useOnRelease` | false | **also false** |
 | what the client predicts | the entire meal, twice over | the animation, and nothing else |
 
-The last-but-one row is the one that looks wrong. `ItemStack.useOnRelease`
-is the third term of the completion guard and it is the obvious name for
-"this item is finished by letting go" — but **`CrossbowItem.useOnRelease` is
-its only override in the tree**. The bow and the trident return
-`Item.useOnRelease`'s default false. They are release-ended not because a
-predicate says so, but because their `Item.getUseDuration` is an hour long and
-their `Item.releaseUsing` does the work. The spyglass returns the default too
-and is not release-ended at all: at 1200 ticks its countdown really can run
-out.
+The last-but-one row is the one that looks wrong. `ItemStack.useOnRelease` is
+the third term of the completion guard and it is the obvious name for "this
+item is finished by letting go" — but it only delegates, and the hook it
+delegates to, `Item.useOnRelease`, has **exactly one override in the tree**,
+`CrossbowItem`'s. The bow and the trident take the default false. They are
+release-ended not because a predicate says so, but because their
+`Item.getUseDuration` is an hour long and their `Item.releaseUsing` does the
+work. The spyglass takes the default too and is not release-ended at all: at
+1200 ticks its countdown really can run out.
+
+Duration is where the real answer lives, and the whole roster is eight
+overrides and one default. `Item.getUseDuration`'s base body reads
+`Consumable.consumeTicks` off the stack if there is a `Consumable` on it, and
+otherwise answers the hour for anything carrying
+`DataComponents.BLOCKS_ATTACKS` or `DataComponents.KINETIC_WEAPON` — so a
+shield and a spear get their long draw from the base method and no class of
+their own. Above it: `BowItem`, `CrossbowItem` and `TridentItem` return the
+same 72000, which `Item.APPROXIMATELY_INFINITE_USE_DURATION` names and no
+override actually reads; `SpyglassItem` returns 1200; `BrushItem` and
+`BundleItem` return 200; `InstrumentItem` returns the goat horn's own sounded
+length in ticks; and `EnderEyeItem` returns **zero**, which makes it the one
+item in the game whose use is instant by declaration rather than by having no
+`Consumable` at all.
 
 ## Starting: the client finishes before it speaks
 
@@ -66,7 +81,7 @@ which sets the four-tick `Minecraft.rightClickDelay` itself, refuses while
 `LocalPlayer.isHandsBusy`, and walks both hands for a target. With nothing
 under the crosshair it reaches `MultiPlayerGameMode.useItem`, which opens a prediction window first
 (`MultiPlayerGameMode.startPrediction`,
-[prediction and acks](../client/prediction-and-acks.md)) and does everything
+[prediction and acks](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)) and does everything
 else inside it: it builds the `ServerboundUseItemPacket` — hand, sequence
 number and both rotations — then consults the client's own `ItemCooldowns`,
 and runs `ItemStack.use` **locally first** only if the item is off cooldown.
@@ -87,7 +102,8 @@ release strange later, because the release packet does no such thing. And
 `ServerPlayerGameMode.useItem` ends on a deliberate omission: it normally
 re-sends the player's inventory with
 `AbstractContainerMenu.sendAllDataToRemote`
-([containers and menus](containers-and-menus.md)), but not when the use it
+([containers and
+menus](containers-and-menus.md#the-chest-you-see-is-not-the-chest)), but not when the use it
 just ran started a multi-tick one. **While you are eating or drawing, the
 server declines to correct your inventory.**
 
@@ -95,7 +111,8 @@ server declines to correct your inventory.**
 
 `LivingEntity.startUsingItem` writes two bits of
 `LivingEntity.DATA_LIVING_ENTITY_FLAGS`
-([synched entity data](../entities/synched-entity-data.md)) — bit one for
+([synched entity
+data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from)) — bit one for
 *using*, bit two *assigned* the hand, so a main-hand use clears it — and
 only on the server. `LivingEntity.isUsingItem` and
 `LivingEntity.getUsedItemHand` read those bits, which is how every other
@@ -153,7 +170,7 @@ the three `CrossbowItem.ChargingSounds` at fixed fractions of
 render-thread computation — `CrossbowPull` and `ItemInHandRenderer` both
 call `CrossbowItem.getChargeDuration`, which calls
 `EnchantmentHelper.modifyCrossbowChargingTime`
-([enchantments](enchantments.md)). **An enchantment hook, evaluated on the
+([enchantments](enchantments.md#questions-the-pattern-raises)). **An enchantment hook, evaluated on the
 render thread, once per frame, to pick one of three textures.**
 
 > **For a 1.21-era reader.** There is no bow-pull item property class left
@@ -177,7 +194,7 @@ by exactly as much as eating does, through exactly the same field.**
 `Item.Properties.spear` is the definition that overrides it outright, with a
 `UseEffects` that permits sprinting, suppresses vibrations and multiplies
 speed by one; the attack that ends *that* use is a different packet again
-([the sword swing](../player/the-sword-swing.md)).
+([the spear](../player/the-spear.md)).
 
 ## The ending, in one picture
 
@@ -221,7 +238,7 @@ other item asks for that. Release is also not only a key-up —
 `LivingEntity.completeUsingItem` itself, when the stack turned out not to
 match the hand; `CrossbowAttack` and `RangedCrossbowAttackGoal`, which is
 how a pillager fires
-([AI goals and brains](../entities/ai-goals-and-brains.md)); and
+(a pillager's ranged goal); and
 `BrushItem.onUseTick` twice, ending its own use from inside the tick.
 
 ## The meal, tick by tick
@@ -264,7 +281,8 @@ body. Particles, sound, the `ConsumableListener` walk that finds
 `FoodProperties`, and the `ItemStack.consume` shrink all run on both — and
 every one of those client mutations is then overwritten. That is why a
 chorus fruit's teleport is never predicted while the hunger bar's jump is
-([hunger and experience](../player/hunger-and-experience.md)).
+([hunger and
+experience](../player/hunger-and-experience.md#eating-is-a-component-walk)).
 
 One meal, two exactly-once sound strategies. The chew sound goes through
 `Player.playSound`, which names the eater as the entity to *exclude*, so the
@@ -361,7 +379,8 @@ consumed, not even a spectator check. Everything the client learns about its
 own shot arrives as ordinary world traffic. The arrow is the quick one: adding
 it to the level starts its tracking inside the same call, so the spawn packet
 leaves on that tick. The spent ammo and the bow's damage wait for a container
-slot update ([containers and menus](containers-and-menus.md)) and the cleared
+slot update ([containers and
+menus](containers-and-menus.md#where-in-the-tick-a-broadcast-happens)) and the cleared
 using-flag for entity data it has already acted on, both a tick or more
 later. The shoot sound is broadcast with no
 exclusion, so — by the same rule as the burp — the shooter hears the

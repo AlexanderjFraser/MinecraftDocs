@@ -161,24 +161,25 @@ Part V for what it collides with.
 ## VII · Items and inventories
 
 Part VII is two tiers. The first three lectures are the vocabulary and are
-watched in order; the last five are three engines that hand each other nothing,
-so they can be watched in any order — though the two pairs below want to stay
-together, and *contexts and predicates* leans on no stack at all and could come
-first.
+watched in order; the last five are three engines that touch each other only at
+their boundaries, so they can be watched in any order — though the two pairs
+below want to stay together, and *contexts and predicates* leans on no stack at
+all and could come first.
 
 1. [Items and stacks](systems/items/items-and-stacks.md) — assumes [data
    components](systems/foundations/data-components.md) completely.
 2. [Using an item](systems/items/using-an-item.md)
-3. [Containers and menus](systems/items/containers-and-menus.md) — needs
-   [the level tick](systems/server/server-level-tick.md) for when a
-   broadcast happens.
+3. [Containers and menus](systems/items/containers-and-menus.md) — needs all
+   three of Part III's and Part VIII's tick pages for *when* a broadcast
+   happens: the drain, the level's entity phase, and the player's second half.
 4. [Recipes](systems/items/recipes.md)
 5. [Enchantments](systems/items/enchantments.md)
 6. [Enchanting](systems/items/enchanting.md) — watch it directly after
    *enchantments*.
 7. [Contexts and predicates](systems/items/contexts-and-predicates.md) — the
    one page in this part that Part XIII needs.
-8. [Loot tables](systems/items/loot-tables.md)
+8. [Loot tables](systems/items/loot-tables.md) — watch it directly after
+   *contexts and predicates*, which it is the worked example of.
 
 Part VII assumes Part II for components, codecs and the reload, Part III for
 where in a tick a packet is drained and a broadcast lands, and Part V for how a

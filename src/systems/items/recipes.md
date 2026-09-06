@@ -34,7 +34,7 @@ not unlocked, plus any authority over the outcome.
 
 `RecipeManager` is a `SimplePreparableReloadListener` over a `RecipeMap`, so it
 takes the ordinary two-phase shape of
-[the resource system](../foundations/resource-system.md) — and then does
+[the resource system](../foundations/resource-system.md#prepare-every-listener-at-once) — and then does
 something unusual with the second phase.
 
 ```mermaid
@@ -96,7 +96,13 @@ not data. `CustomRecipe` hard-codes `Recipe.isSpecial` true, `Recipe.group`
 empty and `PlacementInfo.NOT_PLACEABLE`, and not one of the nine overrides
 `Recipe.display`, so a special recipe contributes nothing to the display list in
 the first place. Only eight of the nine are *named* special: `DecoratedPotRecipe`
-registers as *crafting_decorated_pot* and is a `CustomRecipe` all the same. Of
+registers as *crafting_decorated_pot* and is a `CustomRecipe` all the same.
+They are the recipes whose output cannot be written down — `FireworkStarRecipe`
+and its fade sibling, `FireworkRocketRecipe`, `BookCloningRecipe`,
+`BannerDuplicateRecipe`, `ShieldDecorationRecipe`, `MapExtendingRecipe`, the
+decorated pot, and `RepairItemRecipe`, which is the one this part comes back
+for: it fuses two damaged tools and carries every curse from both inputs onto
+the result ([enchanting](enchanting.md#what-each-path-is-allowed-to-add)). Of
 the five that remain, `ShapedRecipe` and `ShapelessRecipe` are the pair everyone
 knows, and `DyeRecipe`, `ImbueRecipe` and `TransmuteRecipe` are genuine
 `NormalCraftingRecipe`s — data-driven, with hand-written matching, hand-built
@@ -140,9 +146,10 @@ crafting overrides of it end in the same static,
 `CraftingMenu.slotChangedCraftingGrid`. They reach it differently:
 `CraftingMenu.slotsChanged` goes through `ContainerLevelAccess.execute`, while
 `InventoryMenu.slotsChanged` calls the static directly, gated only on having a
-`ServerLevel`. A `CraftingMenu` built with the two-argument constructor holds
-`ContainerLevelAccess.NULL`, whose `ContainerLevelAccess.execute` runs nothing — and that instance is
-the client's copy, which is why the client never matches anything.
+`ServerLevel`. The two-argument `CraftingMenu` constructor — the client's — is
+handed `ContainerLevelAccess.NULL`, which runs nothing at all ([containers and
+menus](containers-and-menus.md#the-chest-you-see-is-not-the-chest)), so the
+client never matches anything.
 
 **Trimming.** `CraftingContainer.asPositionedCraftInput` produces a
 `CraftingInput` with the empty border rows and columns removed *and* the offset
@@ -186,15 +193,18 @@ the recipe is not special, and `ServerRecipeBook.contains` says no. Limited
 crafting is enforced *here*, in the result slot, not in matching. Past it,
 `Recipe.assemble` produces the stack — for everything but the hand-written
 recipes it ignores its input entirely and materialises a stored
-`ItemStackTemplate` ([items and stacks](items-and-stacks.md)) —
+`ItemStackTemplate` ([items and
+stacks](items-and-stacks.md#an-item-a-count-some-components--said-three-ways)) —
 `ItemStack.isItemEnabled` filters that against the level's feature flags, and
 `ResultContainer.setItem` stores it.
 
 **Pushing it.** `AbstractContainerMenu.setRemoteSlot` forces the server's belief
 about slot zero and then a `ClientboundContainerSetSlotPacket` is sent by hand,
-outside the diffing that [containers and menus](containers-and-menus.md)
-describes, incrementing the state id on its own way past. It is sent even when
-the result is empty.
+incrementing the state id on its own way past — outside the diffing that
+[containers and
+menus](containers-and-menus.md#two-paths-that-are-not-this-protocol-at-all)
+describes, and outside the flag that suppresses it. It is sent even when the
+result is empty.
 
 **Taking it, in an order that surprises.** `ResultSlot.remove` counts what was
 taken, and then `ResultSlot.onTake` runs `ResultSlot.checkTakeAchievements`
@@ -235,6 +245,10 @@ place.
 
 Those sets exist so that menus can answer *may this item go in this slot* — and
 route a shift-click on the strength of it — without knowing a single recipe.
+The recipe classes behind those stations are as thin as the sets suggest:
+`SingleItemRecipe` is the stonecutter's shape, and `SmithingTransformRecipe`
+and `SmithingTrimRecipe` are the smithing table's two — one that replaces the
+item, one that writes an `ArmorTrim` component onto it.
 `SmithingMenu` builds its three input slots out of the three smithing sets,
 `AbstractFurnaceMenu` holds whichever of `RecipePropertySet.FURNACE_INPUT`,
 `RecipePropertySet.BLAST_FURNACE_INPUT` and `RecipePropertySet.SMOKER_INPUT`
@@ -255,7 +269,7 @@ used: five `RecipeDisplay` types, one per station shape, and eleven registered
 `SlotDisplay` variants, which `SlotDisplay.resolve` turns into concrete stacks
 against a `SlotDisplayContext`. The chest's single ingredient reaches the client
 as a `SlotDisplay.TagSlotDisplay` over *minecraft:planks*
-([tags](../foundations/tags.md)) — everything needed to draw the recipe, and
+([tags](../foundations/tags.md#a-tag-is-a-key-and-a-file)) — everything needed to draw the recipe, and
 nothing at all about its name.
 
 ## The recipe book: unlocked, glowing, and filled in for you
@@ -266,7 +280,11 @@ an *identity* set of recipe keys — and `ServerRecipeBook.highlight`, the subse
 still new enough to glow. It is saved in the player NBT as
 `ServerRecipeBook.Packed` and read back by `ServerRecipeBook.loadUntrusted`,
 which validates every key against the live `RecipeManager` and logs and drops the
-ones that no longer resolve ([codecs](../foundations/codecs-nbt-json.md)).
+ones that no longer resolve ([codecs](../foundations/codecs-nbt-json.md#trusted-untrusted-and-validated)).
+The ordinary route into that set is not crafting at all: every recipe in
+vanilla has an advancement whose reward names it, so unlocking the advancement
+is what fills the book ([advancements](../commands/advancements.md)). Crafting
+a recipe you had not unlocked adds it too, which is the path this trace took.
 `ClientRecipeBook` never sees any of that. It holds `RecipeDisplayEntry`s by
 display id, and `ClientRecipeBook.rebuildCollections` groups them into
 `RecipeCollection`s by category and then by group index, which is why one button
@@ -279,7 +297,7 @@ crafting, furnace, blast furnace and smoker — and exactly five menus extend
 `RecipeBookMenu`s at all, so the stonecutter and the smithing table have no book
 and no auto-fill, even though `RecipeBookCategories.STONECUTTER` and
 `RecipeBookCategories.SMITHING` exist to categorise them — and the anvil and the
-grindstone were never recipes at all ([enchanting](enchanting.md)).
+grindstone were never recipes at all ([enchanting](enchanting.md#the-five-paths-at-a-glance)).
 
 Craftability is decided on the client and then decided again on the server.
 `RecipeCollection.selectRecipes` asks `RecipeDisplayEntry.canCraft` against a
@@ -338,9 +356,11 @@ items would have accepted without complaint.
 `ResultContainer` · `RecipeCraftingHolder` · `ServerRecipeBook` ·
 `ClientRecipeBook` · `ServerPlaceRecipe` · `StackedItemContents`
 
-Before this page: [containers and menus](containers-and-menus.md), for the
+Before this page: [containers and
+menus](containers-and-menus.md#one-shift-click-end-to-end), for the
 synchroniser that the result slot goes around, and [items and
-stacks](items-and-stacks.md) for `ItemStackTemplate` and crafting remainders.
+stacks](items-and-stacks.md#an-item-a-count-some-components--said-three-ways)
+for `ItemStackTemplate`.
 
 ---
 

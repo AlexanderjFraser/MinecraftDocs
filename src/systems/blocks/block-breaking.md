@@ -266,11 +266,10 @@ Drops come last and in a fixed order. If `Player.preventsBlockDrops` (creative)
 the method returns here. Otherwise the tool is copied,
 `Player.hasCorrectToolForDrops` is asked *once* and remembered, and
 `ItemStack.mineBlock` is called **unconditionally** — though what it does is
-not: `Item.mineBlock` awards `Stats.ITEM_USED` and spends
-`Tool.damagePerBlock` only on the server, only for a stack that carries a
-`DataComponents.TOOL` at all, only when that tool's damage per block is above
-zero, and only when the block's hardness is non-zero
-([items and stacks](../items/items-and-stacks.md#a-pickaxes-last-point-of-durability)). Only then, and only if the
+conditional four ways over, and not one of those conditions is this page's
+([items and
+stacks](../items/items-and-stacks.md#a-pickaxes-last-point-of-durability)).
+Only then, and only if the
 write succeeded and the remembered answer was yes, does `Block.playerDestroy`
 run: `Stats.BLOCK_MINED`, 0.005 of food exhaustion, and `Block.dropResources`.
 

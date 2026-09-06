@@ -1595,13 +1595,41 @@ writes one strikes it through; a session that rules one out says why, here.*
   `scoreboard-and-data`, which pass 5 can add without a new page; the
   predicate catalogue is a generation candidate with the shape library
   below. *(session K, half-corrected session N, carried session P)*
-- **The predicate *shape* library** — `MinMaxBounds`, `CollectionPredicate`
+- ~~**The predicate *shape* library**~~ — `MinMaxBounds`, `CollectionPredicate`
   with its contents/counts pair, `EntitySubPredicate` as registry-dispatched
   extension, and `DataComponentMatchers`. Four shapes the whole data-driven
   half of the game reuses, currently a table on `advancements` because that
   is their biggest consumer. `contexts-and-predicates` owns the *context*
   machinery and not these. A Reference page, most likely generated. *(session
-  N)*
+  N)* — **ruled by pass 5's session G, for session M to apply: the table stays
+  on `advancements`.** Four classes explained in prose is not an enumeration a
+  generator can read, and the page whose scenario invented the shapes owns
+  them under the first ownership rule; a generated view remains possible for
+  the two that really are registries (`DataComponentPredicates` and
+  `BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE`) and would sit beside the
+  table rather than replace it. What Part VII owed was the citation, and
+  `contexts-and-predicates` now carries it from the paragraph where a reader
+  meets `net/minecraft/advancements/predicates`.
+
+- **Part VII's four unowned systems** *(pass 5, session G)*. The part is 507
+  classes and 45,289 lines and about a third of those lines are named on no
+  page; almost all of that is families the pages already cover in a sentence
+  each, and four things are not. **Villager trading** — `world/item/trading`
+  is 1,626 unmentioned lines with `VillagerTrades` alone at 847, plus
+  `MerchantMenu` and `MerchantContainer`; it is named as a *caller* on four
+  pages of the part and owned by nobody, and Part VI's villager pages do not
+  take it either. **Brewing** — `PotionBrewing` and the two potion tables in
+  `world/item/alchemy`, with `BrewingStandMenu`; `recipes` draws exactly the
+  boundary it would sit on ("the anvil and the grindstone were never recipes
+  at all") and stops. **The creative tabs** — `CreativeModeTab` at 307 lines
+  and `CreativeModeTabs` the largest class in `world/item`;
+  `containers-and-menus` explains the creative *protocol* and `enchanting`
+  names the book generators, and what a tab is and how it is filled is
+  nowhere. **Armour identity and trims** — `world/item/equipment` and
+  `equipment/trim`, used by Part VIII and drawn by Part XI and explained by
+  neither. All four are named and declined on `items/README`; a second edition
+  should take them, and villager trading is the one that most looks like a
+  page of its own.
 
 - **Reference views `gen_reference.py` does not yet have** — three
   catalogues the part sessions named and session O declined to hand-keep,

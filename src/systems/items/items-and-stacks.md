@@ -7,18 +7,19 @@ A diamond pickaxe is in your hotbar. The `Item` behind it,
 that has ever existed on this server, and it holds four fields: a description
 id, a crafting remainder, a feature-flag set, and its own registry holder. Not
 the stack size. Not the mining speed. Not the durability. All of that is data
-components ([data components](../foundations/data-components.md)) — and they
-do not live on the `Item` either. They live on the item's `Holder.Reference`
-in `BuiltInRegistries.ITEM`, and the *stack* borrows that map as a read-only
-prototype and stores only the ways it differs from it. Two things follow, and
-they run through the whole page. **That prototype does not exist until the
-first data-pack load**: `Item.components` throws until a reload binds it, and
-`Item.CODEC_WITH_BOUND_COMPONENTS` exists purely to refuse an item whose
-components are not bound yet. And **a stack whose components equal its item's
-defaults carries an empty patch** — every item's prototype contains
-`DataComponents.ENCHANTMENTS` set to `ItemEnchantments.EMPTY`, so *enchanted
-with nothing* and *never enchanted* are not merely equal, they are the same
-object state, indistinguishable on disk and on the wire.
+components — and they do not live on the `Item` either. They live on the
+item's `Holder.Reference` in `BuiltInRegistries.ITEM`, as a prototype map
+built at the first data-pack load and rebuilt at every one after ([data
+components](../foundations/data-components.md#the-prototype-and-why-it-is-built-at-reload)),
+and the *stack* borrows that map read-only and stores only the ways it
+differs from it. This page is the object in the slot rather than the
+component system behind it: what an `ItemStack` is made of, what makes two of
+them the same stack, what a stack may legally hold, and what happens to one
+that runs out of durability. That last is the odd one out in a part where
+almost everything is predicted locally and corrected afterwards.
+**Durability is the one thing a client never even guesses at** — the method
+that spends it demands a `ServerLevel`, and the convenient overloads that do
+not have one silently do nothing at all.
 
 ## The cast
 
@@ -79,82 +80,34 @@ step onto a `DataComponentInitializers.Initializer`, a function that will be
 run against a `DataComponentMap.Builder` later, with a
 `HolderLookup.Provider` in hand.
 
-## The map that does not exist yet
+Between the two halves of that arrangement an `Item` is a live object with no
+components at all: the constructor registers an initializer and the map is not
+built until a reload builds it, so `Item.components` throws until then and
+`Item.CODEC_WITH_BOUND_COMPONENTS` exists to refuse an item whose components
+are not bound yet. When and on which thread that happens, on the server and on
+a joining client alike, is [data
+components](../foundations/data-components.md#the-prototype-and-why-it-is-built-at-reload).
 
-Registration and definition happen at completely different times, on
-different threads, in different phases of the program.
+## What copying a stack costs, and what crosses the wire
 
-```mermaid
-sequenceDiagram
-    participant Boot as Bootstrap
-    participant Items as Items
-    participant Item as Item
-    participant BIR as BuiltInRegistries
-    participant Worker as Worker
-    participant MS as MinecraftServer
+Two properties of that borrowed map do work on the rest of this page, and
+both belong to [data components](../foundations/data-components.md#the-maps).
+The patch is **sanitised on every write**, so it can never hold a value the
+item already had — which is what makes the equality table below behave. And
+the patch map is **shared until someone writes to it**: `ItemStack.copy` hands
+out the same map and sets a copy-on-write flag, and the fork happens on the
+first mutation. Copying a stack is therefore something the game does without
+thinking about it, and it does — menus, recipes, hover text and
+`ServerPlayerGameMode.destroyBlock` all copy constantly, and each copy
+allocates one small object and no component data.
 
-    Boot->>BIR: bootStrap, then createContents touches Items.AIR
-    BIR->>Items: the class loads, running 1177 static initialisers
-    Items->>Item: one constructor per field, each given an Item.Properties
-    Item->>BIR: DATA_COMPONENT_INITIALIZERS.add, one Initializer per item
-    Note over Item: every item now exists and NO item has components
-    Note over MS: much later — a world load, or a reload command
-    MS->>Worker: ReloadableServerResources.loadResources
-    Worker->>BIR: DataComponentInitializers.build against the reloaded registries and tags
-    Note over Worker: DataComponentMap.Builder.build runs each item validator here
-    Worker-->>MS: a PendingComponents per registry
-    Note over MS: back on the main thread
-    MS->>Item: PendingComponents.apply, then bindComponents on every holder
-```
-
-Between those two halves an `Item` is a live object whose `Item.components`
-call ends in a null check reading *Components not bound yet*;
-`Holder.Reference.areComponentsBound` is the polite way to ask, and
-`Item.CODEC_WITH_BOUND_COMPONENTS` refuses to name an unbound item at all. The
-client goes through the same gate on its own registries, in
-`RegistryDataCollector` while `ClientConfigurationPacketListenerImpl` finishes
-configuration — so a client on the title screen has componentless items too.
-
-Almost none of that map actually varies with the data pack. Every initializer
-starts by copying `DataComponents.COMMON_ITEM_COMPONENTS` — ten entries every
-item in the game gets, including the stack size of 64 and the empty
-enchantment list the hook rests on — and `Item.Properties.component` bakes
-literal Java values on top. Only `Item.Properties.delayedComponent` and
-`Item.Properties.delayedHolderComponent` read the context, and there are
-**twenty** call sites between them in the entire game, all in `Item` and
-`Items`: fire resistance resolving `DamageTypeTags.IS_FIRE`, the banner
-patterns, the goat horn, the jukebox songs, the egg variants, the spear's
-damage type. `Item.Properties.repairable` is the near miss — it takes a tag
-and is still eager, because it takes a lookup from
-`BuiltInRegistries.acquireBootstrapRegistrationLookup` at class-init and
-stores an unresolved `HolderSet` rather than waiting.
-
-## A patch with tombstones, and a copy that copies nothing
-
-`PatchedDataComponentMap` holds three things: the prototype, a patch map, and
-a copy-on-write flag. Reads consult the patch and fall through to the
-prototype. Writes are where the design shows.
-`PatchedDataComponentMap.set` compares the new value against the prototype's
-and, if they are equal, **removes** the entry rather than storing it — the
-patch never contains a value the item already had.
-`PatchedDataComponentMap.remove` does the opposite trick: when the prototype
-has the component, it cannot simply drop the key, so it writes an empty
-optional as a tombstone meaning *this one is deliberately gone*. A patch is
-therefore a diff in both directions, which is exactly what
-`DataComponentPatch` serialises: additions, then removals.
-
-`ItemStack.copy` and `PatchedDataComponentMap.asPatch` both hand out the
-*same* patch map and set the copy-on-write flag on it, and every mutating
-method calls `PatchedDataComponentMap.ensureMapOwnership` first, which forks
-the map on the first write and clears the flag. Copying a stack — which menus,
-recipes, hover text and `ServerPlayerGameMode.destroyBlock` all do constantly
-— allocates one small object and copies no component data at all.
-
-The wire form falls straight out of it. `ItemStack.OPTIONAL_STREAM_CODEC`
-writes the count, then the item holder, then `PatchedDataComponentMap.asPatch`
-— **the patch only, never the prototype**, because the receiver already has
-the same prototype bound to the same holder. A count of zero is the whole
-encoding of an empty stack.
+The wire form falls out of the same shape and is the third of the four
+serialisations [codecs, NBT and
+JSON](../foundations/codecs-nbt-json.md#the-four-paths-side-by-side) lays side
+by side: `ItemStack.OPTIONAL_STREAM_CODEC` writes the count, the item holder
+and the patch, never the prototype, because the receiver has the same
+prototype bound to the same holder. A count of zero is the whole encoding of
+an empty stack.
 
 ## When two stacks are the same stack
 
@@ -165,15 +118,15 @@ question, and menus, recipes and the renderer each want a different one.
 |---|---|---|
 | `ItemStack.isSameItem` | the item holder only | *is this the same kind of thing* |
 | `ItemStack.isSameItemSameComponents` | the item, then the whole `PatchedDataComponentMap` | stacking, and every *are these interchangeable* test |
-| `ItemStack.matches` | the count as well | container synchronisation ([containers and menus](containers-and-menus.md)) |
+| `ItemStack.matches` | the count as well | container synchronisation ([containers and menus](containers-and-menus.md#the-ladder-the-server-climbs-before-it-believes-you)) |
 | `ItemStack.matchesIgnoringComponents` | everything except the component types a predicate excuses | the held-item swap animation |
 | `ItemStack.hashItemAndComponents` | the item's hash and the effective component map's | keying stacks in maps |
 
-The second row is where the hook pays off. `PatchedDataComponentMap` compares
-by prototype **and** patch, so for two stacks of the same item it amounts to
-comparing the patches — and since a patch can never hold a value equal to the
-prototype's, two pickaxes with the same damage are equal whether one reached
-that state by being set explicitly or by never being touched.
+The second row is where the borrowed map pays off. Comparing two stacks of the
+same item amounts to comparing their patches, and because a patch never holds
+a value equal to the prototype's, two pickaxes with the same damage are equal
+whether one reached that state by being set explicitly or by never being
+touched.
 
 The fourth row exists for one component. `DataComponents.DAMAGE` is the only
 component type in the game declared with
@@ -199,18 +152,20 @@ components.
 | when | at reload, on the background executor | when a command, a template or a component patch builds a stack |
 | on failure | throws, failing the reload | depends on the caller: `ItemInput` throws a command syntax error, the other two log and yield `ItemStack.EMPTY` or restore the previous patch |
 
-Neither is reached from a network decode, and the client's stacks are proved a
-third way instead. Exactly **one** serverbound packet in the protocol carries
-an `ItemStack`: `ServerboundSetCreativeModeSlotPacket`, whose
-`ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC` is wrapped in
-`ItemStack.validatedStreamCodec` — which runs no validator at all, but
-re-encodes the decoded stack through `ItemStack.CODEC` and throws if that
-fails. The contents of a container stack are checked one level down, but on
-the other path: `ItemStack.validateContainedItemSizes` runs inside
-`ItemStack.validateStrict`, over `DataComponents.CONTAINER`,
-`DataComponents.BUNDLE_CONTENTS` and `DataComponents.CHARGED_PROJECTILES` — so
-a shulker box full of impossible stacks is caught by a command, not at the
-creative slot's door.
+Neither is reached from a network decode. Exactly **one** serverbound packet
+in the protocol carries an `ItemStack` at all, the creative slot's, and it is
+proved a third way — re-encoded rather than validated ([codecs, NBT and
+JSON](../foundations/codecs-nbt-json.md#trusted-untrusted-and-validated)).
+
+The strict validator reaches one level into a stack's contents and no further.
+`ItemStack.validateContainedItemSizes` runs inside `ItemStack.validateStrict`
+over `DataComponents.CONTAINER`, `DataComponents.BUNDLE_CONTENTS` and
+`DataComponents.CHARGED_PROJECTILES`, checking each contained stack's count
+against its own maximum — and it does **not** re-run the full validation
+there, so nesting is not followed and a shulker box full of impossible stacks
+is caught by a command rather than at the creative slot's door. The bundle is
+the one that gets a second test of its own: an over-weight `BundleContents`
+fails too.
 
 ## An item, a count, some components — said three ways
 
@@ -225,8 +180,11 @@ happens, because the common set puts 64 there.
 
 Two classes implement it. `ItemStack` is the mutable one that lives in slots.
 `ItemStackTemplate` is an immutable record of a `Holder<Item>`, a count and a
-raw `DataComponentPatch` — what a stack becomes when it is stored *inside*
-something else: `ItemContainerContents` (so a shulker box's contents are
+**raw** `DataComponentPatch` — one that came straight from a builder and was
+never sanitised against a prototype, so a template is the one thing in the
+game that can carry a component value equal to the item's own default and send
+it verbatim. It is what a stack becomes when it is stored *inside* something
+else: `ItemContainerContents` (so a shulker box's contents are
 templates, not stacks), `BundleContents`, `ChargedProjectiles`,
 `ItemParticleOption`, `HoverEvent`, `UseRemainder`, the recipe classes, and
 `Item`'s own crafting remainder. Its constructor refuses a count of zero or
@@ -258,7 +216,7 @@ that does the work demands a `ServerLevel` outright. The overloads taking a `Liv
 pattern-match on the entity's level and **silently do nothing** on the client,
 which is why a client never predicts durability. The amount then goes through
 `EnchantmentHelper.processDurabilityChange`
-([enchantments](enchantments.md)), which is how Unbreaking turns a point of
+([enchantments](enchantments.md#seven-families-of-moment)), which is how Unbreaking turns a point of
 damage into no damage at all, and a player with `Player.hasInfiniteMaterials`
 short-circuits to zero before even that. If anything survives, the stack fires
 `CriteriaTriggers.ITEM_DURABILITY_CHANGED` for a real player, writes the new
@@ -296,21 +254,32 @@ the thirty-six ordinary slots and tells the selected one it is the main hand;
 `EntityEquipment.tick`, from `LivingEntity.aiStep`, walks the worn and held
 slots of every living entity. A stack that leaves an inventory altogether
 becomes an `ItemEntity`, which keeps it in a synched data entry
-([synched entity data](../entities/synched-entity-data.md)) rather than a
+([synched entity data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from)) rather than a
 plain field, counts up to a 6000-tick lifetime, and folds itself into
 neighbours through `ItemEntity.mergeWithNeighbours` — a merge that keeps the
 *smaller* of the two ages, so a fresh drop rejuvenates an old one. Blocks
 reach it through `Block.popResource`
-([block breaking](../blocks/block-breaking.md)).
+([block breaking](../blocks/block-breaking.md#remove-damage-roll-drop)).
+
+**And the other ninety-eight classes in `world/item`?** They are one `Item`
+subclass each, and each exists for the same reason: a behaviour hook that no
+component can express. `MaceItem`, `BoneMealItem`, `HoneycombItem`,
+`EnderEyeItem`, `DebugStickItem`, `BoatItem`, `LeadItem` and sixty more
+override `Item.use`, `Item.useOn` or `Item.interactLivingEntity` and hold no
+state of their own; `AxeItem`, `ShovelItem` and `HoeItem` kept a class only
+for stripping, path-making and tilling, which act on a block rather than on a
+stack. That is why a registry of over a thousand items has so few classes
+behind it ([the class hierarchy](../../maps/hierarchy.md)).
 
 ## What this page hands off
 
 Everything a stack *does* when a player holds down the use key — the
 prediction, the countdown, the consumable and cooldown components, the
-completion packet — is the next lecture: [using an item](using-an-item.md).
+completion packet — is the next lecture: [using an item](using-an-item.md#the-two-paths-side-by-side).
 How two machines agree about a set of stacks in a screen is
-[containers and menus](containers-and-menus.md); the component system itself
-is [data components](../foundations/data-components.md), catalogued in the
+[containers and menus](containers-and-menus.md#one-shift-click-end-to-end); the
+component system itself is [data
+components](../foundations/data-components.md#the-key-datacomponenttype), catalogued in the
 [components reference](../../reference/components.md). And how an item picks
 the model, texture and tint you see in the slot is **not** this part's subject
 at all: it is Part XI's, in [models and atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model).
@@ -318,8 +287,7 @@ at all: it is Part XI's, in [models and atlases](../rendering/models-and-atlases
 ## Where to look
 
 `Item` · `Item.Properties` · `Items` · `BuiltInRegistries.ITEM` ·
-`DataComponentInitializers` · `Holder.Reference` ·
-`ReloadableServerResources.loadResources` · `ItemStack` ·
+`DataComponentInitializers.Initializer` · `Holder.Reference` · `ItemStack` ·
 `PatchedDataComponentMap` · `DataComponentPatch` · `ItemInstance` ·
 `TypedInstance` · `ItemStackTemplate` · `ItemContainerContents` ·
 `ServerPlayerGameMode.destroyBlock` · `ItemEntity` · `Inventory.tick` ·

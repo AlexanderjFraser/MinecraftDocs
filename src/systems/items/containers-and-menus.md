@@ -32,10 +32,18 @@ the client's belief object, never the client's data.
 
 The server's `ChestMenu` is built from a `MenuProvider` that
 `ChestBlock.getMenuProvider` produces and `ChestBlock.useWithoutItem` hands
-to `ServerPlayer.openMenu` ([block interaction](../blocks/block-interaction.md)),
-and its `Container` is the real `ChestBlockEntity` — or a
+to `ServerPlayer.openMenu` ([block
+interaction](../blocks/block-interaction.md#block-then-empty-hand-then-item)),
+which is a fixed sequence: close whatever menu was already open, take the
+next container id, ask the provider for a menu, send
+`ClientboundOpenScreenPacket`, and then `ServerPlayer.initMenu` — which
+attaches the listener and the synchronizer, and whose attaching of a
+synchronizer is what sends the single `ClientboundContainerSetContentPacket`
+carrying the contents. The screen arrives before the contents do, and both
+arrive after the menu object exists on the server. Its `Container` is the real
+`ChestBlockEntity` — or a
 `CompoundContainer` over both halves, for a double chest, from a separate
-anonymous provider. The client's `ChestMenu` is built
+anonymous provider that unpacks both halves' loot tables itself. The client's `ChestMenu` is built
 from `MenuType`'s screen-side constructor by `MenuScreens`, and that
 constructor makes a **fresh `SimpleContainer`**. The client's chest contents
 have no connection to the block entity beyond the packet stream. Its
@@ -56,13 +64,38 @@ construction. The listener half is not: `BeaconScreen`, `ItemCombinerScreen`,
 `ContainerListener`, which is how the anvil's rename field repopulates itself
 after a slot changes.
 
+The third half of that asymmetry is the one the other pages of this part lean
+on. A block-anchored menu reaches the world through a `ContainerLevelAccess`,
+and the client's copy holds `ContainerLevelAccess.NULL`, whose
+`ContainerLevelAccess.execute` **runs nothing and returns an empty optional**.
+Anything a menu does inside that call — matching a recipe, spending lapis,
+stripping enchantments — is therefore skipped wholesale on the client, without
+a side test anywhere in the body. What the client really runs in those cases
+is whatever guard sits in *front* of the call, which is why a client copy of a
+menu can still refuse a click it cannot afford.
+
+There are twenty-nine `AbstractContainerMenu` subclasses in `world/inventory`,
+and after this page's chest, the crafting grid, the anvil and the enchanting
+table the rest are the same machine with a different slot list: `LoomMenu`,
+`CartographyTableMenu`, `BeaconMenu`, `BrewingStandMenu`, `CrafterMenu`,
+`LecternMenu`, `DispenserMenu`, `HopperMenu`, `ShulkerBoxMenu`, `MerchantMenu`
+and the two mount menus. A station menu is a `Container` the server owns, a
+list of `Slot`s carrying the GUI policy, and — where it has a progress bar or
+a price — a `ContainerData`; `SlotRanges` and
+`ItemCombinerMenuSlotDefinition` are the two small vocabularies the anvil and
+the smithing table are laid out from.
+
 Three smaller facts about the model that a reader will otherwise trip over.
 A menu with a null `MenuType` cannot be opened over the network at all —
 `AbstractContainerMenu.getType` throws — which is why the player's own
 `InventoryMenu` is pinned to `InventoryMenu.CONTAINER_ID`, zero, and built
-independently on both sides, and why the mount menus need a
+independently on both sides, and why the two
+`AbstractMountInventoryMenu` subclasses — the horse's and the nautilus's,
+which pass a null type up to `AbstractContainerMenu` explicitly — need a
 `ClientboundMountScreenOpenPacket` of their own instead of
-`ClientboundOpenScreenPacket`. Every other menu takes an id from
+`ClientboundOpenScreenPacket`. A chest boat is not one of them: it opens an
+ordinary `ChestMenu` through `ServerPlayer.openMenu` like any other
+container. Every other menu takes an id from
 `ServerPlayer.nextContainerCounter`, which cycles 1 to 100 and never reaches
 zero. And `Slot.mayPlace` and `Container.canPlaceItem` are unrelated
 questions: the first is GUI policy and defaults to true without consulting
@@ -150,7 +183,9 @@ hashes each changed stack with `HashedStack.create`, and sends
 the real `Inventory`. `Slot.setChanged` reaches `BlockEntity.setChanged`,
 which calls `Level.blockEntityChanged` to mark the chunk and
 `Level.updateNeighbourForOutputSignal` to re-derive the comparator output
-([block entities](../blocks/block-entities.md)). The whole click is wrapped
+([block entities](../blocks/block-entities.md#one-save-hook-four-ways-out), and
+[diodes and observers](../blocks/diodes-and-observers.md#one-int-and-the-fan-out-that-exists-to-deliver-it)
+for what a comparator does with it). The whole click is wrapped
 in a try/catch that builds a crash report category naming the menu class,
 the slot and the button.
 
@@ -236,15 +271,16 @@ nothing at all, not even the container id, and goes straight to
 CRC32C integer per *added* component plus the plain set of *removed* ones.
 Each integer comes from running the component's own codec into
 `HashOps.CRC32C_INSTANCE`, a `DynamicOps` whose output **is** the hash
-([codecs, NBT and JSON](../foundations/codecs-nbt-json.md) owns that
-mechanism). Nothing is serialised on the way and there is no intermediate
+([codecs, NBT and
+JSON](../foundations/codecs-nbt-json.md#checksum-a-hash-instead-of-a-stack) owns
+that mechanism). Nothing is serialised on the way and there is no intermediate
 byte form. `HashedPatchMap.matches` then checks the removed set, the added
 count, and each component's hash in turn.
 
 Two things follow. The client is *asserting a belief*, not authoring state —
 a hash cannot be turned back into an item, so a client that lies here can
-only fail to match — and the traffic is 128 integers rather than 128 full
-`DataComponentPatch`es. The asymmetry is exact: **only the client ever calls
+only fail to match — and each claimed slot costs an integer per component
+rather than a re-encoded `DataComponentPatch`. The asymmetry is exact: **only the client ever calls
 `HashedStack.create`, and only the server ever calls `HashedStack.matches`.**
 Hashing is not free-standing on the server either: `ServerPlayer`'s
 `ContainerSynchronizer` carries a 256-entry component-hash cache shared by
@@ -252,13 +288,17 @@ every menu that player opens, and `ContainerSynchronizer.createSlot` hands
 each new `RemoteSlot.Synchronized` a `HashedPatchMap.HashGenerator` backed
 by it.
 
+### The other channel: `DataSlot`, and why it is never silent
+
 One channel is deliberately outside all of this. `DataSlot` and
 `ContainerData` — furnace progress, enchanting cost, lectern page — travel
 as `ClientboundContainerSetDataPacket`, whose id and value are written as
 **shorts**, and they carry two independent baselines:
 `DataSlot.checkAndClearUpdateFlag` for the listeners and
 `AbstractContainerMenu.remoteDataSlots` for the network, compared
-separately. The network comparison is a plain integer test, so a furnace's
+separately. A slot is either a `DataSlot.shared` view onto an array the menu
+already keeps or a `DataSlot.standalone` int the menu owns, and each one that
+differs costs its own packet. The network comparison is a plain integer test, so a furnace's
 progress bar is not covered by the hash-agreement silence and is re-sent
 every time it changes.
 
@@ -284,14 +324,23 @@ everything.
 ## Where in the tick a broadcast happens
 
 Not one place, and the difference is observable. Packets are drained
-**before any level ticks** ([the server tick](../server/server-tick.md)), so
+**before any level ticks** ([the server tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)), so
 a click and any correction it produces both happen at the top of the tick
 and reach the client the same tick. `ServerPlayer.tick` then calls
 `AbstractContainerMenu.broadcastChanges` again from the level's **entity**
 phase, which runs *before* the block-entity phase
-([the level tick](../server/server-level-tick.md)). And `ServerPlayer.doTick`
+([the level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates)). And `ServerPlayer.doTick`
 — driven by the connection after every level has finished — repeats only the
 `AbstractContainerMenu.stillValid` distance test, without a broadcast.
+
+There is a third place, and it is not in the tick at all. A menu **button**
+click — the lectern's page turn, the enchanting table's offer, the loom's
+pattern, the stonecutter's choice — is answered inside its own handler:
+`ServerGamePacketListenerImpl.handleContainerButtonClick` calls
+`AbstractContainerMenu.broadcastChanges` directly, the moment
+`AbstractContainerMenu.clickMenuButton` accepts, so the correction leaves on
+the same packet drain that brought the click. That is the one write on this
+page whose answer does not wait for a phase.
 
 So the distance test happens twice a tick and only the first is accompanied
 by a broadcast. A hopper that pushes an item into a chest whose menu is open
@@ -355,19 +404,14 @@ with `AbstractContainerMenu.setRemoteSlot` to suppress the echo. A negative
 slot number means *drop it in the world instead*, and that branch is the one
 place here with a rate limiter on it.
 
-**The crafting result is a second, unsuppressed channel.**
-`CraftingMenu.slotChangedCraftingGrid` recomputes the result slot and then
-sends a `ClientboundContainerSetSlotPacket` **straight down the connection**,
-bumping the state id itself and bypassing `ContainerSynchronizer` entirely.
-It is reached from `CraftingMenu.slotsChanged`,
-`CraftingMenu.finishPlacingRecipe` and `InventoryMenu.slotsChanged`, and the
-first of those fires mid-click, because `TransientCraftingContainer` calls
-`AbstractContainerMenu.slotsChanged` from its own `Container.setItem` and
-from any `Container.removeItem` that took something. So the one path that
-transmits *during* a click is also the one path
-`AbstractContainerMenu.suppressRemoteUpdates` does not cover — that flag
-guards only `AbstractContainerMenu.synchronizeSlotToRemote` and its two
-siblings. [Recipes](recipes.md) is where the recomputation itself lives.
+**The crafting result is a second, unsuppressed channel.** The result slot's
+packet is written by hand and goes straight down the connection, bumping the
+state id on its way past and bypassing `ContainerSynchronizer` entirely
+([recipes](recipes.md#eight-planks-the-trace)). What matters here is that it
+fires *during* a click and is therefore the one path
+`AbstractContainerMenu.suppressRemoteUpdates` does not cover: that flag guards
+`AbstractContainerMenu.synchronizeSlotToRemote` and its two siblings, and
+nothing else.
 
 Everything else on the wire is bookkeeping around those two:
 `ClientboundOpenScreenPacket` and `ClientboundContainerClosePacket` for the
@@ -380,7 +424,7 @@ stonecutter buttons,
 `ServerboundSetCarriedItemPacket` with `ClientboundSetHeldSlotPacket` for the
 hotbar selection — which, despite the name, has nothing to do with the
 cursor. A structure chest fills itself on first open through
-`RandomizableContainer.unpackLootTable` ([loot tables](loot-tables.md)), and
+`RandomizableContainer.unpackLootTable` ([loot tables](loot-tables.md#the-chest-was-empty-before-you-got-there)), and
 `ContainerLevelAccess` — `ContainerLevelAccess.NULL` on the client — is the
 position capability a block-anchored menu tests distance against. None of
 the click protocol is data-driven: `BuiltInRegistries.MENU` supplies only

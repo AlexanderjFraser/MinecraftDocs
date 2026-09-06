@@ -381,7 +381,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   `anatomy#four-threads-worth-memorising`; the page keeps "there is no
   generation thread setting" and the consequence that the only knob is the
   shared pool's.
-- **`data-components` ↔ `items-and-stacks` is the same lecture twice**, and
+- ~~**`data-components` ↔ `items-and-stacks` is the same lecture twice**~~, and
   worse than the 17.00 score suggests: the same hook and nine duplicated
   mechanisms (the prototype built at reload, the sanitising patch,
   copy-on-write, equality, the ten common components, the two validators, the
@@ -389,13 +389,29 @@ the corrections it made are in [pass9.md](pass9.md).*
   re-teaches the component system". One clause is a move to
   `containers-and-menus`: `handleContainerButtonClick` calling
   `broadcastChanges` directly, out of the ordinary tick. **Session G**, which
-  the routing rule gives the pair.
-- **`data-driven-types`' trace runs a page too far.** L278–294 — the roll, the
+  the routing rule gives the pair. ~~Open.~~ **Done, session G (pass 5)**: the
+  line is Part II owns the component system's own machinery — the type, the
+  maps, the patch's sanitising and copy-on-write, the prototype's two-phase
+  build — and Part VII owns the stack as an object: its fields, the five
+  identity methods, the two validators, `ItemStackTemplate`, durability, the
+  tick. Six mechanisms cut to a citation on `items-and-stacks` (including its
+  own hook, which was Part II's twice over) and three moved the other way; the
+  validators, `ItemStackTemplate` and `ignoreSwapAnimation` moved *to* Part VII
+  and `data-components` cut to a clause each. The button-click broadcast moved
+  to `containers-and-menus` as recorded.
+- ~~**`data-driven-types`' trace runs a page too far.**~~ L278–294 — the roll, the
   scatter, and the three-level function composition — is `items/loot-tables`'
   explanation retold. The pattern page should stop at the object existing.
-  **Session G**, with the pair above.
+  **Session G**, with the pair above. **Done, session G (pass 5)**: *The run
+  half* now stops at the object existing and cites `loot-tables#one-roll-drawn`.
 - **Eleven of the fifty-six rows send the reader to a page that never names
-  the element**: `Permission` and `PermissionCheck` → Brigadier when
+  the element** — **Part VII's three struck, session G (pass 5)**:
+  `SlotSource` now points at `contexts-and-predicates` (which names it) rather
+  than `loot-tables` (which never did), `EnchantmentProvider` at `enchanting`,
+  and `ConsumeEffect` at `using-an-item`; `NbtProvider` and
+  `ScoreboardNameProvider` were pointing at `loot-tables` for elements *no*
+  page named, and are now both pointed at `contexts-and-predicates`, which
+  names them. Sessions E and M keep the rest. Original entry: `Permission` and `PermissionCheck` → Brigadier when
   `commands/permissions` owns them; `EnchantmentProvider` → enchantments when
   `items/enchanting` owns it; `SlotSource`, `ConsumeEffect`, `SpawnCondition`
   and `BLOCK_TYPE` land on pages silent on them. Each *taught in* cell is a
@@ -1142,11 +1158,17 @@ duplicate a Reference page that has been checked row by row.
 - **`items-and-stacks`' *Two validators, one rule, two spellings* table** now has
   an *on failure* cell that is three clauses long, because the three
   `ItemStack.validateStrict` call sites do not agree. It is the only cell in the
-  corpus that has to disambiguate its own row.
+  corpus that has to disambiguate its own row. **Checked, session G (pass 5)**:
+  the section is ruled `items-and-stacks`' outright and grew rather than
+  shrank, so the cell stands as it is; the fix is a sentence under the table
+  rather than a fourth column. [kind=lecture]
 - **`enchanting`'s five-path table** is doing too much: after this session two of
   its cells carry three clauses each (the providers-and-loot gate and filter).
   Either the table narrows to the three columns that behave alike, or
-  `EnchantRandomlyFunction` gets a sentence of its own.
+  `EnchantRandomlyFunction` gets a sentence of its own. **Session G's note**:
+  the sentence now exists — the corrected `selectEnchantment` paragraph names
+  which four paths select and which two roll their own — so pass 6 can cut the
+  cells to a pointer rather than inventing prose. [kind=lecture]
 - **`items/README.md`'s figure** lost an edge (`CM → CP`) and re-sourced another,
   so the second tier now has one node with no incoming arrow. That is *true* —
   contexts and predicates depends on none of the vocabulary — but a flowchart
@@ -2131,11 +2153,14 @@ was cut or moved, and why)*
   (all three moved with the caller table to `contexts-and-predicates`), and
   `Registries.LOOT_TABLE` — now only implied through
   `ReloadableServerRegistries`, which pass 5 may want named once.
-  **`using-an-item`** deliberately left the full `Item.getUseDuration`
-  override roster (`BrushItem`, `BundleItem`, `EnderEyeItem`,
-  `InstrumentItem` and their numbers) to nobody: neither it nor
-  `items-and-stacks` now carries it. It is a Reference-page candidate or a
-  sentence; it is currently lost prose, and this is the record of it.
+  ~~**`using-an-item`** deliberately left the full `Item.getUseDuration`
+  override roster to nobody.~~ **Done, session G (pass 5)**: written as a
+  sentence on `using-an-item`, with the base method's own three-way answer in
+  front of it — a Reference row was declined because eight overrides and one
+  default is not a catalogue. `Registries.LOOT_TABLE` in the same entry was
+  found already named on `contexts-and-predicates`:312, and the
+  `LootDataType`, `ContainerEntity` and command-class items with it: the whole
+  `loot-tables` half of this entry is **overtaken**.
 
   **Length.** Every page is over the 200–320 brief: 318, 324, 332, 344,
   346, 358, 389, 391. Five agents reported trimming twice and stopping
@@ -2817,8 +2842,14 @@ that takes it. Everything session E did act on is struck above or logged in
   owns the third copy of the empty-chest answer: `what-the-client-is-told`
   states the two sync defaults at :340-347 *and* again in its Q&A at :428-431,
   and `block-entities#a-furnace-tells-nobody-anything` owns them.
-- **Session G (VII) — three pages reach into `containers-and-menus` and one
-  chain stops short.** `containers-and-menus`:150-153 cites `block-entities`
+- ~~**Session G (VII) — three pages reach into `containers-and-menus` and one
+  chain stops short.**~~ **Done, session G (pass 5)**: `block-entities` gained
+  the onward citation of
+  `diodes-and-observers#one-int-and-the-fan-out-that-exists-to-deliver-it`,
+  `containers-and-menus` and `loot-tables` both now anchor at it, and
+  `DataSlot` got its own sub-heading on `containers-and-menus` so
+  `block-entities` and `enchanting` can cite the channel rather than the page.
+  Original entry: `containers-and-menus`:150-153 cites `block-entities`
   for the comparator re-derivation, and `block-entities` is itself a
   one-sentence citation with no onward link, so the reader stops one page short
   of the owner (`diodes-and-observers#one-int-and-the-fan-out-that-exists-to-deliver-it`).
@@ -2926,3 +2957,138 @@ that takes it. Everything session E did act on is struck above or logged in
   use-hook family, with the count the queue asked for restored (25 override
   `BlockBehaviour.useItemOn`, 52 `BlockBehaviour.useWithoutItem`), on
   `block-interaction`. The four items above are what a sentence cannot reach.
+
+## Session G — Part VII · Items and inventories (pass 5) *(2026-09-05)*
+
+*What nine page reads and one end-to-end reading of the part turned up and
+session G did not act on, routed by kind. The claims it introduced and the
+corrections it made are in [pass9.md](pass9.md).*
+
+### For other part sessions (pass 5)
+
+- **Session H (VIII) — `Consumable`, `FoodProperties` and `ConsumableListener`
+  are defined on a Part VIII page and spent whole by a Part VII one.**
+  `using-an-item` runs its entire first scenario on the `Consumable` family and
+  the only definition in the book is `player/hunger-and-experience`:88-104.
+  `PotionContents` (252 lines, `world/item/alchemy`) and
+  `TeleportRandomlyConsumeEffect` (`world/item/consume_effects`) have the same
+  shape — a `world/item` component family living on a Part VIII page. Session H
+  decides whether the definition moves to Part VII or `using-an-item` cites it;
+  the routing rule gives the pair to the later part.
+- **Session H (VIII) — `UseEffects` is explained twice.** `using-an-item`:165-176
+  owns the slowdown half (it is that page's scenario) and
+  `hunger-and-experience`:147-156 states the component and its three fields,
+  including the `UseEffects.interactVibrations` half that `using-an-item` only
+  gestures at. One owner, one citation, and the vibration half is a move.
+- **Session H (VIII) — two landing pages hand `Inventory` to each other.**
+  `player/README`:57-59 says Part VII owns "the inventory this part stops at
+  the edge of"; `items/README` says the part stops at the slot and Part VIII
+  owns the inventory. `player/player-anatomy`:122-137 settles it in Part
+  VIII's favour, so Part VIII's sentence is the loose one.
+- **Session H (VIII) — `ItemStack.inventoryTick`'s two callers.**
+  `items-and-stacks`:293-297 and `player/player-anatomy`:293-298 both explain
+  why item ticking needs two callers. `player-anatomy` owns it (the forty-three
+  slots are its subject); `items-and-stacks` keeps what the method itself does.
+  Left for session H because the cut is on the Part VIII side of a Part VIII
+  claim. `items-and-stacks` adds "tells the selected one it is the main hand",
+  which is a move.
+- **Session H (VIII) — `using-an-item`:180 pointed at `the-sword-swing` for the
+  spear and now points at `the-spear`.** Session H should check the round trip:
+  `player/README`:57-59 sends readers to Part VII *for* the spear.
+- **Session I (IX) — `packets-and-stream-codecs`:368-373 describes the
+  `HashedStack` shape, which `containers-and-menus` owns.** The packet page
+  names `HashedPatchMap.addedComponents` and `HashedPatchMap.removedComponents`,
+  which the click page describes without naming: a move, not a cut. The framing
+  claim (*exactly one packet lets a client hand the server an item*) is the
+  packet page's and `containers-and-menus` now keeps the handler only.
+- **Session J (X) — `client/gui-and-screens` and `containers-and-menus` are
+  unlinked in both directions on three shared mechanisms**: the null `MenuType`
+  (its hook), `AbstractContainerScreen`'s click resolution, and
+  `CreativeModeInventoryScreen`. The glossary's **Menu** entry (`glossary`:391)
+  describes only the server's object, where the page insists there are two.
+- **Session M (XIII) — `brigadier-and-commands`:255 routes `LootCommand` and
+  `ItemCommands` to `loot-tables`, which names neither**; both are on
+  `contexts-and-predicates`:233-234. The row's `/item modify` claim is
+  `loot-tables`', so the row wants two destinations.
+- **Session M (XIII) — `advancements`:7-10 opens on
+  `AbstractContainerMenu.broadcastChanges` and links `containers-and-menus`
+  nowhere**, and `entity-selectors`:118 and `advancements`:146-150 are each
+  half of a fact whose other half is on `contexts-and-predicates`. Four
+  inbound links from Part XIII, none anchored.
+- **Session M (XIII) — the predicate shape library, ruled.** §7 asks whether
+  `MinMaxBounds`, `CollectionPredicate`, `EntitySubPredicate` and
+  `DataComponentMatchers` belong here or in a Reference page. Session G's
+  ruling, for M to apply or overturn: **they stay a table on `advancements`**.
+  They are four classes explained in prose, not an enumeration a tool can
+  read, and the page whose scenario invented them owns them;
+  `contexts-and-predicates` owns the *context* machinery and not these, and
+  now cites `advancements` from its own predicate-package paragraph. A
+  generated view is still possible for the two that *are* registries
+  (`DataComponentPredicates`, `ENTITY_SUB_PREDICATE_TYPE`) and would not
+  replace the table.
+- **Session N (Reference) — the glossary has no entry for *loot context*,
+  *loot condition* or *parameter set***, all three used unglossed on six pages
+  in three parts, all three owned by `contexts-and-predicates`.
+- **Session N (Reference) — `reference/attributes`' `Attributes.LUCK` row is
+  linked from no system page**, and `loot-tables#one-roll-drawn` is the only
+  page that explains what luck does.
+
+### For pass 6 — the lecture
+
+- **Part VII is the longest part per page in the corpus** and this session made
+  four of its pages longer, not shorter. `enchantments` is 357 lines with a
+  92-line *Questions the pattern raises*; `containers-and-menus` ends on a
+  nine-packet enumeration in prose (L372-387); `loot-tables` lists nine entry
+  types in prose inside the paragraph that explains the algebra. The length
+  bill is still Part VII's. [kind=lecture]
+- **Three pages of eight have no *Questions players ask* closer** —
+  `containers-and-menus`, `contexts-and-predicates` and `using-an-item` — and
+  each has the material for one inline. `contexts-and-predicates` is the sharp
+  case, because its declared pair (`loot-tables`) ends on one and it ends on a
+  dependency note. [kind=lecture]
+- **`enchanting`'s last section carries three subjects** (providers, loot and
+  trades, and then the creative tabs) and its heading names two. [kind=lecture]
+- **`enchanting`'s *What it costs, and who pays*** spends its second half on
+  what the grindstone pays *out*; the heading is right about the anvil only. [kind=lecture]
+- **`using-an-item`'s cast says "client main" where the book says Render
+  thread** (`anatomy`:61, `reference/threads`:61, and both adjacent pages). [kind=lecture]
+- **`recipes` says the `CraftingInput` constructor's accounting twice**, 170
+  lines apart in different vocabulary (L152-153 and L324-326). [kind=lecture]
+- **`items-and-stacks` explains the pop time twice** (in the fields section and
+  again in the tick section). [kind=lecture]
+
+### For pass 7 — the figures
+
+- **`items/README`'s figure draws a chain where the prose claims two tiers**
+  (`IS → UI → CM → RE` in a line), and draws no edge between `EC` and `LO`
+  though two of enchanting's five paths are loot functions. The prose is right
+  about the shape; the figure is the artefact and should carry it. [kind=figure]
+- **`items-and-stacks` and `data-components` draw the same object.** Both
+  flowcharts run `ItemStack` → `PatchedDataComponentMap` → patch with the
+  dotted prototype arrow. After this session's cut the Part VII page should
+  draw the `ItemStack` fields and the `Item`'s four and drop the patch
+  internals, which are Part II's. [kind=figure]
+- **`loot-tables`' funnel flowchart is sixteen edges** and now carries the
+  splitter's corrected level as a note; pass 7 should judge whether the
+  correction reads at the column width. [kind=figure]
+
+### For pass 8 — the voice
+
+- **`enchantments` says "forty-three" of two unrelated things** 158 lines apart
+  (the vanilla enchantments, and the lines of JSON in Fire Aspect's file). [kind=voice]
+- **`containers-and-menus`:316 "those four"** counts four categories, one of
+  which is itself four slots. [kind=voice]
+- **`using-an-item`:328 "five enchantment hooks"** are spread over three
+  paragraphs and the fifth is only implicit. [kind=voice]
+- **`recipes`:104-105 says "for the first" and "for the second"** over a
+  three-item list, leaving the third unaccounted. [kind=voice]
+- **`using-an-item`:47 uses *acknowledged*** four rows above a sentence about
+  sequence numbers, for something that is not the ledger's acknowledgement. [kind=voice]
+- **The *ledger* metaphor** stands on both `loot-tables` and
+  `contexts-and-predicates` ("a stack, not a ledger"), which is the pair the
+  brief's A3 already logged for pass 8. [kind=voice]
+- **`enchantments`:109-112 is near-verbatim with `reference/enchantment-hooks`'
+  generated intro** ("the enchantment package barely calls anything and
+  everything calls it"); the Reference prose lives in `gen_reference.py`, so
+  the page is the copy that should vary. [kind=voice]
+

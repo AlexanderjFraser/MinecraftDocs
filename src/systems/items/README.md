@@ -6,23 +6,62 @@ A block is a position in a grid and an entity is a thing in the world. An
 item is neither: it is a *stack*, and a stack only exists inside something
 else — a hand, a slot, a chest, a recipe grid, a dropped `ItemEntity`, a
 packet. That makes this part the one where the two programs disagree most
-often and most cheaply, because almost everything a player does with items
-is predicted locally and confirmed afterwards. A player recognises the part
-by the small lies: the sword that swings before the server has heard about
-it, the chest whose contents appear a tick late, the bow that fires when you
-let go rather than when it finished drawing, and the dungeon chest that is
-empty until the moment somebody opens it.
+often and most cheaply, because almost everything a player does with items is
+predicted locally and confirmed afterwards ([prediction and
+acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)). A player recognises the part
+by the small lies: the shift-click that lands before anything has answered it,
+the chest whose contents appear a tick late, the bow that fires when you let go
+rather than when it finished drawing, and the dungeon chest that is empty until
+the moment somebody opens it.
+
+## Where the part stops, and how much of it there is
+
+The part is {{#include ../../generated/part-items.md}} in `world/item`,
+`world/inventory` and `world/level/storage/loot`, and about a third of those
+lines are named on no page in the book. Most of that is the answer rather
+than a gap. The ninety-eight classes still left in `world/item` are one `Item`
+subclass each, kept for a behaviour hook no component can express; the
+twenty-nine menus in `world/inventory` are one machine with different slot
+lists; the forty-three loot functions and twenty loot conditions are one shape
+each; and the special crafting recipes are the nine whose output cannot be
+written down. Each of those families is named once, on the page that teaches
+the machine.
+
+Four things in these packages are not a family and are explained nowhere:
+**villager trading** (`VillagerTrades` alone is the part's largest class),
+**brewing**, **the creative tabs**, and **armour identity and trims**. A
+second edition should take them; this one names them and says so.
+
+The traffic runs the other way too, and more than in most parts: an item is
+often the place some other system surfaces. `BlockItem` is Part V's, `BucketItem`
+Part IV's, `SpawnEggItem` Part VI's, `Equippable` and `AttackRange` Part
+VIII's. And the part stops at the slot. What a player's own inventory is, and
+how the hand relates to the equipment slots, is [player
+anatomy](../player/player-anatomy.md#forty-three-slots-and-one-of-them-is-an-alias)
+in Part VIII; how a held stack picks the model you actually see is Part XI's,
+in [models and
+atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model). The
+container click is *not* on the prediction ledger — it carries no sequence
+number and opens no window — and [prediction and
+acknowledgement](../client/prediction-and-acks.md#what-the-ledger-does-not-cover)
+in Part X is where that distinction is drawn.
 
 ## The shape of the part
 
 Part VII is **two tiers**, not a chain. The first three pages are the
 vocabulary — what a stack is, what using one does, and how a set of them is
-kept in agreement across the wire. The last five are three independent
-data-driven engines that produce or decorate stacks. Recipes, enchanting and
-loot tables lean on the vocabulary and hand each other nothing;
-*contexts and predicates* is the outlier, because its subject is not a stack
-at all — it is the question engine the other engines happen to run on, and it
-can be watched first.
+kept in agreement across the wire. The last five are three engines
+built out of one pattern — a registry of kinds, a dispatch codec, a data file
+naming one ([data-driven
+types](../foundations/data-driven-types.md#the-idea-stated-once)) — that
+produce or decorate stacks. Recipes, enchanting and
+loot tables all lean on the vocabulary and can be watched in any order — they
+do touch each other at the edges, and each crossing is a boundary rather than a
+dependency: two of enchanting's five paths *are* loot functions, a repair
+recipe carries curses, and the recipe book refuses an enchanted stack.
+*Contexts and predicates* is the outlier, because its subject is not a stack at
+all — it is the question engine the other engines happen to run on, and it can
+be watched first.
 
 ```mermaid
 flowchart TD
@@ -44,34 +83,39 @@ flowchart TD
 
 ## Before you start
 
-[Data components](../foundations/data-components.md) is the hard
-prerequisite: a stack *is* an item plus a component patch, and this part
+[Data
+components](../foundations/data-components.md#the-prototype-and-why-it-is-built-at-reload)
+is the hard prerequisite: a stack *is* an item plus a component patch, and this part
 never re-teaches the component system. [Codecs, NBT and
-JSON](../foundations/codecs-nbt-json.md) for the four ways one stack is
-serialised, and [identifiers and
-registries](../foundations/identifiers-and-registries.md) and [the resource
-system](../foundations/resource-system.md) for where recipes, enchantments
-and loot tables come from and when. They come from three different places, and
+JSON](../foundations/codecs-nbt-json.md#the-four-paths-side-by-side) for the
+four ways one stack is serialised, and [identifiers and
+registries](../foundations/identifiers-and-registries.md#when-a-world-opens) and
+[the resource
+system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)
+for where recipes, enchantments and loot tables come from and when. They come from three different places, and
 the difference bites: recipes are a reload listener and loot tables a
 reloadable registry layer, so `/reload` rebuilds both — while enchantments are
-a world-load dynamic registry that `/reload` never re-reads at all.
+a world-load dynamic registry that `/reload` [never re-reads at
+all](enchantments.md#questions-the-pattern-raises).
 
 Three ordering facts matter more than they look. [The server
-tick](../server/server-tick.md) drains the packet queue before any level ticks,
+tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain) drains
+the packet queue before any level ticks,
 which is why a click and its correction land in the same tick; [the level
-tick](../server/server-level-tick.md) decides *when* a menu's changes are
-broadcast, which is what makes a hopper's delivery visibly late; and [block
-interaction](../blocks/block-interaction.md)
-is how a chest gets opened in the first place, which is where two of these
+tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates) decides
+*when* a menu's changes are broadcast, which is what makes a hopper's delivery visibly late; and [block
+interaction](../blocks/block-interaction.md#block-then-empty-hand-then-item) is
+how a chest gets opened in the first place, which is where two of these
 pages start.
 
 ## Watch in this order
 
 The first three in order, then the engines in any order you like.
 
-1. [Items and stacks](items-and-stacks.md) — an `Item` holds almost no
-   data, and an `ItemStack` holds a *diff*. The prototype it is a diff
-   against does not exist until the first data-pack load.
+1. [Items and stacks](items-and-stacks.md) — an `Item` holds almost no data
+   and an `ItemStack` holds a *diff*, and everything else follows: what makes
+   two of them the same stack, what one may legally hold, and the one thing
+   about an item a client never predicts.
 2. [Using an item](using-an-item.md) — a meal and a bow, which are one
    machine read two ways. The client's countdown never stops at zero: the
    meal ends when a single byte arrives, and the bow ends when you let go.
@@ -91,8 +135,9 @@ The first three in order, then the engines in any order you like.
    what the table is offering.
 7. [Contexts and predicates](contexts-and-predicates.md) — the engine that
    answers *is this true here*. Twelve of its twenty-six parameter sets
-   never roll a loot table at all: `/execute if predicate`, entity
-   selectors, advancement triggers and villager trades all run on it.
+   never roll a loot table at all: five of them belong to enchantment
+   effects, and the rest are `/execute if predicate`, entity selectors,
+   advancement triggers and villager trades.
 8. [Loot tables](loot-tables.md) — the worked example, and the part's
    closer. A dungeon chest is genuinely empty on disk, and the first thing
    to touch it — a hopper will do — commits the roll with no luck at all.
@@ -108,21 +153,13 @@ hooks](../../reference/enchantment-hooks.md) — every `EnchantmentHelper`
 entry point with the classes that call it, which is the enchantment
 system's real interface. [Loot context parameter
 sets](../../reference/loot-context-params.md) — all twenty-six, with the
-keys each one requires and allows. Then [data
-components](../../reference/components.md),
-[packets](../../reference/packets.md),
-[registries](../../reference/registries.md) and [diagram
-lanes](../../reference/lanes.md).
-
-The part stops at the slot. What a player's own inventory is, and how the
-hand relates to the equipment slots, is [player
-anatomy](../player/player-anatomy.md) in Part VIII; how a held stack picks
-the model you actually see is Part XI's, in [models and
-atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model). The
-container click is *not* on the prediction ledger — it carries no sequence
-number and opens no window — and [prediction and
-acknowledgement](../client/prediction-and-acks.md) in Part X is where that
-distinction is drawn.
+keys each one requires and allows. Then the catalogue behind the part's hard prerequisite, [data
+components](../../reference/components.md) — every component type with what
+holds it; [packets](../../reference/packets.md) for the container and recipe
+traffic; [registries](../../reference/registries.md) for where each of the
+three engines' elements live; [naming
+drift](../../reference/naming-drift.md) for the loot package's move out of
+*critereon*; and [diagram lanes](../../reference/lanes.md).
 
 ---
 
