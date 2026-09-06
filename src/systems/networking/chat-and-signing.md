@@ -232,7 +232,7 @@ count of last-seen signatures and each one's raw bytes. Not fed to it: the
 decorated `Component`, the `FilterMask`, the `ChatType.Bound` that supplies the
 *someone said* wrapper — a `ChatType` is a data-pack registry entry and
 `ChatTypeDecoration` is the translation key and argument list that turns a
-message into *<name> said this*, so the phrasing around a line is data and the
+message into *so-and-so said this*, so the phrasing around a line is data and the
 line is not — and the global index the receiving client checks. A
 server is free to change any of those. The signature is over what the player
 typed and what they had seen when they typed it, and nothing else.
