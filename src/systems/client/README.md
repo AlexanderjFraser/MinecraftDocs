@@ -1,19 +1,17 @@
 # X · The client
 
-> Verified against **Minecraft 26.2** · Part X · One thread, one loop, and seven systems that differ mainly in how often the loop gets round to them.
+> Verified against **Minecraft 26.2** · Part X · One thread, one loop, and everything else in the part answering the same question about itself: when in that loop does this happen?
 
-Everything in this part that touches the game happens on one thread. Nothing
-in the client's simulation is driven by a scheduler or a timer callback —
-the two classes that own one, `PeriodicNotificationManager` and
-`RemoteFriendListUpdateHandler`, hop back to the game thread before they
-touch anything — and, despite the name printed in every stack trace, there
-is no render thread: the thread called *Render thread* is the main thread,
-and it is the same thread that ticks the world, applies packets, handles your
-keyboard, decides what a screen looks like and asks the GPU to draw it. A
-player recognises the part by its symptoms of that arrangement: the stutter
-where the world moves on without you, the block that appears and then
-disappears, the terrain filling in ahead of you as you fly, the sound that
-arrives a beat after the packet.
+Everything in this part that touches the game happens on one thread, and
+nothing in the client's simulation is driven by a scheduler or a timer
+callback. Despite the name printed in every stack trace there is no render
+thread: the thread called *Render thread* is the main thread, and it is the
+same thread that ticks the world, applies packets, handles your keyboard,
+decides what a screen looks like and asks the GPU to draw it. A player
+recognises the part by its symptoms of that arrangement: the stutter where
+the world moves on without you, the block that appears and then disappears,
+the terrain filling in ahead of you as you fly, the sound that arrives a beat
+after the packet.
 
 ## The shape of the part
 
@@ -43,12 +41,12 @@ flowchart TD
     LOOP -- "per tick, and a packet only when the set changes" --> DBG
 ```
 
-The one genuine pipeline inside the part is the GUI stack: a screen records
-itself into a tree, the text in it becomes glyphs, and the tree is then
-sorted and batched into draws. Those three are three stages of one journey
-and are watched in a different order from the one they run in — the tree
-before the text, because the text's stages are easier to follow once you know
-what they are recording into — with the HUD after them as the other thing
+The one genuine pipeline inside the part is the GUI stack, and it is a
+pipeline whose stages interleave rather than queue: a screen records itself
+into a tree, and the text in it is measured and baked *while* it is being
+recorded, because the tree cannot place a line it has not measured. So the
+tree comes first here — you cannot follow the text pipeline until you know
+what it is recording into — with the HUD after them both as the other thing
 that records into the same tree. Everything else in the part is independent
 of everything else in the part.
 
@@ -64,12 +62,18 @@ the premise of the whole part: the server's tick loop and the client's frame
 loop are different clocks, and almost every surprise in Part X is a
 consequence of one of them waiting on the other.
 
-[Authority](../entities/authority.md) from Part VI, because "what the client
-is allowed to decide" is the question `the-client-level` and
-`prediction-and-acks` are both answering, and neither re-derives the five
+[Authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
+from Part VI, because "what the client is allowed to decide" is the question
+this part splits in two: [the client level](the-client-level.md) answers what
+it may *simulate*, [prediction and acknowledgement](prediction-and-acks.md)
+what it may *show before it is told*, and neither re-derives the five
 predicates.
 
-Two smaller ones, each for one page. [Part V](../blocks/README.md) before
+Three smaller ones, each for one page. [Containers and
+menus](../items/containers-and-menus.md#the-chest-you-see-is-not-the-chest)
+from Part VII before [GUI and screens](gui-and-screens.md), which opens on a
+menu and takes for granted that the chest you see is not the chest.
+[Part V](../blocks/README.md) before
 [prediction and acknowledgement](prediction-and-acks.md): the ledger's six
 windows open around rather more than a block placed and a block broken, but
 those two are the ones a viewer needs to have seen, and Part V's landing
@@ -97,12 +101,12 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
 6. [GUI and screens](gui-and-screens.md) — what a screen *is*: the manager,
    the lifecycle, the widget family, and the four routes by which a screen
    comes to exist.
-7. [The GUI render tree](the-gui-render-tree.md) — the second stage of the
-   same journey. Nothing in the 2D UI draws anything; it all appends to a
-   tree that infers its own layering from bounding boxes.
-8. [Text and fonts](text-and-fonts.md) — the third stage, and a pipeline of
-   its own: six stages from a `Component` at one end to a quad with a glyph
-   on it at the other.
+7. [The GUI render tree](the-gui-render-tree.md) — what a screen records
+   *into*. Nothing in the 2D UI draws anything; it all appends to a tree that
+   infers its own layering from bounding boxes.
+8. [Text and fonts](text-and-fonts.md) — the one thing recorded into that
+   tree that is a pipeline of its own: six stages from a `Component` at one
+   end to a quad with a glyph on it at the other.
 9. [The HUD](hud.md) — the other thing that records into that tree, and the
    part's second policy page: what is drawn over the world, in what order,
    and under exactly which conditions.
@@ -130,16 +134,34 @@ elements](../../reference/hud-elements.md) is the gate table [the
 HUD](hud.md) is built on, in record order.
 [Packets](../../reference/packets.md) for everything arriving from Part IX,
 and [the glossary](../../reference/glossary.md) for *partial tick*,
-*prediction ledger* and *extract*.
+*prediction ledger* and *extract*. [Naming
+drift](../../reference/naming-drift.md) is the one to keep open beside this
+part in particular: ten of these twelve pages carry a *for a 1.21-era reader*
+box, because the client is where 26.2 renamed the most.
 
-Where the part stops: `Minecraft.renderFrame` from its *extract* zone onwards
-is Part XI, which begins where [the client loop](the-client-loop.md) ends —
-at [the frame](../rendering/the-frame.md), and the acquired surface. The
-handful of statements before that zone are still this part's, which is why
-the per-frame light pass is a Part X cadence even though it runs inside the
-render method. What the *server*
-chose to send is [what the client is
-told](../networking/what-the-client-is-told.md) in Part IX.
+Where the part stops: the profiler's *frame* zone. Everything inside it — the
+acquired surface, the update window, the extract pass, the draw — is [the
+frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)
+in Part XI, which begins exactly where [the client
+loop](the-client-loop.md#one-turn-of-the-loop) ends. A few of this part's own
+cadences run *inside* that zone and stay this part's for what they decide
+rather than for where they sit: the per-frame light pass is `ClientLevel`'s
+work, and the GUI record pass is a screen's. What the *server* chose to send
+is [what the client is told](../networking/what-the-client-is-told.md) in
+Part IX.
+
+And where it stops in the other direction, which is the part's largest
+boundary by far: **this part explains what a screen, a widget and a glyph
+*are*, not the two hundred-odd screens the game ships.** Nine tenths of what
+no page here names is one more `Screen` or one more widget — the world
+creation flow, the pack picker, the friends and social lists, the recipe book,
+a class per container — and [GUI and
+screens](gui-and-screens.md#who-opens-a-screen) covers all of them as one
+pattern with four routes into it, on purpose. The two things in the part's
+packages that are genuinely somebody else's are the model tree under
+`client/resources`, which is Part XI's, and player reporting, which [this book
+skips](../anatomy/what-this-book-skips.md#player-reporting) for its own
+reasons.
 
 ---
 

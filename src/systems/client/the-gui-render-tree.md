@@ -15,7 +15,12 @@ barriers.
 That inference is what makes the batching possible, and the batching is why a
 chest full of identical stacks is cheap: each distinct item model is rendered
 into a dynamic atlas **once and reused for as long as it stays resident** —
-one 3D render ever, not one per frame, and not one per stack.
+one 3D render ever, not one per frame, and not one per stack. The model it
+renders is [models and
+atlases](../rendering/models-and-atlases.md)', and what records into this tree
+in the first place — screens and widgets — is [GUI and
+screens](gui-and-screens.md#the-objects-and-what-contains-what), the lecture
+before this one.
 
 ## The cast
 
@@ -27,7 +32,7 @@ one 3D render ever, not one per frame, and not one per stack.
 | `GuiElementRenderState` | one recorded thing, and the bounds the layering algorithm reads | Render thread |
 | `GuiRenderer` | resolving, sorting, coalescing and issuing the draws | Render thread |
 | `GuiItemAtlas` | which item models are already rendered, and which age out | Render thread |
-| `GameRenderState` | who actually owns the tree — not `Gui` | Render thread |
+| `GameRenderState` | who actually owns the tree — not `Gui`; the frame's own snapshot ([the frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)) | Render thread |
 
 ## The tree, and where a new element lands
 
@@ -71,10 +76,15 @@ added through the layer-bypassing verb,
 the record pass, and emitted after their node's geometry. **Glyphs are never sorted**, and
 that is the whole mechanism behind "text draws on top of its own background".
 
-**The search never descends below the current stratum**, which is what makes
-`GuiRenderState.nextStratum` a hard barrier rather than a hint. It is how the
-HUD keeps the hotbar block out of the crosshair's layering, and how chat
-stays clear of the scoreboard.
+**The search never descends below the current stratum.** A *stratum* is a
+floor the layering search may not go under: opening one declares that
+everything recorded from now on sits above everything recorded so far,
+whatever the bounding boxes say. That is what makes
+`GuiRenderState.nextStratum` — reached by a recorder as
+`GuiGraphicsExtractor.nextStratum`, which is the same barrier under the name
+the caller sees — a hard rule rather than a hint. It is how the HUD keeps the
+hotbar block out of the crosshair's layering, and how chat stays clear of the
+scoreboard.
 
 **The fast path is the common case.** If the previous element's box
 *contains* the new one — a label inside a button, a sprite inside a slot — it
@@ -92,7 +102,11 @@ states themselves are `BlitRenderState`, `TiledBlitRenderState`,
 `PictureInPictureRenderState` family — `GuiEntityRenderState`,
 `GuiSkinRenderState`, `GuiBookModelRenderState`,
 `GuiBannerResultRenderState`, `GuiProfilerChartRenderState` and
-`OversizedItemRenderState`.
+`OversizedItemRenderState`. Each of those last six has a matching
+`PictureInPictureRenderer` subclass in `client/gui/render/pip` that resolves
+it into a texture during `GuiRenderer.prepare`, and they are the one place 3D
+drawing happens inside a 2D pass — the spinning entity in an inventory, the
+skin in a social list, the enchanting-table book.
 
 ## The draw pass
 
@@ -131,12 +145,21 @@ Both the sort and the coalescing happen inside `GuiRenderer.prepare`;
 
 ## Blur is a barrier, and it is fussy
 
-`GuiRenderState.blurBeforeThisStratum` splits the draw list in two. Asking
-for it twice in one frame **throws**. It is conditional on the
-menu-background blurriness option being at least one, and screens that
-declare themselves in-game UI — container screens, sign editors, book screens
-— take the transparent-background path and never request it. That is why the
-pause menu blurs the world and a chest does not.
+`GuiRenderState.blurBeforeThisStratum` splits the draw list in two, and
+`GuiRenderer.draw` then draws everything before the boundary, clears the depth
+buffer, runs the blur chain over the result — world and GUI alike, which is
+[post-processing](../rendering/post-processing.md#the-six-chains)'
+— and draws the rest crisp on top. What the *tree* decides is where the
+boundary goes and whether there is one at all.
+
+`Screen.extractBlurredBackground` is the one thing that asks, and three
+conditions gate it. Asking twice in one frame **throws**. The
+menu-background blurriness option must be at least one, which is why a slider
+at zero costs nothing. And screens that declare themselves in-game UI —
+container screens, sign editors, book screens — take the transparent-background
+path and never ask. That is why the pause menu blurs the world and a chest
+does not, and why the darkening tint over a blurred menu is itself sharp: it
+is recorded after the boundary.
 
 ## Questions a reader asks
 
@@ -144,7 +167,8 @@ pause menu blurs the world and a chest does not.
 resident and current — a slot that has gone stale, or was never filled, is
 redrawn with no invalidation involved. Wholesale invalidation is the loud
 case: changing the GUI scale throws the atlas away, and an atlas that cannot
-grow logs that some items will be skipped. Animated models are the exception
+grow — `DynamicAtlasAllocator` is what runs out of room — logs that some items
+will be skipped. Animated models are the exception
 to residency: they are redrawn every frame. The aging that evicts a slot happens
 in `GuiRenderer.endFrame`, which `GameRenderer` calls — not
 `GuiRenderer.render`.
@@ -152,14 +176,15 @@ in `GuiRenderer.endFrame`, which `GameRenderer` calls — not
 **Does the extractor really have no side effects?** It has two, just not
 drawing ones. The scissor stack is real state, and the cursor shape requested
 during the record pass is applied to the window at the end of it. It also
-holds the deferred tooltip and the pre-edit overlay.
+holds the deferred tooltip and the `IMEPreeditOverlay`, which is why an input
+method's in-progress text survives a pass that is otherwise stateless.
 
-**Can a 2D flag change how the world is drawn?** Yes. The HUD's hidden flag
-and a clear-colour override live on `GuiRenderState` and are read by
-`GameRenderer` — every site is `GameRenderer`'s, not `LevelRenderer`'s. The
-tree also belongs to `GameRenderState` rather than to `Gui`: the GUI holds a
-reference to it. Nor is this the only reach backwards: the HUD's boss bar
-reads world fog, the lightmap and the level render state as well.
+**Who owns the tree?** Not `Gui`, which holds a reference to one that belongs
+to `GameRenderState` — so the tree outlives any particular screen and is
+reachable from the frame rather than from the interface. That is also how two
+fields recorded here come to change the *world*: [the
+HUD](hud.md#the-hidden-flag-travels-two-ways) owns that traffic and both of
+its directions.
 
 **What if the batching sort were wrong?** There are debug switches for
 exactly that. One promotes every element into its own layer and outlines it;

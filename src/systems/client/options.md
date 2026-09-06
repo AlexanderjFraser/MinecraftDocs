@@ -135,18 +135,23 @@ packet rather than a play one: the first is sent during configuration,
 straight from `ClientHandshakePacketListenerImpl`, before the play phase
 exists. Every later one comes from `Options.broadcastOptions`.
 
-**There is no acknowledgement, and the absence is the point.** The one thing
-a client-information packet can provoke is a hat-visibility broadcast to the
-whole player list, and nothing in it tells you what happened to what you
-asked for. The only thing that ever sets
-`Options.serverRenderDistance` is the server announcing its *own* view
+**There is no acknowledgement, and the absence is the point.** What the packet
+provokes goes *outward, to other people*, never back to you: a hat-visibility
+broadcast to the whole player list, and — because
+`ServerPlayer.updateOptions` writes two of the nine fields into synched data
+rather than into fields of its own — the skin-customisation byte and the main
+hand travel to everyone tracking you as [synched entity
+data](../entities/synched-entity-data.md#five-more-channels-all-keyed-by-the-same-entity-id). The other
+seven are read off the `ServerPlayer` by whoever needs them. Nothing in any of
+it tells you what happened to what you asked for. The only thing that ever
+sets `Options.serverRenderDistance` is the server announcing its *own* view
 distance — in the login packet, or by broadcasting
 `ClientboundSetChunkCacheRadiusPacket` when an operator changes it. Your
-request is clamped by `ChunkMap.getPlayerViewDistance` and used for chunk
-tracking, and you are never told what it was clamped to; the client clamps
-itself, with `Options.getEffectiveRenderDistance`.
-`ClientboundSetSimulationDistancePacket` is likewise an announcement, not a
-reply.
+request is clamped by `ChunkMap.getPlayerViewDistance` and used for [chunk
+tracking](../world/tickets-and-loading.md), and you are never told what it was
+clamped to; the client clamps itself, with
+`Options.getEffectiveRenderDistance`. `ClientboundSetSimulationDistancePacket`
+is likewise an announcement, not a reply.
 
 Singleplayer short-circuits half of it. `IntegratedServer.tickServer` reads
 both the simulation and render sliders off the client's options every unpaused

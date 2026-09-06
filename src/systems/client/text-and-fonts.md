@@ -55,18 +55,22 @@ flowchart TD
 The numbering is the order the stages *matter* in, not a pipeline anything
 walks straight through. Stages one to three run whenever the text changes, and
 four to six run inside `Font.prepareText`, which the GUI calls **during the
-record pass**, because [the render tree](the-gui-render-tree.md) needs the
-text's bounds before it can place it. But four and five are also reached from
-*two*: the width function `Font` hands its `StringSplitter` asks the glyph
-source for each codepoint, and that call resolves the provider and forces the
-bake. Measuring a string you never draw still uploads its glyphs. Only the
-expansion into per-glyph states waits for the draw pass.
+record pass** — [the render
+tree](the-gui-render-tree.md#the-tree-and-where-a-new-element-lands) explains
+why, and why stage six alone is left for the draw pass. But four and five are
+also reached from *two*: the width function `Font` hands its `StringSplitter`
+asks the glyph source for each codepoint, and that call resolves the provider
+and forces the bake. Measuring a string you never draw still uploads its
+glyphs.
 
 All of it is on the Render thread, glyph baking and GPU uploads included. The
-only work that leaves the thread is *loading*: `FontManager`'s prepare phase
-parses the font definitions, loads each provider, resolves references between
-them, and pre-warms every provider by asking it for every codepoint it
-claims, on the reload workers. The apply phase — closing the old font sets
+only work that leaves the thread is *loading*, and it is an ordinary [resource
+reload](../foundations/resource-system.md#prepare-every-listener-at-once) with
+one unusual step: `FontManager`'s prepare phase parses the font definitions,
+loads each provider, resolves references between them, and then **pre-warms
+every provider by asking it for every codepoint it claims**, on the reload
+workers, so that the first frame after a reload does not pay for the whole
+alphabet. The apply phase — closing the old font sets
 and building new ones — is back on the Render thread.
 
 ### 1 · Flatten
@@ -106,13 +110,15 @@ algorithm over it, and re-emits each run through
 the result against the identity of the current `Language`.
 `Font.bidirectionalShaping` is a separate, much smaller thing: it shapes a
 bare string, and beside `Font.prepareText`'s own use of it the sign editor is
-the only caller.
+the only caller. Those two are half of the game's ICU surface; the other two
+are not text layout at all — `CreateBuffetWorldScreen` and the item
+property `LocalTime` each use it for collation and calendars.
 
 ### 4 · Resolve
 
 `FontManager` is the reload listener and the resolver: `Font.Provider` asks
-it for a `GlyphSource` given a `FontDescription`, and it answers three
-different ways.
+it for a `GlyphSource` given a `FontDescription`, and it branches once per
+kind of description — three of them.
 
 A `FontDescription.Resource` resolves to a `FontSet` — the per-font-id object
 holding the provider list, the codepoint cache (`CodepointMap`), a
@@ -123,9 +129,17 @@ instead to a `SingleSpriteSource` from `AtlasGlyphProvider` or
 every codepoint, with no texture sheet of its own; `FontManager` still keeps a
 `FontSet` behind it as the fallback.
 
-Below that: `GlyphProvider` implementations chosen by `GlyphProviderType` —
-bitmap, TrueType, space, unihex, reference — declared in *font/* JSON as
-`GlyphProviderDefinition`s.
+Below that: `GlyphProvider` implementations chosen by `GlyphProviderType`,
+declared in *font/* JSON as `GlyphProviderDefinition`s. Five kinds, and their
+definitions are worth naming because the differences between them are visible
+on screen: `BitmapProvider` slices a PNG on a grid, `TrueTypeGlyphProviderDefinition`
+runs FreeType over a real font file (`FreeTypeUtil` is the wrapper),
+`UnihexProvider` reads the compact hex format the fallback font ships in,
+`SpaceProvider` produces advance and no pixels, and
+`ProviderReferenceDefinition` splices another font's providers into this one's
+chain. Beside them `SpecialGlyphs` is not from a file at all: it is the
+hard-coded missing-glyph box and the white square everything else draws
+effects with.
 
 ### 5 · Bake
 

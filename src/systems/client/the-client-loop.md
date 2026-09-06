@@ -8,15 +8,21 @@ times as the clock says it owes. The clock is asked once per iteration, it
 answers in whole ticks, and the loop then runs at most **ten** of them. A
 frame that earned fifteen runs ten and loses five: they are already gone from
 the residual, nothing will ever run them, and the world you are standing in
-has skipped forward without simulating the gap. The server drops ticks too,
-but only once it is more than the overload threshold plus twenty ticks behind
-— and it logs *Can't keep up!* when it does. The client does it on any frame
-that needs to, at a ceiling of ten, and says nothing.
+has skipped forward without simulating the gap. That the two programs keep
+different clocks at all is [the two loops](../anatomy/anatomy.md#two-loops-and-a-wire-between-them),
+and the contrast is sharpest here: the server drops ticks too, but only once
+it is more than the overload threshold plus twenty ticks behind, and it logs
+*Can't keep up!* when it does ([the server
+tick](../server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)).
+The client does it on any frame that needs to, at a ceiling of ten, and says
+nothing.
 
-Everything on this page is one thread. The thread named `"Render thread"` is
-the main thread — `Main.main` renames it and `RenderSystem.initRenderThread`
-claims it — so `Minecraft.gameThread`, `BlockableEventLoop.isSameThread` and
-`RenderSystem.assertOnRenderThread` all agree about the same thread. There is
+Everything on this page is one thread — the client's half of [the four
+threads](../anatomy/anatomy.md#four-threads-worth-memorising). What that page
+does not say is who does the naming: `Main.main` renames the JVM's main thread
+to `"Render thread"` and `RenderSystem.initRenderThread` claims it, so
+`Minecraft.gameThread`, `BlockableEventLoop.isSameThread` and
+`RenderSystem.assertOnRenderThread` all agree about that one thread. There is
 no render thread, and there never was one in this version.
 
 ## The cast
@@ -26,7 +32,7 @@ no render thread, and there never was one in this version.
 | `Minecraft` | the loop itself, and — being a `ReentrantBlockableEventLoop` — the main thread's task queue | Render thread |
 | `DeltaTracker.Timer` | how many whole ticks this frame owes, and what the leftover fraction is | Render thread |
 | `PacketProcessor` | where packets decoded on Netty threads wait to be applied | filled on Netty, drained here |
-| `TickRateManager` | the millisecond target the Timer divides by — a *server* object | read here, owned there |
+| `TickRateManager` | the millisecond target the Timer divides by — a shared class the client holds one of, carrying numbers only the server sets | read here, decided there |
 | `FramerateLimitTracker` | what the frame cap actually is, which is not always the option | Render thread |
 | `FramerateLimiter` | the park that enforces it | Render thread |
 | `Main` | the process: the config, the shutdown hook, the thread's name | JVM main = Render thread |
@@ -68,8 +74,9 @@ frame of a pause is drawn unpaused.
 The quoted phrases are `Window.setErrorSection` calls, the crash report's
 breadcrumb, so a client that dies takes *Pre render*, *Render* or *Post
 render* to the report with it. What happens inside the frame is [the
-frame](../rendering/the-frame.md); this page stops at the profiler's *frame*
-zone. Note where the frame limiter sits: inside `Minecraft.renderFrame`,
+frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents);
+this page stops where the profiler's *frame* zone opens, and every zone inside
+it is that page's. Note where the frame limiter sits: inside `Minecraft.renderFrame`,
 after the present, with only the *fpsUpdate* zone after it, and *before* the
 pause is recomputed.
 
@@ -138,7 +145,9 @@ running between them.
 
 Two orderings in that list are load-bearing elsewhere in the book.
 `ServerboundClientTickEndPacket` goes out once per unpaused client tick that
-has a connection, and the server reads it to decide that a player who sent no
+has **both a level and a connection** — it sits inside the level block, so a
+client still in configuration sends none — and the server reads it to decide
+that a player who sent no
 movement this tick is standing still. And `Minecraft.pick` runs **once per
 tick and once per frame** — the tick's call at a partial tick of one, the
 frame's at the real one, and it is the frame's result the crosshair and the
@@ -164,14 +173,20 @@ Four queues and one re-entry that is not a queue.
   tick that will observe them — see [input and keybinds](input-and-keybinds.md).
 - **Section meshing** goes to `Util.backgroundExecutor` and is collected by
   `SectionRenderDispatcher` (Part XI).
+- **Timers**, of which the client has exactly two, and neither of them
+  touches the game. `PeriodicNotificationManager` and
+  `RemoteFriendListUpdateHandler` each own a scheduler, and each hops back
+  here with `BlockableEventLoop.execute` before touching anything — which is
+  why nothing in the client's simulation is ever driven by a timer callback.
 - **GPU work** registered with `RenderSystem.queueFencedTask` is picked up by
   `RenderSystem.executePendingTasks`, which stops at the first unsignalled
   fence rather than waiting. It looks general and is not: the one thing in
   the tree that queues a fenced task is the OpenGL backend's asynchronous
   texture readback.
 - And `BlockableEventLoop.managedBlock` pumps tasks while the loop is
-  *blocked* waiting for the integrated server — the mechanism
-  [`server-tick`](../server/server-tick.md) owns.
+  *blocked* waiting for the integrated server — the mechanism [the server
+  tick](../server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)
+  owns.
 
 The profiler wraps all of it. `Minecraft.constructProfiler` picks per
 iteration between `InactiveProfiler`, the frame-profile `ContinuousProfiler`
@@ -190,11 +205,14 @@ the server like a network stall.
 `Minecraft.pauseIfInactive`, called during the frame, pauses the game when
 the window has been unfocused for more than half a second and
 `Options.pauseOnLostFocus` is on. `Minecraft.pause` — the field — is
-recomputed at the very end of `Minecraft.runTick` as *singleplayer, and the
-GUI says we are pausing, and the world is not open to LAN*. `Gui.isPausing`
+recomputed at the very end of `Minecraft.runTick` as a conjunction of three:
+*singleplayer*, and the GUI says we are pausing, and the world is not open to
+LAN. Only the middle one is a question about the interface — `Gui.isPausing`
 asks the current screen and overlay, and `Screen.isPauseScreen` defaults to
-**true**: this is why the options screen stops a singleplayer world and a
-chest does not — `AbstractContainerScreen` overrides it to false. On the
+**true**, which is why the options screen stops a singleplayer world and a
+chest does not ([GUI and
+screens](gui-and-screens.md#gui-which-is-not-the-hud) owns the vote and the
+overrides that cast it). On the
 rising edge the loop calls `SoundManager.pauseAllExcept`, sparing music and
 UI sounds, and hands the new state to `DeltaTracker.Timer.updatePauseState`.
 
@@ -231,7 +249,11 @@ constructor, but five statements *after* the `Options` are read from disk —
 which is why every `OptionInstance.set` performed while loading *options.txt*
 silently skips its listener (see [options](options.md)). `Main.main` then
 calls `Minecraft.exitWorldAndClose`, and its last statement arms
-`ClientShutdownWatchdog.startShutdownWatchdog` over what follows.
+`ClientShutdownWatchdog.startShutdownWatchdog` over what follows. That is the
+second of two armings, not the only one: the window-close callback arms the
+same watchdog against the game thread while the game is still running, which
+is the one that catches a client that hangs on the close button rather than
+one that hangs on the way out.
 
 Stopping has three doors and one corridor. `Minecraft.stop` sets
 `Minecraft.running` false, and is what `Window.shouldClose` triggers at the

@@ -54,8 +54,36 @@ position, block position or entity UUID, plus a list of expiring events, and
 `ClientDebugSubscriber.createDebugValueAccess` hands renderers a read-only
 `DebugValueAccess` view. `DebugRenderer` is a plain list of
 `DebugRenderer.SimpleDebugRenderer`s, rebuilt by
-`DebugRenderer.refreshRendererList` — and they do not draw either: they emit
-through `Gizmos`.
+`DebugRenderer.refreshRendererList` — and they do not draw either.
+
+## Nothing in the game draws a gizmo; it appends one
+
+The renderers at the end of this trace emit through `Gizmos`, a debug-drawing
+API in the game-engine sense: the immediate-mode *draw me a box in the world
+for one frame* facility most engines have and Minecraft did not. `Gizmos` is a
+static façade over a **thread-local** `GizmoCollector`, and `Gizmos.addGizmo`
+**throws** when no collector is installed on the calling thread — so where you
+may draw is decided by where you are running, not by what you are allowed to
+see. The shapes are small records — `CuboidGizmo`, `LineGizmo`, `ArrowGizmo`,
+`CircleGizmo`, `RectGizmo`, `PointGizmo`, `TextGizmo` — a `GizmoStyle` is a
+stroke and a fill, and the `GizmoProperties` handle a call returns can pin the
+shape on top, keep it for a number of milliseconds, or fade it.
+
+Four collectors are installed anywhere in the game, and the fourth is the one
+worth knowing.
+
+| collector | installed by | what it collects |
+|---|---|---|
+| per tick | `Minecraft.collectPerTickGizmos` | anything the client tick draws, cleared each tick |
+| per frame, main thread | `LevelExtractor.collectPerFrameMainThreadGizmos` | the debug renderers of this page, inside the extract pass |
+| per frame, render thread | `LevelRenderer.collectPerFrameRenderThreadGizmos` | what the world renderer itself wants outlined |
+| **the integrated server** | `IntegratedServer`, around its whole packet-and-tick step | server tick code drawing into a singleplayer world, published for the client to drain |
+
+So **server-side game logic can draw**, and only in singleplayer: a dedicated
+server installs no collector at all, so the identical call there would throw,
+and `GameTestServer` installs `GizmoCollector.NOOP` so that a headless test
+run pays nothing for the same code path. That asymmetry is the reason half the
+renderers below reach for the singleplayer server directly.
 
 ## The sixteen instances
 
@@ -125,13 +153,13 @@ or entity. When the last subscriber goes away the whole thing is cleared.
 The three cadences: `ClientDebugSubscriber.tick` runs from
 `ClientPacketListener.tick`, once per client tick, and sends only when the
 wanted set differs from the last one sent.
-`ServerDebugSubscribers.tick` runs from `MinecraftServer.tickChildren`
+`ServerDebugSubscribers.tick` runs from [`MinecraftServer.tickChildren`](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
 *after* the levels have ticked, while each `LevelDebugSynchronizers.tick`
 runs *inside* its level's tick — so **every level acts on the previous tick's
 subscriber snapshot**, a built-in one-tick lag. And `DebugRenderer.emitGizmos`
-runs inside `LevelExtractor.extract`, after entities, block entities,
-particles, sky and clouds, fetching one `DebugValueAccess` for the whole
-pass.
+runs inside `LevelExtractor.extract` — [the frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)'s
+own snapshot step — after entities, block entities, particles, sky and clouds,
+fetching one `DebugValueAccess` for the whole pass.
 
 ## The exceptions
 
@@ -162,9 +190,9 @@ sent — so the saving is in bandwidth, not in server time.
 **About half the renderers do not use this system at all.** The chunk debug
 renderer reaches directly into `Minecraft.getSingleplayerServer` and shows
 nothing in multiplayer; the entity hitbox renderer reaches for it too, but
-only for its optional *server* hitbox — its ordinary client hitboxes are
-drawn for every visible entity, on any server, from an F3 entry rather than a
-flag. And a
+only for its optional *server* hitbox — what it draws for an ordinary visible
+entity is [entity rendering](../rendering/entity-rendering.md)'s, and comes
+from an F3 entry rather than a flag. And a
 whole family of them — chunk borders, light, collision boxes, height maps,
 the section octree — are purely client-side views that need no server.
 
@@ -180,6 +208,23 @@ simply never touched; a respawn builds a new one and `ServerPlayer.restoreFrom`
 copies the requested set across. A fresh login starts empty, and the client
 re-sends on its next tick because `ClientDebugSubscriber` was cleared at
 login.
+
+## The other query, which is one transaction deep
+
+Not everything the client asks the server for is a subscription. Press the
+copy-recreate-command key — `Options.keyDebugCopyRecreateCommand`, an ordinary
+rebindable mapping — while looking at a block or an entity and the client
+builds a `/setblock` or `/summon` for it and puts it on the clipboard. Whether
+the NBT in that command is *yours* or the *server's* is decided by two things.
+Holding shift takes the client's own copy, straight out of the block entity or
+the entity in front of you. Not holding it goes to the server, through
+`DebugQueryHandler`: `ServerboundBlockEntityTagQueryPacket` or
+`ServerboundEntityTagQueryPacket` with a transaction id, a callback parked
+against that id, and the command assembled when the reply comes back. The
+handler holds **one** callback and one id, so a second query cancels the first
+by overwriting it, and a reply whose id does not match is dropped on the
+floor. Including the NBT at all needs the gamemaster permission, and the whole
+key is dead while the server has reduced debug info on.
 
 ## The sample path, which shares only the subscriber map
 

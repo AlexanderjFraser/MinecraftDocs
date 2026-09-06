@@ -1121,13 +1121,22 @@ duplicate a Reference page that has been checked row by row.
 
 ### Structural findings (logged, not acted on)
 
-- **The GUI stack is watched in a different order from the one it runs in.**
+- ~~**The GUI stack is watched in a different order from the one it runs in.**
   The three pages are `gui-and-screens` → `the-gui-render-tree` →
   `text-and-fonts`, but at runtime the text becomes glyphs *before* the tree
   is sorted and batched. The landing page now says so out loud, which is
   honest and clumsy — a part-shape sentence should not have to apologise for
   the watch order. Either the order changes in pass 6, or the sentence gets
-  shorter.
+  shorter.~~ **Settled, session J: the order stands and the sentence is
+  rewritten as a fact rather than an apology.** The premise was slightly
+  wrong. The stages do not run in the watched order *or* in the reverse of
+  it — they interleave: text is measured and baked **during** the record
+  pass, because the tree cannot place a line whose bounds it does not have,
+  and only the expansion into per-glyph states waits for the draw pass. So
+  there is no "order they run in" to be out of step with, and the reason the
+  tree comes first is positive: the text pipeline cannot be followed until
+  you know what it records into. `client/README`, `lectures.md` and both
+  pages now say the same thing.
 - **`hud-elements` now has the contextual bar on two rows** (14 background, 16
   foreground) with the experience level between them, because that is the
   record order. Correct and hard to read; a merged row with a note might serve
@@ -1136,13 +1145,21 @@ duplicate a Reference page that has been checked row by row.
   mechanism** — a state diagram of the two machines and a sequence of the
   refusal — and the fact-check found the argument living in the prose both
   times. One of the two may be redundant.
-- **The Part X landing page's verified line says "seven systems"** (the
+- ~~**The Part X landing page's verified line says "seven systems"** (the
   figure's seven spokes) over a part of twelve pages. Both are true and the
-  reader meets the mismatch immediately.
-- **`anatomy/anatomy` is a Part X dependency that no Part X page links.**
+  reader meets the mismatch immediately.~~ **Done, session J:** the count is
+  gone from the verified line, which now states the part's question instead —
+  *when in that loop does this happen?* — so nothing counts and the figure's
+  seven spokes contradict nothing.
+- ~~**`anatomy/anatomy` is a Part X dependency that no Part X page links.**
   Session A logged the cross-link as pass-5 work (pass4.md:2765); this session
   re-derived that it is genuinely used — `the-client-loop`'s hook contrasts
-  the two loops — so the link belongs in that hook's paragraph.
+  the two loops — so the link belongs in that hook's paragraph.~~ **Done,
+  session J:** the hook now cites `anatomy#two-loops-and-a-wire-between-them`
+  for the two clocks and `server-tick`'s event-loop anchor for *Can't keep
+  up!*, and the four-threads paragraph below it cites
+  `anatomy#four-threads-worth-memorising` and keeps only what it adds (who
+  renames the thread and who claims it).
 
 
 ## Session G — Part VII Items and inventories (pass 4) *(2026-09-04)*
@@ -2323,11 +2340,21 @@ was cut or moved, and why)*
     person (*hold the key*, *press F1*, *you break a block*, *a chest full of
     the same item*). Sessions I and J both flagged the drift; it is now four
     parts wide and the corpus-wide decision cannot wait for pass 6.
-  - **`the-gui-render-tree`'s title is still the weakest in the part**
+  - ~~**`the-gui-render-tree`'s title is still the weakest in the part**
     (session H's note, unresolved). It is really *how the UI is recorded and
     drawn*, and the tree is the mechanism rather than the subject. Not
     renamed this session because a rename costs a redirect and the page's own
-    figure now makes the tree the point; pass 5 or pass 6 should settle it.
+    figure now makes the tree the point; pass 5 or pass 6 should settle it.~~
+    **Ruled out, session J — the title stands, and after pass 5 no page
+    moves.** Two of the session's agents backed the rename and the read did
+    not. The page's hook, both its figures and its whole argument are the
+    tree: layering is *inferred*, and the draw pass exists to resolve what
+    the inference built. More decisively, all eight inbound links call it the
+    render tree in their own sentences — *the machinery underneath*, *the
+    tree they record into*, *infers layering from call order* — so a rename
+    would leave eight sentences pointing at a title that no longer matches
+    the words around the link. A title that is not misleading is not worth a
+    redirect and five files.
   - **"Record" and "extract" are used interchangeably across four pages** —
     `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud` —
     because the methods are all named *extract* and the concept reads better
@@ -2599,18 +2626,32 @@ it made are in [pass9.md](pass9.md).*
   invert options. This is the routed pair at 7.73 and it is session J's to
   resolve; session H left the Part VIII half intact deliberately, so that J
   decides how much of it survives. [kind=book]
-- **Session J (X) — `input-to-movement`'s deferral framing.** Its
+- ~~**Session J (X) — `input-to-movement`'s deferral framing.** Its
   "the GLFW callback ... immediately defers to the client's main thread with
   `BlockableEventLoop.execute`" is the exact reading `input-and-keybinds`:16-22
   exists to refute (on the game thread that call runs the task rather than
   queueing it). Session H cut the clause and cited the owner; check the owner's
-  version is the one a reader lands on. [kind=book]
-- **Session J (X) — the sound rule's fourth telling.**
+  version is the one a reader lands on.~~ **Done, session J, and the citation
+  was landing wrong:** it pointed at `input-and-keybinds#the-cast`, because
+  the refutation sat above the page's first heading and had no anchor at all.
+  The refutation now has its own section, *A key press is not queued*, the
+  Part VIII citation lands on it, and the section itself cites
+  `the-client-loop` for the qualification the owner of
+  `BlockableEventLoop.execute` puts on the same method. [kind=book]
+- ~~**Session J (X) — the sound rule's fourth telling.**
   `the-sword-swing` now cites `client/what-makes-a-sound` for the
   excluded-player rule, but the rule sits in that page's opening, above any
   heading, so the citation cannot carry an anchor. `blocks/block-interaction`:299
   and `client/the-client-level`:215 are the other two copies. Session J owns
-  the page; a heading there would pay off three citations. [kind=book]
+  the page; a heading there would pay off three citations.~~ **Done, session
+  J, and there were five copies rather than four** — `items/using-an-item`
+  and `player/the-sword-swing` tell it too. The fix was cheaper than a new
+  heading: `## Who hears it` already owned the server half, so the local
+  branch moved *into* it, where the two halves now read as one rule about the
+  word *excluded*. The opener keeps the hook and points down at the section.
+  The two copies that add something were kept as such; the
+  `the-client-level` copy, which also duplicated the distance-delay mechanism
+  whole, is cut to one sentence and the anchor. [kind=book]
 - **Session K (XI) — the skin pipeline's drawing half.**
   `player-anatomy` now names `PlayerSkin`, `PlayerModelType` and
   `PlayerModelPart` and declares that drawing them is Part XI's. Check
@@ -3307,14 +3348,24 @@ that takes it. Everything session I did act on is struck above or logged in
 
 **Routed to a later part's session.**
 
-- **Session J (X) — `GuiMessageTag` and the chat-GUI family.** `client/multiplayer/chat`
+- ~~**Session J (X) — `GuiMessageTag` and the chat-GUI family.** `client/multiplayer/chat`
   holds `GuiMessage`, `GuiMessageTag`, `GuiMessageSource`, `ChatLog` and
   `LoggedChatEvent` (219 lines, none named in the book). `GuiMessageTag` is
   what draws the coloured bar beside a chat line — the thing the Part IX
   landing page used to promise in its opening and no longer does, because
   nothing explains it. `client/hud`:155 draws the line at "this page owns
   display only", which makes the tag `hud`'s if it is anyone's. Either name it
-  there or decline it. [kind=book]
+  there or decline it.~~ **Named, session J, on `hud`.** The family is now a
+  paragraph in the chat answer, and two of the guesses in this entry were
+  wrong and are corrected by it: the bar is drawn two pixels to the **left**
+  of the line, outside the text entirely, not beside it; and there are five
+  tags, not the two a reader would predict — system, system-in-singleplayer,
+  not-secure, modified and error, of which only *modified* also carries an
+  icon, and that one does sit after the text. `GuiMessage` carries the
+  signature as well as the display fields, `GuiMessageSource` says which of
+  three produced the line, and `ChatLog`'s ring of `LoggedChatEvent`s is kept
+  for the reporting screens rather than for display — which is the seam with
+  the one thing this part declines. [kind=book]
 - **Session K (XI) — the multiplayer server list.** `ServerList` (204),
   `ServerData` (196), `SessionSearchTrees` (141) and `CacheSlot`, in Part IX's
   own `client/multiplayer`. Session I named `ServerList`/`ServerData` in the
@@ -3428,3 +3479,92 @@ that takes it. Everything session I did act on is struck above or logged in
   `ConnectionProtocol` and a step of the server tick — and `the-connection`
   uses both, one of them inside a figure note where no link can go.
   [kind=voice]
+
+## From pass-5 session J (Part X, the client), 2026-09-06
+
+*What the twelve reader agents and the whole-part read raised that session J
+did not act on, routed by kind. The claims it introduced and the corrections
+it made are in [pass9.md](pass9.md).*
+
+### For other part sessions (pass 5)
+
+- **Session M (XIII) — the boss-bar feed still has no owner, and session J
+  confirms the Part X half.** `commands/scoreboard-and-data`:28-30 hands the
+  bar's value and maximum to the HUD, which never mentions `execute store`.
+  `client/hud` owns `BossHealthOverlay` and `LerpingBossEvent` — the drawing
+  and the wall-clock interpolation — and is the wrong page for what a *feed*
+  is. This is the same object session I routed to M from the wire's end
+  (pass5.md:3326); M should settle both or decline both, and if it declines,
+  the `scoreboard-and-data` hand-forward has to go with it. [kind=book]
+- **Session K (XI) — `client/resources/model` is in Part X's package set and
+  is Part XI's subject.** `ModelManager`, `ModelBakery`, `ModelDiscovery`,
+  `FaceBakery`, `BlockStateModelLoader`, `ResolvedModel`, `QuadCollection`,
+  `AtlasManager`, `TextureSlots`, `ItemModelGenerator` — around 2,400 lines
+  that `pass5_coverage.py` bills to Part X and `models-and-atlases` explains.
+  Session J stated the boundary on the Part X landing page rather than
+  changing `PARTS`, because the mapping is by package and the package is
+  genuinely shared. If session K wants the tool to agree with the book, the
+  change is `map_source.py`'s and not a page's. [kind=book]
+- **Session K (XI) — the picture-in-picture renderers.** Session J named the
+  seven `client/gui/render/pip` classes as a family on `the-gui-render-tree`
+  (the one place 3D drawing happens inside a 2D pass). `GuiEntityRenderer`
+  and `GuiSkinRenderer` reach into Part XI's entity rendering to do it;
+  whether that seam wants a link from the Part XI side is K's. [kind=book]
+
+### For pass 6 (the lecture)
+
+- **`the-gui-render-tree`'s recording-verb list is a 22-identifier
+  paragraph** — six verbs, two structural ones and thirteen state classes in
+  running prose, past the budget's seven. A table would carry it, and the
+  `PictureInPictureRenderState`/`PictureInPictureRenderer` pairing session J
+  added would fall out of the table's second column for free.
+- **`the-gui-render-tree` and `text-and-fonts` head their closers "Questions
+  a reader asks"** where the corpus says "Questions players ask". Two of the
+  five spellings session P counted, both in this part.
+- **`options` has no anchor for its loading guard.** `the-client-loop` cites
+  the page for "every `OptionInstance.set` performed while loading silently
+  skips its listener", and the only landing spot is a question inside the
+  closer. Session J declined to add a `###` inside a Q&A list because that is
+  a shape change; pass 6 owns the shape and can give the guard a home.
+- **`the-client-level`'s closer is six questions and four of them are other
+  pages' subjects**, now that the two sound questions have been cut to one
+  citation. What is left that is genuinely the page's own is the clock and
+  the weather level that steps twenty times a second instead of
+  interpolating. Session J did not restructure the closer.
+- **`prediction-and-acks` opens on a four-sentence contract that two Part V
+  pages also carry** (a declared pair, so the copy stays) — but the page now
+  also opens on the authority split. Pass 6 should read the first two
+  paragraphs together and decide which is the hook.
+
+### For pass 7 (the figures)
+
+- **`text-and-fonts`' chat-line figure has `Font->>FSet: getGlyph`**, and
+  `FontSet.getGlyph` is private — the caller really reaches
+  `FontSet.Source.getGlyph` through the `GlyphSource` interface, which is the
+  distinction the page's own 1.21 box draws. The arrow is true as an
+  *object* interaction and misleading as a call. Session J left it.
+- **The Part X landing figure's seven spokes against twelve pages** is now
+  contradicted by nothing in the prose (the verified line no longer counts),
+  but the figure still collapses four GUI pages into one node and two sound
+  pages into another. Pass 7 should judge whether that is the right picture
+  now that the GUI node is the part's only pipeline.
+
+### For pass 8 (the voice)
+
+- **"The hop" means two things in Part X.** `reference/threads`:120 fixes it
+  as `ensureRunningOnSameThread` — a packet reaching the game thread — and
+  `sound-engine`'s verified line and hook use it for the post *out* to the
+  sound thread. Both senses appear within fifteen lines of each other on that
+  page. One of the two needs a different word, corpus-wide.
+- **"Record" and "extract" are still interchangeable** across
+  `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud`
+  (session I's note, now four pages confirmed). Session J added prose to
+  three of the four and used *record* throughout, which is a vote, not a
+  ruling.
+- **Second person, again, and now five pages.** `input-and-keybinds`, `hud`,
+  `what-makes-a-sound`, `the-gui-render-tree` and `gui-and-screens` all open
+  in it. Sessions I, J and K have each flagged the drift; it is corpus-wide
+  and pass 8's, not a part session's.
+- **`hud`'s "the most-loved fifty-seven lines in the client"** is a line
+  count of a method, which will rot at the next release. Session J left it;
+  the sentence works without the number.

@@ -1,6 +1,6 @@
 # Sound: the engine
 
-> Verified against **Minecraft 26.2** · Part X · a block placed near you: from a packet on the game thread to an OpenAL source, across five threads and one hop the sound cannot skip.
+> Verified against **Minecraft 26.2** · Part X · a block placed near you: from a packet on the game thread to an OpenAL source, across four of the system's five threads and one hop the sound cannot skip.
 
 `SoundEngine.play` never starts a sound. It resolves the name, picks a
 variant, tells the subtitle overlay, computes the volume and asks for a
@@ -51,8 +51,14 @@ And one the game does not own: OpenAL Soft's own event-callback thread,
 which invokes the callback `CallbackDeviceTracker` installs to notice that
 the default device changed.
 
-The Render thread's two cadences: once per client tick `Minecraft.tick` calls
-`MusicManager.tick` and then `SoundManager.tick`, which walks the ticking
+Four of those five are on the path of a single sound; `Util.ioPool` is the odd
+one, polling the device list beside the trace rather than inside it. Where
+each sits among the rest of the game's is [the
+threads](../../reference/threads.md#the-threads-a-lecture-leans-on).
+
+The Render thread's two cadences, both set by [the client
+loop](the-client-loop.md#what-a-tick-is-in-order): once per client tick
+`Minecraft.tick` calls `MusicManager.tick` and then `SoundManager.tick`, which walks the ticking
 sounds, updates positions and volumes, releases finished channels and drains
 the delayed queue; once per *frame* `Minecraft.runTick` calls
 `SoundManager.updateSource` with the camera.
@@ -205,8 +211,9 @@ them.
 ## Questions a reader asks
 
 **Why does sound cut out when I plug in headphones?** Because reload is
-destroy-and-rebuild, and it arrives from three different doors. The resource
-reload arrives as `SoundManager.apply`, which ends by reloading the engine;
+destroy-and-rebuild, and it arrives from three different doors. The [resource
+reload](../foundations/resource-system.md#apply-registration-order) arrives as
+`SoundManager.apply`, which ends by reloading the engine;
 `SoundManager.reload` is the *options* path, taken when the audio device is
 changed; and `SoundEngine.tick` reloads itself when the device tracker reports
 the default device changed. All three tear the OpenAL context down in

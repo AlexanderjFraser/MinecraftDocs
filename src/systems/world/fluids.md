@@ -166,10 +166,11 @@ a state change.
 
 The client is told none of this, because there is nothing to tell. The placing
 player's client ran `BucketItem.use` itself inside
-`MultiPlayerGameMode.startPrediction`, holding the write until the server's
-acknowledgement arrives ([the six
-windows](../client/prediction-and-acks.md#the-six-windows)), so the source appears
-locally with no round trip; the blocks the water later touches arrive the way any
+`MultiPlayerGameMode.startPrediction` and wrote the source block **at once** —
+what the window holds is not the write but the *old* state, filed under a
+sequence number against the day the server disagrees ([the six
+windows](../client/prediction-and-acks.md#the-six-windows)) — so the source
+appears locally with no round trip; the blocks the water later touches arrive the way any
 run of block changes does ([one flush a tick, two
 audiences](../networking/what-the-client-is-told.md#block-changes-one-flush-a-tick-two-audiences)),
 which for a spreading flow means a single

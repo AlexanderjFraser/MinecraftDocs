@@ -9,7 +9,7 @@ could therefore never build an `InventoryScreen` from a packet even if one
 arrived. The *opening* is entirely a client-side event. Press E again and the
 symmetry breaks: `LocalPlayer.closeContainer` sends
 `ServerboundContainerClosePacket`, and the server empties your 2×2 crafting
-grid on the way out. The screen the server is never told about is one the
+grid on the way out, returning or dropping what was in it. The screen the server is never told about is one the
 server is told about exactly once, at the end.
 
 The menu underneath it is not symmetric in the same way, and the qualification
@@ -32,7 +32,7 @@ GUI render tree](the-gui-render-tree.md); how a `Component` becomes glyphs is
 | `AbstractWidget` | the final outer shape of a widget, and one inner hook per subclass | Render thread |
 | `Layout` over `LayoutElement` | where widgets end up, re-arranged on most screens whenever the window changes | Render thread |
 | `AbstractContainerScreen` | a screen mirroring a server-side menu, and the slot geometry | Render thread |
-| `MenuScreens` | `MenuType` to screen class — the only registry of screens in the game | Render thread |
+| `MenuScreens` | `MenuType` to screen class — the registry the menu packets look a screen up in | Render thread |
 | `Overlay` | suppresses the screen's record pass, its mouse and its typing — but not its key presses | Render thread |
 | `ScreenNarrationCollector` | what has already been said, so it is not said twice | Render thread |
 
@@ -93,11 +93,13 @@ with a dead player it substitutes the death screen, or respawns; otherwise it
 restores the chat screen if one was saved. During a level teardown it throws,
 rather than return you to a world that is being dismantled.
 
-**`Gui.isPausing` is what stops the integrated server**, and it asks the
-screen. `Screen.isPauseScreen` defaults to **true** and
-`AbstractContainerScreen` overrides it to false — which is the whole reason
-the options screen pauses a singleplayer world and a chest does not. An
-overlay pauses by default too.
+**`Gui.isPausing` is the screen's vote on whether the game stops**, and it is
+one of three conjuncts: [the client
+loop](the-client-loop.md#pausing-which-is-two-things-and-neither-is-the-menu)
+owns the pause itself and the other two, and the vote is cast by
+`Screen.isPauseScreen`, which defaults to **true**. An overlay pauses by
+default too, which the loop page does not say, and is why a resource reload
+stops a singleplayer world as surely as the options screen does.
 
 And an overlay does not stack on a screen: in the record pass it *replaces*
 it. Nothing draws both. `LoadingOverlay` is the only implementation of
@@ -133,8 +135,9 @@ Layout is `Layout` over `LayoutElement`: `LinearLayout`, `GridLayout`,
 `FrameLayout`, `EqualSpacingLayout`, `HeaderAndFooterLayout` and
 `SpacerElement`, configured by `LayoutSettings` and resolved by
 `Layout.arrangeElements` and `Layout.visitWidgets`. Input arrives as the
-`client/input` records through `GuiEventListener` and
-`ContainerEventHandler`; focus is a `ComponentPath` moved by a
+`client/input` records — `KeyEvent`, `MouseButtonEvent` and their siblings,
+which are [input and keybinds](input-and-keybinds.md)' — through
+`GuiEventListener` and `ContainerEventHandler`; focus is a `ComponentPath` moved by a
 `FocusNavigationEvent`, ordered by `TabOrderedElement.getTabOrderGroup`; and
 geometry is `ScreenRectangle`, `ScreenPosition`, `ScreenAxis` and
 `ScreenDirection`.
@@ -160,7 +163,7 @@ sequenceDiagram
     MC->>MPGM: isServerControlledInventory? false for a player on foot
     MC->>MC: Tutorial.onOpenInventory
     MC->>Gui: setScreen(new InventoryScreen(player))
-    Gui->>Gui: MouseHandler.releaseMouse, then KeyMapping.releaseAll — both before init
+    Gui->>Gui: MouseHandler.releaseMouse, then KeyMapping.releaseAll — both before init, and both input and keybinds'
     Gui->>InvS: removed on the old screen, then added, then Screen.init
     InvS->>InvS: init — creative? replace myself with CreativeModeInventoryScreen
     Note over Gui: next frame, record
@@ -181,7 +184,9 @@ then `AbstractContainerScreen.extractCarriedItem`, then
 the quick-craft state, and a click goes
 `AbstractContainerScreen.slotClicked` to
 `MultiPlayerGameMode.handleContainerInput` — see [containers and
-menus](../items/containers-and-menus.md).
+menus](../items/containers-and-menus.md#the-chest-you-see-is-not-the-chest),
+which also owns the fact this page's second paragraph turns on: the client
+never computes a crafting result.
 
 The final `AbstractContainerScreen.tick` closes the container when the player
 is dead or removed. The *client* notices first.
@@ -190,13 +195,25 @@ is dead or removed. The *client* notices first.
 
 | route | examples |
 |---|---|
-| entirely client-side | title, pause, options, chat, advancements, social interactions, the survival and creative inventories |
+| entirely client-side | `TitleScreen`, `PauseScreen`, `OptionsScreen`, `ChatScreen`, advancements, social interactions, the survival and creative inventories |
 | `ClientboundOpenScreenPacket` | every menu with a `MenuType` — chests, furnaces, anvils, and a chest boat |
 | `ClientboundMountScreenOpenPacket` | a horse's or a nautilus's own inventory |
-| other packets | the book viewer, the sign editor, the death screen, the win screen, the demo popup, the level-loading screen, dialogs |
+| other packets | `BookViewScreen`, `AbstractSignEditScreen`, `DeathScreen`, `WinScreen`, the demo popup, `LevelLoadingScreen`, dialogs |
 
 Three entities implement `HasCustomInventoryScreen`, and they do not agree:
 two use the mount packet and one falls back to the ordinary menu packet.
+
+**Those seven names are examples and the book keeps them that way.** There are
+two hundred-odd classes in `client/gui/screens` and its eighteen
+sub-packages — the world-creation flow, the pack picker, the report screens,
+the friends and social lists, the recipe book, a class per container — and
+they are the single largest thing in Part X by line count. Every one of them
+is this section's four routes, the lifecycle above, the widget and layout
+families below and nothing else; the book explains the pattern once, here, and
+names a screen only where some other page's scenario walks into it. The
+exception it does *not* cover is player reporting, declined for its own
+reasons in [what this book
+skips](../anatomy/what-this-book-skips.md#player-reporting).
 
 The screens you see *first* are a chain rather than a screen.
 `Gui.buildInitialScreens` composes accessibility onboarding, ban notices, a
@@ -206,7 +223,11 @@ renders one frame on the spot — synchronously — which is how progress appear
 during blocking main-thread work such as a world load, a data fix or a save.
 
 Narration, finally, is mostly timed rather than immediate — mostly, because
-`Screen.init` narrates the new screen at once before arming anything.
+`Screen.init` narrates the new screen at once before arming anything. What
+does the speaking is `GameNarrator`, a thin wrapper over Mojang's *text2speech*
+library with a four-valued `NarratorStatus` option in front of it and two
+tempers: the *queued* methods, which yield to whatever is already being said,
+and `GameNarrator.saySystemNow`, which interrupts.
 Thereafter `Screen.handleDelayedNarration` fires from `Gui.update` once two
 clocks have passed — one delay after a mouse move, a shorter one after a
 keyboard action, and a two-second suppression after a screen is built — and
@@ -224,8 +245,10 @@ then picks a *single* widget to narrate, by tab-order group and priority.
 
 ## Where to look
 
-`Gui.setScreen` — the substitution tree and the input housekeeping at both
-ends of a screen's life. `Screen.init` and `Screen.resize` for the lifecycle,
+`Gui.setScreen` — the substitution tree, and the input housekeeping at both
+ends of a screen's life that [input and
+keybinds](input-and-keybinds.md#the-bulk-operations-and-their-single-callers)
+explains. `Screen.init` and `Screen.resize` for the lifecycle,
 `Screen.extractRenderStateWithTooltipAndSubtitles` for the record pass, and
 `Gui.extractRenderState` for the frame's contributor order.
 `AbstractContainerScreen.extractContents` for the busiest screen in the game,

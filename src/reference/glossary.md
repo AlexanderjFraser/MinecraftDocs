@@ -368,7 +368,9 @@ edge-detects. → [input and keybinds](../systems/client/input-and-keybinds.md)
 ## L
 
 **Level** — a world: `ServerLevel` on the server, `ClientLevel` on the
-client, sharing an abstract `Level` and remarkably little else. → [the level tick](../systems/server/server-level-tick.md), [the client level](../systems/client/the-client-level.md)
+client, sharing an abstract `Level` that carries most of the behaviour —
+`ClientLevel` differs by *hollowing out* inherited methods rather than by
+implementing fewer of them. → [the level tick](../systems/server/server-level-tick.md), [the client level](../systems/client/the-client-level.md)
 
 **Lightmap** — the small texture the client samples to turn a block-light /
 sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md)

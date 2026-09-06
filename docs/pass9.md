@@ -1989,3 +1989,264 @@ has exactly five dedicated-only rows.
   later is a score lost", which contradicts `how-a-server-dies`' hook (a
   tick-loop crash writes what `/stop` writes) unless it means a watchdog kill
   or a *kill -9*. Session M's page, flagged in [pass5.md](pass5.md).
+
+## Pass 5, session J — Part X, the client (2026-09-06)
+
+*Twelve reader-of-the-book agents, one per page plus the landing page, and
+one whole-part read in watching order. Every finding acted on was re-derived
+against `reference/26.2` by the session itself. Corrections first, then the
+claims the session introduced, which pass 9 checks before anything else.*
+
+### Corrections — what the page said, what the decompile says
+
+1. **`client/the-client-level`:129** said the renderer is reached directly by
+   "the chunk cache and **one** packet handler". `ClientPacketListener` has
+   five references to `Minecraft.levelExtractor`
+   (`ClientPacketListener.java`:538, 550, 940, 1329, 2677): two hand it to a
+   `ClientLevel` constructor, and **three** are calls on it —
+   `handleChunksBiomes` marking sections dirty (:940), `handleLogin`
+   refreshing the debug renderer list (:550) and `handleGameTestHighlightPos`
+   (:2677). Session N had flagged the count as right only for the
+   dirty-marking path (pass5.md:770); it is. The sentence now says three and
+   names what each does.
+2. **`client/sound-engine`'s verified line** said the trace crosses "five
+   threads". The page's own table lists five threads that *take part in the
+   system*, but `Util.ioPool` appears in no step of the trace — it polls the
+   ALC device list beside it (`AbstractDeviceTracker.tick`). A block placed
+   near you crosses four: Server, Render, the sound engine's, and
+   `Util.nonCriticalIoPool`. The landing page had it right and the page did
+   not. Corrected to "four of the system's five threads", with a sentence
+   saying which one is the odd one.
+3. **`client/options`:354** said "the one thing a client-information packet
+   can provoke is a hat-visibility broadcast".
+   `ServerGamePacketListenerImpl.handleClientInformation` does broadcast the
+   hat, but `ServerPlayer.updateOptions` also writes two of the nine fields
+   into synched data — `ServerPlayer.DATA_PLAYER_MODE_CUSTOMISATION` and
+   `ServerPlayer.DATA_PLAYER_MAIN_HAND` — which reach every tracker.
+   `entities/synched-entity-data`:303-305 already said so, so this was a page
+   contradicting another page. Rewritten as two outward effects and still no
+   reply, with the link.
+4. **`client/gui-and-screens`:35** called `MenuScreens` "the only registry of
+   screens in the game" and :232 on the same page called `DialogScreens` "the
+   second one". A page contradicting itself. The cast row now says what
+   `MenuScreens` is *for* — the registry the menu packets look a screen up in.
+5. **`client/gui-and-screens`:96** said "`Gui.isPausing` **is** what stops the
+   integrated server". `Minecraft.runTick` (`Minecraft.java`:1321) recomputes
+   `Minecraft.pause` as a conjunction of three: a singleplayer server, the
+   GUI saying it is pausing, and the world not being published. Against
+   `the-client-loop`, which had it right. Rewritten as the screen's *vote*,
+   with the loop cited for the other two — and the overlay fact, which the
+   loop page lacks, kept here.
+6. **`client/README`:135-139** put the Part X/XI boundary at
+   `Minecraft.renderFrame`'s *extract* zone, with "the handful of statements
+   before that zone" still Part X's. The *frame* zone is pushed in
+   `Minecraft.runTick` (`Minecraft.java`:1308) around the whole of
+   `renderFrame`, so *update window*, *update* and *extract* are all inside
+   it — there are no statements before it. `the-client-loop`,
+   `rendering/the-frame` and `rendering/README` all say the *frame* zone, so
+   the landing page was the outlier. Rewritten to the *frame* zone, keeping
+   the real point: a few Part X cadences run inside it and stay Part X's for
+   what they decide, not where they sit.
+7. **`client/the-client-loop`:29** called `TickRateManager` "a *server*
+   object". It is `net.minecraft.world.TickRateManager` — shared; the server
+   subclass is `ServerTickRateManager`, and `ClientLevel` holds a plain one
+   fed by packets. The cast row now says a shared class carrying numbers only
+   the server sets.
+8. **`client/the-client-loop`:140** said `ServerboundClientTickEndPacket`
+   goes out "once per unpaused client tick that has a connection". The send
+   (`Minecraft.java`:2064) is inside `Minecraft.tick`'s level block, so it
+   also needs a level — a client still in configuration sends none. Corrected.
+9. **`client/the-client-loop`:234** presented `Main.main`'s arming of
+   `ClientShutdownWatchdog.startShutdownWatchdog` as the only one. There are
+   two: `Main.java`:291 (post-main) and `Minecraft.java`:545, the window-close
+   callback, armed against the game thread while the game is still running.
+   Corrected, with what the second one catches.
+10. **`player/input-to-movement`:296-298** said the client calls
+    `BlockStatePredictionHandler.onTeleport` "to drop its outstanding block
+    predictions". `BlockStatePredictionHandler.java`:70 assigns
+    `lastTeleportSequence = currentSequenceNr`, and :49 uses it only to pass a
+    null player position to `ClientLevel.syncBlockState` — it suppresses the
+    *position snap*, and the predictions settle normally.
+    `prediction-and-acks` had it right. Corrected, and the citation repointed
+    from `#the-six-windows` to `#the-four-writes`.
+11. **`player/input-to-movement`:131-132** said "Releases are always
+    delivered". `KeyboardHandler.keyPress` (`KeyboardHandler.java`:527-534)
+    returns early when `Screen.keyReleased` consumes the event, before the
+    unconditional `KeyMapping.set(key, false)` at :602 — so a screen can
+    swallow a release, which is the asymmetry `input-and-keybinds`:117-120 is
+    built on. Corrected to: a release is recorded whether or not a screen is
+    open, but a screen that consumes one swallows it.
+12. **`world/fluids`:167-171** said the client ran `BucketItem.use` inside
+    the prediction window, "holding the write until the server's
+    acknowledgement arrives", and then said in its own next clause that the
+    source appears with no round trip. The window holds the *old* state, not
+    the write. Corrected.
+13. **`reference/hud-elements`** — three defects in the table, all found by
+    reading `Hud.extractRenderState` and `Gui.extractRenderState` against it.
+    (a) `SpectatorGui.extractAction` (`Hud.java`:615) is a recorded element
+    and had no row; it is the *else* of the selected-item-name row. Added as
+    17b. (b) Row 27's *hidden by F1* cell held a condition instead of an
+    answer, so the table never said whether subtitles are hidden — they are,
+    with the in-game-UI exception the same row's last cell describes; and
+    "something audible is playing" describes a *distance* test
+    (`SubtitleOverlay.Subtitle.isAudibleFrom`), not a volume one, which is
+    what `sound-engine`'s hook turns on. Both rewritten. (c) The second table
+    said `Gui` records four elements "after the overlay or screen" without
+    ever giving the overlay or screen a row, so the record order had a hole
+    in it. Added as a dash row.
+14. **`reference/glossary`:370-371** defined *Level* as the two subclasses
+    "sharing an abstract `Level` and remarkably little else", where
+    `the-client-level`'s whole comparison is of methods both sides *inherit*
+    and one side hollows out. Rewritten to say that.
+15. **`anatomy/what-this-book-skips`:375** wrote "the channel pool" and "the
+    channel pools" in the passage that forwards to a page whose own heading is
+    *The channel limits are counters, not pools*. Reworded, and the forward
+    now carries that section's anchor; the binaural-rendering promise in the
+    same sentence is now qualified to what the page actually pays off
+    (`Options.directionalAudio`).
+
+### Suspicions re-derived and found sound (no change)
+
+- `what-makes-a-sound`:124 "the seed … so that every client picks the same
+  variant **and the same pitch**" against `block-interaction`:306-308 "each
+  side draws its own pitch from its own `Level.getRandom`". Both true and
+  about different paths: `ClientboundSoundPacket` carries an explicit pitch
+  field *and* `AbstractSoundInstance.getPitch` multiplies it by
+  `Sound.getPitch().sample(this.random)` off the seeded random, so recipients
+  agree; the *predicting* client generates its own seed and does not.
+  Session J made the wording say which is which rather than changing either.
+- `debugging-the-running-game`:71 `DebugSubscriptions.RAIDS` fed by
+  `LevelChunk.registerDebugValues` — confirmed at `LevelChunk.java`:758.
+- `debugging-the-running-game`:69-70 against `points-of-interest`:330-332 on
+  the `POIS` feeder: both right, at two levels of the same call —
+  `LevelDebugSynchronizers.registerPoi` delegates to
+  `TrackingDebugSynchronizer.PoiSynchronizer`.
+- `the-client-loop`:241-244 on the out-of-memory path: confirmed at
+  `Minecraft.java`:908-949 — `oomRecovery` makes every later iteration call
+  `runTick(false)`, and a second `OutOfMemoryError` rethrows.
+- `client/options`:357-360 "the only thing that ever sets
+  `Options.serverRenderDistance`": confirmed, two call sites, both the server
+  announcing its own radius (`ClientPacketListener.java`:564 and :2560).
+- `input-and-keybinds`:34 "the four mappings that can behave as toggles" and
+  :73-75 "with default bindings, sneak and sprint": both right.
+  `Options.java` constructs four `ToggleKeyMapping`s, and
+  `ToggleKeyMapping.shouldRestoreStateOnScreenClosed` additionally requires
+  the current binding to be a `KEYSYM`, which attack and use are not by
+  default.
+- `input-and-keybinds`:132-138 against `input-to-movement`:139-142 on whether
+  `MouseHandler.handleAccumulatedMovement` is gated on the mouse being
+  grabbed: the screen half and the turn half are tested separately
+  (`MouseHandler.java`), and the reset runs outside both. Both pages right
+  about their own half.
+- `the-client-level`:55-57 on `ClientboundExplodePacket` carrying the sound,
+  the particle and the knockback — confirmed against the record's seven
+  components.
+- `debugging-the-running-game`'s renderer count: 25 `renderers.add(new …)`
+  calls in `DebugRenderer.refreshRendererList`. The page said "about two
+  dozen" in one place and "twenty-five" in another; the hedge is now the
+  count.
+
+### Claims this session introduced
+
+**Written from the decompile, and therefore pass 9's first targets.**
+
+- `client/hud` — the toast shelf: five slots (`ToastManager.SLOT_COUNT`), a
+  waiting deque, `Toast.occcupiedSlotCount` requiring *consecutive* free
+  slots via `ToastManager.findFreeSlotsIndex`, `Toast.Visibility` as a
+  two-state animation each carrying a sound, `Toast.getToken` for
+  replacement, and `NowPlayingToast` as a separate field suppressed by
+  `PauseScreen` and `MusicToastDisplayState`. Six implementations named.
+- `client/hud` — the chat-GUI family: `GuiMessage`'s five fields including
+  the signature; `GuiMessageTag`'s five instances (system,
+  system-singleplayer, not-secure, modified, error), the two-pixel indicator
+  bar drawn at x −4..−2 (`ChatComponent.handleTag`) — to the *left* of the
+  line, outside the text — the hover tooltip, the icon on *modified* only and
+  placed after the text (`GuiMessage.Line.getTagIconLeft`), and `logTag` as
+  the only part reaching `ChatLog`.
+- `client/hud` — the three gates above the whole HUD, moved here from
+  `reference/hud-elements` and restated: `GameRenderer.extract` computes
+  them, `Gui.extractRenderState` applies them.
+- `client/hud` — the clear-colour override beside `GuiRenderState.isHudHidden`
+  and the claim that every reading site of either is `GameRenderer`'s rather
+  than `LevelRenderer`'s, moved here from `the-gui-render-tree`.
+- `client/debugging-the-running-game` — the whole *Nothing in the game draws
+  a gizmo* section, moved from `anatomy/what-this-book-skips` and extended:
+  the thread-local collector, `Gizmos.addGizmo` throwing with none installed,
+  the seven shape records, and the four collectors table
+  (`Minecraft.collectPerTickGizmos`,
+  `LevelExtractor.collectPerFrameMainThreadGizmos`,
+  `LevelRenderer.collectPerFrameRenderThreadGizmos`, and `IntegratedServer`'s
+  around its packet-and-tick step) with `GameTestServer` installing
+  `GizmoCollector.NOOP` and a dedicated server installing none.
+- `client/debugging-the-running-game` — the whole *The other query* section:
+  `Options.keyDebugCopyRecreateCommand`, the shift modifier choosing the
+  client's own NBT over the server's, `DebugQueryHandler`'s single
+  transaction id and single callback, the two query packets, the gamemaster
+  permission gate on including NBT, and the reduced-debug-info gate.
+- `client/gui-and-screens` — `GameNarrator` as a wrapper over *text2speech*
+  with `NarratorStatus` in front of it and two tempers (queued against
+  `GameNarrator.saySystemNow`).
+- `client/gui-and-screens` — the coverage claim: two hundred-odd classes in
+  `client/gui/screens` and its eighteen sub-packages (measured: 224 files, 18
+  directories), covered as one pattern with four routes; seven previously
+  English-only examples given their class names.
+- `client/text-and-fonts` — the five provider kinds named as classes
+  (`BitmapProvider`, `TrueTypeGlyphProviderDefinition` with `FreeTypeUtil`,
+  `UnihexProvider`, `SpaceProvider`, `ProviderReferenceDefinition`) and
+  `SpecialGlyphs` as the not-from-a-file case; and the other two of the four
+  ICU sites named (`CreateBuffetWorldScreen`, `LocalTime` — measured by
+  grepping `com.ibm.icu`, which hits exactly four files).
+- `client/the-gui-render-tree` — the definition of *stratum*; the note that
+  `GuiGraphicsExtractor.nextStratum` and `GuiRenderState.nextStratum` are the
+  same barrier under two names; the blur section's three gates
+  (`Screen.extractBlurredBackground` as the only caller, the throw on a second
+  request, the option, the in-game-UI opt-out) and the claim that the
+  darkening tint is sharp because it is recorded after the boundary;
+  `DynamicAtlasAllocator` as what runs out of room; `IMEPreeditOverlay` named;
+  and the `PictureInPictureRenderer` half of the pip family.
+- `client/what-makes-a-sound` — the reorganised *Who hears it*: both
+  `ClientLevel.playSeededSound` overloads carrying the excluded-player rule,
+  the two qualifications (`Player.playServerSideSound` excluding nobody; the
+  predicting client drawing its own seed from `Level.soundSeedGenerator`), and
+  `SoundType` described as the five-sound group on
+  `BlockBehaviour.Properties`. Also `SoundEventRegistrationSerializer` named
+  as what parses a `sounds.json` entry.
+- `client/the-client-loop` — the two timers as a fifth bullet in the
+  queues-and-re-entries list (`PeriodicNotificationManager` and
+  `RemoteFriendListUpdateHandler`, each hopping back with
+  `BlockableEventLoop.execute`), moved from the Part X landing page, which
+  was the book's only explanation of either.
+- `client/the-client-level` — `ClientLevel.EntityCallbacks` as the four hooks
+  and `TransientEntitySectionManager` as the comparison table's last row made
+  concrete.
+- `client/README` — the part's coverage answer: nine tenths of what no page
+  names is one more screen or widget (measured from `pass5_coverage.py`'s
+  sub-package table — 27,146 of 29,360 unmentioned lines are under
+  `client/gui`, 23,731 of them screens and widgets), plus the two declared
+  exceptions (the model tree, player reporting).
+- `src/figures/parts-dependency.md` — a new solid arrow **VII → X**, because
+  the landing page now lists `containers-and-menus` under *before you start*
+  for lecture six. `check_deps.py` caught the missing arrow and refused the
+  first version of the page, which is the gate doing its job.
+
+### Ownership decisions, for the record
+
+- The excluded-player sound rule: `what-makes-a-sound#who-hears-it` owns it;
+  `the-client-level` cut to one sentence; `block-interaction` and
+  `using-an-item` keep copies that add something.
+- The distance delay ("sound has a speed"): `what-makes-a-sound` owns it;
+  `the-client-level`'s Q&A cut.
+- The music fade against the music slider: `sound-engine` owns it;
+  `what-makes-a-sound` cut to a clause and a link.
+- The pause predicate: `the-client-loop` owns it; `gui-and-screens` keeps the
+  screen's vote and the overlay default.
+- The un-rebindable F3 shortcut: `input-and-keybinds` owns it; `hud` cut to a
+  citation plus its own half.
+- The blur split: `the-gui-render-tree` owns the *barrier*,
+  `post-processing` owns the *chain that runs in the gap*; both rewritten,
+  both linked.
+- `Gizmos`: moved to `debugging-the-running-game`; `what-this-book-skips`
+  keeps the address, which is that page's job.
+- The frame cap, `ClientShutdownWatchdog` and the fenced-task queue were
+  reported as duplicates with Part XI pages and **left for session K**, which
+  owns the other half of each.

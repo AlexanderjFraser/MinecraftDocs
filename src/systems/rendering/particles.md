@@ -42,7 +42,11 @@ description the client expands itself.
 Both routes start in the same place. `Block.spawnDestroyParticles` raises
 level event `LevelEvent.PARTICLES_DESTROY_BLOCK` with the breaker as the
 source, and the two branches diverge only because of *who* that source is
-relative to whoever is watching.
+relative to whoever is watching. That the wire carries an int rather than a
+particle at all — and what else comes through the same door — is [what makes a
+sound happen](../client/what-makes-a-sound.md#the-three-doors), which owns
+`LevelEventHandler`; this page owns what the client does with the puff once
+the switch has decided.
 
 ```mermaid
 sequenceDiagram

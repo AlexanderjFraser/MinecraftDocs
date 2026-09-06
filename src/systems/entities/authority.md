@@ -16,7 +16,11 @@ This is the single most error-prone idea in the entity part, and four later
 parts rest on it — [movement and collision](movement-and-collision.md#who-is-allowed-to-run-this-at-all)
 here, every page in Part VIII about a player, [what the client is
 told](../networking/what-the-client-is-told.md#gate-1-who-is-allowed-to-see-it)
-in Part IX, and [the client level](../client/the-client-level.md) in Part X.
+in Part IX, and in Part X both [the client
+level](../client/the-client-level.md#where-the-two-levels-differ), for what
+the client is allowed to simulate, and [prediction and
+acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other),
+for what it is allowed to *guess* while it waits to be told.
 Sixteen pages link back to this one. It is stated in full once, here.
 
 ## The cast
@@ -107,7 +111,10 @@ instead is the branch `LivingEntity.aiStep` opens with: if an
 `InterpolationHandler` is running, step it; **otherwise scale the stored
 delta by 0.98** — and nothing then applies that delta, because the only thing
 that would is `Entity.move`, which nothing in the mob's own tick reaches on
-this side. (A piston or a shulker box can still drive a client-side mob into
+this side — and this is precisely the seam where the client's other answer
+begins: what it may guess rather than simulate is [prediction and
+acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)'s.
+(A piston or a shulker box can still drive a client-side mob into
 `Entity.move`, with a vector of their own rather than its stored delta —
 [movement and collision](movement-and-collision.md#building-the-delta) has the
 five `MoverType` constants that say who is pushing.) There is no collision, no

@@ -16,7 +16,10 @@ What is drawn over the world, in what order, under exactly which conditions,
 and which of those conditions is a surprise. The full per-element table is
 [what the HUD draws, and when](../../reference/hud-elements.md) in Reference;
 the machinery underneath every one of them is [the GUI render
-tree](the-gui-render-tree.md).
+tree](the-gui-render-tree.md#the-tree-and-where-a-new-element-lands), and
+what a *screen* is — the other thing recorded into that tree, and the reason
+four of these elements are recorded after rather than with the rest — is [GUI
+and screens](gui-and-screens.md#gui-which-is-not-the-hud).
 
 ## The cast
 
@@ -55,16 +58,40 @@ flowchart TD
     H2 -- "yes" --> B2 --> GUI
 ```
 
+Above all of that sit three gates that are not `Hud`'s at all, and a page
+about conditions has to name them: `GameRenderer.extract` computes whether
+resources are loaded, whether this frame advances game time and whether there
+is a level, and `Gui.extractRenderState` applies them, calling into `Hud` only
+when they hold. That is why a HUD-less frame is the normal state of a loading
+screen rather than a special case of one — and it is also the difference
+between the two `Gui`-recorded elements that survive a level and the two that
+do not.
+
 Two structural facts follow from the shape. The hidden flag is published
 *before* the loading-screen short-circuit, so the renderer's copy is correct
 even on a frame where the HUD records nothing. And toasts and the debug
 overlay are always **above** a screen, because `Gui` records them after it —
-while the deferred subtitles are called from a screen's *background* pass and
-therefore land under the screen's widgets.
+while the deferred subtitles are called from a screen's *background* pass, so
+the deferral that fires after the screen finds nothing left to draw and the
+subtitles a screen drew for itself sit under that screen's widgets.
 
 `Hud.tick` runs from `Gui.tick` once per client tick and takes a pause flag:
 the autosave indicator animates either way, everything else only when the
 game is not paused.
+
+The toasts are the one element in that list with arbitration of its own, and
+it is a shelf rather than a queue. `ToastManager` holds **five** slots and a
+waiting deque; a toast declares how many consecutive slots it wants through
+`Toast.occcupiedSlotCount` — Mojang's spelling — and is admitted only when
+that many free slots sit next to each other, so a wide toast can wait behind
+narrow ones that arrived after it. `Toast.Visibility` is the two-state
+animation, each state carrying its own sound, and a toast is asked its wanted
+visibility every frame rather than given a lifetime. `Toast.getToken` is what
+lets a second advancement replace the first instead of stacking on it. The
+implementations are `AdvancementToast`, `RecipeToast`, `TutorialToast`,
+`SystemToast`, `FriendToast` and `NowPlayingToast` — the last of which is not
+on the shelf at all: it is a field of its own, drawn after the five and
+suppressed by the pause screen and by `MusicToastDisplayState`.
 
 ## The hidden flag travels two ways
 
@@ -75,6 +102,14 @@ animation. The block-in-eyes, water and fire overlays are drawn whatever F1
 says. So a 2D flag does change how the *world* is drawn, in three narrow
 ways. But `Hud.isHidden` itself is read directly by six other places across
 the client, including two entity renderers that suppress name tags.
+
+It is not the only field on the tree the world reads back: a clear-colour
+override lives there too, and every site that reads either of them is
+`GameRenderer`'s rather than `LevelRenderer`'s — the 2D side never reaches
+into the world renderer, only into the thing that drives it. The traffic goes
+the other way as well, and this page's own boss bar is the loudest example:
+`BossHealthOverlay` reads world fog, the lightmap and the level render state
+to answer its three questions.
 
 ## Four states, one slot, and an asymmetric rule
 
@@ -127,8 +162,8 @@ One gate silences four elements at once: armour, hearts, food and air are all
 recorded inside `Hud.extractPlayerHealth`, which is gated on the game mode
 being able to hurt you — which is why creative has no armour bar either. Food
 and mount health share a slot, and the air bubbles shift up when either is
-drawn. And the HUD makes a sound: `Hud.playAirBubblePoppedSound` ramps its
-volume and pitch with how many bubbles are *gone*, so it climbs as you drown.
+drawn. And the HUD makes a sound of its own, which is the only element in it that
+does.
 
 ## Questions players ask
 
@@ -151,28 +186,54 @@ marker — so the marker fades on the original message's schedule.
 `ChatComponent` holds **four** collections, not two: every message and every
 wrapped *line* are separate lists with separate caps, and the deletion queue
 and the recent-input history are the other two. A fifth, the delay-option
-queue, lives on `ChatListener`. Signing belongs to [chat and
-signing](../networking/chat-and-signing.md); this page owns display only.
+queue, lives on `ChatListener` — the reason a chat-delay setting can hold a
+message that has already arrived.
+
+What those lists hold is a `GuiMessage` — the time it arrived in HUD ticks,
+the `Component`, the signature if it had one, a `GuiMessageSource` saying
+whether a player, the server or this client produced it, and a nullable
+`GuiMessageTag`. **The tag is the client's own verdict, drawn as a two-pixel
+bar to the *left* of the line**, outside the text entirely, with the reason as
+a tooltip when you hover it: system, system-in-singleplayer, not-secure,
+modified, error. Only *modified* also carries an icon, and that one goes after
+the text rather than beside the bar; each tag additionally carries a short
+`GuiMessageTag.logTag` string, which is the only part of it that reaches
+`ChatLog` — a separate ring of `LoggedChatEvent`s kept for the reporting
+screens rather than for display. Which verdict a message earned is [chat and
+signing](../networking/chat-and-signing.md#three-ways-to-say-no)'; this page
+owns the bar.
 
 **Is the pumpkin blur hardcoded?** No. The camera overlay list is
 data-driven: every equipment slot is asked whether its item declares a camera
 overlay.
+
+**Why does the air-bubble pop get louder as I drown?** Because the HUD makes
+that sound itself. `Hud.playAirBubblePoppedSound` ramps volume and pitch with
+how many bubbles are *gone*, and hands it to [the sound
+engine](sound-engine.md#volume-is-three-factors-and-looping-is-three-mechanisms)
+like any other client-side sound — one of the few places a drawing pass is
+also an audio event.
 
 **Can I turn a debug line on without pressing F3?** Yes, and the game saves
 that you did. `DebugScreenEntries` holds every entry by `Identifier`, each a
 `DebugScreenEntry` writing lines through a `DebugScreenDisplayer`;
 `DebugScreenEntryList`, reachable as `Minecraft.debugEntries`, stores a
 `DebugScreenEntryStatus` per entry, ships `DebugScreenProfile` presets and
-persists to its own file with its own data-fixer type. An entry set to
+persists to its own file with its own data-fixer type. The *other* debug
+system, the one that asks the server for a villager's brain, is [debugging the
+running game](debugging-the-running-game.md#the-idea) — and the two meet here,
+because an F3 entry decides whether eleven of the renderers exist and the FPS
+charts are what turn the tick-time subscription on. An entry set to
 always-on renders with F3 never pressed. The screen that edits it is
 suppressed by `Gui`, not by the overlay. The charts are `FpsDebugChart`,
 `TpsDebugChart`, `PingDebugChart` and `BandwidthDebugChart` over
 `AbstractDebugChart` — plus `ProfilerPieChart`, which is not one of them.
 
-**Why is that F3 shortcut not rebindable?** Twenty are ordinary key mappings;
-a second family is a raw switch on key codes behind the game's debug flag,
-bindable to nothing. Several of the mappings toggle debug entries that print
-nothing at all and exist only to carry a flag the world renderer reads.
+**Why is that F3 shortcut not rebindable?** Because it is not a mapping —
+which family a given shortcut belongs to is [input and
+keybinds](input-and-keybinds.md#questions-players-ask)'. What is this page's:
+several of the mappings that *are* rebindable toggle debug entries printing no
+line at all, and exist only to carry a flag the world renderer reads.
 
 **What counts as "HUD state"?** Whatever `Hud.onDisconnected` resets — tab
 list, boss bars, toasts, debug overlay, chat and titles, together. It is the

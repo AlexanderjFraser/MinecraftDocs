@@ -302,8 +302,9 @@ lines on an integrated server skip both tests and are secure by definition.
 **Can a server delete a message from my chat?** It has the packet for it:
 `ClientboundDeleteChatPacket` is registered and handled, and the handler will
 pull the line out of the player's own chat-delay queue if their *chatDelay*
-option means it has not been drawn yet ([the HUD](../client/hud.md#the-order-and-the-two-blocks) owns what
-that queue draws). Nothing in the game constructs it.
+option means it has not been drawn yet ([the
+HUD](../client/hud.md#questions-players-ask) owns that queue and the four
+collections beside it). Nothing in the game constructs it.
 
 **Why can I report some lines and not others?** `LoggedChatMessage.canReport`
 needs a signature from the player being reported, and system messages,

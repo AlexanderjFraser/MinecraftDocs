@@ -6,20 +6,18 @@ Watch someone place a block and the server sends `ClientboundSoundPacket`,
 naming the sound. Watch them break the same block and it sends nothing of the
 kind: `Block.spawnDestroyParticles` fires a **level event**, and
 `ClientboundLevelEventPacket` carries an int and a block-state id. The client
-decides for itself what that int means — for a break, `SoundType.getBreakSound`
-from the block's own `SoundType` — and plays the result locally. So the two
+decides for itself what that int means — for a break,
+`SoundType.getBreakSound` off the block's own `SoundType`, the five-sound
+group (break, step, place, hit, fall) every `BlockBehaviour.Properties`
+carries — and plays the result locally. So the two
 halves of one interaction reach you by different mechanisms, and the second
 one is not a sound at all until your client makes it one.
 
-Then there is the third door, the one people are most surprised by. Both of
-those calls name the acting player as the *excluded* entity, so neither packet
-is sent to whoever did it — and they do not need to be, because the same
-shared code runs on that player's own client, where
-`ClientLevel.playSeededSound` plays a sound exactly when the excluded entity
-*is* the local player. Your own place and break are predicted, not delivered.
-The rule does not generalise, though: `Player.playServerSideSound`, which
-plays the six attack sounds, excludes nobody, so your own critical hit is one
-of the sounds that does travel the whole way out and back.
+Then there is the third door, the one people are most surprised by, and it is
+not a packet at all: neither of those calls is sent to the player who caused
+the sound, because that player's own client has already played it. Your own
+place and break are predicted, not delivered — *[who hears it](#who-hears-it)*
+below is the rule that arranges it.
 
 This page is the content model and those three doors. The machine that turns
 any of them into an OpenAL source is [the sound engine](sound-engine.md).
@@ -86,14 +84,17 @@ of an `Identifier` and an optional fixed range. `SoundEvents` is the
 a file.**
 
 The file comes from `sounds.json`, one per namespace in every resource pack,
-which maps an event name to a `SoundEventRegistration`: a weighted list of
+which `SoundEventRegistrationSerializer` parses into a
+`SoundEventRegistration` per event name: a weighted list of
 `Sound` entries — a file, or a redirect to another event, per the
 `Sound.Type` enum — each with volume, pitch, weight, attenuation distance,
 and whether to *stream* rather than load whole. `SoundManager` owns the
 loaded form, a map of `Identifier` to `WeighedSoundEvents`, rebuilt on every
 resource reload.
 
-Packs merge rather than replace, unless told otherwise.
+Packs merge rather than replace, unless told otherwise — the one place the
+[resource system](../foundations/resource-system.md#discover-the-repository-and-its-packs)'s
+ordinary top-pack-wins rule is overridden by the data itself.
 `SoundEventRegistration` carries a replace flag; without it a higher pack's
 entries are **appended** to the lower pack's list, so a pack that adds one
 variant gets a mix rather than an override. A redirect entry multiplies
@@ -123,8 +124,28 @@ radius — a fixed range if the event declares one, otherwise sixteen blocks
 scaled up by volumes above one — and `PlayerList.broadcast` sends the packet
 to every player in that dimension within range, **skipping the excluded
 player**. The seed travels in the packet so that every client picks the same
-random variant and the same pitch, which is why a sound that is one of eight
-variants sounds the same to two players standing together.
+variant and samples the same pitch multiplier off the chosen `Sound`, which is
+why a sound that is one of eight variants sounds the same to two players
+standing together.
+
+**And the excluded player is not left out; they are served first.** The two
+sides read that one word oppositely. `ServerLevel.playSeededSound` broadcasts
+to everyone in range *but* the excluded entity;
+`ClientLevel.playSeededSound` — the same method name, the client's override,
+in both its positional and its entity-bound form — plays a sound **only** when
+the excluded entity *is* the local player. So the shared block or item code
+that called `Level.playSound` runs on both machines and each hears exactly
+one copy: yours locally, theirs by packet. That is the whole of the third
+door, and it is why your own place and break are silent on the wire.
+
+Two qualifications keep it from being a law. The rule needs an exclusion to
+read: `Player.playServerSideSound`, which plays the six attack sounds,
+excludes nobody, so your own critical hit does travel the whole way out and
+back. And your local copy is genuinely a *different* sound from the one your
+neighbour hears — your client drew its own seed from `Level.soundSeedGenerator`
+rather than reading one off a packet, so the variant and the pitch are rolled
+twice ([block interaction](../blocks/block-interaction.md#questions-players-ask)
+follows a door through both rolls).
 
 The position is quantised on the way:
 `ClientboundSoundPacket.LOCATION_ACCURACY` is eight, so the wire carries
@@ -170,10 +191,13 @@ the cave "mood" that accumulates in darkness (`AmbientMoodSettings`).
 two that remain plain client-side handlers with no attribute behind them.
 
 `MusicManager` owns the rest: a `MusicManager.MusicFrequency` setting that
-scales the gap between tracks, a fade implemented by driving
-`SoundManager.updateCategoryVolume` — which is why the music slider and the
-music fade are two different numbers — and the now-playing toast, shown or
-not depending on the `SoundEngine.PlayResult` the engine returned.
+scales the gap between tracks, a fade that drives
+`SoundManager.updateCategoryVolume` rather than the player's slider (the third
+of the engine's [three volume
+factors](sound-engine.md#volume-is-three-factors-and-looping-is-three-mechanisms)),
+and the now-playing toast — a `NowPlayingToast` shown or withheld on the
+`SoundEngine.PlayResult` the engine returned, and suppressed again by the
+pause screen and by `MusicToastDisplayState`.
 
 The remaining callers are worth naming because they are the ones that are
 neither the world nor the wire: `PlaySoundCommand`, the ambient handlers in

@@ -271,22 +271,15 @@ about them.
 
 **`net/minecraft/gizmos`** is a **debug-drawing API**, in the game-engine
 sense of the word: the immediate-mode "draw me a box in the world for one
-frame" facility most engines have and Minecraft did not. `Gizmos` is a
-static façade over a thread-local `GizmoCollector`; calling a shape method
-outside a collector scope throws. The shapes are small records; a style is
-a stroke and fill; the returned handle can pin a shape on top, persist it
-for a duration or fade it out.
-
-Every one of the debug renderers — chunk borders, hitboxes, pathfinding,
-brains, points of interest, raids, light sections — is now written against
-it. The part that surprises is that it is **server-side too**: there are
-four collectors — three on the client (per-tick, the extract pass, the
-render thread) and one on the integrated server, which wraps its whole
-packet-and-tick step in a collector scope and publishes the result for the
-client to drain. Server tick code can draw into the singleplayer world; a
-dedicated server installs no collector at all, so the same calls there would
-throw. A headless test server installs a no-op collector so the same calls
-cost nothing.
+frame" facility most engines have and Minecraft did not. Every one of the
+debug renderers — chunk borders, hitboxes, pathfinding, brains, points of
+interest, raids, light sections — is now written against it, and it is not
+client-only, which is the surprise. It is taught where its output is, in Part
+X, by [debugging the running
+game](../client/debugging-the-running-game.md#nothing-in-the-game-draws-a-gizmo-it-appends-one);
+the address is what belongs here, because a reader hunting for the debug
+renderers' drawing code will look under `client/renderer/debug` and find
+nothing that draws.
 
 **`net/minecraft/references`** is not "references" in the data-fixer sense.
 It is a set of **id-constant tables**, and the split is not the one the
@@ -372,13 +365,15 @@ book's own [reference layer](../../reference/README.md) covers.
 **`com/mojang/blaze3d/audio`** is the one package in this tour that is
 hatched for its *address* rather than for being unread. It wraps OpenAL, and
 it sits inside Blaze3D, beside the GPU abstraction, rather than in the
-client's sound package where the engine, the manager, the channel pool and
-the Ogg decoding live. That is the boundary fact: Blaze3D is the platform
+client's sound package where the engine, the manager, the channel bookkeeping
+and the Ogg decoding live. That is the boundary fact: Blaze3D is the platform
 layer for both devices, not only the graphics one, and a reader looking for
 the sound code under `client/sounds` will not find the half that talks to the
 driver. Everything the package does — the device and context, the channel
-pools, binaural rendering, hot-plugging a headset mid-game — is taught, in
-Part X, by [the sound engine](../client/sound-engine.md).
+limits (which are counters and not pools, as that page's own heading insists),
+binaural rendering through `Options.directionalAudio`, hot-plugging a headset
+mid-game — is taught, in Part X, by [the sound
+engine](../client/sound-engine.md#the-channel-limits-are-counters-not-pools).
 
 ## Player reporting
 

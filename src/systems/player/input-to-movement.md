@@ -43,25 +43,14 @@ authoritative instance updates it unconditionally.
 
 ### On the client
 
-- **`KeyMapping`** — one object per bindable action. `KeyMapping.ALL` is
-  the by-name registry, `KeyMapping.MAP` the physical-key reverse index
-  rebuilt by `KeyMapping.resetMapping`. Each holds `KeyMapping.isDown` and
-  `KeyMapping.clickCount`. **`KeyMapping.consumeClick` is a counter drain,
-  not an edge test** — most call sites loop on it, a few take one click
-  per tick — but the movement keys never use it; they are polled with
-  `KeyMapping.isDown`. `KeyMapping.Category` is a *record*, with constants
-  like `KeyMapping.Category.MOVEMENT` and a public
-  `KeyMapping.Category.register` for mods.
-- **`ToggleKeyMapping`** — `Options.keyShift` and `Options.keySprint` are
-  these; hold-versus-toggle lives entirely in
-  `ToggleKeyMapping.setDown`, driven by `Options.toggleCrouch` and
-  `Options.toggleSprint`. Nothing downstream knows the difference. The
-  screen-focus machinery is theirs too: `KeyMapping.setAll`,
-  `KeyMapping.releaseAll`, `KeyMapping.resetToggleKeys` and
-  `KeyMapping.restoreToggleStatesOnScreenClosed`, which consults
-  `ToggleKeyMapping.shouldRestoreStateOnScreenClosed`. That is the answer
-  to why a sneak *toggle* survives opening the inventory when a held
-  sneak does not.
+- **`KeyMapping`** — one object per bindable action, holding
+  `KeyMapping.isDown` and `KeyMapping.clickCount`. Only the first of those
+  matters here: the movement keys are **polled** with `KeyMapping.isDown`
+  and never drained with `KeyMapping.consumeClick`, so a key held for ten
+  ticks reads down ten times. What a mapping is, how a press reaches one,
+  what a toggle does to it and why a sneak *toggle* survives opening the
+  inventory when a held sneak does not are all [input and
+  keybinds](../client/input-and-keybinds.md#two-ways-gameplay-reads-a-mapping-and-they-behave-differently)'.
 - **`Options`** — the movement bindings: `Options.keyUp`,
   `Options.keyDown`, `Options.keyLeft`, `Options.keyRight`,
   `Options.keyJump`, `Options.keyShift`, `Options.keySprint`. Plus
@@ -137,12 +126,14 @@ keybinds](../client/input-and-keybinds.md#the-cast). The read happens once
 per game tick, deep inside `LocalPlayer.aiStep`, which calls
 `ClientInput.tick`.
 
-Mouse look is the exception: `MouseHandler.handleAccumulatedMovement` runs
-**per frame**, in `Minecraft.runTick` after the tick loop, gated on the
-window being active and the mouse grabbed, and `MouseHandler.turnPlayer`
-calls `Entity.turn` directly — after cubing the sensitivity, applying
-`Options.smoothCamera` through a `SmoothDouble` and honouring the two
-invert options. Rotation is therefore finer-grained than position.
+Mouse look is the exception, and it is the one number on this page that is
+not sampled once a tick: `MouseHandler.handleAccumulatedMovement` runs **per
+frame**, in `Minecraft.runTick` after the tick loop, and — when the window is
+active and the mouse grabbed — `MouseHandler.turnPlayer` calls `Entity.turn`
+directly. Rotation is therefore finer-grained than position, which is why a
+packet can carry a rotation the tick never saw a keypress for. The sensitivity curve inside
+`MouseHandler.turnPlayer`, and the three gates on it, are [input and
+keybinds](../client/input-and-keybinds.md#the-mouse-accumulate-apply-discard)'.
 
 On the server the ordering is the whole story:
 
@@ -294,9 +285,11 @@ more than twenty ticks** if no acknowledgement arrives, and until it does,
 every incoming move packet contributes rotation only. The client replies
 with `ServerboundAcceptTeleportationPacket` *and* an immediate
 `ServerboundMovePlayerPacket.PosRot`, then calls
-`BlockStatePredictionHandler.onTeleport` to drop its outstanding block
-predictions ([prediction and
-acknowledgement](../client/prediction-and-acks.md#the-six-windows)). On the
+`BlockStatePredictionHandler.onTeleport`, which does *not* drop its
+outstanding block predictions: it records the sequence the teleport arrived
+at, so that when those predictions are settled later the ledger skips the
+position snap that would otherwise shove you back ([prediction and
+acknowledgement](../client/prediction-and-acks.md#the-four-writes)). On the
 receiving end `ClientPacketListener.handleMovePlayer` applies the position
 only when the player is not a passenger, and never interpolates: it passes
 the interpolate flag as a literal false, so your own player is always

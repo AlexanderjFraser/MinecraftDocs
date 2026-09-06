@@ -259,18 +259,24 @@ noted below.
 11. [What makes a sound happen](systems/client/what-makes-a-sound.md)
 12. [Debugging the running game](systems/client/debugging-the-running-game.md)
 
-Six to nine are the part's one internal pipeline — a screen records, the
-tree sorts and batches, the text becomes glyphs — and are watched
-consecutively. Two and three are the other pair: the ledger lives on
+Six to nine are the part's one internal pipeline — a screen records into a
+tree, the text in it is measured and baked while it is being recorded, and
+the tree is then sorted and batched — and are watched consecutively, tree
+before text because the text pipeline cannot be followed until you know what
+it records into. Two and three are the other pair: the ledger lives on
 `ClientLevel` and is reached through four of its methods.
 
 Part X assumes [Part IX](systems/networking/README.md), which is the same
 wire watched from the sending end, and Part I's
 [anatomy](systems/anatomy/anatomy.md) for the two loops. It assumes Part
 VI's [authority](systems/entities/authority.md) as the premise under
-lectures two and three, and **Part V before lecture three** — Part V's
-landing page rules that its two click lectures come first, because they are
-the ledger's two applications. Lecture eight assumes Part II's [text
+lectures two and three — which split its question between them, what the
+client may simulate and what it may show before it is told — and **Part V
+before lecture three**, because Part V's landing page rules that its two
+click lectures come first and they are the ledger's two applications. Lecture
+six assumes Part VII's [containers and
+menus](systems/items/containers-and-menus.md), which is the thing behind the
+screen it opens on, and lecture eight assumes Part II's [text
 components](systems/foundations/text-components.md). Lecture one is a
 prerequisite of Part XI, which begins where it ends, at the acquired
 surface.

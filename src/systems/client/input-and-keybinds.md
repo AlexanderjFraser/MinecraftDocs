@@ -13,16 +13,19 @@ the tick that observes them runs. Opening the inventory is the exception that
 shows where the seam is: that one is a *drain*, and the drain is inside the
 tick.
 
-That is the fact this page is built on. **GLFW callbacks are not queued.**
-They are dispatched from inside `RenderSystem.pollEvents`, which
-`Minecraft.run` calls immediately before `Minecraft.runTick`; the handlers
-wrap their bodies in `BlockableEventLoop.execute`, but on the game thread
-that call runs the task rather than queueing it. Any description of Minecraft
-input that says a key press is "queued onto the client thread" is describing
-a different game.
-
 What the movement keys *mean* once they are down belongs to [input to
 movement](../player/input-to-movement.md); this page stops at the mapping.
+
+## A key press is not queued
+
+**GLFW callbacks are not queued.** They are dispatched from inside
+`RenderSystem.pollEvents`, which `Minecraft.run` calls immediately before
+`Minecraft.runTick`; the handlers wrap their bodies in
+`BlockableEventLoop.execute`, but on the game thread that call runs the task
+rather than queueing it — the qualification [the client
+loop](the-client-loop.md#where-work-leaves-this-thread-and-where-it-comes-back)
+puts on the same method. Any description of Minecraft input that says a key
+press is "queued onto the client thread" is describing a different game.
 
 ## The cast
 
@@ -100,8 +103,11 @@ nineteen times over for the F3 combinations. `KeyMapping.same`,
 
 ## The bulk operations, and their single callers
 
+`Options.keyMappings` is the array every mapping is reached through — the
+third of the three shapes [options](options.md#the-three-ways-a-setting-is-stored)
+lists, and the only one that is still a bare public field. Beside it
 `KeyMapping` keeps two static registries of every mapping ever constructed —
-one by name, one by key — which is how a key code is turned back into the
+`KeyMapping.ALL` by name, `KeyMapping.MAP` by key — which is how a key code is turned back into the
 mappings that want it. Five static operations walk them. Four of the five are
 called from exactly one place each, and those four are the interesting ones —
 the fifth, `KeyMapping.resetMapping`, is the binding screen's own reset and
@@ -109,7 +115,7 @@ has two callers.
 
 | operation | called from | why |
 |---|---|---|
-| `KeyMapping.releaseAll` | `Gui.setScreen` | a screen may swallow a release, and a stuck-held mapping is worse than a lost press |
+| `KeyMapping.releaseAll` | `Gui.setScreen` ([GUI and screens](gui-and-screens.md#gui-which-is-not-the-hud)) | a screen may swallow a release, and a stuck-held mapping is worse than a lost press |
 | `KeyMapping.restoreToggleStatesOnScreenClosed` | `Gui.setScreen` | put back the toggles that the release above turned off |
 | `KeyMapping.resetToggleKeys` | `LocalPlayer.respawn` | you should not wake up sneaking |
 | `KeyMapping.setAll` | `MouseHandler.grabMouse` | only where `InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB` is set |
@@ -161,8 +167,9 @@ instance.
 ## Questions players ask
 
 **I bound two things to one key and both happen.** They will. Conflict
-detection lives only in the binding screen and is purely cosmetic — nothing
-in the input path resolves a collision. It also refuses to flag one when
+detection lives only in the binding screen — `ControlsScreen` over
+`KeyBindsScreen` over the `KeyBindsList` that draws one row per mapping — and
+is purely cosmetic: nothing in the input path resolves a collision. It also refuses to flag one when
 *both* mappings are still at their defaults, which quietly exempts the pairs
 the game itself ships colliding.
 

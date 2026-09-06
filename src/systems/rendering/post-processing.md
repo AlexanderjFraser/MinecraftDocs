@@ -153,13 +153,12 @@ through the global block, whose seven members are fixed in Java.
 | *transparency* | `LevelRenderer.render`, when improved transparency is on | **six** of the caller's targets, colour **and** depth, and just one internal target of its own | water, particles, clouds and rain layered in the right order |
 
 Only one of those is a screen effect. *blur* runs over whatever is currently
-on the main target, world and GUI alike, because `GuiRenderer.draw` splits
-the GUI in two and runs it in the gap: everything up to the blur boundary is
-drawn, the depth buffer is cleared, the chain runs, and the rest of the GUI
-is drawn crisp on top. `Screen.extractBlurredBackground` sets that boundary
-through `GuiGraphicsExtractor.blurBeforeThisStratum` when
-`Options.getMenuBackgroundBlurriness` is at least one, which is why the
-slider at zero costs nothing and why the menu's darkening tint is not blurred.
+on the main target, world and GUI alike, because `GuiRenderer.draw` splits the
+GUI in two and runs this chain in the gap. Where that boundary falls, who asks
+for it and why a chest does not is [the GUI render
+tree](../client/the-gui-render-tree.md#blur-is-a-barrier-and-it-is-fussy)'s;
+what this page owns is that the thing running in the gap is an ordinary post
+chain over the main target, with nothing about it that knows it is a menu.
 
 Three are world effects: *creeper*, *spider* and *invert* run at the end of
 `GameRenderer.render`'s world block, after the level and before any GUI, so

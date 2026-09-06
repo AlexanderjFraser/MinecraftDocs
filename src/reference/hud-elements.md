@@ -12,13 +12,12 @@ things appear in front of each other, since [the GUI render
 tree](../systems/client/the-gui-render-tree.md) infers layering from call
 order and bounding boxes.
 
-Three gates sit above everything below and none of them belongs to `Hud`:
-`GameRenderer.extract` computes them — resources loaded, the frame advancing
-game time, a level existing — and `Gui.extractRenderState` is what applies
-them, calling into `Hud` only when they hold. `Hud.extractRenderState` then
-short-circuits entirely while a `LevelLoadingScreen` is up — but it publishes
-`GuiRenderState.isHudHidden` **before** that check, so the flag is always
-current even when nothing is recorded.
+Three gates sit above everything below and none of them belongs to `Hud` —
+resources loaded, the frame advancing game time, a level existing; [the
+HUD](../systems/client/hud.md#the-order-and-the-two-blocks) is where they are
+explained. Below them `Hud.extractRenderState` short-circuits entirely while a
+`LevelLoadingScreen` is up, publishing `GuiRenderState.isHudHidden` before it
+does.
 
 *Hidden* in the last column means `Hud.isHidden`, which `Options.keyToggleGui`
 — F1 — flips.
@@ -43,6 +42,7 @@ current even when nothing is recorded.
 | 15 | experience level | `ContextualBar.extractExperienceLevel` | yes | the game mode has experience **and** the level is above zero — recorded between the bar's two passes, so it survives whichever bar wins |
 | 16 | contextual bar, foreground | `ContextualBar.extractRenderState` | yes | always recorded; empty in `ContextualBar.EMPTY`, `ExperienceBar` and `JumpableVehicleBar`, so `LocatorBar` is the only one of the four states that draws anything here |
 | 17 | selected item name | `Hud.extractSelectedItemName` | yes | not a spectator, `Hud.toolHighlightTimer` above zero, and the stack is not empty |
+| 17b | spectator action name | `SpectatorGui.extractAction` | yes | *else*: the game mode is spectator **and** the player is one — the same slot as row 17, and the second of the two places `SpectatorGui` replaces a `Hud` element |
 | 18 | status effects | `Hud.extractEffects` | yes | the player has effects, no screen is showing them itself, and the instance sets `MobEffectInstance.showIcon` |
 | 19 | boss bars | `BossHealthOverlay` | yes | the overlay has events |
 | 20 | **sleep fade** | `Hud.extractSleepOverlay` | **no** | `Player.getSleepTimer` above zero — the one element between the two hidden-gated blocks |
@@ -52,24 +52,20 @@ current even when nothing is recorded.
 | 24 | title and subtitle | `Hud.extractTitle` | yes | `Hud.title` is set and `Hud.titleTime` is above zero |
 | 25 | chat | `ChatComponent.extractRenderState` | yes | a player exists and the chat *screen* is not focused |
 | 26 | tab list | `PlayerTabOverlay.extractRenderState` | yes | `Options.keyPlayerList` is down, and either this is not a local server, or more than one player is listed, or a `DisplaySlot.LIST` objective exists |
-| 27 | subtitles | `SubtitleOverlay` | `Options.showSubtitles` is on and something audible is playing | deferred when there is no screen or the screen declares itself in-game UI — and recorded even while hidden, if a screen declaring itself in-game UI is up |
+| 27 | subtitles | `SubtitleOverlay` | yes, with one exception | `Options.showSubtitles` is on, and a subtitle-carrying sound has played within its own range — a *distance* test, not a volume one, so a category muted to silence still puts its subtitle on screen. Deferred when there is no screen or the screen declares itself in-game UI, and recorded even while hidden if such a screen is up — which is the exception |
 
 The four elements a reader expects at the end of that list are not on
 `Hud.extractRenderState`'s list at all — three of them are still `Hud` methods,
 and only the toasts are outside `Hud`. `Gui.extractRenderState` records them,
-after the overlay or screen:
+and the overlay or the screen goes in between:
 
 | # | element | its own condition | hidden by F1? |
 |---:|---|---|---|
+| — | *the overlay, or else the screen* | an `Overlay` if there is one; otherwise, and only once resources are loaded, `Gui.screen` through `Screen.extractRenderStateWithTooltipAndSubtitles` — never both | — |
 | 28 | saving indicator | `Options.showAutosaveIndicator` is on, the frame is drawing a level, and a save is still animating | **no** |
 | 29 | toasts | resources are loaded | checks the flag itself |
 | 30 | debug overlay | the current screen is not `DebugOptionsScreen` | checks the flag itself |
 | 31 | deferred subtitles | row 27 deferred them — but only when no screen is up: a screen draws them itself from `Screen.extractBackground`, below its own widgets, and this call then finds nothing left | — |
-
-Two consequences worth carrying away. Toasts and the debug overlay are always
-**above** a screen, because `Gui` records them after it. And the deferred
-subtitles are called from a screen's *background* pass, so they land under the
-screen's widgets rather than over them.
 
 ---
 

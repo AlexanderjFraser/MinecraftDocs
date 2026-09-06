@@ -135,6 +135,28 @@ only once the landing page says the part owns the wire and not everything in
 `network/`; three passages were written for what is neither a packet nor a
 `Component` — the text filter, the per-phase listener interfaces and the
 address resolver. **No tool bug.**
+**Session J is done** (2026-09-06, Part X): all twelve pages, the landing page
+and the part's Reference page rewritten, and this is the session where the
+lens found the *part's own boundary* rather than a duplicate. Part X is the
+book's third-largest coverage debt — 32,000 lines named nowhere — and **92% of
+it is `client/gui`, four fifths of that one more screen or one more widget**,
+which `gui-and-screens` already covers as a pattern and no page said so; the
+landing page now makes that its second boundary statement, and §7's Part X row
+is discharged without a new page. **Fifteen corrections**, six of them one page
+contradicting another and three a page contradicting itself, including the
+part's own landing page putting the Part X/XI boundary at a different profiler
+zone from the three pages that own it. Two of the corrections were in the part's
+Reference table, which had a recorded element with no row and a column holding
+a condition instead of an answer. Nine suspicions were re-derived and found
+sound — the highest ratio of any pass-5 session, and the reason is that the
+agents have no source. Both open moves are settled in writing: the GUI watch
+order **stands** (the premise was wrong — the stages interleave rather than
+run in a different order, because text is baked *during* the record pass), and
+`the-gui-render-tree` is **not renamed**, because all eight inbound links call
+it the render tree in their own sentences. `check_deps.py` refused the first
+landing page for a *before you start* entry the dependency figure had no arrow
+for, which is the gate doing its job. **No tool bug**, the fourth pass-5 part
+session without one.
 
 ## The passes
 

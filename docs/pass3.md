@@ -536,6 +536,48 @@ last is the worst — same part, adjacent pages. Plus session H's standing
 `GR` collision (`GuiRenderer` in X, `GameRenderer` in XI) is now live in
 both parts at once.
 
+*(pass 5, session J — Part X's half of this row, settled)* **The coverage
+question for Part X answers itself once the part says what a screen is.**
+`pass5_coverage.py` bills Part X 335 unnamed classes and 32,164 unnamed
+lines, the third-largest debt in the book — and **27,146 of those lines are
+under `client/gui`, 23,731 of them one more `Screen` or one more widget**.
+`gui-and-screens` already covers all of them as a pattern with four routes
+into it; what was missing was any page *saying* so, which the landing page now
+does. Four things outside `client/gui` were left over and each is now settled
+rather than counted: `client/multiplayer/chat/report` (735 lines) was already
+declined in *what this book skips*; `client/resources/sounds` (619) is the
+`SoundInstance` family `sound-engine` covers by pattern; `client/resources`'s
+model tree (~2,400 lines, billed here by the package mapping) is Part XI's
+subject and the landing page says so; and the leftovers in `client` itself
+were the real gaps — `GameNarrator` is now named on `gui-and-screens`,
+`DebugQueryHandler` has a section of its own on
+`debugging-the-running-game`, and `MusicToastDisplayState` and
+`NowPlayingToast` are named on `hud` and `what-makes-a-sound`. **No new page
+was needed and none is proposed**; the part's argument had no hole in it, only
+an unstated boundary.
+
+*(pass 5, session J)* **Session H's "two pages in Part X are not lectures
+about the client at all" is answered and needs no move.**
+`prediction-and-acks` is where it is because the block that appears and then
+disappears is its whole scenario — the ownership rule's first clause, and
+session A's own worked example (pass5-brief.md A1, amendment 1). Session J
+strengthened rather than weakened that: the page now opens by splitting
+`authority`'s question with `the-client-level` (what the client may
+*simulate* against what it may *show before it is told*), which is an
+argument only Part X can make. `text-and-fonts` likewise stays: its six
+stages end in the GUI's record pass and in Part XI's submit nodes both, and
+the page that owns the tree it records into is next door. **After pass 5 no
+page moves, and neither of these two does.**
+
+*(pass 5, session J)* **Carried to session K, not discharged:** the frame
+cap (told on `the-client-loop`, `the-window` and `the-frame`, with the two
+Part XI copies pointing at each other rather than at the owner),
+`ClientShutdownWatchdog` (named in Part X, explained on `the-window`), the
+fenced-task queue, and whether `map_source.py`'s `PARTS` should stop billing
+`client/resources/model` to Part X. Each is a pair whose other half is Part
+XI's, and A4's routing rule gives a cross-part pair to the later part's
+session.
+
 ### Part XII · World generation
 
 *(session J)* **The part is a pipeline with a substrate underneath it, and

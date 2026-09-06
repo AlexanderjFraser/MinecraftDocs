@@ -11,8 +11,9 @@ that consults the level therefore gets a wrong answer rather than an error,
 and anything that reschedules itself looks inert until the server speaks.
 
 That is the shape of the whole class. `ClientLevel` is not a passive receiver
-and not an authority either ([authority](../entities/authority.md) is where
-the five predicates that word stands for are set out): it simulates hard — every block entity ticks
+and not an authority either
+([authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
+is where the five predicates that word stands for are set out): it simulates hard — every block entity ticks
 regardless of distance, every local block change is relit locally, it keeps
 its own clock and free-runs between corrections — while inheriting a set of
 shared `Level` methods that have been quietly reduced to constants. Reading
@@ -69,7 +70,8 @@ by their own packets, and handed to each new `ClientLevel` at construction.
 
 ## What it does simulate: the two cadences
 
-**Per client tick**, from `Minecraft.tick`: `ClientLevel.tickEntities`, then
+**Per client tick**, from [`Minecraft.tick`](the-client-loop.md#what-a-tick-is-in-order):
+`ClientLevel.tickEntities`, then
 `Level.tickBlockEntities`, then `ClientLevel.tick` — which does
 `Level.updateSkyBrightness` unconditionally and then, **only if the tick rate
 manager is running normally**, the world border, the clock, the weather
@@ -133,8 +135,10 @@ handler**, so a chunk exists, ticks and can be walked on before it is lit.
 the frame usually owes no tick at all, so the light is applied with nothing
 having ticked in between. And **the renderer is reached two ways** —
 the level pushes (`ClientLevel.sendBlockUpdated`, `ClientLevel.setBlocksDirty`,
-`ClientLevel.setSectionRangeDirty`), but the chunk cache and one packet
-handler call `LevelExtractor` directly, and the extractor also *pulls*:
+`ClientLevel.setSectionRangeDirty`), but the chunk cache and three of
+`ClientPacketListener`'s own handlers reach `LevelExtractor` directly (the
+biome resend marks whole sections dirty; login and the game-test highlight
+reach through it for the debug renderers), and the extractor also *pulls*:
 `ClientLevel.entitiesForRendering`, `ClientLevel.destructionProgress` and
 `ClientLevel.getGloballyRenderedBlockEntities` are read each frame and are
 mutated with no notification at all.
@@ -194,27 +198,20 @@ That table is the reason a dropped item's movement looks different from a
 mob's over the same connection: nothing is smoothing it. The handler itself
 — its three-tick window, and the 64-block distance past which
 `ClientPacketListener` does not hand it the move at all and snaps instead — belongs to [movement and
-collision](../entities/movement-and-collision.md); what this page owns is
-*who has one*. `Entity.isInterpolating` is the question
+collision](../entities/movement-and-collision.md#off-it-goes); what this page
+owns is *who has one*. `Entity.isInterpolating` is the question
 `ServerboundMoveVehiclePacket` and `PositionMoveRotation` both ask before
 deciding whether to publish the interpolation's target or the entity's
 current position.
 
 ## Questions players ask
 
-**Does the client model the speed of sound?** For a few sounds, yes — and
-not for the one you would expect. `ClientLevel.playLocalSound` takes a
-*distance delay* flag, and when it is set and the source is more than ten
-blocks away the sound is deferred by its distance over a fixed rate. Firework
-explosions set it, and so do a handful of level events — the trial spawner,
-the vault, a cobweb placed. Thunder does **not**: `LightningBolt` passes the
-flag as false, so the crack is instant and what makes it feel late is the
-lightning being drawn first. See [the sound engine](sound-engine.md).
-
-**Why do I hear my own footsteps instantly on a laggy server?**
-`ClientLevel.playSeededSound` plays a sound locally when the *excluded*
-player is the local one. The server tells everyone else and the client
-produces its own copy. What lags is what you hear of other people.
+**Why do I hear my own footsteps instantly on a laggy server?** Because
+`ClientLevel.playSeededSound` is the one method here that plays a sound
+*only* when the excluded player is the local one — so your own footsteps are
+never on the wire at all, and what lags is what you hear of other people
+([who hears it](what-makes-a-sound.md#who-hears-it), which also holds the
+handful of sounds this level defers for distance).
 
 **Who decides how hard it is raining?** The server, one hundredth at a
 time. Weather on the client is presentation only:
@@ -247,9 +244,13 @@ setting further.
 
 ## What else it holds, and what it will not tell you
 
-`ClientLevel.tickingEntities` is an `EntityTickList`, fed by the callbacks
-`ClientLevel.entityStorage` — a `TransientEntitySectionManager` — invokes when
-a chunk starts or stops ticking.
+`ClientLevel.tickingEntities` is an `EntityTickList`, fed by
+`ClientLevel.EntityCallbacks` — the four hooks
+`ClientLevel.entityStorage` invokes as a chunk starts and stops ticking. That
+storage is a `TransientEntitySectionManager`, which is the comparison table's
+last row made concrete: the same section-indexed lookup the server uses, with
+the disk store, the UUID index and the per-chunk load states left out, so
+nothing in it survives a `ClientLevel` being replaced.
 `ClientLevel.tintCaches` holds four `BlockTintCache`s — grass, foliage, dry
 foliage, water. `ClientLevel.globallyRenderedBlockEntities` is the set that
 draws from anywhere, populated by `ClientLevel.onBlockEntityAdded`.
@@ -261,10 +262,10 @@ ledger [prediction and acknowledgement](prediction-and-acks.md) owns, and
 
 The client runs a real light engine — block light always, sky light only
 where the dimension has it — and every client-side `Level.setBlock` relights,
-but only when `LightEngine.hasDifferentLightProperties` says so — which is
-emission or dampening differing, *or* either state using its shape for light
-occlusion, so a purely cosmetic change to a stair or a slab relights anyway.
-The test is in shared `LevelChunk` code, so the server applies it too. Its
+under exactly the shared `LightEngine.hasDifferentLightProperties` test the
+server uses ([lighting](../world/lighting.md) owns what that test asks; the
+consequence here is that a purely cosmetic change to a stair or a slab
+relights anyway). Its
 collision world, on the other hand,
 is one entity wide: `ClientLevel.getPushableEntities` returns at most the
 local player.

@@ -14,7 +14,12 @@ server intends travels *earlier in the stream* than the receipt for it,
 because the correction is sent from inside the handler while the receipt is
 only a number the connection flushes later.
 
-Part V's [block interaction](../blocks/block-interaction.md) and [block
+This is the client's second answer to the question
+[authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
+asks. The client level answers *what may I simulate*; this page answers *what
+may I show before I am told* — and the answer is anything at all, provided it
+is written down. Part V's [block
+interaction](../blocks/block-interaction.md) and [block
 breaking](../blocks/block-breaking.md) are the two applications, and both
 carry the same four-sentence statement of that contract. This page is the
 machinery underneath: one ledger per level, one counter per connection, six
@@ -96,7 +101,8 @@ or below it and passes each one's recorded state to the settle.
 
 **`ClientLevel.syncBlockState`** — the settle. Applies the recorded state
 only if it differs from what is there, with flags `Block.UPDATE_NEIGHBORS`
-plus `Block.UPDATE_CLIENTS` plus `Block.UPDATE_KNOWN_SHAPE`. That third flag
+plus `Block.UPDATE_CLIENTS` plus `Block.UPDATE_KNOWN_SHAPE` (the whole set is
+in [block update flags](../../reference/block-update-flags.md)). That third flag
 suppresses the shape pass, and neighbour updates are inert on the client
 anyway — so the restore is a bare state write plus a remesh. **The cascade
 that produced the prediction does not re-run on the way back.**
@@ -208,15 +214,14 @@ at all.
 
 ## Questions players ask
 
-**Why does the block come back and then vanish again?** Your client finished
-its own progress clock first. It fires the STOP window and removes the block
-locally, but the server recomputes the progress itself, finds it under
-`0.7F`, and takes the delayed-destroy branch instead of breaking anything.
-The action is acknowledged all the same, so the client settles the entry,
-restores the stone, and the block reappears — until the server's own delayed
-destroy completes a few ticks later and broadcasts air. Releasing the mouse
-does *not* do this: that is `MultiPlayerGameMode.stopDestroyBlock`, which
-opens no window at all.
+**Why does the block come back and then vanish again?** Because the two
+progress clocks disagreed and the ack does not care — [block
+breaking](../blocks/block-breaking.md#two-clocks-and-the-plus-one-that-makes-them-agree)
+follows both clocks. What is this page's is the consequence: the action is
+acknowledged whatever the server decided, so the entry settles, the stone
+comes back, and it vanishes again when the server's own delayed destroy
+finishes. Releasing the mouse does *not* do this — that is
+`MultiPlayerGameMode.stopDestroyBlock`, which opens no window at all.
 
 **Why did that ack arrive with a zero in it?** The three-argument
 `ServerboundPlayerActionPacket` constructor defaults the sequence to zero,
@@ -240,9 +245,11 @@ player. A single ack can produce all three across the map in one pass. And
 *acknowledged* sequence rather than each entry's, and is never reset, so one
 teleport suppresses a whole batch of snaps.
 
-**Why can I not right-click while mining?** `Minecraft.startUseItem` is gated
-on `MultiPlayerGameMode.isDestroying`. Spectators are the odd case in the
-other direction and are asymmetric about it:
+**Why can I not right-click while mining?** Because `Minecraft.startUseItem`
+is gated on `MultiPlayerGameMode.isDestroying`, one of the click gates [block
+interaction](../blocks/block-interaction.md#one-press-one-hand-at-a-time)
+lists. Spectators are the odd case in the other direction, and the interesting
+part is that the ledger treats the two halves asymmetrically:
 `MultiPlayerGameMode.useItem` returns early, before the window opens, while
 `MultiPlayerGameMode.useItemOn` returns *inside* it — so the sequence is
 burned and the packet is sent anyway.
