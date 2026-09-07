@@ -12,11 +12,14 @@ them, the mega tree. The single-sapling slot is left empty, and
 the game is implemented as an absence.**
 
 Which is a good introduction to this page, because the whole tree kit works
-like that: the thirty-nine configured tree features are one algorithm,
-`TreeFeature`, with five slots
+like that: the thirty-nine shipped configured features whose feature is
+`TreeFeature` are one algorithm with five slots
 in it, and almost everything you can say about how a cherry differs from a
-mangrove is a statement about what is in the slots.
-[Features and placement](features-and-placement.md) is how a tree gets a
+mangrove is a statement about what is in the slots. (`TreeFeatures` declares
+fifty keys, because it also holds the fallen trees, the huge mushrooms and the
+bone-meal variants, none of which is a `TreeFeature`.)
+[Features and placement](features-and-placement.md#the-trace-a-chunk-decorates)
+is how a tree gets a
 position and whether it is attempted at all; this is what happens after
 `Feature.place` is entered.
 
@@ -25,7 +28,7 @@ position and whether it is attempted at all; this is what happens after
 | class | its slot | what varies |
 |---|---|---|
 | `TreeFeature` | the algorithm — *final*, one implementation, no subclasses | nothing |
-| `TreeConfiguration` | nine fields: five of them are the parts below, three are `BlockStateProvider`s (trunk, foliage, and the dirt column laid under the trunk) and one is the *ignore vines* flag | everything |
+| `TreeConfiguration` | nine fields: five of them are the parts below, three are `BlockStateProvider`s ([features and placement](features-and-placement.md#what-a-feature-may-write-and-where-it-may-read)) for the trunk, the foliage and the dirt column laid under the trunk, and one is the *ignore vines* flag | everything |
 | `TrunkPlacer` | writes the logs, returns where crowns hang | 9 registered types |
 | `FoliagePlacer` | writes the leaves around one attachment | 11 registered types |
 | `RootPlacer` | writes roots, and may lift the trunk off the ground | **1** registered type |
@@ -33,9 +36,11 @@ position and whether it is attempted at all; this is what happens after
 | `TreeDecorator` | runs afterwards over what was placed | 10 registered types |
 | `FoliagePlacer.FoliageAttachment` | the only channel from trunk to crown: a position, a signed radius nudge, and *is the trunk under me two-by-two* | — |
 
-Every one of those five is a codec-dispatched type in a built-in registry, so
+Every one of those five is a codec-dispatched type in a built-in registry —
+`TrunkPlacerType`, `FoliagePlacerType`, `RootPlacerType`, `FeatureSizeType`
+and `TreeDecoratorType` — so
 a data pack composes trees freely and cannot add a new *kind* of placer
-([the data-driven type pattern](../foundations/data-driven-types.md)).
+([the data-driven type pattern](../foundations/data-driven-types.md#the-idea-stated-once)).
 
 ## One algorithm, five slots
 
@@ -92,7 +97,9 @@ number and nothing survives it.
 `FeatureSize` supplies only the radius to test.
 `TrunkPlacer.isFree` is air, anything in the replaceable-by-trees tag, **or
 an existing log** — which is how a new tree grows up through an old one — and
-it delegates to a *virtual* `TrunkPlacer.validTreePos`, so
+it delegates to a *virtual* `TrunkPlacer.validTreePos`
+([tags](../foundations/tags.md#from-json-to-a-parrots-decision) is where that
+tag test comes from), so
 `UpwardsBranchingTrunkPlacer` quietly widens the definition with its own
 *can grow through* block set. A vine anywhere in the scanned column also
 fails, unless the configuration sets `TreeConfiguration.ignoreVines`.
@@ -103,7 +110,7 @@ returning false — and all three happen before a single block is written.
 After `TrunkPlacer.placeTrunk` begins there is no undo, and `TreeFeature`
 reports success even for a tree that was truncated to a stump.
 
-## The nine trunk placers
+## The trunk placers
 
 The base contract is three numbers — `TrunkPlacer.getTreeHeight` is a base
 height plus two independent random draws — and one method that writes logs
@@ -134,7 +141,7 @@ count is a minimum against one, over an expression that is never below one
 (`FancyTrunkPlacer`). The named density constant it multiplies has no effect
 on any tree of any height.
 
-## The eleven foliage placers
+## The foliage placers
 
 A foliage placer gets one attachment and three numbers — a height, a radius,
 and an offset it samples itself — and its two real degrees of freedom are how
@@ -179,7 +186,7 @@ One asymmetry inside it: a root that lands in mud is written from the muddy
 provider instead, and that branch skips the base implementation entirely — so
 **muddy mangrove roots never get their moss carpet.**
 
-## The decorators, and the pass that undoes half of them
+## The decorators, and the pass that runs around them
 
 `TreeFeature` accumulates four sets as it writes — roots, logs, leaves and
 decorations — and hands the first three to each `TreeDecorator` as a
@@ -197,7 +204,7 @@ which shuffles the tree's logs and converts one that is completely surrounded
 by other logs — a random such log, not the first. `BeehiveDecorator` looks
 like a third but is not: it hangs its nest in an air block beside a log, and
 populates the block entity with two or three bees on the spot
-([block entities](../blocks/block-entities.md)). The ones that write on the
+([block entities](../blocks/block-entities.md#create-keep-replace-remove)). The ones that write on the
 ground around the tree are `AlterGroundDecorator` (the podzol discs under a
 mega spruce, which reach several blocks beyond the trunk) and
 `PlaceOnGroundDecorator` (leaf litter, over an inflated box). And
@@ -214,7 +221,8 @@ root sets are marked as *occupied* before the walk starts, so a
 decorator-placed block or a mangrove root **blocks leaf-distance propagation
 through itself**. Anything the walk cannot reach within six steps keeps the
 `BlockStateProperties.DISTANCE` of 7 the foliage provider gave it — already decaying — and falls
-apart on its first random tick.
+apart on its first random tick
+([random ticks](../world/scheduled-ticks.md#the-other-kind-of-turn-random-ticks)).
 
 ## Five species, side by side
 
@@ -265,7 +273,7 @@ the sets they fill and the final shape update are the same machinery
 `StructureTemplate` uses to fix block shapes at the edge of a placed
 structure, and every block a tree writes goes in with the same flags: update
 neighbours, update clients, and *known shape*
-([blocks and states](../blocks/blocks-and-states.md)).
+([the flag word](../blocks/blocks-and-states.md#the-flag-word)).
 
 ## Where to look
 
@@ -280,7 +288,8 @@ neighbours, update clients, and *known shape*
 `MangroveRootPlacement` · `FeatureSize.getSizeAtHeight` ·
 `TwoLayersFeatureSize` · `ThreeLayersFeatureSize` ·
 `TreeDecorator.Context` · `BeehiveDecorator` · `AlterGroundDecorator` ·
-`TreeFeatures` · `TreeGrower.growTree` · `SaplingBlock.advanceTree`
+`TreeFeatures` · `TreeGrower.growTree` · `SaplingBlock.advanceTree` ·
+`TrunkPlacerType` · `FoliagePlacerType` · `TreeDecoratorType`
 
 ---
 

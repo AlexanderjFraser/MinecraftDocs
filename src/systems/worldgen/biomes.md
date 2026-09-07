@@ -22,8 +22,8 @@ one layer among several rather than the owner
 
 | class | what it decides | when |
 |---|---|---|
-| `BiomeSource` | which biome a quart cell gets. Four implementations, and `BiomeSource.possibleBiomes` is the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on a worldgen worker |
-| `Climate.Sampler` | the six climate numbers at a point. Filling a chunk uses `NoiseChunk.cachedClimateSampler`, the chunk-wrapped copy; `RandomState.sampler` is the flattened, cacheless one everything outside a chunk asks ([density functions](density-functions.md)) | per quart cell |
+| `BiomeSource` | which biome a quart cell gets, through the `BiomeResolver` interface the chunk fill takes. `BiomeSources.bootstrap` registers four — `MultiNoiseBiomeSource`, `TheEndBiomeSource`, `FixedBiomeSource` (one biome everywhere, which is what a buffet world is) and `CheckerboardColumnBiomeSource` (a listed few in squares) — and `BiomeSource.possibleBiomes` is the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on a worldgen worker |
+| `Climate.Sampler` | the six climate numbers at a point. Filling a chunk uses `NoiseChunk.cachedClimateSampler`, the chunk-wrapped copy; `RandomState.sampler` is the flattened, cacheless one everything outside a chunk asks ([density functions](density-functions.md#seed-once-per-dimension)) | per quart cell |
 | `Climate.ParameterList` | the search space: one `Climate.ParameterPoint` per biome, indexed by a `Climate.RTree` | built once per world |
 | `OverworldBiomeBuilder` | the overworld's parameter table, in Java — temperature, humidity, erosion and continentalness bands over six tables of biome keys | build time |
 | `LevelChunkSection` | where the answer lives: a second `PalettedContainer` keyed by biome holder, two bits per axis | written once, saved, shipped |
@@ -60,7 +60,8 @@ sequenceDiagram
 ```
 
 The two wrappers in the second arrow only do anything beside chunks an
-older version generated — [blending at the old-chunk border](blending.md)
+older version generated — [blending at the old-chunk
+border](blending.md#what-the-blender-actually-answers)
 is where they are explained.
 
 **Biomes are decided before terrain, and not for it.** `ChunkStatus.BIOMES`
@@ -70,11 +71,16 @@ is that both were computed from the *same* noise router — `RandomState` builds
 the climate sampler out of the depth, continents, erosion and ridges
 functions, the very ones that shape the land. Neither was consulted about the
 other. The biome does not touch a block until `ChunkStatus.SURFACE`
-([terrain](terrain.md)).
+([terrain](terrain.md#the-surface-pass-and-the-two-places-it-breaks-its-own-rule)).
 
-Only the noise generator does the above. `FlatLevelSource` and
-`DebugLevelSource` inherit the base implementation and use the level's
-uncached sampler directly. The End is a `NoiseBasedChunkGenerator` like the
+The *fork* at the top of that trace is not the noise generator's: the base
+`ChunkGenerator.createBiomes` forks to *init_biomes* too, so a superflat world
+leaves the worldgen executor for its biomes exactly as the overworld does.
+What `NoiseBasedChunkGenerator` overrides it for is the three lines below
+the fork — building the chunk's `NoiseChunk`, wrapping the resolver, and
+sampling through the chunk's cached sampler instead of the level's uncached
+one. `FlatLevelSource` and `DebugLevelSource` do none of those. The End is a
+`NoiseBasedChunkGenerator` like the
 overworld and the nether — just with `TheEndBiomeSource` in front of it,
 which does not do a climate search at all: it thresholds a single erosion
 sample outside a fixed central radius.
@@ -114,12 +120,13 @@ cave biome is an ordinary entry that happens to win only below the surface.
 
 ## The two borders
 
-The label goes into the section's biome palette — two bits per axis, so
-**sixty-four biome cells per section** — is written to NBT under *biomes*
-([chunk storage](../world/chunk-storage.md)) and is shipped to the client
+The label goes into the section's second paletted container — two bits per
+axis, so **sixty-four biome cells per section**
+([sections and their four counters](../world/chunk-anatomy.md#sections-and-their-four-counters)) —
+and is shipped to the client
 inside the chunk payload. From then on it is *stored*, not computed, which is
-why `/fillbiome` can exist at all and why `ClientboundChunksBiomesPacket`
-exists to tell the client about it.
+why `FillBiomeCommand` can exist at all and why `ClientboundChunksBiomesPacket`
+exists to tell the client about the result.
 
 And then two different readers ask for it two different ways.
 
@@ -127,24 +134,23 @@ And then two different readers ask for it two different ways.
 |---|---|---|
 | entry point | `LevelReader.getBiome` → `BiomeManager.getBiome` | `BiomeManager.getNoiseBiomeAtPosition`, and on the client `BiomeManager.getNoiseBiomeAtQuart` |
 | what it does | offsets by two, takes the eight surrounding quart corners, and picks the one minimising `BiomeManager.getFiddledDistance` — a seeded hash worth up to ±0.45 of a cell per axis | floors to the quart cell and reads the palette |
-| who uses it | freezing and precipitation, mob spawning, commands — **and block tint**: grass, foliage and water colour, through `ClientLevel.calculateBlockTint` | the environment-attribute stack, and nothing else |
+| who uses it | freezing and precipitation, mob spawning, commands, the surface rules during generation — **and block tint**: grass, foliage and water colour, through `ClientLevel.calculateBlockTint` | the environment-attribute stack, and nothing else that goes through `BiomeManager` |
 | what it looks like | the ragged border | the straight one |
 
 **Block tint is on the jittered side**, which is the half of this that
 surprises people: grass colour follows exactly the same ragged line as
 whether snow falls. What softens the colour boundary in game is not the biome
-lookup but a box blur on top of it — `ClientLevel.calculateBlockTint`
-averages the result over the columns named by the *biome blend radius* option
-and caches that in a `BlockTintCache`. Fog and sky are the ones on the other
-border.
+lookup but a box blur on top of it, which the client owns
+([the client level](../client/the-client-level.md#what-else-it-holds-and-what-it-will-not-tell-you)).
+Fog and sky are the ones on the other border.
 
-The client's exact read is the more expensive of the two, and
-unconditionally so: `EnvironmentAttributeProbe.tick` runs a
-`GaussianSampler` over the neighbourhood **every tick**, accumulating whole
-`EnvironmentAttributeMap`s into a `SpatialAttributeInterpolator`. Whether an
-attribute is actually interpolated is tested later, when the layer is
-applied, and one that fails the test falls back to a single unfuzzed lookup.
-The server never interpolates at all — it passes no interpolator.
+The client's exact read is the more expensive of the two, and it is spent
+**unconditionally**: the probe that feeds the attribute stack runs its
+Gaussian pass over the neighbourhood every tick whether or not any attribute
+at that position is interpolated at all, because the test is applied later,
+when the layer is applied
+([the same value on the client](../world/environment-attributes-and-timelines.md#the-same-value-on-the-client)).
+The server never interpolates and never pays it — it passes no interpolator.
 
 ## What a biome still owns
 
@@ -165,7 +171,9 @@ unadjusted escape hatch.
 `BiomeSpecialEffects` is, in 26.2, **only block tint** — five fields, all of
 them colours or a grass-colour modifier, and only the water colour is
 mandatory. Fog, sky, clouds, ambient sound, music and particles have all left
-it for the attribute stack
+it for the attribute stack. What is left is read by nothing in the attribute
+system at all: `BiomeColors` reaches these five fields through four
+`ColorResolver`s, with no probe and no layer stack anywhere in the path
 ([lightmap, fog and sky](../rendering/lightmap-fog-and-sky.md)). And when the
 four optional ones are silent, the tint does not come from the biome at all:
 grass
@@ -174,25 +182,31 @@ downfall, through `GrassColor`, `FoliageColor` and `DryFoliageColor`. "The
 biome's grass colour" is usually just the two climate numbers that index a
 texture.
 
-`Biome.getAttributes` returns the `EnvironmentAttributeMap`, whose entries
-are `AttributeModifier`s rather than values — so a biome may *override* the
-layer below it or merely *modify* it, which is how a swamp thickens water fog
-without naming a distance. One restriction lands here specifically:
+`Biome.getAttributes` returns the `EnvironmentAttributeMap`, and what a biome
+puts in it are *modifiers*, not values — which is how a swamp thickens water
+fog without naming a distance
+([arguments, not values](../world/environment-attributes-and-timelines.md#arguments-not-values)).
+One restriction lands here specifically:
 `EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL` means a biome may not set a
 non-positional attribute at all.
 
-`BiomeGenerationSettings` is a set of carvers and one set of placed features
-*per decoration step*, read by [features and placement](features-and-placement.md);
-`BiomeGenerationSettings.getBoneMealFeatures` is its only reader outside
-worldgen, and its one caller is `GrassBlock`. `MobSpawnSettings` is the
-weighted spawn lists `NaturalSpawner` reads
-([entity lifecycle](../entities/entity-lifecycle.md)) — and its entry
+`BiomeGenerationSettings` holds two lists, and they are read by different
+pages: the placed features, one set *per decoration step*, by
+[features and placement](features-and-placement.md#the-trace-a-chunk-decorates),
+and the carvers by [terrain](terrain.md#carving-and-who-chooses-the-block), at
+a different status. `BiomeGenerationSettings.getBoneMealFeatures` is its only
+reader outside worldgen, and its one caller is `GrassBlock`. `MobSpawnSettings`
+is the weighted spawn lists `NaturalSpawner` reads
+([entity lifecycle](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)) —
+and its entry
 constructor silently rewrites any miscellaneous-category entity type to pig.
 
 ## Questions players ask
 
 **Why do I always spawn near the origin?** Because the *chunk* is chosen by a
-climate search. `Climate.SpawnFinder` and `Climate.findSpawnPosition` look for
+climate search — once, the first time the world is ever loaded, and never
+again ([building the levels](../server/starting-a-server.md#building-the-levels)
+owns *when*). `Climate.SpawnFinder` and `Climate.findSpawnPosition` look for
 the point whose climate best matches the noise settings' spawn target, in two
 spiral passes out to a maximum radius of 2,048 blocks, with depth pinned to
 zero and the fitness deliberately biased toward the origin so that a tie lands
@@ -213,8 +227,9 @@ instantly rather than after a spiral out to six thousand four hundred blocks.
 
 **Can a data pack change the overworld's biome layout?** Not the vanilla
 preset. `OverworldBiomeBuilder` is hardcoded, and the data-pack element that
-would carry a parameter list serialises to nothing but a preset name — there
-are two presets. A pack can supply its own parameter list for a multi-noise
+would carry it, `MultiNoiseBiomeSourceParameterList`, serialises to nothing
+but a preset name — `MultiNoiseBiomeSourceParameterLists` registers two. A
+pack can supply its own parameter list inline for a multi-noise
 source; it cannot edit the one that ships.
 
 **What does the client actually have?** A hollow `Biome`.
@@ -223,16 +238,17 @@ and the effects, and substitutes empty generation and mob settings — features,
 carvers and spawn lists never cross the wire. And when a client asks for a
 biome in a chunk it does not have, it gets plains.
 
-**Does the biome decide which mobs spawn?** Not on its own, and not first.
-`ChunkGenerator.getMobsAt` consults `Structure.spawnOverrides` *before*
-`Biome.getMobSettings` ([structure placement](structure-placement.md)), and
-nether fortresses are special-cased earlier still, inside `NaturalSpawner`.
+**Does the biome decide which mobs spawn?** Not on its own, and not first —
+a structure at the position can replace `MobSpawnSettings` outright before the
+spawner ever reads it
+([a spawn attempt is a filter](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)).
 
-**Why does adding one biome change the whole dimension?** Because
-`EnvironmentAttributeSystem` builds one positional layer per attribute that
-*any* biome in the registry mentions, at level construction. One new biome
-naming one new attribute adds a layer every position in the dimension then
-carries.
+**Why does adding one biome change the whole dimension?** Because one
+positional layer is built per attribute that *any* biome in the registry
+mentions, at level construction
+([the stack a value falls through](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)),
+and a layer is not free where the biome that wanted it is absent: it is a
+layer every position in the dimension then falls through.
 
 ## Where to look
 

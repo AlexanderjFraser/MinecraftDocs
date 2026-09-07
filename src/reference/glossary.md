@@ -259,9 +259,9 @@ immutable values. → [the frame](../systems/rendering/the-frame.md)
 **Feature** — the algorithm half of decoration: what to build, with no say in
 which positions it is offered. → [features and placement](../systems/worldgen/features-and-placement.md)
 
-**Flat level generator preset** — a `FlatLevelGeneratorPreset`: a display
-item plus a `FlatLevelGeneratorSettings`, one row of the Superflat *Presets*
-screen. → [creating a world](../systems/worldgen/creating-a-world.md)
+**Flat level generator preset** — a display item plus a
+`FlatLevelGeneratorSettings`, one row of the Superflat *Presets* screen; nine
+ship. → [creating a world](../systems/worldgen/creating-a-world.md#the-layer-editor-edits-the-generator-you-already-have)
 
 **Fluid** — the registry object behind a `FluidState`, a source and a flowing
 instance per liquid, with `FlowingFluid` holding the spread algorithm and
@@ -415,8 +415,10 @@ write. → [scores, teams and stored data](../systems/commands/scoreboard-and-da
 neighbours after a change; distinct from a *shape update*, which runs on
 both sides. → [blocks and states](../systems/blocks/blocks-and-states.md)
 
-**NoiseChunk** — the per-chunk machine that fills the noise lattice and
-installs the caches the density-function graph asked for. → [density functions](../systems/worldgen/density-functions.md)
+**NoiseChunk** — the per-chunk workspace: it installs the caches the
+density-function graph asked for, and it is also the loop driver that fills
+the lattice from them. → [density functions](../systems/worldgen/density-functions.md#wrap-once-per-chunk),
+[terrain](../systems/worldgen/terrain.md#filling-the-noise-six-loops-one-number-at-the-bottom)
 
 **NoiseRouter** — the density functions a generator asks for, as one record;
 `NoiseRouter.mapAll` rebuilds them all at once, which is how a whole graph gets
@@ -587,7 +589,8 @@ start assembled in memory, and pieces written a chunk at a time. → [structure 
 hand-built half it is a Java class that writes its own blocks and constructs its
 own neighbours, chosen by no pool; the jigsaw half's `PoolElementStructurePiece`
 is one too. Every piece carries a registered `StructurePieceType`, which is how
-it comes back off disk. → [hand-built structures](../systems/worldgen/hand-built-structures.md)
+it comes back off disk. → [hand-built structures](../systems/worldgen/hand-built-structures.md#the-idea),
+[jigsaw and templates](../systems/worldgen/jigsaw-and-templates.md#the-cast)
 
 **StructureStart** — one decided structure: the `Structure`, the chunk it
 started in, a `PiecesContainer`, a reference count and a cached bounding box,

@@ -178,6 +178,39 @@ Three homeless pass-3 cuts placed, four proposed cuts all declined with
 reasons, and the landing page's argument — *the renderer is not allowed to
 look at the world* — written for the first time. **No tool bug**, the fifth
 pass-5 part session without one.
+**Session L is done** (2026-09-07, Part XII): all ten pages, the landing page
+and `reference/density-function-nodes` rewritten, eleven pages in six other
+parts edited, and this is the session where the lens found *a page arguing with
+itself about a data-pack field*. `terrain` called the carvers' lava level a
+constant in the generator four sections after calling it *configured*; it is
+`CarverConfiguration.lavaLevel`, a `VerticalAnchor`, and all four shipped
+carvers anchor it eight blocks above the world's **bottom** — which is the real
+answer to why it does not move with the sea level. **Fifteen corrections**,
+five of them one page contradicting another and three a page contradicting
+itself, and **two of them on a Part IV page**: `scheduled-ticks`' opening list
+of "everything the world does later" offered a bone-mealed sapling and a
+budding amethyst, and both are *random* ticks, which is the distinction that
+page itself draws. Six suspicions were re-derived and found sound, among them
+the landing page's `PlacementContext` sentence — the class really does hand a
+placement modifier the carving mask, and it was named on no page in the book.
+The part's top duplication pair settled **the same way round as session K's**:
+`reference/density-function-nodes` had drifted into lecture prose, and its
+36-line *Bounds* section is now an eight-row table plus one paragraph, with the
+parse-time story, the min/max warning and the trustworthiness argument back on
+the lecture that owns them. The lattice fact was three tellings on two pages
+plus a fourth inside `terrain`; `density-functions` keeps the resolutions and
+`terrain` keeps the census of eight interpolated terms that neither other page
+has. **`terrain` is not renamed**, ruled in writing: read whole the page is not
+three statuses but one thing made across them, and every page that cites it
+calls it the terrain in its own sentence. §7's `JigsawStructure` entry is
+**discharged** — and the shipped data corrected the entry, because six
+structures set the expansion hack and not five. The part's biggest structural
+finding was `terrain` and `features-and-placement` carrying four Part IV
+passages between them as a running commentary on the conveyor, each now a
+citation with the cargo's half kept. Part XII arrived with **82 internal links
+and not one anchor**, the seventh part running; it now carries 183 links, 158
+of them anchored. **No tool bug**, the sixth
+pass-5 part session without one.
 
 ## The passes
 

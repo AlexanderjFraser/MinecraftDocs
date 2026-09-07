@@ -14,23 +14,28 @@ The edge of a village is a substitution, not a stop condition.
 
 This is the assembler one of the sixteen structure types uses — the jigsaw —
 together with the `.nbt` template system that turns each of its pieces into
-blocks. Everything *outside* the assembler is
-[structure placement](structure-placement.md): the lottery that chose this
-chunk, `StructureStart`, the reference scan, the beardifier, and the moment
-`StructurePiece.postProcess` is called. The other fifteen types use a
+blocks, which is also what a structure block reads and writes. Everything
+*outside* the assembler is structure placement:
+[the lottery](structure-placement.md#which-chunk-a-grid-and-nothing-else) that
+chose this chunk, [the reference
+scan](structure-placement.md#who-needs-to-know),
+[the beardifier](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive),
+and [the moment `StructurePiece.postProcess` is
+called](structure-placement.md#then-the-blocks-arrive-one-chunk-at-a-time). The
+other fifteen types use a
 different assembler and reach this page only for the templates
-([hand-built structures](hand-built-structures.md)).
+([hand-built structures](hand-built-structures.md#the-four-families)).
 
 ## The cast
 
 | class | what it holds | when |
 |---|---|---|
-| `JigsawStructure` | the start pool, the start jigsaw name, a depth, a start height, a maximum distance and the pool aliases | data pack |
+| `JigsawStructure` | ten data-pack fields: the start pool, the start jigsaw name, a depth, a start height, a heightmap to project onto, a maximum distance, the pool aliases, the expansion hack, the dimension padding and the liquid settings | data pack, `Registries.STRUCTURE` |
 | `StructureTemplatePool` | a weighted list of `StructurePoolElement`s and a **fallback** pool — the two fields its codec has | data pack |
-| `StructurePoolElement` | one candidate: a single template, a legacy single, a list, a placed *feature*, or nothing | data pack |
-| `JigsawPlacement.Placer` | the assembly loop and its priority queue; the `VoxelShape` of free space travels with each queue entry | `ChunkStatus.STRUCTURE_STARTS`, worldgen worker |
+| `StructurePoolElement` | one candidate: a single template, a legacy single, a list, a placed *feature*, or nothing — a dispatched type like the processors and the rule tests below ([the pattern](../foundations/data-driven-types.md#the-idea-stated-once)) | data pack |
+| `JigsawPlacement.Placer` | the assembly loop and its priority queue; the `VoxelShape` of free space ([shapes and collision](../../reference/math-and-primitives.md#shapes-and-collision)) travels with each queue entry | `ChunkStatus.STRUCTURE_STARTS`, worldgen worker |
 | `JigsawBlock` | the connector, with `JigsawBlockEntity.JointType` deciding whether rotation must match | in the template |
-| `PoolElementStructurePiece` | one accepted candidate, with its junctions | in memory until `ChunkStatus.FEATURES` |
+| `PoolElementStructurePiece` | one accepted candidate, with its junctions | built at `ChunkStatus.STRUCTURE_STARTS`, saved with the chunk |
 | `StructureTemplate` | a parsed `.nbt` file: block palettes, entities, and the jigsaw blocks in it | loaded by `StructureTemplateManager` |
 | `StructurePlaceSettings` | rotation, mirror, the chunk box, liquid handling and an **ordered** list of `StructureProcessor`s | per piece, per chunk |
 
@@ -83,12 +88,16 @@ template. `LegacySinglePoolElement` is the same with an older block-shape
 rule. `ListPoolElement` is several placed as a unit. `EmptyPoolElement` is a
 deliberate nothing. And `FeaturePoolElement` places a `PlacedFeature`
 instead of a template — which is how village trees arrive
-([features and placement](features-and-placement.md)).
+([features and placement](features-and-placement.md#the-fold)).
 
 `PoolAliasBinding` and `PoolAliasLookup` sit on top: one structure can swap
 which pool a name resolves to, per placement, resolved once from a positional
-random source. Trial chambers are the only vanilla structure that uses it, and
-what they swap is which pool the spawners draw their mobs from.
+random source before the assembly loop starts. `PoolAliasBindings` registers
+three kinds — `DirectPoolAlias` names a replacement outright, `RandomPoolAlias`
+draws one from a weighted list, and `RandomGroupPoolAlias` draws a whole group
+of substitutions together so they agree. Trial chambers are the only vanilla
+structure that uses any of them, and what they swap is which pool the spawners
+draw their mobs from.
 
 ## The assembly loop
 
@@ -119,7 +128,38 @@ tried.
 `JigsawJunction` into the parent piece *and* the child, which is what lets
 `Beardifier` treat junctions as their own terrain contribution rather than
 inferring them from the boxes
-([structure placement](structure-placement.md)).
+([structure placement](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive)).
+
+Three of the ten fields on `JigsawStructure` are boxes drawn round that loop,
+and none of them is the depth cap. **`JigsawStructure.MaxDistance`** is the
+horizontal and vertical reach from the centre, and the free-space shape is
+built to exactly that box — so a piece the queue would otherwise accept is
+refused for being too far out. It is also the field the data-pack load
+validates: `JigsawStructure.MAX_TOTAL_STRUCTURE_RANGE` is 128, and a horizontal
+reach plus the twelve blocks a terrain adaptation needs must fit inside it, or
+the pack fails to load rather than generating a structure the
+[17×17 reference scan](structure-placement.md#who-needs-to-know) could miss.
+**`DimensionPadding`** shrinks that box at the top and the bottom, in blocks,
+and rejects the start piece outright if the centre itself will not fit inside
+the padded world — which is how a structure declines to generate near the
+build limits instead of being clipped by them. And **the expansion hack**
+inflates a candidate's box *upward* before the collision test, by the tallest
+piece the pools that candidate's own jigsaws point at could need. A house that
+fits can therefore be rejected for the rooms it would have wanted above it.
+
+The tenth field is not about space at all. **`LiquidSettings`** decides
+whether the blocks a piece writes keep the water that was already there —
+*apply_waterlogging* re-floods what it can, *ignore_waterlogging* leaves the
+piece dry — and it is the default that ships, overridable per element as well
+as per structure.
+
+The shipped data is the clearest thing about all three: of the thirty-four
+structure files, six set the expansion hack (the five villages and the
+pillager outpost, the only pools whose pieces stack), and **exactly one sets
+either of the others** — trial chambers, which pads ten blocks off the top and
+the bottom because it generates deep and must not punch through, and which
+turns waterlogging off because a flooded chamber is not the room it was drawn
+as. No shipped pool element overrides the setting at all.
 
 ## From a piece to blocks
 
@@ -139,29 +179,71 @@ A `StructureTemplate` is a parsed `.nbt` file: `StructureTemplate.Palette`s
 of `StructureTemplate.StructureBlockInfo`, an entity list, and
 `StructureTemplate.JigsawBlockInfo` for the connectors. Placing it writes
 what falls inside the box, loads block-entity data
-([block entities](../blocks/block-entities.md)) and stamps a **fresh loot
+([block entities](../blocks/block-entities.md#create-keep-replace-remove)) and stamps a **fresh loot
 seed** into containers rather than a table's contents
-([loot tables](../items/loot-tables.md)) — which is why a village chest's
+([loot tables](../items/loot-tables.md#the-chest-was-empty-before-you-got-there)) — which is why a village chest's
 contents are decided when you open it, not when the village generated.
 
+## The processors, and what the shipped lists use
+
 The processors are the interesting layer, because they are shared with the
-other assembler and with the structure blocks a player can use. `RuleProcessor`
+other assembler and with the structure blocks a player can use. A
+`StructureProcessorList` is the data-pack object — a registry element that is
+just an ordered list of them — and each entry is a dispatched type
+([the pattern](../foundations/data-driven-types.md#the-idea-stated-once)).
+
+`RuleProcessor`
 applies `ProcessorRule`s, and each rule holds **two** block tests with
 different subjects: an *input predicate* against the template's own block and
-a *location predicate* against the block already in the world. A position test,
-a replacement state and an optional block-entity modifier follow, and the
-first rule that matches wins.
+a *location predicate* against the block already in the world. Both are
+`RuleTest`s, a small family of ways to match a block — by state, by block, by
+tag, or by any of those on a random roll — and a `PosRuleTest` follows, its
+own family, measuring position against the reference the structure's piece
+zero fixed. A replacement state and an optional `RuleBlockEntityModifier` come
+last, and the first rule that matches wins.
 `BlockRotProcessor` deletes a fraction of the blocks. `GravityProcessor`
-drops them to a heightmap. `BlockIgnoreProcessor` skips a named list of
+drops them to a heightmap. `ProtectedBlockProcessor` refuses to overwrite
+anything in a tag. `CappedProcessor` runs another processor a bounded number
+of times. `BlockIgnoreProcessor` skips a named list of
 blocks, and its three presets name the structure block, air, or both — never
-structure void, which `JigsawReplacementProcessor` handles instead. And `JigsawReplacementProcessor` is the one that cleans up after the
+structure void, which never reaches a template in the first place, because a
+structure block excludes it when it saves. And `JigsawReplacementProcessor` is
+the one that cleans up after the
 assembler: it swaps each jigsaw block for the state named in its final-state
 string, or removes it entirely. **The assembly graph is invisible in the
-finished village** unless the debug flag in `SharedConstants` is set.
+finished village** unless `SharedConstants.DEBUG_KEEP_JIGSAW_BLOCKS_DURING_STRUCTURE_GEN`
+is set.
+
+Which of those a data pack actually uses is a much shorter list than the
+registry. **Forty** processor lists ship, and between them they name four
+types: rule thirty-five times, protected blocks seven, block rot six, capped
+four. Gravity and jigsaw replacement never appear in one, because the
+projection and the assembler add them; the ruined portal's stack never appears
+either, because it is assembled in Java
+([hand-built structures](hand-built-structures.md#where-the-families-bend-the-idea)).
+
+## Where a template comes from
 
 `StructureTemplateManager` loads templates in a fixed order — the world's
-generated directory, then the gametest source, then data packs — and the
-folder it looks in is *structure*, singular.
+generated directory, then the gametest source, then data packs — through three
+`TemplateSource`s: two `DirectoryTemplateSource`s reading files off disk (the
+second of them parsing the *.snbt* text form the game tests keep), and a
+`ResourceManagerTemplateSource` reading the pack stack like any other
+resource. `TemplatePathFactory` is what turns an id into a path in each. The
+first source that answers wins, which is what lets a structure block's saved
+file shadow a data pack's, and the folder every one of them looks in is
+*structure*, singular.
+
+That first source is also the seam with the block a player can use. A
+**structure block** in save mode calls `StructureTemplate.fillFromWorld` over
+its box and writes the result into the world's generated directory — excluding
+structure void, which is how a saved template gets its holes — and in load
+mode it hands a `StructurePlaceSettings` to the same
+`StructureTemplate.placeInWorld` a village piece uses, with rotation, mirror,
+an integrity roll that is a `BlockRotProcessor`, and a seed. `/place template`
+is the command form of the same call. `StructureBlockEntity` holds all of that
+state, and `ServerboundSetStructureBlockPacket` is how the screen edits it; the
+jigsaw block's editor is the same arrangement one class along.
 
 > **For a 1.21-era reader.** The `.nbt` folder is
 > *data/&lt;namespace&gt;/structure/*, not *structures/*. The plural
@@ -185,10 +267,12 @@ in both directions: `ServerboundSetJigsawBlockPacket` and
 `ServerboundJigsawGeneratePacket` let a creative player run the assembler live
 against a loaded `ServerLevel`, and `JigsawBlockEntity` syncs its pool, target
 and joint back the other way. `/place jigsaw` does the same from a command,
-with a pool, a target and a depth. Both are exceptions to "structures cross
-the network as ordinary blocks", and there is a third that only a developer
+with a pool, a target and a depth. Both are exceptions to the rule that a
+finished structure reaches the client as nothing but ordinary blocks in a
+chunk packet, and there is a third that only a developer
 sees: `DebugSubscriptions.STRUCTURES` ships every piece's bounding box to the
-client for the debug renderer.
+client for the debug renderer
+([debugging the running game](../client/debugging-the-running-game.md#the-sixteen-instances)).
 
 **Why do the same houses appear in different rotations?** Because rotation is
 chosen per piece and applied to the block *states* as they are written, not
@@ -222,6 +306,8 @@ The village is data for its entire generated life and becomes blocks last.
 `StructureTemplate.placeInWorld` · `StructureTemplate.processBlockInfos` ·
 `StructureTemplate.Palette` · `StructureTemplateManager` ·
 `StructurePlaceSettings` · `StructureProcessorList` · `RuleProcessor` ·
+`RuleTest` · `PosRuleTest` · `CappedProcessor` · `TemplateSource` ·
+`DimensionPadding` · `LiquidSettings` · `StructureBlockEntity` ·
 `ProcessorRule` · `GravityProcessor` · `JigsawReplacementProcessor`
 
 ---

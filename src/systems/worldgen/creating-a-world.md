@@ -10,9 +10,13 @@ experiment, set one game rule, and press *Create*.
 
 That opening pause is what this page is about. Before the screen can draw a
 single widget the game has already run a **complete server-side data-pack
-load** — the same `WorldLoader.load` a dedicated server runs at startup — on a
+load** — the same `WorldLoader.load` a dedicated server runs at startup
+([the world load](../server/starting-a-server.md#everything-main-does-before-there-is-a-second-thread)) —
+on a
 background thread, with the client's main thread parked on
-`BlockableEventLoop.managedBlock` until it finishes. The object the screen
+`BlockableEventLoop.managedBlock`, running other people's tasks while it waits
+([the event loop](../server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)),
+until it finishes. The object the screen
 exists to edit, `WorldGenSettings`, was built halfway through that load, out
 of registries the load had just filled. Every widget on the *World* tab is an
 edit to it — the name, the game mode, the difficulty, Allow Commands and the
@@ -49,21 +53,25 @@ flowchart TB
     D --> E["5 · commit — bake the dimensions, write level.dat, spin MinecraftServer"]
 ```
 
-The ordering that matters is stage 2 before stage 3. `WorldLoader.load` takes
-the settings-building callback as a parameter and calls it **after** the
-worldgen registries and the `Registries.LEVEL_STEM` registry are loaded and
-**before** `ReloadableServerResources.loadResources` runs. The registry set
+The ordering that matters is stage 2 before stage 3, and it is the reason
+this page exists at all. `WorldLoader.load` takes the settings-building
+callback as a parameter and calls it in the gap between loading the registries
+and compiling the recipes — so the registry set
 that recipes, loot tables and functions are then parsed against includes the
-dimension registry that callback produced. So the seed and the dimension list
+dimension registry that callback produced. The seed and the dimension list
 are settled before a single recipe is read, and they are settled by a lambda
-the *caller* supplied — which is the only reason the client's create screen,
+the *caller* supplied, which is the only reason the client's create screen,
 the client's world-opener, the dedicated server and the game-test server can
 share one loader.
 
-`RegistryDataLoader.DIMENSION_REGISTRIES` is a list of exactly one registry,
+The registry pass that callback sits behind is
+`RegistryDataLoader.DIMENSION_REGISTRIES`, and it is the last of the layers a
+world load walks
+([when a world opens](../foundations/identifiers-and-registries.md#when-a-world-opens)).
+It holds exactly one registry,
 `Registries.LEVEL_STEM`, loaded in its own pass because its entries need every
-worldgen registry already in hand. That single-entry list is the *dimension/*
-folder of a data pack.
+worldgen registry already in hand — and that single-entry list is the
+*dimension/* folder of a data pack.
 
 ## The object, and what is not in it
 
@@ -72,8 +80,8 @@ folder of a data pack.
 old save carries. `WorldDimensions` holds the map of `LevelStem`s. There is no
 world name in it, no difficulty, no game mode, no game rule and no data-pack
 list — those are `LevelSettings` and `GameRules`, and
-[level data and rules](../../reference/level-data-and-rules.md) says which file
-each of them ends up in.
+[level data and rules](../../reference/level-data-and-rules.md#dimensions-and-the-seed)
+says which file each of them ends up in.
 
 A seed is not a number the box gives you. `WorldOptions.parseSeed` trims the
 text, returns nothing at all for an empty string, parses a long if it can, and
@@ -90,7 +98,9 @@ re-rolling a new random world every time you touch it.
 > *data/minecraft/world_gen_settings.dat* beside *raids.dat* — and the game rules to
 > *data/minecraft/game_rules.dat* — by the ordinary saved-data machinery rather than by
 > the level-data writer. `PrimaryLevelData` keeps the old key name only as the
-> constant `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS`.
+> constant `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS` — which is the one that
+> still matters at the far end of this page, where the world list skips that
+> subtree while reading a row.
 
 ## Every widget is an edit to a live object
 
@@ -116,7 +126,9 @@ the only thing that ever selects it is `CreateWorldScreen.testWorld`, behind a
 
 *Customize* is rarer than it looks. `PresetEditor.EDITORS` is a two-entry map:
 `WorldPresets.FLAT` opens `CreateFlatWorldScreen` and
-`WorldPresets.SINGLE_BIOME_SURFACE` opens `CreateBuffetWorldScreen`. For the
+`WorldPresets.SINGLE_BIOME_SURFACE` opens `CreateBuffetWorldScreen`, whose one
+choice becomes a `FixedBiomeSource` — the buffet world is the whole of that
+biome source's use in the game. For the
 other five presets the button is inactive. Both editors end the same way, in
 `WorldCreationContext.DimensionsUpdater` lambdas that call
 `WorldDimensions.replaceOverworldGenerator` — the overworld only. Nothing in
@@ -125,7 +137,8 @@ the create screen can edit the nether or the end.
 ## The layer editor edits the generator you already have
 
 `FlatLevelGeneratorSettings` is the odd object in a part where everything else
-is a record. Its layer list is mutable, its *lakes* and *features* flags are
+is a record. Its layer list — of `FlatLayerInfo`, a block and a height — is
+mutable, its *lakes* and *features* flags are
 set by void methods, and `FlatLevelGeneratorSettings.getLayersInfo` hands out
 the live list. `PresetEditor` passes `CreateFlatWorldScreen` the settings of
 the current overworld generator when that generator is already a
@@ -158,9 +171,13 @@ as [features](features-and-placement.md).
 
 `ExperimentsScreen` looks like a toggle list and is a filtered pack browser: it
 walks the repository's available packs and keeps only those whose
-`Pack.getPackSource` is `PackSource.FEATURE`. Three ship in 26.2 —
+`Pack.getPackSource` is `PackSource.FEATURE` — a built-in pack that carries a
+feature-flag section and deliberately refuses to be selected automatically
+([the repository and its packs](../foundations/resource-system.md#discover-the-repository-and-its-packs)).
+Three ship in 26.2 —
 *minecart_improvements*, *redstone_experiments* and *trade_rebalance* — one per
-non-vanilla flag in `FeatureFlags`. Pressing *Done* rewrites the repository's
+non-vanilla flag in `FeatureFlags`, and what a flag then gates is
+[feature flags](../foundations/identifiers-and-registries.md#feature-flags-the-same-registry-narrowed). Pressing *Done* rewrites the repository's
 selection and lands in `CreateWorldScreen` exactly where the data-pack screen
 lands, in `CreateWorldScreen.tryApplyNewDataPacks`.
 
@@ -171,7 +188,9 @@ swaps the configuration in and nothing reloads. Otherwise
 runs `WorldLoader.load` again from the top — and it has to carry your settings
 across a registry set that is about to be replaced. It does that by
 **serialising them**: `WorldGenSettings.CODEC` encodes the current options and
-dimensions to JSON using the old registries as context, and re-parses that JSON
+dimensions to JSON using the old registries as context
+([where the registry context comes from](../foundations/codecs-nbt-json.md#where-the-registry-context-comes-from)),
+and re-parses that JSON
 against the new ones. Every `Holder` in the object — every biome, every noise
 settings, every structure set the flat generator overrides — is written out as
 an id and looked up again. If the new packs have no world preset or no biome,

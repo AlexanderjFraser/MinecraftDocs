@@ -19,24 +19,24 @@ A structure is a thing the generator decides to build **at** a place rather
 than **from** it. This page is the framework all sixteen structure types
 share: the decision, the caching, the reference scan, the way terrain bends
 around it, and the moment blocks are finally written. What builds the pieces
-is one of two assemblers — [jigsaw and templates](jigsaw-and-templates.md) for
-villages and their relatives, [hand-built structures](hand-built-structures.md)
+is one of two assemblers — [jigsaw and templates](jigsaw-and-templates.md#the-assembly-loop) for
+villages and their relatives, [hand-built structures](hand-built-structures.md#the-idea)
 for the other fifteen types.
 
 ## The cast
 
 | class | the decision it owns | when |
 |---|---|---|
-| `StructureSet` | which structures share a grid, with weights, and which `StructurePlacement` lays that grid out | data pack |
-| `StructurePlacement` | where the grid falls. `RandomSpreadStructurePlacement` is the spacing-and-separation lottery; `ConcentricRingsStructurePlacement` is strongholds | world start, then per chunk |
+| `StructureSet` | which structures share a grid, with weights, and which `StructurePlacement` lays that grid out | data pack, `Registries.STRUCTURE_SET` |
+| `StructurePlacement` | where the grid falls, dispatched on a `StructurePlacementType` like any data-driven type ([the pattern](../foundations/data-driven-types.md#the-idea-stated-once)). `RandomSpreadStructurePlacement` is the spacing-and-separation lottery; `ConcentricRingsStructurePlacement` is strongholds | world start, then per chunk |
 | `ChunkGeneratorStructureState` | which sets are possible in this dimension at all, and the stronghold ring positions | once per world, on the main thread |
-| `Structure` | the settings wrapper: allowed biomes, spawn overrides, the decoration step, the terrain adjustment — and `Structure.findGenerationPoint` | `ChunkStatus.STRUCTURE_STARTS` |
+| `Structure` | the settings wrapper: allowed biomes, spawn overrides, the decoration step, the terrain adjustment — and `Structure.findGenerationPoint`. Its `StructureType` is what the sixteen concrete subclasses are registered as | `Registries.STRUCTURE`, then `ChunkStatus.STRUCTURE_STARTS` |
 | `StructureStart` | the answer: a structure, the chunk it started in, a `PiecesContainer`, a reference count and a cached box | stored on the chunk |
 | `StructureManager` | the per-level view of starts and references | worldgen and main thread |
 | `StructureCheck` | the presence cache — two caches over a partial-NBT reader — and the thing `/locate` actually asks | **main thread only**, unsynchronised |
 | `Beardifier` | how much the terrain bends, as a density term | built with the `NoiseChunk` at `ChunkStatus.BIOMES` |
 
-## Four decisions, on four different clocks
+## Five decisions, on five different clocks
 
 ```mermaid
 flowchart TB
@@ -49,7 +49,10 @@ flowchart TB
 
 The odd thing about that ladder is where it starts. `ChunkStatus.STRUCTURE_STARTS`
 is the **second** status a chunk passes through, two before
-`ChunkStatus.BIOMES` — so a structure is decided before the biomes and the
+`ChunkStatus.BIOMES` ([the pyramid,
+drawn](../world/chunk-generation-pipeline.md#the-pyramid-drawn) is the ladder
+and the dependency rules it enforces) — so a structure is decided before the
+biomes and the
 terrain it will sit in exist. Everything the structure needs to know about
 the world it asks for directly, from the generator, rather than reading it
 out of a chunk.
@@ -104,14 +107,24 @@ children, so the layout is run **once** and never twice.
 What is *not* deferred is the centre: the start template, its rotation and
 its ground height are all resolved before the stub comes back.
 
+## The presence cache, and the hole that proves an absence
+
 `StructureCheck` is the cache in front of all of this, and it is two caches
 over a partial-NBT reader: chunk → structure → **reference count** (which is
 what makes "unreferenced only" searches possible), and structure → chunk →
 would-generate. On a miss it reads the chunk off disk through
-`ChunkScanAccess`, pulling only the data version and the structure starts and
-data-fixing that fragment alone. It is main-thread-only and unsynchronised,
-which is why `ServerLevel.onStructureStartsAvailable` hops back to the server
-thread from the worldgen executor to feed it.
+`ChunkScanAccess`, which answers a question about a chunk without loading it
+([why the server thread never
+waits](../world/chunk-storage.md#why-the-server-thread-never-waits-and-the-three-times-it-does)),
+pulling only the data version and the structure starts — a field-selected read
+that never builds the rest of the tag
+([a whole file need not be read](../foundations/codecs-nbt-json.md#what-nbt-actually-is)) —
+and data-fixing that fragment alone. It is main-thread-only and
+unsynchronised, which is why both routes in hop to the server thread to feed
+it: `ServerLevel.onStructureStartsAvailable` from the worldgen executor when a
+chunk generates its starts, and the loading pyramid's own
+`ChunkStatusTasks.loadStructureStarts` when a chunk arrives from disk with
+starts already in it.
 
 **Absence is stored as a hole, not as a marker.** An invalid start is never
 written at all: `ChunkGenerator.tryGenerateStructure` calls
@@ -127,9 +140,9 @@ legacy, and `StructureCheck` skips them while loading.
 At `ChunkStatus.STRUCTURE_REFERENCES`, `ChunkGenerator.createReferences` scans
 the **17×17 chunk square around each chunk** and records the packed position
 of every start whose bounding box overlaps it. Discovery is outside-in: a
-village never walks its own pieces to announce itself, and this is why almost
-every later step in the generation pyramid requires structure starts within
-eight.
+village never walks its own pieces to announce itself, and this is why every
+step from this one through `ChunkStatus.FEATURES` — six of the twelve —
+requires structure starts eight chunks out.
 
 The box that scan tests is not always the box the assembler produced.
 `Structure.adjustBoundingBox` inflates it by twelve the moment
@@ -146,10 +159,13 @@ validation.
 
 `Beardifier.forStructuresInChunk` reads those references and turns the nearby
 pieces into `Beardifier.Rigid` boxes plus their junctions. It is built with
-the `NoiseChunk`, which the *biomes* step creates and the noise step only
-reuses, so the beardifier exists a status before the density field it bends. **No blocks are edited.** The flat shelf under a village is
-the density field being told to be solid there
-([terrain](terrain.md)), and `TerrainAdjustment` picks the shape: only two of
+the `NoiseChunk`, which is born at `ChunkStatus.BIOMES` rather than at the
+noise step ([four statuses, and what each hands
+on](terrain.md#four-statuses-and-what-each-hands-on)) — so the beardifier
+exists a status before the density field it bends.
+**No blocks are edited.** The flat shelf under a village is a term added to
+the scalar field before anything samples it, and `TerrainAdjustment` picks the
+shape: only two of
 its five values use the kernel the name *beard* refers to — the two beard
 modes, where junctions contribute at half the weight of the pieces, which is
 where the smooth shoulders under village streets come from. *Bury* and
@@ -162,8 +178,12 @@ looked at — twenty-three of the thirty-four shipped structure files, those two
 among them. The hand-built pieces that do reach the branch belong to the stronghold
 and the nether fossil.
 
-Then at `ChunkStatus.FEATURES`, `ChunkGenerator.applyBiomeDecoration` places
-structures at their declared decoration step, *before* that step's features.
+## Then the blocks arrive, one chunk at a time
+
+At `ChunkStatus.FEATURES`, `ChunkGenerator.applyBiomeDecoration` places
+structures at their declared decoration step, *before* that step's features —
+inside the same step loop that runs decoration
+([the trace: a chunk decorates](features-and-placement.md#the-trace-a-chunk-decorates)).
 `StructureStart.placeInChunk` derives a reference position from **piece
 zero** — piece order is semantic, not cosmetic, and every `PosRuleTest`
 measures its distances from that point — and calls `StructurePiece.postProcess`
@@ -180,7 +200,17 @@ world generation, from the server thread. `StructureCheck` re-runs the
 start-point and biome test — the grid arithmetic having already produced the
 candidate chunk — and on a result of `StructureCheckResult.CHUNK_LOAD_NEEDED`
 it loads the chunk to structure starts, **synchronously**, for up to a
-hundred expanding rings of grid cells.
+hundred expanding rings of grid cells. An eye of ender, a dolphin and an
+explorer map all reach the same code and can all pay the same pause.
+
+**What does `/locate` point at, then?** Not the structure — the corner of the
+chunk it started in. `ChunkGenerator.findNearestMapStructure` returns
+`StructurePlacement.getLocatePos`, which is that chunk's minimum block plus
+the placement's own offset, and the eye of ender takes the same answer. A
+stronghold's portal room can be two hundred blocks from it, and the stronghold
+does keep a pointer at the room
+([hand-built structures](hand-built-structures.md#questions-players-ask)) that
+nothing in 26.2 reads.
 
 **Why do two exploration maps usually not point at the same monument?**
 `StructureStart.getMaxReferences` is one, and `ExplorationMapFunction`
@@ -191,17 +221,18 @@ guarantee: the three buried-treasure map tables, in shipwrecks and both ocean
 ruins, set the flag to false and will happily send two players to the same
 chest.
 
-**Do structures override the biome for mob spawning?** Yes, and first.
-`ChunkGenerator.getMobsAt` consults `Structure.spawnOverrides` before
-`Biome.getMobSettings` ([biomes](biomes.md)), scoped either to the piece or
-to the whole start. Nether fortresses are special-cased earlier still, inside
-`NaturalSpawner`.
+**Do structures override the biome for mob spawning?** Yes, and the box they
+override inside is the *inflated* one, not the assembler's — so the margin the
+beardifier needs is also the margin in which a village counts as "here" for
+`Structure.spawnOverrides`. What the override then does to the spawner's list
+is [a spawn attempt is a
+filter](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation).
 
 **Which `StructureManager` is which?** There are two unrelated things with
 that shape of name, and both live on the level.
 `ServerLevel.structureManager` is the starts-and-references view on this
 page; `ServerLevel.getStructureManager` returns the `.nbt` template loader
-owned by the server ([jigsaw and templates](jigsaw-and-templates.md)). There
+owned by the server ([jigsaw and templates](jigsaw-and-templates.md#from-a-piece-to-blocks)). There
 is also a second, unrelated `StructureCheck` in the entity-variant package.
 
 **Is there dead code in here?** Some, and it reads as load-bearing.
@@ -219,6 +250,7 @@ other. The live post-placement hook is `Structure.afterPlace`.
 `ChunkGeneratorStructureState.generatePositions` ·
 `ChunkGenerator.createStructures` · `ChunkGenerator.createReferences` ·
 `ChunkGenerator.tryGenerateStructure` · `StructureStart.placeInChunk` ·
+`StructurePlacement.getLocatePos` ·
 `StructureStart.INVALID_START` · `StructureManager.startsForStructure` ·
 `StructureManager.addReferenceForStructure` · `StructureCheck.checkStart` ·
 `ChunkScanAccess` · `Beardifier.forStructuresInChunk` ·

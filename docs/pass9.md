@@ -2528,3 +2528,253 @@ which counts against Part X and is this part's subject.
   with existing meshes.
 - `resource-system`:242 names `ParticleResources` as a second consumer of
   `AtlasManager.PENDING_STITCH`; `models-and-atlases`' figure shows one.
+
+## Pass 5, session L — Part XII, world generation (2026-09-07)
+
+*All ten system pages, the landing page and `reference/density-function-nodes`
+rewritten; eleven pages in six other parts edited. Twelve reader agents, one
+per page; every finding acted on was re-derived by reading both pages, and
+every fact below was changed with the decompile open.*
+
+### Corrections
+
+- `worldgen/terrain`:231–233 said the carvers' lava level "is a constant in the
+  generator, not a data-pack field", **and the same page's own carve-state
+  paragraph at :210 called it *configured***. `CarverConfiguration.lavaLevel`
+  is a `VerticalAnchor` field on the configured carver
+  (`world/level/levelgen/carver/CarverConfiguration.java`:35, read at
+  `WorldCarver.java`:153). All four shipped configured carvers set it to
+  *above_bottom: 8* (`data/minecraft/worldgen/configured_carver/*.json`), which
+  is why it does not move with the sea level — it is anchored to the world's
+  bottom, not below its sea. The answer is rewritten to say that; :210 now
+  names the field.
+- `worldgen/terrain`:41–43 said `NoiseBasedChunkGenerator` "overrides
+  [`createBiomes`] only to use the chunk's cached sampler". The override
+  (`NoiseBasedChunkGenerator.java`:85–99) forks *and* builds the chunk's
+  `NoiseChunk` *and* wraps the biome resolver in `Blender` and
+  `BelowZeroRetrogen`. The whole fork inventory was Part IV's and is now a
+  citation; the three jobs are stated on `worldgen/biomes` instead.
+- `worldgen/biomes`:75 said "Only the noise generator does the above", where
+  "the above" includes the *init_biomes* fork drawn in the figure directly
+  over it. The base `ChunkGenerator.createBiomes`
+  (`ChunkGenerator.java`:121–126) forks for every generator; the override is
+  about the three lines below the fork. Rewritten, and it now agrees with
+  `terrain`.
+- `worldgen/density-functions`:17–18 called `DensityFunctions` "the library of
+  thirty-four node types you build one out of". Thirty-four is a count of
+  registered **ids** (`DensityFunctions.bootstrap`), not of classes: six ids
+  are one `DensityFunctions.Marker`, seven are one `DensityFunctions.Mapped`,
+  and *old_blended_noise* is `BlendedNoise`, which is not a `DensityFunctions`
+  member (`DensityFunctions.java`:56). Rewritten.
+- `worldgen/density-functions`'s *The six caches, and the three a single point
+  may use* named **two** single-point-safe classes in a section whose heading
+  promises three, and never named the sixth cache at all. The third is
+  `NoiseChunk.BlendDensity` (`NoiseChunk.java`:892–922), which tests no context
+  and answers from anywhere. Written in, with what it is.
+- `worldgen/blending`:320–322 said "Height and biome are **averaged** over
+  every measured column", where the page's own :260–268 says the biome answer
+  "is not a blend" and :328 calls it a threshold. Rewritten: both are drawn
+  from the same map at the same radius, the height averaged over it and the
+  biome taken from the nearest entry in it.
+- `worldgen/hand-built-structures`:90 called `MineshaftStructure`'s pre-filled
+  builder "the only *Either.right* in the game". `Either.right` is an everyday
+  idiom across the corpus; what is unique is the right branch of
+  `Structure.GenerationStub`'s own `Either` (`Structure.java`:250–253 — every
+  other construction takes the left). Rescoped.
+- `worldgen/structure-placement`:131 said "almost every later step in the
+  generation pyramid requires structure starts within eight", against
+  `terrain`'s "six of the generation steps". Six of the twelve, and they are
+  contiguous: `ChunkPyramid.GENERATION_PYRAMID` declares
+  `addRequirement(ChunkStatus.STRUCTURE_STARTS, 8)` on *STRUCTURE_REFERENCES*
+  through *FEATURES* and nowhere else. Rewritten as that range.
+- `worldgen/README`:14 said "the surface pass reads its neighbours' biomes" as
+  an example of generation reading the world. The pass that reads a
+  *neighbourhood* is the carvers (17×17 source chunks, `terrain`:191–197);
+  `SurfaceSystem.buildSurface` reads one biome per column, through
+  `biomeManager::getBiome` (`SurfaceSystem.java`:103, 114). Replaced with the
+  carvers.
+- `worldgen/biomes`' two-borders table listed the jittered read's users without
+  world generation. The surface rules read the biome through
+  `BiomeManager.getBiome`, the jittered entry point (`SurfaceSystem.java`:103).
+  The row gains the surface pass, and `terrain` now states which read it is.
+- `world/scheduled-ticks`:13 offered "a sapling sprouting after bonemeal" as an
+  example of a scheduled tick. `SaplingBlock.performBonemeal` calls
+  `SaplingBlock.advanceTree` in the same call (`SaplingBlock.java`:81–82) and
+  the un-bonemealed path is a *random* tick (:48) — the page's own contrast.
+  The same list's "a piece of amethyst budding" is also a random tick
+  (`BuddingAmethystBlock.java`:28). Replaced with a dispenser firing
+  (`DispenserBlock.java`:138) and a redstone torch burning out.
+- `worldgen/README`:170 said the level-data Reference page is "which lecture
+  nine links to"; the page that links it is lecture **ten**,
+  `creating-a-world`.
+- `worldgen/README` and `src/lectures.md` disagreed about how many statuses lie
+  between a structure being decided and its blocks being written — three
+  against four, from unstated baselines. Both now count from named statuses:
+  decided at `ChunkStatus.STRUCTURE_STARTS`, written at
+  `ChunkStatus.FEATURES`, three statuses after the noise fill.
+- `foundations/data-driven-types`:190 said the trace on
+  `features-and-placement` "walks a tree through all" nine feature sub-object
+  rows; five of the nine carry *trees* in their own *taught in* column and the
+  trace walks none of them. Split between the two pages.
+- `blocks/README`:34 handed "the command and structure blocks" to Part XIII,
+  which names neither. Split: the structure block to
+  `jigsaw-and-templates#where-a-template-comes-from` (written this session),
+  the command block left to Part XIII.
+- `reference/density-function-nodes`' deck advertised two of the page's four
+  sections; `reference/README`:56 and `worldgen/README`:160 copied the same
+  omission. All three corrected.
+
+### Suspicions re-derived and found sound (no change)
+
+- `worldgen/blending`:47 "the scan runs on the background executor" — correct.
+  `IOWorker.createOldDataForRegion` submits to `Util.backgroundExecutor()`
+  (`IOWorker.java`:98–126) and joins `scanChunk` from inside it; the IO lane is
+  underneath, not the submitting pool.
+- `worldgen/README`:12 "the decoration step reads block states, heights and the
+  carving mask through `PlacementContext`" — correct, and the class was named
+  on no page. `PlacementContext` has `getBlockState`, `getHeight`,
+  `getCarvingMask` and `topFeature`, and extends `WorldGenerationContext`.
+  Named on `features-and-placement` this session.
+- `features-and-placement`:222 "a structure and a feature at the same index in
+  the same step draw the *same* feature seed" — correct.
+  `WorldgenRandom.setFeatureSeed` is *seed + index + 10000 × step*
+  (`WorldgenRandom.java`:59–63) with no structure/feature discriminator, and
+  `ChunkGenerator.applyBiomeDecoration` restarts the index at zero for each
+  half (`ChunkGenerator.java`:356, 415).
+- `jigsaw-and-templates`:156 "never structure void, which
+  `JigsawReplacementProcessor` handles instead" — correct as far as it went,
+  and now stated more precisely: structure void never reaches a template,
+  because `StructureBlockEntity` excludes it when it saves
+  (`StructureBlockEntity.java`:380).
+- `hand-built-structures`:206 "the forty shipped processor lists between them
+  use four types" — correct. Forty files under
+  *data/minecraft/worldgen/processor_list/*, using rule (35), protected blocks
+  (7), block rot (6) and capped (4). Moved to `jigsaw-and-templates` with the
+  counts and the two class names the corpus lacked.
+- `trees`' "thirty-nine configured tree features" against
+  `what-this-book-skips`' "50 tree kits" — both correct, different
+  populations: 39 shipped *configured_feature* files of type *minecraft:tree*,
+  50 `ResourceKey<ConfiguredFeature>` constants on `TreeFeatures`. `trees` now
+  says which it counts and why the other number exists.
+
+### Claims introduced
+
+**`worldgen/density-functions`** — the fifteen router functions partition
+6 climate / 5 aquifer (its four noises plus *preliminary_surface_level*, which
+`Aquifer.NoiseBasedAquifer` samples per column) / 3 ore veins / 1 final
+density; `PerlinSimplexNoise`'s only three instances are `Biome`'s fixed-seed
+temperature noises; `SimplexNoise` is the End islands node's;
+`NoiseUtils.biasTowardsExtreme` has no callers, making it the fourth dead
+thing in the Q&A; all six installed classes carry `DensityFunction.fillArray`
+and `CacheOnce` keeps a second counter for it; the beardifier splice's
+consequence ("every noise dimension is beardified whether or not its router
+JSON mentions one") moved here from `terrain`.
+
+**`reference/density-function-nodes`** — *Bounds* rewritten from 36 lines of
+prose to an eight-row table plus one paragraph; the three wrap singletons
+became a table; two unregistered `DensityFunctions` members named as absent
+from the catalogue; the deck rewritten to admit four sections.
+
+**`worldgen/terrain`** — the aquifer reads five router functions, named; the
+surface rule tree is two registries of dispatched types
+(`SurfaceRules.RuleSource`, `SurfaceRules.ConditionSource`) and branches on
+the *jittered* biome read; `CaveWorldCarver`, `CanyonWorldCarver`,
+`CaveCarverConfiguration`, `CanyonCarverConfiguration` and
+`CarverDebugSettings` named; ore veins contrasted with `OreFeature`; the
+noise fill "holds every section across its noise range" (cited to
+`chunk-anatomy`).
+
+**`worldgen/biomes`** — `BiomeSources.bootstrap` registers four sources, all
+four named with what each is for; `BiomeResolver` named as the interface;
+`MultiNoiseBiomeSourceParameterList` and `MultiNoiseBiomeSourceParameterLists`
+named, two presets; `FillBiomeCommand` named; the probe's Gaussian pass is
+unconditional and the server passes no interpolator (moved to
+`world/environment-attributes-and-timelines`); the box blur moved to
+`client/the-client-level`; `BiomeColors` reaches the effects through four
+`ColorResolver`s with no probe in the path.
+
+**`worldgen/blending`** — the *For a 1.21-era reader* box moved to
+`reference/naming-drift`'s Part IV table as a row; the three counts (five
+consumers, four answers, three questions) reconciled in one clause.
+
+**`worldgen/features-and-placement`** — `PlacementContext` and
+`FeaturePlaceContext` named and what each carries; the fourth value-type rung
+(`BlockStateProvider`) added, with registered counts 14 / 6 / 8 for the
+predicate, height and state families; `SurfaceRelativeThresholdFilter` named as
+the fifteenth modifier; `PlacementFilter` defined over the chain's four
+filters; `FeatureCountTracker` behind `SharedConstants.DEBUG_FEATURE_COUNT`;
+*/place feature* named as the third door into `Feature.place`; the
+sixty-three-algorithm tail declined in writing; `Feature.NO_OP` separated from
+the five selectors.
+
+**`worldgen/jigsaw-and-templates`** — §7's three unnamed `JigsawStructure`
+fields written, with the shipped-data census: six structures set the expansion
+hack (five villages and the pillager outpost) and **exactly one** — trial
+chambers — sets either `DimensionPadding` (10) or `LiquidSettings`
+(*ignore_waterlogging*), and no shipped pool element overrides the latter;
+`JigsawStructure.MaxDistance` and `JigsawStructure.MAX_TOTAL_STRUCTURE_RANGE`
+explained as the free-space box and its load-time validation; the processors
+given their own section with the forty-list census, `ProtectedBlockProcessor`,
+`CappedProcessor`, `RuleTest`, `PosRuleTest` and `RuleBlockEntityModifier`; the
+three `TemplateSource`s and `TemplatePathFactory` written as *Where a template
+comes from*, with the first-source-wins rule; the **structure block** taken
+(save mode excludes structure void, load mode builds a `StructurePlaceSettings`
+with a `BlockRotProcessor` for integrity); `PoolAliasBindings`' three kinds;
+the debug flag named.
+
+**`worldgen/structure-placement`** — `StructurePlacement.getLocatePos` moved in
+from `hand-built-structures` as its own Q&A; the presence cache split into its
+own section, with the second feed (`ChunkStatusTasks.loadStructureStarts`)
+named; the per-chunk write split into its own section; `StructureType` and
+`StructurePlacementType` named; the figure's five boxes and the heading's count
+reconciled.
+
+**`worldgen/hand-built-structures`** — the `*Structure` wrapper family named as
+settings wrappers, with `RuinedPortalStructure`'s five decay setups and
+`DesertPyramidStructure.afterPlace`'s five-to-seven suspicious sand;
+`BuriedTreasurePieces` given a row in the four-families table;
+`WoodlandMansionPieces`' double membership explained; `StructurePieceType`
+named in the cast; "chunk workers" settled to the worldgen executor.
+
+**`worldgen/trees`** — the thirty-nine/fifty count scoped; the five registry
+type classes named; two counted headings renamed (*The trunk placers*, *The
+foliage placers*) so a release cannot break an anchor; the decorator heading
+corrected — the leaf pass does not undo the decorators, it is blocked by them.
+
+**`worldgen/creating-a-world`** — the stage list cut to a citation and the
+*consequence* kept; `FlatLayerInfo` and `FixedBiomeSource` named;
+`WorldOpenFlows.openWorld` given its own section, with `ChunkGenerator.validate`
+identified as one of its eight links; *Optimize World* pointed at
+`chunk-storage` rather than left with the declined half.
+
+**`worldgen/README`** — the size sentence is the include, with two boundary
+corrections (`PatrolSpawner`/`PhantomSpawner`, the Xoroshiro sources); the
+order argument made once instead of three times; the closer rewritten as an
+instruction; a *Where the part stops* section with the coverage answer — a
+quarter of the part's lines are one shape, an algorithm that writes blocks and
+adds no mechanism, and the head of each family is named; the verified line
+rewritten off lecture one's hook; the pass-number sentence cut.
+
+### For pass 9's attention, found and not fixed
+
+- `worldgen/blending`:162 says `BlendingData.pack` "omits the heights entirely
+  if none of them was ever measured", thirty lines after saying the codec
+  "validates the saved height array against" sixteen slots. Consistent only if
+  the field is optional; neither sentence says so.
+- `worldgen/jigsaw-and-templates` states 188 shipped pool files; the other two
+  data censuses on the part's structure pages (34 structure files, 40 processor
+  lists) were re-derived this session and this one was not.
+- `worldgen/creating-a-world`:280 hand-counts nineteen classes in
+  `client/gui/screens/worldselection`, which nothing regenerates.
+- `worldgen/biomes`:32's attribute counts ("twenty gameplay attributes … the
+  sixty-six vanilla biome files touch three … fifty-one touch none") against
+  `world/environment-attributes-and-timelines`:80 ("eleven attributes across
+  sixty-six biome files, with *visual/sky_color* in fifty-six of them"). The
+  two are reconcilable only under a silent *gameplay* scoping that neither
+  states. Both are data-pack censuses; pass 9 re-derives.
+- `worldgen/creating-a-world`:285 reaches a `LevelSummary` through
+  `LevelStorageSource.readLightweightData`, `reference/level-data-and-rules`:92
+  through `LevelStorageSource.readLevelSummary`, and
+  `server/starting-a-server`:156 through
+  `LevelStorageSource.LevelStorageAccess.fixAndGetSummaryFromTag`. Probably one
+  chain; the book does not say.

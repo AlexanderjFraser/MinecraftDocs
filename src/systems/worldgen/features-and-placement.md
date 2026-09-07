@@ -13,20 +13,24 @@ order is a topological sort of a graph, and a graph can have a cycle.
 Decoration is everything the terrain steps did not put there: trees, flowers,
 ores, lakes, patches, springs. The system separates three things a modder
 usually wants separately — *what* to build, *where* to try, and *who* wants
-it — and this page is how those three meet at `ChunkStatus.FEATURES`. The
+it — and this page is how those three meet at `ChunkStatus.FEATURES`. All
+three are registries of dispatched types, which makes this the largest single
+instance of [the data-driven type
+pattern](../foundations/data-driven-types.md#the-idea-stated-once) in the
+game. The
 biggest single feature, the tree, has its own page
-([trees](trees.md)); the terrain that decoration lands on is
-[terrain](terrain.md).
+([trees](trees.md#one-algorithm-five-slots)); the terrain that decoration
+lands on is [terrain](terrain.md#the-two-fillers-what-the-number-becomes).
 
 ## The cast
 
 | class | its job | notes |
 |---|---|---|
-| `Feature` | the algorithm, with one method: `Feature.place`, which returns whether it wrote anything | **63** registered into `BuiltInRegistries.FEATURE` |
+| `Feature` | the algorithm, with one method: `Feature.place`, taking a `FeaturePlaceContext` and returning whether it wrote anything | **63** registered into `BuiltInRegistries.FEATURE` |
 | `FeatureConfiguration` | its parameters, per feature type | `NoneFeatureConfiguration` for the ones that need none |
 | `ConfiguredFeature` | a feature plus its configuration, and **no position logic at all** | the unit a sapling grows |
 | `PlacedFeature` | a configured feature plus an ordered list of modifiers | the unit a biome names — the only one of the three that owns placement modifiers |
-| `PlacementModifier` | one function from a position to a *stream* of positions | 15 registered types |
+| `PlacementModifier` | one function from a position to a *stream* of positions, over a `PlacementContext` | 15 registered types |
 | `GenerationStep.Decoration` | the eleven steps, in order, from raw generation to top-layer modification | a biome's list is a list of lists, by ordinal |
 | `FeatureSorter` | flattens every possible biome's per-step lists into one sorted list per step, with an index lookup | once per generator, memoised |
 | `WorldgenRandom` | the seed, reseeded absolutely twice: once per chunk, then once per feature | on the worldgen executor |
@@ -71,14 +75,17 @@ is reseeded absolutely before it runs, so an extra draw inside a feature
 perturbs the rest of *that* feature and nothing after it.
 
 **Who wants what.** The biome palettes of the surrounding 3×3 chunks are
-unioned and intersected with the biome source's possible biomes. Every placed
-feature any of those biomes lists for this step is collected by its index in
+unioned and intersected with the biome source's possible biomes
+([biomes](biomes.md#the-cast)). Every placed
+feature any of those biomes lists for this step — the per-step lists on its
+`BiomeGenerationSettings` — is collected by its index in
 that step's list, and the indices are **sorted** — that sort is the execution order, and
 it is the same for every chunk *in that dimension*, because
 `ChunkGenerator.featuresPerStep` is memoised per generator and built from
 that generator's possible biomes. The Nether's order has nothing to do with
 the Overworld's. Within each step, structures at that step are placed before
-its features ([structure placement](structure-placement.md)).
+its features ([structure
+placement](structure-placement.md#then-the-blocks-arrive-one-chunk-at-a-time)).
 
 ## The fold
 
@@ -100,7 +107,11 @@ flowchart TB
 ```
 
 Three things about that chain are load-bearing and none of them is obvious
-from a data pack.
+from a data pack. Four of the modifiers in it are pure filters —
+`RarityFilter` at the head, which turns one position into one or none on a
+roll; `SurfaceWaterDepthFilter`; `BlockPredicateFilter`, the survival check;
+and `BiomeFilter` — and they are what a `PlacementFilter` is: a modifier that
+returns the position it was given, or nothing.
 
 **A repeating placement does not scatter.** `CountPlacement`,
 `NoiseBasedCountPlacement` and `NoiseThresholdCountPlacement` are
@@ -115,7 +126,8 @@ them on the ground, and a chain that forgets one places at the bottom of the
 world. `WorldGenRegion.getHeight` returns the stored height **plus one**, so
 a heightmap placement lands on top of the surface rather than in it. Two of
 vanilla's heightmap presets read the *worldgen* heightmaps, which are not
-among the four `ChunkStatusTasks.generateFeatures` primed on the way in.
+among the four `ChunkStatusTasks.generateFeatures` primed on the way in
+([the six heightmaps](../world/chunk-anatomy.md#the-six-heightmaps)).
 
 **The biome is checked twice.** A feature was selected because *some* biome
 in the 3×3 wanted it; `BiomeFilter` re-reads the biome at the scattered
@@ -125,20 +137,26 @@ each direction. Vanilla is not consistent about where it goes: the base tree
 placement ends with the biome filter and the survival-checked variant appends
 its block predicate *after* it, so both orders ship.
 
+What every one of them is handed is a `PlacementContext`, and it is more
+world than anything else in this system gets: the block state at a position,
+a heightmap reading, the chunk's carving mask, and — the field the biome
+filter needs — which placed feature the chain started from.
+
 The rest of the fifteen modifiers move a position rather than counting or
 filtering it: `InSquarePlacement` scatters within the chunk,
 `RandomOffsetPlacement` jitters, `EnvironmentScanPlacement` searches up or
-down for a surface, `FixedPlacement` names absolute positions. One of the
+down for a surface over a `CaveSurface`, `FixedPlacement` names absolute
+positions, and `SurfaceRelativeThresholdFilter` keeps a position only if a
+heightmap reading above or below it falls in a range. One of the
 fifteen fits neither shape: `CountOnEveryLayerPlacement` is deprecated,
 extends `PlacementModifier` directly, and does its own scatter and cave-layer
 scan inside `PlacementModifier.getPositions`.
 
 ## A feature that is a tree of features
 
-Six of the sixty-three registered features write no blocks. `Feature.NO_OP`
-is a deliberate nothing; the other five take other placed features and choose
-between them, which is how a data pack builds decoration out of decoration
-rather than out of algorithms:
+Five of the sixty-three registered features write no blocks of their own.
+They take other *placed* features and choose between them, which is how a data
+pack builds decoration out of decoration rather than out of algorithms:
 `RandomSelectorFeature` walks a weighted list rolling each entry's chance and
 falls back to a default; `SimpleRandomSelectorFeature` picks a uniform index;
 `WeightedRandomSelectorFeature` draws from a weighted list;
@@ -146,6 +164,8 @@ falls back to a default; `SimpleRandomSelectorFeature` picks a uniform index;
 and `SequenceFeature` places every entry in order and **stops at the first
 failure**, reporting failure itself. The plains oak is one of these — a
 random selector between a fancy oak, a fallen oak and a plain oak with bees.
+(A sixth writes nothing and chooses nothing: `Feature.NO_OP` is a deliberate
+blank, and it is what an empty slot in a data pack is spelled as.)
 
 All five call `PlacedFeature.place`, not
 `PlacedFeature.placeWithBiomeCheck` — which is exactly why a `BiomeFilter`
@@ -156,33 +176,42 @@ biome-level ones do.
 
 ## What a feature may write, and where it may read
 
-`ChunkStatus.FEATURES` is the **only** step in the generation pyramid with a
-positive block write radius: one, so a tree may cross into a neighbour
-([the chunk generation pipeline](../world/chunk-generation-pipeline.md)). The
-terrain steps declare zero and every other step declares minus one, which no
-position satisfies — a write from a step that has not declared a radius is
-logged and dropped.
+`ChunkStatus.FEATURES` is the only step in the generation pyramid with a
+*positive* block write radius, and the radius is one — so a tree may cross
+into a neighbour, and nothing else in generation may cross into anything
+([four steps may write, and only
+four](../world/chunk-generation-pipeline.md#four-steps-may-write-and-only-four)).
 
-Writes and reads are guarded in different places, and the reads reach much
-further. `Feature.place` checks `WorldGenLevel.ensureCanWrite` for the origin
+What that permission is worth is decided twice, and the second time is this
+page's. `Feature.place` checks `WorldGenLevel.ensureCanWrite` for the origin
 once, and then each individual write is re-checked by
 `WorldGenRegion.ensureCanWrite`, which logs — and pauses, in a development
 environment — and does not write. A canopy that would reach two chunks out is
-**truncated**, not moved and not abandoned. A *read* outside the write zone is
-only warned about by `WorldGenRegion.warnIfReadOutsideWriteZone` and still
-happens. What makes cascading worldgen structurally impossible is one level
-further out: `WorldGenRegion.getChunk` **throws** rather than loading once the
-request passes the step's declared dependency radius — eight chunks of
-chessboard distance at this step — and what it may legally see there is a
-chunk at `ChunkStatus.STRUCTURE_STARTS`.
+therefore **truncated**, not moved and not abandoned: half a tree, written
+without complaint. Reading is looser and then suddenly much stricter. A read
+outside the write zone is a warning and still happens; a read past the step's
+declared dependency radius — eight chunks at this step, and only of chunks at
+`ChunkStatus.STRUCTURE_STARTS` — throws instead of loading, which is what makes
+cascading worldgen structurally impossible rather than merely discouraged
+([a read too far crashes, a read too wide only
+warns](../world/chunk-generation-pipeline.md#a-read-too-far-crashes-a-read-too-wide-only-warns)).
 
-The supporting value types are worth naming because they are handed three
-different amounts of world. An `IntProvider` gets a random source and nothing
-else. `HeightProvider.sample` and `VerticalAnchor.resolveY` get a
+The supporting value types are worth naming because they are handed four
+different amounts of world, and the ladder is the whole design. An
+`IntProvider` and a `FloatProvider` get a random source and nothing else.
+`HeightProvider.sample` and `VerticalAnchor.resolveY` get a
 `WorldGenerationContext`, which despite the name is two integers — the world's
-minimum Y and its height. Only `BlockPredicate` sees the world itself: it
+minimum Y and its height. A `BlockStateProvider` gets a random source and a
+position, and picks the block to write from it. Only `BlockPredicate` sees the
+world: it
 extends `BiPredicate<WorldGenLevel, BlockPos>`, and that is why a placement
-can ask what block is under the sapling.
+can ask what block is under the sapling. Each of the four is its own registry
+of dispatched types, and each is mostly instances: fourteen block predicates,
+of which four are boolean combinators over the other ten; six height
+providers, which are distribution shapes over one range; eight state
+providers, which pick a block from a weight, a noise or a rule. The head of
+each family is explained once, here; the members are a catalogue this book
+declines ([what this book skips](../anatomy/what-this-book-skips.md)).
 
 ## Questions players ask
 
@@ -199,12 +228,18 @@ catches the exception and offers safe mode. A dedicated server never calls
 crash report wrapped around the first chunk that tries to decorate.
 
 **Why does a chunk keep changing after it has decorated?** Because all eight
-neighbours write into it when *they* decorate. What makes that safe is not
-locking and not the dependency graph: every decoration step in a level runs on
-the single-threaded `ConsecutiveExecutor` named *worldgen*, so no two
-neighbours are ever inside the centre chunk at once. The dependency graph
-fixes the *order* — lighting requires the whole ring to have decorated
-first — not the exclusion.
+neighbours write into it when *they* decorate, and nothing about the
+dependency graph says that is safe — the graph fixes the *order*, not the
+exclusion. What makes it safe is that every worldgen task in a dimension is
+serialised behind one executor, so no two neighbours are ever inside the
+centre chunk at once
+([dispatch, and why the parallelism is smaller than the thread
+names](../world/chunk-generation-pipeline.md#dispatch-and-why-the-parallelism-is-smaller-than-the-thread-names)).
+
+**Is decoration the only way a feature runs?** No, there are three doors, and
+two of them skip this page entirely. A configured feature can be placed
+straight from `/place feature`, with no placement layer at all; a sapling
+grows through the third.
 
 **Does a sapling grow the same way a worldgen tree does?** No — it skips this
 whole page. `SaplingBlock.advanceTree` and bone meal run on the **server main
@@ -218,6 +253,21 @@ It also hand-manages the sapling block, which is a story of its own
 good one: `EndPodiumFeature` is constructed directly by the dragon fight and
 appears in no registry at all. Being a `Feature` and being data-driven are
 different things.
+
+**Where are the actual features?** Sixty-three algorithms is the longest tail
+in the part — icebergs, geodes, dripstone clusters, lakes, springs, coral,
+huge fungi, the End spikes — and none of them is a mechanism this page has not
+already explained: each is one `Feature.place` writing blocks from a
+configuration, reached the same way as every other. The book names the
+framework and declines the catalogue
+([what this book skips](../anatomy/what-this-book-skips.md)); the two that do
+something structurally different are named where they bite, `OreFeature` on
+[chunk anatomy](../world/chunk-anatomy.md#sections-and-their-four-counters)
+for holding a section open across many writes, and `TreeFeature` on
+[trees](trees.md#one-algorithm-five-slots). A development build can count the
+rest: with
+`SharedConstants.DEBUG_FEATURE_COUNT` set, `FeatureCountTracker` tallies every
+feature placed per level and dumps the table on a key press.
 
 **Are structures and features really the same step?** They share the step
 loop and not the index space, so a structure and a feature at the same index
@@ -234,6 +284,8 @@ chunk, while a feature gets only the softer 3×3 write-zone check.
 `RandomSelectorFeature` · `SequenceFeature` ·
 `GenerationStep.Decoration` · `FeatureSorter.buildFeaturesPerStep` ·
 `ChunkGenerator.applyBiomeDecoration` · `ChunkGenerator.validate` ·
+`PlacementContext` · `FeaturePlaceContext` ·
+`SurfaceRelativeThresholdFilter` · `BlockStateProvider` ·
 `WorldgenRandom.setDecorationSeed` · `WorldgenRandom.setFeatureSeed` ·
 `WorldGenRegion.ensureCanWrite` · `WorldGenRegion.getChunk` ·
 `BlockPredicate` · `HeightProvider` · `VerticalAnchor` ·

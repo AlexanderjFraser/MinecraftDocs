@@ -10,8 +10,8 @@ two game ticks from now, at `TickPriority.HIGH` — and then forgets. Two ticks
 later a scheduler the repeater has never heard of hands the position back to
 `ServerLevel.tickBlock`, which checks that a repeater is still there and
 calls the block again. Nearly everything the world does *later* is one of
-these: a fluid flowing, a sapling sprouting after bonemeal, a pressure plate
-releasing, a piece of amethyst budding. They all share two queues per chunk
+these: a fluid flowing, a pressure plate releasing, a dispenser firing, a
+redstone torch burning out. They all share two queues per chunk
 and one rule that surprises everybody: **the queue dedups on type and
 position alone, so a second tick for the same block — even a much sooner
 one — is silently dropped.**

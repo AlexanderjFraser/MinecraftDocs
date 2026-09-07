@@ -23,16 +23,12 @@ game does not remember and has to go and measure, one column at a time.
 A chunk is old if `ChunkAccess.blendingData` is non-null. That is the whole
 test: `ChunkAccess.isOldNoiseGeneration` returns exactly whether that field is
 set, and the field is *final* — it arrives through the constructor from
-`SerializableChunkData`, which reads a *blending_data* compound out of the
-chunk's NBT, and nothing sets it afterwards. Which saves carry that key is
-`util/datafix`'s business, which
+`SerializableChunkData`, the record that reads a chunk's NBT
+([chunk storage](../world/chunk-storage.md#the-cast)), which pulls a
+*blending_data* compound out of it and nothing sets afterwards. Which saves
+carry that key is `util/datafix`'s business, which
 [this book skips](../anatomy/what-this-book-skips.md); by the time world
 generation sees a chunk the key is either there or it is not.
-
-> **For a 1.21-era reader.** The class that used to read and write the chunk
-> NBT is now `SerializableChunkData`, a record with a *blending_data*
-> component and its own parse and write halves. The old *ChunkSerializer*
-> name is gone.
 
 The awkward part is that a chunk being generated cannot ask its neighbours
 whether they are old, because most of them do not exist yet. So `Blender.of` —
@@ -41,7 +37,10 @@ file*. `WorldGenRegion.isOldChunkAround` hands the question to the level's
 `ChunkMap`, which inherits `SimpleRegionStorage.isOldChunkAround` and lands on
 `IOWorker.isOldChunkAround`. That walks the region files covering a square of
 radius seven, and for each region it needs a `BitSet` with one bit per chunk,
-built by scanning all 1,024 chunks in the region for two NBT fields and
+built by scanning all 1,024 chunks in the region — a region file is
+thirty-two by thirty-two
+([inside a region file](../world/chunk-storage.md#inside-a-region-file)) — for
+two NBT fields and
 nothing else: *DataVersion* and *blending_data*. A chunk counts as old if its
 stored *DataVersion* is below 4882 or if it already carries a *blending_data*
 compound. The scan runs on the background executor, the caller joins it, and
@@ -51,7 +50,8 @@ the bitset is kept in a 1,024-entry region cache.
 twice, whatever generator the dimension uses:
 `ChunkStatusTasks.generateBiomes` and `ChunkStatusTasks.generateNoise` both
 evaluate `Blender.of` eagerly, before knowing whether the answer can possibly
-be yes. The noise generator adds two more —
+be yes ([four steps may
+write](../world/chunk-generation-pipeline.md#four-steps-may-write-and-only-four)). The noise generator adds two more —
 `NoiseBasedChunkGenerator.buildSurface`, eagerly again, and
 `NoiseBasedChunkGenerator.applyCarvers`, the only call site written inside a
 supplier and so the only one that can be skipped. When nothing is old the
@@ -106,7 +106,9 @@ A neighbour yields data only if it passes two tests in
 `BlendingData.getOrUpdateBlendingData`: it carries a `BlendingData`, **and**
 `ChunkAccess.getHighestGeneratedStatus` is not before `ChunkStatus.BIOMES`.
 The second test is what keeps this honest — during the *BIOMES* step the
-dependency window only guarantees neighbours at *STRUCTURE_STARTS*, so a
+dependency window only guarantees neighbours at *STRUCTURE_STARTS*
+([the pyramid, drawn](../world/chunk-generation-pipeline.md#the-pyramid-drawn)),
+so a
 half-built chunk in the queue contributes nothing, and in practice the only
 chunks that pass are ones loaded whole from the save.
 
@@ -115,7 +117,9 @@ derives from the twenty-seven-cell height range: four quart cells per section
 across seven sections, less one, plus three, converted back to chunks. It sits
 inside the radius-eight
 dependency window every noise step declares, so none of the 193 reads can
-trip `WorldGenRegion.getChunk`'s out-of-range crash.
+trip the crash a read past that window would be
+([a read too far crashes, a read too wide only
+warns](../world/chunk-generation-pipeline.md#a-read-too-far-crashes-a-read-too-wide-only-warns)).
 
 ## Sixteen columns, read out of blocks
 
@@ -143,7 +147,8 @@ chunk object measures itself once and never again: whichever sides were new at
 that moment are the sides it will carry until it is unloaded.
 
 Each filled column gets three things. **A height**:
-`BlendingData.getHeightAtXZ` starts at the *WORLD_SURFACE_WG* heightmap if the
+`BlendingData.getHeightAtXZ` starts at the *WORLD_SURFACE_WG* heightmap
+([the six heightmaps](../world/chunk-anatomy.md#the-six-heightmaps)) if the
 chunk has one primed and at the top of the old area if not, then walks
 straight down looking for one of eleven block types — podzol, gravel, grass,
 stone, coarse dirt, sand, red sand, mycelium, a snow *block*, terracotta or
@@ -201,21 +206,22 @@ graph is the one built at *BIOMES* — the later three are passed to
 `ChunkAccess.getOrCreateNoiseChunk`, find it already created, and are thrown
 away.
 
-The twenty-five columns are the other thing worth noticing. Before any router
-mapping runs, the `NoiseChunk` constructor loops over the chunk's five-by-five
-grid of quart columns, calls `Blender.blendOffsetAndFactor` for each, and
-fills two `NoiseChunk.FlatCache` instances. Only afterwards does
-`NoiseChunk.wrapNew` swap `DensityFunctions.BlendAlpha` and
-`DensityFunctions.BlendOffset` — by object identity, the same trick the
-beardifier uses — for those already-full caches
-([density functions](density-functions.md)). An empty blender skips the swap:
-the two singletons stay the constants one and zero that they are, and a
-*blend_density* marker is replaced by its own child.
+The twenty-five columns are the other thing worth noticing, because they are
+where this page's measurements physically enter the density graph. Before any
+router mapping runs, the `NoiseChunk` constructor loops over the chunk's
+five-by-five grid of quart columns, calls `Blender.blendOffsetAndFactor` for
+each, and fills two `NoiseChunk.FlatCache` instances. Only afterwards does the
+per-chunk rewrite put those already-full caches where the two blend leaves
+were — and, with no old chunk near, leave the leaves as the constants they are
+and erase the *blend_density* node altogether
+([wrap: once per chunk](density-functions.md#wrap-once-per-chunk)).
 
 ## What the blender actually answers
 
 Three questions, three different shapes of answer, and only two of them are
-blends.
+blends. Three is fewer than the five consumers above because the last two do
+not ask the blender anything: the carving mask and the border ticks read a
+chunk's `BlendingData` directly, and neither of the two maps is involved.
 
 **Height, as an alpha and an offset.** `Blender.blendOffsetAndFactor` first
 checks whether the sample point sits exactly on a measured column; if it does,
@@ -242,8 +248,10 @@ function files and *blend_offset* in three, all of them under the three
 overworld directories.
 
 Because *offset* and *factor* are also the two inputs to
-`NoiseRouterData.preliminarySurfaceLevel`, which `Aquifer.NoiseBasedAquifer`
-reads to place its fluid levels, the water table follows the old ground. Nobody
+`NoiseRouterData.preliminarySurfaceLevel`, which is one of the five router
+functions the aquifer reads
+([the two fillers](terrain.md#the-two-fillers-what-the-number-becomes)), the
+water table follows the old ground. Nobody
 wrote a rule for that: it falls out of the aquifer sampling a blended
 function.
 
@@ -258,7 +266,9 @@ in all seven shipped noise settings, while the alpha and offset nodes are
 overworld-only.
 
 **Biome, as a replacement.** `Blender.getBiomeResolver` wraps the biome source
-in a resolver that asks `Blender.blendBiome` first and only falls through when
+in a `BiomeResolver` — the one-method interface the chunk's biome fill takes
+([the trace: a chunk's biomes](biomes.md#the-trace-a-chunks-biomes)) — that
+asks `Blender.blendBiome` first and only falls through when
 it declines. And it is not a blend: it finds the nearest measured biome within
 twenty-seven cells, adds twelve cells' worth of a fixed shift noise to that
 distance, divides by twenty-eight, and returns the old biome if the result is
@@ -275,7 +285,10 @@ all eight `Direction8` neighbours plus the chunk's own, turns each into a
 `Blender.DistanceGetter` measuring distance to a box eight blocks either side
 of the chunk centre in X and Z — a whole chunk wide — and as tall as that
 chunk's old area, and installs the minimum of them as a
-`CarvingMask.Mask` on the chunk's carving mask. A position within four blocks
+`CarvingMask.Mask` on the chunk's carving mask — the per-chunk bit set the
+carvers record themselves in
+([carving, and who chooses the block](terrain.md#carving-and-who-chooses-the-block)).
+A position within four blocks
 of any such box — after each axis is displaced by the same shift noise,
 scaled by four — reads as already carved. Since `WorldCarver.carveEllipsoid`
 skips any position the mask already reports, the effect is that carvers refuse
@@ -297,7 +310,9 @@ old, walks the whole sixteen-wide face from the bottom of the old area up to
 that column's *MOTION_BLOCKING* height. Every leaf block and every non-empty
 fluid it passes goes to `ChunkAccess.markPosForPostProcessing`. Nothing is
 changed: the positions are queued for the post-processing pass that runs when
-the chunk becomes live, which is what makes water at the seam flow and
+the chunk becomes live
+([what the chunk goes on holding](../world/chunk-anatomy.md#what-step-11-leaves-behind-and-what-the-chunk-goes-on-holding)),
+which is what makes water at the seam flow and
 orphaned leaves decay instead of hanging there. The step's ordering is what
 makes the heightmap read safe — `ChunkStatusTasks.generateFeatures` primes the
 four final heightmaps before decorating, so *MOTION_BLOCKING* is current by
@@ -308,7 +323,9 @@ the time the border walk reads it.
 `BelowZeroRetrogen` is not blending, but it rides the same hooks and is easy
 to mistake for it. A chunk carrying one is being *deepened* rather than
 blended: `ChunkAccess.getHighestGeneratedStatus` folds its
-`BelowZeroRetrogen.targetStatus` in, `ChunkStatusTasks.generateNoise` calls
+`BelowZeroRetrogen.targetStatus` in
+([the four shapes a chunk takes](../world/chunk-anatomy.md#the-four-shapes-a-chunk-takes)),
+`ChunkStatusTasks.generateNoise` calls
 `BelowZeroRetrogen.replaceOldBedrock` and then
 `BelowZeroRetrogen.applyBedrockMask` if there are holes, and
 `BelowZeroRetrogen.getBiomeResolver` wraps the blender's resolver in one more
@@ -318,10 +335,12 @@ everything else from the chunk's existing biome column.
 ## Questions players ask
 
 **Why is the seam wide for hills and narrow for caves?** Two maps, two radii.
-Height and biome are averaged over every measured column within a hundred and
-eight blocks, gathered from up to 193 chunks; density is mixed only from the
-nine chunks nearest the one being generated, over two cells. The ground slopes
-for a hundred blocks and the caves change their mind in eight.
+Height and biome are both drawn from the same map of every measured column
+within a hundred and eight blocks, gathered from up to 193 chunks — the height
+averaged over it, the biome taken from the nearest entry in it; density is
+mixed only from the nine chunks nearest the one being generated, over two
+cells. The ground slopes for a hundred blocks and the caves change their mind
+in eight.
 
 **Can the blend leave a visible edge anyway?** Yes, twice over. A column whose
 old surface is none of the eleven blocks the height scan recognises reports

@@ -252,7 +252,11 @@ last row made concrete: the same section-indexed lookup the server uses, with
 the disk store, the UUID index and the per-chunk load states left out, so
 nothing in it survives a `ClientLevel` being replaced.
 `ClientLevel.tintCaches` holds four `BlockTintCache`s — grass, foliage, dry
-foliage, water. `ClientLevel.globallyRenderedBlockEntities` is the set that
+foliage, water — and each is what makes a biome colour boundary look softer
+than the biome boundary is: `ClientLevel.calculateBlockTint` box-blurs the
+per-block answer over the columns the *biome blend radius* option names and
+caches that, over a lookup that is itself on the ragged side of the two biome
+borders ([biomes](../worldgen/biomes.md#the-two-borders)). `ClientLevel.globallyRenderedBlockEntities` is the set that
 draws from anywhere, populated by `ClientLevel.onBlockEntityAdded`.
 `ClientLevel.explosionTracker` is a `ClientExplosionTracker`, a per-tick
 budget of at most 512 block particles that empties itself every tick rather

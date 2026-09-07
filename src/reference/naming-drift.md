@@ -117,6 +117,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | the name you remember | 26.2 |
 |---|---|
 | *ChunkStorage* | gone — `ChunkMap extends SimpleRegionStorage` |
+| *ChunkSerializer* | `SerializableChunkData`, a record with its own parse and write halves — and a *blending_data* component |
 | *DimensionDataStorage* | `SavedDataStorage` (two of them) |
 | *getLightBlock* | `BlockBehaviour.BlockStateBase.getLightDampening` |
 | *PalettedContainer.Strategy* | top-level `Strategy` + `Configuration` |
@@ -328,6 +329,7 @@ render.
 | *BiomeSpecialEffects.fogColor* / *skyColor* / music / ambient sound | `EnvironmentAttributes.*` via `Biome.getAttributes` |
 | the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters |
 | *StructureTemplateManager* folder *structures/* | *structure/* |
+| *level.dat* field *WorldGenSettings* | its own file — `WorldGenSettings` is `SavedData`, written to *data/minecraft/world_gen_settings.dat*; `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS` is all that is left of the key |
 
 ### Part XIII — Commands and data packs
 

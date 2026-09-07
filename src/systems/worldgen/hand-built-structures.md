@@ -10,8 +10,8 @@ one, `StrongholdStructure` **clears the whole builder, adds one to the seed
 and generates the entire stronghold again.** It is the only structure in the
 game that regenerates itself until it likes the result.
 
-[Jigsaw and templates](jigsaw-and-templates.md) traces a village, and a
-village is a jigsaw: pieces come from a data-pack registry and find each
+[Jigsaw and templates](jigsaw-and-templates.md#the-trace-a-village-from-town-centre-to-blocks)
+traces a village, and a village is a jigsaw: pieces come from a data-pack registry and find each
 other through connector blocks. That is one of the sixteen structure types.
 **The other fifteen use an older assembler that is still the majority of the
 code** — 32 classes and about 10,200 lines under
@@ -21,10 +21,15 @@ woodland mansions, end cities, ruined portals, igloos, shipwrecks, ocean
 ruins, desert pyramids, jungle temples, swamp huts, buried treasure and
 nether fossils are all built this way.
 
-Everything *around* the assembler is shared, and belongs to
-[structure placement](structure-placement.md): the lottery, `Structure`,
-`StructureStart`, `StructureCheck`, the reference scan, `Beardifier`, and the
-per-chunk write. This page is only the part where the pieces come from.
+Everything *around* the assembler is shared, and belongs to structure
+placement: [the lottery](structure-placement.md#which-chunk-a-grid-and-nothing-else),
+[the presence cache](structure-placement.md#the-presence-cache-and-the-hole-that-proves-an-absence)
+that `StructureCheck` is, [the reference
+scan](structure-placement.md#who-needs-to-know),
+[`Beardifier`](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive)
+and [the per-chunk
+write](structure-placement.md#then-the-blocks-arrive-one-chunk-at-a-time). This
+page is only the part where the pieces come from.
 
 ## The idea
 
@@ -34,12 +39,12 @@ constructing its own neighbours.
 
 | class | its role |
 |---|---|
-| `StructurePiece` | the base, and the reason the system holds together: a **mutable** `BoundingBox`, an orientation, a mirror, a rotation, a depth, and a piece type |
+| `StructurePiece` | the base, and the reason the system holds together: a **mutable** `BoundingBox`, an orientation, a mirror, a rotation, a depth, and a registered `StructurePieceType` — which is how a piece comes back off disk, and the reason every one of these classes needs a loader beside it |
 | `StructurePiece.placeBlock` | the conventional write path — converts to world coordinates, drops anything outside the chunk box it was handed, applies the piece's mirror and rotation *to the block state*, and schedules a tick for whatever fluid is at the position **after** the write. Not a choke point: the structure classes call `LevelWriter.setBlock` on the level directly two dozen times |
 | `StructurePiece.BlockSelector` | a stateful per-block state chooser, and the entire visual character of a structure |
 | `StructurePieceAccessor` | eleven lines, two methods, and `StructurePiece.findCollisionPiece` is a **linear scan returning the first overlapping box**. There is no spatial index |
 | `StructurePiecesBuilder` | accumulates the pieces, and can move all of them vertically at once |
-| `TemplateStructurePiece` | the bridge to the `.nbt` machinery, for structures that are procedural in *layout* and templated in *content* |
+| `TemplateStructurePiece` | the bridge to [the `.nbt` machinery](jigsaw-and-templates.md#from-a-piece-to-blocks), for structures that are procedural in *layout* and templated in *content* |
 | `ScatteredFeaturePiece` | the base for one-shot surface buildings, with two ground-finders |
 | `SinglePieceStructure` | the forty-line `Structure` that places exactly one of those |
 
@@ -74,20 +79,26 @@ The vocabulary a piece writes with is the rest of the base class:
 cells from interior ones, and `StructurePiece.generateAirBox`,
 `StructurePiece.generateMaybeBox`,
 `StructurePiece.generateUpperHalfSphere`,
-`StructurePiece.fillColumnDown` and `StructurePiece.createChest` are the
-rest. `StrongholdPieces.SmoothStoneSelector` is the canonical block selector:
+`StructurePiece.fillColumnDown` and `StructurePiece.createChest` — which
+leaves a loot-table key and a seed rather than items
+([loot tables](../items/loot-tables.md#the-chest-was-empty-before-you-got-there)) —
+are the rest. `StrongholdPieces.SmoothStoneSelector` is the canonical block selector:
 on a box edge it rolls cracked, mossy or infested stone brick and otherwise
 plain, and interior cells become cave air. One small object is the whole look
 of a stronghold. `JungleTemplePiece.MossStoneSelector` is the other one.
 
 ## The trace: a stronghold
 
-All of this runs at `ChunkStatus.STRUCTURE_STARTS`, inside the same
-`Structure.GenerationStub` consumer the jigsaw assembler runs in — so the
+All of this runs at `ChunkStatus.STRUCTURE_STARTS`
+([the pyramid, drawn](../world/chunk-generation-pipeline.md#the-pyramid-drawn)),
+inside the same
+[`Structure.GenerationStub`](structure-placement.md#whether-it-is-worth-laying-out)
+consumer the jigsaw assembler runs in — so the
 whole graph is built in memory, on a worldgen worker, with no world access
-and no blocks written. One structure skips the consumer:
-`MineshaftStructure.findGenerationPoint` hands the stub a builder it has
-already filled, which is the only *Either.right* in the game.
+and no blocks written. The stub's generator is an *either*, and one structure
+takes the branch nothing else takes:
+`MineshaftStructure.findGenerationPoint` hands it a builder it has
+already filled instead of a consumer to run later.
 
 ```mermaid
 sequenceDiagram
@@ -149,18 +160,36 @@ and a stronghold library falls back from its tall variant to its short one.
 | **procedural piece graphs** | the pieces write their own blocks and construct their own neighbours — the pattern in its pure form | `StrongholdPieces`, `MineshaftPieces`, `NetherFortressPieces` |
 | **grid and graph solvers** | a layout is *solved* first and pieces are emitted afterwards, so neither ever calls `StructurePieceAccessor.findCollisionPiece` — the layout **is** the collision guarantee | `WoodlandMansionPieces`, `OceanMonumentPieces` |
 | **template-backed pieces** | procedural placement, `.nbt` content, and therefore the same processors and the same `StructureTemplate.placeInWorld` the jigsaw path uses | `EndCityPieces`, `RuinedPortalPiece`, `OceanRuinPieces`, `ShipwreckPieces`, `IglooPieces`, `NetherFossilPieces`, `WoodlandMansionPieces` |
-| **one-shot surface buildings** | no graph and no children: one box, dropped on the ground, over `ScatteredFeaturePiece` | `DesertPyramidPiece`, `JungleTemplePiece`, `SwampHutPiece` |
+| **one-shot surface buildings** | no graph and no children: one box, dropped on the ground, over `ScatteredFeaturePiece`, or — for buried treasure — no ground-finder at all | `DesertPyramidPiece`, `JungleTemplePiece`, `SwampHutPiece`, `BuriedTreasurePieces` |
 
 The nether fortress is the most elaborate of the first family: it runs *two*
 weight tables and a mode switch, where a castle entrance is a one-way door
 out of bridge mode into castle mode, and only a T-balcony can fall back, on a
-one-in-eight roll per branch.
+one-in-eight roll per branch. `WoodlandMansionPieces` is in the table twice
+because it genuinely is: its layout is solved and its rooms are then stamped
+from `.nbt` files.
+
+Beside each of those piece families sits a thin `Structure` subclass —
+`RuinedPortalStructure`, `DesertPyramidStructure`, `OceanRuinStructure`,
+`ShipwreckStructure`, `WoodlandMansionStructure`, `NetherFossilStructure` and
+the rest — which is the settings wrapper and the entry point and nothing more,
+usually a `SinglePieceStructure` of forty lines. Two of them do more than
+wrap. `RuinedPortalStructure` draws the decay setup, below. And
+`DesertPyramidStructure` is where the book's one live `Structure.afterPlace`
+lives: once the pyramid's blocks are down it collects every candidate
+position its pieces recorded, shuffles them from a positional random source,
+turns five to seven into suspicious sand and the rest into plain sand — which
+is why a pyramid's archaeology is the same in two worlds with one seed and
+never the same twice within one.
 
 Almost nothing here is data-driven, and that is the point. Piece choice,
 weights, budgets, layout rules and adjacency are all Java.
-`Registries.STRUCTURE` still supplies the settings wrapper, and the templated
+`Registries.STRUCTURE` still supplies the settings wrapper
+([structure placement](structure-placement.md#the-cast)) and the templated
 families read `.nbt` files, but **a data pack cannot add a room to a
-stronghold.**
+stronghold** — which makes this the book's clearest counter-example to the
+data-driven type pattern: a registry whose instances are Java grammars
+([the pattern](../foundations/data-driven-types.md#the-idea-stated-once)).
 
 ## Where the families bend the idea
 
@@ -196,20 +225,20 @@ likelier the longer the bridge gets, with at most one per city.
 **Ruined portal decay is a processor stack, not code.** The rot, the
 gold-block gaps, the lava-to-magma substitutions and the mossiness are
 `StructureProcessor`s assembled per portal and stored in the saved piece, so
-decay reproduces exactly on reload. Only some of that stack is shared with the
-jigsaw path ([jigsaw and templates](jigsaw-and-templates.md)):
+decay reproduces exactly on reload. What makes it unusual is that the stack is
+built in Java and appears in no data pack at all
+([the processors](jigsaw-and-templates.md#the-processors-and-what-the-shipped-lists-use)):
 `BlockAgeProcessor` — which is the mossiness, not a separate step —
-`LavaSubmergedBlockProcessor` and `BlackstoneReplaceProcessor` are built in
-`RuinedPortalPiece` and appear in no data pack at all. The forty shipped
-processor lists between them use four types: rule, protected blocks, block rot
-and capped.
+`LavaSubmergedBlockProcessor` and `BlackstoneReplaceProcessor` are
+`RuinedPortalPiece`'s alone. Which of the five decay setups a portal gets —
+surface, buried, in a mountain, on the ocean floor, in the nether — is
+`RuinedPortalStructure`'s weighted draw, made before any piece exists.
 
 ## Questions players ask
 
 **Does `/locate stronghold` point at the portal?** No — at the corner of the
-start chunk. `ChunkGenerator.findNearestMapStructure` returns
-`StructurePlacement.getLocatePos`, which is the chunk's minimum block plus the
-placement's own offset, and the eye of ender takes the same answer. The
+start chunk, like every other structure
+([what `/locate` points at](structure-placement.md#questions-players-ask)). The
 stronghold *does* keep a portal-room pointer —
 `StrongholdPieces.StartPiece.getLocatorPosition` overrides the base method to
 return it — but nothing in 26.2 calls that method. What the pointer is really
@@ -220,7 +249,7 @@ for is the regeneration loop's exit condition: the portal room's entire
 and visibly so. `StrongholdPieces` keeps its remaining-piece list, its
 running weight total and a one-shot "force this piece next" override in
 **private static fields**, reset by `StrongholdPieces.resetPieces` from
-inside a generation lambda that runs on chunk workers. The nether fortress's
+inside a generation lambda that runs on the worldgen executor. The nether fortress's
 placement counters live on static array elements merely reset at start-piece
 construction, so its per-structure budget is an illusion. It is rare enough
 not to bite, and it is the sharpest contrast with the stateless jigsaw path.

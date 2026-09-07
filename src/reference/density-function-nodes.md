@@ -1,16 +1,18 @@
 # Density-function nodes
 
 > Verified against **Minecraft 26.2** · Reference · the thirty-four node types a
-> *worldgen/density_function* file may name, what each one takes, and what the
-> per-chunk rewrite turns it into.
+> *worldgen/density_function* file may name: what each one takes, what the
+> per-chunk rewrite turns it into, what range it reports, and which ids the
+> shipped data actually writes.
 
 [Density functions](../systems/worldgen/density-functions.md) is the lecture:
 three forms of one graph, two rewrites, and the six caches. This is the
-catalogue behind it — the table you would pause the video to read.
+catalogue behind it — the four tables you would pause the video to read.
 
 `DensityFunctions.bootstrap` registers every entry below into
 `BuiltInRegistries.DENSITY_FUNCTION_TYPE`, in this order, under the
-*minecraft* namespace. That registry is **built-in and frozen at startup**,
+*minecraft* namespace. That registry is built-in and
+[frozen at start-up](../systems/foundations/identifiers-and-registries.md#the-freeze-rule-stated),
 which is why adding a new *kind* of node takes code while adding a new graph
 takes a JSON file.
 
@@ -67,88 +69,82 @@ wrapped function; the seven transforms are all `DensityFunctions.Mapped`; the
 four arithmetic ids share `DensityFunctions.TwoArgumentSimpleFunction`. In
 each case the *enum constant* carries its own codec, and the node's *codec()*
 returns its type's — which is how a re-serialised graph comes back with the
-right id. `DensityFunctions.MulOrAdd` is the specialisation
-`DensityFunctions.TwoArgumentSimpleFunction.create` picks when the id is
-*add* or *mul* and one argument folded to a `DensityFunctions.Constant`, so
-*add* in the JSON may come back as either class.
+right id. The two classes in the *add* and *mul* rows are the same story: the
+constructor folds a constant argument away
+([the parse step](../systems/worldgen/density-functions.md#parse-one-file-one-graph)),
+so *add* in the JSON may come back as either.
+
+Two members of `DensityFunctions` are **not** in this table because they are
+not registered: `DensityFunctions.HolderHolder`, the in-memory stand-in for an
+id reference, which has no codec at all; and
+`DensityFunctions.TransformerWithContext`, a shape with no implementation.
 
 ## What the caches become
 
-`NoiseChunk.wrapNew` is the per-chunk rewrite. A marker is a *request*; this
-is what is installed instead. All six replacements implement
-`DensityFunctions.MarkerOrMarked`, so they still report their marker type and
-would re-serialise unchanged.
+`NoiseChunk.wrapNew` is the
+[per-chunk rewrite](../systems/worldgen/density-functions.md#wrap-once-per-chunk).
+A marker is a *request*; this is what is installed instead. All six installed
+classes implement `DensityFunctions.MarkerOrMarked`, so the marker type
+survives the swap and the graph would re-serialise unchanged.
 
 | marker type | installed | keyed on |
 |---|---|---|
-| `DensityFunctions.Marker.Type.Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell. Serves a foreign context by delegating to the wrapped function; only a sample whose context *is* the `NoiseChunk` throws outside the loop |
+| `DensityFunctions.Marker.Type.Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell |
 | `DensityFunctions.Marker.Type.FlatCache` | `NoiseChunk.FlatCache` | **position**, at quart resolution: one array entry per 4×4 block column group, filled at construction |
 | `DensityFunctions.Marker.Type.Cache2D` | `NoiseChunk.Cache2D` | **position**, one entry — the packed XZ of the last sample |
 | `DensityFunctions.Marker.Type.CacheOnce` | `NoiseChunk.CacheOnce` | **a counter** — `NoiseChunk.interpolationCounter` for the scalar, a second counter for the array form |
 | `DensityFunctions.Marker.Type.CacheAllInCell` | `NoiseChunk.CacheAllInCell` | **the cell** — one array entry per block in the cell, Y stored inverted |
-| `DensityFunctions.Marker.Type.BlendDensity` | `NoiseChunk.BlendDensity`, **or nothing at all** if the level's `Blender` is empty, in which case the marker is replaced by its own child | not cached |
+| `DensityFunctions.Marker.Type.BlendDensity` | `NoiseChunk.BlendDensity`, **or nothing at all** if the level's [`Blender`](../systems/worldgen/blending.md#what-the-blender-actually-answers) is empty, in which case the marker is replaced by its own child | not cached |
 
-The same rewrite resolves three singletons by object identity:
-`DensityFunctions.BlendAlpha` and `DensityFunctions.BlendOffset` become flat
-caches the `NoiseChunk` constructor has *already filled* (or survive as the
-constants 1.0 and 0.0 when there is no blending to do), and
-`DensityFunctions.BeardifierMarker` becomes this chunk's `Beardifier`. And
-`DensityFunctions.HolderHolder` — the in-memory stand-in for an id reference,
-which is not registered and has no codec — is resolved to its value once
-instead of on every sample.
+The same rewrite resolves three unregistered singletons by object identity,
+and every `DensityFunctions.HolderHolder` to its value:
+
+| singleton | installed | with no blending to do |
+|---|---|---|
+| `DensityFunctions.BlendAlpha` | a `NoiseChunk.FlatCache` the constructor has already filled | survives as the constant 1.0 |
+| `DensityFunctions.BlendOffset` | a `NoiseChunk.FlatCache`, likewise | survives as the constant 0.0 |
+| `DensityFunctions.BeardifierMarker` | this chunk's [`Beardifier`](../systems/worldgen/structure-placement.md#the-ground-bends-and-then-the-blocks-arrive) | — the swap is unconditional |
 
 ## Bounds
 
 Every node answers `DensityFunction.minValue` and `DensityFunction.maxValue`
-without a position. The arithmetic family — the two-argument nodes, the
-mapped ones and *clamp* — stores its bounds as record components filled once
-at construction, and so does `BlendedNoise`; a few answer with literals of
-their own and the rest delegate to their input or walk their list again on
-each call. The rules worth knowing:
+without a position. Most take theirs from a child; the arithmetic family — the
+two-argument nodes, the mapped ones and *clamp* — stores them as record
+components filled once at construction, and so does `BlendedNoise`. The bounds
+of a *parsed* graph are not the bounds of the running one, which is
+[the lecture's argument](../systems/worldgen/density-functions.md#questions-players-ask);
+this table is which node departs from its child, and how.
 
-The arithmetic bounds are **sign-aware** and eager: *mul* takes the four
-cross products and picks by the signs of the operands' ends, and *min* and
-*max* take the element-wise minimum and maximum of the ends. Building a *min*
-or a *max* over two ranges that cannot overlap logs a warning and proceeds.
-`DensityFunctions.Mapped.create` transforms the child's two endpoints, with
-*abs* and *square* clamping the minimum up to zero and *invert* reporting
-**±infinity** whenever the child's range straddles zero. *clamp* is the clearest of the nodes
-whose bounds are not derived from a child: its record components are
-literally named *minValue* and *maxValue*, so the codec's *min* and *max*
-fields *are* the interface's bound methods. *shifted_noise* takes its bounds
-from the noise and ignores all three of its children, and *blend_density*
-reports infinity whatever its child says.
+| id | its range | |
+|---|---|---|
+| *add*, *mul*, *min*, *max* | sign-aware and eager | *mul* takes the four cross products and picks by the signs of the operands' ends; *min* and *max* take the element-wise minimum and maximum. Two ranges that cannot overlap log a warning and proceed |
+| *abs*, *square* | the child's endpoints, minimum clamped up to zero | `DensityFunctions.Mapped.create` transforms both ends |
+| *invert* | **±infinity** whenever the child's range straddles zero | the reciprocal has no finite bound across zero |
+| *clamp* | its own record components | they are literally named *minValue* and *maxValue*, so the codec's *min* and *max* fields **are** the interface's bound methods |
+| *shifted_noise* | the noise's | all three children are ignored |
+| *blend_density* | **±infinity**, whatever its child says | the one marker type that is not transparent |
+| *find_top_surface* | its *lower_bound* and its upper bound's maximum | **Y coordinates** — this node's range is on a different scale from every other row |
+| *noise* | from the `DensityFunction.NoiseHolder`; 2.0 until the graph is seeded | the sixty-three shipped noise definitions come out between 2.57 and 7.32 once seeded |
 
-Three nodes report bounds that are not densities or not final.
-`DensityFunctions.Marker` passes its child's bounds through except when its
-type is `DensityFunctions.Marker.Type.BlendDensity`, where it reports ±infinity — the one place a marker
-is not transparent. `DensityFunctions.HolderHolder` reports ±infinity while
-its holder is unbound, which is what lets forward references parse. And
-`DensityFunctions.FindTopSurface` reports its *lower bound* and its upper
-bound's maximum, which are **Y coordinates** — this node's range is on a
-different scale from every other node in the table.
-
-One more, on the unseeded graph: `DensityFunction.NoiseHolder` answers a
-maximum of 2.0 while its `NormalNoise` is still null. Every one of the
-sixty-three shipped noise definitions computes a maximum between 2.57 and 7.32
-once seeded, so a freshly parsed router reports noise bounds that are too
-**narrow**, and seeding widens them.
+`DensityFunctions.HolderHolder`, off the table, reports ±infinity while its
+holder is unbound, which is what lets forward references parse at all.
 
 ## What vanilla actually uses
 
 Thirty-five JSON files ship under *worldgen/density_function* — four at the
 top level plus the per-dimension directories — and between them they use
 twenty-five of the thirty-four ids. Five more appear only inline, in the
-seven `Registries.NOISE_SETTINGS` files: *blend_density* and *squeeze* in all
-seven, and *square*, *invert* and *find_top_surface* in the three overworld
-variants.
+seven `Registries.NOISE_SETTINGS` files, the per-dimension recipes
+[terrain](../systems/worldgen/terrain.md#the-cast) reads: *blend_density* and
+*squeeze* in all seven, and *square*, *invert* and *find_top_surface* in the
+three overworld variants.
 
 That leaves four ids vanilla data never writes. *constant* is never written
 as a typed object, because a bare number is one. *cache_all_in_cell* and
 *beardifier* are added **in code**, by `NoiseChunk`'s constructor, around the
 router's final density. And *shift* — the three-dimensional domain warp — is
-used by nothing: `DensityFunctions.shift` has no callers anywhere in the
-decompile, and no shipped file names the id. `DensityFunctions.ShiftA` and
+[used by nothing](../systems/worldgen/density-functions.md#questions-players-ask):
+`DensityFunctions.ShiftA` and
 `DensityFunctions.ShiftB` cover the two two-dimensional warps vanilla wants.
 
 ---

@@ -187,9 +187,11 @@ item-model property on *component*. All four are among the exceptions below.
 | `BuiltInRegistries.NUMBER_FORMAT_TYPE` | `NumberFormatType` | `NumberFormat` | | inline in `Objective` and `Score` — save data and commands, no pack | [scoreboard and data](../commands/scoreboard-and-data.md) |
 | `BuiltInRegistries.POSITION_SOURCE_TYPE` | `PositionSourceType` | `PositionSource` | | `VibrationParticleOption`, and one enchantment effect (`SpawnParticlesEffect`) — save data and the wire, no pack | [game events and vibrations](../world/game-events-and-vibrations.md) |
 
-The first nine rows are the sub-objects of a configured or placed feature,
-and the trace on [features and placement](../worldgen/features-and-placement.md)
-walks a tree through all of them.
+The first nine rows are the sub-objects of a configured or placed feature, and
+they split between two pages: the first four are the placement layer, on
+[features and placement](../worldgen/features-and-placement.md#the-fold), and
+the five tree slots are [trees](../worldgen/trees.md#one-algorithm-five-slots),
+which is one configured feature's inside seen whole.
 
 ### The type is the behaviour: the file supplies only a config
 

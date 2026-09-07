@@ -16,10 +16,11 @@ This page is the three chunk statuses that turn a scalar field into blocks —
 the workspace that `ChunkStatus.BIOMES` quietly builds before any of them.
 The conveyor that runs the statuses, the dependency pyramid and the
 threading are [the chunk generation
-pipeline](../world/chunk-generation-pipeline.md) in Part IV; this is the
+pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn) in Part IV;
+this is the
 cargo. The scalar field itself is [density
-functions](density-functions.md), and the labels that steer the surface pass
-are [biomes](biomes.md).
+functions](density-functions.md#three-forms-of-one-graph), and the labels that
+steer the surface pass are [biomes](biomes.md#the-trace-a-chunks-biomes).
 
 ## The cast
 
@@ -34,13 +35,11 @@ are [biomes](biomes.md).
 | `SurfaceSystem` | the column re-skin: grass over dirt over stone, sand, the badlands bands | `ChunkStatus.SURFACE`, one instance per level |
 | `WorldCarver` | the shape of caves and canyons, and nothing about their contents | `ChunkStatus.CARVERS` |
 
-Everything here runs on the worldgen executor, one task at a time per
-dimension. Two of the steps fan out further. `ChunkGenerator.createBiomes`
-forks to the background pool as *init_biomes* for **every** generator — the
-base implementation does it, so `FlatLevelSource` and `DebugLevelSource` fork
-too — and `NoiseBasedChunkGenerator` overrides it only to use the chunk's
-cached sampler. The second fork, `NoiseBasedChunkGenerator.fillFromNoise` as
-*wgen_fill_noise*, really is the noise generator's alone.
+Everything here runs on the worldgen executor, and two of these steps fan out
+from it — the biome fill for every generator, the noise fill for this one
+([which steps fork, and why the parallelism is smaller than the thread
+names](../world/chunk-generation-pipeline.md#dispatch-and-why-the-parallelism-is-smaller-than-the-thread-names)).
+What is worth carrying from that into this page is one object.
 `RandomState` — the per-level seed root — is built once in `ChunkMap` and
 shared by every generating chunk, and it owns the `SurfaceSystem`, which is
 therefore per **level**, not per chunk.
@@ -57,19 +56,26 @@ flowchart LR
 
 The odd arrow is the first one. **The workspace is born one status before
 the terrain needs it**, because the biome sampler wants the chunk's caches
-too ([biomes](biomes.md) reads the climate functions through
-`NoiseChunk.cachedClimateSampler`). So `NoiseChunk.forChunk` runs at
+too ([biomes](biomes.md#the-trace-a-chunks-biomes) reads the climate functions
+through `NoiseChunk.cachedClimateSampler`). So `NoiseChunk.forChunk` runs at
 `ChunkStatus.BIOMES`, wrapping the seeded router into chunk-local caches and
 constructing the `Aquifer` and the `NoiseChunk.BlockStateFiller` chain,
-before a single block exists.
+before a single block exists. Two things depend on that one status of slack:
+the beardifier is built with the workspace, so a structure has bent the
+density field before the field is ever sampled
+([structure placement](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive)),
+and the blender that reaches the density graph is the one built here rather
+than at any later step
+([blending](blending.md#following-one-chunk-through)).
 
 That one instance then serves all three terrain steps, which is exactly what
 makes the aquifer's answers agree between filling and carving. It is heavily
 mutated on the way — and `NoiseChunk.stopInterpolation`, at the end of the
-noise fill, *disarms* it: from the surface step onward, sampling an
-interpolator with the `NoiseChunk` itself as the context throws. A caller that
-passes any other context is quietly served by the wrapped function instead,
-which is what every post-fill caller does. What survives for reuse is the aquifer's grid cache and
+noise fill, *disarms* it: from the surface step onward, an interpolator
+sampled with the `NoiseChunk` itself as the context throws, while every other
+context is served by the wrapped function
+([the caches, and which of them a single point may use](density-functions.md#the-six-caches-and-the-three-a-single-point-may-use)).
+What survives for reuse is the aquifer's grid cache and
 the preliminary surface level. It is never cleared and it is not pinned to a
 thread; the three steps run as separate tasks on whichever worker takes
 them, and what serialises them is the chunk-status future chain rather than
@@ -118,26 +124,23 @@ The Y direction runs **downward** at both nesting levels, which matters
 because the two worldgen heightmaps are updated as blocks are written and
 the first non-air block seen from the top is the answer.
 
-Two things about that lattice are worth stating plainly, because "Minecraft
-terrain is a lattice" is true twice over at two different resolutions. Only
-the terms explicitly marked *interpolated* come from the eight-corner lerp,
-and resolving every reference in the overworld router finds **eight** of
-them: one round the whole final-density subtree, four inside the noodle-cave
-graph, and three across the two vein terms — *vein_gap* is not one of them,
-and neither is the aquifer's barrier, which the `Aquifer` samples per block.
-The final density is then wrapped in a *cache_all_in_cell*, filled for every
-block in the cell. Meanwhile the 2-D shaping terms, continentalness and erosion and
-ridges and the splines, sit behind *flat_cache*, which samples once per
-**four-by-four block column group** at y = 0 and reuses that for all sixteen
-columns. Only *cache_2d* is exact per column
-([density functions](density-functions.md) owns the caches).
+**Eight** — *interpolated* terms in the overworld router, resolved through
+every reference: one round the whole final-density subtree, four inside the
+noodle-cave graph, and three across the two vein terms. *vein_gap* is not one
+of them, and neither is the aquifer's barrier, which the `Aquifer` samples per
+block. Those eight are the only terms this loop reads at cell corners; the
+final density is then wrapped in a *cache_all_in_cell* and filled for every
+block in the cell. Everything else in the router is sampled at a resolution of
+its own, and the resolutions are coarser than the names suggest
+([the caches, and which of them a single point may
+use](density-functions.md#the-six-caches-and-the-three-a-single-point-may-use)).
 
-The write at the bottom of the loop does not go through
-`ChunkAccess.setBlockState`. The fill calls the section setter directly with
-the threading check disabled and updates `Heightmap.Types.OCEAN_FLOOR_WG`
-and `Heightmap.Types.WORLD_SURFACE_WG` by hand, and it skips air entirely —
-a chunk starts empty, so only non-air is ever written. The acquire/release
-pair around the whole fill is a concurrent-access assertion, not a lock.
+The write at the bottom of the loop skips air entirely — a chunk starts empty,
+so only non-air is ever written — and updates
+`Heightmap.Types.OCEAN_FLOOR_WG` and `Heightmap.Types.WORLD_SURFACE_WG` by
+hand rather than through the chunk's ordinary write path. It can, because it
+holds every section across its noise range for the whole fill
+([what placing a block actually does](../world/chunk-anatomy.md#what-placing-a-block-actually-does)).
 
 ## The two fillers: what the number becomes
 
@@ -148,7 +151,11 @@ are two of them, in this order.
 
 **The aquifer.** `Aquifer.computeSubstance` receives the final density and
 decides, from its own barrier and fluid-level noises sampled on a coarse
-grid, whether this point is stone, air, or a fluid. `Aquifer.FluidPicker`
+grid, whether this point is stone, air, or a fluid. It takes five of the
+router's fifteen functions: those four noises, and *preliminary_surface_level*,
+which it samples at a single point per column through
+`NoiseChunk.preliminarySurfaceLevel` to know roughly where the ground is
+before any ground exists. `Aquifer.FluidPicker`
 and `Aquifer.FluidStatus` are the global fallback underneath its local water
 tables — the sea, and the lava. `Aquifer.NoiseBasedAquifer` is the real
 implementation; a dimension with aquifers switched off gets a trivial one.
@@ -156,7 +163,10 @@ implementation; a dimension with aquifers switched off gets a trivial one.
 **The ore veins.** `OreVeinifier` is the second filler, active only when the
 settings enable it, and it is why copper and iron veins are *terrain rather
 than decoration*: they exist before the surface pass and before the carvers,
-and no feature places them. Which of the two `OreVeinifier.VeinType`s you
+and no feature places them. Every other ore in the game is an `OreFeature`
+placed at `ChunkStatus.FEATURES`
+([features and placement](features-and-placement.md#what-a-feature-may-write-and-where-it-may-read)).
+Which of the two `OreVeinifier.VeinType`s you
 get is the **sign** of one router function, `NoiseRouter.veinToggle` — there
 is no separate "which ore" noise.
 
@@ -165,7 +175,8 @@ block. And `Aquifer` marks the positions where it placed fluid for
 post-processing, so the settled water table you can see in a cross-section
 becomes real fluid ticks the moment the chunk is promoted — which is why
 "nothing flowed in" is a true statement about worldgen and not about the
-chunk's first live tick ([scheduled ticks](../world/scheduled-ticks.md)).
+chunk's first live tick
+([scheduled ticks](../world/scheduled-ticks.md#appointments-that-survive-a-restart)).
 
 ## The surface pass, and the two places it breaks its own rule
 
@@ -177,6 +188,17 @@ height in a `SurfaceRules.Context` that carries its own caches. Every write
 is gated on the existing block still being the settings' **default block**,
 which is what makes ore veins and aquifer water immune to being turned into
 grass.
+
+That rule tree is itself two registries of data-driven types inlined into the
+noise settings — `SurfaceRules.RuleSource` for what to write and
+`SurfaceRules.ConditionSource` for when, each dispatched on a type id like any
+other ([the data-driven type
+pattern](../foundations/data-driven-types.md#the-idea-stated-once)) — so a
+pack composes a surface out of the shipped conditions and cannot write a new
+kind of condition. The biome the tree branches on is the *jittered* read,
+`BiomeManager.getBiome`, not the palette's exact one
+([the two borders](biomes.md#the-two-borders)), which is why a surface rule
+can change block for block along the same ragged line the grass colour does.
 
 Two things sit outside the rule system entirely, and neither obeys that
 gate. `SurfaceSystem.erodedBadlandsExtension` runs *before* the column walk
@@ -194,21 +216,25 @@ chunks**, asks each configured carver of that source chunk's biome whether a
 cave or a canyon *starts* there, and carves whatever does into the centre
 chunk. That reach costs the dependency pyramid nothing: the neighbours are
 read only as memo holders for `ChunkAccess.carverBiome`, and the biome
-itself is recomputed from the biome source. The reach the carvers need is
-already paid for: six of the generation steps ask for
-`ChunkStatus.STRUCTURE_STARTS` eight chunks out, written as a bare literal —
-the constant `ChunkStatus.MAX_STRUCTURE_DISTANCE` that holds the same eight is
-read by nothing — and the accumulated pyramid the ticket system sizes itself
-against is wider still ([the chunk generation
-pipeline](../world/chunk-generation-pipeline.md)).
+itself is recomputed from the biome source. The reach is already paid for,
+because every generation step from `ChunkStatus.STRUCTURE_REFERENCES` to
+`ChunkStatus.FEATURES` asks for structure starts eight chunks out anyway
+([the pyramid, drawn](../world/chunk-generation-pipeline.md#the-pyramid-drawn)).
 
-Three carvers are registered — `WorldCarver.CAVE`, `WorldCarver.NETHER_CAVE`
-and `WorldCarver.CANYON` — each paired with a `CarverConfiguration` as a
+Three carvers are registered — `WorldCarver.CAVE` and `WorldCarver.CANYON`,
+which are `CaveWorldCarver` and `CanyonWorldCarver`, and
+`WorldCarver.NETHER_CAVE`, which is the odd one below — each paired with a
+`CarverConfiguration` as a
 `ConfiguredWorldCarver`, reading the world through a `CarvingContext` and
-recording what they touched in a `CarvingMask`, the per-chunk bit set.
+recording what they touched in a `CarvingMask`, the per-chunk bit set. The
+two configuration classes, `CaveCarverConfiguration` and
+`CanyonCarverConfiguration`, are the data-pack half, and each carries a
+`CarverDebugSettings` that a development build can turn on to write marker
+blocks instead of real ones.
 
 And then the hook. `WorldCarver.getCarveState` returns lava below the
-configured lava level, and otherwise asks `Aquifer.computeSubstance` with a
+configuration's own `CarverConfiguration.lavaLevel`, and otherwise asks
+`Aquifer.computeSubstance` with a
 density of **zero** what belongs at this point. `Aquifer.FluidStatus.at`
 answers plain air above the local water table and the fluid below it — never
 null; the null is `Aquifer.computeSubstance`'s own, and it means *do not carve
@@ -229,8 +255,12 @@ below thirty-one blocks above the dimension's minimum and cave air above.
 ## Questions players ask
 
 **Why is there always lava at the same depth, in every world?** Because the
-sea level moves with the noise settings and the lava level below it does
-not — it is a constant in the generator, not a data-pack field.
+two levels are anchored to different things. The sea level is a field of the
+noise settings and moves with them; the lava a carver leaves behind is
+`CarverConfiguration.lavaLevel`, a `VerticalAnchor` on the *configured carver*
+rather than on the dimension — and all four shipped configured carvers anchor
+it eight blocks above the world's **bottom**, not below its sea. A data pack
+could move it; nothing in vanilla does, and changing the sea level would not.
 
 **Do the caves change if I switch the dimension to the modern random
 source?** Not their seeding.
@@ -244,25 +274,28 @@ visitor builds those two from a `LegacyRandomSource` whatever the setting
 says.
 
 **Where does the flat shelf under a village come from?** From this page's
-density field, not from any block edit. `NoiseChunk`'s constructor adds
-`DensityFunctions.BeardifierMarker` to the router's final density *itself*
-and then swaps that exact instance for the chunk's real `Beardifier` while
-wrapping — so every noise dimension is beardified whether or not its router
-JSON ever mentions a beardifier, and "structures flatten terrain" is
-implemented as an object comparison inside a visitor
-([structure placement](structure-placement.md)).
+density field, not from any block edit. The beardifier is a node spliced into
+the router in code and swapped for the chunk's real `Beardifier` during the
+per-chunk rewrite
+([wrap: once per chunk](density-functions.md#wrap-once-per-chunk)), so what a
+village does to the ground is a term added to a scalar field, decided before
+the cell loop reads it. What that term's shape is —
+`Beardifier.Rigid` boxes, junctions at half weight, and the five
+`TerrainAdjustment` modes — is
+[structure placement](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive).
 
 **What height does a structure think the ground is at, then?** The one
 *before* it changes it. `NoiseBasedChunkGenerator.iterateNoiseColumn`,
 behind `ChunkGenerator.getBaseHeight` and `ChunkGenerator.getBaseColumn`,
 builds a throwaway one-cell `NoiseChunk` with an empty
-[`Blender`](blending.md) and the
+`Blender` and the
 bare beardifier marker, samples a column, and discards it.
 
 **What happens at the boundary with chunks generated by an older version?**
 `Blender` reads `BlendingData` harvested from the neighbours and enters the
 density graph as three nodes — [blending at the old-chunk
-border](blending.md) is the page for it, and for `BelowZeroRetrogen`, the
+border](blending.md#one-measurement-five-consumers) is the page for it, and
+for [`BelowZeroRetrogen`](blending.md#the-other-passenger), the
 world-deepening path that rides the same hooks: it wraps the biome
 resolver, patches bedrock after the noise step, and gates the spawn step.
 
@@ -276,12 +309,13 @@ outright, plus visualisation modes that make the aquifer and the ore veins
 write marker blocks instead of real ones.
 
 **Why does a half-generated chunk have the wrong heightmaps in it?**
-Because which two are live is a property of the *status*, not of the step:
-`ChunkStatus` registers every status up to and including
-`ChunkStatus.SURFACE` with the worldgen pair and `ChunkStatus.CARVERS`
-onward with the four final ones. A chunk saved mid-generation really does
-persist its worldgen heightmaps, and they stop being written from the
-carvers status on ([chunk anatomy](../world/chunk-anatomy.md)).
+Because which two are live is a property of the *status*, not of the step —
+the two *_WG* maps up to `ChunkStatus.SURFACE`, the four final ones from
+`ChunkStatus.CARVERS` on
+([the six heightmaps](../world/chunk-anatomy.md#the-six-heightmaps)). The
+consequence for this page is that the two maps the noise fill maintains by
+hand stop being written one status after the fill ends, and a chunk saved
+mid-generation really does persist them.
 
 ## Where to look
 
@@ -292,8 +326,10 @@ carvers status on ([chunk anatomy](../world/chunk-anatomy.md)).
 `NoiseChunk.stopInterpolation` · `MaterialRuleList` ·
 `Aquifer.computeSubstance` · `Aquifer.NoiseBasedAquifer` ·
 `OreVeinifier.create` · `SurfaceSystem.buildSurface` ·
-`SurfaceRules.RuleSource` · `SurfaceRules.Context` ·
-`NoiseBasedChunkGenerator.applyCarvers` · `WorldCarver.getCarveState` ·
+`SurfaceRules.RuleSource` · `SurfaceRules.ConditionSource` ·
+`SurfaceRules.Context` · `CarverConfiguration.lavaLevel` ·
+`NoiseBasedChunkGenerator.applyCarvers` · `CaveWorldCarver` ·
+`WorldCarver.getCarveState` ·
 `WorldCarver.canReplaceBlock` · `CarvingContext` · `CarvingMask` ·
 `Beardifier` · `Blender` · `BelowZeroRetrogen` · `Heightmap.Types` ·
 `RandomState.create`

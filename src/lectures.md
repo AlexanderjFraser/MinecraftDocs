@@ -320,10 +320,12 @@ owns the system this part only consumes.
 
 A substrate, a pipeline, and a wing — and the wing runs first while being
 watched last. The ten lectures below run against the chunk status ladder
-rather than along it: a structure is *decided* two statuses before the
-biomes and terrain it will stand in exist, and writes its blocks four
-statuses later, so keeping the three structure lectures together at the end
-costs one forward reference and buys a whole arc in one place.
+rather than along it: a structure is *decided* at
+`ChunkStatus.STRUCTURE_STARTS`, two statuses before the biomes and terrain it
+will stand in exist, and writes no block until `ChunkStatus.FEATURES`, three
+statuses after the noise fill — so keeping the three structure lectures
+together at the end costs one forward reference and buys a whole arc in one
+place.
 
 1. [Density functions](systems/worldgen/density-functions.md)
 2. [Biomes](systems/worldgen/biomes.md)
@@ -336,13 +338,12 @@ costs one forward reference and buys a whole arc in one place.
 9. [Hand-built structures](systems/worldgen/hand-built-structures.md)
 10. [Creating a world](systems/worldgen/creating-a-world.md)
 
-Two comes before three: `ChunkPyramid` makes `ChunkStatus.BIOMES` a
-requirement of both `ChunkStatus.NOISE` and `ChunkStatus.SURFACE`, and the
-surface pass reads the biome. Four needs both, and reaches one status forward
-into five and six's. Seven
-comes before eight and nine, which are alternatives to each other rather
-than a sequence. Ten is the object the other nine read, told last because
-it is a tree of everything they explain.
+One to six are the chunk being made, in the order it is made, and each needs
+the one before it. Seven, eight and nine are one arc, and eight and nine are
+alternatives to each other rather than a sequence. Ten is the object the other
+nine read, told last because it is a tree of everything they explain — but it
+is the one lecture that moves, and a viewer who wants the origin before the
+machinery can watch it first.
 
 Part XII assumes Part IV's [chunk generation
 pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the

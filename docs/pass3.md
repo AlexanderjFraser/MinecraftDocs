@@ -1489,17 +1489,23 @@ writes one strikes it through; a session that rules one out says why, here.*
   section on `entity-selectors`, or a row in its cast, for pass 5 or later.
   *(session M of pass 4, 2026-09-05)*
 
-- **The expansion hack, dimension padding and liquid settings** — three of
+- ~~**The expansion hack, dimension padding and liquid settings** — three of
   `JigsawStructure`'s ten data-pack fields that no page names, and one of them
-  is load-bearing for why a village street stops:
-  `JigsawPlacement.Placer` inflates a candidate's bounding box upward by the
-  tallest piece its own child pools could need before the collision test, and
-  all five villages set *use_expansion_hack* true. `DimensionPadding` rejects
-  a start piece too near the world's Y limits and shrinks the growth box;
-  `LiquidSettings` decides per structure or per element whether placed blocks
-  inherit waterlogging. `jigsaw-and-templates` names one of the three in
-  passing after pass 4 and owns none of them. Not a whole page — a section on
-  that page, for pass 5 or later. *(session L of pass 4, 2026-09-05)*
+  is load-bearing for why a village street stops.~~ **Written by session L of
+  pass 5**, as the close of *The assembly loop* on `jigsaw-and-templates`,
+  framed as what the queue entry could not see: three of the ten fields are
+  boxes drawn round the loop and none of them is the depth cap.
+  `JigsawStructure.MaxDistance` is the box the free-space shape is built to,
+  and the field the data-pack load validates against
+  `JigsawStructure.MAX_TOTAL_STRUCTURE_RANGE`; `DimensionPadding` shrinks it
+  top and bottom and rejects a start piece that will not fit; the expansion
+  hack inflates a candidate upward for the children it would need room for.
+  `LiquidSettings` is the tenth and is not about space at all. The shipped
+  data is what makes them one passage rather than three: **six** structures set
+  the expansion hack (the five villages *and the pillager outpost*, which the
+  entry's "all five villages" missed) and **exactly one** — trial chambers —
+  sets either of the other two. *(session L of pass 4, 2026-09-05; discharged
+  session L of pass 5, 2026-09-07)*
 - ~~**Post-processing**~~ — **written by session L** as
   `src/systems/rendering/post-processing.md`, the part's closer and its R7
   spend: 996 lines in four classes, six shipped chains, written against the

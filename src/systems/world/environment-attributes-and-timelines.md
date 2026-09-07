@@ -336,9 +336,12 @@ cells — 216 samples, a 1-4-6-4-1 kernel lerped by the sub-cell offset on each
 axis — accumulating weights into a `SpatialAttributeInterpolator`, whose
 `SpatialAttributeInterpolator.applyAttributeLayer` applies each contributing
 biome's modifier to the base value and lerps the *results* together by
-weight. That is only for the 21 attributes flagged
-`EnvironmentAttribute.isSpatiallyInterpolated`; anything else takes the
-single biome under the position. In time, each probed value keeps last tick's
+weight. Only the 21 attributes flagged
+`EnvironmentAttribute.isSpatiallyInterpolated` are resolved that way; anything
+else takes the single biome under the position. But that flag is not a gate on
+the *sampling*: the probe runs its 216 samples every tick regardless, and the
+test is applied afterwards, when the layer is applied. The server pays none of
+it — it passes no interpolator at all. In time, each probed value keeps last tick's
 answer beside this tick's and returns `AttributeType.partialTickLerp` between
 them — and prunes itself, dropping any value nobody read during a tick.
 

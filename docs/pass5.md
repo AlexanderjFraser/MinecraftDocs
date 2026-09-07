@@ -292,11 +292,16 @@ six corrections it made are in [pass9.md](pass9.md).*
   added III to *Level data and rules*' row, because Part III's landing page
   now points there. The column is still hand-kept and is the one A6 left to
   session N.
-- **Session L (XII) — the initial spawn search is split and neither half
+- ~~**Session L (XII) — the initial spawn search is split and neither half
   links the other.** `starting-a-server`:269-277 owns *when* it runs (the
   `ServerLevelData.isInitialized` gate, the bonus chest, the flag that stops
   it repeating); `biomes`:194-204 owns the search itself, with
-  `Climate.findSpawnPosition` and the 2,048-block cap. One clause each.
+  `Climate.findSpawnPosition` and the 2,048-block cap. One clause each.~~
+  **Done, session L**, with the citation corrected: the passage is at
+  `starting-a-server#building-the-levels`, not the line the entry named.
+  `biomes` keeps the search — it is a `Climate` mechanism and that is the
+  `Climate` page — and now opens the answer by saying it runs once, the first
+  time the world is loaded, with the link.
 
 ### For pass 6 — the lecture
 
@@ -556,15 +561,25 @@ create, routed by kind.*
   carry no size sentence, which A2 allows. [kind=book] **Part XI half done,
   session K:** the four-package population is the one the part's argument is
   about (particles is lecture ten), so `rendering/README` now uses the include
-  and states the two boundary corrections the number needs. `worldgen/README`
-  is session L's.
+  and states the two boundary corrections the number needs. **Part XII done,
+  session L:** `worldgen/README` now uses the include and carries two boundary
+  corrections of its own — `PatrolSpawner` and `PhantomSpawner`, which run on
+  the server tick inside a part whose argument is that nothing does, and the
+  Xoroshiro sources the argument rests on, which are Reference's. **Both
+  landing pages settled; entry closed.**
 - **Two landing pages are over the measured budget** — everything but the
   watch order: `rendering/README` 124 lines and `worldgen/README` 144,
   against a corpus median of 90. Sessions K and L judge; the fix is the
   argument, not the trim. [kind=book] **Part XI judged, session K:** the
   argument was rewritten and the ten-line caption disowning the figure cut to
   four; the page is longer than the median and is where the part's coverage
-  boundary is stated, which is worth the lines. `worldgen/README` is L's.
+  boundary is stated, which is worth the lines. **Part XII judged, session L,
+  and the answer is the same:** the order argument was being made three times
+  (the figure caption, the closer, and the tenth page twice) and is now made
+  once, the closer became an instruction, and the space went into a *Where the
+  part stops* section carrying the part's coverage answer. The page is longer
+  than it was, not shorter, and the lines it gained are the ones the charter
+  asked for. **Entry closed: the budget is a measurement, not a target.**
 - **`lectures.md`:296 and `rendering/README`:140 were near-verbatim**, and
   session A shortened the first under the summariser rule. ~~Session K reads
   the pair once to check nothing was lost.~~ **Done, session K:** nothing was
@@ -973,18 +988,30 @@ for voice.** Seven were rewritten because the fact under them fell:
 
 **Structural findings, not acted on.**
 
-- `worldgen/README.md`'s *Watch in this order* closer now carries three
+- ~~`worldgen/README.md`'s *Watch in this order* closer now carries three
   separate order rulings (two before three, four reaching forward into five
   and six's status, seven before eight and nine) where it used to carry a
-  clean pair. It reads as a list of caveats rather than an instruction.
+  clean pair. It reads as a list of caveats rather than an instruction.~~
+  **Done, session L:** the closer is now three sentences of instruction — watch
+  one to six straight through, read seven to nine as one arc, and ten is the
+  only lecture that moves. The per-page rulings that justified the order moved
+  up to the figure caption, where the order is argued.
 - `blending`'s **first figure gained a dashed annotation node** to say that
   two of the five consumers never touch the two maps. That is prose smuggled
   into a flowchart, and the page's own text says the same thing thirty lines
-  below. One of the two should go.
-- `features-and-placement`'s *A feature that is a tree of features* section is
+  below. One of the two should go. **Ruled, session L: the prose owns it, and
+  now says it.** The page's three counts of one list — five consumers, four
+  answers, three questions — sat within a hundred and fifty lines of each other
+  with nothing reconciling them, and the clause that does now (*three is fewer
+  than five because the carving mask and the border ticks read `BlendingData`
+  directly*) is exactly what the annotation node was for. The node is pass 7's
+  to remove; the fact no longer depends on it. [kind=figure]
+- ~~`features-and-placement`'s *A feature that is a tree of features* section is
   now about six features of which one is unrelated to the section's subject
   (`Feature.NO_OP` writes nothing but is not a selector). The count and the
-  subject want separating.
+  subject want separating.~~ **Done, session L:** the section is five
+  selectors, and `Feature.NO_OP` is a parenthetical after them saying what it
+  is instead — the spelling of an empty slot in a data pack.
 - `hand-built-structures`' `StructurePiece.placeBlock` cast row is now three
   clauses long and contains a negation ("not a choke point"), which is the
   *not X but Y* tic in a table cell.
@@ -1747,7 +1774,11 @@ correction):
     blockquote instead (`density-functions` on the two vocabularies for the
     six climate functions, `jigsaw-and-templates` on the singular
     *structure* folder). With X, XI and XII converted the formulas survive
-    only in Part XIII.
+    only in Part XIII. [kind=lecture] **Session L's note:** the part had a
+    third blockquote, on `blending`, and it was the one carrying a Part IV
+    rename rather than a Part XII one; it is now a row in `naming-drift`. Two
+    left, both about this part's own vocabulary, which is what the device is
+    for.
   - **Second person, now five parts wide and needing a ruling rather than
     another flag.** `terrain` opens with *you dig into a cave*, `biomes`
     with *walk out of a desert*, `trees` with *plant a single dark-oak
@@ -1755,19 +1786,36 @@ correction):
     the most natural way to start inside a scenario and it is the house
     style now whether or not anyone decided it. Sessions I, J and K all
     flagged the drift.
-  - **`terrain`'s title is a compromise.** The page is noise, surface and
+  - ~~**`terrain`'s title is a compromise.** The page is noise, surface and
     carvers — three statuses — so *Terrain* is broader than its subject,
     while its old name collided with Part IV's *chunk generation pipeline*.
     If pass 5 finds a better name the redirect already exists and a second
-    costs nothing.
-  - **The lattice fact is stated three times across two pages** — twice in
+    costs nothing.~~ **Ruled, session L: the title stands, and no rename.**
+    Read whole, the page is not three statuses but one thing made across them —
+    a chunk's rock, from the workspace born at *BIOMES* to the last carved
+    block — and *Terrain* is the word for that. The alternatives are worse in
+    the same way the queue entry is: they name the steps instead of the
+    product. Every page that cites it calls it the terrain in its own sentence,
+    which is session J's test for `the-gui-render-tree`, and it passes.
+  - ~~**The lattice fact is stated three times across two pages** — twice in
     `terrain`, at its two resolutions, and once more in `density-functions`
     from the cache side. All three are true and it is the part's best "true
-    twice over" observation, but one of the three should become a link.
-  - **`jigsaw-and-templates` is the shortest page in the part** at 204
+    twice over" observation, but one of the three should become a link.~~
+    **Done, session L, and it was three tellings on two pages plus a fourth
+    inside `terrain`.** `density-functions` owns the resolutions — `terrain`
+    already conceded it in its own parenthesis — and keeps them; `terrain` keeps
+    the one thing neither other page has, the census of **eight** interpolated
+    terms in the overworld router, and its second telling of the corner
+    sampling is folded into the first.
+  - ~~**`jigsaw-and-templates` is the shortest page in the part** at 204
     lines, because the processor stack is described rather than traced. If
     pass 5 wants a section trimmed elsewhere, this is the page that could
-    absorb it instead.
+    absorb it instead.~~ **Taken, session L**, and the room went to coverage
+    rather than to a trim from elsewhere: §7's three unnamed `JigsawStructure`
+    fields, the processors as their own section with the shipped-list census
+    moved in from `hand-built-structures`, the four-class template loader, and
+    the structure block, which `blocks/README` had been handing to a part that
+    never named it.
 
 - **2026-09-03, session L — Part XI.** Eleven system pages plus a landing
   page and a Reference page. **Every page landed inside the 260–340 brief**
@@ -3208,6 +3256,12 @@ that takes it. Everything session E did act on is struck above or logged in
   `CommandBlockEntity` (205) — only their two serverbound packets appear, as
   rows in `reference/packets`. Part XIII is the natural home for the command
   block; the structure block belongs beside `jigsaw-and-templates`.
+  **Half done, session L: the structure block is taken**, as *Where a template
+  comes from* on `jigsaw-and-templates` — the world's generated directory is
+  the first of the three template sources, and what writes into it is a
+  structure block in save mode, which is also where a template's holes come
+  from. `blocks/README`'s hand-forward is split to match. **The command block
+  is still Part XIII's and still unwritten**; session M.
 - **Four state machines are half-adopted by other parts.**
   `BeaconBlockEntity` (434), `ConduitBlockEntity` (300), and the *trialspawner*
   (642 unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
