@@ -18,7 +18,7 @@ version (26.2), written as the notes for a video lecture series.
 The work is in ten passes: a rough draft, an adversarial fact-check of
 every claim, a restructuring pass and a second fact-check (all four done);
 then four passes of restructuring and refinement with one lens each — the
-book (done), the lecture (next), the figures, the voice — a third fact-check,
+book (done), the lecture (in progress), the figures, the voice — a third fact-check,
 and a last polish, after which the site is finished. The owner
 reads alongside. [docs/plan.md](docs/plan.md) is the roadmap (the passes,
 the current pass's charter and schedule, the session log).

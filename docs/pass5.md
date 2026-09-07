@@ -25,8 +25,14 @@ reads this file by kind and by page, guessing each entry's kind from the
 section it sits under and its words and marking a guess with `?`; a tag
 `[kind=book]`, `[kind=lecture]`, `[kind=figure]` or `[kind=voice]` anywhere
 in an entry settles its kind, and a session tags the entries it finds
-misrouted as it reads them. Below: the original preface, the standing items,
-then the entries, newest first.*
+misrouted as it reads them. A fifth tag, `[kind=record]`, marks an entry no
+pass acts on — a pass-3 cut log, a count a close re-derived — so that it is
+kept and not counted as open work; a bare bold lead-in, an italic preface or
+a rule is a preamble and is never an entry. The pass-6 planning session
+(2026-09-07) re-routed 92 guessed entries and struck 20 that pass 5's own
+sessions had settled and left standing, each strike naming what it was
+verified against. Below: the original preface, the standing items, then the
+entries, newest first.*
 
 ---
 
@@ -217,14 +223,14 @@ it. Everything it acted on itself is struck in place above, or logged in
   had `DiodeBlock.shouldPrioritize`'s condition inverted (logged in
   [pass9.md](pass9.md)).
 - **Session F (VI) — local difficulty has no lecture.**
-  `reference/level-data-and-rules`:283-289 is the book's **only** explanation of
+  `reference/level-data-and-rules`:283-289 is the book's **only** explanation of [kind=book] *(pass-6 planning session: still open at pass 6's planning — `DifficultyInstance` is explained on the Reference page alone; Parts IV and VI are closed, so this is pass 10's.)*
   `DifficultyInstance` and `ServerLevel.getCurrentDifficultyAt`, built from
   `ChunkAccess.getInhabitedTime`, the overworld clock and the moon phase. That
   is a mechanism on the shelf, which A1's Reference rule forbids, and its
   consumers are Part VI's mobs. Part IV names `ChunkAccess.inhabitedTime` and
   cites the level tick for it; Part VI should take the explanation, or say why
   not.
-- **Session I (IX) — the send table is now half a table.**
+- ~~**Session I (IX) — the send table is now half a table.**~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session I, as the entry's own last lines say.
   `tickets-and-loading`'s *What the player is sent, and when* restated the batch
   pacing, the acknowledgement limit and four `PlayerChunkSender` constants that
   `what-the-client-is-told`:260-301 owns and explains better. Cut to the rows
@@ -327,7 +333,7 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **A coverage question this session could not close.**
 
-- `world/level/entity`'s six unnamed classes (98 lines) and `server/level`'s
+- `world/level/entity`'s six unnamed classes (98 lines) and `server/level`'s [kind=book] *(pass-6 planning session: still open at pass 6's planning — `ServerEntityGetter` is named on no page; pass 10's.)*
   `ServerEntityGetter` are declared in Part IV's *where the part stops* as Part
   VI's, but Part VI names only four of the seven. Session F decides whether the
   section index wants a passage on `entity-lifecycle` or a declined sentence.
@@ -401,7 +407,7 @@ six corrections it made are in [pass9.md](pass9.md).*
   third homeless item, discharged). ~~Open.~~ **Agreed, session D (pass 5)** —
   D does not disagree, so the two Part III citations stand as C left them.~~
   **Session O's audit (pass 5's close): settled and never struck** — session D ran and did not disagree; `reference/level-data-and-rules#what-is-left-in-leveldat` is the declared owner and both Part III pages cite it.
-- **Session D (IV) — three Part III classes that are Part IV's.**
+- ~~**Session D (IV) — three Part III classes that are Part IV's.**~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session D, as the entry's own *Done* says; only the word *Open* had been struck.
   `ChunkResult` (110 lines, the success/fail wrapper chunk futures carry) and
   `PlayerMap` (`ChunkMap`'s player index, which
   `players-and-sessions`:233-237 makes a "two player lists" point without
@@ -419,7 +425,7 @@ six corrections it made are in [pass9.md](pass9.md).*
   `HopperBlockEntity.MOVE_ITEM_SPEED` is 8, and the only place the book said
   so was Part III's landing page, which is a summariser. Cut from there;
   `block-entities` is where a ticker's cadence belongs if session E wants it.
-- **Session F (VI) — `ServerEntityGetter`** (132 lines, `server/level`), the
+- **Session F (VI) — `ServerEntityGetter`** (132 lines, `server/level`), the [kind=book] *(pass-6 planning session: still unnamed at pass 6's planning; pass 10's.)*
   server-side entity-query interface `ServerLevel` implements, is named
   nowhere in the book and is Part VI's vocabulary.
 - ~~**Session H (VIII) — `DemoMode`**~~ *Done, session H: written as a
@@ -427,11 +433,11 @@ six corrections it made are in [pass9.md](pass9.md).*
   (102 lines) extends
   `ServerPlayerGameMode` and is named nowhere; `player-anatomy`'s game-mode
   comparison is where it would go, or a declared decline.
-- **Session M (XIII) — `ServerBossEvent`** (166 lines, `server/level`) is
+- ~~**Session M (XIII) — `ServerBossEvent`** (166 lines, `server/level`) is~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M — `scoreboard-and-data`'s boss-bar section names `ServerBossEvent`.
   still Part XIII's, as the schedule says; `players-and-sessions`:180 sends
   "boss events" in the join burst without naming a class.
-- **Session M (XIII) — a live disagreement.**
-  `scoreboard-and-data`:277-278 says "a score set and a crash a tick later is
+- ~~**Session M (XIII) — a live disagreement.**~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M — the scoreboard page was corrected to the crash path that reaches `MinecraftServer.saveAllChunks` (plan.md, session M; pass9.md).
+  ~~`scoreboard-and-data`:277-278 says "a score set and a crash a tick later is~~ **Struck by the pass-6 planning session (2026-09-07):** settled with the entry above.
   a score lost"; `how-a-server-dies` says a tick-loop crash reaches the same
   *finally* and writes what `/stop` writes, and `scoreboard-and-data`:145-146
   puts `ServerScoreboard.storeToSaveDataIfDirty` inside
@@ -552,11 +558,11 @@ the corrections it made are in [pass9.md](pass9.md).*
 
 ### For other part sessions (pass 5)
 
-- **`client/the-client-loop` still does not link `anatomy`** (the session-A
+- ~~**`client/the-client-loop` still does not link `anatomy`** (the session-A~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session J — `the-client-loop`:12 and :21 link `anatomy`'s two sections.
   entry, re-derived): its hook contrasts the two loops and links neither
   `anatomy` nor `server-tick`. The anchor is
   `anatomy.md#two-loops-and-a-wire-between-them`. **Session J.**
-- **`world/chunk-generation-pipeline` repeats anatomy's worker-pool sizing**
+- ~~**`world/chunk-generation-pipeline` repeats anatomy's worker-pool sizing**~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session D — the sizing is a citation now; `maxAllowedExecutorThreads` no longer appears on the page.
   (`Util.maxAllowedExecutorThreads`, the *max.bg.threads* property) and links
   no anatomy page. It should keep only "there is no generation thread
   setting", which anatomy does not say, and cite
@@ -606,7 +612,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   rows. **Sessions E, G, M** between them.
   **Session M (pass 5): the last live row struck** — `Permission` and `PermissionCheck` now point at `commands/permissions`, which names both. The entry is discharged.~~
   **Session O's audit (pass 5's close): settled and never struck** — session M struck the last live row itself, in the paragraph above; the entry was discharged and left standing.
-- **`Gizmos` is explained only on `what-this-book-skips`** and linked from
+- ~~**`Gizmos` is explained only on `what-this-book-skips`** and linked from~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session J — `Gizmos` moved to `debugging-the-running-game`.
   none of the pages whose traces end in a debug renderer. The skips page is
   the owner by default and should not be; either a later part takes it or the
   pages that use it cite the skips page. **Sessions J and K.**
@@ -764,7 +770,7 @@ create, routed by kind.*
   part stops* section carrying the part's coverage answer. The page is longer
   than it was, not shorter, and the lines it gained are the ones the charter
   asked for. **Entry closed: the budget is a measurement, not a target.**
-- **`lectures.md`:296 and `rendering/README`:140 were near-verbatim**, and
+- ~~**`lectures.md`:296 and `rendering/README`:140 were near-verbatim**, and~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session K, as the entry's own *Done* says.
   session A shortened the first under the summariser rule. ~~Session K reads
   the pair once to check nothing was lost.~~ **Done, session K:** nothing was
   lost. Both were re-synced again after the landing page's figure caption
@@ -807,7 +813,7 @@ looser or more repetitive than it should be.
   read them too. It will fail on lane ids and nested simple names, so it wants a
   pass over the first run's output, which is why it is pass-5 work and not a
   gate change.
-- **23 simple names are shared by two files**, so a `Class.member` backtick
+- **23 simple names are shared by two files**, so a `Class.member` backtick [kind=voice]
   resolves against the union of both — `Connection` (99 corpus backticks,
   `network/` against `server/jsonrpc/`), `AttributeModifier` (13, and the two
   classes have genuinely different member sets), `EntitySelector`,
@@ -862,14 +868,14 @@ mentions.
   `Gui.overlay` is now named beside it, and the strata question is answered the
   other way round — a screen contributes *one* entry to the record, never both
   with the overlay, which is what the row now says.
-- **`reference/level-data-and-rules.md`** never names `DirectoryLock` (what
+- **`reference/level-data-and-rules.md`** never names `DirectoryLock` (what [kind=lecture] *(pass-6 planning session: pass 6's job 5, session N: `DirectoryLock` is `starting-a-server`'s now and the *session.lock* row cites it; check the rest of the list against the page as it stands.)*
   `session.lock` is for), `LevelVersion` (the *Version* compound and
   *DataVersion* the world-select row reads), `LevelSummary`'s corrupted and
   symlink states, four more `LevelResource` paths (*generated/*, *datapacks/*,
   the world resource pack, the icon), the per-player *advancements/* and
   *stats/* files, or `MinecraftServer.saveAllChunks` — the method that drives
   all three save paths the page describes.
-- Seven of that page's eighteen table rows get no prose at all — the
+- Seven of that page's eighteen table rows get no prose at all — the [kind=lecture] *(pass-6 planning session: pass 6's job 5, session N.)*
   scoreboard, maps, raids, chunk tickets, the dragon fight, five of the
   boss-bar row's six owners, and player data.
 
@@ -879,16 +885,16 @@ Five entries are titled with a phrase the corpus does not use, against the
 page's own rule that "where a term is a class name, the class name is the
 entry":
 
-- **Blend alpha** — the corpus writes plain "alpha" or the JSON name
+- **Blend alpha** — the corpus writes plain "alpha" or the JSON name [kind=record]
   *blend_alpha*.
-- **Staging buffer** — used once outside the glossary, on its owner page, and
+- **Staging buffer** — used once outside the glossary, on its owner page, and [kind=voice]
   once elsewhere for an unrelated thing (`section-meshing`'s worker buffer).
   The class-shaped headword is `ExecutionContext.newTopCommands`.
-- **Flat level generator preset** — the lowercase phrase appears nowhere; the
+- **Flat level generator preset** — the lowercase phrase appears nowhere; the [kind=record]
   corpus names only the plural bootstrap class, twice, on one page.
-- **Batch** — claimed for the game-test meaning, while a reader is likelier to
+- **Batch** — claimed for the game-test meaning, while a reader is likelier to [kind=voice]
   have met *chunk batching* in Part IX. Retitle, or add the chunk one beside it.
-- **Permission atom** — the two-word phrase appears nowhere; the corpus writes
+- **Permission atom** — the two-word phrase appears nowhere; the corpus writes [kind=record]
   "an atom", "the chat atoms", "the entity-selector atom".
 
 Beside them: **Blending data** should be `BlendingData` by the same rule, and
@@ -916,9 +922,9 @@ uses in more than one sense, which is A5's rule applied. [kind=book]
 
 ### Two counts in this file that were wrong
 
-Session P's own pass-5 notes carry two numbers the close re-derived:
+Session P's own pass-5 notes carry two numbers the close re-derived: [kind=record]
 
-- **The literal `## The trace: …` heading is on twenty pages in eight parts**,
+- **The literal `## The trace: …` heading is on twenty pages in eight parts**, [kind=record]
   not "twelve pages in four parts" — and session P's own list named three
   parts while saying four. Both numbers were already true at pass 3's close
   (`git grep -c` at `0255661` gives 20), so pass 4 changed nothing here; the
@@ -948,13 +954,13 @@ drop the number.
 
 **A count of one thing described as a count of another.**
 
-- `blocks/blocks-and-states.md:25` — "through **fifty-eight** statics — the
+- `blocks/blocks-and-states.md:25` — "through **fifty-eight** statics — the [kind=voice]
   drops, the particles and the shape-update helpers". 58 is every `static`
   declaration in `Block.java` (23 fields, 34 methods, one nested record); the
   things listed are static *methods*, of which there are 34. And "the
   particles" is `Block.spawnDestroyParticles`, a `protected` **instance**
   method.
-- `client/hud.md` — the heading is now *Four states*, and three of the four
+- `client/hud.md` — the heading is now *Four states*, and three of the four [kind=voice]
   draw. If pass 5 wants "bars" back, the number is three.
 - ~~`world/scheduled-ticks.md:81` — "**Two** type parameters" is right for the
   two type *arguments* in play (`Block`, `Fluid`); every class involved
@@ -962,7 +968,7 @@ drop the number.
 - ~~`world/chunk-storage.md:281` — "it changes hands **four** times" names four
   stages but only three thread changes.~~ **Done, session D (pass 5)**: "four
   stages across three lanes", with the shared lane said out loud.
-- `player/README.md:32,63` — "**eight** classes" is the cast table's eight
+- `player/README.md:32,63` — "**eight** classes" is the cast table's eight [kind=voice]
   *rows*, which name nine classes (one row holds `ServerPlayerGameMode` /
   `MultiPlayerGameMode`).
 - `networking/README.md:35` — "the two the part spends longest on" names
@@ -999,11 +1005,11 @@ drop the number.
   two pages no inbound edge.~~ **Done, session D (pass 5)**: the superlative is
   gone, replaced by *off the conveyor, ahead of it*, which is what the figure
   draws.
-- `world/chunk-storage.md:203` — "**Three** places do make the server thread
+- `world/chunk-storage.md:203` — "**Three** places do make the server thread [kind=voice]
   wait on a disk": a fourth blocking join at `ServerChunkCache.java:126`/`149`
   can end at the disk, though it drives the main-thread queue rather than
   raw-joining the IO lane.
-- `client/the-client-level.md:129` — "the chunk cache and **one** packet
+- `client/the-client-level.md:129` — "the chunk cache and **one** packet [kind=voice]
   handler call `LevelExtractor` directly" is right for the dirty-marking path;
   three `ClientPacketListener` sites touch `levelExtractor` in all.
 - ~~`foundations/identifiers-and-registries.md:75` — "keyed **three** ways"
@@ -1016,7 +1022,7 @@ drop the number.
   **Done, session B** — re-derived (`IOWorker.java:105` two `FieldSelector`s,
   `StructureCheck.java:113` three) and rewritten to name the mechanism
   (`CollectFields` over the selectors the caller wants) rather than a number.
-- `blocks/signal-and-dust.md:27,126` — "the three answers a state gives" is
+- `blocks/signal-and-dust.md:27,126` — "the three answers a state gives" is [kind=voice]
   three of six signal delegators on `BlockBehaviour.BlockStateBase`; "All three
   stop early" is true of the reading methods and false of the direction arrays
   the previous paragraph counts.
@@ -1025,10 +1031,10 @@ drop the number.
   **Done, session N**, and re-derived: `Direction.Axis`, `com/mojang/math/Axis`
   and `ChunkPalettedStorageFix.Axis`. The sentence now says *in scope* and names
   the third as out of it.
-- `items/loot-tables.md:130` — "a funnel with **three** fan-outs" describes the
+- `items/loot-tables.md:130` — "a funnel with **three** fan-outs" describes the [kind=figure]
   page's own figure, which has four branch nodes.
 
-- `maps/biggest.md:29` — "only **two** concrete mobs make the list" is true of
+- ~~`maps/biggest.md:29` — "only **two** concrete mobs make the list" is true of~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session N — `maps/biggest`:38 now says *make the thirty* and names the table's forty.
   the figure's thirty and false of the table's forty (`Panda` 37th,
   `SulfurCube` 40th).
 - ~~`maps/fanin.md:24` — "the **thirty** hubs … they are **seven**" has the right
@@ -1072,7 +1078,7 @@ drop the number.
   `ClipboardManager` is a `KeyboardHandler` field; `TextInputManager` is
   `Minecraft.textInputManager` and is reached from `Gui`,
   `AbstractSignEditScreen` and `IMEPreeditOverlay` as well.
-- `rendering/entity-rendering.md:189,255` — "half" and "4x4" are right but the
+- `rendering/entity-rendering.md:189,255` — "half" and "4x4" are right but the [kind=voice]
   enumeration is short (`SubmitNodeCollector.submitMovingBlock` also copies only
   the `Matrix4f`; `submitFlame`, `submitShapeOutline` and `submitCustomGeometry`
   also copy the full pose); and "half a dozen others" is seven layers that hang
@@ -1086,7 +1092,7 @@ drop the number.
 - `rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
   (`ClientLevel.java:274`), stated as a fraction rather than hedged.
 
-- `commands/functions-and-macros.md:158` — "**three** lines apart" is three
+- ~~`commands/functions-and-macros.md:158` — "**three** lines apart" is three~~ **Struck by the pass-6 planning session (2026-09-07):** overtaken, as the entry's own last line says (session M).
   lines *between* the two declarations (`CommandSourceStack.java` 124 and 128),
   a delta of four.
   **Session M (pass 5): overtaken** — the heading is now *The two permission verbs*. A line delta is rule 2's problem, not a count's.
@@ -1109,7 +1115,7 @@ drop the number.
   the server itself uses" is one under *shared `PermissionCheck` constant*, two
   if `Permissions.COMMANDS_GAMEMASTER` counts, which the server reads inside
   `Commands.LEVEL_GAMEMASTERS`.
-- `commands/scoreboard-and-data.md:371` — "the nicest **ten** lines" is not
+- `commands/scoreboard-and-data.md:371` — "the nicest **ten** lines" is not [kind=voice]
   verifiable at that precision; decompiled formatting is not the source's.
 
   **Session M (pass 5): carried, and re-tagged** — "the nicest ten lines" is a claim about decompiled formatting, which is rule 2's line, not a count. Logged for pass 9 as well. [kind=voice]
@@ -1197,7 +1203,7 @@ for voice.** Seven were rewritten because the fact under them fell:
   mechanism now needs four sentences where the false version needed two. The
   clause "What the depth limit does is stop offering the asked-for pool at
   all" is doing a lot of work in one line.
-- `trees`' **crown paragraph**, which now ends on "the asymmetry is in the
+- `trees`' **crown paragraph**, which now ends on "the asymmetry is in the [kind=voice]
   code and vanilla data cannot express it" — true, and a stranger note to end
   a section on than the section was written for. Its header line
   ("a ceiling the crown's size was decided before") is grammatically awkward
@@ -1266,13 +1272,13 @@ fell, and none has had a wording pass:
 - `the-frame`'s acquire-failure paragraph and its minimize Q&A (the answer
   went from "three calls' worth" to a paragraph about the ten-frame limiter,
   and it is now the longest Q&A on the page).
-- `the-frame`'s partial-tick table gained a sixth row and lost the "five
+- `the-frame`'s partial-tick table gained a sixth row and lost the "five [kind=voice]
   partial ticks" heading; the section is now called *six clocks in one frame*,
   which is accurate and may not be the best title.
 - `models-and-atlases`' chunk-layer hook, which now carries a nine-line
   qualifier about `force_translucent` where the point is one sentence long.
   **This is the clearest over-long fix in the session.**
-- `models-and-atlases`' water-animation Q&A, whose *question* changed — it
+- `models-and-atlases`' water-animation Q&A, whose *question* changed — it [kind=voice]
   now asks two things at once ("why does lag slow it but the pause menu not
   stop it"), which is a compound question in a slot that wants a simple one.
 - `lightmap-fog-and-sky`'s opening, where "only two still read the raw world
@@ -1287,7 +1293,7 @@ fell, and none has had a wording pass:
 
 **Structural findings (not acted on).**
 
-- `the-window`'s seventh callback (the window-close one) is introduced in a
+- `the-window`'s seventh callback (the window-close one) is introduced in a [kind=lecture]
   section titled *Six callbacks are the entire surface* and then explained
   three sections later, under the shutdown watchdog. Either the heading or the
   ordering is wrong; pass 5 should decide which. Same page: the "rest of the
@@ -1324,7 +1330,7 @@ fell, and none has had a wording pass:
   the paragraph under it now spends four lines saying what the arrows are
   *not*. That is honest and it is also the longest caption in the part.
 
-**Smaller misleading items, verified but left as they are** (each is true as
+**Smaller misleading items, verified but left as they are** (each is true as [kind=voice]
 written and imprecise in a way that costs a reader nothing at this pass):
 `the-frame`'s "all of this is one thread" against a client that has several;
 `models-and-atlases`' "twelve separate layers" where the prose enumerates
@@ -1463,7 +1469,7 @@ duplicate a Reference page that has been checked row by row.
   than what they replace. The verified line still says "picks up enchantments
   four other ways", which is now the only place the old framing survives — check
   it reads right beside the new title.
-- **`items/README.md`'s shape paragraph.** "every later page assumes all three"
+- **`items/README.md`'s shape paragraph.** "every later page assumes all three" [kind=voice]
   was false, and the replacement admits that *contexts and predicates* is the
   outlier and could be watched first. That is a truer paragraph and a wordier
   one; it also now half-contradicts the numbered list's "the first three in
@@ -1474,7 +1480,7 @@ duplicate a Reference page that has been checked row by row.
 - **`containers-and-menus`' advancement-channel paragraph.** The claim "nothing
   calls back into the menu" had to be scoped to the chest and the exceptions
   named, which turned one clean sentence into four.
-- **`loot-tables`' world-gen paragraph** and its `BuiltInLootTables` category
+- **`loot-tables`' world-gen paragraph** and its `BuiltInLootTables` category [kind=lecture]
   list: the list was incomplete and is now longer. It is nine items in a book
   whose budget is seven.
 - **`recipes`' reload-window paragraph**, rewritten from "a window that is short
@@ -1564,13 +1570,13 @@ Part VII is **2 of 9** on *Questions players ask* (`loot-tables` and
 - **`entity-anatomy`'s registry paragraph** gained a second override
   direction (`getOptional` calls `super`), which is the subtlest thing on the
   page and is currently one clause.
-- **`damage-and-death`'s blocking sentence** now names `Hoglin` and
+- **`damage-and-death`'s blocking sentence** now names `Hoglin` and [kind=voice]
   `Ravager` to prove who is knocked back. Good evidence, but it is an aside
   inside an aside.
 
 **Structural findings, not acted on.**
 
-- **`authority` states its own subject with the wrong number in four
+- **`authority` states its own subject with the wrong number in four [kind=lecture]
   places** ("the four predicates" as a section heading, a closer heading, the
   hook and the cast row). Pass 4 corrected all four to five, but a page whose
   organising count changed is a page whose headings should be re-read
@@ -1585,7 +1591,7 @@ Part VII is **2 of 9** on *Questions players ask* (`loot-tables` and
   (`authority`'s *What the predicates explain*, `pathfinding`'s *Why mobs
   look stupid*), which makes 5 of 10 and is a data point for the *four
   spellings* problem session A logged rather than for the count.
-- **`entity-anatomy` and `entity-lifecycle` both explain
+- ~~**`entity-anatomy` and `entity-lifecycle` both explain~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session F — the gates are `entity-anatomy`'s and the spawner's consequence `entity-lifecycle`'s (the charter's named duplicate).
   `EntityType.create`'s feature-flag and Peaceful gates**, from opposite
   ends — anatomy as *type to object*, lifecycle as the last filter before a
   mob exists. Not a shared skeleton, but a paragraph pass 5 could cut from
@@ -1620,13 +1626,13 @@ acted on; pass 4 does not polish.
 - `block-breaking`'s **durability answer** grew from two sentences to five to
   carry `Item.mineBlock`'s three conditions and the shears exception. It is the
   page's best *Questions players ask* entry and it is now its longest.
-- `diodes-and-observers`' **comparator fan-out paragraph** now names two callers
+- `diodes-and-observers`' **comparator fan-out paragraph** now names two callers [kind=voice]
   and says which one the example uses, where it named one. The correction is
   right and the paragraph has lost its shape: the interesting fact
   (`BlockEntity.setChanged` is what makes a comparator notice a chest) is now
   third in the sentence order rather than first.
 
-**The "three differences" tic, and the shape it hides.** `diodes-and-observers`'
+**The "three differences" tic, and the shape it hides.** `diodes-and-observers`' [kind=lecture]
 comparison table is introduced as five rows because it *has* five rows, which is
 honest and flat. The real structure underneath is two axes — repeater against
 comparator (four differences, all about arithmetic and priority) and diode
@@ -1699,12 +1705,12 @@ acted on; pass 4 does not polish.
   is the better punchline and probably wants to be *in the hook* rather than two
   thirds of the way down a page whose hook is about colour — a structural call,
   not a wording one.
-- `chunk-generation-pipeline`'s **radius-11 derivation** now explains
+- `chunk-generation-pipeline`'s **radius-11 derivation** now explains [kind=lecture]
   `ChunkStep.Builder.getRadiusOfParent` in the middle of a paragraph that was
   already the page's most arithmetical. The true rule ("a debt counts only when
   the step's own parent already sits a ring out") may deserve to be its own
   sentence, or a row in the table above it.
-- `chunk-storage`'s **IOWorker priority paragraph** gained five lines saying what
+- `chunk-storage`'s **IOWorker priority paragraph** gained five lines saying what [kind=lecture]
   the shutdown barrier is and why a flush still waits. The section's subject is
   "why the server thread never waits", and this is a digression inside it.
 
@@ -1752,7 +1758,7 @@ header should get its ticking image back around the true number.
   re-derived against `PoiManager.java:195` and `SectionStorage.java:121`, with
   the reason it is deliberate (the flood settles every tick and must not touch
   the disk).
-- The cross-links session A logged here as pass-5 work are half done:
+- ~~The cross-links session A logged here as pass-5 work are half done:~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session L — Part XII's two Part II links are paid at first use on four pages.
   `chunk-anatomy` now links `foundations/identifiers-and-registries` (pass 4
   needed it for addition 2). Part XII's two are still open.
 
@@ -1972,7 +1978,7 @@ correction):
   and the recipient's at once. Recorded in `TEMPLATE.md`'s collision prose and
   in a note inside the figure; if pass 5 dislikes it, the alternative is two
   identically-labelled lanes.
-- **`reference/submit-phases.md` is a catalogue that needs a paragraph.** Its
+- ~~**`reference/submit-phases.md` is a catalogue that needs a paragraph.** Its~~ **Struck by the pass-6 planning session (2026-09-07):** settled by sessions K and N — the page names `SubmitNodeStorage` and `TranslucentSubmit`, and the merging rule moved to the lecture.
   "order bucket" and "may be reordered" language is unexplained without
   `SubmitNodeStorage` and `PhaseSubmitGrouper`; that is a page shape question,
   not a fact.
@@ -2105,7 +2111,7 @@ correction):
   frame. Worth restoring if a line becomes available, since it is the only
   mention of what ends those two buffers' frames.
 
-  **Wording debt.** The *headline for a 1.21-era reader* formula that opened
+  **Wording debt.** The *headline for a 1.21-era reader* formula that opened [kind=lecture]
   eight of eight Part XI pages is gone as an opening and survives as one
   blockquote at the foot of each — the same move session K made, so the
   device is now consistent across two parts and pass 5 should check it reads
@@ -2131,7 +2137,7 @@ correction):
   need; and the `BlockBehaviour.BlockStateBase.initCache` thread-safety
   paragraph is the page's most self-contained.
 
-  **Cuts made, and where they went.** All are names rather than claims.
+  **Cuts made, and where they went.** All are names rather than claims. [kind=record]
   `block-interaction` dropped the `InteractionResult.ItemContext` record and
   `InteractionResult.Success.withoutItem`; the full `BlockSetType` component
   roster (fourteen components, seventeen instances, its register/values/codec
@@ -2161,7 +2167,7 @@ correction):
     the other six link to the anchor. **Check in pass 5 that none of them has
     started re-explaining it**; this is the duplication that produced three of
     the part's pass-2 errors.
-  - `block-interaction` and `block-breaking` carry an identical four-sentence
+  - `block-interaction` and `block-breaking` carry an identical four-sentence [kind=book]
     preamble blockquote. That is deliberate (R6) and it should stay identical
     — if either drifts, they stop reading as one lecture in two halves.
   - The reflow around three link edits is untidy: `block-interaction` line
@@ -2171,7 +2177,7 @@ correction):
   - `diodes-and-observers` line 52 runs long after
     `HorizontalDirectionalBlock.FACING` replaced the shorter name the
     verifier rejected.
-  - The three redstone pages were written by the session rather than by
+  - The three redstone pages were written by the session rather than by [kind=voice]
     drafting agents, so they have had one fewer pair of eyes on their prose
     than the rest of the corpus. They are the pages most likely to be carrying
     the session's own tics.
@@ -2234,7 +2240,7 @@ correction):
   which is four in one part; check whether that reads as a part-level
   convention or a template.
 
-  **`level-data-and-rules`'s Reference framing is provisional.** Session E
+  ~~**`level-data-and-rules`'s Reference framing is provisional.** Session E~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session D (pass 5), which rewrote the page; no *Responsibility*-era heading remains.
   changed only its header, its links and its opening; it still carries a
   `## Responsibility`-era body shape and a "Short, no trace" ancestry.
   Session O owns the reframe.
@@ -2252,7 +2258,7 @@ was cut or moved, and why)*
   material became prose, tables and figures, and pass 5 should look for
   paragraphs that would read better as a short list after all.
   *Cuts and moves, per page.*
-  **`server-tick`**: the field inventories go (the `ServerTickRateManager`
+  **`server-tick`**: the field inventories go (the `ServerTickRateManager` [kind=record]
   sprint bookkeeping — `remainingSprintTicks`, `sprintTickStartTime`,
   `sprintTimeSpend` — and `MinecraftServer.mayHaveDelayedTasks` as a named
   field are no longer listed, only used); `MinecraftServer.spin` and the
@@ -2335,7 +2341,7 @@ was cut or moved, and why)*
   tickets page says "graph" and "tracker" for the same object.
 
 
-- **2026-09-02, session C — Parts I and II.** Cuts are names, not claims,
+- **2026-09-02, session C — Parts I and II.** Cuts are names, not claims, [kind=record]
   unless marked; the class index still answers "where" for every name here.
   **`anatomy`**: the eleven-row thread table and the situational-threads
   paragraph moved to `reference/threads.md` (already there, verified);
@@ -2350,11 +2356,11 @@ was cut or moved, and why)*
   client is a view of it" and the "this page is the frame" meta-sentence
   cut (the landing page says it); `RconThread`, `QueryThreadGs4`,
   `ManagementServer` dropped from *Where to look*.
-  **`what-this-book-skips`**: "Seventy-six pages cover the game" cut (the
+  **`what-this-book-skips`**: "Seventy-six pages cover the game" cut (the [kind=record]
   count churns); the four gap lists folded into one table with two prose
   paragraphs for the three entries that needed more than a cell; the four
   "the honest version" / "the detail worth having" tics rephrased.
-  **`codecs-nbt-json`**: cut names — `ExtraCodecs.intRange` /
+  **`codecs-nbt-json`**: cut names — `ExtraCodecs.intRange` / [kind=record]
   `nonEmptyList` / `optionalAlwaysPresentFieldOf`, `TagTypes`,
   `NbtIo.readCompressed`, `NbtOps.convertTo`, the three printing visitors
   and the `/data` colouring aside, the five `nbt/visitors` classes,
@@ -2368,14 +2374,14 @@ was cut or moved, and why)*
   (`text-components`), the `RegistrySynchronization` case
   (`protocol-phases`), `CODEC_WITH_BOUND_COMPONENTS` (`data-components`),
   `RemoteSlot`'s either-or (`containers-and-menus`).
-  **`identifiers-and-registries`**: ~~`MappedRegistry.byValue` cut~~
+  **`identifiers-and-registries`**: ~~`MappedRegistry.byValue` cut~~ [kind=record]
   (restored, session B — the cut is what made the "keyed three ways" count
   wrong); `TagLoader` named only as `TagLoader.buildUpdatedLookups` — carried,
   the tags page names the rest and the registries page cites it.
-  **`resource-system`**: `RegistryDataLoader` dropped from its calls-into
+  **`resource-system`**: `RegistryDataLoader` dropped from its calls-into [kind=record]
   (the registries page owns it) — carried, correct under the ownership rule.
-  **`tags`**: nothing cut.
-  **`data-components`**: the hashing detail (`HashedStack`,
+  **`tags`**: nothing cut. [kind=record]
+  **`data-components`**: the hashing detail (`HashedStack`, [kind=record]
   `HashedPatchMap`, `RemoteSlot.Synchronized`'s either-or and promotion,
   the creative double guard) moved to `codecs-nbt-json` and
   `containers-and-menus`; three enchanting facts moved *towards* Part VII
@@ -2404,9 +2410,9 @@ was cut or moved, and why)*
   check it reads as intended. Nothing was cut from the old maps: the
   tables are all still there under the figures, at the same URLs.
 
-- **2026-09-03, session G — Part VI Entities.** *Cuts, all of them moves or
+- **2026-09-03, session G — Part VI Entities.** *Cuts, all of them moves or [kind=record]
   logged losses.*
-  **`entity-anatomy`**: the seven-group field inventory and the "smaller
+  **`entity-anatomy`**: the seven-group field inventory and the "smaller [kind=record]
   state families" paragraph (fire, freezing, fluids, portals, naming,
   item-component views) go — the names survive only where the story touches
   them, mostly as the contents of `Entity.baseTick`; the hand-drawn class
@@ -2418,24 +2424,24 @@ was cut or moved, and why)*
   `tickCount + id`, **moved to `ai-goals-and-brains`**; `Marker.tick` being
   genuinely empty. The subpackage table stayed and its counts were corrected
   — the old rows summed to 639 of a stated 716.
-  **`entity-lifecycle`**: the nineteen-constant `EntitySpawnReason` list
+  **`entity-lifecycle`**: the nineteen-constant `EntitySpawnReason` list [kind=record]
   (four survive, the rest want Reference — logged in pass3.md); the
   `SpawnPlacementTypes` list, folded into a cast row; the game-rule and tag
   roster from *Data-driven by*; and — the largest deliberate cut — the
   **Nether-fortress hard-coded spawn list and `Structure.spawnOverrides`**,
   which are verified true and are now stated **nowhere in the corpus**.
   Session M or O should take them.
-  **`synched-entity-data`**: the 43-constant serializer bullet (74 lines) to
+  **`synched-entity-data`**: the 43-constant serializer bullet (74 lines) to [kind=record]
   the generated Reference page, leaving three named in prose; the
   `defineId`/`defineSynchedData`/setter roster; the thirty-five-overrider
   list, cut to three examples; `ServerEntity.Synchronizer` compressed to one
   table cell.
-  **`attributes`**: the forty-constant catalogue (five themed bullets, 34
+  **`attributes`**: the forty-constant catalogue (five themed bullets, 34 [kind=record]
   lines) to the generated Reference page, with the count, the clamp rule,
   the eight non-syncable names and the handful of numbers the argument uses
   kept in prose. `Attributes.DEFAULT_ATTACK_SPEED` cut outright because the
   claim about it was false.
-  **`movement-and-collision`**: the position-and-teleport family
+  **`movement-and-collision`**: the position-and-teleport family [kind=record]
   (`Entity.absSnapTo`, `Entity.snapTo`, `Entity.setOldPosAndRot`, the
   ±3.0000512E7 clamp, `Entity.setBoundingBox`'s public callers,
   `Entity.getKnownMovement`, `Entity.flyDist`) — these are
@@ -2444,7 +2450,7 @@ was cut or moved, and why)*
   H: `input-to-movement` carries both directions in* What it calls, and what
   crosses the wire*, so that half is discharged)*, which
   `input-to-movement` owns; the data-driven tag inventory.
-  **`ai-goals-and-brains`**: the behaviour-package roster cut to eight named
+  **`ai-goals-and-brains`**: the behaviour-package roster cut to eight named [kind=record]
   classes plus a count; `VillagerType`.
   **`damage-and-death`**: the exhaustive `DamageTypes` key list and the
   fifteen-name `DamageTypeTags` list, replaced by the counts (51 and 35)
@@ -2479,7 +2485,7 @@ was cut or moved, and why)*
   should check the device's distribution across all thirteen parts. The part's hooks all land on a bold or em-dashed final sentence,
   the same tic session C logged for Part II.
 
-- **2026-09-03, session H — Part VII Items and inventories.** Eight pages,
+- **2026-09-03, session H — Part VII Items and inventories.** Eight pages, [kind=record]
   318–391 lines. **Nothing was cut except by moving it**, but a lot of
   *names* left the pages when the field inventories went, and this is the
   list, because the class index is now their only home.
@@ -2492,7 +2498,7 @@ was cut or moved, and why)*
   `ShulkerBoxSlot`), the `Inventory` slot constants, the
   `AbstractContainerMenu` field list and
   `AbstractContainerScreen.checkHotbarKeyPressed`.
-  **`recipes`**: the `Recipe.CommonInfo` / `Recipe.BookInfo` codec-fragment
+  **`recipes`**: the `Recipe.CommonInfo` / `Recipe.BookInfo` codec-fragment [kind=record]
   paragraph, `NormalCraftingRecipe`'s memoisation, the seven `RecipeType`
   constants enumerated, the `RecipeInput` three shapes
   (`SingleRecipeInput`, `SmithingRecipeInput`), the
@@ -2517,7 +2523,7 @@ was cut or moved, and why)*
   `LootDataType`, `ContainerEntity` and command-class items with it: the whole
   `loot-tables` half of this entry is **overtaken**.
 
-  **Length.** Every page is over the 200–320 brief: 318, 324, 332, 344,
+  **Length.** Every page is over the 200–320 brief: 318, 324, 332, 344, [kind=lecture]
   346, 358, 389, 391. Five agents reported trimming twice and stopping
   rather than cutting evidence. Part VII is now the longest part per page
   in the corpus and is where pass 5's cutting should start.
@@ -2614,7 +2620,7 @@ was cut or moved, and why)*
   codec*, which is precise but is the sort of phrase a viewer hears as a
   singular file rather than a composed dispatcher.
 
-- **2026-09-03, session K, Part X's cuts and its wording debt.**
+- **2026-09-03, session K, Part X's cuts and its wording debt.** [kind=record]
   **Cuts, all of them moves rather than losses.** `hud`'s twenty-eight-row
   element gate table, which pass 2 had compressed to a paragraph of prose,
   is now `src/reference/hud-elements.md` and the page links to it — the page
@@ -2648,7 +2654,7 @@ was cut or moved, and why)*
     note that on three pages (`the-gui-render-tree`, `text-and-fonts`,
     `sound-engine`) the questions are a reader's rather than a player's, and
     the heading says so, which may be a distinction without a difference.
-  - **Second person again.** `input-and-keybinds`, `hud`,
+  - **Second person again.** `input-and-keybinds`, `hud`, [kind=lecture]
     `what-makes-a-sound` and `the-gui-render-tree` all open in the second
     person (*hold the key*, *press F1*, *you break a block*, *a chest full of
     the same item*). Sessions I and J both flagged the drift; it is now four
@@ -2675,11 +2681,11 @@ was cut or moved, and why)*
 
 ## Session N — Part XIII Commands and data packs *(2026-09-03)*
 
-**Cuts, with reasons.** Nine pages from five, and the reshapes dropped
+**Cuts, with reasons.** Nine pages from five, and the reshapes dropped [kind=record]
 material rather than moving it in these places. None of it is wrong; all of
 it lost a fight for space against the page's own story.
 
-- `brigadier-and-commands` lost: `CommandSource` as a named object (the
+- `brigadier-and-commands` lost: `CommandSource` as a named object (the [kind=record]
   output end alone — `CommandSource.NULL`, `CommandSource.acceptsSuccess`,
   `CommandSource.shouldInformAdmins` — and the observation that a command
   block, RCON and the console differ *only* there);
@@ -2693,7 +2699,7 @@ it lost a fight for space against the page's own story.
   The `CommandSource` row is the one worth restoring if the page ever has
   room — it is the whole answer to "why does a command block not spam chat".
   **Session M (pass 5): the `CommandSource` row restored**, as the entry recommended, and widened — the four implementations are now the page's answer to why a command block does not spam chat, and they pay off `blocks/README`'s promise about the command block. The resource-argument family is restored as a paragraph too. `Commands.CommandSelection` and the fourteen-field inventory stay cut.
-- `advancements` lost: the two `Advancement.validate` methods (a private
+- `advancements` lost: the two `Advancement.validate` methods (a private [kind=record]
   static one the codec runs, which cross-checks requirements against criteria
   and **fails the load**, and a public one that walks each trigger instance
   through a `ProblemReporter` and only *warns*); `AdvancementTree.remove` as
@@ -2707,17 +2713,17 @@ it lost a fight for space against the page's own story.
   "`AdvancementCommands` is 312 lines"). The reload-listener sentence is the
   loss that matters — the page now says the layout runs on the server without
   saying *when*.
-- `the-execution-engine` lost `ExecutionControl` and the
+- `the-execution-engine` lost `ExecutionControl` and the [kind=record]
   `EntryAction` / `UnboundEntryAction` pair as named cast rows; both are now
   only implied by `CommandQueueEntry`'s row.
-- `scoreboard-and-data` lost: `PlayerScores` (package-private, and the
+- `scoreboard-and-data` lost: `PlayerScores` (package-private, and the [kind=record]
   observation that `Scoreboard.resetSinglePlayerScore` deletes the whole row
   so the outer map never accumulates empties); `TeamColor`'s sixteen values
   and the unrelated second `TeamColor` in `client/color/item`;
   `DisplaySlot`'s nineteen enumerated; `ScoreHolder.fromGameProfile`; and the
   command-class sizes (`ScoreboardCommand` at 620 lines is the fourth-largest
   command class in the game, which was a nice number).
-- `dialogs` and `game-tests` lost the individual names of six packets
+- `dialogs` and `game-tests` lost the individual names of six packets [kind=record]
   (`ClientboundClearDialogPacket` survives; `ClientboundTestInstanceBlockStatus`,
   `ServerboundSetTestBlockPacket` and `ServerboundTestInstanceBlockActionPacket`
   are now described rather than named). `reference/packets.md` has them.
@@ -2741,7 +2747,7 @@ it lost a fight for space against the page's own story.
   the invariant wall, and a corpus where half the pages have one has just
   re-invented the seven-heading template with better headings. Count them in
   pass 5 and cap it.
-- **"The one sentence a player would recognise" is gone from all five old
+- **"The one sentence a player would recognise" is gone from all five old [kind=lecture]
   pages** and was not replaced by anything with a fixed position — the
   recognisable thing is now inside the opening paragraph where it belongs.
   Worth checking the earlier parts still do the same.
@@ -2758,7 +2764,7 @@ it lost a fight for space against the page's own story.
 
 ## Session O — Reference *(2026-09-03)*
 
-- `level-data-and-rules` was reshaped bullet-for-paragraph, so its
+- `level-data-and-rules` was reshaped bullet-for-paragraph, so its [kind=lecture]
   paragraphs are still inventories in prose clothing (the `PrimaryLevelData`
   field list, the `DimensionType` record). A reference page may keep them;
   a polish pass should decide whether the two longest become tables.
@@ -2771,9 +2777,9 @@ it lost a fight for space against the page's own story.
 - `naming-drift` keeps its second-person "the name in your head" voice,
   which is now the only page in Reference that talks to the reader; keep or
   level in the voice sweep.
-- `reference/README.md`'s table has a *parts* column written by hand from
+- ~~`reference/README.md`'s table has a *parts* column written by hand from~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session N — `check_deps.py` derives the column from the landing pages and fails on a disagreement.
   the landing pages; if a tool ever writes it, the column goes generated.
-- The glossary's owner links are one page each except *Component*,
+- ~~The glossary's owner links are one page each except *Component*,~~ **Struck by the pass-6 planning session (2026-09-07):** settled by sessions A and N — one owner per *sense*; *Quart* and *Render state* carry one link each.
   *Level*, *Render state*, *Tick*, *Quart* and *Submit node*, which point at
   two; a polish rule should say whether two is allowed.
 
@@ -3091,7 +3097,7 @@ Wording debt from fixes made in place, and structural findings not acted on.
   (pass 5)**, half overtaken: the bundle section's `StreamCodec.unit` is a
   *use*, not a second introduction; only its four-word gloss ("an id and a
   zero-byte body") duplicated, and that is cut.
-- `packets-and-stream-codecs.md` — the JSON exception is now a four-line
+- `packets-and-stream-codecs.md` — the JSON exception is now a four-line [kind=lecture]
   aside inside a paragraph about the NBT bridge. It is a good fact and it is
   in the wrong shape; it may want to be its own short paragraph.
 - ~~`protocol-phases.md` — "Eight, not four: every phase but handshaking
@@ -3143,7 +3149,7 @@ Wording debt, all of it created by a fact fix:
   all of them" turn is doing a lot of work in one clause. Pass 5 should read
   the opening and the *A node that asks for suggestions by hand* section
   together and decide whether the argument now takes one paragraph too many.
-- `entity-selectors.md` — the **opening scenario was replaced** (a command
+- `entity-selectors.md` — the **opening scenario was replaced** (a command [kind=voice]
   block, because a player typing `/tp @p` always selects themselves) and now
   carries a parenthetical explaining why the obvious version does not work.
   The parenthetical is a correction in the voice of a correction; pass 5
@@ -3165,12 +3171,12 @@ Wording debt, all of it created by a fact fix:
   several other places). The section's own punchline — that the client can
   tell "no permission" from "typo" — is now the fourth idea in it.
   **Session M (pass 5): confirmed and handed to pass 6.** The section is now four ideas under a heading that promises one, and the client-side-gates paragraph is really a fourth source of belief rather than part of this answer. A reshape, not a move. [kind=lecture]
-- `scoreboard-and-data.md` — the "one thing this corpus cannot settle"
+- `scoreboard-and-data.md` — the "one thing this corpus cannot settle" [kind=lecture]
   paragraph became an answer, so a paragraph that existed to mark a limit is
   now a paragraph of fact sitting where a caveat used to close a section.
   Check it still belongs at the end.
   **Session M (pass 5): checked and kept.** The paragraph is the page's last word on `execute store` and it belongs at the end; what it lost was the half the engine owns (`WithErrorHandling`), now a citation, leaving the `ContextChain.runExecutable` fact that is this page's own.
-- `game-tests.md` — the client-writes sentence now ends on a list of four
+- ~~`game-tests.md` — the client-writes sentence now ends on a list of four~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M, as the entry's own last line says.
   serverbound packets that belong to other pages. True, and long. Pass 5
   should consider cutting it back to the narrow claim.
   **Session M (pass 5): done** — cut back to the narrow claim, and the tail replaced by naming `TestInstanceBlock`, which no page had.
@@ -3180,7 +3186,7 @@ Wording debt, all of it created by a fact fix:
 
 Structural findings, not acted on:
 
-- `entity-selectors.md` — the page is one of the longest in the part and its
+- `entity-selectors.md` — the page is one of the longest in the part and its [kind=lecture]
   *Resolve* section carries five bolded claims in a row, three of which are
   about cost rather than about the trace. The page's shape is a pipeline with
   a policy figure; the cost material may want to be a table.
@@ -3340,17 +3346,17 @@ that takes it. Everything session F did act on is struck above or logged in
   no *Questions players ask* closer, and three of `entity-lifecycle`'s best
   facts are already question-shaped (*name it and it stays*, *a mob alone in a
   world never despawns*, *a wild cow on a hilltop never despawns*).
-- `pathfinding`'s verified line promises "a villager decides to walk to its
+- `pathfinding`'s verified line promises "a villager decides to walk to its [kind=lecture]
   bed" — the third consecutive page to open on the same villager — while the
   page's own hook is the mob against the fence. The two halves of the line
   could swap without touching a fact.
 - `authority`'s *Where the gates actually sit* is an eight-site inventory in a
   seven-item list, one bullet carrying two. A table with a *which member*
   column is the obvious shape.
-- `movement-and-collision`'s *Off it goes* carries two subjects joined only by
+- `movement-and-collision`'s *Off it goes* carries two subjects joined only by [kind=lecture]
   "the tick ends": the crowding pass, which is the trace's last step, and the
   network paragraph, which is two other pages' material cited from here.
-- `pathfinding` has three enumerations over the seven-item budget (eleven
+- `pathfinding` has three enumerations over the seven-item budget (eleven [kind=lecture]
   `PathType` constants with costs, seven required-path-length values, twelve
   `MoveControl` callers in eight classes). A fourth Reference page for the 27
   `PathType`s with their default costs and the per-mob malus overrides would
@@ -3360,14 +3366,14 @@ that takes it. Everything session F did act on is struck above or logged in
 
 - `authority`'s boat sequence declares `participant SL as ServerLevel` and
   sends no message on that lane; it appears only inside a `Note over`.
-- `entity-anatomy`'s figcaption for the generated `Entity` tree omits the key
+- `entity-anatomy`'s figcaption for the generated `Entity` tree omits the key [kind=figure]
   `maps/hierarchy`:20 gives the same SVG, so a reader landing here first
   cannot read the numbers.
 
 **Pass 8 — the voice.**
 
-- Three pages phrase the same schedule rule three ways:
-  `ai-goals-and-brains`:339 "fewer than 21 ticks", `points-of-interest`:236
+- Three pages phrase the same schedule rule three ways: [kind=voice]
+  `ai-goals-and-brains`:339 "fewer than 21 ticks", `points-of-interest`:236 [kind=voice]
   "more than twenty ticks", `environment-attributes-and-timelines`:384 "more
   than 20 game ticks". (This is already logged at :805-809; the third
   spelling is new.)
@@ -3377,7 +3383,7 @@ that takes it. Everything session F did act on is struck above or logged in
   accident.
 - `client/the-client-level`:195 calls the interpolation window "three-tick"
   where `movement-and-collision`:379 says "three steps". One number, two names.
-- `entity-anatomy` uses *frozen* for three unrelated things on one page: the
+- `entity-anatomy` uses *frozen* for three unrelated things on one page: the [kind=voice]
   registry freeze, an `EntityType`'s frozen dimensions, and
   `Entity.DATA_TICKS_FROZEN`.
 - ~~`reference/naming-drift`:414-415 lists *Entity.hurt* as a 1.21 name that is
@@ -3463,7 +3469,7 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **For pass 6, the lecture.**
 
-- `signal-and-dust`'s *The second implementation* stops using the page's trace:
+- `signal-and-dust`'s *The second implementation* stops using the page's trace: [kind=lecture]
   the lever and the two dust vanish and the section walks
   `ExperimentalRedstoneWireEvaluator`'s fields in call order. Run the same lever
   and two dust through it and cut to the two differences the hook names. The
@@ -3483,10 +3489,10 @@ that takes it. Everything session E did act on is struck above or logged in
   split (all six sibling links land on its second half, which is the part's
   hub), but the header line and one clause in the opening would carry the
   reader across the seam.
-- `block-interaction`'s Q&A entry on breaking a door's bottom half teaches the
+- `block-interaction`'s Q&A entry on breaking a door's bottom half teaches the [kind=lecture]
   same thing as the body four sections earlier, with the same three method
   names. It is the page's only genuine internal duplicate.
-- The *constant nobody reads* device appears several times in Part V
+- The *constant nobody reads* device appears several times in Part V [kind=lecture]
   (`PistonStructureResolver.MAX_PUSH_DEPTH`, `PistonMovingBlockEntity.TICKS_TO_EXTEND`,
   `HopperBlockEntity.MOVE_ITEM_SPEED`, plus the torch's three) and the page that
   explains why a decompile cannot tell is `client/the-client-loop`. None of the
@@ -3494,7 +3500,7 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **For pass 7, the figures.**
 
-- `pistons-and-block-events`' flag table is five rows with a *written by* column
+- `pistons-and-block-events`' flag table is five rows with a *written by* column [kind=figure]
   and wants the `custom.css` wide treatment.
 - `block-entities`' sequence diagram uses three names for one menu — the lane
   *FM as FurnaceMenu*, then `AbstractContainerMenu.broadcastChanges`, then
@@ -3506,16 +3512,16 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **For pass 8, the voice.**
 
-- Part V says *flags 3* repeatedly and never names `Block.UPDATE_ALL`; the
+- Part V says *flags 3* repeatedly and never names `Block.UPDATE_ALL`; the [kind=voice]
   catalogue now decomposes all four combinations, so the pages could use either
   form consistently.
-- `blocks-and-states`' *The two update channels* heading is cited by six sibling
+- `blocks-and-states`' *The two update channels* heading is cited by six sibling [kind=voice]
   pages and by three Part IV pages; if pass 8 rewords it, every one of those
   anchors moves. Same for `block-entities#loaded-is-not-enough-to-tick`.
 
 **Coverage, for [pass3.md](pass3.md) §7 and the second edition.**
 
-- **The hopper is the largest unowned mechanism in Part V.**
+- **The hopper is the largest unowned mechanism in Part V.** [kind=book] *(pass-6 planning session: not carried to pass3.md §7 as session E's log says, and not declared on `blocks/README`, whose *where the part stops* says **one** thing in the part belongs to nobody (the sculk spread); the pass-6 planning session carried it to §7, and Part V's pass-6 session re-judges that sentence when it places the seventh section.)*
   `HopperBlockEntity` (547) with `HopperBlock` (182): the book gestures at it
   from three pages — `containers-and-menus` uses it as *the* example of the
   block-entity phase, `diodes-and-observers` as the thing a comparator notices,
@@ -3540,7 +3546,7 @@ that takes it. Everything session E did act on is struck above or logged in
   from. `blocks/README`'s hand-forward is split to match. **The command block
   is still Part XIII's and still unwritten**; session M.~~
   **Session O's audit (pass 5's close): settled and never struck** — settled: `commands/brigadier-and-commands`:154 has `CommandBlockEntity` and `worldgen/jigsaw-and-templates`:244 has `StructureBlockEntity`.
-- **Four state machines are half-adopted by other parts.**
+- **Four state machines are half-adopted by other parts.** [kind=book] *(pass-6 planning session: the same: not in §7 and not declared on the landing page; carried to §7 by the pass-6 planning session, the landing page's sentence for Part V's pass-6 session.)*
   `BeaconBlockEntity` (434), `ConduitBlockEntity` (300), and the *trialspawner*
   (642 unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
   named on Part VI and Part VII pages while their state machines are explained
@@ -3613,7 +3619,7 @@ corrections it made are in [pass9.md](pass9.md).*
   spear and now points at `the-spear`.**~~ *Checked, session H: the round trip
   is paid off in both directions and both ends now carry anchors.* Session H should check the round trip:
   `player/README`:57-59 sends readers to Part VII *for* the spear.
-- **Session I (IX) — `packets-and-stream-codecs`:368-373 describes the
+- **Session I (IX) — `packets-and-stream-codecs`:368-373 describes the [kind=book]
   `HashedStack` shape, which `containers-and-menus` owns.** The packet page
   names `HashedPatchMap.addedComponents` and `HashedPatchMap.removedComponents`,
   which the click page describes without naming: a move, not a cut. The framing
@@ -3624,12 +3630,12 @@ corrections it made are in [pass9.md](pass9.md).*
   (its hook), `AbstractContainerScreen`'s click resolution, and
   `CreativeModeInventoryScreen`. The glossary's **Menu** entry (`glossary`:391)
   describes only the server's object, where the page insists there are two.
-- **Session M (XIII) — `brigadier-and-commands`:255 routes `LootCommand` and
+- ~~**Session M (XIII) — `brigadier-and-commands`:255 routes `LootCommand` and~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M, as the entry's own last line says.
   `ItemCommands` to `loot-tables`, which names neither**; both are on
-  `contexts-and-predicates`:233-234. The row's `/item modify` claim is
+  ~~`contexts-and-predicates`:233-234. The row's `/item modify` claim is~~ **Struck by the pass-6 planning session (2026-09-07):** settled with the entry above.
   `loot-tables`', so the row wants two destinations.
   **Session M (pass 5): done** — repointed at `contexts-and-predicates#who-asks-and-with-which-set`, which names both, with `loot-tables` kept for the functions themselves.
-- **Session M (XIII) — `advancements`:7-10 opens on
+- **Session M (XIII) — `advancements`:7-10 opens on [kind=book]
   `AbstractContainerMenu.broadcastChanges` and links `containers-and-menus`
   nowhere**, and `entity-selectors`:118 and `advancements`:146-150 are each
   half of a fact whose other half is on `contexts-and-predicates`. Four
@@ -3918,7 +3924,7 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 6 (the lecture)
 
-- **`the-gui-render-tree`'s recording-verb list is a 22-identifier
+- **`the-gui-render-tree`'s recording-verb list is a 22-identifier [kind=lecture]
   paragraph** — six verbs, two structural ones and thirteen state classes in
   running prose, past the budget's seven. A table would carry it, and the
   `PictureInPictureRenderState`/`PictureInPictureRenderer` pairing session J
@@ -3936,7 +3942,7 @@ it made are in [pass9.md](pass9.md).*
   citation. What is left that is genuinely the page's own is the clock and
   the weather level that steps twenty times a second instead of
   interpolating. Session J did not restructure the closer.
-- **`prediction-and-acks` opens on a four-sentence contract that two Part V
+- **`prediction-and-acks` opens on a four-sentence contract that two Part V [kind=lecture]
   pages also carry** (a declared pair, so the copy stays) — but the page now
   also opens on the authority split. Pass 6 should read the first two
   paragraphs together and decide which is the hook.
@@ -3961,12 +3967,12 @@ it made are in [pass9.md](pass9.md).*
   `sound-engine`'s verified line and hook use it for the post *out* to the
   sound thread. Both senses appear within fifteen lines of each other on that
   page. One of the two needs a different word, corpus-wide.
-- **"Record" and "extract" are still interchangeable** across
+- **"Record" and "extract" are still interchangeable** across [kind=voice]
   `gui-and-screens`, `the-gui-render-tree`, `text-and-fonts` and `hud`
   (session I's note, now four pages confirmed). Session J added prose to
   three of the four and used *record* throughout, which is a vote, not a
   ruling.
-- **Second person, again, and now five pages.** `input-and-keybinds`, `hud`,
+- **Second person, again, and now five pages.** `input-and-keybinds`, `hud`, [kind=lecture]
   `what-makes-a-sound`, `the-gui-render-tree` and `gui-and-screens` all open
   in it. Sessions I, J and K have each flagged the drift; it is corpus-wide
   and pass 8's, not a part session's.

@@ -1450,6 +1450,26 @@ writes one strikes it through; a session that rules one out says why, here.*
   needs of it is a set of numbers, two extents and a list of packets — an
   enumeration, not a story followed through the system. A second edition with a
   wider scope may disagree; nothing before pass 10 should.
+- **The hopper.** *(pass 5, session E; carried here by pass 6's planning
+  session, 2026-09-07.)* `HopperBlockEntity` (547 lines) with `HopperBlock`
+  (182) is the largest unowned mechanism in Part V: the book gestures at it from
+  three pages — `containers-and-menus` uses it as *the* example of the
+  block-entity phase, `diodes-and-observers` as the thing a comparator notices,
+  `loot-tables` as a way into a chest — and nothing anywhere explains the
+  transfer, the five slots, the push-versus-pull asymmetry or the ordering.
+  Session E named its cadence on `block-entities` and declined the rest as a
+  lecture rather than a sentence, and its log says the entry went here; it had
+  not, and `blocks/README`'s *where the part stops* still says **one** thing in
+  the part belongs to nobody, the sculk spread. Part V's pass-6 session re-judges
+  that sentence when it places the landing page's seventh section. A second
+  edition should take it; nothing before pass 10 should.
+- **Four block-entity state machines half-adopted by other parts.** *(pass 5,
+  session E; carried here by pass 6's planning session.)* `BeaconBlockEntity`
+  (434 lines), `ConduitBlockEntity` (300), and the *trialspawner* (642
+  unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
+  named on Part VI and Part VII pages while their state machines are explained
+  nowhere. The same shape as the hopper, declared the same way, and waiting for
+  the same edition.
 - ~~**The abstract `Level` itself**~~ — **written by session C of pass 5** as
   a paragraph after `server-level-tick`'s cast: what `Level` holds on both
   sides, what it leaves abstract, and what `ServerLevel` adds, ending on the

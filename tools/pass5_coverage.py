@@ -22,10 +22,17 @@ and the sub-packages with the most unmentioned lines, since a whole sub-package 
 page names is the shape a missing section has. A class is a file; nested types
 are not counted, which is the atlas's rule.
 
+Pass 6's planning session added `--write`: one phrase per part into
+`src/generated/coverage-<dir>.md` — "**N% of the part's lines are named on no
+page in the book**" — so that a landing page whose coverage answer carries a
+number includes it the way it includes its size, and never hand-counts it.
+`tools/deploy.sh` runs it after `map_source.py`, so the phrase follows the pages.
+
 Usage:
     python tools/pass5_coverage.py --part world
     python tools/pass5_coverage.py --all --summary        # one row per part
     python tools/pass5_coverage.py --all --out DIR        # one <part>.coverage.md per part
+    python tools/pass5_coverage.py --write                # src/generated/coverage-<dir>.md, all thirteen
 """
 from __future__ import annotations
 
@@ -167,6 +174,24 @@ def report(files, part_dir: str, ticks: dict, figs: dict, min_lines: int, part_o
     return "\n".join(out) + "\n", stats
 
 
+GEN = os.path.join(queue.ROOT, "src", "generated")
+
+
+def phrase(st: dict) -> str:
+    """The generated coverage phrase for a part: the unnamed fraction by lines, rounded, with its population."""
+    total = st["lines"] or 1
+    unnamed = 100.0 * (st["none_lines"] + st["figure_lines"]) / total
+    return f"**{unnamed:.0f}% of the part's lines are named on no page in the book**"
+
+
+def write_phrases(files, ticks, figs) -> None:
+    for d, _n, _t, _s in map_source.PARTS:
+        _text, st = report(files, d, ticks, figs, 80)
+        with open(os.path.join(GEN, f"coverage-{d}.md"), "w", encoding="utf-8", newline="\n") as f:
+            f.write(phrase(st))
+        print(f"wrote src/generated/coverage-{d}.md  {phrase(st)}")
+
+
 def probe() -> int:
     """A class named in backticks on a page of the part is covered; one named on another part's page
     is 'named elsewhere' with its owner; one only in a figure is 'figure'; one named nowhere is the gap."""
@@ -188,6 +213,9 @@ def probe() -> int:
         ("BulkSectionAccess is figure-only", st["figure_classes"] == 1 and "BulkSectionAccess" in text.split("## Named only inside a figure")[-1]),
         ("MissingPaletteEntryException is the gap, listed with its lines", st["none_classes"] == 1
          and "| `MissingPaletteEntryException` | 200 |" in text),
+        # 300 + 120 named of 710 lines; the figure-only 90 and the unnamed 200 are 41%
+        ("the coverage phrase counts figure-only names as unnamed and names its population",
+         phrase(st) == "**41% of the part's lines are named on no page in the book**"),
     ]
     for name, ok in checks:
         print(f"  {'ok ' if ok else 'BAD'} {name}")
@@ -206,6 +234,7 @@ def main() -> int:
     ap.add_argument("--summary", action="store_true", help="one row per part")
     ap.add_argument("--out", help="write one <part>.coverage.md per part here")
     ap.add_argument("--min-lines", type=int, default=80)
+    ap.add_argument("--write", action="store_true", help="write src/generated/coverage-<dir>.md for every part")
     args = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -213,11 +242,15 @@ def main() -> int:
     if args.probe:
         return probe()
     parts = [d for d, _n, _t, _s in map_source.PARTS] if args.all else args.part
-    if not parts:
+    if not parts and not args.write:
         ap.print_help()
         return 2
     files = map_source.load()
     ticks, figs = page_names()
+    if args.write:
+        write_phrases(files, ticks, figs)
+        if not parts:
+            return 0
     if args.out:
         os.makedirs(args.out, exist_ok=True)
     if args.summary:

@@ -16,9 +16,14 @@ to the pages it names, and guesses each unit's kind from two things:
 
 An explicit tag wins over both: put `[kind=book]`, `[kind=lecture]`,
 `[kind=figure]` or `[kind=voice]` anywhere in a unit (or `[kind=5]` … `[kind=8]`)
-and that is its kind. A unit whose guess is a tie or has no evidence is printed
-with `?` so a session can tag it. Struck units (`~~…~~`) are settled and are
-listed only with --settled.
+and that is its kind. A fifth tag, `[kind=record]`, marks a unit no pass acts
+on — a pass-3 cut log, a count the close re-derived — so that it stops being
+counted as open work (pass 6's planning session, after pass 5's close found
+the guesser routing cut logs to `book`). A unit whose guess is a tie or has no
+evidence is printed with `?` so a session can tag it. Struck units (`~~…~~`)
+are settled and are listed only with --settled. A *preamble* — a bare bold
+lead-in such as `**For pass 6, the lecture.**`, an italic preface paragraph,
+a `---` — is not an entry and is never listed or counted.
 
 Usage:
     python tools/pass5_queue.py --summary                         # units by kind × part; how many are guesses
@@ -39,10 +44,14 @@ import pass4_queue as q   # noqa: E402
 
 QUEUE = os.path.join(q.ROOT, "docs", "pass5.md")
 NUMERAL = {v: k for k, v in q.ROMAN.items()}
-KINDS = ("book", "lecture", "figure", "voice")
-PASS_OF = {"book": 5, "lecture": 6, "figure": 7, "voice": 8}
-KIND_OF_PASS = {str(v): k for k, v in PASS_OF.items()}
-TAG = re.compile(r"\[kind=(book|lecture|figure|voice|[5-8])\]")
+KINDS = ("book", "lecture", "figure", "voice", "record")
+WORD_KINDS = ("book", "lecture", "figure", "voice")   # record is only ever tagged, never guessed
+PASS_OF = {"book": 5, "lecture": 6, "figure": 7, "voice": 8, "record": None}
+KIND_OF_PASS = {str(v): k for k, v in PASS_OF.items() if v}
+TAG = re.compile(r"\[kind=(book|lecture|figure|voice|record|[5-8])\]")
+PREAMBLE = (re.compile(r"^\*\*[^*]+\*\*\s*$"),          # a bare bold lead-in: **For pass 6, the lecture.**
+            re.compile(r"^\*(?!\*).*[^*]\*$", re.S),     # a wholly italic preface paragraph
+            re.compile(r"^-{3,}\s*$"))                   # a rule
 
 # the words that decide a kind, scored per unit; the section prior breaks ties
 WORDS = {
@@ -84,7 +93,7 @@ def kind_of(unit: q.Unit, prior: str | None) -> tuple[str, bool]:
         k = m.group(1)
         return (KIND_OF_PASS.get(k, k), True)
     text = unit.text
-    scores = {k: len(WORDS[k].findall(text)) for k in KINDS}
+    scores = {k: len(WORDS[k].findall(text)) for k in WORD_KINDS}
     # the closer device is pass 6's whatever else the unit says about it
     if re.search(r"questions players ask|questions a |\bcloser device\b", text, re.I):
         scores["lecture"] += 2
@@ -107,6 +116,15 @@ def section_prior(text: str) -> str | None:
         if pat.search(text):
             return kind
     return None
+
+
+def is_preamble(u: q.Unit) -> bool:
+    """A bare bold lead-in, an italic preface paragraph or a rule: a unit that is not an entry."""
+    if u.level <= 6:
+        return False
+    t = re.sub(r"^\s*(?:[-*]|\d+[.)])\s+", "", u.text.strip())
+    t = " ".join(l.strip() for l in t.split("\n")).strip()
+    return any(p.match(t) for p in PREAMBLE)
 
 
 def classify(units: list[q.Unit]) -> dict[int, tuple[str, bool]]:
@@ -142,25 +160,33 @@ def probe() -> int:
     old = QUEUE
     with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as f:
         f.write("# probe\n\n## Session Z — Part IV (pass 4)\n\n"
+                "*What the reading raised and this session did not act on, about `lighting`.*\n\n"
                 "**Structural findings, not acted on.**\n\n"
                 "- `lighting` and `chunk-anatomy` both explain the same thing.\n"
                 "- ~~`lighting`'s hook was rewritten; re-read it.~~\n"
-                "- `lighting`'s flowchart has sixteen edges and wants redrawing. [kind=voice]\n\n"
+                "- `lighting`'s flowchart has sixteen edges and wants redrawing. [kind=voice]\n"
+                "- `lighting`'s field inventory went to the class index. [kind=record]\n\n"
                 "### Wording to re-read\n\n"
                 "- `chunk-storage`'s hook is now three sentences.\n"
-                "- `chunk-storage`'s sequence figure gained a lane and a dashed arrow. [kind=7]\n")
+                "- `chunk-storage`'s sequence figure gained a lane and a dashed arrow. [kind=7]\n"
+                "- **For pass 6, the lecture.**\n")
         QUEUE = f.name
     try:
         pages, units, standing, kinds = load()
         def kinds_for(key, kind):
             return [u.line for u in units_for(units, kinds, key, pages[key][1], kind, False)[0]]
         checks = [
-            ("section prior routes the first bullet to book", kinds_for("world/lighting", "book") == [7]),
-            ("a struck entry is dropped", 8 not in kinds_for("world/lighting", None)),
-            ("an explicit tag beats the words (figure words, tagged voice)", kinds_for("world/lighting", "voice") == [9]),
-            ("the heading prior routes wording debt to voice", kinds_for("world/chunk-storage", "voice") == [13]),
-            ("a numeric tag maps to its pass", kinds_for("world/chunk-storage", "figure") == [14]),
-            ("chunk-anatomy is named by the shared bullet", 7 in kinds_for("world/chunk-anatomy", "book")),
+            ("section prior routes the first bullet to book", kinds_for("world/lighting", "book") == [9]),
+            ("a struck entry is dropped", 10 not in kinds_for("world/lighting", None)),
+            ("an explicit tag beats the words (figure words, tagged voice)", kinds_for("world/lighting", "voice") == [11]),
+            ("a record-tagged entry is its own kind and no pass's", kinds_for("world/lighting", "record") == [12]
+             and 12 not in kinds_for("world/lighting", "book") and PASS_OF["record"] is None),
+            ("the heading prior routes wording debt to voice", kinds_for("world/chunk-storage", "voice") == [16]),
+            ("a numeric tag maps to its pass", kinds_for("world/chunk-storage", "figure") == [17]),
+            ("chunk-anatomy is named by the shared bullet", 9 in kinds_for("world/chunk-anatomy", "book")),
+            ("an italic preface naming a page is not an entry", 5 not in kinds_for("world/lighting", None)),
+            ("a bare bold lead-in is not a part-wide entry",
+             all(u.line != 18 for u in units_for(units, kinds, "", 4, None, False)[1])),
         ]
     finally:
         QUEUE = old
@@ -186,10 +212,10 @@ def load():
 
 def units_for(units, kinds, key: str, part_num: int, kind: str | None, settled: bool):
     mine = [u for u in units if (key in u.pages or u.owner == key) and (settled or not u.struck)
-            and (kind is None or kinds[u.line][0] == kind) and u.level >= 99]
+            and (kind is None or kinds[u.line][0] == kind) and u.level >= 99 and not is_preamble(u)]
     partwide = [u for u in units if not u.pages and u.owner is None and u.level >= 99
                 and part_num in (u.session_parts or (0,)) and (settled or not u.struck)
-                and (kind is None or kinds[u.line][0] == kind)]
+                and (kind is None or kinds[u.line][0] == kind) and not is_preamble(u)]
     return mine, partwide
 
 
@@ -204,7 +230,7 @@ def render(u: q.Unit, kinds) -> str:
 def checklist(key: str, pages, units, kinds, kind: str | None, settled: bool) -> str:
     part, num, path = pages[key]
     mine, partwide = units_for(units, kinds, key, num, kind, settled)
-    out = [f"# Pass-{PASS_OF.get(kind, '5–8')} queue — `src/{path}`", "",
+    out = [f"# {'Record' if kind == 'record' else 'Pass-' + str(PASS_OF.get(kind) or '5–8')} queue — `src/{path}`", "",
            f"Part {num or '—'} ({part}). {len(mine)} open {kind or 'queue'} entr{'y' if len(mine) == 1 else 'ies'} name this page. "
            "Every entry is checked against the page before it is acted on — passes 5 to 7 rewrite what this file "
            "describes, and an entry already overtaken is struck with a word saying so. A `?` marks a kind the tool "
@@ -218,7 +244,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("pages", nargs="*", help="part/slug")
     ap.add_argument("--part", help="a part directory under src/systems, or reference, or frame")
-    ap.add_argument("--kind", choices=KINDS, help="book (pass 5) · lecture (6) · figure (7) · voice (8); default all")
+    ap.add_argument("--kind", choices=KINDS, help="book (pass 5) · lecture (6) · figure (7) · voice (8) · record (no pass); default all")
     ap.add_argument("--out", help="write one <slug>.queue.md per page here, plus _part-notes.md")
     ap.add_argument("--settled", action="store_true", help="include struck units")
     ap.add_argument("--summary", action="store_true")
@@ -231,11 +257,11 @@ def main() -> int:
     if args.probe:
         return probe()
     pages, units, standing, kinds = load()
-    content = [u for u in units if u.level >= 99 and not u.struck]
+    content = [u for u in units if u.level >= 99 and not u.struck and not is_preamble(u)]
 
     if args.summary:
-        print("| part | book (5) | lecture (6) | figure (7) | voice (8) | of which guessed |")
-        print("|---|---:|---:|---:|---:|---:|")
+        print("| part | book (5) | lecture (6) | figure (7) | voice (8) | record (no pass) | of which guessed |")
+        print("|---|---:|---:|---:|---:|---:|---:|")
         rows = {}
         for u in content:
             num = None
@@ -246,19 +272,20 @@ def main() -> int:
             elif u.session_parts:
                 num = u.session_parts[0]
             num = num or 0
-            r = rows.setdefault(num, {"book": 0, "lecture": 0, "figure": 0, "voice": 0, "guess": 0})
+            r = rows.setdefault(num, {k: 0 for k in KINDS} | {"guess": 0})
             k, sure = kinds[u.line]
             r[k] += 1
             r["guess"] += 0 if sure else 1
-        tot = {"book": 0, "lecture": 0, "figure": 0, "voice": 0, "guess": 0}
+        tot = {k: 0 for k in KINDS} | {"guess": 0}
         for num in sorted(rows):
             r = rows[num]
             for k in tot:
                 tot[k] += r[k]
-            print(f"| {NUMERAL.get(num, 'frame/ref')} | {r['book']} | {r['lecture']} | {r['figure']} | {r['voice']} | {r['guess']} |")
-        print(f"| **total** | {tot['book']} | {tot['lecture']} | {tot['figure']} | {tot['voice']} | {tot['guess']} |")
+            print(f"| {NUMERAL.get(num, 'frame/ref')} | {r['book']} | {r['lecture']} | {r['figure']} | {r['voice']} | {r['record']} | {r['guess']} |")
+        print(f"| **total** | {tot['book']} | {tot['lecture']} | {tot['figure']} | {tot['voice']} | {tot['record']} | {tot['guess']} |")
         named = sum(1 for u in content if u.pages or u.owner)
-        print(f"\n{len(content)} open units; {named} name a page; {len(content) - named} are part-wide or preamble.")
+        print(f"\n{len(content)} open units; {named} name a page; {len(content) - named} are part-wide. "
+              f"Preambles (lead-ins, prefaces, rules) are not counted.")
         return 0
 
     if args.unsure:

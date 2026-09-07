@@ -44,6 +44,42 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, the planning session — between passes 5 and 6 *(2026-09-07)*
+
+*No page's prose was touched. What this session introduced that pass 9
+should know about, because each is a claim:*
+
+- **`src/generated/coverage-<dir>.md`**, thirteen generated phrases — *N% of
+  the part's lines are named on no page in the book* — written by
+  `pass5_coverage.py --write` from the atlas's `PARTS` mapping, with a name
+  that appears only inside a figure counted as unnamed. A generated page is
+  checked by re-deriving its population: `map_source.PARTS` less `SKIPPED`,
+  a class being a file, `package-info.java` excluded. Included on no page yet;
+  pass 6's sessions swap the four hand-counted numbers for it (`entities/README`
+  *about 40%* against a generated 34%, `items/README` *about a third* against
+  24%, `player/README` *97% named* against 0% unnamed, `worldgen/README` *a
+  quarter* against 19%) — each swap is a correction of the prose to the
+  population, and the part session logs it here.
+- **Twenty strikes in [pass5.md](pass5.md)**, each a claim that an entry is
+  settled, verified before striking: `the-client-loop`:12 and :21 link
+  `anatomy`; `chunk-generation-pipeline` no longer names
+  `Util.maxAllowedExecutorThreads`; `Gizmos` is on
+  `debugging-the-running-game`; `scoreboard-and-data` names `ServerBossEvent`;
+  `reference/submit-phases` names `SubmitNodeStorage`; `maps/biggest`:38 says
+  *make the thirty*; the glossary's *Quart* and *Render state* carry one link
+  each; `reference/level-data-and-rules` has no *Responsibility*-era heading;
+  four Part XII pages link the two Part II pages; `check_deps.py`'s header
+  lists the Reference-parts-column check; the other nine are settlements the
+  entries' own last lines record (*Done, session …*).
+- **Two entries carried to [pass3.md](pass3.md) §7** that session E's log said
+  were there and were not: the hopper, and four block-entity state machines.
+  The claim beside them — that `blocks/README`'s *Where the part stops* names
+  only the sculk spread as belonging to nobody — is read from the page's
+  second paragraph under that heading.
+- **The charter's device counts corrected from the tool**: five closer
+  spellings (an H2 starting *Questions*), not seven; 39 pages carry the 1.21
+  blockquote by its own form (`> **For a 1.21-era reader.**`), not 42.
+
 ## Pass 5, session O — the close: the frame, the summarisers and the pass's own queue *(2026-09-07)*
 
 *Pass 5's closing session. Four reader agents: one on the introduction, one on
