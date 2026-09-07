@@ -380,16 +380,15 @@ which has the complete set including the pools and the situational ones
 | *Timer hack thread* | `Util.startTimerHackThread`, in *main* | yes | nothing. It sleeps and is never woken |
 
 Two rows carry a consequence for the other end of the story. `RconThread` and
-`QueryThreadGs4` are both `GenericThread`s, created from the Server thread and
-never marked daemon, so they are the only non-daemon threads in this table
-besides the Server thread itself — `Util.ioPool`'s *IO-Worker* threads, made
-outside it and squarely in the boot path, are non-daemon too — and each polls
-its socket with a half-second timeout so that it notices
-`GenericThread.running` going false. What that costs at the other end is [how
-a server dies](how-a-server-dies.md#the-closes-and-the-last-thread)'s. And `RconThread.create`
-returns nothing — logging that RCON is disabled — when *rcon.password* is
-empty or *rcon.port* is out of range, so setting *enable-rcon* on its own
-starts no thread at all.
+`QueryThreadGs4` are the only non-daemon threads in this table besides the
+Server thread itself — `Util.ioPool`'s *IO-Worker* threads, made outside it and
+squarely in the boot path, are non-daemon too — so boot is where the process
+acquires the three things that will later have to be stopped by hand rather
+than abandoned, and what that costs at the other end is [how a server
+dies](how-a-server-dies.md#the-closes-and-the-last-thread)'s. Why those two poll,
+and the two conditions that can leave RCON unstarted with *enable-rcon* set, are
+per-thread facts and live with the rest of them
+([threads](../../reference/threads.md#the-threads-a-lecture-leans-on)).
 
 One more thing outlives boot without being a thread: `server.properties` stays
 live. Nineteen `DedicatedServerProperties` fields are `Settings.MutableValue`s,

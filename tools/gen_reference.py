@@ -10,6 +10,9 @@ Usage:
     python tools/gen_reference.py attributes                # every attribute: default, range, syncable
     python tools/gen_reference.py enchantment-hooks         # every EnchantmentHelper entry point and its callers
     python tools/gen_reference.py loot-context-params       # every parameter set, with required and optional keys
+    python tools/gen_reference.py spawn-reasons             # every EntitySpawnReason and what it gates
+    python tools/gen_reference.py weapon-helpers            # the Item.Properties weapon helpers and every item built by one
+    python tools/gen_reference.py structure-spawn-overrides # which structures replace a biome's spawn list
     python tools/gen_reference.py all         # write every view into src/reference/
 
 Always regenerate with `all`, which writes each file as UTF-8 with LF. Do NOT
@@ -114,7 +117,7 @@ def registries() -> str:
     worldgen = lists.get("WORLDGEN_REGISTRIES", set())
     dimension = lists.get("DIMENSION_REGISTRIES", set())
     synced = lists.get("SYNCHRONIZED_REGISTRIES", set())
-    out = header("Registries", "Every registry key declared in `Registries`. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLDGEN_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).")
+    out = header("Registries", "Every registry key in the game. **148 of them are declared in `Registries`**; five more are declared by the class that owns them (`ServerFunctionLibrary`, `ClockTimeMarkers`, `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) with the public `ResourceKey.createRegistryKey` rather than `Registries`' private helper, which is why this total is larger than the 148 [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name) counts. **Built-in** registries are populated from static code in `BuiltInRegistries` at class-load time and frozen; **data-pack** registries are loaded per world by `RegistryDataLoader` from JSON (`WORLDGEN_REGISTRIES`, or `DIMENSION_REGISTRIES` for level stems); **synced** ones are sent to the client in the configuration phase (`SYNCHRONIZED_REGISTRIES`). A key that is none of these is a registry *type* the game reasons about without a global instance (e.g. per-world or client-side). See [Identifiers and registries](../systems/foundations/identifiers-and-registries.md).")
     out += f"{len(keys)} keys · {len(builtin)} built-in · {len(worldgen | dimension)} data-pack · {len(synced)} synced\n\n"
     out += "| key | element type | kind | synced |\n|---|---|---|---|\n"
     for elem, const, key, owner in sorted(keys, key=lambda k: k[2]):
@@ -327,6 +330,161 @@ def enchantment_hooks() -> str:
     return out
 
 
+# ------------------------------------------------- entity spawn reasons
+# `EntitySpawnReason` is passed into `EntityType.create`, `Mob.finalizeSpawn` and
+# `SpawnPlacements`, and a handful of classes branch on it. The catalogue the book
+# wanted (pass 3 §7) is *what each one gates*, so the second column is every place
+# the constant is compared rather than every place it is passed.
+REASON_DECL = re.compile(r"public enum EntitySpawnReason \{\s*\n\s*(.*?);", re.S)
+REASON_TEST = re.compile(r"EntitySpawnReason\.([A-Z_]+)\b")
+# A method signature in Mojang's decompiled output: four or eight spaces, an access modifier,
+# a return type, the name. Requiring the modifier is what keeps `if (…) {` and `for (…) {` out —
+# without it the walk-up returns the nearest control block and names the wrong method.
+JAVA_METHOD = re.compile(
+    r"^ {4,8}(?:public|protected|private)(?: (?:static|final|abstract|synchronized|native))* "
+    r"(?:@\w+ )*[\w<>\[\],.?]+(?:<[^>]*>)? (\w+)\s*\([^;]*?\)\s*(?:throws [\w, .]+)?\{", re.M)
+
+
+def _walk(root: str):
+    for dirpath, _dirs, files in os.walk(root):
+        for f in files:
+            if f.endswith(".java"):
+                yield os.path.join(dirpath, f)
+
+
+def _enclosing_method(text: str, pos: int) -> str:
+    """The name of the method whose body contains `pos`, or '' if none does."""
+    last = ""
+    for m in JAVA_METHOD.finditer(text, 0, pos):
+        last = m.group(1)
+    return last
+
+
+def spawn_reasons() -> str:
+    order = [c.strip() for c in REASON_DECL.search(read("world", "entity", "EntitySpawnReason.java")).group(1).split(",")]
+    tests: dict[str, list[tuple[str, str]]] = {c: [] for c in order}
+    passes: dict[str, set[str]] = {c: set() for c in order}
+    for path in _walk(os.path.dirname(MC)):
+        cls = os.path.basename(path)[:-5]
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            text = fh.read()
+        if "EntitySpawnReason." not in text:
+            continue
+        for m in REASON_TEST.finditer(text):
+            const = m.group(1)
+            if const not in tests:
+                continue
+            line_start = text.rfind("\n", 0, m.start()) + 1
+            line = text[line_start:text.find("\n", m.end())]
+            if re.search(r"[=!]=\s*EntitySpawnReason\.|EntitySpawnReason\.\w+\s*[=!]=", line) and cls != "EntitySpawnReason":
+                where = (cls, _enclosing_method(text, m.start()))
+                if where not in tests[const]:
+                    tests[const].append(where)
+            else:
+                passes[const].add(cls)
+    out = header("Entity spawn reasons", "Every `EntitySpawnReason` constant, in declaration order, with **what each one gates** — the classes that compare against it and so behave differently for that reason — and how many other classes pass it. A reason with an empty *gates* column changes nothing by itself: it is a label the spawn path carries for other code to read. `EntitySpawnReason.isSpawner` folds `SPAWNER` and `TRIAL_SPAWNER` together and `EntitySpawnReason.ignoresLightRequirements` is true of `TRIAL_SPAWNER` alone. See [entity lifecycle](../systems/entities/entity-lifecycle.md#the-other-ways-in).")
+    gated = sum(1 for c in order if tests[c])
+    out += f"{len(order)} reasons · {gated} of them tested somewhere · {sum(len(v) for v in tests.values())} test sites\n\n"
+    out += "| # | reason | what it gates | classes that pass it |\n|---:|---|---|---:|\n"
+    for i, c in enumerate(order):
+        cells = "; ".join(f"`{k}.{m}`" if m else f"`{k}`" for k, m in tests[c]) or "*nothing tests it*"
+        out += f"| {i} | `EntitySpawnReason.{c}` | {cells} | {len(passes[c])} |\n"
+    return out
+
+
+# ------------------------------------------------- Item.Properties weapon helpers
+HELPER_DECL = re.compile(r"public Item\.Properties (tool|pickaxe|axe|hoe|shovel|sword|spear)\((.*?)\) \{(.*?)\n        \}", re.S)
+ITEM_REG = re.compile(r"public static final Item (\w+) = registerItem\((.*?)\);\n", re.S)
+
+
+def weapon_helpers() -> str:
+    item_src = read("world", "item", "Item.java")
+    material_src = read("world", "item", "ToolMaterial.java")
+    items_src = read("world", "item", "Items.java")
+    bodies = {m.group(1): (m.group(2), m.group(3)) for m in HELPER_DECL.finditer(item_src)}
+
+    def installs(name: str, seen: tuple = ()) -> list[str]:
+        """The DataComponents a helper ends up setting, following the one hop into ToolMaterial."""
+        args, body = bodies[name]
+        found = list(dict.fromkeys(re.findall(r"DataComponents\.(\w+)", body)))
+        for callee in re.findall(r"this\.(tool|pickaxe|axe|hoe|shovel|sword|spear)\(", body):
+            if callee not in seen:
+                found += [c for c in installs(callee, seen + (name,)) if c not in found]
+        for apply in re.findall(r"material\.(apply\w+)\(", body):
+            m = re.search(rf"public Item\.Properties {apply}\(.*?\n    \}}", material_src, re.S)
+            if m:
+                found += [c for c in re.findall(r"DataComponents\.(\w+)", m.group(0)) if c not in found]
+                for common in re.findall(r"this\.(applyCommonProperties)\(", m.group(0)):
+                    c2 = re.search(rf"public Item\.Properties {common}\(.*?\n    \}}", material_src, re.S)
+                    if c2:
+                        found += [c for c in re.findall(r"DataComponents\.(\w+)", c2.group(0)) if c not in found]
+        return found
+
+    # every Items entry that reaches a helper, directly or through the item class that wraps it
+    wrappers = {}
+    for path in _walk(os.path.join(MC, "world", "item")):
+        with open(path, encoding="utf-8", errors="replace") as fh:
+            t = fh.read()
+        m = re.search(r"super\(properties\.(tool|pickaxe|axe|hoe|shovel|sword|spear)\(", t)
+        if m:
+            wrappers[os.path.basename(path)[:-5]] = m.group(1)
+    rows = []
+    for m in ITEM_REG.finditer(items_src):
+        call = " ".join(m.group(2).split())
+        h = re.search(r"\.(tool|pickaxe|axe|hoe|shovel|sword|spear)\(ToolMaterial\.(\w+),\s*([-\d.F]+),\s*([-\d.F]+)", call)
+        if h:
+            rows.append((m.group(1), h.group(1), h.group(2), h.group(3), h.group(4)))
+            continue
+        w = re.search(r"new (\w+)\(ToolMaterial\.(\w+),\s*([-\d.F]+),\s*([-\d.F]+)", call)
+        if w and w.group(1) in wrappers:
+            rows.append((m.group(1), wrappers[w.group(1)] + f" (`{w.group(1)}`)", w.group(2), w.group(3), w.group(4)))
+
+    out = header("The weapon helpers on `Item.Properties`", "The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. Three of the six tool families need a class of their own because they also do something on right-click, and three are plain `Item`s the helper alone describes. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).")
+    out += "| helper | delegates to | components it sets | attributes |\n|---|---|---|---|\n"
+    for name in ("tool", "pickaxe", "axe", "hoe", "shovel", "sword", "spear"):
+        args, body = bodies[name]
+        deleg = re.findall(r"this\.(tool|pickaxe|axe|hoe|shovel|sword|spear)\(", body) + re.findall(r"material\.(apply\w+)\(", body)
+        comps = ", ".join(f"`DataComponents.{c}`" for c in installs(name)) or "—"
+        attrs = ", ".join(f"`Attributes.{a}`" for a in dict.fromkeys(re.findall(r"Attributes\.(\w+)", body))) or \
+            ("`Attributes.ATTACK_DAMAGE`, `Attributes.ATTACK_SPEED` (through `ToolMaterial`)" if deleg else "—")
+        out += f"| `Item.Properties.{name}` | {', '.join(f'`{d}`' for d in deleg) or '—'} | {comps} | {attrs} |\n"
+    out += f"\n## The {len(rows)} items built by one\n\n*damage* and *speed* are the two baselines the call passes; the material adds its own attack-damage bonus on top.\n\n"
+    out += "| item | helper | material | damage baseline | speed baseline |\n|---|---|---|---:|---:|\n"
+    for name, helper, mat, dmg, spd in rows:
+        h = helper if "`" in helper else f"`Item.Properties.{helper}`"
+        out += f"| `Items.{name}` | {h} | `ToolMaterial.{mat}` | {dmg.rstrip('F')} | {spd.rstrip('F')} |\n"
+    return out
+
+
+# ------------------------------------------------- structure spawn overrides
+def spawn_overrides() -> str:
+    import json
+    base = os.path.join(ROOT, "data", "minecraft", "worldgen", "structure")
+    declared, rows = 0, []
+    for f in sorted(os.listdir(base)):
+        if not f.endswith(".json"):
+            continue
+        with open(os.path.join(base, f), encoding="utf-8") as fh:
+            d = json.load(fh)
+        if "spawn_overrides" not in d:
+            continue
+        declared += 1
+        for cat, v in sorted(d["spawn_overrides"].items()):
+            spawns = v.get("spawns", [])
+            what = ", ".join(f"`{e['type'].split(':')[-1]}` ({e['weight']}, {e['minCount']}–{e['maxCount']})" for e in spawns) \
+                or "**nothing** — the category is suppressed inside the box"
+            rows.append((f[:-5], cat, v.get("bounding_box", "?"), what))
+    structures = sorted({r[0] for r in rows})
+    out = header("Structure spawn overrides", "Which structures replace a biome's spawn list, for which mob category, and with what. A structure JSON's `spawn_overrides` map is read into `Structure.spawnOverrides`; `NaturalSpawner` asks the first structure at the position that declares an override for the category, and if one answers, the biome's list is not consulted at all. An override with an **empty** spawn list is therefore a *ban*, not a no-op. *box* is `piece` (only inside a piece's own bounding box) or `full` (anywhere in the structure's). The mechanism is on [entity lifecycle](../systems/entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation); the nether fortress has a second, hard-coded list in front of this one.")
+    out += f"{declared} structures carry the field · **{len(structures)}** declare an override · {len(rows)} overrides in all\n\n"
+    out += "| structure | category | box | what spawns instead (weight, min–max) |\n|---|---|---|---|\n"
+    for name, cat, box, what in rows:
+        out += f"| `{name}` | {cat} | {box} | {what} |\n"
+    out += (f"\nThe other {declared - len(structures)} structures that carry the field carry it empty, "
+            "which is the same as not carrying it: the biome's list stands.\n")
+    return out
+
+
 VIEWS = {
     "packets": packets,
     "registries": registries,
@@ -336,6 +494,9 @@ VIEWS = {
     "attributes": attributes,
     "loot-context-params": loot_context_params,
     "enchantment-hooks": enchantment_hooks,
+    "spawn-reasons": spawn_reasons,
+    "weapon-helpers": weapon_helpers,
+    "structure-spawn-overrides": spawn_overrides,
 }
 
 

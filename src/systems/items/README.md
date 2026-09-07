@@ -149,6 +149,8 @@ and seven is the one Part XIII comes back for.
 ## Reference this part uses
 
 Two were written for it. [Enchantment
+helpers](../../reference/weapon-helpers.md) — the seven `Item.Properties`
+methods that make a weapon and the forty-two items built by one; [enchantment
 hooks](../../reference/enchantment-hooks.md) — every `EnchantmentHelper`
 entry point with the classes that call it, which is the enchantment
 system's real interface. [Loot context parameter

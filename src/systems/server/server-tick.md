@@ -105,13 +105,18 @@ has the crossing, in both directions). This is where most
 player input enters the world, but not all of it: the handlers that never
 call `PacketUtils.ensureRunningOnSameThread` hop by the other door instead.
 **Fifty-two of `ServerGamePacketListenerImpl`'s sixty-one game handlers open
-on that call**, and the nine that do not divide into three kinds. Two really
-touch nothing — the ping reply and an empty custom-payload hook.
-`ServerGamePacketListenerImpl.handleChat` and both command packets run their
-work through `MinecraftServer.execute`, and filtered sign and book text comes
-back on a `CompletableFuture` completed against the server — so chat and
-commands arrive as *tasks*, drained by the event loop below, and not with the
-packets. And the chat family does a little real work before it hands over:
+on that call**, and the nine that do not divide into four kinds
+([the handlers that never hop](../../reference/threads.md#the-handlers-that-never-hop)
+lists them). Two really touch nothing — the ping reply and an empty
+custom-payload hook. Three — `ServerGamePacketListenerImpl.handleChat` and both
+command packets — run their work through `MinecraftServer.execute`, and two more,
+filtered sign and book text, come back on a `CompletableFuture` completed
+against the server: so chat and commands arrive as *tasks*, drained by the event
+loop below, and not with the packets. The last two write listener state on Netty
+outright, because there is nothing to hand it to — a chat acknowledgement
+advances `LastSeenMessagesValidator` under a lock, and the acknowledgement that
+ends the play phase installs the configuration listener. And the chat family
+does a little real work before it hands over:
 `ServerGamePacketListenerImpl.tryHandleChat` reads the sender's chat
 visibility and resets its last-action time **on the Netty thread**, which is
 the one place player state is written off the main thread by design.

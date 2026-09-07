@@ -37,7 +37,12 @@ drawn **before** the opaque one, which is the row order reversed.
 Three of the fifteen are a `TranslucentFeatureRenderPhase` — rows 4, 7 and 8,
 *seeThroughNameTags*, *translucentBlocksAndItems* and *translucentModels* —
 and the other twelve a `SimpleFeatureRenderPhase`, which is not what half the
-names suggest. What the two kinds do differently to a node's
+names suggest. What lets those three sort at all is on the node rather than the
+phase: `TranslucentSubmit` is a marker interface declaring one method,
+`TranslucentSubmit.distanceToCameraSq`, and **five** of the thirteen renderers'
+nested *Submit* records implement it — `BlockModelFeatureRenderer`,
+`ItemFeatureRenderer`, `ModelFeatureRenderer`, `MovingBlockFeatureRenderer` and
+`NameTagFeatureRenderer`. A phase can only order what its nodes can answer. What the two kinds do differently to a node's
 chance of sharing a draw is [entity
 rendering](../systems/rendering/entity-rendering.md#prepare-sorting-batching-and-the-vertices)'s.
 

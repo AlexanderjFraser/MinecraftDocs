@@ -95,7 +95,7 @@ is why a handler method must do nothing observable before that line. A handler
 that touches no game state — the pong bookkeeping, the chunk-batch clock, the
 keep-alive answer — simply omits it and runs on Netty; the client's play
 listener has nine, listed in
-[threads](../../reference/threads.md#the-nine-client-handlers-that-never-hop).
+[threads](../../reference/threads.md#the-handlers-that-never-hop).
 The unknown-custom-payload fallback is not one of them, and looks as though it
 should be: `ClientCommonPacketListenerImpl` hops first and dispatches to it
 afterwards, so it runs on the main thread like everything else.

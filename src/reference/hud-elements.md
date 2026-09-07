@@ -61,7 +61,7 @@ and the overlay or the screen goes in between:
 
 | # | element | its own condition | hidden by F1? |
 |---:|---|---|---|
-| — | *the overlay, or else the screen* | an `Overlay` if there is one; otherwise, and only once resources are loaded, `Gui.screen` through `Screen.extractRenderStateWithTooltipAndSubtitles` — never both | — |
+| — | *the overlay, or else the screen* | `Gui.overlay` if there is one — the loading overlay is the one you will have seen; otherwise, and only once resources are loaded, `Gui.screen` through `Screen.extractRenderStateWithTooltipAndSubtitles`. Never both, and this is the whole of what a screen contributes to the record | — |
 | 28 | saving indicator | `Options.showAutosaveIndicator` is on, the frame is drawing a level, and a save is still animating | **no** |
 | 29 | toasts | resources are loaded | checks the flag itself |
 | 30 | debug overlay | the current screen is not `DebugOptionsScreen` | checks the flag itself |

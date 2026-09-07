@@ -31,6 +31,8 @@ Checks (F = fails, exit 1; R = report only, for the session to judge):
      more landing pages name under *before you start*, less the three every part
      assumes (they are the boxes the figure draws without edges)
   F  nothing in *watch in this order* is a Reference or maps page or another part's
+  F  `reference/README.md`'s *parts* column, re-derived from the landing pages'
+     *Reference this part uses* sections — pass 5, session N
   F  no landing page assumes `game-tests`
   R  per part: *before you start* pages that no page in the part links or names
      (candidate unused dependencies), and other parts' pages the part's pages link
@@ -39,7 +41,7 @@ Checks (F = fails, exit 1; R = report only, for the session to judge):
 Usage:
     python tools/check_deps.py            # the checks; exit 1 on any F
     python tools/check_deps.py --quiet    # failures only
-    python tools/check_deps.py --probe    # prove the two pass-5 checks on synthetic input
+    python tools/check_deps.py --probe    # prove the three pass-5 checks on synthetic input
 """
 from __future__ import annotations
 
@@ -113,9 +115,16 @@ def parts() -> dict:
             k = norm(base, m.group(1)) if m else None
             if k:
                 watch.append(k)
+        # the Reference pages this part's landing page points at, which is the population behind
+        # `reference/README.md`'s *parts* column (pass 5, session N)
+        refs = []
+        for m in LINK.finditer(section(text, "Reference this part uses")):
+            k = norm(base, m.group(1))
+            if k and k.startswith("reference/") and k not in refs:
+                refs.append(k)
         pages = [f"systems/{d}/{f[:-3]}" for f in sorted(os.listdir(base)) if f.endswith(".md") and f != "README.md"]
         out[d] = {"num": num, "title": tm.group(2).strip(), "before": before, "context": context,
-                  "watch": watch, "pages": pages, "readme": readme}
+                  "watch": watch, "pages": pages, "refs": refs, "readme": readme}
     return out
 
 
@@ -240,6 +249,64 @@ def membership_failures(dependents: dict[str, set[int]], table_pages: set[str]) 
     return out
 
 
+REF_ROW = re.compile(r"^\|\s*\[[^\]]*\]\((?P<href>[a-z0-9\-]+\.md)\)\s*\|[^|]*\|[^|]*\|(?P<parts>[^|]*)\|\s*$", re.M)
+
+
+def reference_column(refs_by_part: dict[str, set[int]]) -> list[str]:
+    """`reference/README.md`'s *parts* column against the thirteen landing pages.
+
+    The column's own header says *the parts whose landing pages point at it*, and the
+    landing page's slot for that is `## Reference this part uses` (TEMPLATE.md, *The
+    landing page*). So the column is derivable, and pass 5's session N found it stale in
+    six of twenty rows — the only such column in the book with no gate.
+    `every part` is the shorthand for all thirteen; an em dash means none.
+    """
+    out = []
+    path = os.path.join(SRC, "reference", "README.md")
+    seen = set()
+    for m in REF_ROW.finditer(read(path)):
+        key = "reference/" + m.group("href")[:-3]
+        seen.add(key)
+        want = sorted(refs_by_part.get(key, set()))
+        cell = m.group("parts").strip()
+        if cell == "every part":
+            got = sorted(range(1, 14))
+        elif cell in ("—", "-", ""):
+            got = []
+        else:
+            got = sorted(ROMAN[x.strip()] for x in cell.split(",") if x.strip() in ROMAN)
+        if got != want:
+            shown = "every part" if want == list(range(1, 14)) else (", ".join(NUMERAL[n] for n in want) or "—")
+            out.append(f"reference/README.md: {m.group('href')}'s *parts* column says “{cell}”; "
+                       f"the landing pages that point at it under *Reference this part uses* are {shown}")
+    for key in sorted(set(refs_by_part) - seen):
+        out.append(f"reference/README.md: no row for {key.split('/')[-1]}.md, which "
+                   f"{len(refs_by_part[key])} landing page(s) point at")
+    return out
+
+
+def _ref_truth(drop: bool = False) -> dict[str, set[int]]:
+    """The probe's synthetic truth: the shelf's own column, read back as if the landing pages
+    said exactly that, so the check passes; with `drop`, one part is removed from one row so it
+    must fail. Built from the file rather than hard-coded, so the probe cannot rot."""
+    truth: dict[str, set[int]] = {}
+    first = None
+    for m in REF_ROW.finditer(read(os.path.join(SRC, "reference", "README.md"))):
+        key = "reference/" + m.group("href")[:-3]
+        cell = m.group("parts").strip()
+        if cell == "every part":
+            truth[key] = set(range(1, 14))
+        elif cell in ("—", "-", ""):
+            continue
+        else:
+            truth[key] = {ROMAN[x.strip()] for x in cell.split(",") if x.strip() in ROMAN}
+            if first is None and len(truth[key]) > 1:
+                first = key
+    if drop and first:
+        truth[first] = set(sorted(truth[first])[:-1])
+    return truth
+
+
 def probe() -> int:
     """Prove the two pass-5 checks fail on the constructs they are for, and pass otherwise."""
     P = {"world": {"num": 4, "watch": ["systems/world/a", "systems/world/b", "systems/world/c"]}}
@@ -262,6 +329,10 @@ def probe() -> int:
          membership_failures({UNIVERSAL_PAGES[0]: {3, 4, 5, 6, 7, 8}}, set()) == []),
         ("a universal with a row fails",
          len(membership_failures({UNIVERSAL_PAGES[0]: {3, 4}}, {UNIVERSAL_PAGES[0]})) == 1),
+        ("the shelf's *parts* column, as the landing pages have it, passes",
+         reference_column(_ref_truth()) == []),
+        ("a row missing a part fails",
+         len(reference_column(_ref_truth(drop=True))) == 1),
     ]
     bad = [name for name, ok in checks if not ok]
     for name, ok in checks:
@@ -394,6 +465,13 @@ def main() -> int:
             if k.startswith("systems/") and not k.endswith("/README") and numof(k) != v["num"]:
                 dependents.setdefault(k, set()).add(v["num"])
     fails += membership_failures(dependents, table_pages)
+
+    # 4d. the shelf's *parts* column against the landing pages (pass 5, session N)
+    refs_by_part: dict[str, set[int]] = {}
+    for d, v in P.items():
+        for k in v["refs"]:
+            refs_by_part.setdefault(k, set()).add(v["num"])
+    fails += reference_column(refs_by_part)
 
     # 5. nobody assumes game-tests
     for d, v in P.items():

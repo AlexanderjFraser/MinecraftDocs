@@ -118,8 +118,9 @@ declares one shape and is handed the rest — three more from
 matrix and lazily decomposes it into translation, left rotation, scale and
 right rotation for model JSON.
 
-There are two things called `Axis`: `Direction.Axis` and the quaternion
-factory in `com/mojang/math`. They are unrelated.
+There are two things called `Axis` in scope: `Direction.Axis` and the
+quaternion factory in `com/mojang/math`. They are unrelated, and a grep finds a
+third in the save-migration tree, which this book does not cover.
 
 ## Shapes and collision
 
@@ -260,8 +261,9 @@ only shared one.
 
 **`SectionPos` has `SectionPos.x` as both an instance and a static method,** instance and static, same name.
 
-**`BlockUtil` is in `net/minecraft/util`, not `net/minecraft/core`;**
-`BlockBox`, `BlockMath` and `Cursor3D` are in `net/minecraft/core`.
+**Not everything with *Block* in the name is in `net/minecraft/core`.**
+`BlockBox`, `BlockMath` and `Cursor3D` are; `BlockUtil` is in
+`net/minecraft/util` ([naming drift](naming-drift.md#the-four-you-will-hit-in-the-first-ten-minutes)).
 `BlockMath` is model-rotation plumbing, not coordinates.
 
 ## Where to look

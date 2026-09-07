@@ -26,13 +26,21 @@ game in 0.4% of its files.
 Read down the bars and the thirty sort themselves into three kinds, and
 the kind tells you how to read the class.
 
-**The god objects.** `Entity`, `LivingEntity`, `Player`, `ServerPlayer`,
-`LocalPlayer` and `Mob` are one chain of inheritance, and each level adds
-a thousand lines or more because each is the base of everything below it.
+**The god objects.** `Entity` and `LivingEntity` are the trunk, and each adds
+a couple of thousand lines because each is the base of everything below it. The
+fork above them is not one chain: `Mob` is one of `LivingEntity`'s direct
+subclasses and `Avatar` — inserted in 26.2 — is another, with `Player` under it
+and `ServerPlayer` and `LocalPlayer` the two leaves
+([entity anatomy](../systems/entities/entity-anatomy.md) has the tree). Those
+two leaves are long for the opposite reason to the trunk: nothing descends from
+either, and each is a whole side of the authority split written out.
 `Minecraft` and `MinecraftServer` are the two programs' roots; `ServerLevel`
 is the world; `ChunkMap` is the world's loader. Only two concrete mobs make
-the list — `Fox` and `Bee`, the two with the most bespoke behaviour — and
-they are the pages a reader of Part VI should expect to be long.
+the thirty — `Fox` and `Bee`, the two with the most bespoke behaviour — and
+what they are long *with* is per-species goal classes, which is exactly why
+[Part VI](../systems/entities/README.md) explains the machine and declines to
+enumerate its instances: there is no `Fox` page and there is not going to be
+one.
 
 **The switchboards.** `ClientPacketListener` is a handler method for every
 clientbound play packet, and `ServerGamePacketListenerImpl` is the same for

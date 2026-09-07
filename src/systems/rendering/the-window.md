@@ -298,9 +298,11 @@ and only happen to live here.
 > **For a 1.21-era reader.** The headline is that the window no longer
 > presents anything: *Window.updateDisplay* and *Window.setVsync* are gone,
 > presentation is [blaze3d](blaze3d.md)'s `GpuSurface` protocol and vsync is a
-> `GpuSurface.PresentMode`. Also gone: *Window.setupGuiState*, and
-> *ScreenManager*, which never existed here — monitor handling has always been
-> `MonitorManager`. And the constructor now takes a `GpuBackend`, because the
+> `GpuSurface.PresentMode`. Also gone: *Window.setupGuiState*; and if you are
+> reaching for *ScreenManager*, monitor handling is `MonitorManager`, in the
+> same package and behind the same GLFW callback ([naming
+> drift](../../reference/naming-drift.md#part-xi--rendering)). And the
+> constructor now takes a `GpuBackend`, because the
 > window cannot be made without knowing which API is going to draw into it.
 
 ## Where to look

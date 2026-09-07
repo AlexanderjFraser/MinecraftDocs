@@ -116,7 +116,9 @@ more than anything else on this page. It looks the key up through
 `CriteriaTriggers.GENERATE_LOOT` if a `ServerPlayer` is doing the opening, and
 **then clears the stored key**, before a single die is rolled. It builds the
 parameters with `LootContextParams.ORIGIN` at the block centre and, *only if a
-player is present*, that player's `Player.getLuck` and
+player is present*, that player's `Player.getLuck` — the live value of
+`Attributes.LUCK`, whose default is zero and which nothing but a potion or a
+command moves ([attributes](../../reference/attributes.md)) — and
 `LootContextParams.THIS_ENTITY`. Then it calls `LootTable.fill` with the
 container, those parameters and the stored seed.
 

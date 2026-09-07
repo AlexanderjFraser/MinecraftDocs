@@ -316,7 +316,7 @@ What is being measured is narrower than it looks.
 `ClientPacketListener.handleChunkBatchFinished` are two of the nine handlers on
 the client's play listener that never hop off the network thread, so the
 loop is timing packet decode, not mesh building (the nine are listed in
-[threads](../../reference/threads.md#the-nine-client-handlers-that-never-hop)).
+[threads](../../reference/threads.md#the-handlers-that-never-hop)).
 
 ### What a chunk packet carries
 

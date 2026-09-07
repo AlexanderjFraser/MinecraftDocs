@@ -1749,7 +1749,14 @@ writes one strikes it through; a session that rules one out says why, here.*
   The last is the largest — a spectator's camera entity is a real mechanism
   and Part VIII, Part X and Part XIII each touch it and none explains it.
 
-- **Reference views `gen_reference.py` does not yet have** — three
+- ~~**Reference views `gen_reference.py` does not yet have**~~ — **all three
+  built and published by pass 5's session N (2026-09-07)**:
+  `reference/spawn-reasons.md` (19 reasons, what each gates, and the finding that
+  eight are tested by nothing), `reference/weapon-helpers.md` (7 helpers, 42
+  items) and `reference/structure-spawn-overrides.md` (34 structures carry the
+  field, six fill it in, 18 of the 23 overrides empty). Each is generated on every
+  deploy, each has a citer in the part that asked for it, and each is on the
+  landing page of that part. The original entry follows. — three
   catalogues the part sessions named and session O declined to hand-keep,
   because each is a declaration order the tool could read: the nineteen
   `EntitySpawnReason` constants with what each gates (session G); the

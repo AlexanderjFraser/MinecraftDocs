@@ -157,7 +157,11 @@ Three were written for this part.
 ranges and the syncable flag, generated from the registrations.
 [Entity data serializers](../../reference/entity-data-serializers.md) — all
 43, in wire-id order, which is registration order.
-[Damage outside `LivingEntity`](../../reference/non-living-damage.md) — what
+[Entity spawn reasons](../../reference/spawn-reasons.md) — all nineteen, with
+the classes that behave differently for each; eight are labels nothing tests.
+[Structure spawn overrides](../../reference/structure-spawn-overrides.md) —
+which six structures replace a biome's spawn list, and what they put there
+instead. [Damage outside `LivingEntity`](../../reference/non-living-damage.md) — what
 each of the twenty-one non-living classes does with a `DamageSource`, on
 either side.
 

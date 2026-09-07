@@ -37,9 +37,12 @@ thirteen direct subclasses of `Entity` with no children of their own, from
 </figure>
 
 `Block` is wide and shallow: 92 direct subclasses, most of them terminal.
-The one deep branch is `BaseEntityBlock` (64), the blocks that own a
-block entity, which is Part V's
-[block entities](../systems/blocks/block-entities.md) page in tree form.
+The one deep branch is `BaseEntityBlock` (64), the abstract base most of the
+blocks that own a block entity extend — the interface that actually decides is
+`EntityBlock`, and a handful of blocks implement it without taking that base at
+all, `ComparatorBlock` and `JigsawBlock` among them. Part V's
+[block entities](../systems/blocks/block-entities.md#create-keep-replace-remove)
+is the branch in prose.
 The table's first row, `BlockBehaviour` at 294, is the same tree seen from
 one class higher — `Block` is its only subclass, and it exists so that a
 block's behaviour and its registry identity can be separate classes.
@@ -67,8 +70,9 @@ is this shape.
 
 `Screen` (158) is `Block`'s shape again — 72 direct subclasses, 60 of
 them terminal — with one deep branch, `AbstractContainerScreen` (27), the
-screens that show a menu, and one branch that is not in this book,
-`RealmsScreen` (23). The row above it in the table,
+screens that show a menu ([GUI and
+screens](../systems/client/gui-and-screens.md) is Part X's), and one branch that
+is not in this book, `RealmsScreen` (23). The row above it in the table,
 `AbstractContainerEventHandler` at 159, is `Screen`'s parent with `Screen`
 as its only subclass, the same one-class-higher effect as
 `BlockBehaviour`.

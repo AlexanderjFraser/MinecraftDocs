@@ -179,7 +179,10 @@ for why some of them are frozen at start-up and some reload with the world.
 [Math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither)
 for the two random families and the seeding conventions, which is where the
 determinism this page opens on actually lives.
-[Diagram lanes](../../reference/lanes.md), and
+[Structure spawn overrides](../../reference/structure-spawn-overrides.md) for
+the six structures whose JSON replaces the biome's spawn list — the one place
+a structure decides what lives in it, which lecture eight places and Part VI
+runs. [Diagram lanes](../../reference/lanes.md), and
 [naming drift](../../reference/naming-drift.md)'s thirteen rows for this part.
 [Level data and rules](../../reference/level-data-and-rules.md#dimensions-and-the-seed)
 for which

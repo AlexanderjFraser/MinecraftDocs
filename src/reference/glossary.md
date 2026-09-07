@@ -83,8 +83,8 @@ behind one `GpuDevice`. → [Blaze3D](../systems/rendering/blaze3d.md)
 the nearest measured old column: zero against the seam (use the old
 measurement), one out of range (use the noise). → [blending at the old-chunk border](../systems/worldgen/blending.md)
 
-**Blending data** — the sixteen-column ring of heights, densities and biomes
-a `BlendingData` measures out of its **own** chunk's blocks, on the sides
+**`BlendingData`** — the sixteen-column ring of heights, densities and biomes
+one of these measures out of its **own** chunk's blocks, on the sides
 facing ground the game has yet to generate; its presence on a chunk is what
 makes the chunk old. → [blending at the old-chunk border](../systems/worldgen/blending.md)
 
@@ -186,10 +186,17 @@ phase changes. → [the connection](../systems/networking/the-connection.md#one-
 a hopper, an inventory), as distinct from the *menu* a player interacts
 with it through. → [containers and menus](../systems/items/containers-and-menus.md)
 
-**Criterion** — one condition inside an advancement, backed by a
-`CriterionTrigger` the server fires when the relevant thing happens. → [advancements](../systems/commands/advancements.md)
+**Criterion** — two different things the corpus keeps apart: one condition
+inside an advancement, backed by a `CriterionTrigger` the server fires when the
+relevant thing happens; and a scoreboard objective's `ObjectiveCriteria`, which
+is what the objective counts. → [advancements](../systems/commands/advancements.md), [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
 
 ## D
+
+**Data-driven type** — the book's name for the shape a dozen systems share: a
+registry of *types*, each type a codec, and an instance a `Codec` produced from
+JSON, dispatched on its own type field. Fifty-six registries follow it.
+→ [the data-driven type pattern](../systems/foundations/data-driven-types.md#the-idea-stated-once)
 
 **DamageSource** — the *what hit you, and who is responsible* record every
 damage calculation and death message reads. → [damage and death](../systems/entities/damage-and-death.md)
@@ -276,7 +283,11 @@ instance per liquid, with `FlowingFluid` holding the spread algorithm and
 wrapping API on top of it; a glyph is baked into a texture the first time it
 is asked for. → [text and fonts](../systems/client/text-and-fonts.md)
 
-**Frame** — the execution engine's unit of a running function: a depth, a
+**Frame** — two different things the corpus keeps apart. In Part XI it is one
+pass of the client's render loop, the unit *partial tick*, *extract* and the
+frame graph are all relative to ([the
+frame](../systems/rendering/the-frame.md#update-and-extract-six-clocks-in-one-frame)).
+In Part XIII it is the execution engine's unit of a running function: a depth, a
 result callback that `/return` feeds sideways, and a control that can delete
 the frame's pending work — one object shared by reference across a whole
 function body, and deliberately *not* a stack frame. → [the execution engine](../systems/commands/the-execution-engine.md)
@@ -375,7 +386,9 @@ edge-detects. → [input and keybinds](../systems/client/input-and-keybinds.md)
 **Level** — a world: `ServerLevel` on the server, `ClientLevel` on the
 client, sharing an abstract `Level` that carries most of the behaviour —
 `ClientLevel` differs by *hollowing out* inherited methods rather than by
-implementing fewer of them. → [the level tick](../systems/server/server-level-tick.md), [the client level](../systems/client/the-client-level.md)
+implementing fewer of them. The word is also a number in two other places: a
+*ticket level* is how strongly a chunk is held, and a *permission level* is one
+of five ranks. → [the level tick](../systems/server/server-level-tick.md), [the client level](../systems/client/the-client-level.md)
 
 **Lightmap** — the small texture the client samples to turn a block-light /
 sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md)
@@ -383,6 +396,15 @@ sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog
 **LocalPlayer** — the `Player` a human steers: its own `ClientInput`, and the
 last input and position it sent. The block predictions it seems to own are
 the level's. → [player anatomy](../systems/player/player-anatomy.md#the-three-sides-of-one-player)
+
+**Loot condition** — a predicate in the loot package's own vocabulary
+(`LootItemCondition`), asked with a loot context; the same objects the
+`/execute if predicate` check runs, under a different name. → [contexts and predicates](../systems/items/contexts-and-predicates.md#what-reads-a-context)
+
+**Loot context** — the bag of *what was involved* — the level, the position,
+the tool, the killer, the block entity — that every loot roll, predicate and
+enchantment effect is asked against; a `LootContext` built to satisfy exactly
+one parameter set. → [contexts and predicates](../systems/items/contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)
 
 **Loot table** — the data-driven roll that turns an event (a block broken, a
 mob killed, anything at all reading a container that has not been rolled yet)
@@ -431,6 +453,22 @@ its caches installed in one pass. → [density functions](../systems/worldgen/de
 
 ## O
 
+**Occlusion** — four unrelated questions the corpus asks with one word, and
+no page owns all four. *Does this section hide that one* is the visibility
+graph's, and the answer is a walk rather than a test ([visibility and the frame
+graph](../systems/rendering/visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)).
+*Does this face stop light, or hide the face against it* is a shape question a
+`BlockState` caches, and it is what ends a sky column
+([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood)) and what lets
+two fluid surfaces cancel ([fluids](../systems/world/fluids.md)). *Ambient*
+occlusion is none of that: it is the per-quad shading the mesher bakes in
+([section meshing](../systems/rendering/section-meshing.md)). And a vibration's
+occlusion is a six-ray raycast for `BlockTags.OCCLUDES_VIBRATION_SIGNALS` that
+reports occluded only if **all six** are stopped ([game events and
+vibrations](../systems/world/game-events-and-vibrations.md#the-gates-between-a-footstep-and-a-candidate)).
+A page always means exactly one of the four; the word is the only thing they
+share.
+
 **Objective** — a named scoreboard column: a criterion, a display name, a
 render type and a number format. Only the *dummy* and *trigger* criteria wait
 for commands; every other one — including every statistic in the game, since
@@ -451,6 +489,13 @@ one phase. → [packets and stream codecs](../systems/networking/packets-and-str
 **PalettedContainer** — the bit-packed storage a chunk section keeps its
 block states and biomes in, with a palette that grows as the section gets
 more varied. → [chunk anatomy](../systems/world/chunk-anatomy.md)
+
+**Parameter set** — the declared contract between a loot context and the
+things asked against it: a `ContextKeySet` naming which `ContextKey`s must be
+present and which may be. Asking for a parameter the set does not allow throws, and asking for an
+optional one that is absent gives nothing — two of the three ways a parameter
+can be missing. All twenty-six sets are listed in [loot context parameter
+sets](loot-context-params.md). → [contexts and predicates](../systems/items/contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)
 
 **Partial tick** — the fraction of a tick elapsed at the moment a frame is
 drawn, used to interpolate the world. There is no single one: a frame carries
@@ -496,7 +541,9 @@ play; each has its own packet table and its own listener. → [protocol phases](
 ## Q
 
 **Quart** — a four-block cell, the resolution biomes are stored and
-sampled at; `QuartPos` is the arithmetic. → [biomes](../systems/worldgen/biomes.md), [math and primitives](math-and-primitives.md)
+sampled at; `QuartPos` is the arithmetic, tabulated with the other packings in
+[math and primitives](math-and-primitives.md#three-long-keys).
+→ [biomes](../systems/worldgen/biomes.md)
 
 ## R
 
@@ -509,16 +556,17 @@ addressed by a sector table at its head. → [chunk storage](../systems/world/ch
 
 **Registry** — a frozen, id-assigning table of one kind of thing; some are
 built into the jar, some are loaded from data packs, some are sent to the
-client. → [identifiers and registries](../systems/foundations/identifiers-and-registries.md)
+client, and all 153 are listed in [registries](registries.md).
+→ [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-table)
 
 **Reload listener** — the unit of a reload: one object that reads what it
 needs off the worker pool and swaps its live state on the owning thread, every
 apply running in order behind a `PreparableReloadListener.PreparationBarrier`. → [the resource system](../systems/foundations/resource-system.md)
 
-**Render state** — the write-once snapshot of what to draw, produced by the
-extract half of the frame and consumed by the drawing half. The property that
-matters is that the drawing half reads no game object, not that the state is
-an immutable value. → [the frame](../systems/rendering/the-frame.md), [entity rendering](../systems/rendering/entity-rendering.md)
+**Render state** — the snapshot of what to draw, produced by the extract half
+of the frame and consumed by the drawing half; the property that matters is
+that the drawing half reads no game object.
+→ [the frame](../systems/rendering/the-frame.md#the-wall-and-the-one-level-at-which-it-is-real)
 
 **RenderPipeline** — the client's declaration of how to rasterise: shaders,
 blend, depth, cull, vertex format, topology. It says nothing about which
@@ -550,6 +598,11 @@ lifecycle; the server is told nothing about most of them. → [GUI and screens](
 states, one of biomes, and four counters. Its light lives in the light
 engine's own storage, not on the section. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
+**Status effect** — a `MobEffect` held on a `LivingEntity` with an amplifier
+and a duration; the ones that change a number do it by attaching an attribute
+modifier rather than by being read where the number is used.
+→ [status effects](../systems/player/status-effects.md#what-an-effect-is)
+
 **Section mesh** — the compiled vertex buffers for one section
 (`CompiledSectionMesh`), rebuilt when the section is both dirty and visible —
 usually on a worker, but inline on the client thread when the chunk-builder
@@ -562,6 +615,11 @@ two instead add an aliveness test. → [entity selectors](../systems/commands/en
 
 **Sensor** — the half of brain AI that writes memories from the world, on a
 fixed interval. → [AI](../systems/entities/ai-goals-and-brains.md)
+
+**ServerPlayer** — the server's copy of a player: the entity, the connection's
+listener, the game-mode object and the session state, all on one class.
+`LocalPlayer` is the client's answer to it and the two share `Player`.
+→ [player anatomy](../systems/player/player-anatomy.md), [players and sessions](../systems/server/players-and-sessions.md#the-cast)
 
 **ServerEntity** — the server's per-tracked-entity bookkeeping: what the
 watching clients were last told, and what to send them next. → [what the client is told](../systems/networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
@@ -604,7 +662,8 @@ stored on the chunk it began in. → [structure placement](../systems/worldgen/s
 **Submit node** — one thing to draw that is not terrain, written into
 `SubmitNodeStorage` by the *submit* pass out of the render states extract left
 behind, and sorted into a phase before the feature renderers turn it into
-vertices. → [entity rendering](../systems/rendering/entity-rendering.md), [submit phases](submit-phases.md)
+vertices; the fifteen phases and the thirteen renderers are listed in
+[submit phases](submit-phases.md). → [entity rendering](../systems/rendering/entity-rendering.md)
 
 **SynchedEntityData** — the per-entity table of small values the server
 pushes to watching clients, keyed by class-tree ordinal. → [synched entity data](../systems/entities/synched-entity-data.md)

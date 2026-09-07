@@ -4,12 +4,14 @@
 
 A lecture explains one thing at a time, and it cannot stop to list the 43
 entity-data serializers or the ten bits of a flag word without losing the
-room. The rule for this tier is the one pass 3 set: *would a viewer pause
-the video to read this?* If yes, it lives here and the page links to it.
-Twenty pages on the shelf and this one in front of them, and the useful way
-to tell the twenty apart is not by subject but by **how each one is kept** — because a catalogue is only as good as
+room. The rule for this tier is one question: *would a viewer pause the
+video to read this?* If yes, it lives here and the page links to it.
+Twenty-three pages on the shelf and this one in front of them, and the
+useful way to tell them apart is not by subject but by **how each one is kept** — because a catalogue is only as good as
 the version it was read from, and the first question to ask of any page on
-this shelf is *what regenerates it.*
+this shelf is *how it survives a version bump.* Half of them are rewritten
+from the source on every deploy and cannot go stale; the other half are read
+by a person, and go stale exactly the way this page's own last column did.
 
 ## The shelf
 
@@ -21,6 +23,7 @@ flowchart LR
     subgraph G["read off the decompile by gen_reference.py, rewritten on every deploy"]
         G1["packets, registries, data components, game rules"]
         G2["attributes, entity data serializers, enchantment hooks, loot context parameter sets"]
+        G3["entity spawn reasons, structure spawn overrides, the weapon helpers"]
     end
     subgraph I["read off the corpus by the checkers, rewritten on every deploy"]
         I1["class index, from verify_names.py"]
@@ -42,23 +45,26 @@ flowchart LR
 | page | what it lists | kept by | the parts whose landing pages point at it |
 |---|---|---|---|
 | [Packets](packets.md) | every packet, by protocol group and direction | generated | III, V, VI, VII, VIII, IX, X, XIII |
-| [Registries](registries.md) | every registry key: built-in, data-pack, synced | generated | II, V, VI, VII, IX, XII, XIII |
+| [Registries](registries.md) | every registry key: built-in, data-pack, synced | generated | II, IV, V, VI, VII, IX, XII, XIII |
 | [Data components](components.md) | every `DataComponentType`, persistent and synced | generated | II, V, VII, VIII, IX |
 | [Game rules](gamerules.md) | every rule, type, category, default | generated | III, IV, V, VI, VIII |
 | [Attributes](attributes.md) | every attribute: default, range, sentiment, syncable | generated | VI, VIII |
 | [Entity data serializers](entity-data-serializers.md) | all 43, in registration order, which is the wire id | generated | VI |
 | [Enchantment hooks](enchantment-hooks.md) | every public `EnchantmentHelper` entry point and its callers | generated | VII |
 | [Loot context parameter sets](loot-context-params.md) | all twenty-six, with required and optional keys | generated | VII, XIII |
+| [Entity spawn reasons](spawn-reasons.md) | all nineteen, and which classes change behaviour for each | generated | VI |
+| [Structure spawn overrides](structure-spawn-overrides.md) | the six structures that replace a biome's spawn list, and with what | generated | VI, XII |
+| [The weapon helpers](weapon-helpers.md) | the seven `Item.Properties` helpers and every item built by one | generated | VII |
 | [Block update flags](block-update-flags.md) | the ten bits of `Level.setBlock`'s flag word | hand-kept | IV, V |
-| [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-one non-living classes does when hit | hand-kept | VI |
+| [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-one non-living classes does when hit | hand-kept | VI, VIII |
 | [What the HUD draws, and when](hud-elements.md) | every HUD element and the condition it is behind | hand-kept | X |
 | [Submit phases and feature renderers](submit-phases.md) | the fifteen phases and the thirteen renderers, in declaration order | hand-kept | XI |
 | [Density-function nodes](density-function-nodes.md) | the thirty-four node types, what the rewrite installs for each, what range each reports, and which ids the shipped data writes | hand-kept | XII |
-| [Threads](threads.md) | every thread, who makes it, what may run on it | hand-kept | I, III, IV, IX, X, XI |
+| [Threads](threads.md) | every thread, who makes it, what may run on it | hand-kept | I, III, IV, VI, IX, X, XI |
 | [Math and primitives](math-and-primitives.md) | the coordinate spaces, packings, shapes and random sources | hand-kept | II, IV, V, VI, XII |
-| [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | III, IV, VIII, XII |
-| [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.2 calls it | hand-kept | I, II, XI, XII |
-| [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | X, XI, XII, XIII |
+| [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | III, IV, VIII, IX, XII |
+| [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.2 calls it | hand-kept | I, II, VII, X, XI, XII |
+| [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | II, V, VI, X, XI, XII, XIII |
 | [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the nine that mean a thread, a process or a boundary instead | generated from the lane key | every part |
 | [Class index](class-index.md) | every class backticked on a page, and the pages that name it | generated from the pages | — |
 
@@ -67,10 +73,16 @@ from the decompile's declaration lines, so a version bump re-derives it
 rather than re-reading it; the two indexes are rewritten by
 `python tools/verify_names.py --index` and `python tools/check_lanes.py
 --index`. *Hand-kept* means a part session read the classes and wrote the
-rows, `tools/verify_names.py` checks every name on the page, and the
-second fact-check re-reads the rows — declaration orders drift on a version
+rows, `tools/verify_names.py` checks every name on the page, and a
+fact-check re-reads the rows — declaration orders drift on a version
 bump, and two of these pages (submit phases, density-function nodes) are
 nothing but declaration order.
+
+The last column is the one thing on this page a tool can settle, and it is
+now settled by one: a part's landing page names the shelf pages it uses, and
+`tools/check_deps.py` re-derives this column from those thirteen sections and
+refuses to publish when the two disagree. It disagreed in six of twenty rows
+when the check was written, which is what a hand-kept column does.
 
 For agents: the whole site is also served as one file at
 [/llms-full.txt](https://minecraftdocs.dev/llms-full.txt).

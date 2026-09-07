@@ -3054,3 +3054,196 @@ rewritten off lecture one's hook; the pass-number sentence cut.
   `server/starting-a-server`:156 through
   `LevelStorageSource.LevelStorageAccess.fixAndGetSummaryFromTag`. Probably one
   chain; the book does not say.
+
+## Pass 5, session N — Reference, the maps, and the frame's Reference-facing pages *(2026-09-07)*
+
+Sixteen pages read by one agent each — the eleven hand-kept Reference pages and
+the five maps; the ten generated Reference views were not read, because a
+generated page's claims are its generator's. Three new generated views were
+built. **Pages changed: 24.** Eleven of the corrections are on pages outside the
+tier, because almost everything the shelf holds is a fact some lecture also
+states.
+
+### Corrections (what the page said · what the decompile says · where)
+
+1. **`maps/README`:9-11** said "Nothing here is hand-counted … the pages are
+   regenerated with the figures each time the site is built, so a number on a
+   map cannot drift." Only `src/generated/` is regenerated (`tools/deploy.sh`:9,
+   `tools/map_source.py`); every number in the four map pages' **prose** is typed
+   by a session. Found independently by the `maps/README` and `maps/hierarchy`
+   reads. The paragraph now separates the generated half from the hand-written
+   half and says the version pass owes the sentences a re-read.
+2. **`maps/biggest`:29-30** — "`Entity`, `LivingEntity`, `Player`, `ServerPlayer`,
+   `LocalPlayer` and `Mob` are one chain of inheritance … each is the base of
+   everything below it." `Entity.java`, `LivingEntity.java`, `Avatar.java`,
+   `Mob.java`, `Player.java`, `ServerPlayer.java`, `LocalPlayer.java`: `Mob` and
+   `Avatar` are two of `LivingEntity`'s direct subclasses, `Player extends
+   Avatar`, `LocalPlayer extends AbstractClientPlayer`, and neither player leaf
+   is the base of anything. Rewritten as a trunk and a fork.
+3. **`maps/biggest`:33-34** — "the pages a reader of Part VI should expect to be
+   long" promises `Fox` and `Bee` pages the book does not have and has ruled out
+   (`systems/entities/README`:26-31). Re-aimed at that ruling.
+4. **`maps/biggest`:33** — "Only two concrete mobs make **the list**" is true of
+   the thirty the figure draws; the table below has forty rows and three more
+   mobs (`Panda`, `AbstractHorse`, `SulfurCube`). Now "the thirty".
+5. **`maps/fanin`:24-26** — "The thirty hubs … are seven, and Part II is the
+   first six of them." The table names 32 classes, 24 of them in the thirty; six
+   of the thirty are in no row; and by the table's own last column Part II
+   teaches three of the seven, Reference two and Part IX one. All three claims
+   corrected, and `maps/README`:19 carried the same "vocabulary Part II teaches"
+   sentence and was corrected with it.
+6. **`maps/fanin`:42-43** — "the client's hub is a hub for a quarter of the code,
+   and the shared three quarters never name it." The client-only side is 2,206 of
+   7,055 files (31%) and 212,242 of 719,302 lines (29.5%), both from
+   `maps/packages`:22-27. Now "under a third" and "the shared seven tenths".
+7. **`reference/README`:44-63** — the *parts* column was stale in **six of twenty
+   rows**, missing nine part numerals (registries ← IV; non-living-damage ← VIII;
+   threads ← VI; level-data-and-rules ← IX; naming-drift ← VII, X; glossary ← II,
+   V, VI). Derived from the thirteen landing pages' `## Reference this part uses`
+   sections and now enforced by `check_deps.py`.
+8. **`tools/gen_reference.py`, the registries blurb** — "Every registry key
+   declared in `Registries`", printed above a total of **153**. 148 are declared
+   in `Registries.java`; five are declared by their own class with the public
+   `ResourceKey.createRegistryKey` (`ServerFunctionLibrary`, `ClockTimeMarkers`,
+   `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) — which the
+   tool's own comment already recorded. The blurb now names them and cites the
+   lecture's 148.
+9. **`reference/threads`:69** — RCON starts "when *enable-rcon* **and**
+   *rcon.password* is set". `RconThread.create` (`RconThread.java`:61-76) also
+   returns null when *rcon.port* is outside 1–65535, and tests the port **first**.
+10. **`reference/threads`:65** — `Util.nonCriticalIoPool` is "the same shape" as
+    `Util.ioPool`. `Util.java`:110-111 passes `daemon=false` for *IO-Worker-* and
+    `daemon=true` for *Download-*, which is the one difference the new column is
+    about.
+11. **`server/server-tick`:107-117** — "the nine that do not divide into three
+    kinds", then a taxonomy accounting for **seven**. The nine are
+    `handlePingRequest`, `handleCustomPayload`, `handleChat`, `handleChatCommand`,
+    `handleSignedChatCommand`, `handleSignUpdate`, `handleEditBook`,
+    `handleChatAck` and `handleConfigurationAcknowledged`
+    (`ServerGamePacketListenerImpl.java`); the last two write listener state on
+    the Netty thread and were in no kind. Four kinds now.
+12. **`reference/level-data-and-rules`:219-221** — 29,999,984 attributed to the
+    integrated server. `MinecraftServer.getAbsoluteMaxWorldSize`
+    (`MinecraftServer.java`:1632) returns it; `DedicatedServer` overrides.
+13. **`reference/level-data-and-rules`:16-21** — "Four parts point here"; five do
+    (`networking/README`:117 is the fifth), which `check_deps.py` now enforces
+    from the shelf's side.
+14. **`worldgen/creating-a-world`:96-97** — `world_gen_settings.dat` is written
+    "beside *raids.dat*". `WorldGenSettings` goes into `MinecraftServer`'s
+    server-global `savedDataStorage` (`MinecraftServer.java`:355); `Raids` goes
+    into `ServerLevel.getDataStorage()` (`ServerLevel.java`:259), which is
+    per-dimension. Different folders; the clause is cut.
+15. **`reference/naming-drift`:42 and :383** — "Two hundred and forty-three rows",
+    twice. The thirteen part tables hold **245** (3+4+31+18+12+18+30+9+24+20+27+13+36).
+16. **`reference/naming-drift`:416-417** — the bullet still italicised
+    *Entity.hurt* as a name that is gone, against its own corrected table row.
+    `Entity.java`:2031-2040: `Entity.hurt` is a `@Deprecated` **final returning
+    void** that forwards to `Entity.hurtServer` only.
+17. **`reference/naming-drift`:290** — "`ByteBufferBuilder` → `MeshData`".
+    `BufferBuilder.build`/`buildOrThrow` produce the `MeshData`
+    (`BufferBuilder.java`:68-78); `ByteBufferBuilder` is the memory under it, which
+    is what `blaze3d`:354 says.
+18. **`reference/naming-drift`:496** — backticked `Minecraft.setScreen`, which
+    does not exist in 26.2 (`Minecraft.java` has only `setScreenAndShow`, and the
+    field lives on `Gui`). Italicised, as the page's own rule requires.
+19. **`rendering/the-window`:302-303** — "*ScreenManager*, which never existed
+    here" against `naming-drift`:313, which lists it as a rename. Whether an older
+    tree used the name is outside rule 3; the sentence now states only what 26.2
+    settles (monitor handling is `MonitorManager`) and cites the rename table.
+20. **`reference/math-and-primitives`:116** — "two things called `Axis`". Three:
+    `Direction.Axis`, `com/mojang/math/Axis`, `ChunkPalettedStorageFix.Axis`. Now
+    "two in scope", with the third named as out of it.
+21. **`reference/level-data-and-rules`:94-97** — `LevelResource.MAP_RESOURCE_FILE`
+    glossed nowhere and then, in this session's own first draft, as the map-id
+    counter. It is `resourcepacks/resources.zip` (`LevelResource.java`:15). Caught
+    before publishing and recorded because a fix is a claim.
+
+### Suspicions re-derived and found sound (no change, or a sharpening only)
+
+- **`reference/level-data-and-rules`:211-212** — "a fresh `WorldBorder` starts
+  with a warning time of 15, not 300." True and sharper than it looks:
+  `WorldBorder(Settings)` (`WorldBorder.java`:44-53) sets `warningTime = 15` and
+  stores the settings **without applying them**, so even a border built from
+  `WorldBorder.Settings.DEFAULT` (whose `warning_time` is 300) is live at 15.
+- **`maps/fanin`:45** — "all but ten of the files that import `Schema` are in
+  `util/datafix`." Exactly ten, and all ten are in its sibling `util/filefix`;
+  the page now says where they are.
+- **`maps/biggest`:44** — `SoundEvents` grouped with the catalogues-written-as-code.
+  1,668 `SoundEvent` constants, one `register(...)` per line.
+- **`maps/biggest`:42** — "`FriendlyByteBuf` is the buffer both read from."
+  `RegistryFriendlyByteBuf extends FriendlyByteBuf`, so play's buffer is one.
+- **`reference/glossary`, the "five headwords the corpus does not use"** (pass-4
+  session O). Re-measured with whitespace normalised: **four**, not five, and all
+  four are compound noun phrases the corpus writes in pieces. Ruled to stand; the
+  original count was a line-wrap artefact.
+
+### Claims introduced (check these first)
+
+**Three new generated views** (`tools/gen_reference.py`, each read off the
+decompile or the shipped data on every deploy; the numbers below are what the
+generator printed on 26.2 and will move on a version bump):
+
+- `reference/spawn-reasons.md` — 19 reasons, **11 tested somewhere, 20 test
+  sites**, and a *classes that pass it* count per reason. The claim behind the
+  view is that a "test" is a comparison against the constant and everything else
+  is a pass-through; the enclosing method is found by walking up to the nearest
+  access-modifier-led signature. **Eight reasons are tested by nothing**, and all
+  but two comparisons are inside `Mob.finalizeSpawn` — both stated on
+  `entities/entity-lifecycle`.
+- `reference/weapon-helpers.md` — 7 helpers, **42 items**. The claim: an item
+  reaches a helper directly (`sword`, `pickaxe`, `spear`) or through the class
+  that wraps it (`AxeItem`, `HoeItem`, `ShovelItem` each call theirs in `super`),
+  and "components it sets" follows one hop into `ToolMaterial`.
+- `reference/structure-spawn-overrides.md` — **34 structures carry
+  `spawn_overrides`, six fill it in, 23 overrides, 18 of them empty.** The claim
+  that an empty spawn list is a *ban* rather than a no-op is the view's argument
+  and is stated on `entities/entity-lifecycle` too.
+
+**New prose claims:**
+
+- `reference/threads` — a *daemon* value for every row: Render thread and *main*
+  no (they are the JVM's), Server thread no (`MinecraftServer.spin`), Netty yes
+  (`EventLoopGroupHolder.createThreadFactory` sets it), Worker-Main yes
+  (`ForkJoinPool`, and `how-a-server-dies`:217-220 already said so), IO-Worker
+  **no** and Download yes (`Util.java`:110-111), sound engine yes
+  (`SoundEngineExecutor.createThread`), watchdog/console/management yes, timer
+  hack yes, RCON and query **no**. Plus: RCON and query poll on a **500 ms**
+  socket timeout (`RconThread.java`:82, `QueryThreadGs4.java`:277) and
+  `RconClient` sets `setSoTimeout(0)`, so it does not poll at all.
+- `reference/threads` — a new *main* row for the dedicated server, and a nine-row
+  table of the server handlers that never hop, with what each does on Netty.
+- `reference/threads` — the closing section cut from four rules to one paragraph
+  with three citations; the claim introduced is that `BlockableEventLoop.managedBlock`
+  is `server-tick`'s to own, not this page's.
+- `reference/level-data-and-rules` — a thirteen-row `LevelResource` table.
+- `reference/submit-phases` — `TranslucentSubmit` declares one method,
+  `TranslucentSubmit.distanceToCameraSq`, and **five** of the thirteen renderers'
+  nested *Submit* records implement it (`BlockModelFeatureRenderer`,
+  `ItemFeatureRenderer`, `ModelFeatureRenderer`, `MovingBlockFeatureRenderer`,
+  `NameTagFeatureRenderer`).
+- `reference/glossary` — eight new entries (*Occlusion* with four senses, *Loot
+  context*, *Loot condition*, *Parameter set*, *Data-driven type*, *ServerPlayer*,
+  *Status effect*) and second senses added to *Frame*, *Criterion* and *Level*.
+  The *Occlusion* entry's four senses are each a claim.
+- `reference/README` — the tier's argument re-aimed from *what regenerates it* to
+  *how it survives a version bump*, and a paragraph saying the last column is
+  gated.
+- `maps/README` — a new mermaid figure of the atlas's own pipeline, whose node
+  labels ("eight SVG figures", "six tables", "the thirteen per-part size
+  phrases") are counts of `src/generated/`.
+- `reference/hud-elements` — "this is the whole of what a screen contributes to
+  the record", which answers pass-4 session O's *three or four strata* question
+  in the negative and is the session's own reading of `Gui.java`:183-207.
+
+### Rulings
+
+- **The shelf's *parts* column is derived, not kept.** `check_deps.py` gained a
+  fourth `F` check with a probe; the rule is the column header's own words.
+- **`hud-elements`' contextual bar keeps two rows.** The ordering *is* the fact.
+- **The glossary disambiguates**, for a word the corpus itself uses in more than
+  one sense, and the entry is the disambiguation (A5's rule, applied to
+  *Occlusion*, *Frame*, *Criterion* and *Level*).
+- **`MapItemSavedData`, `MapIndex` and `WanderingTraderData` stay named-only** —
+  declared on the table rather than given a lecture. To [pass3.md](pass3.md) §7.
+- **`starting-a-server` keeps its boot thread table**; only the per-thread
+  properties moved to the shelf.

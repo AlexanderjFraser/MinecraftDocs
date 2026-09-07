@@ -78,7 +78,9 @@ component map. `Item.Properties.component` and every convenience over it —
 `Item.Properties.equippable`, `Item.Properties.useCooldown` — fold one more
 step onto a `DataComponentInitializers.Initializer`, a function that will be
 run against a `DataComponentMap.Builder` later, with a
-`HolderLookup.Provider` in hand.
+`HolderLookup.Provider` in hand. Seven of those conveniences are the ones that
+make a weapon, and between them they build forty-two of the game's items
+([the weapon helpers](../../reference/weapon-helpers.md)).
 
 Between the two halves of that arrangement an `Item` is a live object with no
 components at all: the constructor registers an initializer and the map is not

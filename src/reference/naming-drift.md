@@ -39,7 +39,7 @@ each part explains it.
 Every row here was found the same way: a fact-sheet agent reading the 26.2
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. Two hundred and forty-three rows, and the distribution is
+corpus needed. Two hundred and forty-five rows, and the distribution is
 itself a finding: the three biggest tables are **commands** (36), **the
 server** (31) and **items** (30), and the fourth is **rendering** (27). The
 client was rewritten around extract-then-render, which is why almost nothing
@@ -158,6 +158,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 |---|---|
 | *Player extends LivingEntity* | `Player extends Avatar extends LivingEntity` |
 | *EntityType.PIG* (constants) | `EntityTypes.PIG` + `EntityTypeIds.PIG` |
+| *BlockUtil* in *core* | `BlockUtil`, in `net/minecraft/util` — the name did not move, the package did |
 | *MobSpawnType* | `EntitySpawnReason` (+ `EntitySpawnRequest`) |
 | *SpawnPlacements.Type* | `SpawnPlacementType` / `SpawnPlacementTypes` |
 | *Entity.hurt(DamageSource, float)* returning a boolean | split into `Entity.hurtServer` and `Entity.hurtClient`. Both old shapes survive as deprecated finals — `Entity.hurt` delegating to the server half, `Entity.hurtOrSimulate` as the boolean-returning successor — so grep still finds the name |
@@ -287,7 +288,7 @@ render.
 |---|---|
 | *MultiBufferSource* / *BufferSource* | `SubmitNodeCollector` / `SubmitNodeStorage` / `FeatureRenderDispatcher` |
 | *ShaderInstance*, *RenderStateShard* | `RenderPipeline` + `RenderPipelines` + `BindGroupLayouts` |
-| *VertexBuffer*, *Tesselator*, *BufferUploader* | `GpuBuffer` / `GpuBufferSlice`, `ByteBufferBuilder` → `MeshData`, `UberGpuBuffer` |
+| *VertexBuffer*, *Tesselator*, *BufferUploader* | `GpuBuffer` / `GpuBufferSlice`, `BufferBuilder` → `MeshData` (over a `ByteBufferBuilder`'s memory), `UberGpuBuffer` |
 | *RenderSystem.setShader* / *enableBlend* / *depthMask* … | fields of a `RenderPipeline` |
 | *VertexFormat.Mode*, *VertexFormat.IndexType*, *TextureFormat* | `PrimitiveTopology`, `IndexType`, `GpuFormat` |
 | *Window.updateDisplay*, vsync as a swap interval | `GpuSurface.present`, vsync as a `GpuSurface.PresentMode` |
@@ -380,7 +381,7 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 ## The shape changes, not just the names
 
 A rename table flatters the reader: it suggests that if you learn the two
-hundred and forty-three rows above you can read the tree. You cannot, because a dozen of these rows are one
+hundred and forty-five rows above you can read the tree. You cannot, because a dozen of these rows are one
 design change each, and the change is what the corresponding page is about.
 The recurring ones:
 
@@ -413,8 +414,10 @@ The recurring ones:
 - **UUIDs became identifiers.** An `AttributeModifier` is keyed by
   `Identifier`, not a UUID, which is why a data pack can now name one —
   [attributes](../systems/entities/attributes.md).
-- **Sides split.** *Entity.hurt* became `Entity.hurtServer` and
-  `Entity.hurtClient`; *Player.attack* is still there but the packet that
+- **Sides split.** `Entity.hurt` split into `Entity.hurtServer` and
+  `Entity.hurtClient` — the old name survives, as a `@Deprecated` final that
+  returns void and forwards to the server half only, so grep finds it and it
+  does nothing on the client; *Player.attack* is still there but the packet that
   reaches it is `ServerboundAttackPacket`, a record of one integer, and
   `ServerboundInteractPacket` is right-click only. The general rule: where
   1.21 had one method that checked `Level.isClientSide`, 26.2 tends to have
@@ -493,10 +496,15 @@ Fabric code now compiles against a Mojang-named class with the Yarn name.
   management server postdate 1.21 entirely: there is no old name to look up,
   and a reader who cannot find one is not missing a row. Game tests are the
   opposite case — the *whole* 1.21 API is gone, which is why they have five.
-- **`Minecraft.setScreen` is a trap rather than a rename.**
+- ***Minecraft.setScreen* is a trap rather than a rename.**
   `Minecraft.setScreenAndShow` exists in 26.2 and a 1.21-era reader grepping
   for the old name will land on it, then wonder why the screen stack behaves
   differently. The method that replaced the old one is `Gui.setScreen`.
+- **One name a 1.21 reader reaches for was never a class.** There is no
+  *DebugPackets* type in 26.2 and there is nothing it was renamed to: the debug
+  traffic is a subscription protocol with one packet per kind
+  ([debugging the running game](../systems/client/debugging-the-running-game.md)),
+  not a static sender, so the grep that finds nothing is telling the truth.
 - **Some names survived and changed meaning**, which is worse than a
   rename because grep still finds them: `Gui` (now the screen manager, not
   the HUD), `Material` (now a texture reference in

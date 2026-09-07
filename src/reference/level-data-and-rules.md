@@ -13,11 +13,12 @@ under [who owns what](#who-owns-what) is the page; the sections after it are
 the prose behind the rows that need it, and the rest are one line each because
 one line is all there is.
 
-Four parts point here — [III](../systems/server/README.md) for what a boot
+Five parts point here — [III](../systems/server/README.md) for what a boot
 reads, [IV](../systems/world/README.md) for what the world is made of,
 [VIII](../systems/player/README.md) for the two game rules that decide
-whether the server checks your movement, and
-[XII](../systems/worldgen/README.md) for the seed — and [the level
+whether the server checks your movement,
+[IX](../systems/networking/README.md) for the rule values a client asks for by
+name, and [XII](../systems/worldgen/README.md) for the seed — and [the level
 tick](../systems/server/server-level-tick.md) is where most of them are read.
 
 ## Who owns what
@@ -91,10 +92,24 @@ The file is written by `LevelStorageSource.LevelStorageAccess.saveDataTag`
 `Util.safeReplaceFile` renames the old *level.dat* to `level.dat_old` and
 the temp into place, ten retries per step with a rollback. `LevelSummary`
 (the world-select row) is read from it by
-`LevelStorageSource.readLevelSummary`. `LevelResource` names the paths:
-`LevelResource.LEVEL_DATA_FILE`, `LevelResource.DATA`,
-`LevelResource.PLAYER_DATA_DIR` (*players/data/*, a new sub-folder),
-`LevelResource.LOCK_FILE`.
+`LevelStorageSource.readLevelSummary`. `LevelResource` names every path under a world folder, and the per-player
+files are three separate ones rather than one *player data* row:
+
+| `LevelResource` | the path | what is in it |
+|---|---|---|
+| `LevelResource.LEVEL_DATA_FILE` | *level.dat* | what this page's table calls level data |
+| `LevelResource.OLD_LEVEL_DATA_FILE` | *level.dat_old* | the previous one, kept by the rename dance above |
+| `LevelResource.LOCK_FILE` | *session.lock* | held for the life of the process ([starting a server](../systems/server/starting-a-server.md#taking-the-lock-and-fixing-leveldat-twice)) |
+| `LevelResource.DATA` | *data/* | the server-global `SavedData` files: the scoreboard, the game rules, the world-gen settings, the boss bars |
+| `LevelResource.PLAYER_DATA_DIR` | *players/data/* | one *.dat* per player, read twice on join ([players and sessions](../systems/server/players-and-sessions.md#the-save-file-is-read-twice-and-both-reads-are-the-whole-file)) |
+| `LevelResource.PLAYER_ADVANCEMENTS_DIR` | *players/advancements/* | one JSON per player, the progress half of every advancement ([advancements](../systems/commands/advancements.md)) |
+| `LevelResource.PLAYER_STATS_DIR` | *players/stats/* | one JSON per player, and every statistic is also a scoreboard criterion ([scores, teams and stored data](../systems/commands/scoreboard-and-data.md)) |
+| `LevelResource.PLAYER_OLD_DATA_DIR` | *players/* | the folder the other three moved out of |
+| `LevelResource.ROOT` · `LevelResource.ICON_FILE` · `LevelResource.GENERATED_DIR` · `LevelResource.DATAPACK_DIR` · `LevelResource.MAP_RESOURCE_FILE` | *.* , *icon.png*, *generated/*, *datapacks/*, *resourcepacks/resources.zip* | the world folder itself, its world-select thumbnail, what a structure block saves ([jigsaw and templates](../systems/worldgen/jigsaw-and-templates.md)), the world's own packs, and the world resource pack a server may send |
+
+Thirteen constants, and nothing else in a world folder has a name here: the
+*dimensions/* tree and the region files are addressed by `ChunkPos` arithmetic
+instead ([chunk storage](../systems/world/chunk-storage.md)).
 
 ### The spawn every level reports is the server's, not each level's
 
@@ -179,8 +194,8 @@ for the other two (`ClientboundGameEventPacket.LIMITED_CRAFTING`,
 `ServerWaypointManager`; and `GameRules.ADVANCE_TIME`, which broadcasts a
 full clock sync because a paused clock is expressed on the wire as rate 0
 ([environment attributes](../systems/world/environment-attributes-and-timelines.md)).
-`MinecraftServer.updateMobSpawningFlags` sends nothing; it only calls
-`Level.setSpawnSettings`, which forwards to `ServerChunkCache.setSpawnSettings`.
+`MinecraftServer.updateMobSpawningFlags` sends nothing; it pushes the two
+spawn flags down instead, and is the one entry below that is not a packet.
 
 New is an in-game editor: `ServerboundClientCommandPacket.Action.REQUEST_GAMERULE_VALUES`
 → `ServerGamePacketListenerImpl.sendGameRuleValues` →
@@ -218,8 +233,8 @@ re-saves itself every tick: `WorldBorder.MovingBorderExtent` marks the
 saved data dirty on every advance, and a stationary one never does.
 `WorldBorder.MAX_SIZE` is 59,999,968; `MinecraftServer.getAbsoluteMaxWorldSize`
 is applied to every level's border in `MinecraftServer.createLevels` —
-29,999,984 on the integrated server, but `DedicatedServer` overrides it
-with *max-world-size*. `WorldBorder.isWithinBounds`, `WorldBorder.clampToBounds`,
+29,999,984, which is `MinecraftServer`'s own answer and so the integrated
+server's, while `DedicatedServer` overrides it with *max-world-size*. `WorldBorder.isWithinBounds`, `WorldBorder.clampToBounds`,
 `WorldBorder.getDistanceToBorder`, `WorldBorder.getCollisionShape` are
 the readers; `BorderStatus` colours the client's wall.
 
@@ -286,7 +301,9 @@ biome-zoom-obfuscated seed in `CommonPlayerSpawnInfo`.
 
 `Difficulty` (`Difficulty.PEACEFUL` … `Difficulty.HARD`) sits in
 `LevelSettings.DifficultySettings`. `MinecraftServer.setDifficulty` writes
-it, `MinecraftServer.updateMobSpawningFlags`, and
+it, then `MinecraftServer.updateMobSpawningFlags` — which calls
+`Level.setSpawnSettings`, forwarded to `ServerChunkCache.setSpawnSettings`, so
+peaceful stops the spawner rather than the mobs — and
 `MinecraftServer.sendDifficultyUpdate` → `ClientboundChangeDifficultyPacket`.
 `DedicatedServer.forceDifficulty` applies *server.properties* at boot
 with the lock ignored; there is no *getForcedDifficulty*.
@@ -297,6 +314,11 @@ attribute, `EnvironmentAttributes.MOON_PHASE`, indexed into
 `DimensionType.MOON_BRIGHTNESS_PER_PHASE` — the one piece of the old moon
 logic still on `DimensionType`; see
 [environment attributes](../systems/world/environment-attributes-and-timelines.md)).
+What reads it is Part VI: every `Mob.finalizeSpawn` is handed one
+([entity lifecycle](../systems/entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)),
+which is why a zombie that can break doors is a roll made once, at spawn, in
+the chunk you have been standing in
+([AI](../systems/entities/ai-goals-and-brains.md)).
 
 `WeatherData` — server-global `SavedData`, `MinecraftServer.getWeatherData`
 — was covered in [the level tick](../systems/server/server-level-tick.md).

@@ -104,14 +104,25 @@ it. Everything it acted on itself is struck in place above, or logged in
   (`ClientLevel.java:274`), so the rendering page's copy was both a duplicate
   and wrong; it is now one clause and a link. Session K should confirm the page
   still reads whole where it was cut.
-- **Session N (Reference) — three things the shelf is carrying for a lecture.**
+- ~~**Session N (Reference) — three things the shelf is carrying for a lecture.**
   The `SavedDataStorage` write path has moved to `chunk-storage` (the Reference
   page keeps the folder table and what a `SavedData` *is*). Still open:
   `MapItemSavedData`, `MapIndex`, `CustomBossEvents` and `WanderingTraderData`
   are named on `level-data-and-rules` and nowhere else in the corpus outside the
   class index; and the table has a *player data* row but none for the per-player
   *stats/* and *advancements/* files, which are the same kind of fact and have
-  owner pages to cite.
+  owner pages to cite.~~ **Done, session N:** the prose list of four
+  `LevelResource` paths became a table of all **thirteen**, with *players/data/*,
+  *players/advancements/* and *players/stats/* as three separate rows each
+  citing its owner page, and `LevelResource.GENERATED_DIR` citing the structure
+  block session L placed. `CustomBossEvents` now has an owner (session M's boss-bar
+  section) and the *data/* row cites it. `MapItemSavedData`, `MapIndex` and
+  `WanderingTraderData` stay named-only and are **declared rather than
+  discharged** — each is a `SavedData` with no lecture, and saying so is the
+  table's job. Two corrections fell out: `LevelResource.MAP_RESOURCE_FILE` is
+  the world resource pack, not the map-id counter, and
+  `MinecraftServer.getAbsoluteMaxWorldSize`'s 29,999,984 is the base server's,
+  not the integrated server's.
 
 **For pass 6, the lecture.**
 
@@ -282,17 +293,29 @@ six corrections it made are in [pass9.md](pass9.md).*
   sentence means a watchdog kill or a *kill -9*, or one of the two pages is
   wrong. Also in [pass9.md](pass9.md).
   **Session M (pass 5): settled — `scoreboard-and-data` was wrong** and `how-a-server-dies` right; the crash path reaches `saveAllChunks`, whose first statement stores the scoreboard. Corrected, and logged in pass9.md.
-- **Session N (Reference) — `reference/threads` wants three things Part III
+- ~~**Session N (Reference) — `reference/threads` wants three things Part III
   has and it lacks**: a *daemon* column; that `RconThread` and
   `QueryThreadGs4` are `GenericThread`s polling on a half-second timeout so
   they notice `GenericThread.running`; and that `RconThread.create` returns
   nothing when *rcon.password* is empty **or** *rcon.port* is out of range,
-  where its row states only the password half. Session C left all three on
-  `starting-a-server` rather than move them into a Reference page mid-pass.
-- **Session N (Reference) — `reference/README`'s parts column.** Session C
+  where its row states only the password half.~~ **Done, session N:** all three
+  moved. The table has a *daemon* column on every row, re-derived from the
+  decompile (`Netty` and the sound engine set it explicitly, `Util.ioPool` passes
+  `false` where `Util.nonCriticalIoPool` passes `true`, and the row now says so);
+  RCON and query carry `GenericThread`, the 500 ms socket timeout and both of
+  `RconThread.create`'s gates. `starting-a-server` keeps its seven-row boot table
+  and the consequence for shutdown, and cites the shelf for the per-thread facts.
+  A *main* row was added: the page claimed *every thread the game creates* and
+  had no row for the one that creates most of them.
+- ~~**Session N (Reference) — `reference/README`'s parts column.** Session C
   added III to *Level data and rules*' row, because Part III's landing page
   now points there. The column is still hand-kept and is the one A6 left to
-  session N.
+  session N.~~ **Done, session N — and it is a gate now.** The column's own
+  header says *the parts whose landing pages point at it*, and the landing page's
+  slot for that is `## Reference this part uses`, so the column is derivable.
+  `check_deps.py` derives it, fails on a disagreement and proves the check on
+  synthetic input; it found **six of twenty rows stale**, missing nine part
+  numerals in all. The rule is stated on the page.
 - ~~**Session L (XII) — the initial spawn search is split and neither half
   links the other.** `starting-a-server`:269-277 owns *when* it runs (the
   `ServerLevelData.isInitialized` gate, the bonus chest, the flag that stops
@@ -468,10 +491,18 @@ the corrections it made are in [pass9.md](pass9.md).*
   its errors rather than its output. The* **wire buffer** *stays: it is a
   column of the comparison and the page states it as a contrast, not an
   explanation. Two left, for D and G.*
-- **`reference/registries` says 153 registry keys and
+- ~~**`reference/registries` says 153 registry keys and
   `identifiers-and-registries` says 148.** Two populations or one wrong
   number; session B did not re-derive it because the Reference page is
-  session N's. **Session N**, and pass 9 if it survives.
+  session N's.~~ **Settled, session N: two populations, and the Reference
+  page's sentence was the wrong one.** 148 keys are declared in `Registries`
+  and five more by the class that owns them (`ServerFunctionLibrary`,
+  `ClockTimeMarkers`, `RecipePropertySet`, `EquipmentAssets`,
+  `WaypointStyleAssets`), with the public `ResourceKey.createRegistryKey`
+  rather than `Registries`' private helper — which `gen_reference.py` already
+  knew and its own blurb denied, saying *every registry key declared in
+  `Registries`* over a total of 153. The blurb is corrected and now names the
+  five; `identifiers-and-registries` says why the two numbers differ.
 
 ### For pass 6 (the lecture)
 
@@ -667,10 +698,19 @@ mentions.
   gates **both** merges, independently of `strictlyOrdered`, and is now the
   thing the corrected merging paragraph turns on). `PhaseSubmitGrouper` is
   machinery this page can leave out.
-- **`reference/hud-elements.md`** has no row for `SpectatorGui.extractAction`
+  **Session K took the first and third; session N took `TranslucentSubmit`** —
+  re-derived as an interface declaring one method,
+  `TranslucentSubmit.distanceToCameraSq`, implemented by exactly five of the
+  thirteen renderers' nested *Submit* records, which is what a translucent phase
+  can order and a simple one cannot ask.
+- ~~**`reference/hud-elements.md`** has no row for `SpectatorGui.extractAction`
   (the *else* branch of row 17), and never names `Gui.overlay`/`Gui.screen`, the
   two things recorded between the HUD and rows 28–31, nor the three or four
-  strata a screen contributes there.
+  strata a screen contributes there.~~ **Mostly overtaken, closed by session N:**
+  row 17b (`SpectatorGui.extractAction`) and `Gui.screen` were added by session J;
+  `Gui.overlay` is now named beside it, and the strata question is answered the
+  other way round — a screen contributes *one* entry to the record, never both
+  with the overlay, which is what the row now says.
 - **`reference/level-data-and-rules.md`** never names `DirectoryLock` (what
   `session.lock` is for), `LevelVersion` (the *Version* compound and
   *DataVersion* the world-select row reads), `LevelSummary`'s corrupted and
@@ -705,6 +745,23 @@ Beside them: **Blending data** should be `BlendingData` by the same rule, and
 pages with no page owning it — the session left it out rather than write a
 five-way pointer, and pass 5 should decide whether the glossary does
 disambiguation at all.
+
+**Session N (pass 5) — the headword finding is mostly an artefact, and is
+struck.** Re-measured with whitespace normalised (the corpus wraps a two-word
+headword across a line break, which is what the original search missed) and with
+hyphen and space treated alike, **four** headwords are phrases the corpus never
+writes whole: *Blend alpha*, *Flat level generator preset*, *Globally-rendered
+block entity* and *Permission atom*. All four are compound noun phrases the
+corpus writes in pieces — "the alpha", "one of the Superflat presets",
+"globally-rendered", "the entity-selector atom" — which is what a glossary
+headword is *for*: it is the thing the reader is looking up, alphabetised, not a
+quotation. **The four stand, and the entry is closed.** *Staging buffer* and
+*Batch* were not among them on re-measurement and are wording questions for
+pass 8, tagged there. What was done: **`BlendingData`** now carries the class
+name by the page's own rule, and ***Occlusion* is written** — four senses, four
+links, and the sentence that says the word is the only thing they share.
+Disambiguation is therefore what the glossary does, for a word the corpus itself
+uses in more than one sense, which is A5's rule applied. [kind=book]
 
 ### Two counts in this file that were wrong
 
@@ -812,17 +869,31 @@ drop the number.
   three of six signal delegators on `BlockBehaviour.BlockStateBase`; "All three
   stop early" is true of the reading methods and false of the direction arrays
   the previous paragraph counts.
-- `reference/math-and-primitives.md:116` — "two things called `Axis`" is two
-  in scope; there is a third in the datafix tree, which rule 3 excludes.
+- ~~`reference/math-and-primitives.md:116` — "two things called `Axis`" is two
+  in scope; there is a third in the datafix tree, which rule 3 excludes.~~
+  **Done, session N**, and re-derived: `Direction.Axis`, `com/mojang/math/Axis`
+  and `ChunkPalettedStorageFix.Axis`. The sentence now says *in scope* and names
+  the third as out of it.
 - `items/loot-tables.md:130` — "a funnel with **three** fan-outs" describes the
   page's own figure, which has four branch nodes.
 
 - `maps/biggest.md:29` — "only **two** concrete mobs make the list" is true of
   the figure's thirty and false of the table's forty (`Panda` 37th,
   `SulfurCube` 40th).
-- `maps/fanin.md:24` — "the **thirty** hubs … they are **seven**" has the right
+- ~~`maps/fanin.md:24` — "the **thirty** hubs … they are **seven**" has the right
   seven idea rows, but the table's class list is 32 classes, only 24 of them in
-  the thirty; six of the thirty appear in no row.
+  the thirty; six of the thirty appear in no row.~~ **Done, session N**, and
+  re-derived exactly: 32 in the table, 24 of them in the thirty, and the six that
+  are not are `LogUtils`, `Util`, `Schema`, `DSL`, `Minecraft` and
+  `BlockBehaviour`. The section now says the table reads down the sixty rather
+  than the thirty *so that a family is not broken by the cut-off*, and the three
+  the prose had no home for (`LogUtils`, `Util`, `BlockBehaviour`) get a sentence
+  each. Two more corrections came with it: the heading's claim that **Part II
+  teaches the vocabulary** is false of the table under it — Part II has three of
+  the seven rows, Reference two, Part IX one — and the same claim was on
+  `maps/README`'s row for the page, so both were rewritten; and "a hub for a
+  quarter of the code" is under a third by files and 29.5% by lines, which is
+  what the sentence now says.
 - ~~`lectures.md:220` — "**Two** components on one item" is the two *weapon*
   components; `the-spear`'s own cast lists eight `DataComponents` on it.~~
   **Overtaken** (pass 5, session A): `lectures.md`'s per-page blurbs are cut,
@@ -1200,10 +1271,14 @@ duplicate a Reference page that has been checked row by row.
   tree comes first is positive: the text pipeline cannot be followed until
   you know what it records into. `client/README`, `lectures.md` and both
   pages now say the same thing.
-- **`hud-elements` now has the contextual bar on two rows** (14 background, 16
+- ~~**`hud-elements` now has the contextual bar on two rows** (14 background, 16
   foreground) with the experience level between them, because that is the
   record order. Correct and hard to read; a merged row with a note might serve
-  the reader better, if the ordering fact survives the merge.
+  the reader better, if the ordering fact survives the merge.~~ **Ruled out,
+  session N: the two rows stand.** The ordering fact *is* the finding — the
+  experience level is recorded between the bar's two passes, so it survives
+  whichever of the four states wins — and a merged row states it as an aside
+  instead of showing it. Row 15 already says why in its own condition column.
 - **`prediction-and-acks` has two figures that both explain the same
   mechanism** — a state diagram of the two machines and a sequence of the
   refusal — and the fact-check found the argument living in the prose both
@@ -1692,8 +1767,10 @@ correction):
   behind `networking/README` at 222 and `blocks/README` at 210.**
 - `src/maps/fanin.md` — the hook now spends three lines on what the chart does
   not count before it gets to the surprise.
-- `src/maps/packages.md` — the `net/minecraft/data` clause became a
-  four-line aside with a cross-link.
+- ~~`src/maps/packages.md` — the `net/minecraft/data` clause became a
+  four-line aside with a cross-link.~~ **Struck as a record rather than a task,
+  session N** — it says what session A did, and the aside still reads and still
+  resolves.
 
 **Structural findings** (not acted on, per the charter):
 
@@ -2533,10 +2610,12 @@ it lost a fight for space against the page's own story.
   paragraphs are still inventories in prose clothing (the `PrimaryLevelData`
   field list, the `DimensionType` record). A reference page may keep them;
   a polish pass should decide whether the two longest become tables.
-- `math-and-primitives`' *What trips people up* is nine bold-led paragraphs
+- ~~`math-and-primitives`' *What trips people up* is nine bold-led paragraphs
   where the list was; the ninth (`BlockUtil` is in `util`, not `core`) is a
   naming-drift row wearing a surprise's clothes and could move to that
-  page.
+  page.~~ **Done, session N:** `naming-drift` has the row, and
+  `math-and-primitives` keeps the package fact it needs (which *Block\** classes
+  are in `core`) with a citation. The bold-led shape is still pass 8's.
 - `naming-drift` keeps its second-person "the name in your head" voice,
   which is now the only page in Reference that talks to the reader; keep or
   level in the voice sweep.
@@ -3136,11 +3215,26 @@ that takes it. Everything session F did act on is struck above or logged in
 - `entity-anatomy` uses *frozen* for three unrelated things on one page: the
   registry freeze, an `EntityType`'s frozen dimensions, and
   `Entity.DATA_TICKS_FROZEN`.
-- `reference/naming-drift`:414-415 lists *Entity.hurt* as a 1.21 name that is
+- ~~`reference/naming-drift`:414-415 lists *Entity.hurt* as a 1.21 name that is
   gone; `damage-and-death`:337 has it live as a deprecated wrapper. The row
-  wants the *still live* form the page already uses elsewhere.
-- `maps/biggest.md`:33-34 says `Fox` and `Bee` "are the pages a reader of Part
-  VI should expect to be long". Part VI has no `Fox` page and no `Bee` page.
+  wants the *still live* form the page already uses elsewhere.~~ **Done,
+  session N.** The *table row* had already been corrected; the **bullet** under
+  *The shape changes* had not, and still italicised the name as gone. Re-derived:
+  `Entity.hurt` is a `@Deprecated` final returning **void** that forwards to
+  `Entity.hurtServer` only, so it does nothing on the client — which is now what
+  the bullet says.
+- ~~`maps/biggest.md`:33-34 says `Fox` and `Bee` "are the pages a reader of Part
+  VI should expect to be long". Part VI has no `Fox` page and no `Bee` page.~~
+  **Done, session N**, re-aimed rather than cut: the two are long *with*
+  per-species goal classes, which is exactly the argument Part VI's landing page
+  makes for explaining the machine and declining to enumerate its instances, so
+  the sentence now cites it and says there is no `Fox` page and will not be one.
+  The same paragraph's other claim was wrong and is corrected — `Entity`,
+  `LivingEntity`, `Player`, `ServerPlayer`, `LocalPlayer` and `Mob` are **not**
+  one chain: `Mob` and `Avatar` are two of `LivingEntity`'s direct subclasses,
+  `Player` is under `Avatar`, and the two player leaves are the base of nothing.
+  And "make the list" was measured against the thirty the figure draws while the
+  table below it has forty rows with three more mobs in them.
 
 ## From pass 5, session E (Part V · Blocks), 2026-09-05
 
@@ -3385,12 +3479,20 @@ corrections it made are in [pass9.md](pass9.md).*
   (`DataComponentPredicates`, `ENTITY_SUB_PREDICATE_TYPE`) and would not
   replace the table.
   **Session M (pass 5): session G's ruling applied.** The table stays on `advancements`; the page now also declines the concrete predicates as a family in its own words, so the shape and the instances are both accounted for.
-- **Session N (Reference) — the glossary has no entry for *loot context*,
+- ~~**Session N (Reference) — the glossary has no entry for *loot context*,
   *loot condition* or *parameter set***, all three used unglossed on six pages
-  in three parts, all three owned by `contexts-and-predicates`.
-- **Session N (Reference) — `reference/attributes`' `Attributes.LUCK` row is
+  in three parts, all three owned by `contexts-and-predicates`.~~ **Done,
+  session N**: all three written, each citing `contexts-and-predicates`' own
+  section anchor, and *Parameter set* naming the Reference catalogue as where the
+  twenty-six are listed. Four more gaps the read found were written with them —
+  *Data-driven type* (a through-line with no entry at all), *ServerPlayer*,
+  *Status effect*, and a second sense for *Frame*, *Criterion* and *Level*.
+- ~~**Session N (Reference) — `reference/attributes`' `Attributes.LUCK` row is
   linked from no system page**, and `loot-tables#one-roll-drawn` is the only
-  page that explains what luck does.
+  page that explains what luck does.~~ **Done, session N:** `loot-tables` now
+  cites the catalogue where it reads `Player.getLuck`, with the default and the
+  fact that only a potion or a command moves it — the row exists to be looked up
+  from exactly there.
 
 ### For pass 6 — the lecture
 

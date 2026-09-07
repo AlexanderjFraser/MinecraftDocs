@@ -95,7 +95,7 @@ re-rolling a new random world every time you touch it.
 
 > **For a 1.21-era reader.** The seed has left *level.dat*. `WorldGenSettings`
 > extends `SavedData` and carries its own `SavedDataType`, so it is written to
-> *data/minecraft/world_gen_settings.dat* beside *raids.dat* — and the game rules to
+> *data/minecraft/world_gen_settings.dat* — and the game rules to
 > *data/minecraft/game_rules.dat* — by the ordinary saved-data machinery rather than by
 > the level-data writer. `PrimaryLevelData` keeps the old key name only as the
 > constant `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS` — which is the one that

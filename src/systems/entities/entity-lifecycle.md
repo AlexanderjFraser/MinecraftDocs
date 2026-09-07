@@ -113,7 +113,11 @@ for the first one declaring a `StructureSpawnOverride` for this category,
 or inside the whole start, depending on the override's
 `StructureSpawnOverride.BoundingBoxType`. That is how an ocean monument spawns
 guardians and empties itself of axolotls, and it is a data-pack field
-(*spawn_overrides*) on the structure. Ahead of all of it sits
+(*spawn_overrides*) on the structure. Thirty-four shipped structures carry the
+field and **six** fill it in — and of the twenty-three overrides those six
+declare, eighteen name nothing at all, which bans the category inside the box
+rather than replacing its list ([structure spawn
+overrides](../../reference/structure-spawn-overrides.md)). Ahead of all of it sits
 `NaturalSpawner.isInNetherFortressBounds`, which is not data-driven at all:
 if the category is `MobCategory.MONSTER` and the block below is
 `Blocks.NETHER_BRICKS` and the position is anywhere inside a fortress's
@@ -195,7 +199,10 @@ a list only the overworld is constructed with
 Each stamps one of the nineteen `EntitySpawnReason` constants, though not a
 distinct one — phantoms and cats both count as *natural*, sieges and
 wandering traders both as *event* — and that reason never leaves the server: nothing about *why* something spawned
-crosses the wire.
+crosses the wire. Nor does most of it change anything: eleven of the nineteen
+are compared somewhere, eight are labels no class tests, and every comparison
+but two is inside one method, `Mob.finalizeSpawn`
+([entity spawn reasons](../../reference/spawn-reasons.md)).
 
 ## Entry: what addFreshEntity actually does
 

@@ -244,6 +244,51 @@ and which single omission is deliberate — the three commands that are
 entries discharged and one ruling applied. Twenty queue entries settled in
 place. **No tool bug**, the seventh pass-5 part session without one.
 
+**Session N is done** (2026-09-07, Reference, the maps and the frame's
+Reference-facing pages): the eleven hand-kept Reference pages read one agent
+each, the five maps likewise, three new generated views built, and eleven pages
+outside the tier edited. This is the session where the lens found *the two tiers
+that exist to be trustworthy each telling a lie about their own
+trustworthiness*. `reference/README`'s **parts** column — the one column in the
+book claiming which parts lean on which shelf page — was stale in **six of
+twenty rows**, missing nine part numerals; and `maps/README` opened with
+*nothing here is hand-counted … the pages are regenerated each time the site is
+built*, which is true of `src/generated/` and false of every number in the four
+map pages' prose, as two independent reads found. Both are fixed the same way:
+the shelf's column is now **derived by `check_deps.py`** from the thirteen
+landing pages' *Reference this part uses* sections and refuses to publish on a
+disagreement (a fourth `F` check, with a probe), and the atlas's landing page
+separates its generated half from its hand-written half and says what the
+version pass owes the sentences. **The gates grew by truth for the third time in
+this pass.** [pass3.md](pass3.md) §7's three `gen_reference.py` views are all
+**built and published** — `spawn-reasons` (nineteen reasons, and the finding
+that **eight are tested by nothing** while all but two comparisons sit inside
+`Mob.finalizeSpawn`), `weapon-helpers` (seven helpers, forty-two items, and
+three of the six tool families needing a class of their own only because they
+also do something on right-click) and `structure-spawn-overrides` (thirty-four
+structures carry the field, **six** fill it in, and **eighteen of the
+twenty-three overrides are empty**, which is a ban and not a no-op) — each with
+a citer and a landing-page row. **Twenty-one corrections**, eleven of them on
+pages outside the tier, which is what a Reference session finds: the shelf holds
+the facts the lectures also state. Among them `server-tick`'s taxonomy of the
+nine handlers that never hop, which named three kinds and accounted for seven —
+the two it missed write listener state on the Netty thread, and the server's
+nine are now a table on `reference/threads` beside the client's, which is where
+a list belongs. `maps/biggest` had six classes as *one chain of inheritance*
+that forks two ways and ends in two leaves; `maps/fanin` had a table of
+thirty-two classes described as the thirty and a *quarter* that is under a
+third; `naming-drift` had 243 rows and has 245. **Five suspicions re-derived and
+found sound**, one sharper than the page knew — a `WorldBorder` built from
+`WorldBorder.Settings.DEFAULT` is live at warning time 15, because the
+constructor stores the settings without applying them — and one of them a **tool
+artefact rather than a finding**: pass 4's *five glossary headwords the corpus
+does not use* is four, all four compound noun phrases the corpus writes in
+pieces, and the original count came from a search that could not see a headword
+wrapped across a line. *Occlusion* is written at last, four senses and four
+links, and with it the ruling that the glossary **does** disambiguate; eight
+entries added, three second senses, and the two-owner reductions A5 ordered.
+**No tool bug**, the eighth pass-5 session without one.
+
 ## The passes
 
 | pass | what | lens | status |

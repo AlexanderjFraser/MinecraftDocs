@@ -66,7 +66,10 @@ registry it belongs to, and keys are **interned** through a weak map keyed
 by `ResourceKey.InternKey`, so two keys for the same registry and id are
 literally the same object. `Registries` holds the 148 `ResourceKey`s *of
 registries* (`Registries.ITEM`, `Registries.BIOME` …) — 147 distinct
-objects, for a reason the questions at the end explain — and `ItemIds` and
+objects, for a reason the questions at the end explain. Five more registry
+keys are declared by the class that owns them rather than here, which is why
+the catalogue's total is 153 and this one is 148
+([registries](../../reference/registries.md)). `ItemIds` and
 `BlockItemIds` (`net/minecraft/references`) hold the per-element keys the
 static initialisers use.
 
