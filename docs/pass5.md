@@ -49,6 +49,151 @@ Nothing here is acted on before pass 4 has checked the page.*
 
 ## Entries
 
+## Session O — the close (pass 5) *(2026-09-07)*
+
+What pass 5's closing session found and did **not** act on, because it belongs
+to a later pass's lens. Everything it acted on is struck in place above or
+logged in [pass9.md](pass9.md). The four reads behind this list were the
+introduction, `lectures.md`, **the thirteen landing pages read as one set** —
+the reading no session in the project had done, because every landing page was
+rewritten by its own part's session — and the glossary entry by entry.
+
+**Page-shape findings — pass 6, the lecture.**
+
+- **The recognition sentence is a slot.** *A player recognises the part by
+  &lt;noun&gt;: four symptoms*, on nine of the thirteen landing pages
+  (`anatomy/README`:9, `foundations/README`:7, `server/README`:9,
+  `world/README`:10, `items/README`:11, `player/README`:11,
+  `networking/README`:9, `client/README`:10, `worldgen/README`:23), and on five
+  of them (II, VII, VIII, IX, X) it is the argument paragraph's **last**
+  sentence, so the paragraph ends on a list of symptoms instead of a claim.
+  Four more use it mid-paragraph and recover. [kind=lecture]
+- **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
+  on the device above; V and VI end on an enumeration of their own pages
+  (`blocks/README`:13 "either choosing the state that goes in, performing the
+  write, or being a block that answers one"; `entities/README`:13, four shared
+  things). The strongest four are III, IV, XI and XIII, and XI is the model: a
+  claim, three consequences, then the hook. [kind=lecture]
+- **A seventh, unlisted section exists on twelve of the thirteen**, in five
+  positions and three forms: after Reference (I, VIII, IX, XII), before
+  Reference (III, XIII), before the shape (V, VI, VII), inside the Reference
+  section (X, XI), inside the shape section (IV), absent (II). It carries the
+  part's size on four and not on five. It is the coverage answer pass 5 asked
+  every part for, it is now a real part of the shape, and it belongs in
+  `TEMPLATE.md` with a fixed position. [kind=lecture]
+- **The landing pages grew through pass 5.** `TEMPLATE.md` budgets "about a
+  hundred lines" outside the watch order; measured at the close, only I (55),
+  II (68) and IV (93) are inside it, and the median has moved from the 90 the
+  planning session measured to **127**: VI 141, IX 137, XI 135, XIII 132, VII
+  131, VIII 127, X 125, V 123, III 106, XII **178**. Almost all of the growth is
+  the unlisted section above. The fix `TEMPLATE.md` prescribes is the argument
+  rather than the trim, which makes it pass 6's and not a sweep. [kind=lecture]
+- **Other grown slots**, each a phrase now used as a label: *the part's closer*
+  (V, VI, VIII, IX, XI), *the part's policy page* (IX, X twice, XI, XII), *and
+  not optionally* (IX, X, XI, XII), *the vocabulary page* (IV twice, VIII, XI).
+  [kind=voice]
+- **The verified line changes register at Part XI**: I to X capitalise the
+  scenario clause, XI, XII and XIII do not. [kind=voice]
+- **One sentence is verbatim on two landing pages** — "A second edition should
+  take them; this one names them and says so." (`entities/README`:35,
+  `items/README`:33). [kind=voice]
+- **`lectures.md` still writes the page's line in two places**, which is the
+  landing page's slot: *Points of interest — Part VI owns the brain; this owns
+  the index it reads* and *The client loop — the hub, and the page every other
+  page in the part leans on* (the latter is `client/README`:86's blurb). Five
+  shape paragraphs there are near-copies of their landing page's and should be
+  the shorter copy: Part IV, Part X's GUI pipeline, Part XI's opening, Part
+  XII's structure arc and its within-part order, Part XIII's floors.
+  [kind=lecture]
+- **The introduction's five rules have no anchors.** They are bold run-in
+  lead-ins, so `anatomy/what-this-book-skips`:8's citation of "[rule
+  three](../../introduction.md)" lands on the top of the page. Either the rules
+  take headings or that citation takes `#the-rules-the-book-keeps`. It is the
+  only mechanism the book cites by number without an anchor. [kind=lecture]
+- **The introduction's skip list is a list** (pass 4 logged the same at
+  `pass5.md`'s Part I section); it is now factually right and still reads as an
+  inventory. [kind=lecture]
+- **`networking/README`:64-67 carries a non-dependency inside *before you
+  start***: "Part X's *client loop* is the deeper version of it, and this part
+  does not wait for it". It is useful where it is and it is not what the
+  section is for; `check_deps.py` cannot see it because it is not a link.
+  Judged and left. [kind=lecture]
+
+**Figure findings — pass 7.**
+
+- **Part IV's figure has eleven nodes for ten pages**: `LC["a live LevelChunk
+  in a ticking world"]` is a concept and is the conveyor's hinge. The only
+  landing figure with a non-page node. [kind=figure]
+- **Part X's figure collapses twelve pages into eight boxes** — `GUI` is four
+  pages and `SND` is two — so it is not a figure of the part's own pages the
+  way the other twelve are. [kind=figure]
+- **Part V says *a hub and six spokes* and draws five spoke-to-spoke edges**,
+  which makes it a hub with a mesh. [kind=figure]
+- **Two metaphor collisions**: Part V and Part X are both *a hub and its
+  spokes*, for different systems; Part XI is *a substrate under a pipeline* and
+  Part XII, read straight after it, is *a substrate, a pipeline, and a wing*.
+  [kind=figure]
+- **The introduction's figure draws three threads** (Render, Server,
+  Worker-Main-n, with the wire as a box) under a paragraph that promises four.
+  Whether the Netty loop should be a box or stay inside `Connection` is the
+  figure pass's call. [kind=figure]
+
+**Wording debt — pass 8.**
+
+- **Three superlatives whose population is unstated**, all corrected this
+  session to name the population and all worth re-reading as sentences:
+  Part VI "the largest part of the book" (by lines) against Part XI "the
+  largest thing on the client" (by classes); Part VIII "the smallest part of
+  the book" (now, with a system in it). A rule for the book: a superlative
+  names what it counts. [kind=voice]
+- **Three landing pages each claim the cleanest statement of the server/client
+  split** (`player/README`:99, `entities/README`:9, `blocks/README`:8), and the
+  reader meets Part V's first. [kind=voice]
+- **The size is generated and the coverage fraction never is.** Six landing
+  pages `{{#include}}` the size correctly and then hand-count a percentage in
+  the next clause (VI, VII, VIII, IX, XI, XII, XIII). If the coverage answer is
+  a standing section, its number wants a generator; `pass5_coverage.py` already
+  reads the same mapping. [kind=book] — a tool, so it is the pass-6 planning
+  session's if it is anyone's.
+- **`lectures.md` counts one dependency two ways in one page**: environment
+  attributes by *page* at :67 ("nine pages in six other parts") and by *landing
+  page* in the table's row ("III, VI, XI, XII"). Both right, and they read as a
+  contradiction. [kind=voice]
+- **Glossary headwords the corpus leans on and the page still lacks**, after
+  this session added eight: *Vibration*, *Gizmo*, *Sprite*, *Palette*, `Mob`,
+  `ServerPlayerGameMode`, `EnchantmentHelper`, and the three long keys
+  `BlockPos` / `ChunkPos` / `SectionPos`. Each has an owner page and a section.
+  [kind=voice]
+- **One headword the corpus never writes**: *Section mesh*; the owner page says
+  `CompiledSectionMesh` throughout. Either rename the headword or accept it as
+  coined and say so. *Globally-rendered block entity* and *Prediction ledger*
+  are the same shape and are defensible. [kind=voice]
+
+**Left open, with a reason.**
+
+- **`Player.getSlot` has a reader in Part XIII and no link.** `player-anatomy`
+  explains the 200/499/500 decoding and says it is the map behind a slot
+  argument; no Part XIII page names `Player.getSlot` or `SlotArgument`. Two
+  sessions were asked and neither did it. It is one clause on
+  `brigadier-and-commands` and a link back, and it is **pass 10's**, because
+  Part XIII closed before this was checked and the clause is a claim about a
+  page nobody is reading this pass. [kind=book]
+- **`codecs-nbt-json` explains five mechanisms other parts own** — the wire
+  buffer, region compression, the `BlockEntity` save shells, the serverbound
+  fence and the trusted-tag constants. Session B left them because each is one
+  column of the page's own four-path table and cutting them needs the table
+  redrawn. Still true, still deliberate, and it is **pass 7's**, because the
+  table is the figure. [kind=figure]
+- **Part IV's landing page says "Nothing in this part needs Part V or
+  beyond"**, which is true of dependencies and not of links: `chunk-anatomy`
+  links `blocks-and-states`, `fluids` links `prediction-and-acks`, `lighting`
+  links `the-client-level`. The book needs one distinction it does not have —
+  a **part-level dependency** is an arrow, a **page-level forward reach** is
+  not — and once it has it, three sentences want it: this one, the
+  introduction's "the two dashed arrows are the only places a part reaches
+  forward", and `lectures.md`'s weaker version. **Pass 10's**, with the
+  distinction written into `TEMPLATE.md` first. [kind=book]
+
 ## Session D — Part IV · The world (pass 5) *(2026-09-05)*
 
 What this session's reading raised for the sessions and passes that come after
@@ -243,7 +388,7 @@ six corrections it made are in [pass9.md](pass9.md).*
   `players-and-sessions` owns it, and the object is
   `players-and-sessions#the-object-and-the-reference-that-outlives-it`.~~
   **Done, session F (pass 5)**: repointed, with the anchor.
-- **Session D (IV) — `reference/level-data-and-rules` is now the declared
+- ~~**Session D (IV) — `reference/level-data-and-rules` is now the declared
   owner of the `level.dat` write path** (session C's ruling: three tellings
   cut to one, and both Part III pages now cite
   `#what-is-left-in-leveldat`). Nothing to do unless D disagrees; if it does,
@@ -254,7 +399,8 @@ six corrections it made are in [pass9.md](pass9.md).*
   explain the lock, and `PlayerDataStorage`'s rescue is now explained on
   `players-and-sessions` rather than wanting a Reference entry (pass5.md:1553's
   third homeless item, discharged). ~~Open.~~ **Agreed, session D (pass 5)** —
-  D does not disagree, so the two Part III citations stand as C left them.
+  D does not disagree, so the two Part III citations stand as C left them.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session D ran and did not disagree; `reference/level-data-and-rules#what-is-left-in-leveldat` is the declared owner and both Part III pages cite it.
 - **Session D (IV) — three Part III classes that are Part IV's.**
   `ChunkResult` (110 lines, the success/fail wrapper chunk futures carry) and
   `PlayerMap` (`ChunkMap`'s player index, which
@@ -445,7 +591,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   explanation retold. The pattern page should stop at the object existing.
   **Session G**, with the pair above. **Done, session G (pass 5)**: *The run
   half* now stops at the object existing and cites `loot-tables#one-roll-drawn`.
-- **Eleven of the fifty-six rows send the reader to a page that never names
+- ~~**Eleven of the fifty-six rows send the reader to a page that never names
   the element** — **Part VII's three struck, session G (pass 5)**:
   `SlotSource` now points at `contexts-and-predicates` (which names it) rather
   than `loot-tables` (which never did), `EnchantmentProvider` at `enchanting`,
@@ -458,7 +604,8 @@ the corrections it made are in [pass9.md](pass9.md).*
   and `BLOCK_TYPE` land on pages silent on them. Each *taught in* cell is a
   claim about another part's page, so each part session should check its own
   rows. **Sessions E, G, M** between them.
-  **Session M (pass 5): the last live row struck** — `Permission` and `PermissionCheck` now point at `commands/permissions`, which names both. The entry is discharged.
+  **Session M (pass 5): the last live row struck** — `Permission` and `PermissionCheck` now point at `commands/permissions`, which names both. The entry is discharged.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session M struck the last live row itself, in the paragraph above; the entry was discharged and left standing.
 - **`Gizmos` is explained only on `what-this-book-skips`** and linked from
   none of the pages whose traces end in a debug renderer. The skips page is
   the owner by default and should not be; either a later part takes it or the
@@ -539,7 +686,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   atlas's `PARTS` mapping and is Part V's subject. Either the mapping moves it
   or `blocks/` names the family. **Session E**, with the mapping change if it
   wants one.
-- `util/worldupdate` (5 classes, 736 lines — `RegionStorageUpgrader`,
+- ~~`util/worldupdate` (5 classes, 736 lines — `RegionStorageUpgrader`,
   `UpgradeProgress`) is named nowhere in the book. It is the *Optimize World*
   button, and it is the last sizeable unowned mechanism in Part II's packages.
   Session B's judgement: it belongs beside `world/chunk-storage`, not in
@@ -547,14 +694,17 @@ the corrections it made are in [pass9.md](pass9.md).*
   (pass 5)**: a section on `chunk-storage`, *Doing all of it at once, with no
   server running* — `WorldUpgrader`'s daemon thread, `RegionStorageUpgrader`'s
   walk of every region file, the optional recreate that compacts a save, and
-  `UpgradeProgress` as the bar's counter.
-- `util/eventlog` and `util/monitoring/jmx` (571 lines) belong to the skips
+  `UpgradeProgress` as the bar's counter.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session D placed it: `world/chunk-storage`:320-326 is *Optimize World*, `RegionStorageUpgrader` and `UpgradeProgress`.
+- ~~`util/eventlog` and `util/monitoring/jmx` (571 lines) belong to the skips
   page's boundary, not to a lecture. Session B named `JsonEventLog` in
-  passing on `resource-system` and left the rest.
-- `GsonHelper` (608 lines, the largest unnamed class in Part II) is the JSON
+  passing on `resource-system` and left the rest.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session B's judgement is the answer — `JsonEventLog` is named on `resource-system`, *enable-jmx-monitoring* on `starting-a-server`, and the rest is the skips page's boundary. Declined, not pending.
+- ~~`GsonHelper` (608 lines, the largest unnamed class in Part II) is the JSON
   reading toolbox; `codecs-nbt-json` names `StrictJsonParser` and
   `LenientJsonParser` and not it. One clause on that page would close it.
-  [kind=book]
+  [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — written this session: `codecs-nbt-json` now carries `GsonHelper` as sixty-nine helpers and 109 unconverted call sites.
 
 
 ## Session A — the standard (pass 5) *(2026-09-05)*
@@ -583,7 +733,7 @@ create, routed by kind.*
   put the owner's anchor on the through-line links out of its own pages —
   `server-tick#what-minecraftservertickchildren-runs-and-in-what-order` and
   the rest are tabulated in the brief's A3. [kind=book]
-- **Two landing pages hand-count a size the atlas now generates**, and one of
+- ~~**Two landing pages hand-count a size the atlas now generates**, and one of
   them counts a different population: `worldgen/README`:27 says *451 classes
   and 45,700 lines* against the generated 451 / 45,749 (the same packages,
   rounded — a straight switch to `{{#include}}`), and `rendering/README`:20
@@ -599,7 +749,8 @@ create, routed by kind.*
   corrections of its own — `PatrolSpawner` and `PhantomSpawner`, which run on
   the server tick inside a part whose argument is that nothing does, and the
   Xoroshiro sources the argument rests on, which are Reference's. **Both
-  landing pages settled; entry closed.**
+  landing pages settled; entry closed.**~~
+  **Session O's audit (pass 5's close): settled and never struck** — both landing pages now `{{#include}}` their size; no landing page hand-counts a part's size.
 - **Two landing pages are over the measured budget** — everything but the
   watch order: `rendering/README` 124 lines and `worldgen/README` 144,
   against a corpus median of 90. Sessions K and L judge; the fix is the
@@ -1503,14 +1654,14 @@ whether that is one table or two.
 
 **Structural findings, not acted on.**
 
-- **~~`block-entities` is the part's odd page and the landing page now says so
+- ~~**`block-entities` is the part's odd page and the landing page now says so
   awkwardly.**~~ **Done** — the fourth clause is gone. The landing page's argument is now the two channels seen through a door and a lamp, and the part is described as choosing a state, performing a write, or being a block that answers one; `block-entities` is the page about state that outgrew a block state, which needs no clause of its own.
   *(original entry follows)*  It is not about choosing a state, performing a write, or answering
   a neighbour's write; the landing page's opening had to grow a fourth clause
   ("or — once — about the state a position cannot hold at all") to cover it. The
   cleaner reading is that Part V has a hub, two click lectures, a redstone trio,
   and one page about state that outgrew a block state.
-- **~~`signal-and-dust` carries two subjects.**~~ **Ruled: it stays, as the page's counterfactual.** No other page can own the experimental evaluator — the flag pages own the flag, not the evaluator — and the question it answers (why the staircase is avoidable) is the one this page's scenario raises. What made it read as a second subject was that it stopped using the trace; a pass-6 note is logged to run the same lever and two dust through it.
+- ~~**`signal-and-dust` carries two subjects.**~~ **Ruled: it stays, as the page's counterfactual.** No other page can own the experimental evaluator — the flag pages own the flag, not the evaluator — and the question it answers (why the staircase is avoidable) is the one this page's scenario raises. What made it read as a second subject was that it stopped using the trace; a pass-6 note is logged to run the same lever and two dust through it.
   *(original entry follows)*  The default evaluator and the
   experimental one are the same computation with different semantics, and the
   page gives the second a full section plus a closing paragraph. It is the right
@@ -1737,12 +1888,13 @@ correction):
   finding) and Parts I and II are among the worst affected: every lane in
   the anatomy, tags and data-components figures is a `participant X as
   ClassName` the index cannot see.
-- **Cross-links session A judged missing** and left to pass 5 touch this
+- ~~**Cross-links session A judged missing** and left to pass 5 touch this
   part: ~~Part X ← `anatomy/anatomy`~~ (still open, and session J's: the link
   belongs on `the-client-loop`, not here — session B re-derived it and it is
   the depending page that must change), Part IV and Part XII ←
   `identifiers-and-registries` and `codecs-nbt-json`. Each is a real
-  dependency with no link or backticked slug on the depending page.
+  dependency with no link or backticked slug on the depending page.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session J paid it: `client/the-client-loop`:12 and :21 both link `anatomy/anatomy` by anchor.
 
 ## Session A — The frame (pass 4) *(2026-09-04)*
 
@@ -2783,7 +2935,7 @@ it made are in [pass9.md](pass9.md).*
 
 ### For other part sessions (pass 5)
 
-- **Session J (X) — `input-to-movement` spends thirty-nine lines on Part X's
+- ~~**Session J (X) — `input-to-movement` spends thirty-nine lines on Part X's
   input system.** The `KeyMapping` / `ToggleKeyMapping` / `Options` bullets
   and the press-gauntlet paragraph are `client/input-and-keybinds`' subject —
   that page declares the seam itself — and Part VIII linked it nowhere at all
@@ -2792,7 +2944,8 @@ it made are in [pass9.md](pass9.md).*
   `Options.toggleCrouch` / `Options.toggleSprint`, `SmoothDouble` and the two
   invert options. This is the routed pair at 7.73 and it is session J's to
   resolve; session H left the Part VIII half intact deliberately, so that J
-  decides how much of it survives. [kind=book]
+  decides how much of it survives. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — session H paid it: `player/input-to-movement`:53 cites `client/input-and-keybinds#two-ways-gameplay-reads-a-mapping-and-they-behave-differently`.
 - ~~**Session J (X) — `input-to-movement`'s deferral framing.** Its
   "the GLFW callback ... immediately defers to the client's main thread with
   `BlockableEventLoop.execute`" is the exact reading `input-and-keybinds`:16-22
@@ -2834,11 +2987,12 @@ it made are in [pass9.md](pass9.md).*
   is the map behind a slot argument. The command that consumes it
   (`/item replace entity`, `SlotArgument`) is Part XIII's, and no Part XIII
   page names `Player.getSlot`. One link each way. [kind=book]
-- **Session N (Reference) — `reference/threads` has no server-side
+- ~~**Session N (Reference) — `reference/threads` has no server-side
   never-hop list.** It enumerates the nine client handlers that never hop and
   has no counterpart for the server, though `server-tick` now carries the
   52-of-61 count and names the nine. Either the Reference page takes the list
-  or the count stays prose. [kind=book]
+  or the count stays prose. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — session N built it: `reference/threads`:115 carries the server's nine beside the client's, with the fifty-two that hop.
 
 ### For pass 6, the lecture
 
@@ -3030,12 +3184,13 @@ Structural findings, not acted on:
   *Resolve* section carries five bolded claims in a row, three of which are
   about cost rather than about the trace. The page's shape is a pipeline with
   a policy figure; the cost material may want to be a table.
-- `commands/README.md` — the part's size sentence now needs nine package
+- ~~`commands/README.md` — the part's size sentence now needs nine package
   names to be reproducible and gives none, which is what let a wrong pair
   stand through two passes. Every other landing page has the same shape. A
   standing fix would be for the atlas to generate the per-part totals rather
   than each landing page hand-counting them — that is a tooling change, and
-  it belongs to whoever revisits `map_source.py`.
+  it belongs to whoever revisits `map_source.py`.~~
+  **Session O's audit (pass 5's close): settled and never struck** — the planning session did it: `map_source.py`'s `PARTS` writes `part-<dir>.md` and every landing page includes it.
 
 ---
   **Session M (pass 5): fully discharged.** The include has been there since session A; the prose now names all nine packages, which is the half the entry asked for and the template requires.
@@ -3068,20 +3223,22 @@ that takes it. Everything session F did act on is struck above or logged in
   `ServerEntity.sendChanges` ahead of the gate and lets `LivingEntity` dirty
   its own container in the same call — absent from the owner entirely.
   [kind=book]
-- **Session I (IX) — a count that disagrees across the seam.**
+- ~~**Session I (IX) — a count that disagrees across the seam.**
   ~~`what-the-client-is-told`:213 says "**Four** feeds ignore gate 3" and then
   names three; `synched-entity-data`:280-282 names two plus the item frame.
   The candidate for the fourth is `Entity.updateDataBeforeSync`. Re-derive with
   the decompile.~~ **Done, session I (pass 5)**: it is **three**.
   `Entity.updateDataBeforeSync` opens the method but sends nothing, so it is a
   hook and not a feed; it is now named as such, in the prose and in the figure.
-  [kind=book]
-- **Session I (IX) — `entity-anatomy` now cites
+  [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — settled: `what-the-client-is-told`:234 says **three** feeds ignore gate 3 and names three.
+- ~~**Session I (IX) — `entity-anatomy` now cites
   `what-the-client-is-told#gate-3-and-the-position-it-chooses` for
   `EntityType.trackDeltas`.** The list moved there in principle; check that
   page's own version names the same set (it has nine categories where
   `entity-anatomy` had ten types, "item frames" plural covering two).
-  [kind=book]
+  [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — checked this session, and the two pages disagreed — `entity-anatomy`:393 had `EntityType.trackDeltas` inverted. Corrected; logged in pass9.md.
 - ~~**Session H (VIII) — `the-sword-swing` owes two things a Reference page is
   carrying.**~~ *Done, session H: both moved onto the gate paragraph, with the
   hooks, the two users, the tag and the ghast fireball; the Reference page
@@ -3100,13 +3257,14 @@ that takes it. Everything session F did act on is struck above or logged in
   of the fall-damage gate.**~~ *Done, session H, on both Part VIII pages.* `authority` owns it and now says so; that page's
   version should become one sentence carrying
   `authority#three-cases-read-on-both-sides`. [kind=book]
-- **Session J (X) — `the-client-level` and `prediction-and-acks` both answer
+- ~~**Session J (X) — `the-client-level` and `prediction-and-acks` both answer
   `authority`'s question and only one is named there.** `client/README`:67-70
   says both do; `authority`:19 names only the client level. When Part X
   settles, `authority` should cite `prediction-and-acks#two-state-machines-running-against-each-other`
   at the two places a reader asks *then where does prediction live*
-  (`authority`:106-107 and :210-215). [kind=book]
-- **Sessions ~~H~~, ~~I~~ and J — the anchors on `authority`'s inbound
+  (`authority`:106-107 and :210-215). [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — session J made both citations: `entities/authority`:22 and :116 cite `prediction-and-acks#two-state-machines-running-against-each-other`.
+- ~~**Sessions ~~H~~, ~~I~~ and J — the anchors on `authority`'s inbound
   links.** *Session I did `what-the-client-is-told`'s and the Part IX landing
   page's, both on*
   `#five-predicates-and-the-final-one-the-other-four-hang-off`. Twenty-two
@@ -3116,19 +3274,22 @@ that takes it. Everything session F did act on is struck above or logged in
   section that answers them;* the ones from
   `what-the-client-is-told`, `the-client-level` and the two remaining landing pages want
   `authority#five-predicates-and-the-final-one-the-other-four-hang-off`.
-  [kind=book]
-- **Session M (XIII) — `entity-selectors` can now cite an owner for the two
+  [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — done: of thirty inbound links from twenty-one pages, every system page's carries an anchor; the three without are summarisers.
+- ~~**Session M (XIII) — `entity-selectors` can now cite an owner for the two
   lookups.** `entity-lifecycle#findable-ticking-or-neither` defines
   `EntitySection`, `EntitySectionStorage` and `EntityLookup` as of this
   session; `entity-selectors`:199-212 explains the *query* fork and should
   point back rather than introduce them. [kind=book]
-  **Session M (pass 5): done** — the cast row for `LevelEntityGetterAdapter` now cites `entity-lifecycle#findable-ticking-or-neither` for both structures.
-- **Session M (XIII) — the `EntitySpawnReason` and `Structure.spawnOverrides`
+  **Session M (pass 5): done** — the cast row for `LevelEntityGetterAdapter` now cites `entity-lifecycle#findable-ticking-or-neither` for both structures.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session M made it: `commands/entity-selectors`:33 cites `entity-lifecycle#findable-ticking-or-neither`.
+- ~~**Session M (XIII) — the `EntitySpawnReason` and `Structure.spawnOverrides`
   Reference views ([pass3.md](pass3.md) §7) have their citers now.** The
   nineteen reasons are named on `entity-lifecycle#the-other-ways-in`, which is
   what a view of *what each one gates* would hang off; the spawn-override
   table is what `entity-lifecycle`'s new species-list passage cites for *which
-  structures override what*. Session N builds the views. [kind=book]
+  structures override what*. Session N builds the views. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — session N built both views and they have citers: `entity-lifecycle`:120 and :205, and rows on two landing pages.
 - ~~**Session K (XI) — `synched-entity-data`:238-244 walks the extract and layer
   pipeline with no link.** `entity-rendering` links *here* at its :16 and gets
   nothing back. The sheep-specific payoff (a layer skipped, not a model swap;
@@ -3139,7 +3300,7 @@ that takes it. Everything session F did act on is struck above or logged in
 
 **Coverage, routed rather than written.**
 
-- **Four mechanisms in Part VI's packages are bigger than a sentence and are
+- ~~**Four mechanisms in Part VI's packages are bigger than a sentence and are
   explained nowhere**, declared as such on the landing page and carried to
   [pass3.md](pass3.md) §7: the minecart's two movement models
   (`MinecartBehavior`, `NewMinecartBehavior`, `OldMinecartBehavior`,
@@ -3147,24 +3308,28 @@ that takes it. Everything session F did act on is struck above or logged in
   ender dragon's sixteen flight phases (`world/entity/boss/enderdragon/phases`,
   1,283 lines, named nowhere); a raid (`Raid` 898 lines, `Raider` 619, named
   only on `points-of-interest` and `level-data-and-rules`); and villager gossip
-  (`GossipContainer`, 274 lines, no owner anywhere). [kind=book]
-- **`ConversionType` (195 lines) is named nowhere**, and
+  (`GossipContainer`, 274 lines, no owner anywhere). [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — declared on `entities/README` and carried to pass3.md §7 with the reason; that is the settlement, not a deferral.
+- ~~**`ConversionType` (195 lines) is named nowhere**, and
   `points-of-interest`:372-373 sends "death and **conversion**" to
   `entity-lifecycle#five-reasons-one-label`, which covers death and not
   conversion. A mob converting is one entity removed and another created, so it
   is lifecycle-shaped; session F left it because the page's cascade is about a
   mob being *born*, not swapped. Second edition, or a later pass with the
-  budget. [kind=book]
-- **`foundations/data-driven-types`:151 names `entity-lifecycle` as the home of
+  budget. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — paid this session: `entity-lifecycle`'s `DISCARDED` row now names `ConversionType.SINGLE` and `ConversionType.SPLIT_ON_DEATH` and says what `Mob.convertTo` does, so the class is named and the link covers conversion.
+- ~~**`foundations/data-driven-types`:151 names `entity-lifecycle` as the home of
   `BuiltInRegistries.SPAWN_CONDITION_TYPE`, `SpawnCondition` and
   `SpawnPrioritySelectors`.** The page mentions none of them, and the
   `world/entity/variant` sub-package (11 classes) is unnamed. The variant pick
   runs at `Mob.finalizeSpawn`, so the hand-forward is plausible; it is
-  unpaid today. [kind=book]
-- **`entity-lifecycle`:168 hands `SpawnerBlockEntity`, `BaseSpawner` and
+  unpaid today. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — paid this session: `entity-lifecycle#the-variant-that-same-method-picks` explains `SpawnCondition` and `SpawnPrioritySelectors`, and the table's link now carries that anchor.
+- ~~**`entity-lifecycle`:168 hands `SpawnerBlockEntity`, `BaseSpawner` and
   `TrialSpawner` to `blocks/block-entities`, which names none of the three.**
   Either that page owes them a sentence or the link goes. Part V is closed, so
-  this is pass 10's or a §7 note. [kind=book]
+  this is pass 10's or a §7 note. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — paid this session: `blocks/block-entities`:253 names `SpawnerBlockEntity`, `BaseSpawner` and `TrialSpawnerBlockEntity` and says what each holds.
 
 **Pass 6 — the lecture.**
 
@@ -3294,7 +3459,7 @@ that takes it. Everything session E did act on is struck above or logged in
   `block-interaction` is right on both counts. `section-meshing` attributes the
   same decision to `SectionRenderDispatcher.RenderSection.compileSync` and names
   the option differently; session K should make the two agree, with
-  `section-meshing` owning it and Part V citing.
+  `section-meshing` owning it and Part V citing. [kind=lecture]
 
 **For pass 6, the lecture.**
 
@@ -3358,11 +3523,12 @@ that takes it. Everything session E did act on is struck above or logged in
   transfer, the five slots, the push-versus-pull asymmetry or the ordering.
   Session E named its cadence on `block-entities` and declined the rest: it is a
   lecture, not a sentence.
-- **The sculk spread machine has no home.** `SculkSpreader` (387),
+- ~~**The sculk spread machine has no home.** `SculkSpreader` (387),
   `SculkBlock` (109), `SculkVeinBlock` (211).
   `world/game-events-and-vibrations` owns the sensor, the shrieker and the
-  catalyst; the charge-and-spread machine is named nowhere in the book.
-- **Structure and command blocks are named nowhere in `src/`.**
+  catalyst; the charge-and-spread machine is named nowhere in the book.~~
+  **Session O's audit (pass 5's close): settled and never struck** — ruled this session: declared on `blocks/README` as the one mechanism in Part V's packages no page explains, with the reason and the size, and carried to pass3.md §7.
+- ~~**Structure and command blocks are named nowhere in `src/`.**
   `StructureBlockEntity` (582), `StructureBlock` (109), `CommandBlock` (261),
   `CommandBlockEntity` (205) — only their two serverbound packets appear, as
   rows in `reference/packets`. Part XIII is the natural home for the command
@@ -3372,7 +3538,8 @@ that takes it. Everything session E did act on is struck above or logged in
   the first of the three template sources, and what writes into it is a
   structure block in save mode, which is also where a template's holes come
   from. `blocks/README`'s hand-forward is split to match. **The command block
-  is still Part XIII's and still unwritten**; session M.
+  is still Part XIII's and still unwritten**; session M.~~
+  **Session O's audit (pass 5's close): settled and never struck** — settled: `commands/brigadier-and-commands`:154 has `CommandBlockEntity` and `worldgen/jigsaw-and-templates`:244 has `StructureBlockEntity`.
 - **Four state machines are half-adopted by other parts.**
   `BeaconBlockEntity` (434), `ConduitBlockEntity` (300), and the *trialspawner*
   (642 unmentioned lines) and *vault* (432) sub-packages, whose outer classes are
@@ -3467,7 +3634,7 @@ corrections it made are in [pass9.md](pass9.md).*
   nowhere**, and `entity-selectors`:118 and `advancements`:146-150 are each
   half of a fact whose other half is on `contexts-and-predicates`. Four
   inbound links from Part XIII, none anchored.
-- **Session M (XIII) — the predicate shape library, ruled.** §7 asks whether
+- ~~**Session M (XIII) — the predicate shape library, ruled.** §7 asks whether
   `MinMaxBounds`, `CollectionPredicate`, `EntitySubPredicate` and
   `DataComponentMatchers` belong here or in a Reference page. Session G's
   ruling, for M to apply or overturn: **they stay a table on `advancements`**.
@@ -3478,7 +3645,8 @@ corrections it made are in [pass9.md](pass9.md).*
   generated view is still possible for the two that *are* registries
   (`DataComponentPredicates`, `ENTITY_SUB_PREDICATE_TYPE`) and would not
   replace the table.
-  **Session M (pass 5): session G's ruling applied.** The table stays on `advancements`; the page now also declines the concrete predicates as a family in its own words, so the shape and the instances are both accounted for.
+  **Session M (pass 5): session G's ruling applied.** The table stays on `advancements`; the page now also declines the concrete predicates as a family in its own words, so the shape and the instances are both accounted for.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session M applied session G's ruling: the four predicate shapes are a table on `commands/advancements`:162-165.
 - ~~**Session N (Reference) — the glossary has no entry for *loot context*,
   *loot condition* or *parameter set***, all three used unglossed on six pages
   in three parts, all three owned by `contexts-and-predicates`.~~ **Done,
@@ -3596,19 +3764,21 @@ that takes it. Everything session I did act on is struck above or logged in
   the ground that the interesting half is a screen. Session K should take it or
   say why not; the address resolver underneath it is written and is Part IX's.
   [kind=book]
-- **Session M (XIII) — the boss-bar feed has no owner.** `ClientboundBossEventPacket`
+- ~~**Session M (XIII) — the boss-bar feed has no owner.** `ClientboundBossEventPacket`
   is 309 lines and the largest unnamed class in Part IX's packages; `client/hud`
   draws the bar, `players-and-sessions` sends them on join,
   `reference/level-data-and-rules` stores them, and no page says what the feed
   *is*. §7 already has *the boss bar as `execute store`'s third sink* routed to
   M; this is the same object from the wire's end, and M should settle both
   together or decline both. Session I named the gap on the landing page rather
-  than inventing a home for it. [kind=book]
-- **Session N (Reference) — `reference/threads` is the never-hop table's home
+  than inventing a home for it. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — session M wrote it: `commands/scoreboard-and-data`:291 owns the boss bar as `execute store`'s third sink.
+- ~~**Session N (Reference) — `reference/threads` is the never-hop table's home
   and the login state machine's second telling.** Session I added the two links
   it lacked (to `the-connection`'s hop paragraph and to `protocol-phases#login`)
   and left the prose; a Reference page that explains a state machine in three
-  sentences is N's to judge. [kind=book]
+  sentences is N's to judge. [kind=book]~~
+  **Session O's audit (pass 5's close): settled and never struck** — session N settled it: `reference/threads` cites `protocol-phases#login` for the state machine and keeps only the row.
 
 **For pass 6 (the lecture).**
 
@@ -3710,7 +3880,7 @@ it made are in [pass9.md](pass9.md).*
 
 ### For other part sessions (pass 5)
 
-- **Session M (XIII) — the boss-bar feed still has no owner, and session J
+- ~~**Session M (XIII) — the boss-bar feed still has no owner, and session J
   confirms the Part X half.** `commands/scoreboard-and-data`:28-30 hands the
   bar's value and maximum to the HUD, which never mentions `execute store`.
   `client/hud` owns `BossHealthOverlay` and `LerpingBossEvent` — the drawing
@@ -3718,7 +3888,8 @@ it made are in [pass9.md](pass9.md).*
   is. This is the same object session I routed to M from the wire's end
   (pass5.md:3326); M should settle both or decline both, and if it declines,
   the `scoreboard-and-data` hand-forward has to go with it. [kind=book]
-  **Session M (pass 5): both ends settled, and neither declined.** `scoreboard-and-data` gains a section on the boss bar as `execute store`'s third sink — the model, the two memberships, the `SavedData` and the write surface — which also gives `ClientboundBossEventPacket` the owner `networking/README` said it lacked. Both hand-forwards are rewritten: `networking/README` and `client/hud` now cite the section, and `hud` keeps the drawing. `pass3.md` §7's entry is discharged.
+  **Session M (pass 5): both ends settled, and neither declined.** `scoreboard-and-data` gains a section on the boss bar as `execute store`'s third sink — the model, the two memberships, the `SavedData` and the write surface — which also gives `ClientboundBossEventPacket` the owner `networking/README` said it lacked. Both hand-forwards are rewritten: `networking/README` and `client/hud` now cite the section, and `hud` keeps the drawing. `pass3.md` §7's entry is discharged.~~
+  **Session O's audit (pass 5's close): settled and never struck** — session M wrote it, and the Part X half with it; `scoreboard-and-data`:291 is the owner.
 - ~~**Session K (XI) — `client/resources/model` is in Part X's package set and
   is Part XI's subject.** `ModelManager`, `ModelBakery`, `ModelDiscovery`,
   `FaceBakery`, `BlockStateModelLoader`, `ResolvedModel`, `QuadCollection`,

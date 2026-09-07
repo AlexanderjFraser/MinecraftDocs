@@ -123,8 +123,8 @@ machine — as it owns `/execute if predicate`, which a selector's own
 
 ## Where the part stops
 
-Most of this part by line is the catalogue rather than the machinery, and the
-honest answer to what is unexplained is that nearly all of it is one more
+Not quite a third of this part by line is the catalogue rather than the
+machinery, and it is where the unexplained lines are. The honest answer to what is unexplained is that nearly all of it is one more
 instance of something a page above already draws. The **fifty-odd commands**
 nobody names are the door table's premise repeated:
 `SpreadPlayersCommand`, `FillCommand`, `TeleportCommand`, `WorldBorderCommand`

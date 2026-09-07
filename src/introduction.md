@@ -52,47 +52,56 @@ leaves out.
 Four threads carry nearly all of it — the Render thread, which is also the
 client's game thread; the Server thread; the Netty event loop; and a shared
 worker pool — and the first lecture of the book,
-[Anatomy](systems/anatomy/anatomy.md), is those four threads and the two
-loops.
+[Anatomy](systems/anatomy/anatomy.md#four-threads-worth-memorising), is those
+four threads and the two loops.
 
 ## How the book is read
 
 The site is a book in three tiers, and the sidebar is its table of
 contents.
 
-**Parts** are watched in order. Thirteen of them, I to XIII, each a system
-— the server tick, the world, blocks, entities, the player, networking, the
-client, rendering, world generation, commands — and each opening on a
-landing page that says what shape the part is, what it assumes from earlier
-parts, and which of its pages to watch in which order. A page is one
+**Parts** are watched in order. Thirteen of them, I to XIII, each a system:
+the anatomy of the two programs, the foundations they are both built out of,
+the server, the world, blocks, entities, items, the player, networking, the
+client, rendering, world generation, and commands. Each opens on a landing
+page that argues what its part claims about its system, says what shape the
+part is, names the parts it assumes and what it uses each of them for, lists
+its pages in the order to watch them, and says which Reference pages the part
+reads. A page is one
 lecture's notes: it follows one scenario through the system (a player walks
 east across a chunk boundary; a server is clicked in the list) and its
 figure is the artefact — a sequence diagram whose lanes are class names, a
 state machine, a flowchart of a decision. Every diagram enlarges on click.
 Each part only assumes the ones before it, and the
 [lecture map](lectures.md) says where that is not quite true. The picture
-below is the whole of that: an arrow is *watch before*, the two
+below is the whole of that: a solid arrow is *watch before*, the two
 dependencies every part shares — Part I for the threads, Part II for codecs
-and registries — are left off because their arrows would reach almost every
-box, and the two dashed arrows are the only places a part reaches forward,
-each cut on purpose rather than solved by reordering.
+and registries — keep their boxes and the one arrow each along the spine but
+have the rest of theirs left off, because those would reach almost every box,
+and the two dashed arrows are the only places a part reaches forward, each cut
+on purpose rather than solved by reordering.
 
 {{#include figures/parts-dependency.md}}
 
-**Maps** are looked at once. The [atlas](maps/README.md) is four views
-generated from the decompile on every deploy — [where the code
-is](maps/packages.md), [where the mass is](maps/biggest.md), [what
-everything imports](maps/fanin.md) and [what extends
-what](maps/hierarchy.md) — each with a page of prose and the table it was
-drawn from. It is the "where is everything" answer a newcomer wants before
-any system page makes sense.
+**Maps** are looked at once. The [atlas](maps/README.md) is four views of the
+decompile — [where the code is](maps/packages.md), [where the mass
+is](maps/biggest.md), [what everything imports](maps/fanin.md) and [what
+extends what](maps/hierarchy.md). Each view's figure and its table are
+regenerated on every deploy and cannot go stale; the prose around them is
+written by a person from those tables, and is re-read when the version moves.
+It is the "where is everything" answer a newcomer wants before any system page
+makes sense.
 
-**Reference** is looked up. Every packet, registry, data component, game
-rule and thread, the coordinate spaces and the random sources, the
+**Reference** is looked up. Twenty-three [pages](reference/README.md): every
+packet, registry, data component, game rule and [thread](reference/threads.md),
+the coordinate spaces and the random sources, the
 [glossary](reference/glossary.md), the [naming drift](reference/naming-drift.md)
-table, a class index that answers "which page talks about `ChunkMap`", and
-the [diagram lanes](reference/lanes.md). The rule for what
-belongs here is *would a viewer pause the video to read this*.
+table, a [class index](reference/class-index.md) that answers "which page talks
+about `ChunkMap`", and the [diagram lanes](reference/lanes.md). Rather more
+than half of them are rewritten from the decompile or from the corpus on every
+deploy and cannot go stale; the rest are hand-kept and re-read every pass, and
+the shelf's own [front page](reference/README.md) says which is which. The rule
+for what belongs here is *would a viewer pause the video to read this*.
 
 For agents, the whole site is one file:
 [llms-full.txt](https://minecraftdocs.dev/llms-full.txt), regenerated on
@@ -123,9 +132,10 @@ against the decompile before the site publishes, every diagram is parsed
 by the same mermaid the site ships, every lane in every diagram is
 checked against the one [key](reference/lanes.md) the whole book uses, and
 every link and anchor between pages is checked to land. A
-page that fails any of those does not go up, and neither does a change
-that puts the landing pages, the lecture map and the dependency figure out
-of step with each other. That is a narrow
+page that fails any of those does not go up, and neither does a change that
+puts the landing pages, the sidebar, the lecture map, the dependency figure and
+the Reference shelf's own index of who uses it out of step with each other.
+That is a narrow
 guarantee, and it is worth stating narrowly: it proves the names are real
 and current in 26.2, not that the sentence around them is true. The
 sentences are what the passes are for.
@@ -143,14 +153,18 @@ then. Never line-level. Code makes boring video and dates fast.
 
 Save migration (the `util/datafix` and `util/filefix` trees, which are
 version-difference code by definition), Realms, telemetry, the profiler, the
-management server, RCON, the data generators, statistics and the recipe book,
-the OpenAL audio backend and two packages nobody will
-recognise are all in the jar and not in the parts.
+management server, RCON, the data generators, statistics, player reporting and
+a package of id constants nobody will recognise are in the jar and not in the
+parts.
 [What this book skips](systems/anatomy/what-this-book-skips.md), the closing
 page of Part I, draws that boundary honestly — what each thing is, how big, whether the dedicated
 server ships it, and the two or three class names to start at if you need
 it anyway — so a viewer knows the edge of the map before investing in
-thirteen parts.
+thirteen parts. It also tours three things that are *not* skipped and are only
+surprising for where they live: the OpenAL backend, which sits in Blaze3D
+beside the GPU abstraction rather than in the client's sound package; the
+recipe book, which sits in the statistics package and belongs to Part VII; and
+the debug-drawing API every debug renderer in the game is now written against.
 
 ## Unofficial, and free to reuse
 

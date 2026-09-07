@@ -21,7 +21,8 @@ stepped from the [*tick*](particles.md), sections are meshed on [a background
 pool](section-meshing.md), and the atlases are built by [a resource
 reload](models-and-atlases.md).
 
-It is also the largest thing on the client by a distance. Counting
+It is also the largest thing on the client, by classes and by a distance —
+nearly twice Part X's, in about the same number of lines. Counting
 `client/renderer`, `client/model`, `client/particle` and `com/mojang/blaze3d`
 together — one class per file, one line per line of decompiled source, the
 same way [the atlas](../../maps/README.md) counts everything else — that is

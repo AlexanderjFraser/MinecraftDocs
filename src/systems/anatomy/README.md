@@ -10,8 +10,9 @@ one of those two waiting on the other. A player recognises the split by its
 symptom: the game that keeps drawing while the world stands still, because
 the two are not the same loop and never were. Nearly every
 [lane](../../reference/lanes.md) in the sequence diagrams after this part is
-a class, and the handful that are not stand for a thread — which is the same
-reason for reading this part first either way.
+a class, and the nine that are not are a thread, a process, or the boundary
+between the two programs — which is the same reason for reading this part
+first either way.
 
 ## The shape of the part
 

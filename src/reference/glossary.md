@@ -58,8 +58,12 @@ a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-an
 
 ## B
 
-**Batch** — a group of game tests keyed by the environment they share;
-a batch *is* an environment, not a name and not a class. → [game tests](../systems/commands/game-tests.md)
+**Batch** (game tests) — a group of game tests keyed by the environment they
+share; a batch *is* an environment, not a name and not a class. The renderer's
+*batch* is a different word: quads grouped by render state, which is [section
+meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes)' and
+[entity rendering](../systems/rendering/entity-rendering.md)'s.
+→ [game tests](../systems/commands/game-tests.md)
 
 **Beardifier** — the density-function term that bends terrain around a
 structure; terrain adaptation writes no blocks, it changes the noise. → [structure placement](../systems/worldgen/structure-placement.md)
@@ -112,7 +116,7 @@ goes live. → [blending at the old-chunk border](../systems/worldgen/blending.m
 **Boss bar** — a named server-side `BossEvent` holding a name, a progress
 float and three screen effects, broadcast to the players attached to it; the
 `/bossbar` kind adds an integer value and maximum, persists its membership as
-UUIDs, and is `execute store`'s third sink. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+UUIDs, and is `execute store`'s third sink. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again)
 
 **Brain** — the memory-and-behaviour AI used by villagers, piglins and
 axolotls, as opposed to the older goal system. → [AI](../systems/entities/ai-goals-and-brains.md)
@@ -123,7 +127,7 @@ argument nodes with per-node requirements, shared by client and server. → [Bri
 **Built-in block model** — a block model attached in code by
 `BuiltInBlockModels` rather than by a resource pack, living in a second
 model table that terrain never reads; how a minecart or a block display
-draws a chest. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
+draws a chest. → [block-entity rendering](../systems/rendering/block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them)
 
 ## C
 
@@ -139,7 +143,7 @@ which does not ask. → [terrain](../systems/worldgen/terrain.md)
 **Cell** — the lattice unit of terrain noise, four blocks wide and deep and
 eight tall in the overworld, 768 to a chunk: the expensive three-dimensional
 density terms are evaluated at its corners and interpolated within it, and the
-caches keyed on it mean nothing outside the cell loop. → [terrain](../systems/worldgen/terrain.md), [density functions](../systems/worldgen/density-functions.md)
+caches keyed on it mean nothing outside the cell loop. → [terrain](../systems/worldgen/terrain.md#filling-the-noise-six-loops-one-number-at-the-bottom), [density functions](../systems/worldgen/density-functions.md)
 
 **Chunk** — a 16-by-16 column of the world's full height: sections,
 heightmaps, block entities, tick queues and a status. → [chunk anatomy](../systems/world/chunk-anatomy.md)
@@ -147,7 +151,9 @@ heightmaps, block entities, tick queues and a status. → [chunk anatomy](../sys
 **Chunk layer** — which of the three `ChunkSectionLayer` buffers a block's
 quads are meshed into — solid, cutout or translucent — decided at bake time
 from the alpha inside that quad's own patch of its sprite rather than from the
-block. → [models and atlases](../systems/rendering/models-and-atlases.md), [section meshing](../systems/rendering/section-meshing.md)
+block; the mesher only reads the answer, except for leaves, which it
+overrides. → [models and
+atlases](../systems/rendering/models-and-atlases.md#a-quads-chunk-layer-is-read-out-of-the-sprites-pixels)
 
 **ChunkHolder** — the server's per-chunk record of the *level* the two graphs
 computed for it, a future per threshold and status, and what changed in it this
@@ -173,7 +179,7 @@ immutable, so every `with…` returns a copy. → [Brigadier and commands](../sy
 
 **Compiled query** — the immutable `EntitySelector` a parse produces:
 thirteen fields, no reader and no grammar, resolvable any number of times
-against different sources. → [entity selectors](../systems/commands/entity-selectors.md)
+against different sources. → [entity selectors](../systems/commands/entity-selectors.md#compile-what-a-box-is-and-where-it-comes-from)
 
 **Component** — two different things the corpus keeps apart: a *data
 component* on an item stack, and a `Component` of chat text. → [data components](../systems/foundations/data-components.md), [text components](../systems/foundations/text-components.md)
@@ -189,14 +195,9 @@ with it through. → [containers and menus](../systems/items/containers-and-menu
 **Criterion** — two different things the corpus keeps apart: one condition
 inside an advancement, backed by a `CriterionTrigger` the server fires when the
 relevant thing happens; and a scoreboard objective's `ObjectiveCriteria`, which
-is what the objective counts. → [advancements](../systems/commands/advancements.md), [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+is what the objective counts. → [advancements](../systems/commands/advancements.md#a-criterions-conditions-are-loot-conditions), [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
 
 ## D
-
-**Data-driven type** — the book's name for the shape a dozen systems share: a
-registry of *types*, each type a codec, and an instance a `Codec` produced from
-JSON, dispatched on its own type field. Fifty-six registries follow it.
-→ [the data-driven type pattern](../systems/foundations/data-driven-types.md#the-idea-stated-once)
 
 **DamageSource** — the *what hit you, and who is responsible* record every
 damage calculation and death message reads. → [damage and death](../systems/entities/damage-and-death.md)
@@ -205,15 +206,20 @@ damage calculation and death message reads. → [damage and death](../systems/en
 `DataComponentType`: a patch over the item's prototype on a stack, a whole map
 on a block entity, read-only on an entity; what NBT item tags became. → [data components](../systems/foundations/data-components.md)
 
+**Data-driven type** — the book's name for the shape a dozen systems share: a
+registry of *types*, each type a codec, and an instance a `Codec` produced from
+JSON, dispatched on its own type field. Fifty-six registries follow it.
+→ [the data-driven type pattern](../systems/foundations/data-driven-types.md#the-idea-stated-once)
+
 **Data pack** — a pack of JSON, structure NBT and function files supplying
-the server's data-driven content; the server half of the resource system. → [the resource system](../systems/foundations/resource-system.md)
+the server's data-driven content; the server half of the resource system. → [the resource system](../systems/foundations/resource-system.md#discover-the-repository-and-its-packs)
 
 **DataLayer** — the nibble array one section's block light or sky light lives
 in, owned by the light engine and never by the section. → [lighting](../systems/world/lighting.md)
 
 **Debug subscription** — a registered kind of debug value a client can ask
 the server for; most kinds the server polls, diffs and sends only when they
-change, and the rest it pushes as they happen. → [debugging the running game](../systems/client/debugging-the-running-game.md)
+change, and the rest it pushes as they happen. → [debugging the running game](../systems/client/debugging-the-running-game.md#the-idea)
 
 **DeltaTracker** — the client's clock: how much of a tick has elapsed, and
 the source of every partial tick in the frame but the lightmap's, which is a
@@ -227,7 +233,7 @@ actually runs. → [density functions](../systems/worldgen/density-functions.md)
 screen, whose submitted values come back as a packet. → [dialogs](../systems/commands/dialogs.md)
 
 **Dimension** — one `ServerLevel` and its `DimensionType`: a height range,
-a set of environment attributes and its own chunk storage. → [level data and rules](level-data-and-rules.md)
+a set of environment attributes and its own chunk storage. → [level data and rules](level-data-and-rules.md#dimensions-and-the-seed)
 
 ## E
 
@@ -248,7 +254,7 @@ per-weather value resolved through a stack of layers: directly on the server,
 through the camera's smoothing probe on the client. Not only the visual ones:
 alongside fog and sky colour sit twenty gameplay attributes — whether lava
 flows fast, whether piglins zombify, whether a bed works, and the villager's
-schedule. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md)
+schedule. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)
 
 **Event loop** — the queue-and-thread pairing `BlockableEventLoop` is: an
 owning thread that drains posted tasks and, through
@@ -270,6 +276,14 @@ immutable values. → [the frame](../systems/rendering/the-frame.md)
 
 **Feature** — the algorithm half of decoration: what to build, with no say in
 which positions it is offered. → [features and placement](../systems/worldgen/features-and-placement.md)
+
+**Feature flag** — a bit in a `FeatureFlagSet`, which is a 64-bit mask and the
+`FeatureFlagUniverse` it belongs to. There is one universe and four flags in
+it: vanilla and three experiments. A registry element that is a
+`FeatureElement` carries a set, and a lookup narrowed by the world's enabled
+set hides it — the registry is still frozen, and the *view* is what changed.
+→ [identifiers and
+registries](../systems/foundations/identifiers-and-registries.md#feature-flags-the-same-registry-narrowed)
 
 **Flat level generator preset** — a display item plus a
 `FlatLevelGeneratorSettings`, one row of the Superflat *Presets* screen; nine
@@ -293,7 +307,7 @@ the frame's pending work — one object shared by reference across a whole
 function body, and deliberately *not* a stack frame. → [the execution engine](../systems/commands/the-execution-engine.md)
 
 **Frame graph** — the client's per-frame declaration of render passes and
-the targets each reads and writes, resolved before anything is drawn. → [visibility and the frame graph](../systems/rendering/visibility-and-the-frame-graph.md)
+the targets each reads and writes, resolved before anything is drawn. → [visibility and the frame graph](../systems/rendering/visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled)
 
 **Function** — a `.mcfunction` file: a list of commands loaded as a
 `CommandFunction`, optionally with macro lines. → [functions and macros](../systems/commands/functions-and-macros.md)
@@ -302,10 +316,10 @@ the targets each reads and writes, resolved before anything is drawn. → [visib
 
 **Game event** — a broadcast fact about something that just happened at a
 position (a block placed, a door opened) that sculk sensors and mobs
-listen for. → [game events and vibrations](../systems/world/game-events-and-vibrations.md)
+listen for. → [game events and vibrations](../systems/world/game-events-and-vibrations.md#a-game-event-is-one-number)
 
 **Game rule** — one typed, server-wide switch or number in `GameRules`, saved
-with the world and sometimes sent to the client. → [level data and rules](level-data-and-rules.md)
+with the world and sometimes sent to the client. → [level data and rules](level-data-and-rules.md#game-rules-are-a-registry)
 
 **Game test** — a data-driven test instance: a structure, an environment
 and a check the server runs and reports on. → [game tests](../systems/commands/game-tests.md)
@@ -313,7 +327,7 @@ and a check the server runs and reports on. → [game tests](../systems/commands
 **Globally-rendered block entity** — one whose renderer says
 `BlockEntityRenderer.shouldRenderOffScreen`, so the client keeps it in a
 level-wide set and draws it whether or not its section is visible; three
-renderers qualify. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
+renderers qualify. → [block-entity rendering](../systems/rendering/block-entity-rendering.md#off-screen-means-off-this-list)
 
 **Goal** — one unit of the older mob AI: a start condition, an answer to
 whether it may be interrupted, and the set of `Goal.Flag` controls it claims
@@ -337,7 +351,7 @@ four that survive worldgen. → [chunk anatomy](../systems/world/chunk-anatomy.m
 
 **Holder** — a reference to a registry entry that can exist before the
 entry is bound: `Holder.Reference` for a registered value, `Holder.Direct`
-for an inline one. → [identifiers and registries](../systems/foundations/identifiers-and-registries.md)
+for an inline one. → [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-table)
 
 **HolderSet** — a set of holders: either a tag (`HolderSet.Named`) or a
 literal list. → [tags](../systems/foundations/tags.md)
@@ -348,23 +362,29 @@ literal list. → [tags](../systems/foundations/tags.md)
 ## I
 
 **Identifier** — a namespace and a path; the id of everything. A 1.21-era
-reader knows it as *ResourceLocation*. → [identifiers and registries](../systems/foundations/identifiers-and-registries.md)
+reader knows it as *ResourceLocation*. → [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-name)
 
 **Ingredient** — a recipe's "any of these items" test. It cannot be an
 empty inline list, but a tag that resolves to nothing makes one empty — and a
-recipe holding it is never placeable. → [recipes](../systems/items/recipes.md)
+recipe holding it is never placeable. → [recipes](../systems/items/recipes.md#loading-one-scan-one-swap-and-four-indexes-built-later)
 
 **Integrated server** — the `MinecraftServer` a singleplayer client runs on
 its own Server thread. Every change to the *world* still crosses as a packet;
-a handful of settings cross by direct call. → [anatomy](../systems/anatomy/anatomy.md)
+a handful of settings cross by direct call. → [anatomy](../systems/anatomy/anatomy.md#what-singleplayer-shares-by-direct-call)
 
 **InteractionResult** — the answer a block or item gives to a click: was
-the input consumed, should the arm swing, did the held item change. → [block interaction](../systems/blocks/block-interaction.md)
+the input consumed, should the arm swing, did the held item change. → [block interaction](../systems/blocks/block-interaction.md#block-then-empty-hand-then-item)
 
 **Item** — the singleton for a kind of item, holding none of the components
 a stack shows; a stack is a holder to one of these, a count, a pop time and a
 patched component map — the item's defaults plus the ways this stack differs
 from them. → [items and stacks](../systems/items/items-and-stacks.md)
+
+**ItemStack** — the object in a slot: a final class holding a count, a pop
+time, a `Holder` of `Item`, and a patch of data components over the item's
+prototype. Only the last is really data; equality is the prototype plus the
+patch, which is why two identical-looking stacks may refuse to merge.
+→ [items and stacks](../systems/items/items-and-stacks.md#four-fields-and-only-one-of-them-is-really-data)
 
 **ItemStackTemplate** — the immutable item-shaped record (an item holder, a
 count, a component patch) that data uses where a live, mutable `ItemStack`
@@ -393,6 +413,13 @@ of five ranks. → [the level tick](../systems/server/server-level-tick.md), [th
 **Lightmap** — the small texture the client samples to turn a block-light /
 sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog and sky](../systems/rendering/lightmap-fog-and-sky.md)
 
+**LivingEntity** — the rung of the entity tree that can be hurt and healed:
+health, attributes, mob effects, equipment and the shared movement code. It
+holds 124 of `Entity`'s 191 descendants and has exactly three direct
+subclasses — `Avatar`, `ArmorStand` and `Mob`.
+→ [entity
+anatomy](../systems/entities/entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)
+
 **LocalPlayer** — the `Player` a human steers: its own `ClientInput`, and the
 last input and position it sent. The block predictions it seems to own are
 the level's. → [player anatomy](../systems/player/player-anatomy.md#the-three-sides-of-one-player)
@@ -404,7 +431,7 @@ the level's. → [player anatomy](../systems/player/player-anatomy.md#the-three-
 **Loot context** — the bag of *what was involved* — the level, the position,
 the tool, the killer, the block entity — that every loot roll, predicate and
 enchantment effect is asked against; a `LootContext` built to satisfy exactly
-one parameter set. → [contexts and predicates](../systems/items/contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)
+one parameter set. → [contexts and predicates](../systems/items/contexts-and-predicates.md#inputs-then-one-invocation)
 
 **Loot table** — the data-driven roll that turns an event (a block broken, a
 mob killed, anything at all reading a container that has not been rolled yet)
@@ -422,6 +449,12 @@ are gated on which memories are present. → [AI](../systems/entities/ai-goals-a
 **Menu** — the server-authoritative object behind an open container screen:
 slots, a synchroniser and a state id. → [containers and menus](../systems/items/containers-and-menus.md)
 
+**MinecraftServer** — the object that *is* the server: the thread, the tick
+loop, every `ServerLevel`, the player list and the registries the world was
+loaded with. Singleplayer runs one too, as an `IntegratedServer` inside the
+client's process.
+→ [the server tick](../systems/server/server-tick.md#the-cast)
+
 **MultiPlayerGameMode** — the client's only channel for acting on the world:
 every break, place, use and attack goes through it, and the ones that predict
 open a prediction window before they send. → [prediction and acknowledgement](../systems/client/prediction-and-acks.md)
@@ -436,16 +469,16 @@ final classes, read and written through `NbtIo` and reached by codecs through
 **NBT path** — a compiled query over a tag, six node kinds deep — a named
 child, an index, all elements, and three kinds of match — that `/data` uses to
 read and write, and which materialises the structure it walks through on a
-write. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+write. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#the-path-language-and-the-accessor-that-is-coarser-than-it-looks)
 
 **Neighbour update** — the server-only notification a block sends its six
 neighbours after a change; distinct from a *shape update*, which runs on
-both sides. → [blocks and states](../systems/blocks/blocks-and-states.md)
+both sides. → [blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
 
 **NoiseChunk** — the per-chunk workspace: it installs the caches the
 density-function graph asked for, and it is also the loop driver that fills
-the lattice from them. → [density functions](../systems/worldgen/density-functions.md#wrap-once-per-chunk),
-[terrain](../systems/worldgen/terrain.md#filling-the-noise-six-loops-one-number-at-the-bottom)
+the lattice from them. → [density
+functions](../systems/worldgen/density-functions.md#wrap-once-per-chunk)
 
 **NoiseRouter** — the density functions a generator asks for, as one record;
 `NoiseRouter.mapAll` rebuilds them all at once, which is how a whole graph gets
@@ -453,14 +486,23 @@ its caches installed in one pass. → [density functions](../systems/worldgen/de
 
 ## O
 
+**Objective** — a named scoreboard column: a criterion, a display name, a
+render type and a number format. Only the *dummy* and *trigger* criteria wait
+for commands; every other one — including every statistic in the game, since
+`Stat` extends `ObjectiveCriteria` — is driven from `ServerPlayer`. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#what-a-criterion-can-be-which-is-nearly-anything)
+
 **Occlusion** — four unrelated questions the corpus asks with one word, and
 no page owns all four. *Does this section hide that one* is the visibility
 graph's, and the answer is a walk rather than a test ([visibility and the frame
 graph](../systems/rendering/visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)).
-*Does this face stop light, or hide the face against it* is a shape question a
-`BlockState` caches, and it is what ends a sky column
-([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood)) and what lets
-two fluid surfaces cancel ([fluids](../systems/world/fluids.md)). *Ambient*
+*Does this face stop light, or hide the face against it* is a shape question
+every `BlockState` precomputes — a field on the state itself rather than
+anything in its shape cache ([math and
+primitives](math-and-primitives.md#shapes-and-collision)) — and it is what ends
+a sky column
+([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood))
+and what lets two fluid surfaces cancel
+([fluids](../systems/world/fluids.md#questions-players-ask)). *Ambient*
 occlusion is none of that: it is the per-quad shading the mesher bakes in
 ([section meshing](../systems/rendering/section-meshing.md)). And a vibration's
 occlusion is a six-ray raycast for `BlockTags.OCCLUDES_VIBRATION_SIGNALS` that
@@ -468,11 +510,6 @@ reports occluded only if **all six** are stopped ([game events and
 vibrations](../systems/world/game-events-and-vibrations.md#the-gates-between-a-footstep-and-a-candidate)).
 A page always means exactly one of the four; the word is the only thing they
 share.
-
-**Objective** — a named scoreboard column: a criterion, a display name, a
-render type and a number format. Only the *dummy* and *trigger* criteria wait
-for commands; every other one — including every statistic in the game, since
-`Stat` extends `ObjectiveCriteria` — is driven from `ServerPlayer`. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
 
 **Old chunk** — a chunk whose `ChunkAccess.blendingData` is non-null, which
 is to say one whose save data carried a *blending_data* compound;
@@ -500,7 +537,13 @@ sets](loot-context-params.md). → [contexts and predicates](../systems/items/co
 **Partial tick** — the fraction of a tick elapsed at the moment a frame is
 drawn, used to interpolate the world. There is no single one: a frame carries
 six values, they disagree on purpose, and the one screens are handed is not a
-fraction of a tick at all. → [the frame](../systems/rendering/the-frame.md)
+fraction of a tick at all. → [the frame](../systems/rendering/the-frame.md#update-and-extract-six-clocks-in-one-frame)
+
+**Particle** — a client-only object with a position, a velocity, an age and a
+sprite, ticked and drawn by the `ParticleEngine`. Nothing about it is
+authoritative: it is spawned locally by prediction or by a level event, and the
+server is told the player's particle setting and never acts on it.
+→ [particles](../systems/rendering/particles.md#does-the-particle-happen-at-all)
 
 **Path** — the list of nodes a navigator is following, produced by
 `PathFinder`'s A\* over a snapshot of already-loaded chunks, with a
@@ -509,21 +552,27 @@ fraction of a tick at all. → [the frame](../systems/rendering/the-frame.md)
 **Permission atom** — a named capability with an `Identifier`
 (`Permission.Atom`), the other kind of permission besides a command level;
 an operator's level-based set grants exactly one, the entity-selector atom,
-from gamemaster up. → [permissions](../systems/commands/permissions.md)
+from gamemaster up. → [permissions](../systems/commands/permissions.md#a-question-an-answer-and-a-check)
 
 **Permission level** — one rung of `PermissionLevel` (all, moderators,
 gamemasters, admins, owners), and only the *ordered* half of a permission: a
 command source carries a `PermissionSet` and a node requires a
-`PermissionCheck`, neither of which is an integer. → [permissions](../systems/commands/permissions.md)
+`PermissionCheck`, neither of which is an integer. → [permissions](../systems/commands/permissions.md#a-question-an-answer-and-a-check)
 
 **Permission set** — what a command source carries and a node's check is
 asked against: on the server a level-based set (a rung plus one atom). The
 client rebuilds four of those from the op level it is told — rung zero maps to
 `PermissionSet.NO_PERMISSIONS` instead — and keeps a chat set built by
-subtraction beside them. No packet carries a `PermissionSet` itself. → [permissions](../systems/commands/permissions.md)
+subtraction beside them. No packet carries a `PermissionSet` itself. → [permissions](../systems/commands/permissions.md#where-a-set-comes-from)
 
 **PlacedFeature** — a configured feature plus an ordered list of placement
 modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)
+
+**Player** — the shared player class: the inventory and ender chest, the open
+menu, the abilities, the food and experience bars, sleep, and the cooldowns.
+`ServerPlayer` and `LocalPlayer` are its two live subclasses and an `Avatar` is
+the rung above it.
+→ [player anatomy](../systems/player/player-anatomy.md#what-player-owns)
 
 **Point of interest** — a block state the game has decided is worth walking
 to: a bed, a job site, a portal. `PoiManager` indexes them by position, in its
@@ -533,7 +582,7 @@ own files beside the chunks. → [points of interest](../systems/world/points-of
 the client's record of what the server is known to have at a block it changed
 optimistically. The ack is a receipt for a number, not a verdict — it settles
 every entry at or below it, writing back a correction if one arrived and
-rolling the block back if none did. → [prediction and acknowledgement](../systems/client/prediction-and-acks.md)
+rolling the block back if none did. → [prediction and acknowledgement](../systems/client/prediction-and-acks.md#the-four-writes)
 
 **Protocol phase** — one of handshaking, status, login, configuration and
 play; each has its own packet table and its own listener. → [protocol phases](../systems/networking/protocol-phases.md#the-five-phases)
@@ -547,12 +596,19 @@ sampled at; `QuartPos` is the arithmetic, tabulated with the other packings in
 
 ## R
 
+**Random tick** — a turn a block gets that nobody booked: aimed at no block,
+carrying no promise, and drawn from the *entity*-ticking chunk set rather than
+the wider block-ticking one a scheduled tick uses — so there is a ring of
+chunks where appointments come due and nothing is ever chosen at random.
+→ [scheduled
+ticks](../systems/world/scheduled-ticks.md#the-other-kind-of-turn-random-ticks)
+
 **Recipe** — a server-side matcher and assembler; no `Recipe` ever crosses
 the wire. The client gets a `RecipeDisplay` and a `RecipeDisplayId`, which is a
 position in a list rather than the recipe's name. → [recipes](../systems/items/recipes.md)
 
 **Region file** — the 32-by-32-chunk container file chunks are stored in,
-addressed by a sector table at its head. → [chunk storage](../systems/world/chunk-storage.md)
+addressed by a sector table at its head. → [chunk storage](../systems/world/chunk-storage.md#inside-a-region-file)
 
 **Registry** — a frozen, id-assigning table of one kind of thing; some are
 built into the jar, some are loaded from data packs, some are sent to the
@@ -561,7 +617,7 @@ client, and all 153 are listed in [registries](registries.md).
 
 **Reload listener** — the unit of a reload: one object that reads what it
 needs off the worker pool and swaps its live state on the owning thread, every
-apply running in order behind a `PreparableReloadListener.PreparationBarrier`. → [the resource system](../systems/foundations/resource-system.md)
+apply running in order behind a `PreparableReloadListener.PreparationBarrier`. → [the resource system](../systems/foundations/resource-system.md#prepare-every-listener-at-once)
 
 **Render state** — the snapshot of what to draw, produced by the extract half
 of the frame and consumed by the drawing half; the property that matters is
@@ -577,13 +633,13 @@ which target to draw into, which textures to bind, and the layering and
 batching rules. → [Blaze3D](../systems/rendering/blaze3d.md)
 
 **Resource pack** — a pack of assets; the client half of the same pack
-machinery data packs use. → [the resource system](../systems/foundations/resource-system.md)
+machinery data packs use. → [the resource system](../systems/foundations/resource-system.md#discover-the-repository-and-its-packs)
 
 ## S
 
 **SavedData** — a named, codec-backed blob stored beside the world (the
 border, the weather, the rules, raids, the dragon fight); `level.dat`
-itself is nearly a stub. → [level data and rules](level-data-and-rules.md)
+itself is nearly a stub. → [level data and rules](level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds)
 
 **Scheduled tick** — a block or fluid position queued to run at a named
 future tick, with a priority breaking ties inside that tick. → [scheduled ticks](../systems/world/scheduled-ticks.md)
@@ -598,34 +654,33 @@ lifecycle; the server is told nothing about most of them. → [GUI and screens](
 states, one of biomes, and four counters. Its light lives in the light
 engine's own storage, not on the section. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
-**Status effect** — a `MobEffect` held on a `LivingEntity` with an amplifier
-and a duration; the ones that change a number do it by attaching an attribute
-modifier rather than by being read where the number is used.
-→ [status effects](../systems/player/status-effects.md#what-an-effect-is)
-
 **Section mesh** — the compiled vertex buffers for one section
 (`CompiledSectionMesh`), rebuilt when the section is both dirty and visible —
 usually on a worker, but inline on the client thread when the chunk-builder
-option asks for it. → [section meshing](../systems/rendering/section-meshing.md)
+option asks for it. → [section meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes)
 
 **Selector head** — the single character after the *@* (*a*, *e*, *n*,
 *p*, *r*, *s*) that sets a selector's default limit, order and entity scope
 before any option is read; three of the six also pin the type to player, and
-two instead add an aliveness test. → [entity selectors](../systems/commands/entity-selectors.md)
+two instead add an aliveness test. → [entity selectors](../systems/commands/entity-selectors.md#parse-six-heads-and-twenty-one-names)
 
-**Sensor** — the half of brain AI that writes memories from the world, on a
-fixed interval. → [AI](../systems/entities/ai-goals-and-brains.md)
+**Sensor** (brains) — the half of brain AI that writes memories from the
+world, on a fixed interval. A *sculk sensor* is a block and a different
+subject ([game events and
+vibrations](../systems/world/game-events-and-vibrations.md#the-trace-one-footstep-several-ticks)).
+→ [AI](../systems/entities/ai-goals-and-brains.md)
+
+**ServerEntity** — the server's per-tracked-entity bookkeeping: what the
+watching clients were last told, and what to send them next. → [what the client is told](../systems/networking/what-the-client-is-told.md#one-entitys-tick-and-the-gates-it-does-not-pass)
 
 **ServerPlayer** — the server's copy of a player: the entity, the connection's
 listener, the game-mode object and the session state, all on one class.
 `LocalPlayer` is the client's answer to it and the two share `Player`.
-→ [player anatomy](../systems/player/player-anatomy.md), [players and sessions](../systems/server/players-and-sessions.md#the-cast)
-
-**ServerEntity** — the server's per-tracked-entity bookkeeping: what the
-watching clients were last told, and what to send them next. → [what the client is told](../systems/networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
+→ [player
+anatomy](../systems/player/player-anatomy.md#the-three-sides-of-one-player)
 
 **Shape update** — the "your neighbour changed, recompute yourself" call
-that runs on both client and server, unlike a neighbour update. → [blocks and states](../systems/blocks/blocks-and-states.md)
+that runs on both client and server, unlike a neighbour update. → [blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
 
 **Signed message** — a chat message carrying a signature over its content
 and its place in a per-player chain, so the server can prove who said it. → [chat and signing](../systems/networking/chat-and-signing.md#what-the-signature-covers)
@@ -636,11 +691,16 @@ chunks tick blocks, fluids and entities. → [tickets and loading](../systems/wo
 
 **Special model renderer** — a hand-written submitter for a shape no cuboid
 model can express, reached from an item model or a block state rather than
-from a block entity; thirteen of them. → [block-entity rendering](../systems/rendering/block-entity-rendering.md)
+from a block entity; thirteen of them. → [block-entity rendering](../systems/rendering/block-entity-rendering.md#where-rendererspecial-borrows-its-geometry)
 
 **Staging buffer** — the list an executing action appends its spawned
 commands to, spliced onto the *head* of the queue after it runs — which is
-what makes an `ArrayDeque` behave as a call stack. → [the execution engine](../systems/commands/the-execution-engine.md)
+what makes an `ArrayDeque` behave as a call stack. → [the execution engine](../systems/commands/the-execution-engine.md#the-queue-four-moments-apart)
+
+**Status effect** — a `MobEffect` held on a `LivingEntity` with an amplifier
+and a duration; the ones that change a number do it by attaching an attribute
+modifier rather than by being read where the number is used.
+→ [status effects](../systems/player/status-effects.md#what-an-effect-is)
 
 **StreamCodec** — the wire counterpart of a `Codec`: encodes to and decodes
 from a `ByteBuf`, with no schema and no field names. → [packets and stream codecs](../systems/networking/packets-and-stream-codecs.md#the-codec-layer-is-small-and-composition-is-all-of-it)
@@ -652,8 +712,8 @@ start assembled in memory, and pieces written a chunk at a time. → [structure 
 hand-built half it is a Java class that writes its own blocks and constructs its
 own neighbours, chosen by no pool; the jigsaw half's `PoolElementStructurePiece`
 is one too. Every piece carries a registered `StructurePieceType`, which is how
-it comes back off disk. → [hand-built structures](../systems/worldgen/hand-built-structures.md#the-idea),
-[jigsaw and templates](../systems/worldgen/jigsaw-and-templates.md#the-cast)
+it comes back off disk. → [hand-built
+structures](../systems/worldgen/hand-built-structures.md#the-idea)
 
 **StructureStart** — one decided structure: the `Structure`, the chunk it
 started in, a `PiecesContainer`, a reference count and a cached bounding box,
@@ -663,7 +723,7 @@ stored on the chunk it began in. → [structure placement](../systems/worldgen/s
 `SubmitNodeStorage` by the *submit* pass out of the render states extract left
 behind, and sorted into a phase before the feature renderers turn it into
 vertices; the fifteen phases and the thirteen renderers are listed in
-[submit phases](submit-phases.md). → [entity rendering](../systems/rendering/entity-rendering.md)
+[submit phases](submit-phases.md). → [entity rendering](../systems/rendering/entity-rendering.md#submit-describing-a-draw-without-making-one)
 
 **SynchedEntityData** — the per-entity table of small values the server
 pushes to watching clients, keyed by class-tree ordinal. → [synched entity data](../systems/entities/synched-entity-data.md)
@@ -676,7 +736,7 @@ the word belongs to [NBT](../systems/foundations/codecs-nbt-json.md).) → [tags
 
 **Team** — a named set of score holders carrying a colour, a friendly-fire
 flag, a collision rule and a nametag rule — so a class in the scores package
-is read by collision and by rendering. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+is read by collision and by rendering. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md#teams-which-five-systems-read-and-none-of-them-are-scores)
 
 **Tick** — one step of the server's simulation, 50 ms at the default rate
 that `/tick rate` can change, or one step of the client's; a client behind
@@ -689,11 +749,14 @@ only, then full, then block-ticking, then entity-ticking. → [tickets and loadi
 
 **Timeline** — one clock's data-driven curve set: an optional period, the
 named instants on that clock, and one `AttributeTrack` per environment
-attribute — keyframed over *modifier arguments*, not over values. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md)
+attribute — keyframed over *modifier arguments*, not over values. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#arguments-not-values)
 
-**Trigger** — the server-side hook that tells **one** player's advancement
-state that something happened, by sweeping that player's listener map for
-this trigger. Nothing broadcasts. → [advancements](../systems/commands/advancements.md)
+**Trigger** (advancements) — the server-side hook that tells **one** player's
+advancement state that something happened, by sweeping that player's listener
+map for this trigger. Nothing broadcasts. The scoreboard's *trigger* criterion
+and the `/trigger` command are a different thing entirely ([scores, teams and
+stored data](../systems/commands/scoreboard-and-data.md#what-a-criterion-can-be-which-is-nearly-anything)).
+→ [advancements](../systems/commands/advancements.md#the-trace-stone-age)
 
 ## U
 
@@ -702,7 +765,7 @@ or a chat click event, sent through `ClientPacketListener.sendUnattendedCommand`
 The client re-parses it and asks first if it fails to parse, needs a signature,
 or needs a permission the client believes it lacks; a clean one goes without a
 prompt. A sign's command is not one of these — it runs on the server at
-gamemaster level and the client is never asked. → [permissions](../systems/commands/permissions.md)
+gamemaster level and the client is never asked. → [permissions](../systems/commands/permissions.md#asking-a-question-the-client-cannot-answer)
 
 ## V
 
@@ -712,13 +775,19 @@ from the server's own number. Not *simulation distance*, which is how far
 the world ticks. → [tickets and loading](../systems/world/tickets-and-loading.md)
 
 **VoxelShape** — the collision or outline volume of a block state, held as
-a set of boxes with fast merge and sweep operations. → [math and primitives](math-and-primitives.md)
+a set of boxes with fast merge and sweep operations. → [math and primitives](math-and-primitives.md#shapes-and-collision)
 
 ## W
 
 **Watchdog** — `ServerWatchdog`, the daemon that treats a tick longer than
 *max-tick-time* as a dead server: it writes a crash report, calls `System.exit`,
-and halts the JVM ten seconds later whether the shutdown finished or not. → [how a server dies](../systems/server/how-a-server-dies.md)
+and halts the JVM ten seconds later whether the shutdown finished or not. → [how a server dies](../systems/server/how-a-server-dies.md#the-watchdog-that-does-not)
+
+**Widget** — an `AbstractWidget`, the reusable piece of a screen: a button, a
+slider, an edit box. It is usually in all three of a screen's lists at once —
+the children that get input, the renderables that get recorded, and the
+narratables that get described.
+→ [GUI and screens](../systems/client/gui-and-screens.md#the-objects-and-what-contains-what)
 
 **Window** — the GLFW handle the whole client hangs off: the framebuffer
 size, the GUI scale, fullscreen, and the six window callbacks — not the input
@@ -728,13 +797,17 @@ ones, which `KeyboardHandler` and `MouseHandler` register. → [the window](../s
 in `Registries.WORLD_CLOCK`, two of them in vanilla, holding nothing at all.
 The tick count, the rate and the paused flag are
 `ServerClockManager.ClockInstance`'s, one per clock, and `/time` can move or
-pause each independently. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md)
+pause each independently. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#who-owns-the-clock)
 
 **World gen settings** — `WorldGenSettings`: a `WorldOptions` (the seed,
 *generate structures*, *bonus chest*) and the `LevelStem` map, a `SavedData`
 written to *data/minecraft/world_gen_settings.dat*. It is the only part of world
 generation that is saved; everything else Part XII reads is re-read from the
-enabled packs on every world open. → [creating a world](../systems/worldgen/creating-a-world.md)
+enabled packs on every world open. → [creating a world](../systems/worldgen/creating-a-world.md#the-object-and-what-is-not-in-it)
+
+**World-limited** — a parse-time flag, set by any of seven positional
+selector options, that confines a selector's resolve to the source's own
+level instead of every level on the server. → [entity selectors](../systems/commands/entity-selectors.md#resolve-which-levels-which-structure-which-order)
 
 **World preset** — a `WorldPreset` registry entry holding one `LevelStem`
 per dimension; what the world-type button selects, and what *level-type*
@@ -743,10 +816,6 @@ names on a dedicated server. → [creating a world](../systems/worldgen/creating
 **World stem** — `WorldStem`, the four things `WorldLoader.load` hands the
 server constructor in one bundle: the resource manager, the reloadable server
 resources, the layered registries, and the level data with its gen settings. → [starting a server](../systems/server/starting-a-server.md)
-
-**World-limited** — a parse-time flag, set by any of seven positional
-selector options, that confines a selector's resolve to the source's own
-level instead of every level on the server. → [entity selectors](../systems/commands/entity-selectors.md)
 
 **WorldGenRegion** — the bounded, write-guarded view of the world a
 generation step is given; it throws rather than loading a chunk, which is

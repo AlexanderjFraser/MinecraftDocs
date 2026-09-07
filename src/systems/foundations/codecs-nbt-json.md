@@ -351,7 +351,15 @@ on the wire it survives in exactly two places, both outside the play phase:
 `ClientboundStatusResponsePacket` and `ClientboundLoginDisconnectPacket`,
 sent through `ByteBufCodecs.lenientJson`. That is why the game ships two
 JSON parsers — `LenientJsonParser` for the wire and `StrictJsonParser` for
-data packs. Chat text itself is NBT by the time it reaches the play phase:
+data packs. Neither is where most JSON reading happens, though. `GsonHelper`
+is the toolbox — sixty-nine static helpers, each pulling one typed field out
+of a parsed object and naming the field in the exception when it is missing or
+the wrong shape — and it is the *pre-codec* way of reading JSON, still called
+from 109 places that were never converted: the model loaders, the particle
+definitions, the server list, the data fixers. It has no place in a
+codec pipeline, which is the point; a field it reads is read by a hand-written
+parser and a field a codec reads is not. Chat text itself is NBT by the time
+it reaches the play phase:
 `ComponentSerialization` holds that whole matrix in one class
 ([text components](text-components.md#serialisation-one-codec-three-shapes)).
 

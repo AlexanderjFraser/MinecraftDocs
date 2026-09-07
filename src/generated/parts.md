@@ -8,9 +8,9 @@
 | VI · Entities | `world/entity`, `network/syncher`, `world/level/pathfinder`, `world/damagesource`, `world/effect`, minus `world/entity/player` | 755 | 0 | 110,407 |
 | VII · Items and inventories | `world/item`, `world/inventory`, `world/level/storage/loot` | 507 | 0 | 45,289 |
 | VIII · The player | `world/entity/player`, `world/food`, `ServerPlayer`, `client/player` | 29 | 9 | 8,135 |
-| IX · Networking | `network`, `server/network`, `client/multiplayer`, minus `network/syncher` | 496 | 63 | 39,434 |
-| X · The client | `client` (itself only), `client/gui`, `client/multiplayer`, `client/sounds`, `client/resources`, `client/player`, `client/input`, `client/server` | 689 | 689 | 93,640 |
+| IX · Networking | `network`, `server/network`, `client/multiplayer`, minus `network/syncher` | 484 | 51 | 38,482 |
+| X · The client | `client` (itself only), `client/gui`, `client/multiplayer`, `client/sounds`, `client/resources`, `client/player`, `client/input`, `client/server` | 677 | 677 | 92,688 |
 | XI · Rendering | `client/renderer`, `client/model`, `client/particle`, `com/mojang/blaze3d` | 1,254 | 1,254 | 93,012 |
 | XII · World generation | `world/level/levelgen`, `world/level/biome` | 451 | 0 | 45,749 |
 | XIII · Commands and data packs | `commands`, `server/commands`, `server/dialog`, `server/permissions`, `server/bossevents`, `advancements`, `gametest`, `world/scores`, `client/gui/screens/dialog` | 470 | 17 | 43,126 |
-| **the thirteen parts, with the shared packages counted twice** | | 5,902 | 2,037 | 645,916 |
+| **the thirteen parts, with the shared packages counted twice** | | 5,878 | 2,013 | 644,012 |

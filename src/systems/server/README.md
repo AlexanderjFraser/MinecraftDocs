@@ -20,8 +20,10 @@ That is a small system to know so much about. Counting the four packages
 part, the way it counts everything else, it is
 {{#include ../../generated/part-server.md}} — and over half of those lines
 are `net/minecraft/server/level`'s forty-two classes, at nearly three hundred
-lines apiece, because the objects that own a world are few and enormous. One
-of them, `MinecraftServer`, is most of this part's first three pages.
+lines apiece, because the objects that own a world are few and enormous.
+`MinecraftServer` is not among them — it sits a package up, in
+`net/minecraft/server`, which is why the atlas counts it under Part I — and it
+is most of this part's first three pages anyway.
 
 ## The shape of the part
 

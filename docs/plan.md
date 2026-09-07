@@ -40,7 +40,11 @@ pass has **one lens**, since pass 4 showed that a session sees what it is
 looking for and nothing else: what the writing session knew it had changed
 came back clean, and what it did not know was where the errors lived.
 
-**Pass 5 — the book — is running.** Its charter is below at the level of
+**Pass 5 — the book — is done** (2026-09-07, sessions A–O), and its record is
+[pass5-brief.md](pass5-brief.md), which holds the charter, the rulings, the
+runbook and the schedule with what each session did — the archive a finished
+pass gets, kept there rather than in `pass5.md` because that name was already
+the queue four passes draw on. Its charter is below at the level of
 intent; its brief, runbook, standard and schedule are
 [pass5-brief.md](pass5-brief.md), written by the 2026-09-05 planning session
 with the tools it names (`pass5_dups.py`, `pass5_coverage.py`,
@@ -289,6 +293,75 @@ links, and with it the ruling that the glossary **does** disambiguate; eight
 entries added, three second senses, and the two-owner reductions A5 ordered.
 **No tool bug**, the eighth pass-5 session without one.
 
+**Session O is done** (2026-09-07, the close), and it is the session that
+proves the lens was still finding things on the last day. Four reader agents:
+the introduction, `lectures.md`, **the thirteen landing pages read as one set**
+— the reading no session in the project had done, because each landing page was
+rewritten by its own part's session and no session ever saw all thirteen — and
+the glossary entry by entry. **Twenty corrections**, of which **thirteen were
+one page contradicting another**, the shape of every session in this pass:
+`entity-anatomy` had `EntityType.trackDeltas` inverted against Part IX's page,
+calling a predicate that is true of every type but ten "a hard-coded list of
+types whose velocity is never sent at all"; the introduction listed the OpenAL
+backend, the debug-drawing API and the recipe book as things "in the jar and not
+in the parts" where the skips page it summarises says, in its own headings, that
+all three are taught; **four landing pages made a size claim their own generated
+number denies** — the smallest part of the book is Part I and not Part VIII, the
+largest thing on the client is Part XI by classes and Part X by lines, Part IX
+is not "the whole of `net/minecraft/network`", and Part XIII's catalogue is
+under a third of it and not most; and `lectures.md` called Part II a stack where
+its landing page argues *not a stack but a fan*, sent lighting's dependents to
+the wrong part, gave a menu broadcast a third place whose owner says it does not
+broadcast, and stated the owner's confirmation of the lecture order as something
+that has already happened. **Three prose copies said the parts figure draws no
+arrows out of Parts I and II, and the figure draws two** — corrected on both
+pages and in the gate's own comment. The glossary got eight headwords, **twenty-
+seven more anchored arrows** (73 of its links now land on a section rather than
+a page top), two arrows repointed, four two-owner entries reduced to one owner
+and three senses marked. **The audit of the pass's own queue is the finding
+about the pass itself**: of the forty entries still tagged `book` and unstruck,
+**twenty-six had been settled by a later session and never struck**, eight were
+never open at all (pass-3 cut logs the queue tool's guesser routes to `book`),
+and six were genuinely open — five closed here and one routed to pass 10 with a
+reason. Pass 4's failure mode was a strike that settled nothing; pass 5's is the
+opposite, a settlement never struck. `docs/pass9.md` was in neither the order
+nor the heading form it states for itself, and pass 9 reads it first, so both
+are fixed. **The nineteenth tool bug of the project, and the second in this pass
+that had published a falsehood**: `map_source.py`'s `SKIPPED` was missing
+`net/minecraft/client/multiplayer/chat/report`, so twelve classes and 952 lines
+the book itself declares skipped were counted into Parts IX and X by every size
+sentence, every landing page's coverage answer and every coverage report the
+pass ran.
+
+### What pass 5 did, and whether it was worth it
+
+Fifteen sessions. **171 corrections** in the fourteen that counted them, and the
+number that matters is not the total but the shape: session after session, about
+half of them were **one page contradicting another**, which is the error a
+page-at-a-time reading cannot see and which two fact-checks over 102 pages did
+not find. Pass 4 read every page against the source and left 171 places where
+two pages disagreed with each other. That is the answer to whether the lens
+earned its cost.
+
+Beside the corrections: every part's landing page rewritten to a stated role and
+given an argument; the coverage question asked once per part with a tool and
+answered in writing, including in the four places the answer was *this is
+deliberately not explained, and here is why*; seven parts that arrived with no
+anchors at all left with them; the book's duplication pairs settled one at a
+time, with the loser keeping a sentence and a link; three new generated
+Reference views built and cited; and **the gates grew by truth three times** —
+`check_links.py` became a deploy gate on day one, `check_deps.py` gained two
+checks in session A and a fourth in session N, and each new check shipped with a
+probe proving it fails on the construct it should. Four tool bugs, of which two
+had published a falsehood and one had been hiding failures.
+
+What pass 5 did not fix, and named instead: the landing pages grew past their
+own budget while gaining their argument (median 127 lines outside the watch
+order against a hundred, and the growth is the coverage section every part now
+carries); the recognition device became a slot on nine of thirteen; and the
+coverage *fraction* is hand-counted on seven landing pages beside a size that is
+generated. All three are in [pass5.md](pass5.md) for pass 6.
+
 ## The passes
 
 | pass | what | lens | status |
@@ -297,8 +370,8 @@ entries added, three second senses, and the two-owner reductions A5 ordered.
 | **2 — completeness and accuracy** | every claim adversarially fact-checked; gaps filled; pages split and added freely | the adversary with the source | done, 2026-09-01 — [pass2.md](pass2.md) |
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
-| **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | **running** — session A done 2026-09-05; charter below; queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts; a page that reads as one lecture's notes | the reader with only the page | after 5 |
+| **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts; a page that reads as one lecture's notes | the reader with only the page | **next** — charter below; queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -407,7 +480,7 @@ Standing rules for passes 5 to 8, the restructuring and refining passes:
 
 ---
 
-## Pass 5 — the book (next)
+## Pass 5 — the book (done, 2026-09-07)
 
 **Goal:** the corpus reads as one book. Every idea has one home and one
 name and every other mention is a sentence and a link; every seam between
@@ -515,32 +588,84 @@ lecture map re-derived, the glossary's owner links, the moves' redirects
 under the link gate, [pass9.md](pass9.md)'s entries checked for shape, the
 pass's own strikes audited, and pass 6's charter detail.
 
-## Pass 6 — the lecture
+## Pass 6 — the lecture (next)
 
 **Goal:** each page is one lecture's notes — in the shape of its story,
 opening inside the scenario on a hook that holds, its trace the spine and
 its figure the artefact, reading differently from its neighbours, speakable
 in a sitting.
 
-**The jobs:** the devices that became slots — the *Questions players ask*
-closer on 69 of the 102 pages in five spellings (four parts use it on every
-page; session P's rule of thumb, at most half a part, stands until a session
-says why not), the literal `## The trace: …` heading on twenty pages, the
-bold or dashed sentence that ends the opening paragraph on most of the
-corpus, the *for a 1.21-era reader* blockquote as a fixed slot, and the
-second person, which opens more than half the pages and is ratified or
-reversed corpus-wide in session A, not page by page; the skeleton groups
-session P listed, varied one of each; the section order, where a fact fix
-left the exception before the rule or the concession inside the hook; the
-cuts — the length bill pass 2 deferred and pass 3 recorded page by page,
-with each drafter's own cheapest cut already logged and Parts IV and VII
-fattest; the completeness lists for the four Reference catalogues; every
-page-shape finding in [pass5.md](pass5.md). The agent is **a reader with
-nothing but the page**, asked four questions — where did you get lost, what
-did you have to read twice, what did the page assume you already knew, and
-what did you skip — and the session decides. Each part session ends by
-re-syncing the landing page's and `lectures.md`'s blurbs to the pages as
-they now stand.
+**The queue it draws on**, counted afresh at pass 5's close:
+[pass5.md](pass5.md) holds **158 entries of kind `lecture`**, spread over
+every part (Part VII 16, Part IX 15, the frame and Reference 15, Part XIII 14,
+Part VI 13) — up from 149 before session O added the landing pages' findings.
+`python tools/pass5_queue.py --kind lecture --part <dir>` is the per-part
+checklist, and 198 of the file's 524 open units still carry a guessed kind, so
+a session tags what it finds misrouted as it reads.
+
+**The jobs.**
+
+1. **The devices that became slots**, all re-measured at the close so the pass
+   starts from numbers rather than from memory:
+   - the *Questions players ask* closer on **69 of the 102** system pages, in
+     **seven** spellings (63 of them the canonical one). **Three parts use it on
+     every page** — IV (10/10), V (7/7), VIII (7/7) — and two more nearly do:
+     XII 9/10 and II 6/7. Session P's rule of thumb, at most half a part, stands
+     until a session says why not, and the parts that already sit near it (VI
+     3/9, VII 3/8, XIII 5/9) are the evidence that it can be met.
+   - the literal `## The trace…` heading on **20** pages, where the rule is that
+     a heading says what its section says and not which slot it fills.
+   - the *for a 1.21-era reader* blockquote on **42** pages, a fixed slot in a
+     fixed place.
+   - the bold or dashed sentence that ends the opening paragraph, on most of
+     the corpus.
+   - **the second person**, which opens **26** of the 102 pages outright and
+     runs through many more. Ratified or reversed **corpus-wide in session A**,
+     not page by page.
+   - **on the landing pages, two more**: the recognition sentence — *A player
+     recognises the part by &lt;noun&gt;: four symptoms* — on **nine of the
+     thirteen**, and on five of those the argument paragraph's last sentence, so
+     the paragraph ends on a list instead of a claim; and the phrases that have
+     become labels (*the part's closer*, *the part's policy page*, *and not
+     optionally*, *the vocabulary page*).
+2. **The skeletons**, varied one of each: the groups session P listed, plus the
+   twin openings session O found across the thirteen landing pages.
+3. **The section order**, where a fact fix left the exception before the rule or
+   the concession inside the hook.
+4. **The cuts**, which this pass has a fresh and specific bill for. The length
+   bill pass 2 deferred and pass 3 recorded page by page still stands, with each
+   drafter's own cheapest cut logged and Parts IV and VII fattest — and beside
+   it, **the thirteen landing pages, which grew through pass 5 while gaining
+   their argument**: `TEMPLATE.md` budgets about a hundred lines outside the
+   watch order, the corpus median has moved from 90 to **127**, and only Parts
+   I, II and IV are inside it (XII is at 178). Almost all of the growth is the
+   coverage section, so the cut is not a trim: **the seventh section wants a
+   place in `TEMPLATE.md` first** — it is now on twelve of the thirteen, in five
+   positions and three forms, carrying the size on four and not on five — and
+   the trim follows from the shape.
+5. **The completeness lists** for the four Reference catalogues.
+6. **Every page-shape finding in [pass5.md](pass5.md)**, checked against the
+   page before it is acted on.
+
+**The agent** is **a reader with nothing but the page**, asked four questions —
+where did you get lost, what did you have to read twice, what did the page
+assume you already knew, and what did you skip — and the session decides.
+
+**The rhythm** is pass 5's, which worked: a planning session (Fable) builds the
+prompt tool and writes the brief; session A settles the corpus-wide rulings the
+part sessions apply — for this pass, the second person, the closer's rule, the
+1.21 blockquote's register and place, and the landing page's seventh section in
+`TEMPLATE.md` — then B–N take the parts in sidebar order and O closes. Each part
+session ends by re-syncing its landing page's and `lectures.md`'s blurbs to the
+pages as they now stand, and **session O checks the thirteen**, which is where
+pass 5 found thirteen of its last twenty corrections.
+
+**Two warnings from pass 5's close, both about the queue rather than the pages.**
+A settlement that is not struck is invisible: twenty-six of pass 5's forty open
+`book` entries had been done and left standing, so **a session strikes as it
+settles, in the same commit**. And a strike must sit outside the bold —
+`- ~~**text**~~`, not `- **~~text**~~` — or `pass5_queue.py` cannot see it; two
+entries hid that way for a whole pass.
 
 **Not:** facts; a figure beyond what a reshaped section needs; voice.
 
@@ -1337,5 +1462,14 @@ plan as it stood at its close)*
   passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather than left in the
   log.
 - *From session J on, a part session's record is the "Session … is done"
-  paragraph under **Where we are** above, which is where sessions J, K, L and M
-  wrote theirs; this list is not continued in parallel.*
+  paragraph under **Where we are** above, which is where sessions J to O wrote
+  theirs; this list is not continued in parallel.*
+- **2026-09-07, session O — the close. Pass 5 is done.** Its record is
+  [pass5-brief.md](pass5-brief.md), whole: the charter, the rulings session A
+  made, the runbook every session ran, and the schedule with what each of the
+  fifteen did. What the pass found, what it left and whether it was worth it are
+  under **Where we are** above; what it left for later is in
+  [pass5.md](pass5.md) by kind and in [pass9.md](pass9.md) as claims to check
+  first. **Pass 6 — the lecture — is next**, and its charter is below with the
+  devices counted afresh at the close. The next session is pass 6's planning
+  session (Fable), which builds `pass6_prompts.py` and writes the brief.*

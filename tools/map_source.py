@@ -54,6 +54,7 @@ SKIPPED = (
     "com/mojang/realmsclient", "net/minecraft/realms", "net/minecraft/stats", "net/minecraft/gizmos",
     "com/mojang/blaze3d/audio",
     "net/minecraft/references",
+    "net/minecraft/client/multiplayer/chat/report",
 )
 
 # The hierarchies drawn as trees, in the order the parts teach them.

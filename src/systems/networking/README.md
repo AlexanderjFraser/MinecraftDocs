@@ -122,7 +122,8 @@ pages' figures use.
 ## Where the part stops
 
 Part IX's packages hold {{#include ../../generated/part-networking.md}} —
-the whole of `net/minecraft/network`, `server/network` and `client/multiplayer` — and the number is
+`net/minecraft/network` less `network/syncher`, which is Part VI's, plus
+`server/network` and `client/multiplayer` — and the number is
 misleading in a way worth stating, because **this part owns the wire, not
 everything in `network/`**. About two thousand of those lines are
 `network/chat`, which is `Component` and is [Part

@@ -5,8 +5,8 @@ stable content. Each part's landing page lists its lectures in watching
 order and says in a line what each one is; this page assembles the thirteen
 orders and states the dependencies between them — where a later part is
 assumed by an earlier one, and what to watch first because of it. It was
-drafted in pass 3, one part per session, and is confirmed by the owner, who
-reads every part with the decompile open, before anything is recorded.
+drafted one part per session, and the owner confirms it — reading each part
+with the decompile open — before anything is recorded.
 Nothing in [Reference](reference/README.md) is watched, and nothing in the
 [maps](maps/README.md) is: the maps are looked at once, the reference pages
 are looked up, and a lecture links into them wherever a viewer would pause
@@ -15,10 +15,14 @@ the video to read a table.
 Because the subject here is the order, nothing below describes a lecture.
 What each one is about is said once, on its part's landing page; what is
 here is what the order needs — the shape of each part, the lectures that
-must be watched together or in a fixed sequence, and the three that are
-worth taking out of turn: *environment attributes and timelines* before Part
-III, *contexts and predicates* before Part XIII's advancements, and *the
-client loop* before Part XI.
+must be watched together or in a fixed sequence, and the three worth taking
+out of turn: [environment attributes and
+timelines](systems/world/environment-attributes-and-timelines.md) before Part
+III, [contexts and predicates](systems/items/contexts-and-predicates.md)
+before Part XIII's advancements, and [the client
+loop](systems/client/the-client-loop.md) before Part XI. Only the first is a
+departure from the sidebar order; the other two are pages a viewer coming for
+one part alone has to fetch.
 
 The one rule that holds everywhere: **each part assumes only the parts
 before it**, and where that is not true the section says so and names the
@@ -34,8 +38,9 @@ at the end, draws the whole graph.
 
 ## II · Foundations
 
-Part II is a stack, watched bottom-up; each page is the machinery the one
-above it assumes.
+Part II is a fan, watched bottom-up: codecs and registries are underneath
+everything else, and the five pages above them are largely independent of one
+another.
 
 1. [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md)
 2. [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
@@ -44,9 +49,6 @@ above it assumes.
 5. [Data components](systems/foundations/data-components.md)
 6. [Text components](systems/foundations/text-components.md)
 7. [The data-driven type pattern](systems/foundations/data-driven-types.md)
-
-[Math and primitives](reference/math-and-primitives.md) is not a lecture;
-it is Reference, and the parts link into it.
 
 ## III · The server
 
@@ -88,17 +90,14 @@ watched in any order once the vocabulary page is done.
    pipeline](systems/world/chunk-generation-pipeline.md) — Part XII is the
    cargo on this conveyor and cannot be watched before it.
 5. [Lighting](systems/world/lighting.md) — inside the chain, but nothing
-   later in this part assumes it; Part XI does.
+   later in this part assumes it; Parts IX and X do.
 6. [Chunk storage](systems/world/chunk-storage.md)
-7. [Scheduled ticks](systems/world/scheduled-ticks.md) — Part V's redstone
-   lecture assumes this one, and so does the next.
+7. [Scheduled ticks](systems/world/scheduled-ticks.md) — two of Part V's
+   redstone lectures assume this one, and so does the next.
 8. [Fluids](systems/world/fluids.md)
 9. [Game events and vibrations](systems/world/game-events-and-vibrations.md)
 10. [Points of interest](systems/world/points-of-interest.md) — Part VI owns
     the brain; this owns the index it reads.
-
-[Level data and rules](reference/level-data-and-rules.md) is not a lecture;
-it is Reference, and this part and Part III both link into it.
 
 ## V · Blocks
 
@@ -122,9 +121,8 @@ the six are one lecture in two halves.
 
 Part V's two click lectures are the applications of [prediction and
 acknowledgement](systems/client/prediction-and-acks.md) in Part X, and that
-page's own scenario needs this part's vocabulary. The dependency is
-circular and this book cuts it here: both click pages open with the same
-statement of the contract, and the machinery waits for Part X.
+page's own scenario needs this part's vocabulary. The dependency is circular
+and this book [cuts it here](#the-dependencies-between-parts).
 
 ## VI · Entities
 
@@ -132,8 +130,8 @@ Part VI is a ladder, and nothing in it can be reordered without breaking
 something.
 
 1. [Entity anatomy](systems/entities/entity-anatomy.md)
-2. [Authority](systems/entities/authority.md) — short, and the one page most
-   often skipped.
+2. [Authority](systems/entities/authority.md) — short, and the rung the rest
+   of the ladder leans on hardest.
 3. [Entity lifecycle](systems/entities/entity-lifecycle.md) — assumes
    [tickets and loading](systems/world/tickets-and-loading.md) for what
    *entity-ticking* means.
@@ -155,8 +153,9 @@ something.
 
 Part VI must precede Part VIII, which is the player half of nearly every
 page here, and it should precede Parts IX and X, both of which lean on
-*authority*. It assumes Part IV for what makes an entity tick at all and
-Part V for what it collides with.
+*authority*. It assumes Part III first — half this part's surprises are claims
+about which phase of the tick something ran in — then Part IV for what makes an
+entity tick at all and Part V for what it collides with.
 
 ## VII · Items and inventories
 
@@ -169,9 +168,9 @@ all and could come first.
 1. [Items and stacks](systems/items/items-and-stacks.md) — assumes [data
    components](systems/foundations/data-components.md) completely.
 2. [Using an item](systems/items/using-an-item.md)
-3. [Containers and menus](systems/items/containers-and-menus.md) — needs all
-   three of Part III's and Part VIII's tick pages for *when* a broadcast
-   happens: the drain, the level's entity phase, and the player's second half.
+3. [Containers and menus](systems/items/containers-and-menus.md) — needs both
+   of Part III's tick pages for *when* a broadcast happens: the packet drain
+   at the top of the tick, and the level's entity phase.
 4. [Recipes](systems/items/recipes.md)
 5. [Enchantments](systems/items/enchantments.md)
 6. [Enchanting](systems/items/enchanting.md) — watch it directly after
@@ -193,8 +192,8 @@ watch out of order.
 
 Part VIII is a trunk and four branches: two lectures on what a player is and
 when it runs, then five more on what a player does, in four independent
-groups. Only one group has an internal order — the spear is the sword
-swing's sequel.
+groups. Two groups have an internal order: the two-phase tick follows player
+anatomy, and the spear is the sword swing's sequel.
 
 1. [Player anatomy](systems/player/player-anatomy.md) — the vocabulary
    lecture.
@@ -240,10 +239,10 @@ same wire watched from the receiving end.
 ## X · The client
 
 Part X is a hub and its spokes, and the spokes are cadences rather than
-stages. Nothing here hands off to anything; every page after the first
-answers "when in the client's one loop does *this* happen". Watch the hub
-first and then take the rest in any order that suits — except the two pairs
-noted below.
+stages. With one exception, nothing here hands off to anything; every page
+after the first answers "when in the client's one loop does *this* happen".
+Watch the hub first and then take the rest in any order that suits — except
+the three groups noted below.
 
 1. [The client loop](systems/client/the-client-loop.md) — the hub, and the
    page every other page in the part leans on.
@@ -321,11 +320,11 @@ owns the system this part only consumes.
 A substrate, a pipeline, and a wing — and the wing runs first while being
 watched last. The ten lectures below run against the chunk status ladder
 rather than along it: a structure is *decided* at
-`ChunkStatus.STRUCTURE_STARTS`, two statuses before the biomes and terrain it
-will stand in exist, and writes no block until `ChunkStatus.FEATURES`, three
-statuses after the noise fill — so keeping the three structure lectures
-together at the end costs one forward reference and buys a whole arc in one
-place.
+`ChunkStatus.STRUCTURE_STARTS`, two statuses before the biomes it will stand
+in exist, and writes no block until `ChunkStatus.FEATURES`, three statuses
+after the noise fill — so keeping the three structure lectures together at the
+end costs three of the earlier pages a forward topic and buys a whole arc in
+one place.
 
 1. [Density functions](systems/worldgen/density-functions.md)
 2. [Biomes](systems/worldgen/biomes.md)
@@ -395,8 +394,10 @@ advancements need for every trigger and selectors for one option.
 
 Every arrow below is a *before you start* entry on a landing page: the part
 at the tail is one the part at the head assumes, and not optionally. The
-two dependencies every part shares are drawn as boxes but not as edges,
-because their arrows would reach almost every node — Part I's [anatomy](systems/anatomy/anatomy.md), for
+two dependencies every part shares keep their boxes and the one arrow each
+along the spine, and have the rest of their arrows left off, because those
+would reach almost every node — Part I's
+[anatomy](systems/anatomy/anatomy.md#four-threads-worth-memorising), for
 the threads every diagram's lanes are on, and Part II's
 [codecs](systems/foundations/codecs-nbt-json.md) and
 [registries](systems/foundations/identifiers-and-registries.md), assumed
@@ -437,8 +438,8 @@ saying it is not an authority either, which needs
 Ten pages carry most of the graph — nine rows below, because the two server
 ticks are one dependency in two lectures. The membership rule is
 mechanical: **a page that two or more landing pages name under *before you
-start***, less the three every part assumes, which are the boxes the figure
-draws without edges. A viewer who has watched these ten can take the parts
+start***, less the three pages those two universal parts contribute, which are
+the boxes whose other arrows the figure leaves off. A viewer who has watched these ten can take the parts
 they belong to in almost any order; a viewer who skips one of them will
 find a later part's first surprise unexplained.
 
@@ -454,13 +455,14 @@ find a later part's first surprise unexplained.
 | [The data-driven type pattern](systems/foundations/data-driven-types.md) | II | XII, XIII — the *type* field in a data-pack file and the registry it dispatches on; these two parts own most of its instances |
 | [Text components](systems/foundations/text-components.md) | II | IX, X — what a chat message and a screen's label are before anything draws them |
 
-Three more pages are a single part's dependency, and each is named in that
-part's *before you start* rather than here: [blocks and
+A dozen or so other pages are named by exactly one landing page, and each
+belongs in that part's *before you start* rather than in this table. Three are
+worth saying out loud anyway, because a viewer coming for one part alone most
+often has to fetch them from elsewhere in the book: [blocks and
 states](systems/blocks/blocks-and-states.md) before Part VI, [contexts and
 predicates](systems/items/contexts-and-predicates.md) before Part XIII's
-advancements, and [the client loop](systems/client/the-client-loop.md)
-before Part XI. The last two are the ones a viewer coming for that part
-alone most often has to fetch from elsewhere in the book.
+advancements, and [the client loop](systems/client/the-client-loop.md) before
+Part XI.
 
 Watched straight through, the sidebar order still needs one departure from
 itself, and it is now as small as it can be: *environment attributes and

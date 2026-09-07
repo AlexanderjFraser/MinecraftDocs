@@ -255,7 +255,21 @@ knowing: `HopperBlockEntity` moves one item and then sets a cooldown, so a
 hopper chain runs at two and a half items a second however often it is ticked.
 The eight ticks are written as a literal at both sites that set it;
 `HopperBlockEntity.MOVE_ITEM_SPEED` holds the same number and nothing reads it.
-Every other block entity in
+The two spawners are the other cadence worth knowing, and they are the block
+entities that keep their whole personality outside themselves.
+`SpawnerBlockEntity` holds an anonymous `BaseSpawner` and hands it the tick;
+the delay, the spawn count, the required player range and the rolled
+`SpawnData` all live on the `BaseSpawner`, which is not a `BlockEntity` at all.
+Both sides tick it, and they run different methods: `BaseSpawner.serverTick`
+does the spawning, and `BaseSpawner.clientTick` runs its own copy of the
+countdown to spin the cube and drop smoke and flame — a local animation, never
+a packet, and both are gated on `BaseSpawner.isNearPlayer`, so a spawner with
+nobody in range neither spins nor fires. `TrialSpawnerBlockEntity` is the same
+arrangement with a state machine on top: its `TrialSpawner` holds a
+`TrialSpawnerState` and a `TrialSpawnerStateData`, and the block entity holds
+the `TrialSpawner` ([entity
+lifecycle](../entities/entity-lifecycle.md#the-other-ways-in) owns what either
+one spawns and under which reason). Every other block entity in
 the sub-package is one of the shapes on this page — four hooks, a ticker handed
 out per level, one of the five save shells, and the create-keep-replace-remove
 lifecycle — with different fields in the middle.

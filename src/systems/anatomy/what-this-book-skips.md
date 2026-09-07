@@ -29,7 +29,11 @@ leaks.
 Each entry below says what the thing is, roughly how big it is, whether the
 dedicated server ships it, one fact worth knowing, and where to start
 reading. The treemap deliberately does not hatch `net/minecraft/gametest`:
-Part XIII covers it, so it is a gap that closed rather than a skip. The
+Part XIII covers it, so it is a gap that closed rather than a skip. It cannot
+hatch player reporting either, which is why the table has fifteen top-level
+rows against the map's fourteen hatched boxes: the map's smallest box is a
+package four levels deep, and `net/minecraft/client/multiplayer/chat/report`
+is six, sitting inside a package Parts IX and X between them own. The
 counts in the table are files, so a *package-info.java* counts as a class
 there and not in the prose below.
 

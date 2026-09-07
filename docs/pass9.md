@@ -44,6 +44,1546 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 5, session O — the close: the frame, the summarisers and the pass's own queue *(2026-09-07)*
+
+*Pass 5's closing session. Four reader agents: one on the introduction, one on
+`lectures.md`, one on the thirteen landing pages read as one set (a brief
+written this session — no session in the project has read all thirteen
+together), and one on the glossary's owner links entry by entry. The session's
+own work was the audit: the forty explicitly-tagged `[kind=book]` entries still
+open in [pass5.md](pass5.md) checked one at a time against the corpus, and
+`docs/pass9.md`'s own shape. Everything below is either a claim this session
+introduced or a correction it made with the decompile open; the corrections
+come first.*
+
+### Corrections — what the page said, what the decompile says
+
+1. **`entities/entity-anatomy`:393 — what `EntityType.trackDeltas` is.** The
+   page called it "a hard-coded list of types whose velocity is never sent at
+   all". `EntityType.trackDeltas` (`EntityType.java`:447-449) is a method
+   returning `true` for every type *except* ten named ones, so the page had the
+   sense of the name inverted; and velocity is not "never sent" for those ten,
+   because `ServerEntity.sendChanges` takes the delta branch when
+   `Entity.needsSync` is set or a `LivingEntity` is elytra-flying
+   (`ServerEntity.java`:206-217), and `Entity.hurtMarked` sends a motion packet
+   outside the branch entirely (:267-269). Page against page:
+   `networking/what-the-client-is-told`:222 had it right as "a hardcoded
+   exclusion list". Now "a third parameter, `EntityType.trackDeltas`, which is
+   true of every type but ten", with the roster left to its owner.
+
+2. **`introduction`:148 — three things called skipped that the skips page says
+   are taught.** The introduction listed "the data generators, statistics and
+   the recipe book, the OpenAL audio backend and two packages nobody will
+   recognise" as "all in the jar and not in the parts".
+   `anatomy/what-this-book-skips` says the opposite of three of them, in its own
+   headings: `com/mojang/blaze3d/audio` is "hatched for its *address* rather
+   than for being unread" and "is taught, in Part X, by the sound engine"
+   (:363-376); `net/minecraft/gizmos` "is taught where its output is, in Part X"
+   (:272-283); and `RecipeBook`, `RecipeBookSettings` and `ServerRecipeBook`
+   "are not skipped, they are recipes'" (:263-268). The frame is the summariser
+   and the page wins: the introduction's list now names player reporting and the
+   id-constant tables instead, and a following sentence says the page tours
+   three things that are not skipped and why.
+
+3. **`anatomy/README`:11 — what a non-class lane stands for.** "The handful
+   that are not stand for a thread." `check_lanes.py --strict` prints nine word
+   lanes, and four of them are not a thread: `Disk` (the save on disk), `Game`
+   (the game's own code above Blaze3D), `JVM` (the process) and `Wire` (the
+   network between the two programs). `reference/README`:68 already said "the
+   nine that mean a thread, a process or a boundary instead". Now "the nine that
+   are not are a thread, a process, or the boundary between the two programs".
+
+4. **`server/README`:23 — `MinecraftServer` among `server/level`'s forty-two.**
+   The sentence read "over half of those lines are `net/minecraft/server/level`'s
+   forty-two classes … One of them, `MinecraftServer`, is most of this part's
+   first three pages." `MinecraftServer.java` is in `net/minecraft/server`, one
+   package up, and `map_source.py`'s `PARTS` counts it under Part I. Now says so
+   explicitly and keeps the point.
+
+5. **`player/README`:125 — "the smallest part of the book".** Part VIII is 29
+   classes and 8,135 lines; Part I is **7 classes and 6,770 lines**, smaller by
+   both measures (`src/generated/part-player.md`, `part-anatomy.md`). Now "the
+   smallest part of the book with a system in it", naming Part I as the
+   exception.
+
+6. **`rendering/README`:24 — "the largest thing on the client by a distance".**
+   Part XI is 1,254 classes and 93,012 lines; Part X is 677 and **93,640**. By
+   lines Part X is larger; by classes Part XI is nearly double. Now "the largest
+   thing on the client, by classes and by a distance — nearly twice Part X's, in
+   about the same number of lines". (The comparison the sentence goes on to make,
+   420 classes and 53,000 lines for the whole of `net/minecraft/server`, was
+   re-derived and is right: 420 files, 52,720 lines.)
+
+7. **`networking/README`:125 — "the whole of `net/minecraft/network`".**
+   `map_source.py`'s Part IX subtracts `net/minecraft/network/syncher` and gives
+   it to Part VI, which `entities/README`:21 states from its side. "Whole" is
+   what made it false rather than loose; now "less `network/syncher`, which is
+   Part VI's".
+
+8. **`commands/README`:126 — "Most of this part by line is the catalogue".**
+   The catalogue the page sizes four lines earlier is 102 files and 12,781 lines
+   of a part that is 43,126 — under a third. Now "Not quite a third of this part
+   by line is the catalogue rather than the machinery, and it is where the
+   unexplained lines are."
+
+9. **`lectures.md`:88 — lighting's consumer is not Part XI.** "Inside the
+   chain, but nothing later in this part assumes it; Part XI does."
+   `check_links.py --inbound src/systems/world/lighting.md` lists twelve links
+   from eight pages and **no page under `systems/rendering/`** among them;
+   `rendering/README`'s *before you start* does not name it either. The pages
+   that lean on it are `networking/what-the-client-is-told` (twice) and
+   `client/the-client-level`. Now "Parts IX and X do".
+
+10. **`lectures.md`:171 — the three places a menu broadcast happens.** The map
+    said containers and menus "needs all three of Part III's and Part VIII's
+    tick pages … the drain, the level's entity phase, and the player's second
+    half". `items/containers-and-menus`:325-336 gives the third place as
+    `ServerPlayer.doTick`, "driven by the connection after every level has
+    finished", which "repeats only the `AbstractContainerMenu.stillValid`
+    distance test, **without a broadcast**". Two broadcasts, both Part III's.
+    Now "needs both of Part III's tick pages … the packet drain at the top of
+    the tick, and the level's entity phase".
+
+11. **`lectures.md`:322 — "two statuses before the biomes and terrain".**
+    `worldgen/README`:74 says "two statuses before the biomes it will stand in
+    exist"; terrain (`ChunkStatus.NOISE`) is further down the ladder than
+    `ChunkStatus.BIOMES`, so one count cannot cover both. "And terrain" dropped.
+
+12. **`lectures.md`:325 — "costs one forward reference".**
+    `worldgen/README`:80-83 prices the same trade at "three of the six pages
+    before the structure arc reach for the beardifier before the page that owns
+    it". Now "costs three of the earlier pages a forward topic".
+
+13. **`lectures.md`:37 — Part II called a stack.** `foundations/README`:15 says
+    "Part II is **not a stack but a fan**. Codecs and registries are underneath
+    everything else here, and the five pages above them are largely independent
+    of one another — which is why the figure has two roots and no single
+    column", and its figure has two roots. The only place in the book where two
+    copies of a shape sentence contradicted rather than merely differed. The map
+    now says fan, and Part XIII keeps *a stack of three floors* alone.
+
+14. **`lectures.md`:195 — Part VIII's groups with an internal order.** "Only
+    one group has an internal order — the spear is the sword swing's sequel",
+    three lines above the map's own entry "the two-phase tick — watch it
+    immediately after *player anatomy*", and against `player/README`:104-106,
+    which declares two pairs. Now "Two groups have an internal order".
+
+15. **`lectures.md`:242 — "Nothing here hands off to anything".**
+    `client/README`:18 says the same sentence "with one exception, noted below",
+    the exception being the GUI stack, which the map itself then describes.
+    Corrected, and "except the two pairs noted below" became "the three groups",
+    because `client/README`:123-126 declares three (two and three; six to nine;
+    ten and eleven, the two halves of sound).
+
+16. **`lectures.md`:396 and `introduction`:76 — the figure's own arrows.** Both
+    said Parts I and II are drawn "as boxes but not as edges" / "left off".
+    `src/figures/parts-dependency.md`:16 is `P1 --> P2 --> P3`, and both edges
+    are real declared dependencies (`foundations/README`:45,
+    `server/README`:53-59) that `check_deps.py`'s first check requires. Three
+    prose copies against one figure. Both pages now say the two keep their boxes
+    and the one arrow each along the spine and have the rest left off; the same
+    correction went into `check_deps.py`'s comment at :392.
+
+17. **`lectures.md`:457 — "Three more pages are a single part's dependency".**
+    Read against the thirteen landing pages, about a dozen pages are named by
+    exactly one; the sentence claimed an enumeration and meant a selection.
+    Rewritten as a selection with the reason for the three it names.
+
+18. **`lectures.md`:8 — the lecture order "is confirmed by the owner".** Stated
+    in the present tense as a completed fact; [plan.md](plan.md) books the
+    owner's confirmation for **before pass 9**. Now written as what happens
+    rather than what has happened.
+
+19. **`reference/glossary`:461 — occlusion "a shape question a `BlockState`
+    caches".** `reference/math-and-primitives`:141 says the occlusion shape is
+    **not** in `BlockBehaviour.BlockStateBase.Cache`; the decompile agrees —
+    `BlockBehaviour.BlockStateBase.initCache` builds the `Cache` only for a
+    block without a dynamic shape (`BlockBehaviour.java`:896-897) and sets
+    `occlusionShape` on the state itself unconditionally (:901-915). Now "a
+    shape question every `BlockState` precomputes — a field on the state itself
+    rather than anything in its shape cache", with the link to the page that
+    owns the distinction.
+
+20. **`blocks/README`:29 — "the sculk family is game events and vibrations'".**
+    That page owns the sensor, the shrieker and the catalyst as *listeners*;
+    `SculkSpreader` (387), `SculkVeinBlock` (211), `SculkBlock` (109) and
+    `SculkBehaviour` (54) are named on no page in the book. Corrected to name
+    the three the other page owns, and the gap declared (below).
+
+### The claims this session introduced
+
+**`introduction`** — the part list names all thirteen parts, where it named ten
+systems for thirteen and called Part III by the title of one of its pages; the
+landing page's role is stated as the six things `TEMPLATE.md` requires, where it
+stated three; the Maps paragraph now separates the generated figure and table
+from the hand-written prose, which is the distinction `maps/README`:10-20 makes
+load-bearing; the Reference paragraph says twenty-three pages (the count
+`reference/README`:9 states and `SUMMARY.md` lists), links the tier's own front
+page, `reference/threads` and `reference/class-index` for the first time, and
+says "rather more than half" are regenerated (thirteen of twenty-three, per
+`reference/README`'s own figure); the gates paragraph names the sidebar and the
+Reference shelf's *parts* column, which `check_deps.py` gained in pass 5's
+sessions A and N; the anatomy link takes the owner's anchor.
+
+**`anatomy/what-this-book-skips`** — a new clause saying the table has fifteen
+top-level rows against the treemap's fourteen hatched boxes, because the map's
+smallest box is a package four levels deep and
+`net/minecraft/client/multiplayer/chat/report` is six.
+
+**`entities/entity-lifecycle`** — a new subsection, *The variant that same
+method picks*: seven species (`Chicken`, `Cow`, `Pig`, `Cat`, `Frog`, `Wolf`,
+`ZombieNautilus`) call `VariantUtils.selectVariantToSpawn` from their own
+override of `Mob.finalizeSpawn`; `PriorityProvider.select` unpacks every
+variant's `SpawnPrioritySelectors`, sorts by priority descending and keeps only
+entries at or above the highest priority whose condition passed, and
+`PriorityProvider.pick` then chooses uniformly at random among those; a selector
+with no condition always matches; `SpawnConditions` registers `BiomeCheck`,
+`StructureCheck` and `MoonBrightnessCheck`; and the shipped
+*cat_variant/all_black.json* uses priority 1 for the swamp-hut structure and 0
+for a moon brightness of at least 0.9. The `Entity.RemovalReason.DISCARDED` row
+gained "a `ConversionType.SINGLE` conversion (`Mob.convertTo` adds the new mob,
+then discards the old — `ConversionType.SPLIT_ON_DEATH` keeps it)", which pays
+off `points-of-interest`:375's link.
+
+**`blocks/block-entities`** — a new passage in *Loaded is not enough to tick*:
+`SpawnerBlockEntity` holds an anonymous `BaseSpawner` and hands it the tick, the
+delay and spawn count and required player range and rolled `SpawnData` live on
+the `BaseSpawner`, which is not a `BlockEntity`; `BaseSpawner.serverTick` and
+`BaseSpawner.clientTick` are different methods and the client one runs its own
+copy of the countdown to spin the cube and drop smoke and flame, both gated on
+`BaseSpawner.isNearPlayer`; and `TrialSpawnerBlockEntity` is the same
+arrangement with `TrialSpawnerState` and `TrialSpawnerStateData` on top.
+
+**`foundations/codecs-nbt-json`** — a new clause: `GsonHelper` is sixty-nine
+static helpers, each pulling one typed field out of a parsed object and naming
+the field in the exception, and it is called from 109 places outside its own
+file that were never converted to codecs.
+
+**`blocks/README`** — a new paragraph declaring the sculk spread machine as the
+one mechanism in Part V's two packages that no page explains, with the reason
+(its scenario is a mob dying on sculk, not a block hearing a neighbour) and the
+size (about 760 lines).
+
+**`reference/glossary`** — eight headwords added (*Feature flag*, *ItemStack*,
+*LivingEntity*, *MinecraftServer*, *Particle*, *Player*, *Random tick*,
+*Widget*), each a sentence drawn from the owner page and an anchored arrow;
+**twenty-seven more arrows given anchors**, so 73 of the file's links now land on
+a section instead of a page top; two arrows repointed (*Loot context* to
+`#inputs-then-one-invocation`, *ServerEntity* to
+`#one-entitys-tick-and-the-gates-it-does-not-pass`); four two-owner entries
+reduced to one owner (*Chunk layer* to `models-and-atlases`, *NoiseChunk* to
+`density-functions`, *StructurePiece* to `hand-built-structures`, *ServerPlayer*
+to `player-anatomy`), each keeping the loser's distinct half as a clause; three
+headwords marked for sense (*Batch* (game tests), *Trigger* (advancements),
+*Sensor* (brains)) with a link to the other sense; seven headwords moved into
+alphabetical order. 171 headwords, from 163.
+
+**`items/README`** — the Reference link that read "Enchantment helpers" is *The
+weapon helpers*, its real title, and "Two were written for it" introduced three.
+
+**`lectures.md`** — the two Reference asides cut (the rule is stated once at the
+top for all of Reference); the Part V/X cut reduced to a clause and a link to
+the section that states it in full; Part VI's dependency clause now leads with
+Part III; the *authority* blurb's "the one page most often skipped" replaced,
+because nothing in the project can know what a viewer skips; the three pages
+worth taking out of turn are linked at first mention and the one that is a
+departure from the sidebar order is distinguished from the two that are not.
+
+**`map_source.py`** — `net/minecraft/client/multiplayer/chat/report` added to
+`SKIPPED`, so the twelve classes and 952 lines the book declares skipped stop
+counting toward Parts IX and X. Part X moves from 689/93,640 to 677/92,688 and
+Part IX from 496/39,434 to 484/38,482; `parts.md` and both `part-*.md` phrases
+are regenerated. This is a claim about the population every landing-page size
+sentence and every coverage report is built on, so pass 9 should check it first.
+
+### The pass's own strikes, audited
+
+Forty entries in [pass5.md](pass5.md) carried an explicit `[kind=book]` tag and
+were still unstruck at the pass's close. Read one at a time against the corpus:
+**twenty-six were settled by a later session and never struck** (among them the
+`authority` ↔ `prediction-and-acks` citation session F routed to J, which J
+made at `authority`:22 and :116; the twenty-two anchors on `authority`'s inbound
+links, of which thirty links from twenty-one pages now carry one and only the
+summarisers do not; `reference/threads`' server-side never-hop table, built by
+session N; the two landing pages that hand-counted a size, both now
+`{{#include}}`; `util/worldupdate`, placed on `chunk-storage`:320-326 by session
+D; the boss bar, settled twice over by session M). **Eight were never open**:
+they are pass-3 cut logs and pass-3 session records that `pass5_queue.py`'s
+guesser routes to `book` because of the words in them. **Six were genuinely
+open**, and this session closed five (`GsonHelper`, the `SpawnCondition`
+hand-forward, the `SpawnerBlockEntity` hand-forward, the sculk gap, the
+`level-data-and-rules` ruling) and routed one forward with a reason. No strike
+this session examined had settled nothing — the failure mode in pass 5's queue
+was the opposite of pass 4's, an entry settled in the pages and left standing in
+the file.
+
+### The file's own shape
+
+`docs/pass9.md` said its entries are written "per session, newest first" and
+held them in the order I, H, G, F, E, D, M, A, planning, B, C, J, K, L, N —
+sessions appended at the top for six sessions and at the bottom for six more.
+Reordered to the stated rule, and the six headings written in three other forms
+normalised to `## Pass 5, session X — <part> *(date)*`. No entry's text changed.
+Pass 9 reads this file first, so its order is a claim like any other.
+
+## Pass 5, session N — Reference, the maps, and the frame's Reference-facing pages *(2026-09-07)*
+
+Sixteen pages read by one agent each — the eleven hand-kept Reference pages and
+the five maps; the ten generated Reference views were not read, because a
+generated page's claims are its generator's. Three new generated views were
+built. **Pages changed: 24.** Eleven of the corrections are on pages outside the
+tier, because almost everything the shelf holds is a fact some lecture also
+states.
+
+### Corrections (what the page said · what the decompile says · where)
+
+1. **`maps/README`:9-11** said "Nothing here is hand-counted … the pages are
+   regenerated with the figures each time the site is built, so a number on a
+   map cannot drift." Only `src/generated/` is regenerated (`tools/deploy.sh`:9,
+   `tools/map_source.py`); every number in the four map pages' **prose** is typed
+   by a session. Found independently by the `maps/README` and `maps/hierarchy`
+   reads. The paragraph now separates the generated half from the hand-written
+   half and says the version pass owes the sentences a re-read.
+2. **`maps/biggest`:29-30** — "`Entity`, `LivingEntity`, `Player`, `ServerPlayer`,
+   `LocalPlayer` and `Mob` are one chain of inheritance … each is the base of
+   everything below it." `Entity.java`, `LivingEntity.java`, `Avatar.java`,
+   `Mob.java`, `Player.java`, `ServerPlayer.java`, `LocalPlayer.java`: `Mob` and
+   `Avatar` are two of `LivingEntity`'s direct subclasses, `Player extends
+   Avatar`, `LocalPlayer extends AbstractClientPlayer`, and neither player leaf
+   is the base of anything. Rewritten as a trunk and a fork.
+3. **`maps/biggest`:33-34** — "the pages a reader of Part VI should expect to be
+   long" promises `Fox` and `Bee` pages the book does not have and has ruled out
+   (`systems/entities/README`:26-31). Re-aimed at that ruling.
+4. **`maps/biggest`:33** — "Only two concrete mobs make **the list**" is true of
+   the thirty the figure draws; the table below has forty rows and three more
+   mobs (`Panda`, `AbstractHorse`, `SulfurCube`). Now "the thirty".
+5. **`maps/fanin`:24-26** — "The thirty hubs … are seven, and Part II is the
+   first six of them." The table names 32 classes, 24 of them in the thirty; six
+   of the thirty are in no row; and by the table's own last column Part II
+   teaches three of the seven, Reference two and Part IX one. All three claims
+   corrected, and `maps/README`:19 carried the same "vocabulary Part II teaches"
+   sentence and was corrected with it.
+6. **`maps/fanin`:42-43** — "the client's hub is a hub for a quarter of the code,
+   and the shared three quarters never name it." The client-only side is 2,206 of
+   7,055 files (31%) and 212,242 of 719,302 lines (29.5%), both from
+   `maps/packages`:22-27. Now "under a third" and "the shared seven tenths".
+7. **`reference/README`:44-63** — the *parts* column was stale in **six of twenty
+   rows**, missing nine part numerals (registries ← IV; non-living-damage ← VIII;
+   threads ← VI; level-data-and-rules ← IX; naming-drift ← VII, X; glossary ← II,
+   V, VI). Derived from the thirteen landing pages' `## Reference this part uses`
+   sections and now enforced by `check_deps.py`.
+8. **`tools/gen_reference.py`, the registries blurb** — "Every registry key
+   declared in `Registries`", printed above a total of **153**. 148 are declared
+   in `Registries.java`; five are declared by their own class with the public
+   `ResourceKey.createRegistryKey` (`ServerFunctionLibrary`, `ClockTimeMarkers`,
+   `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) — which the
+   tool's own comment already recorded. The blurb now names them and cites the
+   lecture's 148.
+9. **`reference/threads`:69** — RCON starts "when *enable-rcon* **and**
+   *rcon.password* is set". `RconThread.create` (`RconThread.java`:61-76) also
+   returns null when *rcon.port* is outside 1–65535, and tests the port **first**.
+10. **`reference/threads`:65** — `Util.nonCriticalIoPool` is "the same shape" as
+    `Util.ioPool`. `Util.java`:110-111 passes `daemon=false` for *IO-Worker-* and
+    `daemon=true` for *Download-*, which is the one difference the new column is
+    about.
+11. **`server/server-tick`:107-117** — "the nine that do not divide into three
+    kinds", then a taxonomy accounting for **seven**. The nine are
+    `handlePingRequest`, `handleCustomPayload`, `handleChat`, `handleChatCommand`,
+    `handleSignedChatCommand`, `handleSignUpdate`, `handleEditBook`,
+    `handleChatAck` and `handleConfigurationAcknowledged`
+    (`ServerGamePacketListenerImpl.java`); the last two write listener state on
+    the Netty thread and were in no kind. Four kinds now.
+12. **`reference/level-data-and-rules`:219-221** — 29,999,984 attributed to the
+    integrated server. `MinecraftServer.getAbsoluteMaxWorldSize`
+    (`MinecraftServer.java`:1632) returns it; `DedicatedServer` overrides.
+13. **`reference/level-data-and-rules`:16-21** — "Four parts point here"; five do
+    (`networking/README`:117 is the fifth), which `check_deps.py` now enforces
+    from the shelf's side.
+14. **`worldgen/creating-a-world`:96-97** — `world_gen_settings.dat` is written
+    "beside *raids.dat*". `WorldGenSettings` goes into `MinecraftServer`'s
+    server-global `savedDataStorage` (`MinecraftServer.java`:355); `Raids` goes
+    into `ServerLevel.getDataStorage()` (`ServerLevel.java`:259), which is
+    per-dimension. Different folders; the clause is cut.
+15. **`reference/naming-drift`:42 and :383** — "Two hundred and forty-three rows",
+    twice. The thirteen part tables hold **245** (3+4+31+18+12+18+30+9+24+20+27+13+36).
+16. **`reference/naming-drift`:416-417** — the bullet still italicised
+    *Entity.hurt* as a name that is gone, against its own corrected table row.
+    `Entity.java`:2031-2040: `Entity.hurt` is a `@Deprecated` **final returning
+    void** that forwards to `Entity.hurtServer` only.
+17. **`reference/naming-drift`:290** — "`ByteBufferBuilder` → `MeshData`".
+    `BufferBuilder.build`/`buildOrThrow` produce the `MeshData`
+    (`BufferBuilder.java`:68-78); `ByteBufferBuilder` is the memory under it, which
+    is what `blaze3d`:354 says.
+18. **`reference/naming-drift`:496** — backticked `Minecraft.setScreen`, which
+    does not exist in 26.2 (`Minecraft.java` has only `setScreenAndShow`, and the
+    field lives on `Gui`). Italicised, as the page's own rule requires.
+19. **`rendering/the-window`:302-303** — "*ScreenManager*, which never existed
+    here" against `naming-drift`:313, which lists it as a rename. Whether an older
+    tree used the name is outside rule 3; the sentence now states only what 26.2
+    settles (monitor handling is `MonitorManager`) and cites the rename table.
+20. **`reference/math-and-primitives`:116** — "two things called `Axis`". Three:
+    `Direction.Axis`, `com/mojang/math/Axis`, `ChunkPalettedStorageFix.Axis`. Now
+    "two in scope", with the third named as out of it.
+21. **`reference/level-data-and-rules`:94-97** — `LevelResource.MAP_RESOURCE_FILE`
+    glossed nowhere and then, in this session's own first draft, as the map-id
+    counter. It is `resourcepacks/resources.zip` (`LevelResource.java`:15). Caught
+    before publishing and recorded because a fix is a claim.
+
+### Suspicions re-derived and found sound (no change, or a sharpening only)
+
+- **`reference/level-data-and-rules`:211-212** — "a fresh `WorldBorder` starts
+  with a warning time of 15, not 300." True and sharper than it looks:
+  `WorldBorder(Settings)` (`WorldBorder.java`:44-53) sets `warningTime = 15` and
+  stores the settings **without applying them**, so even a border built from
+  `WorldBorder.Settings.DEFAULT` (whose `warning_time` is 300) is live at 15.
+- **`maps/fanin`:45** — "all but ten of the files that import `Schema` are in
+  `util/datafix`." Exactly ten, and all ten are in its sibling `util/filefix`;
+  the page now says where they are.
+- **`maps/biggest`:44** — `SoundEvents` grouped with the catalogues-written-as-code.
+  1,668 `SoundEvent` constants, one `register(...)` per line.
+- **`maps/biggest`:42** — "`FriendlyByteBuf` is the buffer both read from."
+  `RegistryFriendlyByteBuf extends FriendlyByteBuf`, so play's buffer is one.
+- **`reference/glossary`, the "five headwords the corpus does not use"** (pass-4
+  session O). Re-measured with whitespace normalised: **four**, not five, and all
+  four are compound noun phrases the corpus writes in pieces. Ruled to stand; the
+  original count was a line-wrap artefact.
+
+### Claims introduced (check these first)
+
+**Three new generated views** (`tools/gen_reference.py`, each read off the
+decompile or the shipped data on every deploy; the numbers below are what the
+generator printed on 26.2 and will move on a version bump):
+
+- `reference/spawn-reasons.md` — 19 reasons, **11 tested somewhere, 20 test
+  sites**, and a *classes that pass it* count per reason. The claim behind the
+  view is that a "test" is a comparison against the constant and everything else
+  is a pass-through; the enclosing method is found by walking up to the nearest
+  access-modifier-led signature. **Eight reasons are tested by nothing**, and all
+  but two comparisons are inside `Mob.finalizeSpawn` — both stated on
+  `entities/entity-lifecycle`.
+- `reference/weapon-helpers.md` — 7 helpers, **42 items**. The claim: an item
+  reaches a helper directly (`sword`, `pickaxe`, `spear`) or through the class
+  that wraps it (`AxeItem`, `HoeItem`, `ShovelItem` each call theirs in `super`),
+  and "components it sets" follows one hop into `ToolMaterial`.
+- `reference/structure-spawn-overrides.md` — **34 structures carry
+  `spawn_overrides`, six fill it in, 23 overrides, 18 of them empty.** The claim
+  that an empty spawn list is a *ban* rather than a no-op is the view's argument
+  and is stated on `entities/entity-lifecycle` too.
+
+**New prose claims:**
+
+- `reference/threads` — a *daemon* value for every row: Render thread and *main*
+  no (they are the JVM's), Server thread no (`MinecraftServer.spin`), Netty yes
+  (`EventLoopGroupHolder.createThreadFactory` sets it), Worker-Main yes
+  (`ForkJoinPool`, and `how-a-server-dies`:217-220 already said so), IO-Worker
+  **no** and Download yes (`Util.java`:110-111), sound engine yes
+  (`SoundEngineExecutor.createThread`), watchdog/console/management yes, timer
+  hack yes, RCON and query **no**. Plus: RCON and query poll on a **500 ms**
+  socket timeout (`RconThread.java`:82, `QueryThreadGs4.java`:277) and
+  `RconClient` sets `setSoTimeout(0)`, so it does not poll at all.
+- `reference/threads` — a new *main* row for the dedicated server, and a nine-row
+  table of the server handlers that never hop, with what each does on Netty.
+- `reference/threads` — the closing section cut from four rules to one paragraph
+  with three citations; the claim introduced is that `BlockableEventLoop.managedBlock`
+  is `server-tick`'s to own, not this page's.
+- `reference/level-data-and-rules` — a thirteen-row `LevelResource` table.
+- `reference/submit-phases` — `TranslucentSubmit` declares one method,
+  `TranslucentSubmit.distanceToCameraSq`, and **five** of the thirteen renderers'
+  nested *Submit* records implement it (`BlockModelFeatureRenderer`,
+  `ItemFeatureRenderer`, `ModelFeatureRenderer`, `MovingBlockFeatureRenderer`,
+  `NameTagFeatureRenderer`).
+- `reference/glossary` — eight new entries (*Occlusion* with four senses, *Loot
+  context*, *Loot condition*, *Parameter set*, *Data-driven type*, *ServerPlayer*,
+  *Status effect*) and second senses added to *Frame*, *Criterion* and *Level*.
+  The *Occlusion* entry's four senses are each a claim.
+- `reference/README` — the tier's argument re-aimed from *what regenerates it* to
+  *how it survives a version bump*, and a paragraph saying the last column is
+  gated.
+- `maps/README` — a new mermaid figure of the atlas's own pipeline, whose node
+  labels ("eight SVG figures", "six tables", "the thirteen per-part size
+  phrases") are counts of `src/generated/`.
+- `reference/hud-elements` — "this is the whole of what a screen contributes to
+  the record", which answers pass-4 session O's *three or four strata* question
+  in the negative and is the session's own reading of `Gui.java`:183-207.
+
+### Rulings
+
+- **The shelf's *parts* column is derived, not kept.** `check_deps.py` gained a
+  fourth `F` check with a probe; the rule is the column header's own words.
+- **`hud-elements`' contextual bar keeps two rows.** The ordering *is* the fact.
+- **The glossary disambiguates**, for a word the corpus itself uses in more than
+  one sense, and the entry is the disambiguation (A5's rule, applied to
+  *Occlusion*, *Frame*, *Criterion* and *Level*).
+- **`MapItemSavedData`, `MapIndex` and `WanderingTraderData` stay named-only** —
+  declared on the table rather than given a lecture. To [pass3.md](pass3.md) §7.
+- **`starting-a-server` keeps its boot thread table**; only the per-thread
+  properties moved to the shelf.
+
+## Pass 5, session M — Part XIII · Commands and data packs *(2026-09-07)*
+
+All ten pages of the part rewritten — `commands/README`,
+`commands/brigadier-and-commands`, `commands/permissions`,
+`commands/entity-selectors`, `commands/the-execution-engine`,
+`commands/functions-and-macros`, `commands/advancements`,
+`commands/scoreboard-and-data`, `commands/dialogs`, `commands/game-tests` —
+plus eight pages elsewhere: `foundations/data-driven-types`,
+`foundations/resource-system`, `items/contexts-and-predicates`,
+`networking/README`, `blocks/README`, `client/hud`, `reference/glossary` and
+`src/lectures.md`. The part owns no hand-kept Reference page of its own.
+
+### Claims introduced
+
+**`commands/scoreboard-and-data` — a new section, *The third sink is a boss
+bar, and it is this page's shape again*.** Every sentence in it is new to the
+book; `BossEvent`, `ServerBossEvent`, `CustomBossEvent`, `CustomBossEvents`
+and `BossBarCommands` were named on no page before this session.
+
+- "A boss bar is a named server-side thing holding a number, saved with the
+  world, broadcast to the players attached to it, and writable only by a
+  command."
+- `BossEvent` is "an id, a name, a *progress* float from zero to one, a
+  `BossEvent.BossBarColor`, a `BossEvent.BossBarOverlay`, and three booleans
+  that ask the client to darken the screen, play the boss music and draw the
+  world fog" (`BossEvent.java`:11–18).
+- `ServerBossEvent` "adds the live membership — a `Set<ServerPlayer>` — and
+  turns every setter into a broadcast" (`ServerBossEvent.java`:18, 29–101).
+- "one `ClientboundBossEventPacket` with six operations, add and remove and
+  one update apiece for progress, name, style and properties"
+  (`ClientboundBossEventPacket.java`:118–122, the `OperationType` enum).
+- "There is no serverbound counterpart, exactly as there is none for a score."
+- "Four things in the game own one: `WitherBoss`, `Raid`, `EnderDragonFight`
+  — and `CustomBossEvent`" (the four files that name `ServerBossEvent`).
+- `CustomBossEvent` "keeps an integer `CustomBossEvent.value` and an integer
+  `CustomBossEvent.max`, derives the float progress from them on every write"
+  (`CustomBossEvent.java`:26–27, 77–87).
+- The membership claim: a persisted `Set<UUID>` beside the superclass's live
+  set, `CustomBossEvent.onPlayerConnect` re-attaching a player whose UUID is
+  on the list and `CustomBossEvent.onPlayerDisconnect` calling the
+  superclass's removal "deliberately so that the UUID stays"
+  (`CustomBossEvent.java`:25, 211–219). **The word *deliberately* is an
+  inference from the shape of the override; pass 9 should decide whether the
+  book may say it.**
+- `CustomBossEvents` is "the `SavedData` that holds them, one file at
+  *data/minecraft/custom_boss_events.dat*", with capitalised NBT field names
+  (`CustomBossEvents.java`:38; `CustomBossEvent.Packed.CODEC`).
+- `ExecuteCommand.storeValue` is "a sibling of the score sink rather than the
+  same code" — which **corrects** the parenthetical it replaces.
+- `BossBarCommands` is "the write surface, at gamemaster"
+  (`BossBarCommands.java`:57).
+
+**`commands/entity-selectors` — a new section, *Two more argument types write
+the same fork by hand*** (discharges a `pass3.md` §7 entry).
+
+- `GameProfileArgument` "resolves to profiles, not entities"; an `@` "is
+  rejected outright if it includes non-players"; the literal side is "read to
+  the next space and looked up in the server's name-to-id cache — so `/ban`,
+  `/whitelist` and `/op` name a player who has never joined this session"
+  (`GameProfileArgument.java`:51–77; the five callers are `BanPlayerCommands`,
+  `DeOpCommands`, `OpCommand`, `PardonCommand`, `WhitelistCommand`).
+- "That lookup is the only thing on this page that leaves the game's own
+  data." **An absolute over this page's scope; pass 9 should test it.**
+- `ScoreHolderArgument`'s four literal branches "in order", the wildcard alone
+  throwing (`ScoreHolderArgument.java`:102–170).
+- "both enforce their single-or-many shape on the compiled selector rather
+  than on the text".
+- Elsewhere on the page: `EntityTypeTest` glossed as "the one-method 'is this
+  the type I asked for, and give it to me typed' the whole entity-fetching API
+  is generic over"; `Permissions.COMMANDS_ENTITY_SELECTORS` called "the **only
+  permission in the game checked in two different phases**" (moved here from
+  `commands/permissions`, where it was already asserted).
+
+**`commands/brigadier-and-commands`.**
+
+- A new paragraph on `SharedSuggestionProvider`: implemented by
+  `CommandSourceStack` and `ClientSuggestionProvider`; "most of its 355 lines
+  are static helpers"; `SharedSuggestionProvider.customSuggestion` "is the
+  packet on the client and a completed empty future on the server"
+  (`SharedSuggestionProvider.java`:32–50, and the two implementors).
+- A new paragraph on `CommandSource`, restoring what pass-3 session N cut:
+  four methods and four implementations; `RconConsoleSource.shouldInformAdmins`
+  deferring to *broadcast-rcon-to-ops*; `BaseCommandBlock`'s source gated on
+  `GameRules.SEND_COMMAND_FEEDBACK` and `GameRules.COMMAND_BLOCK_OUTPUT`,
+  "which is what those two game rules *are*"; "a command block that has been
+  broken accepts nothing at all" (the `closed` field);
+  `CommandSource.NULL` refusing everything. Files:
+  `CommandSource.java`:7–25, `RconConsoleSource.java`:44–56,
+  `BaseCommandBlock.java`:202–214, `MinecraftServer.java`:1889–1899.
+- **"The command block is `BaseCommandBlock` plus the `CommandBlockEntity`
+  that holds one: a `CommandSource`, a stored string and a redstone edge, and
+  no machinery of its own beyond this page's."** This is the sentence that
+  pays off `blocks/README`'s promise; it is a *scope* claim as much as a fact.
+- A new paragraph on the resource-argument family: six types "over the same
+  idea", differing in what they hand back and "in whether they accept a glob.
+  Only `ResourceSelectorArgument` does, which is why `/test run *` works and
+  `/give @s *` does not." Also the five `commands/synchronization/brigadier`
+  classes as "the only argument types in the game the game did not write".
+- `WorldCoordinates` as "three `WorldCoordinate`s, each a value plus a *is
+  this relative* flag".
+- A sign's click command "is never checked by the client, because it never
+  reaches the client at all" (the correction below).
+
+**`commands/advancements` — a new section, *What the package holds that this
+page does not name*.** The two family claims (thirty-five unnamed triggers;
+the concrete predicates as instances of the four shapes) and
+`CriterionProgress` as "a nullable timestamp, which is why the wire form can
+carry progress without carrying a single condition"
+(`CriterionProgress.java`:9). Also new: `TreeNodePosition` runs "in its
+*apply* half — the half a reload runs on the main thread, once per root,
+after the JSON has been read on a background one"
+(`SimplePreparableReloadListener.java`:14–23,
+`ServerAdvancementManager.java`:24, 36, 53).
+
+**`commands/functions-and-macros`.** The macro variable-name rule stated in
+prose for the first time — "inside `$(…)`, letters, digits and underscore and
+nothing else" (`StringTemplate.java`:50–55) — and the claim that a dialog's
+input keys obey the same rule. The caller list re-scoped (below).
+
+**`commands/the-execution-engine`.** `ExecutionControl` as "the (context,
+frame) pair with two methods … that pair is the whole privilege an action
+has" (`ExecutionControl.java`:6–25). And the reconciliation the book lacked:
+"the thread-local is null again the moment a queue drains, so two commands run
+back to back each open their own context, which is why every function in
+`#minecraft:tick` gets a budget of its own"
+(`Commands.java`:406–410, `ServerFunctionManager.java`:58–84).
+
+**`commands/permissions`.** `Permissions`' own nine, split "four to five"
+(`Permissions.java`:7–15). And the second route to a client's op level:
+"except on an integrated server, where
+`IntegratedServer.updatePermissionAndChatAbilities` writes the host's own
+`LocalPlayer` directly and no packet is involved"
+(`IntegratedServer.java`:343–353).
+
+**`commands/dialogs`.** The five dialog screens named as one family; the three
+bootstraps (`DialogBodyTypes`, `InputControlTypes`, `ActionTypes`),
+`StaticAction` and `DialogCommand` named.
+
+**`commands/game-tests`.** `TestCommand` at "572 lines of subcommands";
+`TestFinder` turning a subcommand's argument into `Registries.TEST_INSTANCE`
+ids; "the glob in `/test run *` is `ResourceSelectorArgument`, the one
+argument type in the game that takes one"
+(`TestCommand.java`:296–299); `GameTestTicker` and `TestInstanceBlock` named.
+
+**`commands/README` — a new *Where the part stops* section**, with three
+family declines and one written-out omission: "three unrelated routines do not
+make one lecture" (`SpreadPlayersCommand`, `CloneCommands`, `FillCommand`).
+Its packages sentence now names all nine, and its *Reference this part uses*
+paragraph re-scopes the traffic claim (below).
+
+**`reference/glossary` — a new headword, *Boss bar*.**
+
+**`src/lectures.md`** — Part XIII's dependency paragraph shortened to what is
+about the order, and its Part VII clause re-scoped from "for advancements
+alone" to advancements plus the selector's *predicate* option.
+
+### Corrections
+
+1. **`commands/scoreboard-and-data`** said "a score set and a crash a tick
+   later is a score lost". A tick-loop crash is not that ending:
+   `MinecraftServer.java`:877's *finally* runs `stopServer()` (:689), which
+   calls `saveAllChunks` (:733), whose **first statement** is
+   `this.scoreboard.storeToSaveDataIfDirty(…)` (:629). `how-a-server-dies`
+   says so in as many words at its opening and in *What you lose if you kill
+   the process*. Now: the watchdog kill, a *kill -9* or a power cut, with the
+   link to that section.
+2. **`commands/brigadier-and-commands`** listed a sign among the commands the
+   client vets through `ClientPacketListener.sendUnattendedCommand`.
+   `SignBlockEntity.executeClickCommandsIfPresent` calls
+   `Commands.performPrefixedCommand` **on the server** with a source it builds
+   itself at `LevelBasedPermissionSet.GAMEMASTER`
+   (`SignBlockEntity.java`:201–247) — which `commands/permissions` already
+   said. Now: a dialog button and a chat click event, with the sign named as
+   the exception.
+3. **`commands/permissions`' own figure** listed "a sign" in its entry node,
+   four lines above prose saying a sign does not come that way. Same evidence;
+   the node now reads "a dialog button, a chat click event".
+4. **`commands/functions-and-macros`** said `ServerFunctionManager.tick` "is
+   the **first** thing `MinecraftServer.tickChildren` does".
+   `MinecraftServer.java`:1206–1213: the method first suspends packet flushing
+   on every player, *then* opens the *commandFunctions* zone. `server-tick`'s
+   order table has the suspension as row one. Now: "the first profiler zone …
+   with only the suspension of every player's packet flushing ahead of it".
+5. **`commands/dialogs`** called `WaitingForResponseScreen`'s button an
+   "escape button" in one paragraph and a "Back button" in another. It is
+   built from `CommonComponents.GUI_BACK`
+   (`WaitingForResponseScreen.java`:14, 26). Now: Back, once.
+6. **`foundations/resource-system`** said connected clients after a `/reload`
+   "complete against the tree they were given until they reconnect". Both
+   server-side parses read `MinecraftServer.getCommands`
+   (`MinecraftServer.java`:1854–1856 → `this.resources.managers.getCommands()`;
+   `ServerGamePacketListenerImpl.java`:610 for suggestions), so a newly added
+   function *does* complete after a reload — which
+   `commands/brigadier-and-commands` says and this page contradicted. Now: it
+   is the tree's *shape* that goes stale, with the link.
+7. **`items/contexts-and-predicates`** said Part XIII's commands "own
+   `/execute if predicate`". No page in Part XIII mentions it; that page owns
+   its own trace of it. Now: the page owns the command, Part XIII owns the
+   engine it runs in and the selector option that is the second caller.
+8. **`commands/brigadier-and-commands`**' door table routed `LootCommand` and
+   `ItemCommands` to `loot-tables`, which names neither;
+   `contexts-and-predicates`:247–248 names both. Repointed, with
+   `loot-tables` kept for the functions themselves. *(pass5.md:3349,
+   session G)*
+9. **`foundations/data-driven-types`** routed `BuiltInRegistries.PERMISSION_TYPE`
+   and `PERMISSION_CHECK_TYPE` to `brigadier-and-commands`, which names
+   neither identifier; `commands/permissions` owns both. Repointed with
+   anchors. *(the last live row of pass5.md:424)*
+10. **`commands/brigadier-and-commands`** said `net/minecraft/server/commands`
+    is "a hundred classes and 12,800 lines" where the landing page and the
+    atlas say 102. Both count files; 102 is the generated number, and the
+    package has a `data/` subpackage that a flat `ls` misses. Now: "102 files",
+    naming the atlas as the population.
+11. **`commands/README`** said the part's traffic "is almost all server →
+    client". Its own `game-tests` page names two serverbound packets and
+    `advancements` a third, besides the two command packets. Now: the two
+    reporting systems are one-way and everything a player does comes back.
+12. **`commands/functions-and-macros`** called its caller list "short and
+    exhaustive" while omitting `execute if function` and `/return run
+    function`, both of which the engine page explains. Now: named, with the
+    link.
+13. **`commands/functions-and-macros`** cited `items/enchantments` for
+    `RunFunction`, which that page never names. Now: `RunFunction` is named
+    here as one of the `EnchantmentEntityEffect`s, with the link pointing at
+    the section that explains the effect families.
+
+### Suspicions re-derived and found sound
+
+- `commands/permissions`' "ninety-one gates that name a level constant,
+  sixty-six … sixteen … nine" against the same page's 95
+  `Commands.hasPermission` call sites. Both right: the arguments to those 95
+  calls are 66 gamemaster, 16 admin, 9 owner, two ternaries in `SeedCommand`
+  and `VersionCommand`, `GameModeCommand.PERMISSION_CHECK` and
+  `ClientPacketListener.RESTRICTED_COMMAND_CHECK`. **For pass 8:** whether the
+  two ternary gates "name a level constant" is left to the reader, and they do.
+- `commands/advancements`' "its only users are the six component predicates in
+  `core/component/predicates`". Exactly six of that package's classes
+  reference `CollectionPredicate`.
+- `commands/dialogs`' "thirty-one classes across four packages" — 35 files
+  less four `package-info.java`. Sound.
+- `commands/game-tests`' "forty-four classes" for `gametest/framework` — 45
+  files less one `package-info.java`. Sound. The 47 on
+  `anatomy/what-this-book-skips` is the atlas's file convention over the whole
+  `gametest` tree, not a disagreement. **For pass 8** (the two rules for the
+  word *classes*), not a correction.
+- `commands/game-tests`' `/test run *`. `TestCommand` registers `run`,
+  `runmultiple`, `runfailed`, `runthat`, `runthese` and `runclosest`; there is
+  no `runall`, and `run` takes a `ResourceSelectorArgument`.
+- `commands/permissions`' "three sources of belief". Sound as a taxonomy; the
+  integrated server's direct write is a second route into the first source,
+  and is now a clause rather than a fourth entry.
+
+### For pass 9's attention, found and not fixed
+
+- `commands/brigadier-and-commands` says the client's dispatcher is built
+  "from a tree the server sent you when you joined" and later that the tree's
+  only sender is `PlayerList.sendPlayerPermissionLevel`. Both were checked in
+  pass 4; the join path reaching that method was not re-derived here.
+- `commands/scoreboard-and-data`'s *Where to look* calls
+  `NbtPathArgument.NbtPath` "the nicest ten lines in the area", and
+  `commands/functions-and-macros` no longer says "three lines apart" — both
+  are line-level claims about decompiled formatting, which is not the
+  source's. The second is retired; the first is not, and is rule 2's problem
+  rather than a fact.
+- Two class-name collisions the book does not acknowledge:
+  `EntityDataAccessor` (`DataCommands`' accessor against the syncher key on
+  `entities/synched-entity-data`) and `EntitySelector` (the compiled query
+  against the predicate bag in `world/entity`, two pages apart in this part).
+  `commands/entity-selectors` names the second in *Where to look*; nothing
+  names the first. The verifier lists both among its 25 ambiguous names.
+- `commands/scoreboard-and-data` is linked from `foundations/data-driven-types`
+  for `BuiltInRegistries.NUMBER_FORMAT_TYPE` and names `NumberFormatTypes` but
+  not `NumberFormatType`; the page states the three kinds without stating the
+  pattern. Left as it stands.
+
+
+## Pass 5, session L — Part XII · World generation *(2026-09-07)*
+
+*All ten system pages, the landing page and `reference/density-function-nodes`
+rewritten; eleven pages in six other parts edited. Twelve reader agents, one
+per page; every finding acted on was re-derived by reading both pages, and
+every fact below was changed with the decompile open.*
+
+### Corrections
+
+- `worldgen/terrain`:231–233 said the carvers' lava level "is a constant in the
+  generator, not a data-pack field", **and the same page's own carve-state
+  paragraph at :210 called it *configured***. `CarverConfiguration.lavaLevel`
+  is a `VerticalAnchor` field on the configured carver
+  (`world/level/levelgen/carver/CarverConfiguration.java`:35, read at
+  `WorldCarver.java`:153). All four shipped configured carvers set it to
+  *above_bottom: 8* (`data/minecraft/worldgen/configured_carver/*.json`), which
+  is why it does not move with the sea level — it is anchored to the world's
+  bottom, not below its sea. The answer is rewritten to say that; :210 now
+  names the field.
+- `worldgen/terrain`:41–43 said `NoiseBasedChunkGenerator` "overrides
+  [`createBiomes`] only to use the chunk's cached sampler". The override
+  (`NoiseBasedChunkGenerator.java`:85–99) forks *and* builds the chunk's
+  `NoiseChunk` *and* wraps the biome resolver in `Blender` and
+  `BelowZeroRetrogen`. The whole fork inventory was Part IV's and is now a
+  citation; the three jobs are stated on `worldgen/biomes` instead.
+- `worldgen/biomes`:75 said "Only the noise generator does the above", where
+  "the above" includes the *init_biomes* fork drawn in the figure directly
+  over it. The base `ChunkGenerator.createBiomes`
+  (`ChunkGenerator.java`:121–126) forks for every generator; the override is
+  about the three lines below the fork. Rewritten, and it now agrees with
+  `terrain`.
+- `worldgen/density-functions`:17–18 called `DensityFunctions` "the library of
+  thirty-four node types you build one out of". Thirty-four is a count of
+  registered **ids** (`DensityFunctions.bootstrap`), not of classes: six ids
+  are one `DensityFunctions.Marker`, seven are one `DensityFunctions.Mapped`,
+  and *old_blended_noise* is `BlendedNoise`, which is not a `DensityFunctions`
+  member (`DensityFunctions.java`:56). Rewritten.
+- `worldgen/density-functions`'s *The six caches, and the three a single point
+  may use* named **two** single-point-safe classes in a section whose heading
+  promises three, and never named the sixth cache at all. The third is
+  `NoiseChunk.BlendDensity` (`NoiseChunk.java`:892–922), which tests no context
+  and answers from anywhere. Written in, with what it is.
+- `worldgen/blending`:320–322 said "Height and biome are **averaged** over
+  every measured column", where the page's own :260–268 says the biome answer
+  "is not a blend" and :328 calls it a threshold. Rewritten: both are drawn
+  from the same map at the same radius, the height averaged over it and the
+  biome taken from the nearest entry in it.
+- `worldgen/hand-built-structures`:90 called `MineshaftStructure`'s pre-filled
+  builder "the only *Either.right* in the game". `Either.right` is an everyday
+  idiom across the corpus; what is unique is the right branch of
+  `Structure.GenerationStub`'s own `Either` (`Structure.java`:250–253 — every
+  other construction takes the left). Rescoped.
+- `worldgen/structure-placement`:131 said "almost every later step in the
+  generation pyramid requires structure starts within eight", against
+  `terrain`'s "six of the generation steps". Six of the twelve, and they are
+  contiguous: `ChunkPyramid.GENERATION_PYRAMID` declares
+  `addRequirement(ChunkStatus.STRUCTURE_STARTS, 8)` on *STRUCTURE_REFERENCES*
+  through *FEATURES* and nowhere else. Rewritten as that range.
+- `worldgen/README`:14 said "the surface pass reads its neighbours' biomes" as
+  an example of generation reading the world. The pass that reads a
+  *neighbourhood* is the carvers (17×17 source chunks, `terrain`:191–197);
+  `SurfaceSystem.buildSurface` reads one biome per column, through
+  `biomeManager::getBiome` (`SurfaceSystem.java`:103, 114). Replaced with the
+  carvers.
+- `worldgen/biomes`' two-borders table listed the jittered read's users without
+  world generation. The surface rules read the biome through
+  `BiomeManager.getBiome`, the jittered entry point (`SurfaceSystem.java`:103).
+  The row gains the surface pass, and `terrain` now states which read it is.
+- `world/scheduled-ticks`:13 offered "a sapling sprouting after bonemeal" as an
+  example of a scheduled tick. `SaplingBlock.performBonemeal` calls
+  `SaplingBlock.advanceTree` in the same call (`SaplingBlock.java`:81–82) and
+  the un-bonemealed path is a *random* tick (:48) — the page's own contrast.
+  The same list's "a piece of amethyst budding" is also a random tick
+  (`BuddingAmethystBlock.java`:28). Replaced with a dispenser firing
+  (`DispenserBlock.java`:138) and a redstone torch burning out.
+- `worldgen/README`:170 said the level-data Reference page is "which lecture
+  nine links to"; the page that links it is lecture **ten**,
+  `creating-a-world`.
+- `worldgen/README` and `src/lectures.md` disagreed about how many statuses lie
+  between a structure being decided and its blocks being written — three
+  against four, from unstated baselines. Both now count from named statuses:
+  decided at `ChunkStatus.STRUCTURE_STARTS`, written at
+  `ChunkStatus.FEATURES`, three statuses after the noise fill.
+- `foundations/data-driven-types`:190 said the trace on
+  `features-and-placement` "walks a tree through all" nine feature sub-object
+  rows; five of the nine carry *trees* in their own *taught in* column and the
+  trace walks none of them. Split between the two pages.
+- `blocks/README`:34 handed "the command and structure blocks" to Part XIII,
+  which names neither. Split: the structure block to
+  `jigsaw-and-templates#where-a-template-comes-from` (written this session),
+  the command block left to Part XIII.
+- `reference/density-function-nodes`' deck advertised two of the page's four
+  sections; `reference/README`:56 and `worldgen/README`:160 copied the same
+  omission. All three corrected.
+
+### Suspicions re-derived and found sound (no change)
+
+- `worldgen/blending`:47 "the scan runs on the background executor" — correct.
+  `IOWorker.createOldDataForRegion` submits to `Util.backgroundExecutor()`
+  (`IOWorker.java`:98–126) and joins `scanChunk` from inside it; the IO lane is
+  underneath, not the submitting pool.
+- `worldgen/README`:12 "the decoration step reads block states, heights and the
+  carving mask through `PlacementContext`" — correct, and the class was named
+  on no page. `PlacementContext` has `getBlockState`, `getHeight`,
+  `getCarvingMask` and `topFeature`, and extends `WorldGenerationContext`.
+  Named on `features-and-placement` this session.
+- `features-and-placement`:222 "a structure and a feature at the same index in
+  the same step draw the *same* feature seed" — correct.
+  `WorldgenRandom.setFeatureSeed` is *seed + index + 10000 × step*
+  (`WorldgenRandom.java`:59–63) with no structure/feature discriminator, and
+  `ChunkGenerator.applyBiomeDecoration` restarts the index at zero for each
+  half (`ChunkGenerator.java`:356, 415).
+- `jigsaw-and-templates`:156 "never structure void, which
+  `JigsawReplacementProcessor` handles instead" — correct as far as it went,
+  and now stated more precisely: structure void never reaches a template,
+  because `StructureBlockEntity` excludes it when it saves
+  (`StructureBlockEntity.java`:380).
+- `hand-built-structures`:206 "the forty shipped processor lists between them
+  use four types" — correct. Forty files under
+  *data/minecraft/worldgen/processor_list/*, using rule (35), protected blocks
+  (7), block rot (6) and capped (4). Moved to `jigsaw-and-templates` with the
+  counts and the two class names the corpus lacked.
+- `trees`' "thirty-nine configured tree features" against
+  `what-this-book-skips`' "50 tree kits" — both correct, different
+  populations: 39 shipped *configured_feature* files of type *minecraft:tree*,
+  50 `ResourceKey<ConfiguredFeature>` constants on `TreeFeatures`. `trees` now
+  says which it counts and why the other number exists.
+
+### Claims introduced
+
+**`worldgen/density-functions`** — the fifteen router functions partition
+6 climate / 5 aquifer (its four noises plus *preliminary_surface_level*, which
+`Aquifer.NoiseBasedAquifer` samples per column) / 3 ore veins / 1 final
+density; `PerlinSimplexNoise`'s only three instances are `Biome`'s fixed-seed
+temperature noises; `SimplexNoise` is the End islands node's;
+`NoiseUtils.biasTowardsExtreme` has no callers, making it the fourth dead
+thing in the Q&A; all six installed classes carry `DensityFunction.fillArray`
+and `CacheOnce` keeps a second counter for it; the beardifier splice's
+consequence ("every noise dimension is beardified whether or not its router
+JSON mentions one") moved here from `terrain`.
+
+**`reference/density-function-nodes`** — *Bounds* rewritten from 36 lines of
+prose to an eight-row table plus one paragraph; the three wrap singletons
+became a table; two unregistered `DensityFunctions` members named as absent
+from the catalogue; the deck rewritten to admit four sections.
+
+**`worldgen/terrain`** — the aquifer reads five router functions, named; the
+surface rule tree is two registries of dispatched types
+(`SurfaceRules.RuleSource`, `SurfaceRules.ConditionSource`) and branches on
+the *jittered* biome read; `CaveWorldCarver`, `CanyonWorldCarver`,
+`CaveCarverConfiguration`, `CanyonCarverConfiguration` and
+`CarverDebugSettings` named; ore veins contrasted with `OreFeature`; the
+noise fill "holds every section across its noise range" (cited to
+`chunk-anatomy`).
+
+**`worldgen/biomes`** — `BiomeSources.bootstrap` registers four sources, all
+four named with what each is for; `BiomeResolver` named as the interface;
+`MultiNoiseBiomeSourceParameterList` and `MultiNoiseBiomeSourceParameterLists`
+named, two presets; `FillBiomeCommand` named; the probe's Gaussian pass is
+unconditional and the server passes no interpolator (moved to
+`world/environment-attributes-and-timelines`); the box blur moved to
+`client/the-client-level`; `BiomeColors` reaches the effects through four
+`ColorResolver`s with no probe in the path.
+
+**`worldgen/blending`** — the *For a 1.21-era reader* box moved to
+`reference/naming-drift`'s Part IV table as a row; the three counts (five
+consumers, four answers, three questions) reconciled in one clause.
+
+**`worldgen/features-and-placement`** — `PlacementContext` and
+`FeaturePlaceContext` named and what each carries; the fourth value-type rung
+(`BlockStateProvider`) added, with registered counts 14 / 6 / 8 for the
+predicate, height and state families; `SurfaceRelativeThresholdFilter` named as
+the fifteenth modifier; `PlacementFilter` defined over the chain's four
+filters; `FeatureCountTracker` behind `SharedConstants.DEBUG_FEATURE_COUNT`;
+*/place feature* named as the third door into `Feature.place`; the
+sixty-three-algorithm tail declined in writing; `Feature.NO_OP` separated from
+the five selectors.
+
+**`worldgen/jigsaw-and-templates`** — §7's three unnamed `JigsawStructure`
+fields written, with the shipped-data census: six structures set the expansion
+hack (five villages and the pillager outpost) and **exactly one** — trial
+chambers — sets either `DimensionPadding` (10) or `LiquidSettings`
+(*ignore_waterlogging*), and no shipped pool element overrides the latter;
+`JigsawStructure.MaxDistance` and `JigsawStructure.MAX_TOTAL_STRUCTURE_RANGE`
+explained as the free-space box and its load-time validation; the processors
+given their own section with the forty-list census, `ProtectedBlockProcessor`,
+`CappedProcessor`, `RuleTest`, `PosRuleTest` and `RuleBlockEntityModifier`; the
+three `TemplateSource`s and `TemplatePathFactory` written as *Where a template
+comes from*, with the first-source-wins rule; the **structure block** taken
+(save mode excludes structure void, load mode builds a `StructurePlaceSettings`
+with a `BlockRotProcessor` for integrity); `PoolAliasBindings`' three kinds;
+the debug flag named.
+
+**`worldgen/structure-placement`** — `StructurePlacement.getLocatePos` moved in
+from `hand-built-structures` as its own Q&A; the presence cache split into its
+own section, with the second feed (`ChunkStatusTasks.loadStructureStarts`)
+named; the per-chunk write split into its own section; `StructureType` and
+`StructurePlacementType` named; the figure's five boxes and the heading's count
+reconciled.
+
+**`worldgen/hand-built-structures`** — the `*Structure` wrapper family named as
+settings wrappers, with `RuinedPortalStructure`'s five decay setups and
+`DesertPyramidStructure.afterPlace`'s five-to-seven suspicious sand;
+`BuriedTreasurePieces` given a row in the four-families table;
+`WoodlandMansionPieces`' double membership explained; `StructurePieceType`
+named in the cast; "chunk workers" settled to the worldgen executor.
+
+**`worldgen/trees`** — the thirty-nine/fifty count scoped; the five registry
+type classes named; two counted headings renamed (*The trunk placers*, *The
+foliage placers*) so a release cannot break an anchor; the decorator heading
+corrected — the leaf pass does not undo the decorators, it is blocked by them.
+
+**`worldgen/creating-a-world`** — the stage list cut to a citation and the
+*consequence* kept; `FlatLayerInfo` and `FixedBiomeSource` named;
+`WorldOpenFlows.openWorld` given its own section, with `ChunkGenerator.validate`
+identified as one of its eight links; *Optimize World* pointed at
+`chunk-storage` rather than left with the declined half.
+
+**`worldgen/README`** — the size sentence is the include, with two boundary
+corrections (`PatrolSpawner`/`PhantomSpawner`, the Xoroshiro sources); the
+order argument made once instead of three times; the closer rewritten as an
+instruction; a *Where the part stops* section with the coverage answer — a
+quarter of the part's lines are one shape, an algorithm that writes blocks and
+adds no mechanism, and the head of each family is named; the verified line
+rewritten off lecture one's hook; the pass-number sentence cut.
+
+### For pass 9's attention, found and not fixed
+
+- `worldgen/blending`:162 says `BlendingData.pack` "omits the heights entirely
+  if none of them was ever measured", thirty lines after saying the codec
+  "validates the saved height array against" sixteen slots. Consistent only if
+  the field is optional; neither sentence says so.
+- `worldgen/jigsaw-and-templates` states 188 shipped pool files; the other two
+  data censuses on the part's structure pages (34 structure files, 40 processor
+  lists) were re-derived this session and this one was not.
+- `worldgen/creating-a-world`:280 hand-counts nineteen classes in
+  `client/gui/screens/worldselection`, which nothing regenerates.
+- `worldgen/biomes`:32's attribute counts ("twenty gameplay attributes … the
+  sixty-six vanilla biome files touch three … fifty-one touch none") against
+  `world/environment-attributes-and-timelines`:80 ("eleven attributes across
+  sixty-six biome files, with *visual/sky_color* in fifty-six of them"). The
+  two are reconcilable only under a silent *gameplay* scoping that neither
+  states. Both are data-pack censuses; pass 9 re-derives.
+- `worldgen/creating-a-world`:285 reaches a `LevelSummary` through
+  `LevelStorageSource.readLightweightData`, `reference/level-data-and-rules`:92
+  through `LevelStorageSource.readLevelSummary`, and
+  `server/starting-a-server`:156 through
+  `LevelStorageSource.LevelStorageAccess.fixAndGetSummaryFromTag`. Probably one
+  chain; the book does not say.
+
+## Pass 5, session K — Part XI · Rendering *(2026-09-06)*
+
+*Thirteen reader-of-the-book agents — one per page, the landing page and
+`reference/submit-phases` — and one whole-part read in watching order. Every
+finding acted on was re-derived against `reference/26.2` by the session
+itself. Corrections first, then the claims the session introduced, which pass
+9 checks before anything else.*
+
+### Corrections — what the page said, what the decompile says
+
+1. **`rendering/entity-rendering`:97** said "Visibility is **two tests in two
+   places**. The frustum test is `EntityRenderer.shouldRender`". That method
+   runs *two* tests, in order: `Entity.shouldRender(camX, camY, camZ)`, a
+   distance test scaled by the entity's bounding box, and only then
+   `Frustum.isVisible` (`EntityRenderer.java`:66–78). `block-entity-rendering`
+   :162 had it right and the entity page had it half right, so the sibling
+   taught the entity rule better than the entity page. Now **three tests in
+   two places**, with the distance half stated.
+2. **`rendering/post-processing`:12** said "every chain this game will ever
+   load is named by a constant in Java, and there are only six of those",
+   while its own :251 said three of the six are "built inside
+   `GameRenderer.checkEntityPostEffect`". Three are `static final` fields
+   (`LevelRenderer.java`:99–100, `GameRenderer.java`:92); the other three are
+   inline `Identifier.withDefaultNamespace` literals in a switch
+   (`GameRenderer.java`:213–223). The page contradicted itself; the claim it
+   wants — the set of ids is closed and written in Java — survives, and now
+   says three constants and three literals.
+3. **`reference/submit-phases`:64** said a quad-particle group is submitted
+   **once** and lands in two phases. `SubmitNodeCollection.submitQuadParticleGroup`
+   (`SubmitNodeCollection.java`:250–253) builds **two** separate
+   `QuadParticleFeatureRenderer.Submit` records, one into `solid` and one into
+   `afterTerrain`. `particles`:287 said twice and was right; the Reference page
+   said once and was wrong. Now "reaches the collector in one call and becomes
+   two nodes".
+4. **`rendering/the-window`:197** said "An atlas is assembled into one with
+   `NativeImage.copyRect`, `NativeImage.resizeSubRectTo` and
+   `NativeImage.fillRect`". None of the three assembles an atlas.
+   `copyRect`/`fillRect` are used by `Unstitcher` (a sprite *source*, before
+   any stitch), `CubeMapTexture` and `SkinTextureDownloader`;
+   `resizeSubRectTo` has exactly one caller in the game,
+   `GameRenderer.java`:512, the world-icon downscale. The atlas is assembled
+   on the GPU, which `models-and-atlases`:219 already said. Rewritten to what
+   the methods do, with a sentence saying what an atlas is *not*.
+5. **`rendering/visibility-and-the-frame-graph`:61** said
+   `LevelExtractor.applyFrustum` "is the last thing *extract* does".
+   `LevelExtractor.extract` (`LevelExtractor.java`:96–141) runs it near the
+   *top*, right after `prepareDispatchers`, and everything after it —
+   entities, block entities, dirty sections — reads the list it just filled.
+   Three other pages depend on that order. Rewritten to "runs near the top of
+   extract", and the consequence stated as the finding it is.
+6. **`rendering/models-and-atlases`:298** said the display block-model table
+   is used by "item frames, **block entities** and ten entity renderers". No
+   block-entity renderer reads it. `BlockModelResolver` reaches the
+   block-entity side only as a field of `BlockEntityRendererProvider.Context`
+   (`BlockEntityRenderDispatcher.java`:102), which nothing under
+   `renderer/blockentity` or `renderer/special` calls. Eleven entity
+   renderers read it and nothing else does. The sentence is cut (the table is
+   now `block-entity-rendering`'s) and the owner states the `Context` fact.
+7. **`rendering/lightmap-fog-and-sky`:324** said "the weather reads neither
+   clock nor attribute, seeding each column from its own coordinates" — while
+   the same page's opening (:15) said the rain's texture scrolls off the raw
+   world clock. `WeatherEffectRenderer` passes `level.getGameTime()` into both
+   `createRainColumnInstance` and `createSnowColumnInstance`
+   (`WeatherEffectRenderer.java`:93–95), and the snow's `vOffset` is
+   built from `ticks & 511L` (:236). The *seed* is coordinates, the *scroll*
+   is the clock. The page was contradicting itself and the closing sentence
+   was the wrong half.
+8. **`rendering/the-window`:36** said "All of it lives in
+   *com/mojang/blaze3d/platform*" of a cast table whose first two rows are
+   `Minecraft` (`net/minecraft/client`) and `GpuBackend`
+   (`com/mojang/blaze3d/systems`). Now "every row but the first two".
+9. **`rendering/the-window`:244** claimed the *rest of the package* and
+   omitted seven of the twenty-five classes in it, `TextureUtil` (288 lines)
+   the largest. Five of the seven are pipeline state and belong to
+   `blaze3d`; the sentence now says so and `TextureUtil` is explained.
+10. **`rendering/the-frame`:78** described the *update window* zone as
+    "reconfigures the surface if it needs it and then calls
+    `GpuSurface.acquireNextTexture`". `Minecraft.java`:1341–1342 opens the zone
+    with `Window.updateFullscreenIfChanged`, which `the-window`:166 states and
+    `the-frame` omitted. The zone now has three statements and the first is
+    cited to its owner.
+11. **`reference/naming-drift`:396** said the frame "builds an immutable
+    render state **on the game thread**". Both halves run on the Render thread
+    (`Minecraft.renderFrame`), and the glossary already retired *immutable*
+    for the top-level states. Reworded to "copies the live game into render
+    state and then draws from that copy, both halves on the Render thread".
+12. **`world/lighting`:354** cited `section-meshing#a-click-and-the-flag-it-leaves-behind`
+    for the `hasAllNeighbors` light gate, which is two sections later under
+    *The sweep that only looks at what you can see*. The anchor existed, so
+    `check_links.py` passed it; repointed.
+13. **`rendering/section-meshing`:282** said *BlockRenderDispatcher* is
+    "gone", while `reference/naming-drift`:302 gives `ModelBlockRenderer` as
+    its successor. Both are true of different things; the drift box now says
+    the name is gone and `ModelBlockRenderer` does the tesselating, and
+    `BlockAndTintGetter.getShade` is separated out as the one with no
+    successor at all.
+14. **`reference/submit-phases`:31** said three phases are a
+    `TranslucentFeatureRenderPhase` without saying which. They are rows 4, 7
+    and 8 — `seeThroughNameTags`, `translucentBlocksAndItems`,
+    `translucentModels` (`SubmitNodeCollection.java`:55–69) — and not the ones
+    the names suggest. The count was an unenumerated assertion on a page whose
+    whole job is enumeration.
+
+### Suspicions re-derived and found sound — a strike is a claim
+
+- `post-processing`:239, the F3 pie chart. The camera-entity chain runs in
+  `GameRenderer.render` *after* `renderLevel` has returned
+  (`GameRenderer.java`:443–449), so it is inside the *world* zone but outside
+  all five of `renderLevel`'s sub-zones, *screenEffects* included. Both pages
+  were right and neither needed changing.
+- `the-frame`:137, `TickRateManager.isEntityFrozen` "excludes anything with a
+  player aboard", against `block-entity-rendering`:263, "never freezes a
+  `Player`". `TickRateManager.java`:73 excludes both, and each page states the
+  half its own scenario needs. No contradiction.
+- `the-window`:221, the error callback "swapped three times over the game's
+  life". True as a lifecycle statement (`Window.java`:312, 335, 346); the
+  scoped swaps are a fourth *kind*, now written as such rather than as a
+  correction to the count.
+- `the-window`:256, "*ScreenManager*, which never existed here", against
+  `naming-drift`:312. Left: rule 3 makes the page a claim about 26.2, and the
+  drift row is a claim about where a 1.21 reader should look. Logged for pass
+  9 rather than settled here.
+
+### Claims introduced
+
+**Ownership moves, each stated once and cited everywhere else.**
+
+- The **merging rule** moved from `reference/submit-phases`:31–44 to
+  `entity-rendering`'s *prepare* section, with the two phase classes, the
+  batch-key explanation, `RenderTypeFeatureRenderer.Group` and
+  `RenderType.canConsolidateConsecutiveGeometry` moving with it. The Reference
+  page keeps the 12:3 split, now enumerated, and a link.
+- The **two baked block-model tables** settled to `block-entity-rendering`
+  (its scenario, its figure); `models-and-atlases` keeps the `BlockModel`
+  naming trap and a link.
+- The **`prepareSharedState` handshake** cut to a citation of
+  `resource-system#the-shared-state-channel`; `models-and-atlases` keeps only
+  which end of it it is (thirteen published, two awaited).
+- **Directional shading and `CardinalLighting`** moved off `visibility` onto
+  `lightmap-fog-and-sky`'s *What is not an attribute*.
+- **The compile ordering** (`compileSections` after `FrameGraphBuilder.execute`)
+  split: `visibility` keeps where the call sits, `section-meshing` keeps what
+  it costs, each citing the other.
+- **The wall** cut on `visibility` to one sentence and an anchor into
+  `the-frame`.
+- **The frame cap** cut on `the-frame` and `the-window` to citations of
+  `the-client-loop`, which receives the *iconified, not unfocused* distinction.
+- **`ClientShutdownWatchdog`** cut on `the-window` to the one arming it owns;
+  `the-client-loop` receives the fifteen-second sleep, the daemon thread and
+  the report-only-versus-halt difference.
+- **The minimised-window answer** won by `the-frame`; `the-window` cut to
+  `Window.isMinimized` plus the anchor.
+- **The backend-choice answer** won by `the-window` — its figure draws the
+  retry loop — and it receives the ordered pair, `GlBackend`/`VulkanBackend`,
+  the OpenGL-first default and the unclean-shutdown double downgrade from
+  `blaze3d`, which keeps one sentence.
+- **The static-pipeline precompile** and **the two-stage GLSL preprocessing**
+  won by `blaze3d`, which receives the reload phase, the thread and the
+  all-or-nothing cache swap; `post-processing` cut to citations.
+- **The *Globals* block's seven members** moved to `blaze3d` and enumerated
+  from `GlobalSettingsUniform.UBO_SIZE`; `post-processing` keeps the
+  consequence.
+- **`CrossFrameResourcePool`'s three-frame hold** moved off the part's last
+  page onto `visibility`, beside `createInternal`.
+- **The frame-graph inspector** moved from `post-processing` onto `visibility`,
+  which owns `FrameGraphBuilder.execute`; `post-processing` keeps the contrast.
+- **The spectator-chain answer** won by `post-processing`; `the-frame` cut to
+  one clause and an anchor. **The UI lightmap** won by `lightmap-fog-and-sky`,
+  which receives the `levelLightmap`/`uiLightmap` pair; `the-frame`'s Q&A cut
+  to the answer and a link.
+- **The hand's second submit storage** won by `the-frame`, which now names
+  `ItemInHandRenderer` and `ScreenEffectRenderer` and pays off the hand-forward
+  `entity-rendering`:293 had been making to it; `block-entity-rendering` cut to
+  a citation. **The six partial ticks** stay `the-frame`'s and
+  `block-entity-rendering` keeps only its own difference, which is the declared
+  pair's business.
+
+**Coverage written.**
+
+- `models-and-atlases`: the three branching item models and **thirty-three
+  properties in three registries** (10 numeric, 10 select, 13 conditional),
+  `NeedleDirectionHelper`'s per-stack damped compass needle and its
+  *wobble: false* opt-out, `LocalTime`'s once-a-second re-read, and
+  `DisplayContext`. This discharges `what-this-book-skips`' promise that the
+  `client/renderer/item` properties subtree is covered as a section here.
+- `models-and-atlases`: the chunk-layer decision made exact — `Transparency`
+  is two booleans and `ChunkSectionLayer.byTransparency` reads them
+  translucent-first — with `Sheets` named as where the item render type comes
+  from.
+- `block-entity-rendering`: `BlockModelRenderState` as why one entry holds
+  quads *and* a renderer; the built-in table's four other model kinds
+  (`EmptyBlockModel`, `SelectBlockModel`, `ConditionalBlockModel`,
+  `CompositeBlockModel`) and the **five bare wrappers** — bell, conduit, end
+  gateway, end portal, and the enchanting table, whose built-in model is a
+  book with no table under it; `WallAndGroundTransformations`;
+  `BlockEntityWithBoundingBoxRenderer`'s `Player.canUseGameMasterBlocks` gate;
+  and the crumbling overlay's one construction site, with
+  `BlockDestructionProgress` ordering on stage before digger id.
+- `entity-rendering`: `EntityRenderers` and `EntityRendererProvider` as where
+  a shared renderer comes from; `DisplayRenderer`; and **the skin pipeline's
+  drawing half**, which pays off `player-anatomy`:118's "Drawing any of it is
+  Part XI's" — `AvatarRenderState` carries the whole `PlayerSkin` by value and
+  seven booleans, one per `PlayerModelPart`, while `PlayerModelType` never
+  reaches the state because the dispatcher used it to pick the renderer.
+- `the-window`: `TextureUtil`'s two pre-mipmap repairs (`TextureUtil.solidify`,
+  `TextureUtil.fillEmptyAreasWithDarkColor`) and why they exist;
+  `GLFWErrorScope` and `GLFWErrorCapture` as the scoped fourth kind of callback
+  swap and the four places that use them.
+- `lightmap-fog-and-sky`: `Lighting` — one UBO, five `Lighting.Entry` slices,
+  four written once in the constructor and only `LEVEL` rewritten — and
+  `WorldBorderRenderer` as the second thing in the weather pass.
+- `visibility-and-the-frame-graph`: `ChunkSectionLayerGroup` as
+  SOLID-and-CUTOUT against TRANSLUCENT; `ViewArea` as a
+  `RotatingSectionStorage` of `RenderSection`s, the same ring the dirty flags
+  use; and `TranslucencyPointOfView` as three integers clamped to minus one,
+  zero or plus one — **twenty-seven possible values** — with
+  `TranslucencyPointOfView.isAxisAligned` reading zero on any axis.
+- `section-meshing`: `ModelBlockRenderer.tesselateBlock` and `BlockQuadOutput`
+  as how a model becomes quads, and `ModelBlockRenderer.forceOpaque` as which
+  of the compiler's two callbacks a leaf block gets.
+- `blaze3d`: `GlTransientMemory`/`VulkanTransientMemory` and
+  `GlConst`/`VulkanConst`; and the homeless pass-3 cut
+  `RenderSystem.outputColorTextureOverride` /
+  `RenderSystem.outputDepthTextureOverride`, written as the one thing that
+  redirects where a draw lands, with the GUI item atlas and picture-in-picture
+  as its only setters.
+- `particles`: the eighty-odd `Particle` subclasses as a family, with
+  `ParticleProvider` in the cast, `DripParticle` and `FireworkParticles` named
+  as nests of variants, and `ParticleOptions` written — which pays off
+  `data-driven-types`:186's hand-forward.
+- `the-frame`: `TimerQuery` as the GPU stopwatch that brackets the frame and is
+  only restarted once the last one has been collected.
+
+**The landing page**, rewritten to the role. Its argument is now stated:
+*the renderer is not allowed to look at the world*, and every seam a player
+notices is a disagreement about which copy something got. Its size sentence is
+the generated include over the mapping's four packages (1,254 / 93,012)
+instead of a hand count of three (1,179 / 87,000). The ten-line caption
+disowning its own figure is four lines, and the contradiction between "in the
+order things happen inside one frame" and "the pipeline arrows are not frame
+order" is resolved in favour of the second, with `lectures.md` re-synced to
+match. Its coverage answer is the part's boundary stated twice — packages
+other parts own that count against Part XI, and `client/resources/model`,
+which counts against Part X and is this part's subject.
+
+### Rulings made in writing
+
+- **The `map_source.py` `PARTS` change is declined** (queue pass5.md:3499).
+  `client/resources/model` is billed to Part X and is `models-and-atlases`'
+  subject; moving it would change both parts' generated totals and invalidate
+  the coverage argument session J had just written into Part X's landing page.
+  The mapping is by package, the package is genuinely shared, and both landing
+  pages now say so in prose. No page moves, no tool changes.
+- **The *what a player sees* column stays** on `post-processing`, with a
+  sentence above the table saying it is a reading of the shaders rather than a
+  citation, and the *transparency* row reworded because it was the one cell
+  doing a different job.
+- **`the-window` is not cut.** The pass-2 suggestion that the whole page might
+  go is overtaken: the landing page now argues its place, and three pages open
+  on state it creates.
+- **`particles`' explosion section is not cut.** It is the book's only home for
+  the client explosion budget.
+
+### For pass 9's attention, found and not fixed
+
+- `blaze3d`:206 names `StagedVertexBuffer` in the chunk-meshing staging chain;
+  `the-frame`:167 and `submit-phases`:77 describe it as the feature and GUI
+  buffer. One of the three is describing the wrong buffer.
+- `models-and-atlases`' "**twelve** separate layers" of soft failure, where the
+  prose enumerates eleven. Third pass to record it; it is a count assertion, so
+  it is pass 9's rather than pass 8's.
+- `entity-rendering`:191 and :257 — the pose-copy split and "half a dozen
+  others" are both stated as if exhaustive and are not (pass5.md:823).
+- `section-meshing`'s "the pool plus one" ceiling conflates concurrent compiles
+  with existing meshes.
+- `resource-system`:242 names `ParticleResources` as a second consumer of
+  `AtlasManager.PENDING_STITCH`; `models-and-atlases`' figure shows one.
+
+## Pass 5, session J — Part X · The client *(2026-09-06)*
+
+*Twelve reader-of-the-book agents, one per page plus the landing page, and
+one whole-part read in watching order. Every finding acted on was re-derived
+against `reference/26.2` by the session itself. Corrections first, then the
+claims the session introduced, which pass 9 checks before anything else.*
+
+### Corrections — what the page said, what the decompile says
+
+1. **`client/the-client-level`:129** said the renderer is reached directly by
+   "the chunk cache and **one** packet handler". `ClientPacketListener` has
+   five references to `Minecraft.levelExtractor`
+   (`ClientPacketListener.java`:538, 550, 940, 1329, 2677): two hand it to a
+   `ClientLevel` constructor, and **three** are calls on it —
+   `handleChunksBiomes` marking sections dirty (:940), `handleLogin`
+   refreshing the debug renderer list (:550) and `handleGameTestHighlightPos`
+   (:2677). Session N had flagged the count as right only for the
+   dirty-marking path (pass5.md:770); it is. The sentence now says three and
+   names what each does.
+2. **`client/sound-engine`'s verified line** said the trace crosses "five
+   threads". The page's own table lists five threads that *take part in the
+   system*, but `Util.ioPool` appears in no step of the trace — it polls the
+   ALC device list beside it (`AbstractDeviceTracker.tick`). A block placed
+   near you crosses four: Server, Render, the sound engine's, and
+   `Util.nonCriticalIoPool`. The landing page had it right and the page did
+   not. Corrected to "four of the system's five threads", with a sentence
+   saying which one is the odd one.
+3. **`client/options`:354** said "the one thing a client-information packet
+   can provoke is a hat-visibility broadcast".
+   `ServerGamePacketListenerImpl.handleClientInformation` does broadcast the
+   hat, but `ServerPlayer.updateOptions` also writes two of the nine fields
+   into synched data — `ServerPlayer.DATA_PLAYER_MODE_CUSTOMISATION` and
+   `ServerPlayer.DATA_PLAYER_MAIN_HAND` — which reach every tracker.
+   `entities/synched-entity-data`:303-305 already said so, so this was a page
+   contradicting another page. Rewritten as two outward effects and still no
+   reply, with the link.
+4. **`client/gui-and-screens`:35** called `MenuScreens` "the only registry of
+   screens in the game" and :232 on the same page called `DialogScreens` "the
+   second one". A page contradicting itself. The cast row now says what
+   `MenuScreens` is *for* — the registry the menu packets look a screen up in.
+5. **`client/gui-and-screens`:96** said "`Gui.isPausing` **is** what stops the
+   integrated server". `Minecraft.runTick` (`Minecraft.java`:1321) recomputes
+   `Minecraft.pause` as a conjunction of three: a singleplayer server, the
+   GUI saying it is pausing, and the world not being published. Against
+   `the-client-loop`, which had it right. Rewritten as the screen's *vote*,
+   with the loop cited for the other two — and the overlay fact, which the
+   loop page lacks, kept here.
+6. **`client/README`:135-139** put the Part X/XI boundary at
+   `Minecraft.renderFrame`'s *extract* zone, with "the handful of statements
+   before that zone" still Part X's. The *frame* zone is pushed in
+   `Minecraft.runTick` (`Minecraft.java`:1308) around the whole of
+   `renderFrame`, so *update window*, *update* and *extract* are all inside
+   it — there are no statements before it. `the-client-loop`,
+   `rendering/the-frame` and `rendering/README` all say the *frame* zone, so
+   the landing page was the outlier. Rewritten to the *frame* zone, keeping
+   the real point: a few Part X cadences run inside it and stay Part X's for
+   what they decide, not where they sit.
+7. **`client/the-client-loop`:29** called `TickRateManager` "a *server*
+   object". It is `net.minecraft.world.TickRateManager` — shared; the server
+   subclass is `ServerTickRateManager`, and `ClientLevel` holds a plain one
+   fed by packets. The cast row now says a shared class carrying numbers only
+   the server sets.
+8. **`client/the-client-loop`:140** said `ServerboundClientTickEndPacket`
+   goes out "once per unpaused client tick that has a connection". The send
+   (`Minecraft.java`:2064) is inside `Minecraft.tick`'s level block, so it
+   also needs a level — a client still in configuration sends none. Corrected.
+9. **`client/the-client-loop`:234** presented `Main.main`'s arming of
+   `ClientShutdownWatchdog.startShutdownWatchdog` as the only one. There are
+   two: `Main.java`:291 (post-main) and `Minecraft.java`:545, the window-close
+   callback, armed against the game thread while the game is still running.
+   Corrected, with what the second one catches.
+10. **`player/input-to-movement`:296-298** said the client calls
+    `BlockStatePredictionHandler.onTeleport` "to drop its outstanding block
+    predictions". `BlockStatePredictionHandler.java`:70 assigns
+    `lastTeleportSequence = currentSequenceNr`, and :49 uses it only to pass a
+    null player position to `ClientLevel.syncBlockState` — it suppresses the
+    *position snap*, and the predictions settle normally.
+    `prediction-and-acks` had it right. Corrected, and the citation repointed
+    from `#the-six-windows` to `#the-four-writes`.
+11. **`player/input-to-movement`:131-132** said "Releases are always
+    delivered". `KeyboardHandler.keyPress` (`KeyboardHandler.java`:527-534)
+    returns early when `Screen.keyReleased` consumes the event, before the
+    unconditional `KeyMapping.set(key, false)` at :602 — so a screen can
+    swallow a release, which is the asymmetry `input-and-keybinds`:117-120 is
+    built on. Corrected to: a release is recorded whether or not a screen is
+    open, but a screen that consumes one swallows it.
+12. **`world/fluids`:167-171** said the client ran `BucketItem.use` inside
+    the prediction window, "holding the write until the server's
+    acknowledgement arrives", and then said in its own next clause that the
+    source appears with no round trip. The window holds the *old* state, not
+    the write. Corrected.
+13. **`reference/hud-elements`** — three defects in the table, all found by
+    reading `Hud.extractRenderState` and `Gui.extractRenderState` against it.
+    (a) `SpectatorGui.extractAction` (`Hud.java`:615) is a recorded element
+    and had no row; it is the *else* of the selected-item-name row. Added as
+    17b. (b) Row 27's *hidden by F1* cell held a condition instead of an
+    answer, so the table never said whether subtitles are hidden — they are,
+    with the in-game-UI exception the same row's last cell describes; and
+    "something audible is playing" describes a *distance* test
+    (`SubtitleOverlay.Subtitle.isAudibleFrom`), not a volume one, which is
+    what `sound-engine`'s hook turns on. Both rewritten. (c) The second table
+    said `Gui` records four elements "after the overlay or screen" without
+    ever giving the overlay or screen a row, so the record order had a hole
+    in it. Added as a dash row.
+14. **`reference/glossary`:370-371** defined *Level* as the two subclasses
+    "sharing an abstract `Level` and remarkably little else", where
+    `the-client-level`'s whole comparison is of methods both sides *inherit*
+    and one side hollows out. Rewritten to say that.
+15. **`anatomy/what-this-book-skips`:375** wrote "the channel pool" and "the
+    channel pools" in the passage that forwards to a page whose own heading is
+    *The channel limits are counters, not pools*. Reworded, and the forward
+    now carries that section's anchor; the binaural-rendering promise in the
+    same sentence is now qualified to what the page actually pays off
+    (`Options.directionalAudio`).
+
+### Suspicions re-derived and found sound (no change)
+
+- `what-makes-a-sound`:124 "the seed … so that every client picks the same
+  variant **and the same pitch**" against `block-interaction`:306-308 "each
+  side draws its own pitch from its own `Level.getRandom`". Both true and
+  about different paths: `ClientboundSoundPacket` carries an explicit pitch
+  field *and* `AbstractSoundInstance.getPitch` multiplies it by
+  `Sound.getPitch().sample(this.random)` off the seeded random, so recipients
+  agree; the *predicting* client generates its own seed and does not.
+  Session J made the wording say which is which rather than changing either.
+- `debugging-the-running-game`:71 `DebugSubscriptions.RAIDS` fed by
+  `LevelChunk.registerDebugValues` — confirmed at `LevelChunk.java`:758.
+- `debugging-the-running-game`:69-70 against `points-of-interest`:330-332 on
+  the `POIS` feeder: both right, at two levels of the same call —
+  `LevelDebugSynchronizers.registerPoi` delegates to
+  `TrackingDebugSynchronizer.PoiSynchronizer`.
+- `the-client-loop`:241-244 on the out-of-memory path: confirmed at
+  `Minecraft.java`:908-949 — `oomRecovery` makes every later iteration call
+  `runTick(false)`, and a second `OutOfMemoryError` rethrows.
+- `client/options`:357-360 "the only thing that ever sets
+  `Options.serverRenderDistance`": confirmed, two call sites, both the server
+  announcing its own radius (`ClientPacketListener.java`:564 and :2560).
+- `input-and-keybinds`:34 "the four mappings that can behave as toggles" and
+  :73-75 "with default bindings, sneak and sprint": both right.
+  `Options.java` constructs four `ToggleKeyMapping`s, and
+  `ToggleKeyMapping.shouldRestoreStateOnScreenClosed` additionally requires
+  the current binding to be a `KEYSYM`, which attack and use are not by
+  default.
+- `input-and-keybinds`:132-138 against `input-to-movement`:139-142 on whether
+  `MouseHandler.handleAccumulatedMovement` is gated on the mouse being
+  grabbed: the screen half and the turn half are tested separately
+  (`MouseHandler.java`), and the reset runs outside both. Both pages right
+  about their own half.
+- `the-client-level`:55-57 on `ClientboundExplodePacket` carrying the sound,
+  the particle and the knockback — confirmed against the record's seven
+  components.
+- `debugging-the-running-game`'s renderer count: 25 `renderers.add(new …)`
+  calls in `DebugRenderer.refreshRendererList`. The page said "about two
+  dozen" in one place and "twenty-five" in another; the hedge is now the
+  count.
+
+### Claims this session introduced
+
+**Written from the decompile, and therefore pass 9's first targets.**
+
+- `client/hud` — the toast shelf: five slots (`ToastManager.SLOT_COUNT`), a
+  waiting deque, `Toast.occcupiedSlotCount` requiring *consecutive* free
+  slots via `ToastManager.findFreeSlotsIndex`, `Toast.Visibility` as a
+  two-state animation each carrying a sound, `Toast.getToken` for
+  replacement, and `NowPlayingToast` as a separate field suppressed by
+  `PauseScreen` and `MusicToastDisplayState`. Six implementations named.
+- `client/hud` — the chat-GUI family: `GuiMessage`'s five fields including
+  the signature; `GuiMessageTag`'s five instances (system,
+  system-singleplayer, not-secure, modified, error), the two-pixel indicator
+  bar drawn at x −4..−2 (`ChatComponent.handleTag`) — to the *left* of the
+  line, outside the text — the hover tooltip, the icon on *modified* only and
+  placed after the text (`GuiMessage.Line.getTagIconLeft`), and `logTag` as
+  the only part reaching `ChatLog`.
+- `client/hud` — the three gates above the whole HUD, moved here from
+  `reference/hud-elements` and restated: `GameRenderer.extract` computes
+  them, `Gui.extractRenderState` applies them.
+- `client/hud` — the clear-colour override beside `GuiRenderState.isHudHidden`
+  and the claim that every reading site of either is `GameRenderer`'s rather
+  than `LevelRenderer`'s, moved here from `the-gui-render-tree`.
+- `client/debugging-the-running-game` — the whole *Nothing in the game draws
+  a gizmo* section, moved from `anatomy/what-this-book-skips` and extended:
+  the thread-local collector, `Gizmos.addGizmo` throwing with none installed,
+  the seven shape records, and the four collectors table
+  (`Minecraft.collectPerTickGizmos`,
+  `LevelExtractor.collectPerFrameMainThreadGizmos`,
+  `LevelRenderer.collectPerFrameRenderThreadGizmos`, and `IntegratedServer`'s
+  around its packet-and-tick step) with `GameTestServer` installing
+  `GizmoCollector.NOOP` and a dedicated server installing none.
+- `client/debugging-the-running-game` — the whole *The other query* section:
+  `Options.keyDebugCopyRecreateCommand`, the shift modifier choosing the
+  client's own NBT over the server's, `DebugQueryHandler`'s single
+  transaction id and single callback, the two query packets, the gamemaster
+  permission gate on including NBT, and the reduced-debug-info gate.
+- `client/gui-and-screens` — `GameNarrator` as a wrapper over *text2speech*
+  with `NarratorStatus` in front of it and two tempers (queued against
+  `GameNarrator.saySystemNow`).
+- `client/gui-and-screens` — the coverage claim: two hundred-odd classes in
+  `client/gui/screens` and its eighteen sub-packages (measured: 224 files, 18
+  directories), covered as one pattern with four routes; seven previously
+  English-only examples given their class names.
+- `client/text-and-fonts` — the five provider kinds named as classes
+  (`BitmapProvider`, `TrueTypeGlyphProviderDefinition` with `FreeTypeUtil`,
+  `UnihexProvider`, `SpaceProvider`, `ProviderReferenceDefinition`) and
+  `SpecialGlyphs` as the not-from-a-file case; and the other two of the four
+  ICU sites named (`CreateBuffetWorldScreen`, `LocalTime` — measured by
+  grepping `com.ibm.icu`, which hits exactly four files).
+- `client/the-gui-render-tree` — the definition of *stratum*; the note that
+  `GuiGraphicsExtractor.nextStratum` and `GuiRenderState.nextStratum` are the
+  same barrier under two names; the blur section's three gates
+  (`Screen.extractBlurredBackground` as the only caller, the throw on a second
+  request, the option, the in-game-UI opt-out) and the claim that the
+  darkening tint is sharp because it is recorded after the boundary;
+  `DynamicAtlasAllocator` as what runs out of room; `IMEPreeditOverlay` named;
+  and the `PictureInPictureRenderer` half of the pip family.
+- `client/what-makes-a-sound` — the reorganised *Who hears it*: both
+  `ClientLevel.playSeededSound` overloads carrying the excluded-player rule,
+  the two qualifications (`Player.playServerSideSound` excluding nobody; the
+  predicting client drawing its own seed from `Level.soundSeedGenerator`), and
+  `SoundType` described as the five-sound group on
+  `BlockBehaviour.Properties`. Also `SoundEventRegistrationSerializer` named
+  as what parses a `sounds.json` entry.
+- `client/the-client-loop` — the two timers as a fifth bullet in the
+  queues-and-re-entries list (`PeriodicNotificationManager` and
+  `RemoteFriendListUpdateHandler`, each hopping back with
+  `BlockableEventLoop.execute`), moved from the Part X landing page, which
+  was the book's only explanation of either.
+- `client/the-client-level` — `ClientLevel.EntityCallbacks` as the four hooks
+  and `TransientEntitySectionManager` as the comparison table's last row made
+  concrete.
+- `client/README` — the part's coverage answer: nine tenths of what no page
+  names is one more screen or widget (measured from `pass5_coverage.py`'s
+  sub-package table — 27,146 of 29,360 unmentioned lines are under
+  `client/gui`, 23,731 of them screens and widgets), plus the two declared
+  exceptions (the model tree, player reporting).
+- `src/figures/parts-dependency.md` — a new solid arrow **VII → X**, because
+  the landing page now lists `containers-and-menus` under *before you start*
+  for lecture six. `check_deps.py` caught the missing arrow and refused the
+  first version of the page, which is the gate doing its job.
+
+### Ownership decisions, for the record
+
+- The excluded-player sound rule: `what-makes-a-sound#who-hears-it` owns it;
+  `the-client-level` cut to one sentence; `block-interaction` and
+  `using-an-item` keep copies that add something.
+- The distance delay ("sound has a speed"): `what-makes-a-sound` owns it;
+  `the-client-level`'s Q&A cut.
+- The music fade against the music slider: `sound-engine` owns it;
+  `what-makes-a-sound` cut to a clause and a link.
+- The pause predicate: `the-client-loop` owns it; `gui-and-screens` keeps the
+  screen's vote and the overlay default.
+- The un-rebindable F3 shortcut: `input-and-keybinds` owns it; `hud` cut to a
+  citation plus its own half.
+- The blur split: `the-gui-render-tree` owns the *barrier*,
+  `post-processing` owns the *chain that runs in the gap*; both rewritten,
+  both linked.
+- `Gizmos`: moved to `debugging-the-running-game`; `what-this-book-skips`
+  keeps the address, which is that page's job.
+- The frame cap, `ClientShutdownWatchdog` and the fenced-task queue were
+  reported as duplicates with Part XI pages and **left for session K**, which
+  owns the other half of each.
+
 ## Pass 5, session I — Part IX · Networking *(2026-09-06)*
 
 *Five pages plus the landing page, one reader-of-the-book agent each; the part
@@ -1523,535 +3063,6 @@ not checked when they were written.
 
 *(pass-5 sessions append below, newest first)*
 
-## Session M — Part XIII · Commands and data packs (pass 5) *(2026-09-07)*
-
-All ten pages of the part rewritten — `commands/README`,
-`commands/brigadier-and-commands`, `commands/permissions`,
-`commands/entity-selectors`, `commands/the-execution-engine`,
-`commands/functions-and-macros`, `commands/advancements`,
-`commands/scoreboard-and-data`, `commands/dialogs`, `commands/game-tests` —
-plus eight pages elsewhere: `foundations/data-driven-types`,
-`foundations/resource-system`, `items/contexts-and-predicates`,
-`networking/README`, `blocks/README`, `client/hud`, `reference/glossary` and
-`src/lectures.md`. The part owns no hand-kept Reference page of its own.
-
-### Claims introduced
-
-**`commands/scoreboard-and-data` — a new section, *The third sink is a boss
-bar, and it is this page's shape again*.** Every sentence in it is new to the
-book; `BossEvent`, `ServerBossEvent`, `CustomBossEvent`, `CustomBossEvents`
-and `BossBarCommands` were named on no page before this session.
-
-- "A boss bar is a named server-side thing holding a number, saved with the
-  world, broadcast to the players attached to it, and writable only by a
-  command."
-- `BossEvent` is "an id, a name, a *progress* float from zero to one, a
-  `BossEvent.BossBarColor`, a `BossEvent.BossBarOverlay`, and three booleans
-  that ask the client to darken the screen, play the boss music and draw the
-  world fog" (`BossEvent.java`:11–18).
-- `ServerBossEvent` "adds the live membership — a `Set<ServerPlayer>` — and
-  turns every setter into a broadcast" (`ServerBossEvent.java`:18, 29–101).
-- "one `ClientboundBossEventPacket` with six operations, add and remove and
-  one update apiece for progress, name, style and properties"
-  (`ClientboundBossEventPacket.java`:118–122, the `OperationType` enum).
-- "There is no serverbound counterpart, exactly as there is none for a score."
-- "Four things in the game own one: `WitherBoss`, `Raid`, `EnderDragonFight`
-  — and `CustomBossEvent`" (the four files that name `ServerBossEvent`).
-- `CustomBossEvent` "keeps an integer `CustomBossEvent.value` and an integer
-  `CustomBossEvent.max`, derives the float progress from them on every write"
-  (`CustomBossEvent.java`:26–27, 77–87).
-- The membership claim: a persisted `Set<UUID>` beside the superclass's live
-  set, `CustomBossEvent.onPlayerConnect` re-attaching a player whose UUID is
-  on the list and `CustomBossEvent.onPlayerDisconnect` calling the
-  superclass's removal "deliberately so that the UUID stays"
-  (`CustomBossEvent.java`:25, 211–219). **The word *deliberately* is an
-  inference from the shape of the override; pass 9 should decide whether the
-  book may say it.**
-- `CustomBossEvents` is "the `SavedData` that holds them, one file at
-  *data/minecraft/custom_boss_events.dat*", with capitalised NBT field names
-  (`CustomBossEvents.java`:38; `CustomBossEvent.Packed.CODEC`).
-- `ExecuteCommand.storeValue` is "a sibling of the score sink rather than the
-  same code" — which **corrects** the parenthetical it replaces.
-- `BossBarCommands` is "the write surface, at gamemaster"
-  (`BossBarCommands.java`:57).
-
-**`commands/entity-selectors` — a new section, *Two more argument types write
-the same fork by hand*** (discharges a `pass3.md` §7 entry).
-
-- `GameProfileArgument` "resolves to profiles, not entities"; an `@` "is
-  rejected outright if it includes non-players"; the literal side is "read to
-  the next space and looked up in the server's name-to-id cache — so `/ban`,
-  `/whitelist` and `/op` name a player who has never joined this session"
-  (`GameProfileArgument.java`:51–77; the five callers are `BanPlayerCommands`,
-  `DeOpCommands`, `OpCommand`, `PardonCommand`, `WhitelistCommand`).
-- "That lookup is the only thing on this page that leaves the game's own
-  data." **An absolute over this page's scope; pass 9 should test it.**
-- `ScoreHolderArgument`'s four literal branches "in order", the wildcard alone
-  throwing (`ScoreHolderArgument.java`:102–170).
-- "both enforce their single-or-many shape on the compiled selector rather
-  than on the text".
-- Elsewhere on the page: `EntityTypeTest` glossed as "the one-method 'is this
-  the type I asked for, and give it to me typed' the whole entity-fetching API
-  is generic over"; `Permissions.COMMANDS_ENTITY_SELECTORS` called "the **only
-  permission in the game checked in two different phases**" (moved here from
-  `commands/permissions`, where it was already asserted).
-
-**`commands/brigadier-and-commands`.**
-
-- A new paragraph on `SharedSuggestionProvider`: implemented by
-  `CommandSourceStack` and `ClientSuggestionProvider`; "most of its 355 lines
-  are static helpers"; `SharedSuggestionProvider.customSuggestion` "is the
-  packet on the client and a completed empty future on the server"
-  (`SharedSuggestionProvider.java`:32–50, and the two implementors).
-- A new paragraph on `CommandSource`, restoring what pass-3 session N cut:
-  four methods and four implementations; `RconConsoleSource.shouldInformAdmins`
-  deferring to *broadcast-rcon-to-ops*; `BaseCommandBlock`'s source gated on
-  `GameRules.SEND_COMMAND_FEEDBACK` and `GameRules.COMMAND_BLOCK_OUTPUT`,
-  "which is what those two game rules *are*"; "a command block that has been
-  broken accepts nothing at all" (the `closed` field);
-  `CommandSource.NULL` refusing everything. Files:
-  `CommandSource.java`:7–25, `RconConsoleSource.java`:44–56,
-  `BaseCommandBlock.java`:202–214, `MinecraftServer.java`:1889–1899.
-- **"The command block is `BaseCommandBlock` plus the `CommandBlockEntity`
-  that holds one: a `CommandSource`, a stored string and a redstone edge, and
-  no machinery of its own beyond this page's."** This is the sentence that
-  pays off `blocks/README`'s promise; it is a *scope* claim as much as a fact.
-- A new paragraph on the resource-argument family: six types "over the same
-  idea", differing in what they hand back and "in whether they accept a glob.
-  Only `ResourceSelectorArgument` does, which is why `/test run *` works and
-  `/give @s *` does not." Also the five `commands/synchronization/brigadier`
-  classes as "the only argument types in the game the game did not write".
-- `WorldCoordinates` as "three `WorldCoordinate`s, each a value plus a *is
-  this relative* flag".
-- A sign's click command "is never checked by the client, because it never
-  reaches the client at all" (the correction below).
-
-**`commands/advancements` — a new section, *What the package holds that this
-page does not name*.** The two family claims (thirty-five unnamed triggers;
-the concrete predicates as instances of the four shapes) and
-`CriterionProgress` as "a nullable timestamp, which is why the wire form can
-carry progress without carrying a single condition"
-(`CriterionProgress.java`:9). Also new: `TreeNodePosition` runs "in its
-*apply* half — the half a reload runs on the main thread, once per root,
-after the JSON has been read on a background one"
-(`SimplePreparableReloadListener.java`:14–23,
-`ServerAdvancementManager.java`:24, 36, 53).
-
-**`commands/functions-and-macros`.** The macro variable-name rule stated in
-prose for the first time — "inside `$(…)`, letters, digits and underscore and
-nothing else" (`StringTemplate.java`:50–55) — and the claim that a dialog's
-input keys obey the same rule. The caller list re-scoped (below).
-
-**`commands/the-execution-engine`.** `ExecutionControl` as "the (context,
-frame) pair with two methods … that pair is the whole privilege an action
-has" (`ExecutionControl.java`:6–25). And the reconciliation the book lacked:
-"the thread-local is null again the moment a queue drains, so two commands run
-back to back each open their own context, which is why every function in
-`#minecraft:tick` gets a budget of its own"
-(`Commands.java`:406–410, `ServerFunctionManager.java`:58–84).
-
-**`commands/permissions`.** `Permissions`' own nine, split "four to five"
-(`Permissions.java`:7–15). And the second route to a client's op level:
-"except on an integrated server, where
-`IntegratedServer.updatePermissionAndChatAbilities` writes the host's own
-`LocalPlayer` directly and no packet is involved"
-(`IntegratedServer.java`:343–353).
-
-**`commands/dialogs`.** The five dialog screens named as one family; the three
-bootstraps (`DialogBodyTypes`, `InputControlTypes`, `ActionTypes`),
-`StaticAction` and `DialogCommand` named.
-
-**`commands/game-tests`.** `TestCommand` at "572 lines of subcommands";
-`TestFinder` turning a subcommand's argument into `Registries.TEST_INSTANCE`
-ids; "the glob in `/test run *` is `ResourceSelectorArgument`, the one
-argument type in the game that takes one"
-(`TestCommand.java`:296–299); `GameTestTicker` and `TestInstanceBlock` named.
-
-**`commands/README` — a new *Where the part stops* section**, with three
-family declines and one written-out omission: "three unrelated routines do not
-make one lecture" (`SpreadPlayersCommand`, `CloneCommands`, `FillCommand`).
-Its packages sentence now names all nine, and its *Reference this part uses*
-paragraph re-scopes the traffic claim (below).
-
-**`reference/glossary` — a new headword, *Boss bar*.**
-
-**`src/lectures.md`** — Part XIII's dependency paragraph shortened to what is
-about the order, and its Part VII clause re-scoped from "for advancements
-alone" to advancements plus the selector's *predicate* option.
-
-### Corrections
-
-1. **`commands/scoreboard-and-data`** said "a score set and a crash a tick
-   later is a score lost". A tick-loop crash is not that ending:
-   `MinecraftServer.java`:877's *finally* runs `stopServer()` (:689), which
-   calls `saveAllChunks` (:733), whose **first statement** is
-   `this.scoreboard.storeToSaveDataIfDirty(…)` (:629). `how-a-server-dies`
-   says so in as many words at its opening and in *What you lose if you kill
-   the process*. Now: the watchdog kill, a *kill -9* or a power cut, with the
-   link to that section.
-2. **`commands/brigadier-and-commands`** listed a sign among the commands the
-   client vets through `ClientPacketListener.sendUnattendedCommand`.
-   `SignBlockEntity.executeClickCommandsIfPresent` calls
-   `Commands.performPrefixedCommand` **on the server** with a source it builds
-   itself at `LevelBasedPermissionSet.GAMEMASTER`
-   (`SignBlockEntity.java`:201–247) — which `commands/permissions` already
-   said. Now: a dialog button and a chat click event, with the sign named as
-   the exception.
-3. **`commands/permissions`' own figure** listed "a sign" in its entry node,
-   four lines above prose saying a sign does not come that way. Same evidence;
-   the node now reads "a dialog button, a chat click event".
-4. **`commands/functions-and-macros`** said `ServerFunctionManager.tick` "is
-   the **first** thing `MinecraftServer.tickChildren` does".
-   `MinecraftServer.java`:1206–1213: the method first suspends packet flushing
-   on every player, *then* opens the *commandFunctions* zone. `server-tick`'s
-   order table has the suspension as row one. Now: "the first profiler zone …
-   with only the suspension of every player's packet flushing ahead of it".
-5. **`commands/dialogs`** called `WaitingForResponseScreen`'s button an
-   "escape button" in one paragraph and a "Back button" in another. It is
-   built from `CommonComponents.GUI_BACK`
-   (`WaitingForResponseScreen.java`:14, 26). Now: Back, once.
-6. **`foundations/resource-system`** said connected clients after a `/reload`
-   "complete against the tree they were given until they reconnect". Both
-   server-side parses read `MinecraftServer.getCommands`
-   (`MinecraftServer.java`:1854–1856 → `this.resources.managers.getCommands()`;
-   `ServerGamePacketListenerImpl.java`:610 for suggestions), so a newly added
-   function *does* complete after a reload — which
-   `commands/brigadier-and-commands` says and this page contradicted. Now: it
-   is the tree's *shape* that goes stale, with the link.
-7. **`items/contexts-and-predicates`** said Part XIII's commands "own
-   `/execute if predicate`". No page in Part XIII mentions it; that page owns
-   its own trace of it. Now: the page owns the command, Part XIII owns the
-   engine it runs in and the selector option that is the second caller.
-8. **`commands/brigadier-and-commands`**' door table routed `LootCommand` and
-   `ItemCommands` to `loot-tables`, which names neither;
-   `contexts-and-predicates`:247–248 names both. Repointed, with
-   `loot-tables` kept for the functions themselves. *(pass5.md:3349,
-   session G)*
-9. **`foundations/data-driven-types`** routed `BuiltInRegistries.PERMISSION_TYPE`
-   and `PERMISSION_CHECK_TYPE` to `brigadier-and-commands`, which names
-   neither identifier; `commands/permissions` owns both. Repointed with
-   anchors. *(the last live row of pass5.md:424)*
-10. **`commands/brigadier-and-commands`** said `net/minecraft/server/commands`
-    is "a hundred classes and 12,800 lines" where the landing page and the
-    atlas say 102. Both count files; 102 is the generated number, and the
-    package has a `data/` subpackage that a flat `ls` misses. Now: "102 files",
-    naming the atlas as the population.
-11. **`commands/README`** said the part's traffic "is almost all server →
-    client". Its own `game-tests` page names two serverbound packets and
-    `advancements` a third, besides the two command packets. Now: the two
-    reporting systems are one-way and everything a player does comes back.
-12. **`commands/functions-and-macros`** called its caller list "short and
-    exhaustive" while omitting `execute if function` and `/return run
-    function`, both of which the engine page explains. Now: named, with the
-    link.
-13. **`commands/functions-and-macros`** cited `items/enchantments` for
-    `RunFunction`, which that page never names. Now: `RunFunction` is named
-    here as one of the `EnchantmentEntityEffect`s, with the link pointing at
-    the section that explains the effect families.
-
-### Suspicions re-derived and found sound
-
-- `commands/permissions`' "ninety-one gates that name a level constant,
-  sixty-six … sixteen … nine" against the same page's 95
-  `Commands.hasPermission` call sites. Both right: the arguments to those 95
-  calls are 66 gamemaster, 16 admin, 9 owner, two ternaries in `SeedCommand`
-  and `VersionCommand`, `GameModeCommand.PERMISSION_CHECK` and
-  `ClientPacketListener.RESTRICTED_COMMAND_CHECK`. **For pass 8:** whether the
-  two ternary gates "name a level constant" is left to the reader, and they do.
-- `commands/advancements`' "its only users are the six component predicates in
-  `core/component/predicates`". Exactly six of that package's classes
-  reference `CollectionPredicate`.
-- `commands/dialogs`' "thirty-one classes across four packages" — 35 files
-  less four `package-info.java`. Sound.
-- `commands/game-tests`' "forty-four classes" for `gametest/framework` — 45
-  files less one `package-info.java`. Sound. The 47 on
-  `anatomy/what-this-book-skips` is the atlas's file convention over the whole
-  `gametest` tree, not a disagreement. **For pass 8** (the two rules for the
-  word *classes*), not a correction.
-- `commands/game-tests`' `/test run *`. `TestCommand` registers `run`,
-  `runmultiple`, `runfailed`, `runthat`, `runthese` and `runclosest`; there is
-  no `runall`, and `run` takes a `ResourceSelectorArgument`.
-- `commands/permissions`' "three sources of belief". Sound as a taxonomy; the
-  integrated server's direct write is a second route into the first source,
-  and is now a clause rather than a fourth entry.
-
-### For pass 9's attention, found and not fixed
-
-- `commands/brigadier-and-commands` says the client's dispatcher is built
-  "from a tree the server sent you when you joined" and later that the tree's
-  only sender is `PlayerList.sendPlayerPermissionLevel`. Both were checked in
-  pass 4; the join path reaching that method was not re-derived here.
-- `commands/scoreboard-and-data`'s *Where to look* calls
-  `NbtPathArgument.NbtPath` "the nicest ten lines in the area", and
-  `commands/functions-and-macros` no longer says "three lines apart" — both
-  are line-level claims about decompiled formatting, which is not the
-  source's. The second is retired; the first is not, and is rule 2's problem
-  rather than a fact.
-- Two class-name collisions the book does not acknowledge:
-  `EntityDataAccessor` (`DataCommands`' accessor against the syncher key on
-  `entities/synched-entity-data`) and `EntitySelector` (the compiled query
-  against the predicate bag in `world/entity`, two pages apart in this part).
-  `commands/entity-selectors` names the second in *Where to look*; nothing
-  names the first. The verifier lists both among its 25 ambiguous names.
-- `commands/scoreboard-and-data` is linked from `foundations/data-driven-types`
-  for `BuiltInRegistries.NUMBER_FORMAT_TYPE` and names `NumberFormatTypes` but
-  not `NumberFormatType`; the page states the three kinds without stating the
-  pattern. Left as it stands.
-
-
-## Session A — the standard (pass 5) *(2026-09-05)*
-
-Three published pages rewritten — `src/lectures.md`, `src/SUMMARY.md` and
-`src/systems/commands/README.md` — plus `TEMPLATE.md` and two tools. No
-system page touched, no fact changed, and **no correction made**: nothing
-this session read was found wrong against the decompile, and nothing was
-re-derived, because every finding was about where a claim lives rather than
-whether it is true. The claims introduced:
-
-**`src/lectures.md`**
-
-- The dependency table gained a **membership rule** and three rows and lost
-  three. The rule is a claim about the corpus, checkable without the
-  decompile: *a page two or more landing pages name under **before you
-  start***, less `anatomy/anatomy`, `foundations/codecs-nbt-json` and
-  `foundations/identifiers-and-registries`. `tools/check_deps.py` re-derives
-  it on every run and fails on a mismatch, so pass 9's job here is to check
-  the rule is the right rule, not the rows.
-- Three new rows carry a new third-column phrase each, and each is a claim
-  about why a part depends on the page, re-derived from the depending
-  landing pages' own sentences: **`resource-system`** — "the staged load and
-  its barrier: a server's own data at startup, where recipes and loot tables
-  come from, and the reload the atlases are built by" (from `server/README`,
-  `items/README`, `rendering/README`); **`data-driven-types`** — "the *type*
-  field in a data-pack file and the registry it dispatches on; these two
-  parts own most of its instances" (from `worldgen/README`,
-  `commands/README`; the "most" rests on `worldgen/README`'s existing
-  twenty-six-of-fifty-six claim); **`text-components`** — "what a chat
-  message and a screen's label are before anything draws them" (from
-  `networking/README`, `client/README`).
-- "Watched straight through, the sidebar order still needs one departure
-  from itself, and it is now as small as it can be" — the claim is that
-  moving *environment attributes and timelines* to first in Part IV leaves
-  exactly one out-of-order watch (Part IV lecture 1 before Part III lecture
-  2) and that no other part's order departs. `check_deps.py` checks the
-  three orders agree; the "one departure" is the session's own reading of
-  the graph.
-- **102 blurbs cut.** Each was a second copy of a line on a landing page.
-  The ordering claims inside them were kept and are quoted unchanged; the
-  descriptions were dropped, not moved, because the landing page has them.
-  Pass 9 should read the kept clauses against the landing pages rather than
-  against the source: the risk is a clause that lost its subject in the cut,
-  not a fact that changed.
-- The new second paragraph ("Because the subject here is the order, nothing
-  below describes a lecture…") is a claim about the page itself.
-- "one page until this pass" became "two pages that were one" — a
-  pass-number rot fix, no claim.
-
-**`src/SUMMARY.md`** — *environment attributes and timelines* is now first
-in Part IV. Nothing else moved; no URL changed (mdBook derives the path from
-the file, not the summary).
-
-**`src/systems/commands/README.md`** (the exemplar landing page)
-
-- The size sentence is now `{{#include ../../generated/part-commands.md}}`
-  and reads **470 classes and 43,126 lines**, against the hand-count it
-  replaced (473 / 43,900). The prose's population is now "the nine packages
-  the atlas lists for this part", which is `map_source.PARTS` — check the
-  nine, and the `#where-each-part-lives` anchor.
-- New: "the command catalogue alone (`net/minecraft/server/commands`) is 102
-  classes and 12,800 lines" — the old sentence said "a hundred command
-  classes and 12,800 lines" without naming the package.
-  `src/generated/packages-depth4.md` gives 102 / 12,781.
-- New in the argument: "**None of those four needs any of the others.**" —
-  moved up from the shape section, which says "none of them needs another".
-  The sentence after it ("a reader who has those two can explain any of the
-  four from them") is new and is a claim about the part, not about the game.
-- **Cut, not moved**: "one of only two parts of a save that go through the
-  data fixer as JSON, the other being advancement progress".
-  `anatomy/what-this-book-skips`:252 owns it and this page links there.
-- Three *before you start* links now carry an anchor
-  (`server-tick#what-minecraftservertickchildren-runs-and-in-what-order`,
-  `data-driven-types#the-idea-stated-once`,
-  `the-connection#the-threads-underneath-it`). The claim in an anchored link
-  is that the named section is where the thing is explained; all three were
-  checked against the built heading ids.
-
-**`TEMPLATE.md`** — two new sections, *One home per mechanism* and *The
-landing page*. The only measured claim in them is the landing-page budget
-("about a hundred lines plus the watch order"), derived from the thirteen
-pages on 2026-09-05.
-
-**`tools/check_deps.py`, `tools/verify_names.py`** — two new failing checks
-and the index label; see `docs/pass5-brief.md` A5. A tool is suspected
-first, twice over: `check_deps.py`'s membership check reproduced pass-4
-session A's hand-found list exactly (three absent, three present that should
-not be) before anything was edited, which is the evidence that it reads the
-pages right; and `check_deps.py --probe` now proves both new checks fail on
-the constructs they are for — a reordered sidebar, a short sidebar, a
-qualifying page with no row, a row for a page one part assumes, a row for a
-page nobody assumes, and a universal that takes a row — and pass on the
-shapes they must accept.
-
-## Planning session — between passes 4 and 5 (2026-09-05)
-
-No system page rewritten. Three claims introduced, all in the frame and the
-atlas:
-
-- `src/introduction.md` — the *Verified means tested* paragraph now says
-  "every link and anchor between pages is checked to land" and "a page that
-  fails any of those does not go up": the claim is that `tools/check_links.py`
-  runs in `tools/deploy.sh` before the build and exits non-zero on a broken
-  link, anchor, include, `SUMMARY.md` entry or redirect (`tools/deploy.sh`,
-  the line after `check_deps.py`).
-- `src/maps/packages.md` — the *Where each part lives* table is now
-  `src/generated/parts.md`, written from `map_source.py`'s `PARTS`. The
-  mapping is a set of claims about which packages each part covers, and it
-  differs from the hand table it replaced: Part IV adds `world/level/material`,
-  `world/attribute`, `world/timeline`, `world/clock`, `world/level/border`;
-  Part VI adds `world/damagesource`, `world/effect` and subtracts
-  `world/entity/player`; Part II adds `world/flag`; Part IX subtracts
-  `network/syncher` (Part VI's); Part X adds `client/input`, `client/server`
-  and counts `net/minecraft/client` itself only; Part XI adds
-  `client/particle`; Part XIII adds `server/permissions`, `server/bossevents`
-  and `client/gui/screens/dialog`. The paragraph above the table says how
-  it is counted (no prefix, *itself only*, shared packages counted twice,
-  skipped packages left out) — check each against `map_source.in_part`.
-  Every landing page's size sentence will quote its row once the part
-  sessions switch them to the include; until then a landing page's hand
-  count and its row may differ (Part XIII: 473 / 43,900 by hand, 470 /
-  43,126 by the atlas).
-- `docs/pass5-brief.md` Part 4 — the measured tables (coverage per part, the
-  queue by kind, the duplication pairs) are the tools' output on 2026-09-05
-  and are claims about the corpus on that day, not about the game; pass 9
-  need not check them.
-
-## Pass 5, session B — Parts I and II *(2026-09-05)*
-
-Eleven pages read by one agent each, both parts read end to end, nine pages
-rewritten (`anatomy/README.md`, `anatomy/anatomy.md`,
-`anatomy/what-this-book-skips.md`, `foundations/README.md`,
-`foundations/identifiers-and-registries.md`, `foundations/resource-system.md`,
-`foundations/tags.md`, `foundations/codecs-nbt-json.md`,
-`foundations/data-driven-types.md`) plus one-clause link edits on
-`data-components.md` and `text-components.md`.
-
-### Corrections — re-derived against the decompile before the fix
-
-- `foundations/identifiers-and-registries.md` — said `MappedRegistry` "is
-  keyed three ways (`byKey`, `byLocation` and the insertion-ordered
-  `byId`)". **There are four.** `MappedRegistry.java:40` declares
-  `private final Map<T, Holder.Reference<T>> byValue`, an `IdentityHashMap`
-  built at :65 and written at :129; `getKey` (:141) and `getResourceKey`
-  (:148) both read it, so the object-to-name direction goes through `byValue`
-  and not through the three the page named. `toId` (:37) is the parallel
-  identity map to the number. Now: four indexes, one per lookup direction.
-- `foundations/codecs-nbt-json.md` — said `StreamTagVisitor` and its
-  neighbours "let `NbtIo.parse` pull **two** fields out of a region chunk",
-  then named three consumers. Two is right for one of them only:
-  `IOWorker.java:105` builds a `CollectFields` of two `FieldSelector`s
-  (*DataVersion*, *blending_data*); `StructureCheck.java:113` builds one of
-  three (*DataVersion*, *Level/Structures/Starts*, *structures/starts*). Now
-  stated as the mechanism — a `CollectFields` over whatever selectors the
-  caller wants — with both counts attributed.
-- **Checked and found correct, so no change:** `data-components.md`:183-191
-  and `identifiers-and-registries.md`:306-311 were reported as contradicting
-  each other on the singleplayer component binding. They do not.
-  `ClientConfigurationPacketListenerImpl.java:177` passes
-  `connection.isMemoryConnection()` as
-  `tagsAndComponentsForSynchronizedRegistriesOnly`, and
-  `RegistryDataCollector.java:166` negates it into `updateComponents`'
-  `includeSharedRegistries` (:142-148), so a memory connection binds only the
-  `RegistrySynchronization.isNetworkable` registries. Both pages say that.
-
-### Claims introduced
-
-- **A new section, `identifiers-and-registries.md` §*Feature flags: the same
-  registry, narrowed*** — the largest new claim of the session, discharging
-  a coverage entry. Each sentence, with where it came from:
-  `FeatureFlagSet` is a *long* mask plus a `FeatureFlagUniverse`, cap
-  `MAX_CONTAINER_SIZE` = 64 (`FeatureFlagSet.java:9-18`); one universe,
-  *main*, and four flags — `VANILLA`, `TRADE_REBALANCE`,
-  `REDSTONE_EXPERIMENTS`, `MINECART_IMPROVEMENTS` (`FeatureFlags.java:37-48`);
-  `isExperimental` is "not a subset of `VANILLA_SET`" (:34-36);
-  `FeatureElement` has one method and seven implementors — `Item`,
-  `BlockBehaviour`, `EntityType`, `GameRule`, `MenuType`, `Potion`,
-  `MobEffect`; `FILTERED_REGISTRIES` names those seven registries
-  (`FeatureElement.java:10`);
-  `HolderLookup.RegistryLookup.filterFeatures` returns *this* for a registry
-  not in the set and a filtering delegate for one that is
-  (`HolderLookup.java:82-87`); **"the registry underneath is not touched, and
-  neither is its numbering — a disabled item keeps its wire id"** is the
-  inference from that delegation and is the sentence most worth re-deriving;
-  the consumers are `CommandBuildContext.java:22`, `GameRules.java:109`,
-  `MinecraftServer.java:373` and `LevelReader.java:232-235`; the set is
-  `WorldDataConfiguration.enabledFeatures`.
-- **`resource-system.md`, the two `server/packs` corners** the skips page had
-  been promising it: *linkfs* as `LinkFileSystem` / `LinkFSProvider` /
-  `LinkFSPath`, and `DownloadQueue` — one directory per pack UUID, one at a
-  time on a `ConsecutiveExecutor` over `Util.nonCriticalIoPool`, a
-  `JsonEventLog` per attempt, and `DownloadCacheCleaner.vacuumCacheDir` at
-  construction trimming to `MAX_KEPT_PACKS` = 20 (`DownloadQueue.java:37-47`,
-  `DownloadCacheCleaner.java:30-60`). **"newest kept, one per directory
-  before any directory's second"** is a reading of `prioritizeFilesInDirs` and
-  the two comparators, and is the claim here to check.
-- **`anatomy.md`, the packet-drain contrast.** The hop paragraph now ends
-  "so a client at 200 frames a second takes the server's updates ten times
-  more often than it ticks" — arithmetic over the page's own 20 Hz tick, and
-  a restatement of `what-the-client-is-told.md`:442. Check the framing, not
-  the numbers.
-- **`anatomy.md`, the 1.21-era callout** was replaced: out went the
-  `Gui`/`Hud` box (owned by `client/hud` and `reference/naming-drift`), in
-  came `DeltaTracker` was *Timer*, which restates
-  `reference/naming-drift.md`:52 and :68.
-- **`anatomy.md`, `GameConfig`** — new clause: the client's `Main` parses its
-  command line into a `GameConfig` the `Minecraft` constructor is built from.
-  Closes the part's one coverage gap; check against `client/main/Main`.
-- **`anatomy/README.md` is rewritten to the landing-page role** and its
-  figure redrawn from the twelve other parts to the part's own two pages.
-  New claims: that the part's argument is the two loops rather than "a server
-  that ticks and a client that draws"; that the boundary page is second
-  because a boundary is drawn before the investment (moved from
-  `lectures.md`:466-468, which keeps it as an ordering claim); and *where the
-  part stops*, which asserts that Parts III, IX and X take the three threads
-  onward. The lane sentence is now "nearly every lane ... is a class, and the
-  handful that are not stand for a thread", which is
-  `reference/lanes.md`:5-10 and `check_lanes.py`'s own count (333 and 9).
-- **`foundations/README.md`** — "Part II is not a stack but a fan ... the
-  figure has two roots and no single column" replaces "Part II is a stack".
-  A claim about the figure directly above it, and checkable against it.
-- **`what-this-book-skips.md`, three reframings.** `com/mojang/blaze3d/audio`
-  is no longer presented as skipped — `client/sound-engine` teaches all of it
-  (its cast carries `Library` and `AbstractDeviceTracker`; :129 the thirty
-  channels, :240 HRTF), so the section keeps only the address argument. The
-  statistics page's criterion-parse paragraph became a citation of
-  `scoreboard-and-data`:158-162, which owns it. The recipe book is stated as
-  `items/recipes`' rather than as skipped. **The hatching in the generated
-  treemap was not changed to match**, so the figure and the prose should be
-  read together at pass 9.
-- **Ownership moves that changed what a page asserts** (each now one sentence
-  and a link where it was an explanation): the two tag tables, from
-  `identifiers-and-registries` to `tags`; the GPU-backend retry order, to
-  `rendering/the-window`; the crash relay, to `how-a-server-dies`; the
-  empty-server pause, to `server-tick`; `MinecraftServer.spin`'s order, to
-  `starting-a-server`; the Netty hop's mechanism, to `the-connection`. In
-  each case check that the surviving sentence is still true on its own — a
-  trimmed sentence is a new claim.
-- **Outbound links gained anchors** across the nine pages. An anchor is a
-  claim that the named section is the answer; all resolve under
-  `check_links.py`, which proves the heading exists and not that it answers.
-
-### Tool bug
-
-- `tools/map_source.py` and `tools/pass5_coverage.py` reported different
-  populations for the same packages — Part I as 7 classes / 6,770 lines and
-  6 / 6,766 — while `map_source.py`'s own comment claimed they "can never
-  disagree". The difference is `package-info.java`, which the atlas counts as
-  a file and the coverage tool drops. No published page states either number
-  today (Part I's landing page carries no size), so nothing false was
-  published. Both tools now say which population they mean, and the false
-  comment is gone. Every part with a `package-info.java` reads one class
-  larger in the atlas than in its coverage report.
-
 ## Pass 5, session C — Part III · The server *(2026-09-05)*
 
 All six pages of Part III touched: `src/systems/server/README.md` (rewritten
@@ -2266,984 +3277,255 @@ has exactly five dedicated-only rows.
   tick-loop crash writes what `/stop` writes) unless it means a watchdog kill
   or a *kill -9*. Session M's page, flagged in [pass5.md](pass5.md).
 
-## Pass 5, session J — Part X, the client (2026-09-06)
+## Pass 5, session B — Parts I and II *(2026-09-05)*
 
-*Twelve reader-of-the-book agents, one per page plus the landing page, and
-one whole-part read in watching order. Every finding acted on was re-derived
-against `reference/26.2` by the session itself. Corrections first, then the
-claims the session introduced, which pass 9 checks before anything else.*
+Eleven pages read by one agent each, both parts read end to end, nine pages
+rewritten (`anatomy/README.md`, `anatomy/anatomy.md`,
+`anatomy/what-this-book-skips.md`, `foundations/README.md`,
+`foundations/identifiers-and-registries.md`, `foundations/resource-system.md`,
+`foundations/tags.md`, `foundations/codecs-nbt-json.md`,
+`foundations/data-driven-types.md`) plus one-clause link edits on
+`data-components.md` and `text-components.md`.
 
-### Corrections — what the page said, what the decompile says
+### Corrections — re-derived against the decompile before the fix
 
-1. **`client/the-client-level`:129** said the renderer is reached directly by
-   "the chunk cache and **one** packet handler". `ClientPacketListener` has
-   five references to `Minecraft.levelExtractor`
-   (`ClientPacketListener.java`:538, 550, 940, 1329, 2677): two hand it to a
-   `ClientLevel` constructor, and **three** are calls on it —
-   `handleChunksBiomes` marking sections dirty (:940), `handleLogin`
-   refreshing the debug renderer list (:550) and `handleGameTestHighlightPos`
-   (:2677). Session N had flagged the count as right only for the
-   dirty-marking path (pass5.md:770); it is. The sentence now says three and
-   names what each does.
-2. **`client/sound-engine`'s verified line** said the trace crosses "five
-   threads". The page's own table lists five threads that *take part in the
-   system*, but `Util.ioPool` appears in no step of the trace — it polls the
-   ALC device list beside it (`AbstractDeviceTracker.tick`). A block placed
-   near you crosses four: Server, Render, the sound engine's, and
-   `Util.nonCriticalIoPool`. The landing page had it right and the page did
-   not. Corrected to "four of the system's five threads", with a sentence
-   saying which one is the odd one.
-3. **`client/options`:354** said "the one thing a client-information packet
-   can provoke is a hat-visibility broadcast".
-   `ServerGamePacketListenerImpl.handleClientInformation` does broadcast the
-   hat, but `ServerPlayer.updateOptions` also writes two of the nine fields
-   into synched data — `ServerPlayer.DATA_PLAYER_MODE_CUSTOMISATION` and
-   `ServerPlayer.DATA_PLAYER_MAIN_HAND` — which reach every tracker.
-   `entities/synched-entity-data`:303-305 already said so, so this was a page
-   contradicting another page. Rewritten as two outward effects and still no
-   reply, with the link.
-4. **`client/gui-and-screens`:35** called `MenuScreens` "the only registry of
-   screens in the game" and :232 on the same page called `DialogScreens` "the
-   second one". A page contradicting itself. The cast row now says what
-   `MenuScreens` is *for* — the registry the menu packets look a screen up in.
-5. **`client/gui-and-screens`:96** said "`Gui.isPausing` **is** what stops the
-   integrated server". `Minecraft.runTick` (`Minecraft.java`:1321) recomputes
-   `Minecraft.pause` as a conjunction of three: a singleplayer server, the
-   GUI saying it is pausing, and the world not being published. Against
-   `the-client-loop`, which had it right. Rewritten as the screen's *vote*,
-   with the loop cited for the other two — and the overlay fact, which the
-   loop page lacks, kept here.
-6. **`client/README`:135-139** put the Part X/XI boundary at
-   `Minecraft.renderFrame`'s *extract* zone, with "the handful of statements
-   before that zone" still Part X's. The *frame* zone is pushed in
-   `Minecraft.runTick` (`Minecraft.java`:1308) around the whole of
-   `renderFrame`, so *update window*, *update* and *extract* are all inside
-   it — there are no statements before it. `the-client-loop`,
-   `rendering/the-frame` and `rendering/README` all say the *frame* zone, so
-   the landing page was the outlier. Rewritten to the *frame* zone, keeping
-   the real point: a few Part X cadences run inside it and stay Part X's for
-   what they decide, not where they sit.
-7. **`client/the-client-loop`:29** called `TickRateManager` "a *server*
-   object". It is `net.minecraft.world.TickRateManager` — shared; the server
-   subclass is `ServerTickRateManager`, and `ClientLevel` holds a plain one
-   fed by packets. The cast row now says a shared class carrying numbers only
-   the server sets.
-8. **`client/the-client-loop`:140** said `ServerboundClientTickEndPacket`
-   goes out "once per unpaused client tick that has a connection". The send
-   (`Minecraft.java`:2064) is inside `Minecraft.tick`'s level block, so it
-   also needs a level — a client still in configuration sends none. Corrected.
-9. **`client/the-client-loop`:234** presented `Main.main`'s arming of
-   `ClientShutdownWatchdog.startShutdownWatchdog` as the only one. There are
-   two: `Main.java`:291 (post-main) and `Minecraft.java`:545, the window-close
-   callback, armed against the game thread while the game is still running.
-   Corrected, with what the second one catches.
-10. **`player/input-to-movement`:296-298** said the client calls
-    `BlockStatePredictionHandler.onTeleport` "to drop its outstanding block
-    predictions". `BlockStatePredictionHandler.java`:70 assigns
-    `lastTeleportSequence = currentSequenceNr`, and :49 uses it only to pass a
-    null player position to `ClientLevel.syncBlockState` — it suppresses the
-    *position snap*, and the predictions settle normally.
-    `prediction-and-acks` had it right. Corrected, and the citation repointed
-    from `#the-six-windows` to `#the-four-writes`.
-11. **`player/input-to-movement`:131-132** said "Releases are always
-    delivered". `KeyboardHandler.keyPress` (`KeyboardHandler.java`:527-534)
-    returns early when `Screen.keyReleased` consumes the event, before the
-    unconditional `KeyMapping.set(key, false)` at :602 — so a screen can
-    swallow a release, which is the asymmetry `input-and-keybinds`:117-120 is
-    built on. Corrected to: a release is recorded whether or not a screen is
-    open, but a screen that consumes one swallows it.
-12. **`world/fluids`:167-171** said the client ran `BucketItem.use` inside
-    the prediction window, "holding the write until the server's
-    acknowledgement arrives", and then said in its own next clause that the
-    source appears with no round trip. The window holds the *old* state, not
-    the write. Corrected.
-13. **`reference/hud-elements`** — three defects in the table, all found by
-    reading `Hud.extractRenderState` and `Gui.extractRenderState` against it.
-    (a) `SpectatorGui.extractAction` (`Hud.java`:615) is a recorded element
-    and had no row; it is the *else* of the selected-item-name row. Added as
-    17b. (b) Row 27's *hidden by F1* cell held a condition instead of an
-    answer, so the table never said whether subtitles are hidden — they are,
-    with the in-game-UI exception the same row's last cell describes; and
-    "something audible is playing" describes a *distance* test
-    (`SubtitleOverlay.Subtitle.isAudibleFrom`), not a volume one, which is
-    what `sound-engine`'s hook turns on. Both rewritten. (c) The second table
-    said `Gui` records four elements "after the overlay or screen" without
-    ever giving the overlay or screen a row, so the record order had a hole
-    in it. Added as a dash row.
-14. **`reference/glossary`:370-371** defined *Level* as the two subclasses
-    "sharing an abstract `Level` and remarkably little else", where
-    `the-client-level`'s whole comparison is of methods both sides *inherit*
-    and one side hollows out. Rewritten to say that.
-15. **`anatomy/what-this-book-skips`:375** wrote "the channel pool" and "the
-    channel pools" in the passage that forwards to a page whose own heading is
-    *The channel limits are counters, not pools*. Reworded, and the forward
-    now carries that section's anchor; the binaural-rendering promise in the
-    same sentence is now qualified to what the page actually pays off
-    (`Options.directionalAudio`).
-
-### Suspicions re-derived and found sound (no change)
-
-- `what-makes-a-sound`:124 "the seed … so that every client picks the same
-  variant **and the same pitch**" against `block-interaction`:306-308 "each
-  side draws its own pitch from its own `Level.getRandom`". Both true and
-  about different paths: `ClientboundSoundPacket` carries an explicit pitch
-  field *and* `AbstractSoundInstance.getPitch` multiplies it by
-  `Sound.getPitch().sample(this.random)` off the seeded random, so recipients
-  agree; the *predicting* client generates its own seed and does not.
-  Session J made the wording say which is which rather than changing either.
-- `debugging-the-running-game`:71 `DebugSubscriptions.RAIDS` fed by
-  `LevelChunk.registerDebugValues` — confirmed at `LevelChunk.java`:758.
-- `debugging-the-running-game`:69-70 against `points-of-interest`:330-332 on
-  the `POIS` feeder: both right, at two levels of the same call —
-  `LevelDebugSynchronizers.registerPoi` delegates to
-  `TrackingDebugSynchronizer.PoiSynchronizer`.
-- `the-client-loop`:241-244 on the out-of-memory path: confirmed at
-  `Minecraft.java`:908-949 — `oomRecovery` makes every later iteration call
-  `runTick(false)`, and a second `OutOfMemoryError` rethrows.
-- `client/options`:357-360 "the only thing that ever sets
-  `Options.serverRenderDistance`": confirmed, two call sites, both the server
-  announcing its own radius (`ClientPacketListener.java`:564 and :2560).
-- `input-and-keybinds`:34 "the four mappings that can behave as toggles" and
-  :73-75 "with default bindings, sneak and sprint": both right.
-  `Options.java` constructs four `ToggleKeyMapping`s, and
-  `ToggleKeyMapping.shouldRestoreStateOnScreenClosed` additionally requires
-  the current binding to be a `KEYSYM`, which attack and use are not by
-  default.
-- `input-and-keybinds`:132-138 against `input-to-movement`:139-142 on whether
-  `MouseHandler.handleAccumulatedMovement` is gated on the mouse being
-  grabbed: the screen half and the turn half are tested separately
-  (`MouseHandler.java`), and the reset runs outside both. Both pages right
-  about their own half.
-- `the-client-level`:55-57 on `ClientboundExplodePacket` carrying the sound,
-  the particle and the knockback — confirmed against the record's seven
-  components.
-- `debugging-the-running-game`'s renderer count: 25 `renderers.add(new …)`
-  calls in `DebugRenderer.refreshRendererList`. The page said "about two
-  dozen" in one place and "twenty-five" in another; the hedge is now the
-  count.
-
-### Claims this session introduced
-
-**Written from the decompile, and therefore pass 9's first targets.**
-
-- `client/hud` — the toast shelf: five slots (`ToastManager.SLOT_COUNT`), a
-  waiting deque, `Toast.occcupiedSlotCount` requiring *consecutive* free
-  slots via `ToastManager.findFreeSlotsIndex`, `Toast.Visibility` as a
-  two-state animation each carrying a sound, `Toast.getToken` for
-  replacement, and `NowPlayingToast` as a separate field suppressed by
-  `PauseScreen` and `MusicToastDisplayState`. Six implementations named.
-- `client/hud` — the chat-GUI family: `GuiMessage`'s five fields including
-  the signature; `GuiMessageTag`'s five instances (system,
-  system-singleplayer, not-secure, modified, error), the two-pixel indicator
-  bar drawn at x −4..−2 (`ChatComponent.handleTag`) — to the *left* of the
-  line, outside the text — the hover tooltip, the icon on *modified* only and
-  placed after the text (`GuiMessage.Line.getTagIconLeft`), and `logTag` as
-  the only part reaching `ChatLog`.
-- `client/hud` — the three gates above the whole HUD, moved here from
-  `reference/hud-elements` and restated: `GameRenderer.extract` computes
-  them, `Gui.extractRenderState` applies them.
-- `client/hud` — the clear-colour override beside `GuiRenderState.isHudHidden`
-  and the claim that every reading site of either is `GameRenderer`'s rather
-  than `LevelRenderer`'s, moved here from `the-gui-render-tree`.
-- `client/debugging-the-running-game` — the whole *Nothing in the game draws
-  a gizmo* section, moved from `anatomy/what-this-book-skips` and extended:
-  the thread-local collector, `Gizmos.addGizmo` throwing with none installed,
-  the seven shape records, and the four collectors table
-  (`Minecraft.collectPerTickGizmos`,
-  `LevelExtractor.collectPerFrameMainThreadGizmos`,
-  `LevelRenderer.collectPerFrameRenderThreadGizmos`, and `IntegratedServer`'s
-  around its packet-and-tick step) with `GameTestServer` installing
-  `GizmoCollector.NOOP` and a dedicated server installing none.
-- `client/debugging-the-running-game` — the whole *The other query* section:
-  `Options.keyDebugCopyRecreateCommand`, the shift modifier choosing the
-  client's own NBT over the server's, `DebugQueryHandler`'s single
-  transaction id and single callback, the two query packets, the gamemaster
-  permission gate on including NBT, and the reduced-debug-info gate.
-- `client/gui-and-screens` — `GameNarrator` as a wrapper over *text2speech*
-  with `NarratorStatus` in front of it and two tempers (queued against
-  `GameNarrator.saySystemNow`).
-- `client/gui-and-screens` — the coverage claim: two hundred-odd classes in
-  `client/gui/screens` and its eighteen sub-packages (measured: 224 files, 18
-  directories), covered as one pattern with four routes; seven previously
-  English-only examples given their class names.
-- `client/text-and-fonts` — the five provider kinds named as classes
-  (`BitmapProvider`, `TrueTypeGlyphProviderDefinition` with `FreeTypeUtil`,
-  `UnihexProvider`, `SpaceProvider`, `ProviderReferenceDefinition`) and
-  `SpecialGlyphs` as the not-from-a-file case; and the other two of the four
-  ICU sites named (`CreateBuffetWorldScreen`, `LocalTime` — measured by
-  grepping `com.ibm.icu`, which hits exactly four files).
-- `client/the-gui-render-tree` — the definition of *stratum*; the note that
-  `GuiGraphicsExtractor.nextStratum` and `GuiRenderState.nextStratum` are the
-  same barrier under two names; the blur section's three gates
-  (`Screen.extractBlurredBackground` as the only caller, the throw on a second
-  request, the option, the in-game-UI opt-out) and the claim that the
-  darkening tint is sharp because it is recorded after the boundary;
-  `DynamicAtlasAllocator` as what runs out of room; `IMEPreeditOverlay` named;
-  and the `PictureInPictureRenderer` half of the pip family.
-- `client/what-makes-a-sound` — the reorganised *Who hears it*: both
-  `ClientLevel.playSeededSound` overloads carrying the excluded-player rule,
-  the two qualifications (`Player.playServerSideSound` excluding nobody; the
-  predicting client drawing its own seed from `Level.soundSeedGenerator`), and
-  `SoundType` described as the five-sound group on
-  `BlockBehaviour.Properties`. Also `SoundEventRegistrationSerializer` named
-  as what parses a `sounds.json` entry.
-- `client/the-client-loop` — the two timers as a fifth bullet in the
-  queues-and-re-entries list (`PeriodicNotificationManager` and
-  `RemoteFriendListUpdateHandler`, each hopping back with
-  `BlockableEventLoop.execute`), moved from the Part X landing page, which
-  was the book's only explanation of either.
-- `client/the-client-level` — `ClientLevel.EntityCallbacks` as the four hooks
-  and `TransientEntitySectionManager` as the comparison table's last row made
-  concrete.
-- `client/README` — the part's coverage answer: nine tenths of what no page
-  names is one more screen or widget (measured from `pass5_coverage.py`'s
-  sub-package table — 27,146 of 29,360 unmentioned lines are under
-  `client/gui`, 23,731 of them screens and widgets), plus the two declared
-  exceptions (the model tree, player reporting).
-- `src/figures/parts-dependency.md` — a new solid arrow **VII → X**, because
-  the landing page now lists `containers-and-menus` under *before you start*
-  for lecture six. `check_deps.py` caught the missing arrow and refused the
-  first version of the page, which is the gate doing its job.
-
-### Ownership decisions, for the record
-
-- The excluded-player sound rule: `what-makes-a-sound#who-hears-it` owns it;
-  `the-client-level` cut to one sentence; `block-interaction` and
-  `using-an-item` keep copies that add something.
-- The distance delay ("sound has a speed"): `what-makes-a-sound` owns it;
-  `the-client-level`'s Q&A cut.
-- The music fade against the music slider: `sound-engine` owns it;
-  `what-makes-a-sound` cut to a clause and a link.
-- The pause predicate: `the-client-loop` owns it; `gui-and-screens` keeps the
-  screen's vote and the overlay default.
-- The un-rebindable F3 shortcut: `input-and-keybinds` owns it; `hud` cut to a
-  citation plus its own half.
-- The blur split: `the-gui-render-tree` owns the *barrier*,
-  `post-processing` owns the *chain that runs in the gap*; both rewritten,
-  both linked.
-- `Gizmos`: moved to `debugging-the-running-game`; `what-this-book-skips`
-  keeps the address, which is that page's job.
-- The frame cap, `ClientShutdownWatchdog` and the fenced-task queue were
-  reported as duplicates with Part XI pages and **left for session K**, which
-  owns the other half of each.
-
-## Pass 5, session K — Part XI, rendering (2026-09-06)
-
-*Thirteen reader-of-the-book agents — one per page, the landing page and
-`reference/submit-phases` — and one whole-part read in watching order. Every
-finding acted on was re-derived against `reference/26.2` by the session
-itself. Corrections first, then the claims the session introduced, which pass
-9 checks before anything else.*
-
-### Corrections — what the page said, what the decompile says
-
-1. **`rendering/entity-rendering`:97** said "Visibility is **two tests in two
-   places**. The frustum test is `EntityRenderer.shouldRender`". That method
-   runs *two* tests, in order: `Entity.shouldRender(camX, camY, camZ)`, a
-   distance test scaled by the entity's bounding box, and only then
-   `Frustum.isVisible` (`EntityRenderer.java`:66–78). `block-entity-rendering`
-   :162 had it right and the entity page had it half right, so the sibling
-   taught the entity rule better than the entity page. Now **three tests in
-   two places**, with the distance half stated.
-2. **`rendering/post-processing`:12** said "every chain this game will ever
-   load is named by a constant in Java, and there are only six of those",
-   while its own :251 said three of the six are "built inside
-   `GameRenderer.checkEntityPostEffect`". Three are `static final` fields
-   (`LevelRenderer.java`:99–100, `GameRenderer.java`:92); the other three are
-   inline `Identifier.withDefaultNamespace` literals in a switch
-   (`GameRenderer.java`:213–223). The page contradicted itself; the claim it
-   wants — the set of ids is closed and written in Java — survives, and now
-   says three constants and three literals.
-3. **`reference/submit-phases`:64** said a quad-particle group is submitted
-   **once** and lands in two phases. `SubmitNodeCollection.submitQuadParticleGroup`
-   (`SubmitNodeCollection.java`:250–253) builds **two** separate
-   `QuadParticleFeatureRenderer.Submit` records, one into `solid` and one into
-   `afterTerrain`. `particles`:287 said twice and was right; the Reference page
-   said once and was wrong. Now "reaches the collector in one call and becomes
-   two nodes".
-4. **`rendering/the-window`:197** said "An atlas is assembled into one with
-   `NativeImage.copyRect`, `NativeImage.resizeSubRectTo` and
-   `NativeImage.fillRect`". None of the three assembles an atlas.
-   `copyRect`/`fillRect` are used by `Unstitcher` (a sprite *source*, before
-   any stitch), `CubeMapTexture` and `SkinTextureDownloader`;
-   `resizeSubRectTo` has exactly one caller in the game,
-   `GameRenderer.java`:512, the world-icon downscale. The atlas is assembled
-   on the GPU, which `models-and-atlases`:219 already said. Rewritten to what
-   the methods do, with a sentence saying what an atlas is *not*.
-5. **`rendering/visibility-and-the-frame-graph`:61** said
-   `LevelExtractor.applyFrustum` "is the last thing *extract* does".
-   `LevelExtractor.extract` (`LevelExtractor.java`:96–141) runs it near the
-   *top*, right after `prepareDispatchers`, and everything after it —
-   entities, block entities, dirty sections — reads the list it just filled.
-   Three other pages depend on that order. Rewritten to "runs near the top of
-   extract", and the consequence stated as the finding it is.
-6. **`rendering/models-and-atlases`:298** said the display block-model table
-   is used by "item frames, **block entities** and ten entity renderers". No
-   block-entity renderer reads it. `BlockModelResolver` reaches the
-   block-entity side only as a field of `BlockEntityRendererProvider.Context`
-   (`BlockEntityRenderDispatcher.java`:102), which nothing under
-   `renderer/blockentity` or `renderer/special` calls. Eleven entity
-   renderers read it and nothing else does. The sentence is cut (the table is
-   now `block-entity-rendering`'s) and the owner states the `Context` fact.
-7. **`rendering/lightmap-fog-and-sky`:324** said "the weather reads neither
-   clock nor attribute, seeding each column from its own coordinates" — while
-   the same page's opening (:15) said the rain's texture scrolls off the raw
-   world clock. `WeatherEffectRenderer` passes `level.getGameTime()` into both
-   `createRainColumnInstance` and `createSnowColumnInstance`
-   (`WeatherEffectRenderer.java`:93–95), and the snow's `vOffset` is
-   built from `ticks & 511L` (:236). The *seed* is coordinates, the *scroll*
-   is the clock. The page was contradicting itself and the closing sentence
-   was the wrong half.
-8. **`rendering/the-window`:36** said "All of it lives in
-   *com/mojang/blaze3d/platform*" of a cast table whose first two rows are
-   `Minecraft` (`net/minecraft/client`) and `GpuBackend`
-   (`com/mojang/blaze3d/systems`). Now "every row but the first two".
-9. **`rendering/the-window`:244** claimed the *rest of the package* and
-   omitted seven of the twenty-five classes in it, `TextureUtil` (288 lines)
-   the largest. Five of the seven are pipeline state and belong to
-   `blaze3d`; the sentence now says so and `TextureUtil` is explained.
-10. **`rendering/the-frame`:78** described the *update window* zone as
-    "reconfigures the surface if it needs it and then calls
-    `GpuSurface.acquireNextTexture`". `Minecraft.java`:1341–1342 opens the zone
-    with `Window.updateFullscreenIfChanged`, which `the-window`:166 states and
-    `the-frame` omitted. The zone now has three statements and the first is
-    cited to its owner.
-11. **`reference/naming-drift`:396** said the frame "builds an immutable
-    render state **on the game thread**". Both halves run on the Render thread
-    (`Minecraft.renderFrame`), and the glossary already retired *immutable*
-    for the top-level states. Reworded to "copies the live game into render
-    state and then draws from that copy, both halves on the Render thread".
-12. **`world/lighting`:354** cited `section-meshing#a-click-and-the-flag-it-leaves-behind`
-    for the `hasAllNeighbors` light gate, which is two sections later under
-    *The sweep that only looks at what you can see*. The anchor existed, so
-    `check_links.py` passed it; repointed.
-13. **`rendering/section-meshing`:282** said *BlockRenderDispatcher* is
-    "gone", while `reference/naming-drift`:302 gives `ModelBlockRenderer` as
-    its successor. Both are true of different things; the drift box now says
-    the name is gone and `ModelBlockRenderer` does the tesselating, and
-    `BlockAndTintGetter.getShade` is separated out as the one with no
-    successor at all.
-14. **`reference/submit-phases`:31** said three phases are a
-    `TranslucentFeatureRenderPhase` without saying which. They are rows 4, 7
-    and 8 — `seeThroughNameTags`, `translucentBlocksAndItems`,
-    `translucentModels` (`SubmitNodeCollection.java`:55–69) — and not the ones
-    the names suggest. The count was an unenumerated assertion on a page whose
-    whole job is enumeration.
-
-### Suspicions re-derived and found sound — a strike is a claim
-
-- `post-processing`:239, the F3 pie chart. The camera-entity chain runs in
-  `GameRenderer.render` *after* `renderLevel` has returned
-  (`GameRenderer.java`:443–449), so it is inside the *world* zone but outside
-  all five of `renderLevel`'s sub-zones, *screenEffects* included. Both pages
-  were right and neither needed changing.
-- `the-frame`:137, `TickRateManager.isEntityFrozen` "excludes anything with a
-  player aboard", against `block-entity-rendering`:263, "never freezes a
-  `Player`". `TickRateManager.java`:73 excludes both, and each page states the
-  half its own scenario needs. No contradiction.
-- `the-window`:221, the error callback "swapped three times over the game's
-  life". True as a lifecycle statement (`Window.java`:312, 335, 346); the
-  scoped swaps are a fourth *kind*, now written as such rather than as a
-  correction to the count.
-- `the-window`:256, "*ScreenManager*, which never existed here", against
-  `naming-drift`:312. Left: rule 3 makes the page a claim about 26.2, and the
-  drift row is a claim about where a 1.21 reader should look. Logged for pass
-  9 rather than settled here.
+- `foundations/identifiers-and-registries.md` — said `MappedRegistry` "is
+  keyed three ways (`byKey`, `byLocation` and the insertion-ordered
+  `byId`)". **There are four.** `MappedRegistry.java:40` declares
+  `private final Map<T, Holder.Reference<T>> byValue`, an `IdentityHashMap`
+  built at :65 and written at :129; `getKey` (:141) and `getResourceKey`
+  (:148) both read it, so the object-to-name direction goes through `byValue`
+  and not through the three the page named. `toId` (:37) is the parallel
+  identity map to the number. Now: four indexes, one per lookup direction.
+- `foundations/codecs-nbt-json.md` — said `StreamTagVisitor` and its
+  neighbours "let `NbtIo.parse` pull **two** fields out of a region chunk",
+  then named three consumers. Two is right for one of them only:
+  `IOWorker.java:105` builds a `CollectFields` of two `FieldSelector`s
+  (*DataVersion*, *blending_data*); `StructureCheck.java:113` builds one of
+  three (*DataVersion*, *Level/Structures/Starts*, *structures/starts*). Now
+  stated as the mechanism — a `CollectFields` over whatever selectors the
+  caller wants — with both counts attributed.
+- **Checked and found correct, so no change:** `data-components.md`:183-191
+  and `identifiers-and-registries.md`:306-311 were reported as contradicting
+  each other on the singleplayer component binding. They do not.
+  `ClientConfigurationPacketListenerImpl.java:177` passes
+  `connection.isMemoryConnection()` as
+  `tagsAndComponentsForSynchronizedRegistriesOnly`, and
+  `RegistryDataCollector.java:166` negates it into `updateComponents`'
+  `includeSharedRegistries` (:142-148), so a memory connection binds only the
+  `RegistrySynchronization.isNetworkable` registries. Both pages say that.
 
 ### Claims introduced
 
-**Ownership moves, each stated once and cited everywhere else.**
+- **A new section, `identifiers-and-registries.md` §*Feature flags: the same
+  registry, narrowed*** — the largest new claim of the session, discharging
+  a coverage entry. Each sentence, with where it came from:
+  `FeatureFlagSet` is a *long* mask plus a `FeatureFlagUniverse`, cap
+  `MAX_CONTAINER_SIZE` = 64 (`FeatureFlagSet.java:9-18`); one universe,
+  *main*, and four flags — `VANILLA`, `TRADE_REBALANCE`,
+  `REDSTONE_EXPERIMENTS`, `MINECART_IMPROVEMENTS` (`FeatureFlags.java:37-48`);
+  `isExperimental` is "not a subset of `VANILLA_SET`" (:34-36);
+  `FeatureElement` has one method and seven implementors — `Item`,
+  `BlockBehaviour`, `EntityType`, `GameRule`, `MenuType`, `Potion`,
+  `MobEffect`; `FILTERED_REGISTRIES` names those seven registries
+  (`FeatureElement.java:10`);
+  `HolderLookup.RegistryLookup.filterFeatures` returns *this* for a registry
+  not in the set and a filtering delegate for one that is
+  (`HolderLookup.java:82-87`); **"the registry underneath is not touched, and
+  neither is its numbering — a disabled item keeps its wire id"** is the
+  inference from that delegation and is the sentence most worth re-deriving;
+  the consumers are `CommandBuildContext.java:22`, `GameRules.java:109`,
+  `MinecraftServer.java:373` and `LevelReader.java:232-235`; the set is
+  `WorldDataConfiguration.enabledFeatures`.
+- **`resource-system.md`, the two `server/packs` corners** the skips page had
+  been promising it: *linkfs* as `LinkFileSystem` / `LinkFSProvider` /
+  `LinkFSPath`, and `DownloadQueue` — one directory per pack UUID, one at a
+  time on a `ConsecutiveExecutor` over `Util.nonCriticalIoPool`, a
+  `JsonEventLog` per attempt, and `DownloadCacheCleaner.vacuumCacheDir` at
+  construction trimming to `MAX_KEPT_PACKS` = 20 (`DownloadQueue.java:37-47`,
+  `DownloadCacheCleaner.java:30-60`). **"newest kept, one per directory
+  before any directory's second"** is a reading of `prioritizeFilesInDirs` and
+  the two comparators, and is the claim here to check.
+- **`anatomy.md`, the packet-drain contrast.** The hop paragraph now ends
+  "so a client at 200 frames a second takes the server's updates ten times
+  more often than it ticks" — arithmetic over the page's own 20 Hz tick, and
+  a restatement of `what-the-client-is-told.md`:442. Check the framing, not
+  the numbers.
+- **`anatomy.md`, the 1.21-era callout** was replaced: out went the
+  `Gui`/`Hud` box (owned by `client/hud` and `reference/naming-drift`), in
+  came `DeltaTracker` was *Timer*, which restates
+  `reference/naming-drift.md`:52 and :68.
+- **`anatomy.md`, `GameConfig`** — new clause: the client's `Main` parses its
+  command line into a `GameConfig` the `Minecraft` constructor is built from.
+  Closes the part's one coverage gap; check against `client/main/Main`.
+- **`anatomy/README.md` is rewritten to the landing-page role** and its
+  figure redrawn from the twelve other parts to the part's own two pages.
+  New claims: that the part's argument is the two loops rather than "a server
+  that ticks and a client that draws"; that the boundary page is second
+  because a boundary is drawn before the investment (moved from
+  `lectures.md`:466-468, which keeps it as an ordering claim); and *where the
+  part stops*, which asserts that Parts III, IX and X take the three threads
+  onward. The lane sentence is now "nearly every lane ... is a class, and the
+  handful that are not stand for a thread", which is
+  `reference/lanes.md`:5-10 and `check_lanes.py`'s own count (333 and 9).
+- **`foundations/README.md`** — "Part II is not a stack but a fan ... the
+  figure has two roots and no single column" replaces "Part II is a stack".
+  A claim about the figure directly above it, and checkable against it.
+- **`what-this-book-skips.md`, three reframings.** `com/mojang/blaze3d/audio`
+  is no longer presented as skipped — `client/sound-engine` teaches all of it
+  (its cast carries `Library` and `AbstractDeviceTracker`; :129 the thirty
+  channels, :240 HRTF), so the section keeps only the address argument. The
+  statistics page's criterion-parse paragraph became a citation of
+  `scoreboard-and-data`:158-162, which owns it. The recipe book is stated as
+  `items/recipes`' rather than as skipped. **The hatching in the generated
+  treemap was not changed to match**, so the figure and the prose should be
+  read together at pass 9.
+- **Ownership moves that changed what a page asserts** (each now one sentence
+  and a link where it was an explanation): the two tag tables, from
+  `identifiers-and-registries` to `tags`; the GPU-backend retry order, to
+  `rendering/the-window`; the crash relay, to `how-a-server-dies`; the
+  empty-server pause, to `server-tick`; `MinecraftServer.spin`'s order, to
+  `starting-a-server`; the Netty hop's mechanism, to `the-connection`. In
+  each case check that the surviving sentence is still true on its own — a
+  trimmed sentence is a new claim.
+- **Outbound links gained anchors** across the nine pages. An anchor is a
+  claim that the named section is the answer; all resolve under
+  `check_links.py`, which proves the heading exists and not that it answers.
 
-- The **merging rule** moved from `reference/submit-phases`:31–44 to
-  `entity-rendering`'s *prepare* section, with the two phase classes, the
-  batch-key explanation, `RenderTypeFeatureRenderer.Group` and
-  `RenderType.canConsolidateConsecutiveGeometry` moving with it. The Reference
-  page keeps the 12:3 split, now enumerated, and a link.
-- The **two baked block-model tables** settled to `block-entity-rendering`
-  (its scenario, its figure); `models-and-atlases` keeps the `BlockModel`
-  naming trap and a link.
-- The **`prepareSharedState` handshake** cut to a citation of
-  `resource-system#the-shared-state-channel`; `models-and-atlases` keeps only
-  which end of it it is (thirteen published, two awaited).
-- **Directional shading and `CardinalLighting`** moved off `visibility` onto
-  `lightmap-fog-and-sky`'s *What is not an attribute*.
-- **The compile ordering** (`compileSections` after `FrameGraphBuilder.execute`)
-  split: `visibility` keeps where the call sits, `section-meshing` keeps what
-  it costs, each citing the other.
-- **The wall** cut on `visibility` to one sentence and an anchor into
-  `the-frame`.
-- **The frame cap** cut on `the-frame` and `the-window` to citations of
-  `the-client-loop`, which receives the *iconified, not unfocused* distinction.
-- **`ClientShutdownWatchdog`** cut on `the-window` to the one arming it owns;
-  `the-client-loop` receives the fifteen-second sleep, the daemon thread and
-  the report-only-versus-halt difference.
-- **The minimised-window answer** won by `the-frame`; `the-window` cut to
-  `Window.isMinimized` plus the anchor.
-- **The backend-choice answer** won by `the-window` — its figure draws the
-  retry loop — and it receives the ordered pair, `GlBackend`/`VulkanBackend`,
-  the OpenGL-first default and the unclean-shutdown double downgrade from
-  `blaze3d`, which keeps one sentence.
-- **The static-pipeline precompile** and **the two-stage GLSL preprocessing**
-  won by `blaze3d`, which receives the reload phase, the thread and the
-  all-or-nothing cache swap; `post-processing` cut to citations.
-- **The *Globals* block's seven members** moved to `blaze3d` and enumerated
-  from `GlobalSettingsUniform.UBO_SIZE`; `post-processing` keeps the
-  consequence.
-- **`CrossFrameResourcePool`'s three-frame hold** moved off the part's last
-  page onto `visibility`, beside `createInternal`.
-- **The frame-graph inspector** moved from `post-processing` onto `visibility`,
-  which owns `FrameGraphBuilder.execute`; `post-processing` keeps the contrast.
-- **The spectator-chain answer** won by `post-processing`; `the-frame` cut to
-  one clause and an anchor. **The UI lightmap** won by `lightmap-fog-and-sky`,
-  which receives the `levelLightmap`/`uiLightmap` pair; `the-frame`'s Q&A cut
-  to the answer and a link.
-- **The hand's second submit storage** won by `the-frame`, which now names
-  `ItemInHandRenderer` and `ScreenEffectRenderer` and pays off the hand-forward
-  `entity-rendering`:293 had been making to it; `block-entity-rendering` cut to
-  a citation. **The six partial ticks** stay `the-frame`'s and
-  `block-entity-rendering` keeps only its own difference, which is the declared
-  pair's business.
+### Tool bug
 
-**Coverage written.**
+- `tools/map_source.py` and `tools/pass5_coverage.py` reported different
+  populations for the same packages — Part I as 7 classes / 6,770 lines and
+  6 / 6,766 — while `map_source.py`'s own comment claimed they "can never
+  disagree". The difference is `package-info.java`, which the atlas counts as
+  a file and the coverage tool drops. No published page states either number
+  today (Part I's landing page carries no size), so nothing false was
+  published. Both tools now say which population they mean, and the false
+  comment is gone. Every part with a `package-info.java` reads one class
+  larger in the atlas than in its coverage report.
 
-- `models-and-atlases`: the three branching item models and **thirty-three
-  properties in three registries** (10 numeric, 10 select, 13 conditional),
-  `NeedleDirectionHelper`'s per-stack damped compass needle and its
-  *wobble: false* opt-out, `LocalTime`'s once-a-second re-read, and
-  `DisplayContext`. This discharges `what-this-book-skips`' promise that the
-  `client/renderer/item` properties subtree is covered as a section here.
-- `models-and-atlases`: the chunk-layer decision made exact — `Transparency`
-  is two booleans and `ChunkSectionLayer.byTransparency` reads them
-  translucent-first — with `Sheets` named as where the item render type comes
-  from.
-- `block-entity-rendering`: `BlockModelRenderState` as why one entry holds
-  quads *and* a renderer; the built-in table's four other model kinds
-  (`EmptyBlockModel`, `SelectBlockModel`, `ConditionalBlockModel`,
-  `CompositeBlockModel`) and the **five bare wrappers** — bell, conduit, end
-  gateway, end portal, and the enchanting table, whose built-in model is a
-  book with no table under it; `WallAndGroundTransformations`;
-  `BlockEntityWithBoundingBoxRenderer`'s `Player.canUseGameMasterBlocks` gate;
-  and the crumbling overlay's one construction site, with
-  `BlockDestructionProgress` ordering on stage before digger id.
-- `entity-rendering`: `EntityRenderers` and `EntityRendererProvider` as where
-  a shared renderer comes from; `DisplayRenderer`; and **the skin pipeline's
-  drawing half**, which pays off `player-anatomy`:118's "Drawing any of it is
-  Part XI's" — `AvatarRenderState` carries the whole `PlayerSkin` by value and
-  seven booleans, one per `PlayerModelPart`, while `PlayerModelType` never
-  reaches the state because the dispatcher used it to pick the renderer.
-- `the-window`: `TextureUtil`'s two pre-mipmap repairs (`TextureUtil.solidify`,
-  `TextureUtil.fillEmptyAreasWithDarkColor`) and why they exist;
-  `GLFWErrorScope` and `GLFWErrorCapture` as the scoped fourth kind of callback
-  swap and the four places that use them.
-- `lightmap-fog-and-sky`: `Lighting` — one UBO, five `Lighting.Entry` slices,
-  four written once in the constructor and only `LEVEL` rewritten — and
-  `WorldBorderRenderer` as the second thing in the weather pass.
-- `visibility-and-the-frame-graph`: `ChunkSectionLayerGroup` as
-  SOLID-and-CUTOUT against TRANSLUCENT; `ViewArea` as a
-  `RotatingSectionStorage` of `RenderSection`s, the same ring the dirty flags
-  use; and `TranslucencyPointOfView` as three integers clamped to minus one,
-  zero or plus one — **twenty-seven possible values** — with
-  `TranslucencyPointOfView.isAxisAligned` reading zero on any axis.
-- `section-meshing`: `ModelBlockRenderer.tesselateBlock` and `BlockQuadOutput`
-  as how a model becomes quads, and `ModelBlockRenderer.forceOpaque` as which
-  of the compiler's two callbacks a leaf block gets.
-- `blaze3d`: `GlTransientMemory`/`VulkanTransientMemory` and
-  `GlConst`/`VulkanConst`; and the homeless pass-3 cut
-  `RenderSystem.outputColorTextureOverride` /
-  `RenderSystem.outputDepthTextureOverride`, written as the one thing that
-  redirects where a draw lands, with the GUI item atlas and picture-in-picture
-  as its only setters.
-- `particles`: the eighty-odd `Particle` subclasses as a family, with
-  `ParticleProvider` in the cast, `DripParticle` and `FireworkParticles` named
-  as nests of variants, and `ParticleOptions` written — which pays off
-  `data-driven-types`:186's hand-forward.
-- `the-frame`: `TimerQuery` as the GPU stopwatch that brackets the frame and is
-  only restarted once the last one has been collected.
+## Pass 5, session A — the standard *(2026-09-05)*
 
-**The landing page**, rewritten to the role. Its argument is now stated:
-*the renderer is not allowed to look at the world*, and every seam a player
-notices is a disagreement about which copy something got. Its size sentence is
-the generated include over the mapping's four packages (1,254 / 93,012)
-instead of a hand count of three (1,179 / 87,000). The ten-line caption
-disowning its own figure is four lines, and the contradiction between "in the
-order things happen inside one frame" and "the pipeline arrows are not frame
-order" is resolved in favour of the second, with `lectures.md` re-synced to
-match. Its coverage answer is the part's boundary stated twice — packages
-other parts own that count against Part XI, and `client/resources/model`,
-which counts against Part X and is this part's subject.
+Three published pages rewritten — `src/lectures.md`, `src/SUMMARY.md` and
+`src/systems/commands/README.md` — plus `TEMPLATE.md` and two tools. No
+system page touched, no fact changed, and **no correction made**: nothing
+this session read was found wrong against the decompile, and nothing was
+re-derived, because every finding was about where a claim lives rather than
+whether it is true. The claims introduced:
 
-### Rulings made in writing
+**`src/lectures.md`**
 
-- **The `map_source.py` `PARTS` change is declined** (queue pass5.md:3499).
-  `client/resources/model` is billed to Part X and is `models-and-atlases`'
-  subject; moving it would change both parts' generated totals and invalidate
-  the coverage argument session J had just written into Part X's landing page.
-  The mapping is by package, the package is genuinely shared, and both landing
-  pages now say so in prose. No page moves, no tool changes.
-- **The *what a player sees* column stays** on `post-processing`, with a
-  sentence above the table saying it is a reading of the shaders rather than a
-  citation, and the *transparency* row reworded because it was the one cell
-  doing a different job.
-- **`the-window` is not cut.** The pass-2 suggestion that the whole page might
-  go is overtaken: the landing page now argues its place, and three pages open
-  on state it creates.
-- **`particles`' explosion section is not cut.** It is the book's only home for
-  the client explosion budget.
+- The dependency table gained a **membership rule** and three rows and lost
+  three. The rule is a claim about the corpus, checkable without the
+  decompile: *a page two or more landing pages name under **before you
+  start***, less `anatomy/anatomy`, `foundations/codecs-nbt-json` and
+  `foundations/identifiers-and-registries`. `tools/check_deps.py` re-derives
+  it on every run and fails on a mismatch, so pass 9's job here is to check
+  the rule is the right rule, not the rows.
+- Three new rows carry a new third-column phrase each, and each is a claim
+  about why a part depends on the page, re-derived from the depending
+  landing pages' own sentences: **`resource-system`** — "the staged load and
+  its barrier: a server's own data at startup, where recipes and loot tables
+  come from, and the reload the atlases are built by" (from `server/README`,
+  `items/README`, `rendering/README`); **`data-driven-types`** — "the *type*
+  field in a data-pack file and the registry it dispatches on; these two
+  parts own most of its instances" (from `worldgen/README`,
+  `commands/README`; the "most" rests on `worldgen/README`'s existing
+  twenty-six-of-fifty-six claim); **`text-components`** — "what a chat
+  message and a screen's label are before anything draws them" (from
+  `networking/README`, `client/README`).
+- "Watched straight through, the sidebar order still needs one departure
+  from itself, and it is now as small as it can be" — the claim is that
+  moving *environment attributes and timelines* to first in Part IV leaves
+  exactly one out-of-order watch (Part IV lecture 1 before Part III lecture
+  2) and that no other part's order departs. `check_deps.py` checks the
+  three orders agree; the "one departure" is the session's own reading of
+  the graph.
+- **102 blurbs cut.** Each was a second copy of a line on a landing page.
+  The ordering claims inside them were kept and are quoted unchanged; the
+  descriptions were dropped, not moved, because the landing page has them.
+  Pass 9 should read the kept clauses against the landing pages rather than
+  against the source: the risk is a clause that lost its subject in the cut,
+  not a fact that changed.
+- The new second paragraph ("Because the subject here is the order, nothing
+  below describes a lecture…") is a claim about the page itself.
+- "one page until this pass" became "two pages that were one" — a
+  pass-number rot fix, no claim.
 
-### For pass 9's attention, found and not fixed
+**`src/SUMMARY.md`** — *environment attributes and timelines* is now first
+in Part IV. Nothing else moved; no URL changed (mdBook derives the path from
+the file, not the summary).
 
-- `blaze3d`:206 names `StagedVertexBuffer` in the chunk-meshing staging chain;
-  `the-frame`:167 and `submit-phases`:77 describe it as the feature and GUI
-  buffer. One of the three is describing the wrong buffer.
-- `models-and-atlases`' "**twelve** separate layers" of soft failure, where the
-  prose enumerates eleven. Third pass to record it; it is a count assertion, so
-  it is pass 9's rather than pass 8's.
-- `entity-rendering`:191 and :257 — the pose-copy split and "half a dozen
-  others" are both stated as if exhaustive and are not (pass5.md:823).
-- `section-meshing`'s "the pool plus one" ceiling conflates concurrent compiles
-  with existing meshes.
-- `resource-system`:242 names `ParticleResources` as a second consumer of
-  `AtlasManager.PENDING_STITCH`; `models-and-atlases`' figure shows one.
+**`src/systems/commands/README.md`** (the exemplar landing page)
 
-## Pass 5, session L — Part XII, world generation (2026-09-07)
+- The size sentence is now `{{#include ../../generated/part-commands.md}}`
+  and reads **470 classes and 43,126 lines**, against the hand-count it
+  replaced (473 / 43,900). The prose's population is now "the nine packages
+  the atlas lists for this part", which is `map_source.PARTS` — check the
+  nine, and the `#where-each-part-lives` anchor.
+- New: "the command catalogue alone (`net/minecraft/server/commands`) is 102
+  classes and 12,800 lines" — the old sentence said "a hundred command
+  classes and 12,800 lines" without naming the package.
+  `src/generated/packages-depth4.md` gives 102 / 12,781.
+- New in the argument: "**None of those four needs any of the others.**" —
+  moved up from the shape section, which says "none of them needs another".
+  The sentence after it ("a reader who has those two can explain any of the
+  four from them") is new and is a claim about the part, not about the game.
+- **Cut, not moved**: "one of only two parts of a save that go through the
+  data fixer as JSON, the other being advancement progress".
+  `anatomy/what-this-book-skips`:252 owns it and this page links there.
+- Three *before you start* links now carry an anchor
+  (`server-tick#what-minecraftservertickchildren-runs-and-in-what-order`,
+  `data-driven-types#the-idea-stated-once`,
+  `the-connection#the-threads-underneath-it`). The claim in an anchored link
+  is that the named section is where the thing is explained; all three were
+  checked against the built heading ids.
 
-*All ten system pages, the landing page and `reference/density-function-nodes`
-rewritten; eleven pages in six other parts edited. Twelve reader agents, one
-per page; every finding acted on was re-derived by reading both pages, and
-every fact below was changed with the decompile open.*
+**`TEMPLATE.md`** — two new sections, *One home per mechanism* and *The
+landing page*. The only measured claim in them is the landing-page budget
+("about a hundred lines plus the watch order"), derived from the thirteen
+pages on 2026-09-05.
 
-### Corrections
+**`tools/check_deps.py`, `tools/verify_names.py`** — two new failing checks
+and the index label; see `docs/pass5-brief.md` A5. A tool is suspected
+first, twice over: `check_deps.py`'s membership check reproduced pass-4
+session A's hand-found list exactly (three absent, three present that should
+not be) before anything was edited, which is the evidence that it reads the
+pages right; and `check_deps.py --probe` now proves both new checks fail on
+the constructs they are for — a reordered sidebar, a short sidebar, a
+qualifying page with no row, a row for a page one part assumes, a row for a
+page nobody assumes, and a universal that takes a row — and pass on the
+shapes they must accept.
 
-- `worldgen/terrain`:231–233 said the carvers' lava level "is a constant in the
-  generator, not a data-pack field", **and the same page's own carve-state
-  paragraph at :210 called it *configured***. `CarverConfiguration.lavaLevel`
-  is a `VerticalAnchor` field on the configured carver
-  (`world/level/levelgen/carver/CarverConfiguration.java`:35, read at
-  `WorldCarver.java`:153). All four shipped configured carvers set it to
-  *above_bottom: 8* (`data/minecraft/worldgen/configured_carver/*.json`), which
-  is why it does not move with the sea level — it is anchored to the world's
-  bottom, not below its sea. The answer is rewritten to say that; :210 now
-  names the field.
-- `worldgen/terrain`:41–43 said `NoiseBasedChunkGenerator` "overrides
-  [`createBiomes`] only to use the chunk's cached sampler". The override
-  (`NoiseBasedChunkGenerator.java`:85–99) forks *and* builds the chunk's
-  `NoiseChunk` *and* wraps the biome resolver in `Blender` and
-  `BelowZeroRetrogen`. The whole fork inventory was Part IV's and is now a
-  citation; the three jobs are stated on `worldgen/biomes` instead.
-- `worldgen/biomes`:75 said "Only the noise generator does the above", where
-  "the above" includes the *init_biomes* fork drawn in the figure directly
-  over it. The base `ChunkGenerator.createBiomes`
-  (`ChunkGenerator.java`:121–126) forks for every generator; the override is
-  about the three lines below the fork. Rewritten, and it now agrees with
-  `terrain`.
-- `worldgen/density-functions`:17–18 called `DensityFunctions` "the library of
-  thirty-four node types you build one out of". Thirty-four is a count of
-  registered **ids** (`DensityFunctions.bootstrap`), not of classes: six ids
-  are one `DensityFunctions.Marker`, seven are one `DensityFunctions.Mapped`,
-  and *old_blended_noise* is `BlendedNoise`, which is not a `DensityFunctions`
-  member (`DensityFunctions.java`:56). Rewritten.
-- `worldgen/density-functions`'s *The six caches, and the three a single point
-  may use* named **two** single-point-safe classes in a section whose heading
-  promises three, and never named the sixth cache at all. The third is
-  `NoiseChunk.BlendDensity` (`NoiseChunk.java`:892–922), which tests no context
-  and answers from anywhere. Written in, with what it is.
-- `worldgen/blending`:320–322 said "Height and biome are **averaged** over
-  every measured column", where the page's own :260–268 says the biome answer
-  "is not a blend" and :328 calls it a threshold. Rewritten: both are drawn
-  from the same map at the same radius, the height averaged over it and the
-  biome taken from the nearest entry in it.
-- `worldgen/hand-built-structures`:90 called `MineshaftStructure`'s pre-filled
-  builder "the only *Either.right* in the game". `Either.right` is an everyday
-  idiom across the corpus; what is unique is the right branch of
-  `Structure.GenerationStub`'s own `Either` (`Structure.java`:250–253 — every
-  other construction takes the left). Rescoped.
-- `worldgen/structure-placement`:131 said "almost every later step in the
-  generation pyramid requires structure starts within eight", against
-  `terrain`'s "six of the generation steps". Six of the twelve, and they are
-  contiguous: `ChunkPyramid.GENERATION_PYRAMID` declares
-  `addRequirement(ChunkStatus.STRUCTURE_STARTS, 8)` on *STRUCTURE_REFERENCES*
-  through *FEATURES* and nowhere else. Rewritten as that range.
-- `worldgen/README`:14 said "the surface pass reads its neighbours' biomes" as
-  an example of generation reading the world. The pass that reads a
-  *neighbourhood* is the carvers (17×17 source chunks, `terrain`:191–197);
-  `SurfaceSystem.buildSurface` reads one biome per column, through
-  `biomeManager::getBiome` (`SurfaceSystem.java`:103, 114). Replaced with the
-  carvers.
-- `worldgen/biomes`' two-borders table listed the jittered read's users without
-  world generation. The surface rules read the biome through
-  `BiomeManager.getBiome`, the jittered entry point (`SurfaceSystem.java`:103).
-  The row gains the surface pass, and `terrain` now states which read it is.
-- `world/scheduled-ticks`:13 offered "a sapling sprouting after bonemeal" as an
-  example of a scheduled tick. `SaplingBlock.performBonemeal` calls
-  `SaplingBlock.advanceTree` in the same call (`SaplingBlock.java`:81–82) and
-  the un-bonemealed path is a *random* tick (:48) — the page's own contrast.
-  The same list's "a piece of amethyst budding" is also a random tick
-  (`BuddingAmethystBlock.java`:28). Replaced with a dispenser firing
-  (`DispenserBlock.java`:138) and a redstone torch burning out.
-- `worldgen/README`:170 said the level-data Reference page is "which lecture
-  nine links to"; the page that links it is lecture **ten**,
-  `creating-a-world`.
-- `worldgen/README` and `src/lectures.md` disagreed about how many statuses lie
-  between a structure being decided and its blocks being written — three
-  against four, from unstated baselines. Both now count from named statuses:
-  decided at `ChunkStatus.STRUCTURE_STARTS`, written at
-  `ChunkStatus.FEATURES`, three statuses after the noise fill.
-- `foundations/data-driven-types`:190 said the trace on
-  `features-and-placement` "walks a tree through all" nine feature sub-object
-  rows; five of the nine carry *trees* in their own *taught in* column and the
-  trace walks none of them. Split between the two pages.
-- `blocks/README`:34 handed "the command and structure blocks" to Part XIII,
-  which names neither. Split: the structure block to
-  `jigsaw-and-templates#where-a-template-comes-from` (written this session),
-  the command block left to Part XIII.
-- `reference/density-function-nodes`' deck advertised two of the page's four
-  sections; `reference/README`:56 and `worldgen/README`:160 copied the same
-  omission. All three corrected.
+## Pass 5, the planning session — between passes 4 and 5 *(2026-09-05)*
 
-### Suspicions re-derived and found sound (no change)
+No system page rewritten. Three claims introduced, all in the frame and the
+atlas:
 
-- `worldgen/blending`:47 "the scan runs on the background executor" — correct.
-  `IOWorker.createOldDataForRegion` submits to `Util.backgroundExecutor()`
-  (`IOWorker.java`:98–126) and joins `scanChunk` from inside it; the IO lane is
-  underneath, not the submitting pool.
-- `worldgen/README`:12 "the decoration step reads block states, heights and the
-  carving mask through `PlacementContext`" — correct, and the class was named
-  on no page. `PlacementContext` has `getBlockState`, `getHeight`,
-  `getCarvingMask` and `topFeature`, and extends `WorldGenerationContext`.
-  Named on `features-and-placement` this session.
-- `features-and-placement`:222 "a structure and a feature at the same index in
-  the same step draw the *same* feature seed" — correct.
-  `WorldgenRandom.setFeatureSeed` is *seed + index + 10000 × step*
-  (`WorldgenRandom.java`:59–63) with no structure/feature discriminator, and
-  `ChunkGenerator.applyBiomeDecoration` restarts the index at zero for each
-  half (`ChunkGenerator.java`:356, 415).
-- `jigsaw-and-templates`:156 "never structure void, which
-  `JigsawReplacementProcessor` handles instead" — correct as far as it went,
-  and now stated more precisely: structure void never reaches a template,
-  because `StructureBlockEntity` excludes it when it saves
-  (`StructureBlockEntity.java`:380).
-- `hand-built-structures`:206 "the forty shipped processor lists between them
-  use four types" — correct. Forty files under
-  *data/minecraft/worldgen/processor_list/*, using rule (35), protected blocks
-  (7), block rot (6) and capped (4). Moved to `jigsaw-and-templates` with the
-  counts and the two class names the corpus lacked.
-- `trees`' "thirty-nine configured tree features" against
-  `what-this-book-skips`' "50 tree kits" — both correct, different
-  populations: 39 shipped *configured_feature* files of type *minecraft:tree*,
-  50 `ResourceKey<ConfiguredFeature>` constants on `TreeFeatures`. `trees` now
-  says which it counts and why the other number exists.
-
-### Claims introduced
-
-**`worldgen/density-functions`** — the fifteen router functions partition
-6 climate / 5 aquifer (its four noises plus *preliminary_surface_level*, which
-`Aquifer.NoiseBasedAquifer` samples per column) / 3 ore veins / 1 final
-density; `PerlinSimplexNoise`'s only three instances are `Biome`'s fixed-seed
-temperature noises; `SimplexNoise` is the End islands node's;
-`NoiseUtils.biasTowardsExtreme` has no callers, making it the fourth dead
-thing in the Q&A; all six installed classes carry `DensityFunction.fillArray`
-and `CacheOnce` keeps a second counter for it; the beardifier splice's
-consequence ("every noise dimension is beardified whether or not its router
-JSON mentions one") moved here from `terrain`.
-
-**`reference/density-function-nodes`** — *Bounds* rewritten from 36 lines of
-prose to an eight-row table plus one paragraph; the three wrap singletons
-became a table; two unregistered `DensityFunctions` members named as absent
-from the catalogue; the deck rewritten to admit four sections.
-
-**`worldgen/terrain`** — the aquifer reads five router functions, named; the
-surface rule tree is two registries of dispatched types
-(`SurfaceRules.RuleSource`, `SurfaceRules.ConditionSource`) and branches on
-the *jittered* biome read; `CaveWorldCarver`, `CanyonWorldCarver`,
-`CaveCarverConfiguration`, `CanyonCarverConfiguration` and
-`CarverDebugSettings` named; ore veins contrasted with `OreFeature`; the
-noise fill "holds every section across its noise range" (cited to
-`chunk-anatomy`).
-
-**`worldgen/biomes`** — `BiomeSources.bootstrap` registers four sources, all
-four named with what each is for; `BiomeResolver` named as the interface;
-`MultiNoiseBiomeSourceParameterList` and `MultiNoiseBiomeSourceParameterLists`
-named, two presets; `FillBiomeCommand` named; the probe's Gaussian pass is
-unconditional and the server passes no interpolator (moved to
-`world/environment-attributes-and-timelines`); the box blur moved to
-`client/the-client-level`; `BiomeColors` reaches the effects through four
-`ColorResolver`s with no probe in the path.
-
-**`worldgen/blending`** — the *For a 1.21-era reader* box moved to
-`reference/naming-drift`'s Part IV table as a row; the three counts (five
-consumers, four answers, three questions) reconciled in one clause.
-
-**`worldgen/features-and-placement`** — `PlacementContext` and
-`FeaturePlaceContext` named and what each carries; the fourth value-type rung
-(`BlockStateProvider`) added, with registered counts 14 / 6 / 8 for the
-predicate, height and state families; `SurfaceRelativeThresholdFilter` named as
-the fifteenth modifier; `PlacementFilter` defined over the chain's four
-filters; `FeatureCountTracker` behind `SharedConstants.DEBUG_FEATURE_COUNT`;
-*/place feature* named as the third door into `Feature.place`; the
-sixty-three-algorithm tail declined in writing; `Feature.NO_OP` separated from
-the five selectors.
-
-**`worldgen/jigsaw-and-templates`** — §7's three unnamed `JigsawStructure`
-fields written, with the shipped-data census: six structures set the expansion
-hack (five villages and the pillager outpost) and **exactly one** — trial
-chambers — sets either `DimensionPadding` (10) or `LiquidSettings`
-(*ignore_waterlogging*), and no shipped pool element overrides the latter;
-`JigsawStructure.MaxDistance` and `JigsawStructure.MAX_TOTAL_STRUCTURE_RANGE`
-explained as the free-space box and its load-time validation; the processors
-given their own section with the forty-list census, `ProtectedBlockProcessor`,
-`CappedProcessor`, `RuleTest`, `PosRuleTest` and `RuleBlockEntityModifier`; the
-three `TemplateSource`s and `TemplatePathFactory` written as *Where a template
-comes from*, with the first-source-wins rule; the **structure block** taken
-(save mode excludes structure void, load mode builds a `StructurePlaceSettings`
-with a `BlockRotProcessor` for integrity); `PoolAliasBindings`' three kinds;
-the debug flag named.
-
-**`worldgen/structure-placement`** — `StructurePlacement.getLocatePos` moved in
-from `hand-built-structures` as its own Q&A; the presence cache split into its
-own section, with the second feed (`ChunkStatusTasks.loadStructureStarts`)
-named; the per-chunk write split into its own section; `StructureType` and
-`StructurePlacementType` named; the figure's five boxes and the heading's count
-reconciled.
-
-**`worldgen/hand-built-structures`** — the `*Structure` wrapper family named as
-settings wrappers, with `RuinedPortalStructure`'s five decay setups and
-`DesertPyramidStructure.afterPlace`'s five-to-seven suspicious sand;
-`BuriedTreasurePieces` given a row in the four-families table;
-`WoodlandMansionPieces`' double membership explained; `StructurePieceType`
-named in the cast; "chunk workers" settled to the worldgen executor.
-
-**`worldgen/trees`** — the thirty-nine/fifty count scoped; the five registry
-type classes named; two counted headings renamed (*The trunk placers*, *The
-foliage placers*) so a release cannot break an anchor; the decorator heading
-corrected — the leaf pass does not undo the decorators, it is blocked by them.
-
-**`worldgen/creating-a-world`** — the stage list cut to a citation and the
-*consequence* kept; `FlatLayerInfo` and `FixedBiomeSource` named;
-`WorldOpenFlows.openWorld` given its own section, with `ChunkGenerator.validate`
-identified as one of its eight links; *Optimize World* pointed at
-`chunk-storage` rather than left with the declined half.
-
-**`worldgen/README`** — the size sentence is the include, with two boundary
-corrections (`PatrolSpawner`/`PhantomSpawner`, the Xoroshiro sources); the
-order argument made once instead of three times; the closer rewritten as an
-instruction; a *Where the part stops* section with the coverage answer — a
-quarter of the part's lines are one shape, an algorithm that writes blocks and
-adds no mechanism, and the head of each family is named; the verified line
-rewritten off lecture one's hook; the pass-number sentence cut.
-
-### For pass 9's attention, found and not fixed
-
-- `worldgen/blending`:162 says `BlendingData.pack` "omits the heights entirely
-  if none of them was ever measured", thirty lines after saying the codec
-  "validates the saved height array against" sixteen slots. Consistent only if
-  the field is optional; neither sentence says so.
-- `worldgen/jigsaw-and-templates` states 188 shipped pool files; the other two
-  data censuses on the part's structure pages (34 structure files, 40 processor
-  lists) were re-derived this session and this one was not.
-- `worldgen/creating-a-world`:280 hand-counts nineteen classes in
-  `client/gui/screens/worldselection`, which nothing regenerates.
-- `worldgen/biomes`:32's attribute counts ("twenty gameplay attributes … the
-  sixty-six vanilla biome files touch three … fifty-one touch none") against
-  `world/environment-attributes-and-timelines`:80 ("eleven attributes across
-  sixty-six biome files, with *visual/sky_color* in fifty-six of them"). The
-  two are reconcilable only under a silent *gameplay* scoping that neither
-  states. Both are data-pack censuses; pass 9 re-derives.
-- `worldgen/creating-a-world`:285 reaches a `LevelSummary` through
-  `LevelStorageSource.readLightweightData`, `reference/level-data-and-rules`:92
-  through `LevelStorageSource.readLevelSummary`, and
-  `server/starting-a-server`:156 through
-  `LevelStorageSource.LevelStorageAccess.fixAndGetSummaryFromTag`. Probably one
-  chain; the book does not say.
-
-## Pass 5, session N — Reference, the maps, and the frame's Reference-facing pages *(2026-09-07)*
-
-Sixteen pages read by one agent each — the eleven hand-kept Reference pages and
-the five maps; the ten generated Reference views were not read, because a
-generated page's claims are its generator's. Three new generated views were
-built. **Pages changed: 24.** Eleven of the corrections are on pages outside the
-tier, because almost everything the shelf holds is a fact some lecture also
-states.
-
-### Corrections (what the page said · what the decompile says · where)
-
-1. **`maps/README`:9-11** said "Nothing here is hand-counted … the pages are
-   regenerated with the figures each time the site is built, so a number on a
-   map cannot drift." Only `src/generated/` is regenerated (`tools/deploy.sh`:9,
-   `tools/map_source.py`); every number in the four map pages' **prose** is typed
-   by a session. Found independently by the `maps/README` and `maps/hierarchy`
-   reads. The paragraph now separates the generated half from the hand-written
-   half and says the version pass owes the sentences a re-read.
-2. **`maps/biggest`:29-30** — "`Entity`, `LivingEntity`, `Player`, `ServerPlayer`,
-   `LocalPlayer` and `Mob` are one chain of inheritance … each is the base of
-   everything below it." `Entity.java`, `LivingEntity.java`, `Avatar.java`,
-   `Mob.java`, `Player.java`, `ServerPlayer.java`, `LocalPlayer.java`: `Mob` and
-   `Avatar` are two of `LivingEntity`'s direct subclasses, `Player extends
-   Avatar`, `LocalPlayer extends AbstractClientPlayer`, and neither player leaf
-   is the base of anything. Rewritten as a trunk and a fork.
-3. **`maps/biggest`:33-34** — "the pages a reader of Part VI should expect to be
-   long" promises `Fox` and `Bee` pages the book does not have and has ruled out
-   (`systems/entities/README`:26-31). Re-aimed at that ruling.
-4. **`maps/biggest`:33** — "Only two concrete mobs make **the list**" is true of
-   the thirty the figure draws; the table below has forty rows and three more
-   mobs (`Panda`, `AbstractHorse`, `SulfurCube`). Now "the thirty".
-5. **`maps/fanin`:24-26** — "The thirty hubs … are seven, and Part II is the
-   first six of them." The table names 32 classes, 24 of them in the thirty; six
-   of the thirty are in no row; and by the table's own last column Part II
-   teaches three of the seven, Reference two and Part IX one. All three claims
-   corrected, and `maps/README`:19 carried the same "vocabulary Part II teaches"
-   sentence and was corrected with it.
-6. **`maps/fanin`:42-43** — "the client's hub is a hub for a quarter of the code,
-   and the shared three quarters never name it." The client-only side is 2,206 of
-   7,055 files (31%) and 212,242 of 719,302 lines (29.5%), both from
-   `maps/packages`:22-27. Now "under a third" and "the shared seven tenths".
-7. **`reference/README`:44-63** — the *parts* column was stale in **six of twenty
-   rows**, missing nine part numerals (registries ← IV; non-living-damage ← VIII;
-   threads ← VI; level-data-and-rules ← IX; naming-drift ← VII, X; glossary ← II,
-   V, VI). Derived from the thirteen landing pages' `## Reference this part uses`
-   sections and now enforced by `check_deps.py`.
-8. **`tools/gen_reference.py`, the registries blurb** — "Every registry key
-   declared in `Registries`", printed above a total of **153**. 148 are declared
-   in `Registries.java`; five are declared by their own class with the public
-   `ResourceKey.createRegistryKey` (`ServerFunctionLibrary`, `ClockTimeMarkers`,
-   `RecipePropertySet`, `EquipmentAssets`, `WaypointStyleAssets`) — which the
-   tool's own comment already recorded. The blurb now names them and cites the
-   lecture's 148.
-9. **`reference/threads`:69** — RCON starts "when *enable-rcon* **and**
-   *rcon.password* is set". `RconThread.create` (`RconThread.java`:61-76) also
-   returns null when *rcon.port* is outside 1–65535, and tests the port **first**.
-10. **`reference/threads`:65** — `Util.nonCriticalIoPool` is "the same shape" as
-    `Util.ioPool`. `Util.java`:110-111 passes `daemon=false` for *IO-Worker-* and
-    `daemon=true` for *Download-*, which is the one difference the new column is
-    about.
-11. **`server/server-tick`:107-117** — "the nine that do not divide into three
-    kinds", then a taxonomy accounting for **seven**. The nine are
-    `handlePingRequest`, `handleCustomPayload`, `handleChat`, `handleChatCommand`,
-    `handleSignedChatCommand`, `handleSignUpdate`, `handleEditBook`,
-    `handleChatAck` and `handleConfigurationAcknowledged`
-    (`ServerGamePacketListenerImpl.java`); the last two write listener state on
-    the Netty thread and were in no kind. Four kinds now.
-12. **`reference/level-data-and-rules`:219-221** — 29,999,984 attributed to the
-    integrated server. `MinecraftServer.getAbsoluteMaxWorldSize`
-    (`MinecraftServer.java`:1632) returns it; `DedicatedServer` overrides.
-13. **`reference/level-data-and-rules`:16-21** — "Four parts point here"; five do
-    (`networking/README`:117 is the fifth), which `check_deps.py` now enforces
-    from the shelf's side.
-14. **`worldgen/creating-a-world`:96-97** — `world_gen_settings.dat` is written
-    "beside *raids.dat*". `WorldGenSettings` goes into `MinecraftServer`'s
-    server-global `savedDataStorage` (`MinecraftServer.java`:355); `Raids` goes
-    into `ServerLevel.getDataStorage()` (`ServerLevel.java`:259), which is
-    per-dimension. Different folders; the clause is cut.
-15. **`reference/naming-drift`:42 and :383** — "Two hundred and forty-three rows",
-    twice. The thirteen part tables hold **245** (3+4+31+18+12+18+30+9+24+20+27+13+36).
-16. **`reference/naming-drift`:416-417** — the bullet still italicised
-    *Entity.hurt* as a name that is gone, against its own corrected table row.
-    `Entity.java`:2031-2040: `Entity.hurt` is a `@Deprecated` **final returning
-    void** that forwards to `Entity.hurtServer` only.
-17. **`reference/naming-drift`:290** — "`ByteBufferBuilder` → `MeshData`".
-    `BufferBuilder.build`/`buildOrThrow` produce the `MeshData`
-    (`BufferBuilder.java`:68-78); `ByteBufferBuilder` is the memory under it, which
-    is what `blaze3d`:354 says.
-18. **`reference/naming-drift`:496** — backticked `Minecraft.setScreen`, which
-    does not exist in 26.2 (`Minecraft.java` has only `setScreenAndShow`, and the
-    field lives on `Gui`). Italicised, as the page's own rule requires.
-19. **`rendering/the-window`:302-303** — "*ScreenManager*, which never existed
-    here" against `naming-drift`:313, which lists it as a rename. Whether an older
-    tree used the name is outside rule 3; the sentence now states only what 26.2
-    settles (monitor handling is `MonitorManager`) and cites the rename table.
-20. **`reference/math-and-primitives`:116** — "two things called `Axis`". Three:
-    `Direction.Axis`, `com/mojang/math/Axis`, `ChunkPalettedStorageFix.Axis`. Now
-    "two in scope", with the third named as out of it.
-21. **`reference/level-data-and-rules`:94-97** — `LevelResource.MAP_RESOURCE_FILE`
-    glossed nowhere and then, in this session's own first draft, as the map-id
-    counter. It is `resourcepacks/resources.zip` (`LevelResource.java`:15). Caught
-    before publishing and recorded because a fix is a claim.
-
-### Suspicions re-derived and found sound (no change, or a sharpening only)
-
-- **`reference/level-data-and-rules`:211-212** — "a fresh `WorldBorder` starts
-  with a warning time of 15, not 300." True and sharper than it looks:
-  `WorldBorder(Settings)` (`WorldBorder.java`:44-53) sets `warningTime = 15` and
-  stores the settings **without applying them**, so even a border built from
-  `WorldBorder.Settings.DEFAULT` (whose `warning_time` is 300) is live at 15.
-- **`maps/fanin`:45** — "all but ten of the files that import `Schema` are in
-  `util/datafix`." Exactly ten, and all ten are in its sibling `util/filefix`;
-  the page now says where they are.
-- **`maps/biggest`:44** — `SoundEvents` grouped with the catalogues-written-as-code.
-  1,668 `SoundEvent` constants, one `register(...)` per line.
-- **`maps/biggest`:42** — "`FriendlyByteBuf` is the buffer both read from."
-  `RegistryFriendlyByteBuf extends FriendlyByteBuf`, so play's buffer is one.
-- **`reference/glossary`, the "five headwords the corpus does not use"** (pass-4
-  session O). Re-measured with whitespace normalised: **four**, not five, and all
-  four are compound noun phrases the corpus writes in pieces. Ruled to stand; the
-  original count was a line-wrap artefact.
-
-### Claims introduced (check these first)
-
-**Three new generated views** (`tools/gen_reference.py`, each read off the
-decompile or the shipped data on every deploy; the numbers below are what the
-generator printed on 26.2 and will move on a version bump):
-
-- `reference/spawn-reasons.md` — 19 reasons, **11 tested somewhere, 20 test
-  sites**, and a *classes that pass it* count per reason. The claim behind the
-  view is that a "test" is a comparison against the constant and everything else
-  is a pass-through; the enclosing method is found by walking up to the nearest
-  access-modifier-led signature. **Eight reasons are tested by nothing**, and all
-  but two comparisons are inside `Mob.finalizeSpawn` — both stated on
-  `entities/entity-lifecycle`.
-- `reference/weapon-helpers.md` — 7 helpers, **42 items**. The claim: an item
-  reaches a helper directly (`sword`, `pickaxe`, `spear`) or through the class
-  that wraps it (`AxeItem`, `HoeItem`, `ShovelItem` each call theirs in `super`),
-  and "components it sets" follows one hop into `ToolMaterial`.
-- `reference/structure-spawn-overrides.md` — **34 structures carry
-  `spawn_overrides`, six fill it in, 23 overrides, 18 of them empty.** The claim
-  that an empty spawn list is a *ban* rather than a no-op is the view's argument
-  and is stated on `entities/entity-lifecycle` too.
-
-**New prose claims:**
-
-- `reference/threads` — a *daemon* value for every row: Render thread and *main*
-  no (they are the JVM's), Server thread no (`MinecraftServer.spin`), Netty yes
-  (`EventLoopGroupHolder.createThreadFactory` sets it), Worker-Main yes
-  (`ForkJoinPool`, and `how-a-server-dies`:217-220 already said so), IO-Worker
-  **no** and Download yes (`Util.java`:110-111), sound engine yes
-  (`SoundEngineExecutor.createThread`), watchdog/console/management yes, timer
-  hack yes, RCON and query **no**. Plus: RCON and query poll on a **500 ms**
-  socket timeout (`RconThread.java`:82, `QueryThreadGs4.java`:277) and
-  `RconClient` sets `setSoTimeout(0)`, so it does not poll at all.
-- `reference/threads` — a new *main* row for the dedicated server, and a nine-row
-  table of the server handlers that never hop, with what each does on Netty.
-- `reference/threads` — the closing section cut from four rules to one paragraph
-  with three citations; the claim introduced is that `BlockableEventLoop.managedBlock`
-  is `server-tick`'s to own, not this page's.
-- `reference/level-data-and-rules` — a thirteen-row `LevelResource` table.
-- `reference/submit-phases` — `TranslucentSubmit` declares one method,
-  `TranslucentSubmit.distanceToCameraSq`, and **five** of the thirteen renderers'
-  nested *Submit* records implement it (`BlockModelFeatureRenderer`,
-  `ItemFeatureRenderer`, `ModelFeatureRenderer`, `MovingBlockFeatureRenderer`,
-  `NameTagFeatureRenderer`).
-- `reference/glossary` — eight new entries (*Occlusion* with four senses, *Loot
-  context*, *Loot condition*, *Parameter set*, *Data-driven type*, *ServerPlayer*,
-  *Status effect*) and second senses added to *Frame*, *Criterion* and *Level*.
-  The *Occlusion* entry's four senses are each a claim.
-- `reference/README` — the tier's argument re-aimed from *what regenerates it* to
-  *how it survives a version bump*, and a paragraph saying the last column is
-  gated.
-- `maps/README` — a new mermaid figure of the atlas's own pipeline, whose node
-  labels ("eight SVG figures", "six tables", "the thirteen per-part size
-  phrases") are counts of `src/generated/`.
-- `reference/hud-elements` — "this is the whole of what a screen contributes to
-  the record", which answers pass-4 session O's *three or four strata* question
-  in the negative and is the session's own reading of `Gui.java`:183-207.
-
-### Rulings
-
-- **The shelf's *parts* column is derived, not kept.** `check_deps.py` gained a
-  fourth `F` check with a probe; the rule is the column header's own words.
-- **`hud-elements`' contextual bar keeps two rows.** The ordering *is* the fact.
-- **The glossary disambiguates**, for a word the corpus itself uses in more than
-  one sense, and the entry is the disambiguation (A5's rule, applied to
-  *Occlusion*, *Frame*, *Criterion* and *Level*).
-- **`MapItemSavedData`, `MapIndex` and `WanderingTraderData` stay named-only** —
-  declared on the table rather than given a lecture. To [pass3.md](pass3.md) §7.
-- **`starting-a-server` keeps its boot thread table**; only the per-thread
-  properties moved to the shelf.
+- `src/introduction.md` — the *Verified means tested* paragraph now says
+  "every link and anchor between pages is checked to land" and "a page that
+  fails any of those does not go up": the claim is that `tools/check_links.py`
+  runs in `tools/deploy.sh` before the build and exits non-zero on a broken
+  link, anchor, include, `SUMMARY.md` entry or redirect (`tools/deploy.sh`,
+  the line after `check_deps.py`).
+- `src/maps/packages.md` — the *Where each part lives* table is now
+  `src/generated/parts.md`, written from `map_source.py`'s `PARTS`. The
+  mapping is a set of claims about which packages each part covers, and it
+  differs from the hand table it replaced: Part IV adds `world/level/material`,
+  `world/attribute`, `world/timeline`, `world/clock`, `world/level/border`;
+  Part VI adds `world/damagesource`, `world/effect` and subtracts
+  `world/entity/player`; Part II adds `world/flag`; Part IX subtracts
+  `network/syncher` (Part VI's); Part X adds `client/input`, `client/server`
+  and counts `net/minecraft/client` itself only; Part XI adds
+  `client/particle`; Part XIII adds `server/permissions`, `server/bossevents`
+  and `client/gui/screens/dialog`. The paragraph above the table says how
+  it is counted (no prefix, *itself only*, shared packages counted twice,
+  skipped packages left out) — check each against `map_source.in_part`.
+  Every landing page's size sentence will quote its row once the part
+  sessions switch them to the include; until then a landing page's hand
+  count and its row may differ (Part XIII: 473 / 43,900 by hand, 470 /
+  43,126 by the atlas).
+- `docs/pass5-brief.md` Part 4 — the measured tables (coverage per part, the
+  queue by kind, the duplication pairs) are the tools' output on 2026-09-05
+  and are claims about the corpus on that day, not about the game; pass 9
+  need not check them.

@@ -390,8 +390,9 @@ def main() -> int:
         d = part_of(key, None)
         return P[d]["num"] if d in P else None
 
-    # 1. landing before-you-start ↔ figure arrows. Parts I and II are left off the figure on purpose
-    # (lectures.md: "the two dependencies every part shares"), so arrows out of them are not expected.
+    # 1. landing before-you-start ↔ figure arrows. Parts I and II keep their boxes and the spine
+    # I → II → III, but the rest of their arrows are left off on purpose (lectures.md: "the two
+    # dependencies every part shares"), so arrows out of them are not expected.
     UNIVERSAL = {1, 2}
     landing_solid, landing_dashed = set(), set()
     landing_by_edge: dict[tuple, list[str]] = {}

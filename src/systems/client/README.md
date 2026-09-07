@@ -157,11 +157,13 @@ no page here names is one more `Screen` or one more widget — the world
 creation flow, the pack picker, the friends and social lists, the recipe book,
 a class per container — and [GUI and
 screens](gui-and-screens.md#who-opens-a-screen) covers all of them as one
-pattern with four routes into it, on purpose. The two things in the part's
-packages that are genuinely somebody else's are the model tree under
-`client/resources`, which is Part XI's, and player reporting, which [this book
+pattern with four routes into it, on purpose. Two things in the part's
+packages are somebody else's: the model tree under `client/resources`, which
+is Part XI's, and `client/player`, which the atlas counts here and in [Part
+VIII](../player/README.md) both, because the local player is a client object
+and a player. A third is nobody's — player reporting, which [this book
 skips](../anatomy/what-this-book-skips.md#player-reporting) for its own
-reasons.
+reasons and which the atlas therefore counts in no part at all.
 
 ---
 

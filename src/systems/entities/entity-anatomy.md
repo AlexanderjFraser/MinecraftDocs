@@ -390,8 +390,8 @@ and `EntityType.updateInterval` in ticks, and both decide how often a tracker
 is even asked about the entity, never mind what it says
 ([what the client is
 told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
-owns the asking, and a third parameter, `EntityType.trackDeltas`, which is a
-hard-coded list of types whose velocity is never sent at all).
+owns the asking, and a third parameter, `EntityType.trackDeltas`, which is
+true of every type but ten).
 Thirty-seven of the 158 types set an interval explicitly, most of them at 10
 or 20; seven set *Integer.MAX_VALUE*, so their interval branch never fires
 again after tick zero — `EntityTypes.ITEM_FRAME` and `EntityTypes.GLOW_ITEM_FRAME`,

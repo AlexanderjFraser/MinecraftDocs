@@ -27,7 +27,7 @@ tick. A reader who has those four can read any of the three hundred.
 Part V owns the write and the four answers; it does not own most of the
 *blocks*. About ten thousand lines of its own two packages are taught in other
 parts, because a block is usually the place some other system surfaces: the
-sculk family is [game events and
+sculk sensor, the shrieker and the catalyst are [game events and
 vibrations](../world/game-events-and-vibrations.md)', `LiquidBlock` is
 [fluids](../world/fluids.md)', the containers and their menus are [Part
 VII](../items/README.md), signs and chests as things that are *drawn* are
@@ -38,6 +38,16 @@ because what it saves and loads is a `.nbt` template, and the command block is
 XIII](../commands/brigadier-and-commands.md#three-parsers-see-one-string)'s,
 because what a command block is, is a `CommandSource` holding a string. What comes back here is the moment any
 of them writes a state.
+
+One thing in those ten thousand lines belongs to nobody, and this is the
+sentence that says so rather than leaving the silence to be discovered. When a
+catalyst blooms, what spreads is `SculkSpreader`'s charges walking outward
+through `SculkBehaviour`, `SculkBlock` and `SculkVeinBlock` — about 760 lines,
+the one mechanism in Part V's two packages that no page in this book explains.
+It is not this part's: its scenario is a mob dying on sculk rather than a block
+hearing that its neighbour changed, and the page that owns the catalyst owns it
+as a *listener*, which is where that page's scenario ends. It is lecture-sized,
+and it waits for a second edition.
 
 ## The shape of the part
 

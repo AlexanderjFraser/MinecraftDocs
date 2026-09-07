@@ -183,6 +183,30 @@ returns outright and kills all three. The base value is four, and seven
 species change it — horses to 6, fish and wolves to 8, and ghasts, happy
 ghasts and pillagers **down** to 1.
 
+### The variant that same method picks
+
+Seven species pick a *variant* in their own override of `Mob.finalizeSpawn`
+before calling the base one — `Chicken`, `Cow`, `Pig`, `Cat`, `Frog`, `Wolf`
+and `ZombieNautilus` — and all seven do it through the same call,
+`VariantUtils.selectVariantToSpawn`, handed a `SpawnContext` built from the level and the block position. Each
+variant in the registry carries a `SpawnPrioritySelectors`: a list of
+conditions, each with an integer priority. `PriorityProvider.select` unpacks
+every variant's selectors into one list, sorts it by priority descending, and
+walks it keeping entries whose condition passes and dropping every entry below
+the highest priority that has matched — so the highest *matching* priority wins
+outright, and `PriorityProvider.pick` then chooses uniformly at random among
+whatever is tied at it. A variant whose selector has no condition at all
+(`PriorityProvider.alwaysTrue`, which `SpawnPrioritySelectors.fallback` wraps)
+always matches, which is how a default loses to a biome-specific variant
+without either knowing the other exists. `SpawnConditions` registers three
+condition types into `BuiltInRegistries.SPAWN_CONDITION_TYPE` — `BiomeCheck`,
+`StructureCheck` and `MoonBrightnessCheck` — and the shipped data uses the
+priority to mean *rarity*: an all-black cat is priority 1 inside a swamp hut
+and priority 0 anywhere the moon is at least 0.9 bright, so the hut always wins
+and the full moon is the fallback. The registry of codecs behind one interface
+is the [data-driven type pattern](../foundations/data-driven-types.md) once
+more, and this is the entry that pattern's table sends here for.
+
 ## The other ways in
 
 Natural spawning is one caller of `LevelWriter.addFreshEntity` among many.
@@ -390,7 +414,7 @@ discarded mob still sitting in a section out of the file.
 | reason | destroys | saves | what leaves it behind |
 |---|---|---|---|
 | `Entity.RemovalReason.KILLED` | yes | no | death, in every sense the game means it |
-| `Entity.RemovalReason.DISCARDED` | yes | no | `Entity.discard`, every despawn, the client replacing a network id |
+| `Entity.RemovalReason.DISCARDED` | yes | no | `Entity.discard`, every despawn, a `ConversionType.SINGLE` conversion (`Mob.convertTo` adds the new mob, then discards the old — `ConversionType.SPLIT_ON_DEATH` keeps it), the client replacing a network id |
 | `Entity.RemovalReason.UNLOADED_TO_CHUNK` | no | **yes** | the unload above — the only reason that saves |
 | `Entity.RemovalReason.UNLOADED_WITH_PLAYER` | no | no | a vehicle travelling inside a player's own save data |
 | `Entity.RemovalReason.CHANGED_DIMENSION` | no | no | a portal, where the entity is rebuilt on the far side |
@@ -416,6 +440,8 @@ which decays back to a UUID rather than to nothing.
 `PersistentEntitySectionManager.updateChunkStatus` · `Visibility` ·
 `EntityLookup` · `EntitySection` · `EntitySectionStorage` · `LevelCallback` ·
 `EntityInLevelCallback` · `EntityTickList` · `ServerLevel.tickNonPassenger` ·
+`VariantUtils.selectVariantToSpawn` · `SpawnPrioritySelectors` · `SpawnCondition` ·
+`PriorityProvider.select` ·
 `Level.guardEntityTick` · `EntityStorage` · `Entity.RemovalReason` ·
 `Entity.setRemoved` · `TransientEntitySectionManager`
 

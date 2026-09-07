@@ -122,7 +122,8 @@ lanes](../../reference/lanes.md).
 
 ## Where the part stops
 
-Part VIII is the smallest part of the book —
+Part VIII is the smallest part of the book with a system in it — only Part I
+is smaller, and Part I is two pages about the program the rest run inside —
 {{#include ../../generated/part-player.md}} in `world/entity/player`,
 `world/food`, `ServerPlayer` and `client/player` — and almost the only part
 where a size is not a warning: 97% of those lines are named somewhere in the
