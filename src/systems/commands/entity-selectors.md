@@ -30,7 +30,7 @@ filters at all: they are the query plan. This page is about which is which.
 | `EntitySelector` | the compiled query: thirteen final fields, no reader, no grammar, no string | built at parse time, run later |
 | `EntityArgument` | four argument shapes (single or many, entities or players) and the parse-time rejections that enforce them | parse time and on the wire |
 | `CommandSourceStack` | the only thing a selector can be resolved against — origin, level, server, permission set | resolve time |
-| `LevelEntityGetterAdapter` | the fork in the road: an `EntityLookup` walk, or an `EntitySectionStorage` box query | resolve time |
+| `LevelEntityGetterAdapter` | the fork in the road: an `EntityLookup` walk, or an `EntitySectionStorage` box query ([entity lifecycle](../entities/entity-lifecycle.md#findable-ticking-or-neither) owns both) | resolve time |
 
 `net/minecraft/commands/arguments/selector` is five classes and 1,717 lines,
 and every one of them is in the server jar *and* the client jar. That matters
@@ -200,7 +200,9 @@ option handlers call `EntitySelectorParser.setWorldLimited`: *distance*, *x*,
 `Level.getEntities` goes through `EntitySectionStorage`, which visits only the
 accessible non-empty 16-cubes the box overlaps. Without one,
 `ServerLevel.getEntities` goes through `EntityLookup`, which walks the level's
-entire visible-entity map and calls `EntityTypeTest.tryCast` on each. **There
+entire visible-entity map and calls `EntityTypeTest.tryCast` on each —
+`EntityTypeTest` being the one-method "is this the type I asked for, and give
+it to me typed" the whole entity-fetching API is generic over. **There
 is no index by entity type.** *type=zombie* narrows nothing structurally; it
 is a cast applied one entity at a time, ahead of the tests. Only the seven
 box options narrow the search itself, and only when they add up to a box.
@@ -225,18 +227,20 @@ collects every match in range, sorts the list and throws all but one away.
 *@n* and *@p* live permanently in the second mode: their heads set the nearest
 order, so they always collect first and cut afterwards.
 
-**So the query plan is written by eight of the twenty-one names.** Seven of
-them build the box and world-limit the search — *distance*, *x*, *y*, *z*,
-*dx*, *dy* and *dz* — and the eighth, *sort*, un-decides part of it by taking
-the limit away. The other thirteen only filter what the plan returns.
+**So the query plan is written by eight of the twenty-one names**: the seven
+above, which build the box and world-limit the search, and *sort*, which
+un-decides part of it by taking the limit away. The other thirteen only filter
+what the plan returns.
 
 ## One permission, checked in two places, for two different reasons
 
 The gate is a single atom, `Permissions.COMMANDS_ENTITY_SELECTORS`, granted by
 `LevelBasedPermissionSet` from gamemaster upward as the one hard-coded
-exception in that class ([permissions](permissions.md)). It is read in seven
-places, all of them under `commands/arguments`, and they divide cleanly in
-two.
+exception in that class
+([permissions](permissions.md#a-question-an-answer-and-a-check)). It is the
+**only permission in the game checked in two different phases**, it is read in
+seven places, all of them under `commands/arguments`, and they divide cleanly
+in two.
 
 **At parse time**, `EntitySelectorParser.allowSelectors` asks the source and
 the answer becomes a constructor argument. If it is false, an *@* throws
@@ -266,10 +270,38 @@ resolve-time check is what decides whether a */tellraw* written by a data pack
 may actually enumerate entities, and it asks the source the component is being
 resolved *against*, never whoever wrote it.
 
+## Two more argument types write the same fork by hand
+
+`EntityArgument` is not the only argument type that will take an `@`.
+`ScoreHolderArgument` and `GameProfileArgument` each reimplement the
+selector-or-literal fork for a value that is not an entity, and what they do
+on the *literal* side is the interesting half.
+
+`GameProfileArgument` resolves to profiles, not entities. An `@` builds a
+selector and is rejected outright if it includes non-players; anything else is
+read to the next space and looked up in the server's name-to-id cache — so
+`/ban`, `/whitelist` and `/op` name a player who has never joined this session
+and may not exist on this server at all. That lookup is the only thing on this
+page that leaves the game's own data.
+
+`ScoreHolderArgument` resolves to `ScoreHolder`s, which need not be alive.
+Its literal side has four branches in order — `*` for every tracked holder,
+a `#`-prefixed name taken as a bare string, a UUID searched across every
+level, and an online player — with the last three falling back to a bare name
+and the wildcard alone throwing when there is nothing to return
+([scores, teams and stored data](scoreboard-and-data.md#questions-players-ask)
+for what those names are for).
+
+Both take the permission the same way this page's own parse does, and both
+enforce their single-or-many shape on the compiled selector rather than on
+the text, exactly as `EntityArgument` does below.
+
 ## Questions a command author asks
 
 **Does the client parse selectors?** Yes, by two routes, and it cannot resolve
-one. All five selector classes ship in the client jar.
+one. All five selector classes ship in the client jar, and the client is
+running a real dispatcher against a real tree ([Brigadier and
+commands](brigadier-and-commands.md#three-parsers-see-one-string)).
 `EntityArgument.listSuggestions` builds a real `EntitySelectorParser` against
 the client's own permission set, parses as far as it can, swallows the
 exception and asks the half-finished parser for its suggestions — which is why

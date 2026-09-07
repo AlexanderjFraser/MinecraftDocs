@@ -346,9 +346,11 @@ list `RegistrySynchronization.isNetworkable` tests, so none is ever packed
 for a client. What crosses the wire is only the *result* — a container
 packet, an item entity, a command's success.
 
-The two dependants outside this part are Part XIII's commands, which own
-`/execute if predicate` and [the selector
-argument](../commands/entity-selectors.md), and [the advancement
+The two dependants outside this part are Part XIII's commands — this page
+owns `/execute if predicate` itself, and what Part XIII owns is the engine it
+runs in and the [selector
+argument](../commands/entity-selectors.md) whose *predicate* option is the
+other caller — and [the advancement
 system](../commands/advancements.md), whose triggers build a context per
 tested entity.
 

@@ -155,8 +155,8 @@ item-model property on *component*. All four are among the exceptions below.
 | `BuiltInRegistries.DIALOG_ACTION_TYPE` | `Action` | | inline in dialogs | [dialogs](../commands/dialogs.md) |
 | `BuiltInRegistries.DIALOG_BODY_TYPE` | `DialogBody` | | inline in dialogs | [dialogs](../commands/dialogs.md) |
 | `BuiltInRegistries.INPUT_CONTROL_TYPE` | `InputControl` | | inline in dialogs, as a `MapCodec` (`Codec.dispatchMap`) | [dialogs](../commands/dialogs.md) |
-| `BuiltInRegistries.PERMISSION_TYPE` | `Permission` | | inline in a permission check | [Brigadier and commands](../commands/brigadier-and-commands.md) |
-| `BuiltInRegistries.PERMISSION_CHECK_TYPE` | `PermissionCheck` | | only written, by `ArgumentUtils` into the command-tree report | [Brigadier and commands](../commands/brigadier-and-commands.md) |
+| `BuiltInRegistries.PERMISSION_TYPE` | `Permission` | | inline in a permission check | [permissions](../commands/permissions.md#a-question-an-answer-and-a-check) |
+| `BuiltInRegistries.PERMISSION_CHECK_TYPE` | `PermissionCheck` | | only written, by `ArgumentUtils` into the command-tree report | [permissions](../commands/permissions.md#where-a-set-comes-from) |
 | `BuiltInRegistries.BLOCK_TYPE` | `Block` | | nothing loads it: every block is Java, and `BlockTypes.CODEC` is read by no one and written only by `BlockListReport` | [blocks and states](../blocks/blocks-and-states.md) |
 
 ### The type-object spelling: the registry holds a type that carries a `MapCodec`

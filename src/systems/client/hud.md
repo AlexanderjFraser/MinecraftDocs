@@ -171,7 +171,10 @@ does.
 — should the screen darken, should world fog be created, should the End music
 play — read from five places between the frame, the fog environment and the
 lightmap. The bar itself interpolates against wall-clock time inside
-`LerpingBossEvent`, so discrete packet progress becomes a smooth bar.
+`LerpingBossEvent`, so discrete packet progress becomes a smooth bar. What is
+on the other end of those packets — the saved model, its members, and the
+`execute store` that writes it — is [scores, teams and stored
+data](../commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again).
 
 **Why do subtitles appear under an open chest?** They are deferred past the
 screen, along with the tooltip and the pre-edit overlay the extractor holds. The deferral fires when there is no screen at all *or* the screen

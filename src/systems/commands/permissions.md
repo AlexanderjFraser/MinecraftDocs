@@ -59,6 +59,11 @@ flowchart TB
     S --> C
 ```
 
+`Permissions` holds all nine the game defines, and the split is four to five:
+four `Permission.HasCommandLevel` constants — one per rung above zero — and
+five `Permission.Atom`s, of which one is the entity-selector gate and the
+other four are the chat abilities below.
+
 The **question** is data: both shapes are records, both are codec-dispatched
 over `BuiltInRegistries.PERMISSION_TYPE`, and `Permission.CODEC` accepts an
 atom written as a bare identifier as well as the full dispatched form. The
@@ -88,10 +93,10 @@ Union has a special case of its own, and it runs the opposite way to its
 name. `LevelBasedPermissionSet.union` of two level-based sets is not a
 `PermissionSetUnion` at all, and it is not the higher of the two: both
 branches of the override return the **lower**-levelled set, so it is a
-minimum. `CommandSourceStack.withMaximumPermission` is that union, which
-means "raising" a function body to gamemaster ([functions and
-macros](functions-and-macros.md)) *caps* an owner's source at gamemaster
-rather than leaving it alone. Only for sets that are not level-based does
+minimum. `CommandSourceStack.withMaximumPermission` is that union, so the one method in
+the game named for a ceiling enforces a floor instead — which is what a
+function body runs under ([functions and
+macros](functions-and-macros.md#the-two-permission-verbs)). Only for sets that are not level-based does
 `PermissionSet.union` fall through to `PermissionSetUnion`, which does OR the two.
 
 ## Where a set comes from
@@ -133,12 +138,12 @@ An unopped player typing `/give` is told there is no such command. The
 server cannot tell them otherwise without a second parse, and it does not
 do one.
 
-The entity-selector atom is checked **twice**, in two different phases, and
-it is the only permission in the game that is: `EntitySelectorParser.allowSelectors`
-tests it at parse time, and `EntitySelector.checkPermissions` tests it again
-when the selector is resolved against the world. A command holding a parsed
-selector can therefore be re-run later against a source that may no longer
-use it — which is exactly what an `/execute` chain does.
+One permission escapes the parse entirely.
+`Permissions.COMMANDS_ENTITY_SELECTORS` is tested at parse time *and* again
+when the selector is resolved against the world, because a parsed selector
+outlives its parse — which is exactly what an `/execute` chain relies on, and
+why [entity selectors](entity-selectors.md#one-permission-checked-in-two-places-for-two-different-reasons)
+owns the two checks and the route that reaches only the second.
 
 Two more consequences worth naming. `Commands.LEVEL_MODERATORS` gates
 **nothing**: the rung exists, is settable and is stored, and no vanilla
@@ -155,14 +160,18 @@ server's — no packet carries a `PermissionSet`. It has three sources of
 belief, and they behave differently enough to be worth separating.
 
 **The op level**, which arrives on an entity event and is mapped by
-`LocalPlayer.handleEntityEvent` onto one of the five sets. Note the bottom
+`LocalPlayer.handleEntityEvent` onto one of the five sets — except on an
+integrated server, where `IntegratedServer.updatePermissionAndChatAbilities`
+writes the host's own `LocalPlayer` directly and no packet is involved. Note the bottom
 rung: level zero maps to `PermissionSet.NO_PERMISSIONS`, not to
 `LevelBasedPermissionSet.ALL`. The two are indistinguishable in practice —
 rung zero satisfies no level and no atom either — but the client's copy is a
 different object from the server's.
 
 **The command tree**, whose nodes were filtered for this player before being
-sent. Two elisions ride that packet and they mean different things.
+sent ([Brigadier and
+commands](brigadier-and-commands.md#the-tree-on-the-wire) for what the packet
+carries). Two elisions ride that packet and they mean different things.
 A node whose requirement the player failed is simply **absent**, and the
 filter is recursive, so a gated literal takes its whole subtree with it. A
 node that a *no-permission* source would fail is **flagged**
@@ -203,7 +212,7 @@ client is never consulted.
 
 ```mermaid
 flowchart TB
-    IN["an unattended command — a dialog button, a click event, a sign"]
+    IN["an unattended command — a dialog button, a chat click event"]
     IN --> P1{"parses against the ordinary source?"}
     P1 -- no --> E1["PARSE_ERRORS — confirm: parse errors"]
     P1 -- yes --> P2{"any signable argument?"}

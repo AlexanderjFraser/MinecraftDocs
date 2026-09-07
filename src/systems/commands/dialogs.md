@@ -6,16 +6,19 @@ A dialog is a data pack's form: a title, some body text, some inputs and
 some buttons, decoded from JSON and put on your screen. Nothing about that
 is surprising until you notice which protocol phase it works in.
 `ClientboundShowDialogPacket` is registered in **both** the play and the
-configuration protocols, with a different codec in each ([packets and stream
-codecs](../networking/packets-and-stream-codecs.md#questions-players-ask)),
-so a server can interrupt the join handshake to ask you something. Vanilla
+configuration protocols, with a different codec in each, so a server can
+interrupt the join handshake to ask you something — configuration being the
+phase a joining client is parked in, and the one a play session can be sent
+back to ([protocol
+phases](../networking/protocol-phases.md#configuration)). Vanilla
 only ever does it from a dev-flag-gated command — but the machinery is
 there, complete, in the shipped jar.
 
 And the reason it works there is not a special case bolted on; it is a
 second codec, and it explains itself. The configuration buffer is a plain
-byte buffer with **no registry access**, so the packet cannot carry a holder
-id. `Dialog.CONTEXT_FREE_STREAM_CODEC` therefore sends the whole dialog
+byte buffer with **no registry access** ([packets and stream
+codecs](../networking/packets-and-stream-codecs.md#which-buffer-and-why-play-needs-its-own)),
+so the packet cannot carry a holder id. `Dialog.CONTEXT_FREE_STREAM_CODEC` therefore sends the whole dialog
 inline. What is "context-free" is the *buffer*, not the payload.
 
 A dialog is also one of the two clearest instances of a move Mojang has been
@@ -40,7 +43,11 @@ page assumes it. Four of the pattern's registries are dialog registries.
 
 `net/minecraft/server/dialog` is thirty-one classes across four packages,
 all in the server jar; the screens that render them are client-only in
-`net/minecraft/client/gui/screens/dialog`. The five kinds
+`net/minecraft/client/gui/screens/dialog`, one per dialog kind —
+`SimpleDialogScreen`, `MultiButtonDialogScreen`, `ButtonListDialogScreen`,
+`DialogListDialogScreen` and `ServerLinksDialogScreen` — which is the same
+one-more-screen pattern [GUI and
+screens](../client/gui-and-screens.md) covers everywhere else. The five kinds
 `DialogTypes.bootstrap` registers are `NoticeDialog` and `ConfirmationDialog`
 (both `SimpleDialog`) and `MultiActionDialog`, `DialogListDialog` and
 `ServerLinksDialog` (all `ButtonListDialog`) — and both of those supertypes
@@ -87,8 +94,8 @@ Netty thread onto the server's `PacketProcessor` before
 `MinecraftServer.handleCustomClickAction` sees it, and on the client
 `ClientCommonPacketListenerImpl.handleShowDialog` hops to the client's
 processor before touching the screen stack. Exactly one thing in this system
-ticks: `WaitingForResponseScreen`, counting ticks to un-grey its escape
-button.
+ticks: `WaitingForResponseScreen`, counting ticks to reveal and then enable
+its Back button.
 
 ## Four ways a dialog opens, and one of them is not a click
 
@@ -98,8 +105,10 @@ is the obvious caller. The interesting ones are the click events, because
 events are dispatched". There are three places on the client where they
 actually are — chat, a book, and `DialogScreen` itself, which dispatches its
 own buttons and body text — and one route that is not a click dispatch at
-all: `SignBlockEntity` reads the event
-**server-side** and calls `ServerPlayer.openDialog` directly. An item's name
+all: `SignBlockEntity` reads the event **server-side** and calls
+`ServerPlayer.openDialog` directly — the same way it runs a *run command*
+event, and the reason a sign is the one clickable thing the client never gets
+to vet ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)). An item's name
 or lore is tooltip text and dispatches nothing.
 
 Two tags round it out. `DialogTags.PAUSE_SCREEN_ADDITIONS` and
@@ -113,7 +122,10 @@ Inside a dialog, the parts dispatch on registries of their own the same way
 the dialog does: `DialogBody` over `BuiltInRegistries.DIALOG_BODY_TYPE`
 (`PlainMessage` and `ItemBody`), `InputControl` over
 `BuiltInRegistries.INPUT_CONTROL_TYPE`, and `ActionButton` carrying a
-`CommonButtonData` of label, tooltip and width. `DialogBodyHandlers` and
+`CommonButtonData` of label, tooltip and width. `DialogBodyTypes`,
+`InputControlTypes` and `ActionTypes` are the three bootstraps that fill them
+in code, `StaticAction` is the plain "do this fixed click event" action, and
+`DialogCommand` is `/dialog` itself. `DialogBodyHandlers` and
 `InputControlHandlers` are the client-side factory maps that mirror them.
 An input's key is validated by `ParsedTemplate` against
 `StringTemplate.isValidVariableName` — the same rule a macro function's
@@ -142,14 +154,13 @@ encodes *and* on the client as it decodes, which is what covers a dialog sent
 inline in the configuration phase.
 
 **A button that runs a command is not simply a chat command.** It goes
-through `ClientPacketListener.sendUnattendedCommand`, which parses the string
-once — and a second time, against a no-permission source, only if that first
-parse succeeded and needs no signature — and pops a confirmation screen if
-the command fails to parse, needs a signature, or needs a permission the
-client believes it lacks ([permissions](permissions.md)). A command with
-none of those problems is sent with no screen at all. And the configuration-phase
-`DialogConnectionAccess` refuses to run commands at all, logging a warning
-instead.
+through `ClientPacketListener.sendUnattendedCommand`, which parses it twice
+and shows you a confirmation screen for any of three reasons before sending
+anything ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)
+owns the four outcomes). What is this system's own is the phase: the
+configuration-phase `DialogConnectionAccess` refuses to run a command at all,
+logging a warning instead, so a button on a dialog shown before you are in a
+world can do everything except that.
 
 ## The extension point vanilla does not use
 
@@ -160,9 +171,10 @@ server software to build on. The game itself only defines the transport, and
 defends it with a 32 KB NBT accounter and a 64 KB cap on the payload's own length prefix.
 
 The same is true one level up: the only vanilla sender of a
-configuration-phase dialog is `DebugConfigCommand`, which is gated on
-`SharedConstants.DEBUG_DEV_COMMANDS` *or* `SharedConstants.IS_RUNNING_IN_IDE`,
-**and** dedicated-server-only. A server
+configuration-phase dialog is `DebugConfigCommand`, one of the commands a
+shipped game never registers ([Brigadier and
+commands](brigadier-and-commands.md#commands-that-are-a-door-to-somewhere-else)),
+and dedicated-server-only besides. A server
 really can put a form in front of you before you are in the world. Vanilla
 never does.
 

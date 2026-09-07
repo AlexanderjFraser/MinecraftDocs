@@ -15,15 +15,20 @@ by `/test`. **None of those four needs any of the others.** What they need
 is the parse and the queue, and a reader who has those two can explain any
 of the four from them.
 
-Counting the nine packages [the atlas](../../maps/packages.md#where-each-part-lives)
-lists for this part, the way it counts everything else, that is
+The nine packages [the atlas](../../maps/packages.md#where-each-part-lives)
+gives this part are the machinery — `net/minecraft/commands` and
+`server/commands` — the four systems on top of it —
+`net/minecraft/advancements`, `world/scores`, `server/dialog` with its
+`client/gui/screens/dialog` screens, and `net/minecraft/gametest` — and two
+small ones the machinery needs, `server/permissions` and `server/bossevents`.
+Counted the way the atlas counts everything, that is
 {{#include ../../generated/part-commands.md}} — of which the command
-catalogue alone (`net/minecraft/server/commands`) is 102 classes and 12,800
+catalogue alone (`net/minecraft/server/commands`) is 102 files and 12,800
 lines, each of them a thin lambda over machinery some other part of this
 book owns. So what a command *does* once dispatched is almost always another
-part's page, and [Brigadier and commands](brigadier-and-commands.md) carries
-the list of which; the statistics, which are criteria, are in [what this
-book skips](../anatomy/what-this-book-skips.md).
+part's page, and [Brigadier and commands](brigadier-and-commands.md#commands-that-are-a-door-to-somewhere-else)
+carries the list of which; the statistics, which are criteria, are in [what
+this book skips](../anatomy/what-this-book-skips.md).
 
 ## The shape of the part
 
@@ -62,12 +67,9 @@ optional for any of the four.
 ## Before you start
 
 [The server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
-from Part III, because *when* turns out to matter twice: command functions
-run near the top of `MinecraftServer.tickChildren`, before any level ticks,
-and the **connection** phase — where `ServerGamePacketListenerImpl.tick`
-calls `ServerPlayer.doTick` — runs *after* the levels, which is what puts a
-periodic advancement trigger one tick behind the packet that should have
-carried it.
+from Part III. Two pages in this part turn on where in that order a thing
+sits — command functions near the top, an advancement's flush at the end of a
+player's own tick — and neither is legible without the order itself.
 
 [Codecs, NBT and JSON](../foundations/codecs-nbt-json.md) and
 [the data-driven type pattern](../foundations/data-driven-types.md#the-idea-stated-once)
@@ -82,7 +84,8 @@ packets cross in two different ways on purpose.
 [Contexts and predicates](../items/contexts-and-predicates.md) from Part
 VII, if you are here for advancements: a trigger's conditions are loot
 conditions, evaluated against a loot context, and that page owns the
-machine.
+machine — as it owns `/execute if predicate`, which a selector's own
+*predicate* option is the second caller of.
 
 ## Watch in this order
 
@@ -109,8 +112,8 @@ machine.
    shrinks as criteria are met and is rebuilt when one is revoked. The tree
    is laid out on the server and shipped.
 7. [Scores, teams and stored data](scoreboard-and-data.md) — one number per
-   thing, one query language for any tag, and the `execute store` seam that
-   joins them. Why fake players exist.
+   thing, one query language for any tag, a boss bar, and the `execute store`
+   seam that joins all three. Why fake players exist.
 8. [Dialogs](dialogs.md) — a data pack puts a form on your screen, possibly
    before you are in a world at all. The values are read at the moment of
    the click and not before.
@@ -118,11 +121,35 @@ machine.
    The annotations are gone, a batch *is* an environment, and the shipped
    jar contains exactly one test.
 
+## Where the part stops
+
+Most of this part by line is the catalogue rather than the machinery, and the
+honest answer to what is unexplained is that nearly all of it is one more
+instance of something a page above already draws. The **fifty-odd commands**
+nobody names are the door table's premise repeated:
+`SpreadPlayersCommand`, `FillCommand`, `TeleportCommand`, `WorldBorderCommand`
+and their neighbours are each a Brigadier registration and a call into another
+part. The **thirty-five unnamed advancement triggers** and the **concrete
+predicates** beside them are instances of two shapes
+[advancements](advancements.md#what-the-package-holds-that-this-page-does-not-name)
+states and then declines to enumerate. The **argument types** are the same
+again — [Brigadier and commands](brigadier-and-commands.md#the-tree-on-the-wire)
+explains the wire form and names the families rather than the fifty-seven.
+
+What is genuinely not here is a lecture on the three commands that are
+*algorithms* rather than doors — `SpreadPlayersCommand`'s scatter,
+`CloneCommands`' overlap handling, `FillCommand`'s replace modes. Each is a
+self-contained routine that belongs to no other part, and three unrelated
+routines do not make one lecture; they are named here so that a reader knows
+the omission is deliberate.
+
 ## Reference this part uses
 
-[Packets](../../reference/packets.md) for this part's own traffic, which is
-almost all server → client: the scoreboard has five packets and no
-serverbound counterpart at all.
+[Packets](../../reference/packets.md) for this part's own traffic. The two
+systems that only *report* have no serverbound packet at all between them —
+the scoreboard's five and the boss bar's one run one way — while everything a
+player *does* comes back: the command and its suggestions, a dialog's click,
+an advancement tab, and the two a test block's edit screens send.
 [Registries](../../reference/registries.md) and
 [the data-driven type pattern](../foundations/data-driven-types.md) for the
 six type registries dialogs and tests dispatch on.
@@ -130,8 +157,8 @@ six type registries dialogs and tests dispatch on.
 sets an advancement trigger and an advancement reward run in.
 [Diagram lanes](../../reference/lanes.md) for the abbreviations these figures
 use, and [the glossary](../../reference/glossary.md) for *Brigadier*,
-*selector head*, *world-limited*, *criterion*, *objective*, *macro*, *dialog*
-and *game test*.
+*selector head*, *world-limited*, *criterion*, *objective*, *macro*, *boss
+bar*, *dialog* and *game test*.
 
 ---
 

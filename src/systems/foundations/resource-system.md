@@ -372,8 +372,10 @@ server-sent pack is just one more `RepositorySource`, so
 
 Two of those rows are worth a second look. The command tree is rebuilt by
 every `/reload` — a new `Commands` inside the new
-`ReloadableServerResources` — but nothing re-sends it, so connected clients
-complete against the tree they were given until they reconnect. And the
+`ReloadableServerResources` — and nothing re-sends it, so what a connected
+client holds is the old tree's *shape*. It is less than it sounds, because
+both server-side parses read the new dispatcher immediately ([Brigadier and
+commands](../commands/brigadier-and-commands.md#the-tree-on-the-wire)). And the
 reload is debug-timed only: the "Resource reload finished after N ms" line,
 the per-listener timings and the total-blocking-time figure all come from
 `ProfiledReloadInstance`, selected only when the logger is at debug.

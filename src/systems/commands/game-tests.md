@@ -104,11 +104,12 @@ sequenceDiagram
     RGL->>RGL: say to chat, and GlobalTestReporter to the log or to JUnit XML
 ```
 
-Game tests tick on the server thread, from `MinecraftServer.tickChildren` in
-a profiler section named after the subsystem — after connections and players
-and the debug subscribers, before the server GUI refresh and chunk sending —
-and only when the tick-rate manager reports the game running normally, so
-`/tick freeze` suspends them.
+Game tests tick on the server thread, from `GameTestTicker` in one of the last
+zones `MinecraftServer.tickChildren` opens, and only while the tick-rate
+manager reports the game running normally — so `/tick freeze` suspends a
+running test where it stands ([the server
+tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
+for the order, and its questions for what a freeze does and does not stop).
 
 **Setup ticks run before tick zero.** `GameTestInfo.startExecution` starts
 its counter *negative* — by the declared setup ticks, plus the spawner's own
@@ -140,18 +141,22 @@ The client half the framework's package list hides is what makes that
 practical: `TestInstanceBlockEditScreen` and `TestBlockEditScreen` are how a
 test is authored in game, `TestInstanceRenderer` draws the bounding box, and
 `GameTestBlockHighlightRenderer` is the sole consumer of
-`ClientboundGameTestHighlightPosPacket`. Both serverbound test packets are
-sent *by* the client, from those screens: this is the one system in the part
-whose *declaration* a client edits, though far from the only one whose
-client talks back — commands, suggestions, dialog clicks and advancement tab
-switches are all serverbound too.
+`ClientboundGameTestHighlightPosPacket`. Both serverbound test packets are sent *by* the client, from those screens,
+which makes this the one system in the part whose *declaration* a client
+edits. `TestInstanceBlock` is the block itself; `TestInstanceBlockEntity`
+below is where the work is.
 
 ## Two things a running server should know
 
 **`/test` exists on every server**, not only in a development environment.
-Only the export subcommands are gated on running from an IDE. The command
-sits at `Commands.LEVEL_GAMEMASTERS` like every other data-pack command in
-this part.
+`TestCommand` is 572 lines of subcommands and only the export ones are gated
+on running from an IDE; the rest sit at `Commands.LEVEL_GAMEMASTERS`, the
+rung every data-pack command in this part asks for
+([permissions](permissions.md#the-requirement-is-consulted-inside-the-parse)).
+How it addresses a test is the data-driven move again: `TestFinder` turns a
+subcommand's argument into a set of `Registries.TEST_INSTANCE` ids, and the
+glob in `/test run *` is `ResourceSelectorArgument`, the one argument type in
+the game that takes one.
 
 **Test instance blocks are points of interest.** Locating every test within
 a 250-block radius is a POI query, not a block scan
@@ -163,12 +168,13 @@ Underneath both, `StructureUtils` and `StructureGridSpawner` are the layer
 that clears the space, lays tests out in a grid, transforms the far corner
 and finds every test block by position
 ([jigsaw and templates](../worldgen/jigsaw-and-templates.md) owns the
-template machinery they call). `GameTestServer` is a whole `MinecraftServer`
-subclass for headless runs, driven by `GameTestMainUtil`, and it overrides
-`GameTestServer.waitUntilNextTick` to drain tasks instead of sleeping: the
-headless test server runs flat out, and installs a no-op gizmo collector so
-debug drawing costs nothing
-([what this book skips](../anatomy/what-this-book-skips.md)).
+template machinery they call). `GameTestServer` is the third `MinecraftServer`
+subclass ([anatomy](../anatomy/anatomy.md#from-main-to-a-world)), driven by
+`GameTestMainUtil`, and the one thing it changes that matters here is
+`GameTestServer.waitUntilNextTick`: it drains tasks instead of sleeping, so a
+headless test run goes flat out rather than at twenty ticks a second. It also
+installs a no-op gizmo collector ([debugging the running
+game](../client/debugging-the-running-game.md#the-exceptions)).
 
 ## Where to look
 

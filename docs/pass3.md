@@ -1475,7 +1475,7 @@ writes one strikes it through; a session that rules one out says why, here.*
   new section for what the resulting set gates. The claims are logged in
   [pass9.md](pass9.md).
 
-- **The two other selector-capable argument types** —
+- ~~**The two other selector-capable argument types**~~ —
   `GameProfileArgument` and `ScoreHolderArgument` both compile and resolve an
   `EntitySelector` and neither is named anywhere in the book.
   `GameProfileArgument` is the one that resolves a selector to *profiles*, so
@@ -1487,7 +1487,14 @@ writes one strikes it through; a session that rules one out says why, here.*
   `entity-selectors` names `EntityArgument` alone and says "four argument
   shapes", meaning `EntityArgument`'s own four. Not a whole page — a short
   section on `entity-selectors`, or a row in its cast, for pass 5 or later.
-  *(session M of pass 4, 2026-09-05)*
+  *(session M of pass 4, 2026-09-05)* — **done by pass 5's session M,
+  2026-09-07**, as the short section: *Two more argument types write the same
+  fork by hand*, with `GameProfileArgument`'s name-to-id-cache fallback (which
+  is why `/ban`, `/whitelist` and `/op` take a name nobody is carrying) and
+  `ScoreHolderArgument`'s four literal branches cited to the scoreboard page
+  that already had them. The entry's premise had gone half-stale in the
+  meantime: `brigadier-and-commands` named both in one sentence, which is now
+  a citation of this section.
 
 - ~~**The expansion hack, dimension padding and liquid settings** — three of
   `JigsawStructure`'s ten data-pack fields that no page names, and one of them
@@ -1625,13 +1632,22 @@ writes one strikes it through; a session that rules one out says why, here.*
   `ai-goals-and-brains`' scenario and not `points-of-interest`'). The landing
   page declares all four rather than leaving the silence unexplained. A second
   edition should take them; nothing before pass 10 should.
-- **Commands that are algorithms** — `SpreadPlayersCommand`,
+- ~~**Commands that are algorithms**~~ — `SpreadPlayersCommand`,
   `CloneCommands`, `ChaseCommand` (a debug socket protocol between two game
   instances). Part XIII, or Reference. **Session P: carried.** Three
   unrelated algorithms make a Reference page, not a lecture; a
   `gen_reference.py` view cannot write it. Pass 6 decides whether any is
-  a lecture. *(session K, carried session P)*
-- **The predicate catalogue and the boss bar** — 54 predicate files; the
+  a lecture. *(session K, carried session P)* — **ruled out in writing by
+  pass 5's session M, 2026-09-07, and declared rather than dropped.** Session
+  P was right that three unrelated routines do not make one lecture, and a
+  Reference page holds enumerations, not three algorithms; what was missing
+  was anywhere saying so. `commands/README`'s new *Where the part stops* names
+  `SpreadPlayersCommand`'s scatter, `CloneCommands`' overlap handling and
+  `FillCommand`'s replace modes as the part's one deliberate omission. The
+  roster shifted with the reading: `ChaseCommand` is a dev-only debug socket
+  that `brigadier-and-commands` already declares, and `FillCommand` is the
+  third algorithm in its place.
+- ~~**The predicate catalogue and the boss bar**~~ — 54 predicate files; the
   boss bar is `execute store`'s third sink and belongs with
   `scoreboard-and-data`. Parts VII and XIII. **Session N confirmed the third
   sink from `ExecuteCommand.wrapStores` — score, bossbar, then the three data
@@ -1649,7 +1665,23 @@ writes one strikes it through; a session that rules one out says why, here.*
   stops* rather than inventing a home for it; session M should settle the sink
   and the feed together, or decline both. *(session K, half-corrected session
   N, carried session P, widened session I of pass 5)*
-- ~~**The predicate *shape* library**~~ — `MinMaxBounds`, `CollectionPredicate`
+  — **discharged by pass 5's session M, 2026-09-07, at both ends.**
+  `scoreboard-and-data` gains *The third sink is a boss bar*: `BossEvent`,
+  `ServerBossEvent`, `CustomBossEvent`, `CustomBossEvents` and
+  `BossBarCommands`, none of which any page had named. The section is the
+  model, its two memberships (a live `Set<ServerPlayer>` and a persisted
+  `Set<UUID>`), the `SavedData` and the write surface — so
+  `ClientboundBossEventPacket` has a sender's owner and
+  `networking/README`'s *where the part stops* now cites it instead of
+  declaring the gap. `client/hud` keeps the drawing and cites the section for
+  the feed; the glossary gains a *Boss bar* headword. **The predicate
+  catalogue half stands**, carried with the shape-library entry below: it is a
+  generation candidate and pass 5 adds no generated views.
+- ~~**The predicate *shape* library**~~ *(applied by pass 5's session M,
+  2026-09-07: the table stays on `advancements`, and the page now also
+  declines the ~1,800 lines of concrete predicates as a family in its own
+  words, so the shape and its instances are both accounted for)* —
+  `MinMaxBounds`, `CollectionPredicate`
   with its contents/counts pair, `EntitySubPredicate` as registry-dispatched
   extension, and `DataComponentMatchers`. Four shapes the whole data-driven
   half of the game reuses, currently a table on `advancements` because that

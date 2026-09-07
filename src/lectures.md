@@ -382,17 +382,14 @@ four. Six, seven, eight and nine each assume one through five and nothing
 else in this part.
 
 Part XIII assumes Part III's [server tick](systems/server/server-tick.md)
-twice over — command functions run near the top of `MinecraftServer.tickChildren`, before any
-level ticks, and the connection phase that calls `ServerPlayer.doTick` runs
-after the levels, which is what puts a periodic advancement trigger one tick
-behind the packet that should have carried it. It assumes Part II's [codecs](systems/foundations/codecs-nbt-json.md)
+twice over, because two of its pages turn on where in that order a thing
+sits. It assumes Part II's [codecs](systems/foundations/codecs-nbt-json.md)
 and [the data-driven type pattern](systems/foundations/data-driven-types.md),
 of which dialogs and game tests are the two clearest instances; Part IX's
 [connection](systems/networking/the-connection.md) for the Netty/server
-thread boundary the command packets cross two different ways; and, for
-advancements alone, Part VII's
-[contexts and predicates](systems/items/contexts-and-predicates.md), because
-a trigger's conditions are loot conditions.
+thread boundary the command packets cross two different ways; and Part VII's
+[contexts and predicates](systems/items/contexts-and-predicates.md), which
+advancements need for every trigger and selectors for one option.
 
 ## The dependencies between parts
 

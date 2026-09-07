@@ -5,8 +5,10 @@
 Mine a stone block. Nothing about advancements happens when the item is
 picked up; nothing happens when it enters the inventory either. What happens
 is that `AbstractContainerMenu.broadcastChanges` — the same diff that keeps
-your client's inventory in sync — notices that a slot's contents differ from
-its remembered copy, and reports the difference. Detection is a **diff, not
+your client's inventory in sync ([containers and
+menus](../items/containers-and-menus.md#where-in-the-tick-a-broadcast-happens))
+— notices that a slot's contents differ from its remembered copy, and reports
+the difference. Detection is a **diff, not
 an event**, and the advancement system is a subscriber to it.
 
 That is the first of two things this system does backwards from
@@ -133,7 +135,9 @@ does everything that arrived in a packet, because
 `MinecraftServer.processPacketsAndTick` drains the inbound queue before the
 levels tick at all.
 
-But `ServerPlayer.tick` is not the last thing that happens to a player.
+But `ServerPlayer.tick` is not the last thing that happens to a player: it is
+only the first of the two brackets a player is ticked in ([the two-phase
+tick](../player/the-two-phase-tick.md#the-bracket-and-what-survives-it)).
 `ServerGamePacketListenerImpl.tick` calls `ServerPlayer.doTick` during the
 **connection** phase, which in 26.2 runs *after* the levels
 ([the server tick](../server/server-tick.md)) — i.e. after
@@ -158,7 +162,7 @@ reuses.
 | `MinMaxBounds` | the numeric range, with both a codec **and** a `StringReader` grammar | `3..7` means the same in a predicate, an entity selector and `/random` |
 | `CollectionPredicate` | one generic "N of these match", composing `CollectionContentsPredicate` and `CollectionCountsPredicate` | its only users are the six component predicates in `core/component/predicates` |
 | `EntitySubPredicate` | a per-mob test as a **registry element** instead of a code branch | the twenty-odd small entity predicates are each a record, a codec and nothing else |
-| `DataComponentMatchers` | testing a stack's components without knowing what any of them are | [data components](../foundations/data-components.md) |
+| `DataComponentMatchers` | testing a stack's components without knowing what any of them are | [data components](../foundations/data-components.md#the-readers-and-the-predicates) |
 
 Two details change behaviour rather than shape.
 `EntityPredicate.ADVANCEMENT_CODEC` accepts *either* a condition list or a
@@ -185,18 +189,23 @@ it off the wire, which is exactly what the client does before its first
 update.)
 
 **Why does the tree look the same on every client?** Because it was laid out
-on the server. `TreeNodePosition` runs inside `ServerAdvancementManager` and
-mutates `DisplayInfo` in place; the coordinates ride the packet. A root with
+on the server. `ServerAdvancementManager` is one of the three server reload
+listeners, and `TreeNodePosition` runs in its *apply* half — the half a
+reload runs on the main thread, once per root, after the JSON has been read
+on a background one ([the resource
+system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)).
+It mutates `DisplayInfo` in place; the coordinates ride the packet. A root with
 no `DisplayInfo` is never laid out and never becomes a tab, and a
 display-less node in the middle of a tree is transparent — the layout skips
 it and adopts its children. One wrinkle in an otherwise deterministic
 algorithm: `AdvancementNode.children` is an unordered hash set, so sibling
 order inside a tidy-tree layout is hash-dependent.
 
-**Does `/reload` roll back my progress?** No, and the order is the point.
-`MinecraftServer.reloadResources` calls `PlayerList.saveAll` and *then*
-`PlayerList.reloadResources`, so `PlayerAdvancements.reload` re-reads a file
-written moments earlier. What is genuinely lost is progress for any
+**Does `/reload` roll back my progress?** No, and the order is the point: a
+reload's completion list saves every player before it reloads them ([the
+resource
+system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)),
+so `PlayerAdvancements.reload` re-reads a file written moments earlier. What is genuinely lost is progress for any
 advancement the new pack has removed or renamed — logged once each, and
 invisible to the player except as a full reset packet — plus the selected
 tab, which is silently forgotten with no packet, so the client keeps a stale
@@ -214,7 +223,8 @@ file at `players/advancements/<uuid>.json`
 **How does the recipe book fit in?** Every recipe advancement is generated
 with a `RecipeUnlockedTrigger` criterion and an `AdvancementRewards` naming
 the recipe, so earning it calls `ServerPlayer.awardRecipes`
-([recipes](../items/recipes.md)). `RecipeUnlockedTrigger` then closes the
+([recipes](../items/recipes.md#the-recipe-book-unlocked-glowing-and-filled-in-for-you)).
+`RecipeUnlockedTrigger` then closes the
 loop by letting *other* advancements observe an unlock — comparing the
 recipe key by **reference identity**, which is safe only because
 `ResourceKey`s are interned.
@@ -250,6 +260,28 @@ strictest sense: it walks every advancement on every player load, but its
 whole body sits behind *this advancement has no criteria at all*, and
 `Advancement`'s criteria codec rejects an empty map outright. No loaded
 advancement can satisfy the guard, so the loop never does anything.
+
+## What the package holds that this page does not name
+
+Two families make up most of `net/minecraft/advancements`, and the answer to
+both is the same: the page explains the shape and the members are instances of
+it. The **thirty-five unnamed triggers** — `KilledTrigger`,
+`FishingRodHookedTrigger`, `RecipeCraftedTrigger` and the rest — are each a
+record, a codec and a `CriterionTriggerInstance`, registered by `CriteriaTriggers` and fired
+from wherever in the game the thing happens; knowing `SimpleCriterionTrigger`
+is knowing all of them. The **concrete predicates** under
+`advancements/predicates` are the same story one level down:
+`StatePropertiesPredicate`, `EntityFlagsPredicate`, `EntityEquipmentPredicate`,
+`MobEffectsPredicate`, `DamageSourcePredicate` and their neighbours are each
+one of the four shapes above applied to one kind of thing, and the two that
+matter to another part — `LocationPredicate` and `BlockPredicate` — are named
+where they do work, in [contexts and
+predicates](../items/contexts-and-predicates.md#what-reads-a-context) and
+[features and placement](../worldgen/features-and-placement.md).
+
+The one class worth naming for itself is `CriterionProgress`: a criterion's
+whole per-player state is a nullable timestamp, which is why the wire form can
+carry progress without carrying a single condition.
 
 ## The screen at the other end
 

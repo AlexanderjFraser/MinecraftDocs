@@ -109,6 +109,11 @@ the global palette. → [blocks and states](../systems/blocks/blocks-and-states.
 post-processing, so a leaf or a fluid there is re-evaluated when the chunk
 goes live. → [blending at the old-chunk border](../systems/worldgen/blending.md)
 
+**Boss bar** — a named server-side `BossEvent` holding a name, a progress
+float and three screen effects, broadcast to the players attached to it; the
+`/bossbar` kind adds an integer value and maximum, persists its membership as
+UUIDs, and is `execute store`'s third sink. → [scores, teams and stored data](../systems/commands/scoreboard-and-data.md)
+
 **Brain** — the memory-and-behaviour AI used by villagers, piglins and
 axolotls, as opposed to the older goal system. → [AI](../systems/entities/ai-goals-and-brains.md)
 

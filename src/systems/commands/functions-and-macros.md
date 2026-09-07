@@ -103,6 +103,12 @@ Everything else — integers, compounds, lists — falls through to SNBT.
 Integers merely happen to render bare; byte, short and long need their own
 cases precisely because SNBT would suffix them.
 
+`StringTemplate` also decides what a parameter may be called, and the rule is
+the narrowest in the area: inside `$(…)`, letters, digits and underscore and
+nothing else, checked by `StringTemplate.isValidVariableName` at compile time.
+That rule is borrowed — a dialog's input keys obey it too, which is what lets
+a dialog substitute its inputs into a command ([dialogs](dialogs.md#four-ways-a-dialog-opens-and-one-of-them-is-not-a-click)).
+
 Three smaller rules complete the model. One `$` line anywhere makes the
 whole *file* a macro function, though its non-macro lines keep their
 already-compiled form and are never re-parsed. A `$` line containing no
@@ -125,11 +131,12 @@ not yet materialised. Everything after this point is
 
 ## What calls a function, and when
 
-`ServerFunctionManager.tick` is the **first** thing
-`MinecraftServer.tickChildren` does — before the clocks, before the time
-sync, before any level ticks, and therefore long before connections and
-players tick, which in 26.2 happen *after* the levels
-([the server tick](../server/server-tick.md)). It no-ops entirely when the
+`ServerFunctionManager.tick` runs in the first profiler zone
+`MinecraftServer.tickChildren` opens — *commandFunctions*, with only the
+suspension of every player's packet flushing ahead of it — and so before the
+clocks, before the time sync, before any level ticks, and long before
+connections and players tick, which in 26.2 happen *after* the levels ([the
+server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)). It no-ops entirely when the
 tick-rate manager is not running normally, so `/tick freeze` suspends data
 packs. `#minecraft:load` runs once after a reload or start, and
 `#minecraft:tick` runs every tick from a list **snapshotted at reload** and
@@ -139,23 +146,26 @@ reloads.
 Each function in a tag gets its **own** `ExecutionContext`, so the budget is
 per function rather than shared across the tag.
 
-`/schedule` is the one way out of the current tick, and its gate is narrower
-than it sounds. The callback goes into the server's timer queue — server-wide
-saved data, not per level — and `ServerLevel.tickTime` advances that queue
-immediately after setting the game time. That whole method sits behind the
-level's own *tickTime* flag, **which only the overworld has**, so a
-scheduled function fires once per tick rather than once per dimension.
-`ScheduleCommand` also refuses two things outright: a macro function, and a
-delay of zero.
+`/schedule` is the one way out of the current tick, and it books its callback
+into the server-wide `TimerQueue` that only the overworld's clock advances
+([the level tick](../server/server-level-tick.md#sleeping-is-the-one-thing-a-freeze-cannot-stop)) —
+so a scheduled function fires once per tick, not once per dimension, and
+stands still while the world is frozen. What belongs to functions rather than
+to the clock is what `ScheduleCommand` refuses outright: a macro function, and
+a delay of zero.
 
-Everything else that runs a function is a short and exhaustive list:
-`/function` itself, `AdvancementRewards` for a reward function
-([advancements](advancements.md)), the `RunFunction` enchantment effect
-([enchantments](../items/enchantments.md)), and
+Everything else that runs a function is a short list: `/function` itself and
+the two constructs the engine builds on it, `execute if function` and
+`/return run function` ([the execution
+engine](the-execution-engine.md#the-two-commands-that-are-part-of-the-engine));
+`AdvancementRewards`, whose `CacheableFunction` holds the id and resolves it
+once ([advancements](advancements.md#questions-players-ask)); `RunFunction`,
+one of the `EnchantmentEntityEffect`s
+([enchantments](../items/enchantments.md#seven-families-of-moment)); and
 `TestEnvironmentDefinition.Functions` for a game test's environment setup
 ([game tests](game-tests.md)).
 
-## The two permission verbs, three lines apart
+## The two permission verbs
 
 A function body is one of the places a command source's permission set is
 deliberately rewritten, and the game reaches the same answer down two
@@ -167,17 +177,12 @@ which is `LevelBasedPermissionSet.OWNER` — and calls
 **replacement**: the tick and load tags run at gamemaster.
 
 `FunctionCommand` and `DebugCommand` instead call
-`CommandSourceStack.withMaximumPermission`, which is `PermissionSet.union`.
-The name promises a widening, and for two sets that are *not* level-based it
-delivers one — the default `PermissionSet.union` builds a `PermissionSetUnion` that ORs.
-But `LevelBasedPermissionSet` overrides it, and the override returns the
-**lower**-levelled set on both of its branches
-([permissions](permissions.md)). So for the sets a player or the console
-actually carries it is a *minimum*, and `CommandSourceStack.withMaximumPermission`
-at gamemaster
-over an owner's source yields gamemaster too. Both routes land on the same
-rung: there is no way to reach a function body above gamemaster, and the
-method named for a ceiling is the one that enforces it.
+`CommandSourceStack.withMaximumPermission` at gamemaster, which is
+`PermissionSet.union` — and for the level-based sets a player or the console
+actually carries, that union returns the **lower** of the two rather than the
+higher ([permissions](permissions.md#a-question-an-answer-and-a-check)). So an
+owner's source comes out at gamemaster on this route as well. Both verbs land
+on the same rung: there is no way to reach a function body above gamemaster.
 
 ## Where to look
 

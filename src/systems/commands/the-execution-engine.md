@@ -32,7 +32,12 @@ that one decision.
 
 `net/minecraft/commands/execution` is the whole engine and it is entirely
 server-side. Nothing here crosses the network; only the *effects* of
-commands produce packets.
+commands produce packets. What arrives is a `ParseResults` and a
+`CommandSourceStack` that [Brigadier and
+commands](brigadier-and-commands.md#three-parsers-see-one-string) has already
+built: `Commands.performCommand` flattens the parse into a context chain and
+`Commands.executeCommandInContext` is the door — it reads the two limits,
+installs the context in a thread-local and drives the loop.
 
 ## The queue, four moments apart
 
@@ -78,7 +83,10 @@ depth-first.** An action does not push directly: it appends to
 `ExecutionContext.pushNewCommands` splices that list onto the *head*
 afterwards, in order. So whatever the current action spawned runs before
 whatever was already pending — the semantics of a call stack, out of an
-`ArrayDeque`.
+`ArrayDeque`. An action never sees the context directly: it is handed an
+`ExecutionControl`, which is the (context, frame) pair with two methods —
+queue an action, and install a `TraceCallbacks` — and that pair is the whole
+privilege an action has.
 
 **The fan-out is lazy, and the arithmetic is exact.**
 `ContinuationTask.schedule` queues nothing for an empty list, one entry for
@@ -177,8 +185,10 @@ worth knowing. The increment happens only when the stage carries a non-null
 redirect modifier, and only after the custom-modifier hand-off has been
 ruled out. So a plain `execute run` costs nothing for its redirect, and
 **`execute if function` and `/return run` are free**: neither custom
-modifier ever reaches the counter. A `ContinuationTask` is free too, so an
-N-way fan-out costs N, not N+1.
+modifier ever reaches the counter. A `ContinuationTask` is free too, and that is
+the +1 an N-way fan-out does not pay: N leaves cost N, the continuation that
+materialised them costs nothing, and the modifier stage that forked in the
+first place was the single unit charged above.
 
 **Ten million** — the cap on *queue length*, staged plus queued
 (`ExecutionContext`). The constant that names it reads as though it bounded
@@ -224,8 +234,13 @@ own to pick up.)
 
 **Does a nested command get its own budget?** No.
 `Commands.CURRENT_EXECUTION_CONTEXT` is a thread-local: a command that
-starts another top-level execution appends to the running queue rather than
-making a new context, and the limits were read once by the outermost call.
+starts another top-level execution *while one is running* appends to the
+running queue rather than making a new context, and the limits were read once
+by the outermost call. Note what that does and does not cover — the thread-local
+is null again the moment a queue drains, so two commands run back to back each
+open their own context, which is why every function in `#minecraft:tick` gets
+a budget of its own ([functions and
+macros](functions-and-macros.md#what-calls-a-function-and-when)).
 Its top frame is nested one depth deeper, so its discards cannot eat the
 outer queue.
 

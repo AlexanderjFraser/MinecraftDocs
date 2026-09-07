@@ -140,10 +140,12 @@ owns is the signed material a report is built from. The **server list and its
 screen** are one more screen, which [GUI and
 screens](../client/gui-and-screens.md) covers as a pattern; what belongs here
 is only how a typed address becomes a socket, which [the
-connection](the-connection.md#the-threads-underneath-it) states. And the
-**boss-bar feed** — the part's largest single unnamed class — is a level feed
-whose sending side has no owner anywhere in the book; it is named here so that
-a reader knows the gap is known.
+connection](the-connection.md#the-threads-underneath-it) states. And the **boss-bar feed** —
+`ClientboundBossEventPacket`, the part's largest single class — is one more
+broadcast whose sending side belongs to the model behind it, [scores, teams
+and stored
+data](../commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again),
+and whose drawing belongs to [the HUD](../client/hud.md).
 
 Outward, what the *client* does with what it is told is [the client
 level](../client/the-client-level.md#what-it-does-simulate-the-two-cadences)

@@ -34,7 +34,9 @@ VII](../items/README.md), signs and chests as things that are *drawn* are
 [Part XI](../rendering/README.md), the structure block is
 [jigsaw and templates](../worldgen/jigsaw-and-templates.md#where-a-template-comes-from)',
 because what it saves and loads is a `.nbt` template, and the command block is
-[Part XIII](../commands/README.md)'s. What comes back here is the moment any
+[Part
+XIII](../commands/brigadier-and-commands.md#three-parsers-see-one-string)'s,
+because what a command block is, is a `CommandSource` holding a string. What comes back here is the moment any
 of them writes a state.
 
 ## The shape of the part

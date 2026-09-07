@@ -1523,6 +1523,282 @@ not checked when they were written.
 
 *(pass-5 sessions append below, newest first)*
 
+## Session M — Part XIII · Commands and data packs (pass 5) *(2026-09-07)*
+
+All ten pages of the part rewritten — `commands/README`,
+`commands/brigadier-and-commands`, `commands/permissions`,
+`commands/entity-selectors`, `commands/the-execution-engine`,
+`commands/functions-and-macros`, `commands/advancements`,
+`commands/scoreboard-and-data`, `commands/dialogs`, `commands/game-tests` —
+plus eight pages elsewhere: `foundations/data-driven-types`,
+`foundations/resource-system`, `items/contexts-and-predicates`,
+`networking/README`, `blocks/README`, `client/hud`, `reference/glossary` and
+`src/lectures.md`. The part owns no hand-kept Reference page of its own.
+
+### Claims introduced
+
+**`commands/scoreboard-and-data` — a new section, *The third sink is a boss
+bar, and it is this page's shape again*.** Every sentence in it is new to the
+book; `BossEvent`, `ServerBossEvent`, `CustomBossEvent`, `CustomBossEvents`
+and `BossBarCommands` were named on no page before this session.
+
+- "A boss bar is a named server-side thing holding a number, saved with the
+  world, broadcast to the players attached to it, and writable only by a
+  command."
+- `BossEvent` is "an id, a name, a *progress* float from zero to one, a
+  `BossEvent.BossBarColor`, a `BossEvent.BossBarOverlay`, and three booleans
+  that ask the client to darken the screen, play the boss music and draw the
+  world fog" (`BossEvent.java`:11–18).
+- `ServerBossEvent` "adds the live membership — a `Set<ServerPlayer>` — and
+  turns every setter into a broadcast" (`ServerBossEvent.java`:18, 29–101).
+- "one `ClientboundBossEventPacket` with six operations, add and remove and
+  one update apiece for progress, name, style and properties"
+  (`ClientboundBossEventPacket.java`:118–122, the `OperationType` enum).
+- "There is no serverbound counterpart, exactly as there is none for a score."
+- "Four things in the game own one: `WitherBoss`, `Raid`, `EnderDragonFight`
+  — and `CustomBossEvent`" (the four files that name `ServerBossEvent`).
+- `CustomBossEvent` "keeps an integer `CustomBossEvent.value` and an integer
+  `CustomBossEvent.max`, derives the float progress from them on every write"
+  (`CustomBossEvent.java`:26–27, 77–87).
+- The membership claim: a persisted `Set<UUID>` beside the superclass's live
+  set, `CustomBossEvent.onPlayerConnect` re-attaching a player whose UUID is
+  on the list and `CustomBossEvent.onPlayerDisconnect` calling the
+  superclass's removal "deliberately so that the UUID stays"
+  (`CustomBossEvent.java`:25, 211–219). **The word *deliberately* is an
+  inference from the shape of the override; pass 9 should decide whether the
+  book may say it.**
+- `CustomBossEvents` is "the `SavedData` that holds them, one file at
+  *data/minecraft/custom_boss_events.dat*", with capitalised NBT field names
+  (`CustomBossEvents.java`:38; `CustomBossEvent.Packed.CODEC`).
+- `ExecuteCommand.storeValue` is "a sibling of the score sink rather than the
+  same code" — which **corrects** the parenthetical it replaces.
+- `BossBarCommands` is "the write surface, at gamemaster"
+  (`BossBarCommands.java`:57).
+
+**`commands/entity-selectors` — a new section, *Two more argument types write
+the same fork by hand*** (discharges a `pass3.md` §7 entry).
+
+- `GameProfileArgument` "resolves to profiles, not entities"; an `@` "is
+  rejected outright if it includes non-players"; the literal side is "read to
+  the next space and looked up in the server's name-to-id cache — so `/ban`,
+  `/whitelist` and `/op` name a player who has never joined this session"
+  (`GameProfileArgument.java`:51–77; the five callers are `BanPlayerCommands`,
+  `DeOpCommands`, `OpCommand`, `PardonCommand`, `WhitelistCommand`).
+- "That lookup is the only thing on this page that leaves the game's own
+  data." **An absolute over this page's scope; pass 9 should test it.**
+- `ScoreHolderArgument`'s four literal branches "in order", the wildcard alone
+  throwing (`ScoreHolderArgument.java`:102–170).
+- "both enforce their single-or-many shape on the compiled selector rather
+  than on the text".
+- Elsewhere on the page: `EntityTypeTest` glossed as "the one-method 'is this
+  the type I asked for, and give it to me typed' the whole entity-fetching API
+  is generic over"; `Permissions.COMMANDS_ENTITY_SELECTORS` called "the **only
+  permission in the game checked in two different phases**" (moved here from
+  `commands/permissions`, where it was already asserted).
+
+**`commands/brigadier-and-commands`.**
+
+- A new paragraph on `SharedSuggestionProvider`: implemented by
+  `CommandSourceStack` and `ClientSuggestionProvider`; "most of its 355 lines
+  are static helpers"; `SharedSuggestionProvider.customSuggestion` "is the
+  packet on the client and a completed empty future on the server"
+  (`SharedSuggestionProvider.java`:32–50, and the two implementors).
+- A new paragraph on `CommandSource`, restoring what pass-3 session N cut:
+  four methods and four implementations; `RconConsoleSource.shouldInformAdmins`
+  deferring to *broadcast-rcon-to-ops*; `BaseCommandBlock`'s source gated on
+  `GameRules.SEND_COMMAND_FEEDBACK` and `GameRules.COMMAND_BLOCK_OUTPUT`,
+  "which is what those two game rules *are*"; "a command block that has been
+  broken accepts nothing at all" (the `closed` field);
+  `CommandSource.NULL` refusing everything. Files:
+  `CommandSource.java`:7–25, `RconConsoleSource.java`:44–56,
+  `BaseCommandBlock.java`:202–214, `MinecraftServer.java`:1889–1899.
+- **"The command block is `BaseCommandBlock` plus the `CommandBlockEntity`
+  that holds one: a `CommandSource`, a stored string and a redstone edge, and
+  no machinery of its own beyond this page's."** This is the sentence that
+  pays off `blocks/README`'s promise; it is a *scope* claim as much as a fact.
+- A new paragraph on the resource-argument family: six types "over the same
+  idea", differing in what they hand back and "in whether they accept a glob.
+  Only `ResourceSelectorArgument` does, which is why `/test run *` works and
+  `/give @s *` does not." Also the five `commands/synchronization/brigadier`
+  classes as "the only argument types in the game the game did not write".
+- `WorldCoordinates` as "three `WorldCoordinate`s, each a value plus a *is
+  this relative* flag".
+- A sign's click command "is never checked by the client, because it never
+  reaches the client at all" (the correction below).
+
+**`commands/advancements` — a new section, *What the package holds that this
+page does not name*.** The two family claims (thirty-five unnamed triggers;
+the concrete predicates as instances of the four shapes) and
+`CriterionProgress` as "a nullable timestamp, which is why the wire form can
+carry progress without carrying a single condition"
+(`CriterionProgress.java`:9). Also new: `TreeNodePosition` runs "in its
+*apply* half — the half a reload runs on the main thread, once per root,
+after the JSON has been read on a background one"
+(`SimplePreparableReloadListener.java`:14–23,
+`ServerAdvancementManager.java`:24, 36, 53).
+
+**`commands/functions-and-macros`.** The macro variable-name rule stated in
+prose for the first time — "inside `$(…)`, letters, digits and underscore and
+nothing else" (`StringTemplate.java`:50–55) — and the claim that a dialog's
+input keys obey the same rule. The caller list re-scoped (below).
+
+**`commands/the-execution-engine`.** `ExecutionControl` as "the (context,
+frame) pair with two methods … that pair is the whole privilege an action
+has" (`ExecutionControl.java`:6–25). And the reconciliation the book lacked:
+"the thread-local is null again the moment a queue drains, so two commands run
+back to back each open their own context, which is why every function in
+`#minecraft:tick` gets a budget of its own"
+(`Commands.java`:406–410, `ServerFunctionManager.java`:58–84).
+
+**`commands/permissions`.** `Permissions`' own nine, split "four to five"
+(`Permissions.java`:7–15). And the second route to a client's op level:
+"except on an integrated server, where
+`IntegratedServer.updatePermissionAndChatAbilities` writes the host's own
+`LocalPlayer` directly and no packet is involved"
+(`IntegratedServer.java`:343–353).
+
+**`commands/dialogs`.** The five dialog screens named as one family; the three
+bootstraps (`DialogBodyTypes`, `InputControlTypes`, `ActionTypes`),
+`StaticAction` and `DialogCommand` named.
+
+**`commands/game-tests`.** `TestCommand` at "572 lines of subcommands";
+`TestFinder` turning a subcommand's argument into `Registries.TEST_INSTANCE`
+ids; "the glob in `/test run *` is `ResourceSelectorArgument`, the one
+argument type in the game that takes one"
+(`TestCommand.java`:296–299); `GameTestTicker` and `TestInstanceBlock` named.
+
+**`commands/README` — a new *Where the part stops* section**, with three
+family declines and one written-out omission: "three unrelated routines do not
+make one lecture" (`SpreadPlayersCommand`, `CloneCommands`, `FillCommand`).
+Its packages sentence now names all nine, and its *Reference this part uses*
+paragraph re-scopes the traffic claim (below).
+
+**`reference/glossary` — a new headword, *Boss bar*.**
+
+**`src/lectures.md`** — Part XIII's dependency paragraph shortened to what is
+about the order, and its Part VII clause re-scoped from "for advancements
+alone" to advancements plus the selector's *predicate* option.
+
+### Corrections
+
+1. **`commands/scoreboard-and-data`** said "a score set and a crash a tick
+   later is a score lost". A tick-loop crash is not that ending:
+   `MinecraftServer.java`:877's *finally* runs `stopServer()` (:689), which
+   calls `saveAllChunks` (:733), whose **first statement** is
+   `this.scoreboard.storeToSaveDataIfDirty(…)` (:629). `how-a-server-dies`
+   says so in as many words at its opening and in *What you lose if you kill
+   the process*. Now: the watchdog kill, a *kill -9* or a power cut, with the
+   link to that section.
+2. **`commands/brigadier-and-commands`** listed a sign among the commands the
+   client vets through `ClientPacketListener.sendUnattendedCommand`.
+   `SignBlockEntity.executeClickCommandsIfPresent` calls
+   `Commands.performPrefixedCommand` **on the server** with a source it builds
+   itself at `LevelBasedPermissionSet.GAMEMASTER`
+   (`SignBlockEntity.java`:201–247) — which `commands/permissions` already
+   said. Now: a dialog button and a chat click event, with the sign named as
+   the exception.
+3. **`commands/permissions`' own figure** listed "a sign" in its entry node,
+   four lines above prose saying a sign does not come that way. Same evidence;
+   the node now reads "a dialog button, a chat click event".
+4. **`commands/functions-and-macros`** said `ServerFunctionManager.tick` "is
+   the **first** thing `MinecraftServer.tickChildren` does".
+   `MinecraftServer.java`:1206–1213: the method first suspends packet flushing
+   on every player, *then* opens the *commandFunctions* zone. `server-tick`'s
+   order table has the suspension as row one. Now: "the first profiler zone …
+   with only the suspension of every player's packet flushing ahead of it".
+5. **`commands/dialogs`** called `WaitingForResponseScreen`'s button an
+   "escape button" in one paragraph and a "Back button" in another. It is
+   built from `CommonComponents.GUI_BACK`
+   (`WaitingForResponseScreen.java`:14, 26). Now: Back, once.
+6. **`foundations/resource-system`** said connected clients after a `/reload`
+   "complete against the tree they were given until they reconnect". Both
+   server-side parses read `MinecraftServer.getCommands`
+   (`MinecraftServer.java`:1854–1856 → `this.resources.managers.getCommands()`;
+   `ServerGamePacketListenerImpl.java`:610 for suggestions), so a newly added
+   function *does* complete after a reload — which
+   `commands/brigadier-and-commands` says and this page contradicted. Now: it
+   is the tree's *shape* that goes stale, with the link.
+7. **`items/contexts-and-predicates`** said Part XIII's commands "own
+   `/execute if predicate`". No page in Part XIII mentions it; that page owns
+   its own trace of it. Now: the page owns the command, Part XIII owns the
+   engine it runs in and the selector option that is the second caller.
+8. **`commands/brigadier-and-commands`**' door table routed `LootCommand` and
+   `ItemCommands` to `loot-tables`, which names neither;
+   `contexts-and-predicates`:247–248 names both. Repointed, with
+   `loot-tables` kept for the functions themselves. *(pass5.md:3349,
+   session G)*
+9. **`foundations/data-driven-types`** routed `BuiltInRegistries.PERMISSION_TYPE`
+   and `PERMISSION_CHECK_TYPE` to `brigadier-and-commands`, which names
+   neither identifier; `commands/permissions` owns both. Repointed with
+   anchors. *(the last live row of pass5.md:424)*
+10. **`commands/brigadier-and-commands`** said `net/minecraft/server/commands`
+    is "a hundred classes and 12,800 lines" where the landing page and the
+    atlas say 102. Both count files; 102 is the generated number, and the
+    package has a `data/` subpackage that a flat `ls` misses. Now: "102 files",
+    naming the atlas as the population.
+11. **`commands/README`** said the part's traffic "is almost all server →
+    client". Its own `game-tests` page names two serverbound packets and
+    `advancements` a third, besides the two command packets. Now: the two
+    reporting systems are one-way and everything a player does comes back.
+12. **`commands/functions-and-macros`** called its caller list "short and
+    exhaustive" while omitting `execute if function` and `/return run
+    function`, both of which the engine page explains. Now: named, with the
+    link.
+13. **`commands/functions-and-macros`** cited `items/enchantments` for
+    `RunFunction`, which that page never names. Now: `RunFunction` is named
+    here as one of the `EnchantmentEntityEffect`s, with the link pointing at
+    the section that explains the effect families.
+
+### Suspicions re-derived and found sound
+
+- `commands/permissions`' "ninety-one gates that name a level constant,
+  sixty-six … sixteen … nine" against the same page's 95
+  `Commands.hasPermission` call sites. Both right: the arguments to those 95
+  calls are 66 gamemaster, 16 admin, 9 owner, two ternaries in `SeedCommand`
+  and `VersionCommand`, `GameModeCommand.PERMISSION_CHECK` and
+  `ClientPacketListener.RESTRICTED_COMMAND_CHECK`. **For pass 8:** whether the
+  two ternary gates "name a level constant" is left to the reader, and they do.
+- `commands/advancements`' "its only users are the six component predicates in
+  `core/component/predicates`". Exactly six of that package's classes
+  reference `CollectionPredicate`.
+- `commands/dialogs`' "thirty-one classes across four packages" — 35 files
+  less four `package-info.java`. Sound.
+- `commands/game-tests`' "forty-four classes" for `gametest/framework` — 45
+  files less one `package-info.java`. Sound. The 47 on
+  `anatomy/what-this-book-skips` is the atlas's file convention over the whole
+  `gametest` tree, not a disagreement. **For pass 8** (the two rules for the
+  word *classes*), not a correction.
+- `commands/game-tests`' `/test run *`. `TestCommand` registers `run`,
+  `runmultiple`, `runfailed`, `runthat`, `runthese` and `runclosest`; there is
+  no `runall`, and `run` takes a `ResourceSelectorArgument`.
+- `commands/permissions`' "three sources of belief". Sound as a taxonomy; the
+  integrated server's direct write is a second route into the first source,
+  and is now a clause rather than a fourth entry.
+
+### For pass 9's attention, found and not fixed
+
+- `commands/brigadier-and-commands` says the client's dispatcher is built
+  "from a tree the server sent you when you joined" and later that the tree's
+  only sender is `PlayerList.sendPlayerPermissionLevel`. Both were checked in
+  pass 4; the join path reaching that method was not re-derived here.
+- `commands/scoreboard-and-data`'s *Where to look* calls
+  `NbtPathArgument.NbtPath` "the nicest ten lines in the area", and
+  `commands/functions-and-macros` no longer says "three lines apart" — both
+  are line-level claims about decompiled formatting, which is not the
+  source's. The second is retired; the first is not, and is rule 2's problem
+  rather than a fact.
+- Two class-name collisions the book does not acknowledge:
+  `EntityDataAccessor` (`DataCommands`' accessor against the syncher key on
+  `entities/synched-entity-data`) and `EntitySelector` (the compiled query
+  against the predicate bag in `world/entity`, two pages apart in this part).
+  `commands/entity-selectors` names the second in *Where to look*; nothing
+  names the first. The verifier lists both among its 25 ambiguous names.
+- `commands/scoreboard-and-data` is linked from `foundations/data-driven-types`
+  for `BuiltInRegistries.NUMBER_FORMAT_TYPE` and names `NumberFormatTypes` but
+  not `NumberFormatType`; the page states the three kinds without stating the
+  pattern. Left as it stands.
+
+
 ## Session A — the standard (pass 5) *(2026-09-05)*
 
 Three published pages rewritten — `src/lectures.md`, `src/SUMMARY.md` and

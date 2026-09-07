@@ -211,6 +211,38 @@ citation with the cargo's half kept. Part XII arrived with **82 internal links
 and not one anchor**, the seventh part running; it now carries 183 links, 158
 of them anchored. **No tool bug**, the sixth
 pass-5 part session without one.
+**Session M is done** (2026-09-07, Part XIII): all ten pages of the part
+rewritten and eight pages elsewhere edited, and this is the session where the
+lens found *a mechanism the whole book had left out*. The boss bar is
+`execute store`'s third sink and about 400 lines of `BossEvent`,
+`ServerBossEvent`, `CustomBossEvent`, `CustomBossEvents` and
+`BossBarCommands` — and no page named a single one of those classes. Three
+earlier sessions had each found one end of it and routed it here;
+`scoreboard-and-data` now owns it as a section, because the model *rhymes*
+with the page's own: a named server-side thing holding a number, saved with
+the world, broadcast to whoever is attached, writable only by a command, and
+carrying a persisted `Set<UUID>` beside a live `Set<ServerPlayer>` — the
+scoreboard's own *a name is not an entity* trick a second time. That section
+discharged three open items at once, so `networking/README`'s *where the part
+stops* now cites an owner instead of declaring a gap. **Thirteen
+corrections**, six of them one page contradicting another and two a page
+contradicting itself: `scoreboard-and-data` said a crash loses a score where
+`how-a-server-dies` says a crash saves — the crash path's *finally* reaches
+`MinecraftServer.saveAllChunks`, whose first statement stores the scoreboard,
+and it is the watchdog and a hard kill that lose it; `brigadier-and-commands`
+put a sign among the commands the client vets, and `permissions`' own figure
+said the same against its prose four lines below, when a sign runs its command
+server-side at a hard-coded gamemaster; `functions-and-macros` called the
+function tag the first thing the tick does, where the packet-flush suspension
+is; and `resource-system` asserted the stale-command-tree folklore that
+`brigadier-and-commands` exists to correct. **Six suspicions re-derived and
+found sound**, among them a count that looked self-contradictory and was not.
+The coverage answer is that most of the part by line is the catalogue, and the
+landing page now says which families the pages above already cover as patterns
+and which single omission is deliberate — the three commands that are
+*algorithms* rather than doors, ruled out as a lecture in writing. Two more §7
+entries discharged and one ruling applied. Twenty queue entries settled in
+place. **No tool bug**, the seventh pass-5 part session without one.
 
 ## The passes
 
@@ -1259,3 +1291,6 @@ plan as it stood at its close)*
   widened, and what the reading raised for sessions J, K, M and N and for
   passes 6, 7 and 8 appended to [pass5.md](pass5.md) rather than left in the
   log.
+- *From session J on, a part session's record is the "Session … is done"
+  paragraph under **Where we are** above, which is where sessions J, K, L and M
+  wrote theirs; this list is not continued in parallel.*

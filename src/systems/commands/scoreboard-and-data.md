@@ -9,7 +9,7 @@ scoreboard working exactly as written, and one method override explains it.
 
 `Entity.getScoreboardName` returns the entity's UUID string.
 `Player.getScoreboardName` overrides it with the profile name. There is one
-flat map from *string* to a row of scores, holding players by name, mobs by
+flat map from *string* to a `PlayerScores` — a row of scores, holding players by name, mobs by
 UUID, and anything else you care to type. From that single override follows
 the whole of scoreboard folk practice: **why fake players exist** (nothing
 checks that a key belongs to an entity), **why a mob's score can never
@@ -23,11 +23,11 @@ to do with scores. Command storage and the NBT path language are the other
 half — a place to put a tag belonging to no block and no entity, and a query
 language for reaching into any tag at all. And `execute store` is the seam:
 the only construct in the game that takes the result of an arbitrary command
-and writes it somewhere. It has **three** sinks, and two of them are these
-two models — a score, and a path into a block, an entity or a storage. (The
-third is a boss bar's value or maximum, which shares its implementation with
-the score sink and belongs to
-[the HUD](../client/hud.md).)
+and writes it somewhere. It has **three** sinks, and all three are
+named things on this server that a number is written into: a score, a path
+into a block, an entity or a storage, and a boss bar's value or maximum. The
+third has the same shape as the scoreboard one floor up, and the last section
+before the questions is about it.
 
 The instinct they share is worth stating before the classes, because it
 explains three otherwise-odd decisions: **the server is the only participant
@@ -47,7 +47,7 @@ Every write is a command.
 | `PlayerTeam` | the **only** subclass of `Team`: the mutable state, the setters, a precomputed display style, and friendly-fire plus see-invisibles packed into one wire byte | both |
 | `ServerScoreboard` | three fields — the server, `ServerScoreboard.trackedObjectives`, and one dirty boolean — and thirteen overrides across ten hooks, each conditionally broadcasting, then marking dirty. It lives in `net/minecraft/server`, not beside `Scoreboard` | server |
 | `NbtPathArgument` | 874 lines, the largest argument type in the game, and a whole query language: six node kinds and a depth limit of 512 | both |
-| `DataCommands` | `/data`, over three `DataAccessor`s — `BlockDataAccessor`, `EntityDataAccessor` and `StorageDataAccessor` | server |
+| `DataCommands` | `/data`, over three `DataAccessor`s — `BlockDataAccessor`, `EntityDataAccessor` and `StorageDataAccessor`. Beside it, `ScoreboardCommand`, `TeamCommand` and `TriggerCommand` are this system's entire write surface | server |
 
 `net/minecraft/world/scores` is sixteen files and 1,442 lines — the whole
 model — and every class in it ships in both jars. Beside it:
@@ -274,8 +274,12 @@ reference ([text components](../foundations/text-components.md)). A
 
 Saving is one boolean for the entire scoreboard, cleared by re-packing the
 whole thing, and it happens only when the world is saved — the autosave,
-`/save-all`, or shutdown: **a score set and a crash a tick later is a score
-lost.** `ScoreboardSaveData` sits under
+`/save-all`, or shutdown. A tick-loop crash is a shutdown: it falls into the
+same *finally*, which calls `MinecraftServer.saveAllChunks`, whose very first
+statement is `ServerScoreboard.storeToSaveDataIfDirty`. **What loses a score
+is an ending that never reaches that method** — a watchdog kill, a *kill -9*,
+a power cut — and then everything since the last autosave goes with it ([how a
+server dies](../server/how-a-server-dies.md#what-you-lose-if-you-kill-the-process)). `ScoreboardSaveData` sits under
 `minecraft:scoreboard` beside the world, with one command-storage file per
 namespace, both through the data fixer
 ([level data and rules](../../reference/level-data-and-rules.md)). The NBT
@@ -283,6 +287,47 @@ field names are the archaeology — *Objectives*, *PlayerScores*,
 *DisplaySlots*, *Teams*, and inside them *Name*, *CriteriaName*,
 *RenderType*, *Locked* — capitalised, pre-flattening conventions, preserved
 by codec.
+
+## The third sink is a boss bar, and it is this page's shape again
+
+`execute store result bossbar <id> value` writes into a `CustomBossEvent`,
+and a reader who has the scoreboard already knows the model. A boss bar is a
+named server-side thing holding a number, saved with the world, broadcast to
+the players attached to it, and writable only by a command.
+
+`BossEvent` is the shape everything shares: an id, a name, a *progress* float
+from zero to one, a `BossEvent.BossBarColor`, a `BossEvent.BossBarOverlay`,
+and three booleans that ask the client to darken the screen, play the boss
+music and draw the world fog. `ServerBossEvent` adds the live membership — a
+`Set<ServerPlayer>` — and turns every setter into a broadcast, which is the
+whole of the sending side the book had not named: one
+`ClientboundBossEventPacket` with six operations, add and remove and one
+update apiece for progress, name, style and properties. There is no
+serverbound counterpart, exactly as there is none for a score. Four things in
+the game own one: `WitherBoss`, `Raid`, `EnderDragonFight` — and
+`CustomBossEvent`, which is `/bossbar`.
+
+What `CustomBossEvent` adds is the part that rhymes. It keeps an integer
+`CustomBossEvent.value` and an integer `CustomBossEvent.max`, derives the
+float progress from them on every write, and holds its membership as a
+**`Set<UUID>`** *beside* the superclass's set of live players. The UUID set is
+what persists and what `/bossbar set … players` edits; the live set is
+maintained by `CustomBossEvent.onPlayerConnect`, which re-attaches a player
+whose UUID is on the list, and by `CustomBossEvent.onPlayerDisconnect`, which
+calls the superclass's removal deliberately so that the UUID stays. A bar's
+membership outlives the session the same way a score outlives the entity.
+
+`CustomBossEvents` is the `SavedData` that holds them, one file at
+*data/minecraft/custom_boss_events.dat* ([level data and
+rules](../../reference/level-data-and-rules.md)), and its NBT is the same
+archaeology as the scoreboard's — *Name*, *Visible*, *Value*, *Max*,
+*Players*, capitalised, preserved by codec. `BossBarCommands` is the write
+surface, at gamemaster like everything else in this part, and
+`ExecuteCommand.storeValue` is the store sink: a sibling of the score sink
+rather than the same code, chaining the same kind of callback onto the source
+and writing the value or the maximum instead of a `ScoreAccess`. What the
+client does with the packet — the interpolation, the sky it darkens — is [the
+HUD](../client/hud.md#questions-players-ask).
 
 ## Questions players ask
 
@@ -356,10 +401,11 @@ player's below-name score is legible, per entity
 ([attributes](../entities/attributes.md)).
 
 **A failing command under `store result` writes 0**, whichever kind it is.
-For the custom-executor path the answer is in the game's own packages —
-`CustomCommandExecutor.WithErrorHandling` reports failure through the
-callback and a failure result is a zero, so a failing `/function` writes 0.
-For an ordinary leaf the result consumer is driven by Brigadier, and
+On the custom-executor path that is `CustomCommandExecutor.WithErrorHandling`
+doing what it does for everything ([the execution
+engine](the-execution-engine.md#a-result-is-a-flag-and-a-number-and-nothing-aggregates)),
+so a failing `/function` writes 0. For an ordinary leaf the result consumer is
+driven by Brigadier, and
 `ContextChain.runExecutable` catches the `CommandSyntaxException` and calls
 the consumer with *success false, result 0* before rethrowing. The game
 hands that consumer straight through from the source's own callback, so the
