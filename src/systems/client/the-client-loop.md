@@ -220,7 +220,9 @@ UI sounds, and hands the new state to `DeltaTracker.Timer.updatePauseState`.
 
 `FramerateLimitTracker.getFramerateLimit` returns the option unchanged
 normally; caps it at thirty after a minute idle; replaces it with ten when
-the window is iconified or after ten minutes idle; and replaces it with
+the window is iconified or after ten minutes idle — **iconified, not
+unfocused**, which is a different state with a different consequence, one
+section above — and replaces it with
 **sixty** in a menu with no level — which can be *more* than the player
 asked for. The two idle cases apply only when `Options.inactivityFpsLimit`
 is set to the AFK behaviour, and the iconified test wins over both.
@@ -253,7 +255,12 @@ calls `Minecraft.exitWorldAndClose`, and its last statement arms
 second of two armings, not the only one: the window-close callback arms the
 same watchdog against the game thread while the game is still running, which
 is the one that catches a client that hangs on the close button rather than
-one that hangs on the way out.
+one that hangs on the way out. The two do not have the same powers, either.
+Both start a daemon thread that sleeps fifteen seconds and, if the shutdown
+has not claimed the counter by then, builds a crash report from the main
+thread's stack — but the close-callback arming stops there, at *report only*,
+while the one after `Minecraft.run` has returned goes on to take the process
+down.
 
 Stopping has three doors and one corridor. `Minecraft.stop` sets
 `Minecraft.running` false, and is what `Window.shouldClose` triggers at the

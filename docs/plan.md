@@ -157,6 +157,27 @@ it the render tree in their own sentences. `check_deps.py` refused the first
 landing page for a *before you start* entry the dependency figure had no arrow
 for, which is the gate doing its job. **No tool bug**, the fourth pass-5 part
 session without one.
+**Session K is done** (2026-09-06, Part XI): all eleven pages, the landing page
+and `reference/submit-phases` rewritten, and this is the session where the
+lens found a *Reference page out-explaining its own lecture* — the merging
+rule was fourteen lines of mechanism on the catalogue and three on
+`entity-rendering`, and it moved to the lecture with the two phase classes and
+`RenderType.canConsolidateConsecutiveGeometry`. **Fourteen corrections**, five
+of them one page contradicting another and three a page contradicting itself,
+including a Reference row that said a particle group is submitted once where
+the code makes two nodes, and a page whose closing sentence denied its own
+opening about whether the weather reads the world clock. Part XI is the book's
+largest coverage debt in absolute lines, and the answer was the same shape as
+Part X's: the number is inflated at *both* ends by a package mapping the book
+disagrees with, and the landing page now says so from this side as Part X's
+does from the other — the `map_source.py` change is **ruled out in writing**,
+because moving a shared package would invalidate the argument session J had
+just written. Sixteen ownership moves, of which the largest are three that
+went *out* of the part to Part X's client loop and Part II's resource system.
+Three homeless pass-3 cuts placed, four proposed cuts all declined with
+reasons, and the landing page's argument — *the renderer is not allowed to
+look at the world* — written for the first time. **No tool bug**, the fifth
+pass-5 part session without one.
 
 ## The passes
 

@@ -9,8 +9,9 @@ object and run by the same three classes. Six such files ship, covering the
 pause menu, the three things it is unpleasant to spectate, the glow around a
 spectral-arrowed mob and the option that sorts water against particles. A
 resource pack can rewrite every one of them. What it cannot do is add a
-seventh, because every chain this game will ever load is named by a constant
-in Java, and there are only six of those.
+seventh, because the set of ids the game will ever ask for is closed and
+written in Java — three of them as constants and three as literals in a
+switch — and it has six members.
 
 ## The cast
 
@@ -24,6 +25,14 @@ in Java, and there are only six of those.
 | `LevelTargetBundle` | the seven names the level's targets answer to, and which set a chain may ask for | Render thread |
 | `LevelRenderer` | the two chains that become passes in the world's own frame graph | Render thread |
 | `GameRenderer` | the four chains that get a frame graph of their own, built and thrown away on the spot | Render thread |
+
+Nothing here talks to a driver directly: a pass is a [`RenderPipeline` and a
+`RenderPass`](blaze3d.md#one-draw) like every other draw in the game, and the
+vocabulary this page spends — `BindGroupLayout`, `GpuBuffer`,
+`MappableRingBuffer`, `Std140Builder`, `TextureTarget` — is
+[Blaze3D](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame)'s.
+The graph the passes go into is [visibility and the frame
+graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled)'s.
 
 ## From a file on disk to a pass in a graph
 
@@ -81,15 +90,15 @@ one.
 ## Loaded off-thread, compiled inside a frame
 
 `ShaderManager` is a `SimplePreparableReloadListener`, so its two halves run
-in two places. `ShaderManager.prepare` runs on the reload's worker executor:
-it reads every GLSL source under *shaders*, resolves each source's
-*moj_import* directives through `GlslPreprocessor`, and parses every JSON
-under *post_effect* with `PostChainConfig.CODEC` into an immutable map — a
-malformed chain is logged and simply absent from it. `ShaderManager.apply`
-then runs on the render thread, clears the device's pipeline cache,
-precompiles every statically registered pipeline and, only if all of them
-succeeded, swaps in a new `ShaderManager.CompilationCache` and closes the
-old.
+in the [two places a reload
+listener has](../foundations/resource-system.md#prepare-every-listener-at-once).
+`ShaderManager.prepare` runs on the reload's worker executor: it reads every
+GLSL source under *shaders*, [resolves each source's *moj_import*
+directives](blaze3d.md#shaders-and-the-reflection-that-checks-them), and
+parses every JSON under *post_effect* with `PostChainConfig.CODEC` into an
+immutable map — a malformed chain is logged and simply absent from it.
+`ShaderManager.apply` then runs on the render thread and [precompiles the
+static pipeline catalogue](blaze3d.md#one-draw).
 
 Post chains are not in that precompiled set. They are built lazily, the first
 time somebody asks: `ShaderManager.getPostChain` consults the cache, and on a
@@ -135,22 +144,29 @@ in the uniforms map, has to match anything.
 
 That is why the blur's radius is not one of them. *blur.json* declares a
 radius of zero, and *box_blur* treats zero as "ask elsewhere": it falls back
-to a member of the *Globals* block, which `GlobalSettingsUniform.update`
-rewrites every frame from `OptionsRenderState.menuBackgroundBlurriness` and
+to a member of [the *Globals*
+block](blaze3d.md#buffers-uniforms-and-the-ring-that-resets-every-frame),
+which `GlobalSettingsUniform.update` rewrites every frame — from
+`OptionsRenderState.menuBackgroundBlurriness`, in this case — and
 `RenderSystem.bindDefaultUniforms` binds to every post pass. **Anything a
 chain needs to vary per frame cannot be a chain uniform.** It has to come in
-through the global block, whose seven members are fixed in Java.
+through the global block, whose membership is fixed in Java.
 
 ## The six chains
 
-| chain | who declares it | what it reads | what a player sees |
+The last column is a *reading of the shaders*, not a citation: the GLSL says
+what it does to a pixel and does not say what that looks like, so those cells
+are the one place on this page where the book is describing rather than
+reporting.
+
+| chain | who declares it | what it reads | what it looks like |
 |---|---|---|---|
 | *blur* | `GameRenderer.processBlurEffect`, called from inside `GuiRenderer.draw` | the main target and one internal target, six passes alternating between them | the world going soft behind a pause or options screen |
 | *creeper* | `GameRenderer.render`, when the camera entity is a `Creeper` | the main target, and one internal target it bounces through | luminance collapsed into the green channel, then posterised and mosaicked |
 | *spider* | `GameRenderer.render`, when it is a `Spider` | the main target and four internal targets | the view repeated through several skewed, blurred, red-tinted lobes |
 | *invert* | `GameRenderer.render`, when it is an `EnderMan` | the main target, and one internal target it bounces through | colours inverted, four fifths of the way |
 | *entity_outline* | `LevelRenderer.render`, when anything submitted an outline this frame | the entity-outline target — and never the main one | the coloured halo around a glowing mob |
-| *transparency* | `LevelRenderer.render`, when improved transparency is on | **six** of the caller's targets, colour **and** depth, and just one internal target of its own | water, particles, clouds and rain layered in the right order |
+| *transparency* | `LevelRenderer.render`, when improved transparency is on | **six** of the caller's targets, colour **and** depth, and just one internal target of its own | not an appearance at all — this one *makes* the picture, merging the six layers by depth |
 
 Only one of those is a screen effect. *blur* runs over whatever is currently
 on the main target, world and GUI alike, because `GuiRenderer.draw` splits the
@@ -236,14 +252,14 @@ a `FrameGraphBuilder` of its own, imports one target as *main*, adds the
 chain, executes it and throws it away. Both its callers are in
 `GameRenderer`: the camera-entity effect at the end of the world block, and
 `GameRenderer.processBlurEffect` in the middle of the GUI.
-Neither passes an inspector, so **the blur and the spectator shaders never
-get a slice of the F3 pie chart to themselves**: their cost is folded into
-whichever enclosing zone they ran under, *render → world* for the spectator
-effects and *render → gui → draw* for the blur, and no name in the chart
-tells you a post chain is what you are looking at. The graphs are throwaway but the
-memory is not: both doors take internal targets from the one
-`CrossFrameResourcePool`, which holds a released target for three frames in
-case something asks again for that size and format.
+Neither passes [the inspector the level's graph is executed
+with](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled),
+so **the blur and the spectator shaders never get a slice of the F3 pie chart
+to themselves**: their cost is folded into whichever enclosing zone they ran
+under, *render → world* for the spectator effects and *render → gui → draw*
+for the blur, and no name in the chart tells you a post chain is what you are
+looking at. The graphs are throwaway; the memory the targets sit in is
+pooled either way.
 
 ## Questions players ask
 

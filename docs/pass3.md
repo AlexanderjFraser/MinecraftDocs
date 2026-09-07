@@ -1737,6 +1737,43 @@ writes one strikes it through; a session that rules one out says why, here.*
   directions. Reference,
   generated where possible. *(sessions F, G, I; ruled session O)*
 
+- **Part XI's coverage question, answered without a new page** *(pass 5,
+  session K)*. Part XI is the book's largest coverage debt by lines — 43,000
+  named nowhere — and the landing page now states why that number is the shape
+  it is rather than a hole. It is inflated at both ends by the package
+  mapping: `client/renderer/state/gui` and `client/renderer/debug` count
+  against Part XI and are Part X's, `client/renderer/feature` and
+  `client/renderer/gizmos` are the Reference tier's, while
+  `client/resources/model` counts against Part X and is `models-and-atlases`'
+  subject entire. **The mapping is not changed** — the packages are genuinely
+  shared and moving one would invalidate the coverage argument on the other
+  part's landing page — and both landing pages now say so in prose instead.
+  What is left is families the pages teach as patterns: one class per mob
+  model, one per entity renderer, one per render state, one per layer, one per
+  particle, and one file per GL or Vulkan call site. The genuine gaps were
+  written rather than queued: the item-model property vocabulary on
+  `models-and-atlases` (which discharges *what this book skips*' promise that
+  `client/renderer/item` is covered there), `Lighting` and
+  `WorldBorderRenderer` on `lightmap-fog-and-sky`, `ModelBlockRenderer` on
+  `section-meshing`, `EntityRenderers` and `DisplayRenderer` and the skin
+  pipeline on `entity-rendering`, `TextureUtil` and the GLFW error scope on
+  `the-window`, `BlockModelRenderState` and the built-in table's five bare
+  wrappers on `block-entity-rendering`, `ChunkSectionLayerGroup` and `ViewArea`
+  and `TranslucencyPointOfView` on `visibility-and-the-frame-graph`, and the
+  particle family sentence with `ParticleOptions` on `particles`. **No new
+  page, and no row carried forward.**
+
+- **Three homeless pass-3 cuts in Part XI, all placed** *(pass 5, session K)*.
+  `RenderSystem.outputColorTextureOverride` / `outputDepthTextureOverride` —
+  the only mention of where the world can be redirected — went to `blaze3d`,
+  beside the render targets, with the GUI item atlas and picture-in-picture as
+  its only setters. The two `endFrame` ring buffers are `DynamicUniformStorage`'s and
+  `FogRenderer.regularBuffer`, both rotated at the end of a frame rather than
+  overwritten; `blaze3d` now names both and says why a ring is what a per-draw
+  uniform needs. The second `MaterialBaker`
+  behind the block-atlas rule is named on `models-and-atlases` and the rule it
+  is behind is stated there; nothing further is owed.
+
 ---
 
 ## 8 · Notes from pass-3 sessions for later pass-3 sessions

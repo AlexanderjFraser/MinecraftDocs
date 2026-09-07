@@ -44,13 +44,12 @@ everything below.
 
 **The client resolves the same stack from the same data** — it is never sent
 a resolved colour — and what it adds is `EnvironmentAttributeProbe`, on the
-camera. `EnvironmentAttributeProbe.tick` re-samples the biome neighbourhood
-once per client tick and rolls each probed value's new answer down into last
-tick's; `EnvironmentAttributeProbe.getValue` fetches the fresh one lazily,
-during the frame, and interpolates between the two by partial tick; and any
-attribute nobody asked for during a tick is evicted. Every renderer here that
-asks for an attribute at all goes through the probe and never through the
-system — and one of the five asks for none.
+camera: a per-tick cache that smooths in space and in time and [evicts
+anything nobody asked
+for](../world/environment-attributes-and-timelines.md#the-same-value-on-the-client).
+What matters on this page is that
+every renderer here that asks for an attribute at all goes through the probe
+and never through the system — and one of the five asks for none.
 
 **Whether a value smooths or steps is declared on the attribute**, not chosen
 by the renderer — which is why the sky colour slides and
@@ -173,9 +172,12 @@ Three leftovers. `Lightmap.getBrightness` survives but no longer feeds the
 lightmap: it is a CPU-side duplicate of the shader's curve, kept for `Hud`,
 `EntityRenderer`'s shadow sampling and `ScreenEffectRenderer` alone. The
 packing statics moved out of the texture into `LightCoordsUtil`, from where a
-packed value reaches a vertex through `VertexConsumer.setLight`. And
-`UiLightmap` is the 1×1 white `DynamicTexture` handed out while
-`GameRenderer.useUiLightmap` is set.
+packed value reaches a vertex through `VertexConsumer.setLight`. And there are two lightmaps, not one: `GameRenderer.levelLightmap` always
+returns the real 16×16 texture, `UiLightmap` is a 1×1 white
+`DynamicTexture`, and `GameRenderer.lightmap` hands out the second for
+exactly as long as `GameRenderer.useUiLightmap` is set — which is the GUI
+block and nothing else, and which is [why the HUD is not shaded by the light
+you are standing in](the-frame.md#questions-players-ask).
 
 ### Two curves that look like one
 
@@ -304,11 +306,19 @@ records inside a `WeatherRenderState`.
 level is zero, so a clear sky costs nothing. Otherwise it loops every column
 in a square of radius `Options.weatherRadius`, querying the heightmap and the
 precipitation at each — every frame, on the CPU. The vertex buffer is rebuilt in
-`WeatherEffectRenderer.render` rather than in extract, rain and snow are two
-indexed draws sharing it, and the world border rides in the same pass. Particles and sound are somebody else's job:
-`ClientLevel.tickWeatherEffects` spawns those per tick within the same radius,
-next to `ClientLevel.animateTick`, which scatters
-`EnvironmentAttributes.AMBIENT_PARTICLES`.
+`WeatherEffectRenderer.render` rather than in extract, and rain and snow are
+two indexed draws sharing it. `WorldBorderRenderer` rides in the same pass and
+is nothing to do with the weather: the pass simply draws the two of them one
+after the other into whichever target it was given — the dedicated weather
+target when the transparency chain made one, the main target otherwise — and
+the border's own draw is handed the render distance and the far plane so it
+can stop the wall where the fog would have taken it anyway. What the border
+*is* stays [Part IV's](../../reference/level-data-and-rules.md).
+Particles and sound are somebody else's job: `ClientLevel.tickWeatherEffects`
+spawns those per tick within the same radius, next to
+`ClientLevel.animateTick`, whose scatter of
+`EnvironmentAttributes.AMBIENT_PARTICLES` is
+[particles](particles.md#three-neighbours-that-look-like-the-same-thing)'.
 
 ## What is not an attribute
 
@@ -317,12 +327,29 @@ needs a qualifier. `DimensionType.ambientLight` and
 `DimensionType.cardinalLightType` are plain record fields, read directly —
 and the first of the two no longer reaches the lightmap at all: its two readers are
 `Lightmap.getBrightness`, the CPU-side duplicate this page has already said
-the shader does not use, and one deprecated method on `LevelReader`. Block tint never moved at all: grass, foliage and water
+the shader does not use, and one deprecated method on `LevelReader`.
+
+The second is the one you can see, because **directional shading is per
+dimension and it is not data**. How bright a face is by which way it points
+comes from a `CardinalLighting` record, and there are exactly two in the
+game: `CardinalLighting.DEFAULT` and `CardinalLighting.NETHER`, both
+hard-coded. `DimensionType` carries the choice between them and nothing else
+— a data pack picks, it does not supply numbers. What does the picking is
+`Lighting`, a single UBO of two diffuse light directions sliced five ways,
+one slice per `Lighting.Entry`. Four of the five —
+`Lighting.Entry.ITEMS_FLAT`, `.ITEMS_3D`, `.ENTITY_IN_UI` and
+`.PLAYER_SKIN`, which is why an item in a slot, an item in your hand and the
+player in the inventory screen are each lit differently — are written once in
+the constructor and never again. Only `Lighting.Entry.LEVEL` is rewritten,
+by `Lighting.updateLevel`, and only when the dimension's choice changes.
+
+Block tint never moved at all: grass, foliage and water
 are still `BiomeColors` reading `BiomeSpecialEffects` through the four
 `ColorResolver`s, with no probe and no layer stack in it. And the clouds still
 read the world clock, because a value sampled at the camera and lerped by
-partial tick is the wrong shape for a drift — while the weather reads neither
-clock nor attribute, seeding each column from its own coordinates.
+partial tick is the wrong shape for a drift — as does the weather, whose
+streaks scroll off it, though the weather is the one renderer here that asks
+for no attribute at all and seeds each column from its own coordinates.
 
 > **For a 1.21-era reader.** Nearly every per-dimension, per-biome,
 > per-time-of-day visual constant is an environment attribute now, so the

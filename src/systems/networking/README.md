@@ -137,8 +137,9 @@ for a stated reason. **Player reporting** — the upload, the report kinds and
 the reason enum — is declared out of scope on [what this book
 skips](../anatomy/what-this-book-skips.md#player-reporting); what this part
 owns is the signed material a report is built from. The **server list and its
-screen** are Part XI's to draw; what belongs here is only how a typed address
-becomes a socket, which [the
+screen** are one more screen, which [GUI and
+screens](../client/gui-and-screens.md) covers as a pattern; what belongs here
+is only how a typed address becomes a socket, which [the
 connection](the-connection.md#the-threads-underneath-it) states. And the
 **boss-bar feed** — the part's largest single unnamed class — is a level feed
 whose sending side has no owner anywhere in the book; it is named here so that

@@ -395,8 +395,8 @@ The recurring ones:
 - **Rendering split into extract and render.** *GuiGraphics*,
   *EntityRenderer.render*, *LevelRenderer.renderLevel*, *MultiBufferSource*
   and every `RenderSystem` state setter are gone or repurposed, because the
-  frame now builds an immutable render state on the game thread and draws
-  from it — [the frame](../systems/rendering/the-frame.md), [Blaze3D](../systems/rendering/blaze3d.md),
+  frame now copies the live game into render state and then draws from that
+  copy, both halves on the Render thread — [the frame](../systems/rendering/the-frame.md), [Blaze3D](../systems/rendering/blaze3d.md),
   [entity rendering](../systems/rendering/entity-rendering.md).
 - **Per-dimension and per-biome constants became one attribute system.**
   *DimensionSpecialEffects* and most of *BiomeSpecialEffects* are gone;

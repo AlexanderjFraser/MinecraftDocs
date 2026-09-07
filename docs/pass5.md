@@ -95,7 +95,9 @@ it. Everything it acted on itself is struck in place above, or logged in
   ~~*Two left for I.*~~ **Done, session I:** both were pointing at
   `tickets-and-loading`, which bounces the reader straight back; both now point
   at `what-the-client-is-told#the-rate-the-client-asks-for`.
-- **Session K (XI) — the flash layers are a citation now.**
+- ~~**Session K (XI) — the flash layers are a citation now.**~~ **Confirmed,
+  session K:** the cut reads whole, and the End-flash contrast it sets up is
+  paid off later on the same page.
   `lightmap-fog-and-sky`:60-65 explained the two `ClientLevel` lightning layers,
   which is `environment-attributes-and-timelines`' stack, and gave the lerp as
   "a fifth" where the owner says 22%. The decompile says `0.22F`
@@ -551,14 +553,23 @@ create, routed by kind.*
   mapping's 1,254 / 93,012 for four, because `map_source.PARTS` gives Part XI
   `client/particle` as well. Session K decides which population Part XI's
   argument is about and then uses the include. The other ten landing pages
-  carry no size sentence, which A2 allows. [kind=book]
+  carry no size sentence, which A2 allows. [kind=book] **Part XI half done,
+  session K:** the four-package population is the one the part's argument is
+  about (particles is lecture ten), so `rendering/README` now uses the include
+  and states the two boundary corrections the number needs. `worldgen/README`
+  is session L's.
 - **Two landing pages are over the measured budget** — everything but the
   watch order: `rendering/README` 124 lines and `worldgen/README` 144,
   against a corpus median of 90. Sessions K and L judge; the fix is the
-  argument, not the trim. [kind=book]
+  argument, not the trim. [kind=book] **Part XI judged, session K:** the
+  argument was rewritten and the ten-line caption disowning the figure cut to
+  four; the page is longer than the median and is where the part's coverage
+  boundary is stated, which is worth the lines. `worldgen/README` is L's.
 - **`lectures.md`:296 and `rendering/README`:140 were near-verbatim**, and
-  session A shortened the first under the summariser rule. Session K reads
-  the pair once to check nothing was lost. [kind=book]
+  session A shortened the first under the summariser rule. ~~Session K reads
+  the pair once to check nothing was lost.~~ **Done, session K:** nothing was
+  lost. Both were re-synced again after the landing page's figure caption
+  changed.
 
 ### For pass 8, the voice
 
@@ -816,7 +827,9 @@ drop the number.
   `LevelRenderer.TRANSPARENCY_POST_CHAIN_ID`) and the other three are inline
   literals in `GameRenderer.checkEntityPostEffect`'s switch. The count holds;
   *constant* does not.
-- `rendering/the-window.md:244` — "(**both** reached from `KeyboardHandler`)".
+- ~~`rendering/the-window.md:244` — "(**both** reached from `KeyboardHandler`)".~~
+  **Done, session K:** the parenthetical is cut; two other pages contradicted
+  it independently.
   `ClipboardManager` is a `KeyboardHandler` field; `TextInputManager` is
   `Minecraft.textInputManager` and is reached from `Gui`,
   `AbstractSignEditScreen` and `IMEPreeditOverlay` as well.
@@ -826,7 +839,9 @@ drop the number.
   also copy the full pose); and "half a dozen others" is seven layers that hang
   something off a posed part, thirteen that call `RenderLayer.getParentModel`
   at all.
-- `rendering/models-and-atlases.md:191` — "**twelve** separate layers" of
+- **Carried to pass 9, session K** (it is a count assertion, so it is a
+  fact-check's rather than a wording pass's).
+  `rendering/models-and-atlases.md:191` — "**twelve** separate layers" of
   fallback: the prose names eleven distinct failure kinds, and twelve only if
   "bakes that throw" counts as its two `ModelBakery` catches.
 - `rendering/lightmap-fog-and-sky.md:60` — "a fifth of the way" is `0.22F`
@@ -1007,9 +1022,12 @@ fell, and none has had a wording pass:
 - `lightmap-fog-and-sky`'s opening, where "only two still read the raw world
   clock" became "only one… and the weather does not ask anybody". The new
   clause is true and the rhythm of the sentence is worse.
-- `visibility-and-the-frame-graph`'s opening, which no longer resolves to one
+- ~~`visibility-and-the-frame-graph`'s opening, which no longer resolves to one
   method and now has to say "not quite at one method" — an admission in a
-  position that wants a promise.
+  position that wants a promise.~~ **Done, session K:** fixed from both ends.
+  *Where to look* was still promising "that one method, top to bottom", which
+  is what forced the apology; the opening now promises the *order* and states
+  the first stage's being on the far side of the wall as the finding it is.
 
 **Structural findings (not acted on).**
 
@@ -1020,8 +1038,10 @@ fell, and none has had a wording pass:
   package" list omits seven of the package's twenty-six classes, including
   `Transparency` and `TextureUtil`, and the error callback is swapped at least
   four times where the page implies two.
-- `block-entity-rendering`'s completeness sweep — the page had never been
-  checked, and nineteen in-scope classes and mechanisms go unmentioned. The
+- ~~`block-entity-rendering`'s completeness sweep~~ **Done, session K:** all
+  five prioritised items written, plus the built-in table's four other model
+  kinds and its five bare wrappers. The page had never been
+  checked, and nineteen in-scope classes and mechanisms went unmentioned. The
   ones worth a sentence each, in the agent's priority order:
   `BlockEntityRendererProvider.Context`, `WallAndGroundTransformations`,
   `BlockModelRenderState`, the crumbling-overlay source, and
@@ -1030,8 +1050,11 @@ fell, and none has had a wording pass:
   list, the `EmptyBlockModel`/`SelectBlockModel` entries in the same table, and
   the five blocks that get a bare wrapper rather than a composite — which is
   why a block-displayed enchanting table is a book with no table under it.
-- `entity-rendering` and `reference/submit-phases.md` overlap more than they
-  should now that the catalogue is corrected: the lecture names four of the
+- ~~`entity-rendering` and `reference/submit-phases.md` overlap more than they
+  should~~ **Decided, session K: the catalogue wants less preamble.** The
+  merging paragraph moved to the lecture, which owns it by scenario and by
+  figure; the Reference page keeps the 12:3 split, now enumerated. The
+  original finding: the lecture names four of the
   fifteen phases and exactly one of the thirteen renderers, so the "three or
   four examples from" framing the Reference page used was already generous.
   Pass 5 should decide whether the lecture wants more of the catalogue or the
@@ -1064,8 +1087,14 @@ there is a third at `BlockEntityRenderDispatcher.java:67`, and its "nothing
 reaches back into the world", which `SignRenderState`'s live `SignText`
 references break.
 
-**On-spec material pass 5 may cut**, carried forward from pass 2's session I
-and still true after this pass: `the-window` in its entirety (it is a real
+~~**On-spec material pass 5 may cut**~~ **All four ruled, session K, and none
+cut:** `the-window` stays (the landing page argues its place and three pages
+open on state it creates); `blaze3d`'s two sections stay, both carrying
+material three pages depend on and none of them explains, with the
+naming-drift charge landing on its 1.21 *table* instead; `particles`'
+explosion section stays, being the book's only home for the client explosion
+budget; and `entity-rendering`'s two lists were already gone. The original
+entry, carried forward from pass 2's session I: `the-window` in its entirety (it is a real
 gap and a real lecture, and it is also the page a viewer is most likely to
 skip — the landing page now says so in as many words); `blaze3d`'s *What
 replaced RenderStateShard* and *Resources and uniforms* sections, both of
@@ -2652,7 +2681,12 @@ it made are in [pass9.md](pass9.md).*
   The two copies that add something were kept as such; the
   `the-client-level` copy, which also duplicated the distance-delay mechanism
   whole, is cut to one sentence and the anchor. [kind=book]
-- **Session K (XI) — the skin pipeline's drawing half.**
+- ~~**Session K (XI) — the skin pipeline's drawing half.**~~ **Done, session
+  K:** paid off on `entity-rendering`, in a section of its own — the whole
+  `PlayerSkin` and seven `PlayerModelPart` booleans go into `AvatarRenderState`
+  at extract, and `PlayerModelType` never reaches the state because the
+  dispatcher used it to pick the renderer. `models-and-atlases` was not the
+  payoff and no longer reads as though it were.
   `player-anatomy` now names `PlayerSkin`, `PlayerModelType` and
   `PlayerModelPart` and declares that drawing them is Part XI's. Check
   `rendering/entity-rendering` or `models-and-atlases` pays that off; if no
@@ -2951,11 +2985,13 @@ that takes it. Everything session F did act on is struck above or logged in
   what a view of *what each one gates* would hang off; the spawn-override
   table is what `entity-lifecycle`'s new species-list passage cites for *which
   structures override what*. Session N builds the views. [kind=book]
-- **Session K (XI) — `synched-entity-data`:238-244 walks the extract and layer
+- ~~**Session K (XI) — `synched-entity-data`:238-244 walks the extract and layer
   pipeline with no link.** `entity-rendering` links *here* at its :16 and gets
   nothing back. The sheep-specific payoff (a layer skipped, not a model swap;
   the undercoat ignores the sheared flag) stays; the pipeline should cite
-  `entity-rendering#extract-the-live-entity-becomes-a-snapshot`. [kind=book]
+  `entity-rendering#extract-the-live-entity-becomes-a-snapshot`.~~ **Done,
+  session K:** the pipeline sentence is now one clause and that anchor; the
+  sheep-specific payoff stays where it was. [kind=book]
 
 **Coverage, routed rather than written.**
 
@@ -3088,8 +3124,12 @@ that takes it. Everything session E did act on is struck above or logged in
   reach range is; `player-anatomy` (Part VIII) owns it and is later. Both
   halves of a declared pair have the same hole, so it wants one ruling rather
   than two per-page fixes.
-- **Session K (XI) — `section-meshing` and `block-interaction` describe one
-  switch two ways.** Session E re-derived it: `LevelRenderer` is the class that
+- ~~**Session K (XI) — `section-meshing` and `block-interaction` describe one
+  switch two ways.**~~ **Done, session K:** re-derived again
+  (`LevelRenderer.java`:593-610) and `section-meshing` corrected — the
+  dispatcher does not decide, `LevelRenderer.compileSections` does, and the
+  page now names the three `PrioritizeChunkUpdates` values and pays off its own
+  earlier promise about `isDirtyFromPlayer`. The original finding: Session E re-derived it: `LevelRenderer` is the class that
   reads `PrioritizeChunkUpdates` and decides `rebuildSync`, and the default is
   *NONE* while both fancy presets set *PLAYER_AFFECTED* — so
   `block-interaction` is right on both counts. `section-meshing` attributes the
@@ -3366,7 +3406,14 @@ that takes it. Everything session I did act on is struck above or logged in
   three produced the line, and `ChatLog`'s ring of `LoggedChatEvent`s is kept
   for the reporting screens rather than for display — which is the seam with
   the one thing this part declines. [kind=book]
-- **Session K (XI) — the multiplayer server list.** `ServerList` (204),
+- ~~**Session K (XI) — the multiplayer server list.**~~ **Declined, session K,
+  and the routing corrected.** It is not Part XI's: nothing in the part draws a
+  screen, and Part XI's own *where the part stops* hands everything drawn *over*
+  the world to Part X from `the-gui-render-tree` onward. If the family wants a
+  home it is Part X's `gui-and-screens`, as one more screen among the many that
+  page covers as a pattern — which is exactly the boundary session J wrote into
+  Part X's landing page. `networking/README`'s clause should stop saying Part XI.
+  The original entry: `ServerList` (204),
   `ServerData` (196), `SessionSearchTrees` (141) and `CacheSlot`, in Part IX's
   own `client/multiplayer`. Session I named `ServerList`/`ServerData` in the
   clause on `the-connection` that already described them and wrote the family
@@ -3496,7 +3543,7 @@ it made are in [pass9.md](pass9.md).*
   is. This is the same object session I routed to M from the wire's end
   (pass5.md:3326); M should settle both or decline both, and if it declines,
   the `scoreboard-and-data` hand-forward has to go with it. [kind=book]
-- **Session K (XI) — `client/resources/model` is in Part X's package set and
+- ~~**Session K (XI) — `client/resources/model` is in Part X's package set and
   is Part XI's subject.** `ModelManager`, `ModelBakery`, `ModelDiscovery`,
   `FaceBakery`, `BlockStateModelLoader`, `ResolvedModel`, `QuadCollection`,
   `AtlasManager`, `TextureSlots`, `ItemModelGenerator` — around 2,400 lines
@@ -3504,8 +3551,19 @@ it made are in [pass9.md](pass9.md).*
   Session J stated the boundary on the Part X landing page rather than
   changing `PARTS`, because the mapping is by package and the package is
   genuinely shared. If session K wants the tool to agree with the book, the
-  change is `map_source.py`'s and not a page's. [kind=book]
-- **Session K (XI) — the picture-in-picture renderers.** Session J named the
+  change is `map_source.py`'s and not a page's.~~ **Ruled out, session K, in
+  writing:** the mapping is by package, the package is genuinely shared, and
+  changing it would move both parts' generated totals and invalidate the
+  coverage argument session J had just written into Part X's landing page. Part
+  XI's landing page now states the boundary from its side too, so both ends say
+  it. No tool change. [kind=book]
+- ~~**Session K (XI) — the picture-in-picture renderers.**~~ **Done, session
+  K:** the seam is linked from the Part XI side at the one place it is a
+  mechanism rather than a mention — `blaze3d`'s
+  `RenderSystem.outputColorTextureOverride` pair, which is *how* a
+  picture-in-picture renderer makes the world's machinery draw into a texture,
+  and which was a homeless pass-3 cut until now. The original entry: session J
+  named the
   seven `client/gui/render/pip` classes as a family on `the-gui-render-tree`
   (the one place 3D drawing happens inside a 2D pass). `GuiEntityRenderer`
   and `GuiSkinRenderer` reach into Part XI's entity rendering to do it;
@@ -3568,3 +3626,75 @@ it made are in [pass9.md](pass9.md).*
 - **`hud`'s "the most-loved fifty-seven lines in the client"** is a line
   count of a method, which will rot at the next release. Session J left it;
   the sentence works without the number.
+
+## Session K — Part XI, rendering (pass 5) *(2026-09-06)*
+
+### For pass 6 (the lecture)
+
+- **Three of Part XI's eleven pages read their own figure out loud with a
+  three- or four-verb mnemonic**: `the-frame`'s *acquire, snapshot, draw,
+  present*, `visibility-and-the-frame-graph`'s *reach, gather, declare, draw,
+  defer* and `post-processing`'s *parse, compile, declare, draw*. Two of the
+  three share *declare, draw*. That is a part-wide slot rather than a tic, and
+  it is pass 6's to keep, vary or cut — but it should be looked at as a set.
+  [kind=lecture]
+- **`the-window` carries two subjects and says so nowhere.** The hook promises
+  the window-and-backend coupling; `NativeImage` is a second lecture that
+  arrives at line 191 with no preparation. It is deliberate — the landing page
+  advertises it and *Where to look* calls it "the image type the rest of Part
+  XI is built on" — so the fix is one sentence in the opening declaring the
+  page as the *platform layer* rather than as the window. [kind=lecture]
+- **`visibility-and-the-frame-graph`'s *One bucket per buffer set* section is
+  shorter by two subjects after this session** (the directional shading moved
+  out, the compile-ordering consequence went to its owner) and its heading is
+  now true. Pass 6 should check the section still lands, since it lost its
+  ending. [kind=lecture]
+- **`the-window`'s seventh callback** is introduced under a heading that now
+  names it and explained three sections later under the shutdown watchdog.
+  Session K fixed the heading; whether the *ordering* is right is a shape
+  question. [kind=lecture]
+- **`particles`' explosion section** is a second trace on a page that already
+  has one, and it is the book's only home for the client explosion budget, so
+  it cannot be cut. Shortening it is pass 6's. [kind=lecture]
+
+### For pass 7 (the figures)
+
+- **The Part XI landing page's pipeline figure asserts an order the page spends
+  a paragraph disowning.** Session K cut the disowning from ten lines to four
+  and relabelled the subgraph, but the honest fix is the figure: either label
+  the arrows for what they are or drop the last one, which is the only arrow
+  whose claim is false in two of six cases. [kind=figure]
+- **`entity-rendering`'s four-stage flowchart and its zombie sequence diagram
+  say the same thing twice**, the second in more detail. Pass 7 should decide
+  whether the part's longest page needs both. [kind=figure]
+- **`the-window`'s six-callback flowchart draws six events and the section now
+  discusses seven.** The figure and the heading no longer agree.
+  [kind=figure]
+- **`visibility-and-the-frame-graph` has a six-node figure under a heading that
+  says *Five stages*.** The sixth is the walk re-run for the next frame and the
+  figure draws it looping; the heading counts stages of one frame. Session K
+  made the prose say so; the figure and the heading still disagree on their
+  face. [kind=figure]
+
+### For pass 8 (the voice)
+
+- **Part XI says "client thread" and "Render thread" for the same thread.**
+  `visibility-and-the-frame-graph` and `section-meshing` — a declared pair —
+  use "the client thread" in prose while their own cast tables say **Render
+  thread**, which is `reference/threads`' name for it. `particles` does the
+  same. Fix all of them or none. [kind=voice]
+- **Two different thirteens three lines apart** on `entity-rendering`: "the
+  thirteen feature renderers" and "the thirteen kinds of submit". Both counts
+  are right and the sentence is not. [kind=voice]
+- **`post-processing`:8 says a chain is "run by the same three classes"** over
+  a cast table of eight. The three are presumably `ShaderManager`, `PostChain`
+  and `PostPass`; the sentence should name them or drop the count.
+  [kind=voice]
+- **`blaze3d`'s *For a 1.21-era reader* table restates six of `naming-drift`'s
+  own rows.** The per-page drift box is the template's device, so this is not a
+  straight cut, but a table of seven where six are duplicated is the wrong
+  shape. The queue's older charge against the page's two *sections* is
+  overtaken — both carry material three pages depend on — and this is where it
+  actually lands. [kind=voice]
+- **`the-window` and `blaze3d` carry the same *Window.updateDisplay / setVsync*
+  drift row twice inside one part.** [kind=voice]

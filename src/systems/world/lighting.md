@@ -350,8 +350,8 @@ Enabling a column is a separate thing from lighting it, and on the client that
 distinction reaches all the way to the geometry: a section is not meshed at all
 until `LevelLightEngine.lightOnInColumn` is true for each of its eight
 surrounding columns, so **a light flag decides whether a section may have a
-mesh** ([a click, and the flag it leaves
-behind](../rendering/section-meshing.md#a-click-and-the-flag-it-leaves-behind)).
+mesh** ([the sweep that only looks at what you can
+see](../rendering/section-meshing.md#the-sweep-that-only-looks-at-what-you-can-see)).
 Meanwhile the client had already lit this torch itself:
 `MultiPlayerGameMode.startPrediction` runs the placement locally through the
 same `LevelChunk.setBlockState`, so the packet mostly confirms what the

@@ -76,11 +76,15 @@ first and last of those four touch the surface.
 
 ## Acquire, and the frame that carries on without one
 
-The *update window* zone reconfigures the surface if it needs it and then
-calls `GpuSurface.acquireNextTexture`. Vsync is not a swap interval any
-more: it is a `GpuSurface.PresentMode` baked into the surface configuration,
-so toggling it in the options forces a reconfigure —
-`Minecraft.invalidateSurfaceConfiguration` — rather than setting a flag.
+The *update window* zone does three things, and the first belongs to
+somebody else: `Window.updateFullscreenIfChanged` at the very top of it —
+[the window](the-window.md#what-the-window-does-per-frame-which-is-almost-nothing)'s
+one per-frame call — then a reconfigure of the surface if it needs one, then
+`GpuSurface.acquireNextTexture`. Vsync is a
+[`GpuSurface.PresentMode`](blaze3d.md#how-a-frame-reaches-the-screen) in that
+configuration rather than a swap interval, so toggling it in the options
+forces a reconfigure — `Minecraft.invalidateSurfaceConfiguration` — rather
+than setting a flag.
 
 When the acquisition throws, the surface is marked invalid, a reconfigure is
 scheduled, and the frame goes on as if nothing had happened but for a line in
@@ -100,8 +104,11 @@ called, the call is a silent no-op.
 ## Update and extract: six clocks in one frame
 
 The *update* zone advances the real-time clock, reads
-`Minecraft.timerQuery` — the GPU-side stopwatch behind the F3 utilisation
-figure — runs `Minecraft.pauseIfInactive` and updates the GUI. On ticking
+`Minecraft.timerQuery` — a `TimerQuery`, the GPU-side stopwatch behind the F3
+utilisation figure. It brackets almost the whole frame, from here to the end
+of *render*, and it is only *started* when the last one has been collected,
+so not every frame is measured — runs
+`Minecraft.pauseIfInactive` and updates the GUI. On ticking
 frames `ClientLevel.update` runs the client's own light engine. Then
 `GameRenderer.update` calls `Camera.update`, and `Minecraft.renderFrame`
 follows it with `Minecraft.pick` — a private method of `Minecraft`, not the
@@ -168,14 +175,25 @@ scratch `RenderBuffers.sectionBufferPool` — capped by processor count and
 again by a memory budget — and a single shared
 `RenderBuffers.stagedVertexBuffer` released by `RenderBuffers.endFrame`, with
 the GUI keeping a second staged buffer of its own inside `GuiRenderer`.
-Geometry submission moved to `SubmitNodeCollector` and `SubmitNodeStorage`,
-drawn either by the passes of the frame graph in [visibility and the frame
-graph](visibility-and-the-frame-graph.md) or by
-`FeatureRenderDispatcher.renderAllFeatures` — which, despite the name, is
-**not** how the level is drawn. It has four call sites: the held item, the
+Geometry submission moved to `SubmitNodeCollector` and `SubmitNodeStorage`
+([entity rendering](entity-rendering.md#submit-describing-a-draw-without-making-one)
+owns what a submission is), drawn either by the passes of the frame graph in
+[visibility and the frame graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled)
+or by `FeatureRenderDispatcher.renderAllFeatures` — which, despite the name,
+is **not** how the level is drawn. It has four call sites: the held item, the
 screen effects, the GUI's item atlas and picture-in-picture. The last two are
 why the GUI needs submit storage at all. The world's submitted features are
 prepared into the frame graph and drawn by its passes.
+
+The first two share a storage of their own.
+`GameRenderer.handAndScreenSubmitNodeStorage` collects both
+`GameRenderer.renderItemInHand` — which is `ItemInHandRenderer`, drawn under
+its own projection after a depth clear so a held sword never intersects the
+world — and, in the *screenEffects* zone that follows it,
+`ScreenEffectRenderer`: the underwater overlay, the fire quad when you are
+burning, the sprite of whatever block your head is inside, and the
+item-activation flourish a totem plays. Both are submitted, prepared and
+drawn inside that one zone, and neither ever reaches the level's frame graph.
 
 ## Present, swapBuffers, and which of the two names lies
 
@@ -187,11 +205,12 @@ on the OpenGL backend `GpuSurface.present` is a single call to GLFW's
 buffer swap.
 
 The last two zones are bookkeeping. *frameLimiter* spends the limit that
-*extract* snapshotted, parking only below a threshold, so the top slider
-position never parks at all; `FramerateLimitTracker` is what may have
-overridden the player's option before the snapshot was taken, when the window
-is iconified, after a spell of idleness, or in a menu with no level. Then
-*fpsUpdate*, and the frame is over.
+*extract* snapshotted into `GameRenderState.framerateLimit`, parking only
+below a threshold, so the top slider position never parks at all. What that
+limit is — and the four cases in which `FramerateLimitTracker` has already
+replaced the player's option with something smaller — is [the client
+loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;
+this page only spends it. Then *fpsUpdate*, and the frame is over.
 
 ## Questions players ask
 
@@ -207,17 +226,16 @@ effect — where culling against the configured FOV keeps the geometry a
 narrowed view would have thrown away.
 
 **Why is the HUD not shaded by the light the player is standing in?**
-Because it is lit by a one-pixel white texture. `GameRenderer.lightmap` hands
-out `GameRenderer.uiLightmap` for as long as `GameRenderer.useUiLightmap` is
-set, which is exactly the GUI block; `GameRenderer.levelLightmap` always
-returns the real one.
+Because for the whole of the GUI block `GameRenderer.lightmap` hands out a
+one-pixel white texture instead of the real one — the switch is
+`GameRenderer.useUiLightmap`, set around exactly that block, and both
+lightmaps belong to [lightmap, fog and
+sky](lightmap-fog-and-sky.md#how-bright-one-draw-per-tick-and-no-partial-ticks-at-all).
 
-**Why does the world go strange when spectating a creeper?** The post-effect
-chain is chosen by what you are spectating, not by an option:
-`GameRenderer.checkEntityPostEffect` switches on the camera entity's type and
-sets `GameRenderer.postEffectId` from it, and F4
-(`GameRenderer.togglePostEffect`) flips it off and on. What the chain then
-does to the picture is [post-processing](post-processing.md).
+**Why does the world go strange when spectating a creeper?** Because the
+post-effect chain is chosen by what you are spectating rather than by an
+option. Which chain, through which door, and what it then does to the picture
+are all [post-processing](post-processing.md#questions-players-ask)'s.
 
 **Does minimizing the window save the client any work?** A great deal, but
 not where you would look for it. Every zone still runs: the acquire is not

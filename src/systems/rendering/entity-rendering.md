@@ -85,22 +85,35 @@ sequenceDiagram
 **Out:** one freshly allocated render state per surviving entity.
 **Decided:** visibility, and everything the other three stages will ever know.
 
-`LevelExtractor.extractVisibleEntities` walks the level's entity list, drops
-what `LevelExtractor.isEntityVisible` rejects, and hands each survivor to
+`LevelExtractor.extractVisibleEntities` walks [the client level's entity
+list](../client/the-client-level.md), drops what
+`LevelExtractor.isEntityVisible` rejects, and hands each survivor to
 `EntityRenderDispatcher.extractEntity`. That call finds the renderer for the
-entity's `EntityType` through `EntityRenderDispatcher.getRenderer`, allocates
-a state with `EntityRenderer.createRenderState`, fills it by running
+entity's `EntityType` through `EntityRenderDispatcher.getRenderer` — a map
+the dispatcher builds once from `EntityRenderers`, the static table that
+files one `EntityRendererProvider` per type and is the reason a renderer is
+shared rather than per-entity — allocates a state with
+`EntityRenderer.createRenderState`, fills it by running
 `EntityRenderer.extractRenderState` down the whole inheritance chain, and then
 lets `EntityRenderer.finalizeRenderState` reach into the world one last time
 to sample the shadow.
 
-Visibility is **two tests in two places**. The frustum test is
-`EntityRenderer.shouldRender`, on the renderer; the "is the section this entity
-stands in actually compiled and visible" test belongs to `LevelExtractor`, and
-block entities must additionally clear a separate section threshold to count at
-all. Several things escape the frustum entirely: anything indirectly carrying
+Visibility is **three tests in two places**. Two of them are
+`EntityRenderer.shouldRender`, on the renderer, and it runs them in that
+order: `Entity.shouldRender`, a distance test whose limit scales with the
+entity's own bounding box, and only then the frustum. The third — "is the
+section this entity stands in actually compiled and visible" — belongs to
+`LevelExtractor`, which is [the reachability walk](visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)
+deciding one more thing on its way past. Block entities keep the distance half
+and drop the frustum, which is [block-entity
+rendering](block-entity-rendering.md#culling-by-section-not-by-frustum)'s
+first difference. Several things escape the frustum entirely: anything indirectly carrying
 the local player, the three renderers that declare themselves unculled, a
-`Display` that sets its own no-culling flag, and — the ones nobody expects —
+`Display` that sets its own no-culling flag — `DisplayRenderer` is the largest
+file in the package for the same reason the entity is unusual: one abstract
+base carrying the interpolation and billboarding every display shares, with a
+nested renderer each for a block, an item and a line of text — and, the ones
+nobody expects,
 an entity on the other end of a visible leash, an end crystal with a beam
 target and a guardian firing one, each of which is drawn because something
 *else* in view is attached to it.
@@ -227,10 +240,26 @@ Extras hang off `RenderLayer` — `HumanoidArmorLayer`, `ItemInHandLayer`,
 Armour and trims funnel through `EquipmentLayerRenderer`, dressed by
 `EquipmentAssetManager` and `EquipmentClientInfo` out of the resource packs,
 and a renderer holds a whole `ArmorModelSet` per body size rather than one
-armour model. Player skins come by another road — `SkinManager`,
-`SkinTextureDownloader`, `PlayerSkinRenderCache`, with `DefaultPlayerSkin` as
-the fallback — and held or worn items through `ItemModelResolver` and
-`ItemStackRenderState`, [models and atlases](models-and-atlases.md)'s business.
+armour model. Held or worn items come through `ItemModelResolver` and
+`ItemStackRenderState`, [models and
+atlases](models-and-atlases.md#how-an-item-picks-its-model)'s business.
+
+### Drawing a player, which is the part VIII owes this page
+
+[Player anatomy](../player/player-anatomy.md#what-player-owns) leaves the drawing
+here, and the answer is that all of it becomes render state at extract like
+everything else. `AvatarRenderState` carries the whole `PlayerSkin` record by
+value — the four textures, the arm width and the secure flag — read off the
+tab-list entry rather than off the entity, which is why a skin change needs
+no entity packet. Beside it sit seven booleans, one per `PlayerModelPart`:
+the hat, the jacket, the two sleeves, the two trouser legs and the cape, each
+copied from `Avatar.isModelPartShown` once per frame, so a customisation
+toggle is a part the model is told not to draw rather than a different model.
+`PlayerModelType` is the one piece that never reaches the state, because the
+dispatcher used it earlier — it is the key into the wide and slim avatar maps
+that chose the renderer in the first place. The textures themselves arrive by
+a road of their own, `SkinManager` and `SkinTextureDownloader` through a
+`PlayerSkinRenderCache`, with `DefaultPlayerSkin` standing in until one does.
 
 ## Prepare: sorting, batching, and the vertices
 
@@ -241,16 +270,31 @@ the fallback — and held or worn items through `ItemModelResolver` and
 `FeatureRenderDispatcher.prepareFrame` drains every phase of every order
 bucket, groups the nodes, and lets the thirteen feature renderers build
 geometry — `ModelFeatureRenderer` being where a `ModelPart` tree finally
-becomes vertices. **Only two of the thirteen kinds of submit can be batched at
-all** — a model and a piece of custom geometry — and everything else keeps
-the order it was submitted in and merges only with its immediate neighbour.
-Where the zombies of the world do collapse into one draw, that is the group
-finding they all want the same `RenderType`. A translucent phase marks its
-group strictly ordered, and that switches off exactly one of the group's two
-merges: consecutive submits of one render type still share a draw, and what
-stops is the fold into a *non-adjacent* earlier draw — which is the merge that
-would move geometry ahead of everything between, and so undo the depth sort
-the phase exists for.
+becomes vertices.
+
+The phases come in two kinds and the kind decides how hard the grouping is
+allowed to try. Twelve are a `SimpleFeatureRenderPhase`, which groups by
+feature type and then by *batch key* — and **only two of the thirteen kinds
+of submit have a batch key at all**, a model and a piece of custom geometry.
+Everything else groups by adjacency, keeping the order it was submitted in
+and merging only with its immediate neighbour. Where the zombies of the world
+do collapse into one draw, that is a batch key finding they all want the same
+`RenderType`, and `RenderTypeFeatureRenderer.Group` then being free to fold a
+node's geometry into **any** earlier draw of that type rather than only the
+adjacent one.
+
+The other three phases are a `TranslucentFeatureRenderPhase`. That one keeps
+every node, sorts them back to front by squared distance to the camera, and
+marks the group strictly ordered — which switches off exactly one of the
+group's two merges. Consecutive submits of one render type still share a
+draw. What stops is the fold into a *non-adjacent* earlier draw, which is the
+merge that would move geometry ahead of everything between it and its target,
+and so undo the sort the phase exists for. A render type may also opt out of
+both merges on its own account, through
+`RenderType.canConsolidateConsecutiveGeometry`, which is how something whose
+primitives are chained keeps them chained. Which three phases are the
+translucent ones, and what lands in each of the fifteen, is [submit phases and
+feature renderers](../../reference/submit-phases.md).
 
 ### Why the zombie is animated more than once
 

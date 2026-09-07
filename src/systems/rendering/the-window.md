@@ -33,8 +33,12 @@ exists. All three of them start here.
 | `FramerateLimitTracker` | what an iconified, idle or menu-bound window is allowed to cost | Render thread |
 | `NativeImage` | the CPU-side pixels between a file and a texture | native memory, closed by its owner |
 
-All of it lives in *com/mojang/blaze3d/platform*, and none of it exists on the
-server: `server-classes.txt` has no entry under *com/mojang/blaze3d* at all.
+Every row but the first two lives in *com/mojang/blaze3d/platform* —
+`Minecraft` is the game's, and `GpuBackend` sits in *blaze3d/systems* with
+[the façades](blaze3d.md#four-objects-the-game-only-touches-through-a-façade)
+— and none of it exists on the server: `server-classes.txt` has no entry under
+*com/mojang/blaze3d* at all. All of it runs on the Render thread, which is
+[one of the four](../anatomy/anatomy.md#four-threads-worth-memorising).
 
 ## Trying backends until one of them makes a window
 
@@ -89,7 +93,7 @@ and the graphics-API preference that ordered the loop above. The window's
 *position* is not among them — it is a field the move callback keeps and
 nobody saves.
 
-## Six callbacks are the entire surface, and the game hears two
+## Six callbacks, a seventh added later, and the two the game is told about
 
 Once the window exists, `Window`'s constructor registers six GLFW callbacks,
 and they are almost the whole of what the operating system can say to it —
@@ -183,10 +187,13 @@ a name, a handle, its list of `VideoMode`s, the current one and its position —
 and `Window.getRefreshRate` is the number that comes out of the mode.
 
 The one thing on this page that runs continuously is
-`FramerateLimitTracker`, which watches iconification and idle time — not
-focus — and overrides the frame limit: ten frames a second for an iconified
-or long-idle window, thirty for a short idle, sixty in a menu with no level. [The frame](the-frame.md) is
-where that limit gets spent.
+`FramerateLimitTracker`, and what it watches is the window: iconification and
+idle time, **not** focus — losing focus is a different mechanism with a
+different effect. What it does with that, and the four limits it substitutes,
+is [the client
+loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;
+[the frame](the-frame.md#present-swapbuffers-and-which-of-the-two-names-lies)
+is where the limit gets spent.
 
 ## `NativeImage`, the seam between a file and a texture
 
@@ -194,17 +201,24 @@ where that limit gets spent.
 native memory. It is where every image in the game briefly is, and it is not
 only textures. `NativeImage.read` is an STB decode from a stream, a byte array
 or an NIO buffer — that is the PNG path. `NativeImage.copyFromFont` receives a
-rasterised FreeType glyph. An atlas is assembled into one with
-`NativeImage.copyRect`, `NativeImage.resizeSubRectTo` and
-`NativeImage.fillRect`, and `NativeImage.mappedCopy`,
-`NativeImage.getPixel` and `NativeImage.setPixel` are the rest of the
-vocabulary. A downloaded skin sits in one while it is being validated, and a
-screenshot arrives in one read back off the GPU on its way to
-`NativeImage.writeToFile`.
+rasterised FreeType glyph. `NativeImage.copyRect` and `NativeImage.fillRect`
+are how one image is cut out of or patched into another — an `Unstitcher`
+source slicing a sheet apart before it is ever stitched, or
+`SkinTextureDownloader` folding a legacy 64×32 skin into the modern layout —
+while `NativeImage.resizeSubRectTo` has exactly one caller in the game, the
+world icon being scaled down. `NativeImage.mappedCopy`, `NativeImage.getPixel`
+and `NativeImage.setPixel` are the rest of the vocabulary. A downloaded skin
+sits in one while it is being validated, and a screenshot arrives in one read
+back off the GPU on its way to `NativeImage.writeToFile`. What it is *not* is
+where an atlas is built: an atlas is assembled on the GPU, sprite by sprite,
+which is [models and
+atlases](models-and-atlases.md#the-barrier-and-how-a-sprite-reaches-the-gpu)'.
 
-`NativeImage.computeTransparency` is the method that [models and
-atlases](models-and-atlases.md) leans on to decide which chunk layer a quad
-belongs to — a rendering decision made by looking at the pixels of a file.
+`NativeImage.computeTransparency` is what a stitched sprite's contents are
+scanned with, and it is the reason [a quad's chunk layer is read out of its
+sprite's
+pixels](models-and-atlases.md#a-quads-chunk-layer-is-read-out-of-the-sprites-pixels)
+— a rendering decision made by looking at the pixels of a file.
 
 Because the memory is native, ownership is explicit: `NativeImage.close`
 frees it, and `NativeImage.untrack` exists for the cases where something else
@@ -212,18 +226,37 @@ has taken the pointer over.
 
 ## Questions players ask
 
-**Why does the game keep drawing while it is minimised?** Because nothing
-stops it. `Window.isMinimized` suppresses the surface acquisition and the
-frame then runs to completion regardless — see [the frame](the-frame.md). The
-work that is actually saved is saved by `FramerateLimitTracker` dropping the
-limit to ten, not by the frame being skipped.
+**Why is the game on OpenGL when I asked for Vulkan?** Because the loop above
+takes an ordered *pair*. `PreferredGraphicsApi.getBackendsToTry` never returns
+one candidate: every setting has the other API behind it as a fallback, the
+default is OpenGL-first, and `GlBackend` and `VulkanBackend` are the two
+things the loop is choosing between. A previous unclean shutdown downgrades
+twice over — a Vulkan preference becomes the default, and the default becomes
+OpenGL — so a client that crashed on boot comes back on the safest option it
+has, and stays there until you set it again.
+
+**Why does the game keep drawing while it is minimised?** Because
+`Window.isMinimized` suppresses only the surface acquisition; what the frame
+then does anyway, and where the real saving comes from, is [the
+frame](the-frame.md#questions-players-ask)'s.
 
 **Why does a graphics crash report name the thing the game was doing?**
 Because the error callback is swapped three times over the game's life: a
 boot-crash handler while starting, `Window.setDefaultErrorCallback` once
 running, and a null on close. `Window.setErrorSection` tags whatever GLFW
-complains about with what the game was busy with when it complained, so a
-driver's error message arrives attached to a phase rather than floating free.
+complains about with what the game was busy with when it complained — *Pre
+startup*, *Startup*, *Post startup*, *Pre render* — so a driver's error
+message arrives attached to a phase rather than floating free.
+
+Beside those three there is a fourth kind of swap, and it is scoped rather
+than permanent. `GLFWErrorScope` is a closeable scope that installs a
+callback, runs one piece of work and puts the previous one back — throwing if
+anybody else changed it in between — and what it usually installs is a
+`GLFWErrorCapture`, which does nothing but collect what GLFW said into a
+list. That pairing is how the retry loop above knows *why* a window did not
+appear, and it is also around GLFW's own initialisation, the monitor
+enumeration and the clipboard read: four places that expect to fail and want
+the failure themselves instead of in somebody's crash report.
 
 **Why does the mouse cursor stop changing shape sometimes?** Because you
 turned it off, or never turned it on. `Window.setAllowCursorChanges` is
@@ -233,21 +266,34 @@ half of the problem is the platform's: `CursorType.createStandardCursor`
 takes a fallback for the shapes a given system does not provide.
 
 **Why does the game sometimes leave a crash report behind after I close
-it?** Because a shutdown that hangs is reported from outside.
-`ClientShutdownWatchdog` starts a daemon thread that sleeps fifteen seconds
-and, if the shutdown has not claimed the counter by then, builds the crash
-report itself from the main thread's stack. It is armed twice with different
-powers: the window-close callback arms it to *report only*, while the one
-`Minecraft.run` has already returned from arms it to report and then take the
-process down.
+it?** Because a shutdown that hangs is reported from outside. The seventh
+callback — the window-close one `Minecraft` adds after the constructor's six
+— is one of the two places `ClientShutdownWatchdog` is armed, and it is the
+one that catches a client that hangs on the close button rather than on the
+way out. [The two armings and what each may
+do](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping) are
+the client loop's.
 
 **What is the rest of the package?** The corners the story above does not pass
 through: `ClipboardManager` and `TextInputManager` for copy, paste and IME
-text (both reached from `KeyboardHandler`), `CursorType` and `CursorTypes` for
-the cursor shapes, `IconSet` for what `Window.setIcon` picks between,
-`MacosUtil`, `DebugMemoryUntracker`, the rest of `GLX` (`GLX._getCpuInfo`,
-`GLX._getLWJGLVersion`, `GLX.getGlfwPlatform`) — and `InputConstants`, the key
-and mouse-button vocabulary that every `KeyMapping` is written in.
+text, `CursorType` and `CursorTypes` for the cursor shapes, `IconSet` for what
+`Window.setIcon` picks between, `MacosUtil`, `DebugMemoryUntracker`, the rest
+of `GLX` (`GLX._getCpuInfo`, `GLX._getLWJGLVersion`, `GLX.getGlfwPlatform`) —
+and `InputConstants`, the key and mouse-button vocabulary that every
+`KeyMapping` is written in. `TextureUtil` is the largest of them and the
+odd one out, because nothing about it is a window: it is the static toolbox
+for reading a resource into a native buffer, writing a `GpuTexture` back out
+as a PNG, and the two repairs `MipmapGenerator` runs over a sprite *before*
+it builds the mip chain. `TextureUtil.solidify` floods the nearest opaque
+colour outward into every fully transparent pixel, and
+`TextureUtil.fillEmptyAreasWithDarkColor` fills them with the image's darkest
+colour instead. Either way the transparent texels stop being an arbitrary
+colour, so that averaging four of them down a mip level cannot bleed
+something that was never in the texture into its edges. Five more are
+pipeline state
+(`Transparency`, `BlendFactor`, `BlendOp`, `CompareOp`, `PolygonMode`), which
+belong to [Blaze3D](blaze3d.md#a-pipeline-is-a-record-not-a-sequence-of-calls)
+and only happen to live here.
 
 > **For a 1.21-era reader.** The headline is that the window no longer
 > presents anything: *Window.updateDisplay* and *Window.setVsync* are gone,

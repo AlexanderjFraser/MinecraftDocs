@@ -22,6 +22,7 @@ survives a series of gates that disagree about what they are gating.**
 | `ParticleType` | the type's identity in the registry, and `ParticleType.getOverrideLimiter`, the "ignore the limits" flag baked into it | either |
 | `ClientLevel` | the gated entry point, `ClientLevel.doAddParticle` — and the ungated ones beside it | Client |
 | `ParticleResources` | which provider a type gets, registered once at construction, and which `SpriteSet` — rebound on every reload | load off-thread, bind on Client |
+| `ParticleProvider` | one per registered type: what class of `Particle` an options record turns into | Client |
 | `ParticleEngine` | the groups, the one-tick admission queue, the emitters, the per-type counts | Client |
 | `ParticleGroup` | whether there is room: the per-render-type cap and the probabilistic reservoir | Client |
 | `ClientExplosionTracker` | how many explosion particles happen this tick, and where — the client's own budgeted generator | Client |
@@ -39,7 +40,8 @@ description the client expands itself.
 
 ## Does the particle happen at all?
 
-Both routes start in the same place. `Block.spawnDestroyParticles` raises
+Both routes start in the same place. At the end of [a dig that
+succeeded](../blocks/block-breaking.md), `Block.spawnDestroyParticles` raises
 level event `LevelEvent.PARTICLES_DESTROY_BLOCK` with the breaker as the
 source, and the two branches diverge only because of *who* that source is
 relative to whoever is watching. That the wire carries an int rather than a
@@ -248,6 +250,19 @@ but `ParticleEngine.extract` iterates `ParticleEngine.RENDER_ORDER`, which
 lists three of the four render types, so a no-render group ticks its
 contents forever and is never asked for a render state. Which is exactly
 what a no-render particle is for.
+
+The eighty-odd `Particle` subclasses are a family, and the shape above is all
+of it: a provider, a lifetime, a per-tick move, and a group. The two largest
+are `DripParticle` and `FireworkParticles`, and both are large for the same
+reason — each is a nest of static factories and nested subclasses covering a
+dozen variants (every fluid that drips, every stage of a rocket) behind one
+class name. What varies between any two of them is which `ParticleOptions`
+record the registry hands the provider: `ParticleType` is
+[a data-driven registry
+entry](../foundations/data-driven-types.md#the-bare-spelling-the-registry-holds-a-mapcodec)
+like any other,
+and `ParticleOptions` is the argument its codec parses — usually nothing at
+all, sometimes a block state, an item stack, a colour or a target position.
 
 Everything visible happens at extract time, once per frame, from
 `LevelExtractor`. That is where the particle's previous and current

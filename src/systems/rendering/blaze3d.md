@@ -192,12 +192,30 @@ index buffers, not one: `RenderSystem.getSequentialBuffer` switches between a
 quad buffer, a line buffer with different winding, and a one-to-one buffer.
 
 Per-draw uniform data does not come from per-draw uniform calls; it is carved
-out of ring buffers. `DynamicUniforms` and `DynamicUniformStorage` hand out
-`GpuBufferSlice`s of a `MappableRingBuffer` reset once a frame, while
+out of ring buffers, and the ring is what makes it safe: a slice handed out
+this frame is still being read while the next frame is being built, so the
+buffer is *rotated* rather than overwritten. `DynamicUniforms` and
+`DynamicUniformStorage` hand out `GpuBufferSlice`s of a `MappableRingBuffer`,
+and `DynamicUniformStorage.endFrame` rotates it, resets the write cursor and
+closes any buffer a growth left behind. `FogRenderer.regularBuffer` is a
+second ring rotated the same way at the end of the same frame, while
 `GlobalSettingsUniform` and `ProjectionMatrixBuffer` hold one buffer apiece
-and rewrite it in place, which is all a frame-wide value needs. Per-frame
-scratch comes from `TransientMemory` — one
-interface, two large implementations over the shared `TransientBlockAllocator`.
+and rewrite it in place, which is all a frame-wide value needs. The first of
+those is the *Globals* block `RenderSystem.bindDefaultUniforms` puts in front
+of every draw in the game, and its seven members are fixed in Java: the
+camera position as an integer block position *and* the fraction left over,
+the screen size, the glint strength, the time of day as a fraction of
+twenty-four thousand ticks, the menu blur radius, and a flag for the
+supersampled texture-filtering mode. That is the whole of what a shader may
+know without being told, which is why [a post chain that
+wants something to vary per
+frame](post-processing.md#a-pass-is-three-vertices-and-its-uniforms-are-written-once-at-load)
+has nowhere else to put it. Per-frame
+scratch comes from `TransientMemory` — one interface over the shared
+`TransientBlockAllocator`, with `GlTransientMemory` and
+`VulkanTransientMemory` behind it, and between them the two largest classes
+in either backend tree after the constant tables `GlConst` and `VulkanConst`
+that translate the game's enums into each API's integers.
 Blocks are packed by hand with `Std140Builder`, sized by `Std140SizeCalculator`.
 
 Vertex data is described by `VertexFormat` and `VertexFormatElement` (a plain
@@ -212,16 +230,25 @@ is why `SectionRenderDispatcher` has a spin-wait guarded by
 `RenderSystem.isOnRenderThread`. Render targets are `RenderTarget`,
 `TextureTarget` and `MainTarget`, the transient ones allocated through
 `GraphicsResourceAllocator` — `CrossFrameResourcePool` implements it — and
-declared in the `FrameGraphBuilder` of [visibility and the
-frame graph](visibility-and-the-frame-graph.md).
+declared in the `FrameGraphBuilder` of [visibility and the frame
+graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled).
+Which target a pass actually lands on is otherwise never in doubt, with one
+exception: `RenderSystem.outputColorTextureOverride` and
+`RenderSystem.outputDepthTextureOverride` are two static fields that redirect
+the default target somewhere else for as long as they are set, and the only
+things that set them are the GUI's item atlas and its picture-in-picture
+renderers, which is how [a spinning entity in an inventory
+screen](../client/the-gui-render-tree.md) is drawn by the world's machinery
+into a texture instead of onto the screen.
 
 ## Shaders, and the reflection that checks them
 
 `ShaderManager` loads shader sources and hands them to a backend through
-`ShaderSource`. `ShaderManager` resolves the *moj_import* directives at load
-time, before a backend sees anything; the `ShaderDefines` are injected later
-and inside each backend, by the same shared `GlslPreprocessor` at the moment
-a program is compiled. The Vulkan side goes further than compiling: `GlslCompiler`
+`ShaderSource`. Preprocessing happens twice, in two places, and knowing which
+is which is the whole of it: `ShaderManager` resolves the *moj_import*
+directives **on a worker, during a reload's prepare**, before a backend sees
+anything; the `ShaderDefines` are injected later and inside each backend, by
+the same shared `GlslPreprocessor` at the moment a program is compiled. The Vulkan side goes further than compiling: `GlslCompiler`
 runs the GLSL through shaderc to SPIR-V and `IntermediaryShaderModule`
 *reflects* the result with spirv-cross, enumerating `SpvUniformBuffer`s and
 `SpvSampler`s — which is what lets a declared `BindGroupLayout` be checked
@@ -268,8 +295,14 @@ point is not that a draw is cheap. It is that *the game* never sees any of it.
 
 The pipeline compiles lazily on its first `RenderPass.setPipeline` and is
 cached by identity on the device, but no frame in a running game pays for it:
-`ShaderManager` precompiles the static catalogue into that cache on every
-resource reload, leaving the lazy path for pipelines outside it. Run the trace
+on the *apply* half of every resource reload, on the render thread,
+`ShaderManager` clears the device's pipeline cache and precompiles the whole
+static catalogue back into it — and swaps in a new
+`ShaderManager.CompilationCache` only if every one of them succeeded, so a
+pack that breaks a shader leaves the old cache standing rather than a
+half-built one. The lazy path is left for pipelines outside the catalogue,
+which in a stock game means [the post
+chains](post-processing.md#loaded-off-thread-compiled-inside-a-frame). Run the trace
 on Vulkan and the game code is unchanged — dynamic rendering replaces the
 framebuffer bind, push descriptors the uniform binding, and the swapchain
 lives in `VulkanGpuSurface`.
@@ -290,11 +323,8 @@ validation is a development-environment feature: the *missing uniform*,
 and in a shipped game the same conditions make the draw return without a word.
 
 **Why is the game on OpenGL when I asked for Vulkan?** Because the backend is
-chosen in `Minecraft`, not in Blaze3D. `PreferredGraphicsApi.getBackendsToTry`
-returns an ordered *pair*, each candidate tried in turn, so every setting has
-the other API as its fallback and the default is OpenGL-first. A previous
-unclean shutdown downgrades twice: a Vulkan preference to the default, the
-default to OpenGL.
+chosen in `Minecraft`, not in Blaze3D — which candidates it tries, and in what
+order, is [the window](the-window.md#questions-players-ask)'s.
 
 **Why does the game care which GPU I have, when it can ask the driver?**
 Because the capability record is sniffed as well as queried. `GlHeuristics`

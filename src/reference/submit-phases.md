@@ -18,6 +18,12 @@ only here.
 
 ## The fifteen phases
 
+One `SubmitNodeCollection` holds all fifteen, and a `SubmitNodeStorage` holds
+one collection per *order* bucket — the global draw order [a submit chooses
+with
+`SubmitNodeCollector.order`](../systems/rendering/entity-rendering.md#submit-describing-a-draw-without-making-one).
+So "every order bucket" below means every one of those collections in turn.
+
 In **declaration order**, which is also the order of
 `SubmitNodeCollection.allPhases`. It is *not* the order they are drawn in, and
 neither is the last column: `FeatureRenderDispatcher.PreparedFrame.executeTranslucent`
@@ -28,20 +34,12 @@ shadows, then translucent models, then see-through name tags, then name tags,
 then texts, then translucent custom geometry — so a see-through name tag is
 drawn **before** the opaque one, which is the row order reversed.
 
-Three phases are a `TranslucentFeatureRenderPhase` and the other twelve a
-`SimpleFeatureRenderPhase`. The simple phase groups its nodes by feature type
-and then by batch key — which only two of the thirteen submit kinds have, a
-model and a piece of custom geometry, everything else grouping by adjacency —
-and leaves `RenderTypeFeatureRenderer.Group` free to fold a node's geometry
-into **any** earlier draw of the same render type, not only the adjacent one.
-The translucent phase keeps every node, sorts them back to front by squared
-distance to the camera, and marks the group strictly ordered. That does not
-stop merging: consecutive submits of one render type still share a draw, on a
-test that never consults the flag. What it stops is the fold into a
-*non-adjacent* earlier draw — the one merge that would move geometry ahead of
-the draws between it and its target, and so undo the sort. A render type whose
-primitives are chained opts out of both, through
-`RenderType.canConsolidateConsecutiveGeometry`.
+Three of the fifteen are a `TranslucentFeatureRenderPhase` — rows 4, 7 and 8,
+*seeThroughNameTags*, *translucentBlocksAndItems* and *translucentModels* —
+and the other twelve a `SimpleFeatureRenderPhase`, which is not what half the
+names suggest. What the two kinds do differently to a node's
+chance of sharing a draw is [entity
+rendering](../systems/rendering/entity-rendering.md#prepare-sorting-batching-and-the-vertices)'s.
 
 | # | phase | what lands in it | drained by |
 |---:|---|---|---|
@@ -61,9 +59,10 @@ primitives are chained opts out of both, through
 | 14 | `SubmitNodeCollection.alwaysOnTop` | gizmo groups flagged on top | `.executeAlwaysOnTop` |
 | 15 | `SubmitNodeCollection.outline` | a second copy of a model, block model, moving block or item whose outline colour was non-zero — a model or block model only where its render type has an outline variant, and a moving block or item with its ordinary type, re-typed inside the feature renderer or dropped there — plus custom geometry, which is not a second copy at all: an outline render type routes the *only* copy here | `.executeOutline`, which `FeatureRenderDispatcher.renderAllFeatures` never calls — `LevelRenderer` does, into its own target |
 
-Two rows are worth reading twice. A quad-particle group is submitted **once**
-and lands in two phases at once, *solid* and *afterTerrain*, with a flag that
-picks which of its layers each half draws. And *outline* is not simply *solid*
+Two rows are worth reading twice. A quad-particle group reaches the collector
+in one call and becomes **two** nodes, one in *solid* and one in
+*afterTerrain*, each wrapping the same render state with a flag that picks
+which of its layers it draws. And *outline* is not simply *solid*
 submitted twice: the glow is a second submission for a model, a block model, a
 moving block or
 an item, but flames, leashes and quad particles never reach it at all, a

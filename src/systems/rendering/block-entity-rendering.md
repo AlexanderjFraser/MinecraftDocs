@@ -102,10 +102,10 @@ sequenceDiagram
 
 The two halves of the figure are not two stages of one pipeline. The world's
 block entities go through `LevelRenderer.submitFeatures` into the frame
-graph. The held chest is submitted, prepared and drawn in
-`GameRenderer.renderItemInHand`, into `GameRenderer.handAndScreenSubmitNodeStorage` — a
-second storage, drained by `FeatureRenderDispatcher.renderAllFeatures` after
-the whole world is already on the screen. They never share a submit node.
+graph. The held chest goes into [the hand's own submit
+storage](the-frame.md#the-wall-and-the-one-level-at-which-it-is-real),
+drained after the whole world is already on the screen. They never share a
+submit node.
 
 ## The chest's block model is empty, and there are two tables of them
 
@@ -130,15 +130,38 @@ packs, and it is the one `SectionCompiler` reads: a chest is empty in it.
 `ModelManager.getBlockModelSet` is built on top of that one and merged with
 `BuiltInBlockModels.createBlockModels`, which attaches a
 `SpecialBlockModelWrapper` to every state of every chest, banner, skull,
-shulker box, conduit, decorated pot, bell, enchanting table and end portal in
-the game. Nothing in terrain ever reads that table — that is the whole of the
-separation, and it is membership rather than behaviour. `BlockModelResolver`
-is its one reader, and its callers are all entity renderers: item frames,
-block displays, minecart contents, the block an enderman is carrying. When one
-of them draws a chest it gets the quads **and** the special renderer, both,
-because that road draws whatever it finds; terrain simply never asks this
-table, and reads `BlockStateModelSet` instead, where the chest's entry is
-empty.
+shulker box, conduit, decorated pot, bell, enchanting table, end gateway, end
+portal and copper golem statue in the game. Nothing in terrain ever reads
+that table — that is the whole of the separation, and it is membership rather
+than behaviour. `BlockModelResolver` is its one reader, and every caller that
+reads it is an *entity* renderer: item frames, block displays, minecart
+contents, the golems, the block an enderman is carrying. It reaches the
+block-entity side too, as a field of `BlockEntityRendererProvider.Context` —
+the record every block-entity renderer is constructed from — where nothing
+reads it, because a block entity already has a renderer and does not need to
+find one through a model. When an entity renderer draws a chest it gets the
+quads **and** the special renderer, both, because that road draws whatever it
+finds; terrain simply never asks this table, and reads `BlockStateModelSet`
+instead, where the chest's entry is empty.
+
+The reason one entry can hold quads *and* a renderer is the object the road
+resolves into. `BlockModelResolver` hands the model a
+`BlockModelRenderState`, which has a slot for each: a list of
+`BlockStateModelPart`, a transformation, a `RenderType`, a
+`SpecialModelRenderer` with a transformation of its own, and the tint layers
+and light. Every `BlockModel` implementation writes into that one object, and
+what comes out is submitted in one go.
+
+Not every entry in it is a wrapped block, either. The three airs are an
+`EmptyBlockModel`; wildflowers and pink petals are a `SelectBlockModel` that
+branches on the display context; and the two ordinary chests are a
+`ConditionalBlockModel` — the Christmas switch this page comes back to. Most
+of the rest are a `CompositeBlockModel`: the block's own quads *and* the
+special renderer stacked. **Five are not**, and get the renderer alone with
+no quads under it — the bell, the conduit, the end gateway, the end portal
+and the enchanting table, whose built-in model is `BookSpecialRenderer` and
+nothing else. Put an enchanting table in a block display and you get a book
+hanging in the air.
 
 ## Culling by section, not by frustum
 
@@ -173,7 +196,7 @@ renderer classes, and it does not scale with your render distance the way
 |---|---|---|
 | the other nineteen | 64 | the interface default |
 | `PistonHeadRenderer` | 68 | a moving block starts outside the block it is drawn from |
-| `BlockEntityWithBoundingBoxRenderer` | 96 | the structure block's outline is a build tool |
+| `BlockEntityWithBoundingBoxRenderer` | 96 | the structure block's outline is a build tool — and its extraction sets a visibility flag from `Player.canUseGameMasterBlocks` or spectator mode, so it is the one renderer in the package whose output depends on your permissions |
 | `TheEndGatewayRenderer` | 256 | the beam is the thing you are looking for |
 | `BeaconRenderer` | the render distance in blocks | and measured **horizontally only** |
 | `TestInstanceRenderer` | the larger of its two delegates | it wraps a beacon and a bounding box |
@@ -213,6 +236,18 @@ calls before adding its own. There is no `EntityRenderer.finalizeRenderState`
 counterpart here: `BlockEntityRenderer` declares one extraction method, not
 two, so nothing reaches back into the world after the snapshot is taken.
 
+The crumbling overlay is the fifth field and the only one built outside the
+renderer. `LevelExtractor` looks the block position up in
+`ClientLevel.destructionProgress`, takes the *last* entry of the sorted set —
+`BlockDestructionProgress` orders on the stage first and the digger's entity
+id only to break a tie, so two players on one block show whichever crack is
+further along — and wraps that stage and a pose into a
+`ModelFeatureRenderer.CrumblingOverlay`. This is the only place
+in the game a non-null one is made, which is why [a mob is never
+crumbled](entity-rendering.md#why-the-zombie-is-animated-more-than-once) and
+a chest being mined is. The global list is extracted with a null overlay
+outright, so a beacon someone is breaking shows no cracks.
+
 Twenty-five subclasses, twenty-six classes: `BedRenderState` is reachable from
 nothing in the game. There is no bed block entity in `BlockEntityTypes` and no
 bed renderer, and a corpus-wide search for the name finds only its own file.
@@ -247,22 +282,23 @@ stage later than everything else in the frame.
 
 ## One partial tick for the whole world
 
-This is the difference a player can see. `LevelExtractor` gives every entity
-its own partial tick, asking `TickRateManager.isEntityFrozen` per entity, so a
-mob exempt from a freeze keeps interpolating while its neighbours stop. Block
-entities get no such question: they all receive the single
-`DeltaTracker.getGameTimeDeltaPartialTick` value that `GameRenderer.extract`
-computed for the world, with the frozen-game flag honoured — which returns
+This is the difference a player can see. [Six partial ticks are in play in
+one frame](the-frame.md#update-and-extract-six-clocks-in-one-frame), and
+block entities take the row that has no exception in it. The entity side is
+asked per entity, `TickRateManager.isEntityFrozen` at a time, so a mob exempt
+from a freeze keeps interpolating while its neighbours stop. Block entities
+get no such question: they all receive the single
+`DeltaTracker.getGameTimeDeltaPartialTick` value the world got, which returns
 exactly 1.0 while the game is frozen. Every block entity in the world is
 therefore pinned to its last completed tick, with no per-block exemption
 anywhere in the path.
 
-The held chest is a third answer again. `GameRenderer` draws it with
-`Camera.getCameraEntityPartialTicks`, which asks the frozen check about the
-*camera entity* and, when it is not frozen, ignores the frozen game entirely —
-and `TickRateManager.isEntityFrozen` never freezes a `Player`. So under
-*/tick freeze* the item in your hand is redrawn from a live partial tick while
-every chest lid in the world is stopped dead.
+The held chest is a third answer again, off
+`Camera.getCameraEntityPartialTicks` — and the frozen check never freezes a
+`Player`, so under */tick freeze* the item in your hand is redrawn from a
+live partial tick while every chest lid in the world is stopped dead. Three
+things drawn in one frame from three different clocks, and the only reason
+they disagree is which question each one was allowed to ask.
 
 The same split shows up in the Christmas textures, which the game implements
 three times. `ChestRenderer` reads `SpecialDates.isExtendedChristmas` **once,
@@ -296,6 +332,16 @@ texture or model layer on one — `SkullBlockRenderer.submitSkull`,
 `CopperGolemStatueSpecialRenderer` stand alone. The chest in your hand really
 is the same `ChestModel`, baked from the same `ModelLayerLocation`, posed at a
 fixed openness instead of an interpolated one.
+
+Beyond the two named here, the twenty-four renderer classes are a family and
+this page teaches the shape rather than the instances: each is one
+`BlockEntityRenderer.extractRenderState` and one `BlockEntityRenderer.submit`,
+and the interesting ones differ only in the six ways the table above records. The shared piece worth naming is
+`WallAndGroundTransformations`, which is how a skull, a banner or a sign
+answers *am I on the floor or on a wall* — one transformation per
+`Direction` for the wall case and an array indexed by rotation segment for
+the free-standing one, built once in the renderer's constructor rather than
+per frame.
 
 ### How an empty item model turns into a chest
 

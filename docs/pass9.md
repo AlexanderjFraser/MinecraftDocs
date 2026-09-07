@@ -2250,3 +2250,281 @@ claims the session introduced, which pass 9 checks before anything else.*
 - The frame cap, `ClientShutdownWatchdog` and the fenced-task queue were
   reported as duplicates with Part XI pages and **left for session K**, which
   owns the other half of each.
+
+## Pass 5, session K — Part XI, rendering (2026-09-06)
+
+*Thirteen reader-of-the-book agents — one per page, the landing page and
+`reference/submit-phases` — and one whole-part read in watching order. Every
+finding acted on was re-derived against `reference/26.2` by the session
+itself. Corrections first, then the claims the session introduced, which pass
+9 checks before anything else.*
+
+### Corrections — what the page said, what the decompile says
+
+1. **`rendering/entity-rendering`:97** said "Visibility is **two tests in two
+   places**. The frustum test is `EntityRenderer.shouldRender`". That method
+   runs *two* tests, in order: `Entity.shouldRender(camX, camY, camZ)`, a
+   distance test scaled by the entity's bounding box, and only then
+   `Frustum.isVisible` (`EntityRenderer.java`:66–78). `block-entity-rendering`
+   :162 had it right and the entity page had it half right, so the sibling
+   taught the entity rule better than the entity page. Now **three tests in
+   two places**, with the distance half stated.
+2. **`rendering/post-processing`:12** said "every chain this game will ever
+   load is named by a constant in Java, and there are only six of those",
+   while its own :251 said three of the six are "built inside
+   `GameRenderer.checkEntityPostEffect`". Three are `static final` fields
+   (`LevelRenderer.java`:99–100, `GameRenderer.java`:92); the other three are
+   inline `Identifier.withDefaultNamespace` literals in a switch
+   (`GameRenderer.java`:213–223). The page contradicted itself; the claim it
+   wants — the set of ids is closed and written in Java — survives, and now
+   says three constants and three literals.
+3. **`reference/submit-phases`:64** said a quad-particle group is submitted
+   **once** and lands in two phases. `SubmitNodeCollection.submitQuadParticleGroup`
+   (`SubmitNodeCollection.java`:250–253) builds **two** separate
+   `QuadParticleFeatureRenderer.Submit` records, one into `solid` and one into
+   `afterTerrain`. `particles`:287 said twice and was right; the Reference page
+   said once and was wrong. Now "reaches the collector in one call and becomes
+   two nodes".
+4. **`rendering/the-window`:197** said "An atlas is assembled into one with
+   `NativeImage.copyRect`, `NativeImage.resizeSubRectTo` and
+   `NativeImage.fillRect`". None of the three assembles an atlas.
+   `copyRect`/`fillRect` are used by `Unstitcher` (a sprite *source*, before
+   any stitch), `CubeMapTexture` and `SkinTextureDownloader`;
+   `resizeSubRectTo` has exactly one caller in the game,
+   `GameRenderer.java`:512, the world-icon downscale. The atlas is assembled
+   on the GPU, which `models-and-atlases`:219 already said. Rewritten to what
+   the methods do, with a sentence saying what an atlas is *not*.
+5. **`rendering/visibility-and-the-frame-graph`:61** said
+   `LevelExtractor.applyFrustum` "is the last thing *extract* does".
+   `LevelExtractor.extract` (`LevelExtractor.java`:96–141) runs it near the
+   *top*, right after `prepareDispatchers`, and everything after it —
+   entities, block entities, dirty sections — reads the list it just filled.
+   Three other pages depend on that order. Rewritten to "runs near the top of
+   extract", and the consequence stated as the finding it is.
+6. **`rendering/models-and-atlases`:298** said the display block-model table
+   is used by "item frames, **block entities** and ten entity renderers". No
+   block-entity renderer reads it. `BlockModelResolver` reaches the
+   block-entity side only as a field of `BlockEntityRendererProvider.Context`
+   (`BlockEntityRenderDispatcher.java`:102), which nothing under
+   `renderer/blockentity` or `renderer/special` calls. Eleven entity
+   renderers read it and nothing else does. The sentence is cut (the table is
+   now `block-entity-rendering`'s) and the owner states the `Context` fact.
+7. **`rendering/lightmap-fog-and-sky`:324** said "the weather reads neither
+   clock nor attribute, seeding each column from its own coordinates" — while
+   the same page's opening (:15) said the rain's texture scrolls off the raw
+   world clock. `WeatherEffectRenderer` passes `level.getGameTime()` into both
+   `createRainColumnInstance` and `createSnowColumnInstance`
+   (`WeatherEffectRenderer.java`:93–95), and the snow's `vOffset` is
+   built from `ticks & 511L` (:236). The *seed* is coordinates, the *scroll*
+   is the clock. The page was contradicting itself and the closing sentence
+   was the wrong half.
+8. **`rendering/the-window`:36** said "All of it lives in
+   *com/mojang/blaze3d/platform*" of a cast table whose first two rows are
+   `Minecraft` (`net/minecraft/client`) and `GpuBackend`
+   (`com/mojang/blaze3d/systems`). Now "every row but the first two".
+9. **`rendering/the-window`:244** claimed the *rest of the package* and
+   omitted seven of the twenty-five classes in it, `TextureUtil` (288 lines)
+   the largest. Five of the seven are pipeline state and belong to
+   `blaze3d`; the sentence now says so and `TextureUtil` is explained.
+10. **`rendering/the-frame`:78** described the *update window* zone as
+    "reconfigures the surface if it needs it and then calls
+    `GpuSurface.acquireNextTexture`". `Minecraft.java`:1341–1342 opens the zone
+    with `Window.updateFullscreenIfChanged`, which `the-window`:166 states and
+    `the-frame` omitted. The zone now has three statements and the first is
+    cited to its owner.
+11. **`reference/naming-drift`:396** said the frame "builds an immutable
+    render state **on the game thread**". Both halves run on the Render thread
+    (`Minecraft.renderFrame`), and the glossary already retired *immutable*
+    for the top-level states. Reworded to "copies the live game into render
+    state and then draws from that copy, both halves on the Render thread".
+12. **`world/lighting`:354** cited `section-meshing#a-click-and-the-flag-it-leaves-behind`
+    for the `hasAllNeighbors` light gate, which is two sections later under
+    *The sweep that only looks at what you can see*. The anchor existed, so
+    `check_links.py` passed it; repointed.
+13. **`rendering/section-meshing`:282** said *BlockRenderDispatcher* is
+    "gone", while `reference/naming-drift`:302 gives `ModelBlockRenderer` as
+    its successor. Both are true of different things; the drift box now says
+    the name is gone and `ModelBlockRenderer` does the tesselating, and
+    `BlockAndTintGetter.getShade` is separated out as the one with no
+    successor at all.
+14. **`reference/submit-phases`:31** said three phases are a
+    `TranslucentFeatureRenderPhase` without saying which. They are rows 4, 7
+    and 8 — `seeThroughNameTags`, `translucentBlocksAndItems`,
+    `translucentModels` (`SubmitNodeCollection.java`:55–69) — and not the ones
+    the names suggest. The count was an unenumerated assertion on a page whose
+    whole job is enumeration.
+
+### Suspicions re-derived and found sound — a strike is a claim
+
+- `post-processing`:239, the F3 pie chart. The camera-entity chain runs in
+  `GameRenderer.render` *after* `renderLevel` has returned
+  (`GameRenderer.java`:443–449), so it is inside the *world* zone but outside
+  all five of `renderLevel`'s sub-zones, *screenEffects* included. Both pages
+  were right and neither needed changing.
+- `the-frame`:137, `TickRateManager.isEntityFrozen` "excludes anything with a
+  player aboard", against `block-entity-rendering`:263, "never freezes a
+  `Player`". `TickRateManager.java`:73 excludes both, and each page states the
+  half its own scenario needs. No contradiction.
+- `the-window`:221, the error callback "swapped three times over the game's
+  life". True as a lifecycle statement (`Window.java`:312, 335, 346); the
+  scoped swaps are a fourth *kind*, now written as such rather than as a
+  correction to the count.
+- `the-window`:256, "*ScreenManager*, which never existed here", against
+  `naming-drift`:312. Left: rule 3 makes the page a claim about 26.2, and the
+  drift row is a claim about where a 1.21 reader should look. Logged for pass
+  9 rather than settled here.
+
+### Claims introduced
+
+**Ownership moves, each stated once and cited everywhere else.**
+
+- The **merging rule** moved from `reference/submit-phases`:31–44 to
+  `entity-rendering`'s *prepare* section, with the two phase classes, the
+  batch-key explanation, `RenderTypeFeatureRenderer.Group` and
+  `RenderType.canConsolidateConsecutiveGeometry` moving with it. The Reference
+  page keeps the 12:3 split, now enumerated, and a link.
+- The **two baked block-model tables** settled to `block-entity-rendering`
+  (its scenario, its figure); `models-and-atlases` keeps the `BlockModel`
+  naming trap and a link.
+- The **`prepareSharedState` handshake** cut to a citation of
+  `resource-system#the-shared-state-channel`; `models-and-atlases` keeps only
+  which end of it it is (thirteen published, two awaited).
+- **Directional shading and `CardinalLighting`** moved off `visibility` onto
+  `lightmap-fog-and-sky`'s *What is not an attribute*.
+- **The compile ordering** (`compileSections` after `FrameGraphBuilder.execute`)
+  split: `visibility` keeps where the call sits, `section-meshing` keeps what
+  it costs, each citing the other.
+- **The wall** cut on `visibility` to one sentence and an anchor into
+  `the-frame`.
+- **The frame cap** cut on `the-frame` and `the-window` to citations of
+  `the-client-loop`, which receives the *iconified, not unfocused* distinction.
+- **`ClientShutdownWatchdog`** cut on `the-window` to the one arming it owns;
+  `the-client-loop` receives the fifteen-second sleep, the daemon thread and
+  the report-only-versus-halt difference.
+- **The minimised-window answer** won by `the-frame`; `the-window` cut to
+  `Window.isMinimized` plus the anchor.
+- **The backend-choice answer** won by `the-window` — its figure draws the
+  retry loop — and it receives the ordered pair, `GlBackend`/`VulkanBackend`,
+  the OpenGL-first default and the unclean-shutdown double downgrade from
+  `blaze3d`, which keeps one sentence.
+- **The static-pipeline precompile** and **the two-stage GLSL preprocessing**
+  won by `blaze3d`, which receives the reload phase, the thread and the
+  all-or-nothing cache swap; `post-processing` cut to citations.
+- **The *Globals* block's seven members** moved to `blaze3d` and enumerated
+  from `GlobalSettingsUniform.UBO_SIZE`; `post-processing` keeps the
+  consequence.
+- **`CrossFrameResourcePool`'s three-frame hold** moved off the part's last
+  page onto `visibility`, beside `createInternal`.
+- **The frame-graph inspector** moved from `post-processing` onto `visibility`,
+  which owns `FrameGraphBuilder.execute`; `post-processing` keeps the contrast.
+- **The spectator-chain answer** won by `post-processing`; `the-frame` cut to
+  one clause and an anchor. **The UI lightmap** won by `lightmap-fog-and-sky`,
+  which receives the `levelLightmap`/`uiLightmap` pair; `the-frame`'s Q&A cut
+  to the answer and a link.
+- **The hand's second submit storage** won by `the-frame`, which now names
+  `ItemInHandRenderer` and `ScreenEffectRenderer` and pays off the hand-forward
+  `entity-rendering`:293 had been making to it; `block-entity-rendering` cut to
+  a citation. **The six partial ticks** stay `the-frame`'s and
+  `block-entity-rendering` keeps only its own difference, which is the declared
+  pair's business.
+
+**Coverage written.**
+
+- `models-and-atlases`: the three branching item models and **thirty-three
+  properties in three registries** (10 numeric, 10 select, 13 conditional),
+  `NeedleDirectionHelper`'s per-stack damped compass needle and its
+  *wobble: false* opt-out, `LocalTime`'s once-a-second re-read, and
+  `DisplayContext`. This discharges `what-this-book-skips`' promise that the
+  `client/renderer/item` properties subtree is covered as a section here.
+- `models-and-atlases`: the chunk-layer decision made exact — `Transparency`
+  is two booleans and `ChunkSectionLayer.byTransparency` reads them
+  translucent-first — with `Sheets` named as where the item render type comes
+  from.
+- `block-entity-rendering`: `BlockModelRenderState` as why one entry holds
+  quads *and* a renderer; the built-in table's four other model kinds
+  (`EmptyBlockModel`, `SelectBlockModel`, `ConditionalBlockModel`,
+  `CompositeBlockModel`) and the **five bare wrappers** — bell, conduit, end
+  gateway, end portal, and the enchanting table, whose built-in model is a
+  book with no table under it; `WallAndGroundTransformations`;
+  `BlockEntityWithBoundingBoxRenderer`'s `Player.canUseGameMasterBlocks` gate;
+  and the crumbling overlay's one construction site, with
+  `BlockDestructionProgress` ordering on stage before digger id.
+- `entity-rendering`: `EntityRenderers` and `EntityRendererProvider` as where
+  a shared renderer comes from; `DisplayRenderer`; and **the skin pipeline's
+  drawing half**, which pays off `player-anatomy`:118's "Drawing any of it is
+  Part XI's" — `AvatarRenderState` carries the whole `PlayerSkin` by value and
+  seven booleans, one per `PlayerModelPart`, while `PlayerModelType` never
+  reaches the state because the dispatcher used it to pick the renderer.
+- `the-window`: `TextureUtil`'s two pre-mipmap repairs (`TextureUtil.solidify`,
+  `TextureUtil.fillEmptyAreasWithDarkColor`) and why they exist;
+  `GLFWErrorScope` and `GLFWErrorCapture` as the scoped fourth kind of callback
+  swap and the four places that use them.
+- `lightmap-fog-and-sky`: `Lighting` — one UBO, five `Lighting.Entry` slices,
+  four written once in the constructor and only `LEVEL` rewritten — and
+  `WorldBorderRenderer` as the second thing in the weather pass.
+- `visibility-and-the-frame-graph`: `ChunkSectionLayerGroup` as
+  SOLID-and-CUTOUT against TRANSLUCENT; `ViewArea` as a
+  `RotatingSectionStorage` of `RenderSection`s, the same ring the dirty flags
+  use; and `TranslucencyPointOfView` as three integers clamped to minus one,
+  zero or plus one — **twenty-seven possible values** — with
+  `TranslucencyPointOfView.isAxisAligned` reading zero on any axis.
+- `section-meshing`: `ModelBlockRenderer.tesselateBlock` and `BlockQuadOutput`
+  as how a model becomes quads, and `ModelBlockRenderer.forceOpaque` as which
+  of the compiler's two callbacks a leaf block gets.
+- `blaze3d`: `GlTransientMemory`/`VulkanTransientMemory` and
+  `GlConst`/`VulkanConst`; and the homeless pass-3 cut
+  `RenderSystem.outputColorTextureOverride` /
+  `RenderSystem.outputDepthTextureOverride`, written as the one thing that
+  redirects where a draw lands, with the GUI item atlas and picture-in-picture
+  as its only setters.
+- `particles`: the eighty-odd `Particle` subclasses as a family, with
+  `ParticleProvider` in the cast, `DripParticle` and `FireworkParticles` named
+  as nests of variants, and `ParticleOptions` written — which pays off
+  `data-driven-types`:186's hand-forward.
+- `the-frame`: `TimerQuery` as the GPU stopwatch that brackets the frame and is
+  only restarted once the last one has been collected.
+
+**The landing page**, rewritten to the role. Its argument is now stated:
+*the renderer is not allowed to look at the world*, and every seam a player
+notices is a disagreement about which copy something got. Its size sentence is
+the generated include over the mapping's four packages (1,254 / 93,012)
+instead of a hand count of three (1,179 / 87,000). The ten-line caption
+disowning its own figure is four lines, and the contradiction between "in the
+order things happen inside one frame" and "the pipeline arrows are not frame
+order" is resolved in favour of the second, with `lectures.md` re-synced to
+match. Its coverage answer is the part's boundary stated twice — packages
+other parts own that count against Part XI, and `client/resources/model`,
+which counts against Part X and is this part's subject.
+
+### Rulings made in writing
+
+- **The `map_source.py` `PARTS` change is declined** (queue pass5.md:3499).
+  `client/resources/model` is billed to Part X and is `models-and-atlases`'
+  subject; moving it would change both parts' generated totals and invalidate
+  the coverage argument session J had just written into Part X's landing page.
+  The mapping is by package, the package is genuinely shared, and both landing
+  pages now say so in prose. No page moves, no tool changes.
+- **The *what a player sees* column stays** on `post-processing`, with a
+  sentence above the table saying it is a reading of the shaders rather than a
+  citation, and the *transparency* row reworded because it was the one cell
+  doing a different job.
+- **`the-window` is not cut.** The pass-2 suggestion that the whole page might
+  go is overtaken: the landing page now argues its place, and three pages open
+  on state it creates.
+- **`particles`' explosion section is not cut.** It is the book's only home for
+  the client explosion budget.
+
+### For pass 9's attention, found and not fixed
+
+- `blaze3d`:206 names `StagedVertexBuffer` in the chunk-meshing staging chain;
+  `the-frame`:167 and `submit-phases`:77 describe it as the feature and GUI
+  buffer. One of the three is describing the wrong buffer.
+- `models-and-atlases`' "**twelve** separate layers" of soft failure, where the
+  prose enumerates eleven. Third pass to record it; it is a count assertion, so
+  it is pass 9's rather than pass 8's.
+- `entity-rendering`:191 and :257 — the pose-copy split and "half a dozen
+  others" are both stated as if exhaustive and are not (pass5.md:823).
+- `section-meshing`'s "the pool plus one" ceiling conflates concurrent compiles
+  with existing meshes.
+- `resource-system`:242 names `ParticleResources` as a second consumer of
+  `AtlasManager.PENDING_STITCH`; `models-and-atlases`' figure shows one.

@@ -14,14 +14,16 @@ compiled mesh that happens to have no draws in it. Terrain reveals itself
 outward because the walk can only reach as far as the meshes that already
 exist.
 
-[The frame](the-frame.md) ends where this page begins — but not quite at one
-method. The first stage runs on the *extract* side of the wall:
-`LevelExtractor.applyFrustum` trims the reached sections to the visible list
-before `GameRenderer.render` is called at all. The other four are
+[The frame](the-frame.md#the-wall-and-the-one-level-at-which-it-is-real) ends
+where this page begins, and the order is the page: **reach, gather, declare,
+draw, defer**. Only the first of those five is on the far side of the wall,
+and that is a finding rather than an exception — `LevelExtractor.applyFrustum`
+runs near the *top* of extract, so everything else the extractor does that
+frame, entities and block entities and dirty sections alike, is already
+reading the list this stage just decided. The other four are
 `LevelRenderer.render`, which gathers what was submitted, declares the passes
-of a frame, draws the terrain, schedules translucency work for a later frame
-and re-runs the walk on its way out — in that order, and the order is the
-page.
+of a frame, draws the terrain and schedules translucency work for a later
+frame — then re-runs the walk on its way out, for the frame after this one.
 
 ## The cast
 
@@ -38,11 +40,9 @@ page.
 
 Only one of those reads the world, and it is the one on the extract side:
 `LevelExtractor` holds the `ClientLevel` and is the class that carries it
-across the wall. `LevelRenderer` does not — its single `ClientLevel`
-reference is a *parameter*, to `LevelRenderer.invalidateCompiledGeometry`,
-which is the reload path and not the frame path. Everything the drawing half
-knows about the world came across in the snapshot; what the renderer still
-owns is geometry, targets and order.
+across [the wall](the-frame.md#the-wall-and-the-one-level-at-which-it-is-real).
+What the renderer still owns, on this side of it, is geometry, targets and
+order.
 
 ## Five stages, and the first one decides the other four
 
@@ -58,9 +58,9 @@ flowchart TD
     S6 -. "next frame" .-> S1
 ```
 
-Read it as **reach, gather, declare, draw, defer**, and note that stage one
-has already happened when `LevelRenderer.render` is entered — it is the last
-thing *extract* does. Stages one and five are bookkeeping that decides what
+Stage one has already happened when `LevelRenderer.render` is entered, and
+stage six is the same walk being re-run for the frame after this one, which
+is why the figure loops. Stages one and five are bookkeeping that decides what
 the drawing stages will have to do, and both are budgeted rather than
 complete.
 
@@ -179,7 +179,12 @@ already happened.
 declaring resources and passes. `FrameGraphBuilder.importExternal` brings in
 the targets that already exist outside the frame — the main render target and
 the entity-outline target — and `FrameGraphBuilder.createInternal` declares
-five that exist only for the duration of this frame. Each pass comes from
+five that exist only for the duration of this frame. *For the duration of this
+frame* is not the same as *allocated this frame*: every internal target in
+the part comes out of one `CrossFrameResourcePool`, which keeps a released
+target for three frames in case something asks again for that size and
+format, so a target that is conceptually thrown away at the end of a frame is
+usually the same GPU memory next frame. Each pass comes from
 `FrameGraphBuilder.addPass`, states its dependencies with `FramePass.reads`
 and `FramePass.readsAndWrites`, and states its body with `FramePass.executes`.
 `LevelTargetBundle` is where the handles live under names —
@@ -194,7 +199,7 @@ flowchart TD
     MAIN["main — LevelRenderer.addMainPass"]
     OUT["the entity outline post chain — added only when something submitted an outline"]
     CLOUDS["clouds — LevelRenderer.addCloudsPass, added only in a frame that has clouds"]
-    WEATHER["weather — LevelRenderer.addWeatherPass, which also draws the world border"]
+    WEATHER["weather — LevelRenderer.addWeatherPass, which also runs WorldBorderRenderer"]
     TRANS["the transparency post chain"]
     TOP["always on top — LevelRenderer.addAlwaysOnTopPass, which clears depth first"]
     CLEAR --> SKY --> MAIN --> OUT --> CLOUDS --> WEATHER --> TRANS --> TOP
@@ -215,6 +220,13 @@ The two post chains in that figure are declared here and explained in
 [post-processing](post-processing.md). The outline chain is why the
 entity-outline target is imported at all, and the transparency chain is the
 only reason the five internal targets are ever created.
+
+`FrameGraphBuilder.execute` is also where the profiler learns about any of
+this: the level's graph is executed with an inspector that pushes a zone per
+pass, named after the pass, which is why the F3 pie chart can tell you the
+sky cost you something. A graph executed without one — and [there is another
+kind](post-processing.md#two-doors-into-the-gpu-and-one-of-them-is-deprecated)
+— reports nothing.
 
 **The graph culls passes, and culls none of these.**
 `FrameGraphBuilder.execute` keeps only the passes that transitively feed an
@@ -241,10 +253,20 @@ bucket, with each section's transform arriving as a slice of a uniform buffer
 rather than as a per-draw state change. **The saving is not the draw calls.**
 Both backends still loop and issue one GPU draw per section — what the bucket
 removes is the buffer rebinding and the per-draw state change between them,
-which is the expensive part on this side of the driver. The two groups the
-main pass renders are
-`ChunkSectionLayerGroup.OPAQUE` and `ChunkSectionLayerGroup.TRANSLUCENT`; the
-layers underneath them belong to [section meshing](section-meshing.md).
+which is the expensive part on this side of the driver.
+
+The main pass renders two *groups*, not three layers.
+`ChunkSectionLayerGroup` is the coarser partition the draw side works in:
+`ChunkSectionLayerGroup.OPAQUE` covers [the solid and cutout
+layers](section-meshing.md#what-the-compiler-makes) together, because neither
+blends and both can be drawn in any order, and
+`ChunkSectionLayerGroup.TRANSLUCENT` is the third layer alone, which is why
+the next paragraph is only ever about that one. Turning a position back into
+the section it names is `LevelRenderer.viewArea`, a `ViewArea` — and it holds
+its `SectionRenderDispatcher.RenderSection`s in a `RotatingSectionStorage`,
+the [same ring the dirty flags live
+in](section-meshing.md#the-flag-belongs-to-a-slot-not-to-a-section),
+recentred by `ViewArea.repositionCamera` as you move.
 
 The translucent layer inverts the rule, and it inverts it in the direction
 nobody guesses. Its grouping hash omits the buffer contribution entirely, so
@@ -255,17 +277,12 @@ reversed against, so the far sections blend before the near ones. Correct
 blending is bought here by refusing to *distinguish* the buffers, not by
 refusing to share them.
 
-**Directional shading is per dimension, and it is not data.** How bright a
-face is by direction comes from a `CardinalLighting` record, and there are
-exactly two of them: `CardinalLighting.DEFAULT` and `CardinalLighting.NETHER`,
-both hard-coded. `DimensionType` carries the choice between them and nothing
-else — a datapack picks, it does not supply numbers.
-
-One ordering here catches everyone out. **Terrain is drawn before the sections
-queued this frame are compiled**: `LevelRenderer.compileSections` runs *after*
-`FrameGraphBuilder.execute`, so even the option that forces a synchronous
-rebuild only guarantees the mesh exists by the end of frame *N* — it appears
-in frame *N+1*. Again, [section meshing](section-meshing.md).
+One ordering here catches everyone out, and it is worth stating from this
+side because it is a fact about where `LevelRenderer.compileSections` sits:
+it runs *after* `FrameGraphBuilder.execute`, so **terrain is drawn before the
+sections queued this frame are compiled**. What that costs a player, and why
+the option that promises otherwise cannot deliver it, is [section
+meshing](section-meshing.md#questions-players-ask)'s.
 
 ## Translucency, re-sorted on a budget it never finishes
 
@@ -283,13 +300,23 @@ whichever is larger, walked from
 continue where the last one stopped.
 
 Being considered is not being re-sorted. A section is scheduled if its
-`TranslucencyPointOfView` actually changed, **or** if the camera's block
-position moved since `LevelRenderer.lastTranslucentSortBlockPos` and the
-section is either axis-aligned from the camera or one of the nearby ones. It
-is then skipped anyway if a re-sort is already scheduled for it, or if it has
-no translucent geometry at all. So standing still costs nothing, walking costs
-a bounded amount, and a fast enough sideways move can leave a distant pane of
-glass sorted for a viewpoint you have already left.
+`TranslucencyPointOfView` actually changed — and that is three integers, each
+clamped to −1, 0 or +1, saying whether the camera's section is before, level
+with or past this one on that axis. **Twenty-seven possible values in all**,
+which is why "changed" is a cheap test that is usually false: crossing a
+section boundary changes it, and wandering about inside one does not.
+`TranslucencyPointOfView.isAxisAligned` is the same record answering whether
+any axis reads zero — **or** the section is scheduled anyway if the camera's
+block position moved since `LevelRenderer.lastTranslucentSortBlockPos` and the
+section is either axis-aligned like that or one of the nearby ones. It is then skipped
+anyway if a re-sort is already scheduled for it, or if it has no translucent
+geometry at all. What runs when one is scheduled is
+`SectionRenderDispatcher.RenderSection.resortTransparency`, which reorders the
+existing mesh rather than recompiling it — [the cheap path section meshing
+hands here](section-meshing.md#onto-the-gpu-and-a-swap-that-is-late-on-purpose).
+So standing still costs nothing, walking costs a bounded amount, and a fast
+enough sideways move can leave a distant pane of glass sorted for a viewpoint
+you have already left.
 
 > **For a 1.21-era reader.** *LevelRenderer.renderLevel* does not exist — the
 > method is `LevelRenderer.render`, and it is handed render state rather than
@@ -305,8 +332,9 @@ glass sorted for a viewpoint you have already left.
 
 ## Where to look
 
-`LevelRenderer.render` — the stages of this page are that one method, top to
-bottom. `SectionOcclusionGraph.update` for the walk, and
+`LevelExtractor.applyFrustum` first, because stage one is the one that is not
+in `LevelRenderer.render`; then `LevelRenderer.render`, which is stages two to
+five top to bottom. `SectionOcclusionGraph.update` for the walk, and
 `SectionOcclusionGraph.runPartialUpdate` for the only part of it on the client
 thread. `LevelExtractor.applyFrustum` for why the visible list is usually a
 cache. `FrameGraphBuilder.execute` for how declared passes are ordered and

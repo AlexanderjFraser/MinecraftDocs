@@ -2,37 +2,54 @@
 
 > Verified against **Minecraft 26.2** · Part XI · one thread, a hundred-odd times a second, turning a world nobody can see into a picture — and two layers of machinery underneath that never touch the world at all.
 
-A frame is one method call. Most of this part happens inside
-`Minecraft.renderFrame`, on the same thread that ticked the world a moment
-earlier, and it happens twice over: once to *copy* the live game into a pile
-of immutable value objects, and once to *draw* those objects with the live
-game held at arm's length. The exceptions are worth naming up front, because
-each is a page: particles are stepped from the *tick*, sections are meshed on
-a background pool, and the atlases are built by a resource reload. A player recognises the part by the seams in
-that arrangement — terrain filling in outward as you fly, a block you placed
-appearing before the server has agreed to it, a mob that pins in place under
-`/tick freeze` while you keep moving, a resource pack that makes the game
-stop for a second and come back looking different.
+**The renderer is not allowed to look at the world.** A frame is one call to
+[`Minecraft.renderFrame`](the-frame.md), on the same thread that ticked the
+world a moment earlier, and it runs twice over: once to *copy* the live game
+into a pile of value objects, and once to draw those objects with the live
+game held at arm's length. Everything in this part is either that wall, or
+something feeding it, or something on the far side of it working from a copy
+— and every seam a player notices is some piece of the game disagreeing about
+*which* copy it got. A mob pins in place under `/tick freeze` while the item
+in your hand keeps swaying, because they were copied at different instants.
+Terrain fills in outward as you fly, because the walk that decides what is
+visible can only reach as far as the meshes that already exist. A chest's lid
+stops and the chest in your hand does not. The wall is why all three are
+true.
+
+Three things escape the frame, and each of them is a page: particles are
+stepped from the [*tick*](particles.md), sections are meshed on [a background
+pool](section-meshing.md), and the atlases are built by [a resource
+reload](models-and-atlases.md).
 
 It is also the largest thing on the client by a distance. Counting
-`client/renderer`, `client/model` and `com/mojang/blaze3d` together — one class per file, one
-line per line of decompiled source, the same way [the atlas](../../maps/README.md)
-counts everything else — the renderer is **1,179 classes and 87,000 lines**,
-against 420 classes and 53,000 for the whole of `net/minecraft/server`. This
-part does not cover all of it, and [what this book
-skips](../anatomy/what-this-book-skips.md) says which parts are declined and
-why.
+`client/renderer`, `client/model`, `client/particle` and `com/mojang/blaze3d`
+together — one class per file, one line per line of decompiled source, the
+same way [the atlas](../../maps/README.md) counts everything else — that is
+{{#include ../../generated/part-rendering.md}}, against 420 classes and
+53,000 for the whole of `net/minecraft/server`.
+
+Read that number with two corrections. Some of what it counts belongs to
+other parts, because the packages are shared and the mapping is by package:
+the GUI's render state and its debug renderers live under `client/renderer`
+and are Part X's, and the feature renderers are the Reference tier's. And the
+traffic runs the other way too — `client/resources/model` counts against
+Part X and is [models and atlases](models-and-atlases.md)' subject entire.
+Most of the rest is *families*: one class per mob model, one per renderer,
+one per render state, one per particle, and one file per GL or Vulkan call
+site. This part teaches each of those shapes once and declines the instances,
+which is what [what this book
+skips](../anatomy/what-this-book-skips.md) records.
 
 ## The shape of the part
 
 Part XI is **a substrate under a pipeline**. Two of its pages — the window
 and Blaze3D — are what the renderer stands on: neither has a trace through
-the world, and both are cited from the pages above rather than the other way
-round — Blaze3D by eight of the other ten, the window by two. The rest really is a
-pipeline, in the order things happen inside one frame. `the-frame` opens the
-part because it is the shortest way to see the whole shape at once, and
-because a reader who has watched one frame end to end has a reason to care
-what a `GpuDevice` is.
+the world, and both are cited far more than they cite, Blaze3D by eight of
+the other ten and the window by two. The rest is a pipeline, and the arrows
+below are the order to *watch* it in rather than the order a frame runs in.
+[The frame](the-frame.md) opens the part because it is the shortest way to
+see the whole shape at once, and because a reader who has watched one frame
+end to end has a reason to care what a `GpuDevice` is.
 
 ```mermaid
 flowchart TD
@@ -64,16 +81,11 @@ flowchart TD
     FRAME --> PIPE
 ```
 
-Read the substrate arrow as *depends on*, not as *happens before*: the window
-and the device are made once at startup and never again. The pipeline arrows
-are not frame order either — inside a frame the sky pass is declared before the
-main one, and the lightmap is built before the world is drawn at all. They are
-the order to watch the pages in, each labelled with what the next one needs
-from the one before. The last arrow is the one the figure flatters: **two**
-of the six post chains append their passes to the very frame graph the
-visibility page describes, and the other four build a graph of their own and
-throw it away. They are one machine because they are one loader, one schema
-and one pass class — not because they all end up in one graph.
+Every arrow is *what the next page needs from the last*. Inside a frame the
+order is different — the sky pass is declared before the main one, the
+lightmap is built before the world is drawn at all, and [two of the six post
+chains are passes of the world's own graph while the other four build one and
+throw it away](post-processing.md#two-doors-into-the-gpu-and-one-of-them-is-deprecated).
 
 ## Before you start
 
@@ -137,11 +149,11 @@ ways `LevelExtractor` is reached, pushed and pulled.
     spectator shader turn out to be the same machine — and a resource pack
     can rewrite all six and add none.
 
-Four and five are a pair — they were one page until pass 3, and they are
-still one journey seen from its two ends — and so are seven and eight, the
-second of which is written as the differences from the first. One to three can be watched in
-order or in the order one, three, two; the window is the page a viewer is
-most likely to skip and least likely to regret.
+Four and five are a pair — one journey seen from its two ends — and so are
+seven and eight, the second of which is written as the differences from the
+first. One to three can be watched in order or in the order one, three, two;
+the window is the page a viewer is most likely to skip and least likely to
+regret.
 
 ## Reference this part uses
 

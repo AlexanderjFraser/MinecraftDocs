@@ -100,15 +100,15 @@ parses *items/* into `ClientItem`.
 
 Reload listeners are not supposed to reach into each other, and this pair
 has to: baking cannot resolve a texture slot without knowing where the
-sprite landed. `PreparableReloadListener.prepareSharedState` runs for
-*every* listener on the client thread before *any* reload task starts, and
-`AtlasManager` uses its turn to publish thirteen pending stitches under
-`AtlasManager.PENDING_STITCH`, of which `ModelManager` awaits the two it
-bakes against — the blocks atlas and the items atlas.
-The *ordering* was always guaranteed anyway — the reload chains each
-listener's barrier onto the previous one, and `AtlasManager` is registered
-before `ModelManager` — so what the handshake buys is not order but the
-end of the reaching-in.
+sprite landed. The channel that lets them is [the resource system's
+shared-state
+pass](../foundations/resource-system.md#the-shared-state-channel), and
+`AtlasManager.PENDING_STITCH` is the only key the game declares. What
+matters here is which end of it this page is: `AtlasManager` publishes a
+pending stitch for all thirteen atlases, and `ModelManager` awaits exactly
+the two it bakes against — the blocks atlas and the items atlas — from
+inside its own prepare, which is what lets baking overlap stitching instead
+of queueing behind it.
 
 ## Interning the models, and dropping the ones that loop
 
@@ -170,8 +170,13 @@ whether they need sorting or re-uploading without reading a quad.
 The most surprising decision in the pipeline is the one nobody has to make.
 `FaceBakery.bakeQuad` does not take the render layer from the block or from
 any per-face declaration: it asks `SpriteContents` what transparency actually
-exists inside *that quad's UV rectangle*, and picks solid, cutout or
-translucent from the answer.
+exists inside *that quad's UV rectangle*. The answer is a `Transparency`, two
+booleans wide — are there fully transparent pixels in there, and are there
+partly transparent ones — and `ChunkSectionLayer.byTransparency` reads them in
+that order: any partial alpha makes it translucent, otherwise any full
+transparency makes it cutout, otherwise solid. The same two booleans pick the
+item render type out of `Sheets`, which is where the four block-and-item
+sheets live.
 
 **One pixel** — enough alpha inside a quad's UV rectangle to move that face
 out of the solid layer (`FaceBakery`, asking `SpriteContents`).
@@ -263,16 +268,48 @@ the hand-swap animation and whether it may overflow its slot in the GUI.
 
 What each id maps to came from *items/*, parsed into `ClientItem` by
 `ClientItemInfoLoader` and baked alongside the block models. `ItemModels`
-registers **eight** kinds of unbaked item model and only one of them draws
-anything by itself — the rest select, compose, dispatch on a range or
-delegate — while `SpecialModelRenderers` covers the thirteen shapes no
-cuboid model can express, from chests and banners to shields, heads,
-tridents and decorated pots ([block-entity
-rendering](block-entity-rendering.md) is where those thirteen get their
-geometry). `ItemModelGenerator` is the odd one out and by
-far the most-used model in the game: it extrudes a flat sprite into
-geometry by tracing its alpha channel, which is what *item/generated*
+registers **eight** kinds of unbaked item model and only one of them,
+`CuboidItemModelWrapper`, draws anything by itself. `EmptyModel` draws
+nothing, `CompositeModel` stacks the others, `SpecialModelWrapper` hands the
+layer to a renderer instead of quads, `BundleSelectedItemSpecialRenderer` is
+a bundle's peek — and the remaining three, `RangeSelectItemModel`,
+`SelectItemModel` and `ConditionalItemModel`, do not draw at all. They
+*branch*. `SpecialModelRenderers` covers the thirteen shapes no cuboid model
+can express, from chests and banners to shields, heads, tridents and
+decorated pots ([block-entity
+rendering](block-entity-rendering.md#where-rendererspecial-borrows-its-geometry)
+is where those thirteen get their geometry). `ItemModelGenerator` is the odd
+one out and by far the most-used model in the game: it extrudes a flat sprite
+into geometry by tracing its alpha channel, which is what *item/generated*
 means.
+
+### What the three branching models branch on
+
+The three are the whole of how an item's appearance changes without the item
+changing, and each reads from its own registry of *properties* under
+`client/renderer/item/properties`. There are thirty-three of them in three
+shapes, and the shape decides which model can use it.
+
+| the model | what the property returns | how many | examples |
+|---|---|---:|---|
+| `RangeSelectItemModel` | a float, thresholded against declared cut-offs | 10, in `RangeSelectItemModelProperties` | `CompassAngle`, `Damage`, `Cooldown`, `CrossbowPull`, `BundleFullness`, `UseDuration` |
+| `SelectItemModel` | a value matched against declared cases | 10, in `SelectItemModelProperties` | `MainHand`, `DisplayContext`, `TrimMaterialProperty`, `ItemBlockState`, `LocalTime`, `ContextDimension` |
+| `ConditionalItemModel` | a boolean, choosing one of two models | 13, in `ConditionalItemModelProperties` | `Damaged`, `Broken`, `IsUsingItem`, `IsSelected`, `IsCarried`, `FishingRodCast`, `IsKeybindDown` |
+
+Two of them keep state, which nothing else in the baking pipeline does. A
+compass is a `NeedleDirectionHelper`, and its needle is a damped follower
+updated once per tick per stack rather than a value read straight off the
+angle — which is the wobble, and a model may declare *wobble: false* and get
+the raw angle instead. `LocalTime` is the other, and it re-reads the wall
+clock at most once a second, which is why a chest *item* notices Christmas
+and [a placed
+chest](block-entity-rendering.md#one-partial-tick-for-the-whole-world) does
+not.
+
+`DisplayContext` is the row worth knowing for a different reason: it is what
+lets one item file draw one thing in your hand, another in a frame and a
+third in the GUI, and the context comes from whoever is drawing rather than
+from the stack.
 
 One rule is enforced here and nowhere else. A block model may only use the
 block atlas, and a cuboid *item* model must draw every quad from a single
@@ -292,13 +329,14 @@ that does stop the water is `/tick freeze`, because the guard on that call is
 `Minecraft.isLevelRunningNormally` and nothing else.
 
 **Why does an item frame sometimes look different from the block in it?**
-Because blocks have two model layers with different jobs. `BlockStateModel`
-is the quad source for the mesher and for particles, while `BlockModel` — a
-different interface in a different package, reached through
-`ModelManager.getBlockModelSet` — is the *display* model used by item
-frames, block entities and ten entity renderers. Tints and a transform
-belong to its usual implementation, `BlockStateModelWrapper`, not to the
-interface.
+Because a bake produces two block-model tables, not one, and only the first
+is the mesher's. Which is which, and why a chest is empty in one and a chest
+in the other, is [block-entity
+rendering](block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them)'s.
+The trap this page owes you is the naming: `BlockStateModel` is the quad
+source, while `BlockModel` is a *different interface in a different package*
+— the display model — and tints and a transform belong to its usual
+implementation, `BlockStateModelWrapper`, not to the interface.
 
 **Can I look at the atlas?** Yes. A debug keybind writes every atlas to
 disk, each with a text listing of every sprite's position and size beside it;

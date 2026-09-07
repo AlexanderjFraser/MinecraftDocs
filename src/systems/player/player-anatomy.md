@@ -116,7 +116,9 @@ tab-list entry, not on the player, which is why a skin can change without an
 entity packet. **`PlayerModelPart`** is the other half: the seven toggles in
 the skin-customisation screen, each a bit in the byte
 `Avatar.DATA_PLAYER_MODE_CUSTOMISATION` carries, read back through
-`Avatar.isModelPartShown`. Drawing any of it is Part XI's.
+`Avatar.isModelPartShown`. Drawing any of it is Part XI's — the skin and
+the seven toggles land in an `AvatarRenderState` at [extract
+time](../rendering/entity-rendering.md#drawing-a-player-which-is-the-part-viii-owes-this-page).
 
 **Reach is two attributes, not one.** `Player.blockInteractionRange` and
 `Player.entityInteractionRange` read `Attributes.BLOCK_INTERACTION_RANGE`

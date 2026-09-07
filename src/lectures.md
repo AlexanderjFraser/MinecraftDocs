@@ -284,10 +284,11 @@ surface.
 ## XI · Rendering
 
 *A substrate under a pipeline.* Two lectures are what the renderer stands
-on and have no trace through the world; the rest are one frame in the order
-it happens. The part opens on the frame itself because it is the shortest
-way to see the whole shape at once — and because a viewer who has watched
-one frame end to end has a reason to care what a `GpuDevice` is.
+on and have no trace through the world; the rest are a pipeline, watched in
+an order that is not the order a frame runs in. The part opens on the frame
+itself because it is the shortest way to see the whole shape at once — and
+because a viewer who has watched one frame end to end has a reason to care
+what a `GpuDevice` is.
 
 1. [The frame](systems/rendering/the-frame.md)
 2. [The window](systems/rendering/the-window.md)

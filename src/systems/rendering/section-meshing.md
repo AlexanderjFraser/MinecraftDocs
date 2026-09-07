@@ -157,9 +157,15 @@ at the world as it was when the snapshot was taken.
 ## The queue, the packs, and why more cores do not always help
 
 `SectionRenderDispatcher` takes the sections the extract collected and either
-queues them (`SectionRenderDispatcher.RenderSection.compileAsync`) or, under
-the *prioritise chunk updates* setting, compiles them on the spot
-(`SectionRenderDispatcher.RenderSection.compileSync`). `SectionTaskDynamicQueue`
+queues them (`SectionRenderDispatcher.RenderSection.compileAsync`) or compiles
+them on the spot (`SectionRenderDispatcher.RenderSection.compileSync`). The
+dispatcher does not decide which: `LevelRenderer.compileSections` does, from
+the snapshotted *prioritise chunk updates* option, and this is where
+`SectionUpdateTracker.SectionDirtyState.isDirtyFromPlayer` is finally spent.
+`PrioritizeChunkUpdates.NONE` — the default — never compiles inline;
+`PrioritizeChunkUpdates.PLAYER_AFFECTED` does so for a section the player
+changed; `PrioritizeChunkUpdates.NEARBY` does so for those *and* for anything
+close to the camera. `SectionTaskDynamicQueue`
 decides the order and it is nearest-first, with one guard: a recompile only
 beats a first-time compile while a small quota lasts, and only if it is also
 nearer. With no first-time compile queued at all, a recompile wins outright.
@@ -188,7 +194,11 @@ count after all.
 ## What the compiler makes
 
 `SectionCompiler.compile` walks every block in the section, asks the models
-for its quads and sorts them into layers. Its product is
+for its quads and sorts them into layers. The asking is
+`ModelBlockRenderer.tesselateBlock`, one instance built per compile from the
+ambient-occlusion option and `BlockColors`, and the quads come back through a
+`BlockQuadOutput` — a callback the compiler supplies, so the renderer never
+knows which layer's buffer it is writing into. Its product is
 `SectionCompiler.Results`, four things at once:
 `SectionCompiler.Results.renderedLayers` (the geometry, per layer), the
 `SectionCompiler.Results.blockEntities` it found on the way, a
@@ -206,10 +216,12 @@ time and simply carried into the compile — see [models and
 atlases](models-and-atlases.md) for the `BlockStateModelSet` the compiler
 reads and the reload that invalidates every mesh in the world. But the mesher
 can overrule it in two places. Every leaf quad is redirected to
-`ChunkSectionLayer.SOLID` when the *cutout leaves* option is off, so that
-setting is baked into the mesh rather than applied at draw time. And fluids
-never consult a baked quad at all: their layer comes from the `FluidModel`,
-through `FluidRenderer`.
+`ChunkSectionLayer.SOLID` when the *cutout leaves* option is off — that is
+`ModelBlockRenderer.forceOpaque`, tested per block, and it picks which of the
+compiler's two callbacks the renderer is handed — so the setting is baked
+into the mesh rather than applied at draw time. And fluids never consult a
+baked quad at all: `FluidRenderer.tesselate` is a separate call with its own
+callback, and the layer comes from the `FluidModel`.
 
 ## Onto the GPU, and a swap that is late on purpose
 
@@ -255,12 +267,13 @@ a section's *first* upload — so a recompile of terrain you have been staring
 at, which is what placing a block is, has no fade left to spend.
 
 **I turned on "prioritise chunk updates" and it still costs me a frame. Why?**
-Because of where compiling sits in the frame. Terrain is drawn *before* the
-sections queued this frame are compiled, so the strongest promise the setting
-can make is that the mesh exists by the end of frame *N*. It appears in frame
-*N+1*. The setting buys you the compile, not the draw — and it buys it by
-doing the work on the client thread, which is why it can also cost you the
-frame outright.
+Because of where compiling sits in the frame. `LevelRenderer.compileSections`
+runs *after* `FrameGraphBuilder.execute` — [terrain is already
+drawn](visibility-and-the-frame-graph.md#one-bucket-per-buffer-set-and-what-bucketing-actually-buys)
+— so the strongest promise the setting can make is that the mesh exists by
+the end of frame *N*. It appears in frame *N+1*. The setting buys you the
+compile, not the draw — and it buys it by doing the work on the client
+thread, which is why it can also cost you the frame outright.
 
 **What happens when the buffer pool runs out?** Nothing visible, which is the
 design. The worker that cannot acquire a `SectionBufferBuilderPack` puts its
@@ -279,7 +292,9 @@ back smaller and the game keeps going with fewer concurrent meshes.
 > `CompiledSectionMesh`, *RenderChunkRegion* is `RenderSectionRegion`, and
 > *LiquidBlockRenderer* is `FluidRenderer`. *RenderType.chunkBufferLayers* and
 > its five chunk render types are three `ChunkSectionLayer`s.
-> *BlockRenderDispatcher* and *BlockAndTintGetter.getShade* are gone.
+> *BlockRenderDispatcher* is gone as a name and `ModelBlockRenderer` is what
+> does its tesselating, while *BlockAndTintGetter.getShade* has no successor
+> at all.
 
 ## Where to look
 

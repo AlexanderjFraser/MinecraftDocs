@@ -235,10 +235,12 @@ the id is unknown, then calls `SynchedEntityData.assignValues`, which checks
 that the incoming serializer is the one the accessor was defined with — a
 mismatch throws, loudly, on the client — stores each value, fires
 `Entity.onSyncedDataUpdated` per item and then the batch overload once.
-Nothing tells the renderer. Next frame `LevelExtractor` walks the visible
-entities, `EntityRenderDispatcher.extractEntity` builds a `SheepRenderState`,
-and `SheepRenderer.extractRenderState` copies `Sheep.isSheared` and
-`Sheep.getColor` into it, after which `SheepWoolLayer` draws nothing. The
+Nothing tells the renderer. It finds out next frame, by [reading the sheep
+again from
+scratch](../rendering/entity-rendering.md#extract-the-live-entity-becomes-a-snapshot):
+`SheepRenderer.extractRenderState` copies `Sheep.isSheared` and
+`Sheep.getColor` into a fresh `SheepRenderState`, after which `SheepWoolLayer`
+draws nothing. The
 wool vanishing is a *layer skipped*, not a model swap — and only one layer,
 because `SheepWoolUndercoatLayer` tests colour, baby and invisibility but
 never the sheared flag, so a sheared coloured sheep still draws its undercoat.
