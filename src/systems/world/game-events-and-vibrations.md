@@ -7,17 +7,15 @@ tendrils flick up and it pushes redstone power out of its side. Nothing
 scanned for you: the step itself posted a `GameEvent.STEP` into
 `GameEventDispatcher.post`, which walked the loaded chunk sections around
 you and called every listener inside its own radius *inline*, before
-`Entity.move` had finished. What a player believes about sculk lives in the
-gates that footstep then has to pass, and their shape is the surprise.
-**The sensor always hears you at least one tick late by design,
-because `VibrationSelector.chosenCandidate` hands over a candidate only if
-it was recorded on an *earlier* tick. The wool box works only if all six
-rays of `VibrationSystem.Listener.isOccluded` hit wool, not just the one on
-the straight line. And standing on the sensor skips the whole cascade —
-`SculkSensorBlock.stepOn` calls `VibrationSystem.Listener.forceScheduleVibration`
-with no dispatcher, no occlusion test and no
-`VibrationSystem.User.isValidVibration`, so sneaking does not save you.**
-Only a warden gets out of that one.
+`Entity.move` had finished. Nothing about that broadcast is deferred — and
+yet what a player believes about sculk lives entirely in the delay, because
+the very last stage puts one back. **The sensor always hears you at least one
+tick late by design: `VibrationSelector.chosenCandidate` hands over a
+candidate only if it was recorded on an *earlier* tick, so an event delivered
+inside `Entity.move` cannot be acted on in the tick that made it.** Everything
+else a player thinks is stealth — the wool box, the crouch — is one of the
+gates between that footstep and that slot, and two of them do not work the way
+the folklore says.
 
 ## The cast
 
@@ -86,7 +84,7 @@ where it was advances either way, so a move whose *old* chunk is not loaded to
 `ChunkStatus.FULL` leaves a stale registration behind, and one whose *new*
 chunk is not takes the listener out of the world entirely.
 
-## The dispatcher never queues
+## The broadcast is a nested loop, and one listener is the exception
 
 `ServerLevel.gameEvent` is one line into `GameEventDispatcher.post`, and
 `ServerLevel.gameEventDispatcher` owns nothing between calls. `GameEventDispatcher.post` turns
@@ -143,7 +141,7 @@ flowchart TD
     J -->|"passes"| K{"VibrationSystem.Listener.isOccluded, six rays nudged off the source block centre"}
     K -->|"all six hit BlockTags.OCCLUDES_VIBRATION_SIGNALS"| X8["dropped"]
     K -->|"any one ray gets through"| L["VibrationSelector.addCandidate"]
-    S["SculkSensorBlock.stepOn, from Entity.applyEffectsFromBlocks while standing on the block"] --> S2{"not a warden, SculkSensorBlock.canActivate, and canReceiveVibration"}
+    S["SculkSensorBlock.stepOn, from Entity.applyEffectsFromBlocks while standing on the block"] --> S2{"not a warden, and canReceiveVibration, which defers to canActivate"}
     S2 -->|"yes"| L
 ```
 
@@ -163,6 +161,18 @@ position — which is why placing a sensor does not set it off — refuses a
 frequency of `VibrationSystem.NO_VIBRATION_FREQUENCY`, and otherwise defers
 to `SculkSensorBlock.canActivate`: inactive only.
 
+Two nodes hang off the bottom of that figure with no incoming edge, and they
+are the gates a player most often meets. `SculkSensorBlock.stepOn` runs from
+`Entity.applyEffectsFromBlocks` every tick an entity stands on the block, and
+calls `VibrationSystem.Listener.forceScheduleVibration` directly: no section
+walk, no radius test, no occlusion raycast, and — the part that matters — no
+`VibrationSystem.User.isValidVibration`, which is where the sneaking tag
+lives. Crouching on a sensor does not quiet it. What the shortcut still asks
+is `VibrationSystem.User.canReceiveVibration`, so an already-active sensor
+stays quiet, and `SculkSensorBlock.canActivate`; and it still refuses a warden
+by name. It ends where everything else ends, at
+`VibrationSelector.addCandidate`, so it buys no time either.
+
 The occlusion test is worth reading slowly.
 `VibrationSystem.Listener.isOccluded` takes the source block's centre,
 nudges it a hundred-thousandth of a block along each of the six `Direction`
@@ -173,7 +183,7 @@ moment one is not — so a single block of wool on the straight line is
 almost never enough, and a wool box is a box because a box is what makes
 all six fail.
 
-## The trace: one footstep, several ticks
+## One footstep, and the ticks it takes to arrive
 
 ```mermaid
 sequenceDiagram
@@ -197,7 +207,7 @@ sequenceDiagram
     VST->>VSel: chosenCandidate
     VSel-->>VST: the VibrationInfo, then startOver clears the slot
     VST->>SL: sendParticles, one VibrationParticleOption with the destination and the tick count
-    Note over VST,SSB: the countdown starts in this same tick, one block per tick
+    Note over VST,SSB: the countdown starts in this same tick, one block per tick — eight blocks away, that is seven more
     VST->>SSB: onReceiveVibration on SculkSensorBlockEntity's VibrationSystem.User — the event, the entities and the arrival distance
     SSB->>SL: setBlock PHASE active with POWER, scheduleTick 30, gameEvent SCULK_SENSOR_TENDRILS_CLICKING
     Note over Entity,SSB: 30 ticks later deactivate, then 10 more before inactive
@@ -219,7 +229,7 @@ packet. When the block entity was loaded from disk,
 `VibrationSystem.Data.shouldReloadVibrationParticle` is set and the ticker
 re-sends the particle from a point interpolated along the path covered.
 
-## One tick, structurally
+## One slot, one tick late, and one refusal that waits
 
 `VibrationSelector` holds at most one candidate, stamped with the game time
 it arrived. `VibrationSelector.addCandidate` takes an empty slot
@@ -319,17 +329,6 @@ Open a chest while crouched and the sensor hears it. Sneak past one as a
 player and `CriteriaTriggers.AVOID_VIBRATION` notes the advancement,
 because sensors and wardens answer `VibrationSystem.User.canTriggerAvoidVibration`.
 
-**Then why does the sensor I am crouching on still fire?** That path is not
-the dispatcher's. `SculkSensorBlock.stepOn` runs from
-`Entity.applyEffectsFromBlocks` every tick an entity stands on the block
-and calls `VibrationSystem.Listener.forceScheduleVibration` directly: no
-section walk, no radius test, no occlusion, and no
-`VibrationSystem.User.isValidVibration`, which is where the sneaking tag
-lives. It still asks `VibrationSystem.User.canReceiveVibration`, so an
-active sensor stays quiet, and it still refuses a warden. The tick of
-latency remains, since the shortcut ends at `VibrationSelector.addCandidate`
-like everything else.
-
 **Why did my wool floor not stop it?** Wool underfoot and wool in the way
 are different tags doing different jobs. `BlockTags.DAMPENS_VIBRATIONS` on
 the block being walked on kills the event at
@@ -351,24 +350,23 @@ and `DebugSubscriptions.GAME_EVENT_LISTENERS`, broadcast through
 
 ## Where to look
 
-`GameEvent` · `GameEventDispatcher.post` ·
+The broadcast, from the event to the door of a listener: `GameEvent` ·
+`GameEventDispatcher.post` ·
 `EuclideanGameEventListenerRegistry.visitInRangeListeners` ·
-`LevelChunk.getListenerRegistry` · `LevelChunk.addGameEventListener` ·
-`DynamicGameEventListener.move` · `ServerLevel.EntityCallbacks` ·
-`Entity.vibrationAndSoundEffectsFromBlock` ·
-`VibrationSystem.Listener.handleGameEvent` ·
+`LevelChunk.getListenerRegistry`. Then the gates, in the order the cascade
+asks them: `VibrationSystem.Listener.handleGameEvent` ·
 `VibrationSystem.User.isValidVibration` ·
 `VibrationSystem.Listener.isOccluded` · `VibrationSelector.addCandidate` ·
 `VibrationSelector.chosenCandidate` · `VibrationSystem.Ticker.tick` ·
-`SculkSensorBlockEntity.VibrationUser` · `SculkSensorBlock.activate` ·
-`SculkSensorBlock.stepOn` · `SculkShriekerBlockEntity.tryShriek` ·
-`Warden.VibrationUser` · `SculkCatalystBlockEntity.CatalystListener` —
-then [entity anatomy](../entities/entity-anatomy.md) for
-`Entity.updateDynamicGameEventListener` and
-[registries](../../reference/registries.md) for
-`BuiltInRegistries.GAME_EVENT`. The other index the world keeps about
-itself — where things worth walking to are, rather than what just happened
-— is [points of interest](points-of-interest.md#a-ticket-is-a-claim-nothing-enforces).
+`SculkSensorBlock.activate`. And the two doors out of this page:
+`SculkSensorBlock.stepOn` for the shortcut, `DynamicGameEventListener.move`
+for how a listener that walks stays filed.
+
+The other index the world keeps about itself — where things worth walking to
+are, rather than what just happened — is [points of
+interest](points-of-interest.md#a-ticket-is-a-claim-nothing-enforces). The
+brain behind a warden or an allay is [entity
+anatomy](../entities/entity-anatomy.md)'s.
 
 ---
 

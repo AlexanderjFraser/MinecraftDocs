@@ -55,7 +55,7 @@ Everything after that — the palette codecs, the deflate, the sector
 arithmetic, the syscall — runs somewhere else, and `ChunkMap.save` returns
 as soon as the copy is done.
 
-## Three folders, and the one thing that is not in *region/*
+## Four folders, three of them the same shape
 
 `LevelStorageSource.LevelStorageAccess.getDimensionPath` defers to
 `DimensionType.getStorageFolder`, which puts **every** dimension — the
@@ -92,15 +92,15 @@ race. `SavedDataStorage.saveAndJoin` is the only place anything waits, and it
 is shutdown. Copy while the world is still, encode and write while it moves:
 the same bargain the chunk path makes, over a much smaller object. Which
 file holds what is [level data and
-rules](../../reference/level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds)'.
+rules](../../reference/level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds)'s.
 
 ## The four moments a chunk is written
 
 | the moment | what runs it | which chunks | what holds it back |
 |---|---|---|---|
-| **an unload** | the task `ChunkMap.scheduleUnload` queued, drained by `ChunkMap.processUnloads` | the one chunk being dropped, at whatever status it reached | nothing — no cooldown, and whatever the queue holds beyond 2000 tasks drains regardless of the tick budget |
+| **an unload** | the task `ChunkMap.scheduleUnload` queued, drained by `ChunkMap.processUnloads` | the one chunk being dropped, at whatever status it reached | nothing — no cooldown, and whatever `ChunkMap.unloadQueue` holds beyond 2,000 tasks drains regardless of the tick budget |
 | **the eager sweep** | `ChunkMap.saveChunksEagerly`, the last statement of that same `ChunkMap.processUnloads` | everything in `ChunkMap.chunksToEagerlySave` | 20 a tick, fewer than 128 writes outstanding, the tick's time budget, and ten seconds per chunk |
-| **an autosave** | `MinecraftServer.autoSave` → `ServerLevel.save` → `ServerChunkCache.save` without flush | every holder in `ChunkMap.visibleChunkMap` | only the per-chunk gates: `ChunkMap.saveAllChunks` clears `ChunkMap.nextChunkSaveTime`, but `ChunkMap.saveChunkIfNeeded` still wants an accessible, ready, unsaved `LevelChunk` or `ImposterProtoChunk` |
+| **an autosave** | `MinecraftServer.autoSave` → `ServerLevel.save` → `ServerChunkCache.save` → `ChunkMap.saveAllChunks`, without flush | every holder in `ChunkMap.visibleChunkMap` | only the per-chunk gates: `ChunkMap.saveAllChunks` clears `ChunkMap.nextChunkSaveTime`, but `ChunkMap.saveChunkIfNeeded` still wants an accessible, ready, unsaved `LevelChunk` or `ImposterProtoChunk` |
 | **a flush save** | `/save-all flush`, `/stop`, `ServerChunkCache.close` | every accessible holder, over and over until a pass saves none | it blocks the server thread instead |
 
 The dirty set behind the second row is narrower than it looks.
@@ -126,6 +126,28 @@ consults it at all. An explicit save is a different question again:
 `ServerLevel.save` only when its *force* flag is clear, and `/save-all`
 sets that flag while `MinecraftServer.autoSave` does not.
 
+### The guard against writing a half-made chunk over a finished one, and where it leaks
+
+The cast row promises this one, so here it is: `ChunkMap.save` refuses to
+write a non-full chunk over a full one on disk, and the refusal is best
+effort in two ways. `ChunkMap.isExistingChunkFull` returns false — meaning
+*go ahead* — whenever the read throws or comes back empty, so an IO error
+licenses exactly the clobber the guard exists to prevent. And
+`ChunkAccess.tryMarkSaved` clears the unsaved flag *before* the guards run,
+so a chunk the guard turns away has already been marked clean and will not be
+offered again.
+
+Two shapes never reach the write at all. A proto chunk still at
+`ChunkStatus.EMPTY` with no valid structure start is dropped by the same
+block, and an `ImposterProtoChunk` refuses outright:
+`ImposterProtoChunk.tryMarkSaved` and `ImposterProtoChunk.canBeSerialized` are
+flat falses, not the pass-throughs the wrapper's other methods are
+(`ImposterProtoChunk.markUnsaved`, `ImposterProtoChunk.isLightCorrect` and
+`ImposterProtoChunk.setLightCorrect` all defer to the chunk underneath —
+[chunk anatomy](chunk-anatomy.md#the-four-shapes-a-chunk-takes)). The reason
+is the same in both cases: the `LevelChunk` under the imposter is what the
+saver will be handed instead.
+
 ## A chunk nobody needs any more
 
 ```mermaid
@@ -143,7 +165,7 @@ sequenceDiagram
     CM->>CM: processUnloads moves the holder from updatingChunkMap to pendingUnloads
     CM->>CH: scheduleUnload reads getSaveSyncFuture and hangs the unload task off it
     CH-->>CM: the future completes, so the task is appended to unloadQueue
-    Note over CM: a later tick again, while the tick budget still says yes
+    Note over CM: a later tick again, while the tick budget says yes — or unconditionally, past the queue's first 2,000
     CM->>CH: is getSaveSyncFuture still the same future — if not, scheduleUnload rearms on the new one
     CM->>CM: pendingUnloads.remove of this exact holder — false if a ticket re-adopted it, and the task ends
     CM->>CM: setLoaded false, then save — PoiManager.flush, tryMarkSaved, the proto-over-full guard
@@ -180,7 +202,10 @@ lane, and those entities are removed with
 `Entity.RemovalReason.UNLOADED_TO_CHUNK`. The filter runs before the removal,
 not after it, so what it turns away — a `Player`, an `EnderDragonPart`, a
 passenger, a vehicle carrying exactly one player — is neither written nor
-removed.
+removed. The last of those is not an oddity: `ServerPlayer` writes its own
+root vehicle into the player file under *RootVehicle* under exactly that
+condition, so a boat with one rider travels in the player's file rather than
+the chunk's.
 
 Two other things leave with the chunk, both after the snapshot is taken:
 `ServerLevel.unload` clears its block entities and unregisters its tick
@@ -188,7 +213,7 @@ containers, and `ThreadedLevelLightEngine.updateChunkStatus` queues the
 light engine to forget its layers ([lit before you ever see
 it](lighting.md#lit-before-you-ever-see-it)).
 
-## Why the server thread never waits, and the three times it does
+## Why the server thread never waits
 
 `IOWorker` is not a thread. It holds a `PriorityConsecutiveExecutor` over
 `Util.ioPool` — a cached pool whose threads are named *IO-Worker-n* — and
@@ -216,7 +241,9 @@ rather than by any lock. `IOWorker.STORE_EMPTY` is the null supplier that
 means *delete*, and `IOWorker.scanChunk` is the streaming `ChunkScanAccess`
 that `StructureCheck` uses to peek into chunks nobody has loaded.
 
-Three places do make the server thread wait on a disk. `ChunkMap.isExistingChunkFull`,
+### The three places that do wait
+
+Three places make the server thread wait on a disk. `ChunkMap.isExistingChunkFull`,
 the guard that stops a `ProtoChunk` overwriting a finished chunk, answers
 from `ChunkMap.chunkTypeCache` when it can but joins the read future inline
 on a cold entry — the IO lane, then a datafix pass on the worker pool. And
@@ -253,7 +280,11 @@ A `RegionFile` is one *r.X.Z.mca*: two header sectors
 `RegionFile.offsets`, packed as sector number ≪ 8 with the sector count in
 the low byte, and a 1024-entry `RegionFile.timestamps`. Free space is a
 `RegionBitmap`, with the header's two sectors forced used at construction
-and `RegionBitmap.allocate` handing out the first run big enough. Each
+and `RegionBitmap.allocate` handing out the first run big enough. Nothing
+ever reads the timestamp table back: `RegionFile.write` stamps each entry
+with epoch seconds from `RegionFile.getTimestamp`, and the only clock the
+save path consults is the monotonic `Util.getMillis` behind
+`ChunkMap.nextChunkSaveTime`. Two clocks, and neither of them is game time. Each
 stored chunk starts with `RegionFile.CHUNK_HEADER_SIZE` (5) bytes — a length
 and a compression id — and both `RegionFile.write` and
 `RegionFile.getChunkDataInputStream` are synchronised on the `RegionFile`
@@ -351,35 +382,12 @@ so changing the rate can bring the next autosave forward and can never push
 it back. [The server tick](../server/server-tick.md#the-bookkeeping-at-the-bottom) has the rest of that
 loop.
 
-**Can a half-generated chunk overwrite my base?** The guard is best effort.
-`ChunkMap.save` refuses to write a non-full chunk over a full one on disk —
-but `ChunkMap.isExistingChunkFull` returns false, meaning *go ahead*,
-whenever the read throws or comes back empty, so an IO error licenses
-exactly the clobber the guard exists to prevent. Worse, `ChunkAccess.tryMarkSaved`
-clears the unsaved flag *before* the guards run, so a chunk the guard turns
-away has already been marked clean and will not be offered again. A proto
-chunk still at `ChunkStatus.EMPTY` with no valid structure start is dropped
-by the same block, and an `ImposterProtoChunk` never reaches any of it:
-`ImposterProtoChunk.tryMarkSaved` and `ImposterProtoChunk.canBeSerialized`
-both answer false. It is not that the wrapper stops deferring to the
-`LevelChunk` it wraps — `ImposterProtoChunk.markUnsaved`,
-`ImposterProtoChunk.isLightCorrect` and `ImposterProtoChunk.setLightCorrect`
-all pass straight through ([chunk anatomy](chunk-anatomy.md#the-four-shapes-a-chunk-takes)) —
-but that these two are flat falses: an imposter refuses to be serialised at
-all, because the `LevelChunk` under it is what the saver will be handed.
-
 **Why is my *entities/* folder full of files with nothing in them?** It is
 not — but emptying a chunk costs one write. `EntityStorage.storeEntities`
 with an empty set only writes when `EntityStorage.emptyChunks` did not
 already contain the position, and that write is `IOWorker.STORE_EMPTY`,
 which zeroes the region entry and deletes any sidecar. The first time a
 chunk goes empty costs a write. Every later save of it costs nothing.
-
-**Do the file timestamps mean anything?** Not to the game.
-`RegionFile.write` stamps each entry with epoch seconds
-from `RegionFile.getTimestamp`, which reads `Util.getEpochMillis`, and
-nothing ever reads the table back; the save cooldown in
-`ChunkMap.nextChunkSaveTime` is monotonic `Util.getMillis`. Two clocks, and neither of them is game time.
 
 ## Where to look
 

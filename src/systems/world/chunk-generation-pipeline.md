@@ -91,12 +91,24 @@ resolved in:
 
 The rows that do the work are the radius-1 ones: they force a neighbour to
 run one step ahead of the chunk being built. Five requirements in the pyramid
-have radius 1, but only three of them widen the accumulated list, because
-`ChunkStep.Builder.getRadiusOfParent` counts a debt only when the step's own
-parent already sits a ring out. *NOISE* wanting *BIOMES*, *FEATURES* wanting
-*CARVERS* and *LIGHT* wanting *INITIALIZE_LIGHT* each add one; *SURFACE* and
-*SPAWN*, which also ask for *BIOMES* within 1, add nothing. Three ones on top
-of *STRUCTURE_STARTS* out to 8 is where the 11 comes from. `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and the pyramid writes
+have radius 1, and only three of them widen the accumulated list — which is
+the arithmetic the page's headline number rests on, so it is worth stating as
+a rule.
+
+`ChunkStep.Builder.getRadiusOfParent` asks a narrower question than *does this
+step want anything a ring out*. It asks **how far out this step still demands
+its own immediate predecessor**, and it charges that many rings to everything
+the predecessor already needed. *NOISE*'s predecessor is *BIOMES* and *NOISE*
+asks for *BIOMES* at radius 1, so its whole inherited list slides out by one.
+*SURFACE*'s predecessor is *NOISE*, and although *SURFACE* also asks for
+*BIOMES* within 1, *BIOMES* is behind *NOISE*: at ring 1 *SURFACE* is
+demanding something its predecessor has already passed, which costs nothing.
+The three that pay are *NOISE* wanting *BIOMES*, *FEATURES* wanting *CARVERS*
+and *LIGHT* wanting *INITIALIZE_LIGHT*, each one ring; *SURFACE* and *SPAWN*
+pay nothing for the same-shaped requirement. Three ones on top of
+*STRUCTURE_STARTS* out to 8 is where the 11 comes from — a radius of 11 is a
+list of twelve, and the walk that claims it is 23 chunks on a side, or 529.
+`ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and the pyramid writes
 the literal each time — no reader of the constant survives the decompile.
 
 The same arithmetic sets the edge of the world. `ChunkPyramid.SAFETY_MARGIN_CHUNKS`
@@ -211,8 +223,9 @@ was already at *FULL*, or `ChunkMap.createEmptyChunk` when there was no file.
 The futures are not done, so the task yields and is re-entered when they land
 ([chunk storage](chunk-storage.md#the-way-back-in)).
 
-A file that will not parse takes the same fourth road, which is the one branch
-worth naming. `SerializableChunkData.parse` returning null logs *missing level
+### A file that will not parse is regenerated, not skipped
+
+There is a fourth outcome, and it rejoins the third. `SerializableChunkData.parse` returning null logs *missing level
 data* and empties the optional, so the step falls through to
 `ChunkMap.createEmptyChunk` exactly as though the file had never existed; and
 anything thrown along the way reaches `ChunkMap.handleChunkLoadFailure` on the
@@ -223,13 +236,21 @@ back an empty chunk. Either way the position is marked replaceable in
 it — **an unreadable chunk is regenerated, not skipped, and the old bytes stay
 on disk until something writes over them**.
 
-Now `ChunkGenerationTask.canLoadWithoutGeneration` decides. It wants the
-centre persisted at or past the target, and every chunk in the loading
-pyramid's accumulated square — for *FULL*, the 3×3 — at or past what its
-distance requires there: *SPAWN* at the centre, *INITIALIZE_LIGHT* on the
-ring. If that holds, the walk stays narrow. `ChunkPyramid.LOADING_PYRAMID`
-passes seven of the twelve steps straight through and only four do anything —
-`ChunkStatusTasks.loadStructureStarts`, which just posts the saved starts to
+### Load or generate, decided per chunk and per layer
+
+Now `ChunkGenerationTask.canLoadWithoutGeneration` decides, and it asks two
+things. First, is the centre persisted at or past the target — for a *FULL*
+target, *FULL*. Then, separately, is every chunk in the loading pyramid's
+accumulated square at or past what its distance demands: for *FULL* that
+square is the 3×3, wanting *SPAWN* at the centre and *INITIALIZE_LIGHT* on the
+ring, so the centre is checked twice and the second check is the weaker one.
+
+If both hold, the walk stays narrow. Twelve steps still run, but
+`ChunkPyramid.LOADING_PYRAMID` gives seven of them no body at all —
+*STRUCTURE_REFERENCES*, *BIOMES*, *NOISE*, *SURFACE*, *CARVERS*, *FEATURES*
+and *SPAWN* pass straight through. Of the five that remain, *EMPTY* is the
+disk read `ChunkMap.applyStep` special-cases, and four carry a task:
+`ChunkStatusTasks.loadStructureStarts`, which only posts the saved starts to
 `StructureCheck`, the two light steps, and `ChunkStatusTasks.full`. **A
 loaded chunk still walks all twelve steps**, and it still needs its 3×3
 neighbours at *INITIALIZE_LIGHT* before its own *LIGHT* step will run.
@@ -384,7 +405,7 @@ sequenceDiagram
     CGT->>CM: STRUCTURE_STARTS to 11, then STRUCTURE_REFERENCES to 3
     CM->>SL: onStructureStartsAvailable posts each chunk's starts to the server thread
     CGT->>Worker: thread hop — BIOMES to 3 as init_biomes, NOISE to 2 as wgen_fill_noise
-    CGT->>CM: SURFACE and CARVERS to 2, FEATURES to 1 — inline, the steps that may write
+    CGT->>CM: SURFACE and CARVERS to 2, FEATURES to 1 — inline, and three of the four that may write
     CGT->>TLE: thread hop — INITIALIZE_LIGHT at 1 and LIGHT at 0 on the light executor
     CGT->>SL: SPAWN inline, then FULL — thread hop, supplyAsync on the main-thread executor
     SL->>CM: LevelChunk built, replaceProtoChunk, setLoaded, tick containers registered
@@ -411,28 +432,17 @@ ticket level puts the ceiling below *FULL*.
 chunk sits at *STRUCTURE_STARTS* or *BIOMES*, correct and unfinished, for as
 long as the level says so.
 
-**Why is there a limit on how far out I can build?** Not because of the
-pyramid. `ChunkPyramid.SAFETY_MARGIN_CHUNKS` does reserve 90 chunks at the
-coordinate maximum so that a chunk at the edge still has its radius-11 square
-to generate in, and `ChunkPos.isValid` refuses a holder outside it — but that
-edge is three and a half million blocks further out than
-`Level.MAX_LEVEL_SIZE`, which is the ±30 000 000 a player actually meets.
-
 ## Where to look
 
-`ChunkPyramid.GENERATION_PYRAMID` · `ChunkPyramid.LOADING_PYRAMID` ·
-`ChunkStep.getAccumulatedRadiusOf` · `ChunkDependencies.getRadiusOf` ·
-`ChunkLevel.RADIUS_AROUND_FULL_CHUNK` · `ChunkGenerationTask.create` ·
-`ChunkGenerationTask.runUntilWait` · `ChunkGenerationTask.scheduleNextLayer` ·
+The two lists that decide everything: `ChunkPyramid.GENERATION_PYRAMID` ·
+`ChunkPyramid.LOADING_PYRAMID` · `ChunkStep.getAccumulatedRadiusOf`. Then one
+task's life, in order: `ChunkGenerationTask.create` ·
+`ChunkGenerationTask.runUntilWait` ·
 `ChunkGenerationTask.canLoadWithoutGeneration` ·
-`ChunkGenerationTask.scheduleChunkInLayer` ·
-`GenerationChunkHolder.scheduleChunkGenerationTask` ·
-`GenerationChunkHolder.applyStep` · `GenerationChunkHolder.acquireStatusBump` ·
-`ChunkMap.applyStep` · `ChunkMap.scheduleChunkLoad` ·
-`ChunkMap.runGenerationTask` · `ChunkTaskDispatcher.scheduleForExecution` ·
-`ChunkTaskPriorityQueue.resortChunkTasks` · `AbstractConsecutiveExecutor.run` ·
-`ChunkStatusTasks.full` · `WorldGenRegion.getChunk` ·
-`WorldGenRegion.ensureCanWrite` · `StaticCache2D`
+`ChunkGenerationTask.scheduleChunkInLayer`. Where a step actually runs:
+`ChunkMap.applyStep` · `GenerationChunkHolder.acquireStatusBump` ·
+`ChunkStatusTasks.full`. And what polices a running step:
+`WorldGenRegion.getChunk` · `WorldGenRegion.ensureCanWrite`.
 
 ---
 

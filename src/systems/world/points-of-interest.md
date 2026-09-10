@@ -12,8 +12,9 @@ decremented that bed's ticket. Night has nothing to do with it. Hours later
 and because both occupied variants of a bed head are in `PoiTypes.BEDS` and
 map to the same `PoiTypes.HOME`, that block change does not touch the record
 at all: **the claim and the *occupied* flag speak in one direction only. Going
-to sleep tells the index nothing; the single behaviour that reads the flag
-back can only take a claim away.** Neither is what a player would call
+to sleep tells the index nothing, and of the three behaviours that read the
+flag back, the only one that turns it into a change in the record can do just
+one thing with it — take a claim away.** Neither is what a player would call
 ownership.
 
 ## The cast
@@ -64,11 +65,13 @@ stateDiagram-v2
 The asymmetry in that figure is deliberate on the release side and merely
 survivable on the removal side. `PoiManager.release` **throws** when the
 section is not there and `PoiSection.release` throws when the record is not,
-which is why three of the four releasers check `PoiManager.getType` or
-`PoiManager.exists` first — `Villager.releasePoi` checks the type and then
-tests it against `Villager.POI_MEMORIES` before it dares. The fourth,
-`VillagerMakeLove`, checks nothing, and gets away with it because the
-position it releases is one `PoiManager.take` handed back a moment earlier. `PoiSection.remove` on
+which is why three of the four call sites that release a ticket check
+`PoiManager.getType` or `PoiManager.exists` first. Those four are
+`ValidateNearbyPoi`, `Villager.releaseAllPois` (through `Villager.releasePoi`,
+which checks the type and then tests it against `Villager.POI_MEMORIES` before
+it dares), `SetWalkTargetFromBlockMemory` and `VillagerMakeLove`. The last
+checks nothing, and gets away with it because the position it releases is one
+`PoiManager.take` handed back a moment earlier. `PoiSection.remove` on
 a missing record only logs an error, so the removal path is allowed to be
 wrong and the release path is not.
 
@@ -113,8 +116,9 @@ thirteen professions, `PoiTypeTags.BEE_HOME` for the two hives, and
 
 ## Where the index lives, and how it repairs itself
 
-`PoiManager` extends `SectionStorage` ([three folders, and the one thing that
-is not in *region/*](chunk-storage.md#three-folders-and-the-one-thing-that-is-not-in-region)), so
+`PoiManager` extends `SectionStorage`, so it is the third of the three region
+stores a dimension keeps ([four folders, three of them the same
+shape](chunk-storage.md#four-folders-three-of-them-the-same-shape)), and
 the unit of storage is a chunk section and the unit of file a region:
 `ChunkMap` builds it on the dimension's *poi/* folder with
 `DataFixTypes.POI_CHUNK`, and `PoiSection.Packed` is the on-disk shape — a
@@ -168,7 +172,7 @@ Deferral is the worldgen and nested-task case — there the record appears a
 task later than the block it describes, and a read in between gets the old
 answer.
 
-## The trace: a villager claims a bed
+## Noon, and a bed forty-eight blocks away
 
 ```mermaid
 sequenceDiagram
@@ -250,22 +254,33 @@ the brain exist at all: `VillagerGoalPackages.getRestPackage` is where
 bed. So between dawn and dusk a villager whose bed was mined keeps pointing at
 a position with no record, and nothing tells it otherwise.
 
-At night the three run in priority order. `SetWalkTargetFromBlockMemory` at
-priority 2 writes `MemoryModuleType.WALK_TARGET` whenever the bed is more than
-one block away in Manhattan distance — straight at it when it is nearer than
-150, and at a random intermediate position when it is further — and gives up,
-releasing the ticket and erasing the memory, once `MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE` has stood for
-more than 1200 ticks. `ValidateNearbyPoi` at priority 3 does
+### What the three of them do to the record
+
+At night the three run in priority order, and only two of them ever touch a
+ticket. `SetWalkTargetFromBlockMemory` at priority 2 is the walking half —
+where it sends a villager and how it picks an intermediate target belong to
+[goals and brains](../entities/ai-goals-and-brains.md#the-brains-trace-a-villagers-day);
+what belongs here is its one effect on the index, which is that it gives up,
+**releasing the ticket** and erasing the memory, once
+`MemoryModuleType.CANT_REACH_WALK_TARGET_SINCE` has stood for more than 1200
+ticks. `ValidateNearbyPoi` at priority 3 does
 nothing at all unless the bed is within 16 blocks and in this dimension: then
 it erases the memory if `PoiManager.exists` no longer agrees on the type, and
-if the bed is `BedBlock.OCCUPIED` and this villager is not itself the
-sleeper, it erases the memory and releases the ticket — unless some villager
-is asleep in that block, in which case the memory goes and the ticket stays,
-the sleeper being presumed to hold it. `SleepInBed`, also priority 3, needs the villager within 2 blocks, the bed
-unoccupied, and `SleepInBed.COOLDOWN_AFTER_BEING_WOKEN` ticks since
-`MemoryModuleType.LAST_WOKEN`. It calls `LivingEntity.startSleeping`, which is
-what actually sets the flag, and then records `MemoryModuleType.LAST_SLEPT`
-and erases the walk target itself.
+if the bed is `BedBlock.OCCUPIED` while *this* villager is not asleep — asleep
+anywhere, not asleep here — it erases the memory. Whether it also releases the
+ticket turns on a second question, asked of the world rather than of the
+block: is a `Villager` actually sleeping inside that block's box? If one is,
+the memory goes and the ticket stays, the sleeper being presumed to hold it.
+If none is, the ticket goes too. The two can disagree — a player asleep in the
+bed sets the same flag, and a villager killed in its sleep can leave it set —
+and that disagreement is the whole reason the second question exists. `SleepInBed`, also priority 3, is the one that touches no ticket at all. It
+needs the villager within 2 blocks, the bed unoccupied and
+`SleepInBed.COOLDOWN_AFTER_BEING_WOKEN` ticks since
+`MemoryModuleType.LAST_WOKEN`; it calls `LivingEntity.startSleeping`, which is
+what actually sets the flag. That is the second of the three reads of
+`BedBlock.OCCUPIED` — a gate on entering the bed, not a change to the record —
+and the third is `VillagerGoalPackages.validateBedPoi`, the filter
+`AcquirePoi` runs over its best five.
 
 Morning ends it twice over: `WakeUp`, at priority 0 in the core package, calls
 `LivingEntity.stopSleeping` the instant `Activity.REST` goes inactive, and
@@ -320,7 +335,7 @@ position of the occupied `PoiTypeTags.VILLAGE` records within 64 blocks.
 | `LodestoneTracker` | one position — is `PoiTypes.LODESTONE` still there | — | — |
 | `LocateCommand` | `PoiManager.findClosestWithType` for a type or a tag | 256 | *ANY* |
 | `Raids` | the records it averages into a raid's centre | 64 | *IS_OCCUPIED* |
-| `CatSpawner` | more than four claimed `PoiTypes.HOME` nearby | 48 | *IS_OCCUPIED* |
+| `CatSpawner` | more than four claimed `PoiTypes.HOME` nearby — asked only after `ServerLevel.isCloseToVillage` at two sections has already said yes | 48 | *IS_OCCUPIED* |
 | `WanderingTraderSpawner` | a `PoiTypes.MEETING` near a player, to arrive at | 48 | *ANY* |
 | `NearestBedSensor` | `PoiTypes.HOME` for `MemoryModuleType.NEAREST_BED`, babies only, no ticket taken | 48 | *ANY* |
 
@@ -360,13 +375,14 @@ thought it already had one.
 
 ## Where to look
 
-`PoiTypes.bootstrap` · `PoiRecord.acquireTicket` · `PoiSection.refresh` ·
-`PoiManager.add` · `PoiManager.take` · `PoiManager.release` ·
-`PoiManager.getInRange` · `PoiManager.checkConsistencyWithBlocks` ·
-`ServerLevel.updatePOIOnBlockStateChange` · `AcquirePoi.create` ·
-`VillagerGoalPackages.getCorePackage` · `VillagerGoalPackages.getRestPackage` ·
-`ValidateNearbyPoi.create` · `SleepInBed.start` · `Villager.releasePoi` ·
-`PoiManager.DistanceTracker` · `ServerLevel.isVillage`
+The record and the three things that happen to one:
+`PoiRecord.acquireTicket` · `PoiManager.add` · `PoiManager.take` ·
+`PoiManager.release`. Where they live and how they are repaired:
+`PoiManager.checkConsistencyWithBlocks` · `PoiSection.refresh` ·
+`ServerLevel.updatePOIOnBlockStateChange`. The claim, from the brain's side:
+`AcquirePoi.create` · `ValidateNearbyPoi.create`. And the flood that turns
+claimed records into a village: `PoiManager.DistanceTracker` ·
+`ServerLevel.isVillage`.
 
 The other index in this corner of the tree — the fire-and-forget broadcast
 sculk sensors listen to — is

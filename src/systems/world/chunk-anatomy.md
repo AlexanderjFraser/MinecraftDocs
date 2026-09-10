@@ -25,7 +25,7 @@ re-encodes all 4,096 entries into a wider storage before it can be written.**
 | `LevelChunk` | a chunk that is part of a `Level`: block entities, tickers, tick containers, the full-status supplier | the server thread — on the client, the client's main thread |
 | `ImposterProtoChunk` | what a still-generating neighbour sees when the chunk it asked for is already live | the server thread |
 | `LevelChunkSection` | 16×16×16: two palette containers and four counters that let a whole section be skipped | whichever thread holds its permit |
-| `PalettedContainer` | the mapping from 4,096 (or 64) entries to values, and when to widen it | one writer at a time, enforced by `ThreadingDetector`; reads are lock-free |
+| `PalettedContainer` | the mapping from 4,096 (or 64) entries to values, and when to widen it | one writer at a time — a second is detected rather than blocked, and both threads die; reads are lock-free |
 | `Strategy` | which palette and which bit width each entry count deserves, for block states and for biomes | immutable, shared by every container in the level |
 | `Heightmap` | the top of each of 256 columns, for one definition of *top* | with the chunk that owns it |
 
@@ -118,6 +118,13 @@ because the `LevelChunk` under it is what gets saved. Its
 live one, but only inside `ImposterProtoChunk.getHeight`: asking it to
 *create* a *_WG* heightmap creates a real one on the live chunk.
 
+What makes that wrapper honest is what promotion does not do. `ChunkAccess`
+always allocates its own array and copies the section references in, so a
+promoted chunk leaves two chunks holding two arrays over one set of
+`LevelChunkSection` objects: writing through either is writing the same
+blocks, and the proto chunk a generating neighbour is still holding goes on
+working. The imposter is a third handle on the same sections.
+
 `EmptyLevelChunk` is the other direction: `Blocks.VOID_AIR` everywhere,
 `EmptyLevelChunk.isEmpty` true where `LevelChunk.isEmpty` is false, one
 fixed biome, and `EmptyLevelChunk.getFullStatus` a flat
@@ -161,6 +168,15 @@ section of solid stone without looking at any of its 4,096 blocks. Only a
 load from disk recounts: `LevelChunkSection.recalcBlockCounts` runs from the
 two-container constructor, whose only caller is `SerializableChunkData`.
 
+On a client, two of the four are permanently wrong and nothing notices.
+`LevelChunkSection.write` carries only the non-empty-block and fluid counts,
+and `LevelChunkSection.read` takes exactly those two and never recounts, so a
+client section starts with `LevelChunkSection.tickingBlockCount` and
+`LevelChunkSection.tickingFluidCount` at zero and only ever counts what has
+changed since the chunk arrived. The sole reader of
+`LevelChunkSection.isRandomlyTicking` is `ServerLevel`, and the client runs no
+random ticks.
+
 Biomes share the section but are coarse and read-only.
 Two bits per axis, 64 entries of 4×4×4 blocks each — the number
 `LevelChunkSection.BIOME_CONTAINER_BITS` names, though the 2 that matters is
@@ -183,6 +199,28 @@ of the block-state container alone (nothing at all when the section is air)
 plus an immutable snapshot of the chunk's block-entity map. A worker that
 means to write instead brackets its work with `LevelChunkSection.acquire`
 and `LevelChunkSection.release`.
+
+### The permit, and what happens to the thread that misses it
+
+That bracket is the permit the cast table names, and it is not a mutex.
+`PalettedContainer.threadingDetector` is a `ThreadingDetector`: a one-permit
+semaphore with a reporter attached. `ThreadingDetector.checkAndLock` tries the
+permit and, on failure, records itself as the loser and then blocks. It is the
+**winner** that notices, in `ThreadingDetector.checkAndUnlock`: it builds
+`ThreadingDetector.makeThreadingException` — *Accessing PalettedContainer from
+multiple threads*, with both stack traces — and throws it, and the loser
+re-throws the same report the instant the permit comes free. Both threads die,
+deliberately: an interleaved section write would be a corrupt world rather than
+a crash.
+
+Exactly one thread writes a section at a time, then — the server thread for a
+live chunk, and on the worker pool whoever holds
+`LevelChunkSection.acquire`: either `NoiseBasedChunkGenerator`, which holds
+every section across its noise range, or the `BulkSectionAccess` that
+`OreFeature`, its only user, holds over every section it touches until it
+closes. Those hold the permit already, so they write through the unchecked
+five-argument `LevelChunkSection.setBlockState` and
+`PalettedContainer.getAndSetUnchecked`.
 
 ## The palette and the ladder it climbs
 
@@ -228,6 +266,13 @@ then is the value that triggered the growth added — under
 `PaletteResize.noResizeExpected`, which throws if a second growth were
 somehow needed.
 
+The palette is also what lets a search rule out a section it never reads.
+`LevelChunkSection.maybeHas` puts a predicate to the palette alone, so
+`ChunkAccess.findBlocks` — and the points-of-interest scan behind it — can
+dismiss 4,096 blocks with a handful of comparisons. The one rung where that
+stops paying is `Configuration.Global`, whose `Palette.maybeHas` is an
+unconditional yes.
+
 `SimpleBitStorage` never lets an entry straddle a long: its
 `SimpleBitStorage.valuesPerLong` is 64 divided by the width, so 4,096
 entries are 256 longs at four bits, 342 at five and 512 at eight, and the
@@ -257,6 +302,30 @@ instead of `Configuration.bitsInMemory`.
 `Configuration.Global`, whose `Configuration.alwaysRepack` is true — every
 `Configuration.Simple` rung reports one width for both, so its long array is
 adopted exactly as it lies on disk.
+
+### The third form, and what the client is handed
+
+Memory and disk are two of three. The wire form is
+`ClientboundLevelChunkWithLightPacket`, whose
+`ClientboundLevelChunkPacketData` carries the heightmaps for which
+`Heightmap.Types.sendToClient` is true, one buffer holding *every* section's
+`LevelChunkSection.write` — empty ones included — and the block-entity update
+tags. The writer pre-sizes that buffer from the sum of
+`LevelChunkSection.getSerializedSize` and throws if
+`ClientboundLevelChunkPacketData.extractChunkData` does not fill it to the
+byte, and the reader refuses anything over two megabytes. Light rides beside
+it in `ClientboundLightUpdatePacketData`.
+
+The client applies the lot through `ClientPacketListener.updateLevelChunk` →
+`ClientChunkCache.replaceWithPacketData` → `LevelChunk.replaceWithPacketData`,
+which clears the block entities, gives each section `LevelChunkSection.read`,
+installs the raw heightmaps with `ChunkAccess.setHeightmap` and rebuilds the
+sky-light sources. Biome-only refreshes come later as
+`ClientboundChunksBiomesPacket` → `LevelChunk.replaceBiomes`, and the
+block-entity tags travel as
+`ClientboundLevelChunkPacketData.BlockEntityInfo`. When a chunk is sent, and
+to whom, is [what the client is
+told](../networking/what-the-client-is-told.md#what-a-chunk-packet-carries)'s.
 
 ## The six heightmaps
 
@@ -297,9 +366,10 @@ missing the first time a block is written. What is *saved*, though, is not
 ## What placing a block actually does
 
 `LevelChunk.setBlockState` is the one write path into a live chunk, and its
-order matters more than any single step in it. Four of the twelve steps are
-skipped by a bit of the caller's flag word, which is enumerated in [block
-update flags](../../reference/block-update-flags.md):
+order matters more than any single step in it. Twelve steps, of which **three**
+consult the caller's flag word — and one of those three has only a part of
+itself skipped. The bits are enumerated in [block update
+flags](../../reference/block-update-flags.md):
 
 | in order | what happens | when it is skipped |
 |---|---|---|
@@ -345,45 +415,10 @@ The other thing step 11 leaves is a debt to be paid when the chunk goes live:
 `LevelChunk.postProcessGeneration` replays the post-processing offsets,
 promotes every pending block entity and applies `UpgradeData.upgrade`.
 
-## Questions players ask
-
-**Why do two threads writing one section crash the game rather than block?**
-Because `PalettedContainer.threadingDetector` is a detector, not a mutex.
-`ThreadingDetector.checkAndLock` tries a one-permit semaphore and, on
-failure, records itself as the loser and then blocks. It is the **winner**
-that notices, in `ThreadingDetector.checkAndUnlock`: it builds
-`ThreadingDetector.makeThreadingException` — *Accessing PalettedContainer
-from multiple threads*, with both stack traces — and throws it, and the
-loser re-throws the same report the instant it acquires the permit. Both
-threads die, deliberately: an interleaved section write would be a corrupt
-world rather than a crash. Exactly one thread writes a section at a time —
-the server thread for a live chunk, and on the worker pool whoever holds
-`LevelChunkSection.acquire`, either `NoiseBasedChunkGenerator`, which holds every
-section across its noise range, or the `BulkSectionAccess` that `OreFeature` — its only user — holds over
-every section it touches until it closes. Those hold the permit already, so they
-write through the unchecked five-argument `LevelChunkSection.setBlockState`
-and `PalettedContainer.getAndSetUnchecked`.
-
-**Why are a client chunk's ticking counters zero?** Because
-`LevelChunkSection.write` carries only two of the four shorts, the
-non-empty-block and fluid counts, and `LevelChunkSection.read` takes exactly
-those two and never recounts. A client section therefore starts with
-`LevelChunkSection.tickingBlockCount` and
-`LevelChunkSection.tickingFluidCount` at zero and only ever counts what has
-changed since the chunk arrived. Nothing notices: the only reader of
-`LevelChunkSection.isRandomlyTicking` is `ServerLevel`, and the client runs
-no random ticks.
-
-**Why does the proto chunk keep working after the level chunk exists?**
-Because the two share the sections but not the array. `ChunkAccess` always
-allocates its own array and copies the references in, so promotion leaves
-two chunks holding two arrays over one set of `LevelChunkSection` objects —
-writing through either is writing the same blocks. That is also what makes
-the `ImposterProtoChunk` honest: it is a third handle on the same sections.
-
-**Why does a chest in a freshly loaded chunk not exist yet?** Because it is
-still a `CompoundTag` in `ChunkAccess.pendingBlockEntities`
-([block entities](../blocks/block-entities.md#create-keep-replace-remove)). Any call to
+*Pending* is the word to take seriously. A chest in a chunk freshly read from
+disk is not a `BlockEntity` yet; it is a `CompoundTag` in
+`ChunkAccess.pendingBlockEntities` ([block
+entities](../blocks/block-entities.md#create-keep-replace-remove)). Any call to
 `LevelChunk.getBlockEntity` promotes it through
 `LevelChunk.promotePendingBlockEntity` on the first touch, whatever the
 `LevelChunk.EntityCreationType` asked for; `LevelChunk.postProcessGeneration`
@@ -393,40 +428,16 @@ bulk when the chunk goes live. Of the three creation types only
 `LevelChunk.EntityCreationType.CHECK` have callers left in the game —
 `LevelChunk.EntityCreationType.QUEUED` has none.
 
-**Why can a search skip a whole section without reading it?** Because
-`LevelChunkSection.maybeHas` puts the predicate to the palette alone, so
-`ChunkAccess.findBlocks` can rule out 4,096 blocks with a handful of
-comparisons — unless the section is on the global palette, whose answer is
-always *maybe*.
-
-**What does the client actually receive?** `ClientboundLevelChunkWithLightPacket`,
-whose `ClientboundLevelChunkPacketData` carries the heightmaps for which
-`Heightmap.Types.sendToClient` is true (three of the six), one buffer
-holding *every* section's `LevelChunkSection.write` — empty ones included —
-and the block-entity update tags. The writer pre-sizes that buffer from the
-sum of `LevelChunkSection.getSerializedSize` and throws if
-`ClientboundLevelChunkPacketData.extractChunkData` does not fill it to the
-byte, and the reader refuses anything over two megabytes. Light rides beside
-it in `ClientboundLightUpdatePacketData`. The client applies the lot through
-`ClientPacketListener.updateLevelChunk` → `ClientChunkCache.replaceWithPacketData`
-→ `LevelChunk.replaceWithPacketData`, which clears the block entities, gives
-each section `LevelChunkSection.read`, installs the raw heightmaps with
-`ChunkAccess.setHeightmap` and rebuilds the sky-light sources. Biome-only
-refreshes come later as `ClientboundChunksBiomesPacket` →
-`LevelChunk.replaceBiomes`, and the block-entity tags travel as
-`ClientboundLevelChunkPacketData.BlockEntityInfo`.
-
 ## Where to look
 
-`ChunkAccess` · `LevelChunk.setBlockState` · `LevelChunk.getBlockEntity` ·
-`ProtoChunk.setBlockState` · `ImposterProtoChunk` · `ChunkStatusTasks.full` ·
-`LevelChunkSection.setBlockState` · `LevelChunkSection.write` ·
-`PalettedContainer.onResize` · `PalettedContainer.pack` ·
-`PalettedContainer.unpack` · `Strategy.createForBlockStates` ·
-`Configuration.Global` · `SimpleBitStorage` · `ThreadingDetector.checkAndLock` ·
-`BulkSectionAccess` · `Heightmap.Types` · `ChunkStatus.heightmapsAfter` ·
-`ClientChunkCache.Storage` · `ClientboundLevelChunkPacketData.extractChunkData` ·
-the [class index](../../reference/class-index.md) for every field no page names
+In the order the write takes them: `ChunkAccess` · `LevelChunk.setBlockState` ·
+`LevelChunkSection.setBlockState` · `PalettedContainer.onResize` ·
+`Strategy.createForBlockStates` · `SimpleBitStorage` · `Heightmap.Types`.
+Then the shapes a chunk is not: `ProtoChunk.setBlockState` ·
+`ImposterProtoChunk` · `ChunkStatusTasks.full`. And the two serialised forms:
+`PalettedContainer.pack` · `ClientboundLevelChunkPacketData.extractChunkData`.
+Every field no page names is in the [class
+index](../../reference/class-index.md).
 
 ---
 

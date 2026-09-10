@@ -74,7 +74,10 @@ rewritten by its own part's session — and the glossary entry by entry.
   of them (II, VII, VIII, IX, X) it is the argument paragraph's **last**
   sentence, so the paragraph ends on a list of symptoms instead of a claim.
   Four more use it mid-paragraph and recover. **I and II done, pass 6 session
-  B**; the other seven are their own sessions' and session O's. [kind=lecture]
+  B; IV checked and left, pass 6 session D** — `world/README`'s is
+  mid-paragraph and its argument already ends on the claim about the three
+  radii, so there was nothing to reverse. The other six are their own sessions'
+  and session O's. [kind=lecture]
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; V and VI end on an enumeration of their own pages
   (`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -280,28 +283,142 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **For pass 6, the lecture.**
 
-- `chunk-generation-pipeline` tells the world's edge twice —
+- ~~`chunk-generation-pipeline` tells the world's edge twice —
   `ChunkPyramid.SAFETY_MARGIN_CHUNKS`, `ChunkPos.isValid` and the
   three-and-a-half-million-block gap appear in the body and again as the fourth
-  *Questions players ask*. One of the two is redundant with itself. [kind=lecture]
-- `chunk-anatomy`'s *four shapes* section carries two subjects in one paragraph:
+  *Questions players ask*. One of the two is redundant with itself.~~ **Done,
+  pass 6 session D**: the closer's telling went, because the body's is inside
+  the arithmetic that produces the number. [kind=lecture]
+- ~~`chunk-anatomy`'s *four shapes* section carries two subjects in one paragraph:
   `EmptyLevelChunk`, which the figure draws, and the client chunk cache, which
-  no figure on the page draws. [kind=lecture]
-- `chunk-storage`'s *Why the server thread never waits, and the three times it
+  no figure on the page draws.~~ **Overtaken, pass 6 session D**: the section
+  was judged whole under A2 rather than for that paragraph, and now ends on the
+  shared-section array promoted out of the closer. The client-cache sentence
+  stands where it is, and a reader flagged it again as a subject change —
+  carried to pass 8 below. [kind=lecture]
+- ~~`chunk-storage`'s *Why the server thread never waits, and the three times it
   does* is two sections under one heading: the `IOWorker`'s priorities and
-  write-behind map, and the three blocking joins. The heading promises one.
+  write-behind map, and the three blocking joins. The heading promises one.~~
+  **Done, pass 6 session D**: the H2 is *Why the server thread never waits* and
+  the joins are an H3 under it, `structure-placement`:118 repointed.
   [kind=lecture]
-- `lighting`:145 — "`ThreadedLevelLightEngine.scheduled`, an `AtomicBoolean`,
+- ~~`lighting`:145 — "`ThreadedLevelLightEngine.scheduled`, an `AtomicBoolean`,
   keeps exactly one batch in flight" is two sentences away from the
   `tryScheduleUpdate` it qualifies and reads as though it qualified the unload
-  kick. A placement fix, not a fact. [kind=lecture]
-- `points-of-interest`:233-270 mixes the ticket story with walk-target
+  kick. A placement fix, not a fact.~~ **Done, pass 6 session D**: it now sits
+  between the two callers and says *whichever caller gets there*.
+  [kind=lecture]
+- ~~`points-of-interest`:233-270 mixes the ticket story with walk-target
   mechanics — the Manhattan rule, the 150-block threshold,
   `MemoryModuleType.LAST_SLEPT`, `WakeUp`'s priority. Every sentence that takes,
-  releases or leaves a ticket alone is the page's; the rest is the brain's.
-  [kind=lecture]
-- `scheduled-ticks`:192's "forty lines below" points at the page's own layout,
-  which reads at first as a pointer into the source. [kind=lecture]
+  releases or leaves a ticket alone is the page's; the rest is the brain's.~~
+  **Done, pass 6 session D**: an H3, *What the three of them do to the record*,
+  keeps each behaviour's effect on a ticket and hands the walking to
+  `ai-goals-and-brains`. [kind=lecture]
+- ~~`scheduled-ticks`:192's "forty lines below" points at the page's own layout,
+  which reads at first as a pointer into the source.~~ **Done, pass 6 session
+  D**: now "the two area operations below". [kind=lecture]
+
+**From pass 6, session D — Part IV · The world** *(2026-09-10)*
+
+**For pass 7, the figures.**
+
+- **Three of Part IV's ten pages open on a figure the page cannot yet be read
+  against**, and every reader said so independently — the same part-wide
+  pattern session C found in Part III, which makes it two parts of two.
+  `chunk-storage`'s lead flowchart hands over *foreground priority*,
+  *background priority* and `pendingWrites` 150 lines before they are
+  explained, and the paragraph under it is about a different subject;
+  `chunk-generation-pipeline`'s pyramid puts radius 11 on its *EMPTY* node and
+  the paragraph beneath says the number is wrong for the common case;
+  `fluids`' bucket sequence names `Block.UPDATE_SKIP_ON_PLACE`, "the drain",
+  `getNewLiquid` and "the shape pass", none of them yet defined. This is the
+  lead figure's contract, not three pages' bad luck. [kind=figure]
+- `game-events-and-vibrations`' gate flowchart has fifteen nodes and eight
+  refusal exits, and two edge labels carry five and six conditions each — a
+  density question at column width and on a slide. [kind=figure]
+- `game-events-and-vibrations`' trace: one lane, `SculkSensorBlock`, stands for
+  both the block and its block entity, and its own arrow label says so
+  ("onReceiveVibration on **SculkSensorBlockEntity**'s `VibrationSystem.User`").
+  Either two lanes or a note. [kind=figure]
+- `lighting`'s batch flowchart draws `updatingSectionData` reaching
+  `propagateDecreases` and `propagateIncreases` but not `checkNode`, which the
+  prose says also writes a stored level. [kind=figure]
+- `scheduled-ticks`' repeater trace gives `LevelChunk` a lane that carries one
+  message and decides nothing the `ServerLevel` lane does not. [kind=figure]
+- `world/README`'s part figure is described as a conveyor "in order" and drawn
+  as a cycle with three branches; pass 6 named which box is not a page, but the
+  shape sentence and the picture still disagree about the loop. [kind=figure]
+- `chunk-anatomy`'s first figure is about which shape *becomes* which and the
+  paragraph under it is about which class *extends* which — two different
+  graphs over the same five names. [kind=figure]
+
+**For pass 8, the voice.**
+
+- The **possessive-link construction** — "is [page name](link)'s." — stopped
+  two of this part's readers dead, on `chunk-anatomy` (twice),
+  `chunk-generation-pipeline` and `chunk-storage`, where one instance was also
+  missing its *s*. It is a corpus-wide device and wants one ruling.
+  [kind=voice]
+- **The dead-constant aside** is still four to a part in Part IV
+  (`LevelChunkSection.BIOME_CONTAINER_BITS`, `ChunkStatus.MAX_STRUCTURE_DISTANCE`,
+  `ThreadedLevelLightEngine.DEFAULT_BATCH_SIZE`, `SculkSensorBlock.ACTIVE_TICKS`),
+  and every reader skipped every one of them as a note about how the source
+  reads rather than how the system works. [kind=voice]
+- `scheduled-ticks` uses **`DiodeBlock` and `RepeaterBlock` for the same block**
+  from its first sentence to its last and never relates them; its reader could
+  not judge any finding that turned on it. [kind=voice]
+- `chunk-storage` uses **"lane"** as its central noun — chunk lane, entities
+  lane, IO lane, "three lanes" — 185 lines before it says what one is.
+  [kind=voice]
+- **"Level" runs two ways at once** across `tickets-and-loading`,
+  `chunk-storage` and `chunk-generation-pipeline`: a ticket level counts *down*
+  toward loaded, and no page says so where a reader first meets it. Both
+  readers of those pages named it. [kind=voice]
+- `points-of-interest`'s catalogue row asks a reader to align thirteen
+  `PoiTypes` names against a comma list of thirteen blocks by position, and the
+  alignment breaks at the leatherworker's cauldrons. A table or a re-ordering.
+  [kind=voice]
+- `chunk-generation-pipeline` calls the FULL step's dependency list both
+  *eleven* (the index) and *twelve* (the count) throughout. Pick a reading and
+  say it once. [kind=voice]
+- `lighting` says "the upward walk it is known for" — folklore corrected before
+  it is stated. [kind=voice]
+
+**Cut, with the reason** *(pass 6, session D)*
+
+- `fluids`, *Questions players ask*, "Why is my infinite pool not infinite?"
+  and "Why does water refuse to run the way that looks downhill?" — both were
+  second tellings of bold body sentences (the first branch of
+  `FlowingFluid.getNewLiquid`, and the running-minimum paragraph that is the
+  page's hook). Nothing is lost: the body says both, in bold, where they
+  happen. [kind=record]
+- `chunk-generation-pipeline`, *Questions players ask*, "Why is there a limit
+  on how far out I can build?" — a second telling of the
+  `ChunkPyramid.SAFETY_MARGIN_CHUNKS` paragraph, which keeps the fact because
+  it is where the arithmetic that produces it lives. [kind=record]
+- `lighting`, *Questions players ask*, "Why does breaking one block re-light
+  half a room?" and "Does an empty sky section cost anything?" — the first is
+  the **Up to 14** number block restated (its one extra clause, that the client
+  must re-mesh each, moved into that block); the second was both a second
+  telling of *Two 4-bit fields* and the page's one false sentence, corrected in
+  the body it duplicated. [kind=record]
+- `scheduled-ticks`, *Questions players ask*, "I rescheduled the tick for
+  sooner and nothing changed" and "Why does lava set things alight faster than
+  the number of random ticks suggests?" — the first is the opening paragraph
+  restated (its one new distinction, what `willTickThisTick` sees that
+  `hasScheduledTick` cannot, moved into *What one drain actually does*); the
+  second restates a bold sentence forty lines above. [kind=record]
+- `tickets-and-loading`, *Questions players ask*, "Why does sprinting outrun
+  chunk loading?" — three facts, all three in the paragraph that ends *at most
+  four view chunks are ever loading at once and they are the four nearest*.
+  [kind=record]
+- `chunk-storage`, *Questions players ask*, "Do the file timestamps mean
+  anything?" — not a question a player asks; the fact moved into *Inside a
+  region file* beside `RegionFile.timestamps`. [kind=record]
+- `world/README`, the hand-forward paragraph — six lines to two. Nothing lost
+  but the sentence saying neither is a dependency, which `check_deps.py`
+  enforces anyway. [kind=record]
 
 **For pass 7, the figures.**
 
@@ -1747,14 +1864,22 @@ acted on; pass 4 does not polish.
   is the better punchline and probably wants to be *in the hook* rather than two
   thirds of the way down a page whose hook is about colour — a structural call,
   not a wording one.
-- `chunk-generation-pipeline`'s **radius-11 derivation** now explains [kind=lecture]
-  `ChunkStep.Builder.getRadiusOfParent` in the middle of a paragraph that was
+- ~~`chunk-generation-pipeline`'s **radius-11 derivation** now explains~~ [kind=lecture]
+  ~~`ChunkStep.Builder.getRadiusOfParent` in the middle of a paragraph that was
   already the page's most arithmetical. The true rule ("a debt counts only when
   the step's own parent already sits a ring out") may deserve to be its own
-  sentence, or a row in the table above it.
-- `chunk-storage`'s **IOWorker priority paragraph** gained five lines saying what [kind=lecture]
-  the shutdown barrier is and why a flush still waits. The section's subject is
-  "why the server thread never waits", and this is a digression inside it.
+  sentence, or a row in the table above it.~~ **Done, pass 6 session D** — and
+  the rule as quoted here is the compressed form a reader could not follow: it
+  is *how far out this step still demands its own immediate predecessor*, which
+  is why *SURFACE* asking for *BIOMES* a ring out costs nothing. Its own two
+  paragraphs now, with the negative case worked.
+- ~~`chunk-storage`'s **IOWorker priority paragraph** gained five lines saying what~~ [kind=lecture]
+  ~~the shutdown barrier is and why a flush still waits. The section's subject is
+  "why the server thread never waits", and this is a digression inside it.~~
+  **Ruled out, pass 6 session D**: the five lines are the answer to *why does a
+  flush still wait if it is submitted at foreground priority*, which the
+  section's own subject raises. Kept; the section's real problem was its
+  heading, struck above.
 
 **The dead-constant tic.** Four fixes in this part took the same shape: *the
 number is right, the constant that names it has no readers*, so the prose now
@@ -2249,6 +2374,22 @@ correction):
   — one *Questions players ask* entry. Nothing above is a factual cut; all of
   it is length.
 
+  **Judged whole, pass 6 session D, and mostly declined.** A9 replaced the
+  line budget with the hook test, and on that test most of this list survives.
+  `chunk-anatomy`'s *what the client actually receives* is the chunk's third
+  serialised form beside memory and disk, so it stayed and became an H3 that
+  Part IX's summary now points at; its ticker subsection is already down to ten
+  lines with a link; the `ImposterProtoChunk` paragraph gained the sentence
+  that makes the wrapper make sense. `lighting`'s sky column is the page's
+  second layer and no reader skipped it. `environment-attributes` was session
+  A's, and cut four other things instead. `points-of-interest`'s *who else asks*
+  table is the demonstration that the index is a general spatial lookup rather
+  than a villager feature — its reader would cut it and named the one paragraph
+  worth keeping, which is the one it already keeps. What *was* cut is logged
+  under **Cut, with the reason (pass 6, session D)** above, and it is six
+  closers' worth of second telling rather than any of these. The ten pages came out
+  at 4,185 lines against 4,160 — up, as A9 says a part may be.
+
   **Cuts made, all of them names rather than claims.** `chunk-anatomy` drops
   `Block.UpdateFlags` as a named catalogue (the four flags the write path
   actually tests survive; the catalogue belongs to `blocks-and-states`),
@@ -2288,6 +2429,14 @@ correction):
   close (`chunk-anatomy`, `lighting`, `points-of-interest`) plus the pilot's,
   which is four in one part; check whether that reads as a part-level
   convention or a template.
+
+  **Answered, pass 6 session D**: by the time this pass reached the part the
+  closer was on **ten of ten**, which is a template and not a convention, and
+  the test in A2 took it to eight. On the bolded ending, A5 asks *does the page
+  come back to it* rather than *how many*: six of the ten do come back to it,
+  and all six keep it. The two close-cousin hooks are still close cousins and
+  are pass 8's — but they are now four lectures apart in the watch order, which
+  is what session E asked for. [kind=voice]
 
   ~~**`level-data-and-rules`'s Reference framing is provisional.** Session E~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session D (pass 5), which rewrote the page; no *Responsibility*-era heading remains.
   changed only its header, its links and its opening; it still carries a
@@ -2900,6 +3049,11 @@ detail sections → questions → where to look, only the nouns change);
 `the-frame` (one turn of a loop, zones named, what falls off the end — kept
 apart mainly by one being a flowchart and the other a sequence). Pass 5
 varies one of each pair; the shape need not change, the skeleton must.
+**Part IV had no within-part pair, pass 6 session D** — its one entanglement
+was the three-way identical spine `chunk-anatomy` / `rendering/the-window` /
+`worldgen/terrain`, which A7 leaves as a note across parts; cutting
+`chunk-anatomy`'s closer broke it anyway, so two pages are left sharing that
+spine and the pair is Part XI's or Part XII's to judge, not this one's.
 **Part III's two pairs are settled, pass 6 session C.** ~~`server-tick` /
 `server-level-tick`~~ had already come apart in pass 5 — five sections against
 fifteen, and no edit distance between them worth the name — so that half was

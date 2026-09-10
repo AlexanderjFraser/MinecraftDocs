@@ -69,8 +69,8 @@ LIST_ITEM = re.compile(r"^(\s*)(?:[-*]|\d+[.)])\s+(.*)$")
 TICK = re.compile(r"`([^`]+)`")
 SECOND = re.compile(r"\b(?:you|your|yours|yourself)\b", re.I)
 BOLD = re.compile(r"\*\*[^*]+\*\*")
-QLEAD = re.compile(r"^\*\*[^*]+\*\*")
-QMARK = re.compile(r"^\*\*[^*]*\?\*\*")
+QLEAD = re.compile(r"^\*\*(.+?)\*\*")          # nested emphasis allowed: **why is *this* so?**
+QMARK = re.compile(r"^\*\*(.+?)\?\*\*")
 BLOCKQUOTE_121 = re.compile(r"^> \*\*For a 1\.21")
 NUMBER_DEVICE = re.compile(r"^\*\*[A-Z][A-Za-z-]*(?: [a-z-]+){0,2}\*\* — ")   # **Four** — what it counts
 MYTH = re.compile(r"what the forum says", re.I)
@@ -767,6 +767,8 @@ Prose under the trace.
 
 **When?** Then.
 
+**Why is my *entities/* folder empty?** Because.
+
 > **For a 1.21-era reader.** A name moved.
 > Second line.
 
@@ -819,8 +821,10 @@ def probe() -> int:
         ("a section over forty lines with no figure or H3 is flagged", [s.title for s in pg.long_sections()] == ["A long section"]),
         ("a list of eight with one long item is measured", pg.sections[3].lists == [(pg.sections[3].lists[0][0], 8, 1)]),
         ("the number device is counted", pg.sections[3].number_devices == 1),
-        ("the closer is last, canonical, two questions of three lead-ins", pg.closer is not None and pg.closer_last
-         and pg.closer.title == CANON_CLOSER and pg.closer.questions == 2 and pg.closer.leads == 3),
+        ("the closer is last, canonical, three questions of four lead-ins", pg.closer is not None and pg.closer_last
+         and pg.closer.title == CANON_CLOSER and pg.closer.questions == 3 and pg.closer.leads == 4),
+        ("a lead-in with nested italics still matches the question test",
+         bool(QMARK.match("**Why is my *entities/* folder empty?**")) and not QMARK.match("**Names to look for.**")),
         ("the 1.21 blockquote is two lines at the foot", pg.blockquote is not None and pg.blockquote[2] == 2 and pg.blockquote[3]),
         ("Where to look counts four names", pg.look_names == 4),
         ("the slots are counted", set(pg.slots()) == {"closer", "trace heading", "1.21 blockquote", "bold ending", "second person", "the number"}),

@@ -114,8 +114,8 @@ over a partial-NBT reader: chunk → structure → **reference count** (which is
 what makes "unreferenced only" searches possible), and structure → chunk →
 would-generate. On a miss it reads the chunk off disk through
 `ChunkScanAccess`, which answers a question about a chunk without loading it
-([why the server thread never
-waits](../world/chunk-storage.md#why-the-server-thread-never-waits-and-the-three-times-it-does)),
+and is one of the three joins that block the server thread ([the three places
+that do wait](../world/chunk-storage.md#the-three-places-that-do-wait)),
 pulling only the data version and the structure starts — a field-selected read
 that never builds the rest of the tag
 ([a whole file need not be read](../foundations/codecs-nbt-json.md#what-nbt-actually-is)) —

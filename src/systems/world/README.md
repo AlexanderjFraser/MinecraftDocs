@@ -1,13 +1,13 @@
 # IV · The world
 
-> Verified against **Minecraft 26.2** · Part IV · The machinery that turns a place you have walked to into a place that exists: chunks made, lit, sent, saved and forgotten, and the five pages off that line — what the place and the hour decide, and the four systems that make the world the line delivers feel alive.
+> Verified against **Minecraft 26.2** · Part IV · The machinery that turns a place you have walked to into a place that exists: chunks asked for, made, lit, saved and forgotten, and the five pages off that line — what the place and the hour decide, and the four systems that make the world the line delivers feel alive.
 
 Part III was one thread going round. This part is what it goes round *on*.
 A world is too big to hold, so the server holds a moving window of it, and
 almost everything in this part exists to decide the window's edge: which
 chunks are worth building, how far past the edge to build them, which of
-them tick, which of them are sent to you, and when one is finally written
-down and let go. A player recognises the part by its edge — the ring of
+them tick, which of them you are owed a copy of, and when one is finally
+written down and let go. A player recognises the part by its edge — the ring of
 half-made terrain past render distance, the mobs that stop moving when you
 fly away from them, the *Saving world* bar. Almost none of that edge is one
 number: **render distance, simulation distance and the mob-spawning radius
@@ -17,11 +17,13 @@ store](tickets-and-loading.md#two-graphs-one-store)).
 
 ## The shape of the part
 
-Part IV is a conveyor with a vocabulary page in front of it. Four pages are
-the conveyor and they hand a chunk to each other in order; the fifth page
-defines the thing being handed. The other five are not on the line at all —
-one is what the place and the hour decide, and four are about the world the
-conveyor delivers.
+Part IV is a conveyor with a vocabulary page in front of it. One page defines
+the thing being handed; four more are the conveyor, and they hand a chunk to
+each other in order. The other five are not on the line at all — one is what
+the place and the hour decide, and four are about the world the conveyor
+delivers. Every box below is one of those ten lectures except the one in lower
+case, which is a chunk's *state* rather than a page: the live `LevelChunk` the
+conveyor exists to produce and the last four pages act on.
 
 ```mermaid
 flowchart TD
@@ -49,20 +51,18 @@ flowchart TD
     EA -- "read by fluids and by the villagers, and by Part III" --> LC
 ```
 
-What the part hands forward, and what it does not: [blocks and
-states](../blocks/blocks-and-states.md) in Part V assumes the section and
-palette model [chunk anatomy](chunk-anatomy.md) defines, and Part XII's
-terrain generation is the cargo on the conveyor [the generation
-pipeline](chunk-generation-pipeline.md) describes. Neither is a dependency
-of this part; both are parts that depend on it.
+Two later parts hang off that line rather than feeding it: Part V's blocks
+assume [chunk anatomy](chunk-anatomy.md)'s sections and palettes, and Part
+XII's terrain is the cargo on [the generation
+pipeline](chunk-generation-pipeline.md).
 
 ## Before you start
 
 [The server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order) and [the level
 tick](../server/server-level-tick.md#the-chunk-source-does-five-things-in-one-call). Almost everything here happens on the Server
-thread inside that loop, or on a worker the loop is waiting for — the IO lane
-below is the exception the storage page is about — and the level tick is where
-the chunk source is asked to do its five things.
+thread inside that loop, or on a worker the loop is waiting for — the one
+exception being the IO lane that [chunk storage](chunk-storage.md) is about —
+and the level tick is where the chunk source is asked to do its five things.
 Part II's [codecs](../foundations/codecs-nbt-json.md#disk-a-chest-writes-a-list-of-slots) and
 [registries](../foundations/identifiers-and-registries.md#the-table) are assumed
 wherever a chunk is written to disk or a type is looked up by name, and
@@ -74,8 +74,9 @@ Nothing in this part needs Part V or beyond.
 ## Watch in this order
 
 Lectures two to six are the chain — nothing later in it can be watched
-first. The first is off the chain on purpose, and the last four can be
-watched in any order once you have the vocabulary page.
+first. The first is off the chain on purpose. Of the last four, fluids assumes
+scheduled ticks and must follow it; the other three can be watched in any
+order once you have the vocabulary page.
 
 1. [Environment attributes and timelines](environment-attributes-and-timelines.md)
    — off the conveyor, ahead of it, and the page [the level
@@ -111,16 +112,34 @@ watched in any order once you have the vocabulary page.
    reaches a sculk sensor, through a cascade of tests that is most of the
    lecture. The sensor always hears you at least one tick late by design.
 10. [Points of interest](points-of-interest.md) — a villager claims a bed
-    from 48 blocks away, the moment a path to it exists. Going to sleep in it
-    tells the index nothing, and the one behaviour that acts on the flag can
-    only take a claim away.
+    from 48 blocks away, the moment a path to it exists. Sleeping in it sets
+    the bed's *occupied* flag and tells the index nothing, and the only
+    behaviour that turns that flag into a change in the index can only take a
+    claim away.
+
+## Where the part stops
+
+{{#include ../../generated/coverage-world.md}} — the lowest figure in the
+book, and what it leaves over is one more instance of a shape a page above
+teaches: the modifier classes an attribute's arithmetic uses are the library
+[environment
+attributes](environment-attributes-and-timelines.md#arguments-not-values)
+describes rather than enumerates, and the rest are look-up tables.
+
+Two omissions are deliberate. **The world border** is the one mechanism here
+with no lecture — a per-dimension `SavedData` answering a question about a
+position, with no chunk, no tick phase and no thread to trace — so it sits on
+[level data and
+rules](../../reference/level-data-and-rules.md#the-border-is-per-dimension).
+And **sending a chunk** stops at eligibility: the packet and its pacing are
+Part IX's.
 
 ## Reference this part uses
 
 [Level data and rules](../../reference/level-data-and-rules.md) — who owns
 the seed, the spawn, the rules, the border and the dimensions, and which
 file remembers each; it is also where the border itself is explained, for
-the reason above. [Game rules](../../reference/gamerules.md) — five of
+the reason just given. [Game rules](../../reference/gamerules.md) — five of
 which this part reads. [Math and
 primitives](../../reference/math-and-primitives.md#three-long-keys) —
 `ChunkPos` and `SectionPos`, and the packings the conveyor pages assume.

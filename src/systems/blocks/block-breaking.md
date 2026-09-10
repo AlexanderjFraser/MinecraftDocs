@@ -254,7 +254,8 @@ anything: `ItemStack.canDestroyBlock`, then `GameMasterBlock` against
 captures the `BlockEntity` first, because the write is about to destroy it.
 Then `Block.playerWillDestroy` — particles and sound to everyone else, piglins
 angered for `BlockTags.GUARDED_BY_PIGLINS`, and a `GameEvent.BLOCK_DESTROY`
-posted for sculk ([game events](../world/game-events-and-vibrations.md#the-dispatcher-never-queues)).
+posted for sculk, and delivered before this method returns ([the broadcast is a
+nested loop](../world/game-events-and-vibrations.md#the-broadcast-is-a-nested-loop-and-one-listener-is-the-exception)).
 
 The write itself is `Level.removeBlock`, not `Level.destroyBlock`. It puts the
 *fluid* that was in the block back — water for a waterlogged block, air here —

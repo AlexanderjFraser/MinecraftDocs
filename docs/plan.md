@@ -33,8 +33,8 @@ stood at the close, with the session paragraphs and the log.
 
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
 planning session on Fable; **session A set the standard on 2026-09-10, and
-sessions B (Parts I and II) and C (Part III) followed the same day**, so the
-next session is D (Part IV · The world). The charter is below; the brief, the
+sessions B (Parts I and II), C (Part III) and D (Part IV) followed the same
+day**, so the next session is E (Part V · Blocks). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -62,7 +62,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A, B and C done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -586,3 +586,57 @@ readers' single most valuable output was not a list of confusions but the
 contradicting another sentence or a figure on the same page, which is the
 error class pass 5 could not see because it read across pages and pass 4
 could not see because it checked each claim alone.
+
+**Pass 6, session D — Part IV · The world** *(2026-09-10).* Ten system pages
+and the landing page, eleven readers, one each. Part IV arrived as the part
+where A2 bites hardest — the closer on **10 of 10** — and the test took it to
+**8**, because two pages turned out to be answering themselves.
+`chunk-anatomy` lost its closer entirely: not one of its six answers was a
+consequence a player meets, and every one of them was a thing the body already
+needed. The section permit and `ThreadingDetector` were used in the cast table
+and again 170 lines later and explained only at the foot; the client's two dead
+counters belong beside the four counters; `LevelChunkSection.maybeHas` was
+**cited by `points-of-interest`** at an anchor whose prose never mentioned it,
+which is A2's load-bearing rule in its purest form; and the chunk's wire form is
+its third serialised shape beside memory and disk, so it became an H3 that Part
+IX's own summary now points at. `fluids` lost its closer for the mirror reason:
+two answers were the page's machinery (the block tick that is really bubble
+columns, the occlusion cache the *body* wanted 180 lines earlier — and the
+glossary's *Occlusion* entry cited it, so it moved up under a heading and the
+citation was repointed in the same commit), and the other two were second
+tellings of bold sentences. Six more closers came down 4→3, 5→3, 5→3, 5→3, 6→5
+and 4→3. **Both literal trace headings are gone**, three inbound links
+repointed; four more headings were renamed because their own sections
+contradicted them — `chunk-storage`'s *Three folders* over a list of four, and
+*The dispatcher never queues* over a section whose last paragraph is
+`GameEventDispatcher.handleGameEventMessagesInQueue`. All four 1.21 blockquotes
+are at the foot now, from none. The part went from ten long sections to none,
+on six H3s inside existing anchors. **Nine facts corrected**, every one found
+by a reader with no source: a pyramid count where seven plus four is eleven
+(the page's own closer had it right and the body did not); *four of the twelve
+steps* where the flag word touches three; a light flood said to stop at level 1
+when it stops *propagating* at 1 and writes it; `sectionLightChanged` with two
+gates where the figure had one and the prose the other; a sky column answering
+15 by walking upward where the body says, correctly, without looking; a
+container sent back to the wrong queue when the budget runs out; and on
+`points-of-interest` a hook that says *the single behaviour that reads the flag*
+where three do. The ninth is on **session A's own exemplar**: mobs stop burning
+"until dawn" against the page's own 23460 and its own "tick 0 is dawn", and
+`day.json` has no marker called dawn. The landing page gained *Where the part
+stops* — the first thing in the book to explain the world border's absence,
+which gave a dangling "for the reason above" the antecedent it had lost — and
+stopped promising a lecture on *sending*, which is Part IX's. Eight *Where to
+look* lists came down from 17–27 names to 12–17 under A12, each in its page's
+own reading order, no name lost from the book. Ten pages 4,160 → 4,185 lines.
+**One tool bug**: `pass6_shape.py`'s question regexes used `[^*]`, so a bold
+lead-in with italics inside it counted as neither a lead-in nor a question —
+fixed, with a probe, and every closer count this pass has published may be low
+by one. Twenty-eight units appended to [pass5.md](pass5.md) (seven for pass 7,
+eight for pass 8, seven logged cuts, six part-wide answers); eight entries
+struck and four annotated; the session's entry in [pass9.md](pass9.md). All
+five gates green; deployed. **What the session would tell the next one**: the
+readers' most valuable output was again the count that does not close. Five of
+the nine corrections are one sentence disagreeing with another sentence or a
+figure **on the same page** — the same class session B named — and three of
+those five were found by a reader simply doing the arithmetic the page invited.
+A page that shows its working is a page that can be caught.

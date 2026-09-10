@@ -3,8 +3,8 @@
 > Verified against **Minecraft 26.2** · Part IV · A bucket of water is emptied on flat stone and spreads one step.
 
 A player holding a water bucket clicks the top of a stone block. Their own
-client places the source at once, on a prediction, and it will sit there doing
-nothing for the rest of the session. The server places the same block and then
+client places the source at once, on a prediction, and will never spread it a
+single block for the rest of the session. The server places the same block and then
 also does nothing — for five ticks. When the appointment falls due, the source
 looks down, finds stone, and hands the decision to four independent searches,
 one per horizontal direction, each walking out through the surrounding blocks
@@ -90,6 +90,13 @@ and `FlowingFluid.getLegacyLevel`, the encoder going the other way, is
 correspondingly lossy for falling flows — which costs nothing, because
 `FlowingFluid.getNewLiquid` only ever produces a falling state at amount 8.
 
+`LiquidBlock` has a block tick of its own, and it spreads nothing.
+`LiquidBlock.tick` calls `BubbleColumnBlock.updateColumn`, and only when the
+fluid there is a full source in `FluidTags.BUBBLE_COLUMN_CAN_OCCUPY`; the tick
+was booked twenty ticks out by `LiquidBlock.tryScheduleBubbleBlockColumn`
+because soul sand or magma is underneath. Flow is entirely a *fluid* tick, in
+the other queue with its own budget — two queues, two appointments, one block.
+
 Waterlogging runs the other way round: a block that implements
 `SimpleWaterloggedBlock` reports water of its own accord.
 `SimpleWaterloggedBlock.canPlaceLiquid` accepts `Fluids.WATER` and nothing else,
@@ -129,7 +136,7 @@ sequenceDiagram
     SL->>LB: onPlace on each new block
     LB->>LTs: each books its own tick, because spreadTo schedules nothing
     SL->>LB: the shape pass reaches the source, updateShape books it again
-    SL->>CPL: four more block updates, and nothing else
+    SL->>CPL: four more block changes, in one section packet, and nothing else
 ```
 
 `BucketItem.use` picks the position, then `BucketItem.emptyContents` asks two
@@ -223,6 +230,19 @@ The scan that feeds the branches counts a neighbour only if
 `FlowingFluid.canPassThroughWall` says the face between the two positions is
 open, so a pane of glass between two source blocks is enough to stop them making
 a third.
+
+### Why the wall test is affordable
+
+That test runs constantly — once per neighbour per scan, and again for every
+candidate of every slope search below — so it is built to be cheap twice over.
+`FlowingFluid.canPassThroughWall` short-circuits the easy cases first: either
+side a full cube is a no, both sides empty is a yes. Only past those does it
+merge the two collision shapes with `Shapes.mergedFaceOccludes` ([shapes and
+collision](../../reference/math-and-primitives.md#shapes-and-collision)), and it
+memoises that answer in `FlowingFluid.OCCLUSION_CACHE`, a thread-local
+200-entry map keyed by `FlowingFluid.BlockStatePairKey`, which hashes both
+states by identity. A block with a dynamic shape (`Block.hasDynamicShape`)
+skips the cache entirely, because its answer cannot be keyed on the state.
 
 The first branch is source conversion, and it is where infinite water lives: two
 source neighbours, a yes from `WaterFluid.canConvertToSource` — which reads
@@ -359,66 +379,37 @@ three times in four, whenever a non-falling flow is about to get deeper. Lava
 does not creep — it creeps unevenly, and the unevenness is rolled fresh on each
 tick.
 
-The three exceptions are where lava stops behaving like a fluid.
-`LavaFluid.spreadTo` intercepts a downward spread onto water: the fizz plays
+### The three places lava stops behaving like a fluid
+
+All three end in a fizz and in the spread being abandoned, and two of them
+leave a block behind. `LavaFluid.spreadTo` intercepts a downward spread onto water: the fizz plays
 and nothing spreads, whatever the water is in, and the target becomes
 `Blocks.STONE` when — and only when — it was a `LiquidBlock`. So a lavafall into
 a pool builds a plug rather than replacing the water, while a lavafall onto a
-waterlogged stair is merely stopped. The other two are in `LiquidBlock.shouldSpreadLiquid`, called from
+waterlogged stair is merely stopped. The other two share one method, `LiquidBlock.shouldSpreadLiquid`, called from
 `LiquidBlock.onPlace` and `LiquidBlock.neighborChanged`: for lava it walks
 `LiquidBlock.POSSIBLE_FLOW_DIRECTIONS` and tests each direction's *opposite*, so
 the faces it inspects are the top and the four sides and never the bottom. Water
 at any of them turns *this* block into `Blocks.OBSIDIAN` if its own fluid is a
 source and `Blocks.COBBLESTONE` if it is not, and returns false so no tick is
-booked at all. The `Blocks.BASALT` case is the exception to the exception and
-the only place the block below is read: `Blocks.SOUL_SOIL` underneath and
-`Blocks.BLUE_ICE` at one of those five opposites.
+booked at all. The third exception shares that walk and is the only place the block below is
+read: `Blocks.SOUL_SOIL` underneath and `Blocks.BLUE_ICE` at one of those five
+opposites turns the lava into `Blocks.BASALT`, again with a fizz and again
+without booking a tick.
 
 Lava's *random* tick is fire rather than flow, and a selected position gets it
 twice — once as a block and once as a fluid — for reasons that belong to
 [scheduled ticks](scheduled-ticks.md).
 
-## Questions players ask
-
-**Why does a water block have a block tick at all?** `LiquidBlock.tick` spreads
-nothing. It calls `BubbleColumnBlock.updateColumn`, and only when the fluid
-there is a full source in `FluidTags.BUBBLE_COLUMN_CAN_OCCUPY`; the tick was
-booked twenty ticks out by `LiquidBlock.tryScheduleBubbleBlockColumn` because
-soul sand or magma is underneath. Flow is entirely a *fluid* tick, in the other
-queue with its own budget.
-
-**Why is my infinite pool not infinite?** Because
-`GameRules.WATER_SOURCE_CONVERSION` can be turned off, and because the first
-branch of `FlowingFluid.getNewLiquid` also demands something solid or another
-source directly below the position being filled. Two sources over a hole make
-nothing.
-
-**Why does water refuse to run the way that looks downhill?** Because a water
-block already sitting on one side scores in the slope vote and then refuses to
-be replaced, so it can drag the minimum down to its own distance and empty the
-winners' map on the way past.
-
-**Why is the wall test worth caching?** Because it runs constantly.
-`FlowingFluid.canPassThroughWall` short-circuits the easy cases — either side a
-full cube is a no, both sides empty is a yes — and otherwise merges the two
-collision shapes with `Shapes.mergedFaceOccludes` ([shapes and
-collision](../../reference/math-and-primitives.md#shapes-and-collision)) and
-memoises the answer in
-`FlowingFluid.OCCLUSION_CACHE`, a thread-local 200-entry map keyed by
-`FlowingFluid.BlockStatePairKey`, which hashes both states by identity and is
-skipped entirely when either block has a dynamic shape
-(`Block.hasDynamicShape`).
-
 ## Where to look
 
-`BucketItem.emptyContents` · `LiquidBlock.onPlace` ·
-`LiquidBlock.shouldSpreadLiquid` · `ServerLevel.tickFluid` · `FlowingFluid.tick`
-· `FlowingFluid.getNewLiquid` · `FlowingFluid.spread` ·
-`FlowingFluid.spreadToSides` · `FlowingFluid.getSpread` ·
-`FlowingFluid.getSlopeDistance` · `FlowingFluid.SpreadContext` ·
-`FlowingFluid.spreadTo` · `FlowingFluid.canPassThroughWall` ·
-`LiquidBlock.stateCache` · `SimpleWaterloggedBlock.placeLiquid` · `WaterFluid` ·
-`LavaFluid.spreadTo`
+Where a source comes from and who books its tick: `BucketItem.emptyContents` ·
+`LiquidBlock.onPlace` · `LiquidBlock.shouldSpreadLiquid`. Then one tick, in the
+order it decides: `FlowingFluid.tick` · `FlowingFluid.getNewLiquid` ·
+`FlowingFluid.spread` · `FlowingFluid.spreadToSides` ·
+`FlowingFluid.getSpread` · `FlowingFluid.getSlopeDistance` ·
+`FlowingFluid.spreadTo`. The two numbers files that make lava lava:
+`WaterFluid` · `LavaFluid.spreadTo`.
 
 ---
 

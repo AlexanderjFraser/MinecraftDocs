@@ -44,6 +44,199 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session D — Part IV · The world *(2026-09-10)*
+
+Ten system pages and the landing page, all eleven read first by one agent each
+under the pass-6 brief (a reader with the page and nothing else). Every fact
+below was re-derived against `reference/26.2` — or against
+`reference/26.2/data` where the claim is about a data pack — by this session
+before it was written.
+
+### Corrections — what the page said, what the decompile says
+
+- `src/systems/world/chunk-generation-pipeline.md`:230-233 — "`ChunkPyramid.LOADING_PYRAMID`
+  passes seven of the twelve steps straight through and only four do anything".
+  Seven plus four is eleven. `ChunkPyramid.java`:37-60: of the twelve loading
+  steps, seven call no `setTask` (*STRUCTURE_REFERENCES*, *BIOMES*, *NOISE*,
+  *SURFACE*, *CARVERS*, *FEATURES*, *SPAWN*), four set one
+  (`ChunkStatusTasks.loadStructureStarts`, `initializeLight`, `light`, `full`)
+  and the twelfth is *EMPTY*, which `ChunkMap.applyStep` special-cases into the
+  disk read. The page's own closer had it right at five; the body was the
+  telling that did not close. Now stated as seven, four and the disk read, with
+  the seven named. Found by a reader doing the arithmetic.
+- `src/systems/world/chunk-anatomy.md`:300 — "Four of the twelve steps are
+  skipped by a bit of the caller's flag word". `LevelChunk.java`:285-380 reads
+  the flag word four times but in **three** steps: `flags & 256` inside step 7
+  (and there it skips only `BlockEntity.preRemoveSideEffects`, not the
+  removal), `flags & 1` with `flags & 64` in step 8, and `flags & 512` with
+  `flags & 64` in step 10. Now three, with the partial one called out.
+- `src/systems/world/lighting.md`:203 — the block flood stops "when the next
+  level would be 1". `BlockLightEngine.java`:77-80: `setStoredLevel` runs
+  unconditionally in that branch and only the **re-enqueue** is gated on
+  `newToLevel > 1`. A level of 1 is written; it just does not propagate — which
+  is what makes the page's own "thirteen blocks" (L322, L379) true from an
+  emission of 14. Found by a reader who could not reconcile the two.
+- `src/systems/world/lighting.md`:286-288 — `ChunkHolder.sectionLightChanged`
+  described as marking the chunk unsaved, then giving up with no ticking chunk.
+  `ChunkHolder.java`:151-171 has **two** gates with the bookkeeping between
+  them: it returns at once if `getChunkIfPresent(ChunkStatus.INITIALIZE_LIGHT)`
+  is null, *then* marks unsaved, *then* returns if `getTickingChunk()` is null.
+  So a chunk still generating is not marked dirty at all. The page's own figure
+  had the first gate and not the second; the prose had the second and not the
+  first. Both now say both.
+- `src/systems/world/lighting.md`:385-386 (in the closer, since cut) —
+  "Sections above the sky column's top have no `DataLayer` at all and answer 15
+  by walking upward". `SkyLightSectionStorage.java`:23-46: at or above
+  `topSection` the method returns 15 from the `else` branch **without
+  looking**; the upward walk is the case *below* the top with no layer. The
+  page's body (L98-101) was right and the closer contradicted it.
+- `src/systems/world/scheduled-ticks.md`:176-179 — "A container that is
+  overtaken, or that still has something due when the budget is spent, goes
+  back into the container queue". `LevelTicks.java`:158-166: a container with a
+  still-due head goes back into `containersToTick` **only if
+  `canScheduleMoreTicks`**; with the budget spent it takes the `else` branch
+  into `updateContainerScheduling`, the index. Now three fates keyed on the
+  budget as well as the head, and `rescheduleLeftoverContainers` described as
+  emptying what the drain left in the queue.
+- `src/systems/world/points-of-interest.md`:14-16 — the hook's "the single
+  behaviour that reads the flag back can only take a claim away". **Three**
+  read `BedBlock.OCCUPIED`: `SleepInBed.java`:52 (an entry condition),
+  `ValidateNearbyPoi.java`:59 and `VillagerGoalPackages.java`:48 (the
+  `AcquirePoi` filter). Only `ValidateNearbyPoi` turns the flag into a change
+  in the record. The hook now says that.
+- `src/systems/world/points-of-interest.md`:262-264 — the release rule stated
+  as "this villager is not itself the sleeper". `ValidateNearbyPoi.java`:59 is
+  `!body.isSleeping()` — asleep anywhere, not asleep *here*. And the exception
+  is a second question asked of the world (`bedIsOccupiedByVillager`, an AABB
+  search for a sleeping `Villager`), not of the block, which is why it does not
+  swallow the rule: the flag and a sleeping villager can disagree. Both now
+  said.
+- `src/systems/world/environment-attributes-and-timelines.md`:9 — mobs stop
+  burning "until dawn", against the page's own "true again at 23460" (L288) and
+  "tick 0 … is dawn" (L325). `data/minecraft/timeline/day.json`:
+  *gameplay/monsters_burn* is false at 12542 and true at 23460, and tick 0 is
+  where the 24000-tick period closes and `ClockTimeMarkers.WAKE_UP_FROM_SLEEP`
+  sits — no marker in the file is called dawn. The opening now gives the tick
+  and the wrap sentence names the marker. A correction on session A's own
+  exemplar, found by a reader with no source.
+
+### Claims introduced
+
+- **`chunk-anatomy` loses its closer entirely** (A2). All six answers were the
+  page's own mechanism, and each is now a claim in the section that owns it:
+  the write permit and `ThreadingDetector` as an H3 under *Sections and their
+  four counters*; the client's two dead counters in the same section; the
+  shared-section array under *The four shapes a chunk takes*;
+  `LevelChunkSection.maybeHas` under *The palette and the ladder it climbs*
+  (which is where `points-of-interest` already cited it, at an anchor whose
+  prose never mentioned it); the wire form as a new H3, *The third form, and
+  what the client is handed*; and `ChunkAccess.pendingBlockEntities` under
+  *What step 11 leaves behind*. The cast row for `PalettedContainer` now says a
+  second writer is detected rather than blocked.
+- **`fluids` loses its closer entirely** (A2). `LiquidBlock.tick` and bubble
+  columns moved into *The block underneath the water*; the occlusion cache
+  became *Why the wall test is affordable*, an H3 beside the test it explains,
+  and the glossary's *Occlusion* entry now lands there instead of on
+  `#questions-players-ask`. The two remaining answers were second tellings of
+  bold body sentences and are logged as cuts in [pass5.md](pass5.md).
+- Six closers trimmed: `chunk-generation-pipeline` 4→3 (the world's edge, told
+  twice), `chunk-storage` 5→3 (the proto-over-full guard promoted to a section
+  of its own, the timestamps answer moved into *Inside a region file*),
+  `lighting` 5→3, `scheduled-ticks` 5→3 (the `hasScheduledTick` /
+  `willTickThisTick` distinction moved into *What one drain actually does*),
+  `tickets-and-loading` 6→5 (the `PlayerMap` remembered-gate mechanism moved
+  into *What a ticket asks for*), `game-events-and-vibrations` 4→3 (the
+  `SculkSensorBlock.stepOn` shortcut given prose where its own figure draws it
+  as two orphan nodes).
+- **Two headings renamed under A4**, both literal trace headings, with three
+  inbound links repointed in the same commit: `game-events-and-vibrations`
+  *The trace: one footstep, several ticks* → *One footstep, and the ticks it
+  takes to arrive* (glossary:669); `points-of-interest` *The trace: a villager
+  claims a bed* → *Noon, and a bed forty-eight blocks away*
+  (`ai-goals-and-brains`:378, `pathfinding`:109), which also stopped the
+  heading being a verbatim copy of the verified line.
+- **Four headings renamed under A8**, each because its own section contradicted
+  or under-described it: `chunk-storage` *Three folders…* → *Four folders,
+  three of them the same shape* (its own list has four and calls *data/* the
+  fourth); *Why the server thread never waits, and the three times it does* →
+  *Why the server thread never waits*, with the three joins as an H3
+  (`structure-placement`:118 repointed); `game-events-and-vibrations` *The
+  dispatcher never queues* → *The broadcast is a nested loop, and one listener
+  is the exception* (`block-breaking`:257 and `block-interaction`:162
+  repointed — the section's own last paragraph is
+  `GameEventDispatcher.handleGameEventMessagesInQueue`), and *One tick,
+  structurally* → *One slot, one tick late, and one refusal that waits*.
+- **Three 1.21 blockquotes moved to the foot** (A3): `lighting` (also trimmed
+  from ten lines to eight), `scheduled-ticks` (which gained a clause about
+  every waterloggable block booking through `updateShape`, a fact the body
+  never states), `tickets-and-loading`. Part IV now has four, all at the foot.
+- **`game-events-and-vibrations`' opening re-argued under A5**: three bold
+  claims became one — the tick of latency, which *One slot, one tick late* pays
+  off. The wool box and the crouch are now named as gates the body reaches
+  rather than promised in the hook.
+- **`chunk-generation-pipeline`'s radius-11 derivation rewritten**: the rule is
+  now stated as *how far out this step still demands its own immediate
+  predecessor*, with *SURFACE* worked as the negative case, and the 529 is
+  derived where the 11 is (a radius of 11 is a list of twelve and a square 23
+  on a side). The claim is that `ChunkStep.Builder.getRadiusOfParent` walks
+  `directDependenciesByRadius` from the outside in for the first ring at or
+  after the parent status (`ChunkStep.java`:135-143), which gives 1 for *NOISE*,
+  *FEATURES* and *LIGHT* and 0 for *SURFACE* and *SPAWN*.
+- **`chunk-generation-pipeline`'s `canLoadWithoutGeneration` split into its two
+  gates**: the centre against the target, then the square against
+  `LOADING_PYRAMID`'s FULL accumulated dependencies, which this session
+  computed to be `[SPAWN, INITIALIZE_LIGHT]` — a 3×3 in which the centre is
+  checked a second time and more weakly. Its figure's last inline line no
+  longer says *the steps that may write* over three of the four (*NOISE*, on
+  the line above, is the fourth).
+- **`chunk-storage`**: the autosave row's chain now names
+  `ChunkMap.saveAllChunks`, which its holdback column already cited; the unload
+  row and the figure note now agree that past 2,000 queued tasks the drain
+  ignores the tick budget (`ChunkMap.java`:496-500); and the entity filter says
+  why a vehicle with exactly one player rider is skipped —
+  `ServerPlayer.java`:486-493 writes it into the player file under
+  *RootVehicle* under exactly that condition.
+- **`fluids`**: the opening's "doing nothing for the rest of the session" now
+  says *never spread it a single block*, because the page's own client
+  paragraph gives the client `FluidState.animateTick` and `FluidState.getFlow`;
+  the basalt case states its outcome (`LiquidBlock.java`:237-241) instead of
+  leaving it to be inferred from the name; the lava section's opening says two
+  of the three leave a block behind, because `LavaFluid.spreadTo`
+  (`LavaFluid.java`:204-215) places `Blocks.STONE` only when the target was a
+  `LiquidBlock`; and the trace's packet line says *four block changes, in one
+  section packet*, which is what the prose beneath it already claimed.
+- **`points-of-interest`**: the four releasers are named rather than counted;
+  the `CatSpawner` row says its condition follows `ServerLevel.isCloseToVillage`
+  at two sections (`CatSpawner.java`:42-59); and *After the claim: the night
+  shift* now separates what each behaviour does to the *record* from where it
+  sends the villager, which is `ai-goals-and-brains`'.
+- **The landing page** gained *Where the part stops* in the template's place
+  with `{{#include ../../generated/coverage-world.md}}`, which is where the
+  world border's absence is now explained — giving the *Reference this part
+  uses* sentence's "for the reason just given" an antecedent it had lost. Its
+  verified line and argument no longer promise a lecture on *sending* (the
+  packet is Part IX's; this part stops at eligibility); the shape paragraph now
+  says which box in its figure is not a page; the watch order no longer says
+  the last four are free of each other, because `fluids` assumes
+  `scheduled-ticks` and `lectures.md` already said so; and the tenth blurb no
+  longer names a flag the reader has not met.
+- **Eight *Where to look* lists rewritten to A12**, each in the page's own
+  reading order with a phrase saying what each run is for: 21→13
+  (`chunk-anatomy`), 24→13 (`chunk-generation-pipeline`), 26→17 (`lighting`),
+  27→16 (`scheduled-ticks`), 23→13 (`tickets-and-loading`), 18→13 (`fluids`),
+  17→12 (`points-of-interest`), 23→16 (`game-events-and-vibrations`). No name
+  left the book; `scheduled-ticks` dropped three that appear nowhere on the
+  page and belong to the random-tick tangent rather than to its own trace.
+- **Six H3s added inside existing H2 anchors** to clear the forty-line budget
+  without moving an anchor: two on `lighting`, two on
+  `chunk-generation-pipeline`, one on `fluids`, one on `chunk-storage`. Part IV
+  went from ten long sections to none.
+- **`tools/pass6_shape.py` fixed**: `QLEAD` and `QMARK` used `[^*]`, so a bold
+  lead-in containing italics — `**Why is my *entities/* folder…?**` — counted
+  as neither a lead-in nor a question. Now non-greedy, with a probe case. Every
+  closer count this pass has published was measured with the old regex and may
+  be low by one wherever a question names a file or a field in italics.
+
 ## Pass 6, session C — Part III · The server *(2026-09-10)*
 
 Five system pages and the landing page, all six read first by one agent each

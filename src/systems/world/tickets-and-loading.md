@@ -94,12 +94,14 @@ except `TicketType.UNKNOWN` in `TicketStorage.deactivatedTickets`, and
 `TicketStorage.activateAllDeactivatedTickets` replays them during
 `MinecraftServer.prepareLevels`.
 
-> **For a 1.21-era reader.** There is no *LIGHT*, *PLAYER*, *START* or
-> *POST_TELEPORT* ticket, and there is no forced-chunks file: `TicketStorage`
-> (in `world/level`, not `server/level`) is the saved data now. The two
-> graphs are separate top-level classes, not inner classes of
-> `DistanceManager`, and the whole `ChunkHolder` generation half is a
-> superclass, `GenerationChunkHolder`.
+Which players place the two player tickets at all is a remembered answer, not
+a re-asked one. `ChunkMap` keeps its players in a `PlayerMap` that records
+each as ignored or not at the moment it joins (`PlayerMap.ignorePlayer`,
+`PlayerMap.ignoredOrUnknown`), and `ChunkMap.skipPlayer` — a spectator, unless
+`GameRules.SPECTATORS_GENERATE_CHUNKS` says otherwise — is what that record
+holds. So entering and leaving spectator mode is what adds and removes a
+player from the distance manager, and everything downstream reads the
+remembered answer.
 
 ### The number line
 
@@ -210,18 +212,20 @@ All of it on the **Server thread**, in three slots:
 2. **Idle time.** Whenever the server thread would otherwise wait,
    `MinecraftServer.pollTaskInternal` polls every level's
    `ServerChunkCache.MainThreadExecutor.pollTask`, which runs the distance
-   updates *first* and, if they did any work, returns at once. The light
-   schedule and the one queued chunk task only happen on a poll where the
-   graphs were already settled — propagation does not share the queue with
-   chunk work, it starves it until quiescent.
+   updates *first* and, if they did any work, returns at once.
 3. **A synchronous ask.** `ServerChunkCache.getChunk` from anywhere on the
    server thread checks a four-entry cache, then
    `ServerChunkCache.getChunkFutureMainThread` adds a `TicketType.UNKNOWN`
-   ticket and, if `ServerChunkCache.chunkAbsent`, runs the distance updates
-   synchronously so the holder exists in this call, then
-   `BlockableEventLoop.managedBlock` until the future is done. The server
-   thread never sleeps on a chunk: it runs chunk tasks while it waits.
-   Off-thread callers are bounced to the main thread and joined.
+   ticket and blocks on the future it arms.
+
+The second slot has a priority buried in it: the light schedule and the one
+queued chunk task happen only on a poll where the graphs were already
+settled, so propagation does not share the queue with chunk work — it starves
+it until quiescent. The third has an ordering: if `ServerChunkCache.chunkAbsent`,
+the distance updates run synchronously so that the holder exists inside the
+call, and `BlockableEventLoop.managedBlock` then waits. The server thread
+never sleeps on a chunk; it runs chunk tasks while it waits, and off-thread
+callers are bounced to the main thread and joined.
 
 Inside `DistanceManager.runAllUpdates` the order is fixed: the spawn
 counter, the simulation tracker, the player ticket tracker, the loading
@@ -380,30 +384,28 @@ and no setting.
 its remaining `Ticket.ticksLeft`, and only counts down while its chunk is
 saveable.
 
-**Why does sprinting outrun chunk loading?** Four in flight, nearest
-first, one slot released per completed entity-ticking future. It is a
-throttle, not a bug.
+**Do spectators load chunks?** Not unless
+`GameRules.SPECTATORS_GENERATE_CHUNKS` says so. A skipped player is still
+sent every chunk that already exists; what they cannot do is place a ticket
+that would generate one.
 
-**Do spectators load chunks?** Only if `GameRules.SPECTATORS_GENERATE_CHUNKS`
-says so: `ChunkMap.skipPlayer` is the gate, and a skipped player is still
-sent chunks that exist, but places no tickets that would generate them. The
-gate is remembered rather than re-asked — `ChunkMap` keeps its players in a
-`PlayerMap` that records each one as ignored or not at the moment it joins
-(`PlayerMap.ignorePlayer`, `PlayerMap.ignoredOrUnknown`), so entering and
-leaving spectator mode is what adds and removes the player from the distance
-manager, and everything else reads the remembered answer.
+> **For a 1.21-era reader.** There is no *LIGHT*, *PLAYER*, *START* or
+> *POST_TELEPORT* ticket, and there is no forced-chunks file: `TicketStorage`
+> (in `world/level`, not `server/level`) is the saved data now. The two
+> graphs are separate top-level classes, not inner classes of
+> `DistanceManager`, and the whole `ChunkHolder` generation half is a
+> superclass, `GenerationChunkHolder`.
 
 ## Where to look
 
-`TicketType` · `TicketStorage.addTicket` · `TicketStorage.purgeStaleTickets` ·
-`ChunkLevel.byStatus` · `ChunkLevel.fullStatus` · `DistanceManager.addPlayer` ·
-`DistanceManager.runAllUpdates` · `DistanceManager.PlayerTicketTracker.onLevelChange` ·
-`LoadingChunkTracker` · `SimulationChunkTracker` · `ChunkTracker.computeLevelFromNeighbor` ·
-`ChunkMap.updateChunkScheduling` · `ChunkMap.move` · `ChunkMap.applyChunkTrackingView` ·
-`ChunkMap.prepareTickingChunk` · `ChunkHolder.updateFutures` ·
-`ChunkHolder.scheduleFullChunkPromotion` · `ServerChunkCache.getChunk` ·
-`ServerChunkCache.getChunkFutureMainThread` · `ServerChunkCache.runDistanceManagerUpdates` ·
-`ChunkTrackingView.difference` · `PlayerChunkSender.sendNextChunks`
+Start where a ticket does: `TicketType` · `TicketStorage.addTicket` ·
+`ChunkLevel.byStatus`. Then the two graphs and the pass that runs them:
+`LoadingChunkTracker` · `SimulationChunkTracker` ·
+`ChunkTracker.computeLevelFromNeighbor` · `DistanceManager.runAllUpdates`.
+Then what a level change does to one chunk: `ChunkMap.updateChunkScheduling` ·
+`ChunkHolder.updateFutures` · `ChunkMap.prepareTickingChunk`. And the two ways
+in from outside: `ChunkMap.move` for a player, `ServerChunkCache.getChunk` for
+everyone else.
 
 ---
 

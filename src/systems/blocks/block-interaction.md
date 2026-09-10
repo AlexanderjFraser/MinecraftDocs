@@ -159,8 +159,8 @@ it is yes: `StateHolder.cycle` flips `DoorBlock.OPEN`, and `Level.setBlock`
 is called with flags **10** — `Block.UPDATE_CLIENTS` and
 `Block.UPDATE_IMMEDIATE`, with `Block.UPDATE_NEIGHBORS` **clear**. Then
 `DoorBlock.playSound`, `LevelAccessor.gameEvent` with `GameEvent.BLOCK_OPEN` or
-`GameEvent.BLOCK_CLOSE` (posting is [game events and
-vibrations](../world/game-events-and-vibrations.md#the-dispatcher-never-queues)), and
+`GameEvent.BLOCK_CLOSE` (posting is [a nested loop inside the caller's own
+method](../world/game-events-and-vibrations.md#the-broadcast-is-a-nested-loop-and-one-listener-is-the-exception)), and
 `InteractionResult.SUCCESS`. Exactly this code runs on both sides.
 
 Ten is the whole story of the page. Bit 2 broadcasts, and on the client

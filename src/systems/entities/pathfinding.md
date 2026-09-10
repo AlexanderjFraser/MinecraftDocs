@@ -107,7 +107,7 @@ neighbour's walked distance. A villager can find a bed 48 blocks away because it
 *required path length* to 48, and the larger of the two numbers wins; it
 cannot find one 60 blocks away no matter how open the ground is. That is the
 budget behind [a villager claiming a
-bed](../world/points-of-interest.md#the-trace-a-villager-claims-a-bed), whose
+bed](../world/points-of-interest.md#noon-and-a-bed-forty-eight-blocks-away), whose
 scan radius is the same 48 for exactly this reason.
 
 That region is built by asking `ChunkSource.getChunkNow` for every chunk in

@@ -103,13 +103,6 @@ the dedup key: `Fluids.WATER` and `Fluids.FLOWING_WATER` are different
 registry objects, so one tick of each can be pending at one position. What
 those ticks then *do* is [fluids](fluids.md).
 
-> **For a 1.21-era reader.** `BlockBehaviour.updateShape` no longer takes a
-> `LevelAccessor`. It takes a `LevelReader` and a separate
-> `ScheduledTickAccess` — a small interface whose whole job is booking:
-> `ScheduledTickAccess.createTick`, `ScheduledTickAccess.getBlockTicks`,
-> `ScheduledTickAccess.getFluidTicks` and four `ScheduledTickAccess.scheduleTick`
-> overloads that compose them.
-
 ## Where an appointment waits
 
 Every `LevelChunk` owns exactly two containers, `LevelChunk.blockTicks` and
@@ -174,12 +167,15 @@ one that passes moves into `LevelTicks.containersToTick`, a priority queue of
 hands to `LevelTicks.drainFromCurrentContainer`, which keeps pulling from that
 same container while its next tick is still due and still beats the next-best
 container's head — containers are re-heaped only when the winner stops
-winning. A container that is overtaken, or that still has something due when the
-budget is spent, goes back into the container queue; one merely overdue goes
-back to the index; one drained empty goes to neither. And
-`LevelTicks.rescheduleLeftoverContainers` returns whatever the budget cut off
-to the index at its head's trigger time, already in the past — which gets it
-*collected* next tick but buys it no place in the order, because
+winning. Where a container goes next turns on the budget as much as on its
+own head. **Overtaken but still due, with budget left**: back into the
+container queue, to be polled again this tick. **Head no longer due, or still
+due but the budget is spent**: back to the index, and asked again next tick.
+**Drained empty**: neither. Then
+`LevelTicks.rescheduleLeftoverContainers` runs over whatever is still sitting
+in the container queue when the drain stopped and returns each to the index at
+its head's trigger time, already in the past — which gets it *collected* next
+tick but buys it no place in the order, because
 `LevelTicks.CONTAINER_DRAIN_ORDER` compares priority and sub-order and has no
 time term at all.
 
@@ -191,11 +187,16 @@ re-read the world there and run `BlockBehaviour.BlockStateBase.tick` or
 named. **A tick is a promise to a type**, and that check is the whole of
 cancellation for anything a block does: break the block and its pending ticks
 evaporate with no cancellation code anywhere. The only code that removes a
-pending tick outright is bulk — `LevelChunkTicks.removeIf`, through
-`LevelTicks.clearArea`, forty lines below. **Clean up** is
+pending tick outright is bulk — `LevelChunkTicks.removeIf`, through the two
+area operations below. **Clean up** is
 `LevelTicks.cleanupAfterTick`, emptying all four working collections including
 `LevelTicks.toRunThisTickSet`, which is built lazily and only if somebody
-actually asks `LevelTicks.willTickThisTick`.
+actually asks `LevelTicks.willTickThisTick`. That laziness is the whole
+difference between the two questions a block can ask. `TickAccess.hasScheduledTick`
+reads the container and answers *is one booked*; `LevelTickAccess.willTickThisTick`
+reads this already-collected list and answers *is one about to run in this very
+level tick* — a thing `LevelTicks.hasScheduledTick` can no longer see, because
+`LevelChunkTicks.poll` freed the slot during collect.
 
 ### The comparisons, and which is used where
 
@@ -356,16 +357,6 @@ at the game time the chunk started ticking.
 
 ## Questions players ask
 
-**I rescheduled the tick for sooner and nothing changed. Why?** Because
-`LevelChunkTicks.schedule` dedups on type and position only, and the first
-booking wins. No block moves or cancels a pending tick — only `/clone` and the gametest
-framework do, in bulk, through `LevelTicks.copyAreaFrom` and
-`LevelTicks.clearArea`. So ask
-`TickAccess.hasScheduledTick` whether one is already booked, or
-`LevelTickAccess.willTickThisTick` whether one is about to run in this very
-level tick, which reads the already-collected list that
-`LevelTicks.hasScheduledTick` can no longer see.
-
 **Why did breaking one block stop a machine that was two ticks from firing?**
 A tick names a type. The appointment stays in the queue and still runs, but
 `ServerLevel.tickBlock` re-reads the position, finds a different block, and
@@ -386,22 +377,26 @@ is block-ticking again they are all collected in one drain. If the chunk
 unloads first they are written to disk with it. The only appointment actually
 lost is one booked into a chunk with no registered container.
 
-**Why does lava set things alight faster than the number of random ticks
-suggests?** Because a chosen lava position runs `LavaFluid.randomTick` twice
-per selection, once as a block and once as a fluid.
+> **For a 1.21-era reader.** `BlockBehaviour.updateShape` no longer takes a
+> `LevelAccessor`. It takes a `LevelReader` and a separate
+> `ScheduledTickAccess` — a small interface whose whole job is booking:
+> `ScheduledTickAccess.createTick`, `ScheduledTickAccess.getBlockTicks`,
+> `ScheduledTickAccess.getFluidTicks` and four `ScheduledTickAccess.scheduleTick`
+> overloads that compose them. Every waterloggable block books water's tick
+> from its own override of it.
 
 ## Where to look
 
-`ScheduledTick` · `ScheduledTick.UNIQUE_TICK_HASH` ·
-`ScheduledTick.DRAIN_ORDER` · `TickPriority` · `ScheduledTickAccess.scheduleTick` ·
-`LevelAccessor.createTick` · `LevelTicks.schedule` · `LevelChunkTicks.schedule` ·
-`LevelChunkTicks.poll` · `LevelTicks.tick` · `LevelTicks.sortContainersToTick` ·
+The appointment and the two things that decide its fate: `ScheduledTick` ·
+`ScheduledTick.UNIQUE_TICK_HASH` · `ScheduledTick.DRAIN_ORDER`. Booking, from
+the block's side in: `ScheduledTickAccess.scheduleTick` ·
+`LevelAccessor.createTick` · `LevelChunkTicks.schedule`. One drain, in its
+three phases: `LevelTicks.tick` · `LevelTicks.sortContainersToTick` ·
 `LevelTicks.drainContainers` · `LevelTicks.runCollectedTicks` ·
-`ServerLevel.tickBlock` · `ServerLevel.isPositionTickingWithEntitiesLoaded` ·
-`LevelChunk.registerTickContainerInLevel` · `LevelChunkTicks.unpack` ·
-`SavedTick` · `ProtoChunkTicks` · `WorldGenTickAccess` · `BlackholeTickAccess` ·
-`ServerLevel.tickChunk` · `LevelChunkSection.isRandomlyTicking` ·
-`DiodeBlock.checkTickOnNeighbor` · `DiodeBlock.tick` · `LevelTicks.copyAreaFrom`
+`ServerLevel.tickBlock`. The gate the collect phase asks:
+`ServerLevel.isPositionTickingWithEntitiesLoaded`. And the three containers
+that are not a live chunk's: `SavedTick` · `ProtoChunkTicks` ·
+`BlackholeTickAccess`.
 
 ---
 

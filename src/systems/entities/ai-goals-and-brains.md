@@ -376,7 +376,7 @@ hatch asks once, on its own terms.
 The rest of the day hangs off that. **Claiming a job site** is `AcquirePoi`
 from the core package, and the claim itself — the scan, the best five, the
 one pathfind that decides which of them is reachable — is [points of
-interest](../world/points-of-interest.md#the-trace-a-villager-claims-a-bed)'s,
+interest](../world/points-of-interest.md#noon-and-a-bed-forty-eight-blocks-away)'s,
 told there against a bed. A bell across a
 ravine is invisible to a villager. What is this page's is what the memory
 then means: `AcquirePoi` writes

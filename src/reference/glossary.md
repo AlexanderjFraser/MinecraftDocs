@@ -501,8 +501,8 @@ anything in its shape cache ([math and
 primitives](math-and-primitives.md#shapes-and-collision)) — and it is what ends
 a sky column
 ([lighting](../systems/world/lighting.md#the-sky-column-is-a-table-not-a-flood))
-and what lets two fluid surfaces cancel
-([fluids](../systems/world/fluids.md#questions-players-ask)). *Ambient*
+and what lets two fluid surfaces cancel ([why the wall test is
+affordable](../systems/world/fluids.md#why-the-wall-test-is-affordable)). *Ambient*
 occlusion is none of that: it is the per-quad shading the mesher bakes in
 ([section meshing](../systems/rendering/section-meshing.md)). And a vibration's
 occlusion is a six-ray raycast for `BlockTags.OCCLUDES_VIBRATION_SIGNALS` that
@@ -666,8 +666,8 @@ two instead add an aliveness test. → [entity selectors](../systems/commands/en
 
 **Sensor** (brains) — the half of brain AI that writes memories from the
 world, on a fixed interval. A *sculk sensor* is a block and a different
-subject ([game events and
-vibrations](../systems/world/game-events-and-vibrations.md#the-trace-one-footstep-several-ticks)).
+subject ([one footstep, and the ticks it takes to
+arrive](../systems/world/game-events-and-vibrations.md#one-footstep-and-the-ticks-it-takes-to-arrive)).
 → [AI](../systems/entities/ai-goals-and-brains.md)
 
 **ServerEntity** — the server's per-tracked-entity bookkeeping: what the

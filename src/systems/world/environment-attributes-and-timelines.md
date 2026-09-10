@@ -6,7 +6,8 @@ Dusk on the overworld clock is a stretch and not an instant. Between tick
 11867 and tick 13670 the sky over a taiga slides from its pale blue towards
 black, and the sky over a pale garden slides from its grey towards black by
 the same proportion; part-way through, at tick 12542, every mob standing in
-the open stops being in danger of burning until dawn. A player would never
+the open stops being in danger of burning, and is not in danger again until
+tick 23460. A player would never
 connect the three, and in 26.2 they are one mechanism. An **environment
 attribute** is a named, typed, registered property of the world —
 `EnvironmentAttributes` puts 48 of them in
@@ -322,8 +323,9 @@ when a loot context asks for one.
 
 `KeyframeTrackSampler.sample` is where the period matters: for a periodic
 track it bakes two extra segments, last keyframe to first on either side of
-the loop, so a value interpolates *across the wrap* — tick 0, which on this
-clock is dawn — instead of snapping, and it reduces the clock's total ticks
+the loop, so a value interpolates *across the wrap* — tick 0, where the day
+timeline's period closes and `ClockTimeMarkers.WAKE_UP_FROM_SLEEP` sits —
+instead of snapping, and it reduces the clock's total ticks
 with a floor-mod before choosing one. `EasingType` supplies the curve, and
 the day timeline's sun, moon and star angles share one symmetric cubic
 Bézier whose two keyframes both sit at tick 6000, so the baked segment runs
