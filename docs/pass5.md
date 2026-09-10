@@ -4126,3 +4126,101 @@ these are new.*
   literal branch and the sidebar's hidden-row filter. Neither is wrong and the
   pair is deliberate after this session; check the two do not drift.
   [kind=voice]
+
+## Session A — the standard (pass 6) *(2026-09-10)*
+
+*One page read and rewritten, `world/environment-attributes-and-timelines`,
+plus one paragraph of `commands/README`. The rulings are
+[pass6-brief.md](pass6-brief.md) Part 3; what follows is what the reading left
+for other passes and the cuts it logged.*
+
+### Cuts logged (nothing dropped without a line here)
+
+- **The fourteen `AttributeTypes` names, spelled out** —
+  `world/environment-attributes-and-timelines`. An inventory a reader cannot
+  hold and nothing later on the page needed more than three of; the sentence
+  now names the four families and their sizes. The names live in the class
+  index. [kind=record]
+- **The modifier-library roll call** — same page: `BooleanModifier`'s six
+  gates, `FloatModifier`'s six operations, `ColorModifier`'s four (with
+  `ColorModifier.BlendToGray` and `FloatWithAlpha`) and `IntegerModifier`, all
+  inside one paragraph whose point was `AttributeType.checkAllowedModifier`
+  at the far end of it. The counts survive per type family; the four class
+  names and the two helper types do not. [kind=record]
+- **The six `EnvironmentAttributeProbe` consumers by class name** — same
+  page. `SkyRenderer` stays (it is a lane in the figure);
+  `LightmapRenderStateExtractor`, `AtmosphericFogEnvironment`,
+  `WaterFogEnvironment` and `LevelExtractor` are now *"the lightmap, the two
+  fog environments, the clouds"*, with the link to
+  [lightmap, fog and sky](../src/systems/rendering/lightmap-fog-and-sky.md)
+  in the same sentence. [kind=record]
+- **`TimeCommand`'s subtree shape** — same page: that the whole subtree is
+  registered twice, the six subcommand names, and `/time query gametime`
+  sitting outside the clock nodes. What survives is that everything is
+  offered twice and why. A reference detail with no bearing on dusk falling;
+  the reader skipped it. [kind=record]
+
+### For the part sessions (pass 6)
+
+- **The trace that arrives 55% of the way down.** The exemplar promised a
+  trace in its verified line and delivered a vocabulary tour for 230 lines
+  first; the reader "had stopped expecting a trace". The fix that worked was
+  not a restructure but a **two-sentence signpost in the cast** saying what
+  the page does and in what order, plus a verified line that stops naming a
+  slot. Any page whose figure kinds disagree with its verified line is the
+  same case. [kind=lecture]
+- ***Where to look* is where the field inventory came back.** Measured over
+  the 102 system pages: the median is 18 names, 61 pages carry more than 15,
+  and **82 pages carry at least one name that appears nowhere else on the
+  page — 513 names in all**, led by `contexts-and-predicates` (26),
+  `recipes` (21), `entity-lifecycle` (20), `features-and-placement` (18) and
+  `jigsaw-and-templates` (17). Ruling A12 allows a door the page never opened
+  and refuses a dozen of them; the part sessions have the numbers per page in
+  their session files. [kind=lecture]
+
+### For pass 7 (the figures)
+
+- **`world/environment-attributes-and-timelines`' stack figure is a
+  `flowchart BT` under the heading *The stack a value falls through***, so
+  the value climbs while the prose says it falls, and only the 1–4 numbering
+  settles the direction. Judge the direction and the heading together — the
+  heading is an anchor seven pages land on, so the figure is the cheaper end.
+  [kind=figure]
+- **The two client-only lightning rungs in the same figure** sit inline
+  between weather and `sanitizeValue`, which reads as though the server
+  passes through them too; the prose corrects it two paragraphs later. A
+  branch or a subgraph would say it in the picture. [kind=figure]
+- **Whether `Note over` counts as a step.** The reader tried to count the
+  arrows in the dusk sequence to find "the fifth" and got two answers. The
+  prose no longer numbers the step, but any page that numbers a step of a
+  sequence diagram has the same ambiguity — pass 7's tick-boundary-bar job
+  should settle whether a `Note over` is a step. [kind=figure]
+
+### For pass 8 (the voice)
+
+- **`world/environment-attributes-and-timelines`:83-86** — *"rain at
+  `Level.getRainLevel` minus the thunder level, so a thunderstorm never
+  counts twice"* packs two blends and a subtraction into one clause, and the
+  subtraction reads as applying to the value rather than to the rain layer's
+  weight. Re-derived and true; the sentence is the problem. [kind=voice]
+- **Same page, the `ClientboundSetTimePacket` paragraph** — one sentence
+  carrying the full sync, the per-mutator broadcast and the routine empty-map
+  broadcast, joined by *and … and … but*; the reader lost the subject.
+  [kind=voice]
+- **Same page, *"where"* for *"whereas"*** — *"gates every clock at once
+  where `ServerClockManager.setPaused` gates one"*. [kind=voice]
+- **Same page, the sun-angle passage (L302-307 as it stood)** — four steps of
+  reasoning in three sentences, each depending on the wrap-segment idea two
+  sentences earlier. The reader called it the best passage on the page and
+  the one they read most slowly; it is a pacing problem, not a content one,
+  and the arithmetic checks out (13,563.7 above the horizon against 10,436.3,
+  the slope 0.666 of linear at noon and 1.190 at midnight). [kind=voice]
+- **`Registries.X` against `BuiltInRegistries.X`** — the exemplar names the
+  same registry both ways, two hundred lines apart, and the book never says
+  what the difference is. Corpus-wide: this is a glossary headword or a
+  sentence in `identifiers-and-registries`, and pass 8's terminology sweep
+  should decide which. [kind=voice]
+- **"game time" against a clock's total ticks** — the exemplar's wire section
+  carries both in one packet and never distinguishes them, after a page spent
+  arguing that day time lives in a clock. Two names for two things, one of
+  them unexplained. [kind=voice]

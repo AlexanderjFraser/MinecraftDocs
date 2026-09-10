@@ -44,6 +44,149 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session A — the standard and the exemplar *(2026-09-10)*
+
+*Two pages rewritten: `world/environment-attributes-and-timelines` (the
+exemplar, rewritten whole to the pass-6 standard) and
+`commands/README` (one paragraph, for the coverage include). `TEMPLATE.md`
+and `docs/pass6-brief.md` Part 3 changed too and are not pages.*
+
+### Corrections — every one re-derived against the decompile
+
+- `world/environment-attributes-and-timelines` — the opening said *"At tick
+  12542 on the overworld clock the sun goes under, and three things a player
+  would never connect happen at once"*, and only one of the three is at 12542.
+  `data/minecraft/timeline/day.json`: the *visual/sky_color* track is a
+  **multiply** whose keyframes hold `#ffffff` to tick 11867 and reach
+  `#000000` at 13670, so the sky slides across that stretch;
+  *gameplay/monsters_burn* flips false at 12542 and true at 23460; and the
+  sun crosses the horizon at ≈12782 by the page's own sun-angle Bézier (see
+  the next item). Now: *"Dusk on the overworld clock is a stretch and not an
+  instant. Between tick 11867 and tick 13670 … part-way through, at tick
+  12542 …"*.
+- `world/environment-attributes-and-timelines` — the same sentence said mobs
+  *"stop being in danger of burning at dawn"*, which reads as the danger
+  ending at dawn. `day.json`'s *gameplay/monsters_burn* keyframes are
+  `{12542: false}`, `{23460: true}`, modifier *or* — burning resumes at dawn.
+  Now *"until dawn"*.
+- `world/environment-attributes-and-timelines` — *"the same four numbers
+  exist twice more as records"*. `ClockState.java:7` is
+  `record ClockState(long totalTicks, float partialTick, float rate, boolean
+  paused)`; `ClockNetworkState.java:7` is `record ClockNetworkState(long
+  totalTicks, float partialTick, float rate)` — three, not four. The page now
+  says `ClockState` carries all four and `ClockNetworkState` three, with the
+  paused flag as the whole of what the client does not get (which the page
+  already said in the next sentence, contradicting itself).
+- `world/environment-attributes-and-timelines` — *"a 1-4-6-4-1 kernel lerped
+  by the sub-cell offset on each axis"*. `GaussianSampler.java:10` is a
+  **seven**-entry array `{0, 1, 4, 6, 4, 1, 0}`, and `:23` lerps between
+  entries *i+1* and *i* by the sub-cell offset for each of the six taps on an
+  axis (`GAUSSIAN_SAMPLE_BREADTH = 6`, `GAUSSIAN_SAMPLE_RADIUS = 2`). Five
+  weights over six cells does not close, which is what the reader caught.
+- `world/environment-attributes-and-timelines` — *"both read the flash
+  through the accessibility option Hide Lightning Flashes, which reports a
+  flash time of zero"* — as written the option always reports zero.
+  `ClientLevel.java:976`: `getSkyFlashTime` returns 0 **when the option is
+  on** and `skyFlashTime` otherwise. Now *"reports a flash time of zero while
+  it is switched on — so the two layers are still there and simply never
+  fire"*.
+
+### Claims introduced — `world/environment-attributes-and-timelines`
+
+- The verified line is new: *"dusk falls over a taiga, and one value is
+  resolved through a stack of layers — on the server for a mob, and again on
+  the client for the sky"* (it said *"The trace: dusk falls — …"*).
+- *The cast* gains a lead: *"Eight classes carry a value from the data pack
+  to the sky. The first two thirds of this page is the machinery, object by
+  object; the last third runs dusk through it twice, once on each side."* A
+  claim about the page, not the game — check it still describes the page.
+- The `EnvironmentAttribute` cast row now names the three flags —
+  *positional*, *spatially interpolated*, *syncable*
+  (`EnvironmentAttribute.java:14-16`, and the row already claimed *three*).
+- *positional* is now defined at first use: *"an attribute is positional
+  unless its builder says otherwise — positional meaning its answer is
+  allowed to differ from block to block"*
+  (`EnvironmentAttribute.Builder`'s default `isPositional = true`,
+  `EnvironmentAttribute.java:71`).
+- *"`AttributeTypes` registers fourteen of them, in four families: two
+  boolean kinds, three numeric, two colour, and seven enumerations a data
+  pack picks a name from"* — the grouping is new (`AttributeTypes.java`:
+  boolean, tri_state · float, angle_degrees, integer · rgb_color, argb_color
+  · moon_phase, activity, bed_rule, particle, ambient_particles,
+  background_music, ambient_sounds).
+- *"six logic gates for a boolean, six arithmetic ones for a float, four ways
+  to combine two colours"* — the same counts the page gave per modifier
+  class, now stated per type family.
+- The `Timelines.MOON` period cell says **192000 — eight days** where it said
+  `24000 × MoonPhase.COUNT` (`data/minecraft/timeline/moon.json`:
+  `period_ticks: 192000`).
+- New paragraph in *The four timelines*: *"a timeline with no period is not a
+  cycle at all — its track runs once against the clock's total ticks and then
+  holds its last value forever"* — moved up out of the closer's pillager
+  answer, which now states only the consequence.
+- The villager-schedule paragraph (`Brain.setSchedule`, the two tracks,
+  `Brain.updateActivityFromSchedule`'s 20-game-tick throttle, the link to
+  points of interest) moved from the closer into *The four timelines*
+  unchanged in substance.
+- New paragraph in *What crosses the wire*, all of it new: **syncable** is
+  the third flag; *"Thirty-three of the 48 carry it: every one of the 24
+  visual/ attributes and all four audio/ ones, and five of the gameplay flags
+  — sky_light_level, fast_lava, water_evaporates, piglins_zombify,
+  creaking_active. The fifteen left behind are gameplay decisions the server
+  makes alone"*, and *"the client's stack is shorter than the server's, and
+  identical everywhere the client actually looks"*
+  (`EnvironmentAttributes.java`, counted by `.syncable()` on each
+  `register(…)`: 33 of 48, the 15 without it all `gameplay/`).
+- The trace heading is now *"Dusk, and the same question asked twice"* (was
+  *"The trace: dusk falls"*), and its lead sentence changed to *"Both go
+  through the stack above, and this is the machinery running."* No inbound
+  link landed on the old anchor.
+- *"The step that reads oddly is the fifth"* is now named rather than
+  numbered — *"the one where the sampler asks whether any layer of the
+  attribute is positional and finds that none is"*.
+- Re-scoped appositive: *"`LavaFluid.isFastLava` and `Entity` …, the two
+  sites that between them decide how fast lava flows and how hard it
+  shoves"* — `LavaFluid.java:237` reads `FAST_LAVA` for the fluid's own
+  spread, `Entity.java:1756` for the push scale (0.007 against
+  0.0023333333333333335). The old sentence's *"the pair"* read as the two
+  attributes.
+- The six probe consumers are now a clause — *"everything that draws the sky
+  goes through it — the sky, the lightmap, the two fog environments, the
+  clouds and the music"* — so `LightmapRenderStateExtractor`,
+  `AtmosphericFogEnvironment`, `WaterFogEnvironment` and `LevelExtractor` are
+  no longer named on the page (logged in [pass5.md](pass5.md)).
+- The server/client one-tick disagreement moved from the closer into *The
+  same value on the client*, with a new framing sentence: *"The last
+  difference is a tick wide, and it is the reason the two sides can disagree
+  about the sky for one tick at dusk."* The mechanism is unchanged.
+- `TimeCommand`'s two registrations are now *"Everything `TimeCommand` offers
+  is offered twice, once against the source level's
+  `DimensionType.defaultClock` and once under `/time of` against a clock the
+  player names"*; the six subcommand names and the `/time query gametime`
+  exception are cut (logged).
+- The 1.21 blockquote moved to the foot, 11 lines to 8, and asserts something
+  the old one only implied: *"ultrawarm has become two of them,
+  `EnvironmentAttributes.FAST_LAVA` and
+  `EnvironmentAttributes.WATER_EVAPORATES`"* — by elimination against
+  `DimensionTypes.java:39`, where the nether sets `BED_RULE`,
+  `RESPAWN_ANCHOR_WORKS`, `WATER_EVAPORATES`, `FAST_LAVA` and
+  `PIGLINS_ZOMBIFY` for the four old booleans. `DimensionType.hasFixedTime`
+  and `DimensionType.ambientLight` "stayed put" is cut from the blockquote.
+- The closer keeps three questions (the nether's night, `/time` and the End,
+  the pillager patrols) and loses two to the body. Every answer left is a
+  consequence a player meets — the A2 test, applied.
+
+### Claims introduced — `commands/README`
+
+- *Where the part stops* now opens on
+  `{{#include ../../generated/coverage-commands.md}}` — **21% of the part's
+  lines are named on no page in the book**, from `pass5_coverage.py --write`
+  over `map_source.py`'s `PARTS`. The sentence around it is new: *"the
+  catalogue is where they sit: not quite a third of this part by line is
+  command registrations rather than machinery"* (12,781 of 43,126 lines by
+  `map_source.py packages`, which is 29.6%). The claim that the unexplained
+  lines are mostly the catalogue is the old sentence's and is unchecked.
+
 ## Pass 6, the planning session — between passes 5 and 6 *(2026-09-07)*
 
 *No page's prose was touched. What this session introduced that pass 9

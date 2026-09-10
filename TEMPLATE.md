@@ -8,7 +8,12 @@ budgets below are the enforceable part. Ruling R2 in section 9 of `docs/pass3.md
 authority; this file is its working form. Pass-5 session A (2026-09-05) added
 the two sections below it — "One home per mechanism" and "The landing page" —
 which are rules about the book rather than about a page; the rulings behind
-them are in `docs/pass5-brief.md` Part 3.*
+them are in `docs/pass5-brief.md` Part 3. Pass-6 session A (2026-09-10) wrote
+in what the menu had let become slots: the landing page's seventh section,
+the closer's one spelling and its test, the 1.21 blockquote's place, the way
+into a scenario, bold on the hook, one subject a section, *Where to look* as
+a reading list, and which of two look-alike pages varies. Its rulings are in
+`docs/pass6-brief.md` Part 3.*
 
 ## One home per mechanism
 
@@ -79,7 +84,7 @@ and one anchor, and every other page cites it in that form; the table is in
 
 A landing page is a part's **argument**, not a summary of its pages. It is
 what the folding sidebar opens on, so it is the first thing a reader of that
-part sees and the thing they come back to. Six things, in this order:
+part sees and the thing they come back to. Seven things, in this order:
 
 **The argument** — one paragraph saying what the part claims about its
 system and what a reader will be able to explain afterwards. It starts
@@ -112,12 +117,27 @@ about the order, and neither repeats the line. The order itself is the
 part's argument in miniature, and `check_deps.py` fails if the three
 disagree.
 
+***Where the part stops*** — what is in the part's packages and not in the
+lectures, and why. It sits here, after the watch order and before the shelf:
+the reader has just seen what the part teaches, so this is where they can
+judge what it leaves out, and the shelf then closes the page. It carries the
+families the pages above already draw (a clause each), the deliberate
+omissions with the reason (a sentence each, and each of those is an entry in
+`docs/pass3.md` §7), and the coverage number from
+`{{#include ../../generated/coverage-<dir>.md}}` — never hand-counted, the
+same rule the size follows. At most fifteen lines: what is longer is either
+the argument made a second time or an explanation that belongs on a page.
+
 **The Reference it uses** — one line per page, what the part reads it for.
 
 Then the rules footer. No trace, no cast, and no figure but the part's own
-shape. Everything except the watch order runs to about a hundred lines; a
-landing page much longer than that is arguing twice, and the fix is the
-argument rather than the trim.
+shape. Everything except the watch order runs to about a hundred lines,
+*Where the part stops* inside that; a landing page much longer than that is
+arguing twice, and the fix is the argument rather than the trim. **The
+argument ends on the claim** — where the paragraph carries the recognition
+sentence (*a player recognises this part by …*), that sentence sets the claim
+up and does not end the paragraph, or the part's argument reads as a list of
+symptoms.
 
 ## What every page keeps
 
@@ -132,7 +152,16 @@ argument rather than the trim.
    hook bank (the block that comes back and vanishes again; lava
    random-ticking twice; the watchdog kill that saves nothing; the minimized
    window rendering frames nobody sees; the player built after the phase
-   named for preparing it).
+   named for preparing it). **What varies between pages is the way in** — a
+   thing happening, a thing seen, a fact stated flat, a question — not
+   whether the reader is addressed: the second person is the plainest way
+   into a scenario and belongs to any page that wants it, but *You* as the
+   first word is an entry, and a part whose pages nearly all start on it has
+   one way in rather than a register. In the body the second person stays
+   where the reader does the thing (the click, the swing) and out of the
+   explanation. **Bold on the hook is a device, not a slot**: spent where
+   that sentence is the page's thesis and the page comes back to it, and
+   otherwise not.
 4. **The cast** — at most eight classes with role and thread, as a small
    table (`| class | what it decides | thread |`) or woven into the
    narration. It replaces the field inventories: a page names the fields
@@ -142,9 +171,22 @@ argument rather than the trim.
    from the key.
 6. **Headings that say what the section says** — *The two flushes*, *When
    a ticket dies*, *Status, the phase nobody logs in through* — never which
-   template slot it fills. A reader should be able to tell two pages apart
-   from their tables of contents.
-7. ***Where to look*** — entry-point names, one line, in reading order — and
+   template slot it fills, so a trace's heading is its scenario (*Dusk, and
+   the mob and the camera ask the same question*) and never `The trace: …`.
+   A reader should be able to tell two pages apart from their tables of
+   contents. **A section has one subject and its heading names it**: a
+   heading that names two of the three things under it is the finding, and
+   the fix is usually a third heading rather than a longer one. **A section
+   lands on its rule and the exception follows**, unless the exception is the
+   page's hook. What the page names and does not explain — the coverage
+   passage — sits in one place: last before the closer, or last before
+   *Where to look* where there is none.
+7. ***Where to look*** — entry-point names, one line, in reading order: a
+   reading list for someone opening the decompile, **not an index of the
+   page**. A name in it that the page never said is a door the reader can
+   still open, so it is allowed — but a dozen of them is the field inventory
+   come back under a new heading, and those go to the class index and
+   Reference where the inventories live. Then
    the rules footer, verbatim:
 
    `*Rules: names, never code · how the system works, not how the code reads ·
@@ -171,12 +213,21 @@ truth is a graph, do not draw a conversation.
 | **the comparison** | two or three paths that differ | a table with the paths as columns; one diagram per path, or one with `alt` | a section per point of difference, not per path | — |
 | **the vocabulary page** | the objects and their relations | a figure of the data (`classDiagram`, a containment `flowchart`), then one small trace | a tour by object, each grounded in the trace | — |
 | **the pattern** | one idea, many instances | the instances as a table; one instance traced | the idea, the table, the trace, the exceptions | — |
-| **the landing page** | a part | the part's shape as a figure of its pages | the argument · the size · the figure · *before you start* · *watch in this order* · the Reference pages it uses — the section [The landing page](#the-landing-page) above has the role in full | `src/systems/commands/README.md` |
+| **the landing page** | a part | the part's shape as a figure of its pages | the argument · the size · the figure · *before you start* · *watch in this order* · *where the part stops* · the Reference pages it uses — the section [The landing page](#the-landing-page) above has the role in full | `src/systems/commands/README.md` |
 
 A page may borrow one section from another shape (the policy pilot keeps a
 six-lane trace; the state-machine pilot keeps a three-lane sequence for the
 encryption handshake alone). It may not borrow the whole skeleton. **A page
-is not done until it reads differently from its neighbours.**
+is not done until it reads differently from its neighbours** — its
+neighbours being the pages a reader meets around it, which is the pages of
+its own part. Where two of them run the same sections in the same order, the
+**later page in the watch order varies**, because the reader met the earlier
+one fresh; the variation is structural — a different order of the same
+sections, the questions dissolved, the comparison table as the figure, the
+trace before the cast — never the same paragraphs under reshuffled headings.
+Two pages in different parts may share a spine and usually should not be
+touched for it. The exception is a pair the book declares (above): there a
+shared skeleton is the point, and what has to read differently is the prose.
 
 ## The devices
 
@@ -187,9 +238,24 @@ Any page may use these; none must.
   `**Four** — player-view chunks loading at once (\`DistanceManager.ticketDispatcher\`).`
 - **For a 1.21-era reader** — a blockquote opening `> **For a 1.21-era
   reader.**`, replacing the names-you-will-hunt-for bullets; one per page at
-  most, and only where a modder would reach for a name that has moved.
+  most, at most eight lines, and only where a name or a mechanism actually
+  moved — a blockquote that only says *this is new* is not one. **Its place
+  is the foot of the page**: the last thing before *Where to look*, after the
+  closer if there is one. It addresses a reader the page is not otherwise
+  written for, who should be able to find it without reading the page, and in
+  the body it stops the scenario for the reader the book *is* for.
 - **Questions players ask** — a section whose bold lead-ins are questions
-  and whose paragraphs are the invariants, restated as answers.
+  and whose paragraphs are the invariants, restated as answers. That
+  spelling and no other: where the questioner is a data-pack author or a
+  command author, the question says so and the heading does not. **A closer
+  holds consequences, never the page's own mechanism.** An answer another
+  page needs is load-bearing by definition — it moves up under a heading
+  that says what it says, and the link that cited it is repointed in the
+  same commit. A closer that stays is the last content section, holds at
+  most six questions, and answers each in at most a paragraph. Where it
+  goes, its material dissolves into the section where the answer happens or
+  takes a heading of its own; nothing is dropped except by the budget rule.
+  A part whose every page ends on one has stopped choosing.
 - **The same trace from the other side** — a mirrored client/server pair,
   as `environment-attributes-and-timelines` already does.
 - **The tick-boundary bar** — `Note over X: a later tick` (or the tick

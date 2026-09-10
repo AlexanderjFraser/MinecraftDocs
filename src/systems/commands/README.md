@@ -123,9 +123,11 @@ machine — as it owns `/execute if predicate`, which a selector's own
 
 ## Where the part stops
 
-Not quite a third of this part by line is the catalogue rather than the
-machinery, and it is where the unexplained lines are. The honest answer to what is unexplained is that nearly all of it is one more
-instance of something a page above already draws. The **fifty-odd commands**
+{{#include ../../generated/coverage-commands.md}}, and the catalogue is where
+they sit: not quite a third of this part by line is command registrations
+rather than machinery. The honest answer to what is unexplained is that
+nearly all of it is one more instance of something a page above already
+draws. The **fifty-odd commands**
 nobody names are the door table's premise repeated:
 `SpreadPlayersCommand`, `FillCommand`, `TeleportCommand`, `WorldBorderCommand`
 and their neighbours are each a Brigadier registration and a call into another

@@ -28,7 +28,9 @@ refinement, one lens each: **6 the lecture** (**current**, planned
 2026-09-07 — one page at a time: the devices that became slots, the twin
 skeletons, the section order, the cuts, the landing pages' seventh section;
 the brief, the runbook, the standard and **the schedule with each session's
-status** are `docs/pass6-brief.md`), **7 the figures**
+status** are `docs/pass6-brief.md`, whose **Part 3 is settled** — session A
+ruled on 2026-09-10 and a part session applies it rather than re-deciding
+it), **7 the figures**
 (every figure as rendered; the gate over names inside mermaid blocks), **8 the
 voice** (one voice, the tics, the terminology, the ambiguous counts). Then
 **9** the third fact-check and **10** the last polish. Beside them, a **version pass**

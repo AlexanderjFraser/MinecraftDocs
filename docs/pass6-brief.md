@@ -5,11 +5,12 @@ every pass-6 session (A–O, run on Opus) launches the same read the same way.
 Part 1 is handed to the agent verbatim — `tools/pass6_prompts.py` prepends it
 to each page's prompt file, and that file carries **nothing else**, because
 this pass's agent is a reader with nothing but the page. Part 2 is the
-session's own procedure. Part 3 is session A's work: the rulings the part
-sessions apply, made once — written here as the planning session's
-recommendations with the numbers behind them, for session A to ratify, amend
-or reverse and rewrite as a record, the way pass 5's session A rewrote its
-Part 3. Part 4 is the schedule, one session per part, with what the tools
+session's own procedure. Part 3 is **the standard** — the rulings the part
+sessions apply, made once: written by the planning session as recommendations
+with the numbers behind them, and rewritten by session A on 2026-09-10 as the
+record of what was ratified, what was amended and what was added, the way
+pass 5's session A rewrote its Part 3. A part session reads it and applies it;
+it does not re-decide it. Part 4 is the schedule, one session per part, with what the tools
 measured before the first session spent anything, and **the status column the
 owner reads to see which sessions are done**. The charter this implements is
 in [plan.md](plan.md) under *Pass 6 — the lecture*; the queue it draws on is
@@ -208,8 +209,9 @@ mechanism rather than a player's consequence (Part 3, A2); the pages whose
 skeleton you had just read on the page before (A7); and the sections you
 skipped yourself. Then decide, with the part's device table open, the two
 part-wide questions before any page is touched: **which pages keep the closer**
-(at most about half, by A2's test) and **which page of each within-part twin
-pair varies** (A7). Run the mechanical checks for the part:
+— the test in A2, page by page, with the half a smell rather than a quota —
+and **which page of each within-part twin pair varies** (A7). Run the
+mechanical checks for the part:
 
 ```
 python tools/pass6_shape.py --part world
@@ -298,239 +300,250 @@ after all of them. Commit your own files by name, never `add -A`.
 
 ---
 
-## Part 3 — Session A: the standard
+## Part 3 — The standard (session A's record, 2026-09-10)
 
-*Written by the planning session as recommendations, each with the number
-behind it (`pass6_shape.py`, 2026-09-07). Session A ratifies, amends or
-reverses each one with the exemplar page open, writes the rulings into
-`TEMPLATE.md` where they are rules about a page, and rewrites this part as the
-record of what was decided — the way pass 5's session A did. Thirteen part
-sessions then apply them rather than re-deciding them.*
+*The planning session wrote this part as eleven recommendations, each with the
+number behind it. Session A read the exemplar and one reader's report on it,
+ratified nine, amended one, added one, and wrote the rules about a page into
+`TEMPLATE.md`, which is where the part sessions read them. This is the record
+of what was decided and why; the numbers are the planning session's,
+unchanged, so that a session can read a recommendation and its ruling
+together. Thirteen part sessions apply these; none re-decides them.*
 
-### A1. The second person — ratified as a register, refused as a first word
+**What the exemplar proved about the method, before any ruling.** One reader
+with no source, no other page and no measurements found **five factual errors**
+on a page that had been fact-checked adversarially twice — the opening pinning
+a stretch of 1,800 ticks to one instant, a mob's danger ending at the wrong
+end of the night, four numbers said to exist in a record that holds three, a
+five-weight kernel over six cells that does not close, and an accessibility
+option described as always on. Every one of them was found by a reader
+*reading*, not by a reader checking: the sentence contradicted another
+sentence, or the arithmetic would not close. That is the error two fact-checks
+could not see and pass 5 was not looking for, and it is the strongest argument
+so far that this pass earns its cost. It is also why the standing rule stands:
+a session that finds one **stops, opens the decompile, re-derives it itself**,
+and logs it in [pass9.md](pass9.md) with file and line.
 
-**Measured:** 26 of the 102 system pages open on the word *You*; 41 have a
-second-person first sentence; 65 carry *you* somewhere in the opening
-paragraph. By part, the second-person first sentence runs from none (I, II) to
-all eight pages of Part VII; Parts VI (6 of 9), XI (5 of 11) and XII (5 of
-10) are next.
+### A1. The second person — **ratified**
 
-**Recommended ruling.** The second person stays: the verified line is *a
-sentence a player could act out*, an opening starts *inside* the scenario, and
-putting the reader in it is the plainest way in. What became a slot is not the
-person but the entry — *You …* as the first word, on a quarter of the corpus
-and on every page of one part. So: any page may open in the second person; no
-part opens most of its pages on the word *You*; the thing varied is **how the
-reader enters the scenario** — a thing happening, a thing seen, a fact stated
-flat, a question — not whether *you* appears. In the body the second person
-stays where the reader does the thing (the click, the swing) and out of the
-explanation, which is the corpus's usage today. The sentence-level register is
-pass 8's.
+The ruling as recommended. Any page may open in the second person; **no part
+opens most of its pages on the word *You***; what varies is *how the reader
+enters the scenario* — a thing happening, a thing seen, a fact stated flat, a
+question — not whether *you* appears. In the body the second person stays
+where the reader does the thing and out of the explanation. The
+sentence-level register is pass 8's.
 
-### A2. The closer — one spelling, at most about half a part, never load-bearing
+Written into `TEMPLATE.md` under *What every page keeps*, item 3. The
+exemplar is the entry that is not a person at all — *"Dusk on the overworld
+clock is a stretch and not an instant"* — a fact stated flat, which is the
+fourth of the four ways in and the one the corpus uses least.
 
-**Measured:** the closer is on **69 of 102** pages, in **five** spellings
-(*Questions players ask* ×63; *Questions a reader asks* ×3, all in Part X;
-*Questions the pattern raises*, *Questions a data-pack author asks*, *Questions
-a command author asks* ×1 each) — the plan's *seven* was a miscount. Three
-parts use it on every page (IV 10/10, V 7/7, VIII 7/7) and two nearly (XII
-9/10, II 6/7). On four pages it is not the last content section
-(`what-the-client-is-told`, `the-client-level`, `advancements`,
-`the-execution-engine`). And **27 links from 25 pages land on a closer's
-anchor** — each one an answer some other page needs, sitting in a section
-named for questions a player asks; `status-effects`' closer holds three of the
-page's real explanations, `server-tick`'s holds the autosave arithmetic.
+### A2. The closer — **amended: the test stands, the quota goes**
 
-**Recommended ruling.** (a) One spelling, *Questions players ask*; where the
-questioner is a data-pack author or a command author the *question* says so
-and the heading does not. (b) Session P's rule of thumb stands — at most about
-half the pages of a part end on it — and the test that decides which pages
-keep it is this: **a closer stays where every answer in it is a consequence a
-player meets, and none is the page's own mechanism.** An answer another page
-cites is load-bearing by definition; it moves up under a heading that says
-what it says, and the citing link is repointed in the same commit. (c) A
-closer that survives is the last content section, holds at most six questions,
-and each answer is at most a paragraph. (d) Where the closer goes, its
-material dissolves into the section where the answer happens (session G's
-precedent: *Three things about the id*, *Why mobs look stupid*) or takes a
-heading of its own; nothing is dropped except by the budget rule. (e) A page
-without a closer whose best facts are question-shaped (`entity-lifecycle`,
-`players-and-sessions`) may gain one if the part is under the half — the
-device is still on the menu.
+(a), (c), (d) and (e) as recommended: one spelling, *Questions players ask*;
+a closer that stays is the last content section, holds at most six questions
+and answers each in at most a paragraph; where it goes its material dissolves
+into the section where the answer happens or takes a heading of its own; and a
+closer-less page whose best facts are question-shaped may gain one.
 
-### A3. The 1.21 blockquote — at the foot, short, and only where a name moved
+(b) is **amended**. The recommendation was *at most about half the pages of a
+part*, and a quota is the one thing A9 refuses two rulings later — *no line
+budget; a count in a queue is a description, not a target*. The same argument
+applies here: a quota would force a session to strip a closer off a page where
+every answer passes the test, to hit a number. So **the test decides, and
+nothing else**:
 
-**Measured:** on **39** pages (the plan's 42 counted three pages that mention
-a 1.21-era reader in prose without the device). At the foot of the page —
-inside the last content section or right before *Where to look* — on 23:
-all nine of Part X's and all eleven of Part XI's (sessions K and L of pass 3
-moved them there deliberately) and one each in III, IX and XIII. In the body on
-16: Part IV's four, Part XII's three, and one or two each in I, II, V, VII,
-IX and XIII. The longest is eleven lines (`block-entity-rendering`).
+> A closer stays where every answer in it is a consequence a player meets,
+> and none is the page's own mechanism. An answer another page cites is
+> load-bearing by definition: it moves up under a heading that says what it
+> says, and the citing link is repointed in the same commit.
 
-**Recommended ruling.** The foot is its place: the last thing before *Where
-to look*, after the closer if there is one — because it addresses a reader the
-page is not otherwise written for, who should find it without reading the
-page, and because in the body it interrupts the scenario for the reader the
-book is for. At most eight lines; one per page; only where a name or a
-mechanism actually moved between 1.21 and 26.2 (the template's rule) — a
-blockquote that only says *this is new* goes. Its register is pass 8's.
+The half is a **smell, not a target**. A part that comes out of its session
+with the closer still on nearly every page has probably not applied the test,
+and the session says in its log why each survivor passed. Four parts are in
+that position today (IV 10/10, V 7/7, VIII 7/7, XII 9/10).
 
-### A4. The literal `## The trace: …` heading — the heading is the scenario
+The exemplar is the test working in both directions on one page. Five
+questions: the nether's night and *"does setting the time in the overworld
+move the End"* are consequences and stayed; *"why do the server and the client
+disagree by a tick"* was the page's own mechanism and moved into the client
+section, where it now closes the comparison; *"where did the villager schedule
+go"* was half a repeat of the 1.21 blockquote and its real content moved into
+*The four timelines*; and the pillager-patrol answer carried the page's only
+statement of a mechanism the body needed — *a timeline with no period is not a
+cycle* — so the mechanism moved up and the question kept the consequence.
+Three questions left, all consequences, and the page is better in the middle
+rather than shorter at the end.
 
-**Measured:** 20 pages in eight parts (VIII ×4, XII ×4, XIII ×4, IV ×3, VI ×2,
-II, VII, XI). The template's rule is already that a heading says what the
-section says, never which slot it fills.
+Written into `TEMPLATE.md` under *The devices*.
 
-**Recommended ruling.** Rename each to the scenario — *One click, one
-integer, one round trip*, not *The trace: one click…* — with `check_links.py
---inbound` in hand, because the heading is an anchor.
+### A3. The 1.21 blockquote — **ratified**
 
-### A5. The opening's last sentence — the hook last, bold spent not defaulted
+The foot is its place: the last thing before *Where to look*, after the closer
+if there is one. At most eight lines; one per page; only where a name or a
+mechanism actually moved. A blockquote that only says *this is new* goes. Its
+register is pass 8's.
 
-**Measured:** 28 openings end on a bold sentence (Part IV 6 of 10, Part VII 5
-of 8, Part VIII 4 of 7); 34 end on a dash clause.
+Written into `TEMPLATE.md` under *The devices*. The exemplar's went from
+eleven lines in the body to eight at the foot, and lost the clause about the
+two `DimensionType` fields that *stayed put* — a blockquote about names that
+moved has no room for names that did not.
 
-**Recommended ruling.** The hook stays the last sentence (the template's
-rule). Bold on it is a device, not a slot: spent where the sentence is the
-page's thesis and the page returns to it — a figure caption or a heading
-echoes it — and otherwise not. The two parts where most hooks are bold unbold
-first, page by page, as each is read. The dash clause is pass 8's (the
-em-dash chain is in its charter).
+### A4. The literal `## The trace: …` heading — **ratified, and it takes the verified line with it**
 
-### A6. The landing page — the seventh section gets a place, and the argument ends on the claim
+Rename each of the twenty to its scenario, with `check_links.py --inbound` in
+hand. One addition: **where the verified line names the slot too, it is
+rewritten in the same edit.** Exactly one page did (`environment-attributes-
+and-timelines`, whose line began *"The trace: dusk falls — …"*), so this is a
+clause, not a job.
 
-**Measured:** lines outside *Watch in this order* run 57 (I) · 69 (II) · 94
-(IV) · 109 (III) · 128 (X) · 129 (VIII) · 132 (VII) · 133 (XIII) · 134 (V) ·
-137 (XI) · 139 (IX) · 142 (VI) · 179 (XII), median **132** against the
-template's *about a hundred*. The seventh section — the coverage answer
-pass 5 asked every part for — is a heading on nine pages in three positions
-(**first**, before the shape: V, VI, VII; **fourth**, before Reference: III,
-XIII; **fifth**, after Reference: I, VIII, IX, XII), a headingless paragraph
-on three (IV inside the shape section, X and XI inside the Reference section),
-and absent on II. The recognition sentence — *a player recognises the part
-by …* — is on nine, and on five (II, VII, VIII, IX, X) it is the argument's
-last sentence, so the paragraph ends on a list of symptoms instead of a claim.
-Four pages hand-count a coverage number beside a size that is generated (VI
-*about 40%*, VII *about a third*, VIII *97%*, XII *a quarter*); the generator
-now writes all thirteen.
+The exemplar's heading is now *"Dusk, and the same question asked twice"*. No
+inbound link landed on the old anchor, which is worth knowing before the part
+sessions start: of the four devices, the trace heading is the cheapest to
+rename and the closer the dearest — **27 links from 25 pages land on a
+closer's anchor**.
 
-**Recommended ruling.** (a) `TEMPLATE.md`'s landing page gains a seventh
-section, ***Where the part stops***, in a fixed place: **after *Watch in this
-order* and before *Reference this part uses*** — the reader has just seen the
-lectures, the section says what is in the part's packages and not in them and
-why, and the shelf closes the page. The exemplar landing page,
-`commands/README`, already has it there. (b) It carries the families the pages
-above already draw (a clause each), the deliberate omissions with the reason
-(a sentence each, each an entry in [pass3.md](pass3.md) §7), the size where
-the argument does not already carry it, and the coverage number from
-`{{#include ../../generated/coverage-<dir>.md}}` — never hand-counted, so the
-four swap theirs. (c) The budget stays *about a hundred lines plus the watch
-order* with the seventh section inside it: at most fifteen lines, and what is
-longer is either the argument made twice or an explanation that belongs on a
-page. The median comes down by the argument, not the trim. (d) The argument
-ends on the claim (XI is the model: a claim, three consequences, then the
-hook); the recognition sentence may set the claim up mid-paragraph and may not
-end it. (e) The phrases that became labels — *the part's closer*, *the part's
-policy page*, *and not optionally*, *the vocabulary page* — are pass 8's,
-already tagged.
+### A5. The opening's last sentence — **ratified**
 
-### A7. The twin skeletons — the later page of a within-part pair varies
+The hook stays last. Bold on it is spent where the sentence is the page's
+thesis and the page comes back to it, and otherwise not. The two parts where
+most hooks are bold (IV 6/10, VII 5/8) unbold page by page as each is read.
 
-**Measured** (`pass6_shape.py --twins`, spines as tokens: cast · trace · q ·
-look · seq · flow · state · svg · p): **six identical spines** shared by
-fifteen pages, none inside one part — `block-breaking` = `codecs-nbt-json` =
-`trees`; `block-interaction` = `the-connection` = `section-meshing`;
-`chunk-anatomy` = `the-window` = `terrain`; `authority` = `recipes`;
-`text-components` = `post-processing`; `models-and-atlases` =
-`structure-placement` — and **seventeen within-part pairs one edit apart**,
-of which the densest are Part VIII (`input-to-movement` against three of its
-own neighbours: session P's *cast → The trace → detail → questions → where to
-look, only the nouns change*), Part X's GUI-and-sound group (`gui-and-screens`
-↔ `hud` ↔ `options` ↔ `what-makes-a-sound`) and Part XI's `blaze3d` ↔
-`models-and-atlases` ↔ `post-processing`. Session P's other groups still hold
-in the tokens (`biomes` ↔ `features-and-placement`; `density-functions` ↔
-`terrain`; `jigsaw-and-templates` ↔ `trees`; `how-a-server-dies` ↔
-`players-and-sessions`; `data-driven-types` ↔ `tags`; `authority` ↔
-`entity-anatomy`; `block-entities` ↔ `signal-and-dust`).
+The exemplar **keeps** its bold, and that is the point of the ruling: *"Night
+does not set the sky's colour — it multiplies whatever the biome produced"* is
+the page's thesis, and *Arguments, not values* pays it off forty lines later
+with the same verb. The rule is not *unbold*; it is *earn it or lose it*.
+Written into `TEMPLATE.md` under *What every page keeps*, item 3.
 
-**Recommended ruling.** `TEMPLATE.md`'s rule — *a page is not done until it
-reads differently from its neighbours* — is about neighbours, so a within-part
-pair is the finding and a cross-part identical spine is a note the session
-reads and may leave. For each within-part pair **the later page in the watch
-order varies**, because the reader meets the earlier one fresh; the exception
-is one of pass 5's fifteen declared pairs (`block-breaking` ↔
-`block-interaction`, *one lecture in two halves*), where a shared skeleton is
-the point and what must read differently is the prose. The variation is
-structural — a different order of the same sections, the questions dissolved,
-the comparison table as the figure, the trace before the cast — never a
-reshuffled heading over the same paragraphs.
+### A6. The landing page's seventh section — **ratified**
 
-### A8. The section order — the rule, then the exception; one subject a section
+`TEMPLATE.md`'s landing page now has seven things, and the seventh is
+***Where the part stops***, **after *Watch in this order* and before
+*Reference this part uses***: the reader has just seen the lectures, so this
+is where they can judge what is left out, and the shelf closes the page. It
+carries the families the pages above already draw, the deliberate omissions
+with the reason (each an entry in [pass3.md](pass3.md) §7), and the coverage
+number from `{{#include ../../generated/coverage-<dir>.md}}`, never
+hand-counted. At most fifteen lines, inside the *about a hundred* budget. The
+argument ends on the claim, and the recognition sentence may set the claim up
+mid-paragraph and may not end the paragraph.
 
-**From the queue:** `server-level-tick` delivers a punchline and immediately
-qualifies it; `the-execution-engine` opens on *there is no recursion limit* and
-names the budget in the middle and the two limits at the end; `the-window`
-introduces a seventh callback under a heading that says six and explains it
-three sections later; `advancements`' coverage section sits between the Q&A
-and the page's last trace; a dozen headings promise two subjects of the three
-under them.
+Two facts for the sessions that will move theirs: the heading is
+***Where the part stops*** and nothing longer — the two parts that spell it
+*"…, and how much of it there is"* (VI, VII) take the short form, because the
+number is now inside the section rather than in its title — and
+**no page in the corpus links to any of the thirteen anchors**, so every move
+and rename in this ruling is free.
 
-**Recommended ruling.** A section lands on its rule and the exception follows
-it, unless the exception is the page's hook. A section has one subject, and
-its heading names it; a heading that names two of three subjects is the
-finding. What a page names and does not explain — the coverage passages pass
-5 added — sits in one place on every page: last before the closer, or last
-before *Where to look* where there is none.
+`commands/README` is the landing exemplar and now carries the include, the
+first page in the book to. Its number is 21%, and the sentence it sits in
+keeps the part's own argument about *why*: *"the catalogue is where they
+sit"*. The other four hand-counted numbers (VI, VII, VIII, XII) swap for the
+include in their own sessions.
 
-### A9. The cuts — a move or a logged cut, decided by the reader and the hook
+### A7. The twin skeletons — **ratified**
 
-**Measured:** thirteen pages are over 450 lines (`what-the-client-is-told`
-510, `server-level-tick` 507, `packets-and-stream-codecs` 505,
-`identifiers-and-registries` 491, `the-connection` 490, `players-and-sessions`
-489, `text-components` 473, `what-this-book-skips` 471, `server-tick` 470,
-`ai-goals-and-brains` 469, `entity-lifecycle` 458, `how-a-server-dies` 454,
-`containers-and-menus` 453); the corpus median is 356, and by part it runs from
-267 (VIII, X) to 490 (IX). 131 sections over forty lines carry neither a
-figure nor an H3. Pass 3's drafters each logged their cheapest cut
-([pass5.md](pass5.md):2180 for Part IV, :2520 for Part VII).
+A within-part pair is the finding; a cross-part identical spine is a note the
+session may leave. For each within-part pair **the later page in the watch
+order varies**, and the variation is structural — a different order of the
+same sections, the questions dissolved, the comparison table as the figure,
+the trace before the cast — never the same paragraphs under reshuffled
+headings. The exception is one of pass 5's declared pairs, where the shared
+skeleton is the point and the prose is what must differ.
 
-**Recommended ruling.** No line budget — a count in a queue is a description,
-not a target, and the owner reads pages, not line counts. The evidence for a
-cut is the reader's *what I skipped* and *the section I would cut first*, and
-the test is the hook: a section the page's hook does not need and no other
-page cites (`check_links.py --inbound`) is the first cut. A cut is a move —
-to its owner page, or to Reference with a sentence and a link kept — or a
-logged cut in [pass5.md](pass5.md) tagged `[kind=record]`, never a silence.
-A page over 450 lines is read whole for the cut, not trimmed.
+Written into `TEMPLATE.md` beside *a page is not done until it reads
+differently from its neighbours*, which is the rule this makes operable by
+saying who *neighbours* are.
 
-### A10. The exemplar — one page rewritten to the standard before the part sessions run
+### A8. The section order — **ratified, with the exemplar's method**
 
-**Measured** (`pass6_shape.py --slots`): ten pages carry four of the fixed
-devices at once. The candidate is **`world/environment-attributes-and-timelines`**
-— the closer, the literal trace heading, a blockquote in the body and a bold
-ending; the first lecture of Part IV, which is 10/10 on the closer; and the
-page nine pages in six parts depend on, so its anchors are the test of the
-rename discipline in A4 and A7. The alternatives with four:
-`world/tickets-and-loading` (pass 3's policy pilot, whose shape was set as a
-model then), `foundations/data-driven-types`, `networking/what-the-client-is-told`.
+A section lands on its rule and the exception follows, unless the exception is
+the page's hook. A section has one subject and its heading names it. What a
+page names and does not explain sits in one place: last before the closer, or
+last before *Where to look* where there is none.
 
-**Recommended.** Session A launches the reader on the candidate, rewrites it to
-A1–A9 with the report in hand, and records what changed in
-[pass9.md](pass9.md). That page and `commands/README` (the landing exemplar
-from pass 5, given its coverage include) are what the part sessions read
-before their own part.
+The exemplar had the corpus's commonest form of this: *Who owns the clock*,
+45 lines, no figure and no subsection, carrying three subjects — what a clock
+is, what moves it, and how an instant on it is named. **The fix is three H3s
+under the existing H2**, which costs four lines, keeps the H2's anchor (two
+pages land on it) and clears the forty-line budget at the same time. Part
+sessions should reach for that before reaching for a split: 131 sections in
+the corpus are over forty lines with neither a figure nor an H3.
 
-### A11. What session A does not do
+Written into `TEMPLATE.md` under *What every page keeps*, item 6.
 
-It does not read a part, does not rewrite a landing page but the exemplar's
-own (to A6, as the model), makes no cut on a page it has not read whole, and
-changes no fact. Three things are left where they belong: the tick-boundary
-bars and the density of the trace figures (pass 7), the register of the 1.21
-blockquote and the dash clause (pass 8), and the four Reference catalogues'
-completeness lists (session N, job 5).
+### A9. The cuts — **ratified**
 
----
+No line budget. The evidence for a cut is the reader's *what I skipped* and
+*the section I would cut first*, and the test is the hook: a section the hook
+does not need and no other page cites is the first cut. A cut is a move or a
+logged cut in [pass5.md](pass5.md) tagged `[kind=record]`, never a silence. A
+page over 450 lines is read whole for the cut.
+
+**And a page may come out longer.** The exemplar took four logged cuts — a
+fourteen-name type inventory, a modifier-library roll call, six consumer class
+names, and a command's subtree shape — and still went from 414 lines to 444,
+because five corrections needed more words to be true and the reader's one
+unanswered question was worth a paragraph. A session that reports a part's
+line count going up has not failed; a session that trimmed to a number has.
+
+### A10. The exemplar — **ratified and done**
+
+`world/environment-attributes-and-timelines` was read by one agent under
+Part 1's brief and rewritten to A1–A9 and A12. What changed is in
+[pass9.md](pass9.md). It and `commands/README` are what a part session reads
+before its own part: the first for a page, the second for a landing page.
+
+The reader's report is the shape a part session should expect: eight places it
+got lost, thirteen it read twice, twenty-odd terms the page assumed, eight
+things it skipped, one section it would cut, one question it still had, and
+four suspected errors — of which two were real, one was a wording ambiguity
+and one was two different tracks the page never distinguished. **Roughly half
+of what a reader reports is actionable**, which is why step 5 of the runbook
+says a report is evidence and not a verdict.
+
+### A11. What session A does not do — **ratified, with one departure**
+
+It read no part, rewrote no landing page but the landing exemplar's *Where the
+part stops*, made no cut on a page it had not read whole, and left the
+tick-boundary bars and figure density to pass 7, the blockquote's register and
+the dash clause to pass 8, and the four Reference catalogues to session N.
+
+The departure is facts. The brief says session A *changes no fact*; the
+reader found five, and the standing rule for passes 5–8 says a session that
+finds a real error stops and re-derives it against the decompile itself. The
+standing rule wins — a session does not publish a sentence it knows to be
+false in order to keep a lens clean. All five are in [pass9.md](pass9.md) with
+file and line.
+
+### A12. ***Where to look* is a reading list, not an index** — new, session A's
+
+The planning session measured the cast against *Where to look* and made no
+recommendation; the exemplar's reader skipped the section by design and the
+schedule flags it under three separate part sessions, so it wants one ruling
+rather than thirteen.
+
+**Measured** over the 102 system pages: the median is **18 names**, 61 pages
+carry more than fifteen, and **82 pages carry at least one name that appears
+nowhere else on the page — 513 names in all**. The leaders are
+`contexts-and-predicates` (26), `recipes` (21), `entity-lifecycle` (20),
+`features-and-placement` (18), `jigsaw-and-templates` (17), `pathfinding` (16),
+`starting-a-server`, `text-components` and `codecs-nbt-json` (15 each).
+
+**Ruling.** *Where to look* is entry-point names in reading order — a reading
+list for someone opening the decompile, **not an index of the page**. A name
+in it the page never said is a door the reader can still open, so it is
+allowed. A dozen of them is the field inventory come back under a new heading,
+which is the thing pass 3's template explicitly dropped, and those go to the
+class index and Reference where the inventories live. No number is a
+threshold; the question a session asks is *would a reader opening the source
+start here*, and a name that is only in the list because it is in the package
+fails it.
+
+Written into `TEMPLATE.md` under *What every page keeps*, item 7. The exemplar
+keeps all nineteen of its names, one of which (`Timeline.createTrackSampler`)
+is not in its prose and is a genuine door.
+
 
 ## Part 4 — The schedule
 
@@ -597,7 +610,7 @@ appends one line saying what it did.
 
 | session | status | part | pages | queue (lecture) | the charter's named items, and what the tools add |
 |---|---|---|---:|---:|---|
-| **A** | — | the standard | the exemplar + `TEMPLATE.md` | — | Part 3 above: ratify, amend or reverse A1–A9 and rewrite Part 3 as the record; `TEMPLATE.md` gains the seventh section in its place (A6), the closer's rule and spelling under *The devices* (A2), the blockquote's place (A3), and a line on the second person (A1); the exemplar page rewritten with a reader's report in hand (A10) and `commands/README` given `{{#include ../../generated/coverage-commands.md}}` if its *where the part stops* carries the number; every anchor moved repointed under `check_links.py`. |
+| **A** | **done 2026-09-10** | the standard | the exemplar + `TEMPLATE.md` | — | Part 3 above: ratify, amend or reverse A1–A9 and rewrite Part 3 as the record; `TEMPLATE.md` gains the seventh section in its place (A6), the closer's rule and spelling under *The devices* (A2), the blockquote's place (A3), and a line on the second person (A1); the exemplar page rewritten with a reader's report in hand (A10) and `commands/README` given `{{#include ../../generated/coverage-commands.md}}` if its *where the part stops* carries the number; every anchor moved repointed under `check_links.py`. — **Done.** Nine ratified, A2 amended (the test decides; the half is a smell, not a quota — a count in a queue is not a target, which is A9's own argument), **A12 added** (*Where to look* is a reading list, not an index: 82 of 102 pages carry a name that is nowhere else on the page, 513 in all). `TEMPLATE.md` rewritten in seven places. `world/environment-attributes-and-timelines` rewritten to the standard: closer 5 questions → 3 (two moved into the body), the trace heading and the verified line renamed to the scenario, the blockquote 11 lines in the body → 8 at the foot, a 45-line three-subject section given three H3s inside its anchor, four cuts logged, 414 → 444 lines. `commands/README` is the first page to carry a generated coverage number. **Five facts corrected** — all five found by a reader with no source on a page fact-checked twice. |
 | **B** | — | I · Anatomy, II · Foundations | 2 + 7 | 5 + 2 | **I:** `what-this-book-skips` is 471 lines of fifteen tours and a table with no figure and four long sections — the length judged as a whole; `anatomy`'s *Where to look* is twenty names for a cast of eight; `anatomy` carries the book's only closer in the part, with the blockquote in the body. **II:** the closer on 6 of 7 — which three keep it; `tags`' pay-off *Prepared, then applied* is a bold lead-in with no heading that three pages cite; `tags`' opening restates L192; `data-components`' literal trace heading; `text-components` tells the `/say @a` punchline twice (body and Q&A); `codecs-nbt-json` shares its spine with `block-breaking` and `trees`, `text-components` with `post-processing`; within the part `data-driven-types` ↔ `tags` are one edit apart; the part's median is 415 lines. The landing pages: I at 57 with the seventh section after Reference; II at 69 with no seventh section and the argument ending on the recognition list. |
 | **C** | — | III · The server | 5 | 11 | The closer on 2 of 5 — and both are the rule's test cases the other way: `server-tick`'s holds the autosave arithmetic (load-bearing, A2) and `players-and-sessions` has none while three of its `###` sub-heads are player questions in disguise; `server-level-tick`'s falling-sand punchline is qualified in the next paragraph (A8); `players-and-sessions`' *Four ways* heading over a paragraph naming a fifth (re-judged, per session C's ruling); `how-a-server-dies`' *Ctrl-C, the window, and a singleplayer world* carries three subjects; `starting-a-server`'s opening is the page's densest and overclaims against its own *Done* section; the part is the book's longest by median (470) — all five pages are over 437 lines, and `how-a-server-dies` ↔ `players-and-sessions` are one edit apart (session P: one skeleton run forwards and backwards for `starting-a-server` / `how-a-server-dies`). The landing page: 109 outside the watch order, the seventh section before Reference, the argument ending bold. |
 | **D** | — | IV · The world | 10 | 11 | The part where A2 bites hardest: the closer on **10 of 10** — which five keep it, with `chunk-generation-pipeline` telling the world's edge in the body and again as the fourth question, and `lighting`'s closer the longest; three literal trace headings (`environment-attributes-and-timelines`, `game-events-and-vibrations`, `points-of-interest`); four blockquotes, all in the body; six of ten hooks bold (A5); the exemplar lives here if A10 stands. From the queue: `chunk-anatomy`'s *four shapes* carries two subjects; `chunk-storage`'s *Why the server thread never waits* is two sections under one heading; `lighting`:145's `scheduled` sentence is two sentences from what it qualifies; `points-of-interest`:233-270 mixes the ticket story with walk-target mechanics; `scheduled-ticks`:192 points at *forty lines below*; pass 3's length bill — eight of ten pages at 358–417 with each drafter's cheapest cut logged at [pass5.md](pass5.md):2180. `chunk-anatomy` shares its spine with `the-window` and `terrain`. The landing page is inside budget (94) with the coverage answer inside the shape section and no heading of its own. |

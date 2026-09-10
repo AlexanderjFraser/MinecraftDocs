@@ -31,11 +31,13 @@ them; and the gates grew by truth three times. Its whole record is
 A's rulings and the schedule with what each session did; Part 5 the plan as it
 stood at the close, with the session paragraphs and the log.
 
-**Pass 6 — the lecture — is planned** (2026-09-07, the planning session on
-Fable), and its next session is A. The charter is below; the brief, the
-runbook, the standard session A rules on, and **the schedule with each
-session's status** are [pass6-brief.md](pass6-brief.md) — Part 4's table is
-where the owner sees which sessions are done. The planning session built
+**Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
+planning session on Fable; **session A set the standard on 2026-09-10** and
+the next session is B (Parts I and II). The charter is below; the brief, the
+runbook, **the standard as session A settled it** and **the schedule with each
+session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
+session applies rather than re-decides, and Part 4's table is where the owner
+sees which sessions are done. The planning session built
 `tools/pass6_shape.py` (the devices, the skeletons, the budgets and the
 landing pages, measured the same way every time) and `tools/pass6_prompts.py`
 (a reader with nothing but the page; the measurements go to the session
@@ -59,7 +61,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07; charter below; brief, runbook, standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, session A done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -445,3 +447,47 @@ sessions A to I in full, and the note on where J to O wrote theirs — is in
   owner reads for which sessions are done, and each session writes its own
   cell in step 9; a planning session may strike a queue entry only with the
   page or the log open, and says which in the strike.
+
+- **2026-09-10, session A (Opus) — the standard and the exemplar.** Pass 6's
+  rulings made once, and one page rewritten to them. **Nine of the eleven
+  recommendations ratified; A2 amended and A12 added.** A2's *at most about
+  half a part* became a **smell rather than a quota** — a quota would strip a
+  closer off a page whose every answer passes the test, and A9 refuses exactly
+  that reasoning two rulings later ("a count in a queue is a description, not
+  a target"); the test alone decides, and a part that finishes its session
+  still at 10/10 says in its log why each survivor passed. **A12** is session
+  A's own: ***Where to look* is a reading list, not an index** — measured over
+  the 102 system pages, the median is 18 names, 61 pages carry more than
+  fifteen, and **82 pages carry at least one name that appears nowhere else on
+  the page, 513 in all**, which is the field inventory pass 3 dropped coming
+  back under a new heading. `TEMPLATE.md` rewritten in seven places: the
+  landing page's seventh section ***Where the part stops*** in its fixed place
+  (after the watch order, before the shelf) and the argument ending on the
+  claim; the closer's one spelling and its test; the blockquote's place, length
+  and reason; the way into a scenario and bold on the hook; one subject a
+  section and the rule before its exception; *Where to look*; and who a page's
+  *neighbours* are, which is what makes the twin rule operable.
+  **The exemplar**, `world/environment-attributes-and-timelines`, read by one
+  agent under Part 1's brief and rewritten: the closer 5 questions → 3, the two
+  that carried the page's own mechanism moved into the body where they teach;
+  the literal trace heading and the verified line renamed to the scenario; the
+  1.21 blockquote 11 lines in the body → 8 at the foot; a 45-line
+  three-subject section given three H3s **inside its existing anchor**; a
+  two-sentence signpost in the cast for the reader who "had stopped expecting
+  a trace" 230 lines in; four cuts logged; 414 → 444 lines, and A9 now says in
+  writing that a page may come out longer. `commands/README` is the first page
+  in the book to carry a generated coverage number
+  (`{{#include ../../generated/coverage-commands.md}}`). **Five facts
+  corrected**, every one found by a reader with no source, no other page and no
+  measurements, on a page fact-checked adversarially twice: a stretch of 1,800
+  ticks pinned to one instant, a danger ending at the wrong end of the night,
+  four numbers in a record that holds three, a five-weight kernel over six
+  cells that does not close, and an accessibility option described as always
+  on. That is the pass's first evidence that it earns its cost. Fifteen units
+  appended to [pass5.md](pass5.md) (four logged cuts, two for the part
+  sessions, three for pass 7, six for pass 8); the session's entry in
+  [pass9.md](pass9.md). All five gates green; deployed. **Rulings**: the test
+  decides and no count in this pass is a target (A2, restating A9); a session
+  that finds a real error stops and re-derives it even when its own brief says
+  it changes no facts (A11's departure) — a lens is never kept clean by
+  publishing a sentence known to be false.
