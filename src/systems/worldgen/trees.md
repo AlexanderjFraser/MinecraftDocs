@@ -98,7 +98,7 @@ number and nothing survives it.
 `TrunkPlacer.isFree` is air, anything in the replaceable-by-trees tag, **or
 an existing log** — which is how a new tree grows up through an old one — and
 it delegates to a *virtual* `TrunkPlacer.validTreePos`
-([tags](../foundations/tags.md#from-json-to-a-parrots-decision) is where that
+([tags](../foundations/tags.md#the-check-is-a-field-read) is where that
 tag test comes from), so
 `UpwardsBranchingTrunkPlacer` quietly widens the definition with its own
 *can grow through* block set. A vine anywhere in the scanned column also

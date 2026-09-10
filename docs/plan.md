@@ -32,8 +32,9 @@ A's rulings and the schedule with what each session did; Part 5 the plan as it
 stood at the close, with the session paragraphs and the log.
 
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
-planning session on Fable; **session A set the standard on 2026-09-10** and
-the next session is B (Parts I and II). The charter is below; the brief, the
+planning session on Fable; **session A set the standard on 2026-09-10,
+session B took Parts I and II the same day**, and the next session is C
+(Part III · The server). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -61,7 +62,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, session A done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A and B done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -491,3 +492,49 @@ sessions A to I in full, and the note on where J to O wrote theirs — is in
   that finds a real error stops and re-derives it even when its own brief says
   it changes no facts (A11's departure) — a lens is never kept clean by
   publishing a sentence known to be false.
+
+**Pass 6, session B — Parts I · Anatomy and II · Foundations** *(2026-09-10).*
+Nine system pages and two landing pages, eleven readers, one per page. The
+part-wide judgements first: the closer went from 6 of 7 Part II pages to 4,
+and from Part I's one page to none of its own mechanism, under A2's test
+rather than a quota — `resource-system` keeps its five because every answer
+is a thing a player meets (a texture stops animating, a datapack appears and
+a resource pack does not, every pack turns itself off, `/reload` freezes the
+server, vanilla cannot be disabled), and `identifiers-and-registries` and
+`data-driven-types` lost theirs entirely because not one of their twelve
+questions was a consequence: they were the page's own mechanism wearing a
+question mark, and eight of the twelve moved up into the section that needed
+them, `HolderOwner.canSerializeIn` travelling 363 lines to the sentence that
+first uses it. Two blockquotes moved to the foot and two more were *created*
+out of closer answers and body asides addressed to a 1.21 reader (`tags`'
+missing *TagManager*, the registries page's datagen answer), which is the
+device used as a device rather than filled as a slot. The one within-part
+twin pair, `tags` ↔ `data-driven-types`, was varied on the later page by
+dissolving its questions — three edits between the spines where there was
+one. `tags`' pay-off finally has an anchor: six H3s inside the H2 the three
+citing pages already point at, so a citation lands on the paragraph rather
+than on a hundred-line section. `what-this-book-skips` was judged whole and
+came down 476 → 457 by cutting the nine *covered* and *absorbed* rows of its
+rulings table — nine rows about things the book does **not** skip, on the
+page that draws the boundary — to one paragraph, and its citation of "rule
+three" now names the rule and takes the anchor, which was the only mechanism
+in the book cited by number without one. Both landing pages were re-argued to
+A6 with the seventh section in its place and a generated coverage number:
+Part I's argument now *names* the four threads it had promised three times
+and never listed, and Part II's says what its seven pages have in common
+instead of ending on a list of symptoms. **Nine facts corrected**, all nine
+found by readers with no source: four indexes that are five, an arrow to a
+registry the prose says is never consulted, a thread cell its own page
+contradicts, a scoping error that made a paragraph deny its second half, two
+"the one" claims with a second instance ten paragraphs away, a stage count
+against its own figure, and a section whose lead excludes its own third
+group. Part I came out at 869 lines against 871 and Part II at 2,965 against 3,002. Nineteen units
+appended to [pass5.md](pass5.md) (eight for pass 7, eight for pass 8, two for
+pass 9, one coverage decline to [pass3.md](pass3.md) §7); eight queue entries
+struck and two annotated; the session's entry in [pass9.md](pass9.md). All
+five gates green; deployed. **What the session would tell the next one**: the
+readers' single most valuable output was not a list of confusions but the
+*count* disagreements — five of the nine corrections are one sentence
+contradicting another sentence or a figure on the same page, which is the
+error class pass 5 could not see because it read across pages and pass 4
+could not see because it checked each claim alone.

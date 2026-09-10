@@ -7,8 +7,8 @@ chest, logs out, comes back and clicks the slot. In those few seconds the
 same sword has been written four times into four different shapes: parsed
 out of the square brackets, written into the chunk file the chest lives in,
 sent down a socket as bytes, and sent back up when the slot was clicked.
-The fourth is the one worth stopping on. **The click carries no component
-data at all.** It names the item and the count in the clear —
+The click is the one worth stopping on. **It carries no component values at
+all.** It names the item and the count in the clear —
 `HashedStack.ActualItem` is a `Holder<Item>`, an int and a hashed patch —
 and for each component on the sword it sends one 32-bit checksum,
 produced by running that component's own codec into a `DynamicOps` whose
@@ -96,7 +96,8 @@ sequenceDiagram
     IStack->>IStack: re-encode through ItemStack.CODEC into NullOps, keeping only the errors
 ```
 
-Nothing on this path is a `Codec`. `ItemStack.OPTIONAL_STREAM_CODEC` writes
+Nothing on the clientbound half of this path is a `Codec`.
+`ItemStack.OPTIONAL_STREAM_CODEC` writes
 a varint count where anything non-positive means empty and nothing else
 follows, then a registry id that resolves because the buffer is a
 `RegistryFriendlyByteBuf`, then `DataComponentPatch.STREAM_CODEC`.
@@ -346,6 +347,8 @@ problems — the persistent codec is used as a validator for the wire one,
 which is why a creative-mode stack cannot carry a component the *disk* would
 reject.
 
+## JSON, the third format in the title and the smallest on the wire
+
 JSON is the format with the smallest footprint. It is the data packs, and
 on the wire it survives in exactly two places, both outside the play phase:
 `ClientboundStatusResponsePacket` and `ClientboundLoginDisconnectPacket`,
@@ -385,12 +388,6 @@ saves without it.
 Because it is the only packet on which a client authors a whole stack.
 Everywhere else the client either receives stacks or asserts hashes about
 stacks the server already sent it.
-
-**Why does a `/give` accept the same square brackets a chunk file uses?**
-Because it is the same codec. `ItemParser` parses the text into a `Tag`
-with `TagParser` and hands that tag to `DataComponentType.codecOrThrow` —
-the codec `ItemStack.MAP_CODEC` reaches for when it writes *components* to
-disk.
 
 **Why can a world hold chunks in two different compressions?** Because the
 compression setting is captured per `RegionFile` for writing only, and every

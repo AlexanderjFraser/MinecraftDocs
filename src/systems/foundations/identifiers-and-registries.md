@@ -66,10 +66,19 @@ registry it belongs to, and keys are **interned** through a weak map keyed
 by `ResourceKey.InternKey`, so two keys for the same registry and id are
 literally the same object. `Registries` holds the 148 `ResourceKey`s *of
 registries* (`Registries.ITEM`, `Registries.BIOME` …) — 147 distinct
-objects, for a reason the questions at the end explain. Five more registry
-keys are declared by the class that owns them rather than here, which is why
-the catalogue's total is 153 and this one is 148
-([registries](../../reference/registries.md)). `ItemIds` and
+objects, because two of the keys are one: `Registries.DIMENSION` and
+`Registries.LEVEL_STEM` are both built from the string *dimension*, so
+interning hands back one object under two names and two (unchecked) element
+types — `Registries.LEVEL_STEM` is the data-pack registry the
+`RegistryLayer.DIMENSIONS` layer loads, `Registries.DIMENSION` keys the
+`ServerLevel`s, and the conversion helpers between them are identity
+functions at run time. Five more registry keys are declared by the class
+that owns them rather than here, which is why the catalogue's total is 153
+and this one is 148 ([registries](../../reference/registries.md)). Interning
+earns its keep only where identity is used: `MappedRegistry.byKey` and
+`MappedRegistry.byLocation` are ordinary hash maps, and what genuinely
+depends on it is `MappedRegistry.registrationInfos`, an identity map, and
+`Holder.Reference.is` for a `ResourceKey`, which is a reference comparison. `ItemIds` and
 `BlockItemIds` (`net/minecraft/references`) hold the per-element keys the
 static initialisers use.
 
@@ -83,13 +92,14 @@ is also an int-to-object table. `WritableRegistry` adds
 `DefaultedRegistry` answers a default entry — *air* for items and blocks —
 instead of null. `MappedRegistry` is the one real implementation, with
 `DefaultedMappedRegistry` its only subclass. It holds the same entries in
-four indexes at once and every lookup direction is one of them:
+five indexes at once, and every lookup direction is one of them:
 `MappedRegistry.byKey` and `MappedRegistry.byLocation` from a name, the
-insertion-ordered `MappedRegistry.byId` from a number, and
-`MappedRegistry.byValue` from the object itself — an identity map that is
-what answers `Registry.getKey`, with `MappedRegistry.toId` the parallel
-identity map to the number. It carries the `MappedRegistry.frozen`
-flag that `MappedRegistry.validateWrite` checks on every mutation.
+insertion-ordered `MappedRegistry.byId` from a number, and, from the object
+itself, the two identity maps `MappedRegistry.byValue` — what answers
+`Registry.getKey` — and `MappedRegistry.toId`, which returns −1 for anything
+it has never seen, an equal-but-distinct object included. It carries the
+`MappedRegistry.frozen` flag that `MappedRegistry.validateWrite` checks on
+every mutation.
 
 A `Holder` is the seam between a registry and the code that names its
 entries. It is a sealed interface with two kinds (`Holder.Kind`).
@@ -106,7 +116,10 @@ no key, is in no tag, and serialises inline. A `HolderSet` is a set of
 holders — `HolderSet.Named` is a tag, `HolderSet.Direct` a literal list.
 
 What a codec sees is a read-only view. `HolderGetter`, `HolderLookup` and
-`HolderOwner` are those views; `HolderLookup.Provider` is "all the
+`HolderOwner` are those views — and `HolderOwner` exists for exactly one
+question, `HolderOwner.canSerializeIn`: a holder answers whether the context
+asking to serialise it is its own owner, which is why a holder from one
+world refuses to be written by another; `HolderLookup.Provider` is "all the
 registries I may resolve against" and `HolderLookup.RegistryLookup` is one
 of them. `RegistryAccess` is a `HolderLookup.Provider` over a set of
 registries, and `RegistryAccess.Frozen` is a bare marker for the finished
@@ -138,7 +151,7 @@ sequenceDiagram
     Items->>Item: new Item(properties)
     Item->>DMR: createIntrusiveHolder: a Holder.Reference with a value but no key yet
     Items->>DMR: Registry.register, then WritableRegistry.register(key, item, BUILT_IN): bindKey, numeric id = byId.size()
-    BIR->>BIR: freeze: the root first, then every registry: bindBootstrappedTagsToEmpty, MappedRegistry.freeze
+    BIR->>BIR: freeze: the root first, then every registry: BuiltInRegistries.bindBootstrappedTagsToEmpty, then MappedRegistry.freeze
     DMR->>DMR: freeze: bindValue on every holder, refuse if any holder or declared tag is unbound, build componentLookup
     BIR->>BIR: validate: an empty registry logs, a DefaultedRegistry without its default throws
     Note over Main,DMR: components are still unbound here, they are bound at the first reload, and tags at world load
@@ -179,13 +192,21 @@ Registration then binds the key to *that* holder rather than creating a
 new one, so `Item.builtInRegistryHolder` and the registry's own holder are
 the same object, and a tag check on a block or item is a set lookup on the
 holder's own bound tag set with no registry hop
-([tags](tags.md#from-json-to-a-parrots-decision)). `Holder.Reference.createIntrusive` is marked
+([tags](tags.md#the-check-is-a-field-read)). `Holder.Reference.createIntrusive` is marked
 deprecated — the mechanism is load-bearing but not encouraged.
 
 **The numeric id is the line number.** `MappedRegistry.register` appends
 to `MappedRegistry.byId`, and every static registration carries
-`RegistrationInfo.BUILT_IN`. The wire id of an item is the position of its
-line in `Items`, and `Item.STREAM_CODEC` encodes that integer.
+`RegistrationInfo.BUILT_IN` — a `Lifecycle` and the `KnownPack` an entry
+came from, which for a static entry is nothing. The wire id of an item is
+the position of its line in `Items`, and `Item.STREAM_CODEC` encodes that
+integer. A dynamic registry numbers the other way, and the difference is
+worth holding: `ResourceManagerRegistryLoadTask` decodes its files in
+parallel and then registers them in sorted order of their ids, so the
+server's numbering is the same whichever file finished first. The client
+still never derives a number — it registers what the packet lists, in the
+order the packet lists it — but because the server sorted, that order is
+reproducible rather than accidental.
 
 **Freeze is a proof**, stated in full below. `BuiltInRegistries.freeze`
 freezes the root registry first, then every registry it holds, and
@@ -350,9 +371,10 @@ swaps the tag tables of the static registries, and `/reload` does more
 than refill the `RegistryLayer.RELOADABLE` layer — it re-reads and
 re-applies tags for **every** registry in the server's composite access.
 How a frozen registry's tags are swapped is the pay-off of
-[tags](tags.md#from-json-to-a-parrots-decision), and the mechanics of the reload
-itself belong to [the resource system](resource-system.md#reload-the-same-pipeline-on-the-server). **Components:** every registry
-element's `DataComponentMap` is bound after the freeze by
+[tags](tags.md#prepared-then-applied), and the mechanics of the reload
+itself belong to [the resource system](resource-system.md#reload-the-same-pipeline-on-the-server). **Components:** components are not part of
+the freeze at all. Every registry element's `DataComponentMap` is bound
+after it by
 `Holder.Reference.bindComponents`, and `/reload` rebinds every one of them;
 [data components](data-components.md#the-prototype-and-why-it-is-built-at-reload) owns how.
 
@@ -416,61 +438,15 @@ tables, predicates, item modifiers) comes through
 `ReloadableServerRegistries`. Which registry is which kind is
 [reference/registries](../../reference/registries.md).
 
-## Questions players ask
-
-**Are `Registries.DIMENSION` and `Registries.LEVEL_STEM` two registries?**
-They are the same object. Both are created from the string "dimension", and
-because `ResourceKey` interns, the two fields hold one interned key under
-two names and two (unchecked) element types. `Registries.LEVEL_STEM` is the
-data-pack registry the `RegistryLayer.DIMENSIONS` layer loads;
-`Registries.DIMENSION` keys the `ServerLevel`s; the conversion helpers
-between them are identity functions at runtime. That is why `Registries`
-declares 148 keys and holds 147 objects.
-
-**Does interning matter?** Where identity is used, and only there.
-`MappedRegistry.byKey` and `MappedRegistry.byLocation` are ordinary hash
-maps. What genuinely depends on interned keys is
-`MappedRegistry.registrationInfos`, an identity map, and
-`Holder.Reference.is` for a `ResourceKey`, which is a reference comparison.
-
-**Where does the number come from?** Two different places. For
-`BuiltInRegistries` it is an accident of source order —
-`MappedRegistry.byId` insertion order, so reordering two lines in `Blocks`
-changes a block's wire id and a resource pack cannot. For a **dynamic**
-registry it is the element ids in sorted order:
-`ResourceManagerRegistryLoadTask` decodes in parallel but registers sorted,
-which is exactly why the client can rebuild the same ids from the same
-element list. `MappedRegistry.toId` is keyed by *value* identity and
-returns −1 for anything it has never seen, including an equal-but-distinct
-object.
-
-**Are components part of the freeze?** No. `Holder.Reference.bindComponents`
-attaches a per-entry `DataComponentMap` built by
-`BuiltInRegistries.DATA_COMPONENT_INITIALIZERS` — on the server during a
-reload, on the client at the end of configuration. Do not confuse that with
-`MappedRegistry.componentLookup`, which is a `DataComponentLookup` built
-*at* freeze: a lazily-populated **reverse** index answering "which elements
-have this component value?", used by things like finding the spawn egg for
-an entity type ([data components](data-components.md#the-reverse-index-datacomponentlookup)).
-
-**What does a `RegistrationInfo` say?** Per entry, a `Lifecycle` and the
-`KnownPack` it came from; `RegistrationInfo.BUILT_IN` is what every static
-registration gets.
-
-**Why does a holder from one world refuse to be written by another?**
-`HolderOwner` exists for one question — `HolderOwner.canSerializeIn` — and
-that is it: a holder answers whether the context asking to serialise it is
-its own owner.
-
-**Is the vanilla data built at runtime?** No. `RegistrySetBuilder`,
-`BootstrapContext` and `VanillaRegistries` are the data generator that
-*writes* the JSON in the jar; the running game only ever reads JSON. A
-1.21 reader who remembers biomes being registered in code is remembering
-datagen.
-
-**Is `Block.BLOCK_STATE_REGISTRY` a registry?** No. `IdMapper` is the
-standalone `IdMap` used for `BlockState` ids and similar palettes; the two
-share an interface and nothing else.
+> **For a 1.21-era reader.** `Identifier` was *ResourceLocation*, and the
+> vanilla data you remember being registered in code is now read as JSON
+> like anyone else's: `RegistrySetBuilder`, `BootstrapContext` and
+> `VanillaRegistries` are the *data generator* that writes those files into
+> the jar, and the running game only ever reads them
+> ([what this book skips](../anatomy/what-this-book-skips.md#the-data-generators-and-why-data-driven-is-both-true-and-misleading)
+> has how far that is true). And `Block.BLOCK_STATE_REGISTRY` is not a
+> registry: `IdMapper` is the standalone `IdMap` behind block-state ids and
+> similar palettes, sharing an interface with `Registry` and nothing else.
 
 ## Where to look
 

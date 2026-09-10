@@ -73,7 +73,8 @@ rewritten by its own part's session — and the glossary entry by entry.
   `networking/README`:9, `client/README`:10, `worldgen/README`:23), and on five
   of them (II, VII, VIII, IX, X) it is the argument paragraph's **last**
   sentence, so the paragraph ends on a list of symptoms instead of a claim.
-  Four more use it mid-paragraph and recover. [kind=lecture]
+  Four more use it mid-paragraph and recover. **I and II done, pass 6 session
+  B**; the other seven are their own sessions' and session O's. [kind=lecture]
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; V and VI end on an enumeration of their own pages
   (`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -111,11 +112,13 @@ rewritten by its own part's session — and the glossary entry by entry.
   the shorter copy: Part IV, Part X's GUI pipeline, Part XI's opening, Part
   XII's structure arc and its within-part order, Part XIII's floors.
   [kind=lecture]
-- **The introduction's five rules have no anchors.** They are bold run-in
+- ~~**The introduction's five rules have no anchors.** They are bold run-in
   lead-ins, so `anatomy/what-this-book-skips`:8's citation of "[rule
   three](../../introduction.md)" lands on the top of the page. Either the rules
   take headings or that citation takes `#the-rules-the-book-keeps`. It is the
-  only mechanism the book cites by number without an anchor. [kind=lecture]
+  only mechanism the book cites by number without an anchor.~~ **done, pass 6
+  session B** — the citation took the anchor and the rule's name rather than
+  its number; the introduction's rules are unchanged. [kind=lecture]
 - **The introduction's skip list is a list** (pass 4 logged the same at
   `pass5.md`'s Part I section); it is now factually right and still reads as an
   inventory. [kind=lecture]
@@ -659,20 +662,33 @@ the corrections it made are in [pass9.md](pass9.md).*
 
 ### For pass 6 (the lecture)
 
-- `tags`' pay-off, *Prepared, then applied*, is a bold lead-in with no
+- ~~`tags`' pay-off, *Prepared, then applied*, is a bold lead-in with no
   heading, so a citation aimed at it lands on a hundred-line section instead.
-  Three pages now cite that section. [kind=lecture]
-- `tags`' opening paragraph states the three-step apply and the "one thread,
+  Three pages now cite that section.~~ **done, pass 6 session B** — all six of
+  that section's beats are H3s now, and the three citations were repointed at
+  `#prepared-then-applied` and `#the-check-is-a-field-read`. [kind=lecture]
+- ~~`tags`' opening paragraph states the three-step apply and the "one thread,
   start to finish" sentence, and L192 states both again nearly verbatim. The
-  hook should keep the promise and the section the mechanism. [kind=lecture]
-- The *A player recognises this part by its symptom* device opens eight of
+  hook should keep the promise and the section the mechanism.~~ **done, pass 6
+  session B** — the opening now ends on the promise (nothing unfrozen, no lock)
+  and the mechanism is only in *Prepared, then applied*. [kind=lecture]
+- ~~The *A player recognises this part by its symptom* device opens eight of
   the thirteen landing pages. Session B varied Part I's away from it and left
-  Part II's. [kind=lecture]
-- `what-this-book-skips` is 476 lines of fifteen tours plus a fifteen-row
+  Part II's.~~ **done for I and II, pass 6 session B** — both arguments now
+  carry the recognition mid-paragraph and end on the claim; the other six
+  landing pages are their own sessions' and session O's. [kind=lecture]
+- ~~`what-this-book-skips` is 476 lines of fifteen tours plus a fifteen-row
   ruling table, and it is the second lecture a reader meets. Its length is a
-  cut worth judging as a whole. [kind=lecture]
-- `anatomy`'s *Where to look* is twenty names for a page whose cast is eight.
-  [kind=lecture]
+  cut worth judging as a whole.~~ **done, pass 6 session B** — judged whole and
+  cut to 457: the nine *covered* and *absorbed* rows became one paragraph (they
+  are things the book does **not** skip, on a page about skips) and the
+  `client/resources` reframing became three named corners inside *Named, and
+  not yet written*. The fifteen tours stay; they are the page. [kind=lecture]
+- ~~`anatomy`'s *Where to look* is twenty names for a page whose cast is
+  eight.~~ **done, pass 6 session B** — twelve, in reading order, under A12: the
+  four another part owns (`GpuBackend`, `GameTestServer`, `DedicatedServer`,
+  `DeltaTracker`) and the four a reader reaches from a name already in the list
+  went. [kind=lecture]
 
 ### For pass 8 (the voice)
 
@@ -1845,11 +1861,13 @@ correction):
   "every sequence diagram … lanes that name classes and assume you know
   which thread each class is on", which is true and two clauses longer than
   the sentence it replaced.
-- `src/systems/anatomy/anatomy.md` — four paragraphs grew a qualifying
+- ~~`src/systems/anatomy/anatomy.md` — four paragraphs grew a qualifying
   clause each: the bootstrap ordering, the crash relay, the singleplayer
   differences and *Everything else that matters is serialised onto*. The
   crash paragraph is now the longest answer under *Questions players ask*
-  and carries three class names it did not before.
+  and carries three class names it did not before.~~ **done, pass 6 session B**
+  — the crash relay was the page's own mechanism, not a consequence, and it is
+  now a section of its own; the other three clauses stand. [kind=lecture]
 - `src/systems/foundations/identifiers-and-registries.md` — the opening
   paragraph's last sentence was the hook's causal clause and is now two
   sentences. It is true; it no longer lands.
@@ -2343,7 +2361,7 @@ was cut or moved, and why)*
 
 - **2026-09-02, session C — Parts I and II.** Cuts are names, not claims, [kind=record]
   unless marked; the class index still answers "where" for every name here.
-  **`anatomy`**: the eleven-row thread table and the situational-threads
+  **`anatomy`** [kind=record]: the eleven-row thread table and the situational-threads
   paragraph moved to `reference/threads.md` (already there, verified);
   `Minecraft`'s manager inventory retired (`TextureManager`, `ShaderManager`,
   `ModelManager`, `AtlasManager`, `FontManager`, `SoundManager`,
@@ -3843,10 +3861,11 @@ that takes it. Everything session I did act on is struck above or logged in
   the chat session and the chain decoder lives on the listener, which survives
   a respawn — but this is a new claim and session I did not add it. A good
   *Questions players ask* entry for whoever writes one. [kind=lecture]
-- `foundations/text-components` tells the `/say @a` punchline twice on its own
+- ~~`foundations/text-components` tells the `/say @a` punchline twice on its own
   page, in the body and again in the Q&A, and it is the sentence
-  `chat-and-signing` now cites rather than repeats. Part II's page, one home.
-  [kind=lecture]
+  `chat-and-signing` now cites rather than repeats. Part II's page, one home.~~
+  **done, pass 6 session B** — the Q&A telling went; *Resolution*, which
+  `chat-and-signing` cites, is the one home. [kind=lecture]
 
 **For pass 7 (the figures).**
 
@@ -4224,3 +4243,94 @@ for other passes and the cuts it logged.*
   carries both in one packet and never distinguishes them, after a page spent
   arguing that day time lives in a clock. Two names for two things, one of
   them unexplained. [kind=voice]
+
+## Session B — Parts I · Anatomy and II · Foundations (pass 6) *(2026-09-10)*
+
+Eleven readers, one per page, under the Part 1 brief. What the reading raised
+that this session did not act on, tagged by kind. The corrections it did act
+on are in [pass9.md](pass9.md).
+
+### For pass 7 (the figures)
+
+- **`anatomy`'s start-up sequence gives `MinecraftServer` and
+  `IntegratedServer` separate lanes**, and the reader could not say what
+  crossed the arrow between them — two objects, two threads, or one object
+  calling its own override. It is one object. The lane pair may be the right
+  picture anyway (the abstract loop and the singleplayer subclass), but it
+  wants a `Note` or one lane. [kind=figure]
+- **`anatomy`'s two-loops flowchart draws `runTick` as a step beside
+  `processQueuedPackets`, `runAllTasks`, `tick` and `renderFrame`**; the
+  prose says all four happen *inside* `runTick`. A nesting drawn as a
+  sequence. [kind=figure]
+- **Same figure, the Netty node's two edges are labelled only "a clientbound
+  packet" / "a serverbound packet"**, so the figure reads as though every
+  packet hops threads; the prose narrows it to handlers that touch game
+  state, and the thread table excludes handshake and login entirely.
+  [kind=figure]
+- **`tags`' sequence diagram carries six labels that are whole sentences**
+  (the `TagLoader.load` and `TagLoader.build` arrows, and four `Note over`
+  bars); the reader lost which lane a label was on before reaching its end.
+  [kind=figure]
+- **`codecs-nbt-json`'s Checksum figure spans two machines and three moments**
+  with only notes for the seams, and one arrow crosses from client to server
+  with no lane between them. The reader named it the one figure they could
+  not read against its paragraph. [kind=figure]
+- **`data-driven-types`' trace figure gives `unpackLootTable` to a
+  `ChestBlockEntity` lane** where the prose has `RandomizableContainer`, and
+  draws `LootItemFunctions.compose` as an arrow from `SetItemCountFunction`
+  where the prose has the `LootTable` constructor calling it. Two arrows to
+  re-derive. [kind=figure]
+- **`text-components`' death-message figure makes `ComponentSerialization`
+  stand for both the codec and the wire** (`SP->>CS` is "send a packet", with
+  a `Note over CS` naming the Netty thread and `PacketEncoder`), and its last
+  two arrows read as though the `Language` lookup happens after the screen
+  has drawn. [kind=figure]
+- **`data-components`' shape figure is told to be read left to right** and
+  has an edge running back into the subgraph the sentence reads away from,
+  with `DataComponentType` declared last and feeding both halves.
+  [kind=figure]
+
+### For pass 8 (the voice)
+
+- **The bare possessive on a page title** — *"is [items and stacks](…)'"*,
+  *"is [the server tick](…)'s"*. Three readers across three pages read the
+  trailing apostrophe as a typo before parsing the construction, and one
+  reported it as an error. It is the citation form pass 5 settled, so this is
+  a spelling question for the terminology sweep, not a structural one.
+  [kind=voice]
+- **"the shared worker pool"** — *shared* with what? Four pages use the
+  phrase and none says. [kind=voice]
+- **`resource-system`'s three words for one thing** — `SimpleReloadInstance`
+  in the cast, `ReloadInstance` in the body, `ProfiledReloadInstance` in the
+  `/reload` table; the page never says which is the interface. [kind=voice]
+- **`resource-system`'s four inversions in three sentences** —
+  `Pack.Position.BOTTOM` inserts at the front, `TOP` at the back, the last
+  pack wins, higher in the UI means later in the list. The rule the whole
+  *Snapshot* section rests on, and the passage the reader was least sure of.
+  [kind=voice]
+- **`identifiers-and-registries`' counts do not reconcile for a reader** —
+  148 keys, 147 objects, 153 catalogued, 95 built-in created at class init,
+  47 dynamic. The page now explains the first three; 95 + 47 against 148 is
+  still an arithmetic a reader will try and fail. Pick the population or drop
+  a number. [kind=voice]
+- **`data-driven-types`' criterion for the fifty-six** — the page states the
+  exclusions and the reader still could not derive the rule; the sentence
+  carries "the value *in the data this book is about*" as its whole bridge.
+  [kind=voice]
+- **"interrupted" against "aborted"** on `what-this-book-skips` — the
+  filefix sentence turns on a distinction ordinary English does not draw.
+  [kind=voice]
+- **Netty is used as common ground and never glossed** — `anatomy` seven
+  times, `what-this-book-skips` three, and it is the name of the thing the
+  two halves talk over. Part I is where a one-clause gloss would go.
+  [kind=voice]
+
+### For pass 9 (the fact-check), beyond this session's own claims
+
+- **`codecs-nbt-json`, the four-paths table's *what is carried* row** puts
+  four different kinds of answer in four cells (a document, a field order, a
+  count of ints, a text form then a tag). Worth a check that each cell is
+  answering the same question.
+- **`text-components`, `Style.shadowColor`** is described as an integer whose
+  absence is `Style.NO_SHADOW` = zero, inside a list of eleven fields
+  introduced as nullable with "null means *inherit*". Does the shadow inherit?

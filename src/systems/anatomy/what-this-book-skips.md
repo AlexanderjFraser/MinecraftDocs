@@ -4,10 +4,10 @@
 
 Open the atlas and part of the jar is drawn hatched. That hatching is this
 page. Java Minecraft is 7,055 classes and 719,302 lines, and the parts do
-not reach all of it. Some of what is left out is excluded on purpose by
-[rule three](../../introduction.md) — save migration is version-difference
-code, and a book that documents only the current version has nothing to say
-about it. Some is out of scope because it is a client for a service this
+not reach all of it. Some of what is left out is excluded on purpose by the
+[newest-version-only rule](../../introduction.md#the-rules-the-book-keeps) —
+save migration is version-difference code, and a book that documents only
+the current version has nothing to say about it. Some is out of scope because it is a client for a service this
 book cannot read. And one hatched box is not skipped code so much as skipped
 *ground*: `net/minecraft/data` is the program that writes vanilla's own
 content as a data pack, it ships in the dedicated server jar — all 163
@@ -15,9 +15,8 @@ classes of it — and the running game compiles against it and calls into it.
 `Blocks` names `TreeFeatures` keys while it constructs mushroom blocks;
 `MinecraftServer` reaches for a `MiscOverworldFeatures` key for the bonus
 chest; the F3 screen's biome line runs through
-`NoiseRouterData.peaksAndValleys` into `TerrainProvider`. The boundary this
-page draws is honest, and part of drawing it honestly is showing where it
-leaks.
+`NoiseRouterData.peaksAndValleys` into `TerrainProvider`. A boundary drawn
+honestly has to show where it leaks, and that is the largest leak in it.
 
 <figure class="map">
 {{#include ../../generated/packages-treemap.svg}}
@@ -142,10 +141,11 @@ opens the log directory in the platform's file manager.
 
 Start at `ClientTelemetryManager`, `TelemetryEventType`.
 
-## Four profilers, two of them in this package
+## Four profiling systems, and Tracy is the surprise
 
-**`net/minecraft/util/profiling`** holds four profiling systems, though
-only two of them are self-contained here.
+**`net/minecraft/util/profiling`** holds four profiling systems. Two sit in
+the package itself — the tick profiler and the Tracy bridge — and two in
+subpackages of it, *jfr* and *metrics*.
 
 The **tick profiler** is the familiar one: `Profiler` is a thread-local
 holder of a `ProfilerFiller`, `ActiveProfiler` records the push/pop tree of
@@ -366,8 +366,10 @@ book's own [reference layer](../../reference/README.md) covers.
 
 ## The audio backend lives in Blaze3D, and is not skipped
 
-**`com/mojang/blaze3d/audio`** is the one package in this tour that is
-hatched for its *address* rather than for being unread. It wraps OpenAL, and
+**`com/mojang/blaze3d/audio`** is hatched for its *address*, like
+`net/minecraft/gizmos` above: the book teaches what it does and the atlas
+still counts it outside every part, because it is filed where nobody looks
+for it. It wraps OpenAL, and
 it sits inside Blaze3D, beside the GPU abstraction, rather than in the
 client's sound package where the engine, the manager, the channel bookkeeping
 and the Ogg decoding live. That is the boundary fact: Blaze3D is the platform
@@ -397,64 +399,49 @@ service library.
 
 ## Gaps, and the ruling on each
 
-These were never excluded on principle — they were simply not written when
-the book reached them. Each carries one of four rulings: **covered** (a page
-now owns it), **absorbed** (a paragraph or a section on a page that already
-exists), **reframed** (the gap was described wrongly, and the description is
-what changed), or **declined** with a reason. A decline is a promise that a
-reader will not miss it, not a shrug.
+The hatched boxes above are the boundary as drawn. Beside them sits a
+shorter list of things that were never excluded on principle — they were
+simply not written when the book reached them, and each has since been
+ruled on. **Ten are now taught**, either as a page of their own
+(`net/minecraft/gametest`, `com/mojang/blaze3d/platform`, the post-effect
+chains, the scoreboard and command storage) or as a section of one (the
+debug cluster across the HUD and debugging pages, item models on models and
+atlases, the packrat parser on Brigadier and on codecs, the animation
+framework on entity rendering, the pack classes on the resource system, and
+`net/minecraft/client/resources`, which turned out to be five systems with
+five owners rather than one gap). Naming where each landed is the landing
+pages' job, not this one's; what belongs here is the other ruling.
 
-| what | size | ruling | where |
+**Declined, with the reason.** A decline is a promise that a reader will not
+miss it, not a shrug.
+
+| what | size | why | what carries it instead |
 |---|---|---|---|
-| `net/minecraft/gametest` | 47 classes, 5,514 lines | covered, which is why the treemap does not hatch it | [game tests](../commands/game-tests.md) |
-| the debug cluster | four packages' worth | covered: the F3 entry registry, and the server-push subscriptions, sample loggers and debug renderers | [the HUD](../client/hud.md), [debugging the running game](../client/debugging-the-running-game.md) |
-| `com/mojang/blaze3d/platform` | 29 classes, 3,896 lines | covered | [the window](../rendering/the-window.md) |
-| `PostChain`, `PostChainConfig`, `PostPass`, `UniformValue` | 4 classes, 996 lines, and six shipped chains | covered — it was the only place in the game where user-authored shaders are first class | [post-processing](../rendering/post-processing.md) |
-| `net/minecraft/client/renderer/item`, its item-properties subtree included | 63 classes | covered as a section rather than a page: the trace starts at an `ItemStack` but everything it touches is Part XI's | [models and atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model) |
-| the scoreboard, teams and command storage | 32 classes, ~3,830 lines | covered — it was the largest coherent system in the book with no page at all | [scores, teams and stored data](../commands/scoreboard-and-data.md) |
-| `net/minecraft/util/parsing` | 29 classes, 1,879 lines | absorbed — Mojang's own packrat parser-combinator framework, and the question it answers, why the client can complete mid-token, is that page's question | [Brigadier and commands](../commands/brigadier-and-commands.md), and [codecs, NBT and JSON](../foundations/codecs-nbt-json.md) for its largest consumer, the SNBT reader |
-| `net/minecraft/client/animation` | 23 classes, 509 lines | absorbed for its five framework classes, declined for the sixteen pure-keyframe definitions | [entity rendering](../rendering/entity-rendering.md) |
-| `net/minecraft/server/packs` | 55 classes, 4,975 lines | absorbed — mostly covered already, two corners owed a sentence each | [the resource system](../foundations/resource-system.md) |
-| `net/minecraft/client/resources` | 101 classes, 7,612 lines | reframed — it is not one system, and five pages own its parts | [models and atlases](../rendering/models-and-atlases.md), [what makes a sound happen](../client/what-makes-a-sound.md), [entity rendering](../rendering/entity-rendering.md), [the HUD](../client/hud.md), [the resource system](../foundations/resource-system.md) |
-| `com/mojang/blaze3d/vulkan` | 40 classes, 7,477 lines | declined — a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
-| `net/minecraft/client/data` | 28 classes, 6,176 lines | declined — build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
-| the catalogues | ~230 mob models, ~73 particles, 101 render states, 50 render layers, 16 animation definitions, 61 of 63 worldgen features, 50 tree kits, the entity sub-predicates | declined — each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
-| `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | a few classes each | declined — no mechanism a lecture needs | — |
+| `com/mojang/blaze3d/vulkan` | 40 classes, 7,477 lines | a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
+| `net/minecraft/client/data` | 28 classes, 6,176 lines | build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
+| the catalogues | ~230 mob models, ~73 particles, 101 render states, 50 render layers, 16 animation definitions, 61 of 63 worldgen features, 50 tree kits, the entity sub-predicates | each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
+| `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | a few classes each | no mechanism a lecture needs | — |
 | `net/minecraft/data/worldgen` as content | 56 classes, 5,369 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
+| `net/minecraft/client/animation`'s keyframe definitions | 16 of its 23 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 509 lines and 674 KB, one file's longest line thirty thousand characters, because the decompiler renders each animation as one builder chain | [entity rendering](../rendering/entity-rendering.md) has the five framework classes |
 
-Three of those rows need a sentence more. `client/animation` comes with a
-warning owed to anyone who measures it, because *lines* is the wrong unit
-for that package: 509 lines and 674 KB, with one file whose single longest
-line is thirty thousand characters, because the decompiler renders each
-animation as one builder chain. Four things inside `blaze3d/vulkan` are not
-backend detail and are named before the decline — `GlslCompiler` and the
-`vulkan/glsl` shaderc and spirv-cross pair, because Minecraft still authors
-GLSL and cross-compiles it to SPIR-V, which is the whole reason one shader
-source can feed two backends; `DestructionQueue`, the deferred-free
-discipline OpenGL needs no equivalent of, which is the clearest illustration
-of what the device seam hides; and `vulkan/checkpoints`, vendor breadcrumb
-extensions for GPU crash reports. The interiors of `blaze3d/opengl` are
-declined on the same grounds.
-
-The `client/resources` reframing is the third. The old entry called it "the
-client reload" with "no page owning the client half end to end", and that
-overstates it: models and atlases, sound instances, skins, waypoint styles,
-and the pack source, splashes, language and metadata all have owners. What
-no page walks is the client *reload* as one sequence, which is a question
-about the shape of the documentation rather than a hole in it. The one
-substantively uncovered corner is `client/resources/server`, the
-server-resource-pack prompt and download flow — and it pairs with the two
-corners of `net/minecraft/server/packs` that the resource-system page owes a
-sentence each: *linkfs*, a synthetic read-only file system that lets a
-development checkout's scattered directories present as one pack root, and
-`DownloadQueue` with `DownloadCacheCleaner`, the server-resource-pack
-download queue and its cache eviction.
+Four things inside `blaze3d/vulkan` are named before the decline rather than
+after it. `GlslCompiler` and the `vulkan/glsl` shaderc and spirv-cross pair,
+because Minecraft still authors GLSL and cross-compiles it to SPIR-V, which
+is the whole reason one shader source can feed two backends;
+`DestructionQueue`, the deferred-free discipline OpenGL needs no equivalent
+of, which is the clearest illustration of what the device seam hides; and
+`vulkan/checkpoints`, vendor breadcrumb extensions for GPU crash reports.
+The interiors of `blaze3d/opengl` are declined on the same grounds.
 
 **Named, and not yet written.** These are real systems with real lectures
-in them, found by the coverage sweeps and not covered by any ruling above:
-the carver tunnel walk; the dragon fight (`EnderDragonFight`); the
-advancements screen; and `client/multiplayer`'s joining-a-server tail. They
-are named here so that a reader who wants one knows the book knows it is
+in them, and no ruling above covers them: the carver tunnel walk; the dragon
+fight (`EnderDragonFight`); the advancements screen; `client/multiplayer`'s
+joining-a-server tail; and three corners of the pack system — the
+server-resource-pack prompt and download flow in `client/resources/server`,
+the *linkfs* synthetic file system that lets a development checkout's
+scattered directories present as one pack root, and `DownloadQueue` with
+`DownloadCacheCleaner`, the download queue and its cache eviction. They are
+named here so that a reader who wants one knows the book knows it is
 missing, and knows where to start.
 
 ## Where to look

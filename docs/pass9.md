@@ -44,6 +44,176 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session B — Parts I · Anatomy and II · Foundations *(2026-09-10)*
+
+Nine system pages and two landing pages, all eleven read first by one agent
+each under the pass-6 brief (a reader with the page and nothing else). Every
+fact below was re-derived against `reference/26.2` by this session before it
+was written.
+
+### Corrections — what the page said, what the decompile says
+
+- `src/systems/anatomy/anatomy.md`:15-21 — the opening said pause is decided
+  by `Minecraft.isPaused` and enforced by `IntegratedServer.tickServer`,
+  "which is why a world published to LAN never pauses". Nothing on the page
+  joined the two: on its own account the options menu should still pause a
+  published world. `Minecraft.java`:1323 sets
+  `pause = hasSingleplayerServer() && gui.isPausing() &&
+  !singleplayerServer.isPublished()`, so publishing is a term in the
+  *client's* decision rather than something the server overrides. The page
+  now says so. (`IntegratedServer.java`:136 is the enforcement half:
+  `paused = Minecraft.getInstance().isPaused() || players.isEmpty()`.)
+- `src/systems/foundations/identifiers-and-registries.md`:86-92 — "It holds
+  the same entries in **four** indexes at once and every lookup direction is
+  one of them", followed by five named maps. `MappedRegistry.java`:36-40
+  declares five: `byId`, `toId`, `byLocation`, `byKey`, `byValue`. Corrected
+  to five, with `toId`'s −1 behaviour folded in from the closer.
+- `src/systems/foundations/tags.md`:154 — the trace's last arrow was
+  `Parrot->>MR` (the `MappedRegistry` lane) for the membership test, and the
+  paragraph explaining that same chain ends "No registry is consulted."
+  `Holder.Reference.is(TagKey)` reads the reference's own `Set<TagKey<T>>`
+  field, bound by `Holder.Reference.bindTags` (`Holder.java`, the `Reference`
+  class); no registry call. The arrow is now a self-message on the `Parrot`
+  lane saying so. This is a figure disagreeing with its own prose, not a
+  wrong fact in the prose.
+- `src/systems/foundations/tags.md`:35 — the cast gave `MappedRegistry` the
+  thread "Server; Render on the client", while the page's own apply paragraph
+  says that at world load the Server thread does not exist yet and the apply
+  runs on the launching thread or the Render thread. The cell now says "read
+  from any; written only by whichever thread is applying".
+- `src/systems/foundations/codecs-nbt-json.md`:99 — "Nothing on this path is
+  a `Codec`", in a paragraph whose second half has the serverbound half
+  re-encoding through `ItemStack.CODEC` into `NullOps`. Scoped to "nothing on
+  the clientbound half of this path".
+- `src/systems/anatomy/what-this-book-skips.md` — "`com/mojang/blaze3d/audio`
+  is **the one** package in this tour that is hatched for its *address*
+  rather than for being unread", ten paragraphs after `net/minecraft/gizmos`
+  is described in the same terms. Rewritten to name the pair.
+- `src/systems/anatomy/what-this-book-skips.md` — "Four profilers, two of
+  them in this package" against four subsections all of which live under
+  `util/profiling`. The split is package-level: `ActiveProfiler` and
+  `TracyZoneFiller` sit in `util/profiling` itself, *jfr* and *metrics* are
+  subpackages of it (`reference/26.2/net/minecraft/util/profiling/`). Said
+  plainly now, and the heading names what the section says.
+- `src/systems/foundations/resource-system.md`:47 — "Five stages" over a
+  figure drawing six nodes. The sixth is the rollback branch off *apply*; the
+  sentence now says so.
+- `src/systems/foundations/data-driven-types.md`:296-298 — "most of the ones
+  that are **not** [registries of kinds] fall into three groups", where the
+  third group is headed *A registry of kinds with nothing to load*. The lead
+  now separates the three groups from the fourth case.
+
+### Claims introduced
+
+- `anatomy` — **new section** *A crash in singleplayer surfaces on the wrong
+  half*, promoted out of the closer under A2. Claim: only a loop constructed
+  to propagate crashes rethrows a parked report and `IntegratedServer` is not
+  one, so a worker dying on the server's work takes down the client. The
+  sentences are pass 5's, moved; the framing is new.
+- `anatomy` — the five *main* methods moved from the closer to the head of
+  *From main to a world*, and the bootstrap paragraph's "both *main* methods"
+  became "every one of those *main* methods". The count claim is new:
+  `SharedConstants.tryDetectVersion` opens more than two of them.
+- `anatomy` — "the textbook case of *waiting drains*" replaced by the
+  mechanism it named: a thread blocking on this half keeps running that
+  half's queue, which is why the wait cannot deadlock.
+- `anatomy` — the closer's tick-rate answer now says `ServerTickRateManager`
+  is the server's **subclass** of `TickRateManager`
+  (`ServerTickRateManager.java`:11) rather than sitting "over the shared"
+  one, and the budget answer names `MinecraftServer.haveTime` as one boolean.
+- `anatomy` — *Where to look* cut from nineteen names to twelve under A12.
+- `what-this-book-skips` — the nine *covered* and *absorbed* rows of the
+  rulings table became one paragraph claiming that **ten** systems once on
+  the list are now taught. Count it.
+- `what-this-book-skips` — the `client/animation` decline is now a table row
+  of its own, claiming 16 of its 23 classes are keyframe definitions.
+- `what-this-book-skips` — three uncovered corners (`client/resources/server`,
+  *linkfs*, `DownloadQueue` with `DownloadCacheCleaner`) moved into *Named,
+  and not yet written*.
+- `identifiers-and-registries` — the `Registries.DIMENSION` /
+  `Registries.LEVEL_STEM` identity, the interning-matters answer, the
+  `HolderOwner.canSerializeIn` answer, the `RegistrationInfo` contents and
+  the components-are-not-in-the-freeze answer all moved out of the dissolved
+  closer into the body sections that needed them. The dynamic-numbering
+  paragraph is **re-argued**: the client never derives a number, but the
+  server's sort makes the order reproducible rather than accidental. That
+  sentence is new, and it resolves a contradiction the reader found between
+  the opening and the closer.
+- `identifiers-and-registries` — new 1.21 blockquote at the foot, carrying
+  the datagen answer and the `Block.BLOCK_STATE_REGISTRY` / `IdMapper`
+  answer.
+- `resource-system` — `DownloadQueue` moved from *Discover* to *Across the
+  wire*, and its cap re-scoped: `DownloadQueue.MAX_KEPT_PACKS` is 20 and
+  `DownloadCacheCleaner.vacuumCacheDir` counts **files**
+  (`DownloadCacheCleaner.java`:30-46), so "the last twenty servers" holds
+  only at one file per pack. The page now says which unit it means.
+- `resource-system` — *namespace* glossed in place at its first load-bearing
+  use, as the first half of an id.
+- `tags` — the opening no longer carries the apply mechanism; its last
+  sentence is now the claim *nothing is unfrozen and no lock is taken*.
+- `tags` — the two `TagLoader.ElementLookup` forms are explained where they
+  are first used, with the placeholder-`Holder.Reference` consequence
+  (`MappedRegistry.createRegistrationLookup`) that used to sit 85 lines later
+  in the closer.
+- `tags` — the four-moments section's third moment is now stated to be a
+  *different* path, with a write lock and no swap, which resolves the
+  opening's "no lock" against `RegistryLoadTask.registerTags`.
+- `tags` — new 1.21 blockquote at the foot carrying the *TagManager* absence
+  and the singular directory; the body's version of both was cut, so check
+  the blockquote rather than the body for those two claims.
+- `tags` — closer cut from eight questions to four; *Where to look* from
+  twenty names to ten.
+- `data-components` — trace heading renamed to *Sharpness onto a sword, and
+  how the client is told*; the book branch moved out of the trace's first
+  arrow into a note. New claim in *The readers and the predicates*: `/give`'s
+  square brackets become a `DataComponentPatch` through `ItemParser` reading
+  each `DataComponentType`'s own codec.
+- `data-components` — the prototype section now opens on *recorded once,
+  built many times*, a framing claim about its two halves.
+- `text-components` — the 256-character truncation is re-attributed: the
+  `PacketSendListener.exceptionallySend` fallback fires on a failed send and
+  the failure it exists for is a message too large to encode
+  (`ServerPlayer.java`:985-993, where the local is named
+  `truncatedMessageSize` and the hover key is
+  *death.attack.message_too_long*). The forward reference in the walk
+  paragraph is gone.
+- `codecs-nbt-json` — new section *JSON, the third format in the title and
+  the smallest on the wire*; the paragraph is unchanged, only rehoused. The
+  opening's "the fourth is the one worth stopping on" became "the click",
+  and "carries no component data at all" became "no component **values** at
+  all", which is what the same sentence's own aside describes.
+- `data-driven-types` — the loader contrast (`SimpleJsonResourceReloadListener`
+  drops one file, `RegistryDataLoader` fails the whole load) and the
+  one-kind-name-in-three-places fact moved from the dissolved closer into the
+  traced instance. `Codec.either` is now named where the bare-value rule is
+  stated.
+- **`src/systems/anatomy/README.md` — re-argued.** The claims: four threads
+  worth memorising, *named* (Render, Server, Netty event loop, shared worker
+  pool); nine lanes in the corpus are not classes; the part's own packages
+  are wholly named, from the generated include.
+- **`src/systems/foundations/README.md` — re-argued.** The claim is new: the
+  seven pages are not seven mechanisms but three used again — a codec
+  describes a value, a registry names and numbers it, a pack stack decides
+  which copy wins. Also new: a *Where the part stops* section claiming
+  `net/minecraft/util` is a grab-bag named only where a page needs it, and
+  that `net/minecraft/core/dispenser` is thirteen dispense behaviours the
+  book names nowhere. Both come from `pass5_coverage.py` rather than a hand
+  count; the *thirteen* wants checking against `core/dispenser`.
+- Ten figure edge labels on `foundations/README` rewritten to drop class
+  names the part has not introduced (`Holder.Reference`,
+  `ComponentSerialization`, `HolderSet`). No arrow changed direction.
+
+### Anchors moved (every citation repointed in the same commit)
+
+- `tags` gained six H3s in *From JSON to a parrot's decision*;
+  `identifiers-and-registries`:195 and :348 and `worldgen/trees`:101 were
+  repointed at `#the-check-is-a-field-read` and `#prepared-then-applied`.
+- `data-components`'s `#the-trace-sharpness-at-the-enchanting-table` and
+  `text-components`'s `#eight-clicks-three-hovers-one-refusal` were renamed;
+  no page cited either.
+- `identifiers-and-registries` and `data-driven-types` lost
+  `#questions-players-ask`; no page cited either.
+
 ## Pass 6, session A — the standard and the exemplar *(2026-09-10)*
 
 *Two pages rewritten: `world/environment-attributes-and-timelines` (the

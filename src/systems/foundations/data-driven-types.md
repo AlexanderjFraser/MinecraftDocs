@@ -14,10 +14,12 @@ static initialiser and frozen before any world existed — and the
 `MapCodec` it finds there reads the rest of the object. The result is a
 `SetItemCountFunction`, and the first time a player opens that chest,
 `SetItemCountFunction.run` calls `ItemStack.setCount` on every stack the
-pool emits. The same move is made in fifty-six places. That is why *type*
-is the most important key in a data pack: **every file that has one is a
-lookup in a registry data packs cannot add to**, so a pack can compose the
-game's behaviours endlessly and never add a new one.
+pool emits. That field is spelled *function* here and *type* almost everywhere else,
+and the move behind it is the same one: fifty-six registries in
+`BuiltInRegistries` are read this way. It is why *type* is the most
+important key in a data pack — **every file that has one is a lookup in a
+registry data packs cannot add to**, so a pack can compose the game's
+behaviours endlessly and never add a new one.
 
 ## The cast
 
@@ -88,7 +90,8 @@ feature's configuration codec under that key, and
 `ConfiguredFeature.DIRECT_CODEC` dispatches to it. `WorldCarver` and
 `ConfiguredWorldCarver.DIRECT_CODEC` are the same shape.
 
-Seven of the instances accept a bare value in place of the object:
+Seven of the instances accept a bare value in place of the object, each
+through a `Codec.either` in front of the dispatch:
 `IntProviders.CODEC`, `FloatProviders.CODEC` and `NumberProviders.CODEC`
 read a plain number as a constant, `DensityFunctions.DIRECT_CODEC` reads a
 plain number as `DensityFunctions.Constant`, a height provider reads a bare
@@ -99,13 +102,6 @@ falls back to `SequenceFunction.INLINE_CODEC`, so a JSON array where one
 function was expected is a sequence of them; `LootItemCondition` does the
 same through `AllOfCondition.INLINE_CODEC`, and `SlotSources` through
 `GroupSlotSource.INLINE_CODEC`.
-
-> **For a 1.21-era reader.** The loot package has no type-object class any
-> more: there is no *LootItemFunctionType* record wrapping a `MapCodec`,
-> and `BuiltInRegistries.LOOT_FUNCTION_TYPE`,
-> `BuiltInRegistries.LOOT_CONDITION_TYPE` and the provider registries hold
-> the `MapCodec` itself. The worldgen registries
-> kept their type objects. Both spellings dispatch identically.
 
 ## Fifty-six of them
 
@@ -254,7 +250,12 @@ listener shape ([the resource system](resource-system.md#prepare-every-listener-
 whose lister is `FileToIdConverter.registry` over `Registries.elementsDirPath` — the
 directory *is* the registry's path, *loot_table* — and which parses every
 file with the type's codec. A file that fails to parse is logged and
-skipped, and a duplicate id is an error, so one bad table costs one table.
+skipped, and a duplicate id is an error, so one bad table costs one table —
+a loot table naming *minecraft:set_cuont* is simply missing, and the chest
+that names it gets `LootTable.EMPTY`. `RegistryDataLoader` is stricter with
+the same shape of mistake: it collects every error by key and fails the
+whole load, which is why a typo in a biome stops the world from opening and
+a typo in a loot table does not.
 
 Inside `LootTable.DIRECT_CODEC` the *functions* list is
 `LootItemFunctions.ROOT_CODEC`; the entry in question is an object, so
@@ -270,7 +271,11 @@ file named none of them. A misspelt kind fails at the first of them with
 an *Unknown registry key* error that names the registry of kinds, and the
 whole file is dropped. The `LootTable` constructor then calls
 `LootItemFunctions.compose`, which folds each list of functions into a
-single function; a list of one is the function itself.
+single function; a list of one is the function itself. That same
+`LootItemFunctions.ROOT_CODEC` decodes the *functions* field of a pool and
+of an entry as well as of the table, which is why one kind name is accepted
+in all three places — the three composite functions wrap the output consumer
+one inside the other, and a function on the table runs last.
 
 After all three registries are built,
 `ReloadableServerRegistries.createUpdatedRegistries` replaces the
@@ -295,8 +300,9 @@ the pattern ended the moment the object existed.
 ## What does not follow the pattern
 
 Not every registry in `BuiltInRegistries` whose name ends in *type* is a
-registry of kinds, and most of the ones that are not fall into three
-groups. A few fall outside them altogether — `BuiltInRegistries.TICKET_TYPE`,
+registry of kinds. Three groups account for most of the ones that are not,
+and a fourth for the one registry that *is* the pattern and has nothing to
+apply it to. A few fall outside them altogether — `BuiltInRegistries.TICKET_TYPE`,
 `BuiltInRegistries.MAP_DECORATION_TYPE`,
 `BuiltInRegistries.POINT_OF_INTEREST_TYPE` and
 `BuiltInRegistries.VILLAGER_TYPE` are registries of ordinary things whose
@@ -341,29 +347,11 @@ on it through `Block.codec` — that no data pack and no loader ever reads.
 Its one caller is the data generator's `BlockListReport`, which encodes
 every block with it. It is the pattern applied for the sake of the report.
 
-## Questions players ask
-
-**Can a data pack add a new loot function, placement modifier or dialog
-kind?** No. Every kind is an entry in a `BuiltInRegistries` registry, and
-those are frozen at `Bootstrap`. A pack composes kinds; only the jar adds
-one.
-
-**Why does one typo break the whole file and not the whole pack?**
-`SimpleJsonResourceReloadListener.scanDirectory` parses each file on its
-own and logs the ones that fail, so a loot table that names
-*minecraft:set_cuont* is simply missing, and the chest that names the table
-gets `LootTable.EMPTY`. `RegistryDataLoader` is stricter: it collects every
-error by key and fails the whole load, which is why a broken biome stops
-the world from opening and a broken loot table does not.
-
-**Why is the same kind name accepted in a pool, an entry and a table?**
-Because the field is decoded by the same `LootItemFunctions.ROOT_CODEC` in
-all three places, and the three composite functions wrap the output
-consumer one inside the other. A function on the table runs last.
-
-**Why do worldgen files sometimes take a number where an object was
-expected?** `Codec.either` in front of the dispatch: a bare number is a
-constant for int, float and number providers and for density functions.
+> **For a 1.21-era reader.** The loot package has no type-object class any
+> more: there is no *LootItemFunctionType* record wrapping a `MapCodec`, and
+> `BuiltInRegistries.LOOT_FUNCTION_TYPE`, `BuiltInRegistries.LOOT_CONDITION_TYPE`
+> and the provider registries hold the `MapCodec` itself. The worldgen
+> registries kept their type objects. Both spellings dispatch identically.
 
 ## Where to look
 

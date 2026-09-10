@@ -73,8 +73,7 @@ new, the siblings are shared.
 
 The walk is the only way to read one. `Component.getString` visits every
 node and concatenates what it says; `Component.getString` with a limit stops
-at that many characters, which is how a death message too long to send is
-cut to 256 for its replacement. Everything from the walk onwards — the
+at that many characters, which is the only truncation in the system. Everything from the walk onwards — the
 codepoint stream, bidirectional reordering, glyphs — belongs to
 [text and fonts](../client/text-and-fonts.md).
 
@@ -162,7 +161,7 @@ to be drawn flat. `Style.font` is a `FontDescription`, which may be a
 `FontDescription.Resource` naming a font file, or one of the two sprite
 shapes that `ObjectContents` uses — it need not name a font at all.
 
-### Eight clicks, three hovers, one refusal
+### Eight clicks, and the one the server may not send
 
 `ClickEvent` and `HoverEvent` are interfaces implemented by nested records
 — closed by convention and by their `Action` dispatch codec, not by the
@@ -352,10 +351,11 @@ styles, and a mob killer's name is a second key the client will look up
 after the first.
 
 The packet is sent twice over. `ClientboundPlayerCombatKillPacket` goes to
-the victim, with a `PacketSendListener.exceptionallySend` fallback: if the
-send fails, a replacement carries *death.attack.even_more_magic* with the
-first 256 characters of the real message in a hover, so the death screen
-never goes blank. The same component goes to everyone as system chat —
+the victim, with a `PacketSendListener.exceptionallySend` fallback for the
+one thing that can go wrong, a message too large to encode: the replacement
+carries *death.attack.even_more_magic* and hangs the first 256 characters of
+the real message off it as a *death.attack.message_too_long* hover, so the
+death screen never goes blank. The same component goes to everyone as system chat —
 `PlayerList.broadcastSystemMessage`, or the team-scoped
 `PlayerList.broadcastSystemToTeam` / `PlayerList.broadcastSystemToAllExceptTeam`
 when the team's `Team.Visibility` says so — each as a
@@ -422,13 +422,6 @@ Because neither client received a sentence. Both received
 *death.attack.arrow* and two name components, and each client's
 `Language` supplied its own template on the first frame that drew it.
 
-**Why does `/tellraw` with a selector name people when chat with an `@`
-does not?** Chat is a literal, always: nothing in the chat path calls
-`ComponentUtils.resolve`. A command's message argument parses `@` into
-`MessageArgument.Part`s and expands them behind
-`Permissions.COMMANDS_ENTITY_SELECTORS`; a `/tellraw` component is resolved
-whole by `ComponentArgument.getResolvedComponent`.
-
 **Why does a message sometimes show as a raw key like *death.attack.foo*?**
 The key is in neither the selected language nor *en_us*, and the component
 has no fallback, so `Language.getOrDefault` returned the key. A server or
@@ -440,12 +433,6 @@ the key on every client.
 so it cannot be encoded into any packet, data pack or book by either side.
 Only client code that constructs the `ClickEvent.OpenFile` in memory — the
 screenshot notice, a debug dump's path — can present one.
-
-**What does an object component actually put in the text?** One U+FFFC
-placeholder whose style names a sprite font — an atlas sprite or a player
-head — so the font system draws the picture where a glyph would go.
-Anything that reads the text as a string sees *[sprite]* or *[name head]*
-instead.
 
 **Why does the server console show death messages in English?** The server's
 `Language` is `Language.DEFAULT_INSTANCE`, the bundled *en_us.json*;

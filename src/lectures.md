@@ -34,13 +34,14 @@ at the end, draws the whole graph.
 1. [Anatomy](systems/anatomy/anatomy.md) — watched first, because every
    later diagram's lanes assume it.
 2. [What this book skips](systems/anatomy/what-this-book-skips.md) — second
-   and not last, for the reason the closing paragraph of this page gives.
+   and not last, because a boundary is worth drawing before you invest in
+   thirteen parts rather than after.
 
 ## II · Foundations
 
-Part II is a fan, watched bottom-up: codecs and registries are underneath
-everything else, and the five pages above them are largely independent of one
-another.
+Part II is a fan, watched bottom-up: codecs sit under registries and those
+two sit under everything else, and the five pages above them lean on the two
+below far more than on each other.
 
 1. [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md)
 2. [Identifiers and registries](systems/foundations/identifiers-and-registries.md)

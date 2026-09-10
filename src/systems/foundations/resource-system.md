@@ -44,8 +44,8 @@ flowchart LR
     A --> R["roll back: every pack deselected, the reload run again"]
 ```
 
-Five stages, and the rest of the page is one section per stage: what comes
-in, what is decided, what goes out. F3+T is the grounding trace; `/reload`
+Five stages and the one branch off the last of them, and the rest of the
+page is a section per stage: what comes in, what is decided, what goes out. F3+T is the grounding trace; `/reload`
 is the coda, as a table of where the server's run of the same pipeline
 differs.
 
@@ -87,19 +87,12 @@ subdirectories, which the `Pack.ResourcesSupplier` assembles for zip and
 folder packs (the vanilla pack never produces one). Discovery is guarded:
 `DirectoryValidator`, `ForbiddenSymlinkInfo` and `PackDetector` decide
 what a folder is allowed to be, `allowed_symlinks.txt` is parsed into a
-`DirectoryValidator` by `LevelStorageSource.parseValidator`. Two corners of
-`server/packs` are worth a sentence each. `packs/linkfs` is a synthetic
+`DirectoryValidator` by `LevelStorageSource.parseValidator`. One corner of
+`server/packs` is worth a sentence here. `packs/linkfs` is a synthetic
 read-only file system — `LinkFileSystem`, `LinkFSProvider` and a `LinkFSPath`
 that is a name in a tree rather than a name on disk — which lets a
 development checkout's scattered directories present as one pack root, so
-the game can open a pack that was never assembled. And `DownloadQueue` is
-the client's cache for server-sent packs: one directory per pack UUID under
-a cache root, downloads run one at a time on a `ConsecutiveExecutor` over
-`Util.nonCriticalIoPool`, every attempt appended to a `JsonEventLog` beside
-them, and the constructor calls `DownloadCacheCleaner.vacuumCacheDir` to
-trim the root to `DownloadQueue.MAX_KEPT_PACKS` — twenty files, newest kept,
-one per directory before any directory's second. A server you visited
-twenty packs ago has been evicted.
+the game can open a pack that was never assembled. 
 
 ### What *pack.mcmeta* says
 
@@ -136,8 +129,10 @@ selected `Pack`s opened into a list of `PackResources`, in order.
 
 `MultiPackResourceManager` (`server/packs/resources`) is built from that
 list. It is a **snapshot of the pack list, not of the bytes**: it asks each
-pack for its namespaces and builds one `FallbackResourceManager` per
-namespace, each a stack searched from the **last** selected pack down. The
+pack for its namespaces — the first half of every id, *minecraft* for
+vanilla's own files and whatever a pack calls itself for the rest — and
+builds one `FallbackResourceManager` per namespace, each a stack searched
+from the **last** selected pack down. The
 old world stays up until the last apply, but the old files do not: on the
 client, `ReloadableResourceManager.createReload` closes the previous
 `MultiPackResourceManager` — with every file handle it held — before
@@ -396,6 +391,17 @@ client that declines — but the "required" it consults is
 *server.properties* setting, not the flag on the individual pack, so a
 declined */serverpack push* can disconnect you on a server whose
 properties pack is required.
+
+What the client keeps of them is a cache with a hard cap. `DownloadQueue`
+gives every pack a directory of its own under a cache root, runs the
+downloads one at a time on a `ConsecutiveExecutor` over
+`Util.nonCriticalIoPool`, appends every attempt to a `JsonEventLog` beside
+them, and calls `DownloadCacheCleaner.vacuumCacheDir` at construction to
+trim the root to `DownloadQueue.MAX_KEPT_PACKS`. The cap counts **files**,
+not packs — twenty, newest first, and one file per directory before any
+directory's second — so with one file per pack it is the last twenty
+servers whose packs survive on disk, and the twenty-first is downloaded
+again next time.
 
 The system is data-driven by *pack.mcmeta* (`PackMetadataSection`, with
 *min_format* / *max_format* replacing the integer *pack_format*),

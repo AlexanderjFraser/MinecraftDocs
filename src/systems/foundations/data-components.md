@@ -162,7 +162,9 @@ two are not symmetric.
 
 ## The prototype, and why it is built at reload
 
-The first half happens at class-init, long before a world exists.
+A prototype is *recorded* once and *built* many times, and the two happen
+years apart in the program's life. The recording is at class-init, long
+before a world exists.
 `BuiltInRegistries.bootStrap` touches `Items.AIR`, the `Items` class loads and
 runs its static initialisers, and each one builds an `Item` — so every item in
 the game exists, and no item has components. An `Item` constructor registers
@@ -243,7 +245,12 @@ over `ItemStack` and `ItemStackTemplate` that predicates and recipes take
 ([items and
 stacks](../items/items-and-stacks.md#an-item-a-count-some-components--said-three-ways)). Beyond item behaviour, the callers are
 loot functions (`CopyComponentsFunction`) and the `/give` and `/item`
-commands.
+commands — which is where the square brackets this page opened on are
+finally turned into a patch: `ItemParser` reads the text component by
+component through each `DataComponentType`'s own codec
+([codecs, NBT and JSON](codecs-nbt-json.md#text-square-brackets-into-a-tag)),
+and what it produces is the same `DataComponentPatch` the wire and the disk
+carry.
 
 The predicates come in two strengths. `DataComponentExactPredicate` requires
 every listed component to equal. The partial `DataComponentPredicate`
@@ -268,7 +275,7 @@ But the tools that act *on a block* are not: `AxeItem`, `ShovelItem` and
 `HoeItem` still exist as classes, purely for stripping, path-making and
 tilling — their combat and mining live in components like everything else.
 
-## The trace: Sharpness at the enchanting table
+## Sharpness onto a sword, and how the client is told
 
 ```mermaid
 sequenceDiagram
@@ -279,8 +286,8 @@ sequenceDiagram
     participant CPL as ClientPacketListener
 
     Note over EM: server thread, ServerboundContainerButtonClickPacket has arrived
-    EM->>IStack: transmuteCopy(Items.ENCHANTED_BOOK) if the input is a book, same patch over a new prototype
     EM->>IStack: enchant(holder, level) for each chosen EnchantmentInstance
+    Note over EM,IStack: a book instead of a sword takes one extra step first, transmuteCopy(Items.ENCHANTED_BOOK), the same patch over a new prototype
     IStack->>IStack: EnchantmentHelper.updateEnchantments, then set of STORED_ENCHANTMENTS for a book, ENCHANTMENTS otherwise
     IStack->>PDM: set: ensureMapOwnership clones the shared map, the value differs from the prototype's empty set, so patch.put
     Note over PDM: patch is now {minecraft:enchantments to {sharpness: 3}}
@@ -292,10 +299,10 @@ sequenceDiagram
 ```
 
 **The menu owns the mutation.** `EnchantmentMenu.clickMenuButton` runs
-under `ContainerLevelAccess.execute` on the server thread. For a book it
-first calls `ItemStack.transmuteCopy` — a new stack with the *same patch*
-applied to the enchanted book's prototype — then `ItemStack.enchant` per
-chosen `EnchantmentInstance`. `ItemStack.enchant` hands the edit to
+under `ContainerLevelAccess.execute` on the server thread and calls
+`ItemStack.enchant` once per chosen `EnchantmentInstance`. (A book takes one
+step more first: `ItemStack.transmuteCopy` builds a new stack carrying the
+*same patch* over the enchanted book's prototype.) `ItemStack.enchant` hands the edit to
 `EnchantmentHelper.updateEnchantments`, which reads the current
 `ItemEnchantments`, edits a mutable copy and writes the immutable result
 back with `ItemStack.set`; the enchanting rules, the lapis, the seed and

@@ -1438,6 +1438,18 @@ closer, because the boundary is drawn before the investment, and
 rest wait here, and session P discharges what budget allows. A session that
 writes one strikes it through; a session that rules one out says why, here.*
 
+- **`net/minecraft/core/dispenser` has no owner, and Part II's landing page
+  now says so.** *(pass 6, session B.)* Thirteen classes and 1,090 lines —
+  `DispenseItemBehavior` and twelve implementations — sit inside Part II's
+  packages because of where they are filed, and no page in the book names one
+  of them. They are not foundations: what a dispenser *is* belongs to Part V,
+  and what each behaviour does (a boat, shears, a minecart, flint and steel,
+  a piece of equipment) is a catalogue of one shape repeated. Part II's
+  *Where the part stops* declines them on those grounds rather than leaving
+  them silent, which is the treatment `what-this-book-skips` gives a family
+  the book does not teach. If a second edition wants them, they belong beside
+  Part V's block-interaction ledger, not here.
+
 - **The world border has no lecture, and this is the ruling that says so.**
   *(pass 5, session D.)* `WorldBorder` is 573 lines in Part IV's packages and
   the book's only explanation of it is a section of
