@@ -154,7 +154,7 @@ cover. And sleep is half-explained on purpose: [player
 anatomy](player-anatomy.md#what-player-owns) names the fields and the
 refusals a bed answers with, and the *everyone is asleep* half — the night
 skip and the weather reset — is [the level
-tick](../server/server-level-tick.md#sleeping-is-the-one-thing-a-freeze-cannot-stop)'s.
+tick](../server/server-level-tick.md#a-freeze-stops-the-clock-and-not-the-sleep-check)'s.
 Nobody explains the walk between them: what one player lying down does over
 the hundred ticks that follow.
 

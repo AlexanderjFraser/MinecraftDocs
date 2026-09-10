@@ -44,6 +44,196 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session C — Part III · The server *(2026-09-10)*
+
+Five system pages and the landing page, all six read first by one agent each
+under the pass-6 brief (a reader with the page and nothing else). Every fact
+below was re-derived against `reference/26.2`, or against
+`tools/map_source.py`'s `PARTS` mapping where the claim is about the atlas,
+by this session before it was written.
+
+### Corrections — what the page said, what the decompile says
+
+- `src/systems/server/README.md`:24-26 — "`MinecraftServer` is not among
+  them — it sits a package up, in `net/minecraft/server`, which is why the
+  atlas counts it under Part I". It **is** among them. Part III's spec in
+  `tools/map_source.py`:90-92 is `net/minecraft/server/.` (the package
+  itself-only), `server/level`, `server/players` and `server/dedicated`, and
+  the itself-only entry holds `MinecraftServer.java` — re-derived by running
+  `map_source.part_files` over that spec: 95 files, `MinecraftServer.java`
+  among them at 2,633 lines, the largest single file in the part. Part I
+  counts it as well, because the atlas's parts deliberately overlap (Part IV
+  also claims `server/level`; Part VIII claims `ServerPlayer.java`). The page
+  now names the four packages, says `MinecraftServer` is the largest of the
+  ninety-five, and says plainly that a class can belong to two parts. Found
+  by a reader who could not tell which lecture owns the class the part's
+  central claim is about.
+- `src/systems/server/README.md`:3 — the verified line promised "from the
+  command line that starts it to the exception that ends it", while the
+  page's own watch order (item 5) compares **three** endings and the first,
+  `/stop`, is not an exception. Now "to the three different ways it stops".
+- `src/systems/server/server-level-tick.md`:145 — the heading *Sleeping is
+  the one thing a freeze cannot stop* against the page's own figure, which
+  marks nine of its twenty steps *no gate*. Re-derived at
+  `ServerLevel.java`:345-363: the sleep block and `updateSkyBrightness()` sit
+  outside `if (runs)` and `tickTime()` sits inside it, so the section's two
+  paragraphs are a contrast rather than a superlative. The heading is *A
+  freeze stops the clock and not the sleep check*, which is what they say.
+  Three inbound links repointed in the same commit.
+- `src/systems/server/server-level-tick.md`:408 — the heading *The two steps
+  that always run*, over the same figure's nine ungated nodes. It means the
+  last two; it says so now — *After the entities: the manager's drain and the
+  debug feed*. No inbound links.
+- `src/systems/server/players-and-sessions.md`:47 —
+  "`PlayerList.canPlayerLogin` returns the reason to refuse, or null", under a
+  heading promising a `Component` the prose never delivered.
+  `PlayerList.java`:348 declares
+  `@Nullable Component canPlayerLogin(SocketAddress, NameAndId)`. The type is
+  in the sentence now.
+- `src/systems/server/players-and-sessions.md`:52 — "the `ServerOpList` the
+  **next paragraph** turns on". The op list is turned on in the same
+  paragraph, seven lines further down; the next paragraph is about the second
+  run of the gate. Now "that both surprises below turn on".
+
+### Claims introduced
+
+- `server-tick`, the opening — the hook's second half now says *why* a server
+  that has complained recently keeps running behind: "that branch will not
+  fire again for a further ten seconds and a hundred ticks of the server's own
+  scheduled time". The two constants are the page's own at :69-73
+  (`OVERLOADED_WARNING_INTERVAL_NANOS` plus
+  `OVERLOADED_TICKS_WARNING_INTERVAL` ticks' worth); the claim promoted into
+  the opening is that the *since-last-warning* gate, not the backlog gate, is
+  what keeps a warned server behind. A reader with no source could not follow
+  the hook without it.
+- `server-tick`, *The deadline moves before the work starts* — "the other arm
+  of the loop's opening *if*, the one the overload check sits inside". Asserts
+  that the sprint is the *then* arm and the overload check lives in the
+  *else*: `MinecraftServer.java`:795-810.
+- `server-tick`, after the `tickChildren` table — **moved up from the
+  closer**, the definition of *frozen* (`TickRateManager.runsNormally` false;
+  `/tick freeze` sets `isFrozen`; `TickRateManager.tick` derives
+  `runGameElements` unless `/tick step` left `frozenTicksToRun` above zero).
+  New claim in the move: "**Three** rows say *frozen*" — the functions row,
+  the clocks row and the debug/game-tests row of that table.
+- `server-tick`, *The bookkeeping at the bottom* — **moved up from the
+  closer**, the whole autosave arithmetic, beside the
+  `MinecraftServer.ticksUntilAutosave` countdown it is about. Nothing in it is
+  new; the claim the move asserts is that the countdown and its arithmetic are
+  one subject.
+- `server-tick`, *An empty server stops ticking* — **moved from inside the
+  closer** (where it was a paragraph that was not a question), the
+  `IntegratedServer`/`DedicatedServer` override paragraph, with one new
+  sentence joining it to the integrated pause above it: "That pause is the
+  pattern for every difference between the two servers on this page."
+- `server-level-tick`, *Three ranges, before we need them* — new: the number
+  line "counts *outwards*: a low level is a chunk somebody is standing in and
+  a high one is a chunk at the edge of what the server bothers with, up to
+  `ChunkLevel.MAX_LEVEL`". `ChunkLevel.java`:11-16. The page had never said
+  which direction the number runs and a reader inferred it from a later
+  sentence.
+- `server-level-tick`, *The chunk source does five things in one call* — the
+  running paragraph is a five-item numbered list, each item naming its gate.
+  Two claims are sharper than the prose was: item 3 says the third thing is
+  "one call holding two halves, both skipped in a debug world"
+  (`ServerChunkCache.tickChunks` wraps the spawning work *and*
+  `broadcastChangedChunks` in a not-debug test), and item 4 says
+  `ChunkMap.tick` is ungated (`ServerChunkCache.java`:333-337 puts it inside
+  `if (tickChunks)` and outside the debug test).
+- `server-level-tick`, *What the tick does before anything can move* — a new
+  H2 over two H3s, the first keeping the old anchor. The claim the grouping
+  asserts: the environment-cache drop, the border and the weather cycle are
+  the tick's work on the level's own environment, before anything in it moves.
+  Second H3 heading, new: *The weather is the server's; only the fade is the
+  level's*.
+- `server-level-tick`, the foot — a **1.21-era blockquote made out of a closer
+  answer** ("Where did the day–night cycle go?"), which was written for a
+  reader who remembers the level owning the time. Claim added in the move: the
+  weather countdowns went the same way, into one `WeatherData` on the
+  `MinecraftServer` — which is the page's own :136-138.
+- `players-and-sessions`, *What comes across when you die* — **moved from the
+  section opening**, the end-credits concession, with a new framing claim:
+  the end credits are "not a way a session changes so much as the one place
+  two of them meet", since `ServerPlayer.showEndCredits` removes with
+  `CHANGED_DIMENSION` like a dimension change and then hands to
+  `PlayerList.respawn` like a death. That is the page's own :349-352 read the
+  other way round.
+- `players-and-sessions` — *The three kicks that come from the tick* promoted
+  from `###` to `##`, out from under *Four ways the session changes*. Implied
+  claim: the three kicks are not one of the four ways. The anchor is unchanged
+  and its three inbound links still land.
+- `players-and-sessions` — four new H3s (*Four questions, and the two ways
+  past them*, *The gate runs twice, and disagrees with itself*, *Between the
+  two reads, the player is built*, *Two rescues wired into the read*) under
+  two existing H2s whose anchors are unchanged. Each names what was already
+  under it; the second asserts that the two runs of the gate disagree, which
+  is the paragraph's own duplicate-login contrast.
+- `starting-a-server`, the opening — "Every other item on that list was over
+  before the first one printed … It is not a claim about the whole boot:
+  query, RCON, the watchdog and JMX are all started *after* that line". The
+  page's own *Done comes before the loop* is the source; the claim is the
+  scoping. The same paragraph now cites `tickets-and-loading` at the hook's
+  *nine ticket types*, its first use, 285 lines before the payoff.
+- `starting-a-server`, *The Server thread wakes up, and can still fail twice*
+  — new: "a false there is not a quiet exit: `MinecraftServer.runServer` calls
+  it inside its own *try* and throws an *IllegalStateException* on false".
+  `MinecraftServer.java`:783-787. The page had `runServer` throwing into its
+  own catch with the bridge missing, which read as nonsense to a reader with
+  no source.
+- `how-a-server-dies` — **the comparison table moved above the cast** (A7's
+  structural variation for the later page of a twin pair). No claim in the
+  move; the first cell of the table lost the six-caller list it duplicated
+  from *The command is a flag* below, and now says "called with *wait* false
+  by `StopCommand` and by five other callers below".
+- `how-a-server-dies` — *Three booleans and a question* **dissolved**. Claims
+  it carried and where they are now: `MinecraftServer.running` is volatile and
+  the loop's only condition (into *The command is a flag*, where the flag is
+  set); `MinecraftServer.stopped` is a plain field other threads read through
+  `isStopped` (into the teardown paragraph that sets it); the
+  `isShutdown`-versus-`isStopped` contrast (into *Singleplayer ends on a
+  poll*, which is the only thing on the page that turns on it, with a new
+  clause: a screen driven by `isStopped` "would come down before the world was
+  written"). `MinecraftServer.isReady` was cut — `starting-a-server`'s *Done
+  comes before the loop* owns it and says the same thing.
+- `how-a-server-dies` — *The endings that are `/stop` under another name*, a
+  renamed H2 over two new H3s. The renaming asserts that Ctrl-C, SIGTERM, the
+  GUI button and singleplayer *Save and Quit* all clear
+  `MinecraftServer.running` and reach the same *finally*, which is what the
+  section already said of each separately.
+- `how-a-server-dies` — three new H3s under *What you lose if you kill the
+  process*, the third of which (*What you lose with no ending at all*) asserts
+  that the quiet per-chunk save failure belongs to the same subject.
+- `server/README`, *Where the part stops* — rewritten to A6 and now carrying
+  `{{#include ../../generated/coverage-server.md}}`. Two claims: that 2% is
+  "after Parts I and VIII … as close to complete as the book gets" (checked
+  against all thirteen `src/generated/coverage-*.md`: anatomy 0%, player 0%,
+  server 2%, world 3%), and that what the part leaves out it leaves to a named
+  other part rather than to nothing. The nine-class inventory the reader
+  skipped is gone, replaced by the families.
+- `server/README`, *The shape of the part* — new: "The figure is the shape of
+  the part and not the order to watch it in", because the figure runs
+  Start → Tick → Level → Players → Death and the watch order puts *Starting a
+  server* fourth, and nothing said so. The "seven later parts" count now names
+  its population (IV, V, VI, VII, VIII, IX, XIII) and matches
+  `lectures.md`:449's "seven of the eight later parts that run on the Server
+  thread".
+- `server/README`, *Watch in this order* — two blurbs re-synced: item 3 no
+  longer says "the configuration phase" (a term Part III's reader has not met
+  at that point) and item 5 says what the watchdog is.
+
+### Cuts, and what released them
+
+Four *Where to look* lists cut under A12, from 26, 33, 33 and 24 names to 17,
+19, 19 and 15, each now in the page's own reading order and introduced by the
+order it is in. Every name removed is still in the page's prose, so nothing
+left the book: `server-tick` released `MinecraftServer.shouldRun`,
+`MinecraftServer.pollTask`, `TickTask`, `ReentrantBlockableEventLoop`,
+`TickCommand`, `ChunkMap.processUnloads`, `ServerClockManager`, `SampleLogger`
+and `TpsDebugDimensions`; `server-level-tick` fourteen leaf members of classes
+the list still names; `starting-a-server` thirteen, of which `ServerWatchdog`
+was the one name that appeared nowhere else on the page and is
+`how-a-server-dies`'; `how-a-server-dies` nine.
+
 ## Pass 6, session B — Parts I · Anatomy and II · Foundations *(2026-09-10)*
 
 Nine system pages and two landing pages, all eleven read first by one agent

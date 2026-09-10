@@ -9,13 +9,18 @@ those lines prints, the server has opened a data pack stack, built every
 registry the world is made of, taken an operating-system lock on the save
 directory, rewritten `level.dat`, constructed a `ServerLevel` for every
 dimension the packs declare and started listening on 25565 — and only the
-levels were built between the two lines. Everything else was over before the
-first one printed, which is why the elapsed time it reports is so short. And
-the step in the middle whose name promises the most —
+levels were built between the two lines. Every other item on that list was
+over before the first one printed, which is why the elapsed time *Done*
+reports is so short. It is not a claim about the whole boot: query, RCON, the
+watchdog and JMX are all started *after* that line, and the last of the
+server's own start-up work happens later still. And the step in the middle
+whose name promises the most —
 `MinecraftServer.prepareLevels`, the one whose progress line still reads
 *Preparing spawn area* — does the least: **on an ordinary world it loads no
-chunks at all.** All it does is re-arm the tickets the last shutdown wrote
-down, and exactly two of the nine ticket types are ever written down.
+chunks at all.** All it does is re-arm the chunk-loading tickets the last
+shutdown wrote down ([tickets and
+loading](../world/tickets-and-loading.md#what-a-ticket-asks-for) has the nine
+kinds), and exactly two of the nine are ever written down.
 
 ## The cast
 
@@ -249,9 +254,12 @@ The conversion itself is `DedicatedServer.convertOldUsers`, which attempts
 five migrations — the two ban lists, the op list, the whitelist and the player
 save files — retrying each up to twice more, five seconds apart, and reporting
 whether *any* of them did something. The gate is the separate check above, so
-what stops the boot is the file nobody could convert. Either failure makes
-`MinecraftServer.runServer` throw, which lands in `MinecraftServer.runServer`'s own catch,
-writes a crash report and falls into the same *finally* that `/stop` reaches —
+what stops the boot is the file nobody could convert. Either failure returns
+false out of `DedicatedServer.initServer`, and a false there is not a quiet
+exit: `MinecraftServer.runServer` calls it inside its own *try* and
+throws an *IllegalStateException* on false, so the boot failure lands in the
+loop's own catch, writes a crash report and falls into the same *finally* that
+`/stop` reaches —
 a server that failed to bind still walks the whole shutdown path and releases
 `session.lock` on the way out ([how a server dies](how-a-server-dies.md)).
 
@@ -333,13 +341,6 @@ rather than to boot — `PrepareSpawnTask`, in the configuration phase
 ([players and sessions](players-and-sessions.md#preparing-a-place-to-stand)) — and
 `LevelLoadListener.Stage.START_SERVER` is declared and fired by nothing.
 
-> **For a 1.21-era reader.** There is no *spawnChunkRadius* game rule:
-> `GameRuleRegistryFix` deletes it out of any save that still carries one, and
-> the chunks around the world spawn are kept alive by whoever stands in them
-> and by nothing else. *spawn-protection* in `server.properties` survives and
-> is unrelated — it is a permission check in
-> `DedicatedServer.isUnderSpawnProtection`, not a loader.
-
 ## *Done* comes before the loop
 
 `DedicatedServer.initServer` logs *Done (1.284s)! For help, type "help"* the
@@ -414,21 +415,24 @@ by a caller that goes back to drawing frames rather than returning from
 *main* — [anatomy](../anatomy/anatomy.md) is that hand-off, and its diagram is
 the one to read for how the two loops meet.
 
+> **For a 1.21-era reader.** There is no *spawnChunkRadius* game rule:
+> `GameRuleRegistryFix` deletes it out of any save that still carries one, and
+> the chunks around the world spawn are kept alive by whoever stands in them
+> and by nothing else. *spawn-protection* in `server.properties` survives and
+> is unrelated — it is a permission check in
+> `DedicatedServer.isUnderSpawnProtection`, not a loader.
+
 ## Where to look
 
-`server/Main` · `CrashReport.preload` · `Bootstrap.bootStrap` · `Eula` ·
-`DedicatedServerSettings` · `DedicatedServerProperties` · `JsonRpc.create` ·
-`LevelStorageSource.createDefault` · `LevelStorageSource.validateAndCreateAccess` ·
+In boot order. `server/Main` · `Bootstrap.bootStrap` · `Eula` ·
+`DedicatedServerSettings` · `JsonRpc.create` ·
+`LevelStorageSource.validateAndCreateAccess` ·
 `LevelStorageSource.LevelStorageAccess` · `DirectoryLock.create` ·
-`WorldLoader.load` · `WorldStem` · `Util.blockUntilDone` · `WorldUpgrader` ·
-`LevelStorageSource.LevelStorageAccess.saveDataTag` · `MinecraftServer.spin` ·
-`MinecraftServer.runServer` · `DedicatedServer.initServer` ·
-`OldUsersConverter.areOldUserlistsRemoved` · `MinecraftServer.loadLevel` ·
-`MinecraftServer.createLevels` · `MinecraftServer.setInitialSpawn` ·
-`MinecraftServer.prepareLevels` · `ChunkLoadCounter` ·
-`TicketStorage.activateAllDeactivatedTickets` · `LevelLoadListener` ·
-`LoggingLevelLoadListener` · `RconThread.create` · `QueryThreadGs4.create` ·
-`ServerWatchdog` · `IntegratedServer.initServer`
+`WorldLoader.load` · `Util.blockUntilDone` · `WorldStem` ·
+`MinecraftServer.spin` · `MinecraftServer.runServer` ·
+`DedicatedServer.initServer` · `MinecraftServer.loadLevel` ·
+`MinecraftServer.createLevels` · `MinecraftServer.prepareLevels` ·
+`LevelLoadListener` · `IntegratedServer.initServer`
 
 ---
 

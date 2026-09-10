@@ -17,24 +17,11 @@ for the Server thread to finish — the very thread wedged in the tick that
 tripped the watchdog. That wait never returns. Ten seconds later the
 watchdog's own scheduled `Runtime.halt` ends the JVM with nothing written.
 
-## The cast
-
-| class | what it decides | thread |
-|---|---|---|
-| `MinecraftServer` | the three booleans, the tick loop, and the *finally* that is the whole of shutdown | Server |
-| `StopCommand` | that `/stop` is one call to `MinecraftServer.halt` with *wait* false, at `Commands.LEVEL_OWNERS` | Server |
-| `DedicatedServer` | what wraps the base teardown: the JSON-RPC notification, `Util.shutdownExecutors`, and the side threads in `DedicatedServer.onServerExit` | Server |
-| `ServerWatchdog` | that a tick past *max-tick-time* is a dead server, and that the JVM goes with it | Server Watchdog, a daemon |
-| `PlayerList` | that every player is written before anyone is disconnected | Server |
-| `ServerChunkCache` · `ChunkMap` | when the world is quiet enough to stop draining, and what a flush save means | Server, with the writes on the IO pool |
-| `LevelStorageSource.LevelStorageAccess` | `level.dat` and the `DirectoryLock` on `session.lock` | Server |
-| `Util` | the process-wide pools, and the three-second grace each of the two it shuts down gets | any |
-
 ## Three endings, side by side
 
 |  | `/stop` | a tick-loop crash | a watchdog kill |
 |---|---|---|---|
-| **what clears `MinecraftServer.running`** | `MinecraftServer.halt`, with *wait* false from `StopCommand`, the JSON-RPC state service or the singleplayer host logging out, with *wait* true from the shutdown hook and the server GUI's close button | nothing: the loop is left by the throw, not by the condition | the shutdown hook, eventually — `System.exit` runs it and it calls `MinecraftServer.halt` with *wait* true |
+| **what clears `MinecraftServer.running`** | `MinecraftServer.halt`, called with *wait* false by `StopCommand` and by five other callers below | nothing: the loop is left by the throw, not by the condition | the shutdown hook, eventually — `System.exit` runs it and it calls `MinecraftServer.halt` with *wait* true |
 | **does `MinecraftServer.runServer`'s *finally* run** | yes, on the Server thread | yes, on the Server thread, after the crash report | no: the Server thread never leaves the tick |
 | **are players saved** | yes, `PlayerList.saveAll` then `PlayerList.removeAll` | yes, identically | no |
 | **are chunks saved** | yes: the unload drain, then `MinecraftServer.saveAllChunks` with *flush* | yes, identically | no — only what the last autosave happened to write |
@@ -47,6 +34,19 @@ The first two columns differ in three of the eight rows: what clears the
 flag, when the *finally* runs relative to the crash report, and whether there
 is a crash report at all. The third differs from the first in all eight, and
 the rest of this page is why.
+
+## The cast
+
+| class | what it decides | thread |
+|---|---|---|
+| `MinecraftServer` | the three booleans, the tick loop, and the *finally* that is the whole of shutdown | Server |
+| `StopCommand` | that `/stop` is one call to `MinecraftServer.halt` with *wait* false, at `Commands.LEVEL_OWNERS` | Server |
+| `DedicatedServer` | what wraps the base teardown: the JSON-RPC notification, `Util.shutdownExecutors`, and the side threads in `DedicatedServer.onServerExit` | Server |
+| `ServerWatchdog` | that a tick past *max-tick-time* is a dead server, and that the JVM goes with it | Server Watchdog, a daemon |
+| `PlayerList` | that every player is written before anyone is disconnected | Server |
+| `ServerChunkCache` · `ChunkMap` | when the world is quiet enough to stop draining, and what a flush save means | Server, with the writes on the IO pool |
+| `LevelStorageSource.LevelStorageAccess` | `level.dat` and the `DirectoryLock` on `session.lock` | Server |
+| `Util` | the process-wide pools, and the three-second grace each of the two it shuts down gets | any |
 
 ## `/stop`, in full
 
@@ -85,7 +85,8 @@ sequenceDiagram
 
 `StopCommand` registers one literal at `Commands.LEVEL_OWNERS`, sends
 *commands.stop.stopping* and calls `MinecraftServer.halt` with *wait* false.
-That call assigns `MinecraftServer.running` and returns. Nothing else
+That call assigns `MinecraftServer.running` — volatile, and the loop's only
+condition — and returns. Nothing else
 happens on that line of the console: the tick that was running the command
 finishes its entities, its block entities and its packet flush, and the loop
 condition at the top of `MinecraftServer.runServer` fails on the next pass.
@@ -98,7 +99,8 @@ singleplayer server when its host logs out; and `GameTestServer`, which halts
 itself when its test run is over. The client adds three more of its own.
 
 Teardown itself is the loop's *finally*. `MinecraftServer.runServer` sets
-`MinecraftServer.stopped` and calls `MinecraftServer.stopServer`, then calls
+`MinecraftServer.stopped`, the plain field other threads read through
+`MinecraftServer.isStopped`, and calls `MinecraftServer.stopServer`, then calls
 `MinecraftServer.onServerExit` from a nested *finally*, so that a teardown
 which throws still stops the side threads. `DedicatedServer.stopServer`
 wraps the base with `NotificationManager.serverShuttingDown` before and
@@ -338,7 +340,9 @@ is still counting. The drain loop survives that by resetting the deadline
 every pass; the flush save that follows it does not reset anything, so a slow
 enough save after a crash can be shot by the watchdog mid-write.
 
-## Ctrl-C, the window, and a singleplayer world
+## The endings that are `/stop` under another name
+
+### Ctrl-C, SIGTERM and the window button
 
 Ctrl-C at the console and a *SIGTERM* from a service manager are the same
 thing as far as the game is concerned: the JVM runs its shutdown hooks, and
@@ -350,7 +354,9 @@ waits. A Ctrl-C on a healthy server *is* a `/stop`, and the JVM does not exit
 until the world is on disk. The server GUI's window-close button does the
 same thing from the AWT thread.
 
-Singleplayer ends on a poll. `Minecraft.disconnect` — reached from *Save and
+### Singleplayer ends on a poll
+
+`Minecraft.disconnect` — reached from *Save and
 Quit*, from a disconnect, and from `Minecraft.emergencySave` — closes the
 client's connection, then calls `IntegratedServer.halt` with *wait* false.
 That override first uses `BlockableEventLoop.executeBlocking` to remove every
@@ -368,30 +374,22 @@ reaches the same place by a different road: `Window.shouldClose` makes
 backstop for a kill signal — and after an ordinary exit it finds
 `Minecraft.singleplayerServer` already null.
 
+`MinecraftServer.isShutdown` is the right question to spin on, and it is the
+one fact in this teardown that is not a field: it asks whether the Server
+thread is still alive, so nothing can set it and nothing can lie about it.
+`MinecraftServer.isStopped`, which the screen could have watched instead,
+goes true at the *start* of teardown, when nothing has been saved yet — a
+"Saving world" screen driven by that one would come down before the world
+was written.
+
 The integrated server never calls `Util.shutdownExecutors`.
 `IntegratedServer.stopServer` tears down published state and defers to the
 base. The client owns those pools and shuts them down at the very end of its
 own life, long after the world is closed.
 
-## Three booleans and a question
-
-`MinecraftServer.running` is volatile and is the loop condition, and it is
-the only one of the three that anything sets in order to stop the server.
-`MinecraftServer.stopped` is a plain field set in the *finally* just before
-teardown, read from other threads through `MinecraftServer.isStopped`, and
-it is what closes the task queue. `MinecraftServer.isReady` is volatile and set
-at the bottom of every loop iteration, which makes it the one of the three
-that has nothing to do with dying — and it is not what prints *Done*
-([starting a server](starting-a-server.md#done-comes-before-the-loop)).
-
-`MinecraftServer.isShutdown` is the odd one out, and is not a field at all:
-it asks whether the Server thread is still alive. Nothing sets it, nothing
-can lie about it, and it stays false through the whole teardown whichever
-ending is running — which is precisely why the singleplayer client waits on
-it rather than on `MinecraftServer.isStopped`, which goes true at the *start*
-of teardown, when nothing has been saved yet.
-
 ## What you lose if you kill the process
+
+### What an autosave has already written
 
 Ordinary autosave is `MinecraftServer.saveEverything` with neither *flush*
 nor *force*, on the countdown the tick keeps at the bottom of every lap
@@ -409,7 +407,9 @@ cleanly. Everything else — a chest filled two minutes ago, a mob that walked
 into a new chunk, an inventory change — lives in the `LevelChunk` and the
 entity sections until something saves them.
 
-That gives an honest answer per ending. After `/stop` or a tick-loop crash,
+### The honest answer, per ending
+
+After `/stop` or a tick-loop crash,
 nothing is lost: the drain, the flush save and the joined `IOWorker` mean the
 process does not end until the bytes are down. The crash has one asterisk the
 clean stop does not — the watchdog is still armed all the way through it — but
@@ -425,6 +425,8 @@ server](starting-a-server.md#taking-the-lock-and-fixing-leveldat-twice)), and
 an operating system drops it when the process dies however it dies — so a
 world left behind by a killed server opens on the next start.
 
+### What you lose with no ending at all
+
 Individual failures are quieter than any of this. A chunk that cannot be
 written calls `MinecraftServer.reportChunkSaveFailure`: logged, added to the
 `SuppressedExceptionCollector` that the next crash report will print, written
@@ -434,18 +436,14 @@ the only sign at the time is a line in the log.
 
 ## Where to look
 
-`StopCommand` · `MinecraftServer.halt` · `MinecraftServer.runServer` ·
-`MinecraftServer.constructOrExtractCrashReport` · `MinecraftServer.stopServer` ·
-`MinecraftServer.saveAllChunks` · `MinecraftServer.saveEverything` ·
-`ServerLevel.save` · `ServerChunkCache.save` · `ChunkMap.saveAllChunks` ·
-`ChunkMap.hasWork` · `TicketStorage.deactivateTicketsOnClosing` ·
-`LevelStorageSource.LevelStorageAccess.saveDataTag` ·
-`LevelStorageSource.LevelStorageAccess.close` · `DirectoryLock` ·
-`Util.shutdownExecutors` · `DedicatedServer.stopServer` ·
-`DedicatedServer.onServerExit` · `ServerWatchdog.run` ·
-`ServerWatchdog.createWatchdogCrashReport` · `Main` (the shutdown hook) ·
-`BlockableEventLoop.relayDelayCrash` · `IntegratedServer.halt` ·
-`Minecraft.disconnect`
+The `/stop` road first, then the other two. `StopCommand` ·
+`MinecraftServer.halt` · `MinecraftServer.runServer` (the loop and its
+*finally*) · `MinecraftServer.stopServer` · `DedicatedServer.stopServer` ·
+`ChunkMap.hasWork` · `MinecraftServer.saveAllChunks` ·
+`LevelStorageSource.LevelStorageAccess.close` · `DedicatedServer.onServerExit` ·
+`MinecraftServer.constructOrExtractCrashReport` ·
+`BlockableEventLoop.relayDelayCrash` · `ServerWatchdog.run` ·
+`Main` (the shutdown hook) · `IntegratedServer.halt` · `Minecraft.disconnect`
 
 ---
 

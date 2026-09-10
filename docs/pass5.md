@@ -484,35 +484,61 @@ six corrections it made are in [pass9.md](pass9.md).*
 
 ### For pass 6 — the lecture
 
-- `server-level-tick` — the falling-sand exception (pass 4's finding at
-  pass5.md:1081, still live and re-checked): :304-307 delivers the section's
-  punchline and :309-316 immediately qualifies it. Lead with the exception
-  and land on the rule. [kind=lecture]
-- `players-and-sessions` has no *Questions players ask* closer and is one of
-  the pages that most obviously wants one: three of the four `###` sub-heads
-  under *Four ways the session changes* are already player questions in
-  disguise (why the ender chest survives death, why the Nether keeps effects,
-  where the llama goes). [kind=lecture]
-- `players-and-sessions`:280-286 — the heading *Four ways the session
-  changes* sits above a paragraph naming a fifth (the end credits). Session C
-  ruled the heading stays: it names the comparison's four columns and the
-  concession is what makes the paragraph honest. Recorded as pass 6's to
-  re-judge with the section in hand, not as an open defect. [kind=lecture]
-- `how-a-server-dies`:336-369 — *Ctrl-C, the window, and a singleplayer
-  world* carries three subjects and the heading promises all three; the
-  client's own window-close road is the client loop's. Session C left the
-  paragraph because the cut would take the "after an ordinary exit it finds
-  `Minecraft.singleplayerServer` already null" fact with it, which the client
-  loop lacks. [kind=lecture]
-- `starting-a-server`:5-18 — the opening paragraph (pass 4's finding at
-  pass5.md:1070) is still the page's densest and now carries one more clause.
-  Its "everything else was over before the first one printed" is true of the
-  things it enumerates and reads as a claim about the whole boot, which the
-  *Done* section then contradicts for query, RCON, the watchdog and JMX.
-  Worth two sentences. [kind=lecture]
-- `server-tick` — the *Questions players ask* section is where the autosave
-  arithmetic now lives, which makes it load-bearing rather than a closer.
+- ~~**`server-level-tick` — the falling-sand exception.** :304-307 delivers
+  the section's punchline and :309-316 immediately qualifies it. Lead with the
+  exception and land on the rule.~~ **Ruled out, pass 6 session C, under A8:**
+  *a section lands on its rule and the exception follows, unless the exception
+  is the page's hook* — and here the **rule** is the hook (the broadcast before
+  the entities). The section already names the exception in its first sentence
+  and defers it (*"a landing `FallingBlockEntity` is the exception worth
+  knowing, and it is dealt with at the end of this section"*), which is what
+  the finding was asking for. Nothing moved. [kind=lecture]
+- ~~**`players-and-sessions` has no closer and most obviously wants one:**
+  three of the four `###` sub-heads under *Four ways the session changes* are
+  already player questions in disguise.~~ **Ruled out, pass 6 session C, under
+  A2:** they are player questions that already have *headings of their own*,
+  which is precisely what A2 tells a closer's load-bearing material to become.
+  Giving the page a closer would move three answers out of the sections where
+  they happen and back into a slot. [kind=lecture]
+- ~~**`players-and-sessions`:280-286 — the heading *Four ways the session
+  changes* sits above a paragraph naming a fifth** (the end credits).~~
+  **Done, pass 6 session C:** the heading stays and the fifth moves. The
+  concession left the section's opening — where it undercut the comparison
+  before the reader had seen it — for *What comes across when you die*, the
+  one paragraph on the page the end credits are actually the point of
+  (`ServerPlayer.restoreFrom`'s *restore everything* branch is reached from
+  nowhere else). Also under A8: *The three kicks that come from the tick* was
+  the sixth `###` under this H2 and is about no way the session changes, so it
+  is an H2 of its own now — the anchor is unchanged and its three inbound
+  links still land. [kind=lecture]
+- ~~**`how-a-server-dies`:336-369 — *Ctrl-C, the window, and a singleplayer
+  world* carries three subjects and the heading promises all three.**~~
+  **Done, pass 6 session C, by A8's method** (the exemplar's: reach for an H3
+  before a split). The H2 is now *The endings that are `/stop` under another
+  name* — which is the one subject all of it has — over two H3s, *Ctrl-C,
+  SIGTERM and the window button* and *Singleplayer ends on a poll*. Nothing
+  was cut, so the `Minecraft.singleplayerServer` fact stays. [kind=lecture]
+- ~~**`starting-a-server`:5-18 — "everything else was over before the first
+  one printed" is true of the things it enumerates and reads as a claim about
+  the whole boot**, which the *Done* section then contradicts for query, RCON,
+  the watchdog and JMX. Worth two sentences.~~ **Done, pass 6 session C:** it
+  is *"every other item on that list"* now, and the sentence after it says
+  outright that this is not a claim about the whole boot and names the four.
+  The same paragraph's *nine ticket types* — the hook's population, unexplained
+  and unlinked 285 lines before its payoff — now carries the citation.
   [kind=lecture]
+- ~~**`server-tick` — the *Questions players ask* section is where the
+  autosave arithmetic now lives, which makes it load-bearing rather than a
+  closer.**~~ **Done, pass 6 session C:** the arithmetic moved into *The
+  bookkeeping at the bottom*, beside the `MinecraftServer.ticksUntilAutosave`
+  countdown it is about, and the question went. A second answer went the same
+  way: *does freezing stop the server* held the only definition of **frozen**
+  on a page whose `tickChildren` table uses the word in three rows, 240 lines
+  above, so the mechanism moved up under the table and the question kept the
+  consequence. Four questions to two, plus one that was never a question — the
+  `IntegratedServer`/`DedicatedServer` override paragraph, which is now the
+  close of *An empty server stops ticking*, the section those two already
+  diverge in. [kind=lecture]
 
 ### For pass 7 — the figures
 
@@ -1796,12 +1822,12 @@ should be read again for rhythm rather than for truth:
   already points forward ("so chat and commands arrive as *tasks*, drained by
   the event loop below, and not with the packets"). The exception belongs
   beside the rule it qualifies; nothing to move.**
-- `server-level-tick`'s **falling-sand exception** is now its own paragraph
-  after "The ordering is visible from a client". That is the right place for
-  it factually, but it means the section's punchline is immediately
-  qualified. Consider leading with the exception and landing on the rule.
-  *(Re-checked by session C of pass 5 and still live; it is a section-order
-  finding, so pass 6's.)* [kind=lecture]
+- ~~**`server-level-tick`'s falling-sand exception** is now its own paragraph
+  after "The ordering is visible from a client" … consider leading with the
+  exception and landing on the rule.~~ **Ruled out, pass 6 session C** — the
+  same finding as the pass-6 entry above; see it for the reason (A8's rule
+  clause, and the section already defers the exception in its first sentence).
+  [kind=lecture]
 
 **Repeated hedges introduced.** "Almost nothing", "almost none", "all but the
 first", "two of the three endings", "on this side of the jar" — five new
@@ -1828,19 +1854,24 @@ instead ("`FallingBlockEntity` is the one place that …").
   stage moved onto the `Main` lane) and split `spin` into three. At 27 items
   it is now the largest single diagram in the part — `server-level-tick` has
   more in total (35) but across two figures.
-- **Part III is 2 of 5 on *Questions players ask*** (`server-tick`,
+- ~~**Part III is 2 of 5 on *Questions players ask*** (`server-tick`,
   `server-level-tick`), which is *inside* session P's rule of thumb and one
-  of the better parts on the device — recorded here because the corpus-wide
-  pass needs the parts that are already fine as much as the ones that are
-  not. The session's own first guess at this number was five, and counting
-  it settled the matter; treat every per-part count in this file the same way.
+  of the better parts on the device.~~ **Re-tested, pass 6 session C:** being
+  inside the rule of thumb settles nothing — A2 amended the half into a smell
+  and made the *test* the only thing that decides, and both survivors failed it
+  in part. `server-tick` went 4 questions to 2 (the autosave arithmetic and the
+  definition of *frozen* were the page's own mechanism and moved up);
+  `server-level-tick` went 7 to 4, of which two were second tellings of a
+  section the reader had passed within fifty lines and one was written for a
+  1.21-era reader and is the page's blockquote now. Still 2 of 5, and each
+  survivor is a consequence a player meets.
 
 **Small.**
 
-- `players-and-sessions`'s section heading *Four ways the session changes*
-  now sits above a paragraph that names a fifth (the end credits). The
-  heading is still the right frame for the comparison, but the tension is
-  visible; a reader who counts will stop.
+- ~~**`players-and-sessions`'s section heading *Four ways the session changes*
+  now sits above a paragraph that names a fifth** (the end credits).~~
+  **Done, pass 6 session C** — the same finding as the pass-6 entry above; the
+  fifth moved to the paragraph it is the point of.
 - `server-tick`'s `tickChildren` table row about the player-info broadcast
   now reads "its own counter has not passed 600 — so every 601st call, not
   every 600th tick", which is two corrections in one cell and the longest
@@ -2275,7 +2306,16 @@ was cut or moved, and why)*
   three each), which is worth checking is not its own monotony: the
   material became prose, tables and figures, and pass 5 should look for
   paragraphs that would read better as a short list after all.
-  *Cuts and moves, per page.*
+  *Cuts and moves, per page.* — ~~**the list question**~~ **answered, pass 6
+  session C:** one paragraph wanted one and got it. `server-level-tick`'s
+  *The chunk source does five things in one call* stated its five in a running
+  paragraph, and a reader with no source counted **six** and stopped trusting
+  the heading, because the figure above splits the third into two nodes. It is
+  a five-item numbered list now, each item naming its gate and the third
+  saying outright that it is one call holding two halves. The heading is
+  right — `ServerChunkCache.tick` really is five statements — and it was the
+  prose that could not be counted. The part still carries one list in five
+  pages, which reads as deliberate rather than as monotony.
   **`server-tick`**: the field inventories go (the `ServerTickRateManager` [kind=record]
   sprint bookkeeping — `remainingSprintTicks`, `sprintTickStartTime`,
   `sprintTimeSpend` — and `MinecraftServer.mayHaveDelayedTasks` as a named
@@ -2860,6 +2900,16 @@ detail sections → questions → where to look, only the nouns change);
 `the-frame` (one turn of a loop, zones named, what falls off the end — kept
 apart mainly by one being a flowchart and the other a sequence). Pass 5
 varies one of each pair; the shape need not change, the skeleton must.
+**Part III's two pairs are settled, pass 6 session C.** ~~`server-tick` /
+`server-level-tick`~~ had already come apart in pass 5 — five sections against
+fifteen, and no edit distance between them worth the name — so that half was
+overtaken there. ~~`starting-a-server` / `how-a-server-dies`~~ was live, and
+`how-a-server-dies` was one edit from `players-and-sessions` too. It is the
+later page in the watch order and varied under A7 by putting its **comparison
+table before its cast**: the page's artefact is the three-way table its hook
+promises, and it was sitting behind eight rows of cast the reader had to cross
+first. No page in the part now shares a spine with any other, in the part or
+out of it.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4334,3 +4384,114 @@ on are in [pass9.md](pass9.md).
 - **`text-components`, `Style.shadowColor`** is described as an integer whose
   absence is `Style.NO_SHADOW` = zero, inside a list of eleven fields
   introduced as nullable with "null means *inherit*". Does the shadow inherit?
+
+## Session C — Part III · The server (pass 6) *(2026-09-10)*
+
+Six readers, one per page and one for the landing page, under the Part 1
+brief. What the reading raised that this session did not act on, tagged by
+kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
+
+### For pass 7 (the figures)
+
+- **`server-level-tick`'s twenty-node gate flowchart is a single vertical
+  chain** with a gate clause appended to every label, and the reader could not
+  say whether it survives a phone or a slide. It is also the figure that made
+  the *five things in one call* heading read as a lie, because it splits the
+  third into `CHUNKS` and `CAST`: the prose is a list now, and the figure is
+  pass 7's half of the same fix. [kind=figure]
+- **`server-tick`'s event-loop flowchart** (already logged from pass 5, and
+  the reader confirmed it independently): fourteen edges; node `C` is a
+  24-word sentence in a diamond; and the two edges that converge on it mean
+  opposite things (*the queue was empty* and *the queue had work I may not
+  run*). The reader could not read it until they had read the four sections
+  under it. [kind=figure]
+- **`server-tick`'s lap sequence names `nextTickTimeNanos` and `haveTime`
+  before the prose does** — the figure sits directly under the cast table, so
+  there is no paragraph above it to read it against. True of
+  `server-level-tick`'s (`handlingTick`, `hasActiveTickets`) and of
+  `players-and-sessions`' join sequence (`SynchronizeRegistriesTask`,
+  `returnToWorld`, `JoinWorldTask`, the `Preparing`/`Ready` states, and a
+  `spawnPlayer` the prose everywhere else calls `PlayerList.placeNewPlayer`).
+  A lead figure the page cannot yet be read against is a part-wide pattern
+  here, not three pages' bad luck. [kind=figure]
+- **`starting-a-server`'s boot sequence has a `Worker` lane with no cast row**,
+  and its `Worker-->>WL` arrow carries a label saying the work goes back to
+  `Main`. [kind=figure]
+- **`how-a-server-dies`' `/stop` figure asserts `PacketProcessor`,
+  `ChunkMap.hasWork`, `deactivateTicketsOnClosing`, `ServerLevel.noSave` and
+  "after level.dat and not before"** — every one of them explained in the six
+  H3s below it. The reader's words: read second it is the best thing on the
+  page, read in place two thirds of it is opaque. [kind=figure]
+
+### For pass 8 (the voice)
+
+- **The bold-number device reads as a fragment.** `server-tick`'s "**Two** —
+  writes to the socket per client per tick" and "**Three** — the things
+  `MinecraftServer.haveTime` decides": the noun the number counts arrives
+  after the dash, so the bold word is unattached until you have read past it.
+  Both readers who met it said so, on two pages. [kind=voice]
+- **Two of the corpus's ambiguous counts are here**, and both are scope rather
+  than arithmetic. `server-tick`'s "**Two** — writes to the socket per client
+  per tick" is true of sends made *on the Server thread*, and the same
+  paragraph says anything sent from another thread flushes on its own; and
+  "**Three** — the things `haveTime` decides" counts what the supplier gates
+  *inside the tick*, while the event-loop figure four sections later shows it
+  deciding whether a queued task runs at all. Pick the reading and say it, or
+  drop the number. [kind=voice]
+- **`server-tick`'s two overload thresholds are each "a constant plus N ticks'
+  worth — X seconds at the default rate"**, and the reader had to decide twice
+  whether *X seconds* was the second term or the total. [kind=voice]
+- **`server-level-tick`'s asides are longer than their sentences** in two
+  places: the whole lightning mechanism (the 1-in-100000 roll, the rod, the
+  mob, the heightmap, the trap horse and its percentage) parked inside the
+  sentence that walks the spawning chunks, and the `MobCategory.MISC` and
+  persistence exclusions arriving before the verb they qualify. The reader
+  skipped the first outright. [kind=voice]
+- **`starting-a-server`'s world-load stage is one nine-clause sentence** —
+  `createResourceManager`, tags, two registry loads, the data supplier, the
+  new-world fallback and `ReloadableServerResources` in a single breath.
+  [kind=voice]
+- **`how-a-server-dies` uses *door* for two mechanisms** — the packet's route
+  into the world on `server-tick`, and the task queue's two entry points here
+  — and reuses *border* on `server-level-tick` for the world border and for
+  the edge of a player's tracked area, the second inside a figure label before
+  the first is finished with. [kind=voice]
+- **`persistence` means two things forty lines apart on `server-level-tick`**:
+  mobs that *require persistence* (excluded from the census) and the
+  *persistent categories* considered every 400 ticks. [kind=voice]
+- **`server-level-tick`:322-325 — "A command typed at the *console* is as late
+  as the piston, and for the same reason"** — the consequence is the same and
+  the reason is not (the piston is late because block entities tick after the
+  broadcast; the console command because it is drained after every level has
+  ticked). [kind=voice]
+- **Terms the part uses as common ground and never glosses**: *debug world*
+  (one of `server-level-tick`'s three gates and one of its four stated
+  surprises), *POI*, *the simulation graph*, *the radius-8 tracker*, *block
+  events*, `SavedData`, *serverbound*, and *Tracy*. Each is one clause.
+  [kind=voice]
+
+### For pass 9 (the fact-check), beyond this session's own claims
+
+- **`server-level-tick`:229-232** — `ChunkMap.forEachBlockTickingChunk` is
+  said to walk `DistanceManager.forEachEntityTickingChunk` "despite its name",
+  which makes random ticks reach the *narrower* of the two ranges while the
+  page's own number line frames block-ticking as the wider one. The naming
+  curiosity is probably the point; worth confirming which set
+  `ServerLevel.tickChunk` really runs over.
+- **`server-level-tick`'s weather countdowns** — one `WeatherData` on the
+  `MinecraftServer`, and `ServerLevel.advanceWeatherCycle` running once per
+  dimension per tick. Does a three-dimension server count the rain timer down
+  three times a tick? The reader derived the question from two of the page's
+  own sentences and the page does not answer it.
+- **`server-tick`:420-421** — the autosave interval is the tick rate times
+  300, floored at 100 ticks, and the page says an autosave is five wall-clock
+  minutes. Check the floor does not break the five-minute claim at very low
+  tick rates.
+- **`players-and-sessions`:62 against :173-179** —
+  `DedicatedServer.isSingleplayerOwner` "returns false for everyone", and the
+  singleplayer-owner save-file rescue is described as working once. Check the
+  second reads the same field as the first.
+- **`players-and-sessions`, the `PLAYER_SPAWN` ticket** — the figure waits an
+  unbounded number of ticks for the chunks, and the prose re-arms the
+  twenty-tick ticket only once the task has reached `PrepareSpawnTask.Ready`.
+  What holds the chunks between the ticket being placed and *Ready*?

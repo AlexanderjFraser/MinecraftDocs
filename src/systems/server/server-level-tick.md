@@ -22,8 +22,11 @@ reaches it on the next one.
 
 ## Three ranges, before we need them
 
-Three phrases run through everything below and they are all one number line.
-A chunk is *loaded* when it has a `ChunkHolder` at all; it is
+Three phrases run through everything below and they are all one number line,
+which counts *outwards*: a low level is a chunk somebody is standing in and a
+high one is a chunk at the edge of what the server bothers with, up to
+`ChunkLevel.MAX_LEVEL`. A chunk is *loaded* when it has a `ChunkHolder` at
+all; it is
 **block-ticking** at level 32 or below (`ChunkLevel.BLOCK_TICKING_LEVEL`) and
 **entity-ticking** at 31 or below (`ChunkLevel.ENTITY_TICKING_LEVEL`), and
 those last two answers come from the simulation graph, through
@@ -113,7 +116,9 @@ loads, sends and unloads chunks — and stops expiring its tickets. A debug
 world keeps its entities and drops its block updates. And the last two steps
 run on a dimension with nobody in it.
 
-## The cache that is dropped before the border
+## What the tick does before anything can move
+
+### The cache that is dropped before the border
 
 The first thing the tick does to the world, before the border and before
 the weather, is `EnvironmentAttributeSystem.invalidateTickCache`: last tick's
@@ -125,6 +130,8 @@ is where the old per-dimension and per-biome constants went, and
 light from the time of day. `ServerClockManager` invalidates the same cache
 on every level whenever a clock moves, so the level is not its only owner —
 it is the first reader of the tick, and it starts clean.
+
+### The weather is the server's; only the fade is the level's
 
 Then `WorldBorder.tick` advances the interpolated extent, and
 `ServerLevel.advanceWeatherCycle` counts the clear, rain and thunder timers
@@ -142,7 +149,7 @@ of it. Every move of a float is a `ClientboundGameEventPacket`
 `ClientboundGameEventPacket.THUNDER_LEVEL_CHANGE`) to this dimension's
 players, and a start or a stop goes to every player in every dimension.
 
-## Sleeping is the one thing a freeze cannot stop
+## A freeze stops the clock and not the sleep check
 
 `SleepStatus.areEnoughSleeping` and `SleepStatus.areEnoughDeepSleeping`
 (against `GameRules.PLAYERS_SLEEPING_PERCENTAGE`) decide the night skip, and
@@ -185,14 +192,19 @@ this budget.
 supplier — the level never looks at it, it only passes it on — and does five
 things in order.
 
-It purges stale tickets, but only while running, so a frozen world holds on
-to expired portal and pearl tickets indefinitely. It runs
-`ServerChunkCache.runDistanceManagerUpdates`, ungated, which is where chunks
-change ticking state: the reason an entity starts or stops ticking this tick
-is decided here, several steps before the entity loop reads it. Then, if
-this is not a debug world, it does the spawning and random-ticking work
-below and broadcasts the block changes; it updates entity tracking; and
-finally it spends whatever time is left on POI saving and chunk unloads.
+1. **Purge stale tickets** — while running only, so a frozen world holds on
+   to expired portal and pearl tickets indefinitely.
+2. **Run `ServerChunkCache.runDistanceManagerUpdates`** — ungated, and the
+   place chunks change ticking state. The reason an entity starts or stops
+   ticking this tick is decided here, several steps before the entity loop
+   reads it.
+3. **Tick the chunks, then broadcast** — one call holding two halves, both
+   skipped in a debug world: the spawning and random-ticking work below,
+   and then the block changes turned into packets. Each half has a section
+   of its own.
+4. **Update entity tracking** — `ChunkMap.tick`, ungated, where last tick's
+   movement becomes packets.
+5. **Spend whatever time is left** on POI saving and chunk unloads.
 
 That last step is the only part of the whole level tick that yields to the
 clock, and even it does not yield completely: `ChunkMap.processUnloads`
@@ -405,7 +417,7 @@ next tick. [Block
 entities](../blocks/block-entities.md#loaded-is-not-enough-to-tick) has the
 rest.
 
-## The two steps that always run
+## After the entities: the manager's drain and the debug feed
 
 `PersistentEntitySectionManager.tick` drains
 `PersistentEntitySectionManager.loadingInbox`, a concurrent queue that chunk
@@ -452,12 +464,6 @@ source *are* frozen and are easy to miss: the spawning and random-ticking
 step, and `TicketStorage.purgeStaleTickets` — so a frozen world accumulates
 expired tickets and never releases the chunks they hold.
 
-**Why does my furnace keep going after the mobs around it stop?** Two
-thresholds, one chunk apart. Block entities are gated on block-ticking range
-(`ChunkLevel.BLOCK_TICKING_LEVEL`, 32) and entities on entity-ticking range
-(`ChunkLevel.ENTITY_TICKING_LEVEL`, 31), and a chunk on the boundary is in
-one and not the other.
-
 **Why did replacing a block cancel its scheduled tick?** Because a scheduled
 tick is a promise to *that* block: `ServerLevel.tickBlock` compares the
 `Block` at the position with the one scheduled, and a mismatch runs nothing.
@@ -472,33 +478,26 @@ per level, and only where `Level.canHaveWeather`.
 that is running kept the view it started with. The mob is in the list — it
 is just not in *this* walk of it.
 
-**Why is a dimension with nobody in it still burning CPU?** Because going
-empty skips three things and nothing else: past 300 ticks with no active
-ticket the dragon fight, the entity loop and the block entities stop, and
-the weather, scheduled ticks, chunk source, block events and entity manager
-carry on.
-
-**Where did the day–night cycle go?** Out of the level. Time is a set of
-`WorldClock`s owned by `ServerClockManager` and ticked by the server;
-`ServerLevel.tickTime` advances *gameTime* only, only in the overworld, and
-every other dimension reads the overworld's number.
+> **For a 1.21-era reader.** The day–night cycle is out of the level. Time is
+> a set of `WorldClock`s owned by `ServerClockManager` and ticked by the
+> server, and the `ClientboundSetTimePacket` after a night skip is sent by the
+> clock manager rather than by the level. What `ServerLevel` still owns is
+> *gameTime*, advanced by `ServerLevel.tickTime` in the overworld alone, which
+> every other dimension reads. The weather countdowns went the same way, into
+> one `WeatherData` on the `MinecraftServer`.
 
 ## Where to look
 
-`ServerLevel.tick` · `ServerLevel.advanceWeatherCycle` · `ServerLevel.tickTime` ·
-`ServerLevel.tickBlock` · `ServerLevel.tickChunk` · `ServerLevel.tickThunder` ·
-`ServerLevel.tickCustomSpawners` · `ServerLevel.runBlockEvents` ·
-`ServerLevel.tickNonPassenger` · `ServerLevel.tickPassenger` ·
-`ServerChunkCache.tick` · `ServerChunkCache.tickChunks` ·
-`ServerChunkCache.broadcastChangedChunks` · `ServerChunkCache.blockChanged` ·
-`ChunkHolder.broadcastChanges` · `ChunkMap.collectSpawningChunks` ·
-`ChunkMap.forEachBlockTickingChunk` · `ChunkMap.tick` · `ChunkMap.processUnloads` ·
-`DistanceManager.inEntityTickingRange` · `ChunkLevel.fullStatus` ·
-`LevelTicks.tick` · `NaturalSpawner.createState` · `LocalMobCapCalculator.canSpawn` ·
-`EntityTickList.forEach` · `PersistentEntitySectionManager.tick` ·
-`Level.tickBlockEntities` · `Level.getBlockRandomPos` · `WeatherData` ·
-`ServerClockManager.moveToTimeMarker` · `SleepStatus.areEnoughSleeping` ·
-`EnvironmentAttributeSystem.invalidateTickCache` · `LevelDebugSynchronizers.tick`
+In the order the tick runs them. `ServerLevel.tick` ·
+`EnvironmentAttributeSystem.invalidateTickCache` ·
+`ServerLevel.advanceWeatherCycle` · `SleepStatus.areEnoughSleeping` ·
+`ServerClockManager.moveToTimeMarker` · `ServerLevel.tickTime` ·
+`LevelTicks.tick` · `ServerChunkCache.tick` · `ServerChunkCache.tickChunks` ·
+`NaturalSpawner.createState` · `ServerLevel.tickChunk` ·
+`ServerChunkCache.broadcastChangedChunks` · `ChunkHolder.broadcastChanges` ·
+`ChunkMap.tick` · `ServerLevel.runBlockEvents` · `EntityTickList.forEach` ·
+`Level.tickBlockEntities` · `PersistentEntitySectionManager.tick` ·
+`LevelDebugSynchronizers.tick`
 
 ---
 

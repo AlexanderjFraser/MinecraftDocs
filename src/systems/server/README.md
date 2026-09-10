@@ -1,6 +1,6 @@
 # III · The server
 
-> Verified against **Minecraft 26.2** · Part III · The program that owns the world: one thread, one loop, twenty times a second, from the command line that starts it to the exception that ends it.
+> Verified against **Minecraft 26.2** · Part III · The program that owns the world: one thread, one loop, twenty times a second, from the command line that starts it to the three different ways it stops.
 
 Everything a player thinks of as *the world* — the blocks, the mobs, the
 weather, the hunger bar — is state owned by one object on one thread, and
@@ -16,14 +16,16 @@ change reaches a screen, when a mob stops being ticked, when a chest is on
 disk, and what is lost if the process is killed between two of those moments.
 
 That is a small system to know so much about. Counting the four packages
-[the atlas](../../maps/packages.md#where-each-part-lives) lists for this
-part, the way it counts everything else, it is
-{{#include ../../generated/part-server.md}} — and over half of those lines
-are `net/minecraft/server/level`'s forty-two classes, at nearly three hundred
-lines apiece, because the objects that own a world are few and enormous.
-`MinecraftServer` is not among them — it sits a package up, in
-`net/minecraft/server`, which is why the atlas counts it under Part I — and it
-is most of this part's first three pages anyway.
+[the atlas](../../maps/packages.md#where-each-part-lives) lists for this part
+— `net/minecraft/server` itself, and `server/level`, `server/players` and
+`server/dedicated` under it — the way it counts everything else, it is
+{{#include ../../generated/part-server.md}}. Over half of those lines are
+`server/level`'s forty-two classes at nearly three hundred lines apiece,
+because the objects that own a world are few and enormous. The other landmark
+is one file: `MinecraftServer`, the largest of the ninety-five and most of
+this part's first three pages. Part I counts it too, because it is where the
+Server thread is made — the atlas lets a class belong to two parts, and this
+is the part that watches it work.
 
 ## The shape of the part
 
@@ -46,8 +48,12 @@ flowchart LR
     Tick -- "the loop's finally, which two of the three endings reach" --> Death
 ```
 
-The first two are one lecture in two halves and are watched together: seven
-later parts assume one of them or the other, which makes them the most
+The figure is the shape of the part and not the order to watch it in: the
+loop's two pages come first below, and the beginning and the end come last,
+when there is something for them to start and stop. Those two are one lecture
+in two halves, watched together — and seven later parts (IV, V, VI, VII, VIII,
+IX and XIII: every part that runs on the Server thread except world
+generation) assume one of them or the other, which makes them the most
 load-bearing pair in the book after *Anatomy*.
 
 ## Before you start
@@ -64,18 +70,17 @@ are assumed wherever something is written to disk or sent on the wire, and
 assumed once, by *starting a server*, which runs its staged load for server
 data.
 
-Two pages from a later part are assumed, and they are cut two different
-ways. [Tickets and
+Two pages from a later part are assumed, and only one of them has to be read
+first. [Tickets and
 loading](../world/tickets-and-loading.md#the-number-line) owns what
-*entity-ticking* and *block-ticking* range mean, and [the level
+*entity-ticking* and *block-ticking* range mean, but [the level
 tick](server-level-tick.md#three-ranges-before-we-need-them) defines both
-before it uses them, so that one keeps until Part IV. [Environment attributes
-and
+before it uses them, so it keeps until Part IV. [Environment attributes and
 timelines](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)
-does not: the level tick's first act is to throw that system's cache away,
-and its opening paragraph does not mean much to a reader who has never met
-it. That is the one page worth watching out of order before this part;
-everything else in Part IV can wait.
+does not keep: the level tick's first act is to throw that system's cache
+away, and the level tick's opening paragraph does not mean much to a reader
+who has never met it. Watch that page out of order; everything else in Part IV
+can wait.
 
 ## Watch in this order
 
@@ -94,29 +99,32 @@ everything else in Part IV can wait.
 3. [Players and sessions](players-and-sessions.md) — a join from the end of
    the login handshake to a player standing in a world with chunks on the
    way, and then the four ways that session changes: death, a dimension,
-   a disconnect, and a debug command that sends the player back to the
-   configuration phase. Dying replaces your player object; the Nether does not.
+   a disconnect, and a debug command that sends the player back through the
+   join handshake without dropping the socket. Dying replaces your player
+   object; the Nether does not.
 4. [Starting a server](starting-a-server.md) — *java -jar server.jar* to
    the word *Done*: the EULA, the lock on `session.lock`, the packs and
    registries, the thread, the levels. The step that loads the world's
    chunks loads none of them on an ordinary world.
 5. [How a server dies](how-a-server-dies.md) — three endings compared:
-   `/stop`, a crash in the tick loop, and the watchdog. A crash saves your
-   world. The watchdog does not.
+   `/stop`, a crash in the tick loop, and the watchdog thread that kills a
+   server whose tick never ends. A crash saves your world. The watchdog does
+   not.
 
 ## Where the part stops
 
-A good deal of `server/` is taught elsewhere, because a package is not a
-subject. The generation half of `ChunkMap` — `ChunkGenerationTask`,
-`ChunkTaskDispatcher`, `ChunkTaskPriorityQueue` and `WorldGenRegion` — belongs
-to Part IV, where a chunk is the thing being followed
-([chunk generation](../world/chunk-generation-pipeline.md)).
-`ServerPlayerGameMode` is the server half of a click and is watched in Parts V
-and VIII. `ServerScoreboard`, `ServerFunctionLibrary` and
-`ServerAdvancementManager` are data-pack machinery and belong to Part XIII.
-`ReloadableServerRegistries` is Part II's reload. What is left here — and it
-is the part's whole subject — is the loop, the levels it drives, the players
-in them, and the two ends of the process.
+Almost nothing, and none of it by omission: {{#include ../../generated/coverage-server.md}},
+which after Parts I and VIII is as close to complete as the book gets. What
+the five lectures leave out they leave to
+another part, because a package is not a subject. Chunk *generation* — half of
+`ChunkMap` and everything around it — is Part IV's, where a chunk rather than
+a tick is the thing being followed ([chunk
+generation](../world/chunk-generation-pipeline.md)). The server half of a
+click is Parts V and VIII's. The data-pack machinery that happens to live in
+`net/minecraft/server` — the scoreboard, the function library, the
+advancement manager — is Part XIII's, and the reload beside it is Part II's.
+What is left, and it is the part's whole subject, is the loop, the levels it
+drives, the players in them, and the two ends of the process.
 
 ## Reference this part uses
 
@@ -127,7 +135,8 @@ name, out of fifty-nine.
 [Level data and rules](../../reference/level-data-and-rules.md) — which file
 remembers what, and how *level.dat* is written.
 [Packets](../../reference/packets.md) — everything the tick sends.
-[Diagram lanes](../../reference/lanes.md).
+[Diagram lanes](../../reference/lanes.md) — what each lane in the figures
+above stands for.
 
 ---
 

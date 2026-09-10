@@ -44,12 +44,15 @@ the two halves — a `CachedUserNameToIdResolver` over *usercache.json*, with a
 comparing its remembered name against the profile's is how the server notices
 a player has been renamed since their last visit.
 
-`PlayerList.canPlayerLogin` returns the reason to refuse, or null. It asks
+### Four questions, and the two ways past them
+
+`PlayerList.canPlayerLogin` returns a `Component` — the reason to refuse,
+rendered on the disconnect screen — or null for *let them in*. It asks
 four questions in order — the ban list, the whitelist, the IP ban list, then
 capacity — and the first three ask the same kind of object. A `StoredUserList`
 is a JSON file of `StoredUserEntry` records keyed by identity, rewritten whole
 on every change, and there are four of them: `UserBanList`, `IpBanList`,
-`UserWhiteList` and the `ServerOpList` the next paragraph turns on. The two
+`UserWhiteList` and the `ServerOpList` that both surprises below turn on. The two
 ban lists share a `BanListEntry` carrying a source, a reason and an expiry,
 and nothing sweeps that expiry on a schedule: `StoredUserList.get` drops what
 has lapsed before it answers, so a temporary ban ends the moment somebody
@@ -65,6 +68,8 @@ separate thing entirely and reaches exactly one of the four questions:
 `ServerOpListEntry.bypassesPlayerLimit` is read only by
 `DedicatedPlayerList.canBypassPlayerLimit`, and only the capacity test calls
 it. A banned op is still banned.
+
+### The gate runs twice, and disagrees with itself
 
 The gate runs **twice**, and the second run is not a repeat of the first.
 `ServerLoginPacketListenerImpl.verifyLoginAndFinishConnectionSetup` runs it
@@ -146,7 +151,9 @@ not I/O, and a join pays the migration cost twice — once here, and once in
 `PrepareSpawnTask.Ready`, where the file is loaded again for the full
 `Entity.load`.
 
-Between the two reads the player is built. `ServerLevel.waitForEntities`
+### Between the two reads, the player is built
+
+`ServerLevel.waitForEntities`
 blocks the Server thread until the entities in the spawn chunks have
 finished loading — a horse to remount has to exist before a rider can be
 attached to it — and then the `ServerPlayer` constructor runs, pulling its
@@ -158,6 +165,8 @@ object in, the player is snapped to the prepared position,
 `ServerPlayer.loadAndSpawnEnderPearls` and
 `ServerPlayer.loadAndSpawnParentVehicle` put back what the player was
 carrying and sitting on when they left.
+
+### Two rescues wired into the read
 
 Two rescues are wired into the read, and the first is the file's own.
 `PlayerDataStorage.load` tries *\<uuid\>.dat*; if that comes back with
@@ -298,11 +307,7 @@ otherwise idle chunk still moves.
 
 The join is one story; what happens afterwards is a comparison. Three of
 these a player will meet tonight and the fourth exists for one debug
-command. They are not quite every way out of a `ServerLevel` — the end
-credits are a fifth, and `ServerPlayer.showEndCredits` removes the player
-with `Entity.RemovalReason.CHANGED_DIMENSION` on its way to the respawn
-below — but they are the four a session is built out of, and they disagree
-about almost everything.
+command, and they disagree about almost everything.
 
 | | respawn | dimension change | disconnect | `ServerGamePacketListenerImpl.switchToConfig` |
 |---|---|---|---|---|
@@ -350,6 +355,13 @@ portal state — is reached only when `PlayerList.respawn` is called with
 `Entity.RemovalReason.CHANGED_DIMENSION`, which happens in exactly one place:
 a player pressing *Respawn* on the end credits, with `ServerPlayer.wonGame`
 set. That is the End-portal return, not *keepInventory*.
+
+Which makes the end credits a fifth way out of a `ServerLevel`, and the
+reason the table above has four columns rather than five:
+`ServerPlayer.showEndCredits` removes the player with
+`Entity.RemovalReason.CHANGED_DIMENSION` like a dimension change, and then
+hands it to `PlayerList.respawn` like a death. It is not a way a session
+changes so much as the one place two of them meet.
 
 An ordinary death takes the other branch. Health is reset to maximum,
 effects are gone, and `GameRules.KEEP_INVENTORY` — or having died as a
@@ -440,7 +452,7 @@ tick](server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)).
 The rest of what other players see is entity tracking in `ChunkMap`, and the
 removal reasons in the table above have already told it what to do.
 
-### The three kicks that come from the tick
+## The three kicks that come from the tick
 
 `ServerGamePacketListenerImpl.tick` ends sessions of its own accord. An idle
 player is disconnected after `MinecraftServer.playerIdleTimeout` minutes

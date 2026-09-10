@@ -148,7 +148,7 @@ per function rather than shared across the tag.
 
 `/schedule` is the one way out of the current tick, and it books its callback
 into the server-wide `TimerQueue` that only the overworld's clock advances
-([the level tick](../server/server-level-tick.md#sleeping-is-the-one-thing-a-freeze-cannot-stop)) —
+([the level tick](../server/server-level-tick.md#a-freeze-stops-the-clock-and-not-the-sleep-check)) —
 so a scheduled function fires once per tick, not once per dimension, and
 stands still while the world is frozen. What belongs to functions rather than
 to the clock is what `ScheduleCommand` refuses outright: a macro function, and

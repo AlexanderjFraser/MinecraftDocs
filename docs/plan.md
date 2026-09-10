@@ -32,9 +32,9 @@ A's rulings and the schedule with what each session did; Part 5 the plan as it
 stood at the close, with the session paragraphs and the log.
 
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
-planning session on Fable; **session A set the standard on 2026-09-10,
-session B took Parts I and II the same day**, and the next session is C
-(Part III · The server). The charter is below; the brief, the
+planning session on Fable; **session A set the standard on 2026-09-10, and
+sessions B (Parts I and II) and C (Part III) followed the same day**, so the
+next session is D (Part IV · The world). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -62,7 +62,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A and B done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A, B and C done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -492,6 +492,54 @@ sessions A to I in full, and the note on where J to O wrote theirs — is in
   that finds a real error stops and re-derives it even when its own brief says
   it changes no facts (A11's departure) — a lens is never kept clean by
   publishing a sentence known to be false.
+
+**Pass 6, session C — Part III · The server** *(2026-09-10).* Five system
+pages and the landing page, six readers, one each. Part III arrived as the
+part that was already *inside* the rules — 2 of 5 on the closer, no literal
+trace heading, a median of 470 lines — and the session's finding is that
+being inside a rule of thumb settles nothing: **both closers failed A2's test
+in part**, and every one of the six pages had something a reader with no
+source could not get past. `server-tick` went 4 questions to 2 and then to 3
+sections richer: the autosave arithmetic moved up beside the countdown it is
+about, and *does freezing stop the server* turned out to hold the page's only
+definition of **frozen** — a word its `tickChildren` table uses in three rows,
+240 lines above — so the mechanism went up under the table and the question
+kept the consequence. A fourth thing in that closer was not a question at all
+and is now the close of *An empty server stops ticking*.
+`server-level-tick` went 7 to 4: two answers were second tellings of sections
+the reader had passed within fifty lines, and *where did the day–night cycle
+go* was written for a 1.21 reader, so it is the page's blockquote now — the
+third page in the part to gain or move one to the foot, which makes 3 of 5 at
+the foot and none in the body. Three of that page's headings overclaimed
+against its own figure (*the one thing a freeze cannot stop* over nine ungated
+steps; *the two steps that always run* over the same nine; *five things in one
+call* over a figure that splits the third), and the fix for the third was not
+the heading — `ServerChunkCache.tick` really is five statements — but the
+prose, which became the part's only list, answering a question pass 3's
+session D left open in 2026-09-02. **A7 bit here**: `starting-a-server` /
+`how-a-server-dies` were one skeleton run forwards and backwards, and
+`how-a-server-dies` was one edit from `players-and-sessions` as well, so the
+later page varied by putting its **comparison table before its cast** — the
+page's artefact is the three-way table its hook promises and it was sitting
+behind eight rows of cast. Its *Three booleans and a question* dissolved into
+the three sections that use each boolean. No page in the part now shares a
+spine with any other, in the part or out of it. **Six facts corrected**, the
+sharpest on the landing page: it said `MinecraftServer` was not counted in
+Part III's size, which is why the atlas counts it under Part I — and the
+atlas's Part III spec is `net/minecraft/server` itself-only, so it is counted
+in both, which is the answer to the question the reader ended the page with.
+Four *Where to look* lists came down from 26, 33, 33 and 24 names to 17, 19,
+19 and 15 under A12, each in the page's own reading order, with no name lost
+from the book. Part III went 2,357 lines to 2,367 — up, as A9 says a part may
+be. Twenty units appended to [pass5.md](pass5.md) (five for pass 7, nine for
+pass 8, five for pass 9, one on the list question); nine queue entries struck
+and two annotated; the session's entry in [pass9.md](pass9.md). All five gates
+green; deployed. **What the session would tell the next one**: three of the
+five pages open on a figure the page cannot yet be read against — the lead
+sequence or flowchart names five or six mechanisms whose prose is below it,
+and every reader said so independently. That is a part-wide pattern rather
+than three pages' bad luck, and it is pass 7's, so it went to the queue whole
+rather than being patched a page at a time.
 
 **Pass 6, session B — Parts I · Anatomy and II · Foundations** *(2026-09-10).*
 Nine system pages and two landing pages, eleven readers, one per page. The

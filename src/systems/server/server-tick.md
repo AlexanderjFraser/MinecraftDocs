@@ -12,8 +12,9 @@ plenty of places and **committed** in this one, on this one thread. When a
 lap runs long the console eventually prints *Can't keep up! Is the server
 overloaded?*, and that line is not a warning that the server is about to
 start missing ticks. `MinecraftServer.runServer` logs it and advances the
-deadline past the whole backlog inside the same *if*, so the message **is**
-the skip; because the log and the skip share one condition, a server that
+deadline past the whole backlog in the same branch, so the message **is**
+the skip; and because that branch will not fire again for a further ten
+seconds and a hundred ticks of the server's own scheduled time, a server that
 complained recently keeps running behind rather than skipping at all. And the
 ticks it does skip are simply gone — nothing runs them later, so game time
 ends up that many ticks younger than the wall clock and stays there.
@@ -80,7 +81,8 @@ second gate is fifteen seconds of the server's *own* scheduled time — which on
 an overloaded server is rather more than fifteen seconds of yours. In between,
 the backlog is real and every tick of it is run.
 
-Sprinting takes the other arm of the same *if*: when the server is not paused,
+Sprinting takes the other arm of the loop's opening *if*, the one the overload
+check sits inside: when the server is not paused,
 `ServerTickRateManager.isSprinting` is true and
 `ServerTickRateManager.checkShouldSprintThisTick` consents, this tick is
 declared **zero nanoseconds long** and `MinecraftServer.nextTickTimeNanos` is
@@ -153,6 +155,15 @@ client's render and simulation distance into the `PlayerList` on every
 unpaused tick, which is why singleplayer has no separate view-distance
 setting.
 
+That pause is the pattern for every difference between the two servers on
+this page. The loop itself is written once: `IntegratedServer` and
+`DedicatedServer` override pieces of the tick and never the loop, so
+`DedicatedServer.tickServer` adds the JSON-RPC `ManagementServer.tick`,
+`DedicatedServer.tickConnection` the console, and `IntegratedServer.tickServer`
+the pause above. [Starting a
+server](starting-a-server.md#minecraftserverspin-and-the-last-thing-main-does)
+is how the thread that runs `MinecraftServer.runServer` comes to exist.
+
 ### What `MinecraftServer.tickChildren` runs, and in what order
 
 `MinecraftServer.tickChildren` is the tick, and the rows below are its
@@ -171,6 +182,15 @@ flush has none, and the debug row is three:
 | debug, game tests, tickables | `ServerDebugSubscribers.tick`, `GameTestTicker.tick`, the dedicated server GUI's refresh through `MinecraftServer.addTickable` | game tests alone, when frozen |
 | send chunks | `PlayerChunkSender.sendNextChunks`, then `ServerCommonPacketListenerImpl.resumeFlushing`, per player | never |
 
+Three rows say *frozen*, and that is `TickRateManager.runsNormally` answering
+false. `/tick freeze` sets `TickRateManager.isFrozen`, and
+`TickRateManager.tick` turns that into this tick's
+`TickRateManager.runGameElements` — unless `/tick step` left
+`TickRateManager.frozenTicksToRun` above zero, which it also decrements.
+Everything that consults `TickRateManager.runsNormally` stops: the functions
+and the clocks in the table above, and inside a level the weather, the block
+and fluid ticks, the other entities and the game tests.
+
 A throwable out of `ServerLevel.tick` is caught, filled with the level's
 details as *"Exception ticking world"* and rethrown as a `ReportedException`
 — which is how one bad dimension ends the whole server. Nothing else in the
@@ -179,7 +199,7 @@ list is wrapped. Two things a reader looks for here are elsewhere: the
 (`MinecraftServer.getScheduledEvents`) but ticks from inside
 `ServerLevel.tickTime`, which runs in the overworld alone and off the
 overworld's *gameTime* ([the level
-tick](server-level-tick.md#sleeping-is-the-one-thing-a-freeze-cannot-stop)), and the last
+tick](server-level-tick.md#a-freeze-stops-the-clock-and-not-the-sleep-check)), and the last
 statement of `MinecraftServer.tickChildren` is `ServerActivityMonitor.tick`,
 a rate-limited nudge to the `NotificationManager` rather than anything the
 world can see.
@@ -249,7 +269,15 @@ own chunks without slowing the tick.
 `ServerStatus` is rebuilt when the old one is more than
 `MinecraftServer.STATUS_EXPIRE_TIME_NANOS` (five seconds) old, so a ping never
 costs a walk of the player list. `MinecraftServer.ticksUntilAutosave` counts
-down to `MinecraftServer.autoSave`. And the tick's own duration replaces its
+down to `MinecraftServer.autoSave`, and it counts *ticks* while promising
+*minutes*: it starts at `MinecraftServer.AUTOSAVE_INTERVAL` (6000) and is
+thereafter `MinecraftServer.computeNextAutosaveInterval`, the tick rate times
+300, floored at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS` (100 — the typo is
+Mojang's). So an autosave is five wall-clock minutes whatever `/tick rate` is
+set to; `MinecraftServer.onTickRateChanged` re-derives the figure whenever
+that changes, but only ever *shortens* the pending countdown, and a sprint
+uses the measured rate from `MinecraftServer.getAverageTickTimeNanos` so that
+it saves at the speed it is really running. And the tick's own duration replaces its
 slot in the hundred-entry `MinecraftServer.tickTimesNanos` ring, updates
 `MinecraftServer.aggregatedTickTimesNanos`, and folds into
 `MinecraftServer.smoothedTickTimeMillis` at
@@ -403,26 +431,11 @@ drains whether there is time or not.
 
 ## Questions players ask
 
-**Does freezing stop the server?** It stops the *world*. `/tick freeze` sets
-`TickRateManager.isFrozen`, and `TickRateManager.tick` turns that into this
-tick's `TickRateManager.runGameElements` — unless `/tick step` left
-`TickRateManager.frozenTicksToRun` above zero, which it also decrements. The
-loop still runs, `MinecraftServer.tickCount` still increments, connections
-still tick, and `TickRateManager.isEntityFrozen` exempts players and anything
-carrying one. Everything that consults `TickRateManager.runsNormally` —
-functions, clocks, weather, block and fluid ticks, other entities, game
-tests — stops.
-
-**Why does lowering the tick rate not delay my autosave?**
-`MinecraftServer.ticksUntilAutosave` starts at
-`MinecraftServer.AUTOSAVE_INTERVAL` (6000) and is thereafter
-`MinecraftServer.computeNextAutosaveInterval`: the tick rate times 300,
-floored at `MinecraftServer.MIMINUM_AUTOSAVE_TICKS` (100 — the typo is
-Mojang's). An autosave is five wall-clock minutes.
-`MinecraftServer.onTickRateChanged` re-derives it whenever `/tick rate`
-changes, but only ever *shortens* the pending countdown. While sprinting it
-uses the measured rate from `MinecraftServer.getAverageTickTimeNanos`, so a
-sprint saves at the speed it is really running.
+**Does freezing stop the server?** It stops the world, not the loop.
+`MinecraftServer.tickCount` still increments, connections still tick and
+packets are still answered, so a frozen server is one you can log into, walk
+about in and type commands at — `TickRateManager.isEntityFrozen` exempts
+players and anything carrying one — while nothing around you moves.
 
 **Is the tick rate settable to anything?** Between
 `TickRateManager.MIN_TICKRATE` (1.0) and `TickCommand.MAX_TICKRATE` (10000).
@@ -442,26 +455,15 @@ rule, and [tickets and
 loading](../world/tickets-and-loading.md#when-a-ticket-dies) owns which ticket
 resets it.
 
-The loop itself is written once. `IntegratedServer` and
-`DedicatedServer` override pieces of the tick, never the loop:
-`DedicatedServer.tickServer` adds the JSON-RPC `ManagementServer.tick`,
-`DedicatedServer.tickConnection` the console, `IntegratedServer.tickServer`
-the pause. [Starting a
-server](starting-a-server.md#minecraftserverspin-and-the-last-thing-main-does)
-is how the thread that runs `MinecraftServer.runServer` comes to exist.
-
 ## Where to look
 
 `MinecraftServer.runServer` · `MinecraftServer.processPacketsAndTick` ·
 `MinecraftServer.tickServer` · `MinecraftServer.tickChildren` ·
 `MinecraftServer.waitUntilNextTick` · `MinecraftServer.haveTime` ·
-`MinecraftServer.shouldRun` · `MinecraftServer.pollTask` · `TickTask` ·
-`ReentrantBlockableEventLoop` · `BlockableEventLoop` · `PacketProcessor` ·
-`PacketUtils` · `TickRateManager` · `ServerTickRateManager` · `TickCommand` ·
-`ServerConnectionListener.tick` · `Connection.tick` ·
+`BlockableEventLoop` · `PacketProcessor` · `PacketUtils` · `TickRateManager` ·
+`ServerTickRateManager` · `ServerConnectionListener.tick` · `Connection.tick` ·
 `ServerCommonPacketListenerImpl.send` · `ServerChunkCache.MainThreadExecutor` ·
-`ChunkMap.processUnloads` · `IntegratedServer` · `DedicatedServer` ·
-`ServerClockManager` · `SampleLogger` · `TpsDebugDimensions`
+`IntegratedServer` · `DedicatedServer`
 
 ---
 
