@@ -34,8 +34,8 @@ stood at the close, with the session paragraphs and the log.
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day and E
-(Part V), F (Part VI) and G (Part VII) on 2026-09-13**, so the next session is H
-(Part VIII · The player). The charter is below; the brief, the
+(Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13**, so the
+next session is I (Part IX · Networking). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -63,7 +63,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E, F and G on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E, F, G and H on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -372,6 +372,63 @@ run between two of passes 6 to 8, and again if 26.4 lands before pass 10.
 A re-read, rarely a rewrite. A system that changed shape rather than names
 is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
 to §7.
+
+**Pass 6, session H — Part VIII · The player** *(2026-09-13).* Seven system
+pages and the landing page, eight readers, one each. The part arrived at
+**7 of 7** on the closer and **four** literal trace headings, the joint-worst
+pair of numbers in the book, and it took session G's parting advice first:
+`check_links.py --inbound` on all seven pages before deciding anything. That
+found four citations landing on a device's anchor, and **not one of them wanted
+the section it named**. Two pages cited `hunger-and-experience`'s closer for a
+0.1 exhaustion figure that closer never mentions. `player-anatomy` cited the
+sword swing's closer for the two combat clocks, which were the back half of an
+answer about mashing. `the-two-phase-tick` cited `player-anatomy`'s closer for
+why item ticking needs two callers. Each was promoted to a section and
+repointed. Then, after the four trace headings were renamed, the link gate
+turned up a fifth and sixth of the same kind: `authority` and `the-spear` had
+both been landing on `input-to-movement`'s single trace anchor and wanting
+opposite halves of a 150-line section. The closer went **7 of 7 → 6**, and the
+one that dissolved whole was `the-spear`'s, whose five answers were three
+second tellings and two body sections wearing a question mark — the cast table
+had promised the mob path 190 lines earlier and only the closer delivered it.
+Four other closers lost their load-bearing answer and kept their consequences.
+**Twenty-three facts corrected**, twenty-one of them found by a reader with no
+source, and the class is by now familiar and still undiminished: a record of
+"four textures — body, cape, elytra"; a player "five classes deep" whose own
+figure draws six; a hook saying the main-hand item "is not stored anywhere"
+against its own payoff saying "not stored *twice*"; a closer saying the *one*
+thing that stops phase two against a gate the same page names thirty lines
+above; a landing page whose "four things it does" sits over a watch order with
+five; a mannequin's split "one class lower" than a class the page calls its
+sibling. The sharpest is `the-spear`'s: *if any of the three conditions passes,
+the damage is…* — three conditions that in fact gate three different effects,
+so a charge can knock a target off a horse and do nothing to it. The fifth and
+last hand-counted landing-page number went to the include, and was wrong like
+the other four (*97%*, in fact 100%). Seven *Where to look* lists became prose
+reading routes under A12, with twenty-two names rescued back into prose by the
+token diff. **A7** was the queue's fourth stale twin entry running: the pair it
+named (`the-spear` / `the-sword-swing`) had dissolved, and what was live was
+`input-to-movement` one edit from *three* of its own neighbours — a hub, not a
+pair. It varied by splitting its trace section into two H2s and promoting six
+bold lead-ins to H3s, which is the same edit the queue had asked for
+separately, on the grounds that nothing could anchor to them. Part VIII's seven pages 2,081 → 2,328 lines, and
+its landing page 164 → 179. Thirty-one units appended to [pass5.md](pass5.md) (seven logged
+cuts, seven for pass 7, six for pass 8, three for pass 9, and one structural
+note for session O); nine entries struck and three annotated; the session's
+entry in [pass9.md](pass9.md). All five gates green; deployed.
+**What the session would tell the next one**: sessions F and G found that a
+renamed closer and an inbound link into a closer are both invisible to the
+tools. Part VIII adds the reason they are, and it generalises past closers:
+**an anchor that names a device rather than a subject collects citations that
+mean different things, and nothing can see the mismatch, because a link
+resolves against a heading and not against a sentence.** The link checker only
+ever catches it at the moment the heading moves — which turns A4's rename from
+a tidying job into a diagnostic, and is an argument for renaming the trace
+headings in Parts XII and XIII even where nothing else on those pages needs it.
+One caveat for session O: renaming them **changes what `pass6_shape.py`
+measures**, because its spine alphabet reads the literal `## The trace` as its
+own token; Part VIII came out of the rename with a measured identical pair that
+was an artefact, and the tool cannot see an H3 at all.
 
 ## The owner's read
 

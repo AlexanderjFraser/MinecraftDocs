@@ -143,7 +143,7 @@ half again,
 and it arrives as orbs from `ExperienceOrb.award` at the block — on the
 ground, not in the player
 ([hunger and
-experience](../player/hunger-and-experience.md#the-other-bar)).
+experience](../player/hunger-and-experience.md#the-other-bar-and-the-number-it-is-really-watching)).
 
 ## What each path is allowed to add
 

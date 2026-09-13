@@ -44,6 +44,284 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session H — Part VIII · The player *(2026-09-13)*
+
+Seven system pages and the landing page, eight readers, one each. Every
+correction below was found by a reader with no source and no other page, and
+re-derived by the session against `reference/26.2` before it landed. Two were
+found by the session while re-deriving another, and are marked.
+
+### Corrections — what the page said, what the decompile says
+
+1. **`player-anatomy`** called `PlayerSkin` "a record of four textures — body,
+   cape, elytra": three nouns for four textures, on the same line.
+   `PlayerSkin.java:12` — the record is `(ClientAsset.Texture body,
+   ClientAsset.Texture cape, ClientAsset.Texture elytra, PlayerModelType model,
+   boolean secure)`. **Three** textures, and the page's own list was right. Now
+   three.
+2. **`player-anatomy`**'s verified line said a player is "five classes deep".
+   The line addresses a reader opening *their own* inventory, so the chain is
+   `Entity` → `LivingEntity` → `Avatar` → `Player` → `AbstractClientPlayer` →
+   `LocalPlayer` (`Entity.java:164`, `LivingEntity.java:142`, `Avatar.java:13`,
+   `Player.java:129`, `AbstractClientPlayer.java:20`, `LocalPlayer.java:109`) —
+   **six** on the client, and five only on the server, where `ServerPlayer`
+   (`:213`) extends `Player` directly. The line now says six on your own screen,
+   and the opening states both numbers, which is the fact the ladder section
+   exists for.
+3. **`player-anatomy`**'s opening claimed "**the main-hand item is not stored
+   anywhere**", and its own payoff eighty lines later says the held item "is not
+   stored *twice*". The second is what `PlayerEquipment.java:16–22` shows:
+   `EquipmentSlot.MAINHAND` resolves to `Inventory.getSelectedItem`, so the item
+   is stored once, in the hotbar slot. The hook now says the main-hand item has
+   no storage *of its own*, which is both true and the thing that is
+   surprising.
+4. **`player-anatomy`** said the `Mannequin` repeats "the same server/client
+   split `Player` has, **one class lower**", two paragraphs after calling the
+   mannequin a *sibling* of `Player`. `Mannequin` extends `Avatar`
+   (`Mannequin.java`), so it is on `Player`'s own rung, and its split is one
+   class deep (`ClientMannequin`) where `Player`'s is two
+   (`AbstractClientPlayer` → `LocalPlayer` / `RemotePlayer`). Now: the split is
+   repeated on its own branch, in one class instead of two.
+5. **`player-anatomy`**'s closer said "**Can a data pack redefine any of this?**
+   Almost none of it", then named two things that *are* set from data, then
+   ended "the player is one of the few systems in the game a data pack cannot
+   redefine" — flatter than the *almost* it opened with. Both halves are true
+   of different things, so the paragraph now names the two data-driven pieces
+   (`Player.createAttributes`; game rules and server properties setting the
+   starting `GameType`) and then makes the flat claim about the rest.
+   Reader-found contradiction, no code change needed to resolve it.
+6. **`the-spear`** said that when any of the three `KineticWeapon.Condition`s
+   passes, "the damage is the attacker's base `Attributes.ATTACK_DAMAGE` plus
+   the floor of relative speed × `KineticWeapon.damageMultiplier`". That is what
+   the damage *figure* is, but it is only dealt when the **damage** condition
+   passed. `KineticWeapon.java` (`damageEntities`) computes `dealsDismount`,
+   `dealsKnockback` and `dealsDamage` separately and calls
+   `livingEntity.stabAttack(slot, target, damageDealt, dealsDamage,
+   dealsKnockback, dealsDismount)` if *any* is true;
+   `LivingEntity.java:3056` then reads `boolean dealtDamage = dealsDamage &&
+   target.hurtServer(...)`, and `Player.java:1203` the same
+   (`totalDamage = dealsDamage ? baseDamage + magicBoost : 0.0F`). Each of the
+   three gates its own effect. The page now says so, with the consequence a
+   player would notice: a charge can knock a target off a horse and do nothing
+   to it.
+7. **`the-two-phase-tick`**'s closer said "the one thing that stops phase two is
+   `MinecraftServer.isPaused`", which its own phase-two section contradicts
+   thirty lines earlier ("a gate that a spectator in unloaded chunks fails").
+   Two different things, both real:
+   `ServerGamePacketListenerImpl.java:306` short-circuits the whole bracket when
+   the server is paused, and `ServerPlayer.doTick` opens with
+   `if (!this.isSpectator() || !this.touchingUnloadedChunk())`, which skips
+   `super.tick()`, the container check, `FoodData.tick` and the play-time
+   statistics — but **not** the forty-three-slot sweep or any of the last-sent
+   comparisons, which run regardless. Both are now stated, and the gate is named
+   and its contents listed, which is what the page had been vague about.
+8. **`the-two-phase-tick`**'s cast row for `Player` read "`Player.tick` and
+   `Player.aiStep`, reached only from phase two", thread "both".
+   `LocalPlayer.tick` (`LocalPlayer.java:338 region`) calls `super.tick()`, so
+   on the client they are reached from the client's single tick. The row now
+   says: on the server, phase two only; on the client, from `LocalPlayer.tick`.
+9. **`the-two-phase-tick`** placed `Entity.rideTick` twice — as phase one's
+   caller for a mounted player, and as the reason a rider is the exception to
+   *the authoritative position never moves inside the bracket* — without saying
+   they are the same placement. `ServerLevel.java:875–886`
+   (`tickPassenger` → `entity.rideTick()`) and `Entity.java:2552–2557`
+   (`rideTick` ticks, then `getVehicle().positionRider(this)`): a rider's real
+   position is written in **phase one**, before the bracket opens. Said once
+   now, in the bracket section.
+10. **`input-to-movement`** gave `ServerGamePacketListenerImpl.MAXIMUM_FLYING_TICKS`
+    (80) and `ServerGamePacketListenerImpl.CLIENT_LOADED_TIMEOUT_TIME` (60) as a
+    pair of named constants, and a reader asked what the 60 was measured in.
+    `ServerGamePacketListenerImpl.java:2479` decrements
+    `clientLoadedTimeoutTimer` once per tick from `ServerPlayer.tick`, so it is
+    **ticks**. Session-found while checking that: the constant is not read by
+    anything either — `restartClientLoadTimerAfterRespawn` arms the timer with a
+    bare `60` — which makes it a second instance of the page's own theme.
+    Corrected and the dead constant named. *(Session-found.)*
+11. **`input-to-movement`** said the mouse-look gates are "the three gates on
+    it", after naming two. `MouseHandler.java:291–343`: the enclosing test is
+    `minecraft.isWindowActive()`, and `turnPlayer` is reached only when no
+    screen is open and the mouse is grabbed. The count was not re-derivable as
+    *three* from the page's own two, and the number was doing no work, so it is
+    gone rather than replaced — the sensitivity curve and its gates are [input
+    and keybinds]'s, which the sentence already said.
+12. **`the-sword-swing`** said `Player.cannotAttack` and `Player.deflectProjectile`
+    "run before the target is asked anything at all", and then, in the next
+    sentence, that `Player.cannotAttack` "puts two questions to *it*" — the
+    target. `Player.java:1002–1004`: `cannotAttack` is
+    `!entity.isAttackable() ? true : entity.skipAttackInteraction(this)` —
+    both questions are put to the target. The page now says the first two gates
+    are asked of the target rather than of the attacker, which is the real
+    distinction and the one the section goes on to use.
+13. **`the-sword-swing`** placed `Item.getAttackDamageBonus` "between the sprint
+    check and the multiplication", in the paragraph telling the reader to read
+    the flowchart above — which has no sprint check in it. `Player.java:946–953`
+    confirms the placement in the code (the sprint-knockback block, then
+    `baseDamage += ...getAttackDamageBonus(...)`), so the fact is right and the
+    figure is what is missing it. The prose now says *before the ×1.5 rather
+    than after it*, and a new paragraph names the sprint-knockback step in the
+    body where the figure can be read against it.
+14. **`the-sword-swing`**'s closer answered "why does my swing look different"
+    by saying "the swing is not echoed to the swinger", leaving a reader unable
+    to say what moves their own arm — with a `ServerboundSwingPacket` in the
+    figure the body never mentioned. `LocalPlayer.java:338–341`:
+    `LocalPlayer.swing` overrides `LivingEntity.swing` to call the base method
+    *and* send `ServerboundSwingPacket`; `LivingEntity.java:2141–2155` then
+    broadcasts `ClientboundAnimatePacket` to trackers only. A new answer says
+    so, and the figure's arrow now has a sentence behind it. *(Session-found,
+    from the reader's unanswered question.)*
+15. **`hunger-and-experience`**'s cast row said `FoodData` is "the food bar,
+    saturation and exhaustion — and by type, only on the server", which its own
+    prediction paragraph contradicts ("the client replays the meal … and runs
+    `FoodProperties.onConsume` and its `FoodData.eat` locally"). Both sides hold
+    a `FoodData`; what is server-only by type is `FoodData.tick`, whose
+    signature is `tick(ServerPlayer)` (`FoodData.java:34`). The row now says
+    that, with the narrowing in the thread column where it belongs.
+16. **`hunger-and-experience`**'s regen flowchart says "then at most one of the
+    three" and the paragraph under it never says what makes them exclusive.
+    `FoodData.java:49–73` is an `if / else if / else if` chain, so the **order**
+    is the rule, and *heal fast* (`saturationLevel > 0 && isHurt &&
+    foodLevel >= 20`) and *heal slowly* (`foodLevel >= 18 && isHurt`) both hold
+    at twenty food. The prose now states the order and names the consequence.
+    Not a wrong claim; an unstated one that no reader could supply.
+17. **`status-effects`**'s opening said the client's duration "is corrected by a
+    re-send every six hundred ticks", and its closer said the re-send fires
+    "whenever the remaining duration divides by six hundred", then rested the
+    page's own hook on the second reading (−1 divides by nothing). Both describe
+    `LivingEntity.java:888` (`effect.getDuration() % 600 == 0`), but only the
+    divisibility form makes the −1 argument work, and the opening was the half
+    the reader met first. The opening now states the test and then says what it
+    amounts to for a finite effect.
+18. **`status-effects`** wrote its pulse rhythms as "*25 ≫ amplifier* ticks",
+    with no reader able to tell a right shift from *much greater than*.
+    `PoisonMobEffect.java:25` — `int interval = 25 >> amplification`. It is a
+    right shift, and the page's own scenario is Poison II, which the page never
+    connected to an amplifier of 1. Now written out: halved per level, floored
+    at one tick, with 25 for Poison I and 12 for the Poison II of the scenario.
+19. **`status-effects`** counted its vocabulary as three and then introduced
+    `MobEffects` in the same bolded form, and then said "behind those three is a
+    fourth" — leaving `MobEffects` uncounted and a reader doing arithmetic. No
+    fact wrong; the counting is now off the page, with `MobEffects` named as the
+    registry that *uses* the three rather than as a fourth of them.
+20. **`player/README`**'s argument said a player "aliases an eighth" slot after
+    saying its inventory "reports seven slots it does not store".
+    `Inventory.java:39` — `EQUIPMENT_SLOT_MAPPING` has exactly seven entries
+    (four armour, offhand, body, saddle), and `getContainerSize` (`:438`) is
+    `items.size() + EQUIPMENT_SLOT_MAPPING.size()` = 43. The alias is
+    `EquipmentSlot.MAINHAND`, which is **not** one of the forty-three at all —
+    so "an eighth" describes a slot the container never reports. The clause is
+    gone and the seven kept; the alias is *player anatomy*'s to explain, and the
+    landing page now says so.
+21. **`player/README`**'s verified line promised "the four things it does that
+    the rest of the world does differently" against a figure with four branches
+    and a watch order with **five** doing-pages (input to movement, the sword
+    swing, the spear, hunger and experience, status effects). The figure's
+    branches are four only because the spear hangs off the sword swing. Five.
+22. **`player/README`**'s *Where the part stops* said "two things inside these
+    packages are nobody's, and both are **declined** rather than missed", and
+    then, two sentences later, "nobody explains the walk between them", which is
+    a third thing and is missed rather than declined. Now three, with two
+    declined and one admitted.
+23. **`player/README`** hand-counted "97% of those lines are named somewhere in
+    the book". `tools/pass5_coverage.py --part player` on the same mapping:
+    **100%** by line, one class unnamed (`ProfilePublicKey` is named on
+    `chat-and-signing`; only `ProfileKeyPair`, 19 lines, is named nowhere). The
+    sentence now carries
+    `{{#include ../../generated/coverage-player.md}}` and hand-counts nothing,
+    which is the fifth of the five hand-counted landing-page numbers to go.
+
+### Claims this session introduced
+
+**New sections, each an assertion about where a mechanism belongs.**
+
+- `player-anatomy` *Why the forty-three need two ticking calls* (H3) — claims
+  `Inventory.tick` runs from `Player.aiStep` over the thirty-six and
+  `EntityEquipment.tick` from `LivingEntity.aiStep` over the other seven, and
+  that a third walk crosses all forty-three in phase two for
+  `ServerPlayer.synchronizeSpecialItemUpdates`. Promoted out of the closer
+  because `the-two-phase-tick` cites it; that link now lands here.
+- `player-anatomy` *What crosses between them* (H3) — the eight packets that
+  carry a player, moved out of the closer unchanged.
+- `player-anatomy`'s `Avatar` paragraph now claims that "no instance fields"
+  and "owns two synched values" are consistent because the `DATA_*` names are
+  static `EntityDataAccessor` keys onto storage `Entity` owns. Every reader of
+  the page stopped on the apparent contradiction; the resolution is a claim
+  about what an accessor is.
+- `the-sword-swing` *The two clocks a swing is charged against* (H2) — the
+  ticker vocabulary promoted out of the closer, because `player-anatomy`'s cast
+  table cites it. The link now lands here. New assertion inside it: the two
+  clocks are distinguished by `Player.onAttack` clearing one and leaving the
+  other.
+- `input-to-movement` *Floating, and everything exempted from it* (H2) —
+  promoted out of the closer because `players-and-sessions` cites it as "a list
+  of exemptions the movement page owns". Claims the definition of floating is
+  *no blocks anywhere below* and that the suppression list is six items.
+- `input-to-movement` *What the server does with the packet it gets* (H2) plus
+  six H3s — a structural split of the old trace section, not a new claim, but
+  every H3 title is an assertion about what its paragraphs are about.
+- `the-spear` *What a mob does with the same item* and *What a data pack can
+  and cannot change here* (H2s) — the last two closer answers promoted whole.
+- `hunger-and-experience` — the exhaustion economy moved to in front of the
+  flowchart it explains, and the total-only change detection moved into *The
+  other bar, and the number it is really watching*, which is the hook's payoff.
+  New assertion in the second: every call site that changes a level without
+  changing the total poisons `ServerPlayer.lastSentExp` by hand, and one that
+  forgot would leave a stale client level.
+- `status-effects` — three promotions into the body (the hidden-effect chain
+  and the packet that cannot carry it; the blend state; the ambient-particle
+  probability). New assertion in the third, derived this session from
+  `LivingEntity.java:903–911`: a **visible** wholly-ambient entity rolls one in
+  **twenty** (`bound` 4 × `ambientFactor` 5), which the page had left to the
+  reader while working out only the invisible case.
+- `hunger-and-experience`'s new first answer claims a golden carrot carries
+  14.4 saturation (nutrition 6 × modifier 1.2 × 2, from
+  `FoodConstants.saturationByModifier` and `Foods.java:26`) and that eating one
+  on an empty bar leaves six food and six saturation, because
+  `FoodData.add` clamps saturation to the **new** food level
+  (`FoodData.java:22–25`). Arithmetic, re-derived; worth a second reading.
+
+**Renamed headings (each a claim that the new title says what the section
+says), with every inbound link repointed in the same commit.**
+
+- `input-to-movement`: `## The trace: W is pressed` → *W, held down: what the
+  client decides and sends*, with the server half split out. `authority` and
+  `the-spear` had both been landing on the old anchor and wanted different
+  halves; they now land on *What the server does with the packet it gets* and
+  *Where the velocity everything downstream reads comes from*.
+- `status-effects`: `## The trace: Poison II, on both sides at once` →
+  *Poison II counting down on two machines*. No inbound link.
+- `the-sword-swing`: `## The trace: one click, one integer, one round trip` →
+  *One click, one integer, one round trip*. No inbound link.
+- `the-two-phase-tick`: `## The trace: one player, one tick, twice` → *Both
+  halves, in the order they run*; `players-and-sessions` repointed.
+- `hunger-and-experience`: `## The other bar` → *The other bar, and the number
+  it is really watching*; four inbound links repointed.
+- Four links that had been landing on a closer's anchor now land on a section:
+  `the-two-phase-tick` → `player-anatomy#why-the-forty-three-need-two-ticking-calls`,
+  `player-anatomy` → `the-sword-swing#the-two-clocks-a-swing-is-charged-against`,
+  `players-and-sessions` → `input-to-movement#floating-and-everything-exempted-from-it`,
+  and `the-spear` and `the-sword-swing` → `hunger-and-experience#the-food-bar-is-four-numbers-and-a-pile-of-literals`
+  for the 0.1 melee exhaustion, which the closer they had been citing never
+  mentioned.
+
+**Rewritten arguments.**
+
+- `player/README`'s argument now ends on the claim *the player is the one
+  object the server is not allowed to be right about*, with the four symptoms
+  moved to the front as the way in. That claim is a summary of
+  `authority`'s ruling applied to this part, and pass 9 should check it as a
+  claim rather than as rhetoric.
+- `player/README`'s *The shape of the part* now claims the inventory needs no
+  lecture because the interesting thing about it is that seven of its
+  forty-three slots are stored elsewhere — an answer to a reader who could not
+  find the inventory in the figure or the watch order.
+- Seven *Where to look* lists became prose reading routes under A12. No name
+  left the book: checked by diffing every backticked token on each page against
+  `HEAD` and then against all of `src/`, which caught eighteen on
+  `player-anatomy` and four on `input-to-movement` and put them back into prose
+  with a verb attached.
+- Four watch-order blurbs on `player/README` re-synced to the pages as they now
+  stand (1, 4, 6 and 7), each one a fresh one-sentence claim about its page.
+
 ## Pass 6, session G — Part VII · Items and inventories *(2026-09-13)*
 
 Eight system pages and the landing page, nine readers, one each. Every

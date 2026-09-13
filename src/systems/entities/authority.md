@@ -59,7 +59,7 @@ three different methods, not overrides of each other:
 the fall distance and lets `Block.fallOn` fire; and
 `Entity.doCheckFallDamage` is a separate entrance the server uses instead,
 driven by the movement packet, which is [Part VIII's
-subject](../player/input-to-movement.md#the-trace-w-is-pressed).
+subject](../player/input-to-movement.md#what-the-server-does-with-the-packet-it-gets).
 
 ## The cast
 

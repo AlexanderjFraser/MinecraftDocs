@@ -30,14 +30,10 @@ tick](the-two-phase-tick.md#the-bracket-and-what-survives-it)).
 
 Who is *allowed* to decide any of this is [Part VI's
 authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off),
-and this page assumes it: the server simulates your player and is not allowed
-to believe the result. Two consequences of that run through everything below
-— `Entity.doCheckFallDamage` on the packet path does the fall damage, because
-the branch inside `Entity.move` is gated on an authority a `ServerPlayer`
-does not have ([three cases, read on both
-sides](../entities/authority.md#three-cases-read-on-both-sides)); and the
-ground flag needs real vertical motion on the server, because only an
-authoritative instance updates it unconditionally.
+and this page assumes it in one sentence: the server simulates your player
+and is not allowed to believe the result. Everything below is what that
+costs, and the cost is paid twice — once on the way out, where the client
+decides, and once on the way in, where the server checks.
 
 ## What each side holds
 
@@ -69,15 +65,20 @@ authoritative instance updates it unconditionally.
   `KeyboardInput.tick` builds a fresh `Input` from the seven
   `KeyMapping.isDown` values, maps each pair to −1, 0 or +1 with
   `KeyboardInput.calculateImpulse`, and normalises the resulting vector.
-- **`LocalPlayer`** — the send-tracking block: `LocalPlayer.xLast`,
-  `LocalPlayer.yLast`, `LocalPlayer.zLast`, `LocalPlayer.yRotLast`,
-  `LocalPlayer.xRotLast`,
-  `LocalPlayer.lastOnGround`, `LocalPlayer.lastHorizontalCollision`,
-  `LocalPlayer.positionReminder` (against
-  `LocalPlayer.POSITION_REMINDER_INTERVAL`, twenty),
-  `LocalPlayer.lastSentInput`, `LocalPlayer.wasSprinting`,
-  `LocalPlayer.sprintTriggerTime`, `LocalPlayer.autoJumpEnabled`,
-  `LocalPlayer.autoJumpTime`, `LocalPlayer.crouching`.
+- **`LocalPlayer`** — one block of fields whose entire job is *what did I
+  last tell the server*. Five of them shadow the position and rotation
+  (`LocalPlayer.xLast`, `LocalPlayer.yLast`, `LocalPlayer.zLast`,
+  `LocalPlayer.yRotLast`, `LocalPlayer.xRotLast`), two shadow the ground and
+  collision flags (`LocalPlayer.lastOnGround`,
+  `LocalPlayer.lastHorizontalCollision`), one shadows the key set
+  (`LocalPlayer.lastSentInput`) and one counts down to a re-send that
+  happens whether anything changed or not
+  (`LocalPlayer.positionReminder`, against
+  `LocalPlayer.POSITION_REMINDER_INTERVAL`, twenty). The rest of the block
+  is local state nobody is told about: `LocalPlayer.wasSprinting` and
+  `LocalPlayer.sprintTriggerTime` for the double-tap,
+  `LocalPlayer.autoJumpEnabled` and `LocalPlayer.autoJumpTime` for
+  auto-jump, and `LocalPlayer.crouching`.
 
 `LocalPlayer.input` starts as a bare `ClientInput` and is replaced with a
 `KeyboardInput` by `ClientPacketListener` on login and on respawn — which
@@ -85,32 +86,40 @@ is why a respawned player's input object is a different one.
 
 ### On the server
 
-`ServerGamePacketListenerImpl` holds the whole judgement:
-`ServerGamePacketListenerImpl.firstGoodX` and its siblings (where
-`ServerGamePacketListenerImpl.tickPlayer` found the player),
-`ServerGamePacketListenerImpl.lastGoodX` and its siblings
-(the last accepted position),
-`ServerGamePacketListenerImpl.awaitingPositionFromClient`,
+`ServerGamePacketListenerImpl` holds the whole judgement in four groups of
+fields, and the groups are the argument. **Two positions**, not one:
+`ServerGamePacketListenerImpl.firstGoodX` and its siblings are where the
+connection tick found the player at the top of the bracket, and
+`ServerGamePacketListenerImpl.lastGoodX` and its siblings are the last
+position it actually accepted from you. **Three teleport fields** —
 `ServerGamePacketListenerImpl.awaitingTeleport`,
-`ServerGamePacketListenerImpl.awaitingTeleportTime`,
-`ServerGamePacketListenerImpl.clientIsFloating`,
-`ServerGamePacketListenerImpl.aboveGroundTickCount`,
-`ServerGamePacketListenerImpl.receivedMovePacketCount`,
-`ServerGamePacketListenerImpl.knownMovePacketCount`,
-`ServerGamePacketListenerImpl.receivedMovementThisTick`, and the vehicle
-equivalents (`ServerGamePacketListenerImpl.lastVehicle`,
+`ServerGamePacketListenerImpl.awaitingTeleportTime` and
+`ServerGamePacketListenerImpl.awaitingPositionFromClient` — hold the
+handshake open while a rubber-band is in flight. **Two counters**,
+`ServerGamePacketListenerImpl.receivedMovePacketCount` against
+`ServerGamePacketListenerImpl.knownMovePacketCount`, are how the speed budget
+learns how many packets arrived since the last tick, with
+`ServerGamePacketListenerImpl.receivedMovementThisTick` the per-tick flag.
+And **a floating pair**, `ServerGamePacketListenerImpl.clientIsFloating` and
+`ServerGamePacketListenerImpl.aboveGroundTickCount`. Every one of those four
+groups has a vehicle twin beside it —
+`ServerGamePacketListenerImpl.lastVehicle`,
 `ServerGamePacketListenerImpl.vehicleFirstGoodX`,
 `ServerGamePacketListenerImpl.vehicleLastGoodX`,
-`ServerGamePacketListenerImpl.clientVehicleIsFloating`).
-`ServerPlayer.lastKnownClientMovement` is the observed per-tick
-displacement, read back through `ServerPlayer.getKnownMovement` and
-`ServerPlayer.getKnownSpeed`, and `ServerPlayer.lastClientInput` is the
-raw key state.
+`ServerGamePacketListenerImpl.clientVehicleIsFloating` — which is the first
+sign that a vehicle is judged by its own cut-down copy of this code.
+
+On `ServerPlayer` itself there are only two: the observed per-tick
+displacement, `ServerPlayer.lastKnownClientMovement`, read back through
+`ServerPlayer.getKnownMovement` and `ServerPlayer.getKnownSpeed`, and the raw
+key state, `ServerPlayer.lastClientInput`.
 
 **Almost none of the thresholds have names.** The numbers in the movement
-checks are inline literals; the only named ones nearby are
-`ServerGamePacketListenerImpl.MAXIMUM_FLYING_TICKS` (80) and
-`ServerGamePacketListenerImpl.CLIENT_LOADED_TIMEOUT_TIME` (60).
+checks are inline literals. Two constants nearby do have names —
+`ServerGamePacketListenerImpl.MAXIMUM_FLYING_TICKS` (80 ticks) and
+`ServerGamePacketListenerImpl.CLIENT_LOADED_TIMEOUT_TIME` (60 ticks) — and
+the second is not read by anything either: the load timer is armed with a
+bare 60 beside it.
 
 ## Sampled once a tick, judged once a tick
 
@@ -118,22 +127,24 @@ Keys are **sampled inside the tick, not pushed from the callback.** The
 *movement* half of `KeyboardHandler.keyPress` sets `KeyMapping.isDown` and
 bumps `KeyMapping.clickCount`, and does even that only when no screen is
 open; everything else the method does — the screen's own key handling, the
-debug keys, the pause — never reaches a `KeyMapping` at all. Releases are
-always delivered, which is the asymmetry the toggle-restoring machinery above
-exists to repair. When the callback runs, and why *deferred* is the wrong
-word for it, is [input and
-keybinds](../client/input-and-keybinds.md#the-cast). The read happens once
-per game tick, deep inside `LocalPlayer.aiStep`, which calls
-`ClientInput.tick`.
+debug keys, the pause — never reaches a `KeyMapping` at all. Releases, by
+contrast, are always delivered, screen or no screen. That asymmetry is the
+whole reason a mapping can be left stuck down, and repairing it is [input and
+keybinds](../client/input-and-keybinds.md#two-ways-gameplay-reads-a-mapping-and-they-behave-differently)'s,
+along with when the callback actually runs. The *read* happens once per game
+tick, deep inside `LocalPlayer.aiStep`, which calls
+`ClientInput.tick` — the empty base method whose `KeyboardInput` override
+does the work.
 
-Mouse look is the exception, and it is the one number on this page that is
-not sampled once a tick: `MouseHandler.handleAccumulatedMovement` runs **per
+Mouse look is the exception, and it is the one input on this page not
+sampled once a tick. `MouseHandler.handleAccumulatedMovement` runs **per
 frame**, in `Minecraft.runTick` after the tick loop, and — when the window is
 active and the mouse grabbed — `MouseHandler.turnPlayer` calls `Entity.turn`
 directly. Rotation is therefore finer-grained than position, which is why a
-packet can carry a rotation the tick never saw a keypress for. The sensitivity curve inside
-`MouseHandler.turnPlayer`, and the three gates on it, are [input and
-keybinds](../client/input-and-keybinds.md#the-mouse-accumulate-apply-discard)'.
+packet can carry a rotation the tick never saw a keypress for. The
+sensitivity curve inside `MouseHandler.turnPlayer` and the rest of the gates
+on it are [input and
+keybinds](../client/input-and-keybinds.md#the-mouse-accumulate-apply-discard)'s.
 
 On the server the ordering is the whole story:
 
@@ -147,7 +158,7 @@ On the server the ordering is the whole story:
    step, and the place the floating check is enforced. A paused server
    short-circuits before it.
 
-## The trace: W is pressed
+## W, held down: what the client decides and sends
 
 ```mermaid
 sequenceDiagram
@@ -172,7 +183,9 @@ sequenceDiagram
     SGPL->>SP: doTick — simulate the whole tick, then absSnapTo(firstGood…) and discard
 ```
 
-**The client half.** `KeyboardInput.tick` builds an `Input` from the seven
+### The client half
+
+`KeyboardInput.tick` builds an `Input` from the seven
 keys and a normalised `Vec2`. `LocalPlayer.applyInput` — overriding a
 `LivingEntity.applyInput` that does nothing but decay them —
 turns that into the `LivingEntity.xxa` and `LivingEntity.zza` movement
@@ -193,16 +206,19 @@ Sprint is decided in `LocalPlayer.aiStep` before that, and it is a
 **rising edge, not a release**. `LocalPlayer.aiStep` snapshots the forward
 impulse *before* ticking the input, so the value it later tests is the
 previous tick's; `LocalPlayer.canStartSprinting` requires the current
-tick's. The pair means the double-tap window is armed on the first
-*press* and consumed on the second, and a release only matters because
-sneaking, using an item or walking backwards clears
-`LocalPlayer.sprintTriggerTime` outright.
-`LocalPlayer.shouldStopRunSprinting` ends it. Auto-jump is
+tick's. The pair means the double-tap window — `Options.sprintWindow`, seven ticks by
+default — is armed on the first *press* and consumed on the second. Letting
+go is not what arms it, and letting go is not what cancels it either:
+sneaking, using an item or walking backwards clear
+`LocalPlayer.sprintTriggerTime` outright, and
+`LocalPlayer.shouldStopRunSprinting` ends a sprint already running. Auto-jump is
 `LocalPlayer.updateAutoJump` (called from `LocalPlayer.move`) setting
 `LocalPlayer.autoJumpTime`, which makes the *next* tick call
 `ClientInput.makeJump`.
 
-**What goes on the wire.** `LocalPlayer.sendPosition` picks the variant:
+### What goes on the wire
+
+`LocalPlayer.sendPosition` picks the variant:
 `ServerboundMovePlayerPacket.PosRot` when both changed,
 `ServerboundMovePlayerPacket.Pos` or `.Rot` for one,
 `ServerboundMovePlayerPacket.StatusOnly` when only the ground or
@@ -212,7 +228,11 @@ position is re-sent every twenty ticks regardless, via
 two halves: rotation compares exactly, while position must have moved by
 more than 2×10⁻⁴ blocks. And the whole method sits behind
 `LocalPlayer.isControlledCamera`, so while spectating another entity a
-client sends no move packets at all, not even the reminder. The two
+client sends no move packets at all, not even the reminder — which has one
+side effect nobody would look for here, because `LocalPlayer.sendPosition` is
+also where `Options.autoJump` is read back into
+`LocalPlayer.autoJumpEnabled`, so the setting quietly stops tracking for a
+passenger or a non-camera player. The two
 booleans ride in one byte
 (`ServerboundMovePlayerPacket.FLAG_ON_GROUND`,
 `ServerboundMovePlayerPacket.FLAG_HORIZONTAL_COLLISION`).
@@ -220,7 +240,25 @@ booleans ride in one byte
 and `ServerboundClientTickEndPacket` — a zero-byte singleton — closes
 every client tick that has a level and is not paused.
 
-**The server half.** `ServerGamePacketListenerImpl.handleMovePlayer`
+### Elytra, which is its own round trip
+
+`LocalPlayer.aiStep` asks
+`Player.tryToStartFallFlying` and, if it says yes, sends
+`ServerboundPlayerCommandPacket.Action.START_FALL_FLYING` — the server runs
+the same method on receipt. The server may
+disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
+`LivingEntity.updateFallFlying` and `LivingEntity.travelFallFlying`.
+
+## What the server does with the packet it gets
+
+Everything above happens before the packet exists. What follows is one
+method, `ServerGamePacketListenerImpl.handleMovePlayer`, and two judgements
+inside it — and then, because a judgement can go against you, a handshake for
+putting you back.
+
+### The two checks, in the order they run
+
+`ServerGamePacketListenerImpl.handleMovePlayer`
 begins with `ServerGamePacketListenerImpl.containsInvalidValues`, which
 rejects **NaN** coordinates and non-finite *rotations* — an infinite
 coordinate survives it and is clamped instead, to ±3×10⁷ horizontally by
@@ -255,7 +293,10 @@ chunk position, which is not quite "returns early". Then two checks:
   `ServerGamePacketListenerImpl.isEntityCollidingWithAnythingNew`
   reporting the player ended up inside a collider it was not already
   inside — which fires whether or not the residual check failed. Both
-  arms are additionally suppressed for a no-physics or sleeping player.
+  arms are additionally suppressed for a no-physics or sleeping player. The
+  vertical half of that residual is dead code: the guard that zeroes it is a
+  disjunction true for every finite double, so the 0.0625 test is
+  horizontal-only in practice, in the vehicle handler as well as this one.
 
 Accepting means `Entity.absSnapTo`, `ServerChunkCache.move`,
 `Entity.setOnGroundWithMovement`, `Entity.doCheckFallDamage`,
@@ -266,7 +307,9 @@ The server also **infers the jump**: a packet that reports leaving the
 ground while moving upward calls `LivingEntity.jumpFromGround` on the player's
 behalf.
 
-**Where velocity comes from.** The reported delta is stored by
+### Where the velocity everything downstream reads comes from
+
+The reported delta is stored by
 `ServerPlayer.setKnownMovement`, and
 `ServerGamePacketListenerImpl.handleClientTickEnd` zeroes it if no move
 packet arrived that tick. That is what everything downstream reads when it
@@ -275,14 +318,21 @@ does, the speed a fired projectile inherits, leash physics — and it is why a
 client that stops sending is treated as stationary rather than as still
 coasting.
 
-**The teleport handshake.** `ServerGamePacketListenerImpl.teleport` bumps
+### The teleport handshake, and what it does not undo
+
+`ServerGamePacketListenerImpl.teleport` bumps
 `ServerGamePacketListenerImpl.awaitingTeleport`, moves the player with `Entity.teleportSetPosition`,
 records `ServerGamePacketListenerImpl.awaitingPositionFromClient` and sends
 `ClientboundPlayerPositionPacket` (a `PositionMoveRotation` plus a set of
 `Relative` flags saying which fields are deltas).
 `ServerGamePacketListenerImpl.updateAwaitingTeleport` **re-sends after
 more than twenty ticks** if no acknowledgement arrives, and until it does,
-every incoming move packet contributes rotation only. The client replies
+every incoming move packet contributes rotation only. That is also the answer
+to what happens to the movement you made while the rubber-band was in
+flight: nothing replays it. The client snaps, the packets it had already sent
+are discarded as positions, and the ticks you walked between the rejection
+and the snap are simply gone — unlike a block prediction, which survives the
+same teleport on purpose. The client replies
 with `ServerboundAcceptTeleportationPacket` *and* an immediate
 `ServerboundMovePlayerPacket.PosRot`, then calls
 `BlockStatePredictionHandler.onTeleport`, which does *not* drop its
@@ -297,12 +347,28 @@ snapped, and the 4096-blocks-squared jump test that gates interpolation is
 reached only on the entity-teleport path.
 `ClientboundPlayerRotationPacket` is the rotation-only sibling.
 
-**Elytra** is its own round trip: `LocalPlayer.aiStep` asks
-`Player.tryToStartFallFlying` and, if it says yes, sends
-`ServerboundPlayerCommandPacket.Action.START_FALL_FLYING` — the server runs
-the same method on receipt. The server may
-disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
-`LivingEntity.updateFallFlying` and `LivingEntity.travelFallFlying`.
+## Floating, and everything exempted from it
+
+The third judgement is not about a packet at all. It runs in the connection
+tick beside the bracket, and it is the one that ends sessions.
+
+*Floating* has a flat definition — **no blocks anywhere below you** — and a
+budget that is anything but flat.
+`ServerGamePacketListenerImpl.getMaximumFlyingTicks` returns an effectively
+unbounded budget below a gravity of 10⁻⁵, and otherwise stretches the
+eighty-tick budget as gravity falls; so the kick scales with gravity, and
+only upward. `ServerGamePacketListenerImpl.clientIsFloating` is then
+suppressed outright by six things: spectator mode, `Abilities.mayfly`, the
+server's own allow-flight setting, `MobEffects.LEVITATION`, fall-flying and
+riptide. That list is why creative flight never trips it, and it is the list
+the rest of the book points here for.
+
+A floating *vehicle* runs a second copy of the whole check —
+`ServerGamePacketListenerImpl.clientVehicleIsFloating` against
+`ServerGamePacketListenerImpl.aboveGroundVehicleTickCount`, on its own budget
+and only for the controlling passenger — so a rider and the thing they are
+riding are judged separately, and either can end the session ([players and
+sessions](../server/players-and-sessions.md#the-three-kicks-that-come-from-the-tick)).
 
 ## What it calls, and what crosses the wire
 
@@ -324,7 +390,9 @@ disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
   `ServerboundPlayerCommandPacket.Action.OPEN_INVENTORY`,
   `ServerboundPlayerCommandPacket.Action.START_FALL_FLYING`; **there is
   no sneak action** — sneaking reaches the server through
-  `ServerboundPlayerInputPacket`, which calls `Entity.setShiftKeyDown`),
+  `ServerboundPlayerInputPacket`, which calls `Entity.setShiftKeyDown`; and
+  the packet carries an entity id the server never validates against the
+  sender),
   `ServerboundMoveVehiclePacket`,
   `ServerboundAcceptTeleportationPacket`,
   `ServerboundClientTickEndPacket`; and back,
@@ -337,12 +405,6 @@ disagree and call `LivingEntity.stopFallFlying`, and the flight itself is
   movement attributes.
 
 ## Questions players ask
-
-**Why does the server bother simulating me at all?** For one number:
-`Entity.getDeltaMovement`, the *expected* distance the speed check subtracts
-from what you reported. Everything else the simulation produces — the
-position above all — is thrown away a line later, which is [the two-phase
-tick](the-two-phase-tick.md#the-bracket-and-what-survives-it).
 
 **If `ServerboundPlayerInputPacket` never moves me, what is it for?**
 Two things. `ServerPlayer.setLastClientInput` feeds
@@ -367,21 +429,6 @@ contributes rotation and a chunk re-registration and nothing else, and the
 budget of 100, no elytra case, no game rule, and no horizontal-collision
 flag.
 
-**What counts as floating, and why does creative flight not trip it?**
-`ServerGamePacketListenerImpl.getMaximumFlyingTicks` returns an effectively
-unbounded budget below a gravity of 10⁻⁵ and otherwise stretches the
-eighty-tick budget as gravity falls, so the kick scales with gravity and
-only upward. `ServerGamePacketListenerImpl.clientIsFloating` is separately
-suppressed by spectator mode, `Abilities.mayfly`, the server's own
-allow-flight setting, `MobEffects.LEVITATION`, fall-flying and riptide — and
-the condition that actually defines *floating* is having no blocks anywhere
-below. A floating *vehicle* runs a second copy of the whole check —
-`ServerGamePacketListenerImpl.clientVehicleIsFloating` against
-`ServerGamePacketListenerImpl.aboveGroundVehicleTickCount`, on its own budget
-and only for the controlling passenger — so a rider and the thing they are
-riding are judged separately and either can end the session ([players and
-sessions](../server/players-and-sessions.md#the-three-kicks-that-come-from-the-tick)).
-
 **Why did my quick tap do nothing?** Movement polls `KeyMapping.isDown` once
 a tick, so a press shorter than a tick never happened. The keys that use
 `KeyMapping.consumeClick` behave the other way: three taps inside one tick
@@ -393,24 +440,26 @@ measures the angle against `LocalPlayer.MINOR_COLLISION_ANGLE_THRESHOLD_RADIAN`,
 about eight degrees; a graze shallower than that is forgiven. The server has
 no equivalent.
 
-**What is quietly wrong here?** Three things, all harmless and all worth
-knowing. The vertical residual in the *moved wrongly* check is dead code —
-the guard that zeroes it is a disjunction true for every finite double, so
-the 0.0625 test is horizontal-only in practice, in both the player and the
-vehicle handler. `Options.autoJump` is read inside a networking method:
-`LocalPlayer.autoJumpEnabled` is refreshed in `LocalPlayer.sendPosition`,
-which does not run for a passenger or a non-camera player, so the setting
-quietly stops tracking in those states. And `ServerboundPlayerCommandPacket`
-carries an entity id the server never validates against the sender.
-
 ## Where to look
 
-`KeyboardHandler` · `KeyMapping` · `ToggleKeyMapping` · `Options` ·
-`ClientInput` · `KeyboardInput` · `Input` · `LocalPlayer` ·
-`MouseHandler` · `ServerboundMovePlayerPacket` ·
-`ServerboundPlayerInputPacket` · `ServerGamePacketListenerImpl` ·
-`ClientboundPlayerPositionPacket` · `PositionMoveRotation` · `Relative` ·
-`PacketProcessor` · `TickThrottler`
+The client half reads shortest first: **`KeyboardInput.tick`** is the whole
+of the sampling, **`LocalPlayer.aiStep`** the tick it happens inside, and
+**`LocalPlayer.sendPosition`** the method that decides what, if anything,
+leaves. **`MouseHandler.handleAccumulatedMovement`** is the per-frame
+exception beside them, and **`KeyboardHandler.keyPress`** the callback that
+does less than its name suggests.
+
+The server half is essentially one class. Read
+**`ServerGamePacketListenerImpl.handleMovePlayer`** end to end — it is the
+speed check, the move, the residual check and the rubber-band in one method —
+then **`ServerGamePacketListenerImpl.handleMoveVehicle`** beside it to see
+the same logic with the elytra case and the game rule taken out. On the wire,
+**`ServerboundMovePlayerPacket`** with its four variants and
+**`ClientboundPlayerPositionPacket`** with its `PositionMoveRotation` and
+`Relative` flags are worth opening for their shape alone. Two doors this page
+only points at: **`PacketProcessor`**, which is what drains a move packet
+before any level ticks, and **`TickThrottler`**, which is what movement
+notably does *not* have.
 
 ---
 

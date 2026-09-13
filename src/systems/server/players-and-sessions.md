@@ -297,7 +297,7 @@ the sixty ticks again. The death screen is held open by the same field the
 That the countdown ticks from `ServerPlayer.tick` while the food, health and
 stat sync tick from `ServerPlayer.doTick` is the whole reason a player is
 ticked from two places every tick; [the two-phase
-tick](../player/the-two-phase-tick.md#the-trace-one-player-one-tick-twice) is
+tick](../player/the-two-phase-tick.md#both-halves-in-the-order-they-run) is
 the lecture on that. The fact worth
 carrying out of here is that the level's entity loop ticks players
 *regardless* of entity-ticking range, which is how a player standing in an
@@ -460,7 +460,7 @@ with no action, unless they are sitting on the end credits. A player whose
 client reports itself airborne for too long is kicked for flying, on a budget
 that stretches as gravity falls and against a list of exemptions the movement
 page owns ([input to
-movement](../player/input-to-movement.md#questions-players-ask)). And
+movement](../player/input-to-movement.md#floating-and-everything-exempted-from-it)). And
 keep-alive disconnects a client that has stopped answering — a mechanism that
 belongs to the connection rather than to the session, because it runs in the
 configuration phase too ([the

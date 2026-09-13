@@ -82,7 +82,13 @@ rewritten by its own part's session — and the glossary entry by entry.
   symptoms (logged in [pass9.md](pass9.md)). The argument now ends on what an
   item *is* — the thing that is never simply somewhere — and the four symptoms
   sit mid-paragraph, sorted into the three that are predictions and the one that
-  is not. The other five are their own sessions' and session O's. [kind=lecture]
+  is not. **VIII done, pass 6 session H**: it was one of the five ending on
+  the symptom list, and the reversal paid for itself here too — the four
+  symptoms moved to the front as the reader's way *in*, and writing a claim
+  to end on found the part's real argument, which no sentence on the page had
+  ever stated: the player is the one object the server is not allowed to be
+  right about. The other four are their own sessions' and session O's.
+  [kind=lecture]
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
   (~~`blocks/README`:13 "either choosing the state that goes in, performing the
@@ -3149,6 +3155,18 @@ spine with any other, in the part or out of it.
   variation for its own sake. That is three parts running where the pair the
   queue named had already dissolved and the tool had to be asked again — worth
   session O's attention as a fact about this entry rather than about the parts.
+  **Part VIII's pair was one of three, pass 6 session H.** The queue named
+  ~~`the-spear` / `the-sword-swing`~~, which had already come apart; what was
+  live was `input-to-movement` one edit from *three* of its own neighbours,
+  the hub rather than a pair. It is the later page of two of those three, and
+  varied by splitting its 150-line trace section into two H2s — what the
+  client decides and sends, and what the server does with the packet — with
+  the six bold lead-ins inside them promoted to H3s, which is the same edit
+  the `input-to-movement` entry below asked for. `the-sword-swing`, the later
+  page of the third pair, varied by gaining *The two clocks a swing is charged
+  against* between its figure and its flowchart. No two pages of the part are
+  identical now. That is four parts running where the pair the queue named had
+  dissolved — the entry itself is the stale thing, not the parts.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -3157,6 +3175,17 @@ parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
 `advancements`, `dialogs`, `game-tests`, `scoreboard-and-data`), which is
 a template slot's name and breaks the *headings say what the section
 says* rule from `TEMPLATE.md`. Each wants the scenario as its heading.
+**Part VIII's four are done, pass 6 session H** — `input-to-movement`,
+`status-effects`, `the-sword-swing` and `the-two-phase-tick`, with three
+inbound anchors repointed (two of them to *different* new headings, because
+the one anchor had been serving two questions). One thing for session O: the
+rename **changes what `pass6_shape.py` measures**, because its spine alphabet
+reads the literal `## The trace` as its own token and anything else as a
+figure section, so a part that renames its trace headings comes out of the
+session with pages that look more alike than they did going in. Part VIII's
+identical pair after the rename (`input-to-movement` ≡ `the-two-phase-tick`)
+was an artefact of that, and was broken at H2 level on the merits anyway.
+Parts XII and XIII are still to do.
 
 **Two structural outliers**, for the same sweep: `functions-and-macros`
 has no cast table (it opens on *The pipeline*), and `hand-built-structures`
@@ -3309,37 +3338,75 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 6, the lecture
 
-- `status-effects` — the closer carries eight questions and three of the
+- ~~`status-effects` — the closer carries eight questions and three of the
   page's real explanations (the hidden-effect stack and the packet that
   cannot carry it, the blend state, the ambient-particle probability). The
   trace is thirty lines and the closer is over sixty; the page's substance
   sits in its Q&A. Promoting the hidden-effect answer into *What an effect is*,
   which introduces `MobEffectInstance.hiddenEffect` and then drops it, is the
-  first move. [kind=lecture]
-- `status-effects` — the verified line promises "You drink a potion of
+  first move.~~ **Done, pass 6 session H**, all three promotions, exactly
+  where the entry said: the hidden-effect stack and the packet that cannot
+  carry it into *What an effect is*, immediately after the field that
+  introduces it; the blend state beside the flags it sits with; and the
+  ambient-particle probability beside the synched particle list, which is the
+  only thing a watcher ever gets. Eight questions to five, and the closer is
+  now shorter than the trace it follows. [kind=lecture]
+- ~~`status-effects` — the verified line promises "You drink a potion of
   Poison" and the trace opens with the effect already ticking; the drink is
   handed to two other pages. Either the scenario line becomes the tick or the
-  trace gains a bridge from `PotionContents` to `LivingEntity.addEffect`.
-  [kind=lecture]
-- `input-to-movement` — the page's three most-cited paragraphs are bold
+  trace gains a bridge from `PotionContents` to `LivingEntity.addEffect`.~~
+  **Done, pass 6 session H** — the first of the two options. The scenario line
+  is *Poison II is already on you*, and the last answer in the closer now says
+  out loud that the arrival is another page's and names both owners, which is
+  what the reader with no source asked for. [kind=lecture]
+- ~~`input-to-movement` — the page's three most-cited paragraphs are bold
   sentences rather than headings, so nothing can anchor to them, and the
   floating definition now has a Part III page linking at it with only
   `#questions-players-ask` to land on. The same shape as the
-  `what-makes-a-sound` entry above. [kind=lecture]
-- `the-two-phase-tick` — the Netty paragraph that session H cut sat under the
+  `what-makes-a-sound` entry above.~~ **Done, pass 6 session H**: six bold
+  lead-ins became H3s, the floating definition became an H2 of its own
+  (*Floating, and everything exempted from it*) and `players-and-sessions`
+  was repointed at it in the same commit. Two more inbound links that landed
+  on the page's one trace anchor turned out to want two different H3s inside
+  it — `authority` wanted the server's half, `the-spear` wanted the velocity
+  paragraph — which the link gate caught the moment the heading moved.
+  [kind=lecture]
+- ~~`the-two-phase-tick` — the Netty paragraph that session H cut sat under the
   heading *The client's single tick* while being about the server's threads.
   The heading is now honest, but the section is two sentences shorter than it
-  was and may want rebalancing against the two phase sections. [kind=lecture]
-- `hunger-and-experience` — the verified line promises the two bars "meet in
+  was and may want rebalancing against the two phase sections.~~ **Done, pass
+  6 session H** — and the heading was *not* honest: the Netty paragraph was
+  still sitting under it. It moved into *The bracket, and what survives it*,
+  where it belongs as the one qualification to *phase two is where a player's
+  own state is written*, and the client section kept only the client.
+  [kind=lecture]
+- ~~`hunger-and-experience` — the verified line promises the two bars "meet in
   the enchanting table" and the page never stages that meeting; and the
   change-detection paragraph, which is the joint between the two halves and
-  the page's own hook, is the fourth *Questions players ask*. [kind=lecture]
-- `the-spear` — the tail section hands off to four pages in five consecutive
+  the page's own hook, is the fourth *Questions players ask*.~~ **Done, pass 6
+  session H.** The verified line stopped promising the meeting; the
+  change-detection paragraph is the second half of *The other bar, and the
+  number it is really watching*, which is where the hook is paid off, and the
+  four pages that cited the old anchor were repointed. The enchanting-table
+  meeting survives as one sentence in the seed answer, which is the only place
+  the two bars really do touch: the levels an anvil eats and the seed a table
+  reads are fields on the same object. [kind=lecture]
+- ~~`the-spear` — the tail section hands off to four pages in five consecutive
   clauses. Session H added the links; whether five hand-offs in a row is a
-  section or a list is pass 6's. [kind=lecture]
-- `player-anatomy` — *The three sides of one player* is a field inventory of
+  section or a list is pass 6's.~~ **Overtaken, pass 6 session H** — the tail
+  reads as four hand-offs now, not five, and the reader with no source did not
+  trip on it; what it *was* wrong about was the conditions, which this session
+  corrected (each of the three gates its own effect, and the damage only lands
+  if the damage condition passed). Left as a section. [kind=lecture]
+- ~~`player-anatomy` — *The three sides of one player* is a field inventory of
   about forty lines, and sixteen names appear only there and only in a list.
-  The page promises no field inventories. [kind=lecture]
+  The page promises no field inventories.~~ **Done, pass 6 session H**: the
+  section is prose with a verb on every name and an argument in the middle of
+  it (two rows of mirror fields that exist for the same reason and answer to
+  different readers), and the heading is true now — `AbstractClientPlayer` is
+  introduced as the rung the two client sides share, not as a fourth side. The
+  H2 anchor is unchanged, which matters, because the glossary lands on it
+  twice. [kind=lecture]
 
 ### For pass 7, the figures
 
@@ -5223,3 +5290,127 @@ because between them they are the payoff of the page's own hook.
   of a *section*, not an entity) is not what the opening prepares the reader
   for. Structural, and it is session O's or pass 10's, not this session's:
   the opening's hook is about the spawn roll and it pays off.
+
+
+## Pass 6, session H — Part VIII, the player
+
+*What eight readers with no source and no other page raised, sorted by the
+pass that owns it. Everything acted on this session is struck above.*
+
+### Logged cuts (session H) [kind=record]
+
+- `player-anatomy`, *Which names will I hunt for under other spellings?* —
+  both answers (`AvatarRenderer` and `Inventory.addAndPickItem`) were already
+  in the body, at the point where a reader meets the thing. Cut whole; the
+  naming-drift shelf keeps the pair. [kind=record]
+- `player-anatomy`, the nine empty `Player` hooks — the framing clause ("empty
+  hooks that exist so the two sides can disagree") carries the point and the
+  nine names did not. Kept, because they are the only naming of those methods
+  in the book, but they no longer sit in a section of their own. [kind=record]
+- `the-spear`, three closer answers — *why the server never asks which mob I
+  stabbed* (a second telling of the two facts under the figure, in the same
+  order), *does a spear work while I am moving* (the third telling of the
+  `UseEffects` override, now one sentence opening *The charge*), and *why did
+  my charge stop hurting the same mob* (a second telling of the contact
+  cooldown). Cut; nothing left the book. [kind=record]
+- `input-to-movement`, *Why does the server bother simulating me at all?* — a
+  second telling of the opening paragraph's last sentence, down to the same
+  link and the same anchor. Cut. [kind=record]
+- `the-two-phase-tick`, *Which half does the thing I am looking for?* — not a
+  player's question but a reader's rule of thumb, and it works better as the
+  last paragraph of the two phase sections, which is where it now is. [kind=record]
+- `hunger-and-experience`, *What crosses the wire?* — dissolved into a
+  sentence at the end of *Eating is a component walk*; every name kept. [kind=record]
+- `status-effects`, *What crosses the wire?* — folded into the last answer,
+  which is now the only one that says where an effect comes from. [kind=record]
+
+### For pass 7, the figures (from session H's readers)
+
+- `hunger-and-experience`'s regen flowchart draws three branches from one
+  node labelled *then at most one of the three*, and the branches are an
+  if/else-if chain whose **order is the rule** — *heal fast* and *heal slowly*
+  both hold at twenty food. The prose now says the order decides; the figure
+  still does not show it. A numbered chain, or one arrow.
+- `hunger-and-experience`'s sequence diagram has `ClientboundEntityEventPacket(9)`
+  labelled *sent first* while being drawn second, from a lane that has not
+  acted; and the `FP->>FD: eat` arrow is run on both sides, which the single
+  set of lanes cannot show.
+- `status-effects`' diagram is headed *on both sides at once* (now *Poison II
+  counting down on two machines*) and has **one `LE` lane doing both
+  machines**, told apart only by two `Note over` lines. Every reader stopped
+  on it. Either two lanes or a bar.
+- `the-sword-swing`'s damage flowchart mixes data nodes with control nodes on
+  the same arrows, so `BQ --> RESET --> GATE` reads as though the quadratic
+  term *becomes* a ticker reset; and its `GATE` node asks "either term above
+  zero?" without naming which two.
+- `the-spear`'s flowchart: the prose under it says *two things in that picture
+  are worth stopping on* and the second of them (`handleAttack` refusing a
+  piercing weapon) is not in the picture — the only listener node is
+  `handlePlayerAction`.
+- `input-to-movement`'s sequence diagram declares an `LE` lane that carries
+  exactly one arrow and is not in the cast table.
+- `the-sword-swing`'s diagram shows a `ServerboundSwingPacket` leaving
+  `LocalPlayer` that the body did not mention; the body now does (*What makes
+  my own arm move?*), so check the arrow against it rather than the reverse.
+
+### For pass 8, the voice (from session H's readers)
+
+- The thread column of a cast table takes three values, and one of them
+  (*both*) is not a thread. Five of Part VIII's seven pages use it; readers
+  stopped on it twice, once as *both threads at once* and once as *both
+  sides*. Corpus-wide wording decision, not this part's.
+- `status-effects` wrote its rhythms as *25 ≫ amplifier*, and neither reader
+  could tell a right shift from *much greater than*. Session H wrote it out in
+  words; the question of how a shift is typeset in this book is pass 8's, and
+  `≫` should be grepped for.
+- `player-anatomy`'s "fifty-seven lines" and "the 470-line matcher": a reader
+  could not tell whether a line count is evidence or colour. The book uses the
+  device often enough to want one rule.
+- `the-spear` uses *charge* for two different things — the attack-strength
+  meter in the `MINIMUM_ATTACK_CHARGE` row, and the right-click hold
+  everywhere else. One of the two needs another word.
+- `input-to-movement` L49 and L136 (as they stood) both ended a link sentence
+  `…)'.` — a stray apostrophe read twice as an unclosed quotation. Session H
+  fixed the second; grep the corpus for `)'.` and `)'` after a link.
+- *Where to look* became a reading route on all seven pages here, as in
+  sessions E, F and G. The register of those routes is now a corpus-wide
+  question: seven sessions have written them and nobody has read them as a
+  set.
+
+### For pass 9, the fact-check (raised by session H, not acted on)
+
+- `hunger-and-experience`: the starvation floor is stated as *five hearts on
+  Easy and Peaceful*, and the exhaustion drain takes food off the bar only
+  when the difficulty is not Peaceful — so the Peaceful branch of the
+  starvation rule may be unreachable in practice. The page states the code
+  correctly; whether it should say the branch is dead is a question for the
+  adversary.
+- `player-anatomy`: the ranking of ability accessors ("more call sites than
+  every other such accessor put together") is a count whose population is
+  *methods on `Player` that read `Abilities`*. Session H checked that
+  `Player.isSwimming` and `Player.isPushedByFluid` do read it, so the
+  population holds; the ranking itself was not re-counted.
+- `input-to-movement`: *the 4096-blocks-squared jump test that gates
+  interpolation* is named only to say it is not reached on this path. Worth
+  confirming against `ClientPacketListener` in pass 9, since nothing on the
+  page depends on it.
+
+### A structural note for session O [kind=record]
+
+Three inbound links in this part landed on a closer's anchor and a fourth on
+a trace heading, and **not one of the four wanted the section it named**.
+Two pages cited `hunger-and-experience#questions-players-ask` for
+`Player.causeFoodExhaustion` charging 0.1 — a number that appeared nowhere in
+that closer. `player-anatomy` cited `the-sword-swing#questions-players-ask`
+for the two combat clocks, which was the back half of an answer about
+mashing. `the-two-phase-tick` cited `player-anatomy#questions-players-ask`
+for the two ticking callers. And after the trace headings were renamed, the
+link gate showed that `authority` and `the-spear` had both been landing on
+`input-to-movement`'s one trace anchor and wanting two different halves of
+it. This is session G's finding a second time, and it now has a shape worth
+stating: **an anchor that names a device rather than a subject accumulates
+citations that mean different things, and no tool can see the mismatch,
+because a link resolves against a heading and not against a sentence.** The
+link checker only ever catches it when the heading moves — which is an
+argument for renaming the remaining device headings in Parts XII and XIII
+even where nothing else on the page needs it. [kind=record]

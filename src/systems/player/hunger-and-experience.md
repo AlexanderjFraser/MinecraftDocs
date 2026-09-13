@@ -1,6 +1,6 @@
 # Hunger and experience
 
-> Verified against **Minecraft 26.2** · Part VIII · Two bars above the hotbar that the server owns outright: one you empty by sprinting, one you fill by mining — and they meet in the enchanting table.
+> Verified against **Minecraft 26.2** · Part VIII · Two bars above the hotbar that the server owns outright: one you empty by sprinting, one you fill by mining, and neither of them is quite the number the interface draws.
 
 The food bar and the experience bar look like the same kind of thing: a
 number the server keeps and sends you. They are, and they are also the two
@@ -17,7 +17,7 @@ the bar will not move.
 
 | class | what it decides | thread |
 |---|---|---|
-| `FoodData` | the food bar, saturation and exhaustion — and by type, only on the server | server main |
+| `FoodData` | the food bar, saturation and exhaustion; both sides hold one, but only the server ticks it | both (`FoodData.tick` takes a `ServerPlayer`) |
 | `FoodProperties` | how much a given item is worth, as a data component | both |
 | `Consumable` | how long eating takes, what it sounds like, and what else it applies | both |
 | `Player` | the four experience fields, the level curve, and the enchanting seed | both |
@@ -63,8 +63,22 @@ referenced by anything.** Only `FoodConstants.saturationByModifier` has call
 sites; `FoodData` writes every threshold as an inline literal, so the
 constants file and the behaviour can drift apart without a compile error.
 
-What `FoodData.tick` does with those literals is one exhaustion rule and a
-three-way mutually exclusive chain:
+Before the tick can spend exhaustion, something has to produce it, and the
+economy is smaller than players assume. **Walking costs nothing** — and it
+costs nothing out loud: `ServerPlayer.checkMovementStatistics` multiplies
+distance by a literal zero on both the walking and the crouching branch,
+while `FoodConstants.EXHAUSTION_WALK` documents an intent nothing reads.
+What does cost you is sprinting, jumping, swimming, mining, attacking, the
+Hunger effect, the `ApplyExhaustion` enchantment effect, and being hurt — the
+last of which is data-driven, since `DamageSource.getFoodExhaustion` reads
+the damage type. `Player.causeFoodExhaustion` charges 0.1 for a melee swing,
+which is the figure [the sword swing](the-sword-swing.md) and [the
+spear](the-spear.md) both end on. And in creative or spectator the whole
+economy is disabled in one line: `Player.causeFoodExhaustion` returns
+immediately for invulnerable abilities.
+
+What `FoodData.tick` then does with that budget is one exhaustion rule and a
+three-way chain, tested **in the order below**, first match only:
 
 ```mermaid
 flowchart TD
@@ -76,6 +90,10 @@ flowchart TD
     CHAIN --> SLOW["heal slowly: every 80 ticks, at 18 or more food, hurt, and the game rule on"]
     CHAIN --> STARVE["starve: every 80 ticks at zero food, and not gated on the game rule at all"]
 ```
+
+The order is what makes the three exclusive, and it is why a full bar with
+saturation left heals you six times faster than a bar at eighteen: both
+conditions hold at twenty food, and the fast one is tested first.
 
 The game rule is `GameRules.NATURAL_HEALTH_REGENERATION`, which lives in
 `world/level/gamerules` with typed `GameRule` lookups ([level data and
@@ -146,13 +164,21 @@ still plays. The client also *reads* its food data for two decisions of its
 own: sprinting is gated on having more than six food *or* being able to
 fly, and the HUD's food-bar jitter reads saturation.
 
+What crosses the wire for all of this is three packets — `ClientboundSetHealthPacket`
+(health, food and saturation together, to that player only),
+`ClientboundSetExperiencePacket` (progress, level and total) and
+`ClientboundTakeItemEntityPacket` for the orb pickup animation — and what is
+data-driven is `DataComponents.FOOD`, `DataComponents.CONSUMABLE`,
+`DataComponents.USE_EFFECTS`, `Registries.CONSUME_EFFECT_TYPE` and the three
+game rules above.
+
 Eating slowdown is a third component again — `UseEffects`, on *every* item,
 which is why a meal and a drawn bow cost you exactly the same speed ([using
 an item](../items/using-an-item.md#moving-while-you-use)). It has nothing to
 do with the food: it is read while any item is held out, and a spear is the
 one definition that turns it off ([the spear](the-spear.md#what-an-item-needs-to-be-a-spear)).
 
-## The other bar
+## The other bar, and the number it is really watching
 
 `Player.experienceLevel`, `Player.experienceProgress`,
 `Player.totalExperience` and `Player.enchantmentSeed`, plus
@@ -171,6 +197,17 @@ consumed already, and either an always-dropper or a recent player kill with
 `GameRules.KEEP_INVENTORY` — or unless you are a spectator, which drops
 nothing.
 
+The packet that draws the bar watches **one** of those four fields, and it is
+not the one on the bar. `ServerPlayer.lastSentExp` is compared against
+`Player.totalExperience`, and `ClientboundSetExperiencePacket` goes out only
+when the two differ. Every mutation that changes the *level* without changing
+the total — `ServerPlayer.setExperienceLevels`, `Player.giveExperienceLevels`,
+enchanting, respawn — therefore has to poison the last-sent value by hand
+before the bar will move. Nothing in the game changes a level and lets the
+change detection notice: each call site remembers to lie to it, and a call
+site that forgot would produce a client whose level is stale until the next
+orb.
+
 **`ExperienceOrb`** is an `Entity` with `ExperienceOrb.DATA_VALUE` synched
 and `ExperienceOrb.count`, `ExperienceOrb.age`, `ExperienceOrb.health` and
 `ExperienceOrb.followingPlayer` unsynched — though `ExperienceOrb.age` and
@@ -188,16 +225,17 @@ collapse into one entity rather than reducing the scan.
 
 ## Questions players ask
 
-**Why does walking cost nothing?** Because it is multiplied by zero, out
-loud: `ServerPlayer.checkMovementStatistics` multiplies distance by a
-literal zero on both the walking and the crouching branch, while
-`FoodConstants.EXHAUSTION_WALK` documents the intent and is referenced by
-nothing. The exhaustion economy is sprinting, jumping, swimming, mining,
-attacking, the Hunger effect, the `ApplyExhaustion` enchantment effect, and
-being hurt — the last of which is data-driven, since
-`DamageSource.getFoodExhaustion` reads the damage type. And in creative or
-spectator the whole economy is disabled in one line:
-`Player.causeFoodExhaustion` returns immediately for invulnerable abilities.
+**Why does a meal not seem to fill me?** Because the number you cannot see is
+clamped to the one you can. `FoodData.eat` adds nutrition to the bar and
+saturation behind it, and then **clamps saturation to the new food level** —
+so the emptier you are when you eat, the more of the meal's saturation is
+thrown away. A golden carrot carries 14.4 of it — nutrition 6 at a modifier
+of 1.2, doubled by `FoodConstants.saturationByModifier` — and eaten on an
+empty bar it leaves you at six food and six saturation, with more than half
+of what it was worth discarded. The reserve that funds fast healing is
+exactly what an emergency meal loses. At the other end the
+meal does not happen at all: `Player.canEat` refuses at a full bar unless the
+food is *can always eat* or your abilities are invulnerable.
 
 **Why does my saturation sit above my food bar on Peaceful?**
 `ServerPlayer.tickRegeneration` raises saturation directly toward 20, while
@@ -209,45 +247,43 @@ change-detected. `ClientboundSetHealthPacket` carries a full float, yet the
 server only notices whether saturation became *zero* — so your client's
 saturation does not update until health or food moves.
 
-**Why does enchanting update the bar when the level packet is
-change-detected on the total?** Because the code forces it.
-`ServerPlayer.lastSentExp` is compared against `Player.totalExperience`, so
-every mutation that changes only the level — `ServerPlayer.setExperienceLevels`,
-`Player.giveExperienceLevels`, enchanting, respawn — has to poison the
-last-sent value to make the packet go out.
-
-**Why does an orb repair my pickaxe before it reaches my bar?** Because
-`ExperienceOrb.playerTouch` runs `ExperienceOrb.repairPlayerItems` first and
-only the remainder becomes experience — and that method calls itself with
-the leftover. One orb entity can also be picked up many times: it carries a
-count, decremented per touch behind a two-tick `Player.takeXpDelay`, and a
-player absorbs **one orb per tick**, chosen at random from those it is
-touching. The pickup sweep buckets orbs separately from items for exactly
-that purpose.
-
 **Why is the Standard Galactic gibberish stable until I enchant?** Because
 `Player.onEnchantmentPerformed` subtracts the level cost *and* re-rolls
 `Player.enchantmentSeed`, while `AnvilMenu` — which also spends levels,
 through `Player.giveExperienceLevels` — does not. A seed that loads back as
 zero is re-rolled on read. [Enchanting](../items/enchanting.md#where-the-randomness-comes-from)
-owns what the seed is for.
+owns what the seed is for. This is the one place the two bars of this page
+meet: the levels the anvil eats and the seed the table reads are fields on
+the same object, and only one of the two spenders touches both.
 
-**What crosses the wire?** `ClientboundSetHealthPacket` (health, food and
-saturation together, to that player only), `ClientboundSetExperiencePacket`
-(progress, level and total), and `ClientboundTakeItemEntityPacket` for the
-orb pickup animation. The data-driven side is `DataComponents.FOOD`,
-`DataComponents.CONSUMABLE`, `DataComponents.USE_EFFECTS`,
-`Registries.CONSUME_EFFECT_TYPE`,
-`EnchantmentEffectComponents.REPAIR_WITH_XP` for mending, and the three game
-rules above.
+**Why does an orb repair my pickaxe before it reaches my bar?** Because
+`ExperienceOrb.playerTouch` runs `ExperienceOrb.repairPlayerItems` first —
+mending, through `EnchantmentEffectComponents.REPAIR_WITH_XP` — and only the
+remainder becomes experience; that method then calls itself with the
+leftover. One orb entity can also be picked up many times: it carries a
+count, decremented per touch behind a two-tick `Player.takeXpDelay`, and a
+player absorbs **one orb per tick**, chosen at random from those it is
+touching. The pickup sweep buckets orbs separately from items for exactly
+that purpose.
 
 ## Where to look
 
-`FoodData` · `FoodConstants` · `FoodProperties` · `Foods` ·
-`ConsumableListener` · `Consumable.onConsume` ·
-`Player.giveExperiencePoints` · `ExperienceOrb` ·
-`ServerPlayer.tickRegeneration` · `ClientboundSetHealthPacket` ·
-`ClientboundSetExperiencePacket`
+**`FoodData`** is a hundred lines and is the food half entire — read it
+first, then **`FoodConstants`** beside it for the names of everything
+`FoodData` writes as a literal, which is the joke. **`Foods`** is where the
+built-in `FoodProperties` values live, if you want to know what a carrot is
+worth.
+
+For the walk that reaches it, open **`Consumable.onConsume`** and follow it
+into **`ConsumableListener`**: `FoodProperties` is one implementation of
+four, and seeing the other three is what makes the missing *eat* method
+obvious. The experience half is one method,
+**`Player.giveExperiencePoints`**, plus **`ExperienceOrb`** for the
+denomination ladder and the merge. Then the two packets the whole page is
+about: **`ClientboundSetHealthPacket`**, which carries a number it does not
+change-detect, and **`ClientboundSetExperiencePacket`**, which
+change-detects a number it is not drawing.
+
 
 ---
 

@@ -1,6 +1,6 @@
 # Status effects
 
-> Verified against **Minecraft 26.2** · Part VIII · You drink a potion of Poison: the server starts hurting you on a rhythm, and your client never runs a single one of the effect's hooks.
+> Verified against **Minecraft 26.2** · Part VIII · Poison II is already on you: the server hurts you on a rhythm, and your client never runs a single one of the effect's hooks — it only counts.
 
 Poison II lands. Your health starts dropping in steps, the swirls appear,
 the icon in the corner counts down, and if the connection stutters the
@@ -15,16 +15,18 @@ collision](../entities/movement-and-collision.md#and-then-gravity)) — because
 that is shared movement code your own player runs unguarded, which is the one
 case in the book where the client simulates in earnest ([authority](../entities/authority.md#three-cases-read-on-both-sides)). But
 every attribute modifier, every pulse of damage, every regeneration tick
-happens on the server behind an explicit server-side guard, and the client's copy of the duration is
-corrected by a re-send every six hundred ticks. An **infinite** effect is
-never re-sent at all, because its duration is −1 and −1 never satisfies the
-test.
+happens on the server behind an explicit server-side guard, and the client's
+copy of the duration is corrected only when the server happens to notice —
+which it does by testing whether the remaining duration **divides by six
+hundred**. For a finite effect that is once every six hundred ticks. An
+**infinite** effect's duration is −1, which divides by nothing, so it is
+never re-sent at all.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
-| `MobEffect` | what the effect *does*, and on what rhythm | server main (the client reads only its colour and blend durations) |
+| `MobEffect` | what the effect *does*, and on what rhythm — the singleton, shared by every holder | server main (of this class the client reads only the colour and the blend durations) |
 | `MobEffectInstance` | duration, amplifier, flags, and the masked effect underneath | both main threads |
 | `MobEffects` | the forty built-in holders | — |
 | `LivingEntity` | `LivingEntity.activeEffects`, the tick, and the three server-guarded hooks | both |
@@ -48,25 +50,53 @@ hooks are the interesting part, because one of them is false by default.
 | `MobEffect.onMobHurt` | when the holder takes damage |
 | `MobEffect.onMobRemoved` | when the holder goes |
 
-The default *false* is why each effect has its own rhythm: the overrides
-give poison a pulse every *25 ≫ amplifier* ticks, regeneration every
-*50 ≫ amplifier*, wither every *40 ≫ amplifier*, and hunger every tick.
+The default *false* is why each effect has its own rhythm, and each rhythm is
+one number **right-shifted by the amplifier** — halved per level, floored at
+one tick. Poison's is 25, so Poison I pulses every 25 ticks and the Poison II
+of this page's scenario every 12; regeneration's is 50, wither's 40, and
+hunger's override skips the arithmetic and pulses every tick.
 Attribute modifiers go on as `AttributeInstance.addPermanentModifier` with
 an amount linear in amplifier + 1, computed by
 `MobEffect.AttributeTemplate.create` ([attributes](../entities/attributes.md#strength-ii-lands-and-nothing-leaves-the-server)).
 
 **`MobEffectInstance`** is the per-entity half: duration, amplifier, the
 ambient, visible and show-icon flags, a private blend state, and
-**`MobEffectInstance.hiddenEffect`** — the stack that lets a stronger,
-shorter effect temporarily mask a weaker, longer one, built by
-`MobEffectInstance.update`. `MobEffectInstance.INFINITE_DURATION` is −1, and
+**`MobEffectInstance.hiddenEffect`**.
+
+That last one is a stack, and it is where a weaker effect goes when a
+stronger one lands on top of it. `MobEffectInstance.update` builds the chain,
+so Strength I with nine minutes left survives underneath a Strength II that
+has thirty seconds, and surfaces again through
+`MobEffectInstance.downgradeToHiddenEffect` when the stronger one expires.
+Both of the instance's codecs are recursive, so the save file *and* the wire
+format are each capable of carrying the whole chain.
+
+The wire does not. **`ClientboundUpdateMobEffectPacket` never uses that
+stream codec at all**: it writes an entity id, a `MobEffect` holder, an
+amplifier, a duration and a flags byte by hand. So the client rebuilds an
+instance with nothing under it, and learns about the masked one only when the
+surfacing on the server triggers a fresh packet — which is why a weaker
+effect can appear from nowhere in your list the instant a stronger one runs
+out.
+
+`MobEffectInstance.INFINITE_DURATION` is −1, and
 `MobEffectInstance.compareTo` is what orders both lists of effects a player
 sees — ambient last, infinite next, then by remaining duration, then by
 colour. The two surfaces read it in opposite directions: the HUD sorts it
-reversed and the inventory list does not, so the same four effects run
+reversed and the inventory list does not, so a list of effects runs
 top-to-bottom one way beside the hotbar and the other way beside your
-inventory. `LivingEntity.canBeAffected` is the veto, and it consults three
-entity tags as well as the effect itself.
+inventory.
+
+The blend state beside those flags is a **pure render quantity**: it ticks
+only on the client, is never saved and never sent, and only
+`MobEffects.NAUSEA` and `MobEffects.DARKNESS` declare blend durations to use
+it. The wire carries one bit for it, set only when an effect is *first*
+added — an update clears the bit, and the client responds by skipping the
+blend. That is why Nausea swims in when you drink it and simply resumes when
+you drink a second bottle.
+
+`LivingEntity.canBeAffected` is the veto, and it consults three entity tags
+as well as the effect itself.
 
 **`MobEffectCategory`** is the third small vocabulary word, and it is three
 constants — `MobEffectCategory.BENEFICIAL`, `MobEffectCategory.HARMFUL` and
@@ -78,19 +108,20 @@ like a benefit; and the HUD asks `MobEffect.isBeneficial`, which is true of
 goes in — so a neutral effect sits on the bottom row with the harmful ones
 while its tooltip is coloured with the good ones.
 
-**`MobEffects`** is forty entries, and every one is a `Holder<MobEffect>`,
+Those three are the vocabulary. The registry that uses them,
+**`MobEffects`**, is forty entries, and every one is a `Holder<MobEffect>`,
 not a bare `MobEffect` — including `MobEffects.BREATH_OF_THE_NAUTILUS`. Some
 point at attributes a reader would not expect: `MobEffects.JUMP_BOOST`
 modifies `Attributes.SAFE_FALL_DISTANCE`, and `MobEffects.INVISIBILITY`
 modifies `Attributes.WAYPOINT_TRANSMIT_RANGE`.
 
-Behind those three is a fourth vocabulary that the page's own hook rests on:
+Behind all of it is a fourth family the page's own hook rests on:
 `world/effect` holds one small `MobEffect` subclass per effect that needs
 behaviour — `PoisonMobEffect`, `RegenerationMobEffect`, `WitherMobEffect`,
 `HungerMobEffect`, `AbsorptionMobEffect` and a dozen more, plus
 `InstantaneousMobEffect` for the ones that only ever fire once. Everything
 else in `MobEffects` is a plain `MobEffect` with an attribute template and no
-code. The rhythms below are those subclasses overriding two methods each; the
+code. The rhythms above are those subclasses overriding two methods each; the
 family is the shape, and no one member is worth a lecture.
 
 On the entity itself: `LivingEntity.activeEffects` (a plain unordered map),
@@ -104,6 +135,18 @@ drains it into the invisibility flag and the swirl list from inside
 before it looks at what changed ([synched entity
 data](../entities/synched-entity-data.md#the-gate-that-holds-a-packet-back)).
 An effect that expired this tick therefore opens its own gate.
+
+That particle list is also the whole of what a *watcher* gets, and it is
+deliberately hard to see. The default particle factory bakes ambience into
+the `ParticleOptions` itself — alpha 38 of 255 instead of opaque — so an
+ambient effect really does synch a different, fainter particle; and the
+client spawns one particle from the list on a one-in-*n* roll whose *n* is
+four, fifteen if the entity is invisible, and multiplied by five again when
+**every** effect on it is ambient, which is what
+`LivingEntity.DATA_EFFECT_AMBIENCE_ID` records. An invisible, wholly ambient
+entity is rolling one in seventy-five; a visible one in the same state,
+twenty.
+
 `MobEffectUtil` is the shared
 question-asking surface: `MobEffectUtil.hasDigSpeed`,
 `MobEffectUtil.hasWaterBreathing`,
@@ -111,7 +154,7 @@ question-asking surface: `MobEffectUtil.hasDigSpeed`,
 `MobEffectUtil.addEffectToPlayersAround` and the duration formatter the
 inventory screen uses.
 
-## The trace: Poison II, on both sides at once
+## Poison II counting down on two machines
 
 Effects are ticked from `LivingEntity.tickEffects`, the last call
 `LivingEntity.baseTick` makes before it copies this tick's rotations into
@@ -163,49 +206,17 @@ hidden-effect chain matters at all.
 ## Questions players ask
 
 **Why does my duration sometimes jump?** Because it was wrong and got
-corrected. All of `LivingEntity.onEffectAdded`,
-`LivingEntity.onEffectUpdated` and `LivingEntity.onEffectsRemoved` are
-server-guarded, so no attribute modifier is ever applied client-side and
-attribute values arrive by their own sync; the client's *duration* is a
-local countdown that drifts. The correction has no name in the code:
-`LivingEntity.tickEffects` calls `LivingEntity.onEffectUpdated` whenever the
-remaining duration divides by six hundred, against a bare literal with no
-constant behind it. Two holes in that: an **infinite** effect's duration is
-−1, which never divides by anything, so it is never re-sent, and the re-send
-only ever reaches the affected player or a player riding them.
+corrected. The client's duration is a local countdown with nothing keeping it
+honest, and the correction has no name in the code: `LivingEntity.tickEffects`
+calls `LivingEntity.onEffectUpdated` whenever the remaining duration divides
+by six hundred, against a bare literal. The re-send only ever reaches the
+affected player or a player riding them — and never at all for an infinite
+effect, whose −1 divides by nothing.
 
 **Why can I not see how long a mob's effect has left?** Because you were
 never told. A client watching a mob it is not riding receives no
-`MobEffectInstance` at all — only `LivingEntity.DATA_EFFECT_PARTICLES`, the
-synched particle list, which is why other entities have swirls and no
-numbers.
-
-**Where did my weaker effect go?** Under the stronger one.
-`MobEffectInstance.hiddenEffect` is a stack, and both of its codecs are
-recursive, so both the save and the wire *can* carry the chain. The packet
-does not: **`ClientboundUpdateMobEffectPacket` never uses that stream codec
-at all**, writing an entity id, a `MobEffect` holder, an amplifier, a
-duration and a flags byte by hand — so the client rebuilds an instance with
-no hidden effect under it, and learns about the masked one only when
-`MobEffectInstance.downgradeToHiddenEffect` surfaces it and triggers a
-re-send.
-
-**Why does Nausea swim in and out, but Poison just starts?** Blending is a
-pure render quantity: `MobEffectInstance`'s blend state ticks only on the
-client, is never saved and never sent, and only `MobEffects.NAUSEA` and
-`MobEffects.DARKNESS` use it. The blend *bit* is set only when an effect is
-first added — an update clears it, and the client responds by skipping the
-blend.
-
-**Why are a beacon's swirls so faint?** Twice over. The default particle
-factory bakes ambience into the `ParticleOptions` itself — alpha 38 of 255
-instead of opaque — so an ambient effect really does synch a different,
-fainter particle; and it also makes them rarer, because the client spawns one
-particle from the synched list on a one-in-*n* roll whose *n* is four,
-fifteen if the entity is invisible, and multiplied by five again when
-**every** effect on it is ambient — which is what
-`LivingEntity.DATA_EFFECT_AMBIENCE_ID` records. An invisible, wholly ambient
-entity is therefore rolling one in seventy-five.
+`MobEffectInstance` at all — only the synched particle list, which is why
+other entities have swirls and no numbers.
 
 **Does an effect pulse on its own clock or the world's?** Both, depending on
 whether it ends. `MobEffectInstance.tickServer` counts an infinite-duration
@@ -213,28 +224,44 @@ effect's pulses off the entity's age and a finite one off its own countdown.
 
 **What happens when one effect adds another?** The rest of that tick's
 effects are silently skipped. `LivingEntity.tickEffects` catches a
-concurrent-modification error and drops it, so an effect that adds or
-removes another quietly aborts the loop it was in.
+concurrent-modification error and drops it, so an effect that adds or removes
+another quietly aborts the loop it was in.
 
-**What crosses the wire?** `ClientboundUpdateMobEffectPacket` and
-`ClientboundRemoveMobEffectPacket` for the effects you hold, and
-`LivingEntity.DATA_EFFECT_PARTICLES` through [synched entity
-data](../entities/synched-entity-data.md) for everyone else's swirls.
-Effects themselves are code, registered into `BuiltInRegistries.MOB_EFFECT`
-by `MobEffects` with no JSON behind them; what is data-driven is the ways
-they land. The machinery that carries them — the use timer, the finish, the
-replay — is [using an
+**Where does the effect come from in the first place?** Not from this page.
+Everything above starts at the moment an instance exists on a
+`LivingEntity`; the machinery that puts one there — the use timer, the
+finish, the replay — is [using an
 item](../items/using-an-item.md#the-meal-tick-by-tick), and the components
 that ride on it, `PotionContents` and `SuspiciousStewEffects` and
 `ApplyStatusEffectsConsumeEffect` among them, are [hunger and
-experience](hunger-and-experience.md#eating-is-a-component-walk).
+experience](hunger-and-experience.md#eating-is-a-component-walk). What
+crosses the wire from here on is `ClientboundUpdateMobEffectPacket` and
+`ClientboundRemoveMobEffectPacket` for the effects you hold, and
+`LivingEntity.DATA_EFFECT_PARTICLES` through [synched entity
+data](../entities/synched-entity-data.md) for everyone else's swirls. The
+effects themselves are code, registered into `BuiltInRegistries.MOB_EFFECT`
+by `MobEffects` with no JSON behind them; what is data-driven is the ways
+they land.
 
 ## Where to look
 
-`MobEffect` · `MobEffectInstance` · `MobEffects` · `MobEffectCategory` ·
-`MobEffectUtil` · `LivingEntity.tickEffects` · `LivingEntity.activeEffects` ·
-`LivingEntity.canBeAffected` · `ClientboundUpdateMobEffectPacket` ·
-`ClientboundRemoveMobEffectPacket`
+**`LivingEntity.tickEffects`** is the page in one method: the server branch
+and the client branch sit side by side in it, and the asymmetry is visible at
+a glance. Read **`MobEffectInstance`** next, for the hidden-effect chain and
+the two codecs that can carry it, then **`MobEffect`** for the seven hooks
+and the one that is false by default. **`PoisonMobEffect`** is a
+twenty-line subclass and is the cheapest way to see what an override actually
+overrides; `world/effect` has a dozen more of the same shape.
+
+**`MobEffects`** is worth one pass for the two attribute targets nobody
+expects, and **`MobEffectCategory`** takes a minute and explains why a
+neutral effect is coloured like a benefit and filed with the harmful ones.
+When you want to know what the client is allowed to know,
+**`ClientboundUpdateMobEffectPacket`** is five fields written by hand and is
+the whole answer. Two doors this page only points at:
+**`LivingEntity.canBeAffected`**, the veto and its three entity tags, and
+**`MobEffectUtil`**, which is where the rest of the game asks its questions.
+
 
 ---
 
