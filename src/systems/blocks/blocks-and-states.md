@@ -130,7 +130,8 @@ share a serialised name while being different objects:
 `BlockStateProperties.HORIZONTAL_FACING` are all *facing* on disk.
 
 That pool and the `StringRepresentable` enums its `EnumProperty`s range over —
-`ChestType`, `WoodType` and two dozen more — are the whole of the
+`ChestType`, `WoodType`, `NoteBlockInstrument`, `RotationSegment` and two dozen
+more — are the whole of the
 `state/properties` sub-package: no behaviour, just the axes and their values.
 Two classes beside it read a state rather than being part of one, and are
 worth a name because their scenarios are elsewhere: `BlockPattern` with

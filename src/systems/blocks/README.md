@@ -137,7 +137,8 @@ Three mechanisms belong to nobody, and this is the sentence that says so rather
 than leaving the silence to be found. The **hopper** is the largest —
 `HopperBlockEntity` and `HopperBlock` are named on three pages and the transfer
 itself is explained on none. **Sculk spread** is the second: `SculkSpreader`'s
-charges walking through `SculkBehaviour` and `SculkVeinBlock`, where the page
+charges walking through `SculkBehaviour`, `SculkBlock` and `SculkVeinBlock`,
+where the page
 that owns the catalyst owns it only as a *listener*. The third is a family —
 `BeaconBlockEntity`, `ConduitBlockEntity` and the trial-spawner and vault
 sub-packages, whose outer classes Parts VI and VII name while their state
