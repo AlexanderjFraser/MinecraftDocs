@@ -7,14 +7,15 @@ eaten it. You hold the same button on a bow and nothing happens at all until
 you let go. These are the same machine: `Item.use` starts both,
 `LivingEntity.useItemRemaining` counts down on the client *and* the server
 for both, `ItemStack.onUseTick` runs every tick on both sides, and
-`LivingEntity.stopUsingItem` ends both. What differs is whether the count is
-allowed to mean anything — and the consequence is stranger than the
-difference. **The client's countdown does not stop at zero.** The meal ends
-because one byte arrives from the server, a `ClientboundEntityEventPacket`
-carrying `EntityEvent.USE_ITEM_COMPLETE`. The bow's countdown starts at
-72000 and would take an hour to expire, so the shot is fired by a
-`ServerboundPlayerActionPacket` instead — the same packet, carrying the same
-action, that the meal would read as *the player changed their mind*.
+`LivingEntity.stopUsingItem` ends both. What differs is whether reaching zero
+is allowed to end anything, and only one of the two ever gets there: a meal is
+thirty-two ticks long and a bow is set to 72000, an hour. **And the client's
+countdown does not stop at zero on either.** The meal ends because one byte
+arrives from the server — a `ClientboundEntityEventPacket` carrying
+`EntityEvent.USE_ITEM_COMPLETE`, which is the byte 9, the number this page
+uses for it from here on. The bow's hour never expires, so the shot is fired
+by a `ServerboundPlayerActionPacket` instead: the same packet, carrying the
+same action, that the meal would read as *the player changed their mind*.
 
 ## The cast
 
@@ -50,9 +51,11 @@ stacks](items-and-stacks.md#four-fields-and-only-one-of-them-is-really-data).
 | `ItemStack.useOnRelease` | false | **also false** |
 | what the client predicts | the entire meal, twice over | the animation, and nothing else |
 
-The last-but-one row is the one that looks wrong. `ItemStack.useOnRelease` is
-the third term of the completion guard and it is the obvious name for "this
-item is finished by letting go" — but it only delegates, and the hook it
+### `ItemStack.useOnRelease` is not the row that decides it
+
+The `ItemStack.useOnRelease` row is the one that looks wrong. It is the
+obvious name for "this item is finished by letting go" — but it only
+delegates, and the hook it
 delegates to, `Item.useOnRelease`, has **exactly one override in the tree**,
 `CrossbowItem`'s. The bow and the trident take the default false. They are
 release-ended not because a predicate says so, but because their
@@ -60,7 +63,9 @@ release-ended not because a predicate says so, but because their
 work. The spyglass takes the default too and is not release-ended at all: at
 1200 ticks its countdown really can run out.
 
-**`Consumable`** (`DataComponents.CONSUMABLE`) is the component all of that
+### What the meal's component holds, and what it does not
+
+`Consumable` (`DataComponents.CONSUMABLE`) is the component the meal column
 hangs off, and it holds the whole of the *use* half: `Consumable.consumeSeconds`,
 with `Consumable.consumeTicks` derived from it; the `ItemUseAnimation` the
 arm plays; the sound; the particles; and a list of `ConsumeEffect`s to apply
@@ -71,19 +76,21 @@ through `Registries.CONSUME_EFFECT_TYPE`. What it does *not* hold is what the
 food is worth, which is a second component and Part VIII's ([hunger and
 experience](../player/hunger-and-experience.md#eating-is-a-component-walk)).
 
-Duration is where the real answer lives, and the whole roster is eight
-overrides and one default. `Item.getUseDuration`'s base body reads
-`Consumable.consumeTicks` off the stack if there is a `Consumable` on it, and
-otherwise answers the hour for anything carrying
+### Where the hour comes from
+
+Duration is one base method and eight overrides. `Item.getUseDuration`'s base
+body reads `Consumable.consumeTicks` off the stack if there is a `Consumable`
+on it, and otherwise answers the hour for anything carrying
 `DataComponents.BLOCKS_ATTACKS` or `DataComponents.KINETIC_WEAPON` — so a
 shield and a spear get their long draw from the base method and no class of
-their own. Above it: `BowItem`, `CrossbowItem` and `TridentItem` return the
-same 72000, which `Item.APPROXIMATELY_INFINITE_USE_DURATION` names and no
-override actually reads; `SpyglassItem` returns 1200; `BrushItem` and
-`BundleItem` return 200; `InstrumentItem` returns the goat horn's own sounded
-length in ticks; and `EnderEyeItem` returns **zero**, which makes it the one
-item in the game whose use is instant by declaration rather than by having no
-`Consumable` at all.
+their own. `BowItem`, `CrossbowItem` and `TridentItem` override it to return
+the same 72000 by hand, which `Item.APPROXIMATELY_INFINITE_USE_DURATION`
+names and no override actually reads. At the other end `EnderEyeItem` returns
+**zero**, which makes it the one item in the game whose use is instant by
+declaration rather than by having no `Consumable` at all. The remaining four
+overrides are ordinary finite numbers: the spyglass's 1200, two hundred each
+for `BrushItem` and `BundleItem`, and `InstrumentItem`'s, which is the goat
+horn's own sounded length in ticks.
 
 ## Starting: the client finishes before it speaks
 
@@ -181,14 +188,10 @@ the three `CrossbowItem.ChargingSounds` at fixed fractions of
 render-thread computation — `CrossbowPull` and `ItemInHandRenderer` both
 call `CrossbowItem.getChargeDuration`, which calls
 `EnchantmentHelper.modifyCrossbowChargingTime`
-([enchantments](enchantments.md#questions-the-pattern-raises)). **An enchantment hook, evaluated on the
-render thread, once per frame, to pick one of three textures.**
-
-> **For a 1.21-era reader.** There is no bow-pull item property class left
-> to hunt for. The old *pulling* / *pull* pair is now the shared
-> `UseDuration` range-select property plus a *using_item* condition, both
-> declared in the item's JSON; the crossbow keeps a bespoke one,
-> `CrossbowPull`, only because its denominator is enchantable.
+([enchantments](enchantments.md#what-runs-on-the-client-and-why-it-is-only-ever-a-number)
+owns the two enchantment values a client is allowed to compute). **An
+enchantment hook, evaluated on the render thread, once per frame, to pick one
+of three textures.**
 
 ## Moving while you use
 
@@ -197,8 +200,9 @@ Neither path slows you through movement code — both read one component.
 `LocalPlayer.itemUseSpeedMultiplier`, which reads
 `UseEffects.speedMultiplier` off the stack, unless the player is riding, and
 `LocalPlayer.isSlowDueToUsingItem` blocks sprinting because
-`UseEffects.canSprint` is false. The famous twenty per cent is the default
-in `UseEffects.DEFAULT`, which sits in
+`UseEffects.canSprint` is false. The number is a multiplier and not a
+subtraction: `UseEffects.DEFAULT` carries 0.2, so the input is scaled to a
+fifth of what you pressed. That default sits in
 `DataComponents.COMMON_ITEM_COMPONENTS`, so every item has one — and neither
 cooked beef nor the bow overrides it, which is why **drawing a bow slows you
 by exactly as much as eating does, through exactly the same field.**
@@ -255,13 +259,13 @@ And **`ItemStack.useOnRelease` does not mean "ends on release"**. It means
 key comes up*: `LivingEntity.releaseUsingItem` calls
 `LivingEntity.updatingUsingItem` again when it is true, so a crossbow gets a
 final `CrossbowItem.onUseTick` in which it can still latch the charge. No
-other item asks for that. Release is also not only a key-up —
-`LivingEntity.releaseUsingItem` has five other call sites:
-`LivingEntity.completeUsingItem` itself, when the stack turned out not to
-match the hand; `CrossbowAttack` and `RangedCrossbowAttackGoal`, which is
-how a pillager fires
-(a pillager's ranged goal); and
-`BrushItem.onUseTick` twice, ending its own use from inside the tick.
+other item asks for that. Release is also not only a key-up: besides the
+client's and the server's key-up paths, `LivingEntity.releaseUsingItem` is
+called from five other places — once by `LivingEntity.completeUsingItem`
+itself, when the stack turned out not to match the hand; once each by
+`CrossbowAttack` and `RangedCrossbowAttackGoal`, which is how a pillager
+fires; and twice by `BrushItem.onUseTick`, which ends its own use from inside
+the tick.
 
 ## The meal, tick by tick
 
@@ -340,7 +344,7 @@ sequenceDiagram
     MC->>MPGM: releaseUsingItem
     MPGM->>Wire: ServerboundPlayerActionPacket, RELEASE_USE_ITEM, sequence zero
     MPGM->>BowI: LivingEntity.releaseUsingItem, BowItem.releaseUsing on the client
-    BowI->>LP: no ServerLevel, so no ammo and no arrow, then stopUsingItem
+    BowI->>LP: no ServerLevel, so one phantom stack, no ammo spent, no arrow entity, then stopUsingItem
     Wire->>SGPL: handlePlayerAction, the rotation is whatever the server last heard
     SGPL->>SP: LivingEntity.releaseUsingItem
     SP->>BowI: BowItem.releaseUsing, ProjectileWeaponItem.draw then shoot
@@ -366,7 +370,8 @@ phantom arrow marked `DataComponents.INTANGIBLE_PROJECTILE`, spends nothing
 and shoots nothing.**
 
 On the server it is five enchantment hooks and one ordering worth
-remembering. `EnchantmentHelper.processProjectileSpread` fans a multishot
+remembering. Two have already run inside `ProjectileWeaponItem.draw`; the
+third, `EnchantmentHelper.processProjectileSpread`, fans a multishot
 volley, and each arrow is aimed by `BowItem.shootProjectile` through
 `Projectile.shootFromRotation` using the **server's** rotation — which the
 release packet never updated, so the shot goes where the last movement
@@ -374,7 +379,10 @@ packet said you were looking. `Projectile.spawnProjectile` aims, adds the
 entity to the level, and only *afterwards* calls
 `Projectile.applyOnProjectileSpawned`, which runs
 `EnchantmentHelper.onProjectileSpawned` **twice** when ammo and weapon are
-different items: once for the arrow's stack and once for the bow's.
+different items: once for the arrow's stack and once for the bow's. The fifth
+is out of sight in the arrow itself — the `AbstractArrow` constructor asks
+`EnchantmentHelper.getPiercingCount` off the weapon it was fired from
+([enchantments](enchantments.md#seven-families-of-moment)).
 `ItemStack.hurtAndBreak` takes the durability after each arrow, and the
 volley breaks off if the bow dies mid-flight.
 
@@ -413,22 +421,43 @@ tells the client to re-derive the outcome from components it already holds,
 and `ClientboundSetHealthPacket` corrects whatever it got wrong. The single
 override of `Item.finishUsingItem` in the whole tree is
 `SpyglassItem.finishUsingItem`, which plays a sound — the spyglass being the
-one item whose completion is worth a sound of its own — reached either at its
-1200-tick duration or, like any use, the moment you let go.
+one item whose completion is worth a sound of its own.
+
+That override is reached only by the countdown running out, all 1200 ticks of
+it. Letting go takes the other door: `SpyglassItem` **also** overrides
+`Item.releaseUsing` — the fourth and last override of it in the tree, after
+the bow, the crossbow and the trident — plays the same sound there, and
+returns true. So the spyglass gets its sound either way, and the two ways
+share no method at all. That is the last thing this page has to say about the
+two endings: they are not one path with a switch on it. They are two.
+
+> **For a 1.21-era reader.** There is no bow-pull item property class left
+> to hunt for. The old *pulling* / *pull* pair is now the shared
+> `UseDuration` range-select property plus a *using_item* condition, both
+> declared in the item's JSON. The crossbow keeps a bespoke property,
+> `CrossbowPull`, only because its denominator is enchantable.
 
 ## Where to look
 
-`Minecraft.handleKeybinds` · `Minecraft.startUseItem` ·
-`MultiPlayerGameMode.useItem` · `MultiPlayerGameMode.releaseUsingItem` ·
-`ServerGamePacketListenerImpl.handleUseItem` ·
-`ServerGamePacketListenerImpl.handlePlayerAction` ·
-`ServerPlayerGameMode.useItem` · `ItemStack.use` · `Item.use` ·
-`LivingEntity.startUsingItem` · `LivingEntity.updatingUsingItem` ·
-`LivingEntity.updateUsingItem` · `LivingEntity.completeUsingItem` ·
-`LivingEntity.releaseUsingItem` · `ItemStack.releaseUsing` ·
-`ItemStack.useOnRelease` · `Consumable` · `UseEffects` · `UseCooldown` ·
-`BowItem` · `CrossbowItem` · `TridentItem` · `ProjectileWeaponItem` ·
-`SpyglassItem` · `ItemInHandRenderer` · `UseDuration`
+`LivingEntity` is the whole machine, and four of its methods in this order are
+the page: `LivingEntity.startUsingItem`, the private
+`LivingEntity.updatingUsingItem` that decides whether to keep going,
+`LivingEntity.updateUsingItem` that counts, and `LivingEntity.releaseUsingItem`
+for the other ending. `LivingEntity.completeUsingItem` beside them is the one
+the client never reaches from its own countdown.
+
+For where a use begins, read down: `Minecraft.startUseItem`, then
+`MultiPlayerGameMode.useItem` for the prediction window, then
+`ServerGamePacketListenerImpl.handleUseItem` for the rotation snap, then
+`ServerPlayerGameMode.useItem` for the inventory re-send it declines to do.
+`ItemStack.use` is where both sides dispatch into the item.
+
+`Consumable` is the meal in one class. `BowItem` is the bow, and
+`ProjectileWeaponItem` above it holds the two methods that decide how many
+arrows leave and whether any is spent; `CrossbowItem` is the one item that
+uses the tick hook and the one that sets `ItemStack.useOnRelease`.
+`UseEffects` and `UseCooldown` are the two components that outlive the use,
+and `ItemInHandRenderer` is everything you actually see.
 
 ---
 

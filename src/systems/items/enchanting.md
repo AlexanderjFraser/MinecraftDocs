@@ -45,28 +45,33 @@ and gets its own section.
 
 ## The five paths at a glance
 
+Read this table as the page's table of contents rather than as something to
+use now: every cell is a compressed forward reference, and each row below is
+the section that unpacks it.
+
 | | enchanting table | anvil | grindstone | providers and loot | `/enchant` |
 |---|---|---|---|---|---|
 | **what it costs** | 1, 2 or 3 levels and the same count of lapis | the full price in levels, and a chance the anvil chips | pays *you*, in orbs at the block | nothing | nothing |
-| **the gate on the item** | `ItemStack.isEnchantable` — enchantable *and* not already enchanted | `EnchantmentHelper.canStoreEnchantments` | damageable or already enchanted | `DataComponents.ENCHANTABLE`, except `SingleEnchantment` and `EnchantRandomlyFunction` | any non-empty main-hand item |
-| **which item filter** | `Enchantment.isPrimaryItem` — the narrow set | `Enchantment.canEnchant` — the supported set | n/a | `Enchantment.isPrimaryItem` for the selection paths, `Enchantment.canEnchant` for `EnchantRandomlyFunction`, none at all for `SingleEnchantment` | `Enchantment.canEnchant` |
+| **the gate on the item** | `ItemStack.isEnchantable` — enchantable *and* not already enchanted | `EnchantmentHelper.canStoreEnchantments` | damageable or already enchanted | `DataComponents.ENCHANTABLE`, with two exceptions (below) | any non-empty main-hand item |
+| **which item filter** | `Enchantment.isPrimaryItem` — the narrow set | `Enchantment.canEnchant` — the supported set | n/a | one of three, depending on the path (below) | `Enchantment.canEnchant` |
 | **the level ceiling** | whatever the cost brackets allow | clamped to `Enchantment.getMaxLevel` | n/a | clamped, except `SetEnchantmentsFunction` | rejected above `Enchantment.getMaxLevel` |
 | **exclusivity** | filtered out mid-selection | dropped, and it raises the price | curses survive, everything else goes | filtered, or ignored by flag | rejected with an error |
 | **randomness** | the player's saved seed | none in the arithmetic; a 12% roll for the chip | none in the strip; a roll on the refund | the level's random source | none |
 | **decided on** | server, with the click predicted | server, with the price synced | server | server | server |
 
-Five paths, one row that would be the same everywhere: the last step. Not the
-same method — the table, `/enchant` and `EnchantRandomlyFunction` go through
+Every row of that table differs. The one thing that would not — and so has no
+row — is the last step, where all five converge. Not on the same method: the
+table, `/enchant` and `EnchantRandomlyFunction` go through
 `ItemStack.enchant`, the grindstone and the providers call
 `EnchantmentHelper.updateEnchantments` themselves, and the anvil writes with
-`EnchantmentHelper.setEnchantments` — but the same *decision*, and that is
+`EnchantmentHelper.setEnchantments`. But on the same *decision*, and that is
 where the page starts.
 
 ## The one question all five ask
 
-`EnchantmentHelper.getComponentType` is the private line under every one of
-those three entry points, and it does the thing worth knowing before any of
-the five paths make sense.
+The three write methods above funnel into one private line,
+`EnchantmentHelper.getComponentType`, so all five paths ask it in the end —
+and it does the thing worth knowing before any of them make sense.
 
 It **routes by item identity**: the component the write lands in is
 `DataComponents.STORED_ENCHANTMENTS` if the stack is `Items.ENCHANTED_BOOK`
@@ -108,6 +113,8 @@ the same one, two or three.
 | more bookshelves make better enchantments | more bookshelves raise the *cost*, and `EnchantmentHelper.getEnchantmentCost` floors the bottom slot at twice the shelf count |
 | the anvil's "Too Expensive" is a level cap | it is a result cap — at a price of forty or more `AnvilMenu.createResult` empties the output slot unless the player has infinite materials |
 
+### The anvil charges what it shows, and taxes what came before
+
 The anvil is the opposite: it charges the whole displayed price, through
 `Player.giveExperienceLevels` with a negative amount, in `AnvilMenu.onTake`,
 and then rolls a small chance to damage or destroy the block. The price is
@@ -123,6 +130,8 @@ transfers, which — forty being exactly the threshold at which the result is
 withheld — makes enchanting a stack not expensive but forbidden outside
 creative; and a rename with no other change is capped at 39, which is why
 renaming never hits "Too Expensive".
+
+### The grindstone pays you
 
 The grindstone runs the transaction backwards. It strips everything not in
 `EnchantmentTags.CURSE`, turns an emptied `Items.ENCHANTED_BOOK` back into a
@@ -144,13 +153,17 @@ an axe can *hold*.
 
 `Enchantment.canEnchant` asks whether the item's *type* is in the
 definition's supported set; `Enchantment.isSupportedItem` asks exactly the
-same question of a stack and is called from nowhere but the method below.
-`Enchantment.isPrimaryItem` asks the supported question **and** the narrower
-primary-items question on top, falling back to the supported set when the
+same question of a stack and is called from nowhere but
+`Enchantment.isPrimaryItem`, which asks the supported question **and** the
+narrower falling back to the supported set when the
 definition names no primary items. The narrow one lives in
-`EnchantmentHelper.getAvailableEnchantmentResults`, which is
-`EnchantmentHelper.selectEnchantment`'s own — so the table, the cost-based
-providers and chest loot all use it, and the anvil and `/enchant` do not. In
+`EnchantmentHelper.getAvailableEnchantmentResults`, which only
+`EnchantmentHelper.selectEnchantment` calls — so the table, the cost-based
+providers and chest loot all use it, and the anvil and `/enchant` do not. That
+is the three-way split the table's *which item filter* cell defers: the
+selection paths ask the narrow question, `EnchantRandomlyFunction` asks the
+supported one, and `SingleEnchantment` asks neither. The two exceptions in the
+*gate* row are the same two: both skip `DataComponents.ENCHANTABLE`. In
 vanilla exactly
 five enchantments declare a narrower primary set than their supported one.
 Three of them are melee enchantments whose supported set reaches axes and
@@ -189,8 +202,12 @@ changes nothing.
 The genuine ceiling-breaker is elsewhere. `SetEnchantmentsFunction` writes
 through `ItemEnchantments.Mutable.set`, whose only clamp is 255, with no
 reference to `Enchantment.getMaxLevel` at all: a loot table can hand out
-Sharpness 200 and nothing else on this page can. Exclusivity, by contrast,
-is one static method everywhere — `Enchantment.areCompatible`, wrapped by
+Sharpness 200 and nothing else on this page can.
+
+### Exclusivity, which no path gets to bend
+
+Where the ceilings differ per path, exclusivity does not: it is one static
+method everywhere — `Enchantment.areCompatible`, wrapped by
 `EnchantmentHelper.isEnchantmentCompatible` and
 `EnchantmentHelper.filterCompatibleEnchantments` — and it is **symmetric**,
 failing if either side's exclusive set names the other, and failing an
@@ -200,12 +217,13 @@ enchantment against itself.
 
 The anvil and the grindstone roll a die each — for the chip and for the refund
 — and everything else rolls one to decide *what you get*. But not in the same
-place. Four callers reach `EnchantmentHelper.selectEnchantment`: the table,
-the two cost-based providers, and `EnchantWithLevelsFunction` through
-`EnchantmentHelper.enchantItem`. The other two roll their own and much more
-simply — `SingleEnchantment` samples a level for an enchantment it already
-knows, and `EnchantRandomlyFunction` picks one at random off the level's
-random source. So the arithmetic below is the *cost-based* path, and it is a
+place. Six things choose an enchantment in this game, and four of them reach
+the shared arithmetic in `EnchantmentHelper.selectEnchantment`: the table, the
+two cost-based providers, and `EnchantWithLevelsFunction` through
+`EnchantmentHelper.enchantItem`. The remaining two roll their own and much
+more simply — `SingleEnchantment` samples a level for an enchantment it
+already knows, and `EnchantRandomlyFunction` picks one at random off the
+level's random source. So the arithmetic below is the *cost-based* path, and it is a
 short method with four distinct sources of variance stacked on one another.
 
 ```mermaid
@@ -256,9 +274,6 @@ and the table to be in `BlockTags.ENCHANTMENT_POWER_TRANSMITTER`
 offsets but leaves Y alone, so the upper ring's gap is checked at the
 bookshelf's own height, not the table's. The clamp to fifteen happens
 inside `EnchantmentHelper.getEnchantmentCost`, not in the walk.
-
-**Fifteen** — the shelf count above which nothing changes, and twice which
-is the floor on the bottom offer (`EnchantmentHelper.getEnchantmentCost`).
 
 ## What is decided on which side
 
@@ -313,12 +328,16 @@ has the data-slot channel, and
 [where a broadcast happens](containers-and-menus.md#where-in-the-tick-a-broadcast-happens)
 has the button click's own timing.
 
-The ten slots are ordinary `DataSlot` entries — three `DataSlot.shared`
-views onto the cost array, one `DataSlot.standalone` holding the seed — and
-they reach the client one `ClientboundContainerSetDataPacket` each as
+All ten are ordinary `DataSlot` entries, and nine of them are
+`DataSlot.shared` views onto three arrays of three: the costs, the enchantment
+ids, and the levels. The tenth is the one `DataSlot.standalone`, holding the
+seed. So a clue is a *pair* — which enchantment, and at what level — which is
+why three offers cost six slots, and why the tooltip can say *Sharpness III*
+rather than just *Sharpness*. A slot with nothing to show carries −1. They
+reach the client one `ClientboundContainerSetDataPacket` each as
 `AbstractContainerMenu.broadcastChanges` diffs them against its remote copy.
-The clue slots carry a **numeric registry id** that `EnchantmentScreen`
-resolves against its own registry copy — the same registry copy that
+The enchantment half of each pair is a **numeric registry id** that
+`EnchantmentScreen` resolves against its own registry copy — the same registry copy that
 `ItemEnchantments`' stream codec needs to name the enchantments on any stack
 the client is sent. The seed slot is
 the only route by which `Player.enchantmentSeed` ever reaches a client: it
@@ -331,7 +350,9 @@ fixed list in the *alt* font — same seed, same three lines, every time.
 
 ## The paths that never show a player anything
 
-The provider path runs at spawn. `Mob.enchantSpawnedEquipment`
+### The provider path, at spawn
+
+`Mob.enchantSpawnedEquipment`
 ([entity lifecycle](../entities/entity-lifecycle.md#what-finalizespawn-settles-for-the-whole-pack))
 calls
 `EnchantmentHelper.enchantItemFromProvider`, which looks a provider up in
@@ -348,6 +369,8 @@ cost; `SingleEnchantment` skips selection entirely, upgrading one named
 enchantment to a sampled level clamped only to that enchantment's own range,
 never asking whether the item supports it. Six of the seven providers
 `VanillaEnchantmentProviders` registers are that third kind.
+
+### The loot path, and the trades on it
 
 The loot path runs wherever a loot table does, and villager trades are on
 it: a `VillagerTrade` carries a list of `LootItemFunction`s applied to what
@@ -367,6 +390,8 @@ out: it adds nothing, reading a level off the killer with
 `EnchantmentHelper.getEnchantmentLevel` to multiply a drop count. It
 consumes this page's output rather than producing any.
 
+### The seventh producer, which is not a path at all
+
 One more producer belongs in nobody's mental model of enchanting.
 `CreativeModeTabs` builds the creative enchanted books with
 `EnchantmentHelper.createBook` — maximum level only in the tab, every level
@@ -376,21 +401,27 @@ in the search, through
 
 ## Where to look
 
-`EnchantmentMenu.slotsChanged` · `EnchantmentMenu.clickMenuButton` ·
-`EnchantingTableBlock.BOOKSHELF_OFFSETS` ·
-`EnchantingTableBlock.isValidBookShelf` ·
-`EnchantmentHelper.getEnchantmentCost` ·
-`EnchantmentHelper.selectEnchantment` ·
-`EnchantmentHelper.getAvailableEnchantmentResults` ·
-`EnchantmentHelper.filterCompatibleEnchantments` ·
-`EnchantmentHelper.updateEnchantments` · `ItemStack.enchant` ·
-`Enchantment.areCompatible` · `Enchantment.isPrimaryItem` ·
-`Enchantment.canEnchant` · `AnvilMenu.createResult` · `AnvilMenu.onTake` ·
-`GrindstoneMenu` · `EnchantmentProvider` · `VanillaEnchantmentProviders` ·
-`EnchantRandomlyFunction` · `EnchantWithLevelsFunction` ·
-`SetEnchantmentsFunction` · `EnchantCommand` ·
-`Player.onEnchantmentPerformed` · `EnchantmentScreen.mouseClicked` ·
-`EnchantmentNames`
+`EnchantmentHelper.selectEnchantment` is the one method to read whole. It is
+short, four of the five paths run it, and every piece of arithmetic the
+flowchart above draws is in it, including the halving loop.
+`EnchantmentHelper.getEnchantmentCost` beside it is where the bookshelves land
+and `EnchantmentHelper.getAvailableEnchantmentResults` is the primary-item
+filter it calls.
+
+For the table as a machine, read `EnchantmentMenu` top to bottom:
+`EnchantmentMenu.slotsChanged` computes the offers and
+`EnchantmentMenu.clickMenuButton` runs the same computation again and applies
+it, which is the page's whole point about the clue. `EnchantmentScreen` is the
+client copy that can only say no, and `EnchantmentNames` is the gibberish.
+
+For the other four paths, one class each and they are all small:
+`AnvilMenu.createResult` for the price, `GrindstoneMenu` for the strip and the
+refund, `EnchantmentProvider` with `VanillaEnchantmentProviders` for a mob's
+gear, and `EnchantCommand` for the shortest path of the five.
+
+`ItemStack.enchant` and `EnchantmentHelper.updateEnchantments` are the two
+ends every path meets at, and `Enchantment.areCompatible` is the exclusivity
+test none of them can bend.
 
 ---
 

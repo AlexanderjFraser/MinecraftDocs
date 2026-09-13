@@ -18,8 +18,9 @@ them the same stack, what a stack may legally hold, and what happens to one
 that runs out of durability. That last is the odd one out in a part where
 almost everything is predicted locally and corrected afterwards.
 **Durability is the one thing a client never even guesses at** — the method
-that spends it demands a `ServerLevel`, and the convenient overloads that do
-not have one silently do nothing at all.
+that spends it demands a `ServerLevel` outright, and the convenient overloads
+that take a `LivingEntity` instead look its level up and silently do nothing
+when the answer is a client's.
 
 ## The cast
 
@@ -59,8 +60,10 @@ The dotted arrow is the shape of the whole system. A stack does not own its
 defaults and cannot change them: it points at a holder, and the holder owns
 one `DataComponentMap` shared by every stack of that item in both programs.
 
-`ItemStack.typeHolder` answers `Items.AIR`'s holder rather than null for an
-empty stack, which is why `ItemStack.getItem` never returns null either. The
+The holder field the figure calls *item* is read through
+`ItemStack.typeHolder`, and it answers `Items.AIR`'s holder rather than null
+for an empty stack, which is why `ItemStack.getItem` never returns null
+either. The
 pop time is the odd one out: it is the five-tick squeeze the hotbar icon does
 when something lands in it, set to 5 by `Inventory` when a stack grows and by
 `ClientPacketListener.handleContainerSetSlot` when a slot update makes a
@@ -78,8 +81,9 @@ component map. `Item.Properties.component` and every convenience over it —
 `Item.Properties.equippable`, `Item.Properties.useCooldown` — fold one more
 step onto a `DataComponentInitializers.Initializer`, a function that will be
 run against a `DataComponentMap.Builder` later, with a
-`HolderLookup.Provider` in hand. Seven of those conveniences are the ones that
-make a weapon, and between them they build forty-two of the game's items
+`HolderLookup.Provider` in hand. Those seven conveniences happen to be exactly
+the ones that make a weapon, and between them they build forty-two items out
+of a registry of over a thousand
 ([the weapon helpers](../../reference/weapon-helpers.md)).
 
 Between the two halves of that arrangement an `Item` is a live object with no
@@ -150,7 +154,7 @@ components.
 |---|---|---|
 | installed by | `Item.Properties.finalizeInitializer` | — |
 | rejects | `DataComponents.DAMAGE` on a stackable item | `DataComponents.MAX_DAMAGE` on a stackable item, and a count over the maximum |
-| runs inside | `DataComponentMap.Builder.build` | `ItemInput`, `ItemStackTemplate.create`, `ItemStack.applyComponentsAndValidate` |
+| runs inside | `DataComponentMap.Builder.build` | `ItemInput`, `ItemStack.applyComponentsAndValidate`, and `ItemStackTemplate.create` and `ItemStackTemplate.apply` through one private step they share |
 | when | at reload, on the background executor | when a command, a template or a component patch builds a stack |
 | on failure | throws, failing the reload | depends on the caller: `ItemInput` throws a command syntax error, the other two log and yield `ItemStack.EMPTY` or restore the previous patch |
 
@@ -229,6 +233,8 @@ which strips the item's attribute modifiers and broadcasts an entity event
 (47 for the main hand); `ServerPlayer.onEquippedItemBroken` adds
 `Stats.ITEM_BROKEN` on top.
 
+### What the client is told, and what it draws
+
 The client is told in one byte. `LivingEntity.handleEntityEvent` turns event
 47 into `LivingEntity.breakItem`, which plays `DataComponents.BREAK_SOUND`
 from the stack still in that slot and spawns five item particles; the empty
@@ -244,6 +250,11 @@ survives the decompile — and
 `Item.getBarColor`
 sweeps a hue from green to red. `GuiGraphicsExtractor` draws the two-pixel bar
 under the icon from those three answers and nothing else.
+
+All three read the client's own copy of the stack, and the client never wrote
+to it. So the bar does not creep as you mine: it sits at whatever the last
+slot update said, and jumps when the next one arrives. The one point of
+durability you just spent is invisible until the server sends the slot back.
 
 ## The tick a stack gets, and the stack that is an entity
 
@@ -263,15 +274,18 @@ neighbours through `ItemEntity.mergeWithNeighbours` — a merge that keeps the
 reach it through `Block.popResource`
 ([block breaking](../blocks/block-breaking.md#remove-damage-roll-drop)).
 
-**And the other ninety-eight classes in `world/item`?** They are one `Item`
-subclass each, and each exists for the same reason: a behaviour hook that no
-component can express. `MaceItem`, `BoneMealItem`, `HoneycombItem`,
-`EnderEyeItem`, `DebugStickItem`, `BoatItem`, `LeadItem` and sixty more
-override `Item.use`, `Item.useOn` or `Item.interactLivingEntity` and hold no
-state of their own; `AxeItem`, `ShovelItem` and `HoeItem` kept a class only
-for stripping, path-making and tilling, which act on a block rather than on a
-stack. That is why a registry of over a thousand items has so few classes
-behind it ([the class hierarchy](../../maps/hierarchy.md)).
+## The hundred classes, and why ninety-eight of them are almost empty
+
+`world/item`'s own directory holds a hundred classes. Two of them are `Item`
+and `ItemStack`; the other ninety-eight are one `Item` subclass each, and each
+exists for the same reason — a behaviour hook that no component can express.
+`MaceItem`, `BoneMealItem`, `HoneycombItem`, `EnderEyeItem`, `DebugStickItem`,
+`BoatItem`, `LeadItem` and sixty more override `Item.use`, `Item.useOn` or
+`Item.interactLivingEntity` and hold no state of their own; `AxeItem`,
+`ShovelItem` and `HoeItem` kept a class only for stripping, path-making and
+tilling, which act on a block rather than on a stack. That is why a registry
+of over a thousand items has so few classes behind it ([the class
+hierarchy](../../maps/hierarchy.md)).
 
 ## What this page hands off
 
@@ -288,12 +302,23 @@ at all: it is Part XI's, in [models and atlases](../rendering/models-and-atlases
 
 ## Where to look
 
-`Item` · `Item.Properties` · `Items` · `BuiltInRegistries.ITEM` ·
-`DataComponentInitializers.Initializer` · `Holder.Reference` · `ItemStack` ·
-`PatchedDataComponentMap` · `DataComponentPatch` · `ItemInstance` ·
-`TypedInstance` · `ItemStackTemplate` · `ItemContainerContents` ·
-`ServerPlayerGameMode.destroyBlock` · `ItemEntity` · `Inventory.tick` ·
-`EntityEquipment.tick` · `ServerboundSetCreativeModeSlotPacket`
+Open `ItemStack` first and read its four fields; everything else on this page
+is a consequence of them. `PatchedDataComponentMap` beside it is where the
+copy-on-write flag and the sanitising live, and it is the shortest way to see
+why two pickaxes with the same damage are equal.
+
+Then `Item` and `Item.Properties`, in that order, for the gap between a live
+item and its components: the builder's output is a
+`DataComponentInitializers.Initializer`, and where it eventually lands is
+`Holder.Reference` in `BuiltInRegistries.ITEM`. `Items` is the roll call of
+what was built.
+
+For the durability trace, `ServerPlayerGameMode.destroyBlock` is the entry
+point and `ItemStack.hurtAndBreak` is where it ends up. For the immutable
+twin, `ItemStackTemplate`; for the contract both stacks answer,
+`ItemInstance`. `ItemEntity` is the stack that left the inventory, and
+`Inventory.tick` and `EntityEquipment.tick` are the two walks that tick the
+stacks that did not.
 
 ---
 

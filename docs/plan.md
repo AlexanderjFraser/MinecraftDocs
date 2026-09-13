@@ -34,8 +34,8 @@ stood at the close, with the session paragraphs and the log.
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day and E
-(Part V) and F (Part VI) on 2026-09-13**, so the next session is G
-(Part VII · Items and inventories). The charter is below; the brief, the
+(Part V), F (Part VI) and G (Part VII) on 2026-09-13**, so the next session is H
+(Part VIII · The player). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -63,7 +63,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E and F on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E, F and G on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -751,3 +751,63 @@ inventory not merely come back but become the *only* home. Run the token diff �
 and run it against hand-written pages only: the first pass of it missed three
 names because `class-index.md` is generated *from* the pages and still listed
 them. Regenerate the index before the commit, not after.
+
+**Pass 6, session G — Part VII · Items and inventories** *(2026-09-13).* Eight
+system pages and the landing page, nine readers, one each. The part arrived
+measured at **2 of 8** on the closer — the most comfortable-looking part since
+III — and the queue asked the opposite question, whether three closer-less
+pages should *gain* one. Both readings were wrong, and in opposite directions.
+The three were **ruled out**: A2(e) is permissive, none of the three had a fact
+that was lost rather than a promise unpaid, and adding closers to a part
+measured at 2 of 8 would manufacture the uniformity A2 exists to break. Mean-
+while the two that existed did not survive the test. `enchantments`' was 103
+lines and **nine** questions under a name of its own, and **three of its answers
+were cited from three other pages, each landing on a different answer inside the
+one anchor** — A2's load-bearing rule at its sharpest so far, because no reading
+of the closer as a whole could have found it and no tool sees a link's
+destination *within* a section. Four answers became body sections, three inbound
+links were repointed, and two consequences stayed. `loot-tables`' dissolved
+whole: its first question was **the page's own hook's payoff**, sitting at the
+foot under a question mark while the body never delivered what the opening
+promised, and the section it became answers the reader's question the closer had
+not — that breaking an unopened chest commits the roll too, luckless, through
+`BlockEntity.preRemoveSideEffects`.
+**Fifteen facts corrected**, thirteen of them found by a reader with no source,
+and the sharpest is on `items/README`: the recognition list called the tick-late
+chest one of the part's prediction lies, four paragraphs above the page's own
+statement that the container click is not on the prediction ledger. Sorting the
+four symptoms into the three that are guesses and the one that is not turned out
+to *be* the argument the landing page was missing, so A6's reversal of the
+recognition sentence paid for itself in a way no session had seen. Beside it a
+fourth hand-counted landing-page number went to the include and was wrong again
+(*about a third*, in fact 24%). The rest are the error class sessions B, D, E and
+F all named: a diagram that says *no arrow* where the prose says *a phantom
+arrow*; nine `CustomRecipe`s listed as eight names and a sibling; a figure node
+that says *stale* where the code says *empty*; "five menus" with two named; "five
+enchantment hooks" with four; ten data slots with four accounted for; two
+sentences about one method's two branches, each true, reading as a
+contradiction.
+Eight *Where to look* lists became prose reading routes under A12 — Part VII's
+median was **27** names, second worst in the book — and **every one of the nine
+readers skipped its page's list**, five of them saying in almost the same words
+that it was an index of the page's own backticks rather than a place to start.
+That is A12 arrived at independently, nine times, by readers who had never seen
+the ruling. The token diff (hand-written pages only, the `class-index.md` trap)
+found five names that would have left the book, all put back into prose — and
+writing the sentence that restored two of them introduced a count error the
+session then had to correct, which is worth saying out loud: the A12 check is
+not free. One literal trace heading renamed, both 1.21 blockquotes moved to the
+foot, two openings varied off the word *You* (six of eight, the worst in the
+book), eleven new H3s inside existing anchors, and three logged cuts. Part VII
+3,207 → 3,478 lines. Twenty-two units appended to [pass5.md](pass5.md) (three
+logged cuts, nine for pass 7, five for pass 8, one for pass 9, and the ruling
+that closed the three-closers question); eleven entries struck and four
+annotated; the session's entry in [pass9.md](pass9.md). All five gates green;
+deployed. **What the session would tell the next one**: session F said a renamed
+closer is still a closer and no tool sees it. The other half of that is here — an
+*inbound link* into a closer is not visible either, because `check_links.py`
+reports the anchor and the anchor is the whole section. Three links landed on
+one anchor and meant three different answers inside it, and the only way to find
+that out is to read the citing sentence at the other end. Run
+`check_links.py --inbound` on every page of the part *before* deciding which
+closers keep, and read what each citing sentence actually wanted.

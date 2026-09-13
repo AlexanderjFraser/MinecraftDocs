@@ -5,63 +5,52 @@
 A block is a position in a grid and an entity is a thing in the world. An
 item is neither: it is a *stack*, and a stack only exists inside something
 else — a hand, a slot, a chest, a recipe grid, a dropped `ItemEntity`, a
-packet. That makes this part the one where the two programs disagree most
-often and most cheaply, because almost everything a player does with items is
-predicted locally and confirmed afterwards ([prediction and
-acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other)). A player recognises the part
-by the small lies: the shift-click that lands before anything has answered it,
-the chest whose contents appear a tick late, the bow that fires when you let go
-rather than when it finished drawing, and the dungeon chest that is empty until
-the moment somebody opens it.
-
-## Where the part stops, and how much of it there is
-
-The part is {{#include ../../generated/part-items.md}} in `world/item`,
-`world/inventory` and `world/level/storage/loot`, and about a third of those
-lines are named on no page in the book. Most of that is the answer rather
-than a gap. The ninety-eight classes still left in `world/item` are one `Item`
-subclass each, kept for a behaviour hook no component can express; the
-twenty-nine menus in `world/inventory` are one machine with different slot
-lists; the forty-three loot functions and twenty loot conditions are one shape
-each; and the special crafting recipes are the nine whose output cannot be
-written down. Each of those families is named once, on the page that teaches
-the machine.
-
-Four things in these packages are not a family and are explained nowhere:
-**villager trading** (`VillagerTrades` alone is the part's largest class),
-**brewing**, **the creative tabs**, and **armour identity and trims**. A
-second edition should take them; this one names them and says so.
-
-The traffic runs the other way too, and more than in most parts: an item is
-often the place some other system surfaces. `BlockItem` is Part V's, `BucketItem`
-Part IV's, `SpawnEggItem` Part VI's, `Equippable` and `AttackRange` Part
-VIII's. And the part stops at the slot. What a player's own inventory is, and
-how the hand relates to the equipment slots, is [player
-anatomy](../player/player-anatomy.md#forty-three-slots-and-one-of-them-is-an-alias)
-in Part VIII; how a held stack picks the model you actually see is Part XI's,
-in [models and
-atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model). The
-container click is *not* on the prediction ledger — it carries no sequence
-number and opens no window — and [prediction and
-acknowledgement](../client/prediction-and-acks.md#what-the-ledger-does-not-cover)
-in Part X is where that distinction is drawn.
+packet. A player recognises the part by the moments that container is showing:
+the shift-click that lands before anything has answered it, the bow that fires
+when you let go rather than when it finished drawing, the chest whose contents
+appear a tick late, the dungeon chest that is empty until somebody opens it.
+Three of those four are a client guessing and being confirmed afterwards
+([prediction and
+acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other));
+the tick-late chest is not a guess at all, but a broadcast that missed its
+phase, and telling those two apart is most of what this part teaches. **An
+item is the thing in the game that is never simply somewhere — so every page
+here is about a container, and about which of the two programs is allowed to
+believe what it holds.**
 
 ## The shape of the part
 
-Part VII is **two tiers**, not a chain. The first three pages are the
-vocabulary — what a stack is, what using one does, and how a set of them is
-kept in agreement across the wire. The last five are three engines
-built out of one pattern — a registry of kinds, a dispatch codec, a data file
-naming one ([data-driven
+More than in most parts, an item is where some other system surfaces:
+`BlockItem` belongs to Part V · Blocks, `BucketItem` to Part IV · The world,
+`SpawnEggItem` to Part VI · Entities, `Equippable` and `AttackRange` to Part
+VIII · The player. Each is an item only in the sense that it is the handle.
+
+Three subjects go out the same door. The part stops at the slot: what a player's
+own inventory *is* belongs to [player
+anatomy](../player/player-anatomy.md#forty-three-slots-and-one-of-them-is-an-alias),
+how a held stack picks the model you see belongs to [models and
+atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model), and
+the reason a container click is not on the prediction ledger — no sequence
+number, no window — belongs to [prediction and
+acknowledgement](../client/prediction-and-acks.md#what-the-ledger-does-not-cover).
+
+What is left is **two tiers**. The first three pages are the vocabulary — what
+a stack is, what using one does, and how a set of them is kept in agreement
+across the wire. The last five are three engines built out of one pattern — a
+registry of kinds, a dispatch codec, a data file naming one ([data-driven
 types](../foundations/data-driven-types.md#the-idea-stated-once)) — that
-produce or decorate stacks. Recipes, enchanting and
-loot tables all lean on the vocabulary and can be watched in any order — they
-do touch each other at the edges, and each crossing is a boundary rather than a
-dependency: two of enchanting's five paths *are* loot functions, a repair
-recipe carries curses, and the recipe book refuses an enchanted stack.
-*Contexts and predicates* is the outlier, because its subject is not a stack at
-all — it is the question engine the other engines happen to run on, and it can
-be watched first.
+produce or decorate stacks.
+
+The engines lean on the vocabulary and not on each other, so they can be
+watched in any order; where two of them touch — two of enchanting's five paths
+*are* loot functions — neither has to teach the other's machine to say so.
+*Contexts and predicates* is the outlier: its subject is not a stack at all,
+but the question engine the other engines happen to run on, and it can be
+watched first.
+
+Every arrow below is *what the next page can now assume*, not what its code
+calls. Read down a chain and nothing is missing; read across two and nothing
+is owed.
 
 ```mermaid
 flowchart TD
@@ -77,7 +66,7 @@ flowchart TD
     UI -- "and a slot is where one lives" --> CM
     CM -- "an arrangement in a grid" --> RE
     IS -- "a modifier on the stack" --> EN
-    EN --> EC
+    EN -- "and how one gets onto a stack" --> EC
     CP -- "which needs no stack at all" --> LO
 ```
 
@@ -96,7 +85,7 @@ for where recipes, enchantments and loot tables come from and when. They come fr
 the difference bites: recipes are a reload listener and loot tables a
 reloadable registry layer, so `/reload` rebuilds both — while enchantments are
 a world-load dynamic registry that `/reload` [never re-reads at
-all](enchantments.md#questions-the-pattern-raises).
+all](enchantments.md#where-the-forty-three-live-and-when-they-are-read).
 
 Three ordering facts matter more than they look. [The server
 tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain) drains
@@ -127,7 +116,9 @@ The first three in order, then the engines in any order you like.
    recipe it has unlocked.
 5. [Enchantments](enchantments.md) — there are no enchantment subclasses.
    Fire Aspect is a data-pack record whose "melee only" rule is one loot
-   condition, and the burn that follows belongs to something else entirely.
+   condition, the burn that follows belongs to something else entirely, and
+   the three enchantments players talk about most have no effect component at
+   all.
 6. [Enchanting](enchanting.md) — the five paths that change what an item is
    enchanted with, one of which runs backwards. The
    seed is per player, saved, and sent to the client, which is why the
@@ -138,13 +129,33 @@ The first three in order, then the engines in any order you like.
    never roll a loot table at all: five of them belong to enchantment
    effects, and the rest are `/execute if predicate`, entity selectors,
    advancement triggers and villager trades.
-8. [Loot tables](loot-tables.md) — the worked example, and the part's
-   closer. A dungeon chest is genuinely empty on disk, and the first thing
-   to touch it — a hopper will do — commits the roll with no luck at all.
+8. [Loot tables](loot-tables.md) — the worked example, and the part's last
+   lecture. A dungeon chest is genuinely empty on disk, and the first thing to
+   *read* it — a hopper will do, and so will breaking it — commits the roll
+   with no luck at all.
 
 Watched as lectures, five and six are the pair to keep together: *what an
 enchantment is* and *how you get one*. Seven and eight are the other pair,
 and seven is the one Part XIII comes back for.
+
+## Where the part stops
+
+The part is {{#include ../../generated/part-items.md}} across `world/item`,
+`world/inventory` and `world/level/storage/loot`, and
+{{#include ../../generated/coverage-items.md}}. Most of that is an answer
+rather than a gap: it is the four families each page names once and does not
+enumerate. `world/item`'s ninety-eight remaining classes are one `Item`
+subclass each, kept for a behaviour hook no component can express; the
+twenty-nine menus in `world/inventory` are one machine with different slot
+lists; the forty-three loot functions and twenty loot conditions are one shape
+each; and the special crafting recipes are the nine whose output cannot be
+written down.
+
+Four things here are not a family and are explained nowhere: **villager
+trading** (`VillagerTrades` alone is the part's largest class — the loot
+machinery a trade *runs on* is covered, the trades themselves are not),
+**brewing**, **the creative tabs**, and **armour identity and trims**. A second
+edition should take them; this one names them and says so.
 
 ## Reference this part uses
 

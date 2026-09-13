@@ -44,6 +44,201 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session G — Part VII · Items and inventories *(2026-09-13)*
+
+Eight system pages and the landing page, nine readers, one each. Every
+correction below was found by a reader with no source and no other page, and
+re-derived by the session against `reference/26.2` before it landed. Two of the
+fifteen were found by the session while re-deriving another, and are marked.
+
+### Corrections — what the page said, what the decompile says
+
+1. **`items-and-stacks`**' hook said durability's method "demands a
+   `ServerLevel`, and the convenient overloads that do not have one silently do
+   nothing at all", which claims the overloads never work. `ItemStack.java:493`
+   and `:497`: the `LivingEntity` overloads test `owner.level() instanceof
+   ServerLevel` and forward when it is one. They do nothing *on a client*, which
+   is what the body had always said (and what makes the hook true). The hook now
+   says so.
+2. **`items-and-stacks`**' *Two validators* table listed
+   `ItemStack.validateStrict`'s callers as `ItemInput`,
+   `ItemStackTemplate.create` and `ItemStack.applyComponentsAndValidate`, while
+   the prose named `ItemStackTemplate.apply` as a fourth. There are three call
+   sites in the tree (`ItemInput.java:29`, `ItemStack.java:824`,
+   `ItemStackTemplate.java:73`), and the third is a private `validate` that
+   **both** `ItemStackTemplate.create` (`:68`) and `ItemStackTemplate.apply`
+   (`:88`) go through. The cell now says that.
+3. **`using-an-item`**'s bow diagram said the client's release produces "no ammo
+   and **no arrow**", while the prose 20 lines later says it produces "a single
+   phantom arrow marked `DataComponents.INTANGIBLE_PROJECTILE`". The prose is
+   right: `ProjectileWeaponItem.useAmmo` (`:126–164`) reaches `ammoToUse == 0`
+   off a client level and returns `projectile.copyWithCount(1)` with the
+   component set. No *entity* is spawned, because `ProjectileWeaponItem.shoot`
+   is inside a `ServerLevel` test. The label now distinguishes the stack from
+   the entity.
+4. **`using-an-item`** said `SpyglassItem.finishUsingItem` is "reached either at
+   its 1200-tick duration or, like any use, the moment you let go". Letting go
+   reaches `ItemStack.releaseUsing` → `Item.releaseUsing`, never
+   `Item.finishUsingItem`. The spyglass gets its sound on release from a
+   **second override**, `SpyglassItem.releaseUsing` (`SpyglassItem.java:44`),
+   which the page never mentioned — the fourth and last override of
+   `Item.releaseUsing` in the tree, after `BowItem`, `CrossbowItem` and
+   `TridentItem`. Corrected and the second override named.
+5. **`using-an-item`** said the server's release runs "five enchantment hooks"
+   and named four. The fifth is `EnchantmentHelper.getPiercingCount`, asked by
+   the `AbstractArrow` constructor (`AbstractArrow.java:114`) rather than by
+   anything in `ProjectileWeaponItem`. Five is right; the fifth is now named.
+6. **`using-an-item`** used *`EntityEvent.USE_ITEM_COMPLETE`* and *event 9* as
+   two names for one thing and never equated them.
+   `EntityEvent.java:13`: `USE_ITEM_COMPLETE = 9`. The opening now says so once.
+7. **`using-an-item`** called `UseEffects.DEFAULT`'s value "the famous twenty
+   per cent" without saying it is a multiplier. `UseEffects.java:11`:
+   `DEFAULT = (false, true, 0.2F)`, and `LocalPlayer.modifyInput` (`:763`)
+   *scales* the input by it — so you move at a fifth of your speed, not
+   four-fifths. Stated.
+8. **`enchantments`** said the third post-attack branch is "a slotless pass with
+   no filter at all, reached through
+   `EnchantmentHelper.doPostAttackEffectsWithItemSourceOnBreak`", and later that
+   the same method "hands `EquipmentSlot.MAINHAND` to the slot filter regardless
+   of where the weapon came from". Both are true of *different branches of one
+   method* (`EnchantmentHelper.java:265–289`): the living-attacker branch at
+   `:277` passes `MAINHAND`, the non-living branch at `:283` uses the two-arg
+   overload with a null slot, and it only runs when a break callback was
+   supplied. The two sentences are now one paragraph that says which is which.
+9. **`enchantments`** said the effect codecs are "one of only two places in the
+   game where a context mismatch is a hard error at decode time" and never named
+   the other. Grepped: `Validatable.validatorForContext` /
+   `listValidatorForContext` have exactly two users —
+   `EnchantmentEffectComponents.java:124` and `VillagerTrade.java:52`. Named.
+10. **`recipes`**' loading figure said that between `RecipeManager.apply` and
+    `finalizeRecipeLoading` the four indexes "still describe the PREVIOUS recipe
+    set", while the prose 20 lines below says they are **empty**. The prose is
+    right: `ReloadableServerResources.java:39` builds a fresh `RecipeManager`
+    per reload and its constructor (`RecipeManager.java:85–89`) sets all four to
+    empty. The node now says empty, and the prose says *empty rather than
+    stale*, which is the distinction the figure had inverted.
+11. **`recipes`** listed the nine `CustomRecipe`s as eight class names plus "its
+    fade sibling", so the count could not be checked against the list. The ninth
+    is `FireworkStarFadeRecipe` (`RecipeSerializers.java:20`), now named; and
+    the *named special* distinction is now stated as what it is — eight register
+    under ids beginning *crafting_special_*, `DecoratedPotRecipe` does not.
+    Verified: 21 serializers, 14 with `crafting_` ids, 9 extending
+    `CustomRecipe`.
+12. **`recipes`** said "exactly five menus extend `RecipeBookMenu`" and named
+    two. The five are `CraftingMenu` and `InventoryMenu` under
+    `AbstractCraftingMenu`, and `FurnaceMenu`, `BlastFurnaceMenu` and
+    `SmokerMenu` under `AbstractFurnaceMenu`. All five named, with the two
+    abstract halves that explain why four `RecipeBookType` values need five
+    menus.
+13. **`enchanting`** promised "ten integers" in its opening and accounted for
+    four of them ("three `DataSlot.shared` views onto the cost array, one
+    `DataSlot.standalone` holding the seed"). `EnchantmentMenu.java:95–104`:
+    nine shared views over **three** arrays of three — `costs`, `enchantClue`
+    and `levelClue` — plus the one standalone seed. A clue is a *pair*, which is
+    why three offers cost six slots. All ten now accounted for, and the reader's
+    unanswered question with them.
+14. **`loot-tables`**' cast called `LootItemFunction` "forty-three
+    stack-to-stack transforms" while the body says the forty-third,
+    `SequenceFunction`, "is a list of functions rather than a transform".
+    `LootItemFunctions.java` registers 43; 42 extend `LootItemConditionalFunction`
+    and `SequenceFunction.java:13` implements `LootItemFunction` directly. The
+    cast now says forty-three registered kinds, forty-two of them transforms.
+15. **`items/README`** listed "the chest whose contents appear a tick late"
+    among the small lies produced by predicting locally and confirming
+    afterwards — and the same page says four paragraphs later that the container
+    click is *not* on the prediction ledger. The tick-late chest is not a
+    prediction at all: it is
+    `containers-and-menus`' block-entity-phase fact, a broadcast that missed its
+    phase. The argument now sorts the four symptoms into the three that are
+    guesses and the one that is not, and makes the distinction the part's
+    subject. *(Found by the landing page's reader; it is the error class pass 5
+    hunted — one page contradicting itself across four paragraphs.)*
+16. **`items/README`** said "about a third of those lines are named on no page",
+    hand-counted. `pass5_coverage.py` gives **24%**. Replaced with
+    `{{#include ../../generated/coverage-items.md}}`. *(Found by the session,
+    not by a reader — the fourth hand-counted landing-page number in the book
+    and the third to be wrong.)*
+17. **`recipes`** — while restoring `RecipeInput` under A12 the session wrote
+    "the seven cooking and stonecutting kinds"; there are three `RecipeInput`
+    implementations in the game (`CraftingInput`, `SingleRecipeInput`,
+    `SmithingRecipeInput`) and five one-slot kinds, not seven. Corrected before
+    the commit. *(Found by the session: a count introduced and killed inside one
+    edit, and the reason the A12 restoration is not free.)*
+
+### Claims introduced
+
+**New body sections, each holding material promoted out of a closer or a
+figure.** Every one is a re-statement of a fact the page already carried, so
+pass 9 should check the *scoping* rather than re-derive the mechanism.
+
+- `enchantments` — four new H2s out of the dissolved *Questions the pattern
+  raises*: *The three famous ones that have no effect component* (Fortune,
+  Looting, Mending), *What runs on the client, and why it is only ever a number*
+  (the claim that the cast row's "some read-only entry points" is exactly two
+  values and three kinds of drawing), *Where the forty-three live, and when they
+  are read* (the `/reload` claim, plus what crosses the wire), and *One JSON
+  file, four effect objects, no Java* (`Enchantments.LUNGE` as the pattern
+  entire). The closer keeps two questions.
+- `loot-tables` — *What counts as reading it*, which is the hook's payoff moved
+  into the body, and it carries **one genuinely new claim**: breaking an
+  unopened chest commits the roll, via
+  `BlockEntity.preRemoveSideEffects` (`BlockEntity.java:306–311`) walking
+  `Container.getItem` over every slot into `Containers.dropContents`. Verified;
+  its reader had asked exactly this and the page had never answered it. Also
+  new: *A loot table that travels inside an item*, out of the closer's
+  shulker-box answer.
+- `containers-and-menus` — *What the client does with a correction, and what
+  closing rescues*, answering its reader's unanswered question. The claim is
+  that `ClientPacketListener.handleContainerSetSlot` (`:1454–1490`) writes the
+  one slot and stores the state id, with no rollback path, **and** that no
+  mispredicted slot is ever left standing because `broadcastChanges` compares
+  every slot rather than only the claimed ones.
+- `items-and-stacks` — a paragraph saying the durability bar does not creep as
+  you mine but jumps at the next slot update, which follows from the page's own
+  facts and answers its reader's question. And *The hundred classes, and why
+  ninety-eight of them are almost empty*, split out of the tick section, with
+  the population stated (100 files in `world/item`'s own directory, of which
+  `Item` and `ItemStack` are two).
+- `recipes` — a paragraph at the head of *What the client actually gets*
+  claiming that `RecipeAccess` is a two-method interface with exactly two
+  implementations (`RecipeManager`, `ClientRecipeContainer`), neither returning
+  a `Recipe`. That is the page's thesis restated as an interface, and it pays
+  off a cast row the body had never delivered.
+
+**Re-argued, renamed and re-scoped.**
+
+- `items/README`'s argument ends on a new claim (an item is the thing that is
+  never simply somewhere; every page is about a container and about which
+  program may believe its contents), and the seventh section moved from first to
+  its A6 place under the short heading *Where the part stops*, with the borders
+  paragraph moved into *The shape of the part*.
+- `contexts-and-predicates` — `## The trace: /execute if predicate` renamed to
+  *Four facts about a question with two keys in it*; `## None of this crosses
+  the wire` renamed to *Three registries, rebuilt on `/reload`, and none of them
+  networkable*, because two thirds of it was never about the wire. No inbound
+  link landed on either.
+- `contexts-and-predicates` — a new claim in *Three ways a parameter can be
+  missing*: of the twenty registered `LootItemCondition` types, every one that
+  reads a parameter uses the optional accessor **except** `EnchantmentActiveCheck`
+  (`:18`), which uses the throwing one — so a predicate asking `/execute` for a
+  block state is quietly false rather than fatal. Verified by grep over
+  `storage/loot/predicates`.
+- `loot-tables` — the opening no longer says the region file holds "a table key
+  and a seed" flatly; a seed is written only when non-zero
+  (`RandomizableContainer.java:72`), which the body already said.
+- Eight *Where to look* lists became prose reading routes (A12). Each names
+  fewer classes and asserts a **reading order**, which is a claim of a kind pass
+  9 has not had to check before: that a named class is a sensible entry point.
+- New H3s inside existing anchors on `using-an-item` (3), `recipes` (3) and
+  `enchanting` (5). No anchor moved.
+
+### Openings varied (A1)
+
+Six of eight pages opened on the word *You*. Two were varied — `containers-and-menus`
+to a thing seen and `contexts-and-predicates` to a fact stated flat — leaving
+four, which is no longer *most*. Both rewrites restate the page's scenario and
+neither changes a fact.
+
 ## Pass 6, session F — Part VI · Entities *(2026-09-13)*
 
 Nine system pages and the landing page, ten readers, one each. Every correction
