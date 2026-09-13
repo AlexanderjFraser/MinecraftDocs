@@ -163,8 +163,11 @@ subject of the last section.
 
 ## The search
 
-`PathFinder.findPath` is plain A\* over a `BinaryHeap`, and three of its
-details decide what mobs feel like.
+`PathFinder.findPath` is plain A\* over a `BinaryHeap` of `Node`s — one per
+candidate block position, carrying its `PathType` and its costs — with the
+destinations held separately as `Target`s, a `Node` subclass that also records
+whether anything reached it. Three details of the search decide what mobs feel
+like.
 
 **It is bounded twice: by a node count and by a distance.** The loop breaks
 as soon as its visit counter reaches the budget —

@@ -4475,9 +4475,14 @@ for other passes and the cuts it logged.*
   became prose reading routes. Six names would have left the book and were put
   back into prose (`Entity.position`, `Entity.collideBoundingBox`,
   `PathNavigation.moveTo`, `ClientPacketListener.handleMoveVehicle`,
-  `Player.isLocalPlayer`, `Brain.Provider`); the check is a token diff against
-  `HEAD` and then against all of `src/`, and it is worth running on every part.
-  [kind=lecture]
+  `Player.isLocalPlayer`, `Brain.Provider`) and three more after the deploy
+  regenerated the class index (`GateBehavior`, `Node`, `Target`). **The check
+  has a trap**: the token diff must exclude `src/reference/class-index.md` and
+  `src/reference/lanes.md`, because both are generated *from* the pages, so a
+  name still sitting in them is not evidence that the book still says it. The
+  first run of the check missed three names for exactly that reason and the
+  regenerated index caught them. Run the diff against hand-written pages only,
+  and regenerate the index before the commit rather than after. [kind=lecture]
 
 ### For pass 7 (the figures)
 

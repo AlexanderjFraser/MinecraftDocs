@@ -397,7 +397,9 @@ skipped as unreachable. Two more behaviours can take a claim away afterwards —
 `PoiCompetitorScan` hands a contested one to the more experienced villager, and
 `ValidateNearbyPoi` erases it when the block is gone.
 
-**Work** is a weighted `RunOne` over six: `WorkAtPoi` (or `WorkAtComposter`),
+**Work** is a weighted `RunOne` — one of the `GateBehavior` composites, which
+are behaviours whose children are behaviours — over six: `WorkAtPoi` (or
+`WorkAtComposter`),
 `StrollAroundPoi`, `StrollToPoi`, `StrollToPoiList`, `HarvestFarmland` and
 `UseBonemeal`;
 `WorkAtPoi` wants 300 ticks since the last check and 1.73 blocks or less to

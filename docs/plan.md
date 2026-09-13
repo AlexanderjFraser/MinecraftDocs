@@ -747,4 +747,7 @@ it is the measuring instrument, and Part VI is where it earned that — the part
 that looked half-clear was the second most uniform in the book. The other half
 of the lesson is A12's: nine lists at a median of thirty names, and six names
 that existed nowhere in the corpus except inside them, which is the field
-inventory not merely come back but become the *only* home. Run the token diff.
+inventory not merely come back but become the *only* home. Run the token diff —
+and run it against hand-written pages only: the first pass of it missed three
+names because `class-index.md` is generated *from* the pages and still listed
+them. Regenerate the index before the commit, not after.
