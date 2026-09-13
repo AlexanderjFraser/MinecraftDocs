@@ -7,7 +7,9 @@ appears. What the server actually did is smaller and stranger than it looks.
 Once a tick, for each chunk near a player and each mob category still under
 its cap, `NaturalSpawner.getRandomPosWithin` rolls a random x, a random z and
 **one** y — a single uniform draw between the world bottom and the surface
-height of that column. Three group attempts follow, and they jitter only x
+height of that column. Three attempts follow — each one a *group*, because a
+successful attempt keeps spawning siblings around the first mob until a size
+limit stops it — and they jitter only x
 and z. So the whole of one category's chance in one chunk this tick lives on
 **one horizontal slice**: every eligible category gets its own slice, caves
 and the open field compete for the same rolls, and a world with more vertical
@@ -21,7 +23,7 @@ rejections later where the mob is finally allowed to exist.
 | class | what it decides | thread |
 |---|---|---|
 | `NaturalSpawner` | every test between a chunk and a mob, in one file of static methods | server main |
-| `NaturalSpawner.SpawnState` | the per-tick census, the global cap per `MobCategory`, and the biome energy budget through `PotentialCalculator` | server main, rebuilt each tick |
+| `NaturalSpawner.SpawnState` | the per-tick census, the global cap per `MobCategory`, and the biome crowding budget through `PotentialCalculator` | server main, rebuilt each tick |
 | `LocalMobCapCalculator` | whether any player near *this* chunk is still under the per-player limit | server main, rebuilt each tick |
 | `SpawnPlacements` | the placement type, heightmap and predicate for each `EntityType` — code, not data | a static table, read on the server main thread |
 | `PersistentEntitySectionManager` | which entities exist, which are findable, which tick, which chunks are queued to unload | server main, with one concurrent load inbox |
@@ -38,10 +40,10 @@ an arrow leaving the path.
 
 ```mermaid
 flowchart TD
-    T["ServerChunkCache.tickChunks, once a tick"] --> ST["NaturalSpawner.createState walks every entity in the level, skipping MISC and persistent mobs"]
+    T["ServerChunkCache.tickChunks, once a tick"] --> ST["NaturalSpawner.createState walks every entity in the level, skipping MISC and any mob that is named, leashed or ridden"]
     ST --> CAT{"NaturalSpawner.getFilteredSpawningCategories"}
     CAT -->|"a monster category, and the monster game rules are off"| X1["this category is dropped from the tick's list"]
-    CAT -->|"a persistent category, and game time is not a multiple of 400"| X1
+    CAT -->|"a MobCategory that is only rolled every 400 ticks, on a tick that is not one of them"| X1
     CAT -->|"already at the global cap for the category"| X1
     CAT -->|"eligible"| CH{"ChunkMap.collectSpawningChunks, then shuffled"}
     CH -->|"no ticking chunk there"| X2["this chunk is skipped"]
@@ -70,7 +72,7 @@ flowchart TD
     TY -->|"SpawnPlacements.isSpawnPositionOk fails on the placement type"| X3
     TY -->|"SpawnPlacements.checkSpawnRules fails, and this is where the light test lives"| X3
     TY -->|"the type's spawn box collides with the world"| X3
-    TY --> BUD{"NaturalSpawner.SpawnState.canSpawn, the biome energy budget"}
+    TY --> BUD{"NaturalSpawner.SpawnState.canSpawn, the biome crowding budget"}
     BUD -->|"over budget"| X3
     BUD --> MAKE["EntityType.create, and ONLY NOW does a Mob object exist"]
     MAKE -->|"feature-flagged off, or Peaceful and not allowed there"| X4["this category's attempt on this chunk returns"]
@@ -95,6 +97,18 @@ of 10 instead of the level's current one, which is what lets monsters spawn
 outdoors in the daytime. The light rule is per-dimension data,
 not a constant, and `EntitySpawnReason.ignoresLightRequirements` exempts
 exactly one reason, `EntitySpawnReason.TRIAL_SPAWNER`.
+
+The last gate before construction is the one nobody meets, and it is worth
+knowing why. `NaturalSpawner.SpawnState.canSpawn` asks the biome for a
+`MobSpawnSettings.MobSpawnCost` for this exact type: a *charge* the mob adds to
+a field of nearby charges and an *energy budget* the sum may not exceed, so a
+species can be made to thin itself out over distance rather than over a cap.
+`PotentialCalculator` is that field, and the rule is per biome and per type
+rather than global. In vanilla data **two biomes use it at all** — soul sand
+valley, for ghasts, skeletons and endermen, and the warped forest, for endermen
+and striders. Everywhere else the biome has no cost for the type,
+`MobSpawnSettings.getMobSpawnCost` returns null, and the gate passes without
+arithmetic.
 
 Construction is itself a filter, and the harshest-tempered one:
 `EntityType.create` can return null ([entity
@@ -141,7 +155,11 @@ grows with player count and shrinks when players stand together.
 The **local** cap is `LocalMobCapCalculator.canSpawn`, and it is a veto
 rather than a budget: it walks the players near this chunk and answers yes
 the moment it finds one under the raw per-chunk number for the category. With
-no player near the chunk the walk finds nobody and the answer is **no**.
+no player near the chunk the walk finds nobody and the answer is **no** — which
+is not dead code, because *near* means something different here from the
+128-block test two gates above: that one measures to the chunk centre, and this
+one counts the players whose spawn-chunk neighbourhood contains the chunk, so a
+chunk can pass the first and find nobody in the second.
 (`SharedConstants.DEBUG_IGNORE_LOCAL_MOB_CAP` is the development switch that
 turns that half off.) The census both caps count from skips any mob that is
 `Mob.isPersistenceRequired` or `Mob.requiresCustomPersistence` — named,
@@ -150,7 +168,7 @@ is the same predicate pair that makes `Mob.checkDespawn` return early, which
 is why *name it and it stays* and *name it and it stops counting* are one
 fact and not two.
 
-### The four constants that are not the numbers
+### Three constants nobody reads, and one that is not the number it looks like
 
 `NaturalSpawner` declares `NaturalSpawner.MIN_SPAWN_DISTANCE` 24,
 `NaturalSpawner.SPAWN_DISTANCE_CHUNK` 8 and
@@ -179,9 +197,10 @@ wide and three tall, and *only if that roll fails* a second 5 % roll to
 create one.
 Two different limits end it. `Mob.isMaxGroupSizeReached` breaks the current
 group and lets the next of the three attempts start; `Mob.getMaxSpawnClusterSize`
-returns outright and kills all three. The base value is four, and seven
-species change it — horses to 6, fish and wolves to 8, and ghasts, happy
-ghasts and pillagers **down** to 1.
+returns outright and kills all three. `Mob`'s base value is four, and seven
+classes override it: `AbstractHorse` to 6, `Wolf` and `AbstractFish` to 8 —
+with `AbstractSchoolingFish` overriding again to return its own school size —
+and `Ghast`, `HappyGhast` and `Pillager` **down** to 1.
 
 ### The variant that same method picks
 
@@ -401,13 +420,13 @@ chunks that came back empty so they are never re-read. Each saved entity and
 its passengers then take `Entity.RemovalReason.UNLOADED_TO_CHUNK` and drop
 their level callback.
 
-Two rules decide what is in that file. Passengers are written **inside** their
-vehicle, never beside it, so `Entity.shouldBeSaved` refuses any entity that is
-riding something; and a vehicle whose passengers are exactly one player is
-refused too, because it travels in that player's own data instead. The clause
-that is easy to miss is the first one in the method: an entity already
-carrying a non-saving removal reason is skipped, which is what keeps a
-discarded mob still sitting in a section out of the file.
+`Entity.shouldBeSaved` has three clauses and they decide the whole contents of
+that file. Passengers are written **inside** their vehicle, never beside it, so
+anything currently riding is refused; a vehicle whose passengers are exactly one
+player is refused too, because it travels in that player's own data instead; and
+— the clause that is easy to miss, because it is the first one in the method —
+an entity already carrying a non-saving removal reason is skipped, which is what
+keeps a discarded mob still sitting in a section out of the file.
 
 ## Five reasons, one label
 
@@ -422,28 +441,32 @@ discarded mob still sitting in a section out of the file.
 *Destroys* means `LevelCallback.onDestroyed` fires — the scoreboard entry and
 the waypoint go. An unloading zombie keeps all of it, because
 `Entity.RemovalReason.UNLOADED_TO_CHUNK` does not destroy. The five are not a
-state machine: `Entity.setRemoved` writes the reason **only if none is set**,
-so the first one wins and a second call cannot change it — though the rest of
-`Entity.setRemoved` still runs, dropping passengers and firing
-`EntityInLevelCallback.onRemove` with the *new* reason. It drops its passengers unconditionally, but dismounts the entity
-from its own vehicle only when the reason destroys. The one link a removal
+state machine, and `Entity.setRemoved` is where that shows: it writes the
+reason **only if none is set**, so the entity's *stored* reason is the first
+one and a second call cannot change it — but the rest of the method runs every
+time, and it runs on two different reasons at once. The dismount branch reads
+the stored reason (it dismounts from a vehicle only when that reason destroys);
+passengers are dropped unconditionally; and
+`EntityInLevelCallback.onRemove` is then fired with the reason *this* call was
+given, which on a second call is not the one the entity is carrying. The one link a removal
 does not break is an `EntityReference` somebody else is holding ([entity
 anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)),
 which decays back to a UUID rather than to nothing.
 
 ## Where to look
 
-`NaturalSpawner.spawnCategoryForPosition` · `NaturalSpawner.SpawnState` ·
-`LocalMobCapCalculator` · `ChunkMap.collectSpawningChunks` ·
-`SpawnPlacements` · `EntitySpawnReason` · `Mob.finalizeSpawn` ·
-`Mob.checkDespawn` · `MobCategory` · `ServerLevel.addFreshEntity` ·
-`PersistentEntitySectionManager.updateChunkStatus` · `Visibility` ·
-`EntityLookup` · `EntitySection` · `EntitySectionStorage` · `LevelCallback` ·
-`EntityInLevelCallback` · `EntityTickList` · `ServerLevel.tickNonPassenger` ·
-`VariantUtils.selectVariantToSpawn` · `SpawnPrioritySelectors` · `SpawnCondition` ·
-`PriorityProvider.select` ·
-`Level.guardEntityTick` · `EntityStorage` · `Entity.RemovalReason` ·
-`Entity.setRemoved` · `TransientEntitySectionManager`
+`NaturalSpawner` is one file of static methods and the cascade above is its
+table of contents; read `NaturalSpawner.spawnCategoryForPosition` first, then
+`NaturalSpawner.SpawnState` and `LocalMobCapCalculator` for the two caps and
+`SpawnPlacements` for the per-type rules the cascade consults.
+`Mob.finalizeSpawn` is where a group becomes a group and
+`Mob.checkDespawn` where one ends. For the other half of the page, start at
+`PersistentEntitySectionManager.updateChunkStatus` — the four tests in their
+fixed order — with `Visibility` and `EntityTickList` beside it, and finish on
+`Entity.setRemoved` and `Entity.RemovalReason`. Two doors the page leaves
+closed: `EntityLookup`, the flat index a command selector walks instead of the
+section grid, and `TransientEntitySectionManager`, the client's much simpler
+counterpart to everything above.
 
 Before this page: [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off),
 on which side is allowed to decide any of it. After it: [synched entity

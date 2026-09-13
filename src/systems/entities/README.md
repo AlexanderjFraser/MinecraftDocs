@@ -9,45 +9,21 @@ a single packet leaving the server. Those are five different systems and one
 question: **which of the two programs is allowed to decide this, and how does
 the other one find out?** Part VI is that question asked about everything in
 the world that is not in the grid — the zombie, the arrow, the boat, the
-dropped pickaxe, the invisible marker a data pack left as a bookmark. They
-share one base class that is deliberately thin *on behaviour*, one numbered
-array for telling clients about themselves, one collision resolver and one
-abstract method for being hurt; the living ones share a bag of named numbers
-besides.
-
-## Where the part stops, and how much of it there is
-
-This is the largest part of the book —
-{{#include ../../generated/part-entities.md}} in `world/entity` (less
-`world/entity/player`), `network/syncher`, `world/level/pathfinder`,
-`world/damagesource` and `world/effect` — and about 40% of those lines are
-named on no page in the book at all. That is the right answer rather than a
-gap: the bulk of them are one class per species, and a species is the *same*
-nine pages instantiated. `Panda` is 1,121 lines of `Mob` with a sitting
-animation; `AbstractHorse` is 1,114 lines of `Mob` with an inventory; the 103
-classes under `world/entity/ai/behavior` and the 61 under
-`world/entity/ai/goal` are one shape each, described once on [goals and
-brains](ai-goals-and-brains.md#what-holds-the-state). The part explains the
-machine and declines to enumerate its instances.
-
-Four mechanisms in these packages are more than a species and are still
-explained nowhere: the minecart's two movement models, the ender dragon's
-sixteen flight phases, a raid, and villager gossip. A second edition should
-take them; this one names them and says so.
-
-The part also stops at `Avatar`, the rung 26.2 inserted **above** `Player`:
-everything player-shaped is Part VIII, drawing an entity is Part XI, and the
-prediction ledger behind the blocks you place is [Part
-X](../client/prediction-and-acks.md#the-four-writes). `world/effect` is the
-one package in the list above whose lecture is not here: an effect is a thing
-that happens to a `LivingEntity`, but the split it demonstrates is the
-player's, so [status effects](../player/status-effects.md) is Part VIII's.
+dropped pickaxe, the invisible marker a data pack left as a bookmark. All of
+them are an `Entity`, a base class deliberately thin *on behaviour*: it gives
+them a box, a numbered array for describing themselves to clients, one
+collision resolver and one abstract method for being hurt, and almost nothing
+else. So the answer to the question is never in one place. It is five
+mechanisms that each decide it separately, and the part's claim is that
+**every surprise on this list is one of those five answering a question you
+thought a different one had already settled.**
 
 ## The shape of the part
 
-Part VI is a ladder. Each page needs the ones below it and nothing above
-them, and the second rung is the one everything else leans on — including
-three later parts, which link back to *authority* rather than re-deriving it.
+Part VI is a ladder, drawn here from the bottom rung up. Each page needs the
+ones below it and nothing above them, and the second rung — *authority* — is
+the one everything else leans on, including Parts VIII, IX and X, which link
+back to it rather than re-deriving it.
 
 ```mermaid
 flowchart BT
@@ -63,22 +39,24 @@ flowchart BT
     A -- "one type, one factory, one live object" --> B
     B -- "and one side of each pair does the arithmetic" --> C
     C -- "now it is in a world, findable and ticking" --> D
-    D -- "one of six channels that describe it" --> E
+    D -- "one of the six channels that describe it; here is another" --> E
     E -- "gravity, step height, speed: the physics knobs are attributes" --> F
-    F -- "something has to set xxa and zza" --> G
+    F -- "something has to decide where to walk" --> G
     G -- "a decision is only a position until something walks there" --> H
     H -- "and everything above can be ended by one abstract method" --> I
 ```
 
-Two of the nine rungs are pairs rather than sequels. *Synched entity data*
-and *attributes* are two channels doing the same job differently, and the
-contrast is the lesson, so the second wants the first fresh in mind.
-*Pathfinding* is the other half of *goals and brains* and watchable on its
-own once that page has said where a wanted position comes from.
+Two of the eight steps up the ladder are pairings rather than sequels.
+*Synched entity data* and *attributes* are two channels doing the same job
+differently, and the contrast is the lesson, so the second wants the first
+fresh in mind. *Pathfinding* is the other half of *goals and brains* and
+watchable on its own once that page has said where a wanted position comes
+from.
 
-One dependency runs forward instead of back, and it is Part X's rather than
-this part's: [the client level](../client/the-client-level.md) opens by saying
-it is *not* an authority either, which only lands once
+There is also one arrow that runs the other way, out of the part rather than
+up the ladder, and it is Part X's dependency rather than this part's: [the
+client level](../client/the-client-level.md) opens by saying it is *not* an
+authority either, which only lands once
 [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
 has said what one is. So this part is watched first, and nothing here waits on
 Part X.
@@ -102,12 +80,13 @@ because a villager's whole day is claims on them and [goals and
 brains](ai-goals-and-brains.md) draws `PoiManager` as a lane rather than
 explaining it. [Blocks and
 states](../blocks/blocks-and-states.md#four-decisions-four-lookups) for the
-shapes that entities collide with, and Part IV's *scheduled ticks* is *not*
-needed — entities keep no appointment book.
+shapes that entities collide with. Part IV's *scheduled ticks* is the one page
+of the world part you can skip before this one: entities keep no appointment
+book.
 
 One more Part IV page, for one lecture: [environment attributes and
 timelines](../world/environment-attributes-and-timelines.md#the-four-timelines)
-before [goals and brains](ai-goals-and-brains.md). A villager's schedule is a
+before [goals and brains](ai-goals-and-brains.md). A villager's timetable is a
 data-pack `Timeline` looked up at a position, and this part asks that system a
 question rather than teaching it.
 
@@ -137,12 +116,12 @@ question rather than teaching it.
    replaying the tick's movement, which is why fire and water touched in one
    step always end in the extinguish.
 7. [AI: goals and brains](ai-goals-and-brains.md) — a villager's day, and the
-   same machinery under a zombie that has none of it. Schedules are gone: a
-   villager goes to bed because it asked the world what time it is where it
-   is standing.
+   same machinery under a zombie that has none of it. The timetable is not on
+   the villager: it goes to bed because it asked the world what time it is
+   where it is standing.
 8. [Pathfinding](pathfinding.md) — the other half of the same lecture. Giving
    up is machinery: the node being walked towards carries a timeout, and the
-   mob you watch walk into a wall and then wander off is running a scheduled
+   mob you watch walk into a fence and then wander off is running a scheduled
    surrender.
 9. [Damage and death](damage-and-death.md) — the part's closer, and it
    assumes nothing above it. An arrow, a dozen owners of one number, and one
@@ -150,9 +129,30 @@ question rather than teaching it.
    at all, and when it is stronger than the last, only its excess lands —
    silently.
 
+## Where the part stops
+
+This is the largest part of the book —
+{{#include ../../generated/part-entities.md}} in `world/entity` (less
+`world/entity/player`), `network/syncher`, `world/level/pathfinder`,
+`world/damagesource` and `world/effect` — and
+{{#include ../../generated/coverage-entities.md}}. Most of that is one class
+per species, and a species is the same nine pages instantiated: `Panda` is
+1,121 lines of `Mob` with a sitting animation, and the 103 behaviour classes
+and 61 goal classes are one shape each, drawn once on [goals and
+brains](ai-goals-and-brains.md#what-holds-the-state).
+
+Four mechanisms there are more than a species and are explained nowhere — the
+minecart's two movement models, the ender dragon's sixteen flight phases, a
+raid, and villager gossip — and a second edition should take them. The part
+also stops one rung short of `Avatar`: everything player-shaped is Part VIII,
+drawing an entity is Part XI, and the prediction ledger is [Part
+X](../client/prediction-and-acks.md#the-four-writes). `world/effect` is the one
+package above whose lecture is elsewhere, because the split an effect
+demonstrates is the player's: [status effects](../player/status-effects.md).
+
 ## Reference this part uses
 
-Three were written for this part.
+Five were written for this part.
 [Attributes](../../reference/attributes.md) — all forty, with defaults,
 ranges and the syncable flag, generated from the registrations.
 [Entity data serializers](../../reference/entity-data-serializers.md) — all

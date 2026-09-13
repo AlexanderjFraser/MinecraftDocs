@@ -1,6 +1,6 @@
 # Pathfinding
 
-> Verified against **Minecraft 26.2** · Part VI · A villager decides to walk to its bed, and a hundred ticks later it is standing still against a fence, having formally given up.
+> Verified against **Minecraft 26.2** · Part VI · A mob walks into a fence, stands there, and then wanders off — a hundred ticks after a behaviour told it where to go.
 
 A behaviour has produced a position and stopped caring. Everything between
 that position and a mob actually leaning into a direction is this page: one
@@ -73,6 +73,12 @@ is not done and the requested target is among its targets, **the existing
 path is returned unchanged**. Re-asking for a destination you are already
 walking to costs nothing and changes nothing.
 
+Most callers never name it: `PathNavigation.moveTo` is what a goal or a
+behaviour reaches for, and its position and entity overloads call
+`PathNavigation.createPath` themselves and hand the result to the overload that
+takes a `Path`. *Find a route* and *start walking it* are one call from
+outside, with all four early exits still in front of them.
+
 `PathNavigation.recomputePath` is the other entrance, and it is rate-limited
 rather than refused. More often than every twenty game ticks, or with
 `PathNavigation.canUpdatePath` false, it sets a flag instead and the next
@@ -82,15 +88,19 @@ in a doorway from re-searching twenty times a second.
 ## The budget, which is also the map
 
 One number governs both how hard the search may work and how much world it
-may look at. `PathNavigation` builds its `PathFinder` with
-`Attributes.FOLLOW_RANGE`'s **base** value times sixteen, and
-`PathNavigation.updatePathfinderMaxVisitedNodes` later recomputes it as
-sixteen times the larger of the *modified* follow range
-([attributes](attributes.md#the-instance-three-indices-and-one-cached-number)
-owns the difference between the two) and
-`PathNavigation.setRequiredPathLength` — 16 by default, raised in seven
+may look at, and it is worth naming before anything is built out of it. Call it
+the **maximum path length**: the larger of the mob's follow range and its
+*required* path length, in blocks. `PathNavigation.setRequiredPathLength` sets
+the second half — 16 by default, raised in seven
 classes' constructors: 48 for `Villager`, `Allay`, `Bee`, `CopperGolem` and
-`HappyGhast`, 40 for `Llama`, 32 for `Fox`. The recompute has exactly one
+`HappyGhast`, 40 for `Llama`, 32 for `Fox`.
+
+The node budget is that length times sixteen. `PathNavigation` builds its
+`PathFinder` with `Attributes.FOLLOW_RANGE`'s **base** value times sixteen, and
+`PathNavigation.updatePathfinderMaxVisitedNodes` later recomputes it against
+the *modified* follow range
+([attributes](attributes.md#the-instance-three-indices-and-one-cached-number)
+owns the difference between the two). The recompute has exactly one
 trigger, and it is not the pathfinder's: `Mob.onAttributeUpdated` calls it
 when either `Attributes.FOLLOW_RANGE` or `Attributes.TEMPT_RANGE` changes, so
 a mob that is tempted or angered searches a different amount of world from
@@ -99,11 +109,14 @@ scales the result, and keeps scaling it until
 `PathNavigation.resetMaxVisitedNodesMultiplier` puts it back: `Bee` is the
 only class that touches either.
 
-The same maximum path length becomes the **radius of the
-`PathNavigationRegion`**, plus an offset of 8 or 16 depending on which
-`PathNavigation.createPath` overload was used — and inside the search it appears twice more,
-as a test on the current node's distance from the start and on each
-neighbour's walked distance. A villager can find a bed 48 blocks away because its constructor set its
+### And the same length is the map
+
+The same maximum path length — the blocks figure, not the node budget —
+becomes the **radius of the `PathNavigationRegion`**, plus an offset of 8 or 16
+depending on which `PathNavigation.createPath` overload was used, and inside
+the search it appears twice more: as a test on the current node's distance from
+the start and on each neighbour's walked distance. A villager can find a bed 48
+blocks away because its constructor set its
 *required path length* to 48, and the larger of the two numbers wins; it
 cannot find one 60 blocks away no matter how open the ground is. That is the
 budget behind [a villager claiming a
@@ -223,10 +236,13 @@ the brain behaviour `BackUpIfTooClose`; `MoveControl.setWait` is a third.
 eight classes: the shared goals `TemptGoal.ForNonPathfinders` and
 `TryFindWaterGoal`, the per-mob goals of `Bee`, `Blaze`, `Ghast` and `Vex`,
 `Rabbit` from the mob itself rather than from a goal, and `Fox` to pin a
-sleeping fox where it lies. The first of those is why a happy ghast drifts
-towards you in a straight line through terrain a path search would have
-routed around — an ordinary tempted cow runs the base `TemptGoal`, which
-calls the navigation like anything else.
+sleeping fox where it lies. The first of those is why a happy ghast follows a
+held item in a straight line through terrain a path search would have routed
+around: it has a navigation like any mob, and one of its goals simply does not
+use it. An ordinary tempted cow runs the base `TemptGoal`, which calls the
+navigation like anything else.
+
+### The three controls beside it
 
 Three more controls sit beside it and are the rest of what turns a decision
 into a pose — all four implementing `Control`, and all four re-specialised by
@@ -248,9 +264,10 @@ the strafe branch, which pathfinding never takes.
 
 ## Giving up
 
-Two independent timers, and they answer different questions.
+`PathNavigation.doStuckDetection` runs two independent timers, and they answer
+different questions.
 
-`PathNavigation.doStuckDetection` runs its first half **every hundred ticks**:
+The first half runs **every hundred ticks**:
 it compares where the mob is with where it was at the last check, against a
 threshold of the mob's effective speed times 100 times 0.25 — a quarter of
 the ground the speed claims. Below that, `PathNavigation.isStuck` is set and
@@ -286,38 +303,21 @@ in a development environment, pauses.
 That is why closing a door in front of a mob re-routes it and repainting a
 block does not.
 
-## Why mobs look stupid
-
-**Why do mobs take silly routes?** The heuristic is multiplied by 1.5, so the
-search is deliberately greedy — it stops at the first route that reaches,
-not the best one. Cost is a per-block malus, not a distance, so a mob will
-happily walk three blocks further to avoid a `PathType.WATER` node worth 8.
-
-**Why does a mob stop dead at the edge of my render distance?** It did not.
-The search only sees chunks already loaded on the server, and a target
-outside them is simply not reachable; the path comes back with
-`Path.canReach` false and the behaviour that asked gives up.
-
-**Why does a villager find a bed across the village but not one behind a
-wall?** Because 48 is `Villager`'s required path length, so distance is
-rarely the limit — and because `AcquirePoi` runs a real path search before it
-claims anything, so unreachable is invisible rather than merely far.
-
 ## Where to look
 
-`PathNavigation` · `PathNavigation.createPath` · `PathNavigation.moveTo` ·
-`PathNavigation.tick` · `PathNavigation.recomputePath` ·
-`PathNavigation.canUpdatePath` · `PathNavigation.doStuckDetection` ·
-`PathNavigation.updatePathfinderMaxVisitedNodes` ·
-`PathNavigation.setRequiredPathLength` · `GroundPathNavigation` ·
-`FlyingPathNavigation` · `WaterBoundPathNavigation` ·
-`AmphibiousPathNavigation` · `WallClimberNavigation` ·
-`PathNavigationRegion` · `PathFinder.findPath` · `BinaryHeap` · `Node` ·
-`Target` · `Path.canReach` · `NodeEvaluator` · `WalkNodeEvaluator` ·
-`SwimNodeEvaluator` · `FlyNodeEvaluator` · `AmphibiousNodeEvaluator` ·
-`PathType` · `PathTypeCache` · `PathfindingContext` ·
-`Mob.getPathfindingMalus` · `MoveControl.setWantedPosition` · `LookControl` ·
-`JumpControl` · `BodyRotationControl` · `ServerLevel.sendBlockUpdated`
+`PathNavigation` is the spine and almost every question on this page is one of
+its methods: `PathNavigation.createPath` for the four early exits,
+`PathNavigation.updatePathfinderMaxVisitedNodes` for the budget,
+`PathNavigation.tick` for the following and
+`PathNavigation.doStuckDetection` for both timers. Then `PathFinder.findPath`,
+which is the A\* itself and shorter than you expect, and `NodeEvaluator` —
+start with `WalkNodeEvaluator`, since the other three specialise it — for what
+a block *is* to a mob. `PathType` is the 27 constants and their costs, and
+`Mob.getPathfindingMalus` is how one mob disagrees with them.
+`MoveControl.setWantedPosition` is the seam where a path becomes a direction.
+Two doors: `PathTypeCache`, the 4,096-entry memo that makes the classification
+affordable, and `ServerLevel.sendBlockUpdated`, the one call in the whole
+system that runs the other way.
 
 ---
 

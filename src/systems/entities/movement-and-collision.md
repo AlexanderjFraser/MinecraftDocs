@@ -2,9 +2,12 @@
 
 > Verified against **Minecraft 26.2** · Part VI · One tick of a falling zombie: 0.08 of gravity, one swept box against a stone floor, and the four booleans everything downstream reads.
 
-A zombie is two blocks above stone with nothing pushing it sideways. Its
+A zombie has been falling for a few ticks and this is the one where it reaches
+the stone. Its
 tick builds one delta vector, hands it to `Entity.move`, gets back the part
-of it the world allowed, and sets four booleans from the difference. Then it
+of it the world allowed, and sets four booleans from the difference —
+`Entity.horizontalCollision`, `Entity.verticalCollision`,
+`Entity.verticalCollisionBelow` and `Entity.minorHorizontalCollision`. Then it
 has to answer a harder question: *what did I just walk through?* It does not
 answer that by sampling the destination. Every segment of the tick's
 movement was recorded into a deque, `Entity.movementThisTick`, and
@@ -111,6 +114,8 @@ the *cached* in-water and in-lava flags, with the live `FluidState` at the
 block position used only for `LivingEntity.canStandOnFluid`, which is how a
 strider walks on lava.
 
+### The knobs on the entity and the knobs on the block
+
 `LivingEntity.travelInAir` probes the block below through
 `Entity.getBlockPosBelowThatAffectsMyMovement` — 0.500001 down — for its
 friction: airborne, 1.0, and on stone `Block.getFriction`'s 0.6 through
@@ -139,6 +144,8 @@ four block properties ([blocks and states](../blocks/blocks-and-states.md#four-d
 | `Block.getSpeedFactor` | 1.0 | 0.4 on soul sand and honey |
 | `Block.getJumpFactor` | 1.0 | 0.5 on honey |
 | `Block.getBounceRestitution` | 0.0 | 1.0 on `Blocks.SLIME_BLOCK`, 0.75 on beds |
+
+### Who else can move you
 
 `MoverType` names who is moving you, in five constants. `MoverType.PISTON` is
 the one with real machinery — `Entity.limitPistonMovement` collapses the
@@ -199,7 +206,11 @@ entity at the edge of loaded space falls through empty space rather than
 blocking the tick. A full cube short-circuits to a box intersection;
 anything else goes through `Shapes.joinIsNotEmpty`.
 
-The step-up loop in the figure is the part worth slowing down for. It does
+`Entity.collideBoundingBox` is the flat attempt itself — the public static that
+gathers the colliders and hands them to `Entity.collideWithShapes`, with no
+step-up in it at all — and `Entity.collide` calls it once before deciding
+whether stepping up is worth trying. The step-up loop in the figure is the part
+worth slowing down for. It does
 not guess a height and it does not pick the best one. It harvests the Y
 coordinates of the candidate shapes that lie above the entity's feet and
 within `Entity.maxUpStep`, skipping the height the flat attempt already
@@ -222,17 +233,27 @@ the pre-collision delta — goes onto `Entity.movementThisTick`, and
 `Entity.setPos` moves the point and the bounding box together.
 
 The four booleans are then computed by comparing what was asked with what
-was allowed: `Mth.equal` on the two horizontals, but **exact** inequality on
-Y, and the whole vertical block only runs if the entity moved vertically at
-all or is authoritative. `Entity.onGround` is therefore a comparison and not
-a raycast — it is set from `Entity.verticalCollisionBelow`, meaning the
-vertical component was clipped and it was negative. The only geometric probe
+was allowed. `Entity.horizontalCollision` is true when either horizontal
+component was clipped; `Entity.verticalCollision` when the Y component was,
+and `Entity.verticalCollisionBelow` when that clip was downward. The fourth,
+`Entity.minorHorizontalCollision`, is the odd one: it asks
+`Entity.isHorizontalCollisionMinor`, which is **false on the base class** and
+overridden by exactly one class in the game, `LocalPlayer`, which is also its
+only reader — a scrape too small to be a wall is the difference between
+stopping a sprint and not. The comparison is `Mth.equal` on the two horizontals
+but **exact** inequality on Y, and the whole vertical block only runs if the
+entity moved vertically at all or is authoritative.
+`Entity.onGround` is not a fifth boolean of the same kind: it is set from
+`Entity.verticalCollisionBelow`, so it too is a comparison and not
+a raycast. The only geometric probe
 is `CollisionGetter.findSupportingBlock`, reached through
 `Entity.setOnGroundWithMovement` and `Entity.checkSupportingBlock`, and it
 answers *which* block is holding you (for sounds and the speed factor), not
 *whether* — probing a paper-thin slab under the box, retrying with the box
 shifted back along the movement if that finds nothing, and setting
 `Entity.onGroundNoBlocks` when it still does.
+
+### Landing, and the fall distance that resets from eight places
 
 `Entity.checkFallDamage` runs next, only when this instance is authoritative.
 It adds the downward movement to `Entity.fallDistance` and, on landing, calls
@@ -346,7 +367,7 @@ replay advances and
 accumulated list at the end, so across steps the order stays chronological
 and fire in a *later* step than water still burns you.
 
-## Off it goes
+## The crowding pass closes the tick
 
 `LivingEntity.pushEntities` closes the tick. It collects pushable
 neighbours through `Level.getPushableEntities` — a different predicate from
@@ -356,6 +377,8 @@ returns at most the local player, never the crowd. On a server it applies
 damage 6) and then calls `LivingEntity.doPush` → `Entity.push`, a
 horizontal-only impulse scaled by 0.05 and ignored below a hundredth of a
 block.
+
+## And the tick after: what this one costs on the wire
 
 Nothing has crossed the network yet. `ServerEntity.sendChanges` runs in the
 chunk-source phase of `ServerLevel.tick`, which comes *before* the entity
@@ -386,20 +409,19 @@ no handler.
 
 ## Where to look
 
-`LivingEntity.aiStep` · `LivingEntity.travel` · `LivingEntity.travelInAir` ·
-`LivingEntity.handleRelativeFrictionAndCalculateMovement` ·
-`LivingEntity.handleOnClimbable` · `Entity.move` · `Entity.collide` ·
-`Entity.collideBoundingBox` · `Entity.collideWithShapes` ·
-`Entity.collectCandidateStepUpHeights` · `CollisionGetter` ·
-`BlockCollisions` · `Shapes.collide` · `Entity.setPos` ·
-`Entity.setOnGroundWithMovement` · `Entity.checkSupportingBlock` ·
-`Entity.checkFallDamage` · `Entity.restituteMovementAfterCollisions` ·
-`Entity.applyMovementEmissionAndPlaySound` ·
-`Entity.updateFluidInteraction` · `EntityFluidInteraction` ·
-`Entity.applyEffectsFromBlocks` · `Entity.checkInsideBlocks` ·
-`InsideBlockEffectApplier.StepBasedCollector` · `InsideBlockEffectType` ·
-`LivingEntity.pushEntities` · `MoverType` · `InterpolationHandler` ·
-`ServerEntity.sendChanges`
+Two methods hold almost all of this and are worth reading end to end in this
+order: `LivingEntity.aiStep`, which is every mob's tick in one list, and
+`Entity.move`, which is the geometry. Under the second, `Entity.collide` and
+`Entity.collideWithShapes` are the axis-at-a-time resolve and
+`Entity.collectCandidateStepUpHeights` the step-up loop; `BlockCollisions` is
+what supplies them with candidates, and `CollisionGetter.findSupportingBlock`
+is the page's only real probe. For the replay, read
+`Entity.applyEffectsFromBlocks` and then `Entity.checkInsideBlocks`, with
+`InsideBlockEffectType` open beside them for the order the collector flushes in.
+`LivingEntity.travelInAir` is where gravity and drag are actually spent, after
+the move rather than before it. Two doors: `ItemEntity.tick`, the other
+convention run end to end in thirty lines, and `InterpolationHandler`, which is
+what moves an entity when nothing on that side simulates it.
 
 ---
 

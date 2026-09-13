@@ -133,7 +133,7 @@ non-default values, refreshed whenever dirty data is flushed
 ([synched entity
 data](../entities/synched-entity-data.md#the-gate-that-holds-a-packet-back)).
 Only the syncable
-attributes go ([attributes](../entities/attributes.md#five-objects-two-dirty-sets-one-filter)),
+attributes go ([attributes](../entities/attributes.md#four-objects-two-dirty-sets-and-one-list-that-is-neither)),
 and equipment,
 passengers and leash links go only if there are any.
 
@@ -427,7 +427,7 @@ though time comes from `MinecraftServer` and the view distances from
 | the ticket graph — the client gets a radius and a simulation distance, as two integers | `TicketStorage`, `DistanceManager`, `ChunkHolder.ticketLevel`, `FullChunkStatus` | [tickets and loading](../world/tickets-and-loading.md#two-graphs-one-store) |
 | worldgen, and **the world seed** — `ClientLevel` gets only a biome zoom seed | `ChunkGenerator`, `RandomState`, `ServerLevel.structureManager`, `StructureStart` | [the generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn) |
 | the worldgen heightmaps, and any block-entity field outside `BlockEntity.getUpdateTag` | `BlockEntity` | [block entities](../blocks/block-entities.md#a-furnace-tells-nobody-anything) |
-| non-syncable attributes, loot tables and loot seeds, the natural spawn state, raids and the dragon fight | `AttributeMap`, `LootTable`, `NaturalSpawner` | [attributes](../entities/attributes.md#five-objects-two-dirty-sets-one-filter) |
+| non-syncable attributes, loot tables and loot seeds, the natural spawn state, raids and the dragon fight | `AttributeMap`, `LootTable`, `NaturalSpawner` | [attributes](../entities/attributes.md#four-objects-two-dirty-sets-and-one-list-that-is-neither) |
 | game rules — they reach the client only on request, and only for a player with the command permission | `GameRules` | [level data and rules](../../reference/level-data-and-rules.md#what-the-client-hears) |
 | the creeper's fuse length and its swell counter — of its three synched values, none is the counter | `Creeper` | [synched entity data](../entities/synched-entity-data.md#nineteen-slots-and-where-the-numbers-come-from) |
 | everything outside the disc: entities past tracking range, chunks past the view, and every other level on the server | `ChunkMap`, `MinecraftServer.levels` | — |

@@ -214,7 +214,7 @@ never fires through a bow.
 override, not `Player`'s base version, which returns its argument unchanged
 — folds Sharpness and friends in through `EnchantmentHelper.modifyDamage`,
 and the hit goes through `Entity.hurtOrSimulate` to `LivingEntity.hurtServer`
-([damage and death](../entities/damage-and-death.md#one-number-a-dozen-owners)). Only if that returned
+([damage and death](../entities/damage-and-death.md#one-number-eight-steps-and-no-step-that-knows-another)). Only if that returned
 true does `Player.itemAttackInteraction` call
 `EnchantmentHelper.doPostAttackEffectsWithItemSource`.
 

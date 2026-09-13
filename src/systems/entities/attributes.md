@@ -36,7 +36,7 @@ it otherwise.
 | `LivingEntity` | when the update set drains, and what reacts to a change | both sides, in `LivingEntity.tick` |
 | `ServerEntity` | when the sync set drains and what goes on the wire | server main thread, in the level tick's *chunkSource* phase |
 
-## Five objects, two dirty sets, one filter
+## Four objects, two dirty sets, and one list that is neither
 
 ```mermaid
 flowchart TB
@@ -69,10 +69,20 @@ flowchart TB
     PAIR -.-> WIRE
 ```
 
-The two sets are **not a partition**: `AttributeMap.onAttributeModified`
-always adds to the update set and *additionally* to the sync set when the
-attribute is syncable, so a syncable attribute is in both and a non-syncable
-one is in the update set alone.
+Four objects carry the whole system — the `Attribute`, the frozen
+`AttributeSupplier` per type, the `AttributeMap` per entity, and the
+`AttributeInstance` per number actually asked for — and everything else in the
+figure is a list one of them keeps.
+
+Two of those lists are the dirty sets, and they are **not a partition**:
+`AttributeMap.onAttributeModified` always adds to the update set and
+*additionally* to the sync set when the attribute is syncable, so a syncable
+attribute is in both and a non-syncable one is in the update set alone. The
+third list, drawn with a dotted arrow, is not a dirty set at all:
+`AttributeMap.getSyncableAttributes` filters the whole live map every time it is
+asked, and it exists for one caller — `ServerEntity.sendPairingData`, which has
+to describe an entity to a player who has never seen it and so cannot work from
+what has changed since last time.
 
 ## Forty numbers, every one of them clamped
 
@@ -93,6 +103,8 @@ reach zero, and `Attributes.KNOCKBACK_RESISTANCE` has a minimum of −2, so
 constant, default, minimum, maximum, syncable, sentiment — is
 [the attribute table](../../reference/attributes.md).
 
+### The syncable flag, and the eight that never travel
+
 What has to be said here is the syncable flag, because it explains most of
 what a client and a server disagree about. **Eight** of the forty never reach
 the client: `Attributes.ATTACK_DAMAGE`, `Attributes.ATTACK_KNOCKBACK`,
@@ -104,6 +116,16 @@ registry id is *spawn_reinforcements*, disagreeing with its own constant name
 its registration line called `Attribute.setSyncable`, and that setter is
 public and has no freeze behind it, on an object that lives in a registry.
 Nothing calls it after bootstrap. Nothing stops it either.
+
+The client is not left with a blank where an unsyncable attribute should be,
+which is the part that makes the silence hard to notice: both sides run the
+same `Attributes` class initialiser and build the same `DefaultAttributes`
+prototypes, so your client's copy of your attack damage holds the prototype's
+1.0 from the moment the entity exists. It is not missing. It is a number that
+was right once and is never corrected — and the client reads it, for the
+field-of-view change in `AbstractClientPlayer.getFieldOfViewModifier` and for
+reach through `Player.blockInteractionRange`, from whatever the last packet
+left in the map ([authority](authority.md#three-cases-read-on-both-sides)).
 
 ## The prototype, frozen at class-init
 
@@ -151,6 +173,8 @@ So **asking for an instance is a mutation**: the first call to
 broadcast before any modifier exists, and a share of the attribute packets a
 busy server sends are caused by something merely asking.
 
+### The two sets drain in two different phases
+
 The two sets drain in different phases of the same tick, and that is where
 the visible lag comes from. `ServerEntity.sendDirtyEntityData` is reached
 from `ChunkMap.tick`, which runs inside `ServerLevel.tick`'s *chunkSource*
@@ -159,9 +183,12 @@ tick](../server/server-level-tick.md#the-broadcast-which-is-why-entities-are-a-t
 entity's own tick (equipment, an effect, sprinting, powder snow, anything in
 `ServerPlayer.updatePlayerAttributes`) has therefore already missed this
 tick's send — and a dirty *attribute* set is not one of the three things that
-open `ServerEntity.sendChanges`'s gate, so it waits for the next tick whose
-count is a multiple of the entity's update interval: the tick after next for a
-player, the third for the default. Only a mutation made *before* the
+open `ServerEntity.sendChanges`'s gate ([synched entity
+data](synched-entity-data.md#the-gate-that-holds-a-packet-back) owns that
+gate), so it waits for the next tick whose
+count is a multiple of the entity's `EntityType.updateInterval`: the tick after
+next for a player, whose interval is 2, and the third for the default 3. Only a
+mutation made *before* the
 level tick — a command, an interaction handled out of the packet queue at the
 top of the server tick — reaches the wire in the tick that produced it. It is
 the same phase ordering that puts a block entity's writes a tick late
@@ -185,6 +212,24 @@ no side check, so the **client** runs `LivingEntity.onAttributeUpdated` too,
 clamping health and resizing an entity whose scale changed — which is why the
 waypoint branch inside it is the one that has to test for a `ServerLevel`
 explicitly.
+
+### A frozen mob is the worked example
+
+Everything above has a cost attached, and the cheapest way to see it is a mob
+standing in powder snow. `LivingEntity.aiStep` calls
+`LivingEntity.removeFrost` and `LivingEntity.tryAddFrost` back to back,
+server-side, with no test for whether anything changed. Each has a gate — the
+remove only dirties when the modifier is actually there, the add needs a
+non-air block underfoot *and* a non-zero frozen counter — but when both hold,
+the pair destroys and re-creates a modifier on `Attributes.MOVEMENT_SPEED`,
+dirtying a **syncable** attribute twenty times a second and re-sending that
+entity's whole movement-speed modifier list for as long as it stays frozen.
+Compare `ServerPlayer.updatePlayerAttributes`, which runs just as often but
+uses `AttributeInstance.addOrUpdateTransientModifier` with a constant modifier
+object, and so dirties nothing after the first tick. The whole difference is
+which of the two sets each write lands in.
+
+### What the map writes to disk
 
 Two more things the map decides, and between them they answer *why did my
 `/attribute` change survive death?* `AttributeMap.pack` writes **every
@@ -285,7 +330,7 @@ client has a live attribute map at all. At most 128 attributes fit in one
 holder, the base value and the complete, uncapped modifier list. There is no
 serverbound attribute packet.
 
-## The trace: Strength II
+## Strength II lands, and nothing leaves the server
 
 ```mermaid
 sequenceDiagram
@@ -358,42 +403,20 @@ snow, the effect, all of them — and `ClientPacketListener.handleUpdateAttribut
 rebuilds the client's instance from scratch. That difference, one boolean on
 the `Attribute`, is the whole design.
 
-## Questions players ask
-
-**Why does a frozen mob flood the network?** `LivingEntity.aiStep` calls
-`LivingEntity.removeFrost` and `LivingEntity.tryAddFrost` back to back,
-server-side, with no test for whether anything changed. Each has a gate — the
-remove only dirties when the modifier is actually there, the add needs a
-non-air block underfoot *and* a non-zero frozen counter — but when both hold,
-the pair destroys and re-creates a modifier on `Attributes.MOVEMENT_SPEED`,
-dirtying a *syncable* attribute twenty times a second and re-sending that
-entity's whole movement-speed modifier list for as long as it stays frozen.
-Compare `ServerPlayer.updatePlayerAttributes`, which runs just as often but
-uses `AttributeInstance.addOrUpdateTransientModifier` with a constant
-modifier object, and so dirties nothing after the first tick.
-
-**Why does the client show the wrong number for a mob?** Because for eight
-attributes it was never told, and for the rest it was told a tick or more
-late. The client is authoritative about none of it: it reads its own
-`Attributes.MOVEMENT_SPEED` in `AbstractClientPlayer.getFieldOfViewModifier`
-and its own reach through `Player.blockInteractionRange` from whatever the
-last packet left in the map ([authority](authority.md#three-cases-read-on-both-sides)).
-
 ## Where to look
 
-`Attributes` · `Attribute.setSyncable` · `RangedAttribute.sanitizeValue` ·
-`DefaultAttributes` · `LivingEntity.createLivingAttributes` ·
-`AttributeSupplier.Builder.build` · `AttributeSupplier.createInstance` ·
-`AttributeMap.getInstance` · `AttributeMap.onAttributeModified` ·
-`AttributeMap.getAttributesToSync` · `AttributeMap.getAttributesToUpdate` ·
-`AttributeMap.getSyncableAttributes` · `AttributeMap.pack` ·
-`AttributeInstance.replaceFrom` · `AttributeInstance.setDirty` ·
-`AttributeInstance.calculateValue` · `ItemAttributeModifiers.compute` ·
-`LivingEntity.collectEquipmentChanges` · `MobEffect.addAttributeModifiers` ·
-`LivingEntity.refreshDirtyAttributes` · `LivingEntity.onAttributeUpdated` ·
-`ServerEntity.sendDirtyEntityData` · `ServerEntity.sendPairingData` ·
-`ClientboundUpdateAttributesPacket` ·
-`ClientPacketListener.handleUpdateAttributes` · `AttributeCommand`
+`Attributes` is forty field initialisers and the syncable flag is visible in
+each of them, so start there; `DefaultAttributes` and
+`AttributeSupplier.Builder.build` are the prototypes and the freeze. Then read
+the three methods this page turns on, in this order:
+`AttributeMap.getInstance`, because asking is a mutation;
+`AttributeMap.onAttributeModified`, the four lines that decide which set a
+change lands in; and `AttributeInstance.calculateValue`, the three passes and
+the clamp. `LivingEntity.refreshDirtyAttributes` and
+`ServerEntity.sendDirtyEntityData` are where the two sets drain, one phase
+apart. Two doors: `ItemAttributeModifiers.compute`, the second and disagreeing
+implementation of the arithmetic, and `AttributeCommand`, whose *modifier add*
+is the one permanent modifier a player can create by hand.
 
 ---
 

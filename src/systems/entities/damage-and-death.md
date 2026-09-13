@@ -20,7 +20,7 @@ signal. It is all in `LivingEntity.hurtServer`.
 | class | what it decides | thread |
 |---|---|---|
 | `DamageSource` | *what* hit and *who*: a direct entity, a causing entity, and — rarely — a position instead | built wherever the hit starts, server main |
-| `DamageType` | the message id, the difficulty scaling, the food cost, the hurt sound and the kind of death message | a dynamic registry entry, loaded from a data pack and synced to clients |
+| `DamageType` | the message id, the difficulty scaling, the food cost, a *player's* hurt sound, and the kind of death message | a dynamic registry entry, loaded from a data pack and synced to clients |
 | `DamageTypeTags` | almost every behavioural branch on the path below | read on the server main thread |
 | `LivingEntity` | the whole reduction pipeline, the i-frames, the flash, the two attribution references and death | server main thread |
 | `CombatRules` | the two pieces of arithmetic — armour and enchantment protection | stateless statics |
@@ -101,11 +101,11 @@ does not. `Player.isInvulnerableTo` is also where `GameRules.DROWNING_DAMAGE`,
 `GameRules.FREEZE_DAMAGE` live — switching one off makes a player *immune*
 rather than making the damage smaller.
 
-## One number, a dozen owners
+## One number, eight steps, and no step that knows another
 
-Past the gates the number goes down a chain in which every link owns one
-arithmetic step — five multiplications and three subtractions — and knows
-about none of the others.
+Past the gates the number goes down a chain of eight arithmetic steps — five
+multiplications and three subtractions — each owned by a different piece of the
+game, and none of them aware of the others.
 
 ```mermaid
 flowchart TB
@@ -199,11 +199,14 @@ it is implemented it routes to `LivingEntity.doHurtEquipment`: one durability
 point per four damage, minimum one, per piece, and each piece must separately
 be `Equippable.damageOnHurt`, damageable, and pass `ItemStack.canBeHurtBy`.
 
+### The armour formula, in the order it is applied
+
 Then `CombatRules.getDamageAfterAbsorb` does the arithmetic. Effective armour
-is the armour points *minus the incoming damage divided by two plus a quarter
-of toughness*, clamped between `CombatRules.MIN_ARMOR_RATIO` of nominal and
-`CombatRules.MAX_ARMOR`, and the reduction is that over
-`CombatRules.ARMOR_PROTECTION_DIVIDER`. **Big hits punch through armour by
+is the armour points, reduced by *the incoming damage divided by (two plus a
+quarter of toughness)*, then clamped between `CombatRules.MIN_ARMOR_RATIO`
+(0.2) of the nominal points and `CombatRules.MAX_ARMOR` (20); the fraction taken
+off is that effective armour over `CombatRules.ARMOR_PROTECTION_DIVIDER`, which
+is **25**. **Big hits punch through armour by
 design**: the subtraction is what makes a 40-damage hit see less armour than a
 6-damage one, and `Attributes.ARMOR_TOUGHNESS` is exactly the term that slows
 it down. Full iron is 15 points and no toughness, so a 6-damage hit sees 12
@@ -258,7 +261,8 @@ sequenceDiagram
     Note over LE,CPL: twenty ticks later, for a mob — tickDeath broadcasts byte 60 and removes it
 ```
 
-`ServerLevel.broadcastDamageEvent` sends the type, the three entity ids and an
+`ServerLevel.broadcastDamageEvent` sends the type, three entity ids — the
+victim, the causing entity and the direct one — and an
 optional position to every tracking player *and the victim*, and it runs
 **before** the knockback, not after. A successful block replaces it entirely:
 if the blocking component absorbed anything, `BlocksAttacks.onBlocked` plays
@@ -340,10 +344,10 @@ entity's health to zero and runs `LivingEntity.die` locally, so the twenty
 tick animation in `LivingEntity.tickDeath` is client-driven, not a
 consequence of a health update. And **`CombatTracker` clears itself** — after
 `CombatTracker.RESET_DAMAGE_STATUS_TIME` out of combat or
-`CombatTracker.RESET_COMBAT_STATUS_TIME` in it — from four places: a twenty
-tick timer in `LivingEntity.tick`, the top of `CombatTracker.recordDamage`,
-and both of `LivingEntity.die` and `ServerPlayer.die`, so a hit after a long lull discards the old log before
-filing its entry.
+`CombatTracker.RESET_COMBAT_STATUS_TIME` in it. Four places call the check: a
+twenty-tick timer in `LivingEntity.tick`, the top of
+`CombatTracker.recordDamage`, `LivingEntity.die`, and `ServerPlayer.die` — so a
+hit after a long lull discards the old log before filing its entry.
 
 ### Who gets the credit for a fall
 
@@ -394,30 +398,34 @@ armour, i-frames, absorption, the combat tracker or the death sequence.
 
 Six patterns cover all twenty-one, and the sharpest are the ones that read the
 damage *number* — only four classes do. `ItemEntity` and `ExperienceOrb` keep a
-plain integer of health and subtract from it; `VehicleEntity` adds *damage ×
+plain integer of health and subtract from it. `VehicleEntity` adds *damage ×
 10* to an accumulator and breaks past 40, which is why a minecart takes a
-fixed number of hits rather than a fixed amount of damage. For the other
+fixed number of hits rather than a fixed amount of damage, and `MinecartTNT`
+inherits that accumulator after its own override has looked at the arrow rather
+than the number. For the other
 seventeen the answer is a yes or a no: ten do nothing whatever, two flinch,
 four are destroyed by one hit of any size — an `EndCrystal` among them, and it
-is **immune to the `EnderDragon` that eats it** — and `EnderDragonPart`
-forwards the whole call to its parent. Which class does which is [the
-non-living damage table](../../reference/non-living-damage.md).
+is **immune to the `EnderDragon` that eats it** — and `EnderDragonPart` reads
+nothing, forwarding the whole call, number included, to its parent. Which class
+does which is [the non-living damage
+table](../../reference/non-living-damage.md).
 
 ## Where to look
 
-`DamageSource` · `DamageType` · `DamageTypes` · `DamageSources` ·
-`DamageTypeTags` · `Entity.hurtServer` · `Entity.isInvulnerableToBase` ·
-`ServerPlayer.hurtServer` · `Player.hurtServer` · `LivingEntity.hurtServer` ·
-`LivingEntity.applyItemBlocking` · `BlocksAttacks` ·
-`LivingEntity.actuallyHurt` · `LivingEntity.getDamageAfterArmorAbsorb` ·
-`LivingEntity.getDamageAfterMagicAbsorb` · `CombatRules` ·
-`LivingEntity.dealDefaultKnockback` · `ServerLevel.broadcastDamageEvent` ·
-`LivingEntity.checkTotemDeathProtection` · `LivingEntity.die` ·
-`ServerPlayer.die` · `LivingEntity.dropAllDeathLoot` · `Entity.killedEntity` ·
-`LivingEntity.tickDeath` · `CombatTracker` · `CombatEntry` · `FallLocation` ·
-`ClientboundDamageEventPacket` · `ClientboundPlayerCombatKillPacket` ·
-`VehicleEntity` · `ItemFrame` — and [attributes](attributes.md#forty-numbers-every-one-of-them-clamped)
-for armour, toughness and knockback resistance as attribute values.
+`LivingEntity.hurtServer` is the whole first half of this page in one method,
+and the three overrides that reach it first — `ServerPlayer.hurtServer`,
+`Player.hurtServer` and the abstract `Entity.hurtServer` they descend from —
+are the gates. Then `LivingEntity.actuallyHurt` and the two `CombatRules`
+statics it calls, which are ten lines each and settle every argument about
+armour. `DamageSource` and `DamageType` are the *what hit you*, and
+`DamageTypeTags` is where nearly every branch on the page actually lives, so
+read the tag file before the type file. For death:
+`LivingEntity.die` and then `ServerPlayer.die`, which does not call it, with
+`CombatTracker` and `FallLocation` for the message. Two doors:
+`BlocksAttacks`, the component that replaced shield code, and `VehicleEntity`,
+the clearest of the twenty-one branches that inherit none of this. For the
+numbers as attributes — armour, toughness, knockback resistance — see
+[attributes](attributes.md#forty-numbers-every-one-of-them-clamped).
 
 ---
 

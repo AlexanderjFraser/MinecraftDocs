@@ -1,26 +1,25 @@
 # AI: goals and brains
 
-> Verified against **Minecraft 26.2** · Part VI · A villager's day — wake, claim a job site, work, meet at the bell, walk home to bed — and the same tick under a zombie that has none of it.
+> Verified against **Minecraft 26.2** · Part VI · A villager's day — wake, claim a job site, work until the schedule turns, walk home to bed — and the same tick under a zombie that has none of it.
 
 It is dawn in a village. One villager climbs out of bed, walks to its
-composter and works there until the bell rings. Ten blocks away a zombie
+composter and works there until the afternoon. Ten blocks away a zombie
 catches fire, sees the villager, and comes for it. Both are `Mob`s, both are
 driven by the same `Mob.serverAiStep` on the server thread, and neither is
 running a script: each is being *re-asked*, every tick or every other tick,
 what it would like to be doing now. They are asked in two completely
-different ways, and the villager's is the surprising one. Its day looks like
-a timetable, and a reader who goes hunting for the class holding that
-timetable will not find one — *Schedule* does not exist in 26.2. A `Brain`
-holds an `EnvironmentAttribute` of `Activity`, a pointer into the *world*
-rather than a table on the mob, and `Brain.updateActivityFromSchedule` asks
-the `EnvironmentAttributeSystem` what that attribute's value is **at this
-position, at this time**. The villager goes to bed because it asked the world
+different ways, and the villager's is the surprising one. Its day looks like a
+timetable held on the villager, and it is not one. A `Brain` holds an
+`EnvironmentAttribute` of `Activity` — a pointer into the *world* rather than a
+table on the mob — and `Brain.updateActivityFromSchedule` asks the
+`EnvironmentAttributeSystem` what that attribute's value is **at this position,
+at this time**. The villager goes to bed because it asked the world
 what hour it is *where it is standing*. The answer comes out of a data-pack
-`Timeline` — `Timelines.VILLAGER_SCHEDULE`, a 24000-tick loop whose adult
-track reads *10 idle, 2000 work, 9000 meet, 11000 idle, 12000 rest* beside a
-baby track that swaps *play* in — and because the lookup takes a position,
-the day can in principle differ by location. That system is [environment
-attributes and
+`Timeline`, `Timelines.VILLAGER_SCHEDULE`: a 24000-tick loop whose adult track
+names the tick each activity *starts* — idle at 10, work at 2000, meet at 9000,
+idle again at 11000, rest at 12000 — beside a baby track that swaps *play* in.
+Because the lookup takes a position, the day can in principle differ by
+location. That system is [environment attributes and
 timelines](../world/environment-attributes-and-timelines.md#the-four-timelines);
 this page only asks it a question.
 
@@ -48,8 +47,6 @@ this page only asks it a question.
 | **what persists across a save** | nothing. Not the running set, not the flags | 53 of the 116 memories, through `Brain.Packed` |
 | **what the world can push in** | `Mob.updateControlFlags` every five ticks, and the leash, both on one selector only | the schedule attribute, POI claims, hostiles seen by sensors, `Attributes.FOLLOW_RANGE` |
 | **which mobs use it** | every `Mob`. 58 goal classes and 10 targeting ones | 20 classes override `LivingEntity.makeBrain` — but only `Villager` sets a schedule |
-
-Every row below is one of those lines, taken in turn.
 
 ### Where both of them sit in one mob tick
 
@@ -82,6 +79,9 @@ What belongs here is the guard's *scope*. On the client neither selector nor bra
 jump, travel and head-turn sections beneath the gate, and the debug
 renderers.
 
+Each of the seven rows of that table is a section below, in the table's own
+order.
+
 ## What holds the state
 
 `GoalSelector` holds three things and none of them is a plan: a set of
@@ -102,8 +102,9 @@ activities, the active set and a default of `Activity.IDLE`.
 Two things about ownership surprise people. `Brain` is declared on
 `LivingEntity`, not on `Mob` — *every* living entity has one, the player
 included, and the base implementation hands back an empty one that reports
-itself `Brain.isBrainDead`. And the activity list is not static:
-`Brain.ActivitySupplier` is asked for it **per body**, which is how a
+itself `Brain.isBrainDead`. And the activity list is not static: a
+`Brain.Provider` is what builds a brain, and it asks its
+`Brain.ActivitySupplier` for that list **per body**, which is how a
 villager's profession selects its work package.
 
 ## What fills it
@@ -275,7 +276,9 @@ conditions above and, through `Mob.onAttributeUpdated`, resizes how far the
 pathfinder may search
 ([pathfinding](pathfinding.md#the-budget-which-is-also-the-map)).
 
-**Neither of them crosses the network.** There is no AI packet. What a client
+### Neither of them crosses the network
+
+There is no AI packet. What a client
 sees are consequences — head rotations, motion, position deltas, pose
 changes, the occasional entity-event byte — plus a debug channel that costs
 nothing until someone subscribes: `Mob.registerDebugValues` registers
@@ -283,7 +286,9 @@ nothing until someone subscribes: `Mob.registerDebugValues` registers
 every mob, and `DebugSubscriptions.BRAINS` only for one that is not
 brain-dead.
 
-Neither library is small, and neither is anything but more of the same. There
+### And neither library is anything but more of the same
+
+There
 are 103 classes under `world/entity/ai/behavior` and 61 under
 `world/entity/ai/goal`, and every one is an instance of the two shapes above:
 a `Behavior` with its required memories and its start conditions, or a `Goal`
@@ -345,7 +350,7 @@ sequenceDiagram
     AP->>AP: one path to all five at once, claimed only if Path.canReach
     AP->>PM: take(pos), then set POTENTIAL_JOB_SITE
     Brain->>UAFS: priority 99 — the last behaviour in the package
-    UAFS->>Brain: updateActivityFromSchedule, refused if under 21 ticks old
+    UAFS->>Brain: updateActivityFromSchedule, refused unless 20 ticks have passed since the last one
     Brain->>EAS: getValue(VILLAGER_ACTIVITY, this position)
     EAS-->>Brain: Timelines.VILLAGER_SCHEDULE says WORK from tick 2000
     Brain->>Brain: requirements met, or fall back to the default silently
@@ -384,7 +389,13 @@ then means: `AcquirePoi` writes
 `AssignProfessionFromJobSite` waits until the villager is within two blocks
 of that position, then erases the memory, writes `MemoryModuleType.JOB_SITE`
 and sets the profession — which is why walking to the workstation is a
-required step and not decoration.
+required step and not decoration, and why a villager that seems to be ignoring
+a perfectly good workstation is usually in one of two states rather than
+broken: it claimed the block and has not arrived yet, so the memory still says
+*potential*, or the pathfind inside `AcquirePoi` failed and the site was
+skipped as unreachable. Two more behaviours can take a claim away afterwards —
+`PoiCompetitorScan` hands a contested one to the more experienced villager, and
+`ValidateNearbyPoi` erases it when the block is gone.
 
 **Work** is a weighted `RunOne` over six: `WorkAtPoi` (or `WorkAtComposter`),
 `StrollAroundPoi`, `StrollToPoi`, `StrollToPoiList`, `HarvestFarmland` and
@@ -430,37 +441,29 @@ directly — `Mob.getTarget` filters through `Mob.asValidTarget` on every call,
 so a target that turned creative or spectator is gone the moment it is asked
 for, and brain mobs source theirs from `Mob.getTargetFromBrain` instead.
 
-## Questions players ask
-
-**Why does a ridden mob stop moving on its own but still glare at me?**
-Because `Mob.updateControlFlags` disables `Goal.Flag.MOVE`, `Goal.Flag.JUMP`
-and `Goal.Flag.LOOK` on `Mob.goalSelector` and never touches
-`Mob.targetSelector`. Target selection is a separate `GoalSelector` with its
-own lock table, and nothing in the game switches it off. A boat alone does
-less than people expect: it costs the mob only `Goal.Flag.JUMP`.
-
-**Why did the villager ignore a perfectly good workstation?** Either it could
-not reach it — `AcquirePoi` pathfinds before it claims, and an unreachable
-site is skipped — or it claimed it and has not walked there yet, in which
-case the memory still says *potential* job site and the profession has not
-changed. `PoiCompetitorScan` will also hand a contested claim to the more
-experienced villager, and `ValidateNearbyPoi` erases it if the block is gone.
-
-**Why does a spooked villager stay spooked past bedtime?** Because the
-schedule does not push, it is pulled — and the panic package has nothing at
-priority 99 to pull it. `VillagerCalmDown` is what lets the clock back in.
+> **For a 1.21-era reader.** There is no *Schedule* class in 26.2 and no
+> *schedule* registry, so the file a villager's timetable used to live in is
+> gone. What replaced it is a `Timeline` in `Registries.TIMELINE`, read through
+> an `EnvironmentAttribute` rather than off the mob:
+> `Timelines.VILLAGER_SCHEDULE` is the data, `Brain.setSchedule` takes an
+> attribute rather than a schedule, and the lookup now takes a **position**.
+> `Activity`, `MemoryModuleType`, `Sensor` and the behaviour classes are
+> unchanged, and `world/entity/schedule` is a package that still exists and
+> holds one class, `Activity`.
 
 ## Where to look
 
-`GoalSelector.tick` · `WrappedGoal.canBeReplacedBy` · `Goal.Flag` ·
-`Mob.registerGoals` · `Mob.serverAiStep` · `Mob.updateControlFlags` ·
-`Sensing` · `TargetingConditions.test` · `Brain.tick` ·
-`Brain.updateActivityFromSchedule` · `Brain.setActiveActivityIfPossible` ·
-`Brain.setActiveActivityToFirstValid` · `Brain.Provider` · `Brain.Packed` ·
-`ActivityData` · `MemoryModuleType` · `MemorySlot` · `Sensor` ·
-`Behavior.tryStart` · `Behavior.canStillUse` · `BehaviorBuilder` ·
-`GateBehavior` · `RunOne` · `VillagerGoalPackages` · `Villager.refreshBrain` ·
-`AcquirePoi` · `MoveToTargetSink` · `SleepInBed` · `Timelines.VILLAGER_SCHEDULE`
+The two systems have one entry point each and they are short:
+`GoalSelector.tick`, whose three phases are the whole arbiter, and
+`Brain.tick`, whose four are. Read `WrappedGoal.canBeReplacedBy` beside the
+first — it is the entire priority rule in one method — and
+`Behavior.tryStart` and `Behavior.canStillUse` beside the second, because
+between them they explain why most behaviours never see a second tick.
+`Mob.registerGoals` on any mob shows a goal list; `VillagerGoalPackages` shows
+what a brain's lists look like instead, and `Villager.refreshBrain` is how one
+is rebuilt mid-life. `Brain.updateActivityFromSchedule` is the six lines the
+opening is about. Two doors: `BehaviorBuilder`, the DSL nearly every behaviour
+is declared with, and `Sensing`, the one-tick memo both systems share.
 
 ---
 

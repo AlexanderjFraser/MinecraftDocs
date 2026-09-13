@@ -84,8 +84,11 @@ rewritten by its own part's session — and the glossary entry by entry.
   write, or being a block that answers one"~~ — **done, pass 6 session E**: V's
   argument now names the four answers a block can give and ends on the claim
   that two of them are the two channels, one server-only and one on both sides;
-  `entities/README`:13, four shared
-  things). The strongest four are III, IV, XI and XIII, and XI is the model: a
+  ~~`entities/README`:13, four shared
+  things~~ — **done, pass 6 session F**: VI's argument now names the base class
+  it had never named, and ends on the claim that every surprise in the part is
+  one of five mechanisms answering a question the reader thought another had
+  settled). The strongest four are III, IV, XI and XIII, and XI is the model: a
   claim, three consequences, then the hook. [kind=lecture]
 - **A seventh, unlisted section exists on twelve of the thirteen**, in five
   positions and three forms: after Reference (I, VIII, IX, XII), before
@@ -1738,21 +1741,28 @@ Part VII is **2 of 9** on *Questions players ask* (`loot-tables` and
 
 **Structural findings, not acted on.**
 
-- **`authority` states its own subject with the wrong number in four [kind=lecture]
+- ~~**`authority` states its own subject with the wrong number in four [kind=lecture]
   places** ("the four predicates" as a section heading, a closer heading, the
   hook and the cast row). Pass 4 corrected all four to five, but a page whose
   organising count changed is a page whose headings should be re-read
-  together.
+  together.~~ — **done, pass 6 session F**: all four re-read together and all
+  four say five. The re-read found a *different* count wrong on the same page —
+  eight gate sites described as nine readings and then given a "ninth reading"
+  — which is what the entry was really asking for.
 - **`entity-lifecycle`'s spawn-cascade figure gained a seventh rejection
   edge** to put `isValidSpawnPostitionForType`'s tests in source order. It
   is now sixteen edges and is the densest figure in the part.
-- **The *Questions players ask* device**: Part VI is 3 of 10 under the
+- ~~**The *Questions players ask* device**: Part VI is 3 of 10 under the
   literal heading (`ai-goals-and-brains`, `attributes`,
   `synched-entity-data`), which is inside session P's at-most-half rule —
   but two more pages carry the same device under a different name
   (`authority`'s *What the predicates explain*, `pathfinding`'s *Why mobs
   look stupid*), which makes 5 of 10 and is a data point for the *four
-  spellings* problem session A logged rather than for the count.
+  spellings* problem session A logged rather than for the count.~~ — **done,
+  pass 6 session F**, and the entry undercounted: `entity-anatomy` carries a
+  sixth, unnamed, in *The id, the box, and the numbers on the type*. Six of nine
+  went to one under A2's test. A2(a)'s single spelling is what made them
+  countable at all.
 - ~~**`entity-anatomy` and `entity-lifecycle` both explain~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session F — the gates are `entity-anatomy`'s and the spawner's consequence `entity-lifecycle`'s (the charter's named duplicate).
   `EntityType.create`'s feature-flag and Peaceful gates**, from opposite
   ends — anatomy as *type to object*, lifecycle as the last filter before a
@@ -3058,7 +3068,7 @@ contents are hard to tell apart); `starting-a-server` / `how-a-server-dies`
 `chunk-storage` / `scheduled-ticks` (three pipelines: lead flowchart,
 per-stage sections, a named trace late, questions); `block-breaking` /
 `block-interaction` (both are applications of the same ledger and the
-shape does not distinguish them); `attributes` / `synched-entity-data`;
+shape does not distinguish them); ~~`attributes` / `synched-entity-data`~~;
 `enchanting` / `using-an-item`; `biomes` / `features-and-placement` /
 `jigsaw-and-templates` (Part XII: cast → *The trace: X* → two or three
 detail sections → questions → where to look, only the nouns change);
@@ -3084,6 +3094,16 @@ table before its cast**: the page's artefact is the three-way table its hook
 promises, and it was sitting behind eight rows of cast the reader had to cross
 first. No page in the part now shares a spine with any other, in the part or
 out of it.
+**Part VI's pair was overtaken and a different one was live, pass 6 session F.**
+~~`attributes` / `synched-entity-data`~~ had already come apart in pass 5 and
+is not one edit apart in the tokens; what the tool found instead was
+`entity-anatomy` ↔ `authority` within the part, and `authority` ≡ `items/recipes`
+identically across parts. `authority` is the later page in the watch order and
+varied under A7 by **leading with its three-case comparison table** — the
+artefact its hook promises, which was sitting behind a cast table the reader
+skipped, a flowchart and two paragraphs of predicates — with the cast after it
+and the three case sections promoted to H2s. No page in the part now shares a
+spine with any other, in the part or out of it.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -3581,28 +3601,45 @@ that takes it. Everything session F did act on is struck above or logged in
 
 **Pass 6 — the lecture.**
 
-- `ai-goals-and-brains` is 438 lines against a 240–390 target even after this
+- ~~`ai-goals-and-brains` is 438 lines against a 240–390 target even after this
   session's three cuts, and its verified line still promises *meet at the
-  bell*, which the trace never delivers.
-- `entity-lifecycle` and `damage-and-death` are the two pages in the part with
+  bell*, which the trace never delivers.~~ — **done, pass 6 session F**: the
+  verified line and the opening no longer promise the bell, and the line count
+  is not a target (A9); the page came out longer.
+- ~~`entity-lifecycle` and `damage-and-death` are the two pages in the part with
   no *Questions players ask* closer, and three of `entity-lifecycle`'s best
   facts are already question-shaped (*name it and it stays*, *a mob alone in a
-  world never despawns*, *a wild cow on a hilltop never despawns*).
-- `pathfinding`'s verified line promises "a villager decides to walk to its [kind=lecture]
+  world never despawns*, *a wild cow on a hilltop never despawns*).~~ —
+  **ruled out, pass 6 session F**: A2(e) permits a closer here and the session
+  declined it on both pages. All three facts already sit under the headings
+  where they happen, so a closer would be the second telling this pass exists
+  to remove — and the part went from six closers to one, which is not the
+  direction to add in.
+- ~~`pathfinding`'s verified line promises "a villager decides to walk to its [kind=lecture]
   bed" — the third consecutive page to open on the same villager — while the
   page's own hook is the mob against the fence. The two halves of the line
-  could swap without touching a fact.
-- `authority`'s *Where the gates actually sit* is an eight-site inventory in a
+  could swap without touching a fact.~~ — **done, pass 6 session F**: swapped;
+  the line now opens on the fence and no fact moved.
+- ~~`authority`'s *Where the gates actually sit* is an eight-site inventory in a
   seven-item list, one bullet carrying two. A table with a *which member*
-  column is the obvious shape.
-- `movement-and-collision`'s *Off it goes* carries two subjects joined only by [kind=lecture]
+  column is the obvious shape.~~ — **done, pass 6 session F**: an eight-row
+  table with a *which member* column, which also makes the eight-places-nine-
+  readings arithmetic visible instead of asserted — the reader could not close
+  it from the list.
+- ~~`movement-and-collision`'s *Off it goes* carries two subjects joined only by [kind=lecture]
   "the tick ends": the crowding pass, which is the trace's last step, and the
-  network paragraph, which is two other pages' material cited from here.
+  network paragraph, which is two other pages' material cited from here.~~ —
+  **done, pass 6 session F**: two sections, *The crowding pass closes the tick*
+  and *And the tick after: what this one costs on the wire*; one inbound link
+  from `the-client-level` repointed in the same commit.
 - `pathfinding` has three enumerations over the seven-item budget (eleven [kind=lecture]
   `PathType` constants with costs, seven required-path-length values, twelve
   `MoveControl` callers in eight classes). A fourth Reference page for the 27
   `PathType`s with their default costs and the per-mob malus overrides would
   let the section keep the three sentences that matter.
+  **Half-settled, pass 6 session F**: all three are prose rather than lists and
+  none breaks the list budget, so nothing was cut. The `PathType` Reference view
+  is still the right answer and is **session N's** — the page asks for it.
 
 **Pass 7 — the figures.**
 
@@ -4433,7 +4470,14 @@ for other passes and the cuts it logged.*
   `recipes` (21), `entity-lifecycle` (20), `features-and-placement` (18) and
   `jigsaw-and-templates` (17). Ruling A12 allows a door the page never opened
   and refuses a dozen of them; the part sessions have the numbers per page in
-  their session files. [kind=lecture]
+  their session files. **Part VI, pass 6 session F**: the worst part in the book
+  on this measure — nine lists running 21 to 35 names, median 30 — and all nine
+  became prose reading routes. Six names would have left the book and were put
+  back into prose (`Entity.position`, `Entity.collideBoundingBox`,
+  `PathNavigation.moveTo`, `ClientPacketListener.handleMoveVehicle`,
+  `Player.isLocalPlayer`, `Brain.Provider`); the check is a token diff against
+  `HEAD` and then against all of `src/`, and it is worth running on every part.
+  [kind=lecture]
 
 ### For pass 7 (the figures)
 
@@ -4826,3 +4870,150 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   upper half is in neither. Session E's answer is that the prediction ledger holds
   both halves and rolls both back. Confirm that is what happens on a
   spawn-protection refusal specifically, where the server writes nothing at all.
+
+## Pass 6, session F — Part VI · Entities (2026-09-13)
+
+**Logged cuts.** Each is a move or a deletion with the reason, per A9. [kind=record]
+
+- `entity-anatomy`'s *Why is my hitbox offset from where I think the entity is?*
+  — **deleted**: two sentences that say what *Dimensions, attachments and pose*
+  says 250 lines above, in the paragraph that builds the box. [kind=record]
+- `pathfinding`'s *Why do mobs take silly routes?* — **deleted**: the 1.5
+  heuristic and the per-block malus are both in *The search*, under a bold
+  lead-in of their own. [kind=record]
+- `pathfinding`'s *Why does a mob stop dead at the edge of my render distance?*
+  — **deleted**: it restates *a path search never loads a chunk and never
+  blocks*, which is the bold sentence of *The budget, which is also the map*.
+  [kind=record]
+- `pathfinding`'s *Why does a villager find a bed across the village but not one
+  behind a wall?* — **deleted**: both halves are already worked through as the
+  villager example in the budget section and in *A failed search still returns a
+  path*. [kind=record]
+- `ai-goals-and-brains`' *Why does a ridden mob stop moving on its own but still
+  glare at me?* — **deleted**: *What the world can push in* says all of it,
+  including the boat costing only `Goal.Flag.JUMP`. [kind=record]
+- `ai-goals-and-brains`' *Why does a spooked villager stay spooked past
+  bedtime?* — **deleted**: it is the last paragraph of the schedule section in
+  three fewer sentences, and that paragraph names `VillagerCalmDown` too.
+  [kind=record]
+- `attributes`' *Why does the client show the wrong number for a mob?* —
+  **moved** into the syncable-flag section, where the hook it restates lives;
+  what survives is the new half (the client reads its own copy for field of view
+  and reach) plus the fact the reader asked for and the page never said — that
+  the client's 1.0 is the prototype's, so the number is stale rather than
+  missing. [kind=record]
+- `synched-entity-data`'s *Does any of this affect the physics the client
+  simulates?* — **moved** into the trace, into the `Entity.onSyncedDataUpdated`
+  paragraph that already names `Entity.DATA_POSE`. [kind=record]
+- `authority`'s cast row for `Entity` losing *four of the five* — **not a cut**;
+  noted here because the phrase was checked against the page and is right.
+  [kind=record]
+
+**Six closers dissolved into five sections and a dozen paragraphs.** The
+promotions worth naming, because a link or a cast row depended on them:
+`entity-anatomy`'s two-numbers answer became ***The two numbers frozen onto the
+type***, which its own cast row had promised for 350 lines and which
+`synched-entity-data` cites; its id-and-equality pair became ***The id, and what
+compares equal***; `synched-entity-data`'s mods answer became
+***Nothing may be inserted above you***, an H3 inside the anchor eight pages
+already land on, carrying the `Display.RENDER_STATE_IDS` paragraph with it,
+because between them they are the payoff of the page's own hook.
+
+### For pass 7 (the figures)
+
+- **`authority`'s predicate flowchart draws two different relations with the
+  same arrow.** `Q -- "on the client" --> LCA` is *what the root asks*;
+  `Q --> SIM` is *what defaults to the root*. A reader cannot tell the
+  direction of the dependency from the picture, and the heading, the body and
+  the figure gave one reader three answers. A dotted edge, a subgraph or two
+  figures. [kind=figure]
+- **`movement-and-collision`'s step-up flowchart has two edges from `MORE` both
+  labelled "no"**, one of them loop exhaustion rather than an answer to the
+  question in the diamond; and `WIN` carries "minus the drop back to the old
+  floor", a step the prose never explains. [kind=figure]
+- **`entity-lifecycle`'s spawn cascade never loops**, so the three group
+  attempts the prose turns on cannot be read off the figure, and the difference
+  between the `X3` and `X4` endings — one drops the attempt, the other returns
+  from the whole category — is carried only in the node text. Sixteen edges, the
+  densest in the part. [kind=figure]
+- **`synched-entity-data`'s trace draws one `SED` lane for two containers.**
+  The server's and the client's are the same lane until a `Note over` says
+  otherwise, two thirds of the way down. The page now says it in prose first;
+  the figure still does not. [kind=figure]
+- **`synched-entity-data`'s gate flowchart draws one of the two out-of-band
+  callers** (`ItemFrame`) and the prose names two more. [kind=figure]
+- **`pathfinding` draws the same pipeline twice** — a flowchart at the top and a
+  sequence two thirds down — and the sequence runs past its own section into the
+  next one. One of the two is the page's artefact; pass 7 picks. [kind=figure]
+- **`ai-goals-and-brains`' `Brain.tick` flowchart node K** holds the same
+  explanation the prose gives four paragraphs later, at more length than either
+  needs. [kind=figure]
+- **`entity-anatomy`'s lead flowchart names nine mechanisms** whose prose is
+  below it — the part-wide pattern session C sent whole. [kind=figure]
+
+### For pass 8 (the voice)
+
+- **`authority`:112–116** — one sentence running through a semicolon, a bolded
+  clause, two em-dash asides and a forward link, ending on a trailing
+  possessive (*is prediction and acknowledgement's*) whose referent has to be
+  reconstructed. [kind=voice]
+- **The trailing-possessive construction generally** — *is [Part VIII's
+  subject]'s*, *is [points of interest]'s*, *belongs to [the sword swing]'s*.
+  Four pages of this part end a paragraph on it. [kind=voice]
+- **`synched-entity-data`'s four paragraphs ending on "and nothing calls it"** —
+  `EntityDataSerializers.registerSerializer`, `ClientboundSetEntityDataPacket.EOF_MARKER`,
+  `SynchedEntityData.MAX_ID_VALUE`, `SyncedDataHolder.onSyncedDataUpdated`. The
+  dead-constant aside used four times on one page trains the reader to skip the
+  shape. [kind=voice]
+- **`damage-and-death`'s cast "thread" column** says *server main thread* five
+  times and, once, *—*. `authority`'s says *both* four times and once says
+  something that is not a thread. Both readers skipped the column. [kind=voice]
+- **`entity-lifecycle`:166** — *"Reading a name and believing the number is how
+  a page gets this wrong"* is advice to this book's authors, inside the page.
+  [kind=voice]
+- **`attributes`:234** — the figure calls a post-pass-1 total "the base", one
+  node after "base value" meant something else. [kind=voice]
+- **`ai-goals-and-brains`:319** — a bolded **One** — with no Two anywhere.
+  [kind=voice]
+- **`entity-lifecycle`:291** — *"every arrow in this box"* reads as a diagram
+  arrow in a paragraph about `ClassInstanceMultiMap`. [kind=voice]
+
+### For pass 9 (the fact-check), beyond this session's own claims
+
+- **`authority`'s "nineteen pages link back to this one"** — counted this
+  session as pages under `src/systems` containing a link to `authority.md`,
+  landing pages included, `lectures.md` and the glossary excluded. Re-derive the
+  population as well as the number; it was *sixteen* and untestable before.
+- **`damage-and-death`'s "only four classes read the damage number"** — the
+  four are `ItemEntity`, `ExperienceOrb`, `VehicleEntity` and `MinecartTNT`
+  (inheriting the accumulator). The Reference page said five by counting
+  `EnderDragonPart`, which forwards the number without reading it; both pages
+  now say four. Confirm `MinecartTNT` belongs in the four at all — its own
+  override reads the arrow's speed, not the damage.
+- **`entity-anatomy`'s six-of-nine defaulted overrides** — `register`,
+  `getId`, `getKey`, `getValue`, `getOptional`, `getAny`, `byId`, `getRandom`
+  and `getDefaultKey` are the nine; six substitute the default. The page said
+  *nine lookups hand it back* and then named a tenth that does not.
+- **`entity-lifecycle`'s biome crowding budget** — new material this session:
+  two biomes (soul sand valley, warped forest) and four types declare
+  `spawn_costs` in vanilla data. Re-derive from `reference/26.2/data`, not from
+  the page.
+- **`entity-anatomy`'s 191 descendants against "the other 66"** — the numbers
+  are the atlas's and they close only if `LivingEntity` itself is counted;
+  the page now says so. Check the sentence, not the numbers.
+
+### Answers a Part VI page still owes
+
+- **`authority`: what makes a passenger the *controlling* one**, and what
+  happens with two riders or a dismount mid-tick. The page hangs the whole
+  vehicle model on that delegation and never opens it. A sentence, or a
+  citation — but the book may not own the answer anywhere.
+- **`synched-entity-data`: what the six channels are**, asked from
+  `entities/README`, whose figure says *one of the six channels* and never
+  populates the other five until the reader reaches this page's table. Judge as
+  a seam in session O.
+- **`entity-lifecycle`: the tick it gets** — the section named for the tick
+  does not show one, and the page's most surprising fact (status is a property
+  of a *section*, not an entity) is not what the opening prepares the reader
+  for. Structural, and it is session O's or pass 10's, not this session's:
+  the opening's hook is about the spawn roll and it pays off.

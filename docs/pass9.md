@@ -44,6 +44,196 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session F — Part VI · Entities *(2026-09-13)*
+
+Nine system pages and the landing page, ten readers, one each. Every correction
+below was found by a reader with no source and no other page, and re-derived by
+the session against `reference/26.2` before it landed.
+
+### Corrections — what the page said, what the decompile says
+
+1. **`entity-anatomy`** said `DefaultedMappedRegistry` "overrides **nine**
+   lookups to hand [the default] back", and then named a tenth that does not
+   (`getOptional`). `DefaultedMappedRegistry.java:20–80` has **nine overrides
+   in total**, of which **six** substitute the default on a miss — `getId`,
+   `getKey`, `getValue`, `getAny`, `byId`, `getRandom` — while `register` sets
+   the default, `getDefaultKey` returns its key, and `getOptional` deliberately
+   answers empty. The page now says nine overrides, six of which substitute.
+2. **`entity-anatomy`** read as 190 against its own 191: it said "`LivingEntity`
+   and its 124 descendants are two thirds of that; the non-living branches are
+   the other 66", then "`LivingEntity` holds 124 of the 191", then "the other
+   66". `src/generated/hierarchy-classes.md` gives `Entity` 191 descendants and
+   `LivingEntity` 124, so the sum closes only if `LivingEntity` itself is the
+   125th. Rewritten to say so, and the second telling of the count removed.
+3. **`entity-lifecycle`** said "**seven species change** [the cluster size] —
+   horses to 6, fish and wolves to 8, and ghasts, happy ghasts and pillagers
+   down to 1", naming six. Seven **classes** override
+   `Mob.getMaxSpawnClusterSize`: `AbstractHorse` 6, `Wolf` 8, `AbstractFish` 8,
+   `AbstractSchoolingFish` (its own school size), `Ghast` 1, `HappyGhast` 1,
+   `Pillager` 1. The seventh is the schooling-fish override, now named.
+4. **`entity-lifecycle`**'s *Two rules decide what is in that file* was followed
+   by three, the third introduced as "the clause that is easy to miss".
+   `Entity.shouldBeSaved` (`Entity.java:4243`) is three clauses. Now *three
+   clauses*.
+5. **`entity-lifecycle`** said `Entity.setRemoved` fires
+   `EntityInLevelCallback.onRemove` "with the *new* reason" one sentence after
+   saying a second call cannot change the reason, which reads as a
+   contradiction. `Entity.java:4219–4231`: the dismount branch tests
+   `this.removalReason` (the **stored** one) and `onRemove`/`onRemoval` are
+   passed the **argument**. Both are true and the page now says which is which.
+6. **`damage-and-death`** said "only **four** classes" read the damage number
+   and named three, while
+   [`reference/non-living-damage.md`](../src/reference/non-living-damage.md)
+   said five by counting `EnderDragonPart`. `EnderDragonPart.java:51` forwards
+   `damage` to `EnderDragon.hurt` without using it; `MinecartTNT.java:72` reads
+   the arrow's speed and then calls `VehicleEntity.hurtServer`, which is where
+   the number is spent. Four, and the fourth named, on both pages.
+7. **`damage-and-death`**'s cast gave `DamageType` "the hurt sound".
+   `Player.java:571` — `source.type().effects().sound()` — is the **only**
+   reader of it in the tree, which the body says 40 lines later. The cast row
+   now says *a player's* hurt sound.
+8. **`damage-and-death`**'s armour formula had two legal parses ("the armour
+   points *minus the incoming damage divided by two plus a quarter of
+   toughness*") and `CombatRules.ARMOR_PROTECTION_DIVIDER` was never valued, so
+   the worked example's "48 per cent off" could not be derived where it was
+   claimed. `CombatRules.java:20–45`: `toughness = 2 + armorToughness/4`,
+   `realArmor = clamp(totalArmor − damage/toughness, totalArmor*0.2, 20)`,
+   fraction `= realArmor/25`. Re-parenthesised, and 0.2, 20 and 25 given.
+9. **`authority`** said "**Sixteen** pages link back to this one". Nineteen
+   pages under `src/systems` contain a link to `authority.md` (three of them
+   landing pages); `lectures.md`, the glossary, `SUMMARY.md` and the class index
+   are excluded. Now nineteen, with the population implied by *in this book*.
+10. **`authority`** said `Player.isClientAuthoritative` is "the member **three
+    later pages** quote". One other page in the corpus names it,
+    `player/the-two-phase-tick`. The count is gone; the member stays.
+11. **`authority`** said `LivingEntity.travelRidden` "carries a **ninth
+    reading** of its own", two paragraphs after an inventory whose own
+    arithmetic (four + three + two, one site reading a pair) already accounts
+    for nine readings at eight sites. `LivingEntity.java:2793` is a ninth
+    **site** and a tenth reading. Now *a ninth site*.
+12. **`ai-goals-and-brains`**'s figure said `updateActivityFromSchedule` is
+    "refused if under 21 ticks old", which reads as the mob's age.
+    `Brain.java:389` is `gameTime - this.lastScheduleUpdate > 20L` — ticks since
+    the last **update**. Label rewritten; the prose was already right.
+13. **`entities/README`** said "**Three** were written for this part" over a
+    list of five. All five (`attributes`, `entity-data-serializers`,
+    `spawn-reasons`, `structure-spawn-overrides`, `non-living-damage`) are cited
+    from an entities page and from nowhere else first. Now five.
+14. **`entities/README`** carried a hand-counted "about **40%** of those lines
+    are named on no page". `pass5_coverage.py` says **34%**. Replaced with
+    `{{#include ../../generated/coverage-entities.md}}`, so it cannot drift
+    again.
+15. **`entities/README`** said "Two of the **nine rungs** are pairs rather than
+    sequels" and then described two pairs, i.e. four rungs. There are eight
+    steps between nine rungs and two of the steps are pairings. Rewritten.
+
+### Claims introduced
+
+**`entity-anatomy`.** New: the two doors framed as *number* versus *string*
+(the packet carries a registry index, the region file an id string) — a
+reframing of facts the page already had, not a new fact. New sections ***The
+id, and what compares equal*** and ***The two numbers frozen onto the type***,
+both built from dissolved closer answers; the second is what the cast row
+"the two numbers that decide how it reaches clients" had been promising.
+New claim: `SummonCommand` tests the peaceful rule itself *and* does not set
+`EntitySpawnRequest.ignoreChecks`, so `EntityType.canSpawn` tests it again
+(`SummonCommand.java:55`, `:62`; `EntityType.java:283–292`) — both gates fire,
+the command's only for the message.
+
+**`authority`.** Restructured: the three-case table moved above the cast, the
+three case sections promoted from H3 to H2 (anchors unchanged), and *Where the
+gates actually sit* rewritten from seven bullets to an eight-row table whose
+*which member* column is new. New claims: that the eight sites carry nine
+readings because `LivingEntity.travel` reads a pair; that an entity nobody
+rides and nothing steers (a dropped item, an arrow) reaches the base
+implementations and is a fourth shape; that *a tracked mob* means one the
+server has told your client about. The `SweetBerryBushBlock` paragraph became
+its own section, ***Authority is also about which of two numbers is real***.
+The unused `ServerLevel` lane was dropped from the boat sequence.
+
+**`entity-lifecycle`.** New material: the biome crowding budget explained —
+`MobSpawnSettings.MobSpawnCost` is a *charge* and an *energy budget*,
+`PotentialCalculator` is the field, and **two** shipped biomes declare
+`spawn_costs` (soul sand valley: ghast, skeleton, enderman; warped forest:
+enderman, strider), derived from `reference/26.2/data/minecraft/worldgen/biome/`
+over all 66 files. New claim: the local cap's no-nearby-player branch is
+reachable because *near* means the chunk-centre 128 blocks in
+`ChunkMap.playerIsCloseEnoughForSpawning` and the spawn-chunk neighbourhood in
+`LocalMobCapCalculator` — two different populations. Two figure labels
+rewritten to stop *persistent* meaning two things three lines apart.
+
+**`synched-entity-data`.** Trace heading renamed to its scenario. Three H3s
+inside the existing `#nineteen-slots-and-where-the-numbers-come-from` anchor.
+New claim, stated in prose for the first time: there is one container **per
+side**, built independently from the same class chain. The mods-and-ordinals
+answer and the `Display.RENDER_STATE_IDS` paragraph moved up together as the
+hook's payoff. New claim: `Entity.needsSync` is the flag `Entity.syncPosition`
+sets, read by both gate tests.
+
+**`attributes`.** Trace heading renamed (one inbound link repointed). Heading
+*Five objects* → *Four objects, two dirty sets, and one list that is neither*,
+with new prose naming the four and explaining
+`AttributeMap.getSyncableAttributes`, which the figure drew and the prose never
+mentioned (one inbound link repointed). New claim: both sides run the same
+`Attributes` initialiser and build the same `DefaultAttributes` prototypes, so
+the client's unsyncable value is the prototype's rather than absent. The
+frozen-mob example moved out of the closer into the dirty-sets section.
+
+**`movement-and-collision`.** New claim: the four booleans are
+`Entity.horizontalCollision`, `Entity.verticalCollision`,
+`Entity.verticalCollisionBelow` and `Entity.minorHorizontalCollision`, the
+header having promised four and the page having named none; and
+`Entity.isHorizontalCollisionMinor` is false on the base class, overridden by
+`LocalPlayer` alone, which is also its only reader
+(`Entity.java:1063`, `LocalPlayer.java:979`). New claim: `Entity.onGround` is
+not one of the four. New claim: `Entity.collideBoundingBox` is the flat attempt
+itself, called once before the step-up test (`Entity.java:1192`, `:1256`).
+*Off it goes* split into two sections (one inbound link repointed). The scenario
+is now stated as the landing tick.
+
+**`ai-goals-and-brains`.** Verified line no longer promises *meet at the bell*.
+New claim: the schedule's numbers are the ticks each activity **starts**, not
+durations. A **1.21-era blockquote created** at the foot out of the opening's
+*Schedule does not exist* clause, and it asserts: no *Schedule* class and no
+*schedule* registry in 26.2; `Brain.setSchedule` takes an
+`EnvironmentAttribute` (`Brain.java:284`); `Registries.TIMELINE` exists
+(`Registries.java:280`); `world/entity/schedule` holds one class, `Activity`.
+The unreachable-workstation answer moved into the villager's-day section with
+`PoiCompetitorScan` and `ValidateNearbyPoi`. New claim: `Brain.Provider` builds
+the brain and asks its `Brain.ActivitySupplier` per body.
+
+**`pathfinding`.** Verified line's halves swapped. New claim: the *maximum path
+length* is named before use — the larger of the follow range and the required
+path length, in blocks — and the node budget is that times sixteen, which the
+page previously called "the same" number at two different scales. New claim:
+`PathNavigation.moveTo`'s position and entity overloads call
+`PathNavigation.createPath` themselves (`PathNavigation.java:183–195`). The
+happy-ghast sentence rescoped: it has a navigation and one goal does not use it.
+*Two independent timers* re-attributed to the two halves of
+`PathNavigation.doStuckDetection`.
+
+**`damage-and-death`.** Heading *One number, a dozen owners* → *One number,
+eight steps, and no step that knows another*, which is what the figure draws
+(one inbound link repointed). New claim: the three entity ids in
+`ClientboundDamageEventPacket` are the victim, the causing entity and the direct
+one. The four `CombatTracker` reset call sites listed as four.
+
+**`entities/README`.** Re-argued to A6. New claim: the part's argument now names
+`Entity` — the base class it had never named — and ends on the claim that every
+surprise on its list is one of five mechanisms answering a question another was
+thought to have settled. *Where the part stops* moved from first to its template
+place and cut to 21 lines. New claim in the shape section: Parts VIII, IX and X
+are the three later parts that link back to *authority* (the count was there,
+the parts were not). Two figure edge labels rewritten (`xxa`/`zza` was
+unglossable on a landing page). *Watch in this order* blurbs re-synced for
+`ai-goals-and-brains` and `pathfinding`.
+
+### Reference
+
+**`reference/non-living-damage.md`**'s pattern summary changed from five classes
+reading the damage amount to four, to agree with `damage-and-death`; see
+correction 6.
+
 ## Pass 6, session E — Part V · Blocks *(2026-09-13)*
 
 Seven system pages and the landing page, eight readers, one each. Every

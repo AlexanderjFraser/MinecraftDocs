@@ -8,20 +8,23 @@ call: a `ResourceKey` in `EntityTypeIds`, the `EntityType` that `EntityTypes`
 built from it before any world existed, and the `Entity` that the type's
 `EntityType.EntityFactory` returns. This page is the vocabulary of that chain,
 and the rest of Part VI is built on it. The surprise is what happens when the
-name is *wrong*, because that depends entirely on which door the name came
-through. `Registries.ENTITY_TYPE` is one of the few **defaulted** registries
-and its default is *pig* — and `DefaultedMappedRegistry` overrides nine
-lookups to hand it back, `DefaultedMappedRegistry.byId` and
-`DefaultedMappedRegistry.getValue` among them. So an entity-type id the client has never
-heard of, arriving inside a `ClientboundAddEntityPacket`, is decoded by
-`ByteBufCodecs.registry` through `IdMap.byIdOrThrow` — which cannot throw
-here, because `DefaultedMappedRegistry.byId` never returns null — and a pig
-walks out of the packet. One lookup is overridden the other way:
-`DefaultedMappedRegistry.getOptional` calls the *superclass* method and so
-still answers empty. `EntityType.CODEC` is `Registry.byNameCodec`, which
-resolves through the plain `Registry.get`, untouched here. The same unknown
-name in a region file therefore yields nothing at
-all: `EntityType.create` logs *Skipping Entity with id …* and leaves a hole
+kind is one nobody has heard of, because that depends entirely on which of two
+doors it came through. An entity arriving over the network is named by a
+**number**, the registry index inside a `ClientboundAddEntityPacket`; an entity
+read back off disk is named by a **string**, the *id* field in the region file.
+Those two doors give opposite answers to the same bad name.
+`Registries.ENTITY_TYPE` is one of the few **defaulted** registries, its
+default is *pig*, and `DefaultedMappedRegistry` overrides nine of the plain
+registry's methods — six of which substitute that default for a miss, among
+them `DefaultedMappedRegistry.byId` and `DefaultedMappedRegistry.getValue`.
+So the numeric door cannot fail: `ByteBufCodecs.registry` decodes through
+`IdMap.byIdOrThrow`, which cannot throw here because
+`DefaultedMappedRegistry.byId` never returns null, and a pig walks out of the
+packet. The string door is not defaulted at all, because `EntityType.CODEC` is
+`Registry.byNameCodec` and resolves through a lookup the subclass leaves alone
+— as does `DefaultedMappedRegistry.getOptional`, the one override that
+deliberately answers empty. So the same unknown name in a region file yields
+nothing: `EntityType.create` logs *Skipping Entity with id …* and leaves a hole
 where the entity was. The default reaches the network and never reaches your
 save file.
 
@@ -106,8 +109,9 @@ per-species variant registries (`Registries.WOLF_VARIANT`,
 
 `EntityDimensions` is a record — width, height, eye height, an
 `EntityAttachments` map and a *fixed* flag — and
-`EntityDimensions.makeBoundingBox` centres the box in X and Z on the position
-and grows it **upward**, because the position is the feet.
+`EntityDimensions.makeBoundingBox` centres the box in X and Z on
+`Entity.position` and grows it **upward**, because that position is the bottom
+centre — the feet — and not the middle of the entity.
 `EntityDimensions.scale` returns the record unchanged when it is fixed, and
 also when both factors are 1. The flag is not the only way to escape `Attributes.SCALE`,
 either: plain `Entity.getDimensions` never scales at all, so every non-living
@@ -145,11 +149,21 @@ overlaps — but only on the server, only after the first tick, only with
 physics on, only when the entity is not a `Player`, and only when the new box
 is at most four blocks in both width and height.
 
+That loop is also the answer to *why did the hitbox not change when I changed
+the size*. `Entity.dimensions`, `Entity.eyeHeight` and `Entity.bb` are caches,
+and on the base class exactly two things refresh them unasked: a pose change,
+and `LivingEntity.onAttributeUpdated` on `Attributes.SCALE`. The dozen
+subclasses with a physics-changing value of their own — `AgeableMob` on the
+baby bit among them — each call `Entity.refreshDimensions` for it, and
+everything else has to call it by hand. While a cache is stale the two
+eye-height accessors disagree: `Entity.getEyeHeight` with no argument reads the
+cache, and the `Pose` overload recomputes.
+
 ## The tree, and the class that was inserted into it
 
 `Entity` has **18** direct subclasses and 191 descendants. `LivingEntity` and
-its 124 descendants are two thirds of that; the non-living branches are the
-other 66.
+its own 124 make 125 of them — two thirds of the tree in one branch — and the
+seventeen non-living branches hold the other 66.
 
 <figure class="map">
 {{#include ../../generated/tree-Entity.svg}}
@@ -158,8 +172,9 @@ other 66.
 
 The full drawing, with the block, item and screen trees beside it, is in
 [what extends what](../../maps/hierarchy.md#entity). What matters here is the shape:
-a long spine and a scattering. `LivingEntity` holds 124 of the 191 and has
-exactly **three** direct subclasses — `Avatar`, `ArmorStand` and `Mob` —
+a long spine and a scattering. The spine is `LivingEntity`, and for all that it
+carries it has exactly **three** direct subclasses — `Avatar`, `ArmorStand` and
+`Mob` —
 which is worth saying plainly, because it means **an armour stand is a living
 entity with no AI at all**: no `GoalSelector`, no `PathNavigation`, both of
 those being `Mob`'s. The `Brain` is not `Mob`'s, though. It is declared on
@@ -171,10 +186,10 @@ which is why `Ghast` and `Phantom` navigate without ever being one.
 `Animal` and `Monster` split by disposition, and `Monster` implements `Enemy`,
 a marker interface carrying nothing but XP-reward constants.
 
-The other 66 are shallow, and the atlas draws them as two families and a
-scattering: `Projectile` with 26 descendants, `VehicleEntity` with 15, and
-thirteen direct subclasses of `Entity` with no children of their own, from
-`ItemEntity` to `LightningBolt`. Sharing a base class that thin is what lets
+The 66 outside `LivingEntity`'s branch are shallow, and the atlas draws them as
+two families and a scattering: `Projectile` with 26 descendants,
+`VehicleEntity` with 15, and thirteen direct subclasses of `Entity` with no
+children of their own, from `ItemEntity` to `LightningBolt`. Sharing a base class that thin is what lets
 them disagree so completely about being hit
 ([damage and death](damage-and-death.md#twenty-one-classes-with-no-pipeline-at-all)).
 
@@ -264,7 +279,14 @@ with the log line the opening quoted — this is the save-file half of the hook.
 **Type to object.** `EntityType.create` checks `EntityType.canSpawn`: the
 feature flags, plus a peaceful-difficulty test gated on the type's own
 `EntityType.isAllowedInPeaceful` flag, which is a declared property and not a
-synonym for *hostile*. `EntitySpawnRequest.ignoreChecks` skips both. Then the
+synonym for *hostile*. `EntitySpawnRequest.ignoreChecks` skips both.
+`SummonCommand` tests the same peaceful rule itself, a few lines earlier, purely
+to fail with a better message; the command does not set the skip flag, so both
+run. One type fails `EntityType.create` always: `EntityTypes.PLAYER` was built
+with `EntityType.Builder.createNothing`, so its factory returns null — and it
+is `EntityType.Builder.noSave` and `EntityType.Builder.noSummon` besides, which
+is why `ClientPacketListener.createEntityFromPacket` special-cases it and
+hand-builds a `RemotePlayer` from the player info it already has. Otherwise the
 factory runs. The `Entity` constructor takes the next id from the level,
 invents a UUID with `Mth.createInsecureUUID`, copies the type's dimensions
 into its cache, and builds the synched-data container — its own eight
@@ -345,50 +367,30 @@ What differs between the sides is not the tick but what the tick is allowed to
 *do*, and that is exactly the subject of the next page,
 [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off).
 
-## The id, the box, and the numbers on the type
+## The id, and what compares equal
 
-**Why do two entities from different worlds compare equal?** Because
 `Entity.equals` compares the network id and nothing else — not the UUID, not
 identity — and `Entity.hashCode` *is* the id. Ids are handed out by
 `ServerLevel.getNextEntityId` from a static `AtomicInteger` on `ServerLevel`,
 so they are process-global and the level is consulted only to avoid a
-collision. Never put entities from two levels in one set.
+collision. Two entities in two different worlds can therefore compare equal,
+which is why entities from two levels must never go in one set.
 
-**Why does a client-side entity throw before its packet arrives?**
+On the client there is no id at all until a packet supplies one.
 `Level.getNextEntityId` returns a literal zero and `ClientLevel` does not
 override it, while zero is the reserved invalid id and `Entity.getId` throws
 *Tried to access entity ID before ID assignment* on it. Between construction
-and `Entity.setId` — which `Entity.recreateFromPacket` performs — a
+and the `Entity.setId` that `Entity.recreateFromPacket` performs, a
 client-side entity has no id, and therefore no equality and no hash.
 `ServerLevel.getNextEntityId` skips zero deliberately.
 
-**Why is my hitbox offset from where I think the entity is?**
-`Entity.position` is the bottom centre and the box grows up from the feet.
+## The two numbers frozen onto the type
 
-**Why did the hitbox not change when I changed the size?** Because
-`Entity.dimensions`, `Entity.eyeHeight` and `Entity.bb` are caches, and only
-two things refresh them unasked for every entity: a pose change on the base
-class and `LivingEntity.onAttributeUpdated` on `Attributes.SCALE`. Twelve
-subclasses do the same for a value of their own — `AgeableMob` on the baby
-bit among them — and everything else has to call `Entity.refreshDimensions`
-itself.
-The two eye-height accessors disagree while a cache is stale:
-`Entity.getEyeHeight` with no argument reads the cache, the `Pose` overload
-recomputes.
-
-**Why is a player never created from its own entity type?** Because
-`EntityTypes.PLAYER` was built with `EntityType.Builder.createNothing`, so its
-factory returns null, and it is `EntityType.Builder.noSave` and
-`EntityType.Builder.noSummon` besides. `EntityType.create` for a player always
-yields null, which is why `ClientPacketListener.createEntityFromPacket`
-special-cases it and hand-builds a `RemotePlayer` from the player info it
-already has.
-
-**Why does that entity never move smoothly?** Because of the two numbers the
-builder froze onto its type. `EntityType.clientTrackingRange` is in **chunks**
-and `EntityType.updateInterval` in ticks, and both decide how often a tracker
-is even asked about the entity, never mind what it says
-([what the client is
+The cast promised two numbers that decide how an entity reaches clients, and
+they are why one entity glides and another jumps between positions.
+`EntityType.clientTrackingRange` is in **chunks** and
+`EntityType.updateInterval` in ticks, and both decide how often a tracker is
+even asked about the entity, never mind what it says ([what the client is
 told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
 owns the asking, and a third parameter, `EntityType.trackDeltas`, which is
 true of every type but ten).
@@ -400,22 +402,26 @@ again after tick zero — `EntityTypes.ITEM_FRAME` and `EntityTypes.GLOW_ITEM_FR
 other end `EntityTypes.MARKER` has a tracking range of 0 and is never sent to
 anyone at all.
 
-**Why does entity render distance depend on my render distance?** Because
-`Entity.viewScale` is a **static** field on `Entity` — process-global state —
+The client holds a lever over the same distance, and it is process-global in
+the same way the ids are. `Entity.viewScale` is a **static** field on `Entity`,
 and `LevelExtractor` writes it from the effective render distance *and* the
-entity-distance option together, not from the option alone.
+entity-distance option together, not from the option alone — which is why
+entity render distance moves when you touch a slider that does not name
+entities.
 
 ## Where to look
 
-`EntityTypeIds` · `EntityTypes` · `EntityType.Builder.build` ·
-`EntityType.CODEC` · `EntityType.by` · `EntityType.create` ·
-`EntityType.canSpawn` · `EntityType.loadEntityRecursive` ·
-`EntityType.spawn` · `MobCategory` · `EntityDimensions.makeBoundingBox` ·
-`EntityAttachments` · `Pose.BY_ID` · `Entity` · `Entity.defineSynchedData` ·
-`Entity.load` · `Entity.refreshDimensions` · `Entity.setRemoved` ·
-`Entity.baseTick` · `Entity.getAddEntityPacket` ·
-`PersistentEntitySectionManager.addNewEntity` · `LivingEntity` · `Avatar` ·
-`Mob` · `PathfinderMob` · `EntityReference` · `ClientboundAddEntityPacket`
+Start at `EntityTypes`, which builds all 158 types and is the most useful
+single table in the package, and read `EntityType.Builder.build` beside it for
+what gets frozen. Then `EntityType.create` and `EntityType.loadEntityRecursive`
+for the chain this page traces, and `Entity` itself — its constructor,
+`Entity.defineSynchedData` and `Entity.load` — for what comes out of it.
+`Entity.refreshDimensions` is the way into the dimension caches and
+`EntityDimensions.makeBoundingBox` the arithmetic under them.
+`PersistentEntitySectionManager.addNewEntity` is where an object becomes part
+of a world. Two doors the page opens only a crack: `EntityReference`, for how
+one entity remembers another, and `EntityType.spawn`, the spawn-egg path that
+meets the trace at its end.
 
 ---
 

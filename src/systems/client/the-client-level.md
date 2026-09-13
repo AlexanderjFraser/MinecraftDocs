@@ -198,7 +198,7 @@ That table is the reason a dropped item's movement looks different from a
 mob's over the same connection: nothing is smoothing it. The handler itself
 — its three-tick window, and the 64-block distance past which
 `ClientPacketListener` does not hand it the move at all and snaps instead — belongs to [movement and
-collision](../entities/movement-and-collision.md#off-it-goes); what this page
+collision](../entities/movement-and-collision.md#and-the-tick-after-what-this-one-costs-on-the-wire); what this page
 owns is *who has one*. `Entity.isInterpolating` is the question
 `ServerboundMoveVehiclePacket` and `PositionMoveRotation` both ask before
 deciding whether to publish the interpolation's target or the entity's

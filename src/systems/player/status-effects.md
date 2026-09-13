@@ -53,7 +53,7 @@ give poison a pulse every *25 ≫ amplifier* ticks, regeneration every
 *50 ≫ amplifier*, wither every *40 ≫ amplifier*, and hunger every tick.
 Attribute modifiers go on as `AttributeInstance.addPermanentModifier` with
 an amount linear in amplifier + 1, computed by
-`MobEffect.AttributeTemplate.create` ([attributes](../entities/attributes.md#the-trace-strength-ii)).
+`MobEffect.AttributeTemplate.create` ([attributes](../entities/attributes.md#strength-ii-lands-and-nothing-leaves-the-server)).
 
 **`MobEffectInstance`** is the per-entity half: duration, amplifier, the
 ambient, visible and show-icon flags, a private blend state, and

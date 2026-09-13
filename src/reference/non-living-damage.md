@@ -51,10 +51,10 @@ and it picks `Entity.hurtServer` or `Entity.hurtClient` off the level.
 Six patterns account for all of it: *nothing happens* (ten classes), *a
 flinch and nothing else* (two), *an int of health with no armour and no
 window* (two), *one hit destroys* (four), *an accumulator* (two), and
-*forward it to something else* (one, the dragon part). The classes that read
-the damage **amount** at all are the pair with an int of health, the
-accumulator pair, and `EnderDragonPart`, which hands the number to the dragon;
-everything else is a yes-or-no.
+*forward it to something else* (one, the dragon part). Only **four** classes
+read the damage **amount** at all: the pair with an int of health and the
+accumulator pair. `EnderDragonPart` passes the number on without looking at it,
+and everything else is a yes-or-no.
 
 ---
 

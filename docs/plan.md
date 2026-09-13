@@ -34,7 +34,8 @@ stood at the close, with the session paragraphs and the log.
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day and E
-(Part V) on 2026-09-13**, so the next session is F (Part VI · Entities). The charter is below; the brief, the
+(Part V) and F (Part VI) on 2026-09-13**, so the next session is G
+(Part VII · Items and inventories). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -62,7 +63,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E and F on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -693,3 +694,57 @@ mattered were never "this sentence is false" but "these two sentences cannot bot
 be true". Nine of the fifteen are one sentence against another sentence, a
 figure, or an enumeration **on the same page**. A part session should read that
 section first and treat the rest as evidence.
+
+**Pass 6, session F — Part VI · Entities** *(2026-09-13).* Nine system pages and
+the landing page, ten readers, one each. The part arrived measured at 3 of 9 on
+the closer, which looked like the most comfortable part in the book, and **the
+measurement was the finding**: three more pages carry the identical device under
+a name of their own — `entity-anatomy`'s *The id, the box, and the numbers on
+the type*, `authority`'s *What the predicates explain*, `pathfinding`'s *Why
+mobs look stupid*, all three renamed by pass 2's own session to make the part
+look less uniform. Six of nine, then, and the test took it to **one**.
+`authority` keeps three answers that are consequences a player meets; the other
+five dissolved, and the two promotions are A2's load-bearing rule at its
+sharpest. `entity-anatomy`'s two-numbers answer became a section its **own cast
+row had been promising for 350 lines** ("the two numbers that decide how it
+reaches clients") and which `synched-entity-data` cites at that anchor; and
+`synched-entity-data`'s *can two mods both add a field* was the payoff of the
+page's own hook — one new field on `Entity` renumbers every entity in the game —
+sitting at the foot of the page under a question mark, and is now an H3 inside
+the anchor eight pages land on, with the `Display.RENDER_STATE_IDS` paragraph
+moved up beside it as its evidence. **A7's pair was not the one the queue named**:
+`attributes` / `synched-entity-data` had come apart in pass 5, and what the tool
+found live was `entity-anatomy` ↔ `authority` inside the part, with `authority`
+identical to `items/recipes` across parts. `authority` varied by **leading with
+its three-case comparison table** — the artefact its hook promises, which was
+sitting behind a cast table every reader skipped, a flowchart, and two
+paragraphs of predicates the table would have explained. The part's **first 1.21
+blockquote** was created rather than moved, out of the *Schedule does not exist*
+clause that was costing `ai-goals-and-brains` its opening. Eight long sections
+went to none on eleven H3s inside existing anchors. Nine *Where to look* lists
+became prose reading routes under A12 — Part VI had a median of **30** names,
+the worst in the book — with no name lost, checked by diffing every backticked
+token against `HEAD` and then against all of `src/`, which caught six and put
+them back into prose. **Fifteen facts corrected**, every one found by a reader
+with no source: six overrides described as nine, a tree that reads as 190
+against its own 191, seven species named as six, two rules that are three, four
+classes named as three, an armour formula with two legal parses and an unvalued
+divisor, *sixteen pages* that are nineteen, *three later pages* that are one, a
+ninth reading that is a ninth site, a figure label that dates the mob instead of
+the call, and on the landing page three counts at once — three reference pages
+that are five, a hand-counted 40% that is 34%, two rungs that are four. The
+landing page was re-argued to A6 with *Where the part stops* moved from first to
+its place and cut to 21 lines, a generated coverage number, and an argument that
+at last **names `Entity`**, the base class the part is about and had never
+named, and ends on the claim rather than on four shared things. Part VI 3,752 →
+3,861 lines. Thirty-three units appended to [pass5.md](pass5.md) (nine logged
+cuts, eight for pass 7, eight for pass 8, five for pass 9, three answers a page
+still owes); nine entries struck and two annotated; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed. **What the session would
+tell the next one**: a device that has been *renamed* is still the device, and
+the tool cannot see it. A2(a)'s one spelling is usually read as a tidiness rule;
+it is the measuring instrument, and Part VI is where it earned that — the part
+that looked half-clear was the second most uniform in the book. The other half
+of the lesson is A12's: nine lists at a median of thirty names, and six names
+that existed nowhere in the corpus except inside them, which is the field
+inventory not merely come back but become the *only* home. Run the token diff.

@@ -69,6 +69,13 @@ define nothing — therefore has exactly nineteen slots:
 | 17 | `AgeableMob.AGE_LOCKED` | `EntityDataSerializers.BOOLEAN` | false |
 | 18 | `Sheep.DATA_WOOL_ID` | `EntityDataSerializers.BYTE` | 0 |
 
+There is one of those arrays **per side**, not one per entity: the server's
+`Sheep` has its own container and your client's `Sheep` has another, built
+independently from the same class chain, and the packet below is the only thing
+that ever reconciles them.
+
+### Declaration order is not definition order
+
 The declaration order and the *definition* order are two different lists.
 Ids come from where `SynchedEntityData.defineId` sits in the class body; the
 values come from the `Entity` constructor, which defines its own eight and
@@ -80,6 +87,8 @@ because `SynchedEntityData.Builder.define` writes each item at
 hand over a container with any slot still null, naming the id it is missing —
 which is why `SynchedEntityData.get` can index the array with no bounds check
 at all.
+
+### Four slots that are bitfields
 
 Four of the nineteen are bitfields, and they are the dense part of the
 channel. Slot 0 is `Entity.FLAG_ONFIRE` 0, `Entity.FLAG_SHIFT_KEY_DOWN` 1,
@@ -99,6 +108,8 @@ and *sheared* into bit four — `Sheep.getColor`, `Sheep.setColor`,
 `DataComponents.SHEEP_COLOR` by `Sheep.get` and written back through
 `Sheep.applyImplicitComponent`.
 
+### Nothing may be inserted above you
+
 The numbering belongs to the class, not to the concept. `Avatar` — the class 26.2 inserts between `LivingEntity` and `Player`
 ([entity anatomy](entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)) — owns
 `Avatar.DATA_PLAYER_MAIN_HAND` and `Avatar.DATA_PLAYER_MODE_CUSTOMISATION`,
@@ -107,6 +118,20 @@ so the skin-part toggles belong to every avatar, while
 shoulder parrots (`Player.DATA_SHOULDER_PARROT_LEFT`,
 `Player.DATA_SHOULDER_PARROT_RIGHT`, optional ints rather than NBT) sit one
 level further down.
+
+That is the whole answer to *can two mods both add a field to `LivingEntity`*:
+only by accident. Inserting, removing or reordering a
+`SynchedEntityData.defineId` on a base class shifts every id below it in every
+subclass, so two mods claiming the same number either collide in
+`SynchedEntityData.Builder.define`, which rejects a duplicate, or land a value
+in the wrong slot and throw the serializer check on the client.
+(`SynchedEntityData.Builder.define` also has an off-by-one in its bounds test —
+an id exactly equal to the array length slips past and dies on the array write
+instead.) And one class treats these numbers as what they are:
+`Display.RENDER_STATE_IDS` is an int set of the eight accessor **ids** that
+force a render-state rebuild, tested against each incoming accessor, with
+`Display.TextDisplay` keeping a second set of its own. Nothing in the codebase
+demonstrates more plainly that a slot number is an ordinal and not a name.
 
 ## The serializer is the other half of the key
 
@@ -133,7 +158,7 @@ that fills the bimap: vanilla calls it 43 times from that one block, and
 nothing else in the tree ever calls it again. It is a mod extension point
 shipped with no caller outside its own file.
 
-## The trace: a sheep is sheared
+## Shears to wool gone, inside one tick
 
 ```mermaid
 sequenceDiagram
@@ -202,7 +227,13 @@ can see it — and calls `Sheep.setSheared`, which ors bit four into slot 18.
 stores it, calls `Entity.onSyncedDataUpdated` for that accessor, and *then*
 marks the item and the container dirty. `Sheep` does not override the hook,
 and the base implementation reacts to exactly one accessor, `Entity.DATA_POSE`,
-by calling `Entity.refreshDimensions`. Back in `Sheep.mobInteract`:
+by calling `Entity.refreshDimensions` — which is also the answer to whether any
+of this channel touches the physics the client simulates. Exactly one value
+does. `Entity.DATA_POSE` travels on its own `EntityDataSerializers.POSE`, and
+the hook resizes the hitbox on whichever side just received it ([entity
+anatomy](entity-anatomy.md#dimensions-attachments-and-pose) has what the resize
+costs). Everything else on the channel is cosmetic to the client, or read back
+by gameplay code that already knew. Back in `Sheep.mobInteract`:
 `Entity.gameEvent` with `GameEvent.SHEAR` for the sculk listeners
 ([game events](../world/game-events-and-vibrations.md#a-game-event-is-one-number)),
 `ItemStack.hurtAndBreak` on the shears, and `InteractionResult.SUCCESS_SERVER`.
@@ -234,7 +265,10 @@ looks the entity up in `ClientLevel` and silently drops the entire packet if
 the id is unknown, then calls `SynchedEntityData.assignValues`, which checks
 that the incoming serializer is the one the accessor was defined with — a
 mismatch throws, loudly, on the client — stores each value, fires
-`Entity.onSyncedDataUpdated` per item and then the batch overload once.
+`Entity.onSyncedDataUpdated` per item and then the batch overload once. That
+batch overload, `SyncedDataHolder.onSyncedDataUpdated`, is the only place a
+client could see a whole update atomically, and nothing in the 7,055 classes
+overrides it: it is dead.
 Nothing tells the renderer. It finds out next frame, by [reading the sheep
 again from
 scratch](../rendering/entity-rendering.md#extract-the-live-entity-becomes-a-snapshot):
@@ -261,7 +295,10 @@ page's: `ChunkMap.tick` decides whether `ServerEntity.sendChanges` is called
 at all, on three conditions [what the client is
 told](../networking/what-the-client-is-told.md#gate-2-whether-the-detector-is-called-at-all)
 sets out. An entity that fails them keeps its dirty data until one of the
-three becomes true. What matters to a byte is the second test.
+three becomes true. `Entity.needsSync` is the entity's own way of forcing the
+issue: a flag `Entity.syncPosition` sets to say *ask about me this tick
+whatever the schedule says*, read by both tests.
+What matters to a byte is the second test.
 Inside `ServerEntity.sendChanges`, the interval gate
 covers the position block *and* the usual
 `ServerEntity.sendDirtyEntityData` call, which is why shearing a sheep also
@@ -273,8 +310,8 @@ registration and copied when `ChunkMap.TrackedEntity` constructs the
 `ServerEntity` — 2 for a player, 3 by default, and *Integer.MAX_VALUE* for
 seven types including `EntityTypes.ITEM_FRAME`, whose interval branch
 therefore never fires again after tick zero ([entity
-anatomy](entity-anatomy.md#the-id-the-box-and-the-numbers-on-the-type) has the
-seven and the other number beside it).
+anatomy](entity-anatomy.md#the-two-numbers-frozen-onto-the-type) has the
+seven and the tracking range beside it).
 
 That is exactly why `ServerEntity.sendChanges` has an `ItemFrame` special
 case that calls `ServerEntity.sendDirtyEntityData` every tenth tick *before*
@@ -296,15 +333,35 @@ and the swirl list goes into slot 10. A mob effect that expired this tick can
 therefore dirty the container and open its own gate, in the same call that
 goes on to read the flag.
 
+One flush carries at most one value per slot, because
+`SynchedEntityData.packDirty` clears each flag as it packs — but the comparison
+in `SynchedEntityData.set` is against the *current* value, not the last one
+sent, so setting A then B then A within a tick dirties the item twice and then
+sends A, a value the client already had. The only thing that never dirties is
+setting a slot to what it already holds, and even that can be overridden:
+`SynchedEntityData.set` has a three-argument force-dirty form that skips the
+comparison. `Display` uses it to restart an interpolation whose delay was
+re-set to the same number; `CopperGolem`'s two uses of it are redundant,
+because the value it writes is always the previous weather state and so always
+different.
+
 ## Five more channels, all keyed by the same entity id
 
 Synched data is one of six clientbound descriptions of an entity, and
 knowing which one a fact travels on answers most *why does the client not
 know that* questions. There is no serverbound counterpart to any of them.
-The client cannot write to the channel directly — though one of its packets
-does move two slots by proxy: `ServerboundClientInformationPacket` reaches
+Nothing stops `SynchedEntityData.set` on the client — `LocalPlayer` prediction
+does it constantly — but the write goes nowhere:
+`ServerEntity.sendDirtyEntityData` is the only caller of
+`SynchedEntityData.packDirty` in the whole tree, so the client's dirty flag is
+read by nobody and the next server value overwrites the slot
+([authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)).
+One serverbound packet moves two slots by proxy all the same:
+`ServerboundClientInformationPacket` reaches
 `ServerPlayer.updateOptions`, which sets the skin-customisation byte and the
-main hand.
+main hand. And the client's container is not useless to it —
+`ClientPacketListener.handleRespawn` copies the old player's non-default values
+straight into the new one, the single client-to-client use of the channel.
 
 | channel | packets | note |
 |---|---|---|
@@ -314,6 +371,8 @@ main hand.
 | mob effects | `ClientboundUpdateMobEffectPacket`, `ClientboundRemoveMobEffectPacket` | the authoritative list, unlike the swirl in `LivingEntity.DATA_EFFECT_PARTICLES` |
 | position and motion | `ClientboundMoveEntityPacket`, `ClientboundEntityPositionSyncPacket`, `ClientboundRotateHeadPacket`, `ClientboundSetEntityMotionPacket`, `ClientboundMoveMinecartPacket` | the block the synched-data gate shares; `ClientboundTeleportEntityPacket` is the exception, sent from `Entity` itself |
 | one-shot events | `ClientboundEntityEventPacket` | a single byte from `ServerLevel.broadcastEntityEvent`, dispatched by `Entity.handleEntityEvent` — `EntityEvent` declares 62 of them |
+
+### Pairing a viewer who has never seen it
 
 Pairing a new viewer runs the same machinery once. `ServerEntity.addPairing`
 calls `ServerEntity.sendPairingData`, which bundles `ClientboundAddEntityPacket`
@@ -326,75 +385,25 @@ an entity still entirely at its defaults sends **no** data packet on pairing
 at all, and any change made while the tracker sat outside its send gate is
 already folded into that cache.
 
-## Questions players ask
-
-**Why is a freshly loaded entity described by so little?** Because defaults
-never travel. `SynchedEntityData.getNonDefaultValues` skips any item still
-equal to its `SynchedEntityData.DataItem.initialValue`, so pairing describes
-only what has changed. Both sides construct their own defaults independently;
-if they ever disagreed, no packet would correct it.
-
-**If a value changes twice in a tick, do I get two packets?** No — and not
-always for the reason you would guess. `SynchedEntityData.packDirty` clears
-each flag as it packs, so one flush carries one value per slot. But the
-comparison in `SynchedEntityData.set` is against the *current* value, not
-the last one sent: setting A then B then A within a tick dirties the item
-twice and then sends A, a value the client already had. The only thing that
-never dirties is setting a slot to what it already holds — and even that can
-be overridden, because `SynchedEntityData.set` has a three-argument
-force-dirty form that skips the comparison entirely. `Display` uses it to
-restart an interpolation whose delay was re-set to the same number;
-`CopperGolem`'s two uses of it are redundant, because the value it writes is
-always the previous weather state and so always different.
-
-**Why does my client-side change never reach the server?** Nothing stops
-`SynchedEntityData.set` on the client — `LocalPlayer` prediction does it
-constantly — but `ServerEntity.sendDirtyEntityData` is the only caller of
-`SynchedEntityData.packDirty` in the whole tree. The client's dirty flag is read by no one, and
-the next server value overwrites the slot
-([authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)). The
-container is not useless to the client, though: `ClientPacketListener.handleRespawn`
-copies the old player's non-default values straight into the new one, the
-single client-to-client use of the channel.
-
-**Can two mods both add a field to `LivingEntity`?** Only by accident. Ids
-are ordinals, so inserting, removing or reordering a `SynchedEntityData.defineId` on a base
-class shifts every id below it in every subclass. Two mods claiming the same
-number either collide in `SynchedEntityData.Builder.define`, which rejects a
-duplicate, or land a value in the wrong slot and throw the serializer check
-on the client. `SynchedEntityData.Builder.define` also has an off-by-one in
-its bounds test — an id exactly equal to the array length slips past and dies
-on the array write instead.
-
-**Does any of this affect the physics the client simulates?** One value does.
-`Entity.DATA_POSE` travels on its own `EntityDataSerializers.POSE`, and the
-hook the setter calls resizes the hitbox on whichever side just received it
-([entity anatomy](entity-anatomy.md#dimensions-attachments-and-pose) has what
-the resize costs). Everything else on the channel is cosmetic to the client,
-or read back by gameplay code that already knew.
-
-Two details that are only visible from the whole tree. The batch overload
-`SyncedDataHolder.onSyncedDataUpdated`, fired by
-`SynchedEntityData.assignValues` after every packet, is overridden by nothing
-in 7,055 classes — it is the only place a client could see a whole update
-atomically, and it is dead. And `Display` is the one class that treats
-accessor ids as *values*: `Display.RENDER_STATE_IDS` is an int set of the
-eight ids that force a render-state rebuild, tested against each incoming
-accessor, with `Display.TextDisplay` keeping a second set of its own. It is
-the sharpest demonstration in the codebase that these numbers really are
-ordinals.
+Defaults never travel, in other words, because
+`SynchedEntityData.getNonDefaultValues` skips any item still equal to its
+`SynchedEntityData.DataItem.initialValue` — which is why a freshly loaded
+entity is described by so little. Both sides construct their own defaults
+independently from the same class chain, and if they ever disagreed no packet
+would correct it.
 
 ## Where to look
 
-`SynchedEntityData` · `SynchedEntityData.Builder` ·
-`SynchedEntityData.DataItem` · `SynchedEntityData.DataValue` ·
-`EntityDataAccessor` · `EntityDataSerializer` · `EntityDataSerializers` ·
-`ClassTreeIdRegistry` · `Entity.defineSynchedData` ·
-`Entity.onSyncedDataUpdated` · `Entity.updateDataBeforeSync` ·
-`ServerEntity.sendChanges` · `ServerEntity.sendDirtyEntityData` ·
-`ServerEntity.sendPairingData` · `ChunkMap.tick` · `ChunkMap.TrackedEntity` ·
-`ClientboundSetEntityDataPacket` · `ClientPacketListener.handleSetEntityData` ·
-`Sheep.mobInteract` · `Shearable`
+`ClassTreeIdRegistry` is forty lines and it is where the numbering scheme
+actually lives; read it before anything else, then `SynchedEntityData` itself
+and its `SynchedEntityData.Builder` for how the array is filled and checked.
+`EntityDataAccessor` and `EntityDataSerializers` are the key and its other
+half. On the sending side the whole gate is `ServerEntity.sendChanges`, with
+`ServerEntity.sendDirtyEntityData` and `ServerEntity.sendPairingData` as its two
+exits; on the receiving side, `ClientPacketListener.handleSetEntityData`.
+`Sheep.mobInteract` is the scenario's own method, three lines of which are this
+whole page. One door worth opening: `Display`, the class that reads accessor
+ids as values.
 
 ---
 
