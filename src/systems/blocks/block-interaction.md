@@ -90,7 +90,11 @@ first if the hotbar selection has moved
 target is outside the world border, and otherwise opens the prediction with
 `MultiPlayerGameMode.startPrediction`, which allocates sequence *n*, runs the
 whole client-side interaction inside it, and sends the
-`ServerboundUseItemOnPacket` the interaction returned.
+`ServerboundUseItemOnPacket` the interaction returned. The ledger that
+prediction writes into belongs to the level rather than to the game mode:
+`ClientLevel.setBlock` hands every state it overwrites while predicting to a
+`BlockStatePredictionHandler`, so **both** halves of the door are recorded, and
+both are restored together if the receipt arrives with the entries unchanged.
 
 ## Block, then empty hand, then item
 
@@ -163,17 +167,34 @@ is called with flags **10** — `Block.UPDATE_CLIENTS` and
 method](../world/game-events-and-vibrations.md#the-broadcast-is-a-nested-loop-and-one-listener-is-the-exception)), and
 `InteractionResult.SUCCESS`. Exactly this code runs on both sides.
 
-Ten is the whole story of the page. Bit 2 broadcasts, and on the client
-`LevelExtractor.blockChanged` reads bit 8 not as *immediate* but as
-*a player did this*, which can buy the section a priority remesh — `LevelRenderer`
-acts on that mark only when the *Chunk Builder* option is set to prioritise
-nearby or player-affected sections, which the fancy graphics preset does and
-the default does not. Bit 1 is absent, so `Level.setBlock` never reaches its
-neighbour fan-out — and on the client that would be a no-op anyway. What the flags then feed, and the rest of
-what a write does, is the flowchart on [blocks and
+Ten is the whole story of the page, so it is worth spelling out as bits: **2 +
+8**, with **1** absent. Bit 2 is `Block.UPDATE_CLIENTS` and it broadcasts. Bit
+8 is `Block.UPDATE_IMMEDIATE`, and on the client `LevelExtractor.blockChanged`
+reads it not as *immediate* but as *a player did this*, which can buy the
+section a priority remesh — `LevelRenderer` acts on that mark only when the
+*Chunk Builder* option is set to prioritise nearby or player-affected
+sections, which the fancy graphics preset does and the default does not. Bit 1
+is `Block.UPDATE_NEIGHBORS`, and because it is absent `Level.setBlock` never
+reaches its neighbour fan-out — which on the client would be a no-op anyway.
+Nothing sets bit 16, `Block.UPDATE_KNOWN_SHAPE`, and that omission is what the
+next section is about. What the flags then feed, and the rest of what a write
+does, is the flowchart on [blocks and
 states](blocks-and-states.md#the-two-update-channels); everything below is
-the part of it the door
-actually walks.
+the part of it the door actually walks.
+
+### The sound only you hear
+
+`DoorBlock.playSound` passes the clicking player as the *except* entity, and
+the two sides read that word oppositely. `ClientLevel.playSeededSound` plays
+the sound **only** when the except entity is the local player;
+`ServerLevel.playSeededSound` broadcasts a `ClientboundSoundPacket` to
+everyone in range **but** them. So you hear your own prediction and never the
+server's copy — and since each side draws its own pitch from its own
+`Level.getRandom` and its own seed from `Level.soundSeedGenerator`, your door
+is genuinely a different sound from the one your friend heard. Every deferral
+in this part that is *not* predicted does the opposite: a lever passes a null
+*except* entity, so the clicker hears the server's packet like everybody else
+([signal and dust](signal-and-dust.md#the-lever-two-dust-and-a-powered-piston)).
 
 ## The shape channel, which both sides run
 
@@ -254,7 +275,7 @@ one counts *recursion depth* and is what the door's 511 and 510 come from.
 
 `ServerGamePacketListenerImpl.handleUseItemOn` tests in this order, and the
 interesting column is the second one — the refusals do not answer alike, and
-one of them lies. The reach the first of them measures is an attribute, and
+one of them lies. The reach the **third** gate measures is an attribute, and
 players have two of them — one for blocks and a shorter one for entities
 ([player anatomy](../player/player-anatomy.md#what-player-owns)).
 
@@ -284,6 +305,16 @@ the gates, and `ServerGamePacketListenerImpl.tick` emits the receipt when
 `MinecraftServer.tickChildren` reaches connections — after the levels have
 already broadcast ([the server tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)).
 
+## The other half of the same lecture
+
+Left-click is this contract with a different pipeline:
+`Minecraft.startAttack` opens its own prediction and sends a
+`ServerboundPlayerActionPacket` instead, and the block hook is
+`BlockBehaviour.BlockStateBase.attack`. Nothing about the ledger changes;
+everything about the *clock* does, because breaking takes eight ticks where
+opening takes none. [Block breaking](block-breaking.md#the-button-is-not-the-switch)
+takes it from there, and the two pages are deliberately the same shape.
+
 ## Questions players ask
 
 **Why can't I open an iron door by hand?** Because
@@ -297,25 +328,6 @@ somewhere else again: `InteractWithDoor` reads
 `DoorBlock.isWoodenDoor`, which is `BlockSetType.canOpenByHand` under
 another name.
 
-**Why does the door sound different to me than to everyone else?**
-`DoorBlock.playSound` passes the clicking player as the *except* entity, and
-the two sides read that word oppositely: `ClientLevel.playSeededSound` plays
-the sound **only** when the except entity is the local player, while
-`ServerLevel.playSeededSound` broadcasts a `ClientboundSoundPacket` to
-everyone in range **but** them. So you hear your own prediction and never the
-server's copy — and since each side draws its own pitch from its own
-`Level.getRandom` and its own seed from `Level.soundSeedGenerator`, your door
-is genuinely a different sound from the one your friend heard.
-
-**Why does breaking the bottom of a door remove the top on the server but
-not on my screen?** Because that removal is a *shape* update whose destroy
-half is server-only. Both sides run `DoorBlock.updateShape` on the upper
-half, both get `Blocks.AIR` back, and both hand it to
-`Block.updateOrDestroy` — where the air branch is wrapped in a not-client
-check. Your client leaves the top half standing until the section packet
-arrives; the server has already dropped it, with the flags-3 neighbour
-updates that `Level.destroyBlock` implies.
-
 **Why does opening a door lag a busy server when nothing is powered?**
 Because the write still reaches `ServerLevel.sendBlockUpdated`, which
 compares the old and new collision shapes and, when they differ, walks every
@@ -325,24 +337,21 @@ the one place the world pushes back on pathfinding, and unbounded by distance
 A door changes shape every time it moves. None of that exists on the client,
 which is one more reason your half of the click is the fast half.
 
-Left-click is the same contract with a different pipeline:
-`Minecraft.startAttack` opens its own prediction and sends a
-`ServerboundPlayerActionPacket` instead, and the block hook is
-`BlockBehaviour.BlockStateBase.attack`. [Block breaking](block-breaking.md#the-button-is-not-the-switch)
-takes it from there.
-
 ## Where to look
 
-`Minecraft.handleKeybinds` · `Minecraft.startUseItem` ·
-`MultiPlayerGameMode.useItemOn` · `MultiPlayerGameMode.performUseItemOn` ·
-`InteractionResult` · `BlockBehaviour.BlockStateBase.useItemOn` ·
-`BlockBehaviour.BlockStateBase.useWithoutItem` · `DoorBlock.useWithoutItem` ·
-`Level.setBlock` · `BlockBehaviour.BlockStateBase.updateNeighbourShapes` ·
-`CollectingNeighborUpdater.addAndRun` ·
-`CollectingNeighborUpdater.runUpdates` ·
-`NeighborUpdater.executeShapeUpdate` · `DoorBlock.updateShape` ·
-`Block.updateOrDestroy` · `ServerGamePacketListenerImpl.handleUseItemOn` ·
-`ServerPlayerGameMode.useItemOn` · `ChunkHolder.broadcastChanges`
+The click comes in at `Minecraft.handleKeybinds` and
+`Minecraft.startUseItem`, reaches the level through
+`MultiPlayerGameMode.useItemOn` and `MultiPlayerGameMode.performUseItemOn`,
+and is answered in `InteractionResult`. The two block hooks a state offers are
+`BlockBehaviour.BlockStateBase.useItemOn` and
+`BlockBehaviour.BlockStateBase.useWithoutItem`, and `DoorBlock.useWithoutItem`
+is this door's. `Level.setBlock` and
+`BlockBehaviour.BlockStateBase.updateNeighbourShapes` are the write and the
+shape cascade, `CollectingNeighborUpdater.addAndRun` the queue underneath it,
+and `DoorBlock.updateShape` with `Block.updateOrDestroy` is where the top half
+is decided. On the server, start at
+`ServerGamePacketListenerImpl.handleUseItemOn` for the gates and
+`ChunkHolder.broadcastChanges` for how the other half reaches everyone else.
 
 ---
 

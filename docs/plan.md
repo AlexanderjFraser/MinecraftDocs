@@ -32,9 +32,9 @@ A's rulings and the schedule with what each session did; Part 5 the plan as it
 stood at the close, with the session paragraphs and the log.
 
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
-planning session on Fable; **session A set the standard on 2026-09-10, and
-sessions B (Parts I and II), C (Part III) and D (Part IV) followed the same
-day**, so the next session is E (Part V · Blocks). The charter is below; the brief, the
+planning session on Fable; **session A set the standard on 2026-09-10, with
+sessions B (Parts I and II), C (Part III) and D (Part IV) the same day and E
+(Part V) on 2026-09-13**, so the next session is F (Part VI · Entities). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -62,7 +62,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -640,3 +640,56 @@ the nine corrections are one sentence disagreeing with another sentence or a
 figure **on the same page** — the same class session B named — and three of
 those five were found by a reader simply doing the arithmetic the page invited.
 A page that shows its working is a page that can be caught.
+
+**Pass 6, session E — Part V · Blocks** *(2026-09-13).* Seven system pages and
+the landing page, eight readers, one each. Part V arrived at **7 of 7** on the
+closer — the worst per page in the book — and came out at **4**, with three
+dissolving whole rather than being trimmed. `blocks-and-states` lost all three of
+its questions *upward*: the `Level.setBlock`-returns-false answer became the only
+prose in the book that reads the two diamonds in its own write figure, the
+property-identity throw went beside the reference comparison that causes it, and
+the third was the payoff of **the page's own hook** — an unknown state quietly
+becoming air — which the body never developed at all and which now has an H3.
+`signal-and-dust` lost three second tellings and moved its torch burnout up to
+the source census where a torch is first named, which is also the A7 variation
+that pulled it apart from `block-entities`. `diodes-and-observers` lost four
+second tellings, and the one line worth rescuing turned out to be **false**. The
+survivors went 4→2, 4→3, 4→2 and 5→2, and every one of the eight questions left
+is a consequence a player meets that the body does not state.
+**The part-wide finding is the flag word.** Four of eight readers independently
+said the lead figure spends a flag word the page has not minted:
+`blocks-and-states` hands the reader *flags 11*, then gates eight bare numbers
+through a flowchart, and names a bit for the first time 150 lines later in a
+section that defers the whole legend to Reference. The prose half is fixed on all
+four pages — a legend before the figure, name paired with number — and the figures
+went to the queue whole, because whether a flowchart gate may carry a constant
+name is pass 7's ruling and not four pages' patching. **Fifteen facts
+corrected**, every one found by a reader with no source, and three of them are
+counts that do not close against the page's own enumeration — the error class
+sessions B and D both named. The sharpest is on `block-breaking`, where the hook
+says neither clock is ever mentioned on the wire and the page's own section says
+the server broadcasts its clock to everyone within 32 blocks but the breaker;
+next to it, the same page called the two clocks *a tick apart* and *the same
+number* in one section, and the reconciliation — the STOP is handled in the packet
+drain, before that tick's increment, so the server measures the span the client
+counted — is the part's own recurring fact and was nowhere on the page. The
+landing page was re-argued to A6 with *Where the part stops* in its place, a
+generated coverage number, and an argument that at last **names** the four
+answers a block can give and binds two of them to the two channels: pass 5 had
+left that binding inside two mermaid edge labels, so a reader finished the page
+unable to say what it had promised. Its *one thing belongs to nobody* sentence
+became three, which is what [pass3.md](pass3.md) §7 has carried since the
+planning session. Eight *Where to look* lists became prose reading routes under
+A12, with no name lost from the book — checked by diffing every backticked token
+against `HEAD` and then against all of `src/`, which caught four and put them
+back into prose. Part V 2,530 → 2,646 lines. Fifty-one units appended to
+[pass5.md](pass5.md) (eleven logged cuts, six for pass 7, eight for pass 8, four
+for pass 9); eight entries struck and two annotated; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed. **What the session would
+tell the next one**: the readers earned their cost twice over, but not where the
+brief expected. Their four questions produced good structural findings; their
+*Suspected errors* section produced fifteen corrections, and the ones that
+mattered were never "this sentence is false" but "these two sentences cannot both
+be true". Nine of the fifteen are one sentence against another sentence, a
+figure, or an enumeration **on the same page**. A part session should read that
+section first and treat the rest as evidence.

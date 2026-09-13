@@ -144,7 +144,7 @@ excludes nobody, so your own critical hit does travel the whole way out and
 back. And your local copy is genuinely a *different* sound from the one your
 neighbour hears — your client drew its own seed from `Level.soundSeedGenerator`
 rather than reading one off a packet, so the variant and the pitch are rolled
-twice ([block interaction](../blocks/block-interaction.md#questions-players-ask)
+twice ([block interaction](../blocks/block-interaction.md#the-sound-only-you-hear)
 follows a door through both rolls).
 
 The position is quantised on the way:

@@ -71,9 +71,13 @@ event named — the same promise a scheduled tick makes. When
 `BlockBehaviour.BlockStateBase.triggerEvent` returns true, and only then, a
 `ClientboundBlockEventPacket` goes to every player within 64 blocks.
 
+### Who else uses the channel
+
 The piston is the mechanism's most demanding customer but not its only one.
 Three blocks raise events directly — `PistonBaseBlock`, `NoteBlock` and
-`PotentSulfurBlock` — and seven block entities raise their own, reaching
+`PotentSulfurBlock`, the geyser, whose event carries no data at all and exists
+only to stamp the same eruption start time onto both sides' block entities — and
+seven block entities raise their own, reaching
 themselves back through `BaseEntityBlock.triggerEvent`: `ChestBlockEntity`,
 `EnderChestBlockEntity`, `ShulkerBoxBlockEntity`, `BellBlockEntity`,
 `DecoratedPotBlockEntity`, `SpawnerBlockEntity` and `TheEndGatewayBlockEntity`
@@ -87,6 +91,15 @@ but `ComparatorBlockEntity` overrides nothing and nothing anywhere raises a
 comparator event, so the override is dead in both directions.
 
 ## One push, tick by tick
+
+Four flag words go past in the next twenty lines, and they are worth having in
+hand: **324** is *skip the block entity's side effects, moved by piston,
+invisible*; **276** swaps the piston bit for *known shape*; **67** is *moved by
+piston, clients, neighbours*; and **3** is the ordinary *neighbours and
+clients*. Only 67 and 3 tell a client anything. The table in [the write nobody
+is told about](#the-write-nobody-is-told-about) has them row by row, and the
+bit names are the catalogue's ([block update
+flags](../../reference/block-update-flags.md)).
 
 ```mermaid
 sequenceDiagram
@@ -118,21 +131,28 @@ sequenceDiagram
 
 ## How a piston decides, and the line that cannot fire
 
+### Quasi-connectivity is two loops, not a rule
+
 `PistonBaseBlock.getNeighborSignal` is the whole of quasi-connectivity, and it
 is one short method. It asks `SignalGetter.hasSignal` at all six neighbours
 except the one it faces; then, if none of those answered, it repeats the same
 question for five of the neighbours of the position **directly above** the
 piston, skipping `Direction.DOWN` because that would only read the piston
-again. The piston is not the only block that reaches up like this —
+again. The piston is not the only block that reaches up like this, but the
+family is tiny and each member spells the reach out for itself:
 `DispenserBlock.neighborChanged` asks `SignalGetter.hasNeighborSignal` at its
-own position *or* at the one above it, and `DropperBlock` inherits that, and
-`DoorBlock.getStateForPlacement` does the same — but each of the three writes
-the reach out by hand, and no other block in the game has it. That is why
+own position *or* at the one above it, and
+`DoorBlock.getStateForPlacement` asks the same pair when a door is placed.
+`DropperBlock` has the behaviour too, by extending `DispenserBlock` and
+overriding nothing — so **three blocks reach up and only two write it down**,
+and no other block in the game does either. That is why
 quasi-connectivity is a short list of block-by-block quirks rather than a
 redstone rule. What signal means, and how the wire beside the piston comes to
 be connected to it at all, is [signal and dust](signal-and-dust.md#dust-and-how-far-it-reaches).
 
-Between the two loops sits a third question — `SignalGetter.hasSignal` at the
+### The call between the loops is dead
+
+Between those two loops sits a third question — `SignalGetter.hasSignal` at the
 piston's *own* position, looking down — and it can never return true. A
 position answers with strong power only if the block standing there is a
 redstone conductor ([signal and
@@ -141,6 +161,8 @@ dust](signal-and-dust.md#what-a-block-answers-when-it-is-asked-for-power)), and
 overrides no signal method of its own either, so its weak answer is zero as
 well. Strong power reaches a piston the ordinary way, through its conducting
 neighbours, in the first loop. The middle call is dead.
+
+### Three events, and what the third one declines to do
 
 `PistonBaseBlock.checkIfExtend` turns the answer into one of three events.
 Powered and not extended raises `PistonBaseBlock.TRIGGER_EXTEND` — but only if
@@ -154,6 +176,15 @@ game tick, or `ServerLevel.isHandlingTick` says the level is still inside the
 window that opens at the top of the tick and closes when this drain ends ([the
 level
 tick](../server/server-level-tick.md#block-events-close-the-handlingtick-window)).
+
+The two retraction events run the same branch of
+`PistonBaseBlock.triggerEvent`, and they differ in exactly one thing: a sticky
+piston contracting normally may drag the block two ahead back with it, and a
+**drop** may not — the pull is guarded on the event being
+`PistonBaseBlock.TRIGGER_CONTRACT`. So a sticky piston whose extension is
+caught in flight retracts its arm and leaves the block it was carrying where it
+stands. That is the whole of the difference, and it is the thing players
+discover by accident.
 
 ## What moves, and what is simply gone
 
@@ -204,8 +235,10 @@ straight push is somebody else's destination, so the vacated set empties — and
 the reader should take the table's point from the two rows that do fire here:
 the client is told that the base is extended, and **nothing** about the two
 positions now holding placeholders. Each placeholder's
-`PistonMovingBlockEntity` is injected by hand with `Level.setBlockEntity` —
-`MovingPistonBlock.newBlockEntity` returns null, because a moving piston is
+`PistonMovingBlockEntity` is injected by hand, built by the static
+`MovingPistonBlock.newMovingBlockEntity` and installed with
+`Level.setBlockEntity` —
+`MovingPistonBlock.newBlockEntity`, the ordinary factory, returns null, because a moving piston is
 never created by the ordinary block-entity path ([block
 entities](block-entities.md#create-keep-replace-remove)) — and carries the real
 block as `PistonMovingBlockEntity.movedState`. That state is also the one thing
@@ -240,17 +273,33 @@ entity may pass through the very block pushing it.
 `PistonMovingBlockEntity.TICKS_TO_EXTEND` is declared as 2, and the 0.5 is
 written as a literal — no reader of the constant survives the decompile.
 
+Note where those two ticks start. The placeholders are written during the
+*blockEvents* phase, and a ticker goes straight into the level's flat list — so
+the *blockEntities* phase, later in the very same tick, already walks it. The
+motion's first tick is the tick the piston was told about, not the one after,
+which is why a piston is not "a tick late" so much as three ticks long.
+
 The tick *after* progress reaches 1 is the landing. The entity is removed, and
 `Block.updateFromNeighbourShapes` re-fits the moved state to its new
 surroundings before it is written at flags 67, with a waterlogged property
-cleared if it survived the trip. The client holds five extra
-`PistonMovingBlockEntity.deathTicks` before doing the same, which is why the
+cleared if it survived the trip. The arm's position becomes a real
+`PistonHeadBlock`, and that block earns its place in the cast by being the one
+piece of the assembly that talks *backwards*:
+`PistonHeadBlock.neighborChanged` forwards every update it receives to the base
+behind it, so power arriving at the head reaches the piston that owns it, and
+`PistonHeadBlock.affectNeighborsAfterRemoval` destroys that base when the head
+is broken, which is why an arm cannot be mined off a piston and left behind.
+The client holds five extra
+`PistonMovingBlockEntity.deathTicks` before writing the landing, which is why the
 visual arrival lags the server's slightly — and why it does not matter, since
 the server's own write is broadcast anyway.
 
+### The other way to end
+
 `PistonMovingBlockEntity.finalTick` is a **different** operation, not an
 early-exit form of that one, and the difference is what makes an interrupted
-extension clean up after itself. It writes at flags 3 rather than 67, and for
+extension clean up after itself. It writes at flags 3 — plain neighbours and
+clients, without the moved-by-piston bit the ordinary landing carries — and for
 the entity carrying the arm — the one with
 `PistonMovingBlockEntity.isSourcePiston` — it writes **air** instead of the
 moved state, so a retraction that catches its own extension in flight leaves
@@ -260,15 +309,6 @@ contracting piston writes at its own position. It is reached from
 `PistonBaseBlock.triggerEvent`'s contract branch.
 
 ## Questions players ask
-
-**Is a piston really a tick late?** The queue is not a fixed delay — it is a
-wait for one named phase. A lever flipped by a player and a repeater firing
-both land in the same tick the piston was told about, because packets and
-scheduled ticks are both handled before the *blockEvents* phase. What you see
-as the piston's delay is two ticks of motion and a third for the landing, and
-the first of the three is the very tick the piston was told about: the
-placeholders' tickers go straight into the level's list, which the
-*blockEntities* phase then walks later in the same tick.
 
 **Why did my one-tick pulse move nothing at all?** Because
 `PistonBaseBlock.triggerEvent` asks `PistonBaseBlock.getNeighborSignal` again
@@ -280,38 +320,28 @@ nobody sees anything happen either.
 questions are asked of different positions.
 `PistonBaseBlock.getNeighborSignal` deliberately skips the direction the
 piston faces when looking for power, so the block in front never counts as a
-source — and then reaches up a block, which is the only place in the game
-anything does.
-
-**Can a piston push a chest?** No, and the reason is one clause in
-`PistonBaseBlock.isPushable`: anything with a block entity is refused.
-`PistonMovingBlockEntity` has a field for the moved *state* and none for a
-moved block entity, so there is nowhere to put a chest's contents for the two
-ticks of the journey.
-
-**Why did the blocks stay put on my screen when everyone else saw them
-move?** Because the placeholders are not synchronised. Your client built its
-copy by re-running the push from one `ClientboundBlockEventPacket`, and that
-packet is sent once, to players within 64 blocks, only if the server's own
-`BlockBehaviour.BlockStateBase.triggerEvent` returned true. Nothing checks
-afterwards that the two animations agree; what does converge is the
-destination, because the landing write carries `Block.UPDATE_CLIENTS` and is
-broadcast like any other.
+source — and then goes looking one block higher, where a redstone build would
+not think to check.
 
 ## Where to look
 
-`Level.blockEvent` · `ServerLevel.blockEvent` · `ServerLevel.runBlockEvents` ·
-`ServerLevel.doBlockEvent` · `BlockEventData` ·
-`BlockBehaviour.BlockStateBase.triggerEvent` · `BaseEntityBlock.triggerEvent` ·
-`PistonBaseBlock.checkIfExtend` · `PistonBaseBlock.getNeighborSignal` ·
-`PistonBaseBlock.triggerEvent` · `PistonBaseBlock.moveBlocks` ·
-`PistonBaseBlock.isPushable` · `PistonStructureResolver.resolve` ·
-`PistonStructureResolver.addBlockLine` ·
-`PistonStructureResolver.addBranchingBlocks` ·
-`MovingPistonBlock.newMovingBlockEntity` · `PistonMovingBlockEntity.tick` ·
-`PistonMovingBlockEntity.finalTick` ·
-`PistonMovingBlockEntity.moveCollidedEntities` ·
-`ClientPacketListener.handleBlockEvent`
+The channel first: `Level.blockEvent` against `ServerLevel.blockEvent` is the
+one override the page turns on, `ServerLevel.runBlockEvents` and
+`ServerLevel.doBlockEvent` are the drain, and
+`BlockBehaviour.BlockStateBase.triggerEvent` is what a block is finally asked.
+Then the piston: `PistonBaseBlock.checkIfExtend` decides,
+`PistonBaseBlock.getNeighborSignal` is quasi-connectivity,
+`PistonBaseBlock.triggerEvent` runs at the drain and
+`PistonBaseBlock.moveBlocks` does the writing.
+`PistonStructureResolver.resolve` with `PistonStructureResolver.addBlockLine`
+is what moves and `PistonBaseBlock.isPushable` what does not. The motion is
+`PistonMovingBlockEntity.tick` and its two endings,
+`PistonMovingBlockEntity.finalTick` being the interesting one.
+`ClientPacketListener.handleBlockEvent` is the client's entire share.
+`BaseEntityBlock.triggerEvent` and
+`PistonMovingBlockEntity.moveCollidedEntities` are doors this page only points
+at: the seven block entities that animate themselves, and what a push does to
+whatever is standing in the way.
 
 ---
 

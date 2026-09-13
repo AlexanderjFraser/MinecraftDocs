@@ -104,8 +104,10 @@ watched in any order once the vocabulary page is done.
 
 Part V is a hub and six spokes, and the hub is watched first because the
 other six all reach back into the same figure in it: what `Level.setBlock`
-and `LevelChunk.setBlockState` do once the section has been written. Two of
-the six are one lecture in two halves.
+and `LevelChunk.setBlockState` do once the section has been written. That
+figure is also where the two update channels are defined, which is the
+vocabulary every later lecture in the part uses. Two of the six are one
+lecture in two halves.
 
 1. [Blocks and states](systems/blocks/blocks-and-states.md)
 2. [Block interaction](systems/blocks/block-interaction.md)

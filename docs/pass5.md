@@ -79,9 +79,12 @@ rewritten by its own part's session — and the glossary entry by entry.
   radii, so there was nothing to reverse. The other six are their own sessions'
   and session O's. [kind=lecture]
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
-  on the device above; V and VI end on an enumeration of their own pages
-  (`blocks/README`:13 "either choosing the state that goes in, performing the
-  write, or being a block that answers one"; `entities/README`:13, four shared
+  on the device above; ~~V~~ and VI end on an enumeration of their own pages
+  (~~`blocks/README`:13 "either choosing the state that goes in, performing the
+  write, or being a block that answers one"~~ — **done, pass 6 session E**: V's
+  argument now names the four answers a block can give and ends on the claim
+  that two of them are the two channels, one server-only and one on both sides;
+  `entities/README`:13, four shared
   things). The strongest four are III, IV, XI and XIII, and XI is the model: a
   claim, three consequences, then the hook. [kind=lecture]
 - **A seventh, unlisted section exists on twelve of the thirteen**, in five
@@ -1782,16 +1785,26 @@ acted on; pass 4 does not polish.
   The table is now wide enough to want the `custom.css` treatment, and the
   paragraph under it gained four lines explaining why the 82 row does not fire in
   the page's own scenario — true, and a digression inside the page's punchline.
-- `block-breaking`'s **durability answer** grew from two sentences to five to
+- ~~`block-breaking`'s **durability answer** grew from two sentences to five to
   carry `Item.mineBlock`'s three conditions and the shears exception. It is the
-  page's best *Questions players ask* entry and it is now its longest.
+  page's best *Questions players ask* entry and it is now its longest.~~
+  **Kept, pass 6 session E** — it is one of only two answers on the page that
+  survived A2's test, and it is the length it needs to be. The body's deferral
+  above it now *names* `Item.mineBlock`'s four conditions rather than gesturing
+  at "conditional four ways over", so the closer no longer holds an explanation
+  the body needed.
 - `diodes-and-observers`' **comparator fan-out paragraph** now names two callers [kind=voice]
   and says which one the example uses, where it named one. The correction is
   right and the paragraph has lost its shape: the interesting fact
   (`BlockEntity.setChanged` is what makes a comparator notice a chest) is now
   third in the sentence order rather than first.
 
-**The "three differences" tic, and the shape it hides.** `diodes-and-observers`' [kind=lecture]
+~~**The "three differences" tic, and the shape it hides.**~~ **Settled, pass 6
+session E**: one table, and the heading stopped counting its own rows. It is now
+*The observer shares one row with the other two*, and the lead paragraph tells the
+reader the grid is two comparisons — columns one against two for the four
+arithmetic-and-urgency rows, and the third column against either for the single
+row where the observer is in the same business at all. `diodes-and-observers`' [kind=lecture]
 comparison table is introduced as five rows because it *has* five rows, which is
 honest and flat. The real structure underneath is two axes — repeater against
 comparator (four differences, all about arithmetic and priority) and diode
@@ -1836,9 +1849,13 @@ whether that is one table or two.
   after gaining the no-op branch. It is the most linked-to figure in the part and
   the densest; it may want splitting into the chunk write and the tail, which are
   already two subgraphs.
-- **Six Part V pages end on *Questions players ask*** (all but the landing page
+- ~~**Six Part V pages end on *Questions players ask*** (all but the landing page
   and `blocks-and-states`), against session P's rule of thumb of at most half a
-  part. This part is the worst offender per page in the book.
+  part. This part is the worst offender per page in the book.~~ **Done, pass 6
+  session E**: seven of seven on the measure (the tool counted `blocks-and-states`
+  too), tested one answer at a time under A2, and four of seven now. Three
+  closers dissolved whole — `blocks-and-states`, `signal-and-dust` and
+  `diodes-and-observers` — and the survivors went 4→2, 4→3, 4→2 and 5→2.
 
 **Corpus-wide, found here.** The corpus has no settled word for the two update
 channels' *directions*. `block-interaction` says "the direction pointing from
@@ -2357,7 +2374,10 @@ correction):
     the session's own tics.
 
 
-- **2026-09-02, session E — Part IV.** **The length debt is this session's
+- **2026-09-02, session E — Part IV.** *(Pass 6 session E: `pass5_queue.py`
+  routes this unit to `blocks/block-entities` because the text names it as a
+  candidate destination for one of Part IV's cuts. It is a pass-3 log entry, not
+  work — tag it `[kind=record]` at the next sweep.)* **The length debt is this session's
   main bequest.** Ten pages, and eight of them landed at 358–417 lines
   against the 260–340 the brief asked for; the two pilots sit at 377 and
   389, so Part IV is now the corpus's fattest part. Every drafter reported
@@ -3691,34 +3711,48 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **For pass 6, the lecture.**
 
-- `signal-and-dust`'s *The second implementation* stops using the page's trace: [kind=lecture]
+- ~~`signal-and-dust`'s *The second implementation* stops using the page's trace:~~ **done, pass 6 session E** — the section now runs the same lever back the other way and follows the same two dust, and the two differences the hook names are the two bolded claims; the torch answer moved up beside the source list where a torch is first named, and the staircase is stated twice (hook, figure coda) instead of three times. [kind=lecture]
   the lever and the two dust vanish and the section walks
   `ExperimentalRedstoneWireEvaluator`'s fields in call order. Run the same lever
   and two dust through it and cut to the two differences the hook names. The
   same page's torch answer arrives cold — no torch appears anywhere earlier on
   the page — and its staircase is stated three times (hook, figure coda, Q&A).
-- `pistons-and-block-events`' *How a piston decides, and the line that cannot
+- ~~`pistons-and-block-events`' *How a piston decides, and the line that cannot
   fire* carries three subjects under a heading that promises two; splitting the
   trigger paragraph would also give `PistonBaseBlock.TRIGGER_DROP` a heading for
-  *two ways to end* to point back at.
-- `pistons-and-block-events`' cast promises `PistonHeadBlock` "the arm once the
+  *two ways to end* to point back at.~~ **Done, pass 6 session E**: three H3s
+  inside the existing H2, the third of them *Three events, and what the third
+  one declines to do* — and it now says what `PistonBaseBlock.TRIGGER_DROP`
+  actually does, which no page did (the sticky pull is guarded on the event
+  being a contraction, so a drop leaves the carried block standing).
+- ~~`pistons-and-block-events`' cast promises `PistonHeadBlock` "the arm once the
   motion is over, and forwarding neighbour updates back to the base" and the
   body never returns to it. Deliver it or drop the row; the cast is at its
-  ceiling of eight.
+  ceiling of eight.~~ **Delivered, pass 6 session E**, in the landing paragraph
+  and re-derived from the decompile: `PistonHeadBlock.neighborChanged` forwards
+  to the base behind it and `PistonHeadBlock.affectNeighborsAfterRemoval`
+  destroys that base, so the arm is the one piece of the assembly that talks
+  backwards.
 - `blocks-and-states` carries two subjects — the state table and the write —
   and its verified line and opening hook promise only the first, so the
   server-gated destroy at the end arrives unheralded. The page should not be
   split (all six sibling links land on its second half, which is the part's
   hub), but the header line and one clause in the opening would carry the
   reader across the seam.
-- `block-interaction`'s Q&A entry on breaking a door's bottom half teaches the [kind=lecture]
+- ~~`block-interaction`'s Q&A entry on breaking a door's bottom half teaches the
   same thing as the body four sections earlier, with the same three method
-  names. It is the page's only genuine internal duplicate.
+  names. It is the page's only genuine internal duplicate.~~ **Cut, pass 6
+  session E** — the body says it inside the trace, which is the better place.
+  Logged below. [kind=lecture]
 - The *constant nobody reads* device appears several times in Part V [kind=lecture]
   (`PistonStructureResolver.MAX_PUSH_DEPTH`, `PistonMovingBlockEntity.TICKS_TO_EXTEND`,
   `HopperBlockEntity.MOVE_ITEM_SPEED`, plus the torch's three) and the page that
   explains why a decompile cannot tell is `client/the-client-loop`. None of the
-  uses cites it.
+  uses cites it. **Pass 6 session E left this standing on purpose**: all six
+  survived the session, none was cut, and adding the same citation six times in
+  one part is a worse page than leaving the phrase alone. It is a wording
+  decision about how the corpus says *nothing reads this*, so it is pass 8's —
+  retag it there rather than acting on it in a part session.
 
 **For pass 7, the figures.**
 
@@ -4649,3 +4683,146 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   unbounded number of ticks for the chunks, and the prose re-arms the
   twenty-tick ticket only once the task has reached `PrepareSpawnTask.Ready`.
   What holds the chunks between the ticket being placed and *Ready*?
+
+---
+
+## Pass 6, session E — Part V · Blocks (2026-09-13)
+
+**Logged cuts.** Each is a move or a deletion with the reason, per A9. [kind=record]
+
+- `block-interaction`'s Q&A on breaking a door's bottom half — **deleted**, not
+  moved: the body says the same thing with the same three method names inside
+  the trace, four sections above, which is where a reader meets it. [kind=record]
+- `block-breaking`'s *Why did the block come back, and then break anyway?* —
+  **deleted**: it was the third telling of the hook and it ended by pointing at
+  the section that had already explained it. Its own answer said *See "The
+  button is not the switch"*. [kind=record]
+- `block-breaking`'s *Why do other players' cracks lag behind mine?* —
+  **deleted**: every clause of it is in *The cracks belong to everyone but
+  you*. [kind=record]
+- `block-entities`' *Why does my furnace stop smelting when I walk away?* —
+  **deleted**: a near-verbatim second telling of *Loaded is not enough to
+  tick*, whose own last sentence already draws the consequence. [kind=record]
+- `blocks-and-states`' three questions — **all three moved**, none deleted: the
+  `Level.setBlock`-returns-false answer into *Inside the chunk write* (as the
+  page's only prose reading of the two diamonds in its figure), the
+  property-identity throw into *The state, a twenty-line leaf* beside the
+  reference comparison that causes it, and the unknown-state-becomes-air answer
+  into a new H3, *The id that answers air*, because it was the payoff of the
+  page's own hook and lived only at the foot. [kind=record]
+- `signal-and-dust`'s four questions — three **deleted** as second tellings
+  (the staircase, the dust pointing into an unpowerable block, the up-and-down
+  asymmetry — all three stated in the body within the previous eighty lines);
+  the torch burnout **moved** up into the source census, where the torch is
+  first named, since it arrived cold at the foot. Also deleted: the standalone
+  **Forty-two** pull-out, which restated a number the opening had just given,
+  and the number is now derived in the opening instead (seven calls, six
+  neighbours each). [kind=record]
+- `pistons-and-block-events` — three questions **deleted** (pushing the block
+  that powers it; pushing a chest; the blocks staying put, which was the hook
+  again), and the one load-bearing sentence in the first question **moved** into
+  *Two ticks of motion*: the placeholders' tickers go into the level's flat
+  list, so the motion's first tick is the tick the piston was told about. [kind=record]
+- `diodes-and-observers`' four questions — **all four deleted** as second
+  tellings, and the one thing worth keeping was **wrong**: see the correction in
+  [pass9.md](pass9.md). [kind=record]
+- `blocks-and-states`' `state/properties` package tour — **trimmed, not cut**:
+  the two dozen enums went to "two dozen more", and `BlockPattern`,
+  `BlockPatternBuilder`, `BlockInWorld` and `BlockStatePredicate` kept their
+  names with the reason they are there. The reader nominated the whole
+  paragraph; the names are doors and the paragraph is four lines shorter. [kind=record]
+- **Eight *Where to look* lists rewritten to A12**, from 15 to 24 bare names
+  down to prose reading routes in each page's own trace order, with the names
+  that are only doors marked as such. No name was lost from the book — checked by
+  diffing every backticked token in the part against `HEAD` and then against the
+  whole of `src/`, which found four (`ExperimentalRedstoneWireEvaluator.enqueueNeighborWire`,
+  `ExperimentalRedstoneWireEvaluator.updatedWires`, `LevelChunk.getBlockEntityNbtForSaving`,
+  `MovingPistonBlock.newMovingBlockEntity`) and put all four back into prose
+  where they do work. [kind=record]
+
+**For pass 7, the figures.**
+
+- **Part V's lead figures spend flag words the page has not yet minted** — this
+  session's part-wide finding, named independently by four of eight readers.
+  Session E fixed it in the *prose* on all four pages (a legend before the
+  figure on `blocks-and-states` and `pistons-and-block-events`, name-and-number
+  pairing on `block-interaction`, flag 2 spelled out on `signal-and-dust`),
+  which is the cheap half. The figures themselves still label every gate with a
+  bare number. Pass 7 should decide whether a flowchart gate may carry a
+  constant name, on `blocks-and-states`'s write figure first. [kind=figure]
+- `blocks-and-states`' build-time flowchart (twelve classes) has **no paragraph
+  beside it** — the next prose after it is an H3 — and it introduces four
+  classes the cast table omits plus nine member names the page never uses. Its
+  reader skipped it entirely. [kind=figure]
+- `block-interaction`'s sequence diagram is the third thing on the page and
+  **eight of its arrows are later sections in shorthand**; several compress
+  three steps into one label. The reader learnt nothing from it on a first
+  read. [kind=figure]
+- `block-entities`' furnace sequence attributes `ServerChunkCache.blockChanged`
+  to the `ServerLevel` lane, and its `isTicking` gate appears in no gate list in
+  the body. A lane question, not a truth question. [kind=figure]
+- `signal-and-dust`'s sequence diagram traces the line coming **on** while the
+  page's hook, its staircase paragraph and its closer were all about the line
+  going **dark** — and two dust cannot show a descent at all. Session E fixed
+  the *scenario* (the verified line now flips the lever both ways and the
+  experimental section runs the off case), but the figure still shows only the
+  on case. A third dust would make the descent visible. [kind=figure]
+- `diodes-and-observers`' two-channel flowchart held the **only definition of
+  either channel** on the page until this session put one in prose. Worth
+  checking the rest of the corpus for figures that are load-bearing that way. [kind=figure]
+
+**For pass 8, the voice.**
+
+- **`blocks-and-states`' opening now has two hooks**, because the page has two
+  subjects and session E made the second one explicit rather than splitting the
+  page (the hub's second half is what six pages cite). It reads as *both
+  surprises about choosing* and then a second bolded claim about writing. One
+  voice pass should decide whether a two-movement page may have two hooks or
+  whether the second becomes a signpost. [kind=voice]
+- `block-breaking`'s contract blockquote is the page's densest paragraph and
+  arrives second, before any packet is named — the reader called it the hardest
+  thing on the page. Both click pages carry it verbatim by design (pass 5's
+  ruling), so any rewrite is a rewrite of both. [kind=voice]
+- `block-breaking`'s nine-factor destroy-speed paragraph is the part's one
+  inventory written as prose, and mining fatigue's four literal factors are not
+  mapped to their amplifiers. A table, or four fewer words. [kind=voice]
+- `diodes-and-observers`, `DiodeBlock.shouldPrioritize` — "a diode whose
+  own input is not on the far side of it, so a diode reading this one or
+  standing sideways to it, but not one aimed the same way": three directions,
+  two ambiguous *it*s and a negation in one sentence. The reader could not build
+  the geometry. [kind=voice]
+- `diodes-and-observers`, the container formula in prose, immediately
+  followed by a sentence saying one side of its `min` always wins. Say the
+  second first. [kind=voice]
+- `pistons-and-block-events`' "passes a **null** *except* entity" carries the
+  page's whole sound claim and is unreadable without the source. `block-interaction`
+  now explains the *except* convention under a heading of its own
+  (`#the-sound-only-you-hear`); this could cite it. [kind=voice]
+- **"The two loops"** on `pistons-and-block-events` is labelled retroactively —
+  the reader met *between those two loops* before anything had called them
+  loops. Session E's H3s make it findable but not fixed. [kind=voice]
+- `block-entities`' *At the end* jumps two hundred ticks back
+  onto the smelting timeline after two paragraphs of packets, with no marker. [kind=voice]
+
+**For pass 9 (the fact-check), beyond this session's own claims.**
+
+- **`block-breaking`, the contract blockquote's "entry"** — the blockquote says a
+  correction *replaces* what the client remembered, and the figure calls the same
+  thing "the ledger". Session E named the owner (`BlockStatePredictionHandler`,
+  held by `ClientLevel`) on `block-interaction` only. Check that both pages'
+  accounts of what the receipt does are the same account.
+- **`block-breaking`'s delayed destroy across a disconnect** — `ServerPlayerGameMode`
+  keeps `hasDelayedDestroy` and `delayedTickStart` and the delayed branch
+  re-checks almost nothing. What happens if the player disconnects, dies, or
+  switches to creative between the STOP and the server's clock crossing 1.0? The
+  page implies it must survive and never says.
+- **`block-entities`' twenty synced types out of forty-nine** — the count maps
+  nineteen declaring classes onto forty-nine registrations via
+  `HangingSignBlockEntity`. Session E confirmed the nineteen (both lists, and
+  that they differ by exactly `CopperGolemStatueBlockEntity` and
+  `PistonMovingBlockEntity`) but not the forty-nine or the twenty.
+- **`block-interaction`'s upper half on a refused click** — the two corrective
+  block updates cover the clicked position and its face neighbour, and the door's
+  upper half is in neither. Session E's answer is that the prediction ledger holds
+  both halves and rolls both back. Confirm that is what happens on a
+  spawn-protection refusal specifically, where the server writes nothing at all.

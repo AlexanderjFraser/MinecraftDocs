@@ -183,7 +183,7 @@ hashes each changed stack with `HashedStack.create`, and sends
 the real `Inventory`. `Slot.setChanged` reaches `BlockEntity.setChanged`,
 which calls `Level.blockEntityChanged` to mark the chunk and
 `Level.updateNeighbourForOutputSignal` to re-derive the comparator output
-([block entities](../blocks/block-entities.md#one-save-hook-four-ways-out), and
+([block entities](../blocks/block-entities.md#two-hundred-ticks-nobody-watches), and
 [diodes and observers](../blocks/diodes-and-observers.md#one-int-and-the-fan-out-that-exists-to-deliver-it)
 for what a comparator does with it). The whole click is wrapped
 in a try/catch that builds a crash report category naming the menu class,

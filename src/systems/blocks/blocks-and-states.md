@@ -1,6 +1,6 @@
 # Blocks and states
 
-> Verified against **Minecraft 26.2** · Part V · A player right-clicks the top of a stone block holding oak stairs, and one of the stair's eighty pre-built states goes into the world.
+> Verified against **Minecraft 26.2** · Part V · A player right-clicks the top of a stone block holding oak stairs: one of the stair's eighty pre-built states is chosen, and then written — and the tail of that write is the figure the rest of this part points back at.
 
 You are standing on stone with a stack of oak stairs, and you right-click the
 top of the block. A moment later a stair is up there, facing away from you,
@@ -9,14 +9,21 @@ happen. Oak stairs have four properties — *facing*, *half*, *shape*,
 *waterlogged* — and all eighty combinations of them were built before any
 world existed, in the class initialiser of `Blocks`, and numbered into one
 flat table, `Block.BLOCK_STATE_REGISTRY`. What a chunk stores is an index
-into that table. Both of the surprises on this page fall out of that single
-decision. Choosing a property allocates nothing: `StateHolder.setValue`
-reads one cell out of a table of neighbours computed at startup and hands
-back a state that already existed. And the index is not always checked:
-`Block.getId` answers **0** for a state its table has never seen, and
-`Block.stateById` answers `Blocks.AIR`'s default state for a number it does
-not know — so wherever the game reaches the table through that pair, a state
-the two sides disagree about raises nothing at all. It quietly becomes air.
+into that table. Both of the surprises about *choosing* a state fall out of
+that single decision. Choosing a property allocates nothing:
+`StateHolder.setValue` reads one cell out of a table of neighbours computed at
+startup and hands back a state that already existed. And the index is not
+always checked: `Block.getId` answers **0** for a state its table has never
+seen, and `Block.stateById` answers `Blocks.AIR`'s default state for a number
+it does not know — so wherever the game reaches the table through that pair, a
+state the two sides disagree about raises nothing at all. It quietly becomes
+air.
+
+Then the state has to go in, and that is the page's second half and its wider
+job: **the write is where a block state stops being a value and becomes an
+event, and the two channels it can leave by are not the same channel on both
+sides of the game.** Six other lectures in this part are applications of that
+one figure, so it is drawn here in full.
 
 ## The cast
 
@@ -67,11 +74,12 @@ flowchart TB
 A *block* is a kind of thing — oak stairs, stone, water. A *block state* is
 one exact configuration of that kind, and it is a block state, never a block,
 that a chunk section stores, that a packet carries, that a model is chosen
-for. The kind is spread over three classes. `BlockBehaviour` is the base and
-holds the hooks; `Block` extends it and adds the registry holder, the state
-table and the statics everything else in the game reaches for. Both are
-constructed from a `BlockBehaviour.Properties`, a builder that must first be
-given an identity: `BlockBehaviour.Properties.setId` supplies the
+for. The kind is spread over three classes, and the third is the one a reader
+does not expect. `BlockBehaviour` is the base and holds the hooks; `Block`
+extends it and adds the registry holder, the state table and the statics
+everything else in the game reaches for. The third is
+`BlockBehaviour.Properties`, which both are constructed from — a builder that
+must first be given an identity: `BlockBehaviour.Properties.setId` supplies the
 `ResourceKey`, the loot table and the translation key are derived from it,
 and the `BlockBehaviour` constructor throws *Block id not set* without one.
 So a block cannot be built from `BlockBehaviour.Properties.of` outside
@@ -98,7 +106,7 @@ world existed.
 
 `StateDefinition.propertiesByName` is a sorted map, so the axes are ordered
 by property *name*, not by the order the block added them — for stairs the two
-orders happen to coincide, at *facing, half, shape, waterlogged*. Two things
+orders happen to coincide, at *facing, half, shape, waterlogged*. Three things
 follow. The order of the global state ids follows it, because the product is
 built by walking that map. And so does the field order of `BlockState.CODEC`
 and `StateDefinition.propertiesCodec` — which is not the same as saying a
@@ -122,13 +130,13 @@ share a serialised name while being different objects:
 `BlockStateProperties.HORIZONTAL_FACING` are all *facing* on disk.
 
 That pool and the `StringRepresentable` enums its `EnumProperty`s range over —
-`ChestType`, `WoodType`, `NoteBlockInstrument`, `RotationSegment` and two dozen
-more — are the whole of the `state/properties` sub-package: no behaviour, just
-the axes and their values. Two smaller neighbours sit beside it and are not
-part of a state at all: `BlockPattern` with `BlockPatternBuilder`, which match
-a three-dimensional arrangement of `BlockInWorld` — how the game recognises a
-built wither or an iron golem — and `BlockStatePredicate`, a `StateDefinition`
-turned into a test.
+`ChestType`, `WoodType` and two dozen more — are the whole of the
+`state/properties` sub-package: no behaviour, just the axes and their values.
+Two classes beside it read a state rather than being part of one, and are
+worth a name because their scenarios are elsewhere: `BlockPattern` with
+`BlockPatternBuilder` matches a three-dimensional arrangement of
+`BlockInWorld`, which is how the game recognises a built wither, and
+`BlockStatePredicate` is a `StateDefinition` turned into a test.
 
 ### The state, a twenty-line leaf
 
@@ -143,6 +151,15 @@ allocates nothing and it never constructs. The table is installed once by
 `StateHolder.initializeNeighbors`, and a second call throws. Because every
 state is built once, `StateHolder.equals` is final and identity-based: two
 states are the same only if they are the same object.
+
+That reference comparison is why a property lookup can throw on a property
+that looks right. States match their properties by *identity* and properties
+match each other by *value*: `Property.equals` compares the value class and
+the name, refined by `IntegerProperty` and `EnumProperty` to compare the value
+list too. So two separately constructed properties can be equal to one another
+and still make `StateHolder.setValue` throw *Cannot set property … as it does
+not exist*. The constant in `BlockStateProperties` is the object the table was
+built with; a look-alike is not.
 
 `BlockBehaviour.BlockStateBase` extends it and is the state-to-block hop —
 `BlockBehaviour.BlockStateBase.getShape`,
@@ -171,6 +188,21 @@ thread, the client thread, the chunk workers and the meshing pool — it is
 long after the constructor. It is that the writes happen inside a class
 initialiser, and every thread that later reaches a `BlockState` reaches it
 through `Blocks`.
+
+### The id that answers air
+
+That registry is where the opening's second surprise lives, and it is worth
+being exact about how far it goes, because the tolerance is a property of two
+static methods and not of the id. `Block.getId` answers **0** for a state the
+table has never seen and `Block.stateById` answers `Blocks.AIR`'s default
+state for a number it does not know, so a disagreement between the two sides
+raises nothing and quietly becomes air. That pair is behind block-break
+particles, the falling-block spawn packet and
+`EntityDataSerializers.OPTIONAL_BLOCK_STATE`. The wire is stricter in both
+directions: `ClientboundBlockUpdatePacket.STREAM_CODEC` reads the same table
+through `ByteBufCodecs.idMapper`, which uses `IdMap.byIdOrThrow` and fails the
+connection instead, and `ClientboundSectionBlocksUpdatePacket` decodes with
+`IdMapper.byId`, which answers null.
 
 ## Four decisions, four lookups
 
@@ -219,6 +251,16 @@ the world and runs the side effects that belong to the *position*, then
 `Level.setBlock`'s tail runs the side effects that belong to the
 *neighbourhood* — and only if the state it reads back is the one it asked
 for.
+
+The figure below names the flag word's bits by number, because that is how a
+write reads them, so here are the seven it gates on before you meet them: **1**
+is `Block.UPDATE_NEIGHBORS`, **2** `Block.UPDATE_CLIENTS`, **4**
+`Block.UPDATE_INVISIBLE`, **16** `Block.UPDATE_KNOWN_SHAPE`, **32**
+`Block.UPDATE_SUPPRESS_DROPS`, **64** `Block.UPDATE_MOVE_BY_PISTON`, **256**
+`Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` and **512**
+`Block.UPDATE_SKIP_ON_PLACE`. Placement's **11** is therefore *neighbours,
+clients and immediate* — the combination `Block.UPDATE_ALL_IMMEDIATE` — so the
+stair takes every gate below except the two that ask for a bit to be clear.
 
 ```mermaid
 flowchart TB
@@ -297,6 +339,16 @@ all and `Level.setBlock` reports false. Otherwise
 or replaced. A block entity that disagrees with the new state is logged as
 *mismatched* and thrown away.
 
+Note that the two diamonds in the figure are not the same test asked twice.
+The one inside the chunk write asks whether the state is *still* the one just
+written and answers false when it is not; the one after it, back in
+`Level.setBlock`, asks the same question and answers **true** anyway — it has a
+write to report, and what it skips is the whole tail. So *false* means the
+chunk refused the write, and *true* with nothing visible happening means a side
+effect got there first. Those three statements are the only ones that return
+false: a position out of bounds, the server side of a debug world, and the
+chunk write coming back with nothing.
+
 ### Back in Level.setBlock's tail
 
 The first two steps of the tail are how the change becomes visible.
@@ -311,8 +363,11 @@ loaded but not yet simulating tells nobody. Worldgen is silent for a different
 reason again: it never reaches `Level.setBlock` at all, writing through
 `WorldGenRegion` instead.
 
-The last three are the two update channels proper, and the difference
-between them is the fact the rest of this part rests on:
+The next two are the two update channels proper, and the difference
+between them is the fact the rest of this part rests on. (The fifth and last
+step of the tail is neither: `Level.updatePOIOnBlockStateChange`, which keeps
+the village's index of interesting blocks in step with the world and belongs to
+[points of interest](../world/points-of-interest.md#a-record-appears-when-a-block-changes-sometimes-a-task-late).)
 
 **Neighbour updates are server-only.** `Level.updateNeighborsAt` and
 `Level.neighborChanged` are empty methods on `Level`, overridden only by
@@ -354,55 +409,26 @@ does nothing at all on the client, which then waits to be told.
 
 ### The flag word
 
-The flowchart above names the flag word's bits by number, because that is how
-a write reads them. What each number is called, what reads it and how the four
-named combinations decompose are the catalogue's: [block update
-flags](../../reference/block-update-flags.md). Two of them do work on this
-page — placement's **11** is `Block.UPDATE_ALL_IMMEDIATE`, and
-`Block.UPDATE_LIMIT` is a 512 that is not a bit at all.
-
-## Questions players ask
-
-**Why did `Level.setBlock` say false when the block is right there?** It
-returns true whenever the chunk accepted the write, even if the state was
-changed again immediately afterwards and the whole tail was skipped. It
-returns false from three statements: a position out of bounds, the server side
-of a debug world, and the chunk write coming back with nothing. That last one
-has three causes of its own, and only the third is a real failure — writing air
-into a section that holds only air, writing the state that is already there
-(states being interned, that is an identity comparison), or a side effect
-inside the chunk write having replaced the block before it could be confirmed.
-The first two are the common ones.
-
-**Why does my property lookup throw when the property looks identical?**
-Because states match properties by *identity* and properties match each other
-by *value*. `StateHolder.setValue` compares `Property` references with `==`,
-while `Property.equals` compares the value class and the name — refined by
-`IntegerProperty` and `EnumProperty` to compare the value list too. So two
-separately constructed properties can be equal to one another and still make
-`StateHolder.setValue` throw *Cannot set property … as it does not exist*.
-Use the `BlockStateProperties` constant, not a look-alike.
-
-**Does an unknown block state really become air?** For `Block.getId` and
-`Block.stateById`, yes, and that is the pair behind block-break particles,
-the falling-block spawn packet and `EntityDataSerializers.OPTIONAL_BLOCK_STATE`.
-It is not universal. `ClientboundBlockUpdatePacket.STREAM_CODEC` reads the
-same table through `ByteBufCodecs.idMapper`, which uses `IdMap.byIdOrThrow`
-and fails the connection instead, and
-`ClientboundSectionBlocksUpdatePacket` decodes with `IdMapper.byId`, which
-answers null. The tolerant lookup is a property of the two static methods,
-not of the id.
+Those eight bits are not the whole word. There are ten, and what each is
+called, what reads it and how the four named combinations decompose are the
+catalogue's: [block update flags](../../reference/block-update-flags.md). One
+number on this page is not a bit at all — `Block.UPDATE_LIMIT` is 512 like
+`Block.UPDATE_SKIP_ON_PLACE` and means something entirely different.
 
 ## Where to look
 
-`Blocks.register` · `BlockBehaviour.Properties.setId` ·
-`StateDefinition.Builder.create` ·
-`StateDefinition.StateCollection.fillNeighborsForState` ·
-`StateHolder.setValue` · `StateHolder.neighbors` ·
-`BlockBehaviour.BlockStateBase.initCache` · `Block.BLOCK_STATE_REGISTRY` ·
-`StairBlock.getStateForPlacement` · `StairBlock.getStairsShape` ·
-`BlockItem.placeBlock` · `LevelChunk.setBlockState` · `Level.setBlock` ·
-`Block.updateOrDestroy` · `NeighborUpdater.executeShapeUpdate`
+Follow the trace: `Blocks.register` and
+`BlockBehaviour.Properties.setId` build a block,
+`StateDefinition.Builder.create` builds its table and
+`StateDefinition.StateCollection.fillNeighborsForState` fills the cells
+`StateHolder.setValue` will later read. `Block.BLOCK_STATE_REGISTRY` is where
+the numbers come from and
+`BlockBehaviour.BlockStateBase.initCache` is what finishes each state. Then
+`StairBlock.getStateForPlacement` chooses one, `BlockItem.placeBlock` writes
+it, and `LevelChunk.setBlockState` and `Level.setBlock` are the two halves of
+the write. `Block.updateOrDestroy` is the end of a shape update, and
+`NeighborUpdater.executeShapeUpdate` — not named above — is the door into the
+updater that carries one.
 
 ---
 

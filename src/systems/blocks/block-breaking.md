@@ -6,9 +6,11 @@ Hold the button on a stone block and two programs start counting. The client
 adds a fraction to `MultiPlayerGameMode.destroyProgress` every client tick and
 paints the crack; the server sets `ServerPlayerGameMode.destroyProgressStart`
 to the tick the dig began and recomputes, from scratch, how far along it ought
-to be. Between the first packet and the last, **neither clock is ever
-mentioned on the wire** — no progress reports, no heartbeat, nothing but the
-swing animation going up — and on the eighth tick the two answers are the same
+to be. Between the first packet and the last, **neither clock is ever mentioned
+on the breaker's own connection** — no progress reports, no heartbeat, nothing
+but the swing animation going up; the only progress that goes on the wire at
+all is the server's, to *other* players, so that they see your cracks — and on
+the eighth tick the two answers are the same
 number. That agreement is what the whole design rests on, and it is
 also why the failure mode is so strange: **releasing the button does not
 cancel a break.** A client that stops too early gets a deferral, not a
@@ -44,23 +46,23 @@ sequenceDiagram
     participant SL as ServerLevel
     participant Block as Block
 
-    Note over MC,Block: client tick 1, the button goes down
-    MC->>MPGM: startAttack sees a non-air block, startDestroyBlock
-    MPGM->>CL: startPrediction opens sequence N, attack runs, getDestroyProgress is 0.133
+    Note over MC,Block: client tick 1, the button goes down, and the same lap also runs the first continueAttack
+    MC->>MPGM: startAttack sees a non-air block, startDestroyBlock, progress 0
+    MPGM->>CL: continueDestroyBlock adds the first 0.133, so tick 1 already holds one tick's worth
     MPGM->>CL: destroyBlockProgress with stage -1, which clears my own crack
     MPGM->>SGPL: ServerboundPlayerActionPacket START, sequence N
     SGPL->>SPGM: handleBlockBreakAction, destroyProgressStart = gameTicks
     SPGM->>SL: destroyBlockProgress broadcasts the first crack stage to everyone else within 32
     SGPL-->>CL: ClientboundBlockChangedAckPacket N, nothing to reconcile
 
-    loop client ticks 1-7 beside server ticks, with a swing packet up and nothing about progress either way
+    loop client ticks 2-8 beside server ticks, with a swing packet up and nothing about progress on this connection
         MC->>MPGM: continueAttack, continueDestroyBlock adds 0.133
         MPGM->>CL: my own stage, plus a hit sound every fourth tick
-        SPGM->>SPGM: tick, incrementDestroyProgress recomputes 0.133 x (elapsed + 1)
+        SPGM->>SPGM: tick, incrementDestroyProgress recomputes 0.133 x (elapsed + 1) and discards it
         SPGM->>SL: a ClientboundBlockDestructionPacket only when the tenth changes
     end
 
-    Note over MC,Block: client tick 8, and the client is the only side that acts on 1.0
+    Note over MC,Block: still client tick 8: the eighth add reaches 1.064, and the client is the only side that acts on it
     MPGM->>CL: prediction M, playerWillDestroy plays event 2001 locally, setBlock to air with flags 11
     MPGM->>SGPL: ServerboundPlayerActionPacket STOP, sequence M
     Note over SGPL,Block: a server tick, STOP handled off the task queue
@@ -107,19 +109,31 @@ For stone at hardness 1.5 and an iron pickaxe at 6.0, that is 6 ÷ 1.5 ÷ 30 =
 
 ### Why the two answers match
 
-The two clocks count differently and still land on the same number. The client
-accumulates: `MultiPlayerGameMode.continueDestroyBlock` adds one tick's
-fraction each time it runs. The server keeps no accumulator, and its number is
-in fact a tick *ahead* of the client's all the way down — it simply never acts
-on it, because the live branch of `ServerPlayerGameMode.tick` throws the value
-away and only the delayed branch compares it with 1.0.
+The two clocks count differently and still land on the same number, and the
+reason is a matter of *when* the server is asked rather than what it computes.
+The client accumulates: `MultiPlayerGameMode.continueDestroyBlock` adds one
+tick's fraction each time it runs, and the first of those runs in the same
+client tick as the `Minecraft.startAttack` that opened the dig, so after *k*
+client ticks the client holds *k* fractions. The server keeps no accumulator.
 `ServerPlayerGameMode.incrementDestroyProgress` multiplies the per-tick
-fraction by *elapsed ticks plus one*, and that plus one is exactly the client's
-first `Minecraft.continueAttack`, which happens in the same client tick as the
-`Minecraft.startAttack` that opened the dig. Recomputing rather than
-accumulating has a second consequence: swap tools or lose haste mid-dig and the
-server rescales the *whole* dig retroactively, while the client keeps the
-progress it already banked.
+fraction by *elapsed ticks plus one*, and that plus one is exactly the client
+tick that both started and continued.
+
+Now the timing. `ServerPlayerGameMode.tick` increments its own tick counter
+before recomputing, so the number it reaches **inside the level tick** is one
+fraction ahead of the client's — and it never acts on that number, because the
+live branch throws the value away and only the delayed branch compares it with
+1.0. The comparison that decides anything happens somewhere else: the STOP is
+handled in the packet drain, *before* that tick's increment ([the server
+tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)), so
+`ServerPlayerGameMode.handleBlockBreakAction` measures elapsed ticks over the
+same span the client counted and arrives at the same 1.064. The agreement is
+not a coincidence in the arithmetic; it is the packet drain running before the
+levels do.
+
+Recomputing rather than accumulating has a second consequence: swap tools or
+lose haste mid-dig and the server rescales the *whole* dig retroactively, while
+the client keeps the progress it already banked.
 
 They agree without talking because every input is either static data both
 sides loaded — hardness, the block tags, the `Tool` component travelling with
@@ -187,17 +201,22 @@ placing there sends the message *and* both updates ([block
 interaction](block-interaction.md#the-gate-list-and-what-each-refusal-answers-with)).
 The rule is not the gate but the pipeline. A placement's two corrective updates
 sit in one branch below the build-height test and go out for every outcome that
-reaches it, refusal or not. A break has no such branch: each refusal decides
-for itself, and three of the four send the true state back while spawn
-protection sends only its message.
+reaches it, refusal or not. A break has no such branch: each of its five exits
+decides for itself. Three send the true state back — the build height,
+`ServerLevel.mayInteract` and `Player.blockActionRestricted`. Spawn protection
+sends its message and no state. And being out of reach sends nothing at all,
+which is the one that leaves a client wrong until something else corrects it.
 
 ## Speed and drops are two scans of one list
 
 `DataComponents.TOOL` holds a `Tool`: a list of `Tool.Rule`, a
 `Tool.defaultMiningSpeed`, a `Tool.damagePerBlock` and a
 `Tool.canDestroyBlocksInCreative`. Each rule names a set of blocks and carries
-an *optional* speed and an *optional* drop verdict, so a rule can answer one
-question and stay silent on the other. `Tool.getMiningSpeed` and
+an *optional* speed and an *optional* drop verdict, so there are exactly three
+shapes a rule can have, and each has a factory that says so:
+`Tool.Rule.minesAndDrops` carries both, `Tool.Rule.deniesDrops` carries only
+the verdict and `Tool.Rule.overrideSpeed` only the speed.
+`Tool.getMiningSpeed` and
 `Tool.isCorrectForDrops` are two independent walks of the same list, each
 taking the first rule that both matches the block *and* carries the field it
 came for. `ToolMaterial.applyToolProperties` builds every pickaxe, axe, shovel
@@ -205,8 +224,8 @@ and hoe from exactly two rules, in this order:
 
 | the iron pickaxe's rules, in order | what `Tool.getMiningSpeed` does | what `Tool.isCorrectForDrops` does |
 |---|---|---|
-| deny drops on `BlockTags.INCORRECT_FOR_IRON_TOOL` — no speed field | skips it | obsidian matches, answers **no** |
-| mine and drop `BlockTags.MINEABLE_WITH_PICKAXE` at 6.0 | obsidian matches, answers **6.0** | never reached |
+| `Tool.Rule.deniesDrops` on `BlockTags.INCORRECT_FOR_IRON_TOOL` — no speed field | skips it | obsidian matches, answers **no** |
+| `Tool.Rule.minesAndDrops` on `BlockTags.MINEABLE_WITH_PICKAXE` at 6.0 | obsidian matches, answers **6.0** | never reached |
 | nothing matched | `Tool.defaultMiningSpeed`, 1.0 | false |
 
 That is why an iron pickaxe mines obsidian and drops nothing. The speed scan
@@ -214,12 +233,12 @@ falls through the deny rule — it has no speed — and takes the full pickaxe
 6.0; the drop scan stops at the deny. The block still takes forever, but for a
 different reason: `Player.hasCorrectToolForDrops` is false, so
 `BlockBehaviour.getDestroyProgress` divides by 100 instead of 30. No item in
-the game uses all three rule shapes: `Tool.Rule.deniesDrops` and
-`Tool.Rule.overrideSpeed` never appear in the same `Tool`, because the items
-that deny drops on a tag are exactly the ones that name their own speed on
-another. The sword is one of exactly three whose
-`Tool.canDestroyBlocksInCreative` is false — the other two are the mace and the
-trident.
+the game uses all three shapes at once, and the two that never share a `Tool`
+are `Tool.Rule.deniesDrops` and `Tool.Rule.overrideSpeed`: the four mining
+tools pair a deny rule with a *minesAndDrops* rule, while shears and the sword
+— which deny nothing — are the only users of `Tool.Rule.overrideSpeed`. The
+sword is also one of exactly three whose `Tool.canDestroyBlocksInCreative` is
+false; the other two are the mace and the trident.
 
 ## The cracks belong to everyone but you
 
@@ -267,9 +286,10 @@ Drops come last and in a fixed order. If `Player.preventsBlockDrops` (creative)
 the method returns here. Otherwise the tool is copied,
 `Player.hasCorrectToolForDrops` is asked *once* and remembered, and
 `ItemStack.mineBlock` is called **unconditionally** — though what it does is
-conditional four ways over, and not one of those conditions is this page's
-([items and
-stacks](../items/items-and-stacks.md#a-pickaxes-last-point-of-durability)).
+conditional four ways over: a `DataComponents.TOOL` at all, the server side, a
+non-zero hardness and a damage-per-block above zero. Not one of those four is
+the drop verdict, which is the whole point and is [items and
+stacks](../items/items-and-stacks.md#a-pickaxes-last-point-of-durability)'.
 Only then, and only if the
 write succeeded and the remembered answer was yes, does `Block.playerDestroy`
 run: `Stats.BLOCK_MINED`, 0.005 of food exhaustion, and `Block.dropResources`.
@@ -291,12 +311,6 @@ delay. Ores add their experience afterwards, in
 
 ## Questions players ask
 
-**Why did the block come back, and then break anyway?** You released a tick or
-two before the server's clock agreed you were done, so the STOP fell under 0.7
-and became a deferral. The receipt for it carried no correction, so your client
-rolled the prediction back and restored the stone; the server finished the dig
-on its own a tick or two later. See *The button is not the switch*.
-
 **Why does my pickaxe lose durability on obsidian, which drops nothing, but
 not on short grass, which does?** Durability is spent by `ItemStack.mineBlock`,
 which runs before the drop verdict is consulted and does not care about it —
@@ -314,24 +328,20 @@ item, not a special case in the game mode — which is why the client refuses
 first, and why the correcting block update the server sends back is a no-op:
 the client predicted nothing to correct.
 
-**Why do other players' cracks lag behind mine?** Yours are written locally
-every client tick from your own accumulator. Theirs arrive as packets, sent
-only when the server's tenth-of-progress changes, from the server's own clock,
-and only if you are within 32 blocks.
-
 ## Where to look
 
-`Minecraft.startAttack` · `Minecraft.continueAttack` ·
-`MultiPlayerGameMode.startDestroyBlock` ·
-`MultiPlayerGameMode.continueDestroyBlock` ·
-`MultiPlayerGameMode.destroyBlock` ·
-`ServerGamePacketListenerImpl.handlePlayerAction` ·
-`ServerPlayerGameMode.handleBlockBreakAction` · `ServerPlayerGameMode.tick` ·
-`ServerPlayerGameMode.incrementDestroyProgress` ·
-`ServerPlayerGameMode.destroyBlock` · `BlockBehaviour.getDestroyProgress` ·
-`Player.getDestroySpeed` · `Tool.getMiningSpeed` · `Tool.isCorrectForDrops` ·
-`Block.playerWillDestroy` · `Block.playerDestroy` · `Block.popResource` ·
-`ServerLevel.destroyBlockProgress` · `ClientLevel.destroyBlockProgress`
+The two clocks are the thing to read first, and they are three methods:
+`BlockBehaviour.getDestroyProgress` is the shared formula,
+`MultiPlayerGameMode.continueDestroyBlock` is the client's accumulator, and
+`ServerPlayerGameMode.incrementDestroyProgress` is the server's recomputation.
+`ServerPlayerGameMode.handleBlockBreakAction` is the state machine behind all
+three break actions and the 0.7 bar, with `ServerPlayerGameMode.tick` for the
+delayed destroy it can leave behind. Then the ends: `Minecraft.startAttack`
+and `Minecraft.continueAttack` for where a dig begins each frame,
+`ServerPlayerGameMode.destroyBlock` for the gauntlet, and
+`Block.playerWillDestroy` with `Block.playerDestroy` and `Block.popResource`
+for what a broken block leaves behind. `Tool.getMiningSpeed` and
+`Tool.isCorrectForDrops` are the two walks of one rule list.
 
 ---
 

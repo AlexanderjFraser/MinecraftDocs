@@ -23,26 +23,36 @@ same trick for its lock.
 |---|---|---|
 | `DiodeBlock` | everything the repeater and the comparator share: what counts as input, what counts as a side input, and how output leaves | Server |
 | `RepeaterBlock` | a delay in two-tick units, and whether it is locked | Server |
-| `ComparatorBlock` | one arithmetic operation, and how far in front of itself it can see | Server |
+| `ComparatorBlock` | two modes over one pair of inputs, and how far in front of itself it can see | Server |
 | `ComparatorBlockEntity` | one integer — the comparator's whole reason for having a [block entity](block-entities.md#create-keep-replace-remove) at all | Server |
 | `ObserverBlock` | that a neighbour's *state* changed, on a channel the other two do not use for input | Server |
 | `Level` | that any write of a state with an analog output pokes the comparators around it | Server |
 
-## Three blocks, five rows
+## The observer shares one row with the other two
 
-Five rows are the whole of what a redstone circuit sees them do differently.
+The table below is two comparisons wearing one grid, and it repays reading in
+that order. Read the first two columns against each other and you get the
+repeater against the comparator — four rows of difference, all of them about
+arithmetic and urgency, and all of them inside machinery the two share. Then
+read the third column against either of the others and there is only one row
+where the observer is in the same business at all: how it outputs. It reads no
+signal, offers no side input, and is told about the world on a different channel
+entirely, which is why *nothing* is the honest answer in two of its cells.
 
 | | `RepeaterBlock` | `ComparatorBlock` | `ObserverBlock` |
 |---|---|---|---|
 | **what it reads from the front** | `DiodeBlock.getInputSignal` — the signal at the block it faces, and if that is under 15, the raw `RedStoneWireBlock.POWER` of a wire there | the same, then overridden: an analog output if the block in front has one, else one block further through a conductor | nothing. It reads no signal at all |
 | **what it reads from the sides** | `DiodeBlock.getAlternateSignal`, restricted to other diodes (`DiodeBlock.sideInputDiodesOnly` is true), and used only to lock | the same, unrestricted, and used as the second operand | nothing |
-| **how it books its turn** | `DiodeBlock.checkTickOnNeighbor` unchanged: `RepeaterBlock.DELAY` doubled, at one of three priorities | overrides it entirely: always a delay of 2, at `TickPriority.HIGH` or `TickPriority.NORMAL` | `ObserverBlock.startSignal` from a shape update: delay 2, no priority, and only if one is not already booked |
+| **how it books its turn** | `DiodeBlock.checkTickOnNeighbor` unchanged: `RepeaterBlock.DELAY` doubled, at one of the three priorities that method can choose | overrides it entirely: always a delay of 2, at `TickPriority.HIGH` or `TickPriority.NORMAL` | `ObserverBlock.startSignal` from a shape update: delay 2, no priority, and only if one is not already booked |
 | **what it stores** | everything, in the block state | the same, plus one int in a `ComparatorBlockEntity` | everything, in the block state |
 | **how it outputs** | `DiodeBlock.updateNeighborsInFront` | the same | `ObserverBlock.updateNeighborsInFront`, an independent copy making the same two calls |
 
 ## A diode never writes into its target
 
-The output half is the least-known part of all three blocks, and it is shared.
+The output half is the least-known part of all three blocks, and the two diodes
+genuinely share it: one method on `DiodeBlock`, inherited unchanged. The
+observer does the same two things by its own copy of the method, which is the
+one place its machinery converges with theirs.
 A diode declares itself a source unconditionally
 (`DiodeBlock.isSignalSource`), answers `DiodeBlock.ownSignal` with
 `DiodeBlock.getOutputSignal` when `DiodeBlock.POWERED` and zero otherwise, and
@@ -98,7 +108,25 @@ position, and the reading of an `ItemFrame` — but only if **exactly one** fram
 in that block's space faces the way the comparator's `HorizontalDirectionalBlock.FACING` points. The
 direction test comes first and the count second, so a frame pointing some other
 way is not counted at all; two frames facing the comparator's way, and the
-comparator reads neither.
+comparator reads neither. Note what it falls back to when both of those come
+up empty: not zero, but the ordinary front reading it already had. A comparator
+in front of a conductor with two item frames behind it is not broken — it is
+reading the conductor.
+
+### What it does with the two numbers
+
+Having read a front value and a side value, `ComparatorBlock.calculateOutputSignal`
+is two lines. A side reading **greater** than the front one puts the output at
+zero, whatever the mode. Otherwise `ComparatorBlock.MODE` decides, and it holds
+one of exactly two values: in `ComparatorMode.SUBTRACT` the output is front
+minus side, and in `ComparatorMode.COMPARE` — the default, and the mode a
+freshly placed comparator is in — it is the front value *unchanged*. So the
+comparing mode does no arithmetic at all; what it compares is only whether the
+side beats the front. The lit torch is a separate question again:
+`ComparatorBlock.shouldTurnOn` lights it when the front beats the side, and on a
+*tie* only in compare mode — which is why a subtract comparator with equal
+inputs outputs zero and goes dark, while a compare comparator with equal inputs
+outputs the full front value and stays lit.
 
 A container's analog output is
 `AbstractContainerMenu.getRedstoneSignalFromContainer`: every slot's count
@@ -145,6 +173,20 @@ input has already gone, books its own turn-off one delay later at
 is stretched to the delay.
 
 ## The channel the observer listens on
+
+Two channels carry news of a change, and the difference between them is the
+whole of this page's hook, so it is worth stating before the figure draws it.
+The **neighbour** channel — `Level.updateNeighborsAt` reaching each neighbour's
+`BlockBehaviour.neighborChanged` — is what a write enters when it carries
+`Block.UPDATE_NEIGHBORS`, and it exists only on the server, where those methods
+have bodies. The **shape** channel — `Level.neighborShapeChanged` reaching each
+neighbour's `BlockBehaviour.updateShape` — runs on *every* write that does not
+say `Block.UPDATE_KNOWN_SHAPE`, and it runs on both sides. So the neighbour
+channel says *something near you changed and here is who says so*, and the
+shape channel says *your neighbour's state is now this; do you still fit?* —
+which is a stronger promise, because it arrives whether or not the neighbour
+meant to tell anybody ([blocks and
+states](blocks-and-states.md#the-two-update-channels) owns both).
 
 ```mermaid
 flowchart TB
@@ -220,47 +262,23 @@ entering a chest is not a write at all. That path is `BlockEntity.setChanged`,
 which calls it unconditionally, and it is what makes a comparator notice a
 hopper filling a chest that nothing else in redstone would have reported.
 
-## Questions players ask
-
-**Why does an observer fire when I open a door next to it, when doors do not
-power anything?** Because the observer is not looking for power. It watches
-the shape channel, which every ordinary write runs on both sides, and a door
-opening is an ordinary write — flags 10, no neighbour updates, three shape
-passes.
-
-**Why did my repeater stay on after the input dropped?** Because
-`DiodeBlock.tick` turns a repeater on whether or not the input is still there,
-and books the turn-off one delay later. That is the mechanism behind pulse
-extension, and it is two entries in the scheduled-tick queue rather than any
-kind of memory.
-
-**Why can I lock a repeater with another repeater but not with a lever?**
-`DiodeBlock.getAlternateSignal` goes through
-`SignalGetter.getControlInputSignal` with `DiodeBlock.sideInputDiodesOnly`
-true for a repeater, and that flag makes the call answer zero for anything
-that is not a `DiodeBlock`.
-
-**Why does my comparator ignore the item frame?** Because
-`ComparatorBlock.getInputSignal` gathers only the frames in that block's space
-that face the way the comparator's own facing points, and then insists on
-exactly one of them. A second frame pointing the same way makes the count two
-and the method returns nothing rather than choosing; a second frame pointing
-anywhere else is never in the count at all.
-
 ## Where to look
 
-`DiodeBlock.isSignalSource` · `DiodeBlock.ownSignal` ·
-`DiodeBlock.getDirectSignal` · `DiodeBlock.getInputSignal` ·
-`DiodeBlock.getAlternateSignal` · `DiodeBlock.sideInputDiodesOnly` ·
-`DiodeBlock.checkTickOnNeighbor` · `DiodeBlock.shouldPrioritize` ·
-`DiodeBlock.tick` · `DiodeBlock.updateNeighborsInFront` ·
-`DiodeBlock.onPlace` · `RepeaterBlock.getDelay` · `RepeaterBlock.isLocked` ·
-`RepeaterBlock.updateShape` · `ComparatorBlock.checkTickOnNeighbor` ·
-`ComparatorBlock.calculateOutputSignal` · `ComparatorBlock.getInputSignal` ·
-`ComparatorBlock.refreshOutputState` · `ComparatorBlockEntity.getOutputSignal` ·
-`AbstractContainerMenu.getRedstoneSignalFromContainer` ·
-`Level.updateNeighbourForOutputSignal` · `ObserverBlock.updateShape` ·
-`ObserverBlock.startSignal` · `ObserverBlock.tick`
+Read the shared half first, because it is where the two diodes stop being two
+blocks: `DiodeBlock.getInputSignal` and `DiodeBlock.getAlternateSignal` are the
+two readings, `DiodeBlock.sideInputDiodesOnly` is the one boolean that turns a
+repeater's side input into a lock, `DiodeBlock.checkTickOnNeighbor` books the
+turn and `DiodeBlock.shouldPrioritize` decides how urgently, `DiodeBlock.tick`
+is where pulse extension lives, and `DiodeBlock.updateNeighborsInFront` with
+`DiodeBlock.onPlace` is the whole of how a signal leaves. Then the two
+divergences: `ComparatorBlock.getInputSignal` with
+`ComparatorBlock.calculateOutputSignal` and `ComparatorBlock.refreshOutputState`
+for the arithmetic and the int in the block entity, and
+`ObserverBlock.updateShape` with `ObserverBlock.startSignal` for the channel.
+`RepeaterBlock.updateShape` is the lock, and
+`Level.updateNeighbourForOutputSignal` is the fan-out built for comparators.
+`AbstractContainerMenu.getRedstoneSignalFromContainer` is the door into what a
+chest is worth.
 
 ---
 

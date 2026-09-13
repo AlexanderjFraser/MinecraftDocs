@@ -44,6 +44,333 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session E — Part V · Blocks *(2026-09-13)*
+
+Seven system pages and the landing page, eight readers, one each. Every
+correction below was found by a reader with no source and no other page, and
+re-derived by the session against `reference/26.2` before it landed.
+
+### Corrections — what the page said, what the decompile says
+
+1. **`blocks/README`** said "**One** thing in those ten thousand lines belongs
+   to nobody… `SculkSpreader`'s charges… the one mechanism in Part V's two
+   packages that no page in this book explains". There are three, and
+   [pass3.md](pass3.md) §7 has carried the other two since 2026-09-07: the
+   hopper (`HopperBlockEntity` 547 lines with `HopperBlock` 182) and the four
+   half-adopted block-entity state machines (`BeaconBlockEntity`,
+   `ConduitBlockEntity`, trialspawner, vault). The section now names all three
+   and carries the generated coverage number instead of implying the gap is one
+   mechanism wide. This is the sentence pass 6's planning session flagged for
+   this session.
+2. **`blocks/README`**'s verified line said "the four kinds of **block** that
+   answer back" while the body said "the four kinds of **answer** a block can
+   give" twice. The four are a neighbour update, a shape update, a block event
+   and a scheduled tick — answers, not kinds of block. The verified line was
+   wrong; it now says *answer*.
+3. **`blocks/README`** said the tail of a write is "drawn there as the part's
+   **one** flowchart". The part has four flowcharts (two on `blocks-and-states`,
+   one each on `signal-and-dust` and `diodes-and-observers`) and the landing page
+   itself has a fifth. Now "the part's largest flowchart".
+4. **`block-breaking`**'s hook said "**neither clock is ever mentioned on the
+   wire** — no progress reports, no heartbeat". The server's clock *is* on the
+   wire: `ServerLevel.destroyBlockProgress`
+   (`net/minecraft/server/level/ServerLevel.java`:1094) sends a
+   `ClientboundBlockDestructionPacket` to every player in the level within 32
+   blocks whose entity id is not the breaker's (`player.getId() != id`, squared
+   distance under 1024). The page's own *The cracks belong to everyone but you*
+   said so, and its closer said so plainly. Scoped: "neither clock is ever
+   mentioned on **the breaker's own connection**", with the exception stated in
+   the same sentence.
+5. **`block-breaking`** said "three of **the four** send the true state back
+   while spawn protection sends only its message", over an enumeration of
+   **five** exits two paragraphs above.
+   `ServerPlayerGameMode.handleBlockBreakAction`
+   (`net/minecraft/server/level/ServerPlayerGameMode.java`:161-192) has five
+   refusals: out of reach sends nothing at all; above the build height,
+   `ServerLevel.mayInteract` and `Player.blockActionRestricted` each send a
+   `ClientboundBlockUpdatePacket`; spawn protection sends only
+   `ServerPlayer.sendSpawnProtectionMessage`. The count now names its population
+   and all five.
+6. **`block-breaking`** said the server's number "is in fact a tick *ahead* of
+   the client's all the way down" in a section headed *Why the two answers
+   match*, whose first sentence is that they "land on the same number". Both are
+   true of different moments and the page never joined them.
+   `ServerPlayerGameMode.tick` does `++this.gameTicks` before
+   `incrementDestroyProgress` (`ServerPlayerGameMode.java`:112-152), so the live
+   branch runs one fraction ahead and discards it; the STOP is handled in the
+   packet drain, *before* that tick's increment, so
+   `ticksSpentDestroying = gameTicks - destroyProgressStart` spans exactly the
+   ticks the client counted and both sides reach 0.133 × 8. The section now
+   states the rule, then the timing, then the discarded value — and says the
+   agreement is the packet drain running before the levels, which is the part's
+   own recurring fact.
+7. **`block-breaking`** said `Tool.Rule.deniesDrops` and
+   `Tool.Rule.overrideSpeed` "never appear in the same `Tool`, because the items
+   that deny drops on a tag are exactly the ones that name their own speed on
+   another" — over a table whose iron pickaxe plainly has a deny rule *and* a
+   6.0 speed rule. The claim is true and the reason given is not: the pickaxe's
+   second rule is `Tool.Rule.minesAndDrops`
+   (`net/minecraft/world/item/ToolMaterial.java`:37), and
+   `Tool.Rule.overrideSpeed` is used only by `ShearsItem`
+   (`net/minecraft/world/item/ShearsItem.java`:37) and
+   `ToolMaterial.applySwordProperties` (`ToolMaterial.java`:47), neither of which
+   denies anything. The three rule shapes are now named, so "all three rule
+   shapes" has a population, and the reason is the true one.
+8. **`block-entities`** said the save shells were "one of the **five** save
+   shells" while its own heading said *four ways out* over a five-row table. Four
+   of the five rows are shells (`saveCustomOnly`, `saveWithoutMetadata`,
+   `saveWithId`, `saveWithFullMetadata`); the fifth,
+   `BlockEntity.saveAdditional`, is the subclass hook they wrap, and the table's
+   own *who calls it* cell says "nobody directly". Now four.
+9. **`diodes-and-observers`**' closer said two item frames make "the count two
+   and **the method returns nothing** rather than choosing".
+   `ComparatorBlock.getItemFrame` returns null on a count other than one, but
+   `ComparatorBlock.getInputSignal`
+   (`net/minecraft/world/level/block/ComparatorBlock.java`:88-111) then keeps
+   `itemFrameOrBlockSignal` at `Integer.MIN_VALUE` and leaves `resultSignal` as
+   the ordinary front reading from `super.getInputSignal`. It returns the
+   redstone reading, not nothing. The closer is cut; the body now says what it
+   falls back to.
+10. **`diodes-and-observers`**' cast said the comparator decides "**one
+    arithmetic operation**", and the page never said what a comparator computes
+    at all — the reader's largest hole. `ComparatorBlock.MODE` holds one of two
+    `ComparatorMode` values (`ComparatorMode.java`:7), and
+    `ComparatorBlock.calculateOutputSignal` returns 0 when the side beats the
+    front, else front minus side in `ComparatorMode.SUBTRACT` and the front
+    value **unchanged** in `ComparatorMode.COMPARE` — so the comparing mode does
+    no arithmetic. The cast row now says "two modes over one pair of inputs" and
+    a new H3 states both, with `ComparatorBlock.shouldTurnOn`'s tie rule beside
+    them.
+11. **`diodes-and-observers`** said "The output half is the least-known part of
+    all three blocks, and it is **shared**", against its own table's
+    "`ObserverBlock.updateNeighborsInFront`, an independent copy".
+    `ObserverBlock.updateNeighborsInFront` (`ObserverBlock.java`:79-86) is a
+    separate method making the same two calls as
+    `DiodeBlock.updateNeighborsInFront` (`DiodeBlock.java`:193-200), differing
+    only in the third argument to `ExperimentalRedstoneUtils.initialOrientation`
+    (null against `Direction.UP`). Now: shared by the two diodes, copied by the
+    observer, which is the one place their machinery converges.
+12. **`pistons-and-block-events`** said `DispenserBlock`, `DropperBlock` and
+    `DoorBlock.getStateForPlacement` reach up "but **each of the three writes
+    the reach out by hand**". Two do: `DispenserBlock.neighborChanged`
+    (`DispenserBlock.java`:134) and `DoorBlock.getStateForPlacement`
+    (`DoorBlock.java`:130) each spell out
+    `hasNeighborSignal(pos) || hasNeighborSignal(pos.above())`, and those are the
+    only two occurrences of that pair in the tree; `DropperBlock extends
+    DispenserBlock` (`DropperBlock.java`:23) and overrides nothing. Now "three
+    blocks reach up and only two write it down".
+13. **`pistons-and-block-events`**' closer said the piston's reach-up is "the
+    **only** place in the game anything does", 150 lines after the body named
+    three other blocks that do. The closer is cut; the body's corrected count
+    stands.
+14. **`pistons-and-block-events`** named `PotentSulfurBlock` beside the piston
+    and the note block with no gloss, and the session added one — checking it
+    first, because the obvious guess was wrong. It is the geyser:
+    `PotentSulfurBlock.onPlace` (`PotentSulfurBlock.java`:107) raises
+    `level.blockEvent(pos, this, 0, 0)` when placed erupting or continuous, and
+    `PotentSulfurBlock.triggerEvent` (:133) only stamps
+    `PotentSulfurBlockEntity.eruptionTick` with the game time. The gloss says
+    that.
+15. **`signal-and-dust`**'s lead flowchart explained its client branch as
+    "nothing at all. `Level.updateNeighborsAt` and `Level.neighborChanged` are
+    empty on Level" — two true facts wrongly joined, since if those are empty the
+    branch is never reached. `RedStoneWireBlock.neighborChanged`
+    (`RedStoneWireBlock.java`:358-359) opens with its own
+    `!level.isClientSide()`. The node now says what the method does, and the
+    prose beside the figure says the branch is belt and braces.
+
+### Claims introduced
+
+**`blocks/README`** — re-argued to A6, and the argument is new.
+
+- The four answers are now *named and defined* in the argument (neighbour
+  update, shape update, block event, scheduled tick) and the claim is that two
+  of them are the two channels a write can leave by, one server-only and one on
+  both sides. Pass 5 left the landing page promising "two entirely different
+  ways a block hears that its neighbour changed" and never saying which two of
+  the four they were; the binding existed only inside two mermaid edge labels.
+- "Half the surprises in this part are that sentence in another costume" — a new
+  claim about the part, replacing an enumeration of its own pages.
+- The hub figure's prose now says each arrow is labelled with *what the hub
+  hands that spoke*, where it had said "what the spokes reach back into it for"
+  against a figure whose arrows all point outward from the hub.
+- *Where the part stops* carries
+  `{{#include ../../generated/coverage-blocks.md}}` — 50%, generated, in place
+  of a hand-written implication that the gap was one mechanism wide.
+- *Before you start* now says **five** pages are load-bearing and gives one
+  reason each; it had run four names into a ninety-word verbless sentence.
+- "Part X is also where the third thing a player notices about this part lives,
+  after the door and the lamp above" — the back-count is now closed.
+
+**`blocks-and-states`**
+
+- The verified line and the opening now announce the page's second subject: "the
+  write is where a block state stops being a value and becomes an event, and the
+  two channels it can leave by are not the same channel on both sides of the
+  game". The claim that six lectures are applications of that one figure.
+- A legend before the write figure pairing eight bit numbers with their
+  constants, and decomposing placement's 11 as neighbours + clients + immediate
+  (`Block.UPDATE_ALL_IMMEDIATE`). The claim is that those eight are the bits the
+  figure gates on.
+- New H3 **`#the-id-that-answers-air`** carrying the hook's payoff out of the
+  closer: the tolerance is a property of `Block.getId` and `Block.stateById` and
+  not of the id, and the wire is stricter in both directions.
+- New paragraph after the chunk write, stating that the figure's two diamonds are
+  not the same test: the first answers false when the state has moved, the second
+  answers **true** and skips the tail. The three statements that return false are
+  named.
+- "Three things follow" (was two, over three).
+- "The **next two** are the two update channels proper" (was "the last three"),
+  with `Level.updatePOIOnBlockStateChange` named as the tail's fifth step and
+  pointed at `points-of-interest`.
+- The property-identity throw is now stated in *The state, a twenty-line leaf*.
+- *The kind, three classes deep* now names `BlockBehaviour.Properties` as the
+  third.
+
+**`block-interaction`**
+
+- New H3 **`#the-sound-only-you-hear`**, promoted out of the closer because
+  `client/what-makes-a-sound`:147 cited it at `#questions-players-ask` (A2's
+  load-bearing rule). The citation is repointed in this commit. It gains one
+  claim: a lever passes a null *except* entity, so the clicker hears the
+  server's packet — the mirror of the door, cited to `signal-and-dust`.
+- Flags 10 decomposed as 2 + 8 with 1 absent, each named, plus the claim that
+  nothing sets bit 16 and that this is what the next section is about.
+- The prediction ledger belongs to `ClientLevel`, not to
+  `MultiPlayerGameMode`: `ClientLevel.setBlock` hands every state it overwrites
+  while predicting to a `BlockStatePredictionHandler`, so **both** halves of the
+  door are recorded and both are restored together
+  (`net/minecraft/client/multiplayer/ClientLevel.java`:238-251, `:195`).
+- "The reach the **third** gate measures" (was "the first of them", against a
+  table that makes it third).
+- New H2 *The other half of the same lecture*, which was a trailing paragraph
+  inside the closer; it now claims the two pages are deliberately the same shape
+  and that what changes between them is the clock.
+
+**`block-breaking`**
+
+- The figure's loop is now "client ticks 2-8" with tick 1's add shown
+  separately, because the old labels showed seven adds and then acted on 1.0
+  with no eighth. The claim: `startAttack` and the first `continueAttack` are the
+  same lap of `Minecraft.handleKeybinds`
+  (`net/minecraft/client/Minecraft.java`:2170, :2192), and
+  `MultiPlayerGameMode.startDestroyBlock` sets progress to zero, so tick 1 ends
+  holding one fraction.
+- "recomputes 0.133 x (elapsed + 1) **and discards it**" on the server's loop
+  arrow.
+- The three rule shapes named with their factories.
+- `ItemStack.mineBlock`'s four conditions named on the page (a `DataComponents.TOOL`
+  at all, the server side, non-zero hardness, damage-per-block above zero), where
+  the page had deferred all four and its closer then explained two.
+
+**`block-entities`**
+
+- The four hooks are now *two pairs*, and the claim is that the disk pair's
+  emptiness is an absence and the network pair's is a decision.
+- "there are nineteen of those too, and it is a different nineteen" — verified:
+  19 `getUpdatePacket` overriders and 19 `getUpdateTag` overriders among
+  `BlockEntity` classes, differing by exactly `CopperGolemStatueBlockEntity`
+  (packet only) and `PistonMovingBlockEntity` (tag only).
+- *Create, keep, replace, remove* now says the two decisions happen in the
+  opposite order to the heading, and why: removal must precede
+  `BlockBehaviour.BlockStateBase.onPlace` and creation follows it.
+- **The two hundred has a population**: `AbstractFurnaceBlockEntity.cookingTotalTime`
+  is the recipe's *cookingtime*, and `SmeltingRecipe.MAP_CODEC` defaults that
+  field to 200 (`net/minecraft/world/item/crafting/SmeltingRecipe.java`:12),
+  which `iron_ingot_from_smelting_raw_iron.json` does not override. And the timer
+  runs backwards two a tick with the fire out and either slot empty, clamped at
+  zero (`AbstractFurnaceBlockEntity.java`:168-171) — the reader's unanswered
+  question.
+- "The tick that lights the fire moves three of them, because data 1 is the
+  fuel's total burn duration; after that only 0 and 2 change" — reconciling the
+  prose with the figure, which had said 0, 1 and 2 then 0 and 2.
+- The furnace calls the base `preRemoveSideEffects` *first*
+  (`AbstractFurnaceBlockEntity.java`:417-418), so it drops like everything else
+  and then pops the experience. The page had read as though overriding meant not
+  dropping.
+- Three H3s inside `#loaded-is-not-enough-to-tick` (the anchor three pages cite,
+  unchanged): the two gates, the list that prunes itself, three cadences.
+
+**`signal-and-dust`**
+
+- The forty-two is now **derived** in the opening (seven `Level.updateNeighborsAt`
+  calls, six neighbours each) rather than asserted and then repeated in a
+  pull-out.
+- The verified line flips the lever **both ways**, because the hook and the
+  staircase are about the line going dark and the traced scenario was only the
+  line coming on.
+- "the whole of the reach: a wire fed at 15 is at 1 fifteen blocks later and at
+  0 on the sixteenth, which is a dark block rather than a shorter line" — the
+  section is headed *Dust, and how far it reaches* and never stated a reach.
+- `RedStoneWireBlock.shouldSignal` now closes the page's own forward reference:
+  it is why no other dust can see a strongly powered block.
+- *The second implementation* is re-argued on the page's own lever and two dust,
+  with the two differences the hook names as its two bolded claims: nothing is
+  written until the network is computed (so the near dust goes straight to zero
+  rather than stepping down), and the fan-out is per connected side instead of
+  seven positions. The claim that the piston east of the two dust is still told,
+  and told once.
+- The torch's burnout mechanism moved into the source census as the one source
+  that keeps state the contract cannot see.
+- The 1.21 blockquote at the foot, and it now says *why* the nullable
+  `Orientation` matters: it is what lets the experimental evaluator order a
+  fan-out relative to where the update came from.
+
+**`pistons-and-block-events`**
+
+- A four-flag-word legend before the sequence figure (324, 276, 67, 3), with the
+  claim that only 67 and 3 tell a client anything.
+- Three H3s inside *How a piston decides*, and the third states what
+  `TRIGGER_DROP` does, which no page did: both retraction events run the same
+  branch and the sticky pull is guarded on the event being
+  `PistonBaseBlock.TRIGGER_CONTRACT` (`PistonBaseBlock.java`:237), so a drop
+  leaves the carried block standing.
+- New H3 *Who else uses the channel* over the census, and *The other way to end*
+  over `finalTick`.
+- `PistonHeadBlock` delivered: `PistonHeadBlock.neighborChanged`
+  (`PistonHeadBlock.java`:107-110) forwards to the base behind it and
+  `PistonHeadBlock.affectNeighborsAfterRemoval` (:84-90) destroys that base, so
+  an arm cannot be mined off a piston and left behind.
+- "the motion's first tick is the tick the piston was told about, not the one
+  after, which is why a piston is not 'a tick late' so much as three ticks
+  long" — promoted out of the closer.
+- `MovingPistonBlock.newMovingBlockEntity` named as the static factory beside
+  `MovingPistonBlock.newBlockEntity` returning null, which removes a body-against-
+  reading-list name mismatch.
+- Flags 3 on `finalTick` glossed as plain neighbours and clients, without the
+  moved-by-piston bit.
+
+**`diodes-and-observers`**
+
+- The comparison table's heading is now *The observer shares one row with the
+  other two* (was *Three blocks, five rows*), and the lead paragraph claims the
+  grid is two comparisons: columns one against two for four rows, the third
+  against either for one.
+- New H3 *What it does with the two numbers*, stating both comparator modes,
+  the zero-when-the-side-wins rule and `ComparatorBlock.shouldTurnOn`'s tie
+  behaviour — with the consequence that a subtract comparator with equal inputs
+  goes dark and a compare comparator with equal inputs stays lit at full value.
+- **Both channels defined in prose** before the figure that had been their only
+  definition, with the claim that the shape channel's promise is stronger because
+  it arrives whether or not the neighbour meant to tell anybody.
+- The item-frame fallback: the ordinary front reading, not nothing.
+
+### Anchors moved (every citation repointed in this commit)
+
+- `block-interaction#questions-players-ask` → `#the-sound-only-you-hear`
+  (cited by `client/what-makes-a-sound`:147).
+- `block-entities#one-save-hook-four-ways-out` → `#two-hundred-ticks-nobody-watches`
+  on `items/containers-and-menus`:186 — **not** an anchor this session moved: the
+  citation was for `BlockEntity.setChanged` and
+  `Level.updateNeighbourForOutputSignal`, which the save-hook section has never
+  explained and the furnace trace does. A mis-pointed citation, corrected in
+  passing.
+- `diodes-and-observers#three-blocks-five-rows` renamed with no inbound links
+  (checked with `check_links.py --inbound`).
+- **No link in the book landed on any Part V closer anchor** except the
+  `what-makes-a-sound` one above, which is why three closers could dissolve
+  whole.
+
 ## Pass 6, session D — Part IV · The world *(2026-09-10)*
 
 Ten system pages and the landing page, all eleven read first by one agent each

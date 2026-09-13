@@ -21,7 +21,7 @@ level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates)).
 
 | class | what it decides | thread |
 |---|---|---|
-| `BlockEntity` | the position, the cached state, the components, and the four defaults every subclass inherits — two of which are *say nothing* | whichever thread owns the level |
+| `BlockEntity` | the position, the cached state, the components, and four defaults every subclass inherits: two for disk, and two for the network that both amount to *say nothing* | whichever thread owns the level |
 | `BlockEntityType` | which blocks the entity is legal on, and what constructs it | immutable once the registry is built |
 | `EntityBlock` | whether a block has an entity at all, which one, and which ticker *per level* | — |
 | `LevelChunk` | the position-to-entity map, the ticker wrapper per position, and create / keep / replace / remove on every write | the chunk's owning thread |
@@ -32,11 +32,14 @@ level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates)).
 
 ## A furnace tells nobody anything
 
-`BlockEntity` has four hooks a subclass is expected to fill in, and its own
-answers to all four are deliberately weak. `BlockEntity.saveAdditional` and
-`BlockEntity.loadAdditional` do nothing. `BlockEntity.getUpdateTag` returns
-an empty tag. `BlockEntity.getUpdatePacket` returns **null** — the base class
-declines to be synced, and a subclass that wants to be must say so.
+`BlockEntity` has four hooks a subclass is expected to fill in, and they come
+in two pairs. `BlockEntity.saveAdditional` and `BlockEntity.loadAdditional` are
+the disk pair, and the base class's versions do nothing because the base class
+has no fields of its own. `BlockEntity.getUpdateTag` and
+`BlockEntity.getUpdatePacket` are the network pair, and *their* emptiness is a
+decision rather than an absence: the tag comes back empty and the packet comes
+back **null**. The base class declines to be synced, and a subclass that wants
+to be must say so.
 
 **Nineteen** classes say so, and every one of them answers with
 `ClientboundBlockEntityDataPacket.create` of itself: signs, banners, beacons,
@@ -49,7 +52,8 @@ forty-nine, because `HangingSignBlockEntity` is a type of its own that
 inherits `SignBlockEntity`'s override and adds nothing.
 
 The overriders of the packet and the overriders of the tag are not the same
-list, and the two classes that differ are instructive.
+list — there are nineteen of those too, and it is a different nineteen — and the
+two classes that differ are instructive.
 `PistonMovingBlockEntity` overrides `BlockEntity.getUpdateTag` but not the
 packet, so its state travels only in a chunk send
 ([pistons and block events](pistons-and-block-events.md#the-write-nobody-is-told-about)).
@@ -71,10 +75,10 @@ subclass; everything else is bookkeeping the base class adds.
 | what runs | what it writes | who calls it |
 |---|---|---|
 | `BlockEntity.saveAdditional` | the subclass's own fields, and nothing else | nobody directly |
-| `BlockEntity.saveCustomOnly` | that alone | thirteen of the nineteen `BlockEntity.getUpdateTag` overrides, and the pick-block path, which then strips the keys that are now components |
-| `BlockEntity.saveWithoutMetadata` | that plus *components* | the two below, plus the copy-NBT debug key, `BlockInput` and the falling block |
-| `BlockEntity.saveWithId` | that plus *id* | two callers that record their own position separately: `AdventureModePredicate` and `StructureTemplate` |
-| `BlockEntity.saveWithFullMetadata` | that plus *id*, *x*, *y* and *z* | `LevelChunk.getBlockEntityNbtForSaving`, the chunk-save form, and every command that reads a block's NBT |
+| `BlockEntity.saveCustomOnly` | that alone | thirteen of the tag overrides, and the pick-block path |
+| `BlockEntity.saveWithoutMetadata` | that plus *components* | the two below, plus `BlockInput` and the falling block |
+| `BlockEntity.saveWithId` | that plus *id* | the two callers that record their own position separately |
+| `BlockEntity.saveWithFullMetadata` | that plus *id*, *x*, *y* and *z* | `LevelChunk.getBlockEntityNbtForSaving`, and every command that reads a block's NBT |
 
 Reading back is `BlockEntity.loadWithComponents` (fields plus components) or
 `BlockEntity.loadCustomOnly` (fields only) over a `ValueInput`
@@ -99,7 +103,10 @@ A block entity that appears because a *block* appeared is created and
 destroyed inside one method: `LevelChunk.setBlockState`, after the section
 write, the heightmaps and the light checks ([what a write
 does](blocks-and-states.md#the-two-update-channels)). That is the lifecycle
-path, and it makes two decisions, in this order. It is not the only way one
+path, and it makes two decisions — but in the opposite order to the one this
+section is named for, because the old entity has to go before
+`BlockBehaviour.BlockStateBase.onPlace` runs and the new one is built after it.
+Removal first, then creation. It is not the only way one
 comes into being: a chunk arriving from disk or from the network builds its
 entities from saved tags, and `LevelChunk.getBlockEntity` in its *immediate*
 mode constructs a missing one on a plain read — which is the mode every
@@ -182,6 +189,14 @@ for that item — 1600 for coal — and one fuel item is consumed. Then
 `AbstractFurnaceBlockEntity.cookingTimer` advances by one. Where the recipe
 comes from is [recipes](../items/recipes.md#loading-one-scan-one-swap-and-four-indexes-built-later).
 
+The two hundred is the recipe's number rather than the furnace's:
+`AbstractFurnaceBlockEntity.cookingTotalTime` holds the recipe's *cookingtime*,
+and `SmeltingRecipe`'s codec defaults that field to **200** for any recipe that
+does not name one — which raw iron's does not. Nor is the timer a stopwatch that
+merely stops. With the fire out and either slot empty it runs *backwards*, two a
+tick, clamped at zero, so an interrupted smelt loses its progress in half the
+time it took to earn it.
+
 Two writes leave the block entity, and neither leaves the server this tick.
 The first is the fire: lit-ness is a *block state*, so the ticker calls
 `Level.setBlock` on its own position with `AbstractFurnaceBlock.LIT` flipped.
@@ -207,8 +222,10 @@ slots against the values last sent and emits a
 `ClientboundContainerSetDataPacket` per difference. Those four ints are the
 furnace's entire GUI: the flame is data 0 over data 1 and the arrow data 2
 over data 3, read by `AbstractFurnaceMenu.getLitProgress` and
-`AbstractFurnaceMenu.getBurnProgress`. While smelting, only 0 and 2 change,
-so it is two packets a tick per open screen and none at all with no viewer.
+`AbstractFurnaceMenu.getBurnProgress`. The tick that lights the fire moves
+three of them, because data 1 is the fuel's total burn duration; after that
+only 0 and 2 change, so a steady smelt is two packets a tick per open screen
+and none at all with no viewer.
 How a menu is opened, synchronised and closed is
 [containers and menus](../items/containers-and-menus.md#the-chest-you-see-is-not-the-chest).
 
@@ -222,6 +239,12 @@ from a take *or* a shift-click, calls
 orbs at the player and unlocks the recipes.
 
 ## Loaded is not enough to tick
+
+Three things about that list are worth separating: the gates over it, the way
+it maintains itself, and the fact that what a ticker does *between* calls is
+nobody's business but its own.
+
+### The two gates, and the distance that is not view distance
 
 `Level.tickBlockEntities` walks one flat list, `Level.blockEntityTickers`,
 under two gates the tickers themselves never see.
@@ -240,6 +263,8 @@ level, inside the world border, and then, on a `ServerLevel` only, the chunk at
 the live state and ticking only while `BlockEntityType.isValid` still holds,
 logging once and skipping while it does not.
 
+### The list that prunes itself
+
 The list is never searched. Removal rebinds the chunk's
 `LevelChunk.RebindableTickingBlockEntityWrapper` to `LevelChunk.NULL_TICKER`,
 whose `TickingBlockEntity.isRemoved` is permanently true, and the next pass of
@@ -249,6 +274,8 @@ is walked every tick anyway. Additions made *during* the walk go to
 pass, so a block entity created by another block entity's tick starts ticking
 one tick later. The client runs the same method from `Minecraft.tick`, after
 its entity pass and before `ClientLevel.tick`, and only while unpaused.
+
+### Three cadences the gates know nothing about
 
 A ticker's cadence is its own business, and the hopper is the one worth
 knowing: `HopperBlockEntity` moves one item and then sets a cooldown, so a
@@ -276,12 +303,6 @@ lifecycle — with different fields in the middle.
 
 ## Questions players ask
 
-**Why does my furnace stop smelting when I walk away, even though the chunk
-is still loaded?** Because loading and simulating are two different
-distances, and `Level.shouldTickBlocksAt` asks about the second. The chunk is
-in memory, its entity is in the map and its ticker is in the list — and
-`Level.tickBlockEntities` walks past it every tick without calling it.
-
 **Why doesn't the client know what is in a chest until I open it?**
 `ChestBlockEntity` overrides neither sync hook, so a chunk send carries its
 type and position with no tag at all (an empty update tag is stored as null)
@@ -295,9 +316,10 @@ exact mirror of the furnace.
 them?** Because dropping is the *base class's* behaviour, not the block's:
 `BlockEntity.preRemoveSideEffects` drops the contents of anything that
 implements `Container`. Eight classes override that hook, and
-`ShulkerBoxBlockEntity` overrides it to do nothing whatever. The furnace
-overrides it too, to pop the experience owed for uncollected smelts at the
-block — awarding the recipes to nobody.
+`ShulkerBoxBlockEntity` is the one that overrides it to do nothing whatever.
+The furnace overrides it too and calls the base version *first*, so it drops
+like everything else and then pops the experience owed for uncollected smelts
+at the block — awarding the recipes to nobody.
 
 **Why does the arrow only move when the screen is open?** Because the arrow
 is not a property of the furnace. It is data slot 2 of an
@@ -307,15 +329,18 @@ menu is gone, and the furnace goes on smelting with no packets at all.
 
 ## Where to look
 
-`BlockEntity.getUpdatePacket` · `BlockEntity.setChanged` ·
-`BlockEntity.loadStatic` · `BlockEntity.saveWithFullMetadata` ·
-`BlockEntity.preRemoveSideEffects` · `BlockEntityType.isValid` ·
-`EntityBlock.newBlockEntity` · `EntityBlock.getTicker` ·
-`BaseEntityBlock.createTickerHelper` · `LevelChunk.setBlockState` ·
-`LevelChunk.updateBlockEntityTicker` · `LevelChunk.BoundTickingBlockEntity` ·
-`LevelChunk.NULL_TICKER` · `Level.tickBlockEntities` ·
-`Level.shouldTickBlocksAt` · `ChunkHolder.broadcastBlockEntity` ·
-`AbstractFurnaceBlockEntity.serverTick` · `AbstractFurnaceMenu.getBurnProgress`
+Start with the two hooks that decide everything else:
+`BlockEntity.getUpdatePacket` and `BlockEntity.setChanged`, neither of which
+sends anything for a furnace. `BlockEntity.loadStatic` is the one place a class
+is chosen from a tag, and `BlockEntity.preRemoveSideEffects` is the last word
+before one is unregistered. The lifecycle is
+`LevelChunk.setBlockState` with `LevelChunk.updateBlockEntityTicker` and
+`LevelChunk.NULL_TICKER`, and the ticking is `Level.tickBlockEntities` over
+`Level.shouldTickBlocksAt`. Then `AbstractFurnaceBlockEntity.serverTick` for
+the smelt itself and `ChunkHolder.broadcastBlockEntity` for the one call site
+that ever asks a block entity for a packet. `EntityBlock.getTicker` and
+`BaseEntityBlock.createTickerHelper` are not named above and are the door into
+how any block hands out a ticker at all.
 
 How a block entity is *drawn* — and why a chest's block model is empty — is
 [block-entity rendering](../rendering/block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them), in Part XI.
