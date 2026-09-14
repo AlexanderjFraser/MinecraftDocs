@@ -44,6 +44,198 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session I — Part IX · Networking *(2026-09-14)*
+
+Five system pages and the landing page, six readers, one each. Every
+correction below was found by a reader with no source and no other page, and
+every one was re-derived against `reference/26.2` before the fix.
+
+### Corrections — decompile open
+
+- `what-the-client-is-told`:415 — *"Everything in the next section is
+  invisible **except** through that channel"*, of the debug feed. **False, and
+  by a wide margin.** `DebugSubscriptions` registers sixteen subscriptions
+  (`net/minecraft/util/debug/DebugSubscriptions.java`:16-31) — brains, goal
+  selectors, entity paths, POIs, raids, structures, neighbour updates, game
+  events, village sections, the three bee/breeze debuggers, redstone-wire
+  orientations, entity/block intersections, game-event listeners and dedicated
+  tick time. Nothing in that list exposes the world seed, loot tables, game
+  rules, scheduled ticks, the ticket graph, non-syncable attributes or the
+  creeper's swell counter, all of which the *never told* table lists. Now
+  stated with its scope and its count.
+- `what-the-client-is-told`:211 — *"The first term in that decision"*, of
+  `Entity.getRequiresPrecisePosition`. The **prose was right and the figure and
+  the table were both wrong**: `ServerEntity.java`:182 tests
+  `!getRequiresPrecisePosition() && !deltaTooBig && teleportDelay <= 400 &&
+  !wasRiding && wasOnGround == onGround()`, so precision is the first
+  conjunct. The figure's edge label listed it second and the table listed it
+  seventh; both are now in the source's order, and the table gained a sentence
+  saying the order is the source's and why that matters.
+- `what-the-client-is-told`, the gate-3 table — *"every
+  `ServerEntity.FORCED_POS_UPDATE_PERIOD` calls, gated or not | a position
+  packet regardless"*. The counter advances on every call
+  (`ServerEntity.java`:265) but the packet is built inside the gate
+  (`ServerEntity.java`:138 and :174), so a forced position packet still needs
+  an open gate. Row rewritten.
+- `chat-and-signing`:172 — `MinecraftServer.enforceSecureProfile` *"governs
+  only the decoder used before one does"*. **False, and the page's own table
+  said so six rows later**: besides selecting the pre-session decoder
+  (`ServerGamePacketListenerImpl.java`:295), the flag gates
+  `ServerGamePacketListenerImpl.performUnsignedChatCommand` (:1716). Row
+  rewritten to name both.
+- `chat-and-signing`:80 — *"Four things in that picture are worth naming"*
+  over five bolded paragraphs. Counted; now five.
+- `the-connection`:69 — *"Four things in that picture are worth stopping on:
+  the framing, the hop, the drain, and the fact that `Connection` appears once
+  but exists twice"*, over six bolded paragraphs, **the fourth of which the
+  page never delivered at all**. The lead-in now names the six and states the
+  two-`Connection` fact in place.
+- `packets-and-stream-codecs`:56 — *"the five chat-shaped packets"*.
+  `ClientboundTagQueryPacket` carries a `CompoundTag` and answers `/data get`
+  (`ClientboundTagQueryPacket.java`:14); it is not chat-shaped. What the five
+  share is a payload composed at run time rather than assembled from fixed
+  fields. Rewritten. *(Also a self-correction: the session's first fix claimed
+  all five carry a `Component`, which is true of four.)*
+- `packets-and-stream-codecs`:336 — *"The frame limit does most of the work,
+  and it is not on this page"*, three paragraphs above a limits table with the
+  frame limit in it. Rewritten to say whose the limit is and why the table
+  carries it anyway.
+
+### Claims introduced
+
+- `the-connection`, the opening: the swing is now cashed.
+  **`ServerboundSwingPacket` carries the hand and nothing else;
+  `ServerGamePacketListenerImpl.handleAnimate` calls `Player.swing(hand)`;
+  `LivingEntity.swing`'s one-argument form passes `sendToSwingingEntity =
+  false`, so `ClientboundAnimatePacket` reaches every tracker and not the
+  swinger** (`LivingEntity.java`:2141-2155,
+  `ServerGamePacketListenerImpl.java`:1913). Also the new last paragraph of
+  the opening, which declares the page's second movement — a structural
+  claim, not a factual one.
+- `the-connection`, new section *A throw out of `Connection.tick`, and why the
+  channel decides what it costs* — promoted out of the closer, same content.
+  New sections *What a terminal packet does to the codecs* (renamed from
+  *Getting back to unconfigured, which nobody asks for*), *The first listener,
+  and who is allowed to install it* (split out of it), and *What the client
+  dials is not what the player typed* (split out of *The threads underneath
+  it*). The gloss on *auto-read* — "Netty's own switch for whether a channel
+  keeps pulling bytes off the socket without being asked" — is new.
+- `protocol-phases`, the opening: **status is the fifth phase and a login
+  never enters it** — reconciling *four languages* against *five phases*,
+  which the page previously left to a section a hundred lines down.
+- `protocol-phases`: **configuration has no deadline, and that is
+  deliberate.** `ServerConfigurationPacketListenerImpl.tick` (:195-196) calls
+  the common base's `keepConnectionAlive` before the current task, so a stuck
+  configuration is closed by an unanswered keep-alive rather than by a
+  phase-specific timeout — unlike login's six hundred ticks. New paragraph,
+  and the sentence explaining *why* ("a slow login is the client's fault, and
+  a slow configuration is usually the server still finding chunks") is the
+  session's reading, not the source's.
+- `protocol-phases`: **protocol 754 is 1.16.4's number** and the two refusals
+  are asymmetric (`ServerHandshakePacketListenerImpl.java`:65). The clause
+  "the oldest that can render a modern kick screen" is an inference from the
+  two branches' behaviour and should be checked.
+- `protocol-phases`, the login figure: `HELLO --> VERIFYING` split into two
+  edges, because the prose promises three branches and the figure drew two.
+- `protocol-phases`, cast: two rows folded into one and a new row for
+  `ServerCommonPacketListenerImpl` · `CommonListenerCookie`; the client row's
+  thread cell now reads "the client's main thread for the last step" where it
+  read "Render".
+- `protocol-phases`: **`ServerboundClientInformationPacket` carries language,
+  view distance and skin-part settings** (`ClientInformation.java`:8).
+- `what-the-client-is-told`: **`EntityType.updateInterval` defaults to three
+  and thirty types override it — one for the three `Display` entities, twenty
+  for arrows, experience orbs, dropped items, falling blocks, tridents and
+  spectral arrows** (`EntityType.java`:505 for the default; thirty call sites,
+  15 at 10, 6 at 20, 4 at 2, 3 at 1, one each at 4 and 5). The reading — "the
+  thing moving fastest is told least often, because a ballistic path is
+  something the client can extrapolate exactly" — is the session's.
+- `what-the-client-is-told`: **`PlayerChunkSender.MAX_UNACKNOWLEDGED_BATCHES`
+  is ten** (`PlayerChunkSender.java`:33), moved into the body from the
+  dissolved closer, which was the only place the page ever gave the number.
+  The gloss on *dead reckoning* is new.
+- `chat-and-signing`: **the first five rows of the check table run on the
+  Netty thread, in that order** — three inside
+  `ServerGamePacketListenerImpl.unpackAndApplyLastSeen` (the offset, the
+  acknowledged-bits walk, then `verifyChecksum` at
+  `LastSeenMessagesValidator.java`:74), then the character check and the
+  chat-visibility refusal inside `tryHandleChat` (:1830-1833), which posts to
+  the server only after both.
+- `chat-and-signing`: **`MessageSignatureCache.push` has exactly two call
+  sites and they are the two ends of one connection** —
+  `ServerGamePacketListenerImpl.java`:1983 and
+  `ClientPacketListener.java`:1082 — and it inserts the last-seen list with
+  the new signature behind it, newest-first, shuffling back displaced entries
+  the batch did not contain (`MessageSignatureCache.java`:38-66).
+- `chat-and-signing`: **a broken chain survives death.**
+  `signedMessageDecoder` is assigned in the constructor and in
+  `resetPlayerChatState` only (`ServerGamePacketListenerImpl.java`:295,
+  :2437); `PlayerList.respawn` reuses the listener (`PlayerList.java`:413)
+  and `ServerPlayer.restoreFrom` copies the chat session
+  (`ServerPlayer.java`:1729). New closer answer.
+- `chat-and-signing`: **the chat throttler's ceiling is twenty per configured
+  second** — `TickThrottler(20, 20 * getChatSpamThresholdSeconds())` (:286) —
+  and *chat-spam-threshold-seconds* defaults to ten
+  (`DedicatedServerProperties.java`:152), so 200 points; commands have an
+  independent budget from *command-spam-threshold-seconds*, also ten (:151).
+  "About ten messages sent faster than the decay" is arithmetic, not a source
+  claim.
+- `chat-and-signing`, the heading *Three ways to say no* → *Three ways to say
+  no, and one way not to ask*, with a new paragraph making `ChatAbilities` the
+  fourth. Two citations repointed.
+- `packets-and-stream-codecs`: **`ClientboundBundleDelimiterPacket` is the one
+  subclass of the abstract `BundleDelimiterPacket`** — the page named both and
+  never related them. The reading of the two `JsonOps` packets ("both are read
+  by a client that may not share this build's registries") is an inference the
+  session drew and should be checked.
+- `packets-and-stream-codecs`, two new sections out of the dissolved closer:
+  *What a skippable packet actually costs* and *One type, several encodings*.
+  The latter's closing clause — "the same message, written differently
+  depending on whether a `RegistryAccess` exists yet to write it against" — is
+  a new claim about *why* the two codecs differ.
+- `networking/README`: the part's argument now ends on a claim rather than on
+  the symptom list — **"the wire is not a pipe between two halves of one
+  machine but a border between two machines, each of which treats what arrives
+  from the other as a claim rather than a fact."**
+- **Six *Where to look* lists became prose reading routes** under A12, and
+  each carries claims about what a file is like to read: `Connection` "in
+  three sittings", `LastSeenMessagesValidator` "sixty lines of suspicion",
+  `ServerHandshakePacketListenerImpl` "sixty lines and one switch",
+  `ConfigurationTask` "a three-method interface", `Packet` "four methods",
+  `PacketReport` "thirty lines", `VecDeltaCodec` "forty lines". These are
+  claims about file sizes and shapes and pass 9 should spot-check them.
+
+### Anchors and citations
+
+Four headings renamed, and the link gate caught three citations on the first:
+`the-connection#getting-back-to-unconfigured-which-nobody-asks-for` →
+`#what-a-terminal-packet-does-to-the-codecs`, repointed from
+`packets-and-stream-codecs`:62 and `protocol-phases`:10 and :225 — all three
+wanted the general mechanism and none wanted the rare return path the old
+heading named. `networking/README`'s citation of
+`the-connection#the-threads-underneath-it` was repointed to
+`#what-the-client-dials-is-not-what-the-player-typed`, which is what its
+sentence actually wanted. `chat-and-signing#three-ways-to-say-no` →
+`#three-ways-to-say-no-and-one-way-not-to-ask`, repointed from
+`client/hud`:206 and `commands/brigadier-and-commands`:137. Two closers
+dissolved whole (`what-the-client-is-told`, `packets-and-stream-codecs`) and
+no link landed on either anchor.
+
+### For pass 9's attention, found and not fixed
+
+- `packets-and-stream-codecs`: a reader asked what happens to a packet already
+  queued or already on the wire at the configuration-to-play switch — which
+  chain numbers it. Not answered on the page and not re-derived; a genuine
+  gap.
+- `what-the-client-is-told`: the page says the client runs `Creeper.tick`
+  locally "swell counter and all" and that neither the fuse nor the counter is
+  ever sent. A reader asked what makes the explosion line up. Not answered.
+- `the-connection`: "the nine handlers that never hop" is a count whose
+  population lives on `reference/threads.md`; not re-counted this session.
+- `chat-and-signing`: the cast row calls `SignedMessageValidator.KeyBased` and
+  `ChatTrustLevel` "Render" thread. Two readers flagged *Render* as a term the
+  page never glosses; whether it is the right thread name was not checked.
+
 ## Pass 6, session H — Part VIII · The player *(2026-09-13)*
 
 Seven system pages and the landing page, eight readers, one each. Every

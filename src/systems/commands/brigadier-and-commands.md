@@ -134,7 +134,7 @@ Netty thread first — the hop the other packets take is
 ([the server
 tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)
 counts them, and [chat and
-signing](../networking/chat-and-signing.md#three-ways-to-say-no) says what each
+signing](../networking/chat-and-signing.md#three-ways-to-say-no-and-one-way-not-to-ask) says what each
 of those checks catches). What matters for a *command* is only that the
 validation which can disconnect you runs before the parse does — so a command
 whose text is illegal never reaches the dispatcher at all.

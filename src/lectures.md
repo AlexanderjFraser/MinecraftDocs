@@ -221,8 +221,9 @@ it.
 
 Part IX is the wire three times, and two things it carries. The first two
 lectures are one lecture in two halves and should be watched together; the
-third finishes the wire's own story, and the last two are applications of the
-play phase which need neither it nor each other.
+third finishes the wire's own story by showing the connection changing
+language, and the last two both sit inside the last of those languages and
+need neither it nor each other.
 
 1. [The connection](systems/networking/the-connection.md)
 2. [Packets and stream codecs](systems/networking/packets-and-stream-codecs.md)

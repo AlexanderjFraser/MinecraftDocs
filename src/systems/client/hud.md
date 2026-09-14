@@ -203,7 +203,7 @@ the text rather than beside the bar; each tag additionally carries a short
 `GuiMessageTag.logTag` string, which is the only part of it that reaches
 `ChatLog` — a separate ring of `LoggedChatEvent`s kept for the reporting
 screens rather than for display. Which verdict a message earned is [chat and
-signing](../networking/chat-and-signing.md#three-ways-to-say-no)'; this page
+signing](../networking/chat-and-signing.md#three-ways-to-say-no-and-one-way-not-to-ask)'; this page
 owns the bar.
 
 **Is the pumpkin blur hardcoded?** No. The camera overlay list is

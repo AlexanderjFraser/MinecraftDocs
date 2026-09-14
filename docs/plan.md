@@ -33,9 +33,9 @@ stood at the close, with the session paragraphs and the log.
 
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
 planning session on Fable; **session A set the standard on 2026-09-10, with
-sessions B (Parts I and II), C (Part III) and D (Part IV) the same day and E
-(Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13**, so the
-next session is I (Part IX · Networking). The charter is below; the brief, the
+sessions B (Parts I and II), C (Part III) and D (Part IV) the same day, E
+(Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, and I
+(Part IX) on 2026-09-14**, so the next session is J (Part X · The client). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -63,7 +63,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10 and E, F, G and H on 2026-09-13; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -372,6 +372,51 @@ run between two of passes 6 to 8, and again if 26.4 lands before pass 10.
 A re-read, rarely a rewrite. A system that changed shape rather than names
 is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
 to §7.
+
+**Pass 6, session I — Part IX · Networking** *(2026-09-14).* Five system pages
+and the landing page, six readers, one each. The part arrived with the most
+queue entries of any (17) and came out with two, and the headline is not one of
+pass 6's devices. **Three of the five pages made a promise in a lead-in
+sentence and then broke it**: `chat-and-signing`'s *"four things in that
+picture"* over five bolded paragraphs; `the-connection`'s *"four things"* over
+six, of which the fourth — *"`Connection` appears once but exists twice"* — the
+page never delivered at all; and `what-the-client-is-told`'s *"the first term
+in that decision"*, where the prose was right about the source and its own
+figure and its own table both put the term elsewhere. None is a fact a
+fact-check would query; each is an arithmetic disagreement between a sentence
+and the text under it, and each was found at once by a reader who counted
+because the sentence told them to. **A lead-in that names a number is a claim
+about the page, and it is the cheapest kind to break, because editing the
+section under it does not touch it.** Beside them, **twelve more corrections**,
+the sharpest being a bullet claiming the debug channel exposes *everything* the
+next section calls invisible — `DebugSubscriptions` has sixteen entries and
+none of them is the seed, the loot tables, the game rules or a scheduled tick —
+and `MinecraftServer.enforceSecureProfile` described as governing "only" the
+pre-session decoder six rows above the page's own table row saying it gates the
+unsigned-command refusal too. The closer went **4 of 5 → 2**: two dissolved
+whole, and `what-the-client-is-told`'s was the purest case the pass has found —
+all seven answers second tellings of a section that had already delivered the
+same consequence, and the only fact it held that the body lacked (ten
+unacknowledged batches) was put back where the constant is named. The two that
+stayed lost their mechanism answers to sections of their own, including the one
+`server-tick` cites. **Four headings renamed and five citations repointed**,
+and the shape is sessions F–H's a fourth time with the boundary moved out:
+three of the five had been landing on *Getting back to unconfigured, which
+nobody asks for* while wanting the general mechanism inside it, and the landing
+page had been citing *The threads underneath it* for a fact about DNS — so it
+is not only closers and trace headings but **any heading whose name is narrower
+than its section**. Six *Where to look* lists became prose reading routes under
+A12. The landing page took A6 (the seventh section moved above *Reference*,
+trimmed 43 → 27 lines, its hand-free coverage number now the include), its
+argument reversed off the symptom list onto a claim — *the wire is a border
+between two machines, each of which treats what arrives from the other as a
+claim rather than a fact* — and *before you start* reordered into reading order,
+which settles the queue's standing non-dependency entry by acting on it rather
+than leaving it. Part IX's five pages 2,261 → 2,368 lines; the landing page
+163 → 152. Twenty-one units appended to [pass5.md](pass5.md) (five logged cuts,
+seven for pass 7, seven for pass 8, two notes); fifteen entries struck, three
+retagged `[kind=record]` or `[kind=voice]`, two annotated; the session's entry
+in [pass9.md](pass9.md). All five gates green; deployed.
 
 **Pass 6, session H — Part VIII · The player** *(2026-09-13).* Seven system
 pages and the landing page, eight readers, one each. The part arrived at

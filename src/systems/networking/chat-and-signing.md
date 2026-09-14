@@ -77,7 +77,7 @@ sequenceDiagram
     RCPL->>SGPL: ServerboundChatAckPacket, once the offset passes 64
 ```
 
-Four things in that picture are worth naming before the checks are.
+Five things in that picture are worth naming before the checks are.
 
 **The client signs the conversation, not just the sentence.** The window it
 signs is the window it now treats as acknowledged, so the signature binds the
@@ -126,7 +126,7 @@ copy that was filtered away entirely, telling the *sender* so. A message whose
 sender is `Util.NIL_UUID` is a system message and leaves as an unsigned,
 unreportable `ClientboundDisguisedChatPacket` instead.
 
-## Three ways to say no
+## Three ways to say no, and one way not to ask
 
 ```mermaid
 flowchart TD
@@ -155,12 +155,34 @@ it. The **connection** dies immediately — through the same funnel as any other
 fault ([the connection](the-connection.md#how-a-connection-dies)) — and the
 player is back at the multiplayer list.
 
+**And there is a fourth way, which is why the flowchart starts where it
+does.** A client can refuse before the server is ever asked. `ChatAbilities`
+is a client-side permission set the server has no part in, stripped
+independently by game options, launcher policy and the account profile, and it
+decides whether this client will send or accept anything at all
+([permissions](../commands/permissions.md#what-the-client-is-allowed-to-believe)).
+Nothing below applies to a message that was never sent, and a player in that
+state sees no error from the server because there was no exchange to fail.
+`ChatVisiblity` is the sliver of the same idea the server *is* told about, and
+it has three values, not two — `ChatVisiblity.HIDDEN` still lets action-bar
+text through.
+
 ## Every check, and what it costs
 
 The first fifteen rows are the server treating the client as the adversary.
 The last three are the client treating the server as one — the same design
 mirrored, because a server can lie about who said what at least as easily as a
 client can.
+
+The order of the rows is the order the checks run in, and the first five run
+on the Netty thread, before the message is handed to the server at all: the
+three window checks inside
+`ServerGamePacketListenerImpl.unpackAndApplyLastSeen`, then the character
+check and the chat-visibility refusal inside
+`ServerGamePacketListenerImpl.tryHandleChat`. The flowchart above draws only
+the two of those five that close the connection; everything from the sixth row
+down happens inside the task
+`ServerGamePacketListenerImpl.tryHandleChat` posts to the server.
 
 | the check | what it catches | what dies |
 |---|---|---|
@@ -169,14 +191,14 @@ client can.
 | `LastSeenMessages.Update.verifyChecksum` | the two sides holding different signatures in slots whose bits agree — a desync the crypto would otherwise report as a bad signature | **connection**, unless the client sent `LastSeenMessages.Update.IGNORE_CHECKSUM` |
 | `ServerGamePacketListenerImpl.isChatMessageIllegal`, over `StringUtil.isAllowedChatCharacter` | section signs and control characters — formatting injected into everyone else's chat | **connection** |
 | `ServerPlayer.getChatVisibility`, non-commands only | a player who turned chat off and sent a line anyway | **message**, with a red *chat.disabled.options* back to the sender |
-| `SignedMessageChain.Decoder.unpack`, no signature present | an unsigned message once a chat session exists — unconditionally, whatever `MinecraftServer.enforceSecureProfile` says, which governs only the decoder used before one does | **message** |
+| `SignedMessageChain.Decoder.unpack`, no signature present | an unsigned message once a chat session exists — unconditionally, whatever `MinecraftServer.enforceSecureProfile` says: that flag selects the decoder used *before* a session exists, and separately gates the unsigned-command refusal two rows down | **message** |
 | the same, `ProfilePublicKey.Data.hasExpired` | a session key past its expiry still being used to sign | **message** |
 | the same, a timestamp before the last accepted one | a replayed or reordered message from this sender | **chain** |
 | the same, `PlayerChatMessage.verify` | content, timestamp, salt or window that do not match the signature — a forgery, or a proxy editing text in flight | **chain** |
 | `ServerGamePacketListenerImpl.collectSignedArguments`, an unknown argument name | a client signing arguments of a command the server's own parse does not have | **chain**, broken explicitly |
 | the same, a signable argument with no signature | signatures stripped from *some* arguments of a signed command | **message** — the chain is left intact |
 | `ServerGamePacketListenerImpl.performUnsignedChatCommand` | a signable command sent down the plain command packet with its signatures removed | **message**, and only when `MinecraftServer.enforceSecureProfile` is on |
-| `ServerGamePacketListenerImpl.detectRateSpam`, a `TickThrottler` per player | flooding: each message costs 20 and one point decays per tick | **connection**, except for operators and the singleplayer host |
+| `ServerGamePacketListenerImpl.detectRateSpam`, a `TickThrottler` per player | flooding: each message costs 20, one point decays per tick, and the ceiling is twenty per configured second — *chat-spam-threshold-seconds*, ten by default, so 200 points, or about ten messages sent faster than the decay | **connection**, except for operators and the singleplayer host |
 | `ServerGamePacketListenerImpl.sendPlayerChatMessage`, via `LastSeenMessagesValidator.trackedMessagesCount` | a client that is sent signed messages and never acknowledges them | **connection**, past 4,096 pending |
 | `ServerGamePacketListenerImpl.handleChatSessionUpdate` | a key that expires *earlier* than the one it replaces, or one `RemoteChatSession.Data.validate` cannot trace to Mojang's services key | **connection** |
 | `ClientPacketListener.handlePlayerChat`, the global index | a server dropping, duplicating or reordering messages beneath the player, which would falsify any report drawn from the log | **connection** |
@@ -217,6 +239,17 @@ attributable. One sender is misbehaving, everyone else's conversation is
 intact, and the proportionate answer is to stop trusting that sender — not to
 end a session for every other player in the room.
 
+What keeps the two caches identical is that neither end chooses what goes in.
+`MessageSignatureCache.push` takes a message's body and its signature, builds
+a queue of the last-seen signatures with that signature behind them, and
+writes them into 128 slots newest-first, shuffling back any displaced entry
+the new batch did not already contain. It is called in exactly two places, and
+they are the two ends of one connection: the server as it sends a signed
+message to that player, and that player's client as it handles the packet.
+Same input, same method, same order — which is why an index means the same
+thing at both ends, and why nothing can put them back in step once they are
+not.
+
 **Sixty-four** — the acknowledgement offset a client may accumulate before
 `ClientPacketListener.markMessageAsProcessed` sends a bare
 `ServerboundChatAckPacket` unprompted. That packet exists so that a player who
@@ -255,6 +288,14 @@ milliseconds** and the encoded key, checked against Mojang's services key. The
 receiving client allows `ProfilePublicKey.EXPIRY_GRACE_PERIOD` — eight hours —
 that the signing chain on the server does not.
 
+**The private half lives nowhere on disk.** `LocalChatSession` holds the pair
+for as long as a session lasts, and `AccountProfileKeyPairManager` writes the
+key file only when `SharedConstants.IS_RUNNING_IN_IDE` and deletes it
+otherwise, so a shipped client re-fetches from the account service every
+launch — and only if `ClientboundLoginPacket.onlineMode` said the server was
+in online mode, which is the packet that opens the play phase ([protocol
+phases](protocol-phases.md#play-and-the-way-back)).
+
 ## Commands: one signature per argument
 
 `ClientPacketListener.sendCommand` parses the command locally and builds a
@@ -266,11 +307,11 @@ index, all of them sharing one timestamp, salt and window. *Signable* means
 the argument type implements `SignedArgument`, and in 26.2 exactly one type
 does — `MessageArgument`, behind the message-shaped commands, and the
 enumeration of which commands register it is [brigadier and
-commands](../commands/brigadier-and-commands.md#signed-arguments-in-one-paragraph)'.
+commands](../commands/brigadier-and-commands.md#signed-arguments-in-one-paragraph)'s.
 `MessageArgument` is also the one route by which chat text has its selectors
 expanded, which is how a command message comes to carry unsigned content at
 all: the expansion itself, its permission and its parse are [text
-components](../foundations/text-components.md#resolution-what-a-server-does-to-a-component-before-it-sends-it)'.
+components](../foundations/text-components.md#resolution-what-a-server-does-to-a-component-before-it-sends-it)'s.
 What matters here is only that the expanded string is the one the recipient
 reads and the signature does not cover it.
 
@@ -279,8 +320,9 @@ name**, which is where two rows of the table above come from: a name its parse
 does not have breaks the chain outright, while a signable argument the client
 left unsigned only fails the command. Both sides cap the shape of the packet
 at `ArgumentSignatures.MAX_ARGUMENT_COUNT` — eight — and
-`ArgumentSignatures.MAX_ARGUMENT_NAME_LENGTH`, sixteen. Commands run against
-their own `TickThrottler`, separate from chat's and with its own threshold. A
+`ArgumentSignatures.MAX_ARGUMENT_NAME_LENGTH`, sixteen. Commands run against their own `TickThrottler`, separate from chat's and built
+the same way from *command-spam-threshold-seconds*, which also defaults to
+ten — so a player has two independent budgets and can spend both. A
 command message that ends up with no signed argument is broadcast as a
 `ClientboundDisguisedChatPacket`: chat-type decorated, unsigned, unreportable.
 
@@ -299,13 +341,6 @@ alive on a server that decorates — or on a command message that carried a
 selector, which is the one unsigned copy vanilla does send. A player's own
 lines on an integrated server skip both tests and are secure by definition.
 
-**Can a server delete a message from my chat?** It has the packet for it:
-`ClientboundDeleteChatPacket` is registered and handled, and the handler will
-pull the line out of the player's own chat-delay queue if their *chatDelay*
-option means it has not been drawn yet ([the
-HUD](../client/hud.md#questions-players-ask) owns that queue and the four
-collections beside it). Nothing in the game constructs it.
-
 **Why can I report some lines and not others?** `LoggedChatMessage.canReport`
 needs a signature from the player being reported, and system messages,
 disguised command output and anything a broken chain swallowed carry none.
@@ -315,23 +350,14 @@ re-verified independently, with
 `ChatReportContextBuilder.collectAllContext` walking the last-seen links
 backwards for the conversation around it.
 
-**Where does my signing key live?** Nowhere, in a shipped client:
-the client's `LocalChatSession` holds the pair for as long as a session
-lasts and `AccountProfileKeyPairManager` writes the key file only when
-`SharedConstants.IS_RUNNING_IN_IDE` and deletes it otherwise, so each launch
-re-fetches from the account service — and only if
-`ClientboundLoginPacket.onlineMode` said the server was in online mode — the
-packet that opens the play phase ([protocol
-phases](protocol-phases.md#play-and-the-way-back)).
-
-**Why can I not chat here even though nothing is wrong?** Because a client can
-refuse before the server is ever asked. `ChatAbilities` is a client-side
-permission set the server has no part in, stripped independently by game
-options, launcher policy and the account profile, and it decides whether this
-client will send or accept anything at all ([permissions](../commands/permissions.md#what-the-client-is-allowed-to-believe)).
-`ChatVisiblity` is the sliver of that the server *is* told about, and it
-has three values, not two — `ChatVisiblity.HIDDEN` still lets action-bar text
-through.
+**Does dying clear a broken chain?** No, and nothing short of a key rotation
+does. The chain decoder lives on `ServerGamePacketListenerImpl`, and a respawn
+builds a new `ServerPlayer` while keeping the same listener —
+`PlayerList.respawn` copies the connection across and `ServerPlayer.restoreFrom`
+copies the chat session with it — so the broken link survives death, dimension
+changes and anything else that replaces the player object. Only
+`ServerGamePacketListenerImpl.handleChatSessionUpdate` installs a fresh
+decoder.
 
 **And if somebody's session key fails validation?** Which side notices decides
 the cost. On the server it closes the connection. On another client,
@@ -342,19 +368,29 @@ by `SignedMessageValidator.REJECT_ALL` where secure profiles are enforced.
 
 ## Where to look
 
-`ChatScreen.normalizeChatMessage` · `ClientPacketListener.sendChat` ·
-`LastSeenMessagesTracker.generateAndApplyUpdate` ·
-`ServerGamePacketListenerImpl.handleChat` ·
-`ServerGamePacketListenerImpl.unpackAndApplyLastSeen` ·
-`LastSeenMessagesValidator.applyUpdate` ·
-`ServerGamePacketListenerImpl.tryHandleChat` · `SignedMessageChain.Decoder` ·
-`PlayerChatMessage.updateSignature` · `PlayerList.broadcastChatMessage` ·
-`OutgoingChatMessage.create` ·
-`ServerGamePacketListenerImpl.sendPlayerChatMessage` ·
-`ClientPacketListener.handlePlayerChat` · `MessageSignatureCache.push` ·
-`SignedMessageValidator.KeyBased` · `ChatListener.handlePlayerChatMessage` ·
-`ChatTrustLevel.evaluate` · `ClientPacketListener.markMessageAsProcessed` ·
-`ChatReportContextBuilder.collectAllContext`
+Follow one message, in the order it travels. **`ClientPacketListener.sendChat`**
+is where a line becomes a signed object, and
+**`LastSeenMessagesTracker.generateAndApplyUpdate`** beside it is the window
+being committed to. **`ServerGamePacketListenerImpl.handleChat`** is the
+receiving end, and it is short — the two methods it calls —
+`ServerGamePacketListenerImpl.unpackAndApplyLastSeen` and
+`ServerGamePacketListenerImpl.tryHandleChat` — are the five Netty-thread
+checks in the table, in order. Then **`PlayerList.broadcastChatMessage`** for the
+per-recipient fan-out and **`ClientPacketListener.handlePlayerChat`** for the
+far end doing it all again in reverse.
+
+Two classes are the argument rather than the route.
+**`LastSeenMessagesValidator`** is sixty lines of suspicion and is worth
+reading in full, because every rejection in it is a connection close.
+**`SignedMessageChain`** is shorter still, and the one line in
+`SignedMessageChain.Decoder.setChainBroken` that drops the next link is what
+*chain broken* actually means.
+
+Three doors this page only points at:
+**`PlayerChatMessage.updateSignature`**, the exact byte order the signature
+covers; **`ChatTrustLevel.evaluate`**, the crude *contains* test behind the
+tag; and **`ChatReportContextBuilder.collectAllContext`**, which walks the
+last-seen links backwards and is the reason the window is signed at all.
 
 ---
 

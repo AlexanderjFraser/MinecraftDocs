@@ -1,20 +1,27 @@
 # The connection
 
-> Verified against **Minecraft 26.2** · Part IX · you swing at a pig and the server answers: one round trip, from a value on one thread to bytes on a wire to a method call on another.
+> Verified against **Minecraft 26.2** · Part IX · you swing at a pig: one round trip, from a value on one thread to bytes on a wire to a method call on another — and then the whole life of the channel that carried it.
 
-You swing. A small immutable value is handed to `Connection.send` on the
-client's main thread, and some milliseconds later a method runs on the
-server's game thread with that value as its argument; the server's answer
-makes the same trip in reverse. Now close the server list and open a
-singleplayer world. Every sentence above is still true. The integrated server
-is another thread in the same process, and the client reaches it through a
-real Netty channel with a real `PacketEncoder` and a real `PacketDecoder` in
-it: **singleplayer serialises every packet to bytes and parses them back
-again.** The local pipeline swaps the length-prefix framing for an in-memory
-hand-off and never installs a cipher or a compressor, and that is the whole
-of the difference. There is no local shortcut: the same encoder runs, the
-same decoder runs, and the value your click produced is rebuilt from bytes on
-the other side.
+You swing. `ServerboundSwingPacket` — a small immutable value holding which
+hand you used and nothing else — is handed to `Connection.send` on the
+client's main thread, and some milliseconds later
+`ServerGamePacketListenerImpl.handleAnimate` runs on the server's game thread
+with that value as its argument. What comes back is
+`ClientboundAnimatePacket`, and it goes to every player tracking you **except
+you**: your own arm was already swinging, because the client moved it the
+moment you clicked. Now close the server list and open a singleplayer world.
+Every sentence above is still true. The integrated server is another thread
+in the same process, and the client reaches it through a real Netty channel
+with a real `PacketEncoder` and a real `PacketDecoder` in it:
+**singleplayer serialises every packet to bytes and parses them back again.**
+There is no local shortcut — the same encoder runs, the same decoder runs,
+and the value your click produced is rebuilt from bytes on the other side.
+
+That round trip is the first half of this page. The second half is the
+channel it travelled on, from the first listener installed on a raw socket to
+the fault that closes it: one connection's whole life, which is more than one
+packet's journey and is where everything surprising about the transport
+lives.
 
 ## The cast
 
@@ -66,8 +73,12 @@ sequenceDiagram
     CPL->>CPL: the handler from the top, a frame later at the earliest
 ```
 
-Four things in that picture are worth stopping on: the framing, the hop, the
-drain, and the fact that `Connection` appears once but exists twice.
+The diagram draws one `Connection` lane and there are two of them: one object
+at each end, which is what the note across the middle says and the picture
+cannot. Six things
+in it are worth stopping on — the framing, the direct call, the hop, the
+drain's own phase, the second question the drain asks, and where an error on
+re-dispatch goes.
 
 **Framing is separate from decoding.** `Varint21FrameDecoder` reads at most
 three length bytes, refuses anything wider and refuses a zero length, and
@@ -171,13 +182,10 @@ codecs](packets-and-stream-codecs.md#where-a-packets-number-comes-from) builds.
 The placeholder is a bare `UnconfiguredPipelineHandler` holding no protocol at
 all, which is the entire point of it.
 
-`HandlerNames` is a class of constants for most of those names, and **nothing
-references it**: every name the pipeline is actually built with is a string
-literal in `Connection`, `ServerConnectionListener`, `ProtocolSwapHandler` and
-`UnconfiguredPipelineHandler`. It has already drifted, which is what an index
-no code reads does — it has no entry for *hackfix*, and it carries
-`HandlerNames.LATENCY`, a handler that exists only on the local pipeline behind
-a debug flag. Cite it for the names, not for the list.
+`HandlerNames` is a class of constants for most of those names and **nothing
+references it**; every name above is a string literal at its install site. It
+has drifted accordingly — no entry for *hackfix*, and one for a
+local-pipeline-only debug handler.
 
 ### The threads underneath it
 
@@ -192,7 +200,9 @@ and the server list — `ServerList`, a saved file of `ServerData` entries — a
 for a group, and the list hands the one it got to `ServerStatusPinger`, which
 never asks for its own.
 
-**What the client dials is not what the player typed.** One package,
+### What the client dials is not what the player typed
+
+One package,
 `client/multiplayer/resolver`, stands between the two and nothing else in the
 book uses it: `ServerAddress.parseString` splits host from port,
 `ServerNameResolver` resolves it, `ServerRedirectHandler` looks up the
@@ -210,8 +220,8 @@ differences are smaller than almost anyone assumes.
   `LocalFrameEncoder`, which do nothing but `HiddenByteBuf.pack` and
   `HiddenByteBuf.unpack` — no length prefix, because the buffer never becomes
   a byte stream.
-- **No read timeout on either side**, so a wedged integrated server hangs
-  rather than disconnecting.
+- **No read timeout on either side.** What that costs the singleplayer host
+  is the keep-alive section's, below.
 - No legacy query handler, and **never** a cipher or a compression handler —
   though by two different mechanisms. Compression is refused at the
   installation sites, which both test `Connection.isMemoryConnection`.
@@ -231,7 +241,7 @@ The integrated server binds its channel through `EventLoopGroupHolder.local`
 and `ServerConnectionListener.startMemoryChannel` hands back an address that
 `Connection.connectToLocalServer` dials.
 
-## Sending, and the two flushes
+## Sending, and why nothing queues on the way out
 
 Outbound is the mirror image and shorter. `Connection.send` reaches
 `Connection.sendPacket`, which checks whether the calling thread is already
@@ -274,6 +284,18 @@ has died; flushes; every twentieth tick runs `Connection.tickSecond`, which
 rolls the packet-rate averages; and last, samples bandwidth. Note the order:
 the flush is in the middle, and the disconnect check happens before it.
 
+**The early phases have no hop at all, and a tick is what advances them.**
+None of `ServerHandshakePacketListenerImpl`,
+`ServerStatusPacketListenerImpl`, `ServerLoginPacketListenerImpl` or the
+client's `ClientHandshakePacketListenerImpl` contains a single
+`PacketUtils.ensureRunningOnSameThread` call, so in those phases every state
+transition and the encryption setup happen on the event loop. What runs on a
+game thread is this method: `ServerLoginPacketListenerImpl` is a
+`TickablePacketListener`, and its tick is what performs the ban and whitelist
+checks, switches compression on, and sends the terminal packet that ends the
+phase. Login is a three-thread state machine, and [protocol
+phases](protocol-phases.md#login) walks it.
+
 Its callers differ by side. The server has one,
 `MinecraftServer.tickConnection`, which walks `ServerConnectionListener.tick`.
 The client has three, because the client has more than one connection:
@@ -284,22 +306,46 @@ connections it opened to ping the servers in the list. Note the clock: the
 pending connection is ticked at tick rate, not at the frame rate the drain
 above runs on.
 
+### A throw out of Connection.tick, and why the channel decides what it costs
+
+`ServerConnectionListener.tick` catches a throw out of `Connection.tick` and
+kicks that client with *"Internal server error"* — unless
+`Connection.isMemoryConnection`, in which case the same catch rethrows it as a
+fresh reported crash named *"Ticking memory connection"* and takes the
+integrated server down. One catch, two branches, and the branch is the channel
+rather than the fault: the same bug that costs a multiplayer client its seat
+costs a singleplayer player their world.
+
 ## A phase change is a message written down the pipeline
+
+**`Connection` does not know which phase it is in.** There is no protocol
+field and no getter; the answer is distributed between the two codec handlers
+currently in the pipeline and the listener object, and every place
+`Connection` names a `ConnectionProtocol` is a comparison rather than a
+reading — `Connection.validateListener` checks a new listener against the
+protocol it is being installed for, `Connection.setupOutboundProtocol` asks
+only whether this is *login*, and the handshake entry point asks only whether
+the listener is the initial one. That is what makes the next paragraph
+possible.
 
 The pipeline is **reconfigured by writing through it**, not by editing it from
 outside. `Connection.setupInboundProtocol` validates that the new listener's
 direction and phase match the `ProtocolInfo`, assigns
 `Connection.packetListener`, and then builds an
 `UnconfiguredPipelineHandler.InboundConfigurationTask` — a closure that will
-replace the current handler with a new `PacketDecoder` and turn auto-read back
-on, optionally adding `"bundler"` after it. That task is *written down the
+replace the current handler with a new `PacketDecoder` and turn *auto-read*
+back on, optionally adding `"bundler"` after it. Auto-read is Netty's own
+switch for whether a channel keeps pulling bytes off the socket without being
+asked; turning it off is how the game stops delivery in the middle of a batch
+while it swaps codecs, and it is the mechanism the rest of this section
+turns on. That task is *written down the
 channel*, where `UnconfiguredPipelineHandler.Inbound` recognises it and runs it
 with the right context, and `Connection.syncAfterConfigurationChange` blocks
 the caller until it completes. `Connection.setupOutboundProtocol` is the mirror
 image, and also records whether the new outbound protocol is the login one, for
 the benefit of the disconnect path.
 
-### Getting back to unconfigured, which nobody asks for
+### What a terminal packet does to the codecs
 
 Returning to the unconfigured state is automatic, and it is asymmetric.
 `ProtocolSwapHandler.handleInboundTerminalPacket` fires when a packet whose
@@ -319,6 +365,8 @@ travels the pipeline in order with the byte stream, reads resume. The unnamed
 flow-control handler between `"splitter"` and the decoder is what makes
 turning auto-read off actually stop delivery mid-batch. Which phases exist,
 and what ends each of them, is [protocol phases](protocol-phases.md#the-five-phases).
+
+### The first listener, and who is allowed to install it
 
 The server's first listener is installed by
 `Connection.setListenerForServerboundHandshake`, which refuses if one already
@@ -405,27 +453,6 @@ sessions](../server/players-and-sessions.md#the-three-kicks-that-come-from-the-t
 
 ## Questions players ask
 
-**Which phase am I in?** `Connection` cannot tell you: there is no protocol
-field and no getter. The answer is distributed between the two codec handlers
-currently in the pipeline and the listener object, and every place
-`Connection` names a `ConnectionProtocol` is a comparison rather than a
-reading: `Connection.validateListener` checks a new listener against the
-protocol it is being installed for, `Connection.setupOutboundProtocol` asks
-only whether this is *login*, and the handshake entry point asks only whether
-the listener is the initial one.
-
-**Does login happen on the Netty thread or the game thread?** Both, and that is
-the surprise. None of `ServerHandshakePacketListenerImpl`,
-`ServerStatusPacketListenerImpl`, `ServerLoginPacketListenerImpl` or the
-client's `ClientHandshakePacketListenerImpl` contains a single
-`PacketUtils.ensureRunningOnSameThread` call, so every state transition and the
-encryption setup happen on the event loop. But
-`ServerLoginPacketListenerImpl` is a `TickablePacketListener`, and its tick —
-on the server thread, through `Connection.tick` — is what runs the ban and
-whitelist checks, switches compression on, and sends the terminal packet that
-ends the phase. Login is a three-thread state machine; [protocol
-phases](protocol-phases.md#login) walks it.
-
 **Does the server drop packets when it is behind?** Not for being late.
 `Connection` keeps no outbound packet queue at all — once the channel exists,
 everything written goes into Netty's own buffer and backpressure is Netty's
@@ -434,15 +461,11 @@ drain empties it. What a slow server costs you is latency, not messages, until
 the keep-alive gives up.
 
 **Why does kicking someone sometimes stall the caller?** Not for the obvious
-reason. `Connection.disconnect` does block on the channel close, but the
-deliberate kicks never call it from the game thread: `/kick` and the ban
-commands go through `ServerCommonPacketListenerImpl.disconnect`, which defers
-`Connection.disconnect` to a `PacketSendListener.thenRun` callback on the event
-loop. What stalls the game thread is the next line —
-`MinecraftServer.executeBlocking` running `Connection.handleDisconnection`,
-so the kicking tick does not continue until the player has been removed. The
-one place that does block on the close from a game thread is
-`ServerLoginPacketListenerImpl.disconnect`, reached from that listener's tick.
+reason: `/kick` and the ban commands defer `Connection.disconnect` — the call
+that blocks on the channel close — to an event-loop callback. What stalls the
+kicking tick is the next line, `MinecraftServer.executeBlocking` running
+`Connection.handleDisconnection`, so the tick waits for the player to be
+removed rather than for the socket to shut.
 
 **Is a flood of packets rate-limited?** Only if the server was configured for
 it. `RateKickingConnection` overrides `Connection.tickSecond` to kick a client
@@ -450,14 +473,6 @@ whose average received-packet rate exceeds
 `RateKickingConnection.rateLimitPacketsPerSecond`, and the two accept sites
 build one only when the server's rate limit is above zero — which it is not by
 default. An ordinary socket gets a plain `Connection`.
-
-**Why does one client's bug crash a singleplayer world but not a server?**
-`ServerConnectionListener.tick` catches a throw out of `Connection.tick` and
-kicks that client with *"Internal server error"* — unless
-`Connection.isMemoryConnection`, in which case the same catch rethrows it as a
-fresh reported crash named *"Ticking memory connection"* and takes the
-integrated server down. One catch, two branches, and the branch is the channel
-rather than the fault.
 
 **Why is the network graph in the debug screen client-side only?**
 `Connection.bandwidthDebugMonitor` is inbound-only and socket-only, set from
@@ -475,13 +490,28 @@ codecs](packets-and-stream-codecs.md).
 
 ## Where to look
 
-`Connection` · `PacketListener` · `TickablePacketListener` ·
-`PacketProcessor` · `PacketUtils` · `PacketSendListener` · `ProtocolInfo` ·
-`UnconfiguredPipelineHandler` · `ProtocolSwapHandler` · `PacketDecoder` ·
-`PacketEncoder` · `Varint21FrameDecoder` · `HandlerNames` ·
-`CompressionDecoder` · `CipherBase` · `EventLoopGroupHolder` ·
-`ServerConnectionListener` · `RateKickingConnection` · `DisconnectionDetails` ·
-`ServerCommonPacketListenerImpl`
+**`Connection`** is the page, and it is worth reading in three sittings rather
+than one. First `Connection.channelRead0` and `Connection.exceptionCaught` —
+the two ends of a packet's life at this class, arrival and fault. Then
+`Connection.configureSerialization` and `Connection.setupInboundProtocol`
+beside each other, which is the pipeline built once and then rebuilt by
+writing through itself. Then `Connection.tick`, six duties in one method and
+the only one a game thread calls.
+
+Around it, in the order this page meets them:
+**`PacketUtils.ensureRunningOnSameThread`** for the hop, two lines long and
+the reason every handler is written the way it is; **`PacketProcessor`** for
+what the hop enqueues and who drains it; **`PacketDecoder`** and
+**`PacketEncoder`** for the two places a codec actually runs; and
+**`UnconfiguredPipelineHandler`** with **`ProtocolSwapHandler`**, which are
+the phase change as a pair of handlers. **`ServerConnectionListener`** is the
+accept side and the one catch that treats a memory connection differently.
+
+Four doors this page only points at: **`Varint21FrameDecoder`**, twenty lines
+that define what a frame is; **`PacketSendListener`**, for everything the game
+does *after* a packet is really on the wire; **`RateKickingConnection`**, the
+subclass almost nobody runs; and **`EventLoopGroupHolder`**, where the choice
+of transport is made.
 
 ---
 
