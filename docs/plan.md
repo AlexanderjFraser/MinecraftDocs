@@ -35,7 +35,8 @@ stood at the close, with the session paragraphs and the log.
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day, E
 (Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, and I
-(Part IX) on 2026-09-14**, so the next session is J (Part X · The client). The charter is below; the brief, the
+(Part IX) and J (Part X) on 2026-09-14**, so the next session is
+K (Part XI · Rendering). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -63,7 +64,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I and J on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -474,6 +475,61 @@ One caveat for session O: renaming them **changes what `pass6_shape.py`
 measures**, because its spine alphabet reads the literal `## The trace` as its
 own token; Part VIII came out of the rename with a measured identical pair that
 was an artefact, and the tool cannot see an H3 at all.
+
+**Pass 6, session J — Part X · The client** *(2026-09-14).* Twelve system
+pages and the landing page, thirteen readers, one each — the largest part in
+the book by page count. It arrived with the closer on 8 of 12 in two spellings,
+no literal trace heading at all and the shortest pages in the corpus, so the
+charter's named jobs looked light; the work turned out to be **counts**, and
+the headline is session I's lesson widened. Session I found that a *lead-in*
+naming a number is a claim about the page and the cheapest kind to break. Part
+X says it is not only lead-ins: **a sentence that names a number, anywhere, is
+a claim about the text beside it, and nothing in the toolchain can see when
+that text changes underneath it.** Twenty of the forty-five corrections are of
+that shape — *four queues* over six bullets, *three sort comparators* where
+there is one, *three conditions* where there is one, *two clocks* over three
+intervals, *two of its behaviours* over three, *seven names* over nine, *three
+health numbers* against a four-layer figure, *half the renderers* where it is
+two of twenty-five, *sixteen instances* over fourteen rows, *nineteen* against
+*twenty* on the same page, *ten of these twelve pages* where it is nine — and
+every one was found by a reader who counted because a sentence told them to. Not
+one is a fact a fact-check would query: each is arithmetic between a sentence
+and the text under it. The other twenty-five are the ordinary crop, of which
+the sharpest are **`what-makes-a-sound` naming its three doors two different
+ways** — the opening's third door was your own predicted sounds, the figure's
+and the table's was client-side ambience, and they are the same door with two
+inhabitants — and **`options`' figure having no screen-close edge**, so every
+route through it saved and broadcast at once while the paragraph beneath said
+the opposite. Rebuilding two figures and one section as tables is what found
+most of the rest: writing a *what gates it* column against `Minecraft.tick`
+showed three steps the prose had implied were inside the level check and are
+not, and writing a *who calls it* column for the render tree's verbs showed that
+two of the eight have no caller in a recorder at all. The closer went **8 of 12
+→ 5**, all in the canonical spelling and all now the last content section, and
+the *spelling* turned out to be diagnostic rather than cosmetic: all three
+pages heading it *Questions a reader asks* failed A2's test outright, which is
+the answer to session J of pass 5's question about whether that was a
+distinction without a difference. Three dissolved whole; two survivors gave up
+their mechanism to sections of their own, including the loading guard
+`the-client-loop` cites, which settles the queue's standing *options* entry by
+acting on it. A7's four-page group came apart in three edits, and the one pair
+left is **an artefact of this session** — dissolving two closers brought two
+pages from two edits apart to one — and is left, with the reasoning, rather than
+varied for a six-token spine. The landing page took A6 (*Where the part stops*
+as a heading in its place, 23 lines, the hand-free coverage number now the
+include), its argument reversed off the symptom list onto a claim — *everything
+that looks like the client falling behind is one thread deciding what to spend
+a frame on* — and its self-contradiction removed. Part X's twelve pages 3,096 →
+3,316 lines; the landing page 172 → 174. Nineteen units appended to
+[pass5.md](pass5.md) (five logged cuts, six for pass 7, five for pass 8, two
+notes and a record); six entries struck, four annotated, two retagged
+`[kind=voice]`; the session's entry in [pass9.md](pass9.md). All five gates
+green; deployed. **What the session would tell the next one**: the three
+corrections that mattered most all came out of turning prose into a table with
+a second column — the gate, the caller, the condition. A count in a sentence
+survives an edit; a column does not, because the row is empty and you can see
+it. Where a part session finds a number it cannot check against the text beside
+it, that is the place to reach for a table rather than a better sentence.
 
 ## The owner's read
 

@@ -92,7 +92,12 @@ rewritten by its own part's session — and the glossary entry by entry.
   symptoms moved to the front as the reader's way *in*, and writing a claim
   to end on found the part's real argument, which no sentence on the page had
   ever stated: the player is the one object the server is not allowed to be
-  right about. The other four are their own sessions' and session O's.
+  right about. **X done, pass 6 session J**: the last of the five that ended on
+  the symptom list. The three symptoms moved to the front as the reader's way
+  in and the paragraph now ends on the claim — everything that looks like the
+  client falling behind is one thread deciding what to spend a frame on — which
+  is the fourth time the reversal has produced the part's argument in one
+  sentence. The remaining three are their own sessions' and session O's.
   [kind=lecture]
 - **Five of the thirteen arguments are summaries.** II, VII, VIII, IX and X end
   on the device above; ~~V~~ and VI end on an enumeration of their own pages
@@ -136,7 +141,11 @@ rewritten by its own part's session — and the glossary entry by entry.
   shape paragraphs there are near-copies of their landing page's and should be
   the shorter copy: Part IV, Part X's GUI pipeline, Part XI's opening, Part
   XII's structure arc and its within-part order, Part XIII's floors.
-  [kind=lecture]
+  **Part X done, pass 6 session J**: the client-loop blurb is gone from
+  `lectures.md` and the GUI-pipeline paragraph is down to its order claim (six
+  to nine consecutively, tree before text), which is the only thing there a
+  reader of the lecture *map* needs. Four shape paragraphs and one blurb are
+  left, all in other parts. [kind=lecture]
 - ~~**The introduction's five rules have no anchors.** They are bold run-in
   lead-ins, so `anatomy/what-this-book-skips`:8's citation of "[rule
   three](../../introduction.md)" lands on the top of the page. Either the rules
@@ -2935,20 +2944,35 @@ was cut or moved, and why)*
     opening paragraph or the verified line. **The formulas now survive
     nowhere in Part X and everywhere in Parts XI to XIII.** Sessions L to N
     should do the same, or pass 5 will be reconciling three different house
-    styles.
-  - **The *questions players ask* device is now doing a lot of work.** Six of
+    styles. **Part X re-checked, pass 6 session J**: still true. Worth knowing
+    for sessions L and M — removing a formula leaves a *count* of the thing it
+    became, and the count is the next thing to rot: the landing page said ten
+    of these twelve pages carry a 1.21 box and nine do, which is a correction
+    in [pass9.md](pass9.md).
+  - ~~**The *questions players ask* device is now doing a lot of work.** Six of
     the twelve pages use it, because it is the honest home for what used to
     be a bullet wall of invariants. That is one page in two, which is the
     same trap the old seven-heading template fell into. Pass 5 should check
     whether it reads as a device or as a section every page must have — and
     note that on three pages (`the-gui-render-tree`, `text-and-fonts`,
     `sound-engine`) the questions are a reader's rather than a player's, and
-    the heading says so, which may be a distinction without a difference.
-  - **Second person again.** `input-and-keybinds`, `hud`, [kind=lecture]
+    the heading says so, which may be a distinction without a difference.~~
+    **Settled, pass 6 session J** under A2: it was eight of twelve by the time
+    the pass reached it and is now five, all in one spelling and all last. The
+    session's own answer to *a distinction without a difference*: it is not one.
+    All three of the *reader asks* pages failed the test, because a heading that
+    admits it is answering a reader rather than a player is admitting that its
+    answers are the page's own mechanism.
+  - **Second person again.** `input-and-keybinds`, `hud`, [kind=voice]
     `what-makes-a-sound` and `the-gui-render-tree` all open in the second
     person (*hold the key*, *press F1*, *you break a block*, *a chest full of
     the same item*). Sessions I and J both flagged the drift; it is now four
     parts wide and the corpus-wide decision cannot wait for pass 6.
+    **Overtaken for Part X, pass 6 session J**: all four of those openings have
+    since been rewritten for other reasons, and the part now opens one page of
+    twelve in the second person (`prediction-and-acks`), which A1 allows
+    without comment. Retagged `voice`, because what is left of this is the
+    register question and that is pass 8's.
   - ~~**`the-gui-render-tree`'s title is still the weakest in the part**
     (session H's note, unresolved). It is really *how the UI is recorded and
     drawn*, and the tree is the mechanism rather than the subject. Not
@@ -3106,7 +3130,14 @@ V 7/7 · VI 3/9 · VII 2/8 · VIII 7/7 · IX 4/5 · X 8/12 · XI 6/10 · XII 8/8
 · XIII 3/8. Parts IV, V, VIII and XII use it on every page. This is a
 *device* become a *slot*, exactly the second-uniformity risk the charter
 named, and it happened for the reason session J gave: the section is the
-honest home for what used to be the invariants wall. **Rule of thumb for
+honest home for what used to be the invariants wall. **Part X: 8 → 5, pass 6
+session J**, all five now in the canonical spelling and all five the last
+content section. Three dissolved whole (`the-client-level`,
+`the-gui-render-tree`, `text-and-fonts`) and two of the survivors gave up
+answers to sections of their own. The part is the first where the *spelling*
+turned out to be diagnostic rather than cosmetic: all three pages spelling it
+*Questions a reader asks* failed A2's test outright, and the two that kept a
+closer under the canonical spelling passed it. **Rule of thumb for
 pass 5: at most half the pages in a part end on it**, and on the others
 the same question-and-answer material either dissolves into the section
 where the answer happens (session G's precedent — *Three things about the
@@ -3178,6 +3209,24 @@ spine with any other, in the part or out of it.
   against* between its figure and its flowchart. No two pages of the part are
   identical now. That is four parts running where the pair the queue named had
   dissolved — the entry itself is the stale thing, not the parts.
+  **Part X had a live four-page group and it came apart in three edits, pass 6
+  session J.** The queue named `hud` / `options` / `input-and-keybinds` /
+  `the-gui-render-tree`; measured live the group was
+  `gui-and-screens` ↔ `hud` ↔ `options` ↔ `what-makes-a-sound`, five pairs in
+  all, with `what-makes-a-sound` the hub of three of them. `hud` varied by
+  putting its **ordered figure above its cast** — the artefact its hook
+  promises, which was sitting behind eight cast rows — and `what-makes-a-sound`
+  by putting **both** its figure and its three-door table above its cast, on
+  the grounds that half of its eight classes mean nothing until you know which
+  door they stand in. `sound-engine` varied as a side effect of A2, gaining a
+  section out of two promoted closer answers. One pair is left,
+  `text-and-fonts` ↔ `the-gui-render-tree`, and **it is an artefact of this
+  session**: the two were two edits apart until dissolving both closers brought
+  them to one, on a six-token spine. Left deliberately. A pipeline page with six
+  numbered stages and a data-structure page with two flowcharts do not read
+  alike, and varying one of them to satisfy a six-token match would be varying
+  for the tool — which is the fifth part running where this entry's named pair
+  was not the live one, and the first where the pass's own edits made a new one.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -4483,28 +4532,61 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 6 (the lecture)
 
-- **`the-gui-render-tree`'s recording-verb list is a 22-identifier [kind=lecture]
+- ~~**`the-gui-render-tree`'s recording-verb list is a 22-identifier [kind=lecture]
   paragraph** — six verbs, two structural ones and thirteen state classes in
   running prose, past the budget's seven. A table would carry it, and the
   `PictureInPictureRenderState`/`PictureInPictureRenderer` pairing session J
-  added would fall out of the table's second column for free.
-- **`the-gui-render-tree` and `text-and-fonts` head their closers "Questions
+  added would fall out of the table's second column for free.~~ **Done, pass 6
+  session J** — and the table paid for itself twice over, because writing a
+  *who calls it* column showed that two of the eight "recording verbs" have no
+  caller in a recorder at all (the corrections are in
+  [pass9.md](pass9.md)), and writing the state column showed
+  `PanoramaRenderState` is not a node state but a field.
+- ~~**`the-gui-render-tree` and `text-and-fonts` head their closers "Questions
   a reader asks"** where the corpus says "Questions players ask". Two of the
-  five spellings session P counted, both in this part.
-- **`options` has no anchor for its loading guard.** `the-client-loop` cites
+  five spellings session P counted, both in this part.~~ **Overtaken, pass 6
+  session J**: both closers failed A2's test outright — every answer in each
+  was the page's own mechanism — so both dissolved into sections and the
+  spelling question went with them. `sound-engine`'s third instance of the
+  spelling survived as a closer and took the canonical one. Part X now has one
+  spelling.
+- ~~**`options` has no anchor for its loading guard.** `the-client-loop` cites
   the page for "every `OptionInstance.set` performed while loading silently
   skips its listener", and the only landing spot is a question inside the
   closer. Session J declined to add a `###` inside a Q&A list because that is
-  a shape change; pass 6 owns the shape and can give the guard a home.
-- **`the-client-level`'s closer is six questions and four of them are other
+  a shape change; pass 6 owns the shape and can give the guard a home.~~
+  **Done, pass 6 session J**: the guard is now *The guard that silences every
+  setting at startup*, an H2 between the delay section and the packet section,
+  and `the-client-loop` cites its anchor. Promoting it also exposed that the
+  citing sentence had no premise under its *which is why* — the loop page never
+  said a listener is gated on `Minecraft.running` — which is a correction in
+  [pass9.md](pass9.md) rather than a shape finding.
+- ~~**`the-client-level`'s closer is six questions and four of them are other
   pages' subjects**, now that the two sound questions have been cut to one
   citation. What is left that is genuinely the page's own is the clock and
   the weather level that steps twenty times a second instead of
-  interpolating. Session J did not restructure the closer.
-- **`prediction-and-acks` opens on a four-sentence contract that two Part V [kind=lecture]
+  interpolating. Session J did not restructure the closer.~~ **Done, pass 6
+  session J**: five questions by then, and the entry's diagnosis held. The
+  closer dissolved whole. The clock and the weather became *The clock and the
+  weather run themselves, and neither interpolates*, which is also where the
+  page finally answers what its own opening failure looks like; the crack
+  overlay and the ambient particles joined them as two more deliberately coarse
+  numbers; and the footsteps answer became one sentence citing
+  `what-makes-a-sound`. The closer was also **not last** on the page, which is
+  the second half of what was wrong with it.
+- ~~**`prediction-and-acks` opens on a four-sentence contract that two Part V [kind=lecture]
   pages also carry** (a declared pair, so the copy stays) — but the page now
   also opens on the authority split. Pass 6 should read the first two
-  paragraphs together and decide which is the hook.
+  paragraphs together and decide which is the hook.~~ **Settled, pass 6 session
+  J**: neither. The reader found *three* candidate hooks in those two
+  paragraphs, not two — the receipt-is-not-a-verdict reversal, the ordering
+  rule, and the authority split — and reported reading the opening twice to
+  find out which the page was about. The ruling is that **the ordering rule is
+  the hook**, because it is what the page's own trace section says correctness
+  rests on; it now ends the first paragraph and carries the bold under A5. The
+  receipt claim leads into it unbolded, and the authority split dropped to the
+  second paragraph as orientation. The four-sentence contract itself is
+  unchanged and stays a declared pair.
 
 ### For pass 7 (the figures)
 
@@ -4531,10 +4613,14 @@ it made are in [pass9.md](pass9.md).*
   (session I's note, now four pages confirmed). Session J added prose to
   three of the four and used *record* throughout, which is a vote, not a
   ruling.
-- **Second person, again, and now five pages.** `input-and-keybinds`, `hud`, [kind=lecture]
+- **Second person, again, and now five pages.** `input-and-keybinds`, `hud`, [kind=voice]
   `what-makes-a-sound`, `the-gui-render-tree` and `gui-and-screens` all open
   in it. Sessions I, J and K have each flagged the drift; it is corpus-wide
-  and pass 8's, not a part session's.
+  and pass 8's, not a part session's. **Overtaken for Part X, pass 6 session
+  J**: one page of the twelve opens in the second person now
+  (`prediction-and-acks`), which A1 allows without comment. Retagged `voice`,
+  with the entry above — what is left of this is the register question, and
+  that is pass 8's.
 - **`hud`'s "the most-loved fifty-seven lines in the client"** is a line
   count of a method, which will rot at the next release. Session J left it;
   the sentence works without the number.
@@ -5544,4 +5630,89 @@ page, had been pointing at `#the-threads-underneath-it` for a fact about DNS.
 So it is not only closers and trace headings: **any heading whose name is
 narrower than its section collects citations that mean something else**, and
 the only way to see it is to rename the heading and read what breaks.
+
+## Part X · The client — raised by pass 6, session J (2026-09-14)
+
+**Logged cuts** (nothing dropped except by moving it or logging it).
+
+- `the-client-level`'s field roll-call in *What else it holds*: six fields [kind=record]
+  walked one by one. Three are now one sentence naming what each *is* the whole
+  of (`globallyRenderedBlockEntities`, `blockStatePredictionHandler`,
+  `explosionTracker`); the `TransientEntitySectionManager` sentences went
+  because the comparison table's last row already says them, which the page
+  itself pointed out; the tint caches were promoted to a subsection of their
+  own instead.
+- `the-client-loop`'s *Where work leaves this thread* bullet for the two [kind=record]
+  timers kept its content but lost its framing as one of "four queues"; nothing
+  was dropped.
+- `input-and-keybinds`' two orphan paragraphs at the foot of the closer [kind=record]
+  (the two packet-sending presses, and `ScrollWheelHandler` / `InputType`) were
+  moved into a section of their own rather than cut — they were good facts filed
+  under a heading the reader had already decided to skip.
+- `hud`'s boss-bar closer answer was moved into *The hidden flag travels two [kind=record]
+  ways*, where its evidence already was; nothing of it was dropped, and the
+  three-questions half is no longer told twice.
+- `prediction-and-acks`' first and fourth closer answers were the only [kind=record]
+  material this session cut rather than moved: both were second tellings of the
+  opening paragraph and of *The four writes*, and everything in them that was
+  not a repeat (the zero sequence, the no-timeout rule,
+  `lastTeleportSequence`, the two flag sets) is now in a section of its own.
+
+**For pass 7, the figures.**
+
+- `the-gui-render-tree`'s first flowchart is **two pictures in one frame**: [kind=figure]
+  the tree on the left, the placement decision on the right, and `UP` and
+  `WALK` point at no node, so the algorithm cannot be read against the
+  structure it walks. The reader said it cost them the section. Two figures, or
+  one with the edges joined.
+- `the-client-level`'s chunk-arrival sequence puts `applyLightData` on the [kind=figure]
+  `ClientPacketListener` lane *after* the queued lambda is shown running on
+  `ClientLevel`, and the prose under it does not say whether that is one arrival
+  or two. Re-derive the order with the figure open.
+- `options`' redrawn flowchart now has eleven nodes and two labelled [kind=figure]
+  branches out of `LISTEN`; it is correct but dense, and worth a look at the
+  column width.
+- `the-client-loop`'s one-turn flowchart is the part's most-cited picture and [kind=figure]
+  has no tick-boundary marking at all, which is the thing the page is about.
+- `text-and-fonts`' chat-line figure: `Font->>FSet: getGlyph` — already [kind=figure]
+  logged by session K, still true, and now the only figure finding on that page.
+- The Part X landing figure's seven spokes are now *explained* in the prose [kind=figure]
+  (the GUI four and the sound two answer together), which settles session K's
+  entry about the count. What is left for pass 7 is whether collapsing them is
+  the right picture.
+
+**For pass 8, the voice.**
+
+- *Render thread*, *the game thread*, *the client thread* and *the main [kind=voice]
+  thread* are used for one thread across this part, and every reader who read a
+  cast table said so. `the-client-loop` now states the identity once; the
+  terminology sweep should decide whether the other three spellings survive
+  anywhere.
+- The **thread column** in a cast table is one repeated value on eight of [kind=voice]
+  these twelve pages, and every reader reported skipping it after the second
+  row. On `sound-engine` it is the opposite problem: four different *kinds* of
+  answer in one column. Both are the same question — what is that column for.
+- `hud`'s *"the most-loved fifty-seven lines in the client"* (session K's [kind=voice]
+  entry, still open) is joined by `the-client-loop`'s *"under a hundred lines"*
+  of `BlockStatePredictionHandler` on `prediction-and-acks` — two line counts of
+  a class or a method that will rot at the next release.
+- The citation possessive — *is [x](y)'* with the noun elided — was read as a [kind=voice]
+  typo by four of the thirteen readers, independently, on four different pages.
+  It is the book's house form and it is not landing.
+- `debugging-the-running-game` names no JVM property, so the page's own [kind=voice]
+  scenario cannot be performed by a reader who wants to. It now names the
+  constants; whether the book says property *names* anywhere is a convention
+  question.
+
+**Notes.**
+
+- Three readers asked what the *extract pass* is and were not told; the term [kind=record]
+  is used unglossed on `options`, `hud`, `gui-and-screens` and
+  `the-gui-render-tree`, and its owner is `the-frame` in Part XI. It is the
+  clearest case in the part of a term the book allows and no page in the part
+  introduces. For session O, against the glossary.
+- `client/README`'s *before you start* opens on Part IX *"and not [kind=record]
+  optionally"* and the reader skipped the three per-page prerequisites as
+  something to read later. That is probably right and probably fine; noting it
+  because the same shape is on every landing page.
 

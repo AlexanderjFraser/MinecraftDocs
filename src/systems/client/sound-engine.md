@@ -1,6 +1,6 @@
 # Sound: the engine
 
-> Verified against **Minecraft 26.2** · Part X · a block placed near you: from a packet on the game thread to an OpenAL source, across four of the system's five threads and one hop the sound cannot skip.
+> Verified against **Minecraft 26.2** · Part X · a block placed near you: from a packet on the client's Render thread to an OpenAL source, across four of the five threads that take part and one hop the sound cannot skip.
 
 `SoundEngine.play` never starts a sound. It resolves the name, picks a
 variant, tells the subtitle overlay, computes the volume and asks for a
@@ -28,7 +28,7 @@ everything outside calls `SoundManager.play` and forgets.
 | `SoundManager` | the loaded `sounds.json` map, and the public front door | Render thread |
 | `SoundEngine` | which instances are playing, how loud, and what to drop | Render thread |
 | `SoundInstance` | one playing-or-wanting-to-play sound: position, pitch, looping, attenuation | Render thread |
-| `SoundEngineExecutor` | a `BlockableEventLoop` around one daemon thread — every *per-source* AL call | Sound engine |
+| `SoundEngineExecutor` | one daemon thread with a task queue in front of it — where a *per-source* AL call is made | Sound engine |
 | `ChannelAccess` | acquiring, configuring and releasing a channel, as tasks | posts to Sound engine |
 | `Library` | the OpenAL device, context, listener and channel limits | Render thread opens it |
 | `SoundBufferLibrary` | decoded `.ogg` data, cached per path | Download pool |
@@ -43,7 +43,7 @@ list before the trace.
 |---|---|
 | **Server** | decides a sound happens, computes who is in range, sends packets. Never audio. |
 | **Render** (the client game thread) | receives the packet, builds a `SoundInstance`, calls `SoundManager.play`. Also everything OpenAL that is *not* per-source: opening and closing the device and context, resetting the `Listener`, deleting buffers. |
-| **Sound engine** | every per-source AL call: channel acquisition, parameter setting and release through `ChannelAccess`, plus the listener transform, which `SoundEngine.updateSource` posts to the executor directly. |
+| **Sound engine** | every per-source AL call while the game is running: channel acquisition, parameter setting and release through `ChannelAccess`, plus the listener transform, which `SoundEngine.updateSource` posts to the executor directly. The two bulk teardowns are the exception, and they run after this thread is gone. |
 | **`Util.nonCriticalIoPool`** (the *Download-* threads) | reads and decodes `.ogg` files with `JOrbisAudioStream` into a `SoundBuffer`, inside `SoundBufferLibrary.getCompleteBuffer`. |
 | **`Util.ioPool`** (the *IO-Worker-* threads) | device enumeration — `AbstractDeviceTracker.tick` dispatches `DeviceList.query` there, so the periodic poll of the ALC device list does not stall a frame. A forced refresh still queries on the Render thread. |
 
@@ -81,7 +81,7 @@ sequenceDiagram
     PL-->>CPL: ClientboundSoundPacket — a holder, a position in eighths of a block, a seed
     CPL->>CL: handleSoundEvent, then playSeededSound, after ensureRunningOnSameThread
     CL->>SndE: SoundManager.play(SimpleSoundInstance) — seeded, so every client picks the same variant
-    SndE->>SndE: resolve, pick by weight, calculateVolume, tell every SoundEventListener, then drop a silent one
+    SndE->>SndE: resolve, pick by weight, calculateVolume, tell every SoundEventListener, then drop a silent one unless it is music
     SndE->>ChanA: createHandle(STATIC or STREAMING limit) — a task on the sound thread
     ChanA->>Library: acquireChannel — generate an OpenAL source, or null if the limit is reached
     SndE->>ChanA: ChannelHandle.execute — setPitch, setVolume, linearAttenuation, setSelfPosition
@@ -109,9 +109,10 @@ category is muted still produces a **subtitle**, and a sound with no
 `ChannelAccess.createHandle` posts a task to the `SoundEngineExecutor`; on
 that thread `Library` generates a new OpenAL source, provided the static or
 streaming limit — chosen by `Sound.shouldStream` — has room. The Render
-thread *blocks* on that future, which is the shorter of the two places the
-game thread waits on the sound thread, and gets a handle or null. Null means
-the sound is silently dropped.
+thread *blocks* on that future and gets a handle or null; null means the sound
+is silently dropped. This is one of exactly two places the Render thread ever
+waits on the sound thread, and much the shorter; the other is teardown, two
+sections below.
 
 **Parameters go first, data arrives later.**
 `ChannelAccess.ChannelHandle.execute` posts the
@@ -149,15 +150,19 @@ all. `SoundEngine.MIN_SOURCE_LIFETIME` holds something else for twenty ticks
 — the engine's *bookkeeping* entry for the instance, long after the source it
 named has been deleted.
 
-`SoundEngine`'s own state is `SoundEngine.instanceToChannel`,
-`SoundEngine.instanceBySource`, `SoundEngine.queuedSounds` (delayed),
-`SoundEngine.tickingSounds`, `SoundEngine.gainBySource` and
-`SoundEngine.soundBuffers`. `SoundEngine.play` returns a
-`SoundEngine.PlayResult` — started, started silently, or not started — and
-`SoundManager.play` passes it through; `MusicManager` is the only caller that
-reads it.
+`SoundEngine.queuedSounds` is the one of its fields worth naming here, because
+it is what the trace has not shown: a sound can be *delayed* rather than played,
+and `SoundEngine.tick` drains that queue once per client tick. Two things put
+a sound in it — a distance delay, which is [what makes a sound
+happen](what-makes-a-sound.md#who-hears-it)', and a manual loop, three
+paragraphs below. Beside it `SoundEngine.instanceToChannel`,
+`SoundEngine.instanceBySource`, `SoundEngine.tickingSounds`,
+`SoundEngine.gainBySource` and `SoundEngine.soundBuffers` are the bookkeeping.
+`SoundEngine.play` returns a `SoundEngine.PlayResult` — started, started
+silently, or not started — and `SoundManager.play` passes it through;
+`MusicManager` is the only caller that reads it.
 
-## Volume is three factors, and looping is three mechanisms
+## Volume, looping, and the attenuation everyone explains wrongly
 
 `SoundEngine.calculateVolume` multiplies the instance's own volume, the
 options volume (`Options.getFinalSoundSourceVolume`, itself category times
@@ -179,9 +184,9 @@ looping instance *with a delay* is looped manually —
 `SoundEngine.shouldLoopManually` — by re-queueing it into
 `SoundEngine.queuedSounds` when its channel stops.
 
-One more attenuation subtlety, because the obvious explanation is wrong. UI
-sounds do not attenuate because of their **attenuation**, not their
-relativity: `SimpleSoundInstance.forUI` sets both
+The third thing in this section is attenuation, and the obvious explanation of
+it is wrong. UI sounds do not attenuate because of their **attenuation**, not
+their relativity: `SimpleSoundInstance.forUI` sets both
 `SoundInstance.Attenuation.NONE` and the relative flag, and it is the former
 that makes the engine call `Channel.disableAttenuation`. A relative sound
 offset from the listener would still fall off.
@@ -208,7 +213,36 @@ assembling the samples and `JOrbisAudioStream` — JOrbis, a Java Vorbis
 decoder — as the one real implementation. `LoopingAudioStream` wraps any of
 them.
 
-## Questions a reader asks
+## The sound thread is not the mixer, and the device is not its
+
+Two things about that thread are assumed the wrong way round often enough to
+be worth stating flatly.
+
+**It does not mix.** `SoundEngineExecutor` does nothing but run tasks; OpenAL,
+the native library, does the mixing on threads of its own that no Java code
+ever sees. The Java thread exists only so that per-source AL calls are
+*serialised*, and almost all of them go through it. The exceptions are the two
+bulk teardowns, `ChannelAccess.clear` and `Library.cleanup`, which release
+handles directly on the Render thread — safely, because by then the sound
+thread has already been joined.
+
+**It does not own the device.** Opening and closing the device and context,
+resetting the listener and deleting buffers all happen on the Render thread,
+and teardown happens deliberately **after** `SoundEngineExecutor.shutDown` has
+joined the sound thread. That join is the longer of the two places the Render
+thread blocks on the sound thread, and `SoundEngine.stopAll` is where it
+happens; the channel acquisition four sections above is the shorter.
+
+What a device has to offer before any of this starts is exactly three things,
+and `Library.init` throws rather than degrade if one is missing: an ALC of 1.1
+or newer, the *AL_EXT_source_distance_model* extension and the
+*AL_EXT_LINEAR_DISTANCE* extension. Everything beyond those it can do without —
+HRTF is taken only when the device offers *ALC_SOFT_HRTF* **and**
+`Options.directionalAudio` is on, and disconnection notices only when the
+device has *ALC_EXT_disconnect*, which is what makes hot-plugging work on some
+machines and not others.
+
+## Questions players ask
 
 **Why does sound cut out when I plug in headphones?** Because reload is
 destroy-and-rebuild, and it arrives from three different doors. The [resource
@@ -219,19 +253,6 @@ changed; and `SoundEngine.tick` reloads itself when the device tracker reports
 the default device changed. All three tear the OpenAL context down in
 `Library.cleanup` and call `SoundEngine.loadLibrary` again.
 
-**Is the sound thread the mixer?** No. `SoundEngineExecutor` does nothing but
-run tasks; OpenAL, the native library, does the mixing on its own threads.
-The Java thread exists so that per-source AL calls are serialised, and almost
-all of them go through it — the exceptions are the bulk teardowns,
-`ChannelAccess.clear` and `Library.cleanup`, which release handles directly on
-the Render thread once the sound thread is already joined. Confusingly, the
-*device* is not the sound thread's either: opening and closing it, resetting
-the listener and deleting buffers all happen on the Render thread, and
-teardown happens deliberately **after**
-`SoundEngineExecutor.shutDown` has joined the sound thread — which makes
-`SoundEngine.stopAll` the longer of the two places the game thread blocks on
-it.
-
 **Why is there no sound for the first few frames of a world?**
 `SoundEngine.updateSource` posts a `ListenerTransform` — position, forward,
 up — from the `Camera` every frame, and it no-ops until
@@ -241,11 +262,6 @@ up — from the `Camera` every frame, and it no-ops until
 is only advanced inside the frame, so the ear is where the eye was last
 frame. At 60 fps nobody hears it — but it is worth knowing before blaming
 OpenAL.
-
-**What does the game demand of an audio device?** Three things.
-`Library.init` refuses a device without the OpenAL distance-model and
-linear-distance extensions, or with an ALC older than 1.1. HRTF is enabled
-from `Options.directionalAudio`.
 
 **Does pausing stop everything?** No: `SoundManager.pauseAllExcept` leaves
 `SoundSource.MUSIC` and `SoundSource.UI` running, and

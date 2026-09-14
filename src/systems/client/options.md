@@ -26,46 +26,55 @@ keybinds](input-and-keybinds.md).
 | `ClientInformation` | the nine-field record the server is told, kept in `server/level` | crosses the wire |
 | `LevelExtractor` | notices, next frame, that the effective render distance changed | Render thread |
 | `ChunkMap` | clamps the request and re-tracks, silently | Server thread |
-| `IntegratedServer` | the singleplayer back door: reads the sliders directly, every tick | Server thread |
+| `IntegratedServer` | the singleplayer back door: reads the sliders directly, every unpaused server tick | Server thread |
 
 ## What happens when a setting changes
 
-Four decisions, and none of them is "run the listener and be done".
+Four decisions stand between a widget and the wire, and none of them is "run
+the listener and be done".
 
 ```mermaid
 flowchart TD
     CHANGE["a widget changes a value"]
     KIND{"slider or cycle?"}
-    ARM["slider that opted out of applying immediately: arm 600 ms, checked during the extract pass"]
-    EARLY{"screen dismissed inside the window?"}
+    IMMED{"does this slider apply immediately?"}
+    ARM["no: arm 600 ms, and let the widget's own extract pass notice it expire"]
     SET["OptionInstance.set"]
     RUNNING{"is Minecraft.running true?"}
     SILENT["assign the field, skip the equality test and the listener — this is what loading does"]
     LISTEN["run the listener"]
-    SAVE["Options.save — write options.txt"]
+    CLOSE["Screen.onClose — apply anything still unapplied"]
+    REMOVED["Screen.removed — Options.save, write options.txt"]
     BCAST["Options.broadcastOptions — build a ClientInformation"]
     SAME{"identical to the last one sent?"}
     SEND["ServerboundClientInformationPacket"]
     NOTHING["nothing is sent"]
     CHANGE --> KIND
-    KIND -- "slider" --> ARM --> EARLY
-    EARLY -- "yes, apply at once" --> SET
-    EARLY -- "no, apply on a later frame" --> SET
-    KIND -- "cycle: apply now" --> SET
+    KIND -- "slider" --> IMMED
+    IMMED -- "yes, on release" --> SET
+    IMMED -- "no" --> ARM --> SET
+    KIND -- "cycle: on click" --> SET
     SET --> RUNNING
     RUNNING -- "no" --> SILENT
     RUNNING -- "yes" --> LISTEN
-    LISTEN --> SAVE
-    SAVE --> BCAST --> SAME
+    LISTEN -- "cycle only" --> REMOVED
+    LISTEN -- "slider: nothing yet" --> CLOSE
+    CLOSE --> REMOVED
+    REMOVED --> BCAST --> SAME
     SAME -- "yes" --> NOTHING
     SAME -- "no" --> SEND
 ```
 
-The cycle branch reaches `Options.save` on every click; the slider branch
-reaches it when the screen closes. That single asymmetry is the whole
-behaviour difference between the two widget families, and it comes from the
-value set's subtype: `OptionInstance.SliderableValueSet` against
-`OptionInstance.CycleableValueSet`.
+Follow the two branches to the right-hand column and the asymmetry is the
+whole behaviour difference between the widget families. A cycle button's own
+handler calls `Options.save` on the click, so the packet is built before you
+have stopped looking at the button. A slider's value reaches the field on
+release or 600 ms later, and nothing saves it: saving happens once, in
+`OptionsSubScreen.removed`, when the screen comes down — with
+`OptionsSubScreen.onClose` applying any value still sitting in an armed timer
+first, so that leaving fast does not lose your drag. The difference comes from
+the value set's subtype, `OptionInstance.SliderableValueSet` against
+`OptionInstance.CycleableValueSet`, and from nothing else.
 
 ## The three ways a setting is stored
 
@@ -107,21 +116,42 @@ and calls its own full invalidation — tint caches cleared, the tracker
 rebuilt, all geometry dirty. The setting and the consequence are joined by a
 poll, not by a callback.
 
-Seven of the other quality options are the opposite way round: their
-listeners reach straight into the level extractor. Nine are not — their
-listeners do nothing but flip the preset back to custom, exactly as render
-distance's does. Elsewhere in the file the immediate listeners are real
-enough: the window, the sound device and the font manager all have one. `Options.graphicsPreset` and
-`Options.setGraphicsPresetToCustom` are the preset machinery — a preset
-writes a batch of settings at once, and almost every graphics listener flips
-the preset back to custom, which is how "Custom" appears without anyone
-selecting it.
+Sixteen other settings carry a listener that touches the graphics preset, and
+they split cleanly. **Seven** of them also reach straight into the level
+extractor and invalidate something: cloud range, cutout leaves, improved
+transparency, ambient occlusion, anisotropic filtering, texture filtering and
+biome blend radius. Those seven really are the callback the render-distance
+slider is not. The other **nine** do exactly what render distance's does and
+nothing else: flip `Options.graphicsPreset` back to custom through
+`Options.setGraphicsPresetToCustom`. That is why "Custom" appears without
+anyone selecting it — a preset writes a batch of settings at once, and every
+one of the sixteen undoes the preset's name on the way past.
 
-Some of those listeners are far more interesting than their options. GUI
-scale resizes whichever screen is open. Vsync invalidates the surface configuration.
-Fullscreen toggles the window and then writes the option back from what the
-window actually did. The unicode-font toggle throws away every glyph atlas.
-High contrast adds and removes a resource pack.
+Elsewhere in the file the immediate listeners are real enough, and the
+interesting ones are far more interesting than their options. GUI scale
+resizes whichever screen is open. Vsync invalidates the surface configuration,
+which is what the window is drawn into. Fullscreen toggles the window and then
+writes the option back from what the window actually did. The unicode-font
+toggle throws away every glyph atlas. High contrast adds and removes a
+resource pack.
+
+## The guard that silences every setting at startup
+
+`OptionInstance.set` is not an unconditional write. It first asks whether
+`Minecraft.running` is true, and when the game is not running it assigns the
+field and skips **both** the equality test and the listener. That is not a
+special path for loading: it silences *any* set performed before the loop
+starts, and loading happens to be the biggest thing that happens there.
+
+The ordering is what makes it bite. `Options` are read from disk inside the
+`Options` constructor, which runs inside the `Minecraft` constructor, five
+statements before `Minecraft.running` is set true ([the client
+loop](the-client-loop.md#starting-and-the-three-ways-of-stopping) has the rest
+of that sequence). So every value that comes out of *options.txt* is installed
+with its side effect suppressed — no atlas thrown away, no window resized, no
+preset marked custom — and the game instead arranges for the startup state to
+be right by other means. A setting whose only effect is in its listener is
+therefore a setting that does nothing until you change it in the interface.
 
 ## Who is told, and what is not said
 

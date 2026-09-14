@@ -13,55 +13,50 @@ carries — and plays the result locally. So the two
 halves of one interaction reach you by different mechanisms, and the second
 one is not a sound at all until your client makes it one.
 
-Then there is the third door, the one people are most surprised by, and it is
-not a packet at all: neither of those calls is sent to the player who caused
-the sound, because that player's own client has already played it. Your own
-place and break are predicted, not delivered — *[who hears it](#who-hears-it)*
-below is the rule that arranges it.
+Then there is the third door, and it is the absence of a packet rather than a
+packet: **some sounds never cross the wire at all.** Two quite different things
+come through it. Biome loops, the cave mood, music, the underwater hum are
+decided by your client and nobody else's. And so, more surprisingly, are your
+*own* place and break — neither of the calls above is sent to the player who
+caused the sound, because that player's client has already played it locally.
+*[Who hears it](#who-hears-it)* below is the one rule that arranges both.
 
-This page is the content model and those three doors. The machine that turns
-any of them into an OpenAL source is [the sound engine](sound-engine.md).
-
-## The cast
-
-| class | what it decides | thread |
-|---|---|---|
-| `SoundEvent` | a name and an optional fixed range — never a file | both sides |
-| `SoundEvents` | the static registry of every event the game defines | both sides |
-| `SoundSource` | which volume slider applies | both sides |
-| `SoundEventRegistration` | what one `sounds.json` entry says, and whether it replaces or appends | Render thread |
-| `WeighedSoundEvents` | the weighted list a name resolves to, and the redirects in it | Render thread |
-| `LevelEventHandler` | what an int from `ClientboundLevelEventPacket` means | Render thread |
-| `BiomeAmbientSoundsHandler` | the loop, the random additions and the cave mood | Render thread |
-| `MusicManager` | which track, how often, and the fade that is not the slider | Render thread |
+This page is the content model and those three doors, and it takes them first:
+the table below is what the page is for, and the cast comes after it, because
+half of the eight classes only make sense once you know which door they stand
+in. The machine that turns any of them into an OpenAL source is [the sound
+engine](sound-engine.md).
 
 ## The three doors
 
 ```mermaid
 flowchart TD
     SERVER["something happens on the server"]
-    NAMED["Level.playSound — the server names a SoundEvent"]
-    EVENT["Level.levelEvent — the server sends an int and a block-state id"]
-    CLIENTONLY["nothing is sent at all"]
+    NAMED["door 1 — Level.playSound names a SoundEvent"]
+    EVENT["door 2 — Level.levelEvent sends an int and a block-state id"]
+    NOWIRE["door 3 — nothing crosses the wire"]
     P1["ClientboundSoundPacket, ClientboundSoundEntityPacket, or the sound inside ClientboundExplodePacket"]
     P2["ClientboundLevelEventPacket"]
     LEH["LevelEventHandler decides what the int means, using this client's block data"]
-    LOCAL["ClientLevel.playSeededSound — which plays only when the excluded entity is the local player, so the same call is the prediction path too"]
+    LOCAL["ClientLevel.playSeededSound — the handler passes the local player as the excluded entity, so this always plays"]
+    MINE["your own place and break: the same shared call, run locally, never broadcast to you"]
     AMB["BiomeAmbientSoundsHandler, MusicManager, the underwater and bubble-column handlers"]
     SM["SoundManager.play"]
     SERVER --> NAMED --> P1 --> LOCAL --> SM
     SERVER --> EVENT --> P2 --> LEH --> SM
-    CLIENTONLY --> AMB --> SM
+    NOWIRE --> MINE --> SM
+    NOWIRE --> AMB --> SM
 ```
 
-The distinction matters for anyone reasoning about the wire.
+The three columns are how to reason about the wire, and the third is the one
+the usual summary leaves out entirely.
 
-| | a named sound | a level event | client-side ambience |
+| | a named sound | a level event | nothing on the wire |
 |---|---|---|---|
 | what crosses | a `SoundEvent` holder, a position in eighths of a block, a seed | an int and a block-state id | nothing |
 | who chooses the sound | the server | **this client**, from its own resource pack and block data | this client |
 | can it name a sound in no registry | **yes** — `SoundEvent.STREAM_CODEC` sends either a registry id or an id plus a range | no | no |
-| examples | a block placed, `/playsound`, a mob's voice | a block broken, a dispenser, fire extinguished, a ghast warning, the wither spawn, the dragon's death | biome loops, cave mood, music, underwater, bubble columns |
+| examples | a block placed, `/playsound`, a mob's voice | a block broken, a dispenser, fire extinguished, a ghast warning, the wither spawn, the dragon's death | your own place and break; biome loops, cave mood, music, underwater, bubble columns |
 
 That third row is a genuine hole in the usual summary. Data packs cannot
 *register* sound events — `Registries.SOUND_EVENT` is a static registry —
@@ -75,6 +70,19 @@ The other clientbound members of the family are
 `ClientboundExplodePacket`, which carries its own sound alongside everything
 else an explosion needs. There is **no serverbound sound packet** anywhere: the server infers what you did from
 other packets and tells everyone else about the sound.
+
+## The cast
+
+| class | what it decides | thread |
+|---|---|---|
+| `SoundEvent` | a name and an optional fixed range — never a file | both sides |
+| `SoundEvents` | the static registry of every event the game defines | both sides |
+| `SoundSource` | which volume slider applies | both sides |
+| `SoundEventRegistration` | what one `sounds.json` entry says, and whether it replaces or appends | Render thread |
+| `WeighedSoundEvents` | the weighted list a name resolves to, and the redirects in it | Render thread |
+| `LevelEventHandler` | what an int from `ClientboundLevelEventPacket` means | Render thread |
+| `BiomeAmbientSoundsHandler` | the loop, the random additions and the cave mood | Render thread |
+| `MusicManager` | which track, how often, and the fade that is not the slider | Render thread |
 
 ## What a sound *is*, as data
 
@@ -100,14 +108,18 @@ entries are **appended** to the lower pack's list, so a pack that adds one
 variant gets a mix rather than an override. A redirect entry multiplies
 volume and pitch through and ORs the streaming flag.
 
-And there are two kinds of silence. The identifier
-`SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION` is short-circuited by name
-in `AbstractSoundInstance.resolve` before the registry is consulted at all, so
-anything asking for it is silenced with no log warning — as distinct from an
-event that simply does not resolve, which logs. A pack that empties an event's
-list gets the warning, not the silence. `SoundEngine.MISSING_SOUND` is the
-development counterpart, which makes a missing sound *audible*, and
-`SharedConstants.DEBUG_SUBTITLES` the one that makes every sound *visible*.
+And there are two kinds of silence, which is worth knowing because only one of
+them is a mistake. The identifier
+`SoundManager.INTENTIONALLY_EMPTY_SOUND_LOCATION` is short-circuited by name in
+`AbstractSoundInstance.resolve` before the registry is consulted at all, so
+anything asking for it is silenced with **no** log warning. An event that
+simply does not resolve is the other kind, and it logs — including a pack that
+empties an event's list, which gets the warning rather than the quiet.
+
+Two development constants exist to make each of those visible.
+`SoundEngine.MISSING_SOUND` makes a failed resolve *audible*, and
+`SharedConstants.DEBUG_SUBTITLES` makes every sound that plays *visible* as a
+subtitle whether or not its event declares one.
 
 `SoundSource` is the volume category and each one is an options slider:
 `SoundSource.MASTER`, `SoundSource.MUSIC`, `SoundSource.RECORDS`,
@@ -130,13 +142,21 @@ standing together.
 
 **And the excluded player is not left out; they are served first.** The two
 sides read that one word oppositely. `ServerLevel.playSeededSound` broadcasts
-to everyone in range *but* the excluded entity;
-`ClientLevel.playSeededSound` — the same method name, the client's override,
-in both its positional and its entity-bound form — plays a sound **only** when
-the excluded entity *is* the local player. So the shared block or item code
-that called `Level.playSound` runs on both machines and each hears exactly
-one copy: yours locally, theirs by packet. That is the whole of the third
-door, and it is why your own place and break are silent on the wire.
+to everyone in range *but* the excluded entity; `ClientLevel.playSeededSound` —
+the same method name, the client's override, in both its positional and its
+entity-bound form — plays a sound **only** when the excluded entity *is* the
+local player.
+
+That inversion is what makes the client override usable for two jobs at once,
+and it is worth being explicit about which is which. When a packet arrives,
+`ClientPacketListener.handleSoundEvent` hands the override *the local player*
+as the excluded entity, so the test passes and a bystander hears the packet
+normally. When shared block or item code calls `Level.playSound` while running
+on your own client, the excluded entity is you for the same reason it was you
+on the server — and the test passes again, locally. So the one method plays the
+sounds sent to you and the sounds never sent to anyone, and each machine hears
+exactly one copy: yours locally, theirs by packet. That is the whole of the
+third door, and it is why your own place and break are silent on the wire.
 
 Two qualifications keep it from being a law. The rule needs an exclusion to
 read: `Player.playServerSideSound`, which plays the six attack sounds,
@@ -194,7 +214,7 @@ two that remain plain client-side handlers with no attribute behind them.
 scales the gap between tracks, a fade that drives
 `SoundManager.updateCategoryVolume` rather than the player's slider (the third
 of the engine's [three volume
-factors](sound-engine.md#volume-is-three-factors-and-looping-is-three-mechanisms)),
+factors](sound-engine.md#volume-looping-and-the-attenuation-everyone-explains-wrongly)),
 and the now-playing toast — a `NowPlayingToast` shown or withheld on the
 `SoundEngine.PlayResult` the engine returned, and suppressed again by the
 pause screen and by `MusicToastDisplayState`.

@@ -141,7 +141,7 @@ And then two different readers ask for it two different ways.
 surprises people: grass colour follows exactly the same ragged line as
 whether snow falls. What softens the colour boundary in game is not the biome
 lookup but a box blur on top of it, which the client owns
-([the client level](../client/the-client-level.md#what-else-it-holds-and-what-it-will-not-tell-you)).
+([the client level](../client/the-client-level.md#the-four-tint-caches-and-the-soft-biome-edge)).
 Fog and sky are the ones on the other border.
 
 The client's exact read is the more expensive of the two, and it is spent

@@ -13,7 +13,7 @@ permissions once a tick whether or not anyone has asked for anything.
 
 That is the pattern the page is about: a registry of subscription kinds, a
 per-level engine that sleeps until somebody asks, a poll-and-diff sender, and
-about two dozen renderers that turn the results into floating text and boxes.
+the twenty-five renderers that turn the results into floating text and boxes.
 It is only half a client system — the machinery ships on the dedicated server
 — but the client is the only thing that ever asks and the only thing that
 draws, and the trace ends in a renderer.
@@ -52,11 +52,12 @@ packet type per kind of information.
 client, `ClientDebugSubscriber` keeps what came back, keyed by chunk
 position, block position or entity UUID, plus a list of expiring events, and
 `ClientDebugSubscriber.createDebugValueAccess` hands renderers a read-only
-`DebugValueAccess` view. `DebugRenderer` is a plain list of
-`DebugRenderer.SimpleDebugRenderer`s, rebuilt by
-`DebugRenderer.refreshRendererList` — and they do not draw either.
+`DebugValueAccess` view. `DebugRenderer` is a plain list of `DebugRenderer.SimpleDebugRenderer`s,
+rebuilt by `DebugRenderer.refreshRendererList`. Neither the synchronizer that
+produced the value nor the renderer that consumes it draws anything: the
+renderer *appends*, which is the next section.
 
-## Nothing in the game draws a gizmo; it appends one
+## A renderer does not draw a gizmo; it appends one
 
 The renderers at the end of this trace emit through `Gizmos`, a debug-drawing
 API in the game-engine sense: the immediate-mode *draw me a box in the world
@@ -69,8 +70,10 @@ see. The shapes are small records — `CuboidGizmo`, `LineGizmo`, `ArrowGizmo`,
 stroke and a fill, and the `GizmoProperties` handle a call returns can pin the
 shape on top, keep it for a number of milliseconds, or fade it.
 
-Four collectors are installed anywhere in the game, and the fourth is the one
-worth knowing.
+Five places in the game install a collector; four of them keep what they are
+given, and those four are the table. The fifth is `GameTestServer`, which
+installs `GizmoCollector.NOOP` so that a headless test run pays nothing for
+code that draws. The fourth row is the one worth knowing.
 
 | collector | installed by | what it collects |
 |---|---|---|
@@ -80,12 +83,13 @@ worth knowing.
 | **the integrated server** | `IntegratedServer`, around its whole packet-and-tick step | server tick code drawing into a singleplayer world, published for the client to drain |
 
 So **server-side game logic can draw**, and only in singleplayer: a dedicated
-server installs no collector at all, so the identical call there would throw,
-and `GameTestServer` installs `GizmoCollector.NOOP` so that a headless test
-run pays nothing for the same code path. That asymmetry is the reason half the
-renderers below reach for the singleplayer server directly.
+server installs no collector at all, so the identical call there would throw.
+That asymmetry is why the two renderers below that want *server* state reach
+for the singleplayer server directly rather than asking for it over the wire.
 
 ## The sixteen instances
+
+Fourteen rows, sixteen subscriptions: two of the rows carry a matched pair.
 
 | subscription | carries | fed by |
 |---|---|---|
@@ -104,11 +108,13 @@ renderers below reach for the singleplayer server directly.
 | `DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS` | an `Orientation` | the experimental wire evaluator, 200 ticks |
 | `DebugSubscriptions.DEDICATED_SERVER_TICK_TIME` | **no value at all** | see *the sample path* below |
 
-"Expires after *n* ticks" means two different things across those four
-expiring rows. For the two *event* kinds it is how long the event stays on
-screen; for the two *pushed-value* kinds it is a time-to-live on a stored
-value. Only the client purges, and only for subscriptions that declare an
-expiry at all.
+Four of the sixteen declare an expiry, and "expires after *n* ticks" means two
+different things among them. `DebugSubscriptions.GAME_EVENTS` and
+`DebugSubscriptions.NEIGHBOR_UPDATES` are *events*, and the number is how long
+the event stays on screen. `DebugSubscriptions.ENTITY_BLOCK_INTERSECTIONS` and
+`DebugSubscriptions.REDSTONE_WIRE_ORIENTATIONS` are values pushed directly, and
+the number is a time-to-live on a stored value. Only the client purges, and
+only for those four.
 
 ## One instance traced: a villager's brain
 
@@ -165,10 +171,13 @@ fetching one `DebugValueAccess` for the whole pass.
 
 Every pattern page's real content.
 
-**Two gates, and the second is not a flag.** Fifteen of the sixteen kinds
-are behind `SharedConstants.DEBUG_ENABLED` *and* an individual flag, both
-read from JVM system properties at startup — the only subscription an F3 key
-can reach is the dedicated server's tick time, through the FPS charts. And
+**Two gates, and the second is not a flag.** Fifteen of the sixteen kinds are
+behind `SharedConstants.DEBUG_ENABLED` *and* an individual constant beside it —
+`SharedConstants.DEBUG_BRAIN`, `SharedConstants.DEBUG_POI`,
+`SharedConstants.DEBUG_BEES` and their siblings, one per kind, all read from
+JVM system properties at startup, so turning one on means launching the game
+differently rather than pressing anything. The only subscription an F3 key can
+reach is the dedicated server's tick time, through the FPS charts. And
 the server still has to agree: `ServerPlayer.debugSubscriptions` returns
 nothing unless `ServerDebugSubscribers.hasRequiredPermissions` passes, which
 means op on the player list, or the owner of a singleplayer world run from an
@@ -226,11 +235,13 @@ by overwriting it, and a reply whose id does not match is dropped on the
 floor. Including the NBT at all needs the gamemaster permission, and the whole
 key is dead while the server has reduced debug info on.
 
-## The sample path, which shares only the subscriber map
+## The sample path, which shares nothing but the idea
 
-The performance charts are a separate and much simpler system. A
-`SampleLogger` takes a vector of longs; partial values are logged during a
-tick and a final call flushes the whole vector. There are two implementations
+The performance charts are a separate and much simpler system, and the only
+thing they have in common with everything above is that one of the sixteen
+subscriptions gates the remote half of them. There is no shared engine, no
+diff and no tracking filter. A `SampleLogger` takes a vector of longs; a tick
+logs its parts as it goes and a final call flushes the whole vector. There are two implementations
 and the difference is the whole story: `LocalSampleLogger` **is** the storage
 — a `SampleStorage` ring buffer the charts read directly — while
 `RemoteSampleLogger` stores nothing and broadcasts a
@@ -246,11 +257,13 @@ time from either of the two paths above, the ping from `PingDebugMonitor`
 shown), and the bandwidth from a `BandwidthDebugMonitor` that counts bytes on
 the Netty thread and is drained by `Connection.tick`.
 
-Six packets carry all of this: `ServerboundDebugSubscriptionRequestPacket`
-outbound, and `ClientboundDebugChunkValuePacket`,
-`ClientboundDebugBlockValuePacket`, `ClientboundDebugEntityValuePacket`,
-`ClientboundDebugEventPacket` and `ClientboundDebugSamplePacket` inbound —
-for a system that used to have one per subject.
+Six packets carry the subscriptions and the samples between them:
+`ServerboundDebugSubscriptionRequestPacket` outbound, and
+`ClientboundDebugChunkValuePacket`, `ClientboundDebugBlockValuePacket`,
+`ClientboundDebugEntityValuePacket`, `ClientboundDebugEventPacket` and
+`ClientboundDebugSamplePacket` inbound — for a system that used to have one
+packet per subject. The two tag-query packets of the section before are not
+among them, and are not part of this machinery at all.
 
 > **For a 1.21-era reader.** The fixed set of debug packets is gone. Instead
 > of one packet type per kind of debug information there is one

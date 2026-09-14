@@ -280,7 +280,7 @@ debug renderers — chunk borders, hitboxes, pathfinding, brains, points of
 interest, raids, light sections — is now written against it, and it is not
 client-only, which is the surprise. It is taught where its output is, in Part
 X, by [debugging the running
-game](../client/debugging-the-running-game.md#nothing-in-the-game-draws-a-gizmo-it-appends-one);
+game](../client/debugging-the-running-game.md#a-renderer-does-not-draw-a-gizmo-it-appends-one);
 the address is what belongs here, because a reader hunting for the debug
 renderers' drawing code will look under `client/renderer/debug` and find
 nothing that draws.

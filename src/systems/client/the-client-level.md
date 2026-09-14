@@ -11,13 +11,15 @@ that consults the level therefore gets a wrong answer rather than an error,
 and anything that reschedules itself looks inert until the server speaks.
 
 That is the shape of the whole class. `ClientLevel` is not a passive receiver
-and not an authority either
-([authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
-is where the five predicates that word stands for are set out): it simulates hard — every block entity ticks
+and not an authority either: it simulates hard — every block entity ticks
 regardless of distance, every local block change is relit locally, it keeps
 its own clock and free-runs between corrections — while inheriting a set of
 shared `Level` methods that have been quietly reduced to constants. Reading
 `ClientLevel` is largely a matter of noticing which overrides are empty.
+(*Authority* is a word with five predicates behind it, and
+[authority](../entities/authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)
+is where they are set out; this page needs only the one that says who may
+decide a block's state.)
 
 ## The cast
 
@@ -36,7 +38,10 @@ shared `Level` methods that have been quietly reduced to constants. Reading
 
 The comparison is the page. Every row but the last is a method both sides
 inherit from the shared hierarchy — `Level` itself, or one of the interfaces
-above it — and that one side has hollowed out; the last row is a field.
+above it — and that the two sides answer differently; the last row is not a
+method but the storage behind one. Seven of the nine rows are the client
+hollowing something out. The eighth, `Level.shouldTickDeath`, is the one that
+runs the other way.
 
 | shared method | on the server | on `ClientLevel` |
 |---|---|---|
@@ -46,7 +51,7 @@ above it — and that one side has hollowed out; the last row is a field.
 | `LevelAccessor.gameEvent` | vibrations, sculk | empty override |
 | `LevelReader.getUncachedNoiseBiome` | generates | returns plains |
 | `LevelReader.hasChunk` | asks the source | unconditionally true |
-| `Level.setBlocksDirty` | empty | the renderer notification |
+| `Level.setBlocksDirty` | empty | real — and it notifies `LevelExtractor`, never `LevelRenderer` |
 | `Level.shouldTickDeath` | true | **stricter** — within the server's simulation distance |
 | entity storage | persistent: a disk store, known UUIDs, per-chunk load states | transient: the same lookup, none of the bookkeeping |
 
@@ -59,14 +64,16 @@ and the knockback, and the handler plays all of it. And `Level.shouldTickDeath` 
 is the stricter of the two: it uses the server's announced simulation
 distance to decide whether a dying mob plays its death animation.
 
-**Two** — the number of things that read the server's announced simulation
-distance off `ClientLevel`. That one, and `LevelExtractor`'s render-stats
-string. (The client's own `Options.simulationDistance`, which is a different
-number, has its own readers.) The value only
-ever arrives from the server, on
+That last row is also one of only **two** things in the client that read the
+server's announced simulation distance: the death-animation test, and
+`LevelExtractor`'s render-stats string. (The client's own
+`Options.simulationDistance` is a different number with its own readers.) The
+level keeps its own copy in `ClientLevel.serverSimulationDistance`, but never
+decides it: the value arrives from the server on
 `ClientPacketListener.serverSimulationDistance`, beside
-`ClientPacketListener.serverChunkRadius`; both are seeded at login, updated
-by their own packets, and handed to each new `ClientLevel` at construction.
+`ClientPacketListener.serverChunkRadius` — both seeded at login and updated by
+their own packets — and is handed to each new `ClientLevel` at construction
+and thereafter through `ClientLevel.setServerSimulationDistance`.
 
 ## What it does simulate: the two cadences
 
@@ -204,65 +211,68 @@ owns is *who has one*. `Entity.isInterpolating` is the question
 deciding whether to publish the interpolation's target or the entity's
 current position.
 
-## Questions players ask
+## The clock and the weather run themselves, and neither interpolates
 
-**Why do I hear my own footsteps instantly on a laggy server?** Because
-`ClientLevel.playSeededSound` is the one method here that plays a sound
-*only* when the excluded player is the local one — so your own footsteps are
-never on the wire at all, and what lags is what you hear of other people
-([who hears it](what-makes-a-sound.md#who-hears-it), which also holds the
-handful of sounds this level defers for distance).
+Two of the things in that tick are the client keeping numbers the server also
+keeps, and both are worth a sentence because both are the class's character in
+miniature: it free-runs, and it is corrected rather than told.
 
-**Who decides how hard it is raining?** The server, one hundredth at a
-time. Weather on the client is presentation only:
+**The clock.** `ClientLevel.tickTime` increments
+`ClientLevel.ClientLevelData.gameTime` unconditionally every tick and hands the
+result to a `ClientClockManager` — owned by `ClientPacketListener`, reached
+through `ClientLevel.clockManager`, and the thing anything asking the client
+what time it is actually asks. `ClientLevel.setTimeFromServer` is the only
+correction, and its only caller is `ClientPacketListener.handleSetTime`. So the
+time in a screenshot is the client's own count since the last correction, not
+the server's.
+
+**The weather.** Weather on the client is presentation only:
 `ClientLevel.tickWeatherEffects` spawns rain particles and picks rain sounds,
 while the rain and thunder *levels* are ramped on the server by ±0.01 a tick
 and broadcast on every tick they change — about a hundred packets across a
 five-second transition. What the client does not do is interpolate *within* a
-tick: `Level.setRainLevel` writes the old and new values to the same number,
-so the partial tick buys nothing and the level steps twenty times a second
-rather than smoothly.
+tick: `Level.setRainLevel` writes the old and new values to the same number, so
+the partial tick buys nothing and the level steps twenty times a second rather
+than smoothly.
 
-**Why does the clock in a screenshot disagree with the server's?** The
-client keeps its own. `ClientLevel.tickTime` increments
-`ClientLevel.ClientLevelData.gameTime` unconditionally every tick and hands
-the result to a `ClientClockManager` owned by `ClientPacketListener` and
-reached through `ClientLevel.clockManager`.
-`ClientLevel.setTimeFromServer` is the only correction, and its only caller
-is `ClientPacketListener.handleSetTime`.
-
-**Why does the crack overlay on someone else's block lag?** The
+Two more numbers in that tick are deliberately coarse in the same way. The
 breaking-progress sweep over `ClientLevel.destroyingBlocks` and
-`ClientLevel.destructionProgress` only runs on every twentieth tick. It is
-approximate by construction.
-
-**Why does the ambient particle load not scale with my machine?**
+`ClientLevel.destructionProgress` runs only on every twentieth tick, which is
+why a crack overlay on someone else's block lags behind their mining. And
 `ClientLevel.animateTick` samples 667 positions at radius sixteen and another
-667 at radius thirty-two, every tick, regardless. `ClientLevel.doAddParticle`
-culls by distance afterwards and can stochastically downgrade the particle
-setting further.
+667 at radius thirty-two every tick regardless of the machine, with
+`ClientLevel.doAddParticle` culling by distance afterwards and able to
+downgrade the particle setting stochastically on top.
 
-## What else it holds, and what it will not tell you
+The one thing in the class that is *not* coarse is the sound of your own
+footsteps: `ClientLevel.playSeededSound` plays only when the excluded entity is
+the local player, so what you do is never on the wire and what lags is what you
+hear of other people ([who hears
+it](what-makes-a-sound.md#who-hears-it) owns that rule and the sounds this
+level defers for distance).
+
+## What else it holds
 
 `ClientLevel.tickingEntities` is an `EntityTickList`, fed by
-`ClientLevel.EntityCallbacks` — the four hooks
-`ClientLevel.entityStorage` invokes as a chunk starts and stops ticking. That
-storage is a `TransientEntitySectionManager`, which is the comparison table's
-last row made concrete: the same section-indexed lookup the server uses, with
-the disk store, the UUID index and the per-chunk load states left out, so
-nothing in it survives a `ClientLevel` being replaced.
+`ClientLevel.EntityCallbacks` — the four hooks `ClientLevel.entityStorage`
+invokes as a chunk starts and stops ticking. Three more fields are each the
+whole of a mechanism another page owns:
+`ClientLevel.globallyRenderedBlockEntities` is the set that draws from
+anywhere, `ClientLevel.blockStatePredictionHandler` is the ledger [prediction
+and acknowledgement](prediction-and-acks.md) owns, and
+`ClientLevel.explosionTracker` is a per-tick budget of at most 512 block
+particles that empties itself every tick rather than deferring anything.
+
+### The four tint caches, and the soft biome edge
+
 `ClientLevel.tintCaches` holds four `BlockTintCache`s — grass, foliage, dry
 foliage, water — and each is what makes a biome colour boundary look softer
-than the biome boundary is: `ClientLevel.calculateBlockTint` box-blurs the
+than the biome boundary is. `ClientLevel.calculateBlockTint` box-blurs the
 per-block answer over the columns the *biome blend radius* option names and
 caches that, over a lookup that is itself on the ragged side of the two biome
-borders ([biomes](../worldgen/biomes.md#the-two-borders)). `ClientLevel.globallyRenderedBlockEntities` is the set that
-draws from anywhere, populated by `ClientLevel.onBlockEntityAdded`.
-`ClientLevel.explosionTracker` is a `ClientExplosionTracker`, a per-tick
-budget of at most 512 block particles that empties itself every tick rather
-than deferring anything. `ClientLevel.blockStatePredictionHandler` is the
-ledger [prediction and acknowledgement](prediction-and-acks.md) owns, and
-`ClientLevel.levelExtractor` is the push half of the route to the renderer.
+borders ([biomes](../worldgen/biomes.md#the-two-borders)). The blur is the
+client's, entirely: nothing on the server knows the edge is soft. That is also
+why a chunk arriving invalidates all four of them at once, two sections above.
 
 The client runs a real light engine — block light always, sky light only
 where the dimension has it — and every client-side `Level.setBlock` relights,

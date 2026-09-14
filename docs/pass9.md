@@ -44,6 +44,292 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session J — Part X · The client *(2026-09-14)*
+
+Twelve system pages and the landing page, thirteen readers, one each. Part X
+arrived with the closer on 8 of 12 in two spellings and no literal trace
+heading at all, and the work turned out to be neither of those: it was
+**counts**, again, and this time not only in lead-in sentences. Session I's
+lesson was that a lead-in naming a number is a claim about the page; Part X
+adds the wider form — **a sentence that names a number, anywhere, is a claim
+about the text beside it, and nothing in the toolchain can see when the text
+changes underneath it.** Eleven of the corrections below are of that shape, and
+every one was found by a reader who counted because a sentence told them to.
+
+### Corrections — every one re-derived against the decompile before the fix
+
+1. `the-client-loop`:159 — *"Four queues and one re-entry that is not a
+   queue"*, over six bullets of which five are ways off the thread. Counted
+   against the section: packets, tasks, section meshing, timers and fenced GPU
+   work are five, and `BlockableEventLoop.managedBlock` is the re-entry.
+   Rewritten as *five ways off this thread*, and the re-entry given its own
+   paragraph so it is not a sixth bullet.
+2. `the-client-loop`:123–139 — *What a tick is, in order* was seventeen ordered
+   steps in one semicolon chain, and its gates did not survive the sentence.
+   Rebuilt as a thirteen-row table with a *what gates it* column, read off
+   `Minecraft.tick` (`net/minecraft/client/Minecraft.java`). Writing the column
+   found three claims the prose had implied and the source denies:
+   `Minecraft.pick`, `Tutorial.onLookAt` and the GUI block are **not** gated on
+   a level, and the keybind drain is gated on no screen and no overlay and on
+   nothing about a level. Five of the thirteen rows are ungated, which is now
+   the section's point.
+3. `the-client-loop`:26 — *"There is no render thread, and there never was one
+   in this version"*, three lines after saying the thread is named
+   `"Render thread"`. The claim is about a *separate* thread and the sentence
+   withheld the word; said now, and tied to every *Render thread* cell in the
+   part's cast tables.
+4. `the-client-loop`:250–252 — *"which is why every `OptionInstance.set`
+   performed while loading silently skips its listener"* rested on a premise
+   the page never states, that a listener fires only while `Minecraft.running`
+   is true (`OptionInstance.set`, `net/minecraft/client/OptionInstance.java`).
+   Premise supplied, and the citation repointed at the new section on
+   `options`.
+5. `the-client-loop`:237–242 — *"three different measurements"*, of which the
+   third was "the graph" and was never named or placed. Said which of the three
+   appears on which line of the overlay.
+6. `the-client-level`:37–39 — the comparison table's lead-in said every row but
+   the last is a method *one side has hollowed out*; `Level.shouldTickDeath` is
+   the row where the **client** is stricter, which is the opposite. Lead-in now
+   counts: seven hollowings, one the other way, and a last row that is storage
+   rather than a method.
+7. `the-client-level`:49 vs :277 — the table said `Level.setBlocksDirty` on the
+   client is *"the renderer notification"* while the page's last section says
+   `ClientLevel` never notifies `LevelRenderer`. Both true; the row now names
+   `LevelExtractor`.
+8. `the-client-level`:62–69 — *"two things read the server's announced
+   simulation distance **off `ClientLevel`**"*, against a paragraph saying the
+   value lives on `ClientPacketListener`. The level does hold its own copy,
+   `ClientLevel.serverSimulationDistance`, seeded at construction and updated
+   by `ClientLevel.setServerSimulationDistance`
+   (`net/minecraft/client/multiplayer/ClientLevel.java`:179, 1137). Said.
+9. `prediction-and-acks`:67 — *"the three destroy actions of
+   `ServerboundPlayerActionPacket` but not its other five"*, with none of the
+   three, the five or the two use packets named.
+   `ServerboundPlayerActionPacket.Action` has eight values
+   (`net/minecraft/network/protocol/game/ServerboundPlayerActionPacket.java`:70),
+   so the arithmetic was right; all of them are now named, and the three
+   `ackBlockChangesUpTo` call sites with them.
+10. `prediction-and-acks`:162 vs :125 — `MultiPlayerGameMode.startPrediction`
+    and `BlockStatePredictionHandler.startPredicting` were used
+    interchangeably. They are two methods on two classes: the first is the
+    window (private, six call sites), the second the pre-increment of
+    `BlockStatePredictionHandler.currentSequenceNr`. Distinguished.
+11. `gui-and-screens`:110 vs :113 — *"`Screen.init` is **final**"* against
+    *"the overridable `Screen.init` hook"*. There are two methods of that name:
+    `Screen.init(int,int)` is final at `Screen.java`:451 and `Screen.init()` is
+    the hook at :496. Said, once, before either is used.
+12. `gui-and-screens`:206 — *"Those **seven** names are examples"* over a table
+    carrying nine backticked class names and four unbackticked ones. The number
+    taught nothing, so it is gone rather than corrected — the lesson of this
+    session applied to itself.
+13. `gui-and-screens`:211 — *"the widget and layout families **below**"*,
+    pointing down at families that are eighty lines above.
+14. `gui-and-screens`:88 — *"**Two** of its behaviours"* introducing three
+    claims in the same form.
+15. `gui-and-screens`:231–234 — *"once **two clocks** have passed"* followed by
+    three intervals. `Screen.handleDelayedNarration` tests two clocks
+    (`Screen.java`:630) and three constants arm them
+    (`NARRATE_DELAY_MOUSE_MOVE` 750, `NARRATE_DELAY_KEYBOARD_ACTION` 200,
+    `NARRATE_SUPPRESS_AFTER_INIT_TIME` two seconds). Both numbers stated, and
+    which is which.
+16. `gui-and-screens`:203 — *"Three entities implement
+    `HasCustomInventoryScreen` … two use the mount packet and one falls back"*,
+    naming none of the three. They are `AbstractHorse`, `AbstractNautilus` and
+    `AbstractChestBoat`; named, and `AbstractChestBoat` opens an ordinary menu
+    through `Player.openMenu` rather than a distinct packet.
+17. `the-gui-render-tree`:31 — the cast said a `GuiRenderState.Node` is *"a
+    list of elements and a separate list of glyphs"*; it holds **five** lists
+    (`net/minecraft/client/renderer/state/gui/GuiRenderState.java`:303–307),
+    which the page's own figure already said.
+18. `the-gui-render-tree`:93–98 — `GuiRenderState.addBlitToCurrentLayer` and
+    `GuiRenderState.addGlyphToCurrentLayer` were listed among *"the recording
+    verbs"* twenty lines after the page said the draw pass calls the glyph one.
+    Neither has a caller in a recorder: the only call sites are `GuiRenderer`
+    and `PictureInPictureRenderer`. The prose became a table with a *who calls
+    it* column.
+19. `the-gui-render-tree`:140–142 — *"The three sort comparators"*. There is
+    **one**: `GuiRenderer.ELEMENT_SORT_COMPARATOR`, composed of
+    `SCISSOR_COMPARATOR`, the pipeline's own sort key and `TEXTURE_COMPARATOR`
+    (`GuiRenderer.java`:69–71) — which is why the figure's three sort *keys* and
+    the prose's three *comparators* would not line up.
+20. `the-gui-render-tree`:155 — *"three conditions gate it"* for
+    `Screen.extractBlurredBackground`, which contains exactly one
+    (`Screen.java`:522). The other two are facts about reaching it; separated.
+21. `the-gui-render-tree`:107 — *"they are the one place 3D drawing happens
+    inside a 2D pass"* of the picture-in-picture family, against the item atlas
+    two paragraphs above and the 1.21 box below. Both are; said so.
+22. `the-gui-render-tree`:101 — `PanoramaRenderState` was listed among the node
+    states. It is a nullable **field** on `GuiRenderState`
+    (`GuiRenderState.java`:28), assigned by `Panorama` and drawn by
+    `GuiRenderer.render` before the tree is resolved.
+23. `options`:29 — the cast said `IntegratedServer` reads the sliders *"every
+    tick"*; the body says every **unpaused** server tick, and the body is right.
+24. `options`:35–61 — the figure had no screen-close edge, so every route
+    through it saved and broadcast immediately, which the paragraph under it
+    contradicted. Redrawn against `OptionsSubScreen.onClose` and
+    `OptionsSubScreen.removed`
+    (`net/minecraft/client/gui/screens/options/OptionsSubScreen.java`:72–83) and
+    `OptionInstance.OptionInstanceSliderButton`
+    (`OptionInstance.java`:462–498): a cycle button saves on click, a slider's
+    value lands on release or 600 ms later, and `Options.save` happens once,
+    when the screen is removed.
+25. `options`:110–111 — *"Seven of the other quality options … Nine are not"*
+    with no population. Counted in `Options.java`: sixteen listeners touch the
+    graphics preset, seven of them also call `operateOnLevelExtractor` (cloud
+    range, cutout leaves, improved transparency, ambient occlusion, anisotropic
+    filtering, texture filtering, biome blend radius) and nine do nothing else.
+    Population named and the seven listed.
+26. `hud`:67–68 — *"the difference between the two `Gui`-recorded elements that
+    survive a level and the two that do not"*, which the page never resolved
+    and which is not two and two. Read off `Gui.extractRenderState`
+    (`net/minecraft/client/gui/Gui.java`:165–250): the saving indicator needs a
+    level, the toasts need resources loaded, the debug overlay and the deferred
+    subtitles are ungated. Four elements, three depths; now a table, with what
+    each does under F1 beside it — where the debug overlay turned out to have a
+    fourth behaviour the page lacked, being hidden by F1 *unless a screen is
+    open* (`DebugScreenOverlay.java`:96).
+27. `hud`:153–154 vs :145 — *"three health numbers"* against a figure drawing a
+    four-item descending pass. Both are right and they are different lists:
+    `Hud.lastHealth`, `Hud.displayHealth` and the truth are the numbers
+    (`Hud.java`:169–172); container, absorption, ghost and truth are the
+    layers. Said, and the ghost identified as `Hud.displayHealth`.
+28. `hud`:165 — *"the HUD makes a sound of its own, which is the only element
+    in it that does"*, against `Toast.Visibility` carrying a sound per state
+    eighty lines above. Scoped to `Hud.extractRenderState`, with the toasts'
+    sounds excluded by name.
+29. `sound-engine`:46 vs :226 — the thread table said the sound thread takes
+    *"every per-source AL call"* and the closer named two exceptions. Scoped to
+    *while the game is running*, which is what makes the teardown exceptions
+    safe.
+30. `sound-engine`:84 — the figure's *"then drop a silent one"* against the
+    body's *unless it is music*. Qualified in the figure.
+31. `sound-engine`:245 — *"Three things"* followed by two extensions, an ALC
+    version and HRTF. `Library.init` throws for exactly three
+    (`com/mojang/blaze3d/audio/Library.java`:76, 113, 118) and HRTF is
+    conditional, not required; separated, and *ALC_EXT_disconnect* added as the
+    other optional one.
+32. `what-makes-a-sound`:16 vs :44 — **the page named its three doors two
+    different ways.** The opening's third door was the prediction path; the
+    figure's and the table's third column was client-side ambience. Both are
+    the same door — *nothing crosses the wire* — with two inhabitants. The
+    opening, the figure and the table now agree, and the figure gained the
+    local-prediction branch it lacked.
+33. `what-makes-a-sound`:52 — the figure routed the named-packet path through a
+    node labelled *"plays only when the excluded entity is the local player"*,
+    which reads as a bystander hearing nothing.
+    `ClientPacketListener.handleSoundEvent` passes `minecraft.player` as that
+    argument (`ClientPacketListener.java`:2225), so the test always passes on
+    the packet path. The inversion is now stated in the prose and the figure
+    label says who supplies the argument.
+34. `what-makes-a-sound`:103 — *"two kinds of silence"* followed by four named
+    things, two of which make sound audible or visible rather than silent.
+    Split into the two kinds and the two development constants.
+35. `debugging-the-running-game`:86 — *"half the renderers below reach for the
+    singleplayer server directly"*. Exactly **two** do
+    (`ChunkDebugRenderer`, `EntityHitboxDebugRenderer`; grep over
+    `client/renderer/debug`). Corrected to two.
+36. `debugging-the-running-game`:72 vs :84 — *"Four collectors are installed
+    anywhere in the game"* and then a fifth install site in the next paragraph.
+    Five places install one; four of them collect. Said.
+37. `debugging-the-running-game`:16 vs :260 — *"about two dozen renderers"*
+    against *"eleven of the twenty-five"*. `DebugRenderer.refreshRendererList`
+    adds twenty-five, eleven of them gated on a debug-screen entry; the vague
+    one now says twenty-five.
+38. `debugging-the-running-game`:88 — a heading reading *The sixteen instances*
+    over a fourteen-row table, with the two double rows unremarked.
+39. `debugging-the-running-game`:107 — *"those four expiring rows"* sorted into
+    two event kinds and two pushed-value kinds without saying which is which;
+    `REDSTONE_WIRE_ORIENTATIONS` was assignable only by elimination. All four
+    named into their buckets.
+40. `debugging-the-running-game`:229 — the heading *The sample path, which
+    shares only the subscriber map* promised a shared thing the section never
+    delivers. Renamed to what it does share, which is the idea and one
+    subscription.
+41. `debugging-the-running-game`:249 — *"Six packets carry all of this"*, where
+    *this* had by then included two tag-query packets that are not among the
+    six. Scoped, and the exclusion said.
+42. `input-and-keybinds`:100 vs :181 — *"nineteen times over"* against *"Twenty
+    debug shortcuts"*. `Options.debugKeys` holds twenty
+    (`Options.java`:1263) and `KeyboardHandler.handleDebugKeys` makes
+    twenty-two `KeyMapping.matches` calls, the extra two being the overlay and
+    modifier keys. Both numbers corrected and the two populations separated.
+43. `input-and-keybinds`:121 — the `KeyMapping.setAll` row said when it happens
+    and never what it does. It asks the window which keys are physically down
+    and sets each willing mapping to match (`KeyMapping.java`:60–70).
+44. `README`:139 — *"ten of these twelve pages carry a *for a 1.21-era reader*
+    box"*. Nine do.
+45. `README`:50 — *"Everything else in the part is independent of everything
+    else in the part"*, four lines above the page naming a dependency between
+    two of those pages. Rewritten to say what the exceptions are.
+
+### Claims introduced
+
+- **The client loop.** The tick table's thirteen rows and their gate column;
+  *five of the thirteen rows are gated on nothing*; the five ungated rows being
+  what a client with no world still does; that `Minecraft.pick`'s tick call is
+  row four and the frame's is elsewhere; that the frame-time graph is the only
+  one of the three measurements fed after the limiter.
+- **The client level.** *The clock and the weather run themselves, and neither
+  interpolates* as a section, assembled from three dissolved closer answers;
+  that the breaking sweep and `ClientLevel.animateTick` are coarse *in the same
+  way*; *The four tint caches, and the soft biome edge* as a heading, with the
+  claim that nothing on the server knows the edge is soft and that a chunk
+  arriving is what invalidates all four.
+- **Prediction and acknowledgement.** The opening re-argued so the ordering
+  rule is the hook and the receipt claim leads into it (the queue asked which
+  of the two openings was the hook; this is the answer); the word *cascade*
+  defined at first use; *What one ack does, and the numbers that are not
+  sequences* as a section, with the claim that the recorded player position is
+  read by the snap and by nothing else.
+- **Input and keybinds.** *The two debug-key families, and which one is
+  bindable* and *Almost nothing here sends a packet* as sections; the claim
+  that the twenty-two tests over twenty shortcuts are explained by the overlay
+  and modifier keys being tested in the same method.
+- **Options.** *The guard that silences every setting at startup* as a section
+  — the queue's standing entry, acted on; the claim that a setting whose only
+  effect is in its listener does nothing until you change it in the interface;
+  the figure's three-way split of when a value is applied.
+- **GUI and screens.** That the two `Screen.init` methods are the framework's
+  style in miniature, stated before the finals list.
+- **The GUI render tree.** The opening's claim that the inference buys the
+  chest twice over — one layer, one atlas entry; the verb table's *who calls
+  it* column; that the two current-layer verbs are why a resolved thing never
+  jumps in front of what recorded it.
+- **The HUD.** The figure moved above the cast, and the opening re-entered
+  through the scenario (A7); the four-element gate table; the boss bar promoted
+  into *The hidden flag travels two ways* with the claim that a dragon changes
+  the sky because a HUD element asked the world to; *What a debug line is, and
+  who turns one on* as a section.
+- **Sound: the engine.** *The sound thread is not the mixer, and the device is
+  not its* as a section (A7's variation for this page, and A2's promotion of
+  two closer answers); the claim that the two teardown exceptions are safe
+  because the thread is already joined.
+- **What makes a sound happen.** The third door redefined as *nothing crosses
+  the wire* with two inhabitants; the cast moved below the figure and the table
+  (A7); the claim that one client method serves both the packet path and the
+  local path because the handler supplies the local player as the excluded
+  entity.
+- **Debugging the running game.** That five places install a collector and four
+  collect; that the sample path shares nothing but the idea and one
+  subscription.
+- **The landing page.** The argument reversed off the symptom list onto the
+  claim that *everything that looks like the client falling behind is one
+  thread deciding what to spend a frame on*; the figure's seven spokes
+  explained against twelve pages; *Where the part stops* as a heading in A6's
+  place with the generated coverage include.
+
+### For pass 9's attention, found and not fixed
+
+- `hud`'s *"six other places across the client"* read `Hud.isHidden` — counted
+  by an earlier pass, not re-counted here.
+- `gui-and-screens`'s *"Forty-one screens override
+  `Screen.repositionElements`"* and *"two hundred-odd classes in
+  `client/gui/screens` and its eighteen sub-packages"* — one exact and one
+  round on the same page, neither re-counted.
+- `the-client-loop`'s *"the overload threshold plus twenty ticks"* names no
+  value, so the contrast with the client's ten cannot be felt; the value is
+  `server-tick`'s to supply.
+
 ## Pass 6, session I — Part IX · Networking *(2026-09-14)*
 
 Five system pages and the landing page, six readers, one each. Every

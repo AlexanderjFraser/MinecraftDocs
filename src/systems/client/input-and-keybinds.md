@@ -7,11 +7,10 @@ press, flips the mapping to *down*, and then swallows the release entirely —
 so as far as the rest of the game is concerned you are still holding a key
 you let go of. Open your inventory and the mapping is released along with
 every other one; close it and the mapping *comes back on*, because the toggle
-remembered it was released by a screen rather than by you. The press and the
-release never involve the tick at all — they have already happened by the time
-the tick that observes them runs. Opening the inventory is the exception that
-shows where the seam is: that one is a *drain*, and the drain is inside the
-tick.
+remembered it was released by a screen rather than by you. **None of that
+involves the tick.** The press and the release have both already happened by
+the time the tick that observes them runs, and the tick's part is only to read
+what the mapping now says.
 
 What the movement keys *mean* once they are down belongs to [input to
 movement](../player/input-to-movement.md); this page stops at the mapping.
@@ -97,7 +96,8 @@ overlay.
 `KeyMapping.matches` and `KeyMapping.matchesMouse` are the third way, used
 where no counter is wanted: they test an event against the binding directly,
 which is what screens do, and what `KeyboardHandler.handleDebugKeys` does
-nineteen times over for the F3 combinations. `KeyMapping.same`,
+twenty-two times over as it works through the F3 combinations one test at a
+time. `KeyMapping.same`,
 `KeyMapping.isDefault` and
 `KeyMapping.isUnbound` are what the binding screen asks.
 
@@ -118,7 +118,7 @@ has two callers.
 | `KeyMapping.releaseAll` | `Gui.setScreen` ([GUI and screens](gui-and-screens.md#gui-which-is-not-the-hud)) | a screen may swallow a release, and a stuck-held mapping is worse than a lost press |
 | `KeyMapping.restoreToggleStatesOnScreenClosed` | `Gui.setScreen` | put back the toggles that the release above turned off |
 | `KeyMapping.resetToggleKeys` | `LocalPlayer.respawn` | you should not wake up sneaking |
-| `KeyMapping.setAll` | `MouseHandler.grabMouse` | only where `InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB` is set |
+| `KeyMapping.setAll` | `MouseHandler.grabMouse` | asks the window which keys are physically down and sets each willing mapping to match — only where `InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB` is set |
 
 The asymmetry between a swallowed press and a swallowed release is worth
 stating plainly, because it is the reason the first two rows exist. A press a
@@ -155,7 +155,8 @@ scaled and offset, so the slowest setting still turns.
 `MouseHandler.grabMouse` and `MouseHandler.releaseMouse` are two directions
 of one edge with `Gui.setScreen`, guarded so the two cannot recurse —
 though only `MouseHandler.releaseMouse` has the single caller;
-`MouseHandler.grabMouse` has five, and also clears the screen. `MouseHandler.isMouseGrabbed` is the state,
+`MouseHandler.grabMouse` has five, and on its way it also sets the current
+screen to none. `MouseHandler.isMouseGrabbed` is the state,
 `MouseHandler.setIgnoreFirstMove` suppresses the jump after a resize, and
 `MouseHandler.simulateRightClick` is macOS-only and fires on a
 control-modified left click rather than on a long one, whatever its constant
@@ -163,6 +164,42 @@ is called.
 Double-click is a threshold plus two identities: the two clicks must be
 within a quarter of a second, on the same button, **and** on the same screen
 instance.
+
+## The two debug-key families, and which one is bindable
+
+Debug shortcuts look like one family and are two, which is why some of them
+can be rebound and some cannot. `Options.debugKeys` holds **twenty** ordinary
+`KeyMapping`s, every one of them rebindable and every one of them listed by
+the binding screen; `KeyboardHandler.handleDebugKeys` is where each is tested,
+and it runs twenty-two tests over those twenty because the overlay and modifier
+keys are checked there too. The second family is not mappings at all: a raw
+switch on key codes in `KeyboardHandler.handleChunkDebugKeys`, gated on the
+game's debug flag and bindable to nothing. Several of the *bindable* twenty
+print no debug line of their own and exist only to carry a flag something else
+reads — which is the seam between this page and [the
+HUD](hud.md#what-a-debug-line-is-and-who-turns-one-on), whose F3 entry registry
+is what those flags feed.
+
+New categories are a third thing again. `KeyMapping.Category` is a registrable
+record rather than an enum, so a mod can add one; registering a duplicate id
+throws. Ordering is plain registration order into one list, and the eight
+built-ins come first only because the record's own static initialiser
+registers them first.
+
+## Almost nothing here sends a packet
+
+Two key presses reach the server directly and the rest do not, which is worth
+saying plainly because it is what keeps this page's scope honest.
+`KeyboardHandler` sends `ServerboundChangeGameModePacket` for F3+N, and
+`Minecraft.handleKeybinds` sends the swap-offhand action straight out of the
+drain. Everything else a key press means reaches the server later and by an
+entirely different route — as a movement packet, an action packet, a chat
+message — and none of those is this page's.
+
+Two smaller types sit beside the two handlers and belong to neither.
+`ScrollWheelHandler` is the wheel's accumulator, and `InputType` is the
+four-valued "what did the player last use" that decides initial keyboard
+focus, narration timing and whether a focused widget shows its tooltip.
 
 ## Questions players ask
 
@@ -177,26 +214,6 @@ the game itself ships colliding.
 modifier and the overlay toggle are the same key by default — so the overlay
 can only fire on the release, and only when no combination was used in
 between. Rebind either and that behaviour disappears.
-
-**Why can I not rebind that debug shortcut?** Twenty debug shortcuts are
-ordinary mappings in the debug-keys array. A second family is a raw switch on
-key codes in `KeyboardHandler.handleChunkDebugKeys`, gated on the game's
-debug flag and bindable to nothing.
-
-**Can a mod add a keybind category?** `KeyMapping.Category` is a registrable
-record, not an enum, so yes; registering a duplicate id throws. Ordering is
-plain registration order into one list — the eight built-ins come first only
-because the record's own static initialiser registers them first.
-
-Almost nothing on this page sends a packet, and the exceptions are worth
-naming because they are the shortcuts: `KeyboardHandler` sends
-`ServerboundChangeGameModePacket` for F3+N, and `Minecraft.handleKeybinds`
-sends the swap-offhand action straight out of the drain. Everything else a
-key press means reaches the server later and by an entirely different route.
-The two smaller supporting types are `ScrollWheelHandler`, the wheel's
-accumulator, and `InputType`, the four-valued "what did the player last use"
-that decides initial keyboard focus, narration timing and whether a focused
-widget shows its tooltip.
 
 > **For a 1.21-era reader.** Input events are **records** now. The
 > `(key, scancode, modifiers, action)` integer tuple is gone from every

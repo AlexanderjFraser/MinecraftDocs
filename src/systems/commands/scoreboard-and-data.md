@@ -327,7 +327,7 @@ surface, at gamemaster like everything else in this part, and
 rather than the same code, chaining the same kind of callback onto the source
 and writing the value or the maximum instead of a `ScoreAccess`. What the
 client does with the packet — the interpolation, the sky it darkens — is [the
-HUD](../client/hud.md#questions-players-ask).
+HUD](../client/hud.md#the-hidden-flag-travels-two-ways).
 
 ## Questions players ask
 

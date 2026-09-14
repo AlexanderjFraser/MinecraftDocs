@@ -248,8 +248,7 @@ after the first answers "when in the client's one loop does *this* happen".
 Watch the hub first and then take the rest in any order that suits — except
 the three groups noted below.
 
-1. [The client loop](systems/client/the-client-loop.md) — the hub, and the
-   page every other page in the part leans on.
+1. [The client loop](systems/client/the-client-loop.md)
 2. [The client level](systems/client/the-client-level.md)
 3. [Prediction and acknowledgement](systems/client/prediction-and-acks.md)
 4. [Input and keybinds](systems/client/input-and-keybinds.md)
@@ -262,12 +261,9 @@ the three groups noted below.
 11. [What makes a sound happen](systems/client/what-makes-a-sound.md)
 12. [Debugging the running game](systems/client/debugging-the-running-game.md)
 
-Six to nine are the part's one internal pipeline — a screen records into a
-tree, the text in it is measured and baked while it is being recorded, and
-the tree is then sorted and batched — and are watched consecutively, tree
-before text because the text pipeline cannot be followed until you know what
-it records into. Two and three are the other pair: the ledger lives on
-`ClientLevel` and is reached through four of its methods.
+Six to nine are the part's one internal pipeline and are watched
+consecutively, tree before text. Two and three are the other pair. Ten and
+eleven are the two halves of sound, in either order.
 
 Part X assumes [Part IX](systems/networking/README.md), which is the same
 wire watched from the sending end, and Part I's

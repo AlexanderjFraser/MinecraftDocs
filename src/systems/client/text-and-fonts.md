@@ -202,55 +202,60 @@ statement earlier. And the continuation indent on a wrapped chat line is a
 **literal space codepoint** prepended by `ComponentRenderUtils` — the one
 place in the pipeline where a character is invented rather than derived.
 
-## Questions a reader asks
+## Style is not a font, and the box is four failures
 
-**Why is this glyph a hollow box?** Four different causes, one appearance. No
-provider has the codepoint; the font id is unknown, so the whole font set is
-the missing-font set; the glyph's advance is "fishy" and the caller asked for
-the filtered font; or the bitmap fit no sheet.
+Two things the pipeline does *not* do are worth stating before the page ends,
+because both are assumed the other way round by nearly everyone.
 
-**What is a "fishy" glyph?** An advance outside a sane range. Every font set
-stores two suppliers per codepoint because of it, and the game builds a
-second `Font` that filters the fishy ones out. That second font has exactly
-one use in the entire client: the chat input box — a font that cannot be made
-to draw a character three screens wide.
-
-**How is a block icon in a chat line drawn?** As a glyph. An object component
-emits a single object replacement character with a synthetic font
-description, which resolves to a one-glyph sprite font. A block icon or a
-player head is, mechanically, one character in a font with one character in
-it — and the plain-text walk of the same component yields a bracketed
-fallback string instead, which is what the narrator and `Component.getString`
-see. A data pack cannot do this: the codec behind `FontDescription` only
-encodes the resource kind, so **a style can never name a sprite font**. The
-sprite descriptions arise only from object contents.
-
-**Why does obfuscated text not shift the layout?** The glyph is swapped for a
-random one *of the same width*, from a table built once per font set. And
-because the swap happens inside `Font.prepareText`, which already runs once
-per frame, the animation costs nothing extra.
-
-**Is bold a font?** No. Bold draws the glyph twice with a small offset and
-thickens it; italic shears the top and bottom edges. Nothing in the font
-pipeline knows what a bold face is. Shadow is a colour rather than a boolean,
+**Bold is not a font.** Bold draws the glyph twice with a small offset and
+thickens it; italic shears the top and bottom edges. Nothing anywhere in the
+six stages knows what a bold face is. Shadow is a colour rather than a boolean,
 and zero means none. Underlines, strikethroughs and text backgrounds always
 come from the **default** font whatever the style names, because the effect
-glyph is looked up separately.
+glyph is looked up separately from the text's. Obfuscation is in the same
+family: the glyph is swapped for a random one *of the same width*, from a
+by-width table built once per font set, which is why obfuscated text never
+shifts a layout — and because the swap happens inside `Font.prepareText`, which
+already runs once per frame, the animation costs nothing extra.
 
-**How does hovering a link work?** `ActiveTextCollector` walks the very same
-`Font.PreparedText` that will be drawn, looking for the style under the
-cursor — which is why preparation can be asked to record *empty* areas, so
-that hovering the space inside a hover-event run still finds the style. Glyph
-areas deliberately extend to the full advance, so there are no dead gaps
-between characters.
+**A sprite is a font.** A block icon or a player head in a chat line is,
+mechanically, one character in a font with one character in it: an object
+component emits a single object replacement character with a synthetic font
+description, which resolves through stage four to a one-glyph sprite source.
+The plain-text walk of the same component yields a bracketed fallback string
+instead, which is what the narrator and `Component.getString` see. A data pack
+cannot reach this: the codec behind `FontDescription` encodes only the resource
+kind, so **a style can never name a sprite font**, and the sprite descriptions
+arise only from object contents.
 
-**Are the caches safe?** Mostly by being single-threaded rather than by
-being locked: they are meant to be touched only on the Render thread. It is
-not a clean rule — some are keyed on identity and some on equality, and the
-glyph layer does use *volatile* fields and a Guava cache. A component's cached visual order is invalidated by the `Language`
-object changing, and a translatable component's decomposition likewise. The
-one place that leaks: the sign block entity caches its rendered lines on a
-class the *server* also ships, and that cache does not notice a font reload.
+And when the pipeline fails it fails one way, which makes the hollow box
+ambiguous. Four different causes produce it: no provider has the codepoint; the
+font id is unknown, so the whole font set is the missing-font set; the glyph's
+advance is *fishy* — outside a sane range — and the caller asked for the
+filtered font; or the bitmap fit no sheet. The fishy case is the one with
+machinery behind it. Every font set stores two suppliers per codepoint because
+of it, and the game builds a second `Font` that filters the fishy ones out,
+with exactly one use in the entire client: the chat input box, which cannot be
+made to draw a character three screens wide.
+
+## What else walks a `Font.PreparedText`, and what the caches promise
+
+The prepared text is walked twice by different things and that is deliberate.
+`GuiRenderer` walks it to emit glyphs, and `ActiveTextCollector` walks the very
+same object looking for the style under the cursor — which is how hovering a
+link works, and why preparation can be asked to record *empty* areas, so that
+hovering the space inside a hover-event run still finds the style. Glyph areas
+deliberately extend to the full advance, so there are no dead gaps between
+characters.
+
+The caches down the pipeline are safe mostly by being single-threaded rather
+than by being locked: they are meant to be touched only on the Render thread.
+It is not a clean rule — some are keyed on identity and some on equality, and
+the glyph layer does use *volatile* fields and a Guava cache. A component's
+cached visual order is invalidated by the `Language` object changing, and a
+translatable component's decomposition likewise. The one place that leaks is
+worth knowing: the sign block entity caches its rendered lines on a class the
+*server* also ships, and that cache does not notice a font reload.
 
 > **For a 1.21-era reader.** `Font` cannot draw. Every *drawInBatch* and
 > *drawString* is gone; `Font.prepareText` returns a `Font.PreparedText` that

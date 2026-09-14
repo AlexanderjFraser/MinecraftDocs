@@ -85,7 +85,7 @@ surface is `Gui.isPausing`, `Gui.handleKeybinds`, `Gui.openChatScreen`,
 `Gui.canInterruptScreen`, `Gui.buildInitialScreens` and
 `Gui.setClientLevelTeardownInProgress`.
 
-Two of its behaviours are the sort of thing a reader assumes and gets wrong.
+Three of its behaviours are the sort of thing a reader assumes and gets wrong.
 
 **`Gui.setScreen` with a null screen does not mean "close the screen".** It means "decide
 what should be up instead". With no level it substitutes the title screen;
@@ -101,26 +101,33 @@ owns the pause itself and the other two, and the vote is cast by
 default too, which the loop page does not say, and is why a resource reload
 stops a singleplayer world as surely as the options screen does.
 
-And an overlay does not stack on a screen: in the record pass it *replaces*
-it. Nothing draws both. `LoadingOverlay` is the only implementation of
-`Overlay` in the game.
+**An overlay does not stack on a screen: in the record pass it *replaces*
+it.** Nothing draws both, and the input rules are split — an overlay
+suppresses the screen's mouse and its typing, but not its key presses.
+`LoadingOverlay` is the only implementation of `Overlay` in the game.
 
 ## The lifecycle, and what is final
 
-`Screen.init` is **final**, and a resize goes through `Screen.resize` to
-`Screen.repositionElements`. The default `Screen.repositionElements` rebuilds
-every widget through `Screen.rebuildWidgets`, which does re-enter the
-overridable `Screen.init` hook — so on a plain screen everything really is rebuilt.
-Forty-one screens override `Screen.repositionElements` instead and keep their
-widgets, most of them just re-arranging their `Layout`. "Everything is rebuilt
-on resize" is true of a plain screen and false of most interesting ones.
+There are two methods called `Screen.init` and the difference between them is
+the lifecycle. The one that takes a width and a height is **final** — the
+framework's entry point, which nothing overrides — and the no-argument one is
+the hook every screen implements to build its widgets. Wherever this page says
+*the `Screen.init` hook* it means the second.
+
+A resize goes through `Screen.resize` to `Screen.repositionElements`. The
+default `Screen.repositionElements` rebuilds every widget through
+`Screen.rebuildWidgets`, which re-enters the hook — so on a plain screen
+everything really is rebuilt. Forty-one screens override
+`Screen.repositionElements` instead and keep their widgets, most of them just
+re-arranging their `Layout`. "Everything is rebuilt on resize" is true of a
+plain screen and false of most interesting ones.
 
 The rest of the lifecycle is `Screen.added`, `Screen.tick`, `Screen.removed`
 and `Screen.onClose`, and the record entry point is the final
 `Screen.extractRenderStateWithTooltipAndSubtitles`.
 
-The framework fixes the outer shape everywhere and hands the subclass one
-inner hook. `Screen.init`,
+That pairing is the framework's whole style: fix the outer shape, hand the
+subclass one inner hook. `Screen.init`'s two-argument form,
 `Screen.extractRenderStateWithTooltipAndSubtitles`,
 `AbstractWidget.extractRenderState`, `AbstractWidget.updateNarration`,
 `AbstractButton.extractWidgetRenderState` and `AbstractContainerScreen.tick`
@@ -200,17 +207,20 @@ is dead or removed. The *client* notices first.
 | `ClientboundMountScreenOpenPacket` | a horse's or a nautilus's own inventory |
 | other packets | `BookViewScreen`, `AbstractSignEditScreen`, `DeathScreen`, `WinScreen`, the demo popup, `LevelLoadingScreen`, dialogs |
 
-Three entities implement `HasCustomInventoryScreen`, and they do not agree:
-two use the mount packet and one falls back to the ordinary menu packet.
+Three entities implement `HasCustomInventoryScreen` and they do not agree
+about which packet to use: `AbstractHorse` and `AbstractNautilus` send the
+mount packet, while `AbstractChestBoat` opens an ordinary menu like any other
+container.
 
-**Those seven names are examples and the book keeps them that way.** There are
-two hundred-odd classes in `client/gui/screens` and its eighteen
-sub-packages — the world-creation flow, the pack picker, the report screens,
-the friends and social lists, the recipe book, a class per container — and
-they are the single largest thing in Part X by line count. Every one of them
-is this section's four routes, the lifecycle above, the widget and layout
-families below and nothing else; the book explains the pattern once, here, and
-names a screen only where some other page's scenario walks into it. The
+**Every screen in that table is an example, and the book keeps them that
+way.** There are two hundred-odd classes in `client/gui/screens` and its
+eighteen sub-packages — the world-creation flow, the pack picker, the report
+screens, the friends and social lists, the recipe book, a class per container
+— and they are the single largest thing in Part X by line count. Every one of
+them is this section's four routes, the lifecycle above and the widget and
+layout families above, and nothing else; the book explains the pattern once,
+here, and names a screen only where some other page's scenario walks into
+it. The
 exception it does *not* cover is player reporting, declined for its own
 reasons in [what this book
 skips](../anatomy/what-this-book-skips.md#player-reporting).
@@ -228,10 +238,12 @@ does the speaking is `GameNarrator`, a thin wrapper over Mojang's *text2speech*
 library with a four-valued `NarratorStatus` option in front of it and two
 tempers: the *queued* methods, which yield to whatever is already being said,
 and `GameNarrator.saySystemNow`, which interrupts.
-Thereafter `Screen.handleDelayedNarration` fires from `Gui.update` once two
-clocks have passed — one delay after a mouse move, a shorter one after a
-keyboard action, and a two-second suppression after a screen is built — and
-then picks a *single* widget to narrate, by tab-order group and priority.
+Thereafter `Screen.handleDelayedNarration` fires from `Gui.update` once **two**
+clocks have both run out: a *next narration* time, armed longer after a mouse
+move than after a keyboard action, and a *suppression* time, set two seconds
+ahead whenever a screen is built. Three intervals, two clocks. When both have
+passed it picks a *single* widget to narrate, by tab-order group and
+priority.
 
 > **For a 1.21-era reader.** `Minecraft.screen` is gone: the current screen
 > belongs to `Gui`, which is now the screen-and-overlay manager rather than

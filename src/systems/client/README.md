@@ -2,25 +2,29 @@
 
 > Verified against **Minecraft 26.2** · Part X · One thread, one loop, and everything else in the part answering the same question about itself: when in that loop does this happen?
 
-Everything in this part that touches the game happens on one thread, and
-nothing in the client's simulation is driven by a scheduler or a timer
-callback. Despite the name printed in every stack trace there is no render
-thread: the thread called *Render thread* is the main thread, and it is the
-same thread that ticks the world, applies packets, handles your keyboard,
-decides what a screen looks like and asks the GPU to draw it. A player
-recognises the part by its symptoms of that arrangement: the stutter where
-the world moves on without you, the block that appears and then disappears,
-the terrain filling in ahead of you as you fly, the sound that arrives a beat
-after the packet.
+A player already knows this part by its symptoms: the stutter where the world
+moves on without you, the block that appears and then disappears, the sound
+that arrives a beat after the packet. Every one of them is the same
+arrangement seen from a different angle. Everything in this part that touches
+the game happens on **one thread**, and nothing in the client's simulation is
+driven by a scheduler or a timer callback; despite the name printed in every
+stack trace there is no separate render thread, and the thread called *Render
+thread* is the same one that ticks the world, applies packets, handles your
+keyboard, decides what a screen looks like and asks the GPU to draw it. So the
+client has no way to do two of those at once, and no way to be interrupted
+into doing one of them late. **Everything that looks like the client falling
+behind is one thread deciding what to spend a frame on.**
 
 ## The shape of the part
 
 Part X is a **hub and its spokes**, and the spokes are cadences rather than
 stages: with one exception, noted below, nothing here hands off to anything.
-`the-client-loop` is the hub because it is the one
-page that says *when* anything on the client runs, and every other page in
-the part answers the same question about itself: **when in that loop does
-this happen?** Read the labels on the arrows as cadences, not as an order.
+[The client loop](the-client-loop.md) is the hub because it is the one page
+that says *when* anything on the client runs, and every other page in the part
+answers the same question about itself: **when in that loop does this
+happen?** The figure has seven spokes for twelve pages, because the four GUI
+pages answer it together and so do the two about sound. Read the labels on the
+arrows as cadences, not as an order.
 
 ```mermaid
 flowchart TD
@@ -37,18 +41,20 @@ flowchart TD
     LOOP -- "per GLFW callback, keys before the tick" --> INPUT
     LOOP -- "per save, which a cycle button does on click" --> OPT
     LOOP -- "per frame, recorded then drawn" --> GUI
-    LOOP -- "per event, then three more threads of its own" --> SND
-    LOOP -- "per tick, and a packet only when the set changes" --> DBG
+    LOOP -- "per event, then off to three other threads" --> SND
+    LOOP -- "per tick, and a packet only when the wanted subscriptions change" --> DBG
 ```
 
 The one genuine pipeline inside the part is the GUI stack, and it is a
 pipeline whose stages interleave rather than queue: a screen records itself
 into a tree, and the text in it is measured and baked *while* it is being
 recorded, because the tree cannot place a line it has not measured. So the
-tree comes first here — you cannot follow the text pipeline until you know
-what it is recording into — with the HUD after them both as the other thing
-that records into the same tree. Everything else in the part is independent
-of everything else in the part.
+tree comes before the text here — you cannot follow the text pipeline until you
+know what it is recording into — with the HUD after them both as the other
+thing that records into the same tree. Outside that stack and one pair, nothing
+in the part depends on anything in the part except the hub: the client level
+and prediction share a ledger, and everything else answers the loop
+independently.
 
 ## Before you start
 
@@ -92,7 +98,8 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
    really simulates, and what it only pretends to.
 3. [Prediction and acknowledgement](prediction-and-acks.md) — the block that
    appears and then disappears. One ledger, one counter, and a receipt that
-   is not a verdict.
+   is not a verdict. Watch it straight after two: the ledger it turns on lives
+   on `ClientLevel` and is reached through four of that class's methods.
 4. [Input and keybinds](input-and-keybinds.md) — everything between the
    operating system and a key being *down*, and the five places a press can
    be swallowed on the way.
@@ -120,10 +127,32 @@ fonts](text-and-fonts.md), which starts from "you have a `Component`".
     mechanism, sixteen instances, all of them shipped and fifteen of them
     unreachable without a JVM flag.
 
-Two and three are a pair — the ledger lives on `ClientLevel` and is reached
-through four of its methods — and six to nine are the GUI stack, watched
-together. Ten and eleven are the two halves of sound and can be watched in
-either order; the engine first is the easier way round.
+Six to nine are the GUI stack and are watched together. Ten and eleven are the
+two halves of sound and can be watched in either order; the engine first is
+the easier way round.
+
+## Where the part stops
+
+At one end, the profiler's *frame* zone: [the
+frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)
+begins exactly where [the client loop](the-client-loop.md#one-turn-of-the-loop)
+ends, and everything inside that zone is Part XI's — though a few of this
+part's own cadences run inside it and stay here for what they decide, the
+per-frame light pass and the GUI record pass among them. What the *server*
+chose to send is Part IX's.
+
+At the other end, and much the larger boundary: **this part explains what a
+screen, a widget and a glyph *are*, not the two hundred-odd screens the game
+ships.** {{#include ../../generated/coverage-client.md}}, and nine tenths of
+that is one more `Screen` or one more widget — the world creation flow, the
+pack picker, the recipe book, a class per container. [GUI and
+screens](gui-and-screens.md#who-opens-a-screen) covers them as one pattern with
+four routes into it, on purpose. Two more things in the part's packages belong
+to other parts (the model tree under `client/resources` to Part XI,
+`client/player` to [Part VIII](../player/README.md) as well as here) and one to
+nobody: player reporting, which [this book
+skips](../anatomy/what-this-book-skips.md#player-reporting) and the atlas
+therefore counts in no part at all.
 
 ## Reference this part uses
 
@@ -136,34 +165,8 @@ HUD](hud.md) is built on, in record order.
 and [the glossary](../../reference/glossary.md) for *partial tick*,
 *prediction ledger* and *extract*. [Naming
 drift](../../reference/naming-drift.md) is the one to keep open beside this
-part in particular: ten of these twelve pages carry a *for a 1.21-era reader*
+part in particular: nine of these twelve pages carry a *for a 1.21-era reader*
 box, because the client is where 26.2 renamed the most.
-
-Where the part stops: the profiler's *frame* zone. Everything inside it — the
-acquired surface, the update window, the extract pass, the draw — is [the
-frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)
-in Part XI, which begins exactly where [the client
-loop](the-client-loop.md#one-turn-of-the-loop) ends. A few of this part's own
-cadences run *inside* that zone and stay this part's for what they decide
-rather than for where they sit: the per-frame light pass is `ClientLevel`'s
-work, and the GUI record pass is a screen's. What the *server* chose to send
-is [what the client is told](../networking/what-the-client-is-told.md) in
-Part IX.
-
-And where it stops in the other direction, which is the part's largest
-boundary by far: **this part explains what a screen, a widget and a glyph
-*are*, not the two hundred-odd screens the game ships.** Nine tenths of what
-no page here names is one more `Screen` or one more widget — the world
-creation flow, the pack picker, the friends and social lists, the recipe book,
-a class per container — and [GUI and
-screens](gui-and-screens.md#who-opens-a-screen) covers all of them as one
-pattern with four routes into it, on purpose. Two things in the part's
-packages are somebody else's: the model tree under `client/resources`, which
-is Part XI's, and `client/player`, which the atlas counts here and in [Part
-VIII](../player/README.md) both, because the local player is a client object
-and a player. A third is nobody's — player reporting, which [this book
-skips](../anatomy/what-this-book-skips.md#player-reporting) for its own
-reasons and which the atlas therefore counts in no part at all.
 
 ---
 
