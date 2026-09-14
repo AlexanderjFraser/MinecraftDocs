@@ -200,7 +200,7 @@ Read the diagram for the order, because the order is the point: **the server
 installs both ciphers while handling the key packet, before its own
 session-service call has begun.** An unauthenticated connection is already
 encrypted. The client's asymmetry is the mirror of it — it calls the session
-service *before* the key packet goes anywhere and sends the packet from that
+service *before* `ServerboundKeyPacket` goes anywhere and sends it from that
 callback, attaching its own ciphers to the send, so the key packet itself
 travels in the clear and nothing after it does.
 

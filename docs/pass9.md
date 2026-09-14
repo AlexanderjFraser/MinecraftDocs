@@ -203,7 +203,16 @@ every one was re-derived against `reference/26.2` before the fix.
   `ServerHandshakePacketListenerImpl` "sixty lines and one switch",
   `ConfigurationTask` "a three-method interface", `Packet` "four methods",
   `PacketReport` "thirty lines", `VecDeltaCodec` "forty lines". These are
-  claims about file sizes and shapes and pass 9 should spot-check them.
+  claims about file sizes and shapes and pass 9 should spot-check them. The
+  token diff over the class index showed the routes releasing seven names and
+  gaining six. Two of the seven were rescued back into prose —
+  `ServerboundKeyPacket`, which the compression above had dropped from
+  `protocol-phases`, and `ClientboundBossEventPacket`, whose "the part's
+  largest single class" is a scope fact the landing page's trim had taken with
+  it. The five released on purpose (`ChatListener`, `CipherBase`,
+  `GamePacketTypes`, `KnownPack` and `RegistrySynchronization`, plus
+  `ProtocolInfoBuilder` losing `protocol-phases`) were each in a list and in no
+  sentence, and each has a home page that still carries it.
 
 ### Anchors and citations
 

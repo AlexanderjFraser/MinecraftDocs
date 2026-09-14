@@ -121,8 +121,8 @@ skips](../anatomy/what-this-book-skips.md#player-reporting). The **server list
 screen** is one more screen for [GUI and
 screens](../client/gui-and-screens.md); only [how a typed address becomes a
 socket](the-connection.md#what-the-client-dials-is-not-what-the-player-typed)
-belongs here. The **boss-bar feed** belongs to its model, [scores, teams and
-stored
+belongs here. The **boss-bar feed** — `ClientboundBossEventPacket` is the part's largest
+single class — belongs to its model, [scores, teams and stored
 data](../commands/scoreboard-and-data.md#the-third-sink-is-a-boss-bar-and-it-is-this-pages-shape-again),
 and to [the HUD](../client/hud.md). Past those,
 {{#include ../../generated/coverage-networking.md}}.
