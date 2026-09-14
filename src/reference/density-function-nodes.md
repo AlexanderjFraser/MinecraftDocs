@@ -103,7 +103,7 @@ and every `DensityFunctions.HolderHolder` to its value:
 |---|---|---|
 | `DensityFunctions.BlendAlpha` | a `NoiseChunk.FlatCache` the constructor has already filled | survives as the constant 1.0 |
 | `DensityFunctions.BlendOffset` | a `NoiseChunk.FlatCache`, likewise | survives as the constant 0.0 |
-| `DensityFunctions.BeardifierMarker` | this chunk's [`Beardifier`](../systems/worldgen/structure-placement.md#the-ground-bends-and-then-the-blocks-arrive) | — the swap is unconditional |
+| `DensityFunctions.BeardifierMarker` | this chunk's [`Beardifier`](../systems/worldgen/structure-placement.md#the-ground-bends-before-the-ground-exists) | — the swap is unconditional |
 
 ## Bounds
 
@@ -112,7 +112,7 @@ without a position. Most take theirs from a child; the arithmetic family — the
 two-argument nodes, the mapped ones and *clamp* — stores them as record
 components filled once at construction, and so does `BlendedNoise`. The bounds
 of a *parsed* graph are not the bounds of the running one, which is
-[the lecture's argument](../systems/worldgen/density-functions.md#questions-players-ask);
+[the lecture's argument](../systems/worldgen/density-functions.md#what-a-bound-is-worth-and-which-form-told-you);
 this table is which node departs from its child, and how.
 
 | id | its range | |
@@ -143,7 +143,7 @@ That leaves four ids vanilla data never writes. *constant* is never written
 as a typed object, because a bare number is one. *cache_all_in_cell* and
 *beardifier* are added **in code**, by `NoiseChunk`'s constructor, around the
 router's final density. And *shift* — the three-dimensional domain warp — is
-[used by nothing](../systems/worldgen/density-functions.md#questions-players-ask):
+[used by nothing](../systems/worldgen/density-functions.md#what-nothing-reaches):
 `DensityFunctions.ShiftA` and
 `DensityFunctions.ShiftB` cover the two two-dimensional warps vanilla wants.
 

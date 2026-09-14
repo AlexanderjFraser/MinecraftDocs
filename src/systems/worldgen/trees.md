@@ -5,9 +5,10 @@
 Plant a single dark-oak sapling, feed it bone meal until you run out, and
 nothing happens. Nothing is wrong with the sapling; there is simply no tree
 for it to become. `TreeGrower` holds up to six configured features per
-species — a normal tree and a mega tree, each with a secondary variant, plus
-two flowering variants — and `TreeGrower.DARK_OAK` fills in exactly one of
-them, the mega tree. The single-sapling slot is left empty, and
+species — a normal tree and a mega tree, each with a *secondary* alternative
+drawn on a per-species probability, plus that same pair again for a sapling
+planted near a flower — and `TreeGrower.DARK_OAK` fills in exactly one of them,
+the mega tree. The single-sapling slot is left empty, and
 `TreeGrower.growTree` finds nothing to place. **The best-known growth rule in
 the game is implemented as an absence.**
 
@@ -18,7 +19,7 @@ in it, and almost everything you can say about how a cherry differs from a
 mangrove is a statement about what is in the slots. (`TreeFeatures` declares
 fifty keys, because it also holds the fallen trees, the huge mushrooms and the
 bone-meal variants, none of which is a `TreeFeature`.)
-[Features and placement](features-and-placement.md#the-trace-a-chunk-decorates)
+[Features and placement](features-and-placement.md#one-chunks-decoration-from-the-corner-outward)
 is how a tree gets a
 position and whether it is attempted at all; this is what happens after
 `Feature.place` is entered.
@@ -32,13 +33,14 @@ position and whether it is attempted at all; this is what happens after
 | `TrunkPlacer` | writes the logs, returns where crowns hang | 9 registered types |
 | `FoliagePlacer` | writes the leaves around one attachment | 11 registered types |
 | `RootPlacer` | writes roots, and may lift the trunk off the ground | **1** registered type |
-| `FeatureSize` | the clearance profile — a horizontal radius per height | 2 registered types |
+| `FeatureSize` | the clearance profile — a horizontal radius per height | 2 registered types, `TwoLayersFeatureSize` and `ThreeLayersFeatureSize` |
 | `TreeDecorator` | runs afterwards over what was placed | 10 registered types |
 | `FoliagePlacer.FoliageAttachment` | the only channel from trunk to crown: a position, a signed radius nudge, and *is the trunk under me two-by-two* | — |
 
-Every one of those five is a codec-dispatched type in a built-in registry —
-`TrunkPlacerType`, `FoliagePlacerType`, `RootPlacerType`, `FeatureSizeType`
-and `TreeDecoratorType` — so
+Five of those rows are the slots — trunk, foliage, roots, size and
+decorators — and every one of the five is a codec-dispatched type in a built-in
+registry: `TrunkPlacerType`, `FoliagePlacerType`, `RootPlacerType`,
+`FeatureSizeType` and `TreeDecoratorType`. So
 a data pack composes trees freely and cannot add a new *kind* of placer
 ([the data-driven type pattern](../foundations/data-driven-types.md#the-idea-stated-once)).
 
@@ -134,18 +136,23 @@ circle equation, then walks the line from trunk to crown *twice*: once with
 placement switched off, purely to ask whether every block on the way is free,
 and again for real only if it was. A branch whose base has slid below the
 trunk top is clamped, which is the whole "branches slope down as they go out"
-look. And it carries one computation that cannot do anything:
-
-**One** — crown candidates a fancy oak tries per level, always, because the
-count is a minimum against one, over an expression that is never below one
-(`FancyTrunkPlacer`). The named density constant it multiplies has no effect
-on any tree of any height.
+look. And it carries one computation that cannot do anything: the number of
+crown candidates it tries per level is a minimum taken against one, over an
+expression that is never below one, so the answer is always **one** — and the
+named density constant that expression multiplies therefore has no effect on
+any tree of any height.
 
 ## The foliage placers
 
-A foliage placer gets one attachment and three numbers — a height, a radius,
-and an offset it samples itself — and its two real degrees of freedom are how
-the radius changes with height and which positions inside a row it *skips*.
+A foliage placer gets one attachment and three numbers: a height, a radius, and
+an **offset** it samples itself from a configured `IntProvider` — how far below
+the attachment its rows start, which is what makes a spruce's crown sit lower on
+its trunk than an oak's. Its two real degrees of freedom are how the radius
+changes with height and which positions inside a row it *skips*, and the skip
+test is asked in **signed** coordinates, running from minus the radius to plus
+it, then folded to absolute values before the block is placed — so a placer that
+wants to treat one corner differently from its mirror image has to override the
+signed form, which exactly one does.
 
 | type | how it differs |
 |---|---|
@@ -169,8 +176,9 @@ Two of the contract's parameters are dead in all eleven implementations:
 
 `RootPlacerType` registers one type. `MangroveRootPlacer` is the only root
 placer in the game, and the base class exists for it: `RootPlacer.trunkOffsetY`
-is what lifts a mangrove's trunk one to three blocks clear of the mud, and
-`AboveRootPlacement` is the moss carpet that lands on top of a root.
+is what lifts a mangrove's trunk one to three blocks clear of the mud, and its
+configuration, `MangroveRootPlacement`, carries the one optional decoration a
+root gets — `AboveRootPlacement`, the moss carpet that lands on top of one.
 
 It simulates the whole root system before writing anything. Starting from the
 trunk position it recurses outward in each of the four horizontal directions;
@@ -189,26 +197,27 @@ provider instead, and that branch skips the base implementation entirely — so
 ## The decorators, and the pass that runs around them
 
 `TreeFeature` accumulates four sets as it writes — roots, logs, leaves and
-decorations — and hands the first three to each `TreeDecorator` as a
+decorations, each filled through a consumer the feature hands down to whichever
+placer is writing — and passes the first three to each `TreeDecorator` as a
 `TreeDecorator.Context`, which sorts all three **ascending by Y**. That sort
 is the reason four different decorators can say "the lowest log" and mean it.
 A decorator returns nothing, so one that finds no valid spot is
 indistinguishable from one that succeeded.
 
-Ten types, in four groups. The ones that hang things off the tree are
-`TrunkVineDecorator` and `LeaveVineDecorator` (vine curtains),
-`PaleMossDecorator`, `CocoaDecorator` and `AttachedToLeavesDecorator` — that
-last one blacklists an exclusion box around each placement so the propagules
-cannot crowd each other. The one that *changes* a block already placed is `CreakingHeartDecorator`,
-which shuffles the tree's logs and converts one that is completely surrounded
-by other logs — a random such log, not the first. `BeehiveDecorator` looks
-like a third but is not: it hangs its nest in an air block beside a log, and
-populates the block entity with two or three bees on the spot
-([block entities](../blocks/block-entities.md#create-keep-replace-remove)). The ones that write on the
-ground around the tree are `AlterGroundDecorator` (the podzol discs under a
-mega spruce, which reach several blocks beyond the trunk) and
-`PlaceOnGroundDecorator` (leaf litter, over an inflated box). And
-`AttachedToLogsDecorator` is used by `FallenTreeFeature` rather than by trees.
+Ten types, in four groups. **Six hang something off the tree in a space that
+was empty**: `TrunkVineDecorator` and `LeaveVineDecorator` (vine curtains),
+`PaleMossDecorator`, `CocoaDecorator`, `AttachedToLeavesDecorator` — which
+blacklists an exclusion box around each placement so the propagules cannot
+crowd each other — and `BeehiveDecorator`, which puts its nest in an air block
+beside a log and populates the block entity with two or three bees on the spot
+([block entities](../blocks/block-entities.md#create-keep-replace-remove)).
+**One changes a block the tree has already placed**: `CreakingHeartDecorator`
+shuffles the tree's logs and converts one that is completely surrounded by
+other logs — a random such log, not the first. **Two write on the ground around
+the tree**: `AlterGroundDecorator` (the podzol discs under a mega spruce, which
+reach several blocks beyond the trunk) and `PlaceOnGroundDecorator` (leaf
+litter, over an inflated box). And **one is not a tree's at all**:
+`AttachedToLogsDecorator` belongs to `FallenTreeFeature`.
 
 Then the last step, and it is the one that reaches furthest.
 `TreeFeature.updateLeaves` runs a bucketed breadth-first walk out from the
@@ -223,6 +232,13 @@ through itself**. Anything the walk cannot reach within six steps keeps the
 `BlockStateProperties.DISTANCE` of 7 the foliage provider gave it — already decaying — and falls
 apart on its first random tick
 ([random ticks](../world/scheduled-ticks.md#the-other-kind-of-turn-random-ticks)).
+
+None of that clearance machinery is shared with the rest of decoration — the
+scan is `TreeFeature`'s alone — but those four consumers, the sets they fill and
+the final shape update are exactly the machinery `StructureTemplate` uses to fix
+block shapes at the edge of a placed structure, and every block a tree writes
+goes in with the same flags: update neighbours, update clients, and *known
+shape* ([the flag word](../blocks/blocks-and-states.md#the-flag-word)).
 
 ## Five species, side by side
 
@@ -267,29 +283,23 @@ from what was already in the world. A log carries a `BlockStateProperties.AXIS` 
 placer chooses, and that is the whole of it. `FoliagePlacer.tryPlaceLeaf` also refuses to overwrite a leaf a
 player placed, by testing the persistent flag.
 
-**Is any of this shared with the rest of decoration?** The clearance idea,
-no — it is `TreeFeature`'s alone. But the four *setter* consumers,
-the sets they fill and the final shape update are the same machinery
-`StructureTemplate` uses to fix block shapes at the edge of a placed
-structure, and every block a tree writes goes in with the same flags: update
-neighbours, update clients, and *known shape*
-([the flag word](../blocks/blocks-and-states.md#the-flag-word)).
-
 ## Where to look
 
-`TreeFeature.place` · `TreeConfiguration` ·
-`TreeConfiguration.TreeConfigurationBuilder` · `TrunkPlacer.placeTrunk` ·
-`TrunkPlacer.getTreeHeight` · `TrunkPlacer.isFree` ·
-`FancyTrunkPlacer` · `CherryTrunkPlacer` ·
-`UpwardsBranchingTrunkPlacer` · `FoliagePlacer.createFoliage` ·
-`FoliagePlacer.shouldSkipLocation` · `FoliagePlacer.FoliageAttachment` ·
-`FoliagePlacer.tryPlaceLeaf` · `RandomSpreadFoliagePlacer` ·
-`DarkOakFoliagePlacer` · `MangroveRootPlacer.placeRoots` ·
-`MangroveRootPlacement` · `FeatureSize.getSizeAtHeight` ·
-`TwoLayersFeatureSize` · `ThreeLayersFeatureSize` ·
-`TreeDecorator.Context` · `BeehiveDecorator` · `AlterGroundDecorator` ·
-`TreeFeatures` · `TreeGrower.growTree` · `SaplingBlock.advanceTree` ·
-`TrunkPlacerType` · `FoliagePlacerType` · `TreeDecoratorType`
+`TreeFeature.place` is short and is the whole algorithm: the two crown numbers
+taken before the scan, the scan, the three abandonment points, and the four
+sets. Read `TreeConfiguration` beside it for the nine fields, and
+`FeatureSize.getSizeAtHeight` with `TwoLayersFeatureSize` for the clearance
+profile the scan tests against. Then one placer per slot, and the most
+instructive are not the simplest: `TrunkPlacer.isFree` for what *free* means
+and who gets to widen it, `FancyTrunkPlacer` for the only placer that plans
+before it writes, `FoliagePlacer.createFoliage` with
+`FoliagePlacer.shouldSkipLocation` for the row-and-skip contract and
+`DarkOakFoliagePlacer` for the one override of it, and
+`MangroveRootPlacer.placeRoots` for a recursion whose success condition reads
+backwards. Finish at `TreeFeature.updateLeaves`, which reaches further than
+anything else on the page, and at `TreeGrower.growTree` for the other door in.
+One door the page does not open: `TreeFeatures`, where all fifty shipped keys
+are declared in one file.
 
 ---
 

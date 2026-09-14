@@ -25,23 +25,25 @@ under a village that was not there before, the cave that is flooded the
 moment you break into it, the desert that becomes a jungle along a ragged
 line, the tree that grows up through another tree.
 
-Counting `world/level/levelgen` and `world/level/biome` together — one class
-per file, one line per line of decompiled source, the way
-[the atlas](../../maps/README.md) counts everything else — that is
-{{#include ../../generated/part-worldgen.md}}. Two corrections go with the
-number. It counts `PatrolSpawner` and `PhantomSpawner`, which sit in these packages
-and are the standing counter-example to the paragraph above: they
-run on the server tick, and they are Parts III and VI's. And it counts the
-Xoroshiro sources the whole determinism argument rests on, which are
-[math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither)'s.
+Counting `world/level/levelgen` and `world/level/biome` together, the way
+[the atlas](../../maps/README.md) counts everything else, that is
+{{#include ../../generated/part-worldgen.md}} — and two of those classes are
+the standing counter-example to the paragraph above. `PatrolSpawner` and
+`PhantomSpawner` sit in these packages, run on the server tick, and belong to
+Parts III and VI.
 
 ## The shape of the part
 
-Part XII is **a substrate, a pipeline, and a wing** — and the wing runs
-first while being taught last. Part IV owns the conveyor that runs the
+Part XII is **a substrate, a pipeline, and a wing**. The substrate is the
+scalar field every terrain step samples; the pipeline is the chunk being made,
+step by step; the wing is the three structure lectures, which run *first* in
+the game and are taught *last* here. Part IV owns the conveyor that runs the
 statuses ([the chunk generation
-pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn));
-this part is the cargo of seven of them.
+pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)); this part
+is the cargo of seven of them.
+
+Read the solid arrows below as the order the game runs, and the numbers as the
+order to watch. The disagreement between them is the argument for the order.
 
 ```mermaid
 flowchart TB
@@ -69,45 +71,35 @@ flowchart TB
     end
 ```
 
-Read the solid chain as the order the game runs and the numbers as the order
-to watch, and read the disagreement between them as the argument for the
-order below. A structure is *decided* at `ChunkStatus.STRUCTURE_STARTS`, two
-statuses before the biomes it will stand in exist, and writes no block until
+A structure is *decided* at `ChunkStatus.STRUCTURE_STARTS`, two statuses before
+the biomes it will stand in exist, and writes no block until
 `ChunkStatus.FEATURES`, three statuses after the noise fill: told in run order
 it is two lectures with six between them, and told last it is one arc. The
-dashed arrow is the same trade at the other end — the world was created before
-any chunk was, and its page is a closer with nine satisfied references rather
-than an opener with nine forward ones. Both cost the same thing, a forward
-topic: three of the six pages before the structure arc reach for the
-beardifier before the page that owns it
-([structure placement](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive)).
+dashed arrow is the same trade at the other end. Both cost one thing, a forward
+topic — three of the six pages before the structure arc reach for the beardifier
+before the page that owns it
+([structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)).
 
-The substrate arrow means *is made of*, not *happens before*. The density
-graph's fifteen functions partition by consumer across three of the nine pages
-below it
-([density functions](density-functions.md#seed-once-per-dimension)); the
-decoration and structure
-packages never mention `DensityFunction` at all, and reach the substrate only
-through the beardifier and the heights the generator hands them.
+The arrow out of lecture one means *is made of* rather than *happens before*.
+The decoration and structure packages never mention `DensityFunction` at all,
+and reach the substrate only through the beardifier and the heights the
+generator hands them
+([density functions](density-functions.md#seed-once-per-dimension)).
 
 ## Before you start
 
 [The chunk generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)
-from
-Part IV, and not optionally. It is the only page that says *when* any of this
-runs, what the twelve chunk statuses are, how the dependency pyramid keeps
+from Part IV, and not optionally. It is the only page that says *when* any of
+this runs, what the twelve chunk statuses are, how the dependency pyramid keeps
 neighbours out of each other's way, and
 [which thread each step is on](../world/chunk-generation-pipeline.md#dispatch-and-why-the-parallelism-is-smaller-than-the-thread-names).
-Eight
-of the ten pages here name a status, and two of them open on one.
+Eight of the ten pages here name a status, and two of them open on one.
 
 [Chunk anatomy](../world/chunk-anatomy.md#sections-and-their-four-counters),
-for what is being written into —
-sections, the two paletted containers, and
+for what is being written into — sections, the two paletted containers, and
 [the heightmaps](../world/chunk-anatomy.md#the-six-heightmaps) the terrain
-steps maintain by hand.
-
-[Environment attributes and timelines](../world/environment-attributes-and-timelines.md),
+steps maintain by hand. And
+[environment attributes and timelines](../world/environment-attributes-and-timelines.md),
 also from Part IV, for lecture two: `Biome` has been hollowed out, and the sky,
 the fog, the music and a dozen gameplay switches now reach the player through a
 stack of modifier layers in which the biome is one layer rather than the owner.
@@ -139,7 +131,8 @@ a page in this part — more than any other part of the book.
    off entirely.
 5. [Features and placement](features-and-placement.md) — decoration as a
    stream of positions folded through filters, in an order the whole
-   dimension agreed on before any chunk existed.
+   dimension agreed on before any chunk existed — and which a data pack can
+   make impossible.
 6. [Trees](trees.md) — one algorithm with five slots in it, and the
    clearance scan that runs after the crown has been sized.
 7. [Structure placement](structure-placement.md) — the part's policy page.
@@ -165,33 +158,6 @@ alternatives to each other, not a sequence, so either order works. Ten is the
 only page that moves: a viewer who wants the origin before the machinery can
 watch it first, at the cost of nine forward references.
 
-## Reference this part uses
-
-[Density-function nodes](../../reference/density-function-nodes.md#the-table)
-is the
-catalogue behind lecture one: all thirty-four node types in registration
-order, what each takes, what the per-chunk rewrite turns it into, what range
-each reports, and which ids the shipped data actually writes.
-[Registries](../../reference/registries.md) for the fourteen *worldgen/*
-registries a data pack writes into, and
-[the freeze rule](../foundations/identifiers-and-registries.md#the-freeze-rule-stated)
-for why some of them are frozen at start-up and some reload with the world.
-[Math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither)
-for the two random families and the seeding conventions, which is where the
-determinism this page opens on actually lives.
-[Structure spawn overrides](../../reference/structure-spawn-overrides.md) for
-the six structures whose JSON replaces the biome's spawn list — the one place
-a structure decides what lives in it, which lecture eight places and Part VI
-runs. [Diagram lanes](../../reference/lanes.md), and
-[naming drift](../../reference/naming-drift.md)'s thirteen rows for this part.
-[Level data and rules](../../reference/level-data-and-rules.md#dimensions-and-the-seed)
-for which
-file the seed, the dimensions and the rules each end up in, which lecture ten
-links to rather than restates. And
-[the glossary](../../reference/glossary.md) for *density function*,
-*aquifer*, *beardifier*, *NoiseChunk*, *blending data*, *old chunk*,
-*PlacedFeature*, *jigsaw*, *world preset* and *world gen settings*.
-
 ## Where the part stops
 
 At `ChunkStatus.FEATURES`. What happens to a chunk after that — lighting,
@@ -199,21 +165,43 @@ spawning, promotion to a live chunk, and being saved — is Part IV; what the
 client is told about any of it is Part IX, and the answer is the finished
 chunk with none of the machinery.
 
-It stops in a second direction too, and the number at the top of this page is
-the reason to say so. A quarter of the part's lines are named on no page here,
-and almost all of them are one shape: **an algorithm that writes blocks and
-adds no mechanism.** Sixty-two of the seventy-four classes in the *feature*
-package are one `Feature` each — icebergs, geodes, lakes, coral, the End
-spikes — with thirty-six more as their configurations, and beside them four
-smaller families of the same kind: the block predicates, the height providers,
-the state providers and the rule tests, whose members are combinators over a
-shape one of these pages already teaches. Naming them would be a catalogue,
-and [what this book skips](../anatomy/what-this-book-skips.md) declines it.
-What the part owes, and pays, is the head of each family — on
+It stops in a second direction too:
+{{#include ../../generated/coverage-worldgen.md}}, and almost all of them are
+one shape — **an algorithm that writes blocks and adds no mechanism.**
+Sixty-two of the seventy-four classes in the *feature* package are one
+`Feature` each — icebergs, geodes, lakes, coral, the End spikes — with
+thirty-six more as their configurations, and beside them four smaller families
+of the same kind: the block predicates, the height providers, the state
+providers and the rule tests, whose members are combinators over a shape one of
+these pages already teaches. Naming them would be a catalogue, and
+[what this book skips](../anatomy/what-this-book-skips.md) declines it. What
+the part owes, and pays, is the head of each family — on
 [features and placement](features-and-placement.md#what-a-feature-may-write-and-where-it-may-read),
 [trees](trees.md#the-trunk-placers),
 [terrain](terrain.md#carving-and-who-chooses-the-block) and
 [jigsaw and templates](jigsaw-and-templates.md#the-processors-and-what-the-shipped-lists-use).
+
+## Reference this part uses
+
+[Density-function nodes](../../reference/density-function-nodes.md#the-table)
+is the catalogue behind lecture one: all thirty-four node types, what each
+takes, what the per-chunk rewrite turns it into, what range each reports, and
+which ids the shipped data writes. Beside it,
+[registries](../../reference/registries.md) for the fourteen *worldgen/*
+registries a data pack writes into;
+[structure spawn overrides](../../reference/structure-spawn-overrides.md) for
+the six structures whose JSON replaces the biome's spawn list, which lecture
+eight places and Part VI runs;
+[level data and rules](../../reference/level-data-and-rules.md#dimensions-and-the-seed)
+for which file the seed, the dimensions and the rules end up in, which lecture
+ten links to rather than restates; and
+[math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither)
+for the two random families the determinism this page opens on actually lives
+in. [Diagram lanes](../../reference/lanes.md) and
+[naming drift](../../reference/naming-drift.md)'s thirteen rows for this part
+are the two every part uses. And
+[the glossary](../../reference/glossary.md) holds this part's ten headwords,
+which is where to go first if a page above spends one before you have met it.
 
 ---
 

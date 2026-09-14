@@ -161,18 +161,27 @@ rewritten **once and stays one object** — which is precisely what makes the
 per-chunk caching in the next step pay, because five router fields that share
 a subgraph will share its cache.
 
+The memo goes further than that, because it keys on the node *itself* and the
+nodes are records: two separately parsed but structurally identical subgraphs
+are equal, and so are merged into one object with one cache.
+`DensityFunctions.Spline` makes the intent explicit with a hand-written
+equality that compares only the spline and ignores the derived sampler beside
+it, so two identical splines written into two different files end up as one
+node.
+
+This once-rewritten form is the one thing outside a chunk that ever samples
+the graph, and it does it in production: `NoiseBasedChunkGenerator.addDebugScreenInfo`
+walks `RandomState.router` with single-point contexts to fill the F3 noise
+readout. That is the whole reason the seeded form has to stay safe to sample
+from anywhere, with every marker still a no-op.
+
 Then a *second*, different visitor runs, and it strips machinery rather than
 installing it: it unwraps every `DensityFunctions.HolderHolder` to its value
 and every `DensityFunctions.Marker` to its wrapped function, over the six
 climate functions only, to build `RandomState.sampler`. That is the
-`Climate.Sampler` [biomes](biomes.md#the-trace-a-chunks-biomes) reads — a copy
+`Climate.Sampler` [biomes](biomes.md#the-search-and-the-axis-that-is-not-sampled) reads — a copy
 of the climate half of the graph with no caches and no indirection in it at
 all.
-
-> **For a 1.21-era reader.** Three of the six climate functions have two
-> names. `NoiseRouter` calls them *vegetation*, *ridges* and *continents*;
-> `Climate.Sampler` calls the same three *humidity*, *weirdness* and
-> *continentalness*. Neither vocabulary is wrong and both ship.
 
 ## Wrap: once per chunk
 
@@ -189,6 +198,11 @@ blender's own measurements, before any router mapping ran
 level's `Blender` is empty, the blend nodes
 survive as the constants they are and a *blend_density* marker is replaced by
 its own child, erasing the node.
+
+So a *cache_once* written into a data pack does something, but not what it
+says: it is a request that `NoiseChunk.wrapNew` install a cache in that slot,
+and the node itself computes nothing and delegates. Worldgen performance lives
+in a switch statement, not in the data.
 
 Afterwards `NoiseChunk` adds the beardifier marker to the router's final
 density itself, wraps the sum in one more cache-all-in-cell, and maps
@@ -249,87 +263,84 @@ where it puts one: of the twenty-four in the shipped files, eleven sit inside
 a flat cache and thirteen do not — and no *noise_settings* file contains a
 *flat_cache* at all.
 
-## Questions players ask
+## What a bound is worth, and which form told you
 
-**Does editing a *cache_once* in a data pack do anything?** Yes, but not what
-it says. It is a request that `NoiseChunk.wrapNew` install a cache in that
-slot; the node itself computes nothing and delegates. Worldgen performance
-lives in a switch statement, not in the data.
-
-**Is the readable graph ever actually sampled?** Once, and you can watch it
-happen. `NoiseBasedChunkGenerator.addDebugScreenInfo` samples
-`RandomState.router` with single-point contexts to fill the F3 noise
-readout — the one production path that runs the graph with every marker a
-no-op, and the reason the once-rewritten form has to stay safe to sample from
-anywhere.
-
-**Why do two identical-looking subgraphs end up sharing one cache?** Because
-both visitors key their memo on the node *itself*, and the nodes are records,
-so two separately-parsed but structurally identical subgraphs are merged into
-one object. `DensityFunctions.Spline` makes this explicit: it has a
-hand-written equality that compares only the spline and ignores the derived
-sampler beside it, so two identical splines from two different files become
-one node with one cache.
-
-**Are the bounds trustworthy?** Not of the graph you can read, and the two
-ways they lie are the two rewrites. Which individual nodes report something
-other than their child's range — the markers, the unbound pointer, the node
-that answers in Y — is the catalogue's
+`DensityFunction.minValue` and `DensityFunction.maxValue` are answered without
+a position, which makes the pair a static analysis of the data pack — and the
+analysis is of a graph that will be rewritten twice before it runs. Which
+*individual* nodes report something other than their child's range — the
+markers, the unbound pointer, the node that answers in Y — is the catalogue's
 ([the node catalogue](../../reference/density-function-nodes.md#bounds)). What
-this page is for is that a bound can be wrong *because of which form the graph
-is in*. Seeding **widens**: `DensityFunction.NoiseHolder` answers a maximum of
-2.0 while its noise is still null, where every one of the sixty-three shipped
-noise definitions comes out between 2.57 and 7.32 once seeded, so a freshly
-parsed router under-reports every noise in it. And wrapping **changes**: the
-two blend leaves parse as the constants 1 and 0 and become
-`NoiseChunk.BlendAlpha` and `NoiseChunk.BlendOffset` with a range of zero to
-one and an infinite one — so a fold the constructor decided above a blend node
-was decided on a range the running graph does not have.
+this page owns is that a bound can be wrong **because of which form the graph
+is in**, and the two rewrites are wrong in opposite directions.
 
-**Is there anything in here that does not work?** Four things, and they are
-the same shape: a name that reads as machinery and is reached by nothing.
-`DensityFunctions.TransformerWithContext` is the shape a position-dependent
-transform would take and has no implementation in 26.2. `Density` writes down
-the three conventions this whole system rests on — surface at zero, and the
-two values a node reaches for when it wants to end an argument — as constants
-that **nothing anywhere reads**; the routers spell the same numbers as
-literals. `NoiseUtils.biasTowardsExtreme` is a curve with no callers, in a
-package where every other class is on a hot path. And `DensityFunctions.shift`,
-the three-dimensional domain warp, is written by no shipped file
-([which ids vanilla uses](../../reference/density-function-nodes.md#what-vanilla-actually-uses)):
-vanilla uses only the two
-two-dimensional warps, and those two read the *same* noise parameters with
-their axes swapped, behind a registry id that is called *offset* rather than
-*shift*.
+**Seeding widens.** `DensityFunction.NoiseHolder` answers a maximum of 2.0
+while its noise is still null, and every one of the sixty-three shipped noise
+definitions comes out between 2.57 and 7.32 once seeded. A freshly parsed
+router therefore under-reports every noise in it.
 
-**Which of these nodes reads the world?** Two, and both do it the same way —
-by harvesting what they need from neighbouring chunks at construction and
-never touching a chunk afterwards. The three blend nodes reach `BlendingData`
-([blending at the old-chunk border](blending.md#one-measurement-five-consumers));
-the *beardifier* marker
-becomes a `Beardifier`, whose `Beardifier.forStructuresInChunk` reads the
-structure references out of chunks at `ChunkStatus.STRUCTURE_REFERENCES`
-([structure placement](structure-placement.md#the-ground-bends-and-then-the-blocks-arrive)).
-Everything else — every
-noise, spline, selector and cache in the catalogue — reads no blocks, no
-chunks and no level, which is why the whole system can run on a worldgen
-worker with nothing loaded, one chunk-status task at a time
+**Wrapping changes.** The two blend leaves parse as the constants 1 and 0 and
+are replaced by `NoiseChunk.BlendAlpha` and `NoiseChunk.BlendOffset` — inner
+classes of the chunk, not the `DensityFunctions` singletons whose place they
+take — with a range of zero to one and an infinite one. So a fold the
+constructor decided above a blend node was decided on a range the running graph
+does not have.
+
+## What nothing reaches
+
+Four names in this package read as machinery and are reached by nothing, and
+one of them is the most misleading thing in the catalogue.
+`DensityFunctions.shift`, the three-dimensional domain warp, is written by no
+shipped file: vanilla uses only the two two-dimensional warps, which read the
+*same* noise parameters with their axes swapped, behind a registry id called
+*offset* rather than *shift*
+([which ids vanilla uses](../../reference/density-function-nodes.md#what-vanilla-actually-uses)).
+Beside it, `DensityFunctions.TransformerWithContext` is the shape a
+position-dependent transform would take and has no implementation; `Density`
+writes down the three conventions this whole system rests on — surface at
+zero, and the two values a node reaches for when it wants to end an argument —
+as constants **nothing anywhere reads**, the routers spelling the same numbers
+as literals; and `NoiseUtils.biasTowardsExtreme` is a curve with no callers in
+a package where every other class is on a hot path.
+
+## The two nodes that read the world
+
+Everything in the catalogue — every noise, spline, selector and cache — reads
+no block, no chunk and no level, which is why the whole system can run on a
+worldgen worker with nothing loaded, one chunk-status task at a time
 ([the chunk generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)).
+Two nodes are the exception, and both keep the property anyway by the same
+trick: they harvest what they need at construction and never touch a chunk
+afterwards. The three blend nodes reach `BlendingData`
+([blending at the old-chunk border](blending.md#one-measurement-five-consumers));
+the *beardifier* marker becomes a `Beardifier`, whose
+`Beardifier.forStructuresInChunk` reads the structure references out of chunks
+at `ChunkStatus.STRUCTURE_REFERENCES`
+([structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)).
+
+That is what *deterministic* means here, stated once: the graph is a function
+of the seed and the packs because the only two things in it that read anything
+read work the same seed and the same packs already produced.
+
+> **For a 1.21-era reader.** Three of the six climate functions have two
+> names. `NoiseRouter` calls them *vegetation*, *ridges* and *continents*;
+> `Climate.Sampler` calls the same three *humidity*, *weirdness* and
+> *continentalness*. Neither vocabulary is wrong and both ship.
 
 ## Where to look
 
-`DensityFunction.compute` · `DensityFunction.mapAll` ·
-`DensityFunction.Visitor` · `DensityFunction.NoiseHolder` ·
-`DensityFunctions.DIRECT_CODEC` · `DensityFunctions.Marker` ·
-`DensityFunctions.MarkerOrMarked` · `DensityFunctions.HolderHolder` ·
-`DensityFunctions.TwoArgumentSimpleFunction` · `NoiseRouter` ·
-`NoiseRouterData.overworld` · `RandomState.create` ·
-`RandomState.getOrCreateNoise` · `NoiseChunk.forChunk` ·
-`NoiseChunk.wrapNew` · `NoiseChunk.NoiseInterpolator` ·
-`NoiseChunk.Cache2D` · `NoiseChunk.BlendDensity` ·
-`NoiseChunk.cachedClimateSampler` ·
-`Climate.Sampler` · `NormalNoise.create` · `ImprovedNoise.noise` ·
-`Noises.instantiate` · `NoiseUtils` · `Density`
+Read `DensityFunction` first — the interface is `DensityFunction.compute`,
+`DensityFunction.fillArray` and the two bounds, and everything else is a node.
+Then `DensityFunction.mapAll` and `DensityFunction.Visitor`, which are the only
+interesting operation in the system, with `DensityFunctions.Marker` and
+`DensityFunctions.HolderHolder` as the two node types the visitors exist to
+replace. `DensityFunctions.DIRECT_CODEC` is the parse; `RandomState.create` and
+`NoiseChunk.wrapNew` are the two rewrites, in that order, and reading them side
+by side is the page. `NoiseRouter` is what they rewrite. Finish inside
+`NoiseChunk`, where the six cache classes and `NoiseChunk.cachedClimateSampler`
+live, and in `NoiseRouterData.overworld` for the graph vanilla actually ships.
+One door the page never opens: `Noises.instantiate`, which is where a noise
+definition becomes a `NormalNoise`.
 
 ---
 

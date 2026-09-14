@@ -11,8 +11,9 @@ and one not, and different systems ask different questions. The surprise is
 which side each thing is on — grass colour, mob spawning and whether water
 freezes are all on the *jittered* side, and the sky is not.
 
-A biome is a label in the chunk at quarter resolution plus a bundle of
-consequences hanging off that label. In 26.2 the bundle has been hollowed
+A biome is a label in the chunk at quarter resolution — one per
+four-by-four-by-four block volume, which this book and the code both call a
+**quart cell** — plus a bundle of consequences hanging off that label. In 26.2 the bundle has been hollowed
 out: `Biome` itself holds five things, and most of what a player would call
 "the biome" now lives in the environment-attribute stack, where the biome is
 one layer among several rather than the owner
@@ -23,7 +24,7 @@ one layer among several rather than the owner
 | class | what it decides | when |
 |---|---|---|
 | `BiomeSource` | which biome a quart cell gets, through the `BiomeResolver` interface the chunk fill takes. `BiomeSources.bootstrap` registers four — `MultiNoiseBiomeSource`, `TheEndBiomeSource`, `FixedBiomeSource` (one biome everywhere, which is what a buffet world is) and `CheckerboardColumnBiomeSource` (a listed few in squares) — and `BiomeSource.possibleBiomes` is the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on a worldgen worker |
-| `Climate.Sampler` | the six climate numbers at a point. Filling a chunk uses `NoiseChunk.cachedClimateSampler`, the chunk-wrapped copy; `RandomState.sampler` is the flattened, cacheless one everything outside a chunk asks ([density functions](density-functions.md#seed-once-per-dimension)) | per quart cell |
+| `Climate.Sampler` | the six climate numbers at a point — temperature, humidity, continentalness, erosion, depth and weirdness. Filling a chunk uses `NoiseChunk.cachedClimateSampler`, the chunk-wrapped copy; `RandomState.sampler` is the flattened, cacheless one everything outside a chunk asks ([density functions](density-functions.md#seed-once-per-dimension)) | per quart cell |
 | `Climate.ParameterList` | the search space: one `Climate.ParameterPoint` per biome, indexed by a `Climate.RTree` | built once per world |
 | `OverworldBiomeBuilder` | the overworld's parameter table, in Java — temperature, humidity, erosion and continentalness bands over six tables of biome keys | build time |
 | `LevelChunkSection` | where the answer lives: a second `PalettedContainer` keyed by biome holder, two bits per axis | written once, saved, shipped |
@@ -31,7 +32,7 @@ one layer among several rather than the owner
 | `Biome` | five things: climate settings, an `EnvironmentAttributeMap`, `BiomeSpecialEffects`, generation settings and mob settings | — |
 | `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music and the gameplay switches — as *modifiers*, not values. Twenty gameplay attributes exist; the sixty-six vanilla biome files touch three of them between them, and fifty-one touch none | per attribute, per read |
 
-## The trace: a chunk's biomes
+## Deciding a chunk's biomes, cell by cell
 
 ```mermaid
 sequenceDiagram
@@ -64,13 +65,17 @@ older version generated — [blending at the old-chunk
 border](blending.md#what-the-blender-actually-answers)
 is where they are explained.
 
-**Biomes are decided before terrain, and not for it.** `ChunkStatus.BIOMES`
-precedes `ChunkStatus.NOISE`, and the two do not depend on each other at all:
-the noise fill never reads a biome. What makes a jungle and its terrain agree
-is that both were computed from the *same* noise router — `RandomState` builds
-the climate sampler out of the depth, continents, erosion and ridges
-functions, the very ones that shape the land. Neither was consulted about the
-other. The biome does not touch a block until `ChunkStatus.SURFACE`
+**Biomes are decided before terrain, and not for it.** `ChunkPyramid` makes
+`ChunkStatus.BIOMES` a requirement of both `ChunkStatus.NOISE` and
+`ChunkStatus.SURFACE`, so the order is enforced — but what the noise step
+collects from it is the chunk's `NoiseChunk` workspace, not a single biome
+label. **The noise fill never reads a biome.** What makes a jungle and its
+terrain agree is that both were computed from the *same* noise router:
+`RandomState` builds the climate sampler out of the depth, continents, erosion
+and ridges functions, the very ones that shape the land — under the
+`Climate.Sampler` names *depth*, *continentalness*, *erosion* and *weirdness*.
+Neither was consulted about the other. The biome does not touch a block until
+`ChunkStatus.SURFACE`
 ([terrain](terrain.md#the-surface-pass-and-the-two-places-it-breaks-its-own-rule)).
 
 The *fork* at the top of that trace is not the noise generator's: the base
@@ -110,6 +115,14 @@ Adjacent quart cells almost always resolve to the same biome, so the walk
 usually prunes immediately — which is what makes filling sixty-four cells a
 section cheap. The tree is therefore stateful per thread, though never
 incorrect: the remembered leaf is only a starting bound.
+
+Which is also the answer to whether a pack can move the overworld's biomes
+around: not the vanilla preset. `OverworldBiomeBuilder` is hardcoded Java, and
+the data-pack element that would carry it,
+`MultiNoiseBiomeSourceParameterList`, serialises to nothing but a preset name —
+`MultiNoiseBiomeSourceParameterLists` registers two. A pack may supply its own
+parameter list inline for a multi-noise source; it cannot edit the one that
+ships.
 
 One thing the parameter table does *not* have is a separate underground
 system. `OverworldBiomeBuilder.addUndergroundBiomes` and
@@ -188,18 +201,30 @@ fog without naming a distance
 ([arguments, not values](../world/environment-attributes-and-timelines.md#arguments-not-values)).
 One restriction lands here specifically:
 `EnvironmentAttributeMap.CODEC_ONLY_POSITIONAL` means a biome may not set a
-non-positional attribute at all.
+non-positional attribute at all. And one cost lands on the whole dimension:
+a positional layer is built per attribute that **any** biome in the registry
+mentions, at level construction
+([the stack a value falls through](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)),
+and a layer is not free where the biome that wanted it is absent — adding one
+biome adds a layer every position in the dimension then falls through.
 
 `BiomeGenerationSettings` holds two lists, and they are read by different
 pages: the placed features, one set *per decoration step*, by
-[features and placement](features-and-placement.md#the-trace-a-chunk-decorates),
+[features and placement](features-and-placement.md#one-chunks-decoration-from-the-corner-outward),
 and the carvers by [terrain](terrain.md#carving-and-who-chooses-the-block), at
 a different status. `BiomeGenerationSettings.getBoneMealFeatures` is its only
 reader outside worldgen, and its one caller is `GrassBlock`. `MobSpawnSettings`
-is the weighted spawn lists `NaturalSpawner` reads
-([entity lifecycle](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)) —
-and its entry
-constructor silently rewrites any miscellaneous-category entity type to pig.
+is the weighted spawn lists `NaturalSpawner` reads — though a structure at the
+position can replace them outright before the spawner ever looks
+([a spawn attempt is a filter](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)) —
+and its entry constructor silently rewrites any miscellaneous-category entity
+type to pig.
+
+Of the five, the client is given two and a half. `Biome.NETWORK_CODEC` sends
+the climate settings, the *syncable* attributes and the effects, and
+substitutes empty generation and mob settings: features, carvers and spawn
+lists never cross the wire. And when a client asks for a biome in a chunk it
+does not have, it gets plains.
 
 ## Questions players ask
 
@@ -225,44 +250,23 @@ find one placed by `/fillbiome`. It pre-filters against
 `BiomeSource.possibleBiomes`, so asking for an impossible biome fails
 instantly rather than after a spiral out to six thousand four hundred blocks.
 
-**Can a data pack change the overworld's biome layout?** Not the vanilla
-preset. `OverworldBiomeBuilder` is hardcoded, and the data-pack element that
-would carry it, `MultiNoiseBiomeSourceParameterList`, serialises to nothing
-but a preset name — `MultiNoiseBiomeSourceParameterLists` registers two. A
-pack can supply its own parameter list inline for a multi-noise
-source; it cannot edit the one that ships.
-
-**What does the client actually have?** A hollow `Biome`.
-`Biome.NETWORK_CODEC` sends the climate settings, the *syncable* attributes
-and the effects, and substitutes empty generation and mob settings — features,
-carvers and spawn lists never cross the wire. And when a client asks for a
-biome in a chunk it does not have, it gets plains.
-
-**Does the biome decide which mobs spawn?** Not on its own, and not first —
-a structure at the position can replace `MobSpawnSettings` outright before the
-spawner ever reads it
-([a spawn attempt is a filter](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)).
-
-**Why does adding one biome change the whole dimension?** Because one
-positional layer is built per attribute that *any* biome in the registry
-mentions, at level construction
-([the stack a value falls through](../world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)),
-and a layer is not free where the biome that wanted it is absent: it is a
-layer every position in the dimension then falls through.
-
 ## Where to look
 
-`Biome` · `Biome.getAttributes` · `BiomeSpecialEffects` ·
-`BiomeSource.getNoiseBiome` · `BiomeSource.possibleBiomes` ·
-`MultiNoiseBiomeSource` · `TheEndBiomeSource` · `Climate.Sampler.sample` ·
-`Climate.quantizeCoord` · `Climate.ParameterList.findValue` ·
-`Climate.RTree.search` · `Climate.PARAMETER_COUNT` ·
-`Climate.findSpawnPosition` · `OverworldBiomeBuilder.addBiomes` ·
-`OverworldBiomeBuilder.addUndergroundBiomes` ·
-`LevelChunkSection.fillBiomesFromNoise` · `BiomeManager.getBiome` ·
-`BiomeManager.getFiddledDistance` · `BiomeManager.getNoiseBiomeAtPosition` ·
-`BiomeGenerationSettings` · `MobSpawnSettings` · `BiomeColors` ·
-`EnvironmentAttributeProbe`
+`BiomeSource.getNoiseBiome` is the one method the whole search hangs off; read
+it with `MultiNoiseBiomeSource` beside it, and `TheEndBiomeSource` after, for
+the source that does no search at all. Then `Climate` whole — it is one file
+holding `Climate.Sampler`, `Climate.quantizeCoord`,
+`Climate.ParameterList.findValue` and the `Climate.RTree` — and
+`Climate.PARAMETER_COUNT` is the line that explains the seventh dimension.
+`OverworldBiomeBuilder.addBiomes` is vanilla's table, in Java, and
+`OverworldBiomeBuilder.addUndergroundBiomes` is where the cave biomes turn out
+not to be a separate system. For the two reads, `BiomeManager.getBiome` against
+`BiomeManager.getNoiseBiomeAtPosition`, with `BiomeManager.getFiddledDistance`
+as the jitter itself. Finish at `Biome`, which is short, and at
+`LevelChunkSection.fillBiomesFromNoise` for where the answer is stored. Two
+doors the page does not open: `BiomeColors`, for how the five effects fields
+reach a rendered block, and `Climate.RTree.search`, for the walk the page only
+describes.
 
 ---
 

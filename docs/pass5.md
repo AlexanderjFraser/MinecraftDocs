@@ -1405,8 +1405,12 @@ for voice.** Seven were rewritten because the fact under them fell:
   describes.
 - `density-functions`' **opening**, which now names two files where it named
   one, and loses some of the "small, honest, readable" rhythm it had.
-- `biomes`' **world-spawn answer**, which went from two sentences to five and
-  is now the longest *Questions players ask* answer on the page.
+- ~~`biomes`' **world-spawn answer**, which went from two sentences to five and
+  is now the longest *Questions players ask* answer on the page.~~ **Kept, pass 6
+  session L**: it is the purest consequence on the page — a player asking why
+  they always spawn near the origin — so A2 keeps it, and it is one paragraph,
+  which is the budget. Two of the six answers around it moved into the body and
+  one was cut, so it is now the longest of two rather than of six.
 - `creating-a-world`'s **hook**, whose "every widget is an edit to it" became
   a clause plus an exception list. The exception list is the kind of
   named-qualifier hedge this pass is meant to hunt.
@@ -1440,9 +1444,14 @@ for voice.** Seven were rewritten because the fact under them fell:
 - `hand-built-structures`' `StructurePiece.placeBlock` cast row is now three
   clauses long and contains a negation ("not a choke point"), which is the
   *not X but Y* tic in a table cell.
-- **The *Questions players ask* closer** is on nine of the eleven Part XII
+- ~~**The *Questions players ask* closer** is on nine of the eleven Part XII
   pages, well over session P's at-most-half rule of thumb. `terrain`,
-  `biomes` and `structure-placement` have five, five and six answers each.
+  `biomes` and `structure-placement` have five, five and six answers each.~~
+  **Done, pass 6 session L**: nine of ten on the measure that counts, and **five**
+  after A2. Four dissolved whole — `density-functions`, `structure-placement`,
+  `hand-built-structures` and `blending` — and `structure-placement`'s is the
+  one to read, because its two surviving answers were the payoff its own opening
+  scenario promised and had been sitting 190 lines below it.
 
 **Wording debt of the session's own making.** Several fixes name a file path
 or a JSON key in italics where the surrounding prose uses backticks for
@@ -2258,30 +2267,38 @@ correction):
 
   Wording debt:
 
-  - **The *questions players ask* device is on six of the eight pages**,
+  - ~~**The *questions players ask* device is on six of the eight pages**,
     which is the ratio session K flagged in Part X and the trap the old
     seven-heading template fell into. It is genuinely the honest home for
     what used to be an invariant wall, which is exactly why it spreads.
     Session P should count it as a *device* becoming a *slot*, and pass 5
-    should consider a rule — at most half the pages in a part.
+    should consider a rule — at most half the pages in a part.~~ **Overtaken,
+    pass 6 session L**: A2 reversed the at-most-half rule into a smell and put a
+    test in its place, so the ratio is a description and never a target.
   - **Session K's two formulas are gone from Part XII too.** No page says
     "the one sentence a player recognises" and none carries a
     names-you-will-hunt-for list; two pages use the *for a 1.21-era reader*
     blockquote instead (`density-functions` on the two vocabularies for the
     six climate functions, `jigsaw-and-templates` on the singular
     *structure* folder). With X, XI and XII converted the formulas survive
-    only in Part XIII. [kind=lecture] **Session L's note:** the part had a
+    only in Part XIII. [kind=record] **Session L's note:** the part had a
     third blockquote, on `blending`, and it was the one carrying a Part IV
     rename rather than a Part XII one; it is now a row in `naming-drift`. Two
     left, both about this part's own vocabulary, which is what the device is
     for.
-  - **Second person, now five parts wide and needing a ruling rather than
+  - ~~**Second person, now five parts wide and needing a ruling rather than
     another flag.** `terrain` opens with *you dig into a cave*, `biomes`
     with *walk out of a desert*, `trees` with *plant a single dark-oak
     sapling*, `structure-placement` with *type the locate command*. It is
     the most natural way to start inside a scenario and it is the house
     style now whether or not anyone decided it. Sessions I, J and K all
-    flagged the drift.
+    flagged the drift.~~ **Ruled, pass 6 session A** (A1), **applied to Part XII
+    in session L.** The ruling is about the *entry*, not the pronoun. Part XII's
+    ten openings were four imperatives, three on the word *You* and three flat
+    facts, which passes — except that lectures three and four, `terrain` and
+    `blending`, ran *You dig* straight into *You are walking*. `blending` now
+    enters on a thing seen: the debug screen's chunk-generation entry reading
+    *Blending: Old* on one side of a line.
   - ~~**`terrain`'s title is a compromise.** The page is noise, surface and
     carvers — three statuses — so *Terrain* is broader than its subject,
     while its old name collided with Part IV's *chunk generation pipeline*.
@@ -3231,6 +3248,23 @@ spine with any other, in the part or out of it.
   alike, and varying one of them to satisfy a six-token match would be varying
   for the tool — which is the fifth part running where this entry's named pair
   was not the live one, and the first where the pass's own edits made a new one.
+  **Part XII's named trio was half live and the session's own edits made three
+  more, pass 6 session L.** The queue named
+  ~~`biomes` / `features-and-placement` / `jigsaw-and-templates`~~; measured
+  live, only `biomes` ↔ `features-and-placement` was one edit apart, and it is
+  the one the session varied on the merits — `features-and-placement` is the
+  later page, its hook is about *order*, and its fold flowchart, the artefact
+  that hook promises, was sitting behind eight rows of cast. The figure now
+  leads the page and the cast follows it. Three other pairs came out of the
+  session that were not in it, and **all three are artefacts of A2**: dissolving
+  a closer removes the `q` token and the promoted material arrives as `p`, so
+  every page the ruling touches drifts toward `cast … p p p … look`. That is
+  session H's note about A4 repeating for A2, and it is the second ruling whose
+  application changes what `pass6_shape.py` measures. Left with the reasoning: a
+  policy page of nine decisions and a substrate page of three rewrites do not
+  read alike whatever their token strings say. **For session O**: two of the
+  four rulings now perturb the tool that measures them, which is worth one line
+  in the pass's own audit rather than another variation.
 
 **The literal heading `## The trace: …` is on twelve pages** in four
 parts (VIII ×4, XII ×4, XIII ×4 — `input-to-movement`, `status-effects`,
@@ -3249,12 +3283,26 @@ figure section, so a part that renames its trace headings comes out of the
 session with pages that look more alike than they did going in. Part VIII's
 identical pair after the rename (`input-to-movement` ≡ `the-two-phase-tick`)
 was an artefact of that, and was broken at H2 level on the merits anyway.
-Parts XII and XIII are still to do.
+  **Part XII's four are done, pass 6 session L** — `biomes`,
+  `features-and-placement`, `hand-built-structures` and `jigsaw-and-templates`,
+  with eight inbound anchors repointed. Sessions F–H's lesson held again and in
+  its widest form yet: `biomes`' one trace anchor was carrying **four**
+  citations from three pages that wanted two different things — two wanted the
+  climate sampler and two wanted the chunk fill — and `features-and-placement`'s
+  was carrying three citations for three different subjects. Renaming both to
+  what their sections are *about* sorted the citations by itself, and one of
+  `biomes`' four was repointed to a different section entirely. Part XIII is all
+  that is left.
 
 **Two structural outliers**, for the same sweep: `functions-and-macros`
-has no cast table (it opens on *The pipeline*), and `hand-built-structures`
-buries its cast inside *The idea* — both differ from every other page in
-their part, and either is fine if it is deliberate.
+has no cast table (it opens on *The pipeline*), and ~~`hand-built-structures`
+buries its cast inside *The idea*~~ — both differ from every other page in
+their part, and either is fine if it is deliberate. **Ruled deliberate, pass 6
+session L**: on that page the cast *is* the idea, because a piece is a Java
+class that writes its own blocks, so a table of base classes under a heading
+called *The idea* is the argument rather than a misplaced slot. The section's
+57 lines were the real complaint and it now carries four H3s.
+`functions-and-macros` is Part XIII's.
 
 **Wording debt from the four session-P pages.** All four were drafted by
 Opus agents against the shared brief and accepted after the session
@@ -4874,7 +4922,22 @@ for other passes and the cuts it logged.*
   `using-an-item`, `LootItemConditions` on `contexts-and-predicates`, and
   `Enchantment.modifyArmorEffectivness` on `enchantments`. Restoring the first
   two required a sentence, and writing that sentence produced a count error the
-  session then had to correct — the check is not free. [kind=lecture]
+  session then had to correct — the check is not free.
+  **Part XII, pass 6 session L**: ten lists running 12 to 31 names, median 24,
+  and **all eleven readers skipped the one on their page**, four of them using
+  the word *index* unprompted. All ten became prose reading routes. Token diff
+  run against hand-written pages only (the `class-index.md` / `lanes.md` trap):
+  21 backticked names left the part, of which **fifteen** would have left the
+  book — the highest of any part so far, because ten lists were rewritten at
+  once. Three went back into prose on the merits: `MangroveRootPlacement`, the
+  only root-placer configuration in the game, on `trees`; `ThreeLayersFeatureSize`,
+  without which the book named one of the two `FeatureSize` types and the cast
+  said there were two; and `WorldSelectionList` on `creating-a-world`. The other
+  twelve are genuine cuts and are logged below. **A pattern worth session O's
+  eye:** eleven of the fifteen were *members* of classes the pages still name
+  (`NormalNoise.create`, `Climate.Sampler.sample`, `PoolElementStructurePiece.place`),
+  which is what A12 is for — a list of a class's methods is the field inventory,
+  and the class is the door. [kind=lecture]
 
 ### For pass 7 (the figures)
 
@@ -5871,3 +5934,113 @@ the only way to see it is to rename the heading and read what breaks.
   pointed back at `lightmap`. A link that resolves cannot see a cycle, and
   `check_links.py` will not either. Worth a `--cycles` question for whoever
   builds pass 7's tools.
+
+
+---
+
+## Pass 6, session L — Part XII · World generation (2026-09-14)
+
+**Logged cuts** (A9: a cut is a move or a logged cut, never a silence).
+
+- `density-functions`' dead-code answer kept its four names but lost the
+  sentence framing them as a puzzle; the *shift*-versus-*offset* naming note,
+  which `reference/density-function-nodes.md` cites, is now the section's lead.
+  [kind=record]
+- `biomes`' *Does the biome decide which mobs spawn?* — a two-line answer that
+  was a second telling of the `MobSpawnSettings` sentence four paragraphs above
+  it. The structure-override clause moved into that sentence. [kind=record]
+- `blending`'s *Why is the seam wide for hills and narrow for caves?* and
+  *Does any of this happen in a brand-new world?* — both second tellings, of
+  *One measurement, five consumers* and of *The flag is a nullable field*
+  respectively. The two facts neither of those sections had —
+  `IOWorker.getOrCreateOldDataForRegion` and
+  `SharedConstants.DEBUG_DISABLE_BLENDING` — moved into the flag section.
+  [kind=record]
+- `structure-placement`'s *Do structures override the biome for mob spawning?*
+  — a near-verbatim second telling of the inflated-box paragraph in *Which
+  chunks have to be told*. [kind=record]
+- `hand-built-structures`' *Does `/locate stronghold` point at the portal?* —
+  cut as another page's material under pass 5's one-home rule; the *why* behind
+  the portal pointer (it is the regeneration loop's exit condition) moved into
+  the trace section, which `structure-placement` now cites by name. [kind=record]
+- `jigsaw-and-templates`' *What is a village made of, if not blocks?* — the
+  third telling of a sentence the trace and *From a piece to blocks* both
+  carry. [kind=record]
+- `features-and-placement`' `FeatureCountTracker` /
+  `SharedConstants.DEBUG_FEATURE_COUNT` aside — a note for a reader running a
+  development build, appended to the coverage answer. Both names leave the
+  book. [kind=record]
+- `creating-a-world`'s *The rest of the family* went from thirteen lines of
+  inventory to the two classes the page's own argument needs.
+  `OptimizeWorldScreen` and `FileFixerProgressScreen` leave the book with it;
+  both are save migration, which rule 3 puts out of scope. [kind=record]
+- Twelve names left the book with the ten rewritten *Where to look* lists and
+  were judged not worth a sentence — nine of them members of classes the pages
+  still name. Listed in the A12 entry above. [kind=record]
+
+**For pass 7 — the figures.**
+
+- `biomes`' sequence diagram returns from `Climate.RTree` straight to
+  `LevelChunkSection`, skipping the two lanes the call descended through; every
+  other arrow in that loop is a neighbour hop, so it reads as a missing return.
+  [kind=figure]
+- `blending`'s *One measurement, five consumers* flowchart has a dotted
+  annotation that depends on *the two maps*, a term introduced in the paragraph
+  **below** the figure, and an `R3` node label naming *the final slide*, a phrase
+  that appears nowhere else in the book. [kind=figure]
+- `terrain`'s *Four statuses* flowchart draws five boxes, the fifth being the
+  handoff rather than a status this page owns; consider a visual break before
+  `FEATURES`. [kind=figure]
+- `trees`' sequence diagram spends *UNCLIPPED* twenty lines before clipped and
+  unclipped are defined, and calls the crown radius `leafRadius` where the prose
+  calls it `foliageRadius`. [kind=figure]
+- `density-functions`' three-forms flowchart labels its root node `Ap2` in all
+  three panels, a name glossed nowhere on the page or in the book.
+  [kind=figure]
+- `hand-built-structures`' stronghold diagram addresses `findCollisionPiece` to
+  `StructurePiecesBuilder` where the prose addresses it to
+  `StructurePieceAccessor`; the cast now says the builder implements the
+  accessor, but the two names in one figure still cost a reader a stop.
+  [kind=figure]
+- `worldgen/README`'s part figure carries one undirected link
+  (`terrain --- blending`) among arrows, with no stated meaning. [kind=figure]
+
+**For pass 8 — the voice.**
+
+- `creating-a-world`'s cast row for `WorldLoader` says *two hops to the main
+  thread* with no population; the body never names them. Pick the reading, say
+  it, or drop the number. [kind=voice]
+- `creating-a-world`'s *Three details in that order are worth stopping on* is a
+  list in prose clothing and wants three bold lead-ins — pass-5 session P's own
+  entry, still true, and structural enough that session L left it rather than
+  reshape a section it had already rewritten twice. [kind=voice]
+- `blending` uses *cell* for the quart cell, the noise cell and the density
+  cell within forty lines; the page now defines the first, which makes the
+  other two read as the same thing. [kind=voice]
+- `biomes` calls both the jittered biome border and the altitude at which snow
+  falls *ragged*, twenty lines apart and from two different causes.
+  [kind=voice]
+- `terrain` italicises *interpolated* three times as though it were being
+  defined and never defines it. [kind=voice]
+- `jigsaw-and-templates` uses *size*, *depth limit*, *depth cap* and
+  `JigsawStructure.MAX_DEPTH` for two things across four sections. [kind=voice]
+- `hand-built-structures` uses *regenerate* for the stronghold's retry loop and
+  for the ocean monument's load-time rebuild, which are unrelated. [kind=voice]
+- `structure-placement`'s *the 128-block cage* arrives as a definite noun for a
+  thing the page has not introduced. [kind=voice]
+
+**Two notes for session O.**
+
+- **A2 perturbs the tool the same way A4 does.** Dissolving a closer drops the
+  `q` token and returns the material as `p`, so a part that applies A2 hard
+  comes out with pages that *measure* more alike than they did going in. Three
+  of Part XII's four within-part twin pairs are artefacts of this session's own
+  dissolutions. Two of the four rulings now change what `pass6_shape.py`
+  reports; the audit should say so once rather than thirteen times.
+- **The landing page came out shorter, which is the first time in four
+  sessions.** 179 lines outside the watch order to 166, with A6's move, the
+  coverage include and two real trims. Sessions I, J and K each reported A6
+  making a landing page longer; the difference here was that the seventh
+  section replaced a hand-counted number with an include and the *Reference*
+  bibliography was tightened at the same time. Still over the template's
+  hundred, and still the largest in the book.

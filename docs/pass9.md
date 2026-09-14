@@ -44,6 +44,208 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session L — Part XII · World generation *(2026-09-14)*
+
+Ten system pages and the landing page rewritten under A1–A9 and A12; eleven
+readers, one per page, none with the source. The closer went **9 of 10 → 5**,
+four trace headings were renamed, and all three 1.21 blockquotes moved to the
+foot.
+
+### Corrections (re-derived against the decompile by this session)
+
+- `src/systems/worldgen/terrain.md` — the page said *"all four shipped
+  configured carvers anchor it eight blocks above the world's **bottom**"*.
+  **Three** do. `reference/26.2/data/minecraft/worldgen/configured_carver/`:
+  *cave*, *cave_extra_underground* and *canyon* each carry
+  `"lava_level": {"above_bottom": 8}`; *nether_cave* carries
+  `{"above_bottom": 10}` — and that fourth value is read by nothing, because
+  `NetherWorldCarver.carveBlock`
+  (`net/minecraft/world/level/levelgen/carver/NetherWorldCarver.java:38-52`)
+  overrides the carve path and writes lava directly at or below
+  `context.getMinGenY() + 31`, so `WorldCarver.getCarveState` and the
+  configuration's `lavaLevel` are never reached. The page now says *the three
+  overworld configured carvers*, and says in the carving section that the
+  nether one's lava level is read by nothing.
+- `src/systems/worldgen/terrain.md` — the page said *"Three carvers are
+  registered"* and, seventy lines later, *"all four shipped configured
+  carvers"*, with nothing distinguishing the populations. Both counts are
+  right: `WorldCarver.java:33-35` registers `CAVE`, `NETHER_CAVE` and `CANYON`,
+  and four configured carvers ship because the cave carver is configured twice
+  (*cave* and *cave_extra_underground* both declare `"type": "minecraft:cave"`;
+  `data/minecraft/worldgen/biome/plains.json` lists all three of the overworld
+  ones). The page now says so where the three are named.
+- `src/systems/worldgen/biomes.md` — the page said `ChunkStatus.BIOMES`
+  *"precedes `ChunkStatus.NOISE`, and the two do not depend on each other at
+  all"*, three lines under its own figure captioning BIOMES as *"which NOISE
+  and SURFACE both require"*.
+  `net/minecraft/world/level/chunk/status/ChunkPyramid.java:20-23`:
+  `NOISE` and `SURFACE` each `addRequirement(ChunkStatus.BIOMES, 1)`. The
+  dependency is real and enforced; what is true is that the **noise fill never
+  reads a biome** — what the noise step collects from the biome step is the
+  chunk's `NoiseChunk` workspace. Rewritten to that.
+- `src/systems/worldgen/features-and-placement.md` — the page filed
+  `SurfaceRelativeThresholdFilter` with the modifiers that *"move a position
+  rather than counting or filtering it"*. It is a filter:
+  `net/minecraft/world/level/levelgen/placement/SurfaceRelativeThresholdFilter.java:1`
+  reads `public class SurfaceRelativeThresholdFilter extends PlacementFilter`,
+  making **five** `PlacementFilter` subclasses, not the four the page names.
+  The fifteen are now accounted for as 5 filters + 3 repeating + 2 height +
+  4 movers + 1 deprecated.
+- `src/systems/worldgen/blending.md` — the cast row gave `Blender` *"the four
+  answers — the height alpha and offset, the blended density, the biome
+  override, and where carvers may not dig"*, which the page's own body
+  contradicts sixty lines later. `Blender.java` has **three** instance
+  answering methods (`blendOffsetAndFactor`:116, `blendDensity`:164,
+  `getBiomeResolver`:236); `generateBorderTicks`:271 and
+  `addAroundOldChunksCarvingMaskFilter`:336 are **static** and read
+  `BlendingData` off the chunks directly. Cast row rewritten to three, saying
+  the other two never ask an instance anything.
+- `src/systems/worldgen/creating-a-world.md` — the page said
+  `WorldDimensions.checkStability` *"asks, per key, whether the built-in three
+  carry the vanilla dimension type, the vanilla noise settings **and** the
+  vanilla biome source"*. It asks a different question of the overworld.
+  `net/minecraft/world/level/levelgen/WorldDimensions.java:129-147`
+  (`isStableOverworld`) tests the dimension type, then tests the parameter list
+  **only if** the biome source `instanceof MultiNoiseBiomeSource`; it never
+  looks at the noise settings. `isStableNether`:149-175 and its End counterpart
+  do require a `NoiseBasedChunkGenerator` on the vanilla noise settings *and* a
+  vanilla-parameter-list `MultiNoiseBiomeSource`.
+- `src/systems/worldgen/creating-a-world.md` — following from the above, the
+  page said the stability warning *"does come from a world type as well as from
+  data packs"*. No preset a player can select raises it. Every preset in the
+  *normal* and *extended* tags keeps the vanilla nether and end noise
+  generators (`data/minecraft/worldgen/world_preset/*.json`); the only shipped
+  preset that fails is *flat_all_dimensions*, which is in neither tag
+  (`data/minecraft/tags/worldgen/world_preset/normal.json`, `extended.json`)
+  and is reachable only through `CreateWorldScreen.testWorld`. Rewritten to say
+  the warning is in practice a data-pack warning.
+- `src/systems/worldgen/README.md` — the hand-counted coverage number said
+  *"A quarter of the part's lines are named on no page here"*. The generated
+  phrase says **19%** (`src/generated/coverage-worldgen.md`, written by
+  `pass5_coverage.py --write` from the same `PARTS` mapping the size phrase
+  uses). Replaced with the include; the page no longer hand-counts.
+- `src/systems/worldgen/trees.md` — the opening glossed `TreeGrower`'s six
+  slots as *"a normal tree and a mega tree, each with a secondary variant, plus
+  two flowering variants"*, and this session first rewrote *secondary* as the
+  bone-meal variant, which is wrong.
+  `net/minecraft/world/level/block/grower/TreeGrower.java:57` names the six as
+  `megaTree`, `secondaryMegaTree`, `tree`, `secondaryTree`, `flowers`,
+  `secondaryFlowers`, and `getConfiguredFeature`:69-80 shows *secondary* is the
+  probability alternative (`random.nextFloat() < this.secondaryChance`) while
+  *flowers* is the near-a-flower pair. The published sentence says that.
+  `TreeGrower.java:207` confirms `DARK_OAK` fills only the mega slot.
+
+### Claims introduced, by page
+
+- `density-functions` — **new section** *What a bound is worth, and which form
+  told you*, asserting that the two rewrites move a bound in opposite
+  directions (seeding widens, wrapping changes), and that
+  `NoiseChunk.BlendAlpha` / `NoiseChunk.BlendOffset` are inner classes of the
+  chunk distinct from the `DensityFunctions` singletons they replace
+  (`NoiseChunk.java:120`, `:546`, `:483`; `DensityFunctions.java:273`).
+  **New section** *What nothing reaches*, leading on the *shift*/*offset*
+  naming and holding the three dead names. **New section** *The two nodes that
+  read the world*, whose closing claim — that the graph is a function of the
+  seed and the packs *because* its only two world-reading nodes read work that
+  seed already produced — is this session's sentence and is new.
+  A promoted paragraph in *Seed* asserts the memo merges structurally identical
+  subgraphs because the nodes are records. A promoted paragraph asserts
+  `NoiseBasedChunkGenerator.addDebugScreenInfo` is the one production path that
+  samples the seeded form.
+- `biomes` — heading `## The trace: a chunk's biomes` → `## Deciding a chunk's
+  biomes, cell by cell` (four inbound anchors repointed; one, from
+  `density-functions`, sent to `#the-search-and-the-axis-that-is-not-sampled`
+  instead). New: the six climate numbers named in the cast
+  (`Climate.java:159`), *quart cell* defined in the opening, the data-pack
+  answer moved into *The search*, the client's hollow `Biome` and the
+  per-dimension layer cost moved into *What a biome still owns*.
+- `terrain` — the opening now says *four* chunk statuses where it said three.
+  Two promoted passages in *Four statuses*: the beardifier as a density term
+  built with the workspace, and the blender/`BelowZeroRetrogen` pair. New
+  arithmetic claim: *"four by four by forty-eight cells have five by five by
+  forty-nine corners between them"*. The heightmap-liveness paragraph and the
+  superflat paragraph are promoted closer answers. The aquifer's four noises
+  are now named individually (`NoiseRouter` barrier, floodedness, spread, lava).
+- `blending` — the opening was re-entered on a thing seen rather than the word
+  *You*, and now names *offset*, *factor* and *jaggedness* where it used to say
+  *the three splines*; it asserts **"At the seam the overworld's terrain splines
+  are not consulted"**, which is a restatement of the body's alpha-zero claim.
+  *old area* is now defined as the band between the minimum and maximum
+  sections (`BlendingData.java:50`, `:69-72`); *quart* is defined. A promoted
+  paragraph closes *What the blender actually answers* with the two ways a
+  visible edge survives. Three H3s under that H2.
+- `features-and-placement` — **new section** *The order is a graph, and a graph
+  can have a cycle*, which is the hook's mechanism promoted out of the closer.
+  **A7 variation**: the fold flowchart now leads the page as *The chain, before
+  anything else*, ahead of the cast, with a new claim that list order *is* the
+  meaning. Heading renamed to *One chunk's decoration, from the corner
+  outward* (three inbound repointed). The value-type ladder is re-argued as
+  four rungs with six types on them. The neighbour-writes paragraph and the
+  structures-share-the-step-loop paragraph are promoted closer answers.
+- `trees` — the six `TreeGrower` slots re-glossed (see Corrections). New: the
+  foliage *offset* defined as how far below the attachment the rows start, and
+  the signed-then-folded skip test explained. The ten decorators re-grouped as
+  6 + 1 + 2 + 1, a regrouping this session made. The shared-machinery paragraph
+  moved from the closer into *The decorators*.
+- `structure-placement` — the opening lost its second hook (*"the difference is
+  a cache"*) and now lands on the arithmetic alone. **New section** *What
+  `/locate` asks, and what it answers with*, holding three promoted closer
+  answers; this is the target `hand-built-structures` now cites, which breaks
+  the citation loop between the two closers. Four headings renamed (eight
+  inbound anchors repointed, all eight on the beardifier heading). New claim:
+  *"a presence question costs a centre and never a layout"*, re-scoping what
+  *the layout is run once* meant. The cast row for
+  `ChunkGeneratorStructureState` now splits its clock between the main thread
+  and the background pool (`ChunkGeneratorStructureState.java:146-161`).
+  The *terrain_adaptation* paragraph now names the desert pyramid and the
+  mineshaft as the twenty-three's examples, which the old text referred to
+  without ever giving.
+- `jigsaw-and-templates` — heading renamed (one inbound repointed). **New
+  section** *The boxes drawn round the loop*, split out of *The assembly loop*.
+  New claims: the five things written on a jigsaw block, listed once in the
+  cast; **two** priorities, selection and placement, both real
+  (`SinglePoolElement.java:43` sorts by selection priority,
+  `JigsawPlacement.java:268,380` queues by placement priority); one shared
+  shrinking `VoxelShape` travelling in each `JigsawPlacement.PieceState`, with
+  a fresh private shape when a jigsaw points inside its own piece's box
+  (`JigsawPlacement.java:250-259`, `:396`). `getFirstFreeHeight` promoted into
+  the loop. The processor sections were **reordered** so what a processor is
+  precedes the section that orders them. The blockquote moved to the foot.
+- `hand-built-structures` — heading `## The trace: a stronghold` → `## A
+  stronghold, built twice if it has to be`. The closer dissolved whole: the
+  static-state paragraph, the portal-pointer/exit-condition paragraph, the
+  deprecation paragraph and a new H3 *What a Java piece keeps that a template
+  cannot* (ocean monument, saved boxes, template jigsaw cleanup) are all
+  promoted. New claim: `StructurePiecesBuilder` **is** the
+  `StructurePieceAccessor` every piece asks
+  (`structure/pieces/StructurePiecesBuilder.java:12`). Four H3s under *The
+  idea*. New answer to the reload question, re-asked: the monument comes back
+  *identical*, not different (`OceanMonumentStructure.java:66-85`).
+- `creating-a-world` — the *world_gen_settings.dat* fact moved out of the
+  blockquote into the body, the blockquote trimmed and moved to the foot.
+  New: the seven presets counted out against the two tags; the
+  `isStableOverworld` asymmetry (see Corrections); *The rest of the family*
+  cut from thirteen lines to two classes; heading *The same object, from a
+  properties file* → *The same object, built two other ways*; the stage-4
+  figure label now says *a change to the enabled packs or the feature set*
+  rather than *any data-pack change*.
+- `worldgen/README` — **A6**: *Where the part stops* moved from after
+  *Reference this part uses* to before it, and its hand-counted *a quarter*
+  replaced by `{{#include ../../generated/coverage-worldgen.md}}`. The figure
+  key sentence moved above the figure. *A substrate, a pipeline, and a wing*
+  now says which is which, and *the substrate arrow* is re-named as *the arrow
+  out of lecture one*. The `PatrolSpawner` / `PhantomSpawner` correction kept;
+  the Xoroshiro correction moved into *Reference this part uses*, where it
+  reads as a pointer rather than a caveat. Lecture 5's blurb gained *"and which
+  a data pack can make impossible"*.
+
+### Names
+
+Three restored into prose after the A12 token diff —
+`MangroveRootPlacement` and `ThreeLayersFeatureSize` on `trees`,
+`WorldSelectionList` on `creating-a-world`. Twelve left the book deliberately
+and are logged in [pass5.md](pass5.md) under this session.
+
 ## Pass 6, session K — Part XI · Rendering *(2026-09-14)*
 
 Eleven system pages and the landing page, twelve readers, one each.

@@ -38,7 +38,7 @@ it comes from, where it goes, and the three different programs that build one.
 | `WorldDimensions` | a map from `LevelStem` key to `LevelStem`, each a dimension type plus a `ChunkGenerator`. Refuses to exist without an overworld | — |
 | `WorldLoader` | the data-pack load every path shares, and the seam (`WorldLoader.WorldDataSupplier`) where the caller decides what the settings are | worker, with two hops to the main thread |
 | `WorldCreationContext` | the settings *plus* the loaded registries and `ReloadableServerResources` they were parsed against — the screen's whole world | render thread, replaced wholesale |
-| `WorldCreationUiState` | the widget-visible state, and the seven listeners that keep the tabs' widgets agreeing with it | render thread |
+| `WorldCreationUiState` | the widget-visible state, and the listener list that keeps the tabs agreeing with it — `CreateWorldScreen` registers seven | render thread |
 | `WorldOpenFlows` | every route from the world list into a running server, each one a chain of methods that can interpose a confirmation | render thread |
 | `MinecraftServer` | takes the finished object out of the `WorldStem` and hands it to `SavedDataStorage`, which is what puts it on disk | server thread |
 
@@ -49,7 +49,7 @@ flowchart TB
     A["1 · load — WorldLoader.load opens the packs, fills the WORLDGEN registries, then the LEVEL_STEM registry"]
     A --> B["2 · decide — the WorldDataSupplier callback builds a WorldGenSettings from the registries just loaded"]
     B --> C["3 · finish the load — ReloadableServerResources reads recipes, loot and functions against the dimensions stage 2 chose"]
-    C --> D["4 · edit — WorldCreationUiState mutates the object, and any data-pack change restarts at stage 1"]
+    C --> D["4 · edit — WorldCreationUiState mutates the object, and a change to the enabled packs or the feature set restarts at stage 1"]
     D --> E["5 · commit — bake the dimensions, write level.dat, spin MinecraftServer"]
 ```
 
@@ -65,8 +65,8 @@ the client's world-opener, the dedicated server and the game-test server can
 share one loader.
 
 The registry pass that callback sits behind is
-`RegistryDataLoader.DIMENSION_REGISTRIES`, and it is the last of the layers a
-world load walks
+`RegistryDataLoader.DIMENSION_REGISTRIES`, and it is the last of the registry
+passes a world load walks
 ([when a world opens](../foundations/identifiers-and-registries.md#when-a-world-opens)).
 It holds exactly one registry,
 `Registries.LEVEL_STEM`, loaded in its own pass because its entries need every
@@ -83,6 +83,13 @@ list — those are `LevelSettings` and `GameRules`, and
 [level data and rules](../../reference/level-data-and-rules.md#dimensions-and-the-seed)
 says which file each of them ends up in.
 
+It does not end up in *level.dat* either. `WorldGenSettings` extends
+`SavedData` and carries its own `SavedDataType`, so it is written to
+*data/minecraft/world_gen_settings.dat* — and the game rules to
+*data/minecraft/game_rules.dat* — by the ordinary saved-data machinery rather
+than by the level-data writer. That is a different writer on a different thread
+at a different moment, which is the last thing this page traces.
+
 A seed is not a number the box gives you. `WorldOptions.parseSeed` trims the
 text, returns nothing at all for an empty string, parses a long if it can, and
 otherwise returns the Java string hash of what you typed — which is why a seed
@@ -92,15 +99,6 @@ that text rather than the number. And *nothing at all* is not zero:
 one draw from a fresh `RandomSource`. The seed field's responder calls
 `WorldCreationUiState.setSeed` on every keystroke, so an empty box is
 re-rolling a new random world every time you touch it.
-
-> **For a 1.21-era reader.** The seed has left *level.dat*. `WorldGenSettings`
-> extends `SavedData` and carries its own `SavedDataType`, so it is written to
-> *data/minecraft/world_gen_settings.dat* — and the game rules to
-> *data/minecraft/game_rules.dat* — by the ordinary saved-data machinery rather than by
-> the level-data writer. `PrimaryLevelData` keeps the old key name only as the
-> constant `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS` — which is the one that
-> still matters at the far end of this page, where the world list skips that
-> subtree while reading a row.
 
 ## Every widget is an edit to a live object
 
@@ -116,10 +114,11 @@ disabled to match, but the state would lie to them anyway.
 The world-type button is the destructive one. `WorldCreationUiState.setWorldType`
 calls `WorldPreset.createWorldDimensions` and replaces **all** the dimensions
 with the preset's, so a trip through *Superflat* and back to *Default* discards
-every layer you edited. The button cycles the *normal* world-preset tag — five
-presets in 26.2 — and holding Alt swaps it for the *extended* tag, which is the
-same five plus *debug_all_block_states*. Seven world presets ship as JSON under
-*data/minecraft/worldgen/world_preset/*; the seventh,
+every layer you edited. Seven world presets ship as JSON under
+*data/minecraft/worldgen/world_preset/*, and the button reaches six of them: it
+cycles the *normal* tag, which holds five — Default, Superflat, Large Biomes,
+Amplified and Single Biome — and holding Alt swaps it for the *extended* tag,
+which is those five plus *debug_all_block_states*. The seventh,
 `WorldPresets.FLAT_ALL_DIMENSIONS`, is in neither tag and appears on no button:
 the only thing that ever selects it is `CreateWorldScreen.testWorld`, behind a
 *TW* button the title screen adds when `SharedConstants.IS_RUNNING_IN_IDE`.
@@ -245,29 +244,38 @@ bakes the dimensions to decide the *lifecycle* and the
 `PrimaryLevelData.SpecialWorldProperty`, but the `WorldGenSettings` it stores
 holds the **unbaked** selection — the bake is what runs, the selection is what
 is saved. The warning is skipped when the world is not a re-create and the baked
-registries are stable, and `WorldDimensions.checkStability` asks, per key,
-whether the built-in three carry the vanilla dimension type, the vanilla noise
-settings **and** the vanilla biome source — anything under a fourth key is
-experimental by construction. Not every shipped preset passes: *Flat (all
-dimensions)* gives the nether and the end flat generators, which fail on the
-noise settings, so this warning does come from a world type as well as from
-data packs. And *level.dat* is written by
+registries are stable, and `WorldDimensions.checkStability` asks that question
+per key — anything under a fourth key is experimental by construction — but it
+asks a **different question of the overworld than of the other two**.
+`WorldDimensions.isStableNether` and its End counterpart require a
+`NoiseBasedChunkGenerator` on the vanilla noise settings and a
+`MultiNoiseBiomeSource` on the vanilla parameter list. The overworld's check
+tests the dimension type, and then the parameter list *only if* the biome source
+happens to be a `MultiNoiseBiomeSource` at all. So Amplified passes on
+non-vanilla noise settings, and Superflat and Buffet pass by not having a
+multi-noise biome source to fail on. The upshot is that **no preset the button
+can reach ever raises this warning**: the only shipped one that fails is *Flat
+(all dimensions)*, which gives the nether and the end flat generators — and it
+is on no button. In practice the warning is a data-pack warning. And
+*level.dat* is written by
 the client, in `Minecraft.doWorldLoad`, **before the server thread exists** —
 while the settings file is written by the server after it starts, because
 `MinecraftServer`'s constructor is the first thing to hand the object to
 `SavedDataStorage`.
 
-The game rules take a third path again. `CreateWorldScreen.onCreate` copies the
-screen's `GameRules` into an `Optional` that travels through
+The game rules take a third route to disk, beside those two.
+`CreateWorldScreen.onCreate` copies the screen's `GameRules` into an `Optional` that travels through
 `CreateWorldCallback`, `WorldOpenFlows.createLevelFromExistingSettings` and
 `Minecraft.doWorldLoad` to the `MinecraftServer` constructor, which builds a
 fresh rule set from the saved-data default and then overlays the screen's
 values on top.
 
-## The same object, from a properties file
+## The same object, built two other ways
 
-The dedicated server never sees a screen, and the comparison is the clearest
-way to see which parts of this page are the subject and which are its interface.
+The screen is one of three programs that produce a `WorldGenSettings`, and
+setting the three side by side is the clearest way to see which parts of this
+page are the subject and which are only its interface. The dedicated server
+never sees a screen at all; *Re-Create* sees this one and feeds it an answer.
 
 | | client create screen | dedicated server | *Re-Create* |
 |---|---|---|---|
@@ -296,18 +304,25 @@ and not one generation setting.
 
 ## The rest of the family
 
-`client/gui/screens/worldselection` holds nineteen classes, nine of them
-screens. `SelectWorldScreen` is a search box, a `WorldSelectionList` and six
-footer buttons; the list's rows are `LevelSummary` objects read by
-`LevelStorageSource.readLightweightData`, an NBT parse that deliberately skips
-the *Data/Player* and *Data/WorldGenSettings* subtrees so that listing a
-hundred worlds never costs a settings parse. `WorldOpenFlows.openWorld` is a
-chain of eight methods — itself, then level data, version compatibility, the
-world stem, stem compatibility, a bundled resource pack, disk space, and
-finally `Minecraft.doWorldLoad` — each of which can stop and put a
-confirmation screen in the way. `OptimizeWorldScreen` and `FileFixerProgressScreen` are the
-progress bars over save migration, which
-[this book does not cover](../anatomy/what-this-book-skips.md).
+Two of the nineteen classes in `client/gui/screens/worldselection` matter to
+this page, and both for the same reason: they are where the split the
+blockquote describes is paid for. The rows of `SelectWorldScreen`'s
+`WorldSelectionList` are `LevelSummary` objects read by
+`LevelStorageSource.readLightweightData`, an NBT parse that
+deliberately skips the *Data/Player* and *Data/WorldGenSettings* subtrees — the
+second of them named by `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS`, all that is
+left of the old key — so that listing a hundred worlds never costs a settings
+parse. And `WorldOpenFlows.openWorld` is a chain of eight methods — itself, then
+level data, version compatibility, the world stem, stem compatibility, a bundled
+resource pack, disk space, and finally `Minecraft.doWorldLoad` — each of which
+can stop and put a confirmation screen in the way, which is the shape every
+route in this page's family takes.
+
+> **For a 1.21-era reader.** The seed has left *level.dat*.
+> `WorldGenSettings` is a `SavedData` with its own file,
+> *data/minecraft/world_gen_settings.dat*, and the game rules likewise;
+> `PrimaryLevelData` keeps the old key name only as the constant
+> `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS`.
 
 ## Where to look
 

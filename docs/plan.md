@@ -35,8 +35,8 @@ stood at the close, with the session paragraphs and the log.
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day, E
 (Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, I
-(Part IX), J (Part X) and K (Part XI) on 2026-09-14**, so the next session is
-L (Part XII · World generation). The charter is below; the brief, the
+(Part IX), J (Part X), K (Part XI) and L (Part XII) on 2026-09-14**, so the
+next session is M (Part XIII · Commands and data packs). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -64,7 +64,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to K on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to L on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -373,6 +373,66 @@ run between two of passes 6 to 8, and again if 26.4 lands before pass 10.
 A re-read, rarely a rewrite. A system that changed shape rather than names
 is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
 to §7.
+
+**Pass 6, session L — Part XII · World generation** *(2026-09-14).* Ten system
+pages and the landing page, eleven readers, one each — the part the schedule
+called the pass's hardest A2 case, at nine closers in ten pages. The closer went
+**9 of 10 → 5**, four of them dissolving whole, and the reason is one sentence:
+**four pages had put the payoff of their own opening scenario inside the
+questions section.** `structure-placement` opens on `/locate` pausing and
+answered it a hundred and ninety lines later, in the closer;
+`features-and-placement` opens on a data pack that can stop a world from opening
+and the topological sort that does it appeared nowhere in the body;
+`density-functions` used *beardifier* as a known noun a hundred and fifty lines
+before the only sentence that says what one is; `jigsaw-and-templates` used the
+depth limit from its third sentence and quantified it in its last section. Each
+of those is a **hook whose mechanism the closer was holding**, and that is a
+sharper form of A2 than the rule states: the test asks whether an answer is a
+player's consequence, and the pages that failed it hardest were the ones whose
+own argument depended on the answer. Two of the four dissolutions produced a
+body section the page had been missing rather than a shorter page.
+
+**Eight facts corrected**, six found by a reader with no source. The sharpest is
+`creating-a-world`'s: `WorldDimensions.checkStability` asks a **different
+question of the overworld than of the other two dimensions** — the overworld
+check never looks at the noise settings and tests the biome-source parameter
+list only if the source happens to be a `MultiNoiseBiomeSource` — so Amplified
+passes on non-vanilla noise settings and Superflat passes by not having a
+multi-noise source to fail on, and **no world type a player can click raises the
+warning the page said came from one**. The only shipped preset that fails is the
+one in neither button tag. Beside it: *all four shipped configured carvers*
+anchoring lava eight above the bottom, where the fourth is at ten and reads the
+field with nothing (`terrain`); `ChunkStatus.BIOMES` and `NOISE` said to *not
+depend on each other at all* three lines under the page's own figure saying
+`NOISE` requires `BIOMES` (`biomes`); a fifth `PlacementFilter` filed with the
+movers (`features-and-placement`); a cast row giving `Blender` four answering
+methods where the class has three and the body says so sixty lines later
+(`blending`); and the landing page's hand-counted *a quarter* against the
+generator's 19%.
+
+**The part's own finding is about the tool.** Three of Part XII's four
+within-part twin pairs came out of this session's own edits, because
+**dissolving a closer drops the `q` token and returns its material as `p`** — so
+a part that applies A2 hard measures *more* alike afterwards. That is session
+H's note about A4 repeating for A2, and two of the four rulings now perturb
+`pass6_shape.py`; it is a line for session O's audit rather than another
+variation. The one pair that was live on the merits,
+`biomes` ↔ `features-and-placement`, was varied by putting
+`features-and-placement`'s fold flowchart **above its cast** — its hook is about
+order and its artefact was sitting behind eight rows of cast. **A12 was the
+largest sweep of the pass**: ten lists, median 24 names, every one of the eleven
+readers skipping the list on its own page, and fifteen names that would have
+left the book — eleven of them *members* of classes the pages still name, which
+is what the ruling is for. Three went back into prose. The landing page took A6
+and came out **shorter**, 179 lines outside the watch order to 166, which is the
+first time in four sessions; the difference was that the seventh section
+replaced a hand-counted number with the include. Part XII's ten pages
+3,141 → 3,190 lines, which A9 expects of a session that promoted four closers
+into bodies; the landing page 221 → 209. Twenty-six units appended to
+[pass5.md](pass5.md) (nine logged cuts, seven for pass 7, eight for pass 8, two
+notes for session O); six entries
+struck, three annotated, one retagged `[kind=record]`; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed.
 
 **Pass 6, session I — Part IX · Networking** *(2026-09-14).* Five system pages
 and the landing page, six readers, one each. The part arrived with the most
