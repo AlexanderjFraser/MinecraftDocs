@@ -28,9 +28,9 @@ survives a series of gates that disagree about what they are gating.**
 | `ClientExplosionTracker` | how many explosion particles happen this tick, and where — the client's own budgeted generator | Client |
 | `SingleQuadParticle.Layer` | which of three atlases a quad reads, and which of two pipelines draws it | Client |
 
-Everything below the second row runs on the client thread, and the only
+Everything below the second row runs on the Render thread, and the only
 off-thread work in the system is the load half of `ParticleResources.reload`
-— the bind that rebuilds each `SpriteSet` comes back to the client thread.
+— the bind that rebuilds each `SpriteSet` comes back to the Render thread.
 Several things cross the network and none of them is a particle. Three carry
 the bulk of it: a `ClientboundLevelParticlesPacket` is an explicit request
 carrying count, spread, speed and two override flags, a
@@ -126,8 +126,10 @@ which is the only reason you can see them.
 
 ## Who is allowed to see it?
 
-There are three distance rules, they are enforced by three different pieces
-of code, and two of them happen to be the same number.
+There are three distance rules, enforced by three different pieces of code,
+and two of them happen to be the same number. The table's fourth row is the
+absence that makes the page's hook true: the busiest route of all has no
+distance rule at any point.
 
 | the gate | measured from | the distance | what an override does to it |
 |---|---|---|---|
@@ -179,28 +181,28 @@ server exactly nothing.
 ## Is there room for it?
 
 Explosions are the one source that budgets itself before it asks anyone
-else, and they are not a particle packet at all. `ServerLevel.explode` sends
-a `ClientboundExplodePacket` carrying a radius, a block count and a
-`WeightedList` of `ExplosionParticleInfo`, and
-`ClientPacketListener.handleExplosion` hands that to
-`ClientLevel.trackExplosionEffects` and the `ClientExplosionTracker`. Each
-tick the tracker totals the block counts of every explosion it is holding,
-caps the result at `ClientExplosionTracker.MAX_PARTICLES_PER_TICK`, and draws
-that many weighted samples: a random direction, a cube-root-distributed
-radius so the samples fill the volume evenly, rejected outright if the block
-there is not air. Each survivor picks an `ExplosionParticleInfo` from the
-weighted list for its type, its positional scaling and its speed multiplier.
-Then the whole list is cleared, spent or not.
+else, and they are not a particle packet at all. What `ServerLevel.explode`
+sends is a *description*: a `ClientboundExplodePacket` of a radius, a block
+count and a `WeightedList` of `ExplosionParticleInfo`, which
+`ClientPacketListener.handleExplosion` hands to `ClientExplosionTracker` to
+expand locally.
+Each tick it totals the block counts of every explosion it holds, caps the
+total at `ClientExplosionTracker.MAX_PARTICLES_PER_TICK`, and draws that many
+weighted samples, each a random direction at a cube-root-distributed radius
+so the samples fill the volume evenly rather than crowding the centre, and
+each rejected outright if the block there is not air. Then the whole list is
+cleared, spent or not — which is the budget: an explosion gets one tick's
+worth of particles and no second chance.
 
 Everything else meets the engine's own two limits.
 
 ```mermaid
 flowchart TD
     A["a constructed particle reaches ParticleEngine.add"] --> B{"does Particle.getParticleLimit name a ParticleLimit"}
-    B -- "no limit, the overwhelming majority" --> D
-    B -- "SPORE_BLOSSOM, already at its count" --> X["dropped"]
-    B -- "SPORE_BLOSSOM, under its count" --> Q["queued in particlesToAdd until the next ParticleEngine.tick"]
-    Q --> D{"then ParticleGroup.add, for the particle's ParticleRenderType"}
+    B -- "no limit, the overwhelming majority" --> Q
+    B -- "SPORE_BLOSSOM, already at its count" --> X["dropped, and never queued"]
+    B -- "SPORE_BLOSSOM, under its count" --> Q["queued in particlesToAdd — every particle that survives goes here"]
+    Q --> D{"at the next ParticleEngine.tick, ParticleGroup.add for the particle's ParticleRenderType"}
     D -- "at ParticleGroup.MAX_PARTICLES" --> X
     D -- "past ParticleGroup.RESERVOIR_START" --> E["kept with probability equal to the square of the fraction of RESERVOIR_SIZE still free"]
     D -- "below RESERVOIR_START" --> K["kept"]
@@ -209,13 +211,18 @@ flowchart TD
     K --> T["ticked from the next tick onward"]
 ```
 
-The cap is per render type, not global, and the last quarter of it is
-probabilistic: past `ParticleGroup.RESERVOIR_START` the acceptance
+**There are four render types in the game**, and they are the whole
+population every *four* below counts against: `ParticleRenderType.SINGLE_QUADS`,
+which is almost everything, `ParticleRenderType.ITEM_PICKUP`,
+`ParticleRenderType.ELDER_GUARDIANS` and `ParticleRenderType.NO_RENDER`. One
+`ParticleGroup` exists per type. The cap, `ParticleGroup.MAX_PARTICLES`, is per render type rather than
+global, and its last quarter is probabilistic: past
+`ParticleGroup.RESERVOIR_START` the acceptance
 probability falls as the square of the free fraction, so the last few
 hundred slots are very hard to fill and a particle storm degrades gradually
 rather than hitting a wall. Since almost everything is a
-`ParticleRenderType.SINGLE_QUADS` particle, that one group's budget is
-effectively the whole budget; the other three groups have their own.
+single-quad particle, that one group's budget is effectively the whole
+budget; the other three have their own.
 
 The per-type machinery beside it is the strangest thing in the system.
 `ParticleLimit` is a full accounting apparatus — a key carried by the
@@ -251,6 +258,8 @@ lists three of the four render types, so a no-render group ticks its
 contents forever and is never asked for a render state. Which is exactly
 what a no-render particle is for.
 
+### The eighty-odd subclasses, which are one shape
+
 The eighty-odd `Particle` subclasses are a family, and the shape above is all
 of it: a provider, a lifetime, a per-tick move, and a group. The two largest
 are `DripParticle` and `FireworkParticles`, and both are large for the same
@@ -263,6 +272,8 @@ entry](../foundations/data-driven-types.md#the-bare-spelling-the-registry-holds-
 like any other,
 and `ParticleOptions` is the argument its codec parses — usually nothing at
 all, sometimes a block state, an item stack, a colour or a target position.
+
+### Extract, where the interpolation and the culling both live
 
 Everything visible happens at extract time, once per frame, from
 `LevelExtractor`. That is where the particle's previous and current
@@ -313,6 +324,8 @@ particle escapes this system entirely: `ItemPickupParticle` carries an
 the item flying into your inventory is
 [a rendered entity](entity-rendering.md) wearing a particle's lifetime.
 
+### What empties the engine, and what it crashes on
+
 Two events empty the engine wholesale, and both have to.
 `ParticleEngine.clearParticles` runs on a resource reload, because every
 live particle holds a sprite reference into an atlas that no longer exists,
@@ -343,13 +356,15 @@ one that has been stopped by a collision once stays flagged as stopped.
 
 ## Where to look
 
-`Block.spawnDestroyParticles` · `ClientLevel.addDestroyBlockEffect` ·
-`ClientLevel.addBreakingBlockEffect` · `ClientLevel.doAddParticle`, the gate
-everything else bypasses · `ClientLevel.animateTick` ·
-`ClientExplosionTracker.tick` · `ParticleEngine.add` · `ParticleEngine.tick` ·
-`ParticleEngine.extract` · `ParticleGroup.MAX_PARTICLES` · `ParticleLimit` ·
-`ParticleResources.registerProviders` for the catalogue ·
-`SingleQuadParticle.Layer.bySprite` · `QuadParticleFeatureRenderer`
+`ClientLevel.doAddParticle` first — it is the gate the page is about, and
+reading it tells you at once how little goes through it. Then
+`ClientLevel.addDestroyBlockEffect` for the route that does not, and
+`ClientLevel.animateTick` for the loop that pays for the ambient world.
+`ParticleEngine.add` and `ParticleEngine.tick` for admission and the order
+the three things in a tick happen in, `ParticleGroup` for the cap and the
+reservoir, `ParticleResources.registerProviders` for the catalogue of types, and `ParticleEngine.extract` for where interpolation and culling
+actually live. `SingleQuadParticle.Layer.bySprite` is the small surprise
+worth reading on its own — a layer chosen by looking at a sprite's pixels.
 
 ---
 

@@ -15,8 +15,13 @@ call at all. It did not vanish, though. It moved behind the backend boundary,
 where `GlStateManager` still shadows every toggle and still elides the
 redundant ones.
 
-This page is the vocabulary of that boundary; the window the device is created
-against is [the window](the-window.md), the frame [the frame](the-frame.md).
+Nothing in this page chooses which backend that is. The choice is made in
+`Minecraft`, before Blaze3D exists, and which candidates it tries and in what
+order is [the
+window](the-window.md#trying-backends-until-one-of-them-makes-a-window)'s —
+which is also why the option is a preference rather than an instruction. This
+page is the vocabulary of the boundary once one of them has won; the frame
+that drives it is [the frame](the-frame.md).
 
 ## The cast
 
@@ -75,6 +80,14 @@ answers for the hardware too — as one record graph, not a pile of getters.
 seven booleans, a `HintsAndWorkarounds`, a `DeviceType` and a `DeviceLimits`
 whose `DeviceLimits.maxMemoryAllocationSize` caps the window size.
 
+That record is **sniffed as well as queried**, which is why the game cares
+which GPU you have when it could simply ask the driver. `GlHeuristics` reads
+the renderer and vendor strings to guess the device type, flags GL-over-D3D12
+— assumed on Windows-on-ARM whatever the string says — and flags AMD for
+anisotropy problems, both of which change how the game uploads and filters.
+The backend probes the reported maximum texture size rather than trusting it
+too, halving a proxy allocation until the driver accepts one.
+
 ### Who checks what
 
 The façade owns the **API-contract** checks and the backend owns the
@@ -94,7 +107,10 @@ gigabytes, and `GlDevice` `GpuOutOfMemoryException` on a failed allocation.
 And it is the backends, not the façade, that keep the development-only
 checks: the only validation in this whole tree gated on running from an IDE
 is in `GlRenderPass` and `VulkanRenderPass`. Everything the façade asserts,
-it asserts in a shipped game.
+it asserts in a shipped game, which is the half of the split that bites: a
+draw that hits one of the development-only conditions — a missing uniform, an
+invalid shader program, a buffer used against its usage bits — produces
+nothing in a shipped game and says nothing about it either.
 
 The thread assertions are not where a reader expects them either.
 `RenderSystem.assertOnRenderThread` is called from eleven classes, eight of
@@ -109,13 +125,18 @@ pass open* guard is per-façade and the game calls it fresh at every use site.
 
 **OpenGL is imported by exactly fourteen files** — thirteen in
 `com/mojang/blaze3d/opengl`, the fourteenth the native-library bootstrap — and
-nothing else in the game references LWJGL's OpenGL bindings. Vulkan
-leaks upward in two places, not one: `RenderPass` imports two Vulkan
-indirect-command structs to use their size when validating an indirect buffer,
-and the loader probe imports Vulkan too, while `BackendCreationException` in
-`blaze3d/systems` carries seven Vulkan-named failure reasons. The two exemptions
-are one, granted twice. Graphics is not all of it either, and neither is the
-render thread: `com/mojang/blaze3d/audio` is the OpenAL wrapper and runs on
+nothing else in the game references LWJGL's OpenGL bindings. Vulkan gets the
+same treatment and the same two exemptions: outside
+`com/mojang/blaze3d/vulkan`, exactly two files import its bindings, and they
+are the mirror of OpenGL's exemption rather than a leak of their own — the
+same native-library bootstrap, and `RenderPass`, which borrows two Vulkan
+indirect-command structs for their *size* when it validates an indirect
+buffer. The boundary is thinner still than that suggests in one direction and
+thicker in the other: `BackendCreationException`, in `blaze3d/systems` where
+the game can see it, names ten ways a backend can fail to be created and
+**seven of the ten are Vulkan's**, so the neutral façade layer knows rather a
+lot about one of the two APIs it is meant not to. Graphics is not all of it
+either, and neither is the render thread: `com/mojang/blaze3d/audio` is the OpenAL wrapper and runs on
 the sound engine's own thread — see [the sound
 engine](../client/sound-engine.md).
 
@@ -191,6 +212,8 @@ and throws if either enum ever gains a constant. And there are three shared
 index buffers, not one: `RenderSystem.getSequentialBuffer` switches between a
 quad buffer, a line buffer with different winding, and a one-to-one buffer.
 
+### The ring, and the one block every shader gets for free
+
 Per-draw uniform data does not come from per-draw uniform calls; it is carved
 out of ring buffers, and the ring is what makes it safe: a slice handed out
 this frame is still being read while the next frame is being built, so the
@@ -218,6 +241,8 @@ in either backend tree after the constant tables `GlConst` and `VulkanConst`
 that translate the game's enums into each API's integers.
 Blocks are packed by hand with `Std140Builder`, sized by `Std140SizeCalculator`.
 
+### Vertices, and the one builder that is not on the render thread
+
 Vertex data is described by `VertexFormat` and `VertexFormatElement` (a plain
 record of name, offset and `GpuFormat`) with the standard layouts in
 `DefaultVertexFormat`, and built with `ByteBufferBuilder` and `BufferBuilder`
@@ -227,7 +252,9 @@ throughput, because chunk meshing runs `BufferBuilder` on worker threads and
 stages the result
 through `StagedVertexBuffer` and `UberGpuBuffer` into a `StagingBuffer`, which
 is why `SectionRenderDispatcher` has a spin-wait guarded by
-`RenderSystem.isOnRenderThread`. Render targets are `RenderTarget`,
+`RenderSystem.isOnRenderThread`. ### Targets, and the two static fields that redirect them
+
+Render targets are `RenderTarget`,
 `TextureTarget` and `MainTarget`, the transient ones allocated through
 `GraphicsResourceAllocator` — `CrossFrameResourcePool` implements it — and
 declared in the `FrameGraphBuilder` of [visibility and the frame
@@ -315,33 +342,18 @@ Presentation is a four-step protocol, not a swap: `GpuSurface.configure`, then
 `GpuSurface.PresentMode` in the configuration: OpenGL offers a fixed pair of
 modes, Vulkan whatever the driver enumerates, mailbox and relaxed FIFO included.
 
-## Questions players ask
+### What stops the CPU running a hundred frames ahead of the GPU
 
-**Why did that draw produce nothing, and say nothing?** Because the deep
-validation is a development-environment feature: the *missing uniform*,
-*invalid shader program* and buffer-usage checks are gated on the in-IDE flag,
-and in a shipped game the same conditions make the draw return without a word.
-
-**Why is the game on OpenGL when I asked for Vulkan?** Because the backend is
-chosen in `Minecraft`, not in Blaze3D — which candidates it tries, and in what
-order, is [the window](the-window.md#questions-players-ask)'s.
-
-**Why does the game care which GPU I have, when it can ask the driver?**
-Because the capability record is sniffed as well as queried. `GlHeuristics`
-reads the renderer and vendor strings to guess the device type, flags
-GL-over-D3D12 — assumed on Windows-on-ARM whatever the string says — and flags
-AMD for anisotropy problems, both of which change how the game uploads and
-filters. The backend also probes the reported maximum texture size rather than
-trusting it, halving a proxy allocation until the driver accepts one.
-
-**What stops the CPU running a hundred frames ahead of the GPU?** A two-deep
-submit fence, not the present: `GlCommandEncoder` rotates its transient memory
-and a small fence ring on submit, and that is the pacing. Results that must come
-*back* use `GpuFence` — a callback registered with
-`RenderSystem.queueFencedTask`, run by `RenderSystem.executePendingTasks` once a
-frame in the *gpuAsync* zone, stopping at the first fence that has not
-signalled. Its one registration site is `GlCommandEncoder`'s texture readback,
-and Vulkan routes the same callbacks through its own destruction queue.
+Not the present. A **two-deep submit fence** is the pacing:
+`GlCommandEncoder` rotates its transient memory and a small fence ring every
+time it submits, and a submit that would outrun the ring waits. Results that
+must come *back* from the GPU use `GpuFence` instead — a callback registered
+with `RenderSystem.queueFencedTask`, run by `RenderSystem.executePendingTasks`
+once a frame in [the *gpuAsync*
+zone](the-frame.md#the-zones-a-frame-is-made-of), stopping at the first fence
+that has not signalled. Its one registration site in the game is
+`GlCommandEncoder`'s texture readback, and Vulkan routes the same callbacks
+through its own destruction queue.
 
 > **For a 1.21-era reader.** Nearly every name you would reach for in this
 > corner of the codebase has gone. `PoseStack` did *not* move, and is still here.

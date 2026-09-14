@@ -22,48 +22,50 @@ and the barrier this rides on — and at no other time.
 
 | class | what it decides | thread |
 |---|---|---|
-| `ModelManager` | the reload's spine, and what the finished lookup sets contain | workers, then the client thread at apply |
-| `AtlasManager` | which atlases exist, and it publishes their stitches for others to await | client thread for the handshake, workers for the work |
+| `ModelManager` | the reload's spine, and what the finished lookup sets contain | workers, then the Render thread at apply |
+| `AtlasManager` | which atlases exist, and it publishes their stitches for others to await | Render thread for the handshake, workers for the work |
 | `SpriteLoader` | how one atlas is decoded, packed and mipmapped | workers |
 | `ModelDiscovery` | which file an `Identifier` means, and what its parent chain resolved to | one worker task |
 | `ModelBakery` | which unbaked model each `BlockState` and each item file bakes to | workers, in batches |
 | `FaceBakery` | a quad's UVs, its rotated cull face, and its chunk layer | workers |
-| `TextureManager` | who owns each `AbstractTexture`, and when an animation advances | client thread |
-| `ItemModelResolver` | which `ItemModel` a given `ItemStack` draws with | client thread, every frame |
+| `TextureManager` | who owns each `AbstractTexture`, and when an animation advances | Render thread |
+| `ItemModelResolver` | which `ItemModel` a given `ItemStack` draws with | Render thread, every frame |
 
 ## The shape of the work: eighteen fans, one barrier
 
 This is the clearest fan-out-and-barrier in the client. Eighteen independent
-pieces of work start on worker threads at once — thirteen atlas stitches and
-the five roots `ModelManager.reload` opens, three of them directory listings
-that are each themselves a fan of one task per file — and they converge
-exactly once.
+pieces of work start on worker threads at once, and every one of them is a
+box in the figure below: thirteen atlas stitches behind the two boxes at the
+left, and the five roots `ModelManager.reload` opens. Three of those five are
+directory listings that are each themselves a fan of one task per file. They
+converge exactly once.
 
 ```mermaid
 flowchart TD
     RL["a reload starts: F3+T, a pack change, or the game booting"]
-    HS["AtlasManager.prepareSharedState on the client thread, before any task runs"]
+    HS["AtlasManager.prepareSharedState on the Render thread, before any task runs"]
     S1["blocks and items atlases: one task per sprite to decode and read metadata, then one stitch each, then mipmaps"]
     S2["the other eleven atlases, the same fan, nothing awaits them until upload"]
     L1["listing of models/, one task per file"]
     L2["listing of blockstates/, one task per file"]
     L3["listing of items/, one task per file"]
-    L4["EntityModelSet.vanilla and BuiltInBlockModels.createBlockModels"]
+    L4["EntityModelSet.vanilla"]
+    L5["BuiltInBlockModels.createBlockModels"]
     RES["ModelDiscovery interns and resolves, ModelGroupCollector groups the states"]
     BAKE["ModelBakery.bakeModels in batches: one bake per BlockState, one per item file"]
     BAR["the barrier"]
-    UP["client thread: TextureAtlas.upload, then ModelManager.apply"]
+    UP["Render thread: TextureAtlas.upload, then ModelManager.apply"]
     INV["LevelExtractor.allChanged raises a flag the next frame reads"]
     RL --> HS
-    HS --> S1 & S2 & L1 & L2 & L3 & L4
+    HS --> S1 & S2 & L1 & L2 & L3 & L4 & L5
     L1 & L2 & L3 --> RES
     S1 & RES --> BAKE
-    BAKE & S2 & L4 --> BAR
+    BAKE & S2 & L4 & L5 --> BAR
     BAR --> UP --> INV
 ```
 
 Read it as **spread, converge, upload, invalidate**: above the barrier,
-worker threads in any order; below it, the client thread in exactly one.
+worker threads in any order; below it, the Render thread in exactly one.
 
 ## Thirteen atlases and three listings, all at once
 
@@ -81,7 +83,8 @@ and grows by powers of two — and returns a `SpriteLoader.Preparations`,
 after which `MipmapGenerator` builds the mip chain under whatever
 `MipmapStrategy` the texture's own metadata asks for.
 
-Two properties of that packing surprise people. The mip level is clamped to
+Two properties of that packing surprise people, and a third setting rides on
+both of them. The mip level is clamped to
 the smallest sprite's power of two, with a warning, so **one undersized
 texture degrades mipmapping for every sprite in the atlas** — and only the
 block atlas asks for mipmaps, the other twelve stitch flat. And sprite
@@ -121,9 +124,10 @@ and `ModelDiscovery.resolve` returns the map of `ResolvedModel`, whose
 helpers walk the parent chain for geometry, slots, ambient occlusion and
 transforms. A model whose parents never reach a root is logged and excluded,
 and a model nothing references is parsed and never baked. In parallel,
-`ModelGroupCollector` gives each block state a visual-equality group — the
-fact that lets `ModelManager.requiresRender` later say *that change is
-invisible*.
+`ModelGroupCollector` gives each block state a visual-equality group, which
+is what lets `ModelManager.requiresRender` later say *that change is
+invisible*: two states sharing a group id cost nothing to draw when one
+becomes the other, unless their fluid state differs.
 
 The JSON model itself is `CuboidModel`, made of `CuboidModelElement`,
 `CuboidFace` and `CuboidRotation`, with `UnbakedGeometry` and
@@ -143,6 +147,17 @@ part, a block, an item and a fluid — is baked first of all, so there is
 always something to substitute. Two further bakes follow: the `BlockModel`
 display layer, including the hard-coded `BuiltInBlockModels`, and the
 `FluidStateModelSet`.
+
+That name is the trap this page owes you, and it is worth taking now rather
+than later. **`BlockStateModel` and `BlockModel` are different interfaces in
+different packages.** `BlockStateModel` is the quad source, the thing a
+mesher reads. `BlockModel` is the *display* model, the thing an entity
+renderer reads, and the tints and the transform a reader expects on the
+interface belong to its usual implementation, `BlockStateModelWrapper`,
+rather than to the interface itself. Two tables come out of a bake because
+there are two interfaces, and which is which is [block-entity
+rendering](block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them)'s
+to explain.
 
 Dedup is what makes per-state baking cheap. Every state sharing an unbaked
 variant gets the *same* baked object, geometry is cached per `ModelState`,
@@ -191,18 +206,29 @@ it — the stained glass, mostly — and it is the exception that shows the
 rule, because it exists for textures whose alpha the scan would read
 correctly and whose author wants them sorted anyway.
 
-## A dozen ways to fail soft, and the two that crash
+## Every layer fails soft, and the two that do not
 
-Missing and malformed input is a warning and a substitution at **twelve**
-separate layers. An unparseable model file, an unparseable blockstate file
-and a single bad variant selector are each swallowed locally, and the
-broadest of the twelve is the last: a block state with no entry at all
-still gets the missing model rather than an exception. In between sit
-missing parents, cycles, bakes that throw, sprite ids that belong to no
-atlas, unbound and unresolvable slot chains, and a block model caught
-reaching outside the block atlas. The startup sweep that would catch the
-last case, `Minecraft.selfTest`, **only runs in a development
-environment**, and there it throws rather than warns.
+Missing and malformed input is a warning and a substitution at every layer
+of the pipeline above, which is why a broken pack usually produces
+checkerboards rather than a crash report.
+
+| what goes wrong | what you get instead |
+|---|---|
+| a model file will not parse | that model alone is dropped |
+| a blockstate file will not parse | that block's states are dropped |
+| one variant selector is malformed | that selector alone is dropped |
+| a model's parent chain never reaches a root | the model is logged and excluded |
+| the parent chain is a cycle | the same |
+| a bake throws | `ModelBakery.MissingModels`, baked first for exactly this |
+| a sprite id belongs to no atlas | the `MissingTextureAtlasSprite` checkerboard |
+| a texture slot is unbound, or its chain does not resolve | the same |
+| a block model draws from outside the block atlas | the model is refused and the missing model substituted |
+| a block state has no entry at all | the missing model — the broadest of them, and the last |
+
+The startup sweep that would catch the atlas-membership case up front,
+`Minecraft.selfTest`, **only runs in a development environment**, and there
+it throws rather than warns — so in a shipped game that one is caught at the
+moment a model is baked, quietly.
 
 Two places have no soft path. If `Stitcher` cannot grow an atlas within the
 device's maximum texture size it raises `StitcherException`, which becomes
@@ -213,7 +239,9 @@ crash site. A pack with too many textures does not degrade — it crashes.
 
 **In:** everything above. **Out:** live lookup sets and live GPU textures.
 
-Only now does the client thread do anything. `TextureAtlas.upload` builds
+The Render thread has done exactly one thing since the reload began —
+`AtlasManager.prepareSharedState`, the handshake above, before any task ran —
+and now it does the rest. `TextureAtlas.upload` builds
 the new texture and closes the old sprites, and `ModelManager.apply`
 assigns the new lookup sets in one go. Underneath sits `TextureManager`, a
 `PreparableReloadListener` owning every `AbstractTexture` by `Identifier` —
@@ -328,24 +356,13 @@ by one frame however many ticks it just owed. Pausing does not touch it —
 that does stop the water is `/tick freeze`, because the guard on that call is
 `Minecraft.isLevelRunningNormally` and nothing else.
 
-**Why does an item frame sometimes look different from the block in it?**
-Because a bake produces two block-model tables, not one, and only the first
-is the mesher's. Which is which, and why a chest is empty in one and a chest
-in the other, is [block-entity
-rendering](block-entity-rendering.md#the-chests-block-model-is-empty-and-there-are-two-tables-of-them)'s.
-The trap this page owes you is the naming: `BlockStateModel` is the quad
-source, while `BlockModel` is a *different interface in a different package*
-— the display model — and tints and a transform belong to its usual
-implementation, `BlockStateModelWrapper`, not to the interface.
-
-**Can I look at the atlas?** Yes. A debug keybind writes every atlas to
-disk, each with a text listing of every sprite's position and size beside it;
-a shared-constant flag makes the game dump one at upload time as well.
-
-**Why do some block updates cost nothing to draw?** Because two states that
-look identical share a group id from `ModelGroupCollector`, and
-`ModelManager.requiresRender` returns false for a change between them,
-unless the fluid state differs.
+**Can I look at the atlas?** Yes, and it is the fastest way to understand
+this page. `Options.keyDebugDumpDynamicTextures` runs
+`TextureManager.dumpAllSheets`, which writes every atlas in the game to disk
+under the game directory with a text listing of each sprite's position and
+size beside it. A shared-constant flag,
+`SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS`, makes the game dump one at upload
+time too, without the keypress.
 
 > **For a 1.21-era reader.** This subsystem was renamed and re-packaged
 > wholesale:

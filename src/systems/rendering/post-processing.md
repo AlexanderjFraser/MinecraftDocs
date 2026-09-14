@@ -7,11 +7,17 @@ chain*: a file called *blur.json*, sitting in the jar beside *creeper.json*,
 in the same format, loaded by the same loader, compiled into the same kind of
 object and run by the same three classes. Six such files ship, covering the
 pause menu, the three things it is unpleasant to spectate, the glow around a
-spectral-arrowed mob and the option that sorts water against particles. A
-resource pack can rewrite every one of them. What it cannot do is add a
-seventh, because the set of ids the game will ever ask for is closed and
-written in Java — three of them as constants and three as literals in a
-switch — and it has six members.
+spectral-arrowed mob, and — the odd one out — the *improved transparency*
+option, which is not an effect over a picture but the step that assembles one
+out of six separately drawn layers, and is why water sorts correctly against
+the particles behind it. A resource pack can rewrite every one of the six,
+with as many passes as it likes, running fragment programs it also ships — a
+real and underused amount of rope. What it cannot do is add a seventh.
+`ShaderManager.getPostChain` is only ever called with six ids: three named as
+constants in `LevelRenderer` and `GameRenderer`, three written as literals
+inside a switch on what the camera is attached to. No registry, no
+data-driven selection, no command. A seventh file parses, loads, and is never
+asked for.
 
 ## The cast
 
@@ -49,10 +55,12 @@ flowchart TD
     DISK --> PREP --> LOAD --> CACHE --> ADD --> PASS --> EXEC --> OUT
 ```
 
-Read it as **parse, compile, declare, draw**, and note that the halves live
-in different phases of the client's life: the parse belongs to a resource
-reload, and everything from *addToFrame* onward happens inside a frame, every
-frame, for as long as the effect is on.
+The chain splits across two phases of the client's life, and the split is the
+thing to hold: everything down to *CACHE* happens once, during a resource
+reload, and everything from *ADD* onward happens inside a frame, every frame,
+for as long as the effect is on. The compile in the middle is the awkward one,
+because it belongs to neither — it happens the first time something asks, and
+that first time is inside a frame.
 
 ## What a chain declares, and the two kinds of name in it
 
@@ -80,8 +88,9 @@ overrides that, and is gone when the graph finishes. Any other name is
 `PostChain.load` subtracts the internal ones, and what remains must be a
 subset of the allowed set the caller passed in —
 `LevelTargetBundle.MAIN_TARGETS`, `LevelTargetBundle.OUTLINE_TARGETS` or
-`LevelTargetBundle.SORTING_TARGETS`, one, two or six names. A chain naming a
-target its caller did not offer does not load at all. An internal target may
+`LevelTargetBundle.SORTING_TARGETS` — one name, two, or six, each set being
+the main target plus whatever else that caller is prepared to hand over. A
+chain naming a target its caller did not offer does not load at all. An internal target may
 also be declared *persistent*, in which case `PostChain` allocates it once,
 keeps it in `PostChain.persistentTargets` and imports it rather than creating
 it, so a pass can read what it wrote last frame. None of the six asks for
@@ -165,8 +174,8 @@ reporting.
 | *creeper* | `GameRenderer.render`, when the camera entity is a `Creeper` | the main target, and one internal target it bounces through | luminance collapsed into the green channel, then posterised and mosaicked |
 | *spider* | `GameRenderer.render`, when it is a `Spider` | the main target and four internal targets | the view repeated through several skewed, blurred, red-tinted lobes |
 | *invert* | `GameRenderer.render`, when it is an `EnderMan` | the main target, and one internal target it bounces through | colours inverted, four fifths of the way |
-| *entity_outline* | `LevelRenderer.render`, when anything submitted an outline this frame | the entity-outline target — and never the main one | the coloured halo around a glowing mob |
-| *transparency* | `LevelRenderer.render`, when improved transparency is on | **six** of the caller's targets, colour **and** depth, and just one internal target of its own | not an appearance at all — this one *makes* the picture, merging the six layers by depth |
+| *entity_outline* | `LevelRenderer.render` — it is *looked up* every level frame and only added to the frame when something submitted an outline | the entity-outline target — and never the main one | the coloured halo around a glowing mob |
+| *transparency* | `LevelRenderer.render`, when improved transparency is on | all **six** of `LevelTargetBundle.SORTING_TARGETS` — the main target plus the five the level creates for the frame — colour **and** depth, and one internal target of its own | not an appearance at all — this one *makes* the picture, merging the six layers by depth |
 
 Only one of those is a screen effect. *blur* runs over whatever is currently
 on the main target, world and GUI alike, because `GuiRenderer.draw` splits the
@@ -178,15 +187,13 @@ chain over the main target, with nothing about it that knows it is a menu.
 
 Three are world effects: *creeper*, *spider* and *invert* run at the end of
 `GameRenderer.render`'s world block, after the level and before any GUI, so
-they warp the world and leave the HUD alone. The last two are neither.
-*entity_outline* never touches the main target — it reads and writes an
-offscreen glow buffer that something else composites — and *transparency* is
-not a filter over a picture at all but the step that *makes* the picture,
-merging six separately rendered layers by depth.
+they warp the world and leave the HUD alone. The last two are neither, and the transparency one is
+the reason the five internal targets in the level's own graph exist at all:
+turn it off and there is nothing to merge, so nothing is created and
+everything draws into the main target and sorts by luck.
 `GameRenderState.useShaderTransparency` gates it on
-`OptionsRenderState.improvedTransparency` and on not being in panoramic mode,
-and when it is off `LevelRenderer` never creates those five targets, so
-everything draws into the main one and sorts by luck.
+`OptionsRenderState.improvedTransparency` — the extracted copy of the player's
+option — and on not being in panoramic mode.
 
 ## The outline chain, end to end
 
@@ -208,7 +215,7 @@ sequenceDiagram
     LR->>FGB: importExternal — the entity outline target, which the main pass has just drawn into
     LR->>ShadM: getPostChain for entity_outline, allowing main and entity_outline
     ShadM-->>LR: the cached chain, or four freshly compiled pipelines
-    Note over LR,ShadM: the lookup runs every level frame — only addToFrame is skipped when hasAnyOutline is false
+    Note over LR,ShadM: the lookup runs every level frame, and only this next step is skipped when nothing is glowing
     LR->>PChain: addToFrame with the screen size and the level's target bundle
     PChain->>FGB: createInternal — the chain's own swap target, at screen size
     PChain->>PPass: addToFrame, four times, in declared order
@@ -263,20 +270,12 @@ pooled either way.
 
 ## Questions players ask
 
-**Can a resource pack add a post effect?** It can add the *file*, the game
-will parse it, and nothing will ever run it. `ShaderManager.getPostChain` is
-called with six ids: three constants in `LevelRenderer` and `GameRenderer`,
-three built inside `GameRenderer.checkEntityPostEffect` from the camera
-entity's class. No registry, no data-driven selection, no command. What a
-pack *can* do is replace any of the six, with as many passes as it likes,
-running fragment programs it also ships under *shaders/post* — a real and
-underused amount of rope.
-
 **Why does the creeper effect vanish when I press F5?** Because third person
 clears it, and the perspective key does it directly.
-`GameRenderer.checkEntityPostEffect` switches on the camera entity's class,
-sets `GameRenderer.postEffectId` for a creeper, a spider or an enderman, and
-clears it for anything else — including for no entity at all. The perspective
+`GameRenderer.checkEntityPostEffect` switches on the camera entity's class and
+sets `GameRenderer.postEffectId` to one of the three ids written as literals
+in its own branches, clearing it for anything else — including for no entity
+at all. The perspective
 key calls it straight out of `Minecraft.handleKeybinds`;
 `Minecraft.setCameraEntity` is the other door into the same method, for when
 what you are spectating changes rather than how. F4 (`Options.keyToggleSpectatorShaderEffects`) is a separate
@@ -303,9 +302,9 @@ resolution, so they are untouched.
 > bookkeeping of named render targets are gone, because the frame graph
 > allocates them now. And *Fabulous* is no longer a mode anything reads: it
 > survives as one of four `GraphicsPreset` values, but a preset only *writes*
-> the individual options and is then forgotten, so what actually gates the
-> transparency chain is `Options.improvedTransparency` — which
-> `GraphicsPreset.FABULOUS` sets true everywhere except macOS.
+> `Options.improvedTransparency` and the other individual options and is then
+> forgotten — and `GraphicsPreset.FABULOUS` writes it true everywhere except
+> macOS.
 
 ## Where to look
 

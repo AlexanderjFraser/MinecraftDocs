@@ -34,14 +34,30 @@ loop](../client/the-client-loop.md); this page starts where that page's
 | `GuiRenderer` | the GUI half, with its own `StagedVertexBuffer` and its own `FeatureRenderDispatcher` | Render thread |
 | `GpuSurface` | whether there is anywhere to put the picture: acquire, blit, present | Render thread |
 
-## Nine zones, which are the frame's table of contents
+## The zones a frame is made of
 
-Naming the profiler zones in order is the shortest honest description of what
-a frame is: *update window* · *update* · *extract* · *gpuAsync* · *render* —
-which pushes *world* and *gui*, and inside the world *matrices*, *fog*,
-*level*, *hand*, *screenEffects* — then *present* · *swapBuffers* ·
-*frameLimiter* · *fpsUpdate*. One of those names is a lie, and the section on
-presentation below says which.
+The profiler zones in order are the shortest honest description of what a
+frame is, and the second column is the part a name does not tell you: who
+pushes it. Only the first four and the last four are `Minecraft.renderFrame`'s
+own. *render* belongs to `GameRenderer.render`, which is why the F3 pie chart
+puts the whole of the drawing half under one slice that `Minecraft` never
+named, and one of these names is a lie — the section on presentation below
+says which.
+
+| zone | pushed by | what happens in it |
+|---|---|---|
+| *update window* | `Minecraft.renderFrame` | the window's one per-frame call, a surface reconfigure if one is due, then `GpuSurface.acquireNextTexture` |
+| *update* | `Minecraft.renderFrame` | the real-time clock, the GPU timer query, `Minecraft.pauseIfInactive`, the GUI, the client light engine on a ticking frame, then `Minecraft.pick` |
+| *camera* | `GameRenderer.update`, inside *update* | `Camera.update` alone — the only zone in the frame that wraps a single call |
+| *extract* | `Minecraft.renderFrame` | the wall: the window, the options, the lightmap, the camera, the level and the GUI copied into `GameRenderState` |
+| *gpuAsync* | `Minecraft.renderFrame` | `RenderSystem.executePendingTasks` drains signalled fences, and nothing else; it is closed before the drawing starts |
+| *render* | `GameRenderer.render` | the resize, the clear, the lightmap, then the two zones below |
+| *world* | `GameRenderer.render`, inside *render* | only on a frame with a level: *matrices*, *fog*, *level*, *hand*, *screenEffects*, then the outline composite and the spectator post chain |
+| *gui* | `GameRenderer.render`, inside *render* | the GUI, drawn under the one-pixel lightmap |
+| *present* | `Minecraft.renderFrame` | the blit, and not the present |
+| *swapBuffers* | `Minecraft.renderFrame` | the submit, then `GpuSurface.present` |
+| *frameLimiter* | `Minecraft.renderFrame` | the parking, spending the limit *extract* snapshotted |
+| *fpsUpdate* | `Minecraft.renderFrame` | the counter behind the number in the top-left |
 
 ```mermaid
 sequenceDiagram
@@ -101,6 +117,20 @@ There is one guard on the whole method, and it is about re-entry rather than
 failure: if the surface is *already* acquired when `Minecraft.renderFrame` is
 called, the call is a silent no-op.
 
+### What a minimized client actually stops doing
+
+A minimized window is the same story with the acquire not attempted at all,
+so the three statements that drop out are the acquire and the two guarded
+ones — which is nothing next to what the frame still pays for. The saving
+comes from somewhere else entirely.
+`FramerateLimitTracker.getThrottleReason` tests iconification *first*, ahead
+of idleness and the menu, and answers with a limit of ten — so *frameLimiter*
+parks the thread for most of every hundred milliseconds and the client draws
+its unseen frames about ten times a second instead of at the player's
+setting. On top of that, losing focus for half a second pauses a
+singleplayer world outright through `Minecraft.pauseIfInactive`, and then
+there is no world left to draw.
+
 ## Update and extract: six clocks in one frame
 
 The *update* zone advances the real-time clock, reads
@@ -108,12 +138,23 @@ The *update* zone advances the real-time clock, reads
 utilisation figure. It brackets almost the whole frame, from here to the end
 of *render*, and it is only *started* when the last one has been collected,
 so not every frame is measured — runs
-`Minecraft.pauseIfInactive` and updates the GUI. On ticking
-frames `ClientLevel.update` runs the client's own light engine. Then
-`GameRenderer.update` calls `Camera.update`, and `Minecraft.renderFrame`
-follows it with `Minecraft.pick` — a private method of `Minecraft`, not the
-renderer's — which writes `Minecraft.hitResult` for the crosshair and the
-block outline to find later.
+`Minecraft.pauseIfInactive` and updates the GUI. Then
+`GameRenderer.update` calls `Camera.update` — that one call is the *camera*
+zone — and `Minecraft.renderFrame` follows it with `Minecraft.pick`, a
+private method of `Minecraft` and not the renderer's, which writes
+`Minecraft.hitResult` for the crosshair and the block outline to find later.
+
+Between those two sits the flag the rest of the page keeps leaning on.
+`Minecraft.renderFrame` is passed a boolean saying whether this frame
+advances game time, and a frame passed false is a **non-ticking frame**: no
+ticks ran before it, `ClientLevel.update` does not run the client's own
+light engine, and the whole world half of the drawing is skipped, leaving a
+GUI-only picture — the half [GUI and
+screens](../client/gui-and-screens.md) owns. Three call sites pass false:
+the two loops that wait for the integrated server to start and to stop, and
+`Minecraft.setScreenAndShow`, which forces a single frame so that a screen
+appears during blocking work. Every other frame is a ticking one, and the
+term means only that.
 
 `Camera` is split three ways across the client, and two of the three are here.
 `Camera.tick` — driven from `GameRenderer.tick`, not from the frame — smooths
@@ -122,6 +163,8 @@ the eye height and the field-of-view modifier and advances the camera's
 `Camera.alignWithEntity`, `Camera.calculateFov`, `Camera.prepareCullFrustum`,
 `Camera.setupPerspective`. `Camera.extractRenderState` then copies the result
 across the wall.
+
+### Six partial ticks, and none of them is *the* one
 
 *Extract* opens by snapshotting the framerate limit into
 `GameRenderState.framerateLimit` and goes on to copy the window, the options,
@@ -163,11 +206,15 @@ looks a `BlockState` up in the level and asks the game mode what it is, all
 mid-draw. The interesting fact is not that a wall exists but that it is
 drawn one level below where *extract then render* implies it is.
 
+### The resize the snapshot has already decided
+
 A resize is handled inside the render half rather than before it:
 `GameRenderer.render` opens by comparing `GameRenderState.windowRenderState`
 against the main target's size and resizing the renderer inline when they
 differ. The snapshot is what the frame believes the window size to be, even
 if the window has changed since.
+
+### What the two halves share, which is three buffers and a storage
 
 The buffers the halves share are far smaller than a 1.21-era reader expects.
 `RenderBuffers` holds `RenderBuffers.fixedBufferPack`, the section-meshing
@@ -185,7 +232,9 @@ screen effects, the GUI's item atlas and picture-in-picture. The last two are
 why the GUI needs submit storage at all. The world's submitted features are
 prepared into the frame graph and drawn by its passes.
 
-The first two share a storage of their own.
+### The hand and the screen effects, in a storage the level never sees
+
+The first two of those four call sites share a storage of their own.
 `GameRenderer.handAndScreenSubmitNodeStorage` collects both
 `GameRenderer.renderItemInHand` — which is `ItemInHandRenderer`, drawn under
 its own projection after a depth clear so a held sword never intersects the
@@ -226,27 +275,17 @@ effect — where culling against the configured FOV keeps the geometry a
 narrowed view would have thrown away.
 
 **Why is the HUD not shaded by the light the player is standing in?**
-Because for the whole of the GUI block `GameRenderer.lightmap` hands out a
-one-pixel white texture instead of the real one — the switch is
-`GameRenderer.useUiLightmap`, set around exactly that block, and both
-lightmaps belong to [lightmap, fog and
-sky](lightmap-fog-and-sky.md#how-bright-one-draw-per-tick-and-no-partial-ticks-at-all).
+Because for the whole of the *gui* zone `GameRenderer.lightmap` hands out a
+one-pixel white texture instead of the real one. `GameRenderer.useUiLightmap`
+is set on either side of exactly that zone and nowhere else; which two
+textures it is switching between is [lightmap, fog and
+sky](lightmap-fog-and-sky.md#how-bright-one-draw-per-tick-and-no-partial-ticks-at-all)'s.
 
 **Why does the world go strange when spectating a creeper?** Because the
 post-effect chain is chosen by what you are spectating rather than by an
-option. Which chain, through which door, and what it then does to the picture
-are all [post-processing](post-processing.md#questions-players-ask)'s.
-
-**Does minimizing the window save the client any work?** A great deal, but
-not where you would look for it. Every zone still runs: the acquire is not
-attempted and the blit and the present are skipped, which is three calls.
-The saving is the limiter. `FramerateLimitTracker.getThrottleReason` tests
-iconification *first*, ahead of idleness and the menu, and answers with a
-limit of ten — so *frameLimiter* parks the thread for most of every hundred
-milliseconds and the client draws its unseen frames about ten times a second
-instead of at the player's setting. On top of that, losing focus for half a
-second pauses a singleplayer world outright through
-`Minecraft.pauseIfInactive`, and then there is no world left to draw.
+option, at the end of the world block and before any GUI. Which chain,
+through which door, and what each does to the picture are
+[post-processing](post-processing.md#the-six-chains)'s.
 
 **Where does the main menu's panorama come from?** The game, on the same two
 halves. `Minecraft.grabPanoramixScreenshot` runs `GameRenderer.update`,
@@ -256,29 +295,17 @@ which is what `CameraRenderState.isPanoramicMode` exists for. A second,
 silent screenshot path inside the world half writes the world icon,
 singleplayer only, and only once enough sections have actually been rendered.
 
-**When does the client draw a frame that runs no ticks?** Whenever
-`Minecraft.renderFrame` is passed false for the flag that says this frame
-advances game time. Three call sites do: the two loops that wait for the
-integrated server to start and to stop, and `Minecraft.setScreenAndShow`,
-which forces a single frame so that a screen appears during blocking work.
-Such a frame has no ticks, no client lighting and no world render at all —
-it is GUI only, and [GUI and screens](../client/gui-and-screens.md) is the
-half that survives.
-
 > **For a 1.21-era reader.** The rendering model is now **extract then
 > render**: `GameRenderer.extract` copies the live game into a
-> `GameRenderState` and `LevelRenderer.render` is handed a
+> `GameRenderState`, and `LevelRenderer.render` is handed a
 > `CameraRenderState` rather than a `Camera`, because by the time it runs the
 > camera is allowed to have moved on. Names to stop hunting for:
 > *Minecraft.getMainRenderTarget* (now `GameRenderer.mainRenderTarget`),
 > *Camera.setup* (now `Camera.update` plus `Camera.extractRenderState`),
-> *GameRenderer.getProjectionMatrix* and *resetProjectionMatrix*,
-> *Window.updateDisplay*, *LightTexture* (now `Lightmap`), and
-> *MultiBufferSource* with every buffer source that used to hang off
-> `RenderBuffers` — none of them exist. Most `Camera` accessors lost their
-> *get* prefix (`Camera.position`, `Camera.entity`, `Camera.rotation`,
-> `Camera.forwardVector`), though `Camera.getCullFrustum`, `Camera.getFov`
-> and `Camera.getCameraEntityPartialTicks` kept theirs.
+> *GameRenderer.getProjectionMatrix*, *Window.updateDisplay*, *LightTexture*
+> (now `Lightmap`), and *MultiBufferSource* with every buffer source that
+> hung off `RenderBuffers`. Most `Camera` accessors also lost their *get*
+> prefix, though `Camera.getCullFrustum` and `Camera.getFov` kept theirs.
 
 ## Where to look
 

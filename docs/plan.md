@@ -34,9 +34,9 @@ stood at the close, with the session paragraphs and the log.
 **Pass 6 — the lecture — is running.** It was planned on 2026-09-07 by the
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day, E
-(Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, and I
-(Part IX) and J (Part X) on 2026-09-14**, so the next session is
-K (Part XI · Rendering). The charter is below; the brief, the
+(Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, I
+(Part IX), J (Part X) and K (Part XI) on 2026-09-14**, so the next session is
+L (Part XII · World generation). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -64,7 +64,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I and J on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to K on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -475,6 +475,81 @@ One caveat for session O: renaming them **changes what `pass6_shape.py`
 measures**, because its spine alphabet reads the literal `## The trace` as its
 own token; Part VIII came out of the rename with a measured identical pair that
 was an artefact, and the tool cannot see an H3 at all.
+
+**Pass 6, session K — Part XI · Rendering** *(2026-09-14).* Eleven system pages
+and the landing page, twelve readers, one each — the part the charter called
+*the model*, because its blockquote is at the foot on all eleven and the closer
+was on only six. What it was not the model of is **A2**. The closer went
+**6 of 11 → 3**, three of the six dissolving whole, and the reason is the same
+one four times over: **four inbound links landed on a closer's anchor and all
+four were from inside Part XI**, which is the first part where the device's
+citations were entirely internal, and one of the four was a **loop** —
+`lightmap-fog-and-sky` cited `the-frame`'s closer for the HUD lightmap while
+that closer's answer pointed back at `lightmap-fog-and-sky`. A link that
+resolves cannot see a cycle and neither can `check_links.py`, which is sessions
+F–H's lesson with a new edge on it: an anchor that names a device does not only
+collect citations that mean different things, it can collect a citation that
+means *this one*. `the-window` lost its closer whole and gained four sections
+out of it, including the seventh callback, which settles the oldest live entry
+in the Part XI queue by ruling that the **ordering** was the wrong half all
+along; `blaze3d` lost its whole closer too, with the `GlHeuristics` sniffing and
+the two-deep submit fence — the reader called them the page's best material —
+promoted into the body; `section-meshing`'s dissolved into one promoted section
+that `visibility-and-the-frame-graph` now cites by name.
+
+**Eighteen facts corrected**, sixteen of them found by a reader with no source,
+and the class is session J's twice over: a sentence that names a number is a
+claim about the text beside it. *Nine zones* over a sentence naming sixteen —
+and the sentence also hid that `Minecraft.renderFrame` pushes only **eight** of
+the nine, *render* belonging to `GameRenderer.render` and a tenth zone,
+*camera*, being named on no page at all. *Twelve separate layers* of soft
+failure enumerating eleven. *Two properties* followed by three. *The six ways
+the table above records* against a table of seven rows. *The two gates* naming
+three different pairs on one page, where the body has three. *Vulkan leaks
+upward in two places, not one*, naming three things and closing on a sentence
+that resolved to nothing. Two are of a different kind and sharper: `the-window`
+promising a name/behaviour inversion in `Window.calculateScale` and
+`Window.setGuiScale` that **is not there** — the real surprise being that the
+option is a ceiling the answer may miss in *both* directions — and
+`lightmap-fog-and-sky` stating the weather's seed two opposite ways, its
+opening right (each column seeded from its own coordinates, which is why two
+clients see the same drops with nothing sent) and its heading and section
+wrong. One figure was wrong: `particles`' flowchart routed unlimited particles
+past the admission queue, where `ParticleEngine.add` queues every particle that
+survives.
+
+**The part's own finding is a terminology split that cost comprehension rather
+than accuracy**: *client thread* and *Render thread* used for one thread, **17
+of the corpus's 23 uses of the first being in this part**, and on exactly the
+four pages where a worker/main split is the subject. Two readers independently
+could not tell whether it was one thread or two. `src/reference/threads.md`
+settles it — the Render thread *is* the client's JVM main thread, renamed — so
+the part was normalised to the book's one name. That is a wording fix a wording
+pass would have found, but it was costing a reader the page, which is what makes
+it this pass's.
+
+The **mnemonic** entry was the queue's part-wide question and it was **five
+pages, not the three it named**: `models-and-atlases` has *spread, converge,
+upload, invalidate* and `section-meshing` the prose form. Judged as a set, two
+were cut — `visibility-and-the-frame-graph`'s, whose page names the same five
+stages three separate ways and never uses the verbs again, and
+`post-processing`'s, which shared *declare, draw* with it and buried the
+sentence's real point. The device survives on three pages in two forms with no
+verb shared between any two. **A7's four-page group was the first this queue
+entry named that was still live** — and A2 dissolved it without a variation
+being made, `blaze3d`'s closer taking its spine away from both neighbours; the
+pair left behind, `entity-rendering` ↔ `the-window`, is an artefact of this
+session's own edits, as in Part X, and is left with the reasoning. **A4** renamed
+the part's one literal trace heading. Eight sections over forty lines with
+neither figure nor subsection became zero, all by A8's H3 method. The landing
+page took A6 with *Where the part stops* as a heading in its place, the coverage
+number now the include — and came out three lines **longer** outside the watch
+order despite two real cuts, which is the third session to report that shape and
+is a note for O. Part XI's eleven pages 3,865 → 3,973 lines; the landing page
+184 → 188. Thirty units appended to [pass5.md](pass5.md) (seven logged cuts,
+seven for pass 7, eight for pass 8, two notes for session O); five entries
+struck, three annotated, one retagged `[kind=voice]`; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed.
 
 **Pass 6, session J — Part X · The client** *(2026-09-14).* Twelve system
 pages and the landing page, thirteen readers, one each — the largest part in

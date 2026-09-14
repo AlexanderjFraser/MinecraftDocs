@@ -14,6 +14,15 @@ attempt that gets a window and then fails at the device does not get to keep
 the window. It is thrown away with the attempt, and the next candidate starts
 from a fresh one.
 
+That loop is the first half of the page. The second is what the window
+turns into once it has survived one: **this is Part XI's platform layer, not
+just its window** — the six callbacks the operating system may fire, the
+three sizes every GUI element is placed against, and `NativeImage`, the CPU
+image type every texture, screenshot, skin and glyph in the game passes
+through on its way to or from a file. They share a package and a role rather
+than a scenario, and the role is *everything between the game and the
+machine it is running on*.
+
 [The frame](the-frame.md) is the lecture you watch first, and it opens on a
 surface that has already been acquired. This page is what acquired it.
 [Input and keybinds](../client/input-and-keybinds.md) opens on a callback that
@@ -33,12 +42,13 @@ exists. All three of them start here.
 | `FramerateLimitTracker` | what an iconified, idle or menu-bound window is allowed to cost | Render thread |
 | `NativeImage` | the CPU-side pixels between a file and a texture | native memory, closed by its owner |
 
-Every row but the first two lives in *com/mojang/blaze3d/platform* —
-`Minecraft` is the game's, and `GpuBackend` sits in *blaze3d/systems* with
-[the façades](blaze3d.md#four-objects-the-game-only-touches-through-a-façade)
-— and none of it exists on the server: `server-classes.txt` has no entry under
-*com/mojang/blaze3d* at all. All of it runs on the Render thread, which is
-[one of the four](../anatomy/anatomy.md#four-threads-worth-memorising).
+Two of those rows live outside *com/mojang/blaze3d/platform* and the other
+six in it: `Minecraft` is the game's own, and `GpuBackend` sits in
+*blaze3d/systems* with
+[the façades](blaze3d.md#four-objects-the-game-only-touches-through-a-façade).
+None of the package exists on the server — `server-classes.txt` has no entry
+under *com/mojang/blaze3d* at all — and all of it runs on the Render thread,
+which is [one of the four](../anatomy/anatomy.md#four-threads-worth-memorising).
 
 ## Trying backends until one of them makes a window
 
@@ -73,6 +83,15 @@ flowchart TD
     LEFT -- "no" --> BOX
 ```
 
+**The list is never one candidate long.** `PreferredGraphicsApi.getBackendsToTry`
+returns an ordered *pair*: every setting has the other API behind it as a
+fallback, the default is OpenGL-first, and `GlBackend` and `VulkanBackend` are
+the two things the loop above is choosing between. A previous unclean shutdown
+downgrades twice over — a Vulkan preference becomes the default, and the
+default becomes OpenGL — so a client that crashed on boot comes back on the
+safest option it has, and stays there until you set it again. That is why
+asking for Vulkan does not always get it.
+
 What the window is asked for is a `DisplayData`: a size, an optional
 fullscreen size and a fullscreen flag, with `DisplayData.withSize` and
 `DisplayData.withFullscreen` for the transitions that change them later. What
@@ -80,10 +99,13 @@ comes back, if anything comes back, is a `Window` holding a `Window.handle`
 and a `Window.backend` — and never a `GpuDevice`. The window knows which
 backend made it and nothing about what that backend went on to build.
 
-Below GLFW and STB, reached through LWJGL, the window itself calls almost
-nothing else in the game — the exceptions are the three classes that have to
-report a failure upward, which reach for `Minecraft`, `CrashReport` and the
-server's watchdog. Above it, `Minecraft` drives startup and the two per-frame calls
+GLFW and STB, reached through LWJGL, are what the package sits on, and it
+calls almost nothing else in the game on its way down. The exceptions are all
+about reporting a failure upward: `Minecraft`, `CrashReport`, and the one
+piece of the dedicated server the client borrows — `ClientShutdownWatchdog`
+builds its report with `ServerWatchdog.createWatchdogCrashReport`, which is
+the only *net.minecraft.server* name anything here touches. Above the
+package, `Minecraft` drives startup and the two per-frame calls
 below, `KeyboardHandler` and `MouseHandler` take the input callbacks and the
 clipboard, `VideoSettingsScreen` drives the fullscreen and video-mode
 controls, and `Screenshot` and `TextureManager` want `NativeImage`. What the
@@ -93,12 +115,32 @@ and the graphics-API preference that ordered the loop above. The window's
 *position* is not among them — it is a field the move callback keeps and
 nobody saves.
 
-## Six callbacks, a seventh added later, and the two the game is told about
+### How the loop knows why a window did not appear
+
+`GpuBackend.handleWindowCreationErrors` in that figure reads something, and
+what it reads is a list somebody was holding a pen over. `GLFWErrorScope` is
+a closeable scope that installs an error callback, runs one piece of work and
+puts the previous one back — throwing if anybody else changed it in between —
+and what it usually installs is a `GLFWErrorCapture`, which does nothing but
+collect what GLFW said into a list. The retry loop runs each window creation
+inside one, so a failed attempt comes back with its reasons attached instead
+of with a line in somebody's log. The same pairing is around GLFW's own
+initialisation, the monitor enumeration and the clipboard read: four places
+that expect to fail and want the failure themselves.
+
+The scope is the fourth kind of error-callback swap and the only scoped one.
+The other three are the game's life in order: a boot-crash handler while
+starting, `Window.setDefaultErrorCallback` once running, and a null on close.
+Across all of them `Window.setErrorSection` tags whatever GLFW complains
+about with what the game was busy with — *Pre startup*, *Startup*, *Post
+startup*, *Pre render* — which is why a driver's error message arrives in a
+crash report attached to a phase rather than floating free.
+
+## Six callbacks, and the two of them the game is ever told about
 
 Once the window exists, `Window`'s constructor registers six GLFW callbacks,
-and they are almost the whole of what the operating system can say to it —
-a seventh, the close callback, is added later by `Minecraft` and is the
-subject of the last section. `WindowEventHandler` — a three-method interface
+and they are almost the whole of what the operating system can say to it.
+`WindowEventHandler` — a three-method interface
 that `Minecraft` implements — is the whole of what a window is allowed to say
 back to the game, and the window only ever reaches for two of those three
 methods.
@@ -131,7 +173,10 @@ operating system reports are things the game is never *told*, only things it
 can look up. `Window.isMinimized` is the one that reads like a fifth and is
 not: it is set by the framebuffer callback, which fires with a zero-by-zero
 size when the window goes away, and cleared by the same callback when a real
-size comes back.
+size comes back. That is also the whole of what minimising suppresses: the
+frame skips its surface acquisition and otherwise runs in full, and where the
+real saving comes from is [the
+frame](the-frame.md#what-a-minimized-client-actually-stops-doing)'s.
 
 The third method on the interface is the odd one.
 `WindowEventHandler.resizeGui` is never called by `Window` at all: its callers
@@ -147,6 +192,18 @@ motion and scrolling. Every input callback is registered somewhere else
 entirely, by `KeyboardHandler` and `MouseHandler` — see [input and
 keybinds](../client/input-and-keybinds.md).
 
+### The seventh, which is not the constructor's
+
+There is one more, and `Minecraft` adds it after the constructor has run: the
+window-close callback, the one that fires when you click the X rather than
+quitting from the menu. It is registered late because what it does is not the
+window's business at all — it is one of the two places `ClientShutdownWatchdog`
+is armed, and it is the one that catches a client hanging on the close button
+rather than on the way out. That is why the game sometimes leaves a crash
+report behind after you close it. [The two armings and what each may
+do](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping) are
+the client loop's.
+
 ## Three sizes, and every misplaced GUI element is a confusion between them
 
 | the size | how it is asked for | what it is |
@@ -155,22 +212,26 @@ keybinds](../client/input-and-keybinds.md).
 | screen | `Window.getScreenWidth`, `Window.getScreenHeight` | the window as the operating system reports it, which under DPI scaling is not the framebuffer |
 | GUI-scaled | `Window.getGuiScaledWidth`, `Window.getGuiScaledHeight` | the framebuffer divided by an integer scale |
 
-The integer scale is the part with a policy in it, and the two methods run
-the other way round from their names. `Window.calculateScale` is handed what
-the option asked for as a *ceiling* and decides what is actually possible,
-counting upward while the framebuffer still divides by the two constants
-`Window.BASE_WIDTH` and `Window.BASE_HEIGHT`, then rounding *up* to an even
-number when the font needs unicode. `Window.setGuiScale` takes that answer
-and stores it, computing the two scaled sizes from it. A high-DPI display is what makes the first two rows
-diverge, and a GUI element that lands in the wrong place is nearly always
-code that read one of the three and meant another.
+The integer scale is the part with a policy in it, and **what the option
+asks for is a ceiling the game is allowed to miss in both directions**.
+`Window.calculateScale` counts upward from one for as long as the framebuffer
+divided by the next scale would still be at least `Window.BASE_WIDTH` by
+`Window.BASE_HEIGHT` — 320 by 240 — so on a small window it stops below what
+you asked for. Then, if the font needs unicode and the answer came out odd,
+it adds one, which is the one case where the result comes back *above* the
+ceiling. `Window.setGuiScale` takes whatever that was and stores it, deriving
+the two scaled sizes by dividing and rounding up. A high-DPI display is what
+makes the first two rows diverge, and a GUI element that lands in the wrong
+place is nearly always code that read one of the three and meant another.
 
 ## What the window does per frame, which is almost nothing
 
 Two calls, both inside `Minecraft.renderFrame`, both in the *update window*
 profiler zone: `Window.updateFullscreenIfChanged` at the very top of it, and
-the surface reconfigure-and-acquire immediately after. Everything else the
-window does is a callback firing.
+immediately after it a reconfigure-and-acquire of the `GpuSurface` — which is
+[Blaze3D](blaze3d.md#how-a-frame-reaches-the-screen)'s object, not the
+window's, and is the whole of the window's involvement in getting a picture
+onto the screen. Everything else the window does is a callback firing.
 
 `Window.updateFullscreenIfChanged` is where F11 lands.
 `Window.toggleFullScreen` and `Window.setWindowed` flip the state,
@@ -224,86 +285,41 @@ Because the memory is native, ownership is explicit: `NativeImage.close`
 frees it, and `NativeImage.untrack` exists for the cases where something else
 has taken the pointer over.
 
-## Questions players ask
+## The corners the story does not pass through
 
-**Why is the game on OpenGL when I asked for Vulkan?** Because the loop above
-takes an ordered *pair*. `PreferredGraphicsApi.getBackendsToTry` never returns
-one candidate: every setting has the other API behind it as a fallback, the
-default is OpenGL-first, and `GlBackend` and `VulkanBackend` are the two
-things the loop is choosing between. A previous unclean shutdown downgrades
-twice over — a Vulkan preference becomes the default, and the default becomes
-OpenGL — so a client that crashed on boot comes back on the safest option it
-has, and stays there until you set it again.
-
-**Why does the game keep drawing while it is minimised?** Because
-`Window.isMinimized` suppresses only the surface acquisition; what the frame
-then does anyway, and where the real saving comes from, is [the
-frame](the-frame.md#questions-players-ask)'s.
-
-**Why does a graphics crash report name the thing the game was doing?**
-Because the error callback is swapped three times over the game's life: a
-boot-crash handler while starting, `Window.setDefaultErrorCallback` once
-running, and a null on close. `Window.setErrorSection` tags whatever GLFW
-complains about with what the game was busy with when it complained — *Pre
-startup*, *Startup*, *Post startup*, *Pre render* — so a driver's error
-message arrives attached to a phase rather than floating free.
-
-Beside those three there is a fourth kind of swap, and it is scoped rather
-than permanent. `GLFWErrorScope` is a closeable scope that installs a
-callback, runs one piece of work and puts the previous one back — throwing if
-anybody else changed it in between — and what it usually installs is a
-`GLFWErrorCapture`, which does nothing but collect what GLFW said into a
-list. That pairing is how the retry loop above knows *why* a window did not
-appear, and it is also around GLFW's own initialisation, the monitor
-enumeration and the clipboard read: four places that expect to fail and want
-the failure themselves instead of in somebody's crash report.
-
-**Why does the mouse cursor stop changing shape sometimes?** Because you
-turned it off, or never turned it on. `Window.setAllowCursorChanges` is
+Two of them are worth a sentence each because a player meets them. The cursor
+stops changing shape when `Window.setAllowCursorChanges` is clear — it is
 driven by a player option on the mouse-settings screen and nothing else, and
-with it clear every request is answered with the default arrow. The other
-half of the problem is the platform's: `CursorType.createStandardCursor`
-takes a fallback for the shapes a given system does not provide.
+with it clear every request is answered with the default arrow; the other half
+of that problem is the platform's, since `CursorType.createStandardCursor`
+takes a fallback for the shapes a given system does not provide. And
+`TextureUtil`, the largest class in the package and the odd one out because
+nothing about it is a window, is why a mipmapped texture's edges do not bleed:
+before `MipmapGenerator` builds a sprite's mip chain it runs one of two
+repairs over it, `TextureUtil.solidify` flooding the nearest opaque colour
+outward into every fully transparent pixel or
+`TextureUtil.fillEmptyAreasWithDarkColor` filling them with the image's
+darkest colour instead. Either way the transparent texels stop being an
+arbitrary colour, so that averaging four of them down a mip level cannot bleed
+something that was never in the texture into its edges.
 
-**Why does the game sometimes leave a crash report behind after I close
-it?** Because a shutdown that hangs is reported from outside. The seventh
-callback — the window-close one `Minecraft` adds after the constructor's six
-— is one of the two places `ClientShutdownWatchdog` is armed, and it is the
-one that catches a client that hangs on the close button rather than on the
-way out. [The two armings and what each may
-do](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping) are
-the client loop's.
+The rest of the package is genuinely a list, and the class index is where a
+list belongs: clipboard and IME text, the cursor shapes, the window icon set,
+the macOS and memory-tracking helpers, the remainder of `GLX`, and
+`InputConstants`, the key and mouse-button vocabulary every `KeyMapping` is
+written in. Five more names in it are pipeline state and belong to
+[Blaze3D](blaze3d.md#a-pipeline-is-a-record-not-a-sequence-of-calls), living
+here only by address.
 
-**What is the rest of the package?** The corners the story above does not pass
-through: `ClipboardManager` and `TextInputManager` for copy, paste and IME
-text, `CursorType` and `CursorTypes` for the cursor shapes, `IconSet` for what
-`Window.setIcon` picks between, `MacosUtil`, `DebugMemoryUntracker`, the rest
-of `GLX` (`GLX._getCpuInfo`, `GLX._getLWJGLVersion`, `GLX.getGlfwPlatform`) —
-and `InputConstants`, the key and mouse-button vocabulary that every
-`KeyMapping` is written in. `TextureUtil` is the largest of them and the
-odd one out, because nothing about it is a window: it is the static toolbox
-for reading a resource into a native buffer, writing a `GpuTexture` back out
-as a PNG, and the two repairs `MipmapGenerator` runs over a sprite *before*
-it builds the mip chain. `TextureUtil.solidify` floods the nearest opaque
-colour outward into every fully transparent pixel, and
-`TextureUtil.fillEmptyAreasWithDarkColor` fills them with the image's darkest
-colour instead. Either way the transparent texels stop being an arbitrary
-colour, so that averaging four of them down a mip level cannot bleed
-something that was never in the texture into its edges. Five more are
-pipeline state
-(`Transparency`, `BlendFactor`, `BlendOp`, `CompareOp`, `PolygonMode`), which
-belong to [Blaze3D](blaze3d.md#a-pipeline-is-a-record-not-a-sequence-of-calls)
-and only happen to live here.
-
-> **For a 1.21-era reader.** The headline is that the window no longer
-> presents anything: *Window.updateDisplay* and *Window.setVsync* are gone,
-> presentation is [blaze3d](blaze3d.md)'s `GpuSurface` protocol and vsync is a
+> **For a 1.21-era reader.** The window no longer presents anything:
+> *Window.updateDisplay* and *Window.setVsync* are gone, presentation is
+> [blaze3d](blaze3d.md)'s `GpuSurface` protocol and vsync is a
 > `GpuSurface.PresentMode`. Also gone: *Window.setupGuiState*; and if you are
 > reaching for *ScreenManager*, monitor handling is `MonitorManager`, in the
 > same package and behind the same GLFW callback ([naming
-> drift](../../reference/naming-drift.md#part-xi--rendering)). And the
-> constructor now takes a `GpuBackend`, because the
-> window cannot be made without knowing which API is going to draw into it.
+> drift](../../reference/naming-drift.md#part-xi--rendering)). The constructor
+> now takes a `GpuBackend`, because the window cannot be made without knowing
+> which API will draw into it.
 
 ## Where to look
 

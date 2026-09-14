@@ -16,17 +16,21 @@ swaying with your view bob, because the two are drawn at **different partial
 ticks** and only one of them respects the freeze.
 
 This page is the sibling of [entity rendering](entity-rendering.md), and does
-not re-teach it. Extract, submit, prepare, execute; render states that hold no
-live object; `SubmitNodeCollector` and the fifteen phases behind it — all of
-that is that page's, and all of it is true here. What follows is only the
-differences, and they are larger than the shared machinery suggests.
+not re-teach it. Four stages run here exactly as they run there — **extract**
+reads the live world into a value object, **submit** describes what ought to
+be drawn without drawing it, **prepare** sorts and batches every description
+in the frame, and **execute** is the frame graph's passes issuing the draws —
+along with render states that hold no live object, `SubmitNodeCollector`, and
+the fifteen phases a submission can land in. All of that is that page's, and
+all of it is true here. What follows is only the differences, and they are
+larger than the shared machinery suggests.
 
 ## The cast
 
 | class | what it decides | thread |
 |---|---|---|
 | `LevelExtractor` | which block entities are candidates at all — the two lists it walks | Render thread |
-| `BlockEntityRenderDispatcher` | the renderer for a type, and the two gates every extraction passes | Render thread |
+| `BlockEntityRenderDispatcher` | the renderer for a type, and two of the three gates an extraction passes | Render thread |
 | `BlockEntityRenderer` | the geometry, and its own answers to *how far* and *off screen* | Render thread |
 | `BlockEntityRenderState` | one block entity's whole frame: position, block state, type, light, break progress | a value object |
 | `ClientLevel` | membership of the globally-rendered set, decided once when the block entity is added | Render thread |
@@ -72,7 +76,7 @@ state class of its own, or an extract stage that reads the live world.
 | the state | an `EntityRenderState` subclass | a `BlockEntityRenderState` subclass | a layer of an `ItemStackRenderState` |
 | the partial tick | one computed per entity | one for every block entity in the world | the camera entity's |
 | where the pose comes from | the dispatcher, from the state's position | `LevelRenderer`, translated to the block | the item transform for the display context |
-| how many | one renderer per entity type | 24 renderer classes, 26 of the 49 types | 13 renderers under 13 ids |
+| how many | one renderer per entity type | 26 of the 49 types, served by 24 classes — `ChestRenderer` takes three of them | 13 renderers under 13 ids |
 
 ## The chest, both halves, one frame
 
@@ -103,7 +107,7 @@ sequenceDiagram
 The two halves of the figure are not two stages of one pipeline. The world's
 block entities go through `LevelRenderer.submitFeatures` into the frame
 graph. The held chest goes into [the hand's own submit
-storage](the-frame.md#the-wall-and-the-one-level-at-which-it-is-real),
+storage](the-frame.md#the-hand-and-the-screen-effects-in-a-storage-the-level-never-sees),
 drained after the whole world is already on the screen. They never share a
 submit node.
 
@@ -144,6 +148,8 @@ quads **and** the special renderer, both, because that road draws whatever it
 finds; terrain simply never asks this table, and reads `BlockStateModelSet`
 instead, where the chest's entry is empty.
 
+### What one entry in the built-in table actually holds
+
 The reason one entry can hold quads *and* a renderer is the object the road
 resolves into. `BlockModelResolver` hands the model a
 `BlockModelRenderState`, which has a slot for each: a list of
@@ -171,7 +177,9 @@ starts from `LevelRenderer.visibleSections` — the reachability walk that
 describes — and takes each section's compiled list of block entities whole.
 Culling has already happened, one section at a time.
 
-Two extra gates then apply, and both are stricter than they look. The first is
+**Three gates decide whether a block entity is extracted at all**, and only
+the first belongs to the walk. The other two are stricter than they look, and
+`BlockEntityRenderDispatcher.tryExtractRenderState` holds both. The first is
 the section's own fade-in: a freshly uploaded section reports a visibility
 ramping from zero to one over a duration the *chunk section fade-in time*
 option sets, and `LevelExtractor` skips its block entities until that number
@@ -182,7 +190,8 @@ about twenty-eight blocks of the camera or one that was empty before, so the
 gate only bites on distant terrain, which is exactly where you would blame the
 draw distance for it.
 
-The second is a distance test with the same name as the entity one and only
+The second is the off-screen flag, which the section after this one is about.
+The third is a distance test with the same name as the entity one and only
 half of its behaviour. `EntityRenderer.shouldRender` does a size-scaled
 distance test *and* a frustum intersection. `BlockEntityRenderer.shouldRender`
 keeps the distance half alone: a camera position, and whether the block's
@@ -253,6 +262,8 @@ nothing in the game. There is no bed block entity in `BlockEntityTypes` and no
 bed renderer, and a corpus-wide search for the name finds only its own file.
 It is the only orphan in the package.
 
+### The five states that carry another pipeline's snapshot
+
 Five states carry another pipeline's snapshot inside them, which is where the
 machines actually touch — and **two** of the five carry an *entity* state, not
 an item one. `SpawnerRenderState.displayEntity` is a whole
@@ -263,10 +274,11 @@ block's. `VaultRenderState.displayItem` reads like the item cases and is not
 one: it is an `ItemClusterRenderState`, which extends `EntityRenderState`, and
 the vault submits it through `ItemEntityRenderer` — the same renderer that
 draws a dropped item lying on the ground. The three genuine item carriers are
-`ShelfRenderState.items`, an array of three `ItemStackRenderState` that reaches
-`ChestSpecialRenderer` from inside a block-entity render state, and
-`CampfireRenderState.items` and `BrushableBlockRenderState.itemState` for what
-is cooking and what is buried.
+`ShelfRenderState.items`, an array of three `ItemStackRenderState` — so a
+shelved item is resolved and submitted by the *item* road, from inside a
+block-entity render state, and lands on whichever special renderer its own
+model names — and `CampfireRenderState.items` and
+`BrushableBlockRenderState.itemState` for what is cooking and what is buried.
 
 One live handle survives into a snapshot, and it is not unique to this side:
 `MovingBlockRenderState` is a one-block fake world that holds the level's
@@ -333,10 +345,12 @@ texture or model layer on one — `SkullBlockRenderer.submitSkull`,
 is the same `ChestModel`, baked from the same `ModelLayerLocation`, posed at a
 fixed openness instead of an interpolated one.
 
-Beyond the two named here, the twenty-four renderer classes are a family and
-this page teaches the shape rather than the instances: each is one
+`ChestRenderer` aside, this page teaches the shape of the twenty-four rather
+than the instances, because a family is what they are: each is one
 `BlockEntityRenderer.extractRenderState` and one `BlockEntityRenderer.submit`,
-and the interesting ones differ only in the six ways the table above records. The shared piece worth naming is
+and the interesting ones differ only in how far they can be seen, which is
+the table above, and in what they put in their render state. The shared piece
+worth naming is
 `WallAndGroundTransformations`, which is how a skull, a banner or a sign
 answers *am I on the floor or on a wall* — one transformation per
 `Direction` for the wall case and an array indexed by rotation segment for
@@ -356,20 +370,17 @@ turns into a chest.
 > **For a 1.21-era reader.** `BlockEntityRenderer` has no *render* method
 > either: the pair is `BlockEntityRenderer.extractRenderState` and
 > `BlockEntityRenderer.submit`, and `blockentity/state` is a package that did
-> not exist. Three names to stop hunting for: *getRenderBoundingBox*, absent
-> from the corpus entirely, because visibility is the section's business now
-> plus the radius in `BlockEntityRenderer.getViewDistance`, *BedRenderer*, and
-> every *renderItem* on a block-entity class — an item held by a block entity
-> now goes through `ItemModelResolver` into an `ItemStackRenderState` like any
-> other. `BlockEntityRenderer.shouldRenderOffScreen` survives with its meaning
-> narrowed to *which of two lists*, `BlockEntityRenderers` still registers by
-> `BlockEntityType`, and the fifteen submit phases these renderers land in are
-> shared with entities.
+> not exist. Three names to stop hunting for: *getRenderBoundingBox*, gone
+> because visibility is the section's business now plus the radius in
+> `BlockEntityRenderer.getViewDistance`; *BedRenderer*; and every *renderItem*
+> on a block-entity class, since an item a block entity holds now goes through
+> `ItemModelResolver` like any other. `BlockEntityRenderer.shouldRenderOffScreen`
+> survives with its meaning narrowed to *which of two lists*.
 
 ## Where to look
 
 `BlockEntityRenderDispatcher.tryExtractRenderState` first — it is twenty-one
-lines and it contains both visibility gates. Then
+lines and it contains two of the three visibility gates. Then
 `LevelExtractor.extractVisibleBlockEntities` for the two lists it is called
 from, and `ChestRenderer` as the clearest renderer in the package, since it is
 the one with a counterpart in `renderer/special` to compare against. For the

@@ -163,7 +163,7 @@ wanted set differs from the last one sent.
 *after* the levels have ticked, while each `LevelDebugSynchronizers.tick`
 runs *inside* its level's tick — so **every level acts on the previous tick's
 subscriber snapshot**, a built-in one-tick lag. And `DebugRenderer.emitGizmos`
-runs inside `LevelExtractor.extract` — [the frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)'s
+runs inside `LevelExtractor.extract` — [the frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of)'s
 own snapshot step — after entities, block entities, particles, sky and clouds,
 fetching one `DebugValueAccess` for the whole pass.
 

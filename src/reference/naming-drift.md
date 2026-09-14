@@ -307,6 +307,7 @@ render.
 | *TextureSheetParticle*, sheet *ParticleRenderType*s | `SingleQuadParticle` + `SingleQuadParticle.Layer` |
 | *ParticleGroup* (a limit record) | `ParticleLimit`; `ParticleGroup` is now the per-render-type bucket |
 | *Camera.setup* | `Camera.update` + `Camera.extractRenderState` |
+| *Camera.getPosition*, *getEntity*, *getRotation*, *getLookVector* | `Camera.position`, `Camera.entity`, `Camera.rotation`, `Camera.forwardVector` — the *get* prefix dropped, though `Camera.getCullFrustum`, `Camera.getFov` and `Camera.getCameraEntityPartialTicks` kept theirs |
 | *RenderStateShard* composition (the texture/target/layering half) | `RenderType` over a `RenderPipeline`, catalogued in `RenderTypes`, built by `RenderSetup` |
 | *BakedQuad* as four vertices | a ten-component record, with a `BakedQuad.MaterialInfo` of six |
 | *LiquidBlockRenderer* | `FluidRenderer`, over a `FluidModel` |

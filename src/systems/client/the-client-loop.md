@@ -79,7 +79,7 @@ frame of a pause is drawn unpaused.
 *Pre render*, *Render* and *Post render*, which head three of the figure's
 nodes, are `Window.setErrorSection` calls — the crash report's breadcrumb, so a
 client that dies takes whichever of the three it was in to the report with it. What happens inside the frame is [the
-frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents);
+frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of);
 this page stops where the profiler's *frame* zone opens, and every zone inside
 it is that page's. Note where the frame limiter sits: inside `Minecraft.renderFrame`,
 after the present, with only the *fpsUpdate* zone after it, and *before* the

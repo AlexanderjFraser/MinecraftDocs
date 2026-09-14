@@ -36,7 +36,7 @@ before this one.
 | `GuiElementRenderState` | one recorded thing, and the bounds the layering algorithm reads | Render thread |
 | `GuiRenderer` | resolving, sorting, coalescing and issuing the draws | Render thread |
 | `GuiItemAtlas` | which item models are already rendered, and which age out | Render thread |
-| `GameRenderState` | who actually owns the tree — not `Gui`; the frame's own snapshot ([the frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)) | Render thread |
+| `GameRenderState` | who actually owns the tree — not `Gui`; the frame's own snapshot ([the frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of)) | Render thread |
 
 ## The tree, and where a new element lands
 

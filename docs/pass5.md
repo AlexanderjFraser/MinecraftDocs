@@ -1483,13 +1483,17 @@ fell, and none has had a wording pass:
 
 **Structural findings (not acted on).**
 
-- `the-window`'s seventh callback (the window-close one) is introduced in a [kind=lecture]
+- ~~`the-window`'s seventh callback (the window-close one) is introduced in a [kind=lecture]
   section titled *Six callbacks are the entire surface* and then explained
   three sections later, under the shutdown watchdog. Either the heading or the
   ordering is wrong; pass 5 should decide which. Same page: the "rest of the
   package" list omits seven of the package's twenty-six classes, including
   `Transparency` and `TextureUtil`, and the error callback is swapped at least
-  four times where the page implies two.
+  four times where the page implies two.~~ **Done, pass 6 session K** — the
+  ordering was the wrong half: the seventh callback now has an H3 of its own
+  inside the callbacks section, so the heading no longer forwards to a "last
+  section" that was in fact the closer. The package-list and error-callback
+  halves were overtaken by pass 5 session K.
 - ~~`block-entity-rendering`'s completeness sweep~~ **Done, session K:** all
   five prioritised items written, plus the built-in table's four other model
   kinds and its five bare wrappers. The page had never been
@@ -3257,8 +3261,10 @@ Opus agents against the shared brief and accepted after the session
 re-derived their sharpest claims; none was cut. `block-entity-rendering`
 (332 lines) is a comparison whose three-column table is the figure and
 whose *why* column on the view-distance table is editorial — pass 5 should
-decide whether an inferred reason belongs in a table cell; its
-1.21-reader blockquote is eleven lines, the longest in the corpus.
+decide whether an inferred reason belongs in a table cell; ~~its
+1.21-reader blockquote is eleven lines, the longest in the corpus.~~
+**Nine lines, pass 6 session K**, trimmed to A3's budget by dropping the
+clauses that explained rather than renamed.
 `entity-selectors` (313 lines) ends on *Questions a command author asks*,
 the fourth spelling of the device; its twenty-one-row option table is
 under budget only because three rows fold *x, y, z* and *dx, dy, dz* and
@@ -4629,31 +4635,52 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 6 (the lecture)
 
-- **Three of Part XI's eleven pages read their own figure out loud with a
+- ~~**Three of Part XI's eleven pages read their own figure out loud with a
   three- or four-verb mnemonic**: `the-frame`'s *acquire, snapshot, draw,
   present*, `visibility-and-the-frame-graph`'s *reach, gather, declare, draw,
   defer* and `post-processing`'s *parse, compile, declare, draw*. Two of the
   three share *declare, draw*. That is a part-wide slot rather than a tic, and
   it is pass 6's to keep, vary or cut — but it should be looked at as a set.
-  [kind=lecture]
-- **`the-window` carries two subjects and says so nowhere.** The hook promises
+  [kind=lecture]~~ **Judged as a set, pass 6 session K — and it was five, not
+  three.** `models-and-atlases` has *spread, converge, upload, invalidate* and
+  `section-meshing` the prose form, *read it in three beats*. Two were cut: the
+  `visibility` one, whose page names the same five stages three times over (the
+  verbs, the figure, the section headings) and never uses the verbs again, and
+  the `post-processing` one, which shared *declare, draw* with it and buried
+  the sentence's real point, the reload/frame phase split. The device survives
+  on three pages, in two forms, with no verb shared between any two.
+- ~~**`the-window` carries two subjects and says so nowhere.** The hook promises
   the window-and-backend coupling; `NativeImage` is a second lecture that
   arrives at line 191 with no preparation. It is deliberate — the landing page
   advertises it and *Where to look* calls it "the image type the rest of Part
   XI is built on" — so the fix is one sentence in the opening declaring the
-  page as the *platform layer* rather than as the window. [kind=lecture]
-- **`visibility-and-the-frame-graph`'s *One bucket per buffer set* section is
+  page as the *platform layer* rather than as the window. [kind=lecture]~~
+  **Done, pass 6 session K**, as a paragraph rather than a sentence — the reader
+  reported the hook covering only the page's first half, so the opening now
+  names the second half as the platform layer and says what holds it together
+  (a role, not a scenario).
+- ~~**`visibility-and-the-frame-graph`'s *One bucket per buffer set* section is
   shorter by two subjects after this session** (the directional shading moved
   out, the compile-ordering consequence went to its owner) and its heading is
   now true. Pass 6 should check the section still lands, since it lost its
-  ending. [kind=lecture]
-- **`the-window`'s seventh callback** is introduced under a heading that now
+  ending. [kind=lecture]~~ **Checked, pass 6 session K: it lands, and the
+  ending it lost is now a heading.** The section carried three subjects under
+  one heading; it gained an H3 (*Two draw groups over three layers, and why
+  translucent inverts the rule*) and the compile-ordering pointer at its end
+  was repointed off `section-meshing`'s closer, which dissolved.
+- ~~**`the-window`'s seventh callback** is introduced under a heading that now
   names it and explained three sections later under the shutdown watchdog.
   Session K fixed the heading; whether the *ordering* is right is a shape
-  question. [kind=lecture]
-- **`particles`' explosion section** is a second trace on a page that already
+  question. [kind=lecture]~~ **Ruled, pass 6 session K: the ordering was
+  wrong.** The seventh is now explained where it is introduced, under an H3;
+  the heading no longer has to promise a later section, and the closer that
+  held it is gone.
+- ~~**`particles`' explosion section** is a second trace on a page that already
   has one, and it is the book's only home for the client explosion budget, so
-  it cannot be cut. Shortening it is pass 6's. [kind=lecture]
+  it cannot be cut. Shortening it is pass 6's. [kind=lecture]~~ **Done, pass 6
+  session K** — shortened from two paragraphs to one by dropping the blow-by-blow
+  and keeping the budget, which is what the section is for; the three route
+  names it had shed were put back after the token diff caught them.
 
 ### For pass 7 (the figures)
 
@@ -5716,3 +5743,131 @@ the only way to see it is to rename the heading and read what breaks.
   something to read later. That is probably right and probably fine; noting it
   because the same shape is on every landing page.
 
+## Session K — Part XI, rendering (pass 6) *(2026-09-14)*
+
+### Cuts logged (nothing dropped except by moving it or logging it)
+
+- `the-window`'s *What is the rest of the package?* closer answer: the
+  twenty-line roll-call went, and with it the bare names `ClipboardManager`,
+  `TextInputManager`, `CursorType`, `CursorTypes`, `IconSet`, `MacosUtil`,
+  `DebugMemoryUntracker`, `GLX._getCpuInfo`, `GLX._getLWJGLVersion`,
+  `GLX.getGlfwPlatform` and `Window.setIcon`. Each carried a noun and no
+  behaviour, which is the field inventory A12 rules out, and the class index is
+  where a list of them belongs. The two things in that section that *were*
+  doing work — the cursor option and `TextureUtil`'s two mip repairs — were
+  kept and given prose. [kind=record]
+- `blaze3d`'s closer answer *Why did that draw produce nothing, and say
+  nothing?* was a second telling of *Who checks what* forty lines above; its
+  one new clause (the shipped game returns silently) was folded into that
+  section and the question went. [kind=record]
+- `particles`' explosion trace lost its blow-by-blow (the per-sample
+  bookkeeping) and kept the budget, which is what the section is for.
+  `ClientExplosionTracker.tick` and `ClientLevel.trackExplosionEffects` are now
+  named on no page; `ServerLevel.explode`, `ClientPacketListener.handleExplosion`
+  and `ClientExplosionTracker` are, so the route is still followable.
+  [kind=record]
+- `models-and-atlases`' closer answer *Why do some block updates cost nothing to
+  draw?* dissolved into the `ModelGroupCollector` sentence that introduces the
+  mechanism; nothing was dropped. [kind=record]
+- `section-meshing`'s closer answer *What happens when the buffer pool runs
+  out?* was a near-verbatim second telling of the pool paragraph; its one live
+  clause (the *task* is requeued, not the flag) went into that paragraph and the
+  question went. [kind=record]
+- `post-processing`'s closer answer *Can a resource pack add a post effect?*
+  restated the opening; the closed-set mechanism it held moved **up** into the
+  opening, which is where the claim is made. [kind=record]
+- `rendering/README` lost the *read that number with two corrections* paragraph
+  from the argument; both corrections are now in *Where the part stops*, which
+  is the section A6 gives them. [kind=record]
+
+### For pass 7 (the figures)
+
+- **`lightmap-fog-and-sky`'s trace figure has no `CloudRenderer` and no
+  `WeatherEffectRenderer` lane**, on a page whose table and opening both
+  promise five askers. The figure draws three of the five and then names the
+  other two only in its last box (*addCloudsPass, then addWeatherPass*). Either
+  two lanes or an explicit note that the figure follows the three that ask the
+  probe. [kind=figure]
+- **`entity-rendering`'s two figures disagree with the prose and with the
+  cast.** The sequence puts the frustum test on `EntityRenderDispatcher` where
+  the prose puts it on `EntityRenderer.shouldRender`, and `LevelRenderer`
+  drives two of the four stages in both figures while appearing in neither the
+  cast table nor the flowchart's labels. [kind=figure]
+- **`the-window`'s retry flowchart makes `GpuBackend.handleWindowCreationErrors`
+  look inert**: its `ERRS` node and the `KILL` node both flow to `LEFT`
+  unconditionally, so the figure shows a verdict that changes nothing. The
+  prose now says what the verdict is *for* (the loop learns why); the figure
+  should either show it or stop implying a branch. [kind=figure]
+- **`particles`' sequence diagram starts its server branch from a lane with no
+  incoming arrow** (`Block ->> SL`, where `SL` has not been reached). A reader
+  cannot tell whether the two branches are two machines or two moments.
+  [kind=figure]
+- **`post-processing`'s outline sequence carries an eight-line note band** and
+  is the densest figure in the part; its *sobel to swap, blur across, blur
+  down, blit back* note is doing the work four arrows would do better.
+  [kind=figure]
+- **`visibility-and-the-frame-graph`'s frame-graph flowchart draws the entity
+  outline chain as one node** while the prose says it has four passes, and the
+  page's other figure has six numbered boxes under a heading that used to say
+  five. The second is fixed in the prose; the first is a figure question.
+  [kind=figure]
+- **`rendering/README`'s pipeline figure now declares its arrows to be reading
+  order only** and says two of them are a frame's reverse. Pass 7 should decide
+  whether a figure whose arrows need that disclaimer is the right figure.
+  [kind=figure]
+
+### For pass 8 (the voice)
+
+- **The cast table's `thread` column is dead on four of this part's eleven
+  pages** — seven or eight identical *Render thread* cells on `the-window`,
+  `entity-rendering`, `lightmap-fog-and-sky` and `the-frame`, each of which
+  also states the thread in prose within twenty lines. Four readers skipped it
+  independently and said so. The five pages where the column earns its width
+  (`models-and-atlases`, `particles`, `section-meshing`, `blaze3d`,
+  `visibility-and-the-frame-graph`) are the ones with real workers in them.
+  This is a corpus-wide question about the cast device, not a Part XI one, and
+  it belongs to whoever owns `TEMPLATE.md`'s cast row after pass 8.
+  [kind=voice]
+- **`the-window`'s unglossed platform vocabulary**: GLFW, GLFW *hints*, STB and
+  LWJGL are load-bearing from the first paragraph and never introduced — the
+  opening argument rests on hints being window-creation parameters fixed before
+  the window exists, which the page never says. [kind=voice]
+- **`blaze3d` uses `GpuTexture` usage bits, `ColorTargetState`, `GpuFormat`,
+  `GpuBufferSlice` and `BindGroupLayout` in *Who checks what*, sixty to a
+  hundred lines before the section that introduces them.** The page is a
+  vocabulary page whose vocabulary arrives after its first use. [kind=voice]
+- **`models-and-atlases` never introduces `ModelState` or `BlockStateModelSet`**,
+  both of which carry load: the first is what geometry is cached per, the
+  second is what the mesher reads. [kind=voice]
+- **`particles`' four *override*-shaped things are never tied together**: the
+  packet's two override flags, `ParticleType.getOverrideLimiter`, the caller's
+  boolean and the always-show flag. Two of the four are reconciled; the other
+  two are not. [kind=voice]
+- **`section-meshing`'s *mesh* means two things** — the finished per-section
+  product, and the scratch a worker is building — which is why *the ceiling on
+  how many meshes exist at once* reads as a contradiction of the swap being
+  atomic. [kind=voice]
+- **`post-processing` uses two units for compilation on one page**: *two shader
+  programs* in the prose and *four freshly compiled pipelines* in a figure
+  note, for the same kind of event. [kind=voice]
+- **`lightmap-fog-and-sky` names the same roster three times in seventy lines**
+  — the opening, the cast table and *The five askers* — and the third is the
+  only one with a column a reader can use. [kind=voice]
+
+### Notes for session O
+
+- **A6 makes a landing page longer, not shorter, when the seventh section was
+  hiding.** Part XI's went from 137 lines outside the watch order to 140 even
+  after two real cuts to the argument, because *Where the part stops* moved
+  from four unheaded lines inside the Reference paragraph to a sixteen-line
+  section with the coverage include. Three sessions have now reported this
+  shape. The budget in `TEMPLATE.md` was written before A6 existed and session
+  O should decide whether *about a hundred* still means what it meant.
+- **A2's inbound-link clause fired four times in this part and all four links
+  were within it** — `lightmap` → `the-frame`'s closer, `the-window` →
+  `the-frame`'s closer, `visibility` → `section-meshing`'s closer, `the-frame`
+  → `post-processing`'s closer. One of the four was a **loop**: `lightmap`
+  cited `the-frame`'s closer for the HUD lightmap while that closer's answer
+  pointed back at `lightmap`. A link that resolves cannot see a cycle, and
+  `check_links.py` will not either. Worth a `--cycles` question for whoever
+  builds pass 7's tools.

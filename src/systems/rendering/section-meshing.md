@@ -62,7 +62,7 @@ sequenceDiagram
 
 Read it in three beats: a change makes a flag, a frame turns some flags into
 work, and a much later frame publishes the result. The middle beat is the one
-that leaves the client thread, and it does not always — a synchronous rebuild
+that leaves the Render thread, and it does not always — a synchronous rebuild
 compiles inline where it stands, and an empty mesh is published by the worker
 that found it empty.
 
@@ -134,7 +134,7 @@ already may always build a new one.
 
 ## What a mesher is allowed to read
 
-A compile runs for an unbounded time on a worker while the client thread
+A compile runs for an unbounded time on a worker while the Render thread
 keeps applying block updates, so it cannot be allowed near the live world.
 `RenderRegionCache` builds it a `RenderSectionRegion` instead: a 3×3×3 grid
 of `SectionCopy`, each holding a genuine *copy* of one section's
@@ -154,7 +154,7 @@ live, through the region's references to `ClientLevel` and the light engine —
 so for those two the mesher is looking at the world as it is when it asks, not
 at the world as it was when the snapshot was taken.
 
-## The queue, the packs, and why more cores do not always help
+## The queue, and the scratch buffer that is the real throttle
 
 `SectionRenderDispatcher` takes the sections the extract collected and either
 queues them (`SectionRenderDispatcher.RenderSection.compileAsync`) or compiles
@@ -178,7 +178,9 @@ The throttle is not the thread count. Each task-runner must acquire a
 sized to the processor count *or* to a share of the heap, whichever is
 smaller, degrading further if it hits an out-of-memory error while
 allocating. A worker that cannot get a pack puts its task back on the queue
-and gives up its turn.
+and gives up its turn — the *task* is requeued, not the flag, which was
+cleared when the work was taken, so the only symptom of an exhausted pool is
+terrain arriving more slowly.
 
 That requeue is a null check, and it is worth knowing how wide it is: the
 catch that implements it covers the whole compile, so *any* null-pointer
@@ -197,8 +199,9 @@ count after all.
 for its quads and sorts them into layers. The asking is
 `ModelBlockRenderer.tesselateBlock`, one instance built per compile from the
 ambient-occlusion option and `BlockColors`, and the quads come back through a
-`BlockQuadOutput` — a callback the compiler supplies, so the renderer never
-knows which layer's buffer it is writing into. Its product is
+`BlockQuadOutput` — one of *two* callbacks the compiler builds per compile and
+picks between per block, so the renderer never knows which layer's buffer it
+is writing into. Its product is
 `SectionCompiler.Results`, four things at once:
 `SectionCompiler.Results.renderedLayers` (the geometry, per layer), the
 `SectionCompiler.Results.blockEntities` it found on the way, a
@@ -223,15 +226,27 @@ into the mesh rather than applied at draw time. And fluids never consult a
 baked quad at all: `FluidRenderer.tesselate` is a separate call with its own
 callback, and the layer comes from the `FluidModel`.
 
+### Why "prioritise chunk updates" still costs you a frame
+
+The figure's third note says it and it is worth stating plainly, because it
+is the one ordering fact on this page a player can feel:
+`LevelRenderer.compileSections` runs *after* `FrameGraphBuilder.execute`, so
+[terrain is drawn before the sections queued this frame are
+compiled](visibility-and-the-frame-graph.md#one-bucket-per-buffer-set-and-what-bucketing-actually-buys).
+The strongest promise the setting can therefore make is that the mesh exists
+by the end of frame *N*; it appears in frame *N+1*. The setting buys you the
+compile, not the draw — and it buys it by doing the work on the Render thread,
+which is why it can cost you that frame outright.
+
 ## Onto the GPU, and a swap that is late on purpose
 
 The worker does not touch the GPU. It appends its vertices to a
 `StagingBuffer` under a lock, spinning if the buffer is full — a real
-back-pressure point, where a worker waits on the client thread rather than the
-buffer growing to fit it. The client thread drains it in
+back-pressure point, where a worker waits on the Render thread rather than the
+buffer growing to fit it. The Render thread drains it in
 `SectionRenderDispatcher.uploadTerrainBuffersToGpu`, and each completed
 upload fires the callback that publishes the new mesh. The result of a
-compile therefore arrives back on the client thread, always, with exactly one
+compile therefore arrives back on the Render thread, always, with exactly one
 exception: a section that compiled to nothing at all is published directly on
 the worker, because there is nothing to upload.
 
@@ -242,46 +257,26 @@ is a real GPU buffer sub-allocated by a `TlsfAllocator`, freed again when it
 empties. Sections are tenants in a shared allocation, not owners of buffers;
 [blaze3d](blaze3d.md) is where those buffers come from.
 
-And now the second fact this page exists to place: **the swap is atomic and
-late.** `SectionRenderDispatcher.RenderSection.sectionMesh` keeps pointing at
+### The swap is atomic and late, on purpose
+
+And now the second fact this page exists to place. `SectionRenderDispatcher.RenderSection.sectionMesh` keeps pointing at
 the *old* mesh until every layer's vertex and index buffer has reported
 uploaded. There is no frame in which a rebuilt section is missing, no flicker
 and no hole — the price being that the section you can see is, for a few
 frames, deliberately out of date. `SectionRenderDispatcher.RenderSection.reset`
 is the other end of that lifecycle, and
 `SectionRenderDispatcher.RenderSection.getVisibility` is not part of it at
-all despite the name — it is the fade the next section explains, an alpha
-that climbs from nothing to one over the upload's fade duration.
+all despite the name — it is a fade, an alpha that climbs from nothing to one
+over the upload's fade duration. That fade is why distant terrain arrives
+softly and a block you place never does:
+`SectionRenderDispatcher.RenderSection.setFadeDuration` is non-zero only for
+distant sections that were not previously empty, and the clock starts at a
+section's *first* upload — so a recompile of terrain you have been staring at,
+which is what placing a block is, has no fade left to spend.
 `SectionRenderDispatcher.RenderSection.resortTransparency` is the cheap path
 that reorders an existing translucent mesh without recompiling anything;
 [visibility and the frame graph](visibility-and-the-frame-graph.md) owns the
 budget that decides when it runs.
-
-## Questions players ask
-
-**Why does distant terrain fade in, but a block I place never does?**
-Because the fade is deliberately restricted to the case it was written for.
-`SectionRenderDispatcher.RenderSection.setFadeDuration` is non-zero only for
-distant sections that were not previously empty, and the fade clock starts at
-a section's *first* upload — so a recompile of terrain you have been staring
-at, which is what placing a block is, has no fade left to spend.
-
-**I turned on "prioritise chunk updates" and it still costs me a frame. Why?**
-Because of where compiling sits in the frame. `LevelRenderer.compileSections`
-runs *after* `FrameGraphBuilder.execute` — [terrain is already
-drawn](visibility-and-the-frame-graph.md#one-bucket-per-buffer-set-and-what-bucketing-actually-buys)
-— so the strongest promise the setting can make is that the mesh exists by
-the end of frame *N*. It appears in frame *N+1*. The setting buys you the
-compile, not the draw — and it buys it by doing the work on the client
-thread, which is why it can also cost you the frame outright.
-
-**What happens when the buffer pool runs out?** Nothing visible, which is the
-design. The worker that cannot acquire a `SectionBufferBuilderPack` puts its
-section back on `SectionTaskDynamicQueue` — the *task* is requeued, not the
-flag, which was cleared when the work was taken — so the only symptom is
-terrain arriving more slowly. The pool is also allowed to
-shrink itself: if it hits an out-of-memory error while allocating, it comes
-back smaller and the game keeps going with fewer concurrent meshes.
 
 > **For a 1.21-era reader.** The whole dirty API moved. Every
 > *setBlockDirty*-shaped method that used to live on `LevelRenderer` is now on

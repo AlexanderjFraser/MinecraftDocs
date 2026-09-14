@@ -134,7 +134,7 @@ the easier way round.
 ## Where the part stops
 
 At one end, the profiler's *frame* zone: [the
-frame](../rendering/the-frame.md#nine-zones-which-are-the-frames-table-of-contents)
+frame](../rendering/the-frame.md#the-zones-a-frame-is-made-of)
 begins exactly where [the client loop](the-client-loop.md#one-turn-of-the-loop)
 ends, and everything inside that zone is Part XI's — though a few of this
 part's own cadences run inside it and stay here for what they decide, the

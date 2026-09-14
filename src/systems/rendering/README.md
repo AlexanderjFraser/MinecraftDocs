@@ -7,50 +7,38 @@
 world a moment earlier, and it runs twice over: once to *copy* the live game
 into a pile of value objects, and once to draw those objects with the live
 game held at arm's length. Everything in this part is either that wall, or
-something feeding it, or something on the far side of it working from a copy
-— and every seam a player notices is some piece of the game disagreeing about
-*which* copy it got. A mob pins in place under `/tick freeze` while the item
-in your hand keeps swaying, because they were copied at different instants.
-Terrain fills in outward as you fly, because the walk that decides what is
-visible can only reach as far as the meshes that already exist. A chest's lid
-stops and the chest in your hand does not. The wall is why all three are
-true.
+something feeding it, or something on the far side of it working from a copy.
+And the claim the part makes is that **nothing you see on screen is the
+world; it is a copy of the world, and every seam a player notices is two
+copies disagreeing**. A mob pins in place under `/tick freeze` while the item
+in your hand keeps swaying, because they were copied at different instants. A
+chest's lid stops and the chest in your hand does not, for the same reason
+one step further out. And terrain fills in outward as you fly because the
+copy that decides what is *visible* can only reach as far as the copies that
+already exist — which is the same disagreement again, now between the world
+and the meshes that stand in for it.
 
 Three things escape the frame, and each of them is a page: particles are
 stepped from the [*tick*](particles.md), sections are meshed on [a background
 pool](section-meshing.md), and the atlases are built by [a resource
 reload](models-and-atlases.md).
 
-It is also the largest thing on the client, by classes and by a distance —
-nearly twice Part X's, in about the same number of lines. Counting
-`client/renderer`, `client/model`, `client/particle` and `com/mojang/blaze3d`
-together — one class per file, one line per line of decompiled source, the
-same way [the atlas](../../maps/README.md) counts everything else — that is
-{{#include ../../generated/part-rendering.md}}, against 420 classes and
-53,000 for the whole of `net/minecraft/server`.
-
-Read that number with two corrections. Some of what it counts belongs to
-other parts, because the packages are shared and the mapping is by package:
-the GUI's render state and its debug renderers live under `client/renderer`
-and are Part X's, and the feature renderers are the Reference tier's. And the
-traffic runs the other way too — `client/resources/model` counts against
-Part X and is [models and atlases](models-and-atlases.md)' subject entire.
-Most of the rest is *families*: one class per mob model, one per renderer,
-one per render state, one per particle, and one file per GL or Vulkan call
-site. This part teaches each of those shapes once and declines the instances,
-which is what [what this book
-skips](../anatomy/what-this-book-skips.md) records.
+It is also the largest thing on the client. `client/renderer`,
+`client/model`, `client/particle` and `com/mojang/blaze3d` together come to
+{{#include ../../generated/part-rendering.md}} — counted the way [the
+atlas](../../maps/README.md) counts everything, and against 420 classes and
+53,000 lines for the whole of `net/minecraft/server`. The entire server is a
+third the size of the client's renderer.
 
 ## The shape of the part
 
 Part XI is **a substrate under a pipeline**. Two of its pages — the window
 and Blaze3D — are what the renderer stands on: neither has a trace through
-the world, and both are cited far more than they cite, Blaze3D by eight of
-the other ten and the window by two. The rest is a pipeline, and the arrows
-below are the order to *watch* it in rather than the order a frame runs in.
-[The frame](the-frame.md) opens the part because it is the shortest way to
-see the whole shape at once, and because a reader who has watched one frame
-end to end has a reason to care what a `GpuDevice` is.
+the world, and both are cited far more than they cite. The rest is a
+pipeline. [The frame](the-frame.md) opens the part ahead of the substrate it
+stands on, because it is the shortest way to see the whole shape at once and
+because a reader who has watched one frame end to end has a reason to care
+what a `GpuDevice` is.
 
 ```mermaid
 flowchart TD
@@ -70,7 +58,7 @@ flowchart TD
         SKY["Lightmap, fog and sky"]
         PART["Particles"]
         POST["Post-processing"]
-        VIS -- "the sections it decided to draw" --> MESH
+        VIS -- "and then: where those sections got their triangles" --> MESH
         MESH -- "and where a section's quads came from" --> MOD
         MOD -- "the same atlases, a different pipeline" --> ENT
         ENT -- "and the things that are neither terrain nor entity" --> BEN
@@ -78,11 +66,15 @@ flowchart TD
         SKY -- "plus the quads that are not geometry" --> PART
         PART -- "then the finished picture, read back" --> POST
     end
-    SUB --> FRAME
-    FRAME --> PIPE
+    FRAME --> SUB
+    SUB --> PIPE
 ```
 
-Every arrow is *what the next page needs from the last*. Inside a frame the
+The arrows in that figure are one thing and one thing only: **what the next
+page needs you to have read**. None of them is the order a frame runs in, and
+two of them are its reverse — visibility hands section meshing the list of
+sections to compile, and a frame's terrain is drawn from meshes an earlier
+frame made. Inside a frame the
 order is different — the sky pass is declared before the main one, the
 lightmap is built before the world is drawn at all, and [two of the six post
 chains are passes of the world's own graph while the other four build one and
@@ -156,27 +148,39 @@ first. One to three can be watched in order or in the order one, three, two;
 the window is the page a viewer is most likely to skip and least likely to
 regret.
 
+## Where the part stops
+
+What draws *over* the world rather than in it — screens, the HUD, the render
+tree they record into and the text inside them — is Part X, from [the GUI
+render tree](../client/the-gui-render-tree.md) onward; what the server chose
+to tell this client is Part IX. The packages themselves cross the boundary in
+both directions: the render states and debug renderers under `client/renderer`
+are Part X's, and `client/resources/model` counts against Part X while being
+[models and atlases](models-and-atlases.md)' subject entire.
+
+Everything else left out is the families — one class per mob model, one per
+renderer, one per particle, one file per GL or Vulkan call site — which is
+why {{#include ../../generated/coverage-rendering.md}}, the second-highest
+figure in the book after Part V's. Teaching six shapes and declining their
+instances leaves a great many lines untouched, and that is the trade, made on
+purpose.
+
 ## Reference this part uses
 
 [Submit phases and feature renderers](../../reference/submit-phases.md) is
 the catalogue behind [entity rendering](entity-rendering.md) and
 [block-entity rendering](block-entity-rendering.md): the fifteen phases a
-submitted feature can land in, in declaration order, and the thirteen
-renderers that write the vertices. [Diagram
-lanes](../../reference/lanes.md) for the abbreviations these figures use, and
-[the threads](../../reference/threads.md) for the two that matter here — the
-one the whole part runs on, and the background pool that meshes sections.
-[Naming drift](../../reference/naming-drift.md) is worth having open for this
-part in particular: the client was rewritten around extract-then-render, so
-almost nothing at the top of the render stack kept the name a 1.21-era
-reader knows it by. [The glossary](../../reference/glossary.md) for *extract*, *render
-state*, *frame graph*, *partial tick*, *atlas*, *special model renderer* and
-*built-in block model*.
-
-Where the part stops: what draws *over* the world rather than in it — screens,
-the HUD, the render tree they record into and the text inside them — is Part
-X, from [the GUI render tree](../client/the-gui-render-tree.md) onward. What
-the server chose to tell this client in the first place is Part IX.
+submitted feature can land in, and the thirteen renderers that write the
+vertices. [The threads](../../reference/threads.md) for the two that matter
+here — the Render thread the whole part runs on, and the background pool that
+meshes sections — and [diagram lanes](../../reference/lanes.md) for the
+abbreviations the figures use. [Naming drift](../../reference/naming-drift.md)
+is worth having open throughout: the client was rewritten around
+extract-then-render, so almost nothing at the top of the render stack kept
+the name a 1.21-era reader knows it by. [The
+glossary](../../reference/glossary.md) for *extract*, *render state*, *frame
+graph*, *partial tick*, *atlas*, *special model renderer* and *built-in block
+model*.
 
 ---
 

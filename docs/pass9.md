@@ -44,6 +44,164 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session K — Part XI · Rendering *(2026-09-14)*
+
+Eleven system pages and the landing page, twelve readers, one each.
+
+**Corrections — each re-derived against the decompile by this session.**
+
+- `the-window`:36 — *"Every row but the first two lives in
+  com/mojang/blaze3d/platform"*, while the same sentence exempts `Minecraft`
+  (row 1) and `GpuBackend` (row 3). `Window` is row 2 and *is* in *platform*
+  (`com/mojang/blaze3d/platform/Window.java`). Rewritten as *two of those rows
+  live outside the package and the other six in it*.
+- `the-window`:158 — *"the two methods run the other way round from their
+  names"*. `Window.calculateScale` calculates and returns; `Window.setGuiScale`
+  stores and derives. Neither is inverted. What is true and more interesting is
+  that the option is a **ceiling the result may miss in both directions**: the
+  loop stops below it when the framebuffer would fall under `Window.BASE_WIDTH`
+  × `Window.BASE_HEIGHT` (320×240), and the unicode round-up can push the
+  answer one *above* it (`Window.java`, `calculateScale`). Rewritten.
+- `the-window`:101 — *"is the subject of the last section"* for the seventh
+  callback, which was in the closer; the last section is *Where to look*. The
+  callback is now explained where it is introduced and the forward reference is
+  gone.
+- `the-window`:86 — *"the server's watchdog"* read as contradicting *"none of
+  it exists on the server"*. Both are true and the sentence hid why:
+  `ClientShutdownWatchdog` is in *blaze3d/platform* (client-only;
+  `server-classes.txt` has no *com/mojang/blaze3d* entry at all) and calls
+  `ServerWatchdog.createWatchdogCrashReport`. Named exactly.
+- `the-frame`:37 — *"Nine zones"* over a sentence naming sixteen. Nine is right
+  for the frame's top-level zones but not for what the sentence listed, and the
+  sentence also hid that **`Minecraft.renderFrame` pushes only eight of them**:
+  *render* is pushed by `GameRenderer.render`, and *camera* — which the page
+  never named at all — by `GameRenderer.update` (`Minecraft.java` `renderFrame`;
+  `GameRenderer.java` `update`, `render`). Rebuilt as a table with a *pushed by*
+  column, so no count sits in a sentence.
+- `visibility-and-the-frame-graph`:64 — *"both are budgeted rather than
+  complete"* of stages one and five. Stage five is budgeted; stage one is not.
+  `SectionOcclusionGraph.runPartialUpdate` drains its whole propagation queue
+  with no slice or quota (`SectionOcclusionGraph.java`). Rewritten as *the first
+  is a cache, the fifth is a budget*.
+- `lightmap-fog-and-sky`:297 — the weather said to be *"seeded from the clock"*.
+  `WeatherEffectRenderer` seeds each column's `RandomSource` from a hash of its
+  own *x* and *z*; `level.getGameTime()` is passed separately and only scrolls
+  the streaks (`WeatherEffectRenderer.java`). This also contradicted the page's
+  own opening, which had it right. Heading and sentence rewritten, and the
+  consequence — two clients see the same drops in the same places with nothing
+  sent between them — is now stated.
+- `particles` figure — the flowchart routed unlimited particles straight to
+  `ParticleGroup.add`, past the queue. `ParticleEngine.add` puts **every**
+  surviving particle in `ParticleEngine.particlesToAdd`; the limit decides
+  whether it is queued at all, not whether it is deferred
+  (`ParticleEngine.java`). Arrow redrawn.
+- `block-entity-rendering`:266 — `ShelfRenderState.items` said to reach
+  `ChestSpecialRenderer`. It is an array of three `ItemStackRenderState`
+  submitted through `ItemStackRenderState.submit`, so it reaches whatever
+  special renderer *that item's own model* names — a chest only if the shelved
+  item is one (`ShelfRenderer.java`, `ShelfRenderState.java`). Rewritten.
+- `models-and-atlases`:196 — *"**twelve** separate layers"* of soft failure,
+  enumerating eleven at most. Replaced with a two-column table (*what goes
+  wrong* · *what you get instead*) and no numeral, which is the shape that
+  cannot go stale.
+- `models-and-atlases`:216 — *"Only now does the Render thread do anything"*
+  against the page's own figure, which puts `AtlasManager.prepareSharedState`
+  on the Render thread before any task runs. Rewritten to name that one prior
+  step.
+- `models-and-atlases`:84 — *"Two properties of that packing"* followed by
+  three. Reworded to two properties and a setting that rides on both.
+- `entity-rendering`:199 — *"exactly one layer in the game asks for a
+  **negative** order"* and never named it. It is `SulfurCubeInnerLayer`
+  (`SulfurCubeInnerLayer.java`, `order(-1)`). Named.
+- `blaze3d`:115 — *"Vulkan leaks upward in two places, not one … The two
+  exemptions are one, granted twice"*, which named three things and resolved to
+  nothing. Re-derived: exactly two files outside `com/mojang/blaze3d/vulkan`
+  import Vulkan bindings (`NativeLibrariesBootstrap` and `RenderPass`),
+  mirroring OpenGL's two; and `BackendCreationException.Reason` has ten
+  constants of which seven are Vulkan-named. Rewritten with the two facts
+  separated.
+- `block-entity-rendering`:339 — *"the six ways the table above records"*; the
+  nearest table has six rows recording one thing, and the comparison table
+  seven. Replaced with what the renderers actually differ in.
+- `block-entity-rendering` — *"the two gates"* named three different pairs on
+  one page (the cast row, *Two extra gates*, *Where to look*). There are
+  **three** gates: the section fade in `LevelExtractor`, the off-screen flag
+  equality and the distance test, the last two both in
+  `BlockEntityRenderDispatcher.tryExtractRenderState`. Said once, as three.
+- `entity-rendering`:101 — *"three tests in two places"* followed by a list that
+  reads as three inside `EntityRenderer.shouldRender`. `Entity.shouldRender`
+  *is* the distance test, and the frustum is the second
+  (`EntityRenderer.java`). Repunctuated so the appositive cannot be read as a
+  third item.
+- `entity-rendering`:277 — *"thirteen kinds of submit"* sitting against a
+  nine-name list. Both are right and they are different populations: thirteen
+  `FeatureRendererType` constants, of which only `ModelFeatureRenderer.Submit`
+  and `CustomFeatureRenderer.Submit` implement `BatchableSubmit`. The list is
+  now said to be nine of the thirteen, with the other four named.
+- `post-processing` — four target counts (seven names, one/two/six, six of the
+  caller's, five internal) all correct and never reconciled. `MAIN_TARGETS` is
+  1, `OUTLINE_TARGETS` 2, `SORTING_TARGETS` 6, and `LevelRenderer` creates five
+  internal targets (`LevelTargetBundle.java`, `LevelRenderer.java`); one clause
+  now says the six are the main target plus those five.
+- Part-wide — **"client thread" and "Render thread" used for one thread**, 17
+  of the corpus's 23 uses of the first being in this part, on the four pages
+  where a worker/main split is the subject. `src/reference/threads.md` settles
+  it: the Render thread *is* the client's JVM main thread, renamed. Normalised
+  to *Render thread* throughout the part.
+
+**Claims this session introduced.**
+
+- `the-frame`'s zone table: the *pushed by* column for all twelve rows, the
+  *camera* zone as `GameRenderer.update`'s, and the claim that *gpuAsync* is
+  closed before the drawing starts.
+- `the-frame`'s *What a minimized client actually stops doing*, promoted whole
+  out of the closer, with its claim that the three statements that drop out are
+  the acquire and the two guarded ones.
+- `the-frame`'s definition of a **non-ticking frame** and its three call sites,
+  moved up out of the closer into *Update and extract*.
+- `the-window`'s opening paragraph declaring the page the **platform layer**,
+  and its claim that the three subjects share a role rather than a scenario.
+- `the-window`'s *The list is never one candidate long*, *How the loop knows why
+  a window did not appear* (the `GLFWErrorScope` / `GLFWErrorCapture` pairing as
+  the mechanism behind `GpuBackend.handleWindowCreationErrors`) and *The
+  seventh, which is not the constructor's*, all promoted out of the closer.
+- `the-window`'s *The corners the story does not pass through*: the claim that
+  `TextureUtil.solidify` and `TextureUtil.fillEmptyAreasWithDarkColor` are why
+  mip averaging cannot bleed a colour that was never in the texture.
+- `blaze3d`'s claim that `BackendCreationException` naming seven Vulkan failures
+  out of ten means the neutral façade layer knows a great deal about one of its
+  two APIs; and the `GlHeuristics` sniffing and the two-deep submit fence,
+  promoted out of the closer, the second under *How a frame reaches the screen*.
+- `visibility-and-the-frame-graph`: the cache/budget distinction for stages one
+  and five.
+- `section-meshing`'s *Why "prioritise chunk updates" still costs you a frame*,
+  promoted out of the closer; and the claim that `SectionCompiler` builds **two**
+  `BlockQuadOutput` callbacks per compile and picks between them per block.
+- `models-and-atlases`: the ten-row soft-failure table; the
+  `BlockStateModel` / `BlockModel` trap moved to first use; the atlas dump named
+  as `Options.keyDebugDumpDynamicTextures` → `TextureManager.dumpAllSheets`,
+  plus `SharedConstants.DEBUG_DUMP_TEXTURE_ATLAS`.
+- `block-entity-rendering`: the claim that 26 types are served by 24 classes
+  because `ChestRenderer` takes three of them.
+- `particles`: `ParticleRenderType`'s four constants named as the population
+  every *four* on the page counts against.
+- `post-processing`: the opening's reframing of the sixth chain as the *improved
+  transparency* option, and the claim that a seventh file parses, loads and is
+  never asked for.
+- `rendering/README`: the claim that Part XI's coverage figure is the
+  **second-highest in the book after Part V's** — written first as *the
+  highest*, which the regenerated phrases disproved within the session (blocks
+  48%, rendering 41%), and corrected before the commit. The argument reversed
+  onto the claim **nothing you see on screen is the world; it is a copy of the
+  world, and every seam a player notices is two copies disagreeing**; the figure's arrows declared to be
+  reading order only, with two of them the reverse of a frame's order; the
+  substrate-to-frame edge reversed; and *Where the part stops* written as a
+  section with the coverage include.
+- `src/lectures.md`: Part XI's paragraph re-argued as the one inversion in the
+  book's order made for the viewer rather than for the dependencies.
+- `src/reference/naming-drift.md`: a row for the four `Camera` accessors that
+  lost their *get* prefix, which the trimmed `the-frame` blockquote released.
+
 ## Pass 6, session J — Part X · The client *(2026-09-14)*
 
 Twelve system pages and the landing page, thirteen readers, one each. Part X

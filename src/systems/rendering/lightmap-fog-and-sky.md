@@ -21,7 +21,7 @@ touches no attribute and no probe at all.
 
 | class | what it decides | thread |
 |---|---|---|
-| `EnvironmentAttributeProbe` | what any attribute is worth at the camera, this frame | Render thread |
+| `EnvironmentAttributeProbe` | what any attribute is worth at the camera — cached once a tick, read many times a frame | Render thread |
 | `LightmapRenderStateExtractor` | the lightmap's ten uniforms, and whether to redraw at all | Render thread |
 | `Lightmap` | how bright, as the 16×16 texture every terrain vertex samples | Render thread |
 | `FogRenderer` | how far you can see, in what colour, and in which medium | Render thread |
@@ -88,7 +88,7 @@ dimension without touching the client.
 | `CloudRenderer` | what colour the clouds are and how high they sit | once per frame, read for it by `LevelExtractor` | a compressed face list, rebaked only when it must be |
 | `WeatherEffectRenderer` | nothing, until it is raining | once per frame, and only then | a list of `WeatherEffectRenderer.ColumnInstance` |
 
-## The trace: the sun goes down
+## Dusk, from a keyframe track to five renderers
 
 ```mermaid
 sequenceDiagram
@@ -275,7 +275,7 @@ outside it: `GameRenderer.renderLevel` suppresses the sky when a boss bar
 wants world fog, with `AtmosphericFogEnvironment.setupFog` clamping the fog
 hard in that case.
 
-### The clouds, which get no fog and no texture
+### The clouds, which are never handed a fog slice and never bind a texture
 
 The clouds are the first of the two exceptions: their colour and height are
 `EnvironmentAttributes.CLOUD_COLOR` and `EnvironmentAttributes.CLOUD_HEIGHT`,
@@ -284,7 +284,7 @@ a texture.** `CloudRenderer.prepare` does the whole job on a worker — reading
 the image and baking it into `CloudRenderer.TextureData` through
 `CloudRenderer.packCellData`, one 64-bit word per pixel with the colour in the
 high bits and four neighbour-emptiness flags in the low four — and
-`CloudRenderer.apply` is two statements on the client thread that install the
+`CloudRenderer.apply` is two statements on the Render thread that install the
 result and raise the rebuild flag.
 `CloudRenderer.buildMesh` walks cells of `CloudRenderer.CELL_SIZE_IN_BLOCKS`,
 writing three bytes per face through `CloudRenderer.encodeFace` — a compressed
@@ -294,10 +294,14 @@ exist. It is rebuilt on a reload, when the camera crosses a cell boundary or
 changes side, or when the `CloudStatus` changes — and a data pack setting the
 cloud colour to zero alpha removes the pass entirely.
 
-## What is coming down: rebuilt every frame, and seeded from the clock
+## What is coming down: rebuilt every frame, and seeded from the ground
 
-`WeatherEffectRenderer` is the second exception: its columns are placed by
-world position, but the streaks are seeded from raw world time. It holds one
+`WeatherEffectRenderer` is the second exception, and the one that asks least
+of anybody. Each column's randomness is seeded from a hash of its own *x* and
+*z* — so the same column of rain looks the same every frame it exists, and
+two clients standing in the same storm see the same drops in the same places
+without a byte crossing between them. World time enters only afterwards, to
+scroll the streaks down the quad. It holds one
 `WeatherEffectRenderer.vertexBuffer` and the precomputed tangent tables
 `WeatherEffectRenderer.columnSizeX` and `WeatherEffectRenderer.columnSizeZ`,
 and its per-frame product is a list of `WeatherEffectRenderer.ColumnInstance`
@@ -329,8 +333,9 @@ and the first of the two no longer reaches the lightmap at all: its two readers 
 `Lightmap.getBrightness`, the CPU-side duplicate this page has already said
 the shader does not use, and one deprecated method on `LevelReader`.
 
-The second is the one you can see, because **directional shading is per
-dimension and it is not data**. How bright a face is by which way it points
+### Directional shading, which is per dimension and is not data
+
+The second of those is the one you can see. How bright a face is by which way it points
 comes from a `CardinalLighting` record, and there are exactly two in the
 game: `CardinalLighting.DEFAULT` and `CardinalLighting.NETHER`, both
 hard-coded. `DimensionType` carries the choice between them and nothing else

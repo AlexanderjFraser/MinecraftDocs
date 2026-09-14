@@ -282,12 +282,12 @@ surface.
 
 ## XI · Rendering
 
-*A substrate under a pipeline.* Two lectures are what the renderer stands
-on and have no trace through the world; the rest are a pipeline, watched in
-an order that is not the order a frame runs in. The part opens on the frame
-itself because it is the shortest way to see the whole shape at once — and
-because a viewer who has watched one frame end to end has a reason to care
-what a `GpuDevice` is.
+*A substrate under a pipeline.* Two lectures are what the renderer stands on
+and have no trace through the world; the rest are a pipeline, watched in an
+order that is not the order a frame runs in — two of its arrows are that
+order's reverse. The part opens on the frame itself rather than on the
+substrate underneath it, which is the one inversion in the book's order made
+for the viewer rather than for the dependencies.
 
 1. [The frame](systems/rendering/the-frame.md)
 2. [The window](systems/rendering/the-window.md)

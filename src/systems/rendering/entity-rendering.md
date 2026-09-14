@@ -76,7 +76,7 @@ sequenceDiagram
 
     LR->>FRD: prepareFrame — group by feature type, batch by RenderType
     FRD->>ZM: setupAnim again, then walk ModelPart and write vertices
-    FRD->>FRD: executeSolid, then executeTranslucent, then executeOutline
+    Note over LR,FRD: later, inside the frame graph's passes: executeSolid, then executeTranslucent, then executeOutline
 ```
 
 ## Extract: the live entity becomes a snapshot
@@ -98,12 +98,11 @@ shared rather than per-entity — allocates a state with
 lets `EntityRenderer.finalizeRenderState` reach into the world one last time
 to sample the shadow.
 
-Visibility is **three tests in two places**. Two of them are
-`EntityRenderer.shouldRender`, on the renderer, and it runs them in that
-order: `Entity.shouldRender`, a distance test whose limit scales with the
-entity's own bounding box, and only then the frustum. The third — "is the
-section this entity stands in actually compiled and visible" — belongs to
-`LevelExtractor`, which is [the reachability walk](visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)
+Visibility is **three tests in two places**. `EntityRenderer.shouldRender`
+runs two of them, in this order: first `Entity.shouldRender` (which is the
+distance test, its limit scaling with the entity's own bounding box), and
+only then the frustum. The third — "is the section this entity stands in
+actually compiled and visible" — belongs to `LevelExtractor`, which is [the reachability walk](visibility-and-the-frame-graph.md#the-walk-that-decides-what-exists-and-the-frustum-that-only-trims-it)
 deciding one more thing on its way past. Block entities keep the distance half
 and drop the frustum, which is [block-entity
 rendering](block-entity-rendering.md#culling-by-section-not-by-frustum)'s
@@ -178,11 +177,15 @@ the way is ever tinted red.
 lets every `RenderLayer` describe its own extra through `RenderLayer.submit` —
 in that order, because the pose is only needed by the layers.
 
-The description API is `SubmitNodeCollector` and its ordered form:
+The description API is `SubmitNodeCollector` and its ordered form. The
+methods a renderer is likely to call are
 `OrderedSubmitNodeCollector.submitModel`, `.submitItem`, `.submitText`,
 `.submitNameTag`, `.submitShadow`, `.submitFlame`, `.submitLeash`,
 `.submitBlockModel` and `.submitCustomGeometry`, plus
-`SubmitNodeCollector.order` to choose a bucket. `SubmitNodeStorage` keeps one
+`SubmitNodeCollector.order` to choose a bucket — nine of the thirteen kinds
+of node the storage can hold, the other four being moving blocks, breaking
+overlays, shape outlines and the gizmo and particle groups nothing on this
+page submits. `SubmitNodeStorage` keeps one
 `SubmitNodeCollection` per order, and each collection files what it is given
 into one of fifteen named phases — `SubmitNodeCollection.solid`,
 `.translucentModels`, `.breakingOverlay`, `.outline` and eleven more, all
@@ -197,7 +200,9 @@ one mob's helmet with another's head. Armour claims consecutive orders as it
 goes, so a dyed, enchanted, trimmed helmet occupies four — leather is the
 only dyeable helmet and its equipment definition has two layers of its own —
 and exactly one
-layer in the game asks for a **negative** order, to get underneath everything.
+layer in the game asks for a **negative** order, to get underneath
+everything: `SulfurCubeInnerLayer`, which has to sit inside the shell it is
+drawn with.
 
 The pose stack is transient, and half of it is dropped. A submit *copies* the
 current pose; nothing downstream ever sees the stack. Models, items and block
@@ -244,7 +249,7 @@ armour model. Held or worn items come through `ItemModelResolver` and
 `ItemStackRenderState`, [models and
 atlases](models-and-atlases.md#how-an-item-picks-its-model)'s business.
 
-### Drawing a player, which is the part VIII owes this page
+### A player is a skin record and seven booleans
 
 [Player anatomy](../player/player-anatomy.md#what-player-owns) leaves the drawing
 here, and the answer is that all of it becomes render state at extract like
@@ -327,7 +332,7 @@ relative to terrain, sky and post-processing is [visibility and the frame
 graph](visibility-and-the-frame-graph.md)'s subject; the draws go out through
 [blaze3d](blaze3d.md).
 
-## Three things shaped like this pipeline, that are not it
+## What borrows this pipeline without being it
 
 **Block entities** take the same four stages under a different visibility
 policy, a different partial tick and an empty block model —

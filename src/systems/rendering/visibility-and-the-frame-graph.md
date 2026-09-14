@@ -15,15 +15,15 @@ outward because the walk can only reach as far as the meshes that already
 exist.
 
 [The frame](the-frame.md#the-wall-and-the-one-level-at-which-it-is-real) ends
-where this page begins, and the order is the page: **reach, gather, declare,
-draw, defer**. Only the first of those five is on the far side of the wall,
-and that is a finding rather than an exception — `LevelExtractor.applyFrustum`
-runs near the *top* of extract, so everything else the extractor does that
-frame, entities and block entities and dirty sections alike, is already
-reading the list this stage just decided. The other four are
-`LevelRenderer.render`, which gathers what was submitted, declares the passes
-of a frame, draws the terrain and schedules translucency work for a later
-frame — then re-runs the walk on its way out, for the frame after this one.
+where this page begins, and the page runs in the order the sections below do.
+The first stage is the odd one, because it is on the far side of the wall:
+`LevelExtractor.applyFrustum` runs near the *top* of extract, so everything
+else the extractor does that frame — entities, block entities, dirty sections
+alike — is already reading the list of visible sections this stage decided.
+Everything after it is `LevelRenderer.render`, which gathers what was
+submitted, declares the passes of a frame, draws the terrain and schedules
+translucency work for a later frame — then re-runs the walk on its way out,
+for the frame after this one.
 
 ## The cast
 
@@ -44,7 +44,7 @@ across [the wall](the-frame.md#the-wall-and-the-one-level-at-which-it-is-real).
 What the renderer still owns, on this side of it, is geometry, targets and
 order.
 
-## Five stages, and the first one decides the other four
+## The order a frame does this in, and why the figure loops
 
 ```mermaid
 flowchart TD
@@ -59,10 +59,13 @@ flowchart TD
 ```
 
 Stage one has already happened when `LevelRenderer.render` is entered, and
-stage six is the same walk being re-run for the frame after this one, which
-is why the figure loops. Stages one and five are bookkeeping that decides what
-the drawing stages will have to do, and both are budgeted rather than
-complete.
+the last box is that same walk being re-run for the frame after this one,
+which is why the figure loops rather than ending. The two bookkeeping stages
+are the first and the fifth, and they are incomplete in two different ways:
+the first is a **cache**, thrown away and rebuilt only when something
+invalidates it, and the fifth is a **budget**, doing a fixed slice of the work
+each frame and leaving the rest stale. Both are why a frame's terrain cost
+does not track what is on the screen.
 
 ## The walk that decides what exists, and the frustum that only trims it
 
@@ -82,7 +85,7 @@ The reached sections live in an `Octree` inside
 neighbours still need visiting. A *rebuilt* state is never edited into the
 old one: the whole of it is published through an `AtomicReference`, because
 `SectionOcclusionGraph.scheduleFullUpdate` runs the complete rebuild on
-`Util.backgroundExecutor` and the client thread has to keep reading the old
+`Util.backgroundExecutor` and the Render thread has to keep reading the old
 graph until the new one is ready. Everything else happens on the client
 thread, including `SectionOcclusionGraph.runPartialUpdate`, which does edit
 the published state in place — it walks outward again from the sections that
@@ -255,6 +258,8 @@ Both backends still loop and issue one GPU draw per section — what the bucket
 removes is the buffer rebinding and the per-draw state change between them,
 which is the expensive part on this side of the driver.
 
+### Two draw groups over three layers, and why translucent inverts the rule
+
 The main pass renders two *groups*, not three layers.
 `ChunkSectionLayerGroup` is the coarser partition the draw side works in:
 `ChunkSectionLayerGroup.OPAQUE` covers [the solid and cutout
@@ -282,7 +287,7 @@ side because it is a fact about where `LevelRenderer.compileSections` sits:
 it runs *after* `FrameGraphBuilder.execute`, so **terrain is drawn before the
 sections queued this frame are compiled**. What that costs a player, and why
 the option that promises otherwise cannot deliver it, is [section
-meshing](section-meshing.md#questions-players-ask)'s.
+meshing](section-meshing.md#why-prioritise-chunk-updates-still-costs-you-a-frame)'s.
 
 ## Translucency, re-sorted on a budget it never finishes
 
@@ -298,6 +303,8 @@ filled alongside the main list — and then a round-robin slice of
 whichever is larger, walked from
 `LevelRenderer.translucencyResortIterationIndex` so that successive frames
 continue where the last one stopped.
+
+### What actually counts as having moved
 
 Being considered is not being re-sorted. A section is scheduled if its
 `TranslucencyPointOfView` actually changed — and that is three integers, each
