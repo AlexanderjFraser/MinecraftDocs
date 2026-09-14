@@ -6037,6 +6037,17 @@ the only way to see it is to rename the heading and read what breaks.
   of Part XII's four within-part twin pairs are artefacts of this session's own
   dissolutions. Two of the four rulings now change what `pass6_shape.py`
   reports; the audit should say so once rather than thirteen times.
+- **A cut on this part's page moved another part's coverage number.**
+  `creating-a-world` is a Part XII page, but the classes its trimmed *rest of
+  the family* section named — `OptimizeWorldScreen` and
+  `FileFixerProgressScreen` — live in `client/gui/screens/worldselection`,
+  which `map_source.py`'s `PARTS` mapping gives to **Part X**. So Part X's
+  generated coverage phrase went 28% to 29% on this session's deploy, and
+  `client/README`'s published number changed without anyone touching Part X.
+  The include is what made that safe — a hand-counted number would simply have
+  gone stale — but it is the first time a session's cut has moved a part it did
+  not open, and session O should know it can happen in both directions before it
+  reads the thirteen landing pages.
 - **The landing page came out shorter, which is the first time in four
   sessions.** 179 lines outside the watch order to 166, with A6's move, the
   coverage include and two real trims. Sessions I, J and K each reported A6

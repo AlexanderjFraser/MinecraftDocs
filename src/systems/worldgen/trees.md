@@ -269,9 +269,9 @@ configured feature, which is the one with no decorators on it at all. The
 moss and the heart only arrive on a worldgen pale oak.
 
 **Why does a mangrove propagule grow underwater?** Sapling growth is the
-other entry into this machine and it hand-manages the sapling block: for the
-single-sapling path it replaces the sapling with whatever the fluid there
-would be, so a waterlogged propagule grows into water. The 2×2 path is
+other entry into this machine and `SaplingBlock` hand-manages its own block on
+the way in: for the single-sapling path it replaces the sapling with whatever
+the fluid there would be, so a waterlogged propagule grows into water. The 2×2 path is
 stranger — it clears all four saplings with no-update writes and puts them
 back if the feature fails.
 
