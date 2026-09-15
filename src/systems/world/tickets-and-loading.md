@@ -36,23 +36,35 @@ distance is how far the world is alive.
 
 ```mermaid
 flowchart TD
-    SRC["a ticket source: a player, a portal, a pearl, the dragon, /forceload, a synchronous getChunk"] --> TS["TicketStorage.addTicket"]
-    TS -- "FLAG_LOADING" --> LCT["LoadingChunkTracker, levels 0 to 45"]
-    TS -- "FLAG_SIMULATION" --> SCT["SimulationChunkTracker, levels 0 to 33"]
-    LCT --> FLOOD["flood: each ring one level higher than the last, every chunk at the minimum of what reaches it"]
-    SCT --> FLOOD2["the same flood, in its own map"]
-    FLOOD --> UCS["ChunkMap.updateChunkScheduling: a holder exists at level 44 or below"]
-    UCS --> UF["ChunkHolder.updateFutures compares ChunkLevel.fullStatus of the old and new level"]
-    UF --> F33["33 and below: fullChunkFuture, the generation pipeline to FULL"]
-    UF --> F32["32 and below: tickingChunkFuture, then postProcessGeneration, unpackTicks, send"]
-    UF --> F31["31 and below: entityTickingChunkFuture, then EntityTickList"]
-    FLOOD2 --> Q["DistanceManager.inBlockTickingRange and inEntityTickingRange: does anything here tick"]
+    SRC["a ticket source: a player, a portal, a pearl, the dragon, /forceload"]
+    TS["TicketStorage: one ticket on one chunk"]
+    LCT["LoadingChunkTracker floods out to level 45"]
+    SCT["SimulationChunkTracker floods out to level 33"]
+    UCS["ChunkMap.updateChunkScheduling makes the holders"]
+    UF["ChunkHolder.updateFutures arms the three futures"]
+    RANGE["DistanceManager.inBlockTickingRange,<br/>DistanceManager.inEntityTickingRange"]
+    ALIVE["the chunk is alive: it exists, and it ticks"]
+    SRC --> TS
+    TS -- "FLAG_LOADING" --> LCT
+    TS -- "FLAG_SIMULATION" --> SCT
+    LCT --> UCS
+    UCS --> UF
+    SCT --> RANGE
+    UF --> ALIVE
+    RANGE --> ALIVE
 ```
+
+*One ticket, two graphs, and a chunk that is only alive where both arms agree.
+Look at the join at the bottom: the left arm decides what a chunk may become
+and the right one decides whether it does anything, and neither consults the
+other. A chunk that reaches the left arm's last box and not the right one
+exists, is lit and is sent, and is inert.*
 
 The figure is the page. A ticket lands on one chunk; each graph the ticket's
 flags name floods outward from it; the loading graph's levels decide which
 holders exist and what futures they arm; the simulation graph's levels decide
-what ticks. The rest of the page is one section per decision on that path.
+what ticks. The rest of the page is one section per decision on that path —
+and the four statuses the left arm climbs are the next figure's.
 
 ### What a ticket asks for
 
@@ -153,19 +165,27 @@ inert.
 
 ## The four statuses
 
+The left arm of that figure climbs a ladder of four, and the ladder is not
+symmetric: going up it costs a future and coming down it costs nothing.
+
 ```mermaid
 stateDiagram-v2
-    direction LR
     [*] --> INACCESSIBLE : level 44 or below, a holder is made
-    INACCESSIBLE --> FULL : level 33, fullChunkFuture succeeds
-    FULL --> BLOCK_TICKING : level 32, tickingChunkFuture succeeds
-    BLOCK_TICKING --> ENTITY_TICKING : level 31, entityTickingChunkFuture succeeds
+    INACCESSIBLE --> FULL : level 33, ChunkHolder.fullChunkFuture succeeds
+    FULL --> BLOCK_TICKING : level 32, ChunkHolder.tickingChunkFuture succeeds
+    BLOCK_TICKING --> ENTITY_TICKING : level 31, ChunkHolder.entityTickingChunkFuture succeeds
     ENTITY_TICKING --> BLOCK_TICKING : level above 31, immediate
     BLOCK_TICKING --> FULL : level above 32, immediate
     FULL --> INACCESSIBLE : level above 33, immediate
-    INACCESSIBLE --> [*] : level above 44, toDrop then processUnloads
-    note right of ENTITY_TICKING : promotion waits for a future, demotion does not
+    INACCESSIBLE --> [*] : level above 44, the holder is dropped
+    note left of INACCESSIBLE : every promotion waits for a future, every demotion is immediate
 ```
+
+*The four values of `FullChunkStatus` — not the twelve of `ChunkStatus`, which
+is the other ladder this page counts on. Read the two columns of arrows
+against each other: going down costs a future and can take many ticks, coming
+back up the page costs nothing and happens inside the one call. That asymmetry
+is why a chunk stops ticking the instant you walk away and starts again slowly.*
 
 `ChunkHolder.updateFutures` compares `ChunkLevel.fullStatus` of
 `ChunkHolder.oldTicketLevel` (what the futures reflect) with that of
@@ -255,18 +275,27 @@ sequenceDiagram
     SGPL->>CM: move: the section changed
     CM->>DM: removePlayer(old) then addPlayer(new)
     DM->>TS: PLAYER_SIMULATION ticket moves, level 21
-    CM->>SGPL: ClientboundSetChunkCacheCenterPacket, the two crescents marked or dropped
-    Note over DM: runAllUpdates, this tick or the next idle poll
-    DM->>DM: simulation graph floods: entity range 10, block range 11
-    DM->>DM: PlayerTicketTracker: 21 chunks entered view, 21 left, four submitted at a time
-    DM->>TS: PLAYER_LOADING added at level 31 (east), removed (west)
-    DM->>CM: loading graph floods: updateChunkScheduling makes holders out to level 44
-    DM->>CH: updateFutures: 45 to 31 arms all three futures
-    CH-->>CM: (a later tick) FULL, then BLOCK_TICKING: onChunkReadyToSend
-    CM->>PCS: markChunkPendingToSend for every player whose view holds it
-    CH-->>DM: ENTITY_TICKING completes, the throttle slot is released
-    PCS->>SGPL: sendNextChunks: batch start, nearest first up to the quota, batch finished
+    CM->>SGPL: ClientboundSetChunk<br/>CacheCenterPacket
+    Note over DM: DistanceManager.runAllUpdates, this tick or the next idle poll
+    DM->>DM: the simulation graph floods, entity range 10, block range 11
+    DM->>DM: DistanceManager.PlayerTicketTracker: 21 in, 21 out, four at a time
+    DM->>TS: PLAYER_LOADING added at 31 east, removed west
+    DM->>CM: the loading graph floods out to level 44
+    DM->>CH: updateFutures: 45 to 31 arms all three
+    CH-->>CM: a later tick, at BLOCK_TICKING: onChunkReadyToSend
+    CM->>PCS: markChunkPendingToSend, per player in view
+    CH-->>DM: ENTITY_TICKING done, the throttle slot freed
+    PCS->>SGPL: send: batch start, nearest first, batch finish
 ```
+
+*One step east, from the packet to the first chunk on the wire. The centre
+packet is the only thing the client hears before the move is over, and it
+carries nothing but the new centre — the two crescents that entered and left
+the view are worked out on the server. The note bar is
+where the trace leaves the move and rejoins the tick: everything above it
+happens inside handling one packet, and everything below it waits for the
+distance manager to be asked to run its updates. The two dotted arrows are the
+only two things that come back, and both come back late.*
 
 The move is `ServerGamePacketListenerImpl.handleMovePlayer` →
 `ServerChunkCache.move` → `ChunkMap.move`, which updates every

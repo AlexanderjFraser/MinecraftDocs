@@ -17,39 +17,50 @@ store](tickets-and-loading.md#two-graphs-one-store)).
 
 ## The shape of the part
 
-Part IV is a conveyor with a vocabulary page in front of it. One page defines
-the thing being handed; four more are the conveyor, and they hand a chunk to
-each other in order. The other five are not on the line at all — one is what
-the place and the hour decide, and four are about the world the conveyor
+Part IV is a conveyor with a vocabulary page in front of it — and the conveyor
+is a **ring**, because a chunk written out comes back in through the door it
+left by. One page defines the thing being handed; four more are the ring, and
+they hand a chunk along it in order. The other five are not on the line at all
+— one is what the place and the hour decide, and four act on the chunk the ring
 delivers. Every box below is one of those ten lectures except the one in lower
 case, which is a chunk's *state* rather than a page: the live `LevelChunk` the
-conveyor exists to produce and the last four pages act on.
+ring exists to produce.
 
 ```mermaid
 flowchart TD
-    CA["Chunk anatomy: sections, palettes, heightmaps"]
-    TL["Tickets and loading: which chunk, at what level"]
-    GP["The generation pipeline: EMPTY to FULL"]
-    LI["Lighting: two 4-bit fields, off the tick"]
-    CS["Chunk storage: copy, encode, sectors"]
+    CA["2 · Chunk anatomy: sections, palettes, heightmaps"]
+    TL["3 · Tickets and loading: which chunk, at what level"]
+    GP["4 · The generation pipeline: EMPTY to FULL"]
+    LI["5 · Lighting: two 4-bit fields, off the tick"]
+    CS["6 · Chunk storage: copy, encode, sectors"]
     LC["a live LevelChunk in a ticking world"]
-    EA["Environment attributes: what the place and the hour decide"]
-    ST["Scheduled ticks: the appointment book"]
-    FL["Fluids: the book's biggest customer"]
-    GV["Game events and vibrations: what just happened"]
-    PI["Points of interest: what is worth going to"]
-    CA -- "the vocabulary every page below spends" --> TL
+    EA["1 · Environment attributes: the place and the hour"]
+    ST["7 · Scheduled ticks: the appointment book"]
+    FL["8 · Fluids: the book's biggest customer"]
+    GV["9 · Game events and vibrations: what just happened"]
+    PI["10 · Points of interest: what is worth going to"]
+    CA -- "the vocabulary the ring spends" --> TL
     TL -- "a holder, a ceiling, three futures" --> GP
-    GP -- "steps nine and ten, on the other executor" --> LI
+    GP -- "two of its twelve statuses" --> LI
     LI -- "sections dirtied, one packet of them" --> LC
-    LC -- "the level rises past 44, nobody needs it" --> CS
-    CS -- "a ticket wants it back, and it is read in" --> TL
-    LC --> ST
-    ST -- "one customer, big enough for its own page" --> FL
-    LC --> GV
-    LC --> PI
-    EA -- "read by fluids and by the villagers, and by Part III" --> LC
+    LC -- "nobody needs it any more" --> CS
+    CS -- "a ticket wants it back" --> TL
+    LC -- "how anything happens later" --> ST
+    ST -- "one customer, its own page" --> FL
+    LC -- "what just happened, and who hears it" --> GV
+    LC -- "what is worth walking to" --> PI
+    EA -- "a value for a position and an instant" --> LC
 ```
+
+*The part numbered to the watch order. The five boxes on the ring hand a chunk
+to each other and the sixth arrow closes it; every other arrow is a page that
+reads the live chunk or acts on it. Lighting is the one inclusion rather than a
+hand-off — it is two of the pipeline's own twelve statuses, run on a different
+executor — and lecture one is deliberately off the ring and ahead of it.*
+
+Follow the numbers rather than the arrows and the surprise is where they
+disagree: the first lecture is the one box with no place on the line, and the
+sixth hands back to the third.
 
 Two later parts hang off that line rather than feeding it: Part V's blocks
 assume [chunk anatomy](chunk-anatomy.md)'s sections and palettes, and Part

@@ -118,32 +118,58 @@ means only the first told gets any. Sorting is how the nearest one wins.
 
 ## The gates between a footstep and a candidate
 
+The cascade has a joint in it, and the prose above has already named it: the
+walk is the dispatcher's, and every gate after `GameEventListener.getDeliveryMode`
+belongs to one listener deciding about itself. So it is two pictures. First, the
+walk.
+
 ```mermaid
 flowchart TD
-    A["Entity.move, moveDist has passed nextStep"] --> B{"on ground, climbing, crouching without vertical movement or on rails, not swimming, and MovementEmission emits events"}
-    B -->|"no"| X1["no event is posted at all"]
-    B -->|"yes"| C["ServerLevel.gameEvent, GameEvent.STEP at the entity, context is the entity plus the block walked on"]
-    C --> D["GameEventDispatcher.post, radius 16 becomes 3 by 3 by 3 sections"]
-    D --> E{"ServerChunkCache.getChunkNow, is the column loaded"}
-    E -->|"no"| X2["skipped in silence, nothing is loaded and nothing is retried"]
-    E -->|"yes"| F{"EuclideanGameEventListenerRegistry.visitInRangeListeners, inside the listener's own radius"}
-    F -->|"outside"| X3["not visited"]
-    F -->|"inside"| G{"GameEventListener.getDeliveryMode"}
-    G -->|"BY_DISTANCE"| Q["collected, sorted by distance, delivered after the walk. The sculk catalyst alone"]
-    G -->|"UNSPECIFIED"| H{"VibrationSystem.Listener.handleGameEvent, is a vibration already in flight"}
-    H -->|"yes"| X4["dropped, this listener is busy"]
-    H -->|"no"| I{"VibrationSystem.User.isValidVibration"}
-    I -->|"outside GameEventTags.VIBRATIONS, a spectator, sneaking on an event in GameEventTags.IGNORE_VIBRATIONS_SNEAKING, Entity.dampensVibrations, or the walked block is in BlockTags.DAMPENS_VIBRATIONS"| X5["dropped"]
-    I -->|"passes"| P{"does the listener's own PositionSource resolve"}
-    P -->|"no"| X6["dropped"]
-    P -->|"yes"| J{"SculkSensorBlockEntity.VibrationUser.canReceiveVibration"}
-    J -->|"a break or place at the sensor's own position, frequency 0, or the sensor is not inactive"| X7["dropped"]
-    J -->|"passes"| K{"VibrationSystem.Listener.isOccluded, six rays nudged off the source block centre"}
-    K -->|"all six hit BlockTags.OCCLUDES_VIBRATION_SIGNALS"| X8["dropped"]
-    K -->|"any one ray gets through"| L["VibrationSelector.addCandidate"]
-    S["SculkSensorBlock.stepOn, from Entity.applyEffectsFromBlocks while standing on the block"] --> S2{"not a warden, and canReceiveVibration, which defers to canActivate"}
-    S2 -->|"yes"| L
+    A{"Entity.applyMovementEmissionAndPlaySound"}
+    A -->|"mid-stride"| X1["no event is posted at all"]
+    A -->|"a stride has passed"| C["ServerLevel.gameEvent posts GameEvent.STEP at the entity"]
+    C --> D["GameEventDispatcher.post walks 3 by 3 by 3 sections"]
+    D --> E{"ServerChunkCache.getChunkNow"}
+    E -->|"not loaded"| X2["skipped in silence, never retried"]
+    E -->|"loaded"| F{"EuclideanGameEventListenerRegistry.visitInRangeListeners"}
+    F -->|"out of its radius"| X3["not visited"]
+    F -->|"in range"| G{"GameEventListener.getDeliveryMode"}
+    G -->|"BY_DISTANCE"| Q["queued, sorted by distance, delivered after the walk"]
+    G -->|"UNSPECIFIED"| H["GameEventListener.handleGameEvent, inline"]
 ```
+
+*From a footstep to a listener that has been handed it. Every exit on the left
+is silent — nothing is loaded, nothing is retried, nothing is told. The two
+right-hand ends are the only two ways the walk finishes, and the sculk catalyst
+is the only listener in the game that takes the lower one.*
+
+Both ends are a real delivery, and the difference is *when*. Everything below
+continues from the inline one, and narrows again: `VibrationSystem.Listener.handleGameEvent` is the vibration path, which
+`Allay.JukeboxListener` is not on at all.
+
+```mermaid
+flowchart TD
+    H["VibrationSystem.Listener.handleGameEvent"]
+    H --> B1{"a vibration already in flight"}
+    B1 -->|"yes"| DROP["dropped, and nothing is remembered"]
+    B1 -->|"no"| B2{"VibrationSystem.User.isValidVibration"}
+    B2 -->|"fails"| DROP
+    B2 -->|"passes"| B3{"the listener's PositionSource"}
+    B3 -->|"does not resolve"| DROP
+    B3 -->|"resolves"| B4{"VibrationSystem.User.canReceiveVibration"}
+    B4 -->|"fails"| DROP
+    B4 -->|"passes"| B5{"VibrationSystem.Listener.isOccluded"}
+    B5 -->|"all six rays stopped"| DROP
+    B5 -->|"one gets through"| L["VibrationSelector.addCandidate"]
+    S["SculkSensorBlock.stepOn, standing on the sensor"] --> S2{"not a warden, and the sensor can activate"}
+    S2 -->|"VibrationSystem.User.canReceiveVibration"| L
+```
+
+*Five refusals in the order they run, all of them landing in one place, and a
+short arm that arrives at the answer having asked almost none of them. Read the
+order rather than the tests: the busy check is first and costs nothing, the
+six-ray occlusion cast is last and costs the most, and the arm along the bottom
+is a player standing on the block.*
 
 The order is not the one a player would guess. The busy check comes first,
 so a sensor already carrying a vibration ignores everything without
@@ -161,8 +187,8 @@ position — which is why placing a sensor does not set it off — refuses a
 frequency of `VibrationSystem.NO_VIBRATION_FREQUENCY`, and otherwise defers
 to `SculkSensorBlock.canActivate`: inactive only.
 
-Two nodes hang off the bottom of that figure with no incoming edge, and they
-are the gates a player most often meets. `SculkSensorBlock.stepOn` runs from
+The short arm along the bottom of that figure is the gate a player most often
+meets. `SculkSensorBlock.stepOn` runs from
 `Entity.applyEffectsFromBlocks` every tick an entity stands on the block, and
 calls `VibrationSystem.Listener.forceScheduleVibration` directly: no section
 walk, no radius test, no occlusion raycast, and — the part that matters — no
@@ -185,20 +211,22 @@ all six fail.
 
 ## One footstep, and the ticks it takes to arrive
 
+Every gate above passes, and the vibration still does not arrive for eight
+ticks. This is where they go.
+
 ```mermaid
 sequenceDiagram
     participant Entity as Entity
     participant SL as ServerLevel
-    participant GED as GameEvent<br/>Dispatcher
     participant VSL as VibrationSystem.<br/>Listener
     participant VSel as VibrationSelector
     participant VST as VibrationSystem.<br/>Ticker
+    participant SSVU as SculkSensor<br/>BlockEntity.<br/>VibrationUser
     participant SSB as SculkSensorBlock
 
     Note over Entity,SSB: tick T, the entity ticks and moves
     Entity->>SL: gameEvent, GameEvent.STEP at the entity's feet
-    SL->>GED: post, every loaded section within 16 blocks
-    GED->>VSL: handleGameEvent, inline, before Entity.move returns
+    SL->>VSL: the dispatcher's walk reaches it, inline
     VSL->>VSel: addCandidate, a VibrationInfo stamped with game time T
     Note over VST,SSB: still tick T, whenever the sensor's block entity ticks
     VST->>VSel: chosenCandidate
@@ -206,12 +234,20 @@ sequenceDiagram
     Note over Entity,SSB: tick T plus 1
     VST->>VSel: chosenCandidate
     VSel-->>VST: the VibrationInfo, then startOver clears the slot
-    VST->>SL: sendParticles, one VibrationParticleOption with the destination and the tick count
-    Note over VST,SSB: the countdown starts in this same tick, one block per tick — eight blocks away, that is seven more
-    VST->>SSB: onReceiveVibration on SculkSensorBlockEntity's VibrationSystem.User — the event, the entities and the arrival distance
-    SSB->>SL: setBlock PHASE active with POWER, scheduleTick 30, gameEvent SCULK_SENSOR_TENDRILS_CLICKING
+    VST->>SL: sendParticles, one VibrationParticleOption
+    Note over VST,SSB: the countdown starts now, a block a tick
+    Note over Entity,SSB: tick T plus 8, and only now does it arrive
+    VST->>SSVU: onReceiveVibration — the event, the entities, the distance
+    SSVU->>SSB: activate, with the power and the frequency
+    SSB->>SL: setBlock PHASE active with POWER, then scheduleTick 30
     Note over Entity,SSB: 30 ticks later deactivate, then 10 more before inactive
 ```
+
+*One footstep, and the eight ticks it takes to be heard. The three note bars are
+the wait: a candidate posted in tick T is deliberately not looked at until T
+plus 1, and then travels a block a tick. Count the arrows above the second bar
+against the arrows below it — almost all of the machinery runs in the tick the
+footstep happened, and none of it reaches the sensor.*
 
 `VibrationSystem.Ticker.tick` is the whole of the wait, and runs from
 whoever hosts the listener: `SculkSensorBlock.getTicker` and
@@ -231,12 +267,15 @@ re-sends the particle from a point interpolated along the path covered.
 
 ## One slot, one tick late, and one refusal that waits
 
-`VibrationSelector` holds at most one candidate, stamped with the game time
-it arrived. `VibrationSelector.addCandidate` takes an empty slot
+`VibrationSelector` holds at most one candidate — a `VibrationInfo`, which
+carries the event, the source position, the distance and the entity behind it —
+stamped with the game time it arrived. `VibrationSelector.addCandidate` takes an empty slot
 unconditionally; against a candidate from the *same* tick it takes the
 closer one, breaking a distance tie in favour of the higher frequency; and
 against one held over from an *earlier* tick it does nothing at all,
-because that one is already waiting to be consumed. That is the whole of
+because that one is already waiting to be consumed. Reading the slot does not
+empty it: `VibrationSelector.startOver` does, and the ticker calls it in the
+same breath as the read. That is the whole of
 "the nearest event wins" — per listener, per tick, one slot.
 
 The latency falls out of the read side. `VibrationSelector.chosenCandidate`
@@ -250,7 +289,10 @@ inside the same call that selected the vibration, so a source *n* whole
 blocks away arrives *n* minus 1 ticks after selection, and anything closer
 than two blocks arrives on the selecting tick itself.
 
-Arrival can be refused. `VibrationSystem.User.requiresAdjacentChunksToBeTicking`
+Arrival is one call — `VibrationSystem.User.onReceiveVibration`, handed the
+event, the source entity, the projectile's owner and the distance the vibration
+actually travelled — and it can be refused.
+`VibrationSystem.User.requiresAdjacentChunksToBeTicking`
 is true for both sculk blocks, and `VibrationSystem.Ticker` will not deliver
 unless all nine columns of the 3 by 3 around the listener are loaded and
 pass `Level.shouldTickBlocksAt` — [tickets and

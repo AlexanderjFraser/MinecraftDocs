@@ -50,17 +50,21 @@ disappears, and no state on the block corresponds to a claim.
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Free : block placed, PoiManager.add, freeTickets = PoiType.maxTickets
-    Free --> Held : PoiManager.take then PoiRecord.acquireTicket
-    Held --> Free : ValidateNearbyPoi, the bed is OCCUPIED and no villager is asleep in it
-    Held --> Free : Villager.releaseAllPois, on death or on witch conversion
-    Held --> Free : SetWalkTargetFromBlockMemory, unreachable for 1200 ticks
-    Held --> Gone : the block changes, PoiManager.remove drops the whole record
-    Free --> Gone : the block changes, PoiManager.remove drops the whole record
+    [*] --> Free : block placed, PoiManager.add, PoiType.maxTickets free
+    Free --> Held : PoiManager.take, then PoiRecord.acquireTicket
+    Held --> Free : PoiManager.release, from one of four villager behaviours
+    Held --> Gone : the block changes, so PoiManager.remove
+    Free --> Gone : the block changes, so PoiManager.remove
     Gone --> [*]
     note right of Held : occupied, so its section is a village centre if the type is in PoiTypeTags.VILLAGE
     note right of Gone : nothing is released, and the claimant is not told
 ```
+
+*The whole life of one ticket, and the thing to look for is what is missing. No
+transition here is driven by the holder: the only way back to **Free** is a
+villager behaviour choosing to let go, and the two arrows into **Gone** bypass the
+claim entirely — the block changed, the record went, and the note says what
+nobody hears about it.*
 
 The asymmetry in that figure is deliberate on the release side and merely
 survivable on the removal side. `PoiManager.release` **throws** when the
@@ -174,6 +178,10 @@ answer.
 
 ## Noon, and a bed forty-eight blocks away
 
+A bed is placed, a villager claims it, and thousands of ticks later it sleeps in
+it. The index is asked twice in all of that, and the second time is not the
+time you would guess.
+
 ```mermaid
 sequenceDiagram
     participant SL as ServerLevel
@@ -181,28 +189,36 @@ sequenceDiagram
     participant Brain as Brain
     participant AP as AcquirePoi
     participant PN as PathNavigation
-    participant VNP as ValidateNearbyPoi
     participant SIB as SleepInBed
 
     Note over SL,PM: any tick, Server thread
-    SL->>SL: setBlock puts the bed head down, forState of old and new differ
-    SL->>PM: add, a PoiRecord with one free ticket, section marked dirty
+    SL->>SL: setBlock puts the bed head down, and the two states differ
+    SL->>PM: add — a PoiRecord with one free ticket, the section dirty
     Note over Brain,SIB: Activity.CORE, any hour of the day, HOME absent
-    Brain->>AP: priority 10, and this evaluation is due
+    Brain->>AP: at priority 10, and this evaluation is due
     AP->>PM: findAllClosestFirstWithType HOME, HAS_SPACE, 48 blocks
-    PM-->>AP: the nearest five past the retry cache, then validateBedPoi
+    PM-->>AP: the nearest five, past the retry cache
+    AP->>AP: VillagerGoalPackages.validateBedPoi re-reads each of the five
     AP->>PN: createPath to all five at once, reach range 1
     PN-->>AP: a Path whose canReach is true, getTarget is one bed
-    AP->>PM: take at that position, acquireTicket, one free becomes zero
+    AP->>PM: take at that position, and one free ticket becomes zero
     AP->>Brain: MemoryModuleType.HOME set to a GlobalPos, entity event 14
     Note over Brain,SIB: thousands of ticks later, tick 12000, Activity.REST
-    Brain->>Brain: SetWalkTargetFromBlockMemory writes WALK_TARGET, MoveToTargetSink walks
-    Brain->>VNP: within 16 blocks, is the record still HOME
-    Brain->>SIB: within 2 blocks and the bed not OCCUPIED
-    SIB->>SL: startSleeping, setBlock with BedBlock.OCCUPIED true
-    SL->>SL: forState is HOME either way, so nothing is queued and the record is untouched
+    Brain->>Brain: SetWalkTargetFromBlockMemory writes WALK_TARGET, and the villager walks
+    Brain->>Brain: ValidateNearbyPoi, within 16 blocks: is the record still HOME
+    Brain->>SIB: within 2 blocks, and the bed is not OCCUPIED
+    SIB->>SL: setBlock, BedBlock.OCCUPIED true
+    SL->>SL: the state is HOME either way, so nothing is queued
     Note over Brain,SIB: morning, REST leaves the brain, WakeUp clears the flag, the ticket stays
 ```
+
+*A bed placed and a bed slept in, with the index consulted once at each end and
+not in between. The last self-message is the page's hook drawn as a non-event:
+sleeping wrote `BedBlock.OCCUPIED` straight to the block, and because the
+before and after are both `MemoryModuleType.HOME` the manager was never asked
+about it. The
+ticket taken thousands of ticks earlier is still the only record that a villager
+has any claim at all.*
 
 The scan is cheap and the path is not. `PoiManager.findAllClosestFirstWithType`
 turns a 48-block radius into a chunk radius of four, walks every section of

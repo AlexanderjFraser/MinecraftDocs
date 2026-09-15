@@ -50,18 +50,20 @@ const MAX_TEXT_SIZE = 50000;
 
 function usage() {
   console.error([
-    'usage: node tools/check_mermaid.js [--no-build] [--verbose]',
+    'usage: node tools/check_mermaid.js [--no-build] [--verbose] [--probe]',
     '  --no-build   check the existing book/ instead of running mdbook build first',
     '  --verbose    print the full mermaid error under each failure line',
+    '  --probe      prove the caption rule fails on the construct it should, then exit',
   ].join('\n'));
 }
 
 function parseArgs(argv) {
-  const opts = { build: true, verbose: false };
+  const opts = { build: true, verbose: false, probe: false };
   for (const a of argv) {
     if (a === '--no-build') opts.build = false;
     else if (a === '--build') opts.build = true;
     else if (a === '--verbose' || a === '-v') opts.verbose = true;
+    else if (a === '--probe') opts.probe = true;
     else if (a === '--help' || a === '-h') { usage(); process.exit(0); }
     else { console.error(`unknown argument: ${a}`); usage(); process.exit(2); }
   }
@@ -232,6 +234,22 @@ function droppedByHashComment(text) {
   return null;
 }
 
+// A caption is the italic paragraph after a figure, and `custom.css` styles it
+// with `p:has(> em:only-child)` — one <em> and nothing else. An author who closes
+// the italics to set a name and reopens them writes *two* <em> children, so the
+// rule stops matching: the paragraph loses its styling and its figure number,
+// silently, in the built page only. The markdown looks right, mermaid parses
+// fine, and nothing but the render ever showed it. (pass 7, session D — thirteen
+// of these were live, three of them shipped in Part III.)
+function brokenCaption(p) {
+  const html = (p.innerHTML || '').trim();
+  if (!html.startsWith('<em>') || !html.endsWith('</em>')) return null;
+  const body = html.slice(4, -5);
+  if (!/<\/?em>/.test(body)) return null;
+  const text = (p.textContent || '').replace(/\s+/g, ' ').trim();
+  return text.length > 60 ? text.slice(0, 60) + '…' : text;
+}
+
 function oneLine(err, fence) {
   const msg = String((err && err.message) || err).replace(/\r/g, '');
   const lines = msg.split('\n');
@@ -249,6 +267,31 @@ function oneLine(err, fence) {
 
 // --- main -----------------------------------------------------------------------
 
+// Prove the caption rule fails on the construct it should and passes the ones it
+// should not: the paragraphs below are the shapes a page actually writes.
+function runProbe(JSDOM) {
+  const cases = [
+    ['a caption that closes its italics part-way', '<p><em>The four values of</em> <code>FullChunkStatus</code><em>, and nothing else.</em></p>', true],
+    ['a caption that closes its italics around a plain word', '<p><em>the only way back to</em> Free <em>is a behaviour letting go.</em></p>', true],
+    ['one italic run with a code span inside it', '<p><em>The shaded band is <code>MinecraftServer.tickChildren</code>, and the rest is bookkeeping.</em></p>', false],
+    ['one italic run with a link inside it', '<p><em>Nothing here is light (<a href="x.html">lighting</a>).</em></p>', false],
+    ['a plain paragraph after a figure', '<p>Follow the two arrows into <em>the network</em>: they are the whole of it.</p>', false],
+    ['a paragraph that is not a caption at all', '<p>Every section below walks one stretch of that diagram.</p>', false],
+  ];
+  let ok = true;
+  for (const [what, html, shouldFail] of cases) {
+    const dom = new JSDOM(`<body><pre class="mermaid">flowchart TD
+ A --> B</pre>${html}</body>`);
+    const fig = dom.window.document.querySelector('.mermaid');
+    const got = brokenCaption(fig.nextElementSibling) !== null;
+    const passed = got === shouldFail;
+    ok = ok && passed;
+    console.log(`${passed ? 'pass' : 'FAIL'}  ${what} — ${shouldFail ? 'is' : 'is not'} a lost caption`);
+  }
+  console.log(ok ? 'probe passed' : 'PROBE FAILED');
+  process.exit(ok ? 0 : 1);
+}
+
 async function main() {
   const opts = parseArgs(process.argv.slice(2));
   let JSDOM, VirtualConsole;
@@ -258,6 +301,7 @@ async function main() {
     console.error('jsdom is not installed: run `npm install` in tools/ once (tools/package.json lists it)');
     process.exit(2);
   }
+  if (opts.probe) return runProbe(JSDOM);
   if (opts.build) buildBook();
   if (!fs.existsSync(BOOK_DIR)) {
     console.error('no book/ directory: drop --no-build, or run `mdbook build` first');
@@ -301,6 +345,18 @@ async function main() {
         console.log(`${mdRel}:${f.line + 1}: this \`\`\`mermaid fence did not become a diagram — it publishes as literal backticks. An HTML block ends at a blank line, so a fence inside <figure> or <details> needs a blank line around it.`);
       }
     }
+    // Captions: every figure on the page, mermaid blocks and generated SVGs alike.
+    const figures = Array.from(pageDom.window.document.querySelectorAll('.mermaid, figure.map'));
+    for (const fig of figures) {
+      const next = fig.nextElementSibling;
+      if (!next || next.tagName !== 'P') continue;
+      const lost = brokenCaption(next);
+      if (lost) {
+        failed++;
+        console.log(`${mdRel}: this caption closes its italics part-way through, so it is not styled or numbered as a caption — one italic run, with any name in backticks inside it: “${lost}”`);
+      }
+    }
+
     if (nodes.length === 0) continue;
 
     for (let i = 0; i < nodes.length; i++) {

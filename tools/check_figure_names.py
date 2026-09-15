@@ -194,14 +194,20 @@ def labels_of(body):
 def close_up_breaks(text: str) -> str:
     """Read a `<br/>` the way pass 7's F17/F18 rule writes it.
 
-    A break is display, never a name. Written tight against the text on both
-    sides — `DataComponentType.<br/>codecOrThrow`, `PersistentEntity<br/>SectionManager` — it is *inside* a name that mermaid would otherwise hyphenate, so the
-    gate closes it up. Written with a space on either side it separates clauses,
-    so it becomes one space. F17 ruled this for a lane expansion; F18 sends part
-    sessions to break names in messages and notes the same way, so the same
-    reading applies wherever a name can appear.
+    A break is display, never a name. Written tight against *name* characters on
+    both sides — `DataComponentType.<br/>codecOrThrow`,
+    `PersistentEntity<br/>SectionManager` — it is *inside* a name that mermaid
+    would otherwise hyphenate, so the gate closes it up. Written with a space on
+    either side it separates clauses, so it becomes one space. **And written
+    after punctuation** — `inBlockTickingRange,<br/>DistanceManager.…` — it
+    separates two names, because no Mojang name ends in a comma: a flowchart
+    node label spends `<br/>` as a line break far more often than as a repair to
+    one name, and closing that up welds two names into a third that is in no
+    decompile. F17 ruled this for a lane expansion; F18 sends part sessions to
+    break names in messages and notes the same way, so the same reading applies
+    wherever a name can appear.
     """
-    text = re.sub(r"(?<=[^\s])<br\s*/?>(?=[^\s])", "", text)
+    text = re.sub(r"(?<=[0-9A-Za-z_$.])<br\s*/?>(?=[0-9A-Za-z_$])", "", text)
     return re.sub(r"<br\s*/?>", " ", text)
 
 
@@ -435,6 +441,8 @@ sequenceDiagram
 ```mermaid
 flowchart TD
     A["NaturalSpawner.createState walks every entity"] --> B{"Mob.finalizeSpawn"}
+    E["DistanceManager.inBlockTickingRange,<br/>DistanceManager.inEntityTickingRange"] --> A
+    F["ChunkMap.save,<br/>ChunkMapp.save"] --> A
     B -->|"two ClientboundBlockUpdatePackets"| C["runAllTasks then FrobnicatorThing then SpawnState"]
     C --> D["DedicatedServer.runServer"]
 ```
@@ -471,8 +479,10 @@ def probe(mc_source: str, libs: str) -> int:
         ("an unqualified member in a flowchart label is a note", any(n[2] == "runAllTasks" for n in notes)),
         ("a rect band's colour is not read as a call named rgba", not any(n[2] == "rgba" for n in notes)),
         ("a box's colour word is stripped and its label still checked", (23, "ChunkMapp") in got),
+        ("a break after punctuation in a node label separates two names, and both resolve", not any(f[1] == 31 for f in failures)),
+        ("a break after punctuation does not hide a bad name on either side", (32, "ChunkMapp.save") in got),
         ("figure mentions include ChunkMap and NaturalSpawner", "ChunkMap" in c.mentions and "NaturalSpawner" in c.mentions),
-        ("exactly the eight failures expected", len(failures) == 8),
+        ("exactly the nine failures expected", len(failures) == 9),
     ]
     ok = True
     for what, passed in checks:

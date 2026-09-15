@@ -113,31 +113,40 @@ downward component to the current it pushes entities with.
 
 ```mermaid
 sequenceDiagram
-    participant BI as BucketItem
-    participant SL as ServerLevel
-    participant LC as LevelChunk
-    participant LB as LiquidBlock
-    participant LTs as LevelTicks
-    participant FF as FlowingFluid
-    participant CPL as ClientPacketListener
+    box transparent the server
+        participant BI as BucketItem
+        participant SL as ServerLevel
+        participant LB as LiquidBlock
+        participant LTs as LevelTicks
+        participant FF as FlowingFluid
+    end
+    box transparent the client
+        participant CPL as ClientPacketListener
+    end
 
-    BI->>SL: emptyContents, then setBlock of the source with the flag word 11
-    SL->>LC: setBlockState, the section write and the counters
-    LC->>LB: onPlace, server side and without UPDATE_SKIP_ON_PLACE
+    BI->>SL: setBlock of the source — neighbours, clients, immediate
+    SL->>LB: the section write lands, then onPlace, with no UPDATE_SKIP_ON_PLACE
     LB->>SL: scheduleTick for Fluids.WATER, five ticks out
     SL->>LTs: schedule into this chunk's fluid container
     SL->>CPL: one ClientboundBlockUpdatePacket at broadcast time
     Note over BI,CPL: five ticks later, inside ServerLevel.tick
     LTs->>SL: the drain hands the position back to tickFluid
-    SL->>FF: FluidState.tick, and a source skips getNewLiquid
-    FF->>FF: spread tries down first, stone below refuses
-    FF->>FF: spreadToSides, then getSpread scores the four sides
-    FF->>SL: spreadTo, setBlock of flowing water at amount 7, four times
+    SL->>FF: FluidState.tick — a source skips the scan
+    FF->>FF: spread tries down, stone refuses
+    FF->>FF: spreadToSides scores the four sides
+    FF->>SL: setBlock of flowing water at amount 7, four times
     SL->>LB: onPlace on each new block
-    LB->>LTs: each books its own tick, because spreadTo schedules nothing
-    SL->>LB: the shape pass reaches the source, updateShape books it again
-    SL->>CPL: four more block changes, in one section packet, and nothing else
+    LB->>SL: each new block books its own tick
+    SL->>LB: the shape pass books the source again
+    SL->>CPL: four more block changes, in one section packet
 ```
+
+*A bucket emptied, and the five ticks before anything moves. The box on the
+right is the only lane on the other machine, and it hears exactly twice: once
+for the source and once for the four blocks the water reached — nothing about
+the appointment, the scan or the scoring crosses. The note bar is the whole
+delay, and the two self-messages under it are the search this page is really
+about.*
 
 `BucketItem.use` picks the position, then `BucketItem.emptyContents` asks two
 questions before it places anything. Is the block there a `LiquidBlockContainer` —
@@ -206,25 +215,44 @@ order of its three branches is most of a fluid's character.
 
 ```mermaid
 flowchart TD
-    T["FlowingFluid.tick on a state that is not a source"] --> SCAN["one pass over the four horizontal neighbours reachable through canPassThroughWall, keeping the highest same-fluid amount and counting the sources"]
-    SCAN --> B1{"two or more sources, canConvertToSource allows it, and the block below is solid or a source of this fluid"}
+    T["FlowingFluid.tick, on a state that is not a source"]
+    T --> SCAN["FlowingFluid.getNewLiquid: one pass over the four horizontal neighbours"]
+    SCAN --> B1{"two or more sources, and a floor under them"}
     B1 -- yes --> SRC["a source, not falling"]
-    B1 -- no --> B2{"the same fluid directly above, through the same wall test"}
+    B1 -- no --> B2{"the same fluid directly above"}
     B2 -- yes --> FALL["flowing at amount 8, falling"]
-    B2 -- no --> B3["the highest neighbour amount minus getDropOff"]
+    B2 -- no --> B3["the highest neighbour amount, minus FlowingFluid.getDropOff"]
     B3 --> Z{"zero or less"}
     Z -- yes --> EMPTY["Fluids.EMPTY"]
     Z -- no --> FLOW["flowing at that amount, not falling"]
-    SRC --> CMP{"the same state that is already here"}
-    FALL --> CMP
-    FLOW --> CMP
-    EMPTY --> AIR["set plain air with flags 3 and schedule nothing, which is how a flow dies"]
-    AIR --> SPREAD
+```
+
+*Three ways for one fluid block to decide what it should now be, in the order
+they are asked. The order is the character: a block becomes a source only if the
+first question says so, and becomes falling only if the second does, so a
+falling column can never convert itself and a pool under a ceiling can.*
+
+That is only the answer. What is done with it is a second, shorter fork, and its
+first question is the one a reader guesses wrong: an *empty* answer never
+reaches the comparison the other two must pass.
+
+```mermaid
+flowchart TD
+    NEW["the state the scan arrived at"]
+    NEW --> E{"is it Fluids.EMPTY"}
+    E -- yes --> AIR["plain air, neighbours and clients, nothing scheduled"]
+    E -- no --> CMP{"the same state that is already here"}
     CMP -- yes --> KEEP["write nothing, schedule nothing"]
-    CMP -- no --> SET["set the new state with flags 3 and book a tick getSpreadDelay out"]
-    KEEP --> SPREAD["then FlowingFluid.spread, which returns at once on an empty state"]
+    CMP -- no --> SET["the new state, the same two flags, and a tick FlowingFluid.getSpreadDelay out"]
+    AIR --> SPREAD["FlowingFluid.spread, which returns at once on an empty state"]
+    KEEP --> SPREAD
     SET --> SPREAD
 ```
+
+*What a tick does about the answer. Only one of the three arms books another
+tick, which is how a flow stops on its own; and all three arrive at
+`FlowingFluid.spread`, which is why even the block that just became air still
+tries to push its neighbours once.*
 
 The scan that feeds the branches counts a neighbour only if
 `FlowingFluid.canPassThroughWall` says the face between the two positions is

@@ -44,6 +44,191 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session D — Part IV · The world: the figures *(2026-09-15)*
+
+Eleven pages, twenty-seven figures (twenty-four before; four were split and one
+became a table plus a new figure). Every figure captioned and every caption one
+italic run; every non-lead figure given a lead-in; every name in every figure
+resolved against the decompile — **nineteen gate failures and sixty-three gate
+notes to none of either**. No page moved and no theme file was touched.
+
+### The part-wide finding, which is the entry pass 9 should read first
+
+**Nineteen names failed the figure gate and fourteen of them were the same
+device Part III named** — a message labelled with the *caller's* own method and
+drawn arriving at the *callee*. It is now four parts of four, and the shape is
+mechanical: the gate finds it because a message's head is checked against the
+lane it is sent to, and the caller's method is by construction not a member of
+that lane. Each was re-derived and fixed by naming what actually arrives.
+
+1. `fluids` — `BucketItem.emptyContents` on an arrow into `ServerLevel`. What
+   arrives is `Level.setBlock` (`BucketItem.java:123`).
+2. `fluids` — `FlowingFluid.spreadTo` into `ServerLevel`; the message is the
+   `setBlock` inside it.
+3. `lighting` — `ServerChunkCache.pollTask` into `ThreadedLevelLightEngine`; the
+   call is `ThreadedLevelLightEngine.tryScheduleUpdate` (`:208`).
+4. `lighting` — `LightEngine.propagateDecreases` and `propagateIncreases` into
+   `LayerLightSectionStorage`; what that lane receives is
+   `LayerLightSectionStorage.setStoredLevel` (`:88`).
+5. `lighting` — `ServerChunkCache.broadcastChangedChunks` into `ChunkHolder`;
+   the call is `ChunkHolder.broadcastChanges` (`:187`).
+6. `chunk-generation-pipeline` — three `ChunkMap` methods
+   (`ChunkMap.prepareAccessibleChunk` at `:783`, `ChunkMap.getChunkRangeFuture`,
+   `ChunkMap.scheduleGenerationTask`) on an arrow into `ChunkGenerationTask`;
+   what happens there is `ChunkGenerationTask.create` (`:35`).
+7. `chunk-generation-pipeline` — `ChunkMap.runGenerationTasks` (`:736`) into
+   `ChunkTaskDispatcher`.
+8. `chunk-generation-pipeline` — `ChunkTaskDispatcher.scheduleForExecution`
+   (`:93`) into `ChunkGenerationTask`.
+9. `chunk-generation-pipeline` — `ChunkGenerationTask.releaseClaim` (`:81`)
+   into `ChunkMap`; what `ChunkMap` is asked for is `ChunkMap.releaseGeneration`
+   (`:673`).
+10. `chunk-storage` — `ChunkMap.scheduleUnload` into `ChunkHolder`; the call is
+    `ChunkHolder.getSaveSyncFuture`.
+11. `scheduled-ticks` — `DiodeBlock.updateNeighborsInFront` (`:193`) into
+    `ServerLevel`; that method calls `Level.neighborChanged` and
+    `Level.updateNeighborsAtExceptFromFacing`, which is what the arrow carries.
+12. `scheduled-ticks` — `DiodeBlock.shouldTurnOn` into `LevelTicks`; the booking
+    is `ServerLevel.scheduleTick`, and the arrow now goes through `ServerLevel`
+    like the page's other booking.
+13. `points-of-interest` — `Player.startSleeping` into `ServerLevel`; the
+    message is the `setBlock` that sets `BedBlock.OCCUPIED`.
+14. `tickets-and-loading` — `PlayerChunkSender.sendNextChunks` (`:56`) into
+    `ServerGamePacketListenerImpl`; that method sends
+    `ClientboundChunkBatchStartPacket`, the chunk packets and
+    `ClientboundChunkBatchFinishedPacket` (`PlayerChunkSender.java:71-81`).
+
+Four more were a member named on the wrong owner:
+`environment-attributes-and-timelines`'s `EnvironmentAttribute.sanitizeValue`
+drawn on a *return* to `Mob` (the value is what returns) and its
+`AttributeType.partialTickLerp` left unqualified; `chunk-storage`'s
+`IOWorker.PendingStore` named bare; and `scheduled-ticks`'s
+`LevelChunkTicks.onTickAdded`, which is the container's own callback field —
+what runs on `LevelTicks` is `LevelTicks.updateContainerScheduling`
+(`LevelTicks.java:55-58`).
+
+**One the gate flagged that was not wrong**, checked and left as drawn:
+`tickets-and-loading`'s `ChunkMap` to `PlayerChunkSender`,
+`markChunkPendingToSend`. Both classes really have that method
+(`ChunkMap.java:930`, `PlayerChunkSender.java:45`) and `ChunkMap`'s calls the
+sender's.
+
+### Corrections
+
+- **`environment-attributes-and-timelines`, the stack figure.** It drew the two
+  lightning-flash layers as two more rungs, so every value passed through them
+  before the clamp. They are neither general rungs nor merely client-only:
+  `ClientLevel` adds each with
+  `EnvironmentAttributeSystem.Builder.addTimeBasedLayer` against **one named
+  attribute** — `EnvironmentAttributes.SKY_COLOR` and
+  `EnvironmentAttributes.SKY_LIGHT_FACTOR` — so they are two entries in two
+  attributes' stacks and absent from the other forty-six
+  (`ClientLevel.java:269-279`). The figure is a branch now and the prose says it.
+- **`environment-attributes-and-timelines`, the client trace.** Everything under
+  *between ticks, once per frame* asserted that the whole stack re-resolves each
+  frame. `EnvironmentAttributeProbe.ValueProbe.get` resolves only when its
+  `newValue` is null and `ValueProbe.tick` nulls it once a tick, so **the first
+  frame of a tick that asks pays for the whole tick and every later frame only
+  lerps** (`EnvironmentAttributeProbe.java:68-86`). Drawn as an `opt` block, with
+  a sentence added to the prose.
+- **`game-events-and-vibrations`, the trace.** The *tick T plus 1* band never
+  ended, so arrival was drawn inside T+1 while the figure's own note and the
+  prose put it eight blocks and seven further ticks away. A third band, *tick T
+  plus 8*.
+- **`game-events-and-vibrations`, the trace's lane.** One `SculkSensorBlock` lane
+  stood for the block *and* the block entity, and its own message text said so.
+  `VibrationSystem.Ticker` calls
+  `SculkSensorBlockEntity.VibrationUser.onReceiveVibration` (`:115`), which calls
+  `SculkSensorBlock.activate` (`:209`), which does the `setBlock`. Two lanes now,
+  and `SSVU` is a new lane-key row.
+- **`scheduled-ticks`, the pipeline figure.** `LevelTicks.cleanupAfterTick` was
+  drawn emptying three collections where the prose a hundred lines below names
+  **four**, `LevelTicks.toRunThisTickSet` included. The figure says four.
+- **`points-of-interest`, the state figure.** Three `Held` to `Free` edges
+  against the four release call sites the prose names (`ValidateNearbyPoi`,
+  `Villager.releaseAllPois`, `SetWalkTargetFromBlockMemory`, `VillagerMakeLove`).
+  One edge now, and the prose keeps the four.
+- **`points-of-interest`, the trace.** `VillagerGoalPackages.validateBedPoi` was
+  on `PoiManager`'s return arrow; the prose has `AcquirePoi` running it after the
+  five come back. A self-message on `AcquirePoi`.
+- **`chunk-generation-pipeline`, the pyramid figure.** The prose says *the six
+  plain boxes run inline* and the figure drew **seven** square boxes, the seventh
+  being the accumulation annotation wearing a step's shape. The twelve steps are
+  a table now and the arithmetic is prose.
+- **`fluids`, the trace.** A fluid tick was booked two ways inside one figure —
+  through `ServerLevel` for the source and straight into `LevelTicks` for the
+  four new blocks. `LiquidBlock.onPlace` calls `ServerLevel.scheduleTick` in both
+  cases; both arrows go through the level now.
+
+### New claims — the figures redrawn, and the orderings they assert
+
+- **`world/README`** — the part figure is numbered to the watch order, and its
+  caption asserts three things: that the five ring boxes hand a chunk along and
+  the sixth arrow closes the ring; that the pipeline-to-lighting edge is an
+  *inclusion* (lighting is two of the pipeline's twelve statuses,
+  `ChunkStatus.INITIALIZE_LIGHT` and `ChunkStatus.LIGHT`, run on a different
+  executor) and not a hand-off like the others; and that lecture one is off the
+  ring. The environment-attributes edge no longer carries a label naming three
+  readers, two of which are other boxes in the same figure.
+- **`chunk-anatomy` figure 1** — a `classDiagram`, the book's third. It asserts
+  the hierarchy (`ChunkAccess` abstract with two direct concrete lines,
+  `ImposterProtoChunk` extending `ProtoChunk`, `EmptyLevelChunk` extending
+  `LevelChunk`, all four verified), one dashed dependency for the promotion by
+  `ChunkStatusTasks.full`, and one association for the wrap. The origin branch
+  was cut and logged in [pass5.md](pass5.md).
+- **`chunk-anatomy` figure 2** — asserts that each `PalettedContainer` has its
+  **own** `PalettedContainer.Data` and the two never share one, where the figure
+  before drew both containers into one box; and its caption asserts that a
+  section's light is not on the section.
+- **`chunk-generation-pipeline` figure 1** — a new figure of four nested rings,
+  asserting `ChunkStep.accumulatedDependencies` for FULL as `ChunkStatus.SPAWN`
+  at distance 0, `ChunkStatus.INITIALIZE_LIGHT` at 1, `ChunkStatus.CARVERS` at 2,
+  `ChunkStatus.BIOMES` at 3 and `ChunkStatus.STRUCTURE_STARTS` from 4 out to 11
+  — so radius 11, and 529 chunks. The twelve steps with their radius, executor
+  and write radius are the table beside it, carried over unchanged from the
+  figure it replaced.
+- **`tickets-and-loading` figure 1** — redrawn to the page's hook: the two graphs
+  are two arms that **join**, and a chunk is alive only where both agree. The
+  arms are `ChunkMap.updateChunkScheduling` into `ChunkHolder.updateFutures`, and
+  `DistanceManager.inBlockTickingRange` with `inEntityTickingRange`
+  (`DistanceManager.java:164,168`). The three thresholds it used to draw are
+  figure 2's alone now.
+- **`game-events-and-vibrations` figures 1 and 2** — the 24-node cascade split at
+  the joint the prose names: the dispatcher's walk, then one listener's five
+  refusals in the order they run, with one shared sink and the step-on arm drawn
+  as the short path it is. That arm asserts that `SculkSensorBlock.stepOn`
+  reaches `VibrationSelector.addCandidate` through
+  `VibrationSystem.Listener.forceScheduleVibration` (`VibrationSystem.java:305`)
+  having asked only *not a warden*, `SculkSensorBlock.canActivate` and
+  `VibrationSystem.User.canReceiveVibration` (`SculkSensorBlock.java:104-121`).
+- **`lighting` figure 2** — redrawn around the two maps: all three stages
+  (`LightEngine.checkNode`, `LightEngine.propagateDecreases`,
+  `LightEngine.propagateIncreases`) write
+  `LayerLightSectionStorage.updatingSectionData`, and the single arrow out of it
+  is the publish. The `checkNode` edge is the one the queue said was missing.
+  Also checked and left: *a window of up to 1,000* is `runUpdate`'s own
+  `Math.min` against 1000 (`ThreadedLevelLightEngine.java:219`).
+- **`fluids` figures 2 and 3** — split at `FlowingFluid.tick`'s own two halves.
+  Figure 3 asserts that an **empty** answer never reaches the same-state
+  comparison the other two must pass, which is the structure of the if/else-if at
+  `FlowingFluid.java:450-459`, and that only the changed-state arm books another
+  tick.
+- **`scheduled-ticks` figures 1 and 2** — split at the page's own bold claim,
+  *the drain is server-thread only and booking is not*. Figure 1 draws the dedup
+  refusal as an arrow of its own; figure 2 asserts that the two ways back to the
+  index — the chunk not ticking, and the budget spent — are both *late, never
+  lost*.
+- **`chunk-storage` figure 1** — the three threads are the three semantic colour
+  words (`server`, `worker`, `disk`), and the caption asserts that the server's
+  share ends at the snapshot.
+- **`chunk-storage` figure 3** — its caption asserts the content-and-pointer
+  asymmetry: the under-256-sector arm writes the bytes before the header that
+  names them, the 256-or-more arm writes the header first at a stub and lands the
+  payload when the temp file is moved, and both meet at *the old sectors are
+  freed last*.
+- **Twenty-seven captions and nine lead-ins**, each a claim about what its figure
+  shows.
+
 ## Pass 7, session C — Part III · The server: the figures *(2026-09-15)*
 
 Six pages, twelve figures (ten before; two were split). Every figure captioned;

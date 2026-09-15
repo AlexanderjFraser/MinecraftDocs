@@ -31,37 +31,64 @@ Change the pyramid and the world's loading radius changes with it.
 
 ## The pyramid, drawn
 
+The pipeline is twelve steps in a fixed order, and three facts about each of
+them — how wide it is swept, where it runs, and whether it may write outside
+its own chunk. Those are three columns, so they are a table:
+
+| # | status | swept to | where it runs | may write |
+|--:|---|--:|---|--:|
+| 1 | `ChunkStatus.EMPTY` | 11 | the disk read — region file and parse on the pool, chunk object on the server thread | — |
+| 2 | `ChunkStatus.STRUCTURE_STARTS` | 11 | inline, worldgen executor | — |
+| 3 | `ChunkStatus.STRUCTURE_REFERENCES` | 3 | inline, worldgen executor | — |
+| 4 | `ChunkStatus.BIOMES` | 3 | **forked** to the worker pool, as *init_biomes* | — |
+| 5 | `ChunkStatus.NOISE` | 2 | **forked** to the worker pool, as *wgen_fill_noise* | 0 |
+| 6 | `ChunkStatus.SURFACE` | 2 | inline, worldgen executor | 0 |
+| 7 | `ChunkStatus.CARVERS` | 2 | inline, worldgen executor | 0 |
+| 8 | `ChunkStatus.FEATURES` | 1 | inline, worldgen executor | 1 |
+| 9 | `ChunkStatus.INITIALIZE_LIGHT` | 1 | **the light executor** | — |
+| 10 | `ChunkStatus.LIGHT` | 0 | **the light executor** | — |
+| 11 | `ChunkStatus.SPAWN` | 0 | inline, worldgen executor | — |
+| 12 | `ChunkStatus.FULL` | 0 | **the server thread** | — |
+
+Five of the twelve leave the worldgen executor and one of them —
+`ChunkStatus.EMPTY` — is not worldgen work at all. The *swept to* column is how
+wide that layer is swept **when the target is FULL and the task has decided it
+must generate**: `ChunkGenerationTask.getRadiusForLayer` asks the FULL step of
+whichever pyramid is in play for `ChunkStep.getAccumulatedRadiusOf` that status.
+A task aiming lower sweeps narrower rings, and a chunk that only ever reaches
+*STRUCTURE_STARTS* is swept at radius 0 by its own task. `ChunkStatus.EMPTY` is
+the row to read twice: the first sweep is the loading pyramid's radius 1, and
+only a chunk that turns out to need generating is swept at 11, as the
+load-or-generate section below explains.
+
+Those radii nest, and nesting is what the word *pyramid* is doing. Read from
+the middle outward:
+
 ```mermaid
 flowchart TD
-    EM[("EMPTY, radius 11 — the disk read: region file, parse on the pool, chunk object on the server thread")]
-    SS["STRUCTURE_STARTS, radius 11 — inline on the worldgen executor"]
-    SR["STRUCTURE_REFERENCES, radius 3 — inline on the worldgen executor"]
-    BI(["BIOMES, radius 3 — forked to the worker pool as init_biomes"])
-    NO(["NOISE, radius 2 — forked to the worker pool as wgen_fill_noise, may write radius 0"])
-    SU["SURFACE, radius 2 — inline, may write radius 0"]
-    CA["CARVERS, radius 2 — inline, may write radius 0"]
-    FE["FEATURES, radius 1 — inline, may write radius 1"]
-    IL(["INITIALIZE_LIGHT, radius 1 — the light executor"])
-    LI(["LIGHT, radius 0 — the light executor"])
-    SP["SPAWN, radius 0 — inline on the worldgen executor"]
-    FU(["FULL, radius 0 — the server thread"])
-    ACC["accumulated for FULL: SPAWN at distance 0, INITIALIZE_LIGHT at 1, CARVERS at 2, BIOMES at 3, STRUCTURE_STARTS from 4 out to 11 — twelve entries, so a radius of 11"]
-    EM --> SS --> SR --> BI --> NO --> SU --> CA --> FE --> IL --> LI --> SP --> FU
-    FU -- "ChunkStep.accumulatedDependencies, counted" --> ACC
+    subgraph OUT["STRUCTURE_STARTS, to 11"]
+        subgraph R3["BIOMES, to 3"]
+            subgraph R2["CARVERS, to 2"]
+                subgraph R1["INITIALIZE_LIGHT, to 1"]
+                    C["the chunk you asked for: SPAWN, then FULL"]
+                end
+            end
+        end
+    end
 ```
 
-Read it downward: that is the whole pipeline. The rounded steps are the five
-that leave the *worldgen* executor, the cylinder is the one step that is not
-worldgen at all, and the six plain boxes run inline. The radius on each node
-is how wide that layer is swept **when the target is FULL and the task has
-decided it must generate** — `ChunkGenerationTask.getRadiusForLayer` asks the
-FULL step of whichever pyramid is in play for
-`ChunkStep.getAccumulatedRadiusOf` that status. A task aiming lower sweeps
-narrower rings, and a chunk that only ever reaches *STRUCTURE_STARTS* is
-swept at radius 0 by its own task. *EMPTY* is the node to read twice: the
-first sweep is the loading pyramid's radius 1, and only a chunk that turns
-out to need generating is swept at 11, as the load-or-generate section below
-explains.
+*The pyramid seen from above: each box is a ring of neighbours, labelled with
+how deep into the pipeline that ring must already be. Nothing here is an order
+in time — these are four rings at one instant. The outer one is the number to
+take away: radius 11 is 23 by 23, so one chunk reaching `ChunkStatus.FULL` has
+claimed 529.*
+
+That is `ChunkStep.accumulatedDependencies` drawn: a list indexed by distance,
+holding the deepest status needed at that distance. For FULL it has twelve
+entries — `ChunkStatus.SPAWN` at distance 0, `ChunkStatus.INITIALIZE_LIGHT` at
+1, `ChunkStatus.CARVERS` at 2, `ChunkStatus.BIOMES` at 3, and
+`ChunkStatus.STRUCTURE_STARTS` for every distance from 4 out to 11 — so the
+radius is 11 and the neighbourhood is 529.
 
 A `ChunkStatus` carries no work. It is a registry entry with an index, a
 parent, a `ChunkType` (`ChunkType.PROTOCHUNK` for the first eleven,
@@ -381,6 +408,10 @@ holders that reach *FULL* for the spawn progress bar, and that count is what
 
 ## The whole walk, once
 
+Everything above, spent once on one chunk that was not on disk. The lanes are
+the five objects that hand it along, and the interesting thing about them is
+which thread each is standing on.
+
 ```mermaid
 sequenceDiagram
     participant DM as DistanceManager
@@ -391,26 +422,35 @@ sequenceDiagram
     participant TLE as ThreadedLevel<br/>LightEngine
     participant SL as ServerLevel
 
-    Note over DM,SL: the Server thread, inside runDistanceManagerUpdates
+    Note over DM,SL: the Server thread, inside ServerChunkCache.runDistanceManagerUpdates
     DM->>CM: the holder reaches level 33 — updateHighestAllowedStatus, then updateFutures
-    CM->>CGT: prepareAccessibleChunk, getChunkRangeFuture, scheduleGenerationTask — create claims 529 holders
-    CM->>CTD: runGenerationTasks submits runUntilWait at the holder's queue level
+    CM->>CGT: create — one task, and a claim on all 529 holders
+    CM->>CTD: submit runUntilWait at the holder's queue level
     Note over CTD,CGT: thread hop — the worldgen ConsecutiveExecutor, one task at a time per dimension
-    CTD->>CGT: scheduleForExecution hands this chunk's batch over
+    CTD->>CGT: runUntilWait, once the executor reaches this chunk
     CGT->>CM: layer EMPTY at radius 1 — applyStep becomes scheduleChunkLoad
-    CM->>Worker: region read, then upgradeChunk and parseChunk on the pool
-    Worker->>SL: thread hop — SerializableChunkData.read builds the chunk object
-    Note over CTD,CGT: the task yielded on the first unfinished future and was resubmitted
-    CGT->>CGT: canLoadWithoutGeneration is false — EMPTY again, now to radius 11
+    CM->>Worker: the region read, then upgradeChunk and parseChunk, on the pool
+    Worker->>SL: SerializableChunkData.read builds the chunk object
+    Note over CTD,CGT: the task yields on the first unfinished future, and is resubmitted
+    CGT->>CGT: nothing on disk, so EMPTY again, now to radius 11
     CGT->>CM: STRUCTURE_STARTS to 11, then STRUCTURE_REFERENCES to 3
-    CM->>SL: onStructureStartsAvailable posts each chunk's starts to the server thread
-    CGT->>Worker: thread hop — BIOMES to 3 as init_biomes, NOISE to 2 as wgen_fill_noise
-    CGT->>CM: SURFACE and CARVERS to 2, FEATURES to 1 — inline, and three of the four that may write
-    CGT->>TLE: thread hop — INITIALIZE_LIGHT at 1 and LIGHT at 0 on the light executor
-    CGT->>SL: SPAWN inline, then FULL — thread hop, supplyAsync on the main-thread executor
-    SL->>CM: LevelChunk built, replaceProtoChunk, setLoaded, tick containers registered
-    CGT->>CM: releaseClaim — removeTask, then releaseGeneration on all 529
+    CM->>SL: onStructureStartsAvailable, posted to the server thread
+    CGT->>Worker: BIOMES to 3 and NOISE to 2, forked to the pool
+    CGT->>CM: SURFACE and CARVERS to 2, FEATURES to 1 — all inline
+    CGT->>TLE: INITIALIZE_LIGHT at 1, then LIGHT at 0, on the light executor
+    CGT->>SL: SPAWN inline, then FULL on the main-thread executor
+    SL->>CM: the LevelChunk is built, wrapped, loaded and registered
+    CGT->>CM: releaseGeneration on all 529, and the task is removed
 ```
+
+*One chunk from a level change to a live `LevelChunk`. Count the executors
+rather than the lanes: the task itself runs on the worldgen one, and it sends
+work to the worker pool twice, to the light executor once, and back to the
+server thread for `ChunkStatus.FULL` — four executors for one chunk, which is
+why a single generating chunk keeps four different queues busy and none of them
+saturated.
+The self-message in the middle is the load-or-generate decision, and everything
+below it is work that the other answer would have skipped.*
 
 ## Questions players ask
 

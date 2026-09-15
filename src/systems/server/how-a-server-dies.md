@@ -85,9 +85,10 @@ sequenceDiagram
     Note over MS: the Server thread returns, and no non-daemon thread is left
 ```
 
-*The whole of shutdown, which is one* finally*. The shaded band is a single
-call, and the three saves inside it are in that order because that call puts
-them there — not because* stopServer *asks for them one at a time.*
+*The whole of shutdown, which is one **finally** block. The shaded band is a
+single call, and the three saves inside it are in that order because that call
+puts them there — not because `MinecraftServer.stopServer` asks for them one at
+a time.*
 
 ### The command is a flag
 
@@ -300,9 +301,9 @@ sequenceDiagram
 ```
 
 *The only ending with a circular wait in it: the exit is waiting for the hook,
-the hook is waiting for the wedged thread, and the armed halt is the only
-thing that moves. The one message to* Disk *is the difference between this and
-a server that dies silently.*
+the hook is waiting for the wedged thread, and the armed halt is the only thing
+that moves. The one message to the **Disk** lane is the difference between this
+and a server that dies silently.*
 
 `ServerWatchdog` is a daemon thread started by `DedicatedServer.initServer`
 whenever `DedicatedServer.getMaxTickLength` is positive — that is

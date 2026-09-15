@@ -237,7 +237,8 @@ sequenceDiagram
 ```
 
 *The second half: the play port is bound two messages before the levels exist,
-and the word* Done *three messages before the loop it claims is running.*
+and the word **Done** is logged three messages before the loop it claims is
+running.*
 
 `MinecraftServer.runServer` is the Server thread's body and its first act is
 `DedicatedServer.initServer`, which begins with the console: a daemon thread

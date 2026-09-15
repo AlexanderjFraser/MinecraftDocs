@@ -301,6 +301,13 @@ tools/render_figures.js` is how any change to one is argued.
   `llms-full.txt` carries it; `custom.css` styles exactly that paragraph and
   numbers it (*Figure 3.*). A caption is a **claim about what the figure
   shows** and goes to `docs/pass9.md` like any other.
+  **It is one italic run from end to end.** The stylesheet matches
+  `p:has(> em:only-child)`, so a caption that closes its italics to set a name
+  and reopens them has two `<em>`s, stops matching, and silently loses its
+  styling and its number in the built page — the markdown looks right and
+  mermaid parses. A name inside a caption goes in backticks *within* the
+  italics, never outside them; `node tools/check_mermaid.js` fails a caption
+  that breaks this.
 
       *The four gates a spawn attempt passes before a mob object exists; the
       boundary marked* only now *is the one that matters.*
@@ -437,6 +444,14 @@ it overwrites `mermaid-init.js` with the default, which wraps nothing.
 - **Quote flowchart labels** (`A["…"]`) so parentheses, colons and slashes
   survive; keep `stateDiagram-v2` transition text on one line after the
   colon; a note is `note right of STATE : text`.
+- **No second colon in a `stateDiagram-v2` transition.** The text after the
+  transition's own colon may not contain another one — the parser stops there
+  and the diagram fails. A comma or a dash instead.
+- **A subgraph title is clipped to one wrapped line.** Mermaid wraps the title
+  at the theme's width and then draws only the first line, silently, so
+  anything past about twenty-five characters is lost on screen. Keep a subgraph
+  title short and put the rest in the caption; the render is the only check
+  that sees this.
 
 **A figure two pages share** is written once, as a mermaid block in a file
 under `src/figures/`, and each page includes it with `{{#include}}` — the
@@ -513,7 +528,11 @@ written with `<br/>` at a CamelCase boundary, a nested class at its dot:
     participant TE as ChunkMap.<br/>TrackedEntity
 
 The break is display only: both gates read a lane expansion with it closed up,
-so the key still holds the name. `python tools/pass7/break_lane_names.py` puts
+so the key still holds the name. **In a message, a break is the last resort and
+not the first**: an explicit `<br/>` turns the 180px wrap off for that whole
+label, so a message that carries a sentence *and* a break renders the sentence
+on one long line and widens the figure. Shorten the message until the name is
+the whole of it, then break the name. `python tools/pass7/break_lane_names.py` puts
 the break in from a render, and is the check after adding a lane.
 
 ### The lane key
@@ -648,6 +667,7 @@ the break in from a render, and is the check after adding a lane.
 | `VST` | `VibrationSystem.Ticker` |
 | `VSel` | `VibrationSelector` |
 | `SSB` | `SculkSensorBlock` |
+| `SSVU` | `SculkSensorBlockEntity.VibrationUser` |
 | `PM` | `PoiManager` |
 | `Brain` | `Brain` |
 | `AP` | `AcquirePoi` |

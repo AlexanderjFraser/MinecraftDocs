@@ -36,12 +36,26 @@ nobody asked for.**
 
 ```mermaid
 flowchart LR
-    S["Server thread — ChunkMap.save decides, SerializableChunkData.copyOf takes the snapshot"] --> W["Worker-Main-n — SerializableChunkData.write builds the CompoundTag"]
-    W --> F["IOWorker.store, foreground priority — joins the encode and parks the tag in pendingWrites"]
-    F --> B["IOWorker.storePendingChunk, background priority — runs only when the lane has no foreground work"]
-    B --> R["RegionFileStorage.write — compress through RegionFileVersion, place the sectors with RegionFile.write"]
-    R --> D["r.X.Z.mca"]
+    S["the Server thread:<br/>SerializableChunkData.copyOf"]:::server
+    W["a worker:<br/>SerializableChunkData.write"]:::worker
+    F["the IO lane, foreground:<br/>IOWorker.store"]:::disk
+    B["the IO lane, background:<br/>IOWorker.storePendingChunk"]:::disk
+    R["RegionFileStorage.write"]:::disk
+    D[("r.X.Z.mca")]:::disk
+    S --> W
+    W --> F
+    F --> B
+    B --> R
+    R --> D
 ```
+
+*One chunk saved, across the three threads that touch it, coloured by which one.
+The server's share is the first box alone, and it ends at a snapshot: everything
+to the right of it happens after the tick that decided to save has finished. The
+two middle boxes are the same lane at two priorities — the foreground call parks
+the tag in `IOWorker.pendingWrites` and returns, and the background one runs
+only when nothing is queued in front of it, which is why a write can sit there
+for a long time and cost nobody anything.*
 
 That figure is the page's answer to *why doesn't saving lag the server*. Apart from
 flushing the position's POI section, the server thread's whole share of a
@@ -150,6 +164,10 @@ saver will be handed instead.
 
 ## A chunk nobody needs any more
 
+The save above is the middle of a longer story, and the longer story is three
+ticks apart. This is the whole of it, from the level change that drops the chunk
+to the write that finally records it.
+
 ```mermaid
 sequenceDiagram
     participant DM as DistanceManager
@@ -160,21 +178,27 @@ sequenceDiagram
     participant SL as ServerLevel
     participant PESM as PersistentEntity<br/>SectionManager
 
-    DM->>CM: the level climbs past ChunkLevel.MAX_LEVEL, updateChunkScheduling adds the key to toDrop
-    Note over CM: a later tick, in ServerChunkCache.tick's unload phase
-    CM->>CM: processUnloads moves the holder from updatingChunkMap to pendingUnloads
-    CM->>CH: scheduleUnload reads getSaveSyncFuture and hangs the unload task off it
+    DM->>CM: the level climbs past ChunkLevel.MAX_LEVEL, so the key joins ChunkMap.toDrop
+    Note over CM,CH: a later tick, in the unload phase of ServerChunkCache.tick
+    CM->>CM: processUnloads moves the holder to ChunkMap.pendingUnloads
+    CM->>CH: getSaveSyncFuture, and the unload task is hung off it
     CH-->>CM: the future completes, so the task is appended to unloadQueue
-    Note over CM: a later tick again, while the tick budget says yes — or unconditionally, past the queue's first 2,000
-    CM->>CH: is getSaveSyncFuture still the same future — if not, scheduleUnload rearms on the new one
-    CM->>CM: pendingUnloads.remove of this exact holder — false if a ticket re-adopted it, and the task ends
-    CM->>CM: setLoaded false, then save — PoiManager.flush, tryMarkSaved, the proto-over-full guard
-    CM->>SCD: copyOf takes the snapshot, and a Worker-Main-n turns it into a CompoundTag
-    CM->>IOW: ChunkMap.write hands that encode future to IOWorker.store on the chunk lane
-    CM->>SL: ServerLevel.unload clears the block entities and the tick containers, then ThreadedLevelLightEngine drops the layers
-    SL->>PESM: later in the same level tick, processUnloads, then EntityStorage.storeEntities on the entities lane
-    IOW-->>CM: PendingStore.result completes, activeChunkWrites goes back down
+    Note over CM,CH: a later tick again, while the budget says yes — or past the queue's first 2,000
+    CM->>CH: getSaveSyncFuture again — a different one, and the task rearms
+    CM->>CM: this exact holder leaves ChunkMap.pendingUnloads, or a ticket took it back
+    CM->>CM: setLoaded false, then save — PoiManager.flush and the proto-over-full guard
+    CM->>SCD: copyOf takes the snapshot, a worker turns it into a CompoundTag
+    CM->>IOW: store, handed the encode future, on the chunk lane
+    CM->>SL: unload clears the block entities, the tick containers and the light layers
+    SL->>PESM: later in the same level tick, processUnloads, then the entities lane
+    IOW-->>CM: the IOWorker.PendingStore future completes, one fewer active write
 ```
+
+*A chunk nobody needs, from the level that stopped needing it to the write that
+records it. The three note bars are three separate ticks, and the two arrows
+that come back are the only two waits in the picture: everything else is a
+hand-off the server thread does not watch. The last two arrows are the
+entities, which leave by a different road and a later step.*
 
 Three things there are load-bearing. The first is that nothing happens until
 `ChunkHolder.saveSync` is done: every promotion future is chained into it by
@@ -257,23 +281,33 @@ costs a copy.
 
 ## Inside a region file
 
+The last box of the first figure is a file format, and it is where the ordering
+that makes a half-finished save survivable actually lives.
+
 ```mermaid
 flowchart TD
-    A["IOWorker.storePendingChunk pops the oldest entry of pendingWrites"] --> B["RegionFileStorage.getRegionFile, an LRU of 256 open files"]
-    B --> C["RegionFile.getChunkDataOutputStream wraps a ChunkBuffer in the selected compressor, NbtIo writes into it"]
+    A["IOWorker.storePendingChunk pops the oldest entry of IOWorker.pendingWrites"] --> B["RegionFileStorage.getRegionFile, an LRU of 256 open files"]
+    B --> C["RegionFile.getChunkDataOutputStream wraps a RegionFile.ChunkBuffer in the compressor, NbtIo writes in"]
     C --> D["closing the buffer back-patches the length and calls RegionFile.write"]
     D --> E{"how many sectors"}
-    E -- "under 256" --> F1["RegionBitmap.allocate takes the first free run"]
-    F1 --> F2["the compressed chunk is written to those new sectors"]
+    E -- "under 256 sectors" --> F1["RegionBitmap.allocate takes the first free run"]
+    F1 --> F2["the compressed chunk goes to those new sectors — the content, first"]
     F2 --> F3["offsets and timestamps updated, then RegionFile.writeHeader"]
     F3 --> F4["any stale sidecar for this chunk is deleted"]
     F4 --> Z["and only now are the old sectors freed"]
-    E -- "256 or more" --> G1["one sector is allocated for a stub"]
-    G1 --> G2["the payload goes to a temp file in the same folder, and a five-byte stub with EXTERNAL_STREAM_FLAG is written to that sector"]
+    E -- "256 sectors or more" --> G1["one sector is allocated for a stub"]
+    G1 --> G2["a five-byte EXTERNAL_STREAM_FLAG stub, and the payload to a temp file"]
     G2 --> G3["offsets and timestamps updated, then RegionFile.writeHeader"]
-    G3 --> G4["the temp file is moved onto c.X.Z.mcc, over the previous copy"]
+    G3 --> G4["the temp file is moved onto c.X.Z.mcc — the content, last"]
     G4 --> Z
 ```
+
+*Two ways to write one chunk, and they put the content and the pointer to it in
+opposite orders. Follow the left arm and the bytes are on disk before the header
+that names them; follow the right arm and the header is written first, pointing
+at a stub, and the real payload only lands when the temp file is moved. Both
+arms meet at the last box, which is the rule that makes either safe: the old
+sectors are not freed until the new ones can be found.*
 
 A `RegionFile` is one *r.X.Z.mca*: two header sectors
 (`RegionFile.SECTOR_BYTES` is 4096) holding a 1024-entry offset table,

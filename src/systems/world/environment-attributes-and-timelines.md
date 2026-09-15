@@ -41,22 +41,42 @@ dusk through it twice, once on each side.
 ## The stack a value falls through
 
 ```mermaid
-flowchart BT
-    DEF["the attribute's own EnvironmentAttribute.defaultValue enters here"] --> DIM
-    DIM["1 — dimension: DimensionType.attributes as EnvironmentAttributeLayer.Constant, folded into the baked base by EnvironmentAttributeSystem.bakeLayerSampler"] --> BIO
-    BIO["2 — biome: one EnvironmentAttributeLayer.Positional for each attribute any biome in the registry mentions"] --> TLS
-    TLS["3 — timelines: DimensionType.timelines, one EnvironmentAttributeLayer.TimeBased for each track a timeline carries"] --> WEA
-    WEA["4 — weather: WeatherAttributes.addBuiltinLayers, added only when Level.canHaveWeather"] --> LF1
-    LF1["client only — the sky colour lerped toward the lightning flash colour"] --> LF2
-    LF2["client only — the sky light factor pinned to 1 while the flash lasts"] --> SAN
-    SAN["EnvironmentAttribute.sanitizeValue clamps the result to the attribute's AttributeRange"]
+flowchart TD
+    DEF["EnvironmentAttribute.defaultValue enters here"]
+    DIM["1 — dimension: DimensionType.attributes, a Constant folded into the baked base"]
+    BIO["2 — biome: one Positional layer per attribute some biome mentions"]
+    TLS["3 — timelines: DimensionType.timelines, one EnvironmentAttributeLayer.TimeBased per track"]
+    WEA["4 — weather: WeatherAttributes.addBuiltinLayers, only where Level.canHaveWeather"]
+    ASK{"who built this stack"}
+    FLASH["two client-only layers, one attribute each"]
+    SAN["EnvironmentAttribute.sanitizeValue clamps to the AttributeRange"]
+    DEF --> DIM
+    DIM --> BIO
+    BIO --> TLS
+    TLS --> WEA
+    WEA --> ASK
+    ASK -- "the server" --> SAN
+    ASK -- "the client" --> FLASH
+    FLASH --> SAN
 ```
+
+*The four rungs every value falls through, and the one branch that is not on
+every value's path. Weather is the last word on the server; the client stacks
+two more layers above it, and they are not general rungs — one lerps the sky
+colour toward the lightning flash and the other pins the sky light factor to 1,
+each bolted to that single attribute. A client asking for anything else falls
+the same four rungs a server does.*
 
 `EnvironmentAttributeSystem.Builder.addDefaultLayers` stacks those four in
 that order and only that order. There is no priority number anywhere and no
 ordering data: a biome cannot run before its dimension, and weather is the
-last word on the server — on the client the two lightning-flash layers sit
-above it. The stack is *per attribute*, too — an attribute nothing
+last word on the server. The client's two extra layers are not a fifth rung:
+`ClientLevel` adds each with
+`EnvironmentAttributeSystem.Builder.addTimeBasedLayer` against **one named
+attribute** — `EnvironmentAttributes.SKY_COLOR` and
+`EnvironmentAttributes.SKY_LIGHT_FACTOR` — so they are two entries in two
+attributes' stacks and are absent from the other forty-six. Each is a no-op
+unless `ClientLevel.getSkyFlashTime` is above zero. The stack is *per attribute*, too — an attribute nothing
 in the level mentions has no `EnvironmentAttributeSystem.ValueSampler` at
 all, and `EnvironmentAttributeSystem.getValue` hands back its default. And it
 is baked once: the whole thing is built in the `ServerLevel` and
@@ -272,25 +292,29 @@ sequenceDiagram
     participant SL as ServerLevel
     participant EAS as Environment<br/>AttributeSystem
     participant EVS as Environment<br/>AttributeSystem.<br/>ValueSampler
-    participant ATS as Attribute<br/>TrackSampler
-    participant SCM as ServerClockManager
-    participant KTS as Keyframe<br/>TrackSampler
     participant Mob as Mob
+    participant ATS as Attribute<br/>TrackSampler
+    participant KTS as Keyframe<br/>TrackSampler
 
-    Note over SL,Mob: one server tick
+    Note over SL,KTS: one server tick
     SL->>EAS: invalidateTickCache — before the world border, before the weather
-    EAS->>EVS: drop the cached value, bump the cache tick id
+    EAS->>EVS: the cached value is dropped, the cache tick id bumped
     Mob->>EAS: getValue(MONSTERS_BURN, position)
     EAS->>EVS: getValue — is any layer of this attribute positional?
     EVS->>EVS: none is — start from the baked base, the default false
     EVS->>ATS: applyTimeBased(value, cache tick id)
-    ATS->>SCM: getTotalTicks(the overworld clock)
-    ATS->>KTS: sample — which keyframe segment, and how far into it
+    ATS->>KTS: sample at ServerClockManager.getTotalTicks of the overworld clock
     KTS-->>ATS: the argument — false at 12542, true again at 23460
-    ATS-->>EVS: BooleanModifier.OR applied to the value
-    EVS->>EVS: weather adds a layer for nine attributes only, and this is not one
-    EVS-->>Mob: sanitizeValue — false, and cached for the rest of the tick
+    ATS-->>EVS: the modifier is BooleanModifier.OR, applied to the value
+    EVS->>EVS: the weather layer is on nine attributes, not this one
+    EVS-->>Mob: false, clamped and cached for the tick
 ```
+
+*One attribute resolved once, on the server, inside one tick. The thing to look
+at is where the tick's work goes: the level's only contribution is the first
+arrow, which throws last tick's answer away, and every arrow after it is the
+stack being walked because a mob asked. Nothing here is pushed — a value exists
+because something wanted it.*
 
 Read the arrows as decisions. `EnvironmentAttributeSystem.invalidateTickCache`
 computes nothing: it drops each sampler's cached value and bumps a counter,
@@ -336,6 +360,9 @@ ticks above the horizon against 10,440 below.
 
 ### The same value on the client
 
+The client resolves the same stack and then does two things to it the server
+never does. Both of them are in the picture, and both of them are about time.
+
 ```mermaid
 sequenceDiagram
     participant Camera as Camera
@@ -351,10 +378,18 @@ sequenceDiagram
     GS->>SAI: accumulate(weight, that biome's attributes) — 216 times
     Note over Camera,SR: between ticks, once per frame
     SR->>EAP: getValue(SKY_COLOR, partialTicks)
-    EAP->>EAS: getValue(attribute, position, interpolator)
-    EAS->>SAI: applyAttributeLayer — weighted blend of every biome in range
-    EAP-->>SR: partialTickLerp between last tick's value and this one
+    opt only on the first frame of the tick that asks for this attribute
+        EAP->>EAS: getValue(attribute, position, interpolator)
+        EAS->>SAI: applyAttributeLayer — weighted blend of every biome in range
+    end
+    EAP-->>SR: AttributeType.partialTickLerp between last tick's value and this one
 ```
+
+*The same stack, on the other side of the wire, with the client's two kinds of
+smoothing around it. Read the two note bars as the boundary they mark: the 216
+biome samples happen once a tick whatever the frame rate, and the **opt** box is
+the part of the frame nobody pays for twice — the stack is resolved by the first
+frame that asks and every later frame in the same tick only lerps.*
 
 The client resolves the *same* stack from the *same* data — it is never sent
 a resolved value. What it adds is two kinds of smoothing the server never
@@ -375,7 +410,12 @@ the *sampling*: the probe runs its 216 samples every tick regardless, and the
 test is applied afterwards, when the layer is applied. The server pays none of
 it — it passes no interpolator at all. In time, each probed value keeps last tick's
 answer beside this tick's and returns `AttributeType.partialTickLerp` between
-them — and prunes itself, dropping any value nobody read during a tick.
+them — and prunes itself, dropping any value nobody read during a tick. The
+resolve itself is **once a tick, not once a frame**:
+`EnvironmentAttributeProbe.ValueProbe.tick` nulls this tick's answer, the first
+frame that asks for the attribute fills it in by walking the whole stack, and
+every frame after that in the same tick does nothing but the lerp. A frame is
+cheap in proportion to how late in its tick it falls.
 
 The probe lives on `Camera`, ticked from `Camera.tick` and emptied by
 `Camera.reset`, and everything that draws the sky goes through it — the sky,

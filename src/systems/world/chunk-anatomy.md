@@ -32,19 +32,44 @@ re-encodes all 4,096 entries into a wider storage before it can be written.**
 ## The four shapes a chunk takes
 
 ```mermaid
-flowchart LR
-    NEW["nothing on disk: ChunkMap.createEmptyChunk"] --> PC
-    DISK["the region file"] -->|"SerializableChunkData.parse, on the worker pool"| SCD["SerializableChunkData"]
-    SCD -->|"read, on the server thread, stored status below full"| PC
-    SCD -->|"read, stored status full: a LevelChunk is built, then wrapped"| IPC
-    PC["ProtoChunk: generation state, written on the worker pool"] -->|"ChunkStatusTasks.full, on the server thread"| LC
-    LC["LevelChunk: the live chunk, owned by the server thread"] -->|"GenerationChunkHolder.replaceProtoChunk"| IPC
-    IPC["ImposterProtoChunk: a ProtoChunk-shaped view over a LevelChunk"] -->|"ImposterProtoChunk.getWrapped"| LC
-    MISS["a lookup that finds nothing there"] --> ELC["EmptyLevelChunk: void air, and a LevelChunk itself"]
+classDiagram
+    class ChunkAccess {
+        <<abstract>>
+        position and height
+        sections, heightmaps, block entities, structures
+    }
+    class ProtoChunk {
+        under construction
+        written on the worker pool
+    }
+    class LevelChunk {
+        part of a Level
+        owned by the server thread
+    }
+    class ImposterProtoChunk {
+        what a still-generating neighbour is handed
+        reads delegate, writes are dropped
+    }
+    class EmptyLevelChunk {
+        void air, one fixed biome
+    }
+    ChunkAccess <|-- ProtoChunk
+    ChunkAccess <|-- LevelChunk
+    ProtoChunk <|-- ImposterProtoChunk
+    LevelChunk <|-- EmptyLevelChunk
+    ProtoChunk ..> LevelChunk : promoted, by ChunkStatusTasks.full
+    ImposterProtoChunk --> LevelChunk : holds the one it stands in for
 ```
 
-`ChunkAccess` is the abstract chunk and has exactly two direct concrete
-lines — `ProtoChunk` (`ChunkType.PROTOCHUNK`) and `LevelChunk`
+*The four shapes and the one abstract base, with the two relations that are not
+inheritance: the dashed arrow is the promotion the whole part exists to reach,
+and the solid one is a wrapper holding the chunk it pretends to be. The two
+subclasses hang off different parents, which is the thing to look at — an
+imposter is a proto chunk and an empty chunk is a live one.*
+
+The diagram is the hierarchy and nothing else, because the hierarchy is short
+enough to be the whole truth. `ChunkAccess` is the abstract chunk and has
+exactly two direct concrete lines — `ProtoChunk` (`ChunkType.PROTOCHUNK`) and `LevelChunk`
 (`ChunkType.LEVELCHUNK`) — with `ImposterProtoChunk` a subclass of the first
 and `EmptyLevelChunk` of the second. Nothing else extends it.
 
@@ -138,18 +163,34 @@ added and removed sets are the renderer's feed of which sections exist.
 
 ## Sections and their four counters
 
+A chunk is four things nested inside each other, and the four counters hang off
+the middle one. Here is the whole of what one holds.
+
 ```mermaid
 flowchart TD
-    LC["LevelChunk: one 16 by 16 column of the whole build height"] --> ARR["ChunkAccess.sections: an array of LevelChunkSection, 24 in the overworld, never a null slot"]
-    LC --> HM["four Heightmaps: 256 entries of 9 bits each"]
-    ARR --> ST["LevelChunkSection.states: PalettedContainer of BlockState, 4096 entries"]
-    ARR --> BIO["LevelChunkSection.biomes: PalettedContainerRO of Biome, 64 entries, one per 4 by 4 by 4 quart"]
-    ARR --> CNT["four shorts: nonEmptyBlockCount, fluidCount, tickingBlockCount, tickingFluidCount"]
-    ST --> DATA["PalettedContainer.Data: one volatile record of configuration, palette and storage"]
-    BIO --> DATA
-    DATA --> PAL["the palette, on the block-state ladder: one value at 0 bits, then anything from 2 to 16 values at 4 bits, 17 to 256 hashed, then the registry itself. Biomes climb a shorter ladder"]
-    DATA --> BST["the BitStorage: ZeroBitStorage, or a SimpleBitStorage of 256 longs at 4 bits, 342 at 5, 512 at 8"]
+    LC["LevelChunk: one 16 by 16 column of the build height"]
+    HM["four Heightmaps, 256 entries of 9 bits each"]
+    ARR["ChunkAccess.sections: 24 LevelChunkSection in the overworld, never a null slot"]
+    CNT["four shorts: non-empty blocks, fluids, and a ticking count of each"]
+    ST["LevelChunkSection.states: PalettedContainer of BlockState, 4,096 entries"]
+    BIO["LevelChunkSection.biomes: PalettedContainerRO of Biome, 64 entries"]
+    D1["its own PalettedContainer.Data: a Palette and a BitStorage, sized together"]
+    D2["its own PalettedContainer.Data, on a shorter ladder"]
+    LC --> HM
+    LC --> ARR
+    ARR --> CNT
+    ARR --> ST
+    ARR --> BIO
+    ST --> D1
+    BIO --> D2
 ```
+
+*Everything a chunk holds, down to the bit storage. The two containers of a
+section have a `PalettedContainer.Data` each and never share one; the four
+counters hang off the section rather than the containers, which is why they can
+answer without touching either. Nothing in this picture is light — the two 4-bit
+fields live in the light engine's own storage, not on the section
+([lighting](lighting.md#one-batch-and-what-it-publishes)).*
 
 The array never has a hole: `ChunkAccess.replaceMissingSections` runs in the
 constructor and fills every empty slot with a fresh all-air section from the

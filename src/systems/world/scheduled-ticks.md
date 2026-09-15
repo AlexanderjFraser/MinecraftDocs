@@ -51,24 +51,61 @@ will.
 
 ## The pipeline, end to end
 
+The pipeline has a seam in it that is also this page's one threading fact — **the
+drain is server-thread only, and booking is not** — so it is two figures. This
+is booking, and anything may do it from anywhere.
+
 ```mermaid
 flowchart TD
-    B["a block books: ScheduledTickAccess.scheduleTick"] --> C["LevelAccessor.createTick — game time plus delay, a TickPriority, the next sub-order"]
-    C --> S["LevelTicks.schedule finds the chunk's container"]
-    S -- "no container registered for that chunk" --> DROP["Util.logAndPauseIfInIde — logged and dropped, never deferred"]
-    S --> D["LevelChunkTicks.schedule — queued only if ticksPerPosition did not hold this type and position"]
-    D --> I["onTickAdded: if the new tick is now the head, nextTickForContainer learns the earlier time"]
-    I --> W["waiting — one priority queue per chunk, in ScheduledTick.DRAIN_ORDER"]
-    W --> SC["LevelTicks.sortContainersToTick walks the index for containers due this tick"]
-    SC -- "chunk fails ServerLevel.isPositionTickingWithEntitiesLoaded" --> W
-    SC --> DR["LevelTicks.drainContainers polls the best container, LevelChunkTicks.poll frees the dedup slot"]
-    DR --> RL["rescheduleLeftoverContainers, which always runs and has work only when the budget MAX_SCHEDULED_TICKS_PER_TICK cut the drain short: the rest go back to the index, still due next tick"]
-    DR --> RUN["LevelTicks.runCollectedTicks hands each position and type to ServerLevel.tickBlock or ServerLevel.tickFluid"]
-    RUN -- "the block books again from inside its own run" --> D
-    RUN --> CL["LevelTicks.cleanupAfterTick empties toRunThisTick, containersToTick, alreadyRunThisTick"]
+    B["a block books: ScheduledTickAccess.scheduleTick"]
+    C["LevelAccessor.createTick — game time plus delay, a TickPriority, a sub-order"]
+    S{"LevelTicks.schedule looks for the chunk's container"}
+    DROP["Util.logAndPauseIfInIde — logged and dropped, never deferred"]
+    D{"LevelChunkTicks.ticksPerPosition already holds this type and position"}
+    SKIP["dropped in silence, even when this one is sooner"]
+    Q[("one priority queue per chunk, ordered by ScheduledTick.DRAIN_ORDER")]
+    B --> C
+    C --> S
+    S -- "no container" --> DROP
+    S -- "found" --> D
+    D -- "yes" --> SKIP
+    D -- "no" --> Q
 ```
 
-Everything below is one stage of that figure.
+*Everything that can happen to an appointment before it is a queued tick — and
+two of the three outcomes are that it is not one. The right-hand refusal is the
+page's subject: the dedup slot is checked against the type and position alone,
+so the second booking is thrown away whether or not it is due sooner than the
+one already there.*
+
+The drain is the other half, it runs once per level tick per type, and it never
+leaves the server thread.
+
+```mermaid
+flowchart TD
+    IDX[("LevelTicks.nextTickForContainer: one entry per container, the head's time")]
+    SC{"LevelTicks.sortContainersToTick asks LevelTicks.tickCheck"}
+    DR["LevelTicks.drainContainers, while the budget lasts"]
+    RUN["LevelTicks.runCollectedTicks, to ServerLevel.tickBlock or ServerLevel.tickFluid"]
+    CL["LevelTicks.cleanupAfterTick empties all four working collections"]
+    AGAIN["a block books again, from inside its own run"]
+    IDX --> SC
+    SC -- "the chunk is not ticking" --> IDX
+    SC -- "due, and ticking" --> DR
+    DR -- "overtaken, budget left" --> DR
+    DR -- "not due, or the budget spent" --> IDX
+    DR --> RUN
+    RUN --> CL
+    RUN --> AGAIN
+```
+
+*The three phases of one drain, and the two ways back to the index that are not
+failures. A container returns to the index when its chunk is not ticking and
+when the budget runs out, and in both cases its ticks are late and never lost.
+The bottom-right box is the loop this page's repeater lives in: the run books
+the next appointment, which re-enters the figure above.*
+
+Everything below is one stage of those two figures.
 
 ## Booking: a type, a position, a time and a tie-breaker
 
@@ -243,26 +280,32 @@ sequenceDiagram
     participant RB as RepeaterBlock
     participant LTs as LevelTicks
     participant LCTs as LevelChunkTicks
-    participant LC as LevelChunk
 
     SL->>RB: neighborChanged — the wire behind went to 15
-    RB->>RB: DiodeBlock.checkTickOnNeighbor — not locked, POWERED false, shouldTurnOn true
+    RB->>RB: DiodeBlock.checkTickOnNeighbor — not locked, POWERED false, it should turn on
     RB->>LTs: willTickThisTick at this position? no
     RB->>SL: scheduleTick — delay 2, TickPriority.HIGH
     SL->>SL: createTick — gameTime plus 2, HIGH, nextSubTickCount
     SL->>LTs: schedule
-    LTs->>LCTs: schedule — ticksPerPosition accepts, tickQueue takes it
-    LCTs-->>LTs: onTickAdded — nextTickForContainer learns gameTime plus 2
-    Note over SL,RB: next tick, the wire drops to 0. checkTickOnNeighbor finds POWERED false and shouldTurnOn false, so it books nothing and cancels nothing
-    Note over SL,LC: two ticks after the booking, ServerLevel.tick, tickPending, blockTicks
+    LTs->>LCTs: schedule — the dedup slot is free, the queue takes it
+    LCTs-->>LTs: updateContainerScheduling — the index learns gameTime plus 2
+    Note over SL,RB: next tick, the wire drops to 0 — the diode books nothing and cancels nothing
+    Note over SL,LCTs: two ticks after the booking, in the level tick's pending-block phase
     LTs->>LCTs: poll — the tick leaves the queue and the dedup set
     LTs->>SL: tickBlock at this position, for Blocks.REPEATER
     SL->>RB: still a repeater here, so BlockBehaviour.BlockStateBase.tick
-    RB->>SL: setBlock POWERED true, update flags 2
-    SL->>LC: setBlockState, then DiodeBlock.onPlace
-    RB->>SL: updateNeighborsInFront — the block it powers, and that block's other neighbours
-    RB->>LTs: shouldTurnOn is false now, so book the turn-off at TickPriority.VERY_HIGH
+    RB->>SL: setBlock POWERED true, with Block.UPDATE_CLIENTS
+    SL->>RB: the section write lands, then DiodeBlock.onPlace
+    RB->>SL: neighborChanged on the block it powers, then that block's other sides
+    RB->>SL: scheduleTick again — the turn-off, at TickPriority.VERY_HIGH
 ```
+
+*One repeater, from the wire behind it changing to the appointment for turning
+itself off again. The two note bars are the two ticks nothing happens in, and
+the middle one is the fact the page is built on: the wire went back to zero and
+the booking already made was neither cancelled nor noticed. Every arrow that books
+goes through `ServerLevel` — the block never touches the queue directly, which
+is what makes the one threading rule enforceable.*
 
 **The booking is a priority the block chooses, not one this queue assigns.**
 The repeater above asks for `TickPriority.HIGH` to turn on and

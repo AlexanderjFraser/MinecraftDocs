@@ -364,7 +364,7 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **For pass 7, the figures.**
 
-- **Three of Part IV's ten pages open on a figure the page cannot yet be read
+- ~~**Three of Part IV's ten pages open on a figure the page cannot yet be read
   against**, and every reader said so independently — the same part-wide
   pattern session C found in Part III, which makes it two parts of two.
   `chunk-storage`'s lead flowchart hands over *foreground priority*,
@@ -374,25 +374,25 @@ it. Everything it acted on itself is struck in place above, or logged in
   the paragraph beneath says the number is wrong for the common case;
   `fluids`' bucket sequence names `Block.UPDATE_SKIP_ON_PLACE`, "the drain",
   `getNewLiquid` and "the shape pass", none of them yet defined. This is the
-  lead figure's contract, not three pages' bad luck. [kind=figure]
-- `game-events-and-vibrations`' gate flowchart has fifteen nodes and eight
+  lead figure's contract, not three pages' bad luck. [kind=figure]~~ — **done, pass 7 session D**: all three. `chunk-storage`'s lead figure is six short boxes coloured by thread; `chunk-generation-pipeline`'s is now a table and a four-ring pyramid; `fluids`' bucket sequence lost the three names it spent early.
+- ~~`game-events-and-vibrations`' gate flowchart has fifteen nodes and eight
   refusal exits, and two edge labels carry five and six conditions each — a
-  density question at column width and on a slide. [kind=figure]
-- `game-events-and-vibrations`' trace: one lane, `SculkSensorBlock`, stands for
+  density question at column width and on a slide. [kind=figure]~~ — **done, pass 7 session D**: split at the joint the prose already names — the dispatcher's walk and the listener's five refusals, one shared sink, no edge label over four words. 24 nodes at 0.54 became 11 and 10, both at scale 1.
+- ~~`game-events-and-vibrations`' trace: one lane, `SculkSensorBlock`, stands for
   both the block and its block entity, and its own arrow label says so
   ("onReceiveVibration on **SculkSensorBlockEntity**'s `VibrationSystem.User`").
-  Either two lanes or a note. [kind=figure]
-- `lighting`'s batch flowchart draws `updatingSectionData` reaching
+  Either two lanes or a note. [kind=figure]~~ — **done, pass 7 session D**: two lanes. `SculkSensorBlockEntity.VibrationUser` is a new key row, and the block keeps its own.
+- ~~`lighting`'s batch flowchart draws `updatingSectionData` reaching
   `propagateDecreases` and `propagateIncreases` but not `checkNode`, which the
-  prose says also writes a stored level. [kind=figure]
-- `scheduled-ticks`' repeater trace gives `LevelChunk` a lane that carries one
-  message and decides nothing the `ServerLevel` lane does not. [kind=figure]
-- `world/README`'s part figure is described as a conveyor "in order" and drawn
+  prose says also writes a stored level. [kind=figure]~~ — **done, pass 7 session D**: the figure was redrawn around the two maps rather than the stages — all three stages now write the scratch map, `LightEngine.checkNode` included, and the one arrow out of it is the publish.
+- ~~`scheduled-ticks`' repeater trace gives `LevelChunk` a lane that carries one
+  message and decides nothing the `ServerLevel` lane does not. [kind=figure]~~ — **done, pass 7 session D**: the `LevelChunk` lane is folded, and with it the `DiodeBlock` method that was riding an arrow into it; four lanes, scale 1.
+- ~~`world/README`'s part figure is described as a conveyor "in order" and drawn
   as a cycle with three branches; pass 6 named which box is not a page, but the
-  shape sentence and the picture still disagree about the loop. [kind=figure]
-- `chunk-anatomy`'s first figure is about which shape *becomes* which and the
+  shape sentence and the picture still disagree about the loop. [kind=figure]~~ — **done, pass 7 session D**: the prose was the cheaper end — Part IV is a **ring**, said so, and the figure is numbered to the watch order with a caption saying what an arrow means.
+- ~~`chunk-anatomy`'s first figure is about which shape *becomes* which and the
   paragraph under it is about which class *extends* which — two different
-  graphs over the same five names. [kind=figure]
+  graphs over the same five names. [kind=figure]~~ — **done, pass 7 session D**: the figure is now the graph the paragraph is about — the book's third `classDiagram`, drawing the hierarchy with the wrap and the promotion; the origin branch was a logged cut.
 
 **For pass 8, the voice.**
 
@@ -463,16 +463,16 @@ it. Everything it acted on itself is struck in place above, or logged in
 
 **For pass 7, the figures.**
 
-- Part IV's landing figure had `GP -- "a chunk that still needs its light
+- ~~Part IV's landing figure had `GP -- "a chunk that still needs its light
   finished" --> LI`, which draws lighting as happening *after* the pipeline when
   both light steps are steps nine and ten of the twelve. Session D relabelled it
   *steps nine and ten, on the other executor*; pass 7 should judge whether the
   edge belongs at all, since the conveyor's other edges are hand-offs and this
-  one is an inclusion. [kind=figure]
-- `chunk-anatomy`'s section figure draws the two containers and the four
+  one is an inclusion. [kind=figure]~~ — **done, pass 7 session D**: the edge stays and the label says what it is — *two of its twelve statuses* — and the caption names it as the figure's one inclusion among five hand-offs.
+- ~~`chunk-anatomy`'s section figure draws the two containers and the four
   counters but not the light, and the glossary's *Section* entry has to say
   "its light lives in the light engine's own storage, not on the section"
-  because no figure does. [kind=figure]
+  because no figure does. [kind=figure]~~ — **done, pass 7 session D**: the figure now says it in its caption rather than by drawing a box — the section figure names what a section holds and the caption names the one thing it does not, so the glossary no longer has to.
 
 **For pass 8, the voice.**
 
@@ -3187,7 +3187,15 @@ page's true picture. — **one of the three answered, pass 7 session A**: on
 `entity-lifecycle` the state diagram is not the page's picture (a spawn is not
 a state machine) but it *is* the owner of the page's second half, and taking
 that half off the entry sequence is what stopped the two figures drawing one
-mechanism. The other two are still open, for sessions D and F. [kind=figure]
+mechanism. The other two are still open, for sessions D and F. — **both
+answered, pass 7 session D**: on `points-of-interest` the state diagram *is* the
+page's true picture and now leads it — a ticket's whole life is three states,
+and the page's hook is which transitions are missing from them. On
+`tickets-and-loading` it is not the page's picture but it *is* the owner of one
+mechanism the lead figure had been drawing too, so the lead figure now stops at
+the two graphs and their join and the four statuses and their thresholds are the
+state diagram's alone. That was the part's one case of two figures for one
+mechanism. [kind=figure]
 
 **The closing device did not hold.** Sixty-three of ninety-eight pages end
 on a questions section (sixty *Questions players ask* verbatim, three
@@ -5035,12 +5043,12 @@ for other passes and the cuts it logged.*
 
 ### For pass 7 (the figures)
 
-- **`world/environment-attributes-and-timelines`' stack figure is a
+- ~~**`world/environment-attributes-and-timelines`' stack figure is a
   `flowchart BT` under the heading *The stack a value falls through***, so
   the value climbs while the prose says it falls, and only the 1–4 numbering
   settles the direction. Judge the direction and the heading together — the
   heading is an anchor seven pages land on, so the figure is the cheaper end.
-  [kind=figure]
+  [kind=figure]~~ — **done, pass 7 session D**: the heading kept its anchor and the figure changed — `flowchart TD`, the default entering at the top and falling, and the client-only rungs off the trunk as a branch rather than two more steps in the stack, which they never were.
 - **The two client-only lightning rungs in the same figure** sit inline
   between weather and `sanitizeValue`, which reads as though the server
   passes through them too; the prose corrects it two paragraphs later. A
@@ -6478,3 +6486,59 @@ Part 3; these are the pieces of work that ruling created.
   one, and its caption says so under F3's own escape clause. If two more parts
   need it, the table wants a fourth row. [kind=figure]
 
+
+- **A caption that closes its italics is not a caption**, and nothing but the
+  render ever said so. `custom.css` matches `p:has(> em:only-child)`, so a
+  caption written `*…the four values of* \`FullChunkStatus\` *— …*` has two
+  `<em>` children, stops matching, and loses its styling and its figure number
+  in the built page alone. Thirteen were live when session D looked and **three
+  had shipped in Part III**, which is to say the fault outlived the session that
+  invented the caption and the two that wrote sixty of them. All thirteen fixed,
+  the rule is in `TEMPLATE.md` (one italic run, names in backticks *inside* it),
+  and `check_mermaid.js --probe` now gates it with six cases. Session O should
+  read it as the shape to look for: **a standard whose only enforcement is the
+  stylesheet is a standard nothing checks.** [kind=record]
+- **An explicit `<br/>` turns the theme's wrap off for the whole label.** F18
+  sends part sessions to break a long name in a message, and doing that to a
+  message that carries any other words makes the figure *wider*: four such
+  repairs took `world/lighting`'s trace from 0.69 to 0.55 and its type from
+  11.1px to 8.8px, and removing them put it back. F18's three options are now in
+  their measured order and `TEMPLATE.md` says why. [kind=record]
+- **A subgraph title is clipped to one wrapped line, silently.** Mermaid wraps
+  the title at the theme's width and draws only the first line, so
+  `chunk-generation-pipeline`'s nested-ring pyramid lost *STRUCTURE_STARTS: 23
+  by 23, 529 chunks* and its innermost ring lost its whole status name. About
+  twenty-five characters is the budget; the rest goes in the caption.
+  `TEMPLATE.md`'s *What mermaid 11.6.0 rejects* has it, with the second rule
+  the same page found — **no second colon in a `stateDiagram-v2` transition**,
+  which fails the parse outright. [kind=record]
+- **Seven lanes is 0.70 and 11.2px, exactly.** Five of Part IV's twenty-seven
+  figures are still below 0.75 and every one of them is a seven-lane sequence
+  diagram with no label over twelve words — the arithmetic F7's amendment
+  states, met. Nothing but folding a lane moves them, and folding one is worth
+  about 0.10 (`fluids` 0.68 → 0.79, `scheduled-ticks` 0.97 → 1.00). Session O
+  should read *shrunk below 0.75* against the lane count before treating it as
+  a fault. [kind=record]
+- **Part IV's ten sections that asked a viewer for a figure**, none of them
+  drawn: `chunk-anatomy`'s *The permit, and what happens to the thread that
+  misses it*; `chunk-storage`'s *The way back in*; `environment-attributes`'
+  *Arguments, not values*; `fluids`' *Four searches, and the losers still
+  vote*; `game-events`' *What arrival costs the block*; `lighting`'s *The sky
+  column is a table, not a flood*; `points-of-interest`'s *A record appears
+  when a block changes, sometimes a task late*; `scheduled-ticks`' three
+  destinations for a container; `tickets-and-loading`'s *The number line*. The
+  part gained four figures this session, and all four were splits at a
+  mechanism's own joint rather than any of these. **The two strongest are the
+  two that are a page's own hook carried entirely in prose** — *Arguments, not
+  values* and *Four searches* — and the one that is a tool job rather than a
+  drawing job is *The number line*, a 0–45 scale with bands, which mermaid
+  cannot draw and `map_source.py` could. [kind=figure]
+- **`chunk-anatomy`'s origin branch, cut.** The old first figure drew where
+  each of the four shapes comes from — `ChunkMap.createEmptyChunk`,
+  `SerializableChunkData.parse` on the pool, the stored-status-full read that
+  builds a `LevelChunk` and wraps it, and the lookup that finds nothing. All of
+  it is true and none of it is this section's subject, which is the hierarchy
+  the paragraph beneath states; the two construction sites belong to
+  `chunk-generation-pipeline` and `chunk-storage` by F11. Cut rather than
+  moved, because both owner pages already trace their own half.
+  [kind=record]

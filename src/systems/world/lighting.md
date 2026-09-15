@@ -41,25 +41,32 @@ sequenceDiagram
     participant CH as ChunkHolder
     participant CL as ClientLevel
 
-    Note over LC,CH: one server tick, inside Level.setBlock
-    LC->>LC: setBlockState sees different light properties, so ChunkSkyLightSources.update runs here and now
-    LC->>TLE: checkBlock, wrapped as a PRE_UPDATE task and submitted at the chunk's queue level
+    Note over LC,CH: one server tick, inside LevelChunk.setBlockState
+    LC->>LC: the light properties differ, so the sky-light sources are rebuilt
+    LC->>TLE: checkBlock, as a PRE_UPDATE task at the chunk's queue level
     Note over LC,SCC: still the same tick, and nothing has been lit
-    SCC->>TLE: pollTask found no distance-graph work, so tryScheduleUpdate
+    SCC->>TLE: tryScheduleUpdate, because the poll found no chunk work
     Note over TLE,LLSS: the light executor, off the server thread
     TLE->>BLE: the window's PRE tasks, then LevelLightEngine.runLightUpdates
     BLE->>BLE: checkNode enqueues a pull-in decrease and an emission increase of 14
-    BLE->>LLSS: propagateDecreases to empty, then propagateIncreases writing 14, 13, 12 and down
-    LLSS->>LLSS: markNewInconsistencies, then swapSectionMap publishes a copy
+    BLE->>LLSS: setStoredLevel, 14 then 13, 12 and down, as the increases propagate
+    LLSS->>LLSS: the changed sections are spliced in, then a fresh copy is published
     LLSS->>SCC: onLightUpdate once per affected section
     Note over SCC,CH: back on the server thread, whenever the posted task is polled
-    SCC->>CH: sectionLightChanged, which bails below INITIALIZE_LIGHT, then marks unsaved, then bails again with no ticking chunk
+    SCC->>CH: sectionLightChanged — it bails below INITIALIZE_LIGHT, and again with no ticking chunk
     Note over SCC,CH: end of ServerChunkCache.tickChunks, normally the next tick
-    SCC->>CH: broadcastChangedChunks reaches broadcastChanges
-    CH->>CL: ClientboundLightUpdatePacket to players this chunk borders, put on lightUpdateQueue by ClientPacketListener
+    SCC->>CH: broadcastChanges, once the chunk tick is over
+    CH->>CL: Clientbound<br/>LightUpdatePacket
     Note over CL: the next frame, not the next tick
     CL->>CL: pollLightUpdates, applyLightData, then runLightUpdates on the client's own engine
 ```
+
+*A torch placed, and the four boundaries the light crosses before a wall is
+drawn lit. Read the note bars rather than the arrows: the placement and the
+lighting are in the same tick but not on the same thread, the packet waits for
+the end of the chunk tick, and the client applies it on a frame rather than a
+tick. Nothing anywhere on this page blocks the server thread on a light
+result.*
 
 Every section below walks one stretch of that diagram. Two classes are absent
 because they carry no decision: `ChunkTaskDispatcher`, which holds the queued
@@ -155,21 +162,38 @@ thread.
 
 ## One batch, and what it publishes
 
+The two middle arrows of that trace are one batch on the light executor, and a
+batch is defined by the two maps it sits between rather than by the flooding it
+does.
+
 ```mermaid
 flowchart TD
-    PRE["ThreadedLevelLightEngine.runUpdate takes a window of up to 1000 queued tasks and runs the PRE_UPDATE ones"]
-    PRE --> NODES["every checkBlock in that window has now added a position to LightEngine.blockNodesToCheck"]
-    NODES --> LAYER["LevelLightEngine.runLightUpdates runs the block engine to completion, then the sky engine, each running the stages below"]
-    LAYER --> C["checkNode on every queued position, deciding what to enqueue, then the set is cleared"]
-    C --> D["propagateDecreases drains decreaseQueue to empty, including the refills it discovers"]
-    D --> I["propagateIncreases drains increaseQueue to empty, including those refills"]
-    I --> M["markNewInconsistencies splices queuedSections in and drops removed sections"]
-    M --> S["swapSectionMap publishes a fresh copy and fires LightChunkGetter.onLightUpdate once per affected section"]
-    S --> POST["the POST_UPDATE tasks of that same window run, and the window is dropped"]
-    UP["updatingSectionData, the engine's own map, cloned per section on its first write of the batch"] -.-> D
-    UP -.-> I
-    S -.-> VIS["visibleSectionData, volatile, and what every other thread reads"]
+    PRE["ThreadedLevelLightEngine.runUpdate takes a window of up to 1,000 tasks"]
+    C["LightEngine.checkNode, on every queued position"]
+    D["LightEngine.propagateDecreases, to an empty queue"]
+    I["LightEngine.propagateIncreases, to an empty queue"]
+    UP[("LayerLightSectionStorage.updatingSectionData: the scratch map, cloned per section")]
+    S["LayerLightSectionStorage.markNewInconsistencies,<br/>then LayerLightSectionStorage.swapSectionMap"]
+    VIS[("LayerLightSectionStorage.visibleSectionData: volatile, and what every reader, saver and packet builder sees")]
+    POST["the window's POST_UPDATE tasks run, and the window is dropped"]
+    PRE --> C
+    C --> D
+    D --> I
+    C -- "writes" --> UP
+    D -- "writes" --> UP
+    I -- "writes" --> UP
+    I --> S
+    UP -- "copied whole" --> S
+    S --> VIS
+    S --> POST
 ```
+
+*One batch, and the two maps it is written between. The three stages down the
+left all write the same scratch map and none of them writes the one anybody
+else can see; the single arrow out of it, at the end, is the whole of what
+another thread ever observes. That is why the picture has two cylinders and not
+one — and why a reader gets the state before the batch or the state after it,
+never a half-propagated flood.*
 
 The two maps are why no reader of light ever waits on the light engine.
 `LayerLightSectionStorage.updatingSectionData` is the engine's scratch copy

@@ -79,8 +79,17 @@ tallest figure in the book fell 6,010px to 2,311px when its gate clauses moved
 into a table beside it, and the part's real fault turned out to be **twelve
 messages labelled with the caller's method and drawn arriving at the callee**,
 one on every page, every one a gate failure — the shape the remaining part
-sessions should look for first.
-Sessions D to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
+sessions should look for first. **Session D ran the same day** over Part IV, the
+largest part by figures: twenty-four became twenty-seven, four of them splits at
+a mechanism's own joint, and the part's fault was Part III's again — fourteen of
+its nineteen gate failures were the caller's method on the callee's arrow, which
+makes it four parts of four. Its own finding is about the standard rather than
+the pages: **a caption that closes its italics mid-way stops matching
+`custom.css`'s selector and silently loses its styling and its number**, and
+thirteen were live, three of them already shipped in Part III. All fixed, the
+rule in `TEMPLATE.md`, and `check_mermaid.js` gates it now — a standard whose
+only enforcement is the stylesheet is a standard nothing checks.
+Sessions E to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -624,3 +633,77 @@ that the owner has not understood; recording is after pass 10.
   spends. Twelve queue entries struck with the page open, five opened. All six
   gates green (the figure-name gate still report-only, 88 unresolved of 2,515
   corpus-wide). Deployed.
+
+- **2026-09-15, pass 7 session D (Opus) — Part IV · The world: the figures.**
+  Eleven pages, twenty-four figures in and **twenty-seven** out, one viewer agent
+  per page with the picture and the section and nothing else. Four of the new ones
+  are splits at a mechanism's own joint, and every joint was one the prose already
+  named: `game-events-and-vibrations`' twenty-four-node cascade — the worst figure
+  in the part at 0.54 and 8.6px, taller than five screens — became the dispatcher's
+  walk and one listener's five refusals, both at scale 1; `fluids`' tick became
+  *what state should be here* and *what is done about it*; `scheduled-ticks`'
+  pipeline became booking and draining, which is that page's own bold claim about
+  which of the two is server-thread only; and
+  `chunk-generation-pipeline`'s twelve-status chain — a table wearing a flowchart,
+  three facts in every node and twelve arrows saying only *next* — became a
+  four-column table beside a new figure of four nested rings, which is what the word
+  *pyramid* had been doing all along. `chunk-anatomy`'s lead figure is the book's
+  third `classDiagram`: its heading promised four shapes, the paragraph under it
+  stated a hierarchy, and the old figure drew neither. Across the part: **no type
+  under 9px, no figure over fifteen nodes, no lane over seven**, the tallest figure
+  4,978px → 2,077px, every figure captioned, every non-lead figure given a lead-in,
+  and the figure gate's **nineteen unresolved names and sixty-three notes are none
+  of either**.
+
+  **The part's fault was Part III's fault again.** Fourteen of the nineteen gate
+  failures were one device — a message labelled with the *caller's* own method and
+  drawn arriving at the *callee* — which makes it four parts of four. It is worth
+  saying why it keeps being caught: the gate checks a message's head against the
+  lane it is sent to, so a caller's method is by construction not a member of that
+  lane. What two fact-checks could not see, a mechanical rule sees every time.
+
+  **The session's own finding is about the standard rather than the pages.** A
+  caption is the italic paragraph after a figure, and `custom.css` matches it with
+  `p:has(> em:only-child)`. An author who closes the italics to set a name and
+  reopens them writes *two* `<em>` children, the selector stops matching, and the
+  paragraph silently loses its styling and its figure number — in the built page
+  alone. The markdown looks right, mermaid parses, `verify_names.py` passes.
+  **Thirteen were live when this session looked, and three had already shipped in
+  Part III**: the fault outlived the session that invented the caption and the two
+  that wrote sixty of them. All thirteen fixed, the rule written into
+  `TEMPLATE.md`, and `check_mermaid.js` now gates it with a six-case `--probe`. The
+  lesson generalises past captions: **a standard whose only enforcement is the
+  stylesheet is a standard nothing checks.**
+
+  Two more render traps, both invisible in source. An explicit `<br/>` turns the
+  theme's 180px wrap off for its *whole* label, so F18's instruction to break a long
+  name inside a message makes the figure wider unless the name is the whole message
+  — four such repairs took `lighting`'s trace from 0.69 to **0.55** and its type
+  from 11.1px to 8.8px, and taking them out again put it back. And a subgraph title
+  is clipped to one wrapped line, which ate the outer ring of the new pyramid until
+  it was cut to twenty-three characters. Both are now in `TEMPLATE.md`, beside the
+  `stateDiagram-v2` second-colon parse failure the same page found. One tool change,
+  and it is the same shape as B's and C's: `check_figure_names.py` closed up a
+  `<br/>` tight on both sides wherever it appeared, so a node label breaking its
+  line after a comma welded two names into a third that is in no decompile — one
+  rule, two probe cases, the third tool blindness a part session has found in three
+  sessions.
+
+  Nine corrections, all in [pass9.md](pass9.md). The sharpest is
+  `environment-attributes-and-timelines`, whose stack figure drew the two
+  lightning-flash layers as rungs *every* value falls through when `ClientLevel`
+  bolts each to **one named attribute**, so they are absent from the other
+  forty-six; beside it, the same page's client trace asserted that the whole stack
+  re-resolves every frame when the probe resolves once a tick and every later frame
+  in that tick only lerps. Also settled: the queue's long-open question about
+  whether a secondary state diagram is a page's true picture, answered for both of
+  its remaining pages — **yes** on `points-of-interest`, where a ticket's whole life
+  is three states and the hook is which transitions are *missing* from them, and
+  **no** on `tickets-and-loading`, where it is not the page's picture but is the
+  owner of the four statuses, which is what stopped that page drawing one mechanism
+  twice. Found and deliberately left: five of the part's figures are still below
+  0.75, and every one is a seven-lane sequence diagram with no label over twelve
+  words — precisely the arithmetic F7's amendment states. Folding a lane is worth
+  about 0.10 and nothing else moves them. Eleven queue entries struck with the page
+  open, seven opened. All six gates green (the figure-name gate still report-only,
+  69 unresolved of 2,489 corpus-wide). Deployed.
