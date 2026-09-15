@@ -130,22 +130,28 @@ sequenceDiagram
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant ACM as Abstract<br/>ContainerMenu
     participant RemS as RemoteSlot
-    participant CSync as Container<br/>Synchronizer
 
     MPGM->>MPGM: copy every slot's stack, before touching anything
-    MPGM->>ChestM: clicked with QUICK_MOVE, predicted on the twin
+    MPGM->>ChestM: clicked with QUICK_MOVE, on the client's own copy
     ChestM->>ChestM: quickMoveStack, then moveItemStackTo backwards
     MPGM->>Wire: ServerboundContainerClickPacket, state id plus changed slots as hashes
-    Wire->>SGPL: handleContainerClick, at the top of the server tick
-    SGPL->>ACM: suppressRemoteUpdates, then the same clicked on the real chest
-    SGPL->>ACM: setRemoteSlotUnsafe per claimed hash, then setRemoteCarried
-    ACM->>RemS: receive, which throws away any concrete stack it held
-    SGPL->>ACM: resumeRemoteUpdates, then broadcastChanges
-    ACM->>RemS: matches?
-    RemS->>RemS: the hash agrees, so adopt the server's stack as the copy
-    RemS-->>CSync: nothing, sendSlotChange is never reached
-    CSync-->>Wire: nothing goes down
+    rect rgba(0, 0, 0, 0.04)
+        Note over MPGM,RemS: the server tick that drains the packet
+        Wire->>SGPL: handleContainerClick
+        SGPL->>ACM: suppressRemoteUpdates, then the same clicked on the real chest
+        SGPL->>ACM: setRemoteSlotUnsafe per claimed hash, then setRemoteCarried
+        ACM->>RemS: receive, dropping any concrete stack it held
+        SGPL->>ACM: resumeRemoteUpdates, then broadcastChanges
+        ACM->>RemS: matches
+        RemS->>RemS: the hash agrees, so it becomes a copy of the server's stack
+    end
+    Note over Wire,RemS: agreement is silence, and AbstractContainerMenu.synchronizeSlotToRemote sends nothing
 ```
+
+*Figure: one shift-click as one packet up and nothing down. Read the diagonal:
+the client runs the click, the server re-runs the identical call on the real
+chest, and the comparison happens only after both — the note at the foot is
+where a reply would have been.*
 
 **The press.** `AbstractContainerScreen.mouseClicked` resolves the hovered
 slot, sees an empty `AbstractContainerMenu.getCarried` and a held shift, and
@@ -201,8 +207,9 @@ the slot and the button.
 
 **Installing the claim, then comparing.**
 `AbstractContainerMenu.setRemoteSlotUnsafe` writes each hash the client sent
-into the matching `RemoteSlot`; `RemoteSlot.Synchronized` **discards any
-concrete stack it was holding** and keeps the hash alone. An out-of-range
+into the matching `RemoteSlot` through `RemoteSlot.receive`, and
+`RemoteSlot.Synchronized` **discards any concrete stack it was holding** and
+keeps the hash alone. An out-of-range
 index is logged at debug and ignored rather than rejected. Then
 `AbstractContainerMenu.setRemoteCarried`, then
 `AbstractContainerMenu.resumeRemoteUpdates`, then
@@ -234,32 +241,34 @@ that are not a `ResultSlot` and whose container is the player's own
 
 `ServerGamePacketListenerImpl.handleContainerClick` is four tests and a
 fork, and the interesting thing about it is how much of it ends in *nothing
-sent* rather than a correction.
+sent* rather than a correction. The packet reaches the handler on the server
+main thread through `PacketUtils.ensureRunningOnSameThread`, and then:
+
+| the test | what a failure does |
+|---|---|
+| does `AbstractContainerMenu.containerId` match the open menu | dropped in total silence — nothing logged, nothing sent |
+| is the player a spectator, or dead or dying | `AbstractContainerMenu.sendAllDataToRemote`, a full resync, and the click never runs |
+| `AbstractContainerMenu.stillValid` | logged at debug, nothing sent, and the menu is *not* closed here |
+| `AbstractContainerMenu.isValidSlotIndex` | logged at debug, nothing sent, nothing corrected |
+
+Past all four the fork begins, and its order is the load-bearing part.
 
 ```mermaid
 flowchart TD
-    P["ServerboundContainerClickPacket, on the server main thread via PacketUtils.ensureRunningOnSameThread"] --> ID{"does containerId match the open menu?"}
-    ID -->|"no"| D1["dropped in total silence, nothing logged, nothing sent"]
-    ID -->|"yes"| SPEC{"spectator, or dead or dying?"}
-    SPEC -->|"yes"| D2["sendAllDataToRemote, a full resync, and the click never runs"]
-    SPEC -->|"no"| SV{"AbstractContainerMenu.stillValid"}
-    SV -->|"fails"| D3["logged at debug, nothing sent, the menu is not closed here"]
-    SV -->|"passes"| IX{"AbstractContainerMenu.isValidSlotIndex"}
-    IX -->|"fails"| D4["logged at debug, nothing sent, nothing corrected"]
-    IX -->|"passes"| ST["compare the packet's state id with the menu's, BEFORE anything is applied"]
-    ST --> AP["suppressRemoteUpdates, run clicked, install the claimed hashes, resumeRemoteUpdates"]
+    ST["compare the packet's state id with the menu's, before anything is applied"]:::server
+    ST --> AP["AbstractContainerMenu.suppressRemoteUpdates, the click, the hashes, resume"]:::server
     AP --> Q{"was that state id stale?"}
-    Q -->|"stale"| FULL["broadcastFullState, ending in sendAllDataToRemote, one ClientboundContainerSetContentPacket with a fresh state id"]
-    Q -->|"current"| BC["broadcastChanges, every slot against its RemoteSlot"]
-    BC --> AG{"RemoteSlot.matches"}
-    AG -->|"agrees"| SIL["the hash becomes a concrete copy of the server's stack, and nothing is sent"]
-    AG -->|"disagrees"| ONE["one ClientboundContainerSetSlotPacket for that slot, with a fresh state id"]
+    Q -->|"stale"| FULL["AbstractContainerMenu.broadcastFullState: one set-content packet, fresh state id"]:::server
+    Q -->|"current"| BC["AbstractContainerMenu.broadcastChanges: every slot against its RemoteSlot"]:::server
 ```
 
-The order of the last two boxes is the load-bearing part: **the state id is
-compared before the click is applied and acted on after**, so a click that
-quotes a stale id still runs, and still runs first. Its result is simply
-published wholesale instead of diffed.
+*Figure: the compare happens above the apply and the branch below it. Read
+the two edges out of the diamond as the whole difference a stale state id
+makes — not whether the click runs, only how its result is published.*
+
+**The state id is compared before the click is applied and acted on after**,
+so a click that quotes a stale id still runs, and still runs first. Its
+result is simply published wholesale instead of diffed.
 
 `AbstractContainerMenu.isValidSlotIndex` deserves suspicion. It accepts −1,
 accepts `AbstractContainerMenu.SLOT_CLICKED_OUTSIDE`, and otherwise only

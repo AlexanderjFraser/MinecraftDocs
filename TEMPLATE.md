@@ -414,6 +414,9 @@ against the decompile the way `verify_names.py` checks the prose — a class, a
 dotted `Class.member`, and a sequence message's head against the lane it is
 sent to — and a page that fails it does not publish. In a figure as in the
 prose: **a member is written `Class.member`**, and a nested class `Outer.Inner`.
+The one exception is a **`classDiagram` member line**, which its own class box
+qualifies the way a lane qualifies a message: `int popTime` inside
+`class ItemStack` is checked as `ItemStack.popTime` and takes no prefix.
 
 ### The theme, and no colour in a page
 
@@ -741,10 +744,12 @@ the break in from a render, and is the check after adding a lane.
 | `ResultC` | `ResultContainer` |
 | `RM` | `RecipeManager` |
 | `CI` | `CraftingInput` |
+| `TCC` | `TransientCraftingContainer` |
 | `SRB` | `ServerRecipeBook` |
 | `Ench` | `Enchantment` |
 | `Ignite` | `Ignite` |
 | `EScr` | `EnchantmentScreen` |
+| `CEM` | `EnchantmentMenu` |
 | `CMap` | `ContextMap` |
 | `LootP` | `LootParams` |
 | `LootC` | `LootContext` |

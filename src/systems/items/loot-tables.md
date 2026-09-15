@@ -106,30 +106,39 @@ nothing to keep.
 
 ## From the click to the screen
 
+Right-clicking a dungeon chest is one call that does four things in an order
+worth watching: it resolves a provider, commits the roll, builds a menu, and
+only then tells the client anything.
+
 ```mermaid
 sequenceDiagram
     participant SPGM as ServerPlayer<br/>GameMode
-    participant CBE as ChestBlockEntity
     participant SP as ServerPlayer
-    participant RCont as Randomizable<br/>Container
+    participant CBE as ChestBlockEntity
     participant LT as LootTable
-    participant LPool as LootPool
     participant ChestM as ChestMenu
+    participant Wire as the network
 
-    SPGM->>CBE: ChestBlock.useWithoutItem resolves a menu provider, and a single chest is its own
-    CBE->>SP: openMenu, whose body is ServerPlayer's
-    SP->>CBE: createMenu, guarded by canOpen
-    CBE->>RCont: unpackLootTable, with the opening player
-    Note over RCont: setLootTable to null BEFORE the roll, one shot
-    RCont->>LT: fill, on the CHEST set, with the stored seed
-    LT->>LPool: addRandomItems, once per pool
-    LPool-->>LT: stacks, through the pool's and then the table's functions
-    LT->>LT: createStackSplitter wraps the whole fill, outside the table's functions
-    LT->>LT: getAvailableSlots then shuffleAndSplitItems then setItem
+    Note over SPGM,CBE: ChestBlock.useWithoutItem picks the provider, and a single chest is its own
+    SPGM->>SP: openMenu, handed the block entity
+    SP->>CBE: createMenu, which opens by asking canOpen
+    CBE->>CBE: unpackLootTable, inside createMenu, before a menu exists
+    Note over CBE,LT: RandomizableContainer.<br/>setLootTable to null <br/>BEFORE the roll
+    CBE->>LT: fill, on the CHEST set, with the stored seed
+    LT->>LT: getRandomItemsRaw, every pool, inside createStackSplitter
+    LT->>LT: getAvailableSlots, then shuffleAndSplitItems across them
+    LT->>CBE: setItem, once per surviving stack
     CBE->>ChestM: threeRows over the now-filled container
-    SP->>ChestM: ClientboundOpenScreenPacket goes first, then initMenu
-    ChestM-->>SP: sendAllDataToRemote, one ClientboundContainerSetContentPacket
+    SP->>Wire: ClientboundOpenScreenPacket, and only then the contents
+    SP->>ChestM: setSynchronizer, from inside ServerPlayer.initMenu
+    ChestM->>Wire: one ClientboundContainer<br/>SetContentPacket,<br/>from sendAllDataToRemote
 ```
+
+*Figure: the roll is three messages deep inside
+`RandomizableContainerBlockEntity.createMenu`, and the screen
+is the last two arrows. Look at where the chest is filled relative to where
+the client is told anything — the contents exist before the screen is asked
+for.*
 
 **The click** arrives as `ServerPlayerGameMode.useItemOn` and reaches
 `ChestBlock.useWithoutItem`
@@ -155,7 +164,8 @@ more than anything else on this page. It looks the key up through
 `ReloadableServerRegistries.Holder.getLootTable` — which answers
 `LootTable.EMPTY` for a missing key, never null — fires
 `CriteriaTriggers.GENERATE_LOOT` if a `ServerPlayer` is doing the opening, and
-**then clears the stored key**, before a single die is rolled. It builds the
+**then clears the stored key** with `RandomizableContainer.setLootTable`,
+before a single die is rolled. It builds the
 parameters with `LootContextParams.ORIGIN` at the block centre and, *only if a
 player is present*, that player's `Player.getLuck` — the live value of
 `Attributes.LUCK`, whose default is zero and which nothing but a potion or a
@@ -163,9 +173,12 @@ command moves ([attributes](../../reference/attributes.md)) — and
 `LootContextParams.THIS_ENTITY`. Then it calls `LootTable.fill` with the
 container, those parameters and the stored seed.
 
-**The screen** comes last and is no part of the roll. `ServerPlayer.openMenu`
+**The screen** comes last and is no part of the roll. The menu itself is a
+`ChestMenu`, built by `ChestMenu.threeRows` over the container the roll has
+just filled. `ServerPlayer.openMenu`
 sends `ClientboundOpenScreenPacket` and then calls `ServerPlayer.initMenu`,
-which attaches the listener and the synchronizer; attaching a synchronizer runs
+which attaches the listener and the synchronizer;
+`AbstractContainerMenu.setSynchronizer` ends in
 `AbstractContainerMenu.sendAllDataToRemote`, and that is the single
 `ClientboundContainerSetContentPacket` carrying the freshly rolled contents
 ([containers and
@@ -176,42 +189,44 @@ menus](containers-and-menus.md#the-chest-you-see-is-not-the-chest)).
 `LootTable.fill` runs every pool of the table, each pool makes some number of
 independent draws, and each draw picks at most one entry. That draw is the
 engine's smallest complete unit, and it narrows the whole way down — from
-however many entries a pool declares, through the one fan-out where composites
-expand into candidates, to at most one stack.
+however many entries a pool declares, through the expansion where composites
+become candidates, to at most one stack.
 
 ```mermaid
 flowchart TD
     A["LootPool.addRandomItems"] --> B{"the pool conditions, all of them"}
     B -->|"any fails"| Z["the pool contributes nothing"]
-    B -->|"all pass"| C["draws equals rolls plus floor of bonusRolls times luck"]
-    C --> D["ONE DRAW, repeated that many times"]
+    B -->|"all pass"| C["draws: rolls plus floor of LootPool.bonusRolls times luck"]
+    C --> D["one draw, repeated that many times"]
     D --> E["expand every entry container, in declaration order, into candidates"]
-    E --> F["AlternativesEntry, an or: stops at the first child that contributes"]
-    E --> G["SequentialEntry, an and: stops at the first child that does not"]
-    E --> H["EntryGroup: every child expands, contribution ignored"]
-    E --> I["TagEntry in expand mode: one candidate per item in the tag"]
-    E --> J["NestedLootTable: one candidate that will run another whole table"]
-    F --> K["weight is floor of weight plus quality times luck, clamped at zero"]
-    G --> K
-    H --> K
-    I --> K
-    J --> K
+    E --> K["weight: floor of weight plus quality times luck, clamped at zero"]
     K --> L{"is that above zero?"}
     L -->|"no"| M["dropped from this draw entirely"]
     L -->|"yes"| N["kept, and added to the running total"]
     N --> O{"how many candidates survived?"}
     O -->|"none, or the total is zero"| Z2["this draw yields nothing"]
     O -->|"exactly one"| P["taken, consuming no randomness at all"]
-    O -->|"two or more"| Q["one nextInt over the total, then walk subtracting weights"]
-    P --> R["the entry's own functions"]
-    Q --> R
-    R --> S["then the pool's functions"]
-    S --> T["then the table's functions"]
-    T --> U["once per fill: createStackSplitter drops disabled items and cuts oversized stacks"]
-    U --> V["getAvailableSlots shuffles the empty slot numbers"]
-    V --> W["shuffleAndSplitItems breaks multi-count stacks up until they roughly fill them"]
-    W --> X["setItem, or a logged warning and a silent discard once the slots run out"]
+    O -->|"two or more"| Q["one RandomSource.nextInt over the total, then walk subtracting weights"]
 ```
+
+*Figure: one draw, narrowing. The two diamonds are the whole of the chance in
+it — and note the middle arm out of the last one, where a pool with a single
+surviving candidate rolls no dice at all.*
+
+The one box that hides a fan-out is *expand*, and what it expands are the five
+containers:
+
+| the container | what expanding it yields |
+|---|---|
+| `AlternativesEntry` | an **or**: stops at the first child that contributes |
+| `SequentialEntry` | an **and**: stops at the first child that does not |
+| `EntryGroup` | every child expands, and the contribution is ignored |
+| `TagEntry` in expand mode | one candidate per item in the tag |
+| `NestedLootTable` | one candidate that will run another whole table |
+
+What becomes of the stack that survives — the three tiers of functions, the
+splitter, the shuffle and the write — is the trace above and *the scatter*
+below; it is a straight line and needs no second picture.
 
 **The algebra is boolean, not weighted.** `ComposableEntryContainer.expand`
 returns a plain *did I contribute*, and each composite folds its children into

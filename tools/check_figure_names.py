@@ -23,6 +23,16 @@ the same index verify_names.py builds:
   expansion the class a participant expands to must exist (check_lanes.py checks it against the
             key; this checks the ones the key does not know)
 
+A `classDiagram` is read the same way, and until pass 7's session G it was not read at all:
+the class name on a `class Foo` line, the display label of `class Foo["Label"]`, every member
+line inside the braces, both ends of a relation, and the relation's own `: label`. F10 sends a
+vocabulary page to this kind, so the five class diagrams sessions B to F drew had every name
+in them unchecked — the fifth thing this pass has found a gate blind to. A **member line is
+checked against its own class box**, the way a message is checked against the lane it is sent
+to: `int popTime` inside `class ItemStack` names `ItemStack.popTime`, so it is a failure rather
+than a note when no such member exists, and it needs no `Class.` prefix in the figure — the box
+is the prefix.
+
 Skipped, and counted: ALL-CAPS tokens (enum constants, `MISC`), single-word capitalised tokens
 (`Entity` is a class and `Then` is not, and the label cannot say which), lane ids, and anything
 in ALLOW. Unqualified humped members inside flowchart or state labels (`runAllTasks` with no
@@ -72,6 +82,17 @@ STATE_TRANS = re.compile(r"^\s*(\[\*\]|[\w.\-\"]+)\s*-->\s*(\[\*\]|[\w.\-\"]+)\s
 STATE_DEF = re.compile(r"^\s*state\s+\"([^\"]+)\"\s+as\s+(\w+)")
 STATE_NOTE = re.compile(r"^\s*note\s+(?:left of|right of)\s+[\w.\-]+\s*:\s*(.*)$")
 COLOUR_LINE = re.compile(r"^\s*(classDef|style|linkStyle|class )\b")
+# classDiagram — the kind F10 sends a vocabulary page to, and the one this gate could not
+# read at all until pass 7's session G: `class Foo["Label"] {`, the member lines inside the
+# braces, and a relation with an optional `: label`. A bare `class Foo` line is also how a
+# flowchart or a state diagram sets a colour class, which is why COLOUR_LINE swallows it and
+# why the classDiagram branch must be taken before that test.
+CLASS_DEF = re.compile(r'^\s*class\s+([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\[\s*"(.*?)"\s*\])?\s*\{?\s*$')
+CLASS_REL = re.compile(r'^\s*([A-Za-z_]\w*)\s*(?:"[^"]*"\s*)?([<>ox|*]?(?:--|\.\.)[<>ox|*]?)\s*(?:"[^"]*"\s*)?([A-Za-z_]\w*)\s*(?::\s*(.*))?$')
+CLASS_NOTE = re.compile(r'^\s*note(?:\s+for\s+[A-Za-z_]\w*)?\s+"(.*)"\s*$')
+CLASS_ANNOT = re.compile(r"^\s*<<.*>>\s*$")
+# a classDiagram member line read as a declaration: its last token humped, or parenthesised
+MEMBER_LINE = re.compile(r"(?:^|[\s<>~,*])([a-z_][A-Za-z0-9_]*[A-Z][A-Za-z0-9_]*)\s*(?:\(.*)?$")
 
 DOTTED = re.compile(r"(?<![\w/`.])([A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)(?![\w/])")
 CAMEL = re.compile(r"\b(?=[A-Z][A-Za-z0-9]*[a-z])([A-Z][a-z0-9]*[A-Z][A-Za-z0-9]*)\b")
@@ -129,10 +150,11 @@ def labels_of(body):
     first = next((raw.strip() for _ln, raw in body if raw.strip() and not raw.strip().startswith("%%")), "")
     kind = first.split()[0] if first else "?"
     lanes: dict[str, str] = {}
+    open_class: str | None = None
     out = []
     for ln, raw in body:
         t = raw.strip()
-        if not t or t.startswith("%%") or COLOUR_LINE.match(t):
+        if not t or t.startswith("%%") or (COLOUR_LINE.match(t) and kind != "classDiagram"):
             continue
         if kind == "sequenceDiagram":
             m = da.PARTICIPANT.match(t)
@@ -175,6 +197,33 @@ def labels_of(body):
                 lab = da.label_of(parts[k]).strip().strip('"').strip()
                 if lab:
                     out.append((ln, "edge", lab, None))
+        elif kind == "classDiagram":
+            if t == "}":
+                open_class = None
+                continue
+            if t in ("{",) or t == "classDiagram" or CLASS_ANNOT.match(t) or t.startswith("direction "):
+                continue
+            m = CLASS_NOTE.match(t)
+            if m:
+                out.append((ln, "note", m.group(1), None))
+                continue
+            m = CLASS_DEF.match(t)
+            if m:
+                out.append((ln, "node", m.group(1), None))
+                if m.group(2):
+                    out.append((ln, "node", m.group(2), None))
+                open_class = m.group(1) if t.endswith("{") else None
+                continue
+            m = CLASS_REL.match(t)
+            if m:
+                out.append((ln, "node", m.group(1), None))
+                out.append((ln, "node", m.group(3), None))
+                if m.group(4):
+                    out.append((ln, "edge", m.group(4).strip(), None))
+                continue
+            # anything else inside the braces is a member line — and its own class box qualifies
+            # it, the way a lane qualifies a message, so it is checked rather than noted
+            out.append((ln, "member", t.lstrip("+-#~"), open_class))
         elif kind.startswith("stateDiagram"):
             m = STATE_DEF.match(t)
             if m:
@@ -368,7 +417,21 @@ class Checker:
                             self.skipped += 1
                     elif head and re.search(r"[a-z][A-Z]", head) and target not in lanes:
                         notes.append((rel, ln, head, f"message to undeclared lane {target}"))
-                elif role in ("node", "edge", "subgraph", "state", "note", "block"):
+                elif role == "member" and target and MEMBER_LINE.search(stripped):
+                    # `int popTime` inside `class ItemStack {` names ItemStack.popTime, so the box
+                    # qualifies it the way a lane qualifies a message. Only a line whose last token
+                    # is humped or parenthesised is read as a declaration: the corpus also writes
+                    # member lines as English ("the product of every property's value count"), and
+                    # those are node labels, checked below like any other.
+                    name = MEMBER_LINE.search(stripped).group(1)
+                    box = target.split(".")[-1]
+                    if box in self.classes:
+                        self.checked += 1
+                        if not (name in self.members(box) or name in ALLOW or self.inherited_member(box, name)):
+                            failures.append((rel, ln, name, f"no member {name} on {target} (the class box it is in)"))
+                    else:
+                        self.skipped += 1
+                elif role in ("node", "edge", "subgraph", "state", "note", "block", "member"):
                     for m in LOWER_CAMEL.finditer(stripped):
                         tok = m.group(1)
                         if tok in ALLOW or tok in ENGLISH_HEADS:
@@ -446,6 +509,19 @@ flowchart TD
     B -->|"two ClientboundBlockUpdatePackets"| C["runAllTasks then FrobnicatorThing then SpawnState"]
     C --> D["DedicatedServer.runServer"]
 ```
+
+```mermaid
+classDiagram
+    class ChunkMap {
+        int viewDistance
+        int noSuchFieldHere
+    }
+    class Bad["ChunkMapp, in a display label"] {
+        ChunkMapp field
+    }
+    ChunkMap --> Bad : ChunkMap.save
+    ChunkMap ..> Bad : ChunkMapp.save
+```
 """
 
 
@@ -482,7 +558,13 @@ def probe(mc_source: str, libs: str) -> int:
         ("a break after punctuation in a node label separates two names, and both resolve", not any(f[1] == 31 for f in failures)),
         ("a break after punctuation does not hide a bad name on either side", (32, "ChunkMapp.save") in got),
         ("figure mentions include ChunkMap and NaturalSpawner", "ChunkMap" in c.mentions and "NaturalSpawner" in c.mentions),
-        ("exactly the nine failures expected", len(failures) == 9),
+        ("a classDiagram is read at all, and its good class resolves", "ChunkMap" in c.mentions and not any(f[2] == "ChunkMap" for f in failures)),
+        ("a classDiagram display label is checked like a node label", (43, "ChunkMapp") in got),
+        ("a classDiagram member line's type is checked as a class", (44, "ChunkMapp") in got),
+        ("a classDiagram relation label's good dotted member passes and its bad one fails", not any(f[2] == "ChunkMap.save" for f in failures) and (47, "ChunkMapp.save") in got),
+        ("a classDiagram member line is checked against its own class box, not noted",
+         (41, "noSuchFieldHere") in got and not any(n[2] == "viewDistance" for n in notes) and not any(f[2] == "viewDistance" for f in failures)),
+        ("exactly the thirteen failures expected", len(failures) == 13),
     ]
     ok = True
     for what, passed in checks:

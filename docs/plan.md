@@ -838,3 +838,43 @@ that the owner has not understood; recording is after pass 10.
   `entity-anatomy` called four families two and never named `Display` at all.
   Ten queue entries struck with the page open, five opened. All six gates
   green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session G (Opus) — Part VII · Items and inventories.**
+  Nine viewer agents, one per page. **Seventeen figures became nineteen**: four
+  pages split one figure at a joint the prose already names — `using-an-item`'s
+  *ending* flowchart, which was two disconnected graphs in one box and is now
+  the page's two endings; `recipes`' seven-lane trace, at the tick boundary its
+  own note bar drew; `containers-and-menus`' seventeen-node ladder, into a
+  four-row table and a five-node fork; and `loot-tables`' twenty-six-node funnel,
+  which lost its placement tail to the trace above it and its five entry
+  containers to a table. The part gained the book's **sixth `classDiagram`**
+  (`items-and-stacks`, whose flowchart had four edgeless boxes and a subgraph
+  title clipped mid-phrase on screen), and `enchanting`'s trace is **split by
+  machine** with a lane each for the two copies of `EnchantmentMenu` — the page's
+  own point, which one lane playing both sides had been hiding. Every figure is
+  captioned and pointed at, **nothing below 0.79 and no type under 12.6px**, no
+  lane over six, no flowchart over fourteen nodes, and the figure gate's **10
+  unresolved names and 31 notes are 0 and 1** — the one a ruled note
+  (`LootItemCondition.test` is `java.util.function.Predicate`'s). Nineteen
+  corrections, all in [pass9.md](pass9.md), and **fifteen of them are the
+  caller's-method-at-the-callee fault, which makes it six parts of six**; the
+  sharpest is `loot-tables`' opening trace, which drew `ChestBlockEntity` and
+  `RandomizableContainer` as two lanes exchanging a message when
+  `RandomizableContainerBlockEntity` *implements* the interface, and had the
+  clientbound content packet returning to `ServerPlayer`. **The session's own
+  finding is a fifth tool blindness, and the one F10 walked into**:
+  `check_figure_names.py` **read nothing at all inside a `classDiagram`** —
+  zero names, zero figures — so the five class diagrams sessions B to F drew on
+  F10's own recommendation had every name in them unchecked, and
+  `pass7_figures.py` was counting the word `classDiagram` as a name the prose
+  never says. Both tools now read the kind, with a **member line checked against
+  its own class box** the way a message is checked against its lane; seven probe
+  cases, and no previously-clean part moved. Beside it, **nine Mojang names the
+  theme was hyphen-breaking on screen** (F18) — `AbstractContainerMe-nu`,
+  `ClientboundContainerSetDataPack-et`, `doPostAttackEffectsWithItemSour-ce` and
+  six more — every one of them the book spelling a name wrong in the picture
+  while spelling it right in the prose, and all nine found **mechanically**:
+  `render/index.json` records the on-screen text of every label, so a break is
+  one regex over the render rather than nine pairs of eyes. Fifteen queue
+  entries struck with the page open, one ruled out, twelve opened. All six gates
+  green (the figure-name gate still report-only). Deployed.

@@ -222,29 +222,52 @@ both ends of a use — `GameEvent.ITEM_INTERACT_START` when the timer opens and
 timer ([game events and
 vibrations](../world/game-events-and-vibrations.md#questions-players-ask)).
 
-## The ending, in one picture
+## The two endings
+
+There are two, and they are separate machines that share a last step. The
+first is the countdown reaching zero, which is the meal.
 
 ```mermaid
 flowchart TD
     T["LivingEntity.updateUsingItem, both sides, every tick"]
-    T --> A["ItemStack.onUseTick with the count before the decrement"]
+    T --> A["ItemStack.onUseTick, with the count before the decrement"]
     A --> B["decrement LivingEntity.useItemRemaining"]
     B --> C{"reached zero"}
     C -- no --> T
     C -- yes --> D{"on the server"}
-    D -- "no, this is the client" --> W["keep counting into the negatives and wait"]
+    D -- "no, this is the client" --> W["keep counting into the negatives and wait"]:::client
     D -- yes --> E{"ItemStack.useOnRelease"}
-    E -- "false, everything but a crossbow" --> F["LivingEntity.completeUsingItem"]
     E -- "true, a crossbow" --> T
-    F --> G["ServerPlayer.completeUsingItem sends ClientboundEntityEventPacket 9 first"]
-    G --> H["ItemStack.finishUsingItem, then LivingEntity.stopUsingItem"]
-    R["the use key comes up, Minecraft.handleKeybinds"] --> S["MultiPlayerGameMode.releaseUsingItem sends RELEASE_USE_ITEM, then releases locally"]
-    S --> P["ServerGamePacketListenerImpl.handlePlayerAction, no ack, no sequence"]
-    P --> Q["LivingEntity.releaseUsingItem, each side on its own copy"]
+    E -- "false, everything else" --> F["LivingEntity.completeUsingItem"]:::server
+    F --> G["ServerPlayer.completeUsingItem sends ClientboundEntityEventPacket 9 first"]:::server
+    G --> H["ItemStack.finishUsingItem, then LivingEntity.stopUsingItem"]:::server
+    G -. "the byte lands" .-> X["Player.handleEntityEvent replays Player.completeUsingItem"]:::client
+    W --> X
+```
+
+*Figure: the client's arm of the branch reaches nothing on its own. The
+dotted edge is the whole of what ends a meal on the client — a byte from the
+server, arriving at a branch that was otherwise waiting for ever.*
+
+The second is the key coming up, which is the bow, and nothing in it waits
+for a reply at all.
+
+```mermaid
+flowchart TD
+    R["the use key comes up, Minecraft.handleKeybinds"]:::client
+    R --> S["MultiPlayerGameMode.releaseUsingItem sends RELEASE_USE_ITEM"]:::client
+    S --> P["ServerGamePacketListenerImpl.handlePlayerAction, no ack, no sequence"]:::server
+    S --> Q2["LivingEntity.releaseUsingItem on the client's own copy"]:::client
+    P --> Q["LivingEntity.releaseUsingItem on the server's"]:::server
     Q --> K["ItemStack.releaseUsing, then LivingEntity.stopUsingItem either way"]
+    Q2 --> K
     K -- "Item.releaseUsing returned true" --> L["the shot, then the after-use side effects"]
     K -- "returned false" --> M["the meal is simply abandoned"]
 ```
+
+*Figure: one method run twice, once per copy, and the split at the top is the
+point — the client releases locally without waiting, and only the server's
+run reaches a `ServerLevel` and so an arrow.*
 
 The **client's branch has no exit**. Nothing on the client ever reaches
 `LivingEntity.completeUsingItem` from the countdown — it is called from
@@ -269,9 +292,11 @@ the tick.
 
 ## The meal, tick by tick
 
+The whole of it is one press, thirty-two quiet ticks and one byte, and the
+bands below are the three moments that are not quiet.
+
 ```mermaid
 sequenceDiagram
-    participant MC as Minecraft
     participant LP as LocalPlayer
     participant MPGM as MultiPlayer<br/>GameMode
     participant Wire as the network
@@ -279,24 +304,36 @@ sequenceDiagram
     participant SP as ServerPlayer
     participant Cons as Consumable
 
-    Note over MC,Cons: tick 0, the press
-    MC->>MPGM: startUseItem, nothing under the crosshair
-    MPGM->>Cons: ItemStack.use, the default Item.use finds DataComponents.CONSUMABLE
-    Cons->>LP: startConsuming, canConsume asks Player.canEat, then startUsingItem
-    MPGM->>Wire: ServerboundUseItemPacket, hand and sequence and both rotations
-    Wire->>SGPL: handleUseItem acks the sequence and snaps the rotation
-    SGPL->>SP: the same Item.use, remaining = 32, the two flag bits are written
-    Note over MC,Cons: ticks 1 to 31, both sides
-    LP->>LP: ItemStack.onUseTick, five particles every fourth tick and the chew sound
-    SP->>SP: the same call, particles discarded, sound broadcast to everyone else
-    Note over MC,Cons: tick 32, the count reaching zero on the server alone
-    SP->>Wire: ClientboundEntityEventPacket, EntityEvent.USE_ITEM_COMPLETE
-    SP->>Cons: ItemStack.finishUsingItem, Consumable.onConsume, FoodData.eat
-    Wire->>LP: Player.handleEntityEvent replays completeUsingItem locally
-    SP->>Wire: ClientboundSetHealthPacket, same tick, overwrites the prediction
-    Note over MC,Cons: a later tick
-    SP->>Wire: broadcastChanges corrects the stack count
+    rect rgba(0, 0, 0, 0.04)
+        Note over LP,Cons: tick 0, the press
+        MPGM->>Cons: startConsuming, reached from Minecraft.startUseItem through Item.use
+        Cons->>LP: startUsingItem, once canConsume has asked Player.canEat
+        MPGM->>Wire: ServerboundUseItemPacket, hand and sequence and both rotations
+        Wire->>SGPL: handleUseItem acks the sequence and snaps the rotation
+        SGPL->>SP: the same Item.use, remaining = 32, the two flag bits written
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over LP,Cons: ticks 1 to 31, both sides
+        LP->>LP: ItemStack.onUseTick, particles and the chew sound once the delay is past
+        SP->>SP: the same call, particles discarded, sound broadcast to everyone else
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over LP,Cons: tick 32, the count reaching zero on the server alone
+        SP->>Wire: ClientboundEntityEventPacket, EntityEvent.USE_ITEM_COMPLETE
+        SP->>Cons: ItemStack.finishUsingItem, Consumable.onConsume, FoodData.eat
+        Wire->>LP: handleEntityEvent replays Player.completeUsingItem locally
+        SP->>Wire: ClientboundSetHealthPacket, same tick, overwrites the prediction
+    end
+    Note over Wire,SP: a later tick: AbstractContainerMenu.broadcastChanges corrects the count
 ```
+
+*Figure: three bands, and the count reaches zero in only one of them. Watch
+the third — the client is told the meal is over by a single byte, and its own
+countdown had nothing to do with it.*
+
+The stack's own count is the last thing to agree: the menu's
+`AbstractContainerMenu.broadcastChanges` corrects it a tick or more later,
+which is a container's business rather than the meal's.
 
 The replay is the interesting half. `Consumable.onConsume` runs on **both**
 sides and three parts of it do not: the `Stats.ITEM_USED` award and
@@ -320,39 +357,46 @@ broadcast alone.
 
 ## The bow, tick by tick
 
+The same lanes, the same opening, and then a release that nobody waits for.
+
 ```mermaid
 sequenceDiagram
-    participant MC as Minecraft
     participant LP as LocalPlayer
     participant MPGM as MultiPlayer<br/>GameMode
     participant Wire as the network
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SP as ServerPlayer
-    participant BowI as BowItem
 
-    Note over MC,BowI: tick 0, the press
-    MC->>MPGM: startUseItem, nothing under the crosshair
-    MPGM->>BowI: ItemStack.use, BowItem.use asks Player.getProjectile
-    BowI->>LP: startUsingItem, remaining = 72000
-    MPGM->>Wire: ServerboundUseItemPacket, hand and sequence and both rotations
-    Wire->>SGPL: handleUseItem acks the sequence and snaps the rotation
-    SGPL->>SP: the same BowItem.use, remaining = 72000, the two flag bits are written
-    Note over MC,BowI: every tick after that, both sides
-    LP->>LP: the count falls, onUseTick is empty, the model reads the use duration
-    SP->>SP: the count falls, and nothing else happens at all
-    Note over MC,BowI: the tick the key comes up
-    MC->>MPGM: releaseUsingItem
-    MPGM->>Wire: ServerboundPlayerActionPacket, RELEASE_USE_ITEM, sequence zero
-    MPGM->>BowI: LivingEntity.releaseUsingItem, BowItem.releaseUsing on the client
-    BowI->>LP: no ServerLevel, so one phantom stack, no ammo spent, no arrow entity, then stopUsingItem
-    Wire->>SGPL: handlePlayerAction, the rotation is whatever the server last heard
-    SGPL->>SP: LivingEntity.releaseUsingItem
-    SP->>BowI: BowItem.releaseUsing, ProjectileWeaponItem.draw then shoot
-    BowI->>Wire: Projectile.spawnProjectile, then ClientboundAddEntityPacket
-    SGPL-->>MPGM: nothing acknowledges the release itself
-    Note over MC,BowI: a later tick
-    SP->>Wire: the container sync corrects the arrow count and the bow's damage
+    rect rgba(0, 0, 0, 0.04)
+        Note over LP,SP: tick 0, the press
+        MPGM->>LP: startUsingItem, remaining = 72000, once BowItem.use has a projectile
+        MPGM->>Wire: ServerboundUseItemPacket, hand and sequence and both rotations
+        Wire->>SGPL: handleUseItem acks the sequence and snaps the rotation
+        SGPL->>SP: startUsingItem too, remaining = 72000, the two flag bits written
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over LP,SP: every tick after that, both sides
+        LP->>LP: the count falls, onUseTick is empty, the model reads the use duration
+        SP->>SP: the count falls, and nothing else happens at all
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over LP,SP: the tick the key comes up
+        MPGM->>Wire: ServerboundPlayerActionPacket, RELEASE_USE_ITEM, sequence zero
+        MPGM->>LP: releaseUsingItem, and BowItem.releaseUsing on the client's copy
+        LP->>LP: no ServerLevel, so a phantom stack, no ammo, no arrow, then stopUsingItem
+        Wire->>SGPL: handlePlayerAction, with whatever rotation the server last heard
+        SGPL->>SP: releaseUsingItem, the identical call on the server's copy
+        SP->>SP: BowItem.releaseUsing, then<br/>ProjectileWeaponItem.<br/>draw and shoot
+        SP->>Wire: Projectile.spawnProjectile, then the add-entity packet
+        SGPL-->>MPGM: nothing acknowledges the release itself
+    end
+    Note over Wire,SP: a later tick: the container sync corrects the arrows and the damage
 ```
+
+*Figure: the same method twice, once per copy — the two self-messages in the
+third band are `BowItem.releaseUsing` on each machine, and only the lower one
+has a `ServerLevel` to shoot into. The dashed line is the only reply, and it
+is empty.*
 
 `BowItem.releaseUsing` runs on both sides and gets nowhere on one of them.
 It measures the draw as `BowItem.getUseDuration` minus the remaining count,

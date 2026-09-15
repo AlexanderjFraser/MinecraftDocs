@@ -5,7 +5,9 @@
 A diamond pickaxe is in your hotbar. The `Item` behind it,
 `Items.DIAMOND_PICKAXE`, is a single object shared by every diamond pickaxe
 that has ever existed on this server, and it holds four fields: a description
-id, a crafting remainder, a feature-flag set, and its own registry holder. Not
+id, a crafting remainder, a feature-flag set, and its own registry holder —
+`Item.descriptionId`, `Item.craftingRemainingItem`, a `FeatureFlagSet` in
+`Item.requiredFeatures`, and `Item.builtInRegistryHolder`. Not
 the stack size. Not the mining speed. Not the durability. All of that is data
 components — and they do not live on the `Item` either. They live on the
 item's `Holder.Reference` in `BuiltInRegistries.ITEM`, as a prototype map
@@ -41,30 +43,48 @@ when the answer is a client's.
 holder, and the interesting one.
 
 ```mermaid
-flowchart LR
-    subgraph S["ItemStack — the object in the slot"]
-      CNT["count"]
-      POP["popTime"]
-      HOL["item, a Holder of Item"]
-      MAP["components"]
-    end
-    MAP --> PDM["PatchedDataComponentMap"]
-    PDM --> PATCH["the patch: only what differs, plus a tombstone per removal"]
-    PDM -. "prototype, borrowed and never written" .-> DEF
-    HOL --> HR["Holder.Reference in BuiltInRegistries.ITEM"]
-    HR --> IT["Item — descriptionId, craftingRemainingItem, requiredFeatures, its own holder"]
-    HR --> DEF["DataComponentMap — the item's defaults, bound at reload"]
+classDiagram
+    class ItemStack {
+        int count
+        int popTime
+        Holder~Item~ item
+        PatchedDataComponentMap components
+    }
+    class Item {
+        String descriptionId
+        ItemStackTemplate craftingRemainingItem
+        FeatureFlagSet requiredFeatures
+        Holder.Reference builtInRegistryHolder
+    }
+    class Reference["Holder.Reference, in BuiltInRegistries.ITEM"] {
+        the Item
+        the item's default DataComponentMap
+    }
+    class PatchedDataComponentMap {
+        the prototype, borrowed
+        the patch, owned
+    }
+    ItemStack *-- PatchedDataComponentMap : the only mutable half
+    ItemStack --> Reference : every stack of this item, the one holder
+    Reference --> Item
+    PatchedDataComponentMap ..> Reference : reads the defaults, never writes them
 ```
 
-The dotted arrow is the shape of the whole system. A stack does not own its
-defaults and cannot change them: it points at a holder, and the holder owns
-one `DataComponentMap` shared by every stack of that item in both programs.
+*Figure: four fields, and the two arrows out of them. The dotted one is the
+shape of the whole system — a stack reads defaults it can never touch.*
+
+A stack does not own its defaults and cannot change them: it points at a
+holder, and the holder owns one `DataComponentMap` shared by every stack of
+that item in both programs. What the patch is made of, and why copying a
+stack is free, belong to [data
+components](../foundations/data-components.md#the-prototype-and-why-it-is-built-at-reload).
 
 The holder field the figure calls *item* is read through
 `ItemStack.typeHolder`, and it answers `Items.AIR`'s holder rather than null
 for an empty stack, which is why `ItemStack.getItem` never returns null
 either. The
-pop time is the odd one out: it is the five-tick squeeze the hotbar icon does
+pop time — `ItemStack.popTime` — is the odd one out: it is the five-tick
+squeeze the hotbar icon does
 when something lands in it, set to 5 by `Inventory` when a stack grows and by
 `ClientPacketListener.handleContainerSetSlot` when a slot update makes a
 hotbar stack larger, counted down by `ItemStack.inventoryTick` on **both**

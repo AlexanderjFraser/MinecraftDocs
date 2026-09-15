@@ -87,6 +87,16 @@ SUBGRAPH = re.compile(r"^\s*subgraph\s+(?:([A-Za-z0-9_]+)\s*)?(?:\[\s*\"?(.*?)\"
 STATE_TRANS = re.compile(r"^\s*(\[\*\]|[\w.\-\"]+)\s*-->\s*(\[\*\]|[\w.\-\"]+)\s*(?::\s*(.*))?$")
 STATE_DEF = re.compile(r"^\s*state\s+\"([^\"]+)\"\s+as\s+(\w+)")
 DIRECTION = re.compile(r"^\s*(?:flowchart|graph)\s+(TD|TB|LR|RL|BT)\b")
+# a `rect` band carries a colour and no label (`rect rgba(0, 0, 0, 0.04)`, F8's tick band), and a
+# `box` may carry one before its label; read as a label the colour becomes a call named `rgba`
+SEQ_COLOUR = re.compile(r"^\s*(?:transparent|(?:rgba?|hsla?)\s*\([^)]*\)|#[0-9A-Fa-f]{3,8})\s*")
+# classDiagram (pass 7, session G): the kind F10 sends a vocabulary page to. Without these it
+# fell through to the catch-all, so `classDiagram` itself was counted as a name and every
+# `class Foo` line was swallowed by COLOUR_LINE.
+CLASS_DEF = re.compile(r'^\s*class\s+([A-Za-z_][A-Za-z0-9_]*)\s*(?:\[\s*"(.*?)"\s*\])?\s*\{?\s*$')
+CLASS_REL = re.compile(r'^\s*([A-Za-z_]\w*)\s*(?:"[^"]*"\s*)?([<>ox|*]?(?:--|\.\.)[<>ox|*]?)\s*(?:"[^"]*"\s*)?([A-Za-z_]\w*)\s*(?::\s*(.*))?$')
+CLASS_NOTE = re.compile(r'^\s*note(?:\s+for\s+[A-Za-z_]\w*)?\s+"(.*)"\s*$')
+CLASS_ANNOT = re.compile(r"^\s*<<.*>>\s*$")
 COLOUR_LINE = re.compile(r"^\s*(classDef|style|linkStyle)\b")
 INIT = re.compile(r"%%\{\s*init")
 NUMBER_GATE = re.compile(r"^\s*(?:flags?\s+)?\d+\s*$|\bflags?\s+\d+\b", re.I)   # a bare number, or a label that spends a flag number
@@ -298,7 +308,7 @@ def labels_of(kind: str, body) -> dict:
         info["br"] += len(re.findall(r"<br\s*/?>", t, re.I))
         if not t or t.startswith("%%"):
             continue
-        if COLOUR_LINE.match(t):
+        if COLOUR_LINE.match(t) and kind != "classDiagram":
             info["colour_lines"] += 1
             continue
         if kind == "sequenceDiagram":
@@ -324,8 +334,9 @@ def labels_of(kind: str, body) -> dict:
             m = SEQ_BLOCK.match(t)
             if m:
                 info["blocks"] += 1
-                if m.group(2):
-                    labels.append((ln, "block", m.group(2).strip()))
+                rest = SEQ_COLOUR.sub("", (m.group(2) or ""), count=1).strip()
+                if rest:
+                    labels.append((ln, "block", rest))
                 continue
         elif kind in ("flowchart", "graph"):
             m = SUBGRAPH.match(t)
@@ -365,6 +376,27 @@ def labels_of(kind: str, body) -> dict:
             if m:
                 info["notes"] += 1
                 labels.append((ln, "note", m.group(1)))
+        elif kind == "classDiagram":
+            if t in ("{", "}") or t == "classDiagram" or CLASS_ANNOT.match(t) or t.startswith("direction "):
+                continue
+            m = CLASS_NOTE.match(t)
+            if m:
+                info["notes"] += 1
+                labels.append((ln, "note", m.group(1)))
+                continue
+            m = CLASS_DEF.match(t)
+            if m:
+                info["nodes"] += 1
+                labels.append((ln, "node", m.group(2) or m.group(1)))
+                continue
+            m = CLASS_REL.match(t)
+            if m:
+                info["edges"] += 1
+                if m.group(4):
+                    info["edge_labels"] += 1
+                    labels.append((ln, "edge", m.group(4).strip()))
+                continue
+            labels.append((ln, "node", t.lstrip("+-#~")))
         else:
             labels.append((ln, "line", t))
     # nodes are defined once but NODE_DEF sees each definition; count ids instead
@@ -820,7 +852,9 @@ sequenceDiagram
     participant MS as MinecraftServer
     SL->>CM: getChunk(pos), which walks the holder map and then asks the storage layer whether the chunk is already on disk before it schedules anything at all
     CM->>CH: promote
-    Note over SL,MS: a later tick
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,MS: a later tick
+    end
 ```
 
 The prose after the figure names `ChunkHolder.promote` and `DistanceManager` for the first time.
@@ -838,6 +872,21 @@ flowchart TD
 *Figure: the first gate, with the flag word it spends.*
 
 Then the section continues and reads the diagram above.
+
+## A class diagram, which this tool could not read until pass 7
+
+```mermaid
+classDiagram
+    class LevelChunk {
+        int nope
+    }
+    class Holder["PalettedContainer, the storage"] {
+        NaturalSpawner field
+    }
+    LevelChunk *-- Holder : ChunkMap.promote
+```
+
+*Figure: the third, and its kind line is not a name.*
 
 ## A long section with no figure
 
@@ -858,8 +907,9 @@ def probe() -> int:
     finally:
         SRC = old
     f1, f2 = p["figures"][0], p["figures"][1]
+    f3 = p["figures"][2]
     checks = [
-        ("two figures found, in order", len(p["figures"]) == 2 and f1["line"] < f2["line"]),
+        ("three figures found, in order", len(p["figures"]) == 3 and f1["line"] < f2["line"] < f3["line"]),
         ("figure 1 opens its section and is the lead figure after the cast", f1["opens_section"] and f1["lead"] and not f1["before_cast"]),
         ("figure 1 has eight lanes and one tick bar", f1["lane_count"] == 8 and f1["tick_bars"] == 1),
         ("figure 1's long message is a sentence label", len(f1["sentence_labels"]) == 1),
@@ -871,6 +921,11 @@ def probe() -> int:
         ("figure 2 is pointed at by its section", f2["pointers"] >= 1),
         ("the long section with no figure is a candidate with order, branch and cycle words",
          len(p["candidates"]) == 1 and p["candidates"][0]["order"] > 40 and p["candidates"][0]["branch"] > 40 and p["candidates"][0]["cycle"] > 40),
+        ("a rect band's colour is not read as a name", "rgba" not in f1["names"]["never"] and "rgba" not in f1["names"]["after"]),
+        ("a classDiagram is read, and its own kind line is not a name",
+         f3["type"] == "classDiagram" and "classDiagram" not in f3["names"]["never"]),
+        ("a classDiagram's class names, display label and relation label are all read",
+         {"LevelChunk", "PalettedContainer", "NaturalSpawner", "ChunkMap.promote"} <= set(f3["names"]["never"]) | set(f3["names"]["before"]) | set(f3["names"]["after"])),
         ("trouble ranks figure 1 above figure 2", trouble(f1)[0] > trouble(f2)[0]),
     ]
     ok = True

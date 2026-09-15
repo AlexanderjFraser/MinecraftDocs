@@ -7,7 +7,7 @@ every page: the key in `TEMPLATE.md` is the authority, and `check_lanes.py` fail
 a page that disagrees with it. The last rows are the exceptions — lanes that stand for a
 thread or a boundary rather than for one class.
 
-336 lanes are classes and 9 are not. A lane is normally the initials of
+338 lanes are classes and 9 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
 rules make about a third of them: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
@@ -52,6 +52,7 @@ read it off this table.
 | `CCPL` | `ClientConfigurationPacketListenerImpl` |
 | `CDS` | `ClientDebugSubscriber` |
 | `CE` | `CommandEncoder` |
+| `CEM` | `EnchantmentMenu` |
 | `CF` | `ConfiguredFeature` |
 | `CG` | `CollisionGetter` |
 | `CGT` | `ChunkGenerationTask` |
@@ -325,6 +326,7 @@ read it off this table.
 | `TA` | `TextureAtlas` |
 | `TagP` | `TagParser` |
 | `TC` | `TestCommand` |
+| `TCC` | `TransientCraftingContainer` |
 | `TCTD` | `ThrottlingChunkTaskDispatcher` |
 | `TDec` | `TreeDecorator` |
 | `TDSS` | `TrackingDebugSynchronizer.SourceSynchronizer` |

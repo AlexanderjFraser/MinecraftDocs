@@ -150,7 +150,7 @@ ungated — and `Player.canEat` itself passes for *invulnerable abilities*,
 `Consumable.consumeTicks` is zero is consumed instantly with no animation.
 After the food lands, `ItemStack.finishUsingItem` applies
 `DataComponents.USE_REMAINDER` and `DataComponents.USE_COOLDOWN` ([using an
-item](../items/using-an-item.md#the-ending-in-one-picture)).
+item](../items/using-an-item.md#the-two-endings)).
 
 The *decision* to finish is server-only, but the client replays the meal on
 an entity event and runs `FoodProperties.onConsume` and its `FoodData.eat`

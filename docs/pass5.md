@@ -1288,8 +1288,8 @@ drop the number.
   **Done, session N**, and re-derived: `Direction.Axis`, `com/mojang/math/Axis`
   and `ChunkPalettedStorageFix.Axis`. The sentence now says *in scope* and names
   the third as out of it.
-- `items/loot-tables.md:130` — "a funnel with **three** fan-outs" describes the [kind=figure]
-  page's own figure, which has four branch nodes.
+- ~~`items/loot-tables.md:130` — "a funnel with **three** fan-outs" describes the [kind=figure]
+  page's own figure, which has four branch nodes.~~ **overtaken** — pass 6 had already rewritten the sentence to *the one fan-out where composites expand into candidates*; session G folded that fan-out into one node and a table, and the lead-in says *the expansion*.
 
 - ~~`maps/biggest.md:29` — "only **two** concrete mobs make the list" is true of~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session N — `maps/biggest`:38 now says *make the thirty* and names the table's forty.
   the figure's thirty and false of the table's forty (`Panda` 37th,
@@ -1789,13 +1789,13 @@ duplicate a Reference page that has been checked row by row.
   the same two paths. Its reader had gone further and said every cell in the
   table is a compressed forward reference, so the table now says so of itself in
   one sentence above it. [kind=lecture]
-- **`items/README.md`'s figure** lost an edge (`CM → CP`) and re-sourced another,
+- ~~**`items/README.md`'s figure** lost an edge (`CM → CP`) and re-sourced another,
   so the second tier now has one node with no incoming arrow. That is *true* —
   contexts and predicates depends on none of the vocabulary — but a flowchart
   with an orphan node reads like an omission. Pass 5 should decide whether the
-  figure wants a second, disconnected cluster or a note.
-- **`contexts-and-predicates`' figure 1** gained a node outside both subgraphs
-  (`SlotSource`). Same question: three groups, or two and a stray.
+  figure wants a second, disconnected cluster or a note.~~ **done, pass 7 session G** — the figure is two subgraphs, *the vocabulary* and *the three engines*, so contexts and predicates is not a stray but the second tier's own starting point; numbered to the watch order and captioned.
+- ~~**`contexts-and-predicates`' figure 1** gained a node outside both subgraphs
+  (`SlotSource`). Same question: three groups, or two and a stray.~~ **done, pass 7 session G** — `SlotSource` is cut. It was worse than a stray: declared outside both subgraphs, mermaid drew it *inside* the loot box, against its own label.
 
 ### Counts that are fine but say nothing
 
@@ -4413,7 +4413,7 @@ left, by the pass that owns it.*
 **For pass 7 — the figures.** Every one of these is a reader's complaint about a
 figure *as read against the paragraph under it*, which is the pass's own test.
 
-- **`containers-and-menus`' shift-click sequence sits before every paragraph
+- ~~**`containers-and-menus`' shift-click sequence sits before every paragraph
   that explains it**, and four of its labels
   (`AbstractContainerMenu.suppressRemoteUpdates`,
   `AbstractContainerMenu.setRemoteSlotUnsafe`,
@@ -4421,39 +4421,39 @@ figure *as read against the paragraph under it*, which is the pass's own test.
   explained sixty lines later. Its reader: "I read the figure, understood
   nothing, read the six bold paragraphs, and came back." It is also off by one
   step against the prose, which opens on the press and the figure on the
-  snapshot. [kind=figure]
-- **`containers-and-menus`' ladder flowchart restates the trace in its bottom
+  snapshot. [kind=figure]~~ **done, pass 7 session G** — six lanes, a tick band, and every one of the four labels now sits inside the band the prose explains; `RemoteSlot.receive` gets its sentence. The lead-in is the section's first paragraph.
+- ~~**`containers-and-menus`' ladder flowchart restates the trace in its bottom
   four boxes**, so a reader who has read the trace skims the figure — and skims
-  the four gate tests, which are the only new material in it. [kind=figure]
-- **`loot-tables`' opening sequence has no client lane** although the two
+  the four gate tests, which are the only new material in it. [kind=figure]~~ **done, pass 7 session G** — the bottom four boxes are cut (they were figure 1's), the four gates are a two-column table, and the figure is the compare-apply-branch the section is about.
+- ~~**`loot-tables`' opening sequence has no client lane** although the two
   packets that are the whole of *the screen* are drawn on it; both appear to
   travel between two server objects. Its first arrow runs
   `ServerPlayerGameMode` → `ChestBlockEntity` under a label about `ChestBlock`,
   a class with no lane, and the `ChestBlockEntity` → `ServerPlayer` arrow reads
-  as the opposite direction from the prose. [kind=figure]
-- **`using-an-item`'s ending flowchart is two disconnected graphs in one box**;
+  as the opposite direction from the prose. [kind=figure]~~ **done, pass 7 session G** — six lanes with a `Wire` lane, and five corrections beside the lane count: the two-lanes-for-one-object, the clientbound packet drawn arriving at the menu, the reversed `sendAllDataToRemote`, the splitter's position and `setItem`'s owner. All in [pass9.md](pass9.md).
+- ~~**`using-an-item`'s ending flowchart is two disconnected graphs in one box**;
   its reader hunted for the edge that joins the release branch to the countdown
   branch. Node K also states the stop before the graph branches on the value
-  that decides it. [kind=figure]
-- **`enchantments`' hook flowchart draws only the six-row shape** while the
+  that decides it. [kind=figure]~~ **done, pass 7 session G** — the two graphs are two figures, one per ending, and the countdown one gains the edge it never had: the byte arriving at `Player.handleEntityEvent`, which is the page's hook and was the client branch's only exit.
+- ~~**`enchantments`' hook flowchart draws only the six-row shape** while the
   paragraph above it says the flag row "is the exception and is the reason the
   shape is worth drawing" — so the sentence points at the figure for the one
-  thing the figure omits. [kind=figure]
-- **`recipes`' loading flowchart turns on the word *enabled* in three edge
+  thing the figure omits. [kind=figure]~~ **done, pass 7 session G** — the flag row is an arm out of a new diamond at the entry point.
+- ~~**`recipes`' loading flowchart turns on the word *enabled* in three edge
   labels**, 150 lines before feature flags are named; and "result and crafting
   station both enabled" is a different sense of the word from the other two.
-  [kind=figure]
-- **`enchanting`'s selection flowchart is the only place the number 50
+  [kind=figure]~~ **done, pass 7 session G** — the three edge labels are one sentence under the figure saying they are the level's `FeatureFlagSet` and not the recipe-book sense.
+- ~~**`enchanting`'s selection flowchart is the only place the number 50
   appears**, and the paragraph under it explains the same fact as "from a cost
-  of forty-nine up". [kind=figure]
-- **`items-and-stacks`' `ItemStack` figure leaves `count` and `popTime` with no
+  of forty-nine up". [kind=figure]~~ **done, pass 7 session G** — the fifty is paired with its meaning in the lead-in above the figure, which is what F4 allows.
+- ~~**`items-and-stacks`' `ItemStack` figure leaves `count` and `popTime` with no
   edges**, and its dotted arrow points at a node whose label is defined two
   lines further down — so the sentence "the dotted arrow is the shape of the
-  whole system" lands on the one arrow hardest to read. [kind=figure]
-- **`items/README`'s figure still does not draw the two tiers.** This session
+  whole system" lands on the one arrow hardest to read. [kind=figure]~~ **done, pass 7 session G** — the figure is a `classDiagram`, so `count` and `popTime` are fields rather than edgeless boxes, and the dotted arrow's label rides its own line. The subgraph title that was being clipped mid-phrase is the caption.
+- ~~**`items/README`'s figure still does not draw the two tiers.** This session
   added a sentence saying what an arrow means (*what the next page can now
   assume*), which was the reader's sharper complaint, but the figure remains a
-  set of chains under a heading that says the part is not one. [kind=figure]
+  set of chains under a heading that says the part is not one. [kind=figure]~~ **done, pass 7 session G** — the two tiers are two subgraphs, and the caption says what an arrow means.
 
 **For pass 8 — the voice.**
 
@@ -4488,11 +4488,11 @@ page had left unnamed as "its fade sibling"). [kind=record]
 
 ### For pass 7 — the figures
 
-- **`items/README`'s figure draws a chain where the prose claims two tiers**
+- ~~**`items/README`'s figure draws a chain where the prose claims two tiers**
   (`IS → UI → CM → RE` in a line), and draws no edge between `EC` and `LO`
   though two of enchanting's five paths are loot functions. The prose is right
-  about the shape; the figure is the artefact and should carry it. [kind=figure]
-- **`items-and-stacks` and `data-components` draw the same object.** Both
+  about the shape; the figure is the artefact and should carry it. [kind=figure]~~ **done, pass 7 session G**, and the second half **ruled out**: an arrow here means *what the next page can now assume*, and loot tables owes enchanting nothing, which is the paragraph above the figure's own claim. The tiers are drawn.
+- ~~**`items-and-stacks` and `data-components` draw the same object.** Both
   flowcharts run `ItemStack` → `PatchedDataComponentMap` → patch with the
   dotted prototype arrow. After this session's cut the Part VII page should
   draw the `ItemStack` fields and the `Item`'s four and drop the patch
@@ -4502,10 +4502,10 @@ page had left unnamed as "its fade sibling"). [kind=record]
   `asPatch`/`fromPatch` in their two directions), so Part VII's session G is
   free to draw the `ItemStack` fields and the `Item`'s four without drawing
   the same picture twice. The overlap to check is the dotted prototype arrow,
-  which Part II now owns.
-- **`loot-tables`' funnel flowchart is sixteen edges** and now carries the
+  which Part II now owns.~~ **done, pass 7 session G** — Part VII draws the `ItemStack` fields and the `Item`'s four; the patch internals are Part II's and the dotted prototype arrow is the only thing the two share, which is the page's thesis and belongs on both.
+- ~~**`loot-tables`' funnel flowchart is sixteen edges** and now carries the
   splitter's corrected level as a note; pass 7 should judge whether the
-  correction reads at the column width. [kind=figure]
+  correction reads at the column width. [kind=figure]~~ **done, pass 7 session G** — the correction reads: the funnel lost its seven-node placement tail to the trace above it and its five entry containers to a table, 26 nodes to 14, and it is at scale 1 with 16px type.
 
 ### For pass 8 — the voice
 
@@ -6727,3 +6727,69 @@ Part 3; these are the pieces of work that ruling created.
   to the ordinary front reading). Five of the six are a page's hook carried
   entirely in prose, which is the same pattern session D found in Part IV.
   [kind=figure]
+
+## Pass 7, session G — Part VII · Items and inventories *(2026-09-15)*
+
+**For session O — the close.**
+
+- **`check_figure_names.py` could not read a `classDiagram` at all**, and neither
+  could `pass7_figures.py`. F10's ruling sends a vocabulary page to exactly that
+  kind, so the five class diagrams sessions B to F drew — `text-components`,
+  `data-components`, `chunk-anatomy`, `blocks-and-states`, `entity-anatomy` —
+  had **every name in them unchecked**, and the report tool was counting the
+  word `classDiagram` itself as a name the prose never says. Both fixed with
+  probes (five cases in the gate, two in the report tool), and the corpus count
+  did not move for failures — the five were all correct, which nobody knew. What
+  it does move is **notes**: the class diagrams' relation labels and the member
+  lines that are English rather than declarations are visible for the first
+  time. Session O should read the new ones before flipping `--strict`.
+  [kind=record]
+- **A classDiagram member line is qualified by its own class box**, and the gate
+  now checks it that way — `int popTime` inside `class ItemStack` is
+  `ItemStack.popTime`, a failure if no such member exists, and needs no
+  `Class.` prefix in the figure. That is a convention F12 did not have because
+  the kind was invisible to it; `TEMPLATE.md`'s *Figures* says it now, and
+  session O should fold it into F12(b)'s wording. [kind=record]
+- **`contexts-and-predicates` figure 2's message head `test` is a ruled note**,
+  not an unresolved name: `LootItemCondition extends Predicate<LootContext>`, so
+  `test` belongs to `java.util.function.Predicate` and is outside every tree the
+  verifier indexes. [kind=record]
+- **The lane key gains three rows** — `TCC` for `TransientCraftingContainer`,
+  and `CEM` beside the existing `EM`, both `EnchantmentMenu`, for the two copies
+  of the menu in `enchanting`'s split-by-machine figure (session F's
+  `AbstractBoat` precedent). `CI` (`CraftingInput`) is no longer declared by any
+  page and joins session O's prune list. [kind=record]
+
+**For pass 8 — the voice.**
+
+- **Two captions in this part name a packet and two name a method**, and the
+  register is not the same: *one `ClientboundContainerSetContentPacket`, from
+  `sendAllDataToRemote`* against *the client is told the meal is over by a
+  single byte*. The second is the book's voice and the first is the source's.
+  Worth reading Part VII's nineteen captions as one set. [kind=voice]
+- **"the client's own copy" and "the server's copy"** are now the part's phrase
+  for the two menus, replacing *the twin*, which appeared once and nowhere else
+  in the book. Check it against Part X's vocabulary for the same pair.
+  [kind=voice]
+
+**For pass 10.**
+
+- **Part VII's sections that wanted a figure and did not get one**, in the order
+  the viewers asked for them: `containers-and-menus`' *Where in the tick a
+  broadcast happens* (four ordered moments in one tick, and the page's
+  *hopper one tick late* conclusion rests entirely on which comes after which —
+  the strongest candidate in the part); `items-and-stacks`' *A pickaxe's last
+  point of durability* (the page's own named scenario, twelve calls of ordering
+  in prose with three silent exits and the server/client boundary at entity
+  event 47); `recipes`' *The filter that greys out a recipe you could craft by
+  hand* (a three-way fork whose gate on two of three branches is the page's
+  closing argument, currently spread across two sections a page apart);
+  `contexts-and-predicates`' *Three ways a parameter can be missing* (three
+  moments the section's hook says are **not** alternatives, which a numbered
+  list actively fights — a three-row table with a *what the player sees* column
+  would also park the counts in cells an edit cannot silently orphan);
+  `enchanting`'s *The one question all five ask*; `loot-tables`' *The scatter*;
+  and `using-an-item`'s *Where the hour comes from* (nine durations in one
+  paragraph, over the page's own seven-item budget — a table). Seven sections,
+  and five of them are a page's hook carried entirely in prose, which is now the
+  same pattern in Parts IV, V and VII. [kind=figure]

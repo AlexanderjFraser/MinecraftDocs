@@ -152,17 +152,21 @@ at all.
 
 ```mermaid
 flowchart TD
-    Caller["a system reaches a moment: Player.itemAttackInteraction, Block.tryDropExperience, LivingEntity.baseTick"]
-    Caller --> EH["an EnchantmentHelper entry point"]
-    EH --> Walk["walk one stack, or every EquipmentSlot of one entity"]
-    Walk --> Slot["on the slot-aware walk, keep entries whose Enchantment.matchingSlot accepts this slot"]
+    Caller["a system reaches a moment"] --> EH{"which EnchantmentHelper entry point"}
+    EH -- "EnchantmentHelper.has, EnchantmentHelper.hasTag" --> Flag["ask the record: is the key there at all"]
+    EH -- "any of the other six" --> Walk["walk one stack, or every EquipmentSlot of one entity"]
+    Walk --> Slot["on the slot-aware walk, keep entries Enchantment.matchingSlot accepts"]
     Slot --> Comp["read the list under one EnchantmentEffectComponents key"]
-    Comp --> Target["for the targeted keys, keep entries whose enchanted target matches this pass"]
+    Comp --> Target["for the targeted keys, keep entries whose enchanted target matches"]
     Target --> Ctx["build a LootContext on that hook's parameter set"]
-    Ctx --> Cond["ConditionalEffect.matches runs the LootItemCondition"]
+    Ctx --> Cond{"ConditionalEffect.matches runs the LootItemCondition"}
     Cond -- "no" --> Drop["nothing happens"]
-    Cond -- "yes" --> Apply["apply: fold a value, or run the effect on the affected entity"]
+    Cond -- "yes" --> Apply["fold a value, or run the effect on the affected entity"]
 ```
+
+*Figure: one shape, and the one row that does not take it. Follow the left
+arm out of the diamond — the flag row answers from the record alone, which is
+why it is the only row that costs nothing to ask.*
 
 The `LootContext` in the middle is the same machinery loot tables and
 `/execute if predicate` use, and `Enchantment` builds five of them —
@@ -189,20 +193,26 @@ sequenceDiagram
     participant Ench as Enchantment
     participant Ignite as Ignite
     participant Entity as Entity
-    participant SED as SynchedEntityData
 
-    SGPL->>Player: handleAttack passes the range checks, then Player.attack
+    SGPL->>Player: attack, once handleAttack has passed the range checks
     Player->>Player: createAttackSource, whose direct and causing entity are one
-    Player->>EH: on a hit that landed, itemAttackInteraction calls doPostAttackEffectsWithItemSource
+    Player->>EH: doPostAttackEffects<br/>WithItemSource,<br/>on a hit that landed
     EH->>EH: the victim's whole equipment first, then the attacker's main hand
     EH->>Ench: doPostAttack for the main-hand stack, in the ATTACKER pass
-    Ench->>Ench: damageContext, then TargetedConditionalEffect.matches asks is the hit direct
+    Ench->>Ench: TargetedConditional<br/>Effect.matches asks <br/>if the hit was direct
     Ench->>Ignite: apply, with the victim as the affected target
     Ignite->>Entity: igniteForSeconds, raised only if the new value is larger
-    Entity->>SED: baseTick sets shared flag zero
-    Note over SED: the flame travels as ClientboundSetEntityDataPacket, the enchantment never does
-    Note over Entity: one point of fire damage every twentieth tick from here on
+    rect rgba(0, 0, 0, 0.04)
+        Note over Ignite,Entity: a later tick, and every twentieth one after it
+        Entity->>Entity: baseTick sets the shared flags byte through SynchedEntityData
+        Note over Entity: the flame travels as a data packet, the enchantment never does
+    end
 ```
+
+*Figure: five lanes between the click and the flame, and no enchantment object
+among the last two. The band is where the enchantment has already finished —
+what the other player sees is a `SynchedEntityData` flag, and one point of damage a
+second is the entity's own business.*
 
 **The swing, and the source that is the whole melee rule.**
 `ServerGamePacketListenerImpl.handleAttack` runs the range checks and calls
@@ -316,7 +326,7 @@ of three textures. And `MultiPlayerGameMode.releaseUsingItem` runs
 `TridentItem.releaseUsing` on the client's own copy, which asks
 `EnchantmentHelper.getTridentSpinAttackStrength`, so **Riptide's strength is
 computed client-side too**, which is what lets the riptide push be predicted
-at all ([using an item](using-an-item.md#the-ending-in-one-picture)).
+at all ([using an item](using-an-item.md#the-two-endings)).
 
 Everything else the client does with an enchantment is drawing:
 `ItemEnchantments.addToTooltip` for the tooltip, `ItemStack.hasFoil` for the

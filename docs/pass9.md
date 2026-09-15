@@ -44,6 +44,209 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session G — Part VII · Items and inventories: the figures *(2026-09-15)*
+
+Nine pages, 19 figures (17 before; `using-an-item`'s single *ending* flowchart
+became two, `recipes`' one trace became two at the tick boundary it already
+drew, `containers-and-menus`' seventeen-node ladder became a four-row table and
+a five-node fork, and `loot-tables`' twenty-six-node funnel lost its placement
+tail to the trace above it). Every figure captioned, every caption one italic
+run; the figure-name gate clean on the part (10 unresolved names → 0, 31 notes
+→ 1, the one ruled below); no type under 12.6px, nothing below 0.79, no lane
+over six, no flowchart over fourteen nodes, **no Mojang name hyphen-broken on
+screen** and no overlap, overflow or clipping anywhere in the part.
+
+### The figures redrawn, and what each asserts
+
+- `items/README` — the part figure gains two subgraphs (*the vocabulary*, *the
+  three engines*) and its eight nodes are numbered to the watch order. **No arrow
+  added, removed or reversed**: the six edges and their sentences are the page's
+  own, unchanged. The claim the subgraphs assert is the section's own sentence
+  ("What is left is **two tiers**"), drawn rather than only said. The queue's
+  standing request for an `EC → LO` edge (:4491) is **ruled out**: the prose says
+  the engines lean on the vocabulary and not on each other, and an arrow here
+  means *what the next page can now assume*, which loot tables does not owe
+  enchanting.
+- `items-and-stacks` figure 1 — the flowchart is now the book's **sixth
+  `classDiagram`**, and it is the shape the section's heading promised (*Four
+  fields*). `count` and `popTime` were edgeless boxes in a subgraph whose title
+  was **clipped mid-phrase on screen** (*ItemStack — the object in*); they are
+  now fields of the `ItemStack` box. **Arrows removed**: `PDM --> PATCH` (the
+  patch internals, which Part II's `data-components` owns since session B).
+  **Arrows kept, re-parented**: `ItemStack --> Holder.Reference`, `Holder.Reference
+  --> Item`, and the dotted `PatchedDataComponentMap ..> Holder.Reference`
+  labelled *reads the defaults, never writes them* — the page's thesis arrow,
+  whose label had drifted onto the neighbouring solid edge in the render. The
+  `Item` box lists the four fields the opening paragraph names, verified at
+  `Item.java:120-123`, and the `ItemStack` box the four at `ItemStack.java:123-128`.
+- `containers-and-menus` figure 1 — the `ContainerSynchronizer` lane **cut**
+  (seven lanes → six), and with it the two arrows that drew *the absence of a
+  packet as a packet*. **Correction, not a simplification**: `RemS-->>CSync:
+  nothing, sendSlotChange is never reached` named the wrong caller —
+  `ContainerSynchronizer.sendSlotChange` is called by
+  `AbstractContainerMenu.synchronizeSlotToRemote`
+  (`AbstractContainerMenu.java:300-307`), never by a `RemoteSlot`. Both are now
+  one note asserting that the synchronizer is not reached in the agreeing case.
+  A `rect` band marks the server tick that drains the packet (F8); `matches?`
+  is `matches`, the form the prose uses; *predicted on the twin* is *on the
+  client's own copy*, the page's own phrase.
+- `containers-and-menus` figure 2 — split at `IX -->|passes|`. The four gates are
+  a two-column table (*the test* · *what a failure does*), and the figure is the
+  five nodes the section is actually about. **Nodes removed**: `BC` → `AG` →
+  `SIL` / `ONE`, which redrew figure 1's ending. **Correction**: the figure drew
+  **six** decision diamonds under a sentence that calls the handler *four tests
+  and a fork* — `RemoteSlot.matches` is inside `AbstractContainerMenu.broadcastChanges`
+  and not in the handler at all (`ServerGamePacketListenerImpl.handleContainerClick`,
+  four tests then one `fullResyncNeeded` fork). The sentence pointing at "the
+  order of the last two boxes" now points at a figure whose last two boxes are
+  the ones it means.
+- `contexts-and-predicates` figure 1 — **`LCtx -->|getParameter and
+  getOptionalParameter| Users` reversed and then cut**: the users call the
+  context (`DamageSourceCondition.java:31-32`), and the five of them belong to
+  *What reads a context*, 180 lines below. `SlotSource` **cut**: declared outside
+  both subgraphs, mermaid drew it *inside* the loot box, contradicting its own
+  label (*in world/item/slot*). **Arrows added**: `Callers --> ContextKeySet`
+  (*each brings its own key set*) and `SlotDisplayContext --> ContextMap`
+  (*builds a ContextMap of its own*) — both the section's own sentences
+  ("everything *above* them is whoever wants a question answered… and, on the
+  *client*, `SlotDisplayContext`, which builds a `ContextMap` of its own"). The
+  loot subgraph is gone and its two nodes carry the `server` class instead: its
+  title was being drawn over the arrow entering it.
+- `contexts-and-predicates` figure 2 — `CMap-->>LootP` **relabelled** from
+  *throws on an unexpected key, or on an absent required one* to *the checked
+  map, or a throw on a bad key*: the old label drew a conditional throw as an
+  unconditional return, against the prose's three-moments account.
+- `enchanting` figure 1 — the five sentence labels are gone and the bare **50**
+  is paired with its meaning in the lead-in above the figure (F4). No arrow
+  changed: the loop, the two diamonds and the two exits are the same claims.
+- `enchanting` figure 2 — **split by machine**, with a lane each for the two
+  copies of `EnchantmentMenu` (`CEM` and `EM`, a new key row, session F's
+  `AbstractBoat` precedent). **Correction**: `EM->>SP: broadcastChanges` and
+  `SP-->>EScr: broadcastChanges` put the same method on two arrows in two
+  directions, and it is the menu's own
+  (`AbstractContainerMenu.java:236-244`); the data slots reach the client as
+  `ClientboundContainerSetDataPacket` through `ContainerSynchronizer.sendDataChange`
+  (`AbstractContainerMenu.java:300-307`, `ServerPlayer.java:348-355`), so both
+  are now `EM->>Wire`. `Player` and `ServerPlayer` **cut** to two notes;
+  `SGPL` cut, the packets going through the `Wire` lane the split gave the
+  figure. The assertion the split makes is the section's own: the client's copy
+  answers the click before any packet is sent.
+- `enchantments` figure 1 — **arm added**: `EnchantmentHelper.has,
+  EnchantmentHelper.hasTag → ask the record: is the key there at all`, and the
+  entry point is now a diamond. The paragraph above the figure calls the flag row
+  "the exception and… the reason the shape is worth drawing" and the figure did
+  not draw it.
+- `enchantments` figure 2 — **two corrections of the caller's-method-at-the-callee
+  shape**: `SGPL->>Player: handleAttack…` is `attack`
+  (`ServerGamePacketListenerImpl.java:2020-2053` — `handleAttack` is the
+  listener's own and `this.player.attack(target)` is what reaches the player);
+  `Entity->>SED: baseTick sets shared flag zero` is `set`, on
+  `Entity.DATA_SHARED_FLAGS_ID` bit 0, from `Entity.baseTick` through
+  `Entity.setSharedFlagOnFire` (`Entity.java:583, 606-607, 2985-2991`). The
+  `SynchedEntityData` lane is folded (one message, no decision) and the fire
+  ticking is a `rect` band — the prose puts it on later ticks and the figure drew
+  it as the next moment.
+- `items/loot-tables` figure 1 — redrawn at six lanes with a `Wire` lane, and
+  **five corrections**: `ChestBlockEntity` and `RandomizableContainer` were two
+  lanes for one object (`RandomizableContainerBlockEntity implements
+  RandomizableContainer`, `:20`); `SP->>ChestM: ClientboundOpenScreenPacket goes
+  first, then initMenu` drew a clientbound packet arriving at the menu and named
+  `ServerPlayer`'s own method (`ServerPlayer.java:1469`); `ChestM-->>SP:
+  sendAllDataToRemote` drew the menu's own method as a return to the player when
+  it is reached from `ServerPlayer.initMenu` → `AbstractContainerMenu.setSynchronizer`
+  (`ServerPlayer.java:621-624`) and sends to the client;
+  `LT->>LT: createStackSplitter wraps the whole fill` sat *after* the pool
+  returned, though the splitter is the consumer `LootTable.getRandomItemsRaw` is
+  called with and so is installed before any pool runs (`LootTable.java:114-122`);
+  and `setItem` was a `LootTable` self-call when it writes into the container
+  (`LootTable.java:166-172`). The opening arrow's `ChestBlock.useWithoutItem`
+  label — a class with no lane — is a note.
+- `items/loot-tables` figure 2 — **the placement tail cut** (`R` → `X`, seven
+  nodes: the three function tiers, the splitter, the shuffle and the write),
+  which the trace above now carries; and the five entry containers folded from
+  five nodes and five edges into one *expand* node plus a two-column table.
+  26 nodes → 14, 2,025px → 1,771px, and no arrow's direction changed.
+- `recipes` figure 1 — the four sentence labels are gone, the two threads are the
+  `worker` and `server` classes rather than the words *Worker:* and *server
+  main:* inside labels, the empty window is a dotted edge, and the three
+  feature-flag conditions leave the edge labels for one sentence (the queue's
+  three senses of *enabled*, :4442). **No arrow's direction changed**; the
+  `A -.-> F` edge is the one the section is about.
+- `recipes` figure 2 — **split at the tick boundary the figure already noted**,
+  into the tick the plank lands (five lanes) and the later tick the result is
+  clicked (six). Both carry `rect` bands. **Four corrections of the same shape**:
+  `CraftM->>CI: asCraftInput` drew the product as the callee — `asCraftInput` is
+  `CraftingContainer`'s (`CraftingContainer.java:16`), and the container, not the
+  `CraftingInput`, is the lane (`TCC`, a new key row); `ResultS->>ResultC:
+  checkTakeAchievements first, then awardUsedRecipes` headed the arrow with
+  `ResultSlot`'s own method, and what reaches the container is `awardUsedRecipes`
+  (`ResultSlot.java:59-68`); `ResultC->>SRB: addRecipes` skipped
+  `ServerPlayer.awardRecipes` between them (`RecipeCraftingHolder.java:23`,
+  `ServerPlayer.java:1645-1646`); and `ResultS->>CraftM: removeItem` sent a
+  `Container` method to the menu when the call is `craftSlots.removeItem` on the
+  `TransientCraftingContainer` (`ResultSlot.java:111`, `AbstractCraftingMenu.java:17-24`).
+- `using-an-item` figure 1 — **split into the two endings the page is about**,
+  which is what the old figure's two disconnected graphs in one box already
+  were. **Arrow added**: `G -. the byte lands .-> X`, a new node
+  *`Player.handleEntityEvent` replays `Player.completeUsingItem`*, and `W --> X`
+  — the client's countdown branch had **no exit at all**, and the packet node
+  sent a byte no arrow received. `Player.handleEntityEvent` calls
+  `completeUsingItem` on id 9 and nothing else on that side does, which is the
+  page's own hook ("the meal ends when a single byte arrives"). In the second
+  half, `S --> Q2` added: the client's local release is a *sibling* of the
+  packet, not downstream of `handlePlayerAction`.
+- `using-an-item` figures 3 and 4 — `Minecraft` cut from both (one message, no
+  decision) and, in the bow, `BowItem` cut, because **one lane was standing for
+  both machines' copies** and the page's point is that the same method runs twice
+  and gets nowhere on one side; both releases are now self-messages on `LP` and
+  `SP`. **Corrections**: `MC->>MPGM: startUseItem` named the caller's method —
+  `Minecraft.startUseItem` calls `MultiPlayerGameMode.useItem`
+  (`Minecraft.java:1880-1930`, `MultiPlayerGameMode.java:410`); `Cons->>LP:
+  startConsuming` likewise — `Consumable.startConsuming` is Consumable's own and
+  what reaches the player is `startUsingItem` (`Consumable.java:42-49`); and the
+  meal's tick label said *five particles every fourth tick* with no mention of
+  the delay the prose states, though `Consumable.shouldEmitParticlesAndSounds`
+  gates on **both** `CONSUME_EFFECTS_START_FRACTION` and the interval. Three
+  `rect` bands per figure replace the bare note bars.
+
+### Corrections
+
+Every one above marked *correction* is a fact changed with the decompile open;
+nineteen in all, and **fifteen of them are one shape**: a message labelled with
+the caller's own method and drawn arriving at the callee, or the same fault in a
+flowchart edge. That is **six parts of six**, and every one was found by
+`check_figure_names.py` mechanically rather than by reading.
+
+Beside them, nine **Mojang names hyphen-broken on screen** (F18) —
+`AbstractContainerMe-nu`, `EnchantmentNames.i-nitSeed`,
+`ClientboundContainerSetDataPack-et`, `doPostAttackEffectsWithItemSour-ce`,
+`TargetedConditionalEffe-ct`, `RandomizableContain-er`,
+`ClientboundContainerSetContentP-acket`, `checkTakeAchievements-`,
+`ProjectileWeaponItem.dr-aw` — every one of them a name the book was getting
+wrong in the picture while getting it right in the prose. All nine fixed, and
+**found mechanically**: `render/index.json` records the on-screen text of every
+label, so a name broken by the theme is one regex over the render.
+
+### Claims the captions make
+
+Nineteen captions, one per figure, each a claim about what its figure shows.
+The five that assert something the prose does not state in the same words, and
+which pass 9 should check first: `containers-and-menus` f1 (*agreement is
+silence* — the synchronizer is not reached in the agreeing case);
+`items-and-stacks` f1 (*a stack reads defaults it can never touch*);
+`loot-tables` f1 (*the contents exist before the screen is asked for*);
+`using-an-item` f2 (*only the server's run reaches a `ServerLevel` and so an
+arrow*); `enchanting` f2 (*the client answers the click out of the ten numbers
+on the left, which is every number it has*).
+
+### Ruled
+
+- `contexts-and-predicates` f2's message head `test` stays a gate **note**:
+  `LootItemCondition extends Predicate<LootContext>`, so `test` is
+  `java.util.function.Predicate`'s and outside every tree `verify_names.py`
+  indexes. F12(d)'s prose-head allowance covers it; session O should not read it
+  as unresolved.
+
 ## Pass 7, session F — Part VI · Entities: the figures *(2026-09-15)*
 
 Ten pages, 26 figures (22 before; three pages split one figure into two, one

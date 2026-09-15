@@ -224,20 +224,22 @@ two cost-based providers, and `EnchantWithLevelsFunction` through
 more simply — `SingleEnchantment` samples a level for an enchantment it
 already knows, and `EnchantRandomlyFunction` picks one at random off the
 level's random source. So the arithmetic below is the *cost-based* path, and it is a
-short method with four distinct sources of variance stacked on one another.
+short method with four distinct sources of variance stacked on one another —
+the last of which is a fresh roll from **fifty**, tested against the cost, once
+per extra enchantment.
 
 ```mermaid
 flowchart TD
-    A["a cost arrives: three from the table, a sampled IntProvider from a provider, a NumberProvider from a loot table"] --> B{"does the stack have DataComponents.ENCHANTABLE"}
+    A["a cost arrives, from the table or from a provider"] --> B{"does the stack have DataComponents.ENCHANTABLE"}
     B -- no --> Z["empty list, and the caller adds nothing"]
-    B -- yes --> C["raise the cost by one plus two independent rolls scaled by the enchantability value"]
-    C --> D["scale by a triangular span of plus or minus 15 percent, round, clamp to at least 1"]
-    D --> E["getAvailableEnchantmentResults keeps an enchantment only if it is primary for this item, or the item is a plain book"]
-    E --> F["for each survivor, take the highest level whose min and max cost bracket contains the value"]
+    B -- yes --> C["raise it by two rolls scaled by Enchantable.value"]
+    C --> D["scale by a triangular span of 15 percent, clamp at 1"]
+    D --> E["EnchantmentHelper.getAvailableEnchantmentResults: primary here, or a plain book"]
+    E --> F["per survivor, the highest level whose bracket holds the value"]
     F --> G{"any candidates at all"}
     G -- no --> Z
     G -- yes --> H["weighted pick by Enchantment.getWeight"]
-    H --> I{"a fresh roll under 50 is at most the cost"}
+    H --> I{"a roll from fifty is at most the cost"}
     I -- no --> Y["the list, out"]
     I -- yes --> J["drop every candidate incompatible with the last pick"]
     J --> K{"anything left"}
@@ -245,6 +247,10 @@ flowchart TD
     K -- yes --> L["weighted pick again, then halve the cost"]
     L --> I
 ```
+
+*Figure: four sources of variance in a row, and then a loop. The cost halves
+on every pass through it, which is what makes a fourth enchantment nearly
+impossible and a first one, above a cost of forty-nine, certain.*
 
 The enchantability perturbation is the first place the item matters:
 `Enchantable.value` — gold's is famously high — widens two independent rolls
@@ -262,7 +268,9 @@ re-seeds it with the seed **plus the slot number** before each selection,
 which is why the three offers are independent of each other and yet
 reproducible. `EnchantmentHelper.getEnchantmentCost` returns zero outright
 for an item with no `DataComponents.ENCHANTABLE`, and a slot whose cost came
-out below its own index plus one is zeroed too.
+out below its own index plus one is zeroed too. The weight each surviving
+candidate carries into the pick is `Enchantment.getWeight`, straight off the
+data-pack record.
 
 Bookshelves reach it as a plain integer. `EnchantmentMenu` walks
 `EnchantingTableBlock.BOOKSHELF_OFFSETS` — a fixed list of thirty-two
@@ -287,42 +295,54 @@ use — unless the list has only one entry, which survives.
 
 ```mermaid
 sequenceDiagram
+    box transparent your machine
     participant EScr as EnchantmentScreen
+    participant CEM as EnchantmentMenu
+    end
+    participant Wire as the network
+    box transparent the server
     participant EM as EnchantmentMenu
     participant EH as EnchantmentHelper
-    participant Player as Player
-    participant SGPL as ServerGamePacket<br/>ListenerImpl
-    participant SP as ServerPlayer
+    end
 
-    Note over EM: the sword lands in slot 0 and slotsChanged runs on the server
+    Note over EM,EH: slot 0 fills, and <br/>AbstractContainerMenu.<br/>slotsChanged runs on this side
     EM->>EM: walk BOOKSHELF_OFFSETS, count the valid shelves
-    EM->>EH: getEnchantmentCost three times, from a stream seeded with the player seed
+    EM->>EH: getEnchantmentCost three times, from the player seed
     EM->>EH: selectEnchantment per slot, re-seeded with the seed plus the slot
     EH-->>EM: a list per slot, one entry of which becomes the clue
-    EM->>SP: broadcastChanges
-    SP-->>EScr: the changed data slots, of ten: three costs, the seed, six clues
-    Note over EScr: EnchantmentNames.initSeed makes the alphabet stable for this seed
-    EScr->>EM: clickMenuButton on the client copy, whose level access is NULL
-    EM-->>EScr: true only if the lapis and the levels are really there
-    EScr->>SGPL: ServerboundContainerButtonClickPacket, via MultiPlayerGameMode
-    SGPL->>EM: clickMenuButton on the server copy
+    EM->>Wire: broadcastChanges, one<br/>Clientbound<br/>ContainerSetDataPacket<br/>per changed slot
+    Wire->>EScr: the ten values: three costs, the seed, six clues
+    Note over EScr,CEM: EnchantmentNames.<br/>initSeed fixes <br/>the alphabet for this seed
+    EScr->>CEM: clickMenuButton, whose level access here is NULL
+    CEM-->>EScr: true only if the lapis and the levels are really there
+    EScr->>Wire: ServerboundContainerButtonClickPacket, via MultiPlayerGameMode
+    Wire->>EM: clickMenuButton, the identical call on the server's copy
     EM->>EH: selectEnchantment again, same seed and slot, same list
-    EM->>Player: onEnchantmentPerformed, take slot plus one levels, re-roll the seed
     EM->>EH: updateEnchantments once per entry, through ItemStack.enchant
-    Note over EM,SP: consume the lapis, award Stats.ENCHANT_ITEM, fire CriteriaTriggers.ENCHANTED_ITEM
+    Note over EM,EH: Player.onEnchantmentPerformed takes the levels and re-rolls the seed
+    Note over EM,EH: the lapis goes, Stats.ENCHANT_ITEM, CriteriaTriggers.ENCHANTED_ITEM
     EM->>EM: slotsChanged again, three fresh offers from the new seed
-    SP-->>EScr: broadcastChanges, then the ten values again, all different
+    EM->>Wire: broadcastChanges, the ten values again, all different
 ```
+
+*Figure: one menu class, two copies, and the boundary drawn. The client's
+`EnchantmentMenu` answers the click before any packet is sent — and answers
+it out of the ten numbers on the left, which is every number it has.*
 
 The predicted click is the sharpest thing on that diagram.
 `EnchantmentScreen.mouseClicked` calls `EnchantmentMenu.clickMenuButton` on
-its own local menu and only sends the packet if that call returns true. On
+its own local menu and only sends the packet — a
+`ServerboundContainerButtonClickPacket`, through `MultiPlayerGameMode` — if
+that call returns true. The server's run of the same method is where
+`Stats.ENCHANT_ITEM` is awarded and `CriteriaTriggers.ENCHANTED_ITEM` fires. On
 the client the menu's level access is `ContainerLevelAccess.NULL`, whose
 evaluation returns an empty optional without running the action at all — so
 the entire enchanting body is skipped, and what the client really evaluates
 is the guard in front of it: the lapis count, the level requirement, and
 `Player.hasInfiniteMaterials`. The affordability check is real on both
 sides; the enchanting is real on one.
+Each changed value crosses as one
+`ClientboundContainerSetDataPacket`.
 [Containers and menus](containers-and-menus.md#the-other-channel-dataslot-and-why-it-is-never-silent)
 has the data-slot channel, and
 [where a broadcast happens](containers-and-menus.md#where-in-the-tick-a-broadcast-happens)

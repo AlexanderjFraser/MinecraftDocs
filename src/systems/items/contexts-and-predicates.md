@@ -18,26 +18,32 @@ validator, and never consulted again while the game is running.
 
 ## Two packages, one machine
 
+The machine is five classes in two packages, and which class sits in which
+package is the fact the rest of the page hangs off.
+
 ```mermaid
 flowchart TD
-    subgraph U["net/minecraft/util/context — knows nothing about loot"]
+    Callers["commands, selectors, advancements, trades, enchantment effects"]
+    Client["SlotDisplayContext, on the client"]:::client
+    subgraph U["util/context"]
         CK["ContextKey, an Identifier plus a static type"]
-        CKS["ContextKeySet, the required keys and the allowed keys"]
+        CKS["ContextKeySet, the required keys and the allowed"]
         CMap["ContextMap, the checked bag of values"]
     end
-    subgraph L["net/minecraft/world/level/storage/loot"]
-        LPar["LootParams, the immutable inputs"]
-        LCtx["LootContext, one invocation"]
-        Users["five LootContextUsers: LootItemCondition, NumberProvider, LootItemFunction, NbtProvider, ScoreboardNameProvider"]
-    end
-    Slot["SlotSource, the sixth, in world/item/slot"]
+    LPar["LootParams, the immutable inputs"]:::server
+    LCtx["LootContext, one invocation"]:::server
     CK -->|"declared required or optional by ContextKeySet.Builder"| CKS
     CKS -->|"ContextMap.Builder.create validates against it"| CMap
+    Callers -->|"each brings its own key set"| CKS
+    Client -->|"builds a ContextMap of its own"| CMap
     CMap -->|"wrapped, with a ServerLevel beside it"| LPar
     LPar -->|"plus a random source and a resolver"| LCtx
-    LCtx -->|"getParameter and getOptionalParameter"| Users
-    LCtx -->|"the same interface, from outside the package"| Slot
 ```
+
+*Figure: every arrow means "built out of", and the box is the whole of the
+general-purpose half. The three classes inside it name no item, block, entity
+or loot table; the two below it are the loot package, and everything that
+asks a question is outside on the right.*
 
 The dividing line is the whole argument of this page. `ContextKey`,
 `ContextKeySet` and `ContextMap` are three small general-purpose classes in
@@ -290,6 +296,9 @@ called *loot tables*.
 
 ## Four facts about a question with two keys in it
 
+`/execute if predicate` is the shortest complete use of the machine: one
+command, one `ContextMap`, one predicate, and no loot table anywhere in it.
+
 ```mermaid
 sequenceDiagram
     participant ExecC as ExecuteCommand
@@ -301,7 +310,7 @@ sequenceDiagram
     Note over ExecC: the argument already holds a Holder, resolved at parse time
     ExecC->>LootP: LootParams.Builder on the level, ORIGIN required, THIS_ENTITY optional
     LootP->>CMap: ContextMap.Builder.create against LootContextParamSets.COMMAND
-    CMap-->>LootP: throws on an unexpected key, or on an absent required one
+    CMap-->>LootP: the checked map, or a throw on a bad key
     ExecC->>LootC: LootContext.Builder.create with no random sequence
     Note over LootC: the random source is Level.getRandom, the resolver is the reloadable registries
     ExecC->>LootC: pushVisitedElement, seeding the recursion guard with this predicate
@@ -309,6 +318,10 @@ sequenceDiagram
     LIC->>LootC: getParameter and getOptionalParameter
     LIC-->>ExecC: a boolean, and the branch is taken or not
 ```
+
+*Figure: the whole machine, once, with no loot in it. Read the two dashed
+returns — the first is the only place the contract is enforced, and the last
+is the only thing the caller gets back.*
 
 Three details in that picture are worth pulling out, and a fourth about the
 call site it does not draw.

@@ -54,14 +54,18 @@ is owed.
 
 ```mermaid
 flowchart TD
-    IS["Items and stacks — what a stack is"]
-    UI["Using an item — what holding the button does"]
-    CM["Containers and menus — how two machines agree about a set of them"]
-    RE["Recipes — an arrangement of stacks becomes another stack"]
-    EN["Enchantments — a named modifier other systems ask about"]
-    EC["Enchanting — how one lands on an item"]
-    CP["Contexts and predicates — the engine that answers questions about the world"]
-    LO["Loot tables — its worked example"]
+    subgraph V["the vocabulary"]
+        IS["1 · Items and stacks"]
+        UI["2 · Using an item"]
+        CM["3 · Containers and menus"]
+    end
+    subgraph E["the three engines"]
+        RE["4 · Recipes"]
+        EN["5 · Enchantments"]
+        EC["6 · Enchanting"]
+        CP["7 · Contexts and predicates"]
+        LO["8 · Loot tables"]
+    end
     IS -- "a stack is a diff over a prototype" --> UI
     UI -- "and a slot is where one lives" --> CM
     CM -- "an arrangement in a grid" --> RE
@@ -69,6 +73,10 @@ flowchart TD
     EN -- "and how one gets onto a stack" --> EC
     CP -- "which needs no stack at all" --> LO
 ```
+
+*Figure: the two tiers of the part, numbered to the watching order. Every
+arrow means "and now you can assume this", so a page with no arrow into it —
+contexts and predicates — is one you can watch whenever you like.*
 
 ## Before you start
 

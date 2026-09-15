@@ -39,15 +39,30 @@ something unusual with the second phase.
 
 ```mermaid
 flowchart TD
-    W["Worker: RecipeManager.prepare scans data/ns/recipe with SimpleJsonResourceReloadListener.scanDirectory, parsing each file through Recipe.CODEC into a sorted map"] --> M["RecipeMap.create, one RecipeHolder per file, keyed by a ResourceKey in Registries.RECIPE"]
-    M --> A["server main: RecipeManager.apply swaps the field and logs a count. That is all it does."]
-    A --> GAP["until the next call, the four indexes below are EMPTY: a reload builds a fresh RecipeManager and its constructor empties all four"]
-    GAP --> F["MinecraftServer calls RecipeManager.finalizeRecipeLoading itself, in its constructor and again at the end of reloadResources"]
-    F -->|"an ingredient is dropped unless every item in it is enabled"| P1["seven RecipePropertySets, one per key in RECIPE_PROPERTY_SETS"]
-    F -->|"input and result display both enabled"| P2["SelectableRecipe.SingleInputSet, the stonecutter's own index"]
-    F -->|"result and crafting station both enabled"| P3["allDisplays: a flat list whose POSITION is the RecipeDisplayId"]
-    P3 --> P4["recipeToDisplay: recipe key to the displays it produced"]
+    W["RecipeManager.prepare scans data/ns/recipe"]:::worker
+    W --> M["RecipeMap holds one RecipeHolder per file"]:::worker
+    M --> A["RecipeManager.apply swaps the field"]:::server
+    A -. "the four indexes below are empty, not stale" .-> F
+    F["RecipeManager.finalizeRecipeLoading, called by MinecraftServer"]:::server
+    F --> P1["seven RecipePropertySet indexes"]:::server
+    F --> P2["SelectableRecipe.SingleInputSet"]:::server
+    F --> P3["RecipeManager.allDisplays, indexed by RecipeDisplayId"]:::server
+    P3 --> P4["RecipeManager.recipeToDisplay, key to displays"]:::server
 ```
+
+*Figure: the reload's two phases — the worker's two boxes above, the server
+main thread's below — and the gap between them. The dotted edge is the one
+the section is about: `RecipeManager.apply` is not what builds the four
+indexes, and between those two boxes they hold nothing.*
+
+Each index applies its own feature-flag filter as it is built: an ingredient
+is dropped from a `RecipePropertySet` unless every item in it is enabled, the
+stonecutter's set keeps an entry only if input and result display are both
+enabled, and a display is kept only if its result and its crafting station
+are. Three tests, three different senses of *enabled*, and none of them the
+recipe-book sense the rest of this page uses: these are the level's
+`FeatureFlagSet`, the same filter `ItemStack.isItemEnabled` applies to an
+assembled stack two sections below.
 
 Three things in that picture are worth saying out loud.
 
@@ -68,6 +83,10 @@ index describe nothing at all rather than describing the pack you just
 replaced. Nothing can catch the game in that state — the swap and the call are
 five statements apart in one lambda on the server thread — which is the only
 reason the gap is allowed to exist.
+
+The last two indexes are a pair: `RecipeManager.allDisplays` is the flat
+list, and `RecipeManager.recipeToDisplay` maps a recipe key to the entries it
+produced in it.
 
 **A `RecipeDisplayId` is a list index, not an identifier.** It is a record
 wrapping a single int, and the int is the position the entry took in the flat
@@ -117,31 +136,61 @@ shapeless* are not the same set, and the difference matters, because it is
 
 ## Eight planks: the trace
 
+Putting the last plank into a crafting grid is two traces a tick or more
+apart, and only the second one reaches the recipe book.
+
 ```mermaid
 sequenceDiagram
     participant CraftM as CraftingMenu
-    participant CI as CraftingInput
+    participant TCC as TransientCrafting<br/>Container
     participant RM as RecipeManager
     participant ResultC as ResultContainer
     participant Wire as the network
-    participant ResultS as ResultSlot
-    participant SRB as ServerRecipeBook
 
-    Note over CraftM: the tick the eighth plank lands
-    CraftM->>CI: asCraftInput, trimming the empty border rows and columns
-    CraftM->>RM: getRecipeFor CRAFTING, this input, this level, no hint
-    RM-->>CraftM: the first RecipeHolder that matches, in id order, or nothing
-    CraftM->>ResultC: setRecipeUsed, refused under LIMITED_CRAFTING if the book has not unlocked it
-    CraftM->>ResultC: setItem 0, the assembled stack
-    CraftM->>Wire: ClientboundContainerSetSlotPacket, written by hand, bumping the state id
-    Note over ResultS: some later tick, the player clicks the result
-    ResultS->>ResultC: checkTakeAchievements first, then awardUsedRecipes on the container
-    ResultC->>SRB: addRecipes, and then the container nulls its stored holder
-    SRB->>Wire: ClientboundRecipeBookAddPacket
-    ResultS->>RM: getRecipeFor again, which it does whether or not the holder survived
-    ResultS->>CraftM: removeItem one per occupied cell, then place the remainders
-    Note over CraftM: every one of those removals re-enters slotsChanged
+    rect rgba(0, 0, 0, 0.04)
+        Note over CraftM,Wire: the tick the eighth plank lands
+        CraftM->>TCC: asCraftInput, trimming the empty rows and columns
+        CraftM->>RM: getRecipeFor CRAFTING, this input, this level, no hint
+        RM-->>CraftM: the first RecipeHolder that matches, in id order, or nothing
+        CraftM->>ResultC: setRecipeUsed, refused under LIMITED_CRAFTING
+        CraftM->>ResultC: setItem 0, the assembled stack
+        CraftM->>Wire: ClientboundContainerSetSlotPacket, bumping the state id
+    end
 ```
+
+*Figure: the result slot is filled and announced in the tick the grid changed,
+and nothing has been taken yet. The packet at the foot is written by hand
+rather than left to the menu's own diffing pass.*
+
+Nothing above happens on the client: the client's `CraftingMenu` is handed
+`ContainerLevelAccess.NULL` and matches nothing. What arrives is the last
+arrow. The second half of the trace is a later tick, and only then does a
+recipe reach the book.
+
+```mermaid
+sequenceDiagram
+    participant ResultS as ResultSlot
+    participant ResultC as ResultContainer
+    participant SRB as ServerRecipeBook
+    participant RM as RecipeManager
+    participant TCC as TransientCrafting<br/>Container
+    participant Wire as the network
+
+    rect rgba(0, 0, 0, 0.04)
+        Note over ResultS,Wire: some later tick, the player clicks the result
+        ResultS->>ResultS: checkTakeAchievements runs before a cell is emptied
+        ResultS->>ResultC: awardUsedRecipes, which then nulls the stored holder
+        ResultC->>SRB: addRecipes, through ServerPlayer.awardRecipes
+        SRB->>Wire: ClientboundRecipeBookAddPacket
+        ResultS->>RM: getRecipeFor again, holder or no holder
+        ResultS->>TCC: Container.removeItem, one cell at a time, then the remainders
+        Note over ResultS,TCC: every removal re-enters CraftingMenu.slotsChanged
+    end
+```
+
+*Figure: taking the stack is where the recipe reaches the book, and where the
+grid is emptied a cell at a time — each removal starting the first figure
+again.*
 
 **The grid changes.** Writing a plank into the menu's
 `TransientCraftingContainer` calls `AbstractContainerMenu.slotsChanged`, and both
