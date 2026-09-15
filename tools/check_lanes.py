@@ -178,6 +178,18 @@ def check_pages(src: str, classes: dict[str, str], words: set[str], only: list[s
     return mismatches, collisions, count
 
 
+def declared_lanes(src: str, only: list[str] | None) -> set[str]:
+    """Every lane any page declares with `participant`/`actor`, corpus-wide."""
+    lanes: set[str] = set()
+    for path, _rel in walk_pages(src, only):
+        with open(path, encoding="utf-8") as fh:
+            for line in fh:
+                m = PARTICIPANT.match(line)
+                if m:
+                    lanes.add(m.group(1))
+    return lanes
+
+
 def write_index(path: str, classes: dict[str, str], words: dict[str, str], template: str) -> None:
     tmpl = os.path.basename(template)
     out = [
@@ -222,6 +234,7 @@ def main() -> int:
     ap.add_argument("--pages", nargs="*", help="restrict the page checks to these files or directories")
     ap.add_argument("--strict", action="store_true", help="page mismatches and collisions fail, not just report")
     ap.add_argument("--index", action="store_true", help="write src/reference/lanes.md")
+    ap.add_argument("--unused", action="store_true", help="list key rows no page declares (pass 7 prunes them)")
     args = ap.parse_args()
 
     classes, words, problems = read_key(args.template)
@@ -235,6 +248,12 @@ def main() -> int:
     mismatches, collisions, count = check_pages(args.src, classes, words, args.pages)
     for line in mismatches + collisions:
         print(line)
+    if args.unused:
+        used = declared_lanes(args.src, args.pages)
+        unused = [l for l in classes if l not in used] + [l for l in words if l not in used]
+        print(f"\n{len(unused)} key rows no page declares ({len(classes) + len(words)} rows, {len(used)} in use):")
+        for l in unused:
+            print(f"  `{l}` -> {classes.get(l) or '*' + words[l] + '*'}")
     scope = f" in {' '.join(args.pages)}" if args.pages else ""
     print(f"{count} participants{scope}: {len(mismatches)} disagree with the key, {len(collisions)} lanes mean two things")
     if count == 0:

@@ -14,7 +14,10 @@ it does not re-decide it. Part 4 is the schedule, one session per part, with wha
 measured before the first session spent anything, and **the status column the
 owner reads to see which sessions are done**. The charter this implements is
 in [plan.md](plan.md) under *Pass 6 — the lecture*; the queue it draws on is
-[pass5.md](pass5.md), kind `lecture`.*
+[pass5.md](pass5.md), kind `lecture`. **Part 5 was added on 2026-09-14 by the
+pass-7 planning session**: the plan as it stood at this pass's close — the
+charter, the fourteen session paragraphs and the log, moved out of plan.md so
+that it is again the current charter and the passes to come.*
 
 **What pass 5 left for this pass, in one paragraph.** Pass 5 made the corpus
 one book — every mechanism has a home, every seam a link, every landing page an
@@ -626,10 +629,964 @@ appends one line saying what it did.
 | **L** | **done 2026-09-14** | XII · World generation | 10 | 8 | The closer on **9 of 10** — which five keep it (`terrain`, `biomes`, `structure-placement` have five, five and six answers); four literal trace headings (`biomes`, `features-and-placement`, `hand-built-structures`, `jigsaw-and-templates`) and session P's *cast → The trace: X → two or three sections → questions → where to look, only the nouns change*, still true in the tokens: `biomes` ↔ `features-and-placement`, `density-functions` ↔ `terrain`, `jigsaw-and-templates` ↔ `trees` are each one edit apart, and `terrain`, `trees` and `structure-placement` each share a spine with another part; `hand-built-structures` buries its cast inside *The idea*; `blending`'s opening carries two numbers before the reader knows what a column is; `creating-a-world`'s *three details* paragraph is a list in prose clothing; `structure-placement`'s *Whether it is worth laying out* promises a decision the section no longer describes; nineteen long sections, the most of any part. The landing page: **179 outside**, the largest in the book, the seventh section after Reference, a hand-counted *a quarter*.  **Done.** The closer **9 of 10 → 5**, four dissolving whole; four trace headings renamed with eight anchors repointed, one of them carrying four citations that wanted two different sections; all three blockquotes to the foot; ten *Where to look* lists to prose reading routes, the largest A12 sweep of the pass (fifteen names would have left the book, three restored). Eight facts corrected, six of them found by a reader with no source — the sharpest being a stability check that asks a different question of the overworld than of the other two dimensions, so no world type a player can click raises the warning the page said it did. `features-and-placement` varied under A7 by leading with its fold flowchart. A6 done, the coverage number now the include (*a quarter* was 19%), and the landing page came out **shorter** — the first in four sessions. |
 | **M** | **done 2026-09-14** | XIII · Commands and data packs | 9 | 12 | The closer on 4 of 9 in **three** spellings (*players ask* ×2, *a command author asks*, *a data-pack author asks*) and two of the four not last (`advancements`, `the-execution-engine`); four literal trace headings (`advancements`, `dialogs`, `game-tests`, `scoreboard-and-data`). `brigadier-and-commands` is the part's largest page and grew in pass 5 — the split question re-asked with the page as it stands, with the seam the page already has at *The tree on the wire*; `scoreboard-and-data` carries four systems and its opening says three (a split or a re-argued opening); `advancements`' coverage section sits between the Q&A and *The screen at the other end* (A8); `the-execution-engine` opens on *no recursion limit* and names the budget in the middle and the two limits at the end; `entity-selectors`' *Resolve* carries five bolded claims, three about cost (a table); `functions-and-macros` has no cast and opens on *The pipeline* — deliberate, or the part's odd page. The landing page: 133 outside, the seventh section before Reference — pass 5's exemplar, the model for A6's position.  — **Done.** The closer stayed at 4 of 9 and every one of the four gave up load-bearing material anyway: eight answers promoted, three of them the payoff of their own page's opening (`the-execution-engine`'s bounds, `advancements`' two refills, `scoreboard-and-data`'s `#`) and one cited by anchor from `entity-selectors`, which is A2's cited-answer clause firing inside a part for the first time. Three spellings to one; two mid-page closers to none; four trace headings renamed (one glossary anchor repointed). `brigadier-and-commands` not split, on a number — 350 lines, below the corpus median — and given two subjects lifted out and four H3s under the anchor three pages land on. `scoreboard-and-data`'s opening re-argued from three systems to four, from the seam outward, matching the blurb that had been right for two passes. A12 needed no sweep (five to eight names a list against a median of eighteen); A8 needed four. Six facts corrected, four found by a reader with no source. Two rulings declined, one an A7 pair this session's own edit created — the third of A2, A4 and A7 to perturb `pass6_shape.py`. Part 2,581 → 2,748 lines; landing page 168 → 176. |
 | **N** | **done 2026-09-14** | Reference and the frame | 11 hand-kept + the introduction, `lectures.md`, the atlas | 13 | Job 5, the completeness lists for the four Reference catalogues: three were settled in pass 5 (`non-living-damage` by F, `submit-phases` by K and N, `hud-elements` by J and N); the fourth, `level-data-and-rules`, is checked against the page as it stands ([pass5.md](pass5.md):865 and :872 — `DirectoryLock` is `starting-a-server`'s now and the *session.lock* row cites it; seven table rows had no prose), and its paragraphs are still inventories in prose clothing (:2761). The 27 `PathType`s from F, if session F asks for the view. The frame: the introduction's skip list is a list and its five rules have no anchors (session O's findings); `lectures.md` still writes a page's line in two places and five of its shape paragraphs are near-copies of the landing pages' — the summariser is the copy that gets shorter. The glossary has no lecture-kind work; its headwords are pass 8's.  — **Done.** Eighteen readers, one per page. Job 5 closed: `level-data-and-rules` needed one section, *One method saves all three*, because `MinecraftServer.saveAllChunks` is the single call behind every row of its table — which also answers the seven-rows-with-no-prose entry (they need no prose; being `SavedData` **is** the answer, the scoreboard's flush the one special case) — plus `LevelVersion`, `LevelSummary`'s two unreadable-world subclasses, and the `DimensionType` record as a table. The frame: the introduction now **says there is a video lecture series**, which it never had; its skip list is three kinds with a reason each; `lectures.md` gave up its last four borrowed shape paragraphs, three of which were also where it contradicted itself. **The session's finding is twenty-one sentences that count the text beside them and get the count wrong** — the frame and the shelf are made of such sentences, and no gate can see one. Nine facts corrected, the sharpest being peaceful stopping the mobs rather than the spawner. 3,799 → 3,902 lines; five queue entries struck, eleven appended; all five gates green. |
-| **O** | — | the close | — | — | **The thirteen landing pages read as one set** (where pass 5 found thirteen of its last twenty corrections): the seventh section in its place on all thirteen, the argument ending on a claim, the recognition sentence off the end of five paragraphs, the four hand-counted numbers swapped for the include, the budget; `lectures.md` re-derived from the landing pages; the pass's own strikes audited (a strike is a claim; twenty-six settlements went unstruck in pass 5); [pass9.md](pass9.md)'s entries checked for shape; the devices re-counted with `pass6_shape.py --summary` against this table; the verdict on whether the pass earned its cost; and pass 7's charter detail written with the figures counted afresh (193 mermaid blocks on the system pages today: 99 flowcharts, 88 sequence diagrams, 6 state diagrams). |
+| **O** | **not run — the pass was called finished after N, 2026-09-14** | the close | — | — | **What it would have done, and where each job went** (plan.md's *Where we are*): pass 7's charter detail and the device re-count were done by the pass-7 planning session (the closer 69 of 102 → **46**, one spelling, all last; the trace heading 20 → **0**; the blockquote 39 → 43, all at the foot); the strike audit and the shape of [pass9.md](pass9.md)'s entries are pass 9's own first step; and **the thirteen landing pages read as one set** is carried to **pass 7's session O**, which reads their figures as a set in any case. Two questions session N left here are annotated in [pass5.md](pass5.md) rather than lost: the two tier front doors' role in `TEMPLATE.md`, and whether *about a hundred lines* still means what it meant. The row's original charge: **The thirteen landing pages read as one set** (where pass 5 found thirteen of its last twenty corrections): the seventh section in its place on all thirteen, the argument ending on a claim, the recognition sentence off the end of five paragraphs, the four hand-counted numbers swapped for the include, the budget; `lectures.md` re-derived from the landing pages; the pass's own strikes audited (a strike is a claim; twenty-six settlements went unstruck in pass 5); [pass9.md](pass9.md)'s entries checked for shape; the devices re-counted with `pass6_shape.py --summary` against this table; the verdict on whether the pass earned its cost; and pass 7's charter detail written with the figures counted afresh (193 mermaid blocks on the system pages today: 99 flowcharts, 88 sequence diagrams, 6 state diagrams). |
 
 **What no session does**: change a fact without the decompile open (the
 standing rule); move a page (pass 5's last-moves rule — after pass 5 no page
 moves again); redraw a figure for legibility (7); hunt a tic or settle a
 count's wording (8); move a mechanism between pages except as a cut's
 destination, and then with the citation form (pass 5's rule, still standing).
+
+---
+
+## Part 5 — The plan as it stood at pass 6's close
+
+*Archived from [plan.md](plan.md) by the pass-7 planning session on 2026-09-14,
+headings demoted one level, so that plan.md is again the current charter and the
+passes to come. Three sections, as they were: **the charter** — pass 6's, as the
+2026-09-07 planning session wrote it and session A amended it in practice;
+**the fourteen session paragraphs**, one per part session, newest first as the
+plan carried them; and **the session log** from pass 6's planning session
+onward. Every pointer to "below" or "above" in them means plan.md as it then
+was. **Session O did not run**; where its jobs went is in plan.md's* Where we
+are*, and the one that is still work — the thirteen landing pages read as one
+set — is pass 7's session O.*
+
+### Pass 6 — the lecture, the charter as it stood at the close
+
+**Goal:** each page is one lecture's notes — in the shape of its story,
+opening inside the scenario on a hook that holds, its trace the spine and
+its figure the artefact, reading differently from its neighbours, speakable
+in a sitting.
+
+**The brief, the runbook, the standard and the schedule** are
+[pass6-brief.md](pass6-brief.md), written by the planning session on
+2026-09-07: Part 1 the reader's brief, Part 2 the runbook, Part 3 the rulings
+session A makes — written as the planning session's recommendations with the
+number behind each — and Part 4 the schedule, sessions A–O, one part each,
+with a **status** column each session fills in itself. That table is the one
+place the owner reads to see which sessions are done.
+
+**The queue it draws on:** [pass5.md](pass5.md) holds **136 units of kind
+`lecture`** after the planning session re-routed the guessed kinds (I 5 · II 2
+· III 11 · IV 11 · V 7 · VI 10 · VII 13 · VIII 6 · IX 17 · X 13 · XI 8 · XII 8
+· XIII 12 · the frame and Reference 13); 45 units in the file are still
+guesses, and a session tags what it finds misrouted as it reads. `python
+tools/pass5_queue.py --kind lecture --part <dir>` is the per-part checklist,
+and `[kind=record]` marks a unit no pass acts on.
+
+**The jobs**, each with the number the planning session measured
+(`tools/pass6_shape.py`; the per-part tables are in the brief's Part 4):
+
+1. **The devices that became slots.** The *Questions players ask* closer on
+   **69 of 102** system pages in five spellings, on every page of Parts IV, V
+   and VIII and nine of ten in XII, not the last section on four pages, and
+   cited from other pages by **27 links** — an answer another page needs,
+   sitting in a slot named for questions a player asks; the literal `## The
+   trace…` heading on **20**; the *for a 1.21-era reader* blockquote on **39**,
+   at the foot of the page on 23 (all of Parts X and XI) and in the body on
+   16; the opening ending on a bold sentence on **28** and on a dash clause on
+   34; the second person in **41** first sentences, **26** of them the word
+   *You*, on all eight pages of Part VII. Ratified or reversed corpus-wide in
+   session A, not page by page. On the landing pages, two more: the
+   recognition sentence on nine of thirteen, and on five the argument's last
+   sentence; and the phrases that became labels, which are pass 8's.
+2. **The skeletons.** Six identical spines shared by fifteen pages, none
+   inside one part; seventeen within-part pairs one edit apart, densest in
+   Parts VIII, X and XI; session P's groups still hold in the tokens. The later
+   page of a within-part pair varies, unless the pair is one pass 5 declared.
+3. **The section order**, where a fact fix left the exception before the rule
+   or the concession inside the hook, and where a heading names two of a
+   section's three subjects.
+4. **The cuts.** Thirteen pages over 450 lines and a corpus median of 356;
+   pass 3's per-page cheapest cuts still logged; and the thirteen landing
+   pages, which run 57 to 179 lines outside the watch order (median 132)
+   against the template's about a hundred, almost all of the growth being the
+   seventh section — the coverage answer — which is a heading on nine in three
+   positions, a headingless paragraph on three and absent on one. **The seventh
+   section gets its place in `TEMPLATE.md` in session A** and the trim follows
+   from the shape; its number comes from `src/generated/coverage-<dir>.md` and
+   is hand-counted on four pages today. No line count is a target: the reader's
+   skip list and the hook decide a cut, and a cut is a move or a logged cut.
+5. **The completeness lists** for the four Reference catalogues: three settled
+   in pass 5, the fourth (`level-data-and-rules`) session N's.
+6. **Every page-shape finding in [pass5.md](pass5.md)**, checked against the
+   page before it is acted on.
+
+**The agent** is a reader with nothing but the page — no source and no other
+page, on purpose — asked four questions: where did you get lost, what did you
+have to read twice, what did the page assume you already knew, and what did
+you skip; then the page in one sentence, the section it would cut first and
+the question it still has. The session decides, with the measurements the
+agent never sees.
+
+**The rhythm** is pass 5's, which worked: session A settles the corpus-wide
+rulings — the second person, the closer's rule and spelling, the blockquote's
+place, the trace heading, the hook's bold, the landing page's seventh section,
+the twin rule, the section order, the cuts — and rewrites one exemplar page to
+them; B–N take the parts in sidebar order and O closes. Each part session ends
+by re-syncing its landing page and its section of `lectures.md`, and **session
+O checks the thirteen**, which is where pass 5 found thirteen of its last
+twenty corrections.
+
+**Two warnings from pass 5's close, both about the queue.** A settlement that
+is not struck is invisible: twenty-six of pass 5's forty open `book` entries
+had been done and left standing, and the planning session found twenty more
+that pass 5's own sessions had settled and not struck — so **a session strikes
+as it settles, in the same commit**. And a strike sits outside the bold —
+`- ~~**text**~~`, not `- **~~text**~~` — or `pass5_queue.py` cannot see it.
+
+**Not:** facts; a figure beyond what a reshaped section needs; voice; a page
+moving.
+
+
+### The session paragraphs
+
+**Pass 6, session N — the frame and Reference** *(2026-09-14).* Eighteen
+pages, eighteen readers, one each: the eleven hand-kept Reference pages, the
+introduction, the lecture map and the four atlas pages. None of pass 6's four
+devices is on any of them — no closer, no trace heading, no 1.21 blockquote —
+so the session has no device count to report, and what it found instead is
+one class of error at a density no part session has come near. **Twenty-one
+sentences count the text beside them and get the count wrong.** *Half of them
+… the other half* over a table that splits thirteen and ten; *six of twenty
+rows* over a table of twenty-three; *the two large ones are worth decomposing*
+over a table that decomposes all four; *the thirty largest classes* over a
+table of forty; *Three rows worth a second look* introducing five; *a dozen of
+these rows* introducing seven; *two hundred and forty-five rows* over 247 and
+*twenty-seven* over 28; *the rest are one line each* over six multi-paragraph
+sections; *the one entry below that is not a packet* over no list at all. This
+is session I's finding — **a lead-in that names a number is a claim about the
+page, and the cheapest kind to break, because editing the section under it
+does not touch it** — arriving at the density the frame and the shelf make
+inevitable, because a catalogue's prose has almost nothing to say except how
+many rows there are and how they group. **No gate in the book can see one:**
+`verify_names.py` checks the names in the sentence, `check_links.py` checks
+where it points, and neither counts the table underneath.
+
+**Nine facts corrected**, and the sharpest is the one two fact-checks kept
+because every method name around it was right. `level-data-and-rules` said
+`MinecraftServer.setDifficulty` → `MinecraftServer.updateMobSpawningFlags` →
+`Level.setSpawnSettings` "so peaceful stops the spawner rather than the mobs".
+The chain is real and the conclusion is **inverted in 26.2**:
+`ServerLevel.isSpawningMonsters` is `GameRules.SPAWN_MOBS &&
+GameRules.SPAWN_MONSTERS` and reads the difficulty nowhere, while
+`Mob.checkDespawn` discards any mob that is not
+`EntityType.isAllowedInPeaceful`. Peaceful empties the world; the two game
+rules empty the spawner. Beside it: `math-and-primitives` concluding "most of
+a new world's generation is legacy" from four of seven noise settings, when
+the overworld is not one of the four; `threads` counting four non-daemon
+threads against its own table's five, and giving **main** a shutdown hook that
+runs on a thread of its own; `FeatureElement`, an interface, said to *inherit*
+the block and item trees its implementers inherit from it; `non-living-damage`
+blaming "several" *nothing* rows on two gates that account for exactly three,
+one of which (`EyeOfEnder`, `Entity.isAttackable` false) the table marked not
+at all; and the glossary stating one rule twice, with its exception and
+without.
+
+**Job 5 is closed.** The fourth Reference catalogue, `level-data-and-rules`,
+needed one section rather than a list of additions: `MinecraftServer.saveAllChunks`
+is the single call behind every row of its table, and saying so also answers
+pass 5's other entry — the seven table rows with no prose do not need prose,
+they need the page to say that being `SavedData` *is* their answer, the
+scoreboard's flush into `ScoreboardSaveData` being the one special case (and
+the meaning of the row's unexplained *buffered at save time*). `LevelVersion`
+and `LevelSummary`'s two unreadable-world subclasses went in beside it. The
+inventories-in-prose entry was decided one way each: the `DimensionType` record
+became a sixteen-component table in four groups, and the `PrimaryLevelData`
+list stayed prose because it is an argument that the class is a stub — but
+*about ten fields* became eleven and gained the field it had been hedging over.
+
+**The frame's own finding is a premise nobody had stated.** `introduction`
+says *watched*, *viewer*, *the video* and *one lecture's notes* throughout and
+**never once says the site is the notes for a video lecture series** — the
+reader named it the page's largest unstated assumption and the one that
+decides what the whole site is. Two sentences at the head of *How the book is
+read* fix it. Beside that, `lectures.md` gave up its last four borrowed shape
+paragraphs (IV, XI, XII, XIII) under the standing ruling that it is the copy
+that gets shorter — and three of the four were *also* where the page
+contradicted itself, because a metaphor borrowed from a landing page does not
+partition the same lectures the order claim does: Part XII's *substrate,
+pipeline and wing* left lecture ten in none of the three, Part IV's *conveyor*
+called the last four free when two are ordered, Part X promised one exception
+and delivered three groups. **Deleting the borrowed half deleted the
+contradiction**, which is the argument for the ruling rather than a
+consequence of it. The frame and the shelf 3,799 → 3,902 lines. Eleven units
+appended to [pass5.md](pass5.md) (six for pass 7, six for pass 8, two notes
+for session O); five entries struck, the frame and Reference's `lecture` queue
+now empty of anything a part session owns; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed.
+**What the session would tell session O**: the two tier front doors,
+`reference/README` and `maps/README`, have no stated role — A6 gave one to the
+thirteen part landing pages only — and both readers asked their page the same
+question it does not answer, *which one do I open?* Neither tier is entered by
+walking it, so the answer is a sentence and not a section, and both pages now
+carry it; but whether `TEMPLATE.md` should say so is session O's call.
+
+**Pass 6, session M — Part XIII · Commands and data packs** *(2026-09-14).*
+Nine system pages and the landing page, ten readers, one each. The count of
+closers did not move — **4 of 9 before and after** — and the session still
+found work inside every one of them, which is the part that makes session L's
+lesson a rule rather than an observation. **Eight load-bearing answers came
+out**, and on three of the four pages the answer the closer was holding was
+the one the page's own opening had promised: `the-execution-engine` opens on
+*there is no recursion limit* and kept every actual bound — both game rules,
+their 65536, the read-once rule, the depth answer — in questions two, five and
+six; `advancements` opens on a table that *only ever shrinks* and kept the two
+things that refill it in question six of seven; `scoreboard-and-data` opens on
+fake players and kept the `#` that makes them in question one, where
+`entity-selectors` was already citing it **by anchor** — the A2 clause about a
+cited answer, firing for the first time inside a part rather than across one.
+`entity-selectors` was the fourth: its body said *exactly as `EntityArgument`
+does below*, forward-referencing a question. The part also arrived with
+**three spellings** of the device and leaves with one, and with two closers
+that were not last and leaves with none.
+
+**Six facts corrected**, four found by a reader with no source. The one worth
+carrying is `advancements`': the verified line said the toast appears *one tick
+later*, and the trace's own note four sections down said *still the same tick*
+— `ServerPlayer.tick` runs `broadcastChanges` fifth and `flushDirty` last, so
+the note was right and the headline had borrowed the one-tick delay that
+belongs to `CriteriaTriggers.LOCATION` in the connection phase, a different
+scenario entirely. Beside it: `AdvancementType` said to have four values where
+the enum has three; `@n` missing from the death-screen consequence it shares
+with `@e`; a selector figure whose players-only node said *always* where
+`findPlayers` branches on the world-limited flag exactly as the entity path
+does; a permissions census of ninety-one plus two against ninety-five, with no
+sentence saying two were unaccounted; and *the ops-file entry's own stored
+set* six lines from *ops.json stores a number*, both true of different things.
+
+**The part's own finding is that A12 needed no sweep.** Part XIII's nine
+*Where to look* lists run five to eight names against a corpus median of
+eighteen, so the reading-list ruling was already satisfied here — the first
+part in the pass where it cost nothing. What the part needed instead was
+**A8**, four times: `brigadier-and-commands` had two subjects in its trace
+section and a fifty-seven-line section with no H3s, `scoreboard-and-data` had
+saving filed under *What the client is ever told*, `dialogs` had its parts
+inventory under a heading about how a dialog *opens*, and `game-tests` had a
+third move under a heading that promised two. **The split question on
+`brigadier-and-commands` was re-asked for the fifth time and answered no with
+a number behind it for the first**: 350 lines, below the corpus median, and
+the seam pass 3 proposed does not hold because the packet is the parse's
+payoff rather than the catalogue's preface. Two subjects lifted out and four
+H3s under the cited anchor did what a split would have. **Two rulings I
+declined**: the *Resolve* cost table (three *becauses*, not three rows), and
+an A7 twin pair the tool now reports between `advancements` and
+`brigadier-and-commands` — an artefact of moving `advancements`' closer to
+last, which is the *third* of A2, A4 and A7 to perturb `pass6_shape.py`'s own
+numbers. Part XIII's nine pages 2,581 → 2,748 lines, which A9 expects of a
+session that promoted eight answers into bodies; the landing page 168 → 176,
+the wrong direction, and session O should judge it with the other twelve.
+Nine units appended to [pass5.md](pass5.md) (five for pass 7, six for pass 8,
+one logged cut, two notes for session O); the part's twelve `lecture` entries
+struck to three, all three multi-part censuses other parts still need; the
+session's entry in [pass9.md](pass9.md). All five gates green; deployed.
+
+**Pass 6, session L — Part XII · World generation** *(2026-09-14).* Ten system
+pages and the landing page, eleven readers, one each — the part the schedule
+called the pass's hardest A2 case, at nine closers in ten pages. The closer went
+**9 of 10 → 5**, four of them dissolving whole, and the reason is one sentence:
+**four pages had put the payoff of their own opening scenario inside the
+questions section.** `structure-placement` opens on `/locate` pausing and
+answered it a hundred and ninety lines later, in the closer;
+`features-and-placement` opens on a data pack that can stop a world from opening
+and the topological sort that does it appeared nowhere in the body;
+`density-functions` used *beardifier* as a known noun a hundred and fifty lines
+before the only sentence that says what one is; `jigsaw-and-templates` used the
+depth limit from its third sentence and quantified it in its last section. Each
+of those is a **hook whose mechanism the closer was holding**, and that is a
+sharper form of A2 than the rule states: the test asks whether an answer is a
+player's consequence, and the pages that failed it hardest were the ones whose
+own argument depended on the answer. Two of the four dissolutions produced a
+body section the page had been missing rather than a shorter page.
+
+**Eight facts corrected**, six found by a reader with no source. The sharpest is
+`creating-a-world`'s: `WorldDimensions.checkStability` asks a **different
+question of the overworld than of the other two dimensions** — the overworld
+check never looks at the noise settings and tests the biome-source parameter
+list only if the source happens to be a `MultiNoiseBiomeSource` — so Amplified
+passes on non-vanilla noise settings and Superflat passes by not having a
+multi-noise source to fail on, and **no world type a player can click raises the
+warning the page said came from one**. The only shipped preset that fails is the
+one in neither button tag. Beside it: *all four shipped configured carvers*
+anchoring lava eight above the bottom, where the fourth is at ten and reads the
+field with nothing (`terrain`); `ChunkStatus.BIOMES` and `NOISE` said to *not
+depend on each other at all* three lines under the page's own figure saying
+`NOISE` requires `BIOMES` (`biomes`); a fifth `PlacementFilter` filed with the
+movers (`features-and-placement`); a cast row giving `Blender` four answering
+methods where the class has three and the body says so sixty lines later
+(`blending`); and the landing page's hand-counted *a quarter* against the
+generator's 19%.
+
+**The part's own finding is about the tool.** Three of Part XII's four
+within-part twin pairs came out of this session's own edits, because
+**dissolving a closer drops the `q` token and returns its material as `p`** — so
+a part that applies A2 hard measures *more* alike afterwards. That is session
+H's note about A4 repeating for A2, and two of the four rulings now perturb
+`pass6_shape.py`; it is a line for session O's audit rather than another
+variation. The one pair that was live on the merits,
+`biomes` ↔ `features-and-placement`, was varied by putting
+`features-and-placement`'s fold flowchart **above its cast** — its hook is about
+order and its artefact was sitting behind eight rows of cast. **A12 was the
+largest sweep of the pass**: ten lists, median 24 names, every one of the eleven
+readers skipping the list on its own page, and fifteen names that would have
+left the book — eleven of them *members* of classes the pages still name, which
+is what the ruling is for. Three went back into prose. The landing page took A6
+and came out **shorter**, 179 lines outside the watch order to 166, which is the
+first time in four sessions; the difference was that the seventh section
+replaced a hand-counted number with the include. Part XII's ten pages
+3,141 → 3,190 lines, which A9 expects of a session that promoted four closers
+into bodies; the landing page 221 → 209. Twenty-six units appended to
+[pass5.md](pass5.md) (nine logged cuts, seven for pass 7, eight for pass 8, two
+notes for session O); six entries
+struck, three annotated, one retagged `[kind=record]`; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed.
+
+**Pass 6, session I — Part IX · Networking** *(2026-09-14).* Five system pages
+and the landing page, six readers, one each. The part arrived with the most
+queue entries of any (17) and came out with two, and the headline is not one of
+pass 6's devices. **Three of the five pages made a promise in a lead-in
+sentence and then broke it**: `chat-and-signing`'s *"four things in that
+picture"* over five bolded paragraphs; `the-connection`'s *"four things"* over
+six, of which the fourth — *"`Connection` appears once but exists twice"* — the
+page never delivered at all; and `what-the-client-is-told`'s *"the first term
+in that decision"*, where the prose was right about the source and its own
+figure and its own table both put the term elsewhere. None is a fact a
+fact-check would query; each is an arithmetic disagreement between a sentence
+and the text under it, and each was found at once by a reader who counted
+because the sentence told them to. **A lead-in that names a number is a claim
+about the page, and it is the cheapest kind to break, because editing the
+section under it does not touch it.** Beside them, **twelve more corrections**,
+the sharpest being a bullet claiming the debug channel exposes *everything* the
+next section calls invisible — `DebugSubscriptions` has sixteen entries and
+none of them is the seed, the loot tables, the game rules or a scheduled tick —
+and `MinecraftServer.enforceSecureProfile` described as governing "only" the
+pre-session decoder six rows above the page's own table row saying it gates the
+unsigned-command refusal too. The closer went **4 of 5 → 2**: two dissolved
+whole, and `what-the-client-is-told`'s was the purest case the pass has found —
+all seven answers second tellings of a section that had already delivered the
+same consequence, and the only fact it held that the body lacked (ten
+unacknowledged batches) was put back where the constant is named. The two that
+stayed lost their mechanism answers to sections of their own, including the one
+`server-tick` cites. **Four headings renamed and five citations repointed**,
+and the shape is sessions F–H's a fourth time with the boundary moved out:
+three of the five had been landing on *Getting back to unconfigured, which
+nobody asks for* while wanting the general mechanism inside it, and the landing
+page had been citing *The threads underneath it* for a fact about DNS — so it
+is not only closers and trace headings but **any heading whose name is narrower
+than its section**. Six *Where to look* lists became prose reading routes under
+A12. The landing page took A6 (the seventh section moved above *Reference*,
+trimmed 43 → 27 lines, its hand-free coverage number now the include), its
+argument reversed off the symptom list onto a claim — *the wire is a border
+between two machines, each of which treats what arrives from the other as a
+claim rather than a fact* — and *before you start* reordered into reading order,
+which settles the queue's standing non-dependency entry by acting on it rather
+than leaving it. Part IX's five pages 2,261 → 2,368 lines; the landing page
+163 → 152. Twenty-one units appended to [pass5.md](pass5.md) (five logged cuts,
+seven for pass 7, seven for pass 8, two notes); fifteen entries struck, three
+retagged `[kind=record]` or `[kind=voice]`, two annotated; the session's entry
+in [pass9.md](pass9.md). All five gates green; deployed.
+
+**Pass 6, session H — Part VIII · The player** *(2026-09-13).* Seven system
+pages and the landing page, eight readers, one each. The part arrived at
+**7 of 7** on the closer and **four** literal trace headings, the joint-worst
+pair of numbers in the book, and it took session G's parting advice first:
+`check_links.py --inbound` on all seven pages before deciding anything. That
+found four citations landing on a device's anchor, and **not one of them wanted
+the section it named**. Two pages cited `hunger-and-experience`'s closer for a
+0.1 exhaustion figure that closer never mentions. `player-anatomy` cited the
+sword swing's closer for the two combat clocks, which were the back half of an
+answer about mashing. `the-two-phase-tick` cited `player-anatomy`'s closer for
+why item ticking needs two callers. Each was promoted to a section and
+repointed. Then, after the four trace headings were renamed, the link gate
+turned up a fifth and sixth of the same kind: `authority` and `the-spear` had
+both been landing on `input-to-movement`'s single trace anchor and wanting
+opposite halves of a 150-line section. The closer went **7 of 7 → 6**, and the
+one that dissolved whole was `the-spear`'s, whose five answers were three
+second tellings and two body sections wearing a question mark — the cast table
+had promised the mob path 190 lines earlier and only the closer delivered it.
+Four other closers lost their load-bearing answer and kept their consequences.
+**Twenty-three facts corrected**, twenty-one of them found by a reader with no
+source, and the class is by now familiar and still undiminished: a record of
+"four textures — body, cape, elytra"; a player "five classes deep" whose own
+figure draws six; a hook saying the main-hand item "is not stored anywhere"
+against its own payoff saying "not stored *twice*"; a closer saying the *one*
+thing that stops phase two against a gate the same page names thirty lines
+above; a landing page whose "four things it does" sits over a watch order with
+five; a mannequin's split "one class lower" than a class the page calls its
+sibling. The sharpest is `the-spear`'s: *if any of the three conditions passes,
+the damage is…* — three conditions that in fact gate three different effects,
+so a charge can knock a target off a horse and do nothing to it. The fifth and
+last hand-counted landing-page number went to the include, and was wrong like
+the other four (*97%*, in fact 100%). Seven *Where to look* lists became prose
+reading routes under A12, with twenty-two names rescued back into prose by the
+token diff. **A7** was the queue's fourth stale twin entry running: the pair it
+named (`the-spear` / `the-sword-swing`) had dissolved, and what was live was
+`input-to-movement` one edit from *three* of its own neighbours — a hub, not a
+pair. It varied by splitting its trace section into two H2s and promoting six
+bold lead-ins to H3s, which is the same edit the queue had asked for
+separately, on the grounds that nothing could anchor to them. Part VIII's seven pages 2,081 → 2,328 lines, and
+its landing page 164 → 179. Thirty-one units appended to [pass5.md](pass5.md) (seven logged
+cuts, seven for pass 7, six for pass 8, three for pass 9, and one structural
+note for session O); nine entries struck and three annotated; the session's
+entry in [pass9.md](pass9.md). All five gates green; deployed.
+**What the session would tell the next one**: sessions F and G found that a
+renamed closer and an inbound link into a closer are both invisible to the
+tools. Part VIII adds the reason they are, and it generalises past closers:
+**an anchor that names a device rather than a subject collects citations that
+mean different things, and nothing can see the mismatch, because a link
+resolves against a heading and not against a sentence.** The link checker only
+ever catches it at the moment the heading moves — which turns A4's rename from
+a tidying job into a diagnostic, and is an argument for renaming the trace
+headings in Parts XII and XIII even where nothing else on those pages needs it.
+One caveat for session O: renaming them **changes what `pass6_shape.py`
+measures**, because its spine alphabet reads the literal `## The trace` as its
+own token; Part VIII came out of the rename with a measured identical pair that
+was an artefact, and the tool cannot see an H3 at all.
+
+**Pass 6, session K — Part XI · Rendering** *(2026-09-14).* Eleven system pages
+and the landing page, twelve readers, one each — the part the charter called
+*the model*, because its blockquote is at the foot on all eleven and the closer
+was on only six. What it was not the model of is **A2**. The closer went
+**6 of 11 → 3**, three of the six dissolving whole, and the reason is the same
+one four times over: **four inbound links landed on a closer's anchor and all
+four were from inside Part XI**, which is the first part where the device's
+citations were entirely internal, and one of the four was a **loop** —
+`lightmap-fog-and-sky` cited `the-frame`'s closer for the HUD lightmap while
+that closer's answer pointed back at `lightmap-fog-and-sky`. A link that
+resolves cannot see a cycle and neither can `check_links.py`, which is sessions
+F–H's lesson with a new edge on it: an anchor that names a device does not only
+collect citations that mean different things, it can collect a citation that
+means *this one*. `the-window` lost its closer whole and gained four sections
+out of it, including the seventh callback, which settles the oldest live entry
+in the Part XI queue by ruling that the **ordering** was the wrong half all
+along; `blaze3d` lost its whole closer too, with the `GlHeuristics` sniffing and
+the two-deep submit fence — the reader called them the page's best material —
+promoted into the body; `section-meshing`'s dissolved into one promoted section
+that `visibility-and-the-frame-graph` now cites by name.
+
+**Eighteen facts corrected**, sixteen of them found by a reader with no source,
+and the class is session J's twice over: a sentence that names a number is a
+claim about the text beside it. *Nine zones* over a sentence naming sixteen —
+and the sentence also hid that `Minecraft.renderFrame` pushes only **eight** of
+the nine, *render* belonging to `GameRenderer.render` and a tenth zone,
+*camera*, being named on no page at all. *Twelve separate layers* of soft
+failure enumerating eleven. *Two properties* followed by three. *The six ways
+the table above records* against a table of seven rows. *The two gates* naming
+three different pairs on one page, where the body has three. *Vulkan leaks
+upward in two places, not one*, naming three things and closing on a sentence
+that resolved to nothing. Two are of a different kind and sharper: `the-window`
+promising a name/behaviour inversion in `Window.calculateScale` and
+`Window.setGuiScale` that **is not there** — the real surprise being that the
+option is a ceiling the answer may miss in *both* directions — and
+`lightmap-fog-and-sky` stating the weather's seed two opposite ways, its
+opening right (each column seeded from its own coordinates, which is why two
+clients see the same drops with nothing sent) and its heading and section
+wrong. One figure was wrong: `particles`' flowchart routed unlimited particles
+past the admission queue, where `ParticleEngine.add` queues every particle that
+survives.
+
+**The part's own finding is a terminology split that cost comprehension rather
+than accuracy**: *client thread* and *Render thread* used for one thread, **17
+of the corpus's 23 uses of the first being in this part**, and on exactly the
+four pages where a worker/main split is the subject. Two readers independently
+could not tell whether it was one thread or two. `src/reference/threads.md`
+settles it — the Render thread *is* the client's JVM main thread, renamed — so
+the part was normalised to the book's one name. That is a wording fix a wording
+pass would have found, but it was costing a reader the page, which is what makes
+it this pass's.
+
+The **mnemonic** entry was the queue's part-wide question and it was **five
+pages, not the three it named**: `models-and-atlases` has *spread, converge,
+upload, invalidate* and `section-meshing` the prose form. Judged as a set, two
+were cut — `visibility-and-the-frame-graph`'s, whose page names the same five
+stages three separate ways and never uses the verbs again, and
+`post-processing`'s, which shared *declare, draw* with it and buried the
+sentence's real point. The device survives on three pages in two forms with no
+verb shared between any two. **A7's four-page group was the first this queue
+entry named that was still live** — and A2 dissolved it without a variation
+being made, `blaze3d`'s closer taking its spine away from both neighbours; the
+pair left behind, `entity-rendering` ↔ `the-window`, is an artefact of this
+session's own edits, as in Part X, and is left with the reasoning. **A4** renamed
+the part's one literal trace heading. Eight sections over forty lines with
+neither figure nor subsection became zero, all by A8's H3 method. The landing
+page took A6 with *Where the part stops* as a heading in its place, the coverage
+number now the include — and came out three lines **longer** outside the watch
+order despite two real cuts, which is the third session to report that shape and
+is a note for O. Part XI's eleven pages 3,865 → 3,973 lines; the landing page
+184 → 188. Thirty units appended to [pass5.md](pass5.md) (seven logged cuts,
+seven for pass 7, eight for pass 8, two notes for session O); five entries
+struck, three annotated, one retagged `[kind=voice]`; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed.
+
+**Pass 6, session J — Part X · The client** *(2026-09-14).* Twelve system
+pages and the landing page, thirteen readers, one each — the largest part in
+the book by page count. It arrived with the closer on 8 of 12 in two spellings,
+no literal trace heading at all and the shortest pages in the corpus, so the
+charter's named jobs looked light; the work turned out to be **counts**, and
+the headline is session I's lesson widened. Session I found that a *lead-in*
+naming a number is a claim about the page and the cheapest kind to break. Part
+X says it is not only lead-ins: **a sentence that names a number, anywhere, is
+a claim about the text beside it, and nothing in the toolchain can see when
+that text changes underneath it.** Twenty of the forty-five corrections are of
+that shape — *four queues* over six bullets, *three sort comparators* where
+there is one, *three conditions* where there is one, *two clocks* over three
+intervals, *two of its behaviours* over three, *seven names* over nine, *three
+health numbers* against a four-layer figure, *half the renderers* where it is
+two of twenty-five, *sixteen instances* over fourteen rows, *nineteen* against
+*twenty* on the same page, *ten of these twelve pages* where it is nine — and
+every one was found by a reader who counted because a sentence told them to. Not
+one is a fact a fact-check would query: each is arithmetic between a sentence
+and the text under it. The other twenty-five are the ordinary crop, of which
+the sharpest are **`what-makes-a-sound` naming its three doors two different
+ways** — the opening's third door was your own predicted sounds, the figure's
+and the table's was client-side ambience, and they are the same door with two
+inhabitants — and **`options`' figure having no screen-close edge**, so every
+route through it saved and broadcast at once while the paragraph beneath said
+the opposite. Rebuilding two figures and one section as tables is what found
+most of the rest: writing a *what gates it* column against `Minecraft.tick`
+showed three steps the prose had implied were inside the level check and are
+not, and writing a *who calls it* column for the render tree's verbs showed that
+two of the eight have no caller in a recorder at all. The closer went **8 of 12
+→ 5**, all in the canonical spelling and all now the last content section, and
+the *spelling* turned out to be diagnostic rather than cosmetic: all three
+pages heading it *Questions a reader asks* failed A2's test outright, which is
+the answer to session J of pass 5's question about whether that was a
+distinction without a difference. Three dissolved whole; two survivors gave up
+their mechanism to sections of their own, including the loading guard
+`the-client-loop` cites, which settles the queue's standing *options* entry by
+acting on it. A7's four-page group came apart in three edits, and the one pair
+left is **an artefact of this session** — dissolving two closers brought two
+pages from two edits apart to one — and is left, with the reasoning, rather than
+varied for a six-token spine. The landing page took A6 (*Where the part stops*
+as a heading in its place, 23 lines, the hand-free coverage number now the
+include), its argument reversed off the symptom list onto a claim — *everything
+that looks like the client falling behind is one thread deciding what to spend
+a frame on* — and its self-contradiction removed. Part X's twelve pages 3,096 →
+3,316 lines; the landing page 172 → 174. Nineteen units appended to
+[pass5.md](pass5.md) (five logged cuts, six for pass 7, five for pass 8, two
+notes and a record); six entries struck, four annotated, two retagged
+`[kind=voice]`; the session's entry in [pass9.md](pass9.md). All five gates
+green; deployed. **What the session would tell the next one**: the three
+corrections that mattered most all came out of turning prose into a table with
+a second column — the gate, the caller, the condition. A count in a sentence
+survives an edit; a column does not, because the row is empty and you can see
+it. Where a part session finds a number it cannot check against the text beside
+it, that is the place to reach for a table rather than a better sentence.
+
+
+### The session log
+
+- **2026-09-07, planning session (Fable, between passes 5 and 6).** No page's
+  prose touched. **Pass 6 planned**: [pass6-brief.md](pass6-brief.md) — Part 1
+  the reader's brief (nothing but the page; four questions and three
+  comparisons), Part 2 the runbook, Part 3 the standard as eleven
+  recommendations with the numbers behind them for session A to rule on, Part
+  4 the schedule with a **status column** the owner reads. **The tools**, each
+  with a `--probe`: `pass6_shape.py` (per page: the opening's person and
+  ending, the spine as tokens, the closer's spelling and position and
+  questions, the literal trace heading, the 1.21 blockquote and its place, the
+  cast against *Where to look*, the list and long-section budgets; per corpus:
+  the skeleton twins, the slots ranking; per landing page: lines outside the
+  watch order, the seventh section, the recognition sentence, a hand-counted
+  number), `pass6_prompts.py` (the brief and the path for the reader; the queue,
+  the shape report, the twins and the inbound links by anchor for the session),
+  `pass5_queue.py` (a `record` kind for units no pass acts on; preambles no
+  longer counted as entries), `pass5_coverage.py --write` (thirteen generated
+  coverage phrases, `src/generated/coverage-<dir>.md`, run by `deploy.sh`
+  after the atlas). **The queue re-measured and re-routed**: 92 guessed units
+  tagged and 20 settlements struck after each was verified against the page or
+  the log it names; the guesses fell from 198 to 45 and the `lecture` count
+  from 158 to 136, the difference being preambles and misroutes that had been
+  counted as work. **Two findings about the record itself**: session E's log
+  said the hopper and four block-entity state machines went to §7, and they
+  had not — carried now, with the note that `blocks/README` still says one
+  thing in the part belongs to nobody, for Part V's pass-6 session; and the
+  charter's device counts were wrong in two places against the tool (seven
+  closer spellings is five; 42 blockquotes is 39), corrected. **Housekeeping**:
+  the pass-5 narrative moved out of this file into
+  [pass5-brief.md](pass5-brief.md) Part 5, headings demoted, so this file is
+  again the current charter and the passes to come; `CLAUDE.md`, `README.md`,
+  `pass5.md`'s preface, `pass9.md` and the memory brought current; the version
+  manifest re-checked (26.2 is the latest release; 26.3 at pre-release 2). All
+  five gates green; nothing deployed, because no published page changed.
+  **Rulings**: a queue unit no pass acts on is tagged `record` rather than left
+  to be counted as open work; the schedule's status column is the one place the
+  owner reads for which sessions are done, and each session writes its own
+  cell in step 9; a planning session may strike a queue entry only with the
+  page or the log open, and says which in the strike.
+
+- **2026-09-10, session A (Opus) — the standard and the exemplar.** Pass 6's
+  rulings made once, and one page rewritten to them. **Nine of the eleven
+  recommendations ratified; A2 amended and A12 added.** A2's *at most about
+  half a part* became a **smell rather than a quota** — a quota would strip a
+  closer off a page whose every answer passes the test, and A9 refuses exactly
+  that reasoning two rulings later ("a count in a queue is a description, not
+  a target"); the test alone decides, and a part that finishes its session
+  still at 10/10 says in its log why each survivor passed. **A12** is session
+  A's own: ***Where to look* is a reading list, not an index** — measured over
+  the 102 system pages, the median is 18 names, 61 pages carry more than
+  fifteen, and **82 pages carry at least one name that appears nowhere else on
+  the page, 513 in all**, which is the field inventory pass 3 dropped coming
+  back under a new heading. `TEMPLATE.md` rewritten in seven places: the
+  landing page's seventh section ***Where the part stops*** in its fixed place
+  (after the watch order, before the shelf) and the argument ending on the
+  claim; the closer's one spelling and its test; the blockquote's place, length
+  and reason; the way into a scenario and bold on the hook; one subject a
+  section and the rule before its exception; *Where to look*; and who a page's
+  *neighbours* are, which is what makes the twin rule operable.
+  **The exemplar**, `world/environment-attributes-and-timelines`, read by one
+  agent under Part 1's brief and rewritten: the closer 5 questions → 3, the two
+  that carried the page's own mechanism moved into the body where they teach;
+  the literal trace heading and the verified line renamed to the scenario; the
+  1.21 blockquote 11 lines in the body → 8 at the foot; a 45-line
+  three-subject section given three H3s **inside its existing anchor**; a
+  two-sentence signpost in the cast for the reader who "had stopped expecting
+  a trace" 230 lines in; four cuts logged; 414 → 444 lines, and A9 now says in
+  writing that a page may come out longer. `commands/README` is the first page
+  in the book to carry a generated coverage number
+  (`{{#include ../../generated/coverage-commands.md}}`). **Five facts
+  corrected**, every one found by a reader with no source, no other page and no
+  measurements, on a page fact-checked adversarially twice: a stretch of 1,800
+  ticks pinned to one instant, a danger ending at the wrong end of the night,
+  four numbers in a record that holds three, a five-weight kernel over six
+  cells that does not close, and an accessibility option described as always
+  on. That is the pass's first evidence that it earns its cost. Fifteen units
+  appended to [pass5.md](pass5.md) (four logged cuts, two for the part
+  sessions, three for pass 7, six for pass 8); the session's entry in
+  [pass9.md](pass9.md). All five gates green; deployed. **Rulings**: the test
+  decides and no count in this pass is a target (A2, restating A9); a session
+  that finds a real error stops and re-derives it even when its own brief says
+  it changes no facts (A11's departure) — a lens is never kept clean by
+  publishing a sentence known to be false.
+
+**Pass 6, session C — Part III · The server** *(2026-09-10).* Five system
+pages and the landing page, six readers, one each. Part III arrived as the
+part that was already *inside* the rules — 2 of 5 on the closer, no literal
+trace heading, a median of 470 lines — and the session's finding is that
+being inside a rule of thumb settles nothing: **both closers failed A2's test
+in part**, and every one of the six pages had something a reader with no
+source could not get past. `server-tick` went 4 questions to 2 and then to 3
+sections richer: the autosave arithmetic moved up beside the countdown it is
+about, and *does freezing stop the server* turned out to hold the page's only
+definition of **frozen** — a word its `tickChildren` table uses in three rows,
+240 lines above — so the mechanism went up under the table and the question
+kept the consequence. A fourth thing in that closer was not a question at all
+and is now the close of *An empty server stops ticking*.
+`server-level-tick` went 7 to 4: two answers were second tellings of sections
+the reader had passed within fifty lines, and *where did the day–night cycle
+go* was written for a 1.21 reader, so it is the page's blockquote now — the
+third page in the part to gain or move one to the foot, which makes 3 of 5 at
+the foot and none in the body. Three of that page's headings overclaimed
+against its own figure (*the one thing a freeze cannot stop* over nine ungated
+steps; *the two steps that always run* over the same nine; *five things in one
+call* over a figure that splits the third), and the fix for the third was not
+the heading — `ServerChunkCache.tick` really is five statements — but the
+prose, which became the part's only list, answering a question pass 3's
+session D left open in 2026-09-02. **A7 bit here**: `starting-a-server` /
+`how-a-server-dies` were one skeleton run forwards and backwards, and
+`how-a-server-dies` was one edit from `players-and-sessions` as well, so the
+later page varied by putting its **comparison table before its cast** — the
+page's artefact is the three-way table its hook promises and it was sitting
+behind eight rows of cast. Its *Three booleans and a question* dissolved into
+the three sections that use each boolean. No page in the part now shares a
+spine with any other, in the part or out of it. **Six facts corrected**, the
+sharpest on the landing page: it said `MinecraftServer` was not counted in
+Part III's size, which is why the atlas counts it under Part I — and the
+atlas's Part III spec is `net/minecraft/server` itself-only, so it is counted
+in both, which is the answer to the question the reader ended the page with.
+Four *Where to look* lists came down from 26, 33, 33 and 24 names to 17, 19,
+19 and 15 under A12, each in the page's own reading order, with no name lost
+from the book. Part III went 2,357 lines to 2,367 — up, as A9 says a part may
+be. Twenty units appended to [pass5.md](pass5.md) (five for pass 7, nine for
+pass 8, five for pass 9, one on the list question); nine queue entries struck
+and two annotated; the session's entry in [pass9.md](pass9.md). All five gates
+green; deployed. **What the session would tell the next one**: three of the
+five pages open on a figure the page cannot yet be read against — the lead
+sequence or flowchart names five or six mechanisms whose prose is below it,
+and every reader said so independently. That is a part-wide pattern rather
+than three pages' bad luck, and it is pass 7's, so it went to the queue whole
+rather than being patched a page at a time.
+
+**Pass 6, session B — Parts I · Anatomy and II · Foundations** *(2026-09-10).*
+Nine system pages and two landing pages, eleven readers, one per page. The
+part-wide judgements first: the closer went from 6 of 7 Part II pages to 4,
+and from Part I's one page to none of its own mechanism, under A2's test
+rather than a quota — `resource-system` keeps its five because every answer
+is a thing a player meets (a texture stops animating, a datapack appears and
+a resource pack does not, every pack turns itself off, `/reload` freezes the
+server, vanilla cannot be disabled), and `identifiers-and-registries` and
+`data-driven-types` lost theirs entirely because not one of their twelve
+questions was a consequence: they were the page's own mechanism wearing a
+question mark, and eight of the twelve moved up into the section that needed
+them, `HolderOwner.canSerializeIn` travelling 363 lines to the sentence that
+first uses it. Two blockquotes moved to the foot and two more were *created*
+out of closer answers and body asides addressed to a 1.21 reader (`tags`'
+missing *TagManager*, the registries page's datagen answer), which is the
+device used as a device rather than filled as a slot. The one within-part
+twin pair, `tags` ↔ `data-driven-types`, was varied on the later page by
+dissolving its questions — three edits between the spines where there was
+one. `tags`' pay-off finally has an anchor: six H3s inside the H2 the three
+citing pages already point at, so a citation lands on the paragraph rather
+than on a hundred-line section. `what-this-book-skips` was judged whole and
+came down 476 → 457 by cutting the nine *covered* and *absorbed* rows of its
+rulings table — nine rows about things the book does **not** skip, on the
+page that draws the boundary — to one paragraph, and its citation of "rule
+three" now names the rule and takes the anchor, which was the only mechanism
+in the book cited by number without one. Both landing pages were re-argued to
+A6 with the seventh section in its place and a generated coverage number:
+Part I's argument now *names* the four threads it had promised three times
+and never listed, and Part II's says what its seven pages have in common
+instead of ending on a list of symptoms. **Nine facts corrected**, all nine
+found by readers with no source: four indexes that are five, an arrow to a
+registry the prose says is never consulted, a thread cell its own page
+contradicts, a scoping error that made a paragraph deny its second half, two
+"the one" claims with a second instance ten paragraphs away, a stage count
+against its own figure, and a section whose lead excludes its own third
+group. Part I came out at 869 lines against 871 and Part II at 2,965 against 3,002. Nineteen units
+appended to [pass5.md](pass5.md) (eight for pass 7, eight for pass 8, two for
+pass 9, one coverage decline to [pass3.md](pass3.md) §7); eight queue entries
+struck and two annotated; the session's entry in [pass9.md](pass9.md). All
+five gates green; deployed. **What the session would tell the next one**: the
+readers' single most valuable output was not a list of confusions but the
+*count* disagreements — five of the nine corrections are one sentence
+contradicting another sentence or a figure on the same page, which is the
+error class pass 5 could not see because it read across pages and pass 4
+could not see because it checked each claim alone.
+
+**Pass 6, session D — Part IV · The world** *(2026-09-10).* Ten system pages
+and the landing page, eleven readers, one each. Part IV arrived as the part
+where A2 bites hardest — the closer on **10 of 10** — and the test took it to
+**8**, because two pages turned out to be answering themselves.
+`chunk-anatomy` lost its closer entirely: not one of its six answers was a
+consequence a player meets, and every one of them was a thing the body already
+needed. The section permit and `ThreadingDetector` were used in the cast table
+and again 170 lines later and explained only at the foot; the client's two dead
+counters belong beside the four counters; `LevelChunkSection.maybeHas` was
+**cited by `points-of-interest`** at an anchor whose prose never mentioned it,
+which is A2's load-bearing rule in its purest form; and the chunk's wire form is
+its third serialised shape beside memory and disk, so it became an H3 that Part
+IX's own summary now points at. `fluids` lost its closer for the mirror reason:
+two answers were the page's machinery (the block tick that is really bubble
+columns, the occlusion cache the *body* wanted 180 lines earlier — and the
+glossary's *Occlusion* entry cited it, so it moved up under a heading and the
+citation was repointed in the same commit), and the other two were second
+tellings of bold sentences. Six more closers came down 4→3, 5→3, 5→3, 5→3, 6→5
+and 4→3. **Both literal trace headings are gone**, three inbound links
+repointed; four more headings were renamed because their own sections
+contradicted them — `chunk-storage`'s *Three folders* over a list of four, and
+*The dispatcher never queues* over a section whose last paragraph is
+`GameEventDispatcher.handleGameEventMessagesInQueue`. All four 1.21 blockquotes
+are at the foot now, from none. The part went from ten long sections to none,
+on six H3s inside existing anchors. **Nine facts corrected**, every one found
+by a reader with no source: a pyramid count where seven plus four is eleven
+(the page's own closer had it right and the body did not); *four of the twelve
+steps* where the flag word touches three; a light flood said to stop at level 1
+when it stops *propagating* at 1 and writes it; `sectionLightChanged` with two
+gates where the figure had one and the prose the other; a sky column answering
+15 by walking upward where the body says, correctly, without looking; a
+container sent back to the wrong queue when the budget runs out; and on
+`points-of-interest` a hook that says *the single behaviour that reads the flag*
+where three do. The ninth is on **session A's own exemplar**: mobs stop burning
+"until dawn" against the page's own 23460 and its own "tick 0 is dawn", and
+`day.json` has no marker called dawn. The landing page gained *Where the part
+stops* — the first thing in the book to explain the world border's absence,
+which gave a dangling "for the reason above" the antecedent it had lost — and
+stopped promising a lecture on *sending*, which is Part IX's. Eight *Where to
+look* lists came down from 17–27 names to 12–17 under A12, each in its page's
+own reading order, no name lost from the book. Ten pages 4,160 → 4,185 lines.
+**One tool bug**: `pass6_shape.py`'s question regexes used `[^*]`, so a bold
+lead-in with italics inside it counted as neither a lead-in nor a question —
+fixed, with a probe, and every closer count this pass has published may be low
+by one. Twenty-eight units appended to [pass5.md](pass5.md) (seven for pass 7,
+eight for pass 8, seven logged cuts, six part-wide answers); eight entries
+struck and four annotated; the session's entry in [pass9.md](pass9.md). All
+five gates green; deployed. **What the session would tell the next one**: the
+readers' most valuable output was again the count that does not close. Five of
+the nine corrections are one sentence disagreeing with another sentence or a
+figure **on the same page** — the same class session B named — and three of
+those five were found by a reader simply doing the arithmetic the page invited.
+A page that shows its working is a page that can be caught.
+
+**Pass 6, session E — Part V · Blocks** *(2026-09-13).* Seven system pages and
+the landing page, eight readers, one each. Part V arrived at **7 of 7** on the
+closer — the worst per page in the book — and came out at **4**, with three
+dissolving whole rather than being trimmed. `blocks-and-states` lost all three of
+its questions *upward*: the `Level.setBlock`-returns-false answer became the only
+prose in the book that reads the two diamonds in its own write figure, the
+property-identity throw went beside the reference comparison that causes it, and
+the third was the payoff of **the page's own hook** — an unknown state quietly
+becoming air — which the body never developed at all and which now has an H3.
+`signal-and-dust` lost three second tellings and moved its torch burnout up to
+the source census where a torch is first named, which is also the A7 variation
+that pulled it apart from `block-entities`. `diodes-and-observers` lost four
+second tellings, and the one line worth rescuing turned out to be **false**. The
+survivors went 4→2, 4→3, 4→2 and 5→2, and every one of the eight questions left
+is a consequence a player meets that the body does not state.
+**The part-wide finding is the flag word.** Four of eight readers independently
+said the lead figure spends a flag word the page has not minted:
+`blocks-and-states` hands the reader *flags 11*, then gates eight bare numbers
+through a flowchart, and names a bit for the first time 150 lines later in a
+section that defers the whole legend to Reference. The prose half is fixed on all
+four pages — a legend before the figure, name paired with number — and the figures
+went to the queue whole, because whether a flowchart gate may carry a constant
+name is pass 7's ruling and not four pages' patching. **Fifteen facts
+corrected**, every one found by a reader with no source, and three of them are
+counts that do not close against the page's own enumeration — the error class
+sessions B and D both named. The sharpest is on `block-breaking`, where the hook
+says neither clock is ever mentioned on the wire and the page's own section says
+the server broadcasts its clock to everyone within 32 blocks but the breaker;
+next to it, the same page called the two clocks *a tick apart* and *the same
+number* in one section, and the reconciliation — the STOP is handled in the packet
+drain, before that tick's increment, so the server measures the span the client
+counted — is the part's own recurring fact and was nowhere on the page. The
+landing page was re-argued to A6 with *Where the part stops* in its place, a
+generated coverage number, and an argument that at last **names** the four
+answers a block can give and binds two of them to the two channels: pass 5 had
+left that binding inside two mermaid edge labels, so a reader finished the page
+unable to say what it had promised. Its *one thing belongs to nobody* sentence
+became three, which is what [pass3.md](pass3.md) §7 has carried since the
+planning session. Eight *Where to look* lists became prose reading routes under
+A12, with no name lost from the book — checked by diffing every backticked token
+against `HEAD` and then against all of `src/`, which caught four and put them
+back into prose. Part V 2,530 → 2,646 lines. Fifty-one units appended to
+[pass5.md](pass5.md) (eleven logged cuts, six for pass 7, eight for pass 8, four
+for pass 9); eight entries struck and two annotated; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed. **What the session would
+tell the next one**: the readers earned their cost twice over, but not where the
+brief expected. Their four questions produced good structural findings; their
+*Suspected errors* section produced fifteen corrections, and the ones that
+mattered were never "this sentence is false" but "these two sentences cannot both
+be true". Nine of the fifteen are one sentence against another sentence, a
+figure, or an enumeration **on the same page**. A part session should read that
+section first and treat the rest as evidence.
+
+**Pass 6, session F — Part VI · Entities** *(2026-09-13).* Nine system pages and
+the landing page, ten readers, one each. The part arrived measured at 3 of 9 on
+the closer, which looked like the most comfortable part in the book, and **the
+measurement was the finding**: three more pages carry the identical device under
+a name of their own — `entity-anatomy`'s *The id, the box, and the numbers on
+the type*, `authority`'s *What the predicates explain*, `pathfinding`'s *Why
+mobs look stupid*, all three renamed by pass 2's own session to make the part
+look less uniform. Six of nine, then, and the test took it to **one**.
+`authority` keeps three answers that are consequences a player meets; the other
+five dissolved, and the two promotions are A2's load-bearing rule at its
+sharpest. `entity-anatomy`'s two-numbers answer became a section its **own cast
+row had been promising for 350 lines** ("the two numbers that decide how it
+reaches clients") and which `synched-entity-data` cites at that anchor; and
+`synched-entity-data`'s *can two mods both add a field* was the payoff of the
+page's own hook — one new field on `Entity` renumbers every entity in the game —
+sitting at the foot of the page under a question mark, and is now an H3 inside
+the anchor eight pages land on, with the `Display.RENDER_STATE_IDS` paragraph
+moved up beside it as its evidence. **A7's pair was not the one the queue named**:
+`attributes` / `synched-entity-data` had come apart in pass 5, and what the tool
+found live was `entity-anatomy` ↔ `authority` inside the part, with `authority`
+identical to `items/recipes` across parts. `authority` varied by **leading with
+its three-case comparison table** — the artefact its hook promises, which was
+sitting behind a cast table every reader skipped, a flowchart, and two
+paragraphs of predicates the table would have explained. The part's **first 1.21
+blockquote** was created rather than moved, out of the *Schedule does not exist*
+clause that was costing `ai-goals-and-brains` its opening. Eight long sections
+went to none on eleven H3s inside existing anchors. Nine *Where to look* lists
+became prose reading routes under A12 — Part VI had a median of **30** names,
+the worst in the book — with no name lost, checked by diffing every backticked
+token against `HEAD` and then against all of `src/`, which caught six and put
+them back into prose. **Fifteen facts corrected**, every one found by a reader
+with no source: six overrides described as nine, a tree that reads as 190
+against its own 191, seven species named as six, two rules that are three, four
+classes named as three, an armour formula with two legal parses and an unvalued
+divisor, *sixteen pages* that are nineteen, *three later pages* that are one, a
+ninth reading that is a ninth site, a figure label that dates the mob instead of
+the call, and on the landing page three counts at once — three reference pages
+that are five, a hand-counted 40% that is 34%, two rungs that are four. The
+landing page was re-argued to A6 with *Where the part stops* moved from first to
+its place and cut to 21 lines, a generated coverage number, and an argument that
+at last **names `Entity`**, the base class the part is about and had never
+named, and ends on the claim rather than on four shared things. Part VI 3,752 →
+3,861 lines. Thirty-three units appended to [pass5.md](pass5.md) (nine logged
+cuts, eight for pass 7, eight for pass 8, five for pass 9, three answers a page
+still owes); nine entries struck and two annotated; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed. **What the session would
+tell the next one**: a device that has been *renamed* is still the device, and
+the tool cannot see it. A2(a)'s one spelling is usually read as a tidiness rule;
+it is the measuring instrument, and Part VI is where it earned that — the part
+that looked half-clear was the second most uniform in the book. The other half
+of the lesson is A12's: nine lists at a median of thirty names, and six names
+that existed nowhere in the corpus except inside them, which is the field
+inventory not merely come back but become the *only* home. Run the token diff —
+and run it against hand-written pages only: the first pass of it missed three
+names because `class-index.md` is generated *from* the pages and still listed
+them. Regenerate the index before the commit, not after.
+
+**Pass 6, session G — Part VII · Items and inventories** *(2026-09-13).* Eight
+system pages and the landing page, nine readers, one each. The part arrived
+measured at **2 of 8** on the closer — the most comfortable-looking part since
+III — and the queue asked the opposite question, whether three closer-less
+pages should *gain* one. Both readings were wrong, and in opposite directions.
+The three were **ruled out**: A2(e) is permissive, none of the three had a fact
+that was lost rather than a promise unpaid, and adding closers to a part
+measured at 2 of 8 would manufacture the uniformity A2 exists to break. Mean-
+while the two that existed did not survive the test. `enchantments`' was 103
+lines and **nine** questions under a name of its own, and **three of its answers
+were cited from three other pages, each landing on a different answer inside the
+one anchor** — A2's load-bearing rule at its sharpest so far, because no reading
+of the closer as a whole could have found it and no tool sees a link's
+destination *within* a section. Four answers became body sections, three inbound
+links were repointed, and two consequences stayed. `loot-tables`' dissolved
+whole: its first question was **the page's own hook's payoff**, sitting at the
+foot under a question mark while the body never delivered what the opening
+promised, and the section it became answers the reader's question the closer had
+not — that breaking an unopened chest commits the roll too, luckless, through
+`BlockEntity.preRemoveSideEffects`.
+**Fifteen facts corrected**, thirteen of them found by a reader with no source,
+and the sharpest is on `items/README`: the recognition list called the tick-late
+chest one of the part's prediction lies, four paragraphs above the page's own
+statement that the container click is not on the prediction ledger. Sorting the
+four symptoms into the three that are guesses and the one that is not turned out
+to *be* the argument the landing page was missing, so A6's reversal of the
+recognition sentence paid for itself in a way no session had seen. Beside it a
+fourth hand-counted landing-page number went to the include and was wrong again
+(*about a third*, in fact 24%). The rest are the error class sessions B, D, E and
+F all named: a diagram that says *no arrow* where the prose says *a phantom
+arrow*; nine `CustomRecipe`s listed as eight names and a sibling; a figure node
+that says *stale* where the code says *empty*; "five menus" with two named; "five
+enchantment hooks" with four; ten data slots with four accounted for; two
+sentences about one method's two branches, each true, reading as a
+contradiction.
+Eight *Where to look* lists became prose reading routes under A12 — Part VII's
+median was **27** names, second worst in the book — and **every one of the nine
+readers skipped its page's list**, five of them saying in almost the same words
+that it was an index of the page's own backticks rather than a place to start.
+That is A12 arrived at independently, nine times, by readers who had never seen
+the ruling. The token diff (hand-written pages only, the `class-index.md` trap)
+found five names that would have left the book, all put back into prose — and
+writing the sentence that restored two of them introduced a count error the
+session then had to correct, which is worth saying out loud: the A12 check is
+not free. One literal trace heading renamed, both 1.21 blockquotes moved to the
+foot, two openings varied off the word *You* (six of eight, the worst in the
+book), eleven new H3s inside existing anchors, and three logged cuts. Part VII
+3,207 → 3,478 lines. Twenty-two units appended to [pass5.md](pass5.md) (three
+logged cuts, nine for pass 7, five for pass 8, one for pass 9, and the ruling
+that closed the three-closers question); eleven entries struck and four
+annotated; the session's entry in [pass9.md](pass9.md). All five gates green;
+deployed. **What the session would tell the next one**: session F said a renamed
+closer is still a closer and no tool sees it. The other half of that is here — an
+*inbound link* into a closer is not visible either, because `check_links.py`
+reports the anchor and the anchor is the whole section. Three links landed on
+one anchor and meant three different answers inside it, and the only way to find
+that out is to read the citing sentence at the other end. Run
+`check_links.py --inbound` on every page of the part *before* deciding which
+closers keep, and read what each citing sentence actually wanted.
+- **2026-09-14, session M (Part XIII · Commands and data packs).** Nine
+  system pages and the landing page rewritten; ten readers, one each. The
+  closer stayed at 4 of 9 and gave up eight load-bearing answers anyway —
+  three of them the payoff of their own page's opening, one of them cited by
+  anchor from another page in the part. Three spellings of the device to one;
+  two closers that were not last to none; four literal trace headings renamed.
+  Six facts corrected, four found by a reader with no source, the sharpest
+  being `advancements`' verified line contradicting its own trace about which
+  tick the toast leaves in. `brigadier-and-commands` re-asked and not split, on
+  a number. A12 needed no sweep here — the part's *Where to look* lists run
+  five to eight names — and A8 needed four. Two rulings declined, one of them
+  an A7 pair this session's own edit created. Queue: twelve `lecture` entries
+  struck to three, nine units appended. Gates green; deployed.

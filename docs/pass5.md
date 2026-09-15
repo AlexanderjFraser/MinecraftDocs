@@ -2175,10 +2175,14 @@ correction):
   id is nowhere near 993). The lecture unpacks it in the next two sentences;
   the landing-page teaser and the verified line do not. Decide whether the
   teaser keeps the metaphor.
-- **`reference/class-index.md` is still blind to diagrams** (session A's
+- ~~**`reference/class-index.md` is still blind to diagrams** (session A's
   finding) and Parts I and II are among the worst affected: every lane in
   the anatomy, tags and data-components figures is a `participant X as
-  ClassName` the index cannot see.
+  ClassName` the index cannot see.~~ **Done, pass-7 planning session**, with
+  the regenerated index open: `verify_names.py --index` merges
+  `check_figure_names.py`'s mentions now, so a class named only in a figure has
+  an index row — **139 page pairs** added, 750 classes named in figures across
+  109 pages.
 - ~~**Cross-links session A judged missing** and left to pass 5 touch this
   part: ~~Part X ← `anatomy/anatomy`~~ (still open, and session J's: the link
   belongs on `the-client-loop`, not here — session B re-derived it and it is
@@ -6002,6 +6006,8 @@ the only way to see it is to rename the heading and read what breaks.
   section with the coverage include. Three sessions have now reported this
   shape. The budget in `TEMPLATE.md` was written before A6 existed and session
   O should decide whether *about a hundred* still means what it meant.
+  **[Pass 6's session O did not run; this is pass 7's session O, which reads the
+  thirteen landing pages' figures as a set, or pass 10's.]** [kind=book]
 - **A2's inbound-link clause fired four times in this part and all four links
   were within it** — `lightmap` → `the-frame`'s closer, `the-window` →
   `the-frame`'s closer, `visibility` → `section-meshing`'s closer, `the-frame`
@@ -6286,7 +6292,8 @@ class implies for later passes.
 
 **Two notes for session O.**
 
-- **The frame has no landing-page role to be measured against.**
+- **[Pass 6's session O did not run; carried to pass 7's session O.]**
+  **The frame has no landing-page role to be measured against.**
   `reference/README` and `maps/README` are tier front doors, and A6 covers the
   thirteen part landing pages only. Both readers asked the same question of
   their page — *which one do I open?* — and neither page answers it, because

@@ -117,6 +117,13 @@ function loadMermaid(JSDOM) {
       dispatchEvent() { return false; },
     });
   }
+  // Three diagram types (pie, packet-beta, radar-beta) call structuredClone, which Node has and a
+  // jsdom window does not; without it they fail to parse here and render fine in the browser.
+  if (typeof w.structuredClone !== 'function' && typeof structuredClone === 'function') {
+    w.structuredClone = structuredClone;
+  }
+  // block-beta's parser prints its lexer trace through console.log; keep the report clean.
+  for (const k of ['log', 'info', 'debug', 'trace']) w.console[k] = () => {};
   const src = fs.readFileSync(MERMAID_JS, 'utf8');
   new vm.Script(src, { filename: 'mermaid.min.js' }).runInContext(dom.getInternalVMContext());
   if (!w.mermaid || typeof w.mermaid.parse !== 'function') {
@@ -333,7 +340,11 @@ async function main() {
   process.exit(failed ? 1 : 0);
 }
 
-main().catch((e) => {
-  console.error((e && e.stack) || e);
-  process.exit(2);
-});
+module.exports = { buildBook, listHtml, mermaidFences, norm, entityDecode, dedent, diagramText, markdownLine, relPosix, REPEAT_PAGES, ROOT, BOOK_DIR, MERMAID_JS };
+
+if (require.main === module) {
+  main().catch((e) => {
+    console.error((e && e.stack) || e);
+    process.exit(2);
+  });
+}

@@ -10,3 +10,6 @@ mermaid-init.js
 # node deps for tools/check_mermaid.js (npm install in tools/)
 /tools/node_modules/
 tools/__pycache__/
+
+# rendered figures (tools/render_figures.js): screenshots and index.json, rebuilt on demand
+/render/

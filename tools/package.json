@@ -1,8 +1,9 @@
 {
   "name": "minecraftdocs-tools",
   "private": true,
-  "description": "Node dependencies for tools/check_mermaid.js (jsdom). Run `npm install` in this directory once.",
+  "description": "Node dependencies for tools/check_mermaid.js (jsdom) and tools/render_figures.js (playwright-core, which drives the Chrome or Edge already installed and downloads no browser). Run `npm install` in this directory once.",
   "dependencies": {
-    "jsdom": "^26.1.0"
+    "jsdom": "^26.1.0",
+    "playwright-core": "^1.55.0"
   }
 }

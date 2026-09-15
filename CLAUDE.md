@@ -23,17 +23,23 @@ ownership, the seams, the through-lines, the thirteen landing pages rewritten
 to a stated role, the coverage question asked once per part with a tool, and
 the last moves; 171 corrections, about half of them one page contradicting
 another, which is the error two fact-checks could not see. Its record is
-`docs/pass5-brief.md`. Passes 6–8 are the three remaining passes of
-refinement, one lens each: **6 the lecture** (**current**, planned
-2026-09-07 — one page at a time: the devices that became slots, the twin
-skeletons, the section order, the cuts, the landing pages' seventh section;
-the brief, the runbook, the standard and **the schedule with each session's
-status** are `docs/pass6-brief.md`, whose **Part 3 is settled** — session A
-ruled on 2026-09-10 and a part session applies it rather than re-deciding
-it), **7 the figures**
-(every figure as rendered; the gate over names inside mermaid blocks), **8 the
-voice** (one voice, the tics, the terminology, the ambiguous counts). Then
-**9** the third fact-check and **10** the last polish. Beside them, a **version pass**
+`docs/pass5-brief.md`. Pass **6 the lecture** is done (2026-09-14, sessions
+A–N): each page read *down*, as one lecture's notes, by a reader with nothing
+but the page — the *Questions players ask* closer on 69 of 102 pages in five
+spellings came to 46 in one, the literal trace heading from 20 to none, the
+1.21 blockquote to the foot on all 43 — and about two hundred facts corrected,
+almost all of them **a sentence disagreeing with the text beside it**, which is
+what neither fact-check was looking for. Its record is `docs/pass6-brief.md`,
+whose Part 3 is the settled standard and Part 5 the archived charter, session
+paragraphs and log. Passes 7–8 are the two remaining passes of refinement, one
+lens each: **7 the figures** (**current**, planned 2026-09-14 — every figure
+as rendered beside its section: is it true, is it needed, does it show the
+thing it should, can it be read at the column width; the theme, the caption,
+and the gate over the 2,619 names inside mermaid blocks; the viewer's brief,
+the runbook, the standard for session A and **the schedule with each session's
+status** are `docs/pass7-brief.md`), **8 the voice** (one voice, the tics, the
+terminology, the ambiguous counts). Then **9** the third fact-check and **10**
+the last polish. Beside them, a **version pass**
 runs between passes on each release, and the owner reads whenever they
 like, leaving `<!-- Q: … -->` in a page for the next session that touches
 it. Nothing is recorded that the owner hasn't understood.
@@ -58,6 +64,9 @@ it. Nothing is recorded that the owner hasn't understood.
 5. **Verified names.** `python tools/verify_names.py` checks that every
    backticked identifier on every page exists in the decompile. A page that
    fails does not publish. "Verified against 26.2" is a test, not a claim.
+   From pass 7, `python tools/check_figure_names.py` asks the same of every
+   name *inside* a mermaid block — a lane, a node, a message — report-only
+   until that pass's close and a gate after it.
 6. **Diagrams render.** `node tools/check_mermaid.js` parses every diagram in
    the built site with the site's own mermaid (11.6.0). A diagram that
    fails does not publish — mermaid ends a statement at `;` and reads `#` as

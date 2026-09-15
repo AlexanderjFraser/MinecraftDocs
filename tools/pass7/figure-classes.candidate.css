@@ -1,0 +1,45 @@
+/* Candidate rules for custom.css, for pass 7's session A to judge (tools/pass7/, planning session 2026-09-14).
+ *
+ * One visual grammar for every figure, with the colours in this file and never in a page.
+ * A flowchart node says which side of the wire it lives on with a class and no classDef:
+ *     A["ServerLevel.tick"]:::server      B["ClientLevel.tick"]:::client
+ *     N["Netty event loop"]:::netty       W["Worker-Main-n"]:::worker      D[("region file")]:::disk
+ * and a state diagram says it with `class Idle server`. mermaid puts the class on the node's <g>
+ * ("node default server"), so the colour is a stylesheet rule that follows the theme, the way
+ * the atlas SVGs already work. The five words are the lane key's word lanes, so a sequence
+ * diagram's `box` labels and a flowchart's classes say the same thing in the same words.
+ *
+ * Caption: a figure's caption is the italic paragraph directly after it (pass 7's device);
+ * `pre.mermaid + p:has(> em:only-child)` styles exactly that paragraph and nothing else, so a
+ * page whose figure has no caption yet looks as it does today. */
+:root {
+    --fig-server: #dfe9f7;   --fig-server-line: #6f8fc4;
+    --fig-client: #fbe9d7;   --fig-client-line: #d08a45;
+    --fig-netty:  #e6f2e2;   --fig-netty-line:  #6a9e5b;
+    --fig-worker: #efe6f5;   --fig-worker-line: #9a6fb8;
+    --fig-disk:   #eeeeee;   --fig-disk-line:   #8f8f8f;
+}
+.coal, .navy, .ayu {
+    --fig-server: #26304a;   --fig-server-line: #6f8fc4;
+    --fig-client: #4a3624;   --fig-client-line: #d08a45;
+    --fig-netty:  #28402a;   --fig-netty-line:  #6a9e5b;
+    --fig-worker: #3b2d47;   --fig-worker-line: #9a6fb8;
+    --fig-disk:   #30343a;   --fig-disk-line:   #8f8f8f;
+}
+.content pre.mermaid g.node.server > *:not(.label), .content pre.mermaid g.node.server > g > rect { fill: var(--fig-server) !important; stroke: var(--fig-server-line) !important; }
+.content pre.mermaid g.node.client > *:not(.label), .content pre.mermaid g.node.client > g > rect { fill: var(--fig-client) !important; stroke: var(--fig-client-line) !important; }
+.content pre.mermaid g.node.netty  > *:not(.label), .content pre.mermaid g.node.netty  > g > rect { fill: var(--fig-netty)  !important; stroke: var(--fig-netty-line)  !important; }
+.content pre.mermaid g.node.worker > *:not(.label), .content pre.mermaid g.node.worker > g > rect { fill: var(--fig-worker) !important; stroke: var(--fig-worker-line) !important; }
+.content pre.mermaid g.node.disk   > *:not(.label), .content pre.mermaid g.node.disk   > g > rect { fill: var(--fig-disk)   !important; stroke: var(--fig-disk-line)   !important; }
+.content pre.mermaid g.cluster.server > rect { fill: var(--fig-server) !important; stroke: var(--fig-server-line) !important; fill-opacity: 0.35; }
+.content pre.mermaid g.cluster.client > rect { fill: var(--fig-client) !important; stroke: var(--fig-client-line) !important; fill-opacity: 0.35; }
+
+/* The caption under a figure. */
+.content pre.mermaid + p:has(> em:only-child) {
+    font-size: 0.9em;
+    color: var(--icons);
+    margin-top: -0.4em;
+    padding-left: 0.6em;
+    border-left: 3px solid var(--table-border-color, #ddd);
+}
+.content pre.mermaid + p:has(> em:only-child) > em { font-style: normal; }

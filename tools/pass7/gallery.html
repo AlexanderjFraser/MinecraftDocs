@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html class="light">
+<head>
+<meta charset="utf-8">
+<title>Pass 7 gallery — one figure of each kind the site's mermaid draws, in the candidate theme</title>
+<!-- Rendered by: node tools/render_figures.js --html tools/pass7/gallery.html --out render/gallery
+                  --init-js tools/pass7/mermaid-init.candidate.js --css tools/pass7/figure-classes.candidate.css
+     Every block below parses under the site's mermaid 11.6.0 (check_mermaid.js's harness); the pictures in
+     render/gallery/ are what session A judges. The names in the blocks are real 26.2 names where a name is
+     used at all; the numbers in the charts are illustrative and say so. -->
+<link rel="stylesheet" href="/__root/custom.css">
+<style>
+  body { font-family: "Open Sans", "Segoe UI", Helvetica, Arial, sans-serif; margin: 0; padding: 24px; color: #333; background: #fff; }
+  .content main { width: 1092px; }
+  h2 { font-size: 1.1em; margin: 2em 0 0.5em; }
+  p { max-width: 800px; }
+  pre.mermaid { max-width: 100%; background: transparent; }
+</style>
+</head>
+<body>
+<div class="content"><main>
+
+<h2>1. A trace with the lanes grouped by thread, a shaded tick band, wrapped messages, and no mirrored actors</h2>
+<pre class="mermaid">sequenceDiagram
+    box transparent Server thread
+    participant SL as ServerLevel
+    participant SCC as ServerChunkCache
+    participant CM as ChunkMap
+    end
+    box transparent Netty
+    participant Conn as Connection
+    end
+    box transparent Render thread
+    participant CPL as ClientPacketListener
+    participant CL as ClientLevel
+    end
+    SL->>SCC: tick
+    SCC->>CM: tick, which walks every holder with a player near enough and hands each its packets
+    CM->>Conn: ClientboundLevelChunkWithLightPacket
+    rect rgba(0, 0, 0, 0.04)
+    Note over SL,CL: the next client tick
+    Conn->>CPL: handleLevelChunkWithLight
+    CPL->>CL: replaceWithPacketData
+    end
+</pre>
+<p><em>A trace whose lanes are grouped into the threads they run on; the shaded band is one tick boundary.</em></p>
+
+<h2>2. A pipeline flowchart with the side of the wire as a class, not a colour in the page</h2>
+<pre class="mermaid">flowchart LR
+    A["Level.setBlock"]:::server --> B["LevelChunk.setBlockState"]:::server --> C["Level.sendBlockUpdated"]:::server
+    C --> D["ClientboundBlockUpdatePacket"]:::netty --> E["ClientLevel.setBlock"]:::client
+    E --> F["LevelExtractor.setBlockDirty"]:::client
+    B --> G[("region file, later")]:::disk
+</pre>
+
+<h2>3. Threads as subgraphs, decisions as diamonds, one shape per meaning</h2>
+<pre class="mermaid">flowchart TD
+    subgraph S["Server thread"]
+        T["ServerLevel.tick"] --> Q{"ticket still alive?"}
+        Q -->|"yes"| K["ChunkHolder keeps its level"]
+        Q -->|"no"| U["ChunkMap.scheduleUnload"]
+    end
+    subgraph W["Worker"]
+        U --> IO["IOWorker writes the chunk"]
+    end
+    IO --> D[("region file")]:::disk
+</pre>
+
+<h2>4. A state machine with the orphan drawn as an orphan</h2>
+<pre class="mermaid">stateDiagram-v2
+    direction LR
+    [*] --> HANDSHAKING
+    HANDSHAKING --> STATUS : ClientIntentionPacket, intention STATUS
+    HANDSHAKING --> LOGIN : intention LOGIN or TRANSFER
+    LOGIN --> CONFIGURATION : ServerboundLoginAcknowledgedPacket
+    CONFIGURATION --> PLAY : ServerboundFinishConfigurationPacket
+    PLAY --> CONFIGURATION : ServerboundConfigurationAcknowledgedPacket
+    STATUS --> [*]
+    PLAY --> [*] : disconnect
+    NEGOTIATING
+    note right of NEGOTIATING : declared, never assigned
+</pre>
+
+<h2>5. A vocabulary page's figure as a class diagram — the objects and their relations, not a conversation</h2>
+<pre class="mermaid">classDiagram
+    class LevelChunk {
+        +LevelChunkSection[] sections
+        +Map heightmaps
+        +Map blockEntities
+    }
+    class LevelChunkSection {
+        +PalettedContainer states
+        +PalettedContainer biomes
+        +short nonEmptyBlockCount
+    }
+    class PalettedContainer {
+        +Palette palette
+        +BitStorage storage
+    }
+    LevelChunk "1" *-- "24" LevelChunkSection
+    LevelChunkSection *-- "2" PalettedContainer
+    PalettedContainer --> Palette
+    PalettedContainer --> BitStorage
+</pre>
+
+<h2>6. A memory layout as a block diagram (block-beta)</h2>
+<pre class="mermaid">block-beta
+    columns 4
+    a["states: PalettedContainer"]:2 b["biomes: PalettedContainer"]:2
+    c["blockLight: DataLayer, in the light engine"]:2 d["skyLight: DataLayer, in the light engine"]:2
+    e["nonEmptyBlockCount"] f["tickingBlockCount"] g["tickingFluidCount"] h["(no light on the section)"]
+</pre>
+
+<h2>7. A packet's bytes as a packet diagram (packet-beta)</h2>
+<pre class="mermaid">packet-beta
+    0-15: "length (VarInt, 1 to 3 bytes shown as 2)"
+    16-23: "packet id (VarInt)"
+    24-63: "payload: the StreamCodec's fields in declaration order"
+</pre>
+
+<h2>8. A number that is a curve: the sword's damage multiplier against ticks since the last swing (xychart, values illustrative)</h2>
+<pre class="mermaid">xychart-beta
+    title "attack strength scale (illustrative)"
+    x-axis "ticks since the last swing" [0, 2, 4, 6, 8, 10, 12]
+    y-axis "multiplier" 0 --> 1.2
+    line [0.2, 0.4, 0.65, 0.85, 1.0, 1.0, 1.0]
+</pre>
+
+<h2>9. One tick's phases against the clock (gantt, milliseconds; illustrative widths)</h2>
+<pre class="mermaid">gantt
+    dateFormat x
+    axisFormat %L ms
+    title one 50 ms server tick (illustrative)
+    section Server thread
+    processQueuedPackets   :a, 0, 4
+    tickChildren           :b, 4, 30
+    saveEverything, sometimes :c, 30, 33
+    waitUntilNextTick, running tasks :d, 33, 50
+</pre>
+
+<h2>10. Two axes of authority (quadrantChart)</h2>
+<pre class="mermaid">quadrantChart
+    title Who decides, and who predicts
+    x-axis "client decides" --> "server decides"
+    y-axis "never predicted" --> "predicted first"
+    quadrant-1 predicted, then corrected
+    quadrant-2 client-only
+    quadrant-3 client-only, unpredicted
+    quadrant-4 server-only
+    block placement: [0.8, 0.85]
+    chest contents: [0.9, 0.2]
+    camera: [0.1, 0.5]
+    sword swing: [0.75, 0.7]
+</pre>
+
+<h2>11. A taxonomy as a mind map, where the arrows of a flowchart would assert an order that does not exist</h2>
+<pre class="mermaid">mindmap
+    root((Reference))
+        catalogues
+            packets
+            gamerules
+            registries
+        look-ups
+            glossary
+            class index
+            lanes
+        generated views
+            attributes
+            components
+</pre>
+
+<h2>12. A timeline of a session's phases (timeline)</h2>
+<pre class="mermaid">timeline
+    title A connection's life
+    handshake : ClientIntentionPacket
+    login : encryption, authentication : ServerboundLoginAcknowledgedPacket
+    configuration : registries, tags, resource packs
+    play : the world : ServerboundConfigurationAcknowledgedPacket returns here
+</pre>
+
+</main></div>
+<script src="/__root/mermaid.min.js"></script>
+<script src="/__root/mermaid-init.js"></script>
+</body>
+</html>

@@ -44,6 +44,46 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, the planning session — between passes 6 and 7 *(2026-09-14)*
+
+**No page's prose was touched and no claim about the game was introduced.** One
+generated page changed and one tool now feeds it, which is what pass 9 checks.
+
+### The one change to a published page
+
+- `src/reference/class-index.md` is **regenerated from two sources now** instead
+  of one. `verify_names.py --index` still reads every backticked name on every
+  hand-written page; it now also merges `check_figure_names.py`'s mentions —
+  every class named inside a mermaid block, as a lane's expansion, a node label,
+  a message, a note, a subgraph title or a state name. **139 page pairs were
+  added** (750 classes are named in figures, across 109 pages), and the page's
+  own preamble was rewritten to say so: it used to state that a class named only
+  in a diagram is outside the index, which was true and is now false. **What
+  pass 9 should check**: that the added rows are real — that the class exists
+  (the figure parser resolves every name against the same decompile index, and
+  119 names in figures do *not* resolve and are therefore absent from the
+  index, which is the gate's own report), and that the preamble's two sentences
+  match what the two parsers actually do.
+
+### Claims introduced elsewhere, all of them about the book rather than the game
+
+- [pass7-brief.md](pass7-brief.md) Part 3 and Part 4 carry **the measurements**:
+  206 figures, 134 of 194 mermaid figures shrunk below their natural size, 89
+  with type under 9px, 115 opening their section, 0 captioned, 51 pointed at by
+  nothing, 139 introducing most of their names before the prose does, 151
+  carrying a name the prose never says, 121 with a label that reads as a
+  sentence, 119 names failing the new gate, 44 unused lane-key rows, 214
+  figure-less sections over forty lines. Each is a tool's output at a stated
+  revision and is re-derivable by re-running the tool; none is a claim about
+  26.2. A pass-7 session that quotes one quotes it as *measured on 2026-09-14*.
+- [plan.md](plan.md)'s *Where we are* states pass 6's device outcome — the
+  closer 69 → 46 in one spelling, the trace heading 20 → 0, the blockquote 39 →
+  43 all at the foot — from `pass6_shape.py --summary` run on the same day.
+
+### Corrections
+
+None. No fact about the game was changed.
+
 ## Pass 6, session N — the frame and Reference *(2026-09-14)*
 
 Eighteen pages read, one agent each, under `docs/pass6-brief.md` Part 1: the
