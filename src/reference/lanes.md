@@ -7,7 +7,7 @@ every page: the key in `TEMPLATE.md` is the authority, and `check_lanes.py` fail
 a page that disagrees with it. The last rows are the exceptions — lanes that stand for a
 thread or a boundary rather than for one class.
 
-338 lanes are classes and 9 are not. A lane is normally the initials of
+339 lanes are classes and 10 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
 rules make about a third of them: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
@@ -279,6 +279,7 @@ read it off this table.
 | `SCD` | `SerializableChunkData` |
 | `SCL` | `ServerConnectionListener` |
 | `SCM` | `ServerClockManager` |
+| `SConn` | `Connection` |
 | `SCPL` | `ServerConfigurationPacketListenerImpl` |
 | `Screen` | `Screen` |
 | `SCT` | `SimulationChunkTracker` |
@@ -363,5 +364,6 @@ read it off this table.
 | `JVM` | *the process itself, not a class* |
 | `Main` | *the JVM main thread, running whichever program's Main the diagram is about — the server's or the client's, so not one class* |
 | `Netty` | *the Netty event loop, not a class* |
+| `Sess` | *the Mojang session service both machines call over HTTPS, not a class* |
 | `Wire` | *the network between the two programs, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |

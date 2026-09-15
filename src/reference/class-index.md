@@ -7,7 +7,7 @@ introduction or the lecture map — or named inside one of its figures (a lane, 
 message; `tools/check_figure_names.py` reads those), and the pages that name it. Outside it:
 the generated views, whose backticks are registry and packet ids rather than class names.
 
-3100 names across 131 pages. A row is a
+3099 names across 131 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -547,7 +547,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ClientboundResourcePackPopPacket` | [resource-system](../systems/foundations/resource-system.md) |
 | `ClientboundResourcePackPushPacket` | [naming-drift](../reference/naming-drift.md), [resource-system](../systems/foundations/resource-system.md) |
 | `ClientboundRespawnPacket` | [player-anatomy](../systems/player/player-anatomy.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
-| `ClientboundRotateHeadPacket` | [synched-entity-data](../systems/entities/synched-entity-data.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
+| `ClientboundRotateHeadPacket` | [synched-entity-data](../systems/entities/synched-entity-data.md) |
 | `ClientboundSectionBlocksUpdatePacket` | [block-entities](../systems/blocks/block-entities.md), [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md) |
 | `ClientboundSelectKnownPacks` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [protocol-phases](../systems/networking/protocol-phases.md) |
 | `ClientboundServerDataPacket` | [text-components](../systems/foundations/text-components.md) |
@@ -1264,7 +1264,6 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `GameModeCommand` | [permissions](../systems/commands/permissions.md) |
 | `GameModeSwitcherScreen` | [permissions](../systems/commands/permissions.md) |
 | `GameNarrator` | [gui-and-screens](../systems/client/gui-and-screens.md) |
-| `GamePacketTypes` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `GameProfile` | [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `GameProfileArgument` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md) |
 | `GameProtocols` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [protocol-phases](../systems/networking/protocol-phases.md) |
