@@ -40,45 +40,46 @@ it otherwise.
 
 ```mermaid
 flowchart TB
-    ATTR["Attribute, always a RangedAttribute: a default, a minimum, a maximum, a sentiment, and one boolean called syncable"]
-    SUP["AttributeSupplier: one frozen prototype map per EntityType, held in DefaultAttributes"]
-    MAP["AttributeMap: one per LivingEntity, holding only the instances something has asked for"]
-    INST["AttributeInstance: a base value, a cached value and a dirty flag"]
-    BYOP["modifiersByOperation: three buckets. What calculateValue walks"]
-    BYID["modifierById: the identity index, and the duplicate check"]
-    PERM["permanentModifiers: the subset AttributeMap.pack writes to disk"]
-    UPD["attributesToUpdate: every dirtied attribute"]
-    SYNC["attributesToSync: only the syncable ones"]
-    REACT["LivingEntity.refreshDirtyAttributes in the entities phase, calling onAttributeUpdated, then clear"]
-    SEND["ServerEntity.sendDirtyEntityData in the chunkSource phase, then clear"]
-    WIRE["ClientboundUpdateAttributesPacket to every tracking player and the entity itself"]
-    PAIR["AttributeMap.getSyncableAttributes: NOT a dirty set. It filters the whole live map, for ServerEntity.sendPairingData"]
+    ATTR["Attribute, always a RangedAttribute: a range, and a syncable flag"]
+    SUP["AttributeSupplier: one frozen prototype map per EntityType"]
+    MAP["AttributeMap: one per LivingEntity, only what was asked for"]
+    INST["AttributeInstance: a base value, a cached value, a dirty flag"]
+    UPD["AttributeMap.attributesToUpdate: every dirtied attribute"]
+    SYNC["AttributeMap.attributesToSync: only the syncable ones"]
+    MOD["AttributeMap.onAttributeModified"]
+    PAIR["AttributeMap.getSyncableAttributes: not a set, a filter"]
+    REACT["LivingEntity.refreshDirtyAttributes, entities phase"]
+    SEND["ServerEntity.sendDirtyEntityData, the ServerLevel.chunkSource phase"]
+    WIRE["ClientboundUpdateAttributesPacket"]
 
-    ATTR -- "registered once, by the class initialiser of Attributes" --> SUP
-    SUP -- "createInstance copies a prototype into a fresh instance" --> MAP
-    MAP --> INST
-    INST --> BYOP
-    INST --> BYID
-    INST --> PERM
-    INST -- "setDirty calls AttributeMap.onAttributeModified, which always adds here" --> UPD
-    INST -- "and additionally here, only if the attribute is syncable" --> SYNC
+    ATTR -- "registered once" --> SUP
+    SUP -- "one per EntityType" --> MAP
+    MAP -- "AttributeMap.getInstance" --> INST
+    INST -- "AttributeInstance.setDirty" --> MOD
+    MOD -- "always" --> UPD
+    MOD -- "and if syncable" --> SYNC
+    MAP -- "when tracking starts" --> PAIR
     UPD --> REACT
     SYNC --> SEND
     SEND --> WIRE
-    MAP -. "a newly tracking player gets this instead" .-> PAIR
-    PAIR -.-> WIRE
+    PAIR --> WIRE
 ```
+
+*The four objects and the three collections — and every collection is the
+`AttributeMap`'s, which is the thing to look at: the instance only calls
+`AttributeInstance.setDirty`, and the map decides which sets that lands in.*
 
 Four objects carry the whole system — the `Attribute`, the frozen
 `AttributeSupplier` per type, the `AttributeMap` per entity, and the
-`AttributeInstance` per number actually asked for — and everything else in the
-figure is a list one of them keeps.
+`AttributeInstance` per number actually asked for. The instance keeps three
+lists of its own, and they are [the next section](#the-instance-three-indices-and-one-cached-number)'s;
+the three in the figure all belong to the map.
 
-Two of those lists are the dirty sets, and they are **not a partition**:
+Two of them are the dirty sets, and they are **not a partition**:
 `AttributeMap.onAttributeModified` always adds to the update set and
 *additionally* to the sync set when the attribute is syncable, so a syncable
 attribute is in both and a non-syncable one is in the update set alone. The
-third list, drawn with a dotted arrow, is not a dirty set at all:
+third is not a dirty set at all:
 `AttributeMap.getSyncableAttributes` filters the whole live map every time it is
 asked, and it exists for one caller — `ServerEntity.sendPairingData`, which has
 to describe an entity to a player who has never seen it and so cannot work from
@@ -274,15 +275,26 @@ clamp:
 
 ```mermaid
 flowchart TB
-    B["base value: the prototype's, or one assigned by AttributeMap.assignBaseValues or by the attribute command"]
-    P1["pass 1: add the amount of every ADD_VALUE modifier"]
-    P2["pass 2: for each ADD_MULTIPLIED_BASE modifier, add the post-pass-1 base times its amount. Each reads the same base, so these do NOT compound"]
-    P3["pass 3: for each ADD_MULTIPLIED_TOTAL modifier, multiply the running total by one plus its amount. Each reads the last one's output, so these DO compound"]
-    C["RangedAttribute.sanitizeValue, once: NaN collapses to the minimum, anything else is clamped between the minimum and the maximum"]
-    O["cachedValue, returned unchanged until the next setDirty"]
+    B["the base value: the prototype's, or AttributeMap.assignBaseValues"]
+    P1["pass 1: every ADD_VALUE modifier, added"]
+    P2["pass 2: every ADD_MULTIPLIED_BASE modifier, off the same base"]
+    P3["pass 3: every ADD_MULTIPLIED_TOTAL modifier, off the running total"]
+    C["RangedAttribute.sanitizeValue, once"]
+    O["AttributeInstance.cachedValue, to the next AttributeInstance.setDirty"]
     B --> P1 --> P2 --> P3 --> C --> O
 ```
 
+*The three passes, in the order they always run. What separates pass 2 from
+pass 3 is the two words on their boxes: `the same base` against `the running
+total`.*
+
+That difference is the whole of the arithmetic. Every
+`AttributeModifier.Operation.ADD_MULTIPLIED_BASE` modifier reads the base as pass 1 left it, so two of
+them do **not** compound — +50% and +50% is +100%. Every
+`AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL` modifier reads the previous one's output, so two of
+those **do** — +50% and +50% is +125%. The clamp runs once at the end:
+`RangedAttribute.sanitizeValue` collapses a not-a-number result to the
+minimum and otherwise holds the value between the minimum and the maximum.
 Operation order is therefore global, not insertion order, and intermediate
 values are never clamped. Within a bucket, iteration order is a hash map's —
 safe only because each bucket's arithmetic is commutative.
@@ -332,6 +344,9 @@ serverbound attribute packet.
 
 ## Strength II lands, and nothing leaves the server
 
+Put the four objects, the two sets and the two phases together and the whole
+system runs once, end to end, for a number the wire never hears about:
+
 ```mermaid
 sequenceDiagram
     participant EffC as EffectCommands
@@ -341,22 +356,30 @@ sequenceDiagram
     participant AttrI as AttributeInstance
     participant SE as ServerEntity
 
-    EffC->>LE: addEffect(Strength, amplifier 1)
+    EffC->>LE: addEffect, Strength at amplifier 1
     LE->>LE: onEffectAdded, guarded server-side
-    LE->>ME: addAttributeModifiers(the map, amplifier 1)
-    ME->>AttrM: getInstance(Attributes.ATTACK_DAMAGE)
-    AttrM->>AttrI: createInstance copies the frozen prototype, replaceFrom ends in setDirty
-    AttrI-->>AttrM: onAttributeModified adds it to attributesToUpdate
-    ME->>AttrI: removeModifier(effect.strength), then addPermanentModifier(+6, ADD_VALUE)
-    AttrI-->>AttrM: setDirty again. ATTACK_DAMAGE is not syncable, so attributesToSync stays empty
-    Note over LE,SE: the next server tick: chunkSource phase, then entities phase
-    SE-->>SE: sendDirtyEntityData finds an empty set and sends nothing
-    LE->>LE: refreshDirtyAttributes drains the update set, onAttributeUpdated matches no branch
+    LE->>ME: addAttributeModifiers, the map and the amplifier
+    ME->>AttrM: getInstance, Attributes.ATTACK_DAMAGE
+    AttrM->>AttrI: replaceFrom, inside AttributeSupplier.createInstance
+    AttrI->>AttrM: onAttributeModified, into the update set
+    ME->>AttrI: removeModifier, then addPermanentModifier at plus 6
+    AttrI->>AttrM: onAttributeModified, into the update set again
+    Note over LE,SE: not syncable, so the sync set stays empty
+    rect rgba(0, 0, 0, 0.04)
+    Note over LE,SE: the next server tick: the ServerLevel.chunkSource phase, then entities
+    SE->>SE: sendDirtyEntityData finds an empty set
+    LE->>LE: refreshDirtyAttributes drains the update set
+    end
     Note over LE,AttrI: three seconds later, inside Player.attack
-    LE->>AttrM: getAttributeValue(Attributes.ATTACK_DAMAGE)
+    LE->>AttrM: getValue, Attributes.ATTACK_DAMAGE
     AttrM->>AttrI: getValue, dirty, so calculateValue
-    AttrI-->>LE: 1.0 base plus the sword's base_attack_damage plus 6.0
+    AttrI-->>AttrM: 1.0 base, plus the sword's, plus 6.0
+    AttrM-->>LE: the same number
 ```
+
+*The lane to watch is `ServerEntity`, which does nothing: it is reached, finds
+the sync set empty, and sends no packet at all. The shaded band is the tick
+that follows, and the whole of what the wire hears about Strength II.*
 
 `MobEffects.STRENGTH` is declared with one attribute modifier: +3 on
 `Attributes.ATTACK_DAMAGE`, `AttributeModifier.Operation.ADD_VALUE`, under

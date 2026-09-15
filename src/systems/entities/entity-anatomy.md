@@ -55,31 +55,35 @@ and never changed. The individual is an `Entity`, and nearly all of its state
 is mutable by design.
 
 ```mermaid
-flowchart TB
-    ET["EntityType: one object per registered kind, 158 of them"]
-    DIM["EntityDimensions: width, height, eye height, EntityAttachments, and a fixed flag. Frozen by EntityType.Builder.build"]
-    CAT["MobCategory: the spawn cap and despawn distance"]
-    FAC["EntityType.EntityFactory: the constructor reference"]
-    NET["clientTrackingRange in chunks (default 5), updateInterval in ticks (default 3)"]
-    E["Entity: the live object"]
-    SED["SynchedEntityData: eight accessors defined inline, then whatever the subclass chain adds"]
-    POS["Entity.position at the feet, and Entity.bb, a stored box rather than a computation"]
-    CB["Entity.levelCallback: EntityInLevelCallback.NULL until a level takes the object"]
-    REM["Entity.removalReason: null is the whole of the am-I-alive bit"]
-    RIDE["Entity.vehicle and Entity.passengers, an immutable list"]
-
-    ET --> FAC
-    ET --> DIM
-    ET --> CAT
-    ET --> NET
-    FAC -- "creates" --> E
-    DIM -- "copied into Entity.dimensions and Entity.eyeHeight, both caches" --> E
-    E --> SED
-    E --> POS
-    E --> CB
-    E --> REM
-    E --> RIDE
+classDiagram
+    class EntityType {
+        one object per registered kind, 158 of them
+        EntityType.EntityFactory, the constructor reference
+        MobCategory, the spawn cap and despawn distance
+        clientTrackingRange in chunks, updateInterval in ticks
+        frozen by EntityType.Builder.build
+    }
+    class EntityDimensions {
+        width, height, eye height
+        EntityAttachments, and a fixed flag
+    }
+    class Entity {
+        SynchedEntityData, eight accessors and the chain's
+        Entity.position at the feet, Entity.bb a stored box
+        Entity.dimensions and Entity.eyeHeight, both caches
+        Entity.levelCallback, null until a level takes it
+        Entity.removalReason, the whole am-I-alive bit
+        Entity.vehicle and Entity.passengers
+    }
+    EntityType --> EntityDimensions : holds one, built once
+    EntityType ..> Entity : EntityType.create calls the factory
+    EntityDimensions ..> Entity : copied into the two caches, and recopied on a pose change
 ```
+
+*What each object holds, and the line the page turns on: everything in the
+top two boxes is frozen at class-initialiser time and shared by every
+individual of that kind, and everything in the bottom one belongs to one
+individual and changes.*
 
 `Entity` implements nine interfaces — `Nameable`, `EntityAccess`,
 `ScoreHolder`, `SyncedDataHolder`, `DataComponentGetter`, `ItemOwner`,
@@ -167,7 +171,7 @@ seventeen non-living branches hold the other 66.
 
 <figure class="map">
 {{#include ../../generated/tree-Entity.svg}}
-<figcaption>The <code>Entity</code> tree to three levels, generated from the decompile. Click to enlarge.</figcaption>
+<figcaption>The <code>Entity</code> tree to three levels, generated from the decompile: a name in brackets carries how many types descend from it, and a grey line folds every child of that node that has no children of its own. Click to enlarge.</figcaption>
 </figure>
 
 The full drawing, with the block, item and screen trees beside it, is in
@@ -187,8 +191,9 @@ which is why `Ghast` and `Phantom` navigate without ever being one.
 a marker interface carrying nothing but XP-reward constants.
 
 The 66 outside `LivingEntity`'s branch are shallow, and the atlas draws them as
-two families and a scattering: `Projectile` with 26 descendants,
-`VehicleEntity` with 15, and thirteen direct subclasses of `Entity` with no
+four families and a scattering: `Projectile` with 26 descendants,
+`VehicleEntity` with 15, `BlockAttachedEntity` with 5, `Display` with 3, and
+thirteen direct subclasses of `Entity` with no
 children of their own, from `ItemEntity` to `LightningBolt`. Sharing a base class that thin is what lets
 them disagree so completely about being hit
 ([damage and death](damage-and-death.md#twenty-one-classes-with-no-pipeline-at-all)).
@@ -249,28 +254,48 @@ sequenceDiagram
     participant Entity as Entity
     participant SL as ServerLevel
     participant PESM as PersistentEntity<br/>SectionManager
-    participant SE as ServerEntity
-    participant CPL as ClientPacketListener
 
-    SumC->>SumC: reject out of bounds, then reject on peaceful via isAllowedInPeaceful
-    SumC->>ET: loadEntityRecursive(tag with an id string, level, EntitySpawnRequest)
-    ET->>ET: by(ValueInput) reads id through EntityType.CODEC
-    ET->>ET: create checks canSpawn, then calls the EntityFactory
-    ET->>Entity: constructor takes the next id, invents a UUID, copies the type dimensions
-    Entity->>Entity: eight base accessors, then defineSynchedData down the chain, then setPos
-    ET->>Entity: load(ValueInput) then readAdditionalSaveData
+    SumC->>SumC: rejects out of bounds, then on peaceful
+    SumC->>ET: loadEntityRecursive, a tag with an id string
+    ET->>ET: EntityType.by reads the id through EntityType.CODEC
+    ET->>ET: EntityType.create checks canSpawn, then the factory
+    ET->>Entity: the constructor: the next id, a new UUID, the type's dimensions
+    Entity->>Entity: eight base accessors, then defineSynchedData, then setPos
+    ET->>Entity: load, then readAdditionalSaveData
     SumC->>Entity: snapTo, the postLoad processor, before any passenger exists
-    ET->>Entity: each Passengers child loaded the same way, then startRiding
-    SumC->>SL: tryAddFreshEntityWithPassengers, one addFreshEntity per body
+    ET->>Entity: each Passengers child the same way, then startRiding
+    SumC->>SL: tryAddFreshEntityWithPassengers, one body at a time
     SL->>PESM: addNewEntity
     PESM->>Entity: setLevelCallback, and only now is it in a world
     Note over SL,Entity: the next server tick
-    SL->>Entity: setOldPosAndRot, then the tick count rises, then tick
-    Note over SE,CPL: later, when a player comes into range
-    SE->>Entity: getAddEntityPacket
-    SE->>CPL: ClientboundAddEntityPacket, bundled with data, attributes and equipment
-    CPL->>CPL: createEntityFromPacket, then recreateFromPacket, then ClientLevel.addEntity
+    SL->>Entity: setOldPosAndRot, the tick count rises, then tick
 ```
+
+*Eleven steps between a registry entry and a live object, and the one that
+matters is the second from last: everything above `Entity.setLevelCallback`
+happens
+to an object no level knows about.*
+
+The client builds its own copy of the same object, from a packet, whenever a
+player comes into range — which is the same journey a second time, in four
+steps instead of eleven:
+
+```mermaid
+sequenceDiagram
+    participant Entity as Entity
+    participant SE as ServerEntity
+    participant CPL as ClientPacketListener
+
+    SE->>Entity: getAddEntityPacket
+    SE->>CPL: ClientboundAddEntityPacket, with data, attributes and equipment
+    CPL->>CPL: createEntityFromPacket, a second live object
+    CPL->>CPL: Entity.recreateFrom<br/>Packet
+    CPL->>CPL: ClientLevel.addEntity
+```
+
+*The client's `Entity` is not the server's: it is a separate object of the
+same class, built from a packet rather than from a tag, and the two are only
+ever as alike as the channels in the rest of this part keep them.*
 
 **Name to type.** `EntityType.by` reads the *id* field through
 `EntityType.CODEC`. An unknown id yields nothing, and the entity is dropped
@@ -389,7 +414,8 @@ client-side entity has no id, and therefore no equality and no hash.
 The cast promised two numbers that decide how an entity reaches clients, and
 they are why one entity glides and another jumps between positions.
 `EntityType.clientTrackingRange` is in **chunks** and
-`EntityType.updateInterval` in ticks, and both decide how often a tracker is
+`EntityType.updateInterval` in ticks — 5 and 3 unless a builder says
+otherwise — and both decide how often a tracker is
 even asked about the entity, never mind what it says ([what the client is
 told](../networking/what-the-client-is-told.md#gate-3-and-the-position-it-chooses)
 owns the asking, and a third parameter, `EntityType.trackDeltas`, which is

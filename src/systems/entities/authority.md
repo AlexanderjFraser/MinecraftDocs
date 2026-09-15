@@ -81,19 +81,35 @@ client-authoritative?* Everything else hangs off those two.
 
 ```mermaid
 flowchart TD
+    SIM["Entity.canSimulateMovement"]
+    AI["Entity.isEffectiveAi"]
+    SIMP["Player: not a client, or I am the local player"]
+    AIP["Player: the same"]
+    AIM["Mob: and not Mob.isNoAi"]
     Q["Entity.isLocalInstanceAuthoritative — final"]
-    Q -- "on the client" --> LCA["Entity.isLocalClientAuthoritative"]
-    Q -- "on the server" --> NCA["not Entity.isClientAuthoritative"]
-    LCA --> LCAD["base: my controlling passenger's answer, or false"]
-    LCA --> LCAP["Player: am I the local player?"]
-    NCA --> CAD["base: my controlling passenger's answer, or false"]
-    NCA --> CAP["Player: always true"]
-    Q --> SIM["Entity.canSimulateMovement — defaults to it"]
-    Q --> AI["Entity.isEffectiveAi — defaults to it"]
-    SIM --> SIMP["Player overrides: not a client, or I am the local player"]
-    AI --> AIP["Player overrides: the same"]
-    AI --> AIM["Mob narrows: and not Mob.isNoAi"]
+    LCA["Entity.isLocalClientAuthoritative"]
+    NCA["Entity.isClientAuthoritative, negated"]
+    LCAD["base: the controlling passenger, or false"]
+    LCAP["Player: am I the local player?"]
+    CAD["base: the controlling passenger, or false"]
+    CAP["Player: true, so the root is false"]
+    SIM -- "by default" --> Q
+    SIM -- "or" --> SIMP
+    AI -- "by default" --> Q
+    AI -- "or" --> AIP
+    AI -- "or" --> AIM
+    Q -- "on the client" --> LCA
+    Q -- "on the server" --> NCA
+    LCA --> LCAD
+    LCA --> LCAP
+    NCA --> CAD
+    NCA --> CAP
 ```
+
+*Every arrow means one thing — `is answered by` — so the two pointing down
+into the root are the hanging-off the heading names, and the root's own two
+edges are the only place a machine is named. Read it as four questions and one
+that is asked twice.*
 
 Two things in that picture are easy to miss. The base implementations of
 both `Entity.isLocalClientAuthoritative` and `Entity.isClientAuthoritative`
@@ -173,25 +189,38 @@ only by `AbstractBoat.interpolation`.
 
 ```mermaid
 sequenceDiagram
-    participant CL as ClientLevel
+    box transparent your machine
     participant LP as LocalPlayer
     participant AB as AbstractBoat
-    participant Wire as the network
-    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant CPL as ClientPacketListener
+    end
+    participant Wire as the network
+    box transparent the server
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
+    participant SAB as AbstractBoat
+    end
 
-    CL->>AB: tickNonPassenger, and isLocalInstanceAuthoritative is true
+    Note over AB: ClientLevel ticks it, and this is the authoritative copy
     AB->>AB: floatBoat, then controlBoat, then move for real
     LP->>Wire: ServerboundMoveVehiclePacket.fromEntity, once per client tick
     Wire->>SGPL: handleMoveVehicle
-    SGPL->>AB: move with MoverType.PLAYER and my distance, then absSnapTo
-    SGPL->>AB: setOnGroundWithMovement then doCheckFallDamage
-    Note over SGPL: the server never simulated it, so this is where the boat gets its physics consequences
-    SGPL-->>Wire: nothing, when the move is accepted
-    SGPL->>Wire: ClientboundMoveVehiclePacket, only when it is rejected
+    SGPL->>SAB: move, MoverType.PLAYER over the reported distance, then absSnapTo
+    SGPL->>SAB: setOnGroundWithMovement, then doCheckFallDamage
+    Note over SGPL,SAB: never simulated here, so the physics consequences land here
+    alt the move is accepted
+    SGPL-->>Wire: nothing
+    else it is rejected
+    SGPL->>Wire: ClientboundMoveVehiclePacket
     Wire->>CPL: handleMoveVehicle
-    CPL->>AB: absSnapTo the server's position, then echo a ServerboundMoveVehiclePacket back
+    CPL->>AB: absSnapTo the server's position
+    CPL->>Wire: ServerboundMoveVehiclePacket, echoed back to confirm
+    end
 ```
+
+*Two copies of one boat, one lane each, because that is the whole of this
+page: yours is simulated and the server's is only told. The alt block is the
+figure's one mark outside the book's table, and it is here because accepted
+and rejected are the same moment, not two.*
 
 The inbound half of that is the sharpest demonstration of what the predicate
 is for. `ClientboundMoveVehiclePacket` is not a routine update — the server

@@ -874,6 +874,51 @@ the corrections it made are in [pass9.md](pass9.md).*
   `DeltaTracker`) and the four a reader reaches from a name already in the list
   went. [kind=lecture]
 
+### From pass 7, session F (Part VI · Entities)
+
+- **A flowchart or state-diagram label that begins a markdown block is erased on
+  screen.** Mermaid runs a markdown tokenizer over those labels and renders only
+  text, strong, em, paragraph, space, html and escape; anything else becomes the
+  literal string `Unsupported markdown: <type>` **in place of the label**. A label
+  starting `1. `, `- `, `* `, `> ` or a rule is a block, so it is gone. The diagram
+  parses, the markdown looks right, and only the render shows it. Nine labels were
+  live — four on `ai-goals-and-brains`' lead figure and **five of the six nodes** on
+  `rendering/visibility-and-the-frame-graph`'s. Both fixed, and `check_mermaid.js`
+  gates it with a nine-case probe measured in Chrome (a sequence message is *not*
+  erased; a digit-dot with no space after it is not; a digit-dot not at the start is
+  not). Nothing left in the corpus. [kind=record]
+- **`entity-lifecycle`'s spawn-loop figure draws neither of the two rejections that
+  end a group attempt.** The prose under it names them — the empty species list and
+  the group filling up — and `NaturalSpawner` line 207 and line 233 are both
+  `break label53`, which ends the attempt, while line 219 and line 228 are `return`,
+  which ends the category. The figure draws only the two `return`s (`MAKE`→`OVER`,
+  `FIN`→`OVER`); `FIN -->|"room for a sibling"| MORE` draws the *false* side of
+  `Mob.isMaxGroupSizeReached` and never its true one, and the empty species list is
+  folded inside the type filter's *fails* although it is tested before it. Two
+  arrows to add and one node to place, all re-derived above. Left to **session O**
+  rather than taken here because the page is the pass's exemplar (F15) and session A
+  owns it; the caption's uncheckable count was corrected in place. [kind=figure]
+- **`pathfinding`'s densest figure-less section is the one three other pages link
+  to.** *The budget, which is also the map* is forty-three lines, 18.6 order-words
+  per hundred, and carries one number that fans out into five consumers: times
+  sixteen it is the node budget, plus 8 or 16 it is the region's radius, inside the
+  search it is two more bounds, and it is recomputed from one trigger that is not
+  the pathfinder's (`Mob.onAttributeUpdated`, on `FOLLOW_RANGE` or `TEMPT_RANGE`).
+  The viewer drew the fan-out and it is a good figure; its seven arrows are seven
+  claims and this session spent its re-derivation budget elsewhere. **F14 candidate
+  for session O or pass 10.** [kind=figure]
+- **`damage-and-death` lost the player-death packets from any figure.** The hit
+  trace now ends at `checkTotemDeathProtection` and *Death, or not* gained the veto
+  flowchart, but `ServerPlayer.die`, `ClientboundPlayerCombatKillPacket` and
+  `LivingEntity.tickDeath`'s byte 60 are now prose only. That is a logged cut, not
+  an oversight: they belong to *The death screen, and what the client does alone*,
+  which is a **comparison** — what `LivingEntity.die` does against what
+  `ServerPlayer.die` does instead — and F10 says a comparison is a table. [kind=record]
+- **Three classes now have two lanes on purpose, up from one.** `SAB` and `CSED`
+  joined `RCPL`, both for the same reason: a figure showing both machines' copy of
+  one object, with a `box` per machine saying which is which. Session O should ask
+  whether that is a pattern worth a key column rather than a paragraph. [kind=figure]
+
 ### For pass 8 (the voice)
 
 - `identifiers-and-registries`' hook says the wire id "is a line number",
@@ -3198,7 +3243,14 @@ and the page's hook is which transitions are missing from them. On
 mechanism the lead figure had been drawing too, so the lead figure now stops at
 the two graphs and their join and the four statuses and their thresholds are the
 state diagram's alone. That was the part's one case of two figures for one
-mechanism. [kind=figure]
+mechanism. — **and the vocabulary half answered, pass 7 session F**: on
+`synched-entity-data` the lead figure is a trace on a vocabulary page and it should
+be, because the page's hook is a *moment* — the callback firing before the item is
+marked dirty. What was wrong was not the shape but the lane: one
+`SynchedEntityData` stood for both machines' containers, which is the one thing the
+page exists to say there are two of. Split at the tick, one lane each, boxed by
+machine. **All three of pass 5's secondary-state-diagram questions and the
+vocabulary-page question are now answered; nothing here is open.** [kind=record]
 
 **The closing device did not hold.** Sixty-three of ninety-eight pages end
 on a questions section (sixty *Questions players ask* verbatim, three
@@ -3939,11 +3991,14 @@ that takes it. Everything session F did act on is struck above or logged in
 
 **Pass 7 — the figures.**
 
-- `authority`'s boat sequence declares `participant SL as ServerLevel` and
-  sends no message on that lane; it appears only inside a `Note over`.
-- `entity-anatomy`'s figcaption for the generated `Entity` tree omits the key [kind=figure]
+- ~~`authority`'s boat sequence declares `participant SL as ServerLevel` and
+  sends no message on that lane; it appears only inside a `Note over`.~~ — **overtaken,
+  pass 7 session F**: the lane was already gone when this session looked, and the
+  figure is now split by machine with a lane each for the two copies of the boat.
+- ~~`entity-anatomy`'s figcaption for the generated `Entity` tree omits the key [kind=figure]
   `maps/hierarchy`:20 gives the same SVG, so a reader landing here first
-  cannot read the numbers.
+  cannot read the numbers.~~ — **done, pass 7 session F**: the figcaption now says what a
+  bracketed number is and what a grey fold line stands for.
 
 **Pass 8 — the voice.**
 
@@ -5525,16 +5580,20 @@ because between them they are the payoff of the page's own hook.
 
 ### For pass 7 (the figures)
 
-- **`authority`'s predicate flowchart draws two different relations with the
+- ~~**`authority`'s predicate flowchart draws two different relations with the
   same arrow.** `Q -- "on the client" --> LCA` is *what the root asks*;
   `Q --> SIM` is *what defaults to the root*. A reader cannot tell the
   direction of the dependency from the picture, and the heading, the body and
   the figure gave one reader three answers. A dotted edge, a subgraph or two
-  figures. [kind=figure]
-- **`movement-and-collision`'s step-up flowchart has two edges from `MORE` both
+  figures.~~ — **done, pass 7 session F**: neither, in the end. Every arrow now means
+  *is answered by*, so the two that had pointed away from the root point into it, and
+  the root's own two edges are the only place a machine is named. [kind=figure]
+- ~~**`movement-and-collision`'s step-up flowchart has two edges from `MORE` both
   labelled "no"**, one of them loop exhaustion rather than an answer to the
   question in the diamond; and `WIN` carries "minus the drop back to the old
-  floor", a step the prose never explains. [kind=figure]
+  floor", a step the prose never explains.~~ — **done, pass 7 session F**: the loop
+  has its own diamond now, so each answers one question with two exits, and the
+  drop back to the old floor has the sentence it was standing in for. [kind=figure]
 - ~~**`entity-lifecycle`'s spawn cascade never loops**, so the three group
   attempts the prose turns on cannot be read off the figure, and the difference
   between the `X3` and `X4` endings — one drops the attempt, the other returns
@@ -5544,20 +5603,33 @@ because between them they are the payoff of the page's own hook.
   decompile says the two endings are *four*, and that fourteen of the sixteen
   edges were not endings at all but a `continue` to the next try
   ([pass9.md](pass9.md), *Pass 7, session A*).
-- **`synched-entity-data`'s trace draws one `SED` lane for two containers.**
+- ~~**`synched-entity-data`'s trace draws one `SED` lane for two containers.**
   The server's and the client's are the same lane until a `Note over` says
   otherwise, two thirds of the way down. The page now says it in prose first;
-  the figure still does not. [kind=figure]
-- **`synched-entity-data`'s gate flowchart draws one of the two out-of-band
-  callers** (`ItemFrame`) and the prose names two more. [kind=figure]
-- **`pathfinding` draws the same pipeline twice** — a flowchart at the top and a
+  the figure still does not.~~ — **done, pass 7 session F**: the trace is split at the
+  joint the prose names, and the second half carries a lane each, boxed by machine.
+  `CSED` is a second lane for `SynchedEntityData` in the key. [kind=figure]
+- ~~**`synched-entity-data`'s gate flowchart draws one of the two out-of-band
+  callers** (`ItemFrame`) and the prose names two more.~~ — **ruled out, pass 7 session
+  F**: the prose's other callers do not skip the gate — `ServerEntity.handleMinecartPosRot`
+  calls from inside it, and the passengers and `Entity.hurtMarked` sends never touch the
+  data channel — so the `ItemFrame` bypass really is the only one, and the figure was
+  right. What it did lack was the first test's false exit, which it now draws. [kind=figure]
+- ~~**`pathfinding` draws the same pipeline twice** — a flowchart at the top and a
   sequence two thirds down — and the sequence runs past its own section into the
-  next one. One of the two is the page's artefact; pass 7 picks. [kind=figure]
-- **`ai-goals-and-brains`' `Brain.tick` flowchart node K** holds the same
+  next one. One of the two is the page's artefact; pass 7 picks.~~ — **done, pass 7
+  session F**: the sequence keeps the pipeline and the flowchart was redrawn to what
+  only it can show — the two entrances and the two endings, including the one the
+  world pushes in. [kind=figure]
+- ~~**`ai-goals-and-brains`' `Brain.tick` flowchart node K** holds the same
   explanation the prose gives four paragraphs later, at more length than either
-  needs. [kind=figure]
-- **`entity-anatomy`'s lead flowchart names nine mechanisms** whose prose is
-  below it — the part-wide pattern session C sent whole. [kind=figure]
+  needs.~~ — **done, pass 7 session F**, and the figure around it too: the four phases
+  moved into the sentence above, and what is drawn is now one behaviour through one
+  `Brain.tick`. [kind=figure]
+- ~~**`entity-anatomy`'s lead flowchart names nine mechanisms** whose prose is
+  below it — the part-wide pattern session C sent whole.~~ — **done, pass 7 session F**:
+  it is the book's fifth `classDiagram`, three boxes instead of eleven, and the nine
+  mechanisms are field rows rather than nodes. [kind=figure]
 
 ### For pass 8 (the voice)
 
@@ -6400,12 +6472,20 @@ Part 3; these are the pieces of work that ruling created.
   phrase break, perhaps) and then teaches `check_figure_names.py` and
   `pass7_figures.py` the message and note cases. Until then a message's long
   name is shortened, not broken. [kind=figure]
-- **The four generated hierarchy trees and the render-state tree are still at
+- ~~**The four generated hierarchy trees and the render-state tree are still at
   0.49–0.67 with 6–8px type.** The theme does not reach them: they are SVGs
   `tools/map_source.py` writes, not mermaid. F13 stands — the emitter folds or
   wraps so a tree is shown at scale 1 with 12px labels — and it is a tool job
   for the two part sessions that carry a tree (VI `entity-anatomy`, XI
-  `entity-rendering` and the render-state tree) or for session O. [kind=figure]
+  `entity-rendering` and the render-state tree) or for session O.~~ — **done, pass 7
+  session F, for all five at once.** `map_source.svg_tree` now lays a tree out
+  repeatedly and keeps the first attempt that fits the 1,092px column, shortening only
+  the folded leaf label — 3 example names, then 2, then 1, then the count alone, then
+  the inter-column padding. Nothing else is elastic, and a Mojang name is never
+  shrunk, which is the point. Widths 1,619–2,217px → **810–1,020px**; the `Entity`
+  tree 0.62 at 7.5px → **1.00 at 12px**. The probe proves it: with the retry removed
+  a synthetic forty-leaf root comes out at 1,203px and fails. Part XI's tree and the
+  render-state tree are fixed by the same change and want looking at once. [kind=figure]
 - **The class diagram is the kind the corpus most obviously lacks.** Looking at
   all twelve gallery figures in the adopted theme, `classDiagram` is the one
   that would replace work the book is currently doing badly: a vocabulary page

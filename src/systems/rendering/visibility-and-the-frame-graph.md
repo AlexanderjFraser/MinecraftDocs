@@ -48,11 +48,11 @@ order.
 
 ```mermaid
 flowchart TD
-    S1["1. what is visible, in extract — SectionOcclusionGraph reaches sections outward from the camera, then LevelExtractor.applyFrustum keeps the ones the Frustum admits and caches them as LevelRenderer.visibleSections"]
-    S2["2. what is submitted — LevelRenderer.submitFeatures gathers entities and block entities, and FeatureRenderDispatcher.prepareFrame groups them, all before a pass exists"]
-    S3["3. what passes exist — FrameGraphBuilder.addPass declares each pass with its reads and writes, then FrameGraphBuilder.execute orders and runs them"]
-    S4["4. how terrain is drawn — LevelRenderer.prepareChunkRenders buckets the visible sections and ChunkSectionsToRender multi-draws each bucket, inside the main pass"]
-    S5["5. what is re-sorted — a rolling budget of translucent sections is scheduled, for a mesh that arrives a frame or more later"]
+    S1["Stage 1, what is visible, in extract — SectionOcclusionGraph reaches sections outward from the camera, then LevelExtractor.applyFrustum keeps the ones the Frustum admits and caches them as LevelRenderer.visibleSections"]
+    S2["Stage 2, what is submitted — LevelRenderer.submitFeatures gathers entities and block entities, and FeatureRenderDispatcher.prepareFrame groups them, all before a pass exists"]
+    S3["Stage 3, what passes exist — FrameGraphBuilder.addPass declares each pass with its reads and writes, then FrameGraphBuilder.execute orders and runs them"]
+    S4["Stage 4, how terrain is drawn — LevelRenderer.prepareChunkRenders buckets the visible sections and ChunkSectionsToRender multi-draws each bucket, inside the main pass"]
+    S5["Stage 5, what is re-sorted — a rolling budget of translucent sections is scheduled, for a mesh that arrives a frame or more later"]
     S6["SectionOcclusionGraph.update — the walk is re-run at the end of render, so the next frame reads a newer graph"]
     S1 --> S2 --> S3 --> S4 --> S5 --> S6
     S6 -. "next frame" .-> S1

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html class="light">
+<head><meta charset="utf-8"><title>list-label probe</title>
+<link rel="stylesheet" href="/__root/custom.css">
+<style>body{font-family:"Open Sans",sans-serif;margin:0;padding:24px}.content main{width:1092px}pre.mermaid{max-width:100%;background:transparent}</style>
+</head><body><div class="content"><main>
+<h2>1. flowchart, ordered-list label</h2>
+<pre class="mermaid">flowchart TD
+    A["1. forgetOutdatedMemories runs first"]
+    B["2. tickSensors runs second"]
+    A --> B</pre>
+<h2>2. flowchart, dash-list label</h2>
+<pre class="mermaid">flowchart TD
+    C["- one candidate per face"]
+    D["* another candidate"]
+    C --> D</pre>
+<h2>3. flowchart, number then no space</h2>
+<pre class="mermaid">flowchart TD
+    E["1.forgetOutdatedMemories runs first"]
+    F["Phase 1. forgetOutdatedMemories"]
+    E --> F</pre>
+<h2>4. sequence message with a leading number-dot</h2>
+<pre class="mermaid">sequenceDiagram
+    participant A as Brain
+    participant B as Behavior
+    A->>B: 1. tryStart, then the duration roll</pre>
+<h2>5. state label with a leading number-dot</h2>
+<pre class="mermaid">stateDiagram-v2
+    S1 --> S2 : 1. the first step
+    note right of S1 : 2. a numbered note</pre>
+<h2>6. flowchart edge label with a leading number-dot</h2>
+<pre class="mermaid">flowchart TD
+    G["a"] -- "1. the first answer" --> H["b"]</pre>
+</main></div>
+<script src="/__root/mermaid.min.js"></script>
+<script src="/__root/mermaid-init.js"></script>
+</body></html>

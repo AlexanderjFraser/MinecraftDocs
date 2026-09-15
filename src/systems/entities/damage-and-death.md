@@ -108,24 +108,49 @@ multiplications and three subtractions — each owned by a different piece of th
 game, and none of them aware of the others.
 
 ```mermaid
-flowchart TB
-    N0["6.0 leaves the bow — Mth.ceil(speed times baseDamage), Power already folded into the base"]
-    N1["LivingEntity.applyItemBlocking — subtract what BLOCKS_ATTACKS resolves for this angle and this damage type"]
-    N2["freezing times 5 on a FREEZE_HURTS_EXTRA_TYPES entity, helmet times 0.75 on a DAMAGES_HELMET source"]
-    N3["the i-frame window — over ten ticks left, only the excess over lastHurt survives"]
-    N4["CombatRules.getDamageAfterAbsorb — armour, floored at a fifth and capped at 20"]
-    N5["Resistance — five points of twenty-five per level, total immunity at amplifier four"]
-    N6["CombatRules.getDamageAfterMagicAbsorb — protection points, capped at 20 as well"]
-    N7["absorption hearts, spent before health is, then CombatTracker.recordDamage and LivingEntity.setHealth"]
+flowchart TD
+    N0["the bow"]
+    N1["blocking"]
+    N2["freezing"]
+    N3["the helmet"]
+    N4["i-frames"]
+    N5["armour"]
+    N6["Resistance"]
+    N7["protection"]
+    N8["absorption, then health"]
 
-    N0 -- "6.0 — Player.hurtServer scales by difficulty, but not a player's arrow" --> N1
-    N1 -- "6.0 — nothing raised" --> N2
-    N2 -- "6.0 — neither applies" --> N3
-    N3 -- "6.0 — the window was clear" --> N4
-    N4 -- "3.12 — 15 armour, no toughness, 48 per cent off" --> N5
-    N5 -- "3.12 — no Resistance" --> N6
-    N6 -- "2.12 — 8 protection points, 32 per cent off" --> N7
+    N0 -- "6.0" --> N1
+    N1 -- "6.0" --> N2
+    N2 -- "6.0" --> N3
+    N3 -- "6.0" --> N4
+    N4 -- "6.0" --> N5
+    N5 -- "3.12" --> N6
+    N6 -- "3.12" --> N7
+    N7 -- "2.12" --> N8
 ```
+
+*The one thing to read off the picture is the number on the arrows: four
+steps in a row take nothing at all, and the whole reduction on a fully
+armoured victim happens in two.*
+
+Which piece of the game owns each of the eight, and what it does to the
+number:
+
+| # | step | owned by | what it does to the number | leaves |
+|---:|---|---|---|---:|
+| — | the arrow leaves the bow | `AbstractArrow` | `Mth.ceil` of speed times base damage, Power already folded into the base | 6.0 |
+| 1 | blocking | `DataComponents.BLOCKS_ATTACKS`, through `LivingEntity.applyItemBlocking` | subtracts what the component resolves for this angle and this damage type | 6.0 |
+| 2 | freezing | `EntityTypeTags.FREEZE_HURTS_EXTRA_TYPES` | multiplies by five | 6.0 |
+| 3 | the helmet | `DamageTypeTags.DAMAGES_HELMET` | multiplies by 0.75 | 6.0 |
+| 4 | the i-frame window | `LivingEntity.lastHurt` | over ten ticks left, only the excess survives | 6.0 |
+| 5 | armour | `CombatRules.getDamageAfterAbsorb` | effective armour over 25, floored at a fifth and capped at 20 — here 48 per cent off | 3.12 |
+| 6 | Resistance | `LivingEntity.getDamageAfterMagicAbsorb` | five of twenty-five per level, and nothing at all at amplifier four | 3.12 |
+| 7 | protection | `CombatRules.getDamageAfterMagicAbsorb` | the summed points over 25, capped at 20 — here 8 points, 32 per cent off | 2.12 |
+| 8 | absorption | `LivingEntity` | spent before health is, then `CombatTracker.recordDamage` and `LivingEntity.setHealth` | 2.12 |
+
+Before the first row there is one gate the chain never sees:
+`Player.hurtServer` scales incoming damage by difficulty, and a player's own
+arrow is not scaled.
 
 The first link is blocking, and **shields are no longer a mechanism, only a
 vocabulary**. `LivingEntity.applyItemBlocking` asks the item being used —
@@ -235,31 +260,39 @@ overrides the whole method to add food exhaustion (`DamageType.exhaustion`,
 
 ## Telling everyone, and what a block replaces
 
+The arithmetic is over and the number has landed. What follows is an order,
+and two of its steps are the ones players notice going missing:
+
 ```mermaid
 sequenceDiagram
     participant AA as AbstractArrow
     participant SP as ServerPlayer
-    participant LE as LivingEntity
     participant CT as CombatTracker
     participant SL as ServerLevel
     participant CPL as ClientPacketListener
 
-    AA->>SP: hurtOrSimulate(arrow source, 6.0)
-    SP->>SP: hurtServer — PvP and teams, then Player's creative gate and difficulty scaling
-    SP->>LE: three gates, blocking, the two odd multipliers
-    LE->>LE: i-frames — a partial hit clears the took-full-damage flag here
-    LE->>CT: actuallyHurt — armour, protection, absorption, then recordDamage and setHealth
-    LE->>LE: resolveMobResponsibleForDamage, resolvePlayerResponsibleForDamage
-    LE->>SL: broadcastDamageEvent — full hits only, and only when nothing was blocked
-    SL-->>CPL: ClientboundDamageEventPacket — every tracker, and the victim
-    LE->>LE: markHurt, then dealDefaultKnockback
-    LE->>SP: indicateDamage — skipped entirely if anything was blocked
-    SP-->>CPL: ClientboundHurtAnimationPacket — that one player, nobody else
-    LE->>LE: dead? checkTotemDeathProtection, else the death sound, then die
-    SP->>SP: die — message, loot, byte 3, and no call up to LivingEntity
-    SP-->>CPL: ClientboundPlayerCombatKillPacket — the death screen opens
-    Note over LE,CPL: twenty ticks later, for a mob — tickDeath broadcasts byte 60 and removes it
+    AA->>SP: hurtOrSimulate, the arrow's source and 6.0
+    SP->>SP: ServerPlayer.hurtServer, canHarmPlayer and teams
+    SP->>SP: Player.hurtServer, the creative gate and difficulty
+    SP->>SP: LivingEntity.hurtServer, the gates and the multipliers
+    SP->>SP: i-frames, where a partial hit clears the flag
+    SP->>SP: actuallyHurt, then setHealth
+    SP->>CT: recordDamage, one CombatEntry
+    SP->>SP: resolveMobResponsible<br/>ForDamage
+    SP->>SP: resolvePlayer<br/>ResponsibleForDamage
+    SP->>SL: broadcastDamageEvent, full hits and nothing blocked
+    SL-->>CPL: ClientboundDamageEventPacket, every tracker and the victim
+    SP->>SP: markHurt, then dealDefaultKnockback
+    SP->>SP: indicateDamage, skipped if anything was blocked
+    SP-->>CPL: ClientboundHurtAnimationPacket, that one player
+    SP->>SP: dead? then checkTotemDeath<br/>Protection
 ```
+
+*One lane for the victim, because `ServerPlayer` and `LivingEntity` are one
+object: the three hurtServer messages at the top are one virtual call going
+down the override chain. The order to read off the picture is
+`ServerLevel.broadcastDamageEvent` before the knockback, not after — and the
+last message is where [the next section](#death-or-not) takes over.*
 
 `ServerLevel.broadcastDamageEvent` sends the type, three entity ids — the
 victim, the causing entity and the direct one — and an
@@ -298,7 +331,33 @@ If health has reached zero, `LivingEntity.checkTotemDeathProtection` looks for
 totemed — and on a hit consumes one, sets health to one, applies
 `DeathProtection`'s effects and broadcasts byte 35.
 
-Otherwise `LivingEntity.die` runs, and its order matters. Kill credit is read
+Otherwise `LivingEntity.die` runs, and its order matters:
+
+```mermaid
+flowchart TD
+    Z["health has reached zero"]
+    T{"DEATH_PROTECTION in a hand, and the source does not bypass?"}
+    TOT["consume one, health to one, byte 35"]
+    D["LivingEntity.die: kill credit, LivingEntity.handleKillingBlow, CombatTracker.recheckStatus"]
+    V{"no causing entity, or Entity.killedEntity agrees?"}
+    L["the death game event, LivingEntity.dropAllDeathLoot, the wither rose"]
+    B["the entity-event byte, to every watcher"]
+    P["Pose.DYING"]
+    Z --> T
+    T -- "yes" --> TOT
+    T -- "no" --> D
+    D --> V
+    V -- "yes" --> L
+    V -- "no" --> B
+    L --> B
+    B --> P
+```
+
+*The diamond in the middle is a veto one other entity holds over this one's
+loot. The two boxes below it are what the veto cannot reach: the byte goes to
+every watcher either way, and the pose is set after the byte, not with it.*
+
+Kill credit is read
 from the attribution references written a few lines earlier,
 `LivingEntity.handleKillingBlow` sets `LivingEntity.dead`, and
 `CombatTracker.recheckStatus` runs. Then — with a causing entity, **only if

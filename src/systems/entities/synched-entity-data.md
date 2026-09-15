@@ -166,28 +166,55 @@ sequenceDiagram
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Sheep as Sheep
     participant SED as SynchedEntityData
-    participant CM as ChunkMap
-    participant SE as ServerEntity
-    participant CPL as ClientPacketListener
 
-    MPGM->>MPGM: predicts locally with Player.interactOn, unless spectator
-    MPGM->>SGPL: ServerboundInteractPacket(entity id, hand, relative location, secondary)
-    Note over SGPL: server tick, before MinecraftServer.tickServer runs
-    SGPL->>SGPL: Entity.setShiftKeyDown from the packet flag, then range and border checks
-    SGPL->>Sheep: Player.interactOn to Entity.interact to Mob.interact
-    Sheep->>Sheep: checkAndHandleImportantInteractions, then Entity.interact, then Sheep.mobInteract
-    Sheep->>Sheep: Sheep.shear — sound, then dropFromShearingLootTable, then setSheared
-    Sheep->>SED: SynchedEntityData.set(Sheep.DATA_WOOL_ID, bit four set)
-    SED->>Sheep: Entity.onSyncedDataUpdated, then DataItem.setDirty and isDirty
-    Note over SGPL,SE: same tick, ServerLevel.tick chunkSource phase
-    CM->>SE: ChunkMap.tick reaches this sheep, ServerEntity.sendChanges
-    SE->>SED: isDirty opens the gate, then SynchedEntityData.packDirty
-    SED-->>SE: one DataValue — id 18, serializer 0, one payload byte
-    SE->>CPL: ClientboundSetEntityDataPacket, queued now and flushed at the end of the tick
-    Note over SED: one container per side — the server's above, the client's below
-    CPL->>SED: handleSetEntityData to assignValues, per item then the batch
-    Note over CPL: next frame — SheepRenderer.extractRenderState reads Sheep.isSheared
+    MPGM->>MPGM: MultiPlayerGameMode<br/>.interact, predicted unless spectator
+    MPGM->>SGPL: ServerboundInteractPacket, with an entity-relative hit location
+    rect rgba(0, 0, 0, 0.04)
+    Note over MPGM,SED: the server tick, before MinecraftServer.tickServer
+    SGPL->>SGPL: Entity.setShiftKeyDown, then the range and border checks
+    SGPL->>Sheep: Mob.interact, down from Player.interactOn
+    Sheep->>Sheep: Mob.checkAndHandle<br/>ImportantInteractions
+    Sheep->>Sheep: Sheep.mobInteract
+    Sheep->>Sheep: Sheep.shear: the sound, the loot table, then Sheep.setSheared
+    Sheep->>SED: SynchedEntityData.set, slot 18 with bit four
+    SED->>Sheep: Entity.onSyncedDataUpdated, before anything is dirty
+    SED->>SED: SynchedEntityData.<br/>DataItem.setDirty
+    end
 ```
+
+*The server's container, and the one moment worth slowing down for: the
+callback to `Sheep` runs first and the item is marked dirty after it, not the
+other way round. The whole band is one tick, and it is over before
+`MinecraftServer.tickServer` has begun.*
+
+Later in that same tick the container is drained, and what the client builds
+from it is a **second** container — one per side, not one per entity:
+
+```mermaid
+sequenceDiagram
+    box transparent the server
+    participant SED as SynchedEntityData
+    participant SE as ServerEntity
+    end
+    box transparent the client
+    participant CPL as ClientPacketListener
+    participant CSED as SynchedEntityData
+    end
+
+    rect rgba(0, 0, 0, 0.04)
+    Note over SED,CSED: the same tick, the ServerLevel.chunkSource phase
+    SE->>SED: SynchedEntityData.packDirty, once the gate opens
+    SED-->>SE: one SynchedEntityData.DataValue: id 18, serializer 0, one byte
+    SE->>CPL: ClientboundSetEntityDataPacket, flushed at the end of the tick
+    CPL->>CSED: SynchedEntityData.assignValues, per item then the batch
+    end
+    Note over CPL,CSED: next frame: SheepRenderer.extractRenderState reads Sheep.isSheared
+```
+
+*Two containers, one per machine, and the packet is the only thing that ever
+reconciles them. Everything to the left of the boundary happened in the band
+above; everything to the right of it is a copy that has never seen a `Sheep`
+of its own until now.*
 
 **The click.** `MultiPlayerGameMode.interact` sends a
 `ServerboundInteractPacket` — a flat record of entity id, hand, an
@@ -281,16 +308,32 @@ never the sheared flag, so a sheared coloured sheep still draws its undercoat.
 
 ## The gate that holds a packet back
 
+Two tests stand between a dirty byte and the wire, and only one of them is
+this page's:
+
 ```mermaid
 flowchart TD
-    IN["ChunkMap.tick: section changed, or Entity.needsSync, or the chunk is in entity-ticking range"] --> SC["ServerEntity.sendChanges, opening with Entity.updateDataBeforeSync"]
-    SC -->|"an ItemFrame, every tenth tick — the map bypass"| DATA["ServerEntity.sendDirtyEntityData"]
-    SC --> GATE{"tickCount is a multiple of EntityType.updateInterval, or Entity.needsSync, or SynchedEntityData.isDirty"}
-    GATE -->|"yes"| SEND["position, rotation and motion"] --> DATA
-    GATE -->|"no"| HOLD["nothing goes out, and the dirty flags survive to the next tick"]
+    IN{"ChunkMap.tick: a section changed, Entity.needsSync, or in entity-ticking range?"}
+    SC["ServerEntity.sendChanges, opening with Entity.updateDataBeforeSync"]
+    GATE{"Entity.tickCount a multiple of EntityType.updateInterval, Entity.needsSync, or SynchedEntityData.isDirty?"}
+    SEND["position, rotation and motion"]
+    DATA["ServerEntity.sendDirtyEntityData"]
+    HOLD["nothing goes out, and the dirty flags survive the tick"]
+
+    IN -- "no" --> HOLD
+    IN -- "yes" --> SC
+    SC -- "an ItemFrame, every tenth tick: the map bypass" --> DATA
+    SC --> GATE
+    GATE -- "yes" --> SEND
+    SEND --> DATA
+    GATE -- "no" --> HOLD
 ```
 
-Two tests stand between a dirty byte and the wire, and the first is not this
+*Two tests, and the one thing that gets past the second without answering it.
+Both diamonds fail into the same box, which is the shape of the whole
+mechanism: nothing is lost when a gate closes, only held.*
+
+The first is not this
 page's: `ChunkMap.tick` decides whether `ServerEntity.sendChanges` is called
 at all, on three conditions [what the client is
 told](../networking/what-the-client-is-told.md#gate-2-whether-the-detector-is-called-at-all)

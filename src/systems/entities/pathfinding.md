@@ -38,29 +38,31 @@ has subscribed.
 
 ## The pipeline
 
+Two ways in, one gate, and two ways it ends. What happens between the gate
+and the ending is [the search](#the-search), which has a figure of its own:
+
 ```mermaid
-flowchart TB
-    WANT["a goal or a behaviour calls PathNavigation.createPath or moveTo"]
-    GATE["four early exits: no targets, mob below the world floor, canUpdatePath false, or a live path to the same target"]
-    REGION["PathNavigationRegion: a cube of chunks fetched with ChunkSource.getChunkNow"]
-    EVAL["NodeEvaluator turns each candidate block into a PathType, through PathTypeCache"]
-    SEARCH["PathFinder: A* over a BinaryHeap, bounded by maxVisitedNodes"]
-    PATH["a Path — reached, or the best node it found"]
-    FOLLOW["PathNavigation.tick advances the node index"]
-    CTRL["MoveControl.setWantedPosition, re-issued every tick"]
-    GIVEUP["stuck check every 100 ticks, node timeout at three times the budget"]
+flowchart TD
+    WANT["a goal or a behaviour: PathNavigation.moveTo, or PathNavigation.createPath"]
+    WORLD["the world: PathNavigation.recomputePath, after a block update"]
+    GATE{"any of the four early exits?"}
+    NULL["null, or the existing path unchanged"]
+    RUN["the search, then the follow, one node at a time"]
+    GIVEUP{"stuck for 100 ticks, or the node timed out?"}
+    DONE["PathNavigation.isDone, and the caller finds out next evaluation"]
 
     WANT --> GATE
-    GATE -- "returns null, or the existing path unchanged" --> WANT
-    GATE --> REGION
-    REGION --> EVAL
-    EVAL --> SEARCH
-    SEARCH --> PATH
-    PATH --> FOLLOW
-    FOLLOW --> CTRL
-    FOLLOW --> GIVEUP
-    GIVEUP -- "stop, and the behaviour is told the path is done" --> WANT
+    WORLD --> GATE
+    GATE -- "yes" --> NULL
+    GATE -- "no" --> RUN
+    RUN --> GIVEUP
+    GIVEUP -- "yes" --> DONE
+    GIVEUP -- "no" --> RUN
 ```
+
+*The page's two ends. The second entrance is the one to notice: the world
+pushes a recompute in after a block changes, and it is the only arrow on this
+page that does not start with a mob wanting something.*
 
 ## Asking: the four ways a search does not happen
 
@@ -214,13 +216,18 @@ sequenceDiagram
     PN->>PNR: build a cube of maxPathLength plus the offset, with getChunkNow
     PN->>PF: findPath — region, mob, targets, maxPathLength, reachRange, multiplier
     PF->>NE: getStart, then getNeighbors per popped node
-    NE->>PNR: getPathTypeFromState, through PathTypeCache on a server level
+    NE->>PNR: getBlockState, through PathfindingContext
+    Note over NE,PNR: PathTypeCache memoises the PathType per position, on a server level
     PF-->>PN: a Path, reached or best-effort, with canReach set accordingly
     PN->>PN: trimPath, record the stuck-check position, keep the node index
     Note over PN,MoveC: every tick from here
     PN->>MoveC: setWantedPosition for the next node, at speedModifier
-    MoveC->>MoveC: tick — reset the operation to WAIT first, then set the yaw and the speed
+    MoveC->>MoveC: tick — the operation back to WAIT, then the yaw and the speed
 ```
+
+*The call chain is the thing to read: the navigation never talks to the
+evaluator, the finder does. Below the band, one search has become a position
+re-issued every tick for as long as the path lasts.*
 
 ## Following it, one tick at a time
 

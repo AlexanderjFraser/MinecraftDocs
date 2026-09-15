@@ -160,31 +160,45 @@ flags, and answers `Goal.canUse`. *goalTick* — reached through
 `GoalSelector.tickRunningGoals` with *true* — ticks the survivors.
 
 A behaviour is asked once per tick, and the first question is not about the
-behaviour at all. `Brain.tick` runs four fixed phases:
+behaviour at all. `Brain.tick` runs four fixed phases in order:
+`Brain.forgetOutdatedMemories`, where every `MemorySlot` counts down and an
+expired one clears itself; `Brain.tickSensors`, where each `Sensor` counts its
+own scan rate down before it looks at anything; and then the two that walk the
+behaviours, `Brain.startEachNonRunningBehavior` over
+`Brain.availableBehaviorsByPriority` lowest number first, and
+`Brain.tickEachRunningBehavior` over everything now *RUNNING*. Both of those
+are complete sweeps, so what happens to one behaviour is two questions asked
+in two different phases of the same tick:
 
 ```mermaid
 flowchart TB
-    A["Brain.tick"]
-    B["1. forgetOutdatedMemories — every MemorySlot counts down, and an expired one clears itself"]
-    C["2. tickSensors — every Sensor, each counting its own scan rate down to zero before it looks at anything"]
-    D["3. startEachNonRunningBehavior — walk availableBehaviorsByPriority, lowest number first"]
-    E{"is this activity in activeActivities?"}
-    F["skipped whole. A behaviour of an inactive activity is never even asked"]
-    G["tryStart: hasRequiredMemories, then checkExtraStartConditions"]
-    H["RUNNING, with an end timestamp rolled between minDuration and maxDuration"]
-    I["4. tickEachRunningBehavior — tickOrStop on everything now RUNNING"]
-    J{"timed out, or canStillUse false?"}
-    K["doStop. canStillUse defaults to false, so most behaviours stop inside the same Brain.tick that started them, and Behavior.tick is never called at all"]
+    A["one behaviour, in one Brain.tick"]
+    E{"is its activity active?"}
+    F["never asked"]
+    G["Behavior.tryStart — its memories, then its extra conditions"]
+    X["stays STOPPED until a later tick"]
+    H["RUNNING, to a rolled end timestamp"]
+    S["phase three ends, phase four begins"]
+    J{"timed out, or Behavior.canStillUse false?"}
+    K["Behavior.doStop, in the Brain.tick that started it"]
     L["Behavior.tick"]
-    A --> B --> C --> D --> E
-    E -- "no" --> F --> I
-    E -- "yes, and the behaviour is STOPPED" --> G --> H --> I
-    I --> J
+    A --> E
+    E -- "no" --> F
+    E -- "yes, and it is STOPPED" --> G
+    G -- "either test fails" --> X
+    G -- "both pass" --> H
+    H --> S
+    S --> J
     J -- "yes" --> K
     J -- "no" --> L
 ```
 
-The branch marked *skipped whole* is what this page turns on. **An activity
+*One behaviour through one `Brain.tick`. The two diamonds are the whole of
+this page: the first is asked in phase three and the second in phase four, and
+between them a behaviour that started has already reached the end of its
+life.*
+
+The branch marked *never asked* is what this page turns on. **An activity
 is a filter, not a mode.** The brain's active set is always the core
 activities plus exactly one other, so `Activity.CORE` behaviours run at every
 hour of the day and switching activity only swaps the second half. (*Core
@@ -331,37 +345,47 @@ time of day involved anywhere.
 
 ## The brain's trace: a villager's day
 
+Put the two phases together over one villager and the priorities become a
+clock. Four behaviours, in the order phase three reaches them:
+
 ```mermaid
 sequenceDiagram
     participant Brain as Brain
     participant MTS as MoveToTargetSink
     participant AP as AcquirePoi
-    participant PM as PoiManager
     participant UAFS as UpdateActivity<br/>FromSchedule
     participant EAS as Environment<br/>AttributeSystem
     participant SIB as SleepInBed
 
-    Note over Brain: one Brain.tick, behaviours tried in ascending priority
-    Brain->>MTS: priority 1, core — WALK_TARGET present and PATH absent
+    rect rgba(0, 0, 0, 0.04)
+    Note over Brain,SIB: one Brain.tick, phase three, ascending priority
+    Brain->>MTS: priority 1, core
     Note over MTS: a wanted position leaves here for the pathfinder
-    Brain->>AP: priority 6, core — runs at every hour of the day
-    AP->>PM: findAllClosestFirstWithType(acquirable job sites, 48, HAS_SPACE)
-    PM-->>AP: the five best, closest first
-    AP->>AP: one path to all five at once, claimed only if Path.canReach
-    AP->>PM: take(pos), then set POTENTIAL_JOB_SITE
-    Brain->>UAFS: priority 99 — the last behaviour in the package
-    UAFS->>Brain: updateActivityFromSchedule, refused unless 20 ticks have passed since the last one
-    Brain->>EAS: getValue(VILLAGER_ACTIVITY, this position)
-    EAS-->>Brain: Timelines.VILLAGER_SCHEDULE says WORK from tick 2000
-    Brain->>Brain: requirements met, or fall back to the default silently
-    Note over Brain: the next Brain.tick is the first to run the work package
-    Note over Brain: tick 12000, REST, which has no requirement and always takes
+    Brain->>AP: priority 6, core
+    AP->>Brain: writes POTENTIAL_JOB_SITE
+    Brain->>UAFS: priority 99, last in the package
+    UAFS->>Brain: updateActivityFromSchedule
+    Brain->>EAS: getValue, VILLAGER_ACTIVITY at this position
+    EAS-->>Brain: WORK, from tick 2000
+    Brain->>Brain: setActiveActivity<br/>IfPossible
+    end
+    Note over Brain,SIB: the next Brain.tick is the first to run the work package
+    rect rgba(0, 0, 0, 0.04)
+    Note over Brain,SIB: tick 12000, REST, which has no requirement
     Brain->>SIB: rest package, priority 3
-    SIB->>SIB: startSleeping, record LAST_SLEPT, clear the walk target
+    Brain->>SIB: tickOrStop, and again every tick until dawn
+    end
 ```
 
+*A villager's day as four behaviours in priority order; the two shaded bands
+are two ticks twelve thousand apart. The one to watch is the schedule
+behaviour at 99: it runs last, so the activity it asks for is the next tick's
+— and `Brain.setActiveActivityIfPossible` takes it only if that activity's
+requirements are met, and falls back to the default without saying so.*
+
 Read the priorities in that diagram as the ordering claims they are. The
-schedule behaviour sits at 99, the last slot in every package that has one,
+schedule behaviour is `UpdateActivityFromSchedule`, and it sits at 99, the
+last slot in every package that has one,
 so the activity a villager switches to is never the one the rest of *this*
 tick runs: the switch lands and the next tick acts on it. And it is only
 consulted when a behaviour asks — `Brain.updateActivityFromSchedule` refuses

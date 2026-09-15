@@ -20,41 +20,48 @@ thought a different one had already settled.**
 
 ## The shape of the part
 
-Part VI is a ladder, drawn here from the bottom rung up. Each page needs the
-ones below it and nothing above them, and the second rung — *authority* — is
-the one everything else leans on, including Parts VIII, IX and X, which link
-back to it rather than re-deriving it.
+Part VI is a ladder, and the numbers on it are the watch order below. Each
+page needs the ones above it and nothing below them, and the second rung —
+*authority* — is the one everything else leans on, including Parts VIII, IX
+and X, which link back to it rather than re-deriving it.
 
 ```mermaid
-flowchart BT
-    A["Entity anatomy — what an entity is"]
-    B["Authority — who is allowed to simulate it"]
-    C["Entity lifecycle — how it enters a world and leaves one"]
-    D["Synched entity data — the channel that describes it"]
-    E["Attributes — the named numbers it carries"]
-    F["Movement and collision — what it does"]
-    G["Goals and brains — why it does it"]
-    H["Pathfinding — how a decision becomes a direction"]
-    I["Damage and death — how it stops"]
+flowchart TD
+    A["1 · Entity anatomy"]
+    B["2 · Authority"]
+    C["3 · Entity lifecycle"]
+    D["4 · Synched entity data"]
+    E["5 · Attributes"]
+    F["6 · Movement and collision"]
+    G["7 · Goals and brains"]
+    H["8 · Pathfinding"]
+    I["9 · Damage and death"]
+    OUT["Parts VIII, IX and X"]
     A -- "one type, one factory, one live object" --> B
-    B -- "and one side of each pair does the arithmetic" --> C
+    B -- "one side of each pair does the arithmetic" --> C
     C -- "now it is in a world, findable and ticking" --> D
-    D -- "one of the six channels that describe it; here is another" --> E
-    E -- "gravity, step height, speed: the physics knobs are attributes" --> F
+    D -- "one of six channels, and here is another" --> E
+    E -- "the physics knobs are attributes" --> F
     F -- "something has to decide where to walk" --> G
-    G -- "a decision is only a position until something walks there" --> H
-    H -- "and everything above can be ended by one abstract method" --> I
+    G -- "a decision is only a position" --> H
+    H -- "and one abstract method ends all of it" --> I
+    B -- "and so does the rest of the book" --> OUT
 ```
 
-Two of the eight steps up the ladder are pairings rather than sequels.
+*Every arrow means the same thing — what the next page needs from this one —
+so the labels are why the order is the order. The rung with two arrows out is
+the one to notice: authority is the only page in Part VI that three later
+parts depend on.*
+
+Two of the eight steps down the ladder are pairings rather than sequels.
 *Synched entity data* and *attributes* are two channels doing the same job
 differently, and the contrast is the lesson, so the second wants the first
 fresh in mind. *Pathfinding* is the other half of *goals and brains* and
 watchable on its own once that page has said where a wanted position comes
 from.
 
-There is also one arrow that runs the other way, out of the part rather than
-up the ladder, and it is Part X's dependency rather than this part's: [the
+The arrow leaving rung two has a second half the figure does not draw, and it
+is Part X's dependency rather than this part's: [the
 client level](../client/the-client-level.md) opens by saying it is *not* an
 authority either, which only lands once
 [authority](authority.md#five-predicates-and-the-final-one-the-other-four-hang-off)

@@ -80,10 +80,10 @@ flowchart TD
     GRP -->|"yes"| OVER
 ```
 
-*After the roll the ways out are cheap: almost every failure jitters x and z and
-tries again, and only three of the eight leave the loop at all. A new group
-attempt puts x and z back at the roll. The thick edge is the boundary the rest
-of this section is about.*
+*After the roll the ways out are cheap: almost every failure jitters x and z
+and tries again, and only three arrows leave the loop at all — the three that
+reach the box at the foot. A new group attempt puts x and z back at the roll.
+The thick edge is the boundary the rest of this section is about.*
 
 Three things in that loop are worth reading twice. Almost every rejection
 merely jitters again — it costs one try, not one of the three attempts. The two that end
@@ -309,7 +309,7 @@ sequenceDiagram
     participant Wire as the network
 
     Note over SL,Wire: all of it on the tick it is created
-    SL->>SL: addFreshEntity, once per passenger
+    SL->>SL: addFreshEntity, once per body, the vehicle first
     SL->>PESM: addNewEntity
     PESM->>PESM: claim the UUID, file it in its EntitySection, install the Callback
     PESM->>SL: LevelCallback.onCreated

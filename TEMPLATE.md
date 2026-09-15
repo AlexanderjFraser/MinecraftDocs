@@ -452,6 +452,16 @@ it overwrites `mermaid-init.js` with the default, which wraps nothing.
   anything past about twenty-five characters is lost on screen. Keep a subgraph
   title short and put the rest in the caption; the render is the only check
   that sees this.
+- **No flowchart or state-diagram label may begin a markdown block.** Mermaid
+  runs a markdown tokenizer over those labels and draws only plain text, bold,
+  italic and a few others; anything else is replaced, *in the node*, by the
+  literal string `Unsupported markdown: <type>` — so a label starting `1. `,
+  `- `, `* `, `> ` or a horizontal rule is **gone from the picture**. The
+  diagram parses and the markdown looks right, which is how nine of these
+  shipped. Number a step `1 · …` or `Stage 1, …` instead. A sequence-diagram
+  message does not go through this path and may start how it likes;
+  `node tools/check_mermaid.js` fails the rest, and its probe has the nine
+  cases it was measured on.
 
 **A figure two pages share** is written once, as a mermaid block in a file
 under `src/figures/`, and each page includes it with `{{#include}}` — the
@@ -711,6 +721,8 @@ the break in from a render, and is the check after adding a lane.
 | `EffC` | `EffectCommands` |
 | `ME` | `MobEffect` |
 | `AB` | `AbstractBoat` |
+| `SAB` | `AbstractBoat` |
+| `CSED` | `SynchedEntityData` |
 | `AA` | `AbstractArrow` |
 | `CR` | `CombatRules` |
 | `MTS` | `MoveToTargetSink` |
@@ -889,10 +901,14 @@ Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
 `CM` is `ChunkMap` (the menus take their own initials); `CH` is `ChunkHolder`
 (the client handshake listener is `CHPL`); `GR` is `GameRenderer`
 (`GuiRenderer` lengthens to `GuiR`); `TD` is retired in favour of `CTD` /
-`TCTD` — and `TreeDecorator` itself is `TDec`. One class has two lanes on
+`TCTD` — and `TreeDecorator` itself is `TDec`. Three classes have two lanes on
 purpose: `RCPL` is also `ClientPacketListener`, because the chat diagram shows
 the sender's client and the recipient's at once and a note in the figure says
-which is which. Part V (session F) lengthened four later claimants rather than
+which is which, and `SAB` is also `AbstractBoat` and `CSED` also
+`SynchedEntityData`, because [authority](systems/entities/authority.md)'s boat
+and [synched entity data](systems/entities/synched-entity-data.md)'s container
+are each a page's one picture of two copies of one object, and a `box` per
+machine says which is which. Part V (session F) lengthened four later claimants rather than
 reassigning a row: `LeverBlock` is `LevB` because `LB` is `LiquidBlock`,
 `BlockItem` would be `BItem` because `BI` is `BucketItem`,
 `BlockPlaceContext` would be `BPC` because `PC` is `ProtoChunk`, and

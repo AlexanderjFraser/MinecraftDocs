@@ -44,6 +44,266 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session F — Part VI · Entities: the figures *(2026-09-15)*
+
+Ten pages, 26 figures (22 before; three pages split one figure into two, one
+page gained a figure, one page traded a flowchart for a table beside a
+shorter one). Every mermaid figure captioned, every caption one italic run;
+the figure-name gate clean on the part (14 unresolved names → 0, 55 notes →
+8, all eight the prose message heads F12(d) allows); no type under 12.6px and
+nothing below 0.79.
+
+### The figures redrawn, and what each asserts
+
+- `entities/README` — the part figure is `TD` rather than `BT`, its nine nodes
+  numbered to the watch order, and it gains one edge: `2 · Authority → Parts
+  VIII, IX and X`, labelled *and so does the rest of the book*. **The claim is
+  the landing page's own** (“the second rung — *authority* — is the one
+  everything else leans on, including Parts VIII, IX and X”), drawn rather than
+  only said. No other arrow changed direction or meaning; the eight edge
+  sentences are the same claims, shortened.
+- `entities/ai-goals-and-brains` figure 1 — redrawn from *the four phases of
+  `Brain.tick`* to *one behaviour through one `Brain.tick`*. **Arrows removed**:
+  `A→B→C→D` (the phase chain, now a sentence above the figure), `F→I` and
+  `H→I`. **Arrows added**: `G -- either test fails --> X` (a behaviour whose
+  `Behavior.tryStart` fails stays `STOPPED`), and `H→S→J` through a new node
+  *phase three ends, phase four begins*. The assertion is that phases three
+  and four are **two complete sweeps over the set, not one pass per
+  behaviour** — `Brain.tick` calls `Brain.startEachNonRunningBehavior` and then
+  `Brain.tickEachRunningBehavior`, each with its own loop
+  (`Brain.java:456-459`, `489-527`). The old `F→I`/`H→I` arrows asserted the
+  opposite by implication.
+- `entities/ai-goals-and-brains` figure 2 — the `PoiManager` lane and its three
+  messages **cut** (the scan is [points of
+  interest](../src/systems/world/points-of-interest.md)'s, as the prose beside
+  the figure already says). `AP→PM: take(pos), then set POTENTIAL_JOB_SITE`
+  **retargeted** to `AP→Brain: writes POTENTIAL_JOB_SITE`: `AcquirePoi` calls
+  `poiManager.take(...)` and then writes the memory through the accessor, which
+  is the brain's (`AcquirePoi.java:89-92`). `SIB→SIB: startSleeping, record
+  LAST_SLEPT, clear the walk target` **replaced** by `Brain→SIB: tickOrStop,
+  and again every tick until dawn`: `startSleeping` is the villager's, not
+  `SleepInBed`'s (`SleepInBed.java:88`), and the new message asserts what the
+  prose calls the page's counter-example — `SleepInBed` overrides
+  `Behavior.canStillUse`, so it is still running the tick after the one that
+  started it. Two `rect` bands added for the two ticks.
+- `entities/attributes` figure 1 — the three modifier indices **cut** to the
+  section that owns them; the two dirty sets **re-parented** from
+  `AttributeInstance` to `AttributeMap`, through a new
+  `AttributeMap.onAttributeModified` node. The assertion: `attributesToSync`
+  and `attributesToUpdate` are fields of `AttributeMap`
+  (`AttributeMap.java:20-21`) and `AttributeMap.onAttributeModified` is what
+  adds to them (`:28-32`). `SUP -- createInstance --> MAP` **relabelled** to
+  `MAP -- AttributeMap.getInstance --> INST`, because the call runs
+  map→supplier and the product is the instance (`AttributeMap.java:50-52`).
+  The dotted `getSyncableAttributes` edge is now solid and labelled *when
+  tracking starts*.
+- `entities/attributes` figure 3 — `AttrM→AttrI: createInstance` **relabelled**
+  `replaceFrom, inside AttributeSupplier.createInstance`
+  (`AttributeSupplier.java:48-58`); `LE→AttrM: getAttributeValue`
+  **relabelled** `getValue`, since `LivingEntity.getAttributeValue` delegates
+  to `AttributeMap.getValue` (`LivingEntity.java:2329-2331`); the two
+  `AttrI-->>AttrM` **dashed returns turned solid**, because
+  `AttributeInstance.setDirty` calling the map's consumer is a call, not a
+  return; `removeModifier` restored to the modifier message
+  (`MobEffect.java:184-185`); a return leg `AttrM-->>LE` added so the value
+  comes back the way it went. A `rect` band marks the following tick.
+- `entities/authority` figure 1 — **`Q→SIM` and `Q→AI` reversed** to
+  `SIM→Q` and `AI→Q`, labelled *by default*, so every arrow in the figure
+  means one thing: *is answered by*. This is the queue's :5528 and the
+  assertion is the heading's own — the other four hang off the final one.
+  `CAP` **relabelled** from *Player: always true* to *Player: true, so the root
+  is false*, because the parent node is the negation and a reader following
+  *not X* to *always true* got the opposite of the page's table.
+- `entities/authority` figure 2 — **split by machine, with a lane each for the
+  two copies of the boat** (`SAB`, a new key row). `CL→AB: tickNonPassenger`
+  **removed** and made a note: `tickNonPassenger` is `ClientLevel`'s, and what
+  arrives at the boat is `Entity.tick` (`ClientLevel.java:477-487`). The two
+  `SGPL→AB` messages **retargeted** to the server's copy. The accept and the
+  reject are now an `alt` — the figure's one mark outside `TEMPLATE.md`'s
+  table, said so in the caption — and the echo is its own `CPL→Wire` arrow
+  rather than a clause on an arrow pointing the other way.
+- `entities/damage-and-death` figure 1 — the eight-step chain keeps only the
+  step names, with the running number on the arrows, and the owners and the
+  arithmetic move to a nine-row table beside it. **Freezing and the helmet are
+  now two steps, not one**, which is the correction below. A terminal *2.12*
+  is asserted as what reaches health in this scenario.
+- `entities/damage-and-death` figure 2 — **`ServerPlayer` and `LivingEntity`
+  merged into one lane**, because they are one object (F7); the three
+  `hurtServer` messages are now self-messages naming the class whose override
+  runs. `LE→CT: actuallyHurt` **split** into a self-message and
+  `SP→CT: recordDamage`, because `LivingEntity.actuallyHurt` is the caller's
+  and only `CombatTracker.recordDamage` reaches the tracker. The death tail
+  **cut** to figure 3 and the prose; `resolveMobResponsibleForDamage` and
+  `resolvePlayerResponsibleForDamage` are now one message each so the name
+  fits without a hyphen.
+- `entities/damage-and-death` figure 3 — **new**, under *Death, or not*.
+  Every arrow re-derived from `LivingEntity.die` (`LivingEntity.java:1565-1601`):
+  the totem test guards the whole of it; kill credit,
+  `LivingEntity.handleKillingBlow` and `CombatTracker.recheckStatus` run
+  unconditionally; the veto is `sourceEntity == null ||
+  sourceEntity.killedEntity(...)` and it guards the game event,
+  `LivingEntity.dropAllDeathLoot` and the wither rose only; the entity-event
+  byte is **outside** the veto; `Pose.DYING` is set **after** the byte.
+- `entities/entity-anatomy` figure 1 — the eleven-box flowchart is now the
+  book's **fifth `classDiagram`**, three classes. `EntityType --> EntityDimensions`
+  (*holds one, built once*), `EntityType ..> Entity` (*`EntityType.create`
+  calls the factory*), `EntityDimensions ..> Entity` (*copied into the two
+  caches, and recopied on a pose change*). The nine former boxes are field
+  rows; no relation is asserted that the old figure did not draw.
+- `entities/entity-anatomy` figure 3 — **split at the tick note**: the server
+  half keeps five lanes, and a second figure of three lanes draws the client
+  building **a second live object** from the packet. The claim the split
+  asserts is the page's title happening twice.
+- `entities/movement-and-collision` figure 1 — **seven lanes to three**. The
+  `CollisionGetter`, `Shapes` and `Block` lanes **cut**: every message sent to
+  them was headed with `Entity`'s own method (`Entity.collide`,
+  `Entity.collideWithShapes`, `Entity.setOnGroundWithMovement`,
+  `Entity.checkFallDamage`), and the inside of `Entity.move` is the next
+  section's figure. `LivingEntity` and `Entity` **merged into one lane**, each
+  message naming the class whose half runs. `SL→Entity: tickNonPassenger`
+  **relabelled** `tick` for the same reason as `authority`'s. A `rect` band
+  marks the next tick.
+- `entities/movement-and-collision` figure 2 — **a new diamond**,
+  `NEXT{"a candidate height left?"}`, so the loop's exhaustion is not drawn as
+  an answer to *more horizontal distance than the flat attempt?*. Re-derived
+  from `Entity.java:1198-1225`: the exits are the `for` ending (→ the flat
+  result) and the `return` inside it (→ the stepped one). `HEIGHTS`
+  **relabelled** *less the one already tried*, which is the correction below.
+- `entities/pathfinding` figure 1 — redrawn from the pipeline (which figure 2
+  draws, with the callers) to **the two entrances and the two endings**.
+  `WORLD→GATE` **added**: `PathNavigation.recomputePath` is the other
+  entrance, which the prose names and the figure never drew.
+  `GIVEUP -- no --> RUN` **added** so the follow is a loop.
+- `entities/pathfinding` figure 2 — `NE→PNR: getPathTypeFromState`
+  **relabelled and split**: `getPathTypeFromState` is
+  `PathfindingContext`'s, not the region's
+  (`PathfindingContext.java:31-35`), and what the evaluator gets from the
+  region is a block state (`:37-39`). Now `NE→PNR: getBlockState, through
+  PathfindingContext` with a note that `PathTypeCache` memoises the
+  `PathType` per position, server-side only.
+- `entities/synched-entity-data` figure 1 — **split at the tick the prose
+  names**, so **each half has one `SynchedEntityData` lane meaning one
+  container**; the second half boxes them by machine and adds `CSED`, a second
+  key row. `SGPL→Sheep: Player.interactOn` **relabelled** `Mob.interact`;
+  `CM→SE: ChunkMap.tick` **cut** with the `ChunkMap` lane, its decision being
+  figure 3's; `CPL→SED: handleSetEntityData` **relabelled**
+  `SynchedEntityData.assignValues` and retargeted to the client's container.
+  `SED→SED: SynchedEntityData.DataItem.setDirty` **added after** the callback
+  to `Sheep`, which is the ordering the prose italicises and the figure had
+  been flattening onto one arrow.
+- `entities/synched-entity-data` figure 3 — `IN` **turned from a box into a
+  diamond** and given its false exit to `HOLD`, so both tests fail into the
+  same place, which is the section's claim.
+
+### Captions
+
+Twenty-five captions written, one per mermaid figure in the part; each is a
+claim about what its figure shows and pass 9 should read each against its
+figure. The two that assert most: `entities/movement-and-collision` figure 1
+(“gravity is subtracted **after** the move, not before it, so the delta a
+tick moves the mob by was built by the tick before”) and
+`entities/damage-and-death` figure 2 (“the three `hurtServer` messages at the
+top are one virtual call going down the override chain”).
+
+### Corrections
+
+- `src/systems/entities/ai-goals-and-brains.md`:353 — the figure said
+  `updateActivityFromSchedule` is “refused unless **20** ticks have passed
+  since the last one”; the prose two paragraphs below says 21, “the test is a
+  strict *greater than* 20”. `Brain.java:389` is
+  `gameTime - this.lastScheduleUpdate > 20L`, so the prose is right and the
+  figure was wrong. The clause is out of the figure and the prose keeps it.
+- `src/systems/entities/ai-goals-and-brains.md`:351 — the figure drew
+  `POTENTIAL_JOB_SITE` being written to `PoiManager`. `AcquirePoi.java:89-92`
+  writes it through the memory accessor, which is the brain's.
+- `src/systems/entities/ai-goals-and-brains.md`:360 — `startSleeping` drawn
+  as `SleepInBed`'s own; `SleepInBed.java:88` calls `body.startSleeping(...)`,
+  so it is the villager's.
+- `src/systems/entities/attributes.md`:49 — the figure said
+  `permanentModifiers` is “the subset **`AttributeMap.pack`** writes to
+  disk”. `AttributeMap.java:156-167` packs **every** instantiated instance and
+  filters nothing; it is `AttributeInstance.pack`
+  (`AttributeInstance.java:207-209`) that writes the base value and the
+  permanent modifiers only. The node is cut with the two others that belong to
+  the next section, and the prose there already had it right.
+- `src/systems/entities/attributes.md`:50-51 — `attributesToUpdate` and
+  `attributesToSync` were drawn hanging off `AttributeInstance`;
+  `AttributeMap.java:20-21` makes them the map's.
+- `src/systems/entities/attributes.md`:58 — the arrow
+  `AttributeSupplier → AttributeMap` was labelled “`createInstance` copies a
+  prototype into a fresh instance”, which reverses the call and misplaces the
+  product: `AttributeMap.getInstance` calls `supplier.createInstance` and the
+  product is an `AttributeInstance` (`AttributeMap.java:50-52`).
+- `src/systems/entities/authority.md`:86-89 — the node *not
+  `Entity.isClientAuthoritative`* had a child reading *Player: always true*,
+  so the figure resolved to *true on the server for a player* while the page's
+  own table (“server, player, false”) says the opposite. The leaf now states
+  what it resolves to.
+- `src/systems/entities/damage-and-death.md`:106 against :114 — the prose says
+  “**eight** arithmetic steps — five multiplications and three subtractions”
+  and the figure drew **seven** boxes after the source, freezing and the helmet
+  sharing one. They are two steps (×5 and ×0.75) and are now drawn and tabled
+  as two; the count in the sentence is the one that was right.
+- `src/systems/entities/damage-and-death.md`:273 — the message read
+  “`hurtServer` — PvP and teams”, where *PvP* is neither a class nor a method;
+  the prose names `ServerPlayer.canHarmPlayer` as the gate, and the figure
+  now does too.
+- `src/systems/entities/entity-anatomy.md`:63 — the figure carried
+  “`clientTrackingRange` in chunks (default 5), `updateInterval` in ticks
+  (default 3)” and the two defaults appeared nowhere in the page's prose.
+  They are right (`EntityType.java:504-505`, the `Builder` constructor) and
+  the sentence that owns the two fields now says them.
+- `src/systems/entities/entity-anatomy.md`:193 — the prose said the 66 outside
+  `LivingEntity`'s branch are “**two families** and a scattering” and named
+  `Projectile` and `VehicleEntity`; the generated tree beside it draws **four**
+  — `BlockAttachedEntity` (5) and `Display` (3) as well — and 27 + 16 + 6 + 4
+  + 13 is the 66. `Display` was named nowhere on the page.
+- `src/systems/entities/movement-and-collision.md`:177 — `HEIGHTS` said
+  “**every** Y face of every candidate shape inside `maxUpStep`”;
+  `Entity.java:1240` is `relativeCoord >= 0.0F && relativeCoord !=
+  stepHeightToSkip`, so the height the flat attempt already tried is skipped,
+  which is what the prose says.
+- `src/systems/entities/movement-and-collision.md`:186 — the `MORE` diamond
+  had two outgoing edges labelled *no*, one of them the `for` loop ending
+  rather than an answer to the question in it (`Entity.java:1212-1224`).
+- `src/systems/entities/pathfinding.md`:217 — `getPathTypeFromState` drawn
+  arriving at `PathNavigationRegion`; it is `PathfindingContext`'s, and the
+  context holds both the region and the cache
+  (`PathfindingContext.java:13-14`, `31-35`).
+- `src/systems/entities/synched-entity-data.md`:181 — the figure put
+  `Entity.onSyncedDataUpdated` and `DataItem.setDirty` on one arrow, in that
+  order, arriving at `Sheep`. The prose italicises the ordering — *and then*
+  marks the item dirty — and the two are now two messages, the second a
+  self-message on the container.
+- `src/systems/entities/entity-lifecycle.md`:85 — the caption said “only
+  three of **the eight** leave the loop at all”, a count nothing in the figure
+  lets a reader check: three arrows reach the terminal box, but *the eight* is
+  not a set the picture draws. Now “only three arrows leave the loop at all —
+  the three that reach the box at the foot”. **The exemplar's figure is
+  otherwise untouched and one real gap in it is logged for session O**
+  ([pass5.md](pass5.md)): it draws neither of the two rejections the prose
+  under it says end a group attempt.
+- `src/systems/entities/entity-lifecycle.md`:312 — the message read
+  “`addFreshEntity`, once per **passenger**” while the prose says
+  `ServerLevel.addFreshEntityWithPassengers` walks `Entity.getSelfAndPassengers`
+  **vehicle first**; a reader of the figure alone concludes the vehicle is not
+  one of the bodies. Now “once per body, the vehicle first”.
+- `src/systems/rendering/visibility-and-the-frame-graph.md`:51-55 — five node
+  labels beginning `1. ` … `5. ` rendered on the live site as the literal
+  string *Unsupported markdown: list*, so five of the figure's six nodes were
+  blank on the page. Out of this part, fixed anyway, and gated (see
+  [pass5.md](pass5.md)). Only where a line ends changed; no arrow, no name,
+  no claim.
+
+### Tools
+
+- `tools/check_mermaid.js` gained `erasedLabels` and a nine-case probe.
+- `tools/map_source.py`'s `svg_tree` gained a width retry and a probe case;
+  the five generated trees are regenerated and **the fold labels of the
+  deepest branches now show a count instead of example names**, which is a
+  change to what five pages' figures say. `entity-anatomy`'s figcaption
+  states the key.
+
 ## Pass 7, session E — Part V · Blocks: the figures *(2026-09-15)*
 
 Eight pages, thirteen figures (ten before; three pages split one figure into

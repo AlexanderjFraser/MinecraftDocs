@@ -773,3 +773,68 @@ that the owner has not understood; recording is after pass 10.
   up. Ten queue entries struck with the page open, six opened (three of them for
   session O). All six gates green (the figure-name gate still report-only).
   Deployed.
+- **2026-09-15, pass 7 session F (Opus) — Part VI · Entities: the figures.** Ten
+  pages, 22 figures in and **26** out, one viewer agent per page with the
+  picture and the section and nothing else. Three pages split one figure at a
+  joint the prose already names — `synched-entity-data`'s shear at the tick,
+  where splitting is what finally gave **the server's container and the
+  client's a lane each**, which is the one thing that page exists to say there
+  are two of; `entity-anatomy`'s summon at the same boundary, so the page's
+  title happens twice, once per machine; and `authority`'s boat by machine,
+  with a lane each for the two copies. `damage-and-death` traded its
+  three-screen eight-step chain for a short chain carrying only the running
+  number and a nine-row *step · owned by · what it does · leaves* table beside
+  it — session C's `server-level-tick` remedy a third time — and gained a
+  figure under *Death, or not* for the veto one other entity holds over this
+  one's loot. `entity-anatomy`'s lead flowchart is the book's **fifth
+  `classDiagram`**: eleven boxes to three, because *what an object holds* was
+  never a flowchart. Across the part: **no type under 12.6px** (five figures
+  were at 9–11px), nothing below 0.79, sentence labels 14 → **2**, every
+  figure captioned, and the figure gate's **fourteen unresolved names → none**.
+
+  **The part-wide fault was the same one, a sixth time.** Eleven of the
+  fourteen gate failures were a message labelled with the caller's own method
+  and drawn arriving at the callee — `tickNonPassenger` at a boat,
+  `collideWithShapes` at `Shapes`, `checkFallDamage` at `Block`,
+  `actuallyHurt` at `CombatTracker`, `getAttributeValue` at `AttributeMap`,
+  `handleSetEntityData` at a container. **Six parts of six**, none of them
+  looking for it, and the gate catches every one mechanically. What is new is
+  what fixing it costs: on three pages the wrongly-addressed lane had nothing
+  else to do, so the fix *removed lanes* — `movement-and-collision` went from
+  seven to three — and the figure got legible as a side effect.
+
+  **The session's own finding is a rendering fault two gates were blind to.**
+  Mermaid runs a markdown tokenizer over flowchart and state-diagram labels
+  and renders only a handful of token types; anything else is replaced, in the
+  node, by the literal string *Unsupported markdown: list*. A label beginning
+  `1. ` is a markdown list, so it is **erased**. Nine were live: four on
+  `ai-goals-and-brains`' lead figure, and **five of the six nodes** on
+  `rendering/visibility-and-the-frame-graph`'s, in Part XI. The diagram
+  parses, the markdown looks right, `verify_names.py` is happy, and only a
+  render shows it — so it survived two fact-checks, a lecture read, and the
+  pass whose whole subject is figures, until a viewer agent said *three boxes
+  say "Unsupported markdown: list"*. `check_mermaid.js` gates it now, with a
+  nine-case probe measured in Chrome. **That is the fourth time this pass a
+  gate has been blind to something its own standard cares about, and the
+  second time the evidence was a picture nobody had opened.**
+
+  Beside it, the pass's one outstanding tool job: F13's tree emitter, deferred
+  to “the two part sessions that carry a tree, or session O”. `svg_tree` now
+  lays a tree out repeatedly and keeps the first attempt that fits the reading
+  column, shortening only the folded leaf label, because nothing else in a
+  tree is elastic and a Mojang name is never shrunk. All **five** trees fixed
+  at once: 1,619–2,217px → 810–1,020px, and the `Entity` tree from 0.62 at
+  7.5px to **1.00 at 12px**. Parts XI and the frame get theirs for nothing.
+
+  Eighteen corrections, all in [pass9.md](pass9.md). The sharpest is
+  `damage-and-death`, where the prose says **eight** arithmetic steps and the
+  figure drew **seven**, freezing and the helmet sharing a box — the page's
+  own heading counts the eight. Beside it: `attributes` gave
+  `permanentModifiers` to `AttributeMap.pack`, which filters nothing, rather
+  than to `AttributeInstance.pack`, which is the one that does; `authority`'s
+  predicate tree resolved *not client-authoritative* → *Player: always true*,
+  the opposite of the page's own table; `ai-goals-and-brains` refused a
+  schedule update after **20** ticks where the code and the prose say 21; and
+  `entity-anatomy` called four families two and never named `Display` at all.
+  Ten queue entries struck with the page open, five opened. All six gates
+  green (the figure-name gate still report-only). Deployed.

@@ -60,6 +60,7 @@ SKIPPED = (
 # The hierarchies drawn as trees, in the order the parts teach them.
 TREE_ROOTS = ("Entity", "Block", "Item", "Screen", "EntityRenderState")
 TREE_DEPTH = 3
+TREE_MAX_W = 1092  # the site's reading column: a tree wider than this is shrunk on screen
 
 # The thirteen parts as sets of packages — the *where each part lives* table on
 # src/maps/packages.md, made the authority (pass-5 planning session). Each entry
@@ -587,9 +588,26 @@ def svg_fanin(files, n=30):
 # ----------------------------------------------------------------------------
 # trees
 
-def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_w=210):
+def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_w=210,
+             max_w=TREE_MAX_W):
     """A left-to-right tree under `root`. Subclasses with no subclasses of their own are folded
-    into one node per parent; nodes at max_depth show their count and stop."""
+    into one node per parent; nodes at max_depth show their count and stop.
+
+    The tree must be legible where it stands (pass 7, F1/F13): the reading column is 1,092px
+    and every one of the five trees was wider than that, so each was shown at 0.49-0.67 and
+    6-8px of type. Nothing here may shrink a Mojang name, so the width comes out of the one
+    elastic thing a tree has — the folded leaf label, which is already a summary ending in an
+    ellipsis. `fold_names` is tried at 3, 2, 1 and 0 example names and then the inter-column
+    padding is dropped, and the first layout that fits the column wins. A tree that still does
+    not fit is emitted at its natural width rather than mangled."""
+    for fold_names, pad in ((3, col_w), (2, col_w), (1, col_w), (0, col_w), (0, 0)):
+        out, width = _svg_tree_once(root, children, counts, max_depth, row_h, pad, fold_names)
+        if width <= max_w:
+            return out
+    return out
+
+
+def _svg_tree_once(root, children, counts, max_depth, row_h, col_w, fold_names):
     rows = []  # terminal nodes in draw order, each (depth, label, cls)
     nodes = []  # (depth, y, label, cls, parent_index)
 
@@ -617,8 +635,10 @@ def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_
             leaf_names = [k[1] for k in leaves]
             if len(leaves) == 1:
                 lab, cls = leaf_names[0], "node"
+            elif fold_names == 0:
+                lab, cls = f"{len(leaves)} with no subclasses", "fold"
             else:
-                names = ", ".join(leaf_names[:3]) + (", …" if len(leaves) > 3 else "")
+                names = ", ".join(leaf_names[:fold_names]) + (", …" if len(leaves) > fold_names else "")
                 lab, cls = f"{len(leaves)} with no subclasses: {names}", "fold"
             nodes.append([depth + 1, len(rows) * row_h, lab, cls, idx])
             rows.append(lab)
@@ -647,7 +667,7 @@ def svg_tree(root, decls, children, counts, max_depth=TREE_DEPTH, row_h=16, col_
             out.append(f'<path class="edge" d="M{pend:.1f} {pyy:.1f} H{mid:.1f} V{py:.1f} H{px - 3:.1f}"/>')
         out.append(f'<text class="{cls}" x="{px:.1f}" y="{py + 4:.1f}" font-size="12">{esc(label)}</text>')
     out.append("</svg>")
-    return "\n".join(out)
+    return "\n".join(out), W
 
 
 # ----------------------------------------------------------------------------
@@ -682,6 +702,22 @@ def main():
                        (("net/minecraft/a", "-net/minecraft/b", "net/minecraft/c", "-net/minecraft/d"),
                         "`a`, `c`, minus `b` and `d`")]
             bad += [(s, want, spec_text(s)) for s, want in phrases if spec_text(s) != want]
+            # a tree narrows itself to the reading column by shortening its folded leaf
+            # labels, and never by shrinking a class name (pass 7, F13). The synthetic root
+            # below has one child with forty leaves whose names are far too wide for 1,092px
+            # at three-names-per-fold, so a tree that does not retry comes out over-wide.
+            root = ("", "Root")
+            mid = ("", "Middle")
+            leaves = [("", "AVeryLongClassNameIndeed%02d" % i) for i in range(40)]
+            kids = {root: [mid], mid: leaves}
+            cnt = {root: 41, mid: 40}
+            cnt.update({k: 0 for k in leaves})
+            svg = svg_tree(root, None, kids, cnt)
+            width = int(re.search(r'width="(\d+)"', svg).group(1))
+            if width > TREE_MAX_W:
+                bad.append(("tree width", TREE_MAX_W, width))
+            if "AVeryLongClassNameIndeed00" not in svg and "40 with no subclasses" not in svg:
+                bad.append(("tree fold", "a count or a name", "neither"))
             print("probe: OK" if not bad else f"PROBE FAILED: {bad}")
             sys.exit(1 if bad else 0)
         else:

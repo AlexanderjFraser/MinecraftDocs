@@ -234,6 +234,40 @@ function droppedByHashComment(text) {
   return null;
 }
 
+// Mermaid runs a markdown tokenizer over flowchart and state-diagram labels and
+// renders only what it understands (text, strong, em, paragraph, space, html,
+// escape); anything else becomes the literal string `Unsupported markdown: <type>`
+// in the node, and the *label is gone*. A label line that begins `1. `, `- `, `* `,
+// `> ` or a rule is a markdown block, so it is erased — the diagram parses, the
+// markdown looks right, and only the render shows it. Sequence-diagram messages do
+// not go through this path; measured on both, in Chrome, at the reading column.
+// (pass 7, session F — nine labels were live: four on one page's lead figure and
+// five of the six nodes on another's.)
+const LABEL_BLOCK = /^(\d+[.)]\s|[-*+]\s|>\s|#{1,6}\s)/;
+const LABEL_RULE = /^(-{3,}|\*{3,}|_{3,})$/;
+function erasedLabels(text, diagramType) {
+  if (!/^(flowchart|graph|state)/i.test(String(diagramType || ''))) return [];
+  const isState = /^state/i.test(String(diagramType || ''));
+  const out = [];
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    if (/^\s*%%/.test(line)) continue;
+    const labels = [...line.matchAll(/"([^"]*)"/g)].map((m) => m[1]);
+    if (isState) {
+      const m = /:\s*(.+)$/.exec(line);
+      if (m) labels.push(m[1]);
+    }
+    for (const label of labels) {
+      for (const seg of label.split(/<br\s*\/?>/i)) {
+        const t = seg.trim();
+        if (LABEL_BLOCK.test(t) || LABEL_RULE.test(t)) out.push({ line: i + 1, text: t.slice(0, 48) });
+      }
+    }
+  }
+  return out;
+}
+
 // A caption is the italic paragraph after a figure, and `custom.css` styles it
 // with `p:has(> em:only-child)` — one <em> and nothing else. An author who closes
 // the italics to set a name and reopens them writes *two* <em> children, so the
@@ -278,7 +312,28 @@ function runProbe(JSDOM) {
     ['a plain paragraph after a figure', '<p>Follow the two arrows into <em>the network</em>: they are the whole of it.</p>', false],
     ['a paragraph that is not a caption at all', '<p>Every section below walks one stretch of that diagram.</p>', false],
   ];
+  // The erased-label rule, measured in Chrome before it was written: a flowchart or
+  // state-diagram label that begins a markdown block is replaced by "Unsupported
+  // markdown", a sequence message is not, and a digit-dot that is not at the start
+  // of the label is ordinary text.
+  const labelCases = [
+    ['a flowchart node label numbered "1. "', ['flowchart TD', ' A["1. forgetOutdatedMemories runs first"] --> B["b"]'], 'flowchart-v2', true],
+    ['a flowchart node label bulleted "- "', ['flowchart TD', ' A["- one candidate per face"] --> B["b"]'], 'flowchart-v2', true],
+    ['a flowchart edge label numbered "1. "', ['flowchart TD', ' A["a"] -- "1. the first answer" --> B["b"]'], 'flowchart-v2', true],
+    ['a state transition numbered "1. "', ['stateDiagram-v2', ' S1 --> S2 : 1. the first step'], 'stateDiagram', true],
+    ['a second line of a label numbered "2. "', ['flowchart TD', ' A["the phases<br/>2. tickSensors"] --> B["b"]'], 'flowchart-v2', true],
+    ['a sequence message numbered "1. "', ['sequenceDiagram', ' A->>B: 1. tryStart, then the duration roll'], 'sequence', false],
+    ['a digit-dot with no space after it', ['flowchart TD', ' A["1.forgetOutdatedMemories runs first"] --> B["b"]'], 'flowchart-v2', false],
+    ['a digit-dot that is not at the start', ['flowchart TD', ' A["Phase 1. forgetOutdatedMemories"] --> B["b"]'], 'flowchart-v2', false],
+    ['an ordinary hyphenated label', ['flowchart TD', ' A["coast-or-interpolate, then applyInput"] --> B["b"]'], 'flowchart-v2', false],
+  ];
   let ok = true;
+  for (const [what, lines, kind, shouldFail] of labelCases) {
+    const got = erasedLabels(lines.join('\n'), kind).length > 0;
+    const passed = got === shouldFail;
+    ok = ok && passed;
+    console.log(`${passed ? 'pass' : 'FAIL'}  ${what} \u2014 ${shouldFail ? 'is' : 'is not'} erased by mermaid`);
+  }
   for (const [what, html, shouldFail] of cases) {
     const dom = new JSDOM(`<body><pre class="mermaid">flowchart TD
  A --> B</pre>${html}</body>`);
@@ -376,6 +431,11 @@ async function main() {
             if (dropped) {
               err = new Error(`"#" starts a comment in sequence diagrams, so mermaid silently drops "${dropped.text}" and the rest of line ${dropped.line}`);
             }
+          }
+          const erased = result ? erasedLabels(text, result.diagramType) : [];
+          if (!err && erased.length) {
+            const one = erased[0];
+            err = new Error(`line ${one.line} is a markdown block, so mermaid replaces the whole label with "Unsupported markdown": “${one.text}”${erased.length > 1 ? ` (and ${erased.length - 1} more in this diagram)` : ''}`);
           }
         } catch (e) {
           err = e;

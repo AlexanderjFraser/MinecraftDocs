@@ -45,35 +45,40 @@ this page notes each gate where the trace hits it.
 
 ## The tick
 
+One tick of a falling zombie, from the entity loop to the packet that carries
+the result. The mob is one object and one lane; the class on each message is
+which half of it runs, because the page's two roles — `LivingEntity`'s physics
+and `Entity`'s geometry — alternate all the way down:
+
 ```mermaid
 sequenceDiagram
     participant SL as ServerLevel
     participant LE as LivingEntity
-    participant Entity as Entity
-    participant CG as CollisionGetter
-    participant Shapes as Shapes
-    participant Block as Block
     participant SE as ServerEntity
 
-    SL->>Entity: tickNonPassenger — setOldPosAndRot, bump tickCount, tick
-    Entity->>Entity: baseTick — updateFluidInteraction snapshots water and lava, lava halves fallDistance
-    LE->>LE: aiStep — coast-or-interpolate, deadzone, applyInput, serverAiStep
-    LE->>LE: travel picks travelInAir (not in fluid, not gliding)
-    LE->>Entity: moveRelative at 0.02 of flying speed, then move(SELF, deltaMovement)
-    Entity->>CG: collide — getEntityCollisions, the world border, getBlockCollisions
-    CG->>Shapes: per candidate getCollisionShape, a full cube short-circuits, else joinIsNotEmpty
-    Entity->>Shapes: collideWithShapes — axisStepOrder, Y first, then the larger horizontal
-    Shapes-->>Entity: the allowed vector, y clipped by the stone floor
-    Entity->>Entity: Movement recorded, setPos, then the collision booleans
-    Entity->>CG: setOnGroundWithMovement — findSupportingBlock names the block
-    Entity->>Block: checkFallDamage — fallOn, then GameEvent.HIT_GROUND
-    Entity->>Entity: restitution, step sound, block speed factor
-    LE->>LE: back in travelInAir — subtract 0.08 of gravity, then the drags
-    LE->>Entity: applyEffectsFromBlocks — replay the deque, flush the collector
-    LE->>LE: pushEntities — cramming check, then doPush
-    Note over SL,SE: the next tick, in the chunkSource phase, before the entity loop runs again
-    SL->>SE: sendChanges — a short Pos delta, or an absolute sync because onGround changed
+    SL->>LE: tick, from ServerLevel's entity loop
+    LE->>LE: Entity.baseTick, and the fluid snapshot
+    LE->>LE: LivingEntity.aiStep: coast or interpolate, then serverAiStep
+    LE->>LE: LivingEntity.travel, which picks travelInAir
+    LE->>LE: Entity.moveRelative, then Entity.move
+    Note over LE: the resolve, and the step-up loop, are the next section
+    LE->>LE: Entity.setPos, then the four collision booleans
+    LE->>LE: Entity.setOnGround<br/>WithMovement
+    LE->>LE: Entity.checkFallDamage
+    LE->>LE: Entity.restitution, step sound, block speed factor
+    LE->>LE: back in travelInAir: 0.08 of gravity, then the drags
+    LE->>LE: Entity.applyEffects<br/>FromBlocks
+    LE->>LE: LivingEntity.push<br/>Entities, then doPush
+    rect rgba(0, 0, 0, 0.04)
+    Note over SL,SE: the next tick, the ServerLevel.chunkSource phase
+    SL->>SE: sendChanges: a short Pos delta, or an absolute sync
+    end
 ```
+
+*The line to look for is the fourth from the bottom. Gravity is subtracted
+**after** the move, not before it, so the delta a tick moves the mob by was
+built by the tick before — and the shaded band at the foot is the next tick
+again, which is when the wire hears about any of it.*
 
 ## Building the delta
 
@@ -169,23 +174,30 @@ booleans cleared.
 ```mermaid
 flowchart TD
     COLLIDE["Entity.collide"]
-    GATHER["collect the colliders: every entity box, the world border if you are near it, then BlockCollisions over the swept box"]
+    GATHER["gather the colliders over the swept box"]
     RESOLVE["Entity.collideWithShapes"]
-    AXIS["Direction.axisStepOrder — Y first, always, then the larger horizontal axis, then the smaller. Each axis clips the box already displaced by the earlier ones"]
-    TEST{"step height above zero, colliding horizontally, and on or hitting the ground?"}
+    AXIS["Direction.axisStepOrder: Y, then the larger horizontal, then the smaller"]
+    TEST{"step height above zero, colliding horizontally, on the ground?"}
     FLAT["return the flat result"]
-    HEIGHTS["Entity.collectCandidateStepUpHeights — every Y face of every candidate shape inside maxUpStep, sorted ascending"]
-    RETRY["retry the whole resolve at the next candidate height"]
-    MORE{"any more horizontal distance than the flat attempt?"}
-    WIN["return that one, minus the drop back to the old floor"]
+    HEIGHTS["Entity.collectCandidateStepUpHeights, ascending, less the one already tried"]
+    NEXT{"a candidate height left?"}
+    RETRY["retry the whole resolve at that height"]
+    MORE{"more horizontal distance than the flat attempt?"}
+    WIN["return that one, dropped back to the old floor"]
 
     COLLIDE --> GATHER --> RESOLVE --> AXIS --> TEST
-    TEST -- no --> FLAT
-    TEST -- yes --> HEIGHTS --> RETRY --> MORE
-    MORE -- "no, try the next candidate" --> RETRY
-    MORE -- "no candidates left" --> FLAT
-    MORE -- yes --> WIN
+    TEST -- "no" --> FLAT
+    TEST -- "yes" --> HEIGHTS --> NEXT
+    NEXT -- "no" --> FLAT
+    NEXT -- "yes" --> RETRY --> MORE
+    MORE -- "no" --> NEXT
+    MORE -- "yes" --> WIN
 ```
+
+*Two diamonds, two questions: the upper one decides whether a step-up is
+attempted at all, and the lower one is asked once per candidate height. The
+loop leaves by the left when it runs out of candidates, which is not an answer
+to the question in it — it is the list ending.*
 
 Two things in the gathering stage surprise people. The first is that
 **collision is against shapes, not blocks**: a candidate contributes
@@ -216,7 +228,9 @@ coordinates of the candidate shapes that lie above the entity's feet and
 within `Entity.maxUpStep`, skipping the height the flat attempt already
 tried, sorts them
 ascending, and retries the *whole* resolve at each until one yields any more
-horizontal distance than the flat attempt — and returns that one. It is the
+horizontal distance than the flat attempt — and returns that one, less the
+drop back to the old floor, because the box it stepped from was the one
+already lowered by this tick's vertical movement. It is the
 lowest step that helps, which is also why an entity can step onto a shape's
 internal ledge and not only its top face. `Entity.maxUpStep` is zero on the
 base class and `LivingEntity.maxUpStep` reads `Attributes.STEP_HEIGHT`,
