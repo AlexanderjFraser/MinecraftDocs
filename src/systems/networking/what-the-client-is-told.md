@@ -33,26 +33,27 @@ a packet.
 
 ```mermaid
 flowchart TD
-    TICK["ChunkMap.tick walks every tracked entity, in the chunk-source phase, before entities tick"] --> SEC{"did the entity change section"}
-    SEC -- yes --> UP["ChunkMap.TrackedEntity.updatePlayer, once per player in the level"]
-    UP --> G1{"gate 1: three conjuncts, all required"}
-    G1 -- "horizontal range, and Entity.broadcastToPlayer, and ChunkMap.isChunkTracked" --> IN["seenBy gains the connection: ServerEntity.addPairing sends the introduction bundle"]
-    G1 -- "any one false" --> OUT["seenBy loses it: ClientboundRemoveEntitiesPacket"]
-    SEC -- no --> G2{"gate 2: is the change detector called at all"}
+    TICK["ChunkMap.tick walks every tracked entity"]:::server --> SEC{"changed section"}
+    SEC -- yes --> UP["re-test every player in the level"]:::server
+    UP --> G1{"gate 1: range, hook, chunk"}
+    G1 -- "all three hold" --> IN["joins the audience: the introduction bundle"]:::server
+    G1 -- "any one false" --> OUT["leaves it: ClientboundRemoveEntitiesPacket"]:::server
+    SEC -- no --> G2{"gate 2: section, flag, or range"}
     IN --> G2
     OUT --> G2
-    G2 -- "changed section, or Entity.needsSync, or the chunk is in entity-ticking range" --> SC["ServerEntity.sendChanges, opening with Entity.updateDataBeforeSync"]
-    G2 -- "none of the three" --> MUTE["nothing, and the call counter does not advance"]
-    SC --> FREE["outside gate 3: a changed passenger list, an item frame every tenth call, and Entity.hurtMarked knockback"]
-    SC --> G3{"gate 3: three disjuncts, any one opens it"}
-    G3 -- "the call count is a multiple of EntityType.updateInterval, or Entity.needsSync, or the synched data is dirty" --> D["three decisions"]
-    G3 -- "none of the three" --> WAIT["wait for a later call"]
-    D --> D1{"relative or absolute"}
-    D1 -- "precision is not demanded, the delta fits a short, the teleport delay is within ServerEntity.FORCED_TELEPORT_PERIOD, it was not riding, and the ground flag held" --> REL["ClientboundMoveEntityPacket.Pos, .Rot or .PosRot"]
-    D1 -- otherwise --> ABS["ClientboundEntityPositionSyncPacket, and the teleport delay resets"]
-    D --> D2["head yaw: its own ClientboundRotateHeadPacket, whenever it moved by a byte"]
-    D --> D3["velocity: ClientboundSetEntityMotionPacket, only for a tracked-delta type, a needsSync, or an elytra flight"]
+    G2 -- "any one is enough" --> SC["ServerEntity.sendChanges"]:::server
+    G2 -- "none of the three" --> MUTE["nothing, and the counter does not advance"]:::server
+    SC --> FREE["three feeds that skip gate 3"]:::server
+    SC --> G3{"gate 3: interval, flag, or dirty data"}
+    G3 -- "any one is enough" --> D["one to three packets, and a new baseline"]:::server
+    G3 -- "none of the three" --> WAIT["wait for a later call"]:::server
 ```
+
+*The three gates, each a three-term test, and the two ways out that are not a
+packet. Gate 1 is a conjunction and gates 2 and 3 are disjunctions, which is
+the asymmetry to carry away: at gate 1 one wrong answer keeps a viewer from
+seeing the entity at all, and at the other two one right answer is enough to
+make it speak. The three terms of each are the three sections below.*
 
 The figure is the page. Three gates stand between an entity moving and a
 player hearing about it, and each is a three-term test: gate 1 is a
@@ -105,6 +106,8 @@ knockback and synched data must all reach for the self-directed one.
 
 ### The introduction is one bundle
 
+What gate 1 opening actually costs, in packets, is one:
+
 ```mermaid
 sequenceDiagram
     participant CM as ChunkMap
@@ -113,13 +116,17 @@ sequenceDiagram
     participant CPL as ClientPacketListener
 
     CM->>CMTE: the creeper changed section, so re-test every player
-    CMTE->>CMTE: range, veto and chunk-tracked all hold, so seenBy gains this connection
+    CMTE->>CMTE: all three conjuncts hold, so the audience gains this connection
     CMTE->>SE: addPairing
     SE->>SE: sendPairingData fills one list, in a fixed order
     SE->>CPL: one ClientboundBundlePacket
     Note over SE,CPL: add-entity at the tracker baseline, then synched data, attributes, equipment, ClientboundSetPassengersPacket, ClientboundSetEntityLinkPacket
     CPL->>CPL: the bundle is applied inside one task, so nothing renders half-built
 ```
+
+*Gate 1 opening, and what the new viewer is sent the moment it does: one
+bundle, in one fixed order, applied on the client inside a single task. The
+position in it is the tracker's baseline, not the creeper's.*
 
 `ServerEntity.sendPairingData` produces the list and `ServerEntity.addPairing`
 sends it as a single `ClientboundBundlePacket`, so the creeper can never be

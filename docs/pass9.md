@@ -44,6 +44,214 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session I — Part IX · Networking: the figures *(2026-09-15)*
+
+Six pages, 11 figures (12 before: `packets-and-stream-codecs`' buffer flowchart
+became a table). Every figure captioned, every caption one italic run; the
+figure-name gate clean on the part (**1 unresolved name → 0, 19 notes → 0** —
+the third part clean on both); **no figure below 0.77 and no type under
+12.3px**, from three figures at 0.38–0.54 with 6–8.6px type; no overlap,
+overflow, clipping or edge through a node anywhere in the part; **no Mojang
+name hyphen-broken on screen** (5 lines were). One figure is still over
+1,200px tall and that is deliberate: `what-the-client-is-told`'s cascade is
+the page's own artefact, and splitting it at the joint would destroy the one
+picture the page says *is* the page.
+
+**The part-wide fault is F7's, in the mirror image of session H's.** Session
+VIII's pages gave *one object two lanes*; Part IX's give **two objects one
+lane**, because the part's subject is two machines running the same classes.
+`the-connection` drew one `Connection` lane for the object at each end — and
+the paragraph under it *conceded the fault in words* ("which is what the note
+across the middle says and the picture cannot") rather than the figure being
+redrawn — and `chat-and-signing` drew two lanes both labelled
+`ClientPacketListener`, told apart by a note naming two mermaid aliases that
+appear nowhere in the rendered picture. Both are fixed the way pass 5's
+`authority` and `synched-entity-data` were: a second lane row for the same
+class, and a `box` per machine.
+
+**Three of the four figures on `protocol-phases` were illegible for one
+reason: `direction LR`.** At 0.54, 0.38 and 0.42 with 6–8.6px type, they were
+the three worst figures in the part, and two of the three fixes were *deleting
+one line*. F3 already says `TD` for anything ordered in time; a state machine
+is ordered in time, and a state diagram's default is `TB`. The lesson for the
+sessions after this one: on a state diagram or a chain of stages, the direction
+line is worth checking before any label is shortened.
+
+### The figures redrawn, and what each asserts
+
+- **`networking/README`, figure 1** — the two subgraph titles were being
+  clipped on screen (mermaid draws only the first wrapped line of a title), so
+  the figure's whole argument — the 3 + 2 split — was the only thing a reader
+  could not read. Titles shortened to *the wire, three times* and *inside the
+  play phase*; the five nodes numbered to the watch order (F13); the
+  fourteen-word edge label from the wire group to the pair became the caption,
+  and the arrow re-anchored from the group `W` to lecture **3**, which is what
+  the prose says ("the last two both sit inside the final language").
+  **Asserts**: lectures 1 → 2 → 3 in that order, and that 4 and 5 run inside
+  the phase lecture 3 ends on.
+- **`the-connection`, figure 1** — redrawn. Six lanes in **two `box` groups**,
+  one per machine; the `Wire` relay lane removed and the crossing drawn
+  encoder → decoder; the return leg drawn right-to-left as one labelled arrow;
+  the two drains marked with `rect` bands (F8). 16 messages → 11, 1,580px →
+  1,141px. **Asserts**: `Connection.send` on the client's main thread;
+  `sendPacket` joining the Netty loop; one whole frame from the client's
+  `PacketEncoder` to the server's `PacketDecoder`; `channelRead0` at the tail
+  of the pipeline; `shouldHandleMessage` then `Packet.handle`;
+  `ensureRunningOnSameThread` queuing and aborting; the second
+  `shouldHandleMessage` inside the drain; the reply written and not flushed;
+  `Connection.tick` flushing; the client's drain once per frame.
+- **`the-connection`, the pipeline table** — not a figure, but the figure's
+  removed note went here: a fourth column, *its outbound mirror*, so the
+  reverse order is read off the table instead of out of an eight-item
+  sentence. **Asserts**: five of the nine inbound handlers have an outbound
+  mirror and four do not.
+- **`packets-and-stream-codecs`, figure 1** — the build chain cut at the
+  `ProtocolInfoBuilder.addPacket` line, one subgraph either side, named for
+  what each half knows (*knows chat, not ids* / *knows ids, not chat*) — which
+  is the sentence directly under the figure. 1,900px → 902px. **Asserts**: the
+  two fields' codecs compose into the packet's `STREAM_CODEC`; one `addPacket`
+  call pairs it with a `PacketType`; `StreamCodec.mapStream` wraps it at bind;
+  the `IdDispatchCodec` holds the wrapped entry — **and the caption states
+  that this is build order and that at send time the dispatch codec runs
+  outermost**, which is what `IdDispatchCodec.encode` does
+  (`net/minecraft/network/codec/IdDispatchCodec.java:47`).
+- **`packets-and-stream-codecs`, figure 2** — cut, replaced by a three-row
+  table. **Asserts**: status serverbound binds the identity function, four
+  phases bind `FriendlyByteBuf` at class-load, play binds
+  `RegistryFriendlyByteBuf` per connection at the switch into play.
+- **`protocol-phases`, figure 1** — `direction LR` removed; 0.54 → 1.00.
+  **Asserts**: unchanged from the figure it replaces.
+- **`protocol-phases`, figure 2** — `direction LR` removed, labels cut to the
+  packet that causes each transition, and `NEGOTIATING` taken out. 0.38 → 1.00.
+  **Asserts**: the same ten transitions as before, none added, removed or
+  reversed.
+- **`protocol-phases`, figure 3** — the `Auth` lane, which was labelled *User
+  Authenticator thread* and yet received the **client's** `joinServer` call,
+  is now a `Sess` lane for the session service both machines call, with the
+  thread named in each message instead; the two listeners are in a `box` each.
+  **Asserts**: the client calls `joinServer` before it sends the key packet;
+  the server installs both ciphers on receiving it; the server calls
+  `hasJoinedServer` after that.
+- **`protocol-phases`, figure 4** — redrawn `TD` with the five queued tasks in
+  a `the serial queue` subgraph, the three out-of-queue packets above it, and
+  the **client round trip** that ends the phase drawn as two arrows.
+  0.42 → 1.00. **Asserts**: the three packets precede the queue;
+  `SynchronizeRegistriesTask` is first and the two optional tasks follow it;
+  `PrepareSpawnTask` then `JoinWorldTask`; `ClientboundFinishConfigurationPacket`
+  out and `ServerboundFinishConfigurationPacket` back before the player is
+  built.
+- **`chat-and-signing`, figure 1** — three `box` groups (the sender's client,
+  the server, every recipient's client), the normalisation moved to a
+  self-message on `ChatScreen`, `sendChat` on the arrow to the listener, and
+  the Server-thread note replaced by a `rect` band bounded to the two server
+  lanes. **Asserts**: `ChatScreen.normalizeChatMessage` is the sender's own
+  work, not the listener's; the band covers the unpack, the filter-and-decorate
+  and the broadcast and nothing on the recipient's machine.
+- **`chat-and-signing`, figure 2** — redrawn **by outcome** rather than by
+  order: all five Netty-thread checks in one diamond, the Server-thread unpack
+  in another, and three terminals, with *the message dies* reached from both.
+  **Asserts**: the window checks and the character check close the connection;
+  the chat-visibility refusal kills the message only; no signature or an
+  expired key kills the message; out of order or an invalid signature kills the
+  chain.
+- **`what-the-client-is-told`, figure 1** — the tail below gate 3 cut (it is
+  the table's job, and see the correction below), the labels cut to the
+  budget, and the three gates left as the cascade. 18 nodes → 13, 2,644px →
+  1,740px. **Asserts**: `ChunkMap.tick` walks every tracked entity; a section
+  change re-tests every player; gate 1 is a conjunction and gates 2 and 3 are
+  disjunctions; three feeds skip gate 3.
+- **`what-the-client-is-told`, figure 2** — captioned, and the word *veto*
+  removed from the self-message, because the paragraph 30 lines below exists
+  to say `Entity.broadcastToPlayer` is **not** a hiding hook.
+
+### Corrections — re-derived against the decompile before the fix
+
+- **`protocol-phases`, the terminal-packet count.** The page said "Seven
+  packets in the game carry the terminal flag, and **six of them are on this
+  diagram**; `ClientIntentionPacket` is the seventh." `ClientIntentionPacket`
+  labels **two** of the diagram's arrows. The seven classes that override
+  `Packet.isTerminal` to return true are `ClientIntentionPacket`,
+  `ClientboundLoginFinishedPacket`, `ServerboundLoginAcknowledgedPacket`,
+  `ClientboundFinishConfigurationPacket`, `ServerboundFinishConfigurationPacket`,
+  `ClientboundStartConfigurationPacket` and
+  `ServerboundConfigurationAcknowledgedPacket` — every one of them on the
+  figure. Now reads "every one of them labels an arrow above.
+  `ClientIntentionPacket` labels two".
+- **`protocol-phases`, `returnToWorld` drawn as a queue entry.** The figure had
+  `returnToWorld appends the last two` as the **fifth step** of the chain,
+  after the resource-pack task. `ServerConfigurationPacketListenerImpl.returnToWorld`
+  (`net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java:104`)
+  appends `PrepareSpawnTask` and `JoinWorldTask` and calls `startNextTask`, and
+  it is called from the **last line of `startConfiguration`** (:101), before
+  any task has run. A queue-building call drawn as a queue entry; the box is
+  gone and the queue is a subgraph.
+- **`protocol-phases`, the unlabelled arrow at the end of configuration.** The
+  `JoinWorldTask → handleConfigurationFinished` arrow looked like the six
+  before it. `handleConfigurationFinished` (:166) runs on the client's
+  `ServerboundFinishConfigurationPacket`, so the arrow was a round trip drawn
+  as a step — and the page's own hook, the server holding a ticket on chunks
+  for a player that does not exist, lives in exactly that gap. Now two arrows
+  through a client node, and the gap is the caption's subject.
+- **`chat-and-signing`, "two of those five close the connection".** Four do:
+  the three window checks and the character check
+  (`ServerGamePacketListenerImpl.tryHandleChat`,
+  `net/minecraft/server/network/ServerGamePacketListenerImpl.java:1829`,
+  disconnects on `isChatMessageIllegal` and the page's own table marks the
+  three window rows **connection**); the chat-visibility refusal is the only
+  one of the five that does not, and it sends a red system line instead
+  (:1832). The sentence was counting the old figure's *diamonds*, which
+  collapsed the three window checks into one.
+- **`chat-and-signing`, the caller's method on the callee's arrow.** The
+  `ChatScreen → ClientPacketListener` arrow was labelled "whitespace squeezed,
+  cut to 256 characters", which is `ChatScreen.normalizeChatMessage`'s own work
+  (`net/minecraft/client/gui/screens/ChatScreen.java:359`, called at :344
+  before `connection.sendChat` at :353). The eighth part of eight to carry this
+  fault. Now a self-message on `ChatScreen`, and the arrow says `sendChat`.
+- **`chat-and-signing`, the Server-thread note's reach.** "everything below is
+  a task queued on the Server thread" spanned the rest of the diagram,
+  including the recipient client's own work, which the page's cast table puts
+  on the Render thread. The band now covers the server's two lanes only.
+- **`what-the-client-is-told`, position drawn as a binary.** The figure's `D1`
+  node made every opened gate 3 send either a relative or an absolute position
+  packet. The page's own table names two further outcomes: **nothing sent**
+  inside `ServerEntity.TOLERANCE_LEVEL_POSITION` and
+  `ServerEntity.TOLERANCE_LEVEL_ROTATION`, and **rotation only** for a
+  passenger. An omission the drawing turned into a claim; the tail is cut and
+  the table owns the outcomes.
+- **`the-connection`, "the connection phase flushes the channel".** The page
+  has no such term. `Connection.tick`
+  (`net/minecraft/network/Connection.java`, `public void tick()`) calls
+  `flushQueue`, ticks a `TickablePacketListener`, and then calls
+  `channel.flush()`. The note names `Connection.tick`, which the page does
+  define, 235 lines below.
+- **`the-connection`, `processQueuedPackets` in a note.** A real method
+  (`net/minecraft/network/PacketProcessor.java:35`) and a spelling the page's
+  prose never uses — it says `PacketProcessor` and *the drain*. The note now
+  says both of those.
+
+### The tool blindnesses — the eighth and ninth of this pass
+
+- **`check_figure_names.py` read only the first 20,000 characters of a class
+  file to find what it extends.** Exactly one class in the decompile declares
+  itself past that mark — `ClientPacketListener`, at byte 21,133, behind three
+  hundred import lines — and it is one of the most-used lanes in the book. So
+  the gate believed `ClientPacketListener` extended nothing, and **every
+  inherited member on a `CPL` lane failed**: `shouldHandleMessage`, which
+  `ClientCommonPacketListenerImpl` overrides
+  (`net/minecraft/client/multiplayer/ClientCommonPacketListenerImpl.java:145`),
+  was reported as a bad name on a figure that was right. Fixed by reading the
+  whole file, with a probe case that is exactly this class and this member.
+  Corpus failures 31 → 30.
+- **A `<br/>` between a name and the next word welded them.** Sessions B and D
+  taught the gate to close up a break *inside* a name and to split one *after
+  punctuation*; nobody had told it that `ensureRunningOnSameThread<br/>queues
+  the pair` is a name meeting a word. It read `ensureRunningOnSameThreadqueues`
+  and failed the page — the fix F18 itself prescribes made the gate fail.
+  The rule is now F17's own wording: **a name break is at a CamelCase boundary
+  or at a dot, and nowhere else**, so a break followed by a lower-case letter,
+  or one whose preceding word is all lower-case, is a line break. Three probe
+  cases; corpus **notes 166 → 148** and no previously-clean part moved.
+
 ## Pass 7, session H — Part VIII · The player: the figures *(2026-09-15)*
 
 Eight pages, 12 figures (10 before; `input-to-movement`'s single trace became a

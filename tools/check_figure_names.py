@@ -266,8 +266,28 @@ def close_up_breaks(text: str) -> str:
     decompile. F17 ruled this for a lane expansion; F18 sends part sessions to
     break names in messages and notes the same way, so the same reading applies
     wherever a name can appear.
+
+    Two more shapes are word breaks and not name breaks, because F17 writes a
+    name break **at a CamelCase boundary or at a dot** and nowhere else
+    (session I):
+
+    * a break followed by a **lower-case** letter --
+      `ensureRunningOnSameThread<br/>queues the pair` -- is the end of a name
+      and the start of the next word; closing it up made
+      `ensureRunningOnSameThreadqueues`, a member of nothing, and failed a page
+      whose figure was right;
+    * a break whose word *before* it is all lower-case --
+      `a tick, then<br/>MinecraftServer.tickChildren` -- is English meeting a
+      name; closing it up buries the name inside `thenMinecraftServer`, an
+      unknown class the gate then skips in silence.
     """
-    text = re.sub(r"(?<=[0-9A-Za-z_$.])<br\s*/?>(?=[0-9A-Za-z_$])", "", text)
+    text = re.sub(r"(?<=\.)<br\s*/?>(?=[0-9A-Za-z_$])", "", text)
+
+    def camel(m):
+        # the word being cut: all lower-case means English meeting a name, not one name
+        return " " if re.search(r"(?:^|[^0-9A-Za-z_$.])[a-z]+$", text[:m.start()]) else ""
+
+    text = re.sub(r"(?<=[0-9A-Za-z_$])<br\s*/?>(?=[A-Z_$])", camel, text)
     return re.sub(r"<br\s*/?>", " ", text)
 
 
@@ -296,8 +316,12 @@ class Checker:
         found: list[str] = []
         for p in self.classes.get(cls, []):
             try:
+                # the whole file, not a window: `ClientPacketListener`'s own declaration sits at
+                # byte 21,133, behind three hundred import lines, and a window that misses the
+                # declaration reports the class as extending nothing, so every inherited member
+                # on that lane fails (session I)
                 with open(p, encoding="utf-8", errors="replace") as fh:
-                    text = fh.read(20000)
+                    text = fh.read()
             except OSError:
                 continue
             for m in DECL.finditer(text):
@@ -551,6 +575,16 @@ classDiagram
     ChunkMap ..> Bad : ChunkMapp.save
     Entity <|-- Avatarr
 ```
+
+```mermaid
+sequenceDiagram
+    participant Conn as Connection
+    participant CPL as ClientPacketListener
+    Conn->>CPL: shouldHandleMessage
+    Conn->>CPL: shouldHandleMessage<br/>queues the pair and aborts
+    Conn->>CPL: a frame, then<br/>ClientPacketListener is asked again
+    Conn->>CPL: handleSetEntity<br/>PassengersPackett once more
+```
 """
 
 
@@ -581,6 +615,14 @@ def probe(mc_source: str, libs: str) -> int:
         ("a bad class in a flowchart node fails", any(f[2] == "FrobnicatorThing" for f in failures)),
         ("a nested class named bare is a note, not a failure", any(n[2] == "SpawnState" and "NaturalSpawner.SpawnState" in n[3] for n in notes) and not any(f[2] == "SpawnState" for f in failures)),
         ("an inherited member resolves (DedicatedServer.runServer is MinecraftServer's)", not any(f[2] == "DedicatedServer.runServer" for f in failures)),
+        ("an inherited member resolves on a class whose own declaration is past 20kB of imports (ClientPacketListener.shouldHandleMessage)",
+         not any(f[2] == "shouldHandleMessage" for f in failures)),
+        ("a break before a lower-case word ends the name there, and does not weld the next word onto it",
+         not any(f[2].startswith("shouldHandleMessagequeues") for f in failures)),
+        ("a break after an all-lower-case word does not bury the class name after it",
+         not any("thenClientPacketListener" in f[2] for f in failures)),
+        ("a break at a real CamelCase boundary is still closed up, and a bad name through one still fails",
+         any(f[2] == "handleSetEntityPassengersPackett" for f in failures)),
         ("an unqualified member in a flowchart label is a note", any(n[2] == "runAllTasks" for n in notes)),
         ("a rect band's colour is not read as a call named rgba", not any(n[2] == "rgba" for n in notes)),
         ("a box's colour word is stripped and its label still checked", (23, "ChunkMapp") in got),
@@ -603,7 +645,7 @@ def probe(mc_source: str, libs: str) -> int:
          any(f[1] == 52 and f[2] == "Avatarr" for f in failures)),
         ("a nested class box resolves against its outer class, and a bad one does not",
          not any(f[2] == "ChunkMap.TrackedEntity" for f in failures) and (49, "ChunkMap.NoSuchNestedClass") in got),
-        ("exactly the sixteen failures expected", len(failures) == 16),
+        ("exactly the seventeen failures expected", len(failures) == 17),
     ]
     ok = True
     for what, passed in checks:

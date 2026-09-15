@@ -930,3 +930,54 @@ that the owner has not understood; recording is after pass 10.
   previously-clean part moved. Ten queue entries struck with the page open,
   eleven opened. All six gates green (the figure-name gate still report-only).
   Deployed.
+
+- **2026-09-15, pass 7 session I (Opus) — Part IX · Networking.** Six viewer
+  agents, one per page. **Twelve figures became eleven**: the buffer flowchart
+  on `packets-and-stream-codecs` is a three-row table, because its three arrows
+  meant two different things — two bindings and one *extends* — and a table
+  carries the bind time the figure had no room for, which is F10's own ruling
+  that two or three paths that differ are a table. Every figure in the part is
+  captioned and every non-lead figure has a lead-in; **nothing is below 0.77 or
+  under 12.3px** (from three figures at 0.38, 0.42 and 0.54 with 6 to 8.6px
+  type), no overlap, overflow, clipping or edge through a node anywhere, no
+  Mojang name broken on screen (five lines were), and the gate's **1 unresolved
+  name and 19 notes are 0 and 0** — the third part clean on both. **The
+  part-wide fault is session H's in the mirror**: Part VIII gave one object two
+  lanes, and Part IX gives **two objects one lane**, because this part's whole
+  subject is two machines running the same classes. `the-connection` drew one
+  `Connection` lane for the object at each end and the paragraph beneath it
+  *conceded the fault in words* — "which is what the note across the middle says
+  and the picture cannot" — instead of the figure being redrawn;
+  `chat-and-signing` drew two lanes both reading `ClientPacketListener`, told
+  apart by a note naming two mermaid aliases that appear nowhere in the
+  rendered picture. Both are fixed the way `authority`'s boat was: a second key
+  row for the same class, and a `box` per machine. **And three of the four
+  figures on `protocol-phases` were illegible for one reason — `direction
+  LR`** — so two of the three fixes were deleting a line: F3 already rules `TD`
+  for anything ordered in time, and a state machine is ordered in time. Nine
+  corrections, all in [pass9.md](pass9.md); the sharpest are
+  `protocol-phases`' configuration flowchart drawing
+  `ServerConfigurationPacketListenerImpl.returnToWorld` as the **fifth step of
+  the queue** when it is the call that *builds* the queue before any task runs,
+  and drawing the client round trip that ends the phase as a plain unlabelled
+  arrow — which is precisely the gap the page's own hook lives in;
+  `what-the-client-is-told`'s cascade drawing position as a relative/absolute
+  binary when the table under it names two further outcomes, *nothing sent* and
+  *rotation only*; and `chat-and-signing` labelling the `ChatScreen` arrow with
+  `ChatScreen.normalizeChatMessage`'s own work — **the caller's method drawn
+  arriving at the callee, on the eighth part of eight**. **Two more tool
+  blindnesses, the eighth and ninth of the pass.**
+  `check_figure_names.py` read only the first 20 kB of a class file to find
+  what it extends: exactly one class in the decompile declares itself past that
+  mark — `ClientPacketListener`, at byte 21,133, behind three hundred import
+  lines — and it is one of the book's commonest lanes, so every **inherited**
+  member on a `CPL` lane was failing a figure that was right. And a `<br/>`
+  between a name and the next word was welded shut, so the repair F18 itself
+  prescribes made the gate fail: the rule is now F17's own wording — a name
+  break is at a CamelCase boundary or at a dot and nowhere else. Four probe
+  cases between them; corpus failures 31 → 30 and notes 166 → 148, with no
+  previously-clean part moved. Ten queue entries struck with the page open, one
+  of them a ruling asked for by name (**may a state machine contain a state
+  nothing reaches? No** — a diagram draws the machine as it runs, and
+  `NEGOTIATING` is the enum's business and the prose's). All six gates green
+  (the figure-name gate still report-only). Deployed.

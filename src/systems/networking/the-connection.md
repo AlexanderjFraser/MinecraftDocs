@@ -40,43 +40,46 @@ lives.
 
 ```mermaid
 sequenceDiagram
+    box transparent the client
     participant CPL as ClientPacketListener
     participant Conn as Connection
     participant PEnc as PacketEncoder
-    participant Wire as the network
+    end
+    box transparent the server
     participant PDec as PacketDecoder
+    participant SConn as Connection
     participant SGPL as ServerGamePacket<br/>ListenerImpl
+    end
 
-    Note over Conn,PDec: one instance of each of these at each end
     Note over CPL: client main thread — a value, not yet any bytes
     CPL->>Conn: send — no packet queue, Netty owns the buffering
-    Note over Conn,PEnc: the sender's Netty event loop, joined by sendPacket
+    Note over Conn,PEnc: the client's Netty event loop, joined by Connection.sendPacket
     Conn->>PEnc: write, or write and flush
-    PEnc->>Wire: the phase's one codec writes a VarInt id, then the fields
-    Note over Wire: compress, prepender, encrypt, then decrypt, splitter, decompress
-    Note over PDec,SGPL: the receiver's Netty event loop
-    Wire->>PDec: exactly one whole frame
-    PDec->>Conn: channelRead0, at the tail of the pipeline
-    Conn->>SGPL: shouldHandleMessage, then Packet.handle
-    SGPL->>SGPL: ensureRunningOnSameThread queues the pair and aborts the call
-    Note over SGPL: server main thread — processQueuedPackets, before the tick
-    SGPL->>SGPL: shouldHandleMessage again, then the handler from the top
-    SGPL->>Conn: send the reply — written, not flushed, inside the tick's bracket
-    Note over Conn: the connection phase flushes the channel
-    Conn->>PEnc: the same handlers, the other direction
-    PEnc->>Wire: clientbound bytes
-    Wire->>PDec: one frame, on the client's Netty event loop
-    PDec->>Conn: channelRead0 again
-    Conn->>CPL: shouldHandleMessage, then Packet.handle
-    CPL->>CPL: ensureRunningOnSameThread queues the pair and aborts the call
-    Note over CPL: client main thread — the drain, once per frame
-    CPL->>CPL: the handler from the top, a frame later at the earliest
+    PEnc->>PDec: one whole frame: a VarInt id, then the fields
+    Note over PDec,SGPL: the server's Netty event loop
+    PDec->>SConn: channelRead0, at the tail of the pipeline
+    SConn->>SGPL: shouldHandleMessage, then Packet.handle
+    SGPL->>SGPL: ensureRunningOnSameThread<br/>queues the pair and aborts
+    rect rgba(0, 0, 0, 0.04)
+        Note over PDec,SGPL: server main thread — the PacketProcessor drain, before the tick
+        SGPL->>SGPL: shouldHandleMessage again, then the handler from the top
+        SGPL->>SConn: the reply — written, not flushed
+    end
+    Note over SConn: Connection.tick flushes the channel
+    SConn->>CPL: the same handlers backwards, then channelRead0 and Packet.handle
+    CPL->>CPL: ensureRunningOnSameThread<br/>queues the pair and aborts
+    rect rgba(0, 0, 0, 0.04)
+        Note over CPL,PEnc: client main thread — the drain, once per frame
+        CPL->>CPL: the handler from the top, a frame later at the earliest
+    end
 ```
 
-The diagram draws one `Connection` lane and there are two of them: one object
-at each end, which is what the note across the middle says and the picture
-cannot. Six things
-in it are worth stopping on — the framing, the direct call, the hop, the
+*The round trip, with each end in its own box: the two `Connection` objects,
+the two drains, and the one arrow — the ninth — where the return leg's
+encoding and decoding are folded away, because they are the same two handler
+stacks read backwards. Watch for the handler body being entered twice.*
+
+Six things in it are worth stopping on — the framing, the direct call, the hop, the
 drain's own phase, the second question the drain asks, and where an error on
 re-dispatch goes.
 
@@ -150,27 +153,27 @@ flags, then lets the listener add its own detail.
 ## The pipeline, in both directions
 
 Two directions through one list of handlers. Inbound runs head to tail;
-outbound runs tail to head. Handlers in *italics* are added later, if at all.
+outbound runs tail to head, and the last column below is that second reading —
+five of the nine have an outbound mirror and the rest are inbound-only.
+Handlers in *italics* are added later, if at all.
 
-| inbound order | handler | added by |
-|---|---|---|
-| 1 | `"timeout"` — a read timeout of thirty seconds | the connect or accept site, before serialization |
-| 2 | `"legacy_query"` — `LegacyQueryHandler` | `ServerConnectionListener.startTcpServerListener` only, and only if the server replies to status; removes itself on the first modern byte |
-| 3 | *`"decrypt"`* — `CipherDecoder` | `Connection.setEncryptionKey` |
-| 4 | `"splitter"` — `Varint21FrameDecoder` | `Connection.configureSerialization` |
-| 5 | *`"decompress"`* — `CompressionDecoder` | `Connection.setupCompression`, inserted directly *after* `"splitter"` |
-| 6 | an unnamed flow-control handler | `Connection.configureSerialization` |
-| 7 | `"decoder"` or `"inbound_config"` | `Connection.configureSerialization` |
-| 8 | *`"bundler"`* — `PacketBundlePacker` | `Connection.setupInboundProtocol`, only for a protocol with a bundle ([packets and stream codecs](packets-and-stream-codecs.md#a-bundle-is-two-empty-markers-round-ordinary-packets)) |
-| 9 | `"packet_handler"` — the `Connection` itself | `Connection.configurePacketHandler` |
+| inbound order | handler | added by | its outbound mirror |
+|---|---|---|---|
+| 1 | `"timeout"` — a read timeout of thirty seconds | the connect or accept site, before serialization | — |
+| 2 | `"legacy_query"` — `LegacyQueryHandler` | `ServerConnectionListener.startTcpServerListener` only, and only if the server replies to status; removes itself on the first modern byte | — |
+| 3 | *`"decrypt"`* — `CipherDecoder` | `Connection.setEncryptionKey` | *`"encrypt"`*, last out |
+| 4 | `"splitter"` — `Varint21FrameDecoder` | `Connection.configureSerialization` | `"prepender"` — `Varint21LengthFieldPrepender`, its exact inverse |
+| 5 | *`"decompress"`* — `CompressionDecoder` | `Connection.setupCompression`, inserted directly *after* `"splitter"` | *`"compress"`* |
+| 6 | an unnamed flow-control handler | `Connection.configureSerialization` | — |
+| 7 | `"decoder"` or `"inbound_config"` | `Connection.configureSerialization` | `"encoder"` or `"outbound_config"` |
+| 8 | *`"bundler"`* — `PacketBundlePacker` | `Connection.setupInboundProtocol`, only for a protocol with a bundle ([packets and stream codecs](packets-and-stream-codecs.md#a-bundle-is-two-empty-markers-round-ordinary-packets)) | *`"unbundler"`* — `PacketBundleUnpacker` |
+| 9 | `"packet_handler"` — the `Connection` itself | `Connection.configurePacketHandler` | itself, and then `"hackfix"` |
 
-Outbound, from the game outwards: `"packet_handler"`, then `"hackfix"` — an
-anonymous pass-through that `Connection.configurePacketHandler` adds
-immediately before it, whose write method does nothing but call its
-superclass — then *`"unbundler"`* (`PacketBundleUnpacker`), `"encoder"` or
-`"outbound_config"`, *`"compress"`*, `"prepender"`
-(`Varint21LengthFieldPrepender`, the exact mirror of the splitter),
-*`"encrypt"`*, and the socket.
+So outbound, from the game outwards, is that column read upwards:
+`"packet_handler"`, then `"hackfix"` — an anonymous pass-through that
+`Connection.configurePacketHandler` adds immediately before it, whose write
+method does nothing but call its superclass — then the unbundler, the encoder,
+the compressor, the prepender, the cipher, and the socket.
 
 Which side gets a live codec at birth is decided by direction. The end that
 will *receive* the handshake — the server — is built with a real `"decoder"`

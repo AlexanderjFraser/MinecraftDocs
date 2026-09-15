@@ -104,24 +104,34 @@ turns on.
 ## From two fields to a numbered blob
 
 ```mermaid
-flowchart TB
-    subgraph V["the value"]
+flowchart TD
+    subgraph V["knows chat, not ids"]
+      direction TB
       F1["content, a Component"]
       F2["overlay, a boolean"]
-    end
-    subgraph C["one stream codec per component"]
-      SC1["ComponentSerialization.TRUSTED_STREAM_CODEC"]
+      SC1["ComponentSerialization.<br/>TRUSTED_STREAM_CODEC"]
       SC2["ByteBufCodecs.BOOL"]
+      COMP["ClientboundSystemChatPacket.STREAM_CODEC, a StreamCodec.composite of both"]
+      F1 --> SC1
+      F2 --> SC2
+      SC1 --> COMP
+      SC2 --> COMP
     end
-    F1 --> SC1
-    F2 --> SC2
-    SC1 --> COMP["ClientboundSystemChatPacket.STREAM_CODEC, a StreamCodec.composite of two codec-and-getter pairs plus the constructor"]
-    SC2 --> COMP
-    COMP --> ENTRY["one addPacket call in GameProtocols.CLIENTBOUND_TEMPLATE, pairing that codec with GamePacketTypes.CLIENTBOUND_SYSTEM_CHAT"]
-    ENTRY --> WRAP["mapStream, applied when the protocol is bound, wraps every call in a fresh RegistryFriendlyByteBuf"]
-    WRAP --> DISP["IdDispatchCodec for the whole clientbound play phase. The id is this entry's index in the chain"]
-    DISP --> OUT["a VarInt id, then the two fields in argument order"]
+    COMP --> ENTRY["one ProtocolInfoBuilder.addPacket call, that codec against a PacketType"]
+    subgraph I["knows ids, not chat"]
+      direction TB
+      WRAP["StreamCodec.mapStream, at bind: a fresh RegistryFriendlyByteBuf per call"]
+      DISP["IdDispatchCodec, one for the clientbound play phase"]
+      WRAP --> DISP
+    end
+    ENTRY --> I
+    DISP --> OUT["on the wire: a VarInt id, then the fields"]
 ```
+
+*How one packet class is assembled, cut at the line the section is about:
+above it nothing knows an id, below it nothing knows chat. This is the order
+things are **built** in — at send time the `IdDispatchCodec` runs outermost,
+writing the id and then handing the value back up to the composite codec.*
 
 Read it downwards and you have the page. **Nothing above the
 `ProtocolInfoBuilder.addPacket` line knows anything about ids**, and
@@ -217,12 +227,15 @@ play needs its own*, below).
 
 ## Which buffer, and why play needs its own
 
-```mermaid
-flowchart LR
-    RAW["ByteBuf, what the pipeline hands the codec"] --> ID["status serverbound binds the identity function and never wraps at all"]
-    RAW --> FBB["FriendlyByteBuf for handshaking, status clientbound, login and configuration"]
-    FBB --> RFBB["RegistryFriendlyByteBuf for play, adding one field, a RegistryAccess"]
-```
+| phase and direction | what the codec is handed | bound |
+|---|---|---|
+| status, serverbound | the raw `ByteBuf` — the identity function, no wrapper at all | at class-load |
+| handshaking, status clientbound, login, configuration | `FriendlyByteBuf` | at class-load |
+| play, both directions | `RegistryFriendlyByteBuf` — a `FriendlyByteBuf` with one more field | per connection, at the switch into play |
+
+Three rows and no figure, because there is no order here to draw: the third
+row is not the second one wrapped again, it is a subclass of it, and every one
+of the three is built round the raw buffer.
 
 `FriendlyByteBuf` is a `ByteBuf` decorator declaring a hundred and fifty-two
 readers and writers, a hundred and twenty-one of which add a wire format the

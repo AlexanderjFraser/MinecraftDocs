@@ -28,19 +28,24 @@ protocol in the book written against a peer that *lies*.
 
 ```mermaid
 flowchart TD
-    subgraph W["the wire, described three ways"]
-      TC["The connection — bytes to a handler call, and back"]
-      PSC["Packets and stream codecs — what the thing crossing the wire is"]
-      PP["Protocol phases — one socket, four languages in turn"]
+    subgraph W["the wire, three times"]
+      TC["1 · The connection — bytes to a handler call, and back"]
+      PSC["2 · Packets and stream codecs — what crosses the wire"]
+      PP["3 · Protocol phases — four languages over one socket"]
     end
-    subgraph A["what it carries, once a connection is playing"]
-      WCT["What the client is told — the server's choosing"]
-      CS["Chat and signing — a message that has to prove who sent it"]
+    subgraph A["inside the play phase"]
+      WCT["4 · What the client is told — the server's choosing"]
+      CS["5 · Chat and signing — proving who sent a message"]
     end
-    TC -- "one round trip, two threads" --> PSC
-    PSC -- "a different codec table per phase" --> PP
-    W -- "the wire's own story ends; these two ride the play phase and neither needs it" --> A
+    TC -- "two threads" --> PSC
+    PSC -- "a codec table per phase" --> PP
+    PP --> A
 ```
+
+*The five lectures, numbered to the watch order: the top box is the wire
+itself, the bottom box is the one language the last two live inside, and an
+arrow is what the lecture before it settles. The pair at the bottom is drawn
+unlinked because neither needs the other — or, strictly, lecture three.*
 
 The spine is the pair at the top: read them together, because the second is
 the second half of the first. The last two are where the part spends most of

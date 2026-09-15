@@ -4657,16 +4657,24 @@ that takes it. Everything session I did act on is struck above or logged in
 
 **For pass 7 (the figures).**
 
-- `networking/README`'s figure now uses two subgraphs with a subgraph-to-
+- ~~`networking/README`'s figure now uses two subgraphs with a subgraph-to-
   subgraph edge carrying a long label. It renders and it is true; whether a
   fourteen-word edge label is legible at column width is pass 7's.
-  [kind=figure]
-- `what-the-client-is-told`'s cascade figure is sixteen nodes and carries the
+  [kind=figure]~~ **Done, pass 7 session I**: both group titles were being
+  *clipped* on screen rather than the edge label being unreadable — the render
+  showed "the wire, described three…" — so both are short one-line titles now,
+  the five nodes are numbered to the watch order, and the long edge label is a
+  caption.
+- ~~`what-the-client-is-told`'s cascade figure is sixteen nodes and carries the
   page's whole argument, and session I added a name to it. It is the densest
-  figure in the part. [kind=figure]
-- `packets-and-stream-codecs`' *From two fields to a numbered blob* is a
+  figure in the part. [kind=figure]~~ **Done, pass 7 session I**: eighteen nodes became thirteen — the
+  tail below gate 3 is the table's job and drawing it as a binary claimed two
+  outcomes the table denies — and the figure is 2,644px tall no longer.
+- ~~`packets-and-stream-codecs`' *From two fields to a numbered blob* is a
   seven-node vertical chain whose labels are sentences of up to twenty words.
-  [kind=figure]
+  [kind=figure]~~ **Done, pass 7 session I**: the chain is cut at the
+  `ProtocolInfoBuilder.addPacket` line the section is about, one subgraph
+  either side of it, and the labels are inside the budget.
 
 **For pass 8 (the voice).**
 
@@ -5878,35 +5886,53 @@ even where nothing else on the page needs it. [kind=record]
 
 ### For pass 7 — the figures [kind=figure]
 
-- `what-the-client-is-told`, the gate cascade: two readers stopped at the
+- ~~`what-the-client-is-told`, the gate cascade: two readers stopped at the
   `FREE` node ("outside gate 3", three feeds) because it branches off `SC`
   before gate 3 has been drawn, so read top-to-bottom it is a forward
   reference inside the figure. Session I reordered the D1 edge label for
-  truth but did not restructure the figure. [kind=figure]
-- `chat-and-signing`, *Three ways to say no*: the flowchart draws two of the
+  truth but did not restructure the figure. [kind=figure]~~ **Done, pass 7 session I**: the node says *three feeds that skip
+  gate 3* and sits beside the gate it skips, so the forward reference is gone.
+- ~~`chat-and-signing`, *Three ways to say no*: the flowchart draws two of the
   five Netty-thread checks and omits the chat-visibility refusal, which is the
   one that does **not** close the connection. Session I stated the omission in
   a sentence above the table rather than redrawing. The page's cast row was
-  right and the figure was the incomplete one. [kind=figure]
-- `packets-and-stream-codecs`, *Which buffer, and why play needs its own*: the
+  right and the figure was the incomplete one. [kind=figure]~~ **Done, pass 7 session I**: redrawn by *outcome* rather than by
+  order, all five checks in it, and the message terminal reached from both
+  threads — which also corrected the sentence above the table, which said two
+  of the five close the connection when four do.
+- ~~`packets-and-stream-codecs`, *Which buffer, and why play needs its own*: the
   three arrows mean two different things — two are "this phase binds this" and
   the third is "this class extends that one". A reader briefly believed play
-  wraps twice. [kind=figure]
-- `packets-and-stream-codecs`, *From two fields to a numbered blob*: four of
+  wraps twice. [kind=figure]~~ **Cut, pass 7 session I**: the figure is a three-row table now
+  (phase and direction · what the codec is handed · bound), which carries the
+  bind time the figure omitted and has no arrow to misread. F10's own ruling:
+  two or three paths that differ are a table.
+- ~~`packets-and-stream-codecs`, *From two fields to a numbered blob*: four of
   the seven boxes name mechanisms the page explains eighty to a hundred and
   fifty lines later, which makes the page's central artefact the first thing a
-  reader has to take on trust. [kind=figure]
-- `protocol-phases`, the login state diagram: `NEGOTIATING` floats with no
+  reader has to take on trust. [kind=figure]~~ **Done, pass 7 session I**: overtaken by the redraw above — the
+  two halves are now named for what each half knows, which is the sentence
+  under the figure, so a reader has the figure's argument before its names.
+- ~~`protocol-phases`, the login state diagram: `NEGOTIATING` floats with no
   edge in or out. It is labelled *declared and never assigned* and is still
   read as a drawing error; pass 7 should decide whether a state machine may
-  contain a state nothing reaches. [kind=figure]
-- `protocol-phases`, the configuration flowchart: the `W` box says
+  contain a state nothing reaches. [kind=figure]~~ **Ruled, pass 7 session I: no.** A state diagram draws the
+  machine as it runs; a constant that is declared and never assigned is a fact
+  about the enum, and the prose already carries it. `NEGOTIATING` is out of
+  the figure, and the caption says seven of the eight constants are drawn.
+- ~~`protocol-phases`, the configuration flowchart: the `W` box says
   "returnToWorld appends the last two", naming its objects by position, and
   the position is only resolvable by reading the two boxes to its right.
-  [kind=figure]
-- `the-connection`, the round-trip sequence diagram: the note "compress,
+  [kind=figure]~~ **Done, pass 7 session I**: the box is gone, and it was also
+  wrong — `returnToWorld` builds the queue before any task runs, so drawing it
+  as the fifth step made a queue-building call into a queue entry. The queue is
+  a subgraph now and the round trip that ends the phase is drawn.
+- ~~`the-connection`, the round-trip sequence diagram: the note "compress,
   prepender, encrypt, then decrypt, splitter, decompress" hands a reader six
-  handler names ninety lines before any of them is explained. [kind=figure]
+  handler names ninety lines before any of them is explained. [kind=figure]~~ **Done, pass 7 session I**: the note is gone with the relay lane
+  it sat over, and the six names now live only in the pipeline table, which
+  gained an *outbound mirror* column so the reverse order is read off the
+  table rather than out of a sentence.
 
 ### For pass 8 — the voice [kind=voice]
 

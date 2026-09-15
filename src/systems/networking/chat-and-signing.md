@@ -32,6 +32,11 @@ defended harder than the cryptography is**, and that is the right way round.
 
 ## A message is not the text you see
 
+Two packets carry all of this, and the page names them once here: a line
+leaves its author in a `ServerboundChatPacket` and reaches everybody else in a
+`ClientboundPlayerChatPacket`, which is the one packet in the game whose
+contents a recipient checks a signature over before drawing.
+
 A message on the wire is a `PlayerChatMessage`: a `SignedMessageLink` saying
 where in the sender's chain it sits, a `MessageSignature`, a
 `SignedMessageBody` of exactly four fields, and — optionally — a `Component`
@@ -54,28 +59,42 @@ up.
 
 ```mermaid
 sequenceDiagram
+    box transparent the sender's client
     participant CScr as ChatScreen
     participant CPL as ClientPacketListener
+    end
+    box transparent the server
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant PL as PlayerList
+    end
+    box transparent every recipient's client
     participant RCPL as ClientPacketListener
     participant CLis as ChatListener
-    Note over RCPL: RCPL is the recipient's client, CPL the sender's
+    end
 
-    CScr->>CPL: whitespace squeezed, cut to 256 characters
-    CPL->>CPL: timestamp, salt, the last-seen window, then sign
+    CScr->>CScr: normalizeChatMessage squeezes the whitespace, cuts to 256
+    CScr->>CPL: sendChat
+    CPL->>CPL: a timestamp, a salt, the last-seen window, then the signature
     CPL->>SGPL: ServerboundChatPacket
     SGPL->>SGPL: Netty thread, apply the last-seen update, check the characters
-    Note over SGPL: everything below is a task queued on the Server thread
-    SGPL->>SGPL: SignedMessageChain.Decoder.unpack, which verifies the signature
-    SGPL->>SGPL: start the filter, decorate at once, join them in a FutureChain
-    SGPL->>PL: broadcastChatMessage, bound to ChatType.CHAT
+    rect rgba(0, 0, 0, 0.04)
+        Note over SGPL,PL: the rest of the server's work is one task on the Server thread
+        SGPL->>SGPL: SignedMessageChain.<br/>Decoder.unpack, the signature check
+        SGPL->>SGPL: the filter starts, the decoration is immediate, a FutureChain joins them
+        SGPL->>PL: broadcastChatMessage, bound to ChatType.CHAT
+    end
     PL->>RCPL: ClientboundPlayerChatPacket, signatures packed to cache ids
-    RCPL->>RCPL: check the global index, unpack the cache ids, verify the signature
+    RCPL->>RCPL: the global index, then the cache ids, then the signature
     RCPL->>CLis: handlePlayerChatMessage, trust level, blocklist, delay queue
     CLis->>RCPL: markMessageAsProcessed
     RCPL->>SGPL: ServerboundChatAckPacket, once the offset passes 64
 ```
+
+*One line's whole journey, three machines in three boxes: the two
+`ClientPacketListener` lanes are the sender's and every recipient's, and the
+same signature is checked once in the middle box and again in the right-hand
+one. The shaded band is the only part of the server's work that is not on the
+Netty thread.*
 
 Five things in that picture are worth naming before the checks are.
 
@@ -128,18 +147,25 @@ unreportable `ClientboundDisguisedChatPacket` instead.
 
 ## Three ways to say no, and one way not to ask
 
+Everything above happens to a message that survives. Four of the checks run
+before the server thread ever sees the packet, and where a refusal lands
+decides how much of the session it takes with it.
+
 ```mermaid
 flowchart TD
-    P["ServerboundChatPacket, on the Netty thread"] --> W{"last-seen window agrees"}
-    W -- no --> X1["connection closed: chat_validation_failed"]
-    W -- yes --> C{"every character allowed"}
-    C -- no --> X2["connection closed: illegal_characters"]
-    C -- yes --> H["queued on the Server thread"]
-    H --> S{"SignedMessageChain.Decoder.unpack"}
-    S -- "no signature, or key expired" --> M["message dropped, red line to the sender, the next one may still land"]
-    S -- "out of order, or signature invalid" --> B["chain broken, every later message this session fails too"]
-    S -- "accepted" --> OK["filter, decorate, broadcast"]
+    P["ServerboundChatPacket"]:::netty --> N{"the window, the characters, chat visibility"}:::netty
+    N -- "the window, or a character" --> XC["the connection dies"]
+    N -- "chat turned off" --> XM["the message dies, and the next one may still land"]
+    N -- "all five pass" --> S{"SignedMessageChain.<br/>Decoder.unpack"}:::server
+    S -- "no signature, or key expired" --> XM
+    S -- "out of order, or signature invalid" --> XB["the chain dies, and every later message this session with it"]
+    S -- accepted --> OK["filter, decorate, broadcast"]:::server
 ```
+
+*The five checks on the Netty thread, in green, and the one stage on the
+Server thread, in blue, drawn so that the arrows meet at the three things a
+refusal can kill. The middle terminal is reached from both, which is the
+picture's point: where a check runs says nothing about what it costs.*
 
 Those three endings are the whole vocabulary of failure here, and every check
 in the next section lands on exactly one of them.
@@ -179,9 +205,9 @@ on the Netty thread, before the message is handed to the server at all: the
 three window checks inside
 `ServerGamePacketListenerImpl.unpackAndApplyLastSeen`, then the character
 check and the chat-visibility refusal inside
-`ServerGamePacketListenerImpl.tryHandleChat`. The flowchart above draws only
-the two of those five that close the connection; everything from the sixth row
-down happens inside the task
+`ServerGamePacketListenerImpl.tryHandleChat`. Four of those five close the
+connection and the fifth does not, which is the split the flowchart above
+draws; everything from the sixth row down happens inside the task
 `ServerGamePacketListenerImpl.tryHandleChat` posts to the server.
 
 | the check | what it catches | what dies |
@@ -269,6 +295,13 @@ message into *so-and-so said this*, so the phrasing around a line is data and th
 line is not — and the global index the receiving client checks. A
 server is free to change any of those. The signature is over what the player
 typed and what they had seen when they typed it, and nothing else.
+
+On the receiving client all of that lands in `ChatListener`, the class the
+figure at the top of this page ends on. `ChatListener.handlePlayerChatMessage`
+acknowledges the message back to the server whether or not it is drawn, and
+puts the line in `ChatListener.delayedMessageQueue` rather than on the screen
+when the *chatDelay* option is set — a queue its own tick drains one line at a
+time, which is why the option is a client-side stagger and not a server one.
 
 That gap is what `ChatTrustLevel` exists to expose, and it tests for it
 crudely on purpose. `ChatTrustLevel.evaluate` calls a message *modified* the

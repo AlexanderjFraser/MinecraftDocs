@@ -573,6 +573,7 @@ the break in from a render, and is the check after adding a lane.
 | `CHPL` | `ClientHandshakePacketListenerImpl` |
 | `CCPL` | `ClientConfigurationPacketListenerImpl` |
 | `Conn` | `Connection` |
+| `SConn` | `Connection` |
 | `SCL` | `ServerConnectionListener` |
 | `BEL` | `BlockableEventLoop` |
 | `SCC` | `ServerChunkCache` |
@@ -895,6 +896,7 @@ the break in from a render, and is the check after adding a lane.
 | `Netty` | *the Netty event loop, not a class* |
 | `Worker` | *the `Util.backgroundExecutor` pool, not a class* |
 | `Auth` | *the User Authenticator thread, not a class* |
+| `Sess` | *the Mojang session service both machines call over HTTPS, not a class* |
 | `Wire` | *the network between the two programs, not a class* |
 | `Disk` | *the save on disk, not a class* |
 | `JVM` | *the process itself, not a class* |
@@ -906,14 +908,17 @@ Collisions the pass-2 notebook recorded and the rows above settle: `SL` is
 `CM` is `ChunkMap` (the menus take their own initials); `CH` is `ChunkHolder`
 (the client handshake listener is `CHPL`); `GR` is `GameRenderer`
 (`GuiRenderer` lengthens to `GuiR`); `TD` is retired in favour of `CTD` /
-`TCTD` — and `TreeDecorator` itself is `TDec`. Three classes have two lanes on
+`TCTD` — and `TreeDecorator` itself is `TDec`. Four classes have two lanes on
 purpose: `RCPL` is also `ClientPacketListener`, because the chat diagram shows
 the sender's client and the recipient's at once and a note in the figure says
 which is which, and `SAB` is also `AbstractBoat` and `CSED` also
 `SynchedEntityData`, because [authority](systems/entities/authority.md)'s boat
 and [synched entity data](systems/entities/synched-entity-data.md)'s container
 are each a page's one picture of two copies of one object, and a `box` per
-machine says which is which. Part V (session F) lengthened four later claimants rather than
+machine says which is which; `SConn` is also `Connection`, because [the
+connection](systems/networking/the-connection.md#one-packet-there-and-one-back)'s
+round trip has one object at each end and the picture, not a note, has to say
+so. Part V (session F) lengthened four later claimants rather than
 reassigning a row: `LeverBlock` is `LevB` because `LB` is `LiquidBlock`,
 `BlockItem` would be `BItem` because `BI` is `BucketItem`,
 `BlockPlaceContext` would be `BPC` because `PC` is `ProtoChunk`, and

@@ -38,7 +38,6 @@ and by the time the object is built it is already encoding play packets to it.
 
 ```mermaid
 stateDiagram-v2
-    direction LR
     [*] --> HANDSHAKING : TCP accept
     HANDSHAKING --> STATUS : ClientIntentionPacket, intent STATUS
     HANDSHAKING --> LOGIN : ClientIntentionPacket, intent LOGIN or TRANSFER
@@ -47,14 +46,20 @@ stateDiagram-v2
     CONFIGURATION --> PLAY : ClientboundFinishConfigurationPacket, ServerboundFinishConfigurationPacket
     PLAY --> CONFIGURATION : ClientboundStartConfigurationPacket, ServerboundConfigurationAcknowledgedPacket
     PLAY --> [*] : disconnect
-    note right of HANDSHAKING : every transition packet is terminal, so the codec that decoded it is already gone
+    note right of HANDSHAKING : every packet named here is terminal, so the codec that decoded it is already gone
 ```
 
-**Seven packets in the game carry the terminal flag**, and six of them are on
-this diagram; `ClientIntentionPacket` is the seventh, so the very first packet
-of a connection already tears out the codec that decoded it. Four of the seven
-are the two handshakes that bracket configuration, which is the only phase a
-connection can enter twice.
+*The five phases, each labelled arrow carrying the packet — or the pair of
+them — that changes one. The arrow back out of play is the only one that goes
+up, which is what makes configuration the only phase a connection can enter
+twice.*
+
+**Seven packets in the game carry the terminal flag**, and every one of them
+labels an arrow above. `ClientIntentionPacket` labels two, which is the
+striking one: the very first packet a connection ever sends already tears out
+the codec that decoded it. Four of the remaining six are the two handshakes
+that bracket configuration, which is the only phase a connection can enter
+twice.
 
 `ConnectionProtocol` is five constants — `ConnectionProtocol.HANDSHAKING`,
 `ConnectionProtocol.STATUS`, `ConnectionProtocol.LOGIN`,
@@ -139,22 +144,29 @@ exists as a separate entry point.
 
 ## Login
 
+The login phase is a state machine on one field, and the states are the ones
+the server moves through between accepting a socket and having a profile it
+believes.
+
 ```mermaid
 stateDiagram-v2
-    direction LR
     [*] --> HELLO
-    HELLO --> KEY : online mode over a socket, ClientboundHelloPacket sent
-    HELLO --> VERIFYING : the singleplayer profile, with no encryption
-    HELLO --> VERIFYING : offline mode, profile minted from the name
-    KEY --> AUTHENTICATING : ServerboundKeyPacket, ciphers installed now
-    AUTHENTICATING --> VERIFYING : the User Authenticator thread stores the profile
-    VERIFYING --> WAITING_FOR_DUPE_DISCONNECT : tick, a player with this profile is still in the world
-    VERIFYING --> PROTOCOL_SWITCHING : tick, bans and whitelist pass, ClientboundLoginFinishedPacket sent
-    WAITING_FOR_DUPE_DISCONNECT --> PROTOCOL_SWITCHING : tick, the old connection is gone
-    PROTOCOL_SWITCHING --> ACCEPTED : ServerboundLoginAcknowledgedPacket, configuration begins
-    NEGOTIATING : NEGOTIATING, declared and never assigned
-    note left of VERIFYING : the three tick transitions are the server-thread work that advances the login
+    HELLO --> KEY : online mode, ClientboundHelloPacket
+    HELLO --> VERIFYING : the singleplayer profile
+    HELLO --> VERIFYING : offline mode
+    KEY --> AUTHENTICATING : ServerboundKeyPacket
+    AUTHENTICATING --> VERIFYING : the authenticator thread returns
+    VERIFYING --> WAITING_FOR_DUPE_DISCONNECT : tick, a duplicate is online
+    VERIFYING --> PROTOCOL_SWITCHING : tick, ClientboundLoginFinishedPacket
+    WAITING_FOR_DUPE_DISCONNECT --> PROTOCOL_SWITCHING : tick, the old one is gone
+    PROTOCOL_SWITCHING --> ACCEPTED : ServerboundLoginAcknowledgedPacket
+    note right of VERIFYING : the three edges marked tick are the server thread's, and every other is a Netty handler's
 ```
+
+*Seven of the eight `ServerLoginPacketListenerImpl.State` constants, and the
+three edges the server thread owns. Look at where the forks are: the machine
+branches once out of the hello, on how — or whether — this login is
+authenticated, and then again on whether the profile is already playing.*
 
 No handler on `ServerLoginPacketListenerImpl` ever schedules itself onto
 another thread — there is not one `PacketUtils.ensureRunningOnSameThread` call
@@ -168,7 +180,16 @@ connection](the-connection.md#connectiontick-the-one-call-from-a-game-thread))
 — reads it on the server thread and does the login.
 The tick is also where `ServerLoginPacketListenerImpl.MAX_TICKS_BEFORE_LOGIN`,
 six hundred ticks, is enforced: a client that has not reached the end of
-the phase in thirty seconds is disconnected for a slow login.
+the phase in thirty seconds is disconnected for a slow login — a transition
+out of every state above, and the one the diagram cannot draw.
+
+The three states the tick moves through are the ones the diagram names and
+the paragraphs below do not: `ServerLoginPacketListenerImpl.State.AUTHENTICATING`
+is the wait on the session service,
+`ServerLoginPacketListenerImpl.State.PROTOCOL_SWITCHING` is the gap between
+the server sending `ClientboundLoginFinishedPacket` and the client
+acknowledging it, and `ServerLoginPacketListenerImpl.State.ACCEPTED` is where
+the machine stops, because configuration has its own listener.
 
 **Three branches out of the hello.** If the name matches the singleplayer
 profile, verification starts at once with no encryption. If the server uses
@@ -182,19 +203,27 @@ offline mode — the profile is minted from the name by
 
 ```mermaid
 sequenceDiagram
+    box transparent the client
     participant CHPL as ClientHandshake<br/>PacketListenerImpl
+    end
+    box transparent the server
     participant SLPL as ServerLoginPacket<br/>ListenerImpl
-    participant Auth as User Authenticator thread
+    end
+    participant Sess as the session service
 
-    SLPL->>CHPL: ClientboundHelloPacket, RSA public key and a four-byte challenge
-    CHPL->>CHPL: generate the AES secret, digest over server id, secret and key
-    CHPL->>Auth: joinServer on the client IO pool, before the key packet is sent
-    CHPL->>SLPL: ServerboundKeyPacket, secret and challenge RSA-encrypted, ciphers attached to the send
-    SLPL->>SLPL: validate the challenge, recover the secret, Connection.setEncryptionKey now
-    SLPL->>Auth: hasJoinedServer on a fresh thread named for user authentication
-    Auth-->>SLPL: the authenticated profile, state VERIFYING
+    SLPL->>CHPL: ClientboundHelloPacket, an RSA public key and a challenge
+    CHPL->>CHPL: a new AES secret, and a digest over id, secret and key
+    CHPL->>Sess: joinServer, on the client's IO pool, before the key packet
+    CHPL->>SLPL: ServerboundKeyPacket, RSA-encrypted, ciphers attached to the send
+    SLPL->>SLPL: the challenge checked, the secret recovered, then<br/>Connection.setEncryptionKey
+    SLPL->>Sess: hasJoinedServer, on a fresh User Authenticator thread
+    Sess-->>SLPL: the authenticated profile, state VERIFYING
     Note over SLPL: the next server tick runs bans, whitelist, compression, duplicates
 ```
+
+*Both ends authenticating against the same external service, the client first.
+Read it downwards: the server has installed both ciphers by the fifth line, two
+lines before it has any idea who this is.*
 
 Read the diagram for the order, because the order is the point: **the server
 installs both ciphers while handling the key packet, before its own
@@ -250,16 +279,29 @@ just disconnects), or six hundred ticks.
 
 ## Configuration
 
+Configuration is a queue. The order below is fixed, each task finishes before
+the next begins, and the last two exist only to get a player into a world.
+
 ```mermaid
-flowchart LR
-    S["startConfiguration: BrandPayload, server links, enabled features, outside the queue"] --> R["SynchronizeRegistriesTask"]
-    R --> C["ServerCodeOfConductConfigurationTask, if the server has one"]
-    C --> P["ServerResourcePackConfigurationTask, if the server has one"]
-    P --> W["returnToWorld appends the last two"]
-    W --> PS["PrepareSpawnTask: Preparing, then Ready"]
-    PS --> J["JoinWorldTask sends ClientboundFinishConfigurationPacket, terminal"]
-    J --> F["handleConfigurationFinished: outbound play, the gate again, then spawnPlayer"]
+flowchart TD
+    S["three packets sent before any task runs"]:::server
+    S --> Q
+    subgraph Q["the serial queue"]
+      direction TB
+      R["SynchronizeRegistriesTask"]:::server --> C["ServerCodeOfConduct<br/>ConfigurationTask"]:::server
+      C --> P["ServerResourcePack<br/>ConfigurationTask"]:::server
+      P --> PS["PrepareSpawnTask: a spawn, and a ticket"]:::server
+      PS --> J["JoinWorldTask: the terminal packet"]:::server
+    end
+    Q -- "ClientboundFinishConfigurationPacket" --> CL["the client rebuilds its registries"]:::client
+    CL -- "ServerboundFinishConfigurationPacket" --> F["the play protocol, the gate again, the player"]:::server
 ```
+
+*The phase as a queue of five tasks, strictly one at a time — the middle two
+only if the server has a code of conduct or a resource pack — with the three
+packets that precede the queue and the round trip that ends it. The two arrows
+at the foot are the phase's oddity: between them the server is holding a
+ticket on chunks for a player that does not exist yet.*
 
 `SynchronizeRegistriesTask` is the reason configuration exists, and the
 queue around it is strictly serial. `ServerConfigurationPacketListenerImpl.startConfiguration`
