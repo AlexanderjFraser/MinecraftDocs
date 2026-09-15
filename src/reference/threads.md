@@ -12,7 +12,7 @@ anything else submits a task to that thread's event loop.
 Two threads own game state — the Render thread owns the client's, the
 Server thread owns the world's — and everything else is a way of getting
 work to them or from them. Work crosses a thread boundary in exactly three
-ways, and the figure labels each edge with which: a **posted task** (a
+ways, and the figure names which on every edge that is one of them: a **posted task** (a
 `Runnable` on the owner's `BlockableEventLoop`), a **completed future** (a
 worker's result, completed onto the owner's executor), or a **hopped
 handler** (a packet decoded on Netty and re-posted to its owner by
@@ -50,9 +50,11 @@ flowchart LR
 ```
 
 The *daemon* column is the one that decides how the process ends, because a
-non-daemon thread holds the JVM open until something stops it. Four kinds of
-thread on a dedicated server are non-daemon: the Server thread, `Util.ioPool`'s
-workers, and the RCON and query listeners. The first two are retired
+non-daemon thread holds the JVM open until something stops it. Five rows of
+the table are non-daemon, and only four of them can hold it open: **main**
+returns the moment it has registered the shutdown hook, long before anything
+needs stopping, which leaves the Server thread, `Util.ioPool`'s workers, and
+the RCON and query listeners. The first two are retired
 deliberately — the Server thread by returning, the IO pool by
 `Util.shutdownExecutors` — and the other two are `GenericThread`s, which is
 where the half-second socket timeout and `GenericThread.running` come from:
@@ -60,7 +62,9 @@ each polls so that it notices the flag within half a second of being told to
 stop. Everything else the game starts is a daemon and simply stops existing
 ([how a server dies](../systems/server/how-a-server-dies.md#the-closes-and-the-last-thread)).
 
-The table is the figure's rows. Netty is drawn once and shared because
+Every lane in the figure has a row in the table; two rows have no lane,
+because **main** has stopped existing before any of these edges are busy and
+the timer-hack thread does nothing at all. Netty is drawn once and shared because
 it is: in singleplayer the client's `Connection` and the integrated
 server's run on the same `Netty Local IO` threads, and the packets between
 them are real.
@@ -70,7 +74,7 @@ them are real.
 | thread | made by | daemon | runs | may touch |
 |---|---|---|---|---|
 | **Render thread** (client) | the JVM main thread, renamed in `client/main/Main` | no — it *is* main | `Minecraft.run` → `Minecraft.runTick` once per frame; `Minecraft.tick` 0–10 times inside it | Everything client-side: `ClientLevel`, `LocalPlayer`, the GPU (`RenderSystem.assertOnRenderThread`), screens, options. It is also the client's event loop (`Minecraft` is a `ReentrantBlockableEventLoop`), so packet handlers run here after `PacketUtils.ensureRunningOnSameThread`. |
-| **main** (dedicated) | the JVM | no | the whole of boot: the properties, the EULA, the `ManagementServer`, `session.lock`, the `WorldLoader`, the `DedicatedServer` constructor, then `MinecraftServer.spin` and the shutdown hook | Everything, until the Server thread exists; after that, nothing ([starting a server](../systems/server/starting-a-server.md#everything-main-does-before-there-is-a-second-thread)) |
+| **main** (dedicated) | the JVM | no | the whole of boot: the properties, the EULA, the `ManagementServer`, `session.lock`, the `WorldLoader`, the `DedicatedServer` constructor, then `MinecraftServer.spin`, and finally registering the *Server Shutdown Thread* as a JVM shutdown hook — which is a separate thread and not main | Everything, until the Server thread exists; after that, nothing ([starting a server](../systems/server/starting-a-server.md#everything-main-does-before-there-is-a-second-thread)) |
 | **Server thread** | `MinecraftServer.spin` | no | `MinecraftServer.runServer` → `MinecraftServer.processPacketsAndTick` every `TickRateManager.nanosecondsPerTick` (50 ms by default); `MinecraftServer.waitUntilNextTick` drains the task queue in the slack | Every `ServerLevel`, every chunk, entity and block entity, the `PlayerList`. Serverbound *play* packet handlers run here, not on Netty. One per server; singleplayer has exactly one. |
 | **Netty IO** (`Netty NIO IO #n`, `Netty Epoll IO #n`, `Netty Kqueue IO #n`, `Netty Local IO #n`) | `EventLoopGroupHolder` | yes | the `Connection` pipeline: split, decrypt, decompress, decode; encode, compress, encrypt — **and the handshake and login handlers** | Bytes and `Packet` objects — plus, in handshake and login, the handlers themselves: `ServerHandshakePacketListenerImpl` and `ServerLoginPacketListenerImpl` never hop. The login *state machine* is not all theirs, though: `ServerLoginPacketListenerImpl` is a `TickablePacketListener`, so the Server thread advances it once a tick ([protocol phases](../systems/networking/protocol-phases.md#login) walks that state machine) through `MinecraftServer.tickConnection`. A *play* handler that needs game state re-posts to the owning thread. *Local* is the in-process channel of singleplayer. |
 | **Worker-Main-n** | `Util.backgroundExecutor` — a `ForkJoinPool` sized to the JDK's available-processor count minus one, clamped by `Util.maxAllowedExecutorThreads` and capped by the *max.bg.threads* property (`Util.getMaxThreads`) | yes | chunk generation and lighting via `ChunkTaskDispatcher`; section meshing via `SectionRenderDispatcher`; resource-reload *prepare* phases; chunk serialisation | Its own inputs. Results return to the owning thread as a `CompletableFuture` completed onto that thread's executor. Never `Level` state directly. |

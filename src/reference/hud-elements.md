@@ -3,9 +3,12 @@
 > Verified against **Minecraft 26.2** · Reference · Hand-kept from
 > `Hud.extractRenderState` and `Gui.extractRenderState`.
 
-The HUD is one ordered method, and almost every element in it is behind a
-condition — the contextual bar is the exception, recorded unconditionally and
-made to draw nothing by an empty state object instead.
+The HUD is one ordered sweep down two methods — twenty-seven slots in
+`Hud.extractRenderState` and then four more in `Gui.extractRenderState`,
+which is the split the second table below is about — and almost every element
+in it is behind a condition. *Slots*, because one of the twenty-seven holds
+two alternative elements and is numbered 17 and 17b below. The contextual bar is the exception, recorded
+unconditionally and made to draw nothing by an empty state object instead.
 The lecture that frames this is [the HUD](../systems/client/hud.md); this is
 the table it is built on, in **record order** — which is also the order
 things appear in front of each other, since [the GUI render
@@ -19,8 +22,9 @@ explained. Below them `Hud.extractRenderState` short-circuits entirely while a
 `LevelLoadingScreen` is up, publishing `GuiRenderState.isHudHidden` before it
 does.
 
-*Hidden* in the last column means `Hud.isHidden`, which `Options.keyToggleGui`
-— F1 — flips.
+*Hidden by F1* means `Hud.isHidden`, which `Options.keyToggleGui` — F1 —
+flips. It is the fourth column in the table below and the last in the
+second one.
 
 | # | element | recorded by | hidden by F1? | its own condition |
 |---:|---|---|---|---|
@@ -55,9 +59,13 @@ does.
 | 27 | subtitles | `SubtitleOverlay` | yes, with one exception | `Options.showSubtitles` is on, and a subtitle-carrying sound has played within its own range — a *distance* test, not a volume one, so a category muted to silence still puts its subtitle on screen. Deferred when there is no screen or the screen declares itself in-game UI, and recorded even while hidden if such a screen is up — which is the exception |
 
 The four elements a reader expects at the end of that list are not on
-`Hud.extractRenderState`'s list at all — three of them are still `Hud` methods,
-and only the toasts are outside `Hud`. `Gui.extractRenderState` records them,
-and the overlay or the screen goes in between:
+`Hud.extractRenderState`'s list at all: `Gui.extractRenderState` records them
+instead, in the order below, with the overlay or the screen going in between.
+Three of the four are still `Hud` methods called from the outer one —
+`Hud.extractSavingIndicator`, `Hud.extractDebugOverlay` and
+`Hud.extractDeferredSubtitles` — and only the toasts, which are
+`ToastManager.extractRenderState`'s, are outside `Hud` entirely.
+The row with no number is the overlay-or-screen slot rather than an element:
 
 | # | element | its own condition | hidden by F1? |
 |---:|---|---|---|

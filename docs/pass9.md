@@ -44,6 +44,277 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session N — the frame and Reference *(2026-09-14)*
+
+Eighteen pages read, one agent each, under `docs/pass6-brief.md` Part 1: the
+eleven hand-kept Reference pages, `src/introduction.md`, `src/lectures.md` and
+the four atlas pages. The generated Reference views and the two indexes were
+not read (they are rewritten on every deploy).
+
+**The class to check first.** Most of what follows is one kind of error: **a
+sentence that counts the text beside it and gets the count wrong**. Twenty-one
+of them, in eighteen pages. None is a claim about the game, so pass 4's
+protocol would not have caught any; each is checkable by counting the table
+under it, which is what pass 9 should do on every page in this list before it
+re-derives a game fact.
+
+### Corrections — the counts, each re-derived by counting the page
+
+- `src/reference/README.md`:9 — *Half of them are rewritten from the source on
+  every deploy … the other half are read by a person* against a table of 23
+  rows that splits **13 generated / 10 hand-kept**. Now stated as thirteen and
+  ten, and `src/introduction.md` (which said *rather more than half*) now says
+  the same two numbers.
+- `src/reference/README.md`:84 — *It disagreed in six of twenty rows when the
+  check was written*. `check_deps.reference_column` compares every row matching
+  `REF_ROW`, which is all twenty-three today; the twenty was the table's size
+  on the day pass 5's session N wrote it. Now *six rows on the day the check
+  was written*, with no phantom population.
+- `src/reference/README.md`:45–69 — the *kept by* column carried four values
+  (*generated*, *hand-kept*, *generated from the lane key*, *generated from the
+  pages*) where the figure above it draws three groups and the prose splits two
+  ways. Now three values matching the figure: *generated · decompile*,
+  *generated · corpus*, *hand-kept*.
+- `src/reference/level-data-and-rules.md`:13 — *the rest are one line each
+  because one line is all there is*. Every section after the table is
+  multi-paragraph prose; no section is one line. Now names the six sections and
+  says what a row with no section below it means.
+- `src/reference/level-data-and-rules.md`:197 — *is the one entry below that is
+  not a packet* indexes a list that is not on the page.
+- `src/reference/level-data-and-rules.md`:65 — *about ten fields*, then ten
+  named. `PrimaryLevelData` has **eleven** instance fields
+  (`PrimaryLevelData.java`:39–49); the eleventh,
+  `PrimaryLevelData.worldGenSettingsLifecycle`, is now named.
+- `src/reference/level-data-and-rules.md`:178 — *the two rules screens*, only
+  one of which (`InWorldGameRulesScreen`) the page ever names. The other is
+  `WorldCreationGameRulesScreen`; both extend `AbstractGameRulesScreen`.
+- `src/reference/block-update-flags.md`:29 — *the two large ones are worth
+  decomposing here rather than in the reader's head*, above a table whose *the
+  bits* column decomposes all four.
+- `src/reference/hud-elements.md`:6 — *The HUD is one ordered method* against
+  the page's own header (*from `Hud.extractRenderState` **and**
+  `Gui.extractRenderState`*) and its second table.
+- `src/reference/hud-elements.md`:22 — *Hidden in the last column* describes the
+  second table's column order while standing over the first, where the column
+  is fourth of five.
+- `src/reference/hud-elements.md`:57 — *three of them are still `Hud` methods*,
+  above a table that names no method. They are `Hud.extractSavingIndicator`,
+  `Hud.extractDebugOverlay` and `Hud.extractDeferredSubtitles`
+  (`Gui.java`, `extractRenderState`); the fourth is
+  `ToastManager.extractRenderState`.
+- `src/reference/density-function-nodes.md`:99 — *three unregistered
+  singletons*, naming `DensityFunctions.BlendAlpha`,
+  `DensityFunctions.BlendOffset` and `DensityFunctions.BeardifierMarker`, all
+  three of which the page's own main table lists as **registered** ids
+  (*blend_alpha*, *blend_offset*, *beardifier*). The word *unregistered* also
+  means something else twenty lines above, where it is right. What is true of
+  the three is that they are singletons resolved by object identity.
+- `src/reference/naming-drift.md`:42 and :385 — *two hundred and forty-five
+  rows*; counting every data row in the thirteen drift tables gives **247**.
+- `src/reference/naming-drift.md`:44 and :284 — the rendering table at
+  *twenty-seven rows*; it has **28**.
+- `src/reference/naming-drift.md`:385 — *a dozen of these rows are one design
+  change each*, introducing **seven** bullets.
+- `src/maps/README.md`:7 — *Each map is a figure … and then the table the
+  figure was drawn from*, against a figure on the same page saying eight SVGs
+  and six tables. The truth is eight SVGs (seven of them the atlas's — the
+  eighth, `tree-EntityRenderState.svg`, belongs to `entity-rendering`) and
+  **seven** generated tables.
+- `src/maps/biggest.md`:3 — the header says *the thirty largest classes*; the
+  page's table is **forty** rows and only the figure is thirty.
+- `src/maps/fanin.md`:45 — *Three rows of the chart are worth a second look*,
+  introducing five names, two of which are in the table the sentence excludes.
+  The page's own arithmetic was sound (24 of the thirty in the table, three in
+  each of two paragraphs); the words were not.
+- `src/maps/fanin.md`:25 — the grouping table was said to hold twenty-four of
+  the thirty; it holds **thirty-two names**, the extra eight being ranks 31–60
+  kept so a family is not broken (re-derived from `src/generated/fanin.md`).
+- `src/maps/packages.md`:5 — *the first surprise in it is which half is bigger*,
+  answered in the next clause with a near-third and seven tenths.
+- `src/maps/packages.md`:24 against :50 — `net/minecraft/client` given as 1,864
+  classes and then as 41, thirty lines apart, without the page saying that the
+  second is the *itself only* count its own convention paragraph defines.
+- `src/maps/hierarchy.md`:5 — *`Block` has 293 subclasses* against :39 *92
+  direct subclasses* and :47 *`Block` is [`BlockBehaviour`'s] only subclass*.
+  293 is the descendant count, which is the word both tables use.
+- `src/lectures.md`:19 against :461 — two lists both claiming to be *the three
+  worth taking out of turn*, differing in their first member (*environment
+  attributes and timelines* against *blocks and states*). There is one
+  departure from the sidebar order and three pages a single-part viewer fetches.
+- `src/lectures.md`:80 against :96 — *the last four can be watched in any order*
+  against the entry two lines below saying fluids assumes scheduled ticks.
+- `src/lectures.md`:196 — *Two groups have an internal order*, one of which
+  (player anatomy → the two-phase tick) is the trunk and not one of the four.
+- `src/lectures.md`:246 — *With one exception, nothing here hands off to
+  anything*; the exception is never named.
+- `src/lectures.md`:320 against :340 — Part XII partitioned as *a substrate, a
+  pipeline, and a wing* and then as 1–6 / 7–9 / 10, which do not cover the same
+  ten lectures: lecture ten is in none of the first three.
+- `src/introduction.md`:52 — *Four threads carry nearly all of it* above a
+  figure that labels three threads and draws the connection as *the wire*.
+  Fixed in the figure's label rather than in the sentence.
+- `src/introduction.md`:95 — *Twenty-three pages* followed by a list of about a
+  dozen items, which reads as the twenty-three.
+
+### Corrections — facts, re-derived against the decompile
+
+- `src/reference/level-data-and-rules.md`:305 — **"so peaceful stops the
+  spawner rather than the mobs" is the wrong way round in 26.2.**
+  `MinecraftServer.setDifficulty` does call
+  `MinecraftServer.updateMobSpawningFlags`, but that method pushes
+  `ServerLevel.isSpawningMonsters` into each level, and `ServerLevel.java`:1901–1903
+  shows it is `GameRules.SPAWN_MOBS && GameRules.SPAWN_MONSTERS` and reads the
+  difficulty nowhere. Difficulty is spent on the mobs instead: `Mob.checkDespawn`
+  (`Mob.java`:759–761) discards a mob that is not
+  `EntityType.isAllowedInPeaceful` on its next despawn check, and
+  `EntityType.java`:284 gates the spawn attempt. So peaceful empties the world
+  and the two game rules empty the spawner. **This is a 1.21 fact surviving
+  inside a chain of correct 26.2 method names**, which is why two fact-checks
+  kept it.
+- `src/reference/level-data-and-rules.md`:197 — *it pushes the two spawn flags
+  down instead*. `Level.setSpawnSettings` (`Level.java`:537) takes **one**
+  boolean; the *two* are the two game rules `ServerLevel.isSpawningMonsters`
+  ANDs into it.
+- `src/reference/math-and-primitives.md`:182 — *so most of a new world's
+  generation is legacy, not Xoroshiro*. The four shipped noise settings with
+  `legacy_random_source: true` are *caves*, *end*, *floating_islands* and
+  *nether* (`reference/26.2/data/minecraft/worldgen/noise_settings/`); the
+  overworld, *amplified* and *large_biomes* are false. An ordinary world's
+  overworld is Xoroshiro and the two dimensions behind a portal are legacy, so
+  a count of four in seven does not support a claim about *most of a new
+  world's generation*. Line 248 stated the same fact more narrowly and was also
+  not quite right (*which the nether and the end have* implies the rest do not
+  opt in; two presets do).
+- `src/reference/threads.md`:54 — *Four kinds of thread on a dedicated server
+  are non-daemon*, against the page's own **main (dedicated)** row marked
+  daemon **no**. Five rows are non-daemon; main returns immediately after
+  `Runtime.getRuntime().addShutdownHook` (`server/Main.java`:236) and cannot
+  hold the JVM open.
+- `src/reference/threads.md`:73 — the same row said main runs
+  *`MinecraftServer.spin` and the shutdown hook*. It **registers** the hook;
+  the hook runs on its own *Server Shutdown Thread* (`server/Main.java`:228–236),
+  which the page's own *Situational threads* paragraph already knew.
+- `src/reference/non-living-damage.md`:68 — *they are why several rows below
+  read `nothing`: the class was never reached*, with no row marked. Exactly
+  three of the ten are: `Interaction` (`Entity.skipAttackInteraction`),
+  `EyeOfEnder` (`EyeOfEnder.java`, `isAttackable()` returns false — the page's
+  row gave no reason at all) and `AbstractHurtingProjectile` (deflected by
+  `Player.deflectProjectile`, which fires only for
+  `EntityTypeTags.REDIRECTABLE_PROJECTILE`). `PrimedTnt` overrides
+  `Entity.isPickable`, not either gate, and the other six are reached and do
+  nothing.
+- `src/reference/density-function-nodes.md`:88 — *All six installed classes
+  implement `DensityFunctions.MarkerOrMarked`, so … the graph would
+  re-serialise unchanged*, stated without the exception the table two lines
+  below states: `NoiseChunk.wrapNew`'s `BlendDensity` case installs the
+  marker's own child when the level's `Blender` is empty, and a child does not
+  re-serialise as *blend_density*.
+- `src/maps/hierarchy.md`:11 — *so it inherits the whole block tree and the
+  whole item tree at once*, of `FeatureElement`, an interface. Its implementers
+  inherit from it; what sweeps up the two trees is its **descendant count**.
+- `src/reference/naming-drift.md`:151 against :511 — *Material* given two
+  verdicts, *gone* and *survived and changed meaning*. Both are true of
+  different classes: the block property is gone, and
+  `net/minecraft/client/resources/model/sprite/Material` exists. The drift row
+  now says so.
+- `src/reference/glossary.md` *Render state* against *Extract* — the same rule
+  stated with its exception in one entry and without it in the other (*the
+  drawing half reads no game object* against *no live game object from
+  `LevelRenderer.render` down — the top of the render half still does*).
+- `src/reference/glossary.md` *Batch* — *a group of game tests keyed by the
+  environment they share* and then *a batch **is** an environment*.
+- `src/reference/submit-phases.md`:100 — *That list is the answer to what can
+  be drawn in a level*, dropping the five exclusions the page's own opening
+  makes (sky, clouds, weather, world border, terrain).
+
+### Claims introduced
+
+**`src/introduction.md`.**
+
+- *This site is the notes for a video lecture series* — new, and the page's
+  largest previously unstated premise. Also *nothing on it leans on the video
+  to make sense*, which restates the owner's 2026-09-05 ruling.
+- *It ticks too, nought to ten times inside each frame, catching its own copy
+  up to the same twenty-a-second clock* — new in the opening, reconciling the
+  prose with the figure's *0 to 10 ticks*. Check against `Minecraft.runTick`.
+- *Just under a third of **those lines** is client-only* — the population
+  named. `src/maps/packages.md` says 212,242 lines, 29.5%.
+- The skip list re-sorted into three kinds: *version differences by definition*
+  (datafix, filefix), *not the game* (Realms, telemetry, the profiler, the
+  management server, RCON, the data generators), *the game's bookkeeping rather
+  than its behaviour* (statistics, player reporting, the id constants). Every
+  membership is a claim.
+- *Thirteen of the twenty-three … the other ten* for the Reference split.
+
+**`src/lectures.md`.** Four per-part shape paragraphs cut to their order
+claims (IV, XI, XII, XIII), each of which now asserts the order and no longer
+the shape: Part IV *of the last four, 7 comes before 8*; Part II *3 to 7 have
+no order among themselves — except that 7 … reads best last*; Part VIII *only
+one of the four has an internal order*; Part X *nothing here hands off to
+anything except lecture seven, which draws what lecture six opens*; Part XIII
+*lectures 1 to 3, then 4 and 5, then the last four*. The *points of interest*
+blurb is now an order claim: *Part VI's AI lecture reads this index*.
+
+**`src/reference/README.md`.** *Nobody arrives at this shelf by walking it*;
+*the table below is sorted for the one question a reader of a catalogue should
+ask of it*; the three-value *kept by* taxonomy; *eleven of them from the
+decompile's declaration lines … the other two are read off this book instead*.
+
+**`src/reference/level-data-and-rules.md`.** A new section, *One method saves
+all three*, asserting the order inside `MinecraftServer.saveAllChunks`
+(`MinecraftServer.java`:628–664): the `ScoreboardSaveData` flush first, then
+every level's chunks, then *level.dat* through
+`LevelStorageSource.LevelStorageAccess.saveDataTag`, then
+`SavedDataStorage.saveAndJoin` or `SavedDataStorage.scheduleSave` on the flush
+flag; and that `MinecraftServer.saveEverything` wraps it with
+`PlayerList.saveAll`. Also new: `LevelVersion`'s five components and what the
+world-select screen reads from them; `LevelSummary.CorruptedLevelSummary` and
+`LevelSummary.SymlinkLevelSummary`; and the `DimensionType` record as a
+**sixteen**-component table in four groups, of which the glosses are claims —
+`DimensionType.logicalHeight` as the ceiling `PortalForcer` and
+`TeleportRandomlyConsumeEffect` clamp to, and `DimensionType.MonsterSettings`'s
+two light tests.
+
+**`src/reference/block-update-flags.md`.** The opening now states two surprises
+as the hook: `Block.UPDATE_NONE` is 260 and not zero, and 512 is both
+`Block.UPDATE_SKIP_ON_PLACE` and `Block.UPDATE_LIMIT`. New glosses: *none*
+suppressing the client gate and the block entity's side effects, and
+`Block.UPDATE_SKIP_ALL_SIDEEFFECTS` as what a structure or data-pack write
+passes — both worth checking.
+
+**`src/reference/threads.md`.** *Every lane in the figure has a row in the
+table; two rows have no lane* — a claim about the figure and the table
+together.
+
+**`src/maps/`.** `maps/README`: *four figures and two tables on what extends
+what, one and one on the two bar charts, one and three on where the code is*,
+and *take them in any order; none of the four needs another*. `maps/fanin`:
+the thirty-two / twenty-four / eight accounting. `maps/packages`: *the hatched
+boxes are those three, and much the largest of them is the save-migration
+history* — check against the treemap.
+
+### For pass 9's attention, found and not fixed
+
+- `src/reference/level-data-and-rules.md` — the *world spawn* row names
+  `PrimaryLevelData.respawnData` while *The spawn every level reports is the
+  server's* says every level reports `MinecraftServer.effectiveRespawnData`.
+  Both are true (stored against reported) and the table gives no hint which it
+  means.
+- `src/reference/submit-phases.md`:91 — *twenty-four steps out and twenty-four
+  back for its two faces, a hundred vertices in all*; 48 and 100 do not
+  reconcile without a per-step vertex count the cell does not give.
+- `src/reference/non-living-damage.md`:102 — *Only four classes read the damage
+  amount at all*, counting `MinecartTNT`, whose own `MinecartTNT.hurtServer`
+  reads only the arrow's speed and passes the amount straight to
+  `VehicleEntity`. Re-derived and left: the fall-through does read it, and the
+  page's row says so.
+- `src/reference/density-function-nodes.md`:21 — *four arithmetic* in the
+  census against :110's *the arithmetic family — the two-argument nodes, the
+  mapped ones and clamp*. Two populations, one word.
+- `src/maps/hierarchy.md`:80 — *Two trees the table shows and the figures do
+  not* names `Goal` and `Packet`; the section heading is about the page's own
+  apparatus rather than about the game.
+
 ## Pass 6, session M — Part XIII · Commands and data packs *(2026-09-14)*
 
 All nine system pages rewritten and the landing page re-synced. Ten readers

@@ -85,7 +85,9 @@ id reference, which has no codec at all; and
 [per-chunk rewrite](../systems/worldgen/density-functions.md#wrap-once-per-chunk).
 A marker is a *request*; this is what is installed instead. All six installed
 classes implement `DensityFunctions.MarkerOrMarked`, so the marker type
-survives the swap and the graph would re-serialise unchanged.
+survives the swap and the graph would re-serialise unchanged — with one
+exception, the last row, where nothing is installed at all and the marker is
+replaced by its own child, which does not re-serialise as *blend_density*.
 
 | marker type | installed | keyed on |
 |---|---|---|
@@ -96,8 +98,9 @@ survives the swap and the graph would re-serialise unchanged.
 | `DensityFunctions.Marker.Type.CacheAllInCell` | `NoiseChunk.CacheAllInCell` | **the cell** — one array entry per block in the cell, Y stored inverted |
 | `DensityFunctions.Marker.Type.BlendDensity` | `NoiseChunk.BlendDensity`, **or nothing at all** if the level's [`Blender`](../systems/worldgen/blending.md#what-the-blender-actually-answers) is empty, in which case the marker is replaced by its own child | not cached |
 
-The same rewrite resolves three unregistered singletons by object identity,
-and every `DensityFunctions.HolderHolder` to its value:
+Three of the registered nodes above are singletons rather than instances, so
+the same rewrite resolves them by object identity instead of by type, and
+every `DensityFunctions.HolderHolder` to its value:
 
 | singleton | installed | with no blending to do |
 |---|---|---|

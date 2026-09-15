@@ -97,8 +97,10 @@ geometry.
 | `ShapeOutlineFeatureRenderer` | two line vertices per edge of a `VoxelShape`, each carrying a per-vertex line width |
 | `GizmoFeatureRenderer` | the debug vocabulary: quads, triangle fans, lines, texts and points out of a `DrawableGizmoPrimitives.Group`, camera-relative |
 
-That list is the answer to *what can be drawn in a level*. Anything a mod or a
-renderer wants that is not one of the other twelve has to go through
+Those thirteen are the answer to *what can be drawn from a submit node* —
+which, by the exclusions the opening makes, is everything in a level except
+the sky, the clouds, the weather, the world border and terrain. Anything a
+renderer wants that none of the other twelve draws goes through
 `CustomFeatureRenderer`.
 
 ---

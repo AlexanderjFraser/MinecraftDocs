@@ -2,14 +2,15 @@
 
 > Verified against **Minecraft 26.2** · Maps · The widest inheritance trees, four of them drawn with the number of descendants on every node.
 
-`Block` has 293 subclasses and `Entity` 191, and those are the two trees a
-reader of this book will climb most often. But neither is the widest
+`Block` has 293 descendants and `Entity` 191 — *descendants*, not direct
+subclasses, which is the count both tables below use — and those are the two
+trees a reader of this book will climb most often. But neither is the widest
 hierarchy in the game. That is `FeatureElement`, with 386 descendants from
 seven implementers — and it is not a hierarchy at all. It is a marker
 interface for *anything that can be put behind a feature flag*, and its
 seven implementers are `BlockBehaviour`, `Item`, `EntityType`, `MenuType`,
-`MobEffect`, `Potion` and `GameRule`, so it inherits the whole block tree
-and the whole item tree at once. `ItemLike`, second at 366, is `Block` plus
+`MobEffect`, `Potion` and `GameRule`, so its descendant count sweeps up the
+whole block tree and the whole item tree at once. `ItemLike`, second at 366, is `Block` plus
 `Item`. The interface table is a list of which mix-ins reach furthest; the
 class table is where the real trees are, and four of them are drawn below.
 

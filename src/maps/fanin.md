@@ -24,8 +24,10 @@ see.
 The hubs are not thirty ideas; they are seven. The table below groups them,
 reading down the sixty rows rather than the thirty the figure draws, so that a
 family is not broken in half by the cut-off — `ByteBufCodecs` and `PacketType`
-are the wire's vocabulary whether or not they clear it. Twenty-four of the
-thirty are in a row; the six that are not are the paragraphs after it.
+are the wire's vocabulary whether or not they clear it. So the table holds
+thirty-two names: **twenty-four of the thirty**, plus eight more from ranks
+31 to 60 that their families would be incomplete without. The six of the
+thirty it leaves out are the two paragraphs after it, three each.
 
 Part II teaches three of the seven, Reference two, Part IX one, and the
 seventh — the world's nouns — is the rest of the book. That is the more useful
@@ -42,24 +44,26 @@ before Part IV are not one part's worth.
 | chance | `RandomSource` | [Math and primitives](../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither) |
 | the world's nouns | `Level`, `ServerLevel`, `BlockState`, `Block`, `Blocks`, `Entity`, `LivingEntity`, `Player`, `EntityType`, `ItemStack`, `SoundEvents`, `SoundEvent`, `DataComponents` | Parts IV to VIII |
 
-Three rows of the *chart* are worth a second look. `ServerLevel` (726) is
-imported by nearly as many files as `Level` (750): most code that touches
-the world knows it is on the server, and says so in its types. `Minecraft`
+Three of the thirty belong to no family and get no row above, and each is
+worth a look. `Minecraft`
 (280) is the only client-only class in the thirty, and it is twenty-ninth —
 the client's hub is a hub for the client-only side alone, which is under a
 third of the files, and the shared seven tenths never name it. And `Schema`
 (389) and `DSL` (278) are the migration tree talking to itself: all but ten of
 the files that import `Schema` are in `util/datafix`, and the ten are its
-sibling `util/filefix`.
+sibling `util/filefix`. One pair *inside* the table earns the same second
+look: `ServerLevel` (726) is imported by nearly as many files as `Level`
+(750), because most code that touches the world knows it is on the server and
+says so in its types.
 
-That leaves three of the thirty with no home in either the table or the
-paragraph above, and they are the three that are not vocabulary at all.
+The last three of the thirty are the ones that are not vocabulary at all.
 *LogUtils* (470) is Mojang's logging library, the one line at the top of nearly
 every class that does anything. `Util` (454) is where the executors and the
 static odds and ends live ([threads](../reference/threads.md#the-threads-a-lecture-leans-on)) —
 a hub because it is where the unclassifiable went, not because it is an idea.
-And `BlockBehaviour` (311) is the world's nouns seen one class higher, which is
-the next paragraph's subject.
+And `BlockBehaviour` (311) is the world's nouns seen one class higher — the
+same one-class-higher shape [what extends what](hierarchy.md#block) draws for
+the `Block` tree.
 
 ## What the count misses
 

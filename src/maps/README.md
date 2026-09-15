@@ -4,8 +4,10 @@
 
 Before any system page makes sense you want the answer to a newcomer's
 question: *where is everything?* The atlas is that answer, looked at once.
-Each map is a figure drawn from the decompile, a page of prose saying what
-the figure shows, and then the table the figure was drawn from.
+Each map is one or more figures drawn from the decompile, prose saying what
+they show, and the tables they were drawn from — four figures and two tables
+on *what extends what*, one and one on the two bar charts, one and three on
+*where the code is*. Take them in any order; none of the four needs another.
 
 No number in the atlas is counted by hand — every one of them comes from
 `tools/map_source.py`, which reads all 7,055 files — but the four pages are
@@ -24,8 +26,8 @@ flowchart LR
     D["the 26.2 decompile: 7,055 files"]
     T["tools/map_source.py, run by deploy.sh"]
     subgraph G["src/generated/, rewritten on every deploy"]
-        G1["eight SVG figures"]
-        G2["six tables"]
+        G1["eight SVG figures, seven of them the atlas's"]
+        G2["seven tables"]
         G3["parts.md and the thirteen per-part size phrases"]
     end
     subgraph P["the four map pages, written by hand"]

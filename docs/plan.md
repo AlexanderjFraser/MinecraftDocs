@@ -35,8 +35,8 @@ stood at the close, with the session paragraphs and the log.
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day, E
 (Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, I
-(Part IX), J (Part X), K (Part XI), L (Part XII) and M (Part XIII) on
-2026-09-14**, so the next session is N (Reference and the frame). The charter is below; the brief, the
+(Part IX), J (Part X), K (Part XI), L (Part XII), M (Part XIII) and N (the
+frame and Reference) on 2026-09-14**, so the next session is O, the close. The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -64,7 +64,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to M on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to N on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -373,6 +373,87 @@ run between two of passes 6 to 8, and again if 26.4 lands before pass 10.
 A re-read, rarely a rewrite. A system that changed shape rather than names
 is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
 to §7.
+
+**Pass 6, session N — the frame and Reference** *(2026-09-14).* Eighteen
+pages, eighteen readers, one each: the eleven hand-kept Reference pages, the
+introduction, the lecture map and the four atlas pages. None of pass 6's four
+devices is on any of them — no closer, no trace heading, no 1.21 blockquote —
+so the session has no device count to report, and what it found instead is
+one class of error at a density no part session has come near. **Twenty-one
+sentences count the text beside them and get the count wrong.** *Half of them
+… the other half* over a table that splits thirteen and ten; *six of twenty
+rows* over a table of twenty-three; *the two large ones are worth decomposing*
+over a table that decomposes all four; *the thirty largest classes* over a
+table of forty; *Three rows worth a second look* introducing five; *a dozen of
+these rows* introducing seven; *two hundred and forty-five rows* over 247 and
+*twenty-seven* over 28; *the rest are one line each* over six multi-paragraph
+sections; *the one entry below that is not a packet* over no list at all. This
+is session I's finding — **a lead-in that names a number is a claim about the
+page, and the cheapest kind to break, because editing the section under it
+does not touch it** — arriving at the density the frame and the shelf make
+inevitable, because a catalogue's prose has almost nothing to say except how
+many rows there are and how they group. **No gate in the book can see one:**
+`verify_names.py` checks the names in the sentence, `check_links.py` checks
+where it points, and neither counts the table underneath.
+
+**Nine facts corrected**, and the sharpest is the one two fact-checks kept
+because every method name around it was right. `level-data-and-rules` said
+`MinecraftServer.setDifficulty` → `MinecraftServer.updateMobSpawningFlags` →
+`Level.setSpawnSettings` "so peaceful stops the spawner rather than the mobs".
+The chain is real and the conclusion is **inverted in 26.2**:
+`ServerLevel.isSpawningMonsters` is `GameRules.SPAWN_MOBS &&
+GameRules.SPAWN_MONSTERS` and reads the difficulty nowhere, while
+`Mob.checkDespawn` discards any mob that is not
+`EntityType.isAllowedInPeaceful`. Peaceful empties the world; the two game
+rules empty the spawner. Beside it: `math-and-primitives` concluding "most of
+a new world's generation is legacy" from four of seven noise settings, when
+the overworld is not one of the four; `threads` counting four non-daemon
+threads against its own table's five, and giving **main** a shutdown hook that
+runs on a thread of its own; `FeatureElement`, an interface, said to *inherit*
+the block and item trees its implementers inherit from it; `non-living-damage`
+blaming "several" *nothing* rows on two gates that account for exactly three,
+one of which (`EyeOfEnder`, `Entity.isAttackable` false) the table marked not
+at all; and the glossary stating one rule twice, with its exception and
+without.
+
+**Job 5 is closed.** The fourth Reference catalogue, `level-data-and-rules`,
+needed one section rather than a list of additions: `MinecraftServer.saveAllChunks`
+is the single call behind every row of its table, and saying so also answers
+pass 5's other entry — the seven table rows with no prose do not need prose,
+they need the page to say that being `SavedData` *is* their answer, the
+scoreboard's flush into `ScoreboardSaveData` being the one special case (and
+the meaning of the row's unexplained *buffered at save time*). `LevelVersion`
+and `LevelSummary`'s two unreadable-world subclasses went in beside it. The
+inventories-in-prose entry was decided one way each: the `DimensionType` record
+became a sixteen-component table in four groups, and the `PrimaryLevelData`
+list stayed prose because it is an argument that the class is a stub — but
+*about ten fields* became eleven and gained the field it had been hedging over.
+
+**The frame's own finding is a premise nobody had stated.** `introduction`
+says *watched*, *viewer*, *the video* and *one lecture's notes* throughout and
+**never once says the site is the notes for a video lecture series** — the
+reader named it the page's largest unstated assumption and the one that
+decides what the whole site is. Two sentences at the head of *How the book is
+read* fix it. Beside that, `lectures.md` gave up its last four borrowed shape
+paragraphs (IV, XI, XII, XIII) under the standing ruling that it is the copy
+that gets shorter — and three of the four were *also* where the page
+contradicted itself, because a metaphor borrowed from a landing page does not
+partition the same lectures the order claim does: Part XII's *substrate,
+pipeline and wing* left lecture ten in none of the three, Part IV's *conveyor*
+called the last four free when two are ordered, Part X promised one exception
+and delivered three groups. **Deleting the borrowed half deleted the
+contradiction**, which is the argument for the ruling rather than a
+consequence of it. The frame and the shelf 3,799 → 3,902 lines. Eleven units
+appended to [pass5.md](pass5.md) (six for pass 7, six for pass 8, two notes
+for session O); five entries struck, the frame and Reference's `lecture` queue
+now empty of anything a part session owns; the session's entry in
+[pass9.md](pass9.md). All five gates green; deployed.
+**What the session would tell session O**: the two tier front doors,
+`reference/README` and `maps/README`, have no stated role — A6 gave one to the
+thirteen part landing pages only — and both readers asked their page the same
+question it does not answer, *which one do I open?* Neither tier is entered by
+walking it, so the answer is a sentence and not a section, and both pages now
+carry it; but whether `TEMPLATE.md` should say so is session O's call.
 
 **Pass 6, session M — Part XIII · Commands and data packs** *(2026-09-14).*
 Nine system pages and the landing page, ten readers, one each. The count of

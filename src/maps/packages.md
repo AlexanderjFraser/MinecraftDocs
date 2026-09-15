@@ -3,8 +3,8 @@
 > Verified against **Minecraft 26.2** · Maps · The jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching is what this book skips.
 
 Java Minecraft is 7,055 classes and 719,302 lines of decompiled Java 25,
-and the first surprise in it is which half is bigger. Everything a player
-sees — every screen, the HUD, the whole renderer, the entity models, both
+and the first surprise in it is how little of that the client owns alone.
+Everything a player sees — every screen, the HUD, the whole renderer, the entity models, both
 GPU back-ends, the sound engine, Realms — is the orange near-third of this
 picture. The blue seven tenths ship in both jars, and the biggest box
 of all, `world/level`, is a fifth of the game by itself: blocks, block
@@ -49,11 +49,14 @@ the frame, section meshing and the entity models, Part XI;
 `client/multiplayer` (11,169) holds `ClientPacketListener` and
 `ClientLevel`, the client's copy of the world. The 41 classes directly in
 `net/minecraft/client` — `Minecraft`, `Options`, `KeyMapping`,
-`MouseHandler` — are 10,709 lines on their own.
+`MouseHandler` — are 10,709 lines on their own. (That 41 is the *itself only*
+count defined below; the 1,864 above is the package with every sub-package
+under it.)
 
 **util — 7%, two thirds of it skipped.** `util/datafix`, `util/filefix`
 and `util/profiling` are 34,176 of the package's 53,275 lines and are all
-outside this book; the hatched box is the save-migration history. What is
+outside this book; the hatched boxes are those three, and much the largest of
+them is the save-migration history. What is
 left is the toolbox every part uses — `Mth`, `RandomSource`, `Util` — and
 the parsing and debug packages.
 
@@ -80,8 +83,8 @@ execution engine, Part XIII) and `net/minecraft/advancements`, plus
 is the program that writes the vanilla data pack — and it is not build-time
 only: the dedicated server ships all 163 classes, and `Blocks` and
 `MinecraftServer` both read `data/worldgen` constants at run time ([what this
-book skips](../systems/anatomy/what-this-book-skips.md) has the three
-exceptions).
+book skips](../systems/anatomy/what-this-book-skips.md) sorts every such
+reader into three kinds).
 
 ## Where each part lives
 

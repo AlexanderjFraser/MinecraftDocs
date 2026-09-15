@@ -58,8 +58,9 @@ a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-an
 
 ## B
 
-**Batch** (game tests) — a group of game tests keyed by the environment they
-share; a batch *is* an environment, not a name and not a class. The renderer's
+**Batch** (game tests) — a group of game tests that share an environment,
+and the key they are grouped by *is* that environment rather than a name or
+a class of its own. The renderer's
 *batch* is a different word: quads grouped by render state, which is [section
 meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes)' and
 [entity rendering](../systems/rendering/entity-rendering.md)'s.
@@ -621,7 +622,8 @@ apply running in order behind a `PreparableReloadListener.PreparationBarrier`. �
 
 **Render state** — the snapshot of what to draw, produced by the extract half
 of the frame and consumed by the drawing half; the property that matters is
-that the drawing half reads no game object.
+that the drawing half reads no game object below `LevelRenderer.render` (see
+*Extract* for where the wall actually is).
 → [the frame](../systems/rendering/the-frame.md#the-wall-and-the-one-level-at-which-it-is-real)
 
 **RenderPipeline** — the client's declaration of how to rasterise: shaders,

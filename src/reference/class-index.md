@@ -8,7 +8,7 @@ a class named only inside a diagram, because the index reads backticked names an
 mermaid label is not one, and the generated views, whose backticks are registry and packet
 ids rather than class names.
 
-3079 names across 131 pages. A row is a
+3082 names across 131 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -36,6 +36,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `AbstractFurnaceBlock` | [block-entities](../systems/blocks/block-entities.md) |
 | `AbstractFurnaceBlockEntity` | [block-entities](../systems/blocks/block-entities.md), [recipes](../systems/items/recipes.md) |
 | `AbstractFurnaceMenu` | [block-entities](../systems/blocks/block-entities.md), [recipes](../systems/items/recipes.md) |
+| `AbstractGameRulesScreen` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `AbstractHorse` | [gui-and-screens](../systems/client/gui-and-screens.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
 | `AbstractHurtingProjectile` | [non-living-damage](../reference/non-living-damage.md) |
 | `AbstractMinecart` | [the-client-level](../systems/client/the-client-level.md) |
@@ -849,6 +850,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `DataResult` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [chunk-anatomy](../systems/world/chunk-anatomy.md) |
 | `DataSlot` | [containers-and-menus](../systems/items/containers-and-menus.md), [enchanting](../systems/items/enchanting.md) |
 | `DataSource` | [text-components](../systems/foundations/text-components.md) |
+| `DataVersion` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `DaylightDetectorBlock` | [signal-and-dust](../systems/blocks/signal-and-dust.md) |
 | `DaylightDetectorBlockEntity` | [diodes-and-observers](../systems/blocks/diodes-and-observers.md) |
 | `DeathMessageType` | [damage-and-death](../systems/entities/damage-and-death.md), [text-components](../systems/foundations/text-components.md) |
@@ -1081,7 +1083,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `EntityStorage` | [entity-lifecycle](../systems/entities/entity-lifecycle.md), [chunk-storage](../systems/world/chunk-storage.md) |
 | `EntitySubPredicate` | [advancements](../systems/commands/advancements.md) |
 | `EntityTickList` | [the-client-level](../systems/client/the-client-level.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [server-level-tick](../systems/server/server-level-tick.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
-| `EntityType` | [fanin](../maps/fanin.md), [hierarchy](../maps/hierarchy.md), [VI · Entities](../systems/entities/README.md), [attributes](../systems/entities/attributes.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [data-components](../systems/foundations/data-components.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [text-components](../systems/foundations/text-components.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [entity-rendering](../systems/rendering/entity-rendering.md), [chunk-storage](../systems/world/chunk-storage.md) |
+| `EntityType` | [fanin](../maps/fanin.md), [hierarchy](../maps/hierarchy.md), [level-data-and-rules](../reference/level-data-and-rules.md), [VI · Entities](../systems/entities/README.md), [attributes](../systems/entities/attributes.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [data-components](../systems/foundations/data-components.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [text-components](../systems/foundations/text-components.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [entity-rendering](../systems/rendering/entity-rendering.md), [chunk-storage](../systems/world/chunk-storage.md) |
 | `EntityTypeIds` | [naming-drift](../reference/naming-drift.md), [entity-anatomy](../systems/entities/entity-anatomy.md) |
 | `EntityTypes` | [naming-drift](../reference/naming-drift.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
 | `EntityTypeTags` | [damage-and-death](../systems/entities/damage-and-death.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [tags](../systems/foundations/tags.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
@@ -1618,10 +1620,11 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LevelTargetBundle` | [post-processing](../systems/rendering/post-processing.md), [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md) |
 | `LevelTickAccess` | [diodes-and-observers](../systems/blocks/diodes-and-observers.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `LevelTicks` | [the-client-level](../systems/client/the-client-level.md), [server-level-tick](../systems/server/server-level-tick.md), [fluids](../systems/world/fluids.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `LevelVersion` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `LevelWriter` | [entity-lifecycle](../systems/entities/entity-lifecycle.md), [fluids](../systems/world/fluids.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
 | `LeverBlock` | [signal-and-dust](../systems/blocks/signal-and-dust.md) |
 | `Library` | [sound-engine](../systems/client/sound-engine.md) |
-| `Lifecycle` | [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
+| `Lifecycle` | [level-data-and-rules](../reference/level-data-and-rules.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
 | `LightChunk` | [chunk-anatomy](../systems/world/chunk-anatomy.md), [lighting](../systems/world/lighting.md) |
 | `LightChunkGetter` | [lighting](../systems/world/lighting.md) |
 | `LightCoordsUtil` | [naming-drift](../reference/naming-drift.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md) |
@@ -2870,7 +2873,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `TitleScreen` | [gui-and-screens](../systems/client/gui-and-screens.md) |
 | `TlsfAllocator` | [section-meshing](../systems/rendering/section-meshing.md) |
 | `Toast` | [hud](../systems/client/hud.md) |
-| `ToastManager` | [hud](../systems/client/hud.md) |
+| `ToastManager` | [hud-elements](../reference/hud-elements.md), [hud](../systems/client/hud.md) |
 | `ToggleKeyMapping` | [input-and-keybinds](../systems/client/input-and-keybinds.md) |
 | `Tool` | [block-breaking](../systems/blocks/block-breaking.md), [data-components](../systems/foundations/data-components.md), [items-and-stacks](../systems/items/items-and-stacks.md) |
 | `ToolMaterial` | [block-breaking](../systems/blocks/block-breaking.md) |
@@ -3057,7 +3060,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `WorldCoordinate` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `WorldCoordinates` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `WorldCreationContext` | [creating-a-world](../systems/worldgen/creating-a-world.md) |
-| `WorldCreationGameRulesScreen` | [creating-a-world](../systems/worldgen/creating-a-world.md) |
+| `WorldCreationGameRulesScreen` | [level-data-and-rules](../reference/level-data-and-rules.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `WorldCreationUiState` | [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `WorldData` | [level-data-and-rules](../reference/level-data-and-rules.md), [starting-a-server](../systems/server/starting-a-server.md) |
 | `WorldDataConfiguration` | [level-data-and-rules](../reference/level-data-and-rules.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [resource-system](../systems/foundations/resource-system.md) |

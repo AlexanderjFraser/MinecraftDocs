@@ -14,15 +14,14 @@ the video to read a table.
 
 Because the subject here is the order, nothing below describes a lecture.
 What each one is about is said once, on its part's landing page; what is
-here is what the order needs — the shape of each part, the lectures that
-must be watched together or in a fixed sequence, and the three worth taking
-out of turn: [environment attributes and
+here is what the order needs — how each part is ordered inside itself, the
+lectures that must be watched together or in a fixed sequence, and the pages
+worth taking out of turn. There is exactly one **departure from the sidebar
+order**, [environment attributes and
 timelines](systems/world/environment-attributes-and-timelines.md) before Part
-III, [contexts and predicates](systems/items/contexts-and-predicates.md)
-before Part XIII's advancements, and [the client
-loop](systems/client/the-client-loop.md) before Part XI. Only the first is a
-departure from the sidebar order; the other two are pages a viewer coming for
-one part alone has to fetch.
+III's second lecture; and there are three **pages a viewer coming for one
+part alone has to fetch** from elsewhere in the book, which
+[the end of this page](#the-dependencies-between-parts) names.
 
 The one rule that holds everywhere: **each part assumes only the parts
 before it**, and where that is not true the section says so and names the
@@ -39,9 +38,10 @@ at the end, draws the whole graph.
 
 ## II · Foundations
 
-Part II is a fan, watched bottom-up: codecs sit under registries and those
-two sit under everything else, and the five pages above them lean on the two
-below far more than on each other.
+Watch 1 and 2 in that order and before everything else in the part. The five
+above them lean on those two far more than on each other, so 3 to 7 have no
+order among themselves — except that 7 is the pattern the other six exist to
+make possible and reads best last.
 
 1. [Codecs, NBT and JSON](systems/foundations/codecs-nbt-json.md)
 2. [Identifiers and registries](systems/foundations/identifiers-and-registries.md)
@@ -73,12 +73,10 @@ on it.
 
 ## IV · The world
 
-Part IV is a conveyor with a vocabulary page in front of it: four pages hand
-a chunk along a line, a fifth defines the thing being handed, and five more
-are about the world the line delivers. Lectures 2 to 6 are the vocabulary page
-and the conveyor, and must be watched in that order — nothing later in the
-chain can be watched first. Lecture 1 is off the line on purpose, and the last four can be
-watched in any order once the vocabulary page is done.
+Lectures 2 to 6 are the vocabulary page and the conveyor after it, and must
+be watched in that order — nothing later in the chain can be watched first.
+Lecture 1 is off the line on purpose. Of the last four, 7 comes before 8; the
+other two need only the vocabulary page and can go anywhere after it.
 
 1. [Environment attributes and
    timelines](systems/world/environment-attributes-and-timelines.md) —
@@ -97,8 +95,9 @@ watched in any order once the vocabulary page is done.
    redstone lectures assume this one, and so does the next.
 8. [Fluids](systems/world/fluids.md)
 9. [Game events and vibrations](systems/world/game-events-and-vibrations.md)
-10. [Points of interest](systems/world/points-of-interest.md) — Part VI owns
-    the brain; this owns the index it reads.
+10. [Points of interest](systems/world/points-of-interest.md) — Part VI's
+    *AI* lecture reads this index, so watch this one first if you are taking
+    that part next.
 
 ## V · Blocks
 
@@ -193,10 +192,10 @@ watch out of order.
 
 ## VIII · The player
 
-Part VIII is a trunk and four branches: two lectures on what a player is and
-when it runs, then five more on what a player does, in four independent
-groups. Two groups have an internal order: the two-phase tick follows player
-anatomy, and the spear is the sword swing's sequel.
+Lectures 1 and 2 are the trunk and are watched in that order; the five above
+them fall into four groups that need nothing from each other. Only one of the
+four has an internal order — the spear is the sword swing's sequel — so
+3, 6 and 7 can go anywhere after the trunk.
 
 1. [Player anatomy](systems/player/player-anatomy.md) — the vocabulary
    lecture.
@@ -242,11 +241,11 @@ same wire watched from the receiving end.
 
 ## X · The client
 
-Part X is a hub and its spokes, and the spokes are cadences rather than
-stages. With one exception, nothing here hands off to anything; every page
-after the first answers "when in the client's one loop does *this* happen".
-Watch the hub first and then take the rest in any order that suits — except
-the three groups noted below.
+Nothing here hands off to anything except lecture seven, which draws what
+lecture six opens; every other page after the first answers "when in the
+client's one loop does *this* happen" and needs only the hub. Watch the hub
+first and then take the rest in any order that suits, except the three groups
+noted below.
 
 1. [The client loop](systems/client/the-client-loop.md)
 2. [The client level](systems/client/the-client-level.md)
@@ -282,12 +281,10 @@ surface.
 
 ## XI · Rendering
 
-*A substrate under a pipeline.* Two lectures are what the renderer stands on
-and have no trace through the world; the rest are a pipeline, watched in an
-order that is not the order a frame runs in — two of its arrows are that
-order's reverse. The part opens on the frame itself rather than on the
-substrate underneath it, which is the one inversion in the book's order made
-for the viewer rather than for the dependencies.
+The part opens on the frame itself rather than on the substrate underneath
+it — the one inversion in the book's order made for the viewer rather than
+for the dependencies — so the watching order below is not the order a frame
+runs in.
 
 1. [The frame](systems/rendering/the-frame.md)
 2. [The window](systems/rendering/the-window.md)
@@ -317,14 +314,12 @@ owns the system this part only consumes.
 
 ## XII · World generation
 
-A substrate, a pipeline, and a wing — and the wing runs first while being
-watched last. The ten lectures below run against the chunk status ladder
-rather than along it: a structure is *decided* at
-`ChunkStatus.STRUCTURE_STARTS`, two statuses before the biomes it will stand
-in exist, and writes no block until `ChunkStatus.FEATURES`, three statuses
-after the noise fill — so keeping the three structure lectures together at the
-end costs three of the earlier pages a forward topic and buys a whole arc in
-one place.
+The three structure lectures run *first* in the game and are watched *last*
+here: a structure is decided at `ChunkStatus.STRUCTURE_STARTS`, two statuses
+before the biomes it will stand in exist, and writes no block until
+`ChunkStatus.FEATURES`, three statuses after the noise fill. Keeping them
+together at the end costs three of the earlier pages a forward topic and buys
+a whole arc in one place.
 
 1. [Density functions](systems/worldgen/density-functions.md)
 2. [Biomes](systems/worldgen/biomes.md)
@@ -359,10 +354,10 @@ data-driven system in the game.
 
 ## XIII · Commands and data packs
 
-A stack of three floors, and the dependency runs strictly one way: *parse*,
-then *execute*, then the four systems built on both. The last four are peers
-rather than a sequence — watch them in any order, or only the ones you care
-about — but neither of the first two floors is optional for any of them.
+The dependency runs strictly one way: lectures 1 to 3, then 4 and 5, then the
+last four. Those last four are peers rather than a sequence — watch them in
+any order, or only the ones you care about — but none of the five before them
+is optional for any of them.
 
 1. [Brigadier and commands](systems/commands/brigadier-and-commands.md)
 2. [Permissions](systems/commands/permissions.md)
@@ -470,9 +465,8 @@ timelines* is the first lecture of Part IV and wants watching before Part
 III's second. A viewer coming for one part rather than the whole book takes
 that part's *before you start* list as the order.
 
-[What this book skips](systems/anatomy/what-this-book-skips.md) is the
-second lecture and not the last: it is the only page that states the
-series' boundary, and a boundary is drawn before the investment, not after.
-Part XIII's game tests are the closing lecture because they are the game's
-own answer to the question the whole book has been asking — how do you know
-what it does — and because nothing later depends on them.
+The book's two ends are chosen rather than inherited. *What this book skips*
+is the second lecture for the reason Part I's entry gives; Part XIII's game
+tests are the closing lecture because they are the game's own answer to the
+question the whole book has been asking — how do you know what it does — and
+because nothing later depends on them.

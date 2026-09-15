@@ -54,7 +54,8 @@ flowchart LR
 | **model / render space** | float | JOML `Vector3f`, `Matrix4f`, `Quaternionf` (external) | everything under `client/renderer` | `Vec3.toVector3f`; `Direction.step`, `Direction.getRotation`; `com/mojang/math` `Axis` builds quaternions |
 
 `Position` is the three-double interface `Vec3` implements. `Vec3i` is the
-mutable-under-the-hood int triple with the arithmetic (`Vec3i.offset`,
+int triple with the arithmetic — immutable to every caller, though not
+quite immutable underneath, which the closer takes up — (`Vec3i.offset`,
 `Vec3i.relative`, `Vec3i.distSqr`, `Vec3i.distManhattan`); `BlockPos` adds
 the iteration helpers (`BlockPos.betweenClosed`, `BlockPos.withinManhattan`,
 `BlockPos.spiralAround`), each of which walks a single reused
@@ -178,10 +179,11 @@ process:
   settings file gets unless it asks otherwise:
   `NoiseGeneratorSettings.getRandomSource` returns
   `WorldgenRandom.Algorithm.XOROSHIRO` unless the settings opt into legacy.
-  **Four of the seven shipped noise settings do opt in**, and two of them are
-  dimensions of an ordinary world — *nether* and *end*, alongside *caves* and
-  *floating_islands* — so most of a new world's generation is legacy, not
-  Xoroshiro.
+  **Four of the seven shipped noise settings do opt in** — *nether*, *end*,
+  *caves* and *floating_islands* — and the overworld is not one of them, nor
+  are *amplified* and *large_biomes*. So an ordinary world runs both families
+  at once: its overworld is Xoroshiro, and the two dimensions you walk into
+  through a portal are legacy.
   `RandomState` forks it positionally (`PositionalRandomFactory.at`,
   `PositionalRandomFactory.fromHashOf`) for the named noise consumers — the
   aquifer and the ore placer each get their own deterministic stream from
@@ -246,7 +248,8 @@ deprecated. Touching a level's random from a worker is meant to be loud.
 **Tick randomness and worldgen randomness are different generators.** The
 LCG drives every `Level` and `Entity`; the saved `RandomSequences` behind loot
 and `/random` are Xoroshiro, and so is terrain wherever the noise settings have
-not opted into legacy — which the nether and the end have.
+not opted into legacy, which is the overworld and nothing else a player
+normally visits.
 `PositionalRandomFactory.parityConfigString` is implemented by **both**
 families, so the parity dumps cover whichever one a dimension is on.
 

@@ -1,6 +1,6 @@
 # Where the mass is
 
-> Verified against **Minecraft 26.2** · Maps · The thirty largest classes by lines of decompiled source, coloured by which jar ships them.
+> Verified against **Minecraft 26.2** · Maps · The forty largest classes by lines of decompiled source, the top thirty of them drawn, coloured by which jar ships them.
 
 The two largest classes in the game are the top of one hierarchy: `Entity`
 and `LivingEntity`, 8,785 lines between them, the thing every mob and

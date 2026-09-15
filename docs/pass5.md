@@ -134,7 +134,7 @@ rewritten by its own part's session — and the glossary entry by entry.
 - **One sentence is verbatim on two landing pages** — "A second edition should
   take them; this one names them and says so." (`entities/README`:35,
   `items/README`:33). [kind=voice]
-- **`lectures.md` still writes the page's line in two places**, which is the
+- ~~**`lectures.md` still writes the page's line in two places**, which is the
   landing page's slot: *Points of interest — Part VI owns the brain; this owns
   the index it reads* and *The client loop — the hub, and the page every other
   page in the part leans on* (the latter is `client/README`:86's blurb). Five
@@ -145,7 +145,14 @@ rewritten by its own part's session — and the glossary entry by entry.
   `lectures.md` and the GUI-pipeline paragraph is down to its order claim (six
   to nine consecutively, tree before text), which is the only thing there a
   reader of the lecture *map* needs. Four shape paragraphs and one blurb are
-  left, all in other parts. [kind=lecture]
+  left, all in other parts.~~ **done, pass 6 session N** — the last four
+  (IV, XI, XII, XIII) are down to their order claims and the *points of
+  interest* blurb is now one. Three of the four were also where the page
+  contradicted itself, because the metaphor it had borrowed did not partition
+  the same lectures the order claim did: Part XII's *substrate, pipeline and
+  wing* left lecture ten in none of the three, and Part IV's *conveyor* said
+  the last four were free when two of them are ordered. Deleting the borrowed
+  half deleted the contradiction. [kind=lecture]
 - ~~**The introduction's five rules have no anchors.** They are bold run-in
   lead-ins, so `anatomy/what-this-book-skips`:8's citation of "[rule
   three](../../introduction.md)" lands on the top of the page. Either the rules
@@ -153,9 +160,12 @@ rewritten by its own part's session — and the glossary entry by entry.
   only mechanism the book cites by number without an anchor.~~ **done, pass 6
   session B** — the citation took the anchor and the rule's name rather than
   its number; the introduction's rules are unchanged. [kind=lecture]
-- **The introduction's skip list is a list** (pass 4 logged the same at
+- ~~**The introduction's skip list is a list** (pass 4 logged the same at
   `pass5.md`'s Part I section); it is now factually right and still reads as an
-  inventory. [kind=lecture]
+  inventory.~~ **done, pass 6 session N** — ten nouns and a verb five lines
+  later became three kinds with the reason each is a kind: version differences
+  by definition, not the game, and the game's bookkeeping rather than its
+  behaviour. [kind=lecture]
 - ~~**`networking/README`:64-67 carries a non-dependency inside *before you
   start***: "Part X's *client loop* is the deeper version of it, and this part
   does not wait for it". It is useful where it is and it is not what the
@@ -1058,16 +1068,28 @@ mentions.
   `Gui.overlay` is now named beside it, and the strata question is answered the
   other way round — a screen contributes *one* entry to the record, never both
   with the overlay, which is what the row now says.
-- **`reference/level-data-and-rules.md`** never names `DirectoryLock` (what [kind=lecture] *(pass-6 planning session: pass 6's job 5, session N: `DirectoryLock` is `starting-a-server`'s now and the *session.lock* row cites it; check the rest of the list against the page as it stands.)*
+- ~~**`reference/level-data-and-rules.md`** never names `DirectoryLock` (what
   `session.lock` is for), `LevelVersion` (the *Version* compound and
   *DataVersion* the world-select row reads), `LevelSummary`'s corrupted and
   symlink states, four more `LevelResource` paths (*generated/*, *datapacks/*,
   the world resource pack, the icon), the per-player *advancements/* and
   *stats/* files, or `MinecraftServer.saveAllChunks` — the method that drives
-  all three save paths the page describes.
-- Seven of that page's eighteen table rows get no prose at all — the [kind=lecture] *(pass-6 planning session: pass 6's job 5, session N.)*
+  all three save paths the page describes.~~ **done, pass 6 session N — the
+  fourth completeness list, closed.** `DirectoryLock`, the four `LevelResource`
+  paths and the two per-player folders were already there (sessions B and C);
+  this session added `MinecraftServer.saveAllChunks` as a section of its own,
+  *One method saves all three*, and `LevelVersion`'s five components with
+  `LevelSummary.CorruptedLevelSummary` and `LevelSummary.SymlinkLevelSummary`
+  beside it. [kind=lecture]
+- ~~Seven of that page's eighteen table rows get no prose at all — the
   scoreboard, maps, raids, chunk tickets, the dragon fight, five of the
-  boss-bar row's six owners, and player data.
+  boss-bar row's six owners, and player data.~~ **done, pass 6 session N —
+  answered rather than filled.** The table is sixteen rows now, and the new
+  save section says why those rows need no section of their own: they are
+  `SavedData` and `saveAllChunks` writes them all, the scoreboard's flush into
+  `ScoreboardSaveData` being the single special case — which is also what the
+  scoreboard row's unexplained *buffered at save time* meant. The opening now
+  says so, instead of promising one line per row. [kind=lecture]
 
 ### The glossary's headwords
 
@@ -3106,10 +3128,17 @@ it lost a fight for space against the page's own story.
 
 ## Session O — Reference *(2026-09-03)*
 
-- `level-data-and-rules` was reshaped bullet-for-paragraph, so its [kind=lecture]
+- ~~`level-data-and-rules` was reshaped bullet-for-paragraph, so its
   paragraphs are still inventories in prose clothing (the `PrimaryLevelData`
   field list, the `DimensionType` record). A reference page may keep them;
-  a polish pass should decide whether the two longest become tables.
+  a polish pass should decide whether the two longest become tables.~~
+  **done, pass 6 session N — decided, one each way.** The `DimensionType`
+  record became a four-row table grouped by what each component decides, which
+  also gives *the first of those three* an antecedent it never had. The
+  `PrimaryLevelData` list stayed prose because it is the argument that the
+  class is a stub, not a look-up — but *about ten fields* became **eleven**
+  and gained the one it had been hedging over
+  (`PrimaryLevelData.worldGenSettingsLifecycle`). [kind=lecture]
 - ~~`math-and-primitives`' *What trips people up* is nine bold-led paragraphs
   where the list was; the ninth (`BlockUtil` is in `util`, not `core`) is a
   naming-drift row wearing a surprise's clothes and could move to that
@@ -6190,3 +6219,86 @@ names a reader could not use; the class index still has them.
   somebody is a pack author, not a player. The ruling is right for the corpus
   and the register of the heading is pass 8's; session O should decide
   whether the book wants one spelling or two.
+
+## Session N — the frame and Reference *(2026-09-14, pass 6)*
+
+**The class this session found, and the reason it lives here.** Eighteen
+readers turned up **twenty-one sentences that count the text beside them and
+get the count wrong** — a rate no part session has come near. It is session
+I's finding (*a lead-in that names a number is a claim about the page, and the
+cheapest kind to break, because editing the section under it does not touch
+it*) at the scale the frame and the shelf make inevitable, because these
+pages are *made* of such sentences: a catalogue's prose has almost nothing to
+say except how many rows there are and how they group. Nothing in the book can
+see one: `verify_names.py` checks the names in the sentence, `check_links.py`
+checks where it points, and neither counts the table underneath it. The twenty-one
+are logged as corrections in [pass9.md](pass9.md); what is here is what the
+class implies for later passes.
+
+**For pass 7, the figures.**
+
+- `reference/README`'s shelf figure has sentence-long subgraph titles that
+  read as three paragraphs rather than a shape, and no caption; the reader
+  skipped it and said the table said the same thing faster. It is the only
+  figure in the book whose job is a taxonomy the table beside it also carries.
+  [kind=figure]
+- `maps/README`'s pipeline figure is the same case one tier over, and it is
+  the one figure in the atlas that is not generated. [kind=figure]
+- `introduction`'s two-programs figure labels three threads and the wire; the
+  paragraph under it counts four threads. This session fixed it by naming the
+  Netty event loop in the wire's label, which is a label change and not a
+  redraw — but the figure still draws `Worker-Main-n` with no sentence above
+  or below introducing it, and the dashed arrows are unexplained. [kind=figure]
+- `math-and-primitives`' coordinate figure is eight nodes and eighteen edges
+  with sentence-length labels, several of them bidirectional pairs between the
+  same two nodes; the densest object in the Reference tier. [kind=figure]
+- `threads`' figure carries one edge label (*written on the caller's thread*)
+  that is none of the three kinds the section is about, and the watchdog's
+  dotted edge carries no kind. Left as drawn: the label is true and the
+  section now says *every edge that is one of them*. [kind=figure]
+- Four Reference pages have no figure at all (`non-living-damage`,
+  `naming-drift`, `block-update-flags`, `hud-elements`); three readers asked
+  whether the tier is exempt from the one-figure rule. It should be said once,
+  on `reference/README`, rather than inferred four times. [kind=figure]
+
+**For pass 8, the voice.**
+
+- **The Reference tier's opening sentences are orientation, not hooks.** On
+  `block-update-flags`, `submit-phases`, `math-and-primitives`,
+  `maps/README` and `maps/biggest` the reader found the page's surprising true
+  thing in its bottom third and said so unprompted. This session moved two
+  (`block-update-flags`' two misnamed constants; `hud-elements`' two methods);
+  the rest are wording, not structure. [kind=voice]
+- `level-data-and-rules` mixes digits and words for the same kind of count,
+  and so does `reference/README` (*the 43 entity-data serializers* beside
+  *all twenty-six*). [kind=voice]
+- *Gone* on `naming-drift` is defined at L33 as "the responsibility moved into
+  something structurally different, and the entry names where it went", and
+  used at L106 for "gone with no replacement". Two meanings, one word, and
+  four rows say only *gone*. [kind=voice]
+- `naming-drift`'s stated column convention (left italic, right backticked) is
+  inverted in one row and doubled in another, so the right column is not
+  always the verified one the paragraph says it always is. [kind=voice]
+- `threads`' *may touch* column is a permission in two rows, a description in
+  four and neither in the watchdog's. [kind=voice]
+- `glossary`'s *parameter set* entry says "two of the three ways a parameter
+  can be missing" and never gives the third. [kind=voice]
+
+**Two notes for session O.**
+
+- **The frame has no landing-page role to be measured against.**
+  `reference/README` and `maps/README` are tier front doors, and A6 covers the
+  thirteen part landing pages only. Both readers asked the same question of
+  their page — *which one do I open?* — and neither page answers it, because
+  neither tier is entered by walking it. This session answered it by saying so
+  in the opening (nobody arrives here by walking; the sort is for the question
+  a catalogue deserves) rather than by adding a routing section. Session O
+  should decide whether the two front doors want a stated role in
+  `TEMPLATE.md` the way the thirteen got one. [kind=lecture]
+- **`introduction` never said there is a video series.** It says *watched*,
+  *viewer*, *the video* and *lecture's notes* throughout and never once states
+  the premise; the reader named it the page's largest unstated assumption and
+  the one that decides what the whole site is. Fixed here in two sentences at
+  the head of *How the book is read*. Worth session O checking whether the
+  thirteen landing pages assume it too — they were written after the
+  introduction and inherit its vocabulary. [kind=lecture]

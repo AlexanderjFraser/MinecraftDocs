@@ -39,9 +39,9 @@ each part explains it.
 Every row here was found the same way: a fact-sheet agent reading the 26.2
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. Two hundred and forty-five rows, and the distribution is
+corpus needed. Two hundred and forty-seven rows, and the distribution is
 itself a finding: the three biggest tables are **commands** (36), **the
-server** (31) and **items** (30), and the fourth is **rendering** (27). The
+server** (31) and **items** (30), and the fourth is **rendering** (28). The
 client was rewritten around extract-then-render, which is why almost nothing
 at the top of the render stack kept its name — but the permission rewrite and
 the game-rule registry moved more names than the renderer did.
@@ -148,7 +148,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *RenderShape.ENTITYBLOCK_ANIMATED* | gone — `RenderShape.INVISIBLE` / `RenderShape.MODEL` only |
 | *Player.canInteractWithBlock* | `Player.isWithinBlockInteractionRange` |
 | *Block.rebuildCache* | gone — `BlockBehaviour.BlockStateBase.initCache` from the `Blocks` static init |
-| *Material* | gone — individual `BlockBehaviour.Properties` flags |
+| *Material* (the block property) | gone — individual `BlockBehaviour.Properties` flags. The name survives on a different class; see *survived and changed meaning* below |
 | *BlockEntity.saveToItem* | `BlockItem.setBlockEntityData` + `BlockEntity.collectComponents` |
 | *MobEffects.DIG_SPEED* / *DIG_SLOWDOWN* | `MobEffects.HASTE` / `MobEffects.MINING_FATIGUE` |
 
@@ -281,7 +281,7 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 
 ### Part XI — Rendering
 
-Twenty-seven rows, and almost all of them are one refactor: extract then
+Twenty-eight rows, and almost all of them are one refactor: extract then
 render.
 
 | the name you remember | 26.2 |
@@ -382,9 +382,9 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 ## The shape changes, not just the names
 
 A rename table flatters the reader: it suggests that if you learn the two
-hundred and forty-five rows above you can read the tree. You cannot, because a dozen of these rows are one
-design change each, and the change is what the corresponding page is about.
-The recurring ones:
+hundred and forty-seven rows above you can read the tree. You cannot, because
+most of those rows are one of **seven** design changes, and the change is what
+the corresponding page is about:
 
 - **Tags on an item became components.** *ItemStack.getTag* /
   *getOrCreateTag* have no replacement; a stack is an `Item` plus a

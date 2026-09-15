@@ -9,9 +9,11 @@ border, its scoreboard and maps. In 26.2 about half of them have left
 a `SavedData` file under a *data/* folder, one server-global and one per
 dimension — so the question this page answers is always the same one:
 *which file remembers this, and who is allowed to change it.* The table
-under [who owns what](#who-owns-what) is the page; the sections after it are
-the prose behind the rows that need it, and the rest are one line each because
-one line is all there is.
+under [who owns what](#who-owns-what) is the page. Six sections follow it,
+one for each datum whose answer is longer than a row — what is left in
+*level.dat*, how a save happens, the two saved-data storages, the rules, the
+border, and the dimensions and the seed — and a row with no section below it
+is a row the table has already answered in full.
 
 Five parts point here — [III](../systems/server/README.md) for what a boot
 reads, [IV](../systems/world/README.md) for what the world is made of,
@@ -23,6 +25,10 @@ tick](../systems/server/server-level-tick.md) is where most of them are read.
 
 ## Who owns what
 
+In the *saved as* column, *dimensions/…/* stands for
+*dimensions/\<namespace\>/\<path\>/*, the folder a dimension's own id names;
+everything else is relative to the world folder.
+
 | datum | owner | saved as | told to the client by |
 |---|---|---|---|
 | seed, structures, bonus chest, dimension list | `WorldGenSettings` (`MinecraftServer.getWorldGenSettings`) | *data/minecraft/world_gen_settings.dat* | the obfuscated seed in `CommonPlayerSpawnInfo`, the dimension list in `ClientboundLoginPacket`; structures and the bonus chest, nothing |
@@ -33,12 +39,12 @@ tick](../systems/server/server-level-tick.md) is where most of them are read.
 | game type, allow-commands, name, data packs | `LevelSettings` | *level.dat* | the game type only as a new player's default, through `CommonPlayerSpawnInfo`; the enabled features at the configuration phase; the name and allow-commands, nothing |
 | game rules | `GameRuleMap` via `GameRules` | *data/minecraft/game_rules.dat* | five rules only, plus `ClientboundGameRuleValuesPacket` on request |
 | weather | `WeatherData` | *data/minecraft/weather.dat* | `ClientboundGameEventPacket` |
-| world border | `WorldBorder`, one per `ServerLevel` | *dimensions/minecraft/…/data/minecraft/world_border.dat* | `ClientboundInitializeBorderPacket` and the five `ClientboundSetBorder…` packets |
+| world border | `WorldBorder`, one per `ServerLevel` | *dimensions/…/data/minecraft/world_border.dat* | `ClientboundInitializeBorderPacket` and the five `ClientboundSetBorder…` packets |
 | scoreboard | `ServerScoreboard` (`MinecraftServer.scoreboard`), buffered by `ScoreboardSaveData` at save time | *data/minecraft/scoreboard.dat* | `ClientboundSetObjectivePacket`, `ClientboundSetScorePacket`, `ClientboundSetPlayerTeamPacket` |
 | maps | `MapItemSavedData` per `MapId`, `MapIndex` for the counter | *data/minecraft/maps/\<n\>.dat*, *data/minecraft/maps/last_id.dat* | `ClientboundMapItemDataPacket` |
-| raids | `Raids` per level | *dimensions/minecraft/…/data/minecraft/raids.dat* | boss bars |
-| chunk tickets | `TicketStorage` per level ([tickets](../systems/world/tickets-and-loading.md)) | *dimensions/minecraft/…/data/minecraft/chunk_tickets.dat* | — |
-| dragon fight | `EnderDragonFight`, where `DimensionType.hasEnderDragonFight` | *dimensions/minecraft/…/data/minecraft/ender_dragon_fight.dat* | boss bars |
+| raids | `Raids` per level | *dimensions/…/data/minecraft/raids.dat* | boss bars |
+| chunk tickets | `TicketStorage` per level ([tickets](../systems/world/tickets-and-loading.md)) | *dimensions/…/data/minecraft/chunk_tickets.dat* | — |
+| dragon fight | `EnderDragonFight`, where `DimensionType.hasEnderDragonFight` | *dimensions/…/data/minecraft/ender_dragon_fight.dat* | boss bars |
 | boss bars, scheduled functions, random sequences, stopwatches, trader timers, command storage | `CustomBossEvents`, `TimerQueue`, `RandomSequences`, `Stopwatches`, `WanderingTraderData`, `CommandStorage` | *data/minecraft/\<id\>.dat*, and one *data/\<namespace\>/command_storage.dat* per namespace | boss bars only |
 | player data | `PlayerDataStorage` | *players/data/\<uuid\>.dat* | — |
 
@@ -62,15 +68,17 @@ setter, `ServerLevelData.isAllowCommands` and its setter, and
 `WorldData.getKnownServerBrands`, `WorldData.overworldData`).
 
 `PrimaryLevelData` implements all of them — the overworld's level data and
-the whole server's — with about ten fields: `PrimaryLevelData.settings` (a
+the whole server's — with eleven fields: `PrimaryLevelData.settings` (a
 `LevelSettings`: name, `GameType`, a `LevelSettings.DifficultySettings` of
 difficulty, hardcore and lock, allow-commands, `WorldDataConfiguration`),
 `PrimaryLevelData.respawnData`, `PrimaryLevelData.gameTime`,
 `PrimaryLevelData.initialized`, `PrimaryLevelData.knownServerBrands`,
 `PrimaryLevelData.wasModded`, `PrimaryLevelData.removedFeatureFlags`,
-`PrimaryLevelData.singlePlayerUUID`, `PrimaryLevelData.version`, and
+`PrimaryLevelData.singlePlayerUUID`, `PrimaryLevelData.version`,
 `PrimaryLevelData.specialWorldProperty` (`PrimaryLevelData.SpecialWorldProperty.FLAT`
-/ `PrimaryLevelData.SpecialWorldProperty.DEBUG` / none). That is the whole
+/ `PrimaryLevelData.SpecialWorldProperty.DEBUG` / none), and
+`PrimaryLevelData.worldGenSettingsLifecycle`, the DFU `Lifecycle` that makes
+the world-select screen warn about experimental settings. That is the whole
 stub: seed, dimensions, rules, border, weather, dragon fight, boss bars,
 scheduled events and trader timers are all `SavedData` files.
 `PrimaryLevelData.createTag` builds the payload — flat, no wrapper — and
@@ -90,9 +98,36 @@ time comes to be shared by every level.
 The file is written by `LevelStorageSource.LevelStorageAccess.saveDataTag`
 → `LevelStorageSource.LevelStorageAccess.saveLevelData`: a temp file, then
 `Util.safeReplaceFile` renames the old *level.dat* to `level.dat_old` and
-the temp into place, ten retries per step with a rollback. `LevelSummary`
-(the world-select row) is read from it by
-`LevelStorageSource.readLevelSummary`. `LevelResource` names every path under a world folder, and the per-player
+the temp into place, ten retries per step with a rollback.
+
+### One method saves all three
+
+Nothing in the table above saves itself. `MinecraftServer.saveAllChunks` is
+the single call behind every row, and it does four things in order: it flushes
+the live `ServerScoreboard` into its `ScoreboardSaveData` (which is what the
+scoreboard row means by *buffered at save time* — the scoreboard is a live
+object all tick and becomes saved data only here), saves every level's chunks,
+writes *level.dat* through `LevelStorageSource.LevelStorageAccess.saveDataTag`, and then either joins the
+saved-data storage or schedules it. So the rows with no section below them —
+the scoreboard, maps, raids, the dragon fight, the boss-bar row's six owners
+and player data — are saved by being `SavedData`, and that one flush is the
+only special case among them. `MinecraftServer.saveEverything` wraps it with
+`PlayerList.saveAll` in front, and that is the pair *autosave*, */save-all* and
+shutdown all reach.
+
+`LevelSummary` — the world-select row — is read without opening the world at
+all, by `LevelStorageSource.readLevelSummary`, and it is where the numbers on
+that screen come from: a `LevelVersion` (`LevelVersion.levelDataVersion`,
+`LevelVersion.lastPlayed`, `LevelVersion.minecraftVersionName`,
+`LevelVersion.minecraftVersion` — the `DataVersion` the *needs upgrading* and
+*from a newer version* warnings compare — and `LevelVersion.snapshot`) plus the
+`LevelSettings`. Two subclasses stand for worlds it could not read:
+`LevelSummary.CorruptedLevelSummary`, and `LevelSummary.SymlinkLevelSummary`
+for a world folder that leaves the saves directory by a link.
+
+### Every path a world folder has a name for
+
+`LevelResource` names every path under a world folder, and the per-player
 files are three separate ones rather than one *player data* row:
 
 | `LevelResource` | the path | what is in it |
@@ -126,6 +161,19 @@ recomputed one where it is not.
 
 ## Two saved-data storages, neither of them the overworld's
 
+`MinecraftServer.savedDataStorage` (`MinecraftServer.getDataStorage`) is
+server-global at *\<world\>/data/*; maps, scoreboard, rules, weather and
+clocks are server-wide. `ServerChunkCache.savedDataStorage`
+(`ServerChunkCache.getDataStorage`, forwarded by
+`ServerLevel.getDataStorage`) is per dimension at
+*dimensions/\<namespace\>/\<path\>/data/* — the overworld included
+([chunk storage](../systems/world/chunk-storage.md)); raids, tickets, the
+border and the dragon fight are per dimension. The overworld's per-dimension
+files sit under *dimensions/* like everyone else's, so neither storage is
+"the overworld's": one is the server's and one is each dimension's.
+
+### What a saved-data file is
+
 `SavedData` is one flag, `SavedData.dirty` (`SavedData.setDirty`); a
 `SavedDataType` is an id, a constructor, a `Codec` and a `DataFixTypes`.
 `SavedDataStorage` caches them per folder
@@ -133,23 +181,14 @@ recomputed one where it is not.
 `SavedDataStorage.set`) and writes `<id>.dat` as *{ data, DataVersion }*,
 gzip-compressed. How a dirty entry reaches the disk — encoded on the caller's
 thread, written on the IO pool, and joined at shutdown — is the same
-copy-then-encode-then-write shape a chunk takes, and it is [chunk
-storage](../systems/world/chunk-storage.md#the-other-store-under-data)'s.
+copy-then-encode-then-write shape a chunk takes, and [chunk
+storage](../systems/world/chunk-storage.md#the-other-store-under-data) is
+where that shape is explained.
 
 The id is an `Identifier`, so every saved-data file lives under a namespace
 folder — the path is *data/\<namespace\>/\<path\>.dat* — and vanilla's are
 all under *data/minecraft/*. Command storage is the one place the namespace
 is not *minecraft*: each gets its own *data/\<namespace\>/command_storage.dat*.
-
-There are two storages. `MinecraftServer.savedDataStorage`
-(`MinecraftServer.getDataStorage`) is server-global at *\<world\>/data/*;
-maps, scoreboard, rules, weather and clocks are server-wide.
-`ServerChunkCache.savedDataStorage` (`ServerChunkCache.getDataStorage`,
-forwarded by `ServerLevel.getDataStorage`) is per dimension at
-*dimensions/\<namespace\>/\<path\>/data/* — the overworld included
-([chunk storage](../systems/world/chunk-storage.md)); raids, tickets, the
-border and the dragon fight are per dimension, the overworld's under
-*dimensions/* like everyone else's. Neither is "the overworld's".
 
 ## Game rules are a registry
 
@@ -175,8 +214,9 @@ The values are saved data, not level data: a `GameRuleMap` — `SavedData`,
 `MinecraftServer.gameRules`. `ServerLevel.getGameRules` returns the
 server's: **one set for every dimension**, and `Level` has no rules
 accessor at all, so no `ClientLevel` can read a rule — the client's only
-`GameRules` objects belong to the two rules screens, and neither drives
-gameplay. The accessors are
+`GameRules` objects belong to the two `AbstractGameRulesScreen`s,
+`WorldCreationGameRulesScreen` and `InWorldGameRulesScreen`, and neither
+drives gameplay. The accessors are
 `GameRules.get`, `GameRules.set` (which calls
 `MinecraftServer.onGameRuleChanged`) and `GameRules.visitGameRuleTypes`
 (how `GameRuleCommand.register` builds **two** literals per rule — the
@@ -194,8 +234,9 @@ for the other two (`ClientboundGameEventPacket.LIMITED_CRAFTING`,
 `ServerWaypointManager`; and `GameRules.ADVANCE_TIME`, which broadcasts a
 full clock sync because a paused clock is expressed on the wire as rate 0
 ([environment attributes](../systems/world/environment-attributes-and-timelines.md)).
-`MinecraftServer.updateMobSpawningFlags` sends nothing; it pushes the two
-spawn flags down instead, and is the one entry below that is not a packet.
+One mechanism in this area sends the client nothing at all:
+`MinecraftServer.updateMobSpawningFlags`, which pushes a flag down the
+server's own chain instead ([below](#difficulty-and-weather)).
 
 New is an in-game editor: `ServerboundClientCommandPacket.Action.REQUEST_GAMERULE_VALUES`
 → `ServerGamePacketListenerImpl.sendGameRuleValues` →
@@ -248,21 +289,16 @@ join and dimension change. `ClientLevel.worldBorder` is a plain
 
 ## Dimensions and the seed
 
-`DimensionType` is a record: `DimensionType.hasSkyLight`,
-`DimensionType.hasCeiling`, `DimensionType.hasFixedTime`,
-`DimensionType.hasEnderDragonFight` (the dragon fight is a dimension flag
-now, not hard-wired to `Level.END`), `DimensionType.coordinateScale`,
-`DimensionType.minY`, `DimensionType.height`, `DimensionType.logicalHeight`,
-`DimensionType.infiniburn`, `DimensionType.ambientLight`,
-`DimensionType.monsterSettings`, `DimensionType.skybox` (`DimensionType.Skybox`),
-`DimensionType.cardinalLightType`, `DimensionType.attributes` (an
-`EnvironmentAttributeMap`), `DimensionType.timelines` and
-`DimensionType.defaultClock` (a
-`WorldClock` holder; `WorldClocks.OVERWORLD`, `WorldClocks.THE_END`). The
-gameplay booleans a 1.21-era reader will look for here went to the first of
-those three ([the stack a value falls
-through](../systems/world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)),
-and [naming drift](naming-drift.md) has the row for each.
+`DimensionType` is a record of sixteen components, and they fall into four
+kinds:
+
+| kind | components | |
+|---|---|---|
+| **the shape of the space** | `DimensionType.minY`, `DimensionType.height`, `DimensionType.logicalHeight`, `DimensionType.coordinateScale` | how tall, how deep, how high a portal or a chorus fruit may reach, and what a coordinate becomes when you step through a portal |
+| **what the sky does** | `DimensionType.hasSkyLight`, `DimensionType.hasCeiling`, `DimensionType.hasFixedTime`, `DimensionType.ambientLight`, `DimensionType.skybox` (a `DimensionType.Skybox`), `DimensionType.cardinalLightType` | the six that decide whether there is daylight, a roof over it, a clock behind it and what is drawn where the blocks stop |
+| **what may live here** | `DimensionType.monsterSettings`, `DimensionType.infiniburn`, `DimensionType.hasEnderDragonFight` | the two monster-spawn light tests (`DimensionType.MonsterSettings.monsterSpawnLightTest` and `DimensionType.MonsterSettings.monsterSpawnBlockLightLimit`), the block tag that burns for ever, and — new — the dragon fight as a flag rather than hard-wired to `Level.END` |
+| **the three that are a system of their own** | `DimensionType.attributes` (an `EnvironmentAttributeMap`), `DimensionType.timelines`, `DimensionType.defaultClock` (a `WorldClock` holder; `WorldClocks.OVERWORLD`, `WorldClocks.THE_END`) | where the gameplay booleans a 1.21-era reader will look for on this record have gone ([the stack a value falls through](../systems/world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)); [naming drift](naming-drift.md) has the row for each |
+
 `DimensionType.getStorageFolder` names the on-disk folder.
 Defaults are `DimensionDefaults` (`DimensionDefaults.OVERWORLD_MIN_Y` −64,
 `DimensionDefaults.OVERWORLD_LEVEL_HEIGHT` 384,
@@ -301,10 +337,21 @@ biome-zoom-obfuscated seed in `CommonPlayerSpawnInfo`.
 
 `Difficulty` (`Difficulty.PEACEFUL` … `Difficulty.HARD`) sits in
 `LevelSettings.DifficultySettings`. `MinecraftServer.setDifficulty` writes
-it, then `MinecraftServer.updateMobSpawningFlags` — which calls
-`Level.setSpawnSettings`, forwarded to `ServerChunkCache.setSpawnSettings`, so
-peaceful stops the spawner rather than the mobs — and
+it, then calls `MinecraftServer.updateMobSpawningFlags` and
 `MinecraftServer.sendDifficultyUpdate` → `ClientboundChangeDifficultyPacket`.
+
+**Peaceful does not turn the spawner off.** The flag
+`MinecraftServer.updateMobSpawningFlags` pushes down — `Level.setSpawnSettings`, forwarded to
+`ServerChunkCache.setSpawnSettings`, one boolean per level — is
+`ServerLevel.isSpawningMonsters`, and that reads two *game rules*,
+`GameRules.SPAWN_MOBS` and `GameRules.SPAWN_MONSTERS`, and never the
+difficulty. Difficulty is spent on the mobs themselves instead:
+`EntityType.isAllowedInPeaceful` gates each spawn attempt, and
+`Mob.checkDespawn` discards a mob that is not allowed in peaceful on its next
+despawn check. So the two paths are independent — the rules empty the spawner,
+peaceful empties the world — and `MinecraftServer.setDifficulty` calls
+`MinecraftServer.updateMobSpawningFlags` only because a rule may have changed under it since
+the last call.
 `DedicatedServer.forceDifficulty` applies *server.properties* at boot
 with the lock ignored; there is no *getForcedDifficulty*.
 `DifficultyInstance` — local difficulty — is built by

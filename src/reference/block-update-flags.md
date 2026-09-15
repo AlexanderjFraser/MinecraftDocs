@@ -10,8 +10,11 @@ one. It is a bit set, tagged in signatures by `Block.UpdateFlags`, an
 annotation that carries no values of its own.
 [Blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
 draws the tail of `Level.setBlock` as a flowchart whose gates name these bits
-by number; this is the table behind the numbers. Every page of Parts IV and V
-that passes a flag word means the same bits by them.
+by number; this is the table behind the numbers, and every page of Parts IV
+and V that passes a flag word means the same bits by them. Two of the
+constants do not mean what they look like: **`Block.UPDATE_NONE` is not zero**
+— it is 260, two bits set — and **512 names two different things**, a bit and
+a recursion budget that is not a bit at all.
 
 | bit | constant | what reads it |
 |---:|---|---|
@@ -26,21 +29,25 @@ that passes a flag word means the same bits by them.
 | 256 | `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` | suppresses `BlockEntity.preRemoveSideEffects` |
 | 512 | `Block.UPDATE_SKIP_ON_PLACE` | suppresses `BlockBehaviour.BlockStateBase.onPlace` |
 
-Four named combinations stand beside the bits, and the two large ones are
-worth decomposing here rather than in the reader's head.
+Four named combinations stand beside the bits, decomposed here rather than
+in the reader's head, and only the first two are ever passed by a page in
+this book.
 
 | constant | value | the bits | where the book meets it |
 |---|---:|---|---|
 | `Block.UPDATE_ALL` | 3 | 1 + 2 | the common write — every page that says *flags 3* means this |
 | `Block.UPDATE_ALL_IMMEDIATE` | 11 | 1 + 2 + 8 | placement |
-| `Block.UPDATE_NONE` | 260 | 4 + 256 | nowhere in this book |
-| `Block.UPDATE_SKIP_ALL_SIDEEFFECTS` | 816 | 16 + 32 + 256 + 512 | nowhere in this book |
+| `Block.UPDATE_NONE` | 260 | 4 + 256 | nowhere in this book — and *none* is a misnomer: it suppresses the client-side gate and the block entity's side effects, rather than doing nothing |
+| `Block.UPDATE_SKIP_ALL_SIDEEFFECTS` | 816 | 16 + 32 + 256 + 512 | nowhere in this book; it is what a structure or a data-pack write passes to land a state and tell nobody |
 
-`Block.UPDATE_LIMIT` is also 512, and is not a bit at all — it is the default
+**512 appears twice on this page and means two unrelated things.** As a bit
+it is `Block.UPDATE_SKIP_ON_PLACE`. As `Block.UPDATE_LIMIT` it is not a bit
+at all: it is the default value of `Level.setBlock`'s *fourth* argument, the
 recursion budget for the shape cascade, counting **recursion depth** rather
-than requests, which is what keeps it distinct from
+than requests — which is what keeps it distinct from
 `CollectingNeighborUpdater.maxChainedNeighborUpdates` ([block
-interaction](../systems/blocks/block-interaction.md#the-updater-underneath-a-stack-drained-depth-first)).
+interaction](../systems/blocks/block-interaction.md#the-updater-underneath-a-stack-drained-depth-first)),
+which counts requests.
 
 ---
 

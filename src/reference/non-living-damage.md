@@ -18,24 +18,28 @@ the damage amount, because there is none on that side: it answers only whether
 a client-side swing should play its own effects.
 
 Two gates run before any of them is asked anything — `Player.cannotAttack`
-and `Player.deflectProjectile` — and they are why several rows below read
-*nothing*: the class was never reached ([the sword
+and `Player.deflectProjectile` ([the sword
 swing](../systems/player/the-sword-swing.md#the-damage-one-number-two-curves-one-order)
-owns both). `Entity.hurtOrSimulate` is what `Player.attack` calls after them,
+owns both) — and they account for exactly three of the rows below, marked
+**never reached** in the second column: `Interaction`, which returns true from
+`Entity.skipAttackInteraction`; `EyeOfEnder`, which returns false from
+`Entity.isAttackable`; and `AbstractHurtingProjectile`, which is deflected.
+Every other *nothing* row is a class a swing really does reach, whose
+`Entity.hurtServer` then does nothing. `Entity.hurtOrSimulate` is what `Player.attack` calls after them,
 and it picks `Entity.hurtServer` or `Entity.hurtClient` off the level.
 
 | class | what it checks first | what it does | returns | `Entity.hurtClient` |
 |---|---|---|---|---|
 | `AreaEffectCloud` | — | nothing | false | false |
 | `Display` | — | nothing | false | false |
-| `Interaction` | — | nothing; the attacker was already recorded in `Entity.skipAttackInteraction` | false | false |
+| `Interaction` | **never reached** — `Entity.skipAttackInteraction` returns true, and the attacker is recorded there | nothing | false | false |
 | `LightningBolt` | — | nothing | false | false |
 | `Marker` | — | nothing | false | false |
 | `OminousItemSpawner` | — | nothing | false | false |
 | `PrimedTnt` | — | nothing: a lit TNT block cannot be shot out of the air | false | false |
 | `EvokerFangs` | — | nothing | false | false |
-| `EyeOfEnder` | — | nothing | false | false |
-| `AbstractHurtingProjectile` | — | nothing — a fireball or a wind charge is deflected before this is reached, and the rest are unhittable by `Entity.isPickable` | false | false |
+| `EyeOfEnder` | **never reached** — `Entity.isAttackable` returns false | nothing | false | false |
+| `AbstractHurtingProjectile` | **never reached** — a fireball or a wind charge is deflected, and the rest are unhittable by `Entity.isPickable` | nothing | false | false |
 | `Projectile` | `Entity.isInvulnerableToBase` | `Entity.markHurt` only, so the client sees a flinch and nothing changes | false | false |
 | `FallingBlockEntity` | `Entity.isInvulnerableToBase` | `Entity.markHurt` only | false | false |
 | `ExperienceOrb` | `Entity.isInvulnerableToBase` | subtracts the damage from an int of health, `Entity.discard` at zero | true | not invulnerable |
