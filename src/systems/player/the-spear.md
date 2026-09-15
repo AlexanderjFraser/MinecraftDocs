@@ -75,19 +75,21 @@ the component does for everything else.
 ```mermaid
 flowchart TD
     CLICK["left-click: Minecraft.startAttack"]
-    HAS["main hand has PIERCING_WEAPON?"]
+    HAS{"main hand:<br/>PIERCING_WEAPON?"}
     NORMAL["the ordinary path: MultiPlayerGameMode.attack, then Player.attack"]
-    PA["MultiPlayerGameMode.piercingAttack — plays the sound, resets the ticker locally"]
-    PKT["ServerboundPlayerActionPacket, Action.STAB — no entity id, a dummy position"]
-    SGPL["handlePlayerAction: not a spectator, cannotAttackWithItem with a 5-tick tolerance"]
+    REFUSE["and ServerGamePacketListenerImpl.handleAttack refuses a piercing weapon"]
+    PA["MultiPlayerGameMode.piercingAttack — the sound, and the ticker locally"]
+    PKT["ServerboundPlayerActionPacket.Action.STAB — no entity id, a dummy position"]
+    SGPL["ServerGamePacketListenerImpl.handlePlayerAction — not a spectator, and Player.cannotAttackWithItem with a 5-tick tolerance"]
     PW["PiercingWeapon.attack — the server's own raycast"]
-    USE["right-click: Item.use sees KINETIC_WEAPON, startUsingItem for 72000 ticks"]
-    TICK["every use tick: ItemStack.onUseTick, server side only"]
-    KW["KineticWeapon.damageEntities — ticksUsed, look vector, closing speed"]
+    USE["right-click: Item.use sees KINETIC_WEAPON, then LivingEntity.startUsingItem"]
+    TICK["ItemStack.onUseTick, every use tick of the 72000"]
+    KW["KineticWeapon.damageEntities — server side only: the ticks used, the look vector, the closing speed"]
     RAY["ProjectileUtil.getHitEntitiesAlong — every entity on the ray, filtered by PiercingWeapon.canHitEntity"]
-    STAB["stabAttack — damage, two knockbacks, dismount, durability"]
+    STAB["PiercingWeapon.stabAttack — damage, two knockbacks, dismount, durability"]
     CLICK --> HAS
     HAS -- "no" --> NORMAL
+    NORMAL --> REFUSE
     HAS -- "yes" --> PA
     PA --> PKT
     PKT --> SGPL
@@ -98,6 +100,11 @@ flowchart TD
     KW --> RAY
     RAY --> STAB
 ```
+
+*Two entries — a click on the left, a held right-click on the right — meeting
+at one raycast, and the only place the two columns touch is that meeting: the
+left column's refusal node is the reason a client cannot route a stab down the
+ordinary path.*
 
 Two things in that picture are worth stopping on. The **client tells the
 server nothing about the target** on the stab path: the packet is a

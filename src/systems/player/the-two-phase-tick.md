@@ -92,6 +92,9 @@ number — it is in phase two.
 
 ## Both halves, in the order they run
 
+One object, one tick, two callers and two bands — and the one call that
+appears in both of them is the container check.
+
 ```mermaid
 sequenceDiagram
     participant SL as ServerLevel
@@ -99,25 +102,31 @@ sequenceDiagram
     participant SPGM as ServerPlayer<br/>GameMode
     participant ACM as Abstract<br/>ContainerMenu
     participant SGPL as ServerGamePacket<br/>ListenerImpl
-    participant Player as Player
-    participant Inv as Inventory
     participant FD as FoodData
 
-    Note over SL: phase 1 — the entity loop, inside the level tick
-    SL->>SP: tick — and no call up to Player.tick
-    SP->>SPGM: tick — block-breaking progress and delayed destroy
-    SP->>ACM: broadcastChanges — diff the open menu, then stillValid
-    SP->>SP: updatePlayerAttributes — creative reach modifiers on and off
-
-    Note over SGPL: phase 2 — the connection tick, after every level
-    SGPL->>SGPL: resetPosition — record this position as firstGood and lastGood
-    SGPL->>SP: doTick — the simulation half
-    SP->>Player: Player.tick, then LivingEntity.tick — physics, to be discarded
-    Player->>Inv: tick — ItemStack.inventoryTick for the 36 ordinary slots
-    SP->>FD: tick — hunger, regeneration, starvation
-    SP->>SGPL: ClientboundSetHealthPacket — only if a watched field differs
-    SGPL->>SP: absSnapTo(firstGood) — put the position back, keep the rotation
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,FD: phase 1 — the entity loop, inside the level tick
+        SL->>SP: tick, and no call up to Player.tick
+        SP->>SPGM: tick — the breaking timer and the delayed destroy
+        SP->>ACM: broadcastChanges, then stillValid
+        SP->>SP: updatePlayerAttributes — the creative reach modifiers
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,FD: phase 2 — the connection tick, after every level
+        SGPL->>SGPL: resetPosition — this position becomes firstGood
+        SGPL->>SP: doTick, inside the bracket
+        SP->>SP: Player.tick, then LivingEntity.tick — the physics
+        SP->>ACM: stillValid — the only work both halves do
+        SP->>FD: tick — hunger, regeneration, starvation
+        SP->>SGPL: ClientboundSetHealthPacket, if a watched field differs
+        SGPL->>SP: absSnapTo — back to firstGood, keeping the rotation
+    end
 ```
+
+*The two bands are the two callers, and `ServerPlayer` is one lane in both
+because it is one object: the physics the page is about happen inside the
+second band and are undone by its last arrow, and `AbstractContainerMenu` is
+the only lane the first band and the second both touch.*
 
 ## The bracket, and what survives it
 

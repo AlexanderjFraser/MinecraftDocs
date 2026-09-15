@@ -44,6 +44,187 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session H — Part VIII · The player: the figures *(2026-09-15)*
+
+Eight pages, 12 figures (10 before; `input-to-movement`'s single trace became a
+client figure and a server figure at the wire, and `status-effects`' single
+trace became a server figure and a client figure at the machine boundary its
+own heading names). Every figure captioned, every caption one italic run; the
+figure-name gate clean on the part (1 unresolved name → 0, 7 notes → 0); no
+type under 12.8px, nothing below 0.80, nothing over 1,200px tall, no lane over
+six, **no Mojang name hyphen-broken on screen**, and no overlap, overflow or
+clipping in the part. One flowchart became the book's **seventh `classDiagram`**.
+
+### The figures redrawn, and what each asserts
+
+- `player/README` — the part figure is numbered 1–7 to the watch order (F13)
+  and captioned to say what an arrow means. **No arrow added, removed or
+  reversed.** Two edge labels that described a *node* ("eight classes,
+  forty-three slots" on `PA → TT`; "and two other melee paths" on `SS → SP`)
+  moved into the nodes they describe, and the one edge that carries a real
+  constraint is now the only labelled one — the claim being the section's own
+  sentence, that the four branches off *the two-phase tick* are independent of
+  one another and the spear is the sword swing's sequel.
+- `player-anatomy` figure 1 — the inheritance tree was a `flowchart TD` whose
+  solid arrow meant *extends*, a mark outside `TEMPLATE.md`'s table. It is now a
+  `classDiagram` with `<|--`, which says *extends* natively. **No relation
+  added, removed or reversed**: the nine edges are the same nine. What is new is
+  the `<<abstract>>` annotation on `Entity`, `LivingEntity`, `Avatar`, `Player`
+  and `AbstractClientPlayer` — five claims, each checked at the class
+  declaration (all `public abstract class`) — and the caption's claim that the
+  five unmarked boxes (`ServerPlayer`, `LocalPlayer`, `RemotePlayer`,
+  `Mannequin`, `ClientMannequin`) are the only ones the game instantiates, each
+  checked as `public class`. **Correction to the prose:** the lead said "six
+  rungs … stand **between** `Entity` and the object on your own screen, and five
+  between `Entity` and the one the server holds", while the counts are inclusive
+  and the figure shows four and three strictly between; now "six rungs … reach
+  **from** `Entity` **down to** …".
+- `the-two-phase-tick` figure 1 — eight lanes to six, 0.61/9.7px to
+  0.82/13.1px. **Lanes folded:** `Player` (a `ServerPlayer` *is* a `Player`, so
+  one object had two lanes — F7) and `Inventory` (one message, and
+  `player-anatomy` owns the forty-three slots). **Devices added:** two `rect`
+  bands with a `Note over` all lanes, replacing two `Note over` a *single* lane
+  that left half the figure unmarked. **Arrow added — and it is a correction:**
+  `SP->>ACM: stillValid` in phase two. The page says in bold that the container
+  check "is the only work both halves do" and the figure showed it in phase one
+  only; `ServerPlayer.doTick` re-runs `this.containerMenu.stillValid(this)`
+  (`ServerPlayer.java:729`). **Name corrected:** the inventory message named
+  `ItemStack.inventoryTick`, which appears nowhere in the page's prose (the
+  prose says `Inventory.tick`); the lane is gone with it. The label
+  `absSnapTo(firstGood)` is now `absSnapTo — back to firstGood`, because the
+  fields are `firstGoodX`, `firstGoodY`, `firstGoodZ` and there is no
+  `firstGood`.
+- `input-to-movement` figures 1 and 2 — one seven-lane trace spanning both
+  machines became a five-lane client figure and a three-lane server figure,
+  split at the wire, each in the section that owns it (the server half had been
+  drawn ninety lines above the section that explains it). 0.69/11.1px to
+  0.92/14.7px and 1.00/16px. **Lane cut:** `LivingEntity` — `LocalPlayer`'s own
+  base class, one arrow, no cast row (F7). **Arrow corrected:** `KI->>LP:
+  applyInput` drew `KeyboardInput` calling `LocalPlayer.applyInput`; the caller
+  is `LivingEntity.aiStep` on itself (`LivingEntity.java:3250`), so it is a
+  self-message. **Arrow added:** `KI->>KM: isDown, once for each of seven
+  mappings` — `KeyboardInput.tick` reads `this.options.keyUp.isDown()` and six
+  more (`KeyboardInput.java:21`), which is what makes `KeyMapping` a lane that
+  decides something rather than one that carries a single message. **Head
+  corrected:** `KH->>KM: keyPress` labelled the message with the *caller's*
+  method; `KeyboardHandler` calls `KeyMapping.set` then `KeyMapping.click`
+  (`KeyboardHandler.java:638-639`). **The server figure asserts** the branch
+  structure of `ServerGamePacketListenerImpl.handleMovePlayer` as an `alt` /
+  `opt`: the speed failure teleports and returns
+  (`ServerGamePacketListenerImpl.java:1270-1271`), and the rubber-band is
+  optional after the move is applied (`…:1309`) — the page's own disjunction,
+  drawn as conditional for the first time. Two `rect` bands assert that the
+  drain and the connection phase are different phases of one server tick, which
+  is the page's numbered list at *Sampled once a tick*.
+- `the-sword-swing` figure 1 — seven lanes to six, in two `box transparent`
+  machines, 0.69/11.0px to 0.80/12.8px. **Three corrections, all arrows:**
+  (1) `SGPL->>SGPL: isWithinAttackRange` drew the listener calling its own
+  method — it is `this.player.isWithinAttackRange(…)`
+  (`ServerGamePacketListenerImpl.java:2031`), declared on `Player`
+  (`Player.java:2009`), and the `Player` lane was already in the figure;
+  (2) `Player->>LE: hurtOrSimulate` landed on a `LivingEntity` lane, but the
+  method is `Entity.hurtOrSimulate` (`Entity.java:2044`) and the page's own
+  Reference link is *Damage outside `LivingEntity`* — the lane is now `Entity`;
+  (3) `SL->>MC: ClientboundDamageEventPacket` drew the packet arriving at
+  `Minecraft`, and the handler is `ClientPacketListener.handleDamageEvent`
+  (`ClientPacketListener.java:1287`) — the receiving lane is now `CPL`, and the
+  sender is the hurt entity, whose own path calls `Level.broadcastDamageEvent`
+  (`LivingEntity.java:1306`). **Node added:** `ServerLevel.getEntityOrPart` as a
+  self-message, the one `ServerLevel` fact the prose gives and the figure had
+  dropped when it dropped the lane. **Label corrected:** `hurtOrSimulate — into
+  Part VI; returns was-anything-damaged` carried a cross-part reference inside a
+  message.
+- `the-sword-swing` figure 2 — the damage walk. **The gate is a diamond** with
+  both terms named and its answers on its edges (`baseDamage > 0.0F ||
+  magicBoost > 0.0F`, `Player.java:941`), where it had been a rectangle asking
+  "either term above zero?" without saying which two. **Node added:** the sprint
+  knockback step (`Player.java:945-951`), which the prose already ties the item
+  bonus to ("it is the step the item bonus is added immediately after") and
+  which the figure did not contain — so the sentence pointed at a node that was
+  not there. **Node added:** *nothing below runs*, the gate's own else. **Fact
+  moved to prose:** "or the riptide value while auto-spinning" left the base
+  node for a sentence naming `Player.autoSpinAttackDmg` (`Player.java:932`) —
+  F6, a name the prose never said. **Correction to the prose:** "the item-bonus
+  node in the figure **below**" — the figure is above it.
+- `the-spear` figure 1 — **name corrected:** `Action.STAB` was the gate's one
+  unresolved name in the part; `Action` is a nested enum and the prose writes it
+  `ServerboundPlayerActionPacket.Action.STAB`
+  (`ServerboundPlayerActionPacket.java:68-70`), which the figure now does.
+  **Label corrected:** "every use tick: ItemStack.onUseTick, server side only"
+  said the wrong thing about the wrong method — `ItemStack.onUseTick` runs on
+  both sides and only the divert to `KineticWeapon.damageEntities` is behind
+  `!level.isClientSide()` (`ItemStack.java:1179-1180`); *server side only* now
+  sits on the `damageEntities` node. **Label corrected:** "startUsingItem for
+  72000 ticks" put the number on the wrong method — 72000 is
+  `Item.getUseDuration`'s, which the prose says. **Node added:** the ordinary
+  attack handler's refusal of a piercing weapon
+  (`ServerGamePacketListenerImpl.java:2033`) — the second of the two things the
+  prose says the picture is worth stopping on, and the only thing the *no*
+  branch had to end in. The decision is a diamond; five unqualified members are
+  qualified.
+- `hunger-and-experience` figure 1 — the regeneration chain. **The shape is the
+  correction:** three sibling branches off one node drew a *set* where
+  `FoodData.tick` is an if / else-if chain tested in order
+  (`FoodData.java:50-77`), which is what makes the three exclusive and why a
+  full bar heals six times faster than one at eighteen. Now three numbered
+  diamonds, each reached only by the one above saying no. **Node added:** the
+  fourth branch, `else { this.tickTimer = 0; }` (`FoodData.java:75-76`), which
+  the figure had never drawn. Four sentence labels moved to a four-row table
+  beside it; the game rule's asymmetry (branches 1 and 2 gated on
+  `GameRules.NATURAL_HEALTH_REGENERATION`, branch 3 not) is a table column.
+- `hunger-and-experience` figure 2 — seven lanes to six in two `box
+  transparent` machines, 0.69/11.1px to 0.80/12.8px. **Lane folded:**
+  `LivingEntity` and `ServerPlayer` were one object in this scenario (F7).
+  **Ordering corrected in the drawing, not the fact:** the entity event was
+  labelled *sent first* and drawn second, from a lane that had not acted;
+  `ServerPlayer.completeUsingItem` sends `ClientboundEntityEventPacket(9)`
+  *before* `super.completeUsingItem()` (`ServerPlayer.java:1706-1710`), so it is
+  now drawn where it happens. **Arrow added:** the client's re-run of the same
+  walk, unguarded — the section's own surprise ("the client replays the meal …
+  and runs `FoodProperties.onConsume` and its `FoodData.eat` locally, with no
+  side guard"), which the figure had omitted while drawing a
+  `ClientPacketListener` lane that never acted.
+- `status-effects` figures 1 and 2 — one trace with **one `LivingEntity` lane
+  standing for two machines**, told apart by two `Note over` lines, became two
+  figures, one per machine, both at 1.00/16px. **Lane cut:**
+  `AttributeInstance` — the modifier's landing is `attributes`' in Part VI, and
+  the page links out to it. **Arrow added, and it is the page's central fact:**
+  the 600-tick correction. `LivingEntity.onEffectUpdated` fires when the
+  remaining duration divides by six hundred and `ServerPlayer.onEffectUpdated`
+  sends `ClientboundUpdateMobEffectPacket` (`ServerPlayer.java:1794-1796`); the
+  opening paragraph and the first *Questions players ask* answer both rest on it
+  and no figure showed it. **Arrow added:** `CPL->>LE: forceAddEffect — a fresh
+  instance, with nothing under it`, checked at
+  `ClientPacketListener.java:1876-1882`, where the instance is built with a
+  `null` hidden effect. **The client figure has no `MobEffect` lane**, which is
+  the claim the caption makes and the page's thesis. Re-derived and **kept**:
+  "four flag bits" (`FLAG_AMBIENT`, `FLAG_VISIBLE`, `FLAG_SHOW_ICON`,
+  `FLAG_BLEND`, `ClientboundUpdateMobEffectPacket.java:14-17`) and
+  `MobEffect.addAttributeModifiers` called from `LivingEntity.onEffectAdded`
+  behind `!this.level().isClientSide()` (`LivingEntity.java:1113-1117`).
+
+### The captions
+
+Twelve captions, each a claim about what its figure shows and each written this
+session; the load-bearing ones are `the-two-phase-tick`'s ("the only lane the
+first band and the second both touch"), `status-effects` figure 2's ("there is
+no `MobEffect` lane here, and that absence is the page"),
+`hunger-and-experience` figure 1's ("a chain, not a fan"), `the-sword-swing`
+figure 2's (the left branch scaled once and left alone, the right one scaled,
+gated, added to and multiplied) and `player-anatomy`'s (the five unmarked boxes
+are the only ones the game instantiates).
+
+### Two tool blindnesses, with probes
+
+`check_figure_names.py` could not see a one-word class name anywhere but a
+`participant` line (its `CAMEL` token needs two humps), and its `CLASS_REL`
+never matched `<|--` at all, so an inheritance relation's ends and label were
+unread. Both fixed with probe cases; corpus-wide the gate now checks 43 more
+names and three more classes reach the index, and **no previously-clean part
+moved on failures**. Nothing already in the corpus was found wrong by either
+fix — but `player-anatomy`'s new class diagram has ten class names in it that
+the gate would not have read at all.
+
 ## Pass 7, session G — Part VII · Items and inventories: the figures *(2026-09-15)*
 
 Nine pages, 19 figures (17 before; `using-an-item`'s single *ending* flowchart

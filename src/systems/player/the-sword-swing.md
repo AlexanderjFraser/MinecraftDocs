@@ -105,26 +105,37 @@ and the attack was handled before that bracket opened.
 
 ## One click, one integer, one round trip
 
+Two packets go out and one comes back, and the one that comes back has no
+damage number in it.
+
 ```mermaid
 sequenceDiagram
-    participant MC as Minecraft
+    box transparent the client
     participant LP as LocalPlayer
     participant MPGM as MultiPlayer<br/>GameMode
+    participant CPL as ClientPacketListener
+    end
+    box transparent the server
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Player as Player
-    participant LE as LivingEntity
-    participant SL as ServerLevel
+    participant Entity as Entity
+    end
 
-    MC->>LP: raycastHitResult — AttackRange first, then the classic pick
-    MC->>MPGM: attack — after cannotAttackWithItem and the range test
-    MPGM->>SGPL: ServerboundAttackPacket — one varint: the entity id
+    LP->>LP: raycastHitResult — AttackRange first, then the classic pick
+    LP->>MPGM: attack, from Minecraft.startAttack
+    MPGM->>SGPL: ServerboundAttackPacket — one varint, the entity id
     LP->>SGPL: ServerboundSwingPacket — from the branches that swing at all
-    SGPL->>SGPL: isWithinAttackRange — AttackRange plus a 3.0 buffer both ways
-    SGPL->>Player: attack — the server recomputes damage from nothing but the id
-    Player->>LE: hurtOrSimulate — into Part VI#59; returns was-anything-damaged
+    SGPL->>SGPL: ServerLevel.<br/>getEntityOrPart
+    SGPL->>Player: isWithinAttackRange — the reach, plus a 3.0 buffer
+    SGPL->>Player: attack — the damage rebuilt from nothing but the id
+    Player->>Entity: hurtOrSimulate — its answer gates everything after it
     Player->>Player: causeExtraKnockback, doSweepAttack, itemAttackInteraction
-    SL->>MC: ClientboundDamageEventPacket — a damage type and three ids, no amount
+    Entity->>CPL: ClientboundDamageEventPacket — a damage type and three ids
 ```
+
+*Everything the client sent is on the two arrows that cross to the right, and
+between them they carry one integer: every number in the box on the right was
+rebuilt there, and the arrow coming back carries none of them.*
 
 ## The two clocks a swing is charged against
 
@@ -155,29 +166,37 @@ combat is the order in which it touches one float.
 
 ```mermaid
 flowchart TD
-    S["s = Player.getAttackStrengthScale, read with a partial tick of 0.5"]
-    BASE["base = Attributes.ATTACK_DAMAGE — or the riptide value while auto-spinning"]
-    BOOST["boost = Player.getEnchantedDamage minus base"]
-    BL["boost × s — linear in the cooldown"]
-    BQ["base × (0.2 + s² × 0.8) — quadratic in the same cooldown"]
-    RESET["Player.onAttack — resets the attack ticker, after the scale was read"]
-    GATE["either term above zero? — otherwise nothing below runs"]
-    ITEM["plus Item.getAttackDamageBonus — the mace's fall bonus lands here"]
-    CRIT["× 1.5 if full strength and Player.canCriticalAttack"]
-    TOTAL["total = that, plus the linear boost"]
-    HURT["Entity.hurtOrSimulate — was anything damaged? that gates the knockback, sweep and durability"]
-    S --> BL
+    S["s = Player.getAttackStrengthScale, at a partial tick of 0.5"]
+    BASE["base = Attributes.ATTACK_DAMAGE"]
+    BOOST["boost = Player.getEnchantedDamage minus base, times s"]
+    BQ["base × (0.2 + s² × 0.8) — Player.baseDamageScaleFactor"]
+    RESET["Player.onAttack — the ticker resets, the scale already read"]
+    GATE{"base or boost<br/>above zero?"}
+    NONE["nothing below runs"]
+    KB["sprint knockback, if s is above 0.9 and you are sprinting"]
+    ITEM["base += Item.getAttackDamageBonus — the mace's fall bonus"]
+    CRIT["base × 1.5, if full strength and Player.canCriticalAttack"]
+    TOTAL["total = base + boost"]
+    HURT["Entity.hurtOrSimulate — was anything damaged?"]
+    S --> BOOST
     S --> BQ
-    BOOST --> BL
+    BASE --> BOOST
     BASE --> BQ
     BQ --> RESET
     RESET --> GATE
-    GATE --> ITEM
+    GATE -- "neither" --> NONE
+    GATE -- "either" --> KB
+    KB --> ITEM
     ITEM --> CRIT
     CRIT --> TOTAL
-    BL --> TOTAL
+    BOOST --> TOTAL
     TOTAL --> HURT
 ```
+
+*One float, followed down: the left-hand branch is the enchantment bonus,
+which is scaled once and then left alone, and the right-hand one is the base
+damage, which is scaled, gated, added to and multiplied before the two meet
+again at the bottom.*
 
 One node in it needs its meaning before the rest of the page spends it.
 `Entity.hurtOrSimulate` is the wrapper that branches on the side —
@@ -193,6 +212,9 @@ quadratic ramp on the base damage, and a plain multiplication is the linear
 one on the enchantment bonus, both from the same scale read with the same 0.5
 partial tick. And **the item bonus is inside the crit**, because
 `Item.getAttackDamageBonus` is added before the ×1.5 rather than after it.
+One substitution the figure leaves out: while an auto-spin attack is in
+flight the base is `Player.autoSpinAttackDmg`, the riptide number, instead of
+the attribute.
 
 The gates along the way are as particular as the arithmetic, and the first
 two are put to the *target* rather than to the attacker.
@@ -212,7 +234,7 @@ Then three tests that are not gates but switches, each deciding what *kind*
 of hit this is. **Sprint knockback** needs the scale above 0.9, plays a
 sound, and adds a flat **0.5** to the knockback later; it is the step the
 item bonus is added immediately after, which is why the item-bonus node in the
-figure below sits where it does. `Player.canCriticalAttack`
+figure above sits where it does. `Player.canCriticalAttack`
 needs falling, not on the ground, not climbing, not in water, not
 mobility-restricted, not a passenger, **not sprinting**, a `LivingEntity`
 target — and full strength as well. `Player.isSweepAttack` needs full

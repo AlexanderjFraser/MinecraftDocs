@@ -78,18 +78,32 @@ economy is disabled in one line: `Player.causeFoodExhaustion` returns
 immediately for invulnerable abilities.
 
 What `FoodData.tick` then does with that budget is one exhaustion rule and a
-three-way chain, tested **in the order below**, first match only:
+three-way chain, tested **in the order below**, first match only — and the
+figure is that order, with the conditions themselves in the table under it.
 
 ```mermaid
 flowchart TD
-    EX["exhaustion above 4.0?"]
-    EX -- "yes" --> DRAIN["spend 4.0 of exhaustion, and take 1.0 off saturation — or one off the food bar once saturation is spent and the difficulty is not Peaceful"]
-    EX -- "no" --> CHAIN
-    DRAIN --> CHAIN["then at most one of the three"]
-    CHAIN --> FAST["heal fast: every 10 ticks, at a full bar, hurt, with saturation left and the game rule on — the heal is funded by that saturation"]
-    CHAIN --> SLOW["heal slowly: every 80 ticks, at 18 or more food, hurt, and the game rule on"]
-    CHAIN --> STARVE["starve: every 80 ticks at zero food, and not gated on the game rule at all"]
+    EX{"exhaustion<br/>above 4.0?"}
+    EX -- "yes" --> DRAIN["spend 4.0 — saturation first, then the bar"]
+    EX -- "no" --> C1
+    DRAIN --> C1{"1 · heal fast?"}
+    C1 -- "yes" --> FAST["every 10 ticks, charged back as exhaustion"]
+    C1 -- "no" --> C2{"2 · heal slowly?"}
+    C2 -- "yes" --> SLOW["every 80 ticks, for 6.0 of exhaustion"]
+    C2 -- "no" --> C3{"3 · starve?"}
+    C3 -- "yes" --> STARVE["every 80 ticks, above the difficulty's floor"]
+    C3 -- "no" --> RESET["none of the three — the timer resets"]
 ```
+
+*A chain, not a fan: each diamond is only reached because the one above it
+said no, which is the whole of why the three are exclusive.*
+
+| tested in this order | the condition | and then |
+|---|---|---|
+| 1 · heal fast | the game rule on, saturation left, hurt, and the bar at 20 | every 10 ticks: heals a sixth of the saturation it spends, and charges that much back as exhaustion |
+| 2 · heal slowly | the game rule on, hurt, and 18 food or more | every 80 ticks: half a heart, for 6.0 of exhaustion |
+| 3 · starve | food at zero — and **not** gated on the game rule | every 80 ticks: half a heart of `DamageTypes.STARVE`, above the difficulty's floor |
+| 4 · none of them | — | `FoodData.tickTimer` goes back to zero |
 
 The order is what makes the three exclusive, and it is why a full bar with
 saturation left heals you six times faster than a bar at eighteen: both
@@ -122,26 +136,38 @@ and [status effects](status-effects.md#what-an-effect-is) meet in one method. Tw
 `FoodData.eat` without any of that: `CakeBlock.eat`, and the saturation
 effect, both using the raw nutrition-and-saturation overload.
 
+The walk itself is five hand-offs on the server and one line out to the
+client, and the packet leaves before any of the five have run.
+
 ```mermaid
 sequenceDiagram
-    participant LE as LivingEntity
+    box transparent the server
+    participant SP as ServerPlayer
     participant IStack as ItemStack
     participant Cons as Consumable
     participant FP as FoodProperties
     participant FD as FoodData
-    participant SP as ServerPlayer
+    end
+    box transparent the client
     participant CPL as ClientPacketListener
+    end
 
-    LE->>LE: updateUsingItem — the zero check is server side only
-    SP->>CPL: ClientboundEntityEventPacket(9) — sent first, so the client replays the meal
-    LE->>IStack: finishUsingItem — the item decides what finishing means
+    SP->>SP: updateUsingItem — the zero check is server side only
+    SP->>CPL: ClientboundEntityEventPacket(9), before the walk starts
+    SP->>IStack: finishUsingItem — the item decides what finishing means
     IStack->>Cons: onConsume — walks every ConsumableListener on the stack
     Cons->>FP: onConsume — the food component is one such listener
     FP->>FD: eat — nutrition and pre-multiplied saturation, clamped
-    Cons->>Cons: onConsumeEffects — server only#59; then consume(1)
+    Cons->>Cons: onConsumeEffects — server only, then consume(1)
+    CPL->>CPL: the same walk again, locally and unguarded
     SP->>FD: tick — exhaustion drain, then regen or starvation
-    SP->>CPL: ClientboundSetHealthPacket — when health, food or zero-saturation changed
+    SP->>CPL: ClientboundSetHealthPacket — the prediction is overwritten
 ```
+
+*The second arrow is the whole of what the client is told, and it leaves
+before the server has eaten anything: everything below it on the left is the
+walk, and the client's one self-call is that same walk run again on a copy
+nobody guarded.*
 
 `Consumable.canConsume` consults `Player.canEat` only when the stack has
 `DataComponents.FOOD` and the user is a player — potions and milk are

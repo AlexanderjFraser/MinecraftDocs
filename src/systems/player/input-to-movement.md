@@ -160,28 +160,34 @@ On the server the ordering is the whole story:
 
 ## W, held down: what the client decides and sends
 
+The press and the reading of it are in different ticks, which is the first
+thing the figure shows.
+
 ```mermaid
 sequenceDiagram
     participant KH as KeyboardHandler
     participant KM as KeyMapping
     participant KI as KeyboardInput
     participant LP as LocalPlayer
-    participant LE as LivingEntity
-    participant SGPL as ServerGamePacket<br/>ListenerImpl
-    participant SP as ServerPlayer
+    participant Wire as the network
 
-    KH->>KM: set — isDown = true#59; nothing else happens yet
-    LP->>KI: tick — from inside aiStep: poll seven keys into one Input
-    KI->>LP: applyInput — moveVector becomes xxa/zza, jump becomes jumping
-    LP->>LE: travel — travelInAir, then Entity.move: the client is authoritative
-    LP->>SGPL: ServerboundPlayerInputPacket — only when the key set changed
-    LP->>SGPL: ServerboundMovePlayerPacket.PosRot — sendPosition decides which variant
-    SGPL->>SGPL: moved too quickly? — squared delta vs getDeltaMovement, budget 100 or 300
-    SGPL->>SP: move(MoverType.PLAYER) — where the server applies the position you reported
-    SGPL->>SGPL: moved wrongly? — residual over 0.0625, or a new collider
-    SGPL->>LP: ClientboundPlayerPositionPacket — rubber-band, awaiting an ack
-    SGPL->>SP: doTick — simulate the whole tick, then absSnapTo(firstGood…) and discard
+    KH->>KM: set, then click — isDown goes true, and nothing else yet
+    rect rgba(0, 0, 0, 0.04)
+        Note over KH,Wire: the next client tick — LocalPlayer.tick
+        LP->>KI: tick, from inside aiStep — the override that does the work
+        KI->>KM: isDown, once for each of seven mappings
+        LP->>LP: applyInput — moveVector becomes xxa and zza, jump becomes jumping
+        LP->>LP: travel — travelInAir, then Entity.move, unguarded
+        LP->>Wire: ServerboundPlayerInputPacket, only if the key set changed
+        LP->>Wire: ServerboundMovePlayerPacket.<br/>PosRot
+    end
 ```
+
+*Nothing happens at the callback but a flag: the band is one client tick, and
+every key the tick reads is read through `KeyMapping`, which is why a press
+and a release inside one band never happened at all — and it is
+`LocalPlayer.sendPosition` that decides which of the move variants leaves at
+the foot of it.*
 
 ### The client half
 
@@ -257,6 +263,35 @@ inside it — and then, because a judgement can go against you, a handshake for
 putting you back.
 
 ### The two checks, in the order they run
+
+```mermaid
+sequenceDiagram
+    participant Wire as the network
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
+    participant SP as ServerPlayer
+
+    rect rgba(0, 0, 0, 0.04)
+        Note over Wire,SP: the packet drain, before any level ticks
+        Wire->>SGPL: ServerboundMovePlayerPacket.<br/>PosRot
+        SGPL->>SGPL: containsInvalidValues, then the two clamps
+        alt moved too quickly
+            SGPL->>Wire: teleport, then return — nothing below runs
+        else within the budget
+            SGPL->>SP: move, with MoverType.PLAYER
+            opt a residual over 0.0625, or a new collider
+                SGPL->>Wire: ClientboundPlayerPositionPacket, awaiting an ack
+            end
+        end
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over Wire,SP: the connection phase, after every level has ticked
+        SGPL->>SP: doTick, then absSnapTo — simulate the tick and discard it
+    end
+```
+
+*The two bands are two phases of one server tick, and the rubber-band is the
+only arrow here that is conditional twice over: it needs the move applied
+first, and then either arm of the disjunction below.*
 
 `ServerGamePacketListenerImpl.handleMovePlayer`
 begins with `ServerGamePacketListenerImpl.containsInvalidValues`, which

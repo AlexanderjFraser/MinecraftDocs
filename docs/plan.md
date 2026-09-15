@@ -878,3 +878,55 @@ that the owner has not understood; recording is after pass 10.
   one regex over the render rather than nine pairs of eyes. Fifteen queue
   entries struck with the page open, one ruled out, twelve opened. All six gates
   green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session H (Opus) — Part VIII · The player.** Eight
+  viewer agents, one per page. **Ten figures became twelve**, both new ones a
+  split at a joint the page's own headings already name: `input-to-movement`'s
+  one seven-lane trace is a client figure under *what the client decides and
+  sends* and a server figure under *what the server does with the packet it
+  gets* — the server half had been drawn ninety lines above the section that
+  explains it — and `status-effects`' one trace is a server figure and a client
+  figure, because it had **one `LivingEntity` lane standing for two machines**,
+  told apart by two `Note over` lines, which is the thing F7 forbids by name.
+  Every figure in the part is captioned and pointed at by a sentence; **nothing
+  is below 0.80 or under 12.8px** (from four at 0.69 and one at 0.61/9.7px),
+  nothing is over 1,200px tall, no lane is over six, and the gate's **1
+  unresolved name and 7 notes are 0 and 0**, which makes Part VIII the second
+  part clean on the notes as well as the failures. `player-anatomy`'s class
+  ladder is the book's **seventh `classDiagram`** and the first drawn for
+  inheritance rather than containment: its solid flowchart arrow had meant
+  *extends*, a mark outside the grammar, and `<|--` says it natively while
+  `<<abstract>>` marks the five rungs the game never instantiates — which also
+  settled the reader's complaint that only `Player` carried *— abstract*.
+  **The part's own fault is F7's, in the shape this part was always going to
+  produce**: four of five sequence diagrams gave **one object two lanes by
+  drawing a class-hierarchy rung beside its subclass** — `Player` beside
+  `ServerPlayer`, `LivingEntity` beside `LocalPlayer`, `LivingEntity` beside
+  `ServerPlayer` twice — on the one part whose whole subject is the inheritance
+  chain. Folding them was the entire lane-budget fix; not one label needed
+  shortening. Eighteen corrections, all in [pass9.md](pass9.md); the sharpest
+  three are `the-two-phase-tick`'s figure, which drew the container check in
+  phase one only under a sentence in bold calling it *the only work both halves
+  do*; `the-sword-swing`'s, which drew the listener calling its own
+  `isWithinAttackRange` when it is `Player`'s and the `Player` lane was already
+  in the figure, landed `hurtOrSimulate` on `LivingEntity` when it is
+  `Entity`'s and the page's own Reference link is *Damage outside
+  `LivingEntity`*, and delivered the damage packet to `Minecraft` rather than
+  to the listener that handles it; and `hunger-and-experience`'s regeneration
+  figure, which drew **three siblings off one node where the code is an
+  if/else-if chain whose order is the whole rule** — the shape was the error,
+  and the fourth branch (the timer reset) had never been drawn at all. **The
+  session's own finding is a sixth and seventh tool blindness, and this one had
+  been there since the gate was written**: `check_figure_names.py`'s token
+  regex needs two CamelCase humps, so **every one-word class name in a figure
+  was unchecked** — `Entity`, `Avatar`, `Player`, `Mannequin`, `Item`, `Block`,
+  `Mob`, `Screen`, `Window` — everywhere but a `participant` line; and its
+  relation pattern allowed one character either side of `--`, so `<|--` never
+  matched and **an inheritance relation was parsed as nothing at all**. Both
+  fixed where the name is structural rather than free text (a `class Foo` box
+  and both ends of a relation, with a box id that has a display label read as
+  an alias the way a lane abbreviation is), each with a probe case; 43 more
+  names checked corpus-wide, three more classes in the index, and no
+  previously-clean part moved. Ten queue entries struck with the page open,
+  eleven opened. All six gates green (the figure-name gate still report-only).
+  Deployed.

@@ -3640,17 +3640,23 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 7, the figures
 
-- `the-spear`'s flowchart node reads "every use tick: ItemStack.onUseTick,
+- ~~`the-spear`'s flowchart node reads "every use tick: ItemStack.onUseTick,
   server side only". Re-derived in session H and sound — the method runs on
   both sides and only the divert to `KineticWeapon.damageEntities` is
   server-gated — but the label compresses the two into one and reads as a
-  contradiction of `using-an-item`:8-9. A label, not a fact. [kind=figure]
-- `player/README`'s part figure gives the two trunk pages one edge label
+  contradiction of `using-an-item`:8-9. A label, not a fact. [kind=figure]~~
+  — done, pass 7 session H: *server side only* moved onto the
+  `KineticWeapon.damageEntities` node, where it is true.
+- ~~`player/README`'s part figure gives the two trunk pages one edge label
   ("eight classes, forty-three slots") and the four branch edges none; the
-  spear edge is the only labelled branch. [kind=figure]
-- `status-effects`' trace has a `Note over LE` for each side and no
+  spear edge is the only labelled branch. [kind=figure]~~ — done, pass 7
+  session H: both node-describing labels moved into their nodes, the nodes
+  numbered to the watch order (F13), and the one real constraint is now the
+  only labelled edge.
+- ~~`status-effects`' trace has a `Note over LE` for each side and no
   tick-boundary bar, so the client and server branches read as sequential.
-  [kind=figure]
+  [kind=figure]~~ — done, pass 7 session H, together with the entry below:
+  the trace is two figures, one per machine, each with its own band.
 
 ### For pass 8, the voice
 
@@ -5733,32 +5739,48 @@ pass that owns it. Everything acted on this session is struck above.*
 
 ### For pass 7, the figures (from session H's readers)
 
-- `hunger-and-experience`'s regen flowchart draws three branches from one
+- ~~`hunger-and-experience`'s regen flowchart draws three branches from one
   node labelled *then at most one of the three*, and the branches are an
   if/else-if chain whose **order is the rule** — *heal fast* and *heal slowly*
   both hold at twenty food. The prose now says the order decides; the figure
-  still does not show it. A numbered chain, or one arrow.
-- `hunger-and-experience`'s sequence diagram has `ClientboundEntityEventPacket(9)`
+  still does not show it. A numbered chain, or one arrow.~~ — done, pass 7
+  session H: a numbered chain of three diamonds, each reached only because
+  the one above said no, with the fourth branch (`FoodData.tickTimer` reset)
+  drawn for the first time and the four sentence labels moved to a table.
+- ~~`hunger-and-experience`'s sequence diagram has `ClientboundEntityEventPacket(9)`
   labelled *sent first* while being drawn second, from a lane that has not
   acted; and the `FP->>FD: eat` arrow is run on both sides, which the single
-  set of lanes cannot show.
-- `status-effects`' diagram is headed *on both sides at once* (now *Poison II
+  set of lanes cannot show.~~ — done, pass 7 session H: *sent first* was true
+  (`ServerPlayer.completeUsingItem` sends before `super`), so the packet is
+  now drawn where it happens, from a `ServerPlayer` lane that is the same
+  object as the old `LivingEntity` one; the client's re-run of the walk is a
+  self-call inside a `box transparent the client`.
+- ~~`status-effects`' diagram is headed *on both sides at once* (now *Poison II
   counting down on two machines*) and has **one `LE` lane doing both
   machines**, told apart only by two `Note over` lines. Every reader stopped
-  on it. Either two lanes or a bar.
-- `the-sword-swing`'s damage flowchart mixes data nodes with control nodes on
+  on it. Either two lanes or a bar.~~ — done, pass 7 session H: two figures,
+  one per machine, and the client's has no `MobEffect` lane at all, which is
+  the page's claim drawn as an absence.
+- ~~`the-sword-swing`'s damage flowchart mixes data nodes with control nodes on
   the same arrows, so `BQ --> RESET --> GATE` reads as though the quadratic
   term *becomes* a ticker reset; and its `GATE` node asks "either term above
-  zero?" without naming which two.
-- `the-spear`'s flowchart: the prose under it says *two things in that picture
+  zero?" without naming which two.~~ — done, pass 7 session H: the gate is a
+  diamond naming both terms with its answers on its edges, and the sprint-
+  knockback step the prose ties the item bonus to is now in the picture.
+- ~~`the-spear`'s flowchart: the prose under it says *two things in that picture
   are worth stopping on* and the second of them (`handleAttack` refusing a
   piercing weapon) is not in the picture — the only listener node is
-  `handlePlayerAction`.
-- `input-to-movement`'s sequence diagram declares an `LE` lane that carries
-  exactly one arrow and is not in the cast table.
-- `the-sword-swing`'s diagram shows a `ServerboundSwingPacket` leaving
+  `handlePlayerAction`.~~ — done, pass 7 session H: the refusal is a node on
+  the ordinary path, which also gives the *no* branch somewhere to end.
+- ~~`input-to-movement`'s sequence diagram declares an `LE` lane that carries
+  exactly one arrow and is not in the cast table.~~ — done, pass 7 session H:
+  the lane is gone (it was `LocalPlayer`'s own base class), and the figure is
+  split at the wire into a client figure and a server figure.
+- ~~`the-sword-swing`'s diagram shows a `ServerboundSwingPacket` leaving
   `LocalPlayer` that the body did not mention; the body now does (*What makes
-  my own arm move?*), so check the arrow against it rather than the reverse.
+  my own arm move?*), so check the arrow against it rather than the reverse.~~
+  — done, pass 7 session H: checked against the body and kept, now inside a
+  `box transparent the client`.
 
 ### For pass 8, the voice (from session H's readers)
 
@@ -6793,3 +6815,71 @@ Part 3; these are the pieces of work that ruling created.
   paragraph, over the page's own seven-item budget — a table). Seven sections,
   and five of them are a page's hook carried entirely in prose, which is now the
   same pattern in Parts IV, V and VII. [kind=figure]
+
+## Pass 7, session H — Part VIII · The player *(2026-09-15)*
+
+**For session O — the close.**
+
+- **The gate was blind to every one-word class name in a figure.** `CAMEL`
+  requires two humps, so `Entity`, `Avatar`, `Player`, `Mannequin`, `Item`,
+  `Block`, `Mob`, `Screen`, `Window`, `Font`, `Brain` and every other
+  single-word class in the key were unchecked everywhere except a `participant`
+  line — a node label could have spelled one wrong on any page since the gate
+  was written. Fixed for the one place the name is *structural* rather than
+  free text: a `classDiagram`'s `class Foo` box and both ends of a relation are
+  now checked whole, with a probe. Free-text labels are unchanged, because
+  checking every capitalised word there would fail on *Poison*, *Peaceful* and
+  *Normal*. **A one-word class in a flowchart node or a message is still
+  unchecked**, and session O should decide whether an allow-listed
+  exception-by-key-row is worth it. [kind=record]
+- **`CLASS_REL` never matched an inheritance relation.** Its arrow pattern
+  allowed one character either side of `--`, and `<|--` is two, so `A <|-- B`
+  was parsed as nothing at all: both ends unchecked and the relation's label
+  unread. Widened to two, with a probe case. That is the **seventh** time this
+  pass a session has found the gate blind to something the standard cares
+  about, and the sixth found by using the construct the standard asks for.
+  [kind=record]
+- **A `class Foo["Label"]` box id is an alias, not a class**, the way a lane
+  abbreviation is — the display label carries the name. The gate reads it that
+  way now (and skips the id at its relations too). [kind=record]
+- **The theme's five semantic classes do not reach a `classDiagram` node.**
+  `class LocalPlayer:::client` parses and renders with no visible change, so
+  `player-anatomy`'s ladder cannot colour its client rungs. A device the theme
+  lacks, logged for session O as F2's business. [kind=figure]
+- **Part VIII's own pattern: a class-hierarchy rung drawn as a second lane.**
+  Four of the part's five sequence diagrams gave one object two lanes —
+  `Player` beside `ServerPlayer`, `LivingEntity` beside `LocalPlayer`,
+  `LivingEntity` beside `ServerPlayer` twice — which is F7's *one object is one
+  lane* and, on the part whose whole subject is the inheritance chain, the
+  easiest mistake in the book to make. Every one was also the part's whole
+  lane-budget problem: folding them took four figures from seven or eight lanes
+  to five or six and from 0.61–0.69 to 0.80–1.00 without shortening a label.
+  Worth stating in F7 as the shape to look for. [kind=record]
+
+**For pass 8 — the voice.**
+
+- **Part VIII's twelve captions say *the band*, *the box* and *the lane*** —
+  the figure's own furniture — where Parts III and VII's say what the picture
+  shows. Both are defensible; they should not both be in the book. Read the
+  two sets together. [kind=voice]
+- **`player-anatomy`'s lead says "six rungs … and five"** and the figure shows
+  six boxes and five: the counts are inclusive and the sentence said *between*,
+  which reads exclusive. Reworded to *from … down to* this session; the same
+  inclusive/exclusive slip is worth grepping for corpus-wide. [kind=voice]
+
+**For pass 10.**
+
+- **Part VIII's sections that wanted a figure and did not get one**, in the
+  order the viewers asked: `the-two-phase-tick`'s *The bracket, and what
+  survives it* (the highest order-word density in the part, and the page's
+  hook); `input-to-movement`'s *Sampled once a tick, judged once a tick* (one
+  server tick as three phases — the numbered list at its foot is a figure in
+  prose) and its teleport handshake, which is a state machine written as a
+  paragraph; `the-sword-swing`'s *The two clocks a swing is charged against*
+  (two clocks, four reset methods, "reset twice per swing on each side", all as
+  counts inside sentences); `the-spear`'s three `KineticWeapon.Condition`s (one
+  in, three out, three nested windows — a table with a window column would do
+  it); `status-effects`' `hiddenEffect` stack (a containment, a transition and
+  the wire's loss of the chain); `player-anatomy`'s *Forty-three slots, and one
+  of them is an alias* — the page's own hook, on a 4,400-word page with one
+  figure. [kind=book]

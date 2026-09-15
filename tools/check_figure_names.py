@@ -88,7 +88,8 @@ COLOUR_LINE = re.compile(r"^\s*(classDef|style|linkStyle|class )\b")
 # flowchart or a state diagram sets a colour class, which is why COLOUR_LINE swallows it and
 # why the classDiagram branch must be taken before that test.
 CLASS_DEF = re.compile(r'^\s*class\s+([A-Za-z_][A-Za-z0-9_.]*)\s*(?:\[\s*"(.*?)"\s*\])?\s*\{?\s*$')
-CLASS_REL = re.compile(r'^\s*([A-Za-z_]\w*)\s*(?:"[^"]*"\s*)?([<>ox|*]?(?:--|\.\.)[<>ox|*]?)\s*(?:"[^"]*"\s*)?([A-Za-z_]\w*)\s*(?::\s*(.*))?$')
+# an inheritance head is two characters (`<|--`, `--|>`), so the arrow ends take up to two
+CLASS_REL = re.compile(r'^\s*([A-Za-z_]\w*)\s*(?:"[^"]*"\s*)?([<>ox|*]{0,2}(?:--|\.\.)[<>ox|*]{0,2})\s*(?:"[^"]*"\s*)?([A-Za-z_]\w*)\s*(?::\s*(.*))?$')
 CLASS_NOTE = re.compile(r'^\s*note(?:\s+for\s+[A-Za-z_]\w*)?\s+"(.*)"\s*$')
 CLASS_ANNOT = re.compile(r"^\s*<<.*>>\s*$")
 # a classDiagram member line read as a declaration: its last token humped, or parenthesised
@@ -152,6 +153,14 @@ def labels_of(body):
     lanes: dict[str, str] = {}
     open_class: str | None = None
     out = []
+    # `class CM["ChunkMap"]` names the box CM and displays ChunkMap: the id is an alias the way a
+    # lane abbreviation is, so the display label carries the name and the id is not a class.
+    aliases: set[str] = set()
+    if kind == "classDiagram":
+        for _ln, raw in body:
+            m = CLASS_DEF.match(raw.strip())
+            if m and m.group(2):
+                aliases.add(m.group(1))
     for ln, raw in body:
         t = raw.strip()
         if not t or t.startswith("%%") or (COLOUR_LINE.match(t) and kind != "classDiagram"):
@@ -209,15 +218,17 @@ def labels_of(body):
                 continue
             m = CLASS_DEF.match(t)
             if m:
-                out.append((ln, "node", m.group(1), None))
                 if m.group(2):
                     out.append((ln, "node", m.group(2), None))
+                else:
+                    out.append((ln, "classname", m.group(1), None))
                 open_class = m.group(1) if t.endswith("{") else None
                 continue
             m = CLASS_REL.match(t)
             if m:
-                out.append((ln, "node", m.group(1), None))
-                out.append((ln, "node", m.group(3), None))
+                for end in (m.group(1), m.group(3)):
+                    if end not in aliases:
+                        out.append((ln, "classname", end, None))
                 if m.group(4):
                     out.append((ln, "edge", m.group(4).strip(), None))
                 continue
@@ -360,6 +371,19 @@ class Checker:
             kind, lanes, labels = labels_of(body)
             for ln, role, text, target in labels:
                 text = close_up_breaks(text)
+                if role == "classname":
+                    # A `class Foo` box and both ends of a relation are structurally class names,
+                    # not free text, so they are checked whole the way a lane expansion is —
+                    # CAMEL needs two humps and would never see `Avatar`, `Player` or `Entity`.
+                    self.checked += 1
+                    outer, _, inner = text.partition(".")
+                    ok = (self.class_ok(text) if not inner
+                          else outer in self.classes and outer in self.nested_outer(inner.split(".")[-1]))
+                    if not ok:
+                        failures.append((rel, ln, text, "no such class for the class box"))
+                    elif outer in self.classes:
+                        self.mentions.setdefault(outer, set()).add(rel)
+                    continue
                 seen_dotted = set()
                 for m in DOTTED.finditer(text):
                     tok = m.group(1)
@@ -519,8 +543,13 @@ classDiagram
     class Bad["ChunkMapp, in a display label"] {
         ChunkMapp field
     }
+    class Entity
+    class Avatarr
+    class ChunkMap.TrackedEntity
+    class ChunkMap.NoSuchNestedClass
     ChunkMap --> Bad : ChunkMap.save
     ChunkMap ..> Bad : ChunkMapp.save
+    Entity <|-- Avatarr
 ```
 """
 
@@ -561,10 +590,20 @@ def probe(mc_source: str, libs: str) -> int:
         ("a classDiagram is read at all, and its good class resolves", "ChunkMap" in c.mentions and not any(f[2] == "ChunkMap" for f in failures)),
         ("a classDiagram display label is checked like a node label", (43, "ChunkMapp") in got),
         ("a classDiagram member line's type is checked as a class", (44, "ChunkMapp") in got),
-        ("a classDiagram relation label's good dotted member passes and its bad one fails", not any(f[2] == "ChunkMap.save" for f in failures) and (47, "ChunkMapp.save") in got),
+        ("a classDiagram relation label's good dotted member passes and its bad one fails", not any(f[2] == "ChunkMap.save" for f in failures) and (51, "ChunkMapp.save") in got),
         ("a classDiagram member line is checked against its own class box, not noted",
          (41, "noSuchFieldHere") in got and not any(n[2] == "viewDistance" for n in notes) and not any(f[2] == "viewDistance" for f in failures)),
-        ("exactly the thirteen failures expected", len(failures) == 13),
+        ("a one-word class box with no CamelCase hump is checked: the good one passes",
+         "Entity" in c.mentions and not any(f[2] == "Entity" for f in failures)),
+        ("a one-word class box with no CamelCase hump is checked: the bad one fails",
+         (47, "Avatarr") in got and (52, "Avatarr") in got),
+        ("a box id with a display label is an alias, not a class, at its definition and its relations",
+         not any(f[2] == "Bad" for f in failures)),
+        ("an inheritance relation is parsed at all, so both its ends are checked",
+         any(f[1] == 52 and f[2] == "Avatarr" for f in failures)),
+        ("a nested class box resolves against its outer class, and a bad one does not",
+         not any(f[2] == "ChunkMap.TrackedEntity" for f in failures) and (49, "ChunkMap.NoSuchNestedClass") in got),
+        ("exactly the sixteen failures expected", len(failures) == 16),
     ]
     ok = True
     for what, passed in checks:

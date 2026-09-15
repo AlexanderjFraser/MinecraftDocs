@@ -163,26 +163,52 @@ last tick's — which for a player means inside
 tick](the-two-phase-tick.md#phase-two-what-this-player-would-do-if-it-simulated-itself),
 not the level's entity tick.
 
+On the server, that tick is four objects and two packets:
+
 ```mermaid
 sequenceDiagram
-    participant LE as LivingEntity
+    participant SP as ServerPlayer
     participant MEI as MobEffectInstance
     participant ME as MobEffect
-    participant AttrI as AttributeInstance
-    participant SP as ServerPlayer
-    participant CPL as ClientPacketListener
+    participant Wire as the network
 
-    LE->>MEI: update — masks any weaker instance as hiddenEffect
-    LE->>ME: addAttributeModifiers — from LivingEntity.onEffectAdded, server-guarded
-    ME->>AttrI: addPermanentModifier — amount linear in amplifier + 1
-    SP->>CPL: ClientboundUpdateMobEffectPacket — amplifier, duration, four flag bits
-    Note over LE: every tick after this
-    LE->>MEI: tickServer — count down, and ask for a pulse
-    MEI->>ME: shouldApplyEffectTickThisTick — every 25 ≫ amplifier for poison
-    MEI->>ME: applyEffectTick — the pulse itself, and false here ends the effect
-    Note over LE: the client, in its own tick
-    LE->>MEI: tickClient — count down, unhide, advance the blend
+    SP->>MEI: update — masks any weaker instance as hiddenEffect
+    SP->>ME: addAttributeModifiers — from LivingEntity.onEffectAdded, server-guarded
+    SP->>Wire: ClientboundUpdateMobEffect<br/>Packet
+    rect rgba(0, 0, 0, 0.04)
+        Note over SP,Wire: every server tick after that
+        SP->>MEI: tickServer, from LivingEntity.tickEffects
+        MEI->>ME: shouldApplyEffectTickThisTick — 25 ≫ amplifier for poison
+        MEI->>ME: applyEffectTick — the pulse, and false here ends the effect
+        SP->>Wire: ClientboundUpdateMobEffect<br/>Packet, when the duration divides by 600
+    end
 ```
+
+*Two arrows leave for the client and the second is the whole of the
+correction: inside the band the duration is the server's, and the client only
+hears about it on the ticks where it divides by six hundred.*
+
+The client's half of the same scenario is a different set of objects, and the
+first thing to notice about it is which class is not in it:
+
+```mermaid
+sequenceDiagram
+    participant Wire as the network
+    participant CPL as ClientPacketListener
+    participant LE as LivingEntity
+    participant MEI as MobEffectInstance
+
+    Wire->>CPL: ClientboundUpdateMobEffect<br/>Packet
+    CPL->>LE: forceAddEffect — a fresh instance, with nothing under it
+    rect rgba(0, 0, 0, 0.04)
+        Note over Wire,MEI: every client tick after that
+        LE->>MEI: tickClient — count down, unhide, advance the blend
+    end
+```
+
+*There is no `MobEffect` lane here, and that absence is the page: the client
+holds the instance and counts it, and never once asks the singleton what the
+effect does.*
 
 The client branch of `LivingEntity.tickEffects` never calls
 `MobEffect.applyEffectTick` and never touches an attribute. It does not even

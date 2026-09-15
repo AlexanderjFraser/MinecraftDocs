@@ -25,24 +25,30 @@ sequel and should not be watched before it. The inventory has no lecture of
 its own and does not need one: Part VII stops at the slot, and the container
 those slots sit in is a section of *player anatomy*, because what is
 interesting about it is that seven of its forty-three slots are somewhere
-else.
+else. So the shape is a trunk of two pages, four branches that do not depend
+on one another, and one sequel — which is what the figure numbers.
 
 ```mermaid
 flowchart TD
-    PA["Player anatomy — what a player is made of"]
-    TT["The two-phase tick — when it runs, and what is thrown away"]
-    IM["Input to movement — walking, and being believed"]
-    SS["The sword swing — one integer, and a number rebuilt"]
-    SP["The spear — two attacks on one item, neither through Player.attack"]
-    HE["Hunger and experience — two bars the server owns"]
-    SE["Status effects — a list of things happening to you"]
-    PA -- "eight classes, forty-three slots" --> TT
-    TT -- "phase two is where the player acts" --> IM
+    PA["1 · Player anatomy — eight classes, forty-three slots"]
+    TT["2 · The two-phase tick — when it runs, and what is thrown away"]
+    IM["3 · Input to movement — walking, and being believed"]
+    SS["4 · The sword swing — one integer, and a number rebuilt"]
+    SP["5 · The spear — two more melee paths, neither through Player.attack"]
+    HE["6 · Hunger and experience — two bars the server owns"]
+    SE["7 · Status effects — a list of things happening to you"]
+    PA --> TT
+    TT --> IM
     TT --> SS
     TT --> HE
     TT --> SE
-    SS -- "and two other melee paths" --> SP
+    SS -- "its sequel" --> SP
 ```
+
+*The trunk and its four branches, numbered to the watch order: an arrow means
+the page below assumes the page above, and the four leaving the two-phase
+tick are independent of one another, so the labelled edge is the only order
+this part insists on beyond the trunk.*
 
 ## Before you start
 

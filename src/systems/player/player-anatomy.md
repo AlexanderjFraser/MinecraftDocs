@@ -6,8 +6,8 @@ You are a `LivingEntity` that a human is steering down a connection. Almost
 everything on this page follows from that sentence: the class ladder exists
 to separate *what any living thing does* from *what a thing with an
 inventory and a game mode does* from *what a thing with a connection does*.
-Six rungs of it stand between `Entity` and the object on your own screen, and
-five between `Entity` and the one the server holds. But two of the things a
+Six rungs of it reach from `Entity` down to the object on your own screen,
+and five from `Entity` down to the one the server holds. But two of the things a
 reader goes looking for are not where they look. **One rung of that ladder
 holds no instance state at all**, and **the main-hand item has no storage of
 its own** — the hotbar slot you are looking at and the item
@@ -30,17 +30,33 @@ the equipment container a horse also has.
 ## The ladder, and the class 26.2 put in the middle
 
 ```mermaid
-flowchart TD
-    E["Entity"] --> LE["LivingEntity"]
-    LE --> AV["Avatar — no instance fields"]
-    AV --> P["Player — abstract"]
-    AV --> M["Mannequin"]
-    P --> SP["ServerPlayer"]
-    P --> ACP["AbstractClientPlayer"]
-    ACP --> LP["LocalPlayer"]
-    ACP --> RP["RemotePlayer"]
-    M --> CM["ClientMannequin"]
+classDiagram
+    class Entity
+    <<abstract>> Entity
+    class LivingEntity
+    <<abstract>> LivingEntity
+    class Avatar {
+        <<abstract>>
+        no instance fields at all
+    }
+    class Player
+    <<abstract>> Player
+    class AbstractClientPlayer
+    <<abstract>> AbstractClientPlayer
+    Entity <|-- LivingEntity
+    LivingEntity <|-- Avatar
+    Avatar <|-- Player
+    Avatar <|-- Mannequin
+    Player <|-- ServerPlayer
+    Player <|-- AbstractClientPlayer
+    AbstractClientPlayer <|-- LocalPlayer
+    AbstractClientPlayer <|-- RemotePlayer
+    Mannequin <|-- ClientMannequin
 ```
+
+*Every abstract rung is marked, so the five unmarked classes are the only
+ones the game ever instantiates — and the branch beside `Player` is the
+reason `Avatar` exists at all.*
 
 `Entity` and `LivingEntity` belong to [Part
 VI](../entities/entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it).
