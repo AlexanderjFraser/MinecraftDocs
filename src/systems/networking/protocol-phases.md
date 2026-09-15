@@ -182,8 +182,8 @@ offline mode — the profile is minted from the name by
 
 ```mermaid
 sequenceDiagram
-    participant CHPL as ClientHandshakePacketListenerImpl
-    participant SLPL as ServerLoginPacketListenerImpl
+    participant CHPL as ClientHandshake<br/>PacketListenerImpl
+    participant SLPL as ServerLoginPacket<br/>ListenerImpl
     participant Auth as User Authenticator thread
 
     SLPL->>CHPL: ClientboundHelloPacket, RSA public key and a four-byte challenge

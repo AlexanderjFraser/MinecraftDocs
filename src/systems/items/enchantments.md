@@ -183,7 +183,7 @@ predicate requiring a *direct* hit.
 
 ```mermaid
 sequenceDiagram
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Player as Player
     participant EH as EnchantmentHelper
     participant Ench as Enchantment

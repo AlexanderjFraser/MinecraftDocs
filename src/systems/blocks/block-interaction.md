@@ -32,11 +32,11 @@ laggy server and a redstone lamp does not.
 ```mermaid
 sequenceDiagram
     participant MC as Minecraft
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant CL as ClientLevel
     participant DB as DoorBlock
-    participant CNU as CollectingNeighborUpdater
-    participant SGPL as ServerGamePacketListenerImpl
+    participant CNU as Collecting<br/>NeighborUpdater
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SL as ServerLevel
 
     Note over MC,CNU: one client tick, all of it before the packet leaves

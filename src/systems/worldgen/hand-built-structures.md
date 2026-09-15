@@ -112,7 +112,7 @@ sequenceDiagram
     participant ChunkG as ChunkGenerator
     participant SStr as StrongholdStructure
     participant SPie as StrongholdPieces
-    participant SPB as StructurePiecesBuilder
+    participant SPB as Structure<br/>PiecesBuilder
     participant SStart as StructureStart
 
     ChunkG->>SStr: Structure.generate — findGenerationPoint, then the stub

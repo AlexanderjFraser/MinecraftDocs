@@ -140,7 +140,7 @@ sequenceDiagram
     participant BIR as BuiltInRegistries
     participant Items as Items
     participant Item as Item
-    participant DMR as DefaultedMappedRegistry
+    participant DMR as Defaulted<br/>MappedRegistry
 
     Note over Main,DMR: the launching thread, before any server or client object exists
     Main->>Boot: bootStrap, early, after argument parsing: isBootstrapped is set before any registry is touched
@@ -232,10 +232,10 @@ this with two layers, `ClientRegistryLayer.STATIC` and
 sequenceDiagram
     participant WL as WorldLoader
     participant RDL as RegistryDataLoader
-    participant RMRLT as ResourceManagerRegistryLoadTask
-    participant LRA as LayeredRegistryAccess
-    participant SCPL as ServerConfigurationPacketListenerImpl
-    participant CCPL as ClientConfigurationPacketListenerImpl
+    participant RMRLT as ResourceManager<br/>RegistryLoadTask
+    participant LRA as Layered<br/>RegistryAccess
+    participant SCPL as ServerConfiguration<br/>PacketListenerImpl
+    participant CCPL as ClientConfiguration<br/>PacketListenerImpl
     participant RDC as RegistryDataCollector
 
     Note over WL,LRA: world load, on the worker pool

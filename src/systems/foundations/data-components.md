@@ -281,8 +281,8 @@ tilling — their combat and mining live in components like everything else.
 sequenceDiagram
     participant EM as EnchantmentMenu
     participant IStack as ItemStack
-    participant PDM as PatchedDataComponentMap
-    participant ACM as AbstractContainerMenu
+    participant PDM as PatchedData<br/>ComponentMap
+    participant ACM as Abstract<br/>ContainerMenu
     participant CPL as ClientPacketListener
 
     Note over EM: server thread, ServerboundContainerButtonClickPacket has arrived

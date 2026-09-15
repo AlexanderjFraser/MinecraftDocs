@@ -133,7 +133,10 @@ def labels_of(body):
         if kind == "sequenceDiagram":
             m = da.PARTICIPANT.match(t)
             if m:
-                lanes[m.group(1)] = (m.group(2) or m.group(1)).strip()
+                # A lane whose class name is wider than the box carries its own break at a
+                # CamelCase boundary (`as PersistentEntity<br/>SectionManager`), so that mermaid
+                # does not hyphenate the name mid-word; the gate reads it closed up (pass 7, A).
+                lanes[m.group(1)] = re.sub(r"<br\s*/?>", "", (m.group(2) or m.group(1))).strip()
                 out.append((ln, "participant", lanes[m.group(1)], m.group(1)))
                 continue
             m = da.SEQ_MSG.match(t)
@@ -386,6 +389,8 @@ sequenceDiagram
     participant MS as MinecraftServer
     participant Main as Main
     participant ZZ as NoSuchClassAnywhere
+    participant PESM as PersistentEntity<br/>SectionManager
+    participant QQ as PersistentEntity<br/>SectionManagerr
     SL->>MS: tickServer
     SL->>MS: noSuchMethodHere(arg)
     SL->>MS: the factory it was handed runs here
@@ -414,19 +419,21 @@ def probe(mc_source: str, libs: str) -> int:
     got = {(f[1], f[2]) for f in failures}
     checks = [
         ("the bad participant expansion fails", (8, "NoSuchClassAnywhere") in got),
-        ("the humped message head that is not a member of the target lane fails", (10, "noSuchMethodHere") in got),
+        ("a lane name broken at a CamelCase boundary is read closed up", not any(f[1] == 9 for f in failures)),
+        ("a broken lane name that is still not a class fails", (10, "PersistentEntitySectionManagerr") in got),
+        ("the humped message head that is not a member of the target lane fails", (12, "noSuchMethodHere") in got),
         ("the good message head (tickServer on MinecraftServer) passes", not any(f[2] == "tickServer" for f in failures)),
-        ("an English message is not a failure", not any(f[1] == 11 for f in failures)),
-        ("a message to a word lane is skipped", not any(f[1] == 12 for f in failures)),
-        ("the bad class in a note fails and the good one passes", (13, "ChunkMapp") in got and not any(f[2] == "ChunkMap" for f in failures)),
-        ("the bad dotted member fails and the good one passes", (13, "ServerLevel.noSuchMemberEither") in got and not any(f[2] == "MinecraftServer.tickServer" for f in failures)),
+        ("an English message is not a failure", not any(f[1] == 13 for f in failures)),
+        ("a message to a word lane is skipped", not any(f[1] == 14 for f in failures)),
+        ("the bad class in a note fails and the good one passes", (15, "ChunkMapp") in got and not any(f[2] == "ChunkMap" for f in failures)),
+        ("the bad dotted member fails and the good one passes", (15, "ServerLevel.noSuchMemberEither") in got and not any(f[2] == "MinecraftServer.tickServer" for f in failures)),
         ("a plural of a class name passes", not any("ClientboundBlockUpdatePackets" in f[2] for f in failures)),
         ("a bad class in a flowchart node fails", any(f[2] == "FrobnicatorThing" for f in failures)),
         ("a nested class named bare is a note, not a failure", any(n[2] == "SpawnState" and "NaturalSpawner.SpawnState" in n[3] for n in notes) and not any(f[2] == "SpawnState" for f in failures)),
         ("an inherited member resolves (DedicatedServer.runServer is MinecraftServer's)", not any(f[2] == "DedicatedServer.runServer" for f in failures)),
         ("an unqualified member in a flowchart label is a note", any(n[2] == "runAllTasks" for n in notes)),
         ("figure mentions include ChunkMap and NaturalSpawner", "ChunkMap" in c.mentions and "NaturalSpawner" in c.mentions),
-        ("exactly the five failures expected", len(failures) == 5),
+        ("exactly the six failures expected", len(failures) == 6),
     ]
     ok = True
     for what, passed in checks:

@@ -121,11 +121,11 @@ arrive in, which is the part correctness actually rests on.
 
 ```mermaid
 sequenceDiagram
-    participant MPGM as MultiPlayerGameMode
-    participant BSPH as BlockStatePredictionHandler
+    participant MPGM as MultiPlayer<br/>GameMode
+    participant BSPH as BlockState<br/>PredictionHandler
     participant CL as ClientLevel
-    participant SGPL as ServerGamePacketListenerImpl
-    participant SPGM as ServerPlayerGameMode
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
+    participant SPGM as ServerPlayer<br/>GameMode
 
     MPGM->>BSPH: startPredicting — currentSequenceNr becomes n
     MPGM->>CL: performUseItemOn, then ItemStack.useOn, then setBlock

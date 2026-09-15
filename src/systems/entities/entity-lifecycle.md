@@ -9,7 +9,7 @@ its cap, `NaturalSpawner.getRandomPosWithin` rolls a random x, a random z and
 **one** y — a single uniform draw between the world bottom and the surface
 height of that column. Three attempts follow — each one a *group*, because a
 successful attempt keeps spawning siblings around the first mob until a size
-limit stops it — and they jitter only x
+limit stops it — and each one makes a handful of tries that jitter only x
 and z. So the whole of one category's chance in one chunk this tick lives on
 **one horizontal slice**: every eligible category gets its own slice, caves
 and the open field compete for the same rolls, and a world with more vertical
@@ -33,56 +33,90 @@ rejections later where the mob is finally allowed to exist.
 
 ## A spawn attempt is a filter, not a conversation
 
-Almost every step of the spawner is a **rejection**. Drawing it as a
-conversation hides that, so here it is as the cascade it is — top to bottom
-in the order the code runs, with everything that can drop an attempt drawn as
-an arrow leaving the path.
+Almost every step of the spawner is a **rejection**, and the rejections are not
+all the same size: one drops a category for the whole tick, one skips a chunk
+for every category, one ends this category on this chunk, and most of them cost
+nothing but a single jittered try. Drawing it as a conversation hides all of
+that. Here it is as the filter it is, in two halves — what has to pass before a
+position is rolled, and what happens once one has been — with the tests
+themselves in the table under them.
 
 ```mermaid
 flowchart TD
-    T["ServerChunkCache.tickChunks, once a tick"] --> ST["NaturalSpawner.createState walks every entity in the level, skipping MISC and any mob that is named, leashed or ridden"]
-    ST --> CAT{"NaturalSpawner.getFilteredSpawningCategories"}
-    CAT -->|"a monster category, and the monster game rules are off"| X1["this category is dropped from the tick's list"]
-    CAT -->|"a MobCategory that is only rolled every 400 ticks, on a tick that is not one of them"| X1
-    CAT -->|"already at the global cap for the category"| X1
-    CAT -->|"eligible"| CH{"ChunkMap.collectSpawningChunks, then shuffled"}
-    CH -->|"no ticking chunk there"| X2["this chunk is skipped"]
-    CH -->|"ChunkMap.playerIsCloseEnoughForSpawning fails, meaning no non-spectator player within 128 blocks measured horizontally to the chunk centre"| X2
-    CH --> TICK{"ServerLevel.canSpawnEntitiesInChunk"}
-    TICK -->|"not entity-ticking, or outside the world border"| X2
-    TICK --> LOC{"LocalMobCapCalculator.canSpawn, per category"}
-    LOC -->|"every nearby player is at their own cap, or there is no nearby player at all"| X2
-    LOC --> POS["NaturalSpawner.getRandomPosWithin, a random x and z and ONE y between the world bottom and the surface"]
-    POS -->|"the roll landed at the very bottom"| X2
-    POS --> RC{"is the block at that position a redstone conductor?"}
-    RC -->|"yes, before any species is picked"| X2
-    RC -->|"no"| JIT["three group attempts, jittering only x and z, the y fixed"]
-    JIT --> NP{"a non-spectator player anywhere in the level?"}
-    NP -->|"no"| X3["this attempt is dropped"]
-    NP --> D{"NaturalSpawner.isRightDistanceToPlayerAndSpawnPoint"}
-    D -->|"within 24 blocks of the nearest player"| X3
-    D -->|"within 24 of the respawn point, and the respawn point is in this dimension"| X3
-    D -->|"jittered into a neighbouring chunk that cannot spawn"| X3
-    D --> PICK{"NaturalSpawner.getRandomSpawnMobAt, weighted, once per group"}
-    PICK -->|"the list is empty, or a reduced-water-ambient biome, 98 per cent of the time"| X3
-    PICK --> TY{"NaturalSpawner.isValidSpawnPostitionForType, the typo is Mojang's"}
-    TY -->|"the category is MISC"| X3
-    TY -->|"too far out for a type that cannot spawn far from a player"| X3
-    TY -->|"unsummonable, or the species is no longer in the list at this exact block"| X3
-    TY -->|"SpawnPlacements.isSpawnPositionOk fails on the placement type"| X3
-    TY -->|"SpawnPlacements.checkSpawnRules fails, and this is where the light test lives"| X3
-    TY -->|"the type's spawn box collides with the world"| X3
-    TY --> BUD{"NaturalSpawner.SpawnState.canSpawn, the biome crowding budget"}
-    BUD -->|"over budget"| X3
-    BUD --> MAKE["EntityType.create, and ONLY NOW does a Mob object exist"]
-    MAKE -->|"feature-flagged off, or Peaceful and not allowed there"| X4["this category's attempt on this chunk returns"]
-    MAKE --> OBS{"Mob.checkSpawnRules and Mob.checkSpawnObstruction, on the real object"}
-    OBS -->|"either fails, or it would despawn instantly anyway"| X3
-    OBS --> FIN["Mob.finalizeSpawn, then addFreshEntityWithPassengers, then SpawnState.afterSpawn"]
+    CAT{"the category"}
+    CAT -->|"fails"| XCAT["out for the whole tick"]
+    CAT -->|"passes"| CHK{"the chunk"}
+    CHK -->|"fails"| XCHK["out for every category"]
+    CHK -->|"passes"| LOC{"the local cap"}
+    LOC -->|"fails"| XPAIR["this category on this chunk is over"]
+    LOC -->|"passes"| ROLL["the roll: one x, one z, one y"]
+    ROLL --> POS{"the position"}
+    POS -->|"fails"| XPAIR
+    POS -->|"passes"| JIT["three group attempts at that position"]
 ```
 
-The boundary that matters is the one marked **only now**. Everything above it
-is decided against the `EntityType` — the placement type, the heightmap
+*Three sizes of giving up, before a position has even been rolled: a category
+can leave the whole tick, a chunk can leave every category, and the two of them
+can end together. The rejecting edges are the subject of this page; the passing
+ones are only what is left.*
+
+Follow the right-hand edge to the bottom and the roll is the thing to stop at:
+one x, one z and **one** y, and everything below it happens at that one height.
+
+```mermaid
+flowchart TD
+    JIT["one jittered try"] --> TRY{"the type filter"}
+    TRY -->|"fails"| MORE{"tries left in this group?"}
+    TRY ==>|"passes"| MAKE{"EntityType.create"}
+    MAKE -->|"null"| OVER["this category on this chunk is over"]
+    MAKE -->|"a Mob at last"| OBJ{"the object filter"}
+    OBJ -->|"fails"| MORE
+    OBJ -->|"passes"| FIN["Mob.finalizeSpawn, then ServerLevel.addFreshEntityWithPassengers"]
+    FIN -->|"cluster full"| OVER
+    FIN -->|"room for a sibling"| MORE
+    MORE -->|"yes"| JIT
+    MORE -->|"no"| GRP{"all three attempts spent?"}
+    GRP -->|"no"| JIT
+    GRP -->|"yes"| OVER
+```
+
+*After the roll the ways out are cheap: almost every failure jitters x and z and
+tries again, and only three of the eight leave the loop at all. A new group
+attempt puts x and z back at the roll. The thick edge is the boundary the rest
+of this section is about.*
+
+Three things in that loop are worth reading twice. Almost every rejection
+merely jitters again — it costs one try, not one of the three attempts. The two that end
+a *group* are the empty species list and the group filling up. And the two that
+end the whole category on this chunk are a null from `EntityType.create` and a
+full cluster, which is why *one bad construction* and *one crowded spawn* both
+look, from outside, like the chunk going quiet. Only the last box is a spawn:
+`Mob.finalizeSpawn` settles what the mob is, and
+`ServerLevel.addFreshEntityWithPassengers` is the door every other spawner in
+the game uses too.
+
+### What each test drops, in the order it runs
+
+| the test | it fails when | what is given up |
+|---|---|---|
+| `NaturalSpawner.getFilteredSpawningCategories` | it is a monster category and the monster game rules are off; it is a persistent category and the game time is not a multiple of 400; or `NaturalSpawner.SpawnState.canSpawnForCategoryGlobal` is already at the cap | the category, for the whole tick |
+| `ChunkMap.collectSpawningChunks` | the holder has no ticking chunk behind it, or `ChunkMap.playerIsCloseEnoughForSpawning` finds no non-spectator player within 128 blocks measured horizontally to the chunk centre | the chunk, for every category |
+| `ServerLevel.canSpawnEntitiesInChunk` | the chunk is not entity-ticking, or lies outside the world border | the chunk, for every category |
+| `NaturalSpawner.SpawnState.canSpawnForCategoryLocal` | `LocalMobCapCalculator.canSpawn` finds every nearby player at their own cap — or finds no nearby player at all | this category on this chunk |
+| `NaturalSpawner.getRandomPosWithin` | the single y roll landed at the very bottom of the world | this category on this chunk |
+| the block at the rolled position | it is a redstone conductor, and this is asked before any species is picked | this category on this chunk |
+| `EntityGetter.getNearestPlayer` | there is no non-spectator player anywhere in the level | this try |
+| `NaturalSpawner.isRightDistanceToPlayerAndSpawnPoint` | within 24 blocks of the nearest player; within 24 of the respawn point and that point is in this dimension; or the jitter left this chunk for one that cannot spawn | this try |
+| `NaturalSpawner.getRandomSpawnMobAt` | the list is empty — or the category is `MobCategory.WATER_AMBIENT` in a reduced-water-ambient biome, 98 times in 100 | this group attempt |
+| `NaturalSpawner.isValidSpawnPostitionForType` | the category is `MobCategory.MISC`; it is too far out for a type that cannot spawn far from a player; the type is unsummonable or no longer in the list at this exact block; `SpawnPlacements.isSpawnPositionOk` fails on the placement type; `SpawnPlacements.checkSpawnRules` fails, which is where the light test lives; or the type's spawn box collides with the world | this try |
+| `NaturalSpawner.SpawnState.canSpawn` | the biome's crowding budget for this exact type is spent | this try |
+| `EntityType.create` | feature-flagged off, or Peaceful and not allowed there | this category on this chunk |
+| `NaturalSpawner.isValidPositionForMob` | `Mob.checkSpawnRules` or `Mob.checkSpawnObstruction` fails on the real object, or `Mob.removeWhenFarAway` says it would despawn instantly anyway | this try |
+| `Mob.isMaxGroupSizeReached` | the group has all the siblings it is allowed | this group attempt |
+| `Mob.getMaxSpawnClusterSize` | the cluster is full | this category on this chunk |
+
+The boundary that matters is the thick edge. Everything above it is decided
+against the `EntityType` — the placement type, the heightmap
 ([chunk anatomy](../world/chunk-anatomy.md#the-six-heightmaps)), the light rule, the collision
 box — because constructing a mob to ask it costs
 more than answering from the type. Nothing above that line has an object to
@@ -261,40 +295,45 @@ promoted and `PersistentEntitySectionManager.addWorldGenChunkEntities` is
 handed them ([the generation pipeline](../world/chunk-generation-pipeline.md#full-is-assembled-on-the-server-thread)).
 On the client the only way in is `ClientLevel.addEntity`, called from the
 packet handler, and it begins by *removing* whatever already holds that
-network id.
+network id. The server door takes the passengers with it:
+`ServerLevel.addFreshEntityWithPassengers` walks `Entity.getSelfAndPassengers`,
+vehicle first, and puts each of them through the four steps below — all four on
+one tick, and the order of them is the thing to read.
 
 ```mermaid
 sequenceDiagram
     participant SL as ServerLevel
-    participant PESM as PersistentEntitySectionManager
+    participant PESM as PersistentEntity<br/>SectionManager
     participant CM as ChunkMap
     participant ETL as EntityTickList
-    participant Mob as Mob
-    participant ES as EntityStorage
     participant Wire as the network
 
-    Note over SL: the tick it is created
-    SL->>SL: addFreshEntityWithPassengers walks getSelfAndPassengers, vehicle first
+    Note over SL,Wire: all of it on the tick it is created
+    SL->>SL: addFreshEntity, once per passenger
     SL->>PESM: addNewEntity
-    PESM->>PESM: claim the UUID, put it in its EntitySection, install the Callback
+    PESM->>PESM: claim the UUID, file it in its EntitySection, install the Callback
     PESM->>SL: LevelCallback.onCreated
-    PESM->>CM: startTracking, through ServerChunkCache.addEntity
-    CM->>Wire: ClientboundAddEntityPacket, bundled with data, attributes, equipment, passengers and leash
-    PESM->>ETL: startTicking, EntityTickList.add
-    Note over SL: every later tick
-    SL->>Mob: checkDespawn, for every entry in the tick list
-    SL->>Mob: tickNonPassenger, only when the chunk is in entity-ticking range
-    Note over PESM: the tick the chunk drops to hidden
-    PESM->>ETL: stopTicking, EntityTickList.remove
-    PESM->>CM: stopTracking
-    CM->>Wire: ClientboundRemoveEntitiesPacket
-    Note over PESM: some later PersistentEntitySectionManager.tick
-    PESM->>ES: storeEntities, and only then UNLOADED_TO_CHUNK
+    PESM->>SL: LevelCallback.onTrackingStart
+    SL->>CM: addEntity, through ServerChunkCache
+    CM->>Wire: ClientboundAddEntityPacket, with data, attributes, equipment and leash
+    PESM->>SL: LevelCallback.onTickingStart
+    SL->>ETL: add
 ```
 
-`ServerLevel.EntityCallbacks` is the class those callbacks land in — five of
-`LevelCallback`'s seven appear in the figure — and
-it is where a surprising amount of the level hangs: the scoreboard entry, the
+*The manager files the entity before anything else hears of it, and the client
+is told in the middle: tracking, then the packet, then ticking. Leaving and
+being written are the other half, and they belong to the state machine below.*
+
+`PersistentEntitySectionManager.addNewEntity` is the one public step in that
+figure, and `LevelCallback.onCreated` the first thing it raises.
+`ServerLevel.EntityCallbacks` is the class those callbacks land in, and the
+figure draws every hop through it: `PersistentEntitySectionManager.startTracking`
+and `PersistentEntitySectionManager.startTicking` are private, and all they do
+is raise `LevelCallback.onTrackingStart` and `LevelCallback.onTickingStart` —
+two of `LevelCallback`'s seven — which is how `ServerChunkCache.addEntity` and
+`EntityTickList.add` come to be called by a class that knows about neither.
+`ServerLevel.EntityCallbacks` is also where a surprising amount
+of the level hangs: the scoreboard entry, the
 players list and the sleeping-player recount, waypoint tracking, the
 navigating-mob set the block-change notifier walks, the `EnderDragonPart` id
 registrations, and the dynamic `DynamicGameEventListener` registration
@@ -313,7 +352,8 @@ section and not of an entity. Beside it `EntityLookup` keeps the flat
 id-and-UUID index; which of the two a query uses is [Part XIII's
 subject](../commands/entity-selectors.md).
 
-`Visibility` is the whole idea in three constants, and
+`Visibility` is the whole idea in three constants — `Visibility.HIDDEN`,
+`Visibility.TRACKED`, `Visibility.TICKING` — and
 `Visibility.fromFullChunkStatus` is the projection: `FullChunkStatus.FULL`
 makes a chunk's entities findable, `FullChunkStatus.ENTITY_TICKING` makes them
 tick, anything less hides them
@@ -325,16 +365,19 @@ stateDiagram-v2
     state "Visibility.TRACKED" as T
     state "Visibility.TICKING" as K
     [*] --> H
-    H --> T : chunk reaches FULL, startTracking adds it to EntityLookup and ChunkMap sends the ClientboundAddEntityPacket bundle
-    T --> K : chunk reaches ENTITY_TICKING, startTicking adds it to EntityTickList
-    K --> T : below ENTITY_TICKING, stopTicking removes it from EntityTickList
-    T --> H : below FULL, stopTracking sends ClientboundRemoveEntitiesPacket and the chunk key joins chunksToUnload
-    K --> H : straight down in one call, stopTicking first and stopTracking second
-    H --> [*] : a later manager tick writes the section and marks UNLOADED_TO_CHUNK
-    note right of H : hidden is not written yet. The client was told at the status change, the disk hears several ticks later.
+    H --> T : reaches FULL, tracking starts
+    T --> K : reaches ENTITY_TICKING, ticking starts
+    K --> T : below ENTITY_TICKING, ticking stops
+    T --> H : below FULL, tracking stops
+    K --> H : straight down, ticking stops then tracking
+    H --> [*] : a later manager tick, EntityStorage.storeEntities
 ```
 
-The asymmetry is real and worth stating precisely.
+*These are a section's states, not an entity's: an entity changes state because
+its section did. Up is one step at a time and down need not be — and the exit
+is several ticks after the client was told, not with it.*
+
+The asymmetry the figure draws is real, and worth stating precisely.
 `PersistentEntitySectionManager.updateChunkStatus` runs its four tests in a
 fixed order — stop ticking, stop tracking, start tracking, start ticking — so
 on the way **up** an entity becomes trackable before it becomes tickable, and

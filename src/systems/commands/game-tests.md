@@ -97,7 +97,7 @@ returns its children's activations and unwinds them in reverse.
 sequenceDiagram
     participant TC as TestCommand
     participant GTR as GameTestRunner
-    participant TIB as TestInstanceBlockEntity
+    participant TIB as TestInstance<br/>BlockEntity
     participant GTT as GameTestTicker
     participant GI as GameTestInfo
     participant RGL as ReportGameListener

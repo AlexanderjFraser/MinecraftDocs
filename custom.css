@@ -15,6 +15,17 @@
     --prose-max-width: 800px;
 }
 
+/* mdBook floats the previous/next chapter chevrons in the page gutters and only
+ * hides them, with the sidebar open, below 1380px. The wider column above leaves
+ * no gutter for them until about 1640px, so on a 1440px laptop the left chevron
+ * is painted twelve pixels inside the prose and sits on top of the words. Found
+ * by pass 7, session A, looking at a rendered page; the fix is mdBook's own rule
+ * with the breakpoint moved to where the column actually clears them. */
+@media only screen and (max-width: 1660px) {
+    #mdbook-sidebar-toggle-anchor:checked ~ .page-wrapper .nav-wide-wrapper { display: none; }
+    #mdbook-sidebar-toggle-anchor:checked ~ .page-wrapper .nav-wrapper { display: block; }
+}
+
 /* Prose keeps a readable measure; everything is left-aligned inside the
  * (centred) main column so wide blocks extend to the right, not both ways. */
 .content main > :not(.table-wrapper):not(pre):not(figure):not(.wide) {
@@ -179,4 +190,66 @@ svg.mapfig .edge {
 }
 .content footer.site-footer p {
     margin: 0.4em 0;
+}
+
+/* ---------------------------------------------------------------------------
+ * Figures (pass 7, session A). The whole visual grammar of a diagram lives in
+ * this file and in mermaid-init.js; a page carries no `%%{init}%%`, no
+ * `classDef`, no `style` and no `linkStyle`.
+ *
+ * A node says which side of the wire it lives on with one of five class words
+ * and no classDef — mermaid puts the class on the node's <g> ("node default
+ * server"), so the colour is a rule here and follows the theme, the way the
+ * atlas SVGs already do:
+ *
+ *     A["ServerLevel.tick"]:::server      B["ClientLevel.tick"]:::client
+ *     N["Netty event loop"]:::netty       W["Worker-Main-n"]:::worker
+ *     D[("region file")]:::disk           (a state diagram: `class Idle server`)
+ *
+ * The same five words are a sequence diagram's `box` labels and the lane key's
+ * word lanes, so a thread is called the same thing in every kind of figure.
+ * -------------------------------------------------------------------------*/
+:root {
+    --fig-server: #dfe9f7;   --fig-server-line: #6f8fc4;
+    --fig-client: #fbe9d7;   --fig-client-line: #d08a45;
+    --fig-netty:  #e6f2e2;   --fig-netty-line:  #6a9e5b;
+    --fig-worker: #efe6f5;   --fig-worker-line: #9a6fb8;
+    --fig-disk:   #eeeeee;   --fig-disk-line:   #8f8f8f;
+}
+.coal, .navy, .ayu {
+    --fig-server: #26304a;   --fig-server-line: #6f8fc4;
+    --fig-client: #4a3624;   --fig-client-line: #d08a45;
+    --fig-netty:  #28402a;   --fig-netty-line:  #6a9e5b;
+    --fig-worker: #3b2d47;   --fig-worker-line: #9a6fb8;
+    --fig-disk:   #30343a;   --fig-disk-line:   #8f8f8f;
+}
+.content pre.mermaid g.node.server > *:not(.label), .content pre.mermaid g.node.server > g > rect { fill: var(--fig-server) !important; stroke: var(--fig-server-line) !important; }
+.content pre.mermaid g.node.client > *:not(.label), .content pre.mermaid g.node.client > g > rect { fill: var(--fig-client) !important; stroke: var(--fig-client-line) !important; }
+.content pre.mermaid g.node.netty  > *:not(.label), .content pre.mermaid g.node.netty  > g > rect { fill: var(--fig-netty)  !important; stroke: var(--fig-netty-line)  !important; }
+.content pre.mermaid g.node.worker > *:not(.label), .content pre.mermaid g.node.worker > g > rect { fill: var(--fig-worker) !important; stroke: var(--fig-worker-line) !important; }
+.content pre.mermaid g.node.disk   > *:not(.label), .content pre.mermaid g.node.disk   > g > rect { fill: var(--fig-disk)   !important; stroke: var(--fig-disk-line)   !important; }
+.content pre.mermaid g.cluster.server > rect { fill: var(--fig-server) !important; stroke: var(--fig-server-line) !important; fill-opacity: 0.35; }
+.content pre.mermaid g.cluster.client > rect { fill: var(--fig-client) !important; stroke: var(--fig-client-line) !important; fill-opacity: 0.35; }
+
+/* The caption is the italic paragraph directly after the figure — markdown, so
+ * verify_names.py reads its names and llms-full.txt carries it. The counter
+ * numbers the figures of a page; a figure that has no caption yet looks exactly
+ * as it did before it got one. */
+.content main { counter-reset: figure; }
+.content pre.mermaid, .content figure.map { counter-increment: figure; }
+.content pre.mermaid + p:has(> em:only-child),
+.content figure.map + p:has(> em:only-child) {
+    font-size: 0.9em;
+    color: var(--icons);
+    margin-top: -0.4em;
+    padding-left: 0.6em;
+    border-left: 3px solid var(--table-border-color, #ddd);
+    max-width: 800px;
+}
+.content pre.mermaid + p:has(> em:only-child) > em,
+.content figure.map + p:has(> em:only-child) > em { font-style: normal; }
+.content pre.mermaid + p:has(> em:only-child)::before,
+.content figure.map + p:has(> em:only-child)::before {
+    content: "Figure " counter(figure) ". ";
+    font-weight: 600;
 }

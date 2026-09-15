@@ -158,7 +158,7 @@ sequenceDiagram
     participant SCD as SerializableChunkData
     participant IOW as IOWorker
     participant SL as ServerLevel
-    participant PESM as PersistentEntitySectionManager
+    participant PESM as PersistentEntity<br/>SectionManager
 
     DM->>CM: the level climbs past ChunkLevel.MAX_LEVEL, updateChunkScheduling adds the key to toDrop
     Note over CM: a later tick, in ServerChunkCache.tick's unload phase

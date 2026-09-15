@@ -108,7 +108,7 @@ knockback and synched data must all reach for the self-directed one.
 ```mermaid
 sequenceDiagram
     participant CM as ChunkMap
-    participant CMTE as ChunkMap.TrackedEntity
+    participant CMTE as ChunkMap.<br/>TrackedEntity
     participant SE as ServerEntity
     participant CPL as ClientPacketListener
 

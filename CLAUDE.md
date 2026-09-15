@@ -36,8 +36,11 @@ lens each: **7 the figures** (**current**, planned 2026-09-14 — every figure
 as rendered beside its section: is it true, is it needed, does it show the
 thing it should, can it be read at the column width; the theme, the caption,
 and the gate over the 2,619 names inside mermaid blocks; the viewer's brief,
-the runbook, the standard for session A and **the schedule with each session's
-status** are `docs/pass7-brief.md`), **8 the voice** (one voice, the tics, the
+the runbook, the standard and **the schedule with each session's
+status** are `docs/pass7-brief.md`; **session A is done** (2026-09-15) — the
+standard is ruled, the theme is adopted, which took the figures showing type
+under 9px from 89 to 10 without changing a page, and the exemplar a part
+session reads first is `entities/entity-lifecycle`), **8 the voice** (one voice, the tics, the
 terminology, the ambiguous counts). Then **9** the third fact-check and **10**
 the last polish. Beside them, a **version pass**
 runs between passes on each release, and the owner reads whenever they
@@ -67,10 +70,17 @@ it. Nothing is recorded that the owner hasn't understood.
    From pass 7, `python tools/check_figure_names.py` asks the same of every
    name *inside* a mermaid block — a lane, a node, a message — report-only
    until that pass's close and a gate after it.
-6. **Diagrams render.** `node tools/check_mermaid.js` parses every diagram in
-   the built site with the site's own mermaid (11.6.0). A diagram that
-   fails does not publish — mermaid ends a statement at `;` and reads `#` as
-   an entity code, so neither goes in a label.
+6. **Diagrams render, and are legible where they stand.** `node
+   tools/check_mermaid.js` parses every diagram in the built site with the
+   site's own mermaid (11.6.0). A diagram that fails does not publish —
+   mermaid ends a statement at `;` and reads `#` as an entity code, so neither
+   goes in a label. Parsing is not the test a reader applies:
+   `node tools/render_figures.js` shows every figure at the reading column, and
+   from pass 7 a figure is legible there **without the zoom**. The whole visual
+   grammar — the wrap, the palettes, the five semantic classes, the caption —
+   is in `mermaid-init.js` and `custom.css`, and a page carries no
+   `%%{init}%%`, `classDef`, `style` or `linkStyle`; `TEMPLATE.md`'s *Figures*
+   is the rest.
 7. **Lanes mean one thing.** `python tools/check_lanes.py --strict` checks
    every `participant` in every sequence diagram against the lane key in
    `TEMPLATE.md`; a page whose lane disagrees with the key does not
@@ -216,7 +226,9 @@ figure two pages share through `{{#include}}` — today the parts-dependency
 graph, on the introduction and `lectures.md`); `src/lectures.md` (the
 lecture order and the dependencies between parts); `src/robots.txt` (ships
 with the build; points at the sitemap). `theme/head.hbs` is the only theme
-override — Open Graph and Twitter-card meta on every page. `custom.css`
+override — Open Graph and Twitter-card meta on every page; `mermaid-init.js` is
+committed and is **the figure theme** (not the file `mdbook-mermaid install`
+writes, which must never be run over it). `custom.css`
 widens the column for tables, diagrams and figures and caps prose at 800px;
 `diagram-zoom.js` opens any diagram at viewport size on click;
 `site-footer.js` puts the licence and the disclaimer on every page.

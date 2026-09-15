@@ -1833,9 +1833,13 @@ mark while the body never delivered it.
   four say five. The re-read found a *different* count wrong on the same page —
   eight gate sites described as nine readings and then given a "ninth reading"
   — which is what the entry was really asking for.
-- **`entity-lifecycle`'s spawn-cascade figure gained a seventh rejection
+- ~~**`entity-lifecycle`'s spawn-cascade figure gained a seventh rejection
   edge** to put `isValidSpawnPostitionForType`'s tests in source order. It
-  is now sixteen edges and is the densest figure in the part.
+  is now sixteen edges and is the densest figure in the part.~~ — **done, pass 7
+  session A**: the cascade is two figures and the rejection edges are gone
+  altogether. `isValidSpawnPostitionForType`'s six tests are one row of the new
+  table, still in source order, and the figure that carried them at 4.6px now
+  carries nine nodes at 16.
 - ~~**The *Questions players ask* device**: Part VI is 3 of 10 under the
   literal heading (`ai-goals-and-brains`, `attributes`,
   `synched-entity-data`), which is inside session P's at-most-half rule —
@@ -3179,7 +3183,11 @@ IX/X (`protocol-phases`, `prediction-and-acks`); Parts I–VII have none as a
 primary although three of their pages carry a `stateDiagram` as a secondary
 figure (`points-of-interest`, `entity-lifecycle`, `tickets-and-loading`).
 Pass 5 should ask, page by page, whether a secondary state diagram is the
-page's true picture.
+page's true picture. — **one of the three answered, pass 7 session A**: on
+`entity-lifecycle` the state diagram is not the page's picture (a spawn is not
+a state machine) but it *is* the owner of the page's second half, and taking
+that half off the entry sequence is what stopped the two figures drawing one
+mechanism. The other two are still open, for sessions D and F. [kind=figure]
 
 **The closing device did not hold.** Sixty-three of ninety-eight pages end
 on a questions section (sixty *Questions players ask* verbatim, three
@@ -5471,11 +5479,15 @@ because between them they are the payoff of the page's own hook.
   labelled "no"**, one of them loop exhaustion rather than an answer to the
   question in the diamond; and `WIN` carries "minus the drop back to the old
   floor", a step the prose never explains. [kind=figure]
-- **`entity-lifecycle`'s spawn cascade never loops**, so the three group
+- ~~**`entity-lifecycle`'s spawn cascade never loops**, so the three group
   attempts the prose turns on cannot be read off the figure, and the difference
   between the `X3` and `X4` endings — one drops the attempt, the other returns
   from the whole category — is carried only in the node text. Sixteen edges, the
-  densest in the part. [kind=figure]
+  densest in the part. [kind=figure]~~ — **done, pass 7 session A** (the
+  exemplar). It loops now, and the entry was righter than it knew: the
+  decompile says the two endings are *four*, and that fourteen of the sixteen
+  edges were not endings at all but a `continue` to the next try
+  ([pass9.md](pass9.md), *Pass 7, session A*).
 - **`synched-entity-data`'s trace draws one `SED` lane for two containers.**
   The server's and the client's are the same lane until a `Note over` says
   otherwise, two thirds of the way down. The page now says it in prose first;
@@ -6309,3 +6321,50 @@ class implies for later passes.
   the head of *How the book is read*. Worth session O checking whether the
   thirteen landing pages assume it too — they were written after the
   introduction and inherit its vocabulary. [kind=lecture]
+
+## Pass 7, session A — the standard, the theme and the exemplar *(2026-09-15)*
+
+What adopting the theme and rewriting one page left for the part sessions and
+for session O. The rulings themselves are [pass7-brief.md](pass7-brief.md)
+Part 3; these are the pieces of work that ruling created.
+
+- **109 names are still hyphen-broken mid-word, in messages and notes** (97
+  messages, 12 notes). The theme wraps at 180px so the lanes stay close enough
+  to keep the type at eleven pixels, and mermaid hyphenates any word wider than
+  that: `ClientboundBlockChangedAckPac-ket`, `ServerPlayer.requestDeb-ug`. The
+  112 that were *lane* names are fixed corpus-wide (F17); these are F4's work,
+  one part at a time — shorten the message until the name is most of it, move
+  the sentence to the caption, or break the name with `<br/>`. **Session O
+  re-measures this and it should be zero.** [kind=figure]
+- **A `<br/>` inside a name works in a lane and not yet in a message.** Both
+  gates close the break up for a `participant` expansion and treat it as a
+  space everywhere else, because the ten `<br/>`s already in the corpus are
+  phrase breaks in flowchart node labels with letters on both sides — the same
+  shape as a name break. Session O decides the authoring rule (a space before a
+  phrase break, perhaps) and then teaches `check_figure_names.py` and
+  `pass7_figures.py` the message and note cases. Until then a message's long
+  name is shortened, not broken. [kind=figure]
+- **The four generated hierarchy trees and the render-state tree are still at
+  0.49–0.67 with 6–8px type.** The theme does not reach them: they are SVGs
+  `tools/map_source.py` writes, not mermaid. F13 stands — the emitter folds or
+  wraps so a tree is shown at scale 1 with 12px labels — and it is a tool job
+  for the two part sessions that carry a tree (VI `entity-anatomy`, XI
+  `entity-rendering` and the render-state tree) or for session O. [kind=figure]
+- **The class diagram is the kind the corpus most obviously lacks.** Looking at
+  all twelve gallery figures in the adopted theme, `classDiagram` is the one
+  that would replace work the book is currently doing badly: a vocabulary page
+  drawing a conversation about objects that do not talk.
+  `render/gallery/gallery--f5.png` is what one looks like here. Not a quota —
+  the rule is still *fewer marks than the old one* (F10). [kind=figure]
+- **The captions have no register yet.** Four exist, all written in one sitting
+  by one session; they are the first sentences in the book with a fixed job
+  (*what the picture shows and what to look for in it*) and pass 8 should read
+  them as a set once there are two hundred. The first four are on
+  `entities/entity-lifecycle`. [kind=voice]
+- **mdBook's floating chapter chevrons sat on top of the prose at 1440px** and
+  had done since pass 3 widened the column: the left chevron is painted twelve
+  pixels inside the text. Fixed here in `custom.css` by moving mdBook's own
+  sidebar-open breakpoint from 1380px to 1660px, which is where the column
+  clears them. Recorded because of how it was found — nobody had looked at a
+  rendered page at a laptop width, which is this pass's whole method, and it is
+  worth session O checking the other frame chrome the same way. [kind=record]

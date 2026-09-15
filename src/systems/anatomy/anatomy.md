@@ -48,7 +48,7 @@ sequenceDiagram
     participant MC as Minecraft
     participant MS as MinecraftServer
     participant IS as IntegratedServer
-    participant SCL as ServerConnectionListener
+    participant SCL as ServerConnection<br/>Listener
     participant Conn as Connection
 
     Main->>Main: tryDetectVersion, loadLibraries, DataFixers.optimize in the background, bootStrap, ClientBootstrap, validate

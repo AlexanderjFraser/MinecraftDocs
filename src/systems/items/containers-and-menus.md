@@ -124,13 +124,13 @@ the hotbar. Watch what the wire carries, and what it does not.
 
 ```mermaid
 sequenceDiagram
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant ChestM as ChestMenu
     participant Wire as the network
-    participant SGPL as ServerGamePacketListenerImpl
-    participant ACM as AbstractContainerMenu
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
+    participant ACM as Abstract<br/>ContainerMenu
     participant RemS as RemoteSlot
-    participant CSync as ContainerSynchronizer
+    participant CSync as Container<br/>Synchronizer
 
     MPGM->>MPGM: copy every slot's stack, before touching anything
     MPGM->>ChestM: clicked with QUICK_MOVE, predicted on the twin

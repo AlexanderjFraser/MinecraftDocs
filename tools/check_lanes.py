@@ -43,6 +43,16 @@ PARTICIPANT_LOOSE = re.compile(r"^\s*(?:create\s+|destroy\s+)?(?:participant|act
 ARROW = re.compile(r"^\s*([A-Za-z0-9_]+)\s*(?:-{1,2}>>?|-{1,2}[x\)]|--?>)\s*[+-]?([A-Za-z0-9_]+)\s*:")
 FENCE = re.compile(r"^\s*(?:```|~~~)\s*(\w*)")
 WORD_LANE_MARK = "not a class"
+# A lane whose class name is wider than the box carries its own line break at a CamelCase
+# boundary (`participant PESM as PersistentEntity<br/>SectionManager`), because mermaid's
+# wrap would otherwise hyphenate it mid-name — pass 7, session A. The break is display only:
+# the gate reads the name with it closed up, never with a space in it.
+LANE_BREAK = re.compile(r"<br\s*/?>")
+
+
+def expansion_of(text: str) -> str:
+    """The class a lane expands to, with any display line break closed up."""
+    return LANE_BREAK.sub("", text).strip()
 
 
 def read_key(template: str) -> tuple[dict[str, str], dict[str, str], list[str]]:
@@ -153,7 +163,7 @@ def check_pages(src: str, classes: dict[str, str], words: set[str], only: list[s
                     mismatches.append(f"{rel}:{n}: participant line the gate cannot parse: {line.strip()}")
                 continue
             if True:
-                lane, expansion = m.group(1), (m.group(2) or m.group(1)).strip()
+                lane, expansion = m.group(1), expansion_of(m.group(2) or m.group(1))
                 declared.add(lane)
                 count += 1
                 if lane in words:

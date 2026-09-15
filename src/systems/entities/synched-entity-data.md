@@ -162,8 +162,8 @@ shipped with no caller outside its own file.
 
 ```mermaid
 sequenceDiagram
-    participant MPGM as MultiPlayerGameMode
-    participant SGPL as ServerGamePacketListenerImpl
+    participant MPGM as MultiPlayer<br/>GameMode
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Sheep as Sheep
     participant SED as SynchedEntityData
     participant CM as ChunkMap

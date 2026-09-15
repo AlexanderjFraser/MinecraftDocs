@@ -212,7 +212,7 @@ sides: the client runs the same dispatch on the same kinds
 
 ```mermaid
 sequenceDiagram
-    participant RSReg as ReloadableServerRegistries
+    participant RSReg as Reloadable<br/>ServerRegistries
     participant LT as LootTable
     participant LIF as LootItemFunctions
     participant BIR as BuiltInRegistries

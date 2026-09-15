@@ -270,11 +270,11 @@ sky is. Both go through the stack above, and this is the machinery running.
 ```mermaid
 sequenceDiagram
     participant SL as ServerLevel
-    participant EAS as EnvironmentAttributeSystem
-    participant EVS as EnvironmentAttributeSystem.ValueSampler
-    participant ATS as AttributeTrackSampler
+    participant EAS as Environment<br/>AttributeSystem
+    participant EVS as Environment<br/>AttributeSystem.<br/>ValueSampler
+    participant ATS as Attribute<br/>TrackSampler
     participant SCM as ServerClockManager
-    participant KTS as KeyframeTrackSampler
+    participant KTS as Keyframe<br/>TrackSampler
     participant Mob as Mob
 
     Note over SL,Mob: one server tick
@@ -339,10 +339,10 @@ ticks above the horizon against 10,440 below.
 ```mermaid
 sequenceDiagram
     participant Camera as Camera
-    participant EAP as EnvironmentAttributeProbe
+    participant EAP as Environment<br/>AttributeProbe
     participant GS as GaussianSampler
-    participant SAI as SpatialAttributeInterpolator
-    participant EAS as EnvironmentAttributeSystem
+    participant SAI as SpatialAttribute<br/>Interpolator
+    participant EAS as Environment<br/>AttributeSystem
     participant SR as SkyRenderer
 
     Note over Camera,SR: one client tick

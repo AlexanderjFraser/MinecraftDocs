@@ -81,7 +81,7 @@ construct it should):
 | `tools/pass7_prompts.py` | **new.** One prompt file per page for the viewer — Part 1, the path, and each figure's number, line, section and picture — and one *session* file beside it: the figure-kind queue, the page's figure report, the gate's failures and notes, every figure arrow by arrow, the figure-less long sections, and the inbound links by anchor; per part, `_part-figures-<part>.md` (the table and the ranking) and `_part-notes.md` | `--part world --out DIR` |
 | `tools/check_lanes.py --unused` | the key rows no page declares (44 of 342 today) | `--unused` |
 | `tools/check_mermaid.js` | the parse gate, unchanged in verdict; it now exports its fence-mapping helpers, keeps `block-beta`'s lexer quiet, and gives the jsdom window a `structuredClone`, so `pie`, `packet-beta` and `radar-beta` parse under it as they do in the browser | as before |
-| `tools/pass7/` | **new.** `mermaid-init.candidate.js` (the site font, `sequence.wrap`, the `base` theme read off mdBook's light and navy palettes, no mirrored actors), `figure-classes.candidate.css` (the five semantic classes and the caption style), `gallery.html` (one figure of each of twelve kinds, rendered to `render/gallery/`) — session A's evidence, adopted or not | see the files' headers |
+| `tools/pass7/` | **new.** The candidates session A judged and adopted — `mermaid-init.candidate.js` and `figure-classes.candidate.css` are now `mermaid-init.js` (committed) and the foot of `custom.css`; `gallery.html` renders one figure of each of twelve kinds in the adopted theme to `render/gallery/`, which is the menu `TEMPLATE.md`'s *kinds* table points at. `break_lane_names.py` puts a long lane's line break at its CamelCase boundary from a render (F17) | `node tools/render_figures.js --html tools/pass7/gallery.html --out render/gallery`, `python tools/pass7/break_lane_names.py --dry-run` |
 | `tools/diagram_arrows.py` | pass 4's arrow-by-arrow listing, reused: the numbered list a session re-derives against when it redraws | `src/systems/world/lighting.md` |
 
 ---
@@ -221,9 +221,9 @@ judgement is in steps 6 and 7.
 
 [plan.md](plan.md) (the charter and this session's line in Part 4 below),
 `CLAUDE.md`, this file whole — Part 3 is the standard the session applies —
-`TEMPLATE.md`'s *The shapes*, *The devices*, *Figures* and *Lanes* (session A
-rewrites *Figures* and *Lanes* to Part 3; until then Part 3 wins where they
-differ), and the part's landing page. Then the part's queue, which is what
+`TEMPLATE.md`'s *The shapes*, *The devices*, *Figures* and *Lanes* — session A
+rewrote the last two to Part 3, and they are what a session works *from*; Part 3
+is why they say what they say — and the part's landing page. Then the part's queue, which is what
 earlier passes already know about its figures:
 
 ```
@@ -382,79 +382,108 @@ not after all of them. Commit your own files by name, never `add -A`.
 
 ---
 
-## Part 3 — The standard (the planning session's recommendations, for session A to rule on)
+## Part 3 — The standard (the record: what session A ruled, 2026-09-15)
 
-*Each recommendation is written with the number behind it, measured on
-2026-09-14 by `render_figures.js` (Chrome, a 1,440px viewport, the 1,092px
-reading column, the light theme), `pass7_figures.py` and `check_figure_names.py`
-over the 206 figures. Session A rewrites this part as the record of what was
-ratified, amended and added, and writes the rules about a figure into
-`TEMPLATE.md`'s *Figures* and *Lanes*, which is where the part sessions read
-them. No count here is a target; the test in each ruling decides, and the
-number says where the work is.*
+*The planning session wrote this part as sixteen recommendations with the
+numbers behind them. Session A ruled on each — ratified, amended or reversed —
+and rewrote the part as **the record**, which is what a part session reads and
+applies. It does not re-decide any of it. Where a ruling names a rule that now
+lives in `TEMPLATE.md`, `TEMPLATE.md` is the place a session works from and
+this is why it says what it says. Fifteen were ratified, four of them amended;
+one (F2) was ratified and one rule inside it reversed. Two rulings the pass did
+not have — **F17**, the lane's own line break, and **F18**, what the theme
+cannot fix and who fixes it — were added here because adopting the theme made
+them necessary. Every number below was measured on 2026-09-14 (before) and
+2026-09-15 (after) by `render_figures.js` in Chrome at the 1,092px reading
+column, `pass7_figures.py` and `check_figure_names.py`.*
 
-### F1. Legible where it stands — the column is the test, not the zoom
+**What session A did, in one paragraph.** It adopted the theme, and the theme
+is most of the legibility problem: over the 196 mermaid figures the median
+scale went 0.61 → **0.82**, figures below half their size 76 → **6**, figures
+showing type under 9px 89 → **10** and under 11px 107 → **31**, the widest
+figure 5,415px → 3,859px; across the 88 sequence diagrams — which were the
+whole of the problem — *below half* went 70 → **none** and *type under 9px* 76
+→ **none**. No page's content changed to get that. The theme's own cost is two
+things and they are named here as rulings rather than left to be found: figures
+are **taller** (the median sequence diagram 401px → 940px, because a message
+that was one long line is now three short ones), and mermaid hyphenates any
+word wider than the wrap — which for a book whose subject is Mojang's names
+meant 222 names broken mid-word on screen. The 112 that were **lane names** are
+fixed, corpus-wide, in this session (F17); the 109 in messages and notes are
+the part sessions' (F18), and they go away when F4 does its work. What remains
+after the theme is what the pass is actually for: 71 figures still shrunk
+below 0.75, 115 opening their section with nothing above them, none captioned,
+151 carrying a name the prose never says, 119 names the gate cannot resolve.
 
-**Measured.** Mermaid scales a diagram wider than the column down to fit, and
-the column is 1,092px. 134 of the 194 mermaid figures are shown below their
-natural size; 76 below half; the median scale is 0.61. Because the base type is
-16px, 89 figures show type under 9px and 107 under 11px; the smallest is 3.2px
-(`identifiers-and-registries` figure 2, natural width 5,415px, shown at 0.20).
-The 88 sequence diagrams are the cause: 87 are shrunk below 0.75 and 70 below
-half, against 26 and 5 of the 101 flowcharts, because a sequence diagram's
-width is the sum of its longest message between each pair of lanes and the
-site's mermaid init does not wrap. The four generated hierarchy trees are the
-maps' version of the same: shown at 0.50–0.67 with 6–8px type (`entity-anatomy`,
-`entity-rendering`, `maps/hierarchy`).
+### F1. Legible where it stands — the column is the test, not the zoom — **ratified**
 
-**Recommendation.** A figure is legible at the column width without the zoom:
+**Measured, before.** Mermaid scales a diagram wider than the column down to
+fit, and the column is 1,092px. 134 of the 194 mermaid figures were shown below
+their natural size; 76 below half; the median scale 0.61. Because the base type
+is 16px, 89 figures showed type under 9px and 107 under 11px; the smallest was
+3.2px (`identifiers-and-registries` figure 2, natural width 5,415px, shown at
+0.20). The 88 sequence diagrams were the cause: 87 shrunk below 0.75 and 70
+below half, against 26 and 5 of the 101 flowcharts, because a sequence
+diagram's width is the sum of its longest message between each pair of lanes
+and the site's mermaid init did not wrap.
+
+**The ruling.** A figure is legible at the column width **without the zoom**:
 no label under 11px on screen, which at 16px base type means a scale no lower
-than about 0.7. Two moves make it, in this order. **First, the theme** (F2):
-the candidate init in `tools/pass7/` turns on `sequence.wrap` at 180px, sets the
-site's font and drops the mirrored actor row; rendered over the whole corpus it
-takes the sequence diagrams from 70 below half to **none** and from 76 under 9px
-to **none** (11 under 11px), the widest from 5,415px to 1,844px — and no page
-changes. The cost is height: the median sequence diagram goes from 401px to
-940px tall, because a message that was one long line is now three short ones,
-and three figures gain a wrapped note or block label that runs past its box.
-**Second, per figure**: what is still shrunk after the theme (46 sequence
-diagrams at 0.6–0.75; 22 flowcharts, five below half) is fixed in the page —
-fewer lanes (F7), shorter labels (F4), a split at the mechanism's joint (F9), a
-flowchart turned from `LR` to `TD`. The render is the check: a part session
-re-renders after editing and reads the scale and the smallest type off
-`pass7_figures.py --part`. A slide is not a separate test — the lightbox shows a
-figure at 96% of the viewport, so what is legible at the column is legible
-enlarged, and the recording's screen is the column.
+than about 0.7. The slide is not a separate test — the lightbox shows a figure
+at 96% of the viewport, so what is legible at the column is legible enlarged,
+and the recording's screen *is* the column.
 
-### F2. One theme, in one file, and no colour in a page
+**After the theme.** Sequence diagrams: none below half, **none under 9px**, 11
+under 11px, the widest 1,844px. All figures: median scale 0.82, 10 under 9px,
+31 under 11px. What is left is per figure and belongs to the part sessions: **71
+figures still below 0.75** — 46 sequence diagrams at 0.6–0.75, whose fix is
+fewer lanes (F7) and shorter labels (F4), and 22 flowcharts, five below half,
+whose fix is a split at the mechanism's joint (F9) or `LR` turned to `TD`. Eight
+flowcharts still show type under 9px and every one of them is over fifteen
+nodes. The render is the check: re-render after editing
+(`node tools/render_figures.js --no-build --pages systems/<part>`) and read the
+scale and the smallest type off `pass7_figures.py --part`.
+
+### F2. One theme, in one file, and no colour in a page — **ratified; one rule reversed**
 
 **Measured.** No page carries a `%%{init}%%` directive and no page carries a
-`classDef`, `style` or `linkStyle` line — the corpus has kept its colour out of
-the pages without a rule saying so. The site ships mdbook-mermaid's default init
-(mermaid's own lilac palette, Trebuchet, no wrapping), gitignored because
-`mdbook-mermaid install` writes it. Verified in Chrome: a flowchart node written
-`A["…"]:::server` renders with `class="node default server"` **without any
-`classDef`**, and a state written `class Idle server` likewise, so a stylesheet
-rule colours it and follows the theme, the way the atlas SVGs already work; a
-sequence diagram's `box transparent Server thread` draws a labelled frame around
-its lanes; `rect rgba(0,0,0,0.04)` draws a shaded band; a YAML `title:` renders
-as a title and `accTitle`/`accDescr` become the SVG's `<title>` and `<desc>` for
-a screen reader.
+`classDef`, `style` or `linkStyle` line — the corpus had kept its colour out of
+the pages without a rule saying so. Verified in Chrome that a flowchart node
+written `A["…"]:::server` renders with `class="node default server"` **without
+any `classDef`**, that a state written `class Idle server` does likewise, that a
+`box transparent Server thread` draws a labelled frame around its lanes, that
+`rect rgba(0,0,0,0.04)` draws a shaded band, and that `accTitle`/`accDescr`
+become the SVG's `<title>` and `<desc>` for a screen reader.
 
-**Recommendation.** The theme lives in `mermaid-init.js` (committed, out of
-`.gitignore`) and `custom.css`, and nowhere else: `%%{init}%%`, `classDef`,
-`style` and `linkStyle` are banned in pages, and `check_mermaid.js` learns to
-refuse them at the close. Session A adopts the candidate init and the candidate
-stylesheet as drafted or amended — the palette read off mdBook's light and navy
-themes so a figure looks like part of the page in both — after looking at
-`render/candidate/` beside `render/`, and `render/gallery/` for the kinds the
-corpus does not use yet. **Five semantic classes**, `server`, `client`, `netty`,
-`worker`, `disk`, are the whole colour vocabulary of a flowchart, and the same
-five words are a sequence diagram's `box` labels and the lane key's word lanes;
-a figure that needs a sixth argues for it in the session log. Everything else
-is the theme's default.
+**The ruling, and what was adopted.** The theme lives in `mermaid-init.js` and
+`custom.css` and nowhere else; `%%{init}%%`, `classDef`, `style` and `linkStyle`
+are banned in pages and `check_mermaid.js` learns to refuse them at the close
+(session O). `mermaid-init.js` is **committed** and out of `.gitignore`, with
+the MPL header of the file it derives from kept and a note that
+`mdbook-mermaid install` must not be re-run over it. The candidate was adopted
+as drafted: the site's font at a 16px base, `sequence.wrap` at a 180px message
+width, `mirrorActors: false`, the `base` theme with variables read off mdBook's
+light and navy palettes, flowchart labels wrapping at 220px. `custom.css` gained
+the five semantic classes (`server`, `client`, `netty`, `worker`, `disk`) as
+CSS variables in both palettes, and the caption rule.
 
-### F3. One visual grammar, corpus-wide
+**Reversed:** the recommendation's *the five words are the whole colour
+vocabulary of a flowchart* stands, but the candidate stylesheet's caption
+selector did not: it numbered only the figures that have captions, so the third
+figure of a page would have been captioned *Figure 1* while two uncaptioned
+figures sat above it. The counter now increments on **every** `pre.mermaid` and
+`figure.map` and the caption only prints it, so a number is the figure's place
+on the page whatever else is captioned. This is the kind of thing that is
+invisible until a pass looks at the rendering: it is exactly the pass's subject,
+found in its own stylesheet.
+
+**Width 240 was tried and rejected.** A wider wrap would have let long lane
+names sit on one line (it fits 30 characters), but it puts the lanes further
+apart: rendered over the corpus it left **71 of the 88 sequence diagrams with
+type under 11px** against 11 at width 180, and 8 under 9px against none. The
+lanes win and the names get their own break (F17).
+
+### F3. One visual grammar, corpus-wide — **ratified**
 
 **Measured.** 51 flowcharts are `TD` and 27 `TB` — the same direction spelled
 two ways — 20 `LR` and 3 `BT`, one of them under a heading that says the value
@@ -466,338 +495,363 @@ meaning, `worldgen/README`'s one undirected link) and where a `Note over` stands
 for a machine boundary the lanes do not draw (`synched-entity-data`,
 `status-effects`, `codecs-nbt-json`).
 
-**Recommendation.** Written into `TEMPLATE.md`'s *Figures* as a table, one row
-per mark, the same on every page: a **rectangle** is a step or a call; a
-**diamond** is a decision and its outgoing edge labels are its answers; a
-**cylinder** is storage; a **subgraph** is a thread, a machine or a tick — never
-a grouping of convenience — and carries one of the five class words or a tick's
-name; a **solid arrow** is a call or a hand-off in time, a **dotted arrow** a
-return or a reply, `-x` a message dropped, `-)` a message nobody waits for; a
-**`Note over`** is a tick boundary or a thread hop (F8) and nothing else; a
-**`box`** groups lanes by thread; direction is `TD` for anything ordered in
-time or by decision and `LR` for a pipeline of stages, and `TB`, `BT` and `RL`
-are not written. A figure that needs a mark outside the table says so in its
-caption.
+**The ruling.** The marks table is now in `TEMPLATE.md`'s *Figures*, one row per
+mark, the same on every page: rectangle a step or a call; diamond a decision
+whose outgoing edge labels are its answers; cylinder storage; subgraph a thread,
+a machine or a tick and never a grouping of convenience; solid arrow a call or a
+hand-off in time, dotted a return or a reply, `-x` a message dropped, `-)` a
+message nobody waits for; `Note over` a tick boundary or a thread hop and
+nothing else; `box` lanes grouped by thread; `rect` band the extent of a tick.
+Direction is **`TD`** for anything ordered in time or by decision and **`LR`**
+for a pipeline of stages; `TB`, `BT` and `RL` are not written. A figure that
+needs a mark outside the table says so in its caption.
 
-### F4. Labels are not sentences
+### F4. Labels are not sentences — **ratified, amended**
 
 **Measured.** 312 labels on 121 figures read as sentences — over twelve words,
 or a full stop inside — 204 of them in flowcharts, 103 in sequence diagrams; the
 median figure's longest label is 14 words; `server-tick`'s event loop puts a
 24-word sentence in a diamond, `entity-lifecycle`'s spawn cascade has nine
 sentence labels, `blocks-and-states`' write figure ten, and Part V's gate labels
-carry the flag numbers the page has not minted (four figures, queue :5325). A
-long label is also the width problem of F1 in another form.
+carry the flag numbers the page has not minted (four figures, queue :5325).
 
-**Recommendation.** A node label is a subject and a verb, at most eight words and
-two lines (`<br/>` where the break matters); an edge label is the condition, at
-most four words; a message is at most twelve words and a note at most sixteen. A
-label that needs a sentence is a sentence the section owns: the label keeps the
-name and the prose keeps the explanation. A gate carries the constant's name,
-never a bare number (`UPDATE_CLIENTS`, not `2`; `flag 2` only where the page
-has paired the name and the number above the figure). `pass7_figures.py` counts
-the sentence labels and the number gates per figure; a session reads its own
-labels aloud.
+**The ruling.** A node label is a subject and a verb, at most eight words and
+two lines; an edge label is the condition, at most four words; a message is at
+most twelve words and a note at most sixteen. A label that needs a sentence is a
+sentence the section owns: the label keeps the name, the prose keeps the
+explanation. A gate carries the constant's name, never a bare number
+(`UPDATE_CLIENTS`, not `2`; `flag 2` only where the page has paired the name and
+the number above the figure).
 
-### F5. Every figure has a caption, and the section reads it
+**Amended:** this ruling is no longer only about reading. Under the adopted
+theme a long label is also **height** — a message that was one line is now three
+— so the twelve-word message budget is what keeps the median sequence diagram
+from growing past a screen, and it is the first thing a part session spends its
+effort on, before it touches a lane. The 109 hyphen-broken names in messages
+and notes (F18) are the same work seen from the other end.
+
+### F5. Every figure has a caption, and the section reads it — **ratified**
 
 **Measured.** No figure in the book has a caption. 115 of 206 open their section
 — a heading directly above, nothing between — and 118 have no lead-in sentence;
-132 are pointed at by a sentence in their section (*the figure*, *the bar*,
-*read it as*, *above*, *below*) and 74 are not; **51 have no lead-in, no caption
-and no sentence pointing at them** — a picture the page never mentions. The
-built HTML puts a `<p>` directly after each figure's `<pre class="mermaid">`, so
-the paragraph after a figure is addressable by a stylesheet; verified with
-mdBook that a `<figure>` wrapper with blank lines around the fence also works,
-but its `<figcaption>` is raw HTML, whose backticks the name gate cannot read.
+132 are pointed at by a sentence in their section and 74 are not; **51 have no
+lead-in, no caption and no sentence pointing at them** — a picture the page
+never mentions.
 
-**Recommendation.** The caption is **the italic paragraph directly after the
+**The ruling.** The caption is **the italic paragraph directly after the
 figure** — one sentence in the book's voice: what the picture shows and what to
-look for in it (*The four gates a spawn attempt passes before a mob object
-exists; the boundary marked* only now *is the one that matters.*). It is
-markdown, so `verify_names.py` reads its names and `llms-full.txt` carries it;
-`custom.css` styles exactly that paragraph (`pre.mermaid + p:has(> em:only-child)`,
-in the candidate stylesheet) and numbers it with a CSS counter, so an
-uncaptioned figure looks as it does today until it gets one. The sentence
-*before* a figure ends by saying what the figure will show, unless the figure
-opens its section — a lead figure may — and then its caption does that job. The
-paragraph after the caption reads the picture: it names the thing the reader
-should see. `pass7_figures.py` measures all three (the lead-in, the caption, the
-pointer), and a figure with none of them is the first thing a session looks at.
+look for in it. It is markdown, so `verify_names.py` reads its names and
+`llms-full.txt` carries it; `custom.css` styles exactly that paragraph
+(`pre.mermaid + p:has(> em:only-child)`) and prints the figure's number before
+it. The sentence *before* a figure ends by saying what the figure will show,
+unless the figure opens its section — a lead figure may — and then its caption
+does that job. The paragraph after the caption reads the picture: it names the
+thing the reader should see. **A caption is a claim** about what the figure
+shows and is logged in [pass9.md](pass9.md) with the figure's other claims.
 
-### F6. The figure the page cannot yet be read against
+### F6. The figure the page cannot yet be read against — **ratified**
 
-**Measured.** This is the pattern sessions C, D and F of pass 6 each found and
-sent whole, and it is now a number: for every identifier-shaped token in a
-figure's labels, whether the prose says it *before* the figure, only *after* it,
-or *never*. **139 of the 195 mermaid figures introduce at least half of their
-names before the prose does**; of the 120 lead figures, 87 do, and 69 open their
-section with nothing above them. **151 figures carry a name the prose never
-says — 614 tokens — and 88 carry three or more**: `entity-lifecycle`'s spawn
-cascade names fifteen methods that appear nowhere in the page's prose,
-`server-tick`'s lap sequence fourteen of its nineteen names after the figure.
-Those figures are the only home of those facts, and they are the ones pass 4's
-standing rule says to read first ("the figure against the section under it").
+**Measured.** For every identifier-shaped token in a figure's labels, whether
+the prose says it *before* the figure, only *after* it, or *never*. **139 of the
+195 mermaid figures introduce at least half of their names before the prose
+does**; of the 120 lead figures, 87 do, and 69 open their section with nothing
+above them. **151 figures carry a name the prose never says — 614 tokens — and
+88 carry three or more**: `entity-lifecycle`'s spawn cascade names fifteen
+methods that appear nowhere in the page's prose, `server-tick`'s lap sequence
+fourteen of its nineteen names after the figure.
 
-**Recommendation.** A figure names what its section explains. A lead figure —
-the page's artefact, sitting under the cast — is drawn **in the words of the
-cast**: the class names the cast table has just given, and verbs for what
-happens (*asks*, *writes*, *sends the packet*), not method names the reader
-meets 150 lines later; the method names belong in the section figures that
-follow their prose. A name the prose never says is either given one sentence in
-the prose — the sentence the figure was standing in for — or taken out of the
-figure. The test is the report's *names* line: a lead figure at 90% first-met
-has been drawn from the decompile rather than from the page.
+**The ruling.** A figure names what its section explains. A lead figure — the
+page's artefact, under the cast — is drawn **in the words of the cast**: the
+class names the cast table has just given, and verbs for what happens (*asks*,
+*writes*, *sends the packet*), not method names the reader meets 150 lines
+later; the method names belong in the section figures that follow their prose. A
+name the prose never says is either given one sentence in the prose — the
+sentence the figure was standing in for — or taken out of the figure. The test
+is the report's *names* line: a lead figure at 90% first-met has been drawn from
+the decompile rather than from the page.
 
-### F7. Lanes: at most seven, each earning its place, one meaning corpus-wide
+### F7. Lanes: at most seven, each earning its place, one meaning corpus-wide — **ratified, amended**
 
 **Measured.** Lanes per sequence diagram: eight on 7, seven on 39, six on 25,
-five on 9, four on 5, three on 2, two on 1 — `TEMPLATE.md` says at most seven.
-The queue names four lanes that carry one message and decide nothing
-(`scheduled-ticks`' `LevelChunk`, `input-to-movement`'s `LE`, `authority`'s
-`SL` used only in a note, `starting-a-server`'s `Worker` with no cast row), two
-lanes standing for two objects (`synched-entity-data`'s one `SED` for both
-containers; `status-effects`' one `LE` for two machines; `game-events`' one
-`SculkSensorBlock` for the block and its block entity), and one object given
-two lanes (`anatomy`'s `MinecraftServer` and `IntegratedServer`). The key has
-342 rows, 298 in use and **44 no page declares** (`check_lanes.py --unused`),
-among them `PTT`, the template's worked example of the nested-class rule, whose
-pilot page has since become a flowchart; `RCPL` is the one class with two lanes
-on purpose. Messages between lanes cross intermediate lifelines 573 times, which
-mermaid draws under the text; the candidate theme's wrapping triples that count
-and is the reason F1's theme needs F7's lanes.
+five on 9, four on 5, three on 2, two on 1. The queue names four lanes that
+carry one message and decide nothing (`scheduled-ticks`' `LevelChunk`,
+`input-to-movement`'s `LE`, `authority`'s `SL` used only in a note,
+`starting-a-server`'s `Worker` with no cast row), two lanes standing for two
+objects (`synched-entity-data`'s one `SED` for both containers; `status-effects`'
+one `LE` for two machines; `game-events`' one `SculkSensorBlock` for the block
+and its block entity), and one object given two lanes (`anatomy`'s
+`MinecraftServer` and `IntegratedServer`). The key has 342 rows, 298 in use and
+**44 no page declares**; `RCPL` is the one class with two lanes on purpose.
 
-**Recommendation.** At most seven lanes; a lane that carries one message and
-decides nothing is folded into a note or a label on the arrow; one object is one
-lane (a subclass and its base are one lane, named for the object); two machines
-are two lanes, or one lane in a `box` for each machine, never a `Note over`
-saying *now the client*. The key is pruned to lanes in use at the close, `PTT`'s
-replacement chosen then, and `check_lanes.py --unused` joins `deploy.sh` as a
-report. Lane *order* is the order of first use, left to right, so that the first
-message reads left to right.
+**The ruling** is in `TEMPLATE.md`'s *Lanes*: at most seven lanes; a lane that
+carries one message and decides nothing is folded into a note or a label on the
+arrow; one object is one lane (a subclass and its base are one lane, named for
+the object); two machines are two lanes, or one lane in a `box` for each
+machine, never a `Note over` saying *now the client*; two objects are never one
+lane. Lane order is the order of first use, left to right. The key is pruned to
+lanes in use at the close, `PTT`'s replacement chosen then, and
+`check_lanes.py --unused` joins `deploy.sh` as a report.
 
-### F8. The tick boundary is a band, and every trace that crosses a tick shows one
+**Amended: seven is now arithmetic, not taste.** Under the theme a lane is about
+230px of column, so an eighth lane puts *every* label in the figure under eleven
+pixels — the seven-lane limit and F1's legibility rule are the same rule, and
+`TEMPLATE.md` says so.
+
+### F8. The tick boundary is a band — **ratified**
 
 **Measured.** 111 notes on 58 of the 88 sequence diagrams name a tick, a frame
 or *later*; **30 sequence diagrams have no tick bar at all**, and the queue names
 traces that cross a tick without one (`status-effects`, whose two machines read
 as sequential; `the-client-loop`'s flowchart, the part's most-cited picture,
-with no tick marking on the page that is about the tick). `TEMPLATE.md`'s device
-is `Note over X: a later tick`; Chrome renders a `rect` band with a note inside
-it, which shows the tick's *extent* and not only its edge (`render/gallery/
-gallery--f1.png`).
+with no tick marking on the page that is about the tick).
 
-**Recommendation.** A trace that crosses a tick, a frame or a thread shows the
-crossing as a **shaded band** (`rect`, the theme's one band colour) with a
-`Note over` all lanes naming the tick or the phase; a flowchart that spans ticks
-puts each tick in a subgraph named for it. The *no reply* annotation (`-->>`
-with *nothing*) stays as the template has it. A trace with no crossing has no
-bar — the device is spent, not defaulted.
+**The ruling.** A trace that crosses a tick, a frame or a thread shows the
+crossing as a **shaded band** (`rect rgba(0, 0, 0, 0.04)`) with a `Note over`
+all lanes naming the tick or the phase, so the picture shows the tick's
+*extent* and not only its edge; a flowchart that spans ticks puts each tick in a
+subgraph named for it. The *no reply* annotation (`-->>` with *nothing*) stays
+as the template has it. A trace with no crossing has no band — the device is
+spent, not defaulted. `render/gallery/gallery--f1.png` is the worked example,
+and it is the one figure in the gallery a part session should look at before
+drawing a band of its own.
 
-### F9. As complex as it needs to be, as simple as it can be — the density budgets
+### F9. As complex as it needs to be, as simple as it can be — **ratified, amended**
 
-**Measured.** Flowcharts: a median of 10 nodes, nine over 15, a maximum of 26
-(`loot-tables`' funnel) and 39 edges (`entity-lifecycle`'s cascade); 42 figures
-are over 1,200px tall on screen and `blocks-and-states`' write figure is 3,766px
-— three and a half screens. Sequence diagrams: a median of 12 messages, one over
-20 (`starting-a-server`, 26), notes up to eight in one band
-(`post-processing`). The parts-dependency figure — thirteen nodes, 27 edges —
-has **26 edge crossings**; `math-and-primitives`' coordinate figure has 5 on 8
-nodes.
+**Measured, before.** Flowcharts: a median of 10 nodes, nine over 15, a maximum
+of 26 (`loot-tables`' funnel) and 39 edges (`entity-lifecycle`'s cascade); 42
+figures over 1,200px tall on screen and `blocks-and-states`' write figure
+3,766px — three and a half screens. Sequence diagrams: a median of 12 messages,
+one over 20 (`starting-a-server`, 26), notes up to eight in one band.
 
-**Recommendation.** No budget is a target, and the test is the viewer's first
+**The ruling.** No budget is a target, and the test is the viewer's first
 question — *what does it show?* — answered in one sentence. But a flowchart over
 about fifteen nodes, a sequence over about twenty messages, or a figure taller
-than a screen is split **at the mechanism's own joint**, the one the prose
-already names (the spawn cascade at *only now does a Mob object exist*: the type
-filter and the object filter; the write figure at *back in `Level.setBlock`*:
-the chunk write and the tail), and each half gets its own caption and its own
-paragraph. Every node is a step or a decision the prose names; a node that
-restates the paragraph is cut; a chain of rejections is one node with a list of
-conditions only where the conditions have no order, and an ordered chain
-(`hunger-and-experience`'s if/else-if regen) is drawn in its order. A dependency
-graph with 26 crossings is redrawn by rank (the parts in the order they are
-watched, arrows only downward) or generated.
+than a screen is split **at the mechanism's own joint, the one the prose already
+names**, and each half gets its own caption and its own paragraph. Every node is
+a step or a decision the prose names; a node that restates the paragraph is cut;
+a chain of rejections is one node with a list of conditions only where the
+conditions have no order, and an ordered chain is drawn in its order. A
+dependency graph with 26 crossings is redrawn by rank or generated.
 
-### F10. The true shape — the kind of figure follows the mechanism
+**Amended: the theme made height the scarce thing.** Figures over 1,200px tall
+went 42 → **49**, and fourteen sequence diagrams are now over a screen where
+none was. That is the right trade — a 940px figure a reader can read beats a
+401px one they cannot — but it means the height half of this ruling is the half
+the part sessions spend most on, and that the twenty-message budget now binds
+before the seven-lane one does.
+
+### F10. The true shape — the kind of figure follows the mechanism — **ratified**
 
 **Measured.** 88 sequence diagrams, 101 flowcharts, 6 state diagrams, 11
-generated SVGs. The site's mermaid parses **twenty-one kinds** (the checker's
-harness now agrees with the browser on `pie`, `packet-beta` and `radar-beta`);
-the corpus uses three, and `TEMPLATE.md` names a fourth, `classDiagram`, for
-vocabulary pages, which no page uses. `render/gallery/` holds one of each kind
-that a page here could want, in the candidate theme: a class diagram of what a
-chunk section holds; a memory layout as `block-beta`; a packet's bytes as
-`packet-beta`; a tick's phases against the clock as a `gantt`; a number that is
-a curve as an `xychart` (the sword's attack-strength scale); a 2×2 of who decides
-and who predicts as a `quadrantChart`; the Reference shelf as a `mindmap` where a
-flowchart's arrows would assert an order that does not exist; a session's phases
-as a `timeline`. Three secondary state diagrams (`points-of-interest`,
-`tickets-and-loading`, `entity-lifecycle`) may be their page's true picture
-(session P's question, queue :3167); the queue names figures whose kind is
-wrong outright — `pathfinding` drawing the same pipeline as a flowchart and as a
-sequence, `permissions`' taxonomy as a pipeline, `reference/README`'s taxonomy
-that its own table carries faster, `the-gui-render-tree`'s two pictures in one
-frame.
+generated SVGs. The site's mermaid parses **twenty-one kinds**; the corpus uses
+three, and `TEMPLATE.md` named a fourth, `classDiagram`, which no page used.
 
-**Recommendation.** `TEMPLATE.md`'s shapes table keeps its rule — *if the truth
-is a graph, do not draw a conversation* — and gains the menu with a picture per
-row: a trace is a sequence diagram; a branch or a pipeline a flowchart; phases a
-state diagram; what an object *holds* a class diagram (the vocabulary page's
-figure, at last); a layout in memory or on the wire a block or packet diagram; a
-quantity a chart, with its numbers real and its caption saying whether they are
-illustrative; a taxonomy a mind map or, better, the table; a comparison a table
-and never a figure. Two kinds have traps the gallery shows — `packet-beta` cuts
-a long field label, `quadrantChart` lets a point label collide with a quadrant
-label — and the renderer flags both. A new kind is used where it shows the thing
-in fewer marks than the old one, not for variety; diversity is the consequence
-of drawing the mechanism, not the aim.
+**The ruling** is the menu now in `TEMPLATE.md`, with `render/gallery/` as its
+pictures: a trace is a sequence diagram; a branch or a pipeline a flowchart;
+phases a state diagram; what an object *holds* a class diagram; a layout in
+memory or on the wire a block or packet diagram; a quantity a chart, with its
+numbers real and its caption saying whether they are illustrative; a taxonomy a
+mind map or, better, the table; a comparison a table and never a figure. Two
+kinds have traps the gallery shows — `packet-beta` cuts a long field label,
+`quadrantChart` lets a point label collide with a quadrant label — and the
+renderer flags both. A new kind is used where it shows the thing in fewer marks
+than the old one, **not for variety**: diversity is the consequence of drawing
+the mechanism, not the aim. Session A looked at all twelve gallery figures in
+the adopted theme and found the class diagram the one the corpus most obviously
+lacks — the vocabulary pages have been drawing conversations about objects.
 
-### F11. Two figures for one mechanism are one figure
+### F11. Two figures for one mechanism are one figure — **ratified**
 
-**Measured.** The queue names five: `prediction-and-acks` (a state diagram of the
-two machines and a sequence of the refusal, the argument living in the prose
-both times); `pathfinding` (a flowchart at the top and a sequence two thirds
-down of the same pipeline); `entity-rendering` (a four-stage flowchart and a
-zombie sequence saying the same thing twice, the second in more detail, and both
-disagreeing with the cast); `items-and-stacks` and `data-components` (two pages
-drawing the same object); `containers-and-menus` (a ladder flowchart restating
-the trace in its bottom four boxes). 68 pages carry two or more figures.
+**Measured.** The queue names five: `prediction-and-acks`, `pathfinding`,
+`entity-rendering`, `items-and-stacks` with `data-components`, and
+`containers-and-menus`. 68 pages carry two or more figures.
 
-**Recommendation.** One mechanism, one figure, on the page that owns the
-mechanism (`TEMPLATE.md`'s ownership rule, applied to pictures: *within a part,
-the page whose figure draws it owns it*). Where two figures show one thing, the
-one that shows the section's thing (F5, question 3) stays and the other is a
-logged cut, or is redrawn to show a *different* thing — the states rather than
-the order, the objects rather than the calls. A second figure on a page earns
-its place by showing what the first cannot.
+**The ruling.** One mechanism, one figure, on the page that owns the mechanism
+(`TEMPLATE.md`'s ownership rule, applied to pictures: within a part, the page
+whose figure draws it owns it). Where two figures show one thing, the one that
+shows the section's thing stays and the other is a logged cut, or is redrawn to
+show a *different* thing — the states rather than the order, the objects rather
+than the calls. A second figure on a page earns its place by showing what the
+first cannot.
 
-### F12. The gate over names in figures
+### F12. The gate over names in figures — **ratified, amended**
 
 **Measured.** `check_figure_names.py` reads 2,619 identifier-shaped tokens in
-the 195 blocks — participant expansions, node and edge labels, messages, notes,
-subgraph titles, state names — and checks them against the decompile as
-`verify_names.py` checks the prose, with inherited members accepted and a
-sequence message's head checked against the lane it is sent to. **119 do not
-resolve as written** (Part VI 20, IV 19, II 13, V 13, III 12, VII 10, X 10, XI
-10, XII 4, XIII 4, I 1, VIII 1, IX 1, Reference 1): a class that does not exist
-(`ChunkBuffer`, `WorldDataSupplier`, `PreparedFrame`), a message naming a
-method its target lane does not have (`SL->>CH: broadcastChangedChunks`,
-`DS->>SL: createLevels`), a member no class has. Beside them, **362 notes** the
-gate does not fail, because the convention is session A's to set: 157
-unqualified members in flowchart node labels (`runAllTasks`, with no class
-beside it), 82 messages whose bare lower-case head is not a member of the lane
-it is sent to (`load`, `spin` — English or a method, the label cannot say), 47
-unqualified members in sequence notes, 25 nested classes named without their
-outer class (`YClampedGradient` for `DensityFunctions.YClampedGradient`,
-`SpawnState`, `PlayerTicketTracker`), 21 in state-diagram edge labels, 20 in
-flowchart edge labels, 5 in subgraph titles, 5 calls. The gate's parser also
-gave the class index the **139 page pairs** it could not see (pass 5, session
-A's finding); `verify_names.py --index` merges them on every deploy.
+the 195 blocks and checks them against the decompile as `verify_names.py`
+checks the prose. **119 do not resolve as written** (Part VI 20, IV 19, II 13,
+V 13, III 12, VII 10, X 10, XI 10, XII 4, XIII 4, I 1, VIII 1, IX 1, Reference
+1). Beside them, **362 notes**: 157 unqualified members in flowchart node
+labels, 82 bare lower-case message heads, 47 unqualified members in sequence
+notes, 25 nested classes named without their outer class, 21 in state-diagram
+edge labels, 20 in flowchart edge labels, 5 in subgraph titles, 5 calls.
 
-**Recommendation.** The gate runs report-only through the pass — `deploy.sh`
-already prints it — and `--strict` at the close, when every one of the 119 has
-been corrected or ruled. The conventions, for session A: **(a)** a sequence
-message that names a method names one of the lane it is sent to, inheritance
-included, and the message's head is that method — where the call really goes
-elsewhere, the lane is wrong; **(b)** a member in a flowchart, state or note
-label is written `Class.member`, as the prose writes it, because nothing else
-qualifies it (157 + 47 + 21 + 20 to rewrite, most of them the fix F4 makes
-anyway); **(c)** a nested class is `Outer.Inner` in a figure as in the prose;
-**(d)** a bare lower-case message head that is not a member is prose (*load,
-wrapped in Util.blockUntilDone*) and stays, or becomes the qualified call it
-stands for. Under (b) and (c) the notes become failures, and the gate at the
-close is the same test the prose has passed since pass 1: **verified against
-26.2 is a test, not a claim — for the figures too.**
+**The ruling** — the conventions the notes are judged by, now in `TEMPLATE.md`:
+**(a)** a sequence message that names a method names one of the lane it is sent
+to, inheritance included, and the message's head is that method — where the call
+really goes elsewhere, the lane is wrong; **(b)** a member in a flowchart, state
+or note label is written `Class.member`, as the prose writes it, because nothing
+else qualifies it; **(c)** a nested class is `Outer.Inner` in a figure as in the
+prose; **(d)** a bare lower-case message head that is not a member is prose
+(*load, wrapped in `Util.blockUntilDone`*) and stays, or becomes the qualified
+call it stands for. Under (b) and (c) the notes become failures at the close.
+The gate runs report-only through the pass and `--strict` at session O, when
+every one of the 119 has been corrected or ruled.
 
-### F13. The generated figures, and the landing pages' own
+**Amended: the gate now reads a lane's line break.** A lane expansion carrying
+`<br/>` (F17) is read with the break closed up, in both this gate and
+`check_lanes.py`, and both have a probe case proving it — a break is display,
+never a name. The counts above are unchanged by the sweep, which is the point.
+
+### F13. The generated figures, and the landing pages' own — **ratified, deferred**
 
 **Measured.** Eleven generated SVGs: the packages treemap (three pages, 9px
 labels with hover titles, at scale 1), the two bar charts, the four hierarchy
 trees (0.50–0.67, type 6–8px on every label) and the render-state tree (0.49,
 5.9px). The thirteen landing-page figures are hand-drawn flowcharts of the
-part's pages; the queue names five (`server/README`'s order that is neither the
-watch order nor the shape sentence's; `world/README`'s conveyor drawn as a
-cycle; `items/README`'s chain where the prose claims two tiers and its orphan
-node; `rendering/README`'s arrows that need a disclaimer; `worldgen/README`'s
-undirected link) and the exemplar `commands/README` numbers its nodes to the
-watch order. `reference/README`'s shelf figure and `maps/README`'s pipeline
-figure are the only figures in their tiers that are not generated; four
-hand-kept Reference pages have no figure and the queue asks that the tier's
-exemption be said once (:6259).
+part's pages; the queue names five, and the exemplar `commands/README` numbers
+its nodes to the watch order.
 
-**Recommendation.** `map_source.py`'s tree emitter folds or wraps so that a
-tree is shown at scale 1 with 12px labels — the entity tree in two columns, or
-the deepest branches folded with a count — a tool job for session A or the two
-part sessions that include one (VI, XI), regenerated by `deploy.sh` as today. A
-landing page's figure is the part's shape **numbered to the watch order** (the
-exemplar's device) with a caption saying what an arrow means (*what the next
-page can assume*), so the shape sentence, the figure and the order agree; a
-landing figure that needs a disclaimer is the wrong figure. The Reference tier's
-one-figure exemption is one sentence on `reference/README`, and its shelf figure
-is a table or a mind map (F10).
+**The ruling.** `map_source.py`'s tree emitter folds or wraps so that a tree is
+shown at scale 1 with 12px labels — the entity tree in two columns, or the
+deepest branches folded with a count. A landing page's figure is the part's
+shape **numbered to the watch order** with a caption saying what an arrow means;
+a landing figure that needs a disclaimer is the wrong figure. The Reference
+tier's one-figure exemption is one sentence on `reference/README`, and its shelf
+figure is a table or a mind map.
 
-### F14. A figure for the section that has none
+**Deferred, and to whom.** The tree emitter is a tool job and the theme does not
+touch it (the four trees are still at 0.50–0.67 with 6–8px type after the
+adoption, because they are generated SVGs and not mermaid): it belongs to the
+two part sessions that include a tree (VI, XI) or to session O, and it is logged
+in [pass5.md](pass5.md) so it cannot be lost. The thirteen landing figures read
+**as one set** is session O's, where it already sits as pass 6's carried job.
 
-**Measured.** 214 sections over forty lines carry no figure, on 102 pages; 111 of
-them have no H3 either; 100 carry twenty or more order, branch, cycle or
-containment words per hundred lines — *then, before, after, first, last; if,
-unless, otherwise, refuses; again, every tick, loop; contains, inside, owns,
-tree* — which is the prose form of a picture. The densest: `functions-and-macros`'
-*What calls a function, and when* (54 per hundred), `block-breaking`'s *Remove,
+### F14. A figure for the section that has none — **ratified**
+
+**Measured.** 214 sections over forty lines carry no figure, on 102 pages; 111
+of them have no H3 either; 100 carry twenty or more order, branch, cycle or
+containment words per hundred lines. The densest: `functions-and-macros`' *What
+calls a function, and when* (54 per hundred), `block-breaking`'s *Remove,
 damage, roll, drop*, `advancements`' *The screen at the other end*,
 `what-the-client-is-told`'s *The rate the client asks for*, `the-two-phase-tick`'s
-*The bracket, and what survives it*, `jigsaw-and-templates`' *The assembly loop*
-(`pass7_figures.py --candidates`). Every system page has at least one figure, so
-this is about sections, not pages.
+*The bracket, and what survives it*, `jigsaw-and-templates`' *The assembly loop*.
 
-**Recommendation.** A section gains a figure where the viewer asked for one
-(Part 1, *the section that wanted a picture*) and the session can draw the
-section's claim in ten nodes or fewer; the candidates list is where to look, not
-a quota, and a section whose order is three steps is better as three sentences.
-A figure added is a figure under every other ruling here: captioned, in the
-words of the section, its names gated, its arrows logged in [pass9.md](pass9.md)
-as claims.
+**The ruling.** A section gains a figure where the viewer asked for one and the
+session can draw the section's claim in ten nodes or fewer; the candidates list
+(`pass7_figures.py --candidates`) is where to look, not a quota, and a section
+whose order is three steps is better as three sentences. A figure added is a
+figure under every other ruling here: captioned, in the words of the section,
+its names gated, its arrows logged in [pass9.md](pass9.md) as claims.
 
-### F15. The exemplar
+### F15. The exemplar — **ratified: `entities/entity-lifecycle`**
 
-**Recommendation.** `entities/entity-lifecycle`, rewritten end to end under
-F1–F14 by session A with one viewer's report in hand. It has three figures of
-three kinds — the spawn cascade (the densest flowchart in the book: 21 nodes,
-39 edges, nine sentence labels, shown at 0.28 with 4.5px type, fifteen names the
-prose never says, six gate failures, and a queue entry saying its three group
-attempts cannot be read off it because it never loops), the entry sequence
-(twelve names the prose never says, shrunk to 0.43) and the visibility state
-diagram (the queue's question of whether a secondary state diagram is the page's
-true picture) — so one page exercises the size ruling, the density ruling and
-the split at *only now*, the labels ruling, the names ruling, the caption, the
-kind, and the gate. `server/server-tick` is the second candidate if session A
-wants a trace as the exemplar instead: the 7-lane lap at 0.29 with fourteen of
-its nineteen names first met there, and the event loop with the 24-word diamond
-and the two converging edges that mean opposite things. The part sessions read
-the exemplar before their own part, the way pass 6's read
-`environment-attributes-and-timelines`.
+`entities/entity-lifecycle` is the exemplar, rewritten end to end by session A
+with a viewer's report in hand. Its three figures were chosen because one page
+exercises nearly every ruling, and they did: the spawn cascade (the densest
+flowchart in the book — 21 nodes, 39 edges, shown at 0.28 with 4.5px type) for
+F1, F4, F9's split and F6's names; the entry sequence for F5, F7 and F8; the
+visibility state diagram for F10's question of whether a secondary state diagram
+is the page's true picture. What the session did to it, figure by figure, and
+every ordering the redrawing asserts, is in [pass9.md](pass9.md) under
+*pass 7, session A*. **Part sessions read the exemplar before their own part**,
+the way pass 6's read `environment-attributes-and-timelines`.
 
-### F16. What session A does not do
+### F16. What session A does not do — **ratified, amended**
 
-It reads no part and redraws no figure but the exemplar's; it changes no fact
-without the decompile open (an arrow found wrong on the exemplar is re-derived
-and logged, the standing rule); it writes no prose beyond captions, lead-ins
-and the one sentence a name needs; it moves no page. It does adopt or amend the
-theme (F2), which is the one change that touches every page at once and is why
-it is session A's and no part session's; it rewrites `TEMPLATE.md`'s *Figures*
-and *Lanes* to Part 3 as ratified; and it leaves the lane key's prune, the gate's
-`--strict`, the tree emitter and the frame's figures to session O and the part
-sessions that own them.
+It read no part and redrew no figure but the exemplar's; it changed no fact
+without the decompile open; it wrote no prose beyond captions, lead-ins and the
+one sentence a name needs; it moved no page. It adopted the theme (F2), which is
+the one change that touches every page at once, and rewrote `TEMPLATE.md`'s
+*Figures* and *Lanes* to this part.
 
----
+**Amended:** it also made **one mechanical edit to every page that needed it** —
+the lane line breaks of F17 — which the original ruling did not foresee because
+the theme's hyphenation was not known until the theme was rendered over the
+corpus. The test applied, and the one a later session should apply to a change
+of this shape: *it changes no arrow, no name and no word, only where a line
+ends; it is the direct cost of a change only session A may make; and leaving it
+would ship a Mojang name misspelled on 56 pages for the length of the pass.*
+
+### F17. A long lane name carries its own break — **new**
+
+**Measured.** Under the adopted theme mermaid hyphen-breaks any word wider than
+the 180px wrap, and a lane's word is a class name: 113 lane lines rendered
+broken mid-name — `PersistentEntitySectio-nManager`, `ServerGamePacketLis-`,
+`MultiPlayerGameMod-` — 63 distinct names over 56 pages. A hyphen inside a
+Mojang name is a name the book gets wrong on screen, which for this book is not
+a cosmetic fault.
+
+**The ruling.** A class name too wide for the lane box is written with `<br/>`
+at a **CamelCase boundary**, a nested class at its **dot**
+(`participant PESM as PersistentEntity<br/>SectionManager`,
+`participant TE as ChunkMap.<br/>TrackedEntity`). The break is display only:
+`check_lanes.py` and `check_figure_names.py` read a lane expansion with it
+closed up, so the key still holds the name and the gate still checks it, and
+both tools have a probe case proving it. `tools/pass7/break_lane_names.py`
+put the 112 breaks in from the render — it reads which lanes *actually* broke
+rather than counting characters, because the box is measured in glyphs and
+`AdvancementRewards` is eighteen characters and still too wide — and a part
+session re-runs it after adding a lane. Lane names broken on screen: **0**.
+
+### F18. What the theme cannot fix, and who fixes it — **new**
+
+**Measured, after the theme.** 109 lines in **messages and notes** are still
+hyphen-broken mid-name (97 messages, 12 notes), because a message is wrapped at
+the same 180px and `ClientboundLevelChunkWithLightPacket` is wider than that
+whatever else the message says. They are not swept: a lane name has nowhere else
+to go, but a *message* carrying a 36-character packet name is usually F4's
+problem — the message is a sentence, the packet name is the only part of it the
+figure needs, and the sentence belongs in the prose or the caption.
+
+**The ruling.** The 109 are the part sessions', under F4, and a part session
+leaves its part at zero: shorten the message so the name is most of it, move the
+sentence to the caption, or — where the name genuinely is the whole message and
+still too wide — break it with `<br/>` at a CamelCase boundary, as a lane does.
+`python tools/pass7_figures.py --part <part>` and the render's own text list say
+which lines they are. **Session O re-measures this number and it should be
+zero**; it is the one figure-legibility number the theme did not close, and it
+is in [pass5.md](pass5.md) tagged `[kind=figure]` so it cannot be lost.
 
 ## Part 4 — The schedule
 
 Sessions B–N run in sidebar order, one part each, after A; O closes. The numbers
-are what `render_figures.js`, `pass7_figures.py`, `check_figure_names.py` and
-`pass5_queue.py` found on 2026-09-14, before any session ran — they say where the
-work is, and no count is a target.
+in the table below are what `render_figures.js`, `pass7_figures.py`,
+`check_figure_names.py` and `pass5_queue.py` found on 2026-09-14, **before any
+session ran** — they say where the work is, and no count is a target.
+
+**Read them with the theme's three columns replaced.** Session A adopted the
+theme on 2026-09-15 (Part 3, F2) and the three size columns moved under every
+part without a page changing; everything else in the table — what opens its
+section, what has no caption, the names, the labels, the lanes, the gate, the
+queue — is untouched, because the theme cannot touch it. That is the pass. The
+current size numbers, re-measured after the adoption:
+
+| part | figures | shrunk below 0.75 | type under 9px | overlap, overflow or through | over 1200px tall |
+|---|---:|---:|---:|---:|---:|
+| I · anatomy | 4 | 2 | 1 | 0 | 0 |
+| II · foundations | 17 | 9 | 2 | 0 | 3 |
+| III · server | 10 | 2 | 0 | 1 | 3 |
+| IV · world | 24 | 11 | 2 | 0 | 7 |
+| V · blocks | 10 | 4 | 0 | 2 | 4 |
+| VI · entities | 22 | 9 | 2 | 0 | 7 |
+| VII · items | 17 | 6 | 0 | 2 | 5 |
+| VIII · player | 10 | 4 | 0 | 0 | 0 |
+| IX · networking | 12 | 3 | 3 | 2 | 3 |
+| X · client | 18 | 6 | 0 | 3 | 8 |
+| XI · rendering | 20 | 8 | 1 | 4 | 4 |
+| XII · worldgen | 15 | 3 | 0 | 8 | 2 |
+| XIII · commands | 13 | 2 | 0 | 5 | 3 |
+| Reference | 3 | 2 | 1 | 2 | 0 |
+| the frame | 11 | 6 | 4 | 1 | 0 |
+| **all** | 206 | **77** (was 122) | **16** (was 95) | 30 (was 35) | **49** (was 42) |
+
+The eleven generated SVGs are most of what is left in the last two columns of
+that table: they are not mermaid and the theme does not reach them (F13). Of the
+mermaid figures, **none of the 88 sequence diagrams now shows type under 9px**
+and none is below half its size; the 8 flowcharts still under 9px are every one
+of them over fifteen nodes, which is F9's work and not the theme's. The seven
+figures that gained height past a screen are the price of the wrap, and F9 says
+where to cut them.
 
 **The figures by part** (`pass7_figures.py --summary`, the render at 1,440px;
 *most names first met here* is a figure introducing at least half of its names
@@ -827,7 +881,7 @@ No figure carries a caption; 51 are pointed at by nothing. Lanes per sequence
 diagram: eight on 7, seven on 39, six on 25, five on 9, four on 5, three on 2,
 two on 1. Flowchart nodes: median 10, maximum 26; directions `TD` 51, `TB` 27,
 `LR` 20, `BT` 3. Tick bars: 111 notes on 58 of 88 sequence diagrams; 30 have
-none. Under the candidate theme, the sequence diagrams' *shrunk below 0.75* falls
+none. Under the adopted theme the sequence diagrams' *shrunk below 0.75* fell
 from 87 to 46 and *type under 9px* from 76 to 0. The 21 frame-and-Reference
 queue units include the lane key's 44 unused rows, the four figure-less
 Reference pages, the two tier figures, and the parts-dependency figure's 26
@@ -842,7 +896,7 @@ appends one line saying what it did.
 
 | session | status | part | pages | figures | queue | the charter's named items, and what the tools add |
 |---|---|---|---:|---:|---:|---|
-| **A** | — | the standard | the exemplar + `TEMPLATE.md` + the theme | 3 | — | Part 3 above: ratify, amend or reverse F1–F16 and rewrite Part 3 as the record; **the theme** (F2) — look at `render/candidate/` beside `render/` and `render/gallery/`, adopt or amend `tools/pass7/mermaid-init.candidate.js` and `figure-classes.candidate.css` into `mermaid-init.js` (committed, out of `.gitignore`) and `custom.css`, re-render the corpus and record the numbers; `TEMPLATE.md`'s *Figures* rewritten to the visual grammar (F3), the label budgets (F4), the caption device (F5), the tick band (F8), the density rule (F9) and the menu of kinds with the gallery's pictures (F10), and its *Lanes* to F7; the mermaid rules corrected to what 11.6.0 rejects (pass 4's session O measured it; `check_mermaid.js` now parses the `structuredClone` kinds); the exemplar `entities/entity-lifecycle` rewritten with a viewer's report in hand (F15) — the cascade split at *only now*, every label a subject and a verb, three captions, the names gated clean; its entry in [pass9.md](pass9.md). |
+| **A** | **done 2026-09-15** | the standard | the exemplar + `TEMPLATE.md` + the theme | 4 | — | Ruled on F1–F16 and added **F17** (a long lane name carries its own `<br/>`) and **F18** (the 109 names the theme still breaks in messages and notes, which are F4's work); Part 3 rewritten as the record. **The theme is adopted**: `mermaid-init.js` committed and out of `.gitignore`, the five semantic classes and the caption rule in `custom.css`. Over the corpus, no page changed and the median scale went 0.61 → **0.82**, figures below half 76 → **6**, type under 9px 89 → **10**, and the 88 sequence diagrams went from 70 below half and 76 under 9px to **none of either**; the cost is height (the median sequence diagram 401px → 940px) and 112 lane names swept to a CamelCase break by `tools/pass7/break_lane_names.py`. The width-240 alternative was rendered and rejected (71 of 88 sequence diagrams would still show type under 11px). `TEMPLATE.md`'s *Figures* rewritten to the grammar, the labels, the caption, the band, the density rule and the menu of kinds, and its *Lanes* to F7 plus the break. The exemplar `entities/entity-lifecycle`: the 21-node cascade at 0.28 with 4.6px type is two flowcharts at scale 1 and 16px with its twenty conditions in a table, and it **loops** — fourteen edges the old figure drew as dead ends are a `continue` to the next try; the entry sequence lost the page's second half to the state diagram; four captions, four figures, no gate failure, nothing under 15.6px. Also fixed: mdBook's floating chevrons had been painted on top of the prose at 1440px since pass 3 widened the column. [pass9.md](pass9.md) has the claims and the six corrections. |
 | **B** | — | I · Anatomy, II · Foundations | 3 + 8 | 4 + 17 | 4 + 6 | **I:** `anatomy`'s start-up sequence gives `MinecraftServer` and `IntegratedServer` two lanes for one object (:5073), and its two-loops flowchart draws `runTick` beside the four calls that happen *inside* it — a nesting drawn as a sequence (:5079), at 0.28. **II:** 15 of 17 figures shrunk, 11 with type under 9px, and the widest figure in the book (`identifiers-and-registries` figure 2, 5,415px); 13 of 17 open their section; `codecs-nbt-json`'s four-path table *is* the figure and explains five mechanisms other parts own (:234), and its Checksum figure spans two machines with one arrow crossing from client to server with no lane between (:5092); `data-components` and `items-and-stacks` draw the same object (:4409, decide here with VII's session) and `data-components`' shape figure runs an edge back into the subgraph it reads away from (:5106); `data-driven-types`' trace gives `unpackLootTable` to a `ChestBlockEntity` lane where the prose has `RandomizableContainer` — two arrows to re-derive (:5096); `tags`' six sentence labels (:5088) and its lead figure of a shape not the page's (:3167); `text-components`' `ComponentSerialization` standing for the codec and the wire (:5101); 13 gate failures. |
 | **C** | — | III · The server | 6 | 10 | 12 | The part-wide pattern named first here: the lead figures the page cannot be read against — `server-tick`'s lap (fourteen of nineteen names first met there), `server-level-tick`'s, `players-and-sessions`' join sequence (:5176). `server-tick`'s event loop: fourteen edges, node `C` a 24-word sentence in a diamond, two converging edges meaning opposite things (:703, :2085, :5170); `server-level-tick`'s twenty-node vertical chain with a gate clause on every label (:5164) and the profiler zones as prose or as labels (:715); `starting-a-server`: 27 items, the largest single diagram in the part (:706, :2089), a `Worker` lane with no cast row and a `Worker-->>WL` arrow labelled as going to `Main` (:5185); `how-a-server-dies`' `/stop` figure asserting five things explained in the six H3s below it (:5188); `players-and-sessions`' `PLAYER_SPAWN` ticket question (:5262); `server/README`'s part figure in the runtime order rather than the watch order — numbering or a caption (:708); 12 gate failures, among them `DS->>SL: createLevels` and `SL->>CH: broadcastChangedChunks`. |
 | **D** | — | IV · The world | 11 | 24 | 10 | The largest part by figures: 24, of which 18 open their section, 17 introduce most of their names first, seven are over 1,200px tall, and 19 names fail the gate. Three lead figures the page cannot yet be read against — `chunk-storage`'s flowchart, `chunk-generation-pipeline`'s pyramid with radius 11 on its `EMPTY` node, `fluids`' bucket sequence (:367); `environment-attributes-and-timelines`' `flowchart BT` under a heading that says the value *falls* (:5020 — the figure is the cheaper end, the heading is an anchor seven pages land on); `game-events-and-vibrations`' fifteen-node gate flowchart with edge labels of five and six conditions (:378, 2,395px tall) and its trace's one lane for the block and its block entity (:381); `lighting`'s batch flowchart missing `checkNode` (:385); `scheduled-ticks`' `LevelChunk` lane that decides nothing (:388); `chunk-anatomy`'s two graphs over five names (:393) and its section figure without the light (:472); `world/README`'s conveyor drawn as a cycle (:390); whether `points-of-interest`'s and `tickets-and-loading`'s secondary state diagrams are the page's true picture (:3167). |

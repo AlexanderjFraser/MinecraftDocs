@@ -51,12 +51,12 @@ The worked instance is one zombie going through all four.
 ```mermaid
 sequenceDiagram
     participant LX as LevelExtractor
-    participant ERD as EntityRenderDispatcher
+    participant ERD as EntityRender<br/>Dispatcher
     participant ZR as ZombieRenderer
     participant ZS as ZombieRenderState
     participant LR as LevelRenderer
     participant SNS as SubmitNodeStorage
-    participant FRD as FeatureRenderDispatcher
+    participant FRD as FeatureRender<br/>Dispatcher
     participant ZM as ZombieModel
 
     LX->>LX: isEntityVisible — frustum via ERD, then: is its section compiled and visible?

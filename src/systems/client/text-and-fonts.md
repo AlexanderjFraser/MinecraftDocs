@@ -170,9 +170,9 @@ normal, see-through and polygon-offset render types by `Font.DisplayMode`.
 ```mermaid
 sequenceDiagram
     participant ChatC as ChatComponent
-    participant CRU as ComponentRenderUtils
+    participant CRU as Component<br/>RenderUtils
     participant SSpl as StringSplitter
-    participant FBR as FormattedBidiReorder
+    participant FBR as Formatted<br/>BidiReorder
     participant Font as Font
     participant FSet as FontSet
     participant GStit as GlyphStitcher

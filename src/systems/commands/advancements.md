@@ -57,11 +57,11 @@ rewards at all.
 
 ```mermaid
 sequenceDiagram
-    participant ACM as AbstractContainerMenu
+    participant ACM as Abstract<br/>ContainerMenu
     participant SP as ServerPlayer
-    participant ICT as InventoryChangeTrigger
+    participant ICT as Inventory<br/>ChangeTrigger
     participant PA as PlayerAdvancements
-    participant AR as AdvancementRewards
+    participant AR as Advancement<br/>Rewards
     participant CPL as ClientPacketListener
     participant CAdv as ClientAdvancements
 

@@ -40,7 +40,7 @@ kinds), and exactly two of the nine are ever written down.
 ```mermaid
 sequenceDiagram
     participant Main as Main
-    participant LSA as LevelStorageSource.LevelStorageAccess
+    participant LSA as LevelStorageSource.<br/>LevelStorageAccess
     participant WL as WorldLoader
     participant Worker as Worker
     participant DS as DedicatedServer

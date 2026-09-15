@@ -337,8 +337,8 @@ sequenceDiagram
     participant MTS as MoveToTargetSink
     participant AP as AcquirePoi
     participant PM as PoiManager
-    participant UAFS as UpdateActivityFromSchedule
-    participant EAS as EnvironmentAttributeSystem
+    participant UAFS as UpdateActivity<br/>FromSchedule
+    participant EAS as Environment<br/>AttributeSystem
     participant SIB as SleepInBed
 
     Note over Brain: one Brain.tick, behaviours tried in ascending priority

@@ -96,9 +96,9 @@ number — it is in phase two.
 sequenceDiagram
     participant SL as ServerLevel
     participant SP as ServerPlayer
-    participant SPGM as ServerPlayerGameMode
-    participant ACM as AbstractContainerMenu
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SPGM as ServerPlayer<br/>GameMode
+    participant ACM as Abstract<br/>ContainerMenu
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Player as Player
     participant Inv as Inventory
     participant FD as FoodData

@@ -66,7 +66,7 @@ sequenceDiagram
     participant RDL as RegistryDataLoader
     participant DlgC as DialogCommand
     participant SP as ServerPlayer
-    participant CComPL as ClientCommonPacketListenerImpl
+    participant CComPL as ClientCommon<br/>PacketListenerImpl
     participant DlgS as DialogScreen
     participant MS as MinecraftServer
 

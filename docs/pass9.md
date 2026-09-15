@@ -44,6 +44,118 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session A — the standard, the theme and the exemplar *(2026-09-15)*
+
+Ruled on F1–F16, added F17 and F18, rewrote [pass7-brief.md](pass7-brief.md)
+Part 3 as the record, rewrote `TEMPLATE.md`'s *Figures* and *Lanes* to it,
+adopted the figure theme (`mermaid-init.js`, now committed, and `custom.css`),
+and rewrote the exemplar `systems/entities/entity-lifecycle`. **The exemplar is
+where the claims are**: two of its three figures were replaced and one was cut
+back, and every arrow that changed was re-derived against
+`net/minecraft/world/level/NaturalSpawner.java`,
+`net/minecraft/server/level/ServerChunkCache.java`,
+`net/minecraft/server/level/ChunkMap.java`,
+`net/minecraft/world/level/entity/PersistentEntitySectionManager.java` and
+`net/minecraft/server/level/ServerLevel.java`.
+
+### Claims introduced
+
+- `systems/entities/entity-lifecycle` — **the spawn cascade is now two
+  figures, and the second one loops.** The old figure drew every rejection
+  below the position roll as a dead end into one sink, *this attempt is
+  dropped*. The new figure 2 asserts a two-level loop: `while (groupCount < 3)`
+  around an inner `while` bounded by `max`, so **most rejections cost one try
+  and not one of the three group attempts** (`NaturalSpawner.spawnCategoryForPosition`,
+  `NaturalSpawner.java:167-250`). Every arrow in it is one of these orderings:
+  a failing test does `++ll; continue` (to *the next try*); an empty
+  `NaturalSpawner.getRandomSpawnMobAt` and `Mob.isMaxGroupSizeReached` do
+  `break label53` (to *the next group attempt*); a null from
+  `NaturalSpawner.getMobForSpawn` and `clusterSize >= Mob.getMaxSpawnClusterSize`
+  `return` (to *this category on this chunk is over*).
+- `systems/entities/entity-lifecycle` — **the four scopes of a rejection**, the
+  new figure 1 and the fourth column of the new table. The claim per scope:
+  `NaturalSpawner.getFilteredSpawningCategories` drops a category for the whole
+  tick (`ServerChunkCache.tickChunks` builds the list once,
+  `ServerChunkCache.java:395`); `ChunkMap.collectSpawningChunks` and
+  `ServerLevel.canSpawnEntitiesInChunk` drop a chunk for every category
+  (`ChunkMap.java:1017`, `ServerChunkCache.java:440`); everything from
+  `NaturalSpawner.SpawnState.canSpawnForCategoryLocal` down is inside
+  `NaturalSpawner.spawnForChunk`'s per-category loop and so ends only this
+  category on this chunk (`NaturalSpawner.java:130-150`).
+- `systems/entities/entity-lifecycle` — **the new table, *What each test drops,
+  in the order it runs*, is fifteen claims**, one per row: the test, the
+  condition, and the scope. Thirteen of the conditions were the old figure's
+  edge labels, moved word for word; two are new (`Mob.isMaxGroupSizeReached`
+  and `Mob.getMaxSpawnClusterSize`, which the prose already had at *What
+  finalizeSpawn settles* but the figure did not).
+- `systems/entities/entity-lifecycle` — the opening paragraph now says each of
+  the three group attempts "makes a handful of tries that jitter only x and z",
+  where it said the three attempts themselves jitter. The inner bound is
+  `Mth.ceil(level.random.nextFloat() * 4.0F)` until a species is picked and the
+  group-size roll after it (`NaturalSpawner.java:180, 205`).
+- `systems/entities/entity-lifecycle` — **the entry sequence now draws the
+  callback hop**: `PersistentEntitySectionManager.startTracking` and
+  `.startTicking` are private and raise `LevelCallback.onTrackingStart` and
+  `LevelCallback.onTickingStart`, which `ServerLevel.EntityCallbacks` implements
+  as `ServerChunkCache.addEntity` and `EntityTickList.add`
+  (`PersistentEntitySectionManager.java:124-139`, `ServerLevel.java:2040-2049`).
+  The old figure sent `startTracking` straight to the `ChunkMap` lane, which
+  named a method `ChunkMap` does not have.
+- `systems/entities/entity-lifecycle` — **four captions, and a caption is a
+  claim**: figure 1's *three sizes of giving up*; figure 2's *only three of the
+  eight leave the loop at all* and *a new group attempt puts x and z back at the
+  roll*; figure 3's *the client is told in the middle: tracking, then the
+  packet, then ticking*; figure 4's *these are a section's states, not an
+  entity's*.
+
+### Corrections (the decompile open)
+
+- `systems/entities/entity-lifecycle`, the spawn figure — **the scope of three
+  rejections was wrong.** `LocalMobCapCalculator.canSpawn` failing, the y roll
+  landing at the world bottom and the redstone conductor at the rolled position
+  were all drawn into *this chunk is skipped*. All three are inside
+  `NaturalSpawner.spawnForChunk`'s loop over `spawningCategories`, so each ends
+  **this category on this chunk** and the next category is still tried
+  (`NaturalSpawner.java:130-157`, `ServerChunkCache.java:441`).
+- `systems/entities/entity-lifecycle`, the spawn figure — **fourteen rejections
+  were drawn as dead ends that are not.** Everything under the three group
+  attempts except the two `break`s and the two `return`s is `++ll; continue`
+  (`NaturalSpawner.java:243-245`), and the figure had no edge back at all.
+- `systems/entities/entity-lifecycle`, the spawn figure — **two exits were
+  missing**: `clusterSize >= mob.getMaxSpawnClusterSize()` returns from the
+  whole call and `mob.isMaxGroupSizeReached(groupSize)` ends the group
+  (`NaturalSpawner.java:227-232`). The prose had both at *What finalizeSpawn
+  settles*; the figure ended at `Mob.finalizeSpawn`.
+- `systems/entities/entity-lifecycle`, the entry sequence against the sentence
+  under it — the page said "five of `LevelCallback`'s seven appear in the
+  figure". One did: `LevelCallback.onCreated`. The other four were drawn under
+  the manager's own private method names. `LevelCallback` declares seven
+  (`LevelCallback.java`); the sentence now says which two the figure raises and
+  what they reach.
+- `systems/entities/entity-lifecycle`, the entry sequence — `startTicking` was
+  drawn as `PersistentEntitySectionManager → EntityTickList`. The manager does
+  not hold the tick list: `ServerLevel.EntityCallbacks.onTickingStart` does
+  `ServerLevel.entityTickList.add` (`ServerLevel.java:2040-2042`). The arrow now
+  goes through the `ServerLevel` lane.
+- `systems/entities/entity-lifecycle`, the visibility state diagram against the
+  sentence above it — the page says in italics that status is a property of a
+  **section**, and all five transition labels said *it*, meaning one entity. The
+  caption now says whose states they are.
+
+### Cut, with the reason
+
+- `systems/entities/entity-lifecycle`, the entry sequence — **the second half
+  was cut** (`checkDespawn`, `tickNonPassenger`, `stopTicking`, `stopTracking`,
+  `ClientboundRemoveEntitiesPacket`, `storeEntities`, and the three later note
+  bars). It was the page's whole second half drawn three sections early, and
+  the same transitions are the state diagram's subject (F11). Every fact in it
+  is in the prose of *The tick it gets*, *Ending two* and the state diagram; the
+  `Mob` and `EntityStorage` lanes went with it.
+- `systems/entities/entity-lifecycle`, the state diagram — the `note right of H`
+  ("hidden is not written yet…") was cut: mermaid drew it at the far left of the
+  figure joined by a long dashed line, and *Ending two* says the same thing in
+  prose. Its point is now the last clause of the figure's caption.
+
 ## Pass 7, the planning session — between passes 6 and 7 *(2026-09-14)*
 
 **No page's prose was touched and no claim about the game was introduced.** One

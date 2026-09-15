@@ -206,7 +206,7 @@ truth is a graph, do not draw a conversation.
 
 | shape | for | its figure | how the sections go | pilot |
 |---|---|---|---|---|
-| **the trace** | one scenario through the system | a `sequenceDiagram`, at most seven lanes, `Note over` at every tick boundary | narrated as prose in the order things happen, each surprise placed where it happens | (session C onward) |
+| **the trace** | one scenario through the system | a `sequenceDiagram`, at most seven lanes, a shaded band at every tick boundary | narrated as prose in the order things happen, each surprise placed where it happens | (session C onward) |
 | **the pipeline** | stages that hand off | a `flowchart` of the stages at the top | a section per stage: what comes in, what is decided, what goes out | — |
 | **the state machine** | phases and transitions | `stateDiagram-v2`, transitions labelled with the packets or events; an orphan state drawn as an orphan | a section per state, each ending in *what disconnects / fails / leaves it* | `protocol-phases` |
 | **the policy** | who is told what, and when | a decision table or a `flowchart` per decision; the surprises are its rows | one section per decision on the path the opening figure draws; a short trace kept as the grounding | `tickets-and-loading` |
@@ -258,10 +258,10 @@ Any page may use these; none must.
   A part whose every page ends on one has stopped choosing.
 - **The same trace from the other side** — a mirrored client/server pair,
   as `environment-attributes-and-timelines` already does.
-- **The tick-boundary bar** — `Note over X: a later tick` (or the tick
-  phase by name) wherever a sequence crosses a tick; and the explicit *no
+- **The tick-boundary band** — a shaded `rect` with a `Note over` naming the
+  tick or the phase, wherever a sequence crosses a tick; and the explicit *no
   reply* annotation (`-->>` with the word *nothing*) where a packet is
-  answered by silence.
+  answered by silence. [Figures](#figures) has the form.
 
 ## The budgets
 
@@ -281,11 +281,154 @@ The enforceable part.
 
 ## Figures
 
-Mermaid in the page for anything mermaid 11.6.0 draws; generated SVG from
-`tools/` (inlined with `{{#include}}`) for the maps and for figures no mermaid
-type draws; never a hand-drawn or raster image. `node tools/check_mermaid.js`
-is the arbiter of what the site's mermaid accepts, and a diagram that fails
-it does not publish. The three rules it enforces most often:
+A figure is the lecture's artefact: the thing a viewer screenshots, and the
+thing a reader who skims uses as the check on the section — *if I understand
+the picture, I understand the section*. So a figure answers **one question**,
+shows **the thing the words carry badly** (an order, a branch, a boundary, a
+containment, a quantity), and is **legible at the column width without the
+zoom**. The rules below were settled by pass 7's session A, each against the
+whole corpus rendered in a browser at the reading column; `node
+tools/render_figures.js` is how any change to one is argued.
+
+### Where a figure sits, and the three sentences around it
+
+- **The lead-in.** The sentence before a figure ends by saying what the figure
+  will show. A **lead figure** — the page's own artefact, under the cast — may
+  open its section with nothing above it; nothing else may.
+- **The caption** is the **italic paragraph directly after the figure**: one
+  sentence, in the book's voice, saying what the picture shows and what to look
+  for in it. It is markdown, so `verify_names.py` reads its names and
+  `llms-full.txt` carries it; `custom.css` styles exactly that paragraph and
+  numbers it (*Figure 3.*). A caption is a **claim about what the figure
+  shows** and goes to `docs/pass9.md` like any other.
+
+      *The four gates a spawn attempt passes before a mob object exists; the
+      boundary marked* only now *is the one that matters.*
+
+- **The reading sentence.** The paragraph after the caption reads the picture:
+  it names the thing the reader should see in it. A figure with no lead-in, no
+  caption and no sentence pointing at it is a picture the page never mentions.
+
+### The kind follows the mechanism
+
+If the truth is a graph, do not draw a conversation. The site's mermaid draws
+twenty-one kinds; use the one that shows the thing in the fewest marks, never
+one for variety.
+
+| the mechanism | the kind |
+|---|---|
+| a scenario in time, across objects or machines | `sequenceDiagram` |
+| a branch, a pipeline of stages, a containment | `flowchart` |
+| phases and what moves between them | `stateDiagram-v2` |
+| what an object **holds** (the vocabulary page's figure) | `classDiagram` |
+| a layout in memory or on the wire | `block-beta`, `packet-beta` |
+| a quantity that is a curve | `xychart-beta`, its caption saying whether the numbers are real or illustrative |
+| a taxonomy with no order in it | `mindmap` — or, faster, the table |
+| two or three paths that differ | **a table.** Not a figure |
+
+`node tools/check_mermaid.js` is the arbiter of what the site's mermaid
+accepts, and a diagram that fails it does not publish; a shape the checker
+rejects is not available whatever these notes say. Two kinds have traps the
+renderer flags: `packet-beta` cuts a long field label, and `quadrantChart` lets
+a point label collide with a quadrant label.
+
+### One visual grammar, the same on every page
+
+| the mark | what it means |
+|---|---|
+| a **rectangle** | a step, or a call |
+| a **diamond** | a decision — and its outgoing edge labels are its answers |
+| a **cylinder** | storage |
+| a **subgraph** | a thread, a machine or a tick, named for it — never a grouping of convenience |
+| a **solid arrow** | a call, or a hand-off in time |
+| a **dotted arrow** | a return, or a reply |
+| **`-x`** | a message dropped |
+| **`-)`** | a message nobody waits for |
+| a **`Note over`** | a tick boundary or a thread hop, and nothing else |
+| a **`box`** | lanes grouped by thread or machine |
+| a **`rect` band** | the extent of a tick, a frame or a phase (see below) |
+
+Direction is **`TD`** for anything ordered in time or by decision and **`LR`**
+for a pipeline of stages; `TB`, `BT` and `RL` are not written. A figure that
+needs a mark outside this table says so in its caption.
+
+**The tick boundary is a band.** A trace that crosses a tick, a frame or a
+thread draws the crossing as a shaded band — `rect rgba(0, 0, 0, 0.04)` with a
+`Note over` all lanes naming the tick or the phase — so the picture shows the
+tick's *extent* and not only its edge; a flowchart that spans ticks puts each
+tick in a subgraph named for it. The explicit *no reply* annotation (`-->>`
+with the word *nothing*) stays as it is. A trace with no crossing has no band:
+the device is spent, not defaulted.
+
+### Labels are not sentences
+
+A label that needs a sentence is a sentence the section owns — the label keeps
+the name, the prose keeps the explanation.
+
+- A **node label**: a subject and a verb, at most eight words and two lines
+  (`<br/>` where the break matters).
+- An **edge label**: the condition, at most four words.
+- A **message**: at most twelve words. A **note**: at most sixteen.
+- A **gate** carries the constant's name, never a bare number
+  (`UPDATE_CLIENTS`, not `2`; `flag 2` only where the page has paired the name
+  and the number above the figure).
+
+`python tools/pass7_figures.py --part <part>` counts the sentence labels and
+the bare number gates per figure; a session reads its own labels aloud.
+
+### As complex as it needs to be, and as simple as it can be
+
+The test is the viewer's first question — *what does it show?* — answered in
+one sentence. Past about **fifteen nodes**, **twenty messages**, or a figure
+taller than a screen, split at **the mechanism's own joint, the one the prose
+already names** (the spawn cascade at *only now does a `Mob` object exist*),
+and give each half its own caption and its own paragraph. Every node is a step
+or a decision the prose names; a node that restates the paragraph is cut; a
+chain of rejections is one node with a list of conditions only where the
+conditions have no order, and an ordered chain is drawn in its order.
+
+**Two figures for one mechanism are one figure.** Within a part, the page whose
+figure draws a mechanism owns it. Where two figures show one thing, the one
+that shows *its section's* thing stays and the other is redrawn to show a
+different thing — the states rather than the order, the objects rather than the
+calls — or is a logged cut. A second figure on a page earns its place by
+showing what the first cannot.
+
+### A figure names what its section explains
+
+A lead figure is drawn **in the words of the cast**: the class names the cast
+table has just given, and verbs for what happens (*asks*, *writes*, *sends the
+packet*) — not method names the reader meets 150 lines later. Method names
+belong in the section figures that follow their prose. **A name the figure says
+and the prose never does** is either given the one sentence the figure was
+standing in for, or taken out of the figure. `python
+tools/check_figure_names.py` checks every identifier inside a mermaid block
+against the decompile the way `verify_names.py` checks the prose — a class, a
+dotted `Class.member`, and a sequence message's head against the lane it is
+sent to — and a page that fails it does not publish. In a figure as in the
+prose: **a member is written `Class.member`**, and a nested class `Outer.Inner`.
+
+### The theme, and no colour in a page
+
+The whole visual grammar lives in `mermaid-init.js` (the wrap, the fonts, the
+palettes for the light and dark themes) and in `custom.css` (the semantic
+classes, the caption). **`%%{init}%%`, `classDef`, `style` and `linkStyle` do
+not go in a page.** A node says which side of the wire it lives on with one of
+**five class words** and no `classDef` — mermaid puts the class on the node's
+`<g>`, so the colour is a stylesheet rule that follows the reader's theme:
+
+    A["ServerLevel.tick"]:::server      B["ClientLevel.tick"]:::client
+    N["Netty event loop"]:::netty       W["Worker-Main-n"]:::worker
+    D[("region file")]:::disk           (a state diagram: `class Idle server`)
+
+`server` · `client` · `netty` · `worker` · `disk` are the whole colour
+vocabulary, and the same five words are a sequence diagram's `box` labels and
+the lane key's word lanes, so a thread is called the same thing in every kind
+of figure. A figure that needs a sixth argues for it in the session log.
+Everything else is the theme's default. Do not re-run `mdbook-mermaid install`:
+it overwrites `mermaid-init.js` with the default, which wraps nothing.
+
+### What mermaid 11.6.0 rejects
 
 - **No `;` in any label** — mermaid ends the statement there. Write `#59;`
   if the character is unavoidable; usually a comma or *then* is better.
@@ -294,10 +437,6 @@ it does not publish. The three rules it enforces most often:
 - **Quote flowchart labels** (`A["…"]`) so parentheses, colons and slashes
   survive; keep `stateDiagram-v2` transition text on one line after the
   colon; a note is `note right of STATE : text`.
-
-Shapes that render under 11.6.0 and are in use: `sequenceDiagram`,
-`flowchart`, `stateDiagram-v2`. Others the checker accepts may be added;
-a shape the checker rejects is not available whatever the docs say.
 
 **A figure two pages share** is written once, as a mermaid block in a file
 under `src/figures/`, and each page includes it with `{{#include}}` — the
@@ -339,6 +478,18 @@ into a failure, and `tools/deploy.sh` runs it that way over the whole corpus,
 so a page whose lane disagrees with the key does not publish. `--index`
 writes the key to `src/reference/lanes.md` for readers.
 
+**How many, and which.** **At most seven lanes**, and the column is the reason:
+a lane is about 230px wide, so an eighth puts the type under eleven pixels on
+screen for every label in the figure. A lane earns its place by *deciding*
+something — a lane that carries one message and decides nothing is folded into
+a note or into the label on the arrow. **One object is one lane**: a subclass
+and its base share a lane, named for the object. **Two machines are two
+lanes** — or a `box` per machine — never a `Note over` saying *now the client*.
+**Two objects are never one lane**: a block and its block entity, a container
+and the container it mirrors, are two, or the figure is about one of them.
+Lane *order* is the order of first use, left to right, so the first message
+reads left to right.
+
 **How a lane is derived** when it is not yet in the key: the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` → `SGPL`),
 never fewer than two letters; a one-word class of up to eight letters is
@@ -351,6 +502,19 @@ A short whole word is allowed for a lane that is not a class (`Netty`,
 `Main`, `Worker`, `Auth`, `Wire`, `Disk`) and is marked as such below.
 **The key is the authority**: add a row when a page introduces a lane, and
 never change an existing row's meaning.
+
+**A long lane name carries its own break.** The theme wraps a message at 180px
+so the lanes stay close and the type stays readable, and mermaid hyphenates any
+word wider than that — `PersistentEntitySectio-nManager`, a Mojang name the
+book would be getting wrong on screen. So a class name too wide for the box is
+written with `<br/>` at a CamelCase boundary, a nested class at its dot:
+
+    participant PESM as PersistentEntity<br/>SectionManager
+    participant TE as ChunkMap.<br/>TrackedEntity
+
+The break is display only: both gates read a lane expansion with it closed up,
+so the key still holds the name. `python tools/pass7/break_lane_names.py` puts
+the break in from a render, and is the check after adding a lane.
 
 ### The lane key
 

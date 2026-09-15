@@ -56,7 +56,7 @@ up.
 sequenceDiagram
     participant CScr as ChatScreen
     participant CPL as ClientPacketListener
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant PL as PlayerList
     participant RCPL as ClientPacketListener
     participant CLis as ChatListener

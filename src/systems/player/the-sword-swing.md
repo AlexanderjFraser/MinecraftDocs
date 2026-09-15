@@ -109,8 +109,8 @@ and the attack was handled before that bracket opened.
 sequenceDiagram
     participant MC as Minecraft
     participant LP as LocalPlayer
-    participant MPGM as MultiPlayerGameMode
-    participant SGPL as ServerGamePacketListenerImpl
+    participant MPGM as MultiPlayer<br/>GameMode
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Player as Player
     participant LE as LivingEntity
     participant SL as ServerLevel

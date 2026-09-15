@@ -216,9 +216,9 @@ temporarily answers that it is not a source at all.
 sequenceDiagram
     participant LevB as LeverBlock
     participant SL as ServerLevel
-    participant CNU as CollectingNeighborUpdater
+    participant CNU as Collecting<br/>NeighborUpdater
     participant RSWB as RedStoneWireBlock
-    participant DRWE as DefaultRedstoneWireEvaluator
+    participant DRWE as DefaultRedstone<br/>WireEvaluator
     participant PBB as PistonBaseBlock
     Note over LevB,PBB: all of this is one call stack, inside one packet handler, before the level ticks
     LevB->>SL: setBlock POWERED with flags 3

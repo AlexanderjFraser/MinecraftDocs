@@ -162,7 +162,7 @@ sequenceDiagram
     participant MC as Minecraft
     participant Gui as Gui
     participant InvS as InventoryScreen
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
 
     KH->>KH: keyPress — no screen is open, so the mapping records a click
     Note over MC: next client tick

@@ -189,7 +189,7 @@ sequenceDiagram
     participant Blender as Blender
     participant CM as ChunkMap
     participant BD as BlendingData
-    participant NBC as NoiseBasedChunkGenerator
+    participant NBC as NoiseBased<br/>ChunkGenerator
     participant NC as NoiseChunk
 
     Note over CST: ChunkStatus.BIOMES, on the worldgen executor

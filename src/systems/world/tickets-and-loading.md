@@ -245,7 +245,7 @@ View distance 10, simulation distance 10.
 
 ```mermaid
 sequenceDiagram
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant CM as ChunkMap
     participant DM as DistanceManager
     participant TS as TicketStorage

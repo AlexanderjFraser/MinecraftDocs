@@ -311,7 +311,7 @@ sequenceDiagram
     participant KH as KeyboardHandler
     participant MC as Minecraft
     participant PR as PackRepository
-    participant RRM as ReloadableResourceManager
+    participant RRM as Reloadable<br/>ResourceManager
     participant SRI as SimpleReloadInstance
     participant Worker as Worker
     participant LO as LoadingOverlay

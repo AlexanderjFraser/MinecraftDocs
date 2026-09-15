@@ -42,10 +42,10 @@ page is what Minecraft builds on top of it.
 
 ```mermaid
 sequenceDiagram
-    participant CSug as CommandSuggestions
+    participant CSug as Command<br/>Suggestions
     participant CPL as ClientPacketListener
-    participant CSP as ClientSuggestionProvider
-    participant SGPL as ServerGamePacketListenerImpl
+    participant CSP as ClientSuggestion<br/>Provider
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Cmds as Commands
     participant GC as GiveCommand
 

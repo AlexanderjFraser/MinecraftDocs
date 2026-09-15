@@ -52,7 +52,7 @@ the switch has decided.
 
 ```mermaid
 sequenceDiagram
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant Block as Block
     participant SL as ServerLevel
     participant PL as PlayerList

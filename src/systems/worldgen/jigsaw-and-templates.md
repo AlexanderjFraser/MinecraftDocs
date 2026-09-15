@@ -47,9 +47,9 @@ different assembler and reach this page only for the templates
 sequenceDiagram
     participant ChunkG as ChunkGenerator
     participant JS as JigsawStructure
-    participant JPP as JigsawPlacement.Placer
-    participant STP as StructureTemplatePool
-    participant PESP as PoolElementStructurePiece
+    participant JPP as JigsawPlacement.<br/>Placer
+    participant STP as Structure<br/>TemplatePool
+    participant PESP as PoolElement<br/>StructurePiece
     participant STemp as StructureTemplate
 
     ChunkG->>JS: Structure.generate — the lottery already chose this chunk

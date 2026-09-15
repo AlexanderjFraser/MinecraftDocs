@@ -39,10 +39,10 @@ between.
 ```mermaid
 sequenceDiagram
     participant MC as Minecraft
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant CL as ClientLevel
-    participant SGPL as ServerGamePacketListenerImpl
-    participant SPGM as ServerPlayerGameMode
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
+    participant SPGM as ServerPlayer<br/>GameMode
     participant SL as ServerLevel
     participant Block as Block
 

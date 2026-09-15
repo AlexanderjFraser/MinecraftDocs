@@ -105,8 +105,8 @@ flags](../../reference/block-update-flags.md)).
 sequenceDiagram
     participant SL as ServerLevel
     participant PBB as PistonBaseBlock
-    participant PSR as PistonStructureResolver
-    participant PMBE as PistonMovingBlockEntity
+    participant PSR as PistonStructure<br/>Resolver
+    participant PMBE as PistonMoving<br/>BlockEntity
     participant CPL as ClientPacketListener
     participant CL as ClientLevel
     Note over SL,CL: tick N, a packet handler, before the level ticks

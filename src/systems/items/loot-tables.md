@@ -108,10 +108,10 @@ nothing to keep.
 
 ```mermaid
 sequenceDiagram
-    participant SPGM as ServerPlayerGameMode
+    participant SPGM as ServerPlayer<br/>GameMode
     participant CBE as ChestBlockEntity
     participant SP as ServerPlayer
-    participant RCont as RandomizableContainer
+    participant RCont as Randomizable<br/>Container
     participant LT as LootTable
     participant LPool as LootPool
     participant ChestM as ChestMenu

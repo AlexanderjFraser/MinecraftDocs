@@ -167,7 +167,7 @@ sequenceDiagram
     participant KI as KeyboardInput
     participant LP as LocalPlayer
     participant LE as LivingEntity
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SP as ServerPlayer
 
     KH->>KM: set — isDown = true#59; nothing else happens yet

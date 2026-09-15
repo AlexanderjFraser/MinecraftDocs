@@ -93,9 +93,9 @@ dimension without touching the client.
 ```mermaid
 sequenceDiagram
     participant Time as Timelines
-    participant EAS as EnvironmentAttributeSystem
-    participant EAP as EnvironmentAttributeProbe
-    participant LRSE as LightmapRenderStateExtractor
+    participant EAS as Environment<br/>AttributeSystem
+    participant EAP as Environment<br/>AttributeProbe
+    participant LRSE as LightmapRender<br/>StateExtractor
     participant FR as FogRenderer
     participant SR as SkyRenderer
     participant LR as LevelRenderer

@@ -88,9 +88,9 @@ evict.
 
 ```mermaid
 sequenceDiagram
-    participant SLPL as ServerLoginPacketListenerImpl
+    participant SLPL as ServerLoginPacket<br/>ListenerImpl
     participant PL as PlayerList
-    participant SCPL as ServerConfigurationPacketListenerImpl
+    participant SCPL as ServerConfiguration<br/>PacketListenerImpl
     participant PST as PrepareSpawnTask
     participant PDS as PlayerDataStorage
     participant SL as ServerLevel
@@ -192,7 +192,7 @@ orphaned by the first save afterwards.
 ```mermaid
 sequenceDiagram
     participant PL as PlayerList
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SL as ServerLevel
     participant CM as ChunkMap
     participant Wire as the network

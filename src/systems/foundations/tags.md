@@ -126,8 +126,8 @@ sequenceDiagram
     participant WL as WorldLoader
     participant TL as TagLoader
     participant MR as MappedRegistry
-    participant RSR as ReloadableServerResources
-    participant CCPL as ClientConfigurationPacketListenerImpl
+    participant RSR as Reloadable<br/>ServerResources
+    participant CCPL as ClientConfiguration<br/>PacketListenerImpl
     participant CPL as ClientPacketListener
     participant Parrot as Parrot
 

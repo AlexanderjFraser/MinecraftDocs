@@ -273,9 +273,9 @@ the tick.
 sequenceDiagram
     participant MC as Minecraft
     participant LP as LocalPlayer
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant Wire as the network
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SP as ServerPlayer
     participant Cons as Consumable
 
@@ -324,9 +324,9 @@ broadcast alone.
 sequenceDiagram
     participant MC as Minecraft
     participant LP as LocalPlayer
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant Wire as the network
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SP as ServerPlayer
     participant BowI as BowItem
 

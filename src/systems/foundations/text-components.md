@@ -289,7 +289,7 @@ target player as the scoreboard entity.
 sequenceDiagram
     participant SP as ServerPlayer
     participant CT as CombatTracker
-    participant CS as ComponentSerialization
+    participant CS as Component<br/>Serialization
     participant CPL as ClientPacketListener
     participant DScr as DeathScreen
     participant TrC as TranslatableContents

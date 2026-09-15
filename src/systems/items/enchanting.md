@@ -291,7 +291,7 @@ sequenceDiagram
     participant EM as EnchantmentMenu
     participant EH as EnchantmentHelper
     participant Player as Player
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SP as ServerPlayer
 
     Note over EM: the sword lands in slot 0 and slotsChanged runs on the server

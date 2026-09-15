@@ -189,10 +189,10 @@ all six fail.
 sequenceDiagram
     participant Entity as Entity
     participant SL as ServerLevel
-    participant GED as GameEventDispatcher
-    participant VSL as VibrationSystem.Listener
+    participant GED as GameEvent<br/>Dispatcher
+    participant VSL as VibrationSystem.<br/>Listener
     participant VSel as VibrationSelector
-    participant VST as VibrationSystem.Ticker
+    participant VST as VibrationSystem.<br/>Ticker
     participant SSB as SculkSensorBlock
 
     Note over Entity,SSB: tick T, the entity ticks and moves

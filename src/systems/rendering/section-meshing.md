@@ -30,12 +30,12 @@ second, for an hour, for as long as you keep your back turned.
 
 ```mermaid
 sequenceDiagram
-    participant MPGM as MultiPlayerGameMode
+    participant MPGM as MultiPlayer<br/>GameMode
     participant CL as ClientLevel
     participant LX as LevelExtractor
     participant SUT as SectionUpdateTracker
     participant LR as LevelRenderer
-    participant SRD as SectionRenderDispatcher
+    participant SRD as SectionRender<br/>Dispatcher
     participant Worker as Worker
     participant SectC as SectionCompiler
 

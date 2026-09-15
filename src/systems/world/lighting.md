@@ -34,10 +34,10 @@ it refuses: `ThreadedLevelLightEngine.runLightUpdates` throws.
 ```mermaid
 sequenceDiagram
     participant LC as LevelChunk
-    participant TLE as ThreadedLevelLightEngine
+    participant TLE as ThreadedLevel<br/>LightEngine
     participant SCC as ServerChunkCache
     participant BLE as BlockLightEngine
-    participant LLSS as LayerLightSectionStorage
+    participant LLSS as LayerLight<br/>SectionStorage
     participant CH as ChunkHolder
     participant CL as ClientLevel
 

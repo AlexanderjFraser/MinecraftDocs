@@ -37,12 +37,12 @@ one layer among several rather than the owner
 ```mermaid
 sequenceDiagram
     participant CST as ChunkStatusTasks
-    participant NBC as NoiseBasedChunkGenerator
+    participant NBC as NoiseBased<br/>ChunkGenerator
     participant CA as ChunkAccess
     participant LCS as LevelChunkSection
-    participant MNBS as MultiNoiseBiomeSource
+    participant MNBS as MultiNoise<br/>BiomeSource
     participant ClimS as Climate.Sampler
-    participant CPList as Climate.ParameterList
+    participant CPList as Climate.<br/>ParameterList
     participant CRT as Climate.RTree
 
     CST->>NBC: createBiomes — ChunkStatus.BIOMES, which NOISE and SURFACE both require

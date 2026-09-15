@@ -388,7 +388,7 @@ sequenceDiagram
     participant CTD as ChunkTaskDispatcher
     participant CGT as ChunkGenerationTask
     participant Worker as Worker
-    participant TLE as ThreadedLevelLightEngine
+    participant TLE as ThreadedLevel<br/>LightEngine
     participant SL as ServerLevel
 
     Note over DM,SL: the Server thread, inside runDistanceManagerUpdates

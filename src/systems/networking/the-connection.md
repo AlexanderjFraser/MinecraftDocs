@@ -45,7 +45,7 @@ sequenceDiagram
     participant PEnc as PacketEncoder
     participant Wire as the network
     participant PDec as PacketDecoder
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
 
     Note over Conn,PDec: one instance of each of these at each end
     Note over CPL: client main thread — a value, not yet any bytes

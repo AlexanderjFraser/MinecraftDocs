@@ -177,7 +177,7 @@ sequenceDiagram
     participant LP as LocalPlayer
     participant AB as AbstractBoat
     participant Wire as the network
-    participant SGPL as ServerGamePacketListenerImpl
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant CPL as ClientPacketListener
 
     CL->>AB: tickNonPassenger, and isLocalInstanceAuthoritative is true

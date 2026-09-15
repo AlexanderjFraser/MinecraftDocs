@@ -156,7 +156,7 @@ flagged removed, every ticker pointed at `LevelChunk.NULL_TICKER`.
 sequenceDiagram
     participant SL as ServerLevel
     participant LC as LevelChunk
-    participant AFBE as AbstractFurnaceBlockEntity
+    participant AFBE as AbstractFurnace<br/>BlockEntity
     participant CH as ChunkHolder
     participant SP as ServerPlayer
     participant FM as FurnaceMenu

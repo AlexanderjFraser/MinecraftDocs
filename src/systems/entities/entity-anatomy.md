@@ -248,7 +248,7 @@ sequenceDiagram
     participant ET as EntityType
     participant Entity as Entity
     participant SL as ServerLevel
-    participant PESM as PersistentEntitySectionManager
+    participant PESM as PersistentEntity<br/>SectionManager
     participant SE as ServerEntity
     participant CPL as ClientPacketListener
 

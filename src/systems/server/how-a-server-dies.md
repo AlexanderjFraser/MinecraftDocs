@@ -57,7 +57,7 @@ sequenceDiagram
     participant PL as PlayerList
     participant SL as ServerLevel
     participant SCC as ServerChunkCache
-    participant LSA as LevelStorageSource.LevelStorageAccess
+    participant LSA as LevelStorageSource.<br/>LevelStorageAccess
     participant Disk
 
     SC->>MS: halt with wait false, so running becomes false

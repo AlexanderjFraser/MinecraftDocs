@@ -83,7 +83,7 @@ state class of its own, or an extract stage that reads the live world.
 ```mermaid
 sequenceDiagram
     participant LX as LevelExtractor
-    participant BERD as BlockEntityRenderDispatcher
+    participant BERD as BlockEntity<br/>RenderDispatcher
     participant ChestR as ChestRenderer
     participant LR as LevelRenderer
     participant IIHR as ItemInHandRenderer

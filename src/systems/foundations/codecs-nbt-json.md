@@ -117,7 +117,7 @@ codecs](../networking/packets-and-stream-codecs.md#what-stops-a-hostile-sender)'
 sequenceDiagram
     participant CPL as ClientPacketListener
     participant HS as HashedStack
-    participant ACM as AbstractContainerMenu
+    participant ACM as Abstract<br/>ContainerMenu
 
     Note over CPL: the client, once, when configuration ends
     CPL->>CPL: createSerializationContext over HashOps.CRC32C_INSTANCE, a RegistryOps whose document is a hash

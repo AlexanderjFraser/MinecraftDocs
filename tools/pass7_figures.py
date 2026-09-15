@@ -378,10 +378,13 @@ def labels_of(kind: str, body) -> dict:
     return info
 
 
-def tokens_of(text: str) -> set[str]:
-    """Identifier-shaped tokens in a label."""
+def tokens_of(text: str, role: str = "") -> set[str]:
+    """Identifier-shaped tokens in a label.
+
+    A lane's line break is inside the name, not between two of them (TEMPLATE.md, *Lanes*),
+    so a participant expansion closes up: `PersistentEntity<br/>SectionManager` is one token."""
     out = set()
-    text = re.sub(r"<br\s*/?>", " ", text)
+    text = re.sub(r"<br\s*/?>", "" if role == "participant" else " ", text)
     for m in DOTTED.finditer(text):
         out.add(m.group(1))
     stripped = DOTTED.sub(" ", text)
@@ -505,7 +508,7 @@ def figures_of(key: str, part: str, rel: str, render: dict) -> dict:
             fig["label_count"] = len(labels)
             toks: set[str] = set()
             for _l, r, t in labels:
-                toks |= tokens_of(t)
+                toks |= tokens_of(t, r)
             before, after, never = [], [], []
             for tok in sorted(toks):
                 ln = first_line_of(tok)

@@ -120,12 +120,12 @@ only for those four.
 
 ```mermaid
 sequenceDiagram
-    participant CDS as ClientDebugSubscriber
+    participant CDS as ClientDebug<br/>Subscriber
     participant CPL as ClientPacketListener
-    participant SGPL as ServerGamePacketListenerImpl
-    participant SDS as ServerDebugSubscribers
-    participant LDS as LevelDebugSynchronizers
-    participant TDSS as TrackingDebugSynchronizer.SourceSynchronizer
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
+    participant SDS as ServerDebug<br/>Subscribers
+    participant LDS as LevelDebug<br/>Synchronizers
+    participant TDSS as TrackingDebug<br/>Synchronizer.<br/>SourceSynchronizer
     participant BDR as BrainDebugRenderer
 
     CDS->>CDS: requestedSubscriptions — the JVM was started with the brain flag

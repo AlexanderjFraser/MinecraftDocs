@@ -63,8 +63,15 @@ meant for a landing page.
 **Pass 7 — the figures — is running.** It was planned on 2026-09-14 by the
 planning session on Fable, which built the four tools the pass needs and wrote
 [pass7-brief.md](pass7-brief.md): Part 1 the viewer's brief, Part 2 the runbook,
-Part 3 the sixteen recommendations session A rules on, Part 4 the schedule with
-**the status column the owner reads**. The charter is below. The latest release
+Part 3 the standard, Part 4 the schedule with **the status column the owner
+reads**. **Session A ran on 2026-09-15**: it ruled on the sixteen
+recommendations and added two, rewrote Part 3 as the record and `TEMPLATE.md`'s
+*Figures* and *Lanes* to it, **adopted the figure theme** — which alone took the
+figures showing type under 9px from 89 to 10, and the 88 sequence diagrams to
+none, without changing a page — and rewrote the exemplar
+`entities/entity-lifecycle`, whose spawn cascade turned out to be wrong about
+fourteen of its edges. Sessions B to N take the parts in sidebar order; O
+closes. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -437,3 +444,44 @@ that the owner has not understood; recording is after pass 10.
   index it writes is regenerable, so neither is committed; and a candidate theme
   lives in `tools/pass7/` until session A adopts it, so that the evidence for a
   corpus-wide change is a diff of two renders rather than an argument.
+
+- **2026-09-15, pass 7 session A (Opus) — the standard, the theme and the
+  exemplar.** Ruled on the planning session's sixteen recommendations and added
+  two the adoption forced: **F17**, a lane name too wide for its box carries its
+  own `<br/>` at a CamelCase boundary, and **F18**, the 109 names the wrap still
+  breaks in messages and notes, which are the part sessions' work under F4.
+  [pass7-brief.md](pass7-brief.md) Part 3 rewritten as the record, and
+  `TEMPLATE.md`'s *Figures* and *Lanes* rewritten to it — the marks table, the
+  label budgets, the caption device, the tick band, the density rule, the menu
+  of kinds and the seven-lane arithmetic. **The theme is adopted**:
+  `mermaid-init.js` is committed (out of `.gitignore`, MPL header kept, with a
+  warning not to re-run `mdbook-mermaid install` over it) and `custom.css`
+  carries the five semantic classes in both palettes and the caption rule.
+  Across the 196 mermaid figures, with no page's content changed: the median
+  scale 0.61 → **0.82**, figures below half 76 → **6**, type under 9px 89 →
+  **10** and under 11px 107 → **31**, the widest 5,415px → 3,859px — and of the
+  88 sequence diagrams that were the whole problem, **none** is now below half
+  or under 9px. The costs are named rather than left to be found: figures are
+  taller (the median sequence diagram 401px → 940px) and mermaid hyphenates a
+  word wider than the wrap, which broke 222 Mojang names on screen. The 112 that
+  were lane names are fixed corpus-wide by a one-time sweep
+  (`tools/pass7/break_lane_names.py`, which reads a render rather than counting
+  characters); both gates learned to close the break up, with probes. A
+  width-240 theme that would have avoided the break was rendered over the corpus
+  and **rejected** — it leaves 71 of 88 sequence diagrams under 11px. The
+  exemplar `entities/entity-lifecycle` was rewritten with a viewer's report in
+  hand: the 21-node, 39-edge cascade shown at 0.28 with 4.6px type is two
+  flowcharts at scale 1 and 16px, its twenty conditions moved into a fifteen-row
+  table, and **it loops** — re-deriving it found that fourteen edges the old
+  figure drew as dead ends are a `continue` to the next try, that three
+  rejections were drawn at the wrong scope, and that two exits were missing
+  entirely. The entry sequence gave the page's second half back to the state
+  diagram that owns it and gained the callback hop it had been drawing as a call
+  `ChunkMap` does not have; the state diagram's sentence labels became
+  conditions. Four captions — the book's first. One finding the method threw up
+  by itself: **mdBook's floating chapter chevrons have been painted on top of
+  the prose at 1440px since pass 3 widened the column**, fixed in `custom.css`
+  by moving mdBook's own breakpoint to where the column clears them. All six
+  gates green (the figure-name gate still report-only, 113 unresolved of 2,588);
+  [pass9.md](pass9.md) has the claims and the six corrections,
+  [pass5.md](pass5.md) the six entries this left. Deployed.
