@@ -44,6 +44,210 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session E — Part V · Blocks: the figures *(2026-09-15)*
+
+Eight pages, thirteen figures (ten before; three pages split one figure into
+two). Every figure captioned and every caption one italic run; every non-lead
+figure given a lead-in; **thirteen gate failures and twenty-six gate notes to
+none of either**, and no figure in the part now shows type under 11.9px (five
+were at 10.3–11.1px). No page moved and no theme file was touched.
+
+### The figures redrawn, and the orderings they assert
+
+**`blocks/README` figure 1 — the part's shape.** Seven nodes numbered to the
+watch order, eleven sentence-length edge labels cut to three or four words, a
+caption. No arrow added, removed or reversed. One claim in the prose beside it
+was **wrong and is corrected**: the lead-in read *Each arrow below is labelled
+with what the hub hands that spoke*, and five of the eleven arrows do not touch
+the hub. It now distinguishes the six hub arrows from the five between spokes.
+
+**`blocks-and-states` figure 1 — the vocabulary, as a `classDiagram`.** Was a
+twelve-node `flowchart TB` in which inheritance and construction were the same
+arrow. Now the book's fourth class diagram, asserting: `BlockBehaviour` is
+abstract and `Block` extends it; `Property` is abstract and is extended by
+`BooleanProperty`, `IntegerProperty` and `EnumProperty` **and by nothing else**
+(verified: those are the only three `extends Property<` in
+`world/level/block/state/properties/`); `StateHolder` is extended by
+`BlockBehaviour.BlockStateBase`, which is extended by `BlockState`; `Block`
+holds one `StateDefinition`, built in its own constructor; `StateDefinition`
+holds the properties and produces one `BlockState` per cell;
+`StateDefinition.fillNeighborsForState` fills `StateHolder`'s table.
+`Block.BLOCK_STATE_REGISTRY` left the figure as a node and is a field line
+inside `Block` — it is a static field, not a class, and the heading is
+therefore now *Eleven classes and one Cartesian product*, not twelve. **The
+caption is a claim**: the two hierarchies meet in `BlockState`, joined by the
+one arrow that is neither an extends nor a holds.
+
+**`blocks-and-states` figures 2 and 3 — the write, split at the re-read.** The
+part's most-linked figure was 21 nodes and 3,409px with ten sentence labels and
+every gate clause inside a node. Split at the joint the prose already names
+(*two half-writes with a re-read between them*), with the gate clauses moved to
+a thirteen-row table (*step · side · flags · also needs*), each derived from
+`Level.setBlock` (`world/level/Level.java:217-262`) and
+`LevelChunk.setBlockState`. Arrows changed: **`IN --> FALSE` added** —
+`Level.setBlock` returns false at `Level.java:219` (out of bounds) and `:221`
+(the server side of a debug world), which the prose already asserted and the
+figure gave no exit for. The `TRUE` node's own text (*returns true, having
+skipped its entire tail*) **was false on one of its two inbound edges** and is
+now plain *returns true*, with the clause on the edge it belongs to. Three
+steps carry `:::server`: `BlockEntity.preRemoveSideEffects`,
+`BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` and
+`BlockBehaviour.BlockStateBase.onPlace`. Every other edge is unchanged.
+
+**`block-breaking` figures 1 and 2 — one dig, split at the eighth tick.** Was
+seven lanes at 0.65 with four Mojang names hyphen-broken on screen. Now six
+lanes each, boxed `Client` and `Server`, with the loop's body in a `par` so the
+picture stops asserting an order between two things the section exists to call
+independent. Six messages were **labelled with the caller's own method and
+drawn arriving at the callee** — `startAttack` and `continueAttack` (both
+`Minecraft`'s, `Minecraft.java:1777`/`:1806`), `continueDestroyBlock`
+(`MultiPlayerGameMode`'s), `destroyAndAck` (`ServerPlayerGameMode`'s),
+`mineBlock` (`ItemStack`'s, called at `ServerPlayerGameMode.java` inside
+`destroyBlock`) and `popResource` — and each now names the method of the lane
+it arrives at. **`ServerboundSwingPacket` added** inside the loop:
+`Minecraft.continueAttack` calls `LocalPlayer.swing`, which sends it
+(`LocalPlayer.java:338-341`); the loop's own label had asserted it in words and
+drawn nothing, which is what made the silence across the boxes unreadable.
+
+**`block-interaction` figures 1 and 2 — one click, split at the machine
+boundary.** `ServerPlayerGameMode` gained the lane the cast already gave it, so
+the two sides read as the same three-step order, which is the section's claim.
+Four caller-headed messages relabelled: `startUseItem` (`Minecraft`'s) →
+`useItemOn`; `canOpenByHand` (`BlockSetType`'s) → `setBlock`;
+`updateNeighbourShapes` (`BlockBehaviour.BlockStateBase`'s) → `shapeUpdate`,
+which is what `CollectingNeighborUpdater` actually receives
+(`CollectingNeighborUpdater.java:37`); `updateOrDestroy` (`Block`'s static,
+`Block.java:238`) → `setBlock`, which is what it calls on the level at
+`Block.java:245`. `endPredictionsUpTo` — a name the page never says, and a
+`BlockStatePredictionHandler` method drawn on the `ClientLevel` lane — became
+`handleBlockChangedAck`, which is `ClientLevel`'s own
+(`ClientLevel.java:190-196`). The two `ClientboundBlockUpdatePacket`s are now
+drawn as two, the count the prose gives. The swing packet became a note.
+
+**`block-entities` figure 1.** `tickBlockEntities` (`Level`'s) → the wrapper it
+actually reaches, `LevelChunk.BoundTickingBlockEntity.tick`
+(`LevelChunk.java:911`). **One message added**:
+`updateNeighbourForOutputSignal`, the second of the two writes the prose counts
+and the figure drew one of — `BlockEntity.setChanged` reaches it at
+`BlockEntity.java:270-276`, called from `AbstractFurnaceBlockEntity.serverTick`
+at `:220`. **One note added**: tick N's chunk-source phase, drawn *above* the
+block-entities phase, which is the whole cause of the lag and had been carried
+in four words of one message label. The `ChunkHolder` self-reply that said
+*gets nothing* became a note — a dashed arrow is a reply and there was no
+reply. The `ServerPlayer` lane, which carried one message and decided nothing,
+folded into a note.
+
+**`pistons-and-block-events` figure 1.** Two caller-headed messages:
+`doBlockEvent` is `ServerLevel`'s (`ServerLevel.java:1344`) and is now a
+self-message with `triggerEvent` as the arrow into `PistonBaseBlock`;
+`moveBlocks` is `PistonBaseBlock`'s own (`PistonBaseBlock.java:291`) and the
+arrow into `ServerLevel` is the `setBlock` it makes. **`PSR-->>PBB` added** —
+the dry run's answer: `PistonBaseBlock.checkIfExtend` queues the block event
+only if `new PistonStructureResolver(...).resolve()` is true (`:116-117`), so
+the resolver's refusal is what stops anything being queued. **`setBlockEntity`
+added** — `moveBlocks` injects one `PistonMovingBlockEntity` per placeholder by
+hand (`:349`, `:360`), which gave the lane its origin. **An `opt` frame added**
+around everything from the second `getNeighborSignal` to the client's re-run:
+`PistonBaseBlock.triggerEvent` returns false at `:189` when the wire is no
+longer powered, and `ServerLevel.runBlockEvents` sends
+`ClientboundBlockEventPacket` **only if `doBlockEvent` returned true**
+(`ServerLevel.java:1333-1334`), so the packet and the whole of the client's
+share really are inside the conditional.
+
+**`signal-and-dust` figure 1.** **`OUT --> IN` added**, the loop back from the
+forty-two outgoing updates to `RedStoneWireBlock.neighborChanged` — the
+recursion the page's hook is about, which had existed only in the prose. The
+`canSurvive`/`dropResources` limb was **cut** (a logged cut: three nodes of a
+story the page tells nowhere). `flag 2` became `Block.UPDATE_CLIENTS`.
+
+**`signal-and-dust` figure 2.** `getBlockSignal` (`RedStoneWireBlock`'s) headed
+a message into `DefaultRedstoneWireEvaluator`; the call that actually arrives
+there is `updatePowerStrength` (`RedStoneWireBlock.java:267-271`,
+`DefaultRedstoneWireEvaluator.java:20`). `LeverBlock.updateNeighbours` headed a
+message into `ServerLevel`; it is `Level.updateNeighborsAt`. `SL->>CNU` now
+names `updateNeighborsAtExceptFromFacing`, which is what
+`ServerLevel.updateNeighborsAt` calls (`ServerLevel.java:1241`).
+
+**`diodes-and-observers` figure 1.** Four node labels that were sentences
+became names, with their conditions on the edges. **Three arrows added**:
+`RL --> DONE` (the repeater's lock is written inside the shape update and books
+nothing — drawn as a named dead end rather than an arrow that stops); and
+`BOOK` now forks to `DiodeBlock.tick` and `ObserverBlock.tick` separately,
+because the two leave by **different routes** — `DiodeBlock.tick` writes
+`POWERED` under flag 2 and never calls `updateNeighborsInFront` itself
+(`DiodeBlock.java:56-71`), so its pulse leaves through `DiodeBlock.onPlace`
+inside that write (`DiodeBlock.java:181-183`), while `ObserverBlock.tick` calls
+`ObserverBlock.updateNeighborsInFront` directly after its own write
+(`ObserverBlock.java:51-61`). One `TICK` node had been carrying both.
+
+### The corrections
+
+1. **`block-breaking` figure 1, the server's progress at STOP.** The figure
+   said *own progress 1.07*; the prose two sections below says the server
+   *arrives at the same 1.064*, and that identity is the section's whole
+   argument. The one number the page is about was printed two ways inside one
+   figure. Now 1.064. (`ServerPlayerGameMode.handleBlockBreakAction`: the
+   per-tick fraction times `ticksSpentDestroying + 1`.)
+2. **`block-breaking` figure 1, the order of tick 1.** The figure drew
+   `continueDestroyBlock`'s first 0.133 *before* the stage −1 crack clear.
+   `MultiPlayerGameMode.startDestroyBlock` sets `destroyProgress` to zero and
+   calls `ClientLevel.destroyBlockProgress` with `getDestroyStage()` — which is
+   −1 at progress zero (`MultiPlayerGameMode.java:583-585`) — at `:202`, and
+   only then does `Minecraft.continueAttack` run `continueDestroyBlock` on the
+   same lap (`Minecraft.java:2170`, `:2192`), which adds 0.133 and calls
+   `destroyBlockProgress` again at `:282`, this time at stage 1. The figure now
+   draws all three, in that order.
+3. **`blocks-and-states`, the flag-word lead-in: *seven* for eight.** *Here are
+   the seven it gates on* was followed by eight bits (1, 2, 4, 16, 32, 64, 256,
+   512), and the page's own later sentence says *those eight bits*. Corrected
+   to eight. Found independently by two viewers.
+4. **`blocks-and-states` figure 2, the `TRUE` node.** *Level.setBlock returns
+   true, having skipped its entire tail* was the text of one inbound edge
+   printed on a node that both edges arrive at, so it was false for the path
+   that had just run the tail.
+5. **`blocks/README`, the figure's lead-in.** *Each arrow below is labelled
+   with what the hub hands that spoke* described six of eleven arrows.
+6. **`pistons-and-block-events` figure 1, the landing tick.** The note read
+   *tick N plus 2, block-entities phase* and spanned `ServerLevel` to
+   `ClientLevel`, directly under a note that said *both sides* — so the figure
+   said both sides land on N+2. The page's own prose says the client holds five
+   extra `PistonMovingBlockEntity.deathTicks` first. The note now names the two
+   timings separately.
+7. **`signal-and-dust` figure 2, who asks whom at the piston.** The label read
+   *the piston asks only whether the wire's east side is above zero*. The prose
+   says the piston asks nothing of the kind: the wire's east side is
+   `RedstoneSide` *SIDE* by the completion pass, and
+   `RedStoneWireBlock.getSignal` *asks about the side, not about the neighbour*
+   — so the wire answers, and the side is a three-valued property, not a number
+   that can be above zero. The label now says the wire answers from its east
+   side.
+8. **`signal-and-dust` figure 2, an unnamed count.** *…and the count resets* —
+   no count is named in that section or anywhere on the page. Removed.
+9. **`block-entities` figure 1, one write of two.** *Two writes leave the block
+   entity* sat forty-five lines under a figure that drew one. The second is now
+   drawn (see above).
+10. **`block-breaking` figure 1, two words the page never says.** `gameTicks`
+    (a real `ServerPlayerGameMode` field, but not prose on this page) and *the
+    ledger* (the page's blockquote calls it *the entry*) left the figure for
+    the page's own words. `MultiPlayerGameMode.startDestroyBlock`, which the
+    figure needed, gained its sentence in the prose instead.
+11. **`block-breaking` figure 1, a number without its unit.** *within 32*,
+    where the prose says *within 32 blocks* and the other numbers in the same
+    figure (0.133, 1.064, 2001, 11, 3) are five different kinds of thing.
+
+### What a pass-9 session should read hardest here
+
+The thirteen-row gate table on `blocks-and-states` is new prose carrying
+thirteen conditions that used to be inside figure labels; every row is a claim
+and every one was derived from `Level.setBlock` and `LevelChunk.setBlockState`
+on 2026-09-15. The `opt` frame on `pistons-and-block-events` asserts that
+*nothing* inside it happens when the second `getNeighborSignal` fails,
+including the sound packet — check that `runBlockEvents`' single `if` really is
+the only gate on both packets. And the `OUT --> IN` loop on `signal-and-dust`
+is the page's hook drawn for the first time: it asserts that a wire among the
+forty-two re-enters `neighborChanged`, which is the prose's claim and not a
+claim about the *number* of re-entries.
+
 ## Pass 7, session D — Part IV · The world: the figures *(2026-09-15)*
 
 Eleven pages, twenty-seven figures (twenty-four before; four were split and one

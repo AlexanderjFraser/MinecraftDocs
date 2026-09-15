@@ -40,31 +40,36 @@ fan-out every *neighbour* update uses. This is the whole of the default
 implementation, from one update arriving to the next batch leaving.
 
 ```mermaid
-flowchart TB
-    IN["RedStoneWireBlock.neighborChanged arrives on the server"]
+flowchart TD
+    IN["RedStoneWireBlock.neighborChanged"]
     CLIENT{"is this a ClientLevel"}
-    SURV{"RedStoneWireBlock.canSurvive"}
-    DROP["dropResources and Level.removeBlock"]
-    NOTHING["nothing at all: RedStoneWireBlock.neighborChanged begins with a not-client test"]
-    BLK["RedStoneWireBlock.getBlockSignal: set shouldSignal false, ask SignalGetter.getBestNeighborSignal, set it back"]
-    WIRE["RedstoneWireEvaluator.getIncomingWireSignal: the best of the four side wires, the wire above a conducting neighbour, the wire below a non-conducting one, minus one"]
-    TARGET["DefaultRedstoneWireEvaluator.calculateTargetStrength: block signal if it is 15, else the larger of the two"]
+    NOTHING["nothing at all"]
+    CALC["DefaultRedstoneWireEvaluator.calculateTargetStrength"]
+    BLK["RedStoneWireBlock.getBlockSignal, with RedStoneWireBlock.shouldSignal off"]
+    WIRE["RedstoneWireEvaluator.getIncomingWireSignal"]
+    TARGET["the target: the block signal, or the larger of the two"]
     SAME{"is the target the POWER already stored"}
-    STOP["return. No write, no fan-out, and the cascade ends here"]
-    WRITE["Level.setBlock with flag 2 alone. Clients are told, no neighbour updates come from the write itself, shape updates still run"]
-    FAN["seven Level.updateNeighborsAt calls: this position and its six neighbours, collected in a hash set"]
-    OUT["forty-two neighbour updates, queued in CollectingNeighborUpdater.addedThisLayer and run before the caller's remaining directions"]
+    STOP["no write, no fan-out: the cascade ends here"]
+    WRITE["Level.setBlock under Block.UPDATE_CLIENTS alone"]
+    FAN["seven Level.updateNeighborsAt calls: this position and its six neighbours"]
+    OUT["forty-two neighbour updates, queued a layer at a time"]
     IN --> CLIENT
     CLIENT -- "yes" --> NOTHING
-    CLIENT -- "no, and not a wire-sourced update under the feature flag" --> SURV
-    SURV -- "no" --> DROP
-    SURV -- "yes" --> BLK
-    BLK -- "block signal under 15" --> WIRE --> TARGET
-    BLK -- "block signal 15, so the wires are never asked" --> TARGET
+    CLIENT -- "no" --> CALC
+    CALC --> BLK
+    BLK -- "under 15" --> WIRE --> TARGET
+    BLK -- "15, so the wires are never asked" --> TARGET
     TARGET --> SAME
     SAME -- "yes" --> STOP
     SAME -- "no" --> WRITE --> FAN --> OUT
+    OUT -- "every wire among them, once per value" --> IN
 ```
+
+*One neighbour update to one wire, and the loop at the bottom is the page:
+forty-two updates leave, some of them land on wires, and each of those
+re-enters at the top. The cascade ends only where a recomputed target equals
+the `RedStoneWireBlock.POWER` already stored, which is a test on the value and not on the
+distance.*
 
 The first branch is belt and braces. `RedStoneWireBlock.neighborChanged` opens
 with a not-client test, and it would never be reached on a `ClientLevel`
@@ -220,19 +225,24 @@ sequenceDiagram
     participant RSWB as RedStoneWireBlock
     participant DRWE as DefaultRedstone<br/>WireEvaluator
     participant PBB as PistonBaseBlock
-    Note over LevB,PBB: all of this is one call stack, inside one packet handler, before the level ticks
+    Note over LevB,PBB: one call stack, inside one packet handler, before the level ticks
     LevB->>SL: setBlock POWERED with flags 3
-    SL->>CNU: the write's own fan-out at the lever, drained on the spot
+    SL->>CNU: updateNeighborsAtExceptFromFacing, drained on the spot
     CNU->>RSWB: neighborChanged at the first dust
-    RSWB->>DRWE: getBlockSignal sees the lever at 15, so the target is 15
+    RSWB->>DRWE: updatePowerStrength, and the lever answers 15
     DRWE->>SL: setBlock POWER 15 with flag 2, then seven updateNeighborsAt
-    CNU->>RSWB: neighborChanged at the second dust, depth-first, ahead of the lever's other directions
-    RSWB->>DRWE: block signal 0, incoming wire signal 15 minus 1
+    CNU->>RSWB: neighborChanged at the second dust, ahead of the lever's other directions
+    RSWB->>DRWE: updatePowerStrength, block signal 0 and a wire at 15
     DRWE->>SL: setBlock POWER 14 with flag 2, then seven more
-    CNU->>PBB: neighborChanged, and the piston asks only whether the wire's east side is above zero
-    Note over CNU,PBB: the remaining dozens of updates run against blocks that do not care, and the count resets
-    LevB->>SL: updateNeighbours by hand, two more fan-outs: the lever and the block it stands on
+    CNU->>PBB: neighborChanged, and the wire answers from its east side
+    Note over CNU,PBB: the remaining dozens of updates run against blocks that do not care
+    LevB->>SL: updateNeighborsAt, two more fan-outs by hand
 ```
+
+*The same cascade in time, and the thing to watch is the order: the second
+dust's whole turn — its recompute, its write and its seven fan-outs — finishes
+before the lever has issued its own remaining directions. That is the queue
+being drained depth-first, inside one call stack, with no tick anywhere in it.*
 
 The lever is the place in this trace where the client does not even try.
 `LeverBlock.useWithoutItem` writes no state on a `ClientLevel` — it spawns a

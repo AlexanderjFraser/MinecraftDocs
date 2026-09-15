@@ -1943,10 +1943,13 @@ whether that is one table or two.
   page gives the second a full section plus a closing paragraph. It is the right
   material; it is also the point at which the page stops being about a lever and
   two dust.
-- **`blocks-and-states`' write flowchart now has eleven nodes and a subgraph**
+- ~~**`blocks-and-states`' write flowchart now has eleven nodes and a subgraph**
   after gaining the no-op branch. It is the most linked-to figure in the part and
   the densest; it may want splitting into the chunk write and the tail, which are
-  already two subgraphs.
+  already two subgraphs.~~ **Done, pass 7 session E**: split at the re-read, which is the joint the
+  prose names, and every gate clause moved to a thirteen-row table beside the
+  pair. 21 nodes and 3,409px became 14 + 8 nodes and 1,739px + one screen, and
+  the ten sentence labels became none.
 - ~~**Six Part V pages end on *Questions players ask*** (all but the landing page
   and `blocks-and-states`), against session P's rule of thumb of at most half a
   part. This part is the worst offender per page in the book.~~ **Done, pass 6
@@ -4086,15 +4089,23 @@ that takes it. Everything session E did act on is struck above or logged in
 
 **For pass 7, the figures.**
 
-- `pistons-and-block-events`' flag table is five rows with a *written by* column [kind=figure]
-  and wants the `custom.css` wide treatment.
-- `block-entities`' sequence diagram uses three names for one menu — the lane
+- ~~`pistons-and-block-events`' flag table is five rows with a *written by* column [kind=figure]
+  and wants the `custom.css` wide treatment.~~ **Overtaken, pass 7 session E**: the figure's own flag clauses are
+  gone and the table reads at the column as it stands; the wide treatment is a
+  stylesheet question for session O.
+- ~~`block-entities`' sequence diagram uses three names for one menu — the lane
   *FM as FurnaceMenu*, then `AbstractContainerMenu.broadcastChanges`, then
-  `AbstractFurnaceMenu.getLitProgress` — which reads as three objects.
-- `diodes-and-observers`' channel flowchart re-derives the two update channels
+  `AbstractFurnaceMenu.getLitProgress` — which reads as three objects.~~ **Done, pass 7 session E**: one name. The lane is `FurnaceMenu` and the
+  note says `FurnaceMenu.broadcastChanges`; the slot detail that carried
+  `AbstractFurnaceMenu.getLitProgress` is prose.
+- ~~`diodes-and-observers`' channel flowchart re-derives the two update channels
   in its node labels rather than citing them; that is legitimate for a figure
   that must be readable alone, but the citation is seventy-odd lines away and
-  pass 7 should decide whether the labels shorten.
+  pass 7 should decide whether the labels shorten.~~ **Ruled, pass 7 session E**: they shorten. Each channel node is now its
+  name and its entry method, and the conditions that were inside the nodes are
+  on the edges where F3 says a condition belongs — which also let the figure
+  show the two things it had been hiding, the repeater's dead end and the two
+  different ways a tick reaches the block in front.
 
 **For pass 8, the voice.**
 
@@ -5348,34 +5359,65 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
 
 **For pass 7, the figures.**
 
-- **Part V's lead figures spend flag words the page has not yet minted** — this
+- ~~**Part V's lead figures spend flag words the page has not yet minted** — this
   session's part-wide finding, named independently by four of eight readers.
   Session E fixed it in the *prose* on all four pages (a legend before the
   figure on `blocks-and-states` and `pistons-and-block-events`, name-and-number
   pairing on `block-interaction`, flag 2 spelled out on `signal-and-dust`),
   which is the cheap half. The figures themselves still label every gate with a
   bare number. Pass 7 should decide whether a flowchart gate may carry a
-  constant name, on `blocks-and-states`'s write figure first. [kind=figure]
-- `blocks-and-states`' build-time flowchart (twelve classes) has **no paragraph
+  constant name, on `blocks-and-states`'s write figure first. [kind=figure]~~ **Answered, pass 7 session E**, and by session A rather than here: F4
+  already rules that a gate carries the constant's name, and `flag 2` only
+  where the page has paired name and number above the figure. Applied over the
+  part — `blocks-and-states` keeps its numbers, because its lead-in pairs all
+  eight (and said *seven*, which was the count that survived an edit);
+  `diodes-and-observers` now says `UPDATE_CLIENTS`, `signal-and-dust`
+  `Block.UPDATE_CLIENTS`, and `pistons-and-block-events` keeps 324 and 67
+  against the four-word legend directly above it. `pass7_figures.py`'s
+  *bare-number gates* count for the part is 0.
+- ~~`blocks-and-states`' build-time flowchart (twelve classes) has **no paragraph
   beside it** — the next prose after it is an H3 — and it introduces four
   classes the cast table omits plus nine member names the page never uses. Its
-  reader skipped it entirely. [kind=figure]
-- `block-interaction`'s sequence diagram is the third thing on the page and
+  reader skipped it entirely. [kind=figure]~~ **Done, pass 7 session E**: it is the book's fourth `classDiagram`. The
+  member inventory is gone, the two hierarchies are inheritance triangles
+  rather than four repetitions of the words *extended by*, and it has a caption
+  and a reading paragraph. Eleven classes, not twelve: the twelfth was
+  `Block.BLOCK_STATE_REGISTRY`, a static field, and the heading said so.
+- ~~`block-interaction`'s sequence diagram is the third thing on the page and
   **eight of its arrows are later sections in shorthand**; several compress
   three steps into one label. The reader learnt nothing from it on a first
-  read. [kind=figure]
-- `block-entities`' furnace sequence attributes `ServerChunkCache.blockChanged`
+  read. [kind=figure]~~ **Done, pass 7 session E**: split at the machine boundary. The client's
+  eight messages are one figure at scale 0.97, the server's ten another at
+  0.76, and `ServerPlayerGameMode` gained the lane it needed for the two sides
+  to read as the same order — which is the section's claim and was the thing
+  the single figure contradicted.
+- ~~`block-entities`' furnace sequence attributes `ServerChunkCache.blockChanged`
   to the `ServerLevel` lane, and its `isTicking` gate appears in no gate list in
-  the body. A lane question, not a truth question. [kind=figure]
-- `signal-and-dust`'s sequence diagram traces the line coming **on** while the
+  the body. A lane question, not a truth question. [kind=figure]~~ **Done, pass 7 session E**: the message into `ChunkHolder` now says what
+  `ChunkHolder.blockChanged` does and nothing about the caller, and the
+  wrapper's two gates are named for the wrapper
+  (`LevelChunk.BoundTickingBlockEntity.tick`) rather than for `isTicking`,
+  which the prose never says.
+- ~~`signal-and-dust`'s sequence diagram traces the line coming **on** while the
   page's hook, its staircase paragraph and its closer were all about the line
   going **dark** — and two dust cannot show a descent at all. Session E fixed
   the *scenario* (the verified line now flips the lever both ways and the
   experimental section runs the off case), but the figure still shows only the
-  on case. A third dust would make the descent visible. [kind=figure]
-- `diodes-and-observers`' two-channel flowchart held the **only definition of
+  on case. A third dust would make the descent visible. [kind=figure]~~ **Half done, pass 7 session E.** The *mechanism* of the descent is now
+  drawn, on the other figure: `signal-and-dust`'s flowchart gained the edge
+  from its forty-two outgoing updates back to `RedStoneWireBlock.neighborChanged`,
+  so the re-entry the page's hook is about is a loop in the picture instead of
+  a sentence. The **scenario** half is still open: neither figure traces the
+  lever going off, and the viewer's own suggestion — the comparison the *second
+  implementation* section is already written as, the same two dust under each
+  evaluator — is a new figure with a dozen new claims in it, so it is left for
+  a session with the derivation budget rather than guessed at here. [kind=figure]
+- ~~`diodes-and-observers`' two-channel flowchart held the **only definition of
   either channel** on the page until this session put one in prose. Worth
-  checking the rest of the corpus for figures that are load-bearing that way. [kind=figure]
+  checking the rest of the corpus for figures that are load-bearing that way. [kind=figure]~~ **Overtaken, pass 7 session E**: the corpus-wide form of this is F6, and
+  `check_figure_names.py` plus `pass7_figures.py`'s *names first met here* line
+  measure it per figure on every page. Part V's figures now carry no name the
+  prose never says except packet names split by a display break.
 
 **For pass 8, the voice.**
 
@@ -6542,3 +6584,66 @@ Part 3; these are the pieces of work that ruling created.
   `chunk-generation-pipeline` and `chunk-storage` by F11. Cut rather than
   moved, because both owner pages already trace their own half.
   [kind=record]
+
+## Pass 7, session E — Part V · Blocks *(2026-09-15)*
+
+**For session O.**
+
+- **Seven lanes does not fit the column, and F7 says eight does not.** Four of
+  Part V's five sequence diagrams were at seven lanes; seven lanes is about
+  1,650px natural, which at the 1,092px reading column is scale 0.66 and 10.6px
+  of type — under F1's floor. Shortening labels does not help at all (every
+  message already wraps at 180px; eight shortenings moved the width by zero).
+  Only a lane fewer or a split does. F7's amendment says the *eighth* lane is
+  what breaks eleven pixels; the measurement says the seventh does. Session O
+  should re-measure across the corpus and decide whether the limit becomes six.
+  [kind=figure]
+- **`loop` and `par` write their own labels outside their frame.** Every block
+  label mermaid draws — `[client ticks 2-8, beside server ticks]`,
+  `[the client adds]`, `[still powered — a pulse shorter than the gap dies
+  here]` — renders to the *right* of the dotted frame it belongs to, so
+  `render_figures.js` counts each one as *text outside its container*. It is
+  the device's own rendering and not a page fault, and every `loop`, `opt` and
+  `par` in the book will collect one; the renderer should either learn the
+  shape or the standard should say the flag is expected here. Part V has four.
+  [kind=figure]
+- **`pistons-and-block-events`' flag table** is five rows with a *written by*
+  column and would read better under `custom.css`'s wide treatment. The
+  figure's own flag clauses are gone, so this is now a stylesheet question
+  rather than a figure one. [kind=figure]
+- **A `classDiagram` has no width knob.** `blocks-and-states`' new class
+  diagram is the widest thing on its page at 0.74 — mermaid lays a class
+  diagram out by rank and there is no wrap setting for a class body the way
+  `sequence.wrap` is one for a message. Four of the book's class diagrams now
+  exist; if session O wants a floor under them it is a theme question.
+  [kind=figure]
+
+**For pass 8, the voice.**
+
+- **Thirteen captions written in one part, and they fall into two registers** —
+  *what the picture shows* (“The two clocks, with the machines boxed…”) and
+  *what to look for in it* (“the thing to watch is the order…”). Both are
+  inside F5's rule and the mixture is probably right, but it is worth reading
+  the corpus's captions as one set once they all exist. [kind=voice]
+- **“the appointment book”** is `diodes-and-observers`' own metaphor and is now
+  a node in its figure. It is good, and it is the only place in Part V where a
+  figure names something the game does not. [kind=voice]
+
+**For pass 10.**
+
+- **Part V's sections that wanted a figure and did not get one**, in the order
+  the viewers asked for them: `blocks-and-states`' *Four decisions, four
+  lookups* (`StairBlock.getStairsShape`'s three-level branch with a veto — the
+  page's own scenario, why the stair you just placed is a corner);
+  `block-entities`' *Create, keep, replace, remove* (six conditions and two
+  outcomes, and the section has to apologise in its second sentence for being
+  named in the opposite order to the code); `pistons-and-block-events`' *Three
+  events, and what the third one declines to do* (a three-clause OR inside a
+  four-clause AND); `block-interaction`'s *The door writes ten* (a bit field
+  spelled out in prose); `block-breaking`'s *The button is not the switch* (the
+  page's headline claim: a branch, a retained state and a re-entry);
+  `diodes-and-observers`' *What each one can see*
+  (`ComparatorBlock.getInputSignal`'s fallback, which returns not to zero but
+  to the ordinary front reading). Five of the six are a page's hook carried
+  entirely in prose, which is the same pattern session D found in Part IV.
+  [kind=figure]

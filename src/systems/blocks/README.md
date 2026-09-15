@@ -32,29 +32,35 @@ classes are one `Block` subclass each, filling in two or three of the hooks
 Part V is a hub and six spokes. The hub is `blocks-and-states`, and what each
 spoke takes from it is not the state table — it is the tail of a write, drawn
 there as the part's largest flowchart and pointed at from every other page.
-Each arrow below is labelled with what the hub hands that spoke.
+The six arrows out of the hub below are labelled with what it hands that
+spoke; the five between spokes are the places two lectures share a mechanism.
 
 ```mermaid
 flowchart TD
-    BS["Blocks and states — the table, and what a write actually does"]
-    BI["Block interaction — the right click"]
-    BB["Block breaking — the left click"]
-    BE["Block entities — when a state is not enough"]
-    SD["Signal and dust — reading power, and the cascade"]
-    PE["Pistons and block events — a change that waits for a phase"]
-    DO["Diodes and the observer — a change that books a turn"]
-    BS -- "the shape channel, which the client runs too" --> BI
-    BS -- "what a flags-3 write does after the section is written" --> BB
-    BS -- "where a block entity is created, kept, replaced, removed" --> BE
-    BS -- "the neighbour channel, which is the server's alone" --> SD
-    BS -- "the flag word, and which bits the placeholders leave out" --> PE
-    BS -- "a flag-2 write, and the onPlace that runs inside it anyway" --> DO
-    BI -- "one lecture in two halves, one prediction ledger" --> BB
-    SD -- "what powers a piston, and how the wire connects to it" --> PE
-    SD -- "what a diode reads, and what reads a diode" --> DO
-    BE -- "the one int redstone keeps outside a block state" --> DO
-    BE -- "the placeholder's entity carries a whole state" --> PE
+    BS["1 · Blocks and states"]
+    BI["2 · Block interaction"]
+    BB["3 · Block breaking"]
+    BE["4 · Block entities"]
+    SD["5 · Signal and dust"]
+    PE["6 · Pistons and block events"]
+    DO["7 · Diodes and the observer"]
+    BS -- "the shape channel" --> BI
+    BS -- "the tail of a flags-3 write" --> BB
+    BS -- "when a block entity lives and dies" --> BE
+    BS -- "the neighbour channel" --> SD
+    BS -- "the flag word's rarer bits" --> PE
+    BS -- "a flag-2 write's side effects" --> DO
+    BI -- "one click each, one ledger" --> BB
+    SD -- "what powers a piston" --> PE
+    SD -- "what a diode reads" --> DO
+    BE -- "redstone's one loose int" --> DO
+    BE -- "the moving block's entity" --> PE
 ```
+
+*The part as a hub and six spokes, numbered to the watch order. Six arrows
+leave `blocks-and-states` carrying the piece of a write that lecture is about;
+the five shorter arrows are the mechanisms two spokes share, and the two that
+reach the piston page are why it is watched late.*
 
 ## Before you start
 

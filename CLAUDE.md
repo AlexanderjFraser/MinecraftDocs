@@ -37,19 +37,23 @@ as rendered beside its section: is it true, is it needed, does it show the
 thing it should, can it be read at the column width; the theme, the caption,
 and the gate over the 2,619 names inside mermaid blocks; the viewer's brief,
 the runbook, the standard and **the schedule with each session's
-status** are `docs/pass7-brief.md`; **sessions A–D are done** (2026-09-15) — the
+status** are `docs/pass7-brief.md`; **sessions A–E are done** (2026-09-15) — the
 standard is ruled, the theme is adopted, which took the figures showing type
 under 9px from 89 to 10 without changing a page, the exemplar a part
-session reads first is `entities/entity-lifecycle`, and Parts I–IV are clean:
+session reads first is `entities/entity-lifecycle`, and Parts I–V are clean:
 every figure captioned, none showing type under 11px, no Mojang name broken on
 screen and no unresolved name in the gate. What the part sessions keep finding
 is **a message labelled with the caller's method and drawn arriving at the
-callee** — twelve in Part III and fourteen in Part IV, one on nearly every page,
-and the gate catches every one of them mechanically. Two things a session
+callee** — twelve in Part III, fourteen in Part IV and all thirteen of Part V's
+gate failures, five parts of five, one on nearly every page,
+and the gate catches every one of them mechanically. Three things a session
 learned the hard way and wrote into `TEMPLATE.md`: **a caption is one italic run
 end to end** (closing it mid-way costs the caption its styling and its number,
-silently, in the built page alone — `check_mermaid.js` gates it now), and an
-explicit `<br/>` turns the theme's wrap off for its whole label), **8 the voice** (one voice, the tics, the
+silently, in the built page alone — `check_mermaid.js` gates it now), an
+explicit `<br/>` turns the theme's wrap off for its whole label, and **seven
+lanes is already one too many for the column** — 1,650px, which is 10.6px of
+type, so F7's limit and F1's floor collide and only a lane fewer or a split
+moves it, never a shorter label), **8 the voice** (one voice, the tics, the
 terminology, the ambiguous counts). Then **9** the third fact-check and **10**
 the last polish. Beside them, a **version pass**
 runs between passes on each release, and the owner reads whenever they

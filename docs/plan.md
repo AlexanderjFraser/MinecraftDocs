@@ -89,7 +89,14 @@ the pages: **a caption that closes its italics mid-way stops matching
 thirteen were live, three of them already shipped in Part III. All fixed, the
 rule in `TEMPLATE.md`, and `check_mermaid.js` gates it now — a standard whose
 only enforcement is the stylesheet is a standard nothing checks.
-Sessions E to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
+**Session E ran the same day** over Part V: ten figures became thirteen, three
+pages split at a joint the prose already names, the book's fourth class diagram,
+and all thirteen of its gate failures were the caller's-method-on-the-callee
+device — five parts of five. Its own finding is a collision between two rulings:
+**seven lanes is about 1,650px, which is 10.6px of type at the column**, so F7's
+*at most seven* and F1's *nothing under eleven pixels* cannot both hold, and no
+amount of label-shortening moves it — only a lane fewer or a split does.
+Sessions F to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -707,3 +714,62 @@ that the owner has not understood; recording is after pass 10.
   about 0.10 and nothing else moves them. Eleven queue entries struck with the page
   open, seven opened. All six gates green (the figure-name gate still report-only,
   69 unresolved of 2,489 corpus-wide). Deployed.
+
+- **2026-09-15, pass 7 session E (Opus) — Part V · Blocks: the figures.** Eight
+  pages, ten figures in and **thirteen** out, one viewer agent per page with the
+  picture and the section and nothing else. Three pages split one figure at a
+  joint the prose already names: `blocks-and-states`' write — the part's
+  most-linked figure, 21 nodes and 3,409px with a gate clause appended to ten of
+  its labels — is now the chunk write and the tail either side of the re-read,
+  with every clause in a thirteen-row *step · side · flags · also needs* table,
+  which is session C's `server-level-tick` remedy applied a second time;
+  `block-breaking`'s dig is split at the eighth tick, the two machines boxed and
+  the loop's body in a `par` so the picture stops asserting an order between two
+  clocks the section exists to call independent; and `block-interaction`'s click
+  is split at the machine boundary, where `ServerPlayerGameMode` finally has the
+  lane the cast always gave it, so the two sides read as the same three-step
+  order — which is that section's claim and the thing the single figure had been
+  contradicting. `blocks-and-states`' vocabulary figure is the book's **fourth
+  `classDiagram`**: twelve nodes in which *extended by* and *builds* were drawn
+  with the same arrow, now two inheritance hierarchies meeting in `BlockState`,
+  and eleven classes rather than twelve, because the twelfth was a static field
+  and the heading had been counting it. Across the part: **no type under 11.9px**
+  (five figures were at 10.3–11.1px), nothing below 0.74, sentence labels 38 →
+  **0**, bare-number gates 3 figures → **0**, every figure captioned, and the
+  figure gate's **thirteen unresolved names and twenty-six notes are none of
+  either**.
+
+  **The part-wide fault was Parts III and IV's, a third and fourth time.** All
+  thirteen gate failures were the same device — a message labelled with the
+  caller's own method and drawn arriving at the callee — which makes it **five
+  parts of five**. Five sessions have now found it, none of them looking for it,
+  and all of them mechanically.
+
+  **The session's own finding is about a collision between two rulings.** Four of
+  Part V's five sequence diagrams had seven lanes, and seven lanes is about
+  1,650px, which at the 1,092px column is scale 0.66 and 10.6px of type. So F7's
+  *at most seven lanes* and F1's *no label under eleven pixels* are **not both
+  satisfiable**: seven lanes is already one too many for the column. What does
+  not help is shortening labels — every message already wraps at 180px, so eight
+  shortenings moved the width by exactly zero. What helps is one lane fewer
+  (`block-entities`' `ServerPlayer` carried one message and decided nothing;
+  folding it bought 0.11) or a split (`block-interaction`'s client half is now at
+  0.97). Every one of the four is now six lanes or two figures. F7's amendment
+  says an *eighth* lane puts everything under eleven pixels; the measurement here
+  says the seventh does, and session O should decide whether the key's number
+  becomes six.
+
+  Eleven corrections, all in [pass9.md](pass9.md). The sharpest is
+  `block-breaking`, where the figure printed the server's progress at STOP as
+  **1.07** while the prose two sections below says both sides *arrive at the same
+  1.064* — the one number the page exists to say is shared, printed two ways
+  inside one picture. Beside it: the tick-1 order in the same figure was
+  inverted; `blocks-and-states`' flag lead-in promised **seven** bits and named
+  **eight**; the landing page's lead-in said *each arrow* of eleven when it meant
+  six; and `pistons-and-block-events`' last note put both sides on tick N+2 when
+  the page's own prose gives the client five extra `deathTicks`. Also settled
+  without new work: the flag-word question the queue left for this session had
+  already been answered by F4, and applying the ruling is what turned the *seven*
+  up. Ten queue entries struck with the page open, six opened (three of them for
+  session O). All six gates green (the figure-name gate still report-only).
+  Deployed.

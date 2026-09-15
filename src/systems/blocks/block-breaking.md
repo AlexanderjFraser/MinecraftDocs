@@ -38,43 +38,78 @@ between.
 
 ```mermaid
 sequenceDiagram
-    participant MC as Minecraft
-    participant MPGM as MultiPlayer<br/>GameMode
-    participant CL as ClientLevel
-    participant SGPL as ServerGamePacket<br/>ListenerImpl
-    participant SPGM as ServerPlayer<br/>GameMode
-    participant SL as ServerLevel
-    participant Block as Block
-
-    Note over MC,Block: client tick 1, the button goes down, and the same lap also runs the first continueAttack
-    MC->>MPGM: startAttack sees a non-air block, startDestroyBlock, progress 0
-    MPGM->>CL: continueDestroyBlock adds the first 0.133, so tick 1 already holds one tick's worth
-    MPGM->>CL: destroyBlockProgress with stage -1, which clears my own crack
-    MPGM->>SGPL: ServerboundPlayerActionPacket START, sequence N
-    SGPL->>SPGM: handleBlockBreakAction, destroyProgressStart = gameTicks
-    SPGM->>SL: destroyBlockProgress broadcasts the first crack stage to everyone else within 32
-    SGPL-->>CL: ClientboundBlockChangedAckPacket N, nothing to reconcile
-
-    loop client ticks 2-8 beside server ticks, with a swing packet up and nothing about progress on this connection
-        MC->>MPGM: continueAttack, continueDestroyBlock adds 0.133
-        MPGM->>CL: my own stage, plus a hit sound every fourth tick
-        SPGM->>SPGM: tick, incrementDestroyProgress recomputes 0.133 x (elapsed + 1) and discards it
-        SPGM->>SL: a ClientboundBlockDestructionPacket only when the tenth changes
+    box Client
+        participant MC as Minecraft
+        participant MPGM as MultiPlayer<br/>GameMode
+        participant CL as ClientLevel
+    end
+    box Server
+        participant SGPL as ServerGamePacket<br/>ListenerImpl
+        participant SPGM as ServerPlayer<br/>GameMode
+        participant SL as ServerLevel
     end
 
-    Note over MC,Block: still client tick 8: the eighth add reaches 1.064, and the client is the only side that acts on it
-    MPGM->>CL: prediction M, playerWillDestroy plays event 2001 locally, setBlock to air with flags 11
-    MPGM->>SGPL: ServerboundPlayerActionPacket STOP, sequence M
-    Note over SGPL,Block: a server tick, STOP handled off the task queue
-    SGPL->>SPGM: handleBlockBreakAction STOP, own progress 1.07 clears the 0.7 bar
-    SPGM->>Block: destroyAndAck then destroyBlock, playerWillDestroy sends 2001 to all but the breaker
-    SPGM->>SL: removeBlock writes the fluid-or-air state under flags 3
-    SPGM->>Block: mineBlock spends one durability point, then playerDestroy
-    Block->>SL: the blocks/stone table rolls, popResource adds the ItemEntity
-    Note over SGPL,Block: same tick, later: the levels broadcast, then the connections flush
-    SL-->>CL: ClientboundBlockUpdatePacket air, absorbed by the ledger
-    SGPL-->>CL: ClientboundBlockChangedAckPacket M, syncBlockState finds air already
+    Note over MC,SL: client tick 1: the button goes down, and the same lap runs the first continue too
+    MC->>MPGM: startDestroyBlock, the block is not air
+    MPGM->>CL: destroyBlockProgress, stage -1 at progress 0
+    MPGM->>SGPL: ServerboundPlayerAction<br/>Packet START, N
+    MC->>MPGM: continueDestroyBlock adds the first 0.133
+    MPGM->>CL: destroyBlockProgress, my own crack at stage 1
+    SGPL->>SPGM: handleBlockBreakAction, the start tick recorded
+    SPGM->>SL: destroyBlockProgress, everyone else's crack within 32 blocks
+    SGPL-->>CL: ClientboundBlockChangedAck<br/>Packet N, nothing to reconcile
+
+    loop client ticks 2-8, beside server ticks
+        par the client adds
+            MC->>MPGM: continueDestroyBlock adds 0.133
+            MPGM->>CL: destroyBlockProgress, my own stage
+            MC->>SGPL: ServerboundSwingPacket, and nothing else
+        and the server recomputes the whole dig and throws the answer away
+            SPGM->>SPGM: incrementDestroy<br/>Progress
+            SPGM->>SL: destroyBlockProgress, only when the tenth changes
+        end
+    end
 ```
+
+*The two clocks, with the machines boxed: inside the loop nothing crosses
+between the boxes but a swing packet, which is the page's whole argument. The
+parallel compartments say the two halves have no order between them — the
+client adds a fraction, the server recomputes the lot, and neither tells the
+other.*
+
+The eighth add is where the two stop being symmetrical. It reaches 1.064 on
+the client, and the client is the only side that acts on a number.
+
+```mermaid
+sequenceDiagram
+    box Client
+        participant MPGM as MultiPlayer<br/>GameMode
+        participant CL as ClientLevel
+    end
+    box Server
+        participant SGPL as ServerGamePacket<br/>ListenerImpl
+        participant SPGM as ServerPlayer<br/>GameMode
+        participant SL as ServerLevel
+        participant Block as Block
+    end
+
+    Note over MPGM,Block: still client tick 8: the eighth add reaches 1.064
+    MPGM->>CL: setBlock to air under flags 11, inside prediction M
+    MPGM->>SGPL: ServerboundPlayerAction<br/>Packet STOP, M
+    Note over MPGM,Block: a server tick, STOP handled off the task queue
+    SGPL->>SPGM: handleBlockBreakAction STOP, its own 1.064 clears the 0.7 bar
+    SPGM->>Block: playerWillDestroy, event 2001 to all but the breaker
+    SPGM->>SL: removeBlock, the fluid-or-air state under flags 3
+    SPGM->>Block: playerDestroy, once ItemStack.mineBlock has spent a durability point
+    Block->>SL: the blocks/stone roll, popResource adds the ItemEntity
+    Note over MPGM,Block: same tick, later: the levels broadcast, then the connections flush
+    SL-->>CL: ClientboundBlockUpdatePacket air, absorbed
+    SGPL-->>CL: ClientboundBlockChangedAck<br/>Packet M, air is already there
+```
+
+*The break itself, in the order the server runs it. The client writes the air
+first and on its own authority, and everything that comes back — the block
+update and the receipt — finds a world that already agrees.*
 
 ## Two clocks, and the plus one that makes them agree
 
@@ -113,7 +148,8 @@ The two clocks count differently and still land on the same number, and the
 reason is a matter of *when* the server is asked rather than what it computes.
 The client accumulates: `MultiPlayerGameMode.continueDestroyBlock` adds one
 tick's fraction each time it runs, and the first of those runs in the same
-client tick as the `Minecraft.startAttack` that opened the dig, so after *k*
+client tick as the `Minecraft.startAttack` that opened the dig through
+`MultiPlayerGameMode.startDestroyBlock`, so after *k*
 client ticks the client holds *k* fractions. The server keeps no accumulator.
 `ServerPlayerGameMode.incrementDestroyProgress` multiplies the per-tick
 fraction by *elapsed ticks plus one*, and that plus one is exactly the client

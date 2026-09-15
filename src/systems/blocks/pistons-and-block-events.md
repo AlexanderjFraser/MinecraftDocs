@@ -109,25 +109,36 @@ sequenceDiagram
     participant PMBE as PistonMoving<br/>BlockEntity
     participant CPL as ClientPacketListener
     participant CL as ClientLevel
+
     Note over SL,CL: tick N, a packet handler, before the level ticks
     SL->>PBB: neighborChanged, so checkIfExtend
-    PBB->>PBB: getNeighborSignal finds the wire, and EXTENDED is false
-    PBB->>PSR: resolve, as a dry run. Stone is pushable, air beyond it
-    PBB->>SL: blockEvent TRIGGER EXTEND with the facing packed in. Nothing moves
-    Note over SL,CL: tick N, blockEvents phase, still the same tick
-    SL->>PBB: doBlockEvent re-reads the block, then triggerEvent
-    PBB->>PBB: getNeighborSignal again. A pulse shorter than the gap dies here
-    PBB->>PSR: resolve a second time, for real
-    PBB->>SL: moveBlocks writes MOVING PISTON placeholders at flags 324, one for the stone and one for the arm
-    PBB->>SL: then triggerEvent itself writes the extended base at flags 67
-    SL-->>CPL: ClientboundBlockEventPacket within 64 blocks, and a sound packet
-    CPL->>CL: Level.blockEvent runs immediately on the client
-    CL->>PBB: the same triggerEvent, the same moveBlocks, against the client's world
-    Note over SL,CL: tick N, blockEntities phase, and tick N plus 1, both sides
+    PBB->>PBB: getNeighborSignal finds the wire, EXTENDED is false
+    PBB->>PSR: resolve, as a dry run
+    PSR-->>PBB: the stone is pushable, air beyond it
+    PBB->>SL: blockEvent, TRIGGER EXTEND with the facing packed in
+    Note over SL,CL: tick N, block-events phase, still the same tick
+    SL->>SL: doBlockEvent re-reads the position
+    SL->>PBB: triggerEvent
+    PBB->>PBB: getNeighborSignal, a second time
+    opt still powered — a pulse shorter than the gap dies here
+        PBB->>PSR: resolve, for real this time
+        PBB->>SL: setBlock, two MOVING PISTON placeholders at flags 324
+        PBB->>SL: setBlockEntity, one PistonMovingBlockEntity per placeholder
+        PBB->>SL: setBlock, the extended base at flags 67
+        SL-->>CPL: ClientboundBlockEventPacket within 64 blocks, and a sound packet
+        CPL->>CL: blockEvent, run at once rather than queued
+        CL->>PBB: triggerEvent again, against the client's world
+    end
+    Note over SL,CL: tick N and tick N plus 1, block-entities phase, both sides
     PMBE->>PMBE: progress 0 to 0.5 to 1, moveCollidedEntities under NOCLIP
-    Note over SL,CL: tick N plus 2, blockEntities phase
-    PMBE->>SL: the placeholder becomes the real stone at flags 67, and the arm a PISTON HEAD
+    Note over SL,CL: tick N plus 2 on the server, five PistonMovingBlockEntity.deathTicks later on the client
+    PMBE->>SL: setBlock, the real stone and a PISTON HEAD, flags 67
 ```
+
+*One extension, from the redstone update to the landing write. The bracket is
+the whole of the point: everything inside it — including the one packet the
+client ever gets — happens only if the wire is still powered when the block
+event is drained, which is a tick after the decision that queued it.*
 
 ## How a piston decides, and the line that cannot fire
 

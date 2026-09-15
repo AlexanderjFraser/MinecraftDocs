@@ -189,20 +189,36 @@ meant to tell anybody ([blocks and
 states](blocks-and-states.md#the-two-update-channels) owns both).
 
 ```mermaid
-flowchart TB
-    NC["the neighbour channel: Level.updateNeighborsAt and Level.neighborChanged, server only. A write enters it only with Block.UPDATE_NEIGHBORS set, and a block may call it directly"]
-    SC["the shape channel: Level.neighborShapeChanged, run on both sides by every write without Block.UPDATE_KNOWN_SHAPE"]
-    RB["RepeaterBlock and ComparatorBlock: DiodeBlock.neighborChanged, then checkTickOnNeighbor"]
-    RL["RepeaterBlock.updateShape recomputes LOCKED, but only off-axis and only on the server"]
-    OB["ObserverBlock.updateShape, but only from the direction it faces and only while unpowered"]
-    SS["ObserverBlock.startSignal books a tick at delay 2, and only if this is not the client and none is booked"]
+flowchart TD
+    NC["the neighbour channel: Level.updateNeighborsAt"]
+    SC["the shape channel: Level.neighborShapeChanged"]
+    RB["DiodeBlock.neighborChanged, on the repeater and the comparator"]
+    RL["RepeaterBlock.updateShape writes LOCKED"]
+    DONE["no appointment: the lock is already correct"]
+    OB["ObserverBlock.updateShape"]
+    SS["ObserverBlock.startSignal"]
     BOOK["the appointment book"]
-    TICK["the scheduled tick runs: write POWERED with flag 2. The observer then calls updateNeighborsInFront itself, a diode reaches it as onPlace inside the write"]
-    NC --> RB --> BOOK
-    SC --> RL
-    SC --> OB --> SS --> BOOK
-    BOOK --> TICK
+    DT["DiodeBlock.tick writes POWERED under UPDATE_CLIENTS"]
+    OT["ObserverBlock.tick writes POWERED under UPDATE_CLIENTS"]
+    OUT["the one block in front, and only it"]
+    NC -- "the write set UPDATE_NEIGHBORS" --> RB
+    SC -- "the write omitted UPDATE_KNOWN_SHAPE" --> RL
+    SC --> OB
+    RB -- "DiodeBlock.checkTickOnNeighbor" --> BOOK
+    RL -- "server only, off the axis" --> DONE
+    OB -- "facing direction, while unpowered" --> SS
+    SS -- "server only, none booked" --> BOOK
+    BOOK --> DT
+    BOOK --> OT
+    DT -- "DiodeBlock.onPlace, inside the write" --> OUT
+    OT -- "ObserverBlock.updateNeighborsInFront, directly" --> OUT
 ```
+
+*Two channels, one queue, and one end that never reaches it: a diode hears
+about a change on the neighbour channel and the observer on the shape channel,
+both book a turn, and only the repeater's lock is written where it stands. The
+two paths out of the book differ too — the diode's pulse leaves through the
+side effect of its own write, the observer calls for it.*
 
 An observer watches for `ObserverBlock.updateShape` arriving from the one
 direction it faces, while `ObserverBlock.POWERED` is false, and books a

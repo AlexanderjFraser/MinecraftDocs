@@ -158,23 +158,30 @@ sequenceDiagram
     participant LC as LevelChunk
     participant AFBE as AbstractFurnace<br/>BlockEntity
     participant CH as ChunkHolder
-    participant SP as ServerPlayer
     participant FM as FurnaceMenu
     participant CPL as ClientPacketListener
-    Note over SL,CPL: tick N, blockEntities phase, the level's last content phase
-    SL->>LC: tickBlockEntities reaches the wrapper, isTicking and isValid pass
+    Note over SL,CPL: tick N, chunk-source phase: the broadcast drain runs now, with nothing yet to send
+    Note over SL,CPL: tick N, block-entities phase, the level's last content phase
+    SL->>LC: LevelChunk.BoundTickingBlockEntity.tick, the two gates pass
     LC->>AFBE: serverTick, quickCheck finds the smelting recipe
-    AFBE->>AFBE: fuel consumed, lit fields set to 1600, cookingTimer 1
-    AFBE->>SL: setBlock LIT true with flags 3
-    SL->>LC: setBlockState, same block, entity kept and ticker rebound
-    SL->>CH: blockChanged only queues the holder, the drain already ran
-    Note over SL,CPL: tick N plus 1, chunkSource phase, the broadcast drain
+    Note over AFBE: fuel consumed, both lit fields take 1600, the cooking timer at one
+    AFBE->>SL: setBlock, LIT true under flags 3
+    SL->>LC: setBlockState, same block, the entity kept and the ticker rebound
+    SL->>CH: blockChanged, which only marks the holder dirty
+    AFBE->>SL: updateNeighbourForOutputSignal, the comparator poke
+    Note over SL,CPL: tick N plus 1, chunk-source phase, the broadcast drain
     CH->>CPL: ClientboundBlockUpdatePacket, the fire appears
-    CH-->>CH: broadcastBlockEntity asks getUpdatePacket and gets nothing
-    Note over SL,CPL: tick N plus 1, entities phase, players tick
-    SP->>FM: broadcastChanges compares four data slots against remoteDataSlots
-    FM->>CPL: ClientboundContainerSetDataPacket per changed slot: 0, 1 and 2 on this tick, 0 and 2 from the next
+    Note over CH: ChunkHolder.broadcastBlockEntity asks BlockEntity.getUpdatePacket and gets nothing
+    Note over SL,CPL: tick N plus 1, entities phase, the players tick
+    Note over FM: ServerPlayer.tick calls FurnaceMenu.broadcastChanges: four data slots against the ones last sent
+    FM->>CPL: ClientboundContainerSet<br/>DataPacket per changed slot
 ```
+
+*Two consequences of one smelting tick, and both of them a tick late for the
+same reason: the drain that turns a dirty holder into a packet runs at the top
+of the tick, in the phase drawn first here, and the block entity does not tick
+until the last one. The two routes out are the block state and the menu's four
+ints, and they arrive by different machinery.*
 
 The furnace's ticker is handed out by `AbstractFurnaceBlock.createFurnaceTicker`
 **only when the level is a `ServerLevel`** — on the client it is null, so no

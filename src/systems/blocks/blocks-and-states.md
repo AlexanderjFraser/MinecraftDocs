@@ -38,36 +38,75 @@ one figure, so it is drawn here in full.
 | `BlockBehaviour.BlockStateBase` | everything a state can answer without going to the block, and the caches that make collision and occlusion cheap | half-built in its constructor, finished by `BlockBehaviour.BlockStateBase.initCache` |
 | `Block.BLOCK_STATE_REGISTRY` | the integer a state is on the wire and in a section's global palette — never on disk, where a state is its name and its properties | appended once per state, in the `Blocks` class initialiser |
 
-## Twelve classes and one Cartesian product
+## Eleven classes and one Cartesian product
 
 ```mermaid
-flowchart TB
-    PROPS["BlockBehaviour.Properties: the builder. Useless until setId hands it a ResourceKey"]
-    BB["BlockBehaviour: 1,357 lines of overridable hooks"]
-    BLOCK["Block: 643 lines, mostly statics, plus one state table and one default state"]
-    PROP["Property: a name, a value type, and getInternalIndex"]
-    BOOL["BooleanProperty: exactly two values, true at index 0"]
-    INT["IntegerProperty: min to max, min never below zero"]
-    ENUM["EnumProperty: any StringRepresentable enum, ordinalToIndex for the lookup"]
-    SD["StateDefinition: propertiesByName sorted by name, states the full Cartesian product"]
-    SH["StateHolder: propertyKeys, propertyValues, and the neighbors table"]
-    BSB["BlockBehaviour.BlockStateBase: every hook a state answers, and the caches"]
-    BS["BlockState: twenty lines. A constructor, asState, and CODEC"]
-    REG["Block.BLOCK_STATE_REGISTRY: an IdMapper over every state of every block"]
-
-    PROPS -- "kept by the BlockBehaviour constructor and read from thereafter" --> BB
-    BB -- "extended by" --> BLOCK
-    PROP -- "extended by, and only by these three" --> BOOL
-    PROP --> INT
-    PROP --> ENUM
-    PROP -- "collected by StateDefinition.Builder.add" --> SD
-    BLOCK -- "builds exactly one, in its own constructor" --> SD
-    SD -- "one object per cell of the product, built once and never again" --> BS
-    SH -- "extended by" --> BSB
-    BSB -- "extended by" --> BS
-    SD -. "fillNeighborsForState fills each state's neighbors, property index by value index" .-> SH
-    BS -- "added in registry order by the Blocks class initialiser, then initCache" --> REG
+classDiagram
+    class BlockBehaviour.Properties {
+        hardness, sound, map colour, whether it ticks
+        setId first, or the constructor throws
+    }
+    class BlockBehaviour {
+        <<abstract>>
+        every hook a block may override
+    }
+    class Block {
+        the registry holder and fifty-eight statics
+        one StateDefinition, one default state
+        BLOCK_STATE_REGISTRY, over every state of every block
+    }
+    class Property {
+        <<abstract>>
+        a name, a value type, an index per value
+    }
+    class BooleanProperty {
+        two values, true at index 0
+    }
+    class IntegerProperty {
+        min to max, min never below zero
+    }
+    class EnumProperty {
+        any StringRepresentable enum
+    }
+    class StateDefinition {
+        propertiesByName, sorted by name
+        states, the whole Cartesian product
+    }
+    class StateHolder {
+        <<abstract>>
+        this state's own property values
+        the neighbours table
+    }
+    class BlockBehaviour.BlockStateBase {
+        <<abstract>>
+        every hook a state answers alone
+        the caches initCache fills
+    }
+    class BlockState {
+        twenty lines: a constructor, asState, CODEC
+    }
+    BlockBehaviour.Properties ..> BlockBehaviour : read by the constructor, never copied out
+    BlockBehaviour <|-- Block
+    Property <|-- BooleanProperty
+    Property <|-- IntegerProperty
+    Property <|-- EnumProperty
+    Block --> StateDefinition : builds exactly one, in its constructor
+    StateDefinition --> Property : one axis each, collected by the Builder
+    StateDefinition --> BlockState : one per cell, built once and never again
+    StateHolder <|-- BlockBehaviour.BlockStateBase
+    BlockBehaviour.BlockStateBase <|-- BlockState
+    StateDefinition ..> StateHolder : fillNeighborsForState fills the table
 ```
+
+*The eleven classes a block state is made of, and the two hierarchies that
+meet in it: a kind three classes deep down the left, a state three classes
+deep down the right, joined by the one arrow that is neither an extends nor a
+holds — `StateDefinition` building one `BlockState` per cell of the product.*
+
+Two things in that picture are the section's: `Property` is extended by those
+three classes and by nothing else, and `BlockState` is the only class in the
+book that inherits from both halves. The rest of this section is what the
+product is and how big it gets.
 
 ### The kind, three classes deep
 
@@ -253,32 +292,34 @@ the world and runs the side effects that belong to the *position*, then
 *neighbourhood* — and only if the state it reads back is the one it asked
 for.
 
-The figure below names the flag word's bits by number, because that is how a
-write reads them, so here are the seven it gates on before you meet them: **1**
-is `Block.UPDATE_NEIGHBORS`, **2** `Block.UPDATE_CLIENTS`, **4**
-`Block.UPDATE_INVISIBLE`, **16** `Block.UPDATE_KNOWN_SHAPE`, **32**
-`Block.UPDATE_SUPPRESS_DROPS`, **64** `Block.UPDATE_MOVE_BY_PISTON`, **256**
+A write reads its flag word by bit, so here are the eight bits it gates on
+before you meet them: **1** is `Block.UPDATE_NEIGHBORS`, **2**
+`Block.UPDATE_CLIENTS`, **4** `Block.UPDATE_INVISIBLE`, **16**
+`Block.UPDATE_KNOWN_SHAPE`, **32** `Block.UPDATE_SUPPRESS_DROPS`, **64**
+`Block.UPDATE_MOVE_BY_PISTON`, **256**
 `Block.UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` and **512**
 `Block.UPDATE_SKIP_ON_PLACE`. Placement's **11** is therefore *neighbours,
 clients and immediate* — the combination `Block.UPDATE_ALL_IMMEDIATE` — so the
-stair takes every gate below except the two that ask for a bit to be clear.
+stair takes every step below except the two that ask for a bit to be clear.
+The figure is the order; the table under it is what each step waits for.
 
 ```mermaid
-flowchart TB
-    IN["Level.setBlock. Refuses a position out of bounds, and refuses everything on the server side of a debug world"]
+flowchart TD
+    IN["Level.setBlock"]
+    IN -- "out of bounds, or debug" --> FALSE["returns false"]
     IN --> SEC
 
-    subgraph CHUNK["inside LevelChunk.setBlockState"]
+    subgraph CHUNK["LevelChunk.setBlockState"]
         SEC["write the section"]
-        NOOP{"was the section all air and the state air, or is that exact state already there"}
-        HM["update the four live heightmaps: MOTION_BLOCKING, MOTION_BLOCKING_NO_LEAVES, OCEAN_FLOOR, WORLD_SURFACE. The two worldgen ones are not touched"]
-        LIGHT["if the section's emptiness flipped, tell the light engine and the chunk source. If the light properties differ, update the sky-light sources and queue LevelLightEngine.checkBlock"]
-        PRE["server only, flag 256 clear, and only when the block changed and the new state does not keep the old block entity: BlockEntity.preRemoveSideEffects. The removal itself runs on both sides"]
-        AFT["server only, flag 1 set or flag 64 set, and only when the block changed or the new block is a rail: affectNeighborsAfterRemoval"]
-        GUARD{"is the block at that position still the one just written"}
-        ONP["server only, flag 512 clear: BlockBehaviour.BlockStateBase.onPlace"]
-        BE["create, keep or replace the block entity, then ChunkAccess.markUnsaved"]
-        NOTHING["return nothing"]
+        NOOP{"air into an empty section,<br/>or this exact state already"}
+        HM["the four live heightmaps"]
+        LIGHT["tell the light engine what moved"]
+        PRE["BlockEntity.preRemoveSideEffects"]:::server
+        AFT["BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval"]:::server
+        GUARD{"is the new state still there"}
+        ONP["BlockBehaviour.BlockStateBase.onPlace"]:::server
+        BE["create, keep or replace the block entity"]
+        NOTHING["hand back nothing"]
         SEC --> NOOP
         NOOP -- "yes" --> NOTHING
         NOOP -- "no" --> HM
@@ -287,22 +328,62 @@ flowchart TB
         GUARD -- "yes" --> ONP --> BE
     end
 
-    NOTHING --> FALSE["Level.setBlock returns false"]
-    BE --> READ{"re-read the position: is it the state we wrote"}
-    READ -- "no" --> TRUE["Level.setBlock returns true, having skipped its entire tail"]
+    NOTHING --> FALSE
+    BE --> READ{"re-read: is it the state we wrote"}
+```
+
+*The first half-write: everything `LevelChunk.setBlockState` does belongs to
+the position itself, and it has two ways out that write nothing further — the
+no-op at the top and the guard three steps from the bottom, which both land
+in the same dead end. The three steps drawn in the server colour are the
+server's alone.*
+
+The re-read at the foot is the joint the whole section turns on. Only if the
+state that comes back is the one that went in does the second half run, and
+that second half is where a write reaches anything outside the position.
+
+```mermaid
+flowchart TD
+    READ{"re-read: is it the state we wrote"}
+    READ -- "no, and the tail is skipped" --> TRUE["Level.setBlock returns true"]
     READ -- "yes" --> DIRTY
 
-    subgraph TAIL["back in Level.setBlock"]
-        DIRTY["Level.setBlocksDirty. Empty on Level, on the client a re-mesh through LevelExtractor.setBlockDirty"]
-        SEND["flag 2, plus flag 4 clear on the client, plus a chunk at FullChunkStatus.BLOCK_TICKING or better on the server: Level.sendBlockUpdated"]
-        NB["flag 1: Level.updateNeighborsAt, and on the server also updateNeighbourForOutputSignal when the new state has an analog output"]
-        SHAPE["flag 16 clear and updateLimit still positive, with flags 1 and 32 masked out of what it passes on: three shape passes, indirect for the old state, direct for the new, indirect for the new"]
-        POI["Level.updatePOIOnBlockStateChange"]
+    subgraph TAIL["the tail of Level.setBlock"]
+        DIRTY["Level.setBlocksDirty"]
+        SEND["Level.sendBlockUpdated"]
+        NB["Level.updateNeighborsAt"]
+        SHAPE["three shape passes"]
+        POI["Level.updatePOIOnBlockStateChange"]:::server
         DIRTY --> SEND --> NB --> SHAPE --> POI
     end
 
     POI --> TRUE
 ```
+
+*The second half-write, and the part's other six lectures are all applications
+of one of its five steps. Both edges out of the diamond return true — a
+write that fails its re-read skips the whole tail and still says it
+succeeded.*
+
+The figure is the order and the table is the gate: every step above runs
+unconditionally unless a row here says otherwise, and the flag numbers are the
+ones the lead-in paired with their names.
+
+| step | side | flags | also needs |
+|---|---|---|---|
+| write the section | both | — | — |
+| the four live heightmaps | both | — | the two worldgen heightmaps are never touched |
+| tell the light engine what moved | both | — | the section's emptiness flipped, or the light properties differ — then `LevelLightEngine.checkBlock` is queued |
+| `BlockEntity.preRemoveSideEffects` | server | 256 clear | the *block* changed, and the new state does not keep the old entity. The removal after it runs on both sides |
+| `BlockBehaviour.BlockStateBase.affectNeighborsAfterRemoval` | server | 1 set, or 64 set | the block changed, or the new block is a `BaseRailBlock` |
+| `BlockBehaviour.BlockStateBase.onPlace` | server | 512 clear | — |
+| create, keep or replace the block entity | both | — | then `ChunkAccess.markUnsaved` |
+| `Level.setBlocksDirty` | client | — | the state actually changed. Empty on `Level`; the client re-meshes through `LevelExtractor.setBlockDirty` |
+| `Level.sendBlockUpdated` | both | 2 set, and 4 clear on the client | on the server, a chunk at `FullChunkStatus.BLOCK_TICKING` or better |
+| `Level.updateNeighborsAt` | both | 1 set | — |
+| `Level.updateNeighbourForOutputSignal` | server | 1 set | the new state has an analog output |
+| three shape passes | both | 16 clear, with 1 and 32 masked out of what they pass on | `Block.UPDATE_LIMIT` still positive. Indirect for the old state, direct for the new, indirect for the new |
+| `Level.updatePOIOnBlockStateChange` | server | — | empty on `Level`, overridden on `ServerLevel` |
 
 ### Inside the chunk write
 

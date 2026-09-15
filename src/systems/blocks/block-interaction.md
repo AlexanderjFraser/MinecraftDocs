@@ -31,36 +31,65 @@ laggy server and a redstone lamp does not.
 
 ```mermaid
 sequenceDiagram
-    participant MC as Minecraft
-    participant MPGM as MultiPlayer<br/>GameMode
-    participant CL as ClientLevel
-    participant DB as DoorBlock
-    participant CNU as Collecting<br/>NeighborUpdater
-    participant SGPL as ServerGamePacket<br/>ListenerImpl
-    participant SL as ServerLevel
+    box Client
+        participant MC as Minecraft
+        participant MPGM as MultiPlayer<br/>GameMode
+        participant CL as ClientLevel
+        participant DB as DoorBlock
+        participant CNU as Collecting<br/>NeighborUpdater
+    end
 
     Note over MC,CNU: one client tick, all of it before the packet leaves
-    MC->>MPGM: startUseItem, main hand first, useItemOn with the BlockHitResult
+    MC->>MPGM: useItemOn, main hand first, with the BlockHitResult
     MPGM->>MPGM: startPrediction opens sequence n
-    MPGM->>DB: useItemOn returns TRY_WITH_EMPTY_HAND, so useWithoutItem runs
-    DB->>CL: canOpenByHand, cycle OPEN, setBlock on the lower half with flags 10
-    CL->>CNU: updateNeighbourShapes, six directions, limit 511
+    MPGM->>DB: useWithoutItem, after useItemOn returned TRY_WITH_EMPTY_HAND
+    DB->>CL: setBlock, the lower half with OPEN cycled, flags 10
+    CL->>CNU: shapeUpdate, six directions, limit 511
     CNU->>DB: updateShape on the upper half, direction DOWN
-    CNU->>CL: updateOrDestroy writes the upper half, flags 10, limit 511
-    DB->>CL: playSound with the clicker as except, so only they hear it
-    MPGM->>SGPL: ServerboundUseItemOnPacket carrying hand, hit and n
-    MC->>SGPL: ServerboundSwingPacket, because SUCCESS swings on the client
-    Note over SGPL,SL: server tick, packets drained before the levels tick
-    SGPL->>SGPL: ackBlockChangesUpTo n, then reach, hit box, height, spawn protection
-    SGPL->>DB: ServerPlayerGameMode.useItemOn, the same inner order
-    DB->>SL: setBlock lower half, then the shape pass writes the upper half
-    DB->>SL: playSound to everyone but the clicker, gameEvent BLOCK OPEN
-    SGPL-->>CL: ClientboundBlockUpdatePacket, clicked position and face neighbour
-    Note over SGPL,SL: still this tick, levels tick, then connections tick
-    SL-->>CL: ClientboundSectionBlocksUpdatePacket, both halves in one section
-    SGPL-->>CL: ClientboundBlockChangedAckPacket for n
-    CL->>CL: endPredictionsUpTo n, both halves already agree, nothing is written
+    CNU->>CL: setBlock, the upper half through Block.updateOrDestroy
+    DB->>CL: playSound, the clicker as except
 ```
+
+*The client's whole share of one click, finished before anything is sent. The
+two writes are the page's subject: the lower half is written by the door, the
+upper half by the shape pass that the first write set off, and no neighbour
+update happens at all.*
+
+Only now does anything leave the machine. The packet carries the hand, the hit
+and the sequence number, and the server runs the identical inner order against
+its own world.
+
+```mermaid
+sequenceDiagram
+    box Client
+        participant MPGM as MultiPlayer<br/>GameMode
+        participant CL as ClientLevel
+    end
+    box Server
+        participant SGPL as ServerGamePacket<br/>ListenerImpl
+        participant SPGM as ServerPlayer<br/>GameMode
+        participant DB as DoorBlock
+        participant SL as ServerLevel
+    end
+
+    MPGM->>SGPL: ServerboundUseItemOnPacket, hand, hit and n
+    Note over MPGM,SGPL: a ServerboundSwingPacket goes up beside it, because SUCCESS swings on the client
+    Note over MPGM,SL: server tick, packets drained before the levels tick
+    SGPL->>SGPL: ackBlockChangesUpTo n, then reach, hit box, height, spawn protection
+    SGPL->>SPGM: useItemOn, the same three-step order
+    SPGM->>DB: useWithoutItem
+    DB->>SL: setBlock lower half, then the shape pass writes the upper half
+    DB->>SL: playSound, everyone but the clicker, and gameEvent BLOCK OPEN
+    SGPL-->>CL: two ClientboundBlockUpdatePackets, the clicked position and the face neighbour
+    Note over MPGM,SL: still this tick, levels tick, then connections tick
+    SL-->>CL: ClientboundSectionBlocks<br/>UpdatePacket, both halves in one section
+    SGPL-->>CL: ClientboundBlockChangedAck<br/>Packet for n
+    CL->>CL: handleBlockChangedAck, and the prediction for n ends
+```
+
+*The server's copy of the same click, and the three things that come back. The
+receipt arrives last, and by the time it does the client has already been
+corrected twice — which is why closing the prediction writes nothing.*
 
 ## One press, one hand at a time
 
