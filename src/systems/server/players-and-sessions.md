@@ -96,18 +96,26 @@ sequenceDiagram
     participant SL as ServerLevel
 
     SLPL->>PL: canPlayerLogin, then disconnectAllPlayersWithProfile
-    SLPL->>SCPL: handleLoginAcknowledgement builds the listener, startConfiguration
-    Note over SCPL: one task at a time, startNextTask refuses to overlap two
+    SLPL->>SCPL: startConfiguration, on a listener just built
+    Note over SCPL: one task at a time, ServerConfigurationPacketListenerImpl.startNextTask refuses to overlap two
     SCPL->>SCPL: SynchronizeRegistriesTask, then a code of conduct or a resource pack
-    SCPL->>PST: returnToWorld appends PrepareSpawnTask, then JoinWorldTask
-    PST->>PDS: load, decoding SavedPosition out of the whole datafixed file
-    PST->>SL: a PLAYER_SPAWN ticket at radius 3, then wait
-    Note over SCPL,SL: every tick until the chunks land, the client still in configuration
-    SL-->>PST: the load future completes, Preparing becomes Ready
-    SCPL->>SCPL: JoinWorldTask sends ClientboundFinishConfigurationPacket
-    SCPL->>PL: handleConfigurationFinished re-checks duplicates and canPlayerLogin
+    SCPL->>PST: start, appended by returnToWorld with a JoinWorldTask behind it
+    PST->>PDS: load, decoding the saved position out of the datafixed file
+    PST->>SL: a PLAYER_SPAWN ticket at radius 3, through its chunk source
+    rect rgba(0, 0, 0, 0.04)
+        Note over SCPL,SL: every tick until the chunks land, the client still in configuration
+        SL-->>PST: the load future completes, Preparing becomes Ready
+    end
+    SCPL->>SCPL: JoinWorldTask sends the finish packet
+    SCPL->>PL: canPlayerLogin again, and the duplicate check again
     SCPL->>PST: spawnPlayer
 ```
+
+*A join assembled while the client waits: the queue above the band runs one
+task at a time and never overlaps, and the band is the one thing that does
+overlap — a world being built for a client that has no idea.*
+
+Nothing in that queue overlaps.
 
 Nothing in that queue overlaps.
 `ServerConfigurationPacketListenerImpl.startNextTask` throws rather than
@@ -118,12 +126,18 @@ remaining work: once the ticket is placed the task simply reports *not
 finished* from `ConfigurationTask.tick` each tick, and the client spends
 that time in configuration with no idea a world is being assembled for it.
 
-The ticket needs re-arming. `TicketType.PLAYER_SPAWN` is registered with a
-timeout of twenty ticks, so `PrepareSpawnTask.keepAlive` — called from
-`ServerConfigurationPacketListenerImpl.tick` — re-adds it at the same radius
-every tick once the task has reached `PrepareSpawnTask.Ready`. Without that,
-a client slow to acknowledge the finish packet would arrive to find its
-spawn chunks expired underneath it.
+The ticket needs re-arming, but not yet. `TicketType.PLAYER_SPAWN` is
+registered with a timeout of twenty ticks and with `TicketType.FLAG_LOADING` as its only
+flag, so `TicketType.canExpireIfUnloaded` is false and the timeout does not
+begin while the chunks it asked for are still on their way — which is what
+lets `ServerChunkCache.addTicketAndLoadWithRadius` accept this type at all,
+since it throws for any type that could expire before it loads. From the
+moment the task reaches `PrepareSpawnTask.Ready` the clock does run, and
+`PrepareSpawnTask.keepAlive` — called from
+`ServerConfigurationPacketListenerImpl.tick` — re-adds the ticket at
+**radius 3**, the radius the figure shows, every tick. Without that, a client
+slow to acknowledge the finish packet would arrive to find its spawn chunks
+expired underneath it.
 
 A player with no save file gets a search instead of a position.
 `PlayerSpawnFinder.findSpawn` walks up to
@@ -198,19 +212,25 @@ sequenceDiagram
     participant Wire as the network
 
     Note over PL,Wire: in the scheduled packet processing at the top of a tick
-    PL->>SGPL: new listener, inbound protocol to play, suspendFlushing
+    PL->>SGPL: suspendFlushing, on a listener already set to play
     PL->>SGPL: ClientboundLoginPacket, difficulty, abilities, held slot, recipes
     PL->>SGPL: the permission level as an entity event, then the command tree
-    PL->>SGPL: recipe book, scoreboard, join message, teleport, server status
-    PL->>SGPL: everyone already here, then the joiner to everyone
-    PL->>SGPL: sendLevelInfo, border, clocks, spawn, rain, LEVEL_CHUNKS_LOAD_START
+    PL->>SGPL: recipe book, scoreboard, the chat join message, teleport, status
+    PL->>SGPL: the tab list as it stands, everyone already here
+    PL->>PL: the joiner is added to PlayerList.players
+    PL->>SGPL: the joiner, to everyone, themselves included
+    PL->>SGPL: the border, the clocks, the spawn, the rain, LEVEL_CHUNKS_LOAD_START
     PL->>SL: addNewPlayer
-    SL->>CM: onTrackingStart, updatePlayerStatus, the first ChunkTrackingView
-    CM->>SGPL: the chunks in view marked pending on PlayerChunkSender
-    PL->>SGPL: boss events, active effects, initInventoryMenu, resumeFlushing
+    SL->>CM: addEntity, then updatePlayerStatus and the first ChunkTrackingView
+    CM->>SGPL: every chunk in that view marked pending on PlayerChunkSender
+    PL->>SGPL: the boss bars, the effects, the inventory menu, then resumeFlushing
     SGPL->>Wire: one write
-    Note over SL,Wire: at the end of the same tick, the first chunk batch, and only one
+    Note over SL,Wire: later in the same tick, the first chunk batch, and only one
 ```
+
+*Everything `PlayerList.placeNewPlayer` sends, and the single write at the foot
+that carries all of it; the self-message in the middle is the step the tab-list
+order turns on.*
 
 The whole method sits inside one suspension, so everything above — a login
 packet, a command tree, a scoreboard, a tab list, a world border — leaves as a
@@ -240,17 +260,21 @@ resolving a `LevelBasedPermissionSet` out of
 needs to know is that both halves are re-sent whenever `PlayerList.op` or
 `PlayerList.deop` changes it.
 
-The tab list goes out in a deliberate order: the joiner is sent everyone
-already present, *then* added to `PlayerList.players`, *then* everyone —
-themselves included — is sent the joiner. And the join message is chosen a
-few lines earlier than it is sent, because
+The tab list goes out in a deliberate order, and it is the middle step that
+makes it one: the joiner is sent everyone already present, *then* added to
+`PlayerList.players`, *then* everyone — themselves included — is sent the
+joiner. The last thing `PlayerList.sendLevelInfo` sends after it is
+`ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START`, which is the client's
+signal to stop waiting and start drawing whatever terrain arrives. And the chat
+join message is chosen a few lines earlier than it is sent, because
 *multiplayer.player.joined.renamed* is used when the name in the profile
 differs from the one the name cache remembers, and the cache is overwritten
 at the top of the method.
 
 Entering the level is the step that starts the terrain, though it is not
-the last: the boss bars, the active effects, the inventory menu and the join
-notification all follow it, and `ServerCommonPacketListenerImpl.resumeFlushing`
+the last: the boss bars, the active effects, the inventory menu and
+`NotificationManager.playerJoined` — which is not the chat message, sent
+twenty lines above — all follow it, and `ServerCommonPacketListenerImpl.resumeFlushing`
 closes the single write.
 `ServerLevel.addNewPlayer` hands the player to
 `PersistentEntitySectionManager.addNewEntity`, whose callback adds it to

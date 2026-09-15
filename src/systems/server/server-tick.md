@@ -39,26 +39,37 @@ sequenceDiagram
     participant PP as PacketProcessor
     participant MS as MinecraftServer
     participant SL as ServerLevel
+    participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Conn as Connection
-    participant PCS as PlayerChunkSender
     participant Wire as the network
 
-    Note over MS: runServer moves nextTickTimeNanos forward, past the backlog if it warns
+    Note over MS,SGPL: MinecraftServer.runServer moves MinecraftServer.nextTickTimeNanos past the backlog if it warns
     MS->>PP: processQueuedPackets
-    PP->>MS: every serverbound packet Netty queued since the last drain, handled now
-    Note over MS,Conn: tickChildren begins, suspendFlushing on every player connection
-    MS->>SL: tick(haveTime), each dimension in turn, overworld first
-    SL->>Conn: send, written to the channel and not flushed
-    MS->>Conn: ServerConnectionListener.tick walks the list, Connection.tick each
-    Conn->>Conn: flushQueue, then ServerGamePacketListenerImpl.tick, the player's own tick
-    Conn->>Wire: flush one, the levels and the player tick
-    MS->>PCS: sendNextChunks, per player
-    PCS->>Conn: the chunk batch, written and not flushed
-    MS->>Conn: resumeFlushing
-    Conn->>Wire: flush two, the chunks and everything sent after the connection phase
-    Note over MS: waitUntilNextTick runs all tasks, then managedBlock parks until the deadline
-    Note over PP,Wire: the next tick begins
+    PP->>MS: every serverbound packet Netty queued since the last drain
+    rect rgba(0, 0, 0, 0.04)
+        Note over PP,Wire: MinecraftServer.tickChildren, one pass
+        MS->>SGPL: suspendFlushing, on every player's listener
+        MS->>SL: tick(haveTime), each dimension in turn, overworld first
+        SL->>SGPL: send, per player
+        SGPL->>Conn: send, with no flush while the flag holds
+        MS->>Conn: ServerConnectionListener.tick, then Connection.tick each
+        Conn->>Conn: flushQueue drains pendingActions
+        Conn->>SGPL: tick, the player's own tick
+        Conn->>Wire: flush one, the levels and the player tick
+        MS->>SGPL: the next chunk batch, through its PlayerChunkSender
+        MS->>SGPL: resumeFlushing, per player, right after that batch
+        SGPL->>Conn: flushChannel
+        Conn->>Wire: flush two, the chunks and the rest of the phase
+    end
+    Note over MS,SGPL: MinecraftServer.waitUntilNextTick runs all tasks, then BlockableEventLoop.managedBlock parks
 ```
+
+*One tick, and the two moments it reaches the socket; the shaded band is
+`MinecraftServer.tickChildren`, and everything outside it is the loop's own
+bookkeeping.*
+
+Follow the two arrows into *the network*: they are the whole of what a client
+hears from this tick, and the second one is the one the chunks ride.
 
 ### The deadline moves before the work starts
 
@@ -315,21 +326,24 @@ where the rest of the book sends you for that machinery.
 
 ```mermaid
 flowchart TD
-    P["BlockableEventLoop.pollTask peeks the head of the queue"] --> E{"anything queued"}
+    P["BlockableEventLoop.pollTask peeks the head"] --> E{"anything queued"}
     E -- "a task" --> B{"blocking depth above zero"}
-    B -- "inside managedBlock" --> RUN["run it, and report true"]
+    B -- "inside BlockableEventLoop.managedBlock" --> RUN["run it, report true"]
     B -- "not blocked" --> S{"MinecraftServer.shouldRun"}
-    S -- "queued more than MAX_TICK_LATENCY ticks ago" --> RUN
-    S -- "otherwise, ask the budget" --> H{"MinecraftServer.haveTime"}
-    H -- "a task is already running" --> RUN
-    H -- "in the slack, now is before delayedTasksMaxNextTickTimeNanos" --> RUN
-    H -- "inside the tick, now is before nextTickTimeNanos" --> RUN
-    H -- "out of time" --> L["leave it queued"]
-    E -- "nothing" --> C{"only now does pollTaskInternal offer every level's chunk source a turn, when sprinting or blocked or in time"}
-    L --> C
-    C -- "one of them had work" --> RUN
-    C -- "none did" --> W["report false. Inside managedBlock, waitForTasks parks, and a schedule unparks it early"]
+    S -- "older than three ticks" --> RUN
+    S -- "otherwise" --> H{"MinecraftServer.haveTime"}
+    H -- "time left" --> RUN
+    H -- "out of time, left queued" --> OFF["nothing ran, and the levels are offered the turn"]
+    E -- "nothing queued" --> OFF
 ```
+
+*The one question the head of the queue is asked, and the three independent
+reasons the answer is yes; the two edges into the bottom box are the ones the
+next figure but one picks up.*
+
+Read the bottom box twice. An empty queue and a queue whose head may not run
+yet are the same answer to `MinecraftServer.pollTaskInternal`, and that answer
+is the only thing a level's chunk source is waiting for.
 
 ### Every runnable becomes a `TickTask`
 
@@ -411,6 +425,19 @@ first and, only if that queue had nothing to run, offers every level's
 `ServerChunkCache.MainThreadExecutor.pollTask` a turn — when the loop is
 sprinting, or blocked, or still in time. The levels get the leftovers of the
 leftovers.
+
+```mermaid
+flowchart TD
+    N["nothing ran from the server's own queue"] --> G{"sprinting, blocked or in time"}
+    G -- "no" --> W["report false, and MinecraftServer.waitForTasks parks"]
+    G -- "yes" --> C{"any level's chunk source with work"}
+    C -- "one had" --> CRUN["a chunk source ran, report true"]
+    C -- "none did" --> W
+```
+
+*What the leftover milliseconds buy: the guard that has to pass before the
+levels are asked at all, and the two ways the poll still ends in a park.*
+
 That executor keeps a policy of its own: its `ServerChunkCache.MainThreadExecutor.shouldRun` is unconditionally
 true, with no age rule, and its poll runs
 `ServerChunkCache.runDistanceManagerUpdates` first and returns at once if that

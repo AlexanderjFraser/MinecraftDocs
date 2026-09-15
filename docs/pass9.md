@@ -44,6 +44,183 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session C — Part III · The server: the figures *(2026-09-15)*
+
+Six pages, twelve figures (ten before; two were split). Every figure captioned;
+every figure now pointed at by a sentence; every name in every figure resolved
+against the decompile (twelve gate failures and thirteen gate notes to none).
+Nothing was moved between pages. The prose changed only where a caption, a
+lead-in, or the one sentence a figure's name needed required it — plus the three
+answers under *Corrections* and *New claims in prose*, each with the decompile
+open.
+
+### The part-wide finding, which is the entry pass 9 should read first
+
+**Twelve messages across all six pages were labelled with the *caller's* method
+and drawn arriving at the *callee*.** Every one failed `check_figure_names.py`,
+and every one was a claim about who does what. Each is now the receiver's own
+method, re-derived:
+
+- `server/how-a-server-dies` — `MS->>SL: saveAllChunks` → `save`.
+  `MinecraftServer.saveAllChunks` calls `level.save(null, flush, …)`
+  (`MinecraftServer.java:637`); `ChunkMap.saveAllChunks` is two calls further
+  down and stays in the label as prose.
+- `server/server-level-tick` ×2 — `SL->>SCC: sendBlockUpdated` → `blockChanged`.
+  `ServerLevel.sendBlockUpdated` calls `this.getChunkSource().blockChanged(pos)`
+  (`ServerLevel.java:1200`).
+- `server/server-level-tick` — `SCC->>CH: broadcastChangedChunks` →
+  `broadcastChanges`. `ServerChunkCache.broadcastChangedChunks`
+  (`ServerChunkCache.java:365`) calls `ChunkHolder.broadcastChanges`
+  (`ChunkHolder.java:187`).
+- `server/players-and-sessions` — `SL->>CM: onTrackingStart` → `addEntity`, then
+  `updatePlayerStatus`. `ServerLevel.EntityCallbacks.onTrackingStart`
+  (`ServerLevel.java:2048`) calls `ServerChunkCache.addEntity`, which reaches
+  `ChunkMap.addEntity` (`ChunkMap.java:1280`); `ChunkMap.updatePlayerStatus` is
+  `ChunkMap.java:1141`.
+- `server/players-and-sessions` — `PL->>SGPL: sendLevelInfo` → the packets
+  themselves. `PlayerList.sendLevelInfo` (`PlayerList.java:700`) is the caller.
+- `server/players-and-sessions` — `SLPL->>SCPL: handleLoginAcknowledgement` →
+  `startConfiguration`. `ServerLoginPacketListenerImpl.handleLoginAcknowledgement`
+  (`ServerLoginPacketListenerImpl.java:264`) is the caller.
+- `server/players-and-sessions` — `SCPL->>PST: returnToWorld` → `start`.
+  `ServerConfigurationPacketListenerImpl.returnToWorld`
+  (`ServerConfigurationPacketListenerImpl.java:104`) builds the task, appends a
+  `JoinWorldTask` and calls `startNextTask`.
+- `server/players-and-sessions` — `SCPL->>PL: handleConfigurationFinished` → the
+  two checks it makes. The method is SCPL's own
+  (`ServerConfigurationPacketListenerImpl.java:166`).
+- `server/server-tick` — `MS->>Conn: resumeFlushing` moved to a new `SGPL` lane.
+  `resumeFlushing` is `ServerCommonPacketListenerImpl.java:157`, reached as
+  `player.connection.resumeFlushing()` (`MinecraftServer.java:1281`), where
+  `ServerPlayer.connection` is a `ServerGamePacketListenerImpl` and not a
+  `Connection`.
+- `server/starting-a-server` ×2 — `MS->>SL: createLevels` / `prepareLevels` →
+  what `ServerLevel` actually receives. Both are `MinecraftServer`'s own
+  (`MinecraftServer.java:449`, `:580`), and `MinecraftServer.loadLevel` is three
+  calls, not two (`:425`).
+
+**`spawnPlayer` was the one that looked wrong and was right**:
+`PrepareSpawnTask.spawnPlayer` is real
+(`server/network/config/PrepareSpawnTask.java:123`) and calls
+`PlayerList.placeNewPlayer` at `:242`. The queue had it down as a naming slip.
+
+### Corrections (a figure against the decompile, or against the page beside it)
+
+- `server/server-level-tick`, figure 1 — the node read
+  *`ServerLevel.runBlockEvents`, then `handlingTick` goes false — **running***.
+  `ServerLevel.handlingTick = false` sits **outside** the `runs` guard
+  (`ServerLevel.java`, after the `blockEvents` push): only `runBlockEvents` is
+  gated. The gates table now carries them as two rows, one ticked and one blank.
+- `server/starting-a-server`, figure 1 — the `Worker-->>WL` return was labelled
+  *the stages that must be single-threaded come back to main*. It does not reach
+  `Main`: the arrow that does is `WL->>Main`, which was labelled
+  `createResourceManager`. `WorldLoader.load` takes a background executor and a
+  main-thread executor, and it is the main-thread one that runs the pack-opening
+  stage and the final assembly (the page says so at *The world load turns the
+  main thread into an executor*). The two labels are swapped to what their own
+  arrows carry.
+- `server/how-a-server-dies`, figure 1 — `saveDataTag` and
+  `SavedDataStorage.saveAndJoin` were drawn as siblings of the flush save. All
+  three are **inside** `MinecraftServer.saveAllChunks`
+  (`MinecraftServer.java:628–665`): the per-level `save`, then
+  `storageSource.saveDataTag`, then `savedDataStorage.saveAndJoin()` under
+  `if (flush)`. Redrawn as a shaded band naming the one call, which is what
+  makes *after `level.dat` and not before* structural rather than asserted.
+- `server/how-a-server-dies`, figure 2 — the watchdog figure had **no `Disk`
+  lane**, so beside figure 1's four writes it read as *the watchdog writes
+  nothing*, which contradicts the page's own comparison table (*is a crash
+  report written: yes*). `ServerWatchdog.run` does both
+  `Bootstrap.realStdoutPrintln` and `report.saveToFile(…/crash-reports/…)`
+  before `exit()` (`ServerWatchdog.java:61–68`). A `Disk` lane and one message
+  added; the closing note now says *nothing **more*** is written.
+- `server/how-a-server-dies`, figure 1 — the drain loop's single arrow put
+  `MinecraftServer`'s own deadline push on `ServerChunkCache`'s lane and omitted
+  `MinecraftServer.waitUntilNextTick`, which the prose calls part of the same
+  loop body. The real body is three steps (`MinecraftServer.java:714–730`) and
+  is drawn as three.
+- `server/players-and-sessions`, figure 2 — the tab-list order was one arrow.
+  `PlayerList.placeNewPlayer` sends `createPlayerInitializing(this.players)`,
+  **then** `this.players.add(player)`, **then**
+  `broadcastAll(createPlayerInitializing(List.of(player)))`
+  (`PlayerList.java:194–196`) — and the middle step is the one the page calls
+  deliberate. Drawn as three beats, the middle one a self-message.
+
+### Orderings the redrawn figures assert
+
+- `server/README` figure 1 — the nodes are numbered to the **watch** order
+  (tick, level, players, start, death) and the arrows are the **run-time**
+  hand-off; the caption says which is which. Claim: `Start → Tick`,
+  `Tick ⇄ Level`, `Tick ⇄ Players`, `Tick → Death`, and that the loop's
+  *finally* is what two of the three endings reach.
+- `server/server-tick` figure 1 — six lanes; `ServerGamePacketListenerImpl`
+  replaces `PlayerChunkSender` (which the cast never listed, while the listener
+  it does). Asserted: `suspendFlushing` on every player before the levels;
+  `ServerLevel.tick` per dimension; `ServerConnectionListener.tick` reaching
+  `Connection.tick`, which does `Connection.flushQueue`, then the listener's own
+  `tick`, then the channel flush (**flush one**); then per player the chunk batch
+  and `resumeFlushing`, which itself calls `Connection.flushChannel` (**flush
+  two**). The band is `MinecraftServer.tickChildren`'s extent
+  (`MinecraftServer.java:1205–1282`).
+- `server/server-tick` figures 2 and 3 — the old fourteen-edge cascade split at
+  `MinecraftServer.pollTaskInternal`'s own joint. Figure 2 asserts that
+  `BlockableEventLoop.pollTask` runs the head for exactly three reasons —
+  blocking depth above zero, older than three ticks, or `haveTime` — and that an
+  empty queue and a head that may not run reach the same outcome. Figure 3
+  asserts the guard `isSprinting() || shouldRunAllTasks() || haveTime()` before
+  any level's chunk source is offered a turn (`MinecraftServer.java:994–1011`).
+- `server/server-level-tick` figure 1 — the twenty-two steps in order, with the
+  six inside `ServerChunkCache.tick` drawn as a subgraph. Claim: those six and
+  only those six are that call's insides
+  (`ServerChunkCache.java:324–343`; `clearCache` is the seventh and is not a
+  step of the world advancing, so it is not drawn — a deliberate omission).
+  The gates table beside it is twenty-one rows of three columns, every cell
+  re-derived from `ServerLevel.tick`.
+- `server/server-level-tick` figure 2 — three bands (before the tick, inside
+  `ServerChunkCache.tick`, several steps later); the `ChunkMap` lane is gone and
+  its one message is a note. Claim: `ChunkHolder.broadcastChanges` emits the
+  light packet **only if either light filter has anything in it** — the prose
+  said so and the old figure drew it unconditional.
+- `server/players-and-sessions` figure 1 — the ticket message is now
+  `PLAYER_SPAWN at radius 3, through its chunk source`; the wait is a band.
+- `server/starting-a-server` — one figure became two, split at the note bar the
+  old figure already drew. Figure 2 asserts `MinecraftServer.loadLevel` is
+  `createLevels`, `forceDifficulty`, `prepareLevels` — three calls, where the
+  old figure drew two — and that the optional listeners are each conditional.
+
+### New claims in prose (three sentences, each with the decompile open)
+
+- `server/players-and-sessions` — "`TicketType.PLAYER_SPAWN` is registered with
+  a timeout of twenty ticks and with `TicketType.FLAG_LOADING` as its only flag,
+  so `TicketType.canExpireIfUnloaded` is false and the timeout does not begin
+  while the chunks it asked for are still on their way — which is what lets
+  `ServerChunkCache.addTicketAndLoadWithRadius` accept this type at all, since
+  it throws for any type that could expire before it loads."
+  (`TicketType.java:18, 48`; `ServerChunkCache.java:514–520`.) This answers
+  pass5.md's open question about what holds the chunks before `Ready`.
+- `server/players-and-sessions` — "The last thing `PlayerList.sendLevelInfo`
+  sends after it is `ClientboundGameEventPacket.LEVEL_CHUNKS_LOAD_START`, which
+  is the client's signal to stop waiting and start drawing whatever terrain
+  arrives." (`PlayerList.java:712`.) The name was in the figure and nowhere in
+  the prose.
+- `server/players-and-sessions` — the disambiguation that
+  `NotificationManager.playerJoined` (`PlayerList.java:202`) is **not** the chat
+  join message, which is broadcast at `:185`, twenty lines above and before
+  `addNewPlayer`. The page used near-identical words for both.
+- `server/how-a-server-dies` — the parked-ticket map "is the map that the flush
+  save below writes out as the dimension's *chunk_tickets* saved data, under
+  `TicketStorage.TYPE`" (`TicketStorage.java:41`). The figure asserted
+  *chunk_tickets* and no sentence on the page did.
+
+### Not a correction, recorded because a reader will ask
+
+`MinecraftServer.MAX_TICK_LATENCY` is declared `= 3` (`MinecraftServer.java:217`)
+and **read nowhere**: `MinecraftServer.shouldRun` uses the literal
+(`:982–983`). The page's *older than `MinecraftServer.MAX_TICK_LATENCY` (three)
+ticks* is true in value and names the policy, so it stands; the figure's edge
+label now says *older than three ticks*. This is the same shape as
+`entity-lifecycle`'s *three constants nobody reads*, and pass 9 may want to
+decide whether the book states it here too.
+
 ## Pass 7, session B — Parts I and II: the figures *(2026-09-15)*
 
 Every figure on the eleven pages of Parts I (anatomy) and II (foundations) was

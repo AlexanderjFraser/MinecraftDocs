@@ -75,31 +75,65 @@ below `ServerLevel.EMPTY_TIME_NO_TICK`, 300).
 ```mermaid
 flowchart TD
     START["MinecraftServer.tickChildren calls ServerLevel.tick, overworld first"]
-    ENV["handlingTick goes true, EnvironmentAttributeSystem.invalidateTickCache — no gate"]
-    WB["WorldBorder.tick, then advanceWeatherCycle and its game-event packets — running"]
-    SLEEP["the sleep check: move the clock, wake the players, reset the weather — no gate"]
-    SKY["Level.updateSkyBrightness, read out of the environment attributes — no gate"]
-    TIME["ServerLevel.tickTime: gameTime and the schedule queue, overworld only — running"]
-    SCHED["ServerLevel.blockTicks then ServerLevel.fluidTicks, 65536 apiece — running, and not a debug world"]
-    RAID["Raids.tick — running"]
-    SCC["ServerChunkCache.tick, handed the server's time budget — no gate"]
-    PURGE["TicketStorage.purgeStaleTickets — running"]
-    DIST["ServerChunkCache.runDistanceManagerUpdates: which chunks tick is settled here — no gate"]
-    CHUNKS["mob counts, spawning chunks, thunder, spawns, random ticks, custom spawners — running, and not a debug world"]
-    CAST["ServerChunkCache.broadcastChangedChunks: block, block-entity and light packets — not a debug world"]
-    TRACK["ChunkMap.tick: chunk tracking, and the movement of everything that moved last tick — no gate"]
-    UNLOAD["ChunkMap.tick with haveTime: POI saving and chunk unloads, until the budget is spent — no gate"]
-    EVENTS["ServerLevel.runBlockEvents, then handlingTick goes false — running"]
-    EMPTY["hasActiveTickets resets emptyTime, otherwise it rises — and it rises only while running"]
-    DRAGON["EnderDragonFight.tick, the End only — running, and the dimension is not empty"]
-    ENT["EntityTickList.forEach: each entity, then its riders — the dimension is not empty"]
-    BE["Level.tickBlockEntities — the dimension is not empty, and each ticker fires only while running"]
-    EM["PersistentEntitySectionManager.tick: the loading inbox, then the unload set — no gate"]
-    DBG["LevelDebugSynchronizers.tick — no gate"]
-    START --> ENV --> WB --> SLEEP --> SKY --> TIME --> SCHED --> RAID --> SCC
-    SCC --> PURGE --> DIST --> CHUNKS --> CAST --> TRACK --> UNLOAD
+    ENV["ServerLevel.handlingTick goes true, the attribute cache dropped"]
+    WB["WorldBorder.tick, then ServerLevel.advanceWeatherCycle"]
+    SLEEP["the sleep check: the clock, the players, the weather"]
+    SKY["Level.updateSkyBrightness"]
+    TIME["ServerLevel.tickTime, overworld only"]
+    SCHED["ServerLevel.blockTicks, then ServerLevel.fluidTicks"]
+    RAID["Raids.tick"]
+    subgraph SCC["ServerChunkCache.tick"]
+        direction TB
+        PURGE["TicketStorage.purgeStaleTickets"]
+        DIST["ServerChunkCache.runDistanceManagerUpdates"]
+        CHUNKS["spawns, random ticks, thunder, custom spawners"]
+        CAST["ServerChunkCache.broadcastChangedChunks"]
+        TRACK["ChunkMap.tick: entity tracking"]
+        UNLOAD["ChunkMap.tick with the budget: POI saves and unloads"]
+        PURGE --> DIST --> CHUNKS --> CAST --> TRACK --> UNLOAD
+    end
+    EVENTS["ServerLevel.runBlockEvents, then ServerLevel.handlingTick false"]
+    EMPTY["ServerLevel.emptyTime: reset by a ticket, otherwise rising"]
+    DRAGON["EnderDragonFight.tick, the End only"]
+    ENT["EntityTickList.forEach: each entity, then its riders"]
+    BE["Level.tickBlockEntities"]
+    EM["PersistentEntitySectionManager.tick: the inbox, then the unload set"]
+    DBG["LevelDebugSynchronizers.tick"]
+    START --> ENV --> WB --> SLEEP --> SKY --> TIME --> SCHED --> RAID --> PURGE
     UNLOAD --> EVENTS --> EMPTY --> DRAGON --> ENT --> BE --> EM --> DBG
 ```
+
+*The order, and the one containment in it: the six steps in the box are not
+siblings of the steps around them, they are the insides of a single call, and
+the next section counts them as five things.*
+
+The gates are the other half of the tick and they do not fit in the boxes. Read
+this table down the middle instead: a step with three blank cells runs on a
+frozen, empty, debug world.
+
+| the step | *running* | *not a debug world* | *the dimension is not empty* |
+|---|:-:|:-:|:-:|
+| `ServerLevel.handlingTick` true, the attribute cache dropped | | | |
+| `WorldBorder.tick`, `ServerLevel.advanceWeatherCycle` | • | | |
+| the sleep check | | | |
+| `Level.updateSkyBrightness` | | | |
+| `ServerLevel.tickTime` | • | | |
+| `ServerLevel.blockTicks`, `ServerLevel.fluidTicks` | • | • | |
+| `Raids.tick` | • | | |
+| `TicketStorage.purgeStaleTickets` | • | | |
+| `ServerChunkCache.runDistanceManagerUpdates` | | | |
+| spawns, random ticks, thunder, custom spawners | • | • | |
+| `ServerChunkCache.broadcastChangedChunks` | | • | |
+| `ChunkMap.tick`, entity tracking | | | |
+| `ChunkMap.tick` with the budget | | | |
+| `ServerLevel.runBlockEvents` | • | | |
+| `ServerLevel.handlingTick` false | | | |
+| `ServerLevel.emptyTime` rises | • | | |
+| `EnderDragonFight.tick` | • | | • |
+| `EntityTickList.forEach` | | | • |
+| `Level.tickBlockEntities` | per ticker | | • |
+| `PersistentEntitySectionManager.tick` | | | |
+| `LevelDebugSynchronizers.tick` | | | |
 
 Those steps have names, and they are the names a profiler reports: *world
 border* and *weather*, *tickPending* (holding *blockTicks* and *fluidTicks*),
@@ -110,7 +144,7 @@ the book place a mechanism by saying it runs *after tickPending* or *in the
 chunk source phase*, and they mean these; so does a `/debug` profiling
 report.
 
-Read the gates and most of the page's surprises fall out of the figure.
+Read the gate columns and most of the page's surprises fall out of the table.
 Sleeping through the night works with the game frozen. A frozen world still
 loads, sends and unloads chunks — and stops expiring its tickets. A debug
 world keeps its entities and drops its block updates. And the last two steps
@@ -292,24 +326,33 @@ sequenceDiagram
     participant SL as ServerLevel
     participant SCC as ServerChunkCache
     participant CH as ChunkHolder
-    participant CM as ChunkMap
     participant Wire as the network
 
-    Note over SL,CM: before the tick — a command changed a hundred blocks
-    SL->>SCC: sendBlockUpdated, once per block
-    SCC->>CH: blockChanged, one entry in that section's set
-    CH-->>SCC: nothing leaves, the holder is only marked
-    Note over SL,Wire: this tick, inside ServerChunkCache.tick
-    SCC->>CH: broadcastChangedChunks walks every marked holder
-    CH->>Wire: ClientboundLightUpdatePacket first, to the border players only
-    CH->>Wire: ClientboundBlockUpdatePacket for a section with one change
-    CH->>Wire: ClientboundSectionBlocksUpdatePacket for a section with several
-    CH->>Wire: BlockEntity.getUpdatePacket beside any changed position that has one
-    SCC->>CM: ChunkMap.tick, the movement of everything that moved last tick
-    Note over SL,Wire: still this tick, several steps later
-    SL->>SL: tickBlockEntities, PistonMovingBlockEntity finishes a push and changes a block
-    SL->>SCC: sendBlockUpdated, marked, and it waits for the next tick
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,Wire: before the tick — a command changed a hundred blocks
+        SL->>SCC: blockChanged, once per block
+        SCC->>CH: blockChanged, one entry in that section's set
+        CH-->>SCC: nothing leaves, the holder is only marked
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,Wire: this tick, inside ServerChunkCache.tick
+        SCC->>CH: broadcastChanges, on every marked holder
+        CH->>Wire: ClientboundLightUpdatePacket, if either light filter has anything
+        CH->>Wire: one ClientboundBlockUpdatePacket per single-change section
+        CH->>Wire: one ClientboundSectionBlocks<br/>UpdatePacket per busier section
+        CH->>Wire: BlockEntity.getUpdatePacket beside any changed block entity
+        Note over SL,Wire: ChunkMap.tick then turns last tick's movement into packets
+    end
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,Wire: still this tick, several steps later
+        SL->>SL: tickBlockEntities: a piston head finishes its push
+        SL->>SCC: blockChanged, marked, and it waits for the next tick
+    end
 ```
+
+*Three bands of one tick: the write, the send, and a write that arrives too
+late for the send. The dotted arrow in the first band is the hook — a block
+change leaves nothing on the wire at the moment it happens.*
 
 `ChunkHolder.broadcastChanges` asks two different questions of two
 different audiences, and it asks the light one first: if either light filter

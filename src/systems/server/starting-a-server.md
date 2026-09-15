@@ -44,44 +44,31 @@ sequenceDiagram
     participant WL as WorldLoader
     participant Worker as Worker
     participant DS as DedicatedServer
-    participant MS as MinecraftServer
-    participant SL as ServerLevel
 
-    Main->>Main: tryDetectVersion, the flags, CrashReport.preload, Bootstrap.bootStrap and validate, the timer hack thread
-    Main->>Main: DedicatedServerSettings reads server.properties and writes it straight back, then Eula. Without agreement main returns here
-    Main->>Main: JsonRpc.create binds the ManagementServer on its own daemon Netty group, with no world open yet
-    Main->>LSA: validateAndCreateAccess. session.lock is taken in the constructor
+    Main->>Main: the flags, Bootstrap.bootStrap, server.properties, the EULA gate
+    Main->>Main: JsonRpc.create, if the management server is enabled at all
+    Main->>LSA: validateAndCreateAccess, taking session.lock in the constructor
     LSA-->>Main: level.dat parsed, or level.dat_old restored into its place
-    Main->>WL: load, wrapped in Util.blockUntilDone, so this thread is now an executor
-    WL->>Main: createResourceManager opens the packs, handed to the main-thread executor
-    WL->>Worker: static tags, worldgen then dimension registries, ReloadableServerResources
-    Worker-->>WL: the stages that must be single-threaded come back to main
+    Main->>WL: load, wrapped in Util.blockUntilDone, so this thread is an executor
+    WL->>Main: the pack-opening stage and the final assembly, single-threaded
+    WL->>Worker: static tags, worldgen then dimension registries, the resources
+    Worker-->>WL: the background stages, finished
     WL-->>Main: a WorldStem
     Main->>LSA: saveDataTag rewrites level.dat now, upgrade or no upgrade
-    Main->>MS: spin builds the Thread object and sets priority 8 above four processors
-    MS->>DS: the factory it was handed runs the constructor here, on this thread, and can throw
-    MS->>MS: only once there is a server to run does spin start the thread
-    Note over Main,MS: main registers the shutdown hook and returns. Everything below is the Server thread
-    MS->>DS: runServer calls initServer
-    DS->>DS: the console daemon thread, the properties into fields, the key pair
-    DS->>DS: startTcpServerListener binds the port, then convertOldUsers
-    DS->>MS: loadLevel
-    MS->>SL: createLevels builds the overworld first, then one level per LevelStem on DerivedLevelData
-    MS->>SL: prepareLevels re-arms the persisted tickets and waits in 10 ms slices
-    SL-->>MS: nothing pending. On an ordinary world nothing was ever asked for
-    MS-->>DS: loadLevel returns
-    DS->>DS: Done is logged here, before the loop is ever entered
-    DS->>DS: query, RCON, the watchdog, JMX, one flush save, serverStarted
-    DS-->>MS: initServer returns true
-    MS->>MS: the icon and the status response are built, then the tick loop begins
+    Main->>DS: MinecraftServer.spin runs the factory here, on this thread
+    Note over Main,DS: the thread starts only now, and main returns
 ```
 
-Read the note bar as a wall: above it, one thread does all the work and
-the server object does not exist for most of it; below it, *main* has
-returned and everything that remains is the Server thread and the daemons
-arranged around it. [Anatomy](../anatomy/anatomy.md) draws the same hand-off
-from the client's side, where the thread that spins the server is the one
-drawing frames.
+*The first half of the boot, and the wall at the foot of it: one thread does
+every line above that note, and the server object does not exist for most of
+them. The second half, below, picks up on the other side.*
+
+Read the note bar as a wall. Above it one thread does all the work; below it
+*main* has returned, and everything that remains is the Server thread and the
+daemons arranged around it — the half drawn under [*The Server thread wakes
+up*](#the-server-thread-wakes-up-and-can-still-fail-twice) below.
+[Anatomy](../anatomy/anatomy.md) draws the same hand-off from the client's
+side, where the thread that spins the server is the one drawing frames.
 
 ## Everything *main* does before there is a second thread
 
@@ -227,6 +214,30 @@ hook goes on the runtime — its whole body is
 [one `MinecraftServer.halt` call](how-a-server-dies.md) — and *main* returns.
 
 ## The Server thread wakes up, and can still fail twice
+
+```mermaid
+sequenceDiagram
+    participant DS as DedicatedServer
+    participant MS as MinecraftServer
+    participant SL as ServerLevel
+
+    Note over DS,SL: the other side of the wall: the Server thread
+    MS->>DS: runServer calls initServer
+    DS->>DS: the console daemon thread, the properties into fields, the key pair
+    DS->>DS: startTcpServerListener binds the port, then convertOldUsers
+    DS->>MS: loadLevel, which is createLevels, forceDifficulty and prepareLevels
+    MS->>SL: the overworld first, then one level per LevelStem on DerivedLevelData
+    MS->>SL: the persisted tickets re-armed, then a wait in 10 ms slices
+    SL-->>MS: nothing pending, because nothing was ever asked for
+    MS-->>DS: loadLevel returns
+    DS->>DS: Done is logged here, before the loop is ever entered
+    DS->>DS: the optional listeners, each if its property is set
+    DS-->>MS: initServer returns true
+    MS->>MS: the icon and the status response, then the tick loop
+```
+
+*The second half: the play port is bound two messages before the levels exist,
+and the word* Done *three messages before the loop it claims is running.*
 
 `MinecraftServer.runServer` is the Server thread's body and its first act is
 `DedicatedServer.initServer`, which begins with the console: a daemon thread

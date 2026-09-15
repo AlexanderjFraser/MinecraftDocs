@@ -74,7 +74,13 @@ fourteen of its edges. **Session B ran the same day** over Parts I and II: two
 figures split at the mechanism's own joint, the book's first two class diagrams,
 nine corrections, and both parts left with no type under 11px anywhere, no
 Mojang name broken on screen and no unresolved name in the gate.
-Sessions C to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
+**Session C ran the same day** over Part III: ten figures became twelve, the
+tallest figure in the book fell 6,010px to 2,311px when its gate clauses moved
+into a table beside it, and the part's real fault turned out to be **twelve
+messages labelled with the caller's method and drawn arriving at the callee**,
+one on every page, every one a gate failure — the shape the remaining part
+sessions should look for first.
+Sessions D to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -543,3 +549,78 @@ that the owner has not understood; recording is after pass 10.
   Part II's was one, and is now `TD`, numbered to the watch order and captioned.
   Eight queue entries struck with the page open, seven opened. All six gates
   green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session C (Opus) — Part III · The server: the figures.**
+  Six pages, ten figures in and twelve out, one viewer agent per page with the
+  picture and the section and nothing else. Every figure in the part is now
+  **captioned**, pointed at by a sentence, and **legible at the reading column**:
+  the two shown below 0.75 are none, the smallest type on screen went 11px →
+  **12.4px**, the fifteen sentence labels are **zero**, and the figure-name
+  gate's twelve unresolved names and thirteen notes are **zero of each** — the
+  first part clean on the notes as well as the failures. Two figures split at
+  the mechanism's own joint: `server-tick`'s event loop at
+  `MinecraftServer.pollTaskInternal`, where an empty queue and a head that may
+  not run turn out to be the same answer, and `starting-a-server`'s boot at the
+  note bar it was already drawing.
+
+  The tallest figure in the book fell **6,010px → 2,311px** and its type went
+  from a label you read one box at a time to 16px throughout.
+  `server-level-tick`'s twenty-two-step chain had a gate clause appended to
+  every label — *— running*, *— no gate*, *— running, and not a debug world* —
+  which is the half the section leans on and the half a reader cannot scan; the
+  gates are a three-column table beside the figure now, one row per step, every
+  cell re-derived from `ServerLevel.tick`. Losing the clauses made room for the
+  containment the figure had been hiding: six of its boxes are the *insides* of
+  `ServerChunkCache.tick`, drawn beside the steps around them as though they
+  were siblings, which is why the prose's *five things in one call* and the
+  figure's six boxes had been contradicting each other since pass 5. They are a
+  box now, and the two counts agree.
+
+  **The part's real fault was not the one the queue named.** Three pass-6
+  sessions had sent *the lead figure the page cannot be read against* here as a
+  part-wide pattern, and underneath it sat a sharper one: **twelve messages —
+  one on every page of the part — labelled with the caller's method and drawn
+  arriving at the callee.** `MinecraftServer.saveAllChunks` on an arrow into
+  `ServerLevel`, which receives `ServerLevel.save`;
+  `ServerLevel.sendBlockUpdated` into `ServerChunkCache`, which receives
+  `blockChanged`; `ServerChunkCache.broadcastChangedChunks` into `ChunkHolder`,
+  which receives `broadcastChanges`; and nine more. Every one was a gate failure
+  and every one was a claim about who does what to whom, which is the thing a
+  sequence diagram exists to say. The gate finds the shape mechanically, and
+  most of the 88 unresolved names left in the corpus look like it — so this is
+  the entry the remaining part sessions should read first.
+
+  **Six corrections**, each re-derived with the source open and logged in
+  [pass9.md](pass9.md). The sharpest is `how-a-server-dies`' watchdog figure,
+  which had no `Disk` lane: beside figure 1's four writes it said *the watchdog
+  writes nothing*, on a page whose own comparison table two screens above reads
+  *is a crash report written: **yes***, and `ServerWatchdog.run` does write one,
+  to stdout and to *crash-reports/*, before it calls `System.exit`. Next to it:
+  `starting-a-server`'s boot had *the stages that must be single-threaded come
+  back to main* on the worker's return arrow, which never touches `Main` — the
+  arrow that does was labelled with a different call; and `how-a-server-dies`
+  drew `saveDataTag` and `SavedDataStorage.saveAndJoin` as siblings of the flush
+  save when all three are *inside* `MinecraftServer.saveAllChunks`, so the
+  page's hook — *after `level.dat` and not before* — is a property of one call
+  and not a claim about three. Drawn as a band, it is structural.
+
+  The queue's one open question is answered: nothing holds a joining player's
+  spawn chunks between the ticket being placed and `PrepareSpawnTask.Ready`,
+  because nothing has to. `TicketType.PLAYER_SPAWN` carries
+  `TicketType.FLAG_LOADING` and nothing else, so `canExpireIfUnloaded` is false
+  and its twenty-tick timeout does not begin while the chunks it asked for are
+  still on their way — which is exactly why
+  `ServerChunkCache.addTicketAndLoadWithRadius` accepts the type at all, since
+  it throws for any type that could expire before it loads.
+
+  One tool change, and it is the same shape session B found: **the gate could
+  not read the tick band F8 tells every part session to draw.** Part III drew
+  the corpus's first four `rect` bands and `check_figure_names.py` read
+  `rgba(0, 0, 0, 0.04)` as a call named `rgba` on every one. One rule — a
+  `rect`'s remainder is a colour and never a label, a `box`'s leading colour is
+  stripped before its label is checked — and two probe cases. Two sessions, two
+  tool blindnesses, both found by being the first to use a device the standard
+  had ruled: the gate is worth re-probing against each new device a part session
+  spends. Twelve queue entries struck with the page open, five opened. All six
+  gates green (the figure-name gate still report-only, 88 unresolved of 2,515
+  corpus-wide). Deployed.

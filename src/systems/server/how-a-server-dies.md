@@ -52,7 +52,6 @@ the rest of this page is why.
 
 ```mermaid
 sequenceDiagram
-    participant SC as StopCommand
     participant MS as MinecraftServer
     participant PL as PlayerList
     participant SL as ServerLevel
@@ -60,26 +59,35 @@ sequenceDiagram
     participant LSA as LevelStorageSource.<br/>LevelStorageAccess
     participant Disk
 
-    SC->>MS: halt with wait false, so running becomes false
+    Note over MS: StopCommand calls halt with wait false, so running goes false
     Note over MS: the tick in progress finishes, then the loop condition fails
-    MS->>MS: stopped = true, then stopServer, from runServer's finally
-    MS->>MS: PacketProcessor.close, then ServerConnectionListener.stop
+    MS->>MS: stopped goes true, then stopServer, out of runServer's finally
+    MS->>MS: PacketProcessor.close, then the connection listener is stopped
     MS->>PL: saveAll, then removeAll
     PL->>Disk: each player's dat file, stats and advancements
     MS->>SL: noSave cleared on every level
     loop while any ChunkMap.hasWork
-        MS->>SCC: the deadline is pushed one millisecond out, then deactivateTicketsOnClosing and tick
+        MS->>MS: the tick deadline pushed one millisecond out
+        MS->>SCC: deactivateTicketsOnClosing, then tick, on every level
+        MS->>MS: waitUntilNextTick drains the queue for what is left of it
     end
-    MS->>SL: saveAllChunks with flush, reaching ChunkMap.saveAllChunks
-    SL->>Disk: region files, entities, poi, and the chunk_tickets saved data
-    MS->>LSA: saveDataTag, level.dat built into a temp file
-    LSA->>Disk: the temp file replaces level.dat, the old one rotated to level.dat_old
-    MS->>MS: savedDataStorage.saveAndJoin, after level.dat and not before
+    rect rgba(0, 0, 0, 0.04)
+        Note over MS,Disk: one call: MinecraftServer.saveAllChunks with flush
+        MS->>SL: save, per level, reaching ChunkMap.saveAllChunks
+        SL->>Disk: region files, entities, poi, and the chunk_tickets saved data
+        MS->>LSA: saveDataTag, level.dat built into a temp file
+        LSA->>Disk: the temp replaces level.dat, the old rotated to level.dat_old
+        MS->>MS: SavedDataStorage.<br/>saveAndJoin, after level.dat and not before
+    end
     MS->>SL: close, ServerChunkCache.close then the entity manager
     MS->>LSA: close, releasing the DirectoryLock on session.lock
     MS->>MS: Util.shutdownExecutors, then onServerExit stops RCON and query
     Note over MS: the Server thread returns, and no non-daemon thread is left
 ```
+
+*The whole of shutdown, which is one* finally*. The shaded band is a single
+call, and the three saves inside it are in that order because that call puts
+them there — not because* stopServer *asks for them one at a time.*
 
 ### The command is a flag
 
@@ -166,7 +174,9 @@ that millisecond.
 proceed while the main-thread queue keeps taking chunk results.
 
 `TicketStorage.deactivateTicketsOnClosing` moves every ticket except
-`TicketType.UNKNOWN` into a parked map, and that is what ends the loop:
+`TicketType.UNKNOWN` into a parked map — the map that the flush save below
+writes out as the dimension's *chunk_tickets* saved data, under
+`TicketStorage.TYPE` — and that is what ends the loop:
 `TicketStorage.hasTickets` counts only the live map, so parking a ticket stops
 it holding a chunk. Parked is not forgotten — which of them survive to the
 next boot, and what re-arms them there, is [tickets and
@@ -273,19 +283,26 @@ sequenceDiagram
     participant MS as MinecraftServer
     participant JVM
     participant Hook as Server Shutdown Thread
+    participant Disk
 
     Note over MS: wedged inside one tick, past max-tick-time
     SW->>MS: getNextTickTime, a deadline now far in the past
-    SW->>SW: createWatchdogCrashReport, every thread dumped, the Server thread's stack grafted on
-    SW->>MS: fillSystemReport, read off-thread while the tick is still running
-    SW->>JVM: schedule Runtime.halt for ten seconds from now
+    SW->>SW: createWatchdogCrashReport, every thread dumped, the Server stack grafted on
+    SW->>MS: fillSystemReport, read off-thread while the tick still runs
+    SW->>Disk: the report, to stdout and to crash-reports
+    SW->>JVM: Runtime.halt armed for ten seconds from now
     SW->>JVM: System.exit
     JVM->>Hook: run the shutdown hooks
     Hook->>MS: halt with wait true, running becomes false
     Hook->>MS: then waits for the Server thread, which is the wedged one
     MS-->>Hook: nothing, because the tick never returns
-    Note over JVM: ten seconds later, Runtime.halt, nothing written
+    Note over SW,Disk: ten seconds later the armed halt fires, and nothing more is written
 ```
+
+*The only ending with a circular wait in it: the exit is waiting for the hook,
+the hook is waiting for the wedged thread, and the armed halt is the only
+thing that moves. The one message to* Disk *is the difference between this and
+a server that dies silently.*
 
 `ServerWatchdog` is a daemon thread started by `DedicatedServer.initServer`
 whenever `DedicatedServer.getMaxTickLength` is positive — that is

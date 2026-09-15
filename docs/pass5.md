@@ -700,21 +700,21 @@ six corrections it made are in [pass9.md](pass9.md).*
 
 ### For pass 7 — the figures
 
-- `server-tick`'s event-loop flowchart (pass5.md:1092's list, re-checked and
+- ~~`server-tick`'s event-loop flowchart (pass5.md:1092's list, re-checked and
   still live): fourteen edges, and its `C` node label is a sentence.
-  [kind=figure]
-- `starting-a-server`'s sequence figure: 27 items, the largest single diagram
-  in the part. [kind=figure]
-- `server/README`'s part figure runs Start → Tick → Level → Players → Death,
+  [kind=figure]~~ **done, pass 7 session C** — split at the joint the prose names: the queue's own cascade (seven nodes, three ways to yes) under *The event loop*, and the chunk-source offer under *The slack*, where its paragraph already was. Node `C`'s 19-word sentence is two four-word edge labels; both halves render at scale 1 and 16px.
+- ~~`starting-a-server`'s sequence figure: 27 items, the largest single diagram
+  in the part. [kind=figure]~~ **done, pass 7 session C** — split at the wall the figure already drew: eleven messages over five lanes before *main* returns, twelve over three after. 3,846px at 0.69 became 1,001px at 0.98 and 1,261px at 1.00.
+- ~~`server/README`'s part figure runs Start → Tick → Level → Players → Death,
   which is the runtime order and not the watch order (Tick, Level, Players,
   Start, Death), and the shape sentence above it offers a third ordering. The
   exemplar (`commands/README`) numbers its nodes to the watch order. Session
   C left the figure alone because it is drawing the *runtime* relationship,
   which is the part's shape; pass 7 should decide whether numbering or a
-  caption settles it. [kind=figure]
-- `server-level-tick` now names the tick's profiler zones in prose. If pass 7
+  caption settles it. [kind=figure]~~ **done, pass 7 session C — both**: the nodes carry the watch number, the arrows keep the runtime hand-off, and the caption says which is which, so the disclaimer sentence F13 calls the mark of a wrong figure is gone. Direction `LR` → `TD`; the six sentence edge labels are four words or fewer.
+- ~~`server-level-tick` now names the tick's profiler zones in prose. If pass 7
   wants them in the flowchart's node labels instead, the prose sentence is
-  the copy to cut. [kind=figure]
+  the copy to cut. [kind=figure]~~ **ruled out, pass 7 session C** — the node labels went the other way: the gate clause came *out* of all twenty-two and into a table, so there is no room for the zones either. The prose sentence stays and is now the only place they are.
 
 ### For pass 8 — the voice
 
@@ -2086,14 +2086,14 @@ instead ("`FallingBlockEntity` is the one place that …").
   spacing to `chunk-storage`, `session.lock`'s nature to `starting-a-server`.
   A durability page built from what is left would be a page of other pages'
   material.
-- **`server-tick`'s event-loop figure grew from eleven edges to fourteen**
+- ~~**`server-tick`'s event-loop figure grew from eleven edges to fourteen**
   when the two impossible ones were replaced by a truthful queue-empty exit.
   It is now the densest flowchart in Part III and its `C` node label is long
-  enough to be a sentence. Correct, but worth redrawing for shape.
-- **`starting-a-server`'s sequence figure gained an arrow** (the pack-opening
+  enough to be a sentence. Correct, but worth redrawing for shape.~~ **done, pass 7 session C** — redrawn and split; see the entry above.
+- ~~**`starting-a-server`'s sequence figure gained an arrow** (the pack-opening
   stage moved onto the `Main` lane) and split `spin` into three. At 27 items
   it is now the largest single diagram in the part — `server-level-tick` has
-  more in total (35) but across two figures.
+  more in total (35) but across two figures.~~ **overtaken, pass 7 session C** — both of those figures are now two figures.
 - ~~**Part III is 2 of 5 on *Questions players ask*** (`server-tick`,
   `server-level-tick`), which is *inside* session P's rule of thumb and one
   of the better parts on the device.~~ **Re-tested, pass 6 session C:** being
@@ -5179,19 +5179,19 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
 
 ### For pass 7 (the figures)
 
-- **`server-level-tick`'s twenty-node gate flowchart is a single vertical
+- ~~**`server-level-tick`'s twenty-node gate flowchart is a single vertical
   chain** with a gate clause appended to every label, and the reader could not
   say whether it survives a phone or a slide. It is also the figure that made
   the *five things in one call* heading read as a lie, because it splits the
   third into `CHUNKS` and `CAST`: the prose is a list now, and the figure is
-  pass 7's half of the same fix. [kind=figure]
-- **`server-tick`'s event-loop flowchart** (already logged from pass 5, and
+  pass 7's half of the same fix. [kind=figure]~~ **done, pass 7 session C** — the gates are a three-column table under the figure, the figure keeps order and one containment, and `ServerChunkCache.tick` is a box round its six steps rather than a box beside them, which is what makes *five things* and six boxes agree. 6,010px → 2,311px, scale 1.00 at 16px, six sentence labels → none.
+- ~~**`server-tick`'s event-loop flowchart** (already logged from pass 5, and
   the reader confirmed it independently): fourteen edges; node `C` is a
   24-word sentence in a diamond; and the two edges that converge on it mean
   opposite things (*the queue was empty* and *the queue had work I may not
   run*). The reader could not read it until they had read the four sections
-  under it. [kind=figure]
-- **`server-tick`'s lap sequence names `nextTickTimeNanos` and `haveTime`
+  under it. [kind=figure]~~ **done, pass 7 session C** — the two converging edges now converge on a box that says what they have in common (*nothing ran*), which is the fact `MinecraftServer.pollTaskInternal` turns on.
+- ~~**`server-tick`'s lap sequence names `nextTickTimeNanos` and `haveTime`
   before the prose does** — the figure sits directly under the cast table, so
   there is no paragraph above it to read it against. True of
   `server-level-tick`'s (`handlingTick`, `hasActiveTickets`) and of
@@ -5199,15 +5199,15 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   `returnToWorld`, `JoinWorldTask`, the `Preparing`/`Ready` states, and a
   `spawnPlayer` the prose everywhere else calls `PlayerList.placeNewPlayer`).
   A lead figure the page cannot yet be read against is a part-wide pattern
-  here, not three pages' bad luck. [kind=figure]
-- **`starting-a-server`'s boot sequence has a `Worker` lane with no cast row**,
+  here, not three pages' bad luck. [kind=figure]~~ **done, pass 7 session C**, and it was two patterns, not one. Every lead figure in the part is captioned and its names qualified; and underneath the naming half sat the part's real fault — **twelve messages labelled with the caller's method and drawn arriving at the callee**, one on every page (the new entry below). `spawnPlayer` is `PrepareSpawnTask.spawnPlayer` and was right; the rest were not.
+- ~~**`starting-a-server`'s boot sequence has a `Worker` lane with no cast row**,
   and its `Worker-->>WL` arrow carries a label saying the work goes back to
-  `Main`. [kind=figure]
-- **`how-a-server-dies`' `/stop` figure asserts `PacketProcessor`,
+  `Main`. [kind=figure]~~ **done, pass 7 session C** — the label was on the wrong arrow. `WorldLoader.load`'s single-threaded stages come back on the `WL->>Main` arrow, which was labelled `createResourceManager`; the worker's return is just the background stages finishing. Both relabelled, and the `Worker` lane keeps its two messages and earns them.
+- ~~**`how-a-server-dies`' `/stop` figure asserts `PacketProcessor`,
   `ChunkMap.hasWork`, `deactivateTicketsOnClosing`, `ServerLevel.noSave` and
   "after level.dat and not before"** — every one of them explained in the six
   H3s below it. The reader's words: read second it is the best thing on the
-  page, read in place two thirds of it is opaque. [kind=figure]
+  page, read in place two thirds of it is opaque. [kind=figure]~~ **done, pass 7 session C** — captioned, and the opacity halved by drawing the nesting the decompile has: `saveDataTag` and `SavedDataStorage.saveAndJoin` are not siblings of the flush save, they are inside it, so *after `level.dat` and not before* is a property of one call rather than a claim about three. `chunk_tickets` gets its sentence; `StopCommand`'s one-message lane is a note, which takes the figure from seven lanes to six and 0.70 to 0.77.
 
 ### For pass 8 (the voice)
 
@@ -5277,9 +5277,9 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   `DedicatedServer.isSingleplayerOwner` "returns false for everyone", and the
   singleplayer-owner save-file rescue is described as working once. Check the
   second reads the same field as the first.
-- **`players-and-sessions`, the `PLAYER_SPAWN` ticket** — the figure waits an
+- ~~**`players-and-sessions`, the `PLAYER_SPAWN` ticket** — the figure waits an
   unbounded number of ticks for the chunks, and the prose re-arms the
-  twenty-tick ticket only once the task has reached `PrepareSpawnTask.Ready`.
+  twenty-tick ticket only once the task has reached `PrepareSpawnTask.Ready`.~~ **answered, pass 7 session C**: nothing has to hold them. `TicketType.PLAYER_SPAWN` carries `TicketType.FLAG_LOADING` and nothing else, so `TicketType.canExpireIfUnloaded` is false and its twenty-tick timeout does not begin while the chunks are still on their way — which is exactly why `ServerChunkCache.addTicketAndLoadWithRadius` accepts the type at all, since it throws for any type that could expire before it loads. The clock starts at `PrepareSpawnTask.Ready`, which is where `PrepareSpawnTask.keepAlive` starts re-arming. The page now says so.
   What holds the chunks between the ticket being placed and *Ready*?
 
 ---
@@ -6437,3 +6437,44 @@ Part 3; these are the pieces of work that ruling created.
   densest prose on the page with no figure, and wants a timeline with three
   fixed points and one branch. Both are F14 candidates a later session or the
   second edition can take. [kind=book]
+
+## Pass 7, session C — Part III · The server *(2026-09-15)*
+
+- **A message labelled with the caller's method, drawn arriving at the callee,
+  was Part III's part-wide fault** — twelve of them, one on every page of the
+  part, and every one a gate failure: `MinecraftServer.saveAllChunks` on an
+  arrow into `ServerLevel` (which receives `ServerLevel.save`),
+  `ServerLevel.sendBlockUpdated` into `ServerChunkCache`
+  (`ServerChunkCache.blockChanged`), `ServerChunkCache.broadcastChangedChunks`
+  into `ChunkHolder` (`ChunkHolder.broadcastChanges`),
+  `ServerLevel.onTrackingStart` into `ChunkMap` (`ChunkMap.addEntity`),
+  `MinecraftServer.createLevels` and `MinecraftServer.prepareLevels` into
+  `ServerLevel`, and five more. Fixed here; **the shape is worth looking for in
+  every other part**, because the gate finds it mechanically and most of the 88
+  corpus failures left are this. [kind=figure]
+- **The gate could not read the band its own ruling tells sessions to draw.**
+  F8 says a trace that crosses a tick draws `rect rgba(0, 0, 0, 0.04)`;
+  `check_figure_names.py` read the colour as a label and noted a call named
+  `rgba`. Part III drew the corpus's first four bands and found it. Fixed with
+  one rule (a `rect`'s rest is a colour, a `box`'s leading colour is stripped)
+  and two probe cases. Session B found the same shape in the same tool for
+  `<br/>` inside a message, so: **the gate is worth re-probing against each new
+  device a part session is the first to use.** [kind=record]
+- **`pass7_figures.py`'s *names first met here* cannot see a lead figure's
+  situation.** For a figure directly under the cast table the count is
+  structurally 100% unless the cast names the methods, so the metric fires on
+  every well-formed lead figure. The number that carries the ruling is *never
+  in the prose*, which the tool also reports and which Part III now has at
+  zero. Worth splitting the column before session O reads the table.
+  [kind=record]
+- **Part III's four figures over 1,200px are the height F9's amendment
+  predicted**, and the tallest fell 6,010px → 2,311px. An ordered chain of
+  twenty-two steps is twenty-two steps: the fix was one line per box, not a
+  split, because the whole order in one artefact is what six other pages cite.
+  Session O should decide whether *over 1,200px* is still the right flag now
+  the type inside is 16px. [kind=figure]
+- **A subgraph round a call's insides** is outside F3's marks table (a thread,
+  a machine or a tick). `server-level-tick`'s `ServerChunkCache.tick` box is
+  one, and its caption says so under F3's own escape clause. If two more parts
+  need it, the table wants a fourth row. [kind=figure]
+

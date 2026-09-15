@@ -34,24 +34,28 @@ Part III is a line into a loop and out again. Two pages are the loop itself
 other three are the beginning, the population and the end.
 
 ```mermaid
-flowchart LR
-    Start["Starting a server: java -jar to the word Done"]
-    Tick["The server tick: 50 ms on the Server thread"]
-    Level["The level tick: one dimension advances"]
-    Players["Players and sessions: who is in the loop"]
-    Death["How a server dies: three endings"]
-    Start -- "the Server thread is spun, the levels are built" --> Tick
-    Tick -- "tickChildren calls ServerLevel.tick, overworld first" --> Level
-    Level -- "the packets the tick decided to send" --> Tick
-    Tick -- "the connection phase, after the levels" --> Players
-    Players -- "a join, a respawn, a disconnect" --> Tick
-    Tick -- "the loop's finally, which two of the three endings reach" --> Death
+flowchart TD
+    Tick["1 · The server tick"]
+    Level["2 · The level tick"]
+    Players["3 · Players and sessions"]
+    Start["4 · Starting a server"]
+    Death["5 · How a server dies"]
+    Start -- "the thread, the levels" --> Tick
+    Tick -- "MinecraftServer.tickChildren" --> Level
+    Level -- "the packets it wrote" --> Tick
+    Tick -- "the connection phase" --> Players
+    Players -- "a join, a disconnect" --> Tick
+    Tick -- "the loop's finally" --> Death
 ```
 
-The figure is the shape of the part and not the order to watch it in: the
-loop's two pages come first below, and the beginning and the end come last,
-when there is something for them to start and stop. Those two are one lecture
-in two halves, watched together — and seven later parts (IV, V, VI, VII, VIII,
+*The five lectures of Part III, numbered in the order to watch them and wired
+in the order the program runs them; an arrow is a hand-off at run time, not a
+dependency between lectures.*
+
+The two numbered first are the loop itself, and the arrows between them are the
+only pair that goes both ways. The beginning and the end are numbered last
+because there has to be something for them to start and stop. Those two are one
+lecture in two halves, watched together — and seven later parts (IV, V, VI, VII, VIII,
 IX and XIII: every part that runs on the Server thread except world
 generation) assume one of them or the other, which makes them the most
 load-bearing pair in the book after *Anatomy*.

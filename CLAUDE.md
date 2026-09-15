@@ -37,10 +37,14 @@ as rendered beside its section: is it true, is it needed, does it show the
 thing it should, can it be read at the column width; the theme, the caption,
 and the gate over the 2,619 names inside mermaid blocks; the viewer's brief,
 the runbook, the standard and **the schedule with each session's
-status** are `docs/pass7-brief.md`; **session A is done** (2026-09-15) — the
+status** are `docs/pass7-brief.md`; **sessions A–C are done** (2026-09-15) — the
 standard is ruled, the theme is adopted, which took the figures showing type
-under 9px from 89 to 10 without changing a page, and the exemplar a part
-session reads first is `entities/entity-lifecycle`), **8 the voice** (one voice, the tics, the
+under 9px from 89 to 10 without changing a page, the exemplar a part
+session reads first is `entities/entity-lifecycle`, and Parts I–III are clean:
+every figure captioned, none showing type under 11px, no Mojang name broken on
+screen and no unresolved name in the gate. What the part sessions keep finding
+is **a message labelled with the caller's method and drawn arriving at the
+callee** — twelve of them in Part III alone, one on every page), **8 the voice** (one voice, the tics, the
 terminology, the ambiguous counts). Then **9** the third fact-check and **10**
 the last polish. Beside them, a **version pass**
 runs between passes on each release, and the owner reads whenever they

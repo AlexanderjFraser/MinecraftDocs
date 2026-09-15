@@ -63,6 +63,10 @@ TEMPLATE = os.path.join(ROOT, "TEMPLATE.md")
 FENCE = re.compile(r"^\s*(`{3,}|~{3,})\s*(\w*)\s*$")
 SEQ_NOTE = re.compile(r"^\s*[Nn]ote\s+(over|left of|right of)\s+([^:]+):\s*(.*)$")
 SEQ_BLOCK = re.compile(r"^\s*(rect|loop|alt|else|opt|par|and|critical|option|break|box)\b\s*(.*)$")
+# A `rect` band carries a colour and no label at all, and a `box` may carry one before its
+# label: `rect rgba(0, 0, 0, 0.04)` is the tick band F8 tells every part session to draw, and
+# read as a label its colour becomes a call named `rgba`. Strip the colour before the label.
+SEQ_COLOUR = re.compile(r"^\s*(?:transparent|(?:rgba?|hsla?)\s*\([^)]*\)|#[0-9A-Fa-f]{3,8})\s*")
 SUBGRAPH = re.compile(r"^\s*subgraph\s+(?:([A-Za-z0-9_]+)\s*)?(?:\[\s*\"?(.*?)\"?\s*\])?\s*(.*)$")
 STATE_TRANS = re.compile(r"^\s*(\[\*\]|[\w.\-\"]+)\s*-->\s*(\[\*\]|[\w.\-\"]+)\s*(?::\s*(.*))?$")
 STATE_DEF = re.compile(r"^\s*state\s+\"([^\"]+)\"\s+as\s+(\w+)")
@@ -148,8 +152,14 @@ def labels_of(body):
                 out.append((ln, "note", m.group(3).strip(), None))
                 continue
             m = SEQ_BLOCK.match(t)
-            if m and m.group(2):
-                out.append((ln, "block", m.group(2).strip(), None))
+            if m:
+                rest = m.group(2).strip()
+                if m.group(1) == "rect":
+                    continue                      # a colour, never a label
+                if m.group(1) == "box":
+                    rest = SEQ_COLOUR.sub("", rest, count=1).strip()
+                if rest:
+                    out.append((ln, "block", rest, None))
                 continue
         elif kind in ("flowchart", "graph"):
             m = SUBGRAPH.match(t)
@@ -413,6 +423,13 @@ sequenceDiagram
     SL->>MS: a tick, then<br/>MinecraftServer.tickChildren
     SL->>MS: MinecraftServer.<br/>tickServer once more
     SL->>MS: MinecraftServer.<br/>tickServerr once more
+    rect rgba(0, 0, 0, 0.04)
+        Note over SL,MS: MinecraftServer.tickChildren
+        SL->>MS: tickServer
+    end
+    box transparent ChunkMapp on the server
+        participant CM as ChunkMap
+    end
 ```
 
 ```mermaid
@@ -452,8 +469,10 @@ def probe(mc_source: str, libs: str) -> int:
         ("a nested class named bare is a note, not a failure", any(n[2] == "SpawnState" and "NaturalSpawner.SpawnState" in n[3] for n in notes) and not any(f[2] == "SpawnState" for f in failures)),
         ("an inherited member resolves (DedicatedServer.runServer is MinecraftServer's)", not any(f[2] == "DedicatedServer.runServer" for f in failures)),
         ("an unqualified member in a flowchart label is a note", any(n[2] == "runAllTasks" for n in notes)),
+        ("a rect band's colour is not read as a call named rgba", not any(n[2] == "rgba" for n in notes)),
+        ("a box's colour word is stripped and its label still checked", (23, "ChunkMapp") in got),
         ("figure mentions include ChunkMap and NaturalSpawner", "ChunkMap" in c.mentions and "NaturalSpawner" in c.mentions),
-        ("exactly the seven failures expected", len(failures) == 7),
+        ("exactly the eight failures expected", len(failures) == 8),
     ]
     ok = True
     for what, passed in checks:
