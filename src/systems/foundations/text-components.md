@@ -35,24 +35,36 @@ message too, only ever reads it in English.
 ## A component is three things
 
 ```mermaid
-flowchart TD
-    Comp["Component: an interface with four abstract members"] --> MComp["MutableComponent: the only implementation"]
-    MComp --> Contents["one ComponentContents"]
-    MComp --> Style["one Style: eleven nullable fields, null means inherit"]
-    MComp --> Siblings["an ordered list of siblings, each a Component"]
-    Siblings -. "recursion" .-> MComp
-    subgraph kinds ["the seven kinds"]
-        Text["PlainTextContents"]
-        Trans["TranslatableContents: key, fallback, arguments"]
-        Key["KeybindContents"]
-        Score["ScoreContents"]
-        Sel["SelectorContents"]
-        Nbt["NbtContents"]
-        Obj["ObjectContents: a sprite in the text"]
-    end
-    Contents --> kinds
-    MComp --> CS["ComponentSerialization.CODEC, and STREAM_CODEC over NBT"]
+classDiagram
+    class Component {
+        <<interface>>
+        getStyle
+        getContents
+        getSiblings
+        getVisualOrderText
+    }
+    class MutableComponent {
+        ComponentContents contents
+        Style style
+        List siblings
+    }
+    class Style {
+        eleven nullable fields
+        null means inherit
+    }
+    Component <|.. MutableComponent : the only implementation
+    MutableComponent *-- ComponentContents : one of seven kinds
+    MutableComponent *-- Style
+    MutableComponent o-- Component : each sibling is one
 ```
+
+*The triple, and the loop that makes it a tree: a component holds one
+`ComponentContents`, one `Style` and a list whose members are components
+again. The filled diamonds are the two it owns; the hollow one is the list,
+which is where the recursion is. Nothing here holds an inherited style —
+`Style.applyTo` merges a parent's over a child's during the walk, and the
+child records nothing.*
+
 
 `Component` is an interface with four abstract members —
 `Component.getStyle`, `Component.getContents`, `Component.getSiblings` and
@@ -287,32 +299,39 @@ target player as the scoreboard entity.
 
 ```mermaid
 sequenceDiagram
+    box transparent the server
     participant SP as ServerPlayer
     participant CT as CombatTracker
-    participant CS as Component<br/>Serialization
+    end
+    box transparent the client
     participant CPL as ClientPacketListener
     participant DScr as DeathScreen
-    participant TrC as TranslatableContents
+    participant TrC as Translatable<br/>Contents
     participant Language as Language
+    end
 
     Note over SP,CT: the server tick in which the player dies
-    SP->>CT: die: getDeathMessage, if show_death_messages
-    CT->>CT: the last CombatEntry's DamageType.deathMessageType, then DamageSource.getLocalizedDeathMessage
-    CT-->>SP: translatable death.attack.arrow, arguments: the victim's display name, the killer's
-    SP->>CS: ClientboundPlayerCombatKillPacket to the victim, TRUSTED_STREAM_CODEC
-    SP->>CS: the same component in ClientboundSystemChatPacket to everyone, and getString for the log
-    Note over CS: the Netty thread, PacketEncoder
-    CS->>CS: encode through NbtOps: translate, with, and each argument a compound with hover_event and insertion
-    Note over CS,CPL: the client's Netty thread decodes, then ensureRunningOnSameThread
-    CS->>CPL: handlePlayerCombatKill, a MutableComponent nobody has read
-    CPL->>DScr: new DeathScreen with the packet's message, Render thread
-    Note over DScr: the next frame
-    DScr->>TrC: visitText, then Component.visit reaches the contents
-    TrC->>Language: decompose: Language.getInstance, getOrDefault(death.attack.arrow)
-    Language-->>TrC: the template from the client's language stack, en_us then the selected code
-    TrC-->>DScr: the victim's name, " was shot by ", the killer's name, each argument visited in turn
-    TrC->>Language: the killer's name, if it is a mob, is entity.minecraft.zombie, worded the same way
+    SP->>CT: die: getDeathMessage, if SHOW_DEATH_MESSAGES
+    CT->>CT: the last CombatEntry's deathMessageType, then<br/>DamageSource.getLocalized<br/>DeathMessage
+    CT-->>SP: a translatable death.attack.arrow, the two names as arguments
+    Note over SP: the only wording on this side is getString for the console log
+    SP->>CPL: ClientboundPlayerCombatKillPacket, encoded to NBT on Netty
+    Note over CPL: a MutableComponent nobody has read
+    CPL->>DScr: new DeathScreen with the packet's message
+    Note over DScr: the next frame, on the Render thread
+    DScr->>TrC: visit reaches the contents
+    TrC->>Language: decompose: getInstance, then getOrDefault of the key
+    Language-->>TrC: the template from the client's language stack
+    TrC->>Language: and again for the killer, if it is a mob
+    TrC-->>DScr: the victim's name, " was shot by ", the killer's name
 ```
+
+*Four boundaries in one trace: the server tick that builds it, the Netty
+thread that encodes it, the client thread that stores it, and the frame that
+finally words it. The component crosses the wire as a key and two arguments;
+the only place either side asks a `Language` before then is the server's own
+console log.*
+
 
 ### Built on the server, in no language
 

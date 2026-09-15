@@ -58,7 +58,7 @@ object, and the identifiers page explains how the reference is handed out
 before the entry exists ([identifiers and registries](identifiers-and-registries.md)).
 
 ```mermaid
-flowchart LR
+flowchart TD
     F["a data-pack file with a type key"] --> D["Codec.dispatch over Registry.byNameCodec"]
     D --> K["a built-in registry of kinds, frozen at Bootstrap"]
     K --> M["that kind's MapCodec reads the remaining fields"]
@@ -66,6 +66,11 @@ flowchart LR
     O --> R["registered by RegistryDataLoader or ReloadableServerRegistries, or inline in a larger element"]
     R --> H["referred to by Holder from other files and from the wire"]
 ```
+
+*The pattern in one line, and the whole of it turns on the third box: the
+registry of kinds is built in and frozen, so a pack may write any number of
+elements and no number of kinds. Everything below that box is data; the box
+itself is code.*
 
 The pattern has two spellings, and they differ only in what the registry
 holds. In the **bare** spelling the element *is* the `MapCodec`:
@@ -220,20 +225,21 @@ sequenceDiagram
     participant CBE as ChestBlockEntity
 
     Note over RSReg: a reload, on the background executor
-    RSReg->>RSReg: reload builds a RegistryOps over JsonOps, then scanDirectory per LootDataType
-    RSReg->>LT: DIRECT_CODEC parses data/mypack/loot_table/chests/mine.json
+    RSReg->>RSReg: reload: a RegistryOps over JsonOps, then scanDirectory
+    RSReg->>LT: DIRECT_CODEC parses one loot_table file
     LT->>LIF: a functions entry, ROOT_CODEC then TYPED_CODEC reads the function key
-    LIF->>BIR: LOOT_FUNCTION_TYPE.byNameCodec looks up minecraft:set_count
-    BIR-->>LIF: SetItemCountFunction.MAP_CODEC, out of a frozen registry
-    LIF->>SICF: MAP_CODEC reads conditions, count and add, the object exists
-    SICF-->>LT: compose folds the list into one BiFunction
-    LT-->>RSReg: registered in a fresh MappedRegistry, validated, the RELOADABLE layer replaced
+    LIF->>BIR: LOOT_FUNCTION_TYPE.<br/>byNameCodec looks up minecraft:set_count
+    BIR-->>LIF: SetItemCountFunction.<br/>MAP_CODEC, out of a frozen registry
+    LIF->>SICF: MAP_CODEC reads conditions, count and add
+    SICF-->>LT: the function object, one of the table's list
+    LT->>LIF: compose, in the LootTable constructor: the list folded into one
+    LT-->>RSReg: into a fresh MappedRegistry, the RELOADABLE layer replaced
     Note over CBE: a later tick, on the server thread, a player opens the chest
-    CBE->>RSReg: unpackLootTable asks reloadableRegistries for the key
+    CBE->>RSReg: the key, from RandomizableContainer.unpackLootTable
     RSReg-->>CBE: the LootTable, or LootTable.EMPTY for an unknown key
     CBE->>LT: fill, then getRandomItems with a CHEST context
     LT->>SICF: decorate wraps the output, every emitted stack passes through apply
-    SICF->>SICF: the conditions pass, run calls ItemStack.setCount with count.getInt
+    SICF->>SICF: the conditions pass, run calls ItemStack.setCount
     SICF-->>CBE: the stack lands in a slot
 ```
 

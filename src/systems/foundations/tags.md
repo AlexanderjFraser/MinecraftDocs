@@ -127,25 +127,27 @@ sequenceDiagram
     participant TL as TagLoader
     participant MR as MappedRegistry
     participant RSR as Reloadable<br/>ServerResources
-    participant CCPL as ClientConfiguration<br/>PacketListenerImpl
-    participant CPL as ClientPacketListener
     participant Parrot as Parrot
 
     Note over WL,MR: world load, on the worker pool
     WL->>TL: loadTagsForExistingRegistries over the STATIC layer
-    TL->>TL: load, every pack's tags/block/logs.json through FileToIdConverter.listMatchingResourceStacks, a replace flag clears what lower packs contributed
-    TL->>TL: build, DependencySorter orders oak_logs before logs_that_burn before logs, tryBuildTag resolves ids through ElementLookup.fromFrozenRegistry
-    TL->>MR: prepareTagReload with the LoadResult, a Registry.PendingTags, nothing visible yet
-    Note over WL,RSR: worldgen and loot codecs resolve the logs tag through PendingTags.lookup, via buildUpdatedLookups
-    Note over MR,RSR: the thread driving the load — launching thread on a dedicated server, Render thread on the client — after the last reload listener has applied
-    RSR->>MR: PendingTags.apply, bind every HolderSet.Named, swap allTags, refreshTagsInHolders rebinds the tag set of every Block holder
-    Note over RSR,CCPL: configuration, a client joins, SynchronizeRegistriesTask sends ClientboundUpdateTagsPacket after the registry data, registry ints not names
-    CCPL->>CCPL: handleUpdateTags, RegistryDataCollector.appendTags, buffered until handleConfigurationFinished
-    Note over CPL: play, after a server /reload, PlayerList.reloadResources broadcasts the packet again
-    CPL->>MR: handleUpdateTags, prepareTagReload always, apply unless the connection is in memory
-    Note over Parrot: a server tick, the parrot's wander goal
-    Parrot->>Parrot: state.is(BlockTags.LOGS), TypedInstance.is, Block.builtInRegistryHolder, Holder.Reference.is — a Set.contains on the holder's own tags, no registry touched
+    TL->>TL: load: every pack's tags/block/logs.json, lowest first
+    TL->>TL: build: DependencySorter orders the nested tags, then tryBuildTag
+    TL->>MR: prepareTagReload: a Registry.PendingTags, nothing visible yet
+    Note over WL,RSR: worldgen and loot codecs read the new table through Registry.PendingTags.lookup
+    Note over MR,RSR: the thread driving the load, after the last reload listener has applied
+    RSR->>MR: Registry.PendingTags.apply: bind, swap, rebind every holder
+    Note over Parrot: a later server tick, the parrot's wander goal
+    Parrot->>Parrot: state.is(BlockTags.LOGS) — a set lookup on the holder's own tags
+    Note over MR,Parrot: no arrow to the registry: the check never reaches it
 ```
+
+*One tag, from the pack files to the check that uses it. The gap between
+`MappedRegistry.prepareTagReload` and `Registry.PendingTags.apply` is where
+the page's opening riddle lives — the table is built but nothing can see it.
+The last note marks an absence, which is the one thing a picture cannot
+draw: the parrot's check touches no registry at all.*
+
 
 ### Every pack's file, lowest first
 
@@ -194,7 +196,8 @@ can; nothing is visible yet, and the `Registry.PendingTags.lookup` it hands
 back answers as if the new table were installed, which is what the worldgen
 and loot codecs are given while they load. `Registry.PendingTags.apply` is
 then **three ordered steps**: bind each `HolderSet.Named`, swap the
-`MappedRegistry.TagSet`, then rebind every holder's tag set. There is no
+`MappedRegistry.TagSet`, then rebind every holder's tag set in
+`MappedRegistry.refreshTagsInHolders`. There is no
 lock and no single-reference swap; it is safe because one thread runs it
 start to finish with nothing else looking, not because it is atomic. Which
 thread depends on the occasion: at world load the Server thread does not

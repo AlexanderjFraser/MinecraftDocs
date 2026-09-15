@@ -181,6 +181,20 @@ def labels_of(body):
     return kind, lanes, out
 
 
+def close_up_breaks(text: str) -> str:
+    """Read a `<br/>` the way pass 7's F17/F18 rule writes it.
+
+    A break is display, never a name. Written tight against the text on both
+    sides — `DataComponentType.<br/>codecOrThrow`, `PersistentEntity<br/>SectionManager` — it is *inside* a name that mermaid would otherwise hyphenate, so the
+    gate closes it up. Written with a space on either side it separates clauses,
+    so it becomes one space. F17 ruled this for a lane expansion; F18 sends part
+    sessions to break names in messages and notes the same way, so the same
+    reading applies wherever a name can appear.
+    """
+    text = re.sub(r"(?<=[^\s])<br\s*/?>(?=[^\s])", "", text)
+    return re.sub(r"<br\s*/?>", " ", text)
+
+
 class Checker:
     def __init__(self, mc_source: str, libs: str, template: str = TEMPLATE):
         self.classes, self.packages = load_index(mc_source, libs)
@@ -280,7 +294,7 @@ class Checker:
         for start, body in fences_of(path):
             kind, lanes, labels = labels_of(body)
             for ln, role, text, target in labels:
-                text = re.sub(r"<br\s*/?>", " ", text)
+                text = close_up_breaks(text)
                 seen_dotted = set()
                 for m in DOTTED.finditer(text):
                     tok = m.group(1)
@@ -396,6 +410,9 @@ sequenceDiagram
     SL->>MS: the factory it was handed runs here
     Main->>SL: load, wrapped in Util.blockUntilDone
     Note over SL,MS: ChunkMap and ChunkMapp and MinecraftServer.tickServer and ServerLevel.noSuchMemberEither
+    SL->>MS: a tick, then<br/>MinecraftServer.tickChildren
+    SL->>MS: MinecraftServer.<br/>tickServer once more
+    SL->>MS: MinecraftServer.<br/>tickServerr once more
 ```
 
 ```mermaid
@@ -428,12 +445,15 @@ def probe(mc_source: str, libs: str) -> int:
         ("the bad class in a note fails and the good one passes", (15, "ChunkMapp") in got and not any(f[2] == "ChunkMap" for f in failures)),
         ("the bad dotted member fails and the good one passes", (15, "ServerLevel.noSuchMemberEither") in got and not any(f[2] == "MinecraftServer.tickServer" for f in failures)),
         ("a plural of a class name passes", not any("ClientboundBlockUpdatePackets" in f[2] for f in failures)),
+        ("a break with a space before it separates clauses, and the name after it still resolves", not any(f[1] == 16 for f in failures)),
+        ("a break tight inside a message's name is read closed up", not any(f[1] == 17 for f in failures)),
+        ("a break tight inside a message's name that still does not resolve fails", (18, "MinecraftServer.tickServerr") in got),
         ("a bad class in a flowchart node fails", any(f[2] == "FrobnicatorThing" for f in failures)),
         ("a nested class named bare is a note, not a failure", any(n[2] == "SpawnState" and "NaturalSpawner.SpawnState" in n[3] for n in notes) and not any(f[2] == "SpawnState" for f in failures)),
         ("an inherited member resolves (DedicatedServer.runServer is MinecraftServer's)", not any(f[2] == "DedicatedServer.runServer" for f in failures)),
         ("an unqualified member in a flowchart label is a note", any(n[2] == "runAllTasks" for n in notes)),
         ("figure mentions include ChunkMap and NaturalSpawner", "ChunkMap" in c.mentions and "NaturalSpawner" in c.mentions),
-        ("exactly the six failures expected", len(failures) == 6),
+        ("exactly the seven failures expected", len(failures) == 7),
     ]
     ok = True
     for what, passed in checks:

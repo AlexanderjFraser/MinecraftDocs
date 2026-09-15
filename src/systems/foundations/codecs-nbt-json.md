@@ -57,17 +57,28 @@ sequenceDiagram
     participant NbtIo as NbtIo
 
     Note over CBE: the server thread, inside chunk serialisation
-    CBE->>TVO: saveWithFullMetadata, createWithContext with a ProblemReporter and the registries
-    CBE->>CHelp: saveAdditional hands the ValueOutput straight on
+    CBE->>TVO: createWithContext, from a ProblemReporter and the registries
+    CBE->>CHelp: saveAllItems, handed the ValueOutput straight on
     CHelp->>TVO: list Items with ItemStackWithSlot.CODEC, one entry per occupied slot
     TVO->>TVO: ItemStack.MAP_CODEC writes id, count and components
-    TVO-->>CBE: buildResult gives a CompoundTag, and ScopedCollector.close logs any problem
+    TVO-->>CBE: buildResult gives a CompoundTag
     Note over NbtIo: an IO worker, later
     CBE->>NbtIo: SerializableChunkData through RegionFileStorage.write
 ```
 
+*The disk path, and the thing to notice is what has no lane: `ItemStack`
+itself. Nothing here is a save method on a stack — an output object is made
+with context at the top, handed down two levels, and becomes a
+`CompoundTag` only on the way back, with
+`ProblemReporter.ScopedCollector.close` logging anything that went wrong as
+the scope shuts.*
+
 `ItemStack` has no NBT method — there is no *save* and no *parse* on it.
-`ChestBlockEntity.saveAdditional` receives a `ValueOutput` and calls
+The `ValueOutput` the whole chain writes into is one
+`TagValueOutput.createWithContext`, made at the top with a `ProblemReporter`
+and the registries and turned into a `CompoundTag` by
+`TagValueOutput.buildResult` on the way back out.
+`ChestBlockEntity.saveAdditional` receives that `ValueOutput` and calls
 `ContainerHelper.saveAllItems`, which opens a typed list under *Items* with
 `ItemStackWithSlot.CODEC`, a record of slot plus the stack's own
 `ItemStack.MAP_CODEC` fields inlined. That map codec writes *id*, *count*
@@ -90,11 +101,17 @@ sequenceDiagram
     Note over PEnc: Netty, clientbound
     PEnc->>IStack: OPTIONAL_STREAM_CODEC, a varint count where anything non-positive means empty
     IStack->>DCP: Item.STREAM_CODEC for the id, then STREAM_CODEC for the patch
-    DCP->>PEnc: added count, removed count, each type id with its value, then the removed ids
+    DCP-->>PEnc: added count, removed count, each type with its value, then the removed ids
     Note over PDec: Netty, serverbound, the creative slot alone
     PDec->>IStack: validatedStreamCodec over OPTIONAL_UNTRUSTED_STREAM_CODEC
     IStack->>IStack: re-encode through ItemStack.CODEC into NullOps, keeping only the errors
 ```
+
+*The wire path, in both directions, and the two halves are not symmetrical:
+the clientbound half above the second note has no `Codec` in it anywhere —
+fields laid into the buffer by hand, in a fixed order — while the
+serverbound half runs a `Codec` it does not want the output of, purely to
+see whether it throws.*
 
 Nothing on the clientbound half of this path is a `Codec`.
 `ItemStack.OPTIONAL_STREAM_CODEC` writes
@@ -115,18 +132,31 @@ codecs](../networking/packets-and-stream-codecs.md#what-stops-a-hostile-sender)'
 
 ```mermaid
 sequenceDiagram
+    box transparent the client
     participant CPL as ClientPacketListener
-    participant HS as HashedStack
+    participant MPGM as MultiPlayer<br/>GameMode
+    end
+    box transparent the server
+    participant SP as ServerPlayer
     participant ACM as Abstract<br/>ContainerMenu
+    end
 
-    Note over CPL: the client, once, when configuration ends
-    CPL->>CPL: createSerializationContext over HashOps.CRC32C_INSTANCE, a RegistryOps whose document is a hash
-    Note over HS: the render thread, on the click
-    CPL->>HS: create, one int per added component through TypedDataComponent.encodeValue
-    HS->>ACM: ServerboundContainerClickPacket, the changed slots and the cursor
+    Note over CPL: once, when configuration ends
+    CPL->>CPL: a RegistryOps over <br/>HashOps.CRC32C_INSTANCE,<br/>from its own registries
+    Note over SP: and the same ops, built the same way, from the server's
+    Note over MPGM: the Render thread, on the click
+    MPGM->>ACM: ServerboundContainerClickPacket: a HashedStack per changed slot
     Note over ACM: the server thread, after the click has been re-run
-    ACM->>ACM: RemoteSlot.Synchronized re-hashes the server's own stack and compares
+    ACM->>SP: the same hash of the server's own stack
+    ACM->>ACM: RemoteSlot.<br/>Synchronized <br/>compares the two
 ```
+
+*Two machines computing the same number the same way, which is the only
+reason the comparison means anything. The packet carries no component data
+at all — one int per added component and the removed types by name — so a
+client that has been lied to about a stack cannot hash its way back to
+agreement.*
+
 
 `HashOps` is a `DynamicOps` like any other, and a codec cannot tell the
 difference: it builds maps and lists and strings as usual, and what comes
@@ -155,8 +185,13 @@ sequenceDiagram
     IP->>TagP: create, over this parser's own RegistryOps on NbtOps
     IP->>TagP: parseAsArgument at the opening bracket
     TagP-->>IP: a Tag, read no further than its own closing brace
-    IP->>IP: DataComponentType.codecOrThrow parses that Tag into a DataComponentPatch.Builder
+    IP->>IP: DataComponentType.<br/>codecOrThrow parses that Tag
 ```
+
+*The shortest of the four paths, and the one that ends where the first
+began: the `Tag` the parser hands back goes through the very codec the chunk
+file used. Text is the only path that reaches a component's codec by asking
+the `DataComponentType` for it.*
 
 `ItemArgument` hands `GiveCommand` an `ItemInput`, and `ItemParser` is what
 builds it. The parser holds a `RegistryOps` over `NbtOps.INSTANCE` and a

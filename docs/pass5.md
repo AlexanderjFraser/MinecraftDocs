@@ -231,12 +231,12 @@ rewritten by its own part's session — and the glossary entry by entry.
   `brigadier-and-commands` and a link back, and it is **pass 10's**, because
   Part XIII closed before this was checked and the clause is a claim about a
   page nobody is reading this pass. [kind=book]
-- **`codecs-nbt-json` explains five mechanisms other parts own** — the wire
+- ~~**`codecs-nbt-json` explains five mechanisms other parts own** — the wire
   buffer, region compression, the `BlockEntity` save shells, the serverbound
   fence and the trusted-tag constants. Session B left them because each is one
   column of the page's own four-path table and cutting them needs the table
   redrawn. Still true, still deliberate, and it is **pass 7's**, because the
-  table is the figure. [kind=figure]
+  table is the figure. [kind=figure]~~ — **settled, pass 7 session B**, the figure half: the four-path table is the comparison (F10 — a comparison is a table, never a figure) and the four sequence diagrams are the order *within* each path, which the table cannot carry; they divide the work and all four stay. What the page borrows from other parts is prose, not figure, and goes to pass 10. [kind=book]
 - **Part IV's landing page says "Nothing in this part needs Part V or
   beyond"**, which is true of dependencies and not of links: `chunk-anatomy`
   links `blocks-and-states`, `fluids` links `prediction-and-acks`, `lighting`
@@ -4422,7 +4422,13 @@ page had left unnamed as "its fade sibling"). [kind=record]
   flowcharts run `ItemStack` → `PatchedDataComponentMap` → patch with the
   dotted prototype arrow. After this session's cut the Part VII page should
   draw the `ItemStack` fields and the `Item`'s four and drop the patch
-  internals, which are Part II's. [kind=figure]
+  internals, which are Part II's. [kind=figure] — **half done, pass 7 session
+  B**: the Part II figure is now a `classDiagram` of what a stack *holds*
+  (`ItemStack` → `PatchedDataComponentMap` → prototype and patch, with
+  `asPatch`/`fromPatch` in their two directions), so Part VII's session G is
+  free to draw the `ItemStack` fields and the `Item`'s four without drawing
+  the same picture twice. The overlap to check is the dotted prototype arrow,
+  which Part II now owns.
 - **`loot-tables`' funnel flowchart is sixteen edges** and now carries the
   splitter's corrected level as a note; pass 7 should judge whether the
   correction reads at the column width. [kind=figure]
@@ -5082,43 +5088,43 @@ on are in [pass9.md](pass9.md).
 
 ### For pass 7 (the figures)
 
-- **`anatomy`'s start-up sequence gives `MinecraftServer` and
+- ~~**`anatomy`'s start-up sequence gives `MinecraftServer` and
   `IntegratedServer` separate lanes**, and the reader could not say what
   crossed the arrow between them — two objects, two threads, or one object
   calling its own override. It is one object. The lane pair may be the right
   picture anyway (the abstract loop and the singleplayer subclass), but it
-  wants a `Note` or one lane. [kind=figure]
-- **`anatomy`'s two-loops flowchart draws `runTick` as a step beside
+  wants a `Note` or one lane. [kind=figure]~~ — **done, pass 7 session B**: one lane, `IntegratedServer`, the object that exists; `MinecraftServer.spin` builds it and `runServer` is a self-message. The lane pair is gone and a `box` per machine draws the boundary instead.
+- ~~**`anatomy`'s two-loops flowchart draws `runTick` as a step beside
   `processQueuedPackets`, `runAllTasks`, `tick` and `renderFrame`**; the
   prose says all four happen *inside* `runTick`. A nesting drawn as a
-  sequence. [kind=figure]
+  sequence. [kind=figure]~~ — **done, pass 7 session B**: the four calls are inside a subgraph named `Minecraft.runTick`, and the server ring gained the same inner box for `processPacketsAndTick`, which `MinecraftServer.java:1116` shows calling `tickServer`. The wire came out of the figure with it — the two rings are now drawn side by side, at scale 1.
 - **Same figure, the Netty node's two edges are labelled only "a clientbound
   packet" / "a serverbound packet"**, so the figure reads as though every
   packet hops threads; the prose narrows it to handlers that touch game
   state, and the thread table excludes handshake and login entirely.
   [kind=figure]
-- **`tags`' sequence diagram carries six labels that are whole sentences**
+- ~~**`tags`' sequence diagram carries six labels that are whole sentences**
   (the `TagLoader.load` and `TagLoader.build` arrows, and four `Note over`
   bars); the reader lost which lane a label was on before reaching its end.
-  [kind=figure]
-- **`codecs-nbt-json`'s Checksum figure spans two machines and three moments**
+  [kind=figure]~~ — **done, pass 7 session B**: the six became four, each under twelve words, and the two client lanes left the figure altogether (the four-moments section above already owns them, and `identifiers-and-registries` figure 3 draws the packet). 0.69 → 0.96.
+- ~~**`codecs-nbt-json`'s Checksum figure spans two machines and three moments**
   with only notes for the seams, and one arrow crosses from client to server
   with no lane between them. The reader named it the one figure they could
-  not read against its paragraph. [kind=figure]
-- **`data-driven-types`' trace figure gives `unpackLootTable` to a
+  not read against its paragraph. [kind=figure]~~ — **done, pass 7 session B**: redrawn as the symmetry it is — a `box` per machine, `MultiPlayerGameMode` as the sender the table already names, and `ServerPlayer` holding the server's copy of the same ops. `HashedStack` stops being a lane, because a record does not send a packet.
+- ~~**`data-driven-types`' trace figure gives `unpackLootTable` to a
   `ChestBlockEntity` lane** where the prose has `RandomizableContainer`, and
   draws `LootItemFunctions.compose` as an arrow from `SetItemCountFunction`
   where the prose has the `LootTable` constructor calling it. Two arrows to
-  re-derive. [kind=figure]
-- **`text-components`' death-message figure makes `ComponentSerialization`
+  re-derive. [kind=figure]~~ — **done, pass 7 session B**: both re-derived. `LootItemFunctions.compose` is called by the `LootTable` constructor (`LootTable.java:66`), not by `SetItemCountFunction`; and the `unpackLootTable` message head belonged to the sender, so the arrow now carries the key and names `RandomizableContainer.unpackLootTable` in its label.
+- ~~**`text-components`' death-message figure makes `ComponentSerialization`
   stand for both the codec and the wire** (`SP->>CS` is "send a packet", with
   a `Note over CS` naming the Netty thread and `PacketEncoder`), and its last
   two arrows read as though the `Language` lookup happens after the screen
-  has drawn. [kind=figure]
-- **`data-components`' shape figure is told to be read left to right** and
+  has drawn. [kind=figure]~~ — **done, pass 7 session B**: the `ComponentSerialization` lane is gone. A `box` per machine carries the wire, the last two arrows are in the order the walk runs them, and a note on `ServerPlayer` says where the server's own reading of the message happens.
+- ~~**`data-components`' shape figure is told to be read left to right** and
   has an edge running back into the subgraph the sentence reads away from,
   with `DataComponentType` declared last and feeding both halves.
-  [kind=figure]
+  [kind=figure]~~ — **done, pass 7 session B**: redrawn as a `classDiagram` — what a stack holds, what it only points at. The build chain left with the flowchart; `asPatch` and `fromPatch` are two arrows now, in their two directions, and both leave `PatchedDataComponentMap` rather than the patch field.
 
 ### For pass 8 (the voice)
 
@@ -6368,3 +6374,66 @@ Part 3; these are the pieces of work that ruling created.
   clears them. Recorded because of how it was found — nobody had looked at a
   rendered page at a laptop width, which is this pass's whole method, and it is
   worth session O checking the other frame chrome the same way. [kind=record]
+- **The figure-name gate did not read a `<br/>` inside a message the way it
+  reads one inside a lane.** F17 ruled the break "display, never a name" and
+  taught `check_figure_names.py` and `check_lanes.py` to close it up in a lane
+  expansion; F18 then sent the part sessions to break a *message's* name the
+  same way — and the gate split the name on the break and failed it. Fixed here
+  in `check_figure_names.py` by one rule with three probe cases: a break tight
+  against the text on both sides is closed up (a name), a break with a space on
+  either side becomes a space (a clause). Corpus-wide unresolved went 119 → 100
+  on the same pages, so about five of the 119 were never page errors at all.
+  **Session O should re-read the remaining count with this in mind** and decide
+  whether `check_lanes.py` wants the same rule for its note and message text.
+  [kind=record]
+- **The renderer counts a `par` block's own headers as labels outside their
+  container.** `anatomy`'s start-up sequence gained a two-branch `par` for the
+  one genuine concurrency in the book — the Render thread drawing while
+  `IntegratedServer.initServer` loads — and `render_figures.js` flags both
+  branch captions. It is the tool not knowing the construct, not a defect in
+  the figure; session O should teach it, or the count in Part 4's *overlap,
+  overflow or through* column will be two high for the rest of the pass.
+  [kind=figure]
+- **`par` is a mark outside `TEMPLATE.md`'s table.** Session B spent it once,
+  captioned as F3 requires, because the figure otherwise said the *opposite* of
+  the paragraph beside it: a sequence diagram reads strictly top to bottom, and
+  the prose's "Meanwhile" is the whole point of that stretch of `anatomy`.
+  Session O should decide whether concurrency earns a row in the marks table —
+  the corpus has at least one more place that wants it (the chunk pipeline's
+  workers) — or whether one captioned exception is the right answer.
+  [kind=figure]
+- **The jar treemap cannot carry what `what-this-book-skips` asks of it.** The
+  page asks the reader to reconcile fifteen table rows against the map's
+  hatched boxes; at the column, eight of the fifteen packages are an unlabelled
+  sliver or not separable at all, `com/mojang/realmsclient` — the second-largest
+  thing the page tours — has no readable name, and the hatch (blue on blue) is
+  the least visible encoding on a map whose loudest story is `world 42%`, which
+  is the atlas's subject and not this page's. Generated by `map_source.py` and
+  shared by three pages, so it is the same kind of job as F13's trees and
+  belongs with them: session O, or whichever session takes the emitter.
+  [kind=figure]
+- **Part II's landing figure was `flowchart BT`** — one of the three directions
+  F3 rules out — and read bottom-up with its key in the prose above it, which
+  is the sentence a picture-first reader skips. Turned `TD` with every arrow
+  unchanged in meaning (machinery → dependant), numbered to the watch order and
+  captioned with the key. **Five of the thirteen landing figures still spell a
+  direction F3 does not allow** (`entities` and `foundations` `BT`, `commands`
+  and `worldgen` `TB`), and the thirteen use five directions between them; that
+  is session O's set-reading, and this is what one of them looked like fixed.
+  [kind=figure]
+- **`resource-system`'s figure 2 asserted three listeners where the page says
+  twenty.** There was no ellipsis, no "…", nothing in the frame admitting
+  seventeen were missing, and a picture-first reader came away believing the
+  client has three reload listeners. Fixed with a *seventeen more listeners*
+  node. Worth a sweep: the corpus is full of excerpt figures whose prose says
+  *some of* afterwards, and the figure is what the reader believes.
+  [kind=figure]
+- **Two sections in Part II asked for a picture and did not get one this
+  session**, both named by their viewer and both real: `resource-system`'s
+  *Discover* and *Snapshot* together state seven things about one spatial
+  object — the pack stack — with two opposite conventions (list order against
+  UI order) and two opposite traversal directions, and draw none of it; and
+  `data-components`' *The prototype, and why it is built at reload* is the
+  densest prose on the page with no figure, and wants a timeline with three
+  fixed points and one branch. Both are F14 candidates a later session or the
+  second edition can take. [kind=book]

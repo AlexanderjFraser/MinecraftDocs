@@ -135,30 +135,34 @@ key goes.
 
 ```mermaid
 sequenceDiagram
-    participant Main
     participant Boot as Bootstrap
     participant BIR as BuiltInRegistries
     participant Items as Items
     participant Item as Item
     participant DMR as Defaulted<br/>MappedRegistry
 
-    Note over Main,DMR: the launching thread, before any server or client object exists
-    Main->>Boot: bootStrap, early, after argument parsing: isBootstrapped is set before any registry is touched
-    Boot->>BIR: class init: one empty registry per built-in key, 95 of the 148 in Registries, each registered into WRITABLE_REGISTRY, each with a loader in LOADERS
-    Boot->>BIR: bootStrap, then createContents: run every loader
-    BIR->>Items: class init (the ITEM loader touches Items.AIR)
-    Items->>Items: registerItem(ItemIds.DIAMOND_SWORD, properties): Item.Properties.setId stores the key
-    Items->>Item: new Item(properties)
-    Item->>DMR: createIntrusiveHolder: a Holder.Reference with a value but no key yet
-    Items->>DMR: Registry.register, then WritableRegistry.register(key, item, BUILT_IN): bindKey, numeric id = byId.size()
-    BIR->>BIR: freeze: the root first, then every registry: BuiltInRegistries.bindBootstrappedTagsToEmpty, then MappedRegistry.freeze
-    DMR->>DMR: freeze: bindValue on every holder, refuse if any holder or declared tag is unbound, build componentLookup
-    BIR->>BIR: validate: an empty registry logs, a DefaultedRegistry without its default throws
-    Note over Main,DMR: components are still unbound here, they are bound at the first reload, and tags at world load
+    Note over Boot,DMR: the launching thread, before any server or client object exists
+    Boot->>BIR: class init: one empty registry per key, 95 of the 148, each with a loader
+    Note over Boot,Items: FireBlock and ComposterBlock run first, so Items is already initialised
+    Boot->>Items: class init: registerItem per item, Item.Properties.setId stores the key
+    Items->>Item: new Item(properties), which knows its own key
+    Item->>DMR: createIntrusiveHolder: a Holder.Reference with a value, no key
+    Items->>DMR: register(key, item, BUILT_IN): bindKey, numeric id = byId.size()
+    Boot->>BIR: bootStrap: createContents runs every loader, then freeze, then validate
+    BIR->>BIR: freeze: the root, then each registry — tags bound empty, then MappedRegistry.freeze
+    DMR->>DMR: bindValue on every holder, refuse an unbound one, build componentLookup
+    Note over Boot,DMR: components are bound at the first reload, tags at world load
 ```
 
-Both `Main` classes do this early — after argument parsing and crash-report
-preload, and after a handful of non-registry bootstraps
+*The bootstrap ladder, on one thread, before either program exists. The
+numeric id an item gets is the size of the registry when it registers — the
+line number of its registration — which is why the wire ids are stable only
+because the registration order is.*
+
+
+Both `Main` classes call `Bootstrap.bootStrap` early — after argument parsing
+and crash-report preload, and `Bootstrap.isBootstrapped` is set before any
+registry is touched — and after a handful of non-registry bootstraps
 ([anatomy](../anatomy/anatomy.md#from-main-to-a-world)) — on the launching thread, before any
 server or client object exists. `Bootstrap.bootStrap` calls
 `BuiltInRegistries.bootStrap`, and after it returns every built-in registry
@@ -169,9 +173,11 @@ creates every registry empty and records the loader that fills it in
 `BuiltInRegistries.LOADERS`, an insertion-ordered map. `Bootstrap.bootStrap`
 then runs `BuiltInRegistries.createContents` — the loaders in that order.
 By then `Items`, `Blocks` and `EntityTypes` are already initialised:
-`Bootstrap.bootStrap` reaches `FireBlock.bootStrap`, `EntityTypes.PLAYER`
-and `CauldronInteractions.bootStrap` before it calls
-`BuiltInRegistries.bootStrap`, and each of those touches its catalogue.
+`Bootstrap.bootStrap` reaches `FireBlock.bootStrap`, `ComposterBlock.bootStrap`,
+`EntityTypes.PLAYER` and `CauldronInteractions.bootStrap` before it calls
+`BuiltInRegistries.bootStrap`, and each of those touches its catalogue — so
+`BuiltInRegistries.createContents` finds the loaders' values already there rather than
+triggering them.
 `Bootstrap.checkBootstrapCalled` is the guard that makes "touched `Blocks`
 from a static initialiser" a crash rather than a silent empty registry; it
 works because the bootstrap flag is set *before* the registries are touched,
@@ -229,32 +235,64 @@ this with two layers, `ClientRegistryLayer.STATIC` and
 — a live view of the frozen root registry, not a copy of it.
 
 ```mermaid
-sequenceDiagram
-    participant WL as WorldLoader
-    participant RDL as RegistryDataLoader
-    participant RMRLT as ResourceManager<br/>RegistryLoadTask
-    participant LRA as Layered<br/>RegistryAccess
-    participant SCPL as ServerConfiguration<br/>PacketListenerImpl
-    participant CCPL as ClientConfiguration<br/>PacketListenerImpl
-    participant RDC as RegistryDataCollector
-
-    Note over WL,LRA: world load, on the worker pool
-    WL->>WL: RegistryLayer.createRegistryAccess: STATIC filled from BuiltInRegistries.REGISTRY, three empty layers
-    WL->>RDL: load(resources, the lookups built from getAccessForLoading(WORLDGEN), WORLDGEN_REGISTRIES, backgroundExecutor)
-    RDL->>RMRLT: one RegistryLoadTask per RegistryData, every task's ConcurrentHolderGetter visible to every other
-    RMRLT->>RMRLT: FileToIdConverter.registry lists data/*/worldgen/biome/*.json, decode in parallel, register sorted by id, load and bind this registry's tags
-    RMRLT->>RMRLT: freezeRegistry, then the RegistryData's RegistryValidator
-    WL->>LRA: one replaceFrom(WORLDGEN, worldgen layer, dimensions layer): the dimensions layer is the WorldDataSupplier's finalDimensions
-    Note over WL,RDC: later, a client logs in and reaches the configuration phase: the server thread on the left, the client thread on the right
-    SCPL->>CCPL: ClientboundSelectKnownPacks: which packs do you already have?
-    CCPL->>SCPL: ServerboundSelectKnownPacks: accepted all-or-nothing
-    SCPL->>CCPL: ClientboundRegistryDataPacket, one per synced registry: RegistrySynchronization.packRegistries, entries from a known pack carry no data
-    SCPL->>CCPL: ClientboundUpdateTagsPacket: every static registry's tags plus the synced dynamic ones, as registry ints
-    SCPL->>CCPL: ClientboundFinishConfigurationPacket
-    CCPL->>RDC: collectGameRegistries: rebuild REMOTE with NetworkRegistryLoadTasks, missing data re-read from the local pack, static tags applied in place
-    RDC->>CCPL: a RegistryAccess.Frozen, into CommonListenerCookie.receivedRegistries
-    CCPL->>SCPL: ServerboundFinishConfigurationPacket: play may begin
+flowchart TD
+    WL["WorldLoader.load, on Util.backgroundExecutor"]:::worker
+    RDL["RegistryDataLoader.load, with the lookups<br/>from getAccessForLoading"]:::worker
+    T1["one RegistryLoadTask: biome"]:::worker
+    T2["one RegistryLoadTask: configured_carver"]:::worker
+    T3["… one per RegistryData, 47 of them"]:::worker
+    F["freezeRegistry binds every promise,<br/>then the RegistryValidator"]:::worker
+    LRA["LayeredRegistryAccess.replaceFrom:<br/>worldgen and dimensions in one call"]:::server
+    WL --> RDL
+    RDL --> T1
+    RDL --> T2
+    RDL --> T3
+    T1 -. "an unbound Holder.Reference" .-> T2
+    T2 -. "an unbound Holder.Reference" .-> T1
+    T1 --> F
+    T2 --> F
+    T3 --> F
+    F --> LRA
 ```
+
+*World load, as a task graph rather than a conversation: one task per
+registry, all on the worker pool, each able to ask any other for an element
+it has not registered yet. The dotted edges are the forward references, and
+the freeze is where they stop being promises. Only the last box is back on
+the thread that called `WorldLoader.load`.*
+
+Later, a client logs in and reaches the configuration phase, and the server
+sends it what it just built.
+
+```mermaid
+sequenceDiagram
+    box transparent the server
+    participant SRT as Synchronize<br/>RegistriesTask
+    participant SCPL as ServerConfiguration<br/>PacketListenerImpl
+    end
+    box transparent the client
+    participant CCPL as ClientConfiguration<br/>PacketListenerImpl
+    participant RDC as RegistryData<br/>Collector
+    end
+
+    SRT->>CCPL: ClientboundSelectKnownPacks: which packs do you have?
+    CCPL->>SCPL: ServerboundSelectKnownPacks: accepted all-or-nothing
+    SRT->>CCPL: one ClientboundRegistryDataPacket per synced registry
+    Note over SRT,CCPL: an entry from a pack the client has carries no data
+    SRT->>CCPL: ClientboundUpdateTagsPacket: tags as registry ints
+    SCPL->>CCPL: ClientboundFinish<br/>ConfigurationPacket
+    CCPL->>RDC: collectGameRegistries: rebuild REMOTE, patch the static tags
+    RDC->>CCPL: a RegistryAccess.Frozen, into the play listener's cookie
+    Note over CCPL,RDC: with an IntegratedServer, that Frozen is thrown away<br/>for the server's own registries
+    CCPL->>SCPL: ServerboundFinish<br/>ConfigurationPacket
+```
+
+*The same registries crossing to a client, and the last packet is what lets
+play begin. `SynchronizeRegistriesTask` sends the three data packets and the
+listener sends the fourth; the client decodes none of it until the finish
+packet arrives. The last note is the singleplayer case, where the work of the
+whole exchange is discarded.*
+
 
 `WorldLoader.load` runs `RegistryDataLoader.load` on
 `Util.backgroundExecutor`, returning to the main thread for

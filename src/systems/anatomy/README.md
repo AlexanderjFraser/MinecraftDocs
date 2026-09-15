@@ -25,10 +25,14 @@ a reader decides whether to go on once they can see the whole program.
 
 ```mermaid
 flowchart LR
-    A["Anatomy: four threads, two loops, one wire — from main to a running singleplayer world"]
-    B["What this book skips: the packages the parts do not reach, and why"]
-    A -- "now that you can see the whole program, here is the part of it this book does not teach" --> B
+    A["1 · Anatomy<br/>a trace: four threads, two loops, one wire"]
+    B["2 · What this book skips<br/>a boundary: where the book stops"]
+    A -- "the program first" --> B
 ```
+
+*The part's two lectures, numbered to the watch order. The arrow is a
+dependency, not a call: the boundary means nothing until you can see the
+program it is drawn around.*
 
 ## Before you start
 

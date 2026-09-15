@@ -43,29 +43,37 @@ running, and is the client's answer to "am I the host".
 
 ```mermaid
 sequenceDiagram
+    box transparent the client
     participant Main as Main
-    participant RS as RenderSystem
     participant MC as Minecraft
-    participant MS as MinecraftServer
+    participant Conn as Connection
+    end
+    box transparent the server
     participant IS as IntegratedServer
     participant SCL as ServerConnection<br/>Listener
-    participant Conn as Connection
+    end
 
-    Main->>Main: tryDetectVersion, loadLibraries, DataFixers.optimize in the background, bootStrap, ClientBootstrap, validate
-    Main->>RS: initRenderThread — this thread is the Render thread from here on
-    Main->>MC: the constructor — initBackendSystem, a backend, a Window, every reload listener registered
-    MC->>MC: the first ReloadInstance — prepare on the workers, apply here, LoadingOverlay on screen
-    Main->>MC: run — pollEvents, then runTick, until running goes false
-    Note over Main,MC: one thread so far. The next line makes the second.
-    MC->>MS: doWorldLoad calls spin — the IntegratedServer is built here, the Server thread is started
-    MS->>IS: runServer calls initServer, which loads the level and prepares its chunks
-    MC->>MC: managedBlock — draw a frame, drain the queue, repeat, until MinecraftServer.isReady
-    MC->>SCL: startMemoryChannel — a Netty local address, no socket anywhere
-    MC->>Conn: connectToLocalServer — the client's end of that same channel
-    Conn->>SCL: handshake, then login — the handlers run on Netty, the login tick on the Server thread
-    Conn->>SCL: configuration, then play — from here the client is a client like any other
-    Note over MC,IS: two loops, one wire
+    Note over Main: from here this thread is the Render thread
+    Main->>Main: tryDetectVersion, loadLibraries, bootStrap, validate
+    Main->>MC: the constructor: a backend, a Window, every reload listener
+    MC->>MC: the first ReloadInstance, the LoadingOverlay on screen
+    Main->>MC: run: pollEvents, then runTick, until running goes false
+    Note over Main,Conn: one thread so far. The next line makes the second.
+    MC->>IS: spin builds it on this thread, then starts the Server thread
+    par on the Server thread
+        IS->>IS: runServer: initServer loads the level and its spawn chunks
+    and meanwhile, on the Render thread
+        MC->>MC: managedBlock: draw a frame, drain the queue, until isReady
+    end
+    MC->>SCL: startMemoryChannel: a Netty local address, no socket
+    MC->>Conn: connectToLocalServer: the client's end of that channel
+    Conn->>Conn: handshake, login, configuration, play — the walk any client makes
 ```
+
+*The one-time start-up, and the line where one thread becomes two. The split
+box is the only place in this book two lanes run at once: the Render thread
+goes on drawing while `IntegratedServer.initServer` loads the level. Everything
+below it is the client dialling a server that happens to be in the same JVM.*
 
 That is the book's first sequence diagram, and its lanes are abbreviated the
 way every later one is: two or more letters of a class name, one meaning
@@ -149,40 +157,46 @@ tick loop with no frames at all. They are not the same shape, and no page
 later in this book is readable until that difference is fixed in mind.
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph Client["the Render thread"]
-        direction TB
-        CR["Minecraft.run: RenderSystem.pollEvents"] --> CD["runTick: the DeltaTracker says how many whole ticks are owed"]
-        CD --> CP["PacketProcessor.processQueuedPackets"]
-        CP --> CQ["BlockableEventLoop.runAllTasks: this thread's own queue"]
-        CQ --> CT["Minecraft.tick, run 0 to 10 times"]
-        CT --> CF["renderFrame, interpolating by the leftover partial tick"]
+        CR["Minecraft.run: pollEvents, then runTick, once per frame"]:::client
+        subgraph Frame["Minecraft.runTick"]
+            CD["the DeltaTracker counts the whole ticks owed"]:::client --> CP["PacketProcessor.processQueuedPackets"]:::client
+            CP --> CQ["BlockableEventLoop.runAllTasks"]:::client
+            CQ --> CT["Minecraft.tick, 0 to 10 times"]:::client
+            CT --> CF["Minecraft.renderFrame, on the partial tick"]:::client
+        end
+        CR --> CD
         CF --> CR
     end
-    subgraph Wire["the Netty event loop"]
-        direction TB
-        N["Connection.channelRead0 decodes and calls the PacketListener. PacketUtils.ensureRunningOnSameThread queues it on the owner and aborts the handler"]
-    end
     subgraph Server["the Server thread"]
-        direction TB
-        SR["MinecraftServer.runServer: the next deadline is set first"] --> SP["processPacketsAndTick: PacketProcessor.processQueuedPackets"]
-        SP --> SS["MinecraftServer.tickServer: every ServerLevel, then the connections"]
-        SS --> SW["waitUntilNextTick: run queued tasks, then park until the deadline"]
+        SR["MinecraftServer.runServer: the deadline is set first"]:::server
+        subgraph STick["processPacketsAndTick"]
+            SP["PacketProcessor.processQueuedPackets"]:::server --> SS["MinecraftServer.tickServer: every ServerLevel, then the connections"]:::server
+        end
+        SW["waitUntilNextTick: run queued tasks, then park"]:::server
+        SR --> SP
+        SS --> SW
         SW --> SR
     end
-    N -- "a clientbound packet" --> CP
-    N -- "a serverbound packet" --> SP
-    CT -- "Connection.send" --> N
-    SS -- "Connection.send" --> N
 ```
+
+*The two loops, side by side and to the same scale. The Render thread's ring is
+a frame with a tick inside it; the Server thread's ring is the tick, and there
+is no frame anywhere in it. The inner box in each is the one call that contains
+the rest of its ring — `Minecraft.runTick` on one side,
+`MinecraftServer.processPacketsAndTick` on the other.*
+
 
 **The frame loop.** `Minecraft.run` polls GLFW events and calls
 `Minecraft.runTick` once per **frame**, as fast as vsync or the frame-rate
 limit allow. Inside each frame a `DeltaTracker.Timer` running at twenty ticks
 a second says how many whole game ticks have elapsed since the last frame —
 usually zero or one, at most ten are run — and `Minecraft.tick` is called that
-many times. The fractional remainder is the partial tick the renderers
-interpolate with. So the client *has* a 20 Hz tick, but it is a sub-step of
+many times, with `BlockableEventLoop.runAllTasks` draining the thread's own
+queue just before them. The fractional remainder is the partial tick
+`Minecraft.renderFrame` hands the renderers to interpolate with. So the client
+*has* a 20 Hz tick, but it is a sub-step of
 the frame loop rather than a loop of its own; [the client
 loop](../client/the-client-loop.md#the-ten-and-the-arithmetic-behind-it) is the
 arithmetic in detail.

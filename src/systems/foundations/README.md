@@ -17,32 +17,37 @@ single behaviour to it.
 
 ## The shape of the part
 
-Part II is not a stack but a fan. Codecs sit under registries, and those two
-sit under everything else here; the five pages above them lean on the two
-below far more than on each other. Watch it bottom-up: every arrow points
-from the machinery to what takes it for granted, and the last page is the
-pattern the rest exists to make possible.
+Part II is not a stack but a fan. Codecs and registries sit under everything
+else here, and the five pages below them lean on those two far more than on
+each other. The last page is the pattern the rest exists to make possible.
 
 ```mermaid
-flowchart BT
-    C["Codecs, NBT and JSON: one object, four formats"]
-    R["Identifiers and registries: a name, a number, a Holder, and the freeze"]
-    S["The resource system: a stack of packs, a snapshot, prepare then apply"]
-    T["Tags: data-pack JSON reaching into hard-coded behaviour"]
-    D["Data components: a prototype on the registry entry, a patch on the stack"]
-    X["Text components: text as data, worded on the client"]
-    P["The data-driven type pattern: a type field is a lookup in a registry packs cannot extend"]
-    C -- "every element a pack defines is decoded by a codec" --> R
-    R -- "the registries a pack can write are loaded from the pack stack" --> S
-    S -- "tags are read from the same stack, before the listeners" --> T
-    R -- "the tag table is swapped on a registry already frozen" --> T
-    R -- "a registry entry carries the components its instances start with" --> D
-    C -- "every component that persists has a codec" --> D
-    C -- "text is a value with a codec like any other" --> X
-    T -- "a tag reference is legal in any file, not only a tag file" --> P
-    D -- "a component type is a key in a file, not a kind" --> P
-    R -- "the registry of kinds is built in, the elements come from the packs" --> P
+flowchart TD
+    C["1 · Codecs, NBT and JSON"]
+    R["2 · Identifiers and registries"]
+    S["3 · The resource system"]
+    T["4 · Tags"]
+    D["5 · Data components"]
+    X["6 · Text components"]
+    P["7 · The data-driven type pattern"]
+    C -- "decodes every element" --> R
+    C -- "a persisted component has one" --> D
+    C -- "text is a value like any other" --> X
+    R -- "pack-written registries load from it" --> S
+    R -- "the tag table is swapped after the freeze" --> T
+    R -- "an entry carries its starting components" --> D
+    R -- "the registry of kinds is built in" --> P
+    S -- "tags are read from the same stack" --> T
+    T -- "a tag reference is legal in any file" --> P
+    D -- "a component type is a key, not a kind" --> P
 ```
+
+*The part as a fan, numbered to the watch order. An arrow points from the
+machinery to the page that takes it for granted: codecs at the top is what
+nothing else here is built without, registries hang directly off it, and the
+pattern at the foot — the only page no arrow leaves — is where the part is
+going.*
+
 
 ## Before you start
 

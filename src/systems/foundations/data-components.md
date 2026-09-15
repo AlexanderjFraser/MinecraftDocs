@@ -39,23 +39,45 @@ Everything here ships in both jars; in the trace below only
 ## The shape of a stack
 
 ```mermaid
-flowchart LR
-    DCI["DataComponentInitializers.build, on the reload worker, with the registries in hand"] --> HR
-    subgraph ITEM["Item, one per registry element"]
-        HR["Holder.Reference, bindComponents at reload"] --> PROTO["the prototype: a DataComponentMap, immutable and identity-keyed"]
-    end
-    subgraph STACK["ItemStack"]
-        PDM["PatchedDataComponentMap"] --> PATCH["patch: type to Optional value, empty meaning removed from the prototype"]
-        PDM --> COW["copyOnWrite: the map is still shared with the stack it was copied from"]
-    end
-    PDM -. "prototype, shared by every stack of the item" .-> PROTO
-    PATCH -- "asPatch and fromPatch" --> DCP["DataComponentPatch: added values and removed keys, the form on disk and on the wire"]
-    KEY["DataComponentType: the key, with a persistent codec, a network codec, or only the latter"] --> PATCH
-    KEY --> PROTO
+classDiagram
+    class Item {
+        DataComponentMap prototype
+    }
+    class ItemStack {
+        PatchedDataComponentMap components
+    }
+    class PatchedDataComponentMap {
+        DataComponentMap prototype
+        DataComponentPatch patch
+        boolean copyOnWrite
+    }
+    class DataComponentPatch {
+        added values
+        removed keys
+    }
+    class DataComponentType {
+        a persistent codec
+        a network codec
+        or only the latter
+    }
+    ItemStack *-- PatchedDataComponentMap
+    PatchedDataComponentMap ..> Item : many stacks, one prototype
+    PatchedDataComponentMap --> DataComponentPatch : asPatch
+    DataComponentPatch --> PatchedDataComponentMap : fromPatch, given a prototype
+    DataComponentType <.. Item : keys the prototype
+    DataComponentType <.. DataComponentPatch : keys the patch
 ```
 
-Read it left to right. The item's prototype is built by
-`DataComponentInitializers` and bound onto the item's `Holder.Reference`.
+*What a stack holds, and what it only points at. The solid diamond is
+ownership: a stack owns its `PatchedDataComponentMap`, and that map owns the
+patch. The dotted line to `Item` is the one that matters — every stack of
+diamond swords in the world reads the same prototype object and none of them
+can write it. `DataComponentPatch` is the form that leaves: it is what goes
+on disk and on the wire, and `PatchedDataComponentMap.fromPatch` is how it comes back.*
+
+
+The item's prototype is built by `DataComponentInitializers` and bound onto
+the item's `Holder.Reference`, which the next section but one is about.
 A stack points at that shared prototype and owns only a patch over it,
 whose values are `Optional` — an empty value is a removal. The patch's
 serialisable twin is a `DataComponentPatch`, and the key of every entry in
@@ -279,24 +301,32 @@ tilling — their combat and mining live in components like everything else.
 
 ```mermaid
 sequenceDiagram
+    box transparent the server
     participant EM as EnchantmentMenu
     participant IStack as ItemStack
     participant PDM as PatchedData<br/>ComponentMap
-    participant ACM as Abstract<br/>ContainerMenu
+    end
+    box transparent the client
     participant CPL as ClientPacketListener
+    end
 
-    Note over EM: server thread, ServerboundContainerButtonClickPacket has arrived
-    EM->>IStack: enchant(holder, level) for each chosen EnchantmentInstance
-    Note over EM,IStack: a book instead of a sword takes one extra step first, transmuteCopy(Items.ENCHANTED_BOOK), the same patch over a new prototype
-    IStack->>IStack: EnchantmentHelper.updateEnchantments, then set of STORED_ENCHANTMENTS for a book, ENCHANTMENTS otherwise
-    IStack->>PDM: set: ensureMapOwnership clones the shared map, the value differs from the prototype's empty set, so patch.put
-    Note over PDM: patch is now {minecraft:enchantments to {sharpness: 3}}
-    Note over ACM: still inside the packet handler, which calls broadcastChanges itself once the click is accepted
-    ACM->>ACM: broadcastChanges, RemoteSlot.Synchronized.matches fails for this slot
-    ACM->>CPL: ClientboundContainerSetSlotPacket: count, item id, DataComponentPatch.STREAM_CODEC
-    CPL->>CPL: decode: new ItemStack(holder, count, patch), fromPatch against the client's own bound prototype
-    CPL->>CPL: handleContainerSetSlot, AbstractContainerMenu.setItem, tooltip via ItemEnchantments.addToTooltip
+    Note over EM: the server thread, the button-click packet has arrived
+    EM->>IStack: enchant, once per EnchantmentInstance
+    Note over EM,IStack: a book is transmuteCopy'd first: the same patch, a new prototype
+    IStack->>IStack: EnchantmentHelper.<br/>updateEnchantments, then set
+    IStack->>PDM: set: ensureMapOwnership clones the shared map, then patch.put
+    Note over PDM: the patch is now one entry: enchantments to sharpness 3
+    EM->>EM: broadcastChanges, still inside the handler — this slot does not match
+    EM->>CPL: ClientboundContainerSetSlotPacket: count, item id, the patch
+    CPL->>CPL: decode: PatchedData<br/>ComponentMap.fromPatch, over its own prototype
+    CPL->>CPL: setItem, then ItemEnchantments.<br/>addToTooltip
 ```
+
+*One write on the server and one packet to the client, and what crosses is
+the diff alone. The client never receives the prototype: it rebuilds the
+stack by laying the patch over the copy it already has, which is why a
+component the server never changed costs nothing to send.*
+
 
 **The menu owns the mutation.** `EnchantmentMenu.clickMenuButton` runs
 under `ContainerLevelAccess.execute` on the server thread and calls
@@ -305,7 +335,9 @@ step more first: `ItemStack.transmuteCopy` builds a new stack carrying the
 *same patch* over the enchanted book's prototype.) `ItemStack.enchant` hands the edit to
 `EnchantmentHelper.updateEnchantments`, which reads the current
 `ItemEnchantments`, edits a mutable copy and writes the immutable result
-back with `ItemStack.set`; the enchanting rules, the lapis, the seed and
+back with `ItemStack.set` — under `DataComponents.STORED_ENCHANTMENTS` for
+an `Items.ENCHANTED_BOOK` and `DataComponents.ENCHANTMENTS` for everything
+else, which is the one place the book branch reaches past the transmute; the enchanting rules, the lapis, the seed and
 `/enchant` are [Part VII's](../items/enchanting.md). What matters here is
 that enchantments are a value, not a list on the stack: one component, one
 write.

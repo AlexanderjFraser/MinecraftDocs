@@ -36,18 +36,23 @@ selected pack it rethrows and crashes instead.
 ## The pipeline
 
 ```mermaid
-flowchart LR
-    D["discover: PackRepository.reload re-runs every RepositorySource and rebuilds the selection"] --> S["snapshot: a new MultiPackResourceManager over the opened packs, a snapshot of the list, not of the bytes"]
-    S --> P["prepare: every listener reads on the worker pool at once"]
-    P --> A["apply: each listener swaps its live state on the owning thread, in registration order, behind a PreparationBarrier"]
-    A --> F["finish: checkExceptions, then the level re-extracted or the server's managers installed"]
-    A --> R["roll back: every pack deselected, the reload run again"]
+flowchart TD
+    D["discover: PackRepository.reload re-runs every RepositorySource"] --> S["snapshot: a new MultiPackResourceManager over the opened packs"]
+    S --> P["prepare: every listener reads, on the worker pool, at once"]
+    P --> A["apply: each listener swaps its live state, in registration order"]
+    A -- "checkExceptions finds none" --> F["finish: the level re-extracted, or the server's managers installed"]
+    A -- "a listener threw" --> R["roll back: every pack deselected"]
+    R -- "the reload run again" --> D
 ```
 
-Five stages and the one branch off the last of them, and the rest of the
-page is a section per stage: what comes in, what is decided, what goes out. F3+T is the grounding trace; `/reload`
-is the coda, as a table of where the server's run of the same pipeline
-differs.
+*The five stages and the one branch, which is off the last of them and not
+the first. A snapshot is of the pack list, not of the bytes; the rollback
+arrow runs back to discover because what follows a failure is another whole
+reload, not a retry of the stage that failed.*
+
+The rest of the page is a section per stage: what comes in, what is decided,
+what goes out. F3+T is the grounding trace; `/reload` is the coda, as a table
+of where the server's run of the same pipeline differs.
 
 ## Discover: the repository and its packs
 
@@ -200,33 +205,39 @@ completes the outer future exceptionally and leaves every prepare running;
 used here. What never happens is the applies.
 
 ```mermaid
-flowchart LR
-    subgraph PREP["prepare, on the worker pool, all at once"]
-        TMp["TextureManager: read every ReloadableTexture"]
-        AMp["AtlasManager: stitch every atlas, completing the futures published under PENDING_STITCH"]
-        MMp["ModelManager: load models and block states, then join the block and item stitches from PENDING_STITCH"]
+flowchart TD
+    SS["prepareSharedState: one synchronous pass,<br/>before any prepare starts"]:::worker
+    subgraph PREP["prepare, all at once"]
+        TMp["TextureManager: read every texture"]:::worker
+        AMp["AtlasManager: stitch every atlas"]:::worker
+        MMp["ModelManager: load models and block states"]:::worker
+        ETC["seventeen more listeners"]:::worker
     end
-    ALL["all preparations: every listener has reached its barrier"]
-    TMp --> ALL
-    AMp --> ALL
-    MMp --> ALL
-    AMp -. "shared state" .-> MMp
-    subgraph APP["apply, on the owning thread, in registration order"]
-        TMa["TextureManager apply: swap texture contents"]
-        AMa["AtlasManager apply: upload the atlases"]
-        MMa["ModelManager apply: install the baked models"]
+    ALL["all preparations in: every listener has reached its barrier"]:::client
+    subgraph APP["apply, in registration order"]
+        TMa["TextureManager: swap texture contents"]:::client --> AMa["AtlasManager: upload the atlases"]:::client
+        AMa --> MMa["ModelManager: install the baked models"]:::client
     end
-    ALL --> TMa
-    ALL --> AMa
-    ALL --> MMa
-    TMa --> AMa
-    AMa --> MMa
+    SS --> PREP
+    PREP --> ALL
+    ALL --> APP
+    SS -. "the pending sprite futures" .-> MMp
+    AMp -. "completes them" .-> MMp
 ```
 
-Three of the client's twenty listeners, the ones registered between them
-elided. Every apply waits on the all-preparations node; each apply also
-waits on the apply before it; and the one dotted edge is the only way one
-listener's prepare depends on another's.
+*Three of the client's twenty listeners. Prepare runs on the worker pool,
+apply on the thread that owns the state, and the two rules that order them
+are drawn once each: nothing in the lower box starts until the gate opens,
+and inside it each apply waits on the one above. The dotted pair is the
+single exception — `AtlasManager.PENDING_STITCH`, published in the first
+pass and completed during prepare, so model baking overlaps stitching
+instead of queueing behind it.*
+
+
+The listeners registered between the three drawn are elided. Every apply
+waits on the all-preparations node; each apply also waits on the apply
+before it; and the dotted pair is the only way one listener's prepare
+depends on another's.
 
 ### The shared-state channel
 
@@ -310,23 +321,30 @@ server thread, and the coda below lists it.
 sequenceDiagram
     participant KH as KeyboardHandler
     participant MC as Minecraft
-    participant PR as PackRepository
     participant RRM as Reloadable<br/>ResourceManager
     participant SRI as SimpleReloadInstance
     participant Worker as Worker
     participant LO as LoadingOverlay
 
-    KH->>MC: handleDebugKeys matches keyDebugReloadResourcePacks, reloadResourcePacks
-    MC->>PR: reload, then openAllSelected: rediscover, keep the selection, open it
-    MC->>RRM: createReload: close the old MultiPackResourceManager, build the new snapshot
-    MC->>LO: setOverlay, in the same statement: logo and a smoothed bar from getActualProgress
-    RRM->>SRI: create: prepareSharedState on every listener, then reload on each, in order
+    KH->>MC: reloadResourcePacks, on the F3+T key mapping
+    MC->>MC: PackRepository.reload, then openAllSelected: keep the selection
+    MC->>RRM: createReload: close the old manager, build the new snapshot
+    RRM->>SRI: prepareSharedState on every listener, then reload on each
+    MC->>LO: setOverlay: the logo and a bar from getActualProgress
     SRI->>Worker: every listener's prepare, all at once
-    Worker-->>MC: each barrier resolved on the Render thread once every prepare is in and the previous listener has applied
+    Worker->>SRI: each listener reaches its PreparationBarrier
+    SRI-->>MC: wait posts to the main-thread executor as the set empties
     MC->>MC: apply, one listener per registration slot, between frames
     Note over LO: a later tick
-    LO->>MC: isDone, checkExceptions, then allChanged on success or rollbackResourcePacks on failure
+    LO->>SRI: isDone, then checkExceptions
+    SRI-->>MC: allChanged on success, rollbackResourcePacks on failure
 ```
+
+*The keypress, end to end. The worker pool is one lane for a whole pool, and
+the two arrows back into `Minecraft` are the only places the Render thread
+gets control again — once when the barrier's task is posted, once when the
+overlay has polled the instance and found it done.*
+
 
 The key does nothing but ask. `KeyboardHandler.handleDebugKeys` matches
 `Options.keyDebugReloadResourcePacks` and calls

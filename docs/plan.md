@@ -70,8 +70,11 @@ recommendations and added two, rewrote Part 3 as the record and `TEMPLATE.md`'s
 figures showing type under 9px from 89 to 10, and the 88 sequence diagrams to
 none, without changing a page — and rewrote the exemplar
 `entities/entity-lifecycle`, whose spawn cascade turned out to be wrong about
-fourteen of its edges. Sessions B to N take the parts in sidebar order; O
-closes. The charter is below. The latest release
+fourteen of its edges. **Session B ran the same day** over Parts I and II: two
+figures split at the mechanism's own joint, the book's first two class diagrams,
+nine corrections, and both parts left with no type under 11px anywhere, no
+Mojang name broken on screen and no unresolved name in the gate.
+Sessions C to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -485,3 +488,58 @@ that the owner has not understood; recording is after pass 10.
   gates green (the figure-name gate still report-only, 113 unresolved of 2,588);
   [pass9.md](pass9.md) has the claims and the six corrections,
   [pass5.md](pass5.md) the six entries this left. Deployed.
+
+- **2026-09-15, pass 7 session B (Opus) — Parts I and II: the figures.** Eleven
+  pages, nineteen figures, one viewer agent per page with the picture and the
+  section and nothing else. Fourteen figures redrawn, **two split at the
+  mechanism's own joint**, one cut back, two given a kind the book had never
+  used, and **all nineteen captioned**. The size numbers close: in both parts,
+  **no figure shows type under 11px** (from nine shrunk and two under 9px after
+  the theme), one is left below 0.75 — `data-driven-types`' trace at 0.73 and
+  11.6px, where six lanes and not the labels set the width, and where cutting a
+  lane would cost the pattern's own subject — the thirteen Mojang names still
+  hyphen-broken on screen are **zero**, and the gate's fourteen unresolved names
+  are **zero**.
+  The two splits are the pass's method working: `identifiers-and-registries`'
+  second figure was two scenarios that shared no lane sitting in one frame — a
+  world-load task graph and a configuration handshake, 0.68 with eight names
+  broken mid-word — and is now a flowchart and a four-lane sequence, both at
+  scale 1; `anatomy`'s two-loops flowchart was 2,184px wide, shown at 0.28 with
+  4.5px type, and is now two rings side by side at scale 1, each with an inner
+  box for the call that contains the rest — which is also the fix for the queue
+  entry that said it drew a nesting as a sequence. **The book's first two class
+  diagrams** are here, on `text-components` and `data-components`, which is
+  exactly F10's prediction: the vocabulary pages had been drawing conversations
+  between objects that do not talk.
+
+  **Nine corrections**, every one a figure disagreeing with the decompile or
+  with the prose beside it, all re-derived with the source open and logged in
+  [pass9.md](pass9.md). The sharpest is `identifiers-and-registries`' bootstrap
+  ladder, where the figure had the ITEM loader triggering `Items` class init and
+  `Bootstrap.bootStrap` had already done it two calls earlier, through
+  `ComposterBlock.bootStrap`; the page's own prose said so and the figure said
+  the other thing. Three more were a message head naming the *caller's* method
+  rather than the target's, one was `LootItemFunctions.compose` drawn leaving
+  the wrong object, one was `HashedStack` — a record — drawn sending a packet,
+  and one was a `LoadingOverlay` arrow that merged a poll of the reload instance
+  with a callback into `Minecraft`. **This is the class pass 6 named, found in
+  pictures**: a figure that disagrees with the text beside it, on a corpus
+  fact-checked twice and read down once.
+
+  One tool change, and it is the session's transferable finding:
+  **`check_figure_names.py` did not read a `<br/>` inside a message the way F17
+  taught it to read one inside a lane**, so F18's instruction to part sessions —
+  break a name too wide for its box at a CamelCase boundary — was unfollowable,
+  and doing it made the gate fail the page. One rule (a break tight against the
+  text is a name and closes up; a break with a space either side is a clause and
+  becomes one) and three probe cases; corpus-wide unresolved names fell 119 →
+  **100** with no page outside these two parts changed, so some of the 119 were
+  never page errors. Also raised for session O: the renderer counts a `par`
+  block's own headers as labels outside their container; `par` itself is a mark
+  outside `TEMPLATE.md`'s table, spent once here and captioned, because the
+  figure otherwise said the opposite of the paragraph's "Meanwhile"; the jar
+  treemap cannot carry the reconciliation `what-this-book-skips` asks of it; and
+  **five of the thirteen landing figures still spell a direction F3 rules out** —
+  Part II's was one, and is now `TD`, numbered to the watch order and captioned.
+  Eight queue entries struck with the page open, seven opened. All six gates
+  green (the figure-name gate still report-only). Deployed.

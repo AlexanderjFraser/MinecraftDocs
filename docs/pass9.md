@@ -44,6 +44,183 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session B — Parts I and II: the figures *(2026-09-15)*
+
+Every figure on the eleven pages of Parts I (anatomy) and II (foundations) was
+looked at rendered, at the reading column, beside its section — eighteen mermaid
+figures and one generated map. Fourteen were redrawn, two were split in two, one
+was cut back, two gained a kind the book had never used, and all nineteen gained
+a caption. **A caption is a claim about what the figure shows**, so every one of
+the nineteen is on this list by being a caption; below are the ones where
+something else changed too.
+
+### Corrections — the figure disagreed with the decompile
+
+1. **`systems/foundations/identifiers-and-registries.md`, figure 1.** The figure
+   had `BuiltInRegistries` triggering `Items` class init, labelled *the ITEM
+   loader touches `Items.AIR`*. The decompile has `Bootstrap.bootStrap` calling
+   `FireBlock.bootStrap` and `ComposterBlock.bootStrap` — the latter reading
+   `Items.JUNGLE_LEAVES` and eighteen more leaf items — before it calls
+   `BuiltInRegistries.bootStrap` at all, so `Items` is already initialised when
+   `BuiltInRegistries.createContents` runs the ITEM loader: the loader *reads*
+   `Items.AIR`, it does not trigger the class init. The page's own prose said so
+   and the figure said the other thing.
+   `net/minecraft/server/Bootstrap.java:46-66`,
+   `net/minecraft/core/registries/BuiltInRegistries.java:195-197, 382-386`,
+   `net/minecraft/world/level/block/ComposterBlock.java:68-85`. Fixed in the
+   figure (a note naming the two bootstraps) and in the prose, which now names
+   `ComposterBlock.bootStrap` in its list and says what `createContents` finds.
+2. **`systems/foundations/identifiers-and-registries.md`, figure 2 (now 3).**
+   Three of the four configuration packets were drawn leaving
+   `ServerConfigurationPacketListenerImpl`. `SynchronizeRegistriesTask` sends
+   `ClientboundSelectKnownPacks`, every `ClientboundRegistryDataPacket` and
+   `ClientboundUpdateTagsPacket`; only `ClientboundFinishConfigurationPacket` is
+   the listener's.
+   `net/minecraft/server/network/config/SynchronizeRegistriesTask.java:33, 36-49`,
+   `net/minecraft/server/network/ServerConfigurationPacketListenerImpl.java:150-168`.
+   The task is now a lane, which the key already held as `SRT`.
+3. **`systems/foundations/data-driven-types.md`, figure 2.**
+   `LootItemFunctions.compose` was drawn as an arrow *from*
+   `SetItemCountFunction`. It is called by the `LootTable` constructor.
+   `net/minecraft/world/level/storage/loot/LootTable.java:60-66`,
+   `net/minecraft/world/level/storage/loot/functions/LootItemFunctions.java:77`.
+   Queue entry [pass5.md](pass5.md):5108, re-derived and fixed.
+4. **`systems/foundations/data-components.md`, figure 1.** One arrow, pointing
+   one way, labelled *asPatch and fromPatch*, and leaving the patch field.
+   `PatchedDataComponentMap.asPatch` is an instance method returning a
+   `DataComponentPatch`; `PatchedDataComponentMap.fromPatch` is a static factory
+   taking a prototype and a patch and returning the map. Two operations, two
+   directions, and both on the map.
+   `net/minecraft/core/component/PatchedDataComponentMap.java:35, 240`.
+5. **`systems/foundations/resource-system.md`, figure 3.** One arrow carried
+   *isDone, checkExceptions, then allChanged or rollbackResourcePacks* from
+   `LoadingOverlay` to `Minecraft`. `LoadingOverlay` calls `ReloadInstance.isDone`
+   and `ReloadInstance.checkExceptions` on the instance and only then accepts the
+   callback into `Minecraft` — two targets merged into one message.
+   `net/minecraft/client/gui/screens/LoadingOverlay.java:133-138`,
+   `net/minecraft/server/packs/resources/ReloadInstance.java:11-15`. Also in that
+   figure: `SimpleReloadInstance`'s construction was drawn *after* `setOverlay`,
+   where `net/minecraft/client/Minecraft.java:1071` evaluates `createReload` as
+   the argument to it; and the barrier resolution was drawn `Worker` to
+   `Minecraft`, where the barrier is the reload instance's and its `wait` posts
+   the task.
+6. **`systems/anatomy/anatomy.md`, figure 1.** `MinecraftServer` and
+   `IntegratedServer` were two lanes exchanging *runServer calls initServer* — a
+   virtual dispatch drawn as a message between two objects. `spin` is static on
+   `MinecraftServer`, `runServer` is `MinecraftServer`'s and `initServer` is
+   abstract there and implemented on `IntegratedServer`: one object.
+   `net/minecraft/server/MinecraftServer.java:305, 392, 783-785`,
+   `net/minecraft/client/server/IntegratedServer.java:86`. Queue entry
+   [pass5.md](pass5.md):5085.
+7. **`systems/anatomy/anatomy.md`, figure 1.** The figure's last two arrows had
+   the handshake and the login walk arriving at `ServerConnectionListener`, which
+   binds channels and installs pipelines and handles no packet.
+   `net/minecraft/server/network/ServerConnectionListener.java:60-148`. The walk
+   is now a self-message on `Connection`, which is what swaps the listener, and
+   `protocol-phases` still owns the phases themselves.
+8. **`systems/foundations/codecs-nbt-json.md`, figure 1.** Two message heads
+   named the *caller's* method: `saveWithFullMetadata` on an arrow to
+   `TagValueOutput` (the call there is `TagValueOutput.createWithContext`) and
+   `saveAdditional` on an arrow to `ContainerHelper` (the call is
+   `ContainerHelper.saveAllItems`).
+   `net/minecraft/world/level/storage/TagValueOutput.java:31, 192`,
+   `net/minecraft/world/level/block/entity/ChestBlockEntity.java:128-132`,
+   `net/minecraft/world/ContainerHelper.java:25-29`.
+9. **`systems/foundations/codecs-nbt-json.md`, figure 3.** `HashedStack` was
+   drawn sending a `ServerboundContainerClickPacket`; the sender is
+   `MultiPlayerGameMode`
+   (`net/minecraft/client/multiplayer/MultiPlayerGameMode.java:512`). And
+   `createSerializationContext` was drawn as something `ClientPacketListener`
+   does to itself: it is the registry access's, called the same way on both sides
+   — `net/minecraft/client/multiplayer/ClientPacketListener.java:452` and
+   `net/minecraft/server/level/ServerPlayer.java:316` — which is the paragraph's
+   bolded claim and was the half the figure did not show.
+
+### Claims the redrawing asserts
+
+- **`anatomy.md` figure 1** now asserts, in a two-branch `par`, that the Render
+  thread's `BlockableEventLoop.managedBlock` loop and
+  `IntegratedServer.initServer` run *at the same time*. The prose says
+  "Meanwhile"; the old figure's strict top-to-bottom order said the opposite. The
+  two `box` frames assert that `Main`, `Minecraft` and the client's `Connection`
+  are the client and that `IntegratedServer` and `ServerConnectionListener` are
+  the server. The `RenderSystem` lane and its one message were cut to a note.
+- **`anatomy.md` figure 2** asserts two nestings: `Minecraft.runTick` contains
+  the delta-tracker read, `PacketProcessor.processQueuedPackets`,
+  `BlockableEventLoop.runAllTasks`, `Minecraft.tick` and `Minecraft.renderFrame`
+  (`net/minecraft/client/Minecraft.java:1201-1310`); and
+  `MinecraftServer.processPacketsAndTick` contains the queue drain and
+  `MinecraftServer.tickServer`
+  (`net/minecraft/server/MinecraftServer.java:1116-1128`). The wire and its four
+  crossing arrows were **cut** from the figure and are carried by the paragraph
+  that owns them; the loss is logged in [pass5.md](pass5.md). Two names the
+  figure alone had carried — `Minecraft.renderFrame` and
+  `BlockableEventLoop.runAllTasks` — were given their sentence in *The frame
+  loop*.
+- **`foundations/README.md`**'s figure asserts the same ten dependencies as
+  before with every label shortened; nothing was added, removed or reversed, and
+  the direction went `BT` to `TD` with each arrow still running from the
+  machinery to the page that takes it for granted.
+- **`identifiers-and-registries.md` figure 2 (new)** asserts that
+  `RegistryDataLoader.load` makes one `RegistryLoadTask` per `RegistryData`, that
+  any task's `ConcurrentHolderGetter` is reachable from any other and hands back
+  an unbound `Holder.Reference`, and that the freeze is where those promises are
+  bound — the page's own *Loading is a task graph* paragraph, drawn instead of
+  told in a label. It also asserts `LayeredRegistryAccess.replaceFrom` is the one
+  call that installs both layers, and puts it outside the *on the worker pool*
+  note, which the old figure had covering it.
+- **`identifiers-and-registries.md` figure 3** adds one claim the old figure
+  stopped short of: with an `IntegratedServer`, the `RegistryAccess.Frozen` the
+  client just built is discarded for the server's, filtered to the same key set
+  (`net/minecraft/client/multiplayer/ClientConfigurationPacketListenerImpl.java:174-184`).
+  The prose already said it.
+- **`resource-system.md` figure 1** adds two edge labels (*checkExceptions finds
+  none* and *a listener threw*) and one edge: the rollback runs the reload again
+  from discover. **Figure 2** adds a `prepareSharedState` node before the prepare
+  box, splits the one dotted *shared state* edge into two (published in the first
+  pass, completed during prepare), replaces three edges from the gate to the
+  three applies with one edge into the apply box, and adds a *seventeen more
+  listeners* node. **Figure 3** drops the `PackRepository` lane into a
+  self-message.
+- **`tags.md` figure 1** asserts nothing new. Two lanes and two notes were
+  **cut** — the client's buffering at configuration and its apply after a
+  `/reload` — because the *four moments* section above owns them and
+  `identifiers-and-registries` figure 3 draws the packet. The closing note
+  asserts an absence: the parrot's check reaches no registry.
+  `MappedRegistry.refreshTagsInHolders`, which the figure alone had named, is now
+  in *Prepared, then applied*.
+- **`text-components.md` figure 1** is a `classDiagram`, the book's first, and
+  asserts the triple: `MutableComponent` owns one `ComponentContents` and one
+  `Style` and aggregates a list of `Component`. The codec node was **cut** — it
+  is not one of the three things the heading counts, which is what the old figure
+  got wrong about its own section — and so was the seven-kind subgraph, which the
+  table below it carries with a column the figure could not.
+- **`text-components.md` figure 2** puts the two `Language` lookups in the order
+  the walk runs them (the killer's name is visited before the finished sentence
+  returns) and adds a note that the server's only wording is
+  `Component.getString` for the console log.
+- **`data-components.md` figure 1** is the second `classDiagram`, and asserts
+  that many stacks read one prototype and none may write it. **Figure 2** drops
+  the `AbstractContainerMenu` lane on F7's rule that a subclass and its base are
+  one lane: `EnchantmentMenu` is the menu that was clicked and the menu that
+  broadcasts. `DataComponents.STORED_ENCHANTMENTS`, which the figure alone had
+  named, is now in *The menu owns the mutation*, with
+  `EnchantmentHelper.getComponentType` as its authority
+  (`net/minecraft/world/item/enchantment/EnchantmentHelper.java:91-93`).
+- **`data-driven-types.md` figure 2** adds one return arrow (the built function
+  object back to the `LootTable`) so that `compose` can leave the table rather
+  than the function.
+
+### Not a page: the gate
+
+`tools/check_figure_names.py` now reads a `<br/>` written tight against the text
+on both sides as closed up (a name broken at a CamelCase boundary or a dot, which
+F17 ruled and F18 sends part sessions to write in messages) and one with a space
+on either side as a space (a clause break). Three probe cases prove it.
+Corpus-wide unresolved names went 119 to 100 without a page outside Parts I and
+II changing, so some of the 119 were the gate's misreading rather than the pages'.
+Recorded in [pass5.md](pass5.md) for session O.
+
 ## Pass 7, session A — the standard, the theme and the exemplar *(2026-09-15)*
 
 Ruled on F1–F16, added F17 and F18, rewrote [pass7-brief.md](pass7-brief.md)
