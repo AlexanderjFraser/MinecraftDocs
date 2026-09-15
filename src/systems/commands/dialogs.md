@@ -1,6 +1,6 @@
 # Dialogs
 
-> Verified against **Minecraft 26.2** · Part XIII · You click a server in the multiplayer list and, before the world has loaded — before you are in a world at all — a form appears with text boxes on it, and it is not part of Minecraft.
+> Verified against **Minecraft 26.2** · Part XIII · You click a server in the multiplayer list and, before the world has loaded — before you are in a world at all — a form appears with text boxes on it, and no vanilla server will ever send it to you.
 
 A dialog is a data pack's form: a title, some body text, some inputs and
 some buttons, decoded from JSON and put on your screen. Nothing about that
@@ -21,12 +21,18 @@ codecs](../networking/packets-and-stream-codecs.md#which-buffer-and-why-play-nee
 so the packet cannot carry a holder id. `Dialog.CONTEXT_FREE_STREAM_CODEC` therefore sends the whole dialog
 inline. What is "context-free" is the *buffer*, not the payload.
 
-A dialog is also one of the two clearest instances of a move Mojang has been
-making everywhere — take something that used to be a Java class and make it
-a registry element loaded from a data pack. That argument is made once, for
+A dialog is also one of this part's two clearest instances of a move Mojang
+has been making everywhere — [game tests](game-tests.md) is the other — take
+something that used to be a Java class and make it a registry element loaded
+from a data pack. That argument is made once, for
 all its instances, in
 [the data-driven type pattern](../foundations/data-driven-types.md); this
-page assumes it. Four of the pattern's registries are dialog registries.
+page assumes it. Four of the pattern's registries are dialog
+registries: `BuiltInRegistries.DIALOG_TYPE` for the dialog itself, and
+`BuiltInRegistries.DIALOG_BODY_TYPE`,
+`BuiltInRegistries.INPUT_CONTROL_TYPE` and
+`BuiltInRegistries.DIALOG_ACTION_TYPE` for the three kinds of part inside
+it.
 
 ## The cast
 
@@ -53,7 +59,7 @@ screens](../client/gui-and-screens.md) covers everywhere else. The five kinds
 `ServerLinksDialog` (all `ButtonListDialog`) — and both of those supertypes
 are interfaces, not classes.
 
-## The trace: a data pack puts a form on the screen
+## From a JSON file to a click the server reads
 
 ```mermaid
 sequenceDiagram
@@ -79,14 +85,13 @@ packet time and not at screen construction. `DialogControlSet` keeps a map
 of live `Action.ValueGetter`s and `Action.createAction` calls them at the
 moment of the click — which is why the same `Action` object produces a
 different command each time, and why `CommandTemplate` can be a template
-rather than a string. `ActionTypes` registers nine kinds: the seven
-click-event kinds a server is allowed to send, plus `CommandTemplate` and
-`CustomAll`, which packs every input value into an NBT compound.
-
-That set of nine is derived from the click-event enum **at class-init**, so
-every click-event kind a server may send is automatically a dialog action of
-the same name — and the one kind that is not allowed, opening a local file,
-can never be one.
+rather than a string. `ActionTypes` registers nine kinds. Seven are
+generated in a loop over the click-event kinds a server is allowed to send,
+each keeping that kind's own name, so a click-event kind is automatically a
+dialog action — and the one kind that is not allowed, opening a local file,
+can never be one. The other two are registered by hand under names of their
+own: `CommandTemplate` as *dynamic/run_command*, and `CustomAll` as
+*dynamic/custom*, which packs every input value into an NBT compound.
 
 Nothing on the server side of this ever ticks. A dialog is a packet send
 from whatever ran the command or handled the click; the reply hops off the
@@ -99,24 +104,33 @@ its Back button.
 
 ## Four ways a dialog opens, and one of them is not a click
 
-`ServerPlayer.openDialog` is the server-side entry point, and `/dialog show`
-is the obvious caller. The interesting ones are the click events, because
-"a component with a click event" is not the same as "a component whose click
-events are dispatched". There are three places on the client where they
-actually are — chat, a book, and `DialogScreen` itself, which dispatches its
-own buttons and body text — and one route that is not a click dispatch at
-all: `SignBlockEntity` reads the event **server-side** and calls
-`ServerPlayer.openDialog` directly — the same way it runs a *run command*
-event, and the reason a sign is the one clickable thing the client never gets
-to vet ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)). An item's name
-or lore is tooltip text and dispatches nothing.
+`ServerPlayer.openDialog` is the server-side entry point, and four things
+reach it.
 
-Two tags round it out. `DialogTags.PAUSE_SCREEN_ADDITIONS` and
-`DialogTags.QUICK_ACTIONS` let a data pack add buttons to the pause menu and
-to a hotkey, so a dialog need not be pushed by the server at all — and
-`Dialogs` holds the three the jar ships. Closing one from the server is
-`ClientboundClearDialogPacket`, registered in both phases like the other
-two.
+**`/dialog show`** is the obvious one. **A click event dispatched on the
+client** is the interesting one, because "a component with a click event" is
+not the same as "a component whose click events are dispatched": there are
+exactly three places on the client where they actually are — chat, a book,
+and `DialogScreen` itself, which dispatches its own buttons and body text.
+An item's name or lore is tooltip text and dispatches nothing.
+
+**A sign** is the one that is not a click dispatch at all. `SignBlockEntity`
+reads the event **server-side** and calls `ServerPlayer.openDialog`
+directly — the same way it runs a *run command* event, and the reason a sign
+is the one clickable thing the client never gets to vet
+([permissions](permissions.md#asking-a-question-the-client-cannot-answer)).
+
+**A tag** is the fourth, and it needs no server at all in the moment.
+`DialogTags.PAUSE_SCREEN_ADDITIONS` and `DialogTags.QUICK_ACTIONS` let a data
+pack add buttons to the pause menu and to a hotkey, and `Dialogs` holds the
+three the jar ships. Closing one from the server is
+`ClientboundClearDialogPacket`, and it is registered in both phases exactly
+as the two packets already on this page are —
+`ClientboundShowDialogPacket` going out and
+`ServerboundCustomClickActionPacket` coming back. Three packets, both
+protocols, one system.
+
+## What a dialog is made of
 
 Inside a dialog, the parts dispatch on registries of their own the same way
 the dialog does: `DialogBody` over `BuiltInRegistries.DIALOG_BODY_TYPE`
@@ -127,11 +141,12 @@ the dialog does: `DialogBody` over `BuiltInRegistries.DIALOG_BODY_TYPE`
 in code, `StaticAction` is the plain "do this fixed click event" action, and
 `DialogCommand` is `/dialog` itself. `DialogBodyHandlers` and
 `InputControlHandlers` are the client-side factory maps that mirror them.
-An input's key is validated by `ParsedTemplate` against
-`StringTemplate.isValidVariableName` — the same rule a macro function's
-parameters obey, which is the seam into
-[functions and macros](functions-and-macros.md), and why `CommandTemplate`
-can substitute a dialog's inputs into a command at all.
+
+One of those parts reaches outside the system. An input's key is validated
+by `ParsedTemplate` against `StringTemplate.isValidVariableName` — the same
+rule a macro function's parameters obey — which is why `CommandTemplate` can
+substitute a dialog's inputs into a command at all, and the seam into
+[functions and macros](functions-and-macros.md).
 
 ## What a data pack cannot do
 
@@ -155,8 +170,8 @@ inline in the configuration phase.
 
 **A button that runs a command is not simply a chat command.** It goes
 through `ClientPacketListener.sendUnattendedCommand`, which parses it twice
-and shows you a confirmation screen for any of three reasons before sending
-anything ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)
+and, on three of its four outcomes, shows you a confirmation screen before
+sending anything ([permissions](permissions.md#asking-a-question-the-client-cannot-answer)
 owns the four outcomes). What is this system's own is the phase: the
 configuration-phase `DialogConnectionAccess` refuses to run a command at all,
 logging a warning instead, so a button on a dialog shown before you are in a

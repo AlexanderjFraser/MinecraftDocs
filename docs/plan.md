@@ -35,8 +35,8 @@ stood at the close, with the session paragraphs and the log.
 planning session on Fable; **session A set the standard on 2026-09-10, with
 sessions B (Parts I and II), C (Part III) and D (Part IV) the same day, E
 (Part V), F (Part VI), G (Part VII) and H (Part VIII) on 2026-09-13, I
-(Part IX), J (Part X), K (Part XI) and L (Part XII) on 2026-09-14**, so the
-next session is M (Part XIII · Commands and data packs). The charter is below; the brief, the
+(Part IX), J (Part X), K (Part XI), L (Part XII) and M (Part XIII) on
+2026-09-14**, so the next session is N (Reference and the frame). The charter is below; the brief, the
 runbook, **the standard as session A settled it** and **the schedule with each
 session's status** are [pass6-brief.md](pass6-brief.md) — Part 3 is what a part
 session applies rather than re-decides, and Part 4's table is where the owner
@@ -64,7 +64,7 @@ version manifest), so no version pass is due before pass 6.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to L on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | **current** — planned 2026-09-07, sessions A to D done 2026-09-10, E to H on 2026-09-13 and I to M on 2026-09-14; charter below; brief, runbook, the settled standard and the schedule with each session's status [pass6-brief.md](pass6-brief.md); queue [pass5.md](pass5.md), kind `lecture` |
 | **7 — the figures** | every figure as rendered, beside its section: the true shape, legibility, lanes, labels; the gate over names inside mermaid blocks | the picture | after 6 |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
@@ -373,6 +373,65 @@ run between two of passes 6 to 8, and again if 26.4 lands before pass 10.
 A re-read, rarely a rewrite. A system that changed shape rather than names
 is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
 to §7.
+
+**Pass 6, session M — Part XIII · Commands and data packs** *(2026-09-14).*
+Nine system pages and the landing page, ten readers, one each. The count of
+closers did not move — **4 of 9 before and after** — and the session still
+found work inside every one of them, which is the part that makes session L's
+lesson a rule rather than an observation. **Eight load-bearing answers came
+out**, and on three of the four pages the answer the closer was holding was
+the one the page's own opening had promised: `the-execution-engine` opens on
+*there is no recursion limit* and kept every actual bound — both game rules,
+their 65536, the read-once rule, the depth answer — in questions two, five and
+six; `advancements` opens on a table that *only ever shrinks* and kept the two
+things that refill it in question six of seven; `scoreboard-and-data` opens on
+fake players and kept the `#` that makes them in question one, where
+`entity-selectors` was already citing it **by anchor** — the A2 clause about a
+cited answer, firing for the first time inside a part rather than across one.
+`entity-selectors` was the fourth: its body said *exactly as `EntityArgument`
+does below*, forward-referencing a question. The part also arrived with
+**three spellings** of the device and leaves with one, and with two closers
+that were not last and leaves with none.
+
+**Six facts corrected**, four found by a reader with no source. The one worth
+carrying is `advancements`': the verified line said the toast appears *one tick
+later*, and the trace's own note four sections down said *still the same tick*
+— `ServerPlayer.tick` runs `broadcastChanges` fifth and `flushDirty` last, so
+the note was right and the headline had borrowed the one-tick delay that
+belongs to `CriteriaTriggers.LOCATION` in the connection phase, a different
+scenario entirely. Beside it: `AdvancementType` said to have four values where
+the enum has three; `@n` missing from the death-screen consequence it shares
+with `@e`; a selector figure whose players-only node said *always* where
+`findPlayers` branches on the world-limited flag exactly as the entity path
+does; a permissions census of ninety-one plus two against ninety-five, with no
+sentence saying two were unaccounted; and *the ops-file entry's own stored
+set* six lines from *ops.json stores a number*, both true of different things.
+
+**The part's own finding is that A12 needed no sweep.** Part XIII's nine
+*Where to look* lists run five to eight names against a corpus median of
+eighteen, so the reading-list ruling was already satisfied here — the first
+part in the pass where it cost nothing. What the part needed instead was
+**A8**, four times: `brigadier-and-commands` had two subjects in its trace
+section and a fifty-seven-line section with no H3s, `scoreboard-and-data` had
+saving filed under *What the client is ever told*, `dialogs` had its parts
+inventory under a heading about how a dialog *opens*, and `game-tests` had a
+third move under a heading that promised two. **The split question on
+`brigadier-and-commands` was re-asked for the fifth time and answered no with
+a number behind it for the first**: 350 lines, below the corpus median, and
+the seam pass 3 proposed does not hold because the packet is the parse's
+payoff rather than the catalogue's preface. Two subjects lifted out and four
+H3s under the cited anchor did what a split would have. **Two rulings I
+declined**: the *Resolve* cost table (three *becauses*, not three rows), and
+an A7 twin pair the tool now reports between `advancements` and
+`brigadier-and-commands` — an artefact of moving `advancements`' closer to
+last, which is the *third* of A2, A4 and A7 to perturb `pass6_shape.py`'s own
+numbers. Part XIII's nine pages 2,581 → 2,748 lines, which A9 expects of a
+session that promoted eight answers into bodies; the landing page 168 → 176,
+the wrong direction, and session O should judge it with the other twelve.
+Nine units appended to [pass5.md](pass5.md) (five for pass 7, six for pass 8,
+one logged cut, two notes for session O); the part's twelve `lecture` entries
+struck to three, all three multi-part censuses other parts still need; the
+session's entry in [pass9.md](pass9.md). All five gates green; deployed.
 
 **Pass 6, session L — Part XII · World generation** *(2026-09-14).* Ten system
 pages and the landing page, eleven readers, one each — the part the schedule
@@ -1104,3 +1163,16 @@ one anchor and meant three different answers inside it, and the only way to find
 that out is to read the citing sentence at the other end. Run
 `check_links.py --inbound` on every page of the part *before* deciding which
 closers keep, and read what each citing sentence actually wanted.
+- **2026-09-14, session M (Part XIII · Commands and data packs).** Nine
+  system pages and the landing page rewritten; ten readers, one each. The
+  closer stayed at 4 of 9 and gave up eight load-bearing answers anyway —
+  three of them the payoff of their own page's opening, one of them cited by
+  anchor from another page in the part. Three spellings of the device to one;
+  two closers that were not last to none; four literal trace headings renamed.
+  Six facts corrected, four found by a reader with no source, the sharpest
+  being `advancements`' verified line contradicting its own trace about which
+  tick the toast leaves in. `brigadier-and-commands` re-asked and not split, on
+  a number. A12 needed no sweep here — the part's *Where to look* lists run
+  five to eight names — and A8 needed four. Two rulings declined, one of them
+  an A7 pair this session's own edit created. Queue: twelve `lecture` entries
+  struck to three, nine units appended. Gates green; deployed.

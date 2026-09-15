@@ -19,8 +19,11 @@ body for it, and `GameTestEnvironments`' default environment — an empty
 test sources, not in the game you downloaded.
 
 This is [the data-driven type pattern](../foundations/data-driven-types.md)
-again, and game tests are its most complete instance: two data-pack
-registries and two built-in type registries between them.
+again, and game tests are its most complete instance. Four registries hold
+the system: `Registries.TEST_INSTANCE` and `Registries.TEST_ENVIRONMENT` are
+loaded from a data pack, and `BuiltInRegistries.TEST_INSTANCE_TYPE` and
+`BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE` are the built-in type
+registries the JSON in those two dispatches on.
 
 ## The cast
 
@@ -36,7 +39,9 @@ registries and two built-in type registries between them.
 | `TestInstanceBlockEntity` | 551 lines: the block that owns a test's bounding box, status and beacon beam, and does the real work of placing, saving and encasing the structure |
 
 `net/minecraft/gametest/framework` is forty-four classes, all server-side,
-with `net/minecraft/gametest/Main` as the headless entry point beside it.
+with `net/minecraft/gametest/Main` as the headless entry point beside it. The
+screens that *author* a test are not in it — they are client-only and live
+with the rest of the GUI, and they are below.
 
 ## The objects, and how they nest
 
@@ -75,13 +80,18 @@ tears the old one down and stands the new one up.
 
 **The environment interface is an undo log.**
 `TestEnvironmentDefinition.setup` returns a value that
-`TestEnvironmentDefinition.teardown` is handed back. Five of the seven kinds
-return the *previous* state and restore it;
-`TestEnvironmentDefinition.Functions` returns nothing and runs a *different*
-data-pack function on the way out; and `TestEnvironmentDefinition.AllOf`
+`TestEnvironmentDefinition.teardown` is handed back, and the seven kinds
+divide three ways. Five bend one thing about the world and hand back what it
+was, so teardown puts it straight: `TestEnvironmentDefinition.ClockTime`,
+`TestEnvironmentDefinition.SetDifficulty`,
+`TestEnvironmentDefinition.SetGameRules`,
+`TestEnvironmentDefinition.Timelines` and `TestEnvironmentDefinition.Weather`.
+`TestEnvironmentDefinition.Functions` is the exception with no state to
+return — it runs one data-pack function on the way in and a *different* one
+on the way out. And `TestEnvironmentDefinition.AllOf` is the composite: it
 returns its children's activations and unwinds them in reverse.
 
-## The trace: one test runs
+## One test, from a command to a green block
 
 ```mermaid
 sequenceDiagram
@@ -113,19 +123,39 @@ for the order, and its questions for what a freeze does and does not stop).
 
 **Setup ticks run before tick zero.** `GameTestInfo.startExecution` starts
 its counter *negative* — by the declared setup ticks, plus the spawner's own
-tick delay, plus one — so the body runs when the count reaches zero. `GameTestSequence` is the "do this, wait, then assert that"
+tick delay, plus one — so the body runs when the count reaches zero.
+
+**A sequence catches one kind of exception and only one.**
+`GameTestSequence` is the "do this, wait, then assert that"
 chain — `GameTestSequence.thenExecuteAfter`,
 `GameTestSequence.thenWaitUntil`, `GameTestSequence.thenSucceed` — and it
 uses an exception as ordinary control flow, at most one thrown and swallowed
-per sequence per tick, and only for an assertion failure. A timeout is not
-caught there.
+per sequence per tick. What it catches is a `GameTestAssertException`: an
+assertion that has not come true *yet* is not a failure, so the sequence
+swallows it and tries again next tick. A timeout is a different subclass —
+`GameTestTimeoutException`, raised by `GameTestInfo` when the tick count
+passes the budget — and nothing swallows it, which is why the figure can
+call it just another `GameTestException` and this paragraph can say it is
+never caught here. Both are true of different catches.
 
-**Reporting is a listener chain, and it writes to four places.**
-`ReportGameListener` is what says something in chat and what writes the
-outcome back to the `TestInstanceBlockEntity` that owns the beam;
-`MultipleTestTracker` is the progress bar, with five states including a
-space for *not started*; and `GlobalTestReporter` dispatches to
-`LogTestReporter` or `JUnitLikeTestReporter`.
+**Reporting is a listener chain, and it writes to four places.** Chat, the
+block, the progress bar and the report. `ReportGameListener` is what says
+something in chat and what writes the outcome back to the
+`TestInstanceBlockEntity` that owns the beam; `MultipleTestTracker` is the
+progress bar; and `GlobalTestReporter` dispatches to `LogTestReporter` or to
+`JUnitLikeTestReporter`, which is the same report in two formats rather than
+two places.
+
+**What a test leaves behind is not undone.** The environment has its undo
+log; the world does not. A passing test has its barrier shell removed and
+nothing else: the pasted blocks stay where they were put, the test instance
+block stays with them, and the chunks it force-loaded stay forced. A
+*failing* test does not even lose its shell, which is the point — the
+failure is left standing so it can be walked into and looked at. Clearing
+any of it is a command: `/test clearall` walks the test instance blocks in
+range, clears the space around each, takes the barriers off and breaks the
+block, and a test instance block's own reset re-pastes the structure over
+whatever the last run left.
 
 ## A test with no Java in it
 
@@ -146,7 +176,7 @@ which makes this the one system in the part whose *declaration* a client
 edits. `TestInstanceBlock` is the block itself; `TestInstanceBlockEntity`
 below is where the work is.
 
-## Two things a running server should know
+## Three things a running server should know
 
 **`/test` exists on every server**, not only in a development environment.
 `TestCommand` is 572 lines of subcommands and only the export ones are gated
@@ -164,12 +194,13 @@ a 250-block radius is a POI query, not a block scan
 `/test`'s radius subcommands cheap — and what makes a world full of saved
 tests carry them in its POI storage.
 
-Underneath both, `StructureUtils` and `StructureGridSpawner` are the layer
-that clears the space, lays tests out in a grid, transforms the far corner
-and finds every test block by position
+**Underneath both sits a layer with no command of its own.**
+`StructureUtils` and `StructureGridSpawner` clear the space, lays tests out in a grid, transforms the far corner
+and find every test block by position
 ([jigsaw and templates](../worldgen/jigsaw-and-templates.md) owns the
-template machinery they call). `GameTestServer` is the third `MinecraftServer`
-subclass ([anatomy](../anatomy/anatomy.md#from-main-to-a-world)), driven by
+template machinery they call). `GameTestServer` is the third
+`MinecraftServer` subclass — beside the integrated and the dedicated ones
+([anatomy](../anatomy/anatomy.md#from-main-to-a-world)) — driven by
 `GameTestMainUtil`, and the one thing it changes that matters here is
 `GameTestServer.waitUntilNextTick`: it drains tasks instead of sleeping, so a
 headless test run goes flat out rather than at twenty ticks a second. It also

@@ -26,7 +26,7 @@ filters at all: they are the query plan. This page is about which is which.
 | `EntitySelectorParser` | the reader, the grammar and thirty-two half-built fields. It owns the selector's own syntax; the brace grammars of *scores* and *advancements* are read by the handlers themselves | parse time |
 | `EntitySelectorOptions` | the name-to-handler map — twenty-one entries, filled once by `Bootstrap.bootStrap` and never again | class init |
 | `InvertableSetOptionState` | the three-state machine behind *type=!zombie,!skeleton*: one positive assertion **or** any number of negations and tags, never both | parse time |
-| `SetOnceOptionState` | one boolean, for the four options that may appear at most once | parse time |
+| `SetOnceOptionState` | one boolean, for the four options with no parsed field to test for emptiness — *limit*, *sort*, *scores*, *advancements*. The other nine once-only options enforce it by checking their own field | parse time |
 | `EntitySelector` | the compiled query: thirteen final fields, no reader, no grammar, no string | built at parse time, run later |
 | `EntityArgument` | four argument shapes (single or many, entities or players) and the parse-time rejections that enforce them | parse time and on the wire |
 | `CommandSourceStack` | the only thing a selector can be resolved against — origin, level, server, permission set | resolve time |
@@ -35,13 +35,6 @@ filters at all: they are the query plan. This page is about which is which.
 `net/minecraft/commands/arguments/selector` is five classes and 1,717 lines,
 and every one of them is in the server jar *and* the client jar. That matters
 later.
-
-> **For a 1.21-era reader.** The parser's crowd of *hasNameEquals* /
-> *hasNameNotEquals* / *hasGamemodeEquals* booleans is gone, replaced by
-> eight state objects — four `InvertableSetOptionState` and four
-> `SetOnceOptionState` — that enforce the same rules structurally. *ResourceLocation* is `Identifier`. And the check
-> that used to be an op-level comparison is now an atom,
-> `Permissions.COMMANDS_ENTITY_SELECTORS` ([permissions](permissions.md)).
 
 ## Three stages, and the last one is not on the parser's clock
 
@@ -100,7 +93,8 @@ switch throws.
 Only *@e* and *@n* add that test, and only `LivingEntity.isAlive` makes it
 mean anything — it is the override that adds "and has health left" to the
 base class's "and has not been removed". So a player sitting on the death
-screen is invisible to *@e* and still a target for *@a* and *@p*.
+screen is invisible to *@e* and *@n*, and still a target for *@a*, *@p* and
+*@r*.
 
 Then the bracket. `EntitySelectorParser.parseOptions` reads a name, looks it
 up through `EntitySelectorOptions.get`, and hands the reader to the handler it
@@ -172,7 +166,7 @@ comparison that serialised the whole entity.
 ```mermaid
 flowchart TB
     A["findEntities, on the server thread"] --> B{"non-players in scope?"}
-    B -- no --> P["findPlayers — a linear walk of a player list, always"]
+    B -- no --> P["findPlayers — one level or every level, but a linear walk of a player list either way"]
     B -- yes --> C{"a bare name or a UUID?"}
     C -- name --> N["PlayerList.getPlayerByName — a linear case-insensitive scan"]
     C -- UUID --> U["PlayerList.getPlayer — the id map, one lookup"]
@@ -289,39 +283,58 @@ Its literal side has four branches in order — `*` for every tracked holder,
 a `#`-prefixed name taken as a bare string, a UUID searched across every
 level, and an online player — with the last three falling back to a bare name
 and the wildcard alone throwing when there is nothing to return
-([scores, teams and stored data](scoreboard-and-data.md#questions-players-ask)
+([scores, teams and stored data](scoreboard-and-data.md#names-that-belong-to-nobody-and-the--that-hides-them)
 for what those names are for).
 
 Both take the permission the same way this page's own parse does, and both
 enforce their single-or-many shape on the compiled selector rather than on
-the text, exactly as `EntityArgument` does below.
+the text, exactly as `EntityArgument` does.
 
-## Questions a command author asks
+## Four argument shapes, enforced on the query and not on the text
 
-**Does the client parse selectors?** Yes, by two routes, and it cannot resolve
-one. All five selector classes ship in the client jar, and the client is
-running a real dispatcher against a real tree ([Brigadier and
-commands](brigadier-and-commands.md#three-parsers-see-one-string)).
+`EntityArgument` comes in four shapes — one entity or many, players only or
+anything — and it enforces the difference on the *compiled selector*, during
+the parse, before the world is touched. A limit above one in a single-target
+slot is refused, and so are non-players in a players-only slot.
+
+That is why */damage @e 1* complains before it has looked at anything:
+`/damage`, `/ride` and `/data get entity` all take the single-target shape,
+and *@e* is unbounded. */kill @e* is fine, because `/kill` takes the
+many-entities shape and neither rejection can fire on it. And *@s* is exempt
+from the players-only test, so */msg @s* parses and then finds nobody when
+the source is not a player.
+
+## The client parses selectors and cannot resolve one
+
+This is what the cast's five-classes-in-both-jars is for. The client parses a
+selector by two routes and can run neither.
+
 `EntityArgument.listSuggestions` builds a real `EntitySelectorParser` against
 the client's own permission set, parses as far as it can, swallows the
 exception and asks the half-finished parser for its suggestions — which is why
-completion inside a bracket knows which options are still legal. And
+completion inside a bracket knows which options are still legal; the tree it
+parses against is a real one the server sent ([Brigadier and
+commands](brigadier-and-commands.md#three-parsers-see-one-string)). And
 `ComponentSerialization` decodes a *selector* content type on the client with
-the same compiler the server uses. What the client cannot do is run one: every
-find method takes a `CommandSourceStack`, and the client's suggestion source
-is a `ClientSuggestionProvider`. The one place a client resolves a component
-that might contain a selector is `ServerStatusPinger`, whose
-`ResolutionContext` deliberately carries no source, so a server-list
-description containing a selector renders as nothing at all.
+the same compiler the server uses.
 
-**Why did */damage @e 1* complain before it touched the world?** Because
-`EntityArgument` rejects on the compiled selector's *shape*, during the parse:
-a limit above one in a single-target slot — which is what `/damage`, `/ride`
-and `/data get entity` all take — or non-players in a players-only slot, as
-in */msg @e*. Note that */kill @e* is fine: `/kill` takes the many-entities
-shape, so neither rejection can fire on it. *@s* is exempt from the second
-test, so */msg @s* parses and then finds nobody when the source is not a
-player.
+What the client cannot do is run one: every find method takes a
+`CommandSourceStack`, and the client's suggestion source is a
+`ClientSuggestionProvider`. The one place a client resolves a component that
+might contain a selector is `ServerStatusPinger`, whose `ResolutionContext`
+deliberately carries no source, so a server-list description containing a
+selector renders as nothing at all.
+
+## Questions players ask
+
+**Which dimension does */kill @e[type=item,limit=1]* kill in?** The
+overworld, unless there is nothing to kill there. With no world-limiting
+option the resolve walks `MinecraftServer.getAllLevels`, which iterates the
+server's `LinkedHashMap` of levels in the order they were created — the
+overworld put in first, the rest in registry order — and an arbitrary-order
+limit reaches the level query as an early abort, so the walk stops at the
+first match it finds. Write *sort=nearest* and the bias disappears, because
+a sort has to see every level before it can rank anything.
 
 **What does the client suggest for an entity argument?** Online player names,
 plus — from `ClientSuggestionProvider.getSelectedEntities` — the UUID of
@@ -337,6 +350,13 @@ box is only a pre-filter. The cube built for a maximum of 8 spans −8 to +9 on
 each axis, deliberately larger than the sphere it approximates, and the exact
 test that follows is `MinMaxBounds.Doubles.matchesSqr`, which compares squared
 distances against pre-squared bounds and so never takes a square root.
+
+> **For a 1.21-era reader.** The parser's crowd of *hasNameEquals* /
+> *hasNameNotEquals* / *hasGamemodeEquals* booleans is gone, replaced by
+> eight state objects — four `InvertableSetOptionState` and four
+> `SetOnceOptionState` — that enforce the same rules structurally. *ResourceLocation* is `Identifier`. And the check
+> that used to be an op-level comparison is now an atom,
+> `Permissions.COMMANDS_ENTITY_SELECTORS` ([permissions](permissions.md)).
 
 ## Where to look
 

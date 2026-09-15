@@ -44,6 +44,203 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 6, session M — Part XIII · Commands and data packs *(2026-09-14)*
+
+All nine system pages rewritten and the landing page re-synced. Ten readers
+under Part 1's brief, one per page, no source. **Six corrections**, four of
+them found by a reader with no source; the rest is claims introduced.
+
+### Corrections
+
+- `advancements`:3 — the verified line said *"a cobblestone lands in your
+  inventory and **one tick later** the toast appears"*, and the trace's own
+  note four sections down says *"still the same tick"*. The decompile agrees
+  with the note: in `ServerPlayer.tick`
+  (`net/minecraft/server/level/ServerPlayer.java`), `broadcastChanges` is the
+  fifth statement and `this.advancements.flushDirty(this, true)` is the last,
+  so the award and the packet are the same tick. The one-tick delay the page
+  *does* demonstrate belongs to `CriteriaTriggers.LOCATION`, which fires in
+  `ServerPlayer.doTick` during the connection phase, after the flush has run —
+  a different scenario. The line now reads *"the toast is on its way before
+  that same tick ends"*.
+- `advancements`:303 (was :254) — the page said `DisplayInfo`'s type is one of
+  four. `AdvancementType` (`net/minecraft/advancements/AdvancementType.java`)
+  is an enum of **three**: `TASK`, `CHALLENGE`, `GOAL`. Written as three, with
+  the claim the sentence now carries: `AdvancementToast.getSoundEvent` returns
+  `SoundEvents.UI_TOAST_CHALLENGE_COMPLETE` for a challenge and **null**
+  otherwise, so a task and a goal toast in silence
+  (`client/gui/components/toasts/AdvancementToast.java`:55–62); the same class
+  gives a challenge its own title colour at :72.
+- `entity-selectors`:96 — "a player sitting on the death screen is invisible
+  to *@e* and still a target for *@a* and *@p*". Both `@e` and `@n` set
+  `selectOnlyAlive` in `EntitySelectorParser.parseSelector`
+  (`commands/arguments/selector/EntitySelectorParser.java`:262–273), and `@a`,
+  `@p` and `@r` do not. Now "invisible to *@e* and *@n*, and still a target
+  for *@a*, *@p* and *@r*".
+- `entity-selectors`, the *Resolve* flowchart — the players-only node read
+  "findPlayers — a linear walk of a player list, **always**", which a reader
+  took as "players are not world-limited". `EntitySelector.findPlayers`
+  (`commands/arguments/selector/EntitySelector.java`:234–253) branches on
+  `isWorldLimited()` exactly as the entity path does — `sender.getLevel()
+  .getPlayers` or `PlayerList.getPlayers` — and both branches are linear. The
+  label now says "one level or every level, but a linear walk of a player list
+  either way". **The figure's shape is still wrong** (it also skips the
+  bare-name and UUID branches `findPlayers` takes) and is logged for pass 7.
+- `permissions`:148–158 — "of the **ninety-one** gates that name a level
+  constant … while `Commands.LEVEL_ALL` appears exactly twice" left two of the
+  ninety-five unaccounted, with no sentence saying a remainder existed. The
+  ninety-five `Commands.hasPermission` call sites are 66 `LEVEL_GAMEMASTERS`,
+  16 `LEVEL_ADMINS`, 9 `LEVEL_OWNERS`, 2 ternaries (`SeedCommand`,
+  `VersionCommand`), 1 `GameModeCommand.PERMISSION_CHECK` and 1
+  `ClientPacketListener.RESTRICTED_COMMAND_CHECK`. The census now divides four
+  ways and closes.
+- `permissions`:115–118 — "the ops-file entry's own **stored set** wins" read
+  against "*ops.json* stores a number" six lines later. Both are true of
+  different things: `ServerOpListEntry`
+  (`server/players/ServerOpListEntry.java`) holds a `LevelBasedPermissionSet`
+  in memory, built in its JSON constructor from the integer `level` field, and
+  serialises that integer back. Said so.
+
+### Claims introduced
+
+**`advancements`** — the trace heading is now *From a slot that changed to a
+toast* (`glossary.md`:754 repointed). New: a bolded trace paragraph claiming
+`AdvancementRewards` holds experience, loot tables, recipes and a function,
+that the recipe field is how the recipe book is filled, and that the function
+reward is a `CacheableFunction` resolved once (the last was moved from
+`functions-and-macros`' citation target, which now points here). New section
+*The table only shrinks, and the two things that refill it*, claiming
+`/advancement revoke` and `/reload` are the only two things that re-subscribe
+and that nothing the game does on its own does — moved out of the closer, with
+`ImpossibleTrigger` and `PlayerAdvancements.checkForAutomaticTriggers` moved
+in beside them. The tree-layout paragraph moved into *The screen at the other
+end* and now asserts the layout is *why* every client sees the same tree.
+Section order changed: client half, coverage note, closer, *Where to look*.
+The cast's trailing sentence now claims the *side* column says where a class
+runs rather than which jar holds it, and that `PlayerAdvancements` is outside
+the 112.
+
+**`brigadier-and-commands`** — split question re-asked and answered no (see
+[pass5.md](pass5.md)). New claims: the three registered suggestion providers
+are named as *ask_server*, *available_sounds* and *summonable_entities*, and
+the five nodes that name one name **one of the two that mean anything** (3
+available_sounds, 2 summonable_entities), the other 62 defaulting to
+ask_server — a re-scoped statement of the same 67/5/62 count. New sentence
+counting off the three parsers of the title. New: *context-aware* glossed at
+first use as "the wire form carries no data of its own and the far side builds
+the parser". The 38-vs-57 comparison re-scoped: 38 classes directly in
+`commands/arguments` against 57 **entries** in `ArgumentTypeInfos`, with the
+claim that one class may register several and a nested one none. *Where a
+command's output goes* is now its own section; *The tree on the wire* gained
+four H3s (anchor kept); `ClientboundCustomChatCompletionsPacket` moved from
+the door section into the packet section.
+
+**`dialogs`** — verified line's last clause changed from "it is not part of
+Minecraft" to "no vanilla server will ever send it to you". New: the four
+dialog registries named. New claim about `ActionTypes.bootstrap`
+(`server/dialog/action/ActionTypes.java`:11–16): **seven** kinds are
+registered in a loop over the click-event kinds and **two** by hand, under
+*dynamic/run_command* and *dynamic/custom* — replacing "that set of nine is
+derived from the click-event enum". New: the three packets registered in both
+protocols named together. Trace heading *From a JSON file to a click the
+server reads*. The four ways a dialog opens are now four bolded items; the
+parts inventory moved to a new section *What a dialog is made of* (the
+`functions-and-macros` citation repointed to it). *Game tests* named as the
+other of the two clearest instances.
+
+**`entity-selectors`** — the 1.21 blockquote moved from the body to the foot.
+Two closer answers promoted to sections: *Four argument shapes, enforced on
+the query and not on the text*, and *The client parses selectors and cannot
+resolve one* (which now claims to be what the cast's "that matters later"
+meant). New closer question claiming **`/kill @e[type=item,limit=1]` resolves
+in the overworld** unless there is nothing there: `MinecraftServer.levels` is
+a `LinkedHashMap` (`MinecraftServer.java`:335) with the overworld put in first
+(:460) and the rest in registry order (:501), `getAllLevels` iterates it, and
+an arbitrary-order limit reaches the level query as an early abort — so a
+sort removes the bias. Cast cell re-scoped: `SetOnceOptionState` covers the
+four options with **no parsed field to test for emptiness**, and the other
+nine once-only options check their own field
+(`EntitySelectorOptions.java`:111–177). Closer respelled to *Questions players
+ask*.
+
+**`functions-and-macros`** — the opening no longer calls the figure a
+two-step model: two steps and a hand-off, and `## 3 · Queue` is now *Then:
+queued, and gone* (`brigadier-and-commands` repointed). The cast table gained
+its own heading. New paragraph in *What calls a function, and when* claiming
+the page's own hook: nothing in `ServerFunctionManager.tick` carries an
+argument compound, the snapshot means the failure repeats every tick, and
+`/function` is the only way to see it. The *four that parse against a source*
+lost its implied population.
+
+**`game-tests`** — trace heading *One test, from a command to a green block*.
+New: the four registries named (`Registries.TEST_INSTANCE`,
+`Registries.TEST_ENVIRONMENT`, `BuiltInRegistries.TEST_INSTANCE_TYPE`,
+`BuiltInRegistries.TEST_ENVIRONMENT_DEFINITION_TYPE`). New: the seven
+environment kinds named and divided five / one / one
+(`TestEnvironmentDefinition.java`:43–49). New claim resolving the page's
+apparent self-contradiction about timeouts: `GameTestSequence.tickAndContinue`
+catches `GameTestAssertException` only (`GameTestSequence.java`:92–97), while
+a timeout is a `GameTestTimeoutException` raised by `GameTestInfo`
+(`GameTestInfo.java`:156–164) and caught nowhere there. **New section
+paragraph** *What a test leaves behind is not undone*: a passing test has its
+barriers removed (`GameTestRunner.java`:142) and nothing else; a failing one
+keeps its shell; the pasted blocks, the test instance block and the
+force-loaded chunks (`TestInstanceBlockEntity.java`:404–412) stay; `/test
+clearall` (`TestCommand.java`:334) clears space, removes barriers and breaks
+the block. Heading *Two things a running server should know* → *Three*.
+Reporting's "four places" named.
+
+**`permissions`** — new cast row for `Permissions` (four rungs, five atoms),
+and the hook's first identifier glossed in place. The package sentence now
+claims every cast row but `ChatAbilities` is one of the eleven. The union
+paragraph reordered rule-before-exception. The client-side-gates paragraph
+moved into *What the client is allowed to believe* as its fourth bolded
+source, with the section's count changed three → four and a new claim that
+`GameModeCommand.PERMISSION_CHECK` is **the one object both universes read**;
+its five references are now enumerated including the command's own
+registration. New closing paragraph claiming the opening operator's `/msg`
+**goes through**, because no server-side node asks for
+`Permissions.CHAT_SEND_COMMANDS`. The unexplained *waxed* dropped, and the
+sign's exemption re-argued as "the client was never told what the text does".
+
+**`scoreboard-and-data`** — the opening re-argued from three systems to four,
+built outward from `execute store`'s three sinks. Trace heading *One command,
+two models, and a number that lands in a third place*. The
+failing-command-writes-0 paragraph moved from the closer into the trace
+commentary (`the-execution-engine` still cites the engine's anchor, not this
+one). New section *Names that belong to nobody, and the `#` that hides them*,
+promoted out of the closer with the `entity-selectors` citation repointed to
+it, and claiming the two `#` mechanisms are unrelated. `forAllObjectives`'
+seven call sites enumerated as seven rather than as thirteen criteria
+(`ServerPlayer.java`:972, 1019, 1056, 1059, 1078, 1633, 1641). The locator bar
+re-argued as a sixth **consumer** and explicitly not a reader, so the
+heading's *five systems read* stands. Number formats and
+`Attributes.BELOW_NAME_DISTANCE` moved into *What the client is ever told*,
+which gained two H3s; saving split out as *What survives a restart, and what
+does not*.
+
+**`the-execution-engine`** — the opening now names the budget in its second
+sentence and claims it is what stopped the self-calling function. *Two ways to
+die* → *What actually stops a command*, with two H3s. Three closer answers
+promoted into it: both game rules named with their 65536 default and the
+read-once claim, the depth answer (unbounded structurally, bounded by the
+budget transitively), and the thread-local per-context budget. The ten-million
+stub folded into the overflow paragraph and re-scoped as queue length not
+depth. *No aggregation anywhere* re-worded to admit its own exception. Cast
+row for `ContinuationTask` re-scoped from "N players cost N entries" to "one
+queue entry at a time". Figure panel 4 now draws the `ExecuteCommand` its
+caption claims. Six-class roll-call cut to four (logged in
+[pass5.md](pass5.md)). Closer respelled and moved last, behind *The two
+commands that are part of the engine*.
+
+**`commands/README`** — the hook's *queue* now carries a clause saying what
+one is. The nine-package roster re-argued into three groups, which changes a
+claim: `net/minecraft/server/commands` is the **catalogue**, not the
+machinery, and `server/bossevents` belongs to `world/scores` rather than to
+the machinery. New parenthetical distinguishing an argument *type* (57) from
+an argument *node* (459). Four *watch in this order* blurbs re-synced to the
+pages as rewritten.
+
 ## Pass 6, session L — Part XII · World generation *(2026-09-14)*
 
 Ten system pages and the landing page rewritten under A1–A9 and A12; eleven

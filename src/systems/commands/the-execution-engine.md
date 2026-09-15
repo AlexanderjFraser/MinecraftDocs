@@ -5,8 +5,10 @@
 Write a data pack that calls a function that calls itself, load it, and the
 server does not crash. It runs a very large number of commands, logs one
 line at *info*, and carries on. That is not a recursion limit — there is no
-recursion limit, and no depth game rule either. It is that **nothing in
-command execution uses the Java call stack.**
+recursion limit, and no depth game rule either. What stopped it was a
+*budget*: a count of units of work spent by one outermost command, whose
+ceiling is a game rule and whose exhaustion is the log line. It is that
+**nothing in command execution uses the Java call stack.**
 
 Every construct that used to nest — `/execute … run`, `/function`,
 `execute if function`, `/return run` — is expressed as *queued work* on a
@@ -25,7 +27,7 @@ that one decision.
 | `CommandQueueEntry` | a `Frame` and an `EntryAction`. That is the entire unit of work | — |
 | `Frame` | **not** a stack frame: a depth, a `CommandResultCallback` a `/return` feeds, and a `Frame.FrameControl` that knows how to delete this frame's pending work | one object shared by reference across a whole function body |
 | `BuildContexts` | walks the stages of a parsed chain, forking sources as it goes | `BuildContexts.TopLevel`, `BuildContexts.Continuation` and `BuildContexts.Unbound` |
-| `ContinuationTask` | the lazy fan-out: emits one element's entry, then re-queues itself | the reason N players cost N entries, not N at once |
+| `ContinuationTask` | the lazy fan-out: emits one element's entry, then re-queues itself | the reason N players cost one queue entry at a time rather than N at once |
 | `CallFunction` / `IsolatedCall` | the only two things besides the top level that open a frame | `IsolatedCall`'s `/return` cannot reach the caller |
 | `ExecutionCommandSource` | the interface the engine is generic over, which is why none of it mentions `CommandSourceStack` | `CommandSourceStack` implements it |
 | `CommandResultCallback` | a success flag and an integer. This pair is what "the result of a command" means everywhere in the game | `CommandResultCallback.EMPTY` short-circuits |
@@ -36,8 +38,9 @@ commands produce packets. What arrives is a `ParseResults` and a
 `CommandSourceStack` that [Brigadier and
 commands](brigadier-and-commands.md#three-parsers-see-one-string) has already
 built: `Commands.performCommand` flattens the parse into a context chain and
-`Commands.executeCommandInContext` is the door — it reads the two limits,
-installs the context in a thread-local and drives the loop.
+`Commands.executeCommandInContext` is the door — it reads the two game rules
+that bound an execution, installs the context in a thread-local and drives
+the loop.
 
 ## The queue, four moments apart
 
@@ -64,7 +67,9 @@ flowchart TB
     end
     subgraph T4["4 · A's say hi is done"]
         direction TB
-        D1["ContinuationTask — and only NOW is B materialised"]
+        D1["ExecuteCommand for player B"]
+        D2["ContinuationTask — and only NOW was B materialised"]
+        D1 --- D2
     end
     T1 --> T2 --> T3 --> T4
 ```
@@ -110,8 +115,8 @@ the value sideways into the callback the caller installed on that frame, and
 `Frame.discard` splices the abandoned work out of the queue. There is no
 search.
 
-The splice is one rule: **pop from the head while the entry's depth is at
-least *d***. That works because the queue is depth-first, so entries deeper
+The splice is one rule. Call the discarding frame's own depth *d*: **pop
+from the head while the entry's depth is at least *d***. That works because the queue is depth-first, so entries deeper
 than a frame are always in front of that frame's own remaining entries —
 which means the rule removes exactly the callee's pending work plus the rest
 of this frame's body, and nothing older. Depth-zero frames are the special
@@ -138,11 +143,11 @@ carrying:
 ## A result is a flag and a number, and nothing aggregates
 
 The result of a command is always a `CommandResultCallback` pair: a success
-flag and an integer. There is no aggregation anywhere in the engine. A fork
+flag and an integer. The engine aggregates nothing, with one exception it makes itself. A fork
 over N players delivers N independent results to N sources, so an
 `execute store result` writes N times and the last one wins — there is no
-success count. A sum exists in exactly one place: `/function` on a *tag*,
-and only when the caller installed a real callback.
+success count. The exception is `/function` on a *tag*, which sums its
+members' results, and only when the caller installed a real callback.
 
 A command typed in chat has an *empty* frame callback and
 `Commands.performCommand` returns nothing — yet `execute store` still works
@@ -154,31 +159,67 @@ is what `ExecuteCommand.wrapStores` decorated
 inside a return or a conditional.
 
 Six classes implement the escape hatch for a command that wants the engine
-rather than Brigadier's plain "return an int" —
-`FunctionCommand.FunctionCustomExecutor`,
-`ReturnCommand.ReturnValueCustomExecutor`,
-`ReturnCommand.ReturnFailCustomExecutor`,
-`DebugCommand.TraceCustomExecutor`,
-`ExecuteCommand.ExecuteIfFunctionCustomModifier` and
-`ReturnCommand.ReturnFromCommandCustomModifier` — and
-`CustomCommandExecutor.WithErrorHandling` is the base *two* of the six use —
-`FunctionCommand.FunctionCustomExecutor` and `DebugCommand.TraceCustomExecutor` —
-routing a thrown `CommandSyntaxException` to both the source's error handler
-and its callback. The other four handle their own.
+rather than Brigadier's plain "return an int", and between them they belong
+to three commands: `/function`, `/return` and `/debug`. Two of the six
+extend `CustomCommandExecutor.WithErrorHandling` —
+`FunctionCommand.FunctionCustomExecutor` and
+`DebugCommand.TraceCustomExecutor` — which routes a thrown
+`CommandSyntaxException` to both the source's error handler *and* its
+callback, so a failing `/function` under `execute store` still writes. The
+other four handle their own.
 
-## Two ways to die, and they are not the same event
+## What actually stops a command
+
+Two things end an execution before its work is done, and they are not the
+same event.
 
 **The quota runs out.** `ExecutionContext.runCommandQueue` checks at the top
 of every iteration, logs at *info*, and breaks. The queue is **not** cleared;
 it is simply abandoned with the context. Nothing reaches the player.
 
 **The queue overflows.** `ExecutionContext.queueNext` trips when staged plus
-queued entries exceed ten million; `ExecutionContext.handleQueueOverflow`
+queued entries exceed **ten million** — a cap on queue *length*, not on
+depth, whatever the constant that names it suggests; `ExecutionContext.handleQueueOverflow`
 clears *both* lists and sets a latch that silently drops every subsequent
 queue attempt, and the driver then logs at **error**. Different level,
 different clean-up, and a latch the quota path has no equivalent of.
 
-The budget itself is spent in exactly three places — `BuildContexts` on a
+### What the two numbers are
+
+Both are game rules, and both are 65536 by default.
+`GameRules.MAX_COMMAND_SEQUENCE_LENGTH` is the budget — how many units of
+work one outermost command may spend before the quota path above fires — and
+`GameRules.MAX_COMMAND_FORKS` is the fork limit, how many sources one stage
+may contribute. **Both are read once, by the outermost command**, so a
+`/gamerule` changed part way through a long fan-out does not take effect
+until the next top-level command. (There is nothing dimensional in it:
+`ServerLevel.getGameRules` returns the server's one `GameRules` instance, so
+no level has rules of its own to pick up.) The fork limit is checked per
+contributing source with a greater-or-equal comparison, so the effective
+ceiling is one below the configured value, and when it trips the handler
+returns without queueing even a `FallthroughTask` — a `/return run` chain
+that hits it yields nothing at all rather than a failure.
+
+Depth is not on that list, and that is the answer to the function at the top
+of this page. **Recursion is unbounded structurally**: depth is used only to
+order discards and to indent the tracer. What bounds a self-calling function
+is the budget, transitively — every call it makes spends a unit — and what
+bounds a fan-out is the ten-million entry cap above.
+
+And a budget belongs to a *context*, not to a command.
+`Commands.CURRENT_EXECUTION_CONTEXT` is a thread-local: a command that
+starts another top-level execution *while one is running* appends to the
+running queue rather than making a new context, and the limits were read
+once by the outermost call. Its top frame is nested one depth deeper, so its
+discards cannot eat the outer queue. The thread-local is null again the
+moment a queue drains, so two commands run back to back each open their own
+context — which is why every function in `#minecraft:tick` gets a budget of
+its own ([functions and
+macros](functions-and-macros.md#what-calls-a-function-and-when)).
+
+### Where a unit is spent
+
+The budget is spent in exactly three places — `BuildContexts` on a
 modifier stage, `CallFunction` on a function call, and the leaf
 `ExecuteCommand` task on an executed command — and the first has a gate
 worth knowing. The increment happens only when the stage carries a non-null
@@ -189,60 +230,6 @@ modifier ever reaches the counter. A `ContinuationTask` is free too, and that is
 the +1 an N-way fan-out does not pay: N leaves cost N, the continuation that
 materialised them costs nothing, and the modifier stage that forked in the
 first place was the single unit charged above.
-
-**Ten million** — the cap on *queue length*, staged plus queued
-(`ExecutionContext`). The constant that names it reads as though it bounded
-depth, and is never read by name.
-
-## Questions a data-pack author asks
-
-**Can a function yield?** No. Work it queues drains inside the same driver
-loop, in the same tick, before the call returns. The only escape is
-`/schedule` ([functions and macros](functions-and-macros.md)).
-
-**How deep can recursion go?** Unbounded, structurally. Depth is used only
-to order discards and to indent the tracer. Recursion is bounded
-transitively by the cost budget and fan-out by the ten-million entry cap.
-
-**Why did my command fail silently inside `execute if`?** Because
-conditionals are fork nodes. `execute as @s`, `execute at @s`,
-`execute if block` and friends set the forked flag on `ChainModifiers` for
-the rest of the chain, and **a forked source suppresses failure messages**.
-Putting a harmless-looking conditional in front of a command converts its
-errors into nothing. They still reach the tracer, which is what
-`/debug function` is for.
-
-**Does `/return` inside a fork stop the other sources?** Not normally.
-`/function` dispatches its N sources eagerly in a plain Java loop, each
-opening its own frame at the next depth, so a `/return` in one discards only
-that callee. It is `return run …` that sets
-`CallFunction.returnParentFrame`, making the inner discard run at the outer
-frame's depth and delete the siblings.
-
-**Why does my fork stop one short?** The fork limit is checked per
-contributing source with a greater-or-equal comparison, so the effective
-ceiling is one below the configured value. When it trips the handler returns
-without queueing even a `FallthroughTask`, so a `/return run` chain that
-hits the fork limit yields nothing at all rather than a failure. The limits
-are `GameRules.MAX_COMMAND_FORKS` and
-`GameRules.MAX_COMMAND_SEQUENCE_LENGTH`, both 65536 by default — and both
-are read **once**, by the outermost command, so a `/gamerule` changed part
-way through a long fan-out does not take effect until the next top-level
-command. (There is nothing dimensional in this: `ServerLevel.getGameRules`
-returns the server's one `GameRules` instance, so no level has rules of its
-own to pick up.)
-
-**Does a nested command get its own budget?** No.
-`Commands.CURRENT_EXECUTION_CONTEXT` is a thread-local: a command that
-starts another top-level execution *while one is running* appends to the
-running queue rather than making a new context, and the limits were read once
-by the outermost call. Note what that does and does not cover — the thread-local
-is null again the moment a queue drains, so two commands run back to back each
-open their own context, which is why every function in `#minecraft:tick` gets
-a budget of its own ([functions and
-macros](functions-and-macros.md#what-calls-a-function-and-when)).
-Its top frame is nested one depth deeper, so its discards cannot eat the
-outer queue.
 
 ## The two commands that are part of the engine
 
@@ -259,6 +246,27 @@ inside a condition function cannot reach the caller.
 than per frame, so it traces everything in that context. It refuses to nest,
 refuses return mode, and implements `CommandSource` as well, so a traced
 function's chat output lands in the trace file alongside the call lines.
+
+## Questions players ask
+
+**Can a function yield?** No. Work it queues drains inside the same driver
+loop, in the same tick, before the call returns. The only escape is
+`/schedule` ([functions and macros](functions-and-macros.md)).
+
+**Why did my command fail silently inside `execute if`?** Because
+conditionals are fork nodes. `execute as @s`, `execute at @s`,
+`execute if block` and friends set the forked flag on `ChainModifiers` for
+the rest of the chain, and **a forked source suppresses failure messages**.
+Putting a harmless-looking conditional in front of a command converts its
+errors into nothing. They still reach the tracer, which is what
+`/debug function` is for.
+
+**Does `/return` inside a fork stop the other sources?** Not normally.
+`/function` dispatches its N sources eagerly in a plain Java loop, each
+opening its own frame at the next depth, so a `/return` in one discards only
+that callee. It is `return run …` that sets
+`CallFunction.returnParentFrame`, making the inner discard run at the outer
+frame's depth and delete the siblings.
 
 ## Where to look
 

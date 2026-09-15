@@ -16,18 +16,18 @@ checks that a key belongs to an entity), **why a mob's score can never
 appear in the tab list** (whose holder is built from a profile name), and
 **why renaming a player orphans their scores**.
 
-Three systems share this page because they share a command and an instinct.
-The scoreboard is the game's general-purpose *number per thing*. The teams
-live in the same package and are read by five subsystems that have nothing
-to do with scores. Command storage and the NBT path language are the other
-half — a place to put a tag belonging to no block and no entity, and a query
-language for reaching into any tag at all. And `execute store` is the seam:
-the only construct in the game that takes the result of an arbitrary command
-and writes it somewhere. It has **three** sinks, and all three are
-named things on this server that a number is written into: a score, a path
-into a block, an entity or a storage, and a boss bar's value or maximum. The
-third has the same shape as the scoreboard one floor up, and the last section
-before the questions is about it.
+`execute store` is why four systems share this page. It is the only
+construct in the game that takes the result of an arbitrary command and
+writes it somewhere, and it has exactly **three** sinks — a score; a path
+into a block, an entity or a storage; and a boss bar's value or maximum.
+Each of those is a named thing on this server that a number can be written
+into, and each brings its own model with it: the scoreboard, which is the
+game's general-purpose *number per thing*; the NBT path language, a query
+language for reaching into any tag at all, over command storage, which is a
+place to put a tag belonging to no block and no entity; and the boss bar,
+which turns out to be the scoreboard's shape one floor up. Teams are the
+fourth, and they are here because they live in the scoreboard's package and
+its class — read by five subsystems that have nothing to do with scores.
 
 The instinct they share is worth stating before the classes, because it
 explains three otherwise-odd decisions: **the server is the only participant
@@ -56,7 +56,7 @@ model — and every class in it ships in both jars. Beside it:
 `net/minecraft/network/chat/numbers`, seven files and 167 lines, holding
 `NumberFormat` with the three kinds `NumberFormatTypes` registers.
 
-## The trace: a store through both models
+## One command, two models, and a number that lands in a third place
 
 ```mermaid
 sequenceDiagram
@@ -98,6 +98,18 @@ scoreboard exists.
 callback, which is precisely why `execute store` works on a command typed in
 chat whose *frame* callback is empty
 ([the execution engine](the-execution-engine.md)).
+
+**A failing command under `store result` writes 0**, whichever kind it is.
+On the custom-executor path that is `CustomCommandExecutor.WithErrorHandling`
+doing what it does for everything ([the execution
+engine](the-execution-engine.md#a-result-is-a-flag-and-a-number-and-nothing-aggregates)),
+so a failing `/function` writes 0. For an ordinary leaf the result consumer is
+driven by Brigadier, and
+`ContextChain.runExecutable` catches the `CommandSyntaxException` and calls
+the consumer with *success false, result 0* before rethrowing. The game
+hands that consumer straight through from the source's own callback, so the
+two paths agree: a store target written by a command that threw holds zero,
+not its previous value.
 
 **`/data get` builds the whole entity to read one field.**
 `EntityDataAccessor.getData` produces the entity's entire save tag, freshly,
@@ -148,6 +160,28 @@ dirty-queue drain: every mutation broadcasts its own packet synchronously,
 inside the call that made it, and there is **one scoreboard per server, not
 per level**, so scores and teams are global across dimensions.
 
+## Names that belong to nobody, and the `#` that hides them
+
+The opening's fake players are not one mechanism but two, and the `#` in
+front of *#total* does a different job in each.
+
+In `ScoreHolderArgument` a leading `#` skips entity resolution entirely, so
+the token is taken as a literal name and no lookup happens. The argument
+type has four resolution branches in order — the wildcard `*`, a `#` name, a
+UUID searched across every level, and an online player — and the last three
+fall back to a bare name when they find nothing. The wildcard does not: with
+no tracked holders at all it throws.
+
+In the sidebar the same character means something unrelated:
+`PlayerScoreEntry.isHidden` filters the row out of the display. One
+character, two mechanisms, and together they are the whole
+hidden-fake-player idiom — a row that can be written by name, read by name,
+and never drawn.
+
+Nothing about that requires an entity to exist. `ScoreHolder.forNameOnly`
+mints a holder from a string, and the scoreboard's one flat map does not
+care where the string came from.
+
 ## What a criterion can be, which is nearly anything
 
 `ObjectiveCriteria` looks like an enum of eleven values and is not.
@@ -174,9 +208,10 @@ watchers — sound only because stat objects are interned in their registries.
 
 Criteria-driven scores are the one part of this page with a schedule, and it
 is narrower than it sounds. `Scoreboard.forAllObjectives` has **seven call
-sites and every one is in `ServerPlayer`**: the six read-only criteria, the
-death count, two kill counts, the two team-kill criteria and the two
-statistics hooks. No *criterion* is driven from `Entity`, `LivingEntity` or
+sites and every one is in `ServerPlayer`**: one loop over the six read-only
+criteria, one for the death count, two for the kill counts, one that fires
+both team-kill criteria, and two for statistics — one awarding, one
+resetting. No *criterion* is driven from `Entity`, `LivingEntity` or
 `Mob`, so a skeleton killing a zombie increments nobody's kill count —
 though `LivingEntity` does reach the scoreboard once, calling
 `Scoreboard.addPlayerToTeam` when it reads its own saved team back. The six read-only criteria are change-detection diffs — six
@@ -221,11 +256,11 @@ because it is not the scoreboard: collision through
 death-message routing through `ServerPlayer.die`. Only `ServerPlayer.die` and
 `LivingEntityRenderer.shouldShowName` are reached from anywhere near one
 place; `EntitySelector.pushableBy` and `Player.canHarmPlayer` have six call
-sites each and `Entity.isInvisibleTo` two. The locator bar is a sixth
-reader, reached the other way round: every team join, leave and modification
-calls through to `ServerWaypointManager` to remake the connections and
-re-colour the icons — the team system driving a waypoint
-system.
+sites each and `Entity.isInvisibleTo` two. A sixth system is joined to teams and does not read them at all; the traffic
+runs the other way. Every team join, leave and modification calls through to
+`ServerWaypointManager` to remake the locator bar's connections and
+re-colour its icons — the team system driving a waypoint system rather than
+being consulted by one.
 
 Two team behaviours are worth pinning. `Team.isAlliedTo` is **reference
 equality**, so two teams with byte-identical settings are never allied;
@@ -241,6 +276,8 @@ F1, for the camera entity, or for a vehicle — so a mob on a team set to
 *always* keeps its name through the HUD toggle.
 
 ## What the client is ever told
+
+### Five packets, and one field that decides whether any of them go
 
 Five packets, all server → client, and no serverbound counterpart exists:
 `ClientboundSetObjectivePacket`, `ClientboundSetDisplayObjectivePacket`,
@@ -259,11 +296,24 @@ at once. The join burst is the same shape:
 list, then walks all nineteen display slots and ships each distinct
 occupying objective with all of its scores.
 
+### What it is not told, and how it draws anyway
+
 What the client is told is also less than it looks. `ClientPacketListener`
 constructs every objective it receives with `ObjectiveCriteria.DUMMY`, so a
 client cannot tell a health objective from a dummy one — it only knows to
 draw hearts — and the score packet carries no lock bit, which is why
 `/trigger`'s suggestions have to be computed on the server.
+
+How a score is *drawn* is settled by a third object again, and it has its
+own fall-back order. A `NumberFormat` may ignore the number entirely —
+`FixedFormat` renders a constant component whatever the score is — and
+resolution runs per-score override, then per-objective, then a per-site
+default: red in the sidebar, yellow in the tab list, unstyled below the
+name. Below-name numbers are the odd one out: they are computed in `Entity`
+rather than in a renderer, and their range is an **attribute**,
+`Attributes.BELOW_NAME_DISTANCE`, syncable, default ten, maximum 512, so a
+server can change how far away a player's below-name score is legible, per
+entity ([attributes](../entities/attributes.md)).
 
 There is a third route by which a score reaches a client, and it carries no
 score packet at all: a `{"score":…}` or `{"nbt":…}` in a text component.
@@ -271,6 +321,8 @@ score packet at all: a `{"score":…}` or `{"nbt":…}` in a text component.
 authoritative scoreboard, and put the *result* on the wire — never the
 reference ([text components](../foundations/text-components.md)). A
 `/tellraw` is a photograph, not a subscription.
+
+## What survives a restart, and what does not
 
 Saving is one boolean for the entire scoreboard, cleared by re-packing the
 whole thing, and it happens only when the world is saved — the autosave,
@@ -331,16 +383,6 @@ HUD](../client/hud.md#the-hidden-flag-travels-two-ways).
 
 ## Questions players ask
 
-**Why does a `#` in front of a name hide the row?** Because `#` does two
-unrelated things. In `ScoreHolderArgument` it skips entity resolution
-entirely, so the token is taken as a literal name; and in the sidebar
-`PlayerScoreEntry.isHidden` filters the row out. One character, two
-mechanisms, and together they are the whole hidden-fake-player idiom. (The
-argument type has four resolution branches in order — the wildcard, a `#`
-name, a UUID searched across every level, an online player — and the last
-three fall back to a bare name. The wildcard does not: with no tracked
-holders at all it throws.)
-
 **Why is my sidebar not `DisplaySlot.SIDEBAR`?** If the local player is on a
 team *with a colour*, `Hud` uses that colour's own display slot and falls
 back to the plain sidebar otherwise. The colour-to-slot mapping lives on
@@ -389,28 +431,6 @@ makes them usable as conditionals in a function, the same choice
 die with the mob: `Scoreboard.entityRemoved` runs from the level's
 destruction callback and is gated on the entity being both non-player and
 not alive.
-
-Two smaller things. A number format can ignore the number entirely —
-`FixedFormat` renders a constant component whatever the score is — and
-resolution order is per-score override, then per-objective, then a per-site
-default: red in the sidebar, yellow in the tab list, unstyled below the
-name. And below-name numbers are computed in `Entity`, not in a renderer,
-with their range as an **attribute**: `Attributes.BELOW_NAME_DISTANCE`,
-syncable, default ten, maximum 512, so a server can change how far away a
-player's below-name score is legible, per entity
-([attributes](../entities/attributes.md)).
-
-**A failing command under `store result` writes 0**, whichever kind it is.
-On the custom-executor path that is `CustomCommandExecutor.WithErrorHandling`
-doing what it does for everything ([the execution
-engine](the-execution-engine.md#a-result-is-a-flag-and-a-number-and-nothing-aggregates)),
-so a failing `/function` writes 0. For an ordinary leaf the result consumer is
-driven by Brigadier, and
-`ContextChain.runExecutable` catches the `CommandSyntaxException` and calls
-the consumer with *success false, result 0* before rethrowing. The game
-hands that consumer straight through from the source's own callback, so the
-two paths agree: a store target written by a command that threw holds zero,
-not its previous value.
 
 ## Where to look
 

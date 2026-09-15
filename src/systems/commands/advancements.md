@@ -1,6 +1,6 @@
 # Advancements
 
-> Verified against **Minecraft 26.2** · Part XIII · "Stone Age": a cobblestone lands in your inventory and one tick later the toast appears — delivered by a subscription table that only ever shrinks, over a packet that never says what the criterion was.
+> Verified against **Minecraft 26.2** · Part XIII · "Stone Age": a cobblestone lands in your inventory and the toast is on its way before that same tick ends — delivered by a subscription table that only ever shrinks, over a packet that never says what the criterion was.
 
 Mine a stone block. Nothing about advancements happens when the item is
 picked up; nothing happens when it enters the inventory either. What happens
@@ -41,12 +41,14 @@ already existed.
 
 The shared model is `net/minecraft/advancements`, the triggers are in
 `advancements/triggers` and the predicates in `advancements/predicates`
-(with the entity half a level down). All 112 classes ship in both jars.
+(with the entity half a level down). All 112 classes ship in both jars — the
+*side* column above says where a class does its work, not which jar carries
+it — and `PlayerAdvancements` sits in `net/minecraft/server` beside them.
 `CriteriaTriggers` registers **fifty-eight** triggers into
 `BuiltInRegistries.TRIGGER_TYPES` over **forty-four** classes; the gap is
 re-use, with `PlayerTrigger` alone accounting for six registrations.
 
-## The trace: "Stone Age"
+## From a slot that changed to a toast
 
 `minecraft:story/mine_stone` has one criterion, *get_stone*, whose trigger
 is `minecraft:inventory_changed` and whose condition is a single
@@ -111,6 +113,42 @@ the rewards, the chat announcement (built by
 `AdvancementType.createAnnouncement`, broadcast to every player, gated on
 `GameRules.SHOW_ADVANCEMENT_MESSAGES`) and the visibility dirty flag.
 
+**The rewards are `AdvancementRewards.EMPTY` here, and that is unusual.**
+The record holds experience, loot tables, recipes and a function, and the
+recipe field is why the recipe book works at all: every recipe advancement
+is generated with a `RecipeUnlockedTrigger` criterion and rewards naming the
+recipe, so earning it calls `ServerPlayer.awardRecipes`
+([recipes](../items/recipes.md#the-recipe-book-unlocked-glowing-and-filled-in-for-you)).
+`RecipeUnlockedTrigger` then closes the loop by letting *other* advancements
+observe an unlock — comparing the recipe key by **reference identity**,
+which is safe only because `ResourceKey`s are interned. The function reward
+is a `CacheableFunction`, which holds the id and resolves it once
+([functions and macros](functions-and-macros.md)).
+
+## The table only shrinks, and the two things that refill it
+
+`PlayerAdvancements.registerListeners` subscribes a player only to criteria
+that are not yet done in advancements that are not yet done, and every award
+unsubscribes. Play for a year and your table is nearly empty; the cost of
+the system to a save falls for as long as the save lives.
+
+Two things run it backwards. `/advancement revoke` re-subscribes what it
+revoked, and `/reload` re-subscribes everything unfinished in the new pack.
+Neither is something the game does on its own, which is why *shrinks* is the
+honest verb and *only* is the wrong word.
+
+Two oddities sit on the same machinery. `ImpossibleTrigger` has no trigger
+method at all — it is the one trigger implementing `CriterionTrigger`
+directly, and it exists so a node can anchor a tree while being ungrantable
+except by command, which vanilla uses for exactly one file: the invisible
+root of every recipe advancement. (It has nothing to do with `/trigger`,
+which is a scoreboard feature.) And
+`PlayerAdvancements.checkForAutomaticTriggers` is dead code in the strictest
+sense: it walks every advancement on every player load, but its whole body
+sits behind *this advancement has no criteria at all*, and `Advancement`'s
+criteria codec rejects an empty map outright. No loaded advancement can
+satisfy the guard, so the loop never does anything.
+
 ## Visibility is per root, and it gates the wire
 
 `PlayerAdvancements.markForVisibilityUpdate` dirties the **root**, and the
@@ -172,124 +210,26 @@ And `EntityPredicate` declares an explicit type-check-first, NBT-last
 ordering for its own sub-tests — a performance invariant hiding inside a
 predicate class.
 
-## Questions players ask
-
-**Why does the client show "3/7" if it does not know what the criteria
-are?** Because `AdvancementRequirements` *is* on the wire and
-`AdvancementProgress.update` reconciles against it. `Advancement.read`
-reconstructs the record with an **empty criteria map** and
-`AdvancementRewards.EMPTY`, so a client cannot know what any criterion
-tests, or that an advancement grants anything at all. And
-`AdvancementProgress.getProgressText` returns nothing at all when there is
-one clause, which is why a single-criterion advancement never shows "1/1".
-(An `AdvancementProgress` with no requirement clauses is permanently
-incompletable — `AdvancementRequirements.test` returns false for an empty
-list rather than vacuously true — and the only way to hold one is to decode
-it off the wire, which is exactly what the client does before its first
-update.)
-
-**Why does the tree look the same on every client?** Because it was laid out
-on the server. `ServerAdvancementManager` is one of the three server reload
-listeners, and `TreeNodePosition` runs in its *apply* half — the half a
-reload runs on the main thread, once per root, after the JSON has been read
-on a background one ([the resource
-system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)).
-It mutates `DisplayInfo` in place; the coordinates ride the packet. A root with
-no `DisplayInfo` is never laid out and never becomes a tab, and a
-display-less node in the middle of a tree is transparent — the layout skips
-it and adopts its children. One wrinkle in an otherwise deterministic
-algorithm: `AdvancementNode.children` is an unordered hash set, so sibling
-order inside a tidy-tree layout is hash-dependent.
-
-**Does `/reload` roll back my progress?** No, and the order is the point: a
-reload's completion list saves every player before it reloads them ([the
-resource
-system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)),
-so `PlayerAdvancements.reload` re-reads a file written moments earlier. What is genuinely lost is progress for any
-advancement the new pack has removed or renamed — logged once each, and
-invisible to the player except as a full reset packet — plus the selected
-tab, which is silently forgotten with no packet, so the client keeps a stale
-one.
-
-**When is progress written to disk?** Only when the player is saved. There is
-no write on award: `PlayerAdvancements.save` runs from `PlayerList.save`, on
-disconnect, on a save-all, or from the reload above. The definitions come
-from `data/<ns>/advancement/<id>.json` through `Advancement.CODEC` — a
-duplicate id aborts the reload outright — and per-player state is one JSON
-file at `players/advancements/<uuid>.json`
-(`LevelResource.PLAYER_ADVANCEMENTS_DIR`), data-fixed on load through
-`DataFixTypes.ADVANCEMENTS`.
-
-**How does the recipe book fit in?** Every recipe advancement is generated
-with a `RecipeUnlockedTrigger` criterion and an `AdvancementRewards` naming
-the recipe, so earning it calls `ServerPlayer.awardRecipes`
-([recipes](../items/recipes.md#the-recipe-book-unlocked-glowing-and-filled-in-for-you)).
-`RecipeUnlockedTrigger` then closes the
-loop by letting *other* advancements observe an unlock — comparing the
-recipe key by **reference identity**, which is safe only because
-`ResourceKey`s are interned.
-
-**Does the listener set ever grow?** Twice.
-`PlayerAdvancements.registerListeners` subscribes only to criteria that are
-not yet done in advancements that are not yet done, and every award
-unsubscribes — *unless* somebody runs `/advancement revoke`, which
-re-subscribes, or `/reload`, which re-subscribes everything unfinished in
-the new pack.
-
-**Why is `/advancement grant` usable as a conditional?** Because a no-op is
-a hard failure: granting an advancement the player already has throws rather
-than reporting zero. `AdvancementCommands.Mode` — *only*, *through*,
-*from*, *until*, *everything* — is a graph traversal collecting parents or
-children or both, and `/advancement grant … everything` calls
-`PlayerAdvancements.flushDirty` before the loop with the packet's "show
-advancements" flag **true** and after it with the flag **false**, which is
-the only purpose that flag has: suppressing a toast storm from the batch it
-just granted.
-
-Three smaller surprises, for completeness. `ImpossibleTrigger` has no
-trigger method at all — it is the one trigger implementing `CriterionTrigger`
-directly, and it exists so a node can anchor a tree while being ungrantable
-except by command, which vanilla uses for exactly one file: the invisible
-root of every recipe advancement. (It has nothing to do with `/trigger`,
-which is a scoreboard feature.) `DisplayInfo`'s announce-to-chat flag is
-**write-only on the wire**: the serialiser packs three flags into an int and
-omits it, and the reader hard-codes it false while the codec defaults it
-true, so the client's copy is wrong for the common case rather than merely
-unused. And `PlayerAdvancements.checkForAutomaticTriggers` is dead code in the
-strictest sense: it walks every advancement on every player load, but its
-whole body sits behind *this advancement has no criteria at all*, and
-`Advancement`'s criteria codec rejects an empty map outright. No loaded
-advancement can satisfy the guard, so the loop never does anything.
-
-## What the package holds that this page does not name
-
-Two families make up most of `net/minecraft/advancements`, and the answer to
-both is the same: the page explains the shape and the members are instances of
-it. The **thirty-five unnamed triggers** — `KilledTrigger`,
-`FishingRodHookedTrigger`, `RecipeCraftedTrigger` and the rest — are each a
-record, a codec and a `CriterionTriggerInstance`, registered by `CriteriaTriggers` and fired
-from wherever in the game the thing happens; knowing `SimpleCriterionTrigger`
-is knowing all of them. The **concrete predicates** under
-`advancements/predicates` are the same story one level down:
-`StatePropertiesPredicate`, `EntityFlagsPredicate`, `EntityEquipmentPredicate`,
-`MobEffectsPredicate`, `DamageSourcePredicate` and their neighbours are each
-one of the four shapes above applied to one kind of thing, and the two that
-matter to another part — `LocationPredicate` and `BlockPredicate` — are named
-where they do work, in [contexts and
-predicates](../items/contexts-and-predicates.md#what-reads-a-context) and
-[features and placement](../worldgen/features-and-placement.md).
-
-The one class worth naming for itself is `CriterionProgress`: a criterion's
-whole per-player state is a nullable timestamp, which is why the wire form can
-carry progress without carrying a single condition.
-
 ## The screen at the other end
 
 The client's half is five classes in
 `net/minecraft/client/gui/screens/advancements` plus `ClientAdvancements`
 over in `client/multiplayer` — about 1,240 lines — and it is the payoff for
 everything the server did. It does **no tree layout**: it is drawing
-positions a data-pack reload decided.
+positions a data-pack reload decided, which is why the tree looks the same
+on every client connected to a server.
+
+The layout itself is `TreeNodePosition`, run by `ServerAdvancementManager`
+in the *apply* half of a reload — the half that runs on the main thread,
+once per root, after the JSON has been read on a background one ([the
+resource
+system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)).
+It mutates `DisplayInfo` in place and the coordinates ride the packet. A
+root with no `DisplayInfo` is never laid out and never becomes a tab, and a
+display-less node in the middle of a tree is transparent — the layout skips
+it and adopts its children. One wrinkle in an otherwise deterministic
+algorithm: `AdvancementNode.children` is an unordered hash set, so sibling
+order inside a tidy-tree layout is hash-dependent.
 
 `ClientAdvancements` consumes `AdvancementTree.Listener`, and
 `AdvancementTree.setListener` replays every existing root and task at a new
@@ -310,6 +250,83 @@ is consumed **only** on the client, by `WorldSessionTelemetryManager`, and
 only for advancements in the *minecraft* namespace — which is the whole
 reason a flag rides a wire form that drops the criteria and the rewards
 ([what this book skips](../anatomy/what-this-book-skips.md)).
+
+## What the package holds that this page does not name
+
+Two families make up most of `net/minecraft/advancements`, and the answer to
+both is the same: the page explains the shape and the members are instances of
+it. The **thirty-five unnamed triggers** — `KilledTrigger`,
+`FishingRodHookedTrigger`, `RecipeCraftedTrigger` and the rest — are each a
+record, a codec and a `CriterionTriggerInstance`, registered by `CriteriaTriggers` and fired
+from wherever in the game the thing happens; knowing `SimpleCriterionTrigger`
+is knowing all of them. The **concrete predicates** under
+`advancements/predicates` are the same story one level down:
+`StatePropertiesPredicate`, `EntityFlagsPredicate`, `EntityEquipmentPredicate`,
+`MobEffectsPredicate`, `DamageSourcePredicate` and their neighbours are each
+one of the four shapes above applied to one kind of thing, and the two that
+matter to another part — `LocationPredicate` and `BlockPredicate` — are named
+where they do work, in [contexts and
+predicates](../items/contexts-and-predicates.md#what-reads-a-context) and
+[features and placement](../worldgen/features-and-placement.md).
+
+## Questions players ask
+
+**Why does the client show "3/7" if it does not know what the criteria
+are?** Because `AdvancementRequirements` *is* on the wire and
+`AdvancementProgress.update` reconciles against it. `Advancement.read`
+reconstructs the record with an **empty criteria map** and
+`AdvancementRewards.EMPTY`, so a client cannot know what any criterion
+tests, or that an advancement grants anything at all. And
+`AdvancementProgress.getProgressText` returns nothing at all when there is
+one clause, which is why a single-criterion advancement never shows "1/1".
+A criterion's whole per-player state is one class,
+`CriterionProgress`, and one field in it: a nullable timestamp. That is why
+the wire form can carry progress without carrying a single condition.
+(An `AdvancementProgress` with no requirement clauses is permanently
+incompletable — `AdvancementRequirements.test` returns false for an empty
+list rather than vacuously true — and the only way to hold one is to decode
+it off the wire, which is exactly what the client does before its first
+update.)
+
+**Does `/reload` roll back my progress?** No, and the order is the point: a
+reload's completion list saves every player before it reloads them ([the
+resource
+system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)),
+so `PlayerAdvancements.reload` re-reads a file written moments earlier. What is genuinely lost is progress for any
+advancement the new pack has removed or renamed — logged once each, and
+invisible to the player except as a full reset packet — plus the selected
+tab, which is silently forgotten with no packet, so the client keeps a stale
+one.
+
+**When is progress written to disk?** Only when the player is saved. There is
+no write on award: `PlayerAdvancements.save` runs from `PlayerList.save`, on
+disconnect, on a save-all, or from the reload above. The definitions come
+from `data/<ns>/advancement/<id>.json` through `Advancement.CODEC` — a
+duplicate id aborts the reload outright — and per-player state is one JSON
+file at `players/advancements/<uuid>.json`
+(`LevelResource.PLAYER_ADVANCEMENTS_DIR`), data-fixed on load through
+`DataFixTypes.ADVANCEMENTS`.
+
+**Why is `/advancement grant` usable as a conditional?** Because a no-op is
+a hard failure: granting an advancement the player already has throws rather
+than reporting zero. `AdvancementCommands.Mode` — *only*, *through*,
+*from*, *until*, *everything* — is a graph traversal collecting parents or
+children or both, and `/advancement grant … everything` calls
+`PlayerAdvancements.flushDirty` before the loop with the packet's "show
+advancements" flag **true** and after it with the flag **false**, which is
+the only purpose that flag has: suppressing a toast storm from the batch it
+just granted.
+
+**Why does the toast stay silent?** Because `AdvancementToast` asks for a
+sound only when the advancement is an `AdvancementType.CHALLENGE` — one of the three
+`AdvancementType`s, and the one that also gets its own title colour. For a
+*task* and a *goal* the method returns nothing at all, so the toast slides in
+in silence. The client can tell which it is because `DisplayInfo` carries the
+type; what it cannot tell is whether the advancement was meant to announce
+itself in chat, because that flag is **write-only on the wire**. The
+serialiser packs three flags into an int and omits it, and the reader
+hard-codes it false while the codec defaults it true, so the client's copy is
+wrong for the common case rather than merely unused.
 
 ## Where to look
 

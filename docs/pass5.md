@@ -3075,13 +3075,20 @@ it lost a fight for space against the page's own story.
   opening paragraph the template asks for (*start inside the scenario*)
   pulls hard towards it. Pass 5 should ratify it or reverse it corpus-wide,
   not page by page.
-- **The *questions players ask* device is on three more pages** —
+- ~~**The *questions players ask* device is on three more pages** —
   `advancements`, `scoreboard-and-data`, and `the-execution-engine` where it
   is called *questions a data-pack author asks*. That is session K's warning
   coming true: the device is becoming the standard home for what used to be
   the invariant wall, and a corpus where half the pages have one has just
   re-invented the seven-heading template with better headings. Count them in
-  pass 5 and cap it.
+  pass 5 and cap it.~~ **Done, pass 6 session M.** All three keep a closer and
+  all three were wrong in the way A2 predicts rather than in the way this
+  entry predicted: not too many closers, but load-bearing answers inside
+  them. `advancements` gave up three (the tree layout, the recipe book, the
+  two things that refill the table); `the-execution-engine` gave up three
+  (the two game rules, the depth answer, the per-context budget) and its
+  spelling; `scoreboard-and-data` gave up two. Part XIII now has one
+  spelling and four closers, all of them the last content section.
 - **"The one sentence a player would recognise" is gone from all five old [kind=lecture]
   pages** and was not replaced by anything with a fixed position — the
   recognisable thing is now inside the opening paragraph where it belongs.
@@ -3302,7 +3309,12 @@ session L**: on that page the cast *is* the idea, because a piece is a Java
 class that writes its own blocks, so a table of base classes under a heading
 called *The idea* is the argument rather than a misplaced slot. The section's
 57 lines were the real complaint and it now carries four H3s.
-`functions-and-macros` is Part XIII's.
+~~`functions-and-macros` is Part XIII's.~~ **Ruled not deliberate, pass 6
+session M**, and the opposite of the other case: the cast table was there all
+along, sitting under a heading that said *The pipeline*, so the page looked
+like the one page in the book with no cast when it simply had no cast
+*heading*. It has one now, after the figure, which is where a pipeline page
+wants it.
 
 **Wording debt from the four session-P pages.** All four were drafted by
 Opus agents against the shared brief and accepted after the session
@@ -3653,17 +3665,17 @@ Wording debt, all of it created by a fact fix:
   and necessary qualifier and reads like a footnote promoted into the body.
   The fact belongs on `permissions`; `functions-and-macros` may be able to
   cite it in a clause.
-- `permissions.md` — *Asking a question the client cannot answer* now says
+- ~~`permissions.md` — *Asking a question the client cannot answer* now says
   three things the section did not previously have to say (the sign is not on
   this path; `NO_ISSUES` sends silently; the client checks permissions in
   several other places). The section's own punchline — that the client can
-  tell "no permission" from "typo" — is now the fourth idea in it.
-  **Session M (pass 5): confirmed and handed to pass 6.** The section is now four ideas under a heading that promises one, and the client-side-gates paragraph is really a fourth source of belief rather than part of this answer. A reshape, not a move. [kind=lecture]
-- `scoreboard-and-data.md` — the "one thing this corpus cannot settle" [kind=lecture]
+  tell "no permission" from "typo" — is now the fourth idea in it.~~
+  **Session M (pass 5): confirmed and handed to pass 6.** The section is now four ideas under a heading that promises one, and the client-side-gates paragraph is really a fourth source of belief rather than part of this answer. A reshape, not a move. ~~[kind=lecture]~~ **Done, pass 6 session M:** the paragraph moved up to *What the client is allowed to believe* as its fourth bolded source, the count in that section's own lead-in went three to four, and the section it left now ends on the operator from the page's opening, whose `/msg` the page had never said went through.
+- ~~`scoreboard-and-data.md` — the "one thing this corpus cannot settle"
   paragraph became an answer, so a paragraph that existed to mark a limit is
   now a paragraph of fact sitting where a caveat used to close a section.
-  Check it still belongs at the end.
-  **Session M (pass 5): checked and kept.** The paragraph is the page's last word on `execute store` and it belongs at the end; what it lost was the half the engine owns (`WithErrorHandling`), now a citation, leaving the `ContextChain.runExecutable` fact that is this page's own.
+  Check it still belongs at the end.~~
+  **Session M (pass 5): checked and kept.** The paragraph is the page's last word on `execute store` and it belongs at the end; what it lost was the half the engine owns (`WithErrorHandling`), now a citation, leaving the `ContextChain.runExecutable` fact that is this page's own. **Overtaken, pass 6 session M:** kept it is, but not there — it was the one item in *Questions players ask* that is not a question, and it moved up to the trace's arrow commentary, beside the other four things `execute store` decides.
 - ~~`game-tests.md` — the client-writes sentence now ends on a list of four~~ **Struck by the pass-6 planning session (2026-09-07):** settled by session M, as the entry's own last line says.
   serverbound packets that belong to other pages. True, and long. Pass 5
   should consider cutting it back to the narrow claim.
@@ -3674,10 +3686,16 @@ Wording debt, all of it created by a fact fix:
 
 Structural findings, not acted on:
 
-- `entity-selectors.md` — the page is one of the longest in the part and its [kind=lecture]
+- ~~`entity-selectors.md` — the page is one of the longest in the part and its
   *Resolve* section carries five bolded claims in a row, three of which are
   about cost rather than about the trace. The page's shape is a pipeline with
-  a policy figure; the cost material may want to be a table.
+  a policy figure; the cost material may want to be a table.~~ **Ruled out,
+  pass 6 session M.** Each of the three cost claims is a *because* and not a
+  row — the two structures differ, players never get a box, sort takes the
+  limit away — and the section already ends on the sentence a table would be
+  a worse version of: *the query plan is written by eight of the twenty-one
+  names*. A table would keep the facts and lose the reasoning. What the
+  section did need was its figure corrected, which is below.
 - ~~`commands/README.md` — the part's size sentence now needs nine package
   names to be reproducible and gives none, which is what let a wrong pair
   stand through two passes. Every other landing page has the same shape. A
@@ -4786,28 +4804,57 @@ these are new.*
   asks* (the engine) — and the other five system pages close on prose. Four of
   ten is inside session P's rule of thumb; the three spellings are not one
   device. Pick one, or say why the audience differs per page. [kind=lecture]
-- **`brigadier-and-commands` is the part's largest page and this session made
+- ~~**`brigadier-and-commands` is the part's largest page and this session made
   it larger**, by two paragraphs it had lost in pass 3 and two coverage
   sentences. Pass 3's question — whether the page splits — was answered *no*
   four sessions running, but it was answered against a shorter page. Re-ask it
   with the page as it now stands, and note that the natural seam is the one the
   page already has: everything before *The tree on the wire* is the parse, and
-  everything after is the catalogue. [kind=lecture]
-- **`scoreboard-and-data` now carries four systems** — scores, teams, stored
+  everything after is the catalogue.~~ **Re-asked and answered no, pass 6
+  session M — the fifth time, and the first with a number behind it.** The
+  page was 350 lines, *below* the corpus median of 356 and nowhere near the
+  450 at which A9 says read it whole for the cut. The seam does not hold
+  either: *The tree on the wire* is what gives the client the tree the page's
+  hook is about, so the packet is the parse's own payoff rather than the
+  catalogue's preface. What the page actually needed was two subjects lifted
+  out of one section — *Where a command's output goes* is now its own — and
+  four H3s under the seam's H2, which keeps the anchor three pages land on.
+  It came out at 367 lines.
+- ~~**`scoreboard-and-data` now carries four systems** — scores, teams, stored
   data and the boss bar — and its section order puts the new one immediately
   before *Questions players ask*, which is right for the argument (the sinks in
   order) and wrong for the page's shape (three sections about the scoreboard,
   one about teams, one about paths, one about the bar). The page's own opening
   says "three systems share this page"; it is four now. Whether that is a split
-  or a re-argued opening is pass 6's. [kind=lecture]
-- **`advancements`' new coverage section sits between the Q&A and *The screen
+  or a re-argued opening is pass 6's.~~ **A re-argued opening, pass 6 session
+  M.** The landing page's blurb had had it right for two passes — *one number
+  per thing, one query language for any tag, a boss bar, and the `execute
+  store` seam that joins all three* — while the page's own opening still said
+  three. So the opening now argues from the seam outward: `execute store` has
+  exactly three sinks, each sink brings a model, and teams are the fourth
+  because they live in the scoreboard's class. No split: the page's whole
+  claim is that these things belong together.
+- ~~**`advancements`' new coverage section sits between the Q&A and *The screen
   at the other end***, which is the only page in the part where a
-  what-is-not-here section is not last before *Where to look*. Check the order.
-  [kind=lecture]
-- **`the-execution-engine` opens on "there is no recursion limit" and the page
+  what-is-not-here section is not last before *Where to look*. Check the
+  order.~~ **Done, pass 6 session M.** The order is now the one
+  `text-components` already used — the client half, then the coverage note,
+  then the closer, then *Where to look* — which puts the coverage note back
+  where the part's other pages keep theirs *and* makes the closer the last
+  content section, which A2 requires of a closer that stays.
+- ~~**`the-execution-engine` opens on "there is no recursion limit" and the page
   never says what there *is*** until the Q&A twelve paragraphs later. The
   budget is named in the middle and the two limits at the end. A reader with
-  only the page hunts. [kind=lecture]
+  only the page hunts.~~ **Done, pass 6 session M**, and it was the part's
+  clearest case of session L's sharpened A2: the opening's whole hook is a
+  negative claim, and every positive answer to it — the two game rules, their
+  values, the fact that depth is bounded only transitively, and that a budget
+  belongs to a context rather than to a command — sat in three of the six
+  questions in a closer called *Questions a data-pack author asks*. The
+  opening now names the budget in its second sentence, *Two ways to die*
+  became *What actually stops a command* with two H3s, and the three answers
+  are in the body under them. The closer kept three consequences and moved to
+  last.
 
 ### For pass 7 (the figures)
 
@@ -6055,3 +6102,91 @@ the only way to see it is to rename the heading and read what breaks.
   section replaced a hand-counted number with an include and the *Reference*
   bibliography was tightened at the same time. Still over the template's
   hundred, and still the largest in the book.
+
+## Pass 6, session M — Part XIII · Commands and data packs (2026-09-14)
+
+*Nine system pages and the landing page, ten readers, one each. What follows
+is what the session did not act on and is handing forward, plus the one cut
+it logged. The corrections it made are in [pass9.md](pass9.md).*
+
+**For pass 7 — the figures.**
+
+- `entity-selectors`' *Resolve* flowchart routes the players-only branch
+  straight to one `findPlayers` node and so skips both decisions the prose
+  under it makes: `EntitySelector.findPlayers` takes the bare-name and UUID
+  branches too, and it chooses between `ServerLevel.getPlayers` and
+  `PlayerList.getPlayers` on exactly the world-limited flag the figure asks
+  about only on the other branch. Session M corrected the node's *label* (it
+  said "always", which read as "not world-limited") but the **shape** is
+  wrong and is pass 7's. [kind=figure]
+- `permissions`' first figure is a taxonomy wired with pipeline arrows:
+  `Q --> S --> C` asserts that a question becomes an answer becomes a check,
+  and the prose under it describes three co-existing roles. Its `CL` node is
+  also the densest label on the page and names two client sets the page does
+  not explain for another hundred and twenty lines. [kind=figure]
+- `brigadier-and-commands`' trace opens on two `CSug->>CPL` arrows, which
+  read as messages sent, immediately under a paragraph whose whole point is
+  that the parse never leaves the machine. The page never says that
+  `ClientPacketListener` is where the client's dispatcher lives, which is
+  what would make those two arrows legible. [kind=figure]
+- `the-execution-engine`'s four-panel queue figure uses `---` (panel 3) and
+  `-.-` (panel 2) with no stated meaning, in a figure whose whole subject is
+  queue *order*. Session M fixed panel 4, which claimed a materialisation it
+  did not draw. [kind=figure]
+- `game-tests`' *The objects, and how they nest* has unlabelled edges between
+  its three subgraphs, a third subgraph with no internal edges at all, and
+  two node labels that repeat cast-table rows verbatim. [kind=figure]
+
+**For pass 8 — the voice.**
+
+- `the-execution-engine` calls one counter *the quota*, *the budget*, *the
+  cost budget*, *one cost unit* and *the two limits*, and never joins them;
+  session M named the budget in the opening and gave the bounds their own
+  section, but the five words are still five words. It also has
+  `CustomModifierExecutor`, `CustomCommandExecutor` and the bare phrase
+  *custom modifier* within ninety lines. [kind=voice]
+- `entity-selectors` uses *level* for a dimension throughout and *level* for
+  the experience-level option in its table, which is the page's central noun
+  colliding with one of its twenty-one names. [kind=voice]
+- `scoreboard-and-data`: "Nothing here is ticked, either" opens a paragraph
+  whose predecessor is about handles, not about ticking. [kind=voice]
+- `the-execution-engine`'s *Two corrections worth carrying* corrects beliefs
+  the page never invites, in the voice of a note left for an editor — the
+  tic pass 8's charter already names. [kind=voice]
+- `permissions` says `LevelBasedPermissionSet.ALL` is "deprecated in place"
+  and never unpacks it, in the middle of a cascade. [kind=voice]
+- `advancements` calls `InventoryChangeTrigger` "the most expensive trigger
+  per fire" and offers `CriteriaTriggers.TICK` as the most frequent in the
+  next clause; two superlatives in adjacent sentences, and a reader cannot
+  tell which cost to carry. [kind=voice]
+
+**The cut this session logged.** `the-execution-engine`'s six-class roll-call
+under *A result is a flag and a number* listed six fully-qualified nested
+class names in one eleven-line sentence. Cut to the shape — six classes,
+three commands — with the two that extend
+`CustomCommandExecutor.WithErrorHandling` still named, because
+`scoreboard-and-data` cites that clause by anchor. What is gone is four class
+names a reader could not use; the class index still has them.
+[kind=record]
+
+**Two notes for session O.**
+
+- **The spine tool now reads `advancements` and `brigadier-and-commands` as
+  one edit apart** [kind=lecture], within the part, which is an A7 finding the session is
+  declining. It is an artefact of this session's own work: moving
+  `advancements`' closer to last turned `cast seq p p p p q p look` into
+  `cast seq p p p p p q look`, one token from brigadier's `cast seq p p p p p
+  p look`. The two pages share no section shape — one is a five-section
+  anatomy with four H3s under a heading three pages cite, the other a trace
+  whose closer holds four player consequences — and on a nine-token alphabet
+  two pages of similar length will collide. Recorded rather than churned. This
+  is the third of A2, A4 and A7 to perturb `pass6_shape.py`'s own numbers.
+- **Part XIII's closers are author-facing under a player-facing name.** [kind=lecture] A2(a)
+  ratified one spelling, *Questions players ask*, and session M applied it to
+  the part's three — including `the-execution-engine`'s *Questions a data-pack
+  author asks* and `entity-selectors`' *Questions a command author asks*. The
+  surviving answers pass A2's test (each is a consequence somebody meets
+  rather than the page's own mechanism), but on two of the four pages the
+  somebody is a pack author, not a player. The ruling is right for the corpus
+  and the register of the heading is pass 8's; session O should decide
+  whether the book wants one spelling or two.

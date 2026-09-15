@@ -3,8 +3,9 @@
 > Verified against **Minecraft 26.2** · Part XIII · You are a level-four operator, you type `/msg`, and the server's own answer to *may this player send a chat command* is **no** — because an operator's permission set grants exactly one thing that is not a command level.
 
 Op yourself to four, the highest rung there is, and ask the server whether
-you hold `Permissions.CHAT_SEND_COMMANDS`. It says no. Not because you are
-restricted — because the set you were given is a
+you hold `Permissions.CHAT_SEND_COMMANDS` — one of nine named capabilities
+the class `Permissions` holds, each of them a `Permission.Atom`. It says no.
+Not because you are restricted — because the set you were given is a
 `LevelBasedPermissionSet`, and its answer to any permission that is not a
 command level is *false*, with one hard-coded exception. The chat atoms
 live only in the *client's* set, which the server never sees and never
@@ -22,6 +23,7 @@ still there, still numbered nought to four, still stored as integers in
 | class | what it decides | where it lives |
 |---|---|---|
 | `Permission` | *what is being asked for*: a `Permission.Atom` (a named capability with an `Identifier`) or a `Permission.HasCommandLevel` (a rung) | both jars |
+| `Permissions` | the nine the game actually defines, as constants — four rungs and five atoms. The plural class is the catalogue; the singular one is the shape | both |
 | `PermissionLevel` | the five rungs — *all*, *moderators*, *gamemasters*, *admins*, *owners* — and `PermissionLevel.isEqualOrHigherThan` | both |
 | `PermissionSet` | *the answer*. A functional interface with one method, `PermissionSet.hasPermission` | both |
 | `LevelBasedPermissionSet` | the ordinary answer: an interface with five constants, one rung each | both |
@@ -30,9 +32,10 @@ still there, still numbered nought to four, still stored as integers in
 | `PermissionProviderCheck` | the `Predicate` Brigadier actually holds, over anything implementing `PermissionSetSupplier` | both |
 | `ChatAbilities` | the client's own set, built by **subtraction** from local reasons | client only |
 
-Eleven classes and 398 lines in `net/minecraft/server/permissions` — the
-smallest package in this book that changes how everything above it is
-written.
+Eleven classes and 398 lines in `net/minecraft/server/permissions` — every
+row above but `ChatAbilities`, which is the client's and sits with the
+client's chat code. The smallest package in this book that changes how
+everything above it is written.
 
 ## A question, an answer, and a check
 
@@ -89,15 +92,18 @@ case written into the method, and returns **false to every other atom**.
 An operator does not have everything; an operator has a number and one
 exception.
 
-Union has a special case of its own, and it runs the opposite way to its
-name. `LevelBasedPermissionSet.union` of two level-based sets is not a
-`PermissionSetUnion` at all, and it is not the higher of the two: both
+Union is where that bites, and the rule is what its name says:
+`PermissionSet.union` falls through to `PermissionSetUnion`, which ORs its
+operands, so a set holding an atom and a set holding a rung together satisfy
+both. The exception is the case the game actually uses.
+`LevelBasedPermissionSet.union` of two *level-based* sets never builds a
+`PermissionSetUnion` at all, and it does not take the higher of the two: both
 branches of the override return the **lower**-levelled set, so it is a
-minimum. `CommandSourceStack.withMaximumPermission` is that union, so the one method in
-the game named for a ceiling enforces a floor instead — which is what a
-function body runs under ([functions and
-macros](functions-and-macros.md#the-two-permission-verbs)). Only for sets that are not level-based does
-`PermissionSet.union` fall through to `PermissionSetUnion`, which does OR the two.
+minimum. `CommandSourceStack.withMaximumPermission` is that union, so the one
+method in the game named for a ceiling enforces a floor instead — which is
+how a function body is held down to gamemaster however high the caller sits
+([functions and
+macros](functions-and-macros.md#the-two-permission-verbs)).
 
 ## Where a set comes from
 
@@ -108,7 +114,9 @@ cached on the player.
 
 Its cascade is short. Not on the operator list at all, and you get
 `LevelBasedPermissionSet.ALL` — rung zero, and deprecated in place. On the
-list, and the ops-file entry's own stored set wins. Failing that: the
+list, and the entry's own set wins — `ServerOpListEntry` holds a
+`LevelBasedPermissionSet`, built when the file was read from the integer the
+file stores. Failing that: the
 singleplayer owner gets `LevelBasedPermissionSet.OWNER`; any other
 singleplayer player gets owner or rung zero depending on the *allow cheats
 for other players* toggle; and on a dedicated server the fallback is the
@@ -147,17 +155,22 @@ owns the two checks and the route that reaches only the second.
 
 Two more consequences worth naming. `Commands.LEVEL_MODERATORS` gates
 **nothing**: the rung exists, is settable and is stored, and no vanilla
-command asks for it. And of the ninety-one gates that name a level
-constant, sixty-six ask for gamemaster, sixteen for admin and nine for
-owner — while `Commands.LEVEL_ALL` appears exactly twice, both times as the
-*else* branch of a ternary, in `SeedCommand` and `VersionCommand`, which
-drop their requirement when the server is the integrated one.
+command asks for it. And the ninety-five gates divide four ways. Ninety-one
+name a level constant outright — sixty-six gamemaster, sixteen admin, nine
+owner. Two are the ternary in `SeedCommand` and `VersionCommand`, which drop
+to `Commands.LEVEL_ALL` when the server is the integrated one, and those are
+the only two appearances of that constant in the game. The last two name a
+`PermissionCheck` rather than a rung: `GameModeCommand.PERMISSION_CHECK`,
+which the end of this page is about, and the client's own synthetic
+restricted-command check.
 
 ## What the client is allowed to believe
 
 The client has permissions of its own, and they are not a copy of the
-server's — no packet carries a `PermissionSet`. It has three sources of
-belief, and they behave differently enough to be worth separating.
+server's — no packet carries a `PermissionSet`. It has four sources of
+belief, and they behave differently enough to be worth separating. Three of
+them the server sent or the machine decided; the fourth is a constant the
+two sides literally share.
 
 **The op level**, which arrives on an entity event and is mapped by
 `LocalPlayer.handleEntityEvent` onto one of the five sets — except on an
@@ -197,6 +210,22 @@ from the account service: a user flag fetched with your profile. The
 client's chat permissions are never granted by the *game* server; they are
 only ever taken away, and only ever from outside it.
 
+**The server's own constants, read locally.** The client runs *server*
+permission checks against its own set in several places —
+`WorldOptionsScreen` gates the hardcore and gamemode buttons on
+`Permissions.COMMANDS_OWNER` and `Permissions.COMMANDS_GAMEMASTER`,
+`KeyboardHandler` gates three debug keys — and almost all of those are the
+client asking its own copy a question the server will ask again later. One
+is shared outright. `GameModeCommand.PERMISSION_CHECK`, a
+`PermissionCheck.Require` for gamemaster exported from the command class, is
+read by its own command registration, twice by `KeyboardHandler`, once by
+`GameModeSwitcherScreen` against `LocalPlayer`'s own set — which is why
+F3+F4 refuses to open the switcher at all, with *debug.gamemodes.error*,
+rather than opening a greyed-out one — and once more by
+`ServerGamePacketListenerImpl` when the packet arrives. One constant, five
+references in four classes, two sides of the network: the one object both
+universes read, and the place they overlap.
+
 ## Asking a question the client cannot answer
 
 Put those two client sources together and you get the one thing the client
@@ -205,10 +234,11 @@ Put those two client sources together and you get the one thing the client
 dialog button and a chat click event both route through
 `ClientPacketListener.sendUnattendedCommand`, whose two callers are
 `Screen.clickCommandAction` and an adapter `ClientPacketListener` builds for
-itself. A **sign does not**: `SignBlockEntity`
-runs its click command on the server, through a `CommandSourceStack` it
-builds itself at a hard-coded `LevelBasedPermissionSet.GAMEMASTER`, and the
-client is never consulted.
+itself. A **sign does not**. A sign's click command is stored in the block entity
+and never travels to the client as a command at all: `SignBlockEntity` runs
+it on the server, through a `CommandSourceStack` it builds itself at a
+hard-coded `LevelBasedPermissionSet.GAMEMASTER`. There is nothing for the
+client to vet, because the client was never told what the text does.
 
 ```mermaid
 flowchart TB
@@ -232,21 +262,16 @@ client can ever know, because it was never told which permission or whose.
 Three of the four outcomes pop a confirmation screen; the fourth,
 `ClientPacketListener.CommandCheckResult` *NO_ISSUES*, sends with no screen at all. So an unattended command that is
 merely *unusual* is always shown to you first — but a clean one goes
-straight out, and a waxed sign's command never came this way to begin
-with.
+straight out, and a sign's command never came this way to begin with.
 
-The client runs *server* permission checks against its own set in several
-places — `WorldOptionsScreen` gates the hardcore and gamemode buttons on
-`Permissions.COMMANDS_OWNER` and `Permissions.COMMANDS_GAMEMASTER`,
-`KeyboardHandler` gates three debug keys — but only one of those checks is a
-constant the server itself uses. `GameModeCommand.PERMISSION_CHECK`, a
-`PermissionCheck.Require` for gamemaster exported from the command class, is
-read twice by `KeyboardHandler` and once by `GameModeSwitcherScreen` against
-`LocalPlayer`'s own set — which is why F3+F4 refuses to open the switcher at
-all, with *debug.gamemodes.error*, rather than opening a greyed-out one —
-and read again by `ServerGamePacketListenerImpl` when the packet arrives.
-One constant, five references in four classes, two sides of the network: the
-exception that shows what the rule costs.
+Which answers the operator at the top of this page. Their `/msg` goes
+through, and it goes through because nothing on the server's side of the
+wire ever asks for `Permissions.CHAT_SEND_COMMANDS`: the `/msg` node's
+requirement is a rung, the atom lives only in this client's `ChatAbilities`,
+and the one participant that consults it is the machine the player is
+sitting at. The server's *no* is real and it is never asked. That is what
+two permission universes overlapping in one place buys — and the one place
+they overlap is the paragraph above.
 
 > **For a 1.21-era reader.** *ServerPlayer.hasPermissions(int)* and
 > *CommandSourceStack.hasPermission(int)* are gone. The nearest thing is

@@ -12,9 +12,11 @@ single case the manager was written to swallow, because the `/function`
 command is expected to report it instead — and `#minecraft:tick` is not the
 `/function` command.
 
-That is the sharp end of a two-step model that is otherwise very tidy: a
+That is the sharp end of a model that is otherwise very tidy: a
 `.mcfunction` file becomes a runnable thing in two steps, and for the
-overwhelming majority of functions the second step does nothing at all.
+overwhelming majority of functions the second step does nothing at all. A
+third stage below is the hand-off — what the engine does with the result —
+and it belongs to another page.
 
 ## The pipeline
 
@@ -27,13 +29,15 @@ flowchart TB
     P --> I["2 · INSTANTIATE, per call — plain returns itself, a macro substitutes and RE-PARSES, cached eight deep"]
     T --> I
     I --> R["an InstantiatedFunction: an id and an ordered list of unbound actions"]
-    R --> Q["3 · QUEUE — CallFunction opens a frame, ContinuationTask schedules the lines"]
+    R --> Q["THEN: QUEUED — CallFunction opens a frame, ContinuationTask schedules the lines"]
     Q --> E["the execution engine — the lines run to completion inside this tick"]
 ```
 
 The two halves of that live in `net/minecraft/commands/functions` (the model)
 and `net/minecraft/server` (the two managers), and both are entirely
 server-side.
+
+## The cast
 
 | class | what it decides |
 |---|---|
@@ -74,9 +78,9 @@ because the library object is built on a background thread and read from
 several. An argument type that dereferenced the world during parsing would
 break a reload — which is exactly why `FunctionArgument` reads an id and
 defers the lookup. In 26.2 no argument type actually tests the constraint:
-the four that parse against a source consult only its permissions, and those
-come from the *function-permission-level* server property, gamemaster by
-default.
+the four argument types whose parse reads the source at all consult only
+its permissions, and those come from the *function-permission-level* server
+property, gamemaster by default.
 
 ## 2 · Instantiate, per call
 
@@ -107,7 +111,7 @@ cases precisely because SNBT would suffix them.
 the narrowest in the area: inside `$(…)`, letters, digits and underscore and
 nothing else, checked by `StringTemplate.isValidVariableName` at compile time.
 That rule is borrowed — a dialog's input keys obey it too, which is what lets
-a dialog substitute its inputs into a command ([dialogs](dialogs.md#four-ways-a-dialog-opens-and-one-of-them-is-not-a-click)).
+a dialog substitute its inputs into a command ([dialogs](dialogs.md#what-a-dialog-is-made-of)).
 
 Three smaller rules complete the model. One `$` line anywhere makes the
 whole *file* a macro function, though its non-macro lines keep their
@@ -116,7 +120,7 @@ substitution at all is a **load-time error**, not a plain command. And a
 macro function's instantiated variants all share **one synthetic id**,
 derived from the parameter *names* rather than the values.
 
-## 3 · Queue
+## Then: queued, and gone
 
 **In:** an `InstantiatedFunction` and a source. **Out:** entries on the
 execution queue.
@@ -143,8 +147,18 @@ packs. `#minecraft:load` runs once after a reload or start, and
 never consulted again, so nothing can join or leave the tick loop between
 reloads.
 
-Each function in a tag gets its **own** `ExecutionContext`, so the budget is
-per function rather than shared across the tag.
+That list is where the failure at the top of this page lives. Nothing in
+`ServerFunctionManager.tick` carries an argument compound, so a macro
+function on the tag can never be instantiated; the manager's one empty catch
+swallows the exception; and the snapshot means the function is tried again
+on the next tick and on every tick after it, for as long as the pack is
+loaded. There is no counter and no log line, and the only way to see it is
+to run the same function through `/function`, which reports what the tick
+tag does not.
+
+Each function in a tag gets its **own** `ExecutionContext` — its own copy of
+the cost budget the engine spends, rather than one shared across the tag
+([the execution engine](the-execution-engine.md)).
 
 `/schedule` is the one way out of the current tick, and it books its callback
 into the server-wide `TimerQueue` that only the overworld's clock advances
@@ -159,7 +173,7 @@ the two constructs the engine builds on it, `execute if function` and
 `/return run function` ([the execution
 engine](the-execution-engine.md#the-two-commands-that-are-part-of-the-engine));
 `AdvancementRewards`, whose `CacheableFunction` holds the id and resolves it
-once ([advancements](advancements.md#questions-players-ask)); `RunFunction`,
+once ([advancements](advancements.md#from-a-slot-that-changed-to-a-toast)); `RunFunction`,
 one of the `EnchantmentEntityEffect`s
 ([enchantments](../items/enchantments.md#seven-families-of-moment)); and
 `TestEnvironmentDefinition.Functions` for a game test's environment setup

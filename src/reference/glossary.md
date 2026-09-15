@@ -756,7 +756,7 @@ advancement state that something happened, by sweeping that player's listener
 map for this trigger. Nothing broadcasts. The scoreboard's *trigger* criterion
 and the `/trigger` command are a different thing entirely ([scores, teams and
 stored data](../systems/commands/scoreboard-and-data.md#what-a-criterion-can-be-which-is-nearly-anything)).
-→ [advancements](../systems/commands/advancements.md#the-trace-stone-age)
+→ [advancements](../systems/commands/advancements.md#from-a-slot-that-changed-to-a-toast)
 
 ## U
 
