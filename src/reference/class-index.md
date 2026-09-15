@@ -969,7 +969,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `DiscreteVoxelShape` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `DispenserBlock` | [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md) |
 | `DispenserMenu` | [containers-and-menus](../systems/items/containers-and-menus.md) |
-| `Display` | [non-living-damage](../reference/non-living-damage.md), [the-client-level](../systems/client/the-client-level.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [entity-rendering](../systems/rendering/entity-rendering.md) |
+| `Display` | [non-living-damage](../reference/non-living-damage.md), [the-client-level](../systems/client/the-client-level.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [entity-rendering](../systems/rendering/entity-rendering.md) |
 | `DisplayContext` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `DisplayData` | [the-window](../systems/rendering/the-window.md) |
 | `DisplayInfo` | [advancements](../systems/commands/advancements.md) |
@@ -1985,7 +1985,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ParticleTypes` | [non-living-damage](../reference/non-living-damage.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
 | `PartPose` | [entity-rendering](../systems/rendering/entity-rendering.md) |
 | `PatchedDataComponentMap` | [naming-drift](../reference/naming-drift.md), [data-components](../systems/foundations/data-components.md), [items-and-stacks](../systems/items/items-and-stacks.md) |
-| `Path` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [pathfinding](../systems/entities/pathfinding.md), [points-of-interest](../systems/world/points-of-interest.md) |
+| `Path` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md), [pathfinding](../systems/entities/pathfinding.md), [points-of-interest](../systems/world/points-of-interest.md) |
 | `PathComputationType` | [pathfinding](../systems/entities/pathfinding.md) |
 | `PathFinder` | [glossary](../reference/glossary.md), [pathfinding](../systems/entities/pathfinding.md) |
 | `PathfinderMob` | [hierarchy](../maps/hierarchy.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [synched-entity-data](../systems/entities/synched-entity-data.md) |
@@ -2978,7 +2978,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ValidateNearbyPoi` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [points-of-interest](../systems/world/points-of-interest.md) |
 | `ValidationContext` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `ValidationContextSource` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
-| `ValueInput` | [block-entities](../systems/blocks/block-entities.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
+| `ValueInput` | [block-entities](../systems/blocks/block-entities.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `ValueInputContextHelper` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `ValueOutput` | [naming-drift](../reference/naming-drift.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `VanillaEnchantmentProviders` | [enchanting](../systems/items/enchanting.md) |
