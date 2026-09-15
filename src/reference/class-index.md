@@ -1069,7 +1069,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `EntityEvent` | [synched-entity-data](../systems/entities/synched-entity-data.md), [using-an-item](../systems/items/using-an-item.md) |
 | `EntityFlagsPredicate` | [advancements](../systems/commands/advancements.md) |
 | `EntityFluidInteraction` | [naming-drift](../reference/naming-drift.md), [movement-and-collision](../systems/entities/movement-and-collision.md) |
-| `EntityGetter` | [movement-and-collision](../systems/entities/movement-and-collision.md) |
+| `EntityGetter` | [entity-lifecycle](../systems/entities/entity-lifecycle.md), [movement-and-collision](../systems/entities/movement-and-collision.md) |
 | `EntityHitResult` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `EntityInLevelCallback` | [entity-anatomy](../systems/entities/entity-anatomy.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
 | `EntityLookup` | [entity-selectors](../systems/commands/entity-selectors.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
