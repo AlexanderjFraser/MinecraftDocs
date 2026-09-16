@@ -49,11 +49,13 @@ therefore per **level**, not per chunk.
 
 ```mermaid
 flowchart LR
-    BIO["BIOMES"] -- "the NoiseChunk, with its caches and its Aquifer" --> NOI["NOISE"]
-    NOI -- "solid rock, two worldgen heightmaps" --> SUR["SURFACE"]
-    SUR -- "a skin, and a preliminary surface level" --> CAR["CARVERS"]
-    CAR -- "holes, and a CarvingMask" --> FEA["FEATURES"]
+    BIO["BIOMES"] -- "NoiseChunk built" --> NOI["NOISE"]
+    NOI -- "rock, interpolation disarmed" --> SUR["SURFACE"]
+    SUR -- "a skin" --> CAR["CARVERS"]
+    CAR -- "holes, a CarvingMask" --> FEA["FEATURES, a later page"]
 ```
+
+*One workspace rides the whole chain: the `NoiseChunk` built at the first status is the one the next three use, and the last box belongs to a later page.*
 
 The odd arrow is the first one. **The workspace is born one status before
 the terrain needs it**, because the biome sampler wants the chunk's caches
@@ -119,13 +121,13 @@ only. Everything inside a cell is three linear interpolations away from the
 eight corners around it, and the walk that does this is six loops deep:
 
 ```mermaid
-flowchart TB
-    subgraph CX["for each of the 4 cell columns in X: advanceCellX fills the next corner slice, swapSlices drops the old one"]
-    subgraph CZ["for each of the 4 cell rows in Z"]
-    subgraph CY["for each of the 48 cells in Y, downward: selectCellYZ loads its eight corner values"]
-    subgraph BY["for each of the 8 block layers in the cell, downward: updateForY"]
-    subgraph BX["for each of the 4 blocks across in X: updateForX"]
-    BZ["for each of the 4 blocks across in Z: updateForZ, then getInterpolatedState — one block decided"]
+flowchart TD
+    subgraph CX["4 cell columns · samples"]
+    subgraph CZ["4 cell rows"]
+    subgraph CY["48 cells, down · samples"]
+    subgraph BY["8 block layers, down"]
+    subgraph BX["4 blocks in X"]
+    BZ["4 blocks in Z, one block decided at each"]
     end
     end
     end
@@ -133,10 +135,21 @@ flowchart TB
     end
 ```
 
-Read the nesting as the cost model. The two outer levels are where the
-sampling happens — a slice of corner values is filled per cell column and
-dropped one column later — and everything below `NoiseChunk.selectCellYZ`
-is arithmetic on eight numbers. The counts go up by one in each direction when
+*Six loops, and the graph is sampled at two of them — once per cell column and once per cell; everything nested inside a cell is interpolation.*
+
+| loop | runs | what it calls on `NoiseChunk` | samples the graph |
+|---|---:|---|---|
+| cell column, in X | 4 | `NoiseChunk.advanceCellX` first, `NoiseChunk.swapSlices` last | yes — the next slice of corners |
+| cell row, in Z | 4 | nothing | no |
+| cell, Y downward | 48 | `NoiseChunk.selectCellYZ` | yes — every *cache_all_in_cell* term, for the whole cell |
+| block layer, Y downward | 8 | `NoiseChunk.updateForY` | no |
+| block, in X | 4 | `NoiseChunk.updateForX` | no |
+| block, in Z | 4 | `NoiseChunk.updateForZ`, then `NoiseChunk.getInterpolatedState` | only the fillers' own noise |
+
+Read the nesting as the cost model. A slice of corner values is filled per
+cell column and dropped one column later, and `NoiseChunk.selectCellYZ` loads
+a cell's eight corners and fills its per-cell caches; below it, every
+*interpolated* term is arithmetic on eight numbers. The counts go up by one in each direction when
 you move from cells to their corners: four by four by forty-eight cells have
 five by five by forty-nine corners between them, so one *interpolated* term is
 sampled

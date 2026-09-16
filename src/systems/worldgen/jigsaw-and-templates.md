@@ -47,31 +47,45 @@ different assembler and reach this page only for the templates
 sequenceDiagram
     participant ChunkG as ChunkGenerator
     participant JS as JigsawStructure
+    participant JP as JigsawPlacement
     participant JPP as JigsawPlacement.<br/>Placer
-    participant STP as Structure<br/>TemplatePool
     participant PESP as PoolElement<br/>StructurePiece
     participant STemp as StructureTemplate
 
-    ChunkG->>JS: Structure.generate — the lottery already chose this chunk
-    JS->>JPP: findGenerationPoint, which is JigsawPlacement.addPieces
-    JPP->>JPP: sample the start height, pick a town centre from the start pool
-    JPP->>JPP: drop it so its ground level sits on getFirstFreeHeight
-    JPP-->>JS: a GenerationStub — the children are still a deferred consumer
-    JS->>JPP: getPiecesBuilder runs it — build a free-space shape around the centre
-    loop until the priority queue drains, depth within the limit
-        JPP->>JPP: jigsaw blocks shuffled, then sorted by selection priority
-        JPP->>STP: the target pool's shuffled templates, then the fallback's
-        Note over JPP: at the depth limit the target pool is skipped entirely
-        JPP->>JPP: canAttach — opposed faces, matching names, rotation if aligned
-        JPP->>JPP: collide the candidate box against the free shape
-        JPP->>PESP: accept — subtract the box, record a junction on BOTH sides
+    Note over ChunkG,STemp: ChunkStatus.STRUCTURE_STARTS, on a worldgen worker
+    ChunkG->>JS: Structure.generate, the lottery already won
+    JS->>JP: addPieces, from findGenerationPoint
+    JP-->>JS: a town centre on the ground, and a stub
+    JS->>JP: the stub's consumer, run at once: the free-space shape
+    JP->>JPP: tryPlacingChildren, on the centre first
+    loop until the priority queue drains
+        JPP->>JPP: a piece's jigsaw blocks, shuffled, then by selection priority
+        alt below the limit
+            JPP->>JPP: the target pool's elements, then the fallback's
+        else at the limit
+            JPP->>JPP: the fallback's elements only
+        end
+        JPP->>ChunkG: getFirstFreeHeight, unless both pieces are rigid
+        JPP->>JPP: the attach test, then collide with the free shape
+        JPP->>PESP: addJunction, on the parent and on the child
+        JPP->>JPP: subtract the box, queue the child by placement priority
     end
-    JPP-->>JS: the pieces builder, filled
-    JS-->>ChunkG: StructurePiecesBuilder.build — a PiecesContainer inside a StructureStart
-    Note over ChunkG: later, at FEATURES, once per chunk the village touches
-    PESP->>STemp: placeInWorld, clipped to this chunk's writable area
-    Note over STemp: processors in order, jigsaw blocks replaced, a fresh loot seed stamped
+    JS-->>ChunkG: a StructureStart holding every piece
+    rect rgba(0, 0, 0, 0.04)
+    Note over ChunkG,STemp: ChunkStatus.FEATURES, once per chunk the village touches
+    ChunkG->>PESP: postProcess, through StructureStart.placeInChunk
+    PESP->>STemp: placeInWorld, through its pool element, clipped to this chunk
+    end
 ```
+
+*A village is a queue drained in memory at the second status and written chunk by chunk at the last; at the depth limit a piece is still queued, and only the fallback pool is offered to it.*
+
+The alternative box is the page's opening in one frame: nothing in the loop counts
+houses or measures a street, and the only thing the depth limit changes is
+which pool a jigsaw block is offered. `JigsawPlacement.addPieces` does the
+centre and the stub, `Structure.GenerationStub.getPiecesBuilder` runs the
+stub on the next line, and `JigsawPlacement.Placer` does everything inside the
+loop; the sections below take the loop's steps in order.
 
 ## The pools
 

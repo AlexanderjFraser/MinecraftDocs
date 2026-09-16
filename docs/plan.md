@@ -1032,3 +1032,38 @@ that the owner has not understood; recording is after pass 10.
   count fell by fourteen with no page changed. Seven queue entries struck with
   the page open, two of them ruled out, six opened. All six gates green (the
   figure-name gate still report-only). Deployed.
+
+- **2026-09-16, pass 7 session L (Opus) — Part XII · World generation.**
+  Run before session K, which had not yet run; the two parts share no page.
+  Eleven viewer agents, one per page. Fifteen figures stayed fifteen, but
+  `density-functions`' three near-identical panels — 1,729px of the same five
+  boxes, every panel title under its own first node — are now a four-node
+  flowchart of the forms and a node-by-form table, which is F10's *a
+  comparison is a table* applied to the part's substrate page. Every figure
+  captioned and pointed at; **nothing below 0.756 or under 12.1px** (from 0.61
+  and 9.7px), no lane over six (from eight and seven), no label over another
+  or over a node (from eight figures), and the gate's **4 unresolved names and
+  35 notes are 0 and 7** (the seven are bare-verb self-messages, F12(d)).
+  **The caller's-method-at-the-callee fault is ten parts of ten**:
+  `Climate.ParameterList.findValueIndex` drawn arriving at `Climate.RTree`,
+  `ChunkGenerator.featuresPerStep` at `FeatureSorter`, and
+  `JigsawStructure.findGenerationPoint` at `JigsawPlacement.Placer`. **The
+  part's own fault is a figure disagreeing with the page's own hook**, twice:
+  the jigsaw trace's loop read *depth within the limit* on the page whose
+  opening is that a piece at the limit is still queued and offered only the
+  fallback — now an `alt` — and the terrain page said *the two outer levels*
+  sample the graph when the samples are at the first and third of six, which
+  a new six-row table with a *samples the graph* column now says. Fourteen
+  corrections, all in [pass9.md](pass9.md); the sharpest is the stronghold
+  figure, which had `StructurePiecesBuilder` building its own
+  `StructureStart`, the pending list on the builder rather than the start
+  piece, and the drain loop on the wrong lane — the page's one regenerate-until-
+  it-likes-it loop, drawn with three of its moving parts in the wrong hands.
+  Two render lessons worth carrying: `autonumber`'s digits are the smallest
+  type in any sequence diagram that has them (9.7px here, the figure's only
+  sub-11px text) and a figure whose prose cites no number loses nothing
+  without them; and a flowchart edge drawn behind a sibling box is cured by
+  `--->`, which pushes the target a rank down. One key row added (`JP`).
+  Eight queue entries struck with the page open (one ruled), eight sections
+  that wanted a figure or a table logged for pass 10, two voice entries for pass 8. All
+  six gates green (the figure-name gate still report-only). Deployed.

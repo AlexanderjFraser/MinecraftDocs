@@ -59,33 +59,26 @@ classes.
 ## Three forms of one graph
 
 ```mermaid
-flowchart TB
-    subgraph AA["as parsed — shared by every world, unseeded and cacheless"]
-        direction TB
-        A1["Ap2, add"] --> A2["YClampedGradient"]
-        A1 --> A3["HolderHolder — a pointer at another registry entry"]
-        A3 --> A4["Marker, flat cache — delegates, caches nothing"]
-        A4 --> A5["NoiseHolder — noise is null, answers 0.0"]
-    end
-    subgraph BB["as seeded — RandomState.router, one per dimension"]
-        direction TB
-        B1["Ap2, add"] --> B2["YClampedGradient"]
-        B1 --> B3["HolderHolder — still a pointer"]
-        B3 --> B4["Marker — still delegating"]
-        B4 --> B5["NoiseHolder — a real NormalNoise"]
-    end
-    subgraph CC["as wrapped — one per chunk, and the only form that runs"]
-        direction TB
-        C1["Ap2, add"] --> C2["YClampedGradient"]
-        C1 --> C3["the pointed-at graph itself"]
-        C3 --> C4["NoiseChunk.FlatCache — a real array, filled"]
-        C4 --> C5["NoiseHolder — the same NormalNoise"]
-    end
-    AA -- "RandomState.create — one visitor over the whole router" --> BB
-    BB -- "NoiseChunk.forChunk — a second visitor" --> CC
+flowchart LR
+    P["as parsed: unseeded, no caches"] -->|"RandomState.create"| S["as seeded: RandomState.router"]
+    S -->|"pointers and markers stripped"| C["RandomState.sampler, climate only"]
+    S -->|"NoiseChunk.forChunk"| W["as wrapped: one per chunk"]
 ```
 
-Both arrows are `DensityFunction.mapAll`, which is the only interesting
+*One graph, three forms and a side copy: each arrow is a visitor rebuilding the whole graph, and only the wrapped form ever fills a chunk.*
+
+What changes between the forms is four kinds of node, and the rest of the
+graph — an *add*, a gradient, a spline — comes through every rewrite as it was.
+
+| the node | as parsed | as seeded | as wrapped |
+|---|---|---|---|
+| a pointer at another entry, `DensityFunctions.HolderHolder` | a pointer | still a pointer | the graph it pointed at |
+| a cache request, `DensityFunctions.Marker` | delegates, caches nothing | still delegates | the real cache, such as `NoiseChunk.FlatCache` |
+| a noise leaf, `DensityFunction.NoiseHolder` | no noise, answers 0.0 | a real `NormalNoise` | the same `NormalNoise` |
+| the blend and beardifier leaves | constants and a marker | unchanged | this chunk's blender and `Beardifier` |
+| who samples it | nothing | the F3 readout, one point at a time | the cell loop |
+
+All three arrows are `DensityFunction.mapAll`, which is the only interesting
 operation in this system: it applies a `DensityFunction.Visitor` bottom-up
 over a whole graph, rebuilding each node's children through
 `DensityFunction.mapChildren`. A visitor has two channels —

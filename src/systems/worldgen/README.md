@@ -42,40 +42,39 @@ statuses ([the chunk generation
 pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)); this part
 is the cargo of seven of them.
 
-Read the solid arrows below as the order the game runs, and the numbers as the
-order to watch. The disagreement between them is the argument for the order.
+Read the solid arrows below as the order the game runs, the dashed ones as
+what their labels say, and the numbers as the order to watch. The
+disagreement between them is the argument for the order.
 
 ```mermaid
-flowchart TB
-    CW["10 · Creating a world — where the seed and the packs were chosen, before any of this"]
-    CW -.-> DF
-    DF["1 · Density functions — the substrate, and the only page that is not a chunk step"]
-    DF --> SS
-    subgraph SS["STRUCTURE_STARTS, STRUCTURE_REFERENCES — first in the game, last in the lectures"]
-        direction LR
-        S6["7 · Structure placement"] --> S7["8 · Jigsaw and templates"]
-        S6 --> S8["9 · Hand-built structures"]
+flowchart TD
+    CW["10 · Creating a world"] -.->|"chose the seed and packs"| DF["1 · Density functions"]
+    DF -.->|"is made of"| SS
+    subgraph SS["the structure statuses"]
+        S7["7 · Structure placement"] --> S8["8 · Jigsaw and templates"]
+        S7 --> S9["9 · Hand-built structures"]
     end
-    SS --> BI
-    subgraph BI["BIOMES"]
-        L2["2 · Biomes"]
-    end
-    BI --> NO
+    SS --> L2["2 · Biomes, at BIOMES"]
+    L2 --> NO
     subgraph NO["NOISE, SURFACE, CARVERS"]
-        L3["3 · Terrain"] --- L3b["4 · Blending — the one place generation reads an older version's work"]
+        L3["3 · Terrain"]
+        L4["4 · Blending"]
     end
     NO --> FE
     subgraph FE["FEATURES"]
-        direction LR
-        L4["5 · Features and placement"] --> L5["6 · Trees"]
+        L5["5 · Features and placement"] --> L6["6 · Trees"]
     end
+    SS -.->|"pieces become blocks"| FE
 ```
+
+*The part laid against the chunk-status ladder and numbered in the order to watch: the structure arc, at `ChunkStatus.STRUCTURE_STARTS` and `ChunkStatus.STRUCTURE_REFERENCES`, is first in the game and last in the lectures.*
 
 A structure is *decided* at `ChunkStatus.STRUCTURE_STARTS`, two statuses before
 the biomes it will stand in exist, and writes no block until
 `ChunkStatus.FEATURES`, three statuses after the noise fill: told in run order
-it is two lectures with six between them, and told last it is one arc. The
-dashed arrow is the same trade at the other end. Both cost one thing, a forward
+it is two lectures with six between them, and told last it is one arc — the
+dashed arrow from the structure box to `ChunkStatus.FEATURES` is that gap. The
+arrow out of lecture ten is the same trade at the other end. Both cost one thing, a forward
 topic — three of the six pages before the structure arc reach for the beardifier
 before the page that owns it
 ([structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)).

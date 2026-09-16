@@ -45,13 +45,17 @@ it comes from, where it goes, and the three different programs that build one.
 ## Five stages, and only one of them is the screen
 
 ```mermaid
-flowchart TB
-    A["1 · load — WorldLoader.load opens the packs, fills the WORLDGEN registries, then the LEVEL_STEM registry"]
-    A --> B["2 · decide — the WorldDataSupplier callback builds a WorldGenSettings from the registries just loaded"]
-    B --> C["3 · finish the load — ReloadableServerResources reads recipes, loot and functions against the dimensions stage 2 chose"]
-    C --> D["4 · edit — WorldCreationUiState mutates the object, and a change to the enabled packs or the feature set restarts at stage 1"]
-    D --> E["5 · commit — bake the dimensions, write level.dat, spin MinecraftServer"]
+flowchart TD
+    subgraph WL["a worker thread"]
+        A["1 · load the packs and the registries"] --> B["2 · the caller's callback decides the settings"]
+        B --> C["3 · recipes, loot and functions read against them"]
+    end
+    C --> D["4 · the screen edits the settings"]
+    D -->|"packs or flags changed"| A
+    D -->|"Create"| E["5 · bake, write level.dat, start the server"]
 ```
+
+*Stages one to three are one `WorldLoader.load` call off the render thread, and the screen is stage four — the only stage that can send the whole load back to the start.*
 
 The ordering that matters is stage 2 before stage 3, and it is the reason
 this page exists at all. `WorldLoader.load` takes the settings-building
@@ -215,29 +219,33 @@ runs on the line after the create callback returns.
 
 ```mermaid
 sequenceDiagram
-    autonumber
     participant CWS as CreateWorldScreen
     participant WCUS as WorldCreationUiState
     participant WOF as WorldOpenFlows
     participant MC as Minecraft
-    participant MS as MinecraftServer
+    participant IS as IntegratedServer
     participant Disk as Disk
+    rect rgba(0, 0, 0, 0.04)
     Note over CWS,Disk: render thread
     CWS->>WCUS: read the context one last time
     WCUS-->>CWS: WorldOptions and the selected WorldDimensions
-    CWS->>CWS: WorldDimensions.bake into a frozen LEVEL_STEM registry, then allRegistriesLifecycle plus the feature flags'
-    CWS->>WOF: confirmWorldCreation with that lifecycle
-    WOF-->>CWS: proceed, or an experimental or deprecated warning first
-    CWS->>Disk: create the world directory, copy the temp datapacks in
-    CWS->>WOF: createLevelFromExistingSettings with the WorldStem parts
+    CWS->>CWS: bake the dimensions, and read the lifecycle off them
+    CWS->>WOF: confirmWorldCreation, with that lifecycle
+    WOF-->>CWS: proceed, or a warning screen first
+    CWS->>Disk: the world directory, with the temp datapacks copied in
+    CWS->>WOF: createLevelFromExistingSettings
     WOF->>MC: doWorldLoad
-    MC->>Disk: saveDataTag writes level.dat through a temp file
-    Note over MC,MS: MinecraftServer.spin builds the server on the render thread, then starts the Server thread
-    MC->>MS: new IntegratedServer with the WorldStem and the screen's GameRules
-    MS->>MS: savedDataStorage.set marks WorldGenSettings dirty
-    Note over MS,Disk: server thread, first save
-    MS->>Disk: data/minecraft/world_gen_settings.dat and data/minecraft/game_rules.dat
+    MC->>Disk: level.dat, through a temp file
+    MC->>IS: new, with the WorldStem and the screen's GameRules
+    IS->>IS: the constructor hands WorldGenSettings to its SavedDataStorage
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over IS,Disk: server thread, first save
+    IS->>Disk: world_gen_settings.dat and game_rules.dat
+    end
 ```
+
+*The client writes `level.dat` before the server exists; the settings reach disk later, from the server's own first save, in two files of their own under data/minecraft.*
 
 Three details in that order are worth stopping on. `CreateWorldScreen.onCreate`
 bakes the dimensions to decide the *lifecycle* and the

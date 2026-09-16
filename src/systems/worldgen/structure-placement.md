@@ -36,13 +36,15 @@ for the other fifteen types.
 ## Five decisions, on five different clocks
 
 ```mermaid
-flowchart TB
-    W["world start, main thread: filter the structure sets to biomes this dimension can host, fire the stronghold ring searches"]
-    W --> S1["STRUCTURE_STARTS — the lottery, then the layout. No blocks, no neighbours read"]
-    S1 --> S2["STRUCTURE_REFERENCES — each chunk scans the 17x17 around itself for starts overlapping it"]
-    S2 --> N["BIOMES and NOISE — the Beardifier is built with the NoiseChunk, and bends the density field"]
-    N --> F["FEATURES — StructureStart.placeInChunk writes blocks, before that step's features"]
+flowchart TD
+    W["world start: filter the sets, place the rings"]
+    W -->|"after EMPTY"| S1["STRUCTURE_STARTS: the lottery, then the layout"]
+    S1 -->|"next status"| S2["STRUCTURE_REFERENCES: scan the 17x17 around"]
+    S2 -->|"next status"| N["BIOMES: the Beardifier is built, to bend the field"]
+    N -->|"NOISE, SURFACE, CARVERS"| F["FEATURES: the pieces write their blocks"]
 ```
+
+*Five decisions on the chunk-status ladder, with the statuses between them on the arrows: a structure is decided at the second status and writes nothing until the three terrain statuses are past.*
 
 The odd thing about that ladder is where it starts. `ChunkStatus.STRUCTURE_STARTS`
 is the **second** status a chunk passes through, two before

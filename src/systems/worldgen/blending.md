@@ -85,20 +85,17 @@ machinery at four chunk statuses — two inside the density graph, three nowhere
 near it.
 
 ```mermaid
-flowchart TB
-    OLD["An old chunk: its blocks on disk, plus a blending_data tag"]
-    BD["BlendingData: a ring of 16 columns round the chunk edge, each a height, a density profile and a biome column"]
-    B["Blender: 193 chunk positions consulted for height and biome, the inner 9 of them also for density"]
-    OLD --> BD
-    BD --> B
-    B --> R1["BIOMES: getBiomeResolver returns the nearest old biome, or defers"]
-    B --> R2["BIOMES and NOISE: blend_alpha and blend_offset, two flat caches filled in the NoiseChunk constructor"]
-    B --> R3["NOISE: blend_density, a marker wrapped round the final slide"]
-    BD --> R4["CARVERS: an extra carving mask, so carvers skip old ground"]
-    BD --> R5["FEATURES: border ticks on leaves and fluids, on the old chunk only"]
-    R4 -.- SN["static on Blender, straight off each chunk's BlendingData — the two maps are not consulted"]
-    R5 -.- SN
+flowchart TD
+    OLD["an old chunk, tagged blending_data"] --> BD["BlendingData: sixteen measured columns"]
+    BD --> B["Blender: two maps of that data"]
+    B --> R1["BIOMES: the nearest old biome, or none"]
+    B --> R2["BIOMES and NOISE: blend_alpha, blend_offset"]
+    B --> R3["NOISE: blend_density round the final density"]
+    BD --->|"read directly"| R4["CARVERS: an extra carving mask"]
+    BD --->|"read directly"| R5["FEATURES: border ticks, old chunk only"]
 ```
+
+*One measurement fans out five ways: three consumers go through the `Blender` and its two maps, and two read each chunk's `BlendingData` with no blender at all.*
 
 Two maps, not one. `Blender.of` sweeps the square from seven chunks west to
 seven chunks east and clips it to a circle — the test is that the squared
@@ -192,22 +189,29 @@ sequenceDiagram
     participant NBC as NoiseBased<br/>ChunkGenerator
     participant NC as NoiseChunk
 
-    Note over CST: ChunkStatus.BIOMES, on the worldgen executor
-    CST->>Blender: of — build a blender for this chunk
-    Blender->>CM: isOldChunkAround, radius 7 chunks
-    CM-->>Blender: yes, from a bitset scanned out of the region files
+    rect rgba(0, 0, 0, 0.04)
+    Note over CST,NC: ChunkStatus.BIOMES, on the worldgen executor
+    CST->>Blender: of, a blender for this chunk
+    Blender->>CM: isOldChunkAround, radius 7, through the region
+    CM-->>Blender: yes, from the region files' bitsets
     loop 193 positions, clipped to a circle
         Blender->>BD: getOrUpdateBlendingData
-        BD->>BD: measure the sides facing new chunks, once per chunk object
+        BD->>BD: measure the sides facing new chunks, once
     end
     Blender-->>CST: a live blender, two maps of BlendingData
-    CST->>NBC: createBiomes with the blender
-    NBC->>NC: forChunk — 25 columns of alpha and offset, filled in the constructor
-    NBC->>NBC: wrap the biome resolver, then wrap that in BelowZeroRetrogen
-    Note over CST,NC: ChunkStatus.NOISE, the same NoiseChunk, cached on the chunk
-    NC->>Blender: blendDensity, once per sampled point inside the marker
+    CST->>NBC: createBiomes, with that blender
+    NBC->>NC: forChunk, cached on the chunk from now on
+    NC->>Blender: blendOffsetAndFactor, 25 columns, in the constructor
+    NBC->>Blender: getBiomeResolver, then wrapped once more
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over CST,NC: ChunkStatus.NOISE, a second blender built and never used
+    NC->>Blender: blendDensity, per sampled point inside the marker
     Blender-->>NC: the old density outright, or a lerp toward the noise
+    end
 ```
+
+*The blender that bends a chunk's terrain is the one built at `ChunkStatus.BIOMES`: the `NoiseChunk` is made then and cached, so the one `ChunkStatus.NOISE` builds finds it already there and is thrown away.*
 
 The order matters in one non-obvious way. `NoiseChunk` is created at *BIOMES*,
 not at *NOISE*, because the biome step needs the chunk's climate sampler, and

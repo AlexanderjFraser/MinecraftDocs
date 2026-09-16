@@ -848,6 +848,7 @@ the break in from a render, and is the check after adding a lane.
 | `WGL` | `WorldGenLevel` |
 | `JS` | `JigsawStructure` |
 | `JPP` | `JigsawPlacement.Placer` |
+| `JP` | `JigsawPlacement` |
 | `STP` | `StructureTemplatePool` |
 | `PESP` | `PoolElementStructurePiece` |
 | `STemp` | `StructureTemplate` |

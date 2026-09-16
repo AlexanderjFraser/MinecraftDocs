@@ -29,16 +29,18 @@ is flat-mapped through an ordered list of modifiers until whatever survives it
 gets built. A realistic chain for a tree runs like this.
 
 ```mermaid
-flowchart TB
-    A["1 position: the chunk corner, at minimum Y"] --> B["RarityFilter — 1 or 0"]
-    B --> C["CountPlacement — N copies of the SAME position"]
-    C --> D["InSquarePlacement — each scattered inside the 16x16"]
-    D --> E["SurfaceWaterDepthFilter — some drop out"]
-    E --> F["HeightmapPlacement — Y is finally set, on top of the surface"]
-    F --> G["BlockPredicateFilter — would a sapling survive here"]
-    G --> H["BiomeFilter — does the biome HERE want this exact feature"]
-    H --> I["ConfiguredFeature.place, once per surviving position"]
+flowchart TD
+    A["the chunk corner, at minimum Y"] -->|"1 position"| B["RarityFilter rolls"]
+    B -->|"1 or 0"| C["CountPlacement copies it"]
+    C -->|"N, all alike"| D["InSquarePlacement scatters"]
+    D -->|"N, spread out"| E["SurfaceWaterDepthFilter drops some"]
+    E -->|"N or fewer"| F["HeightmapPlacement sets Y"]
+    F -->|"on the surface"| G["BlockPredicateFilter: would a sapling survive?"]
+    G -->|"fewer"| H["BiomeFilter: does this biome list it?"]
+    H -->|"fewer"| I["ConfiguredFeature.place, once each"]
 ```
+
+*One position becomes many and then fewer: only the count multiplies, Y is not set until the fifth modifier, and the shipped plains trees run this chain without its rarity roll.*
 
 List order *is* the meaning — the same seven modifiers in another order place a
 different forest, or none — and the rest of the page is who assembles that list,
@@ -61,26 +63,33 @@ who seeds it, and what each link in it is allowed to know.
 
 ```mermaid
 sequenceDiagram
-    participant CST as ChunkStatusTasks
     participant ChunkG as ChunkGenerator
-    participant FS as FeatureSorter
     participant WR as WorldgenRandom
     participant PlacedF as PlacedFeature
     participant PMod as PlacementModifier
     participant CF as ConfiguredFeature
 
-    CST->>ChunkG: applyBiomeDecoration — write radius 1, four final heightmaps primed
-    ChunkG->>FS: featuresPerStep — one sorted list per step, and an index per PlacedFeature
-    ChunkG->>WR: setDecorationSeed(level seed, chunk corner)
-    ChunkG->>ChunkG: union the biome palettes of the 3x3 chunks, intersect with possibleBiomes
-    Note over ChunkG: per step: structures first, then features in sorted index order
-    ChunkG->>WR: setFeatureSeed(decoration seed, feature index, step)
-    ChunkG->>PlacedF: placeWithBiomeCheck, from the chunk's minimum corner
-    PlacedF->>PMod: fold — each modifier flat-maps one position into zero or more
-    PMod-->>PlacedF: the surviving positions
-    PlacedF->>CF: place, once per surviving position
-    CF->>CF: Feature.place — ensureCanWrite checked once, for the origin
+    Note over ChunkG,CF: ChunkStatus.FEATURES, on the worldgen executor
+    ChunkG->>ChunkG: applyBiomeDecoration, write radius 1
+    ChunkG->>ChunkG: read featuresPerStep, sorted once and memoised
+    ChunkG->>WR: setDecorationSeed, from the level seed and the corner
+    ChunkG->>ChunkG: the biomes of the 3x3 chunks, cut to the possible ones
+    loop per decoration step, its structures first
+        loop per placed feature those biomes list, in index order
+            ChunkG->>WR: setFeatureSeed, from the index and the step
+            ChunkG->>PlacedF: placeWithBiomeCheck, from the chunk corner
+            loop per modifier, in list order
+                PlacedF->>PMod: getPositions, one position into zero or more
+            end
+            loop per surviving position
+                PlacedF->>CF: place
+                CF->>CF: its Feature writes, if the origin may be written
+            end
+        end
+    end
 ```
+
+*Two reseedings and two nested loops: every feature is reseeded from its own index before it runs, and each surviving position is one call into the feature's algorithm.*
 
 **The driver.** `ChunkGenerator.applyBiomeDecoration` starts at the chunk's
 minimum corner, at the world's minimum Y. There is no eight-block population
@@ -173,8 +182,8 @@ world than anything else in this system gets: the block state at a position,
 a heightmap reading, the chunk's carving mask, and — the field the biome
 filter needs — which placed feature the chain started from.
 
-Fifteen modifier types are registered, and the chain above has used ten of
-them. The shapes account for all fifteen. **Five** extend `PlacementFilter` —
+Fifteen modifier types are registered, and this page has named ten of them —
+the seven in the chain and three more beside it. The shapes account for all fifteen. **Five** extend `PlacementFilter` —
 the four in the chain plus `SurfaceRelativeThresholdFilter`, which keeps a
 position only if a heightmap reading above or below it falls in a range.
 **Three** are `RepeatingPlacement`s and **two** set Y. **Four** simply move a

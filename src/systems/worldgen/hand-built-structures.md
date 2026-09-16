@@ -113,25 +113,32 @@ sequenceDiagram
     participant SStr as StrongholdStructure
     participant SPie as StrongholdPieces
     participant SPB as Structure<br/>PiecesBuilder
-    participant SStart as StructureStart
 
-    ChunkG->>SStr: Structure.generate — findGenerationPoint, then the stub
-    loop until a portal room exists
+    ChunkG->>SStr: Structure.generate
+    loop until the start piece has recorded a portal room
         SStr->>SPB: clear
-        SStr->>SStr: setLargeFeatureSeed(world seed plus the try counter, chunk)
-        SStr->>SPie: resetPieces — the static weight table and the imposed piece
-        SStr->>SPie: a start room, then addChildren on it
-        loop drain the pending list at a random index
-            SPie->>SPie: pick by weight, reject the previous type, five attempts
-            SPie->>SPB: findCollisionPiece — a linear scan of what is placed
-            SPB-->>SPie: free, so construct it — or a hit, so try the next candidate
-            SPie->>SPB: addPiece, and append to the pending list
+        SStr->>SStr: reseed, the world seed plus one per try
+        SStr->>SPie: resetPieces, the static weight table
+        SStr->>SPB: addPiece, a new start piece
+        SStr->>SPie: addChildren, on the start piece
+        loop while the start piece's pending list is not empty
+            SStr->>SPie: addChildren, on a piece removed at random
+            SPie->>SPie: pick by weight, never the previous type
+            SPie->>SPB: findCollisionPiece, a linear scan
+            SPB-->>SPie: nothing overlaps, so construct it
+            SPie->>SPB: addPiece, and onto the pending list too
         end
-        SStr->>SPB: moveBelowSeaLevel — shift every piece at once
+        SStr->>SPB: moveBelowSeaLevel, every piece at once
     end
-    SPB-->>SStart: build — a PiecesContainer, then a StructureStart
-    Note over SStart: at FEATURES: postProcess, once per chunk each piece overlaps
+    SStr->>SPB: build, into a StructureStart
+    SStr-->>ChunkG: the StructureStart, written at FEATURES
 ```
+
+*The whole stronghold is grown in memory by one method on `StrongholdStructure`, and the outer loop is the one that throws it all away: a try ends only when the start piece holds a portal room.*
+
+The structure only ever asks a piece to grow; the piece does the picking, the
+collision test and the adding, and each piece it adds joins the start piece's
+pending list for a later pass.
 
 **It is built at an imaginary height.** The start piece is constructed at a
 fixed Y — sixty-four for strongholds and fortresses, fifty for mineshafts —

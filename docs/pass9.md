@@ -44,6 +44,181 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session L — Part XII · World generation: the figures *(2026-09-16)*
+
+Eleven pages, 15 figures (the count unchanged: `density-functions`' three
+repeated panels became one four-node flowchart and a table beside it). Every
+figure captioned, every caption one italic run; the figure-name gate is **0
+unresolved and 7 notes** for the part (was 4 and 35; the seven are bare
+lower-case self-message heads, F12(d)); nothing is below **0.756** or under
+**12.1px** (was 0.61 and 9.7px); no lane is over six (was eight on `biomes`,
+seven on `features-and-placement`); no label overlaps another or sits on a
+node (was eight figures); and **no name is hyphen-broken on screen** (one
+file name and one ordinary word were).
+
+### Figures redrawn, and the orderings they assert
+
+- **`biomes` figure 1** — eight lanes to six: `ChunkStatusTasks` is a note and
+  `Climate.RTree` is inside `Climate.ParameterList`'s self-message. Asserts:
+  the generator builds the `NoiseChunk` and wraps the resolver *before*
+  `ChunkAccess.fillBiomesFromNoise`; `ChunkAccess` loops over sections and
+  calls `LevelChunkSection.fillBiomesFromNoise` once per section; each of 64
+  quart cells goes `LevelChunkSection` → `MultiNoiseBiomeSource.getNoiseBiome`
+  → `Climate.Sampler.sample` → `Climate.ParameterList.findValue` →
+  `Climate.ParameterList.findValueIndex`, and the holder returns through the
+  biome source into the new container. Caption: *no block is read and none is
+  written*.
+- **`blending` figure 1** — the dotted annotation node cut; the five consumers
+  on one row in status order, the two direct ones on arrows labelled *read
+  directly*. Asserts: carving mask and border ticks read `BlendingData`
+  without a blender; *blend_density* wraps the final density.
+- **`blending` figure 2** — two shaded bands, *BIOMES* and *NOISE*. Asserts:
+  `Blender.of` asks `ChunkMap.isOldChunkAround` through the region; the
+  193-position loop calls `BlendingData.getOrUpdateBlendingData`; the generator
+  calls `NoiseChunk.forChunk`, whose constructor calls
+  `Blender.blendOffsetAndFactor` for 25 columns, *then* asks
+  `Blender.getBiomeResolver`; at *NOISE* a second blender is built and not
+  used, and the cached `NoiseChunk` calls `Blender.blendDensity`.
+- **`creating-a-world` figure 1** — stages 1–3 inside a *worker thread*
+  subgraph; stage 4 loops back to 1 on *packs or flags changed*; *Create* goes
+  to 5.
+- **`creating-a-world` figure 2** — `autonumber` removed (its 9.7px digits were
+  the only small type, and the prose cites no number); the `MinecraftServer`
+  lane is now `IntegratedServer`, the object constructed; two bands. Asserts:
+  `IntegratedServer`'s construction, and with it the hand-off of
+  `WorldGenSettings` to its `SavedDataStorage`, happen on the render thread
+  after `level.dat` is written; the two settings files are written by the
+  server thread's first save.
+- **`density-functions` figure 1** — the three 1,729px panels are a four-node
+  `LR` flowchart (parsed → seeded → wrapped, and seeded → `RandomState.sampler`)
+  plus a node × form table. Asserts: three visitors, not two; the pointer is
+  resolved only in the wrapped form; the null noise leaf answers 0.0; the F3
+  readout samples the seeded form.
+- **`features-and-placement` figure 1** — edge labels carry the count of
+  positions; direction `TD`. Order unchanged (it is `trees_plains`' shipped
+  order, with a rarity roll added at the head, which the caption now says).
+- **`features-and-placement` figure 2** — seven lanes to five
+  (`ChunkStatusTasks` a note, `FeatureSorter` in a self-message), with nested
+  loops per step, per placed feature, per modifier and per surviving position.
+  Asserts: `ChunkGenerator.featuresPerStep` is read, not recomputed;
+  `WorldgenRandom.setFeatureSeed` runs before every feature; structures come
+  first in each step.
+- **`hand-built-structures` figure 1** — `StructureStart` lane cut, the drain
+  loop driven from `StrongholdStructure`. Asserts, in order per try: `clear`,
+  reseed, `StrongholdPieces.resetPieces`, `addPiece` of a new start piece,
+  `addChildren` on the start piece, then *while the pending list is not empty*
+  `addChildren` on a randomly removed piece, whose own code picks, runs
+  `findCollisionPiece`, and adds to the builder *and* the pending list; then
+  `moveBelowSeaLevel`; the outer loop ends only when the start piece has
+  recorded a portal room; `build` is called by the structure after the loop.
+- **`jigsaw-and-templates` figure 1** — a `JigsawPlacement` lane added (key row
+  `JP`), `StructureTemplatePool` lane cut, an `alt` for the depth limit, a
+  *FEATURES* band. Asserts: `JigsawPlacement.addPieces` makes the centre and
+  the stub; the stub's consumer builds the free-space shape and runs the
+  placer; inside the loop, below the limit the target pool then the fallback
+  is offered, at the limit the fallback only; `getFirstFreeHeight` is asked
+  unless both pieces are rigid; a junction is added to both pieces; the child
+  is queued by placement priority. At *FEATURES*, `postProcess` reaches the
+  piece through `StructureStart.placeInChunk` and `placeInWorld` is called
+  through the pool element.
+- **`structure-placement` figure 1** — the statuses between the five decisions
+  written on the edges, `BIOMES` and `NOISE` no longer one box.
+- **`terrain` figure 1** — edge labels shortened; asserts the `NoiseChunk` is
+  built at *BIOMES* and interpolation is disarmed after *NOISE*; the fifth box
+  is labelled as a later page's.
+- **`terrain` figure 2** — subgraph titles cut to what fits on one line (the
+  old ones were clipped and overlapped), the method names moved to a six-row
+  table beside it with a *samples the graph* column.
+- **`trees` figure 1** — a shaded band for *nothing written yet*, holding all
+  three ways out; the scan drawn as a loop of `TrunkPlacer.isFree` calls; lanes
+  reordered by first use. Asserts: `RootPlacer.placeRoots` simulates in full
+  before writing, and its roots are the first write; `TreeFeature.updateLeaves`
+  is the feature's own last step.
+- **`worldgen/README` figure 1** — `TD`, short subgraph titles, the undirected
+  link removed, the *is made of* arrow dashed and labelled, and a dashed
+  *pieces become blocks* arrow from the structure box to *FEATURES*.
+
+### Corrections — re-derived against the decompile before the fix
+
+- `biomes` figure 1: `CPList->>CRT: findValueIndex` drew
+  `Climate.ParameterList`'s own method arriving at the tree, and the holder
+  returned from the tree straight to `LevelChunkSection`.
+  `Climate.ParameterList.findValue` calls its own `findValueIndex`, which calls
+  `index.search` (Climate.java:251–280); `MultiNoiseBiomeSource.getNoiseBiome`
+  returns the holder (MultiNoiseBiomeSource.java:65–72). The caller's method
+  at the callee, **Part XII, the tenth part of ten**.
+- `features-and-placement` figure 2: `ChunkG->>FS: featuresPerStep` drew
+  `ChunkGenerator`'s memoised field (ChunkGenerator.java:88, :100) as a call
+  into `FeatureSorter` on every chunk; it is read at :329.
+- `features-and-placement`: *the chain above has used ten of them* — the chain
+  has seven; ten is the page's count of modifiers named. Reworded.
+- `jigsaw-and-templates` figure 1: `JS->>JPP: findGenerationPoint` —
+  `JigsawStructure.findGenerationPoint` samples the start height and calls the
+  static `JigsawPlacement.addPieces` (JigsawStructure.java:118–124), not the
+  placer, which is built later inside the stub's consumer
+  (JigsawPlacement.java:104–112, :149–158); the free-space shape is built there
+  too, not after the stub by the placer.
+- `jigsaw-and-templates` figure 1: *loop until the priority queue drains,
+  depth within the limit* — a child at the limit is still queued
+  (`depth + 1 <= maxDepth`, JigsawPlacement.java:377) and offered only the
+  fallback (:263), which is the page's own opening; the loop runs until the
+  queue drains.
+- `jigsaw-and-templates` figure 1: `PESP->>STemp: placeInWorld` — the call is
+  made by the pool element (`PoolElementStructurePiece.place` →
+  `SinglePoolElement.place` → `StructureTemplate.placeInWorld`,
+  PoolElementStructurePiece.java:96–101, SinglePoolElement.java:143–147); now
+  labelled *through its pool element*.
+- `trees` figure 1: `TF->>WGL: updateLeaves` — `TreeFeature.updateLeaves` is
+  `TreeFeature`'s private static (TreeFeature.java:171, :181); `FoliageAttachments`
+  is no class (`FoliagePlacer.FoliageAttachment`, :85); `leafRadius` is a local
+  holding `FoliagePlacer.foliageRadius` (:69).
+- `hand-built-structures` figure 1: `SPB-->>SStart: build` —
+  `Structure.generate` calls `StructurePiecesBuilder.build` and constructs the
+  `StructureStart` (Structure.java:94–95); the drain loop is
+  `StrongholdStructure`'s (StrongholdStructure.java:38–45), the start piece's
+  `addChildren` runs once before it (:37), and each new piece goes onto
+  `StrongholdPieces.StartPiece`'s pending list (StrongholdPieces.java:189–190),
+  not the builder's.
+- `terrain`: *the two outer levels are where the sampling happens* — the cell
+  row level samples nothing; the samples are at the cell column
+  (`NoiseChunk.advanceCellX` → `fillSlice`, NoiseChunk.java:258) and the cell
+  (`NoiseChunk.selectCellYZ` fills every *cache_all_in_cell* term,
+  NoiseChunk.java:296–319). Reworded, and the figure's title *advanceCellX
+  fills the next corner slice* is now a table row.
+- `terrain` figure 1: SURFACE handing *a preliminary surface level* to
+  CARVERS — the value is the `NoiseChunk`'s, computed during the noise fill
+  (the page's own :100 and :187); the label is gone.
+- `density-functions` figure 1: *as wrapped — the only form that runs*
+  disagreed with the page's F3 readout paragraph; *a second visitor* for
+  `NoiseChunk.forChunk` disagreed with the page's *second* visitor, which is
+  the climate flattener — `RandomState`'s constructor runs two
+  (RandomState.java:94, :95–119), so the per-chunk one is the third.
+- `blending` figure 2: `Blender->>CM: isOldChunkAround` — `Blender.of` asks
+  the `WorldGenRegion` (Blender.java:72), which asks `ChunkMap`
+  (WorldGenRegion.java:106–107); now labelled *through the region*. The
+  generator's self-message *wrap the biome resolver* is
+  `Blender.getBiomeResolver` (NoiseBasedChunkGenerator.java:96), now an arrow.
+- `blending` figure 1: *the final slide* — `NoiseRouterData.postProcess` wraps
+  its argument named `slide` in `blend_density` (NoiseRouterData.java:224–225);
+  *the final density* is the book's word.
+- `creating-a-world` figure 2: the `MinecraftServer` lane received
+  `new IntegratedServer`; the lane is now the object. `saveDataTag` is
+  `LevelStorageSource.LevelStorageAccess`'s (LevelStorageSource.java:614,
+  called at Minecraft.java:2233), not a message the disk receives; relabelled
+  *level.dat, through a temp file*.
+
+### Checked and found sound
+
+- `features-and-placement` figure 1's order — block predicate before biome
+  filter — is `trees_plains.json`'s shipped order; the code's
+  `VegetationPlacements.treePlacement` with a sapling puts it after. Both
+  ship, as the page says.
+- `jigsaw-and-templates`: `getFirstFreeHeight` is asked exactly when not both
+  pieces are rigid (JigsawPlacement.java:328–368).
+- `hand-built-structures`: the builder is the accessor
+  (`StructurePiecesBuilder.findCollisionPiece`, StructurePiecesBuilder.java:24),
+  so the stronghold figure's label is right.
+
 ## Pass 7, session J — Part X · The client: the figures *(2026-09-15)*
 
 Thirteen pages, 20 figures (18 before: `options`' one flowchart became two and

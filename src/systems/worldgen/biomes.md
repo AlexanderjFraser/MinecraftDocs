@@ -36,31 +36,33 @@ one layer among several rather than the owner
 
 ```mermaid
 sequenceDiagram
-    participant CST as ChunkStatusTasks
     participant NBC as NoiseBased<br/>ChunkGenerator
     participant CA as ChunkAccess
     participant LCS as LevelChunkSection
     participant MNBS as MultiNoise<br/>BiomeSource
     participant ClimS as Climate.Sampler
     participant CPList as Climate.<br/>ParameterList
-    participant CRT as Climate.RTree
 
-    CST->>NBC: createBiomes — ChunkStatus.BIOMES, which NOISE and SURFACE both require
-    NBC->>NBC: fork to init_biomes, wrap the resolver in Blender and BelowZeroRetrogen
-    NBC->>CA: fillBiomesFromNoise, with the chunk's cached climate sampler
-    CA->>LCS: fillBiomesFromNoise — rebuild the container, 64 cells per section
-    loop per quart cell
-        LCS->>MNBS: getNoiseBiome — quart coordinates and the sampler
-        MNBS->>ClimS: sample — six functions, each multiplied by 10,000 and truncated
-        ClimS-->>MNBS: a Climate.TargetPoint of six longs
-        MNBS->>CPList: findValue — the parameter list owns the search
-        CPList->>CRT: findValueIndex — nearest neighbour over seven dimensions
-        CRT-->>LCS: a biome holder, into the palette
+    Note over NBC,CPList: ChunkStatus.BIOMES, forked to the init_biomes executor
+    NBC->>NBC: build the NoiseChunk, wrap the biome resolver twice
+    NBC->>CA: fillBiomesFromNoise, with the chunk's cached sampler
+    loop per section
+        CA->>LCS: fillBiomesFromNoise, into a new container
+        loop per quart cell, 64 of them
+            LCS->>MNBS: getNoiseBiome, quart coordinates and the sampler
+            MNBS->>ClimS: sample, six functions at one point
+            ClimS-->>MNBS: a Climate.TargetPoint of six longs
+            MNBS->>CPList: findValue
+            CPList->>CPList: findValueIndex, the search down its Climate.RTree
+            CPList-->>MNBS: the nearest biome holder
+            MNBS-->>LCS: into the new container
+        end
     end
-    Note over LCS: saved under "biomes", shipped inside the chunk payload
 ```
 
-The two wrappers in the second arrow only do anything beside chunks an
+*A chunk's biomes are 64 climate searches per section, each a sample at one point and a nearest-neighbour walk; no block is read and none is written.*
+
+The two wrappers in the first arrow only do anything beside chunks an
 older version generated — [blending at the old-chunk
 border](blending.md#what-the-blender-actually-answers)
 is where they are explained.

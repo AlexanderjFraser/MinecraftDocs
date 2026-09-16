@@ -1492,7 +1492,7 @@ for voice.** Seven were rewritten because the fact under them fell:
   one to six straight through, read seven to nine as one arc, and ten is the
   only lecture that moves. The per-page rulings that justified the order moved
   up to the figure caption, where the order is argued.
-- `blending`'s **first figure gained a dashed annotation node** to say that
+- ~~`blending`'s **first figure gained a dashed annotation node** to say that
   two of the five consumers never touch the two maps. That is prose smuggled
   into a flowchart, and the page's own text says the same thing thirty lines
   below. One of the two should go. **Ruled, session L: the prose owns it, and
@@ -1501,7 +1501,8 @@ for voice.** Seven were rewritten because the fact under them fell:
   with nothing reconciling them, and the clause that does now (*three is fewer
   than five because the carving mask and the border ticks read `BlendingData`
   directly*) is exactly what the annotation node was for. The node is pass 7's
-  to remove; the fact no longer depends on it. [kind=figure]
+  to remove; the fact no longer depends on it. [kind=figure]~~
+  **done** (pass 7 session L) — the annotation node is gone; the two direct consumers now hang off `BlendingData` on arrows labelled *read directly*, and the caption says the rest.
 - ~~`features-and-placement`'s *A feature that is a tree of features* section is
   now about six features of which one is unrelated to the section's subject
   (`Feature.NO_OP` writes nothing but is not a selector). The count and the
@@ -6280,30 +6281,37 @@ the only way to see it is to rename the heading and read what breaks.
 
 **For pass 7 — the figures.**
 
-- `biomes`' sequence diagram returns from `Climate.RTree` straight to
+- ~~`biomes`' sequence diagram returns from `Climate.RTree` straight to
   `LevelChunkSection`, skipping the two lanes the call descended through; every
   other arrow in that loop is a neighbour hop, so it reads as a missing return.
-  [kind=figure]
-- `blending`'s *One measurement, five consumers* flowchart has a dotted
+  [kind=figure]~~
+  **done** (pass 7 session L) — and the arrow was worse than a skipped return: `findValueIndex` is `Climate.ParameterList`'s own method, drawn arriving at the tree. The tree lane is folded into the list's self-message and the returns now climb one lane at a time.
+- ~~`blending`'s *One measurement, five consumers* flowchart has a dotted
   annotation that depends on *the two maps*, a term introduced in the paragraph
   **below** the figure, and an `R3` node label naming *the final slide*, a phrase
-  that appears nowhere else in the book. [kind=figure]
-- `terrain`'s *Four statuses* flowchart draws five boxes, the fifth being the
+  that appears nowhere else in the book. [kind=figure]~~
+  **done** (pass 7 session L) — the dotted node is cut, and *the final slide* is now *the final density*, which is what `NoiseRouterData.postProcess` wraps.
+- ~~`terrain`'s *Four statuses* flowchart draws five boxes, the fifth being the
   handoff rather than a status this page owns; consider a visual break before
-  `FEATURES`. [kind=figure]
-- `trees`' sequence diagram spends *UNCLIPPED* twenty lines before clipped and
+  `FEATURES`. [kind=figure]~~
+  **done** (pass 7 session L) — the fifth box is labelled as a later page's, and the caption says so.
+- ~~`trees`' sequence diagram spends *UNCLIPPED* twenty lines before clipped and
   unclipped are defined, and calls the crown radius `leafRadius` where the prose
-  calls it `foliageRadius`. [kind=figure]
-- `density-functions`' three-forms flowchart labels its root node `Ap2` in all
+  calls it `foliageRadius`. [kind=figure]~~
+  **done** (pass 7 session L) — *UNCLIPPED* is gone from the figure and the two crown numbers are named in the sentence after the caption; `leafRadius` is the decompile's local and no longer appears.
+- ~~`density-functions`' three-forms flowchart labels its root node `Ap2` in all
   three panels, a name glossed nowhere on the page or in the book.
-  [kind=figure]
-- `hand-built-structures`' stronghold diagram addresses `findCollisionPiece` to
+  [kind=figure]~~
+  **done** (pass 7 session L) — the three repeated panels are a four-node flowchart and a node-by-form table; the *add* node, `DensityFunctions.Ap2`, is named in words because it is the node that does not change.
+- ~~`hand-built-structures`' stronghold diagram addresses `findCollisionPiece` to
   `StructurePiecesBuilder` where the prose addresses it to
   `StructurePieceAccessor`; the cast now says the builder implements the
   accessor, but the two names in one figure still cost a reader a stop.
-  [kind=figure]
-- `worldgen/README`'s part figure carries one undirected link
-  (`terrain --- blending`) among arrows, with no stated meaning. [kind=figure]
+  [kind=figure]~~
+  **ruled** (pass 7 session L) — the lane is the object, and the object is the builder (F7); `StructurePiecesBuilder.findCollisionPiece` is the accessor method it implements. The label stays; the figure's real faults were elsewhere (see pass9.md).
+- ~~`worldgen/README`'s part figure carries one undirected link
+  (`terrain --- blending`) among arrows, with no stated meaning. [kind=figure]~~
+  **done** (pass 7 session L) — the link is gone (terrain and blending share a box), and every non-solid arrow now carries a label.
 
 **For pass 8 — the voice.**
 
@@ -6993,3 +7001,34 @@ Part 3; these are the pieces of work that ruling created.
   `Minecraft.handleKeybinds`, a tick later. This session put that in the
   caption rather than adding a lane. Whether the page's own sentence should
   say which gate lives where is a prose decision above a figure's pay grade.
+
+**From pass 7, session L — Part XII.** [kind=book]
+
+- **Part XII's sections that wanted a figure and did not get one**, as the
+  viewers asked: `terrain`'s *Carving, and who chooses the block* — a four-way
+  branch (lava below the carver's level; otherwise the aquifer answers no
+  carve, air or fluid; the nether carver never asks), and the page's hook;
+  `features-and-placement`'s *The order is a graph, and a graph can have a
+  cycle* — two biomes making a cycle, then the client's safe mode against the
+  dedicated server's crash; `creating-a-world`'s data-pack reload branch (the
+  fast path, the serialise-and-reload path, the retry-or-reset exit);
+  `structure-placement`'s presence cache, three routes into a server-thread-only
+  object; `biomes`' *The two borders* and `blending`'s sixteen-column ring, both
+  of which want a top-down grid mermaid cannot draw (the `<figure class="map">`
+  route); `hand-built-structures`' ocean-monument maze carving. None was drawn:
+  each is a new claim, and the session's budget went to the fifteen figures the
+  part already had. [kind=book]
+- **`density-functions`' *The six caches* sorts six classes by two properties
+  in three paragraphs** — keyed on the chunk or on position alone, and which
+  may answer a single point — which is a two-column table the prose is reading
+  aloud. [kind=book]
+
+**For pass 8, from pass 7 session L.**
+
+- `structure-placement`'s heading *Five decisions, on five different clocks*
+  now sits over a figure whose fifth box writes blocks and whose fourth builds
+  an object; whether *decisions* is the word is voice. [kind=voice]
+- The sequence-diagram self-messages across Part XII still begin with bare
+  verbs (*reseed*, *pick*, *measure*, *out if*) — the gate notes them under
+  F12(d) and they read well, but pass 8 should settle one register for a
+  self-message's first word. [kind=voice]

@@ -49,31 +49,44 @@ a data pack composes trees freely and cannot add a new *kind* of placer
 ```mermaid
 sequenceDiagram
     participant TF as TreeFeature
-    participant RootP as RootPlacer
     participant TP as TrunkPlacer
     participant FolP as FoliagePlacer
+    participant RootP as RootPlacer
     participant TDec as TreeDecorator
     participant WGL as WorldGenLevel
 
-    TF->>TP: getTreeHeight — two random draws
-    TF->>FolP: foliageHeight, then foliageRadius — both from the UNCLIPPED height
-    TF->>TF: build-height check, then getMaxFreeTreeHeight — the clearance scan
-    Note over TF: clipped below the profile minimum, or none declared, abandons with nothing written
-    TF->>RootP: placeRoots — false abandons the tree
-    RootP->>WGL: roots, and the moss above them
-    TF->>TP: placeTrunk(clipped height)
-    TP->>WGL: logs
-    TP-->>TF: a list of FoliageAttachments
-    loop one per attachment
-        TF->>FolP: createFoliage(clipped height, attachment, foliageHeight, leafRadius)
-        FolP->>WGL: leaves, DISTANCE 7 as provided
+    rect rgba(0, 0, 0, 0.04)
+    Note over TF,WGL: nothing written yet
+    TF->>TP: getTreeHeight, a base plus two draws
+    TF->>FolP: foliageHeight, then foliageRadius, from that height
+    TF->>TF: out if the tree would leave the build height
+    loop the clearance scan, layer by layer
+        TF->>TP: isFree, across the profile's radius
     end
-    TF->>TDec: place(Context) — logs, leaves and roots, each sorted by Y
+    TF->>TF: out if clipped and no minimum allows it
+    TF->>RootP: placeRoots, simulated in full first
+    RootP-->>TF: false, and the tree is abandoned
+    end
+    RootP->>WGL: or roots, and the moss above them
+    TF->>TP: placeTrunk, with the clipped height
+    TP->>WGL: logs
+    TP-->>TF: a list of foliage attachments
+    loop one per attachment
+        TF->>FolP: createFoliage, clipped height and both crown numbers
+        FolP->>WGL: leaves, each at distance 7
+    end
+    TF->>TDec: place, with the logs, leaves and roots sorted by Y
     TDec->>WGL: hives, vines, podzol, propagules
-    TF->>WGL: updateLeaves — a bucketed walk that rewrites every DISTANCE
+    TF->>TF: updateLeaves, rewriting every leaf's distance
 ```
 
-Four things in that diagram are the page's real content.
+*Everything in the shaded band happens before a block is written, which is where all three ways out are; below it nothing is undone, and the crown was sized before the scan measured the room.*
+
+The two crown numbers are `FoliagePlacer.foliageHeight` and
+`FoliagePlacer.foliageRadius`, and the second is what `TreeFeature` hands to
+every `FoliagePlacer.createFoliage` call; every block any slot writes goes to
+the `WorldGenLevel` the feature was handed. Four things in that diagram are the
+page's real content.
 
 **The crown is sized before the ceiling is measured.** `TreeFeature` samples
 the trunk placer's proposed height, derives `FoliagePlacer.foliageHeight` and
