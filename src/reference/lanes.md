@@ -7,7 +7,7 @@ every page: the key in `TEMPLATE.md` is the authority, and `check_lanes.py` fail
 a page that disagrees with it. The last rows are the exceptions — lanes that stand for a
 thread or a boundary rather than for one class.
 
-339 lanes are classes and 10 are not. A lane is normally the initials of
+340 lanes are classes and 10 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
 rules make about a third of them: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
@@ -287,6 +287,7 @@ read it off this table.
 | `SE` | `ServerEntity` |
 | `SectC` | `SectionCompiler` |
 | `SED` | `SynchedEntityData` |
+| `SEE` | `SoundEngineExecutor` |
 | `SFL` | `ServerFunctionLibrary` |
 | `SFM` | `ServerFunctionManager` |
 | `SGPL` | `ServerGamePacketListenerImpl` |
