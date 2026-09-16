@@ -93,7 +93,8 @@ CLASS_REL = re.compile(r'^\s*([A-Za-z_]\w*)\s*(?:"[^"]*"\s*)?([<>ox|*]{0,2}(?:--
 CLASS_NOTE = re.compile(r'^\s*note(?:\s+for\s+[A-Za-z_]\w*)?\s+"(.*)"\s*$')
 CLASS_ANNOT = re.compile(r"^\s*<<.*>>\s*$")
 # a classDiagram member line read as a declaration: its last token humped, or parenthesised
-MEMBER_LINE = re.compile(r"(?:^|[\s<>~,*])([a-z_][A-Za-z0-9_]*[A-Z][A-Za-z0-9_]*)\s*(?:\(.*)?$")
+# (from session M) or a one-word method, if it is parenthesised: `boolean check(PermissionSet)`
+MEMBER_LINE = re.compile(r"(?:^|[\s<>~,*])([a-z_][A-Za-z0-9_]*[A-Z][A-Za-z0-9_]*(?=\s*(?:\(.*)?$)|[a-z_][A-Za-z0-9_]*(?=\s*\(.*$))")
 
 DOTTED = re.compile(r"(?<![\w/`.])([A-Z][A-Za-z0-9]*(?:\.[A-Za-z_][A-Za-z0-9_]*)+)(?![\w/])")
 CAMEL = re.compile(r"\b(?=[A-Z][A-Za-z0-9]*[a-z])([A-Z][a-z0-9]*[A-Z][A-Za-z0-9]*)\b")
@@ -585,6 +586,14 @@ sequenceDiagram
     Conn->>CPL: a frame, then<br/>ClientPacketListener is asked again
     Conn->>CPL: handleSetEntity<br/>PassengersPackett once more
 ```
+
+```mermaid
+classDiagram
+    class PermissionCheck {
+        boolean check(PermissionSet)
+        boolean frob(PermissionSet)
+    }
+```
 """
 
 
@@ -645,7 +654,11 @@ def probe(mc_source: str, libs: str) -> int:
          any(f[1] == 52 and f[2] == "Avatarr" for f in failures)),
         ("a nested class box resolves against its outer class, and a bad one does not",
          not any(f[2] == "ChunkMap.TrackedEntity" for f in failures) and (49, "ChunkMap.NoSuchNestedClass") in got),
-        ("exactly the seventeen failures expected", len(failures) == 17),
+        ("a one-word method in a classDiagram member line is checked against its box, not noted: the good one passes",
+         not any(n[2] == "check" for n in notes) and not any(f[2] == "check" for f in failures)),
+        ("a one-word method in a classDiagram member line is checked against its box: the bad one fails",
+         (69, "frob") in got),
+        ("exactly the eighteen failures expected", len(failures) == 18),
     ]
     ok = True
     for what, passed in checks:

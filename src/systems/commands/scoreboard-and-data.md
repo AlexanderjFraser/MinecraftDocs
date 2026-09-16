@@ -58,32 +58,40 @@ model — and every class in it ships in both jars. Beside it:
 
 ## One command, two models, and a number that lands in a third place
 
+The figure follows that command from the engine's stage walk to the client's
+sidebar; `BuildContexts` is the engine's walker over a parsed chain ([the
+execution engine](the-execution-engine.md#the-queue-four-moments-apart)).
+
 ```mermaid
 sequenceDiagram
-    participant Cmds as Commands
+    box Server
     participant BC as BuildContexts
     participant ExecC as ExecuteCommand
     participant DataC as DataCommands
     participant SS as ServerScoreboard
     participant SA as ScoreAccess
+    end
+    box Client
     participant CPL as ClientPacketListener
+    end
 
-    Cmds->>BC: the parsed chain — @s and the objective name are still strings
-    BC->>BC: "as @a" forks: N sources, one per player
-    BC->>ExecC: "store result score" is a redirect, run once per source
-    ExecC->>ExecC: resolve @s and the objective NOW, and chain a callback onto the source
-    BC->>DataC: the leaf runs: getData(accessor, path)
-    DataC->>DataC: EntityDataAccessor.getData — the entire entity save, built fresh
-    DataC->>DataC: NbtPath.get, then collapse the tag to one int by four rules
-    DataC->>ExecC: the result reaches the SOURCE's callback, not the frame's
-    ExecC->>SS: getOrCreatePlayerScore — without forceWritable
-    SS->>SA: set(value)
-    SA->>SS: onScoreChanged — only if the objective is in a display slot
-    SS->>CPL: ClientboundSetScorePacket, broadcast to every player
-    CPL->>CPL: forNameOnly(owner) — the client only ever has the string
+    BC->>BC: as @a — one source becomes one per player
+    BC->>ExecC: store result score — the modifier, once per source
+    ExecC->>ExecC: storeValue — @s and the objective already resolved
+    BC->>DataC: the leaf, getData, once per source
+    DataC->>DataC: build the entity's whole save tag
+    DataC->>DataC: follow the path, collapse the tag to one int
+    DataC-->>ExecC: the result, to the source's callback
+    ExecC->>SS: getOrCreatePlayerScore
+    ExecC->>SA: set
+    SA->>SS: onScoreChanged — only if changed or new
+    SS->>CPL: ClientboundSetScorePacket — only for a displayed objective
+    CPL->>CPL: handleSetScore — the owner is only a name
 ```
 
-Each arrow is a decision.
+*One `execute store result score` for one player — the store is fixed on the source before the inner command runs, the number reaches it by callback, and two separate gates decide whether the write is a packet.*
+
+The paragraphs below take its arrows in order.
 
 **The store target is resolved before the inner command runs, not after.**
 `ExecuteCommand.wrapStores` builds the store node as a **redirect with a
@@ -179,7 +187,8 @@ hidden-fake-player idiom — a row that can be written by name, read by name,
 and never drawn.
 
 Nothing about that requires an entity to exist. `ScoreHolder.forNameOnly`
-mints a holder from a string, and the scoreboard's one flat map does not
+mints a holder from a string — it is all `ClientPacketListener.handleSetScore`
+ever builds from a score packet — and the scoreboard's one flat map does not
 care where the string came from.
 
 ## What a criterion can be, which is nearly anything

@@ -20,18 +20,25 @@ and it belongs to another page.
 
 ## The pipeline
 
+The figure is the whole model: which kind of function a file becomes, and
+where the one silent failure leaves it.
+
 ```mermaid
-flowchart TB
-    F["a .mcfunction text file, and the tag JSON beside it"]
-    F --> C["1 · COMPILE, at reload — CommandFunction.fromLines, off the main thread, against a null level and a null server"]
-    C --> P["a CommandFunction: a PlainTextFunction, or a MacroFunction if any line begins with a dollar"]
-    T["TRIGGER — the tick tag, the load tag, /function, /schedule, an advancement reward, an enchantment effect, a test environment"]
-    P --> I["2 · INSTANTIATE, per call — plain returns itself, a macro substitutes and RE-PARSES, cached eight deep"]
-    T --> I
-    I --> R["an InstantiatedFunction: an id and an ordered list of unbound actions"]
-    R --> Q["THEN: QUEUED — CallFunction opens a frame, ContinuationTask schedules the lines"]
-    Q --> E["the execution engine — the lines run to completion inside this tick"]
+flowchart TD
+    F[(".mcfunction file")]:::disk --> C["1 · compile, at reload"]
+    C --> K{"a dollar line?"}
+    K -- no --> PT["PlainTextFunction"]
+    K -- yes --> MF["MacroFunction"]
+    PT -- "2 · instantiate: itself" --> R["InstantiatedFunction"]
+    MF -- "2 · instantiate" --> X{"arguments given, parses?"}
+    X -- yes --> R
+    X -- no --> EX["FunctionInstantiationException"]
+    EX --> SW["/function reports it, a tag swallows it"]
+    R --> Q["3 · queued: CallFunction opens a frame"]
+    Q --> E["the execution engine runs the lines"]
 ```
+
+*A function's two steps and the hand-off — compiled once at reload, instantiated on every call, and only the macro branch can fail there; the failure is reported or swallowed depending on who made the call.*
 
 The two halves of that live in `net/minecraft/commands/functions` (the model)
 and `net/minecraft/server` (the two managers), and both are entirely

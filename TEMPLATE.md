@@ -872,6 +872,7 @@ the break in from a render, and is the check after adding a lane.
 | `AR` | `AdvancementRewards` |
 | `DlgC` | `DialogCommand` |
 | `DlgS` | `DialogScreen` |
+| `DCS` | `DialogControlSet` |
 | `CComPL` | `ClientCommonPacketListenerImpl` |
 | `TC` | `TestCommand` |
 | `GTR` | `GameTestRunner` |

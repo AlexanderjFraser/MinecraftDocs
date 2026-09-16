@@ -1067,3 +1067,39 @@ that the owner has not understood; recording is after pass 10.
   Eight queue entries struck with the page open (one ruled), eight sections
   that wanted a figure or a table logged for pass 10, two voice entries for pass 8. All
   six gates green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-16, pass 7 session M (Opus) — Part XIII · Commands and data
+  packs.** Ten viewer agents, one per page. Thirteen figures stayed thirteen,
+  two of them now class diagrams — `permissions`' question/answer/check,
+  which had been a taxonomy wired with pipeline arrows, and `game-tests`'
+  objects, which had been three bands with unlabelled edges — the book's
+  ninth and tenth. Every figure captioned and pointed at; **nothing below 0.78
+  or under 12.5px** (from 0.69 and 11.1px), no lane over six (from seven on
+  two pages), no label over another or over a node (from four figures), no
+  Mojang name broken on screen (from eight), and the gate's **4 unresolved
+  names and 7 notes are 0 and 2** (bare-word heads, F12(d)). **Twenty
+  corrections, and the part's fault is the pass's fault on every page but
+  one**: `getCompletionSuggestions` — `CommandDispatcher`'s — drawn arriving
+  at `ClientPacketListener`, `succeed` at `ReportGameListener`,
+  `DialogScreens.createFromData` at `DialogScreen`, `ServerScoreboard`
+  calling a `ScoreAccess.set` that the store callback calls itself —
+  **eleven parts of eleven**. The sharpest is `entity-selectors`' resolve
+  tree, whose queued *shape* fault turned out to hide a second one: the UUID
+  leaf on the entities branch named `PlayerList.getPlayer`, which is the
+  players-only branch's, where `EntitySelector.findEntities` searches every
+  level with `ServerLevel.getEntity`. Beside it, a queue figure whose last
+  panel was a step ahead of its title, and two sentences under it that
+  charged a cost unit *per stage* when `BuildContexts.execute` charges one per
+  *modifier* stage. **The session's own finding is about the check F18 relies
+  on**: the brief's regex needs three letters before mermaid's hyphen, so a
+  break one or two letters after a dot — `SimpleCriterionTrigger.tr-igger`,
+  `GameTestInstance.run(h-elper)` — reads as clean. The wider check finds
+  **20** names still broken corpus-wide, all in Parts III–V (which closed
+  before session J wrote the regex) and XI (session K's); logged for session
+  O. And the gate's eleventh blindness: a one-word method in a class diagram's
+  member line (`boolean check(PermissionSet)`) was a note, never checked
+  against its box — fixed, two probe cases, one note corpus-wide. Seven queue
+  entries struck with the page open (one left for session O's prune), six
+  sections that wanted a figure logged for pass 10, two voice entries for
+  pass 8. Key row `DCS` added. All six gates green (the figure-name gate still
+  report-only). Deployed.

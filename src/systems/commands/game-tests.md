@@ -45,31 +45,48 @@ with the rest of the GUI, and they are below.
 
 ## The objects, and how they nest
 
+What a test is and what running it builds are two sets of objects, and the
+figure shows what each one holds.
+
 ```mermaid
-flowchart TB
-    subgraph D["THE DECLARATION — data pack files"]
-        TI["GameTestInstance — data/ns/test_instance"]
-        TD["TestData — environment, structure, tick budgets, retries"]
-        TE["TestEnvironmentDefinition — data/ns/test_environment"]
-        ST["a structure — data/ns/structure"]
-        TI --> TD
-        TD --> TE
-        TD --> ST
-    end
-    subgraph R["THE RUN — one object per attempt"]
-        GB["GameTestBatch — every test sharing ONE environment holder, split into runs of fifty"]
-        GI2["GameTestInfo — one run of one test: position, timeout, sequences, outcome"]
-        GH["GameTestHelper — test-local coordinates, edits, assertions"]
-        GB --> GI2
-        GI2 --> GH
-    end
-    subgraph W["THE WORLD — what a test costs"]
-        TIB2["TestInstanceBlockEntity — bounding box, status, beacon beam, barrier shell, forced chunk"]
-        TB2["TestBlock — start, log, fail and accept, for a test written with no Java"]
-    end
-    D --> R
-    R --> W
+classDiagram
+    class GameTestInstance {
+        <<abstract>>
+        TestData info
+        run(GameTestHelper)
+    }
+    class TestData {
+        Identifier structure
+        int maxTicks
+        int setupTicks
+        int maxAttempts
+    }
+    class TestEnvironmentDefinition {
+        <<interface>>
+        setup(ServerLevel)
+        teardown(ServerLevel, saved)
+    }
+    class GameTestBatch {
+        Collection gameTestInfos
+    }
+    class GameTestInfo {
+        int tickCount
+    }
+    class GameTestHelper {
+        GameTestInfo testInfo
+    }
+    class TestInstanceBlockEntity
+
+    GameTestInstance --> TestData : info
+    TestData --> TestEnvironmentDefinition : environment
+    GameTestBatch --> TestEnvironmentDefinition : keyed by
+    GameTestBatch --> GameTestInfo : up to fifty
+    GameTestInfo --> GameTestInstance : test
+    GameTestInfo --> TestInstanceBlockEntity : the block in the world
+    GameTestInfo ..> GameTestHelper : a new one at tick zero
 ```
+
+*A run at the top — a batch is one environment's worth of test runs — and the declaration below it, an instance, its record and the environment the record names; a solid arrow is a field, labelled with its name or its meaning, and the dotted one is the helper each run makes for its body.*
 
 **A batch is not a name and not a class: it is an environment.**
 `GameTestBatchFactory` groups tests by their `TestEnvironmentDefinition`
@@ -102,17 +119,23 @@ sequenceDiagram
     participant GI as GameTestInfo
     participant RGL as ReportGameListener
 
-    TC->>GTR: build one GameTestInfo per test, batched by environment
-    GTR->>GI: spawn each info — prepareTestStructure
-    GI->>TIB: placeStructure, then encaseStructure — a barrier shell round the test
-    GTR->>GTR: TestEnvironmentDefinition.setup — returns the undo log
-    GTR->>GTT: add every info whose structure was placed to the ticker
-    GTT->>GI: tick — counting up from NEGATIVE: the setup ticks run before tick zero
-    GI->>GI: GameTestInstance.run(helper) at tick zero, and sequences tick after
-    GI->>RGL: succeed, or a GameTestException — a timeout is just another one
-    RGL->>TIB: setSuccess or setErrorMessage — the beam turns green, red or orange
-    RGL->>RGL: say to chat, and GlobalTestReporter to the log or to JUnit XML
+    TC->>GTR: the batches, one per environment
+    GTR->>GI: prepareTestStructure, for each run
+    GI->>TIB: placeStructure, then encaseStructure
+    GTR->>GTR: activate the environment — keep what setup returns
+    GTR->>GTT: add, for every run whose structure was placed
+    rect rgba(0, 0, 0, 0.04)
+    Note over GTT,GI: every server tick, from a negative count
+    GTT->>GI: tick
+    GI->>GI: startTest at zero — the body runs with a new helper
+    GI->>GI: succeed, or fail with a GameTestException
+    GI->>RGL: testPassed or testFailed
+    RGL->>TIB: setSuccess or setErrorMessage
+    RGL->>RGL: say, then GlobalTestReporter
+    end
 ```
+
+*One test from `/test run` to its beam — the structure is placed before the environment is set up, the body runs once when a negative tick count reaches zero, and the listener writes the outcome to the block, whose beam is green, red, or orange for an optional test that failed.*
 
 Game tests tick on the server thread, from `GameTestTicker` in one of the last
 zones `MinecraftServer.tickChildren` opens, and only while the tick-rate
@@ -121,9 +144,18 @@ running test where it stands ([the server
 tick](../server/server-tick.md#what-minecraftservertickchildren-runs-and-in-what-order)
 for the order, and its questions for what a freeze does and does not stop).
 
+**The structure comes first, then the environment.** For every run in a
+batch `GameTestRunner` calls `GameTestInfo.prepareTestStructure`, which has
+the run's block entity paste the structure
+(`TestInstanceBlockEntity.placeStructure`) and wall it in with barriers
+(`TestInstanceBlockEntity.encaseStructure`); only then is the batch's
+environment activated, and only the runs whose structure was placed are
+handed to the ticker.
+
 **Setup ticks run before tick zero.** `GameTestInfo.startExecution` starts
 its counter *negative* — by the declared setup ticks, plus the spawner's own
-tick delay, plus one — so the body runs when the count reaches zero.
+tick delay, plus one — so the body runs when the count reaches zero, in
+`GameTestInfo.startTest`, which hands it a new `GameTestHelper`.
 
 **A sequence catches one kind of exception and only one.**
 `GameTestSequence` is the "do this, wait, then assert that"
@@ -134,12 +166,15 @@ per sequence per tick. What it catches is a `GameTestAssertException`: an
 assertion that has not come true *yet* is not a failure, so the sequence
 swallows it and tries again next tick. A timeout is a different subclass —
 `GameTestTimeoutException`, raised by `GameTestInfo` when the tick count
-passes the budget — and nothing swallows it, which is why the figure can
-call it just another `GameTestException` and this paragraph can say it is
-never caught here. Both are true of different catches.
+passes the budget — and nothing swallows it: to `GameTestInfo`, which records whatever
+`GameTestException` ends the run, a timeout is one more failure.
 
 **Reporting is a listener chain, and it writes to four places.** Chat, the
-block, the progress bar and the report. `ReportGameListener` is what says
+block, the progress bar and the report. A finished run calls
+`GameTestListener.testPassed` or `GameTestListener.testFailed` on each of its
+listeners, and `ReportGameListener` answers with
+`TestInstanceBlockEntity.setSuccess` or
+`TestInstanceBlockEntity.setErrorMessage`, which is what colours the beam. `ReportGameListener` is what says
 something in chat and what writes the outcome back to the
 `TestInstanceBlockEntity` that owns the beam; `MultipleTestTracker` is the
 progress bar; and `GlobalTestReporter` dispatches to `LogTestReporter` or to

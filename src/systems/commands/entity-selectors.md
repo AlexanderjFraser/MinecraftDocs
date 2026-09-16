@@ -41,24 +41,21 @@ later.
 ```mermaid
 flowchart LR
     S["the argument text"]
-    subgraph P["PARSE"]
+    subgraph P["PARSE — at parse time"]
         direction TB
-        P1["one head of six sets four defaults"]
-        P2["each option name looked up in a hash map"]
-        P3["its handler writes a field or appends a predicate"]
+        P1["the head sets the defaults"]
+        P2["each option name finds its handler"]
+        P3["the handler writes a field or adds a test"]
         P1 --> P2 --> P3
     end
-    subgraph C["COMPILE — once, still at parse time"]
+    subgraph C["COMPILE — at parse time"]
         direction TB
-        C1["thirteen final fields"]
-        C2["a box, or null"]
-        C3["a position resolver"]
-        C1 --- C2 --- C3
+        C1["thirteen final fields"] ~~~ C2["a box, or none"] ~~~ C3["an origin"]
     end
-    subgraph R["RESOLVE — server thread, once per execution"]
+    subgraph R["RESOLVE — per execution"]
         direction TB
         R1["which levels"]
-        R2["which of two data structures"]
+        R2["which of two structures"]
         R3["order, then cut to the limit"]
         R1 --> R2 --> R3
     end
@@ -66,6 +63,8 @@ flowchart LR
     P --> C
     C --> R
 ```
+
+*The three stages a selector passes through — the first two while Brigadier parses, once, and the third on the server thread each time a command asks for its argument; the three boxes under COMPILE are what it produces, not steps.*
 
 The first two stages happen while Brigadier walks the command tree; the third
 happens when the command's lambda asks for its argument. In between, the
@@ -164,25 +163,34 @@ comparison that serialised the whole entity.
 ## Resolve: which levels, which structure, which order
 
 ```mermaid
-flowchart TB
-    A["findEntities, on the server thread"] --> B{"non-players in scope?"}
-    B -- no --> P["findPlayers — one level or every level, but a linear walk of a player list either way"]
-    B -- yes --> C{"a bare name or a UUID?"}
-    C -- name --> N["PlayerList.getPlayerByName — a linear case-insensitive scan"]
-    C -- UUID --> U["PlayerList.getPlayer — the id map, one lookup"]
+flowchart TD
+    A["EntitySelector.findEntities"] --> C{"a bare name or a UUID?"}
+    C -- name --> N["PlayerList.getPlayerByName, either way"]
+    C -- UUID --> B1{"non-players in scope?"}
+    B1 -- yes --> UE["ServerLevel.getEntity, level by level"]
+    B1 -- no --> UP["PlayerList.getPlayer"]
     C -- neither --> D{"is it the source itself?"}
-    D -- yes --> S["test the source's own entity, or return nothing"]
+    D -- yes --> S["the source's own entity, if it passes"]
     D -- no --> E{"world-limited?"}
-    E -- yes --> F["this level only"]
-    E -- no --> G["every level the server has"]
-    F --> H{"is there a box?"}
-    G --> H
+    E -- "yes: this level" --> B2{"non-players in scope?"}
+    E -- "no: every level" --> B2
+    B2 -- no --> PL["a player list, walked"]
+    B2 -- yes --> H{"is there a box?"}
     H -- yes --> I["EntitySectionStorage — only the sections the box touches"]
-    H -- no --> J["EntityLookup — every visible entity in the level, one by one"]
-    I --> K["order, then cut to the limit"]
+    H -- no --> J["EntityLookup — every visible entity, one by one"]
+    I --> K["sort unless arbitrary, then cut to the limit"]
     J --> K
-    P --> K
+    PL --> K
 ```
+
+*How a compiled selector finds its entities — the players-only selector asks the same questions in the same order, so the figure asks whether non-players are in scope only where the two answers part; the three shortcuts at the top return at once, with no sort and no limit.*
+
+**Three shortcuts come first.** A bare player name goes to
+`PlayerList.getPlayerByName` whatever the selector's scope; a UUID is looked
+up with `ServerLevel.getEntity`, level by level, when non-players are in
+scope, and with `PlayerList.getPlayer` when they are not; and *@s* tests the
+source's own entity against the selector's tests. None of the three is sorted
+or cut.
 
 **World-limited is a parse-time flag, not a runtime one.** Exactly seven
 option handlers call `EntitySelectorParser.setWorldLimited`: *distance*, *x*,

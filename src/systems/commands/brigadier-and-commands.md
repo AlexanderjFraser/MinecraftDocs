@@ -42,25 +42,38 @@ page is what Minecraft builds on top of it.
 
 ```mermaid
 sequenceDiagram
+    box Client
     participant CSug as Command<br/>Suggestions
     participant CPL as ClientPacketListener
     participant CSP as ClientSuggestion<br/>Provider
+    end
+    box Server
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant Cmds as Commands
     participant GC as GiveCommand
+    end
 
-    CSug->>CPL: parse the whole line against the client's dispatcher, every keystroke
-    CSug->>CPL: getCompletionSuggestions on that parse, with CSP as the source
-    CSP->>SGPL: ServerboundCommandSuggestionPacket — only if the node asks the server
-    SGPL->>CPL: ClientboundCommandSuggestionsPacket — capped at a thousand, id-matched
-    CPL->>SGPL: ServerboundChatCommandPacket — the raw string, no signatures for /give
-    Note over SGPL: the illegal-character check runs on the Netty thread
-    SGPL->>Cmds: hand to the server thread, then parse again with the player's real source
-    Cmds->>Cmds: the node requirement is consulted inside the parse
-    Cmds->>Cmds: performCommand — one queue, limits read from the level's game rules
-    Cmds->>GC: the registered lambda — resolve the selector, read back the ItemInput
-    GC->>GC: Inventory.add, then sendSuccess and a broadcast to admins
+    CSug->>CPL: getCommands — the client's own dispatcher
+    CSug->>CSug: updateCommandInfo — parse 1, every keystroke
+    opt a node that asks the server
+        CSug->>CSP: customSuggestion
+        CSP->>SGPL: ServerboundCommand<br/>SuggestionPacket
+        SGPL-->>CPL: ClientboundCommand<br/>SuggestionsPacket
+        CPL->>CSP: completeCustomSuggestions — a stale id is dropped
+    end
+    CPL->>CPL: sendCommand, on Enter — parse 2, for signatures only
+    CPL->>SGPL: ServerboundChatCommandPacket — the string
+    SGPL->>SGPL: tryHandleChat — illegal characters, on the Netty thread
+    rect rgba(0, 0, 0, 0.04)
+    Note over SGPL,GC: the server thread
+    SGPL->>SGPL: parseCommand — parse 3, the one that is used
+    SGPL->>Cmds: performCommand
+    Cmds->>GC: the registered lambda
+    GC->>GC: giveItem — Inventory.add, then sendSuccess
+    end
 ```
+
+*Three parses of one `/give` — two on the client whose answers are thrown away, and the server's, the only one that runs; the round trip in the frame is taken only by a node that asks the server, and `/give` has none.*
 
 The three parsers of the title are in there: the client's, running on every
 keystroke; the client's again, once, when you press Enter; and the server's,
@@ -68,7 +81,9 @@ which is the only one whose answer is used. Each arrow below is a decision.
 
 **The client parses first, and the parse never leaves the machine.**
 `CommandSuggestions.updateCommandInfo` runs the whole string through the
-client's dispatcher on every keystroke, and that parse produces the red
+client's dispatcher on every keystroke — the one
+`ClientPacketListener.getCommands` hands it, rebuilt from the tree the server
+sent — and that parse produces the red
 underline, Brigadier's smart-usage hint and the completion list. What is
 sent is the string.
 
@@ -112,17 +127,19 @@ the tab list, the selected entities, the relevant coordinates, and
 `SharedSuggestionProvider.customSuggestion`, which is the packet on the client
 and a completed empty future on the server.
 
-**Replies are matched by id, so a stale answer never flashes.**
-`ClientSuggestionProvider.customSuggestion` cancels the in-flight future and
+**Replies are matched by id, so a stale answer never flashes.** The reply,
+`ClientboundCommandSuggestionsPacket`, lands on
+`ClientPacketListener.handleCommandSuggestions`, which forwards it to the
+provider. `ClientSuggestionProvider.customSuggestion` cancels the in-flight future and
 increments a counter;
 `ClientSuggestionProvider.completeCustomSuggestions` compares the reply's id
 against that counter and drops anything older. The reply itself is
 **truncated to a thousand entries, silently** — no marker, no message.
 
 **Enter parses a second time on the client, for one reason.**
-`ClientPacketListener.sendCommand` runs `SignableCommand.of` to find out
+`ClientPacketListener.sendCommand`, which `ChatScreen` calls, runs `SignableCommand.of` to find out
 whether any argument is a `SignedArgument`. `/give` has none, so the plain
-packet goes; a `/msg` would take a timestamp, a salt and the last-seen
+packet — `ServerboundChatCommandPacket`, the string alone — goes; a `/msg` would take a timestamp, a salt and the last-seen
 message set, sign each signable argument and send the signed variant. A
 command the player did *not* type — a dialog button, a chat click event —
 goes through `ClientPacketListener.sendUnattendedCommand` instead and is
@@ -135,7 +152,9 @@ checked by the client, because it never reaches the client at all.
 purpose.** `ServerboundCommandSuggestionPacket` goes through
 `PacketUtils.ensureRunningOnSameThread`, so its parse happens on the main
 thread; the command packets are among the handful that do real work on the
-Netty thread first — the hop the other packets take is
+Netty thread first: `ServerGamePacketListenerImpl.tryHandleChat` refuses
+illegal characters there and only then hands the rest to the server thread.
+The hop the other packets take is
 [the connection](../networking/the-connection.md#one-packet-there-and-one-back)
 ([the server
 tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)
@@ -145,7 +164,8 @@ of those checks catches). What matters for a *command* is only that the
 validation which can disconnect you runs before the parse does — so a command
 whose text is illegal never reaches the dispatcher at all.
 
-**The authoritative parse is the server's**, with a `CommandSourceStack`
+**The authoritative parse is the server's** —
+`ServerGamePacketListenerImpl.parseCommand` — with a `CommandSourceStack`
 from `ServerPlayer.createCommandSourceStack` carrying the real permission
 set, and Brigadier consults each node's requirement *during* that parse.
 Execution then is not a Java call: `Commands.performCommand` flattens the
@@ -153,8 +173,8 @@ parse into a context chain and hands it to
 `Commands.executeCommandInContext`, which is
 [the execution engine](the-execution-engine.md).
 
-**`/give` itself is unremarkable and instructive.**
-`EntityArgument.getPlayers` resolves the selector, `ItemArgument.getItem`
+**`/give` itself is unremarkable and instructive.** Its lambda calls
+`GiveCommand.giveItem`: `EntityArgument.getPlayers` resolves the selector, `ItemArgument.getItem`
 hands over the `ItemInput` that was built during *parsing*,
 `ItemInput.createItemStack` validates it, and the stacks go through
 `Inventory.add` with anything that will not fit dropped on the floor

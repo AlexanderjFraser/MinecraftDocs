@@ -43,24 +43,49 @@ Three types do three jobs that a single integer used to do, and keeping them
 apart is what makes the rest legible.
 
 ```mermaid
-flowchart TB
-    subgraph Q["THE QUESTION — Permission"]
-        A["Permission.Atom — an Identifier: commands/entity_selectors, chat/send_messages"]
-        L["Permission.HasCommandLevel — a PermissionLevel: all, moderators, gamemasters, admins, owners"]
-    end
-    subgraph S["THE ANSWER — PermissionSet, one method"]
-        LB["LevelBasedPermissionSet — a rung. Satisfies any level at or below it, plus the entity-selector atom from gamemaster up, and nothing else"]
-        CH["ChatAbilities — a literal Set of the four chat atoms, minus whatever local restrictions removed"]
-        CL["ClientPacketListener's two — the player's own set OR-ed with a synthetic restricted atom, and NO_PERMISSIONS"]
-        UN["PermissionSetUnion — OR over the above. Refuses to contain another union"]
-    end
-    subgraph C["THE CHECK — PermissionCheck, what a node holds"]
-        RQ["PermissionCheck.Require — asks the source's set one question"]
-        AP["PermissionCheck.AlwaysPass — a singleton, and Commands.LEVEL_ALL is literally it"]
-    end
-    Q --> S
-    S --> C
+classDiagram
+    class PermissionProviderCheck {
+        PermissionCheck test
+    }
+    class PermissionCheck {
+        <<interface>>
+        boolean check(PermissionSet)
+    }
+    class Require["PermissionCheck.Require"] {
+        Permission permission
+    }
+    class AlwaysPass["PermissionCheck.AlwaysPass"]
+    class PermissionSet {
+        <<interface>>
+        boolean hasPermission(Permission)
+    }
+    class Permission {
+        <<interface>>
+    }
+    class Atom["Permission.Atom"] {
+        Identifier id
+    }
+    class HasCommandLevel["Permission.HasCommandLevel"] {
+        PermissionLevel level
+    }
+    class LevelBasedPermissionSet {
+        <<interface>>
+    }
+    class ChatAbilities
+
+    PermissionProviderCheck --> PermissionCheck : the check
+    PermissionCheck <|.. Require
+    PermissionCheck <|.. AlwaysPass
+    Require ..> PermissionSet : asks the source's set
+    Require --> Permission : the question
+    Permission <|.. Atom
+    Permission <|.. HasCommandLevel
+    PermissionSet <|-- LevelBasedPermissionSet
+    PermissionSet <|.. PermissionSetUnion
+    ChatAbilities --> PermissionSet : holds one
 ```
+
+*The three roles as types — the check a node holds at the top, the question it asks, and the set that answers; a hollow arrowhead reads as "is a kind of", a solid arrow as "holds", and the dotted one is the single call that joins them.*
 
 `Permissions` holds all nine the game defines, and the split is four to five:
 four `Permission.HasCommandLevel` constants — one per rung above zero — and
@@ -238,27 +263,35 @@ itself. A **sign does not**. A sign's click command is stored in the block entit
 and never travels to the client as a command at all: `SignBlockEntity` runs
 it on the server, through a `CommandSourceStack` it builds itself at a
 hard-coded `LevelBasedPermissionSet.GAMEMASTER`. There is nothing for the
-client to vet, because the client was never told what the text does.
+client to vet, because the client was never told what the text does. The
+figure is the route the other two take.
 
 ```mermaid
-flowchart TB
-    IN["an unattended command — a dialog button, a chat click event"]
-    IN --> P1{"parses against the ordinary source?"}
-    P1 -- no --> E1["PARSE_ERRORS — confirm: parse errors"]
+flowchart TD
+    IN["an unattended command — a dialog button or a chat click"]
+    IN --> P1{"parses with your own set?"}
+    P1 -- no --> E1["PARSE_ERRORS"]
     P1 -- yes --> P2{"any signable argument?"}
-    P2 -- yes --> E2["SIGNATURE_REQUIRED — confirm: signature required"]
-    P2 -- no --> P3{"parses against the NO_PERMISSIONS source too?"}
-    P3 -- no --> E3["PERMISSIONS_REQUIRED — confirm: permissions required"]
-    P3 -- yes --> OK["NO_ISSUES — send it"]
-    E1 --> CS["a ConfirmScreen: the player decides"]
-    E2 --> CS
-    E3 --> CS
+    P2 -- yes --> E2["SIGNATURE_REQUIRED"]
+    P2 -- no --> P3{"parses with NO_PERMISSIONS too?"}
+    P3 -- no --> E3["PERMISSIONS_REQUIRED"]
+    P3 -- yes --> OK["NO_ISSUES — sent, no screen"]
+    E1 --> RUN["ConfirmScreen — its button sends it"]
+    E3 --> RUN
+    E2 --> SUG["ConfirmScreen — its button puts it in the chat box, or copies it"]
 ```
+
+*`ClientPacketListener.verifyCommand`'s three tests in their order, and where each answer leads — only the clean command leaves with no screen, and the signed one is never sent from here at all.*
 
 `ClientPacketListener.verifyCommand` parses the same string against both
 sources and reads the *difference*. Succeeding with your set and failing
 without it means some node on the path was gated — which is as much as the
 client can ever know, because it was never told which permission or whose.
+Between the two parses sits a test that has nothing to do with permissions:
+`SignableCommand.hasSignableArguments`. An unattended command cannot be
+signed, so one that needs a signature is refused outright — its
+`ConfirmScreen` offers to put the command in the chat box for you to send yourself,
+or, when a screen is to follow or chat commands are off, to copy it.
 Three of the four outcomes pop a confirmation screen; the fourth,
 `ClientPacketListener.CommandCheckResult` *NO_ISSUES*, sends with no screen at all. So an unattended command that is
 merely *unusual* is always shown to you first — but a clean one goes

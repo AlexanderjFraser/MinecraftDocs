@@ -5002,16 +5002,16 @@ these are new.*
 
 ### For pass 7 (the figures)
 
-- **`reference/lanes.md` reserves `EC`, `CallF` and `ContT` and no page in the
+- ~~**`reference/lanes.md` reserves `EC`, `CallF` and `ContT` and no page in the
   book uses any of them.** They are left over from a sequence diagram
   `the-execution-engine` no longer has; the page's figures are all flowcharts
-  now. Three rows to prune, and they are in pass 7's 45. [kind=figure]
-- **`brigadier-and-commands`' trace node says `performCommand` reads its
+  now. Three rows to prune, and they are in pass 7's 45. [kind=figure]~~ **overtaken, pass 7 session M — left for session O's prune**: the page's figure is a flowchart and names none of the three, so nothing on the page holds them; the rows go with the other unused ones at the close, as the runbook says.
+- ~~**`brigadier-and-commands`' trace node says `performCommand` reads its
   limits "from the level's game rules"**, and `the-execution-engine` spends a
   parenthesis explaining that no level has rules of its own. Both are true —
   `Commands.executeCommandInContext` really does go through
   `context.getLevel().getGameRules()` — and the label is the reason the
-  parenthesis has to exist. Reword the node, not the prose. [kind=figure]
+  parenthesis has to exist. Reword the node, not the prose. [kind=figure]~~ **done, pass 7 session M** — the node is gone; the trace now shows `ServerGamePacketListenerImpl.parseCommand` then `Commands.performCommand` with no claim about limits, so the engine page's parenthesis stands on its own.
 - **Part XIII's figures are flowcharts where the part's argument is a
   sequence.** Eight of its thirteen diagrams are `flowchart`s, including three that
   draw a thing happening in order (the permission model, the unattended-command
@@ -6372,31 +6372,31 @@ it logged. The corrections it made are in [pass9.md](pass9.md).*
 
 **For pass 7 — the figures.**
 
-- `entity-selectors`' *Resolve* flowchart routes the players-only branch
+- ~~`entity-selectors`' *Resolve* flowchart routes the players-only branch
   straight to one `findPlayers` node and so skips both decisions the prose
   under it makes: `EntitySelector.findPlayers` takes the bare-name and UUID
   branches too, and it chooses between `ServerLevel.getPlayers` and
   `PlayerList.getPlayers` on exactly the world-limited flag the figure asks
   about only on the other branch. Session M corrected the node's *label* (it
   said "always", which read as "not world-limited") but the **shape** is
-  wrong and is pass 7's. [kind=figure]
-- `permissions`' first figure is a taxonomy wired with pipeline arrows:
+  wrong and is pass 7's. [kind=figure]~~ **done, pass 7 session M** — the shape is fixed: the non-players question is asked where the two answers part (after the UUID test, and after world-limited, where a player list is walked), and the redraw found the UUID leaf on the entities branch wrong too (`ServerLevel.getEntity` level by level, not `PlayerList.getPlayer`). [pass9.md](pass9.md).
+- ~~`permissions`' first figure is a taxonomy wired with pipeline arrows:
   `Q --> S --> C` asserts that a question becomes an answer becomes a check,
   and the prose under it describes three co-existing roles. Its `CL` node is
   also the densest label on the page and names two client sets the page does
-  not explain for another hundred and twenty lines. [kind=figure]
-- `brigadier-and-commands`' trace opens on two `CSug->>CPL` arrows, which
+  not explain for another hundred and twenty lines. [kind=figure]~~ **done, pass 7 session M** — a `classDiagram` now: the check a node holds, the question, the set that answers, with *is a kind of* and *holds* as the only arrows; the `CL` node is gone, and the redraw found `ChatAbilities` drawn as a set when it holds one.
+- ~~`brigadier-and-commands`' trace opens on two `CSug->>CPL` arrows, which
   read as messages sent, immediately under a paragraph whose whole point is
   that the parse never leaves the machine. The page never says that
   `ClientPacketListener` is where the client's dispatcher lives, which is
-  what would make those two arrows legible. [kind=figure]
-- `the-execution-engine`'s four-panel queue figure uses `---` (panel 3) and
+  what would make those two arrows legible. [kind=figure]~~ **done, pass 7 session M** — the first arrow is now `ClientPacketListener.getCommands`, the dispatcher the widget parses against, and the prose says so; the second was `CommandDispatcher`'s method drawn arriving at the listener and is gone. Client and server are boxes.
+- ~~`the-execution-engine`'s four-panel queue figure uses `---` (panel 3) and
   `-.-` (panel 2) with no stated meaning, in a figure whose whole subject is
   queue *order*. Session M fixed panel 4, which claimed a materialisation it
-  did not draw. [kind=figure]
-- `game-tests`' *The objects, and how they nest* has unlabelled edges between
+  did not draw. [kind=figure]~~ **done, pass 7 session M** — both marks are gone; an arrow inside a panel runs from the head to the entry behind it and the caption says so. The redraw found the old panel 4 a step ahead of its title, and the cost rule in two sentences needing *modifier* stage.
+- ~~`game-tests`' *The objects, and how they nest* has unlabelled edges between
   its three subgraphs, a third subgraph with no internal edges at all, and
-  two node labels that repeat cast-table rows verbatim. [kind=figure]
+  two node labels that repeat cast-table rows verbatim. [kind=figure]~~ **done, pass 7 session M** — a `classDiagram` with every arrow labelled; `TestBlock` left for its own section.
 
 **For pass 8 — the voice.**
 
@@ -7032,3 +7032,49 @@ Part 3; these are the pieces of work that ruling created.
   verbs (*reseed*, *pick*, *measure*, *out if*) — the gate notes them under
   F12(d) and they read well, but pass 8 should settle one register for a
   self-message's first word. [kind=voice]
+
+**From pass 7, session M — Part XIII.** [kind=book]
+
+- **Part XIII's sections that wanted a figure and did not get one**, as the
+  viewers asked: `functions-and-macros`' *What calls a function, and when* —
+  the densest order-and-cycle section in the part, the tick's first zone, the
+  reload snapshot and the schedule's one clock; `the-execution-engine`'s
+  `/return` discard rule — a queue with each entry's depth and the point where
+  *pop while depth ≥ d* stops; `dialogs`' *Four ways a dialog opens* — three
+  routes converging on `ServerPlayer.openDialog` and a tag that needs no
+  server; `permissions`' *Where a set comes from* — an ordered cascade;
+  `brigadier-and-commands`' pruning of unknown argument types on the wire;
+  `advancements`' place of `PlayerAdvancements.flushDirty` in a player's two
+  tick brackets, which is where the one-tick `LOCATION` delay lives. None was
+  drawn: each is a new claim. [kind=book]
+- **`game-tests`' four reporting places are a list the prose reads aloud**
+  (chat, block, progress bar, report — with the report in two formats); a
+  two-column table would stop the count being carried by a sentence.
+  [kind=book]
+
+**For pass 8, from pass 7 session M.**
+
+- `brigadier-and-commands`' *Three parsers see one string* is the heading,
+  and the page now draws them as *parse 1*, *parse 2*, *parse 3* while the
+  prose says *parsers*; the three are one dispatcher type run three times,
+  so whether the word is *parsers* or *parses* is voice. [kind=voice]
+- Two captions in this part say how to read an arrow in their own figure
+  (`permissions`' class diagram, `the-execution-engine`'s queue) — pass 8
+  should settle whether a caption's *how to read it* clause has one form
+  across the book. [kind=voice]
+
+**For session O, from pass 7 session M.** [kind=figure]
+
+- **The brief's F18 regex is blind to a break one or two letters after a
+  dot.** `[A-Za-z]{3,}-` misses `SimpleCriterionTrigger.tr-` and
+  `GameTestInstance.run(h-`, both live in Part XIII when this session looked;
+  the check this session used adds `[A-Za-z].[a-z]{1,2}-`. Session O's
+  corpus re-measure should run the wider one, or the count of names broken on
+  screen will read low. Over the whole render on 2026-09-16, after this
+  session, it finds **20** — Part III 4 (`how-a-server-dies` f2,
+  `players-and-sessions` f1), Part IV 8 (`chunk-storage` f2,
+  `points-of-interest` f2, `scheduled-ticks` f3, `tickets-and-loading` f3),
+  Part V 6 (`block-entities` f1, `block-interaction` f2, `signal-and-dust`
+  f2) and Part XI 2 (session K's) — against 19 for the narrow one; Parts III
+  to V closed before session J wrote the regex, so theirs are not a lapse,
+  but they are live. [kind=figure]

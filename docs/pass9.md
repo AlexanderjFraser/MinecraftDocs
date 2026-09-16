@@ -44,6 +44,273 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session M — Part XIII · Commands and data packs: the figures *(2026-09-16)*
+
+Ten pages, 13 figures (the count unchanged). Every figure captioned, every
+caption one italic run; the figure-name gate is **0 unresolved and 2 notes**
+for the part (was 4 and 7; the two are bare-word message heads, F12(d));
+nothing is below **0.78** or under **12.5px** (was 0.69 and 11.1px); no lane
+is over six (was seven on `advancements` and `scoreboard-and-data`); no label
+overlaps another or sits on a node (was four figures); and **no Mojang name is
+hyphen-broken on screen** (eight were). Two figures changed kind to
+`classDiagram` (`permissions` f1, `game-tests` f1), the book's ninth and
+tenth.
+
+### Figures redrawn, and the orderings they assert
+
+- **`commands/README` figure 1** — `TD` with the four systems on the top floor,
+  as the prose calls it (`TB` drew them at the bottom); the floors' internal
+  `---` links, a mark outside F3's table, are layout-only; the two arrows read
+  *is built on*; titles short enough not to be clipped. Asserts nothing about
+  the game. Caption: *nothing on the top floor points at another box there*.
+- **`brigadier-and-commands` figure 1** — Client and Server boxes; the
+  ask-server round trip in an `opt` frame; the server thread as a band.
+  Asserts, in order: `CommandSuggestions` gets the dispatcher from
+  `ClientPacketListener.getCommands` and parses on every keystroke
+  (`CommandSuggestions.updateCommandInfo`); only for an ask-server node,
+  `ClientSuggestionProvider.customSuggestion` sends
+  `ServerboundCommandSuggestionPacket`, the reply lands on
+  `ClientPacketListener` and is forwarded to
+  `ClientSuggestionProvider.completeCustomSuggestions`; on Enter
+  `ClientPacketListener.sendCommand` parses again and sends
+  `ServerboundChatCommandPacket`; `ServerGamePacketListenerImpl.tryHandleChat`
+  runs on the Netty thread; then, on the server thread,
+  `ServerGamePacketListenerImpl.parseCommand`, `Commands.performCommand`, the
+  registered lambda, `GiveCommand.giveItem`. Caption: *`/give` has none* (no
+  ask-server node).
+- **`permissions` figure 1** — a flowchart of three bands wired
+  question → answer → check becomes a class diagram. Asserts:
+  `PermissionProviderCheck` holds a `PermissionCheck`; `PermissionCheck.Require`
+  and `PermissionCheck.AlwaysPass` implement it; `Require` holds a `Permission`
+  and asks the source's `PermissionSet`; `Permission.Atom` and
+  `Permission.HasCommandLevel` implement `Permission`;
+  `LevelBasedPermissionSet` extends `PermissionSet`; `PermissionSetUnion`
+  implements it; `ChatAbilities` **holds** one. The `ClientPacketListener`
+  node (its two sets) is gone.
+- **`permissions` figure 2** — `TD`. Asserts the order of
+  `ClientPacketListener.verifyCommand`'s tests — parse with your own set, then
+  signable arguments, then parse with `PermissionSet.NO_PERMISSIONS` — and that
+  the parse-error and permissions outcomes open a `ConfirmScreen` whose button
+  sends, the signature outcome one whose button suggests or copies, and only
+  the clean outcome sends with no screen.
+- **`entity-selectors` figure 1** — titles shortened so neither is clipped
+  (*at parse time*, *per execution*); the compile box's three products no
+  longer joined by an unexplained `---`.
+- **`entity-selectors` figure 2** — redrawn. Asserts: a bare name goes to
+  `PlayerList.getPlayerByName` whatever the scope; a UUID goes to
+  `ServerLevel.getEntity` level by level when non-players are in scope and to
+  `PlayerList.getPlayer` when not; *@s* tests the source's own entity; the
+  three shortcuts return with no sort and no cut; otherwise world-limited
+  picks this level or every level, then players-only walks a player list and
+  the rest take the box query or the lookup walk; every walk ends in *sort
+  unless arbitrary, then cut*.
+- **`the-execution-engine` figure 1** — four panels, `TD`, titles short;
+  the starting entry (`BuildContexts.TopLevel`, depth 0) is in the lead-in.
+  Asserts the queue after entry 1 ran (a `ContinuationTask` alone), after the
+  task ran (A's entry, then the task behind it), after A's entry ran (the task
+  alone, B not yet made), after the task ran again (B's entry, then the task);
+  all at depth 0 in the top frame. Caption: `ExecuteCommand` is the leaf task
+  in `commands/execution/tasks`.
+- **`functions-and-macros` figure 1** — eight sentence boxes become a decision
+  flowchart. Asserts: one dollar line makes a `MacroFunction`, otherwise a
+  `PlainTextFunction`; instantiating a plain one returns itself; a macro one
+  fails with `FunctionInstantiationException` when arguments are missing or
+  the substituted text does not parse; `/function` reports that and a tag
+  swallows it; the `InstantiatedFunction` is queued by `CallFunction`.
+- **`advancements` figure 1** — seven lanes to six (`AdvancementRewards`
+  folded), Server and Client boxes, the server half one `ServerPlayer.tick`
+  band. Asserts: `ServerPlayer` calls
+  `AbstractContainerMenu.broadcastChanges`; the menu calls
+  `ContainerListener.slotChanged` on the player's own listener; the player
+  fires `InventoryChangeTrigger.trigger`; the sweep, the test, `award` after
+  the sweep; `PlayerAdvancements.unregisterListeners` then the rewards; the
+  root marked; `PlayerAdvancements.flushDirty` last in the tick, then
+  `PlayerAdvancements.updateTreeVisibility`; the packet; then
+  `ClientAdvancements.update` rebuilds, reconciles and adds the toast.
+- **`scoreboard-and-data` figure 1** — seven lanes to six (`Commands`
+  dropped), Server and Client boxes. Asserts: the *as @a* fork in
+  `BuildContexts`; the store modifier once per source, with
+  `ExecuteCommand.storeValue` chaining the callback; the leaf
+  `DataCommands.getData` once per source, building the whole save tag, then
+  the path and the collapse; the result returns to the source's callback;
+  `ExecuteCommand` calls `ServerScoreboard.getOrCreatePlayerScore` **and then
+  `ScoreAccess.set` itself**; `ScoreAccess` calls
+  `ServerScoreboard.onScoreChanged` only if changed or new; the packet only
+  for a displayed objective; `ClientPacketListener.handleSetScore` builds a
+  name-only holder.
+- **`dialogs` figure 1** — `RegistryDataLoader` lane dropped, a
+  `DialogControlSet` lane added (key row `DCS`), Server and Client boxes.
+  Asserts: `DialogCommand` → `ServerPlayer.openDialog` →
+  `ClientboundShowDialogPacket` (a holder id or inline) →
+  `ClientCommonPacketListenerImpl.handleShowDialog`, which builds the screen;
+  `DialogScreen` → `DialogControlSet.addInput` per input; at the click the
+  control set's action reads the getters, then `DialogScreen.runAction`, then
+  `DialogConnectionAccess.sendCustomAction` → the listener →
+  `ServerboundCustomClickActionPacket` → `MinecraftServer.handleCustomClickAction`.
+- **`game-tests` figure 1** — three bands become a class diagram. Asserts:
+  `GameTestInstance` holds `TestData` (`info`) and has
+  `GameTestInstance.run`; `TestData` names the environment;
+  `GameTestBatch` is keyed by an environment and holds up to fifty
+  `GameTestInfo`s; `GameTestInfo` holds its test and its
+  `TestInstanceBlockEntity` and makes a new `GameTestHelper` at tick zero;
+  `GameTestHelper` holds its `GameTestInfo`. `TestBlock` left to its section.
+- **`game-tests` figure 2** — the tick-driven half is a band. Asserts:
+  `GameTestRunner` calls `GameTestInfo.prepareTestStructure` for each run,
+  which calls `TestInstanceBlockEntity.placeStructure` then
+  `TestInstanceBlockEntity.encaseStructure`; **then** the environment is
+  activated; then the placed runs are added to `GameTestTicker`; each tick
+  `GameTestTicker` ticks the run; at zero `GameTestInfo.startTest`; succeed or
+  fail; `GameTestListener.testPassed` or `GameTestListener.testFailed`;
+  `TestInstanceBlockEntity.setSuccess` or
+  `TestInstanceBlockEntity.setErrorMessage`; chat, then `GlobalTestReporter`.
+  Caption: the beam is *green, red, or orange for an optional test that
+  failed*.
+
+### Captions written (claims about what each figure shows)
+
+Thirteen, one per figure; each is quoted in the page directly under its
+figure. The ones that state a fact beyond the drawing: `brigadier-and-commands`
+(*`/give` has none*); `functions-and-macros` (*only the macro branch can fail
+there*); `advancements` (*everything on the server happens inside the tick
+that saw the slot change*); `dialogs` (*a handler that, in vanilla, writes a
+debug log line and nothing else*); `game-tests` f2 (orange);
+`the-execution-engine` (every entry at depth 0 in the top frame).
+
+### Prose added (the one sentence a figure's name needed)
+
+- `brigadier-and-commands`: the client's dispatcher is the one
+  `ClientPacketListener.getCommands` hands the widget; the reply lands on
+  `ClientPacketListener.handleCommandSuggestions`, which forwards it;
+  `ChatScreen` calls `ClientPacketListener.sendCommand`; the plain packet is
+  `ServerboundChatCommandPacket`; `ServerGamePacketListenerImpl.tryHandleChat`
+  refuses illegal characters on the Netty thread; the server's parse is
+  `ServerGamePacketListenerImpl.parseCommand`; the lambda calls
+  `GiveCommand.giveItem`.
+- `permissions`: a paragraph on `SignableCommand.hasSignableArguments` — an
+  unattended command cannot be signed, so its `ConfirmScreen` offers to put it
+  in the chat box or, when a screen is to follow or chat commands are off, to
+  copy it (`ClientPacketListener.openSignedCommandSendConfirmationWindow`).
+- `entity-selectors`: *Three shortcuts come first* (name, UUID, *@s*; none is
+  sorted or cut).
+- `the-execution-engine`: the lead-in names the starting entry.
+- `functions-and-macros`: a lead-in.
+- `advancements`: the slot change reaches the trigger through the player's own
+  `ContainerListener`; the flush is one `ClientboundUpdateAdvancementsPacket`
+  and runs `PlayerAdvancements.updateTreeVisibility` once per dirty root;
+  `ClientAdvancements.update` removes and adds nodes, reconciles progress,
+  and adds an `AdvancementToast` for each now-done advancement whose display
+  asks for one, with a sound only for a challenge. *Each arrow is a decision*
+  became *The paragraphs below take its arrows in order*.
+- `scoreboard-and-data`: a lead-in naming `BuildContexts`; the same
+  *take its arrows in order* change; `ClientPacketListener.handleSetScore`
+  builds only a name-only holder.
+- `dialogs`: `DialogControlSet.addInput` registers the getters; the click goes
+  through `DialogScreen.runAction` and
+  `DialogConnectionAccess.sendCustomAction`; the play-phase packet names a
+  registered dialog by holder id and sends an unregistered one inline, and
+  the configuration-phase packet is always inline.
+- `game-tests`: *The structure comes first, then the environment*;
+  `GameTestInfo.startTest` hands the body a new helper; the listener chain's
+  two calls and the block entity's two setters.
+
+### Corrections
+
+- **`brigadier-and-commands` figure 1** — drew `getCompletionSuggestions`
+  arriving at `ClientPacketListener`; it is `CommandDispatcher`'s, called by
+  `CommandSuggestions.updateCommandInfo` on the dispatcher it fetched with
+  `ClientPacketListener.getCommands` (`CommandSuggestions.java`:225–235,
+  `ClientPacketListener.java`:2770).
+- **`brigadier-and-commands` figure 1** — the suggestion reply ended on
+  `ClientPacketListener`; `ClientPacketListener.handleCommandSuggestions`
+  forwards it to `ClientSuggestionProvider.completeCustomSuggestions`, where
+  the id is matched (`ClientPacketListener.java`:1755–1757).
+- **`brigadier-and-commands` figure 1** — the prose under it says all three
+  parses are *in there*; the figure drew two. The second,
+  `ClientPacketListener.sendCommand`, called from `ChatScreen`
+  (`ChatScreen.java`:351), is drawn now.
+- **`brigadier-and-commands` figure 1** — drew the server's parse on
+  `Commands`; it is `ServerGamePacketListenerImpl.parseCommand`, and
+  `performUnsignedChatCommand` then calls `Commands.performCommand`
+  (`ServerGamePacketListenerImpl.java`:1713–1720, :1823). The Netty-side
+  check is `tryHandleChat`, which then calls `server.execute` (:1829–1837).
+- **`brigadier-and-commands` figure 1** — a self-message on `GiveCommand`
+  named `Inventory.add` and `CommandSourceStack.sendSuccess`; they are called
+  from `GiveCommand.giveItem` (`GiveCommand.java`:38, :58, :80), which the
+  label now names.
+- **`permissions` figure 1** — listed `ChatAbilities` among the sets that
+  answer; it is a plain class that holds a `PermissionSet`, a lambda over a
+  literal set (`ChatAbilities.java`:14, :18, :34).
+- **`permissions` figure 2** — drew all three non-clean outcomes converging
+  on one *the player decides* screen; the signature outcome's confirmation
+  never sends — its button suggests the command into chat or copies it
+  (`ClientPacketListener.java`:2890–2903), while the other two send
+  (:2883–2887).
+- **`entity-selectors` figure 2** — the players-only branch skipped the name,
+  UUID, *@s* and world-limited decisions `EntitySelector.findPlayers` makes
+  (`EntitySelector.java`:207–258).
+- **`entity-selectors` figure 2** — the UUID leaf on the entities branch said
+  `PlayerList.getPlayer`; `EntitySelector.findEntities` looks the UUID up in
+  every level with `ServerLevel.getEntity` (`EntitySelector.java`:131–146);
+  `PlayerList.getPlayer` is the players-only branch's (:214).
+- **`the-execution-engine` figure 1** — the fourth panel's title (*A's say hi
+  is done*) sat over the queue one step later, after the task had run again;
+  at that moment the queue is the task alone (`ContinuationTask.java`:23–29).
+- **`the-execution-engine`**, prose — *one cost unit per stage* and *the
+  modifier stage that forked … was the single unit charged*;
+  `BuildContexts.execute` charges only a stage whose redirect modifier is
+  non-null, after the custom-modifier hand-off (`BuildContexts.java`, the
+  stage loop: `if (modifier != null) { context.incrementCost(); …`), so this
+  chain pays for *as @a* and *at @s*, not *run* — two units. Both sentences
+  now say so.
+- **`advancements` figure 1** — the toast self-message said *silent unless it
+  is a CHALLENGE*; `ClientAdvancements.update` adds the toast whenever the
+  packet allows and `DisplayInfo.shouldShowToast` says so
+  (`ClientAdvancements.java`:61–70), and only its sound depends on
+  `AdvancementType.CHALLENGE` (`AdvancementToast.java`:56, :62).
+- **`scoreboard-and-data` figure 1** — drew `ServerScoreboard` calling
+  `ScoreAccess.set`; the store callback made by `ExecuteCommand.storeValue`
+  calls `getOrCreatePlayerScore` and then `ScoreAccess.set` itself
+  (`ExecuteCommand.java`:284–298).
+- **`scoreboard-and-data` figure 1** — put the display-slot condition on the
+  `ScoreAccess` → `ServerScoreboard` arrow; that arrow's gate is *changed or
+  new*, and the display-slot gate is inside `ServerScoreboard.onScoreChanged`
+  (`ServerScoreboard.java`:60–66) — two gates, now on two arrows.
+- **`dialogs` figure 1** — drew `DialogScreens.createFromData` arriving at
+  `DialogScreen`; it is called inside
+  `ClientCommonPacketListenerImpl.showDialog`, after `handleShowDialog`
+  (`ClientCommonPacketListenerImpl.java`:270–293).
+- **`dialogs` figure 1** — put `DialogControlSet.addInput` and
+  `Action.createAction` on the `DialogScreen` lane; `DialogControlSet` is its
+  own object — `DialogScreen` calls `addInput` on it (`DialogScreen.java`:82)
+  and its bound action calls `Action.createAction` at the click, then
+  `DialogScreen.runAction` (`DialogControlSet.java`:48–66).
+- **`dialogs` figure 1** — drew the reply from `DialogScreen` straight to
+  `MinecraftServer`; it goes `DialogScreen.handleDialogClickEvent` →
+  `DialogConnectionAccess.sendCustomAction` (`DialogScreen.java`:220) →
+  `ClientCommonPacketListenerImpl`'s access, which sends the packet (:522–524),
+  → `ServerCommonPacketListenerImpl.handleCustomClickAction` →
+  `MinecraftServer.handleCustomClickAction` (:103–105; `MinecraftServer.java`:2352).
+- **`game-tests` figure 2** — drew `succeed` arriving at
+  `ReportGameListener`; `GameTestInfo.succeed` is the run's own
+  (`GameTestInfo.java`:271), and the listener hears `testPassed` or
+  `testFailed` from `GameTestInfo.tick` (:116–125) — the caller's method at
+  the callee, **eleven parts of eleven**.
+- **`game-tests` figure 2** — drew `TestEnvironmentDefinition.setup` as
+  `GameTestRunner`'s own step; the runner calls
+  `TestEnvironmentDefinition.activate` (`GameTestRunner.java`:109), which
+  calls `setup` and keeps what it returns (`TestEnvironmentDefinition.java`:58–59).
+- **`game-tests` figure 2** — *green, red or orange* with orange explained
+  nowhere; orange is a failed optional test
+  (`TestInstanceBlockEntity.java`:64–66, :219–228). In the caption.
+
+### Tool change
+
+- **`tools/check_figure_names.py`** — a `classDiagram` member line was read
+  as a declaration only if its name had two CamelCase humps, so a one-word
+  method (`boolean check(PermissionSet)`) became a *note* and was never
+  checked against its box. It now reads a parenthesised one-word name too;
+  two probe cases; the only corpus change is that note, on `permissions`.
+
 ## Pass 7, session L — Part XII · World generation: the figures *(2026-09-16)*
 
 Eleven pages, 15 figures (the count unchanged: `density-functions`' three

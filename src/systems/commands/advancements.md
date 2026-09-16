@@ -57,34 +57,42 @@ rewards at all.
 
 ```mermaid
 sequenceDiagram
-    participant ACM as Abstract<br/>ContainerMenu
+    box Server
     participant SP as ServerPlayer
+    participant ACM as Abstract<br/>ContainerMenu
     participant ICT as Inventory<br/>ChangeTrigger
     participant PA as PlayerAdvancements
-    participant AR as Advancement<br/>Rewards
+    end
+    box Client
     participant CPL as ClientPacketListener
     participant CAdv as ClientAdvancements
+    end
 
-    ACM->>ACM: broadcastChanges — this slot differs from lastSlots
-    ACM->>SP: ContainerListener.slotChanged — which slot, which stack
-    SP->>ICT: trigger(player, inventory, stack) — count the 43 slots FIRST
-    ICT->>ICT: SimpleCriterionTrigger.trigger — is this player listening for this trigger at all?
-    ICT->>ICT: TriggerInstance.matches — one predicate, so test only the changed stack
-    ICT->>PA: award(mine_stone, get_stone) — after the sweep, never during
-    PA->>PA: unregisterListeners — the criterion is done, stop watching
-    PA->>AR: grant(player) — EMPTY here. XP, loot, recipes and a function otherwise
-    PA->>PA: markForVisibilityUpdate — the ROOT, not the advancement
-    Note over SP,PA: still the same tick — flushDirty is the last statement of ServerPlayer.tick
-    SP->>PA: flushDirty
-    PA->>PA: updateTreeVisibility — re-walk the whole story tree
-    PA->>CPL: ClientboundUpdateAdvancementsPacket — added, removed, visible progress
-    CPL->>CAdv: update — rebuild the tree, reconcile the progress
-    CAdv->>CAdv: AdvancementToast — and silent unless it is a CHALLENGE
+    rect rgba(0, 0, 0, 0.04)
+    Note over SP,PA: one ServerPlayer.tick
+    SP->>ACM: broadcastChanges
+    ACM->>SP: ContainerListener.slotChanged, on the player's own listener
+    SP->>ICT: trigger — count all 43 slots first
+    ICT->>ICT: SimpleCriterion<br/>Trigger.trigger
+    ICT->>ICT: test the changed stack
+    ICT->>PA: award, after the sweep
+    PA->>PA: unregisterListeners, then the rewards
+    PA->>PA: markForVisibilityUpdate — the root
+    SP->>PA: flushDirty, the tick's last statement
+    PA->>PA: updateTreeVisibility — the whole tree
+    end
+    PA->>CPL: ClientboundUpdate<br/>AdvancementsPacket
+    CPL->>CAdv: update — rebuild, reconcile progress, add a toast
 ```
 
-Each arrow is a decision.
+*One stone pickup through the advancement system — everything on the server happens inside the tick that saw the slot change, and the client learns of it in the one packet the tick's last statement sends.*
 
-**Counting comes before knowing whether anyone cares.**
+The paragraphs below take its arrows in order.
+
+**Counting comes before knowing whether anyone cares.** The slot change
+reaches the trigger through the `ContainerListener` every `ServerPlayer`
+installs on its own menus, whose `ContainerListener.slotChanged` fires
+`CriteriaTriggers.INVENTORY_CHANGED`.
 `InventoryChangeTrigger.trigger` walks all forty-three slots — thirty-six
 inventory plus seven equipment — to compute the occupied, full and empty
 counts *before* it asks whether any criterion is listening. That is the
@@ -152,12 +160,13 @@ satisfy the guard, so the loop never does anything.
 ## Visibility is per root, and it gates the wire
 
 `PlayerAdvancements.markForVisibilityUpdate` dirties the **root**, and the
-flush re-runs `AdvancementVisibilityEvaluator` — the "how far past your
+flush — `PlayerAdvancements.updateTreeVisibility`, once per dirty root — re-runs `AdvancementVisibilityEvaluator` — the "how far past your
 frontier can you see" rule, with a depth of two — over that root's entire
 subtree. Finishing one advancement in a large tree re-evaluates the whole
 tree, and only the nodes whose visibility actually *flipped* go on the wire.
 
-`PlayerAdvancements.flushDirty` then sends progress **only for advancements
+`PlayerAdvancements.flushDirty` then sends one
+`ClientboundUpdateAdvancementsPacket`, with progress **only for advancements
 in `PlayerAdvancements.visible`**. Progress on something hidden, or beyond
 your frontier, accumulates server-side and reaches the client the moment it
 becomes visible.
@@ -233,7 +242,11 @@ order inside a tidy-tree layout is hash-dependent.
 
 `ClientAdvancements` consumes `AdvancementTree.Listener`, and
 `AdvancementTree.setListener` replays every existing root and task at a new
-listener immediately, which is how the screen catches up on open.
+listener immediately, which is how the screen catches up on open. Each packet is applied by
+`ClientAdvancements.update`: it removes and adds tree nodes, reconciles every
+progress it was sent against that advancement's requirements, and — for each
+now done whose display asks for it — adds an `AdvancementToast`, which plays
+a sound only for a challenge.
 `AdvancementsScreen` owns the tab strip; `AdvancementTab` owns one root's
 pan-and-scroll bounds, auto-centres on first render and clamps the drag;
 `AdvancementWidget` scales the server-decided coordinates by a fixed factor,

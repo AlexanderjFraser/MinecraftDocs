@@ -63,35 +63,52 @@ are interfaces, not classes.
 
 ```mermaid
 sequenceDiagram
-    participant RDL as RegistryDataLoader
+    box Server
     participant DlgC as DialogCommand
     participant SP as ServerPlayer
+    participant MS as MinecraftServer
+    end
+    box Client
     participant CComPL as ClientCommon<br/>PacketListenerImpl
     participant DlgS as DialogScreen
-    participant MS as MinecraftServer
+    participant DCS as DialogControlSet
+    end
 
-    RDL->>RDL: Registries.DIALOG from data/ns/dialog — and synced at configuration
-    DlgC->>SP: openDialog(holder) — /dialog show, or a ClickEvent.ShowDialog anywhere
-    SP->>CComPL: ClientboundShowDialogPacket — a holder id, or the whole dialog inline
-    CComPL->>DlgS: DialogScreens.createFromData — pick the screen for the codec
-    DlgS->>DlgS: DialogControlSet.addInput — each input registers an Action.ValueGetter
-    DlgS->>DlgS: click — Action.createAction reads the getters NOW, not earlier
-    DlgS->>MS: ServerboundCustomClickActionPacket — an id plus the inputs as NBT
-    MS->>MS: handleCustomClickAction — vanilla logs it at debug and stops
+    DlgC->>SP: openDialog
+    SP->>CComPL: ClientboundShowDialogPacket — a holder id, or inline
+    CComPL->>CComPL: handleShowDialog — a screen for the dialog's type
+    CComPL->>DlgS: the new screen
+    DlgS->>DCS: addInput, per input — a live getter each
+    DCS->>DCS: the click — the action reads the getters now
+    DCS->>DlgS: runAction, with the click event it made
+    DlgS->>CComPL: DialogConnectionAccess.<br/>sendCustomAction
+    CComPL->>MS: ServerboundCustom<br/>ClickActionPacket
+    MS->>MS: handleCustom<br/>ClickAction
 ```
 
+*One `/dialog show` and one click on a custom button — the input values are read at the click, by the control set that has held a live getter for each input since the screen was built, and the packet that carries them back reaches a handler that, in vanilla, writes a debug log line and nothing else.*
+
 The trace turns on one decision: **when are the input values read?** Not at
-packet time and not at screen construction. `DialogControlSet` keeps a map
-of live `Action.ValueGetter`s and `Action.createAction` calls them at the
+packet time and not at screen construction. `DialogControlSet.addInput`
+registers a live `Action.ValueGetter` for each input as the screen is built,
+and `Action.createAction` calls them at the
 moment of the click — which is why the same `Action` object produces a
 different command each time, and why `CommandTemplate` can be a template
-rather than a string. `ActionTypes` registers nine kinds. Seven are
+rather than a string. The button hands the click event it made to
+`DialogScreen.runAction`, and a custom one leaves through
+`DialogConnectionAccess.sendCustomAction`, the phase's way back to the
+server. `ActionTypes` registers nine kinds. Seven are
 generated in a loop over the click-event kinds a server is allowed to send,
 each keeping that kind's own name, so a click-event kind is automatically a
 dialog action — and the one kind that is not allowed, opening a local file,
 can never be one. The other two are registered by hand under names of their
 own: `CommandTemplate` as *dynamic/run_command*, and `CustomAll` as
 *dynamic/custom*, which packs every input value into an NBT compound.
+
+The packet on the way out is the play-phase form, which names a
+registered dialog by its holder id and sends an unregistered one inline; in
+the configuration phase the same packet is always inline, for the reason at
+the top of this page.
 
 Nothing on the server side of this ever ticks. A dialog is a packet send
 from whatever ran the command or handled the click; the reply hops off the

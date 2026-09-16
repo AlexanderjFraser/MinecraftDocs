@@ -44,40 +44,35 @@ the loop.
 
 ## The queue, four moments apart
 
-`/execute as @a at @s run say hi`, four players online. Read each panel as
-the queue at one moment, head at the top.
+`/execute as @a at @s run say hi`, four players online. The command starts
+as one entry — a `BuildContexts.TopLevel` holding the whole parsed chain, at
+depth 0 — and the figure is the queue at the four moments after that.
 
 ```mermaid
-flowchart TB
-    subgraph T1["1 · the command is queued"]
-        direction TB
-        A1["BuildContexts.TopLevel — the whole parsed chain, one entry, depth 0"]
+flowchart TD
+    subgraph T2["1 · that entry ran"]
+        B1["ContinuationTask over four players"]
     end
-    subgraph T2["2 · that entry ran, ALL of it"]
-        direction TB
-        B1["ContinuationTask over 4 sources"]
-        B2["as @a and at @s were walked inside entry 1 — 1 source became 4, and one cost unit was spent per stage"]
-        B1 -.- B2
+    subgraph T3["2 · the task ran"]
+        direction LR
+        C1["ExecuteCommand for A"] --> C2["ContinuationTask"]
     end
-    subgraph T3["3 · the continuation ran once"]
-        direction TB
-        C1["ExecuteCommand for player A"]
-        C2["ContinuationTask — B, C and D do not exist yet"]
-        C1 --- C2
+    subgraph T4["3 · A's say hi ran"]
+        D1["ContinuationTask — B is still not made"]
     end
-    subgraph T4["4 · A's say hi is done"]
-        direction TB
-        D1["ExecuteCommand for player B"]
-        D2["ContinuationTask — and only NOW was B materialised"]
-        D1 --- D2
+    subgraph T5["4 · the task ran again"]
+        direction LR
+        E1["ExecuteCommand for B"] --> E2["ContinuationTask"]
     end
-    T1 --> T2 --> T3 --> T4
+    T2 --> T3 --> T4 --> T5
 ```
+
+*The whole queue at four moments — an arrow inside a panel runs from the head to the entry behind it, an arrow between panels is one entry run, every entry shown shares the top frame at depth 0, and `ExecuteCommand` here is the leaf task in `commands/execution/tasks`, not the `/execute` command's class of the same name.*
 
 **A fork does not create frames, and it does not create entries.**
 `BuildContexts.execute` walks every non-execute stage inside a *single*
-queue entry, spending one cost unit per stage no matter how many sources
-that stage produces, and turning a one-element source list into an
+queue entry, spending one cost unit per modifier stage — here *as @a* and
+*at @s*, not *run* — no matter how many sources that stage produces, and turning a one-element source list into an
 N-element one. Frames are opened in exactly three places:
 `ExecutionContext.createTopFrame`, `CallFunction` and `IsolatedCall`. A
 hundred-player fork opens none.
@@ -228,8 +223,8 @@ ruled out. So a plain `execute run` costs nothing for its redirect, and
 **`execute if function` and `/return run` are free**: neither custom
 modifier ever reaches the counter. A `ContinuationTask` is free too, and that is
 the +1 an N-way fan-out does not pay: N leaves cost N, the continuation that
-materialised them costs nothing, and the modifier stage that forked in the
-first place was the single unit charged above.
+materialised them costs nothing, and each modifier stage that forked in the
+first place was charged one unit, however many sources it produced.
 
 ## The two commands that are part of the engine
 

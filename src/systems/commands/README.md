@@ -43,25 +43,24 @@ straight up into two of the top-floor systems — but nothing on the top floor
 reaches sideways.
 
 ```mermaid
-flowchart TB
-    subgraph P["PARSE — a string becomes a call"]
+flowchart TD
+    subgraph U["FOUR SYSTEMS"]
         direction LR
-        L1["1 · Brigadier and commands"] --- L2["2 · Permissions"] --- L2b["3 · Entity selectors"]
+        L5["6 · Advancements"] ~~~ L6["7 · Scores, teams<br/>and stored data"] ~~~ L7["8 · Dialogs"] ~~~ L8["9 · Game tests"]
     end
-    P --> X
-    subgraph X["EXECUTE — the call becomes work on a queue"]
+    U -->|"is built on"| X
+    subgraph X["EXECUTE"]
         direction LR
-        L3["4 · The execution engine"] --- L4["5 · Functions and macros"]
+        L3["4 · The execution engine"] ~~~ L4["5 · Functions and macros"]
     end
-    X --> U
-    subgraph U["WHAT COMMANDS ARE FOR — four systems whose write surface is a command"]
+    X -->|"is built on"| P
+    subgraph P["PARSE"]
         direction LR
-        L5["6 · Advancements"]
-        L6["7 · Scores, teams and stored data"]
-        L7["8 · Dialogs"]
-        L8["9 · Game tests"]
+        L1["1 · Brigadier and commands"] ~~~ L2["2 · Permissions"] ~~~ L2b["3 · Entity selectors"]
     end
 ```
+
+*The part as three floors, numbered in watching order — parsing turns a string into a call, execution turns the call into work on a queue, and the four systems on top are each written to by a command; an arrow means the floor it leaves is built on the floor it reaches, and nothing on the top floor points at another box there.*
 
 The four pages on the top floor are peers, not a sequence: watch them in any
 order, or only the ones you care about. The two floors below them are not
