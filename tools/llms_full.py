@@ -28,8 +28,10 @@ def expand(text: str, page_dir: str) -> str:
                     return (f"*(figure: {os.path.basename(target)} — a generated SVG on the site; its data follows)*"
                             + "\n\n" + fh.read().rstrip("\n"))
             return f"*(figure: {os.path.basename(target)} — a generated SVG, not reproduced here)*"
+        # an included fragment may include in turn (src/figures/ wraps a generated SVG), and
+        # mdBook resolves that include against the fragment's own directory
         with open(path, encoding="utf-8") as fh:
-            return fh.read().rstrip("\n")
+            return expand(fh.read().rstrip("\n"), os.path.dirname(path))
     return INCLUDE.sub(sub, text)
 
 

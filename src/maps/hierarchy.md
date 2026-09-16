@@ -18,7 +18,7 @@ class table is where the real trees are, and four of them are drawn below.
 
 <figure class="map">
 {{#include ../generated/tree-Entity.svg}}
-<figcaption>The <code>Entity</code> tree to three levels. The number is how many types descend from the node; subclasses with no subclasses of their own are folded into one italic line per parent. Click to enlarge.</figcaption>
+<figcaption>The <code>Entity</code> tree to three levels. The number is how many types descend from the node; subclasses with no subclasses of their own are folded into one italic line per parent, or named where a parent has only one. Click to enlarge.</figcaption>
 </figure>
 
 The shape is a spine with a few branches. `LivingEntity` holds 124 of the
@@ -55,7 +55,7 @@ block's behaviour and its registry identity can be separate classes.
 <figcaption>The <code>Item</code> tree to three levels. Click to enlarge.</figcaption>
 </figure>
 
-Seventy-one subclasses for over a thousand registered items. The tree is
+Seventy-one types descend from `Item`, for over a thousand registered items. The tree is
 small because an item's behaviour mostly is not in its class: what a stack
 does is in its data components, and `Items` registers most of the game
 as a plain `Item` with a `Item.Properties` describing it. Part VII's

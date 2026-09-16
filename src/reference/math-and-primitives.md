@@ -12,31 +12,24 @@ is answered by knowing which type a method takes.
 
 ## The coordinate spaces
 
-Six integer spaces and one double one, and every conversion is a named method
-— which is the figure: the spaces as nodes, the
-conversions as the edges between them, and the three that also pack to a
-long key.
+Six integer spaces and one double one, and every conversion is a named method.
+The figure is the spaces from the finest to the coarsest, each arrow the
+arithmetic of one step coarser; the table under it names the method for each
+arrow and, for all but `GlobalPos`, the way back, and the three that also pack to a long key are
+the next section's.
 
 ```mermaid
-flowchart LR
-    V["Vec3: a double world position"] -- "BlockPos.containing, which floors" --> B["BlockPos: one block, int"]
-    B -- "Vec3.atCenterOf, atLowerCornerOf, atBottomCenterOf" --> V
-    B -- "ChunkPos.containing, shift 4" --> C["ChunkPos: a 16-block column"]
-    C -- "ChunkPos.getMinBlockX, getWorldPosition" --> B
-    B -- "SectionPos.of, blockToSectionCoord, shift 4" --> S["SectionPos: a 16-cubed section"]
-    S -- "sectionToBlockCoord, sectionRelative masks 15" --> B
-    C -- "SectionPos.of, with a section y" --> S
-    B -- "QuartPos.fromBlock, shift 2" --> Q["QuartPos: a 4-block biome cell"]
-    Q -- "QuartPos.toBlock" --> B
-    S -- "QuartPos.fromSection" --> Q
-    Q -- "QuartPos.toSection" --> S
-    C -- "ChunkPos.getRegionX, getRegionLocalX, shift 5" --> R["region: 32 chunks, one .mca file"]
-    R -- "ChunkPos.minFromRegion" --> C
-    B -- "GlobalPos.of, plus a Level key" --> G["GlobalPos: a dimension and a block"]
-    B -- "BlockPos.asLong: 26-bit x and z, 12-bit y" --> L["long keys"]
-    S -- "SectionPos.asLong: 22-bit x and z, 20-bit y" --> L
-    C -- "ChunkPos.pack: 32 and 32" --> L
+flowchart TD
+    V["Vec3: a double position"] -- "floor" --> B["BlockPos: one block"]
+    B -- "shift 2" --> Q["QuartPos: a 4-block cell"]
+    Q -- "shift 2" --> S["SectionPos: a 16-block cube"]
+    B -- "shift 4" --> S
+    S -- "drop y" --> C["ChunkPos: a 16-block column"]
+    C -- "shift 5" --> R["region: 32 chunks a side, one file"]
+    B -- "plus a dimension" --> G["GlobalPos"]
 ```
+
+*The coordinate spaces as a ladder of sizes: after the first step, which floors, every step down is a right shift by as many bits as the next space is coarser, except the one that drops the y axis and the one that adds a dimension; the table names the method for each.*
 
 | space | unit | type | owner / notes | conversions |
 |---|---|---|---|---|

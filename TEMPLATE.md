@@ -466,11 +466,16 @@ it overwrites `mermaid-init.js` with the default, which wraps nothing.
   `node tools/check_mermaid.js` fails the rest, and its probe has the nine
   cases it was measured on.
 
-**A figure two pages share** is written once, as a mermaid block in a file
-under `src/figures/`, and each page includes it with `{{#include}}` — the
-parts-dependency graph is on the introduction and on `lectures.md` this
-way. One source, so the two copies cannot drift; the file is hand-kept and
-`verify_names.py` reads it like any page.
+**A figure two pages share** is written once, in a file under
+`src/figures/` — a mermaid block, or a generated figure's `<figure class="map">`
+with its caption — and each page includes it with `{{#include}}`. One source,
+so the two copies cannot drift; `verify_names.py` reads it like any page. The
+parts-dependency graph is the example, and it is generated: mermaid laid its
+27 arrows out with 26 crossings and the parts out of watch order, so
+`python tools/check_deps.py --write-figure` draws it from the landing pages
+as the line the prose calls it — the parts in one column, the solid arrows as
+arcs on one side, the two cuts on the other — and the gate fails when the
+file is stale.
 
 **A generated figure** (session B's pipeline, used by the atlas) is an SVG a
 tool under `tools/` writes into `src/generated/` — never hand-edited, always

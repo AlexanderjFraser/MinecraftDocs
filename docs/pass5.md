@@ -186,10 +186,10 @@ rewritten by its own part's session — and the glossary entry by entry.
   spokes*, for different systems; Part XI is *a substrate under a pipeline* and
   Part XII, read straight after it, is *a substrate, a pipeline, and a wing*.
   [kind=figure]
-- **The introduction's figure draws three threads** (Render, Server,
+- ~~**The introduction's figure draws three threads** (Render, Server,
   Worker-Main-n, with the wire as a box) under a paragraph that promises four.
   Whether the Netty loop should be a box or stay inside `Connection` is the
-  figure pass's call. [kind=figure]
+  figure pass's call. [kind=figure]~~ — **done, pass 7 session N**: the figure is now four subgraphs, one per thread, with the Netty loop a box of its own and *Worker-Main-n* named in the paragraph under it.
 
 **Wording debt — pass 8.**
 
@@ -1046,7 +1046,7 @@ looser or more repetitive than it should be.
 
 ### The generators' blind spots, now measured
 
-- **`verify_names.py` cannot see inside a mermaid block, and that is the
+- ~~**`verify_names.py` cannot see inside a mermaid block, and that is the
   corpus's largest unchecked surface.** 453 distinct class-shaped tokens appear
   only in a diagram and in no backtick on their page. Session O found one real
   error in them by hand (`BakedGlyph.renderChar`, which is
@@ -1057,7 +1057,7 @@ looser or more repetitive than it should be.
   ```` ```mermaid ```` fences, feed them to the same resolver, and let the index
   read them too. It will fail on lane ids and nested simple names, so it wants a
   pass over the first run's output, which is why it is pass-5 work and not a
-  gate change.
+  gate change.~~ — **overtaken** by pass 7's planning session: `check_figure_names.py` is that parser, and it feeds `verify_names.py --index`.
 - **23 simple names are shared by two files**, so a `Class.member` backtick [kind=voice]
   resolves against the union of both — `Connection` (99 corpus backticks,
   `network/` against `server/jsonrpc/`), `AttributeModifier` (13, and the two
@@ -2314,10 +2314,10 @@ correction):
   A): `verify_names.py --index` labels any `README.md` with its own `#`
   heading — *VI · Entities*, *Reference*, *The atlas* — which needs no table
   in the tool and follows a retitling. [kind=book]
-- **Teach the class index to read diagrams.** 135 class/page pairs and 112
+- ~~**Teach the class index to read diagrams.** 135 class/page pairs and 112
   classes are named only inside mermaid blocks (51 of them as
   `participant X as ClassName`), and 26 of those classes have no row at all.
-  The page now states the limitation; removing it is the better fix.
+  The page now states the limitation; removing it is the better fix.~~ — **overtaken**, the same way: the class index reads figures through `check_figure_names.py` since pass 7's planning session.
 - **The lane key carries 45 rows no page claims**, against session E's ruling
   that it is pruned to lanes in use. Three appear nowhere but `lanes.md`:
   `PTT`, `TCTD` and (until this session) `TDec`. `PTT` is `TEMPLATE.md`'s
@@ -5138,15 +5138,15 @@ for other passes and the cuts it logged.*
   settles the direction. Judge the direction and the heading together — the
   heading is an anchor seven pages land on, so the figure is the cheaper end.
   [kind=figure]~~ — **done, pass 7 session D**: the heading kept its anchor and the figure changed — `flowchart TD`, the default entering at the top and falling, and the client-only rungs off the trunk as a branch rather than two more steps in the stack, which they never were.
-- **The two client-only lightning rungs in the same figure** sit inline
+- ~~**The two client-only lightning rungs in the same figure** sit inline
   between weather and `sanitizeValue`, which reads as though the server
   passes through them too; the prose corrects it two paragraphs later. A
-  branch or a subgraph would say it in the picture. [kind=figure]
-- **Whether `Note over` counts as a step.** The reader tried to count the
+  branch or a subgraph would say it in the picture. [kind=figure]~~ — **overtaken**, pass 7 session D redrew `environment-attributes-and-timelines`' stack with the two lightning layers bolted to their one attribute each.
+- ~~**Whether `Note over` counts as a step.** The reader tried to count the
   arrows in the dusk sequence to find "the fifth" and got two answers. The
   prose no longer numbers the step, but any page that numbers a step of a
   sequence diagram has the same ambiguity — pass 7's tick-boundary-bar job
-  should settle whether a `Note over` is a step. [kind=figure]
+  should settle whether a `Note over` is a step. [kind=figure]~~ — **ruled**, pass 7 session A: a `Note over` is a tick boundary or a thread hop and nothing else (`TEMPLATE.md`, *One visual grammar*), so it is never a step.
 
 ### For pass 8 (the voice)
 
@@ -6469,29 +6469,29 @@ class implies for later passes.
 
 **For pass 7, the figures.**
 
-- `reference/README`'s shelf figure has sentence-long subgraph titles that
+- ~~`reference/README`'s shelf figure has sentence-long subgraph titles that
   read as three paragraphs rather than a shape, and no caption; the reader
   skipped it and said the table said the same thing faster. It is the only
   figure in the book whose job is a taxonomy the table beside it also carries.
-  [kind=figure]
-- `maps/README`'s pipeline figure is the same case one tier over, and it is
-  the one figure in the atlas that is not generated. [kind=figure]
-- `introduction`'s two-programs figure labels three threads and the wire; the
+  [kind=figure]~~ — **done, pass 7 session N**: cut, because F13 rules the shelf's figure is a table, and the page's table is it; the one thing only the figure said — which source each kind is read from — is the table's *kept by* column and the paragraph under it.
+- ~~`maps/README`'s pipeline figure is the same case one tier over, and it is
+  the one figure in the atlas that is not generated. [kind=figure]~~ — **done, pass 7 session N**: redrawn as the page's own argument, two routes into an atlas page, with no subgraph of convenience and no clipped title.
+- ~~`introduction`'s two-programs figure labels three threads and the wire; the
   paragraph under it counts four threads. This session fixed it by naming the
   Netty event loop in the wire's label, which is a label change and not a
   redraw — but the figure still draws `Worker-Main-n` with no sentence above
-  or below introducing it, and the dashed arrows are unexplained. [kind=figure]
-- `math-and-primitives`' coordinate figure is eight nodes and eighteen edges
+  or below introducing it, and the dashed arrows are unexplained. [kind=figure]~~ — **done, pass 7 session N**: redrawn with a subgraph per thread; the dotted arrows are the pool's results coming back, and the caption says so.
+- ~~`math-and-primitives`' coordinate figure is eight nodes and eighteen edges
   with sentence-length labels, several of them bidirectional pairs between the
-  same two nodes; the densest object in the Reference tier. [kind=figure]
-- `threads`' figure carries one edge label (*written on the caller's thread*)
+  same two nodes; the densest object in the Reference tier. [kind=figure]~~ — **done, pass 7 session N**: redrawn as a ladder of sizes, seven nodes and seven edges, each labelled with its arithmetic; the methods are the table's and the long keys the next section's. Its `sectionRelative` label on a section-to-block edge was wrong and is gone.
+- ~~`threads`' figure carries one edge label (*written on the caller's thread*)
   that is none of the three kinds the section is about, and the watchdog's
   dotted edge carries no kind. Left as drawn: the label is true and the
-  section now says *every edge that is one of them*. [kind=figure]
-- Four Reference pages have no figure at all (`non-living-damage`,
+  section now says *every edge that is one of them*. [kind=figure]~~ — **done, pass 7 session N**: the label was not true — `Connection.sendPacket` posts a send from any other thread to the Netty event loop — so both packet-out edges are now *posted task*, and the watchdog's edge is named as the one that is none of the three.
+- ~~Four Reference pages have no figure at all (`non-living-damage`,
   `naming-drift`, `block-update-flags`, `hud-elements`); three readers asked
   whether the tier is exempt from the one-figure rule. It should be said once,
-  on `reference/README`, rather than inferred four times. [kind=figure]
+  on `reference/README`, rather than inferred four times. [kind=figure]~~ — **done, pass 7 session N**: said once, on `reference/README`.
 
 **For pass 8, the voice.**
 
@@ -6550,14 +6550,14 @@ Part 3; these are the pieces of work that ruling created.
   one part at a time — shorten the message until the name is most of it, move
   the sentence to the caption, or break the name with `<br/>`. **Session O
   re-measures this and it should be zero.** [kind=figure]
-- **A `<br/>` inside a name works in a lane and not yet in a message.** Both
+- ~~**A `<br/>` inside a name works in a lane and not yet in a message.** Both
   gates close the break up for a `participant` expansion and treat it as a
   space everywhere else, because the ten `<br/>`s already in the corpus are
   phrase breaks in flowchart node labels with letters on both sides — the same
   shape as a name break. Session O decides the authoring rule (a space before a
   phrase break, perhaps) and then teaches `check_figure_names.py` and
   `pass7_figures.py` the message and note cases. Until then a message's long
-  name is shortened, not broken. [kind=figure]
+  name is shortened, not broken. [kind=figure]~~ — **overtaken**: sessions B and I taught both gates to read a `<br/>` in a message by F17's rule (a CamelCase boundary or a dot).
 - ~~**The four generated hierarchy trees and the render-state tree are still at
   0.49–0.67 with 6–8px type.** The theme does not reach them: they are SVGs
   `tools/map_source.py` writes, not mermaid. F13 stands — the emitter folds or
@@ -6572,12 +6572,12 @@ Part 3; these are the pieces of work that ruling created.
   tree 0.62 at 7.5px → **1.00 at 12px**. The probe proves it: with the retry removed
   a synthetic forty-leaf root comes out at 1,203px and fails. Part XI's tree and the
   render-state tree are fixed by the same change and want looking at once. [kind=figure]
-- **The class diagram is the kind the corpus most obviously lacks.** Looking at
+- ~~**The class diagram is the kind the corpus most obviously lacks.** Looking at
   all twelve gallery figures in the adopted theme, `classDiagram` is the one
   that would replace work the book is currently doing badly: a vocabulary page
   drawing a conversation about objects that do not talk.
   `render/gallery/gallery--f5.png` is what one looks like here. Not a quota —
-  the rule is still *fewer marks than the old one* (F10). [kind=figure]
+  the rule is still *fewer marks than the old one* (F10). [kind=figure]~~ — **overtaken**: the book has ten class diagrams after session M.
 - **The captions have no register yet.** Four exist, all written in one sitting
   by one session; they are the first sentences in the book with a fixed job
   (*what the picture shows and what to look for in it*) and pass 8 should read
@@ -7078,3 +7078,51 @@ Part 3; these are the pieces of work that ruling created.
   f2) and Part XI 2 (session K's) — against 19 for the narrow one; Parts III
   to V closed before session J wrote the regex, so theirs are not a lapse,
   but they are live. [kind=figure]
+
+**For session O, from pass 7 session N.** [kind=figure]
+
+- **The parts-dependency figure is generated now, and session O reads it with
+  the thirteen landing figures.** `check_deps.py --write-figure` draws it from
+  the landing pages' *before you start* sections into
+  `src/generated/parts-dependency.svg` (with a table beside it for
+  `llms-full.txt`), and the gate fails when the file is stale. Mermaid could
+  not lay the 27 arrows out: 26 crossings as written, and of 200 orderings
+  tried the best had fourteen and put Part V below Part X, and the best that
+  kept the parts in order had sixteen. The
+  generated form is the prose's own shape — the parts in one column in watch
+  order, solid arcs on the right, the two cuts dashed on the left — at scale 1
+  and 13px. Whether arcs this many are the right picture, or a thinner one
+  (the transitive reduction is 14 solid arcs, which would change what
+  `check_deps.py` checks), is a ruling for O or the owner. [kind=figure]
+- **The generated atlas figures are at the 11px floor now** — the treemap's
+  leaf labels and line counts and the two bar charts' package paths were 9px;
+  a treemap cell too small for 11px keeps only its hover title, which drops
+  the visible labels of a few small cells (`platform`, `tags`, core's
+  *(itself)*). The Realms group had no label at all (its path was wider than
+  its box) and now falls back to `realmsclient`. [kind=figure]
+- **`maps/hierarchy`'s viewer asked for three things this session did not
+  do**: the `Block` tree is a screen tall (1,016px), 15 of its rows being
+  branches of one or two; the `Item` tree shows neither of its section's two
+  points (a quantity, and data components); and `RealmsScreen` is drawn like
+  any branch though the book skips it. All three are emitter or page-shape
+  work. [kind=figure]
+- **`maps/biggest`'s colour encodes the jar, which its prose never uses**;
+  the section reads the thirty bars as three kinds and the opening as two
+  that never run in play, and nothing on the figure marks either. A
+  colour-by-kind would be a hand-kept mapping inside a generated figure,
+  which is why it was not done here. [kind=figure]
+
+**For pass 10, from pass 7 session N.**
+
+- `math-and-primitives`' *Two random families* is a comparison written as
+  prose — family, implementations, users, seeding — and wants the table
+  F10 says a comparison is. [kind=book]
+- `threads`' *The handlers that never hop* sorts the server's nine handlers
+  into four kinds in a sentence while its table has no column for the kind;
+  pass 6's lesson, a count in a sentence beside a table that could carry it.
+  [kind=book]
+- `lectures.md`'s Part V entry says *Block entities* "reaches forward once, to
+  Part VII"; the figure has no arc for it because Part V's landing page does
+  not list it, which is right for a hand-forward — but the phrase reads like
+  a third backward dependency to a reader who has just been told there are
+  two. [kind=book]

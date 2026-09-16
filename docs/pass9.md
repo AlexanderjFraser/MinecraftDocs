@@ -44,6 +44,154 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session N — the frame and Reference: the figures *(2026-09-16)*
+
+Ten viewer reports over the introduction, `lectures.md`, the five atlas pages,
+`reference/README`, `math-and-primitives` and `threads`. Fourteen figures in
+scope became thirteen (the shelf figure cut). Nothing in scope is below
+**0.79** or under **11px** (was 0.49 and 7.8px on `math-and-primitives`, and
+9px on four generated figures); the figure-name gate is 0 and 0 on the four
+hand-drawn mermaid figures left; no Mojang name is broken on screen.
+
+### Figures redrawn, and the orderings they assert
+
+- **the parts-dependency figure** (`src/figures/parts-dependency.md`, on the
+  introduction and `lectures.md`) — no longer a mermaid block: an SVG
+  `check_deps.py --write-figure` draws from the landing pages. **It asserts no
+  new edge**: its 25 solid and 2 dashed arcs are exactly the 27 arrows the
+  mermaid figure drew (both sets read and compared), and the gate now fails
+  when the file disagrees with the landing pages. By position it asserts that
+  the parts run top to bottom in watch order and that every solid arc runs
+  down. The dashed arcs' labels are now the titles of the pages the landing
+  page links (*Tickets and loading*, *Environment attributes and timelines*;
+  *Prediction and acknowledgement*) rather than hand-written phrases. A table
+  beside it, `src/generated/parts-dependency.md`, carries the same edges to
+  `llms-full.txt`.
+- **`introduction` figure 1** — four subgraphs, one per thread (Render
+  thread, Netty event loop, Server thread, *Worker-Main-n*), where it had
+  client, *the wire* and server, with the pool outside all three. Asserts:
+  `Minecraft` sends *what the player did* to `Connection`, and `Connection`
+  delivers *what the world became* to `ClientLevel`; `Connection` and
+  `ServerLevel` exchange both ways; the pool returns chunks to `ServerLevel`
+  and **meshes to the Render thread's `Minecraft`** (the old figure landed that
+  arrow on `ClientLevel`; `threads.md`'s own table puts section meshing under
+  `SectionRenderDispatcher`, a Render-thread object). The serverbound arrow
+  now leaves `Minecraft`, not `ClientLevel`. Caption: *the worker pool hands
+  its results back, dotted, to whichever of them asked*.
+- **`maps/README` figure 1** — two subgraphs of convenience (F3) with clipped
+  titles become a five-node pipeline: the decompile, `map_source.py`, *seven
+  figures, seven tables*, and the four map pages, reached directly and through
+  *the sentences*, *read and typed by a person*. Asserts seven SVGs (the
+  treemap, two bar charts, four trees) and seven tables (two package depths,
+  `parts.md`, the two ranked tables, the two hierarchy tables) for the atlas.
+  Cut: the branch to the landing pages' size phrases, and *eight SVG figures,
+  seven of them the atlas's* (the eighth is `tree-EntityRenderState`, and a
+  ninth is now `check_deps.py`'s).
+- **`math-and-primitives` figure 1** — eight nodes and seventeen
+  method-named edges, most of them in both directions, become a ladder of
+  seven nodes and seven edges labelled with arithmetic. Asserts: `Vec3` floors
+  to `BlockPos`; `BlockPos` to `QuartPos` is a right shift of 2
+  (`QuartPos.fromBlock`); `QuartPos` to `SectionPos` a right shift of 2
+  (`QuartPos.toSection`); `BlockPos` to `SectionPos` a right shift of 4
+  (`SectionPos.blockToSectionCoord`); `SectionPos` to `ChunkPos` drops y
+  (`SectionPos.chunk`); `ChunkPos` to its region a right shift of 5
+  (`ChunkPos.getRegionX`); a `BlockPos` plus a dimension is a `GlobalPos`. The
+  lead-in now says the table names the way back for all but `GlobalPos` (the
+  table names only `GlobalPos.of`). The long-key edges went to the section
+  that owns them.
+- **`threads` figure 1** — subgraphs dropped for the class words (`client`,
+  `netty`, `server`, `worker`), edge labels cut to the kind. The same eight
+  boxes and thirteen edges, with **one kind changed**: both packet-out edges
+  (Render thread to Netty, Server thread to Netty) are *posted task* (see the
+  first correction). The watchdog edge reads *reads, unsynchronised*, and the
+  caption names it as the one edge that is none of the three kinds.
+- **`reference/README` figure 1** — cut (F13: the shelf's figure is a
+  table). What only it said, which source each kind of page is read from, is
+  the table's *kept by* column and the paragraph under the table.
+
+### Captions written
+
+The five above, and three generated figures' `<figcaption>`s edited:
+`maps/biggest` (*the package under `net/minecraft`, or under `com/mojang`
+where it starts `mojang/`*), `maps/packages` (*labelled with its share of the
+lines where the box has room for it*), `maps/hierarchy` figure 1 (*or named
+where a parent has only one*).
+
+### Corrections — re-derived against the decompile before the fix
+
+1. **`threads` figure 1 and its lead-in** said a serverbound packet is
+   *written on the caller's thread*, and defined a posted task as a
+   `Runnable` on the owner's `BlockableEventLoop`. `Connection.sendPacket`
+   (`net/minecraft/network/Connection.java`, the method after
+   `Connection.runOnceConnected`) calls `Connection.doSendPacket` directly
+   only when the channel's event loop is the current thread, and otherwise
+   hands it to that event loop's `execute` — so a send from the Render or the
+   Server thread is a task posted to Netty, and the write, encode, compress
+   and encrypt happen there, as the page's own table row for Netty IO says.
+   Both edges relabelled; the definition now names the Netty loop and the
+   worker pools.
+2. **`threads`**: *Five rows of the table are non-daemon* — six are (Render
+   thread, main, Server thread, IO-Worker-n, RCON, Query). The paragraph is
+   about a dedicated server, which has no Render thread; it now says six, and
+   five on a dedicated server.
+3. **`threads`**: *Every lane in the figure has a row in the table* — the
+   figure is a flowchart of boxes, and one box is four rows. Reworded.
+4. **`math-and-primitives` figure 1** labelled the `SectionPos`-to-`BlockPos`
+   edge with `SectionPos.sectionRelative`, which takes a *block* coordinate
+   and returns its 0–15 offset inside its section; it is not a
+   section-to-block conversion. Gone with the redraw.
+5. **`introduction` figure 1** landed the pool's meshing result on
+   `ClientLevel`; meshes go back to the Render thread's renderer
+   (`SectionRenderDispatcher`, per `threads.md`). Redrawn to the Render
+   thread's box.
+6. **`maps/biggest`'s figure** printed `RealmsMainScreen`'s package as
+   `realmsclient` under a caption saying the grey text is the package under
+   `net/minecraft`: `map_source.svg_biggest` cut the first two path segments
+   whatever they were. It now strips `net/minecraft/` and shortens
+   `com/mojang/` to `mojang/`, and the caption says so.
+7. **`maps/packages`' figure**: the Realms group (`com/mojang/realmsclient`,
+   about 2% of the lines) had no label, because its path was wider than its
+   box, while the caption promised every outer box its share. The emitter
+   falls back to the last segment, and the caption says *where the box has
+   room for it* (`advancements`, `gametest` and `tags` still have no share).
+8. **`maps/hierarchy`**: the `Entity` caption said childless subclasses are
+   *folded into one italic line per parent*; `map_source._svg_tree_once`
+   names the child instead when there is only one (`ArmorStand`, `Painting`).
+   And *Seventy-one subclasses* for `Item`, where 71 is the descendant count
+   and 51 the direct one (`hierarchy-classes.md`), on a page whose opening
+   separates the two: now *seventy-one types descend from `Item`*.
+9. **`lectures.md`**: *Lighting — nothing later in this part assumes it;
+   Parts IX and X do* — neither part's landing page lists it, so neither has
+   the arc the page's own figure draws for an assumption; one page in each
+   cites it (`what-the-client-is-told`, `the-client-level`). Reworded to say
+   that.
+
+### Claims introduced
+
+- `reference/README`: a Reference page is exempt from the one-figure rule and
+  draws one only where its subject is a shape — today `math-and-primitives`
+  and `threads`, the only two Reference pages with a figure after the cut.
+- `introduction`: the four boxes of its first figure are *the four threads
+  that carry nearly all of it*, and the pool's threads are named
+  *Worker-Main-n*.
+- `lectures.md` and `introduction`: *the parts run down the page in the
+  sidebar's order, and every solid arc runs down with them* — true by the
+  generator's construction, and `check_deps.py` still fails a solid arc that
+  points at an earlier part.
+
+### Tool changes
+
+- `check_deps.py --write-figure` (the figure and its table); `figure()` now
+  reads the SVG's `data-edge` attributes; a stale file is a failure; two probe
+  cases. `deploy.sh` runs `--write-figure` before the gates.
+- `llms_full.py` expanded only one level of `{{#include}}`, so the shared
+  figure file would have reached agents with its inner include unexpanded; it
+  recurses now, resolving against the included file's directory as mdBook
+  does.
+- `map_source.py`: the bar charts' package text 9px to 11px, with the label
+  column sized from the text; the treemap's leaf labels and line counts at
+  11px or not at all; a group label falls back to its last segment.
+
 ## Pass 7, session M — Part XIII · Commands and data packs: the figures *(2026-09-16)*
 
 Ten pages, 13 figures (the count unchanged). Every figure captioned, every

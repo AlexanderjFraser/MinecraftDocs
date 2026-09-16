@@ -96,7 +96,7 @@ device — five parts of five. Its own finding is a collision between two ruling
 **seven lanes is about 1,650px, which is 10.6px of type at the column**, so F7's
 *at most seven* and F1's *nothing under eleven pixels* cannot both hold, and no
 amount of label-shortening moves it — only a lane fewer or a split does.
-Sessions F to N take the remaining parts in sidebar order; O closes. The charter is below. The latest release
+Sessions F to J, L, M and N have run since — their rows are in the brief's Part 4 and their paragraphs in the log below — and K, Part XI, is the last part left; O closes. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -1103,3 +1103,39 @@ that the owner has not understood; recording is after pass 10.
   sections that wanted a figure logged for pass 10, two voice entries for
   pass 8. Key row `DCS` added. All six gates green (the figure-name gate still
   report-only). Deployed.
+- **2026-09-16, pass 7, session N — the frame and Reference (Opus).** Ten
+  viewer agents over the introduction, `lectures.md`, the five atlas pages,
+  `reference/README`, `math-and-primitives` and `threads`. **The
+  parts-dependency figure is generated now.** Its 27 arrows had 26 crossings,
+  two labels lying across other arrows, and the parts out of watch order; 200
+  orderings of the mermaid source were rendered and measured, and the best
+  that kept Part V above Part X still had sixteen. So
+  `check_deps.py --write-figure` draws it from the landing pages as the
+  shape the prose has always claimed — *a line with two knots*: the thirteen
+  parts in one column in watch order, every solid arc on the right running
+  down, the two cuts dashed on the left and labelled with the pages they
+  need — at scale 1 and 13px, with no crossing a reader has to resolve at a
+  box. The edge set is exactly the old figure's, the gate now reads it back
+  out of the SVG and fails when the file is stale, `deploy.sh` regenerates
+  it, and a table beside it carries the edges to `llms-full.txt` (whose
+  include expansion was one level deep and would have shipped the shared
+  file's inner include raw). Beside it: the introduction's figure is one
+  subgraph per thread; the atlas pipeline is the page's own two routes
+  instead of two clipped groupings of convenience; `math-and-primitives`'
+  seventeen-edge web (0.49, 7.8px) is a seven-node ladder of sizes at 1.00
+  and 16px; `threads`' figure is coloured by side with every edge labelled by
+  its kind (0.58 → 0.85); the shelf figure is a logged cut under F13, and
+  the tier's exemption from the one-figure rule is said once on
+  `reference/README`. `map_source.py`'s bars and treemap were showing 9px
+  type and now stop at 11px, and the treemap's Realms group, unlabelled
+  because its path was wider than its box, is labelled. **Nothing in scope
+  is below 0.79 or under 11px.** **Nine corrections**, and the one worth
+  carrying is the one the queue had excused: `threads`' edge *written on the
+  caller's thread* was logged by pass 6 as *true, left as drawn*, and
+  `Connection.sendPacket` posts every send from another thread to the Netty
+  loop — **a label a queue entry calls true is still a claim**, and the
+  viewer found it only because the page's own definition of a posted task
+  did not fit three other arrows. Thirteen queue entries struck (six of
+  them overtaken or ruled by earlier sessions), seven opened for O and pass
+  10. All six gates green (the figure-name gate still report-only).
+  Deployed.

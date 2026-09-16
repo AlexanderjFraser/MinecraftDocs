@@ -9,13 +9,16 @@ that actually *uses* each dependency). Four sources, read from the pages:
 
   landing   each part's `## Before you start` — the pages it links in other
             parts — and its `## Watch in this order` — the pages it lists
-  figure    `src/figures/parts-dependency.md` — solid and dashed arrows
+  figure    `src/generated/parts-dependency.svg` — solid and dashed arcs, which
+            `--write-figure` draws from the landing pages (pass 7, session N) and
+            `src/figures/parts-dependency.md` includes on two pages
   table     `lectures.md`'s dependency table — page, its part, the parts
             whose landing pages assume it — and each part's section of the map
   sidebar   `SUMMARY.md`'s order within each part
   links     every cross-part link from every system page
 
 Checks (F = fails, exit 1; R = report only, for the session to judge):
+  F  the generated figure and its table are what `--write-figure` would write now
   F  every solid arrow in the figure is a landing-page *before you start* link
      to an earlier part, and every such link is a solid arrow
   F  every *before you start* link to a *later* part is a dashed arrow, and
@@ -41,7 +44,8 @@ Checks (F = fails, exit 1; R = report only, for the session to judge):
 Usage:
     python tools/check_deps.py            # the checks; exit 1 on any F
     python tools/check_deps.py --quiet    # failures only
-    python tools/check_deps.py --probe    # prove the three pass-5 checks on synthetic input
+    python tools/check_deps.py --probe    # prove the checks on synthetic input
+    python tools/check_deps.py --write-figure   # the parts-dependency figure and its table, from the landing pages
 """
 from __future__ import annotations
 
@@ -133,35 +137,140 @@ def part_of(key: str, byslug: dict) -> str | None:
     return m.group(1) if m else None
 
 
+FIG_SVG = os.path.join(SRC, "generated", "parts-dependency.svg")
+FIG_MD = os.path.join(SRC, "generated", "parts-dependency.md")
+FIG_EDGE = re.compile(r'data-edge="(\d+) (\d+) (solid|dashed)"')
+
+
 def figure() -> tuple[set, set, list]:
-    text = read(os.path.join(SRC, "figures", "parts-dependency.md"))
-    ids = {m.group(1): ROMAN[m.group(2)] for m in re.finditer(r"^\s*(P\d+)\[\"([IVX]+)\s", text, re.M)}
+    """The arrows the published figure draws, read back from the generated SVG's `data-edge`
+    attributes (pass 7, session N: the figure is generated from the landing pages by
+    `--write-figure`, so this reads what the site shows, and `figure_stale` says whether the
+    file still matches the landing pages)."""
+    if not os.path.exists(FIG_SVG):
+        return set(), set(), [f"figure: {os.path.relpath(FIG_SVG, ROOT)} is missing — run `python tools/check_deps.py --write-figure`"]
     solid, dashed = set(), set()
-    for line in text.split("\n"):
-        t = line.strip()
-        if "-.->" in t or ".->" in t:
-            m = re.match(r"(P\d+)\s*-\.\s*(?:\"[^\"]*\")?\s*\.->\s*(P\d+)", t)
-            if m:
-                dashed.add((ids[m.group(1)], ids[m.group(2)]))
-            continue
-        if "-->" in t:
-            chain = [c.strip() for c in t.split("-->")]
-            for a, b in zip(chain, chain[1:]):
-                if a in ids and b in ids:
-                    solid.add((ids[a], ids[b]))
-    unread = []
-    for n, line in enumerate(text.split(chr(10)), 1):
-        t = line.strip()
-        if t.startswith("%%") or "```" in t:
-            continue
-        if re.search(r"^\s*P\d+[\[\(\{'\"]", t) and not re.match(r'^\s*P\d+\["[IVX]+\s', t):
-            unread.append(f"figure line {n}: node declaration the checker cannot read: {t}")
-        elif re.search(r"-\.?-?>|==>", t):
-            names = re.findall(r"P\d+", t)
-            if len(names) >= 2 and not any((ids.get(a), ids.get(b)) in (solid | dashed)
-                                           for a, b in zip(names, names[1:])):
-                unread.append(f"figure line {n}: arrow the checker cannot read: {t}")
-    return solid, dashed, unread
+    for m in FIG_EDGE.finditer(read(FIG_SVG)):
+        (solid if m.group(3) == "solid" else dashed).add((int(m.group(1)), int(m.group(2))))
+    return solid, dashed, []
+
+
+# The parts-dependency figure (pass 7, session N). Mermaid laid the 27 arrows out with 26 crossings
+# and no ordering of the source did better than fourteen, with the parts out of watch order; the
+# prose calls the graph "a line with two knots", so the figure draws exactly that: the thirteen
+# parts in one column in watch order, every solid arrow an arc on the right running down, the two
+# backward dependencies dashed arcs on the left running up. An arc's reach is its span, so a
+# nested pair never crosses; ports on a box are ordered so that arcs sharing an end do not either.
+ROW, BOX_H, BOX_W = 54, 38, 270
+FONT, SMALL = 15, 13
+
+
+def landing_edges(P: dict) -> tuple[set, set, dict]:
+    """(solid, dashed, dashed pages) as the landing pages state them; the arrows out of the two
+    universal parts are left off except the spine, which is the rule `lectures.md` states."""
+    solid, dashed, pages = set(), set(), {}
+    nums = {d: v["num"] for d, v in P.items()}
+    for d, v in P.items():
+        for k in v["before"]:
+            n = nums.get(part_of(k, None))
+            if n is None or n == v["num"]:
+                continue
+            if n < v["num"]:
+                if n not in (1, 2) or v["num"] == n + 1:
+                    solid.add((n, v["num"]))
+            else:
+                dashed.add((n, v["num"]))
+                pages.setdefault((n, v["num"]), []).append(k)
+    return solid, dashed, pages
+
+
+def page_title(key: str) -> str:
+    m = re.match(r"#\s+(.*)", read(os.path.join(SRC, key + ".md")))
+    return m.group(1).strip() if m else key.rsplit("/", 1)[1]
+
+
+def figure_svg(P: dict) -> str:
+    solid, dashed, pages = landing_edges(P)
+    titles = {v["num"]: v["title"] for v in P.values()}
+    n = len(titles)
+    labels = {e: [page_title(x) for x in pages[e]] for e in dashed}
+    # the left margin is what the widest dashed label needs beside its arc (0.6em a glyph, generously)
+    left = max((0.75 * (26 + 20 * (a - b)) + 16 + 0.6 * SMALL * max(len(t) for t in labels[(a, b)])
+                for a, b in dashed), default=0)
+    xl = int(left) + 8
+    xr = xl + BOX_W
+    top = lambda p: 10 + (p - 1) * ROW
+    mid = lambda p: top(p) + BOX_H / 2
+
+    def ports(edges, side_nodes):
+        """node -> {edge: y}: incoming arcs above outgoing; the longer arc of a group nearer the middle."""
+        out = {}
+        for p in side_nodes:
+            inc = sorted((e for e in edges if e[1] == p), key=lambda e: p - e[0])
+            outg = sorted((e for e in edges if e[0] == p), key=lambda e: -(e[1] - p))
+            seq = [(e, "in") for e in inc] + [(e, "out") for e in outg]
+            for i, (e, _) in enumerate(seq):
+                out.setdefault(p, {})[e] = top(p) + BOX_H * (i + 1) / (len(seq) + 1)
+        return out
+
+    def bulge(e):
+        return 26 + 20 * abs(e[1] - e[0])
+
+    rp = ports(solid, titles)
+    lp = ports({(b, a) for a, b in dashed}, titles)   # a dashed arc runs up: its head is the earlier part
+    reach_r = max((0.75 * bulge(e) for e in solid), default=0) + 12
+    W = int(xr + reach_r + 4)
+    H = int(top(n) + BOX_H + 10)
+    o = [f'<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" role="img">',
+         '<title>The thirteen parts in watch order; an arc on the right is a part another part assumes, '
+         'an arc on the left is one of the two places a part assumes a later one</title>']
+    for p in sorted(titles):
+        o.append(f'<g class="part"><title>Part {NUMERAL[p]} · {esc(titles[p])}</title>'
+                 f'<rect class="group" x="{xl}" y="{top(p)}" width="{BOX_W}" height="{BOX_H}" rx="3"/>'
+                 f'<text x="{xl + 14}" y="{mid(p) + 5:.1f}" font-size="{FONT}">{NUMERAL[p]} · {esc(titles[p])}</text></g>')
+    for a, b in sorted(solid, key=lambda e: (e[1] - e[0], e)):
+        y1, y2, k = rp[a][(a, b)], rp[b][(a, b)], bulge((a, b))
+        o.append(f'<g><title>{NUMERAL[a]} → {NUMERAL[b]}: Part {NUMERAL[b]} assumes Part {NUMERAL[a]}</title>'
+                 f'<path class="edge" data-edge="{a} {b} solid" d="M{xr},{y1:.1f} C{xr + k},{y1:.1f} {xr + k},{y2:.1f} {xr + 5},{y2:.1f}"/>'
+                 f'<path class="muted" fill="currentColor" d="M{xr},{y2:.1f} l7,-3.5 l0,7 z"/></g>')
+    for a, b in sorted(dashed):
+        # a → b with a later than b: the arc leaves a's left side and arrives at b's, above it
+        y1, y2, k = lp[a][(b, a)], lp[b][(b, a)], bulge((a, b))
+        names = labels[(a, b)]
+        o.append(f'<g><title>{NUMERAL[a]} ⇢ {NUMERAL[b]}: Part {NUMERAL[b]} assumes {esc(", ".join(names))}, cut on purpose</title>'
+                 f'<path class="edge" data-edge="{a} {b} dashed" stroke-dasharray="5 4" '
+                 f'd="M{xl},{y1:.1f} C{xl - k},{y1:.1f} {xl - k},{y2:.1f} {xl - 5},{y2:.1f}"/>'
+                 f'<path class="muted" fill="currentColor" d="M{xl},{y2:.1f} l-7,-3.5 l0,7 z"/></g>')
+        lx, ly = xl - 0.75 * k - 8, (y1 + y2) / 2 - (len(names) - 1) * 9.5
+        for i, t in enumerate(names):
+            o.append(f'<text x="{lx:.1f}" y="{ly + i * 19 + 4:.1f}" text-anchor="end" font-size="{SMALL}">{esc(t)}</text>')
+    o.append("</svg>")
+    return "\n".join(o) + "\n"
+
+
+def figure_table(P: dict) -> str:
+    solid, dashed, pages = landing_edges(P)
+    titles = {v["num"]: v["title"] for v in P.values()}
+    rows = ["| part | assumes (a solid arc) | assumes from a later part (a dashed arc) |", "|---|---|---|"]
+    for p in sorted(titles):
+        before = ", ".join(NUMERAL[a] for a, b in sorted(solid) if b == p) or "—"
+        later = "; ".join(f"{NUMERAL[a]}: " + ", ".join(page_title(k) for k in pages[(a, b)])
+                          for a, b in sorted(dashed) if b == p) or "—"
+        rows.append(f"| {NUMERAL[p]} · {titles[p]} | {before} | {later} |")
+    return "\n".join(rows) + "\n"
+
+
+def esc(s: str) -> str:
+    return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+def figure_stale(P: dict) -> list[str]:
+    out = []
+    for path, want in ((FIG_SVG, figure_svg(P)), (FIG_MD, figure_table(P))):
+        if not os.path.exists(path) or read(path) != want:
+            out.append(f"figure: {os.path.relpath(path, ROOT)} does not match the landing pages — "
+                       f"run `python tools/check_deps.py --write-figure`")
+    return out
 
 
 def lecture_table() -> list[tuple[list[str], int, set[int], int]]:
@@ -307,6 +416,31 @@ def _ref_truth(drop: bool = False) -> dict[str, set[int]]:
     return truth
 
 
+def _fig_parts(universal: bool = False) -> dict:
+    """Two synthetic parts that assume each other, the probe's input to the figure writer; with
+    `universal`, Part IV also names a Part II page and Part III the page before it."""
+    before3 = ["systems/b/x"] + (["systems/f/c"] if universal else [])
+    before4 = ["systems/a/y"] + (["systems/f/c"] if universal else [])
+    P = {"a": {"num": 3, "title": "A", "before": before3},
+         "b": {"num": 4, "title": "B", "before": before4}}
+    if universal:
+        P["f"] = {"num": 2, "title": "F", "before": []}
+    return P
+
+
+def _fig_edges(P: dict) -> tuple[set, set]:
+    global page_title
+    real, page_title = page_title, (lambda key: key)
+    try:
+        svg = figure_svg(P)
+    finally:
+        page_title = real
+    solid, dashed = set(), set()
+    for m in FIG_EDGE.finditer(svg):
+        (solid if m.group(3) == "solid" else dashed).add((int(m.group(1)), int(m.group(2))))
+    return solid, dashed
+
+
 def probe() -> int:
     """Prove the two pass-5 checks fail on the constructs they are for, and pass otherwise."""
     P = {"world": {"num": 4, "watch": ["systems/world/a", "systems/world/b", "systems/world/c"]}}
@@ -333,6 +467,10 @@ def probe() -> int:
          reference_column(_ref_truth()) == []),
         ("a row missing a part fails",
          len(reference_column(_ref_truth(drop=True))) == 1),
+        ("the figure draws a later part's link as a dashed arc and an earlier one as solid",
+         _fig_edges(_fig_parts()) == ({(3, 4)}, {(4, 3)})),
+        ("the figure leaves off a universal part's arrows except the spine",
+         _fig_edges(_fig_parts(universal=True)) == ({(2, 3), (3, 4)}, {(4, 3)})),
     ]
     bad = [name for name, ok in checks if not ok]
     for name, ok in checks:
@@ -374,6 +512,8 @@ def main() -> int:
     ap.add_argument("--quiet", action="store_true", help="failures only")
     ap.add_argument("--probe", action="store_true",
                     help="prove the sidebar and membership checks on synthetic input")
+    ap.add_argument("--write-figure", action="store_true",
+                    help="write src/generated/parts-dependency.svg and its table from the landing pages")
     args = ap.parse_args()
     if hasattr(sys.stdout, "reconfigure"):
         sys.stdout.reconfigure(encoding="utf-8")
@@ -381,9 +521,16 @@ def main() -> int:
         return probe()
 
     P = parts()
+    if args.write_figure:
+        os.makedirs(os.path.dirname(FIG_SVG), exist_ok=True)
+        for path, body in ((FIG_SVG, figure_svg(P)), (FIG_MD, figure_table(P))):
+            with open(path, "w", encoding="utf-8", newline="\n") as fh:
+                fh.write(body)
+            print(f"wrote {os.path.relpath(path, ROOT)}")
+        return 0
     bynum = {v["num"]: k for k, v in P.items()}
     solid, dashed, unread = figure()
-    fails: list[str] = list(unread)
+    fails: list[str] = list(unread) + figure_stale(P)
     reports: list[str] = []
 
     def numof(key: str) -> int | None:

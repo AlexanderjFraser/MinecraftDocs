@@ -15,7 +15,7 @@ not where the game is.
 
 <figure class="map">
 {{#include ../generated/biggest.svg}}
-<figcaption>The thirty largest classes of 26.2. Blue ships in both jars, orange is client-only; the small grey text is the package under <code>net/minecraft</code>. Click to enlarge.</figcaption>
+<figcaption>The thirty largest classes of 26.2. Blue ships in both jars, orange is client-only; the small grey text is the package under <code>net/minecraft</code>, or under <code>com/mojang</code> where it starts <code>mojang/</code>. Click to enlarge.</figcaption>
 </figure>
 
 **The number:** 62,935 — the lines in these thirty classes, 8.7% of the

@@ -9,6 +9,7 @@ export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN:-$(tr -d '"\r\n ' < ~/.cloud
 python tools/map_source.py      # the atlas: src/generated/ (tables and SVG figures) from the decompile
 python tools/gen_reference.py all   # the eleven Reference views, re-read off the decompile
 python tools/pass5_coverage.py --write   # the thirteen coverage phrases, src/generated/coverage-<dir>.md, from the same PARTS mapping the size phrases use (pass-6 planning session)
+python tools/check_deps.py --write-figure   # the parts-dependency figure and its table, src/generated/parts-dependency.*, from the landing pages (pass 7, session N)
 python tools/verify_names.py --index
 python tools/check_lanes.py --strict --index   # every lane on every page means what the key says (corpus-wide since pass-3 session P); src/reference/lanes.md regenerated
 python tools/check_figure_names.py   # every name inside a mermaid block resolves — report-only through pass 7, --strict at its close (pass-7 planning session)

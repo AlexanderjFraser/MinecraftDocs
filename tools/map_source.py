@@ -516,13 +516,14 @@ def svg_treemap(files, W=1000, H=600):
                 out.append(f'<rect class="{cls}" x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}"/>')
                 if is_skipped(leaf):
                     out.append(f'<rect class="skip" x="{lx:.1f}" y="{ly:.1f}" width="{lw:.1f}" height="{lh:.1f}"/>')
+                # nothing under 11px (pass 7, F1): a cell too small for that keeps its hover title only
                 size = 11
                 if lw > text_w(short, size) + 6 and lh > 26:
                     out.append(f'<text x="{lx + lw / 2:.1f}" y="{ly + lh / 2:.1f}" text-anchor="middle" font-size="{size}">{esc(short)}</text>')
-                    if lh > 40 and lw > text_w(fmt(l), 9) + 6:
-                        out.append(f'<text class="muted" x="{lx + lw / 2:.1f}" y="{ly + lh / 2 + 12:.1f}" text-anchor="middle" font-size="9">{fmt(l)}</text>')
-                elif lw > text_w(short, 9) + 4 and lh > 13:
-                    out.append(f'<text x="{lx + lw / 2:.1f}" y="{ly + lh / 2 + 3:.1f}" text-anchor="middle" font-size="9">{esc(short)}</text>')
+                    if lh > 42 and lw > text_w(fmt(l), 11) + 6:
+                        out.append(f'<text class="muted" x="{lx + lw / 2:.1f}" y="{ly + lh / 2 + 14:.1f}" text-anchor="middle" font-size="11">{fmt(l)}</text>')
+                elif lw > text_w(short, 11) + 4 and lh > 15:
+                    out.append(f'<text x="{lx + lw / 2:.1f}" y="{ly + lh / 2 + 4:.1f}" text-anchor="middle" font-size="11">{esc(short)}</text>')
                 out.append("</g>")
         if is_skipped(g) and not (iw > 0 and ih > 0):
             # a skipped depth-3 package too small for a leaf (gizmos, realms) is hatched as a whole,
@@ -531,6 +532,8 @@ def svg_treemap(files, W=1000, H=600):
         out.append(f'<rect class="group" x="{gx:.1f}" y="{gy:.1f}" width="{gw:.1f}" height="{gh:.1f}"/>')
         label = g.replace("net/minecraft/", "").replace("com/mojang/", "mojang/")
         pct = f" {100 * gl / total:.0f}%"
+        if gw <= text_w(label, 12) + 4:
+            label = label.rsplit("/", 1)[-1]   # mojang/realmsclient is wider than its box; realmsclient is not
         if gw > text_w(label, 12) + 4:
             if gw > text_w(label + pct, 12) + 8:
                 label += pct
@@ -552,8 +555,12 @@ def svg_treemap(files, W=1000, H=600):
 # ----------------------------------------------------------------------------
 # bars
 
-def svg_bars(rows, title, unit, W=1000, row_h=19, label_w=330):
-    """rows: [(label, sublabel, value, cls)]"""
+def svg_bars(rows, title, unit, W=1000, row_h=20):
+    """rows: [(label, sublabel, value, cls)]
+
+    The package after each name is 11px, not the 9px it was drawn at until pass 7 (F1's floor), so
+    the label column is sized from the widest label rather than fixed, and the bars take the rest."""
+    label_w = int(max(text_w(l, 12) + text_w(" " + s, 11) for l, s, _v, _c in rows)) + 4
     H = row_h * len(rows) + 8
     out = svg_open(W, H, title)
     mx = max(v for _l, _s, v, _c in rows) or 1
@@ -563,7 +570,7 @@ def svg_bars(rows, title, unit, W=1000, row_h=19, label_w=330):
         w = bar_w * value / mx
         out.append(f'<g><title>{esc(label)} ({esc(sub)}): {fmt(value)} {unit}</title>')
         out.append(f'<text x="{label_w}" y="{y + 13}" text-anchor="end" font-size="12">{esc(label)}'
-                   f'<tspan class="muted" font-size="9"> {esc(sub)}</tspan></text>')
+                   f'<tspan class="muted" font-size="11"> {esc(sub)}</tspan></text>')
         out.append(f'<rect class="{cls}" x="{bar_x}" y="{y + 3}" width="{w:.1f}" height="{row_h - 6}" rx="2"/>')
         out.append(f'<text class="muted" x="{bar_x + w + 5:.1f}" y="{y + 13}" font-size="11">{fmt(value)}</text>')
         out.append("</g>")
@@ -574,8 +581,9 @@ def svg_bars(rows, title, unit, W=1000, row_h=19, label_w=330):
 def svg_biggest(files, n=30):
     rows = []
     for rel, lines, shared in biggest_rows(files, n):
-        parts = rel.split("/")
-        rows.append((parts[-1], "/".join(parts[2:-1]), lines, "shared" if shared else "client"))
+        pkg, _, name = rel.rpartition("/")
+        pkg = pkg.replace("net/minecraft/", "", 1).replace("com/mojang/", "mojang/", 1)
+        rows.append((name, pkg, lines, "shared" if shared else "client"))
     return svg_bars(rows, f"The {n} largest classes of 26.2 by lines of decompiled source", "lines")
 
 

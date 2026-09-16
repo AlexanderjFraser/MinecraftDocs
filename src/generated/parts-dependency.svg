@@ -1,0 +1,46 @@
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 807 706" width="807" height="706" role="img">
+<title>The thirteen parts in watch order; an arc on the right is a part another part assumes, an arc on the left is one of the two places a part assumes a later one</title>
+<g class="part"><title>Part I · Anatomy</title><rect class="group" x="352" y="10" width="270" height="38" rx="3"/><text x="366" y="34.0" font-size="15">I · Anatomy</text></g>
+<g class="part"><title>Part II · Foundations</title><rect class="group" x="352" y="64" width="270" height="38" rx="3"/><text x="366" y="88.0" font-size="15">II · Foundations</text></g>
+<g class="part"><title>Part III · The server</title><rect class="group" x="352" y="118" width="270" height="38" rx="3"/><text x="366" y="142.0" font-size="15">III · The server</text></g>
+<g class="part"><title>Part IV · The world</title><rect class="group" x="352" y="172" width="270" height="38" rx="3"/><text x="366" y="196.0" font-size="15">IV · The world</text></g>
+<g class="part"><title>Part V · Blocks</title><rect class="group" x="352" y="226" width="270" height="38" rx="3"/><text x="366" y="250.0" font-size="15">V · Blocks</text></g>
+<g class="part"><title>Part VI · Entities</title><rect class="group" x="352" y="280" width="270" height="38" rx="3"/><text x="366" y="304.0" font-size="15">VI · Entities</text></g>
+<g class="part"><title>Part VII · Items and inventories</title><rect class="group" x="352" y="334" width="270" height="38" rx="3"/><text x="366" y="358.0" font-size="15">VII · Items and inventories</text></g>
+<g class="part"><title>Part VIII · The player</title><rect class="group" x="352" y="388" width="270" height="38" rx="3"/><text x="366" y="412.0" font-size="15">VIII · The player</text></g>
+<g class="part"><title>Part IX · Networking</title><rect class="group" x="352" y="442" width="270" height="38" rx="3"/><text x="366" y="466.0" font-size="15">IX · Networking</text></g>
+<g class="part"><title>Part X · The client</title><rect class="group" x="352" y="496" width="270" height="38" rx="3"/><text x="366" y="520.0" font-size="15">X · The client</text></g>
+<g class="part"><title>Part XI · Rendering</title><rect class="group" x="352" y="550" width="270" height="38" rx="3"/><text x="366" y="574.0" font-size="15">XI · Rendering</text></g>
+<g class="part"><title>Part XII · World generation</title><rect class="group" x="352" y="604" width="270" height="38" rx="3"/><text x="366" y="628.0" font-size="15">XII · World generation</text></g>
+<g class="part"><title>Part XIII · Commands and data packs</title><rect class="group" x="352" y="658" width="270" height="38" rx="3"/><text x="366" y="682.0" font-size="15">XIII · Commands and data packs</text></g>
+<g><title>I → II: Part II assumes Part I</title><path class="edge" data-edge="1 2 solid" d="M622,29.0 C668,29.0 668,76.7 627,76.7"/><path class="muted" fill="currentColor" d="M622,76.7 l7,-3.5 l0,7 z"/></g>
+<g><title>II → III: Part III assumes Part II</title><path class="edge" data-edge="2 3 solid" d="M622,89.3 C668,89.3 668,122.2 627,122.2"/><path class="muted" fill="currentColor" d="M622,122.2 l7,-3.5 l0,7 z"/></g>
+<g><title>III → IV: Part IV assumes Part III</title><path class="edge" data-edge="3 4 solid" d="M622,151.8 C668,151.8 668,178.3 627,178.3"/><path class="muted" fill="currentColor" d="M622,178.3 l7,-3.5 l0,7 z"/></g>
+<g><title>IV → V: Part V assumes Part IV</title><path class="edge" data-edge="4 5 solid" d="M622,203.7 C668,203.7 668,232.3 627,232.3"/><path class="muted" fill="currentColor" d="M622,232.3 l7,-3.5 l0,7 z"/></g>
+<g><title>V → VI: Part VI assumes Part V</title><path class="edge" data-edge="5 6 solid" d="M622,257.7 C668,257.7 668,285.4 627,285.4"/><path class="muted" fill="currentColor" d="M622,285.4 l7,-3.5 l0,7 z"/></g>
+<g><title>VII → VIII: Part VIII assumes Part VII</title><path class="edge" data-edge="7 8 solid" d="M622,365.7 C668,365.7 668,397.5 627,397.5"/><path class="muted" fill="currentColor" d="M622,397.5 l7,-3.5 l0,7 z"/></g>
+<g><title>IX → X: Part X assumes Part IX</title><path class="edge" data-edge="9 10 solid" d="M622,472.4 C668,472.4 668,502.3 627,502.3"/><path class="muted" fill="currentColor" d="M622,502.3 l7,-3.5 l0,7 z"/></g>
+<g><title>X → XI: Part XI assumes Part X</title><path class="edge" data-edge="10 11 solid" d="M622,527.7 C668,527.7 668,562.7 627,562.7"/><path class="muted" fill="currentColor" d="M622,562.7 l7,-3.5 l0,7 z"/></g>
+<g><title>III → V: Part V assumes Part III</title><path class="edge" data-edge="3 5 solid" d="M622,147.6 C688,147.6 688,238.7 627,238.7"/><path class="muted" fill="currentColor" d="M622,238.7 l7,-3.5 l0,7 z"/></g>
+<g><title>IV → VI: Part VI assumes Part IV</title><path class="edge" data-edge="4 6 solid" d="M622,197.3 C688,197.3 688,290.9 627,290.9"/><path class="muted" fill="currentColor" d="M622,290.9 l7,-3.5 l0,7 z"/></g>
+<g><title>V → VII: Part VII assumes Part V</title><path class="edge" data-edge="5 7 solid" d="M622,251.3 C688,251.3 688,340.3 627,340.3"/><path class="muted" fill="currentColor" d="M622,340.3 l7,-3.5 l0,7 z"/></g>
+<g><title>VI → VIII: Part VIII assumes Part VI</title><path class="edge" data-edge="6 8 solid" d="M622,312.6 C688,312.6 688,407.0 627,407.0"/><path class="muted" fill="currentColor" d="M622,407.0 l7,-3.5 l0,7 z"/></g>
+<g><title>III → VI: Part VI assumes Part III</title><path class="edge" data-edge="3 6 solid" d="M622,143.3 C708,143.3 708,296.3 627,296.3"/><path class="muted" fill="currentColor" d="M622,296.3 l7,-3.5 l0,7 z"/></g>
+<g><title>VI → IX: Part IX assumes Part VI</title><path class="edge" data-edge="6 9 solid" d="M622,307.1 C708,307.1 708,449.6 627,449.6"/><path class="muted" fill="currentColor" d="M622,449.6 l7,-3.5 l0,7 z"/></g>
+<g><title>VII → X: Part X assumes Part VII</title><path class="edge" data-edge="7 10 solid" d="M622,359.3 C708,359.3 708,508.7 627,508.7"/><path class="muted" fill="currentColor" d="M622,508.7 l7,-3.5 l0,7 z"/></g>
+<g><title>III → VII: Part VII assumes Part III</title><path class="edge" data-edge="3 7 solid" d="M622,139.1 C728,139.1 728,346.7 627,346.7"/><path class="muted" fill="currentColor" d="M622,346.7 l7,-3.5 l0,7 z"/></g>
+<g><title>VI → X: Part X assumes Part VI</title><path class="edge" data-edge="6 10 solid" d="M622,301.7 C728,301.7 728,515.0 627,515.0"/><path class="muted" fill="currentColor" d="M622,515.0 l7,-3.5 l0,7 z"/></g>
+<g><title>IX → XIII: Part XIII assumes Part IX</title><path class="edge" data-edge="9 13 solid" d="M622,464.8 C728,464.8 728,667.5 627,667.5"/><path class="muted" fill="currentColor" d="M622,667.5 l7,-3.5 l0,7 z"/></g>
+<g><title>III → VIII: Part VIII assumes Part III</title><path class="edge" data-edge="3 8 solid" d="M622,134.9 C748,134.9 748,416.5 627,416.5"/><path class="muted" fill="currentColor" d="M622,416.5 l7,-3.5 l0,7 z"/></g>
+<g><title>V → X: Part X assumes Part V</title><path class="edge" data-edge="5 10 solid" d="M622,245.0 C748,245.0 748,521.3 627,521.3"/><path class="muted" fill="currentColor" d="M622,521.3 l7,-3.5 l0,7 z"/></g>
+<g><title>III → IX: Part IX assumes Part III</title><path class="edge" data-edge="3 9 solid" d="M622,130.7 C768,130.7 768,457.2 627,457.2"/><path class="muted" fill="currentColor" d="M622,457.2 l7,-3.5 l0,7 z"/></g>
+<g><title>VII → XIII: Part XIII assumes Part VII</title><path class="edge" data-edge="7 13 solid" d="M622,353.0 C768,353.0 768,677.0 627,677.0"/><path class="muted" fill="currentColor" d="M622,677.0 l7,-3.5 l0,7 z"/></g>
+<g><title>IV → XI: Part XI assumes Part IV</title><path class="edge" data-edge="4 11 solid" d="M622,191.0 C788,191.0 788,575.3 627,575.3"/><path class="muted" fill="currentColor" d="M622,575.3 l7,-3.5 l0,7 z"/></g>
+<g><title>IV → XII: Part XII assumes Part IV</title><path class="edge" data-edge="4 12 solid" d="M622,184.7 C808,184.7 808,623.0 627,623.0"/><path class="muted" fill="currentColor" d="M622,623.0 l7,-3.5 l0,7 z"/></g>
+<g><title>III → XIII: Part XIII assumes Part III</title><path class="edge" data-edge="3 13 solid" d="M622,126.4 C848,126.4 848,686.5 627,686.5"/><path class="muted" fill="currentColor" d="M622,686.5 l7,-3.5 l0,7 z"/></g>
+<g><title>IV ⇢ III: Part III assumes Tickets and loading, Environment attributes and timelines, cut on purpose</title><path class="edge" data-edge="4 3 dashed" stroke-dasharray="5 4" d="M352,191.0 C306,191.0 306,137.0 347,137.0"/><path class="muted" fill="currentColor" d="M352,137.0 l-7,-3.5 l0,7 z"/></g>
+<text x="309.5" y="158.5" text-anchor="end" font-size="13">Tickets and loading</text>
+<text x="309.5" y="177.5" text-anchor="end" font-size="13">Environment attributes and timelines</text>
+<g><title>X ⇢ V: Part V assumes Prediction and acknowledgement, cut on purpose</title><path class="edge" data-edge="10 5 dashed" stroke-dasharray="5 4" d="M352,515.0 C226,515.0 226,245.0 347,245.0"/><path class="muted" fill="currentColor" d="M352,245.0 l-7,-3.5 l0,7 z"/></g>
+<text x="249.5" y="384.0" text-anchor="end" font-size="13">Prediction and acknowledgement</text>
+</svg>

@@ -89,7 +89,8 @@ other two need only the vocabulary page and can go anywhere after it.
    pipeline](systems/world/chunk-generation-pipeline.md) — Part XII is the
    cargo on this conveyor and cannot be watched before it.
 5. [Lighting](systems/world/lighting.md) — inside the chain, but nothing
-   later in this part assumes it; Parts IX and X do.
+   later in this part assumes it; one page each in Parts IX and X cites it,
+   and neither part's landing page lists it.
 6. [Chunk storage](systems/world/chunk-storage.md)
 7. [Scheduled ticks](systems/world/scheduled-ticks.md) — two of Part V's
    redstone lectures assume this one, and so does the next.
@@ -387,23 +388,24 @@ advancements need for every trigger and selectors for one option.
 
 ## The dependencies between parts
 
-Every arrow below is a *before you start* entry on a landing page: the part
+Every arc below is a *before you start* entry on a landing page: the part
 at the tail is one the part at the head assumes, and not optionally. The
-two dependencies every part shares keep their boxes and the one arrow each
-along the spine, and have the rest of their arrows left off, because those
+two dependencies every part shares keep their boxes and the one arc each
+along the spine, and have the rest of their arcs left off, because those
 would reach almost every node — Part I's
 [anatomy](systems/anatomy/anatomy.md#four-threads-worth-memorising), for
 the threads every diagram's lanes are on, and Part II's
 [codecs](systems/foundations/codecs-nbt-json.md) and
 [registries](systems/foundations/identifiers-and-registries.md), assumed
 wherever something is written to disk, sent on the wire or looked up by
-name. Read a solid arrow as *watch before*.
+name. Read a solid arc as *watch before*: the parts run down the page in
+the sidebar's order, and every solid arc runs down with them.
 
 {{#include figures/parts-dependency.md}}
 
 The graph is a line with two knots in it, and the sidebar order is a valid
-walk through it: no solid arrow points at an earlier part. The two dashed
-arrows are the places where it does not hold, and each is cut on purpose
+walk through it: no solid arc points at an earlier part. The two dashed
+arcs are the places where it does not hold, and each is cut on purpose
 rather than solved by reordering.
 
 **Part III assumes two pages of Part IV.** [The level
@@ -434,7 +436,7 @@ Ten pages carry most of the graph — nine rows below, because the two server
 ticks are one dependency in two lectures. The membership rule is
 mechanical: **a page that two or more landing pages name under *before you
 start***, less the three pages those two universal parts contribute, which are
-the boxes whose other arrows the figure leaves off. A viewer who has watched these ten can take the parts
+the boxes whose other arcs the figure leaves off. A viewer who has watched these ten can take the parts
 they belong to in almost any order; a viewer who skips one of them will
 find a later part's first surprise unexplained.
 

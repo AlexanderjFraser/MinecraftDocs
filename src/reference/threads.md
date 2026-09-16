@@ -13,45 +13,45 @@ Two threads own game state — the Render thread owns the client's, the
 Server thread owns the world's — and everything else is a way of getting
 work to them or from them. Work crosses a thread boundary in exactly three
 ways, and the figure names which on every edge that is one of them: a **posted task** (a
-`Runnable` on the owner's `BlockableEventLoop`), a **completed future** (a
+`Runnable` handed to the executor that will run it — the owner's
+`BlockableEventLoop`, a worker pool, or the connection's Netty event loop,
+which is where `Connection.sendPacket` puts a packet sent from any other
+thread), a **completed future** (a
 worker's result, completed onto the owner's executor), or a **hopped
 handler** (a packet decoded on Netty and re-posted to its owner by
 `PacketUtils.ensureRunningOnSameThread`).
 
 ```mermaid
-flowchart LR
-    subgraph ClientSide["the client process"]
-        RT["Render thread<br/>Minecraft.runTick: a frame, then 0 to 10 client ticks"]
-        SND["Sound engine<br/>SoundEngineExecutor: the OpenAL calls"]
-    end
-    subgraph Shared["shared by both halves"]
-        NET["Netty IO<br/>Connection: split, decode, encode, plus the handshake and login handlers"]
-        WK["Worker-Main-n<br/>Util.backgroundExecutor: generation, lighting, meshing"]
-    end
-    subgraph ServerSide["the server"]
-        ST["Server thread<br/>MinecraftServer.runServer: a tick every 50 ms"]
-        IO["IO-Worker-n<br/>Util.ioPool: region file reads and writes"]
-        WD["Server Watchdog<br/>dedicated only"]
-        LST["Console, RCON, query, management<br/>dedicated only"]
-    end
-    RT -- "serverbound packets, written on the caller's thread" --> NET
-    NET -- "clientbound play packets: hopped handler" --> RT
-    NET -- "serverbound play packets: hopped handler" --> ST
-    ST -- "clientbound packets" --> NET
-    ST -- "chunk generation and lighting: posted task" --> WK
-    WK -- "a generated chunk: completed future" --> ST
-    RT -- "section meshing: posted task" --> WK
-    WK -- "a built mesh: completed future" --> RT
-    ST -- "region reads and writes: posted task" --> IO
-    IO -- "a loaded chunk's data: completed future" --> ST
-    RT -- "play, stop, move a source: posted task" --> SND
-    LST -- "a command line: posted task" --> ST
-    WD -. "reads tick state unsynchronised, kills the JVM past max-tick-time" .-> ST
+flowchart TD
+    RT["Render thread: Minecraft.runTick"]:::client
+    NET["Netty IO: Connection"]:::netty
+    ST["Server thread: MinecraftServer.runServer"]:::server
+    WK["Worker-Main-n: Util.backgroundExecutor"]:::worker
+    IO["IO-Worker-n: Util.ioPool"]:::worker
+    SND["Sound engine: SoundEngineExecutor"]:::client
+    LST["console, RCON, query, management: dedicated only"]:::server
+    WD["Server Watchdog: dedicated only"]:::server
+    RT -- "posted task" --> NET
+    ST -- "posted task" --> NET
+    NET -- "play packets: hopped" --> RT
+    NET -- "play packets: hopped" --> ST
+    RT -- "posted task" --> WK
+    ST -- "posted task" --> WK
+    WK -. "completed future" .-> RT
+    WK -. "completed future" .-> ST
+    ST -- "posted task" --> IO
+    IO -. "completed future" .-> ST
+    RT -- "posted task" --> SND
+    LST -- "posted task" --> ST
+    WD -. "reads, unsynchronised" .-> ST
 ```
 
+*The threads that carry work, coloured by the side each serves, and every edge between them labelled with how work crosses it: a posted task out, a completed future back, a play packet hopped onto its owner, and the one edge that is none of the three, the watchdog reading the Server thread's tick state without a lock.*
+
 The *daemon* column is the one that decides how the process ends, because a
-non-daemon thread holds the JVM open until something stops it. Five rows of
-the table are non-daemon, and only four of them can hold it open: **main**
+non-daemon thread holds the JVM open until something stops it. Six rows of
+the table are non-daemon; on a dedicated server, which has no Render thread,
+that is five, and only four of them can hold it open: **main**
 returns the moment it has registered the shutdown hook, long before anything
 needs stopping, which leaves the Server thread, `Util.ioPool`'s workers, and
 the RCON and query listeners. The first two are retired
@@ -62,7 +62,8 @@ each polls so that it notices the flag within half a second of being told to
 stop. Everything else the game starts is a daemon and simply stops existing
 ([how a server dies](../systems/server/how-a-server-dies.md#the-closes-and-the-last-thread)).
 
-Every lane in the figure has a row in the table; two rows have no lane,
+Every box in the figure has a row in the table — the listeners' box has four —
+and two rows have no box,
 because **main** has stopped existing before any of these edges are busy and
 the timer-hack thread does nothing at all. Netty is drawn once and shared because
 it is: in singleplayer the client's `Connection` and the integrated

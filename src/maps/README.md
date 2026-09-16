@@ -23,22 +23,12 @@ Reference tier's generated half does not.
 
 ```mermaid
 flowchart LR
-    D["the 26.2 decompile: 7,055 files"]
-    T["tools/map_source.py, run by deploy.sh"]
-    subgraph G["src/generated/, rewritten on every deploy"]
-        G1["eight SVG figures, seven of them the atlas's"]
-        G2["seven tables"]
-        G3["parts.md and the thirteen per-part size phrases"]
-    end
-    subgraph P["the four map pages, written by hand"]
-        P1["where the code is · where the mass is"]
-        P2["what everything imports · what extends what"]
-    end
-    D --> T --> G
-    G1 --> P
-    G2 --> P
-    G3 --> LP["the thirteen landing pages, which include their own size"]
+    D[("the 26.2 decompile")] --> T["map_source.py, on every deploy"] --> G["seven figures, seven tables"]
+    G -- "included as they are" --> P["the four map pages"]
+    G -- "read and typed by a person" --> S["the sentences"] --> P
 ```
+
+*The two routes into an atlas page: the figures and tables arrive by the upper one and cannot drift, and every number in a sentence arrives by the lower one, which is the route a version bump has to walk again by hand.*
 
 ## The four maps
 

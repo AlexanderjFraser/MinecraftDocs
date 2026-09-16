@@ -13,7 +13,7 @@ dedicated server runs with no window attached.
 
 <figure class="map">
 {{#include ../generated/packages-treemap.svg}}
-<figcaption>The 26.2 decompile as a treemap. Each outer box is a package directly under <code>net/minecraft</code> or <code>com/mojang</code>, labelled with its share of the lines; the boxes inside are its sub-packages. Hover a box for its counts; click the figure to enlarge it.</figcaption>
+<figcaption>The 26.2 decompile as a treemap. Each outer box is a package directly under <code>net/minecraft</code> or <code>com/mojang</code>, labelled with its share of the lines where the box has room for it; the boxes inside are its sub-packages. Hover a box for its counts; click the figure to enlarge it.</figcaption>
 </figure>
 
 ## Two jars, one tree

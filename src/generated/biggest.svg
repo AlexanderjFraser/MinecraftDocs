@@ -1,153 +1,153 @@
-<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 578" width="1000" height="578" role="img" aria-label="The 30 largest classes of 26.2 by lines of decompiled source">
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 608" width="1000" height="608" role="img" aria-label="The 30 largest classes of 26.2 by lines of decompiled source">
 <title>The 30 largest classes of 26.2 by lines of decompiled source</title>
 <g><title>Entity (world/entity): 4,464 lines</title>
-<text x="330" y="17" text-anchor="end" font-size="12">Entity<tspan class="muted" font-size="9"> world/entity</tspan></text>
-<rect class="shared" x="338" y="7" width="600.0" height="13" rx="2"/>
+<text x="404" y="17" text-anchor="end" font-size="12">Entity<tspan class="muted" font-size="11"> world/entity</tspan></text>
+<rect class="shared" x="412" y="7" width="526.0" height="14" rx="2"/>
 <text class="muted" x="943.0" y="17" font-size="11">4,464</text>
 </g>
 <g><title>LivingEntity (world/entity): 4,321 lines</title>
-<text x="330" y="36" text-anchor="end" font-size="12">LivingEntity<tspan class="muted" font-size="9"> world/entity</tspan></text>
-<rect class="shared" x="338" y="26" width="580.8" height="13" rx="2"/>
-<text class="muted" x="923.8" y="36" font-size="11">4,321</text>
+<text x="404" y="37" text-anchor="end" font-size="12">LivingEntity<tspan class="muted" font-size="11"> world/entity</tspan></text>
+<rect class="shared" x="412" y="27" width="509.2" height="14" rx="2"/>
+<text class="muted" x="926.2" y="37" font-size="11">4,321</text>
 </g>
 <g><title>Minecraft (client): 3,274 lines</title>
-<text x="330" y="55" text-anchor="end" font-size="12">Minecraft<tspan class="muted" font-size="9"> client</tspan></text>
-<rect class="client" x="338" y="45" width="440.1" height="13" rx="2"/>
-<text class="muted" x="783.1" y="55" font-size="11">3,274</text>
+<text x="404" y="57" text-anchor="end" font-size="12">Minecraft<tspan class="muted" font-size="11"> client</tspan></text>
+<rect class="client" x="412" y="47" width="385.8" height="14" rx="2"/>
+<text class="muted" x="802.8" y="57" font-size="11">3,274</text>
 </g>
 <g><title>BlockModelGenerators (client/data/models): 3,090 lines</title>
-<text x="330" y="74" text-anchor="end" font-size="12">BlockModelGenerators<tspan class="muted" font-size="9"> client/data/models</tspan></text>
-<rect class="client" x="338" y="64" width="415.3" height="13" rx="2"/>
-<text class="muted" x="758.3" y="74" font-size="11">3,090</text>
+<text x="404" y="77" text-anchor="end" font-size="12">BlockModelGenerators<tspan class="muted" font-size="11"> client/data/models</tspan></text>
+<rect class="client" x="412" y="67" width="364.1" height="14" rx="2"/>
+<text class="muted" x="781.1" y="77" font-size="11">3,090</text>
 </g>
 <g><title>ClientPacketListener (client/multiplayer): 3,051 lines</title>
-<text x="330" y="93" text-anchor="end" font-size="12">ClientPacketListener<tspan class="muted" font-size="9"> client/multiplayer</tspan></text>
-<rect class="client" x="338" y="83" width="410.1" height="13" rx="2"/>
-<text class="muted" x="753.1" y="93" font-size="11">3,051</text>
+<text x="404" y="97" text-anchor="end" font-size="12">ClientPacketListener<tspan class="muted" font-size="11"> client/multiplayer</tspan></text>
+<rect class="client" x="412" y="87" width="359.5" height="14" rx="2"/>
+<text class="muted" x="776.5" y="97" font-size="11">3,051</text>
 </g>
 <g><title>MinecraftServer (server): 2,632 lines</title>
-<text x="330" y="112" text-anchor="end" font-size="12">MinecraftServer<tspan class="muted" font-size="9"> server</tspan></text>
-<rect class="shared" x="338" y="102" width="353.8" height="13" rx="2"/>
-<text class="muted" x="696.8" y="112" font-size="11">2,632</text>
+<text x="404" y="117" text-anchor="end" font-size="12">MinecraftServer<tspan class="muted" font-size="11"> server</tspan></text>
+<rect class="shared" x="412" y="107" width="310.1" height="14" rx="2"/>
+<text class="muted" x="727.1" y="117" font-size="11">2,632</text>
 </g>
 <g><title>ServerGamePacketListenerImpl (server/network): 2,499 lines</title>
-<text x="330" y="131" text-anchor="end" font-size="12">ServerGamePacketListenerImpl<tspan class="muted" font-size="9"> server/network</tspan></text>
-<rect class="shared" x="338" y="121" width="335.9" height="13" rx="2"/>
-<text class="muted" x="678.9" y="131" font-size="11">2,499</text>
+<text x="404" y="137" text-anchor="end" font-size="12">ServerGamePacketListenerImpl<tspan class="muted" font-size="11"> server/network</tspan></text>
+<rect class="shared" x="412" y="127" width="294.5" height="14" rx="2"/>
+<text class="muted" x="711.5" y="137" font-size="11">2,499</text>
 </g>
 <g><title>ServerPlayer (server/level): 2,445 lines</title>
-<text x="330" y="150" text-anchor="end" font-size="12">ServerPlayer<tspan class="muted" font-size="9"> server/level</tspan></text>
-<rect class="shared" x="338" y="140" width="328.6" height="13" rx="2"/>
-<text class="muted" x="671.6" y="150" font-size="11">2,445</text>
+<text x="404" y="157" text-anchor="end" font-size="12">ServerPlayer<tspan class="muted" font-size="11"> server/level</tspan></text>
+<rect class="shared" x="412" y="147" width="288.1" height="14" rx="2"/>
+<text class="muted" x="705.1" y="157" font-size="11">2,445</text>
 </g>
 <g><title>BlockStateData (util/datafix/fixes): 2,270 lines</title>
-<text x="330" y="169" text-anchor="end" font-size="12">BlockStateData<tspan class="muted" font-size="9"> util/datafix/fixes</tspan></text>
-<rect class="shared" x="338" y="159" width="305.1" height="13" rx="2"/>
-<text class="muted" x="648.1" y="169" font-size="11">2,270</text>
+<text x="404" y="177" text-anchor="end" font-size="12">BlockStateData<tspan class="muted" font-size="11"> util/datafix/fixes</tspan></text>
+<rect class="shared" x="412" y="167" width="267.5" height="14" rx="2"/>
+<text class="muted" x="684.5" y="177" font-size="11">2,270</text>
 </g>
 <g><title>ServerLevel (server/level): 2,126 lines</title>
-<text x="330" y="188" text-anchor="end" font-size="12">ServerLevel<tspan class="muted" font-size="9"> server/level</tspan></text>
-<rect class="shared" x="338" y="178" width="285.8" height="13" rx="2"/>
-<text class="muted" x="628.8" y="188" font-size="11">2,126</text>
+<text x="404" y="197" text-anchor="end" font-size="12">ServerLevel<tspan class="muted" font-size="11"> server/level</tspan></text>
+<rect class="shared" x="412" y="187" width="250.5" height="14" rx="2"/>
+<text class="muted" x="667.5" y="197" font-size="11">2,126</text>
 </g>
 <g><title>Player (world/entity/player): 2,053 lines</title>
-<text x="330" y="207" text-anchor="end" font-size="12">Player<tspan class="muted" font-size="9"> world/entity/player</tspan></text>
-<rect class="shared" x="338" y="197" width="275.9" height="13" rx="2"/>
-<text class="muted" x="618.9" y="207" font-size="11">2,053</text>
+<text x="404" y="217" text-anchor="end" font-size="12">Player<tspan class="muted" font-size="11"> world/entity/player</tspan></text>
+<rect class="shared" x="412" y="207" width="241.9" height="14" rx="2"/>
+<text class="muted" x="658.9" y="217" font-size="11">2,053</text>
 </g>
 <g><title>SoundEvents (sounds): 2,000 lines</title>
-<text x="330" y="226" text-anchor="end" font-size="12">SoundEvents<tspan class="muted" font-size="9"> sounds</tspan></text>
-<rect class="shared" x="338" y="216" width="268.8" height="13" rx="2"/>
-<text class="muted" x="611.8" y="226" font-size="11">2,000</text>
+<text x="404" y="237" text-anchor="end" font-size="12">SoundEvents<tspan class="muted" font-size="11"> sounds</tspan></text>
+<rect class="shared" x="412" y="227" width="235.7" height="14" rx="2"/>
+<text class="muted" x="652.7" y="237" font-size="11">2,000</text>
 </g>
 <g><title>OceanMonumentPieces (world/level/levelgen/structure/structures): 1,983 lines</title>
-<text x="330" y="245" text-anchor="end" font-size="12">OceanMonumentPieces<tspan class="muted" font-size="9"> world/level/levelgen/structure/structures</tspan></text>
-<rect class="shared" x="338" y="235" width="266.5" height="13" rx="2"/>
-<text class="muted" x="609.5" y="245" font-size="11">1,983</text>
+<text x="404" y="257" text-anchor="end" font-size="12">OceanMonumentPieces<tspan class="muted" font-size="11"> world/level/levelgen/structure/structures</tspan></text>
+<rect class="shared" x="412" y="247" width="233.7" height="14" rx="2"/>
+<text class="muted" x="650.7" y="257" font-size="11">1,983</text>
 </g>
 <g><title>Options (client): 1,972 lines</title>
-<text x="330" y="264" text-anchor="end" font-size="12">Options<tspan class="muted" font-size="9"> client</tspan></text>
-<rect class="client" x="338" y="254" width="265.1" height="13" rx="2"/>
-<text class="muted" x="608.1" y="264" font-size="11">1,972</text>
+<text x="404" y="277" text-anchor="end" font-size="12">Options<tspan class="muted" font-size="11"> client</tspan></text>
+<rect class="client" x="412" y="267" width="232.4" height="14" rx="2"/>
+<text class="muted" x="649.4" y="277" font-size="11">1,972</text>
 </g>
 <g><title>Blocks (world/level/block): 1,969 lines</title>
-<text x="330" y="283" text-anchor="end" font-size="12">Blocks<tspan class="muted" font-size="9"> world/level/block</tspan></text>
-<rect class="shared" x="338" y="273" width="264.7" height="13" rx="2"/>
-<text class="muted" x="607.7" y="283" font-size="11">1,969</text>
+<text x="404" y="297" text-anchor="end" font-size="12">Blocks<tspan class="muted" font-size="11"> world/level/block</tspan></text>
+<rect class="shared" x="412" y="287" width="232.0" height="14" rx="2"/>
+<text class="muted" x="649.0" y="297" font-size="11">1,969</text>
 </g>
 <g><title>CreativeModeTabs (world/item): 1,706 lines</title>
-<text x="330" y="302" text-anchor="end" font-size="12">CreativeModeTabs<tspan class="muted" font-size="9"> world/item</tspan></text>
-<rect class="shared" x="338" y="292" width="229.3" height="13" rx="2"/>
-<text class="muted" x="572.3" y="302" font-size="11">1,706</text>
+<text x="404" y="317" text-anchor="end" font-size="12">CreativeModeTabs<tspan class="muted" font-size="11"> world/item</tspan></text>
+<rect class="shared" x="412" y="307" width="201.0" height="14" rx="2"/>
+<text class="muted" x="618.0" y="317" font-size="11">1,706</text>
 </g>
 <g><title>Items (world/item): 1,694 lines</title>
-<text x="330" y="321" text-anchor="end" font-size="12">Items<tspan class="muted" font-size="9"> world/item</tspan></text>
-<rect class="shared" x="338" y="311" width="227.7" height="13" rx="2"/>
-<text class="muted" x="570.7" y="321" font-size="11">1,694</text>
+<text x="404" y="337" text-anchor="end" font-size="12">Items<tspan class="muted" font-size="11"> world/item</tspan></text>
+<rect class="shared" x="412" y="327" width="199.6" height="14" rx="2"/>
+<text class="muted" x="616.6" y="337" font-size="11">1,694</text>
 </g>
 <g><title>ChunkMap (server/level): 1,668 lines</title>
-<text x="330" y="340" text-anchor="end" font-size="12">ChunkMap<tspan class="muted" font-size="9"> server/level</tspan></text>
-<rect class="shared" x="338" y="330" width="224.2" height="13" rx="2"/>
-<text class="muted" x="567.2" y="340" font-size="11">1,668</text>
+<text x="404" y="357" text-anchor="end" font-size="12">ChunkMap<tspan class="muted" font-size="11"> server/level</tspan></text>
+<rect class="shared" x="412" y="347" width="196.5" height="14" rx="2"/>
+<text class="muted" x="613.5" y="357" font-size="11">1,668</text>
 </g>
 <g><title>Fox (world/entity/animal/fox): 1,625 lines</title>
-<text x="330" y="359" text-anchor="end" font-size="12">Fox<tspan class="muted" font-size="9"> world/entity/animal/fox</tspan></text>
-<rect class="shared" x="338" y="349" width="218.4" height="13" rx="2"/>
-<text class="muted" x="561.4" y="359" font-size="11">1,625</text>
+<text x="404" y="377" text-anchor="end" font-size="12">Fox<tspan class="muted" font-size="11"> world/entity/animal/fox</tspan></text>
+<rect class="shared" x="412" y="367" width="191.5" height="14" rx="2"/>
+<text class="muted" x="608.5" y="377" font-size="11">1,625</text>
 </g>
 <g><title>Mob (world/entity): 1,612 lines</title>
-<text x="330" y="378" text-anchor="end" font-size="12">Mob<tspan class="muted" font-size="9"> world/entity</tspan></text>
-<rect class="shared" x="338" y="368" width="216.7" height="13" rx="2"/>
-<text class="muted" x="559.7" y="378" font-size="11">1,612</text>
+<text x="404" y="397" text-anchor="end" font-size="12">Mob<tspan class="muted" font-size="11"> world/entity</tspan></text>
+<rect class="shared" x="412" y="387" width="189.9" height="14" rx="2"/>
+<text class="muted" x="606.9" y="397" font-size="11">1,612</text>
 </g>
 <g><title>DataFixers (util/datafix): 1,582 lines</title>
-<text x="330" y="397" text-anchor="end" font-size="12">DataFixers<tspan class="muted" font-size="9"> util/datafix</tspan></text>
-<rect class="shared" x="338" y="387" width="212.6" height="13" rx="2"/>
-<text class="muted" x="555.6" y="397" font-size="11">1,582</text>
+<text x="404" y="417" text-anchor="end" font-size="12">DataFixers<tspan class="muted" font-size="11"> util/datafix</tspan></text>
+<rect class="shared" x="412" y="407" width="186.4" height="14" rx="2"/>
+<text class="muted" x="603.4" y="417" font-size="11">1,582</text>
 </g>
 <g><title>FriendlyByteBuf (network): 1,546 lines</title>
-<text x="330" y="416" text-anchor="end" font-size="12">FriendlyByteBuf<tspan class="muted" font-size="9"> network</tspan></text>
-<rect class="shared" x="338" y="406" width="207.8" height="13" rx="2"/>
-<text class="muted" x="550.8" y="416" font-size="11">1,546</text>
+<text x="404" y="437" text-anchor="end" font-size="12">FriendlyByteBuf<tspan class="muted" font-size="11"> network</tspan></text>
+<rect class="shared" x="412" y="427" width="182.2" height="14" rx="2"/>
+<text class="muted" x="599.2" y="437" font-size="11">1,546</text>
 </g>
 <g><title>Hud (client/gui): 1,478 lines</title>
-<text x="330" y="435" text-anchor="end" font-size="12">Hud<tspan class="muted" font-size="9"> client/gui</tspan></text>
-<rect class="client" x="338" y="425" width="198.7" height="13" rx="2"/>
-<text class="muted" x="541.7" y="435" font-size="11">1,478</text>
+<text x="404" y="457" text-anchor="end" font-size="12">Hud<tspan class="muted" font-size="11"> client/gui</tspan></text>
+<rect class="client" x="412" y="447" width="174.2" height="14" rx="2"/>
+<text class="muted" x="591.2" y="457" font-size="11">1,478</text>
 </g>
 <g><title>Bee (world/entity/animal/bee): 1,451 lines</title>
-<text x="330" y="454" text-anchor="end" font-size="12">Bee<tspan class="muted" font-size="9"> world/entity/animal/bee</tspan></text>
-<rect class="shared" x="338" y="444" width="195.0" height="13" rx="2"/>
-<text class="muted" x="538.0" y="454" font-size="11">1,451</text>
+<text x="404" y="477" text-anchor="end" font-size="12">Bee<tspan class="muted" font-size="11"> world/entity/animal/bee</tspan></text>
+<rect class="shared" x="412" y="467" width="171.0" height="14" rx="2"/>
+<text class="muted" x="588.0" y="477" font-size="11">1,451</text>
 </g>
 <g><title>DensityFunctions (world/level/levelgen): 1,445 lines</title>
-<text x="330" y="473" text-anchor="end" font-size="12">DensityFunctions<tspan class="muted" font-size="9"> world/level/levelgen</tspan></text>
-<rect class="shared" x="338" y="463" width="194.2" height="13" rx="2"/>
-<text class="muted" x="537.2" y="473" font-size="11">1,445</text>
+<text x="404" y="497" text-anchor="end" font-size="12">DensityFunctions<tspan class="muted" font-size="11"> world/level/levelgen</tspan></text>
+<rect class="shared" x="412" y="487" width="170.3" height="14" rx="2"/>
+<text class="muted" x="587.3" y="497" font-size="11">1,445</text>
 </g>
 <g><title>StrongholdPieces (world/level/levelgen/structure/structures): 1,436 lines</title>
-<text x="330" y="492" text-anchor="end" font-size="12">StrongholdPieces<tspan class="muted" font-size="9"> world/level/levelgen/structure/structures</tspan></text>
-<rect class="shared" x="338" y="482" width="193.0" height="13" rx="2"/>
-<text class="muted" x="536.0" y="492" font-size="11">1,436</text>
+<text x="404" y="517" text-anchor="end" font-size="12">StrongholdPieces<tspan class="muted" font-size="11"> world/level/levelgen/structure/structures</tspan></text>
+<rect class="shared" x="412" y="507" width="169.2" height="14" rx="2"/>
+<text class="muted" x="586.2" y="517" font-size="11">1,436</text>
 </g>
 <g><title>Util (util): 1,415 lines</title>
-<text x="330" y="511" text-anchor="end" font-size="12">Util<tspan class="muted" font-size="9"> util</tspan></text>
-<rect class="shared" x="338" y="501" width="190.2" height="13" rx="2"/>
-<text class="muted" x="533.2" y="511" font-size="11">1,415</text>
+<text x="404" y="537" text-anchor="end" font-size="12">Util<tspan class="muted" font-size="11"> util</tspan></text>
+<rect class="shared" x="412" y="527" width="166.7" height="14" rx="2"/>
+<text class="muted" x="583.7" y="537" font-size="11">1,415</text>
 </g>
 <g><title>LocalPlayer (client/player): 1,392 lines</title>
-<text x="330" y="530" text-anchor="end" font-size="12">LocalPlayer<tspan class="muted" font-size="9"> client/player</tspan></text>
-<rect class="client" x="338" y="520" width="187.1" height="13" rx="2"/>
-<text class="muted" x="530.1" y="530" font-size="11">1,392</text>
+<text x="404" y="557" text-anchor="end" font-size="12">LocalPlayer<tspan class="muted" font-size="11"> client/player</tspan></text>
+<rect class="client" x="412" y="547" width="164.0" height="14" rx="2"/>
+<text class="muted" x="581.0" y="557" font-size="11">1,392</text>
 </g>
-<g><title>RealmsMainScreen (realmsclient): 1,376 lines</title>
-<text x="330" y="549" text-anchor="end" font-size="12">RealmsMainScreen<tspan class="muted" font-size="9"> realmsclient</tspan></text>
-<rect class="client" x="338" y="539" width="184.9" height="13" rx="2"/>
-<text class="muted" x="527.9" y="549" font-size="11">1,376</text>
+<g><title>RealmsMainScreen (mojang/realmsclient): 1,376 lines</title>
+<text x="404" y="577" text-anchor="end" font-size="12">RealmsMainScreen<tspan class="muted" font-size="11"> mojang/realmsclient</tspan></text>
+<rect class="client" x="412" y="567" width="162.1" height="14" rx="2"/>
+<text class="muted" x="579.1" y="577" font-size="11">1,376</text>
 </g>
 <g><title>VanillaBlockLoot (data/loot/packs): 1,360 lines</title>
-<text x="330" y="568" text-anchor="end" font-size="12">VanillaBlockLoot<tspan class="muted" font-size="9"> data/loot/packs</tspan></text>
-<rect class="shared" x="338" y="558" width="182.8" height="13" rx="2"/>
-<text class="muted" x="525.8" y="568" font-size="11">1,360</text>
+<text x="404" y="597" text-anchor="end" font-size="12">VanillaBlockLoot<tspan class="muted" font-size="11"> data/loot/packs</tspan></text>
+<rect class="shared" x="412" y="587" width="160.3" height="14" rx="2"/>
+<text class="muted" x="577.3" y="597" font-size="11">1,360</text>
 </g>
 </svg>

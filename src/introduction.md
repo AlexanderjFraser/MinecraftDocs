@@ -17,27 +17,31 @@ client predicts and the server overrules; a chunk exists on the server long
 before the client is sent it; a sword swing is a packet, a hit is a reply.
 
 ```mermaid
-flowchart LR
-    subgraph Client["the client (Render thread)"]
-        MC["Minecraft: a frame, and 0 to 10 ticks inside it"]
-        CL["ClientLevel: the copy of the world"]
-        MC --> CL
+flowchart TD
+    subgraph Client["Render thread"]
+        MC["Minecraft: a frame, 0 to 10 ticks in it"]
+        CL["ClientLevel: the copy it is told about"]
     end
-    subgraph Wire["the wire"]
-        Conn["Connection: the Netty event loop, on a socket or an in-process channel"]
+    subgraph Netty["Netty event loop"]
+        Conn["Connection: socket or in-process"]
     end
-    subgraph Server["the server (Server thread)"]
+    subgraph Server["Server thread"]
         MS["MinecraftServer: a tick every 50 ms"]
         SL["ServerLevel: the world, one per dimension"]
-        MS --> SL
     end
-    CL -- "serverbound: what the player did" --> Conn
-    Conn -- "clientbound: what the world became" --> CL
-    Conn --> SL
-    SL --> Conn
-    Worker["Worker-Main-n: chunk generation, lighting, meshing"] -.-> SL
-    Worker -.-> CL
+    subgraph Pool["Worker-Main-n"]
+        W["generation, lighting, meshing"]
+    end
+    MC --> CL
+    MS --> SL
+    MC -- "what the player did" --> Conn
+    Conn -- "what the world became" --> CL
+    Conn <--> SL
+    W -. "chunks" .-> SL
+    W -. "meshes" .-> MC
 ```
+
+*The two programs and the four threads they run on: the client and the server each own their copy of the world and talk only through the connection, and the worker pool hands its results back, dotted, to whichever of them asked.*
 
 The whole thing is 7,055 classes and about 720,000 lines of Java 25. Just
 under a third of those lines is client-only; the rest ships in both jars, and the
@@ -50,9 +54,10 @@ leaves out.
 <figcaption>The two jars. Every box is a package, its area is lines of decompiled source; the <a href="maps/packages.html">atlas</a> walks through it. Click to enlarge.</figcaption>
 </figure>
 
-Four threads carry nearly all of it — the Render thread, which is also the
-client's game thread; the Server thread; the Netty event loop; and a shared
-worker pool — and the first lecture of the book,
+The four boxes of the first picture are the four threads that carry nearly all of
+it — the Render thread, which is also the client's game thread; the Server
+thread; the Netty event loop; and a shared worker pool, whose threads are named
+*Worker-Main-n* — and the first lecture of the book,
 [Anatomy](systems/anatomy/anatomy.md#four-threads-worth-memorising), is those
 four threads and the two loops.
 
@@ -79,12 +84,13 @@ figure is the artefact — a sequence diagram whose lanes are class names, a
 state machine, a flowchart of a decision. Every diagram enlarges on click.
 Each part only assumes the ones before it, and the
 [lecture map](lectures.md) says where that is not quite true. The picture
-below is the whole of that: a solid arrow is *watch before*, the two
+below is the whole of that, drawn as the line it nearly is: the parts in
+watch order, and a solid arc from a part to each part that assumes it. The two
 dependencies every part shares — Part I for the threads, Part II for codecs
-and registries — keep their boxes and the one arrow each along the spine but
+and registries — keep their boxes and the one arc each along the spine but
 have the rest of theirs left off, because those would reach almost every box,
-and the two dashed arrows are the only places a part reaches forward, each cut
-on purpose rather than solved by reordering.
+and the two dashed arcs are the only places a part assumes a later one, each
+cut on purpose rather than solved by reordering.
 
 {{#include figures/parts-dependency.md}}
 

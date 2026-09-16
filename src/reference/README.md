@@ -16,32 +16,12 @@ twenty-three are rewritten by a tool on every deploy and cannot go stale.
 The other ten were read by a person, one class at a time, and go stale
 exactly the way this page's own last column did.
 
-## The shelf
-
-```mermaid
-flowchart LR
-    D["the 26.2 decompile"]
-    P["the system pages"]
-    T["TEMPLATE.md, the lane key"]
-    subgraph G["read off the decompile by gen_reference.py, rewritten on every deploy"]
-        G1["packets, registries, data components, game rules"]
-        G2["attributes, entity data serializers, enchantment hooks, loot context parameter sets"]
-        G3["entity spawn reasons, structure spawn overrides, the weapon helpers"]
-    end
-    subgraph I["read off the corpus by the checkers, rewritten on every deploy"]
-        I1["class index, from verify_names.py"]
-        I2["diagram lanes, from check_lanes.py"]
-    end
-    subgraph H["hand-kept by the part sessions, name-verified, re-read every pass"]
-        H1["block update flags, damage outside LivingEntity, what the HUD draws, submit phases, density-function nodes"]
-        H2["threads, math and primitives, level data and rules"]
-        H3["naming drift, glossary"]
-    end
-    D --> G
-    P --> I1
-    T --> I2
-    D -. "a session reads one class at a time" .-> H
-```
+A shelf is looked up, not watched, so a Reference page is exempt from the
+rule that every page carries a figure: it draws one only where its subject is
+a shape — the conversions between [coordinate
+spaces](math-and-primitives.md#the-coordinate-spaces), the [ways work crosses a
+thread boundary](threads.md#three-ways-work-crosses-a-thread-boundary) — and
+everywhere else, this page included, its figure is the table.
 
 ## How each page is kept, and who leans on it
 
