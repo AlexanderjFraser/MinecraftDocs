@@ -184,7 +184,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BehaviorBuilder` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `BehaviorControl` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `BellBlockEntity` | [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md) |
-| `BelowZeroRetrogen` | [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [biomes](../systems/worldgen/biomes.md), [blending](../systems/worldgen/blending.md), [terrain](../systems/worldgen/terrain.md) |
+| `BelowZeroRetrogen` | [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [blending](../systems/worldgen/blending.md), [terrain](../systems/worldgen/terrain.md) |
 | `BendingTrunkPlacer` | [trees](../systems/worldgen/trees.md) |
 | `BinaryHeap` | [pathfinding](../systems/entities/pathfinding.md) |
 | `BindGroupLayout` | [blaze3d](../systems/rendering/blaze3d.md), [post-processing](../systems/rendering/post-processing.md) |
@@ -446,7 +446,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ChunkSkyLightSources` | [chunk-anatomy](../systems/world/chunk-anatomy.md), [lighting](../systems/world/lighting.md) |
 | `ChunkSource` | [pathfinding](../systems/entities/pathfinding.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [tickets-and-loading](../systems/world/tickets-and-loading.md) |
 | `ChunkStatus` | [lectures](../lectures.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [starting-a-server](../systems/server/starting-a-server.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [lighting](../systems/world/lighting.md), [points-of-interest](../systems/world/points-of-interest.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [tickets-and-loading](../systems/world/tickets-and-loading.md), [XII · World generation](../systems/worldgen/README.md), [biomes](../systems/worldgen/biomes.md), [blending](../systems/worldgen/blending.md), [density-functions](../systems/worldgen/density-functions.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md), [terrain](../systems/worldgen/terrain.md) |
-| `ChunkStatusTasks` | [block-entities](../systems/blocks/block-entities.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [lighting](../systems/world/lighting.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [biomes](../systems/worldgen/biomes.md), [blending](../systems/worldgen/blending.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [structure-placement](../systems/worldgen/structure-placement.md) |
+| `ChunkStatusTasks` | [block-entities](../systems/blocks/block-entities.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [lighting](../systems/world/lighting.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [blending](../systems/worldgen/blending.md), [features-and-placement](../systems/worldgen/features-and-placement.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `ChunkStep` | [glossary](../reference/glossary.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md) |
 | `ChunkTaskDispatcher` | [threads](../reference/threads.md), [anatomy](../systems/anatomy/anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [lighting](../systems/world/lighting.md) |
 | `ChunkTaskPriorityQueue` | [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md) |
@@ -2017,7 +2017,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `PictureInPictureRenderState` | [the-gui-render-tree](../systems/client/the-gui-render-tree.md) |
 | `PieceGenerator` | [structure-placement](../systems/worldgen/structure-placement.md) |
 | `PieceGeneratorSupplier` | [structure-placement](../systems/worldgen/structure-placement.md) |
-| `PiecesContainer` | [glossary](../reference/glossary.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md) |
+| `PiecesContainer` | [glossary](../reference/glossary.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `PiercingWeapon` | [data-components](../systems/foundations/data-components.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md) |
 | `Pig` | [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
 | `Piglin` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [pathfinding](../systems/entities/pathfinding.md), [the-spear](../systems/player/the-spear.md) |
@@ -2740,7 +2740,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `StructureManager` | [structure-placement](../systems/worldgen/structure-placement.md) |
 | `StructurePiece` | [loot-tables](../systems/items/loot-tables.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `StructurePieceAccessor` | [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
-| `StructurePiecesBuilder` | [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
+| `StructurePiecesBuilder` | [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
 | `StructurePieceSerializationContext` | [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `StructurePieceType` | [glossary](../reference/glossary.md), [data-driven-types](../systems/foundations/data-driven-types.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
 | `StructurePlacement` | [data-driven-types](../systems/foundations/data-driven-types.md), [structure-placement](../systems/worldgen/structure-placement.md) |
