@@ -785,6 +785,7 @@ the break in from a render, and is the check after adding a lane.
 | `SndE` | `SoundEngine` |
 | `SBL` | `SoundBufferLibrary` |
 | `ChanA` | `ChannelAccess` |
+| `SEE` | `SoundEngineExecutor` |
 | `Library` | `Library` |
 | `Channel` | `Channel` |
 | `LEH` | `LevelEventHandler` |

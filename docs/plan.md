@@ -981,3 +981,54 @@ that the owner has not understood; recording is after pass 10.
   nothing reaches? No** — a diagram draws the machine as it runs, and
   `NEGOTIATING` is the enum's business and the prose's). All six gates green
   (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session J (Opus) — Part X · The client.** Thirteen
+  viewer agents, one per page. **Eighteen figures became twenty**, both new
+  ones a split at a joint the page already names: `options`' one flowchart —
+  fourteen nodes and 2,081px, two screens — is now the widget's half and the
+  save's, and `text-and-fonts`' one eight-lane sequence is the stages that run
+  when the text changes and the stages that run in the frame. Every figure is
+  captioned and pointed at; **nothing is below 0.78 or under 12.4px** (from
+  0.59 and 9.5px, with six below 0.75), no lane is over six, and the gate's
+  **10 unresolved names and 26 notes are 0 and 0**. **The part's own fault is
+  F18's, and it is the thing a session can only find by looking**: fifteen
+  Mojang names were **hyphen-broken mid-word on screen** —
+  `handleLevelChunkWithL-ight`, `ToggleKeyMapping.setD-own`,
+  `BakedSheetGlyph.rende-rChar`, `ClientboundBlockChangedAckPack-et` and eleven
+  more — which is more than any other part and **more than a third of the whole
+  corpus's forty-one**. The book was spelling a name wrong in the picture while
+  spelling it right in the prose, on nine of thirteen pages, and every one was
+  found by one regex over `render/index.json` rather than by reading. Part X is
+  now at **zero**. Two figures changed kind: `gui-and-screens`' containment
+  flowchart is the book's **eighth `classDiagram`** — it had been drawing
+  *holds*, *extends* and *arranges* with one arrowhead — and
+  `the-gui-render-tree`'s twelve-box draw chain is nested subgraphs, because a
+  flat chain was asserting that five steps happen *after* `GuiRenderer.prepare`
+  when all five are inside it and `GuiRenderer.draw` is its sibling. Eighteen
+  corrections, all in [pass9.md](pass9.md); the sharpest three are
+  `what-makes-a-sound`, whose figure routed your own place and break **past**
+  `ClientLevel.playSeededSound` while the box on that very arrow said *the same
+  shared call* — the convergence it skipped is the page's entire argument;
+  `options`, which sent the cycle path through `Screen.removed` when a cycle
+  button calls `Options.save` in its own click handler and `removed` is where a
+  *slider* saves; and `the-client-level`, where the queue's open question —
+  one arrival or two? — re-derived to **one**, and the arrow that raised it
+  turned out to name two of the listener's own private methods and to land
+  `ClientLevel.setSectionRangeDirty` on the light engine. **The
+  caller's-method-at-the-callee fault is now nine parts of nine** (`hud`,
+  `sound-engine`, `prediction-and-acks`, `the-client-level`,
+  `input-and-keybinds`), and this part adds a second spelling of it the gate
+  cannot see: **a self-message labelled with a third class's method, on a lane
+  that owns neither** — `Tutorial.onOpenInventory` as a `Minecraft` self-call,
+  `ServerPlayer.requestDebugSubscriptions` as an `SGPL` one — which passes
+  silently because the name is qualified. **The session's own finding is a
+  tenth tool blindness, and the second this pass that the standard itself
+  created**: `pass7_figures.py` closed a `<br/>` up only on a `participant`
+  line, so **every repair F18 prescribes split one Mojang name into two halves
+  and counted both as names the prose never says** — the measurement got worse
+  each time a session fixed a figure, and the tool disagreed with
+  `check_figure_names.py`, which has read the break correctly since session I.
+  Fixed to session I's own rule, two probe cases, and Part X's *never in prose*
+  count fell by fourteen with no page changed. Seven queue entries struck with
+  the page open, two of them ruled out, six opened. All six gates green (the
+  figure-name gate still report-only). Deployed.

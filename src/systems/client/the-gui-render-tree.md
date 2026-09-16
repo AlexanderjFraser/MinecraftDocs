@@ -42,33 +42,32 @@ before this one.
 
 ```mermaid
 flowchart TD
-    GRS["GuiRenderState — a list of strata"]
-    S1["stratum 0"]
-    S2["stratum 1 — opened by nextStratum, a hard floor for the search"]
-    N1["Node"]
-    N2["Node — above"]
-    N3["Node — above that"]
-    EL["elements: BlitRenderState, TiledBlitRenderState, ColoredRectangleRenderState — the list the sort works on"]
-    GL["glyphs: GlyphRenderState, in a second list the sort never touches"]
-    OTH["and three more lists beside them: items, text, pictures in picture"]
     NEW["a new element arrives"]
-    FAST{"does the previous element's box contain it?"}
-    UP["up one node — no intersection test at all"]
-    WALK["walk up from the current stratum to just above the highest box it touches"]
     NONE{"has bounds?"}
     DROP["silently discarded"]
-    GRS --> S1
-    GRS --> S2
-    S2 --> N1 --> N2 --> N3
-    N2 --> EL
-    N2 --> GL
-    N2 --> OTH
+    FAST{"does the previous element's box contain it?"}
     NEW --> NONE
     NONE -- "no" --> DROP
     NONE -- "yes" --> FAST
-    FAST -- "yes" --> UP
-    FAST -- "no" --> WALK
+    subgraph GRS["GuiRenderState"]
+        subgraph S0["stratum 0, closed"]
+            N0["Node"]
+        end
+        subgraph S1["stratum 1, the floor"]
+            N1["Node"]
+            N2["Node, above it"]
+            N1 --> N2
+        end
+    end
+    FAST -- "yes: straight up, no intersection test" --> N2
+    FAST -- "no: up to just above the highest box it touches" --> N2
 ```
+
+*`GuiRenderState` is a list of strata and each stratum a chain of nodes. Both
+answers land in the tree, and neither can land below the barrier: a
+`GuiRenderState.nextStratum` call closes stratum 0 for good, so the worst the
+search can do is reach the bottom node of the current one. The five element
+lists each node holds are the table below.*
 
 Three consequences fall straight out of that picture.
 
@@ -134,21 +133,34 @@ recorded objects and the GPU.
 
 ```mermaid
 flowchart TD
-    REC["Gui.extractRenderState — reset the tree, build a fresh extractor, call the contributors in order"]
-    PREP["GuiRenderer.prepare"]
-    PIP["pictures-in-picture: 3D content rendered to textures"]
-    ITEM["items: models rendered into GuiItemAtlas, once each, then reused"]
-    TEXT["text: prepared text expanded into per-glyph states"]
-    SORT["sortElements — per node, by scissor, then pipeline, then texture"]
-    MESH["addElementToMesh — a new Draw only when pipeline, scissor or texture changes"]
-    DRAW["GuiRenderer.draw"]
-    BEFORE["everything before the blur"]
-    BLUR["clear depth, run the post effect"]
-    AFTER["everything after"]
-    END["GuiRenderer.endFrame — called by GameRenderer, ages the item atlas"]
-    REC --> PREP --> PIP --> ITEM --> TEXT --> SORT --> MESH --> DRAW
-    DRAW --> BEFORE --> BLUR --> AFTER --> END
+    REC["Gui.extractRenderState — the contributors record"]
+    subgraph RENDER["GuiRenderer.render"]
+        subgraph PREP["GuiRenderer.prepare"]
+            PIP["pictures-in-picture, to textures"]
+            ITEM["items, into GuiItemAtlas"]
+            TEXT["text, expanded per glyph"]
+            SORT["GuiRenderState.sortElements"]
+            MESH["GuiRenderer.addElementToMesh, coalescing Draws"]
+            PIP --> ITEM --> TEXT --> SORT --> MESH
+        end
+        UP["the vertex buffer uploaded"]
+        subgraph DRAW["GuiRenderer.draw"]
+            BEFORE["everything before the blur"]
+            BLUR["clear depth, run the post effect"]
+            AFTER["everything after"]
+            BEFORE --> BLUR --> AFTER
+        end
+        MESH --> UP --> BEFORE
+    end
+    END["GuiRenderer.endFrame — GameRenderer's call"]
+    REC --> PIP
+    AFTER --> END
 ```
+
+*The nesting is the point: the five steps in the inner box all happen inside
+`GuiRenderer.prepare`, not after it, and `GuiRenderer.draw` is its sibling
+rather than its successor. Only `Gui.extractRenderState` at the top and
+`GuiRenderer.endFrame` at the foot are outside `GuiRenderer.render`.*
 
 One thing happens eagerly during recording that looks like it should not:
 adding text forces the text to be **prepared**, because the tree needs its

@@ -65,32 +65,53 @@ the delayed queue; once per *frame* `Minecraft.runTick` calls
 
 ## A block is placed near you
 
+The packet has arrived and `ClientLevel.playSeededSound` has taken it — that
+half of the story is [what makes a sound
+happen](what-makes-a-sound.md#the-three-doors). What this figure shows is
+everything after: four objects on the Render thread, one on a download thread,
+and the boundary every per-source OpenAL call has to cross.
+
 ```mermaid
 sequenceDiagram
-    participant SL as ServerLevel
-    participant PL as PlayerList
-    participant CPL as ClientPacketListener
+    box transparent Render thread
     participant CL as ClientLevel
     participant SndE as SoundEngine
-    participant SBL as SoundBufferLibrary
     participant ChanA as ChannelAccess
+    end
+    box transparent Sound engine thread
+    participant SEE as SoundEngineExecutor
     participant Library as Library
+    end
+    box transparent Download pool
+    participant SBL as SoundBufferLibrary
+    end
 
-    SL->>SL: BlockItem.place, then Level.playSound(player, pos, event, BLOCKS, volume, pitch)
-    SL->>PL: broadcast to everyone in range except the placer, with a seed
-    PL-->>CPL: ClientboundSoundPacket — a holder, a position in eighths of a block, a seed
-    CPL->>CL: handleSoundEvent, then playSeededSound, after ensureRunningOnSameThread
-    CL->>SndE: SoundManager.play(SimpleSoundInstance) — seeded, so every client picks the same variant
-    SndE->>SndE: resolve, pick by weight, calculateVolume, tell every SoundEventListener, then drop a silent one unless it is music
-    SndE->>ChanA: createHandle(STATIC or STREAMING limit) — a task on the sound thread
-    ChanA->>Library: acquireChannel — generate an OpenAL source, or null if the limit is reached
-    SndE->>ChanA: ChannelHandle.execute — setPitch, setVolume, linearAttenuation, setSelfPosition
-    SndE->>SBL: getCompleteBuffer(path) — decode off-thread, cached per path
-    SBL-->>ChanA: thenAccept, then ChannelHandle.execute — attachStaticBuffer, play
-    loop every client tick
-        SndE->>ChanA: scheduleTick — pump streams, release channels OpenAL reports stopped
+    CL->>SndE: play, via SoundManager
+    SndE->>SndE: resolve, weigh, calculateVolume, tell the listeners
+    SndE->>ChanA: createHandle
+    ChanA->>SEE: execute — the acquire
+    SEE->>Library: acquireChannel
+    SEE-->>SndE: join — a handle, or null
+    SndE->>ChanA: ChannelAccess.<br/>ChannelHandle.execute
+    ChanA->>SEE: execute — the parameters
+    SndE->>SBL: getCompleteBuffer
+    SBL-->>SndE: thenAccept
+    SndE->>ChanA: ChannelAccess.<br/>ChannelHandle.execute
+    ChanA->>SEE: execute — attachStaticBuffer, play
+    loop per client tick
+        SndE->>ChanA: scheduleTick, pumping streams
     end
 ```
+
+*Every arrow that crosses into the right-hand box is a task queued, not a call
+made: `ChannelAccess` never touches OpenAL itself. The one arrow coming back is
+the join on `ChannelAccess.createHandle`'s future — the only place in this trace the Render
+thread waits.*
+
+Read the three `ChanA->>SEE` arrows as one shape. The Render thread reaches the
+sound thread three times for one sound, and the third of them — attach and
+play, posted from inside the buffer future's continuation — is the hop this
+page opens with.
 
 The four beats worth narrating.
 
@@ -154,7 +175,7 @@ named has been deleted.
 it is what the trace has not shown: a sound can be *delayed* rather than played,
 and `SoundEngine.tick` drains that queue once per client tick. Two things put
 a sound in it — a distance delay, which is [what makes a sound
-happen](what-makes-a-sound.md#who-hears-it)', and a manual loop, three
+happen](what-makes-a-sound.md#who-hears-it), and a manual loop, three
 paragraphs below. Beside it `SoundEngine.instanceToChannel`,
 `SoundEngine.instanceBySource`, `SoundEngine.tickingSounds`,
 `SoundEngine.gainBySource` and `SoundEngine.soundBuffers` are the bookkeeping.

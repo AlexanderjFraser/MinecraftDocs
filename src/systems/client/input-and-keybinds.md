@@ -45,28 +45,29 @@ press is "queued onto the client thread" is describing a different game.
 sequenceDiagram
     participant KH as KeyboardHandler
     participant MC as Minecraft
+    participant Screen as Screen
     participant KM as KeyMapping
-    participant Gui as Gui
     participant KI as KeyboardInput
-    participant LP as LocalPlayer
-    participant MH as MouseHandler
-
-    KH->>KH: keyPress — inside glfwPollEvents, on the game thread, not queued
-    KH->>MC: handleGlobalKeyPress — fullscreen, screenshot, friends: handled here, so usually no click
-    KH->>Gui: screen keyPressed — a screen that consumes it ends the story here
-    KH->>KH: keyDebugModifier held? then handleDebugKeys instead
-    KH->>KM: set(down) and click — only with no screen open
-    KM->>KM: ToggleKeyMapping.setDown flips instead of following, and swallows the release
-    Note over MC: next client tick
-    LP->>KI: tick — from LocalPlayer.aiStep, reads isDown on seven mappings, not consumeClick
-    KI->>KI: the Input record, then a normalised move vector
-    Note over Gui: and when a screen opens
-    Gui->>MH: releaseMouse
-    Gui->>KM: releaseAll — every mapping goes up, and the toggle notes that a screen did it
-    Note over Gui: and when that screen closes
-    Gui->>KM: restoreToggleStatesOnScreenClosed — sneak comes back on
-    Gui->>MH: grabMouse
+    rect rgba(0, 0, 0, 0.04)
+    Note over KH,KI: inside RenderSystem.pollEvents, on this thread
+    KH->>KH: keyPress — the callback, run inline, never queued
+    KH->>MC: handleGlobalKeyPress — fullscreen, screenshot, friends
+    KH->>Screen: keyPressed — a screen that consumes it ends the story
+    KH->>KH: Options.<br/>keyDebugModifier down? then handleDebugKeys
+    KH->>KM: set, and a click — only with no screen open
+    KM->>KM: ToggleKeyMapping.<br/>setDown — flips, and eats the release
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over KH,KI: the next client tick
+    KI->>KI: tick, from LocalPlayer.aiStep — isDown on seven mappings
+    KI->>KI: an Input record, then a normalised move vector
+    end
 ```
+
+*Five gates, and only the first four are in the top band: the fifth is the
+no-screen-no-overlay test on draining the clicks, inside
+`Minecraft.handleKeybinds`. Everything in that band is one callback — the two
+bands are a tick apart, and nothing between them asked for the key.*
 
 **A key press has five chances to be swallowed before it counts** — the
 global-key check, an open screen, the debug modifier, the no-screen gate on

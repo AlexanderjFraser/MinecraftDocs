@@ -22,16 +22,16 @@ screens](gui-and-screens.md#gui-which-is-not-the-hud).
 
 ```mermaid
 flowchart TD
-    PUB["publish GuiRenderState.isHudHidden — before any check, so the flag is always current"]
+    PUB["GuiRenderState.isHudHidden published, before any check"]
     LLS{"is a LevelLoadingScreen up?"}
     STOP["record nothing"]
     H1{"hidden?"}
-    A["camera overlays, then the crosshair, then a new stratum, then the hotbar block, effects, boss bars"]
+    A["camera overlays, crosshair, a new stratum, the hotbar block, effects, boss bars"]
     SLEEP["the sleep fade — ungated"]
     H2{"hidden?"}
     B["demo text, scoreboard sidebar, action bar, title, chat, tab list, subtitles"]
-    B2["subtitles only, and only if an in-game-UI screen is up"]
-    GUI["Gui continues: saving indicator, toasts, debug overlay, deferred subtitles"]
+    B2["the subtitles only, and only with an in-game-UI screen up"]
+    GUI["Gui continues: saving indicator, toasts, debug overlay, the deferred subtitles"]
     PUB --> LLS
     LLS -- "yes" --> STOP
     LLS -- "no" --> H1
@@ -41,6 +41,13 @@ flowchart TD
     H2 -- "no" --> B --> GUI
     H2 -- "yes" --> B2 --> GUI
 ```
+
+*Two identical `hidden?` gates with the sleep fade between them, which is the
+whole shape: the fade is the only thing `Hud` records whatever you press. Both
+branches reach the subtitles, on different conditions — the visible one needs
+no screen **or** an in-game-UI screen, the hidden one needs an in-game-UI
+screen to exist — and either way what they record is the deferred call at the
+foot.*
 
 Above all of that sit gates that are not `Hud`'s at all, and a page about
 conditions has to name them: `GameRenderer.extract` computes whether resources
@@ -154,15 +161,30 @@ sequenceDiagram
     participant Hud as Hud
     participant GGE as GuiGraphicsExtractor
 
-    CPL->>LP: handleSetHealth — hurtTo, which sets hurtTime and invulnerableTime
-    Note over Hud: next frame
-    Hud->>Hud: extractPlayerHealth — health fell while invulnerable
-    Hud->>Hud: healthBlinkTime becomes tickCount plus 20 (a heal sets 10)
-    Hud->>Hud: displayHealth catches up only once the second has elapsed
-    Hud->>Hud: random.setSeed(tickCount times a constant) — the jitter is per tick, not per frame
+    CPL->>LP: hurtTo — sets hurtTime and invulnerableTime
+    Note over CPL,GGE: the next frame
+    Hud->>Hud: extractPlayerHealth, gated on the game mode
+    Hud->>Hud: healthBlinkTime — 20 ticks, or 10 for a heal
+    Hud->>Hud: displayHealth catches up after the second
+    Hud->>Hud: Hud.random takes tickCount, so the jitter is per tick
     Hud->>Hud: extractHearts — one descending pass: container, absorption, ghost, truth
-    Hud->>GGE: blitSprite per heart, chosen by HeartType.getSprite
+    Hud->>GGE: blitSprite a heart, chosen by Hud.HeartType.getSprite
 ```
+
+*One packet, one frame later, and seven steps that all belong to `Hud`: the
+packet's own handler is `ClientPacketListener.handleSetHealth`, and everything
+it does to the hearts it does by calling `LocalPlayer.hurtTo`. Nothing in the
+band below is a reaction to the packet — it is what the HUD does every frame,
+reading numbers the packet left behind.*
+
+The figure's steps are `Hud.extractPlayerHealth`, which sets
+`Hud.healthBlinkTime` from `Hud.tickCount` when the health fell;
+`Hud.displayHealth`, which lags; `Hud.random`, reseeded from that same tick
+counter; `Hud.extractHearts`, the one descending pass; and one
+`GuiGraphicsExtractor.blitSprite` per heart, the sprite chosen by
+`Hud.HeartType.getSprite`. `LocalPlayer.hurtTo` is what the packet touched:
+it sets `LivingEntity.hurtTime` and `Entity.invulnerableTime` and nothing on
+`Hud` at all.
 
 **The shake is seeded from the tick counter**, so it jitters at 20 Hz and is
 identical across two frames of the same tick — and the same seeded stream

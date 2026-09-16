@@ -46,19 +46,25 @@ per *connection*.
 stateDiagram-v2
     state "Client — one position in the ledger" as CLIENT {
         [*] --> Absent
-        Absent --> Retained : setBlock inside a window, filed under sequence n
-        Retained --> Retained : setBlock again here, only the sequence is refreshed
-        Retained --> Corrected : setServerVerifiedBlockState, the entry is overwritten and the world is untouched
-        Retained --> [*] : endPredictionsUpTo(n), nothing overwrote it, so syncBlockState puts the old state back
-        Corrected --> [*] : endPredictionsUpTo(n), syncBlockState writes the absorbed state, which is a no-op if it is already on screen
+        Absent --> Retained : ClientLevel.setBlock
+        Retained --> Retained : again, sequence refreshed
+        Retained --> Corrected : ClientLevel.setServerVerifiedBlockState
+        Retained --> [*] : BlockStatePredictionHandler.<br/>endPredictionsUpTo
+        Corrected --> [*] : the same call
     }
     state "Server — one integer per connection" as SERVER {
         [*] --> Idle
-        Idle --> Raised : ackBlockChangesUpTo(n), the maximum of current and incoming
-        Raised --> Raised : another acked action in the same tick
-        Raised --> Idle : emitted at the head of ServerGamePacketListenerImpl.tick, then back to minus one
+        Idle --> Raised : ServerGamePacketListenerImpl.<br/>ackBlockChangesUpTo
+        Raised --> Raised : another acked action, same tick
+        Raised --> Idle : flushed, head of the next tick
     }
 ```
+
+*Two machines that never read each other, on different clocks: the client's
+runs once per position, the server's once per connection. The only state that
+means a lie is on screen is Retained, and both its exits are the same call —
+what differs is whether `ClientLevel.syncBlockState` then writes the old state
+back or the absorbed one, which on screen is a no-op.*
 
 Read the two columns as running at different rates. The client's machine
 advances several times per tick, once per position touched. The server's
@@ -128,19 +134,24 @@ sequenceDiagram
     participant SPGM as ServerPlayer<br/>GameMode
 
     MPGM->>BSPH: startPredicting — currentSequenceNr becomes n
-    MPGM->>CL: performUseItemOn, then ItemStack.useOn, then setBlock
-    CL->>BSPH: retainKnownServerState(pos, air, LocalPlayer) — the truth, filed under n
+    MPGM->>CL: setBlock, from performUseItemOn through ItemStack.useOn
+    CL->>BSPH: retainKnownServerState — the truth, filed under n
     MPGM->>SGPL: ServerboundUseItemOnPacket(hand, hit, n)
     MPGM->>BSPH: close — the window shuts and the block is on screen
-    SGPL->>SGPL: hasClientLoaded? then ackBlockChangesUpTo(n) — the first statement
+    SGPL->>SGPL: hasClientLoaded? then ackBlockChangesUpTo — first
     SGPL->>SPGM: useItemOn — the place fails canPlace, so nothing changes
-    SGPL->>CL: two ClientboundBlockUpdatePackets, sent whatever the outcome — the clicked block and the one past its face
+    SGPL->>CL: two ClientboundBlockUpdatePackets, whatever the outcome
     CL->>BSPH: updateKnownServerState — the entry is overwritten, the world is not
-    Note over SGPL: the next ServerGamePacketListenerImpl.tick, whose first statement flushes it
-    SGPL->>CL: ClientboundBlockChangedAckPacket(n)
+    Note over SGPL,SPGM: the next tick, whose first statement flushes it
+    SGPL->>CL: Clientbound<br/>BlockChangedAckPacket, carrying n
     CL->>BSPH: endPredictionsUpTo(n), then syncBlockState — air goes back
-    CL->>CL: Entity.absSnapTo on the LocalPlayer — only if the restored block now intersects it
+    CL->>CL: Entity.absSnapTo — only if the restored block now intersects you
 ```
+
+*The two `ClientboundBlockUpdatePacket`s leave from inside the handler; the
+ack is only a field the next tick flushes. That is the whole of the ordering
+rule, and it is visible here as the gap between the fourth arrow from the
+bottom and the note.*
 
 The ack is recorded **before** the action is attempted, so by the time the
 refusal happens the receipt is already promised. The correction is not the

@@ -33,20 +33,26 @@ engine](sound-engine.md).
 flowchart TD
     SERVER["something happens on the server"]
     NAMED["door 1 — Level.playSound names a SoundEvent"]
-    EVENT["door 2 — Level.levelEvent sends an int and a block-state id"]
     NOWIRE["door 3 — nothing crosses the wire"]
-    P1["ClientboundSoundPacket, ClientboundSoundEntityPacket, or the sound inside ClientboundExplodePacket"]
+    EVENT["door 2 — Level.levelEvent sends an int and a block-state id"]
+    P1["ClientboundSoundPacket, ClientboundSoundEntityPacket, or one inside ClientboundExplodePacket"]
     P2["ClientboundLevelEventPacket"]
-    LEH["LevelEventHandler decides what the int means, using this client's block data"]
-    LOCAL["ClientLevel.playSeededSound — the handler passes the local player as the excluded entity, so this always plays"]
-    MINE["your own place and break: the same shared call, run locally, never broadcast to you"]
+    LEH["LevelEventHandler reads the int against this client's block data"]
+    LOCAL["ClientLevel.playSeededSound — the excluded entity is you, so the test passes"]
+    MINE["your own place and break, through the shared Level.playSound"]
     AMB["BiomeAmbientSoundsHandler, MusicManager, the underwater and bubble-column handlers"]
     SM["SoundManager.play"]
-    SERVER --> NAMED --> P1 --> LOCAL --> SM
+    SERVER --> NAMED --> P1 --> LOCAL
+    NOWIRE --> MINE --> LOCAL
+    LOCAL --> SM
     SERVER --> EVENT --> P2 --> LEH --> SM
-    NOWIRE --> MINE --> SM
     NOWIRE --> AMB --> SM
 ```
+
+*Doors one and three meet, which is the point of the picture: a packet and your
+own hand both arrive at `ClientLevel.playSeededSound`, and the only reason both
+get through its one test is that the excluded entity is you in both cases. Door
+two is the one that never names a sound on the wire at all.*
 
 The three columns are how to reason about the wire, and the third is the one
 the usual summary leaves out entirely.

@@ -37,27 +37,40 @@ starts from "you have one".
 ```mermaid
 flowchart TD
     C["a Component"]
-    RUNS["1 · flatten — Component.visit yields (style, string) runs in logical order, Style.applyTo down the sibling tree"]
-    DEC["StringDecomposer walks them codepoint by codepoint and interprets legacy section-sign codes"]
-    WRAP["2 · measure and wrap — StringSplitter cuts at a character offset, each surviving run keeping its own Style"]
-    BIDI["3 · reorder — Language.getVisualOrder, ClientLanguage, FormattedBidiReorder, ICU"]
-    RESOLVE["4 · resolve — FontManager answers a FontDescription with a GlyphSource, then the first provider that has the codepoint"]
-    BAKE["5 · bake — first sight only: GlyphBitmap into a FontTexture, uploaded, producing a BakedGlyph"]
-    EMIT["6 · emit — a TextRenderable per glyph, plus effect glyphs, into a Font.PreparedText"]
-    GUI["GuiRenderer expands it into GlyphRenderState"]
-    WORLD["SubmitNodeCollection.submitText and submitNameTag feed the world renderers"]
-    C --> RUNS --> DEC --> WRAP --> BIDI --> RESOLVE --> BAKE --> EMIT
-    WRAP -. "measuring a codepoint resolves and bakes it too" .-> RESOLVE
+    subgraph WHEN["when the text changes"]
+        RUNS["1 · flatten — Component.visit, then Style.applyTo"]
+        DEC["StringDecomposer, codepoint by codepoint"]
+        WRAP["2 · measure and wrap — StringSplitter"]
+        BIDI["3 · reorder — Language.getVisualOrder, ICU"]
+        RUNS --> DEC --> WRAP --> BIDI
+    end
+    subgraph PREP["inside Font.prepareText"]
+        RESOLVE["4 · resolve — FontManager, then the first provider"]
+        BAKE["5 · bake — first sight only, into a FontTexture"]
+        EMIT["6 · emit — a Font.PreparedText of TextRenderables"]
+        RESOLVE --> BAKE --> EMIT
+    end
+    GUI["at draw: GuiRenderer expands it into GlyphRenderState"]
+    WORLD["or SubmitNodeCollection.submitText, for the world"]
+    C --> RUNS
+    BIDI --> RESOLVE
+    WRAP -. "measuring resolves and bakes it too" .-> RESOLVE
     EMIT --> GUI
     EMIT --> WORLD
 ```
+
+*The numbers are the order the stages matter in, not one walk: the top box
+runs when the text changes, the bottom box on every record pass, and the
+dotted edge is why measuring a string you never draw still uploads its glyphs.
+Only what happens after stage six waits for the draw pass.*
 
 The numbering is the order the stages *matter* in, not a pipeline anything
 walks straight through. Stages one to three run whenever the text changes, and
 four to six run inside `Font.prepareText`, which the GUI calls **during the
 record pass** — [the render
 tree](the-gui-render-tree.md#the-tree-and-where-a-new-element-lands) explains
-why, and why stage six alone is left for the draw pass. But four and five are
+why, and why nothing is left for the draw pass but the expansion of the
+finished `Font.PreparedText` into one `GlyphRenderState` a glyph. But four and five are
 also reached from *two*: the width function `Font` hands its `StringSplitter`
 asks the glyph source for each codepoint, and that call resolves the provider
 and forces the bake. Measuring a string you never draw still uploads its
@@ -173,27 +186,47 @@ sequenceDiagram
     participant CRU as Component<br/>RenderUtils
     participant SSpl as StringSplitter
     participant FBR as Formatted<br/>BidiReorder
+
+    ChatC->>CRU: wrapComponents — the chat width over the chat scale
+    CRU->>SSpl: splitLines — translation happens here, first visit
+    SSpl->>SSpl: splitLines cuts at a char offset, each run keeping its Style
+    CRU->>FBR: reorder, reached through Language.getVisualOrder
+    FBR->>FBR: SubStringSource, ICU bidi, one substring per run
+```
+
+*Stages one to three, when the message arrives: four objects and no glyph yet.
+`ComponentRenderUtils` reaches `FormattedBidiReorder` through
+`Language.getVisualOrder`, which `ClientLanguage` implements.*
+
+A frame later the same line is recorded, and it is a different four objects.
+
+```mermaid
+sequenceDiagram
+    participant ChatC as ChatComponent
     participant Font as Font
     participant FSet as FontSet
     participant GStit as GlyphStitcher
     participant GuiR as GuiRenderer
 
-    ChatC->>CRU: wrapComponents — the chat width divided by the chat scale
-    CRU->>SSpl: splitLines — translation happens here, on first visit
-    SSpl->>SSpl: break at a char offset, each surviving run keeping its own Style
-    CRU->>FBR: Language.getVisualOrder(line)
-    FBR->>FBR: SubStringSource, ICU bidi, one substring per run
-    Note over ChatC: next frame, record
-    ChatC->>Font: prepareText — via GuiTextRenderState asking for its own bounds
-    loop per codepoint
+    rect rgba(0, 0, 0, 0.04)
+    Note over ChatC,GuiR: recording the frame
+    ChatC->>Font: prepareText, via GuiTextRenderState asking its bounds
+    loop each codepoint
         Font->>FSet: getGlyph — the first provider that has it
-        FSet->>GStit: first sight only: stitch into a FontTexture and upload
-        Font->>Font: emit a TextRenderable, add underline or strikethrough, advance the pen
+        FSet->>GStit: first sight only: stitch it and upload
+        Font->>Font: a TextRenderable, effects, advance the pen
     end
-    Note over GuiR: same frame, draw
-    GuiR->>GuiR: walk the PreparedText with a Font.GlyphVisitor
-    GuiR->>GuiR: one GlyphRenderState per glyph — the shadow pass, the bold copy and the italic shear are the glyph's own, inside BakedSheetGlyph.renderChar
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over ChatC,GuiR: drawing the same frame
+    GuiR->>GuiR: walks the Font.PreparedText with a Font.GlyphVisitor
+    GuiR->>GuiR: one GlyphRenderState a glyph — shadow, bold and italic belong to BakedSheetGlyph.<br/>renderChar
+    end
 ```
+
+*Stages four to six, then what happens to their result: the two bands are the
+record pass and the draw pass of one frame, and `GlyphStitcher` appears in the
+first only because a glyph is baked once, ever.*
 
 Two moments beyond the baking are worth pausing on. **Translation is lazy and
 cached on the `TranslatableContents` itself**, so the first thing to visit a

@@ -23,27 +23,30 @@ stages: with one exception, noted below, nothing here hands off to anything.
 that says *when* anything on the client runs, and every other page in the part
 answers the same question about itself: **when in that loop does this
 happen?** The figure has seven spokes for twelve pages, because the four GUI
-pages answer it together and so do the two about sound. Read the labels on the
-arrows as cadences, not as an order.
+pages answer it together and so do the two about sound.
 
 ```mermaid
-flowchart TD
-    LOOP["The client loop — the hub"]
-    LEVEL["The client level"]
-    PRED["Prediction and acknowledgement"]
-    INPUT["Input and keybinds"]
-    OPT["Options"]
-    GUI["The GUI stack — screens, the render tree, text, the HUD"]
-    SND["Sound — the engine, and what makes a sound happen"]
-    DBG["Debugging the running game"]
-    LOOP -- "per tick, and light per frame" --> LEVEL
-    LOOP -- "per action, in one synchronous window" --> PRED
-    LOOP -- "per GLFW callback, keys before the tick" --> INPUT
-    LOOP -- "per save, which a cycle button does on click" --> OPT
-    LOOP -- "per frame, recorded then drawn" --> GUI
-    LOOP -- "per event, then off to three other threads" --> SND
-    LOOP -- "per tick, and a packet only when the wanted subscriptions change" --> DBG
+flowchart LR
+    LOOP["1 · The client loop — the hub"]
+    LEVEL["2 · The client level"]
+    PRED["3 · Prediction and acknowledgement"]
+    INPUT["4 · Input and keybinds"]
+    OPT["5 · Options"]
+    GUI["6-9 · The GUI stack"]
+    SND["10-11 · Sound"]
+    DBG["12 · Debugging the running game"]
+    LOOP -- "per tick, light per frame" --> LEVEL
+    LOOP -- "per action, one window" --> PRED
+    LOOP -- "per GLFW callback" --> INPUT
+    LOOP -- "per save" --> OPT
+    LOOP -- "per frame" --> GUI
+    LOOP -- "per event, then off-thread" --> SND
+    LOOP -- "per tick, and a packet on change" --> DBG
 ```
+
+*Numbered to the watch order, and the labels on the arrows are **cadences, not
+steps**: each spoke answers the hub's question — when in the loop does this
+happen? — and none of them hands off to another.*
 
 The one genuine pipeline inside the part is the GUI stack, and it is a
 pipeline whose stages interleave rather than queue: a screen records itself

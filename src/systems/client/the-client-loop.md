@@ -52,29 +52,46 @@ what falls off the end of it.
 
 ```mermaid
 flowchart TD
-    POLL["RenderSystem.pollEvents — GLFW callbacks run here, inline, on this thread"]
-    PRE["Pre render: Window.shouldClose, then any pending resource reload"]
-    ASK["DeltaTracker.Timer.advanceGameTime — how many whole ticks has the clock owed since last time?"]
-    DRAIN["PacketProcessor.processQueuedPackets, then BlockableEventLoop.runAllTasks"]
-    TEX["TextureManager.tick — once, and only if ticks are owed and the level is running normally"]
-    CLAMP{"more than ten ticks owed?"}
-    DROP["the excess is already out of the residual — nothing will ever run it"]
-    TICK["Minecraft.tick, up to ten times"]
-    PREFRAME["SoundManager.updateSource, then MouseHandler.handleAccumulatedMovement"]
-    FRAME["Render: renderFrame — its frameLimiter zone parks for the cap, then fpsUpdate samples the counters"]
-    POST["Post render: recompute Minecraft.pause, update the timer's pause and freeze"]
-    POLL --> PRE --> ASK --> DRAIN --> TEX --> CLAMP
-    CLAMP -- "yes" --> DROP --> TICK
-    CLAMP -- "no" --> TICK
-    TICK --> PREFRAME --> FRAME --> POST
-    POST -- "next iteration of Minecraft.run" --> POLL
+    POLL["RenderSystem.pollEvents — GLFW callbacks, inline"]
+    subgraph RT["Minecraft.runTick"]
+        PRE["Pre render: Window.shouldClose, then a pending reload"]
+        ASK["DeltaTracker.Timer.advanceGameTime — whole ticks owed"]
+        DRAIN["PacketProcessor.processQueuedPackets, then BlockableEventLoop.runAllTasks"]
+        TEX["TextureManager.tick, once"]
+        CLAMP{"more than ten ticks owed?"}
+        TICK["Minecraft.tick, up to ten times"]
+        PREFRAME["SoundManager.updateSource, then MouseHandler.handleAccumulatedMovement"]
+        FRAME["Render: Minecraft.renderFrame, then the limiter parks"]
+        POST["Post render: recompute Minecraft.pause, the timer's pause and freeze"]
+        PRE --> ASK --> DRAIN --> TEX --> CLAMP
+        CLAMP -- "no" --> TICK
+        CLAMP -- "yes: the excess already left the residual" --> TICK
+        TICK --> PREFRAME --> FRAME --> POST
+    end
+    POLL --> PRE
+    POST -- "Minecraft.run, next iteration" --> POLL
 ```
+
+*One iteration, with the boundary drawn: only `RenderSystem.pollEvents` is
+outside `Minecraft.runTick`, which is why a key press lands in no profiler
+zone. Both answers to the clamp reach the same node, which is the point: ten
+run either way, and what differs is what became of the rest.*
 
 Read it as **owe, spend, draw, settle**. The clock says how much simulated
 time has passed; the loop spends it on packets, tasks and up to ten ticks;
 the frame draws whatever the world looks like afterwards; and only then does
 the loop notice whether the game is now paused — which is why the first
 frame of a pause is drawn unpaused.
+
+Four of the figure's nodes are the only place this page names their methods.
+The drain is two calls, not one — `PacketProcessor.processQueuedPackets` takes
+the packets Netty decoded, `BlockableEventLoop.runAllTasks` takes everything
+else the thread was handed — and the pair between the ticks and the frame is
+`SoundManager.updateSource`, which moves the OpenAL listener to the camera,
+then `MouseHandler.handleAccumulatedMovement`, which turns the mouse delta
+into rotation. Both of the second pair run **after** the ticks and before the
+frame, so a mouse movement you make during a tick is applied to the frame that
+tick belongs to.
 
 *Pre render*, *Render* and *Post render*, which head three of the figure's
 nodes, are `Window.setErrorSection` calls — the crash report's breadcrumb, so a

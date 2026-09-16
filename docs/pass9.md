@@ -44,6 +44,205 @@ Strike nothing here; pass 9 strikes.
 
 ## Entries
 
+## Pass 7, session J — Part X · The client: the figures *(2026-09-15)*
+
+Thirteen pages, 20 figures (18 before: `options`' one flowchart became two and
+`text-and-fonts`' one eight-lane sequence became two). Every figure captioned
+and every caption one italic run; the figure-name gate is **0 unresolved and 0
+notes** for the part (was 10 and 26); nothing is below **0.776** or under
+**12.4px** (was 0.59 and 9.5px, with six figures below 0.75 and three under
+11px); no lane is over six; and **no Mojang name is broken on screen** —
+fifteen were, more than any other part and more than a third of the corpus's
+forty-one.
+
+### Figures redrawn, and the orderings they assert
+
+- **`sound-engine` figure 1** — eight lanes at 0.59 rebuilt as six in three
+  `box`es (Render thread · Sound engine thread · Download pool). Asserts:
+  `SoundEngine.play` calls `ChannelAccess.createHandle`, which posts to
+  `SoundEngineExecutor` and returns a future the Render thread **joins**; the
+  acquire runs on the sound thread as `Library.acquireChannel`;
+  `ChannelAccess.ChannelHandle.execute` posts the parameters and, later,
+  attach-and-play; and the continuation of
+  `SoundBufferLibrary.getCompleteBuffer` belongs to **`SoundEngine`**, not to
+  the buffer library. The server half (`ServerLevel`, `PlayerList`) is a
+  **logged cut**: the page hands that story to `what-makes-a-sound` in its own
+  second paragraph.
+- **`the-client-level` figure 1** — the two one-lane notes became one `rect`
+  band over all five lanes, asserting that the whole trace is inside one
+  `Minecraft.runTick`. Three arrows re-derived; see *Corrections*.
+- **`the-client-loop` figure 1** — a `Minecraft.runTick` subgraph now contains
+  everything but `RenderSystem.pollEvents`. Asserts the boundary the page
+  already argues twice in prose (each iteration is `pollEvents` then `runTick`;
+  input lands in no profiler zone). The `DROP` node is folded into the clamp's
+  yes-edge: it was a consequence drawn as a step, with an inbound and an
+  outbound arrow, i.e. as something that runs.
+- **`gui-and-screens` figure 1** — a flowchart of containment became a
+  **`classDiagram`**, the book's eighth. Asserts `Gui` *holds* `Screen`,
+  `Overlay` and `Hud`; `Screen` holds `AbstractWidget` and three typed lists;
+  `AbstractContainerScreen` **extends** `Screen` and holds an
+  `AbstractContainerMenu`; `Layout` only *positions* a widget (dashed). The old
+  figure drew all four relations with one arrowhead. `ToastManager`,
+  `ChatListener` and `SplashManager` are a **logged cut** — three names in one
+  node that the page's prose says nowhere.
+- **`gui-and-screens` figure 2** — two `rect` bands, asserting that everything
+  that makes the screen exist happens in the tick that spends the key and
+  nothing is drawn until the frame after. `Tutorial.onOpenInventory`, a
+  `Tutorial` call drawn as a `Minecraft` self-message, is cut (a second object
+  on that lane, and a name the prose never says); the `Gui` self-call is folded
+  into the `setScreen` arrow it was already inside.
+- **`the-gui-render-tree` figure 1** — the tree and the placement decision,
+  drawn side by side with two dead-end boxes, are one picture. Asserts both
+  outcomes land on a node **of the current stratum**: the fast path goes up one
+  node with no intersection test, and the walk stops just above the highest box
+  it touches and may not cross the barrier `GuiRenderState.nextStratum` set.
+- **`the-gui-render-tree` figure 2** — a flat twelve-box chain became nested
+  subgraphs. Asserts that pictures-in-picture, items, text,
+  `GuiRenderState.sortElements` and `GuiRenderer.addElementToMesh` all run
+  **inside `GuiRenderer.prepare`**, that `GuiRenderer.draw` is `prepare`'s
+  sibling and not its successor, that the vertex-buffer upload sits between
+  them, and that only `Gui.extractRenderState` and `GuiRenderer.endFrame` are
+  outside `GuiRenderer.render`.
+- **`text-and-fonts` figure 1** — the six stages, drawn as one unbroken chain,
+  became two boxes. Asserts stages 1–3 run when the text changes and 4–6 inside
+  `Font.prepareText`; the dotted edge from stage 2 to stage 4 stays.
+- **`text-and-fonts` figures 2 and 3** — one eight-lane sequence split at the
+  frame boundary its own notes named: four lanes before the frame, five in it,
+  with two bands for record and draw.
+- **`options` figures 1 and 2** — one fourteen-node, 2,081px flowchart split at
+  the joint the page names. Figure 2 asserts that a **cycle saves on the
+  click** and a slider at `OptionsSubScreen.removed`; see *Corrections*.
+- **`prediction-and-acks` figure 1** — every edge label cut to the condition and
+  qualified `Class.member`. Asserts both exits from *Retained* are the same call.
+- **`input-and-keybinds` figure 1** — seven lanes to five, two bands. The
+  screen's `keyPressed` now lands on a `Screen` lane rather than on `Gui`; the
+  two-ends-of-a-screen's-life housekeeping is a **logged cut** from this figure
+  (it has its own section, *The bulk operations, and their single callers*).
+- **`debugging-the-running-game` figure 1** — a `box` per machine and full-width
+  bands. Asserts the two-tick lag: the request is stored on the tick it arrives,
+  the subscriber set read at the end of the next, the synchronizers woken on the
+  one after. `ClientPacketListener` is a **logged cut** (a lane carrying two
+  messages and deciding nothing); the packet reaches `ClientDebugSubscriber`
+  through it as any packet does, which the caption says.
+- **`what-makes-a-sound` figure 1** — door 3 now runs through
+  `ClientLevel.playSeededSound` instead of past it; see *Corrections*.
+- **`client/README` figure 1** — `TD` to `LR`, and the seven spokes numbered to
+  the watch order (F13).
+
+### Corrections — re-derived against the decompile before the fix
+
+1. **`the-client-level`, figure 1**: `CPL->>LLE: applyLightData, then
+   enableChunkLight, whose last act is setSectionRangeDirty over a 3x3 of
+   columns`. Both `applyLightData` and `enableChunkLight` are
+   **`ClientPacketListener`'s own private methods** — the caller's methods drawn
+   arriving at the callee — and `enableChunkLight`'s last act is
+   `this.level.setSectionRangeDirty(...)`, a call on **`ClientLevel`**, not on
+   the light engine. Now two arrows: the light engine gets `setLightEnabled` and
+   `updateSectionStatus`, `ClientLevel` gets `setSectionRangeDirty`.
+2. **`the-client-level`, figure 1**: `CCC->>LX: onLightUpdate, then
+   setSectionDirty`. `onLightUpdate` is **`ClientChunkCache`'s** own method;
+   what it calls on the extractor is `setSectionDirty`. Head corrected.
+3. **`the-client-level`, prose**: the page never said whether the light was one
+   arrival or two. It is **one**:
+   `ClientPacketListener.handleLevelChunkWithLight` queues a single lambda that
+   runs `applyLightData` and then, if the chunk is there, `enableChunkLight`.
+   Said now.
+4. **`options`, figure 1**: the cycle path ran through
+   `Screen.removed — Options.save`. A cycle button calls `Options.save` **in its
+   own click handler**, before the value-changed listener
+   (`OptionInstance.CycleableValueSet.createButton`); `Screen.removed` is where
+   a *slider* saves. Redrawn as two entrances to one exit.
+5. **`options`, figure 1**: `Screen.onClose` and `Screen.removed`.
+   `Screen.removed` is an empty base method; the one that saves is
+   **`OptionsSubScreen.removed`**, and `OptionsSubScreen.onClose` is what
+   applies an armed timer. The page's prose already had it right. Corrected.
+6. **`what-makes-a-sound`, figure 1**: door 3 (your own place and break) went
+   straight to `SoundManager.play`, bypassing `ClientLevel.playSeededSound` —
+   while its own box said *the same shared call*. It does **not** bypass it:
+   `ClientLevel.playSeededSound` plays only when the excluded entity *is* the
+   local player, which is exactly why one method serves the packet and the local
+   call. Rewired to converge with door 1, which is the page's argument.
+7. **`sound-engine`, figure 1**: `SBL-->>ChanA: thenAccept, then
+   ChannelHandle.execute — attachStaticBuffer, play`. The continuation is
+   `SoundEngine`'s own lambda, inside `SoundEngine.play`; `SoundBufferLibrary`
+   calls nothing on `ChannelAccess`. Split into two arrows.
+8. **`sound-engine`, figure 1**: `CPL->>CL: handleSoundEvent, then
+   playSeededSound`. `handleSoundEvent` is the **listener's** method; the
+   callee's is `playSeededSound`. Dropped with the lane.
+9. **`sound-engine`, figure 1**: `SL->>SL: BlockItem.place` — `BlockItem` as a
+   second object on the `ServerLevel` lane; and `PL-->>CPL:
+   ClientboundSoundPacket` drawn as mermaid's **dashed reply arrow** for a packet
+   crossing between two machines. Both cut with the server half.
+10. **`hud`, figure 2**: `CPL->>LP: handleSetHealth — hurtTo`.
+    `handleSetHealth` is `ClientPacketListener`'s; the callee's method is
+    `LocalPlayer.hurtTo`. Head corrected; the caller's method is named in the
+    caption, where it belongs.
+11. **`prediction-and-acks`, figure 2**: `MPGM->>CL: performUseItemOn, then
+    ItemStack.useOn, then setBlock`. `performUseItemOn` is **`MultiPlayerGameMode`'s
+    own private method**; the chain's only `ClientLevel` call is `setBlock`.
+    Reordered so the head is the callee's.
+12. **`input-and-keybinds`, figure 1**: `keyDebugModifier` drawn as a
+    `KeyboardHandler` member. It is **`Options.keyDebugModifier`** —
+    `KeyboardHandler.keyPress` reads `options.keyDebugModifier`. Qualified.
+13. **`input-and-keybinds`, figure 1**: `screen keyPressed` drawn arriving at the
+    **`Gui`** lane. `keyPressed` is a `Screen` method; `Gui` is only where the
+    screen is reached from. The figure gained a `Screen` lane and lost two
+    others. (`Minecraft.handleGlobalKeyPress`, which a viewer suspected of being
+    invented, is **real and correctly placed** — `KeyboardHandler.keyPress`
+    calls `this.minecraft.handleGlobalKeyPress(...)`.)
+14. **`text-and-fonts`, prose**: "why stage six alone is left for the draw
+    pass". Stage six — the emit into a `Font.PreparedText` — runs **inside
+    `Font.prepareText`**, at record time. What waits for the draw pass is the
+    *expansion* of that finished object into one `GlyphRenderState` a glyph,
+    which is after stage six, not stage six. Reworded.
+15. **`text-and-fonts`, figure 2**: `CRU->>FBR: Language.getVisualOrder(line)` —
+    `getVisualOrder` is `Language`'s, and `FormattedBidiReorder`'s own method is
+    the static `reorder`. Head corrected, the route kept in the label.
+16. **`debugging-the-running-game`, figure 1**: three self-messages naming a
+    third class's method on a lane that owns neither —
+    `ServerPlayer.requestDebugSubscriptions` on the `SGPL` lane (the handler is
+    `ServerGamePacketListenerImpl.handleDebugSubscriptionRequest`),
+    `Mob.registerDebugValues` on the synchronizer's, and a `Gizmos` call on the
+    renderer's. The first two corrected; the third kept, `Gizmos` being a static
+    façade the renderer calls, and named as such.
+17. **`the-gui-render-tree`, figure 2**: the flat chain asserted that
+    pictures-in-picture, items, text, the sort and the mesh happen *after*
+    `GuiRenderer.prepare`, and that `GuiRenderer.draw` happens after them. All
+    five are inside `prepare`; `draw` is its sibling. Also missing: the
+    vertex-buffer upload between the two. Redrawn as nesting.
+18. **`sound-engine`, prose**: a stray `'` after a link, which rendered.
+
+### Claims introduced
+
+Every caption listed above is a claim about what its figure shows. Beyond them,
+four prose additions this session made to give figure-only names their sentence
+(F6), each to be checked like any other claim: `the-client-loop`'s paragraph on
+the four methods that appear only in the figure — the two-call drain, and that
+`SoundManager.updateSource` and `MouseHandler.handleAccumulatedMovement` run
+after the ticks and before the frame; `hud`'s paragraph naming the seven steps
+of the heart pass and which fields `LocalPlayer.hurtTo` touches;
+`debugging-the-running-game`'s paragraph naming the figure's methods in its
+order; and `options`' two, asserting that the save asymmetry comes from
+`OptionInstance.CycleableValueSet.createButton` carrying `Options.save` while
+`OptionInstance.SliderableValueSet` carries no such call anywhere, and that
+`ClientPacketListener.broadcastClientInformation` compares against the last
+`ClientInformation` sent and sends nothing when they match — which the figure
+had always drawn and the prose had never said.
+
+### Tool blindness — the tenth of the pass, and the second the standard created
+
+`tools/pass7_figures.py` closed a `<br/>` up **only on a `participant` line**
+and turned it into a space everywhere else. F17 rules the break for a lane;
+**F18 sends every part session to break a name in a message or node label the
+same way** — so each repair a session made split one Mojang name into two
+halves and counted both as *names the prose never says*. The measurement got
+worse every time a session fixed a figure, and the two tools disagreed about
+the same label: `check_figure_names.py` has read the break correctly since
+session I. `pass7_figures.py` now uses session I's own reading — a name break is
+at a CamelCase boundary or at a dot and nowhere else — with two probe cases that
+fail on the old behaviour. Part X's *never in prose* count fell by fourteen on
+the re-measure with no page changed: those were never names.
+
 ## Pass 7, session I — Part IX · Networking: the figures *(2026-09-15)*
 
 Six pages, 11 figures (12 before: `packets-and-stream-codecs`' buffer flowchart

@@ -110,7 +110,10 @@ one long frame rather than a hundred slightly late ones.
 
 ## A chunk arrives
 
-The grounding trace, and the one place the whole class is visible at once.
+The grounding trace, and the one place the whole class is visible at once. The
+shaded band is what the figure is for: everything in it is one turn of
+`Minecraft.runTick`, so the light that arrives at the foot is not a later
+frame's work.
 
 ```mermaid
 sequenceDiagram
@@ -120,27 +123,37 @@ sequenceDiagram
     participant LLE as LevelLightEngine
     participant LX as LevelExtractor
 
-    CPL->>CPL: handleLevelChunkWithLight — already hopped to the client thread
+    rect rgba(0, 0, 0, 0.04)
+    Note over CPL,LX: one Minecraft.runTick
+    CPL->>CPL: handleLevelChunk<br/>WithLight, on the client thread
     CPL->>CCC: replaceWithPacketData — blocks now
-    CCC->>CCC: inRange? out-of-range chunks are logged and thrown away
-    CCC->>CL: unload(old) if the torus slot was occupied
-    CCC->>CL: onChunkLoaded — four tint caches invalidated, entityStorage.startTicking
-    CPL->>CL: queueLightUpdate(lambda) — light later
-    Note over CL: any ticks this frame owes, which above 20 fps is usually none
-    CL->>CL: tickEntities, then Level.tickBlockEntities — the new chunk's block entities tick at once
-    Note over CL: still inside the same runTick, in renderFrame
-    CL->>CL: update, then pollLightUpdates — the queued lambda finally runs
-    CPL->>LLE: applyLightData, then enableChunkLight, whose last act is setSectionRangeDirty over a 3x3 of columns
-    CL->>LLE: runLightUpdates (unbounded)
-    CCC->>LX: onLightUpdate, then setSectionDirty — straight to the extractor, bypassing the level
+    CCC->>CL: unload, if the torus slot was taken
+    CCC->>CL: onChunkLoaded — tint caches, ticking
+    CPL->>CL: queueLightUpdate — light later
+    CL->>CL: tickEntities, then tickBlockEntities
+    CL->>CL: update, then pollLightUpdates
+    CPL->>LLE: the queued lambda — setLightEnabled, updateSectionStatus
+    CPL->>CL: then setSectionRangeDirty, a 3x3 of columns
+    CL->>LLE: runLightUpdates, unbudgeted
+    CCC->>LX: setSectionDirty, from onLightUpdate
+    end
 ```
+
+*One packet, one `Minecraft.runTick`, and the light arriving at the bottom of it: the
+band is the whole span, so the gap between the blocks and the light is not a
+wait. Note that the last arrow leaves the chunk cache, not the level.*
 
 Three things about the shape. **Blocks and light are separated in the
 handler**, so a chunk exists, ticks and can be walked on before it is lit.
-**The separation is not a wait**: both notes fall inside the one
+**The separation is not a wait**: the whole band is the one
 `Minecraft.runTick` that handled the packet, and above twenty frames a second
 the frame usually owes no tick at all, so the light is applied with nothing
-having ticked in between. And **the renderer is reached two ways** —
+having ticked in between. It is also **one arrival, not two**: the lambda
+`ClientPacketListener.queueLightUpdate` files runs both
+`ClientPacketListener.applyLightData` and
+`ClientPacketListener.enableChunkLight`, which is why the listener's lane
+wakes up again at the foot of the figure. And **the renderer is reached two
+ways** —
 the level pushes (`ClientLevel.sendBlockUpdated`, `ClientLevel.setBlocksDirty`,
 `ClientLevel.setSectionRangeDirty`), but the chunk cache and three of
 `ClientPacketListener`'s own handlers reach `LevelExtractor` directly (the

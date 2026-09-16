@@ -39,33 +39,40 @@ GUI render tree](the-gui-render-tree.md); how a `Component` becomes glyphs is
 ## The objects, and what contains what
 
 ```mermaid
-flowchart TD
-    Gui["Gui — the manager, once per game"]
-    Screen["Screen — zero or one"]
-    Overlay["Overlay — zero or one, and it wins"]
-    Hud["Hud — reached as Gui.hud"]
-    Toasts["ToastManager, ChatListener, SplashManager"]
-    Children["Screen.children — GuiEventListener, gets input"]
-    Rend["Screen.renderables — Renderable, gets recorded"]
-    Narr["Screen.narratables — NarratableEntry, gets described"]
-    Widget["AbstractWidget — usually in all three lists at once"]
-    Layout["Layout over LayoutElement — arranges, then forgets"]
-    ACS["AbstractContainerScreen — a Screen with a menu behind it"]
-    Menu["AbstractContainerMenu — shared with the server"]
-    Gui --> Screen
-    Gui --> Overlay
-    Gui --> Hud
-    Gui --> Toasts
-    Screen --> Children
-    Screen --> Rend
-    Screen --> Narr
-    Children --> Widget
-    Rend --> Widget
-    Narr --> Widget
-    Layout --> Widget
-    Screen --> ACS
-    ACS --> Menu
+classDiagram
+    class Gui {
+        one per game
+        Screen screen
+        Overlay overlay
+        Hud hud
+    }
+    class Screen {
+        List~GuiEventListener~ children
+        List~Renderable~ renderables
+        List~NarratableEntry~ narratables
+    }
+    class AbstractWidget {
+        usually in all three lists
+    }
+    class AbstractContainerScreen {
+        AbstractContainerMenu menu
+    }
+    class Layout {
+        arranges, then forgets
+    }
+    Gui *-- Screen
+    Gui *-- Overlay
+    Gui *-- Hud
+    Screen *-- AbstractWidget
+    Screen <|-- AbstractContainerScreen
+    AbstractContainerScreen *-- AbstractContainerMenu
+    Layout ..> AbstractWidget : positions
 ```
+
+*A diamond is containment and a hollow arrowhead is inheritance, which the
+flowchart this replaced could not tell apart: `AbstractContainerScreen` **is
+a** `Screen`, and everything else here **holds** what it points at. `Layout`
+is the dashed one because it touches a widget once and then forgets it.*
 
 The three lists on `Screen` are the shape worth remembering: a widget added
 with `Screen.addRenderableWidget` joins all three, and the sibling add methods
@@ -164,20 +171,27 @@ sequenceDiagram
     participant InvS as InventoryScreen
     participant MPGM as MultiPlayer<br/>GameMode
 
-    KH->>KH: keyPress — no screen is open, so the mapping records a click
-    Note over MC: next client tick
-    MC->>MC: handleKeybinds — only with no screen and no overlay
-    MC->>MPGM: isServerControlledInventory? false for a player on foot
-    MC->>MC: Tutorial.onOpenInventory
-    MC->>Gui: setScreen(new InventoryScreen(player))
-    Gui->>Gui: MouseHandler.releaseMouse, then KeyMapping.releaseAll — both before init, and both input and keybinds'
-    Gui->>InvS: removed on the old screen, then added, then Screen.init
-    InvS->>InvS: init — creative? replace myself with CreativeModeInventoryScreen
-    Note over Gui: next frame, record
-    Gui->>InvS: extractRenderStateWithTooltipAndSubtitles
-    InvS->>InvS: extractBackground — in-game UI, so a gradient, no blur, no panorama
-    InvS->>InvS: extractContents, then labels, slots, the hovered highlight, the carried item
+    rect rgba(0, 0, 0, 0.04)
+    Note over KH,MPGM: the tick the key is spent in
+    KH->>KH: keyPress — no screen open, so the mapping records a click
+    MC->>MC: handleKeybinds, with no screen and no overlay
+    MC->>MPGM: isServerControlledInventory — false on foot
+    MC->>Gui: setScreen — a new InventoryScreen, and the input housekeeping
+    Gui->>InvS: removed on the old one, then added, then init
+    InvS->>InvS: init — creative? replace myself with<br/>CreativeModeInventoryScreen
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over KH,MPGM: the next frame, recording
+    Gui->>InvS: extractRenderState<br/>WithTooltipAndSubtitles
+    InvS->>InvS: extractBackground — a gradient, no blur, no panorama
+    InvS->>InvS: extractContents, then labels, slots, highlight, carried item
+    end
 ```
+
+*Two bands, one tick apart: everything that makes the screen exist happens in
+the tick that spends the key, and nothing is drawn until the frame after it.
+`Gui.setScreen`'s housekeeping — the mouse ungrabbed, every mapping released —
+runs before `Screen.init`, which is why sneak does not survive an inventory.*
 
 The busiest screen in the game is `AbstractContainerScreen`, and its record
 pass is worth following once: `AbstractContainerScreen.extractContents` draws

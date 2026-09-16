@@ -410,13 +410,34 @@ def labels_of(kind: str, body) -> dict:
     return info
 
 
+def close_up_breaks(text: str) -> str:
+    """Read a `<br/>` the way `check_figure_names.py` does, so the two tools agree.
+
+    F17 puts a long lane's break inside the name; F18 sends part sessions to break
+    a name in a *message or node label* the same way. This tool used to close the
+    break up only on a `participant` line and turn it into a space everywhere
+    else, so every repair F18 prescribes split one Mojang name into two halves and
+    counted both as names the prose never says — the measurement got worse each
+    time a session fixed a figure. The rule is F17's own wording: a name break is
+    at a CamelCase boundary or at a dot, and nowhere else."""
+    text = re.sub(r"(?<=\.)<br\s*/?>(?=[0-9A-Za-z_$])", "", text)
+
+    def camel(m):
+        # an all-lower-case word before the break is English meeting a name, not one name
+        return " " if re.search(r"(?:^|[^0-9A-Za-z_$.])[a-z]+$", text[:m.start()]) else ""
+
+    text = re.sub(r"(?<=[0-9A-Za-z_$])<br\s*/?>(?=[A-Z_$])", camel, text)
+    return re.sub(r"<br\s*/?>", " ", text)
+
+
 def tokens_of(text: str, role: str = "") -> set[str]:
     """Identifier-shaped tokens in a label.
 
     A lane's line break is inside the name, not between two of them (TEMPLATE.md, *Lanes*),
-    so a participant expansion closes up: `PersistentEntity<br/>SectionManager` is one token."""
+    so a participant expansion closes up: `PersistentEntity<br/>SectionManager` is one token.
+    A message or node label's break is read the same way (`close_up_breaks`)."""
     out = set()
-    text = re.sub(r"<br\s*/?>", "" if role == "participant" else " ", text)
+    text = re.sub(r"<br\s*/?>", "", text) if role == "participant" else close_up_breaks(text)
     for m in DOTTED.finditer(text):
         out.add(m.group(1))
     stripped = DOTTED.sub(" ", text)
@@ -852,6 +873,7 @@ sequenceDiagram
     participant MS as MinecraftServer
     SL->>CM: getChunk(pos), which walks the holder map and then asks the storage layer whether the chunk is already on disk before it schedules anything at all
     CM->>CH: promote
+    CM->>TS: PlayerChunk<br/>Sender.sendNextChunks, then a tick, then<br/>ChunkHolder.promote
     rect rgba(0, 0, 0, 0.04)
         Note over SL,MS: a later tick
     end
@@ -922,6 +944,15 @@ def probe() -> int:
         ("the long section with no figure is a candidate with order, branch and cycle words",
          len(p["candidates"]) == 1 and p["candidates"][0]["order"] > 40 and p["candidates"][0]["branch"] > 40 and p["candidates"][0]["cycle"] > 40),
         ("a rect band's colour is not read as a name", "rgba" not in f1["names"]["never"] and "rgba" not in f1["names"]["after"]),
+        # F18 tells a part session to break a name in a *message* at a CamelCase boundary, and this
+        # tool used to close a break up only on a participant line: the repair then split one name
+        # into two halves and counted both as names the prose never says. Read it the gate's way.
+        ("a name broken in a message closes up, and neither half is a name",
+         "PlayerChunkSender.sendNextChunks" in set(f1["names"]["never"]) | set(f1["names"]["after"]) | set(f1["names"]["before"])
+         and not any(n in ("PlayerChunk", "Sender.sendNextChunks", "thenChunkHolder.promote") for n in
+                     set(f1["names"]["never"]) | set(f1["names"]["after"]) | set(f1["names"]["before"]))),
+        ("a break after an all-lower-case word is a line break, so the name after it survives whole",
+         "ChunkHolder.promote" in set(f1["names"]["never"]) | set(f1["names"]["after"]) | set(f1["names"]["before"])),
         ("a classDiagram is read, and its own kind line is not a name",
          f3["type"] == "classDiagram" and "classDiagram" not in f3["names"]["never"]),
         ("a classDiagram's class names, display label and relation label are all read",

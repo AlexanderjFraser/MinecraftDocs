@@ -1663,12 +1663,16 @@ duplicate a Reference page that has been checked row by row.
   exception (attack sounds do round trip) in the same breath, which makes the
   "three doors" framing land more slowly. The verified line still promises
   three doors and only one naming the sound, which is still true.
-- **`prediction-and-acks`' state-diagram labels.** Both client exits were
+- ~~**`prediction-and-acks`' state-diagram labels.** Both client exits were
   relabelled and are now long enough to crowd the figure — "endPredictionsUpTo(n),
   syncBlockState writes the absorbed state, which is a no-op if it is already
   on screen" is a sentence, not a label. The *diagram* is now true; it is also
   now the wordiest figure in Part X. Same page: the hook lost "in the same
-  tick" and gained a because-clause.
+  tick" and gained a because-clause.~~ **done** (pass 7 session J) — every edge
+  label is now the condition and nothing else, qualified `Class.member` per
+  F12(b), and the two exits say what they are: *the same call*. What differs
+  between them went into the caption, which is where the sentence belonged. The
+  hook is pass 8's.
 - **`the-client-level`'s two weather Q&As.** "Why does thunder arrive late?"
   and "Why does rain stop and start so abruptly?" were both questions whose
   premises the code denies, so both became questions with different subjects
@@ -1706,10 +1710,14 @@ duplicate a Reference page that has been checked row by row.
   experience level is recorded between the bar's two passes, so it survives
   whichever of the four states wins — and a merged row states it as an aside
   instead of showing it. Row 15 already says why in its own condition column.
-- **`prediction-and-acks` has two figures that both explain the same
+- ~~**`prediction-and-acks` has two figures that both explain the same
   mechanism** — a state diagram of the two machines and a sequence of the
   refusal — and the fact-check found the argument living in the prose both
-  times. One of the two may be redundant.
+  times. One of the two may be redundant.~~ **ruled out** (pass 7 session J) —
+  they divide the work under F11: the state diagram shows what the *states* are
+  and that neither machine can read the other, and the sequence shows the
+  *order the packets leave in*, which is the only thing correctness rests on.
+  Neither can show the other's thing. Both kept, both captioned to say which.
 - ~~**The Part X landing page's verified line says "seven systems"** (the
   figure's seven spokes) over a part of twelve pages. Both are true and the
   reader meets the mismatch immediately.~~ **Done, session J:** the count is
@@ -6018,22 +6026,44 @@ the only way to see it is to rename the heading and read what breaks.
 
 **For pass 7, the figures.**
 
-- `the-gui-render-tree`'s first flowchart is **two pictures in one frame**: [kind=figure]
+- ~~`the-gui-render-tree`'s first flowchart is **two pictures in one frame**: [kind=figure]
   the tree on the left, the placement decision on the right, and `UP` and
   `WALK` point at no node, so the algorithm cannot be read against the
   structure it walks. The reader said it cost them the section. Two figures, or
-  one with the edges joined.
-- `the-client-level`'s chunk-arrival sequence puts `applyLightData` on the [kind=figure]
+  one with the edges joined.~~ **done** (pass 7 session J) — one picture, with
+  both answers landing on a node of the tree and the strata drawn as the
+  containment they are; the two dead-end boxes and the three list boxes are gone.
+- ~~`the-client-level`'s chunk-arrival sequence puts `applyLightData` on the [kind=figure]
   `ClientPacketListener` lane *after* the queued lambda is shown running on
   `ClientLevel`, and the prose under it does not say whether that is one arrival
-  or two. Re-derive the order with the figure open.
-- `options`' redrawn flowchart now has eleven nodes and two labelled [kind=figure]
+  or two. Re-derive the order with the figure open.~~ **done** (pass 7 session J)
+  — re-derived: **one arrival.** `ClientPacketListener.handleLevelChunkWithLight`
+  queues a single lambda that runs `applyLightData` *and* `enableChunkLight`, so
+  the listener's lane waking again at the foot is right. Two arrows were wrong:
+  `applyLightData` and `enableChunkLight` are the listener's own methods drawn
+  arriving at `LevelLightEngine`, and `setSectionRangeDirty` is `ClientLevel`'s.
+  The prose now says *one arrival, not two*.
+- ~~`options`' redrawn flowchart now has eleven nodes and two labelled [kind=figure]
   branches out of `LISTEN`; it is correct but dense, and worth a look at the
-  column width.
-- `the-client-loop`'s one-turn flowchart is the part's most-cited picture and [kind=figure]
-  has no tick-boundary marking at all, which is the thing the page is about.
-- `text-and-fonts`' chat-line figure: `Font->>FSet: getGlyph` — already [kind=figure]
-  logged by session K, still true, and now the only figure finding on that page.
+  column width.~~ **done** (pass 7 session J) — it had grown to fourteen nodes and
+  2,081px, and it routed the cycle path through `Screen.removed`, which is where
+  a *slider* saves. Split at the joint the page names — the widget's half and the
+  save's — and the cycle now saves on its own click, from
+  `OptionInstance.CycleableValueSet.createButton`.
+- ~~`the-client-loop`'s one-turn flowchart is the part's most-cited picture and [kind=figure]
+  has no tick-boundary marking at all, which is the thing the page is about.~~
+  **done** (pass 7 session J) — the boundary the page actually argues is not a
+  tick bar but `Minecraft.runTick`: everything but `RenderSystem.pollEvents` is
+  inside it, which is why a key press lands in no profiler zone. Drawn as a
+  subgraph; the `DROP` box, which was a consequence drawn as a step, is folded
+  into the clamp's yes-edge.
+- ~~`text-and-fonts`' chat-line figure: `Font->>FSet: getGlyph` — already [kind=figure]
+  logged by session K, still true, and now the only figure finding on that page.~~
+  **ruled out** (pass 7 session J) — `FontSet.getGlyph` is private and the call
+  really reaches `FontSet.Source.getGlyph` through `GlyphSource`, but F12(a) asks
+  that a message name a method *of the lane it is sent to*, inheritance included,
+  and the lane is the object the caller holds. The arrow stays; the page's own
+  1.21 box already draws the distinction the label cannot.
 - The Part X landing figure's seven spokes are now *explained* in the prose [kind=figure]
   (the GUI four and the sound two answer together), which settles session K's
   entry about the count. What is left for pass 7 is whether collapsing them is
@@ -6909,3 +6939,57 @@ Part 3; these are the pieces of work that ruling created.
   the wire's loss of the chain); `player-anatomy`'s *Forty-three slots, and one
   of them is an alias* — the page's own hook, on a 4,400-word page with one
   figure. [kind=book]
+
+---
+
+## Pass 7, session J (Part X · the client) — opened
+
+**For pass 8.** [kind=voice]
+
+- **Three captions written this session lean on a demonstrative the sentence
+  before them does not set up** — `the-client-level`'s *the band is the whole
+  span*, `hud`'s *the band below*, `sound-engine`'s *the right-hand box*. They
+  read correctly beside the picture and badly in `llms-full.txt`, where the
+  picture is a mermaid block a reader may not render. Worth one rule: a caption
+  names the thing it points at before it points at it.
+- **`the-gui-render-tree`'s two figures now both say "the tree"** where the
+  first means the strata-and-nodes structure and the second means the whole
+  `GuiRenderState`. The page's prose uses *the tree* for both too. One of the
+  two wants a different word.
+- **`what-makes-a-sound`'s doors read 1, 3, 2 left to right** in the redrawn
+  figure, because door 3 had to sit beside door 1 for the convergence at
+  `ClientLevel.playSeededSound` to be drawable without an edge crossing door 2.
+  The numbers carry it, but a reader scanning left to right meets them out of
+  order. If pass 8 finds a wording that makes the convergence the *subject*,
+  the numbering could follow the geometry instead.
+
+**For pass 10.** [kind=book]
+
+- **Part X's sections that wanted a figure and did not get one**, in the order
+  the viewers asked: `the-client-loop`'s *Where work leaves this thread, and
+  where it comes back* — "five ways off this thread, and one re-entry that is
+  not a way off it", a boundary diagram read as a bullet list, on the part
+  whose opening paragraph says the thread is the trap; `the-client-level`'s
+  *The chunk cache is a torus*, where the word *torus* does all the work alone
+  and mermaid has no form for it (the `<figure class="map">` route);
+  `sound-engine`'s *The channel limits are counters, not pools*, three
+  sentences of arithmetic — thirty sources, √30 clamped to 2..8, a clamped
+  remainder floored at 8 and capped at 255 — which is a three-row table with a
+  number column, and pass 6's lesson says a number in a cell survives an edit
+  and a number in a sentence does not; `the-gui-render-tree`'s *When the atlas
+  costs something*, five outcomes of one question written as prose;
+  `prediction-and-acks`' *The four writes*, a fan-out on one side and a flat
+  list on the other, which the page itself calls "the whole mechanism".
+- **`Gui.handleKeybinds` and `Minecraft.handleKeybinds` both exist**, and
+  `gui-and-screens` names the first in its prose and draws the second in its
+  figure. Both are correct — `Minecraft.handleKeybinds` calls
+  `Gui.handleKeybinds` — but the page never says there are two, so a reader who
+  compares the two halves of the page finds a contradiction that is not one.
+  One clause fixes it; it is a *book* job because the same pair is cited from
+  `input-and-keybinds` and `hud`.
+- **`input-and-keybinds` promises five chances to swallow a key press and its
+  figure now shows four**, because the fifth is not in the callback at all: it
+  is the no-screen-no-overlay test on *draining* the clicks, inside
+  `Minecraft.handleKeybinds`, a tick later. This session put that in the
+  caption rather than adding a lane. Whether the page's own sentence should
+  say which gate lives where is a prose decision above a figure's pay grade.

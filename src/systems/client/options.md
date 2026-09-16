@@ -37,44 +37,68 @@ the listener and be done".
 flowchart TD
     CHANGE["a widget changes a value"]
     KIND{"slider or cycle?"}
-    IMMED{"does this slider apply immediately?"}
-    ARM["no: arm 600 ms, and let the widget's own extract pass notice it expire"]
+    IMMED{"applies immediately?"}
+    ARM["arm 600 ms, and let the widget's extract pass notice it expire"]
     SET["OptionInstance.set"]
-    RUNNING{"is Minecraft.running true?"}
-    SILENT["assign the field, skip the equality test and the listener — this is what loading does"]
-    LISTEN["run the listener"]
-    CLOSE["Screen.onClose — apply anything still unapplied"]
-    REMOVED["Screen.removed — Options.save, write options.txt"]
-    BCAST["Options.broadcastOptions — build a ClientInformation"]
-    SAME{"identical to the last one sent?"}
-    SEND["ServerboundClientInformationPacket"]
-    NOTHING["nothing is sent"]
+    RUNNING{"Minecraft.running?"}
+    SILENT["assign the field, no equality test, no listener — loading"]
+    LISTEN["the instance's own listener runs"]
     CHANGE --> KIND
     KIND -- "slider" --> IMMED
     IMMED -- "yes, on release" --> SET
     IMMED -- "no" --> ARM --> SET
-    KIND -- "cycle: on click" --> SET
+    KIND -- "cycle, on click" --> SET
     SET --> RUNNING
     RUNNING -- "no" --> SILENT
     RUNNING -- "yes" --> LISTEN
-    LISTEN -- "cycle only" --> REMOVED
-    LISTEN -- "slider: nothing yet" --> CLOSE
-    CLOSE --> REMOVED
-    REMOVED --> BCAST --> SAME
+```
+
+*Everything above `OptionInstance.set` is the widget's business and everything
+below it is the value's. Note the `Minecraft.running` gate: the same method
+that changes a setting is the one that loads the file, and on the loading path
+no listener runs at all.*
+
+Saving is the second half, and it is where the two families stop behaving
+alike.
+
+```mermaid
+flowchart TD
+    CYCLE["a cycle button's click"]
+    SLIDER["a slider's value, set or armed"]
+    CSAVE["Options.save, from the button's own handler"]
+    CLOSE["OptionsSubScreen.onClose — apply anything still armed"]
+    REMOVED["OptionsSubScreen.removed — Options.save"]
+    WRITE["options.txt written"]
+    BCAST["Options.broadcastOptions — build a ClientInformation"]
+    SAME{"identical to the last one sent?"}
+    SEND["ServerboundClientInformationPacket"]
+    NOTHING["nothing is sent"]
+    CYCLE --> CSAVE --> WRITE
+    SLIDER --> CLOSE --> REMOVED --> WRITE
+    WRITE --> BCAST --> SAME
     SAME -- "yes" --> NOTHING
     SAME -- "no" --> SEND
 ```
 
-Follow the two branches to the right-hand column and the asymmetry is the
-whole behaviour difference between the widget families. A cycle button's own
-handler calls `Options.save` on the click, so the packet is built before you
-have stopped looking at the button. A slider's value reaches the field on
-release or 600 ms later, and nothing saves it: saving happens once, in
-`OptionsSubScreen.removed`, when the screen comes down — with
-`OptionsSubScreen.onClose` applying any value still sitting in an armed timer
-first, so that leaving fast does not lose your drag. The difference comes from
-the value set's subtype, `OptionInstance.SliderableValueSet` against
-`OptionInstance.CycleableValueSet`, and from nothing else.
+*Two entrances, one exit. A cycle saves on the click, so the packet is built
+before you have stopped looking at the button; a slider waits for the screen
+to come down. The gate at the bottom is
+`ClientPacketListener.broadcastClientInformation`, which compares the new
+record with the last one sent and does nothing if they match.*
+
+The asymmetry is not a policy anybody wrote down. It comes from the value
+set's subtype and from nothing else:
+`OptionInstance.CycleableValueSet.createButton` puts `Options.save` straight
+into the button's click handler, and `OptionInstance.SliderableValueSet` has
+no such call anywhere, so a slider's value reaches the field on release or
+600 ms later and then sits there until the screen comes down.
+`OptionsSubScreen.onClose` applies anything still in an armed timer first, so
+leaving fast does not lose your drag.
+
+The last gate is worth naming because nothing else on the client does it:
+`ClientPacketListener.broadcastClientInformation` holds the last
+`ClientInformation` it sent and compares. Save a screen without changing one
+of the nine fields and **no packet leaves at all**.
 
 ## The three ways a setting is stored
 

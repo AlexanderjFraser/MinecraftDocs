@@ -120,32 +120,52 @@ only for those four.
 
 ```mermaid
 sequenceDiagram
+    box transparent the client
     participant CDS as ClientDebug<br/>Subscriber
-    participant CPL as ClientPacketListener
+    participant BDR as BrainDebugRenderer
+    end
+    box transparent the server
     participant SGPL as ServerGamePacket<br/>ListenerImpl
     participant SDS as ServerDebug<br/>Subscribers
     participant LDS as LevelDebug<br/>Synchronizers
     participant TDSS as TrackingDebug<br/>Synchronizer.<br/>SourceSynchronizer
-    participant BDR as BrainDebugRenderer
+    end
 
-    CDS->>CDS: requestedSubscriptions — the JVM was started with the brain flag
-    CDS->>SGPL: ServerboundDebugSubscriptionRequestPacket with BRAINS
-    SGPL->>SGPL: ServerPlayer.requestDebugSubscriptions — stored, not yet honoured
-    Note over SDS: end of the next server tick
-    SDS->>SDS: tick — is this player op, or the owner of an IDE singleplayer world?
-    Note over LDS: the tick after that
+    CDS->>CDS: requestedSubscriptions — the JVM has the brain flag
+    CDS->>SGPL: ServerboundDebugSubscriptionRequestPacket, BRAINS
+    SGPL->>SGPL: handleDebug<br/>SubscriptionRequest — stored, unhonoured
+    Note over SGPL,TDSS: the end of the next server tick
+    SDS->>SDS: tick — op, or the owner of an IDE world?
+    Note over SGPL,TDSS: the tick after that
     LDS->>LDS: tick — subscribers exist, so wake up
     LDS->>TDSS: registerChunk and registerEntity for everything already tracked
-    TDSS->>TDSS: Mob.registerDebugValues gives a ValueGetter for BRAINS
-    loop every server tick
+    TDSS->>TDSS: the Mob offers a DebugValueSource.<br/>ValueGetter
+    loop each server tick
         TDSS->>TDSS: pollUpdate — takeBrainDump, compare with the last value sent
-        TDSS->>CPL: ClientboundDebugEntityValuePacket — only if it differs
+        TDSS->>CDS: ClientboundDebugEntityValuePacket — only if it differs
     end
-    CPL->>CDS: updateEntity — stored under the villager's UUID
-    Note over BDR: next frame
+    CDS->>CDS: updateEntity — stored under the villager's UUID
+    Note over CDS,BDR: the next client frame
     BDR->>BDR: emitGizmos — reads through DebugValueAccess
-    BDR->>BDR: Gizmos.billboardTextOverMob — appended, drawn later in the frame
+    BDR->>BDR: Gizmos.<br/>billboardTextOverMob, later in the frame
 ```
+
+*Two machines and two ticks of lag before anything is sent: the request is
+stored on the tick it arrives, the subscriber set is read at the end of the
+next one, and the synchronizers wake on the one after that. The packet in the
+loop reaches `ClientDebugSubscriber` through `ClientPacketListener` like any
+other, which is why no listener lane is drawn.*
+
+The figure's own names, in its order:
+`ClientDebugSubscriber.requestedSubscriptions` is what the JVM flag filled;
+`ServerGamePacketListenerImpl.handleDebugSubscriptionRequest` stores the set
+on the `ServerPlayer`; `LevelDebugSynchronizers` calls
+`TrackingDebugSynchronizer.registerChunk` and
+`TrackingDebugSynchronizer.registerEntity` for everything already tracked;
+`TrackingDebugSynchronizer.SourceSynchronizer.pollUpdate` is the per-tick
+compare, and for a villager the value it asks for is a brain dump;
+`ClientDebugSubscriber.updateEntity` files the answer under the entity's
+uuid; and `BrainDebugRenderer` reads it back next frame.
 
 The engine is the middle three steps, and it has three properties worth
 naming. **Nothing exists until somebody asks**: the level's synchronizers
