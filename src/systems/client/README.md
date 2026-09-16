@@ -18,7 +18,7 @@ behind is one thread deciding what to spend a frame on.**
 ## The shape of the part
 
 Part X is a **hub and its spokes**, and the spokes are cadences rather than
-stages: with one exception, noted below, nothing here hands off to anything.
+stages: with two exceptions, noted below, nothing here hands off to anything.
 [The client loop](the-client-loop.md) is the hub because it is the one page
 that says *when* anything on the client runs, and every other page in the part
 answers the same question about itself: **when in that loop does this
@@ -44,9 +44,10 @@ flowchart LR
     LOOP -- "per tick, and a packet on change" --> DBG
 ```
 
-*Numbered to the watch order, and the labels on the arrows are **cadences, not
-steps**: each spoke answers the hub's question — when in the loop does this
-happen? — and none of them hands off to another.*
+*The hub and its spokes, numbered to the watch order, a range being pages
+watched together and the hub drawn sideways because it is not a pipeline. The
+labels on the arrows are **cadences, not steps**: each spoke answers the hub's
+question — when in the loop does this happen?*
 
 The one genuine pipeline inside the part is the GUI stack, and it is a
 pipeline whose stages interleave rather than queue: a screen records itself

@@ -162,7 +162,7 @@ sequenceDiagram
     participant CPL as ClientPacketListener
     Note over SL,CPL: tick N, chunk-source phase: the broadcast drain runs now, with nothing yet to send
     Note over SL,CPL: tick N, block-entities phase, the level's last content phase
-    SL->>LC: LevelChunk.BoundTickingBlockEntity.tick, the two gates pass
+    SL->>LC: LevelChunk.<br/>BoundTickingBlock<br/>Entity.tick
     LC->>AFBE: serverTick, quickCheck finds the smelting recipe
     Note over AFBE: fuel consumed, both lit fields take 1600, the cooking timer at one
     AFBE->>SL: setBlock, LIT true under flags 3
@@ -171,9 +171,9 @@ sequenceDiagram
     AFBE->>SL: updateNeighbourForOutputSignal, the comparator poke
     Note over SL,CPL: tick N plus 1, chunk-source phase, the broadcast drain
     CH->>CPL: ClientboundBlockUpdatePacket, the fire appears
-    Note over CH: ChunkHolder.broadcastBlockEntity asks BlockEntity.getUpdatePacket and gets nothing
+    Note over CH: BlockEntity.<br/>getUpdatePacket<br/>answers nothing
     Note over SL,CPL: tick N plus 1, entities phase, the players tick
-    Note over FM: ServerPlayer.tick calls FurnaceMenu.broadcastChanges: four data slots against the ones last sent
+    Note over FM: FurnaceMenu.<br/>broadcastChanges<br/>checks four slots
     FM->>CPL: ClientboundContainerSet<br/>DataPacket per changed slot
 ```
 

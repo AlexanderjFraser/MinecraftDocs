@@ -97,8 +97,8 @@ sequenceDiagram
 
     SLPL->>PL: canPlayerLogin, then disconnectAllPlayersWithProfile
     SLPL->>SCPL: startConfiguration, on a listener just built
-    Note over SCPL: one task at a time, ServerConfigurationPacketListenerImpl.startNextTask refuses to overlap two
-    SCPL->>SCPL: SynchronizeRegistriesTask, then a code of conduct or a resource pack
+    Note over SCPL: one task at a time, never two at once
+    SCPL->>SCPL: Synchronize<br/>RegistriesTask<br/>first, then the<br/>code of conduct<br/>or a resource pack
     SCPL->>PST: start, appended by returnToWorld with a JoinWorldTask behind it
     PST->>PDS: load, decoding the saved position out of the datafixed file
     PST->>SL: a PLAYER_SPAWN ticket at radius 3, through its chunk source

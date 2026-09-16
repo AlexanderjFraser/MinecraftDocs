@@ -265,7 +265,9 @@ function measureAll() {
       const box = rectOf(el);
       const group = el.closest('g.node, g.edgeLabel, g.cluster, g.stateGroup') || (role === 'note' || role === 'participant' ? el.parentElement : null);
       return { el, role, text: clean(el.textContent), box, font, eff: font * scale, group,
-               container: cont, outside: cont ? !contains(cont.box, box, 2) : false };
+               // a loop/alt/par/opt label is drawn by mermaid across its own frame's edge on every figure
+               // that has one, so it is the device's layout, not a label escaping its box (pass 7, O)
+               container: cont, outside: cont && role !== 'block' ? !contains(cont.box, box, 2) : false };
     });
 
     // --- shapes ---

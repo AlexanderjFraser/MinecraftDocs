@@ -227,7 +227,7 @@ sequenceDiagram
     participant PBB as PistonBaseBlock
     Note over LevB,PBB: one call stack, inside one packet handler, before the level ticks
     LevB->>SL: setBlock POWERED with flags 3
-    SL->>CNU: updateNeighborsAtExceptFromFacing, drained on the spot
+    SL->>CNU: updateNeighbors<br/>AtExceptFromFacing<br/>drained at once
     CNU->>RSWB: neighborChanged at the first dust
     RSWB->>DRWE: updatePowerStrength, and the lever answers 15
     DRWE->>SL: setBlock POWER 15 with flag 2, then seven updateNeighborsAt

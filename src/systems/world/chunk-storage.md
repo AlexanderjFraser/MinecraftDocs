@@ -180,12 +180,12 @@ sequenceDiagram
 
     DM->>CM: the level climbs past ChunkLevel.MAX_LEVEL, so the key joins ChunkMap.toDrop
     Note over CM,CH: a later tick, in the unload phase of ServerChunkCache.tick
-    CM->>CM: processUnloads moves the holder to ChunkMap.pendingUnloads
+    CM->>CM: processUnloads moves<br/>the holder to<br/>ChunkMap.<br/>pendingUnloads
     CM->>CH: getSaveSyncFuture, and the unload task is hung off it
     CH-->>CM: the future completes, so the task is appended to unloadQueue
     Note over CM,CH: a later tick again, while the budget says yes — or past the queue's first 2,000
     CM->>CH: getSaveSyncFuture again — a different one, and the task rearms
-    CM->>CM: this exact holder leaves ChunkMap.pendingUnloads, or a ticket took it back
+    CM->>CM: this exact holder<br/>leaves ChunkMap.<br/>pendingUnloads, or<br/>a ticket took it back
     CM->>CM: setLoaded false, then save — PoiManager.flush and the proto-over-full guard
     CM->>SCD: copyOf takes the snapshot, a worker turns it into a CompoundTag
     CM->>IOW: store, handed the encode future, on the chunk lane

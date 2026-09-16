@@ -139,8 +139,9 @@ Names have moved since 1.21 — `Identifier` was *ResourceLocation*,
 it is one version: 26.2. There are no version-difference sections and no
 "in 1.x this was". When a release lands, every page is re-read against it.
 
-**Verified means tested.** Every backticked name on every page is checked
-against the decompile before the site publishes, every diagram is parsed
+**Verified means tested.** Every backticked name on every page, and every
+class and method named inside a diagram, is checked against the decompile
+before the site publishes, every diagram is parsed
 by the same mermaid the site ships, every lane in every diagram is
 checked against the one [key](reference/lanes.md) the whole book uses, and
 every link and anchor between pages is checked to land. A

@@ -430,7 +430,7 @@ sequenceDiagram
     CTD->>CGT: runUntilWait, once the executor reaches this chunk
     CGT->>CM: layer EMPTY at radius 1 — applyStep becomes scheduleChunkLoad
     CM->>Worker: the region read, then upgradeChunk and parseChunk, on the pool
-    Worker->>SL: SerializableChunkData.read builds the chunk object
+    Worker->>CM: back on the server thread, SerializableChunkData.read builds the chunk
     Note over CTD,CGT: the task yields on the first unfinished future, and is resubmitted
     CGT->>CGT: nothing on disk, so EMPTY again, now to radius 11
     CGT->>CM: STRUCTURE_STARTS to 11, then STRUCTURE_REFERENCES to 3

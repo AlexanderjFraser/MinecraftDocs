@@ -45,9 +45,8 @@ flowchart TD
 *The part as a fan, numbered to the watch order. An arrow points from the
 machinery to the page that takes it for granted: codecs at the top is what
 nothing else here is built without, registries hang directly off it, and the
-pattern at the foot — the only page no arrow leaves — is where the part is
-going.*
-
+pattern at the foot — which no arrow leaves, as none leaves text components
+beside it — is where the part is going.*
 
 ## Before you start
 

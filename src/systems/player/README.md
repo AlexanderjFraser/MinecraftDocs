@@ -34,7 +34,7 @@ flowchart TD
     TT["2 · The two-phase tick — when it runs, and what is thrown away"]
     IM["3 · Input to movement — walking, and being believed"]
     SS["4 · The sword swing — one integer, and a number rebuilt"]
-    SP["5 · The spear — two more melee paths, neither through Player.attack"]
+    SP["5 · The spear — two more melee paths"]
     HE["6 · Hunger and experience — two bars the server owns"]
     SE["7 · Status effects — a list of things happening to you"]
     PA --> TT

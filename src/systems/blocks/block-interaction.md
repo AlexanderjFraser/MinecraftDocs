@@ -84,12 +84,13 @@ sequenceDiagram
     Note over MPGM,SL: still this tick, levels tick, then connections tick
     SL-->>CL: ClientboundSectionBlocks<br/>UpdatePacket, both halves in one section
     SGPL-->>CL: ClientboundBlockChangedAck<br/>Packet for n
-    CL->>CL: handleBlockChangedAck, and the prediction for n ends
+    CL->>CL: handleBlock<br/>ChangedAck<br/>ends prediction n
 ```
 
 *The server's copy of the same click, and the three things that come back. The
 receipt arrives last, and by the time it does the client has already been
-corrected twice — which is why closing the prediction writes nothing.*
+corrected twice — which is why closing the prediction,
+`ClientLevel.handleBlockChangedAck`, writes nothing.*
 
 ## One press, one hand at a time
 

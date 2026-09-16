@@ -2,6 +2,11 @@
 
 > Verified against **Minecraft 26.2** · Part XII · the one system in the game that nothing can perturb: a world reproducible from a seed and a data pack alone, and the single deliberate exception to it.
 
+What a player recognises the part by is the seam: the flat shelf of ground
+under a village that was not there before, the cave that is flooded the
+moment you break into it, the desert that becomes a jungle along a ragged
+line, the tree that grows up through another tree.
+
 Everything in this part is determined by two things: the world seed, and the
 data packs enabled when the world is opened — `WorldLoader.load` re-reads the
 worldgen registries out of the current packs every time, so only the seed and
@@ -20,11 +25,6 @@ exception, and it is the only place generation reads something the current
 seed did not produce:
 [the boundary with chunks an older version generated](blending.md#one-measurement-five-consumers).
 
-What a player recognises the part by is the seam: the flat shelf of ground
-under a village that was not there before, the cave that is flooded the
-moment you break into it, the desert that becomes a jungle along a ragged
-line, the tree that grows up through another tree.
-
 Counting `world/level/levelgen` and `world/level/biome` together, the way
 [the atlas](../../maps/README.md) counts everything else, that is
 {{#include ../../generated/part-worldgen.md}} — and two of those classes are
@@ -42,14 +42,13 @@ statuses ([the chunk generation
 pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)); this part
 is the cargo of seven of them.
 
-Read the solid arrows below as the order the game runs, the dashed ones as
-what their labels say, and the numbers as the order to watch. The
-disagreement between them is the argument for the order.
+The numbers below are the order to watch and the arrows the order the game
+runs, and the disagreement between them is the argument for the order.
 
 ```mermaid
 flowchart TD
     CW["10 · Creating a world"] -.->|"chose the seed and packs"| DF["1 · Density functions"]
-    DF -.->|"is made of"| SS
+    DF -.->|"is sampled by"| L2
     subgraph SS["the structure statuses"]
         S7["7 · Structure placement"] --> S8["8 · Jigsaw and templates"]
         S7 --> S9["9 · Hand-built structures"]
@@ -67,7 +66,11 @@ flowchart TD
     SS -.->|"pieces become blocks"| FE
 ```
 
-*The part laid against the chunk-status ladder and numbered in the order to watch: the structure arc, at `ChunkStatus.STRUCTURE_STARTS` and `ChunkStatus.STRUCTURE_REFERENCES`, is first in the game and last in the lectures.*
+*The part laid against the chunk-status ladder and numbered to the watch
+order; a solid arrow is the order the game runs, a dashed one says what it
+means in its label. The structure arc, at `ChunkStatus.STRUCTURE_STARTS` and
+`ChunkStatus.STRUCTURE_REFERENCES`, is first in the game and last in the
+lectures.*
 
 A structure is *decided* at `ChunkStatus.STRUCTURE_STARTS`, two statuses before
 the biomes it will stand in exist, and writes no block until
@@ -79,8 +82,9 @@ topic — three of the six pages before the structure arc reach for the beardifi
 before the page that owns it
 ([structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)).
 
-The arrow out of lecture one means *is made of* rather than *happens before*.
-The decoration and structure packages never mention `DensityFunction` at all,
+The arrow out of lecture one means *is sampled by* rather than *happens before*:
+the biome step is the first status to read the field, through the
+`NoiseChunk` built there. The decoration and structure packages never mention `DensityFunction` at all,
 and reach the substrate only through the beardifier and the heights the
 generator hands them
 ([density functions](density-functions.md#seed-once-per-dimension)).

@@ -23,6 +23,19 @@ decompile open — what the page said, what the decompile says, file and line.
 Name the page in backticks on every line so a queue tool can route it.
 Strike nothing here; pass 9 strikes.
 
+**The form, from pass 7's close** — written because nine of pass 7's thirteen
+entries could not be walked item by item (the shape audit is in session O's
+entry below). *Figures redrawn*: one bullet per figure, as `page` fN with its
+number after any split, each ordering it asserts its own clause; *unchanged* is
+allowed only where no arrow was added, removed, reversed or relabelled, and
+says so. *Captions*: every caption word for word, as `page` fN: *caption* — or
+one line naming the tool that lists them (`python tools/pass7/captions.py`).
+*Corrections*: one numbered item per fact, never inside a figure bullet, as
+`page`:line — what it said — what is true — `path/File.java`:line, with
+*(page-internal)* in place of the file when the check was the page against
+itself; never a bare `:NNN`; a correction that overturns an earlier session's
+listed claim names that session. Quote no source: say what the code does.
+
 ## Standing items
 
 - **A correction is a claim.** Pass 9 confirms the fix, not the original,
@@ -36,13 +49,205 @@ Strike nothing here; pass 9 strikes.
   own paragraph, and the prose was right every time.
 - **Counts are call sites, not `grep -c` lines**; a generated page is
   checked by re-deriving the population, never a row.
-- **Names inside mermaid blocks** are under a gate from pass 7's close; the
-  23 ambiguous simple names the verifier prints are settled by pass 8 or in
-  the tool.
+- **Names inside mermaid blocks** are under a gate from pass 7's close
+  (`check_figure_names.py --strict`, in `deploy.sh`); the 25 ambiguous simple
+  names the verifier prints are settled by pass 8 or in the tool. The gate's
+  62 notes (`--notes`) are the place to look first for the caller's method
+  drawn arriving at the callee, the commonest fault pass 7 found.
+- **Every caption is a claim, and most were never listed.** Pass 7 wrote 193;
+  its session entries list perhaps thirty. `python tools/pass7/captions.py`
+  lists them all with page and line — that is the checklist, read against the
+  figure above each one.
 - **Pass 9 adds nothing.** A gap it finds goes to [pass3.md](pass3.md) §7,
   the coverage queue, which seeds the second edition.
 
 ## Entries
+
+## Pass 7, session O — the close *(2026-09-16)*
+
+Run before session K (Part XI), which had not run. What the close changed on
+purpose, and what it found about this file.
+
+### The shape of pass 7's entries — audited, for pass 9 to work around
+
+A reader agent checked the thirteen pass-7 entries below against the runbook's
+three demands (figures with their orderings, captions, corrections with a
+decompile reference). **Fit:** A and the planning session; **mostly fit:** F
+(the only one with a page line on every correction) and M; **gaps:** the rest.
+The gaps pass 9 has to work around:
+
+- **Captions claimed, not listed** in B, C, D, E, I, J and L (B's entry says
+  every one of its nineteen is on the list and lists none). Use
+  `tools/pass7/captions.py` instead of the entries.
+- **Corrections without a decompile file and line**: J (none of its eighteen),
+  C and D (bare `:NNN` with no file), E, I and N (a method, no line). Many of
+  these are page-internal — the figure against its own prose — and are not
+  marked as such; re-derive them from the page first.
+- **Corrections that are not a list**: G's *Corrections* heading points back
+  at its figure bullets, and H has none; read their figure bullets as the
+  corrections.
+- **Figures called redrawn or unchanged with no orderings**: J's
+  `text-and-fonts` f2 and f3 and `input-and-keybinds` f1; I's
+  `protocol-phases` f2 (*the same ten transitions*, not listed); L's
+  `structure-placement` f1, `terrain` f2 and `worldgen/README` f1; C's
+  `starting-a-server` f1, the half left after its split. Re-derive those from
+  the figure.
+- **Supersession not cross-linked**: F's `entity-lifecycle` correction
+  overrides a caption A lists.
+- **Source quoted** in A, C, F, H, L and M, against rule 1's spirit.
+
+### Figures changed — each ordering a claim
+
+- `rendering/section-meshing` f1: the first arrow is `MultiPlayerGameMode` →
+  `ClientLevel` labelled `ClientLevel.setBlock` (inherited from `Level`),
+  reached from `BlockItem.placeBlock` inside `useItemOn`'s prediction.
+  **Correction** — it had said `useItemOn` arriving at `ClientLevel`, which is
+  `MultiPlayerGameMode`'s own method (`client/multiplayer/MultiPlayerGameMode.java`:343;
+  `world/item/BlockItem.java`:151–152).
+- `rendering/entity-rendering` f2: `ZombieRenderer` → `ZombieRenderState`
+  now reads *fills it, in extractRenderState* and *adds shadow pieces, in
+  finalizeRenderState*. **Correction** — both had been drawn as the state's own
+  methods; they are `EntityRenderer`'s, called from
+  `EntityRenderer.createRenderState` (`client/renderer/entity/EntityRenderer.java`:165–168,
+  :313–317, where `finalizeRenderState` runs `extractShadow`). The note naming
+  five fields is now plain words and spans both lanes; the frame-graph note no
+  longer names the three drains.
+- `rendering/blaze3d` f2: the uniforms arrow is
+  `RenderSystem.bindDefaultUniforms`, a static call taking the pass
+  (`com/mojang/blaze3d/systems/RenderSystem.java`:291) — **correction**, it had
+  been drawn as the pass's own method; the reply says *the RenderPass, which
+  the caller must close* instead of naming `AutoCloseable`.
+- `rendering/visibility-and-the-frame-graph` f2: inside the main pass, in
+  order — opaque terrain, `executeSolid`, the three depth copies,
+  `executeTranslucent`, **then** `executeOutline` as its own node, translucent
+  terrain, `executeTranslucentAfterTerrain`, each drain now qualified
+  `FeatureRenderDispatcher.PreparedFrame` (`client/renderer/LevelRenderer.java`:399–420).
+  The split of one node into two asserts the translucent-then-outline order.
+- `world/chunk-generation-pipeline` f2: the parsed data returns from the
+  worker to `ChunkMap`, where `SerializableChunkData.read` builds the chunk on
+  the server thread. **Correction** — it had been drawn arriving at
+  `ServerLevel`; the read runs in `ChunkMap`'s continuation on
+  `mainThreadExecutor` (`server/level/ChunkMap.java`:597–609).
+- `items/using-an-item` f1: the tick-32 arrow into `Consumable` is now headed
+  by `Consumable.onConsume`, reached from `ItemStack.finishUsingItem`, with
+  `FoodData.eat` *inside* it rather than after it (`world/item/Item.java`:240–243;
+  `world/item/component/Consumable.java`:59–79, the listener loop;
+  `world/food/FoodProperties.java`:35). **Correction** of the order the label
+  implied.
+- `server/server-tick` f1: the arrow into `Connection` is headed
+  `Connection.tick`, called on each connection from
+  `ServerConnectionListener.tick` (`server/network/ServerConnectionListener.java`:199).
+- `world/fluids` f1: the arrow into `FlowingFluid` is headed
+  `FlowingFluid.tick`, through `FluidState.tick` (`world/level/material/FluidState.java`:81,
+  `FlowingFluid.java`:445).
+- `anatomy/anatomy` f2: the node labels qualified (`RenderSystem.pollEvents`,
+  `Minecraft.runTick`, `MinecraftServer.waitUntilNextTick`) —
+  `client/Minecraft.java`:919–920; the server's inner box is titled *one server
+  tick* because a two-line subgraph title is clipped; the caption names
+  `MinecraftServer.processPacketsAndTick`. No arrow changed.
+- `entities/entity-lifecycle` f2 (the exemplar's spawn loop, left to the
+  close by session B): **two arrows added**, both into *all three attempts
+  spent?* — *no species to pick* from the first decision (the node is now *the
+  group's species, then the type filter*, because the empty list is tested
+  first) and *group full* from the spawn box; both are `break label53` in
+  `NaturalSpawner.spawnCategoryForPosition`, which ends the group attempt and
+  not the category (`world/level/NaturalSpawner.java`:204–207 and :233–235,
+  against the two `return`s at :217–219 and :229–231). Caption: *two arrows end
+  only the group attempt, and three reach the box at the foot* — **correction**,
+  it had said only three arrows leave the loop. The figure is taller for it
+  (1,692px, five crossings) and still reads at scale 1.
+- Qualified, no arrow changed: `foundations/identifiers-and-registries` f2
+  (`LayeredRegistryAccess.getAccessForLoading`,
+  `RegistryDataLoader.RegistryData`, `RegistryLoadTask.freezeRegistry`);
+  `foundations/resource-system` f1 and f2 and f3
+  (`ReloadInstance.checkExceptions`, `PreparableReloadListener.prepareSharedState`,
+  `PreparableReloadListener.PreparationBarrier`); `foundations/text-components`
+  f2 (`Component.getString`); `foundations/data-components` f2
+  (`ItemStack.transmuteCopy`); `rendering/particles` f2
+  (`ParticleEngine.particlesToAdd`); `rendering/post-processing` f2
+  (`RenderTarget.blitAndBlendToTexture`, `client/renderer/LevelRenderer.java`:763);
+  `rendering/the-window` f1 (`Window.setIcon`, `Window.setTitle`,
+  `Window.setDefaultErrorCallback`, `client/Minecraft.java`:553, :681).
+- **Twenty names that mermaid hyphen-broke on screen**, each shortened or broken
+  at a CamelCase boundary or a dot, no arrow changed: `blocks/block-entities`
+  f1 (three, and the note about `ChunkHolder.broadcastBlockEntity` now says only
+  that `BlockEntity.getUpdatePacket` answers nothing; *the two gates pass* and
+  the note's `ServerPlayer.tick` left the figure — the prose has both),
+  `blocks/block-interaction` f2, `blocks/signal-and-dust` f2,
+  `server/how-a-server-dies` f2 (*the Server stack grafted on* left the
+  message), `server/players-and-sessions` f1 (the note no longer names
+  `ServerConfigurationPacketListenerImpl.startNextTask`, which the prose
+  owns), `world/chunk-storage` f2, `world/points-of-interest` f2,
+  `world/scheduled-ticks` f3, `world/tickets-and-loading` f3,
+  `rendering/blaze3d` f2, `rendering/the-frame` f1.
+- `flowchart TB` written `TD` (identical layout) on `entities/ai-goals-and-brains`,
+  `entities/attributes` (two) and `rendering/blaze3d`.
+
+### Landing figures and their captions — the set read as one
+
+- `networking/README` f1: **arrow removed** — lecture 3 into the box holding 4
+  and 5 — because `networking/README`'s own watch list says neither needs 3; an
+  invisible link keeps the box below. Caption: *nothing points into the bottom
+  box: its title says where the last two live, and neither needs the other or
+  the lecture above it.*
+- `worldgen/README` f1: **arrow retargeted** — density functions now point at
+  2 · Biomes, labelled *is sampled by*, instead of *is made of* into the
+  structure box; the reading paragraph says the biome step is the first status
+  to read the field, through the `NoiseChunk` built there (per
+  `worldgen/terrain`'s cast and its figure). The arrow key moved into the
+  caption. The argument's symptom paragraph moved to the front.
+- `world/README` f1 caption: *four pages and the live chunk make the ring, and
+  five arrows carry a chunk round it; chunk anatomy hands the ring its
+  vocabulary, lecture one hands the live chunk its values, and the last four act
+  on the live chunk, one of them through another page* — **correction**
+  (page-internal): it had said five boxes and a sixth arrow; the ring has five
+  arrows and one of its boxes is not a page. The sentence under it no longer
+  says lecture one is the only box off the line.
+- `foundations/README` f1 caption: the pattern page is no longer *the only page
+  no arrow leaves* — text components has none either (page-internal).
+- `server/README`: the seven later parts assume *the loop pair*, 1 and 2, not
+  the beginning and the end — page-internal, and `lectures.md`'s table says the
+  same. *One lecture in two halves* is gone; the watch list gives them two.
+- `entities/README`: the closer's watch line no longer says it assumes nothing
+  above it — `entities/damage-and-death` links `entity-anatomy`, `authority`
+  and `attributes`. Caption now names the ladder and the watch order.
+- `client/README`: *two exceptions*, not one (the page names both); caption
+  explains the ranges and the sideways hub.
+- `blocks/README`: `UPDATE_ALL` and `UPDATE_CLIENTS` for the two bare flag
+  numbers (`world/level/block/Block.java`:93, :103); the caption's *the two that
+  reach the piston page are why it is watched late* is now *every one of them
+  runs from an earlier lecture to a later one*, which the numbers bear out.
+- `items/README`: *the engines*, not *the three engines* over five boxes;
+  *Figure:* dropped from the caption. `player/README` node 5 shortened.
+  `commands/README`: floor titles lower-cased, ids renumbered to match, caption
+  now says its arrows are the one set that points down, and why.
+- `networking/chat-and-signing`:150: *Five of the checks* run before the server
+  thread, not four — **correction** (page-internal against its own :204 and
+  figure; `server/network/ServerGamePacketListenerImpl.java`:1679–1683,
+  `unpackAndApplyLastSeen` then `tryHandleChat`).
+- `foundations/data-driven-types` f2 gained its caption, the one figure outside
+  Part XI without one: *One loot function's whole life, in two stretches:
+  parsed once at reload, where the registered type supplies the codec and the
+  file only the config, and run much later, when a chest is filled and every
+  stack passes through `SetItemCountFunction`.*
+- `blocks/block-interaction` f2's caption names `ClientLevel.handleBlockChangedAck`
+  (`client/multiplayer/ClientLevel.java`:190).
+
+### The standard, as the close changed it
+
+The gate is strict and in `deploy.sh`; its F12(b) and (c) notes are failures;
+a class diagram's relation labels and English member lines are checked
+against their boxes; a page's own italic words are words; a one-letter
+misspelling of a one-word key class fails; a qualified head on a lane that owns
+neither is a note. Twenty-six such notes were ruled legitimate (static
+helpers, laneless objects, the lane's inner classes: `Gizmos`,
+`RenderSystem`, `Util`, `JsonRpc`, `VillagerGoalPackages`,
+`EnchantmentHelper`, `LevelCallback` on `ServerLevel`,
+`ContainerListener` on `ServerPlayer`, `DialogConnectionAccess` on the
+client listener, and the rest listed by `--notes`). `check_mermaid.js` fails
+colour in a page. The lane key lost 67 unused rows; `PTT`'s place as the
+nested-class example is `CMTE`. Six lanes, seven only where the render says it
+reads, eight never.
 
 ## Pass 7, session N — the frame and Reference: the figures *(2026-09-16)*
 

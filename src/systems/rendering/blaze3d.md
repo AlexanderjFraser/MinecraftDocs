@@ -42,7 +42,7 @@ Four concrete, validating classes sit in `blaze3d/systems`, each over one thin
 per-backend interface: the game holds the left column below, never the right.
 
 ```mermaid
-flowchart TB
+flowchart TD
     GB["GpuBackend — GLFW window hints, window-creation errors, and it creates the device. The one the game names and never wraps"]
     subgraph F["what the game holds: the facade in blaze3d/systems, concrete and validating"]
       GD["GpuDevice"]
@@ -300,13 +300,13 @@ sequenceDiagram
     Game->>CE: createRenderPass with a RenderPassDescriptor
     CE->>CE: validate attachments, sizes, usage bits, render area, no pass open
     CE->>GlCE: bind an FBO from the cache, viewport, scissor, clear
-    CE-->>Game: RenderPass, an AutoCloseable
+    CE-->>Game: the RenderPass, which the caller must close
     Game->>RP: setPipeline — formats must match the attachments
-    Game->>RP: bindDefaultUniforms — Projection, Fog, Globals, Lighting
+    Game->>RP: RenderSystem.bindDefaultUniforms — Projection, Fog, Globals, Lighting
     Game->>RP: setVertexBuffer, setIndexBuffer, bindTexture
     Game->>RP: drawIndexed
     RP->>GlCE: look up or compile the program, apply pipeline state, bind VAO
-    GlCE->>GlCE: glDrawElementsInstancedBaseVertex
+    GlCE->>GlCE: glDrawElements<br/>InstancedBaseVertex
     Game->>RP: close — debug groups must balance
     RP->>CE: submitRenderPass
     Note over GpuS: the surface, at the two ends of the frame

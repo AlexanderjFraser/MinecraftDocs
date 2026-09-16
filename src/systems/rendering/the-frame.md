@@ -77,7 +77,7 @@ sequenceDiagram
     MC->>MC: Minecraft.pick writes Minecraft.hitResult
     GR->>LX: extract — window, options, lightmap, camera, the level, the GUI
     Note over GR,LX: the wall. Everything after this reads GameRenderState
-    MC->>MC: gpuAsync — RenderSystem.executePendingTasks drains signalled fences
+    MC->>MC: gpuAsync:<br/>RenderSystem.<br/>executePendingTasks<br/>drains fences
     GR->>GR: render — resize if needed, clear, the lightmap, then the world
     GR->>LR: LevelRenderer.render with a CameraRenderState, no live game object
     GR->>GR: the held item under a second projection, then the screen effects

@@ -52,14 +52,15 @@ flowchart TD
     EA -- "a value for a position and an instant" --> LC
 ```
 
-*The part numbered to the watch order. The five boxes on the ring hand a chunk
-to each other and the sixth arrow closes it; every other arrow is a page that
-reads the live chunk or acts on it. Lighting is the one inclusion rather than a
-hand-off — it is two of the pipeline's own twelve statuses, run on a different
-executor — and lecture one is deliberately off the ring and ahead of it.*
+*The part numbered to the watch order. Four pages and the live chunk make the
+ring, and five arrows carry a chunk round it; chunk anatomy hands the ring its
+vocabulary, lecture one hands the live chunk its values, and the last four act
+on the live chunk, one of them through another page. Lighting is an inclusion
+rather than a hand-off — two of the pipeline's own twelve statuses, run on a
+different executor.*
 
 Follow the numbers rather than the arrows and the surprise is where they
-disagree: the first lecture is the one box with no place on the line, and the
+disagree: the first lecture is watched first and sits off the line, and the
 sixth hands back to the third.
 
 Two later parts hang off that line rather than feeding it: Part V's blocks

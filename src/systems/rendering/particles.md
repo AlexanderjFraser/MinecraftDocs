@@ -201,7 +201,7 @@ flowchart TD
     A["a constructed particle reaches ParticleEngine.add"] --> B{"does Particle.getParticleLimit name a ParticleLimit"}
     B -- "no limit, the overwhelming majority" --> Q
     B -- "SPORE_BLOSSOM, already at its count" --> X["dropped, and never queued"]
-    B -- "SPORE_BLOSSOM, under its count" --> Q["queued in particlesToAdd — every particle that survives goes here"]
+    B -- "SPORE_BLOSSOM, under its count" --> Q["queued in ParticleEngine.particlesToAdd — every particle that survives goes here"]
     Q --> D{"at the next ParticleEngine.tick, ParticleGroup.add for the particle's ParticleRenderType"}
     D -- "at ParticleGroup.MAX_PARTICLES" --> X
     D -- "past ParticleGroup.RESERVOIR_START" --> E["kept with probability equal to the square of the fraction of RESERVOIR_SIZE still free"]

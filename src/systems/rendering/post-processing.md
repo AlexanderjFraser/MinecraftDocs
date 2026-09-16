@@ -224,7 +224,7 @@ sequenceDiagram
     PChain-->>LR: the bundle's outline handle replaced with the last one written
     FGB->>FGB: execute — bodies run in dependency order, three vertices each
     GR->>LR: doEntityOutline, after the whole graph has finished
-    Note over GR,LR: blitAndBlendToTexture composites the glow onto the main target
+    Note over GR,LR: RenderTarget.blitAndBlendToTexture composites the glow onto the main target
 ```
 
 The first pass is an edge detector and what it detects edges in is **alpha**,

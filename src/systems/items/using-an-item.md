@@ -320,7 +320,7 @@ sequenceDiagram
     rect rgba(0, 0, 0, 0.04)
         Note over LP,Cons: tick 32, the count reaching zero on the server alone
         SP->>Wire: ClientboundEntityEventPacket, EntityEvent.USE_ITEM_COMPLETE
-        SP->>Cons: ItemStack.finishUsingItem, Consumable.onConsume, FoodData.eat
+        SP->>Cons: Consumable.onConsume, from ItemStack.finishUsingItem, FoodData.eat inside it
         Wire->>LP: handleEntityEvent replays Player.completeUsingItem locally
         SP->>Wire: ClientboundSetHealthPacket, same tick, overwrites the prediction
     end

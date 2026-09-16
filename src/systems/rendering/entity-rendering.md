@@ -43,7 +43,7 @@ flowchart TD
     X["Execute: the frame graph's passes issue the draws the prepare already built"]
     E -- "value objects, no Entity, no Level" --> S
     S -- "submit nodes in SubmitNodeStorage, bucketed by order" --> P
-    P -- "one PreparedFrame of batched draws" --> X
+    P -- "one prepared frame of batched draws" --> X
 ```
 
 The worked instance is one zombie going through all four.
@@ -62,9 +62,9 @@ sequenceDiagram
     LX->>LX: isEntityVisible — frustum via ERD, then: is its section compiled and visible?
     LX->>ERD: extractEntity(zombie, its own partial tick)
     ERD->>ZR: createRenderState — a fresh object, every entity, every frame
-    ZR->>ZS: extractRenderState down the whole chain
-    Note over ZS: position lerp, walk animation, equipment,<br/>hasRedOverlay from hurtTime or deathTime,<br/>lightCoords from getPackedLightCoords
-    ZR->>ZS: finalizeRenderState — sample the blocks under it for shadow pieces
+    ZR->>ZS: fills it, in extractRenderState down the whole chain
+    Note over ZR,ZS: position lerp, walk animation, equipment, the red hurt overlay, the light level
+    ZR->>ZS: adds shadow pieces, in finalizeRenderState, from the blocks under it
 
     LR->>ERD: submit(state, camera, relative position, PoseStack, collector)
     ERD->>ZR: LivingEntityRenderer.submit
@@ -76,7 +76,7 @@ sequenceDiagram
 
     LR->>FRD: prepareFrame — group by feature type, batch by RenderType
     FRD->>ZM: setupAnim again, then walk ModelPart and write vertices
-    Note over LR,FRD: later, inside the frame graph's passes: executeSolid, then executeTranslucent, then executeOutline
+    Note over LR,FRD: later, inside the frame graph's passes: the prepared frame's solid, translucent and outline draws
 ```
 
 ## Extract: the live entity becomes a snapshot

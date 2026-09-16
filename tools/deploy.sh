@@ -11,8 +11,8 @@ python tools/gen_reference.py all   # the eleven Reference views, re-read off th
 python tools/pass5_coverage.py --write   # the thirteen coverage phrases, src/generated/coverage-<dir>.md, from the same PARTS mapping the size phrases use (pass-6 planning session)
 python tools/check_deps.py --write-figure   # the parts-dependency figure and its table, src/generated/parts-dependency.*, from the landing pages (pass 7, session N)
 python tools/verify_names.py --index
-python tools/check_lanes.py --strict --index   # every lane on every page means what the key says (corpus-wide since pass-3 session P); src/reference/lanes.md regenerated
-python tools/check_figure_names.py   # every name inside a mermaid block resolves — report-only through pass 7, --strict at its close (pass-7 planning session)
+python tools/check_lanes.py --strict --index --unused   # every lane on every page means what the key says (corpus-wide since pass-3 session P); src/reference/lanes.md regenerated; key rows no page declares reported, not failed (pass 7, session O)
+python tools/check_figure_names.py --strict   # every name inside a mermaid block resolves (sixth gate: report-only from pass 7's planning session, --strict from its close)
 python tools/check_deps.py --quiet   # the landing pages, the lecture table and the parts-dependency figure agree (fourth gate, pass-4 session A)
 python tools/check_links.py --quiet  # every internal link, anchor, include, SUMMARY entry and redirect resolves (fifth gate, pass-5 planning session)
 mdbook build

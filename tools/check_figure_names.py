@@ -34,12 +34,23 @@ than a note when no such member exists, and it needs no `Class.` prefix in the f
 is the prefix.
 
 Skipped, and counted: ALL-CAPS tokens (enum constants, `MISC`), single-word capitalised tokens
-(`Entity` is a class and `Then` is not, and the label cannot say which), lane ids, and anything
-in ALLOW. Unqualified humped members inside flowchart or state labels (`runAllTasks` with no
-class beside it) are listed as notes: the lane qualifies a message, nothing qualifies a node.
+(`Entity` is a class and `Then` is not, and the label cannot say which) — except a word one
+letter away from a one-word class in the lane key (`Entty`, `Palyer`), which fails — lane ids,
+anything in ALLOW, and any word the page sets in *italics* outside its figures (a profiler zone,
+a task name: verify_names.py's convention for a word that is not an identifier).
 
-Report-only by default — pass 7 runs it that way and reads the list; `--strict` exits 1 on any
-failure, which is what `tools/deploy.sh` switches to at the pass's close. `--mentions` prints
+F12, as pass 7's session O applied it at the close: an unqualified humped member inside a
+flowchart, state, note, subgraph or edge label (`runAllTasks` with no class beside it) **fails**
+— the lane qualifies a message, nothing qualifies a node — and so does a nested class named
+without its outer class. In a classDiagram a member line is qualified by its box and a relation's
+label by either of its two boxes. What stays a *note*: a bare lower-case message head that is not
+a member (F12(d), `load` is also English), and a qualified head whose class is neither the lane's
+nor kin to it (`Gizmos.billboardTextOverMob` on a renderer's lane) — a static façade, an object
+with no lane, or the lane's own inner class, each ruled once in pass7-brief.md; or the
+caller's-method-at-the-callee fault in its qualified spelling, which is why it is listed.
+
+Report-only by default; `--strict` exits 1 on any failure, and `tools/deploy.sh` runs it that way
+from pass 7's close. `--mentions` prints
 class → pages as JSON, and `verify_names.py --index` calls `figure_mentions()` here so that a
 class named only inside a figure reaches the class index (pass 5, session A: 135 page pairs the
 index could not see).
@@ -156,12 +167,12 @@ def labels_of(body):
     out = []
     # `class CM["ChunkMap"]` names the box CM and displays ChunkMap: the id is an alias the way a
     # lane abbreviation is, so the display label carries the name and the id is not a class.
-    aliases: set[str] = set()
+    aliases: dict[str, str] = {}
     if kind == "classDiagram":
         for _ln, raw in body:
             m = CLASS_DEF.match(raw.strip())
             if m and m.group(2):
-                aliases.add(m.group(1))
+                aliases[m.group(1)] = m.group(2)
     for ln, raw in body:
         t = raw.strip()
         if not t or t.startswith("%%") or (COLOUR_LINE.match(t) and kind != "classDiagram"):
@@ -231,7 +242,9 @@ def labels_of(body):
                     if end not in aliases:
                         out.append((ln, "classname", end, None))
                 if m.group(4):
-                    out.append((ln, "edge", m.group(4).strip(), None))
+                    # a relation's label is qualified by the two boxes it joins (session O)
+                    ends = "|".join(aliases.get(e, e) for e in (m.group(1), m.group(3)))
+                    out.append((ln, "edge", m.group(4).strip(), ends))
                 continue
             # anything else inside the braces is a member line — and its own class box qualifies
             # it, the way a lane qualifies a message, so it is checked rather than noted
@@ -250,6 +263,25 @@ def labels_of(body):
             if m:
                 out.append((ln, "note", m.group(1), None))
     return kind, lanes, out
+
+
+ITALIC = re.compile(r"(?<![*\w])[*_]([a-z][A-Za-z0-9]*)[*_](?![*\w])")
+
+
+def italic_words(path: str) -> set[str]:
+    """The words a page sets in italics outside its figures -- verify_names.py's convention for a
+    word that is not an identifier (a profiler zone, a task name, a data key). A figure that
+    carries one of them is spending the page's own word, not naming a member (session O)."""
+    words: set[str] = set()
+    with open(path, encoding="utf-8") as fh:
+        in_fence = False
+        for line in fh:
+            if FENCE.match(line):
+                in_fence = not in_fence
+                continue
+            if not in_fence:
+                words.update(ITALIC.findall(line))
+    return words
 
 
 def close_up_breaks(text: str) -> str:
@@ -304,6 +336,8 @@ class Checker:
         self.nested: dict[str, set[str]] | None = None
         self.checked = 0
         self.skipped = 0
+        self.one_word_keys = sorted(c for c in key_classes
+                                    if re.fullmatch(r"[A-Z][a-z]+", c) and c in self.classes and len(c) >= 5)
 
     def members(self, cls: str) -> set[str]:
         if cls not in self.member_cache:
@@ -390,8 +424,34 @@ class Checker:
             return f"no member {missing[0]} on {cls}"
         return None
 
+    def ancestry(self, cls: str, depth: int = 0, seen: set | None = None) -> set[str]:
+        """`cls` and every class it extends or implements, as far as the decompile has them."""
+        seen = seen if seen is not None else set()
+        if cls in seen or depth > 10:
+            return seen
+        seen.add(cls)
+        for s in self.supers(cls):
+            self.ancestry(s, depth + 1, seen)
+        return seen
+
+    def near_miss(self, word: str) -> str | None:
+        """A one-word class in the lane key that `word` misspells by one letter, or None.
+
+        The identifier token needs two humps, so a one-word class (`Entity`, `Player`) in free
+        text is unchecked: it cannot be told from English. What can be told is a word one edit
+        away from such a class that is not itself a class -- `Entty`, `Palyer` (session O)."""
+        if len(word) < 5 or self.class_ok(word):
+            return None
+        for k in self.one_word_keys:
+            if abs(len(k) - len(word)) > 1 or k == word:
+                continue
+            if _one_edit(k, word):
+                return k
+        return None
+
     def check_page(self, path: str, rel: str):
         failures, notes = [], []
+        italics = italic_words(path)
         for start, body in fences_of(path):
             kind, lanes, labels = labels_of(body)
             for ln, role, text, target in labels:
@@ -443,15 +503,31 @@ class Checker:
                     else:
                         outers = self.nested_outer(tok)
                         if outers:
-                            notes.append((rel, ln, tok, f"a nested class named without its outer class: {', '.join(o + '.' + tok for o in outers[:3])}"))
+                            failures.append((rel, ln, tok, f"a nested class named without its outer class: {', '.join(o + '.' + tok for o in outers[:3])}"))
                             self.mentions.setdefault(outers[0], set()).add(rel) if len(outers) == 1 else None
                         else:
                             failures.append((rel, ln, tok, "no such class"))
+                for m in re.finditer(r"\b([A-Z][a-z]{4,})\b", stripped):
+                    k = self.near_miss(m.group(1))
+                    if k:
+                        failures.append((rel, ln, m.group(1), f"one letter from the class {k}"))
+                # a qualified head names a member of some class; that class should be the lane's
+                # own or kin to it -- otherwise it is a third class's method on a lane that owns
+                # neither (F12, amended by session J): a note, ruled case by case
+                if role == "message" and target and target in lanes:
+                    hq = re.match(r"^\s*([A-Z][A-Za-z0-9]*)\.([a-z_][A-Za-z0-9_]*)", text)
+                    lane_cls = lanes[target].split(".")[0]
+                    if hq and lane_cls in self.classes and hq.group(1) in self.classes and hq.group(1) != lane_cls \
+                            and hq.group(1) not in self.ancestry(lane_cls) and lane_cls not in self.ancestry(hq.group(1)):
+                        notes.append((rel, ln, f"{hq.group(1)}.{hq.group(2)}",
+                                      f"a qualified head on a {lane_cls} lane naming a class that is neither it nor its kin"))
                 # a message's head names a member of the lane it is sent to
                 if role == "message" and target:
                     hm = MSG_HEAD.match(stripped)
                     head = hm.group(1) if hm else None
-                    if head and target in lanes and lanes[target] not in self.key_words and not lanes[target].startswith("*"):
+                    if head and head in italics:
+                        pass                    # the page's own italic word: a zone, a task, a key
+                    elif head and target in lanes and lanes[target] not in self.key_words and not lanes[target].startswith("*"):
                         cls = lanes[target].split(".")[0]
                         humped = bool(re.search(r"[a-z][A-Z]", head)) or bool(re.match(r"^\s*" + re.escape(head) + r"\s*\(", stripped))
                         if cls in self.classes:
@@ -473,7 +549,7 @@ class Checker:
                     # member lines as English ("the product of every property's value count"), and
                     # those are node labels, checked below like any other.
                     name = MEMBER_LINE.search(stripped).group(1)
-                    box = target.split(".")[-1]
+                    box = target.split(".")[0]      # a nested box is read through its outer class, as a dotted name is
                     if box in self.classes:
                         self.checked += 1
                         if not (name in self.members(box) or name in ALLOW or self.inherited_member(box, name)):
@@ -481,18 +557,35 @@ class Checker:
                     else:
                         self.skipped += 1
                 elif role in ("node", "edge", "subgraph", "state", "note", "block", "member"):
-                    for m in LOWER_CAMEL.finditer(stripped):
-                        tok = m.group(1)
-                        if tok in ALLOW or tok in ENGLISH_HEADS:
+                    # F12(b): a member outside a message is written `Class.member`, because nothing
+                    # else qualifies it -- except in a classDiagram, where a member line's box and a
+                    # relation label's two boxes do. A failure from session O; a note before it.
+                    boxes = [b.split(".")[0] for b in (target or "").split("|") if b] if kind == "classDiagram" else []
+                    toks = [m.group(1) for m in LOWER_CAMEL.finditer(stripped)]
+                    toks += [m.group(1) for m in CALL.finditer(stripped) if m.group(1) not in toks]
+                    for tok in toks:
+                        if tok in ALLOW or tok in ENGLISH_HEADS or tok in italics:
                             continue
-                        # qualified by a class in the same label? then it was checked as that class's member above
-                        notes.append((rel, ln, tok, f"unqualified member in a {kind.split('-')[0]} {role} label"))
-                    for m in CALL.finditer(stripped):
-                        tok = m.group(1)
-                        if not re.search(r"[a-z][A-Z]", tok) and tok in ENGLISH_HEADS:
+                        if any(b in self.classes and (tok in self.members(b) or self.inherited_member(b, tok)) for b in boxes):
+                            self.checked += 1
                             continue
-                        notes.append((rel, ln, tok, f"unqualified call in a {kind.split('-')[0]} {role} label"))
+                        where = f"a {kind.split('-')[0]} {role} label"
+                        if boxes:
+                            failures.append((rel, ln, tok, f"no member {tok} on {' or '.join(boxes)} (the boxes that qualify {where})"))
+                        else:
+                            failures.append((rel, ln, tok, f"unqualified member in {where}: write it Class.{tok}"))
         return failures, notes
+
+
+def _one_edit(a: str, b: str) -> bool:
+    """True when b is a one-letter substitution, insertion, deletion or adjacent swap of a."""
+    if len(a) == len(b):
+        diff = [i for i in range(len(a)) if a[i] != b[i]]
+        return len(diff) == 1 or (len(diff) == 2 and diff[1] == diff[0] + 1
+                                  and a[diff[0]] == b[diff[1]] and a[diff[1]] == b[diff[0]])
+    if len(a) > len(b):
+        a, b = b, a
+    return any(b[:i] + b[i + 1:] == a for i in range(len(b)))
 
 
 def walk(src: str, only: list[str] | None):
@@ -594,7 +687,40 @@ classDiagram
         boolean frob(PermissionSet)
     }
 ```
+
+The page sets *zoneName* in italics, which declares it a word and not a member.
+
+```mermaid
+flowchart TD
+    Z["the zoneName zone, then the otherZone zone"]
+    N["Mob.finalizeSpawn and Entty and Palyer, beside Entity and Players"]
+```
+
+```mermaid
+classDiagram
+    class BlockBehaviour.Properties {
+        setId first, or the constructor throws
+        frobnicateThing first
+    }
+    class ChunkMap
+    class ServerLevel
+    ChunkMap --> ServerLevel : getChunkSource, then noSuchRelMember
+```
+
+```mermaid
+sequenceDiagram
+    participant SL as ServerLevel
+    participant MS as MinecraftServer
+    SL->>MS: ChunkMap.save, a third class on a lane that owns neither
+    SL->>MS: MinecraftServer.tickServer, the lane's own
+    SL->>SL: ServerLevel.tick, from itself
+    SL->>MS: zoneName, the page's italic word
+```
 """
+
+
+def _probe_line(needle: str) -> int:
+    return next(i for i, l in enumerate(PROBE.split("\n"), 1) if needle in l)
 
 
 def probe(mc_source: str, libs: str) -> int:
@@ -622,7 +748,8 @@ def probe(mc_source: str, libs: str) -> int:
         ("a break tight inside a message's name is read closed up", not any(f[1] == 17 for f in failures)),
         ("a break tight inside a message's name that still does not resolve fails", (18, "MinecraftServer.tickServerr") in got),
         ("a bad class in a flowchart node fails", any(f[2] == "FrobnicatorThing" for f in failures)),
-        ("a nested class named bare is a note, not a failure", any(n[2] == "SpawnState" and "NaturalSpawner.SpawnState" in n[3] for n in notes) and not any(f[2] == "SpawnState" for f in failures)),
+        ("a nested class named bare is a failure, naming its outer class (F12(c), session O)",
+         any(f[2] == "SpawnState" and "NaturalSpawner.SpawnState" in f[3] for f in failures)),
         ("an inherited member resolves (DedicatedServer.runServer is MinecraftServer's)", not any(f[2] == "DedicatedServer.runServer" for f in failures)),
         ("an inherited member resolves on a class whose own declaration is past 20kB of imports (ClientPacketListener.shouldHandleMessage)",
          not any(f[2] == "shouldHandleMessage" for f in failures)),
@@ -632,7 +759,7 @@ def probe(mc_source: str, libs: str) -> int:
          not any("thenClientPacketListener" in f[2] for f in failures)),
         ("a break at a real CamelCase boundary is still closed up, and a bad name through one still fails",
          any(f[2] == "handleSetEntityPassengersPackett" for f in failures)),
-        ("an unqualified member in a flowchart label is a note", any(n[2] == "runAllTasks" for n in notes)),
+        ("an unqualified member in a flowchart label is a failure (F12(b), session O)", any(f[2] == "runAllTasks" for f in failures)),
         ("a rect band's colour is not read as a call named rgba", not any(n[2] == "rgba" for n in notes)),
         ("a box's colour word is stripped and its label still checked", (23, "ChunkMapp") in got),
         ("a break after punctuation in a node label separates two names, and both resolve", not any(f[1] == 31 for f in failures)),
@@ -658,7 +785,19 @@ def probe(mc_source: str, libs: str) -> int:
          not any(n[2] == "check" for n in notes) and not any(f[2] == "check" for f in failures)),
         ("a one-word method in a classDiagram member line is checked against its box: the bad one fails",
          (69, "frob") in got),
-        ("exactly the eighteen failures expected", len(failures) == 18),
+        ("a word the page sets in italics is not a member, in a label or a message head",
+         not any(f[2] == "zoneName" for f in failures) and not any(n[2] == "zoneName" for n in notes)),
+        ("a word the page does not set in italics is still an unqualified member", any(f[2] == "otherZone" for f in failures)),
+        ("a one-word class misspelt by one letter fails, and the class and its plural pass",
+         {f[2] for f in failures} >= {"Entty", "Palyer"} and not any(f[2] in ("Entity", "Players") for f in failures)),
+        ("a nested box qualifies its English member lines through its outer class",
+         not any(f[2] == "setId" for f in failures) and any(f[2] == "frobnicateThing" for f in failures)),
+        ("a relation label is qualified by either of its two boxes",
+         not any(f[2] == "getChunkSource" for f in failures) and any(f[2] == "noSuchRelMember" for f in failures)),
+        ("a qualified head naming a third class on a lane that owns neither is a note, and the lane's own is not",
+         any(n[1] == _probe_line("a third class on a lane") and n[2] == "ChunkMap.save" for n in notes)
+         and not any(n[2] in ("MinecraftServer.tickServer", "ServerLevel.tick") for n in notes)),
+        ("exactly the twenty-five failures expected", len(failures) == 25),
     ]
     ok = True
     for what, passed in checks:

@@ -174,18 +174,18 @@ rewritten by its own part's session — and the glossary entry by entry.
 
 **Figure findings — pass 7.**
 
-- **Part IV's figure has eleven nodes for ten pages**: `LC["a live LevelChunk
+- ~~**Part IV's figure has eleven nodes for ten pages**: `LC["a live LevelChunk
   in a ticking world"]` is a concept and is the conveyor's hinge. The only
-  landing figure with a non-page node. [kind=figure]
-- **Part X's figure collapses twelve pages into eight boxes** — `GUI` is four
+  landing figure with a non-page node. [kind=figure]~~ — **ruled, pass 7 session O**: kept; `TEMPLATE.md`'s landing-figure grammar now allows a box that is not a page, in lower case, where the caption says what it is — which Part IV's does.
+- ~~**Part X's figure collapses twelve pages into eight boxes** — `GUI` is four
   pages and `SND` is two — so it is not a figure of the part's own pages the
-  way the other twelve are. [kind=figure]
-- **Part V says *a hub and six spokes* and draws five spoke-to-spoke edges**,
-  which makes it a hub with a mesh. [kind=figure]
+  way the other twelve are. [kind=figure]~~ — **ruled, pass 7 session O**: a range node is allowed for pages watched together, and Part X's caption now says so.
+- ~~**Part V says *a hub and six spokes* and draws five spoke-to-spoke edges**,
+  which makes it a hub with a mesh. [kind=figure]~~ — **ruled, pass 7 session O**: the caption names both kinds of arrow, and every spoke-to-spoke arrow runs from an earlier lecture to a later one.
 - **Two metaphor collisions**: Part V and Part X are both *a hub and its
   spokes*, for different systems; Part XI is *a substrate under a pipeline* and
   Part XII, read straight after it, is *a substrate, a pipeline, and a wing*.
-  [kind=figure]
+  [kind=voice] *(retagged by pass 7 session O: a metaphor is wording)*
 - ~~**The introduction's figure draws three threads** (Render, Server,
   Worker-Main-n, with the wire as a box) under a paragraph that promises four.
   Whether the Netty loop should be a box or stay inside `Connection` is the
@@ -374,7 +374,7 @@ it. Everything it acted on itself is struck in place above, or logged in
   the paragraph beneath says the number is wrong for the common case;
   `fluids`' bucket sequence names `Block.UPDATE_SKIP_ON_PLACE`, "the drain",
   `getNewLiquid` and "the shape pass", none of them yet defined. This is the
-  lead figure's contract, not three pages' bad luck. [kind=figure]~~ — **done, pass 7 session D**: all three. `chunk-storage`'s lead figure is six short boxes coloured by thread; `chunk-generation-pipeline`'s is now a table and a four-ring pyramid; `fluids`' bucket sequence lost the three names it spent early.
+  lead figure's contract, not three pages' bad luck. [kind=figure]~~ — **done, pass 7 session D**: all three. `chunk-storage`'s lead figure is six short boxes coloured by thread; `chunk-generation-pipeline`'s is now a table and a four-ring pyramid; `fluids`' bucket sequence lost the three names it spent early. **Audited, pass 7 session O — not borne out:** only `getNewLiquid` left the figure; `Block.UPDATE_SKIP_ON_PLACE`, *the drain* and *the shape pass* are still in it (`fluids`:128–140) and the prose reaches the flag at :171, after the figure. Reopened below, under session O.
 - ~~`game-events-and-vibrations`' gate flowchart has fifteen nodes and eight
   refusal exits, and two edge labels carry five and six conditions each — a
   density question at column width and on a slide. [kind=figure]~~ — **done, pass 7 session D**: split at the joint the prose already names — the dispatcher's walk and the listener's five refusals, one shared sink, no edge label over four words. 24 nodes at 0.54 became 11 and 10, both at scale 1.
@@ -887,7 +887,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   gates it with a nine-case probe measured in Chrome (a sequence message is *not*
   erased; a digit-dot with no space after it is not; a digit-dot not at the start is
   not). Nothing left in the corpus. [kind=record]
-- **`entity-lifecycle`'s spawn-loop figure draws neither of the two rejections that
+- ~~**`entity-lifecycle`'s spawn-loop figure draws neither of the two rejections that
   end a group attempt.** The prose under it names them — the empty species list and
   the group filling up — and `NaturalSpawner` line 207 and line 233 are both
   `break label53`, which ends the attempt, while line 219 and line 228 are `return`,
@@ -897,7 +897,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   folded inside the type filter's *fails* although it is tested before it. Two
   arrows to add and one node to place, all re-derived above. Left to **session O**
   rather than taken here because the page is the pass's exemplar (F15) and session A
-  owns it; the caption's uncheckable count was corrected in place. [kind=figure]
+  owns it; the caption's uncheckable count was corrected in place. [kind=figure]~~ — **done, pass 7 session O**: both arrows added, into the group-attempt decision, and the empty list placed ahead of the type filter; logged in pass9.md.
 - **`pathfinding`'s densest figure-less section is the one three other pages link
   to.** *The budget, which is also the map* is forty-three lines, 18.6 order-words
   per hundred, and carries one number that fans out into five consumers: times
@@ -906,7 +906,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   the pathfinder's (`Mob.onAttributeUpdated`, on `FOLLOW_RANGE` or `TEMPT_RANGE`).
   The viewer drew the fan-out and it is a good figure; its seven arrows are seven
   claims and this session spent its re-derivation budget elsewhere. **F14 candidate
-  for session O or pass 10.** [kind=figure]
+  for session O or pass 10.** [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 - **`damage-and-death` lost the player-death packets from any figure.** The hit
   trace now ends at `checkTotemDeathProtection` and *Death, or not* gained the veto
   flowchart, but `ServerPlayer.die`, `ClientboundPlayerCombatKillPacket` and
@@ -1068,12 +1068,12 @@ looser or more repetitive than it should be.
 - **`map_source.py`'s line counts are 18.4% blank lines** — 132,608 of 719,302
   — and neither the tool's docstring nor `src/maps/README.md` says so. "719k
   lines" is 587k non-blank. One clause on the atlas's counting rule fixes it.
-- **`TEMPLATE.md:112` is stricter than mermaid.** A `;` and a `#` in a
+- ~~**`TEMPLATE.md:112` is stricter than mermaid.** A `;` and a `#` in a
   *flowchart* label both parse and render correctly under 11.6.0; the rule that
   forbids them everywhere is true only of sequence diagrams (`#`) and state
   diagrams (`;`, which silently splits a label into extra states). Relax the
   rule to name the two places it is real — and note that the state-diagram case
-  is now a gate, so the rule has teeth where it needs them.
+  is now a gate, so the rule has teeth where it needs them.~~ — **ruled, pass 7 session O**: the stricter rule stays: it costs nothing to keep `;` and `#` out of every label, and a rule that names three kinds is one more thing to get wrong. The two real cases are gated.
 
 ### Completeness, verified and not acted on
 
@@ -2318,16 +2318,16 @@ correction):
   classes are named only inside mermaid blocks (51 of them as
   `participant X as ClassName`), and 26 of those classes have no row at all.
   The page now states the limitation; removing it is the better fix.~~ — **overtaken**, the same way: the class index reads figures through `check_figure_names.py` since pass 7's planning session.
-- **The lane key carries 45 rows no page claims**, against session E's ruling
+- ~~**The lane key carries 45 rows no page claims**, against session E's ruling
   that it is pruned to lanes in use. Three appear nowhere but `lanes.md`:
   `PTT`, `TCTD` and (until this session) `TDec`. `PTT` is `TEMPLATE.md`'s
   worked example of the nested-class rule and its pilot page has since become
-  a flowchart with no lanes, so the rule's only illustration is unused.
-- **Two lanes for one class, on purpose.** `RCPL` and `CPL` are both
+  a flowchart with no lanes, so the rule's only illustration is unused.~~ — **done, pass 7 session O**: 67 unused class rows pruned; `PTT`'s place as the nested-class example is `CMTE`; `deploy.sh` reports unused rows.
+- ~~**Two lanes for one class, on purpose.** `RCPL` and `CPL` are both
   `ClientPacketListener`, because the chat diagram shows the sender's client
   and the recipient's at once. Recorded in `TEMPLATE.md`'s collision prose and
   in a note inside the figure; if pass 5 dislikes it, the alternative is two
-  identically-labelled lanes.
+  identically-labelled lanes.~~ — **ruled, pass 7 session O**: kept; `RCPL` is still the one class with two lanes, and the lane key says why.
 - ~~**`reference/submit-phases.md` is a catalogue that needs a paragraph.** Its~~ **Struck by the pass-6 planning session (2026-09-07):** settled by sessions K and N — the page names `SubmitNodeStorage` and `TranslucentSubmit`, and the merging rule moved to the lecture.
   "order bucket" and "may be reordered" language is unexplained without
   `SubmitNodeStorage` and `PhaseSubmitGrouper`; that is a page shape question,
@@ -4806,11 +4806,11 @@ it made are in [pass9.md](pass9.md).*
 
 ### For pass 7 (the figures)
 
-- **`text-and-fonts`' chat-line figure has `Font->>FSet: getGlyph`**, and
+- ~~**`text-and-fonts`' chat-line figure has `Font->>FSet: getGlyph`**, and
   `FontSet.getGlyph` is private — the caller really reaches
   `FontSet.Source.getGlyph` through the `GlyphSource` interface, which is the
   distinction the page's own 1.21 box draws. The arrow is true as an
-  *object* interaction and misleading as a call. Session J left it.
+  *object* interaction and misleading as a call. Session J left it.~~ — **ruled, pass 7 session O**: the arrow stays. `FontSet.getGlyph` is the method the figure's lane owns, and the page's 1.21 box already says why it is not the API; the figure draws objects, and the private route is the prose's.
 - **The Part X landing figure's seven spokes against twelve pages** is now
   contradicted by nothing in the prose (the verified line no longer counts),
   but the figure still collapses four GUI pages into one node and two sound
@@ -5221,7 +5221,7 @@ on are in [pass9.md](pass9.md).
 - ~~**`data-components`' shape figure is told to be read left to right** and
   has an edge running back into the subgraph the sentence reads away from,
   with `DataComponentType` declared last and feeding both halves.
-  [kind=figure]~~ — **done, pass 7 session B**: redrawn as a `classDiagram` — what a stack holds, what it only points at. The build chain left with the flowchart; `asPatch` and `fromPatch` are two arrows now, in their two directions, and both leave `PatchedDataComponentMap` rather than the patch field.
+  [kind=figure]~~ — **done, pass 7 session B**: redrawn as a `classDiagram` — what a stack holds, what it only points at. The build chain left with the flowchart; `asPatch` and `fromPatch` are two arrows now, in their two directions, and both leave `PatchedDataComponentMap` rather than the patch field. **Audited, pass 7 session O — not borne out:** the `fromPatch` arrow leaves `DataComponentPatch` (`data-components`:66), which is the right direction for a static factory that takes a patch; the figure is right and this sentence was not.
 
 ### For pass 8 (the voice)
 
@@ -5476,12 +5476,12 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   wrapper's two gates are named for the wrapper
   (`LevelChunk.BoundTickingBlockEntity.tick`) rather than for `isTicking`,
   which the prose never says.
-- ~~`signal-and-dust`'s sequence diagram traces the line coming **on** while the
+- `signal-and-dust`'s sequence diagram traces the line coming **on** while the
   page's hook, its staircase paragraph and its closer were all about the line
   going **dark** — and two dust cannot show a descent at all. Session E fixed
   the *scenario* (the verified line now flips the lever both ways and the
   experimental section runs the off case), but the figure still shows only the
-  on case. A third dust would make the descent visible. [kind=figure]~~ **Half done, pass 7 session E.** The *mechanism* of the descent is now
+  on case. A third dust would make the descent visible. [kind=book] **Half done, pass 7 session E** (unstruck by session O: an entry whose own text says half of it is open is not settled). The *mechanism* of the descent is now
   drawn, on the other figure: `signal-and-dust`'s flowchart gained the edge
   from its forty-two outgoing updates back to `RedStoneWireBlock.neighborChanged`,
   so the re-entry the page's hook is about is a loop in the picture instead of
@@ -5489,13 +5489,13 @@ kind; what it acted on is struck in place above and in [pass9.md](pass9.md).
   lever going off, and the viewer's own suggestion — the comparison the *second
   implementation* section is already written as, the same two dust under each
   evaluator — is a new figure with a dozen new claims in it, so it is left for
-  a session with the derivation budget rather than guessed at here. [kind=figure]
+  a session with the derivation budget rather than guessed at here. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 - ~~`diodes-and-observers`' two-channel flowchart held the **only definition of
   either channel** on the page until this session put one in prose. Worth
   checking the rest of the corpus for figures that are load-bearing that way. [kind=figure]~~ **Overtaken, pass 7 session E**: the corpus-wide form of this is F6, and
   `check_figure_names.py` plus `pass7_figures.py`'s *names first met here* line
   measure it per figure on every page. Part V's figures now carry no name the
-  prose never says except packet names split by a display break.
+  prose never says except packet names split by a display break. **Audited, pass 7 session O — not borne out:** four more were still figure-only when session O looked — `DefaultRedstoneWireEvaluator.calculateTargetStrength` (`signal-and-dust`:47), `PistonBaseBlock` (a lane only, `signal-and-dust`:227), `shapeUpdate` (`block-interaction`:47) and `ClientLevel.handleBlockChangedAck`, which session O gave its sentence in the caption. The other three are reopened below.
 
 **For pass 8, the voice.**
 
@@ -6384,7 +6384,7 @@ it logged. The corrections it made are in [pass9.md](pass9.md).*
   `Q --> S --> C` asserts that a question becomes an answer becomes a check,
   and the prose under it describes three co-existing roles. Its `CL` node is
   also the densest label on the page and names two client sets the page does
-  not explain for another hundred and twenty lines. [kind=figure]~~ **done, pass 7 session M** — a `classDiagram` now: the check a node holds, the question, the set that answers, with *is a kind of* and *holds* as the only arrows; the `CL` node is gone, and the redraw found `ChatAbilities` drawn as a set when it holds one.
+  not explain for another hundred and twenty lines. [kind=figure]~~ **done, pass 7 session M** — a `classDiagram` now: the check a node holds, the question, the set that answers, with *is a kind of* and *holds* as the only arrows (audited by session O: there is also one dotted call arrow, `permissions`:79, and the caption names it); the `CL` node is gone, and the redraw found `ChatAbilities` drawn as a set when it holds one.
 - ~~`brigadier-and-commands`' trace opens on two `CSug->>CPL` arrows, which
   read as messages sent, immediately under a paragraph whose whole point is
   that the parse never leaves the machine. The page never says that
@@ -6542,14 +6542,14 @@ What adopting the theme and rewriting one page left for the part sessions and
 for session O. The rulings themselves are [pass7-brief.md](pass7-brief.md)
 Part 3; these are the pieces of work that ruling created.
 
-- **109 names are still hyphen-broken mid-word, in messages and notes** (97
+- ~~**109 names are still hyphen-broken mid-word, in messages and notes** (97
   messages, 12 notes). The theme wraps at 180px so the lanes stay close enough
   to keep the type at eleven pixels, and mermaid hyphenates any word wider than
   that: `ClientboundBlockChangedAckPac-ket`, `ServerPlayer.requestDeb-ug`. The
   112 that were *lane* names are fixed corpus-wide (F17); these are F4's work,
   one part at a time — shorten the message until the name is most of it, move
   the sentence to the caption, or break the name with `<br/>`. **Session O
-  re-measures this and it should be zero.** [kind=figure]
+  re-measures this and it should be zero.** [kind=figure]~~ — **done, pass 7 session O**: re-measured with the wider regex (`tools/pass7/broken_names.py`, which reads a break after a dot or an open parenthesis too): 20 were live, all in Parts III–V and XI, and the corpus is at **zero**.
 - ~~**A `<br/>` inside a name works in a lane and not yet in a message.** Both
   gates close the break up for a `participant` expansion and treat it as a
   space everywhere else, because the ten `<br/>`s already in the corpus are
@@ -6601,23 +6601,23 @@ Part 3; these are the pieces of work that ruling created.
   on the same pages, so about five of the 119 were never page errors at all.
   **Session O should re-read the remaining count with this in mind** and decide
   whether `check_lanes.py` wants the same rule for its note and message text.
-  [kind=record]
-- **The renderer counts a `par` block's own headers as labels outside their
+  [kind=record] **Re-read, pass 7 session O**: the count is 0 of 2,561 under the strict gate; `check_lanes.py` checks only lane expansions and needs no note or message rule.
+- ~~**The renderer counts a `par` block's own headers as labels outside their
   container.** `anatomy`'s start-up sequence gained a two-branch `par` for the
   one genuine concurrency in the book — the Render thread drawing while
   `IntegratedServer.initServer` loads — and `render_figures.js` flags both
   branch captions. It is the tool not knowing the construct, not a defect in
   the figure; session O should teach it, or the count in Part 4's *overlap,
   overflow or through* column will be two high for the rest of the pass.
-  [kind=figure]
-- **`par` is a mark outside `TEMPLATE.md`'s table.** Session B spent it once,
+  [kind=figure]~~ — **done, pass 7 session O**: `render_figures.js` no longer counts a `loop`, `alt`, `opt` or `par` label as outside its box; the corpus's *outside* count fell from twenty figures to one.
+- ~~**`par` is a mark outside `TEMPLATE.md`'s table.** Session B spent it once,
   captioned as F3 requires, because the figure otherwise said the *opposite* of
   the paragraph beside it: a sequence diagram reads strictly top to bottom, and
   the prose's "Meanwhile" is the whole point of that stretch of `anatomy`.
   Session O should decide whether concurrency earns a row in the marks table —
   the corpus has at least one more place that wants it (the chunk pipeline's
   workers) — or whether one captioned exception is the right answer.
-  [kind=figure]
+  [kind=figure]~~ — **done, pass 7 session O**: `par` is a row in the marks table (*two things that genuinely happen at once*), with `loop`, `alt` and `opt` beside it.
 - **The jar treemap cannot carry what `what-this-book-skips` asks of it.** The
   page asks the reader to reconcile fifteen table rows against the map's
   hatched boxes; at the column, eight of the fifteen packages are an unlabelled
@@ -6627,8 +6627,8 @@ Part 3; these are the pieces of work that ruling created.
   is the atlas's subject and not this page's. Generated by `map_source.py` and
   shared by three pages, so it is the same kind of job as F13's trees and
   belongs with them: session O, or whichever session takes the emitter.
-  [kind=figure]
-- **Part II's landing figure was `flowchart BT`** — one of the three directions
+  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+- ~~**Part II's landing figure was `flowchart BT`** — one of the three directions
   F3 rules out — and read bottom-up with its key in the prose above it, which
   is the sentence a picture-first reader skips. Turned `TD` with every arrow
   unchanged in meaning (machinery → dependant), numbered to the watch order and
@@ -6636,14 +6636,14 @@ Part 3; these are the pieces of work that ruling created.
   direction F3 does not allow** (`entities` and `foundations` `BT`, `commands`
   and `worldgen` `TB`), and the thirteen use five directions between them; that
   is session O's set-reading, and this is what one of them looked like fixed.
-  [kind=figure]
+  [kind=figure]~~ — **done, pass 7 session O**: all thirteen landing figures are `TD` or `LR` now, and the set's grammar is in `TEMPLATE.md`.
 - **`resource-system`'s figure 2 asserted three listeners where the page says
   twenty.** There was no ellipsis, no "…", nothing in the frame admitting
   seventeen were missing, and a picture-first reader came away believing the
   client has three reload listeners. Fixed with a *seventeen more listeners*
   node. Worth a sweep: the corpus is full of excerpt figures whose prose says
   *some of* afterwards, and the figure is what the reader believes.
-  [kind=figure]
+  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 - **Two sections in Part II asked for a picture and did not get one this
   session**, both named by their viewer and both real: `resource-system`'s
   *Discover* and *Snapshot* together state seven things about one spatial
@@ -6676,23 +6676,23 @@ Part 3; these are the pieces of work that ruling created.
   and two probe cases. Session B found the same shape in the same tool for
   `<br/>` inside a message, so: **the gate is worth re-probing against each new
   device a part session is the first to use.** [kind=record]
-- **`pass7_figures.py`'s *names first met here* cannot see a lead figure's
+- ~~**`pass7_figures.py`'s *names first met here* cannot see a lead figure's
   situation.** For a figure directly under the cast table the count is
   structurally 100% unless the cast names the methods, so the metric fires on
   every well-formed lead figure. The number that carries the ruling is *never
   in the prose*, which the tool also reports and which Part III now has at
   zero. Worth splitting the column before session O reads the table.
-  [kind=record]
-- **Part III's four figures over 1,200px are the height F9's amendment
+  [kind=record]~~ — **ruled, pass 7 session O**: the column is not split; *never in the prose* is the number that carries F6, and the close reports it (614 tokens on 151 figures before the pass, 263 on 109 after it).
+- ~~**Part III's four figures over 1,200px are the height F9's amendment
   predicted**, and the tallest fell 6,010px → 2,311px. An ordered chain of
   twenty-two steps is twenty-two steps: the fix was one line per box, not a
   split, because the whole order in one artefact is what six other pages cite.
   Session O should decide whether *over 1,200px* is still the right flag now
-  the type inside is 16px. [kind=figure]
-- **A subgraph round a call's insides** is outside F3's marks table (a thread,
+  the type inside is 16px. [kind=figure]~~ — **ruled, pass 7 session O**: the flag stays at 1,200px as a prompt, not a fault — F9's *taller than a screen* — and 36 figures carry it; the test is whether a split at the mechanism's joint exists, which for an ordered chain the book cites whole it does not.
+- ~~**A subgraph round a call's insides** is outside F3's marks table (a thread,
   a machine or a tick). `server-level-tick`'s `ServerChunkCache.tick` box is
   one, and its caption says so under F3's own escape clause. If two more parts
-  need it, the table wants a fourth row. [kind=figure]
+  need it, the table wants a fourth row. [kind=figure]~~ — **done, pass 7 session O**: the subgraph row now allows *a call whose insides it holds, named for the call*; `anatomy`, `server-level-tick` and the frame graph all use it.
 
 
 - **A caption that closes its italics is not a caption**, and nothing but the
@@ -6740,7 +6740,7 @@ Part 3; these are the pieces of work that ruling created.
   two that are a page's own hook carried entirely in prose** — *Arguments, not
   values* and *Four searches* — and the one that is a tool job rather than a
   drawing job is *The number line*, a 0–45 scale with bands, which mermaid
-  cannot draw and `map_source.py` could. [kind=figure]
+  cannot draw and `map_source.py` could. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 - **`chunk-anatomy`'s origin branch, cut.** The old first figure drew where
   each of the four shapes comes from — `ChunkMap.createEmptyChunk`,
   `SerializableChunkData.parse` on the pool, the stored-status-full read that
@@ -6755,7 +6755,7 @@ Part 3; these are the pieces of work that ruling created.
 
 **For session O.**
 
-- **Seven lanes does not fit the column, and F7 says eight does not.** Four of
+- ~~**Seven lanes does not fit the column, and F7 says eight does not.** Four of
   Part V's five sequence diagrams were at seven lanes; seven lanes is about
   1,650px natural, which at the 1,092px reading column is scale 0.66 and 10.6px
   of type — under F1's floor. Shortening labels does not help at all (every
@@ -6763,8 +6763,8 @@ Part 3; these are the pieces of work that ruling created.
   Only a lane fewer or a split does. F7's amendment says the *eighth* lane is
   what breaks eleven pixels; the measurement says the seventh does. Session O
   should re-measure across the corpus and decide whether the limit becomes six.
-  [kind=figure]
-- **`loop` and `par` write their own labels outside their frame.** Every block
+  [kind=figure]~~ — **ruled, pass 7 session O**: re-measured corpus-wide — six lanes never below 0.73 and 11.6px, seven at 0.69 and 11.0–11.1px, eight at 0.60 and 9.7px — so `TEMPLATE.md` now says six, seven only where the render says it reads, eight never.
+- ~~**`loop` and `par` write their own labels outside their frame.** Every block
   label mermaid draws — `[client ticks 2-8, beside server ticks]`,
   `[the client adds]`, `[still powered — a pulse shorter than the gap dies
   here]` — renders to the *right* of the dotted frame it belongs to, so
@@ -6772,17 +6772,17 @@ Part 3; these are the pieces of work that ruling created.
   the device's own rendering and not a page fault, and every `loop`, `opt` and
   `par` in the book will collect one; the renderer should either learn the
   shape or the standard should say the flag is expected here. Part V has four.
-  [kind=figure]
-- **`pistons-and-block-events`' flag table** is five rows with a *written by*
+  [kind=figure]~~ — **done, pass 7 session O**: the renderer knows the shape now (see session A's entry).
+- ~~**`pistons-and-block-events`' flag table** is five rows with a *written by*
   column and would read better under `custom.css`'s wide treatment. The
   figure's own flag clauses are gone, so this is now a stylesheet question
-  rather than a figure one. [kind=figure]
-- **A `classDiagram` has no width knob.** `blocks-and-states`' new class
+  rather than a figure one. [kind=figure]~~ — **ruled, pass 7 session O**: no stylesheet change; a five-row table reads at the prose width, and the theme is not widened for one table.
+- ~~**A `classDiagram` has no width knob.** `blocks-and-states`' new class
   diagram is the widest thing on its page at 0.74 — mermaid lays a class
   diagram out by rank and there is no wrap setting for a class body the way
   `sequence.wrap` is one for a message. Four of the book's class diagrams now
   exist; if session O wants a floor under them it is a theme question.
-  [kind=figure]
+  [kind=figure]~~ — **ruled, pass 7 session O**: none is added; `TEMPLATE.md` says a class diagram too wide for the column loses a box or splits. The widest of the ten is at 0.74.
 
 **For pass 8, the voice.**
 
@@ -6812,13 +6812,13 @@ Part 3; these are the pieces of work that ruling created.
   (`ComparatorBlock.getInputSignal`'s fallback, which returns not to zero but
   to the ordinary front reading). Five of the six are a page's hook carried
   entirely in prose, which is the same pattern session D found in Part IV.
-  [kind=figure]
+  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 
 ## Pass 7, session G — Part VII · Items and inventories *(2026-09-15)*
 
 **For session O — the close.**
 
-- **`check_figure_names.py` could not read a `classDiagram` at all**, and neither
+- ~~**`check_figure_names.py` could not read a `classDiagram` at all**, and neither
   could `pass7_figures.py`. F10's ruling sends a vocabulary page to exactly that
   kind, so the five class diagrams sessions B to F drew — `text-components`,
   `data-components`, `chunk-anatomy`, `blocks-and-states`, `entity-anatomy` —
@@ -6829,13 +6829,13 @@ Part 3; these are the pieces of work that ruling created.
   it does move is **notes**: the class diagrams' relation labels and the member
   lines that are English rather than declarations are visible for the first
   time. Session O should read the new ones before flipping `--strict`.
-  [kind=record]
-- **A classDiagram member line is qualified by its own class box**, and the gate
+  [kind=record]~~ — **done, pass 7 session O**: the notes it surfaced were read before `--strict`; English member lines are now checked against their box and relation labels against either end, and the gate is strict.
+- ~~**A classDiagram member line is qualified by its own class box**, and the gate
   now checks it that way — `int popTime` inside `class ItemStack` is
   `ItemStack.popTime`, a failure if no such member exists, and needs no
   `Class.` prefix in the figure. That is a convention F12 did not have because
   the kind was invisible to it; `TEMPLATE.md`'s *Figures* says it now, and
-  session O should fold it into F12(b)'s wording. [kind=record]
+  session O should fold it into F12(b)'s wording. [kind=record]~~ — **done, pass 7 session O**: F12's wording in `TEMPLATE.md` now covers the whole class diagram, member lines and relation labels.
 - **`contexts-and-predicates` figure 2's message head `test` is a ruled note**,
   not an unresolved name: `LootItemCondition extends Predicate<LootContext>`, so
   `test` belongs to `java.util.function.Predicate` and is outside every tree the
@@ -6878,13 +6878,13 @@ Part 3; these are the pieces of work that ruling created.
   and `using-an-item`'s *Where the hour comes from* (nine durations in one
   paragraph, over the page's own seven-item budget — a table). Seven sections,
   and five of them are a page's hook carried entirely in prose, which is now the
-  same pattern in Parts IV, V and VII. [kind=figure]
+  same pattern in Parts IV, V and VII. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 
 ## Pass 7, session H — Part VIII · The player *(2026-09-15)*
 
 **For session O — the close.**
 
-- **The gate was blind to every one-word class name in a figure.** `CAMEL`
+- ~~**The gate was blind to every one-word class name in a figure.** `CAMEL`
   requires two humps, so `Entity`, `Avatar`, `Player`, `Mannequin`, `Item`,
   `Block`, `Mob`, `Screen`, `Window`, `Font`, `Brain` and every other
   single-word class in the key were unchecked everywhere except a `participant`
@@ -6895,7 +6895,7 @@ Part 3; these are the pieces of work that ruling created.
   checking every capitalised word there would fail on *Poison*, *Peaceful* and
   *Normal*. **A one-word class in a flowchart node or a message is still
   unchecked**, and session O should decide whether an allow-listed
-  exception-by-key-row is worth it. [kind=record]
+  exception-by-key-row is worth it. [kind=record]~~ — **ruled, pass 7 session O**: not allow-listed by key row; the gate now fails a capitalised word one letter away from a one-word key class (`Entty`, `Palyer`), which catches the misspelling without failing *Poison*, and `TEMPLATE.md` says to write the name where it is checked whole when the name is the point.
 - **`CLASS_REL` never matched an inheritance relation.** Its arrow pattern
   allowed one character either side of `--`, and `<|--` is two, so `A <|-- B`
   was parsed as nothing at all: both ends unchecked and the relation's label
@@ -6906,10 +6906,10 @@ Part 3; these are the pieces of work that ruling created.
 - **A `class Foo["Label"]` box id is an alias, not a class**, the way a lane
   abbreviation is — the display label carries the name. The gate reads it that
   way now (and skips the id at its relations too). [kind=record]
-- **The theme's five semantic classes do not reach a `classDiagram` node.**
+- ~~**The theme's five semantic classes do not reach a `classDiagram` node.**
   `class LocalPlayer:::client` parses and renders with no visible change, so
   `player-anatomy`'s ladder cannot colour its client rungs. A device the theme
-  lacks, logged for session O as F2's business. [kind=figure]
+  lacks, logged for session O as F2's business. [kind=figure]~~ — **ruled, pass 7 session O**: no colour for class diagrams — a class diagram says what an object holds, not where it runs — and `TEMPLATE.md` says so.
 - **Part VIII's own pattern: a class-hierarchy rung drawn as a second lane.**
   Four of the part's five sequence diagrams gave one object two lanes —
   `Player` beside `ServerPlayer`, `LivingEntity` beside `LocalPlayer`,
@@ -6959,17 +6959,17 @@ Part 3; these are the pieces of work that ruling created.
   span*, `hud`'s *the band below*, `sound-engine`'s *the right-hand box*. They
   read correctly beside the picture and badly in `llms-full.txt`, where the
   picture is a mermaid block a reader may not render. Worth one rule: a caption
-  names the thing it points at before it points at it.
+  names the thing it points at before it points at it. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*
 - **`the-gui-render-tree`'s two figures now both say "the tree"** where the
   first means the strata-and-nodes structure and the second means the whole
   `GuiRenderState`. The page's prose uses *the tree* for both too. One of the
-  two wants a different word.
+  two wants a different word. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*
 - **`what-makes-a-sound`'s doors read 1, 3, 2 left to right** in the redrawn
   figure, because door 3 had to sit beside door 1 for the convergence at
   `ClientLevel.playSeededSound` to be drawable without an edge crossing door 2.
   The numbers carry it, but a reader scanning left to right meets them out of
   order. If pass 8 finds a wording that makes the convergence the *subject*,
-  the numbering could follow the geometry instead.
+  the numbering could follow the geometry instead. [kind=voice] *(tagged by pass 7 session O: listed under *For pass 8*)*
 
 **For pass 10.** [kind=book]
 
@@ -6994,13 +6994,13 @@ Part 3; these are the pieces of work that ruling created.
   `Gui.handleKeybinds` — but the page never says there are two, so a reader who
   compares the two halves of the page finds a contradiction that is not one.
   One clause fixes it; it is a *book* job because the same pair is cited from
-  `input-and-keybinds` and `hud`.
+  `input-and-keybinds` and `hud`. [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 - **`input-and-keybinds` promises five chances to swallow a key press and its
   figure now shows four**, because the fifth is not in the callback at all: it
   is the no-screen-no-overlay test on *draining* the clicks, inside
   `Minecraft.handleKeybinds`, a tick later. This session put that in the
   caption rather than adding a lane. Whether the page's own sentence should
-  say which gate lives where is a prose decision above a figure's pay grade.
+  say which gate lives where is a prose decision above a figure's pay grade. [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 
 **From pass 7, session L — Part XII.** [kind=book]
 
@@ -7065,7 +7065,7 @@ Part 3; these are the pieces of work that ruling created.
 
 **For session O, from pass 7 session M.** [kind=figure]
 
-- **The brief's F18 regex is blind to a break one or two letters after a
+- ~~**The brief's F18 regex is blind to a break one or two letters after a
   dot.** `[A-Za-z]{3,}-` misses `SimpleCriterionTrigger.tr-` and
   `GameTestInstance.run(h-`, both live in Part XIII when this session looked;
   the check this session used adds `[A-Za-z].[a-z]{1,2}-`. Session O's
@@ -7077,11 +7077,11 @@ Part 3; these are the pieces of work that ruling created.
   Part V 6 (`block-entities` f1, `block-interaction` f2, `signal-and-dust`
   f2) and Part XI 2 (session K's) — against 19 for the narrow one; Parts III
   to V closed before session J wrote the regex, so theirs are not a lapse,
-  but they are live. [kind=figure]
+  but they are live. [kind=figure]~~ — **done, pass 7 session O**: the re-measure used the wider reading, now `tools/pass7/broken_names.py` with a probe (a break one or two letters after a dot or an open parenthesis counts); 20 found, 20 fixed, zero left.
 
 **For session O, from pass 7 session N.** [kind=figure]
 
-- **The parts-dependency figure is generated now, and session O reads it with
+- ~~**The parts-dependency figure is generated now, and session O reads it with
   the thirteen landing figures.** `check_deps.py --write-figure` draws it from
   the landing pages' *before you start* sections into
   `src/generated/parts-dependency.svg` (with a table beside it for
@@ -7093,24 +7093,24 @@ Part 3; these are the pieces of work that ruling created.
   order, solid arcs on the right, the two cuts dashed on the left — at scale 1
   and 13px. Whether arcs this many are the right picture, or a thinner one
   (the transitive reduction is 14 solid arcs, which would change what
-  `check_deps.py` checks), is a ruling for O or the owner. [kind=figure]
-- **The generated atlas figures are at the 11px floor now** — the treemap's
+  `check_deps.py` checks), is a ruling for O or the owner. [kind=figure]~~ — **ruled, pass 7 session O**: the figure keeps all 27 arcs. It draws what the thirteen *Before you start* sections say, which is what `check_deps.py` checks; a transitive reduction would draw a different claim than the pages make. Read with the landing figures and consistent with them: the parts in watch order, arrows from the part needed to the part that needs it.
+- ~~**The generated atlas figures are at the 11px floor now** — the treemap's
   leaf labels and line counts and the two bar charts' package paths were 9px;
   a treemap cell too small for 11px keeps only its hover title, which drops
   the visible labels of a few small cells (`platform`, `tags`, core's
   *(itself)*). The Realms group had no label at all (its path was wider than
-  its box) and now falls back to `realmsclient`. [kind=figure]
+  its box) and now falls back to `realmsclient`. [kind=figure]~~ — **recorded, pass 7 session O**: re-measured, and every generated figure is at or above 11px.
 - **`maps/hierarchy`'s viewer asked for three things this session did not
   do**: the `Block` tree is a screen tall (1,016px), 15 of its rows being
   branches of one or two; the `Item` tree shows neither of its section's two
   points (a quantity, and data components); and `RealmsScreen` is drawn like
   any branch though the book skips it. All three are emitter or page-shape
-  work. [kind=figure]
+  work. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 - **`maps/biggest`'s colour encodes the jar, which its prose never uses**;
   the section reads the thirty bars as three kinds and the opening as two
   that never run in play, and nothing on the figure marks either. A
   colour-by-kind would be a hand-kept mapping inside a generated figure,
-  which is why it was not done here. [kind=figure]
+  which is why it was not done here. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
 
 **For pass 10, from pass 7 session N.**
 
@@ -7126,3 +7126,115 @@ Part 3; these are the pieces of work that ruling created.
   not list it, which is right for a hand-forward — but the phrase reads like
   a third backward dependency to a reader who has just been told there are
   two. [kind=book]
+
+## Pass 7, session O — the close *(2026-09-16)*
+
+*Run before session K, which had not yet run: Part XI is the one part the close
+could not read, and every item below that names a rendering page is K's.*
+
+**The strike audit.** 122 pass-7 strikes read against the pages as they now
+stand: 116 borne out, 4 not (amended in place above, each marked *Audited, pass
+7 session O*), 2 undecided and left (the `tags` notes count depends on what
+counts as a sentence; the glossary's *Section* entry still says what the
+`chunk-anatomy` caption now says, which is not wrong), and one entry unstruck
+because its own text says half of it is open (`signal-and-dust`'s off case).
+Four settlements use a word outside *done · overtaken · ruled · ruled out*
+(*settled*, *answered*, *cut*) and are left, because each says plainly what
+happened. **A strike is a claim, and one in thirty was wrong** — the same rate
+pass 4's close found.
+
+**For session K — Part XI, which runs after the close.**
+
+- **The gate is strict now**, and Part XI is clean under it only because this
+  session made ten small repairs there (listed in [pass9.md](pass9.md)); K
+  re-reads them with the rest of its figures rather than taking them. [kind=figure]
+- **`rendering/README`'s figure is the one landing figure that fails the set's
+  grammar** (`TEMPLATE.md`, *The landing page*): no numbers, no caption, two
+  subgraph titles hidden under their first node, `direction TB`, and a
+  327-by-1,563px strip. The set reader proposed: number the eleven boxes to
+  the watch order (`1 · The frame` … `11 · Post-processing`), title the two
+  subgraphs *the substrate* and *the pipeline*, cut every edge label to four
+  words, delete both `direction` lines, and caption it as *the part as a
+  substrate under a pipeline, numbered to the watch order; an arrow points at
+  the page that needs the one it leaves, which is not the order a frame runs
+  in* — no arrow changes. Separately, `:74-77` says *two of them are its
+  reverse* and names only one. [kind=figure]
+- **Four Part XI figures show type under 11px** (`entity-rendering` f2,
+  `lightmap-fog-and-sky` f1, `models-and-atlases` f1, `section-meshing` f1):
+  three of them are eight-lane sequence diagrams, which `TEMPLATE.md` no
+  longer allows at all. [kind=figure]
+- **Nineteen Part XI figures have no caption**, `blaze3d` f1's cluster title
+  runs outside its box, and 17 of the corpus's 69 sentence labels are Part
+  XI's. [kind=figure]
+
+**Reopened by the audit.**
+
+- `world/fluids`' bucket sequence still spends `Block.UPDATE_SKIP_ON_PLACE`,
+  *the drain* and *the shape pass* before the prose defines them (:128–140;
+  the flag's first sentence is :171). F6: a sentence above the figure, or the
+  names out of it. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+- Three names are still figure-only in Part V:
+  `DefaultRedstoneWireEvaluator.calculateTargetStrength`
+  (`signal-and-dust`:47), `PistonBaseBlock` (a lane, `signal-and-dust`:227) and
+  `shapeUpdate` (`block-interaction`:47). F6 again. [kind=book] [kind=book] *(tagged by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+
+**The landing pages read as one set** — pass 6's carried job, done here with
+the figures. Every number matches its watch order. The set's grammar is now
+`TEMPLATE.md`'s (*The landing page*, the shape), and this session fixed what
+contradicted it on I–XIII except XI: five captions made to say *numbered to
+the watch order*, `items`' *Figure:* and *three engines* over five pages,
+`networking`'s arrow into two lectures its own list says do not need it,
+`worldgen`'s *is made of* arrow into the one box its reading paragraph says
+never touches the substrate, `world`'s *sixth arrow* on a five-arrow ring,
+`foundations`' *the only page no arrow leaves* beside a second one,
+`server`'s *those two* pointing at the wrong pair, `entities`' watch line
+saying the closer assumes nothing above it while linking three pages above it,
+`client`'s *one exception* beside two, and `worldgen`'s argument ending on its
+symptom list. Left, with the reason: [kind=record]
+
+- **`commands/README`'s arrows point down**, the only landing figure where
+  they do, because reversing them under `TD` draws the parse floor on top of
+  the stack the part is named for. Ruled an exception; its caption says so.
+  [kind=record]
+- **`blocks/README` keeps three crossings.** Two spokes both feed two pages, so
+  one crossing is unavoidable, and reordering the declarations moved nothing:
+  mermaid ranks this figure by its edges. It reads at 12px. [kind=record]
+- **Eleven of the thirteen are over the template's *about a hundred lines***,
+  counted with the figure. `TEMPLATE.md` now counts prose only, which the
+  budget always meant and which predates the figure's caption; measured that
+  way the worst are still `worldgen` (about 130), `entities`, `items`,
+  `player` and `blocks`. The template's own fix is the argument, not a trim,
+  which is pass 10's reading, not this pass's. Nine *Where the part stops*
+  sections are over fifteen lines, `player`'s at forty. [kind=book]
+- **None of the thirteen says the book is notes for a video series**, and
+  twelve say *lecture*, *watch* or *viewer* as if the reader knew; only the
+  introduction states the premise. A reader arriving at a part from a search
+  meets *Watch in this order* with no antecedent. One clause per landing page,
+  or one shared sentence under every *Watch in this order*, is a set-wide
+  wording decision. [kind=book]
+- **Five landing pages point at "the lanes in the figures above"** in their
+  Reference line (`server`, `blocks`, `client`, `rendering`, `commands`),
+  where the landing figure has no lanes; the part's pages do. [kind=voice]
+- **The tier front doors** (`reference/README`, `maps/README`) get no stated
+  role in `TEMPLATE.md`: neither is entered by walking it, and session N's
+  answer — say so in the opening — is the role. Ruled; pass 6's question
+  closed. [kind=record]
+- **The closer's one spelling** (*Questions players ask*) stands on the two
+  Part XIII pages whose askers are pack authors; the register is pass 8's.
+  [kind=voice]
+
+**For pass 8 — the wording debt the figures raised, counted afresh.**
+
+- **193 captions** (and nine generated figures' figcaptions), written by
+  thirteen sessions in at least three registers — *what the picture shows*,
+  *what to look for*, and the figure's own furniture (*the band*, *the box*).
+  `python tools/pass7/captions.py` lists every one with its page and line;
+  read them as one set. [kind=voice]
+- **69 labels on 48 figures are still sentences** (over twelve words, or a
+  full stop inside); 17 are Part XI's. `pass7_figures.py --part` lists them.
+  [kind=voice]
+- **62 notes in the figure gate** are bare-verb message heads and qualified
+  heads on a lane that does not own them; the first kind is a register
+  question (*reseed*, *pick*, *measure*), which session L asked pass 8 to
+  settle. [kind=voice]
+- **Thirteen voice entries** from pass 7's part sessions, above. [kind=record]

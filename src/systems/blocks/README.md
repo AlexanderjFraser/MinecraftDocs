@@ -45,11 +45,11 @@ flowchart TD
     PE["6 · Pistons and block events"]
     DO["7 · Diodes and the observer"]
     BS -- "the shape channel" --> BI
-    BS -- "the tail of a flags-3 write" --> BB
+    BS -- "the tail of an UPDATE_ALL write" --> BB
     BS -- "when a block entity lives and dies" --> BE
     BS -- "the neighbour channel" --> SD
     BS -- "the flag word's rarer bits" --> PE
-    BS -- "a flag-2 write's side effects" --> DO
+    BS -- "an UPDATE_CLIENTS write's side effects" --> DO
     BI -- "one click each, one ledger" --> BB
     SD -- "what powers a piston" --> PE
     SD -- "what a diode reads" --> DO
@@ -59,8 +59,8 @@ flowchart TD
 
 *The part as a hub and six spokes, numbered to the watch order. Six arrows
 leave `blocks-and-states` carrying the piece of a write that lecture is about;
-the five shorter arrows are the mechanisms two spokes share, and the two that
-reach the piston page are why it is watched late.*
+the five shorter arrows are the mechanisms two spokes share, and every one of
+them runs from an earlier lecture to a later one.*
 
 ## Before you start
 

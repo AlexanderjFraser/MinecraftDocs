@@ -312,7 +312,7 @@ sequenceDiagram
 
     Note over EM: the server thread, the button-click packet has arrived
     EM->>IStack: enchant, once per EnchantmentInstance
-    Note over EM,IStack: a book is transmuteCopy'd first: the same patch, a new prototype
+    Note over EM,IStack: a book goes through ItemStack.transmuteCopy first: the same patch, a new prototype
     IStack->>IStack: EnchantmentHelper.<br/>updateEnchantments, then set
     IStack->>PDM: set: ensureMapOwnership clones the shared map, then patch.put
     Note over PDM: the patch is now one entry: enchantments to sharpness 3

@@ -131,7 +131,7 @@ sequenceDiagram
     SL->>CPL: one ClientboundBlockUpdatePacket at broadcast time
     Note over BI,CPL: five ticks later, inside ServerLevel.tick
     LTs->>SL: the drain hands the position back to tickFluid
-    SL->>FF: FluidState.tick — a source skips the scan
+    SL->>FF: FlowingFluid.tick, through FluidState.tick — a source skips the scan
     FF->>FF: spread tries down, stone refuses
     FF->>FF: spreadToSides scores the four sides
     FF->>SL: setBlock of flowing water at amount 7, four times

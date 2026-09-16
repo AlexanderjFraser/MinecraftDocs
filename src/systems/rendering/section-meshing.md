@@ -39,7 +39,7 @@ sequenceDiagram
     participant Worker as Worker
     participant SectC as SectionCompiler
 
-    MPGM->>CL: useItemOn under a prediction, then BlockItem.placeBlock calls setBlock
+    MPGM->>CL: setBlock, from BlockItem.placeBlock inside useItemOn's prediction
     CL->>LX: setBlockDirty, but only if ModelManager.requiresRender
     CL->>LX: blockChanged, player-changed or not, read off the update flags
     LX->>SUT: dirty over a 3x3x3 block halo, one section or up to eight on a boundary

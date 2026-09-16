@@ -39,7 +39,7 @@ it otherwise.
 ## Four objects, two dirty sets, and one list that is neither
 
 ```mermaid
-flowchart TB
+flowchart TD
     ATTR["Attribute, always a RangedAttribute: a range, and a syncable flag"]
     SUP["AttributeSupplier: one frozen prototype map per EntityType"]
     MAP["AttributeMap: one per LivingEntity, only what was asked for"]
@@ -274,7 +274,7 @@ flag starts true, so the first read always computes — three passes and one
 clamp:
 
 ```mermaid
-flowchart TB
+flowchart TD
     B["the base value: the prototype's, or AttributeMap.assignBaseValues"]
     P1["pass 1: every ADD_VALUE modifier, added"]
     P2["pass 2: every ADD_MULTIPLIED_BASE modifier, off the same base"]

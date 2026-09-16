@@ -40,7 +40,7 @@ flowchart TD
     D["discover: PackRepository.reload re-runs every RepositorySource"] --> S["snapshot: a new MultiPackResourceManager over the opened packs"]
     S --> P["prepare: every listener reads, on the worker pool, at once"]
     P --> A["apply: each listener swaps its live state, in registration order"]
-    A -- "checkExceptions finds none" --> F["finish: the level re-extracted, or the server's managers installed"]
+    A -- "ReloadInstance.checkExceptions finds none" --> F["finish: the level re-extracted, or the server's managers installed"]
     A -- "a listener threw" --> R["roll back: every pack deselected"]
     R -- "the reload run again" --> D
 ```
@@ -206,7 +206,7 @@ used here. What never happens is the applies.
 
 ```mermaid
 flowchart TD
-    SS["prepareSharedState: one synchronous pass,<br/>before any prepare starts"]:::worker
+    SS["PreparableReloadListener.prepareSharedState:<br/>one synchronous pass, before any prepare starts"]:::worker
     subgraph PREP["prepare, all at once"]
         TMp["TextureManager: read every texture"]:::worker
         AMp["AtlasManager: stitch every atlas"]:::worker
@@ -332,7 +332,7 @@ sequenceDiagram
     RRM->>SRI: prepareSharedState on every listener, then reload on each
     MC->>LO: setOverlay: the logo and a bar from getActualProgress
     SRI->>Worker: every listener's prepare, all at once
-    Worker->>SRI: each listener reaches its PreparationBarrier
+    Worker->>SRI: each listener reaches its<br/>Preparable<br/>ReloadListener.<br/>PreparationBarrier
     SRI-->>MC: wait posts to the main-thread executor as the set empties
     MC->>MC: apply, one listener per registration slot, between frames
     Note over LO: a later tick

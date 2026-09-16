@@ -48,8 +48,9 @@ flowchart TD
     B -- "and so does the rest of the book" --> OUT
 ```
 
-*Every arrow means the same thing — what the next page needs from this one —
-so the labels are why the order is the order. The rung with two arrows out is
+*The ladder, numbered to the watch order. Every arrow means the same thing —
+what the next page needs from this one — so the labels are why the order is
+the order. The rung with two arrows out is
 the one to notice: authority is the only page in Part VI that three later
 parts depend on.*
 
@@ -130,8 +131,7 @@ question rather than teaching it.
    up is machinery: the node being walked towards carries a timeout, and the
    mob you watch walk into a fence and then wander off is running a scheduled
    surrender.
-9. [Damage and death](damage-and-death.md) — the part's closer, and it
-   assumes nothing above it. An arrow, a dozen owners of one number, and one
+9. [Damage and death](damage-and-death.md) — the part's closer. An arrow, a dozen owners of one number, and one
    abstract method. A hit that lands inside the red flash usually does nothing
    at all, and when it is stronger than the last, only its excess lands —
    silently.

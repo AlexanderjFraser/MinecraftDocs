@@ -10,8 +10,8 @@ version (26.2), written as the notes for a video lecture series.
   names) and explain what they own and when they run; they never reproduce
   source. Decompile it yourself if you need the code.
 - Newest version only. Every page says what it was verified against, and
-  five gates prove it before anything publishes: every named identifier exists
-  in the decompile, every diagram parses, every lane means one thing, every
+  six gates prove it before anything publishes: every named identifier exists
+  in the decompile, in the prose and inside every figure, every diagram parses, every lane means one thing, every
   internal link and anchor lands, and the landing pages, the sidebar, the
   lecture map and the dependency figure agree with each other.
 

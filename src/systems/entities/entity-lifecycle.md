@@ -65,7 +65,8 @@ one x, one z and **one** y, and everything below it happens at that one height.
 
 ```mermaid
 flowchart TD
-    JIT["one jittered try"] --> TRY{"the type filter"}
+    JIT["one jittered try"] --> TRY{"the group's species, then the type filter"}
+    TRY -->|"no species to pick"| GRP
     TRY -->|"fails"| MORE{"tries left in this group?"}
     TRY ==>|"passes"| MAKE{"EntityType.create"}
     MAKE -->|"null"| OVER["this category on this chunk is over"]
@@ -73,6 +74,7 @@ flowchart TD
     OBJ -->|"fails"| MORE
     OBJ -->|"passes"| FIN["Mob.finalizeSpawn, then ServerLevel.addFreshEntityWithPassengers"]
     FIN -->|"cluster full"| OVER
+    FIN -->|"group full"| GRP
     FIN -->|"room for a sibling"| MORE
     MORE -->|"yes"| JIT
     MORE -->|"no"| GRP{"all three attempts spent?"}
@@ -81,8 +83,8 @@ flowchart TD
 ```
 
 *After the roll the ways out are cheap: almost every failure jitters x and z
-and tries again, and only three arrows leave the loop at all — the three that
-reach the box at the foot. A new group attempt puts x and z back at the roll.
+and tries again, two arrows end only the group attempt, and three reach the box
+at the foot. A new group attempt puts x and z back at the roll.
 The thick edge is the boundary the rest of this section is about.*
 
 Three things in that loop are worth reading twice. Almost every rejection

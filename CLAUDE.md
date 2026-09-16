@@ -37,14 +37,17 @@ as rendered beside its section: is it true, is it needed, does it show the
 thing it should, can it be read at the column width; the theme, the caption,
 and the gate over the 2,619 names inside mermaid blocks; the viewer's brief,
 the runbook, the standard and **the schedule with each session's
-status** are `docs/pass7-brief.md`; **sessions A–J and L–N are done** (2026-09-15/16; K, Part XI, is
-next) — the
+status** are `docs/pass7-brief.md`; **sessions A–J and L–O are done** (2026-09-15/16; O, the close,
+ran before K, so **K, Part XI, is the last session of the pass**) — the
 standard is ruled, the theme is adopted, which took the figures showing type
 under 9px from 89 to 10 without changing a page, the exemplar a part
 session reads first is `entities/entity-lifecycle`, and Parts I–X, XII and XIII and the frame and Reference are clean:
-every figure captioned, none showing type under 11px and no unresolved name in
-the gate — and no Mojang name broken on screen except eighteen in Parts III–V,
-which closed before the check for it existed and are session O's. What the part sessions keep finding
+every figure captioned, none showing type under 11px, no Mojang name broken
+on screen and no unresolved name in the gate, which **is strict since the
+close** (0 unresolved of 2,561, from 119). The close's verdict: the pass
+earned its cost, for **about 180 facts corrected in figures** on a corpus
+fact-checked twice more than for the legibility; its re-measure and the
+landing figures' shared grammar are in the brief and `TEMPLATE.md`. What the part sessions keep finding
 is **a message labelled with the caller's method and drawn arriving at the
 callee** — twelve in Part III, fourteen in Part IV and all thirteen of Part V's
 gate failures, eleven parts of eleven, one on nearly every page,
@@ -82,9 +85,11 @@ it. Nothing is recorded that the owner hasn't understood.
 5. **Verified names.** `python tools/verify_names.py` checks that every
    backticked identifier on every page exists in the decompile. A page that
    fails does not publish. "Verified against 26.2" is a test, not a claim.
-   From pass 7, `python tools/check_figure_names.py` asks the same of every
-   name *inside* a mermaid block — a lane, a node, a message — report-only
-   until that pass's close and a gate after it.
+   `python tools/check_figure_names.py --strict` asks the same of every
+   name *inside* a mermaid block — a lane, a node, a message, a class box —
+   and has been a gate since pass 7's close: a member is `Class.member` in a
+   figure as in the prose, and a message's head is checked against the lane it
+   arrives at.
 6. **Diagrams render, and are legible where they stand.** `node
    tools/check_mermaid.js` parses every diagram in the built site with the
    site's own mermaid (11.6.0). A diagram that fails does not publish —
@@ -94,8 +99,8 @@ it. Nothing is recorded that the owner hasn't understood.
    from pass 7 a figure is legible there **without the zoom**. The whole visual
    grammar — the wrap, the palettes, the five semantic classes, the caption —
    is in `mermaid-init.js` and `custom.css`, and a page carries no
-   `%%{init}%%`, `classDef`, `style` or `linkStyle`; `TEMPLATE.md`'s *Figures*
-   is the rest.
+   `%%{init}%%`, `classDef`, `style` or `linkStyle` (`check_mermaid.js` fails
+   one); `TEMPLATE.md`'s *Figures* is the rest.
 7. **Lanes mean one thing.** `python tools/check_lanes.py --strict` checks
    every `participant` in every sequence diagram against the lane key in
    `TEMPLATE.md`; a page whose lane disagrees with the key does not
@@ -252,7 +257,7 @@ Moved pages keep their URLs through `[output.html.redirect]` in `book.toml`;
 `site-url = "/"` keeps the 404 page's links absolute under nested paths.
 `tools/deploy.sh` regenerates the atlas, the eleven Reference views and the
 coverage phrases, runs
-the five gates, builds, writes `llms-full.txt` (the whole corpus in one
+the six gates, builds, writes `llms-full.txt` (the whole corpus in one
 file, `tools/llms_full.py`) and `sitemap.xml` + `llms.txt` (the index form,
 `tools/site_index.py`), and deploys to Cloudflare Pages project
 `minecraftdocs` (https://minecraftdocs.pages.dev, custom domain
@@ -274,10 +279,10 @@ touch Web Analytics, which is not enabled and is the owner's click.
   (`SGPL`, `CPL`, `MC`, `MS`, `SL`); the key lives in `TEMPLATE.md`.
 - Reasoning > sensing > measuring; the owner judges what lands; no count in
   a queue is a target.
-- `verify_names.py`, `check_mermaid.js`, `check_lanes.py --strict` and
-  `check_links.py` before every commit that touches a page, and
-  `check_deps.py` when a landing page, `SUMMARY.md`, `lectures.md` or the
-  dependency figure changes; `deploy.sh` runs all five — after regenerating the atlas
+- `verify_names.py`, `check_mermaid.js`, `check_lanes.py --strict`,
+  `check_figure_names.py --strict` and `check_links.py` before every commit
+  that touches a page, and `check_deps.py` when a landing page, `SUMMARY.md`,
+  `lectures.md` or the dependency figure changes; `deploy.sh` runs all six — after regenerating the atlas
   and the eleven Reference views — and refuses to publish on a failure.
 - A landing page states a size only where size is part of its argument, and
   then from `{{#include ../../generated/part-<dir>.md}}`, which the atlas

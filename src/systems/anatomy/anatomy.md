@@ -159,7 +159,7 @@ later in this book is readable until that difference is fixed in mind.
 ```mermaid
 flowchart TD
     subgraph Client["the Render thread"]
-        CR["Minecraft.run: pollEvents, then runTick, once per frame"]:::client
+        CR["Minecraft.run: RenderSystem.pollEvents,<br/>then Minecraft.runTick, once per frame"]:::client
         subgraph Frame["Minecraft.runTick"]
             CD["the DeltaTracker counts the whole ticks owed"]:::client --> CP["PacketProcessor.processQueuedPackets"]:::client
             CP --> CQ["BlockableEventLoop.runAllTasks"]:::client
@@ -171,10 +171,10 @@ flowchart TD
     end
     subgraph Server["the Server thread"]
         SR["MinecraftServer.runServer: the deadline is set first"]:::server
-        subgraph STick["processPacketsAndTick"]
+        subgraph STick["one server tick"]
             SP["PacketProcessor.processQueuedPackets"]:::server --> SS["MinecraftServer.tickServer: every ServerLevel, then the connections"]:::server
         end
-        SW["waitUntilNextTick: run queued tasks, then park"]:::server
+        SW["MinecraftServer.waitUntilNextTick:<br/>run queued tasks, then park"]:::server
         SR --> SP
         SS --> SW
         SW --> SR

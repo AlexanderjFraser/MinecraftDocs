@@ -198,13 +198,13 @@ sequenceDiagram
     Brain->>AP: at priority 10, and this evaluation is due
     AP->>PM: findAllClosestFirstWithType HOME, HAS_SPACE, 48 blocks
     PM-->>AP: the nearest five, past the retry cache
-    AP->>AP: VillagerGoalPackages.validateBedPoi re-reads each of the five
+    AP->>AP: VillagerGoal<br/>Packages.<br/>validateBedPoi<br/>re-reads all five
     AP->>PN: createPath to all five at once, reach range 1
     PN-->>AP: a Path whose canReach is true, getTarget is one bed
     AP->>PM: take at that position, and one free ticket becomes zero
     AP->>Brain: MemoryModuleType.HOME set to a GlobalPos, entity event 14
     Note over Brain,SIB: thousands of ticks later, tick 12000, Activity.REST
-    Brain->>Brain: SetWalkTargetFromBlockMemory writes WALK_TARGET, and the villager walks
+    Brain->>Brain: SetWalkTarget<br/>FromBlockMemory<br/>writes WALK_TARGET
     Brain->>Brain: ValidateNearbyPoi, within 16 blocks: is the record still HOME
     Brain->>SIB: within 2 blocks, and the bed is not OCCUPIED
     SIB->>SL: setBlock, BedBlock.OCCUPIED true

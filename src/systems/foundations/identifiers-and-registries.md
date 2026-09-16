@@ -237,11 +237,11 @@ this with two layers, `ClientRegistryLayer.STATIC` and
 ```mermaid
 flowchart TD
     WL["WorldLoader.load, on Util.backgroundExecutor"]:::worker
-    RDL["RegistryDataLoader.load, with the lookups<br/>from getAccessForLoading"]:::worker
+    RDL["RegistryDataLoader.load, with the lookups<br/>from LayeredRegistryAccess.getAccessForLoading"]:::worker
     T1["one RegistryLoadTask: biome"]:::worker
     T2["one RegistryLoadTask: configured_carver"]:::worker
-    T3["… one per RegistryData, 47 of them"]:::worker
-    F["freezeRegistry binds every promise,<br/>then the RegistryValidator"]:::worker
+    T3["… one per RegistryDataLoader.RegistryData, 47 of them"]:::worker
+    F["RegistryLoadTask.freezeRegistry binds every promise,<br/>then the RegistryValidator"]:::worker
     LRA["LayeredRegistryAccess.replaceFrom:<br/>worldgen and dimensions in one call"]:::server
     WL --> RDL
     RDL --> T1

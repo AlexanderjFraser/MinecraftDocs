@@ -52,7 +52,7 @@ sequenceDiagram
         MS->>SL: tick(haveTime), each dimension in turn, overworld first
         SL->>SGPL: send, per player
         SGPL->>Conn: send, with no flush while the flag holds
-        MS->>Conn: ServerConnectionListener.tick, then Connection.tick each
+        MS->>Conn: Connection.tick on each, from ServerConnectionListener.tick
         Conn->>Conn: flushQueue drains pendingActions
         Conn->>SGPL: tick, the player's own tick
         Conn->>Wire: flush one, the levels and the player tick

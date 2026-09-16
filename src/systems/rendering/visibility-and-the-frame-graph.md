@@ -206,15 +206,16 @@ flowchart TD
     TRANS["the transparency post chain"]
     TOP["always on top — LevelRenderer.addAlwaysOnTopPass, which clears depth first"]
     CLEAR --> SKY --> MAIN --> OUT --> CLOUDS --> WEATHER --> TRANS --> TOP
-    subgraph INSIDE ["inside the main pass, in order"]
+    subgraph INSIDE ["inside the main pass"]
         direction TB
         T1["opaque terrain — the OPAQUE draw group"]
         T2["FeatureRenderDispatcher.PreparedFrame.executeSolid"]
         T3["depth copied out of the main target into the translucent, item entity and particle targets"]
-        T4["PreparedFrame.executeTranslucent, then PreparedFrame.executeOutline"]
+        T4["FeatureRenderDispatcher.PreparedFrame.<br/>executeTranslucent"]
+        T4b["FeatureRenderDispatcher.PreparedFrame.<br/>executeOutline"]
         T5["translucent terrain — the TRANSLUCENT draw group"]
-        T6["PreparedFrame.executeTranslucentAfterTerrain"]
-        T1 --> T2 --> T3 --> T4 --> T5 --> T6
+        T6["FeatureRenderDispatcher.PreparedFrame.<br/>executeTranslucentAfterTerrain"]
+        T1 --> T2 --> T3 --> T4 --> T4b --> T5 --> T6
     end
     MAIN -.-> INSIDE
 ```

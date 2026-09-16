@@ -276,9 +276,9 @@ sequenceDiagram
     CM->>DM: removePlayer(old) then addPlayer(new)
     DM->>TS: PLAYER_SIMULATION ticket moves, level 21
     CM->>SGPL: ClientboundSetChunk<br/>CacheCenterPacket
-    Note over DM: DistanceManager.runAllUpdates, this tick or the next idle poll
+    Note over DM: DistanceManager.<br/>runAllUpdates, this tick<br/>or the next idle poll
     DM->>DM: the simulation graph floods, entity range 10, block range 11
-    DM->>DM: DistanceManager.PlayerTicketTracker: 21 in, 21 out, four at a time
+    DM->>DM: DistanceManager.<br/>PlayerTicketTracker:<br/>21 in, 21 out,<br/>four at a time
     DM->>TS: PLAYER_LOADING added at 31 east, removed west
     DM->>CM: the loading graph floods out to level 44
     DM->>CH: updateFutures: 45 to 31 arms all three

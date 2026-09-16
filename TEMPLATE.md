@@ -102,7 +102,18 @@ population cannot disagree; the prose names the packages the way
 says nothing and leaves the number to the atlas.
 
 **The shape** — *a hub and six spokes*, *a stack of three floors*, *a
-conveyor* — as a sentence and as a figure of the part's own pages.
+conveyor* — as a sentence and as a figure of the part's own pages. The
+thirteen figures are read as one set (pass 7, session O), so they share a
+grammar: **every page is one node, numbered `N · Title` to the watch order**
+(a range, `6-9 · The GUI stack`, only for pages watched together, and the
+caption says so); **an arrow points from the page you need to the page that
+needs it**, unless the part's shape is not a dependency — a run-time hand-off,
+a cadence, the order the game runs — and then the caption says what an arrow
+means instead; a **subgraph** may group pages into a tier or a phase, the one
+place a grouping is allowed; a box that is not a page is lower case and the
+caption says what it is. The caption begins by naming the shape and says
+*numbered to the watch order*. A landing figure that needs a paragraph of
+disclaimers under it is the wrong figure.
 
 ***Before you start*** — true dependencies only, each with the sentence that
 says what the part uses it for. A hand-forward, where this part gives a
@@ -131,7 +142,9 @@ the argument made a second time or an explanation that belongs on a page.
 **The Reference it uses** — one line per page, what the part reads it for.
 
 Then the rules footer. No trace, no cast, and no figure but the part's own
-shape. Everything except the watch order runs to about a hundred lines,
+shape. Everything except the watch order runs to about a hundred lines **of
+prose** — the figure's source and its caption are not counted, which is the
+one change pass 7 made to this budget, because the budget predates both —
 *Where the part stops* inside that; a landing page much longer than that is
 arguing twice, and the fix is the argument rather than the trim. **The
 argument ends on the claim** — where the paragraph carries the recognition
@@ -206,7 +219,7 @@ truth is a graph, do not draw a conversation.
 
 | shape | for | its figure | how the sections go | pilot |
 |---|---|---|---|---|
-| **the trace** | one scenario through the system | a `sequenceDiagram`, at most seven lanes, a shaded band at every tick boundary | narrated as prose in the order things happen, each surprise placed where it happens | (session C onward) |
+| **the trace** | one scenario through the system | a `sequenceDiagram`, six lanes (seven only where the render says it reads), a shaded band at every tick boundary | narrated as prose in the order things happen, each surprise placed where it happens | (session C onward) |
 | **the pipeline** | stages that hand off | a `flowchart` of the stages at the top | a section per stage: what comes in, what is decided, what goes out | — |
 | **the state machine** | phases and transitions | `stateDiagram-v2`, transitions labelled with the packets or events; an orphan state drawn as an orphan | a section per state, each ending in *what disconnects / fails / leaves it* | `protocol-phases` |
 | **the policy** | who is told what, and when | a decision table or a `flowchart` per decision; the surprises are its rows | one section per decision on the path the opening figure draws; a short trace kept as the grounding | `tickets-and-loading` |
@@ -346,7 +359,7 @@ a point label collide with a quadrant label.
 | a **rectangle** | a step, or a call |
 | a **diamond** | a decision — and its outgoing edge labels are its answers |
 | a **cylinder** | storage |
-| a **subgraph** | a thread, a machine or a tick, named for it — never a grouping of convenience |
+| a **subgraph** | a thread, a machine or a tick, named for it — or a call whose insides it holds, named for the call — never a grouping of convenience (a landing figure's tiers are the one exception, above) |
 | a **solid arrow** | a call, or a hand-off in time |
 | a **dotted arrow** | a return, or a reply |
 | **`-x`** | a message dropped |
@@ -354,9 +367,13 @@ a point label collide with a quadrant label.
 | a **`Note over`** | a tick boundary or a thread hop, and nothing else |
 | a **`box`** | lanes grouped by thread or machine |
 | a **`rect` band** | the extent of a tick, a frame or a phase (see below) |
+| a **`par` block** | two things that genuinely happen at once, on two threads — the only way a sequence diagram, which reads top to bottom, can say *meanwhile* |
+| **`loop`**, **`alt`**, **`opt`** | a repetition, a branch, a condition, with the condition in the brackets |
 
 Direction is **`TD`** for anything ordered in time or by decision and **`LR`**
-for a pipeline of stages; `TB`, `BT` and `RL` are not written. A figure that
+for a pipeline of stages; `TB`, `BT` and `RL` are not written. The one
+exception is a subgraph's own `direction TB`, because mermaid's grammar has no
+`TD` spelling there. A figure that
 needs a mark outside this table says so in its caption.
 
 **The tick boundary is a band.** A trace that crosses a tick, a frame or a
@@ -414,9 +431,25 @@ against the decompile the way `verify_names.py` checks the prose — a class, a
 dotted `Class.member`, and a sequence message's head against the lane it is
 sent to — and a page that fails it does not publish. In a figure as in the
 prose: **a member is written `Class.member`**, and a nested class `Outer.Inner`.
-The one exception is a **`classDiagram` member line**, which its own class box
-qualifies the way a lane qualifies a message: `int popTime` inside
-`class ItemStack` is checked as `ItemStack.popTime` and takes no prefix.
+The one exception is a **`classDiagram`**, whose boxes qualify what is written
+inside them the way a lane qualifies a message: `int popTime` inside
+`class ItemStack` is checked as `ItemStack.popTime` and takes no prefix, and a
+relation's label is checked against either of the two boxes it joins. A word
+the page sets in *italics* in its prose — a profiler zone, a task name — is a
+word, not a member, in the figure too. Since pass 7's close the gate is strict:
+an unqualified member in a node, note, subgraph or edge label fails, a nested
+class named without its outer class fails, and so does a word one letter away
+from a one-word class in the lane key (`Entty`). A one-word class name in free
+text is otherwise unchecked, because the gate cannot tell `Block` from
+*Block*; write it where it is checked whole — a lane, a class box — when the
+name is the point. Two shapes stay notes, printed with `--notes`: a bare
+lower-case message head that is not a member (*load*, *reseed*), and a message
+whose head names a third class's method on a lane that owns neither. The
+second is legitimate for a static helper (`RenderSystem.bindDefaultUniforms`),
+an object with no lane of its own (`Entity.absSnapTo` on a `ClientLevel` lane)
+or the lane's own inner class (`LevelCallback.onCreated` on `ServerLevel`) —
+and it is the caller's-method-at-the-callee fault otherwise, the commonest
+fault pass 7 found. Read each one you write.
 
 ### The theme, and no colour in a page
 
@@ -432,7 +465,12 @@ not go in a page.** A node says which side of the wire it lives on with one of
     D[("region file")]:::disk           (a state diagram: `class Idle server`)
 
 `server` · `client` · `netty` · `worker` · `disk` are the whole colour
-vocabulary, and the same five words are a sequence diagram's `box` labels and
+vocabulary, and `check_mermaid.js` fails a page that names any other or carries
+a colour directive. A `classDiagram` takes no colour: the theme's classes do not
+reach its boxes, and a class diagram says what an object holds, not where it
+runs. It has no wrap setting either — mermaid ranks its boxes and nothing
+narrows them — so a class diagram too wide for the column loses a box or
+splits; the same five words are a sequence diagram's `box` labels and
 the lane key's word lanes, so a thread is called the same thing in every kind
 of figure. A figure that needs a sixth argues for it in the session log.
 Everything else is the theme's default. Do not re-run `mdbook-mermaid install`:
@@ -511,9 +549,12 @@ into a failure, and `tools/deploy.sh` runs it that way over the whole corpus,
 so a page whose lane disagrees with the key does not publish. `--index`
 writes the key to `src/reference/lanes.md` for readers.
 
-**How many, and which.** **At most seven lanes**, and the column is the reason:
-a lane is about 230px wide, so an eighth puts the type under eleven pixels on
-screen for every label in the figure. A lane earns its place by *deciding*
+**How many, and which.** **Six lanes, and seven only where the render says the
+figure still reads**, and the column is the reason: measured over the corpus at
+pass 7's close, six lanes never went below 0.73 or 11.6px, seven sat at
+0.69 and 11.0–11.1px — exactly on the floor — and eight at 0.60 and 9.7px. So a
+seventh lane is spent only when the figure cannot lose one, and the render is
+checked afterwards; an eighth is never written. A lane earns its place by *deciding*
 something — a lane that carries one message and decides nothing is folded into
 a note or into the label on the arrow. **One object is one lane**: a subclass
 and its base share a lane, named for the object. **Two machines are two
@@ -528,13 +569,18 @@ the class's CamelCase words (`ServerGamePacketListenerImpl` → `SGPL`),
 never fewer than two letters; a one-word class of up to eight letters is
 its own lane (`Player`, `Entity`, `Window`), a longer one takes a fixed
 prefix recorded here (`Connection` → `Conn`); a nested class takes the
-outer initials plus its own (`DistanceManager.PlayerTicketTracker` →
-`PTT` is the exception, claimed by the pilot); a collision is resolved by
+outer initials plus its own (`ChunkMap.TrackedEntity` →
+`CMTE`); a collision is resolved by
 lengthening the **later** claimant, never by reassigning an existing row.
 A short whole word is allowed for a lane that is not a class (`Netty`,
 `Main`, `Worker`, `Auth`, `Wire`, `Disk`) and is marked as such below.
 **The key is the authority**: add a row when a page introduces a lane, and
-never change an existing row's meaning.
+never change an existing row's meaning. The key holds **lanes in use** — pass
+7's close removed the 67 class rows no page declared — and
+`check_lanes.py --unused`, which `deploy.sh` runs as a report, lists any row
+that falls out of use; a session that removes the last lane of a kind removes
+its row in the same commit. The word lanes stay whether used or not, because
+they are the vocabulary the five theme classes and the `box` labels share.
 
 **A long lane name carries its own break.** The theme wraps a message at 180px
 so the lanes stay close and the type stays readable, and mermaid hyphenates any
@@ -543,7 +589,7 @@ book would be getting wrong on screen. So a class name too wide for the box is
 written with `<br/>` at a CamelCase boundary, a nested class at its dot:
 
     participant PESM as PersistentEntity<br/>SectionManager
-    participant TE as ChunkMap.<br/>TrackedEntity
+    participant CMTE as ChunkMap.<br/>TrackedEntity
 
 The break is display only: both gates read a lane expansion with it closed up,
 so the key still holds the name. **In a message, a break is the last resort and
@@ -563,7 +609,6 @@ the break in from a render, and is the check after adding a lane.
 | `DS` | `DedicatedServer` |
 | `SL` | `ServerLevel` |
 | `CL` | `ClientLevel` |
-| `Level` | `Level` |
 | `SP` | `ServerPlayer` |
 | `LP` | `LocalPlayer` |
 | `Player` | `Player` |
@@ -571,8 +616,6 @@ the break in from a render, and is the check after adding a lane.
 | `PL` | `PlayerList` |
 | `SGPL` | `ServerGamePacketListenerImpl` |
 | `CPL` | `ClientPacketListener` |
-| `SHPL` | `ServerHandshakePacketListenerImpl` |
-| `SSPL` | `ServerStatusPacketListenerImpl` |
 | `SLPL` | `ServerLoginPacketListenerImpl` |
 | `SCPL` | `ServerConfigurationPacketListenerImpl` |
 | `CHPL` | `ClientHandshakePacketListenerImpl` |
@@ -580,30 +623,22 @@ the break in from a render, and is the check after adding a lane.
 | `Conn` | `Connection` |
 | `SConn` | `Connection` |
 | `SCL` | `ServerConnectionListener` |
-| `BEL` | `BlockableEventLoop` |
 | `SCC` | `ServerChunkCache` |
 | `CM` | `ChunkMap` |
 | `CMTE` | `ChunkMap.TrackedEntity` |
 | `CH` | `ChunkHolder` |
 | `DM` | `DistanceManager` |
 | `TS` | `TicketStorage` |
-| `LCT` | `LoadingChunkTracker` |
-| `SCT` | `SimulationChunkTracker` |
-| `PTT` | `DistanceManager.PlayerTicketTracker` |
 | `CTD` | `ChunkTaskDispatcher` |
-| `TCTD` | `ThrottlingChunkTaskDispatcher` |
 | `PCS` | `PlayerChunkSender` |
 | `PESM` | `PersistentEntitySectionManager` |
 | `PST` | `PrepareSpawnTask` |
 | `SRT` | `SynchronizeRegistriesTask` |
-| `JWT` | `JoinWorldTask` |
-| `RS` | `RenderSystem` |
 | `GR` | `GameRenderer` |
 | `LR` | `LevelRenderer` |
 | `Gui` | `Gui` |
 | `Hud` | `Hud` |
 | `Screen` | `Screen` |
-| `Window` | `Window` |
 | `Boot` | `Bootstrap` |
 | `BIR` | `BuiltInRegistries` |
 | `Items` | `Items` |
@@ -611,12 +646,7 @@ the break in from a render, and is the check after adding a lane.
 | `MR` | `MappedRegistry` |
 | `DMR` | `DefaultedMappedRegistry` |
 | `WL` | `WorldLoader` |
-| `RDL` | `RegistryDataLoader` |
-| `RLT` | `RegistryLoadTask` |
-| `RMRLT` | `ResourceManagerRegistryLoadTask` |
-| `LRA` | `LayeredRegistryAccess` |
 | `RDC` | `RegistryDataCollector` |
-| `RSyn` | `RegistrySynchronization` |
 | `CBE` | `ChestBlockEntity` |
 | `TVO` | `TagValueOutput` |
 | `CHelp` | `ContainerHelper` |
@@ -625,17 +655,12 @@ the break in from a render, and is the check after adding a lane.
 | `PEnc` | `PacketEncoder` |
 | `PDec` | `PacketDecoder` |
 | `DCP` | `DataComponentPatch` |
-| `HS` | `HashedStack` |
 | `IP` | `ItemParser` |
 | `TagP` | `TagParser` |
 | `KH` | `KeyboardHandler` |
-| `PR` | `PackRepository` |
 | `RRM` | `ReloadableResourceManager` |
-| `MPRM` | `MultiPackResourceManager` |
 | `SRI` | `SimpleReloadInstance` |
-| `PRL` | `PreparableReloadListener` |
 | `LO` | `LoadingOverlay` |
-| `RC` | `ReloadCommand` |
 | `TL` | `TagLoader` |
 | `RSR` | `ReloadableServerResources` |
 | `Parrot` | `Parrot` |
@@ -643,10 +668,6 @@ the break in from a render, and is the check after adding a lane.
 | `EH` | `EnchantmentHelper` |
 | `PDM` | `PatchedDataComponentMap` |
 | `ACM` | `AbstractContainerMenu` |
-| `Comp` | `Component` |
-| `MComp` | `MutableComponent` |
-| `CS` | `ComponentSerialization` |
-| `CU` | `ComponentUtils` |
 | `Language` | `Language` |
 | `Font` | `Font` |
 | `CT` | `CombatTracker` |
@@ -657,18 +678,12 @@ the break in from a render, and is the check after adding a lane.
 | `LIF` | `LootItemFunctions` |
 | `SICF` | `SetItemCountFunction` |
 | `PP` | `PacketProcessor` |
-| `TRM` | `ServerTickRateManager` |
 | `LTs` | `LevelTicks` |
 | `EAS` | `EnvironmentAttributeSystem` |
-| `NS` | `NaturalSpawner` |
 | `ETL` | `EntityTickList` |
-| `WB` | `WorldBorder` |
 | `PDS` | `PlayerDataStorage` |
 | `SW` | `ServerWatchdog` |
 | `LSA` | `LevelStorageSource.LevelStorageAccess` |
-| `SC` | `StopCommand` |
-| `DL` | `DirectoryLock` |
-| `WS` | `WorldStem` |
 | `LC` | `LevelChunk` |
 | `CGT` | `ChunkGenerationTask` |
 | `TLE` | `ThreadedLevelLightEngine` |
@@ -681,7 +696,6 @@ the break in from a render, and is the check after adding a lane.
 | `LB` | `LiquidBlock` |
 | `BI` | `BucketItem` |
 | `RB` | `RepeaterBlock` |
-| `GED` | `GameEventDispatcher` |
 | `VSL` | `VibrationSystem.Listener` |
 | `VST` | `VibrationSystem.Ticker` |
 | `VSel` | `VibrationSelector` |
@@ -690,13 +704,11 @@ the break in from a render, and is the check after adding a lane.
 | `PM` | `PoiManager` |
 | `Brain` | `Brain` |
 | `AP` | `AcquirePoi` |
-| `VNP` | `ValidateNearbyPoi` |
 | `SIB` | `SleepInBed` |
 | `PN` | `PathNavigation` |
 | `EVS` | `EnvironmentAttributeSystem.ValueSampler` |
 | `ATS` | `AttributeTrackSampler` |
 | `KTS` | `KeyframeTrackSampler` |
-| `SCM` | `ServerClockManager` |
 | `EAP` | `EnvironmentAttributeProbe` |
 | `Camera` | `Camera` |
 | `GS` | `GaussianSampler` |
@@ -719,12 +731,9 @@ the break in from a render, and is the check after adding a lane.
 | `ET` | `EntityType` |
 | `SumC` | `SummonCommand` |
 | `SE` | `ServerEntity` |
-| `ES` | `EntityStorage` |
 | `SED` | `SynchedEntityData` |
 | `Sheep` | `Sheep` |
 | `LE` | `LivingEntity` |
-| `CG` | `CollisionGetter` |
-| `Shapes` | `Shapes` |
 | `AttrI` | `AttributeInstance` |
 | `AttrM` | `AttributeMap` |
 | `EffC` | `EffectCommands` |
@@ -733,7 +742,6 @@ the break in from a render, and is the check after adding a lane.
 | `SAB` | `AbstractBoat` |
 | `CSED` | `SynchedEntityData` |
 | `AA` | `AbstractArrow` |
-| `CR` | `CombatRules` |
 | `MTS` | `MoveToTargetSink` |
 | `MoveC` | `MoveControl` |
 | `NE` | `NodeEvaluator` |
@@ -741,15 +749,12 @@ the break in from a render, and is the check after adding a lane.
 | `PNR` | `PathNavigationRegion` |
 | `UAFS` | `UpdateActivityFromSchedule` |
 | `Cons` | `Consumable` |
-| `BowI` | `BowItem` |
 | `ChestM` | `ChestMenu` |
 | `CraftM` | `CraftingMenu` |
 | `RemS` | `RemoteSlot` |
-| `CSync` | `ContainerSynchronizer` |
 | `ResultS` | `ResultSlot` |
 | `ResultC` | `ResultContainer` |
 | `RM` | `RecipeManager` |
-| `CI` | `CraftingInput` |
 | `TCC` | `TransientCraftingContainer` |
 | `SRB` | `ServerRecipeBook` |
 | `Ench` | `Enchantment` |
@@ -760,10 +765,7 @@ the break in from a render, and is the check after adding a lane.
 | `LootP` | `LootParams` |
 | `LootC` | `LootContext` |
 | `LIC` | `LootItemCondition` |
-| `LPool` | `LootPool` |
-| `RCont` | `RandomizableContainer` |
 | `ExecC` | `ExecuteCommand` |
-| `Inv` | `Inventory` |
 | `FD` | `FoodData` |
 | `FP` | `FoodProperties` |
 | `KM` | `KeyMapping` |
@@ -776,7 +778,6 @@ the break in from a render, and is the check after adding a lane.
 | `LLE` | `LevelLightEngine` |
 | `LX` | `LevelExtractor` |
 | `BSPH` | `BlockStatePredictionHandler` |
-| `MH` | `MouseHandler` |
 | `InvS` | `InventoryScreen` |
 | `GGE` | `GuiGraphicsExtractor` |
 | `GuiR` | `GuiRenderer` |
@@ -786,14 +787,11 @@ the break in from a render, and is the check after adding a lane.
 | `FBR` | `FormattedBidiReorder` |
 | `FSet` | `FontSet` |
 | `GStit` | `GlyphStitcher` |
-| `SndM` | `SoundManager` |
 | `SndE` | `SoundEngine` |
 | `SBL` | `SoundBufferLibrary` |
 | `ChanA` | `ChannelAccess` |
 | `SEE` | `SoundEngineExecutor` |
 | `Library` | `Library` |
-| `Channel` | `Channel` |
-| `LEH` | `LevelEventHandler` |
 | `CDS` | `ClientDebugSubscriber` |
 | `SDS` | `ServerDebugSubscribers` |
 | `LDS` | `LevelDebugSynchronizers` |
@@ -804,19 +802,10 @@ the break in from a render, and is the check after adding a lane.
 | `CE` | `CommandEncoder` |
 | `RP` | `RenderPass` |
 | `GlCE` | `GlCommandEncoder` |
-| `GB` | `GpuBackend` |
-| `GLX` | `GLX` |
-| `MonM` | `MonitorManager` |
 | `SUT` | `SectionUpdateTracker` |
 | `SRD` | `SectionRenderDispatcher` |
 | `SectC` | `SectionCompiler` |
-| `SOG` | `SectionOcclusionGraph` |
 | `FGB` | `FrameGraphBuilder` |
-| `MM` | `ModelManager` |
-| `MB` | `ModelBakery` |
-| `AM` | `AtlasManager` |
-| `SprL` | `SpriteLoader` |
-| `TA` | `TextureAtlas` |
 | `ERD` | `EntityRenderDispatcher` |
 | `ZR` | `ZombieRenderer` |
 | `ZS` | `ZombieRenderState` |
@@ -839,8 +828,6 @@ the break in from a render, and is the check after adding a lane.
 | `MNBS` | `MultiNoiseBiomeSource` |
 | `ClimS` | `Climate.Sampler` |
 | `CPList` | `Climate.ParameterList` |
-| `CRT` | `Climate.RTree` |
-| `FS` | `FeatureSorter` |
 | `WR` | `WorldgenRandom` |
 | `PlacedF` | `PlacedFeature` |
 | `PMod` | `PlacementModifier` |
@@ -854,10 +841,8 @@ the break in from a render, and is the check after adding a lane.
 | `JS` | `JigsawStructure` |
 | `JPP` | `JigsawPlacement.Placer` |
 | `JP` | `JigsawPlacement` |
-| `STP` | `StructureTemplatePool` |
 | `PESP` | `PoolElementStructurePiece` |
 | `STemp` | `StructureTemplate` |
-| `SStart` | `StructureStart` |
 | `SStr` | `StrongholdStructure` |
 | `SPie` | `StrongholdPieces` |
 | `SPB` | `StructurePiecesBuilder` |
@@ -865,16 +850,10 @@ the break in from a render, and is the check after adding a lane.
 | `CSug` | `CommandSuggestions` |
 | `CSP` | `ClientSuggestionProvider` |
 | `GC` | `GiveCommand` |
-| `EC` | `ExecutionContext` |
 | `BC` | `BuildContexts` |
-| `CallF` | `CallFunction` |
-| `ContT` | `ContinuationTask` |
-| `SFM` | `ServerFunctionManager` |
-| `SFL` | `ServerFunctionLibrary` |
 | `PA` | `PlayerAdvancements` |
 | `CAdv` | `ClientAdvancements` |
 | `ICT` | `InventoryChangeTrigger` |
-| `AR` | `AdvancementRewards` |
 | `DlgC` | `DialogCommand` |
 | `DlgS` | `DialogScreen` |
 | `DCS` | `DialogControlSet` |

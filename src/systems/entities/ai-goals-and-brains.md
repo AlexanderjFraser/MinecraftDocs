@@ -171,7 +171,7 @@ are complete sweeps, so what happens to one behaviour is two questions asked
 in two different phases of the same tick:
 
 ```mermaid
-flowchart TB
+flowchart TD
     A["one behaviour, in one Brain.tick"]
     E{"is its activity active?"}
     F["never asked"]

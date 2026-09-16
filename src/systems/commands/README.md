@@ -44,23 +44,28 @@ reaches sideways.
 
 ```mermaid
 flowchart TD
-    subgraph U["FOUR SYSTEMS"]
+    subgraph U["four systems"]
         direction LR
-        L5["6 · Advancements"] ~~~ L6["7 · Scores, teams<br/>and stored data"] ~~~ L7["8 · Dialogs"] ~~~ L8["9 · Game tests"]
+        L6["6 · Advancements"] ~~~ L7["7 · Scores, teams<br/>and stored data"] ~~~ L8["8 · Dialogs"] ~~~ L9["9 · Game tests"]
     end
     U -->|"is built on"| X
-    subgraph X["EXECUTE"]
+    subgraph X["execute"]
         direction LR
-        L3["4 · The execution engine"] ~~~ L4["5 · Functions and macros"]
+        L4["4 · The execution engine"] ~~~ L5["5 · Functions and macros"]
     end
     X -->|"is built on"| P
-    subgraph P["PARSE"]
+    subgraph P["parse"]
         direction LR
-        L1["1 · Brigadier and commands"] ~~~ L2["2 · Permissions"] ~~~ L2b["3 · Entity selectors"]
+        L1["1 · Brigadier and commands"] ~~~ L2["2 · Permissions"] ~~~ L3["3 · Entity selectors"]
     end
 ```
 
-*The part as three floors, numbered in watching order — parsing turns a string into a call, execution turns the call into work on a queue, and the four systems on top are each written to by a command; an arrow means the floor it leaves is built on the floor it reaches, and nothing on the top floor points at another box there.*
+*The part as three floors, numbered to the watch order — parsing turns a
+string into a call, execution turns the call into work on a queue, and the four
+systems on top are each written to by a command. The arrows point down, the one
+landing figure in the book where they do, so that the top floor is drawn on
+top: an arrow means the floor it leaves is built on the floor it reaches, and
+nothing on the top floor points at another box there.*
 
 The four pages on the top floor are peers, not a sequence: watch them in any
 order, or only the ones you care about. The two floors below them are not

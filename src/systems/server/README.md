@@ -48,17 +48,16 @@ flowchart TD
     Tick -- "the loop's finally" --> Death
 ```
 
-*The five lectures of Part III, numbered in the order to watch them and wired
-in the order the program runs them; an arrow is a hand-off at run time, not a
+*The five lectures of Part III, numbered to the watch order and wired in the
+order the program runs them; an arrow is a hand-off at run time, not a
 dependency between lectures.*
 
 The two numbered first are the loop itself, and the arrows between them are the
-only pair that goes both ways. The beginning and the end are numbered last
-because there has to be something for them to start and stop. Those two are one
-lecture in two halves, watched together — and seven later parts (IV, V, VI, VII, VIII,
-IX and XIII: every part that runs on the Server thread except world
-generation) assume one of them or the other, which makes them the most
-load-bearing pair in the book after *Anatomy*.
+only pair that goes both ways. Seven later parts (IV, V, VI, VII, VIII, IX and
+XIII: every part that runs on the Server thread except world generation) assume
+one of those two or the other, which makes them the most load-bearing pair in
+the book after *Anatomy*. The beginning and the end are numbered last because
+there has to be something for them to start and stop.
 
 ## Before you start
 

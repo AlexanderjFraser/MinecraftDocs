@@ -73,7 +73,7 @@ flowchart TD
     LEFT{"any candidate left?"}
     BOX["MessageBox.error, and the game never starts"]
     RS["RenderSystem.initRenderer with the device that survived"]
-    DONE["setIcon, setTitle, setDefaultErrorCallback"]
+    DONE["Window.setIcon, Window.setTitle,<br/>Window.setDefaultErrorCallback"]
     GLX --> MonM --> MC --> GB --> Window --> Q1
     Q1 -- "no" --> ERRS --> LEFT
     Q1 -- "yes" --> DEV --> Q2

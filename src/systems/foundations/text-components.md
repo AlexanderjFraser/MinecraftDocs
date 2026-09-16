@@ -314,7 +314,7 @@ sequenceDiagram
     SP->>CT: die: getDeathMessage, if SHOW_DEATH_MESSAGES
     CT->>CT: the last CombatEntry's deathMessageType, then<br/>DamageSource.getLocalized<br/>DeathMessage
     CT-->>SP: a translatable death.attack.arrow, the two names as arguments
-    Note over SP: the only wording on this side is getString for the console log
+    Note over SP: the only wording on this side is Component.getString for the console log
     SP->>CPL: ClientboundPlayerCombatKillPacket, encoded to NBT on Netty
     Note over CPL: a MutableComponent nobody has read
     CPL->>DScr: new DeathScreen with the packet's message

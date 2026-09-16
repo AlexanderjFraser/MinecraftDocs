@@ -96,7 +96,25 @@ device — five parts of five. Its own finding is a collision between two ruling
 **seven lanes is about 1,650px, which is 10.6px of type at the column**, so F7's
 *at most seven* and F1's *nothing under eleven pixels* cannot both hold, and no
 amount of label-shortening moves it — only a lane fewer or a split does.
-Sessions F to J, L, M and N have run since — their rows are in the brief's Part 4 and their paragraphs in the log below — and K, Part XI, is the last part left; O closes. The charter is below. The latest release
+Sessions F to J, L, M and N have run since — their rows are in the brief's Part 4 and their paragraphs in the log below.
+**Session O, the close, ran on 2026-09-16 before K**, at the owner's word, so
+**K, Part XI, is the last session of the pass**, and it runs under the strict
+gate the close put in. The close's numbers are in the brief's Part 4 (*The
+close, re-measured*): the median figure shown at full size where it was shown
+at three-fifths, no figure with type under 9px where 89 had it, no Mojang name
+broken on screen, 203 captions where there were none, and the figure-name gate
+at **0** unresolved and strict in `deploy.sh`. Its verdict is that the pass
+earned its cost, and the reason is not the legibility: **about 180 facts in
+figures were corrected on a corpus fact-checked twice**, most of them one
+shape — a message labelled with the caller's method and drawn arriving at the
+callee, which a fact-check reading the label against the source cannot see
+and a gate reading the head against the lane can. The close's own findings:
+the thirteen landing figures, read as one set for the first time, disagreed
+with each other about what an arrow means and with their own pages in seven
+sentences; one pass-7 strike in thirty was not borne out by its page; and nine
+of the thirteen session entries in [pass9.md](pass9.md) could not be walked
+item by item, so its head now says how, and `tools/pass7/captions.py` lists
+the two hundred captions the entries did not. The charter is below. The latest release
 is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
 manifest on 2026-09-07), so no version pass is due before pass 7.
 
@@ -110,7 +128,7 @@ manifest on 2026-09-07), so no version pass is due before pass 7.
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
 | **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | done, 2026-09-14, sessions A–N — record [pass6-brief.md](pass6-brief.md); the close's remaining job carried to pass 7's session O |
-| **7 — the figures** | every figure as rendered, beside its section: is it true, is it needed, does it show the thing, can it be read; the gate over names inside mermaid blocks | the picture | **current** — planned 2026-09-14; charter below; brief, runbook, the standard for session A and the schedule with each session's status [pass7-brief.md](pass7-brief.md); queue [pass5.md](pass5.md), kind `figure` |
+| **7 — the figures** | every figure as rendered, beside its section: is it true, is it needed, does it show the thing, can it be read; the gate over names inside mermaid blocks | the picture | **current** — planned 2026-09-14; sessions A–J and L–O done (O, the close, on 2026-09-16), **K (Part XI) the last**; charter below; brief, runbook, the standard for session A and the schedule with each session's status [pass7-brief.md](pass7-brief.md); queue [pass5.md](pass5.md), kind `figure` |
 | **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
 | **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
 | **10 — the last polish** | pass 9's debt, the frame against the finished book, links, the last cuts, the release | the reader, once more | after 9; then the site is finished |
@@ -126,9 +144,9 @@ come from the decompile, never from model memory of 1.21 · the five gates —
 `python tools/check_lanes.py --strict`, `python tools/check_deps.py`,
 `python tools/check_links.py` — clean before every commit that touches a
 page, and `tools/deploy.sh` refuses to publish on any failure. A sixth,
-`python tools/check_figure_names.py`, runs report-only from pass 7's planning
-session and becomes a gate at that pass's close, when the 119 names it finds
-have been corrected or ruled. Reasoning over sensing over measuring: no count
+`python tools/check_figure_names.py --strict`, has been a gate since pass 7's
+close, when the 119 names it first found had been corrected or ruled; it ran
+report-only from that pass's planning session until then. Reasoning over sensing over measuring: no count
 in a queue is a target, and the owner judges what lands.
 
 ## Why this order
@@ -317,6 +335,21 @@ how data keys are typeset; the wording debt logged per part in
 rewritten it; the register of the 1.21 blockquote. Reader agents again, now
 with the exemplar. Every changed sentence's claims to [pass9.md](pass9.md).
 The planning session builds the tic finders and a terminology checker.
+
+**The wording debt the figures raised**, counted afresh by pass 7's close
+([pass5.md](pass5.md), *Pass 7, session O*): **203 captions**, written by
+thirteen sessions in at least three registers — *what the picture shows*,
+*what to look for*, and the figure's own furniture (*the band*, *the box*) —
+which `python tools/pass7/captions.py` lists in one place and which pass 8
+reads as one set, as it reads the glossary; **69 figure labels on 48 figures
+that are still sentences**, 17 of them Part XI's; the **bare-verb message
+heads** the figure gate notes (*reseed*, *pick*, *measure*), which want one
+register for a self-message's first word; the caption that points at *the
+band* or *the right-hand box* before naming it, which reads badly in
+`llms-full.txt`; *Questions players ask* on the two pages whose askers are pack
+authors; and **thirteen voice entries** from pass 7's part sessions. Every
+caption pass 8 rewrites is a claim about its figure and goes to
+[pass9.md](pass9.md) with the figure's other claims.
 
 **Not:** structure (a structural finding is ruled out or goes to pass 10's
 notes); facts.
@@ -1139,3 +1172,45 @@ that the owner has not understood; recording is after pass 10.
   them overtaken or ruled by earlier sessions), seven opened for O and pass
   10. All six gates green (the figure-name gate still report-only).
   Deployed.
+
+- **2026-09-16, pass 7 session O (Opus) — the close, run before K.** The owner
+  asked for the close with Part XI's session not yet run; the close ran,
+  repaired Part XI's ten gate failures itself so the gate could go strict, and
+  left the rest of Part XI to K, which now runs last. **The gate is strict**
+  (`deploy.sh`, rule 5): F12(b) and (c) fail, and three readings keep the
+  failures honest — a class diagram's boxes qualify its relation labels and
+  English member lines, a page's italic words are words, and a word one letter
+  from a one-word key class fails, which answers session H's question without
+  an allow-list. Session J's question became a note, *a qualified head on a
+  lane that owns neither*: of thirty, four were the caller's-method fault in
+  its qualified spelling and were redrawn — one of them, the chunk read, drawn
+  arriving at `ServerLevel` when it runs in `ChunkMap`'s continuation — and
+  twenty-six were static helpers, laneless objects or the lane's inner class.
+  0 unresolved, 62 notes, 45 probe cases. **`check_mermaid.js` fails colour in
+  a page**; **the lane key lost 67 rows**, `CMTE` the nested example in
+  `PTT`'s place, `--unused` reporting in `deploy.sh`; **twenty names broken on
+  screen went to zero** under session M's wider regex, now
+  `tools/pass7/broken_names.py`; the renderer stopped counting a `loop` label
+  as a label escaping its frame. **Three reader agents** did the reading the
+  close exists for. The **landing set**: every watch-order number right, but
+  four meanings of an arrow, four spellings of the caption and seven sentences
+  contradicting their own figures — a ring counted with six arrows that has
+  five, *the only page no arrow leaves* beside a second, a closer said to
+  assume nothing while linking three pages above it; twelve figures brought to
+  one grammar, now `TEMPLATE.md`'s, two arrows changed, `commands/README`'s
+  downward arrows ruled the one exception, XI left to K. The **strike audit**:
+  122 strikes, 116 borne out, 4 amended, 1 unstruck. The **pass-9 shape
+  audit**: nine of thirteen entries not walkable item by item; the form is in
+  that file's head and a caption lister in `tools/pass7/`. The exemplar's
+  spawn loop gained the two group-ending arrows session B left to the close,
+  and `chat-and-signing` said four Netty checks where its figure says five.
+  **Rulings:** six lanes (seven only where the render says it reads, eight
+  never — six measure at 11.6px or more, seven at exactly 11.0); `par`,
+  `loop`, `alt`, `opt` and a call's subgraph in the marks table; no colour and
+  no width knob for class diagrams; a subgraph's `direction TB` allowed; the
+  landing budget counts prose; no stated role for the tier front doors; the
+  dependency figure keeps all 27 arcs. **The corpus re-measured**, the verdict
+  written (the pass earned its cost, for the corrections more than the
+  legibility), pass 8's wording debt counted and written into its charter.
+  Queue: figure units 150 → 28, 17 of them Part XI's. All six gates green, the
+  sixth now strict. Deployed.

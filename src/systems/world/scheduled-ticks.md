@@ -282,7 +282,7 @@ sequenceDiagram
     participant LCTs as LevelChunkTicks
 
     SL->>RB: neighborChanged — the wire behind went to 15
-    RB->>RB: DiodeBlock.checkTickOnNeighbor — not locked, POWERED false, it should turn on
+    RB->>RB: DiodeBlock.<br/>checkTickOnNeighbor<br/>— unlocked, unpowered,<br/>so it should turn on
     RB->>LTs: willTickThisTick at this position? no
     RB->>SL: scheduleTick — delay 2, TickPriority.HIGH
     SL->>SL: createTick — gameTime plus 2, HIGH, nextSubTickCount
@@ -293,7 +293,7 @@ sequenceDiagram
     Note over SL,LCTs: two ticks after the booking, in the level tick's pending-block phase
     LTs->>LCTs: poll — the tick leaves the queue and the dedup set
     LTs->>SL: tickBlock at this position, for Blocks.REPEATER
-    SL->>RB: still a repeater here, so BlockBehaviour.BlockStateBase.tick
+    SL->>RB: still a repeater, so<br/>BlockBehaviour.<br/>BlockStateBase.tick
     RB->>SL: setBlock POWERED true, with Block.UPDATE_CLIENTS
     SL->>RB: the section write lands, then DiodeBlock.onPlace
     RB->>SL: neighborChanged on the block it powers, then that block's other sides

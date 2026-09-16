@@ -147,7 +147,7 @@ unreportable `ClientboundDisguisedChatPacket` instead.
 
 ## Three ways to say no, and one way not to ask
 
-Everything above happens to a message that survives. Four of the checks run
+Everything above happens to a message that survives. Five of the checks run
 before the server thread ever sees the packet, and where a refusal lands
 decides how much of the session it takes with it.
 

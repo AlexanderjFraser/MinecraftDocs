@@ -243,6 +243,11 @@ sequenceDiagram
     SICF-->>CBE: the stack lands in a slot
 ```
 
+*One loot function's whole life, in two stretches: parsed once at reload,
+where the registered type supplies the codec and the file only the config,
+and run much later, when a chest is filled and every stack passes through
+`SetItemCountFunction`.*
+
 **The reload half.** `MinecraftServer.reloadResources` — and `WorldLoader.load`
 on first start — calls `ReloadableServerResources.loadResources`, whose first
 act is `ReloadableServerRegistries.reload` on the background executor. It

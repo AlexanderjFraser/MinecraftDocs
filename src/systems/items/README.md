@@ -59,7 +59,7 @@ flowchart TD
         UI["2 · Using an item"]
         CM["3 · Containers and menus"]
     end
-    subgraph E["the three engines"]
+    subgraph E["the engines"]
         RE["4 · Recipes"]
         EN["5 · Enchantments"]
         EC["6 · Enchanting"]
@@ -74,7 +74,7 @@ flowchart TD
     CP -- "which needs no stack at all" --> LO
 ```
 
-*Figure: the two tiers of the part, numbered to the watching order. Every
+*The two tiers of the part, numbered to the watch order. Every
 arrow means "and now you can assume this", so a page with no arrow into it —
 contexts and predicates — is one you can watch whenever you like.*
 

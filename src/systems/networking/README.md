@@ -39,15 +39,16 @@ flowchart TD
     end
     TC -- "two threads" --> PSC
     PSC -- "a codec table per phase" --> PP
-    PP --> A
+    W ~~~ A
 ```
 
 *The five lectures, numbered to the watch order: the top box is the wire
 itself, the bottom box is the one language the last two live inside, and an
-arrow is what the lecture before it settles. The pair at the bottom is drawn
-unlinked because neither needs the other — or, strictly, lecture three.*
+arrow is what the lecture before it settles. Nothing points into the bottom
+box: its title says where the last two live, and neither needs the other or
+the lecture above it.*
 
-The spine is the pair at the top: read them together, because the second is
+The spine is the first two: read them together, because the second is
 the second half of the first. The last two are where the part spends most of
 its length, and that is proportionate to the traffic — telling a client where
 the mobs are and sending it chunks is most of what a connection ever carries,

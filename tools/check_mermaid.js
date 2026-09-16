@@ -30,6 +30,10 @@
  * mermaid reads as a comment and silently drops along with the rest of the line.
  * The escapes that survive both checks are mermaid's entity codes, `#59;` for
  * `;` and `#35;` for `#` (a `;` otherwise ends the statement mid-sentence).
+ * Three more are the figure standard's (pass 7): a flowchart or state label that
+ * mermaid erases as "Unsupported markdown", a caption that has lost its styling,
+ * and colour in a page — `%%{init}%%`, `classDef`, `style`, `linkStyle`, or a
+ * class word other than the theme's five (F2, gated from session O).
  */
 'use strict';
 
@@ -53,7 +57,7 @@ function usage() {
     'usage: node tools/check_mermaid.js [--no-build] [--verbose] [--probe]',
     '  --no-build   check the existing book/ instead of running mdbook build first',
     '  --verbose    print the full mermaid error under each failure line',
-    '  --probe      prove the caption rule fails on the construct it should, then exit',
+    '  --probe      prove the caption, label and theme rules fail on the constructs they should, then exit',
   ].join('\n'));
 }
 
@@ -268,6 +272,35 @@ function erasedLabels(text, diagramType) {
   return out;
 }
 
+// The theme lives in mermaid-init.js and custom.css and nowhere else (pass 7, F2):
+// a page carries no `%%{init}%%`, `classDef`, `style` or `linkStyle`, and the only
+// colour it may name is one of the five semantic class words, as `:::word` on a
+// flowchart node or `class A,B word` on a state. Ratified by session A and gated
+// from session O, when the corpus had none of the four and used only the five.
+const THEME_WORDS = new Set(['server', 'client', 'netty', 'worker', 'disk']);
+function themeDirectives(text, diagramType) {
+  const out = [];
+  const isClassDiagram = /^class/i.test(String(diagramType || ''));
+  const lines = text.split('\n');
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    let m;
+    if (/^\s*%%\s*\{/.test(line)) out.push({ line: i + 1, text: 'an %%{init}%% directive' });
+    else if (/^\s*classDef\s/.test(line)) out.push({ line: i + 1, text: 'a classDef' });
+    else if (/^\s*linkStyle\s/.test(line)) out.push({ line: i + 1, text: 'a linkStyle' });
+    else if (/^\s*style\s+\S+\s+\S*:/.test(line)) out.push({ line: i + 1, text: 'a style line' });
+    else if (!isClassDiagram && (m = /^\s*class\s+[\w,]+\s+(\w+)\s*;?\s*$/.exec(line)) && !THEME_WORDS.has(m[1])) {
+      out.push({ line: i + 1, text: `a class word "${m[1]}" that is not one of the five` });
+    } else if (/^\s*%%/.test(line)) continue;
+    else {
+      for (const w of line.matchAll(/:::([A-Za-z_][\w-]*)/g)) {
+        if (!THEME_WORDS.has(w[1])) out.push({ line: i + 1, text: `a class word ":::${w[1]}" that is not one of the five` });
+      }
+    }
+  }
+  return out;
+}
+
 // A caption is the italic paragraph after a figure, and `custom.css` styles it
 // with `p:has(> em:only-child)` — one <em> and nothing else. An author who closes
 // the italics to set a name and reopens them writes *two* <em> children, so the
@@ -327,7 +360,27 @@ function runProbe(JSDOM) {
     ['a digit-dot that is not at the start', ['flowchart TD', ' A["Phase 1. forgetOutdatedMemories"] --> B["b"]'], 'flowchart-v2', false],
     ['an ordinary hyphenated label', ['flowchart TD', ' A["coast-or-interpolate, then applyInput"] --> B["b"]'], 'flowchart-v2', false],
   ];
+  // The theme rule (F2): colour lives in the stylesheet, and a page names only the five words.
+  const themeCases = [
+    ['an init directive', ['%%{init: {"theme": "dark"}}%%', 'flowchart TD', ' A --> B'], 'flowchart-v2', true],
+    ['a classDef', ['flowchart TD', ' A --> B', ' classDef hot fill:#f00'], 'flowchart-v2', true],
+    ['a style line', ['flowchart TD', ' A --> B', ' style A fill:#f9f,stroke:#333'], 'flowchart-v2', true],
+    ['a linkStyle', ['flowchart TD', ' A --> B', ' linkStyle 0 stroke:red'], 'flowchart-v2', true],
+    ['a sixth class word on a node', ['flowchart TD', ' A["a"]:::hot --> B["b"]'], 'flowchart-v2', true],
+    ['a sixth class word on a state', ['stateDiagram-v2', ' S1 --> S2', ' class S1 hot'], 'stateDiagram', true],
+    ['the five class words', ['flowchart TD', ' A["a"]:::server --> B["b"]:::client', ' C["c"]:::netty --> D["d"]:::worker --> E[("e")]:::disk'], 'flowchart-v2', false],
+    ['a state coloured with one of the five', ['stateDiagram-v2', ' S1 --> S2', ' class S1,S2 server'], 'stateDiagram', false],
+    ['a classDiagram class box', ['classDiagram', ' class ChunkMap', ' class Entity {', '  int id', ' }'], 'classDiagram', false],
+    ['a comment line', ['flowchart TD', ' %% style is decided by the theme', ' A --> B'], 'flowchart-v2', false],
+    ['a label that says the word style', ['flowchart TD', ' A["style: the look of a node"] --> B'], 'flowchart-v2', false],
+  ];
   let ok = true;
+  for (const [what, lines, kind, shouldFail] of themeCases) {
+    const got = themeDirectives(lines.join('\n'), kind).length > 0;
+    const passed = got === shouldFail;
+    ok = ok && passed;
+    console.log(`${passed ? 'pass' : 'FAIL'}  ${what} — ${shouldFail ? 'is' : 'is not'} colour in a page`);
+  }
   for (const [what, lines, kind, shouldFail] of labelCases) {
     const got = erasedLabels(lines.join('\n'), kind).length > 0;
     const passed = got === shouldFail;
@@ -431,6 +484,10 @@ async function main() {
             if (dropped) {
               err = new Error(`"#" starts a comment in sequence diagrams, so mermaid silently drops "${dropped.text}" and the rest of line ${dropped.line}`);
             }
+          }
+          const theme = themeDirectives(text, result && result.diagramType);
+          if (!err && theme.length) {
+            err = new Error(`line ${theme[0].line} is ${theme[0].text}: the theme lives in mermaid-init.js and custom.css, and a page names only server, client, netty, worker or disk${theme.length > 1 ? ` (and ${theme.length - 1} more in this diagram)` : ''}`);
           }
           const erased = result ? erasedLabels(text, result.diagramType) : [];
           if (!err && erased.length) {

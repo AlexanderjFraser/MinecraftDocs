@@ -288,7 +288,7 @@ sequenceDiagram
 
     Note over MS: wedged inside one tick, past max-tick-time
     SW->>MS: getNextTickTime, a deadline now far in the past
-    SW->>SW: createWatchdogCrashReport, every thread dumped, the Server stack grafted on
+    SW->>SW: createWatchdog<br/>CrashReport<br/>dumps every thread
     SW->>MS: fillSystemReport, read off-thread while the tick still runs
     SW->>Disk: the report, to stdout and to crash-reports
     SW->>JVM: Runtime.halt armed for ten seconds from now
