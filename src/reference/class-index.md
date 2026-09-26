@@ -7,7 +7,7 @@ introduction or the lecture map — or named inside one of its figures (a lane, 
 message; `tools/check_figure_names.py` reads those), and the pages that name it. Outside it:
 the generated views, whose backticks are registry and packet ids rather than class names.
 
-3147 names across 131 pages. A row is a
+3150 names across 132 pages. A row is a
 simple name, not a class: a few names belong to more than one class (there are five
 `Main`s), and a few are library classes from Brigadier, DataFixerUpper or authlib.
 
@@ -245,11 +245,11 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BlockEventData` | [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md) |
 | `BlockGetter` | [movement-and-collision](../systems/entities/movement-and-collision.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
 | `BlockHitResult` | [math-and-primitives](../reference/math-and-primitives.md), [naming-drift](../reference/naming-drift.md), [block-interaction](../systems/blocks/block-interaction.md) |
-| `BlockIds` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [blocks-and-states](../systems/blocks/blocks-and-states.md) |
+| `BlockIds` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
 | `BlockIgnoreProcessor` | [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
 | `BlockInput` | [block-update-flags](../reference/block-update-flags.md), [block-entities](../systems/blocks/block-entities.md) |
 | `BlockInWorld` | [blocks-and-states](../systems/blocks/blocks-and-states.md) |
-| `BlockItem` | [naming-drift](../reference/naming-drift.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [data-components](../systems/foundations/data-components.md), [VII · Items and inventories](../systems/items/README.md), [section-meshing](../systems/rendering/section-meshing.md) |
+| `BlockItem` | [hierarchy](../maps/hierarchy.md), [naming-drift](../reference/naming-drift.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [data-components](../systems/foundations/data-components.md), [VII · Items and inventories](../systems/items/README.md), [section-meshing](../systems/rendering/section-meshing.md) |
 | `BlockItemIds` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
 | `BlockItemTagId` | [tags](../systems/foundations/tags.md) |
 | `BlockItemTags` | [tags](../systems/foundations/tags.md) |
@@ -306,7 +306,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BooleanModifier` | [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `BooleanOp` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `BooleanProperty` | [blocks-and-states](../systems/blocks/blocks-and-states.md) |
-| `Bootstrap` | [anatomy](../systems/anatomy/anatomy.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md) |
+| `Bootstrap` | [anatomy](../systems/anatomy/anatomy.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [entity-selectors](../systems/commands/entity-selectors.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md) |
 | `BootstrapContext` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
 | `BorderChangeListener` | [level-data-and-rules](../reference/level-data-and-rules.md) |
 | `BorderStatus` | [level-data-and-rules](../reference/level-data-and-rules.md) |
@@ -314,7 +314,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `BossEvent` | [glossary](../reference/glossary.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
 | `BossHealthOverlay` | [hud-elements](../reference/hud-elements.md), [hud](../systems/client/hud.md) |
 | `BoundingBox` | [math-and-primitives](../reference/math-and-primitives.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md) |
-| `BowItem` | [using-an-item](../systems/items/using-an-item.md) |
+| `BowItem` | [data-components](../systems/foundations/data-components.md), [using-an-item](../systems/items/using-an-item.md) |
 | `Brain` | [glossary](../reference/glossary.md), [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [points-of-interest](../systems/world/points-of-interest.md) |
 | `BrainDebugRenderer` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `BrandPayload` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [protocol-phases](../systems/networking/protocol-phases.md) |
@@ -792,7 +792,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `CriterionTrigger` | [glossary](../reference/glossary.md), [advancements](../systems/commands/advancements.md), [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `CriterionTriggerInstance` | [naming-drift](../reference/naming-drift.md), [advancements](../systems/commands/advancements.md) |
 | `CrossbowAttack` | [using-an-item](../systems/items/using-an-item.md) |
-| `CrossbowItem` | [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md) |
+| `CrossbowItem` | [data-components](../systems/foundations/data-components.md), [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md) |
 | `CrossbowPull` | [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md), [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `CrossCollisionBlock` | [movement-and-collision](../systems/entities/movement-and-collision.md) |
 | `CrossFrameResourcePool` | [blaze3d](../systems/rendering/blaze3d.md), [visibility-and-the-frame-graph](../systems/rendering/visibility-and-the-frame-graph.md) |
@@ -853,7 +853,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `DataComponentPatch` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [data-components](../systems/foundations/data-components.md), [containers-and-menus](../systems/items/containers-and-menus.md), [items-and-stacks](../systems/items/items-and-stacks.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
 | `DataComponentPredicate` | [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `DataComponentPredicates` | [data-components](../systems/foundations/data-components.md) |
-| `DataComponents` | [fanin](../maps/fanin.md), [naming-drift](../reference/naming-drift.md), [V · Blocks](../systems/blocks/README.md), [block-breaking](../systems/blocks/block-breaking.md), [block-entities](../systems/blocks/block-entities.md), [attributes](../systems/entities/attributes.md), [damage-and-death](../systems/entities/damage-and-death.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [data-components](../systems/foundations/data-components.md), [text-components](../systems/foundations/text-components.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [items-and-stacks](../systems/items/items-and-stacks.md), [loot-tables](../systems/items/loot-tables.md), [using-an-item](../systems/items/using-an-item.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md), [models-and-atlases](../systems/rendering/models-and-atlases.md) |
+| `DataComponents` | [fanin](../maps/fanin.md), [naming-drift](../reference/naming-drift.md), [V · Blocks](../systems/blocks/README.md), [block-breaking](../systems/blocks/block-breaking.md), [block-entities](../systems/blocks/block-entities.md), [attributes](../systems/entities/attributes.md), [damage-and-death](../systems/entities/damage-and-death.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [II · Foundations](../systems/foundations/README.md), [data-components](../systems/foundations/data-components.md), [text-components](../systems/foundations/text-components.md), [enchanting](../systems/items/enchanting.md), [enchantments](../systems/items/enchantments.md), [items-and-stacks](../systems/items/items-and-stacks.md), [loot-tables](../systems/items/loot-tables.md), [using-an-item](../systems/items/using-an-item.md), [hunger-and-experience](../systems/player/hunger-and-experience.md), [the-spear](../systems/player/the-spear.md), [the-sword-swing](../systems/player/the-sword-swing.md), [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `DataComponentType` | [Reference](../reference/README.md), [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [II · Foundations](../systems/foundations/README.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [data-components](../systems/foundations/data-components.md), [items-and-stacks](../systems/items/items-and-stacks.md) |
 | `DataFixer` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `DataFixers` | [biggest](../maps/biggest.md), [anatomy](../systems/anatomy/anatomy.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [starting-a-server](../systems/server/starting-a-server.md) |
@@ -988,9 +988,9 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `DistanceToPointFunction` | [density-function-nodes](../reference/density-function-nodes.md) |
 | `DistanceTrigger` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `DoorBlock` | [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md) |
-| `DownloadCacheCleaner` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [resource-system](../systems/foundations/resource-system.md) |
+| `DownloadCacheCleaner` | [resource-system](../systems/foundations/resource-system.md) |
 | `DownloadedPackSource` | [resource-system](../systems/foundations/resource-system.md) |
-| `DownloadQueue` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [resource-system](../systems/foundations/resource-system.md) |
+| `DownloadQueue` | [resource-system](../systems/foundations/resource-system.md) |
 | `DrawableGizmoPrimitives` | [submit-phases](../reference/submit-phases.md) |
 | `DriedGhastBlock` | [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `DripParticle` | [particles](../systems/rendering/particles.md) |
@@ -1273,7 +1273,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `FurnaceMenu` | [block-entities](../systems/blocks/block-entities.md), [recipes](../systems/items/recipes.md) |
 | `FurnaceResultSlot` | [block-entities](../systems/blocks/block-entities.md) |
 | `FutureChain` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
-| `GameConfig` | [anatomy](../systems/anatomy/anatomy.md), [the-client-loop](../systems/client/the-client-loop.md) |
+| `GameConfig` | [I · Anatomy](../systems/anatomy/README.md), [anatomy](../systems/anatomy/anatomy.md), [the-client-loop](../systems/client/the-client-loop.md) |
 | `GameEvent` | [non-living-damage](../reference/non-living-damage.md), [block-breaking](../systems/blocks/block-breaking.md), [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [authority](../systems/entities/authority.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [using-an-item](../systems/items/using-an-item.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
 | `GameEventDispatcher` | [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
 | `GameEventListener` | [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md) |
@@ -1421,7 +1421,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `HintsAndWorkarounds` | [blaze3d](../systems/rendering/blaze3d.md) |
 | `HitResult` | [math-and-primitives](../reference/math-and-primitives.md) |
 | `Hoglin` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [damage-and-death](../systems/entities/damage-and-death.md) |
-| `Holder` | [fanin](../maps/fanin.md), [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [II · Foundations](../systems/foundations/README.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md), [text-components](../systems/foundations/text-components.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [items-and-stacks](../systems/items/items-and-stacks.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
+| `Holder` | [fanin](../maps/fanin.md), [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [II · Foundations](../systems/foundations/README.md), [data-components](../systems/foundations/data-components.md), [data-driven-types](../systems/foundations/data-driven-types.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [tags](../systems/foundations/tags.md), [text-components](../systems/foundations/text-components.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [items-and-stacks](../systems/items/items-and-stacks.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
 | `HolderGetter` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `HolderLookup` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [items-and-stacks](../systems/items/items-and-stacks.md) |
 | `HolderOwner` | [naming-drift](../reference/naming-drift.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md) |
@@ -1553,7 +1553,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `JigsawPlacement` | [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
 | `JigsawReplacementProcessor` | [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
 | `JigsawStructure` | [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md) |
-| `JoinWorldTask` | [protocol-phases](../systems/networking/protocol-phases.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
+| `JoinWorldTask` | [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [protocol-phases](../systems/networking/protocol-phases.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `JOrbisAudioStream` | [sound-engine](../systems/client/sound-engine.md) |
 | `JsonEventLog` | [resource-system](../systems/foundations/resource-system.md) |
 | `JsonOps` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [data-driven-types](../systems/foundations/data-driven-types.md), [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
@@ -1618,7 +1618,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LenientJsonParser` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `LerpFunction` | [density-function-nodes](../reference/density-function-nodes.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `LerpingBossEvent` | [hud](../systems/client/hud.md) |
-| `Level` | [lectures](../lectures.md), [fanin](../maps/fanin.md), [Reference](../reference/README.md), [block-update-flags](../reference/block-update-flags.md), [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [math-and-primitives](../reference/math-and-primitives.md), [naming-drift](../reference/naming-drift.md), [threads](../reference/threads.md), [V · Blocks](../systems/blocks/README.md), [block-breaking](../systems/blocks/block-breaking.md), [block-entities](../systems/blocks/block-entities.md), [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [diodes-and-observers](../systems/blocks/diodes-and-observers.md), [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md), [signal-and-dust](../systems/blocks/signal-and-dust.md), [X · The client](../systems/client/README.md), [the-client-level](../systems/client/the-client-level.md), [the-client-loop](../systems/client/the-client-loop.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [entity-selectors](../systems/commands/entity-selectors.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [pathfinding](../systems/entities/pathfinding.md), [containers-and-menus](../systems/items/containers-and-menus.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [loot-tables](../systems/items/loot-tables.md), [using-an-item](../systems/items/using-an-item.md), [XI · Rendering](../systems/rendering/README.md), [entity-rendering](../systems/rendering/entity-rendering.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [particles](../systems/rendering/particles.md), [section-meshing](../systems/rendering/section-meshing.md), [server-level-tick](../systems/server/server-level-tick.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [lighting](../systems/world/lighting.md), [points-of-interest](../systems/world/points-of-interest.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
+| `Level` | [lectures](../lectures.md), [fanin](../maps/fanin.md), [Reference](../reference/README.md), [block-update-flags](../reference/block-update-flags.md), [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [math-and-primitives](../reference/math-and-primitives.md), [naming-drift](../reference/naming-drift.md), [threads](../reference/threads.md), [V · Blocks](../systems/blocks/README.md), [block-breaking](../systems/blocks/block-breaking.md), [block-entities](../systems/blocks/block-entities.md), [block-interaction](../systems/blocks/block-interaction.md), [blocks-and-states](../systems/blocks/blocks-and-states.md), [diodes-and-observers](../systems/blocks/diodes-and-observers.md), [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md), [signal-and-dust](../systems/blocks/signal-and-dust.md), [X · The client](../systems/client/README.md), [the-client-level](../systems/client/the-client-level.md), [the-client-loop](../systems/client/the-client-loop.md), [what-makes-a-sound](../systems/client/what-makes-a-sound.md), [entity-selectors](../systems/commands/entity-selectors.md), [entity-anatomy](../systems/entities/entity-anatomy.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md), [movement-and-collision](../systems/entities/movement-and-collision.md), [pathfinding](../systems/entities/pathfinding.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [containers-and-menus](../systems/items/containers-and-menus.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [loot-tables](../systems/items/loot-tables.md), [using-an-item](../systems/items/using-an-item.md), [XI · Rendering](../systems/rendering/README.md), [entity-rendering](../systems/rendering/entity-rendering.md), [lightmap-fog-and-sky](../systems/rendering/lightmap-fog-and-sky.md), [particles](../systems/rendering/particles.md), [section-meshing](../systems/rendering/section-meshing.md), [server-level-tick](../systems/server/server-level-tick.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md), [fluids](../systems/world/fluids.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [lighting](../systems/world/lighting.md), [points-of-interest](../systems/world/points-of-interest.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `LevelAccessor` | [block-interaction](../systems/blocks/block-interaction.md), [the-client-level](../systems/client/the-client-level.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `LevelBasedPermissionSet` | [naming-drift](../reference/naming-drift.md), [entity-selectors](../systems/commands/entity-selectors.md), [functions-and-macros](../systems/commands/functions-and-macros.md), [permissions](../systems/commands/permissions.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `LevelBasedValue` | [data-driven-types](../systems/foundations/data-driven-types.md), [enchantments](../systems/items/enchantments.md) |
@@ -1720,7 +1720,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LootContextParamSets` | [block-breaking](../systems/blocks/block-breaking.md), [entity-selectors](../systems/commands/entity-selectors.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `LootContextSources` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `LootContextUser` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
-| `LootDataType` | [data-driven-types](../systems/foundations/data-driven-types.md), [tags](../systems/foundations/tags.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
+| `LootDataType` | [data-driven-types](../systems/foundations/data-driven-types.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `LootItem` | [loot-tables](../systems/items/loot-tables.md) |
 | `LootItemCondition` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [advancements](../systems/commands/advancements.md), [data-driven-types](../systems/foundations/data-driven-types.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [enchantments](../systems/items/enchantments.md) |
 | `LootItemConditionalFunction` | [data-driven-types](../systems/foundations/data-driven-types.md), [loot-tables](../systems/items/loot-tables.md) |
@@ -1731,12 +1731,13 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `LootItemRandomChanceCondition` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `LootItemRandomChanceWithEnchantedBonusCondition` | [enchantments](../systems/items/enchantments.md) |
 | `LootParams` | [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [loot-tables](../systems/items/loot-tables.md) |
-| `LootPool` | [data-driven-types](../systems/foundations/data-driven-types.md), [loot-tables](../systems/items/loot-tables.md) |
+| `LootPool` | [loot-tables](../systems/items/loot-tables.md) |
 | `LootPoolEntries` | [loot-tables](../systems/items/loot-tables.md) |
 | `LootPoolEntry` | [loot-tables](../systems/items/loot-tables.md) |
 | `LootPoolEntryContainer` | [data-driven-types](../systems/foundations/data-driven-types.md), [loot-tables](../systems/items/loot-tables.md) |
 | `LootTable` | [data-driven-types](../systems/foundations/data-driven-types.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md), [loot-tables](../systems/items/loot-tables.md), [what-the-client-is-told](../systems/networking/what-the-client-is-told.md) |
 | `LpVec3` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
+| `MaceItem` | [data-components](../systems/foundations/data-components.md) |
 | `MacosUtil` | [input-and-keybinds](../systems/client/input-and-keybinds.md) |
 | `MacroFunction` | [naming-drift](../reference/naming-drift.md), [functions-and-macros](../systems/commands/functions-and-macros.md) |
 | `Main` | [the-client-loop](../systems/client/the-client-loop.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md), [creating-a-world](../systems/worldgen/creating-a-world.md) |
@@ -1769,7 +1770,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `MemoryMap` | [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `MemoryModuleType` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md), [game-events-and-vibrations](../systems/world/game-events-and-vibrations.md), [points-of-interest](../systems/world/points-of-interest.md) |
 | `MemoryReserve` | [starting-a-server](../systems/server/starting-a-server.md) |
-| `MemoryServerHandshakePacketListenerImpl` | [protocol-phases](../systems/networking/protocol-phases.md) |
+| `MemoryServerHandshakePacketListenerImpl` | [anatomy](../systems/anatomy/anatomy.md), [protocol-phases](../systems/networking/protocol-phases.md) |
 | `MemorySlot` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `MenuProvider` | [containers-and-menus](../systems/items/containers-and-menus.md) |
 | `MenuScreens` | [gui-and-screens](../systems/client/gui-and-screens.md), [containers-and-menus](../systems/items/containers-and-menus.md) |
@@ -1874,6 +1875,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `NbtProvider` | [data-driven-types](../systems/foundations/data-driven-types.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
 | `NbtProviders` | [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `NbtTagArgument` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
+| `NbtToSnbt` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md) |
 | `NbtUtils` | [entity-selectors](../systems/commands/entity-selectors.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `NearestAttackableTargetGoal` | [ai-goals-and-brains](../systems/entities/ai-goals-and-brains.md) |
 | `NearestBedSensor` | [points-of-interest](../systems/world/points-of-interest.md) |
@@ -2221,12 +2223,12 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `RarityFilter` | [features-and-placement](../systems/worldgen/features-and-placement.md) |
 | `RateKickingConnection` | [the-connection](../systems/networking/the-connection.md) |
 | `Ravager` | [damage-and-death](../systems/entities/damage-and-death.md) |
-| `RconClient` | [threads](../reference/threads.md) |
+| `RconClient` | [threads](../reference/threads.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md) |
 | `RconConsoleSource` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [brigadier-and-commands](../systems/commands/brigadier-and-commands.md) |
 | `RconThread` | [threads](../reference/threads.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [starting-a-server](../systems/server/starting-a-server.md) |
 | `ReadOnlyScoreInfo` | [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
 | `RealmsConnect` | [protocol-phases](../systems/networking/protocol-phases.md) |
-| `RealmsScreen` | [hierarchy](../maps/hierarchy.md) |
+| `RealmsScreen` | [hierarchy](../maps/hierarchy.md), [what-this-book-skips](../systems/anatomy/what-this-book-skips.md) |
 | `Recipe` | [glossary](../reference/glossary.md), [naming-drift](../reference/naming-drift.md), [data-driven-types](../systems/foundations/data-driven-types.md), [recipes](../systems/items/recipes.md) |
 | `RecipeAccess` | [recipes](../systems/items/recipes.md) |
 | `RecipeBook` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md) |
@@ -2253,7 +2255,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `RecipeToast` | [hud](../systems/client/hud.md) |
 | `RecipeType` | [data-driven-types](../systems/foundations/data-driven-types.md), [recipes](../systems/items/recipes.md) |
 | `RecipeUnlockedTrigger` | [advancements](../systems/commands/advancements.md) |
-| `RecordCodecBuilder` | [fanin](../maps/fanin.md) |
+| `RecordCodecBuilder` | [fanin](../maps/fanin.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `RectGizmo` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `RedStoneOreBlock` | [prediction-and-acks](../systems/client/prediction-and-acks.md) |
 | `RedstoneSide` | [signal-and-dust](../systems/blocks/signal-and-dust.md) |
@@ -2297,6 +2299,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `RemoteSampleLogger` | [debugging-the-running-game](../systems/client/debugging-the-running-game.md) |
 | `RemoteSlot` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [containers-and-menus](../systems/items/containers-and-menus.md) |
 | `RemoveBinomial` | [enchantments](../systems/items/enchantments.md) |
+| `Removed` | [data-components](../systems/foundations/data-components.md) |
 | `RemoveStatusEffectsConsumeEffect` | [using-an-item](../systems/items/using-an-item.md) |
 | `RenderBuffers` | [section-meshing](../systems/rendering/section-meshing.md), [the-frame](../systems/rendering/the-frame.md) |
 | `RenderLayer` | [entity-rendering](../systems/rendering/entity-rendering.md) |
@@ -2439,7 +2442,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `SequenceFeature` | [features-and-placement](../systems/worldgen/features-and-placement.md) |
 | `SequenceFunction` | [naming-drift](../reference/naming-drift.md), [data-driven-types](../systems/foundations/data-driven-types.md), [loot-tables](../systems/items/loot-tables.md) |
 | `SequentialEntry` | [loot-tables](../systems/items/loot-tables.md) |
-| `SerializableChunkData` | [naming-drift](../reference/naming-drift.md), [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [lighting](../systems/world/lighting.md), [points-of-interest](../systems/world/points-of-interest.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [blending](../systems/worldgen/blending.md) |
+| `SerializableChunkData` | [naming-drift](../reference/naming-drift.md), [chunk-anatomy](../systems/world/chunk-anatomy.md), [chunk-generation-pipeline](../systems/world/chunk-generation-pipeline.md), [chunk-storage](../systems/world/chunk-storage.md), [lighting](../systems/world/lighting.md), [points-of-interest](../systems/world/points-of-interest.md), [scheduled-ticks](../systems/world/scheduled-ticks.md), [blending](../systems/worldgen/blending.md) |
 | `SerializableTickContainer` | [scheduled-ticks](../systems/world/scheduled-ticks.md) |
 | `ServerActivityMonitor` | [server-tick](../systems/server/server-tick.md) |
 | `ServerAddress` | [the-connection](../systems/networking/the-connection.md) |
@@ -2503,7 +2506,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `ServerClockManager` | [glossary](../reference/glossary.md), [level-data-and-rules](../reference/level-data-and-rules.md), [naming-drift](../reference/naming-drift.md), [server-level-tick](../systems/server/server-level-tick.md), [server-tick](../systems/server/server-tick.md), [starting-a-server](../systems/server/starting-a-server.md), [environment-attributes-and-timelines](../systems/world/environment-attributes-and-timelines.md) |
 | `ServerCodeOfConductConfigurationTask` | [protocol-phases](../systems/networking/protocol-phases.md) |
 | `ServerCommonPacketListener` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md) |
-| `ServerCommonPacketListenerImpl` | [biggest](../maps/biggest.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [resource-system](../systems/foundations/resource-system.md), [protocol-phases](../systems/networking/protocol-phases.md), [the-connection](../systems/networking/the-connection.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-tick](../systems/server/server-tick.md) |
+| `ServerCommonPacketListenerImpl` | [biggest](../maps/biggest.md), [anatomy](../systems/anatomy/anatomy.md), [synched-entity-data](../systems/entities/synched-entity-data.md), [resource-system](../systems/foundations/resource-system.md), [protocol-phases](../systems/networking/protocol-phases.md), [the-connection](../systems/networking/the-connection.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-tick](../systems/server/server-tick.md) |
 | `ServerConfigurationPacketListenerImpl` | [threads](../reference/threads.md), [identifiers-and-registries](../systems/foundations/identifiers-and-registries.md), [protocol-phases](../systems/networking/protocol-phases.md), [players-and-sessions](../systems/server/players-and-sessions.md) |
 | `ServerConnectionListener` | [anatomy](../systems/anatomy/anatomy.md), [protocol-phases](../systems/networking/protocol-phases.md), [the-connection](../systems/networking/the-connection.md), [how-a-server-dies](../systems/server/how-a-server-dies.md), [players-and-sessions](../systems/server/players-and-sessions.md), [server-tick](../systems/server/server-tick.md), [starting-a-server](../systems/server/starting-a-server.md) |
 | `ServerData` | [the-connection](../systems/networking/the-connection.md) |
@@ -2598,7 +2601,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `SignedMessageValidator` | [chat-and-signing](../systems/networking/chat-and-signing.md) |
 | `SignRenderState` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `SignText` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
-| `SilentInitException` | [the-client-loop](../systems/client/the-client-loop.md) |
+| `SilentInitException` | [I · Anatomy](../systems/anatomy/README.md), [the-client-loop](../systems/client/the-client-loop.md) |
 | `SimpleBitStorage` | [chunk-anatomy](../systems/world/chunk-anatomy.md) |
 | `SimpleBlockFeature` | [naming-drift](../reference/naming-drift.md) |
 | `SimpleContainer` | [containers-and-menus](../systems/items/containers-and-menus.md) |
@@ -2636,6 +2639,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `SingleVariant` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
 | `SkinManager` | [entity-rendering](../systems/rendering/entity-rendering.md) |
 | `SkinTextureDownloader` | [entity-rendering](../systems/rendering/entity-rendering.md), [the-window](../systems/rendering/the-window.md) |
+| `SkipFields` | [codecs-nbt-json](../systems/foundations/codecs-nbt-json.md) |
 | `SkipPacketDecoderException` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [the-connection](../systems/networking/the-connection.md) |
 | `SkipPacketEncoderException` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [the-connection](../systems/networking/the-connection.md) |
 | `SkipPacketException` | [packets-and-stream-codecs](../systems/networking/packets-and-stream-codecs.md), [the-connection](../systems/networking/the-connection.md) |
@@ -2698,7 +2702,6 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `SpawnEggItem` | [entity-lifecycle](../systems/entities/entity-lifecycle.md), [VII · Items and inventories](../systems/items/README.md) |
 | `SpawnerBlockEntity` | [block-entities](../systems/blocks/block-entities.md), [pistons-and-block-events](../systems/blocks/pistons-and-block-events.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
 | `SpawnerRenderState` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
-| `SpawnParticlesEffect` | [data-driven-types](../systems/foundations/data-driven-types.md) |
 | `SpawnPlacements` | [glossary](../reference/glossary.md), [entity-lifecycle](../systems/entities/entity-lifecycle.md) |
 | `SpawnPlacementType` | [naming-drift](../reference/naming-drift.md) |
 | `SpawnPlacementTypes` | [naming-drift](../reference/naming-drift.md) |
@@ -2804,7 +2807,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `StructureStart` | [what-the-client-is-told](../systems/networking/what-the-client-is-told.md), [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `StructureTags` | [tags](../systems/foundations/tags.md) |
 | `StructureTemplate` | [hand-built-structures](../systems/worldgen/hand-built-structures.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md), [trees](../systems/worldgen/trees.md) |
-| `StructureTemplateManager` | [resource-system](../systems/foundations/resource-system.md), [starting-a-server](../systems/server/starting-a-server.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
+| `StructureTemplateManager` | [what-this-book-skips](../systems/anatomy/what-this-book-skips.md), [resource-system](../systems/foundations/resource-system.md), [starting-a-server](../systems/server/starting-a-server.md), [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
 | `StructureTemplatePool` | [jigsaw-and-templates](../systems/worldgen/jigsaw-and-templates.md) |
 | `StructureType` | [data-driven-types](../systems/foundations/data-driven-types.md), [structure-placement](../systems/worldgen/structure-placement.md) |
 | `StructureUtils` | [game-tests](../systems/commands/game-tests.md), [scheduled-ticks](../systems/world/scheduled-ticks.md) |
@@ -2969,7 +2972,7 @@ simple name, not a class: a few names belong to more than one class (there are f
 | `TrialSpawnerBlockEntity` | [block-entities](../systems/blocks/block-entities.md) |
 | `TrialSpawnerState` | [block-entities](../systems/blocks/block-entities.md) |
 | `TrialSpawnerStateData` | [block-entities](../systems/blocks/block-entities.md), [contexts-and-predicates](../systems/items/contexts-and-predicates.md) |
-| `TridentItem` | [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md) |
+| `TridentItem` | [data-components](../systems/foundations/data-components.md), [enchantments](../systems/items/enchantments.md), [using-an-item](../systems/items/using-an-item.md) |
 | `TridentSpecialRenderer` | [block-entity-rendering](../systems/rendering/block-entity-rendering.md) |
 | `TriggerCommand` | [brigadier-and-commands](../systems/commands/brigadier-and-commands.md), [scoreboard-and-data](../systems/commands/scoreboard-and-data.md) |
 | `TrimMaterialProperty` | [models-and-atlases](../systems/rendering/models-and-atlases.md) |
