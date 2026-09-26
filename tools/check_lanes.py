@@ -31,6 +31,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from verify_names import load_index, members_of  # noqa: E402
+import mc_version  # noqa: E402  (the one place the version is written)
 
 KEY_ROW = re.compile(r"^\|\s*`([A-Za-z0-9_]+)`\s*\|\s*(.+?)\s*\|\s*$")
 CLASS_CELL = re.compile(r"^`([A-Za-z_][A-Za-z0-9_.]*)`$")
@@ -239,8 +240,8 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default=os.path.join(here, "..", "src"))
     ap.add_argument("--template", default=os.path.join(here, "..", "TEMPLATE.md"))
-    ap.add_argument("--mc-source", default=os.environ.get("MC_SOURCE", os.path.join(here, "..", "reference", "26.2")))
-    ap.add_argument("--libs", default=os.environ.get("MC_LIBS", os.path.join(here, "..", "reference", "libs")))
+    ap.add_argument("--mc-source", default=mc_version.source())
+    ap.add_argument("--libs", default=mc_version.libs())
     ap.add_argument("--pages", nargs="*", help="restrict the page checks to these files or directories")
     ap.add_argument("--strict", action="store_true", help="page mismatches and collisions fail, not just report")
     ap.add_argument("--index", action="store_true", help="write src/reference/lanes.md")

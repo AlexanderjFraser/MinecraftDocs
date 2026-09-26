@@ -12,7 +12,7 @@ A page is read outside its code fences as prose sentences, table rows and
 diagram lines (a figure label is a claim too); each sentence is tagged with
 every category it trips. The categories, and what trips them:
 
-  count     a digit number (not the version 26.2), a number word from two to
+  count     a digit number (not the version itself), a number word from two to
             a thousand, or "only/exactly/just one", "both", "twice", "a pair",
             "half", "a dozen", "single"
   absolute  only · never · always · every · all · none · nothing · nobody ·
@@ -38,6 +38,8 @@ import re
 import sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mc_version  # noqa: E402  (the one place the version is written)
 SRC = os.path.join(ROOT, "src")
 
 NUMBER_WORDS = (
@@ -47,7 +49,7 @@ NUMBER_WORDS = (
 )
 CATEGORIES = {
     "count": re.compile(
-        rf"(?<![\w.])(?!26\.2\b)\d+(?:[.,]\d+)?(?![\w.])"
+        rf"(?<![\w.])(?!{re.escape(mc_version.VERSION)}\b)\d+(?:[.,]\d+)?(?![\w.])"
         rf"|\b(?:{NUMBER_WORDS})(?:-(?:one|two|three|four|five|six|seven|eight|nine))?\b"
         r"|\b(?:only|exactly|just|the) one\b|\bboth\b|\btwice\b|\ba pair\b|\bhalf\b|\ba dozen\b|\bsingle\b",
         re.I),

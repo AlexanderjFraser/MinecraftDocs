@@ -1,4 +1,10 @@
-# Passes 5–8 — the queue (opened 2026-09-02 as the polish queue)
+# Passes 5–8 — the queue (opened 2026-09-02 as the polish queue; closed by pass 8)
+
+*Pass 8, the last pass, closes this file: every open unit is struck by its close as
+*done*, *overtaken*, *ruled* or *second edition*, each with a word saying why, and
+`python tools/pass5_queue.py --summary` at zero open is the release's test (ruling R8,
+[pass8-brief.md](pass8-brief.md)). On 2026-09-26 it held 603 open units: 85 book, 42
+lecture, 28 figure, 320 voice, 128 record. Nothing is appended for a later pass.*
 
 *Opened when polish was pass 5 and kept under that name. The ten-pass plan of
 2026-09-05 ([plan.md](plan.md)) splits polish into four passes with one lens

@@ -6,51 +6,38 @@ series. One page per lecture, each following one thing through the system
 (a tick, a placed block, a chunk coming into view, a packet, a frame, a sword
 swing) with a diagram whose lanes are class names. The site is the notes;
 the video is the lecture. Readers are humans who'd rather watch and agents
-who'd rather fetch the whole corpus at once.
+who'd rather fetch the whole corpus at once (every page is also served as
+markdown at its `.md` address, and `llms-full.txt` is the whole book).
 
 **Owner:** Alexander Fraser (`AlexanderjFraser`). The owner has to *learn*
 each system to record it, so the work is in passes (the owner is the "meat
-proxy": starts sessions, approves nothing technical, judges what lands).
-**Eight passes leave the site stable** (ten were planned; the last three collapsed into one). Passes 1–4 are done: **1** the rough
+proxy": starts sessions, approves nothing technical, judges what lands by
+reading the live site). Nothing is recorded that the owner hasn't understood.
+
+**Where the work is (2026-09-26).** Seven passes are done: **1** the rough
 draft from the decompile; **2** every claim adversarially fact-checked;
-**3** restructuring — the site became a book, each part the shape of its
-system, each page one of eight shapes, the frame, maps and Reference tier
-redone, the lecture order drafted; **4** the second fact-check, pass 2's
-protocol over everything pass 3 rewrote (each archived whole in
-`docs/passN.md`; every page had at least one wrong claim in both checks).
-Pass **5 the book** is done (2026-09-07, sessions A–O): across pages —
-ownership, the seams, the through-lines, the thirteen landing pages rewritten
-to a stated role, the coverage question asked once per part with a tool, and
-the last moves; 171 corrections, about half of them one page contradicting
-another, which is the error two fact-checks could not see. Its record is
-`docs/pass5-brief.md`. Pass **6 the lecture** is done (2026-09-14, sessions
-A–N): each page read *down*, as one lecture's notes, by a reader with nothing
-but the page — the *Questions players ask* closer on 69 of 102 pages in five
-spellings came to 46 in one, the literal trace heading from 20 to none, the
-1.21 blockquote to the foot on all 43 — and about two hundred facts corrected,
-almost all of them **a sentence disagreeing with the text beside it**, which is
-what neither fact-check was looking for. Its record is `docs/pass6-brief.md`,
-whose Part 3 is the settled standard and Part 5 the archived charter, session
-paragraphs and log. Pass **7 the figures** is done bar one session (K, Part XI, which runs inside
-pass 8): its record is `docs/pass7-brief.md`, its verdict about 180 facts
-corrected in figures on a corpus fact-checked twice, its standing finding **a
-message labelled with the caller's method and drawn arriving at the callee**
-(eleven parts of eleven; the figure gate catches it mechanically), and three
-things written into `TEMPLATE.md` (a caption is one italic run end to end; an
-explicit `<br/>` turns the theme's wrap off; seven lanes is one too many for
-the column). Pass **8 the release** is **current** (planned 2026-09-26,
-`docs/pass8-brief.md`): passes 8, 9 and 10 collapsed into one stabilising
-pass after the owner's read of 2026-09-16 (better than a free wiki, not yet a
-textbook; the process, not the form, is the ceiling) — the third fact-check
-over the 1,064-entry ledger in `docs/pass9.md` (`tools/pass8_queue.py` routes
-it by part; every entry is struck by the close), Part XI's figures, and the
-release; the voice pass is dropped. After it the site is left stable while
-the production process is rebuilt from first principles on a new subject,
-`D:\DjangoDocs` (its `docs/brief.md` holds the reasoning), and returns here
-with what it learned. Beside them, a **version pass**
-runs between passes on each release, and the owner reads whenever they
-like, leaving `<!-- Q: … -->` in a page for the next session that touches
-it. Nothing is recorded that the owner hasn't understood.
+**3** the restructuring into a book of thirteen parts and eight page shapes;
+**4** the second fact-check; **5** the book, read across pages (171
+corrections, half of them one page contradicting another); **6** the lecture,
+each page read down by a reader with nothing but the page (about two hundred
+corrections, almost all *a sentence that disagrees with the text beside it*);
+**7** the figures, every one looked at rendered for the first time (about 180
+facts corrected inside figures; its standing finding *a message labelled with
+the caller's method and drawn arriving at the callee*, which the figure gate
+now catches). Each is archived whole — `docs/passN.md` for 1–4, the brief's
+Part 5 for 5–7. **Pass 8, the release, is current** and is the last pass
+before the site is left stable: the version (26.3 shipped 2026-09-15), the
+third fact-check over the ledger in `docs/pass9.md`, a polish over the exact
+wording done after the check and read again by a session that changed
+nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
+the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
+(sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
+that file's Part 6. After it the production process is rebuilt from first
+principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
+returns here with what it learned; until then only a version pass the owner
+asks for and the corrections readers file touch the site. Beside the passes,
+the owner reads whenever they like, leaving `<!-- Q: … -->` in a page for the
+next session that touches it.
 
 ## The rules
 
@@ -63,9 +50,14 @@ it. Nothing is recorded that the owner hasn't understood.
    fine (this class owns that state; this call happens on that thread);
    line-level walkthroughs are not. Code makes boring video and dates fast.
 3. **Newest version only.** Every page states `verified against <version>`
-   in its header. No version-difference sections, no "in 1.x this was…".
-   When a release lands, re-verify the pages (a re-read, rarely a rewrite).
-   Currently **26.2**.
+   in its header. No version-difference sections, no "in 1.x this was…"
+   (the one allowed drift note is the *For a 1.21-era reader* blockquote at a
+   page's foot). When a release lands, the version pass re-verifies the pages
+   (`docs/plan.md`, *The version pass*; `tools/version_pass.py` stages the
+   tree). **The pages say 26.2 and the tools read 26.2 until pass 8's
+   sessions V1 and V2 run; 26.3 (2026-09-15) is staged at `reference/26.3/`
+   and is what they move the site to.** The version is one constant,
+   `tools/mc_version.py`.
 4. **Trace-driven.** A lecture follows a scenario through the system; the
    trace is the spine and the diagram is the artefact. A package tour is
    the boring version and the one you learn least from.
@@ -83,7 +75,7 @@ it. Nothing is recorded that the owner hasn't understood.
    mermaid ends a statement at `;` and reads `#` as an entity code, so neither
    goes in a label. Parsing is not the test a reader applies:
    `node tools/render_figures.js` shows every figure at the reading column, and
-   from pass 7 a figure is legible there **without the zoom**. The whole visual
+   since pass 7 a figure is legible there **without the zoom**. The whole visual
    grammar — the wrap, the palettes, the five semantic classes, the caption —
    is in `mermaid-init.js` and `custom.css`, and a page carries no
    `%%{init}%%`, `classDef`, `style` or `linkStyle` (`check_mermaid.js` fails
@@ -96,33 +88,40 @@ it. Nothing is recorded that the owner hasn't understood.
 8. **Links resolve.** `python tools/check_links.py` checks every internal
    link, anchor, include, `SUMMARY.md` entry and `book.toml` redirect; a
    broken one does not publish. An anchor is a heading's mdBook id, so a
-   heading that moves takes its links with it or breaks the build.
+   heading that moves takes its links with it or breaks the build — which is
+   why no pass rewords a heading for its wording.
 
 ## The source
 
 The Mojang-mapped decompile is **not in this repo** (it can't be — this repo
 is public and the EULA/mappings licence forbids redistributing it). It lives
-at `reference/26.2/` (gitignored; the zips it came from are gitignored too)
-and `tools/verify_names.py` / `tools/map_source.py` default to it; `MC_SOURCE`
-overrides. The client jar is a strict superset of the server jar, so
-`reference/26.2/` is the client decompile plus `server-classes.txt`, the list
-of classes the dedicated server also ships — the oracle for "is this class
-server-side or client-only". 7,055 classes, 719k lines, Java 25.
+under `reference/` (gitignored, with the jars it came from), one tree per
+version: `reference/26.2/`, the version the pages currently say, and
+`reference/26.3/`, staged 2026-09-26 for the version pass. Every tool reads
+the tree `tools/mc_version.py` names (`MC_SOURCE` overrides). Since 26.x the
+game jar ships with Mojang's names in it, so a tree is a plain Vineflower
+decompile of the client jar — `python tools/version_pass.py <version>` does
+the whole staging from Mojang's manifest in about ten minutes, with the
+decompiler bundled in the sibling project's McDeob jar. The client jar is a
+strict superset of the server jar, so a tree is the client decompile plus
+`server-classes.txt`, the list of classes the dedicated server also ships —
+the oracle for "is this class server-side or client-only". 26.2: 7,055
+classes, 719k lines, Java 25; 26.3: 7,301 classes, 271 removed and 517 added,
+5,037 server classes, protocol 777.
 
-Beside it, also gitignored: **`reference/26.2/data/` and
-`reference/26.2/assets/`** — the jar's data packs and its non-texture assets
-(models, blockstates, items, atlases, fonts, particles, the six `post_effect`
-chains and the shader tree), the fact base for every data-driven claim; and
-**`reference/libs/`** — the Mojang libraries the game depends on, staged by
-`tools/fetch_libs.sh`: Brigadier 1.3.10 and DataFixerUpper 10.0.21 (MIT,
-published source jars) and authlib 9.0.75 (decompiled from the launcher's
-jar, like the game). `verify_names.py` checks library names at member level
-from those trees, so `CommandDispatcher.execute` or `Codec.STRING` is
-verified, not allow-listed. A fact-check agent should read them rather than
-take a library's behaviour on trust.
+Beside the Java in each tree: **`data/` and `assets/`** — the jar's data
+packs and its non-texture assets (models, blockstates, items, atlases, fonts,
+particles, the post-effect chains and the shader tree), the fact base for
+every data-driven claim; and **`reference/libs/`** — the Mojang libraries the
+game depends on, staged by `tools/fetch_libs.sh` at the versions the game
+pins: Brigadier and DataFixerUpper (MIT, published source jars) and authlib
+(decompiled from Mojang's library jar, like the game). `verify_names.py`
+checks library names at member level from those trees, so
+`CommandDispatcher.execute` or `Codec.STRING` is verified, not allow-listed. A
+fact-check agent reads them rather than taking a library's behaviour on trust.
 
 Where the game is (26.2, from `python tools/map_source.py packages`; the
-full tables are in `src/maps/`):
+full tables are in `src/maps/`, regenerated on every deploy):
 
 | package | classes | lines | |
 |---|---:|---:|---|
@@ -130,7 +129,7 @@ full tables are in `src/maps/`):
 | `world/entity` | 716 | 109k | the entity hierarchy, AI, attributes, players |
 | `client/gui` | 444 | 59k | screens, HUD |
 | `client/renderer` + `client/model` | 968 | 61k | the frame, section meshing, entity models, render pipelines |
-| `com/mojang/blaze3d` | 211 | 26k | the GPU abstraction — `opengl` **and `vulkan`** backends behind `GpuDevice` |
+| `com/mojang/blaze3d` | 211 | 26k | the GPU abstraction — `opengl` **and `vulkan`** backends behind `GpuDevice`; **in 26.3 most of it moved to `com/mojang/renderpearl`** (146 classes: `api`, `backend`, `frontend`, `util`) |
 | `world/item` + `world/inventory` | 378 | 36k | items, containers, data components |
 | `network/protocol` | 293 | 13k | the packet catalogue (machinery in `network/`, `server/network`) |
 | `server/level` | 42 | 12k | `ServerLevel`, `ChunkMap`, tickets — small package, huge classes |
@@ -141,7 +140,12 @@ full tables are in `src/maps/`):
 
 Naming drift a 1.21-era reader will trip on: `ResourceLocation` is now
 `Identifier`; `Util` lives in `net.minecraft.util`; `LightTexture` is
-`Lightmap`; `Timer` is `DeltaTracker`; `Gui` and `Hud` both exist.
+`Lightmap`; `Timer` is `DeltaTracker`; `Gui` and `Hud` both exist. 26.3 adds
+to the list: the GPU abstraction is `renderpearl`, world generation's surface
+rules and carvers and the `CARVERS` and `SURFACE` chunk statuses are gone,
+`level/storage` is reworked, and `ServerboundSwingPacket`, `RedStoneWireBlock`,
+`ItemInHandRenderer` and the registry codecs (`RegistryFileCodec`,
+`RegistryFixedCodec`, `HolderSetCodec`) no longer exist under those names.
 
 ## The page (`TEMPLATE.md`)
 
@@ -149,66 +153,62 @@ Naming drift a 1.21-era reader will trip on: `ResourceLocation` is now
 policy · comparison · vocabulary · pattern · landing page), written by
 pass-3 session A from two pilots — `tickets-and-loading` (policy) and
 `protocol-phases` (state machine) — with the devices, the budgets, the
-mermaid rules and **the lane key** (rule 7). Pass-5 session A added the two
+mermaid rules and **the lane key** (rule 7). Pass 5's session A added the two
 rules that are about the book rather than a page: **one home per mechanism**
 (who owns a mechanism, what the other page keeps, and the citation form — a
 parenthetical link carrying the owner's *anchor*) and **the landing page's
 role** (the argument · the size · the shape · before you start · watch in
-this order · the Reference it uses). Over the 102 system pages the
-shapes fell out as trace 31, vocabulary 25, pipeline 19, comparison 11,
-policy 7, pattern 7, state machine 2; the *Questions players ask* closer is
-on 69 of them, in five spellings and on every page of three parts, and 27
-links from other pages land on one, which is pass 6's first job
-(`tools/pass6_shape.py` measures every device per page). What every page keeps: the
-verified line with the part and scenario; an opening paragraph that starts
-inside the scenario and ends on the hook (the surprising true thing the page
-explains); a cast of at most eight classes instead of field inventories; at
-least one figure; headings that say what the section says, not which
-template slot it fills; *Where to look*; the rules footer. Budgets: a list
-is at most seven items of at most two sentences, at most three lists a
-page; anything explanatory is prose, anything enumerative beyond seven is a
-table or a Reference page.
+this order · where the part stops · the Reference it uses). Pass 6's session
+A wrote in the devices that had become slots (the closer's one spelling and
+its test, the 1.21 blockquote at the foot, the way into a scenario); pass 7's
+rewrote *Figures* and *Lanes* to the figure standard (six lanes, the caption
+as one italic run, no colour in a page, the marks table); pass 8's session A
+adds *Voice*, the wording rulings, from `docs/pass8-brief.md` Part 4. What
+every page keeps: the verified line with the part and scenario; an opening
+paragraph that starts inside the scenario and ends on the hook (the
+surprising true thing the page explains); a cast of at most eight classes
+instead of field inventories; at least one figure, captioned; headings that
+say what the section says, not which template slot it fills; *Where to look*;
+the rules footer. Budgets: a list is at most seven items of at most two
+sentences, at most three lists a page; anything explanatory is prose,
+anything enumerative beyond seven is a table or a Reference page. Over the
+102 system pages the shapes fell out as trace 31, vocabulary 25, pipeline 19,
+comparison 11, policy 7, pattern 7, state machine 2.
 
 ## The plan
 
-[docs/plan.md](docs/plan.md) — the ten passes, why they are in that order,
-the rhythm every pass follows, the current pass's charter, the standing
-rules for passes 5–8, the version pass, the owner's read, and the session
-log from pass 5 on. **Read it first; tick it last.** Each finished pass is
-archived whole in `docs/passN.md` (charter, rulings, protocol, schedule,
-log — still worth grepping; pass 2's fact-check protocol and lessons and
-pass 4's additions are what pass 9 runs; the plan as it stood at pass 4's
-close is at the end of `docs/pass4.md`). The queues: [docs/pass5.md](docs/pass5.md)
-is what passes 5–8 draw on — structural findings to 5, page-shape findings
-to 6, figure findings to 7, wording debt to 8, each struck as settled;
-[docs/pass9.md](docs/pass9.md) is where every pass-5-to-8 session lists the
-claims it introduced and the corrections it made, so pass 9 checks them
-first; [docs/pass3.md](docs/pass3.md) §7 is the coverage queue (a system
-with no owner page) and seeds a second edition. **A session that leaves
-something for later appends to the right one of those, not only to the
-log.** Each pass starts with a planning session (Fable) that builds its
-tools and brief — pass 4's were the model: [docs/pass4-brief.md](docs/pass4-brief.md)
-and `tools/pass4_prompts.py` (one prompt file per page from
-`pass4_queue.py`, `claims.py` and `diagram_arrows.py`); **pass 5's are
-[docs/pass5-brief.md](docs/pass5-brief.md)** (the agent's brief, the runbook,
-Part 3 — the record of session A's rulings — and the schedule with what the
-tools measured) and
-`tools/pass5_prompts.py`, fed by `pass5_queue.py` (the queue by kind),
-`pass5_dups.py` (the duplication finder), `pass5_coverage.py` (the coverage
-question per part over the atlas's `PARTS` mapping) and `check_links.py` —
-and ran sessions A–O on Opus, all fifteen done; **pass 6's are
-[docs/pass6-brief.md](docs/pass6-brief.md)** (the reader's brief, the runbook,
-Part 3 the standard session A rules on, Part 4 the schedule with a status
-column) and `tools/pass6_prompts.py`, fed by `pass6_shape.py` (the devices,
-the skeletons, the budgets and the landing pages, measured per page) and
-`pass5_queue.py --kind lecture` (which also knows `[kind=record]` for a unit
-no pass acts on); `tools/check_deps.py` checks the landing
-pages, the lecture table and the parts-dependency figure against each other.
-Every tool built since pass 5 has a `--probe` that proves it fails on the
-construct it should.
-`docs/outline.md` is the archived fourteen-lecture map. The lecture order
-is drafted (`src/lectures.md`, with the parts-dependency figure) and
-confirmed by the owner before pass 9.
+[docs/plan.md](docs/plan.md) — the eight passes, why they are in that order,
+the rhythm every pass follows, the current pass's charter, the standing rules
+for passes 5–8, the version pass, the owner's read, the risks, and the session
+log from pass 8 on. **Read it first; tick it last.** Each finished pass is
+archived whole (`docs/passN.md` for 1–4; `docs/passN-brief.md` Part 5 for
+5–7) — still worth grepping: pass 2's fact-check protocol and lessons and pass
+4's additions are what pass 8's agent brief descends from. **Pass 8's are
+[docs/pass8-brief.md](docs/pass8-brief.md)** — Part 1 the charter, Part 2 the
+agent brief, Part 3 the runbook, Part 4 the voice standard as recommendations
+with counts for session A to rule on, Part 5 the rulings, Part 6 the schedule
+with the status column, Part 7 the charters it replaces — and its tools, each
+with a `--probe` that proves it fails on the construct it should:
+`tools/version_pass.py` (a release staged from Mojang's manifest, then
+measured with `--check`, then `--flip`), `tools/mc_version.py` (the one
+constant), `tools/pass8_queue.py` (the ledger routed by page, part and
+session; `--unstruck` is the close's test), `tools/pass8_voice.py` (the tics,
+hedges, terms and devices counted per page; `--terms` for the glossary's
+two spellings), `tools/pass8_prompts.py` (one prompt per page for the
+fact-check agent, one session file beside it) and `tools/pass8_diff.py`
+(every sentence changed since the tag `pass-8-start`, for the second
+reading). The two queues: [docs/pass9.md](docs/pass9.md) is the ledger every
+session since pass 5 wrote the claims it introduced and the corrections it
+made into, which pass 8 checks and strikes entry by entry (1,333 entries);
+[docs/pass5.md](docs/pass5.md) is the queue passes 5–8 drew on by kind, which
+pass 8 closes — every open unit settled or ruled *second edition* by its close.
+[docs/pass3.md](docs/pass3.md) §7 is the coverage queue (a system with no
+owner page) and seeds a second edition; it is the one queue that stays open.
+The earlier passes' briefs and tools — `pass4_prompts.py`, `pass5_queue.py`,
+`pass6_shape.py`, `pass7_figures.py`, `render_figures.js` — still run and are
+what pass 8's tools import. `docs/outline.md` is the archived fourteen-lecture
+map. The lecture order is drafted (`src/lectures.md`, with the
+parts-dependency figure) and confirmed by the owner before the release.
 
 ## Site
 
@@ -230,37 +230,37 @@ generated by `tools/gen_reference.py`, two indexes by `verify_names.py
 look-up pages, which `verify_names.py` checks like any system page — its
 README is the tier's landing page); `src/figures/` (a figure two pages share
 through `{{#include}}` — today the parts-dependency graph, on the introduction
-and `lectures.md`, which since pass 7 is an SVG `check_deps.py --write-figure`
-draws from the landing pages into `src/generated/`); `src/lectures.md` (the
-lecture order and the dependencies between parts); `src/robots.txt` (ships
-with the build; points at the sitemap). `theme/head.hbs` is the only theme
-override — Open Graph and Twitter-card meta on every page; `mermaid-init.js` is
+and `lectures.md`, an SVG `check_deps.py --write-figure` draws from the
+landing pages into `src/generated/`); `src/lectures.md` (the lecture order
+and the dependencies between parts); `src/robots.txt` (ships with the build;
+points at the sitemap); `src/_headers` (serves the markdown twins as
+`text/markdown`, cross-origin). `theme/head.hbs` is the only theme override —
+Open Graph and Twitter-card meta on every page; `mermaid-init.js` is
 committed and is **the figure theme** (not the file `mdbook-mermaid install`
-writes, which must never be run over it). `custom.css`
-widens the column for tables, diagrams and figures and caps prose at 800px;
-`diagram-zoom.js` opens any diagram at viewport size on click;
-`site-footer.js` puts the licence and the disclaimer on every page.
-Moved pages keep their URLs through `[output.html.redirect]` in `book.toml`;
-`site-url = "/"` keeps the 404 page's links absolute under nested paths.
-`tools/deploy.sh` regenerates the atlas, the eleven Reference views and the
-coverage phrases, runs
-the six gates, builds, writes `llms-full.txt` (the whole corpus in one
+writes, which must never be run over it). `custom.css` widens the column for
+tables, diagrams and figures and caps prose at 800px; `diagram-zoom.js` opens
+any diagram at viewport size on click; `site-footer.js` puts the licence and
+the disclaimer on every page. Moved pages keep their URLs through
+`[output.html.redirect]` in `book.toml`; `site-url = "/"` keeps the 404 page's
+links absolute under nested paths. `tools/deploy.sh` regenerates the atlas,
+the eleven Reference views, the coverage phrases and the dependency figure,
+runs the six gates, builds, writes `llms-full.txt` (the whole corpus in one
 file, `tools/llms_full.py`) and `sitemap.xml` + `llms.txt` (the index form,
 `tools/site_index.py`), **publishes every page's markdown twin** beside its
-HTML (`/systems/entities/entity-lifecycle.md`, `tools/md_twins.py`; `llms.txt`
-links the twins; `src/_headers` serves them as `text/markdown`, cross-origin),
-**rewrites every built `<head>`** (`tools/page_meta.py`: the page's own title
-and part, a description from its scenario line, a canonical at the clean URL,
-the markdown alternate, Open Graph with `src/og.png` from `tools/og_image.py`,
-JSON-LD; it fails the deploy if any page lacks a canonical or shares a
-description — the state of the site before 2026-09-26), and deploys to Cloudflare Pages project
-`minecraftdocs` (https://minecraftdocs.pages.dev, custom domain
-**minecraftdocs.dev**, a full Cloudflare zone with DNS done) using the token
-at `~/.cloudflare/pvpmod.token` — stored wrapped in quotes, which
-`deploy.sh` strips. The token edits Pages and reads the zone; it cannot
-touch Web Analytics, which is not enabled and is the owner's click.
+HTML (`tools/md_twins.py`; `llms.txt` links them), **rewrites every built
+`<head>`** (`tools/page_meta.py`: the page's own title and part, a description
+from its scenario line, a canonical at the clean URL, the markdown alternate,
+Open Graph with `src/og.png` from `tools/og_image.py`, JSON-LD; it fails the
+deploy if any page lacks a canonical or shares a description), and deploys to
+Cloudflare Pages project `minecraftdocs` (https://minecraftdocs.pages.dev,
+custom domain **minecraftdocs.dev**, a full Cloudflare zone with DNS done)
+using the token at `~/.cloudflare/pvpmod.token` — stored wrapped in quotes,
+which `deploy.sh` strips. The token edits Pages and reads the zone; it cannot
+touch Web Analytics or AI Crawl Control, which are the owner's clicks.
 `tools/check_mermaid.js` needs node and a one-time `npm install` in `tools/`
-(see its header comment).
+(see its header comment). A reader's correction arrives as a GitHub issue
+through `.github/ISSUE_TEMPLATE/correction.yml`, which asks for the decompile
+location that shows the claim false.
 
 ## Conventions
 
@@ -276,17 +276,20 @@ touch Web Analytics, which is not enabled and is the owner's click.
 - `verify_names.py`, `check_mermaid.js`, `check_lanes.py --strict`,
   `check_figure_names.py --strict` and `check_links.py` before every commit
   that touches a page, and `check_deps.py` when a landing page, `SUMMARY.md`,
-  `lectures.md` or the dependency figure changes; `deploy.sh` runs all six — after regenerating the atlas
-  and the eleven Reference views — and refuses to publish on a failure.
+  `lectures.md` or the dependency figure changes; `deploy.sh` runs all six —
+  after regenerating the atlas and the eleven Reference views — and refuses
+  to publish on a failure.
 - A landing page states a size only where size is part of its argument, and
   then from `{{#include ../../generated/part-<dir>.md}}`, which the atlas
   writes from `map_source.py`'s `PARTS` mapping (the same mapping
   `pass5_coverage.py` reads), and a coverage number likewise from
-  `{{#include ../../generated/coverage-<dir>.md}}`; no landing page hand-counts. The order in
-  *watch in this order* is the book's: `SUMMARY.md` and `lectures.md` follow
-  it, and `check_deps.py` fails when the three disagree.
+  `{{#include ../../generated/coverage-<dir>.md}}`; no landing page hand-counts.
+  The order in *watch in this order* is the book's: `SUMMARY.md` and
+  `lectures.md` follow it, and `check_deps.py` fails when the three disagree.
 - A published page never names a pass number as a promise about the
   future; when a pass closes, grep `README.md`, this file, `TEMPLATE.md`
   and the frame pages for the old numbers.
 - Commit your own files by name, never `add -A`: two sessions are often
   open at once and pass sessions sweep the tree.
+- A script with a backslash in it is written with the Write tool and run
+  from a file; this machine's Bash heredocs eat one level of escaping.

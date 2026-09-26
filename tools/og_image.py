@@ -14,7 +14,9 @@ from PIL import Image, ImageDraw, ImageFont
 
 HERE = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 OUT = os.path.join(HERE, "src", "og.png")
-VERSION = "26.2"
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mc_version  # noqa: E402  (the one place the version is written)
+VERSION = mc_version.VERSION
 W, H = 1200, 630
 BG, INK, DIM, ACCENT = (24, 30, 38), (240, 240, 235), (150, 160, 170), (98, 170, 120)
 

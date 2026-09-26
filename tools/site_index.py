@@ -18,6 +18,9 @@ import subprocess
 import sys
 from datetime import date
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mc_version  # noqa: E402  (the one place the version is written)
+
 HERE = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
 SRC, BOOK = os.path.join(HERE, "src"), os.path.join(HERE, "book")
 SITE = "https://minecraftdocs.dev"
@@ -109,11 +112,11 @@ with open(os.path.join(BOOK, "sitemap.xml"), "w", encoding="utf-8", newline="\n"
 
 # --- llms.txt -----------------------------------------------------------------
 out = ["# How Java Minecraft Works", "",
-       "> System-level documentation of the current Java Minecraft codebase, 26.2, "
+       f"> System-level documentation of the current Java Minecraft codebase, {mc_version.VERSION}, "
        "written as the notes for a video lecture series: names, never code. One page "
        "per lecture, each following one scenario through the system, with a diagram "
        "whose lanes are class names.", "",
-       "Every backticked identifier on every page exists in the 26.2 decompile (checked "
+       f"Every backticked identifier on every page exists in the {mc_version.VERSION} decompile (checked "
        "before the site publishes), and every claim has been fact-checked against the "
        "decompile twice. The writing is CC BY-SA 4.0; it describes the game and contains "
        f"none of it. Every link below is the page as markdown; drop the .md for the "

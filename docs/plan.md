@@ -3,130 +3,75 @@
 *Rewritten 2026-09-02 at the start of pass 3, 2026-09-03 at its close,
 2026-09-05 at pass 4's close and again that evening by the planning session
 that set the ten-pass plan, 2026-09-07 by the planning session between passes 5
-and 6, and 2026-09-14 by the planning session between passes 6 and 7. This is
-the document every session reads first and ticks last. Each finished pass is
-archived whole in its own file — [pass1.md](pass1.md), [pass2.md](pass2.md),
-[pass3.md](pass3.md), [pass4.md](pass4.md), and for passes 5 and 6 the brief's
-Part 5: [pass5-brief.md](pass5-brief.md) and [pass6-brief.md](pass6-brief.md),
-each holding that pass's charter, its session paragraphs and its log beside the
-brief, the runbook, session A's rulings and the schedule. The queues:
-[pass5.md](pass5.md), opened as the polish queue and now the queue passes 5–8
-draw on, each entry taken by the pass its kind belongs to; [pass9.md](pass9.md),
-where every pass-5-to-8 session lists the claims it introduced;
-[pass3.md](pass3.md) §7, the coverage queue.*
+and 6, 2026-09-14 by the one between passes 6 and 7, and 2026-09-26 by the one
+that chartered pass 8 — the last pass — after the owner's read. This is the
+document every session reads first and ticks last. Each finished pass is
+archived whole: [pass1.md](pass1.md), [pass2.md](pass2.md), [pass3.md](pass3.md)
+and [pass4.md](pass4.md) for the first four, and for passes 5, 6 and 7 the
+brief's Part 5 — [pass5-brief.md](pass5-brief.md), [pass6-brief.md](pass6-brief.md),
+[pass7-brief.md](pass7-brief.md) — each holding that pass's charter, its session
+paragraphs and its log beside the brief, the runbook, session A's rulings and
+the schedule. The queues: [pass5.md](pass5.md), opened as the polish queue on
+2026-09-02, drawn on by passes 5, 6 and 7 by kind, and **closed by pass 8** —
+every open unit settled or ruled by its close; [pass9.md](pass9.md), the ledger
+where every session since pass 5 has listed the claims it introduced and the
+corrections it made, which pass 8 checks and strikes; [pass3.md](pass3.md) §7,
+the coverage queue, which seeds the second edition and is the one queue that
+stays open.*
 
 ## Where we are
 
-**2026-09-26.** Passes 1 to 7 are done bar one session of 7 (K, Part XI), and
-the plan below this paragraph has changed shape: the owner's read of
-2026-09-16 collapsed passes 8, 9 and 10 into **one release pass**, chartered
-in [pass8-brief.md](pass8-brief.md), after which the site is left stable and
-the production process is rebuilt on a new subject (`D:\DjangoDocs`). The
-same day the site became readable by agents as markdown (every page at
-`/path.md`; `llms.txt` links them) and every page got its own title,
-description, canonical and structured data (`tools/page_meta.py`). The
-paragraphs that follow are the state as pass 7 left it.
+**2026-09-26.** Seven passes are done, bar one session of the seventh (K,
+Part XI's figures, which runs inside pass 8), and the plan below has changed
+shape twice this month. On 2026-09-16 the owner read the site as *better than
+a free wiki, not yet a textbook* and judged the process, not the form, to be
+the ceiling: linear passes, each finding the errors at the edges of the last.
+Their decision was to collapse the three remaining passes into one that leaves
+minecraftdocs.dev stable, then to rebuild the production process from first
+principles on a new subject (`D:\DjangoDocs`; its `docs/brief.md` holds the
+reasoning) and return here with what it learned. On 2026-09-26 they said what
+that one pass is: **the final fact-check, using the ledger every session since
+pass 5 kept for it, and a final polish over the exact wording**, planned to
+make the book as good as this process can make it.
 
-**Passes 1 to 6 are done.** Every page was drafted from the decompile (1),
-fact-checked twice with every page found wrong at least once each time (2 and
-4), restructured into a book of thirteen parts and eight page shapes (3), read
-*across* rather than down — one home per mechanism, the seams, the
-through-lines, the thirteen landing pages as arguments (5) — and then read
-*down*, one page at a time, as one lecture's notes (6). Pass 5's record is
-[pass5-brief.md](pass5-brief.md) and pass 6's is
-[pass6-brief.md](pass6-brief.md), each with its charter, its schedule and its
-session paragraphs.
+The same day, two facts moved. **Minecraft 26.3 shipped on 2026-09-15**, so
+every page's *verified against 26.2* has been untrue for eleven days; the
+planning session staged the 26.3 decompile beside the old one
+(`tools/version_pass.py`, one script now) and measured it — 517 names on 65
+pages no longer resolve, and three systems changed shape (the GPU abstraction
+moved to `com/mojang/renderpearl`, world generation's surface rules and carvers
+and two chunk statuses are gone, `level/storage` was reworked) — so the version
+pass is pass 8's first two sessions rather than a re-read between passes. And
+the site became readable by agents that morning: every page at its `.md`
+address, every built `<head>` carrying its own title, description, canonical
+and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 
-**Pass 6 closed on 2026-09-14 after fourteen sessions, A to N**, the owner
-calling the pass finished. The devices it was chartered against came down as
-measured: the *Questions players ask* closer from 69 of 102 pages to **46**, in
-**one** spelling from five, every one of them the last content section; the
-literal `## The trace…` heading from 20 to **none**; the 1.21 blockquote from 39
-to 43 and from 23 at the foot to **43 of 43**. But the count is not what the
-pass was worth. **Around two hundred facts were corrected**, almost all of them
-found by readers who had nothing but the page, on a corpus fact-checked
-adversarially twice — and the class is one no fact-check looks for: **a sentence
-that disagrees with the text beside it.** A lead-in promising four things over
-six paragraphs; *nine zones* over sixteen names; *half of them … the other half*
-over a table that splits thirteen and ten; four numbers in a record that holds
-three. Session I named it, session J widened it from lead-ins to any sentence,
-and session N found twenty-one of them in eighteen pages of the frame and the
-shelf, where a catalogue's prose has little to say but how many rows there are.
-The second finding is A2's: **an answer another page cites is load-bearing**,
-and the closers that failed hardest were the ones holding the payoff of their
-own page's opening — four pages in Part XII, three in Part XIII.
+**Pass 8 — the release — is current**, chartered in [pass8-brief.md](pass8-brief.md):
+nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
+Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
+second reading of every sentence the pass changed, Q the release and the tag
+`release-26.3`. None has run. After it, nothing more is done here except a
+version pass when the owner asks for one and the corrections readers file,
+until the rebuilt process returns.
 
-**Session O, the close, did not run**, and its jobs went three ways. Two were
-done by this planning session: **pass 7's charter detail**, which is below and
-in [pass7-brief.md](pass7-brief.md), and **the device re-count** against the
-brief's Part 4 table, the numbers above. One is pass 7's session O, which reads
-the thirteen landing pages' figures as a set and can read the pages with them:
-**the thirteen landing pages as one set**, where pass 5 found thirteen of its
-last twenty corrections and where five arguments still end on a list of symptoms
-([pass5.md](pass5.md):69, :102). The rest — the strike audit, the shape of
-[pass9.md](pass9.md)'s entries — is pass 9's own first step, which reads that
-file before anything else. Two questions session N left for O are open and are
-written into the queue: whether `TEMPLATE.md` should give the two tier front
-doors a stated role, and whether *about a hundred lines* still means what it
-meant for a landing page.
-
-**Pass 7 — the figures — is running.** It was planned on 2026-09-14 by the
-planning session on Fable, which built the four tools the pass needs and wrote
-[pass7-brief.md](pass7-brief.md): Part 1 the viewer's brief, Part 2 the runbook,
-Part 3 the standard, Part 4 the schedule with **the status column the owner
-reads**. **Session A ran on 2026-09-15**: it ruled on the sixteen
-recommendations and added two, rewrote Part 3 as the record and `TEMPLATE.md`'s
-*Figures* and *Lanes* to it, **adopted the figure theme** — which alone took the
-figures showing type under 9px from 89 to 10, and the 88 sequence diagrams to
-none, without changing a page — and rewrote the exemplar
-`entities/entity-lifecycle`, whose spawn cascade turned out to be wrong about
-fourteen of its edges. **Session B ran the same day** over Parts I and II: two
-figures split at the mechanism's own joint, the book's first two class diagrams,
-nine corrections, and both parts left with no type under 11px anywhere, no
-Mojang name broken on screen and no unresolved name in the gate.
-**Session C ran the same day** over Part III: ten figures became twelve, the
-tallest figure in the book fell 6,010px to 2,311px when its gate clauses moved
-into a table beside it, and the part's real fault turned out to be **twelve
-messages labelled with the caller's method and drawn arriving at the callee**,
-one on every page, every one a gate failure — the shape the remaining part
-sessions should look for first. **Session D ran the same day** over Part IV, the
-largest part by figures: twenty-four became twenty-seven, four of them splits at
-a mechanism's own joint, and the part's fault was Part III's again — fourteen of
-its nineteen gate failures were the caller's method on the callee's arrow, which
-makes it four parts of four. Its own finding is about the standard rather than
-the pages: **a caption that closes its italics mid-way stops matching
-`custom.css`'s selector and silently loses its styling and its number**, and
-thirteen were live, three of them already shipped in Part III. All fixed, the
-rule in `TEMPLATE.md`, and `check_mermaid.js` gates it now — a standard whose
-only enforcement is the stylesheet is a standard nothing checks.
-**Session E ran the same day** over Part V: ten figures became thirteen, three
-pages split at a joint the prose already names, the book's fourth class diagram,
-and all thirteen of its gate failures were the caller's-method-on-the-callee
-device — five parts of five. Its own finding is a collision between two rulings:
-**seven lanes is about 1,650px, which is 10.6px of type at the column**, so F7's
-*at most seven* and F1's *nothing under eleven pixels* cannot both hold, and no
-amount of label-shortening moves it — only a lane fewer or a split does.
-Sessions F to J, L, M and N have run since — their rows are in the brief's Part 4 and their paragraphs in the log below.
-**Session O, the close, ran on 2026-09-16 before K**, at the owner's word, so
-**K, Part XI, is the last session of the pass**, and it runs under the strict
-gate the close put in. The close's numbers are in the brief's Part 4 (*The
-close, re-measured*): the median figure shown at full size where it was shown
-at three-fifths, no figure with type under 9px where 89 had it, no Mojang name
-broken on screen, 203 captions where there were none, and the figure-name gate
-at **0** unresolved and strict in `deploy.sh`. Its verdict is that the pass
-earned its cost, and the reason is not the legibility: **about 180 facts in
-figures were corrected on a corpus fact-checked twice**, most of them one
-shape — a message labelled with the caller's method and drawn arriving at the
-callee, which a fact-check reading the label against the source cannot see
-and a gate reading the head against the lane can. The close's own findings:
-the thirteen landing figures, read as one set for the first time, disagreed
-with each other about what an arrow means and with their own pages in seven
-sentences; one pass-7 strike in thirty was not borne out by its page; and nine
-of the thirteen session entries in [pass9.md](pass9.md) could not be walked
-item by item, so its head now says how, and `tools/pass7/captions.py` lists
-the two hundred captions the entries did not. The charter is below. The latest release
-is still 26.2 (26.3 at pre-release 2 of 2026-09-04, checked against the version
-manifest on 2026-09-07), so no version pass is due before pass 7.
+**What the seven passes found, one line each**, because it is what a
+newcomer needs to know about this book. The rough draft (1) was written from
+the decompile per page, and the first fact-check (2) found at least one wrong
+claim on every page — the errors lived in the confident sentences. The
+restructuring (3) made the site a book of thirteen parts and eight page
+shapes, and the second fact-check (4) found 836 errors, most of them in
+sentences the restructuring had written: every pass that touches a sentence
+puts errors in. Reading *across* pages (5) found 171 more, half of them one
+page contradicting another. Reading each page *down* as one lecture's notes,
+by a reader with nothing but the page (6), found about two hundred, almost all
+**a sentence that disagrees with the text beside it** — the class no
+fact-check looks for. Looking at every figure *rendered* (7), for the first
+time, found about 180 facts wrong inside figures on a corpus fact-checked
+twice, most of them one shape — a message labelled with the caller's method
+and drawn arriving at the callee — which a gate now catches mechanically. Each
+pass's finding was unpredicted by the pass before it; that is the owner's
+diagnosis of the process, and the reason the process is being rebuilt
+elsewhere before it is used again.
 
 ## The passes
 
@@ -137,27 +82,26 @@ manifest on 2026-09-07), so no version pass is due before pass 7.
 | **3 — restructuring** | the site became a book: each part the shape of its system, each page one of eight shapes; the frame, the maps and the Reference tier redone; the lecture order drafted | the shape | done, 2026-09-03 — [pass3.md](pass3.md) |
 | **4 — the second fact-check** | pass 2's protocol over everything pass 3 rewrote; the claims pass 3 introduced checked first | the adversary again | done, 2026-09-05 — [pass4.md](pass4.md) |
 | **5 — the book** | across pages: one home per idea, the seams, the through-lines, the landing pages as the part's argument, the coverage question once per part, the last moves | the book as one thing | done, 2026-09-07 — record [pass5-brief.md](pass5-brief.md); queue [pass5.md](pass5.md) |
-| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | done, 2026-09-14, sessions A–N — record [pass6-brief.md](pass6-brief.md); the close's remaining job carried to pass 7's session O |
-| **7 — the figures** | every figure as rendered, beside its section: is it true, is it needed, does it show the thing, can it be read; the gate over names inside mermaid blocks | the picture | **current** — planned 2026-09-14; sessions A–J and L–O done (O, the close, on 2026-09-16), **K (Part XI) the last**; charter below; brief, runbook, the standard for session A and the schedule with each session's status [pass7-brief.md](pass7-brief.md); queue [pass5.md](pass5.md), kind `figure` |
-| **8 — the voice** | one voice and one vocabulary: the exemplar, the tics, the terminology sweep, the ambiguous counts, the wording debt | the sentence | after 7 |
-| **9 — the third fact-check** | pass 4's protocol plus what pass 4 learned; the claims passes 5–8 introduced first; every fix checked as a claim | the adversary, once more | after 8 — queue [pass9.md](pass9.md) |
-| **10 — the last polish** | pass 9's debt, the frame against the finished book, links, the last cuts, the release | the reader, once more | after 9; then the site is finished |
+| **6 — the lecture** | one page at a time: the devices that became slots, the twin skeletons, section order, the cuts, the landing pages' seventh section; a page that reads as one lecture's notes | the reader with only the page | done, 2026-09-14, sessions A–N — record [pass6-brief.md](pass6-brief.md) |
+| **7 — the figures** | every figure as rendered, beside its section: is it true, is it needed, does it show the thing, can it be read; the gate over names inside mermaid blocks | the picture | done, 2026-09-16, sessions A–J and L–O — record [pass7-brief.md](pass7-brief.md); **K (Part XI) runs inside pass 8** |
+| **8 — the release** | the version (26.3); the third fact-check, over the ledger every session since pass 5 kept; the polish over the exact wording, after the check, with every changed sentence read a second time; Part XI's figures; the frame, the queues closed, the tag | the adversary, then the sentence, then a reader who changed nothing | **current** — planned 2026-09-26; brief, agent brief, runbook, the standard for session A and the schedule with each session's status [pass8-brief.md](pass8-brief.md); ledger [pass9.md](pass9.md); queue [pass5.md](pass5.md), closed by the close |
 
-Beside the passes, unnumbered: **the version pass**, chartered below and
-run once between passes on each release; and **the owner's read**, which
-runs whenever the owner likes and whose questions the current pass answers.
+Passes 8, 9 and 10 of the 2026-09-05 plan — the voice, the third fact-check,
+the last polish — are this one pass; their charters are archived in the
+brief's Part 7. Beside the passes, unnumbered: **the version pass**, chartered
+below and now two sessions of pass 8; and **the owner's read**, which runs
+whenever the owner likes and whose questions the current pass answers.
 
 The rules stand for every pass: names never code · how the system works,
-not how the code reads · newest version only (26.2) · trace-driven · claims
-come from the decompile, never from model memory of 1.21 · the five gates —
-`python tools/verify_names.py`, `node tools/check_mermaid.js`,
-`python tools/check_lanes.py --strict`, `python tools/check_deps.py`,
-`python tools/check_links.py` — clean before every commit that touches a
-page, and `tools/deploy.sh` refuses to publish on any failure. A sixth,
-`python tools/check_figure_names.py --strict`, has been a gate since pass 7's
-close, when the 119 names it first found had been corrected or ruled; it ran
-report-only from that pass's planning session until then. Reasoning over sensing over measuring: no count
-in a queue is a target, and the owner judges what lands.
+not how the code reads · newest version only · trace-driven · claims come
+from the decompile, never from model memory of an earlier version · the six
+gates — `python tools/verify_names.py`, `node tools/check_mermaid.js`,
+`python tools/check_lanes.py --strict`, `python tools/check_figure_names.py
+--strict`, `python tools/check_deps.py`, `python tools/check_links.py` —
+clean before every commit that touches a page, and `tools/deploy.sh` refuses
+to publish on any failure. The version the tools read is one constant,
+`tools/mc_version.py`. Reasoning over sensing over measuring: no count in a
+queue is a target, and the owner judges what lands.
 
 ## Why this order
 
@@ -165,1024 +109,286 @@ in a queue is a target, and the owner judges what lands.
   to change its shape, and pass 4 then found 836 errors, most of them in
   sentences the restructuring had written. Polish done before a restructure
   is paid for twice: its sentences are rewritten, and the errors of the
-  rewrite have to be found anyway. So the two structural passes (5, 6) come
-  first, the wording pass (8) after them, and the fact-check (9) after the
-  wording pass, because every pass that touches a sentence puts errors in —
-  pass 4's finding, fifteen times over — and the last polish (10) is then
-  light enough to put in few.
-- **Across before within.** Pass 5 decides what each page owns, what moves
-  and what is said once, so that pass 6's work on a page is not undone by a
+  rewrite have to be found anyway. So the two structural passes (5, 6) came
+  first, the figures (7) after them, and the words last.
+- **Across before within.** Pass 5 decided what each page owns, what moves
+  and what is said once, so that pass 6's work on a page was not undone by a
   move. The summarisers — the thirteen landing pages, `lectures.md`, the
   glossary — are the exception that proves it: they drift every time their
-  pages change (session O found five glossary entries written from
-  sentences pass 4 had since corrected), so pass 5 gives them their role and
-  each later pass re-syncs them at the end of its part session.
-- **The figures get a pass of their own** because the diagram is the
-  lecture's artefact (rule 4) and nobody has yet looked at one *rendered*:
-  every check so far was parse and arrow-by-arrow truth, not shape or
-  legibility. That pass also builds the gate over names inside mermaid
-  blocks — 453 tokens no gate has ever seen — so that pass 9 checks figures
-  under a gate.
-- **Two polishes mirror two fact-checks**: the heavy one before the check,
-  the light one after; the heavy one (8) is where the tics and the
-  terminology are hunted corpus-wide, and the light one (10) is what the
-  fact-check leaves.
+  pages change, so pass 5 gave them their role and every later pass re-syncs
+  them at the end of its part session, and pass 8 reads them last.
+- **The figures got a pass of their own** because the diagram is the
+  lecture's artefact (rule 4) and nobody had looked at one *rendered*: every
+  check before it was parse and arrow-by-arrow truth, not shape or
+  legibility. That pass also built the gate over names inside mermaid
+  blocks, so that pass 8 checks figures under a gate.
+- **The check before the polish, and the check of the polish.** The
+  2026-09-05 plan mirrored two polishes on two fact-checks — the heavy one
+  before the check, the light one after. Collapsed into one pass, the order
+  inside each part session is the same argument at a smaller scale: the facts
+  are settled first, so the polish works on true sentences and smooths the
+  corrections; the polish is constrained to the sentence (no heading, no
+  paragraph, no list); and every sentence it changed is read again by a
+  session that changed none of them, from git, before the release. That last
+  step is what passes 3 to 7 never had, and it is the price of polishing in
+  the last pass.
 - **One lens per pass.** A session briefed to fix everything fixes what it
   expects to find. Pass 3's sessions were told to reshape and did; the
   errors went into what they were not told to look at. A pass with one
-  question finds what the previous pass could not see.
+  question finds what the previous pass could not see — which is also why
+  pass 8's agent is told to judge nothing about the wording, and its polish
+  step is told to change nothing about the facts.
 
 ## The rhythm of a pass
 
-Every pass runs the same way, because it has worked twice:
+Every pass has run the same way, because it worked the first time and every
+time since:
 
 1. **A planning session** (Fable, between passes): reads the queue, builds
    the pass's tools and writes its brief and runbook — one prompt file per
-   page or figure, so the sessions do no planning of their own — and
-   measures what the queue actually contains before the first session
-   spends anything on it.
+   page, so the sessions do no planning of their own — and measures what the
+   queue actually contains before the first session spends anything on it.
 2. **Session A — the standard**: the frame, the exemplar, the rulings the
    part sessions will apply (pass 3's session A wrote `TEMPLATE.md` from two
-   pilots; pass 4's did the frame and made `check_deps.py` a gate).
+   pilots; pass 4's did the frame and made `check_deps.py` a gate; pass 7's
+   adopted the figure theme; pass 8's rules on the voice from counts).
 3. **Sessions B–N — the parts**, in sidebar order, one part per session on
    Opus: read the charter, this pass's rulings and every queue entry that
    names the part; read the part end to end in watching order before
    changing anything; one background agent per page (never per part — a
    part-wide brief hit the spend limit in pass 3); the session does its own
-   work while they run, then re-derives every finding it acts on; the four
+   work while they run, then re-derives every finding it acts on; the six
    gates; commit `pass N, session X — Part M: <summary>`; deploy; log.
 4. **Session O — the close**: the frame against the finished parts, the
    pass's own work audited (a strike is a claim), the pass archived whole
    into its file, the next pass's charter detail written, and a verdict on
    whether the pass was productive — the owner's test for spending more.
+   Pass 8 has no next pass, so its close is two sessions: the second reading
+   (P) and the release (Q).
 
 Standing rules for passes 5 to 8, the restructuring and refining passes:
 
-- **A fact is not changed without the decompile open.** Agents in passes 5,
-  6 and 8 have no source in their briefs — an agent given the source
-  re-litigates instead of reading; pass 7's have the figure and its section.
-  A session that finds a real error stops, re-derives it against the
-  decompile itself, fixes it, and logs the correction in
-  [pass9.md](pass9.md) the way a pass-4 session logged one: what the page
-  said, what the decompile says, file and line.
+- **A fact is not changed without the decompile open.** The reader agents of
+  passes 5, 6 and 7 had no source in their briefs — an agent given the
+  source re-litigates instead of reading; pass 8's agents are fact-checkers
+  and have it, as pass 4's did. A session that finds a real error stops,
+  re-derives it against the decompile itself, fixes it, and logs the
+  correction in [pass9.md](pass9.md) the way a pass-4 session logged one:
+  what the page said, what the decompile says, file and line.
 - **Every claim a session introduces goes to [pass9.md](pass9.md)** — a
   hook, a moved paragraph, a redrawn arrow, a re-scoped count, a landing
-  page's new argument. This is the rule pass 3 kept for pass 4, and it is
-  what made pass 4 checkable. A session that cannot say what it changed on
-  purpose has not finished.
+  page's new argument, and in pass 8 a polished sentence whose meaning could
+  have moved. This is the rule pass 3 kept for pass 4, and it is what made
+  pass 4 checkable. A session that cannot say what it changed on purpose has
+  not finished.
 - **Nothing is dropped except by moving it or logging the cut** with the
   reason (the budget rule in `TEMPLATE.md`); a moved page keeps its URL
   through `book.toml`'s redirects; after pass 5 no page moves again.
 - **Every queue entry is checked against the page before it is acted on**:
-  passes 5 to 7 rewrite what [pass5.md](pass5.md) describes, and an entry
-  that is already overtaken is struck with a word saying so (pass 4's rule —
-  an item handed forward is checked, not applied).
+  an entry that is already overtaken is struck with a word saying so (pass
+  4's rule — an item handed forward is checked, not applied). Pass 8 strikes
+  every entry in both queues by its close.
 - **The gates stand and grow only by truth**: the link checker joined them
   in pass 5's planning session because it was clean on its first run and a
-  link resolving is a fact; pass 7 adds names inside mermaid blocks; nothing
-  that measures prose is a gate.
+  link resolving is a fact; the figure-name gate joined at pass 7's close;
+  nothing that measures prose is a gate, and `pass8_voice.py` is not one.
 - **Commit your own files by name; never `add -A`** while another session
   may be open (session I of pass 3 swept another session's half-written
   change into an unrelated commit).
 - **The version pass interrupts nothing**: a release that lands mid-pass
-  waits for the pass to close.
+  waits for the pass to close — except at the very end, where ruling R6 makes
+  the release wait for the version.
 
 ---
-## Pass 7 — the figures (current)
+## Pass 8 — the release (current)
 
-**Goal:** every figure is the true picture of its system, is needed, shows the
-thing its section needs shown, and is legible at the column width without the
-zoom — and every name in it is under a gate.
+**Planned 2026-09-26**, twice: in the morning as *the release* (the third
+fact-check and the tag, the voice pass dropped), and in the afternoon, after
+the owner's instruction, as the final fact-check **and** the final polish over
+the exact wording. The charter, the agent brief, the runbook, the standard as
+recommendations with numbers, the rulings and the schedule are
+[pass8-brief.md](pass8-brief.md); this section is the summary a session reads
+before it.
 
-**Why it has a pass of its own.** The diagram is the lecture's artefact (rule 4)
-and **nobody has ever looked at one rendered**: every check so far was parse
-(`check_mermaid.js`) and arrow-by-arrow truth (pass 4), neither of which sees
-shape, size or legibility. Three pass-6 sessions found the same part-wide
-pattern independently — *the lead figure the page cannot yet be read against* —
-and sent it whole rather than patching. The owner's brief adds the reader's
-half: a reader who skims uses the figure as the check on the section, so a
-figure that is wrong, unreadable or about something else costs the section, and
-the figures are where machine-made work shows first.
+**What it does, in order of weight.** (0) **The version**: 26.3 shipped
+2026-09-15; the tree is staged at `reference/26.3/` and the tools read one
+constant; sessions V1 (mechanical — the flip, the atlas's mapping given
+`renderpearl`, the regenerated views diffed, every rename resolved, the header
+line on every page) and V2 (the five pages whose systems changed shape,
+rewritten in the smallest true rewrite, with what the part session must re-read
+written into the ledger). (1) **The third fact-check**: pass 4's protocol —
+one adversarial agent per page with the decompile, given the ledger's entries
+for the page as its opening checklist (1,333 entries; `tools/pass8_queue.py`
+routes them by page and part) — while the session reads the whole part into
+context and lists every sentence that disagrees with another, the class
+passes 5 and 6 found most of. (2) **The polish**, after the check on each
+part, under rulings session A makes from `tools/pass8_voice.py`'s counts:
+the tics, the hedges without a population, the corrections written as
+corrections, the two spellings and two senses of one word, the possessive on a
+link, the captions' and labels' register, the blockquote's form — the smallest
+edit, never a heading, never a paragraph. (3) **Part XI's figures**, pass 7's
+session K, under pass 7's runbook. (4) **The release**: the frame true of every
+gate, the pass numbers swept, the lecture order confirmed, the version line
+against the manifest, the queues closed (`pass8_queue.py --unstruck` and
+`pass5_queue.py --summary` at zero), the maintenance note, the tag
+`release-26.3`, the pass archived.
 
-**The jobs**, each with the number the planning session measured
-(`tools/render_figures.js` in Chrome at the 1,092px reading column,
-`tools/pass7_figures.py`, `tools/check_figure_names.py`; the per-part table is
-in the brief's Part 4):
+**New in the method**: the whole-part read; the ledger checked against
+itself; the polish after the check and **every changed sentence read a second
+time** by session P from git (`tools/pass8_diff.py`); the version as one
+constant and one script; the queues closed rather than carried.
 
-1. **Legibility.** 134 of the 194 mermaid figures are shown below their natural
-   size, 76 below half, and **89 show type under 9px**; the widest is 5,415px.
-   The cause is one thing, not a hundred: a sequence diagram is as wide as its
-   longest message and the site's mermaid init does not wrap. A candidate init
-   (`tools/pass7/`) takes the sequence diagrams from 70 below half to none and
-   from 76 under 9px to none without touching a page; what is still shrunk after
-   it is fixed per figure — fewer lanes, shorter labels, a split at the
-   mechanism's own joint.
-2. **The theme and the visual grammar.** No page carries colour today and none
-   should: five semantic classes (`server`, `client`, `netty`, `worker`, `disk`)
-   in one stylesheet, one meaning per mark corpus-wide, `TD` and `LR` only
-   (the corpus spells the same direction `TD` 51 times and `TB` 27).
-3. **What a figure is for.** 115 figures open their section with nothing above
-   them, **none has a caption**, and 51 are pointed at by no sentence at all.
-   The caption is the italic paragraph after the figure — markdown, so the name
-   gate reads it and `llms-full.txt` carries it.
-4. **The figure the page cannot be read against.** 139 figures introduce at
-   least half their names before the prose does; **151 carry a name the prose
-   never says**, 614 tokens in all. A lead figure is drawn in the words of its
-   cast; a name the prose never says gets a sentence or leaves the figure.
-5. **Density and kind.** Nine flowcharts over fifteen nodes, 42 figures over
-   1,200px tall, one 3,766px; 121 figures carry labels that are sentences (312
-   of them). The site's mermaid draws twenty-one kinds and the corpus uses
-   three: a class diagram for what an object holds, a block or packet diagram
-   for a layout, a chart for a quantity are available and unused
-   (`render/gallery/` has one of each).
-6. **The gate over figures**: 2,619 names inside mermaid blocks, **119
-   unresolved**, plus 362 notes whose convention session A sets. Report-only
-   through the pass, `--strict` at its close. The same parser gave the class
-   index the 139 page pairs it could not see.
-7. **Every figure-kind entry in [pass5.md](pass5.md)** — 150 of them, checked
-   against the figure before it is acted on.
+**Dropped**: pass 10's last cuts and the 215 long sections with no figure
+(the rebuilt process's); anything new (a gap goes to [pass3.md](pass3.md) §7
+and is declared where the book says what it skips). The charters this pass
+replaces are archived in the brief's Part 7.
 
-**The agent** is a viewer with the picture and the section and nothing else,
-asked what the figure shows before it reads the section, what it could not read,
-what the section needed a picture for, what is in the picture that is not needed
-and what is needed that is missing, whether the kind is right, and which words
-the figure spends before the page mints them; then the figure it would keep, the
-one it would cut, the section that wanted a picture, and a sketch of the worst
-one redrawn — with every arrow the sketch changes listed as a claim.
+**The owner's part**: confirm the lecture order before session Q; decide after
+V1 whether V2's five rewrites are written in this pass (the brief assumes
+yes); the dashboards.
 
-**The rhythm** is pass 6's, which worked twice: session A settles the
-corpus-wide rulings, adopts the theme and rewrites one exemplar page
-(`entities/entity-lifecycle`, whose three figures exercise nearly every ruling);
-B–N take the parts in sidebar order and O closes, flipping the gate to
-`--strict`, pruning the lane key, reading the thirteen landing figures as a set
-and re-measuring the corpus against Part 4's table.
-
-**An arrow is a claim.** A figure redrawn asserts an ordering; every arrow
-added, removed, reversed or relabelled is re-derived against the decompile with
-`diagram_arrows.py`'s numbered list in hand and logged in
-[pass9.md](pass9.md) — which is why pass 9's standing item reads *the figure
-against the section under it first*.
-
-**Not:** facts (an arrow found wrong is re-derived and logged as a correction);
-prose beyond a caption, a lead-in and the one sentence a name needs; a figure
-added for variety.
-
-## Pass 8 — the release (passes 8, 9 and 10 in one; current)
-
-**Planned 2026-09-26**, after the owner's read of 2026-09-16: the site is
-better than a free wiki and not yet a textbook, and the ceiling is the
-process, not the form — linear passes, each finding the errors at the edges
-of the last. The process is being rebuilt from first principles on a new
-subject (`D:\DjangoDocs`, its `docs/brief.md`), and this site is to be left
-**stable** until that returns. So the three remaining passes become one that
-does only what stability needs, chartered in
-[pass8-brief.md](pass8-brief.md): **the third fact-check** over the
-1,064-entry ledger in [pass9.md](pass9.md), routed by part with
-`tools/pass8_queue.py` (866 entries name a page; every one is struck by the
-close); **Part XI's figures**, pass 7's session K, which never ran; and **the
-release** — the introduction's *verified* paragraph true of every gate, the
-pass-number sweep, the version line against the manifest, the lecture order
-confirmed by the owner, a maintenance note, a tag. New in the method: a
-session reads its whole part into context before it checks an entry, and
-lists every sentence that disagrees with another in the part — the class
-passes 5 and 6 found most of. **Dropped:** the voice pass (the rebuilt
-process is meant to produce the voice; the wording debt stays in
-[pass5.md](pass5.md) as an archive) and pass 10's last cuts. The charters
-this replaces are archived in the brief's Part 5.
-
-## The version pass — rule 3's re-read (chartered, runs on each release)
+## The version pass — rule 3's re-read (chartered; 26.3 is due and runs first)
 
 Rule 3 says newest version only, and every page carries `verified against
-26.2` as a test rather than a claim. **As of 2026-09-07 the latest release
-is still 26.2; 26.3 is at pre-release 2 (2026-09-04)** — checked against
-Mojang's version manifest by the pass-6 planning session, not assumed. This
-pass triggers on a release and runs once, in one session, between passes; a
-release that lands mid-pass waits for the pass to close. It did not run
-inside pass 5, because 26.3 had not shipped by the close; it will most likely
-run between two of passes 6 to 8, and again if 26.4 lands before pass 10.
+<version>` as a test rather than a claim. **As of 2026-09-26 the latest
+release is 26.3 (2026-09-15); 26.4-snapshot-1 exists (2026-09-22)** — checked
+against Mojang's manifest by `python tools/version_pass.py --latest`, which
+is what any session runs to ask. The cadence is quarterly (26.1 on
+2026-03-24, 26.2 on 2026-06-16, 26.3 on 2026-09-15), so 26.4 is unlikely
+before December. The pass triggers on a release and runs once, between
+passes — except now, where it is pass 8's sessions V1 and V2, because a last
+pass verified against a superseded version would leave the site false on the
+day it was called stable. Its steps, each now a command:
 
-1. Fetch and decompile the release into `reference/<version>/` beside the
-   old tree, with its `data/`, `assets/` and `server-classes.txt`, and
-   re-run `tools/fetch_libs.sh` (26.3 snapshots already use authlib 10.0.77
-   and Brigadier 1.3.11).
-2. **`verify_names.py` against the new tree is the mechanical half**: every
-   name that stops resolving is a rename or a removal, and the failures name
-   the pages that need re-reading. That is the whole point of the gate.
-3. Regenerate: `gen_reference.py all`, `map_source.py`, the two indexes.
-   Diff every generated page against the old version's and read the diff — a
-   population that changed is a page that changed.
-4. `claims.py --all --counts` over the pages the first two steps touched: a
-   count whose population moved is wrong now.
-5. The header line on every page, `CLAUDE.md`, the introduction, `llms.txt`.
+1. **Stage** — `python tools/version_pass.py <version>`: Mojang's manifest to
+   the version JSON to the client and server jars; the client's classes
+   decompiled with the Vineflower bundled in the sibling project's McDeob jar
+   (the jar ships with Mojang's names since 26.x, so no mapping step); `data/`
+   whole, `assets/` without textures, `version.json`, `server-classes.txt`
+   from the server bundler's inner jar; the libraries at the versions the
+   JSON pins, through `tools/fetch_libs.sh`. Into `reference/<version>/`,
+   beside the old tree, gitignored. About ten minutes; done for 26.3.
+2. **Measure** — `python tools/version_pass.py <version> --check`: the name
+   gate and the figure gate against the new tree, the failures by page and
+   part. **That is the mechanical half of the pass**: every name that stops
+   resolving is a rename or a removal, and the failures name the pages that
+   need re-reading. 26.3: 517 names on 65 pages, 32 in figures.
+3. **Flip** — `git tag pass-8-start` (this time), then
+   `python tools/version_pass.py <version> --flip`, which rewrites the one
+   constant in `tools/mc_version.py`; every tool reads it. `map_source.py`'s
+   `PARTS` mapping is read against the new packages (26.3 adds
+   `com/mojang/renderpearl`, `world/level/blockscan`, `world/item/slot`,
+   `world/attribute/modifier`).
+4. **Regenerate and diff** — `map_source.py`, `gen_reference.py all`,
+   `pass5_coverage.py --write`, `check_deps.py --write-figure`, and the diff
+   of `src/generated/` and the generated Reference views *read*: a population
+   that changed is a page that changed.
+5. **Re-read** — the pages the gates named, with the decompile open: a rename
+   in the smallest edit; a removed name replaced by what does its work or the
+   sentence cut; a system that changed shape rewritten in the smallest true
+   rewrite (V2's job); `claims.py --all --counts` over the touched pages,
+   because a count whose population moved is wrong now. Every change logged
+   in the ledger.
+6. **The header line** on every page, `CLAUDE.md`, `README.md`, the
+   introduction, `book.toml`, the issue template's placeholder,
+   `fetch_libs.sh`'s defaults; the 1.21 blockquotes gain the new drift where a
+   reader would hunt for the old name (the brief's V13); `naming-drift` gains
+   the rows. The gates; deploy.
 
-A re-read, rarely a rewrite. A system that changed shape rather than names
-is a structural finding and goes to [pass5.md](pass5.md) or, after pass 5,
-to §7.
+A system that changed shape rather than names is also a structural finding
+for [pass3.md](pass3.md) §7 where the book's existing page cannot carry it.
+**After the release**, the version pass runs when the owner asks for it, and
+not otherwise; until then the site says what version it was verified against
+and when, which is a dated fact rather than a live claim, and the maintenance
+note session Q writes says so.
 
 ## The owner's read
 
 Unnumbered and parallel: the owner reads a part with the decompile open
 whenever they like, and leaves questions **in the page** as `<!-- Q: … -->`
-comments. The next session that touches the page — whatever pass it is in —
-answers each question in the prose (if the owner had to ask, the page was
-wrong or missing it) and removes the comment; every part session greps its
-part for them at the start. The owner confirms or reorders `lectures.md`
-before pass 9, so that pass 9 checks the confirmed order. Nothing is recorded
-that the owner has not understood; recording is after pass 10.
+comments. The next session that touches the page answers each question in the
+prose (if the owner had to ask, the page was wrong or missing it) and removes
+the comment; every part session greps its part for them at the start. The
+owner confirms or reorders `lectures.md` before session Q, so that the release
+carries the confirmed order. Nothing is recorded that the owner has not
+understood; recording is after the release.
 
 ## Risks
 
-- **A restructuring pass puts errors back** — pass 3 did, by the hundred.
-  [pass9.md](pass9.md) is the answer, and the rule that a session lists what
-  it changed on purpose so that pass 9 can read the rest harder.
+- **A pass that touches sentences puts errors back** — pass 3 did, by the
+  hundred, and pass 8's polish touches thousands. The answer is the order
+  (facts first), the constraint (the sentence, never the paragraph), the rule
+  that a session lists what it changed on purpose, and session P reading every
+  changed sentence from git.
 - **A pass that finds nothing.** A lens that returns clean is a lens too
   wide or an agent that liked the page. Brief per page, evidence for every
   finding, and the close says honestly whether the pass earned its cost.
-- **The queue is stale by the time a pass reaches it.** Passes 5 to 7
-  rewrite what [pass5.md](pass5.md) describes; every entry is checked
-  against the page before it is acted on.
-- **A release lands mid-pass.** Finish the pass; run the version pass
-  between passes; the final site is verified against whatever is current
-  at pass 10.
-- **The tools.** Fifteen bugs in pass 4, six of them published; suspect the
-  tool first, and every new tool ships with a probe that proves it fails on
-  the construct it should.
-- **Cost.** About fifteen sessions a pass, about eighty more in all. The
-  owner accepts that while passes are productive, and a pass's close is
-  where that is judged.
-## Session log — pass 7 onward
+- **The version is bigger than a re-read.** 26.3 moved 788 classes and
+  changed the shape of three systems; V2's five rewrites are the largest
+  unchecked writing in the pass, which is why their part sessions (D, L, M)
+  run after them with fresh agents and V2's ledger entries first.
+- **A release lands mid-pass.** 26.4 is unlikely before December; if it
+  ships before session Q, a version session runs first and Q waits (R6).
+- **The tools.** Fifteen bugs in pass 4, six of them published; eleven gate
+  blindnesses in pass 7; the 26.3 staging found one more at once (a new
+  top-level package that no part's mapping names). Suspect the tool first, and
+  every tool built since pass 5 ships with a probe that proves it fails on the
+  construct it should — the four built for this pass do.
+- **Cost.** Nineteen sessions, three passes' worth of work in one; the
+  planning session's estimate, and the owner's to cut (the brief says which
+  sessions can merge). After it, nothing until the process returns.
 
-*(newest last; pass 6's log and its fourteen session paragraphs are in
+## Session log — pass 8 onward
+
+*(newest last; pass 7's log and its session paragraphs are in
+[pass7-brief.md](pass7-brief.md) Part 5, pass 6's in
 [pass6-brief.md](pass6-brief.md) Part 5, pass 5's in
 [pass5-brief.md](pass5-brief.md) Part 5, and pass 4's at the end of
 [pass4.md](pass4.md))*
 
-- **2026-09-14, planning session (Fable, between passes 6 and 7).** No page's
-  prose touched. **Pass 6 archived** whole into [pass6-brief.md](pass6-brief.md)
-  Part 5 — its charter, its fourteen session paragraphs and its log, headings
-  demoted — so this file is again the current charter and the passes to come;
-  the close's one remaining job, the thirteen landing pages read as a set, was
-  carried to pass 7's session O rather than left implicit. **Pass 7 planned**:
-  [pass7-brief.md](pass7-brief.md) — Part 1 the viewer's brief (the picture and
-  the section, seven questions per figure and four per page), Part 2 the
-  runbook, Part 3 the standard as **sixteen recommendations with the numbers
-  behind them** for session A to rule on, Part 4 the schedule with the status
-  column. **Four tools, each with a `--probe`**: `render_figures.js` (the built
-  site served locally and opened in the machine's own Chrome through
-  playwright-core, every figure screenshotted at the reading column's width and
-  measured — scale, smallest type, overlapping labels, labels over a shape,
-  labels outside their box, edges through a node, crossings, clipping;
-  `--init-js`/`--css` try a theme without touching the site, `--html` renders a
-  gallery), `pass7_figures.py` (every figure against its page: its place, its
-  source, which of its names the prose says before it, only after it or never,
-  and the render; plus the sections over forty lines with no figure, and a
-  ranking by trouble), `check_figure_names.py` (**the gate the charter asked
-  for**: 2,619 names inside mermaid blocks checked against the decompile the way
-  `verify_names.py` checks the prose, with inheritance and a message's head
-  against the lane it is sent to) and `pass7_prompts.py`. `check_mermaid.js`
-  gained a `structuredClone` polyfill and a quiet console, so `pie`,
-  `packet-beta` and `radar-beta` parse under it as they do in the browser, and
-  it now exports its fence-mapping helpers; `check_lanes.py` gained `--unused`
-  (44 key rows of 342 that no page declares); `deploy.sh` runs the new gate
-  report-only. **The corpus rendered twice** — as it ships and under a candidate
-  theme — and the numbers are in the brief: 134 of 194 figures shrunk, 89 under
-  9px, none captioned, 151 carrying a name the prose never says, 119 names
-  failing the gate. **One finding of the tool's own**: `verify_names.py --index`
-  now merges the figure parser's mentions, so the class index gained **139 page
-  pairs** it had been blind to since pass 5 session A logged it — a class named
-  only in a diagram had no index entry, because the index reads backticks and a
-  mermaid label is not one. `CLAUDE.md`, `README.md`, the memory and this file
-  brought current; one queue entry struck with the page open. All five gates
-  green; nothing deployed, because no published page changed except the
-  regenerated class index. **Rulings**: the pass's own tooling renders into
-  `render/`, which is gitignored — a screenshot is a build artefact and the
-  index it writes is regenerable, so neither is committed; and a candidate theme
-  lives in `tools/pass7/` until session A adopts it, so that the evidence for a
-  corpus-wide change is a diff of two renders rather than an argument.
+- **2026-09-26, planning session, morning (Fable, after the owner's post-pass-7
+  read).** No page's prose touched. **The site made readable by agents**: every
+  page published as its markdown twin (`tools/md_twins.py`, `src/_headers`
+  serving `text/markdown` cross-origin, `llms.txt` linking the twins) and every
+  built `<head>` rewritten per page — the page's own title and part, a
+  description from its scenario line (every page had shared `book.toml`'s), a
+  canonical at the clean URL, the markdown alternate, Open Graph with
+  `src/og.png`, JSON-LD (`tools/page_meta.py`, a gate in `deploy.sh`). The edge
+  probed with nine AI user agents: none blocked. A correction issue template
+  with an evidence rule. **Passes 8–10 collapsed into pass 8, the release**, its
+  queue tool `tools/pass8_queue.py`, pass 7's session K carried into it.
+  **`D:\DjangoDocs` seeded** with the reasoning of the 2026-09-16 conversation
+  and the memories that transfer. Deployed.
 
-- **2026-09-15, pass 7 session A (Opus) — the standard, the theme and the
-  exemplar.** Ruled on the planning session's sixteen recommendations and added
-  two the adoption forced: **F17**, a lane name too wide for its box carries its
-  own `<br/>` at a CamelCase boundary, and **F18**, the 109 names the wrap still
-  breaks in messages and notes, which are the part sessions' work under F4.
-  [pass7-brief.md](pass7-brief.md) Part 3 rewritten as the record, and
-  `TEMPLATE.md`'s *Figures* and *Lanes* rewritten to it — the marks table, the
-  label budgets, the caption device, the tick band, the density rule, the menu
-  of kinds and the seven-lane arithmetic. **The theme is adopted**:
-  `mermaid-init.js` is committed (out of `.gitignore`, MPL header kept, with a
-  warning not to re-run `mdbook-mermaid install` over it) and `custom.css`
-  carries the five semantic classes in both palettes and the caption rule.
-  Across the 196 mermaid figures, with no page's content changed: the median
-  scale 0.61 → **0.82**, figures below half 76 → **6**, type under 9px 89 →
-  **10** and under 11px 107 → **31**, the widest 5,415px → 3,859px — and of the
-  88 sequence diagrams that were the whole problem, **none** is now below half
-  or under 9px. The costs are named rather than left to be found: figures are
-  taller (the median sequence diagram 401px → 940px) and mermaid hyphenates a
-  word wider than the wrap, which broke 222 Mojang names on screen. The 112 that
-  were lane names are fixed corpus-wide by a one-time sweep
-  (`tools/pass7/break_lane_names.py`, which reads a render rather than counting
-  characters); both gates learned to close the break up, with probes. A
-  width-240 theme that would have avoided the break was rendered over the corpus
-  and **rejected** — it leaves 71 of 88 sequence diagrams under 11px. The
-  exemplar `entities/entity-lifecycle` was rewritten with a viewer's report in
-  hand: the 21-node, 39-edge cascade shown at 0.28 with 4.6px type is two
-  flowcharts at scale 1 and 16px, its twenty conditions moved into a fifteen-row
-  table, and **it loops** — re-deriving it found that fourteen edges the old
-  figure drew as dead ends are a `continue` to the next try, that three
-  rejections were drawn at the wrong scope, and that two exits were missing
-  entirely. The entry sequence gave the page's second half back to the state
-  diagram that owns it and gained the callback hop it had been drawing as a call
-  `ChunkMap` does not have; the state diagram's sentence labels became
-  conditions. Four captions — the book's first. One finding the method threw up
-  by itself: **mdBook's floating chapter chevrons have been painted on top of
-  the prose at 1440px since pass 3 widened the column**, fixed in `custom.css`
-  by moving mdBook's own breakpoint to where the column clears them. All six
-  gates green (the figure-name gate still report-only, 113 unresolved of 2,588);
-  [pass9.md](pass9.md) has the claims and the six corrections,
-  [pass5.md](pass5.md) the six entries this left. Deployed.
-
-- **2026-09-15, pass 7 session B (Opus) — Parts I and II: the figures.** Eleven
-  pages, nineteen figures, one viewer agent per page with the picture and the
-  section and nothing else. Fourteen figures redrawn, **two split at the
-  mechanism's own joint**, one cut back, two given a kind the book had never
-  used, and **all nineteen captioned**. The size numbers close: in both parts,
-  **no figure shows type under 11px** (from nine shrunk and two under 9px after
-  the theme), one is left below 0.75 — `data-driven-types`' trace at 0.73 and
-  11.6px, where six lanes and not the labels set the width, and where cutting a
-  lane would cost the pattern's own subject — the thirteen Mojang names still
-  hyphen-broken on screen are **zero**, and the gate's fourteen unresolved names
-  are **zero**.
-  The two splits are the pass's method working: `identifiers-and-registries`'
-  second figure was two scenarios that shared no lane sitting in one frame — a
-  world-load task graph and a configuration handshake, 0.68 with eight names
-  broken mid-word — and is now a flowchart and a four-lane sequence, both at
-  scale 1; `anatomy`'s two-loops flowchart was 2,184px wide, shown at 0.28 with
-  4.5px type, and is now two rings side by side at scale 1, each with an inner
-  box for the call that contains the rest — which is also the fix for the queue
-  entry that said it drew a nesting as a sequence. **The book's first two class
-  diagrams** are here, on `text-components` and `data-components`, which is
-  exactly F10's prediction: the vocabulary pages had been drawing conversations
-  between objects that do not talk.
-
-  **Nine corrections**, every one a figure disagreeing with the decompile or
-  with the prose beside it, all re-derived with the source open and logged in
-  [pass9.md](pass9.md). The sharpest is `identifiers-and-registries`' bootstrap
-  ladder, where the figure had the ITEM loader triggering `Items` class init and
-  `Bootstrap.bootStrap` had already done it two calls earlier, through
-  `ComposterBlock.bootStrap`; the page's own prose said so and the figure said
-  the other thing. Three more were a message head naming the *caller's* method
-  rather than the target's, one was `LootItemFunctions.compose` drawn leaving
-  the wrong object, one was `HashedStack` — a record — drawn sending a packet,
-  and one was a `LoadingOverlay` arrow that merged a poll of the reload instance
-  with a callback into `Minecraft`. **This is the class pass 6 named, found in
-  pictures**: a figure that disagrees with the text beside it, on a corpus
-  fact-checked twice and read down once.
-
-  One tool change, and it is the session's transferable finding:
-  **`check_figure_names.py` did not read a `<br/>` inside a message the way F17
-  taught it to read one inside a lane**, so F18's instruction to part sessions —
-  break a name too wide for its box at a CamelCase boundary — was unfollowable,
-  and doing it made the gate fail the page. One rule (a break tight against the
-  text is a name and closes up; a break with a space either side is a clause and
-  becomes one) and three probe cases; corpus-wide unresolved names fell 119 →
-  **100** with no page outside these two parts changed, so some of the 119 were
-  never page errors. Also raised for session O: the renderer counts a `par`
-  block's own headers as labels outside their container; `par` itself is a mark
-  outside `TEMPLATE.md`'s table, spent once here and captioned, because the
-  figure otherwise said the opposite of the paragraph's "Meanwhile"; the jar
-  treemap cannot carry the reconciliation `what-this-book-skips` asks of it; and
-  **five of the thirteen landing figures still spell a direction F3 rules out** —
-  Part II's was one, and is now `TD`, numbered to the watch order and captioned.
-  Eight queue entries struck with the page open, seven opened. All six gates
-  green (the figure-name gate still report-only). Deployed.
-
-- **2026-09-15, pass 7 session C (Opus) — Part III · The server: the figures.**
-  Six pages, ten figures in and twelve out, one viewer agent per page with the
-  picture and the section and nothing else. Every figure in the part is now
-  **captioned**, pointed at by a sentence, and **legible at the reading column**:
-  the two shown below 0.75 are none, the smallest type on screen went 11px →
-  **12.4px**, the fifteen sentence labels are **zero**, and the figure-name
-  gate's twelve unresolved names and thirteen notes are **zero of each** — the
-  first part clean on the notes as well as the failures. Two figures split at
-  the mechanism's own joint: `server-tick`'s event loop at
-  `MinecraftServer.pollTaskInternal`, where an empty queue and a head that may
-  not run turn out to be the same answer, and `starting-a-server`'s boot at the
-  note bar it was already drawing.
-
-  The tallest figure in the book fell **6,010px → 2,311px** and its type went
-  from a label you read one box at a time to 16px throughout.
-  `server-level-tick`'s twenty-two-step chain had a gate clause appended to
-  every label — *— running*, *— no gate*, *— running, and not a debug world* —
-  which is the half the section leans on and the half a reader cannot scan; the
-  gates are a three-column table beside the figure now, one row per step, every
-  cell re-derived from `ServerLevel.tick`. Losing the clauses made room for the
-  containment the figure had been hiding: six of its boxes are the *insides* of
-  `ServerChunkCache.tick`, drawn beside the steps around them as though they
-  were siblings, which is why the prose's *five things in one call* and the
-  figure's six boxes had been contradicting each other since pass 5. They are a
-  box now, and the two counts agree.
-
-  **The part's real fault was not the one the queue named.** Three pass-6
-  sessions had sent *the lead figure the page cannot be read against* here as a
-  part-wide pattern, and underneath it sat a sharper one: **twelve messages —
-  one on every page of the part — labelled with the caller's method and drawn
-  arriving at the callee.** `MinecraftServer.saveAllChunks` on an arrow into
-  `ServerLevel`, which receives `ServerLevel.save`;
-  `ServerLevel.sendBlockUpdated` into `ServerChunkCache`, which receives
-  `blockChanged`; `ServerChunkCache.broadcastChangedChunks` into `ChunkHolder`,
-  which receives `broadcastChanges`; and nine more. Every one was a gate failure
-  and every one was a claim about who does what to whom, which is the thing a
-  sequence diagram exists to say. The gate finds the shape mechanically, and
-  most of the 88 unresolved names left in the corpus look like it — so this is
-  the entry the remaining part sessions should read first.
-
-  **Six corrections**, each re-derived with the source open and logged in
-  [pass9.md](pass9.md). The sharpest is `how-a-server-dies`' watchdog figure,
-  which had no `Disk` lane: beside figure 1's four writes it said *the watchdog
-  writes nothing*, on a page whose own comparison table two screens above reads
-  *is a crash report written: **yes***, and `ServerWatchdog.run` does write one,
-  to stdout and to *crash-reports/*, before it calls `System.exit`. Next to it:
-  `starting-a-server`'s boot had *the stages that must be single-threaded come
-  back to main* on the worker's return arrow, which never touches `Main` — the
-  arrow that does was labelled with a different call; and `how-a-server-dies`
-  drew `saveDataTag` and `SavedDataStorage.saveAndJoin` as siblings of the flush
-  save when all three are *inside* `MinecraftServer.saveAllChunks`, so the
-  page's hook — *after `level.dat` and not before* — is a property of one call
-  and not a claim about three. Drawn as a band, it is structural.
-
-  The queue's one open question is answered: nothing holds a joining player's
-  spawn chunks between the ticket being placed and `PrepareSpawnTask.Ready`,
-  because nothing has to. `TicketType.PLAYER_SPAWN` carries
-  `TicketType.FLAG_LOADING` and nothing else, so `canExpireIfUnloaded` is false
-  and its twenty-tick timeout does not begin while the chunks it asked for are
-  still on their way — which is exactly why
-  `ServerChunkCache.addTicketAndLoadWithRadius` accepts the type at all, since
-  it throws for any type that could expire before it loads.
-
-  One tool change, and it is the same shape session B found: **the gate could
-  not read the tick band F8 tells every part session to draw.** Part III drew
-  the corpus's first four `rect` bands and `check_figure_names.py` read
-  `rgba(0, 0, 0, 0.04)` as a call named `rgba` on every one. One rule — a
-  `rect`'s remainder is a colour and never a label, a `box`'s leading colour is
-  stripped before its label is checked — and two probe cases. Two sessions, two
-  tool blindnesses, both found by being the first to use a device the standard
-  had ruled: the gate is worth re-probing against each new device a part session
-  spends. Twelve queue entries struck with the page open, five opened. All six
-  gates green (the figure-name gate still report-only, 88 unresolved of 2,515
-  corpus-wide). Deployed.
-
-- **2026-09-15, pass 7 session D (Opus) — Part IV · The world: the figures.**
-  Eleven pages, twenty-four figures in and **twenty-seven** out, one viewer agent
-  per page with the picture and the section and nothing else. Four of the new ones
-  are splits at a mechanism's own joint, and every joint was one the prose already
-  named: `game-events-and-vibrations`' twenty-four-node cascade — the worst figure
-  in the part at 0.54 and 8.6px, taller than five screens — became the dispatcher's
-  walk and one listener's five refusals, both at scale 1; `fluids`' tick became
-  *what state should be here* and *what is done about it*; `scheduled-ticks`'
-  pipeline became booking and draining, which is that page's own bold claim about
-  which of the two is server-thread only; and
-  `chunk-generation-pipeline`'s twelve-status chain — a table wearing a flowchart,
-  three facts in every node and twelve arrows saying only *next* — became a
-  four-column table beside a new figure of four nested rings, which is what the word
-  *pyramid* had been doing all along. `chunk-anatomy`'s lead figure is the book's
-  third `classDiagram`: its heading promised four shapes, the paragraph under it
-  stated a hierarchy, and the old figure drew neither. Across the part: **no type
-  under 9px, no figure over fifteen nodes, no lane over seven**, the tallest figure
-  4,978px → 2,077px, every figure captioned, every non-lead figure given a lead-in,
-  and the figure gate's **nineteen unresolved names and sixty-three notes are none
-  of either**.
-
-  **The part's fault was Part III's fault again.** Fourteen of the nineteen gate
-  failures were one device — a message labelled with the *caller's* own method and
-  drawn arriving at the *callee* — which makes it four parts of four. It is worth
-  saying why it keeps being caught: the gate checks a message's head against the
-  lane it is sent to, so a caller's method is by construction not a member of that
-  lane. What two fact-checks could not see, a mechanical rule sees every time.
-
-  **The session's own finding is about the standard rather than the pages.** A
-  caption is the italic paragraph after a figure, and `custom.css` matches it with
-  `p:has(> em:only-child)`. An author who closes the italics to set a name and
-  reopens them writes *two* `<em>` children, the selector stops matching, and the
-  paragraph silently loses its styling and its figure number — in the built page
-  alone. The markdown looks right, mermaid parses, `verify_names.py` passes.
-  **Thirteen were live when this session looked, and three had already shipped in
-  Part III**: the fault outlived the session that invented the caption and the two
-  that wrote sixty of them. All thirteen fixed, the rule written into
-  `TEMPLATE.md`, and `check_mermaid.js` now gates it with a six-case `--probe`. The
-  lesson generalises past captions: **a standard whose only enforcement is the
-  stylesheet is a standard nothing checks.**
-
-  Two more render traps, both invisible in source. An explicit `<br/>` turns the
-  theme's 180px wrap off for its *whole* label, so F18's instruction to break a long
-  name inside a message makes the figure wider unless the name is the whole message
-  — four such repairs took `lighting`'s trace from 0.69 to **0.55** and its type
-  from 11.1px to 8.8px, and taking them out again put it back. And a subgraph title
-  is clipped to one wrapped line, which ate the outer ring of the new pyramid until
-  it was cut to twenty-three characters. Both are now in `TEMPLATE.md`, beside the
-  `stateDiagram-v2` second-colon parse failure the same page found. One tool change,
-  and it is the same shape as B's and C's: `check_figure_names.py` closed up a
-  `<br/>` tight on both sides wherever it appeared, so a node label breaking its
-  line after a comma welded two names into a third that is in no decompile — one
-  rule, two probe cases, the third tool blindness a part session has found in three
-  sessions.
-
-  Nine corrections, all in [pass9.md](pass9.md). The sharpest is
-  `environment-attributes-and-timelines`, whose stack figure drew the two
-  lightning-flash layers as rungs *every* value falls through when `ClientLevel`
-  bolts each to **one named attribute**, so they are absent from the other
-  forty-six; beside it, the same page's client trace asserted that the whole stack
-  re-resolves every frame when the probe resolves once a tick and every later frame
-  in that tick only lerps. Also settled: the queue's long-open question about
-  whether a secondary state diagram is a page's true picture, answered for both of
-  its remaining pages — **yes** on `points-of-interest`, where a ticket's whole life
-  is three states and the hook is which transitions are *missing* from them, and
-  **no** on `tickets-and-loading`, where it is not the page's picture but is the
-  owner of the four statuses, which is what stopped that page drawing one mechanism
-  twice. Found and deliberately left: five of the part's figures are still below
-  0.75, and every one is a seven-lane sequence diagram with no label over twelve
-  words — precisely the arithmetic F7's amendment states. Folding a lane is worth
-  about 0.10 and nothing else moves them. Eleven queue entries struck with the page
-  open, seven opened. All six gates green (the figure-name gate still report-only,
-  69 unresolved of 2,489 corpus-wide). Deployed.
-
-- **2026-09-15, pass 7 session E (Opus) — Part V · Blocks: the figures.** Eight
-  pages, ten figures in and **thirteen** out, one viewer agent per page with the
-  picture and the section and nothing else. Three pages split one figure at a
-  joint the prose already names: `blocks-and-states`' write — the part's
-  most-linked figure, 21 nodes and 3,409px with a gate clause appended to ten of
-  its labels — is now the chunk write and the tail either side of the re-read,
-  with every clause in a thirteen-row *step · side · flags · also needs* table,
-  which is session C's `server-level-tick` remedy applied a second time;
-  `block-breaking`'s dig is split at the eighth tick, the two machines boxed and
-  the loop's body in a `par` so the picture stops asserting an order between two
-  clocks the section exists to call independent; and `block-interaction`'s click
-  is split at the machine boundary, where `ServerPlayerGameMode` finally has the
-  lane the cast always gave it, so the two sides read as the same three-step
-  order — which is that section's claim and the thing the single figure had been
-  contradicting. `blocks-and-states`' vocabulary figure is the book's **fourth
-  `classDiagram`**: twelve nodes in which *extended by* and *builds* were drawn
-  with the same arrow, now two inheritance hierarchies meeting in `BlockState`,
-  and eleven classes rather than twelve, because the twelfth was a static field
-  and the heading had been counting it. Across the part: **no type under 11.9px**
-  (five figures were at 10.3–11.1px), nothing below 0.74, sentence labels 38 →
-  **0**, bare-number gates 3 figures → **0**, every figure captioned, and the
-  figure gate's **thirteen unresolved names and twenty-six notes are none of
-  either**.
-
-  **The part-wide fault was Parts III and IV's, a third and fourth time.** All
-  thirteen gate failures were the same device — a message labelled with the
-  caller's own method and drawn arriving at the callee — which makes it **five
-  parts of five**. Five sessions have now found it, none of them looking for it,
-  and all of them mechanically.
-
-  **The session's own finding is about a collision between two rulings.** Four of
-  Part V's five sequence diagrams had seven lanes, and seven lanes is about
-  1,650px, which at the 1,092px column is scale 0.66 and 10.6px of type. So F7's
-  *at most seven lanes* and F1's *no label under eleven pixels* are **not both
-  satisfiable**: seven lanes is already one too many for the column. What does
-  not help is shortening labels — every message already wraps at 180px, so eight
-  shortenings moved the width by exactly zero. What helps is one lane fewer
-  (`block-entities`' `ServerPlayer` carried one message and decided nothing;
-  folding it bought 0.11) or a split (`block-interaction`'s client half is now at
-  0.97). Every one of the four is now six lanes or two figures. F7's amendment
-  says an *eighth* lane puts everything under eleven pixels; the measurement here
-  says the seventh does, and session O should decide whether the key's number
-  becomes six.
-
-  Eleven corrections, all in [pass9.md](pass9.md). The sharpest is
-  `block-breaking`, where the figure printed the server's progress at STOP as
-  **1.07** while the prose two sections below says both sides *arrive at the same
-  1.064* — the one number the page exists to say is shared, printed two ways
-  inside one picture. Beside it: the tick-1 order in the same figure was
-  inverted; `blocks-and-states`' flag lead-in promised **seven** bits and named
-  **eight**; the landing page's lead-in said *each arrow* of eleven when it meant
-  six; and `pistons-and-block-events`' last note put both sides on tick N+2 when
-  the page's own prose gives the client five extra `deathTicks`. Also settled
-  without new work: the flag-word question the queue left for this session had
-  already been answered by F4, and applying the ruling is what turned the *seven*
-  up. Ten queue entries struck with the page open, six opened (three of them for
-  session O). All six gates green (the figure-name gate still report-only).
-  Deployed.
-- **2026-09-15, pass 7 session F (Opus) — Part VI · Entities: the figures.** Ten
-  pages, 22 figures in and **26** out, one viewer agent per page with the
-  picture and the section and nothing else. Three pages split one figure at a
-  joint the prose already names — `synched-entity-data`'s shear at the tick,
-  where splitting is what finally gave **the server's container and the
-  client's a lane each**, which is the one thing that page exists to say there
-  are two of; `entity-anatomy`'s summon at the same boundary, so the page's
-  title happens twice, once per machine; and `authority`'s boat by machine,
-  with a lane each for the two copies. `damage-and-death` traded its
-  three-screen eight-step chain for a short chain carrying only the running
-  number and a nine-row *step · owned by · what it does · leaves* table beside
-  it — session C's `server-level-tick` remedy a third time — and gained a
-  figure under *Death, or not* for the veto one other entity holds over this
-  one's loot. `entity-anatomy`'s lead flowchart is the book's **fifth
-  `classDiagram`**: eleven boxes to three, because *what an object holds* was
-  never a flowchart. Across the part: **no type under 12.6px** (five figures
-  were at 9–11px), nothing below 0.79, sentence labels 14 → **2**, every
-  figure captioned, and the figure gate's **fourteen unresolved names → none**.
-
-  **The part-wide fault was the same one, a sixth time.** Eleven of the
-  fourteen gate failures were a message labelled with the caller's own method
-  and drawn arriving at the callee — `tickNonPassenger` at a boat,
-  `collideWithShapes` at `Shapes`, `checkFallDamage` at `Block`,
-  `actuallyHurt` at `CombatTracker`, `getAttributeValue` at `AttributeMap`,
-  `handleSetEntityData` at a container. **Six parts of six**, none of them
-  looking for it, and the gate catches every one mechanically. What is new is
-  what fixing it costs: on three pages the wrongly-addressed lane had nothing
-  else to do, so the fix *removed lanes* — `movement-and-collision` went from
-  seven to three — and the figure got legible as a side effect.
-
-  **The session's own finding is a rendering fault two gates were blind to.**
-  Mermaid runs a markdown tokenizer over flowchart and state-diagram labels
-  and renders only a handful of token types; anything else is replaced, in the
-  node, by the literal string *Unsupported markdown: list*. A label beginning
-  `1. ` is a markdown list, so it is **erased**. Nine were live: four on
-  `ai-goals-and-brains`' lead figure, and **five of the six nodes** on
-  `rendering/visibility-and-the-frame-graph`'s, in Part XI. The diagram
-  parses, the markdown looks right, `verify_names.py` is happy, and only a
-  render shows it — so it survived two fact-checks, a lecture read, and the
-  pass whose whole subject is figures, until a viewer agent said *three boxes
-  say "Unsupported markdown: list"*. `check_mermaid.js` gates it now, with a
-  nine-case probe measured in Chrome. **That is the fourth time this pass a
-  gate has been blind to something its own standard cares about, and the
-  second time the evidence was a picture nobody had opened.**
-
-  Beside it, the pass's one outstanding tool job: F13's tree emitter, deferred
-  to “the two part sessions that carry a tree, or session O”. `svg_tree` now
-  lays a tree out repeatedly and keeps the first attempt that fits the reading
-  column, shortening only the folded leaf label, because nothing else in a
-  tree is elastic and a Mojang name is never shrunk. All **five** trees fixed
-  at once: 1,619–2,217px → 810–1,020px, and the `Entity` tree from 0.62 at
-  7.5px to **1.00 at 12px**. Parts XI and the frame get theirs for nothing.
-
-  Eighteen corrections, all in [pass9.md](pass9.md). The sharpest is
-  `damage-and-death`, where the prose says **eight** arithmetic steps and the
-  figure drew **seven**, freezing and the helmet sharing a box — the page's
-  own heading counts the eight. Beside it: `attributes` gave
-  `permanentModifiers` to `AttributeMap.pack`, which filters nothing, rather
-  than to `AttributeInstance.pack`, which is the one that does; `authority`'s
-  predicate tree resolved *not client-authoritative* → *Player: always true*,
-  the opposite of the page's own table; `ai-goals-and-brains` refused a
-  schedule update after **20** ticks where the code and the prose say 21; and
-  `entity-anatomy` called four families two and never named `Display` at all.
-  Ten queue entries struck with the page open, five opened. All six gates
-  green (the figure-name gate still report-only). Deployed.
-
-- **2026-09-15, pass 7 session G (Opus) — Part VII · Items and inventories.**
-  Nine viewer agents, one per page. **Seventeen figures became nineteen**: four
-  pages split one figure at a joint the prose already names — `using-an-item`'s
-  *ending* flowchart, which was two disconnected graphs in one box and is now
-  the page's two endings; `recipes`' seven-lane trace, at the tick boundary its
-  own note bar drew; `containers-and-menus`' seventeen-node ladder, into a
-  four-row table and a five-node fork; and `loot-tables`' twenty-six-node funnel,
-  which lost its placement tail to the trace above it and its five entry
-  containers to a table. The part gained the book's **sixth `classDiagram`**
-  (`items-and-stacks`, whose flowchart had four edgeless boxes and a subgraph
-  title clipped mid-phrase on screen), and `enchanting`'s trace is **split by
-  machine** with a lane each for the two copies of `EnchantmentMenu` — the page's
-  own point, which one lane playing both sides had been hiding. Every figure is
-  captioned and pointed at, **nothing below 0.79 and no type under 12.6px**, no
-  lane over six, no flowchart over fourteen nodes, and the figure gate's **10
-  unresolved names and 31 notes are 0 and 1** — the one a ruled note
-  (`LootItemCondition.test` is `java.util.function.Predicate`'s). Nineteen
-  corrections, all in [pass9.md](pass9.md), and **fifteen of them are the
-  caller's-method-at-the-callee fault, which makes it six parts of six**; the
-  sharpest is `loot-tables`' opening trace, which drew `ChestBlockEntity` and
-  `RandomizableContainer` as two lanes exchanging a message when
-  `RandomizableContainerBlockEntity` *implements* the interface, and had the
-  clientbound content packet returning to `ServerPlayer`. **The session's own
-  finding is a fifth tool blindness, and the one F10 walked into**:
-  `check_figure_names.py` **read nothing at all inside a `classDiagram`** —
-  zero names, zero figures — so the five class diagrams sessions B to F drew on
-  F10's own recommendation had every name in them unchecked, and
-  `pass7_figures.py` was counting the word `classDiagram` as a name the prose
-  never says. Both tools now read the kind, with a **member line checked against
-  its own class box** the way a message is checked against its lane; seven probe
-  cases, and no previously-clean part moved. Beside it, **nine Mojang names the
-  theme was hyphen-breaking on screen** (F18) — `AbstractContainerMe-nu`,
-  `ClientboundContainerSetDataPack-et`, `doPostAttackEffectsWithItemSour-ce` and
-  six more — every one of them the book spelling a name wrong in the picture
-  while spelling it right in the prose, and all nine found **mechanically**:
-  `render/index.json` records the on-screen text of every label, so a break is
-  one regex over the render rather than nine pairs of eyes. Fifteen queue
-  entries struck with the page open, one ruled out, twelve opened. All six gates
-  green (the figure-name gate still report-only). Deployed.
-
-- **2026-09-15, pass 7 session H (Opus) — Part VIII · The player.** Eight
-  viewer agents, one per page. **Ten figures became twelve**, both new ones a
-  split at a joint the page's own headings already name: `input-to-movement`'s
-  one seven-lane trace is a client figure under *what the client decides and
-  sends* and a server figure under *what the server does with the packet it
-  gets* — the server half had been drawn ninety lines above the section that
-  explains it — and `status-effects`' one trace is a server figure and a client
-  figure, because it had **one `LivingEntity` lane standing for two machines**,
-  told apart by two `Note over` lines, which is the thing F7 forbids by name.
-  Every figure in the part is captioned and pointed at by a sentence; **nothing
-  is below 0.80 or under 12.8px** (from four at 0.69 and one at 0.61/9.7px),
-  nothing is over 1,200px tall, no lane is over six, and the gate's **1
-  unresolved name and 7 notes are 0 and 0**, which makes Part VIII the second
-  part clean on the notes as well as the failures. `player-anatomy`'s class
-  ladder is the book's **seventh `classDiagram`** and the first drawn for
-  inheritance rather than containment: its solid flowchart arrow had meant
-  *extends*, a mark outside the grammar, and `<|--` says it natively while
-  `<<abstract>>` marks the five rungs the game never instantiates — which also
-  settled the reader's complaint that only `Player` carried *— abstract*.
-  **The part's own fault is F7's, in the shape this part was always going to
-  produce**: four of five sequence diagrams gave **one object two lanes by
-  drawing a class-hierarchy rung beside its subclass** — `Player` beside
-  `ServerPlayer`, `LivingEntity` beside `LocalPlayer`, `LivingEntity` beside
-  `ServerPlayer` twice — on the one part whose whole subject is the inheritance
-  chain. Folding them was the entire lane-budget fix; not one label needed
-  shortening. Eighteen corrections, all in [pass9.md](pass9.md); the sharpest
-  three are `the-two-phase-tick`'s figure, which drew the container check in
-  phase one only under a sentence in bold calling it *the only work both halves
-  do*; `the-sword-swing`'s, which drew the listener calling its own
-  `isWithinAttackRange` when it is `Player`'s and the `Player` lane was already
-  in the figure, landed `hurtOrSimulate` on `LivingEntity` when it is
-  `Entity`'s and the page's own Reference link is *Damage outside
-  `LivingEntity`*, and delivered the damage packet to `Minecraft` rather than
-  to the listener that handles it; and `hunger-and-experience`'s regeneration
-  figure, which drew **three siblings off one node where the code is an
-  if/else-if chain whose order is the whole rule** — the shape was the error,
-  and the fourth branch (the timer reset) had never been drawn at all. **The
-  session's own finding is a sixth and seventh tool blindness, and this one had
-  been there since the gate was written**: `check_figure_names.py`'s token
-  regex needs two CamelCase humps, so **every one-word class name in a figure
-  was unchecked** — `Entity`, `Avatar`, `Player`, `Mannequin`, `Item`, `Block`,
-  `Mob`, `Screen`, `Window` — everywhere but a `participant` line; and its
-  relation pattern allowed one character either side of `--`, so `<|--` never
-  matched and **an inheritance relation was parsed as nothing at all**. Both
-  fixed where the name is structural rather than free text (a `class Foo` box
-  and both ends of a relation, with a box id that has a display label read as
-  an alias the way a lane abbreviation is), each with a probe case; 43 more
-  names checked corpus-wide, three more classes in the index, and no
-  previously-clean part moved. Ten queue entries struck with the page open,
-  eleven opened. All six gates green (the figure-name gate still report-only).
-  Deployed.
-
-- **2026-09-15, pass 7 session I (Opus) — Part IX · Networking.** Six viewer
-  agents, one per page. **Twelve figures became eleven**: the buffer flowchart
-  on `packets-and-stream-codecs` is a three-row table, because its three arrows
-  meant two different things — two bindings and one *extends* — and a table
-  carries the bind time the figure had no room for, which is F10's own ruling
-  that two or three paths that differ are a table. Every figure in the part is
-  captioned and every non-lead figure has a lead-in; **nothing is below 0.77 or
-  under 12.3px** (from three figures at 0.38, 0.42 and 0.54 with 6 to 8.6px
-  type), no overlap, overflow, clipping or edge through a node anywhere, no
-  Mojang name broken on screen (five lines were), and the gate's **1 unresolved
-  name and 19 notes are 0 and 0** — the third part clean on both. **The
-  part-wide fault is session H's in the mirror**: Part VIII gave one object two
-  lanes, and Part IX gives **two objects one lane**, because this part's whole
-  subject is two machines running the same classes. `the-connection` drew one
-  `Connection` lane for the object at each end and the paragraph beneath it
-  *conceded the fault in words* — "which is what the note across the middle says
-  and the picture cannot" — instead of the figure being redrawn;
-  `chat-and-signing` drew two lanes both reading `ClientPacketListener`, told
-  apart by a note naming two mermaid aliases that appear nowhere in the
-  rendered picture. Both are fixed the way `authority`'s boat was: a second key
-  row for the same class, and a `box` per machine. **And three of the four
-  figures on `protocol-phases` were illegible for one reason — `direction
-  LR`** — so two of the three fixes were deleting a line: F3 already rules `TD`
-  for anything ordered in time, and a state machine is ordered in time. Nine
-  corrections, all in [pass9.md](pass9.md); the sharpest are
-  `protocol-phases`' configuration flowchart drawing
-  `ServerConfigurationPacketListenerImpl.returnToWorld` as the **fifth step of
-  the queue** when it is the call that *builds* the queue before any task runs,
-  and drawing the client round trip that ends the phase as a plain unlabelled
-  arrow — which is precisely the gap the page's own hook lives in;
-  `what-the-client-is-told`'s cascade drawing position as a relative/absolute
-  binary when the table under it names two further outcomes, *nothing sent* and
-  *rotation only*; and `chat-and-signing` labelling the `ChatScreen` arrow with
-  `ChatScreen.normalizeChatMessage`'s own work — **the caller's method drawn
-  arriving at the callee, on the eighth part of eight**. **Two more tool
-  blindnesses, the eighth and ninth of the pass.**
-  `check_figure_names.py` read only the first 20 kB of a class file to find
-  what it extends: exactly one class in the decompile declares itself past that
-  mark — `ClientPacketListener`, at byte 21,133, behind three hundred import
-  lines — and it is one of the book's commonest lanes, so every **inherited**
-  member on a `CPL` lane was failing a figure that was right. And a `<br/>`
-  between a name and the next word was welded shut, so the repair F18 itself
-  prescribes made the gate fail: the rule is now F17's own wording — a name
-  break is at a CamelCase boundary or at a dot and nowhere else. Four probe
-  cases between them; corpus failures 31 → 30 and notes 166 → 148, with no
-  previously-clean part moved. Ten queue entries struck with the page open, one
-  of them a ruling asked for by name (**may a state machine contain a state
-  nothing reaches? No** — a diagram draws the machine as it runs, and
-  `NEGOTIATING` is the enum's business and the prose's). All six gates green
-  (the figure-name gate still report-only). Deployed.
-
-- **2026-09-15, pass 7 session J (Opus) — Part X · The client.** Thirteen
-  viewer agents, one per page. **Eighteen figures became twenty**, both new
-  ones a split at a joint the page already names: `options`' one flowchart —
-  fourteen nodes and 2,081px, two screens — is now the widget's half and the
-  save's, and `text-and-fonts`' one eight-lane sequence is the stages that run
-  when the text changes and the stages that run in the frame. Every figure is
-  captioned and pointed at; **nothing is below 0.78 or under 12.4px** (from
-  0.59 and 9.5px, with six below 0.75), no lane is over six, and the gate's
-  **10 unresolved names and 26 notes are 0 and 0**. **The part's own fault is
-  F18's, and it is the thing a session can only find by looking**: fifteen
-  Mojang names were **hyphen-broken mid-word on screen** —
-  `handleLevelChunkWithL-ight`, `ToggleKeyMapping.setD-own`,
-  `BakedSheetGlyph.rende-rChar`, `ClientboundBlockChangedAckPack-et` and eleven
-  more — which is more than any other part and **more than a third of the whole
-  corpus's forty-one**. The book was spelling a name wrong in the picture while
-  spelling it right in the prose, on nine of thirteen pages, and every one was
-  found by one regex over `render/index.json` rather than by reading. Part X is
-  now at **zero**. Two figures changed kind: `gui-and-screens`' containment
-  flowchart is the book's **eighth `classDiagram`** — it had been drawing
-  *holds*, *extends* and *arranges* with one arrowhead — and
-  `the-gui-render-tree`'s twelve-box draw chain is nested subgraphs, because a
-  flat chain was asserting that five steps happen *after* `GuiRenderer.prepare`
-  when all five are inside it and `GuiRenderer.draw` is its sibling. Eighteen
-  corrections, all in [pass9.md](pass9.md); the sharpest three are
-  `what-makes-a-sound`, whose figure routed your own place and break **past**
-  `ClientLevel.playSeededSound` while the box on that very arrow said *the same
-  shared call* — the convergence it skipped is the page's entire argument;
-  `options`, which sent the cycle path through `Screen.removed` when a cycle
-  button calls `Options.save` in its own click handler and `removed` is where a
-  *slider* saves; and `the-client-level`, where the queue's open question —
-  one arrival or two? — re-derived to **one**, and the arrow that raised it
-  turned out to name two of the listener's own private methods and to land
-  `ClientLevel.setSectionRangeDirty` on the light engine. **The
-  caller's-method-at-the-callee fault is now nine parts of nine** (`hud`,
-  `sound-engine`, `prediction-and-acks`, `the-client-level`,
-  `input-and-keybinds`), and this part adds a second spelling of it the gate
-  cannot see: **a self-message labelled with a third class's method, on a lane
-  that owns neither** — `Tutorial.onOpenInventory` as a `Minecraft` self-call,
-  `ServerPlayer.requestDebugSubscriptions` as an `SGPL` one — which passes
-  silently because the name is qualified. **The session's own finding is a
-  tenth tool blindness, and the second this pass that the standard itself
-  created**: `pass7_figures.py` closed a `<br/>` up only on a `participant`
-  line, so **every repair F18 prescribes split one Mojang name into two halves
-  and counted both as names the prose never says** — the measurement got worse
-  each time a session fixed a figure, and the tool disagreed with
-  `check_figure_names.py`, which has read the break correctly since session I.
-  Fixed to session I's own rule, two probe cases, and Part X's *never in prose*
-  count fell by fourteen with no page changed. Seven queue entries struck with
-  the page open, two of them ruled out, six opened. All six gates green (the
-  figure-name gate still report-only). Deployed.
-
-- **2026-09-16, pass 7 session L (Opus) — Part XII · World generation.**
-  Run before session K, which had not yet run; the two parts share no page.
-  Eleven viewer agents, one per page. Fifteen figures stayed fifteen, but
-  `density-functions`' three near-identical panels — 1,729px of the same five
-  boxes, every panel title under its own first node — are now a four-node
-  flowchart of the forms and a node-by-form table, which is F10's *a
-  comparison is a table* applied to the part's substrate page. Every figure
-  captioned and pointed at; **nothing below 0.756 or under 12.1px** (from 0.61
-  and 9.7px), no lane over six (from eight and seven), no label over another
-  or over a node (from eight figures), and the gate's **4 unresolved names and
-  35 notes are 0 and 7** (the seven are bare-verb self-messages, F12(d)).
-  **The caller's-method-at-the-callee fault is ten parts of ten**:
-  `Climate.ParameterList.findValueIndex` drawn arriving at `Climate.RTree`,
-  `ChunkGenerator.featuresPerStep` at `FeatureSorter`, and
-  `JigsawStructure.findGenerationPoint` at `JigsawPlacement.Placer`. **The
-  part's own fault is a figure disagreeing with the page's own hook**, twice:
-  the jigsaw trace's loop read *depth within the limit* on the page whose
-  opening is that a piece at the limit is still queued and offered only the
-  fallback — now an `alt` — and the terrain page said *the two outer levels*
-  sample the graph when the samples are at the first and third of six, which
-  a new six-row table with a *samples the graph* column now says. Fourteen
-  corrections, all in [pass9.md](pass9.md); the sharpest is the stronghold
-  figure, which had `StructurePiecesBuilder` building its own
-  `StructureStart`, the pending list on the builder rather than the start
-  piece, and the drain loop on the wrong lane — the page's one regenerate-until-
-  it-likes-it loop, drawn with three of its moving parts in the wrong hands.
-  Two render lessons worth carrying: `autonumber`'s digits are the smallest
-  type in any sequence diagram that has them (9.7px here, the figure's only
-  sub-11px text) and a figure whose prose cites no number loses nothing
-  without them; and a flowchart edge drawn behind a sibling box is cured by
-  `--->`, which pushes the target a rank down. One key row added (`JP`).
-  Eight queue entries struck with the page open (one ruled), eight sections
-  that wanted a figure or a table logged for pass 10, two voice entries for pass 8. All
-  six gates green (the figure-name gate still report-only). Deployed.
-
-- **2026-09-16, pass 7 session M (Opus) — Part XIII · Commands and data
-  packs.** Ten viewer agents, one per page. Thirteen figures stayed thirteen,
-  two of them now class diagrams — `permissions`' question/answer/check,
-  which had been a taxonomy wired with pipeline arrows, and `game-tests`'
-  objects, which had been three bands with unlabelled edges — the book's
-  ninth and tenth. Every figure captioned and pointed at; **nothing below 0.78
-  or under 12.5px** (from 0.69 and 11.1px), no lane over six (from seven on
-  two pages), no label over another or over a node (from four figures), no
-  Mojang name broken on screen (from eight), and the gate's **4 unresolved
-  names and 7 notes are 0 and 2** (bare-word heads, F12(d)). **Twenty
-  corrections, and the part's fault is the pass's fault on every page but
-  one**: `getCompletionSuggestions` — `CommandDispatcher`'s — drawn arriving
-  at `ClientPacketListener`, `succeed` at `ReportGameListener`,
-  `DialogScreens.createFromData` at `DialogScreen`, `ServerScoreboard`
-  calling a `ScoreAccess.set` that the store callback calls itself —
-  **eleven parts of eleven**. The sharpest is `entity-selectors`' resolve
-  tree, whose queued *shape* fault turned out to hide a second one: the UUID
-  leaf on the entities branch named `PlayerList.getPlayer`, which is the
-  players-only branch's, where `EntitySelector.findEntities` searches every
-  level with `ServerLevel.getEntity`. Beside it, a queue figure whose last
-  panel was a step ahead of its title, and two sentences under it that
-  charged a cost unit *per stage* when `BuildContexts.execute` charges one per
-  *modifier* stage. **The session's own finding is about the check F18 relies
-  on**: the brief's regex needs three letters before mermaid's hyphen, so a
-  break one or two letters after a dot — `SimpleCriterionTrigger.tr-igger`,
-  `GameTestInstance.run(h-elper)` — reads as clean. The wider check finds
-  **20** names still broken corpus-wide, all in Parts III–V (which closed
-  before session J wrote the regex) and XI (session K's); logged for session
-  O. And the gate's eleventh blindness: a one-word method in a class diagram's
-  member line (`boolean check(PermissionSet)`) was a note, never checked
-  against its box — fixed, two probe cases, one note corpus-wide. Seven queue
-  entries struck with the page open (one left for session O's prune), six
-  sections that wanted a figure logged for pass 10, two voice entries for
-  pass 8. Key row `DCS` added. All six gates green (the figure-name gate still
-  report-only). Deployed.
-- **2026-09-16, pass 7, session N — the frame and Reference (Opus).** Ten
-  viewer agents over the introduction, `lectures.md`, the five atlas pages,
-  `reference/README`, `math-and-primitives` and `threads`. **The
-  parts-dependency figure is generated now.** Its 27 arrows had 26 crossings,
-  two labels lying across other arrows, and the parts out of watch order; 200
-  orderings of the mermaid source were rendered and measured, and the best
-  that kept Part V above Part X still had sixteen. So
-  `check_deps.py --write-figure` draws it from the landing pages as the
-  shape the prose has always claimed — *a line with two knots*: the thirteen
-  parts in one column in watch order, every solid arc on the right running
-  down, the two cuts dashed on the left and labelled with the pages they
-  need — at scale 1 and 13px, with no crossing a reader has to resolve at a
-  box. The edge set is exactly the old figure's, the gate now reads it back
-  out of the SVG and fails when the file is stale, `deploy.sh` regenerates
-  it, and a table beside it carries the edges to `llms-full.txt` (whose
-  include expansion was one level deep and would have shipped the shared
-  file's inner include raw). Beside it: the introduction's figure is one
-  subgraph per thread; the atlas pipeline is the page's own two routes
-  instead of two clipped groupings of convenience; `math-and-primitives`'
-  seventeen-edge web (0.49, 7.8px) is a seven-node ladder of sizes at 1.00
-  and 16px; `threads`' figure is coloured by side with every edge labelled by
-  its kind (0.58 → 0.85); the shelf figure is a logged cut under F13, and
-  the tier's exemption from the one-figure rule is said once on
-  `reference/README`. `map_source.py`'s bars and treemap were showing 9px
-  type and now stop at 11px, and the treemap's Realms group, unlabelled
-  because its path was wider than its box, is labelled. **Nothing in scope
-  is below 0.79 or under 11px.** **Nine corrections**, and the one worth
-  carrying is the one the queue had excused: `threads`' edge *written on the
-  caller's thread* was logged by pass 6 as *true, left as drawn*, and
-  `Connection.sendPacket` posts every send from another thread to the Netty
-  loop — **a label a queue entry calls true is still a claim**, and the
-  viewer found it only because the page's own definition of a posted task
-  did not fit three other arrows. Thirteen queue entries struck (six of
-  them overtaken or ruled by earlier sessions), seven opened for O and pass
-  10. All six gates green (the figure-name gate still report-only).
-  Deployed.
-
-- **2026-09-16, pass 7 session O (Opus) — the close, run before K.** The owner
-  asked for the close with Part XI's session not yet run; the close ran,
-  repaired Part XI's ten gate failures itself so the gate could go strict, and
-  left the rest of Part XI to K, which now runs last. **The gate is strict**
-  (`deploy.sh`, rule 5): F12(b) and (c) fail, and three readings keep the
-  failures honest — a class diagram's boxes qualify its relation labels and
-  English member lines, a page's italic words are words, and a word one letter
-  from a one-word key class fails, which answers session H's question without
-  an allow-list. Session J's question became a note, *a qualified head on a
-  lane that owns neither*: of thirty, four were the caller's-method fault in
-  its qualified spelling and were redrawn — one of them, the chunk read, drawn
-  arriving at `ServerLevel` when it runs in `ChunkMap`'s continuation — and
-  twenty-six were static helpers, laneless objects or the lane's inner class.
-  0 unresolved, 62 notes, 45 probe cases. **`check_mermaid.js` fails colour in
-  a page**; **the lane key lost 67 rows**, `CMTE` the nested example in
-  `PTT`'s place, `--unused` reporting in `deploy.sh`; **twenty names broken on
-  screen went to zero** under session M's wider regex, now
-  `tools/pass7/broken_names.py`; the renderer stopped counting a `loop` label
-  as a label escaping its frame. **Three reader agents** did the reading the
-  close exists for. The **landing set**: every watch-order number right, but
-  four meanings of an arrow, four spellings of the caption and seven sentences
-  contradicting their own figures — a ring counted with six arrows that has
-  five, *the only page no arrow leaves* beside a second, a closer said to
-  assume nothing while linking three pages above it; twelve figures brought to
-  one grammar, now `TEMPLATE.md`'s, two arrows changed, `commands/README`'s
-  downward arrows ruled the one exception, XI left to K. The **strike audit**:
-  122 strikes, 116 borne out, 4 amended, 1 unstruck. The **pass-9 shape
-  audit**: nine of thirteen entries not walkable item by item; the form is in
-  that file's head and a caption lister in `tools/pass7/`. The exemplar's
-  spawn loop gained the two group-ending arrows session B left to the close,
-  and `chat-and-signing` said four Netty checks where its figure says five.
-  **Rulings:** six lanes (seven only where the render says it reads, eight
-  never — six measure at 11.6px or more, seven at exactly 11.0); `par`,
-  `loop`, `alt`, `opt` and a call's subgraph in the marks table; no colour and
-  no width knob for class diagrams; a subgraph's `direction TB` allowed; the
-  landing budget counts prose; no stated role for the tier front doors; the
-  dependency figure keeps all 27 arcs. **The corpus re-measured**, the verdict
-  written (the pass earned its cost, for the corrections more than the
-  legibility), pass 8's wording debt counted and written into its charter.
-  Queue: figure units 150 → 28, 17 of them Part XI's. All six gates green, the
-  sixth now strict. Deployed.
-- **2026-09-26, planning session (Fable, after the owner's post-pass-7 read).**
-  No page's prose touched. **The site made readable by agents**: every page
-  published as its markdown twin (`tools/md_twins.py`, `src/_headers` serving
-  `text/markdown` cross-origin, `llms.txt` linking the twins) and every built
-  `<head>` rewritten per page — the page's own title and part, a description
-  from its scenario line (every page had shared `book.toml`'s), a canonical
-  at the clean URL, the markdown alternate, Open Graph with `src/og.png`,
-  JSON-LD (`tools/page_meta.py`, a gate in `deploy.sh`). The edge probed with
-  nine AI user agents: none blocked. A correction issue template with an
-  evidence rule. **Passes 8–10 collapsed into pass 8, the release**
-  ([pass8-brief.md](pass8-brief.md)), its queue tool `tools/pass8_queue.py`
-  (866 of 1,064 ledger entries route to 117 pages), pass 7's session K
-  carried into it as session I. **`D:\DjangoDocs` seeded** with the
-  reasoning of the 2026-09-16 conversation and the memories that transfer.
-  Deployed.
+- **2026-09-26, planning session, afternoon (Fable).** No page's prose touched;
+  nothing deployed. The owner's instruction reversed the morning's one dropped
+  job: pass 8 is the final fact-check **and** a final polish over the exact
+  wording, planned for the best book this process can make. **The version
+  found due**: Mojang's manifest says 26.3 shipped 2026-09-15, so the tree was
+  staged the same afternoon with a new script (`tools/version_pass.py`:
+  manifest, jars, Vineflower, data, assets, `server-classes.txt`, the
+  libraries at 26.3's pins — authlib 10.0.77, Brigadier 1.3.11) and measured:
+  7,301 classes, 517 names on 65 pages unresolved, 32 in figures, `renderpearl`
+  new and unmapped, `levelgen` and `level/storage` reworked. **The version made
+  one constant** (`tools/mc_version.py`; eight tools that carried their own
+  copy now read it; every gate green after the change). **Four tools built,
+  each with a probe**: `pass8_queue.py` rewritten to read the page forms the
+  ledger actually uses (1,333 entries routed where the morning's read 1,064,
+  page-less notes routed to their session's part, `--unstruck` for R3, `--pass
+  8` for the second reading); `pass8_voice.py` (the tics, hedges, corrections-
+  as-corrections, dead-constant asides, possessive links, the number device,
+  openings on *you*, long sentences, counts that rot, and the ambiguous terms,
+  per page and per part, plus `--terms` for glossary headwords spelled two
+  ways — 26); `pass8_prompts.py` (one prompt per page: the agent brief, the
+  page's ledger entries, its captions, the gate's notes, its claims and its
+  arrows; and a session file: the queue units of every kind, the voice measure,
+  the inbound links); `pass8_diff.py` (every sentence changed since a tag, from
+  git, for session P). **The brief rewritten** — Part 2 the agent brief (pass
+  4's, with the ledger as the checklist and the page-against-itself section),
+  Part 3 the runbook (check, then polish, then re-derive, then strike), Part 4
+  the standard as seventeen recommendations with counts, Part 5 eleven
+  rulings, Part 6 nineteen sessions (V1, V2, A–Q) with what the tools measured.
+  **Pass 7 archived** whole into [pass7-brief.md](pass7-brief.md) Part 5; this
+  file, `CLAUDE.md`, `README.md`, the heads of [pass9.md](pass9.md) and
+  [pass5.md](pass5.md), and the memory brought current — the memory's plan
+  entry cut from what the repo already records to what it cannot derive.

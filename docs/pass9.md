@@ -1,4 +1,13 @@
-# Pass 9 — the third fact-check (queue; opened 2026-09-05)
+# The ledger — the third fact-check's queue (opened 2026-09-05 as pass 9's; pass 8 runs it)
+
+*Opened for pass 9, which the 2026-09-05 plan put after a voice pass; on 2026-09-16
+passes 8, 9 and 10 became one, **pass 8, the release**, and this file is what its
+sessions check and strike ([pass8-brief.md](pass8-brief.md); `python
+tools/pass8_queue.py` routes the entries by page, part and session — 1,333 of them
+on 2026-09-26, none struck). Read "pass 9" below as pass 8. Pass 8's own sessions
+write their corrections and their polished sentences here too, under `## Pass 8,
+session X — …`, in the form the next paragraph prescribes plus a *Polished*
+section, and `pass8_queue.py --pass 8` lists them for the second reading.*
 
 *Pass 9 re-runs pass 4's adversarial protocol — archived in
 [pass4.md](pass4.md) with its charter, its agent brief
@@ -21,7 +30,7 @@ the figures redrawn, and which orderings they assert; the material moved,
 from where to where; and, under *Corrections*, every fact changed with the
 decompile open — what the page said, what the decompile says, file and line.
 Name the page in backticks on every line so a queue tool can route it.
-Strike nothing here; pass 9 strikes.
+Strike nothing here; pass 8 strikes, and by its close nothing is unstruck.
 
 **The form, from pass 7's close** — written because nine of pass 7's thirteen
 entries could not be walked item by item (the shape audit is in session O's

@@ -1145,7 +1145,7 @@ appends one line saying what it did.
 | **H** | **done 2026-09-15** | VIII · The player | 8 | 10 → **12** | 10 | The lightest part by the gate (one failure) and the numbers; the queue is about shape. `hunger-and-experience`'s regen flowchart: three branches from one node whose *order is the rule* — a numbered chain, or one arrow (:5592); its sequence labels a packet *sent first* and draws it second, from a lane that has not acted, and one arrow runs on both sides that one set of lanes cannot show (:5597); `status-effects`' one `LE` lane for two machines and no tick bar, so the two branches read as sequential (:3576, :5601 — F7 and F8 together); `input-to-movement`'s `LE` lane with one arrow and no cast row (:5613); `the-spear`'s flowchart missing the second thing the prose stops on (:5609) and its label compressing two sides (:3568); `the-sword-swing`'s data nodes and control nodes on the same arrows and its `GATE` that asks *either term above zero?* without naming the two (:5605), and the swing packet the body now mentions (:5615); `player/README`'s edge labels (:3573). **What the session did.** Eight viewer agents, one per page. Ten figures became twelve, both new ones a split at a joint the page's own headings already name: `input-to-movement`'s seven-lane trace is now a client figure in the section about the client and a server figure in the section about the server — the server half had been drawn ninety lines above the prose that explains it — and `status-effects`' trace is two figures, one per machine, because it had **one `LivingEntity` lane standing for both**, told apart by two `Note over` lines, which is the thing F7 forbids by name. Every figure in the part is captioned and pointed at by a sentence; **nothing is below 0.80 or under 12.8px** (from four at 0.69 and one at 0.61/9.7px), nothing is over 1,200px tall, no lane is over six, and the gate's **1 unresolved name and 7 notes are 0 and 0** — the second part clean on the notes as well as the failures. `player-anatomy`'s ladder is the book's **seventh `classDiagram`** and the first drawn for inheritance rather than containment: its flowchart arrow had meant *extends*, a mark outside F3's table, and `<|--` says it natively while `<<abstract>>` marks the five rungs the game never instantiates. **The part's own fault is F7's, in the shape this part was always going to produce**: four of five sequence diagrams gave one object two lanes by drawing **a class-hierarchy rung beside its own subclass** — `Player` beside `ServerPlayer`, `LivingEntity` beside `LocalPlayer`, `LivingEntity` beside `ServerPlayer` twice — on the one part whose whole subject is the inheritance chain, and folding them was the entire lane-budget fix with not one label shortened. Eighteen corrections, all in [pass9.md](pass9.md); the sharpest are `the-two-phase-tick`'s figure drawing the container check in phase one only, under a sentence in bold calling it *the only work both halves do*; `the-sword-swing`'s drawing the listener calling its own `isWithinAttackRange` when it is `Player`'s and the `Player` lane was already in the figure, landing `hurtOrSimulate` on `LivingEntity` when it is `Entity`'s, and delivering the damage packet to `Minecraft` rather than to the listener that handles it; and `hunger-and-experience`'s regeneration figure drawing **three siblings off one node where the code is an if/else-if chain whose order is the whole rule** — the shape was the error, and its fourth branch had never been drawn at all. Also fixed, and the reason it matters: **`check_figure_names.py` could not see a one-word class name anywhere but a `participant` line** — its token regex needs two CamelCase humps, so `Entity`, `Avatar`, `Player`, `Mannequin`, `Item`, `Block`, `Mob`, `Screen` and `Window` were unchecked in every node label, message and note since the gate was written — and **its relation pattern never matched `<|--` at all**, so an inheritance relation was parsed as nothing. Both fixed where the name is structural rather than free text, with probes; 43 more names checked corpus-wide and no previously-clean part moved. That is the **sixth and seventh** time this pass a session has found the gate blind to something the standard cares about. |
 | **I** | **done 2026-09-15** | IX · Networking | 6 | 12 → **11** | 10 | `what-the-client-is-told`'s sixteen-node cascade carrying the page's whole argument (:4566), with the `FREE` node branching off before gate 3 is drawn — a forward reference inside the figure (:5715); `packets-and-stream-codecs`' seven-node chain of twenty-word labels (:4569), four of its boxes explained 80–150 lines later (:5729), and its buffer figure's three arrows meaning two things — *binds* and *extends* (:5725); `protocol-phases`' `NEGOTIATING` with no edge in or out — may a state machine contain a state nothing reaches? (:5733) — and its `W` box naming objects by position (:5737); `the-connection`'s note handing over six handler names ninety lines early (:5741); `chat-and-signing`'s flowchart omitting the one refusal that does not close the connection (:5720); `networking/README`'s fourteen-word edge label between two subgraphs (:4562); 10 of 12 figures open their section; four figures with an overlap or overflow.  **What the session did.** Six viewer agents, one per page. **Twelve figures became eleven**: `packets-and-stream-codecs`' buffer flowchart is a three-row table, because its three arrows meant two things — two bindings and one *extends* — and the table carries the bind time the figure omitted, which is F10's own ruling. Every figure captioned, every non-lead figure given a lead-in; **nothing below 0.77 or under 12.3px** (from three at 0.38, 0.42 and 0.54 with 6–8.6px type), no overlap, overflow, clipping or edge through a node in the part, no Mojang name broken on screen (five lines were), and the gate's **1 unresolved name and 19 notes are 0 and 0** — the third part clean on both. One figure is over 1,200px tall on purpose: `what-the-client-is-told`'s cascade is the picture the page says *is* the page, and F9's joint would destroy it. **The part-wide fault is session H's in the mirror.** Part VIII gave one object two lanes; Part IX gives **two objects one lane**, because this part's subject is two machines running the same classes — `the-connection`'s single `Connection` lane for the object at each end, whose paragraph *conceded the fault in words* rather than the figure being redrawn, and `chat-and-signing`'s two lanes both reading `ClientPacketListener`, told apart by a note naming two mermaid aliases the picture never shows. Both fixed as `authority`'s boat was: a second key row for the same class, and a `box` per machine. **And three of the four figures on `protocol-phases` were illegible for one reason — `direction LR`**, so two of the three fixes were deleting a line; F3 already rules `TD` for anything ordered in time, and a state machine is. Nine corrections, all in [pass9.md](pass9.md); the sharpest are the configuration flowchart drawing `ServerConfigurationPacketListenerImpl.returnToWorld` as the fifth step of the queue when it is the call that *builds* the queue before any task runs, and drawing the client round trip that ends the phase as a plain arrow — the gap the page's own hook lives in; `what-the-client-is-told`'s cascade drawing position as a relative/absolute binary when its own table names *nothing sent* and *rotation only* as well; and `chat-and-signing` labelling the `ChatScreen` arrow with `ChatScreen.normalizeChatMessage`'s own work — the caller's method drawn arriving at the callee, on the **eighth part of eight**. **Two more tool blindnesses, the eighth and ninth of the pass**: `check_figure_names.py` read only the first 20 kB of a class file to find what it extends, and exactly one class in the decompile declares itself past that mark — `ClientPacketListener`, at byte 21,133, behind three hundred import lines, and one of the book's commonest lanes — so every **inherited** member on a `CPL` lane failed a figure that was right; and a `<br/>` between a name and the next word was welded shut, so **the repair F18 prescribes made the gate fail**. Both fixed to F17's own wording (a name break is at a CamelCase boundary or a dot, nowhere else), four probe cases; corpus failures 31 → 30, notes 166 → 148, no previously-clean part moved. Ten queue entries struck, one of them a ruling asked for by name — **may a state machine contain a state nothing reaches? No**: a diagram draws the machine as it runs, and `NEGOTIATING` is the enum's business and the prose's. |
 | **J** | **done 2026-09-15** | X · The client | 13 | 18 → **20** | 10 | Twelve figures with three or more names the prose never says, the most after IV and VI. `the-gui-render-tree`'s first flowchart is two pictures in one frame, `UP` and `WALK` pointing at no node (:5829); `the-client-loop`'s one-turn flowchart, the part's most-cited picture, has no tick-boundary marking on the page that is about the tick (:5841 — F8 for flowcharts); `prediction-and-acks`' two figures for one mechanism (:1664) and its state-diagram exits that are sentences (:1621); `options`' eleven-node flowchart with two labelled branches out of `LISTEN` (:5838); `text-and-fonts`' `Font->>FSet: getGlyph` — true as an object interaction, misleading as a call (:4694, :5843); `the-client-level`'s `applyLightData` drawn after the queued lambda, one arrival or two (:5834); `sound-engine` figure 1 at 0.23, the second-widest in the book, eight lanes and three sentence labels. | **What it did:** eighteen figures became twenty, both splits at a joint the page names (`options`' 2,081px flowchart; `text-and-fonts`' eight-lane sequence). Nothing below 0.78 or under 12.4px (from 0.59 and 9.5px), no lane over six, the gate's 10 unresolved and 26 notes both 0. **The part's fault was F18's**: fifteen Mojang names hyphen-broken mid-word on screen, more than any other part and over a third of the corpus's forty-one, on nine of thirteen pages — now zero. Two kind changes (the book's eighth `classDiagram`; a flat chain that asserted five steps happen *after* `GuiRenderer.prepare` when all five are inside it). Eighteen corrections; the caller's-method-at-the-callee fault is nine parts of nine, with a second spelling the gate cannot see — a self-message naming a third class's method, qualified, on a lane that owns neither. Tenth tool blindness, and the second the standard created: `pass7_figures.py` closed a `<br/>` up only on a `participant` line, so every F18 repair split a name in two and counted both as never-in-prose.
-| **K** | — (runs after O) | XI · Rendering | 12 | 20 | 14 | Three figures with eight lanes, the most of any part. `entity-rendering`'s two figures say the same thing twice (:4787) and disagree with the prose and the cast on where the frustum test sits and who drives two of the four stages (:5930); `rendering/README`'s pipeline figure declares its arrows reading order only and two of them a frame's reverse (:5953 — the wrong figure, F13); `lightmap-fog-and-sky`'s trace draws three of the five askers its table promises (:5924); `the-window`'s six-callback flowchart under a section discussing seven (:4790) and its retry flowchart making the error verdict look inert (:5935); `visibility-and-the-frame-graph`'s six-node figure under *Five stages* (:4793) and its outline chain as one node where the prose has four passes (:5948); `post-processing`'s eight-line note band doing the work four arrows would (:5944) and its *what a player sees* column (:1549); `particles`' server branch starting from a lane with no incoming arrow (:5940); `blaze3d`'s cluster labels over its nodes (the renderer's overlap list); `models-and-atlases`' single figure over 330 lines (:2367); the render-state tree at 0.49 (F13). |
+| **K** | — (runs as pass 8's session K, under this Part 1 and Part 2; [pass8-brief.md](pass8-brief.md) Part 6) | XI · Rendering | 12 | 20 | 14 | Three figures with eight lanes, the most of any part. `entity-rendering`'s two figures say the same thing twice (:4787) and disagree with the prose and the cast on where the frustum test sits and who drives two of the four stages (:5930); `rendering/README`'s pipeline figure declares its arrows reading order only and two of them a frame's reverse (:5953 — the wrong figure, F13); `lightmap-fog-and-sky`'s trace draws three of the five askers its table promises (:5924); `the-window`'s six-callback flowchart under a section discussing seven (:4790) and its retry flowchart making the error verdict look inert (:5935); `visibility-and-the-frame-graph`'s six-node figure under *Five stages* (:4793) and its outline chain as one node where the prose has four passes (:5948); `post-processing`'s eight-line note band doing the work four arrows would (:5944) and its *what a player sees* column (:1549); `particles`' server branch starting from a lane with no incoming arrow (:5940); `blaze3d`'s cluster labels over its nodes (the renderer's overlap list); `models-and-atlases`' single figure over 330 lines (:2367); the render-state tree at 0.49 (F13). |
 | **L** | **done 2026-09-16** | XII · World generation | 11 | 15 → **15** | 8 | Eight figures with an overlap or an overflow, the most of any part, most of them subgraph titles drawn over their first node: `density-functions`' three panels, whose root node is `Ap2` in all three, a name glossed nowhere (:6073); `terrain`'s cell-loop figure and its *Four statuses* flowchart with five boxes (:6067); `blending`'s dashed annotation node that the prose now owns (:1450, :6063 — remove it) and its *the two maps* named a paragraph below the figure; `biomes`' return from `Climate.RTree` skipping two lanes (:6059); `trees`' `UNCLIPPED` twenty lines before it is defined and `leafRadius` for the prose's `foliageRadius` (:6070); `hand-built-structures`' `findCollisionPiece` addressed to the builder where the prose addresses the accessor (:6076) and its two loop labels outside their boxes; `jigsaw-and-templates`' block label outside its box; `worldgen/README`'s undirected link (:6081). | **What the session did** (run before K, which shares no page with it). Eleven viewer agents. `density-functions`' three repeated panels (1,729px, every title under a node) are a four-node flowchart and a node × form table; `biomes` eight lanes → six, `features-and-placement` seven → five; `hand-built-structures`, `jigsaw-and-templates`, `trees`, `blending` and `creating-a-world` redrawn with bands, loops and an `alt`; the landing figure `TD`, labelled and captioned. Nothing below 0.756 or under 12.1px (from 0.61 / 9.7px), no overlap on any figure (from eight), the gate's 4 unresolved and 35 notes → 0 and 7. Fourteen corrections, three of them the caller's method at the callee (**ten parts of ten**), and two a figure contradicting the page's own hook (the jigsaw depth limit; the terrain loops that sample). `autonumber`'s digits were the one sub-11px text on its figure, and are gone. Eight queue entries struck, one ruled; key row `JP` added.
 | **M** | **done 2026-09-16** | XIII · Commands and data packs | 10 | 13 → **13** | 7 | `entity-selectors`' *Resolve* flowchart routes the players-only branch past both decisions the prose makes — the **shape** is wrong (:6143); `permissions`' first figure is a taxonomy wired with pipeline arrows, `Q --> S --> C` asserting a becoming, and its `CL` node the densest label on the page (:6151); `brigadier-and-commands`' trace opening on two `CSug->>CPL` arrows that read as messages sent under a paragraph whose point is that the parse never leaves the machine (:6156), and its node saying `performCommand` reads limits *from the level's game rules* (:4894 — reword the node); `the-execution-engine`'s four-panel queue figure with `---` and `-.-` unexplained on a page whose subject is queue order (:6161) and its three reserved lanes no page uses (:4890 — session O's prune); `game-tests`' nesting figure with unlabelled edges between subgraphs and one subgraph with no internal edge (:6165); `commands/README` is the landing exemplar for numbering (:708) and its subgraph title overlaps a node. | **What the session did.** Ten viewer agents. Two kind changes — `permissions`' taxonomy-with-pipeline-arrows and `game-tests`' three bands are the book's ninth and tenth `classDiagram`s — and the landing figure `TD` with the top floor on top, its undirected links gone and its titles unclipped. Nothing below 0.78 or under 12.5px (from 0.69 / 11.1px), no lane over six (from seven twice), no overlap (from four figures), no name broken on screen (from eight), the gate's 4 unresolved and 7 notes → 0 and 2. Twenty corrections, and the caller's method at the callee on four of its pages — **eleven parts of eleven**; the sharpest is `entity-selectors`' resolve tree, whose UUID leaf on the entities branch was the players-only branch's `PlayerList.getPlayer`. Found: the F18 regex is blind to a break one or two letters after a dot (20 names still broken corpus-wide by the wider check, in III–V and XI), and the gate's eleventh blindness, a one-word method in a class-diagram member line — fixed with two probe cases. Seven queue entries struck; key row `DCS` added. |
 | **N** | **done 2026-09-16** | the frame and Reference | the introduction, `lectures.md`, the atlas, the hand-kept Reference pages | 14 | 21 | The parts-dependency figure — shared by the introduction and `lectures.md` — has **26 edge crossings** on thirteen nodes, the worst object in the book: redrawn by rank in the watch order, or generated by `check_deps.py`'s reading of the landing pages (F9); the introduction's two-programs figure draws `Worker-Main-n` with no sentence introducing it and dashed arrows nobody explains (:6247); `maps/README`'s pipeline figure, the one atlas figure that is not generated (:6245); `reference/README`'s shelf taxonomy with sentence-long subgraph titles, no caption, and a table beside it that says it faster (:6240), and the tier's one-figure exemption said once for the four figure-less pages (:6259); `math-and-primitives`' eight-node, eighteen-edge coordinate figure with sentence labels and five crossings (:6252); `threads`' edge label of a kind the section is not about (:6255); `maps/hierarchy`'s same SVG (:3922) and the four trees' size (F13, with `map_source.py`); the lane key's 44 unused rows (:2256, :4890) and `lanes.md`; the class index, blind to diagrams until this planning session (:2178 — struck by it). | **What the session did.** Ten viewer agents. **The parts-dependency figure is generated now**: mermaid laid its 27 arrows out with 26 crossings and no ordering of 200 tried kept the parts in order with fewer than sixteen, so `check_deps.py --write-figure` draws it from the landing pages as the prose's own *line with two knots* — the parts in one column in watch order, solid arcs on the right all running down, the two cuts dashed on the left — at scale 1 and 13px, and the gate fails when the file is stale (two probe cases; `deploy.sh` regenerates it; `llms_full.py` now expands a nested include and gets a table beside it). The introduction's figure is a subgraph per thread, the atlas pipeline the page's own two routes, `math-and-primitives`' 17-edge web a seven-node ladder of sizes (0.49/7.8px → 1.00/16px), `threads`' web coloured by side with each edge labelled by its kind (0.58/9.3px → 0.85/13.6px), and the shelf figure a logged cut under F13, with the tier's exemption said once on `reference/README`. `map_source.py`'s bars and treemap brought to the 11px floor, and the treemap's Realms group labelled. **Nothing in scope below 0.79 or under 11px.** Nine corrections; the sharpest is `threads`' *written on the caller's thread*, which the queue had left as true: `Connection.sendPacket` posts any send from another thread to the Netty loop, so both packet-out edges are posted tasks. Thirteen queue entries struck, seven opened. |
@@ -1158,3 +1158,851 @@ polish a sentence for voice (8); add a figure for variety (F10's last sentence);
 draw from the decompile what the page's prose does not say (F6 — the figure
 names what its section explains, and a fact the figure alone carried is given
 its sentence or logged as a cut).
+
+---
+
+## Part 5 — The plan as it stood at pass 7's close
+
+*Archived 2026-09-26 by pass 8's planning session, as passes 5 and 6 were archived into
+their briefs: the charter as [plan.md](plan.md) carried it through the pass, then the session
+log from the pass's planning session to its close, verbatim, headings demoted one level.
+Session K, Part XI, never ran inside the pass; it runs as pass 8's session K under this file's
+Part 1 and Part 2, and records in Part 4's row as well as in [pass8-brief.md](pass8-brief.md).*
+
+### Pass 7 — the figures, the charter as it stood at the close
+
+**Goal:** every figure is the true picture of its system, is needed, shows the
+thing its section needs shown, and is legible at the column width without the
+zoom — and every name in it is under a gate.
+
+**Why it has a pass of its own.** The diagram is the lecture's artefact (rule 4)
+and **nobody has ever looked at one rendered**: every check so far was parse
+(`check_mermaid.js`) and arrow-by-arrow truth (pass 4), neither of which sees
+shape, size or legibility. Three pass-6 sessions found the same part-wide
+pattern independently — *the lead figure the page cannot yet be read against* —
+and sent it whole rather than patching. The owner's brief adds the reader's
+half: a reader who skims uses the figure as the check on the section, so a
+figure that is wrong, unreadable or about something else costs the section, and
+the figures are where machine-made work shows first.
+
+**The jobs**, each with the number the planning session measured
+(`tools/render_figures.js` in Chrome at the 1,092px reading column,
+`tools/pass7_figures.py`, `tools/check_figure_names.py`; the per-part table is
+in the brief's Part 4):
+
+1. **Legibility.** 134 of the 194 mermaid figures are shown below their natural
+   size, 76 below half, and **89 show type under 9px**; the widest is 5,415px.
+   The cause is one thing, not a hundred: a sequence diagram is as wide as its
+   longest message and the site's mermaid init does not wrap. A candidate init
+   (`tools/pass7/`) takes the sequence diagrams from 70 below half to none and
+   from 76 under 9px to none without touching a page; what is still shrunk after
+   it is fixed per figure — fewer lanes, shorter labels, a split at the
+   mechanism's own joint.
+2. **The theme and the visual grammar.** No page carries colour today and none
+   should: five semantic classes (`server`, `client`, `netty`, `worker`, `disk`)
+   in one stylesheet, one meaning per mark corpus-wide, `TD` and `LR` only
+   (the corpus spells the same direction `TD` 51 times and `TB` 27).
+3. **What a figure is for.** 115 figures open their section with nothing above
+   them, **none has a caption**, and 51 are pointed at by no sentence at all.
+   The caption is the italic paragraph after the figure — markdown, so the name
+   gate reads it and `llms-full.txt` carries it.
+4. **The figure the page cannot be read against.** 139 figures introduce at
+   least half their names before the prose does; **151 carry a name the prose
+   never says**, 614 tokens in all. A lead figure is drawn in the words of its
+   cast; a name the prose never says gets a sentence or leaves the figure.
+5. **Density and kind.** Nine flowcharts over fifteen nodes, 42 figures over
+   1,200px tall, one 3,766px; 121 figures carry labels that are sentences (312
+   of them). The site's mermaid draws twenty-one kinds and the corpus uses
+   three: a class diagram for what an object holds, a block or packet diagram
+   for a layout, a chart for a quantity are available and unused
+   (`render/gallery/` has one of each).
+6. **The gate over figures**: 2,619 names inside mermaid blocks, **119
+   unresolved**, plus 362 notes whose convention session A sets. Report-only
+   through the pass, `--strict` at its close. The same parser gave the class
+   index the 139 page pairs it could not see.
+7. **Every figure-kind entry in [pass5.md](pass5.md)** — 150 of them, checked
+   against the figure before it is acted on.
+
+**The agent** is a viewer with the picture and the section and nothing else,
+asked what the figure shows before it reads the section, what it could not read,
+what the section needed a picture for, what is in the picture that is not needed
+and what is needed that is missing, whether the kind is right, and which words
+the figure spends before the page mints them; then the figure it would keep, the
+one it would cut, the section that wanted a picture, and a sketch of the worst
+one redrawn — with every arrow the sketch changes listed as a claim.
+
+**The rhythm** is pass 6's, which worked twice: session A settles the
+corpus-wide rulings, adopts the theme and rewrites one exemplar page
+(`entities/entity-lifecycle`, whose three figures exercise nearly every ruling);
+B–N take the parts in sidebar order and O closes, flipping the gate to
+`--strict`, pruning the lane key, reading the thirteen landing figures as a set
+and re-measuring the corpus against Part 4's table.
+
+**An arrow is a claim.** A figure redrawn asserts an ordering; every arrow
+added, removed, reversed or relabelled is re-derived against the decompile with
+`diagram_arrows.py`'s numbered list in hand and logged in
+[pass9.md](pass9.md) — which is why pass 9's standing item reads *the figure
+against the section under it first*.
+
+**Not:** facts (an arrow found wrong is re-derived and logged as a correction);
+prose beyond a caption, a lead-in and the one sentence a name needs; a figure
+added for variety.
+
+### The session log
+
+*(newest last; the 2026-09-26 planning entry that follows session O's in plan.md belongs to pass 8 and stays there)*
+
+- **2026-09-14, planning session (Fable, between passes 6 and 7).** No page's
+  prose touched. **Pass 6 archived** whole into [pass6-brief.md](pass6-brief.md)
+  Part 5 — its charter, its fourteen session paragraphs and its log, headings
+  demoted — so this file is again the current charter and the passes to come;
+  the close's one remaining job, the thirteen landing pages read as a set, was
+  carried to pass 7's session O rather than left implicit. **Pass 7 planned**:
+  [pass7-brief.md](pass7-brief.md) — Part 1 the viewer's brief (the picture and
+  the section, seven questions per figure and four per page), Part 2 the
+  runbook, Part 3 the standard as **sixteen recommendations with the numbers
+  behind them** for session A to rule on, Part 4 the schedule with the status
+  column. **Four tools, each with a `--probe`**: `render_figures.js` (the built
+  site served locally and opened in the machine's own Chrome through
+  playwright-core, every figure screenshotted at the reading column's width and
+  measured — scale, smallest type, overlapping labels, labels over a shape,
+  labels outside their box, edges through a node, crossings, clipping;
+  `--init-js`/`--css` try a theme without touching the site, `--html` renders a
+  gallery), `pass7_figures.py` (every figure against its page: its place, its
+  source, which of its names the prose says before it, only after it or never,
+  and the render; plus the sections over forty lines with no figure, and a
+  ranking by trouble), `check_figure_names.py` (**the gate the charter asked
+  for**: 2,619 names inside mermaid blocks checked against the decompile the way
+  `verify_names.py` checks the prose, with inheritance and a message's head
+  against the lane it is sent to) and `pass7_prompts.py`. `check_mermaid.js`
+  gained a `structuredClone` polyfill and a quiet console, so `pie`,
+  `packet-beta` and `radar-beta` parse under it as they do in the browser, and
+  it now exports its fence-mapping helpers; `check_lanes.py` gained `--unused`
+  (44 key rows of 342 that no page declares); `deploy.sh` runs the new gate
+  report-only. **The corpus rendered twice** — as it ships and under a candidate
+  theme — and the numbers are in the brief: 134 of 194 figures shrunk, 89 under
+  9px, none captioned, 151 carrying a name the prose never says, 119 names
+  failing the gate. **One finding of the tool's own**: `verify_names.py --index`
+  now merges the figure parser's mentions, so the class index gained **139 page
+  pairs** it had been blind to since pass 5 session A logged it — a class named
+  only in a diagram had no index entry, because the index reads backticks and a
+  mermaid label is not one. `CLAUDE.md`, `README.md`, the memory and this file
+  brought current; one queue entry struck with the page open. All five gates
+  green; nothing deployed, because no published page changed except the
+  regenerated class index. **Rulings**: the pass's own tooling renders into
+  `render/`, which is gitignored — a screenshot is a build artefact and the
+  index it writes is regenerable, so neither is committed; and a candidate theme
+  lives in `tools/pass7/` until session A adopts it, so that the evidence for a
+  corpus-wide change is a diff of two renders rather than an argument.
+
+- **2026-09-15, pass 7 session A (Opus) — the standard, the theme and the
+  exemplar.** Ruled on the planning session's sixteen recommendations and added
+  two the adoption forced: **F17**, a lane name too wide for its box carries its
+  own `<br/>` at a CamelCase boundary, and **F18**, the 109 names the wrap still
+  breaks in messages and notes, which are the part sessions' work under F4.
+  [pass7-brief.md](pass7-brief.md) Part 3 rewritten as the record, and
+  `TEMPLATE.md`'s *Figures* and *Lanes* rewritten to it — the marks table, the
+  label budgets, the caption device, the tick band, the density rule, the menu
+  of kinds and the seven-lane arithmetic. **The theme is adopted**:
+  `mermaid-init.js` is committed (out of `.gitignore`, MPL header kept, with a
+  warning not to re-run `mdbook-mermaid install` over it) and `custom.css`
+  carries the five semantic classes in both palettes and the caption rule.
+  Across the 196 mermaid figures, with no page's content changed: the median
+  scale 0.61 → **0.82**, figures below half 76 → **6**, type under 9px 89 →
+  **10** and under 11px 107 → **31**, the widest 5,415px → 3,859px — and of the
+  88 sequence diagrams that were the whole problem, **none** is now below half
+  or under 9px. The costs are named rather than left to be found: figures are
+  taller (the median sequence diagram 401px → 940px) and mermaid hyphenates a
+  word wider than the wrap, which broke 222 Mojang names on screen. The 112 that
+  were lane names are fixed corpus-wide by a one-time sweep
+  (`tools/pass7/break_lane_names.py`, which reads a render rather than counting
+  characters); both gates learned to close the break up, with probes. A
+  width-240 theme that would have avoided the break was rendered over the corpus
+  and **rejected** — it leaves 71 of 88 sequence diagrams under 11px. The
+  exemplar `entities/entity-lifecycle` was rewritten with a viewer's report in
+  hand: the 21-node, 39-edge cascade shown at 0.28 with 4.6px type is two
+  flowcharts at scale 1 and 16px, its twenty conditions moved into a fifteen-row
+  table, and **it loops** — re-deriving it found that fourteen edges the old
+  figure drew as dead ends are a `continue` to the next try, that three
+  rejections were drawn at the wrong scope, and that two exits were missing
+  entirely. The entry sequence gave the page's second half back to the state
+  diagram that owns it and gained the callback hop it had been drawing as a call
+  `ChunkMap` does not have; the state diagram's sentence labels became
+  conditions. Four captions — the book's first. One finding the method threw up
+  by itself: **mdBook's floating chapter chevrons have been painted on top of
+  the prose at 1440px since pass 3 widened the column**, fixed in `custom.css`
+  by moving mdBook's own breakpoint to where the column clears them. All six
+  gates green (the figure-name gate still report-only, 113 unresolved of 2,588);
+  [pass9.md](pass9.md) has the claims and the six corrections,
+  [pass5.md](pass5.md) the six entries this left. Deployed.
+
+- **2026-09-15, pass 7 session B (Opus) — Parts I and II: the figures.** Eleven
+  pages, nineteen figures, one viewer agent per page with the picture and the
+  section and nothing else. Fourteen figures redrawn, **two split at the
+  mechanism's own joint**, one cut back, two given a kind the book had never
+  used, and **all nineteen captioned**. The size numbers close: in both parts,
+  **no figure shows type under 11px** (from nine shrunk and two under 9px after
+  the theme), one is left below 0.75 — `data-driven-types`' trace at 0.73 and
+  11.6px, where six lanes and not the labels set the width, and where cutting a
+  lane would cost the pattern's own subject — the thirteen Mojang names still
+  hyphen-broken on screen are **zero**, and the gate's fourteen unresolved names
+  are **zero**.
+  The two splits are the pass's method working: `identifiers-and-registries`'
+  second figure was two scenarios that shared no lane sitting in one frame — a
+  world-load task graph and a configuration handshake, 0.68 with eight names
+  broken mid-word — and is now a flowchart and a four-lane sequence, both at
+  scale 1; `anatomy`'s two-loops flowchart was 2,184px wide, shown at 0.28 with
+  4.5px type, and is now two rings side by side at scale 1, each with an inner
+  box for the call that contains the rest — which is also the fix for the queue
+  entry that said it drew a nesting as a sequence. **The book's first two class
+  diagrams** are here, on `text-components` and `data-components`, which is
+  exactly F10's prediction: the vocabulary pages had been drawing conversations
+  between objects that do not talk.
+
+  **Nine corrections**, every one a figure disagreeing with the decompile or
+  with the prose beside it, all re-derived with the source open and logged in
+  [pass9.md](pass9.md). The sharpest is `identifiers-and-registries`' bootstrap
+  ladder, where the figure had the ITEM loader triggering `Items` class init and
+  `Bootstrap.bootStrap` had already done it two calls earlier, through
+  `ComposterBlock.bootStrap`; the page's own prose said so and the figure said
+  the other thing. Three more were a message head naming the *caller's* method
+  rather than the target's, one was `LootItemFunctions.compose` drawn leaving
+  the wrong object, one was `HashedStack` — a record — drawn sending a packet,
+  and one was a `LoadingOverlay` arrow that merged a poll of the reload instance
+  with a callback into `Minecraft`. **This is the class pass 6 named, found in
+  pictures**: a figure that disagrees with the text beside it, on a corpus
+  fact-checked twice and read down once.
+
+  One tool change, and it is the session's transferable finding:
+  **`check_figure_names.py` did not read a `<br/>` inside a message the way F17
+  taught it to read one inside a lane**, so F18's instruction to part sessions —
+  break a name too wide for its box at a CamelCase boundary — was unfollowable,
+  and doing it made the gate fail the page. One rule (a break tight against the
+  text is a name and closes up; a break with a space either side is a clause and
+  becomes one) and three probe cases; corpus-wide unresolved names fell 119 →
+  **100** with no page outside these two parts changed, so some of the 119 were
+  never page errors. Also raised for session O: the renderer counts a `par`
+  block's own headers as labels outside their container; `par` itself is a mark
+  outside `TEMPLATE.md`'s table, spent once here and captioned, because the
+  figure otherwise said the opposite of the paragraph's "Meanwhile"; the jar
+  treemap cannot carry the reconciliation `what-this-book-skips` asks of it; and
+  **five of the thirteen landing figures still spell a direction F3 rules out** —
+  Part II's was one, and is now `TD`, numbered to the watch order and captioned.
+  Eight queue entries struck with the page open, seven opened. All six gates
+  green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session C (Opus) — Part III · The server: the figures.**
+  Six pages, ten figures in and twelve out, one viewer agent per page with the
+  picture and the section and nothing else. Every figure in the part is now
+  **captioned**, pointed at by a sentence, and **legible at the reading column**:
+  the two shown below 0.75 are none, the smallest type on screen went 11px →
+  **12.4px**, the fifteen sentence labels are **zero**, and the figure-name
+  gate's twelve unresolved names and thirteen notes are **zero of each** — the
+  first part clean on the notes as well as the failures. Two figures split at
+  the mechanism's own joint: `server-tick`'s event loop at
+  `MinecraftServer.pollTaskInternal`, where an empty queue and a head that may
+  not run turn out to be the same answer, and `starting-a-server`'s boot at the
+  note bar it was already drawing.
+
+  The tallest figure in the book fell **6,010px → 2,311px** and its type went
+  from a label you read one box at a time to 16px throughout.
+  `server-level-tick`'s twenty-two-step chain had a gate clause appended to
+  every label — *— running*, *— no gate*, *— running, and not a debug world* —
+  which is the half the section leans on and the half a reader cannot scan; the
+  gates are a three-column table beside the figure now, one row per step, every
+  cell re-derived from `ServerLevel.tick`. Losing the clauses made room for the
+  containment the figure had been hiding: six of its boxes are the *insides* of
+  `ServerChunkCache.tick`, drawn beside the steps around them as though they
+  were siblings, which is why the prose's *five things in one call* and the
+  figure's six boxes had been contradicting each other since pass 5. They are a
+  box now, and the two counts agree.
+
+  **The part's real fault was not the one the queue named.** Three pass-6
+  sessions had sent *the lead figure the page cannot be read against* here as a
+  part-wide pattern, and underneath it sat a sharper one: **twelve messages —
+  one on every page of the part — labelled with the caller's method and drawn
+  arriving at the callee.** `MinecraftServer.saveAllChunks` on an arrow into
+  `ServerLevel`, which receives `ServerLevel.save`;
+  `ServerLevel.sendBlockUpdated` into `ServerChunkCache`, which receives
+  `blockChanged`; `ServerChunkCache.broadcastChangedChunks` into `ChunkHolder`,
+  which receives `broadcastChanges`; and nine more. Every one was a gate failure
+  and every one was a claim about who does what to whom, which is the thing a
+  sequence diagram exists to say. The gate finds the shape mechanically, and
+  most of the 88 unresolved names left in the corpus look like it — so this is
+  the entry the remaining part sessions should read first.
+
+  **Six corrections**, each re-derived with the source open and logged in
+  [pass9.md](pass9.md). The sharpest is `how-a-server-dies`' watchdog figure,
+  which had no `Disk` lane: beside figure 1's four writes it said *the watchdog
+  writes nothing*, on a page whose own comparison table two screens above reads
+  *is a crash report written: **yes***, and `ServerWatchdog.run` does write one,
+  to stdout and to *crash-reports/*, before it calls `System.exit`. Next to it:
+  `starting-a-server`'s boot had *the stages that must be single-threaded come
+  back to main* on the worker's return arrow, which never touches `Main` — the
+  arrow that does was labelled with a different call; and `how-a-server-dies`
+  drew `saveDataTag` and `SavedDataStorage.saveAndJoin` as siblings of the flush
+  save when all three are *inside* `MinecraftServer.saveAllChunks`, so the
+  page's hook — *after `level.dat` and not before* — is a property of one call
+  and not a claim about three. Drawn as a band, it is structural.
+
+  The queue's one open question is answered: nothing holds a joining player's
+  spawn chunks between the ticket being placed and `PrepareSpawnTask.Ready`,
+  because nothing has to. `TicketType.PLAYER_SPAWN` carries
+  `TicketType.FLAG_LOADING` and nothing else, so `canExpireIfUnloaded` is false
+  and its twenty-tick timeout does not begin while the chunks it asked for are
+  still on their way — which is exactly why
+  `ServerChunkCache.addTicketAndLoadWithRadius` accepts the type at all, since
+  it throws for any type that could expire before it loads.
+
+  One tool change, and it is the same shape session B found: **the gate could
+  not read the tick band F8 tells every part session to draw.** Part III drew
+  the corpus's first four `rect` bands and `check_figure_names.py` read
+  `rgba(0, 0, 0, 0.04)` as a call named `rgba` on every one. One rule — a
+  `rect`'s remainder is a colour and never a label, a `box`'s leading colour is
+  stripped before its label is checked — and two probe cases. Two sessions, two
+  tool blindnesses, both found by being the first to use a device the standard
+  had ruled: the gate is worth re-probing against each new device a part session
+  spends. Twelve queue entries struck with the page open, five opened. All six
+  gates green (the figure-name gate still report-only, 88 unresolved of 2,515
+  corpus-wide). Deployed.
+
+- **2026-09-15, pass 7 session D (Opus) — Part IV · The world: the figures.**
+  Eleven pages, twenty-four figures in and **twenty-seven** out, one viewer agent
+  per page with the picture and the section and nothing else. Four of the new ones
+  are splits at a mechanism's own joint, and every joint was one the prose already
+  named: `game-events-and-vibrations`' twenty-four-node cascade — the worst figure
+  in the part at 0.54 and 8.6px, taller than five screens — became the dispatcher's
+  walk and one listener's five refusals, both at scale 1; `fluids`' tick became
+  *what state should be here* and *what is done about it*; `scheduled-ticks`'
+  pipeline became booking and draining, which is that page's own bold claim about
+  which of the two is server-thread only; and
+  `chunk-generation-pipeline`'s twelve-status chain — a table wearing a flowchart,
+  three facts in every node and twelve arrows saying only *next* — became a
+  four-column table beside a new figure of four nested rings, which is what the word
+  *pyramid* had been doing all along. `chunk-anatomy`'s lead figure is the book's
+  third `classDiagram`: its heading promised four shapes, the paragraph under it
+  stated a hierarchy, and the old figure drew neither. Across the part: **no type
+  under 9px, no figure over fifteen nodes, no lane over seven**, the tallest figure
+  4,978px → 2,077px, every figure captioned, every non-lead figure given a lead-in,
+  and the figure gate's **nineteen unresolved names and sixty-three notes are none
+  of either**.
+
+  **The part's fault was Part III's fault again.** Fourteen of the nineteen gate
+  failures were one device — a message labelled with the *caller's* own method and
+  drawn arriving at the *callee* — which makes it four parts of four. It is worth
+  saying why it keeps being caught: the gate checks a message's head against the
+  lane it is sent to, so a caller's method is by construction not a member of that
+  lane. What two fact-checks could not see, a mechanical rule sees every time.
+
+  **The session's own finding is about the standard rather than the pages.** A
+  caption is the italic paragraph after a figure, and `custom.css` matches it with
+  `p:has(> em:only-child)`. An author who closes the italics to set a name and
+  reopens them writes *two* `<em>` children, the selector stops matching, and the
+  paragraph silently loses its styling and its figure number — in the built page
+  alone. The markdown looks right, mermaid parses, `verify_names.py` passes.
+  **Thirteen were live when this session looked, and three had already shipped in
+  Part III**: the fault outlived the session that invented the caption and the two
+  that wrote sixty of them. All thirteen fixed, the rule written into
+  `TEMPLATE.md`, and `check_mermaid.js` now gates it with a six-case `--probe`. The
+  lesson generalises past captions: **a standard whose only enforcement is the
+  stylesheet is a standard nothing checks.**
+
+  Two more render traps, both invisible in source. An explicit `<br/>` turns the
+  theme's 180px wrap off for its *whole* label, so F18's instruction to break a long
+  name inside a message makes the figure wider unless the name is the whole message
+  — four such repairs took `lighting`'s trace from 0.69 to **0.55** and its type
+  from 11.1px to 8.8px, and taking them out again put it back. And a subgraph title
+  is clipped to one wrapped line, which ate the outer ring of the new pyramid until
+  it was cut to twenty-three characters. Both are now in `TEMPLATE.md`, beside the
+  `stateDiagram-v2` second-colon parse failure the same page found. One tool change,
+  and it is the same shape as B's and C's: `check_figure_names.py` closed up a
+  `<br/>` tight on both sides wherever it appeared, so a node label breaking its
+  line after a comma welded two names into a third that is in no decompile — one
+  rule, two probe cases, the third tool blindness a part session has found in three
+  sessions.
+
+  Nine corrections, all in [pass9.md](pass9.md). The sharpest is
+  `environment-attributes-and-timelines`, whose stack figure drew the two
+  lightning-flash layers as rungs *every* value falls through when `ClientLevel`
+  bolts each to **one named attribute**, so they are absent from the other
+  forty-six; beside it, the same page's client trace asserted that the whole stack
+  re-resolves every frame when the probe resolves once a tick and every later frame
+  in that tick only lerps. Also settled: the queue's long-open question about
+  whether a secondary state diagram is a page's true picture, answered for both of
+  its remaining pages — **yes** on `points-of-interest`, where a ticket's whole life
+  is three states and the hook is which transitions are *missing* from them, and
+  **no** on `tickets-and-loading`, where it is not the page's picture but is the
+  owner of the four statuses, which is what stopped that page drawing one mechanism
+  twice. Found and deliberately left: five of the part's figures are still below
+  0.75, and every one is a seven-lane sequence diagram with no label over twelve
+  words — precisely the arithmetic F7's amendment states. Folding a lane is worth
+  about 0.10 and nothing else moves them. Eleven queue entries struck with the page
+  open, seven opened. All six gates green (the figure-name gate still report-only,
+  69 unresolved of 2,489 corpus-wide). Deployed.
+
+- **2026-09-15, pass 7 session E (Opus) — Part V · Blocks: the figures.** Eight
+  pages, ten figures in and **thirteen** out, one viewer agent per page with the
+  picture and the section and nothing else. Three pages split one figure at a
+  joint the prose already names: `blocks-and-states`' write — the part's
+  most-linked figure, 21 nodes and 3,409px with a gate clause appended to ten of
+  its labels — is now the chunk write and the tail either side of the re-read,
+  with every clause in a thirteen-row *step · side · flags · also needs* table,
+  which is session C's `server-level-tick` remedy applied a second time;
+  `block-breaking`'s dig is split at the eighth tick, the two machines boxed and
+  the loop's body in a `par` so the picture stops asserting an order between two
+  clocks the section exists to call independent; and `block-interaction`'s click
+  is split at the machine boundary, where `ServerPlayerGameMode` finally has the
+  lane the cast always gave it, so the two sides read as the same three-step
+  order — which is that section's claim and the thing the single figure had been
+  contradicting. `blocks-and-states`' vocabulary figure is the book's **fourth
+  `classDiagram`**: twelve nodes in which *extended by* and *builds* were drawn
+  with the same arrow, now two inheritance hierarchies meeting in `BlockState`,
+  and eleven classes rather than twelve, because the twelfth was a static field
+  and the heading had been counting it. Across the part: **no type under 11.9px**
+  (five figures were at 10.3–11.1px), nothing below 0.74, sentence labels 38 →
+  **0**, bare-number gates 3 figures → **0**, every figure captioned, and the
+  figure gate's **thirteen unresolved names and twenty-six notes are none of
+  either**.
+
+  **The part-wide fault was Parts III and IV's, a third and fourth time.** All
+  thirteen gate failures were the same device — a message labelled with the
+  caller's own method and drawn arriving at the callee — which makes it **five
+  parts of five**. Five sessions have now found it, none of them looking for it,
+  and all of them mechanically.
+
+  **The session's own finding is about a collision between two rulings.** Four of
+  Part V's five sequence diagrams had seven lanes, and seven lanes is about
+  1,650px, which at the 1,092px column is scale 0.66 and 10.6px of type. So F7's
+  *at most seven lanes* and F1's *no label under eleven pixels* are **not both
+  satisfiable**: seven lanes is already one too many for the column. What does
+  not help is shortening labels — every message already wraps at 180px, so eight
+  shortenings moved the width by exactly zero. What helps is one lane fewer
+  (`block-entities`' `ServerPlayer` carried one message and decided nothing;
+  folding it bought 0.11) or a split (`block-interaction`'s client half is now at
+  0.97). Every one of the four is now six lanes or two figures. F7's amendment
+  says an *eighth* lane puts everything under eleven pixels; the measurement here
+  says the seventh does, and session O should decide whether the key's number
+  becomes six.
+
+  Eleven corrections, all in [pass9.md](pass9.md). The sharpest is
+  `block-breaking`, where the figure printed the server's progress at STOP as
+  **1.07** while the prose two sections below says both sides *arrive at the same
+  1.064* — the one number the page exists to say is shared, printed two ways
+  inside one picture. Beside it: the tick-1 order in the same figure was
+  inverted; `blocks-and-states`' flag lead-in promised **seven** bits and named
+  **eight**; the landing page's lead-in said *each arrow* of eleven when it meant
+  six; and `pistons-and-block-events`' last note put both sides on tick N+2 when
+  the page's own prose gives the client five extra `deathTicks`. Also settled
+  without new work: the flag-word question the queue left for this session had
+  already been answered by F4, and applying the ruling is what turned the *seven*
+  up. Ten queue entries struck with the page open, six opened (three of them for
+  session O). All six gates green (the figure-name gate still report-only).
+  Deployed.
+- **2026-09-15, pass 7 session F (Opus) — Part VI · Entities: the figures.** Ten
+  pages, 22 figures in and **26** out, one viewer agent per page with the
+  picture and the section and nothing else. Three pages split one figure at a
+  joint the prose already names — `synched-entity-data`'s shear at the tick,
+  where splitting is what finally gave **the server's container and the
+  client's a lane each**, which is the one thing that page exists to say there
+  are two of; `entity-anatomy`'s summon at the same boundary, so the page's
+  title happens twice, once per machine; and `authority`'s boat by machine,
+  with a lane each for the two copies. `damage-and-death` traded its
+  three-screen eight-step chain for a short chain carrying only the running
+  number and a nine-row *step · owned by · what it does · leaves* table beside
+  it — session C's `server-level-tick` remedy a third time — and gained a
+  figure under *Death, or not* for the veto one other entity holds over this
+  one's loot. `entity-anatomy`'s lead flowchart is the book's **fifth
+  `classDiagram`**: eleven boxes to three, because *what an object holds* was
+  never a flowchart. Across the part: **no type under 12.6px** (five figures
+  were at 9–11px), nothing below 0.79, sentence labels 14 → **2**, every
+  figure captioned, and the figure gate's **fourteen unresolved names → none**.
+
+  **The part-wide fault was the same one, a sixth time.** Eleven of the
+  fourteen gate failures were a message labelled with the caller's own method
+  and drawn arriving at the callee — `tickNonPassenger` at a boat,
+  `collideWithShapes` at `Shapes`, `checkFallDamage` at `Block`,
+  `actuallyHurt` at `CombatTracker`, `getAttributeValue` at `AttributeMap`,
+  `handleSetEntityData` at a container. **Six parts of six**, none of them
+  looking for it, and the gate catches every one mechanically. What is new is
+  what fixing it costs: on three pages the wrongly-addressed lane had nothing
+  else to do, so the fix *removed lanes* — `movement-and-collision` went from
+  seven to three — and the figure got legible as a side effect.
+
+  **The session's own finding is a rendering fault two gates were blind to.**
+  Mermaid runs a markdown tokenizer over flowchart and state-diagram labels
+  and renders only a handful of token types; anything else is replaced, in the
+  node, by the literal string *Unsupported markdown: list*. A label beginning
+  `1. ` is a markdown list, so it is **erased**. Nine were live: four on
+  `ai-goals-and-brains`' lead figure, and **five of the six nodes** on
+  `rendering/visibility-and-the-frame-graph`'s, in Part XI. The diagram
+  parses, the markdown looks right, `verify_names.py` is happy, and only a
+  render shows it — so it survived two fact-checks, a lecture read, and the
+  pass whose whole subject is figures, until a viewer agent said *three boxes
+  say "Unsupported markdown: list"*. `check_mermaid.js` gates it now, with a
+  nine-case probe measured in Chrome. **That is the fourth time this pass a
+  gate has been blind to something its own standard cares about, and the
+  second time the evidence was a picture nobody had opened.**
+
+  Beside it, the pass's one outstanding tool job: F13's tree emitter, deferred
+  to “the two part sessions that carry a tree, or session O”. `svg_tree` now
+  lays a tree out repeatedly and keeps the first attempt that fits the reading
+  column, shortening only the folded leaf label, because nothing else in a
+  tree is elastic and a Mojang name is never shrunk. All **five** trees fixed
+  at once: 1,619–2,217px → 810–1,020px, and the `Entity` tree from 0.62 at
+  7.5px to **1.00 at 12px**. Parts XI and the frame get theirs for nothing.
+
+  Eighteen corrections, all in [pass9.md](pass9.md). The sharpest is
+  `damage-and-death`, where the prose says **eight** arithmetic steps and the
+  figure drew **seven**, freezing and the helmet sharing a box — the page's
+  own heading counts the eight. Beside it: `attributes` gave
+  `permanentModifiers` to `AttributeMap.pack`, which filters nothing, rather
+  than to `AttributeInstance.pack`, which is the one that does; `authority`'s
+  predicate tree resolved *not client-authoritative* → *Player: always true*,
+  the opposite of the page's own table; `ai-goals-and-brains` refused a
+  schedule update after **20** ticks where the code and the prose say 21; and
+  `entity-anatomy` called four families two and never named `Display` at all.
+  Ten queue entries struck with the page open, five opened. All six gates
+  green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session G (Opus) — Part VII · Items and inventories.**
+  Nine viewer agents, one per page. **Seventeen figures became nineteen**: four
+  pages split one figure at a joint the prose already names — `using-an-item`'s
+  *ending* flowchart, which was two disconnected graphs in one box and is now
+  the page's two endings; `recipes`' seven-lane trace, at the tick boundary its
+  own note bar drew; `containers-and-menus`' seventeen-node ladder, into a
+  four-row table and a five-node fork; and `loot-tables`' twenty-six-node funnel,
+  which lost its placement tail to the trace above it and its five entry
+  containers to a table. The part gained the book's **sixth `classDiagram`**
+  (`items-and-stacks`, whose flowchart had four edgeless boxes and a subgraph
+  title clipped mid-phrase on screen), and `enchanting`'s trace is **split by
+  machine** with a lane each for the two copies of `EnchantmentMenu` — the page's
+  own point, which one lane playing both sides had been hiding. Every figure is
+  captioned and pointed at, **nothing below 0.79 and no type under 12.6px**, no
+  lane over six, no flowchart over fourteen nodes, and the figure gate's **10
+  unresolved names and 31 notes are 0 and 1** — the one a ruled note
+  (`LootItemCondition.test` is `java.util.function.Predicate`'s). Nineteen
+  corrections, all in [pass9.md](pass9.md), and **fifteen of them are the
+  caller's-method-at-the-callee fault, which makes it six parts of six**; the
+  sharpest is `loot-tables`' opening trace, which drew `ChestBlockEntity` and
+  `RandomizableContainer` as two lanes exchanging a message when
+  `RandomizableContainerBlockEntity` *implements* the interface, and had the
+  clientbound content packet returning to `ServerPlayer`. **The session's own
+  finding is a fifth tool blindness, and the one F10 walked into**:
+  `check_figure_names.py` **read nothing at all inside a `classDiagram`** —
+  zero names, zero figures — so the five class diagrams sessions B to F drew on
+  F10's own recommendation had every name in them unchecked, and
+  `pass7_figures.py` was counting the word `classDiagram` as a name the prose
+  never says. Both tools now read the kind, with a **member line checked against
+  its own class box** the way a message is checked against its lane; seven probe
+  cases, and no previously-clean part moved. Beside it, **nine Mojang names the
+  theme was hyphen-breaking on screen** (F18) — `AbstractContainerMe-nu`,
+  `ClientboundContainerSetDataPack-et`, `doPostAttackEffectsWithItemSour-ce` and
+  six more — every one of them the book spelling a name wrong in the picture
+  while spelling it right in the prose, and all nine found **mechanically**:
+  `render/index.json` records the on-screen text of every label, so a break is
+  one regex over the render rather than nine pairs of eyes. Fifteen queue
+  entries struck with the page open, one ruled out, twelve opened. All six gates
+  green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session H (Opus) — Part VIII · The player.** Eight
+  viewer agents, one per page. **Ten figures became twelve**, both new ones a
+  split at a joint the page's own headings already name: `input-to-movement`'s
+  one seven-lane trace is a client figure under *what the client decides and
+  sends* and a server figure under *what the server does with the packet it
+  gets* — the server half had been drawn ninety lines above the section that
+  explains it — and `status-effects`' one trace is a server figure and a client
+  figure, because it had **one `LivingEntity` lane standing for two machines**,
+  told apart by two `Note over` lines, which is the thing F7 forbids by name.
+  Every figure in the part is captioned and pointed at by a sentence; **nothing
+  is below 0.80 or under 12.8px** (from four at 0.69 and one at 0.61/9.7px),
+  nothing is over 1,200px tall, no lane is over six, and the gate's **1
+  unresolved name and 7 notes are 0 and 0**, which makes Part VIII the second
+  part clean on the notes as well as the failures. `player-anatomy`'s class
+  ladder is the book's **seventh `classDiagram`** and the first drawn for
+  inheritance rather than containment: its solid flowchart arrow had meant
+  *extends*, a mark outside the grammar, and `<|--` says it natively while
+  `<<abstract>>` marks the five rungs the game never instantiates — which also
+  settled the reader's complaint that only `Player` carried *— abstract*.
+  **The part's own fault is F7's, in the shape this part was always going to
+  produce**: four of five sequence diagrams gave **one object two lanes by
+  drawing a class-hierarchy rung beside its subclass** — `Player` beside
+  `ServerPlayer`, `LivingEntity` beside `LocalPlayer`, `LivingEntity` beside
+  `ServerPlayer` twice — on the one part whose whole subject is the inheritance
+  chain. Folding them was the entire lane-budget fix; not one label needed
+  shortening. Eighteen corrections, all in [pass9.md](pass9.md); the sharpest
+  three are `the-two-phase-tick`'s figure, which drew the container check in
+  phase one only under a sentence in bold calling it *the only work both halves
+  do*; `the-sword-swing`'s, which drew the listener calling its own
+  `isWithinAttackRange` when it is `Player`'s and the `Player` lane was already
+  in the figure, landed `hurtOrSimulate` on `LivingEntity` when it is
+  `Entity`'s and the page's own Reference link is *Damage outside
+  `LivingEntity`*, and delivered the damage packet to `Minecraft` rather than
+  to the listener that handles it; and `hunger-and-experience`'s regeneration
+  figure, which drew **three siblings off one node where the code is an
+  if/else-if chain whose order is the whole rule** — the shape was the error,
+  and the fourth branch (the timer reset) had never been drawn at all. **The
+  session's own finding is a sixth and seventh tool blindness, and this one had
+  been there since the gate was written**: `check_figure_names.py`'s token
+  regex needs two CamelCase humps, so **every one-word class name in a figure
+  was unchecked** — `Entity`, `Avatar`, `Player`, `Mannequin`, `Item`, `Block`,
+  `Mob`, `Screen`, `Window` — everywhere but a `participant` line; and its
+  relation pattern allowed one character either side of `--`, so `<|--` never
+  matched and **an inheritance relation was parsed as nothing at all**. Both
+  fixed where the name is structural rather than free text (a `class Foo` box
+  and both ends of a relation, with a box id that has a display label read as
+  an alias the way a lane abbreviation is), each with a probe case; 43 more
+  names checked corpus-wide, three more classes in the index, and no
+  previously-clean part moved. Ten queue entries struck with the page open,
+  eleven opened. All six gates green (the figure-name gate still report-only).
+  Deployed.
+
+- **2026-09-15, pass 7 session I (Opus) — Part IX · Networking.** Six viewer
+  agents, one per page. **Twelve figures became eleven**: the buffer flowchart
+  on `packets-and-stream-codecs` is a three-row table, because its three arrows
+  meant two different things — two bindings and one *extends* — and a table
+  carries the bind time the figure had no room for, which is F10's own ruling
+  that two or three paths that differ are a table. Every figure in the part is
+  captioned and every non-lead figure has a lead-in; **nothing is below 0.77 or
+  under 12.3px** (from three figures at 0.38, 0.42 and 0.54 with 6 to 8.6px
+  type), no overlap, overflow, clipping or edge through a node anywhere, no
+  Mojang name broken on screen (five lines were), and the gate's **1 unresolved
+  name and 19 notes are 0 and 0** — the third part clean on both. **The
+  part-wide fault is session H's in the mirror**: Part VIII gave one object two
+  lanes, and Part IX gives **two objects one lane**, because this part's whole
+  subject is two machines running the same classes. `the-connection` drew one
+  `Connection` lane for the object at each end and the paragraph beneath it
+  *conceded the fault in words* — "which is what the note across the middle says
+  and the picture cannot" — instead of the figure being redrawn;
+  `chat-and-signing` drew two lanes both reading `ClientPacketListener`, told
+  apart by a note naming two mermaid aliases that appear nowhere in the
+  rendered picture. Both are fixed the way `authority`'s boat was: a second key
+  row for the same class, and a `box` per machine. **And three of the four
+  figures on `protocol-phases` were illegible for one reason — `direction
+  LR`** — so two of the three fixes were deleting a line: F3 already rules `TD`
+  for anything ordered in time, and a state machine is ordered in time. Nine
+  corrections, all in [pass9.md](pass9.md); the sharpest are
+  `protocol-phases`' configuration flowchart drawing
+  `ServerConfigurationPacketListenerImpl.returnToWorld` as the **fifth step of
+  the queue** when it is the call that *builds* the queue before any task runs,
+  and drawing the client round trip that ends the phase as a plain unlabelled
+  arrow — which is precisely the gap the page's own hook lives in;
+  `what-the-client-is-told`'s cascade drawing position as a relative/absolute
+  binary when the table under it names two further outcomes, *nothing sent* and
+  *rotation only*; and `chat-and-signing` labelling the `ChatScreen` arrow with
+  `ChatScreen.normalizeChatMessage`'s own work — **the caller's method drawn
+  arriving at the callee, on the eighth part of eight**. **Two more tool
+  blindnesses, the eighth and ninth of the pass.**
+  `check_figure_names.py` read only the first 20 kB of a class file to find
+  what it extends: exactly one class in the decompile declares itself past that
+  mark — `ClientPacketListener`, at byte 21,133, behind three hundred import
+  lines — and it is one of the book's commonest lanes, so every **inherited**
+  member on a `CPL` lane was failing a figure that was right. And a `<br/>`
+  between a name and the next word was welded shut, so the repair F18 itself
+  prescribes made the gate fail: the rule is now F17's own wording — a name
+  break is at a CamelCase boundary or at a dot and nowhere else. Four probe
+  cases between them; corpus failures 31 → 30 and notes 166 → 148, with no
+  previously-clean part moved. Ten queue entries struck with the page open, one
+  of them a ruling asked for by name (**may a state machine contain a state
+  nothing reaches? No** — a diagram draws the machine as it runs, and
+  `NEGOTIATING` is the enum's business and the prose's). All six gates green
+  (the figure-name gate still report-only). Deployed.
+
+- **2026-09-15, pass 7 session J (Opus) — Part X · The client.** Thirteen
+  viewer agents, one per page. **Eighteen figures became twenty**, both new
+  ones a split at a joint the page already names: `options`' one flowchart —
+  fourteen nodes and 2,081px, two screens — is now the widget's half and the
+  save's, and `text-and-fonts`' one eight-lane sequence is the stages that run
+  when the text changes and the stages that run in the frame. Every figure is
+  captioned and pointed at; **nothing is below 0.78 or under 12.4px** (from
+  0.59 and 9.5px, with six below 0.75), no lane is over six, and the gate's
+  **10 unresolved names and 26 notes are 0 and 0**. **The part's own fault is
+  F18's, and it is the thing a session can only find by looking**: fifteen
+  Mojang names were **hyphen-broken mid-word on screen** —
+  `handleLevelChunkWithL-ight`, `ToggleKeyMapping.setD-own`,
+  `BakedSheetGlyph.rende-rChar`, `ClientboundBlockChangedAckPack-et` and eleven
+  more — which is more than any other part and **more than a third of the whole
+  corpus's forty-one**. The book was spelling a name wrong in the picture while
+  spelling it right in the prose, on nine of thirteen pages, and every one was
+  found by one regex over `render/index.json` rather than by reading. Part X is
+  now at **zero**. Two figures changed kind: `gui-and-screens`' containment
+  flowchart is the book's **eighth `classDiagram`** — it had been drawing
+  *holds*, *extends* and *arranges* with one arrowhead — and
+  `the-gui-render-tree`'s twelve-box draw chain is nested subgraphs, because a
+  flat chain was asserting that five steps happen *after* `GuiRenderer.prepare`
+  when all five are inside it and `GuiRenderer.draw` is its sibling. Eighteen
+  corrections, all in [pass9.md](pass9.md); the sharpest three are
+  `what-makes-a-sound`, whose figure routed your own place and break **past**
+  `ClientLevel.playSeededSound` while the box on that very arrow said *the same
+  shared call* — the convergence it skipped is the page's entire argument;
+  `options`, which sent the cycle path through `Screen.removed` when a cycle
+  button calls `Options.save` in its own click handler and `removed` is where a
+  *slider* saves; and `the-client-level`, where the queue's open question —
+  one arrival or two? — re-derived to **one**, and the arrow that raised it
+  turned out to name two of the listener's own private methods and to land
+  `ClientLevel.setSectionRangeDirty` on the light engine. **The
+  caller's-method-at-the-callee fault is now nine parts of nine** (`hud`,
+  `sound-engine`, `prediction-and-acks`, `the-client-level`,
+  `input-and-keybinds`), and this part adds a second spelling of it the gate
+  cannot see: **a self-message labelled with a third class's method, on a lane
+  that owns neither** — `Tutorial.onOpenInventory` as a `Minecraft` self-call,
+  `ServerPlayer.requestDebugSubscriptions` as an `SGPL` one — which passes
+  silently because the name is qualified. **The session's own finding is a
+  tenth tool blindness, and the second this pass that the standard itself
+  created**: `pass7_figures.py` closed a `<br/>` up only on a `participant`
+  line, so **every repair F18 prescribes split one Mojang name into two halves
+  and counted both as names the prose never says** — the measurement got worse
+  each time a session fixed a figure, and the tool disagreed with
+  `check_figure_names.py`, which has read the break correctly since session I.
+  Fixed to session I's own rule, two probe cases, and Part X's *never in prose*
+  count fell by fourteen with no page changed. Seven queue entries struck with
+  the page open, two of them ruled out, six opened. All six gates green (the
+  figure-name gate still report-only). Deployed.
+
+- **2026-09-16, pass 7 session L (Opus) — Part XII · World generation.**
+  Run before session K, which had not yet run; the two parts share no page.
+  Eleven viewer agents, one per page. Fifteen figures stayed fifteen, but
+  `density-functions`' three near-identical panels — 1,729px of the same five
+  boxes, every panel title under its own first node — are now a four-node
+  flowchart of the forms and a node-by-form table, which is F10's *a
+  comparison is a table* applied to the part's substrate page. Every figure
+  captioned and pointed at; **nothing below 0.756 or under 12.1px** (from 0.61
+  and 9.7px), no lane over six (from eight and seven), no label over another
+  or over a node (from eight figures), and the gate's **4 unresolved names and
+  35 notes are 0 and 7** (the seven are bare-verb self-messages, F12(d)).
+  **The caller's-method-at-the-callee fault is ten parts of ten**:
+  `Climate.ParameterList.findValueIndex` drawn arriving at `Climate.RTree`,
+  `ChunkGenerator.featuresPerStep` at `FeatureSorter`, and
+  `JigsawStructure.findGenerationPoint` at `JigsawPlacement.Placer`. **The
+  part's own fault is a figure disagreeing with the page's own hook**, twice:
+  the jigsaw trace's loop read *depth within the limit* on the page whose
+  opening is that a piece at the limit is still queued and offered only the
+  fallback — now an `alt` — and the terrain page said *the two outer levels*
+  sample the graph when the samples are at the first and third of six, which
+  a new six-row table with a *samples the graph* column now says. Fourteen
+  corrections, all in [pass9.md](pass9.md); the sharpest is the stronghold
+  figure, which had `StructurePiecesBuilder` building its own
+  `StructureStart`, the pending list on the builder rather than the start
+  piece, and the drain loop on the wrong lane — the page's one regenerate-until-
+  it-likes-it loop, drawn with three of its moving parts in the wrong hands.
+  Two render lessons worth carrying: `autonumber`'s digits are the smallest
+  type in any sequence diagram that has them (9.7px here, the figure's only
+  sub-11px text) and a figure whose prose cites no number loses nothing
+  without them; and a flowchart edge drawn behind a sibling box is cured by
+  `--->`, which pushes the target a rank down. One key row added (`JP`).
+  Eight queue entries struck with the page open (one ruled), eight sections
+  that wanted a figure or a table logged for pass 10, two voice entries for pass 8. All
+  six gates green (the figure-name gate still report-only). Deployed.
+
+- **2026-09-16, pass 7 session M (Opus) — Part XIII · Commands and data
+  packs.** Ten viewer agents, one per page. Thirteen figures stayed thirteen,
+  two of them now class diagrams — `permissions`' question/answer/check,
+  which had been a taxonomy wired with pipeline arrows, and `game-tests`'
+  objects, which had been three bands with unlabelled edges — the book's
+  ninth and tenth. Every figure captioned and pointed at; **nothing below 0.78
+  or under 12.5px** (from 0.69 and 11.1px), no lane over six (from seven on
+  two pages), no label over another or over a node (from four figures), no
+  Mojang name broken on screen (from eight), and the gate's **4 unresolved
+  names and 7 notes are 0 and 2** (bare-word heads, F12(d)). **Twenty
+  corrections, and the part's fault is the pass's fault on every page but
+  one**: `getCompletionSuggestions` — `CommandDispatcher`'s — drawn arriving
+  at `ClientPacketListener`, `succeed` at `ReportGameListener`,
+  `DialogScreens.createFromData` at `DialogScreen`, `ServerScoreboard`
+  calling a `ScoreAccess.set` that the store callback calls itself —
+  **eleven parts of eleven**. The sharpest is `entity-selectors`' resolve
+  tree, whose queued *shape* fault turned out to hide a second one: the UUID
+  leaf on the entities branch named `PlayerList.getPlayer`, which is the
+  players-only branch's, where `EntitySelector.findEntities` searches every
+  level with `ServerLevel.getEntity`. Beside it, a queue figure whose last
+  panel was a step ahead of its title, and two sentences under it that
+  charged a cost unit *per stage* when `BuildContexts.execute` charges one per
+  *modifier* stage. **The session's own finding is about the check F18 relies
+  on**: the brief's regex needs three letters before mermaid's hyphen, so a
+  break one or two letters after a dot — `SimpleCriterionTrigger.tr-igger`,
+  `GameTestInstance.run(h-elper)` — reads as clean. The wider check finds
+  **20** names still broken corpus-wide, all in Parts III–V (which closed
+  before session J wrote the regex) and XI (session K's); logged for session
+  O. And the gate's eleventh blindness: a one-word method in a class diagram's
+  member line (`boolean check(PermissionSet)`) was a note, never checked
+  against its box — fixed, two probe cases, one note corpus-wide. Seven queue
+  entries struck with the page open (one left for session O's prune), six
+  sections that wanted a figure logged for pass 10, two voice entries for
+  pass 8. Key row `DCS` added. All six gates green (the figure-name gate still
+  report-only). Deployed.
+- **2026-09-16, pass 7, session N — the frame and Reference (Opus).** Ten
+  viewer agents over the introduction, `lectures.md`, the five atlas pages,
+  `reference/README`, `math-and-primitives` and `threads`. **The
+  parts-dependency figure is generated now.** Its 27 arrows had 26 crossings,
+  two labels lying across other arrows, and the parts out of watch order; 200
+  orderings of the mermaid source were rendered and measured, and the best
+  that kept Part V above Part X still had sixteen. So
+  `check_deps.py --write-figure` draws it from the landing pages as the
+  shape the prose has always claimed — *a line with two knots*: the thirteen
+  parts in one column in watch order, every solid arc on the right running
+  down, the two cuts dashed on the left and labelled with the pages they
+  need — at scale 1 and 13px, with no crossing a reader has to resolve at a
+  box. The edge set is exactly the old figure's, the gate now reads it back
+  out of the SVG and fails when the file is stale, `deploy.sh` regenerates
+  it, and a table beside it carries the edges to `llms-full.txt` (whose
+  include expansion was one level deep and would have shipped the shared
+  file's inner include raw). Beside it: the introduction's figure is one
+  subgraph per thread; the atlas pipeline is the page's own two routes
+  instead of two clipped groupings of convenience; `math-and-primitives`'
+  seventeen-edge web (0.49, 7.8px) is a seven-node ladder of sizes at 1.00
+  and 16px; `threads`' figure is coloured by side with every edge labelled by
+  its kind (0.58 → 0.85); the shelf figure is a logged cut under F13, and
+  the tier's exemption from the one-figure rule is said once on
+  `reference/README`. `map_source.py`'s bars and treemap were showing 9px
+  type and now stop at 11px, and the treemap's Realms group, unlabelled
+  because its path was wider than its box, is labelled. **Nothing in scope
+  is below 0.79 or under 11px.** **Nine corrections**, and the one worth
+  carrying is the one the queue had excused: `threads`' edge *written on the
+  caller's thread* was logged by pass 6 as *true, left as drawn*, and
+  `Connection.sendPacket` posts every send from another thread to the Netty
+  loop — **a label a queue entry calls true is still a claim**, and the
+  viewer found it only because the page's own definition of a posted task
+  did not fit three other arrows. Thirteen queue entries struck (six of
+  them overtaken or ruled by earlier sessions), seven opened for O and pass
+  10. All six gates green (the figure-name gate still report-only).
+  Deployed.
+
+- **2026-09-16, pass 7 session O (Opus) — the close, run before K.** The owner
+  asked for the close with Part XI's session not yet run; the close ran,
+  repaired Part XI's ten gate failures itself so the gate could go strict, and
+  left the rest of Part XI to K, which now runs last. **The gate is strict**
+  (`deploy.sh`, rule 5): F12(b) and (c) fail, and three readings keep the
+  failures honest — a class diagram's boxes qualify its relation labels and
+  English member lines, a page's italic words are words, and a word one letter
+  from a one-word key class fails, which answers session H's question without
+  an allow-list. Session J's question became a note, *a qualified head on a
+  lane that owns neither*: of thirty, four were the caller's-method fault in
+  its qualified spelling and were redrawn — one of them, the chunk read, drawn
+  arriving at `ServerLevel` when it runs in `ChunkMap`'s continuation — and
+  twenty-six were static helpers, laneless objects or the lane's inner class.
+  0 unresolved, 62 notes, 45 probe cases. **`check_mermaid.js` fails colour in
+  a page**; **the lane key lost 67 rows**, `CMTE` the nested example in
+  `PTT`'s place, `--unused` reporting in `deploy.sh`; **twenty names broken on
+  screen went to zero** under session M's wider regex, now
+  `tools/pass7/broken_names.py`; the renderer stopped counting a `loop` label
+  as a label escaping its frame. **Three reader agents** did the reading the
+  close exists for. The **landing set**: every watch-order number right, but
+  four meanings of an arrow, four spellings of the caption and seven sentences
+  contradicting their own figures — a ring counted with six arrows that has
+  five, *the only page no arrow leaves* beside a second, a closer said to
+  assume nothing while linking three pages above it; twelve figures brought to
+  one grammar, now `TEMPLATE.md`'s, two arrows changed, `commands/README`'s
+  downward arrows ruled the one exception, XI left to K. The **strike audit**:
+  122 strikes, 116 borne out, 4 amended, 1 unstruck. The **pass-9 shape
+  audit**: nine of thirteen entries not walkable item by item; the form is in
+  that file's head and a caption lister in `tools/pass7/`. The exemplar's
+  spawn loop gained the two group-ending arrows session B left to the close,
+  and `chat-and-signing` said four Netty checks where its figure says five.
+  **Rulings:** six lanes (seven only where the render says it reads, eight
+  never — six measure at 11.6px or more, seven at exactly 11.0); `par`,
+  `loop`, `alt`, `opt` and a call's subgraph in the marks table; no colour and
+  no width knob for class diagrams; a subgraph's `direction TB` allowed; the
+  landing budget counts prose; no stated role for the tier front doors; the
+  dependency figure keeps all 27 arcs. **The corpus re-measured**, the verdict
+  written (the pass earned its cost, for the corrections more than the
+  legibility), pass 8's wording debt counted and written into its charter.
+  Queue: figure units 150 → 28, 17 of them Part XI's. All six gates green, the
+  sixth now strict. Deployed.

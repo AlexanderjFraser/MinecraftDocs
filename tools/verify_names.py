@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """Every backticked identifier on every page must exist in the decompile.
 
-"Verified against 26.2" is a test, not a claim: this walks `src/**/*.md`,
+"Verified against <version>" is a test, not a claim: this walks `src/**/*.md`,
 collects every `` `Name` `` / `` `Name.member` `` / `` `pkg/path` `` and
 checks it against the remapped source tree at `MC_SOURCE` (default
-`reference/26.2`, gitignored). A name is accepted if it is a class file in
+`reference/<version>`, gitignored; the version is `tools/mc_version.py`'s). A name is accepted if it is a class file in
 the tree (`net/minecraft` or `com/mojang`) or in one of the library source
 trees under `MC_LIBS` (default `reference/libs`: Brigadier, DataFixerUpper,
 authlib — staged by `tools/fetch_libs.sh`), a member (method or field)
@@ -24,6 +24,9 @@ import argparse
 import os
 import re
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mc_version  # noqa: E402  (the one place the version is written)
 
 # A reference page whose header carries this was written by tools/gen_reference.py and is not
 # checked (its backticked cells are registry ids and packet ids). Every other page under
@@ -110,8 +113,8 @@ def members_of(paths: list[str]) -> set[str]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default="src")
-    ap.add_argument("--mc-source", default=os.environ.get("MC_SOURCE", os.path.join(os.path.dirname(__file__), "..", "reference", "26.2")))
-    ap.add_argument("--libs", default=os.environ.get("MC_LIBS", os.path.join(os.path.dirname(__file__), "..", "reference", "libs")),
+    ap.add_argument("--mc-source", default=mc_version.source())
+    ap.add_argument("--libs", default=mc_version.libs(),
                     help="directory of library source trees (Brigadier, DataFixerUpper, authlib), one per subdirectory")
     ap.add_argument("--index", action="store_true", help="write src/reference/class-index.md")
     args = ap.parse_args()

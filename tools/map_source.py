@@ -28,7 +28,7 @@ is the number of files whose `net.minecraft` or `com.mojang` import statements
 name the class (the JDK and the annotations are not counted); a *descendant*
 is any type reachable through `extends`/`implements` declarations, nested
 types included, resolved per file so that two classes of the same simple name
-stay two classes. MC_SOURCE points at the decompile (default reference/26.2).
+stay two classes. MC_SOURCE points at the decompile (default reference/<version>, tools/mc_version.py).
 
 The SVGs carry classes only (svg.mapfig, .shared, .client, .lib, .skip); every
 colour, font and theme lives in custom.css, and text is currentColor so the
@@ -43,7 +43,10 @@ import sys
 from collections import Counter, defaultdict
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.environ.get("MC_SOURCE", os.path.join(HERE, "..", "reference", "26.2")))
+sys.path.insert(0, HERE)
+import mc_version  # noqa: E402  (the one place the version is written)
+ROOT = mc_version.source()
+VERSION = mc_version.VERSION
 GEN = os.path.join(HERE, "..", "src", "generated")
 
 # The packages the book skips (Part I, *what this book skips*); hatched on the treemap.
@@ -497,7 +500,7 @@ def svg_treemap(files, W=1000, H=600):
     gvals = [sum(x[3] for x in groups[g]) for g in gorder]
 
     TITLE, PAD, LEGEND = 15, 2, 28
-    out = svg_open(W, H + LEGEND, "The 26.2 jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching marks what this book skips")
+    out = svg_open(W, H + LEGEND, f"The {VERSION} jar as a treemap of packages: area is lines of decompiled source, colour is which jar ships the package, hatching marks what this book skips")
     out.append('<defs><pattern id="mapfig-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">'
                '<line class="hatch" x1="0" y1="0" x2="0" y2="6"/></pattern></defs>')
     for (gx, gy, gw, gh), g in zip(squarify(gvals, 0, 0, W, H), gorder):
@@ -584,13 +587,13 @@ def svg_biggest(files, n=30):
         pkg, _, name = rel.rpartition("/")
         pkg = pkg.replace("net/minecraft/", "", 1).replace("com/mojang/", "mojang/", 1)
         rows.append((name, pkg, lines, "shared" if shared else "client"))
-    return svg_bars(rows, f"The {n} largest classes of 26.2 by lines of decompiled source", "lines")
+    return svg_bars(rows, f"The {n} largest classes of {VERSION} by lines of decompiled source", "lines")
 
 
 def svg_fanin(files, n=30):
     rows = [(d, p.replace("net.minecraft.", ""), c, {"shared": "shared", "client": "client", "library": "lib"}[k])
             for d, p, c, k in fanin_rows(files, n)]
-    return svg_bars(rows, f"The {n} most-imported classes of 26.2: how many files import each", "importing files")
+    return svg_bars(rows, f"The {n} most-imported classes of {VERSION}: how many files import each", "importing files")
 
 
 # ----------------------------------------------------------------------------

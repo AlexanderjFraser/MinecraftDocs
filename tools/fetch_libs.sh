@@ -14,13 +14,15 @@
 #
 # Versions come from the launcher's version JSON for the current game version
 # (%APPDATA%/.minecraft/versions/<v>/<v>.json, the "com.mojang:<lib>:<version>"
-# entries); update the three below when the game version in CLAUDE.md changes.
+# entries); the three defaults below are the current version's, and tools/version_pass.py
+# overrides them (BRIGADIER, DFU, AUTHLIB) and hands over a downloaded authlib jar (AUTHLIB_JAR)
+# when it stages a new release.
 # The launcher must have run that version once for the authlib jar to be present.
 set -euo pipefail
 cd "$(dirname "$0")/.."
-BRIGADIER=1.3.10
-DFU=10.0.21
-AUTHLIB=9.0.75
+BRIGADIER="${BRIGADIER:-1.3.10}"
+DFU="${DFU:-10.0.21}"
+AUTHLIB="${AUTHLIB:-9.0.75}"
 MCDEOB_JAR="${MCDEOB_JAR:-/d/pvpmod/McDeob-3.4.1.jar}"
 LIBS=reference/libs
 mkdir -p "$LIBS"
@@ -39,7 +41,7 @@ dir="$LIBS/authlib-$AUTHLIB"
 if [ -d "$dir/com" ]; then
     echo "$dir: present"
 else
-    jar="$APPDATA/.minecraft/libraries/com/mojang/authlib/$AUTHLIB/authlib-$AUTHLIB.jar"
+    jar="${AUTHLIB_JAR:-$APPDATA/.minecraft/libraries/com/mojang/authlib/$AUTHLIB/authlib-$AUTHLIB.jar}"
     [ -f "$jar" ] || { echo "no $jar — run the game version once from the launcher"; exit 1; }
     [ -f "$MCDEOB_JAR" ] || { echo "no decompiler at $MCDEOB_JAR (set MCDEOB_JAR)"; exit 1; }
     tmp="$LIBS/_authlib_tmp"

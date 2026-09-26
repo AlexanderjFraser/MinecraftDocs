@@ -20,7 +20,7 @@ redirect a single view into src/reference/ on Windows: Python's stdout falls
 back to the console codepage, the em dashes in the blurbs come out as mojibake,
 and mdbook then refuses the chapter with "stream did not contain valid UTF-8".
 
-MC_SOURCE points at the extracted decompile (default reference/26.2). Nothing
+MC_SOURCE points at the extracted decompile (default reference/<version>, tools/mc_version.py). Nothing
 here reproduces source: each catalogue is names plus the facts a declaration
 line states about them.
 """
@@ -30,7 +30,9 @@ import os
 import re
 import sys
 
-ROOT = os.path.abspath(os.environ.get("MC_SOURCE", os.path.join(os.path.dirname(__file__), "..", "reference", "26.2")))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import mc_version  # noqa: E402  (the one place the version is written)
+ROOT = mc_version.source()
 MC = os.path.join(ROOT, "net", "minecraft")
 OUT = os.path.join(os.path.dirname(__file__), "..", "src", "reference")
 

@@ -76,6 +76,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import diagram_arrows as da                     # noqa: E402
 from verify_names import ALLOW, load_index, members_of, GENERATED_MARK   # noqa: E402
 from check_lanes import read_key                # noqa: E402
+import mc_version  # noqa: E402  (the one place the version is written)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, "src")
@@ -608,8 +609,8 @@ def walk(src: str, only: list[str] | None):
 
 def figure_mentions(src: str = SRC, mc_source: str | None = None, libs: str | None = None) -> dict[str, set[str]]:
     """class -> pages that name it inside a figure, for verify_names.py --index."""
-    mc_source = mc_source or os.environ.get("MC_SOURCE", os.path.join(ROOT, "reference", "26.2"))
-    libs = libs or os.environ.get("MC_LIBS", os.path.join(ROOT, "reference", "libs"))
+    mc_source = mc_source or mc_version.source()
+    libs = libs or mc_version.libs()
     c = Checker(mc_source, libs)
     for path, rel in walk(src, None):
         c.check_page(path, rel)
@@ -815,8 +816,8 @@ def probe(mc_source: str, libs: str) -> int:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--src", default=SRC)
-    ap.add_argument("--mc-source", default=os.environ.get("MC_SOURCE", os.path.join(ROOT, "reference", "26.2")))
-    ap.add_argument("--libs", default=os.environ.get("MC_LIBS", os.path.join(ROOT, "reference", "libs")))
+    ap.add_argument("--mc-source", default=mc_version.source())
+    ap.add_argument("--libs", default=mc_version.libs())
     ap.add_argument("--pages", nargs="*", help="restrict to these files or directories")
     ap.add_argument("--strict", action="store_true", help="exit 1 on any failure")
     ap.add_argument("--notes", action="store_true", help="print the notes too")
