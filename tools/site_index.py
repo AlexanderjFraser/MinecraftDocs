@@ -36,6 +36,13 @@ def html_url(md: str) -> str:
     return f"{SITE}/{md[:-3]}"
 
 
+def md_url(md: str) -> str:
+    """The page's markdown twin, which tools/md_twins.py writes beside the HTML."""
+    if os.path.basename(md) == "README.md":
+        return f"{SITE}/{md[:-len('README.md')]}index.md"
+    return f"{SITE}/{md}"
+
+
 def lastmod(md: str) -> str:
     try:
         out = subprocess.run(
@@ -109,7 +116,8 @@ out = ["# How Java Minecraft Works", "",
        "Every backticked identifier on every page exists in the 26.2 decompile (checked "
        "before the site publishes), and every claim has been fact-checked against the "
        "decompile twice. The writing is CC BY-SA 4.0; it describes the game and contains "
-       f"none of it. The whole book in one file: {SITE}/llms-full.txt", ""]
+       f"none of it. Every link below is the page as markdown; drop the .md for the "
+       f"rendered page. The whole book in one file: {SITE}/llms-full.txt", ""]
 current = None
 part = None
 for sec, depth, title, md in entries:
@@ -122,7 +130,9 @@ for sec, depth, title, md in entries:
         out += ([""] if out and out[-1] != "" else []) + [f"## {heading}", ""]
         current = heading
     desc = scenario(md)
-    out.append(f"- [{title}]({html_url(md)})" + (f": {desc}" if desc else ""))
+    # The link is the page's markdown twin (tools/md_twins.py): llmstxt.org's
+    # convention, and a fraction of the tokens of the rendered page.
+    out.append(f"- [{title}]({md_url(md)})" + (f": {desc}" if desc else ""))
 text = "\n".join(out) + "\n"
 with open(os.path.join(BOOK, "llms.txt"), "w", encoding="utf-8", newline="\n") as fh:
     fh.write(text)

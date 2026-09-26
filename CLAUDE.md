@@ -259,7 +259,14 @@ Moved pages keep their URLs through `[output.html.redirect]` in `book.toml`;
 coverage phrases, runs
 the six gates, builds, writes `llms-full.txt` (the whole corpus in one
 file, `tools/llms_full.py`) and `sitemap.xml` + `llms.txt` (the index form,
-`tools/site_index.py`), and deploys to Cloudflare Pages project
+`tools/site_index.py`), **publishes every page's markdown twin** beside its
+HTML (`/systems/entities/entity-lifecycle.md`, `tools/md_twins.py`; `llms.txt`
+links the twins; `src/_headers` serves them as `text/markdown`, cross-origin),
+**rewrites every built `<head>`** (`tools/page_meta.py`: the page's own title
+and part, a description from its scenario line, a canonical at the clean URL,
+the markdown alternate, Open Graph with `src/og.png` from `tools/og_image.py`,
+JSON-LD; it fails the deploy if any page lacks a canonical or shares a
+description — the state of the site before 2026-09-26), and deploys to Cloudflare Pages project
 `minecraftdocs` (https://minecraftdocs.pages.dev, custom domain
 **minecraftdocs.dev**, a full Cloudflare zone with DNS done) using the token
 at `~/.cloudflare/pvpmod.token` — stored wrapped in quotes, which

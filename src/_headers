@@ -1,0 +1,13 @@
+# Cloudflare Pages response headers (mdBook copies this file into the build).
+# The markdown twins, the two llms files and the sitemap are for agents and
+# tools: served as the text they are, readable cross-origin, cached a day.
+/*.md
+  Content-Type: text/markdown; charset=utf-8
+  Access-Control-Allow-Origin: *
+  Cache-Control: public, max-age=86400
+/llms.txt
+  Access-Control-Allow-Origin: *
+/llms-full.txt
+  Access-Control-Allow-Origin: *
+/sitemap.xml
+  Access-Control-Allow-Origin: *

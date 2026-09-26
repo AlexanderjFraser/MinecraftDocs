@@ -18,5 +18,7 @@ python tools/check_links.py --quiet  # every internal link, anchor, include, SUM
 mdbook build
 node tools/check_mermaid.js --no-build   # every diagram parses under the site's own mermaid (needs `npm install` in tools/ once)
 python tools/llms_full.py   # book/llms-full.txt: the whole corpus in one file for agents
-python tools/site_index.py   # book/sitemap.xml (for search engines; src/robots.txt points at it) and book/llms.txt (the index form, one line per page)
+python tools/site_index.py   # book/sitemap.xml (for search engines; src/robots.txt points at it) and book/llms.txt (the index form, one line per page, linking the markdown twins)
+python tools/md_twins.py     # every page as markdown beside its HTML (/path.md), for agents; fails if a page has no twin (2026-09-26)
+python tools/page_meta.py    # per-page title, description, canonical, markdown alternate, Open Graph and JSON-LD in every built <head>; fails if any page lacks a canonical or shares a description (2026-09-26)
 wrangler pages deploy book --project-name=minecraftdocs --branch="${1:-main}" --commit-dirty=true
