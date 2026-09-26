@@ -5,12 +5,12 @@
 The two largest classes in the game are the top of one hierarchy: `Entity`
 and `LivingEntity`, 9,078 lines between them, the thing every mob and
 player is before it is anything else. Third is `Minecraft`, the client
-itself. And then the list turns odd: two of the top ten never run while
-anyone is playing. `BlockModelGenerators` runs only inside the data
-generator — its single caller is `ModelProvider` — and writes the block
-model JSON that ships in the jar; `BlockStateData` is a table that the
-save-migration fixes consult when a world from an older version is opened,
-and nothing outside `util/datafix` reads it. Size is where the reading is,
+itself. And then the list turns odd: two of the top ten are not game logic
+at all. `BlockModelGenerators` runs only inside the data generator — its
+single caller is `ModelProvider` — and writes the block model JSON that ships
+in the jar; `BlockStateData` is a table that the save-migration fixes consult
+when data a much older version saved is read, and nothing outside
+`util/datafix` reads it. Size is where the reading is,
 not where the game is.
 
 <figure class="map">
@@ -18,25 +18,25 @@ not where the game is.
 <figcaption>The thirty largest classes of 26.3. Blue ships in both jars, orange is client-only; the small grey text is the package under <code>net/minecraft</code>, or under <code>com/mojang</code> where it starts <code>mojang/</code>. Click to enlarge.</figcaption>
 </figure>
 
-**The number:** 64,082 — the lines in these thirty classes, 8.6% of the
-game in 0.4% of its files.
+**64,082 lines** are in these thirty classes, 8.6% of the game in 0.4% of
+its files.
 
 ## Three kinds of big
 
-Read down the bars and the thirty sort themselves into three kinds, and
-the kind tells you how to read the class.
+Read down the bars and twenty-four of the thirty sort themselves into three
+kinds, and the kind tells you how to read the class.
 
-**The god objects.** `Entity` and `LivingEntity` are the trunk, and each adds
-a couple of thousand lines because each is the base of everything below it. The
-fork above them is not one chain: `Mob` is one of `LivingEntity`'s direct
+**The god objects.** `Entity` and `LivingEntity` are the trunk, each over four
+thousand lines because each is the base of everything below it. The
+fork below them is not one chain: `Mob` is one of `LivingEntity`'s direct
 subclasses and `Avatar` is another, with `Player` under it
-and `ServerPlayer` and `LocalPlayer` the two leaves
+and `ServerPlayer` and `LocalPlayer` its two leaves in the thirty
 ([entity anatomy](../systems/entities/entity-anatomy.md) has the tree). Those
-two leaves are long for the opposite reason to the trunk: nothing descends from
-either, and each is a whole side of the authority split written out.
+two leaves are long for the opposite reason to the trunk: no named class
+descends from either, and each is a whole side of the authority split written out.
 `Minecraft` and `MinecraftServer` are the two programs' roots; `ServerLevel`
 is the world; `ChunkMap` is the world's loader. Only two concrete mobs make
-the thirty — `Fox` and `Bee`, the two with the most bespoke behaviour — and
+the thirty — `Fox` and `Bee`, the two with the most bespoke behaviour in their own files — and
 what they are long *with* is per-species goal classes, which is exactly why
 [Part VI](../systems/entities/README.md) explains the machine and declines to
 enumerate its instances: there is no `Fox` page and there is not going to be
@@ -44,16 +44,18 @@ one.
 
 **The switchboards.** `ClientPacketListener` is a handler method for every
 clientbound play packet, and `ServerGamePacketListenerImpl` is the same for
-every serverbound one — the packets both phases share are handled one class
-up, in `ClientCommonPacketListenerImpl` and `ServerCommonPacketListenerImpl`; between them they are the whole of what the wire
+every serverbound one — all but three of the packets both phases share are
+handled one class up, in `ClientCommonPacketListenerImpl` and
+`ServerCommonPacketListenerImpl`; between them they are the whole of what play
 can say, which is why Part IX's pages keep coming back to them.
-`FriendlyByteBuf` is the buffer both read from.
+`FriendlyByteBuf` is the buffer their packets are read from.
 
-**The catalogues written as code.** `SoundEvents`, `Blocks`, `Items` and
-`CreativeModeTabs` are registries populated one constant per line;
+**The catalogues written as code.** `SoundEvents`, `Blocks` and `Items` are
+registries populated a constant at a time, and `CreativeModeTabs` lists every
+tab's items a line apiece;
 `DataFixers` is the migration history; `OceanMonumentPieces` and `StrongholdPieces` are
 structures built by hand, room by room, in Java rather than in a template;
-`Options` is every setting the client has, and `Hud` is the in-world overlay
+`Options` is every setting in *options.txt*, and `Hud` is the in-world overlay
 — the crosshair, the hotbar, the bars — inside the wider `Gui` that also
 draws screens, toasts and the loading overlay. These are long because they are lists. None is hard.
 

@@ -7,15 +7,16 @@ one codebase running as two programs — a server whose whole life is a tick
 loop, and a client whose life is a frame loop with ticks inside it — on four
 threads worth memorising: the **Render thread**, which is also the client's
 game thread; the **Server thread**, which is the world; the **Netty event
-loop**, which carries the packets; and one **shared worker pool** that chunk
-generation, lighting and section meshing all queue onto. A player recognises
-the split by its symptom, the game that keeps drawing while the world stands
-still, and almost every surprise later in this book is one of those two
-loops waiting on the other. Read this part first for the plainest reason
-there is: nearly every [lane](../../reference/lanes.md) in every sequence
-diagram after it is one of these classes, and the nine that are not a class
-at all are one of these threads, a process, or the boundary between the two
-programs.
+loop**, which carries the packets (Netty is the networking library both halves
+use); and one **shared worker pool** that chunk
+generation, the server's lighting and section meshing all queue onto. A player
+recognises the split by its symptom, the game that keeps drawing while the
+world stands still, and the book returns to it wherever the two halves
+disagree, as when a broken block comes back for a moment. Read this part first
+for the plainest reason there is: nearly every [lane](../../reference/lanes.md)
+in every sequence diagram after it is a class that runs on one of these
+threads, and the ten that are not a class are a thread, the process, the wire,
+the disk, the session service or the game's own code.
 
 ## The shape of the part
 
@@ -44,24 +45,27 @@ the game.
 1. [Anatomy](anatomy.md) — from *main* to a running singleplayer world:
    the Render thread that is also the game thread, the Server thread that
    is the world, the Netty threads that run more than bytes, and the one CPU
-   pool that chunk generation, lighting and section meshing all share.
+   pool that chunk generation, the server's lighting and section meshing all
+   share.
 2. [What this book skips](what-this-book-skips.md) — the boundary, drawn
    honestly on the treemap of the jar: save migration, Realms, telemetry,
-   the profiler, the management server, the data generators, and where to
+   the profilers, the management server, the data generators, and where to
    start if you need one anyway. It is the second lecture and not the last
    because a boundary is worth drawing before you invest in thirteen parts,
    not after.
 
 ## Where the part stops
 
-Part I says which threads exist and hands each of them on. What the Server
-thread *does* with a tick is [Part III](../server/README.md); what the frame
-loop does between ticks is [Part X](../client/README.md); what crosses the
-wire between them is [Part IX](../networking/README.md). This part owes you
-only enough of each to read a lane.
+Part I says which threads exist and hands the two loops and the wire on. What
+the Server thread *does* with a tick is [Part III](../server/README.md); what
+the frame loop does between ticks is [Part X](../client/README.md), and the
+frame itself [Part XI](../rendering/README.md); what crosses the wire between
+them is [Part IX](../networking/README.md). This part owes you only enough of
+each to read a lane.
 
-The part's own packages are the four entry points and the two loop classes,
-and it leaves none of them unnamed: {{#include ../../generated/coverage-anatomy.md}}.
+The part's own packages are the two entry points, the client's `GameConfig`
+and `SilentInitException`, and the two loop classes, and it leaves none of
+them unnamed: {{#include ../../generated/coverage-anatomy.md}}.
 The boundary that matters here is the book's rather than the part's, and
 drawing it is the second lecture's whole job.
 

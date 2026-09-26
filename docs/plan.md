@@ -50,10 +50,11 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1, V2 and A ran on 2026-09-26** — the tools read 26.3, and every page says
+`release-26.3`. **V1, V2, A and B ran on 2026-09-26** — the tools read 26.3, and every page says
 26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2; A ruled the voice into
 `TEMPLATE.md`, found twenty-nine errors on the exemplar, and found the book's *constant nobody
-reads* asides to be javac's inlining rather than the game — and B onward have not. After it, nothing more is done here except a
+reads* asides to be javac's inlining rather than the game; B found 293 errors on Parts I and II
+and the atlas, sixteen pages two fact-checks had passed — and C onward have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -458,3 +459,15 @@ understood; recording is after the release.
   kind, `fact`, which `pass8_prompts.py` sends to the agents; `gen_reference.py`'s spawn reasons count the
   enum's own helpers. The 56 frame-level notes routed or struck; the queue's 75 guesses tagged; three
   saved-data classes the ledger said were in pass3.md §7 put there. Deployed.
+
+- **2026-09-26, pass 8, session B — Parts I, II and the Maps (Opus).** Sixteen pages checked under Part 2,
+  one agent per page with its pass 5–7 ledger entries and, by hand, V1's and V2's in its prompt, and each
+  part read whole: **293 corrections**, every one re-derived in the tree before it was made (54 inside a
+  figure or a caption; nine of them 26.3 changes the version pass missed; V2 overturned in seven places),
+  then the polish. The record was drafted by six agents from the diff and the reports and audited by the
+  session, and the audit found eight more errors, each in a sentence the session had written or left beside
+  a correction. The 115 ledger entries struck (36 found wrong in whole or in part); 44 queue units settled,
+  eight of them by a clause on the page. The queue router's part numerals fixed (*Part VII · Items* had also
+  routed to Part I; a plural heading reached only its first part); the atlas's tree titles, the lanes index's
+  intro and a `map_source.py` comment corrected. Left for G, L, O and P: the items in the brief's Part 8.
+  Deployed.

@@ -2,7 +2,7 @@
 
 > Verified against **Minecraft 26.3** · Reference · The shelf behind the lectures: everything a viewer would pause the video to read, kept where no lecture has to stop for it.
 
-A lecture explains one thing at a time, and it cannot stop to list the 43
+A lecture explains one thing at a time, and it cannot stop to list the 44
 entity-data serializers or the ten bits of a flag word without losing the
 room. The rule for this tier is one question: *would a viewer pause the
 video to read this?* If yes, it lives here and the page links to it — so
@@ -53,7 +53,7 @@ I to XIII, as the [lecture map](../lectures.md) lists them.
 | [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | III, IV, VIII, IX, XII |
 | [Naming drift](naming-drift.md) | every 1.21-era name a reader will reach for, and what 26.3 calls it | hand-kept | I, II, VII, X, XI, XII |
 | [Glossary](glossary.md) | one sentence per term, and the page that owns it | hand-kept | II, V, VI, X, XI, XII, XIII |
-| [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the nine that mean a thread, a process or a boundary instead | generated · corpus | every part |
+| [Diagram lanes](lanes.md) | every lane abbreviation and the class it means, and the ten that mean a thread, the process, the wire, the disk, a service or the game's own code instead | generated · corpus | every part |
 | [Class index](class-index.md) | every class backticked on a page, and the pages that name it | generated · corpus | — |
 
 The two generated kinds differ in what they are read from.

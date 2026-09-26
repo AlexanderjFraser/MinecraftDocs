@@ -9,14 +9,14 @@ and sent it twice: once in `ClientboundPlayerCombatKillPacket` to the
 victim, once as system chat to everybody. But the server never wrote the
 sentence. What it built was a `Component` whose contents are a translation
 key — *death.attack.arrow* — and two arguments, the victim's name and the
-killer's, each of them another `Component` carrying a hover card and a
-click action. The packet crosses the wire as NBT. On the client the packet
+killer's, each of them another `Component` carrying a hover card, and a
+player's a click action too. The packet crosses the wire as NBT. On the client the packet
 is decoded, handed to a `DeathScreen`, and still nobody has read the key.
-**The client receives the death message before anyone knows what it says.**
-The words are chosen on the first frame that draws it, when
+**The client receives the death message before it knows what it says.**
+The death screen's words are chosen on the first frame that draws it, when
 `TranslatableContents` asks the client's own `Language` for the template
 behind the key, so two players watching the same death read two
-different sentences from one packet — and the server, which logs the
+different sentences from one packet — and a dedicated server, which logs the
 message too, only ever reads it in English.
 
 ## The cast
@@ -28,8 +28,8 @@ message too, only ever reads it in English.
 | `ComponentContents` · `TranslatableContents` | what a node *says*: seven kinds, of which the translatable kind is the one that waits for a `Language` | worded on whichever thread first visits it |
 | `Style` | the eleven inheritable fields, immutable, `Style.EMPTY` the shared blank | any |
 | `ComponentSerialization` | the one recursive codec, and the NBT stream codecs built over it | Netty, in `PacketEncoder` and `PacketDecoder`; Server or Render for data on disk |
-| `ComponentUtils` | `ComponentUtils.resolve`: selectors, scores and NBT paths into text, against a `ResolutionContext` | Server, during command execution |
-| `Language` | a key to a template; the client swaps the instance on every resource reload | Render thread reads it, `Language.inject` swaps it |
+| `ComponentUtils` | `ComponentUtils.resolve`: selectors, scores and NBT paths into text, against a `ResolutionContext` | Server, for commands and for the text of a sign, a text display, a written book or a *set_name* loot function; the client, for a server list's MOTD |
+| `Language` | a key to a template; the client swaps the instance on every resource reload | whichever thread words a message reads it; `Language.inject` swaps it |
 | `ClickEvent` | what a click on styled text may do, and the one action a server may not send | Render thread, when the click lands |
 
 ## A component is three things
@@ -60,9 +60,8 @@ classDiagram
 
 *The triple, and the loop that makes it a tree: a component holds one
 `ComponentContents`, one `Style` and a list whose members are components
-again. The filled diamonds are the two it owns; the hollow one is the list,
-which is where the recursion is. Nothing here holds an inherited style —
-`Style.applyTo` merges a parent's over a child's during the walk, and the
+again, the hollow diamond where the recursion is. Nothing here holds an inherited style —
+`Style.applyTo` merges a child's over its parent's during the walk, and the
 child records nothing.*
 
 
@@ -79,13 +78,13 @@ parent with a plain child draws the child red, and nothing in the child
 records it. The mutability is in the name. `Component.literal`,
 `Component.translatable` and the other factories return a
 `MutableComponent`, and a tree is built by `MutableComponent.append` and
-`MutableComponent.withStyle`, which replace the style field with a fresh
-`Style` each time. `Component.copy` is a shallow copy — the sibling list is
+`MutableComponent.withStyle`, which replace the style field with the `Style`
+the change produces. `Component.copy` is a shallow copy — the sibling list is
 new, the siblings are shared.
 
 The walk is the only way to read one. `Component.getString` visits every
 node and concatenates what it says; `Component.getString` with a limit stops
-at that many characters, which is the only truncation in the system. Everything from the walk onwards — the
+at that many characters. Everything from the walk onwards — the
 codepoint stream, bidirectional reordering, glyphs — belongs to
 [text and fonts](../client/text-and-fonts.md).
 
@@ -127,8 +126,8 @@ the client installs `KeyMapping.createNameSupplier` in the `Minecraft`
 constructor, so *key.jump* reads as whatever key is bound on a client and
 as *key.jump* anywhere else.
 
-**Score**, **selector** and **nbt** are the three kinds that say nothing
-until a server resolves them. A score names a holder — an entity selector,
+**Score**, **selector** and **nbt** are the three kinds a server has to
+resolve. A score names a holder — an entity selector,
 a literal name, or `ScoreHolder.WILDCARD` for the context's own entity —
 and an objective. A selector holds a compiled `EntitySelector` and an
 optional separator; visited unresolved, it shows the selector's source
@@ -167,9 +166,9 @@ returns `Style.EMPTY` outright.
 
 A `TextColor` is 24 bits, masked on construction, and serialises as one of
 its sixteen names or as *#RRGGBB*; `TextColor.parseColor` accepts either.
-The shadow is different: `Style.shadowColor` is a 32-bit ARGB integer,
-`Style.NO_SHADOW` is zero, and `Style.withoutShadow` is how a component asks
-to be drawn flat. `Style.font` is a `FontDescription`, which may be a
+The shadow is different: `Style.shadowColor` is a 32-bit ARGB integer, and
+a null one inherits like every other field; `Style.withoutShadow` sets it to
+`Style.NO_SHADOW`, zero, which is how a component asks to be drawn flat. `Style.font` is a `FontDescription`, which may be a
 `FontDescription.Resource` naming a font file, or one of the two sprite
 shapes that `ObjectContents` uses — it need not name a font at all.
 
@@ -233,7 +232,8 @@ by shape.
 
 ### On the wire: NBT, and two budgets
 
-On the wire, **components travel as NBT, not JSON**:
+On the wire in the configuration and play phases, **components travel as NBT,
+not JSON**:
 `ComponentSerialization.STREAM_CODEC` is built over the NBT ops — it is
 `ByteBufCodecs.fromCodecWithRegistries`, which encodes through `NbtOps`
 with the buffer's `RegistryOps` and writes the resulting `Tag`, and on
@@ -242,18 +242,18 @@ accounter is the difference between the two families:
 `NbtAccounter.defaultQuota` allows two mebibytes at depth 512, and the
 trusted variants — `ComponentSerialization.TRUSTED_STREAM_CODEC` and its
 siblings, built with `ByteBufCodecs.fromCodecWithRegistriesTrusted` over
-`NbtAccounter.unlimitedHeap` — lift the NBT budget, and **every clientbound
+`NbtAccounter.unlimitedHeap` — lift the NBT size budget (the depth cap stays), and **every clientbound
 chat packet uses them**
 ([packets and stream codecs](../networking/packets-and-stream-codecs.md)).
-So does everything else a server authors: the death packet, entity custom
+So do other texts a server authors: the death packet, entity custom
 names through `EntityDataSerializers.OPTIONAL_COMPONENT`, score displays,
 painting titles, command-suggestion tooltips. The budgeted codec is what
 the two component-typed data components use — `DataComponents.CUSTOM_NAME`
 and `DataComponents.ITEM_NAME` are synchronised with it — and those are
 the components a creative player's stack carries serverbound. A third shape,
 `ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC`, needs no
-registries and carries the texts that must decode before a registry
-exists: `ClientboundDisconnectPacket`, the MOTD in
+registries and carries texts sent where no registry is bound or needed:
+`ClientboundDisconnectPacket`, the MOTD in
 `ClientboundServerDataPacket`, a resource-pack prompt, server links. And
 `ComponentSerialization.flatRestrictedCodec` caps a component by the length
 of its JSON form; `WrittenBookContent.CONTENT_CODEC` uses it at 32,767 for
@@ -273,8 +273,8 @@ resolved too. Past the depth limit — 100 by default —
 the rest untouched and `ResolutionContext.LimitBehavior.DISCARD_REMAINING`
 puts `CommonComponents.ELLIPSIS` in its place. A context with no command
 source resolves score, selector and nbt contents to empty. The context also
-carries an `ObjectInfo` validator: `ResolutionContext.validate` swaps a
-rejected sprite for its fallback, which is how `ServerStatusPinger`
+carries an `ObjectInfo` validator: `ObjectContents.resolve` swaps a sprite
+`ResolutionContext.validate` rejects for its fallback, which is how `ServerStatusPinger`
 sanitises a server-list MOTD on the *client* — depth 16, discard past it,
 and no player heads.
 
@@ -311,7 +311,7 @@ sequenceDiagram
     end
 
     Note over SP,CT: the server tick in which the player dies
-    SP->>CT: die: getDeathMessage, if SHOW_DEATH_MESSAGES
+    SP->>CT: getDeathMessage, if SHOW_DEATH_MESSAGES
     CT->>CT: the last CombatEntry's deathMessageType, then<br/>DamageSource.getLocalized<br/>DeathMessage
     CT-->>SP: a translatable death.attack.arrow, the two names as arguments
     Note over SP: the only wording on this side is Component.getString for the console log
@@ -320,17 +320,17 @@ sequenceDiagram
     CPL->>DScr: new DeathScreen with the packet's message
     Note over DScr: the next frame, on the Render thread
     DScr->>TrC: visit reaches the contents
-    TrC->>Language: decompose: getInstance, then getOrDefault of the key
+    TrC->>Language: getInstance, then getOrDefault of the key
     Language-->>TrC: the template from the client's language stack
     TrC->>Language: and again for the killer, if it is a mob
     TrC-->>DScr: the victim's name, " was shot by ", the killer's name
 ```
 
 *Four boundaries in one trace: the server tick that builds it, the Netty
-thread that encodes it, the client thread that stores it, and the frame that
-finally words it. The component crosses the wire as a key and two arguments;
-the only place either side asks a `Language` before then is the server's own
-console log.*
+thread that encodes it, the Render thread that stores it, and the frame that
+finally words it. The component crosses the wire as a key and two arguments, and
+before that frame a `Language` is asked only for the server's console log and
+for the chat line, which a second packet carries.*
 
 
 ### Built on the server, in no language
@@ -349,11 +349,10 @@ the victim's and the killer's display names as arguments.
 `DeathMessageType.FALL_VARIANTS` and `DeathMessageType.INTENTIONAL_GAME_DESIGN`
 take two more branches, the second of them attaching a
 `ClickEvent.OpenUrl` to a bracketed link — and the fall branch only when
-`CombatTracker.getMostSignificantFall` actually found one, so a fall-typed
+`CombatTracker.getMostSignificantFall` found one, so a fall-typed
 source with no recorded fall drops back to the ordinary message. Which entry
-counts as the significant fall, and the five-block threshold under it, is
-[damage and
-death](../entities/damage-and-death.md#who-gets-the-credit-for-a-fall)'s. A fourth
+counts as the significant fall, and the five-block threshold under it, belongs to [damage and
+death](../entities/damage-and-death.md#who-gets-the-credit-for-a-fall). A fourth
 branch comes first: an empty combat log is *death.attack.generic*. The key
 is a line in *en_us.json*; the tracker never sees the line.
 
@@ -370,11 +369,12 @@ styles, and a mob killer's name is a second key the client will look up
 after the first.
 
 The packet is sent twice over. `ClientboundPlayerCombatKillPacket` goes to
-the victim, with a `PacketSendListener.exceptionallySend` fallback for the
-one thing that can go wrong, a message too large to encode: the replacement
-carries *death.attack.even_more_magic* and hangs the first 256 characters of
-the real message off it as a *death.attack.message_too_long* hover, so the
-death screen never goes blank. The same component goes to everyone as system chat —
+the victim, with a `PacketSendListener.exceptionallySend` fallback for a
+send that fails — the case its keys have in mind is a message too large to
+encode: the replacement carries *death.attack.even_more_magic* and hangs the
+first 256 characters of the real message off it as a
+*death.attack.message_too_long* hover, so a failed send does not leave the
+death screen blank. The same component goes to everyone as system chat —
 `PlayerList.broadcastSystemMessage`, or the team-scoped
 `PlayerList.broadcastSystemToTeam` / `PlayerList.broadcastSystemToAllExceptTeam`
 when the team's `Team.Visibility` says so — each as a
@@ -384,7 +384,7 @@ Both packets use `ComponentSerialization.TRUSTED_STREAM_CODEC`, so what
 crosses is a compound with *translate* and *with*, the arguments compounds
 of their own.
 
-The server reads the message once, for its log:
+On the ordinary path the server reads the message once, for its log:
 `PlayerList.broadcastSystemMessage` starts with
 `MinecraftServer.sendSystemMessage`, which logs `Component.getString`, and
 the walk visits the translatable contents and asks `Language.getInstance`.
@@ -392,13 +392,15 @@ That is the ordinary path only. A victim on a team whose death-message
 visibility is not `Team.Visibility.ALWAYS` goes through
 `PlayerList.broadcastSystemToTeam` or
 `PlayerList.broadcastSystemToAllExceptTeam` instead, neither of which
-logs — and `Team.Visibility.NEVER` matches neither branch, so the message
-reaches nobody and is never read at all.
-On a server that is
+logs — and `Team.Visibility.NEVER` matches neither branch, so only the
+victim is told, on the death screen, and the server never reads it.
+On a dedicated server that is
 `Language.DEFAULT_INSTANCE`, loaded once from the *en_us.json* on the
-classpath, and nothing on the server ever calls `Language.inject`. A
-named mob's death is logged the same way from `LivingEntity.die`. The
-console is in English whatever the players speak.
+classpath, and nothing on the server ever calls `Language.inject`; a
+singleplayer server shares the JVM's one `Language` with the client, so its
+log line is in the player's language. A named mob's death is logged the same
+way from `LivingEntity.die`. A dedicated server's console is in English
+whatever the players speak.
 
 ### Worded on the client, on the first frame
 
@@ -418,11 +420,12 @@ language falls to English; a key missing from both is shown as itself, by
 `Language.getOrDefault`, unless the component carried a fallback from
 `Component.translatableWithFallback`. `Language.loadFromJson` rewrites a
 *%d* or *%f* specifier to *%s* as it loads, which is why translators' number
-specifiers do not crash the decomposer. The template's arguments are
+specifiers do not leave the decomposer showing the raw template. The template's arguments are
 visited in their turn — the killer's name, if it is *entity.minecraft.zombie*,
 goes back to the same `Language` — and the sentence exists, in this
-client's language, for the first time. The chat line took the same path
-through `ChatListener.handleSystemMessage`.
+client's language, for the first time. The chat line takes the same lookup
+through `ChatListener.handleSystemMessage`, worded when the packet is handled
+rather than on a frame.
 
 ## What this page does not own
 
@@ -439,7 +442,7 @@ NBT and JSON differ under one, is
 **Why did my friend's death message say something different from mine?**
 Because neither client received a sentence. Both received
 *death.attack.arrow* and two name components, and each client's
-`Language` supplied its own template on the first frame that drew it.
+`Language` supplied its own template when it first worded the message.
 
 **Why does a message sometimes show as a raw key like *death.attack.foo*?**
 The key is in neither the selected language nor *en_us*, and the component
@@ -453,9 +456,10 @@ so it cannot be encoded into any packet, data pack or book by either side.
 Only client code that constructs the `ClickEvent.OpenFile` in memory — the
 screenshot notice, a debug dump's path — can present one.
 
-**Why does the server console show death messages in English?** The server's
+**Why does a dedicated server's console show death messages in English?** Its
 `Language` is `Language.DEFAULT_INSTANCE`, the bundled *en_us.json*;
-`Language.inject` is called only by the client's `LanguageManager`.
+`Language.inject` is called only by the client's `LanguageManager`, which is
+also why a singleplayer world's log follows the player's language.
 
 ## Where to look
 

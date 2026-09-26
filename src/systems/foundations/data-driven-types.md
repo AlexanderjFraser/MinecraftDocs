@@ -1,6 +1,6 @@
 # The data-driven type pattern
 
-> Verified against **Minecraft 26.3** · Part II · A data pack's loot table says *"type": "minecraft:set_count"*, and the game turns that string into an object it never named in code.
+> Verified against **Minecraft 26.3** · Part II · A data pack's loot table says *"type": "minecraft:set_count"*, and the game turns that string into an object the file never names.
 
 A data-pack author writes a chest loot table, gives one entry a modifier
 whose *type* field says *minecraft:set_count* and whose *count* is a
@@ -10,16 +10,16 @@ the pack says `SetItemCountFunction`. Nothing in the jar says
 has `RegistryDataLoader` scan the directory and hand the file to
 `LootTable.DIRECT_CODEC`, and
 somewhere inside that codec the string *minecraft:set_count* is looked up
-in `BuiltInRegistries.LOOT_FUNCTION_TYPE` — a registry that was filled by a
-static initialiser and frozen before any world existed — and the
+in `BuiltInRegistries.LOOT_FUNCTION_TYPE` — a registry that
+`BuiltInRegistries.bootStrap` filled and froze before any world existed — and the
 `MapCodec` it finds there reads the rest of the object. The result is a
 `SetItemCountFunction`, and the first time a player opens that chest,
 `SetItemCountFunction.run` calls `ItemStack.setCount` on every stack that
 entry emits. That field is spelled *type* here and almost everywhere else the
 pattern appears, and the move behind it is the same one: fifty-six registries in
 `BuiltInRegistries` are read this way. It is why *type* is the most
-important key in a data pack — **every file that has one is a lookup in a
-registry data packs cannot add to**, so a pack can compose the game's
+important key in a data pack — **every *type* the pattern reads is a lookup
+in a registry data packs cannot add to**, so a pack can compose the game's
 behaviours endlessly and never add a new one.
 
 ## The cast
@@ -70,8 +70,8 @@ flowchart TD
 
 *The pattern in one line, and the whole of it turns on the third box: the
 registry of kinds is built in and frozen, so a pack may write any number of
-elements and no number of kinds. Everything below that box is data; the box
-itself is code.*
+elements and no number of kinds. Only the first box is data; every box after
+it is the jar's code.*
 
 The pattern has two spellings, and they differ only in what the registry
 holds. In the **bare** spelling the element *is* the `MapCodec`:
@@ -84,10 +84,10 @@ or record that wraps the codec: `BlockPredicateType` is an interface
 with one method, `BlockPredicateType.codec`, its constants such as
 `BlockPredicateType.MATCHING_BLOCKS` are registered into
 `BuiltInRegistries.BLOCK_PREDICATE_TYPE`, and `BlockPredicate.CODEC`
-dispatches on `BlockPredicate.type`. The type object exists so that a
-kind can carry something beside its codec — `RecipeSerializer`,
-`ConsumeEffect.Type` and `RecipeDisplay.Type` are records of a `MapCodec`
-and a `StreamCodec`, one for the file and one for the wire. `Feature` and
+dispatches on `BlockPredicate.type`. A type object lets a kind carry
+something beside its codec — `RecipeSerializer`, `ConsumeEffect.Type` and
+`RecipeDisplay.Type` are records of a `MapCodec` and a `StreamCodec`, one for
+the file and one for the wire — though most carry the codec alone. `Feature` and
 `WorldCarver` take the bare spelling:
 `BuiltInRegistries.FEATURE_TYPE` and `BuiltInRegistries.CARVER_TYPE` hold
 each kind's `MapCodec`, and the element the file describes carries its own
@@ -111,18 +111,19 @@ does the same through `GroupSlotSource.INLINE_CODEC`.
 
 ## Fifty-six of them
 
-**Fifty-six** — registries in `BuiltInRegistries` that a codec dispatches
-on from the **value** of a field, counted at the dispatch sites:
-thirty-six bare and twenty type-object. The dispatch key is *type* unless
-the row says otherwise. The criterion is the value *in the data this book is about*, not
-`Registry.byNameCodec` itself: four more registries dispatch through it and are
-not here. `BuiltInRegistries.GAME_RULE` and `BuiltInRegistries.STAT_TYPE`
-spell the registry name as the *key* of a map rather than the value of a
-field. `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` and
-`BuiltInRegistries.DATA_COMPONENT_TYPE` do both: they are keys everywhere a
-data pack meets them, and each also backs exactly one field dispatch —
-`EnvironmentAttributeCheck.MAP_CODEC` on *attribute*, and one client
-item-model property on *component*. All four are among the exceptions below.
+**Fifty-six registries** in `BuiltInRegistries` hold a kind's codec, or a
+type that carries one, for a codec to dispatch to from the **value** of a
+field: thirty-six bare and twenty type-object. The dispatch key is *type* unless
+the row says otherwise. The criterion is the codec in the registry, not `Registry.byNameCodec`
+itself: more registries dispatch through it and are not here.
+`BuiltInRegistries.GAME_RULE` spells the registry name as the *key* of a map
+rather than the value of a field, and so does `BuiltInRegistries.STAT_TYPE`
+in a player's statistics file, though a player predicate dispatches on it by
+*type*. `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE` and
+`BuiltInRegistries.DATA_COMPONENT_TYPE` are keys nearly everywhere a data
+pack meets them, and each also backs a field dispatch or two —
+`EnvironmentAttributeCheck.MAP_CODEC` on *attribute*, and two client
+item-model properties. All four are among the exceptions below.
 
 ### The bare spelling: the registry holds a `MapCodec`
 
@@ -188,7 +189,7 @@ item-model property on *component*. All four are among the exceptions below.
 | `BuiltInRegistries.TRIGGER_TYPES` | `CriterionTrigger` | `Criterion` | *trigger*, with the fields under *conditions* (`ExtraCodecs.dispatchOptionalValue`) | inline in `Registries.ADVANCEMENT` (reloadable) | [advancements](../commands/advancements.md) |
 | `BuiltInRegistries.PARTICLE_TYPE` | `ParticleType` | `ParticleOptions` | | inline in biome ambient particles (`AmbientParticle`) and area effect clouds | [particles](../rendering/particles.md) |
 | `BuiltInRegistries.NUMBER_FORMAT_TYPE` | `NumberFormatType` | `NumberFormat` | | inline in `Objective` and `Score` — save data and commands, no pack | [scoreboard and data](../commands/scoreboard-and-data.md) |
-| `BuiltInRegistries.POSITION_SOURCE_TYPE` | `PositionSourceType` | `PositionSource` | | `VibrationParticleOption`, and one enchantment effect (`SpawnParticlesEffect`) — save data and the wire, no pack | [game events and vibrations](../world/game-events-and-vibrations.md) |
+| `BuiltInRegistries.POSITION_SOURCE_TYPE` | `PositionSourceType` | `PositionSource` | | inline in `VibrationParticleOption`, the vibration particle's options, which a pack can write wherever it writes a particle | [game events and vibrations](../world/game-events-and-vibrations.md) |
 
 The first seven rows are the sub-objects of a feature or a placed feature, and
 they split between two pages: the first two are the placement layer, on
@@ -203,8 +204,8 @@ read once, when the world loads; the eight of
 `Registries.ADVANCEMENT` and three more — are read again on every reload by
 `ReloadableServerRegistries`, and `DatapackStructureReport` calls them
 stable dynamic registries. The elements that reach the client are the ones in
-`RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, re-encoded with the same
-direct codec, which is why `BuiltInRegistries` must be identical on both
+`RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, re-encoded with the direct
+codec or, for thirteen of them, a smaller network codec, which is why `BuiltInRegistries` must be identical on both
 sides: the client runs the same dispatch on the same kinds
 ([protocol phases](../networking/protocol-phases.md)).
 
@@ -232,9 +233,9 @@ sequenceDiagram
     CBE->>RSReg: the key, from RandomizableContainer.unpackLootTable
     RSReg-->>CBE: the LootTable, or LootTable.EMPTY for an unknown key
     CBE->>LT: fill, then getRandomItems with a CHEST context
-    LT->>SICF: decorate wraps the output, every emitted stack passes through apply
+    LT->>SICF: the entry's decorate wraps its output, every stack passes through apply
     SICF->>SICF: the condition passes, run calls ItemStack.setCount
-    SICF-->>CBE: the stack lands in a slot
+    LT-->>CBE: the stacks, shuffled into the chest's slots
 ```
 
 *One loot function's whole life, in two stretches: parsed once at reload,
@@ -273,8 +274,8 @@ finds `SetItemCountFunction.MAP_CODEC`, and that codec reads *condition*
 shares, itself dispatched on `BuiltInRegistries.LOOT_CONDITION_TYPE`),
 *count* through `ContextIntProviders.CODEC` — a third dispatch, on
 `BuiltInRegistries.CONTEXT_INT_PROVIDER_TYPE` — and the optional *add*.
-Up to three built-in registries are consulted to build one function, and the
-file names none of them. A misspelt kind fails at the first of them with
+At least three built-in registries are consulted to build this one function,
+and the file names none of them. A misspelt kind fails at the first of them with
 an *Unknown registry key* error that names the registry of kinds, and the
 whole load fails with it. An entry, a pool and a table each hold at most one
 modifier, and several functions in one place are one `SequenceFunction`,
@@ -298,7 +299,7 @@ own packs registers as `Lifecycle.stable`, one from any other pack as
 `Lifecycle.experimental`.
 
 **The run half.** The pack described a function with a string, and the string
-is now an object hanging off a `LootPool`. What runs it is the ordinary
+is now an object hanging off a pool's entry. What runs it is the ordinary
 machinery of a draw — `RandomizableContainer.unpackLootTable` asking
 `MinecraftServer.reloadableRegistries` for the table, the pools rolling, the
 three levels of modifiers wrapping the output consumer one inside the
@@ -315,9 +316,8 @@ A few fall outside them altogether — `BuiltInRegistries.TICKET_TYPE`,
 `BuiltInRegistries.MAP_DECORATION_TYPE`,
 `BuiltInRegistries.POINT_OF_INTEREST_TYPE` and
 `BuiltInRegistries.VILLAGER_TYPE` are registries of ordinary things whose
-names happen to end in *type*, dispatching nothing, and
-`BuiltInRegistries.ATTRIBUTE_TYPE` has a `Registry.byNameCodec` —
-`AttributeTypes.CODEC` — that nothing in the tree reads; the attribute name
+names happen to end in *type*, dispatching nothing, and `BuiltInRegistries.ATTRIBUTE_TYPE` has a `Registry.byNameCodec`,
+`AttributeTypes.CODEC`, that nothing in the tree reads; the attribute name
 a file actually uses as a key belongs to
 `BuiltInRegistries.ENVIRONMENT_ATTRIBUTE`.
 
@@ -331,9 +331,10 @@ key codec is `Registry.byNameCodec` and whose value codec depends on the
 key. There is no *type* field because the name of the field is the type.
 `BuiltInRegistries.ENTITY_SUB_PREDICATE_TYPE` is the same shape and holds a
 plain `Codec` rather than a `MapCodec`, and `EntityPredicate` reads it as a
-dispatched map too. `BuiltInRegistries.STAT_TYPE` is a key whose value codec
-is derived from `StatType.getRegistry` rather than stored, which is what
-`PlayerPredicate.StatMatcher` builds on. `BuiltInRegistries.MEMORY_MODULE_TYPE`
+dispatched map too. `BuiltInRegistries.STAT_TYPE` is a key in a player's
+statistics file and the *type* a `PlayerPredicate.StatMatcher` dispatches on,
+and either way its value codec is derived from `StatType.getRegistry` rather
+than stored. `BuiltInRegistries.MEMORY_MODULE_TYPE`
 is a key in a brain's saved memories, `MemoryMap.CODEC`, the same way.
 
 **A type object with no codec.** `BuiltInRegistries.RECIPE_TYPE` is the

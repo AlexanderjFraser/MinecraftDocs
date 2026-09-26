@@ -176,7 +176,11 @@ def probe() -> int:
                 "### Wording to re-read\n\n"
                 "- `chunk-storage`'s hook is now three sentences.\n"
                 "- `chunk-storage`'s sequence figure gained a lane and a dashed arrow. [kind=7]\n"
-                "- **For pass 6, the lecture.**\n")
+                "- **For pass 6, the lecture.**\n\n"
+                "## Session G — Part VII · Items and inventories (pass 7)\n\n"
+                "- Every caption in this part names a method. [kind=voice]\n\n"
+                "## Session B — Parts I · Anatomy and II · Foundations (pass 6)\n\n"
+                "- Four pages say the shared worker pool. [kind=voice]\n")
         QUEUE = f.name
     try:
         pages, units, standing, kinds = load()
@@ -196,6 +200,12 @@ def probe() -> int:
             ("an italic preface naming a page is not an entry", 5 not in kinds_for("world/lighting", None)),
             ("a bare bold lead-in is not a part-wide entry",
              all(u.line != 19 for u in units_for(units, kinds, "", 4, None, False)[1])),
+            ("a heading's part numeral ends at a word boundary: Part VII · Items is VII, not VII and I",
+             [u.line for u in units_for(units, kinds, "", 7, None, False)[1]] == [23]
+             and all(u.line != 23 for u in units_for(units, kinds, "", 1, None, False)[1])),
+            ("a plural heading reaches its later parts: Parts I · Anatomy and II · Foundations is I and II",
+             27 in [u.line for u in units_for(units, kinds, "", 1, None, False)[1]]
+             and 27 in [u.line for u in units_for(units, kinds, "", 2, None, False)[1]]),
         ]
     finally:
         QUEUE = old

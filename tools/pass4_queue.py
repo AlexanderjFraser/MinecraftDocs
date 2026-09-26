@@ -44,7 +44,9 @@ BULLET_RE = re.compile(r"^(\s*)[-*]\s+(.*)$")
 STRUCK_RE = re.compile(r"^\s*(?:[-*]\s+|\d+[.)]\s+|#{1,6}\s+)?~~")
 SESSION_RE = re.compile(r"[Ss]ession\s+([A-P])\b")
 INLINE_PAGE_RE = re.compile(r"^\s*(?:\*\*)?`[a-z0-9][a-z0-9/-]*`(?:\*\*)?\s*(?:—|-|:)")
-PART_RE = re.compile(r"\bParts?\s+((?:[IVX]+(?:\s*[·,]\s*(?:and\s+)?)?)+)")
+# A numeral ends at a word boundary: without it "Part VII · Items" read the I of *Items* as Part I, and
+# every part-wide unit under a Part VII heading routed to Part I (pass 8, session B).
+PART_RE = re.compile(r"\bParts?\s+((?:[IVX]+\b(?:\s*[·,]\s*(?:and\s+)?)?)+)")
 
 
 @dataclass
@@ -65,6 +67,12 @@ def parts_in(text: str) -> tuple:
         for r in re.findall(r"[IVX]+", m.group(1)):
             if r in ROMAN:
                 found.append(ROMAN[r])
+        if m.group(0).startswith("Parts"):
+            # a plural names its later parts after their titles or an *and* — "Parts I · Anatomy and
+            # II · Foundations", "Parts I and II" — which the pattern stops short of (pass 8, session B)
+            for r in re.findall(r"\b[IVX]+\b", text[m.end():m.end() + 60].split("(")[0]):
+                if r in ROMAN:
+                    found.append(ROMAN[r])
     return tuple(sorted(set(found)))
 
 

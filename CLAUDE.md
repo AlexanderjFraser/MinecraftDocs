@@ -32,10 +32,11 @@ wording done after the check and read again by a session that changed
 nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
 the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
 (sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
-that file's Part 6; **V1, V2 and A have run** (the tools read 26.3 and every
+that file's Part 6; **V1, V2, A and B have run** (the tools read 26.3 and every
 page says 26.3; V2 rewrote the 42 pages whose systems 26.3 reshaped; A ruled the
 voice into `TEMPLATE.md` and found the book's *constant nobody reads* asides to
-be javac's inlining, not the game), and session B is next. After it the
+be javac's inlining, not the game; B made 293 corrections on Parts I and II and
+the atlas), and session C is next. After it the
 production process is rebuilt from first
 principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
 returns here with what it learned; until then only a version pass the owner

@@ -1,12 +1,12 @@
 # What extends what
 
-> Verified against **Minecraft 26.3** · Maps · The widest inheritance trees, four of them drawn with the number of descendants on every node.
+> Verified against **Minecraft 26.3** · Maps · The widest inheritance trees, four of them drawn with the number of descendants on every branch.
 
 `Block` has 297 descendants and `Entity` 192 — *descendants*, not direct
 subclasses, which is the count both tables below use — and those are the two
 trees a reader of this book will climb most often. But neither is the widest
 hierarchy in the game. That is `FeatureElement`, with 386 descendants from
-seven implementers — and it is not a hierarchy at all. It is a marker
+seven implementers — and it is not a hierarchy at all. It is an
 interface for *anything that can be put behind a feature flag*, and its
 seven implementers are `BlockBehaviour`, `Item`, `EntityType`, `MenuType`,
 `MobEffect`, `Potion` and `GameRule`, so its descendant count sweeps up the
@@ -22,7 +22,7 @@ class table is where the real trees are, and four of them are drawn below.
 </figure>
 
 The shape is a spine with a few branches. `LivingEntity` holds 124 of the
-192, `Mob` 114 of those, `PathfinderMob` 108 of those: a mob is four
+192, `Mob` 114 of those, `PathfinderMob` 108 of those: nearly every mob is four
 classes deep before it is a species, and Part VI's
 [entity anatomy](../systems/entities/entity-anatomy.md) is that spine.
 The non-living entities are two families and a scattering — `Projectile`
@@ -40,8 +40,8 @@ thirteen direct subclasses of `Entity` with no children of their own, from
 `Block` is wide and shallow: 92 direct subclasses, most of them terminal.
 The one deep branch is `BaseEntityBlock` (64), the abstract base most of the
 blocks that own a block entity extend — the interface that actually decides is
-`EntityBlock`, and a handful of blocks implement it without taking that base at
-all, `ComparatorBlock` and `JigsawBlock` among them. Part V's
+`EntityBlock`, and two blocks implement it without taking that base at all,
+`ComparatorBlock` and `JigsawBlock`. Part V's
 [block entities](../systems/blocks/block-entities.md#create-keep-replace-remove)
 is the branch in prose.
 The table's first row, `BlockBehaviour` at 298, is the same tree seen from
@@ -58,7 +58,7 @@ block's behaviour and its registry identity can be separate classes.
 Sixty-seven types descend from `Item`, for over a thousand registered items. The tree is
 small because an item's behaviour mostly is not in its class: what a stack
 does is in its data components, and `Items` registers most of the game
-as a plain `Item` with a `Item.Properties` describing it. Part VII's
+as a plain `Item` or `BlockItem` with an `Item.Properties` describing it. Part VII's
 [items and stacks](../systems/items/items-and-stacks.md) is why the tree
 is this shape.
 
@@ -81,15 +81,15 @@ as its only subclass, the same one-class-higher effect as
 ## Two trees the table shows and the figures do not
 
 `Goal` has 202 descendants from 99 direct subclasses, and 132 of the 202
-are nested classes inside the mob they serve — a fox's goals are declared
-in `Fox`, not in `world/entity/ai/goal`. `Packet` is an interface with 240 descendants from 229
+are nested classes, all but one inside the mob they serve — a fox's own goals
+are declared in `Fox`, not in `world/entity/ai/goal`. `Packet` is an interface with 240 descendants from 229
 direct implementers, and almost nothing below them: the packet catalogue is
 flat, and the [packets](../reference/packets.md) reference is its list.
 
 ## The tables
 
-Class roots first, then interface roots; a root needs fifteen descendants
-to appear. *direct* is the number of immediate subclasses or implementers;
+Class roots first, then interface roots; each table is the thirty roots of
+its kind with the most descendants. *direct* is the number of immediate subclasses or implementers;
 *where* is the package of the root.
 
 {{#include ../generated/hierarchy-classes.md}}

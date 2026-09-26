@@ -1,5 +1,5 @@
-<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 879 344" width="879" height="344" role="img" aria-label="The class hierarchy under Entity: each node shows how many types descend from it">
-<title>The class hierarchy under Entity: each node shows how many types descend from it</title>
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 879 344" width="879" height="344" role="img" aria-label="The class hierarchy under Entity: each branch shows how many types descend from it">
+<title>The class hierarchy under Entity: each branch shows how many types descend from it</title>
 <text class="node" x="4.0" y="200.0" font-size="12">Entity (192)</text>
 <path class="edge" d="M93.5 196.0 H204.0 V60.0 H211.0"/>
 <text class="node" x="214.0" y="64.0" font-size="12">LivingEntity (124)</text>

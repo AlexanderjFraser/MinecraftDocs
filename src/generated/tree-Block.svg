@@ -1,5 +1,5 @@
-<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 1032" width="1020" height="1032" role="img" aria-label="The class hierarchy under Block: each node shows how many types descend from it">
-<title>The class hierarchy under Block: each node shows how many types descend from it</title>
+<svg class="mapfig" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1020 1032" width="1020" height="1032" role="img" aria-label="The class hierarchy under Block: each branch shows how many types descend from it">
+<title>The class hierarchy under Block: each branch shows how many types descend from it</title>
 <text class="node" x="4.0" y="562.0" font-size="12">Block (297)</text>
 <path class="edge" d="M86.6 558.0 H204.0 V96.0 H211.0"/>
 <text class="node" x="214.0" y="100.0" font-size="12">BaseEntityBlock (64)</text>

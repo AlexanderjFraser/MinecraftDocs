@@ -26,17 +26,18 @@ order the packet lists them.
 |---|---|---|
 | `Identifier` | the name — namespace and path — and which strings are legal ones | any |
 | `ResourceKey` | the name paired with the registry it belongs to, interned so equal keys are one object | any |
-| `Registry` · `MappedRegistry` | the table: key to object to integer, the frozen flag, the two tag tables | written on the launching thread or a load task's worker; read from anywhere |
+| `Registry` · `MappedRegistry` | the table: key to object to integer, the frozen flag, the two tag tables | elements written on the launching thread or a load task's worker, tags by whichever thread applies them; read from anywhere |
 | `Holder` | a reference to an entry that may be handed out before the entry exists (`Holder.Reference`), or an inline value that belongs to no registry (`Holder.Direct`) | any |
 | `HolderLookup.Provider` · `RegistryAccess` | the read-only view a codec resolves against: all the registries it may name | any |
 | `BuiltInRegistries` | the static registries — created empty at class init, filled and frozen by `Bootstrap.bootStrap` | the launching thread, before any server or client object exists |
-| `RegistryDataLoader` | the dynamic registries — one load task per registry, JSON from the packs on the server, NBT from the wire on the client | `Util.backgroundExecutor` |
-| `LayeredRegistryAccess` | which layer may see which: four `RegistryLayer`s on the server, two `ClientRegistryLayer`s on the client | the server thread owns `MinecraftServer.registries`; the client thread owns its own stack |
+| `RegistryDataLoader` | the dynamic registries — one load task per registry, JSON from the packs on the server; on the client NBT from the wire, or its own jar's JSON for a pack both sides know | `Util.backgroundExecutor` |
+| `LayeredRegistryAccess` | which layer may see which: four `RegistryLayer`s on the server, two `ClientRegistryLayer`s on the client | the server thread owns `MinecraftServer.registries`; the Render thread owns the client's |
 
 All of this is server *and* client: `MappedRegistry`, `BuiltInRegistries`
 and `RegistryDataLoader` ship in the dedicated server jar. Client-only, of
 the classes this page names, are `ClientRegistryLayer`,
-`RegistryDataCollector` and `KnownPacksManager` — and, less surprisingly,
+`RegistryDataCollector`, `KnownPacksManager` and the client's
+`CommonListenerCookie` — and, less surprisingly,
 `ClientPacketListener`, `ClientConfigurationPacketListenerImpl` and
 `IntegratedServer`.
 
@@ -75,12 +76,12 @@ types — `Registries.LEVEL_STEM` is the data-pack registry the
 functions at run time. Five more registry keys are declared by the class
 that owns them rather than here, which is why the catalogue's total is 161
 and this one is 156 ([registries](../../reference/registries.md)). Interning
-earns its keep only where identity is used: `MappedRegistry.byKey` and
-`MappedRegistry.byLocation` are ordinary hash maps, and what genuinely
-depends on it is `MappedRegistry.registrationInfos`, an identity map, and
-`Holder.Reference.is` for a `ResourceKey`, which is a reference comparison. `ItemIds` and
-`BlockItemIds` (`net/minecraft/references`) hold the per-element keys the
-static initialisers use.
+is what makes identity work: `ResourceKey` declares no equality of its own, so
+`MappedRegistry.byKey`, `MappedRegistry.registrationInfos`,
+`Holder.Reference.is` for a `ResourceKey` and every `==` against a key like
+`Level.OVERWORLD` rely on equal keys being one object. `BlockIds`, `ItemIds`
+and `BlockItemIds` (`net/minecraft/references`) hold the per-element keys the
+block and item initialisers use.
 
 ## The table
 
@@ -99,7 +100,7 @@ itself, the two identity maps `MappedRegistry.byValue` — what answers
 `Registry.getKey` — and `MappedRegistry.toId`, which returns −1 for anything
 it has never seen, an equal-but-distinct object included. It carries the
 `MappedRegistry.frozen` flag that `MappedRegistry.validateWrite` checks on
-every mutation.
+every ordinary write.
 
 A `Holder` is the seam between a registry and the code that names its
 entries. It is a sealed interface with two kinds (`Holder.Kind`).
@@ -123,7 +124,9 @@ one world refuses to be written by another; `HolderLookup.Provider` is "all the
 registries I may resolve against" and `HolderLookup.RegistryLookup` is one
 of them. `RegistryAccess` is a `HolderLookup.Provider` over a set of
 registries, and `RegistryAccess.Frozen` is a bare marker for the finished
-kind. Every static initialiser writes through `Registry.register`; every
+kind. Every static initialiser writes its elements through `Registry.register`
+or `Registry.registerForHolder` (the registries themselves go into the root
+through `WritableRegistry.register`); every
 codec that names a *dynamic* entry — `RegistryFileCodec`,
 `RegistryFixedCodec`, `RegistryCodecs.holderSet`, `HolderSetCodec` —
 resolves through a `RegistryOps` ([codecs, NBT and JSON](codecs-nbt-json.md#where-the-registry-context-comes-from));
@@ -144,7 +147,7 @@ sequenceDiagram
 
     Note over Boot,DMR: the launching thread, before any server or client object exists
     Boot->>BIR: class init: one empty registry per key, 95 of the 156, each with a loader
-    Note over Boot,Items: FireBlock and CauldronInteractions run first, so Items is already initialised
+    Note over Boot,Items: the dispenser and cauldron bootstraps run first, so Items is already initialised
     Boot->>Items: class init: registerItem per item, Item.Properties.setId stores the key
     Items->>Item: new Item(properties), which knows its own key
     Item->>DMR: createIntrusiveHolder: a Holder.Reference with a value, no key
@@ -152,7 +155,7 @@ sequenceDiagram
     Boot->>BIR: bootStrap: createContents runs every loader, then freeze, then validate
     BIR->>BIR: freeze: the root, then each registry — tags bound empty, then MappedRegistry.freeze
     DMR->>DMR: bindValue on every holder, refuse an unbound one, build componentLookup
-    Note over Boot,DMR: components are bound at the first reload, tags at world load
+    Note over Boot,DMR: components and tags are bound together later, when a world loads
 ```
 
 *The bootstrap ladder, on one thread, before either program exists. The
@@ -161,11 +164,10 @@ line number of its registration — which is why the wire ids are stable only
 because the registration order is.*
 
 
-Both `Main` classes call `Bootstrap.bootStrap` early — after argument parsing
-and crash-report preload, and `Bootstrap.isBootstrapped` is set before any
-registry is touched — and after a handful of non-registry bootstraps
-([anatomy](../anatomy/anatomy.md#from-main-to-a-world)) — on the launching thread, before any
-server or client object exists. `Bootstrap.bootStrap` calls
+Both `Main` classes call `Bootstrap.bootStrap` early, after argument parsing
+and crash-report preload ([anatomy](../anatomy/anatomy.md#from-main-to-a-world)
+has the order), on the launching thread before any server or client object
+exists, and `Bootstrap.isBootstrapped` is set before any registry is touched. `Bootstrap.bootStrap` calls
 `BuiltInRegistries.bootStrap`, and after it returns every built-in registry
 is frozen and any `WritableRegistry.register` throws.
 
@@ -175,8 +177,10 @@ creates every registry empty and records the loader that fills it in
 then runs `BuiltInRegistries.createContents` — the loaders in that order.
 By then `Items`, `Blocks` and `EntityTypes` are already initialised:
 `Bootstrap.bootStrap` reaches `FireBlock.bootStrap`,
-`EntityTypes.PLAYER` and `CauldronInteractions.bootStrap` before it calls
-`BuiltInRegistries.bootStrap`, and each of those touches its catalogue — so
+`EntityTypes.PLAYER`, the dispense behaviours' bootstrap and
+`CauldronInteractions.bootStrap` before it calls
+`BuiltInRegistries.bootStrap`, and those touch `Blocks`, `EntityTypes` and
+`Items` in that order — so
 `BuiltInRegistries.createContents` finds the loaders' values already there rather than
 triggering them.
 `Bootstrap.checkBootstrapCalled` is the guard that makes "touched `Blocks`
@@ -185,9 +189,10 @@ works because the bootstrap flag is set *before* the registries are touched,
 not after.
 
 **The key travels in the properties.** `Items.registerItem` takes a
-`ResourceKey` from `ItemIds` and calls `Item.Properties.setId` before
-constructing, so an `Item` knows its own key at construction time. Blocks
-do the same with `BlockItemIds` and `BlockBehaviour.Properties.setId`.
+`ResourceKey` from `ItemIds` or `BlockItemIds` and calls
+`Item.Properties.setId` before constructing, so an `Item` knows its own key at
+construction time. Blocks do the same with `BlockIds` and `BlockItemIds` and
+`BlockBehaviour.Properties.setId`.
 
 **Five registries hand the object its own holder.** `BuiltInRegistries.BLOCK`,
 `BuiltInRegistries.ITEM`, `BuiltInRegistries.FLUID`,
@@ -238,10 +243,10 @@ this with two layers, `ClientRegistryLayer.STATIC` and
 ```mermaid
 flowchart TD
     WL["WorldLoader.load, on Util.backgroundExecutor"]:::worker
-    RDL["RegistryDataLoader.load, with the lookups<br/>from LayeredRegistryAccess.getAccessForLoading"]:::worker
-    T1["one RegistryLoadTask: biome"]:::worker
-    T2["one RegistryLoadTask: carver"]:::worker
-    T3["… one per RegistryDataLoader.RegistryData, 52 of them"]:::worker
+    RDL["RegistryDataLoader.load, twice: the world<br/>registries, then the dimensions"]:::worker
+    T1["one RegistryLoadTask: feature"]:::worker
+    T2["one RegistryLoadTask: placed feature"]:::worker
+    T3["… one per RegistryDataLoader.RegistryData, 51 then 1"]:::worker
     F["RegistryLoadTask.freezeRegistry binds every promise,<br/>then the RegistryValidator"]:::worker
     LRA["LayeredRegistryAccess.replaceFrom:<br/>world and dimensions in one call"]:::worker
     WL --> RDL
@@ -257,10 +262,10 @@ flowchart TD
 ```
 
 *World load, as a task graph rather than a conversation: one task per
-registry, all on the worker pool, each able to ask any other for an element
-it has not registered yet. The dotted edges are the forward references, and
-the freeze is where they stop being promises. The last box runs on the
-worker pool too, not on the thread that called `WorldLoader.load`.*
+registry, all on the worker pool, each able to ask any other in the same call
+for an element it has not registered yet. The dotted edges are the forward
+references, the freeze is where they stop being promises, and the last box
+runs on the worker pool too, not on the thread that called `WorldLoader.load`.*
 
 Later, a client logs in and reaches the configuration phase, and the server
 sends it what it just built.
@@ -288,23 +293,24 @@ sequenceDiagram
     CCPL->>SCPL: ServerboundFinish<br/>ConfigurationPacket
 ```
 
-*The same registries crossing to a client, and the last packet is what lets
-play begin. `SynchronizeRegistriesTask` sends the three data packets and the
-listener sends the fourth; the client decodes none of it until the finish
-packet arrives. The last note is the singleplayer case, where the work of the
-whole exchange is discarded.*
+*The same registries crossing to a client: `SynchronizeRegistriesTask` sends
+the three data packets, and the fourth, which lets play begin, comes through
+the listener from a later task, `JoinWorldTask`. The client decodes none of it
+until that finish packet arrives, and the last note is the singleplayer case,
+where the work of the whole exchange is discarded.*
 
 
-`WorldLoader.load` runs `RegistryDataLoader.load` on
-`Util.backgroundExecutor`, returning to the main thread for
-resource-manager creation and the final assembly; this is where the
-`RegistryLayer.WORLD`, `RegistryLayer.DIMENSIONS` and
-`RegistryLayer.RELOADABLE` layers are filled. The configuration phase is
+`WorldLoader.load` creates the resource manager on the main thread, runs
+`RegistryDataLoader.load` on `Util.backgroundExecutor`, and returns to the main
+thread for the final assembly; this is where the `RegistryLayer.WORLD` and
+`RegistryLayer.DIMENSIONS` layers are filled, and the
+`RegistryLayer.RELOADABLE` layer of the copy
+`MinecraftServer.reloadableRegistries` holds. The configuration phase is
 the third moment: `SynchronizeRegistriesTask` sends the dynamic registries
 on the server thread, and the client rebuilds its
 `ClientRegistryLayer.REMOTE` layer in
 `RegistryDataCollector.collectGameRegistries` — decoding on the worker
-pool, joined on the client thread — before it will accept play packets.
+pool, joined on the Render thread — before it will accept play packets.
 
 **Layers load against the layers before them.** `RegistryDataLoader.load`
 is given lookups built from `LayeredRegistryAccess.getAccessForLoading` —
@@ -329,9 +335,10 @@ task's getter to every other, so `Biome.DIRECT_CODEC` decoding on one
 worker can ask for a carver that another worker is still
 registering — the getter returns an unbound `Holder.Reference`, and the
 reference is bound when that registry freezes. Forward references cost
-nothing; cycles are impossible because layers order the registries.
+nothing, even in a cycle — a feature can name placed features and a placed
+feature its feature — because nothing waits on them.
 Fourteen of the fifty-two world and dimension registries also carry a
-`RegistryValidator` in their `RegistryDataLoader.RegistryData`, run after
+`RegistryValidator` other than the empty one in their `RegistryDataLoader.RegistryData`, run after
 the freeze — thirteen of them entity-variant registries running the same
 check, `RegistryValidator.nonEmpty`, and the fourteenth `Registries.TIMELINE`,
 whose `Timeline.validateRegistry` is its own.
@@ -368,8 +375,8 @@ generation and mob-spawn settings the client never needs.
 `RegistryDataCollector` accumulates the packets, and
 `RegistryDataCollector.collectGameRegistries` runs when configuration
 finishes — dispatching the load onto a background executor against the
-negotiated packs and then blocking on the result, so the work leaves the
-network thread without the phase becoming asynchronous. The `ClientRegistryLayer.REMOTE` layer is rebuilt wholesale and
+negotiated packs and then blocking on the result, so the decoding leaves the
+Render thread, which waits for it, without the phase becoming asynchronous. The `ClientRegistryLayer.REMOTE` layer is rebuilt wholesale and
 frozen — but the **static** registries cannot be rebuilt, so their tags are
 applied in place, through the mechanism [tags](tags.md#the-four-moments-tags-are-loaded) owns, and when no
 registry data arrived at all the collector takes a tags-only path that
@@ -398,7 +405,7 @@ never bound. The tag half of that proof works because a registry keeps its
 [tags](tags.md#a-tag-is-a-key-and-a-file) is built on: the freeze checks the
 declared table and installs the bound one. For the static registries the
 real tags do not exist until a data pack is read, so `BuiltInRegistries.freeze`
-first binds the tags the bootstrap actually asked for to empty
+first binds the tags the bootstrap asked for to empty
 (`MappedRegistry.bindAllTagsToEmpty`) and the proof passes on empty sets.
 The freeze also builds `MappedRegistry.componentLookup`. After it, the
 `MappedRegistry.frozen` flag makes `MappedRegistry.validateWrite` throw on
@@ -421,8 +428,9 @@ after it by
 ## Feature flags: the same registry, narrowed
 
 A frozen registry's contents never change — but what a *lookup* will show you
-can be narrower than what the registry holds, and that is the whole of the
-feature-flag mechanism. `FeatureFlagSet` is a bitmask: a 64-bit *long* and the
+can be narrower than what the registry holds, and that is most of the
+feature-flag mechanism; the rest is a direct `FeatureElement.isEnabled` check
+where an element is used. `FeatureFlagSet` is a bitmask: a 64-bit *long* and the
 `FeatureFlagUniverse` it belongs to, with `FeatureFlagSet.MAX_CONTAINER_SIZE`
 at 64 flags. There is one universe, *main*, and `FeatureFlags` declares four
 flags in it — `FeatureFlags.VANILLA` and the three experiments,
@@ -432,7 +440,7 @@ flags in it — `FeatureFlags.VANILLA` and the three experiments,
 what puts the warning on a world.
 
 What carries a flag is a registry element. `FeatureElement` is an interface
-with one method, `FeatureElement.requiredFeatures`, implemented by exactly
+whose one abstract method is `FeatureElement.requiredFeatures`, implemented by exactly
 seven types — `Item`, `BlockBehaviour`, `EntityType`, `GameRule`, `MenuType`,
 `Potion` and `MobEffect` — and `FeatureElement.FILTERED_REGISTRIES` names the
 seven registries those live in. `HolderLookup.RegistryLookup.filterFeatures`
@@ -479,15 +487,14 @@ tables, predicates, item modifiers, recipes, advancements and three more) is
 read the same way, through `ReloadableServerRegistries`. Which registry is which kind is
 [reference/registries](../../reference/registries.md).
 
-> **For a 1.21-era reader.** `Identifier` was *ResourceLocation*, and the
-> vanilla data you remember being registered in code is now read as JSON
-> like anyone else's: `RegistrySetBuilder`, `BootstrapContext` and
-> `VanillaRegistries` are the *data generator* that writes those files into
-> the jar, and the running game only ever reads them
-> ([what this book skips](../anatomy/what-this-book-skips.md#the-data-generators-and-why-data-driven-is-both-true-and-misleading)
-> has how far that is true). And `Block.BLOCK_STATE_REGISTRY` is not a
-> registry: `IdMapper` is the standalone `IdMap` behind block-state ids and
-> similar palettes, sharing an interface with `Registry` and nothing else.
+> **For a 1.21-era reader.** `Identifier` was *ResourceLocation*, and the vanilla
+> data you remember being registered in code is now read as JSON like anyone
+> else's: `RegistrySetBuilder`, `BootstrapContext` and `VanillaRegistries` are
+> the *data generator* that writes those files into the jar, and the running game
+> only ever reads them ([what this book skips](../anatomy/what-this-book-skips.md#the-data-generators-and-why-data-driven-is-both-true-and-misleading)
+> has how far that is true). And `Block.BLOCK_STATE_REGISTRY` is not a registry:
+> `IdMapper` is the standalone `IdMap` behind block-state ids and similar
+> palettes, sharing an interface with `Registry` and nothing else.
 
 ## Where to look
 

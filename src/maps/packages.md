@@ -6,8 +6,8 @@ Java Minecraft is 7,301 classes and 741,069 lines of decompiled Java 25,
 and the first surprise in it is how little of that the client owns alone.
 Everything a player sees — every screen, the HUD, the whole renderer, the entity models, both
 GPU back-ends, the sound engine, Realms — is the orange near-third of this
-picture. The blue seven tenths ship in both jars, and the biggest box
-of all, `world/level`, is a fifth of the game by itself: blocks, block
+picture. The blue seven tenths ship in both jars, and the biggest inner
+box, `world/level`, is a fifth of the game by itself: blocks, block
 states, chunks, lighting and world generation, all of it code the
 dedicated server runs with no window attached.
 
@@ -28,10 +28,9 @@ lines, 29.8% of the total, which is the "just under a third" the
 introduction quotes.
 
 The consequence for reading this book: when a page says a class is
-*client-only* it is saying which package the class lives in, and when a
-page in Part IV or V names a class, the dedicated server has it. The class
-index in Reference says which side each named class is on; the oracle
-behind it is `server-classes.txt`.
+*client-only* it is saying which package the class lives in, and every
+package Parts IV and V own ships in both jars. The oracle for which side a
+class is on is `server-classes.txt`.
 
 ## What the big boxes are
 
@@ -77,10 +76,10 @@ two back-ends behind `GpuDevice`, and the Vulkan one (`renderpearl/backend/vulka
 12,872 lines: the packet catalogue is many tiny classes, one per packet.
 `network/chat` (4,799) is `Component` and chat signing.
 
-Below 3% the other boxes are Part II's foundations — `net/minecraft/core`,
-`net/minecraft/nbt`, `net/minecraft/tags`, `net/minecraft/resources`,
-`net/minecraft/commands` (the command source, the argument types and the
-execution engine, Part XIII) and `net/minecraft/advancements`, plus
+Below 3% the other boxes include Part II's foundations — `net/minecraft/core`,
+`net/minecraft/nbt`, `net/minecraft/tags`, `net/minecraft/resources` — and
+Part XIII's `net/minecraft/commands` (the command source, the argument types
+and the execution engine) and `net/minecraft/advancements`, plus
 `com/mojang/realmsclient` and the skipped `net/minecraft/data`. That last one
 is the program that writes the vanilla data pack — and it is not build-time
 only: the dedicated server ships all 174 classes, and `Blocks` and
@@ -96,9 +95,10 @@ that is a decision rather than a measurement: the packages are assigned by
 hand, in the tool that draws the atlas, and the counts follow. A package
 under `net/minecraft` is written without that prefix; *itself only* means
 the files directly in the package and not its sub-packages; a package two
-parts share is counted in both, which is why the total row is more than the
-jar. A part's landing page quotes its own row of this table as its size,
-and everything the book skips is left out of every row.
+parts share is counted in both and a file in no part's packages in none, so
+the total row is not the jar's. A landing page that states its part's size
+quotes its own row of this table, and everything the book skips is left out
+of every row.
 
 {{#include ../generated/parts.md}}
 

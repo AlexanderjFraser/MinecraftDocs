@@ -5,7 +5,8 @@
 Almost every lane in a sequence diagram is a class, and a lane means the same thing on
 every page: the key in `TEMPLATE.md` is the authority, and `check_lanes.py` fails a deploy on
 a page that disagrees with it. The last rows are the exceptions — lanes that stand for a
-thread or a boundary rather than for one class.
+thread, the process, the wire, the disk, a service or the game's own code rather than for
+one class.
 
 276 lanes are classes and 10 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other

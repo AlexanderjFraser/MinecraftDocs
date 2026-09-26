@@ -14,13 +14,13 @@ content as a data pack, it ships in the dedicated server jar — all 174
 classes of it — and the running game compiles against it and calls into it.
 `Blocks` names `TreeFeatures` keys while it constructs mushroom blocks;
 `MinecraftServer` reaches for a `MiscOverworldFeatures` key for the bonus
-chest; the F3 screen's biome line runs through
+chest; the F3 screen's biome-builder line runs through
 `NoiseRouterData.peaksAndValleys` into `TerrainProvider`. A boundary drawn
 honestly has to show where it leaks, and that is the largest leak in it.
 
 <figure class="map">
 {{#include ../../generated/packages-treemap.svg}}
-<figcaption>The jar by package, area by lines of decompiled source. Hatched boxes are the packages this page tours and the parts do not. Click to enlarge.</figcaption>
+<figcaption>The jar by package, area by lines of decompiled source. Hatched boxes are the packages this page tours, which no part counts. Click to enlarge.</figcaption>
 </figure>
 
 ## The sizes, and which jar ships them
@@ -34,7 +34,8 @@ rows against the map's fourteen hatched boxes: the map's smallest box is a
 package four levels deep, and `net/minecraft/client/multiplayer/chat/report`
 is six, sitting inside a package Parts IX and X between them own. The
 counts in the table are files, so a *package-info.java* counts as a class
-there and not in the prose below.
+there and wherever the prose quotes the table; a sentence that counts a
+package's working classes leaves it out.
 
 | package | classes | lines | side |
 |---|---:|---:|---|
@@ -87,10 +88,11 @@ asks the fixer to compose every rule from there to now.
 it wraps an ordinary codec so decoding pulls the data version, runs the
 chain, and encoding stamps the current version back in. It is the rarer
 door — two callers, `PlayerAdvancements` and `DebugScreenEntryList` — while
-[chunk storage](../world/chunk-storage.md) and player data take the first
-one and read the version themselves. The rules are
+player data takes the first one and reads the version itself, and
+[chunk storage](../world/chunk-storage.md) reads it too and takes a third,
+`DataFixTypes.update`. The rules are
 pre-compiled on a dedicated bootstrap thread, and that thread is built with
-some care to cost nothing: one thread, daemon, at minimum priority, with a
+some care to stay out of the way: one thread, daemon, at minimum priority, with a
 single caller in the client's entry point, optimising exactly one type (the
 level-summary schema, so the world list opens fast). The dedicated server
 never asks for it at all.
@@ -101,17 +103,18 @@ move, rename, split or delete a file. `FileFixerUpper` operates on the
 world **directory**: its operations are moves, regex moves, group moves,
 deletions, content modifications and one composite that scopes a nested list
 of operations to matching folders, and the concrete fixes do things like
-relocate dimension storage, split player storage and pull data out of
+relocate dimension storage, gather player storage into one folder and pull data out of
 *level.dat* into saved data
 ([level data and rules](../../reference/level-data-and-rules.md)).
 
 It stays safe by working somewhere else: the whole upgrade runs against a
-**custom copy-on-write file system** rooted at a scratch directory, and the
-result is swapped in at the end. Exactly how safe depends on the filesystem
+**custom copy-on-write file system** over the world folder, whose writes land
+in a scratch directory, and the result is swapped in at the end. Exactly how safe depends on the filesystem
 underneath. Where hard links are available it uses them. Where they are not,
 it writes one file, *upgrade_in_progress.json*, recording the moves, and an
-interrupted upgrade resumes from it while an aborted one reverts. And where atomic move is
-unavailable it refuses to run at all rather than risk a half-moved world.
+upgrade cut short by a crash resumes from it the next time the world is
+opened, while one that fails on an error tries to move its files back. And where atomic move is
+unavailable it stops before the swap rather than risk a half-moved world.
 
 The client does not grey out a world that needs the upgrade — it relabels
 the button. `LevelSummary.primaryActionMessage` turns Play into *Upgrade and
@@ -126,15 +129,15 @@ carries the backend name and the reason a backend failed — see
 [Blaze3D](../rendering/blaze3d.md)), and four opt-in ones covering
 performance metrics, world load times, advancements and game load times.
 `TelemetryProperty` is the vocabulary; each property carries both an
-internal name and a different export key.
+internal name and an export key.
 
-Opting out is two-tier and neither tier is a plain checkbox.
+Opting out is two-tier, and the game controls only one of the tiers.
 `Minecraft.allowsTelemetry` reads an *account-level* flag the game only
 reports; the in-game control only chooses whether the four opt-in events
 are sent, and is only offered when the account carries the flag that allows
 it. Everything sent is **also written locally** as a JSON event log with a
-seven-day expiry — and the send is nested *inside* the log write, so a
-failed log suppresses the send. A player can read their own outgoing
+seven-day expiry — and the send waits on the log opening, so a log that
+cannot be opened suppresses the send. A player can read their own outgoing
 telemetry, though not in the game: the telemetry screen renders the
 *catalogue* of event types and their properties, and a button next to it
 opens the log directory in the platform's file manager.
@@ -149,15 +152,14 @@ subpackages of it, *jfr* and *metrics*.
 
 The **tick profiler** is the familiar one: `Profiler` is a thread-local
 holder of a `ProfilerFiller`, `ActiveProfiler` records the push/pop tree of
-named sections that every page in this book quotes, and `/debug start`
-drives it.
+named sections that pages in this book quote, and `/perf` and the client's
+F3 profiler chart drive it.
 
 **Tracy** is the surprise, and it is one class bridging out to Mojang's
 Tracy binding. `TracyZoneFiller` implements the same interface, and
 `Profiler.get` falls back to the Tracy filler rather than the inactive one
 when Tracy is available — and `Profiler.decorateFiller` *combines* the two,
-so an attached Tracy build and a running `/debug start` both see every
-section. With a Tracy build attached, every profiler section in the game
+so an attached Tracy build and a running `/perf` both see every section. With a Tracy build attached, every profiler section in the game
 streams out with no command run. Tracy reaches outside this package too,
 into Blaze3D's frame capture, into the GPU abstraction's `TracyGpuProfiler`
 and into the executor wrappers.
@@ -187,8 +189,8 @@ forty-character alphanumeric secret, generating one if absent.
 What it exposes is the administrator's surface, not the game's: allow-list,
 bans and IP bans, players and kicks, operators, game rules, server status,
 save and stop, system messages, and a family of live server settings —
-including the idle-pause window, whose actual behaviour is
-[the server tick](../server/server-tick.md#an-empty-server-stops-ticking)'s,
+including the idle-pause window, whose behaviour belongs to
+[the server tick](../server/server-tick.md#an-empty-server-stops-ticking),
 because a dedicated server pauses too.
 Implementations sit behind service interfaces so the wire layer never
 touches the server object directly, and an executor service marshals calls
@@ -207,8 +209,8 @@ Start at `JsonRpc`, `ManagementServer`.
 ## RCON, query, and the pre-1.7 ping that removes itself
 
 **`net/minecraft/server/rcon`** is seven classes of pre-Netty blocking
-socket code on its own threads. `RconThread` speaks Valve's Source RCON
-framing; commands execute as a `RconConsoleSource`, a command source that
+socket code on its own threads. `RconThread` accepts the connections and
+`RconClient` speaks Valve's Source RCON framing; commands execute as a `RconConsoleSource`, a command source that
 accumulates output into a string rather than a chat feed
 ([Brigadier and commands](../commands/brigadier-and-commands.md)).
 `QueryThreadGs4` speaks the GameSpy4 UDP query protocol with a
@@ -231,9 +233,10 @@ more lines than the whole packet catalogue in `network/protocol`. Roughly
 sixty per cent is screens and the records behind them — subscriptions, world
 slots, templates, invites, backups, minigames, upload and download — and the
 rest is a task framework, the world-upload pipeline and the HTTP layer, a
-list of REST paths with a small request wrapper. Three classes and a
-*package-info.java* in `net/minecraft/realms` are the only part of vanilla
-the Realms UI extends.
+list of REST paths with a small request wrapper. `net/minecraft/realms` is
+three classes and a *package-info.java* vanilla keeps for Realms, `RealmsScreen`
+among them, the base the Realms screens extend; beyond it the Realms UI extends
+ordinary vanilla screens and widgets.
 
 Out of scope because it is a service client: its behaviour is defined by a
 server this book cannot read. One fact anyway. The environment is chosen
@@ -266,8 +269,8 @@ is how the name is parsed).
 
 **The recipe book** is the second concern, and it is in this package for
 historical reasons rather than architectural ones — `RecipeBook`,
-`RecipeBookSettings` and `ServerRecipeBook` are not skipped, they are
-[recipes](../items/recipes.md)', with [advancements](../commands/advancements.md)
+`RecipeBookSettings` and `ServerRecipeBook` are not skipped, they belong to
+[recipes](../items/recipes.md), with [advancements](../commands/advancements.md)
 reaching in from the other side. The address is the only thing surprising
 about them.
 
@@ -292,12 +295,13 @@ form** (water, lava, wall torches, piston heads, wall signs), `ItemIds` the
 items with no block, and `BlockItemIds` — seven times `BlockIds` and not
 quite twice `ItemIds` — the pairs. Look for stone in `BlockIds` and it is not there. They exist to break
 a class-initialisation cycle: exactly **twelve** files outside the package
-name it, and five of them are the ones that need to name a block or item
+name it, and four of them are the ones that need to name a block or item
 *before* the block and item classes are loaded — `Blocks` and `Items`
-themselves, `GrassBlock` and `MyceliumBlock`, which name another block
-during that initialisation, and `PotDecorations` beside them. The other
-seven are data generators that work in keys: the five tag providers and two
-feature bootstraps, `AquaticFeatures` and `NetherFeatures`. A resource key is
+themselves, and `GrassBlock` and `MyceliumBlock`, which name another block
+during that initialisation — while `PotDecorations` looks its brick up by key.
+The other seven are data generators that work in keys: four tag providers, a
+tag appender and two feature bootstraps, `AquaticFeatures` and
+`NetherFeatures`. A resource key is
 a registry plus an [identifier](../foundations/identifiers-and-registries.md), so it can be
 built with nothing loaded. Practically, it is the canonical machine-readable
 list of *block and item* ids, and a better starting point than the block and
@@ -310,13 +314,14 @@ atlases live outside the package, in the trees they belong to.
 Most of **`net/minecraft/data`** is a build-time program: a second entry
 point with its own options, a generator that groups providers into packs,
 and a hash cache that skips unchanged files. `net/minecraft/client/data` is
-its client half, generating block and item models and the atlas definitions.
+its client half, generating block and item models, the atlas definitions,
+equipment assets and waypoint styles.
 
 The significance is a genuine paradox worth stating plainly. **Vanilla's own
-content is a data pack.** `net/minecraft/data/worldgen` is the entire
+content is a data pack.** `net/minecraft/data/worldgen` is most of the
 vanilla worldgen data pack written as Java — the biome feature lists, the
-material rules, the noise settings, the carvers, the jigsaw pools, the
-structures and structure sets, the processor lists — and the loot, recipe,
+material rules, the carvers, the jigsaw pools, the structures and structure
+sets, the processor lists — and the loot, recipe,
 tag and advancement packages do the same for their domains, all serialised
 through the *same* codecs the game uses to read a pack.
 
@@ -334,8 +339,8 @@ classes of it.** Three kinds of exception:
   the atlas manager, the map, sky, painting and particle renderers, and by a
   chat component. Nothing build-time about it.
 - **The bootstrap interface itself.** `BootstrapContext` — in
-  `net/minecraft/data/worldgen` — is what every vanilla registry bootstrap in
-  the game is written against, from damage types and enchantments to chat
+  `net/minecraft/data/worldgen` — is what every vanilla data-pack registry's
+  bootstrap is written against, from damage types and enchantments to chat
   types, dialogs and world clocks. It is the most-imported type in the
   package by a wide margin.
 - **Constants and math the running game calls.** `Blocks` itself names
@@ -346,7 +351,7 @@ classes of it.** Three kinds of exception:
   defaults to a `Pools` key; `NoiseRouterData` and `NoiseGeneratorSettings`,
   both shipped worldgen classes, are compiled against `TerrainProvider` and the
   material rules in `net/minecraft/data/worldgen/material`; and the F3 screen's
-  biome line calls `NoiseRouterData.peaksAndValleys`, one line that delegates
+  biome-builder line calls `NoiseRouterData.peaksAndValleys`, one line that delegates
   straight into `TerrainProvider` ([density functions](../worldgen/density-functions.md)).
 
 Vanilla's density functions and noise settings still reach the running game
@@ -358,13 +363,15 @@ itself reads the generated files out of the built-in pack. Editing
 
 So `net/minecraft/data` holds a build-time program *and* a handful of tables
 and functions the shipped game compiles against and executes. The generator
-half really is inert at runtime, and it is the half worth reading — it is
+half is inert at runtime but for one static helper `StructureTemplateManager`
+borrows from `NbtToSnbt`, and it is the half worth reading — it is
 the fastest way to understand what a vanilla biome or structure declares,
 because it is typed and cross-referenced where the JSON is not, a point
 [biomes](../worldgen/biomes.md) and
 [structure placement](../worldgen/structure-placement.md) both depend on. And the report
-providers are how you get machine-readable dumps of exactly the tables this
-book's own [reference layer](../../reference/README.md) covers.
+providers are how you get machine-readable dumps of the registries and the
+packets, two of the tables this book's own
+[reference layer](../../reference/README.md) covers.
 
 ## The audio backend lives in Blaze3D, and is not skipped
 
@@ -420,11 +427,11 @@ miss it, not a shrug.
 | what | size | why | what carries it instead |
 |---|---|---|---|
 | `com/mojang/renderpearl/backend/vulkan` | 33 classes, 7,387 lines | a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
-| `net/minecraft/client/data` | 28 classes, 6,189 lines | build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
+| `net/minecraft/client/data` | 28 classes, 6,189 lines | build-time model, atlas, equipment and waypoint generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and in the list of *main* methods on [anatomy](anatomy.md#from-main-to-a-world) |
 | the catalogues | ~140 entity models, ~80 particles, 102 render states, 50 render layers, 16 animation definitions, 56 of 58 worldgen features, 57 tree kits, the entity sub-predicates | each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
 | `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | a few classes each | no mechanism a lecture needs | — |
 | `net/minecraft/data/worldgen` as content | 64 classes, 6,016 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
-| `net/minecraft/client/animation`'s keyframe definitions | 16 of its 23 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 509 lines and 674 KB, one file's longest line thirty thousand characters, because the decompiler renders each animation as one builder chain | [entity rendering](../rendering/entity-rendering.md) has the five framework classes |
+| `net/minecraft/client/animation`'s keyframe definitions | 16 of its 23 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 509 lines and 674 KB, one file's longest line thirty thousand characters, because the decompiler renders each animation as one builder chain | [entity rendering](../rendering/entity-rendering.md) has the framework |
 
 Two things inside `com/mojang/renderpearl/backend/vulkan` are named before
 the decline rather than after it: `DestructionQueue`, the deferred-free
@@ -440,12 +447,12 @@ whole reason one shader source can feed two backends. The interiors of
 
 **Named, and not yet written.** These are real systems with real lectures
 in them, and no ruling above covers them: the carver tunnel walk; the dragon
-fight (`EnderDragonFight`); the advancements screen; `client/multiplayer`'s
-joining-a-server tail; and three corners of the pack system — the
+fight (`EnderDragonFight`); `client/multiplayer`'s joining-a-server tail; and
+two corners of the pack system that
+[the resource system](../foundations/resource-system.md) names without teaching — the
 server-resource-pack prompt and download flow in `client/resources/server`,
-the *linkfs* synthetic file system that presents the launcher's hash-named
-asset files as the one tree their index describes, and `DownloadQueue` with
-`DownloadCacheCleaner`, the download queue and its cache eviction. They are
+and the *linkfs* synthetic file system that presents the launcher's hash-named
+asset files as the one tree their index describes. They are
 named here so that a reader who wants one knows the book knows it is
 missing, and knows where to start.
 

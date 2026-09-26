@@ -81,9 +81,9 @@ TREE_MAX_W = 1092  # the site's reading column: a tree wider than this is shrunk
 # way when Part I read 7 classes here and 6 there. The counts here are *files*,
 # the convention systems/anatomy/what-this-book-skips.md states for its own
 # table; pass5_coverage.py drops package-info.java, because its population is
-# what a page could name and a package-info is not nameable. Every part with a
-# package-info.java in one of its directories therefore reads one class and a
-# few lines larger here. Keep both, and say which you mean.
+# what a page could name and a package-info is not nameable. Every part therefore
+# reads larger here by one class and four lines for each package-info.java in its
+# directories, not one in all (pass 8, session B). Keep both, and say which you mean.
 PARTS = (
     ("anatomy", "I", "Anatomy",
      ("net/minecraft/client/main", "net/minecraft/client/Minecraft.java",
@@ -669,7 +669,7 @@ def _svg_tree_once(root, children, counts, max_depth, row_h, col_w, fold_names):
         xs[d] = x
         x += max(depth_w[d], col_w) if d < max(depth_w) else depth_w[d]
     W, H = int(x) + 4, len(rows) * row_h + 8
-    out = svg_open(W, H, f"The class hierarchy under {root[1]}: each node shows how many types descend from it")
+    out = svg_open(W, H, f"The class hierarchy under {root[1]}: each branch shows how many types descend from it")
     for d, y, label, cls, p in nodes:
         px, py = xs[d], y + 12
         if p is not None:

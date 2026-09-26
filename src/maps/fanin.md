@@ -4,9 +4,9 @@
 
 One file in six imports `BlockPos`. That is the least surprising fact on
 this page; the next one is not. The chart counts Mojang imports only —
-*net.minecraft* and *com.mojang* — because the JDK's `List` and `Optional`
-and the nullability annotation outrank everything on it and say nothing
-about the game. Under that rule the second most-imported type is not
+*net.minecraft* and *com.mojang* — because the JDK's `List` and the
+nullability annotation outrank everything on it and say nothing about the
+game. Under that rule the second most-imported type is not
 Minecraft's: it is `Codec`, from Mojang's DataFixerUpper
 library, imported by 943 files, with `MapCodec` sixth and
 `RecordCodecBuilder` seventh. Three of the seven classes the game most depends
@@ -16,12 +16,12 @@ see.
 
 <figure class="map">
 {{#include ../generated/fanin.svg}}
-<figcaption>The thirty most-imported Mojang classes of 26.3; JDK and annotation imports are not counted. Blue ships in both jars, orange is client-only, grey is a library outside the decompile. Click to enlarge.</figcaption>
+<figcaption>The thirty most-imported Mojang classes of 26.3, counting only imports from Mojang's own packages. Blue ships in both jars and grey is a library outside the decompile; none of the thirty is client-only. Click to enlarge.</figcaption>
 </figure>
 
 ## Seven ideas, and where the book teaches them
 
-The hubs are not thirty ideas; they are seven. The table below groups them,
+The hubs are not thirty ideas; twenty-five of them are seven. The table below groups them,
 reading down the sixty rows rather than the thirty the figure draws, so that a
 family is not broken in half by the cut-off — `ByteBufCodecs` and `PacketType`
 are the wire's vocabulary whether or not they clear it. So the table holds
@@ -32,17 +32,17 @@ thirty it leaves out are the two paragraphs after it, two and three.
 Part II teaches three of the seven, Reference two, Part IX one, and the
 seventh — the world's nouns — is the rest of the book. That is the more useful
 fact than *Part II teaches the vocabulary*: the classes a reader must know
-before Part IV are not one part's worth.
+are not one part's worth.
 
 | idea | the hubs | where the book teaches it |
 |---|---|---|
 | a position | `BlockPos`, `Vec3`, `Direction`, `Mth` | [Math and primitives](../reference/math-and-primitives.md#the-coordinate-spaces) |
 | a name and a registry | `Identifier`, `ResourceKey`, `Registries`, `BuiltInRegistries`, `Holder` | [Identifiers and registries](../systems/foundations/identifiers-and-registries.md) |
-| a shape on disk | `Codec`, `MapCodec`, `RecordCodecBuilder` | [Codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md) |
+| a shape on disk | `Codec`, `MapCodec`, `RecordCodecBuilder` | [Codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md), and for `MapCodec` [the data-driven type pattern](../systems/foundations/data-driven-types.md) |
 | a shape on the wire | `StreamCodec`, `ByteBufCodecs`, `RegistryFriendlyByteBuf`, `Packet`, `PacketType` | [Packets and stream codecs](../systems/networking/packets-and-stream-codecs.md) |
 | text | `Component` | [Text components](../systems/foundations/text-components.md) |
 | chance | `RandomSource` | [Math and primitives](../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither) |
-| the world's nouns | `Level`, `ServerLevel`, `BlockState`, `Block`, `Blocks`, `Entity`, `LivingEntity`, `Player`, `EntityType`, `ItemStack`, `SoundEvents`, `SoundEvent`, `DataComponents` | Parts IV to VIII |
+| the world's nouns | `Level`, `ServerLevel`, `BlockState`, `Block`, `Blocks`, `Entity`, `LivingEntity`, `Player`, `EntityType`, `ItemStack`, `SoundEvents`, `SoundEvent`, `DataComponents` | Parts II to X |
 
 Two of the thirty belong to no family and get no row above, and neither
 does the first class after them; each is worth a look. `Minecraft`
@@ -56,9 +56,9 @@ look: `ServerLevel` (735) is imported by nearly as many files as `Level`
 (761), because most code that touches the world knows it is on the server and
 says so in its types.
 
-The last three of the thirty are the ones that are not vocabulary at all.
-*LogUtils* (488) is Mojang's logging library, the one line at the top of nearly
-every class that does anything. `Util` (457) is where the executors and the
+The remaining three of the thirty have no row either.
+*LogUtils* (488) is Mojang's logging library, the one line at the top of a
+class that keeps a logger. `Util` (457) is where the executors and the
 static odds and ends live ([threads](../reference/threads.md#the-threads-a-lecture-leans-on)) —
 a hub because it is where the unclassifiable went, not because it is an idea.
 And `BlockBehaviour` (313) is the world's nouns seen one class higher — the

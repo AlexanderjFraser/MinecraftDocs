@@ -831,7 +831,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   empty component in a packet that still goes) — but the two now link each
   other, and `damage-and-death` gained the fall-attribution rule
   `text-components` was citing without an owner.
-- **`codecs-nbt-json` explains five mechanisms other parts own**: the wire
+- ~~**`codecs-nbt-json` explains five mechanisms other parts own**: the wire
   buffer, region compression, the `BlockEntity` save shells, the serverbound
   fence and the trusted-tag constants. Session B left them: each is one
   column of the page's own four-path table, and cutting them needs the
@@ -843,7 +843,7 @@ the corrections it made are in [pass9.md](pass9.md).*
   the serverbound path is the only one of its four where a codec is run for
   its errors rather than its output. The* **wire buffer** *stays: it is a
   column of the comparison and the page states it as a contrast, not an
-  explanation. Two left, for D and G.*
+  explanation. Two left, for D and G.*~~ *Second edition: the two left — region compression and the `BlockEntity` save shells — would move to their owners' pages, a restructure across pages (R9); both were checked on this page this session — pass 8, session B.*
 - ~~**`reference/registries` says 153 registry keys and
   `identifiers-and-registries` says 148.** Two populations or one wrong
   number; session B did not re-derive it because the Reference page is
@@ -927,29 +927,29 @@ the corrections it made are in [pass9.md](pass9.md).*
   an oversight: they belong to *The death screen, and what the client does alone*,
   which is a **comparison** — what `LivingEntity.die` does against what
   `ServerPlayer.die` does instead — and F10 says a comparison is a table. [kind=record]
-- **Three classes now have two lanes on purpose, up from one.** `SAB` and `CSED`
+- ~~**Three classes now have two lanes on purpose, up from one.** `SAB` and `CSED`
   joined `RCPL`, both for the same reason: a figure showing both machines' copy of
   one object, with a `box` per machine saying which is which. Session O should ask
-  whether that is a pattern worth a key column rather than a paragraph. [kind=figure]
+  whether that is a pattern worth a key column rather than a paragraph. [kind=figure]~~ *Overtaken: pass 7 wrote the pattern into `TEMPLATE.md`'s lane key as a paragraph, which names the four classes that have two lanes on purpose (`RCPL`, `SAB`, `CSED`, `SConn`) and why each does — pass 8, session B.*
 
 ### For pass 8 (the voice)
 
-- `identifiers-and-registries`' hook says the wire id "is a line number",
+- ~~`identifiers-and-registries`' hook says the wire id "is a line number",
   which is a metaphor for the ordinal of the registration statement and false
   read literally. The lecture unpacks it in the next two sentences; the
   landing-page teaser and the verified line do not, and session B left all
   three alone because the metaphor is the page's best sentence. [kind=voice]
-  (This restates an open session-A entry; both should be settled together.)
-- *the two tag tables* survives as a cast-row phrase on
+  (This restates an open session-A entry; both should be settled together.)~~ *Done with the unit at pass5.md:2246, which it restates: the teaser now says it literally, and the hook and the verified line keep the metaphor the next sentence unpacks — pass 8, session B.*
+- ~~*the two tag tables* survives as a cast-row phrase on
   `identifiers-and-registries` after the explanation moved to `tags`. Check
-  the phrase still earns its place. [kind=voice]
+  the phrase still earns its place. [kind=voice]~~ *Ruled: the phrase stays — the cast row lists what `MappedRegistry` owns, and the two tag tables are its fields `MappedRegistry.frozenTags` and `MappedRegistry.allTags`, which the tags page's cast names and explains — pass 8, session B.*
 
 ### Coverage routed, not acted on
 
-- `core/dispenser` (13 classes, 1,090 lines) is in Part II's packages by the
+- ~~`core/dispenser` (13 classes, 1,090 lines) is in Part II's packages by the
   atlas's `PARTS` mapping and is Part V's subject. Either the mapping moves it
   or `blocks/` names the family. **Session E**, with the mapping change if it
-  wants one. [kind=book]
+  wants one. [kind=book]~~ *Ruled: the mapping keeps `core/dispenser` in Part II, and the Foundations landing page says why the book names it nowhere — what a dispenser is belongs to Part V (`DispenserBlock` is on `blocks/pistons-and-block-events`) and what each behaviour does is a catalogue; a grep of the pages finds none of the package's thirteen classes named — pass 8, session B.*
 - ~~`util/worldupdate` (5 classes, 736 lines — `RegionStorageUpgrader`,
   `UpgradeProgress`) is named nowhere in the book. It is the *Optimize World*
   button, and it is the last sizeable unowned mechanism in Part II's packages.
@@ -1078,9 +1078,9 @@ looser or more repetitive than it should be.
   `StructureCheck`, `Input`. The verifier now prints the list on every run. Pass
   5 should either disambiguate the pages or teach the resolver which file a page
   means.
-- **`map_source.py`'s line counts are 18.4% blank lines** — 132,608 of 719,302
+- ~~**`map_source.py`'s line counts are 18.4% blank lines** — 132,608 of 719,302
   — and neither the tool's docstring nor `src/maps/README.md` says so. "719k
-  lines" is 587k non-blank. One clause on the atlas's counting rule fixes it. [kind=voice]
+  lines" is 587k non-blank. One clause on the atlas's counting rule fixes it. [kind=voice]~~ *Done: the atlas's counting table now says a line is one line of the decompiled file, blank lines included (`tools/map_source.py` counts newlines) — pass 8, session B.*
 - ~~**`TEMPLATE.md:112` is stricter than mermaid.** A `;` and a `#` in a
   *flowchart* label both parse and render correctly under 11.6.0; the rule that
   forbids them everywhere is true only of sequence diagrams (`#`) and state
@@ -2191,17 +2191,17 @@ instead ("`FallingBlockEntity` is the one place that …").
 
 ## Session B — Parts I and II (pass 4) *(2026-09-04)*
 
-Wording debt and structural findings from Part I and Part II's fact-check.
-Every factual fix is in `docs/pass4.md`; nothing below was acted on. [kind=record]
+~~Wording debt and structural findings from Part I and Part II's fact-check.
+Every factual fix is in `docs/pass4.md`; nothing below was acted on. [kind=record]~~ *Record: the preface to the units under it, each settled on its own line — pass 8, session B.*
 
-**Wording to re-read** (a hook or an argument was rewritten around a
-correction):
+~~**Wording to re-read** (a hook or an argument was rewritten around a
+correction):~~ *Done: every item under it is settled on its own line — pass 8, session B.*
 
-- `src/systems/anatomy/README.md` — the opening hook and the first *Watch in
+- ~~`src/systems/anatomy/README.md` — the opening hook and the first *Watch in
   this order* teaser were both rewritten mid-sentence. The hook now says
   "every sequence diagram … lanes that name classes and assume you know
   which thread each class is on", which is true and two clauses longer than
-  the sentence it replaced.
+  the sentence it replaced.~~ *Overtaken: the sentence it names is gone; the landing page's reason to read first is now one sentence about lanes, read this session against the lane key in `TEMPLATE.md` (ten lanes that are not a class), and the first teaser in *watch in this order* was corrected with the page it summarises — pass 8, session B.*
 - ~~`src/systems/anatomy/anatomy.md` — four paragraphs grew a qualifying
   clause each: the bootstrap ordering, the crash relay, the singleplayer
   differences and *Everything else that matters is serialised onto*. The
@@ -2209,24 +2209,24 @@ correction):
   and carries three class names it did not before.~~ **done, pass 6 session B**
   — the crash relay was the page's own mechanism, not a consequence, and it is
   now a section of its own; the other three clauses stand. [kind=lecture]
-- `src/systems/foundations/identifiers-and-registries.md` — the opening
+- ~~`src/systems/foundations/identifiers-and-registries.md` — the opening
   paragraph's last sentence was the hook's causal clause and is now two
-  sentences. It is true; it no longer lands.
-- `src/systems/foundations/tags.md` — the hook's first sentence now carries
+  sentences. It is true; it no longer lands.~~ *Second edition: to end the opening on its hook, its last two sentences (the dynamic registries' numbering, the client that never derives one) would move to the body, which already says both — a restructure, not a sentence (R9); every sentence in it was checked this session — pass 8, session B.*
+- ~~`src/systems/foundations/tags.md` — the hook's first sentence now carries
   a parenthetical about component prototypes before it reaches
   `Registry.PendingTags`, which is the thing the page is about. Consider
   moving the second swap to *Prepared, then applied* and leaving the hook a
-  single clause.
-- `src/systems/foundations/data-driven-types.md` — the *Fifty-six of them*
+  single clause.~~ *Overtaken: the hook no longer carries the parenthetical or names `Registry.PendingTags`; it ends on the swap being safe for a reason the page gives, and its first sentence was corrected this session to the goal's two tests, leaves by class or a log by tag (`Parrot.java`:540) — pass 8, session B.*
+- ~~`src/systems/foundations/data-driven-types.md` — the *Fifty-six of them*
   paragraph gained the criterion's two exclusions and is now the densest
   paragraph on the page. The number is right; the sentence explaining it
-  reads like a footnote promoted.
-- `src/systems/foundations/codecs-nbt-json.md` — the *homogeneous numeric
+  reads like a footnote promoted.~~ *Done: the criterion now leads the paragraph — a registry that holds a kind's codec, or a type that carries one, for a codec to dispatch to from a field's value — and the exclusions follow it; the fifty-six were re-derived this session — pass 8, session B.*
+- ~~`src/systems/foundations/codecs-nbt-json.md` — the *homogeneous numeric
   list* sub-section was inverted, so its bolded lead sentence is now a
   double negative ("A numeric array stays an array, but nothing turns a list
-  into one"). Worth one more pass. [kind=voice]
+  into one"). Worth one more pass. [kind=voice]~~ *Ruled: read again under V2 and kept — it is a contrast, not a double negative, and the paragraph is its proof: an array appended to stays an array, and a fresh list never becomes one (`NbtOps.java`:697–730) — pass 8, session B.*
 
-**Structural findings**, logged and not acted on:
+~~**Structural findings**, logged and not acted on:~~ *Done: every item under it is settled — the one left open, the wire id's metaphor, below — pass 8, session B.*
 
 - ~~**`anatomy/README.md`'s root figure is not homogeneous.** Four of its five
   edges point at *parts*; the fifth points at a *page* of Part I (*what this
@@ -2243,12 +2243,12 @@ correction):
   **Done, session B** — the hook now contrasts the two *loops* rather than
   ticking against drawing: "a server whose whole life is a tick loop, and a
   client whose life is a frame loop with ticks inside it".
-- **`identifiers-and-registries`'s "the wire id is the line number".** True
+- ~~**`identifiers-and-registries`'s "the wire id is the line number".** True
   as a metaphor for the ordinal of the registration statement and false
   read literally (`Items.DIAMOND_SWORD` is at `Items.java:993` and its raw
   id is nowhere near 993). The lecture unpacks it in the next two sentences;
   the landing-page teaser and the verified line do not. Decide whether the
-  teaser keeps the metaphor.
+  teaser keeps the metaphor.~~ *Done: the landing page's teaser now says it without the metaphor, the sword's place in the order the items were registered; the verified line and the page's hook keep it, and the hook's next sentence unpacks it (`MappedRegistry.register` appends, and the id is the position) — pass 8, session B.*
 - ~~**`reference/class-index.md` is still blind to diagrams** (session A's
   finding) and Parts I and II are among the worst affected: every lane in
   the anatomy, tags and data-components figures is a `participant X as
@@ -2286,8 +2286,8 @@ correction):
   sentences of mechanism to one sentence and an anchored link (the mechanism
   is that page's), and the count was wrong anyway: at 200 words it was third,
   behind `networking/README` at 222 and `blocks/README` at 210.**
-- `src/maps/fanin.md` — the hook now spends three lines on what the chart does
-  not count before it gets to the surprise.
+- ~~`src/maps/fanin.md` — the hook now spends three lines on what the chart does
+  not count before it gets to the surprise.~~ *Ruled: the counting rule stays before the surprise, because without it the surprise is false — the JDK's `List` and the nullability annotation outrank `Codec` — pass 8, session B.*
 - ~~`src/maps/packages.md` — the `net/minecraft/data` clause became a
   four-line aside with a cross-link.~~ **Struck as a record rather than a task,
   session N** — it says what session A did, and the aside still reads and still
@@ -2748,7 +2748,7 @@ was cut or moved, and why)*
   tickets page says "graph" and "tracker" for the same object.
 
 
-- **2026-09-02, session C — Parts I and II.** Cuts are names, not claims, [kind=record]
+- ~~**2026-09-02, session C — Parts I and II.** Cuts are names, not claims, [kind=record]
   unless marked; the class index still answers "where" for every name here.
   **`anatomy`** [kind=record]: the eleven-row thread table and the situational-threads
   paragraph moved to `reference/threads.md` (already there, verified);
@@ -2805,9 +2805,9 @@ was cut or moved, and why)*
   opening paragraph on a bold or dashed sentence — one voice, seven times;
   the comparison and pattern pages carry long table cells that pass 5 may
   want as prose; `what-this-book-skips` still says "the part that
-  surprises" where it used to say "the fact worth knowing".
+  surprises" where it used to say "the fact worth knowing".~~ *Record: pass 5 session C's cut log for Parts I and II, and every line it forwarded has landed — the three enchanting facts are on `items/enchanting` (the absent component, the lapis and `CriteriaTriggers.ENCHANTED_ITEM`, `/enchant`'s checks), `MappedRegistry.byValue` was restored, and `what-this-book-skips` no longer says *the part that surprises* — pass 8, session B.*
 
-- **2026-09-02, session B — maps.** The four atlas pages and the atlas
+- ~~**2026-09-02, session B — maps.** The four atlas pages and the atlas
   front page are new prose and carry the em-dash chains the corpus is
   prone to; `packages.md`'s part → packages table will duplicate the
   landing pages once all thirteen exist and is a candidate cut then;
@@ -2815,7 +2815,7 @@ was cut or moved, and why)*
   two-sentence section and should either grow a figure or fold into the
   tables' preamble; "the number" device is used once (`biggest.md`) —
   check it reads as intended. Nothing was cut from the old maps: the
-  tables are all still there under the figures, at the same URLs.
+  tables are all still there under the figures, at the same URLs.~~ *Done and ruled: `pass8_voice.py` counts no em-dash chain left on the atlas pages; the number device on `maps/biggest` is V9's form now; the part → packages table stays, because the landing pages quote their rows from it rather than duplicate it; and `maps/hierarchy`'s short section, which a figure or a fold would change, is second edition (R9) — pass 8, session B.*
 
 - **2026-09-03, session G — Part VI Entities.** *Cuts, all of them moves or [kind=record]
   logged losses.*
@@ -5180,11 +5180,11 @@ for other passes and the cuts it logged.*
   the one they read most slowly; it is a pacing problem, not a content one,
   and the arithmetic checks out (13,563.7 above the horizon against 10,436.3,
   the slope 0.666 of linear at noon and 1.190 at midnight). [kind=voice]
-- **`Registries.X` against `BuiltInRegistries.X`** — the exemplar names the
+- ~~**`Registries.X` against `BuiltInRegistries.X`** — the exemplar names the
   same registry both ways, two hundred lines apart, and the book never says
   what the difference is. Corpus-wide: this is a glossary headword or a
   sentence in `identifiers-and-registries`, and pass 8's terminology sweep
-  should decide which. [kind=voice]
+  should decide which. [kind=voice]~~ *Done: `identifiers-and-registries` says it in its first paragraph and again at the keys — `Registries.ITEM` is the registry's `ResourceKey`, `BuiltInRegistries.ITEM` the table the key finds — pass 8, session B.*
 - **"game time" against a clock's total ticks** — the exemplar's wire section
   carries both in one packet and never distinguishes them, after a page spent
   arguing that day time lives in a clock. Two names for two things, one of
@@ -5192,9 +5192,9 @@ for other passes and the cuts it logged.*
 
 ## Session B — Parts I · Anatomy and II · Foundations (pass 6) *(2026-09-10)*
 
-Eleven readers, one per page, under the Part 1 brief. What the reading raised
+~~Eleven readers, one per page, under the Part 1 brief. What the reading raised
 that this session did not act on, tagged by kind. The corrections it did act
-on are in [pass9.md](pass9.md). [kind=record]
+on are in [pass9.md](pass9.md). [kind=record]~~ *Record: the preface to the units under it, each settled on its own line — pass 8, session B.*
 
 ### For pass 7 (the figures)
 
@@ -5208,11 +5208,11 @@ on are in [pass9.md](pass9.md). [kind=record]
   `processQueuedPackets`, `runAllTasks`, `tick` and `renderFrame`**; the
   prose says all four happen *inside* `runTick`. A nesting drawn as a
   sequence. [kind=figure]~~ — **done, pass 7 session B**: the four calls are inside a subgraph named `Minecraft.runTick`, and the server ring gained the same inner box for `processPacketsAndTick`, which `MinecraftServer.java:1116` shows calling `tickServer`. The wire came out of the figure with it — the two rings are now drawn side by side, at scale 1.
-- **Same figure, the Netty node's two edges are labelled only "a clientbound
+- ~~**Same figure, the Netty node's two edges are labelled only "a clientbound
   packet" / "a serverbound packet"**, so the figure reads as though every
   packet hops threads; the prose narrows it to handlers that touch game
   state, and the thread table excludes handshake and login entirely.
-  [kind=figure]
+  [kind=figure]~~ *Overtaken: pass 7 session B drew the two loops side by side without the wire (the unit above), so the figure has no Netty node; the Netty hop is `anatomy`'s thread table and prose, which name the handlers that hop — pass 8, session B.*
 - ~~**`tags`' sequence diagram carries six labels that are whole sentences**
   (the `TagLoader.load` and `TagLoader.build` arrows, and four `Note over`
   bars); the reader lost which lane a label was on before reaching its end.
@@ -5238,48 +5238,48 @@ on are in [pass9.md](pass9.md). [kind=record]
 
 ### For pass 8 (the voice)
 
-- **The bare possessive on a page title** — *"is [items and stacks](…)'"*,
+- ~~**The bare possessive on a page title** — *"is [items and stacks](…)'"*,
   *"is [the server tick](…)'s"*. Three readers across three pages read the
   trailing apostrophe as a typo before parsing the construction, and one
   reported it as an error. It is the citation form pass 5 settled, so this is
   a spelling question for the terminology sweep, not a structural one.
-  [kind=voice]
-- **"the shared worker pool"** — *shared* with what? Four pages use the
-  phrase and none says. [kind=voice]
-- **`resource-system`'s three words for one thing** — `SimpleReloadInstance`
+  [kind=voice]~~ *Ruled: V8 — the possessive never hangs on a link (`TEMPLATE.md`'s *Voice*); on Parts I and II and the Maps none is left, eight rewritten as *belongs to* this session — pass 8, session B.*
+- ~~**"the shared worker pool"** — *shared* with what? Four pages use the
+  phrase and none says. [kind=voice]~~ *Ruled: V7 — *shared* only where the sentence says with what (`TEMPLATE.md`'s *Voice*, the terms table); on Parts I and II the one use left, the Anatomy landing page's, names the three that share it — pass 8, session B.*
+- ~~**`resource-system`'s three words for one thing** — `SimpleReloadInstance`
   in the cast, `ReloadInstance` in the body, `ProfiledReloadInstance` in the
-  `/reload` table; the page never says which is the interface. [kind=voice]
-- **`resource-system`'s four inversions in three sentences** —
+  `/reload` table; the page never says which is the interface. [kind=voice]~~ *Done: the page now says, where the `ReloadInstance` first appears, that it is a `SimpleReloadInstance` or, when the logger is at debug, its subclass `ProfiledReloadInstance` (`SimpleReloadInstance.java`:16, :128–130; `ProfiledReloadInstance.java`:17) — pass 8, session B.*
+- ~~**`resource-system`'s four inversions in three sentences** —
   `Pack.Position.BOTTOM` inserts at the front, `TOP` at the back, the last
   pack wins, higher in the UI means later in the list. The rule the whole
   *Snapshot* section rests on, and the passage the reader was least sure of.
-  [kind=voice]
-- **`identifiers-and-registries`' counts do not reconcile for a reader** —
+  [kind=voice]~~ *Done: the sentence now gives the reader the list's orientation first — it runs from the bottom of the stack to the top — before the two positions and the last-wins rule, which are unchanged — pass 8, session B.*
+- ~~**`identifiers-and-registries`' counts do not reconcile for a reader** —
   148 keys, 147 objects, 153 catalogued, 95 built-in created at class init,
   47 dynamic. The page now explains the first three; 95 + 47 against 148 is
   still an arithmetic a reader will try and fail. Pick the population or drop
-  a number. [kind=voice]
-- **`data-driven-types`' criterion for the fifty-six** — the page states the
+  a number. [kind=voice]~~ *Done by the 26.3 counts the page now states, which reconcile: 156 keys are 155 objects (two keys are one), which are the 95 built-in registries, the 51 world and 1 dimension registries of world load, and the reloadable set of 8 (`Registries.java`, `BuiltInRegistries.java`, `RegistryDataLoader.java`, counted this session) — pass 8, session B.*
+- ~~**`data-driven-types`' criterion for the fifty-six** — the page states the
   exclusions and the reader still could not derive the rule; the sentence
   carries "the value *in the data this book is about*" as its whole bridge.
-  [kind=voice]
-- **"interrupted" against "aborted"** on `what-this-book-skips` — the
+  [kind=voice]~~ *Done: the bridge phrase is gone and the criterion leads the paragraph, a registry holding a kind's codec, or a type that carries one, dispatched to from a field's value — pass 8, session B.*
+- ~~**"interrupted" against "aborted"** on `what-this-book-skips` — the
   filefix sentence turns on a distinction ordinary English does not draw.
-  [kind=voice]
-- **Netty is used as common ground and never glossed** — `anatomy` seven
+  [kind=voice]~~ *Done: the sentence now says what each is — an upgrade stopped by a crash resumes from the file on the next open, one that fails on an error tries to move its files back (`FileFixerUpper.java`:133–139, :343–355) — pass 8, session B.*
+- ~~**Netty is used as common ground and never glossed** — `anatomy` seven
   times, `what-this-book-skips` three, and it is the name of the thing the
   two halves talk over. Part I is where a one-clause gloss would go.
-  [kind=voice]
+  [kind=voice]~~ *Done: the Anatomy landing page, which a reader meets first, glosses it once — Netty is the networking library both halves use — pass 8, session B.*
 
 ### For pass 9 (the fact-check), beyond this session's own claims
 
-- **`codecs-nbt-json`, the four-paths table's *what is carried* row** puts
+- ~~**`codecs-nbt-json`, the four-paths table's *what is carried* row** puts
   four different kinds of answer in four cells (a document, a field order, a
   count of ints, a text form then a tag). Worth a check that each cell is
-  answering the same question. [kind=voice]
-- **`text-components`, `Style.shadowColor`** is described as an integer whose
+  answering the same question. [kind=voice]~~ *Ruled: every cell answers the one question — what the path's payload holds — and they differ because the paths do; each checked this session (`ItemStack.java`:158–163, `HashedPatchMap.java`:17–19) — pass 8, session B.*
+- ~~**`text-components`, `Style.shadowColor`** is described as an integer whose
   absence is `Style.NO_SHADOW` = zero, inside a list of eleven fields
-  introduced as nullable with "null means *inherit*". Does the shadow inherit? [kind=fact]
+  introduced as nullable with "null means *inherit*". Does the shadow inherit? [kind=fact]~~ *Done: yes — a null shadow colour falls through in `Style.applyTo` like every other field, and `Style.withoutShadow` sets an explicit `Style.NO_SHADOW`, zero; the page now says so (`Style.java`:18, :20, :119–121, :270) — pass 8, session B.*
 
 ## Session C — Part III · The server (pass 6) *(2026-09-10)*
 
@@ -6531,7 +6531,7 @@ class implies for later passes.
 
 **Two notes for session O.**
 
-- **[Pass 6's session O did not run; carried to pass 7's session O.]**
+- ~~**[Pass 6's session O did not run; carried to pass 7's session O.]**
   **The frame has no landing-page role to be measured against.**
   `reference/README` and `maps/README` are tier front doors, and A6 covers the
   thirteen part landing pages only. Both readers asked the same question of
@@ -6540,7 +6540,7 @@ class implies for later passes.
   in the opening (nobody arrives here by walking; the sort is for the question
   a catalogue deserves) rather than by adding a routing section. Session O
   should decide whether the two front doors want a stated role in
-  `TEMPLATE.md` the way the thirteen got one. [kind=lecture]
+  `TEMPLATE.md` the way the thirteen got one. [kind=lecture]~~ *Overtaken: ruled by pass 7 session O (pass5.md:7231) — the front doors get no role in `TEMPLATE.md`, and saying so in the opening is the role, which `maps/README`'s opening does (take them in any order) — pass 8, session B.*
 - **`introduction` never said there is a video series.** It says *watched*,
   *viewer*, *the video* and *lecture's notes* throughout and never once states
   the premise; the reader named it the page's largest unstated assumption and
@@ -6631,7 +6631,7 @@ Part 3; these are the pieces of work that ruling created.
   the corpus has at least one more place that wants it (the chunk pipeline's
   workers) — or whether one captioned exception is the right answer.
   [kind=figure]~~ — **done, pass 7 session O**: `par` is a row in the marks table (*two things that genuinely happen at once*), with `loop`, `alt` and `opt` beside it.
-- **The jar treemap cannot carry what `what-this-book-skips` asks of it.** The
+- ~~**The jar treemap cannot carry what `what-this-book-skips` asks of it.** The
   page asks the reader to reconcile fifteen table rows against the map's
   hatched boxes; at the column, eight of the fifteen packages are an unlabelled
   sliver or not separable at all, `com/mojang/realmsclient` — the second-largest
@@ -6640,7 +6640,7 @@ Part 3; these are the pieces of work that ruling created.
   is the atlas's subject and not this page's. Generated by `map_source.py` and
   shared by three pages, so it is the same kind of job as F13's trees and
   belongs with them: session O, or whichever session takes the emitter.
-  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: a treemap that labels fifteen packages at the reading column is new emitter work, a figure no session of the last pass draws (R10) — pass 8, session B.*
 - ~~**Part II's landing figure was `flowchart BT`** — one of the three directions
   F3 rules out — and read bottom-up with its key in the prose above it, which
   is the sentence a picture-first reader skips. Turned `TD` with every arrow
@@ -6650,14 +6650,14 @@ Part 3; these are the pieces of work that ruling created.
   and `worldgen` `TB`), and the thirteen use five directions between them; that
   is session O's set-reading, and this is what one of them looked like fixed.
   [kind=figure]~~ — **done, pass 7 session O**: all thirteen landing figures are `TD` or `LR` now, and the set's grammar is in `TEMPLATE.md`.
-- **`resource-system`'s figure 2 asserted three listeners where the page says
+- ~~**`resource-system`'s figure 2 asserted three listeners where the page says
   twenty.** There was no ellipsis, no "…", nothing in the frame admitting
   seventeen were missing, and a picture-first reader came away believing the
   client has three reload listeners. Fixed with a *seventeen more listeners*
   node. Worth a sweep: the corpus is full of excerpt figures whose prose says
   *some of* afterwards, and the figure is what the reader believes.
-  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
-- **Two sections in Part II asked for a picture and did not get one this
+  [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Done on this page: the figure's *nineteen more listeners* node and its three drawn ones are the page's twenty-two, and its caption now says three of twenty-two; the corpus sweep it asks for is a figure pass's, second edition (R10) — pass 8, session B.*
+- ~~**Two sections in Part II asked for a picture and did not get one this
   session**, both named by their viewer and both real: `resource-system`'s
   *Discover* and *Snapshot* together state seven things about one spatial
   object — the pack stack — with two opposite conventions (list order against
@@ -6665,7 +6665,7 @@ Part 3; these are the pieces of work that ruling created.
   `data-components`' *The prototype, and why it is built at reload* is the
   densest prose on the page with no figure, and wants a timeline with three
   fixed points and one branch. Both are F14 candidates a later session or the
-  second edition can take. [kind=book]
+  second edition can take. [kind=book]~~ *Second edition: two new figures (R10) — pass 8, session B.*
 
 ## Pass 7, session C — Part III · The server *(2026-09-15)*
 
@@ -7113,17 +7113,17 @@ Part 3; these are the pieces of work that ruling created.
   the visible labels of a few small cells (`platform`, `tags`, core's
   *(itself)*). The Realms group had no label at all (its path was wider than
   its box) and now falls back to `realmsclient`. [kind=figure]~~ — **recorded, pass 7 session O**: re-measured, and every generated figure is at or above 11px.
-- **`maps/hierarchy`'s viewer asked for three things this session did not
+- ~~**`maps/hierarchy`'s viewer asked for three things this session did not
   do**: the `Block` tree is a screen tall (1,016px), 15 of its rows being
   branches of one or two; the `Item` tree shows neither of its section's two
   points (a quantity, and data components); and `RealmsScreen` is drawn like
   any branch though the book skips it. All three are emitter or page-shape
-  work. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
-- **`maps/biggest`'s colour encodes the jar, which its prose never uses**;
+  work. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: all three are emitter or page-shape work (R9, R10) — pass 8, session B.*
+- ~~**`maps/biggest`'s colour encodes the jar, which its prose never uses**;
   the section reads the thirty bars as three kinds and the opening as two
   that never run in play, and nothing on the figure marks either. A
   colour-by-kind would be a hand-kept mapping inside a generated figure,
-  which is why it was not done here. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*
+  which is why it was not done here. [kind=book] *(retagged book by pass 7 session O: a figure the pass did not draw is pass 10's or the second edition's)*~~ *Second edition: colour by kind would be a hand-kept mapping inside a generated figure (R10); the caption says what the colour is — pass 8, session B.*
 
 **For pass 10, from pass 7 session N.**
 
@@ -7228,10 +7228,10 @@ symptom list. Left, with the reason: [kind=record]
 - **Five landing pages point at "the lanes in the figures above"** in their
   Reference line (`server`, `blocks`, `client`, `rendering`, `commands`),
   where the landing figure has no lanes; the part's pages do. [kind=voice]
-- **The tier front doors** (`reference/README`, `maps/README`) get no stated
+- ~~**The tier front doors** (`reference/README`, `maps/README`) get no stated
   role in `TEMPLATE.md`: neither is entered by walking it, and session N's
   answer — say so in the opening — is the role. Ruled; pass 6's question
-  closed. [kind=record]
+  closed. [kind=record]~~ *Record: a ruling, and `maps/README` keeps it — pass 8, session B.*
 - **The closer's one spelling** (*Questions players ask*) stands on the two
   Part XIII pages whose askers are pack authors; the register is pass 8's.
   [kind=voice]

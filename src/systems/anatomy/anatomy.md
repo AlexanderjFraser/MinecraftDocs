@@ -26,10 +26,10 @@ options screen you are.
 |---|---|---|
 | `Minecraft` | the client: the `Window`, the resource system, the renderers, input and `Options` — and, in three fields, whether we are in a world at all | Render |
 | `MinecraftServer` | the world and the loop that advances it. Abstract, with three concrete subclasses: `IntegratedServer`, `DedicatedServer`, and `GameTestServer`, the headless harness the gametest entry point launches | Server |
-| `IntegratedServer` | everything singleplayer does differently: the pause, LAN publishing, the player cap, the relaxed limits | Server |
+| `IntegratedServer` | singleplayer's server: the pause, LAN publishing, the player cap, the relaxed limits | Server |
 | `BlockableEventLoop` | the queue-and-thread pairing both loops are — `Minecraft` and `MinecraftServer` each extend `ReentrantBlockableEventLoop` | one per queue, and a thread may own more than one |
 | `Connection` | one channel, and which `PacketListener` is currently on it | Netty |
-| `ServerConnectionListener` | which channels the server listens on, including the in-memory one singleplayer uses | Server, binding into Netty |
+| `ServerConnectionListener` | which channels the server listens on, including the in-memory one singleplayer uses | the binding thread (Render in singleplayer), into Netty |
 | `PacketProcessor` | which decoded packets are waiting to be handled on the thread that owns their state | filled from Netty, drained by the owner |
 | `Util` | the pools everything else is serialised onto: `Util.backgroundExecutor`, `Util.ioPool`, `Util.nonCriticalIoPool` | — |
 
@@ -53,27 +53,27 @@ sequenceDiagram
     participant SCL as ServerConnection<br/>Listener
     end
 
-    Note over Main: from here this thread is the Render thread
     Main->>Main: tryDetectVersion, loadLibraries, bootStrap, validate
+    Note over Main: from here this thread is the Render thread
     Main->>MC: the constructor: a backend, a Window, every reload listener
     MC->>MC: the first ReloadInstance, the LoadingOverlay on screen
     Main->>MC: run: pollEvents, then runTick, until running goes false
-    Note over Main,Conn: one thread so far. The next line makes the second.
+    Note over Main,Conn: one loop so far. The next line makes the second.
     MC->>IS: spin builds it on this thread, then starts the Server thread
     par on the Server thread
-        IS->>IS: runServer: initServer loads the level and its spawn chunks
+        IS->>IS: runServer: initServer loads the level
     and meanwhile, on the Render thread
-        MC->>MC: managedBlock: draw a frame, drain the queue, until isReady
+        MC->>MC: doWorldLoad: draw a frame, drain the queue, until isReady
     end
     MC->>SCL: startMemoryChannel: a Netty local address, no socket
     MC->>Conn: connectToLocalServer: the client's end of that channel
     Conn->>Conn: handshake, login, configuration, play — the walk any client makes
 ```
 
-*The one-time start-up, and the line where one thread becomes two. In the split
-box two lanes run at once: the Render thread
-goes on drawing while `IntegratedServer.initServer` loads the level. Everything
-below it is the client dialling a server that happens to be in the same JVM.*
+*The one-time start-up, and the line where one loop becomes two: in the split
+box the Render thread goes on drawing while `IntegratedServer.initServer` loads
+the level. Everything below it is the client dialling a server that happens to
+be in the same JVM.*
 
 That is the book's first sequence diagram, and its lanes are abbreviated the
 way every later one is: two or more letters of a class name, one meaning
@@ -87,9 +87,8 @@ assets' — models, atlases, equipment assets, waypoint styles — and
 sixth *main*, `SnbtDatafixer`, which converts files and starts nothing.)
 Each parses its own command line — the client's into a `GameConfig` the
 `Minecraft` constructor is built from — and then reads its own settings
-file: *options.txt* through `Options` on the client, *server.properties*
-through `DedicatedServerProperties` on the dedicated server, and
-*version.json* through `SharedConstants` on both. The two generator entry
+file: *options.txt* through `Options` on the client and *server.properties*
+through `DedicatedServerProperties` on the dedicated server. The two generator entry
 points are build-time programs, and
 [what this book skips](what-this-book-skips.md#the-data-generators-and-why-data-driven-is-both-true-and-misleading)
 says how far that is true.
@@ -105,14 +104,14 @@ loader itself needs them
 is what the freeze proves). `ClientBootstrap` does the client-only equivalents
 between that and `Bootstrap.validate`, which checks the result.
 `DataFixers.optimize` is kicked off concurrently before the registries are
-built and joined much later. That ordering is why nothing in `world/` can be
-touched from a static initialiser.
+built and joined much later.
 
 **The GPU backend is chosen in the constructor.**
 `RenderSystem.initBackendSystem` runs first and returns SDL's clock, which
-`Minecraft` installs through `Util.setTimeSource` — on the client, the game's
-entire notion of time comes from the windowing library. Then a `GpuBackend` is
-chosen by trying candidates in an order `Options` sets until one of them
+`Minecraft` installs through `Util.setTimeSource` — so `Util`'s clock, on the
+client and on a singleplayer server beside it, comes from the windowing
+library. Then a `GpuBackend` is chosen by trying candidates in an order
+`Options` sets, unless a launch argument names one, until one of them
 loads its library and makes a `GpuDevice` — there are two, `GlBackend` and
 `VulkanBackend`
 ([the window](../rendering/the-window.md#trying-backends-until-one-of-them-makes-a-device))
@@ -132,20 +131,25 @@ on screen. Pressing F3+T re-runs exactly that path — see
 caller's thread* before starting the new one
 ([starting a server](../server/starting-a-server.md#minecraftserverspin-and-the-last-thing-main-does)
 has that order in full); the new thread's body is `MinecraftServer.runServer`,
-which calls `IntegratedServer.initServer` and enters the loop. Meanwhile the Render
-thread keeps drawing frames and draining its own queue through
-`BlockableEventLoop.managedBlock` until `MinecraftServer.isReady`: a thread
-that blocks on this half of the game keeps running that half's queue while
-it waits, which is the reason the wait cannot deadlock.
+which calls `IntegratedServer.initServer` and enters the loop. Meanwhile
+`Minecraft.doWorldLoad` keeps the Render thread drawing frames and draining its
+own queue until `MinecraftServer.isReady`, waiting out each sixtieth of a
+second in `BlockableEventLoop.managedBlock`: a thread that blocks on this half
+of the game keeps running that half's queue while it waits, which is the
+reason the wait cannot deadlock.
 
 **The client connects like any other client.**
 `ServerConnectionListener.startMemoryChannel` binds a Netty local address and
 `Connection.connectToLocalServer` connects to it; the client then walks
-handshake, login, configuration and play through
-`ClientHandshakePacketListenerImpl` exactly as it would against a remote
-server. Almost nothing in the play path knows it is singleplayer: the
-exceptions are the handful of places that ask `Connection.isMemoryConnection`
-directly, among them `ClientPacketListener.handleUpdateTags`, which skips
+handshake, login, configuration and play as it would against a remote server,
+with `ClientHandshakePacketListenerImpl` as its login listener. The server
+gives the local channel a handshake listener of its own,
+`MemoryServerHandshakePacketListenerImpl`, and skips the encryption request
+and compression it would send a remote client. Almost nothing in the play path
+knows it is singleplayer: the exceptions are the handful of places that ask
+`Connection.isMemoryConnection` or
+`ServerCommonPacketListenerImpl.isSingleplayerOwner` directly, among them
+`ClientPacketListener.handleUpdateTags`, which skips
 applying the tags it was sent because the server's registries are already
 the client's. [The
 connection](../networking/the-connection.md#singleplayer-runs-the-same-pipeline)
@@ -183,11 +187,10 @@ flowchart TD
     end
 ```
 
-*The two loops, side by side and to the same scale. The Render thread's ring is
-a frame with a tick inside it; the Server thread's ring is the tick, and there
-is no frame anywhere in it. The inner box in each is the one call that contains
-the rest of its ring — `Minecraft.runTick` on one side,
-`MinecraftServer.processPacketsAndTick` on the other.*
+*The two loops side by side: the Render thread's ring is a frame with a tick
+inside it, and the Server thread's ring is the tick with no frame anywhere in
+it. The inner box in each is the call that holds the tick — `Minecraft.runTick`
+on one side, `MinecraftServer.processPacketsAndTick` on the other.*
 
 
 **The frame loop.** `Minecraft.run` polls SDL events and calls
@@ -196,8 +199,9 @@ limit allow. Inside each frame a `DeltaTracker.Timer` running at twenty ticks
 a second says how many whole game ticks have elapsed since the last frame —
 usually zero or one, at most ten are run — and `Minecraft.tick` is called that
 many times, with `BlockableEventLoop.runAllTasks` draining the thread's own
-queue just before them. The fractional remainder is the partial tick
-`Minecraft.renderFrame` hands the renderers to interpolate with. So the client
+queue just before them. The fractional remainder is the partial tick the
+renderers read, to interpolate with, from the `DeltaTracker` that
+`Minecraft.renderFrame` hands them. So the client
 *has* a 20 Hz tick, but it is a sub-step of
 the frame loop rather than a loop of its own; [the client
 loop](../client/the-client-loop.md#the-ten-and-the-arithmetic-behind-it) is the
@@ -221,7 +225,7 @@ the deferrable work and the flush bracket around outbound packets.
 `MinecraftServer` both extend `ReentrantBlockableEventLoop` — the same base
 class, not an analogy — so each is an `Executor` whose queue drains on its own
 thread, and any other thread that wants to touch that half's state submits a
-task and waits. `BlockableEventLoop.managedBlock` is the blocking form, and
+task. `BlockableEventLoop.managedBlock` is the blocking form, and
 the reason the owning thread can wait for a future without deadlocking: it
 keeps draining its own queue while it waits.
 
@@ -242,9 +246,9 @@ often than it ticks.
 
 | thread | made by | runs | notes |
 |---|---|---|---|
-| **Render thread** | the JVM main thread, renamed in `client/main/Main` | `Minecraft.run` | Also the client's game thread: `Minecraft.gameThread` is this thread. Priority 10 on machines with more than four cores. |
-| **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` | One per server, so singleplayer has exactly one. Priority 8, on the same more-than-four-cores condition. |
-| **Netty IO** | `EventLoopGroupHolder` | the `Connection` pipeline | Named *Netty NIO IO n* — Epoll or Kqueue when native transport is on, *Netty Local IO n* for the in-process singleplayer channel. Decode, decrypt, decompress — and, unlike the play phase, the handshake and login *handlers*, which never call `PacketUtils.ensureRunningOnSameThread`; the first handler that hops is in configuration. The login state machine is still advanced from the Server thread, because `ServerLoginPacketListenerImpl` is a `TickablePacketListener` and `MinecraftServer.tickConnection` ticks it. |
+| **Render thread** | the JVM main thread, renamed in `client/main/Main` | `Minecraft.run` | Also the client's game thread: `Minecraft.gameThread` is this thread. Priority 10 on machines with more than four processors. |
+| **Server thread** | `MinecraftServer.spin` | `MinecraftServer.runServer` | One per server, so singleplayer has exactly one. Priority 8, on the same more-than-four-processors condition. |
+| **Netty IO** | `EventLoopGroupHolder` | the `Connection` pipeline | Named *Netty NIO IO #n* — Epoll or Kqueue when native transport is on, *Netty Local IO #n* for the in-process singleplayer channel. Decode, decrypt, decompress — and, unlike the play phase, the handshake and login *handlers*, which never call `PacketUtils.ensureRunningOnSameThread`; the first handler that hops is in configuration. The login state machine is still advanced from the Server thread, because `ServerLoginPacketListenerImpl` is a `TickablePacketListener` and `MinecraftServer.tickConnection` ticks it. |
 | **Worker-Main-n** | `Util.backgroundExecutor` | a `ForkJoinPool` sized to the JDK's available-processor count minus one | `Util.maxAllowedExecutorThreads` clamps it, and `Util.getMaxThreads` reads a *max.bg.threads* system property that overrides the ceiling. The shared CPU pool: chunk generation and lighting (`ChunkMap` through `ChunkTaskDispatcher`), section meshing (`SectionRenderDispatcher`), resource-reload *prepare* phases, chunk serialisation. |
 
 That is the set worth memorising, not the set that exists. The IO workers,
@@ -260,8 +264,8 @@ game thread: `Minecraft.gameThread` and the thread `RenderSystem` guards with
 `RenderSystem.assertOnRenderThread` are the same one, and there is no
 *initGameThread* and no *isOnGameThread* anywhere in the tree — only
 `RenderSystem.isOnRenderThread`. A slow client tick costs frames directly.
-What that thread does with a world is animate and predict one — `Minecraft.tick`
-calls `ClientLevel.tickEntities`, and block entities tick too — but nothing it
+What that thread does with a world is animate and predict one (`Minecraft.tick`
+calls `ClientLevel.tickEntities`, and block entities tick too), but nothing it
 concludes is authoritative, and the server's packets overwrite whatever the
 prediction got wrong — which is a claim about the *world*, and the client's
 own player is the exception the book spends Part VIII and
@@ -279,12 +283,10 @@ does not deadlock the chunk that needs the tick.
 
 ## What singleplayer shares by direct call
 
-Nothing on the client writes server world state and nothing on the server
-writes client world state. Every block, entity and inventory change crosses
-as a packet, even in one process. But the two halves share a JVM, and a
-handful of things do cross by direct call — every one of them a setting
-rather than world state, though a setting can reach the world before the call
-returns. The server reads `Minecraft.isPaused` every tick and the client's
+Every block, entity and inventory change a player makes crosses as a packet,
+even in one process. But the two halves share a JVM, and a handful of things
+do cross by direct call — settings, debug state and the options screen's own
+updates — and a setting can reach the world before the call returns. The server reads `Minecraft.isPaused` every tick and the client's
 render and simulation distances every tick it runs the world;
 `WorldOptionsScreen.applyChanges` calls `IntegratedServer.publishServer` and
 its siblings straight from the Render thread, and among them
@@ -292,7 +294,7 @@ its siblings straight from the Render thread, and among them
 `ServerPlayer.setGameMode` on the Render thread, not the Server thread; and
 `IntegratedServer.latestTicksGizmos` is a volatile list the server thread
 writes and the client reads. Treat "everything crosses as a packet" as a rule
-about the *world*, not about the process.
+about play, not about the process.
 
 Singleplayer differs in more than pausing, too. Beyond the pause and the
 distances following `Options`, `IntegratedServer` caps the player list at
@@ -312,7 +314,7 @@ the client's own three exits). The asymmetry is Part I's, because it follows
 from two programs sharing a JVM: only a loop constructed to propagate
 crashes rethrows a parked report, and `IntegratedServer` is not one. So a
 worker that dies doing the server's work in singleplayer takes down the
-*client*, and the crash screen names a thread the player was not watching.
+*client*, and the crash report names a thread the player was not watching.
 
 ## Questions players ask
 
@@ -323,12 +325,13 @@ only the client-decides-it half is.
 
 **Is twenty ticks a second a constant?** No, it is a server field. The
 `TickRateManager.nanosecondsPerTick` the loop re-reads lives on a
-`ServerTickRateManager`, the server's subclass of it, which owns the freeze
-and the sprint state `/tick` manipulates; the client mirrors that state in
-`ClientLevel` so the `DeltaTracker` can freeze too.
+`ServerTickRateManager`, the server's subclass of it, which adds the sprint
+`/tick` manipulates and sends clients the rate and the freeze; the client
+mirrors those two in `ClientLevel`, so the `DeltaTracker` slows and freezes
+with the server.
 
 **Does a busy server skip work?** Less than you would think. The tick
-budget is one boolean, `MinecraftServer.haveTime`, travelling from
+budget is one predicate, `MinecraftServer.haveTime`, travelling from
 `MinecraftServer.tickServer` down through every level, and what it actually
 gates is a short list that does not include loading or generating a chunk. [The server
 tick](../server/server-tick.md#what-the-budget-actually-gates) has that list,
