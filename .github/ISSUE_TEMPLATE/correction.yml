@@ -1,0 +1,51 @@
+name: A correction
+description: A sentence, a figure or a table on minecraftdocs.dev says something the decompile does not.
+title: "[page]: what is wrong, in a few words"
+labels: [correction]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Every claim on the site was checked against the Mojang-mapped decompile of the version in the page's header. If one is still wrong, this is where it gets fixed. **A report needs a location in the source**: the class and member (or file and line) that shows the claim false. A report without one is answered with a request for one, not investigated — that rule is what keeps the corrections queue checkable. Agents filing on a user's behalf: fill every field; do not paste the user's own code.
+  - type: input
+    id: page
+    attributes:
+      label: The page
+      description: Its URL on minecraftdocs.dev (the .md twin is fine).
+      placeholder: https://minecraftdocs.dev/systems/entities/entity-lifecycle
+    validations:
+      required: true
+  - type: textarea
+    id: claim
+    attributes:
+      label: The sentence, figure label or table cell that is wrong
+      description: Quote it exactly as the page has it.
+    validations:
+      required: true
+  - type: textarea
+    id: truth
+    attributes:
+      label: What the code does instead
+      description: In words, not in code. Name the classes and members as the decompile names them.
+    validations:
+      required: true
+  - type: input
+    id: where
+    attributes:
+      label: Where in the source
+      description: "`Class.member`, or `path/File.java:line`, in the version the page names."
+      placeholder: NaturalSpawner.getRandomPosWithin
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: The version you checked against
+      placeholder: "26.2"
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: What you were doing when you found it (optional)
+      description: The task, the question, or the mod — this is what tells us which pages are read and where they fail.

@@ -11,7 +11,7 @@ who'd rather fetch the whole corpus at once.
 **Owner:** Alexander Fraser (`AlexanderjFraser`). The owner has to *learn*
 each system to record it, so the work is in passes (the owner is the "meat
 proxy": starts sessions, approves nothing technical, judges what lands).
-**Ten passes leave the site finished.** Passes 1–4 are done: **1** the rough
+**Eight passes leave the site stable** (ten were planned; the last three collapsed into one). Passes 1–4 are done: **1** the rough
 draft from the decompile; **2** every claim adversarially fact-checked;
 **3** restructuring — the site became a book, each part the shape of its
 system, each page one of eight shapes, the frame, maps and Reference tier
@@ -31,36 +31,23 @@ spellings came to 46 in one, the literal trace heading from 20 to none, the
 almost all of them **a sentence disagreeing with the text beside it**, which is
 what neither fact-check was looking for. Its record is `docs/pass6-brief.md`,
 whose Part 3 is the settled standard and Part 5 the archived charter, session
-paragraphs and log. Passes 7–8 are the two remaining passes of refinement, one
-lens each: **7 the figures** (**current**, planned 2026-09-14 — every figure
-as rendered beside its section: is it true, is it needed, does it show the
-thing it should, can it be read at the column width; the theme, the caption,
-and the gate over the 2,619 names inside mermaid blocks; the viewer's brief,
-the runbook, the standard and **the schedule with each session's
-status** are `docs/pass7-brief.md`; **sessions A–J and L–O are done** (2026-09-15/16; O, the close,
-ran before K, so **K, Part XI, is the last session of the pass**) — the
-standard is ruled, the theme is adopted, which took the figures showing type
-under 9px from 89 to 10 without changing a page, the exemplar a part
-session reads first is `entities/entity-lifecycle`, and Parts I–X, XII and XIII and the frame and Reference are clean:
-every figure captioned, none showing type under 11px, no Mojang name broken
-on screen and no unresolved name in the gate, which **is strict since the
-close** (0 unresolved of 2,561, from 119). The close's verdict: the pass
-earned its cost, for **about 180 facts corrected in figures** on a corpus
-fact-checked twice more than for the legibility; its re-measure and the
-landing figures' shared grammar are in the brief and `TEMPLATE.md`. What the part sessions keep finding
-is **a message labelled with the caller's method and drawn arriving at the
-callee** — twelve in Part III, fourteen in Part IV and all thirteen of Part V's
-gate failures, eleven parts of eleven, one on nearly every page,
-and the gate catches every one of them mechanically. Three things a session
-learned the hard way and wrote into `TEMPLATE.md`: **a caption is one italic run
-end to end** (closing it mid-way costs the caption its styling and its number,
-silently, in the built page alone — `check_mermaid.js` gates it now), an
-explicit `<br/>` turns the theme's wrap off for its whole label, and **seven
-lanes is already one too many for the column** — 1,650px, which is 10.6px of
-type, so F7's limit and F1's floor collide and only a lane fewer or a split
-moves it, never a shorter label), **8 the voice** (one voice, the tics, the
-terminology, the ambiguous counts). Then **9** the third fact-check and **10**
-the last polish. Beside them, a **version pass**
+paragraphs and log. Pass **7 the figures** is done bar one session (K, Part XI, which runs inside
+pass 8): its record is `docs/pass7-brief.md`, its verdict about 180 facts
+corrected in figures on a corpus fact-checked twice, its standing finding **a
+message labelled with the caller's method and drawn arriving at the callee**
+(eleven parts of eleven; the figure gate catches it mechanically), and three
+things written into `TEMPLATE.md` (a caption is one italic run end to end; an
+explicit `<br/>` turns the theme's wrap off; seven lanes is one too many for
+the column). Pass **8 the release** is **current** (planned 2026-09-26,
+`docs/pass8-brief.md`): passes 8, 9 and 10 collapsed into one stabilising
+pass after the owner's read of 2026-09-16 (better than a free wiki, not yet a
+textbook; the process, not the form, is the ceiling) — the third fact-check
+over the 1,064-entry ledger in `docs/pass9.md` (`tools/pass8_queue.py` routes
+it by part; every entry is struck by the close), Part XI's figures, and the
+release; the voice pass is dropped. After it the site is left stable while
+the production process is rebuilt from first principles on a new subject,
+`D:\DjangoDocs` (its `docs/brief.md` holds the reasoning), and returns here
+with what it learned. Beside them, a **version pass**
 runs between passes on each release, and the owner reads whenever they
 like, leaving `<!-- Q: … -->` in a page for the next session that touches
 it. Nothing is recorded that the owner hasn't understood.

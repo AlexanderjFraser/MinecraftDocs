@@ -17,6 +17,16 @@ where every pass-5-to-8 session lists the claims it introduced;
 
 ## Where we are
 
+**2026-09-26.** Passes 1 to 7 are done bar one session of 7 (K, Part XI), and
+the plan below this paragraph has changed shape: the owner's read of
+2026-09-16 collapsed passes 8, 9 and 10 into **one release pass**, chartered
+in [pass8-brief.md](pass8-brief.md), after which the site is left stable and
+the production process is rebuilt on a new subject (`D:\DjangoDocs`). The
+same day the site became readable by agents as markdown (every page at
+`/path.md`; `llms.txt` links them) and every page got its own title,
+description, canonical and structured data (`tools/page_meta.py`). The
+paragraphs that follow are the state as pass 7 left it.
+
 **Passes 1 to 6 are done.** Every page was drafted from the decompile (1),
 fact-checked twice with every page found wrong at least once each time (2 and
 4), restructured into a book of thirteen parts and eight page shapes (3), read
@@ -317,81 +327,28 @@ against the section under it first*.
 prose beyond a caption, a lead-in and the one sentence a name needs; a figure
 added for variety.
 
-## Pass 8 — the voice
+## Pass 8 — the release (passes 8, 9 and 10 in one; current)
 
-**Goal:** one voice, one vocabulary, no tics, and every number says what it
-counts.
-
-**The jobs:** the exemplar page and the voice note, chosen in session A; the
-tics — "not X but Y", the named-qualifier hedge, the dead-constant aside,
-the em-dash chain, the correction written in the voice of a correction,
-*record* against *extract*, the three words for an update channel's
-direction; the terminology sweep with the glossary as the checklist, and the
-glossary's own five headwords, *Occlusion*, and the six two-owner entries;
-the fifty-odd counts whose population admits two readings — pick the
-reading, say it, or drop the number; the two rules for the word *classes*;
-how data keys are typeset; the wording debt logged per part in
-[pass5.md](pass5.md), hooks first, wherever passes 5 to 7 have not already
-rewritten it; the register of the 1.21 blockquote. Reader agents again, now
-with the exemplar. Every changed sentence's claims to [pass9.md](pass9.md).
-The planning session builds the tic finders and a terminology checker.
-
-**The wording debt the figures raised**, counted afresh by pass 7's close
-([pass5.md](pass5.md), *Pass 7, session O*): **203 captions**, written by
-thirteen sessions in at least three registers — *what the picture shows*,
-*what to look for*, and the figure's own furniture (*the band*, *the box*) —
-which `python tools/pass7/captions.py` lists in one place and which pass 8
-reads as one set, as it reads the glossary; **69 figure labels on 48 figures
-that are still sentences**, 17 of them Part XI's; the **bare-verb message
-heads** the figure gate notes (*reseed*, *pick*, *measure*), which want one
-register for a self-message's first word; the caption that points at *the
-band* or *the right-hand box* before naming it, which reads badly in
-`llms-full.txt`; *Questions players ask* on the two pages whose askers are pack
-authors; and **thirteen voice entries** from pass 7's part sessions. Every
-caption pass 8 rewrites is a claim about its figure and goes to
-[pass9.md](pass9.md) with the figure's other claims.
-
-**Not:** structure (a structural finding is ruled out or goes to pass 10's
-notes); facts.
-
-## Pass 9 — the third fact-check
-
-Pass 4's charter, protocol and brief (archived in [pass4.md](pass4.md) and
-[pass4-brief.md](pass4-brief.md)) run again over the corpus passes 5 to 8
-rewrote, with what pass 4 learned made into steps:
-
-1. [pass9.md](pass9.md) first — the claims passes 5 to 8 introduced, and
-   their corrections confirmed as fixes rather than re-litigated as
-   originals.
-2. The illustrations before the mechanisms: tables, one-line summaries, Q&A
-   answers, asides, landing pages, the glossary — where pass 4 found the
-   errors.
-3. **A fix is a claim.** Every correction is re-derived by a second reading
-   before it lands, and the close audits the pass's own strikes and
-   corrections (session O's job, made a step).
-4. The figure against the section under it before either against the
-   source.
-5. Populations, not rows, for every generated page; call sites, not lines,
-   for every count; the population named for every absolute.
-6. The names inside figures are under the gate by then; the 23 ambiguous
-   simple names settled or the resolver taught which file a page means.
-7. The summarisers re-read after their pages are fixed.
-8. Pass 9 adds nothing; a gap goes to [pass3.md](pass3.md) §7 for the second
-   edition.
-
-Its planning session rewrites `pass4_prompts.py` to read pass9.md.
-
-## Pass 10 — the last polish
-
-Pass 9's wording debt; the frame — introduction, lecture map, the maps' and
-Reference's front pages — against the finished book; every internal link
-and anchor under the link checker as a gate; the last cuts; the owner's
-remaining questions answered and the lecture order confirmed; the
-introduction's *verified* paragraph made true of every gate; the release —
-a git tag, the site verified against whatever version is current, the
-second edition's seed written into §7 and *what this book skips*. Then
-nothing more is done to the site except version passes and the corrections
-readers file.
+**Planned 2026-09-26**, after the owner's read of 2026-09-16: the site is
+better than a free wiki and not yet a textbook, and the ceiling is the
+process, not the form — linear passes, each finding the errors at the edges
+of the last. The process is being rebuilt from first principles on a new
+subject (`D:\DjangoDocs`, its `docs/brief.md`), and this site is to be left
+**stable** until that returns. So the three remaining passes become one that
+does only what stability needs, chartered in
+[pass8-brief.md](pass8-brief.md): **the third fact-check** over the
+1,064-entry ledger in [pass9.md](pass9.md), routed by part with
+`tools/pass8_queue.py` (866 entries name a page; every one is struck by the
+close); **Part XI's figures**, pass 7's session K, which never ran; and **the
+release** — the introduction's *verified* paragraph true of every gate, the
+pass-number sweep, the version line against the manifest, the lecture order
+confirmed by the owner, a maintenance note, a tag. New in the method: a
+session reads its whole part into context before it checks an entry, and
+lists every sentence that disagrees with another in the part — the class
+passes 5 and 6 found most of. **Dropped:** the voice pass (the rebuilt
+process is meant to produce the voice; the wording debt stays in
+[pass5.md](pass5.md) as an archive) and pass 10's last cuts. The charters
+this replaces are archived in the brief's Part 5.
 
 ## The version pass — rule 3's re-read (chartered, runs on each release)
 
@@ -1214,3 +1171,18 @@ that the owner has not understood; recording is after pass 10.
   legibility), pass 8's wording debt counted and written into its charter.
   Queue: figure units 150 → 28, 17 of them Part XI's. All six gates green, the
   sixth now strict. Deployed.
+- **2026-09-26, planning session (Fable, after the owner's post-pass-7 read).**
+  No page's prose touched. **The site made readable by agents**: every page
+  published as its markdown twin (`tools/md_twins.py`, `src/_headers` serving
+  `text/markdown` cross-origin, `llms.txt` linking the twins) and every built
+  `<head>` rewritten per page — the page's own title and part, a description
+  from its scenario line (every page had shared `book.toml`'s), a canonical
+  at the clean URL, the markdown alternate, Open Graph with `src/og.png`,
+  JSON-LD (`tools/page_meta.py`, a gate in `deploy.sh`). The edge probed with
+  nine AI user agents: none blocked. A correction issue template with an
+  evidence rule. **Passes 8–10 collapsed into pass 8, the release**
+  ([pass8-brief.md](pass8-brief.md)), its queue tool `tools/pass8_queue.py`
+  (866 of 1,064 ledger entries route to 117 pages), pass 7's session K
+  carried into it as session I. **`D:\DjangoDocs` seeded** with the
+  reasoning of the 2026-09-16 conversation and the memories that transfer.
+  Deployed.
