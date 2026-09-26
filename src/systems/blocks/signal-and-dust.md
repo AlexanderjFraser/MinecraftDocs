@@ -1,6 +1,6 @@
 # Signal and dust
 
-> Verified against **Minecraft 26.2** · Part V · A lever on the floor is flipped on and then off again, and two redstone dust to the east of it go to 15 and 14 — and then count their way back down.
+> Verified against **Minecraft 26.3** · Part V · A lever on the floor is flipped on and then off again, and two redstone dust to the east of it go to 15 and 14 — and then count their way back down.
 
 You flip a lever, and the dust beside it turns bright. Flip it back and the
 line goes dark — in one tick, but not in one pass. Each wire recomputes its
@@ -25,7 +25,7 @@ two ordered phases and does not produce the staircase at all.
 | `SignalGetter` | every question about power: what a position emits, what reaches it, and the direction order the answers are gathered in | a `Level` interface, either side |
 | `BlockBehaviour.BlockStateBase` | the three answers this trace asks a state for — is it a source, what is its weak signal per face, what is its strong signal. The analog pair beside them is the comparator's | either side |
 | `LeverBlock` | the trace's source: 15 in every direction, and 15 *strongly* into one block only | server — the client's copy writes nothing |
-| `RedStoneWireBlock` | which sides a wire connects to, what it emits through them, and the mutable flag that stops it counting itself | server |
+| `RedstoneWireBlock` | which sides a wire connects to, what it emits through them, and the mutable flag that stops it counting itself | server |
 | `RedstoneWireEvaluator` | *minus one per block*: what the neighbouring wires are worth to this one | server |
 | `DefaultRedstoneWireEvaluator` | one wire at a time, recursively, with the fan-out issued by hand | server |
 | `ExperimentalRedstoneWireEvaluator` | the whole network at once, off in two phases and on in one, allocated fresh per call | server |
@@ -41,11 +41,11 @@ implementation, from one update arriving to the next batch leaving.
 
 ```mermaid
 flowchart TD
-    IN["RedStoneWireBlock.neighborChanged"]
+    IN["RedstoneWireBlock.neighborChanged"]
     CLIENT{"is this a ClientLevel"}
     NOTHING["nothing at all"]
     CALC["DefaultRedstoneWireEvaluator.calculateTargetStrength"]
-    BLK["RedStoneWireBlock.getBlockSignal, with RedStoneWireBlock.shouldSignal off"]
+    BLK["RedstoneWireBlock.getBlockSignal, with RedstoneWireBlock.shouldSignal off"]
     WIRE["RedstoneWireEvaluator.getIncomingWireSignal"]
     TARGET["the target: the block signal, or the larger of the two"]
     SAME{"is the target the POWER already stored"}
@@ -68,10 +68,10 @@ flowchart TD
 *One neighbour update to one wire, and the loop at the bottom is the page:
 forty-two updates leave, some of them land on wires, and each of those
 re-enters at the top. The cascade ends only where a recomputed target equals
-the `RedStoneWireBlock.POWER` already stored, which is a test on the value and not on the
+the `RedstoneWireBlock.POWER` already stored, which is a test on the value and not on the
 distance.*
 
-The first branch is belt and braces. `RedStoneWireBlock.neighborChanged` opens
+The first branch is belt and braces. `RedstoneWireBlock.neighborChanged` opens
 with a not-client test, and it would never be reached on a `ClientLevel`
 anyway: `Level.updateNeighborsAt` and `Level.neighborChanged` are empty methods
 there, so nothing on the client ever dispatches a neighbour update to a block
@@ -113,7 +113,7 @@ means, and it is why a block with a lever on it powers the dust beside it. A
 block a wire merely points into is strongly powered too — that is what a
 piston beside a line reads — but no *other dust* can see it, for a reason that
 has nothing to do with this line and everything to do with
-`RedStoneWireBlock.shouldSignal`, below.
+`RedstoneWireBlock.shouldSignal`, below.
 
 The lever shows both halves at once. `LeverBlock.ownSignal` is 15 in every
 direction when powered — that is the weak signal, and it is what the dust next
@@ -151,7 +151,7 @@ what a block **reads**, and it is the one this page uses.
 | `NeighborUpdater.UPDATE_ORDER` | west, east, down, up, north, south | which neighbour is told first about a change, on the neighbour channel |
 | `BlockBehaviour.UPDATE_SHAPE_ORDER` | west, east, north, south, down, up | which neighbour is asked first to re-fit, on the shape channel |
 
-Only the first row is walked as an array at all, and the three *reading*
+Only the first row is about reading, and the three *reading*
 methods in it stop early, not on the same thing: the two that return a number —
 `SignalGetter.getBestNeighborSignal` and `SignalGetter.getDirectSignalTo` —
 stop at a 15, while `SignalGetter.hasNeighborSignal`, which returns a boolean,
@@ -163,7 +163,7 @@ is the only reason its first entry is *down*.
 
 ## Dust, and how far it reaches
 
-`RedStoneWireBlock.POWER` is the number, 0 to 15. Four `RedstoneSide`
+`RedstoneWireBlock.POWER` is the number, 0 to 15. Four `RedstoneSide`
 properties — one per horizontal, each *NONE*, *SIDE* or *UP* — record how the
 wire is drawn and, more
 importantly, which sides it will actually talk through. What a wire is worth
@@ -175,11 +175,11 @@ on the sixteenth, which is a dark block rather than a shorter line. The wires it
 see are the four beside it, plus the wire on top of a conducting neighbour
 when nothing conducts above this position, plus the wire below a
 non-conducting neighbour — which is the *power* half of "dust climbs a block
-and falls down one". The drawing half is `RedStoneWireBlock.getConnectingSide`
+and falls down one". The drawing half is `RedstoneWireBlock.getConnectingSide`
 below, which asks `BlockBehaviour.BlockStateBase.isFaceSturdy` where this one asks
 about conduction.
 
-Two asymmetries follow from `RedStoneWireBlock.getSignal` and are worth
+Two asymmetries follow from `RedstoneWireBlock.getSignal` and are worth
 stating plainly, because they are the two questions every redstone build
 eventually asks. A wire returns **zero** when the direction asked about is
 `Direction.DOWN` — so dust never powers the block above it. It returns its
@@ -188,26 +188,27 @@ so dust always powers the block below it. In every other direction it answers
 only if its connection on the opposite side is made.
 
 Connection itself is two rules and a completion pass.
-`RedStoneWireBlock.shouldConnectTo` is the real one: another wire always, a
-`Blocks.REPEATER` along its own axis, a `Blocks.OBSERVER` only from its facing
-side, and otherwise any block that says it is a signal source — that last
-clause only when a direction is supplied, which the vertical rules do not do,
-so up and down connect to wire and to nothing else.
-`RedStoneWireBlock.getConnectingSide` adds the vertical cases — up over a
+`RedstoneWireBlock.shouldConnectTo` is the real one, and it asks the
+neighbour's own `BlockBehaviour.shouldRedstoneWireConnectTo`: another wire
+always, a `RepeaterBlock` along its own axis, an `ObserverBlock` only from its
+facing side, and by default any block that says it is a signal source — that
+last clause only when a direction is supplied, which the vertical rules do not
+do, so up and down connect to wire and to nothing else.
+`RedstoneWireBlock.getConnectingSide` adds the vertical cases — up over a
 face-sturdy neighbour, down past a non-conducting one. And then
-`RedStoneWireBlock.getConnectionState` runs a completion pass that produces
+`RedstoneWireBlock.getConnectionState` runs a completion pass that produces
 most of the confusion: **if a wire has no north or south connection, west and
 east are set anyway**, and the same the other way round. That is why a lone
 dust is drawn as a cross, and why a wire fed from the west appears to point
 firmly into whatever is on its east — a piston, say — which satisfies neither
 real rule. The piston is not a source and, by `Blocks.pistonProperties`, not a
 conductor. It gets powered anyway, because the wire's east side is *SIDE* by
-completion and `RedStoneWireBlock.getSignal` asks about the side, not about
+completion and `RedstoneWireBlock.getSignal` asks about the side, not about
 the neighbour.
 
-`RedStoneWireBlock.shouldSignal` is the oddest thing on the page: a mutable
+`RedstoneWireBlock.shouldSignal` is the oddest thing on the page: a mutable
 boolean on the block singleton, flipped false for the duration of
-`RedStoneWireBlock.getBlockSignal` so that a wire does not count itself or its
+`RedstoneWireBlock.getBlockSignal` so that a wire does not count itself or its
 neighbouring wires as sources while it works out its *block* power. It works
 because the server thread is the only writer and never re-enters the method.
 It is also the answer to the question left open above: a block a wire merely
@@ -222,17 +223,17 @@ sequenceDiagram
     participant LevB as LeverBlock
     participant SL as ServerLevel
     participant CNU as Collecting<br/>NeighborUpdater
-    participant RSWB as RedStoneWireBlock
+    participant RWB as RedstoneWireBlock
     participant DRWE as DefaultRedstone<br/>WireEvaluator
     participant PBB as PistonBaseBlock
     Note over LevB,PBB: one call stack, inside one packet handler, before the level ticks
-    LevB->>SL: setBlock POWERED with flags 3
+    LevB->>SL: setBlockAndUpdate, POWERED with flags 3
     SL->>CNU: updateNeighbors<br/>AtExceptFromFacing<br/>drained at once
-    CNU->>RSWB: neighborChanged at the first dust
-    RSWB->>DRWE: updatePowerStrength, and the lever answers 15
+    CNU->>RWB: neighborChanged at the first dust
+    RWB->>DRWE: updatePowerStrength, and the lever answers 15
     DRWE->>SL: setBlock POWER 15 with flag 2, then seven updateNeighborsAt
-    CNU->>RSWB: neighborChanged at the second dust, ahead of the lever's other directions
-    RSWB->>DRWE: updatePowerStrength, block signal 0 and a wire at 15
+    CNU->>RWB: neighborChanged at the second dust, ahead of the lever's other directions
+    RWB->>DRWE: updatePowerStrength, block signal 0 and a wire at 15
     DRWE->>SL: setBlock POWER 14 with flag 2, then seven more
     CNU->>PBB: neighborChanged, and the wire answers from its east side
     Note over CNU,PBB: the remaining dozens of updates run against blocks that do not care
@@ -257,24 +258,24 @@ null player, so nobody is excluded and the clicker hears the server's
 [block interaction](block-interaction.md#the-door-writes-ten), where the door passes the clicker
 as *except* and they hear their own prediction instead.
 
-Two details in the diagram are worth naming. The lever's `Level.setBlock`
-uses flags 3, so `Block.UPDATE_NEIGHBORS` fans out once *before*
-`LeverBlock.updateNeighbours` fans out twice more, at the lever's own position
-and at the block it stands on — and because nothing was running when the first
-one was queued, it drains the entire dust cascade before the other two are
-even issued. And the ordering of the seven positions a wire updates is
-fixed by no array: they come out of a hash set. The depth-first drain of
+Two details in the diagram are worth naming. The lever writes through
+`LevelWriter.setBlockAndUpdate`, which is flags 3, so `Block.UPDATE_NEIGHBORS`
+fans out once *before* `LeverBlock.updateNeighbours` fans out twice more, at
+the lever's own position and at the block it stands on — and because nothing
+was running when the first one was queued, it drains the entire dust cascade
+before the other two are even issued. And the ordering of the seven positions
+a wire updates is fixed by no array: they come out of a hash set. The depth-first drain of
 `CollectingNeighborUpdater` is [block interaction](block-interaction.md#the-updater-underneath-a-stack-drained-depth-first)'s
 subject, and it is what puts the second dust's whole cascade ahead of the
 lever's remaining directions.
 
 Placing and breaking a wire take a wider path again:
-`RedStoneWireBlock.onPlace` and
-`RedStoneWireBlock.affectNeighborsAfterRemoval` both call
-`RedStoneWireBlock.updateNeighborsOfNeighboringWires`, which walks the four
+`RedstoneWireBlock.onPlace` and
+`RedstoneWireBlock.affectNeighborsAfterRemoval` both call
+`RedstoneWireBlock.updateNeighborsOfNeighboringWires`, which walks the four
 horizontals and then the diagonals — reaching over a conducting neighbour and
 under a non-conducting one — and calls
-`RedStoneWireBlock.checkCornerChangeAt` on each. That is another seven
+`RedstoneWireBlock.checkCornerChangeAt` on each. That is another seven
 `Level.updateNeighborsAt` per wire found. Which write does what is
 [blocks and states](blocks-and-states.md#the-two-update-channels).
 
@@ -284,8 +285,8 @@ under a non-conducting one — and calls
 registries](../foundations/identifiers-and-registries.md#feature-flags-the-same-registry-narrowed)),
 turned on by a built-in data pack whose entire content is the line that enables
 it ([the resource system](../foundations/resource-system.md#discover-the-repository-and-its-packs)), and
-`RedStoneWireBlock.useExperimentalEvaluator` asks the level for it on **every
-call** — `RedStoneWireBlock.evaluator` is always the default one, and an
+`RedstoneWireBlock.useExperimentalEvaluator` asks the level for it on **every
+call** — `RedstoneWireBlock.evaluator` is always the default one, and an
 `ExperimentalRedstoneWireEvaluator` is a fresh object per update, because it
 carries working state. What changes is not speed but semantics.
 
@@ -313,7 +314,7 @@ reaches the world is exactly the wires that really changed — each with
 `Block.UPDATE_SKIP_SHAPE_UPDATE_ON_WIRE`, the bit that makes
 `NeighborUpdater.executeShapeUpdate` skip any shape update whose **target** is
 dust. (The one wire exempted from that bit is the one an evaluation started
-from, and then only when the caller was `RedStoneWireBlock.onPlace`, which
+from, and then only when the caller was `RedstoneWireBlock.onPlace`, which
 wants the shape updates around a newly placed wire.)
 
 **The fan-out is the second difference, and it is what the seven positions
@@ -325,14 +326,17 @@ unconditionally and `Direction.UP` never — in
 came from rather than from a fixed array, and then five more at any side that
 is a redstone conductor. So the piston east of our two dust is still told, and
 told once, without the seven-position scattergun. The recursion closes because
-`RedStoneWireBlock.neighborChanged` ignores wire-sourced updates entirely in
+`RedstoneWireBlock.neighborChanged` ignores wire-sourced updates entirely in
 this mode; the default evaluator does not, which is what opens it.
 
 > **For a 1.21-era reader.** `BlockBehaviour.neighborChanged` now takes a
 > nullable `Orientation` rather than a source `BlockPos` — which is what lets
 > the experimental evaluator order a fan-out relative to where the update came
 > from — and `BlockBehaviour.affectNeighborsAfterRemoval`, which replaced the
-> old removal hook, does not take one at all.
+> old removal hook, does not take one at all. *RedStoneWireBlock* is now
+> `RedstoneWireBlock`, and the repeater and observer tests that
+> `RedstoneWireBlock.shouldConnectTo` held are gone from it: each block answers
+> `BlockBehaviour.shouldRedstoneWireConnectTo` for itself.
 
 ## Where to look
 
@@ -342,13 +346,13 @@ The three questions a block answers are `SignalGetter.getSignal`,
 `SignalGetter.getBestNeighborSignal` over `SignalGetter.DIRECTIONS` is how a
 position is read. The trace starts at `LeverBlock.pull` with
 `LeverBlock.updateNeighbours`, enters the wire at
-`RedStoneWireBlock.neighborChanged`, and the number is decided by
-`RedStoneWireBlock.getBlockSignal` against
+`RedstoneWireBlock.neighborChanged`, and the number is decided by
+`RedstoneWireBlock.getBlockSignal` against
 `RedstoneWireEvaluator.getIncomingWireSignal`, with
 `DefaultRedstoneWireEvaluator.updatePowerStrength` doing the write and the
-fan-out. For the drawing rules read `RedStoneWireBlock.getConnectionState` and
-`RedStoneWireBlock.shouldConnectTo`; for what leaves a wire,
-`RedStoneWireBlock.getSignal`. The second implementation is
+fan-out. For the drawing rules read `RedstoneWireBlock.getConnectionState` and
+`RedstoneWireBlock.shouldConnectTo`; for what leaves a wire,
+`RedstoneWireBlock.getSignal`. The second implementation is
 `ExperimentalRedstoneWireEvaluator.calculateCurrentChanges` and
 `ExperimentalRedstoneWireEvaluator.causeNeighborUpdates`.
 `SignalGetter.getControlInputSignal` is not named above and is the door into

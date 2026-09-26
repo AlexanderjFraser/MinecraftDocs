@@ -1,6 +1,6 @@
 # Lightmap, fog and sky
 
-> Verified against **Minecraft 26.2** · Part XI · the sun goes down: every colour on screen, traced back to one keyframe curve.
+> Verified against **Minecraft 26.3** · Part XI · the sun goes down: every colour on screen, traced back to one keyframe curve.
 
 Stand on a hill and watch the light go. The sky over the taiga slides from
 blue towards black, the murk closes in until the far trees dissolve, stars
@@ -26,9 +26,9 @@ touches no attribute and no probe at all.
 | `Lightmap` | how bright, as the 16×16 texture every terrain vertex samples | Render thread |
 | `FogRenderer` | how far you can see, in what colour, and in which medium | Render thread |
 | `SkyRenderer` | what hangs above the horizon — and which of two skies it is | Render thread |
-| `CloudRenderer` | the cloud cells, and the face list built from them | `CloudRenderer.prepare` bakes on a worker, the rest on Render |
+| `CloudRenderer` | the cloud cells, and the face list built from them | the reload's `CloudRenderer.prepare` bakes on a worker, the rest on Render |
 | `WeatherEffectRenderer` | which columns get rain, which get snow, and how hard | Render thread |
-| `LevelRenderer` | which of those become frame-graph passes at all | Render thread |
+| `LevelRenderer` | which of those draw at all, and inside which frame-graph pass | Render thread |
 
 ## What a renderer has to know about an attribute, and no more
 
@@ -118,8 +118,7 @@ sequenceDiagram
     Note over LM,LR: per frame, render
     LM->>LM: render — one three-vertex draw into a 16×16 texture
     LR->>LR: addSkyPass — disc, sunrise fan, sun, moon, stars, dark disc
-    LR->>LR: addMainPass — terrain samples the lightmap
-    LR->>LR: addCloudsPass, then addWeatherPass
+    LR->>LR: addMainPass — terrain samples the lightmap, then clouds and weather
 ```
 
 The middle band's order is a dependency order. `GameRenderer.extract` runs
@@ -170,8 +169,8 @@ real one. Sky and fog interpolate mid-tick. World lighting steps.
 
 Three leftovers. `Lightmap.getBrightness` survives but no longer feeds the
 lightmap: it is a CPU-side duplicate of the shader's curve, kept for `Hud`,
-`EntityRenderer`'s shadow sampling and `ScreenEffectRenderer` alone. The
-packing statics moved out of the texture into `LightCoordsUtil`, from where a
+`EntityRenderer`'s shadow sampling and `LevelExtractor`'s underwater overlay
+alone. The packing statics moved out of the texture into `LightCoordsUtil`, from where a
 packed value reaches a vertex through `VertexConsumer.setLight`. And there are two lightmaps, not one: `GameRenderer.levelLightmap` always
 returns the real 16×16 texture, `UiLightmap` is a 1×1 white
 `DynamicTexture`, and `GameRenderer.lightmap` hands out the second for
@@ -207,12 +206,12 @@ off.
 
 **There is one fog UBO for the whole frame, not one per pass.**
 `LevelRenderer.render` takes a single slice and hands the same one to the
-sky, main, weather and always-on-top passes, and does not hand it to the
-clouds pass — which reads a cloud fog end out of the same buffer anyway,
-because the binding is sticky and the shader simply keeps reading what was
-last bound. The sky and cloud fog ends are separate fields *inside that one
-block*, which the shaders choose between, so what a player sees as
-per-element fog is a shader decision and not a binding.
+sky and main passes, and to nothing else: the clouds, the weather and the
+always-on-top features draw inside the main pass, and the clouds read a cloud
+fog end out of the same buffer anyway, because the binding is sticky and each
+of them binds whatever was last set. The sky and cloud fog ends are separate fields
+*inside that one block*, which the shaders choose between, so what a player
+sees as per-element fog is a shader decision and not a binding.
 
 ### The list that decides the colour
 
@@ -280,7 +279,7 @@ hard in that case.
 The clouds are the first of the two exceptions: their colour and height are
 `EnvironmentAttributes.CLOUD_COLOR` and `EnvironmentAttributes.CLOUD_HEIGHT`,
 but their *drift* is raw world time. **And the cloud texture is never bound as
-a texture.** `CloudRenderer.prepare` does the whole job on a worker — reading
+a texture.** The reload's `CloudRenderer.prepare` does the whole job on a worker — reading
 the image and baking it into `CloudRenderer.TextureData` through
 `CloudRenderer.packCellData`, one 64-bit word per pixel with the colour in the
 high bits and four neighbour-emptiness flags in the low four — and
@@ -290,9 +289,10 @@ result and raise the rebuild flag.
 writing three bytes per face through `CloudRenderer.encodeFace` — a compressed
 *face list*, expanded to quads in the shader, with
 `CloudRenderer.RelativeCameraPos` and `CloudStatus` deciding which faces
-exist. It is rebuilt on a reload, when the camera crosses a cell boundary or
-changes side, or when the `CloudStatus` changes — and a data pack setting the
-cloud colour to zero alpha removes the pass entirely.
+exist. The per-frame `CloudRenderer.prepare`, at the top of the main pass,
+rebuilds it on a reload, when the camera crosses a cell boundary or changes
+side, or when the `CloudStatus` changes — and a data pack setting the cloud
+colour to zero alpha skips the clouds entirely.
 
 ## What is coming down: rebuilt every frame, and seeded from the ground
 
@@ -310,13 +310,13 @@ records inside a `WeatherRenderState`.
 level is zero, so a clear sky costs nothing. Otherwise it loops every column
 in a square of radius `Options.weatherRadius`, querying the heightmap and the
 precipitation at each — every frame, on the CPU. The vertex buffer is rebuilt in
-`WeatherEffectRenderer.render` rather than in extract, and rain and snow are
-two indexed draws sharing it. `WorldBorderRenderer` rides in the same pass and
-is nothing to do with the weather: the pass simply draws the two of them one
-after the other into whichever target it was given — the dedicated weather
-target when the transparency chain made one, the main target otherwise — and
-the border's own draw is handed the render distance and the far plane so it
-can stop the wall where the fog would have taken it anyway. What the border
+`WeatherEffectRenderer.prepare`, at the top of the main pass, rather than in
+extract, and rain and snow are two indexed draws sharing it. `WorldBorderRenderer`
+rides in the same pass and is nothing to do with the weather: the main pass
+simply draws the two of them back to back after the translucent terrain — a
+single time, or once per stage with *improved transparency* — and the
+border's `WorldBorderRenderer.prepare` is handed the render distance and the
+far plane so it can stop the wall where the fog would have taken it anyway. What the border
 *is* stays [Part IV's](../../reference/level-data-and-rules.md).
 Particles and sound are somebody else's job: `ClientLevel.tickWeatherEffects`
 spawns those per tick within the same radius, next to
@@ -363,13 +363,13 @@ for no attribute at all and seeds each column from its own coordinates.
 > `DimensionType.skybox` plus attributes), *FogParameters* (now `FogData`),
 > *RenderSystem.setShaderFogColor* and its siblings (now one
 > `RenderSystem.setShaderFog` taking a uniform slice),
-> *LevelRenderer.renderSky* / *renderClouds* / *renderSnowAndRain* (now the
-> `LevelRenderer.addSkyPass` family of frame-graph passes, declared as
-> [visibility and the frame graph](visibility-and-the-frame-graph.md)
+> *LevelRenderer.renderSky* / *renderClouds* / *renderSnowAndRain* (now
+> `LevelRenderer.addSkyPass` and draws inside `LevelRenderer.addMainPass`,
+> frame-graph passes declared as [visibility and the frame graph](visibility-and-the-frame-graph.md)
 > describes), and *Level.getSkyColor*, *ClientLevel.getStarBrightness* and
 > *ClientLevel.effects*, all attributes now. The draws went the way of
 > everything in [blaze3d](blaze3d.md), from `RenderPipelines.LIGHTMAP` and
-> `RenderPipelines.SKY` to `RenderPipelines.WEATHER_DEPTH_WRITE`.
+> `RenderPipelines.SKY` to `RenderPipelines.WEATHER`.
 
 ## Where to look
 

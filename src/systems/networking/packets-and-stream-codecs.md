@@ -1,6 +1,6 @@
 # Packets and stream codecs
 
-> Verified against **Minecraft 26.2** · Part IX · What the thing crossing the wire is: a value with no bytes, a number nobody chose, and the limits that stop a hostile sender.
+> Verified against **Minecraft 26.3** · Part IX · What the thing crossing the wire is: a value with no bytes, a number nobody chose, and the limits that stop a hostile sender.
 
 [The connection](the-connection.md#one-packet-there-and-one-back) hands you a frame: a length, then a run
 of bytes that a handler on a Netty thread is about to turn into a method
@@ -29,7 +29,7 @@ different number in each phase it appears in*.
 | `RegistryFriendlyByteBuf` | that a registry id on the wire means something, by carrying the `RegistryAccess` it is relative to | Netty |
 
 The catalogue of *which* packets exist is generated, not written:
-[reference/packets.md](../../reference/packets.md) lists all 232 packet
+[reference/packets.md](../../reference/packets.md) lists all 235 packet
 types across the eight `*PacketTypes` classes that declare them.
 
 ## A packet is a value, a name and a direction
@@ -72,8 +72,9 @@ those interfaces are the quietest large family in the part: `ClientGamePacketLis
 and `ServerGamePacketListener` are the two big ones — one method per packet,
 which is why the play pair is four hundred lines of signatures — with
 `ClientCommonPacketListener` and `ServerCommonPacketListener` above them and a
-pair each for handshake, status, login, configuration, cookie and ping, all
-rooted in `ClientboundPacketListener` and `ServerboundPacketListener`. Nothing
+pair each for status, login, configuration, cookie and ping. Handshake has only
+a serverbound one, and every phase's interface is rooted in
+`ClientboundPacketListener` or `ServerboundPacketListener`. Nothing
 in them decides anything: they are the vocabulary a phase's `*Impl` class
 promises to implement, and a packet arriving at a listener that implements the
 wrong one is the cast failure and *invalid_packet* kick
@@ -92,12 +93,12 @@ argument. The modern one is a record
 whose *STREAM_CODEC* is a `StreamCodec.composite` naming each component's
 codec and accessor — `ClientboundSystemChatPacket` is one. The older one is
 a plain class with a private buffer constructor and a private write method,
-joined into a codec by `Packet.codec`; `ServerboundSwingPacket`,
-`ClientboundKeepAlivePacket` and `ClientboundSetHealthPacket` are these,
+joined into a codec by `Packet.codec`; `ClientboundKeepAlivePacket` and
+`ClientboundSetHealthPacket` are these,
 and `StreamMemberEncoder` exists chiefly so that second form can bind a
 member reference as its encoder half — `CustomPacketPayload` is its one
 other client. The third shape is the one with no fields to serialise at all:
-a singleton whose codec is `StreamCodec.unit`, fourteen of them, of which
+a singleton whose codec is `StreamCodec.unit`, fifteen of them, of which
 `ServerboundFinishConfigurationPacket` is the one this part's login trace
 turns on.
 
@@ -167,7 +168,7 @@ The constructors and combinators are `StreamCodec.of`,
 `StreamCodec.ofMember`, `StreamCodec.unit`, `StreamCodec.map`,
 `StreamCodec.mapStream`, `StreamCodec.apply`, `StreamCodec.dispatch`,
 `StreamCodec.recursive` and `StreamCodec.cast` — plus
-**`StreamCodec.composite` in twelve arities**, one through twelve pairs of
+**`StreamCodec.composite` in fourteen arities**, one through fourteen pairs of
 codec and getter followed by a constructor. Fields encode and decode
 strictly in argument order, and *that ordering is the format
 specification*: there is no other statement anywhere of what a packet's
@@ -237,19 +238,15 @@ Three rows and no figure, because there is no order here to draw: the third
 row is not the second one wrapped again, it is a subclass of it, and every one
 of the three is built round the raw buffer.
 
-`FriendlyByteBuf` is a `ByteBuf` decorator declaring a hundred and fifty-two
-readers and writers, a hundred and twenty-one of which add a wire format the
+`FriendlyByteBuf` is a `ByteBuf` decorator declaring a hundred and forty-six
+readers and writers, eighty-eight of which add a wire format the
 plain buffer knows nothing about — `FriendlyByteBuf.readVarInt`,
 `FriendlyByteBuf.writeUtf`, `FriendlyByteBuf.readIdentifier`,
 `FriendlyByteBuf.writeResourceKey`, `FriendlyByteBuf.readNbt`,
-`FriendlyByteBuf.readCollection`, `FriendlyByteBuf.readEnumSet`,
-`FriendlyByteBuf.readBlockPos`, `FriendlyByteBuf.readBlockHitResult`,
+`FriendlyByteBuf.readEnumSet`, `FriendlyByteBuf.readBlockPos`,
 `FriendlyByteBuf.readWithCodec` and so on. It holds the two length
 constants `FriendlyByteBuf.MAX_STRING_LENGTH` and
-`FriendlyByteBuf.MAX_COMPONENT_STRING_LENGTH`, and also
-`FriendlyByteBuf.limitValue`, the wrapper an old-style packet puts round a
-collection constructor to get the cap `ByteBufCodecs.collection` gives for
-free.
+`FriendlyByteBuf.MAX_COMPONENT_STRING_LENGTH`.
 
 **`RegistryFriendlyByteBuf` extends it and adds exactly one field**, a
 `RegistryAccess`, behind `RegistryFriendlyByteBuf.registryAccess`. It
@@ -321,10 +318,12 @@ context-or-not: `ProtocolInfoBuilder.serverboundProtocol`,
 `ProtocolInfoBuilder.clientboundProtocol`,
 `ProtocolInfoBuilder.contextServerboundProtocol` and
 `ProtocolInfoBuilder.contextClientboundProtocol`. The context ones let a
-codec ask the *connection* a question, and in 26.2 exactly one protocol
-uses one: `GameProtocols.SERVERBOUND_TEMPLATE`, whose context is
-`GameProtocols.Context` and whose only question is
-`GameProtocols.Context.hasInfiniteMaterials`. The other **eight** templates —
+codec ask the *connection* a question, and exactly one protocol uses one:
+`GameProtocols.SERVERBOUND_TEMPLATE`, whose context is `GameProtocols.Context`
+and whose two questions are `GameProtocols.Context.hasInfiniteMaterials` and
+`GameProtocols.Context.canUseCommandBlocks`, the second deciding how long a
+command the server will read from a `ServerboundCommandSuggestionPacket`. The
+other **eight** templates —
 nine in all, one per direction per phase bar handshaking's serverbound-only
 one — are a `SimpleUnboundProtocol`; `CodecModifier` is the hook a
 context-aware codec is installed through.
@@ -481,12 +480,13 @@ bookkeeping. What keeps the connection alive is
 `Connection.exceptionCaught`, which logs the marker and returns ([the
 connection](the-connection.md#how-a-connection-dies)).
 
-The old shape is measurably weaker here, and the difference is one cap.
-`FriendlyByteBuf.readCollection` applies its constructor to the raw decoded
-count with nothing of its own bounding it, so only the frame limit does, where
-`ByteBufCodecs.collection` refuses the count first and then clamps the
-allocation. The hand-written shape is still in the tree, and
-`FriendlyByteBuf.limitValue` is what one of those must remember to use.
+The old shape is weaker only where it does its own counting. `FriendlyByteBuf`
+has no list or map reader, so a hand-written packet's counted list goes
+through a `ByteBufCodecs` codec — `ClientboundSetPlayerTeamPacket` builds its
+player list with `ByteBufCodecs.list` — and gets the clamped allocation with
+it. A count the packet decodes itself gets no such cap:
+`ClientboundSectionBlocksUpdatePacket` sizes both of its arrays from the raw
+decoded count with nothing of its own bounding it.
 
 ## One type, several encodings
 
@@ -512,6 +512,9 @@ joining connection speaks in turn.
 > is obliged to have. Serialisation is a *STREAM_CODEC* static field that
 > the protocol description reads — which is why one packet class can have
 > two of them, and why a packet class need not own one at all.
+> *FriendlyByteBuf.readList*, *readMap*, *readCollection* and *limitValue* are
+> gone: `ByteBufCodecs.list`, `ByteBufCodecs.map` and `ByteBufCodecs.collection`,
+> which can take the cap as an argument, do their work.
 
 ## Where to look
 
@@ -523,7 +526,7 @@ chain is calling, and `ProtocolInfoBuilder.addPacket` is the line that assigns
 the number without ever naming one.
 
 Then the two layers underneath. **`StreamCodec`** for the combinators, and
-`StreamCodec.composite` in particular, because the twelve arities are the
+`StreamCodec.composite` in particular, because the fourteen arities are the
 whole reason a packet needs no write method. **`IdDispatchCodec`** for how a
 phase's codecs become one codec, and for the duplicate check that fires at
 bind time rather than at registration.

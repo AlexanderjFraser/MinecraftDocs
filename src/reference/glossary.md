@@ -1,6 +1,6 @@
 # Glossary
 
-> Verified against **Minecraft 26.2** · Reference · One sentence
+> Verified against **Minecraft 26.3** · Reference · One sentence
 > per term the rest of the corpus uses, and a link to the page that owns it.
 
 Every page in this corpus assumes the vocabulary of the pages before it.
@@ -29,8 +29,8 @@ expression over them, an optional display entry and a reward. → [advancements]
 
 **Aquifer** — the worldgen component that decides what a point is made of
 once the density is known — stone, air, water or lava — from its own barrier
-and fluid-level noises; a carver writes the block itself but asks the aquifer
-which block to write. → [terrain](../systems/worldgen/terrain.md)
+and fluid-level noises; a carver only marks a shape, and the aquifer decides
+what fills each block of it. → [terrain](../systems/worldgen/terrain.md)
 
 **Argument type** — a Brigadier `ArgumentType` that parses one *argument* off
 the command line, however many words that takes — three for a `Vec3Argument`,
@@ -61,9 +61,9 @@ a player. → [player anatomy](../systems/player/player-anatomy.md#the-ladder-an
 **Batch** (game tests) — a group of game tests that share an environment,
 and the key they are grouped by *is* that environment rather than a name or
 a class of its own. The renderer's
-*batch* is a different word: quads grouped by render state, which is [section
-meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes)' and
-[entity rendering](../systems/rendering/entity-rendering.md)'s.
+*batch* is a different word: quads grouped by render state, which belongs to [section
+meshing](../systems/rendering/section-meshing.md#what-the-compiler-makes) and
+[entity rendering](../systems/rendering/entity-rendering.md).
 → [game tests](../systems/commands/game-tests.md)
 
 **Beardifier** — the density-function term that bends terrain around a
@@ -74,15 +74,19 @@ tick; unless it overrides `Behavior.canStillUse` it stops inside the same
 `Brain.tick` that started it, so everything it does it does in
 `Behavior.start`. → [AI](../systems/entities/ai-goals-and-brains.md)
 
-**Biome** — a named bundle of generation settings, mob spawns, block tints
-and environment attributes, attached to a 4×4×4 volume of the world. → [biomes](../systems/worldgen/biomes.md)
+**Biome** — a named bundle of generation settings, block tints and
+environment attributes, attached to a 4×4×4 volume of the world; its mob
+spawns are one of those attributes. → [biomes](../systems/worldgen/biomes.md)
 
 **BiomeSource** — the object that answers "which biome is at this quart
-position": by a climate search, from one fixed biome, from a checkerboard of a
-listed few, or — in the End — off a single erosion sample. → [biomes](../systems/worldgen/biomes.md)
+position", through the `BiomeResolver` it makes: by a climate search, from one
+fixed biome, from a checkerboard of a listed few, or — in the End — off a
+single erosion sample. → [biomes](../systems/worldgen/biomes.md)
 
-**Blaze3D** — Mojang's GPU abstraction, with OpenGL and Vulkan backends
-behind one `GpuDevice`. → [Blaze3D](../systems/rendering/blaze3d.md)
+**Blaze3D** — Mojang's graphics layer: *com/mojang/blaze3d* keeps
+`RenderSystem`, the window and the frame graph, and the GPU abstraction under
+it is *com/mojang/renderpearl*, with OpenGL and Vulkan backends behind one
+`GpuDevice`. → [Blaze3D](../systems/rendering/blaze3d.md)
 
 **Blend alpha** — the mixing weight `Blender` computes from the distance to
 the nearest measured old column: zero against the seam (use the old
@@ -137,14 +141,14 @@ copied into a `CameraRenderState` once per frame — plus an
 `EnvironmentAttributeProbe` that `Camera.tick` advances and no render state
 carries. → [the frame](../systems/rendering/the-frame.md)
 
-**Carver** — a worldgen pass that hollows out caves and ravines by writing
-air, water or lava, asking the `Aquifer` which — except the nether carver,
-which does not ask. → [terrain](../systems/worldgen/terrain.md)
+**Carver** — a worldgen pass that hollows out caves and ravines by marking
+their shape in a mask and writing no block itself; what each marked block
+becomes — air, water or lava — is the `Aquifer`'s answer, in the Nether as
+everywhere else. → [terrain](../systems/worldgen/terrain.md)
 
 **Cell** — the lattice unit of terrain noise, four blocks wide and deep and
 eight tall in the overworld, 768 to a chunk: the expensive three-dimensional
-density terms are evaluated at its corners and interpolated within it, and the
-caches keyed on it mean nothing outside the cell loop. → [terrain](../systems/worldgen/terrain.md#filling-the-noise-six-loops-one-number-at-the-bottom), [density functions](../systems/worldgen/density-functions.md)
+density terms are evaluated at its corners and interpolated within it. → [terrain](../systems/worldgen/terrain.md#filling-the-noise-six-loops-one-number-at-the-bottom), [density functions](../systems/worldgen/density-functions.md)
 
 **Chunk** — a 16-by-16 column of the world's full height: sections,
 heightmaps, block entities, tick queues and a status. → [chunk anatomy](../systems/world/chunk-anatomy.md)
@@ -227,8 +231,8 @@ the source of every partial tick in the frame but the lightmap's, which is a
 literal one. → [the client loop](../systems/client/the-client-loop.md)
 
 **Density function** — a node in the JSON-defined graph that turns a
-position into a number; the graph in the registry is never the graph that
-actually runs. → [density functions](../systems/worldgen/density-functions.md)
+position into a number, but only once compiled into a `DensitySampler`: the
+graph in the registry is never the graph that actually runs. → [density functions](../systems/worldgen/density-functions.md)
 
 **Dialog** — a data-pack-defined form the server can put on a player's
 screen, whose submitted values come back as a packet. → [dialogs](../systems/commands/dialogs.md)
@@ -253,7 +257,7 @@ it. → [entity anatomy](../systems/entities/entity-anatomy.md)
 **EnvironmentAttribute** — a per-dimension, per-biome, per-time-of-day,
 per-weather value resolved through a stack of layers: directly on the server,
 through the camera's smoothing probe on the client. Not only the visual ones:
-alongside fog and sky colour sit twenty gameplay attributes — whether lava
+alongside fog and sky colour sit twenty-three gameplay attributes — whether lava
 flows fast, whether piglins zombify, whether a bed works, and the villager's
 schedule. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#the-stack-a-value-falls-through)
 
@@ -269,7 +273,7 @@ on in the create-world screen is a data-pack reload. → [creating a world](../s
 
 **Extract** — the first half of the client's frame: walk the game state, cull
 it, and write the render states, so that the drawing half reads no live game
-object from `LevelRenderer.render` down — the top of the render half still
+state from `LevelRenderer.render` down — the top of the render half still
 does. The top-level states are single objects re-filled each frame, not fresh
 immutable values. → [the frame](../systems/rendering/the-frame.md)
 
@@ -357,8 +361,8 @@ for an inline one. → [identifiers and registries](../systems/foundations/ident
 **HolderSet** — a set of holders: either a tag (`HolderSet.Named`) or a
 literal list. → [tags](../systems/foundations/tags.md)
 
-**HUD** — the in-world overlay (hotbar, hearts, chat, boss bars), which in
-26.2 is the class `Hud` — `Gui` now means the screen manager. → [the HUD](../systems/client/hud.md)
+**HUD** — the in-world overlay (hotbar, hearts, chat, boss bars), which is
+the class `Hud`; `Gui` is the screen and overlay manager that holds it. → [the HUD](../systems/client/hud.md)
 
 ## I
 
@@ -416,7 +420,7 @@ sky-light pair into a colour; drawn on the GPU once per tick. → [lightmap, fog
 
 **LivingEntity** — the rung of the entity tree that can be hurt and healed:
 health, attributes, mob effects, equipment and the shared movement code. It
-holds 124 of `Entity`'s 191 descendants and has exactly three direct
+holds 124 of `Entity`'s 192 descendants and has exactly three direct
 subclasses — `Avatar`, `ArmorStand` and `Mob`.
 → [entity
 anatomy](../systems/entities/entity-anatomy.md#the-tree-and-the-class-that-was-inserted-into-it)
@@ -462,7 +466,7 @@ open a prediction window before they send. → [prediction and acknowledgement](
 
 ## N
 
-**NBT** — Minecraft's binary tag format; in 26.2 a sealed `Tag` hierarchy
+**NBT** — Minecraft's binary tag format: a sealed `Tag` hierarchy
 whose scalars are records and whose containers (`CompoundTag`, `ListTag`) are
 final classes, read and written through `NbtIo` and reached by codecs through
 `NbtOps`. → [codecs, NBT and JSON](../systems/foundations/codecs-nbt-json.md)
@@ -476,14 +480,16 @@ write. → [scores, teams and stored data](../systems/commands/scoreboard-and-da
 neighbours after a change; distinct from a *shape update*, which runs on
 both sides. → [blocks and states](../systems/blocks/blocks-and-states.md#the-two-update-channels)
 
-**NoiseChunk** — the per-chunk workspace: it installs the caches the
-density-function graph asked for, and it is also the loop driver that fills
-the lattice from them. → [density
+**NoiseChunk** — the per-chunk workspace: it binds the dimension's compiled
+samplers to one context that grants the caches the density-function graph
+asked for and carries the chunk's beardifier and blender, and it holds the
+chunk's `Aquifer`. → [density
 functions](../systems/worldgen/density-functions.md#wrap-once-per-chunk)
 
-**NoiseRouter** — the density functions a generator asks for, as one record;
-`NoiseRouter.mapAll` rebuilds them all at once, which is how a whole graph gets
-its caches installed in one pass. → [density functions](../systems/worldgen/density-functions.md)
+**NoiseRouter** — the eight density functions a generator asks for, as one
+record: six are the climate, which `NoiseRouter.createClimateSampler` turns
+into a `Climate.Sampler`; *chunk_surface_level* is the surface pass's; and
+*final_density* is the one the fill samples. → [density functions](../systems/worldgen/density-functions.md)
 
 ## O
 
@@ -530,10 +536,10 @@ more varied. → [chunk anatomy](../systems/world/chunk-anatomy.md)
 
 **Parameter set** — the declared contract between a loot context and the
 things asked against it: a `ContextKeySet` naming which `ContextKey`s must be
-present and which may be. Asking for a parameter the set does not allow throws, and asking for an
-optional one that is absent gives nothing — two of the three ways a parameter
-can be missing. All twenty-six sets are listed in [loot context parameter
-sets](loot-context-params.md). → [contexts and predicates](../systems/items/contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)
+present and which may be. Building a context with a parameter the set does
+not allow, or without one it requires, throws; asking for one that is absent
+gives nothing — two of the three ways a parameter can be missing. All thirty-one
+sets are listed in [loot context parameter sets](loot-context-params.md). → [contexts and predicates](../systems/items/contexts-and-predicates.md#a-set-is-a-contract-and-the-caller-signs-it)
 
 **Partial tick** — the fraction of a tick elapsed at the moment a frame is
 drawn, used to interpolate the world. There is no single one: a frame carries
@@ -566,7 +572,7 @@ client rebuilds four of those from the op level it is told — rung zero maps to
 `PermissionSet.NO_PERMISSIONS` instead — and keeps a chat set built by
 subtraction beside them. No packet carries a `PermissionSet` itself. → [permissions](../systems/commands/permissions.md#where-a-set-comes-from)
 
-**PlacedFeature** — a configured feature plus an ordered list of placement
+**PlacedFeature** — a feature plus an ordered list of placement
 modifiers; the unit a biome actually names. → [features and placement](../systems/worldgen/features-and-placement.md)
 
 **Player** — the shared player class: the inventory and ender chest, the open
@@ -613,7 +619,7 @@ addressed by a sector table at its head. → [chunk storage](../systems/world/ch
 
 **Registry** — a frozen, id-assigning table of one kind of thing; some are
 built into the jar, some are loaded from data packs, some are sent to the
-client, and all 153 are listed in [registries](registries.md).
+client, and all 161 are listed in [registries](registries.md).
 → [identifiers and registries](../systems/foundations/identifiers-and-registries.md#the-table)
 
 **Reload listener** — the unit of a reload: one object that reads what it
@@ -622,17 +628,18 @@ apply running in order behind a `PreparableReloadListener.PreparationBarrier`. �
 
 **Render state** — the snapshot of what to draw, produced by the extract half
 of the frame and consumed by the drawing half; the property that matters is
-that the drawing half reads no game object below `LevelRenderer.render` (see
+that the drawing half reads no game state below `LevelRenderer.render` (see
 *Extract* for where the wall actually is).
 → [the frame](../systems/rendering/the-frame.md#the-wall-and-the-one-level-at-which-it-is-real)
 
 **RenderPipeline** — the client's declaration of how to rasterise: shaders,
 blend, depth, cull, vertex format, topology. It says nothing about which
-textures to bind or which target to draw into; that is `RenderType`. → [Blaze3D](../systems/rendering/blaze3d.md)
+textures to bind, which `RenderType` adds, or which target to draw into,
+which is the one its `RenderPass` was opened on. → [Blaze3D](../systems/rendering/blaze3d.md)
 
-**RenderType** — a `RenderPipeline` plus everything a pipeline does not say:
-which target to draw into, which textures to bind, and the layering and
-batching rules. → [Blaze3D](../systems/rendering/blaze3d.md)
+**RenderType** — a `RenderPipeline` plus the textures to bind and the
+layering and batching rules. Neither says which target to draw into: a
+`RenderType` draws into whatever `RenderPass` its caller has opened. → [Blaze3D](../systems/rendering/blaze3d.md)
 
 **Resource pack** — a pack of assets; the client half of the same pack
 machinery data packs use. → [the resource system](../systems/foundations/resource-system.md#discover-the-repository-and-its-packs)
@@ -724,7 +731,7 @@ stored on the chunk it began in. → [structure placement](../systems/worldgen/s
 **Submit node** — one thing to draw that is not terrain, written into
 `SubmitNodeStorage` by the *submit* pass out of the render states extract left
 behind, and sorted into a phase before the feature renderers turn it into
-vertices; the fifteen phases and the thirteen renderers are listed in
+vertices; the fifteen phases and the twelve renderers are listed in
 [submit phases](submit-phases.md). → [entity rendering](../systems/rendering/entity-rendering.md#submit-describing-a-draw-without-making-one)
 
 **SynchedEntityData** — the per-entity table of small values the server
@@ -767,7 +774,8 @@ or a chat click event, sent through `ClientPacketListener.sendUnattendedCommand`
 The client re-parses it and asks first if it fails to parse, needs a signature,
 or needs a permission the client believes it lacks; a clean one goes without a
 prompt. A sign's command is not one of these — it runs on the server at
-gamemaster level and the client is never asked. → [permissions](../systems/commands/permissions.md#asking-a-question-the-client-cannot-answer)
+gamemaster level, only on a sign whose *allow_op_features* flag is set, and
+the client is never asked. → [permissions](../systems/commands/permissions.md#asking-a-question-the-client-cannot-answer)
 
 ## V
 
@@ -791,14 +799,15 @@ the children that get input, the renderables that get recorded, and the
 narratables that get described.
 → [GUI and screens](../systems/client/gui-and-screens.md#the-objects-and-what-contains-what)
 
-**Window** — the GLFW handle the whole client hangs off: the framebuffer
-size, the GUI scale, fullscreen, and the six window callbacks — not the input
-ones, which `KeyboardHandler` and `MouseHandler` register. → [the window](../systems/rendering/the-window.md)
+**Window** — the SDL window handle the whole client hangs off: the
+framebuffer size, the GUI scale, fullscreen, and the nineteen kinds of event
+`Window.handleEvent` answers — not the input ones, which `SDLEventHandler`
+hands to `KeyboardHandler` and `MouseHandler`. → [the window](../systems/rendering/the-window.md)
 
 **World clock** — the identity a timeline is sampled against: a unit record
 in `Registries.WORLD_CLOCK`, two of them in vanilla, holding nothing at all.
 The tick count, the rate and the paused flag are
-`ServerClockManager.ClockInstance`'s, one per clock, and `/time` can move or
+`ServerClockManager.ServerClockInstance`'s, one per clock, and `/time` can move or
 pause each independently. → [environment attributes and timelines](../systems/world/environment-attributes-and-timelines.md#who-owns-the-clock)
 
 **World gen settings** — `WorldGenSettings`: a `WorldOptions` (the seed,

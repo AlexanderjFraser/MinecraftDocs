@@ -32,8 +32,9 @@ wording done after the check and read again by a session that changed
 nothing, Part XI's figures (pass 7's one unrun session), the queues closed,
 the tag `release-26.3`. Its brief is `docs/pass8-brief.md`; its schedule
 (sessions V1, V2, A–Q, nineteen) with the status column the owner reads is
-that file's Part 6; **V1 has run** (the tools read 26.3, 91 pages say 26.3 and 42
-say 26.2 until V2), and V2's scope — 42 pages, by system — is the owner's to set. After it the production process is rebuilt from first
+that file's Part 6; **V1 and V2 have run** (the tools read 26.3 and every page
+says 26.3; V2 rewrote the 42 pages whose systems 26.3 reshaped), and session A
+is next. After it the production process is rebuilt from first
 principles on a new subject (`D:\DjangoDocs`, its `docs/brief.md`) and
 returns here with what it learned; until then only a version pass the owner
 asks for and the corrections readers file touch the site. Beside the passes,
@@ -56,10 +57,10 @@ next session that touches it.
    page's foot). When a release lands, the version pass re-verifies the pages
    (`docs/plan.md`, *The version pass*; `tools/version_pass.py` stages the
    tree). **The tools read 26.3 (2026-09-15), and each page is checked against
-   the release its own header names**: since pass 8's session V1, 91 pages say
-   26.3 and 42 — the systems 26.3 reshaped — still say 26.2 and are checked
-   against `reference/26.2/` until session V2 moves them; `verify_names.py
-   --current` fails any page left behind. The version is one constant,
+   the release its own header names** (built in pass 8's session V1, so a
+   version pass moves the book a page at a time with every header true); since
+   session V2 every page says 26.3, and `verify_names.py --current`, which
+   fails any page left behind, passes. The version is one constant,
    `tools/mc_version.py`.
 4. **Trace-driven.** A lecture follows a scenario through the system; the
    trace is the spine and the diagram is the artefact. A package tour is
@@ -101,8 +102,8 @@ next session that touches it.
 The Mojang-mapped decompile is **not in this repo** (it can't be — this repo
 is public and the EULA/mappings licence forbids redistributing it). It lives
 under `reference/` (gitignored, with the jars it came from), one tree per
-version: `reference/26.3/`, the book's, and `reference/26.2/`, kept while any
-page still says 26.2 (the gates check such a page against it); each tree's
+version: `reference/26.3/`, the book's, and `reference/26.2/`, which no gate
+needs now that every page says 26.3 (kept for diffing the two releases); each tree's
 `libraries.json` names the library versions its release pins. Every tool reads
 the tree `tools/mc_version.py` names (`MC_SOURCE` overrides). Since 26.x the
 game jar ships with Mojang's names in it, so a tree is a plain Vineflower
@@ -156,7 +157,13 @@ recipes and advancements are reloadable registries read by `RegistryDataLoader`;
 `level/storage` is reworked; `ServerboundSwingPacket` is `ServerboundPunchPacket`
 up and `ClientboundSwingAnimationPacket` down; `RedStoneWireBlock` is
 `RedstoneWireBlock`; and `ItemInHandRenderer`, `ConfiguredFeature` and
-`NameTagFeatureRenderer` are gone. The registry codecs (`RegistryFileCodec`,
+`NameTagFeatureRenderer` are gone. Beside them, changes whose names survive,
+so no gate sees them: density functions are compiled once per dimension
+(`DensityFunctionCompiler`); improved transparency is order-independent and
+drawn inside the main pass; the hurt cooldown is `LivingEntity.damageCooldownTime`
+(`Entity.invulnerableTime` is now full invulnerability); the client's movement
+leaves from `LocalPlayer.sendChanges`; and which side simulates an entity's
+movement is its `MoveSimulationType`. The registry codecs (`RegistryFileCodec`,
 `RegistryFixedCodec`, `HolderSetCodec`) only moved, to `core/registries/codec`.
 
 ## The page (`TEMPLATE.md`)

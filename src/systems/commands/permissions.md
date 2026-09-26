@@ -1,9 +1,9 @@
 # Permissions
 
-> Verified against **Minecraft 26.2** · Part XIII · You are a level-four operator, you type `/msg`, and the server's own answer to *may this player send a chat command* is **no** — because an operator's permission set grants exactly one thing that is not a command level.
+> Verified against **Minecraft 26.3** · Part XIII · You are a level-four operator, you type `/msg`, and the server's own answer to *may this player send a chat command* is **no** — because an operator's permission set grants exactly one thing that is not a command level.
 
 Op yourself to four, the highest rung there is, and ask the server whether
-you hold `Permissions.CHAT_SEND_COMMANDS` — one of nine named capabilities
+you hold `Permissions.CHAT_SEND_COMMANDS` — one of five named capabilities
 the class `Permissions` holds, each of them a `Permission.Atom`. It says no.
 Not because you are restricted — because the set you were given is a
 `LevelBasedPermissionSet`, and its answer to any permission that is not a
@@ -12,7 +12,7 @@ live only in the *client's* set, which the server never sees and never
 sends. There are two permission universes in this game and they overlap in
 one place.
 
-That is the shape of the change 26.2 made, and it is the largest API break
+That is the shape of the change, and it is the largest API break
 in this book: **a permission is no longer an integer.** The five levels are
 still there, still numbered nought to four, still stored as integers in
 *ops.json* — but a command node no longer asks for a number. It asks a
@@ -102,9 +102,9 @@ a command node carries: `Commands.hasPermission` wraps a `PermissionCheck`
 in a `PermissionProviderCheck`, and that predicate is what Brigadier
 consults.
 
-**Ninety-five** — `Commands.hasPermission` call sites, which is every
-requirement predicate on every command node in the game. Ninety-four are server-side
-command registrations; the ninety-fifth is on the *client*, in
+**Ninety-seven** — `Commands.hasPermission` call sites, which is every
+requirement predicate on every command node in the game. Ninety-six are server-side
+command registrations; the ninety-seventh is on the *client*, in
 `ClientPacketListener`'s node builder.
 
 Two things about `LevelBasedPermissionSet` decide most of this page. It is
@@ -132,20 +132,23 @@ macros](functions-and-macros.md#the-two-permission-verbs)).
 
 ## Where a set comes from
 
-`MinecraftServer.getProfilePermissions` is the whole of it, and it returns a
-`LevelBasedPermissionSet` — never a union, never an atom set. It is
-consulted afresh every time `ServerPlayer.permissions` is called; nothing is
-cached on the player.
+`MinecraftServer.getProfilePermissions` is the whole of it — in
+singleplayer through its override, `IntegratedServer.getProfilePermissions`
+— and it returns a `LevelBasedPermissionSet`, never a union, never an atom
+set. It is consulted afresh every time `ServerPlayer.permissions` is called;
+nothing is cached on the player.
 
 Its cascade is short. Not on the operator list at all, and you get
 `LevelBasedPermissionSet.ALL` — rung zero, and deprecated in place. On the
 list, and the entry's own set wins — `ServerOpListEntry` holds a
 `LevelBasedPermissionSet`, built when the file was read from the integer the
-file stores. Failing that: the
-singleplayer owner gets `LevelBasedPermissionSet.OWNER`; any other
-singleplayer player gets owner or rung zero depending on the *allow cheats
-for other players* toggle; and on a dedicated server the fallback is the
-configured *op-permission-level* property.
+file stores. Failing that, on a dedicated server the fallback is the
+configured *op-permission-level* property. Singleplayer's override answers
+first. The owner gets `LevelBasedPermissionSet.OWNER` when the world allows
+cheats and rung zero when it does not; any other player gets
+`LevelBasedPermissionSet.GAMEMASTER` when the world allows cheats and the
+host has switched on *Command Access* for other players, rung zero when
+cheats are on without it, and the cascade above when cheats are off.
 
 The integer survives at every edge of that model, which is worth knowing
 before you go looking for a permissions file. *ops.json* stores a number.
@@ -180,8 +183,8 @@ owns the two checks and the route that reaches only the second.
 
 Two more consequences worth naming. `Commands.LEVEL_MODERATORS` gates
 **nothing**: the rung exists, is settable and is stored, and no vanilla
-command asks for it. And the ninety-five gates divide four ways. Ninety-one
-name a level constant outright — sixty-six gamemaster, sixteen admin, nine
+command asks for it. And the ninety-seven gates divide four ways. Ninety-three
+name a level constant outright — sixty-eight gamemaster, sixteen admin, nine
 owner. Two are the ternary in `SeedCommand` and `VersionCommand`, which drop
 to `Commands.LEVEL_ALL` when the server is the integrated one, and those are
 the only two appearances of that constant in the game. The last two name a
@@ -198,9 +201,9 @@ them the server sent or the machine decided; the fourth is a constant the
 two sides literally share.
 
 **The op level**, which arrives on an entity event and is mapped by
-`LocalPlayer.handleEntityEvent` onto one of the five sets — except on an
-integrated server, where `IntegratedServer.updatePermissionAndChatAbilities`
-writes the host's own `LocalPlayer` directly and no packet is involved. Note the bottom
+`LocalPlayer.handleEntityEvent` onto one of the five sets — on an
+integrated server too, where the host's own `LocalPlayer` learns its level
+the same way. Note the bottom
 rung: level zero maps to `PermissionSet.NO_PERMISSIONS`, not to
 `LevelBasedPermissionSet.ALL`. The two are indistinguishable in practice —
 rung zero satisfies no level and no atom either — but the client's copy is a
@@ -261,7 +264,8 @@ dialog button and a chat click event both route through
 `Screen.clickCommandAction` and an adapter `ClientPacketListener` builds for
 itself. A **sign does not**. A sign's click command is stored in the block entity
 and never travels to the client as a command at all: `SignBlockEntity` runs
-it on the server, through a `CommandSourceStack` it builds itself at a
+it on the server, and only when the sign's *allow_op_features* flag is set,
+through a `CommandSourceStack` it builds itself at a
 hard-coded `LevelBasedPermissionSet.GAMEMASTER`. There is nothing for the
 client to vet, because the client was never told what the text does. The
 figure is the route the other two take.
@@ -299,8 +303,8 @@ straight out, and a sign's command never came this way to begin with.
 
 Which answers the operator at the top of this page. Their `/msg` goes
 through, and it goes through because nothing on the server's side of the
-wire ever asks for `Permissions.CHAT_SEND_COMMANDS`: the `/msg` node's
-requirement is a rung, the atom lives only in this client's `ChatAbilities`,
+wire ever asks for `Permissions.CHAT_SEND_COMMANDS`: the `/msg` node carries
+no requirement at all, the atom lives only in this client's `ChatAbilities`,
 and the one participant that consults it is the machine the player is
 sitting at. The server's *no* is real and it is never asked. That is what
 two permission universes overlapping in one place buys — and the one place

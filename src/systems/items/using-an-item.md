@@ -1,6 +1,6 @@
 # Using an item
 
-> Verified against **Minecraft 26.2** · Part VII · A player holds the use key on a piece of cooked beef, then holds it on a bow — one countdown, two endings.
+> Verified against **Minecraft 26.3** · Part VII · A player holds the use key on a piece of cooked beef, then holds it on a bow — one countdown, two endings.
 
 You hold the use button on cooked beef and thirty-two ticks later you have
 eaten it. You hold the same button on a bow and nothing happens at all until
@@ -107,7 +107,7 @@ The packet goes up either way; the cooldown suppresses the prediction, not the
 report of it. The prediction is complete before a byte leaves the client, for
 the meal and the bow alike. Both answer `InteractionResult.CONSUME`, whose
 `InteractionResult.SwingSource.NONE` is why neither swings the arm, although
-`ItemInHandRenderer.itemUsed` still runs — the small dip the item makes as
+`FirstPersonHandsAndItems.itemUsed` still runs — the small dip the item makes as
 the use begins. An *instant* use, one whose `ItemStack.getUseDuration` is
 zero, returns its outcome the other way instead, through
 `InteractionResult.Success.heldItemTransformedTo`, which both game modes
@@ -174,7 +174,8 @@ the crumbs are pure client simulation.
 For the bow the call does nothing whatever: `BowItem` does not override
 `Item.onUseTick`, and the base body is empty. Everything you see while
 drawing is the renderer reading the same counter the logic is decrementing.
-`ItemInHandRenderer` computes the draw curve for `ItemUseAnimation.BOW` from
+`FirstPersonHandsAndItemsRenderer` computes the draw curve for
+`ItemUseAnimation.BOW` from a per-frame copy of
 `LivingEntity.getUseItemRemainingTicks`, and the three-stage bow texture is
 not code at all: *items/bow.json* is a *condition* on *using_item* wrapping
 a *range_dispatch* on the *use_duration* property (`UseDuration`), scaled so
@@ -185,7 +186,7 @@ override `Item.onUseTick`, and that body is entirely server-side: it plays
 the three `CrossbowItem.ChargingSounds` at fixed fractions of
 `CrossbowItem.getChargeDuration` and, on reaching one, writes
 `DataComponents.CHARGED_PROJECTILES` onto the stack. Its client half is a
-render-thread computation — `CrossbowPull` and `ItemInHandRenderer` both
+render-thread computation — `CrossbowPull` and `FirstPersonHandsAndItems` both
 call `CrossbowItem.getChargeDuration`, which calls
 `EnchantmentHelper.modifyCrossbowChargingTime`
 ([enchantments](enchantments.md#what-runs-on-the-client-and-why-it-is-only-ever-a-number)
@@ -273,7 +274,7 @@ The **client's branch has no exit**. Nothing on the client ever reaches
 `LivingEntity.completeUsingItem` from the countdown — it is called from
 `Player.handleEntityEvent` when event 9 arrives, and nowhere else on that
 side. The counter meanwhile keeps falling past zero and only the renderer
-notices: `ItemInHandRenderer` draws a use pose solely while
+notices: `FirstPersonHandsAndItemsRenderer` draws a use pose solely while
 `LivingEntity.getUseItemRemainingTicks` is positive, so the arm drops at
 tick 32 whether or not the packet has landed.
 
@@ -480,6 +481,8 @@ two endings: they are not one path with a switch on it. They are two.
 > `UseDuration` range-select property plus a *using_item* condition, both
 > declared in the item's JSON. The crossbow keeps a bespoke property,
 > `CrossbowPull`, only because its denominator is enchantable.
+> *ItemInHandRenderer* is gone; `FirstPersonHandsAndItems` and
+> `FirstPersonHandsAndItemsRenderer` do its work.
 
 ## Where to look
 
@@ -498,10 +501,12 @@ For where a use begins, read down: `Minecraft.startUseItem`, then
 
 `Consumable` is the meal in one class. `BowItem` is the bow, and
 `ProjectileWeaponItem` above it holds the two methods that decide how many
-arrows leave and whether any is spent; `CrossbowItem` is the one item that
-uses the tick hook and the one that sets `ItemStack.useOnRelease`.
-`UseEffects` and `UseCooldown` are the two components that outlive the use,
-and `ItemInHandRenderer` is everything you actually see.
+arrows leave and whether any is spent; `CrossbowItem` is the one ranged
+weapon that uses the tick hook and the one item that sets
+`ItemStack.useOnRelease`. `UseEffects` and `UseCooldown` are the two
+components that outlive the use, and `FirstPersonHandsAndItems` and
+`FirstPersonHandsAndItemsRenderer` between them are everything you actually
+see.
 
 ---
 

@@ -1,6 +1,6 @@
 # Contexts and predicates
 
-> Verified against **Minecraft 26.2** · Part VII · A command asks *is this true, here, of this entity?* — and the machinery that answers is the same machinery that decides what a chest contains.
+> Verified against **Minecraft 26.3** · Part VII · A command asks *is this true, here, of this entity?* — and the machinery that answers is the same machinery that decides what a chest contains.
 
 `/execute if predicate example:in_the_rain run say wet` is a question about
 the world, and the world is not something a data-pack file may look at.
@@ -11,7 +11,7 @@ handing it to an object loaded out of a registry, which returns a boolean.
 That machinery is usually called the loot system, because most of it lives
 in `net/minecraft/world/level/storage/loot` — but the keys and the sets it
 is built from live in `net/minecraft/util/context` and know nothing about
-loot at all. **Twelve of the twenty-six parameter sets never roll a loot
+loot at all. **Seventeen of the thirty-one parameter sets never roll a loot
 table**, and the set that is enforced is always the *caller's*: a loot
 table's own declared *type* is read exactly once, by the load-time
 validator, and never consulted again while the game is running.
@@ -23,7 +23,7 @@ package is the fact the rest of the page hangs off.
 
 ```mermaid
 flowchart TD
-    Callers["commands, selectors, advancements, trades, enchantment effects"]
+    Callers["commands, selectors, advancements, trades, enchantment effects, fuel, composters"]
     Client["SlotDisplayContext, on the client"]:::client
     subgraph U["util/context"]
         CK["ContextKey, an Identifier plus a static type"]
@@ -33,7 +33,7 @@ flowchart TD
     LPar["LootParams, the immutable inputs"]:::server
     LCtx["LootContext, one invocation"]:::server
     CK -->|"declared required or optional by ContextKeySet.Builder"| CKS
-    CKS -->|"ContextMap.Builder.create validates against it"| CMap
+    CKS -->|"ContextMap.Builder.buildAndValidate validates against it"| CMap
     Callers -->|"each brings its own key set"| CKS
     Client -->|"builds a ContextMap of its own"| CMap
     CMap -->|"wrapped, with a ServerLevel beside it"| LPar
@@ -51,9 +51,12 @@ The dividing line is the whole argument of this page. `ContextKey`,
 or loot. Everything below them is in the loot package, and everything
 *above* them is whoever wants a question answered. A loot table is one such
 caller. The others are commands, entity selectors, advancement triggers,
-villager trades, every enchantment effect — and, on the *client*,
-`SlotDisplayContext`, which builds a `ContextMap` of its own so a recipe book
-entry can resolve itself into stacks.
+villager trades, every enchantment effect, a furnace's or brewing stand's fuel
+and a composter's layers — and, on the *client*, `SlotDisplayContext`, which
+builds a `ContextMap` of its own so a recipe book entry can resolve itself
+into stacks. World generation builds one too, in `NoiseChunk`, with no key
+set at all: it is how the blender and the beardifier reach the density
+functions.
 
 ## The cast
 
@@ -61,47 +64,51 @@ entry can resolve itself into stacks.
 |---|---|---|---|
 | `ContextKey` | *util/context* | one parameter's name and its Java type, and nothing else | — |
 | `ContextKeySet` | *util/context* | which keys a call site must supply, and which it may | built once at class-init |
-| `ContextMap` | *util/context* | the values, and the only place the contract is enforced | server main for loot; the client builds its own for a recipe display |
+| `ContextMap` | *util/context* | the values, and the only place the contract is enforced | server main for loot; the client builds its own for a recipe display, and world generation one per `NoiseChunk` |
 | `LootParams` | *storage/loot* | the `ServerLevel`, the map, the dynamic-drop callbacks, the luck | server main |
 | `LootContext` | *storage/loot* | one invocation: the random source, the reference resolver, the visited stack | server main |
 | `LootItemCondition` | *storage/loot/predicates* | a predicate over a `LootContext` — the boolean answer | server main |
-| `NumberProvider` | *storage/loot/providers* | a float over a `LootContext` — the numeric answer | server main |
+| `ContextFloatProvider` | *storage/loot/providers* | a float over a `LootContext` — the numeric answer, beside `ContextIntProvider` for an int | server main |
 | `ValidationContext` | *storage/loot* | at load, whether an element asked for a key its set does not have | background executor |
 
 ## A key is a name with a type welded to it
 
 `ContextKey` is an `Identifier` and a phantom type parameter. It has no
 value, no default, no validation and no registry — `ContextKey.vanilla`
-just makes one in the *minecraft* namespace, and only seventeen exist: the
-fifteen static fields of `LootContextParams`, plus the two on
-`SlotDisplayContext` that let a client draw a recipe. The type parameter is what
+just makes one in the *minecraft* namespace, and only twenty-one exist: the
+sixteen static fields of `LootContextParams`, the one on `SlotDisplayContext`
+that lets a client draw a recipe, and four that world generation declares on
+`Blender` and `Beardifier`. The type parameter is what
 makes the rest of the system safe: `LootContextParams.ORIGIN` is a key of
 `Vec3`, `LootContextParams.TOOL` a key of `ItemInstance` (the read-only
 item view), `LootContextParams.ENCHANTMENT_LEVEL` a key of a boxed *int*, and
 a reader gets that type back without a cast.
 
-Those seventeen keys are Java, and a data-pack author never types one of
+Those twenty-one keys are Java, and a data-pack author never types one of
 their names. What a JSON file writes instead is a *target* — *this*,
 *attacker*, *target_entity*, *tool*, *block_entity* — and `LootContextArg` is
 the small translator between the two, resolving a target to a key out of
 three enums nested in `LootContext`: `LootContext.EntityTarget` with six
 entity keys, `LootContext.BlockEntityTarget` and
-`LootContext.ItemStackTarget` with one each.
+`LootContext.ItemStackTarget` with one each. One slot source,
+`RangeSlotSource`, adds a target outside them, *container*, for
+`LootContextParams.CONTAINER`.
 
-All three resolve through `LootContextArg.SimpleGetter`, which reads the map
-with `LootContext.getOptionalParameter` rather than the accessor that throws.
-A target the current set does not carry therefore evaluates to nothing instead
-of taking the tick down — which is the first of the three behaviours the next
-section is about.
+All three enums resolve through `LootContextArg.SimpleGetter`, which reads the map
+with `LootContext.getOptional`, the only reader a context has. A target the
+current set does not carry therefore evaluates to nothing instead of taking
+the tick down — which is the second of the three ways a parameter can be
+missing, two sections on.
 
 ## A set is a contract, and the caller signs it
 
 `ContextKeySet` holds two sets: `ContextKeySet.required` and
 `ContextKeySet.allowed`, the second the union of required and optional, and
 its `ContextKeySet.Builder` refuses to make one key both in either order.
-`LootContextParamSets` registers twenty-six of them into a private bi-map,
-which is what `LootContextParamSets.CODEC` reads when a data pack names a
-set by id — and the ids do not always match the field names:
+`LootContextParamSets` registers thirty-one of them into the built-in
+registry `BuiltInRegistries.CONTEXT_KEY_SET`, which is what
+`LootContextParamSets.CODEC` reads when a data pack names a set by id — and
+the ids do not always match the field names:
 `LootContextParamSets.PIGLIN_BARTER` is *barter* and
 `LootContextParamSets.ALL_PARAMS` is *generic*. Every set's keys are
 tabulated in [Loot context parameter
@@ -109,43 +116,36 @@ sets](../../reference/loot-context-params.md).
 
 `LootContextParamSets.ALL_PARAMS` deserves its own warning, because it is
 the default a loot table with no declared *type* gets
-(`LootTable.DEFAULT_PARAM_SET`) and the set standalone predicate and
-item-modifier files are validated against — and it is **not all of them**.
-It declares eleven of the fifteen keys, all of them required, and omits
-`LootContextParams.INTERACTING_ENTITY`, `LootContextParams.TARGET_ENTITY`,
-`LootContextParams.ENCHANTMENT_LEVEL` and
-`LootContextParams.ENCHANTMENT_ACTIVE`. The practical consequence: a
-standalone predicate file that asks about the interacting or target entity,
-or about an enchantment's level or whether it is active, *is* flagged at
-load; one that asks about a block state or a damage source is not, even
-though `LootContextParamSets.COMMAND` — the set `/execute if predicate`
-actually builds — carries neither.
+(`LootTable.DEFAULT_PARAM_SET`) and the set every standalone predicate, item
+modifier, slot source and number provider file is validated against — and it
+**is all of them**. It requires all sixteen keys, and
+`LootContextParamSets.validate` fails the bootstrap if any other set allows a
+key it does not require. The practical consequence: a standalone predicate
+file is never flagged at load for a key it reads, so one that asks about a
+block state or a damage source loads clean even though
+`LootContextParamSets.COMMAND` — the set `/execute if predicate` builds —
+carries neither.
 
 ## Three ways a parameter can be missing
 
 A mismatch between what a call site has and what an element wants is caught
 at three different moments, with three different costs, and the three are not
 alternatives — an element can survive all of the first and still fail at the
-last. `ContextMap.Builder.create` is where the contract is enforced, and it is
-the only place: it throws if the values collected include a key the set
+last. `ContextMap.Builder.buildAndValidate` is where the contract is enforced,
+and it is the only place: it throws if the values collected include a key the set
 does not allow, and again if the set requires a key that is absent. Note
 what it compares — the keys the **caller** supplied against the set the
 **caller** named. Nothing on this path ever sees the loot table.
 
-1. **At build time.** `ContextMap.Builder.create` throws, naming the
+1. **At build time.** `ContextMap.Builder.buildAndValidate` throws, naming the
    offending keys. That is a programming error rather than a data one, and
    it takes the tick down with it.
-2. **At read time.** `LootContext.getParameter` goes to
-   `ContextMap.getOrThrow` and throws; `LootContext.getOptionalParameter`
-   returns nothing, and the conditions and functions degrade quietly rather
-   than fail. Which one a condition uses decides what a bad predicate does to
-   you, and the roster is lopsided: of the twenty registered condition types,
-   every one that reads a parameter at all uses the optional accessor —
-   `LocationCheck` and `LootItemBlockStatePropertyCondition` among them, both
-   answering **false** on a missing key — except `EnchantmentActiveCheck`,
-   which uses the throwing one. So the standalone-file validator's silence
-   about a block state is survivable: from `/execute if predicate` such a
-   predicate is quietly false, not fatal.
+2. **At read time.** `LootContext.getOptional` is the only reader a context
+   has, and it returns nothing for a missing key, so the conditions and
+   functions degrade quietly rather than fail — `LocationCheck`, `MatchBlock`
+   and `EnchantmentActiveCheck` all answer **false**. So the standalone-file
+   validator's silence about a block state is survivable: from `/execute if
+   predicate` such a predicate is quietly false, not fatal.
 3. **At load time.** `ValidationContext.validateContextUsage` compares
    what an element declares it reads —
    `LootContextUser.getReferencedContextParams`, overridden by
@@ -158,15 +158,16 @@ It checks against *allowed*, not
 *required*, so an element that reads an optional key passes validation and
 can still take path 2 at runtime. And what
 `ReloadableServerRegistries.validateLootRegistries` does with the collected
-problems is **log them as warnings**: a predicate that asks for a parameter
-it cannot have loads fine and misbehaves later. The same validation is a
+problems is **log them as warnings** and fail the reload only on a reference
+cycle: a predicate that asks for a parameter it cannot have loads fine and
+misbehaves later. The same validation is a
 hard error in exactly two places, both applied by a codec —
 `Validatable.validatorForContext` for `VillagerTrade`, and its list form
 `Validatable.listValidatorForContext` for every conditional effect in
-`EnchantmentEffectComponents`. Those two build a
-`ValidationContext` with no resolver, so `ValidationContext.allowsReferences`
-is false and a `ConditionReference` inside a trade or an enchantment effect
-is rejected outright.
+`EnchantmentEffectComponents`. Neither a trade nor an enchantment effect can
+name a predicate by id: both are decoded with the world's registries, before
+the predicate registry is loaded, so `RegistryFileCodec` rejects the
+reference outright.
 
 ## Inputs, then one invocation
 
@@ -182,14 +183,15 @@ for the registries, so a `ClientLevel` cannot produce a context at all.
 `HolderGetter.Provider` that resolves references to other loaded elements,
 and a set of `LootContext.VisitedEntry` used as a recursion guard.
 `LootContext.pushVisitedElement` returns false when the element is already
-present, which is how `ConditionReference` detects a cycle — it logs an
-infinite loop and answers false. The guard is a **stack, not a ledger**:
-`LootContext.popVisitedElement` takes the entry off again on the way out, so
-naming the same predicate twice in one evaluation is fine and only genuine
-re-entrancy trips it. Both of the command call sites below — `/execute if
-predicate` and the selector's *predicate* option — seed it with the top-level
-predicate before testing, so a predicate that references itself by name is
-caught on the first hop.
+present, which is how `LootTable.getRandomItemsRaw` refuses a table already
+rolling — it logs an infinite loop and rolls nothing. The guard is a **stack,
+not a ledger**: `LootContext.popVisitedElement` takes the entry off again on
+the way out, so rolling the same table twice in one evaluation is fine and
+only genuine re-entrancy trips it. Both of the command call sites below —
+`/execute if predicate` and the selector's *predicate* option — seed it with
+the top-level predicate before testing, but no predicate reads it back: one
+that references itself by name never loads, because `Validatable.validateHolder`
+reports the cycle as a fatal `ValidationContext.RecursiveElementReferenceProblem`.
 
 **Named random sequences belong to the context, not to the table.**
 `LootContext.Builder.create` takes an optional `Identifier` and picks a
@@ -208,44 +210,48 @@ tables](loot-tables.md#where-the-randomness-comes-from)'s to explain.
 
 ## What reads a context
 
-`LootContextUser` — *what did you read out of the map* — has six
-sub-interfaces: `LootItemCondition`, `NumberProvider`, `LootItemFunction`,
-`NbtProvider`, `ScoreboardNameProvider` and `SlotSource`. Each is a
-data-driven type with its own registry of kinds ([data-driven
-types](../foundations/data-driven-types.md#the-idea-stated-once)), and two of
-them carry the traffic. `LootItemCondition` is a predicate over a
-`LootContext` with twenty types registered in `LootItemConditions`, from
+`LootContextUser` — *what did you read out of the map* — is extended by five
+data-driven types: `LootItemCondition`, `LootItemFunction`, `NbtProvider`,
+`ScoreboardNameProvider` and `SlotSource`. The number providers read the same
+map through two interfaces of their own, `ContextFloatProvider` and
+`ContextIntProvider`. Each of the seven has its own registry of kinds
+([data-driven types](../foundations/data-driven-types.md#the-idea-stated-once)),
+and three of them carry the traffic. `LootItemCondition` is a predicate over a
+`LootContext` with twenty types registered in `LootItemConditionTypes`, from
 `LootItemEntityPropertyCondition` and `LocationCheck` to
-`EnchantmentActiveCheck` and `ConditionReference`; `NumberProvider`
-returns a float and has eight, from `ConstantValue` and `UniformGenerator`
-to `EnchantmentLevelProvider`. Their codecs are forgiving in the same
-shape: `LootItemCondition.DIRECT_CODEC` accepts a bare *list* as an
-implicit `AllOfCondition`, and `NumberProviders.CODEC` accepts a bare
-number as a `ConstantValue` and an untagged object as a
-`UniformGenerator`. `NbtProvider` and `ScoreboardNameProvider` are the two small ones — a tag out
+`EnchantmentActiveCheck` and `MatchBlock`; `ContextFloatProvider` returns a
+float and has twenty-eight, from `ConstantValue` and `UniformGenerator` to
+`EnchantmentLevelProvider`, and `ContextIntProvider` returns an int and has
+twenty-three. Their codecs are forgiving in the same shape:
+`LootItemCondition.CODEC`, `ContextFloatProviders.CODEC` and
+`ContextIntProviders.CODEC` each take a bare id as a reference to an element
+of their own registry, and the two number codecs take a bare number as a
+`ConstantValue`. `NbtProvider` and `ScoreboardNameProvider` are the two small ones — a tag out
 of an entity, a block entity or command storage, and a scoreboard name out of
 a context target — and `LootItemFunction` belongs to [loot
-tables](loot-tables.md#one-roll-drawn). The sixth lives outside the loot
+tables](loot-tables.md#one-roll-drawn). One of the seven lives outside the loot
 package altogether: `SlotSource`, in `net/minecraft/world/item/slot`, answers
 a `SlotCollection` rather than a boolean or a number, and its six registered
 kinds compose — `GroupSlotSource`, `FilteredSlotSource`, `RangeSlotSource`,
-`LimitSlotSource`, `ContentsSlotSource` and `EmptySlotSource`. Its one
-consumer in the game is the `SlotLoot` entry, which is how a loot table names
-a slot of the entity it is rolling for.
+`LimitSlotSource`, `ContentsSlotSource` and `EmptySlotSource`. Its consumers
+are the `SlotLoot` entry, which is how a loot table names a slot of the entity
+it is rolling for, and `SlotSourceArgument`, the *slots* argument of `/item`
+and `/execute if items`.
 
-`ContextAwarePredicate` is the bridge the advancement system uses: a list
-of `LootItemCondition` composed into one predicate, entered through
-`ContextAwarePredicate.matches`. The *player* half of every trigger goes
-through it — `EntityPredicate.wrap` folds an `EntityPredicate` into a
-`LootItemEntityPropertyCondition` — but the rest of
-`net/minecraft/advancements/predicates` need not: a trigger instance can hold
-an `ItemPredicate` or a `LocationPredicate` outright and test it with no
-context at all, which `ConsumeItemTrigger` and `DistanceTrigger` both do.
+The advancement system tests conditions directly: the *player* half of every
+trigger, `SimpleCriterionTrigger.SimpleInstance.player`, is one
+`LootItemCondition` in a `Holder`, named by id or written inline, and
+`EntityPredicate.wrap` folds an `EntityPredicate` into a
+`LootItemEntityPropertyCondition` to make one. The rest of
+`net/minecraft/advancements/predicates` need not touch a context: a trigger
+instance can hold an `ItemPredicate` or a `LocationPredicate` outright and
+test it with no context at all, which `ConsumeItemTrigger` and
+`DistanceTrigger` both do.
 
 ## Who asks, and with which set
 
-Twenty-four callers, and the six in **bold** are the ones with no loot table
-anywhere in sight. Read those six and skim the rest; the others are here as
+Twenty-eight callers, and the six in **bold** ask a question with no loot
+table anywhere in sight. Read those six and skim the rest; the others are here as
 the evidence for the count at the end of the section.
 
 | caller | set | when |
@@ -266,8 +272,12 @@ the evidence for the count at the end of the section.
 | `TrialSpawner.ejectReward`, `TrialSpawnerStateData.getDispensingItems` | `LootContextParamSets.EMPTY` | a trial spawner's reward and its dispensed items |
 | `AdvancementRewards.grant` | `LootContextParamSets.ADVANCEMENT_REWARD` | advancement loot |
 | `Enchantment.damageContext` and its four siblings | the four enchanted sets plus `LootContextParamSets.HIT_BLOCK` | [an enchantment effect's condition](enchantments.md#how-one-hook-fires) |
+| `BaseContainerBlockEntity.getLootContext` | `LootContextParamSets.CONTAINER_PROCESS` | a furnace's or brewing stand's fuel |
+| `ComposterBlock.addLayer` | `LootContextParamSets.BLOCK_INTERACT` | how many layers an item adds to a composter |
 | `LootCommand` | block, entity, chest or fishing | `/loot` |
 | `ItemCommands.applyModifier` | `LootContextParamSets.COMMAND` | `/item … with` |
+| `ItemCommands.getSlotsFromProvider` | `LootContextParamSets.COMMAND_SLOT_SOURCE` | the *slots* of `/item` and `/execute if items` |
+| `LootContextSources` | the three *command_compute* sets | `/compute` and `/data modify … compute` |
 | **`ExecuteCommand`** | `LootContextParamSets.COMMAND` | **`/execute if predicate`** |
 | **`EntitySelectorOptions`** | `LootContextParamSets.SELECTOR` | **a selector's *predicate* argument** |
 | **`EntityPredicate.createContext`** | `LootContextParamSets.ADVANCEMENT_ENTITY` | **every advancement trigger that tests an entity** |
@@ -275,22 +285,25 @@ the evidence for the count at the end of the section.
 | **`DefaultBlockInteractionTrigger`** | `LootContextParamSets.BLOCK_USE` | **right-clicking a block, for an advancement** |
 | **`AbstractVillager.addOffersFromTradeSet`** | `LootContextParamSets.VILLAGER_TRADE` | **rolling and filtering a villager's offers** |
 
-### Fourteen roll a table; twelve never do
+### Fourteen roll a table; seventeen never do
 
-The bold rows are the ones with no loot table anywhere in sight: a boolean,
-or in the villager's case a `MerchantOffers`, is the whole output.
+The bold rows have no loot table anywhere in sight: a boolean, or in the
+villager's case a `MerchantOffers`, is the whole output.
 `ValidationContextSource` even keeps a cached
 `LootContextParamSets.ADVANCEMENT_ENTITY` context around, because so much
 of the advancement tree validates against it.
 
 Count *sets* rather than rows and the picture is starker. Fourteen of the
-twenty-six are named above by a caller that goes on to roll a `LootTable`.
-**The other twelve never do.** Six are the bold rows —
+thirty-one are named above by a caller that goes on to roll a `LootTable`.
+**The other seventeen never do.** Six are the bold rows —
 `LootContextParamSets.COMMAND` counts among them, because its other caller,
 `/item … with`, applies an item modifier rather than a table. Five are the
 enchantment sets, built only by `Enchantment` to decide whether an effect
-fires. The twelfth is `LootContextParamSets.ALL_PARAMS`, which is never
-used to build a `ContextMap` at all: it exists solely as a validation
+fires. Five more are built for a number or a set of slots: the three
+*command_compute* sets, `LootContextParamSets.COMMAND_SLOT_SOURCE` and
+`LootContextParamSets.CONTAINER_PROCESS`. The seventeenth is
+`LootContextParamSets.ALL_PARAMS`, which is never used to build a
+`ContextMap` at all: it exists solely as a validation
 context and as `LootTable.DEFAULT_PARAM_SET`. That is why this page is not
 called *loot tables*.
 
@@ -309,13 +322,13 @@ sequenceDiagram
 
     Note over ExecC: the argument already holds a Holder, resolved at parse time
     ExecC->>LootP: LootParams.Builder on the level, ORIGIN required, THIS_ENTITY optional
-    LootP->>CMap: ContextMap.Builder.create against LootContextParamSets.COMMAND
+    LootP->>CMap: ContextMap.Builder.buildAndValidate against LootContextParamSets.COMMAND
     CMap-->>LootP: the checked map, or a throw on a bad key
     ExecC->>LootC: LootContext.Builder.create with no random sequence
     Note over LootC: the random source is Level.getRandom, the resolver is the reloadable registries
     ExecC->>LootC: pushVisitedElement, seeding the recursion guard with this predicate
     ExecC->>LIC: test
-    LIC->>LootC: getParameter and getOptionalParameter
+    LIC->>LootC: getOptional, the only reader, null for a missing key
     LIC-->>ExecC: a boolean, and the branch is taken or not
 ```
 
@@ -352,22 +365,25 @@ the predicate it hands the parser, and looks the condition up itself
 through the reloadable registries rather than through the argument type —
 so a missing predicate there is a silent false, not a syntax error.
 
-## Three registries, rebuilt on `/reload`, and none of them networkable
+## Six registries, rebuilt on `/reload`, and none of them networkable
 
-`LootDataType` is the three loot registries expressed as data:
+`LootDataType` is the six loot registries expressed as data:
 `LootDataType.TABLE` over `Registries.LOOT_TABLE`,
-`LootDataType.PREDICATE` over `Registries.PREDICATE` and
-`LootDataType.MODIFIER` over `Registries.ITEM_MODIFIER`. Each pairs a
-registry key with a codec and a `LootDataType.ContextGetter` — the function
+`LootDataType.PREDICATE` over `Registries.PREDICATE`,
+`LootDataType.MODIFIER` over `Registries.ITEM_MODIFIER`,
+`LootDataType.SLOT_SOURCE` over `Registries.SLOT_SOURCE`, and
+`LootDataType.FLOAT_PROVIDER` and `LootDataType.INT_PROVIDER` over
+`Registries.CONTEXT_FLOAT_PROVIDER` and `Registries.CONTEXT_INT_PROVIDER`.
+Each pairs a registry key with a `LootDataType.ContextGetter` — the function
 that says which `ContextKeySet` an element of that type is validated
-against. Predicates and item modifiers get the constant
+against. Every type but tables gets the constant
 `LootContextParamSets.ALL_PARAMS`; tables get `LootTable.getParamSet`, and that
 context getter is its only caller in the game. That is the sense in which a
 table's declared type is never checked at runtime.
 
 ### Reloadable, and never networkable
 
-All three live in `RegistryLayer.RELOADABLE` and are rebuilt by every reload
+All six live in `RegistryLayer.RELOADABLE` and are rebuilt by every reload
 ([the resource
 system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)),
 which is what makes them the reachable half of the data-driven game: a
@@ -375,7 +391,7 @@ predicate a pack changed is live after `/reload`. One step of that rebuild
 matters here — a registry's **tags are loaded before its elements are
 validated**, so a predicate naming an item tag has it resolved by the time
 `ValidationContext.validateContextUsage` asks what the predicate reads. None
-of the three appears in `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, the
+of the six appears in `RegistryDataLoader.SYNCHRONIZED_REGISTRIES`, the
 list `RegistrySynchronization.isNetworkable` tests, so none is ever packed
 for a client. What crosses the wire is only the *result* — a container
 packet, an item entity, a command's success.
@@ -392,8 +408,9 @@ tested entity.
 > *LootContextParamSet* is `ContextKeySet`, both moved out of the loot package
 > to `net/minecraft/util/context`. The predicate library that consumes them
 > has left the misspelled *critereon* package for
-> `net/minecraft/advancements/predicates` and
-> `net/minecraft/advancements/triggers`.
+> `net/minecraft/advancements/predicates` and `net/minecraft/advancements/triggers`.
+> *NumberProvider* is now `ContextFloatProvider` and `ContextIntProvider`, and
+> *ConditionReference* and *ContextAwarePredicate* are gone: a `Holder` does their work.
 > [The drift table](../../reference/naming-drift.md) has the rest.
 
 ## Where to look
@@ -403,15 +420,16 @@ Three files, in this order, are the whole argument: `ContextKey`,
 short, they import nothing from the loot package, and reading them is the
 fastest way to see that the loot system's foundation is not about loot.
 
-Then `LootContextParams` and `LootContextParamSets` for the seventeen keys and
-the twenty-six sets — the second is one long list of builders and repays
+Then `LootContextParams` and `LootContextParamSets` for the sixteen loot keys
+and the thirty-one sets — the second is one long list of builders and repays
 skimming rather than reading. `LootParams` and `LootContext` above them are
 the two halves of one invocation, and `LootContext.Builder.create` is where
 the random source is chosen three ways.
 
 `LootItemCondition` is the interface with twenty implementations; open two of
-them, `LocationCheck` for the ordinary shape and `ConditionReference` for the
-recursion guard in use. `ValidationContext.validateContextUsage` is the
+them, `LocationCheck` for the ordinary shape and `InvertedLootItemCondition`
+for one that holds another in a `Holder`, and then `Validatable.validateHolder`
+for the recursion guard in use. `ValidationContext.validateContextUsage` is the
 load-time check, and `LootDataType` is where it is told which set to check
 against.
 

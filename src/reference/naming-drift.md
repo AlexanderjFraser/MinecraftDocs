@@ -39,9 +39,9 @@ each part explains it.
 Every row here was found the same way: a fact-sheet agent reading the
 decompile went looking for a name it expected and did not find it. The
 table is therefore *not* exhaustive — it is exhaustive over the names the
-corpus needed. Two hundred and forty-seven rows, and the distribution is
-itself a finding: the three biggest tables are **commands** (36), **the
-server** (31) and **items** (30), and the fourth is **rendering** (28). The
+corpus needed. Three hundred and eleven rows, and the distribution is
+itself a finding: the three biggest tables are **commands** (41),
+**rendering** (39) and **items** (38), and the fourth is **the server** (31). The
 client was rewritten around extract-then-render, which is why almost nothing
 at the top of the render stack kept its name — but the permission rewrite and
 the game-rule registry moved more names than the renderer did.
@@ -75,6 +75,14 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Minecraft.reloadResources* | `Minecraft.reloadResourcePacks` |
 | *ItemStack.save* / *parse* | `ValueOutput` / `ItemStack.CODEC` |
 | *ChunkPos.asLong* | `ChunkPos.pack` / `ChunkPos.unpack` (a record) |
+| *CompositePackResources* | `OverlayedPackResources` |
+| *VanillaPackResources* as a pack, *VanillaPackResources.asProvider* | a holder of `FixedPathPackResources` layers, `VanillaPackResources.asResourceManager` |
+| *SimpleJsonResourceReloadListener.scanDirectory* | gone — data-pack registry files are read by `RegistryDataLoader` |
+| *RegistryDataLoader.WORLDGEN_REGISTRIES* / *RegistryLayer.WORLDGEN* | `RegistryDataLoader.WORLD_REGISTRIES` / `RegistryLayer.WORLD`, beside a fourth list, `RegistryDataLoader.RELOADABLE_REGISTRIES` |
+| *RegistryCodecs.homogeneousList* | `RegistryCodecs.holderSet` |
+| *HolderOwner.canSerializeIn* | `HolderOwner.canSerialize`, asked of the context rather than the holder |
+| *BuiltInRegistries.BLOCK_TYPE* / *BlockTypes* / *Block.codec* | gone — a block has no codec |
+| *PlacementModifierType* / *StructurePlacementType* / *BlockStateProviderType* | gone — `BuiltInRegistries.PLACEMENT_MODIFIER_TYPE`, `BuiltInRegistries.STRUCTURE_PLACEMENT` and `BuiltInRegistries.BLOCK_STATE_PROVIDER_TYPE` hold the `MapCodec`s |
 
 ### Part III — The server
 
@@ -134,6 +142,9 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Schedule* (the villager's) | `EnvironmentAttributes.VILLAGER_ACTIVITY` on `Timelines.VILLAGER_SCHEDULE` |
 | *Level.dayTime* | `ServerClockManager`, keyed by `WorldClock` |
 | *data/&lt;id&gt;.dat* | *data/&lt;namespace&gt;/&lt;id&gt;.dat* — every saved-data file gained a namespace folder |
+| *ChunkStatus.NOISE* / *SURFACE* / *CARVERS* | `ChunkStatus.TERRAIN`, one task doing all three |
+| *ProtoChunk.carvingMask* (saved with the chunk) | gone — the `CarvingMask` lives for one terrain run |
+| *BiomeManager.NoiseBiomeSource* | `BiomeResolver`, which `ChunkAccess` implements |
 
 ### Part V — Blocks
 
@@ -151,6 +162,9 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *Material* (the block property) | gone — individual `BlockBehaviour.Properties` flags. The name survives on a different class; see *survived and changed meaning* below |
 | *BlockEntity.saveToItem* | `BlockItem.setBlockEntityData` + `BlockEntity.collectComponents` |
 | *MobEffects.DIG_SPEED* / *DIG_SLOWDOWN* | `MobEffects.HASTE` / `MobEffects.MINING_FATIGUE` |
+| *RedStoneWireBlock* | `RedstoneWireBlock`; its connection rule is each block's `BlockBehaviour.shouldRedstoneWireConnectTo` |
+| *BedBlock.OCCUPIED* / *BedBlock.PART* | `AbstractBedBlock.OCCUPIED` / `AbstractBedBlock.PART` |
+| *LevelEvent.PARTICLES_DESTROY_BLOCK* as the break event (2001) | `LevelEvent.PARTICLES_AND_SOUND_DESTROY_BLOCK`; the old name is now 2014, particles only |
 
 ### Part VI — Entities
 
@@ -175,6 +189,9 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | UUID-keyed *AttributeModifier* | `Identifier`-keyed record |
 | *AttributeMap.getDirtyAttributes* | `AttributeMap.getAttributesToSync` + `AttributeMap.getAttributesToUpdate` |
 | *PlayerRenderer* | `AvatarRenderer` (serves players and mannequins, keyed by skin model) |
+| *Entity.invulnerableTime* as the hurt cooldown | `LivingEntity.damageCooldownTime`; `Entity.invulnerableTime` is a separate full-invulnerability timer |
+| *Entity.hurtMarked* | `Entity.syncVelocity` |
+| *TryFindWaterGoal* | `TryFindLiquidGoal` |
 
 ### Part VII — Items and inventories
 
@@ -210,6 +227,14 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *LootingEnchantFunction* | `EnchantedCountIncreaseFunction` |
 | *SetCountFunction* | `SetItemCountFunction` |
 | *LootContextParams.KILLER_ENTITY* | `LootContextParams.ATTACKING_ENTITY` |
+| *AxeItem* / *ShovelItem* / *HoeItem* | gone — `DataComponents.BLOCK_TRANSFORMER` on a plain `Item` |
+| *RecipeManager* as a reload listener | `Registries.RECIPE`, read by `RegistryDataLoader`; the `RecipeManager` constructor builds the `RecipeMap` |
+| *LootPoolSingletonContainer* | `UniformContainerBase` |
+| *LootItemFunctions.compose*, lists of *functions* and *conditions* | one optional *modifier* and one optional *condition* per level; several functions are one `SequenceFunction` |
+| *LootItemConditions* | `LootItemConditionTypes` |
+| *NumberProvider* / *NumberProviders* | `ContextFloatProvider` / `ContextIntProvider` |
+| *ContextAwarePredicate* / *ConditionReference* | gone — a `Holder` of a `LootItemCondition` |
+| *LootContext.getParameter* / *getOptionalParameter* | `LootContext.getOptional` |
 
 ### Part VIII — The player
 
@@ -224,6 +249,11 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *isCritArrow* / *Player.sweepAttack* | `Player.canCriticalAttack` / `Player.isSweepAttack` + `Player.doSweepAttack`, all three private. *isCritArrow* was never a `Player` method and is still live on `AbstractArrow` |
 | *LivingEntity.eat* / *Player.eat* | gone — `Consumable.onConsume` → `FoodProperties` → `FoodData.eat` |
 | *MobEffect.createModifier* | `MobEffect.createModifiers` (plural) |
+| *ServerboundSwingPacket* | `ServerboundPunchPacket` up, with no fields; `ClientboundSwingAnimationPacket` down |
+| *ServerGamePacketListenerImpl.handleAnimate* | `ServerGamePacketListenerImpl.handlePunch` |
+| *LocalPlayer.swing* | gone — `Minecraft.startAttack` sends the punch |
+| *LivingEntity.swinging* / *swingingArm* / *swingTime* / *attackAnim* | `LivingEntity.SwingState` |
+| *ItemStack.getSwingAnimation*, *DataComponents.SWING_ANIMATION* | `ItemStack.getAttackAnimation` + `ItemStack.getInteractAnimation`, `DataComponents.ATTACK_ANIMATION` + `DataComponents.INTERACT_ANIMATION` |
 
 ### Part IX — Networking
 
@@ -253,6 +283,8 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *SignedMessageHeader* / *MessageSigner* | `SignedMessageLink` / `SignedMessageChain.Encoder` |
 | *ChatPreview* and its packets | gone |
 | *ClientboundSetTimePacket(gameTime, dayTime, …)* | a game time plus a `WorldClock` update map |
+| *FriendlyByteBuf.readList* / *readMap* / *readCollection* / *limitValue* | gone — `ByteBufCodecs.list`, `ByteBufCodecs.map` and `ByteBufCodecs.collection`, which clamp the allocation |
+| *FriendlyByteBuf.readBlockHitResult* | `BlockHitResult.STREAM_CODEC` |
 
 ### Part X — The client
 
@@ -278,11 +310,16 @@ overlay manager that also owns `Gui.screen` and `Gui.setScreen` — so a
 | *GlyphProviderBuilder* / *GlyphProviderBuilderType* | `GlyphProviderDefinition` / `GlyphProviderType` |
 | *Style.withFont* taking an id | still `Style.withFont`, but the type is `FontDescription`, which may be a sprite rather than a font |
 | *FontSet.getGlyph* as public API | private — `FontSet.source` then `GlyphSource.getGlyph` |
+| *AbstractSoundInstance.resolve* | `AbstractSoundInstance.getOrResolve` |
+| *GLFW* and its callbacks | SDL3: `SDLEventHandler.pollEvents` drains its events inside `RenderSystem.pollEvents`, input to `KeyboardHandler` and `MouseHandler`, the rest to `Window.handleEvent` |
+| *KeyboardHandler.setup* / *MouseHandler.setup* | gone — `SDLEventHandler` calls the handlers' public methods |
+| *LocalPlayer.tick* sending the move packets | `LocalPlayer.sendChanges`, called by `Minecraft.tick` after the level's entities and block entities |
 
 ### Part XI — Rendering
 
-Twenty-eight rows, and almost all of them are one refactor: extract then
-render.
+Thirty-nine rows. Most are one refactor, extract then render; the rest are
+the GPU layer's move into `com/mojang/renderpearl`, the window's move to SDL,
+and order-independent transparency.
 
 | the name you remember | 26.3 |
 |---|---|
@@ -314,6 +351,17 @@ render.
 | *ItemOverrides* / *getPropertyOverride* | `SelectItemModel` / `RangeSelectItemModel` / `ConditionalItemModel` |
 | *ScreenManager* (the Blaze3D monitor manager) | `MonitorManager`, with `Monitor` and `VideoMode` — same package, now fed by SDL's display events |
 | *Window.setVsync* | a `GpuSurface.PresentMode` in the surface configuration |
+| *GpuDevice*, *CommandEncoder*, *RenderPass* as classes in *com/mojang/blaze3d* | interfaces in `com/mojang/renderpearl/api`, implemented by `FrontendGpuDevice` and its siblings over the backends in `com/mojang/renderpearl/backend/opengl` and `/vulkan` |
+| *GLX* | gone — `RenderSystem.initBackendSystem` starts SDL, and a backend that fails throws `BackendCreationException` |
+| *Window.isMinimized* / *Monitor.getPreferredVidMode* | `Window.isIconified` / `Monitor.getPreferredVideoMode` |
+| *ItemInHandRenderer* | `FirstPersonHandsAndItems` (the tick state and the extract) + `FirstPersonHandsAndItemsRenderer` (the pose) |
+| *NameTagFeatureRenderer* | gone — a name tag is a `TextFeatureRenderer.Submit` |
+| the *transparency* post chain (Fabulous) | order-independent transparency inside the main pass: `LevelRenderer.executeOit`, three `OitStage`s |
+| *LevelRenderer.addCloudsPass* / *addWeatherPass* | gone — clouds and weather draw inside `LevelRenderer.addMainPass` |
+| *ShaderManager.prepare*, *moj_import* | `ShaderManager.loadConfigs`, `#include` resolved by `GlslCompiler.compileToSpv` |
+| *ShaderManager.CompilationCache* | `PipelineCache`, swapped in by `RenderSystem.setCurrentPipelineCache` |
+| *GameRenderer.postEffectId* / *effectActive* | `GameRenderer.spectatedEntityPostEffect` / `GameRenderer.spectatedEntityEffectActive`, beside the per-frame `GameRenderer.requestedPostEffects` |
+| *DynamicUniforms* / *DynamicUniformStorage* | `DynamicGpuData` / `DynamicGpuDataStorageMapped` |
 
 ### Part XII — World generation
 
@@ -332,6 +380,18 @@ render.
 | the +8 chunk population offset | gone — decoration starts at the chunk corner, `InSquarePlacement` scatters |
 | *StructureTemplateManager* folder *structures/* | *structure/* |
 | *level.dat* field *WorldGenSettings* | its own file — `WorldGenSettings` is `SavedData`, written to *data/minecraft/world_gen_settings.dat*; `PrimaryLevelData.OLD_WORLD_GEN_SETTINGS` is all that is left of the key |
+| *ConfiguredFeature* / *FeatureConfiguration* / *FeaturePlaceContext* | gone — a `Feature` carries its own parameters; its instances are `Registries.FEATURE` |
+| *PlacedFeature.placeWithBiomeCheck* / *PlacementModifier.getPositions* | `FeaturePlacer.placeWithBiomeCheck` / `PlacementModifier.modify` |
+| *RandomOffsetPlacement* | `OffsetPlacement` |
+| *ConfiguredWorldCarver* / *CarverConfiguration* / *NetherWorldCarver* | gone — `WorldCarver` instances in `Registries.CARVER`; the nether carver is a cave carver |
+| *SurfaceRules* / *SurfaceSystem* | `MaterialRule` / `MaterialCondition` / `MaterialSystem` |
+| *OreVeinifier* | `OreVeinRule` |
+| *NoiseChunk.forChunk* / *NoiseChunk.wrapNew* and the six cache markers | gone — `DensityFunctionCompiler` compiles once per dimension; one *cache* node; a `SamplerContext` per run |
+| *DensityFunctions.Marker* / *Mapped* / *Ap2* / *MulOrAdd* | `SimpleDensityFunction`, `UnaryFunction`, `BinaryFunction` in `world/level/levelgen/densityfunction` |
+| *TreeConfiguration* | `TreeFeature`, a record holding the fields |
+| *Climate.findSpawnPosition* | `NoiseSpawnFinder.findSpawnPosition` |
+| *Biome.getMobSettings* | `EnvironmentAttributes.NATURAL_MOB_SPAWNS` |
+| *RandomState.sampler* | `RandomState.createClimateSampler` |
 
 ### Part XIII — Commands and data packs
 
@@ -378,12 +438,17 @@ The ints survive only in *ops.json*, in *server.properties* and on the wire.
 | *GameTestRegistry* / *TestFunction* | gone — `Registries.TEST_FUNCTION` + `TestFunctionLoader`, and `TestData` |
 | a test's batch as a string | `GameTestInstance.batch` — the batch *is* a `TestEnvironmentDefinition` |
 | the structure block as the test host | `TestInstanceBlock` / `TestInstanceBlockEntity` |
+| *ServerAdvancementManager* as a reload listener | `Registries.ADVANCEMENT`, read by `RegistryDataLoader`; the manager's constructor lays the tree out |
+| *AdvancementTree.Listener* | `ClientAdvancements.Listener` |
+| *Advancement.read* | `Advancement.STREAM_CODEC` |
+| *EntityPredicate.ADVANCEMENT_CODEC* | gone — `LootItemCondition.CODEC` |
+| *PlayerList.allowCommandsForAllPlayers* | gone — `IntegratedServer.getProfilePermissions` answers for singleplayer first, with a guest command-access toggle |
 
 ## The shape changes, not just the names
 
-A rename table flatters the reader: it suggests that if you learn the two
-hundred and forty-seven rows above you can read the tree. You cannot, because
-most of those rows are one of **seven** design changes, and the change is what
+A rename table flatters the reader: it suggests that if you learn the three
+hundred and eleven rows above you can read the tree. You cannot, because
+many of those rows are one of **seven** design changes, and the change is what
 the corresponding page is about:
 
 - **Tags on an item became components.** *ItemStack.getTag* /

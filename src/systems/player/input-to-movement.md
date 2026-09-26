@@ -173,7 +173,7 @@ sequenceDiagram
 
     KH->>KM: set, then click — isDown goes true, and nothing else yet
     rect rgba(0, 0, 0, 0.04)
-        Note over KH,Wire: the next client tick — LocalPlayer.tick
+        Note over KH,Wire: the next client tick — LocalPlayer.tick, then LocalPlayer.sendChanges
         LP->>KI: tick, from inside aiStep — the override that does the work
         KI->>KM: isDown, once for each of seven mappings
         LP->>LP: applyInput — moveVector becomes xxa and zza, jump becomes jumping
@@ -224,7 +224,9 @@ sneaking, using an item or walking backwards clear
 
 ### What goes on the wire
 
-`LocalPlayer.sendPosition` picks the variant:
+Both packets leave from `LocalPlayer.sendChanges`, which `Minecraft.tick`
+calls once the level has ticked its entities and block entities, and for a
+player on foot `LocalPlayer.sendPosition` picks the variant:
 `ServerboundMovePlayerPacket.PosRot` when both changed,
 `ServerboundMovePlayerPacket.Pos` or `.Rot` for one,
 `ServerboundMovePlayerPacket.StatusOnly` when only the ground or

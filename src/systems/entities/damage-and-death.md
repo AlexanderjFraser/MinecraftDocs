@@ -79,8 +79,9 @@ mid-dimension-change is invulnerable to all but `DamageTypes.ENDER_PEARL`.
 invulnerable, already dying, or a `DamageTypeTags.IS_FIRE` source against
 `MobEffects.FIRE_RESISTANCE` — a mob-effect immunity sitting *outside* the
 reduction pipeline entirely. Invulnerability itself is
-`Entity.isInvulnerableToBase` (removed, the invulnerable flag, fire immunity,
-fall immunity) **or** an enchantment-granted one through
+`Entity.isInvulnerableToBase` (removed, the invulnerable flag or its timed
+twin `Entity.invulnerableTime`, fire immunity, fall immunity) **or** an
+enchantment-granted one through
 `EnchantmentHelper.isImmuneToDamage`, which is how Frost Walker makes its
 wearer immune to magma blocks.
 
@@ -181,14 +182,14 @@ The two multipliers after it almost never fire and are both pure tag lookups:
 
 ## Ten ticks in which nothing shows, and ten that protect nothing
 
-`Entity.invulnerableTime` is set to 20 by a hit that lands in full and counted
+`LivingEntity.damageCooldownTime` is set to 20 by a hit that lands in full and counted
 down once a tick — from `LivingEntity.baseTick` for everything except a
 `ServerPlayer`, and from `ServerPlayer.tick` for players, earlier in the tick.
 `LivingEntity.hurtDuration` and `LivingEntity.hurtTime` are set to 10, so the
 red flash covers half of it.
 
 **It is the flashing half that is invulnerable.** The test is
-`Entity.invulnerableTime` still being *above* ten, which is exactly the ten
+`LivingEntity.damageCooldownTime` still being *above* ten, which is exactly the ten
 ticks the flash is showing; once the counter falls to ten the next hit takes
 the ordinary branch, lands in full, and resets both numbers. The second half
 of what everyone calls the invulnerability window protects nothing at all.
@@ -320,7 +321,7 @@ only the respawn command.
 **The damage amount never crosses the wire.** The client picks a sound and a
 flash from the type and infers magnitude from health — and only for your own
 player, in `LocalPlayer.hurtTo`, the one place a hit is deduced from a health
-*drop*. `LivingEntity.handleDamageEvent` sets `Entity.invulnerableTime` to 20
+*drop*. `LivingEntity.handleDamageEvent` sets `LivingEntity.damageCooldownTime` to 20
 and the flash to 10 and plays the sound, touching health not at all.
 
 ## Death, or not
@@ -468,6 +469,13 @@ is **immune to the `EnderDragon` that eats it** — and `EnderDragonPart` reads
 nothing, forwarding the whole call, number included, to its parent. Which class
 does which is [the non-living damage
 table](../../reference/non-living-damage.md).
+
+> **For a 1.21-era reader.** The hurt cooldown is
+> `LivingEntity.damageCooldownTime`. *invulnerableTime* on `Entity` is now a
+> separate timer of full invulnerability that no hit sets: a skeleton trap
+> gives its horse and riders sixty ticks of it, a cushion broken by lightning
+> gives the item it drops twenty, a conversion carries it over, and
+> `Entity.isInvulnerable` is true while it runs.
 
 ## Where to look
 

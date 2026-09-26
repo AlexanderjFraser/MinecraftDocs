@@ -1,6 +1,6 @@
 # Particles
 
-> Verified against **Minecraft 26.2** · Part XI · A player breaks a block, and the puff of block texture appears on every screen within sixty-four blocks.
+> Verified against **Minecraft 26.3** · Part XI · A player breaks a block, and the puff of block texture appears on every screen within sixty-four blocks.
 
 The block goes. On the breaker's own machine the puff is already there,
 predicted, before the server has heard about the swing; on every other
@@ -26,25 +26,26 @@ survives a series of gates that disagree about what they are gating.**
 | `ParticleEngine` | the groups, the one-tick admission queue, the emitters, the per-type counts | Client |
 | `ParticleGroup` | whether there is room: the per-render-type cap and the probabilistic reservoir | Client |
 | `ClientExplosionTracker` | how many explosion particles happen this tick, and where — the client's own budgeted generator | Client |
-| `SingleQuadParticle.Layer` | which of three atlases a quad reads, and which of two pipelines draws it | Client |
+| `SingleQuadParticle.Layer` | which of three atlases a quad reads, and which pipelines draw it | Client |
 
 Everything below the second row runs on the Render thread, and the only
 off-thread work in the system is the load half of `ParticleResources.reload`
 — the bind that rebuilds each `SpriteSet` comes back to the Render thread.
 Several things cross the network and none of them is a particle. Three carry
 the bulk of it: a `ClientboundLevelParticlesPacket` is an explicit request
-carrying count, spread, speed and two override flags, a
-`ClientboundLevelEventPacket` is an event the client interprets, and a
+carrying count, spread, a speed on each axis, a randomization type and two
+override flags, a `ClientboundLevelEventPacket` is an event the client
+interprets, and a
 `ClientboundExplodePacket` is a
 description the client expands itself.
 
 ## Does the particle happen at all?
 
 Both routes start in the same place. At the end of [a dig that
-succeeded](../blocks/block-breaking.md), `Block.spawnDestroyParticles` raises
-level event `LevelEvent.PARTICLES_DESTROY_BLOCK` with the breaker as the
-source, and the two branches diverge only because of *who* that source is
-relative to whoever is watching. That the wire carries an int rather than a
+succeeded](../blocks/block-breaking.md), `Block.spawnDestroyByEntityParticles`
+raises level event `LevelEvent.PARTICLES_AND_SOUND_DESTROY_BLOCK` with the
+breaker as the source, and the two branches diverge only because of *who*
+that source is relative to whoever is watching. That the wire carries an int rather than a
 particle at all — and what else comes through the same door — is [what makes a
 sound happen](../client/what-makes-a-sound.md#the-three-doors), which owns
 `LevelEventHandler`; this page owns what the client does with the puff once
@@ -61,8 +62,8 @@ sequenceDiagram
     participant PE as ParticleEngine
 
     Note over MPGM,PE: the breaker's own client, predicting
-    MPGM->>Block: playerWillDestroy, then spawnDestroyParticles
-    Block->>CL: levelEvent, PARTICLES_DESTROY_BLOCK, the breaker as source
+    MPGM->>Block: playerWillDestroy, then spawnDestroyByEntityParticles
+    Block->>CL: levelEvent, PARTICLES_AND_SOUND_DESTROY_BLOCK, the breaker as source
     CL->>CL: LevelEventHandler, the sound, then addDestroyBlockEffect
     CL->>PE: add, one TerrainParticle per quarter-block cell of the shape
     Note over SL,PE: everybody else, within 64 blocks
@@ -80,11 +81,13 @@ setting applies to either of them. The branches differ in who dispatches the
 event, not in what the client then does with it.
 
 And the breaker is not always a player.
-`LevelEvent.PARTICLES_DESTROY_BLOCK` has fifteen call sites and only three
-pass a source at all — a bed, a tall plant, and `Block.playerWillDestroy`
-itself. A fox faceplanting into snow, a rabbit eating a carrot down one age,
-a sheep eating grass, a zombie breaking a door, a suspicious block that fell
-and shattered, and `Level.destroyBlock` itself all raise it with a null source
+`LevelEvent.PARTICLES_AND_SOUND_DESTROY_BLOCK` has fourteen call sites and
+only three pass a source at all — a bed, a tall plant, and
+`Block.spawnDestroyByEntityParticles`, which passes on the player
+`Block.playerWillDestroy` hands it. A fox faceplanting into snow, a rabbit
+eating a carrot down one age, a sheep eating grass, a zombie breaking a door,
+a suspicious block that fell and shattered, and `Level.destroyBlock` itself,
+through `Block.spawnDestroyParticles`, all raise it with a null source
 — which means the server broadcasts it to *everybody*, including whoever
 caused it.
 
@@ -99,16 +102,20 @@ particles, where reading the collision shape would give none. Each particle
 shows a different randomly-offset quarter-crop of the block's sprite, which
 is why the puff does not look tiled. A block may opt out of the whole thing
 — `BlockBehaviour.BlockStateBase.shouldSpawnTerrainParticles` gates both the
-destroy and the crack effects — and `TerrainParticle` additionally refuses
+destroy and the crack particles — and `TerrainParticle` additionally refuses
 air and `Blocks.MOVING_PISTON`.
 
 ### Three neighbours that look like the same thing
 
 The *crack* particles that fly off while you are still mining come from
-`ClientLevel.addBreakingBlockEffect`, called once per client **tick** from
-`Minecraft.continueAttack` by way of `Minecraft.handleKeybinds`, and never
-networked at all — your neighbour's screen shows their own crack particles,
-computed locally, not yours. The `/particle` command arrives as
+`ClientLevel.addBreakingBlockEffects`, and the server drives them:
+`ServerPlayerGameMode.tick` raises `LevelEvent.PARTICLES_DESTROY_PROGRESS`
+once per server **tick** of the dig —
+`LevelEvent.PARTICLES_AND_SOUND_DESTROY_PROGRESS` every fourth, which adds
+the hit sound — with a null source, so every screen within sixty-four
+blocks, yours included, adds one crack particle per tick of your dig. Your
+own client adds one more itself, with the hit sound, when the dig starts,
+from `MultiPlayerGameMode.startDestroyBlock`. The `/particle` command arrives as
 `ClientboundLevelParticlesPacket` and goes through `ClientLevel.addParticle`
 once per requested count with Gaussian spread, unless the requested count is
 zero, which is a second mode entirely: one particle whose velocity is the
@@ -300,7 +307,8 @@ particle system draws from three of them, not one:
 | the block atlas | `SingleQuadParticle.Layer.OPAQUE_TERRAIN` | `SingleQuadParticle.Layer.TRANSLUCENT_TERRAIN` |
 | the item atlas | `SingleQuadParticle.Layer.OPAQUE_ITEMS` | `SingleQuadParticle.Layer.TRANSLUCENT_ITEMS` |
 
-The six resolve to two pipelines, `RenderPipelines.OPAQUE_PARTICLE` and
+Without *improved transparency* the six resolve to two pipelines,
+`RenderPipelines.OPAQUE_PARTICLE` and
 `RenderPipelines.TRANSLUCENT_PARTICLE`. `SingleQuadParticle.Layer.bySprite`
 picks a row and a column by reading whether the stitched sprite actually
 contains translucent texels and which atlas the sprite lives on — and only
@@ -316,8 +324,10 @@ after-terrain bucket, the same render state object entered twice, with the
 feature renderer filtering each entry by whether the layer is translucent.
 Opaque particles therefore draw before terrain-translucent geometry and
 translucent ones after, and the per-particle packing still happens only
-once. The dedicated particle render target exists only under the
-transparency post chain, and even then only translucent particles use it
+once. The feature renderer owns no render target and draws into the pass it
+is handed; under *improved transparency* the after-terrain bucket is the
+order-independent one, and the three translucent layers draw once per
+`OitStage` through `RenderPipelines.OIT_PARTICLE`
 ([visibility and the frame graph](visibility-and-the-frame-graph.md)). One
 particle escapes this system entirely: `ItemPickupParticle` carries an
 `EntityRenderState` and is submitted through `EntityRenderDispatcher`, so

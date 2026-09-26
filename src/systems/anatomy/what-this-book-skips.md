@@ -1,16 +1,16 @@
 # What this book skips
 
-> Verified against **Minecraft 26.2** · Part I · A reader opens the atlas, sees fourteen packages hatched, and asks what is in them and why they are not taught.
+> Verified against **Minecraft 26.3** · Part I · A reader opens the atlas, sees fourteen packages hatched, and asks what is in them and why they are not taught.
 
 Open the atlas and part of the jar is drawn hatched. That hatching is this
-page. Java Minecraft is 7,055 classes and 719,302 lines, and the parts do
+page. Java Minecraft is 7,301 classes and 741,069 lines, and the parts do
 not reach all of it. Some of what is left out is excluded on purpose by the
 [newest-version-only rule](../../introduction.md#the-rules-the-book-keeps) —
 save migration is version-difference code, and a book that documents only
 the current version has nothing to say about it. Some is out of scope because it is a client for a service this
 book cannot read. And one hatched box is not skipped code so much as skipped
 *ground*: `net/minecraft/data` is the program that writes vanilla's own
-content as a data pack, it ships in the dedicated server jar — all 163
+content as a data pack, it ships in the dedicated server jar — all 174
 classes of it — and the running game compiles against it and calls into it.
 `Blocks` names `TreeFeatures` keys while it constructs mushroom blocks;
 `MinecraftServer` reaches for a `MiscOverworldFeatures` key for the bonus
@@ -38,20 +38,20 @@ there and not in the prose below.
 
 | package | classes | lines | side |
 |---|---:|---:|---|
-| `net/minecraft/util/datafix` | 396 | 26,372 | both |
-| `net/minecraft/util/filefix` | 57 | 3,544 | both |
+| `net/minecraft/util/datafix` | 411 | 27,048 | both |
+| `net/minecraft/util/filefix` | 57 | 3,553 | both |
 | `net/minecraft/client/telemetry` | 18 | 1,221 | client |
-| `net/minecraft/util/profiling` | 70 | 4,260 | both |
-| `net/minecraft/server/jsonrpc` | 65 | 4,094 | dedicated server |
-| `net/minecraft/server/rcon` | 9 | 839 | dedicated server |
-| `com/mojang/realmsclient` | 127 | 13,217 | client |
+| `net/minecraft/util/profiling` | 70 | 4,265 | both |
+| `net/minecraft/server/jsonrpc` | 65 | 4,118 | dedicated server |
+| `net/minecraft/server/rcon` | 9 | 837 | dedicated server |
+| `com/mojang/realmsclient` | 137 | 14,701 | client |
 | `net/minecraft/realms` | 4 | 203 | client |
-| `net/minecraft/stats` | 10 | 873 | both |
+| `net/minecraft/stats` | 10 | 874 | both |
 | `net/minecraft/gizmos` | 15 | 569 | both |
-| `net/minecraft/references` | 5 | 1,434 | both |
-| `net/minecraft/data` | 163 | 15,587 | both — see below |
-| └ `net/minecraft/data/worldgen` | 56 | 5,369 | both — see below |
-| `net/minecraft/client/data` | 28 | 6,176 | client |
+| `net/minecraft/references` | 5 | 1,483 | both |
+| `net/minecraft/data` | 174 | 16,849 | both — see below |
+| └ `net/minecraft/data/worldgen` | 64 | 6,016 | both — see below |
+| `net/minecraft/client/data` | 28 | 6,189 | client |
 | `com/mojang/blaze3d/audio` | 12 | 1,013 | client |
 | `net/minecraft/client/multiplayer/chat/report` | 12 | 952 | client |
 
@@ -70,8 +70,8 @@ client and the server it configures is not.
 
 **`net/minecraft/util/datafix`** — the largest thing on this page and the
 most explicitly out of scope. `DataFixers` is one static class whose whole
-body is the migration history of the game written out longhand: three
-hundred schema registrations and four hundred-odd fixes, from schema 99 up
+body is the migration history of the game written out longhand: just over
+three hundred schema registrations and four hundred-odd fixes, from schema 99 up
 to the current world version. The rewriting machinery itself is Mojang's
 external DataFixerUpper library; what lives here is the vanilla catalogue —
 `util/datafix/schemas` describing the *shape* of the data at each version,
@@ -81,7 +81,7 @@ A version number becomes a chain of fixes through `DataFixTypes`, an enum
 of about thirty type references (level, chunk, player, entity chunk, POI
 chunk, options, stats, advancements, and a long tail of saved-data kinds).
 `DataFixTypes.updateToCurrentVersion` takes the data version as an
-argument — every one of its thirteen callers reads the version itself — and
+argument — every one of its fourteen callers reads the version itself — and
 asks the fixer to compose every rule from there to now.
 `DataFixTypes.wrapCodec` is the one that reads the version *out of the tag*:
 it wraps an ordinary codec so decoding pulls the data version, runs the
@@ -159,8 +159,8 @@ when Tracy is available — and `Profiler.decorateFiller` *combines* the two,
 so an attached Tracy build and a running `/debug start` both see every
 section. With a Tracy build attached, every profiler section in the game
 streams out with no command run. Tracy reaches outside this package too,
-into Blaze3D's frame capture and GPU profiler and into the executor
-wrappers.
+into Blaze3D's frame capture, into the GPU abstraction's `TracyGpuProfiler`
+and into the executor wrappers.
 
 **JFR** (`util/profiling/jfr`) registers ten custom flight-recorder events
 under a Minecraft category — chunk generation, region reads and writes,
@@ -226,8 +226,8 @@ client-side so the server list can still ping ancient servers.
 
 ## Realms is a client for a server nobody here can read
 
-**`com/mojang/realmsclient`**, client-only, 127 classes and 13,217 lines —
-about the size of the whole packet catalogue in `network/protocol`. Roughly
+**`com/mojang/realmsclient`**, client-only, 137 classes and 14,701 lines —
+more lines than the whole packet catalogue in `network/protocol`. Roughly
 sixty per cent is screens and the records behind them — subscriptions, world
 slots, templates, invites, backups, minigames, upload and download — and the
 rest is a task framework, the world-upload pipeline and the HTTP layer, a
@@ -291,13 +291,14 @@ package names suggest: `BlockIds` holds the keys for blocks with **no item
 form** (water, lava, wall torches, piston heads, wall signs), `ItemIds` the
 items with no block, and `BlockItemIds` — seven times `BlockIds` and not
 quite twice `ItemIds` — the pairs. Look for stone in `BlockIds` and it is not there. They exist to break
-a class-initialisation cycle: exactly **ten** files outside the package name
-it, and they are precisely the ones that need to name a block or item
+a class-initialisation cycle: exactly **twelve** files outside the package
+name it, and five of them are the ones that need to name a block or item
 *before* the block and item classes are loaded — `Blocks` and `Items`
 themselves, `GrassBlock` and `MyceliumBlock`, which name another block
-during that initialisation, `DecoratedPotPatterns` beside them, and the five
-tag providers. A resource key is a registry plus
-an [identifier](../foundations/identifiers-and-registries.md), so it can be
+during that initialisation, and `PotDecorations` beside them. The other
+seven are data generators that work in keys: the five tag providers and two
+feature bootstraps, `AquaticFeatures` and `NetherFeatures`. A resource key is
+a registry plus an [identifier](../foundations/identifiers-and-registries.md), so it can be
 built with nothing loaded. Practically, it is the canonical machine-readable
 list of *block and item* ids, and a better starting point than the block and
 item holder classes if that is what you want — but not the id list: five
@@ -314,7 +315,7 @@ its client half, generating block and item models and the atlas definitions.
 The significance is a genuine paradox worth stating plainly. **Vanilla's own
 content is a data pack.** `net/minecraft/data/worldgen` is the entire
 vanilla worldgen data pack written as Java — the biome feature lists, the
-surface rules, the noise settings, the carvers, the jigsaw pools, the
+material rules, the noise settings, the carvers, the jigsaw pools, the
 structures and structure sets, the processor lists — and the loot, recipe,
 tag and advancement packages do the same for their domains, all serialised
 through the *same* codecs the game uses to read a pack.
@@ -326,7 +327,7 @@ change it without a data pack" is *nearly* true — which is the more useful
 statement, because the exceptions are load-bearing and a reader who believes
 the absolute version will misread three other pages.
 
-**The package is not build-time only, and the dedicated server ships all 163
+**The package is not build-time only, and the dedicated server ships all 174
 classes of it.** Three kinds of exception:
 
 - **Plain id tables.** `AtlasIds` is read at runtime by the model manager,
@@ -338,14 +339,15 @@ classes of it.** Three kinds of exception:
   types, dialogs and world clocks. It is the most-imported type in the
   package by a wide margin.
 - **Constants and math the running game calls.** `Blocks` itself names
-  `TreeFeatures` and `CaveFeatures` keys while constructing mushroom and
-  fungus blocks; `MinecraftServer` reaches for a `MiscOverworldFeatures` key
-  for the bonus chest; a jigsaw block entity defaults to a `Pools` key;
-  `NoiseRouterData` and `NoiseGeneratorSettings`, both shipped worldgen
-  classes, are compiled against `TerrainProvider` and `SurfaceRuleData`; and
-  the F3 screen's biome line calls `NoiseRouterData.peaksAndValleys`, one
-  line that delegates straight into `TerrainProvider`
-  ([density functions](../worldgen/density-functions.md)).
+  `TreeFeatures` keys while constructing mushroom and fungus blocks, and a
+  `CaveFeatures` key and a `VegetationFeatures` key for the moss and pale moss
+  blocks; `MinecraftServer` reaches for a
+  `MiscOverworldFeatures` key for the bonus chest; a jigsaw block entity
+  defaults to a `Pools` key; `NoiseRouterData` and `NoiseGeneratorSettings`,
+  both shipped worldgen classes, are compiled against `TerrainProvider` and the
+  material rules in `net/minecraft/data/worldgen/material`; and the F3 screen's
+  biome line calls `NoiseRouterData.peaksAndValleys`, one line that delegates
+  straight into `TerrainProvider` ([density functions](../worldgen/density-functions.md)).
 
 Vanilla's density functions and noise settings still reach the running game
 as JSON. `NoiseRouterData.bootstrap` and `NoiseGeneratorSettings.bootstrap`
@@ -370,7 +372,7 @@ book's own [reference layer](../../reference/README.md) covers.
 `net/minecraft/gizmos` above: the book teaches what it does and the atlas
 still counts it outside every part, because it is filed where nobody looks
 for it. It wraps OpenAL, and
-it sits inside Blaze3D, beside the GPU abstraction, rather than in the
+it sits inside Blaze3D, beside the window and `RenderSystem`, rather than in the
 client's sound package where the engine, the manager, the channel bookkeeping
 and the Ogg decoding live. That is the boundary fact: Blaze3D is the platform
 layer for both devices, not only the graphics one, and a reader looking for
@@ -417,29 +419,32 @@ miss it, not a shrug.
 
 | what | size | why | what carries it instead |
 |---|---|---|---|
-| `com/mojang/blaze3d/vulkan` | 40 classes, 7,477 lines | a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
-| `net/minecraft/client/data` | 28 classes, 6,176 lines | build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
-| the catalogues | ~230 mob models, ~73 particles, 101 render states, 50 render layers, 16 animation definitions, 61 of 63 worldgen features, 50 tree kits, the entity sub-predicates | each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
+| `com/mojang/renderpearl/backend/vulkan` | 33 classes, 7,387 lines | a faithful second implementation of an interface already documented, and the abstraction is the lecture | [Blaze3D](../rendering/blaze3d.md) |
+| `net/minecraft/client/data` | 28 classes, 6,189 lines | build-time model and atlas generators, the same category as the generator half of `net/minecraft/data`, but big enough that a reader trips over it | named here and nowhere else |
+| the catalogues | ~140 entity models, ~80 particles, 102 render states, 50 render layers, 16 animation definitions, 56 of 58 worldgen features, 57 tree kits, the entity sub-predicates | each is one shape repeated, and the shape is on the page that owns the framework | [the reference layer](../../reference/README.md) |
 | `client/quickplay`, `client/profiling`, `client/renderer/gizmos` | a few classes each | no mechanism a lecture needs | — |
-| `net/minecraft/data/worldgen` as content | 56 classes, 5,369 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
+| `net/minecraft/data/worldgen` as content | 64 classes, 6,016 lines | declined *as content*: it is the datagen bootstrap that emits vanilla's JSON | the runtime exceptions named above, which are not a decline |
 | `net/minecraft/client/animation`'s keyframe definitions | 16 of its 23 classes | pure data in Java clothing — and *lines* is the wrong unit for it: 509 lines and 674 KB, one file's longest line thirty thousand characters, because the decompiler renders each animation as one builder chain | [entity rendering](../rendering/entity-rendering.md) has the five framework classes |
 
-Four things inside `blaze3d/vulkan` are named before the decline rather than
-after it. `GlslCompiler` and the `vulkan/glsl` shaderc and spirv-cross pair,
-because Minecraft still authors GLSL and cross-compiles it to SPIR-V, which
-is the whole reason one shader source can feed two backends;
-`DestructionQueue`, the deferred-free discipline OpenGL needs no equivalent
-of, which is the clearest illustration of what the device seam hides; and
-`vulkan/checkpoints`, vendor breadcrumb extensions for GPU crash reports.
-The interiors of `blaze3d/opengl` are declined on the same grounds.
+Two things inside `com/mojang/renderpearl/backend/vulkan` are named before
+the decline rather than after it: `DestructionQueue`, the deferred-free
+discipline OpenGL needs no equivalent of, which is the clearest illustration
+of what the device seam hides, and `vulkan/checkpoints`, vendor breadcrumb
+extensions for GPU crash reports. The shader compiler is not in the declined
+tree. `GlslCompiler` and `SPIRVModule`, the shaderc and spirv-cross pair, sit
+in front of both backends in `renderpearl/frontend/shaders`, because
+Minecraft still authors GLSL and compiles it to SPIR-V once — Vulkan takes
+the SPIR-V as it is and OpenGL cross-compiles it back to GLSL — which is the
+whole reason one shader source can feed two backends. The interiors of
+`com/mojang/renderpearl/backend/opengl` are declined on the same grounds.
 
 **Named, and not yet written.** These are real systems with real lectures
 in them, and no ruling above covers them: the carver tunnel walk; the dragon
 fight (`EnderDragonFight`); the advancements screen; `client/multiplayer`'s
 joining-a-server tail; and three corners of the pack system — the
 server-resource-pack prompt and download flow in `client/resources/server`,
-the *linkfs* synthetic file system that lets a development checkout's
-scattered directories present as one pack root, and `DownloadQueue` with
+the *linkfs* synthetic file system that presents the launcher's hash-named
+asset files as the one tree their index describes, and `DownloadQueue` with
 `DownloadCacheCleaner`, the download queue and its cache eviction. They are
 named here so that a reader who wants one knows the book knows it is
 missing, and knows where to start.

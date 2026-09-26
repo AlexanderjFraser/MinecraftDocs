@@ -1,6 +1,6 @@
 # Biomes
 
-> Verified against **Minecraft 26.2** · Part XII · A point in the world gets a biome: six numbers quantised to integers, a nearest-neighbour search in seven dimensions, and the two different answers the game keeps for the same block.
+> Verified against **Minecraft 26.3** · Part XII · A point in the world gets a biome: six numbers quantised to integers, a nearest-neighbour search in seven dimensions, and the two different answers the game keeps for the same block.
 
 Walk out of a desert into a jungle and watch the ground. The grass changes
 colour at one line. The fog and the sky change at a *different* line, a
@@ -13,9 +13,9 @@ freezes are all on the *jittered* side, and the sky is not.
 
 A biome is a label in the chunk at quarter resolution — one per
 four-by-four-by-four block volume, which this book and the code both call a
-**quart cell** — plus a bundle of consequences hanging off that label. In 26.2 the bundle has been hollowed
-out: `Biome` itself holds five things, and most of what a player would call
-"the biome" now lives in the environment-attribute stack, where the biome is
+**quart cell** — plus a bundle of consequences hanging off that label. The
+bundle is a thin one: `Biome` itself holds four things, and most of what a
+player would call "the biome" lives in the environment-attribute stack, where the biome is
 one layer among several rather than the owner
 ([environment attributes and timelines](../world/environment-attributes-and-timelines.md)).
 
@@ -23,36 +23,38 @@ one layer among several rather than the owner
 
 | class | what it decides | when |
 |---|---|---|
-| `BiomeSource` | which biome a quart cell gets, through the `BiomeResolver` interface the chunk fill takes. `BiomeSources.bootstrap` registers four — `MultiNoiseBiomeSource`, `TheEndBiomeSource`, `FixedBiomeSource` (one biome everywhere, which is what a buffet world is) and `CheckerboardColumnBiomeSource` (a listed few in squares) — and `BiomeSource.possibleBiomes` is the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on a worldgen worker |
-| `Climate.Sampler` | the six climate numbers at a point — temperature, humidity, continentalness, erosion, depth and weirdness. Filling a chunk uses `NoiseChunk.cachedClimateSampler`, the chunk-wrapped copy; `RandomState.sampler` is the flattened, cacheless one everything outside a chunk asks ([density functions](density-functions.md#seed-once-per-dimension)) | per quart cell |
-| `Climate.ParameterList` | the search space: one `Climate.ParameterPoint` per biome, indexed by a `Climate.RTree` | built once per world |
+| `BiomeSource` | which biome a quart cell gets, through the `BiomeResolver` it makes for the chunk fill. `BiomeSources.bootstrap` registers four — `MultiNoiseBiomeSource`, `TheEndBiomeSource`, `FixedBiomeSource` (one biome everywhere, which is what a buffet world is) and `CheckerboardColumnBiomeSource` (a listed few in squares) — and `BiomeSource.possibleBiomes` is the memoised pre-filter everything else leans on | `ChunkStatus.BIOMES`, on a worldgen worker |
+| `Climate.Sampler` | the six climate numbers at a point — temperature, humidity, continentalness, erosion, depth and weirdness. `RandomState.createClimateSampler` binds the six to a sampling context, with or without caches: filling a chunk takes a caching one, whose functions `MultiNoiseBiomeSource.createResolverForChunk` samples over the whole chunk at once, and `BiomeSource.createCachingResolver` and `BiomeSource.createUncachedResolver` wrap one for a lookup outside the fill ([density functions](density-functions.md#seed-once-per-dimension)) | once per chunk filled, or per point asked |
+| `Climate.ParameterList` | the search space: `Climate.ParameterPoint`s paired with biomes, indexed by a `Climate.RTree` | built once per world |
 | `OverworldBiomeBuilder` | the overworld's parameter table, in Java — temperature, humidity, erosion and continentalness bands over six tables of biome keys | build time |
 | `LevelChunkSection` | where the answer lives: a second `PalettedContainer` keyed by biome holder, two bits per axis | written once, saved, shipped |
 | `BiomeManager` | the jitter — which biome this *block* gets, as opposed to which cell it is in | every gameplay read |
-| `Biome` | five things: climate settings, an `EnvironmentAttributeMap`, `BiomeSpecialEffects`, generation settings and mob settings | — |
-| `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music and the gameplay switches — as *modifiers*, not values. Twenty gameplay attributes exist; the sixty-six vanilla biome files touch three of them between them, and fifty-one touch none | per attribute, per read |
+| `Biome` | four things: climate settings, an `EnvironmentAttributeMap`, `BiomeSpecialEffects` and generation settings | — |
+| `EnvironmentAttributeMap` | the biome's contribution to sky, fog, music, the spawn lists and the gameplay switches — as *modifiers*, not values. Twenty-three gameplay attributes exist; the sixty-seven vanilla biome files touch five of them between them — every file sets the spawn lists, and for fifty that is the only one | per attribute, per read |
 
 ## Deciding a chunk's biomes, cell by cell
 
 ```mermaid
 sequenceDiagram
     participant NBC as NoiseBased<br/>ChunkGenerator
-    participant CA as ChunkAccess
-    participant LCS as LevelChunkSection
     participant MNBS as MultiNoise<br/>BiomeSource
     participant ClimS as Climate.Sampler
+    participant CA as ChunkAccess
+    participant LCS as LevelChunkSection
     participant CPList as Climate.<br/>ParameterList
 
-    Note over NBC,CPList: ChunkStatus.BIOMES, forked to the init_biomes executor
-    NBC->>NBC: build the NoiseChunk, wrap the biome resolver twice
-    NBC->>CA: fillBiomesFromNoise, with the chunk's cached sampler
+    Note over NBC,CPList: ChunkStatus.BIOMES, forked to the createBiomes executor
+    NBC->>MNBS: createResolverForChunk, with a caching Climate.Sampler
+    MNBS->>ClimS: each of its six functions, sampled over the whole chunk
+    ClimS-->>MNBS: a buffer per function, one value per quart cell
+    MNBS-->>NBC: a resolver that reads the six buffers
+    NBC->>NBC: decorateBiomeResolver, wrap the resolver twice
+    NBC->>CA: fillBiomesFromNoise, with the wrapped resolver
     loop per section
         CA->>LCS: fillBiomesFromNoise, into a new container
         loop per quart cell, 64 of them
-            LCS->>MNBS: getNoiseBiome, quart coordinates and the sampler
-            MNBS->>ClimS: sample, six functions at one point
-            ClimS-->>MNBS: a Climate.TargetPoint of six longs
-            MNBS->>CPList: findValue
+            LCS->>MNBS: getNoiseBiome, through the resolver
+            MNBS->>CPList: findValue, the six buffered values as a Climate.TargetPoint
             CPList->>CPList: findValueIndex, the search down its Climate.RTree
             CPList-->>MNBS: the nearest biome holder
             MNBS-->>LCS: into the new container
@@ -60,34 +62,37 @@ sequenceDiagram
     end
 ```
 
-*A chunk's biomes are 64 climate searches per section, each a sample at one point and a nearest-neighbour walk; no block is read and none is written.*
+*A chunk's biomes are the six climate functions sampled once over the whole chunk, then 64 searches per section, each a lookup into those samples and a nearest-neighbour walk; no block is read and none is written.*
 
-The two wrappers in the first arrow only do anything beside chunks an
-older version generated — [blending at the old-chunk
-border](blending.md#what-the-blender-actually-answers)
+The two wrappers `NoiseBasedChunkGenerator.decorateBiomeResolver` adds only
+do anything beside chunks an older version generated — [blending at the
+old-chunk border](blending.md#what-the-blender-actually-answers)
 is where they are explained.
 
 **Biomes are decided before terrain, and not for it.** `ChunkPyramid` makes
-`ChunkStatus.BIOMES` a requirement of both `ChunkStatus.NOISE` and
-`ChunkStatus.SURFACE`, so the order is enforced — but what the noise step
-collects from it is the chunk's `NoiseChunk` workspace, not a single biome
-label. **The noise fill never reads a biome.** What makes a jungle and its
+`ChunkStatus.BIOMES`, one chunk out, a requirement of `ChunkStatus.TERRAIN`,
+so the order is enforced — but what the terrain step collects from it serves
+its surface pass alone: the biomes in the three-by-three chunks' palettes.
+**The noise fill never reads a biome.** What makes a jungle and its
 terrain agree is that both were computed from the *same* noise router:
 `RandomState` builds the climate sampler out of the depth, continents, erosion
 and ridges functions, the very ones that shape the land — under the
 `Climate.Sampler` names *depth*, *continentalness*, *erosion* and *weirdness*.
 Neither was consulted about the other. The biome does not touch a block until
-`ChunkStatus.SURFACE`
-([terrain](terrain.md#the-surface-pass-and-the-two-places-it-breaks-its-own-rule)).
+the surface pass, which follows the fill inside the same `ChunkStatus.TERRAIN`
+task ([terrain](terrain.md#the-surface-pass-and-the-two-places-it-breaks-its-own-rule)).
 
-The *fork* at the top of that trace is not the noise generator's: the base
-`ChunkGenerator.createBiomes` forks to *init_biomes* too, so a superflat world
-leaves the worldgen executor for its biomes exactly as the overworld does.
-What `NoiseBasedChunkGenerator` overrides it for is the three lines below
-the fork — building the chunk's `NoiseChunk`, wrapping the resolver, and
-sampling through the chunk's cached sampler instead of the level's uncached
-one. `FlatLevelSource` and `DebugLevelSource` do none of those. The End is a
-`NoiseBasedChunkGenerator` like the
+The *fork* at the top of that trace is not the noise generator's:
+`ChunkGenerator.createBiomes` is the base class's alone and forks to
+*createBiomes* for every generator, so a superflat world leaves the worldgen
+executor for its biomes exactly as the overworld does. What
+`NoiseBasedChunkGenerator` overrides is one step,
+`ChunkGenerator.decorateBiomeResolver`, for its two wrappers; `FlatLevelSource`
+and `DebugLevelSource` keep the base one, which wraps nothing. Sampling the
+whole chunk up front is the biome source's choice, not the generator's: only
+`MultiNoiseBiomeSource` overrides `BiomeSource.createResolverForChunk`, and the
+other three sources answer cell by cell through `BiomeSource.createResolver`.
+The End is a `NoiseBasedChunkGenerator` like the
 overworld and the nether — just with `TheEndBiomeSource` in front of it,
 which does not do a climate search at all: it thresholds a single erosion
 sample outside a fixed central radius.
@@ -98,9 +103,9 @@ sample outside a fixed central radius.
 thousand and truncates, so the entire search is integer arithmetic. The
 target is a `Climate.TargetPoint` of six longs; each biome declares a
 `Climate.ParameterPoint` of six `Climate.Parameter` intervals; and
-`Climate.ParameterList.findValue` walks a `Climate.RTree` — six children per
-node — minimising the sum of squared distances from the target to each
-interval.
+`Climate.ParameterList.findValue` walks a `Climate.RTree` — up to nineteen
+children per node — minimising the sum of squared distances from the target
+to each interval.
 
 Except the count is seven, not six. `Climate.PARAMETER_COUNT` is **7** and
 `Climate.RTree.create` refuses a point that does not supply seven, because
@@ -149,7 +154,7 @@ And then two different readers ask for it two different ways.
 |---|---|---|
 | entry point | `LevelReader.getBiome` → `BiomeManager.getBiome` | `BiomeManager.getNoiseBiomeAtPosition`, and on the client `BiomeManager.getNoiseBiomeAtQuart` |
 | what it does | offsets by two, takes the eight surrounding quart corners, and picks the one minimising `BiomeManager.getFiddledDistance` — a seeded hash worth up to ±0.45 of a cell per axis | floors to the quart cell and reads the palette |
-| who uses it | freezing and precipitation, mob spawning, commands, the surface rules during generation — **and block tint**: grass, foliage and water colour, through `ClientLevel.calculateBlockTint` | the environment-attribute stack, and nothing else that goes through `BiomeManager` |
+| who uses it | freezing and precipitation, mob spawning, commands, the surface rules during generation — **and block tint**: grass, foliage and water colour, through `ClientLevel.calculateBlockTint` | the environment-attribute stack, for every attribute but the spawn lists — `EnvironmentAttribute.isFullResolutionBiomes` sends those to the jittered read — and nothing else that goes through `BiomeManager` |
 | what it looks like | the ragged border | the straight one |
 
 **Block tint is on the jittered side**, which is the half of this that
@@ -169,8 +174,8 @@ The server never interpolates and never pays it — it passes no interpolator.
 
 ## What a biome still owns
 
-Five things, and none of them stops being read once the chunk is generated —
-`NaturalSpawner` asks the mob settings every tick and a bone-mealed grass block
+Four things, and none of them stops being read once the chunk is generated —
+`NaturalSpawner` asks the attribute map every tick and a bone-mealed grass block
 asks the generation settings.
 
 `Biome.climateSettings` is precipitation, a base temperature, a
@@ -183,7 +188,7 @@ grows. Most of the public surface is the questions rather than the number:
 `Biome.shouldSnow`. `Biome.getBaseTemperature` is the raw, uncached,
 unadjusted escape hatch.
 
-`BiomeSpecialEffects` is, in 26.2, **only block tint** — five fields, all of
+`BiomeSpecialEffects` is **only block tint** — five fields, all of
 them colours or a grass-colour modifier, and only the water colour is
 mandatory. Fog, sky, clouds, ambient sound, music and particles have all left
 it for the attribute stack. What is left is read by nothing in the attribute
@@ -215,49 +220,60 @@ pages: the placed features, one set *per decoration step*, by
 [features and placement](features-and-placement.md#one-chunks-decoration-from-the-corner-outward),
 and the carvers by [terrain](terrain.md#carving-and-who-chooses-the-block), at
 a different status. `BiomeGenerationSettings.getBoneMealFeatures` is its only
-reader outside worldgen, and its one caller is `GrassBlock`. `MobSpawnSettings`
-is the weighted spawn lists `NaturalSpawner` reads — though a structure at the
-position can replace them outright before the spawner ever looks
+reader outside worldgen, and its one caller is `GrassBlock`. The spawn lists
+are in the attribute map, as `EnvironmentAttributes.NATURAL_MOB_SPAWNS`, which
+every biome file sets with a `MobSpawnSettings` argument and `NaturalSpawner`
+reads through the attribute stack — though a structure at the position can
+replace them outright before the spawner ever looks
 ([a spawn attempt is a filter](../entities/entity-lifecycle.md#a-spawn-attempt-is-a-filter-not-a-conversation)) —
-and its entry constructor silently rewrites any miscellaneous-category entity
-type to pig.
+and the `MobSpawnSettings.SpawnerData` constructor silently rewrites any
+miscellaneous-category entity type to pig.
 
-Of the five, the client is given two and a half. `Biome.NETWORK_CODEC` sends
+Of the four, the client is given two and a half. `Biome.NETWORK_CODEC` sends
 the climate settings, the *syncable* attributes and the effects, and
-substitutes empty generation and mob settings: features, carvers and spawn
-lists never cross the wire. And when a client asks for a biome in a chunk it
-does not have, it gets plains.
+substitutes empty generation settings; the spawn-list attribute is not
+syncable, so features, carvers and spawn lists never cross the wire. And when
+a client asks for a biome in a chunk it does not have, it gets plains.
 
 ## Questions players ask
 
 **Why do I always spawn near the origin?** Because the *chunk* is chosen by a
 climate search — once, the first time the world is ever loaded, and never
 again ([building the levels](../server/starting-a-server.md#building-the-levels)
-owns *when*). `Climate.SpawnFinder` and `Climate.findSpawnPosition` look for
-the point whose climate best matches the noise settings' spawn target, in two
-spiral passes out to a maximum radius of 2,048 blocks, with depth pinned to
-zero and the fitness deliberately biased toward the origin so that a tie lands
-near 0,0. `MinecraftServer` then keeps only that answer's chunk and does a
-terrain search inside it: an eleven-by-eleven chunk spiral of
-`PlayerSpawnFinder.getSpawnPosInChunk`, over a first guess taken from
+owns *when*). `NoiseSpawnFinder.findSpawnPosition` looks for the point whose
+climate best matches the noise settings' spawn target — a list of
+`SpawnTargetPoint`s, each a set of intervals on named density functions, for
+the overworld five of the six climate functions with depth left out — in two
+spiral passes out to a maximum radius of 2,048 blocks, with the fitness
+deliberately biased toward the origin so that a tie lands near 0,0.
+`NoiseBasedChunkGenerator.getOrigin` keeps only that answer's chunk, and
+`MinecraftServer` does a terrain search from it: an eleven-by-eleven chunk
+spiral of `PlayerSpawnFinder.getSpawnPosInChunk`, over a first guess taken from
 `ChunkGenerator.getSpawnHeight` or, failing that, the *WORLD_SURFACE*
 heightmap. A dimension whose settings name no spawn target skips the climate
 half and starts that spiral at the origin chunk.
 
 **Why does `/locate biome` find biomes in chunks I have never visited?**
 Because it asks the generator, not the world. `BiomeSource.findClosestBiome3d`
-spirals through `BiomeSource.getNoiseBiome` with the live sampler and never
+spirals through a resolver from `BiomeSource.createCachingResolver` and never
 reads a palette — so it finds biomes in ungenerated chunks and will **never**
 find one placed by `/fillbiome`. It pre-filters against
 `BiomeSource.possibleBiomes`, so asking for an impossible biome fails
 instantly rather than after a spiral out to six thousand four hundred blocks.
 
+> **For a 1.21-era reader.** *Biome.getMobSettings* is gone: the spawn lists are the
+> attribute `EnvironmentAttributes.NATURAL_MOB_SPAWNS`. `BiomeSource` is not itself a
+> `BiomeResolver`; it makes one. *RandomState.sampler* and
+> *NoiseChunk.cachedClimateSampler* are gone; `RandomState.createClimateSampler` does their
+> work. *Climate.findSpawnPosition* is `NoiseSpawnFinder.findSpawnPosition`.
+
 ## Where to look
 
-`BiomeSource.getNoiseBiome` is the one method the whole search hangs off; read
-it with `MultiNoiseBiomeSource` beside it, and `TheEndBiomeSource` after, for
-the source that does no search at all. Then `Climate` whole — it is one file
-holding `Climate.Sampler`, `Climate.quantizeCoord`,
+`BiomeResolver.getNoiseBiome` is the one method the whole search hangs off, and
+`BiomeSource.createResolver` and `BiomeSource.createResolverForChunk` are where a
+source makes one; read them with `MultiNoiseBiomeSource` beside them, and
+`TheEndBiomeSource` after, for the source that does no search at all. Then
+`Climate` whole — it is one file holding `Climate.Sampler`, `Climate.quantizeCoord`,
 `Climate.ParameterList.findValue` and the `Climate.RTree` — and
 `Climate.PARAMETER_COUNT` is the line that explains the seventh dimension.
 `OverworldBiomeBuilder.addBiomes` is vanilla's table, in Java, and

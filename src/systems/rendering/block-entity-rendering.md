@@ -1,6 +1,6 @@
 # Block-entity rendering
 
-> Verified against **Minecraft 26.2** · Part XI · a chest on the ground and a chest in your hand, drawn in the same frame by two renderers that share a model and nothing else.
+> Verified against **Minecraft 26.3** · Part XI · a chest on the ground and a chest in your hand, drawn in the same frame by two renderers that share a model and nothing else.
 
 You place a chest, step back, and hold a second one up in front of your face.
 Both are chests, both are lit, both open the same lid on the same hinge — and
@@ -8,7 +8,7 @@ almost nothing about how they got onto the screen is shared. The one on the
 ground is a *block entity*: the terrain mesh at its position contains no
 geometry at all, and everything you can see of it was extracted from the live
 world by `ChestRenderer` a few microseconds ago. The one in your hand is an
-*item*: it has no block entity, no render state and no extract stage, and it
+*item*: it has no block entity, it is extracted as part of your player, and it
 is drawn by a class in a different package that exists only because an item
 cannot be a block entity. The seam shows if you type */tick freeze*. The chest
 on the ground is nailed to its last tick; the chest in your hand keeps
@@ -21,7 +21,7 @@ reads the live world into a value object, **submit** describes what ought to
 be drawn without drawing it, **prepare** sorts and batches every description
 in the frame, and **execute** is the frame graph's passes issuing the draws —
 along with render states that hold no live object, `SubmitNodeCollector`, and
-the fifteen phases a submission can land in. All of that is that page's, and
+the phases a submission can land in. All of that is that page's, and
 all of it is true here. What follows is only the differences, and they are
 larger than the shared machinery suggests.
 
@@ -72,9 +72,9 @@ state class of its own, or an extract stage that reads the live world.
 |---|---|---|---|
 | what is walked | the level's renderable entities | the visible sections' meshes, then a global set | nothing — it is reached from a model |
 | the visibility test | a frustum, plus a size-scaled distance | the *section* is visible, then a per-renderer radius | whatever drew the thing holding it |
-| the stages | extract, finalize, submit | extract, submit | resolve and submit, in one call |
+| the stages | extract, finalize, submit | extract, submit | resolved in its holder's extract, submitted in its holder's submit |
 | the state | an `EntityRenderState` subclass | a `BlockEntityRenderState` subclass | a layer of an `ItemStackRenderState` |
-| the partial tick | one computed per entity | one for every block entity in the world | the camera entity's |
+| the partial tick | one computed per entity | one for every block entity in the world | its holder's — in your hand, the player's, then the camera entity's |
 | where the pose comes from | the dispatcher, from the state's position | `LevelRenderer`, translated to the block | the item transform for the display context |
 | how many | one renderer per entity type | 26 of the 49 types, served by 24 classes — `ChestRenderer` takes three of them | 13 renderers under 13 ids |
 
@@ -83,30 +83,36 @@ state class of its own, or an extract stage that reads the live world.
 ```mermaid
 sequenceDiagram
     participant LX as LevelExtractor
+    participant FPHAI as FirstPersonHands<br/>AndItems
+    participant IMR as ItemModelResolver
     participant BERD as BlockEntity<br/>RenderDispatcher
     participant ChestR as ChestRenderer
     participant LR as LevelRenderer
-    participant IIHR as ItemInHandRenderer
-    participant IMR as ItemModelResolver
     participant CSR as ChestSpecialRenderer
 
+    rect rgba(0, 0, 0, 0.04)
     Note over LX,CSR: the extract half — one partial tick for every block entity in the world
+    LX->>FPHAI: extractRenderState at the player's own partial tick
+    FPHAI->>IMR: updateForTopItem with the held stack
+    IMR->>IMR: the item model has no quads, only a special renderer
     LX->>LX: walk visibleSections, skip a section under 0.3 of its fade
     LX->>BERD: tryExtractRenderState with the not-global flag
     BERD->>BERD: the flag must equal shouldRenderOffScreen, then shouldRender within 64 blocks
     BERD->>ChestR: createRenderState, then extractRenderState
-    ChestR->>ChestR: combine with the neighbour half — lid openness and the brighter of two lights
+    ChestR->>ChestR: combine with the neighbour half — lid openness, the brighter of two lights
+    end
+    rect rgba(0, 0, 0, 0.04)
     Note over LX,CSR: the draw half — the world first, the hand afterwards, in two storages
     LR->>BERD: submit, with the pose already translated to the block
     BERD->>ChestR: submit — one model, one sprite, no world access
-    IIHR->>IMR: resolve the held stack at the camera entity partial tick
-    IMR->>CSR: the item model has no quads, only a special renderer
-    CSR->>CSR: submit the same ChestModel with its openness fixed
+    CSR->>CSR: submit for the hand renderer — the same ChestModel, openness fixed
+    end
 ```
 
-The two halves of the figure are not two stages of one pipeline. The world's
-block entities go through `LevelRenderer.submitFeatures` into the frame
-graph. The held chest goes into [the hand's own submit
+The two chests are not two runs of one pipeline. The world's block entities
+go through `LevelRenderer.submitFeatures` into the frame graph. The held
+chest is extracted with the player, by `FirstPersonHandsAndItems`, and
+`FirstPersonHandsAndItemsRenderer` submits it into [the hand's own submit
 storage](the-frame.md#the-hand-and-the-screen-effects-in-a-storage-the-level-never-sees),
 drained after the whole world is already on the screen. They never share a
 submit node.
@@ -185,10 +191,9 @@ ramping from zero to one over a duration the *chunk section fade-in time*
 option sets, and `LevelExtractor` skips its block entities until that number
 reaches **0.3**. Terrain fades in from the first frame, and the chests inside
 it appear about a third of the way through — furniture arriving after the
-room. `LevelRenderer.compileSections` zeroes the duration for a section within
-about twenty-eight blocks of the camera or one that was empty before, so the
-gate only bites on distant terrain, which is exactly where you would blame the
-draw distance for it.
+room. The ramp starts at a section's first upload and a recompile never
+restarts it, so the gate bites on arriving terrain at any distance, and never
+on a chest you place in terrain already drawn.
 
 The second is the off-screen flag, which the section after this one is about.
 The third is a distance test with the same name as the entity one and only
@@ -217,8 +222,8 @@ see it. And its extraction scales the beam's radius by the horizontal distance
 divided by 96, floored at one, so **the beam gets visibly wider the further
 away you stand**, which is why a distant beacon does not thin into nothing.
 Raising a spyglass resets the scale to one, because `BeaconRenderer` checks
-whether the local player is scoping. The topmost beam segment is drawn to
-`BeaconRenderer.MAX_RENDER_Y`, 2048 blocks above the block.
+whether the local player is scoping. The topmost beam segment is drawn
+`BeaconRenderer.MAX_RENDER_Y` tall, 2048 blocks up from where it starts.
 
 ### Off screen means off *this* list
 
@@ -255,7 +260,8 @@ further along — and wraps that stage and a pose into a
 in the game a non-null one is made, which is why [a mob is never
 crumbled](entity-rendering.md#why-the-zombie-is-animated-more-than-once) and
 a chest being mined is. The global list is extracted with a null overlay
-outright, so a beacon someone is breaking shows no cracks.
+outright, so a beacon someone is breaking gets its cracks from its block
+model alone, never from its renderer.
 
 Twenty-five subclasses, twenty-six classes: `BedRenderState` is reachable from
 nothing in the game. There is no bed block entity in `BlockEntityTypes` and no
@@ -305,12 +311,15 @@ exactly 1.0 while the game is frozen. Every block entity in the world is
 therefore pinned to its last completed tick, with no per-block exemption
 anywhere in the path.
 
-The held chest is a third answer again, off
-`Camera.getCameraEntityPartialTicks` — and the frozen check never freezes a
-`Player`, so under */tick freeze* the item in your hand is redrawn from a
-live partial tick while every chest lid in the world is stopped dead. Three
-things drawn in one frame from three different clocks, and the only reason
-they disagree is which question each one was allowed to ask.
+The held chest is asked the entity side's question, twice:
+`FirstPersonHandsAndItems.extractRenderState` runs at the local player's own
+partial tick, and the hand is posed at submit off
+`Camera.getCameraEntityPartialTicks`, which puts the same question to the
+camera entity. The frozen check never freezes a `Player`, so under
+*/tick freeze* the item in your hand is redrawn from a live partial tick while
+every chest lid in the world is stopped dead. Three things drawn in one frame,
+and the only reason they disagree is which question each one was allowed to
+ask.
 
 The same split shows up in the Christmas textures, which the game implements
 three times. `ChestRenderer` reads `SpecialDates.isExtendedChristmas` **once,
@@ -354,8 +363,8 @@ worth naming is
 `WallAndGroundTransformations`, which is how a skull, a banner or a sign
 answers *am I on the floor or on a wall* — one transformation per
 `Direction` for the wall case and an array indexed by rotation segment for
-the free-standing one, built once in the renderer's constructor rather than
-per frame.
+the free-standing one, built once into a static field of the renderer rather
+than per frame.
 
 ### How an empty item model turns into a chest
 

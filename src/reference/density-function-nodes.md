@@ -1,13 +1,14 @@
 # Density-function nodes
 
-> Verified against **Minecraft 26.2** · Reference · the thirty-four node types a
+> Verified against **Minecraft 26.3** · Reference · the forty-four node types a
 > *worldgen/density_function* file may name: what each one takes, what the
-> per-chunk rewrite turns it into, what range it reports, and which ids the
-> shipped data actually writes.
+> compiler turns it into, what range it reports, and which ids the shipped
+> data actually writes.
 
 [Density functions](../systems/worldgen/density-functions.md) is the lecture:
-three forms of one graph, two rewrites, and the six caches. This is the
-catalogue behind it — the four tables you would pause the video to read.
+one graph, rewritten twice and compiled once per dimension, and one kind of
+cache. This is the catalogue behind it — the four tables you would pause the
+video to read.
 
 `DensityFunctions.bootstrap` registers every entry below into
 `BuiltInRegistries.DENSITY_FUNCTION_TYPE`, in this order, under the
@@ -16,9 +17,9 @@ catalogue behind it — the four tables you would pause the video to read.
 which is why adding a new *kind* of node takes code while adding a new graph
 takes a JSON file.
 
-**34** — registered node types (`DensityFunctions.bootstrap`): four by name,
-then six markers, nine more by name, seven mapped transforms, four
-arithmetic, and four last.
+**44** — registered node types (`DensityFunctions.bootstrap`): one by name,
+then three context values, seven more by name, eleven unary transforms, four
+roundings, six arithmetic, and twelve last.
 
 ## The table
 
@@ -28,127 +29,154 @@ an inline object or a bare number, because every child slot is typed
 
 | id | class | children | other fields | what it computes |
 |---|---|---:|---|---|
-| *blend_alpha* | `DensityFunctions.BlendAlpha` | 0 | — | constant 1.0 as data — a placeholder the chunk swaps out |
-| *blend_offset* | `DensityFunctions.BlendOffset` | 0 | — | constant 0.0 as data — likewise a placeholder |
-| *beardifier* | `DensityFunctions.BeardifierMarker` | 0 | — | constant 0.0 as data — the structure-terrain placeholder |
+| *constant* | `ConstantFunction` | 0 | *value* | a fixed value |
+| *blend_alpha* | `SimpleDensityFunction` | 0 | — | the chunk's blend alpha from the sampling context, else 1.0 |
+| *blend_offset* | `SimpleDensityFunction` | 0 | — | the chunk's blend offset from the context, else 0.0 |
+| *beardifier* | `SimpleDensityFunction` | 0 | — | the chunk's structure-terrain adjustment from the context, else 0.0 |
+| *noise* | `NoiseFunction` | 3, optional | *noise*, *xz_scale*, *y_scale* | samples the noise a `NormalNoise` defines at position × scale, plus three offsets |
+| *end_outer_islands* | `EndIslandFunction` | 0 | — | the End's simplex field of outer islands, as a density |
+| *distance_to_point* | `DistanceToPointFunction` | 0 | *point*, *metric* | the distance from a fixed point, by one of four metrics |
+| *gradient* | `GradientFunction` | 0 | *axis*, *tiling*, *from_coordinate*, *to_coordinate*, *from_value*, *to_value* | one coordinate mapped onto a value range, clamped, repeated or mirrored past the ends |
+| *shift_a* | `ShiftNoiseFunction.ShiftA` | 0 | *noise* | domain warp read at x, 0, z |
+| *shift_b* | `ShiftNoiseFunction.ShiftB` | 0 | *noise* | domain warp read at z, x, 0 |
+| *shift* | `ShiftNoiseFunction.Shift` | 0 | *noise* | domain warp read at x, y, z |
+| *abs* | `UnaryFunction` | 1 | — | absolute value |
+| *square* | `UnaryFunction` | 1 | — | the child squared |
+| *cube* | `UnaryFunction` | 1 | — | the child cubed |
+| *sqrt* | `UnaryFunction` | 1 | — | the square root |
+| *half_negative* | `UnaryFunction` | 1 | — | identity above zero, halved below |
+| *quarter_negative* | `UnaryFunction` | 1 | — | identity above zero, quartered below |
+| *reciprocal* | `UnaryFunction` | 1 | — | the reciprocal |
+| *negate* | `UnaryFunction` | 1 | — | the child negated |
+| *squeeze* | `UnaryFunction` | 1 | — | clamp to ±1, then a soft odd cubic |
+| *log* | `UnaryFunction` | 1 | — | the natural logarithm |
+| *sign* | `UnaryFunction` | 1 | — | the child's sign: −1, 0 or 1 |
+| *floor* | `RoundFunction` | 2 | — | rounded down to a multiple of *multiple*, 1 unless given |
+| *round* | `RoundFunction` | 2 | — | rounded to the nearest multiple |
+| *ceil* | `RoundFunction` | 2 | — | rounded up to a multiple |
+| *truncate* | `RoundFunction` | 2 | — | rounded toward zero to a multiple |
+| *add* | `BinaryFunction` | 2 | — | the sum |
+| *sub* | `BinaryFunction` | 2 | — | the difference |
+| *mul* | `BinaryFunction` | 2 | — | the product, a single sample short-circuiting when the first child is exactly zero |
+| *div* | `BinaryFunction` | 2 | — | the quotient, with the same short-circuit |
+| *min* | `BinaryFunction` | 2 | — | the minimum, a single sample skipping the second child when the first is already at or below its bound |
+| *max* | `BinaryFunction` | 2 | — | the maximum, with the symmetric skip |
+| *pow* | `PowFunction` | 2 | — | *base* raised to *exponent* |
+| *spline* | `SplineFunction` | inside the spline | *spline* | a `CubicSpline` whose coordinates are themselves density functions |
+| *lerp* | `LerpFunction` | 3 | — | from *first* to *second*, by *alpha* |
+| *clamp* | `ClampFunction` | 1 | *min*, *max* | the child, clamped |
+| *range_choice* | `RangeChoiceFunction` | 3 | *min_inclusive*, *max_exclusive* | one of two branches, by whether the input is in range |
+| *interval_select* | `IntervalSelectFunction` | 1 + a list | *thresholds* | the branch whose ascending threshold the input first falls below |
+| *cache* | `CacheFunction` | 1 | — | delegates — requests a cache of its child |
+| *blend_density* | `BlendDensityFunction` | 1 | — | the child, blended toward old-terrain density where the context holds a non-empty `Blender` |
+| *interpolated* | `InterpolatedFunction` | 1 | *cell_size_xz*, *cell_size_y* | the child read at cell corners and interpolated between them |
+| *slice* | `SliceFunction` | 1 | *axis*, *coordinate* | the child read with one coordinate pinned |
+| *find_top_surface* | `FindTopSurfaceFunction` | 2 | *lower_bound*, *cell_height* | steps down in strides until the density goes positive, and returns that **Y** |
 | *old_blended_noise* | `BlendedNoise` | 0 | *xz_scale*, *y_scale*, *xz_factor*, *y_factor*, *smear_scale_multiplier* | the pre-1.18 terrain noise, decoded unseeded |
-| *interpolated* | `DensityFunctions.Marker` | 1 | — | delegates — requests cell-corner interpolation |
-| *flat_cache* | `DensityFunctions.Marker` | 1 | — | delegates — requests a quart-resolution 2-D cache |
-| *cache_2d* | `DensityFunctions.Marker` | 1 | — | delegates — requests a one-entry XZ memo |
-| *cache_once* | `DensityFunctions.Marker` | 1 | — | delegates — requests reuse within one interpolation step |
-| *cache_all_in_cell* | `DensityFunctions.Marker` | 1 | — | delegates — requests a whole-cell block cache |
-| *blend_density* | `DensityFunctions.Marker` | 1 | — | delegates — requests old-terrain density blending |
-| *noise* | `DensityFunctions.Noise` | 0 | *noise*, *xz_scale*, *y_scale* | samples a `NormalNoise` at the scaled position |
-| *end_islands* | `DensityFunctions.EndIslandDensityFunction` | 0 | — | the End's simplex island field, as a density |
-| *shifted_noise* | `DensityFunctions.ShiftedNoise` | 3 | *noise*, *xz_scale*, *y_scale* | samples noise at position × scale plus three offsets |
-| *range_choice* | `DensityFunctions.RangeChoice` | 3 | *min_inclusive*, *max_exclusive* | one of two branches, by whether the input is in range |
-| *interval_select* | `DensityFunctions.IntervalSelect` | 1 + a list | *thresholds* | the branch whose ascending threshold the input first falls below |
-| *shift_a* | `DensityFunctions.ShiftA` | 0 | *argument* (a noise) | domain warp read at x, 0, z |
-| *shift_b* | `DensityFunctions.ShiftB` | 0 | *argument* (a noise) | domain warp read at z, x, 0 |
-| *shift* | `DensityFunctions.Shift` | 0 | *argument* (a noise) | domain warp read at x, y, z |
-| *clamp* | `DensityFunctions.Clamp` | 1 | *min*, *max* | the child, clamped |
-| *abs* | `DensityFunctions.Mapped` | 1 | — | absolute value |
-| *square* | `DensityFunctions.Mapped` | 1 | — | the child squared |
-| *cube* | `DensityFunctions.Mapped` | 1 | — | the child cubed |
-| *half_negative* | `DensityFunctions.Mapped` | 1 | — | identity above zero, halved below |
-| *quarter_negative* | `DensityFunctions.Mapped` | 1 | — | identity above zero, quartered below |
-| *invert* | `DensityFunctions.Mapped` | 1 | — | the reciprocal |
-| *squeeze* | `DensityFunctions.Mapped` | 1 | — | clamp to ±1, then a soft odd cubic |
-| *add* | `DensityFunctions.Ap2` or `DensityFunctions.MulOrAdd` | 2 | — | the sum |
-| *mul* | `DensityFunctions.Ap2` or `DensityFunctions.MulOrAdd` | 2 | — | the product, short-circuiting on an exact zero |
-| *min* | `DensityFunctions.Ap2` | 2 | — | the minimum, skipping the second child when the first is already below its bound |
-| *max* | `DensityFunctions.Ap2` | 2 | — | the maximum, with the symmetric skip |
-| *spline* | `DensityFunctions.Spline` | inside the spline | *spline* | a `CubicSpline` whose coordinates are themselves density functions |
-| *constant* | `DensityFunctions.Constant` | 0 | *argument* | a fixed value |
-| *y_clamped_gradient* | `DensityFunctions.YClampedGradient` | 0 | *from_y*, *to_y*, *from_value*, *to_value* | block Y mapped onto a value range |
-| *find_top_surface* | `DensityFunctions.FindTopSurface` | 2 | *lower_bound*, *cell_height* | steps down in strides until the density goes positive, and returns that **Y** |
 
-**Where one class serves several ids.** The six markers are all
-`DensityFunctions.Marker`, a record of a `DensityFunctions.Marker.Type` and a
-wrapped function; the seven transforms are all `DensityFunctions.Mapped`; the
-four arithmetic ids share `DensityFunctions.TwoArgumentSimpleFunction`. In
-each case the *enum constant* carries its own codec, and the node's *codec()*
-returns its type's — which is how a re-serialised graph comes back with the
-right id. The two classes in the *add* and *mul* rows are the same story: the
-constructor folds a constant argument away
-([the parse step](../systems/worldgen/density-functions.md#parse-one-file-one-graph)),
-so *add* in the JSON may come back as either.
+**Where one class serves several ids.** The three context values are the
+constants of one enum, `SimpleDensityFunction`; the eleven unary transforms
+are all `UnaryFunction`, a record of a `UnaryFunction.Type` and its input;
+the four roundings share `RoundFunction`, and the six arithmetic ids share
+`BinaryFunction`. In each case an *enum constant* carries its own codec, and
+the node's *codec()* returns it — which is how a re-serialised graph comes
+back with the right id. Nothing is folded while parsing:
+[the parse step](../systems/worldgen/density-functions.md#parse-one-file-one-graph)
+builds each record as written, a constant operand is specialised only when
+the graph is compiled (into a sampler such as `BinaryFunction.ConstAddSampler`),
+and *add* in the JSON comes back as *add*.
 
-Two members of `DensityFunctions` are **not** in this table because they are
-not registered: `DensityFunctions.HolderHolder`, the in-memory stand-in for an
-id reference, which has no codec at all; and
-`DensityFunctions.TransformerWithContext`, a shape with no implementation.
+One member of `DensityFunctions` is **not** in this table because it is not
+registered: `DensityFunctions.HolderHolder`, the in-memory stand-in for an id
+reference, which has no codec at all.
 
 ## What the caches become
 
-`NoiseChunk.wrapNew` is the
-[per-chunk rewrite](../systems/worldgen/density-functions.md#wrap-once-per-chunk).
-A marker is a *request*; this is what is installed instead. All six installed
-classes implement `DensityFunctions.MarkerOrMarked`, so the marker type
-survives the swap and the graph would re-serialise unchanged — with one
-exception, the last row, where nothing is installed at all and the marker is
-replaced by its own child, which does not re-serialise as *blend_density*.
+`DensityFunctionCompiler.getSampler` is the
+[compile step](../systems/worldgen/density-functions.md#wrap-once-per-chunk):
+each dimension's `RandomState` compiles a graph the first time it is asked
+for, and no chunk rewrites anything. A *cache* node is a *request*. Before
+compiling, the compiler's rewrite inlines every `DensityFunctions.HolderHolder`
+and installs a `DensityFunctionCompiler.PreparedCache` in place of each
+*cache* node — one per distinct input, so two *cache* nodes around equal
+graphs share one cache. A second rewrite wraps each subgraph that ignores an
+axis its parent reads, constants and gradients aside, in a *slice* pinned at
+zero on that axis. A prepared cache refuses to encode, so only the parsed
+graph, which the rewrites copy rather than change, re-serialises.
 
-| marker type | installed | keyed on |
+| node | compiled to | keyed on |
 |---|---|---|
-| `DensityFunctions.Marker.Type.Interpolated` | `NoiseChunk.NoiseInterpolator` | nothing — two slices of cell-corner values, and eight corners loaded per cell |
-| `DensityFunctions.Marker.Type.FlatCache` | `NoiseChunk.FlatCache` | **position**, at quart resolution: one array entry per 4×4 block column group, filled at construction |
-| `DensityFunctions.Marker.Type.Cache2D` | `NoiseChunk.Cache2D` | **position**, one entry — the packed XZ of the last sample |
-| `DensityFunctions.Marker.Type.CacheOnce` | `NoiseChunk.CacheOnce` | **a counter** — `NoiseChunk.interpolationCounter` for the scalar, a second counter for the array form |
-| `DensityFunctions.Marker.Type.CacheAllInCell` | `NoiseChunk.CacheAllInCell` | **the cell** — one array entry per block in the cell, Y stored inverted |
-| `DensityFunctions.Marker.Type.BlendDensity` | `NoiseChunk.BlendDensity`, **or nothing at all** if the level's [`Blender`](../systems/worldgen/blending.md#what-the-blender-actually-answers) is empty, in which case the marker is replaced by its own child | not cached |
+| *cache* | a `CachingDensitySampler` carrying the prepared cache's number; its storage is a cell of the `SamplerContext` it runs in | **the volume** for a volume read — one buffer, refilled when a different `DensityVolume` asks — and **the position** for a single sample: the last block sampled, or its entry in the cached volume |
+| *interpolated* | a sampler that reads the child at the cell corners, a volume stepped by *cell_size_xz* and *cell_size_y*, and interpolates every block between | nothing — no value outlives the read |
+| *blend_density* | a sampler that asks the context for this chunk's [`Blender`](../systems/worldgen/blending.md#what-the-blender-actually-answers) and blends only when there is a non-empty one | not cached |
 
-Three of the registered nodes above are singletons rather than instances, so
-the same rewrite resolves them by object identity instead of by type, and
-every `DensityFunctions.HolderHolder` to its value:
+A context has cache cells only when it was built with
+`SamplerContext.Builder.enableCaches`: `NoiseChunk` builds one for each chunk,
+and `SamplerContext.EMPTY_UNCACHED` passes every cached read straight through.
 
-| singleton | installed | with no blending to do |
+Three of the registered nodes above are the constants of one enum,
+`SimpleDensityFunction`, and the compiler replaces none of them: each compiles
+to a `ContextBoundSampler` that looks its key up in the sampling context on
+every read, which is how one compiled graph serves every chunk.
+
+| singleton | reads | with nothing in the context |
 |---|---|---|
-| `DensityFunctions.BlendAlpha` | a `NoiseChunk.FlatCache` the constructor has already filled | survives as the constant 1.0 |
-| `DensityFunctions.BlendOffset` | a `NoiseChunk.FlatCache`, likewise | survives as the constant 0.0 |
-| `DensityFunctions.BeardifierMarker` | this chunk's [`Beardifier`](../systems/worldgen/structure-placement.md#the-ground-bends-before-the-ground-exists) | — the swap is unconditional |
+| `SimpleDensityFunction.BLEND_ALPHA` | `Blender.ALPHA_KEY`, a sampler over the alphas `NoiseChunk`'s constructor computes at quart resolution when the blender is not empty | the constant 1.0 |
+| `SimpleDensityFunction.BLEND_OFFSET` | `Blender.OFFSET_KEY`, likewise | the constant 0.0 |
+| `SimpleDensityFunction.BEARDIFIER` | `Beardifier.CONTEXT_KEY`, this chunk's [`Beardifier`](../systems/worldgen/structure-placement.md#the-ground-bends-before-the-ground-exists) | the constant 0.0 |
 
 ## Bounds
 
-Every node answers `DensityFunction.minValue` and `DensityFunction.maxValue`
-without a position. Most take theirs from a child; the arithmetic family — the
-two-argument nodes, the mapped ones and *clamp* — stores them as record
-components filled once at construction, and so does `BlendedNoise`. The bounds
-of a *parsed* graph are not the bounds of the running one, which is
+Every node answers `DensityFunction.range`, an `Interval`, without a
+position. Most take theirs from a child — *cache*, *interpolated*, *slice*
+and *blend_density* all do — and no registered node stores one: the
+arithmetic family (`BinaryFunction`, `UnaryFunction`, `ClampFunction`)
+combines its children's ranges through `Interval` on every call, and
+`BlendedNoise` derives its own from its parameters. The bounds of a *parsed*
+graph are the ones the compiler reads: a noise's range comes from its
+definition, not its seed, and no rewrite changes a bound. What a bound is
+worth is
 [the lecture's argument](../systems/worldgen/density-functions.md#what-a-bound-is-worth-and-which-form-told-you);
 this table is which node departs from its child, and how.
 
 | id | its range | |
 |---|---|---|
-| *add*, *mul*, *min*, *max* | sign-aware and eager | *mul* takes the four cross products and picks by the signs of the operands' ends; *min* and *max* take the element-wise minimum and maximum. Two ranges that cannot overlap log a warning and proceed |
-| *abs*, *square* | the child's endpoints, minimum clamped up to zero | `DensityFunctions.Mapped.create` transforms both ends |
-| *invert* | **±infinity** whenever the child's range straddles zero | the reciprocal has no finite bound across zero |
-| *clamp* | its own record components | they are literally named *minValue* and *maxValue*, so the codec's *min* and *max* fields **are** the interface's bound methods |
-| *shifted_noise* | the noise's | all three children are ignored |
-| *blend_density* | **±infinity**, whatever its child says | the one marker type that is not transparent |
+| *add*, *sub*, *mul*, *div*, *min*, *max* | interval arithmetic on the two children's ranges | *mul* takes the least and greatest of the four products of the operands' ends, a zero end giving zero even against infinity; *div* multiplies by the reciprocal's range; *min* and *max* take the element-wise minimum and maximum. A *min* or *max* whose two ranges cannot overlap logs a warning when it is compiled, and only the side that always wins is sampled |
+| *abs*, *square* | the child's ends mapped, with zero as the minimum when the child's range contains zero | `Interval.abs` and `Interval.square` map both ends |
+| *reciprocal* | **±infinity** whenever the child's range straddles zero | the reciprocal has no finite bound across zero |
+| *clamp* | the child's range, clamped into *min* and *max* | a child already inside them keeps its own, narrower range |
 | *find_top_surface* | its *lower_bound* and its upper bound's maximum | **Y coordinates** — this node's range is on a different scale from every other row |
-| *noise* | from the `DensityFunction.NoiseHolder`; 2.0 until the graph is seeded | the sixty-three shipped noise definitions come out between 2.57 and 7.32 once seeded |
+| *noise* | its `NormalNoise`'s, fixed when the noise definition is decoded | the three shifts are ignored; the sixty-four shipped noise definitions come out between ±0.87 and ±5.73 |
 
-`DensityFunctions.HolderHolder`, off the table, reports ±infinity while its
-holder is unbound, which is what lets forward references parse at all.
+`DensityFunctions.HolderHolder`, off the table, asks its target, and throws
+while its holder is unbound; forward references parse anyway, because nothing
+asks a node for its bound until the graph is compiled.
 
 ## What vanilla actually uses
 
-Thirty-five JSON files ship under *worldgen/density_function* — four at the
+Fifty-five JSON files ship under *worldgen/density_function* — four at the
 top level plus the per-dimension directories — and between them they use
-twenty-five of the thirty-four ids. Five more appear only inline, in the
-seven `Registries.NOISE_SETTINGS` files, the per-dimension recipes
-[terrain](../systems/worldgen/terrain.md#the-cast) reads: *blend_density* and
-*squeeze* in all seven, and *square*, *invert* and *find_top_surface* in the
-three overworld variants.
+thirty-three of the forty-four ids. The seven `Registries.NOISE_SETTINGS`
+files, the per-dimension recipes
+[terrain](../systems/worldgen/terrain.md#the-cast) reads, write no id the
+density-function files lack. All seven final densities end by adding
+*beardifier*, three of them in a file and four inline.
 
-That leaves four ids vanilla data never writes. *constant* is never written
-as a typed object, because a bare number is one. *cache_all_in_cell* and
-*beardifier* are added **in code**, by `NoiseChunk`'s constructor, around the
-router's final density. And *shift* — the three-dimensional domain warp — is
+That leaves eleven ids vanilla data never writes. *constant* is never written
+as a typed object, because a bare number is one. Nine are arithmetic: *sqrt*,
+*reciprocal*, *log*, *sign*, *pow* and the four roundings. And *shift* — the
+three-dimensional domain warp — is
 [used by nothing](../systems/worldgen/density-functions.md#what-nothing-reaches):
-`DensityFunctions.ShiftA` and
-`DensityFunctions.ShiftB` cover the two two-dimensional warps vanilla wants.
+`ShiftNoiseFunction.ShiftA` and
+`ShiftNoiseFunction.ShiftB` cover the two two-dimensional warps vanilla wants.
+
+> **For a 1.21-era reader.** *NoiseChunk.wrapNew* is gone: `DensityFunctionCompiler`
+> compiles each graph once per dimension, and each chunk supplies a
+> `SamplerContext`. *flat_cache*, *cache_2d*, *cache_once* and
+> *cache_all_in_cell* are gone, and *cache* does their work. *shifted_noise* is
+> *noise* with shift fields, *y_clamped_gradient* is *gradient* on the Y axis,
+> *end_islands* is *end_outer_islands* with the central island left to
+> *distance_to_point*, and *minValue* and *maxValue* are `DensityFunction.range`.
 
 ---
 

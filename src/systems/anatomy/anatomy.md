@@ -1,6 +1,6 @@
 # Anatomy
 
-> Verified against **Minecraft 26.2** · Part I · Clicking Singleplayer, picking a world, and standing in it a few seconds later.
+> Verified against **Minecraft 26.3** · Part I · Clicking Singleplayer, picking a world, and standing in it a few seconds later.
 
 A player clicks Singleplayer, picks a world from the list and waits. One
 thread has been running since *main*; by the time the world appears there
@@ -70,8 +70,8 @@ sequenceDiagram
     Conn->>Conn: handshake, login, configuration, play — the walk any client makes
 ```
 
-*The one-time start-up, and the line where one thread becomes two. The split
-box is the only place in this book two lanes run at once: the Render thread
+*The one-time start-up, and the line where one thread becomes two. In the split
+box two lanes run at once: the Render thread
 goes on drawing while `IntegratedServer.initServer` loads the level. Everything
 below it is the client dialling a server that happens to be in the same JVM.*
 
@@ -109,14 +109,16 @@ built and joined much later. That ordering is why nothing in `world/` can be
 touched from a static initialiser.
 
 **The GPU backend is chosen in the constructor.**
-`RenderSystem.initBackendSystem` runs first and returns GLFW's clock, which
+`RenderSystem.initBackendSystem` runs first and returns SDL's clock, which
 `Minecraft` installs through `Util.setTimeSource` — on the client, the game's
 entire notion of time comes from the windowing library. Then a `GpuBackend` is
 chosen by trying candidates in an order `Options` sets until one of them
-makes a `Window` — there are two, `GlBackend` and `VulkanBackend`
-([the window](../rendering/the-window.md#trying-backends-until-one-of-them-makes-a-window))
-— and from then on the renderer only ever sees the `GpuDevice` abstraction
-in `com/mojang/blaze3d`.
+loads its library and makes a `GpuDevice` — there are two, `GlBackend` and
+`VulkanBackend`
+([the window](../rendering/the-window.md#trying-backends-until-one-of-them-makes-a-device))
+— and only then is the one `Window` made, through the backend that
+succeeded. From then on the renderer only ever sees the `GpuDevice`
+abstraction in `com/mojang/renderpearl`.
 
 **Construction registers, it does not load.** The constructor creates each
 manager and registers it on the `ReloadableResourceManager`; the loading is
@@ -188,7 +190,7 @@ the rest of its ring — `Minecraft.runTick` on one side,
 `MinecraftServer.processPacketsAndTick` on the other.*
 
 
-**The frame loop.** `Minecraft.run` polls GLFW events and calls
+**The frame loop.** `Minecraft.run` polls SDL events and calls
 `Minecraft.runTick` once per **frame**, as fast as vsync or the frame-rate
 limit allow. Inside each frame a `DeltaTracker.Timer` running at twenty ticks
 a second says how many whole game ticks have elapsed since the last frame —
@@ -281,14 +283,16 @@ Nothing on the client writes server world state and nothing on the server
 writes client world state. Every block, entity and inventory change crosses
 as a packet, even in one process. But the two halves share a JVM, and a
 handful of things do cross by direct call — every one of them a setting
-rather than world state. The server reads `Minecraft.isPaused` and the
-client's render and simulation distances every tick;
-`IntegratedServer.updateCommandsAllowedForOtherPlayers` reaches into
-`LocalPlayer.setPermissions`; the options screens call
-`IntegratedServer.publishServer` and its siblings straight from the Render
-thread; and `IntegratedServer.latestTicksGizmos` is a volatile list the
-server thread writes and the client reads. Treat "everything crosses as a
-packet" as a rule about the *world*, not about the process.
+rather than world state, though a setting can reach the world before the call
+returns. The server reads `Minecraft.isPaused` every tick and the client's
+render and simulation distances every tick it runs the world;
+`WorldOptionsScreen.applyChanges` calls `IntegratedServer.publishServer` and
+its siblings straight from the Render thread, and among them
+`IntegratedServer.setPersonalGameType` sets the host's own game mode through
+`ServerPlayer.setGameMode` on the Render thread, not the Server thread; and
+`IntegratedServer.latestTicksGizmos` is a volatile list the server thread
+writes and the client reads. Treat "everything crosses as a packet" as a rule
+about the *world*, not about the process.
 
 Singleplayer differs in more than pausing, too. Beyond the pause and the
 distances following `Options`, `IntegratedServer` caps the player list at
@@ -332,9 +336,10 @@ and the sprint's inverted effect on it.
 
 > **For a 1.21-era reader.** The client's clock is `DeltaTracker`, which was
 > *Timer*, and the partial tick is a `DeltaTracker.Timer` you ask rather than
-> a float you are handed — it appears in the frame loop above and on every
-> renderer in Part XI. The rest of the drift a 1.21 reader will trip on is
-> [naming drift](../../reference/naming-drift.md).
+> a float you are handed — it appears in the frame loop above and in every
+> frame's extract in Part XI. GLFW is gone; SDL makes the window, delivers its
+> events and supplies the time source. The rest of the drift a 1.21 reader
+> will trip on is [naming drift](../../reference/naming-drift.md).
 
 ## Where to look
 

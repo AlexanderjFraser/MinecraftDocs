@@ -1,6 +1,6 @@
 # The frame
 
-> Verified against **Minecraft 26.2** · Part XI · one frame: from acquiring a surface texture to handing it back, and the wall in the middle that the drawing half is not allowed to look past.
+> Verified against **Minecraft 26.3** · Part XI · one frame: from acquiring a surface texture to handing it back, and the wall in the middle that the drawing half is not allowed to look past.
 
 The number in the top-left says 143 fps, and each of those 143 is one call to
 `Minecraft.renderFrame` — one method with two halves. The first walks the
@@ -11,9 +11,8 @@ surprising thing is what happens when that request fails. It does not skip
 the frame. It skips the *picture*. The world still renders in full into
 `GameRenderer.mainRenderTarget`, the GUI still goes on top, the framerate
 limiter still parks; only the blit and the present are guarded on a surface
-having been acquired, and both are quietly skipped. A minimized window is the same story with
-no attempt made at all — a client drawing complete frames that nobody will
-ever see.
+having been acquired, and both are quietly skipped. A minimized window is the same
+story — a client drawing complete frames that nobody will ever see.
 
 All of this is one thread — the same one that ticked the world a moment
 earlier. How many ticks ran before the
@@ -31,31 +30,33 @@ loop](../client/the-client-loop.md); this page starts where that page's
 | `Camera` | where the eye is, how wide the view is, and how wide the *cull* frustum is — which is not the same number | Render thread, but ticked from `GameRenderer.tick` |
 | `LevelExtractor` | which of the live world becomes drawable state, at one partial tick **per entity** | Render thread |
 | `LevelRenderer` | the world half — handed a `CameraRenderState`, never a `Camera` | Render thread |
-| `GuiRenderer` | the GUI half, with its own `StagedVertexBuffer` and its own `FeatureRenderDispatcher` | Render thread |
+| `GuiRenderer` | the GUI half, with its own `StagedVertexBuffer` | Render thread |
 | `GpuSurface` | whether there is anywhere to put the picture: acquire, blit, present | Render thread |
 
 ## The zones a frame is made of
 
 The profiler zones in order are the shortest honest description of what a
 frame is, and the second column is the part a name does not tell you: who
-pushes it. Only the first four and the last four are `Minecraft.renderFrame`'s
+pushes it. Eleven of the fifteen are `Minecraft.renderFrame`'s
 own. *render* belongs to `GameRenderer.render`, which is why the F3 pie chart
 puts the whole of the drawing half under one slice that `Minecraft` never
-named, and one of these names is a lie — the section on presentation below
-says which.
+named.
 
 | zone | pushed by | what happens in it |
 |---|---|---|
 | *update window* | `Minecraft.renderFrame` | the window's one per-frame call, a surface reconfigure if one is due, then `GpuSurface.acquireNextTexture` |
 | *update* | `Minecraft.renderFrame` | the real-time clock, the GPU timer query, `Minecraft.pauseIfInactive`, the GUI, the client light engine on a ticking frame, then `Minecraft.pick` |
-| *camera* | `GameRenderer.update`, inside *update* | `Camera.update` alone — the only zone in the frame that wraps a single call |
+| *camera* | `GameRenderer.update`, inside *update* | `Camera.update` alone |
 | *extract* | `Minecraft.renderFrame` | the wall: the window, the options, the lightmap, the camera, the level and the GUI copied into `GameRenderState` |
 | *gpuAsync* | `Minecraft.renderFrame` | `RenderSystem.executePendingTasks` drains signalled fences, and nothing else; it is closed before the drawing starts |
 | *render* | `GameRenderer.render` | the resize, the clear, the lightmap, then the two zones below |
-| *world* | `GameRenderer.render`, inside *render* | only on a frame with a level: *matrices*, *fog*, *level*, *hand*, *screenEffects*, then the outline composite and the spectator post chain |
+| *world* | `GameRenderer.render`, inside *render* | only on a frame with a level: *matrices*, *fog*, *level*, *hand*, *screenEffects*, then the outline composite and the post-effect chains |
 | *gui* | `GameRenderer.render`, inside *render* | the GUI, drawn under the one-pixel lightmap |
-| *present* | `Minecraft.renderFrame` | the blit, and not the present |
-| *swapBuffers* | `Minecraft.renderFrame` | the submit, then `GpuSurface.present` |
+| *swapchainBlit* | `Minecraft.renderFrame` | the blit from `GameRenderer.mainRenderTarget` into the surface texture |
+| *tracyCapture* | `Minecraft.renderFrame` | only with Tracy frame capture on: the main target copied out for Tracy |
+| *submit* | `Minecraft.renderFrame` | `CommandEncoder.submit`, surface or no surface |
+| *present* | `Minecraft.renderFrame` | `GpuSurface.present` |
+| *endFrame* | `Minecraft.renderFrame` | Tracy's end of frame if it is capturing, the dynamic uniforms reset, `LevelRenderer.endFrame` |
 | *frameLimiter* | `Minecraft.renderFrame` | the parking, spending the limit *extract* snapshotted |
 | *fpsUpdate* | `Minecraft.renderFrame` | the counter behind the number in the top-left |
 
@@ -82,9 +83,10 @@ sequenceDiagram
     GR->>LR: LevelRenderer.render with a CameraRenderState, no live game object
     GR->>GR: the held item under a second projection, then the screen effects
     GR->>GuiR: render, then endFrame
-    MC->>GpuS: present — blitFromTexture from GameRenderer.mainRenderTarget
-    MC->>GpuS: swapBuffers — CommandEncoder.submit, then GpuSurface.present
-    Note over MC: frameLimiter, then fpsUpdate
+    MC->>GpuS: swapchainBlit — blitFromTexture from GameRenderer.mainRenderTarget
+    MC->>MC: submit — CommandEncoder.submit, surface or no surface
+    MC->>GpuS: present — GpuSurface.present
+    Note over MC: endFrame, frameLimiter, then fpsUpdate
 ```
 
 Read it as **acquire, snapshot, draw, present** — and note that only the
@@ -110,7 +112,7 @@ present are each guarded on `GpuSurface.isAcquired`, with nothing on the
 other branch.
 The tolerance is the caller's, not the surface's — `GpuSurface.blitFromTexture`
 and `GpuSurface.present` both throw if you reach them without one. Everything
-between those two guards — the extract, the world, the GUI — is paid in
+before those two guards — the extract, the world, the GUI — is paid in
 full.
 
 There is one guard on the whole method, and it is about re-entry rather than
@@ -119,8 +121,12 @@ called, the call is a silent no-op.
 
 ### What a minimized client actually stops doing
 
-A minimized window is the same story with the acquire not attempted at all,
-so the three statements that drop out are the acquire and the two guarded
+On the OpenGL backend, a minimized window is the same story after one refused
+acquire. `Minecraft.renderFrame` holds any surface reconfigure back until the
+window is restored, and `GlSurface.acquireNextTexture` refuses an iconified
+window outright, so the first minimized frame fails to acquire, the surface is
+marked invalid, and no acquire is tried again until the window comes back. The
+three statements that drop out are the acquire and the two guarded
 ones — which is nothing next to what the frame still pays for. The saving
 comes from somewhere else entirely.
 `FramerateLimitTracker.getThrottleReason` tests iconification *first*, ahead
@@ -128,15 +134,15 @@ of idleness and the menu, and answers with a limit of ten — so *frameLimiter*
 parks the thread for most of every hundred milliseconds and the client draws
 its unseen frames about ten times a second instead of at the player's
 setting. On top of that, losing focus for half a second pauses a
-singleplayer world outright through `Minecraft.pauseIfInactive`, and then
-there is no world left to draw.
+singleplayer world outright through `Minecraft.pauseIfInactive`, and every
+frame after that draws a world that has stopped.
 
 ## Update and extract: six clocks in one frame
 
 The *update* zone advances the real-time clock, reads
 `Minecraft.timerQuery` — a `TimerQuery`, the GPU-side stopwatch behind the F3
-utilisation figure. It brackets almost the whole frame, from here to the end
-of *render*, and it is only *started* when the last one has been collected,
+utilisation figure. It brackets almost the whole frame, from here through
+the blit, and it is only *started* when the last one has been collected,
 so not every frame is measured — runs
 `Minecraft.pauseIfInactive` and updates the GUI. Then
 `GameRenderer.update` calls `Camera.update` — that one call is the *camera*
@@ -150,8 +156,9 @@ advances game time, and a frame passed false is a **non-ticking frame**: no
 ticks ran before it, `ClientLevel.update` does not run the client's own
 light engine, and the whole world half of the drawing is skipped, leaving a
 GUI-only picture — the half [GUI and
-screens](../client/gui-and-screens.md) owns. Three call sites pass false:
-the two loops that wait for the integrated server to start and to stop, and
+screens](../client/gui-and-screens.md) owns. Four call sites pass false:
+the `Minecraft` constructor, once, as it finishes; the two loops that wait for
+the integrated server to start and to stop; and
 `Minecraft.setScreenAndShow`, which forces a single frame so that a screen
 appears during blocking work. Every other frame is a ticking one, and the
 term means only that.
@@ -191,18 +198,20 @@ beside you is a statue.
 
 ## The wall, and the one level at which it is real
 
-`LevelRenderer.render` is handed state and reads no live *game* object: no
-`ClientLevel`, no `Minecraft`. That is the wall, and one level down it holds.
+`LevelRenderer.render` is handed state and reads no live *game* state: no
+`ClientLevel`, and nothing from `Minecraft` but the level renderer itself,
+which it reaches through `Minecraft.getInstance`. That is the wall, and one
+level down it holds.
 It still reaches back into live *renderer* objects for the main target and
 the shader manager, but no live game object is among them.
 
 At the top it leaks, and the leak is sharper than the naming suggests.
-`GameRenderer.render` reads whether the game has finished loading, whether a
-level exists, and the world's game time, every frame including GUI-only ones.
-Inside the world half, `GameRenderer.shouldRenderBlockOutline` reads the
+`GameRenderer.render` takes whether there is a world to draw from the
+snapshot, as `GameRenderState.shouldRenderLevel`, but inside the world half
+`GameRenderer.shouldRenderBlockOutline` reads the
 **live camera entity during rendering**, and in adventure or spectator mode
 goes further: for a player who may not build it reads `Minecraft.hitResult`,
-looks a `BlockState` up in the level and asks the game mode what it is, all
+asks the game mode what it is and looks a `BlockState` up in the level, all
 mid-draw. The interesting fact is not that a wall exists but that it is
 drawn one level below where *extract then render* implies it is.
 
@@ -224,40 +233,42 @@ again by a memory budget — and a single shared
 the GUI keeping a second staged buffer of its own inside `GuiRenderer`.
 Geometry submission moved to `SubmitNodeCollector` and `SubmitNodeStorage`
 ([entity rendering](entity-rendering.md#submit-describing-a-draw-without-making-one)
-owns what a submission is), drawn either by the passes of the frame graph in
+owns what a submission is), drawn either inside the frame graph's *main* pass in
 [visibility and the frame graph](visibility-and-the-frame-graph.md#declaring-the-passes-and-why-none-of-them-is-ever-culled)
 or by `FeatureRenderDispatcher.renderAllFeatures` — which, despite the name,
 is **not** how the level is drawn. It has four call sites: the held item, the
 screen effects, the GUI's item atlas and picture-in-picture. The last two are
 why the GUI needs submit storage at all. The world's submitted features are
-prepared into the frame graph and drawn by its passes.
+prepared into the frame graph and drawn inside its *main* pass.
 
 ### The hand and the screen effects, in a storage the level never sees
 
 The first two of those four call sites share a storage of their own.
 `GameRenderer.handAndScreenSubmitNodeStorage` collects both
-`GameRenderer.renderItemInHand` — which is `ItemInHandRenderer`, drawn under
+`GameRenderer.renderItemInHand` — which is `FirstPersonHandsAndItemsRenderer`, drawn under
 its own projection after a depth clear so a held sword never intersects the
 world — and, in the *screenEffects* zone that follows it,
 `ScreenEffectRenderer`: the underwater overlay, the fire quad when you are
 burning, the sprite of whatever block your head is inside, and the
-item-activation flourish a totem plays. Both are submitted, prepared and
-drawn inside that one zone, and neither ever reaches the level's frame graph.
+item-activation flourish a totem plays. Each is submitted, prepared and
+drawn inside its own zone, and neither ever reaches the level's frame graph.
 
-## Present, swapBuffers, and which of the two names lies
+## Blit, submit and present
 
-**Nothing is presented in the zone called *present*.** That zone does the
-blit from `GameRenderer.mainRenderTarget` to the acquired surface texture.
-The submit and the actual `GpuSurface.present` happen in the *swapBuffers*
-zone after it. Only one of the two names lies: *swapBuffers* is honest, since
-on the OpenGL backend `GpuSurface.present` is a single call to GLFW's
-buffer swap.
+The picture leaves the frame in three zones. *swapchainBlit* does the blit
+from `GameRenderer.mainRenderTarget` to the acquired surface texture;
+*submit* closes the frame's GPU work with `CommandEncoder.submit`, surface or
+no surface; and *present* hands the texture back with `GpuSurface.present`,
+which on the OpenGL backend is a single call to SDL's *SDL_GL_SwapWindow*.
+With Tracy frame capture on, a *tracyCapture* zone between the blit and the
+submit copies the main target out for Tracy.
 
-The last two zones are bookkeeping. *frameLimiter* spends the limit that
-*extract* snapshotted into `GameRenderState.framerateLimit`, parking only
+The last three zones are bookkeeping. *endFrame* ends Tracy's frame if Tracy
+is capturing, resets the dynamic uniforms and calls `LevelRenderer.endFrame`.
+*frameLimiter* spends the limit that *extract* snapshotted into `GameRenderState.framerateLimit`, parking only
 below a threshold, so the top slider position never parks at all. What that
 limit is — and the four cases in which `FramerateLimitTracker` has already
-replaced the player's option with something smaller — is [the client
+replaced the player's option with a limit of its own — is [the client
 loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;
 this page only spends it. Then *fpsUpdate*, and the frame is over.
 
@@ -285,7 +296,7 @@ sky](lightmap-fog-and-sky.md#how-bright-one-draw-per-tick-and-no-partial-ticks-a
 post-effect chain is chosen by what you are spectating rather than by an
 option, at the end of the world block and before any GUI. Which chain,
 through which door, and what each does to the picture are
-[post-processing](post-processing.md#the-six-chains)'s.
+[post-processing](post-processing.md#the-five-chains)'s.
 
 **Where does the main menu's panorama come from?** The game, on the same two
 halves. `Minecraft.grabPanoramixScreenshot` runs `GameRenderer.update`,
@@ -303,9 +314,11 @@ singleplayer only, and only once enough sections have actually been rendered.
 > *Minecraft.getMainRenderTarget* (now `GameRenderer.mainRenderTarget`),
 > *Camera.setup* (now `Camera.update` plus `Camera.extractRenderState`),
 > *GameRenderer.getProjectionMatrix*, *Window.updateDisplay*, *LightTexture*
-> (now `Lightmap`), and *MultiBufferSource* with every buffer source that
-> hung off `RenderBuffers`. Most `Camera` accessors also lost their *get*
-> prefix, though `Camera.getCullFrustum` and `Camera.getFov` kept theirs.
+> (now `Lightmap`), *ItemInHandRenderer* (now
+> `FirstPersonHandsAndItemsRenderer`), and *MultiBufferSource* with every
+> buffer source that hung off `RenderBuffers`. Most `Camera` accessors also
+> lost their *get* prefix, though `Camera.getCullFrustum` and `Camera.getFov`
+> kept theirs.
 
 ## Where to look
 
@@ -313,9 +326,8 @@ singleplayer only, and only once enough sections have actually been rendered.
 its table of contents. Then `GameRenderer.extract` and `GameRenderer.render`
 for the wall between live objects and drawing, `GameRenderer.tick` for the
 per-tick half nobody expects a renderer to have, `Camera.update` for how the
-view is decided, and `GpuSurface.present` — in the zone called *swapBuffers*
-— for where a frame ends. The GPU abstraction underneath all of it is
-[blaze3d](blaze3d.md).
+view is decided, and `GpuSurface.present` for where a frame ends. The GPU
+abstraction underneath all of it has its own page, [blaze3d](blaze3d.md).
 
 ---
 

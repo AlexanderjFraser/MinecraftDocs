@@ -31,11 +31,11 @@ and the barrier this rides on — and at no other time.
 | `TextureManager` | who owns each `AbstractTexture`, and when an animation advances | Render thread |
 | `ItemModelResolver` | which `ItemModel` a given `ItemStack` draws with | Render thread, every frame |
 
-## The shape of the work: eighteen fans, one barrier
+## The shape of the work: seventeen fans, one barrier
 
-This is the clearest fan-out-and-barrier in the client. Eighteen independent
+This is the clearest fan-out-and-barrier in the client. Seventeen independent
 pieces of work start on worker threads at once, and every one of them is a
-box in the figure below: thirteen atlas stitches behind the two boxes at the
+box in the figure below: twelve atlas stitches behind the two boxes at the
 left, and the five roots `ModelManager.reload` opens. Three of those five are
 directory listings that are each themselves a fan of one task per file. They
 converge exactly once.
@@ -45,7 +45,7 @@ flowchart TD
     RL["a reload starts: F3+T, a pack change, or the game booting"]
     HS["AtlasManager.prepareSharedState on the Render thread, before any task runs"]
     S1["blocks and items atlases: one task per sprite to decode and read metadata, then one stitch each, then mipmaps"]
-    S2["the other eleven atlases, the same fan, nothing awaits them until upload"]
+    S2["the other ten atlases, the same fan, nothing awaits them until upload"]
     L1["listing of models/, one task per file"]
     L2["listing of blockstates/, one task per file"]
     L3["listing of items/, one task per file"]
@@ -67,11 +67,11 @@ flowchart TD
 Read it as **spread, converge, upload, invalidate**: above the barrier,
 worker threads in any order; below it, the Render thread in exactly one.
 
-## Thirteen atlases and three listings, all at once
+## Twelve atlases and three listings, all at once
 
-**In:** every enabled pack. **Out:** thirteen stitched images, three parsed maps.
+**In:** every enabled pack. **Out:** twelve stitched images, three parsed maps.
 
-`AtlasManager` owns `AtlasManager.KNOWN_ATLASES` — thirteen of them, named
+`AtlasManager` owns `AtlasManager.KNOWN_ATLASES` — twelve of them, named
 in `AtlasIds` — and each is a definition file in *atlases/*, not a folder
 scan. `SpriteSourceList` runs that file's five kinds of source in order —
 `SingleFile`, `DirectoryLister`, `SourceFilter`, `Unstitcher` and
@@ -87,7 +87,7 @@ Two properties of that packing surprise people, and a third setting rides on
 both of them. The mip level is clamped to
 the smallest sprite's power of two, with a warning, so **one undersized
 texture degrades mipmapping for every sprite in the atlas** — and only the
-block atlas asks for mipmaps, the other twelve stitch flat. And sprite
+block atlas asks for mipmaps, the other eleven stitch flat. And sprite
 padding derives from the mip level *and* the anisotropic filtering setting,
 with the UVs computed inside the padded box, so anisotropy changes the
 layout and every UV in the game. The mipmap slider is blunter still: it
@@ -108,7 +108,7 @@ shared-state
 pass](../foundations/resource-system.md#the-shared-state-channel), and
 `AtlasManager.PENDING_STITCH` is the only key the game declares. What
 matters here is which end of it this page is: `AtlasManager` publishes a
-pending stitch for all thirteen atlases, and `ModelManager` awaits exactly
+pending stitch for all twelve atlases, and `ModelManager` awaits exactly
 the two it bakes against — the blocks atlas and the items atlas — from
 inside its own prepare, which is what lets baking overlap stitching instead
 of queueing behind it.

@@ -1,6 +1,6 @@
 # Structure placement
 
-> Verified against **Minecraft 26.2** · Part XII · A village is decided: a lottery that never looks at the world, a layout that is deferred and then run by the method that deferred it, an absence stored as a hole, and a command that generates chunks to answer a question.
+> Verified against **Minecraft 26.3** · Part XII · A village is decided: a lottery that never looks at the world, a layout that is deferred and then run by the method that deferred it, an absence stored as a hole, and a command that generates chunks to answer a question.
 
 Type `/locate structure village` and the answer usually comes back instantly,
 from a couple of thousand blocks away, in a direction you have never been —
@@ -25,13 +25,13 @@ for the other fifteen types.
 | class | the decision it owns | when |
 |---|---|---|
 | `StructureSet` | which structures share a grid, with weights, and which `StructurePlacement` lays that grid out | data pack, `Registries.STRUCTURE_SET` |
-| `StructurePlacement` | where the grid falls, dispatched on a `StructurePlacementType` like any data-driven type ([the pattern](../foundations/data-driven-types.md#the-idea-stated-once)). `RandomSpreadStructurePlacement` is the spacing-and-separation lottery; `ConcentricRingsStructurePlacement` is strongholds | world start, then per chunk |
+| `StructurePlacement` | where the grid falls, dispatched through `BuiltInRegistries.STRUCTURE_PLACEMENT`, which holds each kind's `MapCodec`, like any data-driven type ([the pattern](../foundations/data-driven-types.md#the-idea-stated-once)). `RandomSpreadStructurePlacement` is the spacing-and-separation lottery; `ConcentricRingsStructurePlacement` is strongholds | world start, then per chunk |
 | `ChunkGeneratorStructureState` | which sets are possible in this dimension at all, and the stronghold ring positions | once per world — the filter on the main thread, the ring searches on the background pool |
 | `Structure` | the settings wrapper: allowed biomes, spawn overrides, the decoration step, the terrain adjustment — and `Structure.findGenerationPoint`. Its `StructureType` is what the sixteen concrete subclasses are registered as | `Registries.STRUCTURE`, then `ChunkStatus.STRUCTURE_STARTS` |
 | `StructureStart` | the answer: a structure, the chunk it started in, a `PiecesContainer`, a reference count and a cached box | stored on the chunk |
-| `StructureManager` | the per-level view of starts and references. Two unrelated things carry that shape of name and both live on the level: this one is `ServerLevel.structureManager`, while `ServerLevel.getStructureManager` returns the server's `.nbt` template loader ([jigsaw and templates](jigsaw-and-templates.md#from-a-piece-to-blocks)) | worldgen and main thread |
-| `StructureCheck` | the presence cache — two caches over a partial-NBT reader — and the thing `/locate` actually asks | **main thread only**, unsynchronised |
-| `Beardifier` | how much the terrain bends, as a density term | built with the `NoiseChunk` at `ChunkStatus.BIOMES` |
+| `StructureManager` | the per-level view of starts and references. Two unrelated things carry that shape of name and both live on the level: this one is `ServerLevel.structureManager`, while `ServerLevel.getStructureTemplateManager` returns the server's `.nbt` template loader ([jigsaw and templates](jigsaw-and-templates.md#from-a-piece-to-blocks)) | worldgen and main thread |
+| `StructureCheck` | the presence cache — three caches over a partial-NBT reader — and the thing `/locate` actually asks | **main thread only**, unsynchronised |
+| `Beardifier` | how much the terrain bends, as a density term | built with the `NoiseChunk` at `ChunkStatus.TERRAIN` |
 
 ## Five decisions, on five different clocks
 
@@ -40,11 +40,11 @@ flowchart TD
     W["world start: filter the sets, place the rings"]
     W -->|"after EMPTY"| S1["STRUCTURE_STARTS: the lottery, then the layout"]
     S1 -->|"next status"| S2["STRUCTURE_REFERENCES: scan the 17x17 around"]
-    S2 -->|"next status"| N["BIOMES: the Beardifier is built, to bend the field"]
-    N -->|"NOISE, SURFACE, CARVERS"| F["FEATURES: the pieces write their blocks"]
+    S2 -->|"BIOMES"| N["TERRAIN: the Beardifier bends the field"]
+    N -->|"next status"| F["FEATURES: the pieces write their blocks"]
 ```
 
-*Five decisions on the chunk-status ladder, with the statuses between them on the arrows: a structure is decided at the second status and writes nothing until the three terrain statuses are past.*
+*Five decisions on the chunk-status ladder, with the statuses between them on the arrows: a structure is decided at the second status and writes nothing until the biome and terrain statuses are past.*
 
 The odd thing about that ladder is where it starts. `ChunkStatus.STRUCTURE_STARTS`
 is the **second** status a chunk passes through, two before
@@ -64,12 +64,12 @@ divide the chunk coordinates by the spacing, seed a `WorldgenRandom` from the
 level seed, the grid cell and the set's own salt, and draw two offsets inside
 the cell. This chunk is the village chunk only if the draw lands exactly
 here. `RandomSpreadType` decides whether the draw is uniform or triangular,
-and `StructurePlacement.isStructureChunk` adds a frequency roll, a
-`StructurePlacement.FrequencyReductionMethod` and a deprecated
-`StructurePlacement.ExclusionZone` that lets one set repel another.
+and `AbstractSpreadingStructurePlacement.isStructureChunk` adds a frequency roll, an
+`AbstractSpreadingStructurePlacement.FrequencyReductionMethod` and a deprecated
+`AbstractSpreadingStructurePlacement.ExclusionZone` that lets one set repel another.
 
-Two qualifiers, and both matter. The *other* placement type is not like this
-at all: `ConcentricRingsStructurePlacement` positions strongholds by asking
+Two qualifiers, and both matter. The *other* placement type the shipped sets use
+is not like this at all: `ConcentricRingsStructurePlacement` positions strongholds by asking
 `BiomeSource.findBiomeHorizontal` for real biome positions, on the background
 pool, at world start. And even for villages a coarse biome test has already
 happened once — when `ChunkGenerator.createState` built the
@@ -81,7 +81,7 @@ dimension can host.
 The set has entries with weights, so a second `WorldgenRandom` picks one.
 Then `Structure.findValidGenerationPoint` runs
 `Structure.findGenerationPoint` and filters it through
-`Structure.isValidBiome` — **the biome is sampled at the proposed point,
+`Structure.GenerationContext.isValidBiome` — **the biome is sampled at the proposed point,
 after the lottery has already chosen the chunk.**
 
 If that fails — most often the biome, but also an empty start pool, a missing
@@ -108,17 +108,17 @@ What is *not* deferred is the centre: the start template, its rotation and its
 ground height are all resolved before the stub comes back — which is why a
 presence question is not free either, merely much cheaper than a village.
 
-Three names in this package read as the framework for all of that and are
-reached by nothing: `PostPlacementProcessor` by anything at all, and
-`PieceGenerator` and `PieceGeneratorSupplier` only by each other. The live
+One name in this package reads as the framework for all of that and is
+reached by nothing: `PostPlacementProcessor`. The live
 post-placement hook is `Structure.afterPlace`.
 
 ## The presence cache, and the hole that proves an absence
 
-`StructureCheck` is the cache in front of all of this, and it is two caches
+`StructureCheck` is the cache in front of all of this, and it is three caches
 over a partial-NBT reader: chunk → structure → **reference count** (which is
-what makes "unreferenced only" searches possible), and structure → chunk →
-would-generate. On a miss it reads the chunk off disk through
+what makes "unreferenced only" searches possible), structure → chunk →
+would-generate, and a capped set of the chunks storage held no starts for,
+which spares the disk a second read of them. On a miss it reads the chunk off disk through
 `ChunkScanAccess`, which answers a question about a chunk without loading it
 and is one of the three joins that block the server thread ([the three places
 that do wait](../world/chunk-storage.md#the-three-places-that-do-wait)),
@@ -147,7 +147,7 @@ At `ChunkStatus.STRUCTURE_REFERENCES`, `ChunkGenerator.createReferences` scans
 the **17×17 chunk square around each chunk** and records the packed position
 of every start whose bounding box overlaps it. Discovery is outside-in: a
 village never walks its own pieces to announce itself, and this is why every
-step from this one through `ChunkStatus.FEATURES` — six of the twelve —
+step from this one through `ChunkStatus.FEATURES` — four of the ten —
 requires structure starts eight chunks out.
 
 The box that scan tests is not always the box the assembler produced.
@@ -165,10 +165,11 @@ validation.
 
 `Beardifier.forStructuresInChunk` reads those references and turns the nearby
 pieces into `Beardifier.Rigid` boxes plus their junctions. It is built with
-the `NoiseChunk`, which is born at `ChunkStatus.BIOMES` rather than at the
-noise step ([four statuses, and what each hands
-on](terrain.md#four-statuses-and-what-each-hands-on)) — so the beardifier
-exists a status before the density field it bends.
+the `NoiseChunk` at the start of `NoiseBasedChunkGenerator.buildTerrain`, the
+background job behind `ChunkStatus.TERRAIN` ([what each status hands
+on](terrain.md#three-steps-and-what-each-hands-on)), and rides in its
+sampling context under `Beardifier.CONTEXT_KEY` — so the beardifier is in
+place before the first sample of the density field it bends.
 **No blocks are edited.** The flat shelf under a village is a term added to
 the scalar field before anything samples it, and `TerrainAdjustment` picks the
 shape: only two of
@@ -179,9 +180,9 @@ where the smooth shoulders under village streets come from. *Bury* and
 applies only to jigsaw pieces, which have a projection to test; a hand-built
 piece contributes unconditionally.
 
-Most structures never reach any of that. A structure that names no
+Many structures never reach any of that. A structure that names no
 *terrain_adaptation* defaults to `TerrainAdjustment.NONE` and is filtered out
-before its pieces are looked at, and that is **twenty-three of the thirty-four
+before its pieces are looked at, and that is **twenty-three of the fifty-two
 shipped structure files** — the desert pyramid and the mineshaft among them,
 which is why neither leaves a shelf. The hand-built pieces that do reach the
 branch belong to the stronghold and the nether fossil.
@@ -215,14 +216,14 @@ What comes back is not the structure. `ChunkGenerator.findNearestMapStructure`
 returns `StructurePlacement.getLocatePos`, which is the start chunk's minimum
 block plus the placement's own offset, and the eye of ender takes the same
 answer. A stronghold's portal room can be two hundred blocks from it, and the
-stronghold does keep a pointer at the room that nothing in 26.2 reads
+stronghold does keep a pointer at the room that the search never reads
 ([hand-built structures](hand-built-structures.md#a-stronghold-built-twice-if-it-has-to-be)).
 
 An exploration map asks a sharper version of the same question, and the
 reference count is what makes it answerable. `StructureStart.getMaxReferences`
 is one, and `ExplorationMapFunction` defaults *skip_existing_chunks* to true,
 so a map asks for an **unreferenced** structure and takes a reference when it
-finds one — which is exactly what the first of `StructureCheck`'s two caches
+finds one — which is exactly what the first of `StructureCheck`'s three caches
 stores, and why two maps usually do not send two players to one monument. It
 is a default and not a guarantee: the three buried-treasure tables, in
 shipwrecks and both ocean ruins, set the flag to false and will happily send
@@ -234,17 +235,17 @@ both.
 `Structure.findValidGenerationPoint`, which is the lottery's answer filtered by
 biome, and hands back the stub. Read `Structure.StructureSettings` beside it for
 what a structure declares. Then the placement side — `StructureSet`,
-`StructurePlacement.isStructureChunk` and
+`AbstractSpreadingStructurePlacement.isStructureChunk` and
 `RandomSpreadStructurePlacement.getPotentialStructureChunk` — which is the grid
-arithmetic, with `ConcentricRingsStructurePlacement` as the one that does not
+arithmetic, with `ConcentricRingsStructurePlacement` as the shipped one that does not
 work that way. `ChunkGenerator.createStructures` and
 `ChunkGenerator.createReferences` are the two chunk statuses, in that order, and
 `StructureStart.placeInChunk` is the third. `StructureCheck.checkStart` is the
 cache, and `ChunkScanAccess` under it is the partial read that makes it cheap.
 Finish at `Beardifier.forStructuresInChunk` and `TerrainAdjustment`, which are
 how the whole arrangement reaches the terrain. Two doors the page does not
-open: `BuiltinStructures` and `BuiltinStructureSets`, where the shipped sixteen
-and their grids are declared.
+open: `BuiltinStructures` and `BuiltinStructureSets`, where the keys of the
+fifty-two shipped structures and their twenty-one grids are declared.
 
 ---
 

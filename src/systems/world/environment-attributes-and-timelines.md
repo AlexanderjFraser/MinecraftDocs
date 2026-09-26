@@ -262,10 +262,10 @@ while `Registries.ENVIRONMENT_ATTRIBUTE` and `Registries.ATTRIBUTE_TYPE` are
 built-in code registries that never go out at all.
 
 **Syncable** is the third flag, and it draws the line between the two sides.
-Thirty-three of the 48 carry it: every one of the 24 *visual/* attributes and
+Thirty-three of the 51 carry it: every one of the 24 *visual/* attributes and
 all four *audio/* ones, and five of the gameplay flags — *sky_light_level*,
 *fast_lava*, *water_evaporates*, *piglins_zombify*, *creaking_active*. The
-fifteen left behind are gameplay decisions the server makes alone: whether
+eighteen left behind are gameplay decisions the server makes alone: whether
 monsters burn, whether a raid can start, what a villager should be doing now.
 Dropping their entries and tracks before the wire costs the client nothing,
 because it would never ask. So the client's stack is shorter than the

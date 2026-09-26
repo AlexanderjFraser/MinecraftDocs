@@ -725,7 +725,7 @@ the break in from a render, and is the check after adding a lane.
 | `AFBE` | `AbstractFurnaceBlockEntity` |
 | `FM` | `FurnaceMenu` |
 | `LevB` | `LeverBlock` |
-| `RSWB` | `RedStoneWireBlock` |
+| `RWB` | `RedstoneWireBlock` |
 | `DRWE` | `DefaultRedstoneWireEvaluator` |
 | `PBB` | `PistonBaseBlock` |
 | `PSR` | `PistonStructureResolver` |
@@ -831,9 +831,9 @@ the break in from a render, and is the check after adding a lane.
 | `ClimS` | `Climate.Sampler` |
 | `CPList` | `Climate.ParameterList` |
 | `WR` | `WorldgenRandom` |
-| `PlacedF` | `PlacedFeature` |
 | `PMod` | `PlacementModifier` |
-| `CF` | `ConfiguredFeature` |
+| `FeatP` | `FeaturePlacer` |
+| `Feature` | `Feature` |
 | `TF` | `TreeFeature` |
 | `TP` | `TrunkPlacer` |
 | `FolP` | `FoliagePlacer` |
@@ -872,10 +872,11 @@ the break in from a render, and is the check after adding a lane.
 | `BERD` | `BlockEntityRenderDispatcher` |
 | `ChestR` | `ChestRenderer` |
 | `CSR` | `ChestSpecialRenderer` |
-| `IIHR` | `ItemInHandRenderer` |
+| `FPHAI` | `FirstPersonHandsAndItems` |
 | `IMR` | `ItemModelResolver` |
 | `Blender` | `Blender` |
 | `BD` | `BlendingData` |
+| `BDFS` | `BlendDensityFunction.Sampler` |
 | `NC` | `NoiseChunk` |
 | `CWS` | `CreateWorldScreen` |
 | `WCUS` | `WorldCreationUiState` |
@@ -993,3 +994,13 @@ two different classes** — the `/execute` command in
 `net/minecraft/server/commands` (the keyed `ExecC`, used by the scoreboard
 page) and the leaf task in `commands/execution/tasks`, which the engine page
 therefore names only in prose and never as a lane.
+
+The version to 26.3 retired three rows whose classes the release removed and
+added five, lengthening nothing. `RedStoneWireBlock` became `RedstoneWireBlock`,
+so `RSWB` gave way to `RWB`; `ConfiguredFeature` is gone, so `CF` went and the
+decoration trace draws `FeatP` (`FeaturePlacer`, lengthened because `FP` is
+`FoodProperties`) and `Feature` (a one-word class), which also left `PlacedF`
+unused and removed; `ItemInHandRenderer` is gone, so `IIHR` gave way to `FPHAI`
+(`FirstPersonHandsAndItems`); and blending's per-sample call is `BDFS`
+(`BlendDensityFunction.Sampler`, the outer initials plus its own). `CallFunction`
+keeps `CallF`, although the `CF` it was lengthened against is free again.

@@ -46,8 +46,8 @@ I to XIII, as the [lecture map](../lectures.md) lists them.
 | [Block update flags](block-update-flags.md) | the ten bits of `Level.setBlock`'s flag word | hand-kept | IV, V |
 | [Damage outside `LivingEntity`](non-living-damage.md) | what each of the twenty-one non-living classes does when hit | hand-kept | VI, VIII |
 | [What the HUD draws, and when](hud-elements.md) | every HUD element and the condition it is behind | hand-kept | X |
-| [Submit phases and feature renderers](submit-phases.md) | the fifteen phases and the thirteen renderers, in declaration order | hand-kept | XI |
-| [Density-function nodes](density-function-nodes.md) | the thirty-four node types, what the rewrite installs for each, what range each reports, and which ids the shipped data writes | hand-kept | XII |
+| [Submit phases and feature renderers](submit-phases.md) | the fifteen phases and the twelve renderers, in declaration order | hand-kept | XI |
+| [Density-function nodes](density-function-nodes.md) | the forty-four node types, what the compiler turns each into, what range each reports, and which ids the shipped data writes | hand-kept | XII |
 | [Threads](threads.md) | every thread, who makes it, what may run on it | hand-kept | I, III, IV, VI, IX, X, XI |
 | [Math and primitives](math-and-primitives.md) | the coordinate spaces, packings, shapes and random sources | hand-kept | II, IV, V, VI, XII |
 | [Level data and rules](level-data-and-rules.md) | who owns the seed, spawn, rules and border, and which file each is in | hand-kept | III, IV, VIII, IX, XII |

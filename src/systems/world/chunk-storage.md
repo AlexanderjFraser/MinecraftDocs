@@ -1,6 +1,6 @@
 # Chunk storage
 
-> Verified against **Minecraft 26.2** · Part IV · A chunk nobody needs any more is dropped from the world and written to disk, and the server thread never waits for it.
+> Verified against **Minecraft 26.3** · Part IV · A chunk nobody needs any more is dropped from the world and written to disk, and the server thread never waits for it.
 
 You walk away from your base. Soon after, the chunk you were standing in is
 no longer reachable from any ticket, its loading level climbs past
@@ -51,7 +51,7 @@ flowchart LR
 
 *One chunk saved, across the three threads that touch it, coloured by which one.
 The server's share is the first box alone, and it ends at a snapshot: everything
-to the right of it happens after the tick that decided to save has finished. The
+to the right of it happens after the tick that decided to save has moved on. The
 two middle boxes are the same lane at two priorities — the foreground call parks
 the tag in `IOWorker.pendingWrites` and returns, and the background one runs
 only when nothing is queued in front of it, which is why a write can sit there
@@ -61,8 +61,8 @@ That figure is the page's answer to *why doesn't saving lag the server*. Apart f
 flushing the position's POI section, the server thread's whole share of a
 save is the middle of `ChunkMap.save`: `SerializableChunkData.copyOf`, which copies every `LevelChunkSection` with
 `LevelChunkSection.copy` and each non-empty block and sky `DataLayer` out of
-`LevelLightEngine.getLayerListener`, clones the heightmaps the chunk's
-persisted status calls for, pulls block-entity NBT through
+`LevelLightEngine.getLayerListener`, clones every heightmap the chunk
+holds, pulls block-entity NBT through
 `ChunkAccess.getBlockEntityNbtForSaving`, packs the ticks through
 `ChunkAccess.getTicksForSerialization`, and packs the structure starts.
 Everything after that — the palette codecs, the deflate, the sector
@@ -86,10 +86,9 @@ region store at all, and it is the section below.
 A `LevelChunk`'s entities are **not** in *region/*. The
 `SerializableChunkData.entities` list is written only when the chunk's
 persisted status is a `ChunkType.PROTOCHUNK` — worldgen's spawns, waiting
-for the column to become full — and `SerializableChunkData.carvingMask` goes
-the same way. A full chunk's entities live in *entities/*, one file per
-chunk, holding a *Position* and an *Entities* list. If an old save still has
-entities inside a full chunk's *region/* entry,
+for the column to become full. A full chunk's entities live in *entities/*,
+one region entry per chunk, holding a *Position* and an *Entities* list. If
+an old save still has entities inside a full chunk's *region/* entry,
 `ServerLevel.addLegacyChunkEntities` adopts them on load.
 
 ### The other store under *data/*
@@ -102,9 +101,10 @@ caller's thread** — the server thread, inside the save it was asked for —
 and hands the finished tags to `Util.ioPool`, at most
 `Util.maxAllowedExecutorThreads` writes at a time, chaining each onto
 `SavedDataStorage.pendingWriteFuture` so that two saves of one file cannot
-race. `SavedDataStorage.saveAndJoin` is the only place anything waits, and it
-is shutdown. Copy while the world is still, encode and write while it moves:
-the same bargain the chunk path makes, over a much smaller object. Which
+race. `SavedDataStorage.saveAndJoin` is the only place anything waits, and
+only a flush save or shutdown reaches it. Copy while the world is still,
+encode and write while it moves: the same bargain the chunk path makes, over
+a much smaller object. Which
 file holds what is [level data and
 rules](../../reference/level-data-and-rules.md#two-saved-data-storages-neither-of-them-the-overworlds)'s.
 
@@ -189,16 +189,17 @@ sequenceDiagram
     CM->>CM: setLoaded false, then save — PoiManager.flush and the proto-over-full guard
     CM->>SCD: copyOf takes the snapshot, a worker turns it into a CompoundTag
     CM->>IOW: store, handed the encode future, on the chunk lane
-    CM->>SL: unload clears the block entities, the tick containers and the light layers
+    CM->>SL: unload clears the block entities and the tick containers
     SL->>PESM: later in the same level tick, processUnloads, then the entities lane
     IOW-->>CM: the IOWorker.PendingStore future completes, one fewer active write
 ```
 
 *A chunk nobody needs, from the level that stopped needing it to the write that
-records it. The three note bars are three separate ticks, and the two arrows
+records it. The two note bars each open a later tick, and the two arrows
 that come back are the only two waits in the picture: everything else is a
-hand-off the server thread does not watch. The last two arrows are the
-entities, which leave by a different road and a later step.*
+hand-off the server thread does not watch. The arrow into
+`PersistentEntitySectionManager` carries the entities, which leave by a
+different road and a later step.*
 
 Three things there are load-bearing. The first is that nothing happens until
 `ChunkHolder.saveSync` is done: every promotion future is chained into it by
@@ -286,7 +287,7 @@ that makes a half-finished save survivable actually lives.
 
 ```mermaid
 flowchart TD
-    A["IOWorker.storePendingChunk pops the oldest entry of IOWorker.pendingWrites"] --> B["RegionFileStorage.getRegionFile, an LRU of 256 open files"]
+    A["IOWorker.storePendingChunk pops the oldest entry of IOWorker.pendingWrites"] --> B["RegionFileStorage.getRegionFile, an LRU of 256 regions"]
     B --> C["RegionFile.getChunkDataOutputStream wraps a RegionFile.ChunkBuffer in the compressor, NbtIo writes in"]
     C --> D["closing the buffer back-patches the length and calls RegionFile.write"]
     D --> E{"how many sectors"}

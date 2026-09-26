@@ -1,11 +1,11 @@
 # The chunk generation pipeline
 
-> Verified against **Minecraft 26.2** · Part IV · A ticket asks for one chunk at *FULL*, and the server claims five hundred and twenty-nine of them before it runs a single step.
+> Verified against **Minecraft 26.3** · Part IV · A ticket asks for one chunk at *FULL*, and the server claims five hundred and twenty-nine of them before it runs a single step.
 
 A player walks east, a loading ticket lands on the chunk that just entered
 view, and `ChunkHolder.updateFutures` asks that chunk for `ChunkStatus.FULL`.
-Nothing in the request mentions neighbours. But *FULL* is the last of twelve
-steps, and the steps below it read — and four of them write — the chunks
+Nothing in the request mentions neighbours. But *FULL* is the last of ten
+steps, and the steps below it read — and two of them write — the chunks
 around the one being built, so the first thing `ChunkGenerationTask.create`
 does is walk out to Chebyshev distance 11 and take a claim on every holder in
 that square: **asking for one chunk asks for 529 of them, and the eleven
@@ -20,18 +20,18 @@ Change the pyramid and the world's loading radius changes with it.
 
 | class | what it decides | thread |
 |---|---|---|
-| `ChunkStatus` | the twelve names and their order, and nothing else — no task, no radius, no work | static, a `BuiltInRegistries.CHUNK_STATUS` entry |
+| `ChunkStatus` | the ten names and their order, and nothing else — no task, no radius, no work | static, a `BuiltInRegistries.CHUNK_STATUS` entry |
 | `ChunkPyramid` | the two step lists — one for generating, one for loading — that say what each status needs and what runs it | static |
 | `ChunkStep` | one status's direct and accumulated dependencies, its block-state write radius, and its body | static |
 | `ChunkGenerationTask` | one (chunk, target) walk: which layer is in flight, which pyramid it is using, and when to yield | the *worldgen* executor |
-| `GenerationChunkHolder` | one chunk's twelve futures, its ticket-derived ceiling, and the compare-and-set that runs each step exactly once | any — every field of it is atomic |
+| `GenerationChunkHolder` | one chunk's ten futures, its ticket-derived ceiling, and the compare-and-set that runs each step exactly once | any — every field of it is atomic |
 | `ChunkMap` | makes the tasks, owns both executors, and turns the *EMPTY* step into a disk read | Server, but `ChunkMap.applyStep` runs on whatever thread reached it |
 | `ChunkTaskDispatcher` | which chunk's batch of work the executor gets next, and re-sorts the queue when tickets move | its own single-file queue on the worker pool |
 | `WorldGenRegion` | what a running step may read and what it may write, checked per call | the thread running the step |
 
 ## The pyramid, drawn
 
-The pipeline is twelve steps in a fixed order, and three facts about each of
+The pipeline is ten steps in a fixed order, and three facts about each of
 them — how wide it is swept, where it runs, and whether it may write outside
 its own chunk. Those are three columns, so they are a table:
 
@@ -40,17 +40,15 @@ its own chunk. Those are three columns, so they are a table:
 | 1 | `ChunkStatus.EMPTY` | 11 | the disk read — region file and parse on the pool, chunk object on the server thread | — |
 | 2 | `ChunkStatus.STRUCTURE_STARTS` | 11 | inline, worldgen executor | — |
 | 3 | `ChunkStatus.STRUCTURE_REFERENCES` | 3 | inline, worldgen executor | — |
-| 4 | `ChunkStatus.BIOMES` | 3 | **forked** to the worker pool, as *init_biomes* | — |
-| 5 | `ChunkStatus.NOISE` | 2 | **forked** to the worker pool, as *wgen_fill_noise* | 0 |
-| 6 | `ChunkStatus.SURFACE` | 2 | inline, worldgen executor | 0 |
-| 7 | `ChunkStatus.CARVERS` | 2 | inline, worldgen executor | 0 |
-| 8 | `ChunkStatus.FEATURES` | 1 | inline, worldgen executor | 1 |
-| 9 | `ChunkStatus.INITIALIZE_LIGHT` | 1 | **the light executor** | — |
-| 10 | `ChunkStatus.LIGHT` | 0 | **the light executor** | — |
-| 11 | `ChunkStatus.SPAWN` | 0 | inline, worldgen executor | — |
-| 12 | `ChunkStatus.FULL` | 0 | **the server thread** | — |
+| 4 | `ChunkStatus.BIOMES` | 3 | **forked** to the worker pool, as *createBiomes* | — |
+| 5 | `ChunkStatus.TERRAIN` | 2 | **forked** to the worker pool, as *buildTerrain* | 0 |
+| 6 | `ChunkStatus.FEATURES` | 1 | inline, worldgen executor | 1 |
+| 7 | `ChunkStatus.INITIALIZE_LIGHT` | 1 | **the light executor** | — |
+| 8 | `ChunkStatus.LIGHT` | 0 | **the light executor** | — |
+| 9 | `ChunkStatus.SPAWN` | 0 | inline, worldgen executor | — |
+| 10 | `ChunkStatus.FULL` | 0 | **the server thread** | — |
 
-Five of the twelve leave the worldgen executor and one of them —
+Five of the ten leave the worldgen executor and one of them —
 `ChunkStatus.EMPTY` — is not worldgen work at all. The *swept to* column is how
 wide that layer is swept **when the target is FULL and the task has decided it
 must generate**: `ChunkGenerationTask.getRadiusForLayer` asks the FULL step of
@@ -68,7 +66,7 @@ the middle outward:
 flowchart TD
     subgraph OUT["STRUCTURE_STARTS, to 11"]
         subgraph R3["BIOMES, to 3"]
-            subgraph R2["CARVERS, to 2"]
+            subgraph R2["TERRAIN, to 2"]
                 subgraph R1["INITIALIZE_LIGHT, to 1"]
                     C["the chunk you asked for: SPAWN, then FULL"]
                 end
@@ -86,12 +84,12 @@ claimed 529.*
 That is `ChunkStep.accumulatedDependencies` drawn: a list indexed by distance,
 holding the deepest status needed at that distance. For FULL it has twelve
 entries — `ChunkStatus.SPAWN` at distance 0, `ChunkStatus.INITIALIZE_LIGHT` at
-1, `ChunkStatus.CARVERS` at 2, `ChunkStatus.BIOMES` at 3, and
+1, `ChunkStatus.TERRAIN` at 2, `ChunkStatus.BIOMES` at 3, and
 `ChunkStatus.STRUCTURE_STARTS` for every distance from 4 out to 11 — so the
 radius is 11 and the neighbourhood is 529.
 
 A `ChunkStatus` carries no work. It is a registry entry with an index, a
-parent, a `ChunkType` (`ChunkType.PROTOCHUNK` for the first eleven,
+parent, a `ChunkType` (`ChunkType.PROTOCHUNK` for the first nine,
 `ChunkType.LEVELCHUNK` for `ChunkStatus.FULL`) and the heightmaps that become
 valid after it, `ChunkStatus.heightmapsAfter`. Everything else — the
 dependencies, the write radius, the body — lives in the `ChunkStep` that
@@ -109,15 +107,13 @@ resolved in:
 | *STRUCTURE_STARTS* | *EMPTY* at 0 | — |
 | *STRUCTURE_REFERENCES* | *STRUCTURE_STARTS* from 0 out to 8 | — |
 | *BIOMES* | *STRUCTURE_REFERENCES* at 0, *STRUCTURE_STARTS* out to 8 | — |
-| *NOISE* | *BIOMES* within 1, *STRUCTURE_STARTS* out to 8 | radius 0 |
-| *SURFACE* | *NOISE* at 0, *BIOMES* at 1, *STRUCTURE_STARTS* out to 8 | radius 0 |
-| *CARVERS* | *SURFACE* at 0, *STRUCTURE_STARTS* out to 8 | radius 0 |
-| *FEATURES* | *CARVERS* within 1, *STRUCTURE_STARTS* out to 8 | radius 1 |
+| *TERRAIN* | *BIOMES* within 1, *STRUCTURE_STARTS* out to 8 | radius 0 |
+| *FEATURES* | *TERRAIN* within 1, *STRUCTURE_STARTS* out to 8 | radius 1 |
 | *LIGHT* | *INITIALIZE_LIGHT* within 1 | — |
 | *SPAWN* | *LIGHT* at 0, *BIOMES* at 1 | — |
 
 The rows that do the work are the radius-1 ones: they force a neighbour to
-run one step ahead of the chunk being built. Five requirements in the pyramid
+run one step ahead of the chunk being built. Four requirements in the pyramid
 have radius 1, and only three of them widen the accumulated list — which is
 the arithmetic the page's headline number rests on, so it is worth stating as
 a rule.
@@ -125,14 +121,13 @@ a rule.
 `ChunkStep.Builder.getRadiusOfParent` asks a narrower question than *does this
 step want anything a ring out*. It asks **how far out this step still demands
 its own immediate predecessor**, and it charges that many rings to everything
-the predecessor already needed. *NOISE*'s predecessor is *BIOMES* and *NOISE*
+the predecessor already needed. *TERRAIN*'s predecessor is *BIOMES* and *TERRAIN*
 asks for *BIOMES* at radius 1, so its whole inherited list slides out by one.
-*SURFACE*'s predecessor is *NOISE*, and although *SURFACE* also asks for
-*BIOMES* within 1, *BIOMES* is behind *NOISE*: at ring 1 *SURFACE* is
+*SPAWN*'s predecessor is *LIGHT*, and although *SPAWN* also asks for
+*BIOMES* within 1, *BIOMES* is behind *LIGHT*: at ring 1 *SPAWN* is
 demanding something its predecessor has already passed, which costs nothing.
-The three that pay are *NOISE* wanting *BIOMES*, *FEATURES* wanting *CARVERS*
-and *LIGHT* wanting *INITIALIZE_LIGHT*, each one ring; *SURFACE* and *SPAWN*
-pay nothing for the same-shaped requirement. Three ones on top of
+The three that pay are *TERRAIN* wanting *BIOMES*, *FEATURES* wanting *TERRAIN*
+and *LIGHT* wanting *INITIALIZE_LIGHT*, each one ring. Three ones on top of
 *STRUCTURE_STARTS* out to 8 is where the 11 comes from — a radius of 11 is a
 list of twelve, and the walk that claims it is 23 chunks on a side, or 529.
 `ChunkStatus.MAX_STRUCTURE_DISTANCE` is declared as 8 and the pyramid writes
@@ -272,14 +267,14 @@ accumulated square at or past what its distance demands: for *FULL* that
 square is the 3×3, wanting *SPAWN* at the centre and *INITIALIZE_LIGHT* on the
 ring, so the centre is checked twice and the second check is the weaker one.
 
-If both hold, the walk stays narrow. Twelve steps still run, but
-`ChunkPyramid.LOADING_PYRAMID` gives seven of them no body at all —
-*STRUCTURE_REFERENCES*, *BIOMES*, *NOISE*, *SURFACE*, *CARVERS*, *FEATURES*
-and *SPAWN* pass straight through. Of the five that remain, *EMPTY* is the
+If both hold, the walk stays narrow. Ten steps still run, but
+`ChunkPyramid.LOADING_PYRAMID` gives five of them no body at all —
+*STRUCTURE_REFERENCES*, *BIOMES*, *TERRAIN*, *FEATURES* and *SPAWN* pass
+straight through. Of the five that remain, *EMPTY* is the
 disk read `ChunkMap.applyStep` special-cases, and four carry a task:
 `ChunkStatusTasks.loadStructureStarts`, which only posts the saved starts to
 `StructureCheck`, the two light steps, and `ChunkStatusTasks.full`. **A
-loaded chunk still walks all twelve steps**, and it still needs its 3×3
+loaded chunk still walks all ten steps**, and it still needs its 3×3
 neighbours at *INITIALIZE_LIGHT* before its own *LIGHT* step will run.
 
 If it does not hold, `ChunkGenerationTask.needsGeneration` goes true and
@@ -297,14 +292,14 @@ generation pyramid only if the chunk is genuinely behind, so a generating
 task's 23×23 square routinely mixes both — which is exactly what stops
 already-finished neighbours being generated a second time.
 
-## Four steps may write, and only four
+## Two steps may write, and only two
 
 `ChunkStep`'s default block-state write radius is **−1**, not 0 — so for
-eight of the twelve steps `WorldGenRegion.ensureCanWrite` fails even for the
+eight of the ten steps `WorldGenRegion.ensureCanWrite` fails even for the
 chunk's own column, and `WorldGenRegion.setBlock` logs and returns false
-rather than doing anything. Only *NOISE*, *SURFACE* and *CARVERS* (radius 0)
-and *FEATURES* (radius 1) can change a block at all. What rides on those
-steps — the density functions, the surface rules, the carvers, the features
+rather than doing anything. Only *TERRAIN* (radius 0) and *FEATURES*
+(radius 1) can change a block at all. What rides on those
+steps — the density functions, the material rules, the carvers, the features
 and the structures they place — is Part XII's subject
 ([terrain](../worldgen/terrain.md),
 [density functions](../worldgen/density-functions.md),
@@ -316,15 +311,15 @@ only, no terrain — and is skipped entirely when `WorldOptions.generateStructur
 is off. Either way `ServerLevel.onStructureStartsAvailable` posts the chunk's
 starts to the server thread. *STRUCTURE_REFERENCES* then records, per chunk,
 which starts within eight chunks reach into it: the reason starts needed a
-radius of 8 around *it*. *BIOMES* forks — both `ChunkGenerator.createBiomes`
-and `NoiseBasedChunkGenerator`'s override put the work on the pool under
-*init_biomes* — so biomes always leave the worldgen executor. *NOISE* forks
-only for `NoiseBasedChunkGenerator`, under *wgen_fill_noise*, and applies the
-`BelowZeroRetrogen` bedrock fix-ups afterwards if the chunk is being deepened;
-`FlatLevelSource` and `DebugLevelSource` return a completed future and stay
-inline. *SURFACE* and *CARVERS* run inline at write radius 0. *FEATURES*
-primes the four final heightmaps with `Heightmap.primeHeightmaps`, decorates,
-and calls `Blender.generateBorderTicks`
+radius of 8 around *it*. *BIOMES* forks — `ChunkGenerator.createBiomes`,
+which no generator overrides, puts the work on the pool under
+*createBiomes* — so biomes always leave the worldgen executor. *TERRAIN* forks
+only for `NoiseBasedChunkGenerator`, under *buildTerrain* — the noise fill, the
+surface and the carvers in one job — and then applies the `BelowZeroRetrogen`
+bedrock fix-ups if the chunk is being deepened and primes the four final
+heightmaps with `Heightmap.primeHeightmaps`; `FlatLevelSource` and
+`DebugLevelSource` return a completed future and stay inline. *FEATURES*
+decorates and calls `Blender.generateBorderTicks`
 ([blending](../worldgen/blending.md)).
 
 *FEATURES* is the interesting one, because a tree at a chunk edge writes into
@@ -367,14 +362,14 @@ it decides — that light saved on disk is re-enabled rather than recomputed —
 
 ## FULL is assembled on the server thread
 
-`ChunkStatusTasks.full` is scheduled exactly like the other eleven steps, but
+`ChunkStatusTasks.full` is scheduled exactly like the other nine steps, but
 its body is a *supplyAsync* on `WorldGenContext.mainThreadExecutor` — the
 `ServerChunkCache.MainThreadExecutor`, a `BlockableEventLoop` pinned to the
 server thread. There are two shapes it can take. If the chunk is already an
 `ImposterProtoChunk`, because the file held a finished chunk, it unwraps the
 `LevelChunk` inside and replaces nothing. Otherwise a `LevelChunk` is built
 from the `ProtoChunk`, sharing its sections, and
-`GenerationChunkHolder.replaceProtoChunk` rewrites slots 0 through 10 of the
+`GenerationChunkHolder.replaceProtoChunk` rewrites slots 0 through 8 of the
 holder's future array to an `ImposterProtoChunk` over it with writes
 disallowed — every slot checked, and the whole step thrown out if any of them
 is not a `ProtoChunk` or was changed by another thread in the meantime.
@@ -409,7 +404,7 @@ holders that reach *FULL* for the spawn progress bar, and that count is what
 ## The whole walk, once
 
 Everything above, spent once on one chunk that was not on disk. The lanes are
-the five objects that hand it along, and the interesting thing about them is
+the seven objects that hand it along, and the interesting thing about them is
 which thread each is standing on.
 
 ```mermaid
@@ -435,8 +430,8 @@ sequenceDiagram
     CGT->>CGT: nothing on disk, so EMPTY again, now to radius 11
     CGT->>CM: STRUCTURE_STARTS to 11, then STRUCTURE_REFERENCES to 3
     CM->>SL: onStructureStartsAvailable, posted to the server thread
-    CGT->>Worker: BIOMES to 3 and NOISE to 2, forked to the pool
-    CGT->>CM: SURFACE and CARVERS to 2, FEATURES to 1 — all inline
+    CGT->>Worker: BIOMES to 3 and TERRAIN to 2, forked to the pool
+    CGT->>CM: FEATURES to 1, inline
     CGT->>TLE: INITIALIZE_LIGHT at 1, then LIGHT at 0, on the light executor
     CGT->>SL: SPAWN inline, then FULL on the main-thread executor
     SL->>CM: the LevelChunk is built, wrapped, loaded and registered
@@ -458,11 +453,11 @@ below it is work that the other answer would have skipped.*
 worldgen is one `ConsecutiveExecutor` running one task at a time, and the
 dispatcher in front of it releases one chunk's work at a time. The pool is busy in parallel with plenty else — the *light*
 executor beside it, the disk read and its datafix, the POI prefetch, the biome
-and noise forks, the second dimension — but none of that is a second worldgen
+and terrain forks, the second dimension — but none of that is a second worldgen
 lane. There is no thread-count setting for generation.
 
 **Why does a chunk I have visited before still take work to load?** It walks
-all twelve steps. Seven of them pass through and cost nothing, but the disk
+all ten steps. Five of them pass through and cost nothing, but the disk
 read, the structure-start replay, both light steps and the *FULL* assembly are
 real work, and the light steps need the 3×3 neighbours read first.
 
@@ -471,6 +466,10 @@ ticket level puts the ceiling below *FULL*.
 `GenerationChunkHolder.isStatusDisallowed` refuses anything higher, so the
 chunk sits at *STRUCTURE_STARTS* or *BIOMES*, correct and unfinished, for as
 long as the level says so.
+
+> **For a 1.21-era reader.** The *noise*, *surface* and *carvers* statuses are
+> gone: *terrain* does their work, as one step. The pool jobs *init_biomes* and
+> *wgen_fill_noise* are now *createBiomes* and *buildTerrain*.
 
 ## Where to look
 

@@ -1,6 +1,6 @@
 # XII · World generation
 
-> Verified against **Minecraft 26.2** · Part XII · the one system in the game that nothing can perturb: a world reproducible from a seed and a data pack alone, and the single deliberate exception to it.
+> Verified against **Minecraft 26.3** · Part XII · the one system in the game that nothing can perturb: a world reproducible from a seed and a data pack alone, and the single deliberate exception to it.
 
 What a player recognises the part by is the seam: the flat shelf of ground
 under a village that was not there before, the cave that is flooded the
@@ -15,7 +15,7 @@ any say in it. Give the same seed and the same packs to two copies of the game
 and they will agree, block for block, forever — which is the property
 speedrunners, seed-hunting sites and structure finders all depend on. It holds
 not because nothing here reads the world — the decoration step reads block
-states, heights and the carving mask through `PlacementContext`
+states and heights through `PlacementContext`
 ([features and placement](features-and-placement.md#the-fold)), and the
 carvers read a whole neighbourhood of chunks for the biome that seeds each
 cave ([terrain](terrain.md#carving-and-who-chooses-the-block)) — but because
@@ -40,7 +40,7 @@ step by step; the wing is the three structure lectures, which run *first* in
 the game and are taught *last* here. Part IV owns the conveyor that runs the
 statuses ([the chunk generation
 pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)); this part
-is the cargo of seven of them.
+is the cargo of five of them.
 
 The numbers below are the order to watch and the arrows the order the game
 runs, and the disagreement between them is the argument for the order.
@@ -54,12 +54,12 @@ flowchart TD
         S7 --> S9["9 · Hand-built structures"]
     end
     SS --> L2["2 · Biomes, at BIOMES"]
-    L2 --> NO
-    subgraph NO["NOISE, SURFACE, CARVERS"]
+    L2 --> TE
+    subgraph TE["TERRAIN"]
         L3["3 · Terrain"]
         L4["4 · Blending"]
     end
-    NO --> FE
+    TE --> FE
     subgraph FE["FEATURES"]
         L5["5 · Features and placement"] --> L6["6 · Trees"]
     end
@@ -74,17 +74,17 @@ lectures.*
 
 A structure is *decided* at `ChunkStatus.STRUCTURE_STARTS`, two statuses before
 the biomes it will stand in exist, and writes no block until
-`ChunkStatus.FEATURES`, three statuses after the noise fill: told in run order
+`ChunkStatus.FEATURES`, one status after the noise fill: told in run order
 it is two lectures with six between them, and told last it is one arc — the
 dashed arrow from the structure box to `ChunkStatus.FEATURES` is that gap. The
 arrow out of lecture ten is the same trade at the other end. Both cost one thing, a forward
-topic — three of the six pages before the structure arc reach for the beardifier
+topic — two of the six pages before the structure arc reach for the beardifier
 before the page that owns it
 ([structure placement](structure-placement.md#the-ground-bends-before-the-ground-exists)).
 
 The arrow out of lecture one means *is sampled by* rather than *happens before*:
-the biome step is the first status to read the field, through the
-`NoiseChunk` built there. The decoration and structure packages never mention `DensityFunction` at all,
+the biome step is the first status to sample the field across a whole chunk,
+through a caching `Climate.Sampler` of its own. The decoration and structure packages never mention `DensityFunction` at all,
 and reach the substrate only through the beardifier and the heights the
 generator hands them
 ([density functions](density-functions.md#seed-once-per-dimension)).
@@ -93,7 +93,7 @@ generator hands them
 
 [The chunk generation pipeline](../world/chunk-generation-pipeline.md#the-pyramid-drawn)
 from Part IV, and not optionally. It is the only page that says *when* any of
-this runs, what the twelve chunk statuses are, how the dependency pyramid keeps
+this runs, what the ten chunk statuses are, how the dependency pyramid keeps
 neighbours out of each other's way, and
 [which thread each step is on](../world/chunk-generation-pipeline.md#dispatch-and-why-the-parallelism-is-smaller-than-the-thread-names).
 Eight of the ten pages here name a status, and two of them open on one.
@@ -120,8 +120,8 @@ a page in this part — more than any other part of the book.
 ## Watch in this order
 
 1. [Density functions](density-functions.md) — the substrate, and the
-   abstract one. Three forms of one graph, two rewrites, and six caches that
-   cache nothing until something else installs them.
+   abstract one. Three forms of one graph, two rewrites, and one kind of
+   cache that caches nothing until something else grants it.
 2. [Biomes](biomes.md) — a nearest-neighbour search in seven dimensions, one
    of which is not sampled from the world at all, and the two biome borders
    the game keeps a couple of blocks apart.
@@ -154,9 +154,8 @@ a page in this part — more than any other part of the book.
 
 Watch one to six straight through: that is the chunk being made, in the order
 it is made, and each page needs the one before it. `ChunkPyramid` makes
-`ChunkStatus.BIOMES` a requirement of both `ChunkStatus.NOISE` and
-`ChunkStatus.SURFACE`, so two really does come before three, and four needs
-both. Then stop and read seven, eight and nine as one arc — eight and nine are
+`ChunkStatus.BIOMES` a requirement of `ChunkStatus.TERRAIN`, so two really
+does come before three, and four needs both. Then stop and read seven, eight and nine as one arc — eight and nine are
 alternatives to each other, not a sequence, so either order works. Ten is the
 only page that moves: a viewer who wants the origin before the machinery can
 watch it first, at the cost of nine forward references.
@@ -171,10 +170,9 @@ chunk with none of the machinery.
 It stops in a second direction too:
 {{#include ../../generated/coverage-worldgen.md}}, and almost all of them are
 one shape — **an algorithm that writes blocks and adds no mechanism.**
-Sixty-two of the seventy-four classes in the *feature* package are one
-`Feature` each — icebergs, geodes, lakes, coral, the End spikes — with
-thirty-six more as their configurations, and beside them four smaller families
-of the same kind: the block predicates, the height providers, the state
+Fifty-eight of the sixty-seven classes in the *feature* package are one
+`Feature` each — icebergs, geodes, lakes, coral, the End spikes — and beside
+them four smaller families of the same kind: the block predicates, the height providers, the state
 providers and the rule tests, whose members are combinators over a shape one of
 these pages already teaches. Naming them would be a catalogue, and
 [what this book skips](../anatomy/what-this-book-skips.md) declines it. What
@@ -187,10 +185,10 @@ the part owes, and pays, is the head of each family — on
 ## Reference this part uses
 
 [Density-function nodes](../../reference/density-function-nodes.md#the-table)
-is the catalogue behind lecture one: all thirty-four node types, what each
-takes, what the per-chunk rewrite turns it into, what range each reports, and
+is the catalogue behind lecture one: all forty-four node types, what each
+takes, what the compiler turns it into, what range each reports, and
 which ids the shipped data writes. Beside it,
-[registries](../../reference/registries.md) for the fourteen *worldgen/*
+[registries](../../reference/registries.md) for the seventeen *worldgen/*
 registries a data pack writes into;
 [structure spawn overrides](../../reference/structure-spawn-overrides.md) for
 the six structures whose JSON replaces the biome's spawn list, which lecture
@@ -201,7 +199,7 @@ ten links to rather than restates; and
 [math and primitives](../../reference/math-and-primitives.md#two-random-families-and-two-that-are-neither)
 for the two random families the determinism this page opens on actually lives
 in. [Diagram lanes](../../reference/lanes.md) and
-[naming drift](../../reference/naming-drift.md)'s thirteen rows for this part
+[naming drift](../../reference/naming-drift.md)'s twenty-five rows for this part
 are the two every part uses. And
 [the glossary](../../reference/glossary.md) holds this part's ten headwords,
 which is where to go first if a page above spends one before you have met it.

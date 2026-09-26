@@ -78,7 +78,7 @@ menu can still refuse a click it cannot afford.
 
 ### Twenty-nine subclasses, one machine
 
-There are twenty-nine `AbstractContainerMenu` subclasses in `world/inventory`,
+There are twenty-eight `AbstractContainerMenu` subclasses in `world/inventory`,
 and after this page's chest, the crafting grid, the anvil and the enchanting
 table the rest are the same machine with a different slot list: `LoomMenu`,
 `CartographyTableMenu`, `BeaconMenu`, `BrewingStandMenu`, `CrafterMenu`,
@@ -353,8 +353,11 @@ and reach the client the same tick. `ServerPlayer.tick` then calls
 `AbstractContainerMenu.broadcastChanges` again from the level's **entity**
 phase, which runs *before* the block-entity phase
 ([the level tick](../server/server-level-tick.md#the-whole-tick-and-its-three-gates)). And `ServerPlayer.doTick`
-— driven by the connection after every level has finished — repeats only the
-`AbstractContainerMenu.stillValid` distance test, without a broadcast.
+— driven by the connection after every level has finished — repeats the
+`AbstractContainerMenu.stillValid` distance test and broadcasts nothing of its
+own; what does broadcast inside it is a pickup, because `ServerPlayer.take`,
+which the player's own tick reaches for every item, orb or arrow it collects,
+calls `AbstractContainerMenu.broadcastChanges`.
 
 There is a third place, and it is not in the tick at all. A menu **button**
 click — the lectern's page turn, the enchanting table's offer, the loom's

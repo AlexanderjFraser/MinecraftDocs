@@ -1,6 +1,6 @@
 # Items and stacks
 
-> Verified against **Minecraft 26.2** · Part VII · A diamond pickaxe sits in a hotbar slot, is compared against its neighbours, is sent to a client, and finally loses its last point of durability.
+> Verified against **Minecraft 26.3** · Part VII · A diamond pickaxe sits in a hotbar slot, is compared against its neighbours, is sent to a client, and finally loses its last point of durability.
 
 A diamond pickaxe is in your hotbar. The `Item` behind it,
 `Items.DIAMOND_PICKAXE`, is a single object shared by every diamond pickaxe
@@ -101,9 +101,9 @@ component map. `Item.Properties.component` and every convenience over it —
 `Item.Properties.equippable`, `Item.Properties.useCooldown` — fold one more
 step onto a `DataComponentInitializers.Initializer`, a function that will be
 run against a `DataComponentMap.Builder` later, with a
-`HolderLookup.Provider` in hand. Those seven conveniences happen to be exactly
-the ones that make a weapon, and between them they build forty-two items out
-of a registry of over a thousand
+`HolderLookup.Provider` in hand. Seven conveniences, `Item.Properties.tool`
+and `Item.Properties.spear` among them, are the ones that make a weapon, and
+between them they build forty-two items out of a registry of over a thousand
 ([the weapon helpers](../../reference/weapon-helpers.md)).
 
 Between the two halves of that arrangement an `Item` is a live object with no
@@ -138,7 +138,8 @@ an empty stack.
 ## When two stacks are the same stack
 
 Five static methods on `ItemStack` answer five different versions of that
-question, and menus, recipes and the renderer each want a different one.
+question, and menus, recipes and the first-person hand each want a different
+one.
 
 | method | compares | used for |
 |---|---|---|
@@ -157,12 +158,12 @@ touched.
 The fourth row exists for one component. `DataComponents.DAMAGE` is the only
 component type in the game declared with
 `DataComponentType.Builder.ignoreSwapAnimation`, and
-`ItemInHandRenderer.shouldInstantlyReplaceVisibleItem` passes exactly that
-flag as the predicate — which is why a pickaxe losing a point of durability
-does not re-play the lower-and-raise animation. And a trap sits under all five
-rows: `ItemStack.EMPTY` is a singleton but is not identified by reference,
-because `ItemStack.isEmpty` also answers true for `Items.AIR` and for any
-count at or below zero.
+`FirstPersonHandsAndItems.shouldInstantlyReplaceVisibleItem` passes exactly
+that flag as the predicate — which is why a pickaxe losing a point of
+durability does not re-play the lower-and-raise animation. And a trap sits
+under all five rows: `ItemStack.EMPTY` is a singleton but is not identified
+by reference, because `ItemStack.isEmpty` also answers true for `Items.AIR`
+and for any count at or below zero.
 
 ## Two validators, one rule, two spellings
 
@@ -294,17 +295,19 @@ neighbours through `ItemEntity.mergeWithNeighbours` — a merge that keeps the
 reach it through `Block.popResource`
 ([block breaking](../blocks/block-breaking.md#remove-damage-roll-drop)).
 
-## The hundred classes, and why ninety-eight of them are almost empty
+## The seventy-nine classes, and why sixty-seven of them are almost empty
 
-`world/item`'s own directory holds a hundred classes. Two of them are `Item`
-and `ItemStack`; the other ninety-eight are one `Item` subclass each, and each
-exists for the same reason — a behaviour hook that no component can express.
-`MaceItem`, `BoneMealItem`, `HoneycombItem`, `EnderEyeItem`, `DebugStickItem`,
-`BoatItem`, `LeadItem` and sixty more override `Item.use`, `Item.useOn` or
-`Item.interactLivingEntity` and hold no state of their own; `AxeItem`,
-`ShovelItem` and `HoeItem` kept a class only for stripping, path-making and
-tilling, which act on a block rather than on a stack. That is why a registry
-of over a thousand items has so few classes behind it ([the class
+`world/item`'s own directory holds seventy-nine classes beside its records,
+enums and interfaces. Two of them are `Item` and `ItemStack` and ten are
+helpers such as `Items` and `ItemCooldowns`; the other sixty-seven are one
+`Item` subclass each, and each exists for the same reason — a behaviour hook
+that no component can express. `BoneMealItem`, `HoneycombItem`,
+`EnderEyeItem`, `DebugStickItem`, `LeadItem` and thirty-four more override
+`Item.use`, `Item.useOn` or `Item.interactLivingEntity` and hold no state of
+their own. Axes, shovels and hoes are plain `Item`s: stripping, path-making
+and tilling are one component, `DataComponents.BLOCK_TRANSFORMER`, that the
+base `Item.useOn` reads and runs. That is why a registry of over a thousand
+items has so few classes behind it ([the class
 hierarchy](../../maps/hierarchy.md)).
 
 ## What this page hands off
@@ -319,6 +322,11 @@ components](../foundations/data-components.md#the-key-datacomponenttype), catalo
 [components reference](../../reference/components.md). And how an item picks
 the model, texture and tint you see in the slot is **not** this part's subject
 at all: it is Part XI's, in [models and atlases](../rendering/models-and-atlases.md#how-an-item-picks-its-model).
+
+> **For a 1.21-era reader.** *AxeItem*, *ShovelItem* and *HoeItem* are gone:
+> `DataComponents.BLOCK_TRANSFORMER` does their work, naming a
+> `BlockTransformer` from a data registry. *ItemInHandRenderer* is gone too;
+> `FirstPersonHandsAndItems` decides the swap animation.
 
 ## Where to look
 

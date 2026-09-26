@@ -7,7 +7,7 @@ every page: the key in `TEMPLATE.md` is the authority, and `check_lanes.py` fail
 a page that disagrees with it. The last rows are the exceptions — lanes that stand for a
 thread or a boundary rather than for one class.
 
-275 lanes are classes and 10 are not. A lane is normally the initials of
+276 lanes are classes and 10 are not. A lane is normally the initials of
 the class's CamelCase words (`ServerGamePacketListenerImpl` is `SGPL`), but three other
 rules make about a third of them: a short one-word class is its own lane (`Player`,
 `Sheep`), a longer one-word class
@@ -28,6 +28,7 @@ read it off this table.
 | `AttrM` | `AttributeMap` |
 | `BC` | `BuildContexts` |
 | `BD` | `BlendingData` |
+| `BDFS` | `BlendDensityFunction.Sampler` |
 | `BDR` | `BrainDebugRenderer` |
 | `BERD` | `BlockEntityRenderDispatcher` |
 | `BI` | `BucketItem` |
@@ -48,7 +49,6 @@ read it off this table.
 | `CDS` | `ClientDebugSubscriber` |
 | `CE` | `CommandEncoder` |
 | `CEM` | `EnchantmentMenu` |
-| `CF` | `ConfiguredFeature` |
 | `CGT` | `ChunkGenerationTask` |
 | `CH` | `ChunkHolder` |
 | `ChanA` | `ChannelAccess` |
@@ -107,12 +107,15 @@ read it off this table.
 | `ExecC` | `ExecuteCommand` |
 | `FBR` | `FormattedBidiReorder` |
 | `FD` | `FoodData` |
+| `FeatP` | `FeaturePlacer` |
+| `Feature` | `Feature` |
 | `FF` | `FlowingFluid` |
 | `FGB` | `FrameGraphBuilder` |
 | `FM` | `FurnaceMenu` |
 | `FolP` | `FoliagePlacer` |
 | `Font` | `Font` |
 | `FP` | `FoodProperties` |
+| `FPHAI` | `FirstPersonHandsAndItems` |
 | `FR` | `FogRenderer` |
 | `FRD` | `FeatureRenderDispatcher` |
 | `FSet` | `FontSet` |
@@ -132,7 +135,6 @@ read it off this table.
 | `Hud` | `Hud` |
 | `ICT` | `InventoryChangeTrigger` |
 | `Ignite` | `Ignite` |
-| `IIHR` | `ItemInHandRenderer` |
 | `IMR` | `ItemModelResolver` |
 | `InvS` | `InventoryScreen` |
 | `IOW` | `IOWorker` |
@@ -200,7 +202,6 @@ read it off this table.
 | `PESP` | `PoolElementStructurePiece` |
 | `PF` | `PathFinder` |
 | `PL` | `PlayerList` |
-| `PlacedF` | `PlacedFeature` |
 | `Player` | `Player` |
 | `PM` | `PoiManager` |
 | `PMBE` | `PistonMovingBlockEntity` |
@@ -224,7 +225,7 @@ read it off this table.
 | `RRM` | `ReloadableResourceManager` |
 | `RSR` | `ReloadableServerResources` |
 | `RSReg` | `ReloadableServerRegistries` |
-| `RSWB` | `RedStoneWireBlock` |
+| `RWB` | `RedstoneWireBlock` |
 | `SA` | `ScoreAccess` |
 | `SAB` | `AbstractBoat` |
 | `SAI` | `SpatialAttributeInterpolator` |

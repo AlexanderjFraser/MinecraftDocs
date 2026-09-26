@@ -1,6 +1,6 @@
 # The client loop
 
-> Verified against **Minecraft 26.2** · Part X · one turn of `Minecraft.run`: how much simulated time a frame owes, what it spends it on, and what happens to the time it cannot afford.
+> Verified against **Minecraft 26.3** · Part X · one turn of `Minecraft.run`: how much simulated time a frame owes, what it spends it on, and what happens to the time it cannot afford.
 
 The client has one loop and no schedule. A tick is not a timer callback and
 not a thread — it is something the loop does on its way to a frame, as many
@@ -52,7 +52,7 @@ what falls off the end of it.
 
 ```mermaid
 flowchart TD
-    POLL["RenderSystem.pollEvents — GLFW callbacks, inline"]
+    POLL["RenderSystem.pollEvents — SDL events, inline"]
     subgraph RT["Minecraft.runTick"]
         PRE["Pre render: Window.shouldClose, then a pending reload"]
         ASK["DeltaTracker.Timer.advanceGameTime — whole ticks owed"]
@@ -145,8 +145,8 @@ interpolation or *complete* interpolation without a branch.
 ## What a tick is, in order
 
 `Minecraft.tick` is one long method, its order is a dependency order, and the
-column that matters is the second: almost everything in it is inside a gate,
-and the two things that are not are the reason the main menu has music.
+column that matters is the third: almost everything in it is inside a gate,
+and two of the things that are not are the reason the main menu has music.
 
 | in order | what runs | what gates it |
 |---|---|---|
@@ -155,23 +155,23 @@ and the two things that are not are the reason the main menu has music.
 | 3 | the game mode | a level, and not paused |
 | 4 | `Minecraft.pick`, at a partial tick of one | nothing |
 | 5 | `Tutorial.onLookAt`, with what the pick found | nothing |
-| 6 | `TextInputManager`, then `Gui.tick` — `Minecraft.missTime` pinned high while a screen is open | nothing |
+| 6 | `Gui.tick` — `Minecraft.missTime` pinned high while a screen is open | nothing |
 | 7 | the keybind drain, `Minecraft.handleKeybinds` | neither a screen nor an overlay — **and nothing about a level** |
-| 8 | `GameRenderer.tick`, `ClientLevel.tickEntities`, `Level.tickBlockEntities` | a level, and not paused |
+| 8 | `GameRenderer.tick`, `ClientLevel.tickEntities`, `Level.tickBlockEntities`, then `LocalPlayer.sendChanges` — the input and movement packets | a level, and not paused |
 | 9 | the music and sound managers | nothing |
 | 10 | the first-server toast, `Tutorial.tick`, then `ClientLevel.tick` alone inside a crash-report handler | a level, and not paused |
 | 11 | `ClientLevel.animateTick`, `ParticleEngine.tick` | a level, not paused, and the tick rate manager running normally |
 | 12 | `ServerboundClientTickEndPacket` | a level, a connection, and not paused |
 | 13 | `KeyboardHandler.tick`, where the F3+C crash countdown lives | nothing |
 
-Five of the thirteen rows are gated on nothing at all, and they are the five
+Six of the thirteen rows are gated on nothing at all, and they are the six
 that explain what a client with no world is still doing: it counts ticks, it
-picks at whatever is in front of the camera, it runs the interface, it plays
-music, and it reads the keyboard. Everything that is the *world* is inside
-`level != null && !pause`. With no level that middle collapses — but not into
-one branch. Two separate *else* arms at two points in the method clear any
-post-effect and tick the pending connection, with row nine running between
-them.
+picks at whatever is in front of the camera and tells the tutorial what it
+found, it runs the interface, it plays music, and it reads the keyboard.
+Everything that is the *world* is inside `level != null && !pause`. With no
+level that middle collapses — but not into one branch. Two separate *else*
+arms at two points in the method clear the spectated entity's post-effect and
+tick the pending connection, with row nine running between them.
 
 Two of those rows are load-bearing elsewhere in the book. Row twelve is why
 a client still in configuration sends no tick-end packet at all: it sits
@@ -197,9 +197,9 @@ Five ways off this thread, and one re-entry that is not a way off it.
   inline instead of queueing — but not while a queued task is already running,
   because `ReentrantBlockableEventLoop.scheduleExecutables` returns true for
   the whole of `ReentrantBlockableEventLoop.doRunTask`, which is what stops a
-  task from re-entering itself. GLFW callbacks, dispatched inside
-  `RenderSystem.pollEvents`, are not inside one, so they execute *before* the
-  tick that will observe them — see [input and keybinds](input-and-keybinds.md).
+  task from re-entering itself. SDL events, dispatched by `SDLEventHandler.pollEvents`
+  inside `RenderSystem.pollEvents`, are not inside one, so they execute *before*
+  the tick that will observe them — see [input and keybinds](input-and-keybinds.md).
 - **Section meshing** goes to `Util.backgroundExecutor` and is collected by
   `SectionRenderDispatcher` (Part XI).
 - **Timers**, of which the client has exactly two, and neither of them
@@ -216,7 +216,7 @@ The re-entry is `BlockableEventLoop.managedBlock`, which pumps that second
 queue while the loop is *blocked* waiting for the integrated server — so work
 runs on this thread at a moment when the thread is not running its loop at all.
 The mechanism is [the server
-tick](../server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys)'.
+tick](../server/server-tick.md#the-event-loop-and-what-a-ticks-spare-time-buys).
 
 The profiler wraps all of it. `Minecraft.constructProfiler` picks per
 iteration between `InactiveProfiler`, the frame-profile `ContinuousProfiler`
@@ -250,12 +250,13 @@ UI sounds, and hands the new state to `DeltaTracker.Timer.updatePauseState`.
 
 `FramerateLimitTracker.getFramerateLimit` returns the option unchanged
 normally; caps it at thirty after a minute idle; replaces it with ten when
-the window is iconified or after ten minutes idle — **iconified, not
-unfocused**, which is a different state with a different consequence, one
-section above — and replaces it with
+the window is iconified or after ten minutes idle; and replaces it with
 **sixty** in a menu with no level — which can be *more* than the player
-asked for. The two idle cases apply only when `Options.inactivityFpsLimit`
-is set to the AFK behaviour, and the iconified test wins over both.
+asked for. The iconified case is **iconified, not unfocused** — a different
+state with a different consequence, one section above — except in exclusive
+fullscreen, where an unfocused window counts as iconified. The two idle
+cases apply only when `Options.inactivityFpsLimit` is set to the AFK
+behaviour, and the iconified test wins over both.
 `FramerateLimiter.limitDisplayFPS` is skipped entirely at or above 260 — the
 option's own maximum, i.e. "unlimited"; below it, it parks for most of the
 remainder, correcting for how much the JDK's park habitually overshoots, and
@@ -309,19 +310,19 @@ after an emergency save; a second one rethrows.
 
 The corridor is `Minecraft.exitWorldAndClose` and then `Minecraft.close`,
 which tears down in a fixed order — the time source first, outside the try,
-then the friends list, the timer query, telemetry, compliancies, the atlas and
-font managers, the game renderer, the shader manager, the level renderer, the
-sound manager, the two texture managers, resources, the Tracy capture, the
-narrator, FreeType, the executors, the surface and the renderer — and then, in
-a finally block, only the window, the monitor manager and GLFW's own termination.
-There is no *Minecraft.destroy*.
+then an offline presence to the friends service, the friends list, the timer
+query, telemetry, compliancies, the atlas and font managers, the game renderer,
+the shader manager, the level renderer, the sound manager, the three texture
+managers, resources, the Tracy capture, the narrator, FreeType, the surface and
+the renderer — and then, in a finally block, only the window, the graphics
+backend's library, SDL's own shutdown and the executors. There is no *Minecraft.destroy*.
 
 > **For a 1.21-era reader.** Names to stop hunting for:
 > *Minecraft.getPartialTick*, *Minecraft.noRender*, *Minecraft.tell*,
 > *Minecraft.destroy*, *Minecraft.screen* and *Minecraft.setScreen* (both now
-> on `Gui`), *Timer* (now `DeltaTracker.Timer`), and *initGameThread* /
-> *isOnGameThread*, which do not exist because the second thread they
-> distinguished does not either.
+> on `Gui`), *Timer* (now `DeltaTracker.Timer`), *GLFW* and its callbacks (now SDL
+> events, drained by `SDLEventHandler.pollEvents`), and *initGameThread* /
+> *isOnGameThread*, which do not exist because the second thread they distinguished does not either.
 
 ## Where to look
 

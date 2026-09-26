@@ -2,7 +2,7 @@
 
 > Generated from the **26.3** decompile by `tools/gen_reference.py`. Do not edit by hand.
 
-The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. Three of the six tool families need a class of their own because they also do something on right-click, and three are plain `Item`s the helper alone describes. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).
+The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. None of the six needs a class of its own: `axe`, `hoe` and `shovel` add `DataComponents.BLOCK_TRANSFORMER`, which the base `Item.useOn` runs on a right-click, so every item a helper builds is a plain `Item`. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).
 
 | helper | delegates to | components it sets | attributes |
 |---|---|---|---|

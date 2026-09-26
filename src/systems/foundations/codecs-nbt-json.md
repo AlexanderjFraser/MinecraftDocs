@@ -1,6 +1,6 @@
 # Codecs, NBT and JSON
 
-> Verified against **Minecraft 26.2** · Part II · One `ItemStack` written four ways: into a chest's chunk file, into a container packet, as a checksum in a click, and out of the text of a `/give`.
+> Verified against **Minecraft 26.3** · Part II · One `ItemStack` written four ways: into a chest's chunk file, into a container packet, as a checksum in a click, and out of the text of a `/give`.
 
 A player types `/give @s diamond_sword[damage=5]`, drops the sword into a
 chest, logs out, comes back and clicks the slot. In those few seconds the
@@ -41,7 +41,7 @@ holds a codec matters only where the same codec runs on two of them.
 | **who starts it** | `ChestBlockEntity.saveAdditional`, inside chunk serialisation | `ClientboundContainerSetSlotPacket`, from `AbstractContainerMenu.broadcastChanges` | `MultiPlayerGameMode.handleContainerInput`, on the click | `GiveCommand` through `ItemArgument` |
 | **the ops** | `RegistryOps` over `NbtOps` | none — a `RegistryFriendlyByteBuf` and nothing else | `RegistryOps` over `HashOps.CRC32C_INSTANCE` | `RegistryOps` over `NbtOps`, held by a `TagParser` |
 | **the codec** | `ItemStack.MAP_CODEC`, inside `ItemStackWithSlot.CODEC` | `ItemStack.OPTIONAL_STREAM_CODEC` | each component's own codec, through `TypedDataComponent.encodeValue` | `DataComponentType.codecOrThrow`, one component at a time |
-| **what is carried** | a document — *id*, *count*, *components* | a count, an item id, then a `DataComponentPatch` | one int per added component, and the bare names of the removed ones | SNBT text, then a `Tag` |
+| **what is carried** | a document — *id*, *count*, *components* | a count, an item id, then a `DataComponentPatch` | one int per added component, and the bare registry ids of the removed ones | SNBT text, then a `Tag` |
 | **the thread** | Server, then an IO worker for the file itself | Netty | Render on the client, Server on the comparison | Server |
 | **when it fails** | a problem is recorded on a `ProblemReporter` and logged when the scope closes | the decoder throws, `Connection.exceptionCaught` sees it, and the connection drops | the hash disagrees, and the server sends the slot back | a `CommandSyntaxException` with the cursor position in it |
 
@@ -153,7 +153,7 @@ sequenceDiagram
 
 *Two machines computing the same number the same way, which is the only
 reason the comparison means anything. The packet carries no component data
-at all — one int per added component and the removed types by name — so a
+at all — one int per added component and the removed types by registry id — so a
 client that has been lied to about a stack cannot hash its way back to
 agreement.*
 
@@ -200,9 +200,11 @@ then goes through the very codec the chunk file used, reached by
 `DataComponentType.codecOrThrow`. A leading `ItemParser.SYNTAX_REMOVED_COMPONENT`
 is the command-line spelling of the same removal the disk codec writes.
 Data packs are the JSON twin of this path:
-`SimpleJsonResourceReloadListener.scanDirectory` takes whatever
-`DynamicOps` it is handed, registry-aware or bare, and an `ItemStack` in a
-loot table goes through `ItemStack.CODEC` exactly as it does on disk.
+`RegistryDataLoader` decodes every registry file in a data pack, loot
+tables among them, through a `RegistryOps` over `JsonOps.INSTANCE`, and a
+*set_components* function in a loot table reads its patch with
+`DataComponentPatch.CODEC`, the codec a stack's *components* go through on
+disk.
 
 ## One abstraction, and the ops that are not formats
 
@@ -393,7 +395,7 @@ data packs. Neither is where most JSON reading happens, though. `GsonHelper`
 is the toolbox — sixty-nine static helpers, each pulling one typed field out
 of a parsed object and naming the field in the exception when it is missing or
 the wrong shape — and it is the *pre-codec* way of reading JSON, still called
-from 109 places that were never converted: the model loaders, the particle
+from 124 places that were never converted: the model loaders, the particle
 definitions, the server list, the data fixers. It has no place in a
 codec pipeline, which is the point; a field it reads is read by a hand-written
 parser and a field a codec reads is not. Chat text itself is NBT by the time

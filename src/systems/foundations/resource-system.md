@@ -1,6 +1,6 @@
 # The resource system
 
-> Verified against **Minecraft 26.2** · Part II · A player presses F3+T, the screen goes to the logo and a bar, and every texture, model, sound and font is rebuilt from a stack of packs without the game stopping.
+> Verified against **Minecraft 26.3** · Part II · A player presses F3+T, the screen goes to the logo and a bar, and every texture, model, sound and font is rebuilt from a stack of packs without the game stopping.
 
 A player presses F3+T. The screen goes red, the Mojang Studios logo comes
 up, and a white bar creeps across under it while the old world keeps
@@ -31,7 +31,7 @@ selected pack it rethrows and crashes instead.
 | `PreparableReloadListener` · `SimplePreparableReloadListener` · `SimpleJsonResourceReloadListener` | what to read off-thread and what to swap on-thread | prepare on the worker pool, apply on the owner |
 | `SimpleReloadInstance` | the schedule: every prepare at once, every apply in order behind a barrier | built on the caller's thread, barriers resolved on the owner |
 | `LoadingOverlay` | when the client's reload is done, and what to do if it failed | Render |
-| `ReloadableServerResources` | the server's three listeners, and the registries that replaced the rest | Server |
+| `ReloadableServerResources` | the server's one listener, and the registries that replaced the rest | Server |
 
 ## The pipeline
 
@@ -85,19 +85,22 @@ marks it bottom but optional.
 
 What a pack *is* on disk is `PackResources` (`server/packs`): the raw file
 source with `PackResources.getResource`, `PackResources.listResources` and
-`PackResources.getNamespaces`. `VanillaPackResources` is the jar's own
-assets and data; `FilePackResources` a zip; `PathPackResources` a
-directory; `CompositePackResources` a pack plus its *overlays*
-subdirectories, which the `Pack.ResourcesSupplier` assembles for zip and
-folder packs (the vanilla pack never produces one). Discovery is guarded:
+`PackResources.getNamespaces`. `FilePackResources` is a zip;
+`PathPackResources` a directory; `OverlayedPackResources` a pack plus its
+*overlays* subdirectories, which the `Pack.ResourcesSupplier` assembles for
+zip and folder packs. `VanillaPackResources` is not a `PackResources`
+itself: its `Pack.ResourcesSupplier` hands out `FixedPathPackResources`
+layers — the jar's own assets and data, and on the client the launcher's
+asset index above them — and never an overlay. Discovery is guarded:
 `DirectoryValidator`, `ForbiddenSymlinkInfo` and `PackDetector` decide
 what a folder is allowed to be, `allowed_symlinks.txt` is parsed into a
 `DirectoryValidator` by `LevelStorageSource.parseValidator`. One corner of
 `server/packs` is worth a sentence here. `packs/linkfs` is a synthetic
 read-only file system — `LinkFileSystem`, `LinkFSProvider` and a `LinkFSPath`
-that is a name in a tree rather than a name on disk — which lets a
-development checkout's scattered directories present as one pack root, so
-the game can open a pack that was never assembled. 
+that is a name in a tree rather than a name on disk — which presents the
+launcher's asset files, stored under their hashes, as the one directory
+tree their index describes, so the game can open a pack that was never
+assembled. 
 
 ### What *pack.mcmeta* says
 
@@ -106,14 +109,14 @@ The file is read as `ResourceMetadata` sections: `PackMetadataSection`
 `OverlayMetadataSection`, `ResourceFilterSection`. Compatibility is a
 range, not a number. `PackMetadataSection` carries an inclusive range of
 `PackFormat` major/minor pairs and `PackCompatibility` reports too old, too
-new, unknown or compatible against the game's own — resource **88.0** and
-data **107.1** in 26.2. Above `PackFormat.lastPreMinorVersion` (64 for
+new, unknown or compatible against the game's own — resource **97.1** and
+data **121.0**. Above `PackFormat.lastPreMinorVersion` (64 for
 assets, 81 for data) the *min_format* / *max_format* fields are mandatory
 and the old integer *pack_format* is not enough. A *pack.mcmeta* the strict
 codec rejects gets one more chance through a description-only fallback so
 the pack can at least be listed as incompatible. Overlays are versioned
 sub-packs: `OverlayMetadataSection` maps a `PackFormat` range to an
-overlays subdirectory that `CompositePackResources` layers on top of the
+overlays subdirectory that `OverlayedPackResources` layers on top of the
 pack itself, so one zip can carry variants for several game versions.
 
 Feature flags are packs, but not auto-selected ones. A feature pack is a
@@ -181,7 +184,7 @@ the `ResourceManager`), a background executor, a
 `SimplePreparableReloadListener.apply` (main thread);
 `SimpleJsonResourceReloadListener` is the "every JSON file in a directory
 through one codec" specialisation, using `FileToIdConverter` to map
-*data/ns/recipe/foo.json* to *ns:foo*; `ResourceManagerReloadListener` is
+*assets/ns/equipment/foo.json* to *ns:foo*; `ResourceManagerReloadListener` is
 the apply-only shape.
 
 `SimpleReloadInstance` is the schedule, and this is what it does, read
@@ -211,7 +214,7 @@ flowchart TD
         TMp["TextureManager: read every texture"]:::worker
         AMp["AtlasManager: stitch every atlas"]:::worker
         MMp["ModelManager: load models and block states"]:::worker
-        ETC["seventeen more listeners"]:::worker
+        ETC["nineteen more listeners"]:::worker
     end
     ALL["all preparations in: every listener has reached its barrier"]:::client
     subgraph APP["apply, in registration order"]
@@ -225,7 +228,7 @@ flowchart TD
     AMp -. "completes them" .-> MMp
 ```
 
-*Three of the client's twenty listeners. Prepare runs on the worker pool,
+*Three of the client's twenty-two listeners. Prepare runs on the worker pool,
 apply on the thread that owns the state, and the two rules that order them
 are drawn once each: nothing in the lower box starts until the gate opens,
 and inside it each apply waits on the one above. The dotted pair is the
@@ -259,8 +262,9 @@ already-async chain.
 Prepare never touches live state. That is the whole contract, and it is
 one-directional: a listener that reads from the manager in
 `SimplePreparableReloadListener.apply` is reading the *new* snapshot and
-that is fine (`TextureManager` does exactly this, from its own
-`PreparableReloadListener.reload`), while one that mutates
+that is fine (`LanguageManager` does exactly this, in the apply-only shape:
+`LanguageManager.onResourceManagerReload` reads the language files on the
+Render thread), while one that mutates
 live state in `SimplePreparableReloadListener.prepare` is racing the
 Render thread. Nothing a listener owns is torn down when a reload starts;
 the client keeps rendering with the old atlases while the new ones bake.
@@ -272,10 +276,11 @@ Registration order is apply order. The client registers, in order,
 `AtlasManager`, `FontManager`, the three colour listeners
 (`GrassColorReloadListener`, `FoliageColorReloadListener`,
 `DryFoliageColorReloadListener`), `ModelManager`, `EquipmentAssetManager`,
-`EntityRenderDispatcher`, `BlockEntityRenderDispatcher`,
-`ParticleResources`, `LevelExtractor`, the cloud renderer,
-`GpuWarnlistManager`, a `PeriodicNotificationManager`, then `SplashManager`
-from `Gui` and `WaypointStyleManager` from `Hud` — twenty in all. On the
+`PalettedTextureManager`, `EntityRenderDispatcher`,
+`BlockEntityRenderDispatcher`, `ParticleResources`, `GameRenderer`,
+`LevelExtractor`, the cloud renderer, `GpuWarnlistManager`, a
+`PeriodicNotificationManager`, then `SplashManager` from `Gui` and
+`WaypointStyleManager` from `Hud` — twenty-two in all. On the
 client `ReloadableResourceManager.createReload` is called with
 `Util.backgroundExecutor` (named *resourceLoad*) and `Minecraft` itself as
 the main-thread executor, so apply runs on the Render thread, interleaved
@@ -291,7 +296,7 @@ the overlay smooths it.
 ## Finish, or roll back
 
 On the client `LoadingOverlay` is a poll. It draws the logo from the
-vanilla pack *outside* the reload (via `VanillaPackResources.asProvider`)
+vanilla pack *outside* the reload (via `VanillaPackResources.asResourceManager`)
 and a smoothed bar from `ReloadInstance.getActualProgress`; a manual reload
 fades it in over half a second and it will not fade out until a full second
 has passed. Each tick, once `ReloadInstance.isDone`, it calls
@@ -376,10 +381,10 @@ server-sent pack is just one more `RepositorySource`, so
 | where the packs are opened | on the Render thread, before the overlay goes up | on the *server thread* first, one `Pack.open` per selected id, before any background work starts |
 | the manager | a façade swap: `ReloadableResourceManager.createReload` closes the old `MultiPackResourceManager` and holds the new one | a fresh `MultiPackResourceManager` inside a new `MinecraftServer.ReloadableResources`; the old one is closed only when the new one is installed, and the new one is closed if the reload fails |
 | which thread applies, and whether it blocks | the Render thread, between frames; nothing blocks | the Server thread; if `/reload` is issued *from* the server thread the method blocks it with `BlockableEventLoop.managedBlock` until done — `/reload` stalls the tick |
-| how many listeners | twenty, in registration order | three — `RecipeManager`, `ServerFunctionLibrary`, `ServerAdvancementManager` (`ReloadableServerResources.listeners`) |
-| what is a registry instead | nothing; the client's registries arrive over the wire | tags are read *before* the reload instance by `TagLoader.loadTagsForExistingRegistries` and applied after it ([tags](tags.md#the-four-moments-tags-are-loaded)); loot tables, predicates and item modifiers load as the `RegistryLayer.RELOADABLE` layer in `ReloadableServerRegistries.reload` ([identifiers and registries](identifiers-and-registries.md#when-a-world-opens)); item component prototypes rebind through `BuiltInRegistries.DATA_COMPONENT_INITIALIZERS` ([data components](data-components.md#the-prototype-and-why-it-is-built-at-reload)) |
+| how many listeners | twenty-two, in registration order | one — `ServerFunctionLibrary` (`ReloadableServerResources.listeners`) |
+| what is a registry instead | nothing; the client's registries arrive over the wire | tags are read *before* the reload instance by `TagLoader.loadTagsForExistingRegistries` and applied after it ([tags](tags.md#the-four-moments-tags-are-loaded)); loot tables, predicates, item modifiers, recipes, advancements and the rest of `RegistryDataLoader.RELOADABLE_REGISTRIES` load as the `RegistryLayer.RELOADABLE` layer in `ReloadableServerRegistries.reload` ([identifiers and registries](identifiers-and-registries.md#when-a-world-opens)); item component prototypes rebind through `BuiltInRegistries.DATA_COMPONENT_INITIALIZERS` ([data components](data-components.md#the-prototype-and-why-it-is-built-at-reload)) |
 | when success is reported | when the overlay's poll finds the instance done with no exception | **before** the reload runs — the success message is sent first, and a failure arrives later, asynchronously |
-| what happens on completion | `LevelExtractor.allChanged` · `ResourceLoadStateTracker.finishReload` · `DownloadedPackSource.onReloadSuccess` · `Minecraft.onResourceLoadFinished` | close the old `MinecraftServer.ReloadableResources` · install the new · `PackRepository.setSelected` · write the new `WorldDataConfiguration` into level data · `ReloadableServerResources.updateComponentsAndStaticRegistryTags` · `RecipeManager.finalizeRecipeLoading` · `PlayerList.saveAll` · `PlayerList.reloadResources` — which re-reads every player's advancements, broadcasts `ClientboundUpdateTagsPacket` and `ClientboundUpdateRecipesPacket`, and re-sends every player's whole recipe book · `ServerFunctionManager.replaceLibrary` · `StructureTemplateManager.onResourceManagerReload` · a rebuilt fuel table |
+| what happens on completion | `LevelExtractor.allChanged` · `ResourceLoadStateTracker.finishReload` · `DownloadedPackSource.onReloadSuccess` · `Minecraft.onResourceLoadFinished` | close the old `MinecraftServer.ReloadableResources` · install the new · `PackRepository.setSelected` · write the new `WorldDataConfiguration` into level data · `ReloadableServerResources.updateComponentsAndStaticRegistryTags` · `RecipeManager.finalizeRecipeLoading` · `PlayerList.saveAll` · `PlayerList.reloadResources` — which re-reads every player's advancements, broadcasts `ClientboundUpdateTagsPacket` and `ClientboundUpdateRecipesPacket`, and re-sends every player's whole recipe book · `ServerFunctionManager.replaceLibrary` · `StructureTemplateManager.onResourceManagerReload` |
 | what happens on failure | `Minecraft.rollbackResourcePacks` | the new manager is closed, the old resources stay installed, and the command source is told |
 | timing | `ProfiledReloadInstance` only when the logger is at debug | the same |
 
@@ -450,6 +455,14 @@ server thread, `MinecraftServer.reloadResources` blocks that thread with
 
 **Why can I disable the vanilla data pack but not the vanilla resource
 pack?** `ClientPackSource` marks it required; `ServerPacksSource` does not.
+
+> **For a 1.21-era reader.** *CompositePackResources* is `OverlayedPackResources`.
+> The vanilla pack is not a `PackResources` any more: `VanillaPackResources`
+> hands out `FixedPathPackResources` layers, and its *asProvider* is
+> `VanillaPackResources.asResourceManager`. `RecipeManager` and
+> `ServerAdvancementManager` are not reload listeners: recipes and advancements
+> are reloadable registries, and `ServerFunctionLibrary` is the server's one
+> listener.
 
 ## Where to look
 

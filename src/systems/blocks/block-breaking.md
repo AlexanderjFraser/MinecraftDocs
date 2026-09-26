@@ -1,22 +1,23 @@
 # Block breaking
 
-> Verified against **Minecraft 26.2** · Part V · A survival player holds left-click on stone with an iron pickaxe for eight ticks: two clocks that agree without talking, one loot roll, one cobblestone.
+> Verified against **Minecraft 26.3** · Part V · A survival player holds left-click on stone with an iron pickaxe for eight ticks: two clocks that agree without talking, one loot roll, one cobblestone.
 
 Hold the button on a stone block and two programs start counting. The client
 adds a fraction to `MultiPlayerGameMode.destroyProgress` every client tick and
 paints the crack; the server sets `ServerPlayerGameMode.destroyProgressStart`
 to the tick the dig began and recomputes, from scratch, how far along it ought
 to be. Between the first packet and the last, **neither clock is ever mentioned
-on the breaker's own connection** — no progress reports, no heartbeat, nothing
-but the swing animation going up; the only progress that goes on the wire at
-all is the server's, to *other* players, so that they see your cracks — and on
-the eighth tick the two answers are the same
+on the breaker's own connection** — a `ServerboundPunchPacket` goes up and a
+`ClientboundLevelEventPacket` comes down every tick, for the swing and for the
+particles and the sound, and neither says how far along the dig is; the only
+progress that goes on the wire at all is the server's, to *other* players, so
+that they see your cracks — and on the eighth tick the two answers are the same
 number. That agreement is what the whole design rests on, and it is
 also why the failure mode is so strange: **releasing the button does not
 cancel a break.** A client that stops too early gets a deferral, not a
 rejection. The receipt for the STOP goes out in the same tick, the client
 dutifully puts the stone back — and then watches it vanish a second time when
-the server's own clock finishes the job, with nothing the player can do in
+the server's deferred break lands, with nothing the player can do in
 between.
 
 > **The contract both halves run under.** The client acts at once and remembers the state it overwrote, under a sequence number it sends with the action. The server's `ClientboundBlockChangedAckPacket` is a receipt for that number and *not* a verdict — it is sent for actions the server refused exactly as for actions it allowed — and correctness comes from ordering instead: any correction the server means to send travels in the same tick and earlier in the stream than the receipt. A correction *replaces* what the client remembered rather than being weighed against it, so when the receipt arrives the client writes back whatever the entry now holds — and only where that differs from what is on screen. [Prediction and acknowledgement](../client/prediction-and-acks.md#two-state-machines-running-against-each-other) owns that machinery; [block interaction](block-interaction.md) and this page are its two applications.
@@ -28,7 +29,7 @@ between.
 | `Minecraft` | that the button is down and the crosshair is on a block, and whether this frame's tick starts a dig or continues one | Render |
 | `MultiPlayerGameMode` | the client's clock: accumulated progress, the five-tick pause after a break, when to predict the removal and send STOP | Render |
 | `ClientLevel` | the predicted air, and the crack overlays — every breaker's, including the local player's | Render |
-| `ServerGamePacketListenerImpl` | which of the eight `ServerboundPlayerActionPacket.Action`s this is, and when the receipt for its sequence is flushed | Server |
+| `ServerGamePacketListenerImpl` | which of the nine `ServerboundPlayerActionPacket.Action`s this is, and when the receipt for its sequence is flushed | Server |
 | `ServerPlayerGameMode` | the server's clock, the reach and permission gates, the 0.7 verdict, and the deferral | Server |
 | `BlockBehaviour.BlockStateBase` | hardness, whether the block needs the right tool for drops, and the per-tick fraction | either |
 | `Tool` | how fast this stack mines this block, and whether it drops — two separate answers from one rule list | either |
@@ -63,19 +64,21 @@ sequenceDiagram
         par the client adds
             MC->>MPGM: continueDestroyBlock adds 0.133
             MPGM->>CL: destroyBlockProgress, my own stage
-            MC->>SGPL: ServerboundSwingPacket, and nothing else
+            MC->>SGPL: ServerboundPunchPacket, no fields at all
         and the server recomputes the whole dig and throws the answer away
             SPGM->>SPGM: incrementDestroy<br/>Progress
             SPGM->>SL: destroyBlockProgress, only when the tenth changes
+            SPGM->>SL: levelEvent with no source, sound every fourth tick
+            SL-->>CL: ClientboundLevelEventPacket, the face but no progress
         end
     end
 ```
 
-*The two clocks, with the machines boxed: inside the loop nothing crosses
-between the boxes but a swing packet, which is the page's whole argument. The
-parallel compartments say the two halves have no order between them — the
-client adds a fraction, the server recomputes the lot, and neither tells the
-other.*
+*The two clocks, with the machines boxed and the loop in parallel
+compartments that have no order between them: the client adds a fraction, the
+server recomputes the lot, and what crosses between the boxes, a punch up and a
+level event down, carries neither clock's count, which is the page's whole
+argument.*
 
 The eighth add is where the two stop being symmetrical. It reaches 1.064 on
 the client, and the client is the only side that acts on a number.
@@ -133,8 +136,8 @@ read together through `MobEffectUtil.hasDigSpeed` and
 `MobEffectUtil.getDigSpeedAmplification`, which returns the **greater** of the
 two amplifiers — a beacon and a conduit are interchangeable and do not stack —
 and multiply by 1 + 0.2 × (amplifier + 1). Mining fatigue is
-not an attribute at all but four literal factors switched on the amplifier —
-0.3, 0.09, 0.0027, and 0.00081 for anything higher. Then
+not an attribute at all but a literal power of 0.3, with the amplifier plus one
+as the exponent — 0.3, 0.09, 0.027 and on down for anything higher. Then
 `Attributes.BLOCK_BREAK_SPEED`, then `Attributes.SUBMERGED_MINING_SPEED` (0.2
 by default) if the eyes are in `FluidTags.WATER`, and finally **divide by five
 if the player is not on the ground**.
@@ -151,16 +154,20 @@ tick's fraction each time it runs, and the first of those runs in the same
 client tick as the `Minecraft.startAttack` that opened the dig through
 `MultiPlayerGameMode.startDestroyBlock`, so after *k*
 client ticks the client holds *k* fractions. The server keeps no accumulator.
-`ServerPlayerGameMode.incrementDestroyProgress` multiplies the per-tick
-fraction by *elapsed ticks plus one*, and that plus one is exactly the client
-tick that both started and continued.
+For a live dig, `ServerPlayerGameMode.incrementDestroyProgress` multiplies the
+per-tick fraction by *elapsed ticks plus one*, and that plus one is exactly the
+client tick that both started and continued.
 
 Now the timing. `ServerPlayerGameMode.tick` increments its own tick counter
 before recomputing, so the number it reaches **inside the level tick** is one
 fraction ahead of the client's — and it never acts on that number, because the
-live branch throws the value away and only the delayed branch compares it with
-1.0. The comparison that decides anything happens somewhere else: the STOP is
-handled in the packet drain, *before* that tick's increment ([the server
+live branch throws the value away and only the delayed branch compares a value
+with 1.0. What the live branch sends every tick is a level event with no source
+entity, so the breaker is sent it too: `LevelEvent.PARTICLES_DESTROY_PROGRESS`,
+or `LevelEvent.PARTICLES_AND_SOUND_DESTROY_PROGRESS` on every fourth, naming
+the face being dug and not the progress. The comparison that decides anything
+happens somewhere else: the STOP is handled in the packet drain, *before* that
+tick's increment ([the server
 tick](../server/server-tick.md#every-packet-since-last-time-in-one-drain)), so
 `ServerPlayerGameMode.handleBlockBreakAction` measures elapsed ticks over the
 same span the client counted and arrives at the same 1.064. The agreement is
@@ -189,16 +196,22 @@ For stone that is about two ticks of slack. Below the bar the STOP is not
 refused: the handler sets `ServerPlayerGameMode.hasDelayedDestroy`, copies the
 position and the *original* start tick into
 `ServerPlayerGameMode.delayedDestroyPos` and
-`ServerPlayerGameMode.delayedTickStart`, and lets its own clock run on. The
-sequence is acknowledged regardless — `ServerGamePacketListenerImpl.handlePlayerAction`
-calls `ServerGamePacketListenerImpl.ackBlockChangesUpTo` for all three break
-actions, unconditionally, after the game mode has run. So the receipt arrives
-with no correction in front of it, the client settles prediction M against the
-stone it recorded, and `ClientLevel.syncBlockState` puts the stone back. The
-block is visibly there again. A tick or two later the server's clock crosses
-1.0, `ServerPlayerGameMode.destroyBlock` runs, and the air arrives as an
-ordinary block update. The prediction was not wrong — it was undone and then
-redone.
+`ServerPlayerGameMode.delayedTickStart`, and leaves the rest to the delayed
+branch of `ServerPlayerGameMode.tick`. The sequence is acknowledged regardless
+— `ServerGamePacketListenerImpl.handlePlayerAction` calls
+`ServerGamePacketListenerImpl.ackBlockChangesUpTo` for all four break actions,
+unconditionally, after the game mode has run. The delayed branch does not count
+the ticks since the dig began: it multiplies the per-tick fraction by the start
+tick itself, plus one, and that tick is the game mode's count since the player
+joined or respawned, so the answer does not grow with waiting. For any dig
+begun more ticks after that than it takes, the product clears 1.0 on the
+branch's first run, later in the same server tick, and
+`ServerPlayerGameMode.destroyBlock` runs — after the level has broadcast that
+tick's block changes. So the receipt still arrives with no correction in front
+of it, the client settles prediction M against the stone it recorded, and
+`ClientLevel.syncBlockState` puts the stone back. The block is visibly there
+again for a tick, until the next broadcast carries the air as an ordinary block
+update. The prediction was not wrong — it was undone and then redone.
 
 Letting go changes nothing. The ABORT branch clears
 `ServerPlayerGameMode.isDestroyingBlock` and erases the crack, and it never
@@ -220,8 +233,9 @@ progress.
 The refusals that *are* refusals differ in what they send back, and the
 difference is observable. A failed `Player.isWithinBlockInteractionRange`
 check — which allows a full block of slack — sends **nothing at all**, and it
-guards ABORT as well as START, so an abort from too far away is dropped on the
-floor. Being above `LevelHeightAccessor.getMaxY`, failing
+guards STOP as well as START; only an abort gets past it, and only while a dig
+is live, so an abort from too far away still ends one. Being above
+`LevelHeightAccessor.getMaxY`, failing
 `ServerLevel.mayInteract` or failing `Player.blockActionRestricted` each answer
 with a `ClientboundBlockUpdatePacket` carrying the true state. Spawn protection
 answers with an overlay message from `ServerPlayer.sendSpawnProtectionMessage`
@@ -364,6 +378,9 @@ item, not a special case in the game mode — which is why the client refuses
 first, and why the correcting block update the server sends back is a no-op:
 the client predicted nothing to correct.
 
+> **For a 1.21-era reader.** *ServerboundSwingPacket* is gone; on a dig,
+> `ServerboundPunchPacket` does its work, and it names no hand.
+
 ## Where to look
 
 The two clocks are the thing to read first, and they are three methods:
@@ -371,7 +388,7 @@ The two clocks are the thing to read first, and they are three methods:
 `MultiPlayerGameMode.continueDestroyBlock` is the client's accumulator, and
 `ServerPlayerGameMode.incrementDestroyProgress` is the server's recomputation.
 `ServerPlayerGameMode.handleBlockBreakAction` is the state machine behind all
-three break actions and the 0.7 bar, with `ServerPlayerGameMode.tick` for the
+four break actions and the 0.7 bar, with `ServerPlayerGameMode.tick` for the
 delayed destroy it can leave behind. Then the ends: `Minecraft.startAttack`
 and `Minecraft.continueAttack` for where a dig begins each frame,
 `ServerPlayerGameMode.destroyBlock` for the gauntlet, and

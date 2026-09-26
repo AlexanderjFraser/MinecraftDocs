@@ -44,9 +44,12 @@ each predicate answers and what follows from it.
 *A tracked mob* is one the server has told your client about at all, which is
 every mob you can see. A fourth shape is worth naming here so that it does not
 look like an omission later: an entity nobody is riding and nothing is
-steering — a dropped item, an arrow in flight — reaches the base
-implementations, which answer false to both roots, and is simulated by the
-server alone.
+steering — an empty boat, a minecart — reaches the base implementations,
+which answer false to both roots, and is simulated by the server alone. A
+dropped item, an arrow in flight, an experience orb, a falling block and lit
+TNT answer false to both roots too, but each declares
+`MoveSimulationType.SERVER_AND_CLIENT`, so `Entity.canSimulateMovement` is
+true for it on both sides.
 
 The row that surprises people is `Entity.checkFallDamage`. `Entity.move` gates
 it on `Entity.isLocalInstanceAuthoritative`, which for a player is true on your
@@ -115,9 +118,10 @@ Two things in that picture are easy to miss. The base implementations of
 both `Entity.isLocalClientAuthoritative` and `Entity.isClientAuthoritative`
 **delegate to the controlling passenger** — an entity with nobody steering it
 answers false to both, and an entity with a rider inherits the rider's answer.
-That single line is the whole vehicle model. And `Player` overrides
-`Entity.canSimulateMovement` and `Entity.isEffectiveAi` to something
-*different* from the root — *not a client, or I am the local player*, the
+That single line is the whole vehicle model. And `Player` answers
+`Entity.getMoveSimulationType` with `MoveSimulationType.AUTHORITATIVE_SIDE_AND_SERVER`,
+which the final `Entity.canSimulateMovement` reads, and overrides
+`Entity.isEffectiveAi`, both to something *different* from the root — *not a client, or I am the local player*, the
 second half being `Player.isLocalPlayer` — which
 is what lets the server simulate a player it is not authoritative for. The
 member that inverts the picture is `Player.isClientAuthoritative`, an

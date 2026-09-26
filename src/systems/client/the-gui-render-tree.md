@@ -183,7 +183,7 @@ turn.
 `GuiRenderState.blurBeforeThisStratum` splits the draw list in two, and
 `GuiRenderer.draw` then draws everything before the boundary, clears the depth
 buffer, runs the blur chain over the result — world and GUI alike, which is
-[post-processing](../rendering/post-processing.md#the-six-chains)'
+[post-processing](../rendering/post-processing.md#the-five-chains)'s
 — and draws the rest crisp on top. What the *tree* decides is where the
 boundary goes and whether there is one at all.
 

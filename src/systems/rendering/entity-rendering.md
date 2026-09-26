@@ -324,10 +324,13 @@ model is stateless, which it emphatically is not.
 **Out:** draws.
 **Decided:** almost nothing — the ordering was fixed two stages ago.
 
-`FeatureRenderDispatcher.PreparedFrame` exposes five drains. `.executeSolid`,
-`.executeTranslucent`, `.executeOutline` and `.executeTranslucentAfterTerrain`
-are called from the frame graph's main pass, while `.executeAlwaysOnTop` runs
-in a later pass of its own that clears depth first. Where those passes sit
+`FeatureRenderDispatcher.PreparedFrame` exposes eight drains, each handed the
+render pass to draw into, and the frame graph's main pass calls every one:
+`.executeSolid` and `.executeOutline` always, `.executeTranslucent` and
+`.executeTranslucentAfterTerrain` for classic transparency, `.executeWaterMask`
+and `.executeOit` for improved transparency, and `.executeSeeThrough` and
+`.executeAlwaysOnTop` each in a render pass of its own that the main pass
+opens, the always-on-top one clearing depth first. Where those passes sit
 relative to terrain, sky and post-processing is [visibility and the frame
 graph](visibility-and-the-frame-graph.md)'s subject; the draws go out through
 [blaze3d](blaze3d.md).

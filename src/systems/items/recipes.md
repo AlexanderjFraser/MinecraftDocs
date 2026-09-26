@@ -1,6 +1,6 @@
 # Recipes
 
-> Verified against **Minecraft 26.2** · Part VII · Eight planks go around the empty centre of a crafting table, a chest appears in the result slot, and the client is never told which recipe it was.
+> Verified against **Minecraft 26.3** · Part VII · Eight planks go around the empty centre of a crafting table, a chest appears in the result slot, and the client is never told which recipe it was.
 
 You lay eight planks around the empty middle square of a crafting table and a
 chest appears in the slot on the right. What the server did was take a trimmed
@@ -22,29 +22,32 @@ unlocked, and any authority whatever over the outcome.
 | class | what it decides | thread |
 |---|---|---|
 | `Recipe` | ten methods and no result getter — a result leaves through `Recipe.assemble`, `Recipe.display`, or a stonecutter's `StonecutterRecipe.resultDisplay` | data, and a `Recipe` object never leaves the server |
-| `RecipeManager` | the loaded set, four indexes derived from it, and the server's `RecipeAccess` | the background executor for the scan, server main for everything after |
+| `RecipeManager` | the loaded set, four indexes derived from it, and the server's `RecipeAccess` | the background executor for its constructor, server main for everything after |
 | `RecipeMap` | the immutable store, holding exactly two indexes: `RecipeMap.byType` and `RecipeMap.byKey` | built off-thread, swapped in and read on server main |
 | `Ingredient` | whether one stack satisfies one slot — a `HolderSet` of items wearing a predicate face | both sides |
 | `CraftingInput` | the trimmed grid a crafting recipe is matched against, and the presence index a shapeless one is matched with | server main |
 | `ResultSlot` | the order of the endgame: award first, then look the recipe up again, then decrement | server main, mirrored on the client's own menu |
 | `ServerRecipeBook` | which recipes this player has unlocked, and which of them still glow | server main |
-| `ClientRecipeContainer` | everything the client knows about recipes *as recipes*: seven `RecipePropertySet`s and the stonecutter's input set | client, rebuilt wholesale from each packet |
+| `ClientRecipeContainer` | everything the client knows about recipes *as recipes*: nine `RecipePropertySet`s and the stonecutter's input set | client, rebuilt wholesale from each packet |
 
 ## Loading: one scan, one swap, and four indexes built later
 
-`RecipeManager` is a `SimplePreparableReloadListener` over a `RecipeMap`, so it
-takes the ordinary two-phase shape of
-[the resource system](../foundations/resource-system.md#prepare-every-listener-at-once) — and then does
-something unusual with the second phase.
+`RecipeManager` is not a reload listener. `RegistryDataLoader` reads the recipe
+files into a reloadable registry, `Registries.RECIPE`, and a fresh
+`RecipeManager` builds its `RecipeMap` from that registry in its constructor,
+both on a worker; on a reload the server thread then swaps the new manager in.
+That is the two-phase shape of
+[the resource system](../foundations/resource-system.md#prepare-every-listener-at-once) without a listener — and
+the second phase does something unusual.
 
 ```mermaid
 flowchart TD
-    W["RecipeManager.prepare scans data/ns/recipe"]:::worker
-    W --> M["RecipeMap holds one RecipeHolder per file"]:::worker
-    M --> A["RecipeManager.apply swaps the field"]:::server
+    W["RegistryDataLoader reads data/ns/recipe into Registries.RECIPE"]:::worker
+    W --> M["RecipeManager constructor builds its RecipeMap"]:::worker
+    M --> A["MinecraftServer.reloadResources swaps in the new manager"]:::server
     A -. "the four indexes below are empty, not stale" .-> F
     F["RecipeManager.finalizeRecipeLoading, called by MinecraftServer"]:::server
-    F --> P1["seven RecipePropertySet indexes"]:::server
+    F --> P1["nine RecipePropertySet indexes"]:::server
     F --> P2["SelectableRecipe.SingleInputSet"]:::server
     F --> P3["RecipeManager.allDisplays, indexed by RecipeDisplayId"]:::server
     P3 --> P4["RecipeManager.recipeToDisplay, key to displays"]:::server
@@ -52,7 +55,7 @@ flowchart TD
 
 *Figure: the reload's two phases — the worker's two boxes above, the server
 main thread's below — and the gap between them. The dotted edge is the one
-the section is about: `RecipeManager.apply` is not what builds the four
+the section is about: the swap is not what builds the four
 indexes, and between those two boxes they hold nothing.*
 
 Each index applies its own feature-flag filter as it is built: an ingredient
@@ -67,22 +70,23 @@ assembled stack two sections below.
 Three things in that picture are worth saying out loud.
 
 **The scan is sorted, and the sort is the whole ordering story.**
-`RecipeManager.prepare` accumulates into a sorted map keyed by `Identifier`,
-and `Identifier.compareTo` compares the *path* first and the namespace only to
-break a tie. So *foo:acacia_boat* sorts ahead of *minecraft:zzz*, matching is
-deterministic across restarts, and the same order fixes the numbering of every
-display id below.
+`ResourceManagerRegistryLoadTask.load` registers the recipes sorted by their
+files' `Identifier`s, `RecipeMap` keeps that order, and `Identifier.compareTo`
+compares the *path* first and the namespace only to break a tie. So
+*foo:acacia_boat* sorts ahead of *minecraft:zzz*, matching is deterministic
+across restarts, and the same order fixes the numbering of every display id
+below.
 
-**The indexes are not built by `RecipeManager.apply`.**
+**The indexes are not built with the map.**
 `RecipeManager.finalizeRecipeLoading` has exactly two call sites, both of them
-in `MinecraftServer`, and neither is inside the reload listener. Between the
+in `MinecraftServer`, and neither is on the worker. Between the
 swap and that call the four derived indexes are **empty** rather than stale: a
-reload builds a fresh `RecipeManager`, and its constructor sets all four to
-their empty values, so the recipe book, the property sets and the stonecutter
-index describe nothing at all rather than describing the pack you just
-replaced. Nothing can catch the game in that state — the swap and the call are
-five statements apart in one lambda on the server thread — which is the only
-reason the gap is allowed to exist.
+reload builds a fresh `RecipeManager`, and its constructor builds the
+`RecipeMap` but leaves all four at their empty values, so the recipe book, the
+property sets and the stonecutter index describe nothing at all rather than
+describing the pack you just replaced. Nothing can catch the game in that
+state — the swap and the call are five statements apart in one lambda on the
+server thread — which is the only reason the gap is allowed to exist.
 
 The last two indexes are a pair: `RecipeManager.allDisplays` is the flat
 list, and `RecipeManager.recipeToDisplay` maps a recipe key to the entries it
@@ -111,7 +115,7 @@ out of thin air. Only gate six of the auto-fill, below, stops the click.
 
 ### It is not only shaped and shapeless
 
-`RecipeSerializers` registers twenty-one serializers and fourteen of them are
+`RecipeSerializers` registers twenty-two serializers and fourteen of them are
 crafting-table recipes. **Nine** of those fourteen are `CustomRecipe`s — Java,
 not data. `CustomRecipe` hard-codes `Recipe.isSpecial` true, `Recipe.group`
 empty and `PlacementInfo.NOT_PLACEABLE`, and not one of the nine overrides
@@ -151,7 +155,7 @@ sequenceDiagram
         Note over CraftM,Wire: the tick the eighth plank lands
         CraftM->>TCC: asCraftInput, trimming the empty rows and columns
         CraftM->>RM: getRecipeFor CRAFTING, this input, this level, no hint
-        RM-->>CraftM: the first RecipeHolder that matches, in id order, or nothing
+        RM-->>CraftM: the first RecipeHolder that matches, in registry order, or nothing
         CraftM->>ResultC: setRecipeUsed, refused under LIMITED_CRAFTING
         CraftM->>ResultC: setItem 0, the assembled stack
         CraftM->>Wire: ClientboundContainerSetSlotPacket, bumping the state id
@@ -204,10 +208,12 @@ menus](containers-and-menus.md#the-chest-you-see-is-not-the-chest)), so the
 client never matches anything.
 
 **Trimming.** Every recipe kind is matched against a `RecipeInput`, and there
-are exactly three implementations of it in the game: `CraftingInput` for a
+are exactly four implementations of it in the game: `CraftingInput` for a
 grid, `SingleRecipeInput` for the one-slot stations — the four
-`AbstractCookingRecipe` kinds and the stonecutter's `SingleItemRecipe` — and
-`SmithingRecipeInput` for the smithing table's three. `CraftingContainer.asPositionedCraftInput` produces a
+`AbstractCookingRecipe` kinds and the stonecutter's `SingleItemRecipe` —
+`SmithingRecipeInput` for the smithing table's three, and `BrewingInput` for a
+brewing stand's bottle and reagent.
+`CraftingContainer.asPositionedCraftInput` produces a
 `CraftingInput` with the empty border rows and columns removed *and* the offset
 beside it, which is why a shaped recipe works anywhere in the grid;
 `CraftingContainer.asCraftInput` is the same call with the offset thrown away,
@@ -353,15 +359,15 @@ still new enough to glow. It is saved in the player NBT as
 which validates every key against the live `RecipeManager` and logs and drops the
 ones that no longer resolve ([codecs](../foundations/codecs-nbt-json.md#trusted-untrusted-and-validated)).
 A fresh player's is genuinely empty, and stays empty until something fills it.
-The ordinary route is not crafting at all: every recipe in vanilla has an
-advancement whose reward names it, so unlocking the advancement is what fills
+The ordinary route is not crafting at all: every recipe in vanilla that is not
+special has an advancement whose reward names it, so unlocking the advancement is what fills
 the book ([advancements](../commands/advancements.md)), and a new world's
 opening minutes are that machinery running. Crafting a recipe you had not
 unlocked adds it too, which is the path this trace took.
 `ClientRecipeBook` never sees any of that. It holds `RecipeDisplayEntry`s by
 display id, and `ClientRecipeBook.rebuildCollections` groups them into
 `RecipeCollection`s by category and then by group index, which is why one button
-in the book cycles through all twelve kinds of plank.
+in the book cycles through all thirteen kinds of plank.
 
 The tabs are narrower than the recipe types. `RecipeBookType` has four values —
 crafting, furnace, blast furnace and smoker — and exactly five concrete menus
@@ -434,8 +440,9 @@ Read `RecipeAccess` first. It is ten lines, it is the whole of what a recipe
 system has to offer a client, and everything else on this page is an argument
 about why it is that short.
 
-Then the server's side in loading order: `RecipeManager` for the scan, the
-swap and the four indexes, with `RecipeMap` beneath it for the two the store
+Then the server's side in loading order: `ResourceManagerRegistryLoadTask` for
+the scan, `MinecraftServer.reloadResources` for the swap and `RecipeManager`
+for the four indexes, with `RecipeMap` beneath it for the two the store
 actually keeps. `Recipe` is the interface every kind implements, and
 `ShapedRecipePattern` is the one piece of matching worth reading line by line,
 for the mirrored pass. `CustomRecipe` is the nine that are Java.

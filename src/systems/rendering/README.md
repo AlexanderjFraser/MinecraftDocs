@@ -1,6 +1,6 @@
 # XI · Rendering
 
-> Verified against **Minecraft 26.2** · Part XI · one thread, a hundred-odd times a second, turning a world nobody can see into a picture — and two layers of machinery underneath that never touch the world at all.
+> Verified against **Minecraft 26.3** · Part XI · one thread, a hundred-odd times a second, turning a world nobody can see into a picture — and two layers of machinery underneath that never touch the world at all.
 
 **The renderer is not allowed to look at the world.** A frame is one call to
 [`Minecraft.renderFrame`](the-frame.md), on the same thread that ticked the
@@ -24,10 +24,11 @@ pool](section-meshing.md), and the atlases are built by [a resource
 reload](models-and-atlases.md).
 
 It is also the largest thing on the client. `client/renderer`,
-`client/model`, `client/particle` and `com/mojang/blaze3d` together come to
+`client/model`, `client/particle`, `com/mojang/blaze3d` and
+`com/mojang/renderpearl` together come to
 {{#include ../../generated/part-rendering.md}} — counted the way [the
-atlas](../../maps/README.md) counts everything, and against 420 classes and
-53,000 lines for the whole of `net/minecraft/server`. The entire server is a
+atlas](../../maps/README.md) counts everything, and against 432 classes and
+54,000 lines for the whole of `net/minecraft/server`. The entire server is a
 third the size of the client's renderer.
 
 ## The shape of the part
@@ -76,9 +77,9 @@ two of them are its reverse — visibility hands section meshing the list of
 sections to compile, and a frame's terrain is drawn from meshes an earlier
 frame made. Inside a frame the
 order is different — the sky pass is declared before the main one, the
-lightmap is built before the world is drawn at all, and [two of the six post
-chains are passes of the world's own graph while the other four build one and
-throw it away](post-processing.md#two-doors-into-the-gpu-and-one-of-them-is-deprecated).
+lightmap is built before the world is drawn at all, and [one of the five post
+chains runs as passes of the world's own graph while the other four build one
+and throw it away](post-processing.md#two-doors-into-the-gpu-and-one-of-them-is-deprecated).
 
 ## Before you start
 
@@ -103,12 +104,12 @@ ways `LevelExtractor` is reached, pushed and pulled.
 ## Watch in this order
 
 1. [The frame](the-frame.md) — one method, two halves, and a wall between
-   them. Nine profiler zones, six clocks disagreeing on purpose, and a failed
+   them. Fifteen profiler zones, six clocks disagreeing on purpose, and a failed
    surface acquisition that costs you the picture but not the work.
 2. [The window](the-window.md) — the substrate nothing else admits to
-   needing. A retry loop that creates a window and a graphics backend
-   together, six operating-system callbacks of which the game hears two, and
-   `NativeImage`, the seam between a file and a texture.
+   needing. A retry loop that settles the graphics backend before the window
+   exists, nineteen kinds of window event and the six the game is never told
+   about, and `NativeImage`, the seam between a file and a texture.
 3. [Blaze3D](blaze3d.md) — the game's own graphics API, and the part's
    vocabulary page. Four validating façades over two real backends, one of
    which is Vulkan and is the larger of the two.
@@ -120,7 +121,7 @@ ways `LevelExtractor` is reached, pushed and pulled.
    block is placed, a halo of positions goes dirty, a worker compiles a
    snapshot, and the swap happens frames later and all at once.
 6. [Models and atlases](models-and-atlases.md) — the reload pipeline behind
-   every quad. Thirteen atlases stitched in parallel, one barrier, and a
+   every quad. Twelve atlases stitched in parallel, one barrier, and a
    quad whose chunk layer is read out of its sprite's pixels.
 7. [Entity rendering](entity-rendering.md) — everything in the world that is
    not terrain, in four stages, none of which is called *render*. The zombie
@@ -137,10 +138,10 @@ ways `LevelExtractor` is reached, pushed and pulled.
     enforced in three places and three readers of one setting who disagree
     about what its values mean, with a break puff that answers to almost
     none of them.
-11. [Post-processing](post-processing.md) — the closer. Six JSON-declared
+11. [Post-processing](post-processing.md) — the closer. Five JSON-declared
     shader chains, which is how the pause-menu blur and the creeper
     spectator shader turn out to be the same machine — and a resource pack
-    can rewrite all six and add none.
+    can rewrite all five and add a sixth.
 
 Four and five are a pair — one journey seen from its two ends — and so are
 seven and eight, the second of which is written as the differences from the
@@ -170,7 +171,7 @@ purpose.
 [Submit phases and feature renderers](../../reference/submit-phases.md) is
 the catalogue behind [entity rendering](entity-rendering.md) and
 [block-entity rendering](block-entity-rendering.md): the fifteen phases a
-submitted feature can land in, and the thirteen renderers that write the
+submitted feature can land in, and the twelve renderers that write the
 vertices. [The threads](../../reference/threads.md) for the two that matter
 here — the Render thread the whole part runs on, and the background pool that
 meshes sections — and [diagram lanes](../../reference/lanes.md) for the

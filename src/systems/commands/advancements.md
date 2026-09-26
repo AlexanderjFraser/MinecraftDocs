@@ -1,13 +1,13 @@
 # Advancements
 
-> Verified against **Minecraft 26.2** · Part XIII · "Stone Age": a cobblestone lands in your inventory and the toast is on its way before that same tick ends — delivered by a subscription table that only ever shrinks, over a packet that never says what the criterion was.
+> Verified against **Minecraft 26.3** · Part XIII · "Stone Age": a cobblestone lands in your inventory and the toast is on its way before the next tick ends — delivered by a subscription table that only ever shrinks, over a packet that never says what the criterion was.
 
-Mine a stone block. Nothing about advancements happens when the item is
-picked up; nothing happens when it enters the inventory either. What happens
-is that `AbstractContainerMenu.broadcastChanges` — the same diff that keeps
+Mine a stone block. Nothing about advancements happens when the item enters
+the inventory. What happens is that the pickup's `ServerPlayer.take` runs
+`AbstractContainerMenu.broadcastChanges` — the same diff that keeps
 your client's inventory in sync ([containers and
 menus](../items/containers-and-menus.md#where-in-the-tick-a-broadcast-happens))
-— notices that a slot's contents differ from its remembered copy, and reports
+— which notices that a slot's contents differ from its remembered copy, and reports
 the difference. Detection is a **diff, not
 an event**, and the advancement system is a subscriber to it.
 
@@ -30,18 +30,18 @@ already existed.
 
 | class | what it decides | side |
 |---|---|---|
-| `Advancement` | the immutable definition — parent, `DisplayInfo`, rewards, criteria, requirements, and a **pre-rendered display name** built in the compact constructor, which is the `[Title]` every announcement quotes | both |
+| `Advancement` | the immutable definition — parent, `DisplayInfo`, rewards, criteria, requirements, and a **pre-rendered display name** built in the six-argument constructor, which is the `[Title]` every announcement quotes | both |
 | `AdvancementHolder` | the id plus the advancement, with **id-only equality** — so a map keyed by holder survives a pack changing an advancement's contents | both |
 | `AdvancementTree` | the parent/child graph, built by a fixed-point loop that refuses any advancement whose parent is not yet a node. An orphan is **discarded**, not re-rooted | both |
 | `Criterion` / `CriterionTrigger` | a trigger plus a decoded `CriterionTriggerInstance`, and nothing else — a criterion has no name of its own, the name is the map key, and the **trigger object is stateless** | both |
 | `SimpleCriterionTrigger` | the base class for all but one trigger, and the owner of the per-fire sweep | both |
 | `AdvancementRequirements` | a list of lists of criterion names: an **AND of ORs**. `AdvancementRequirements.size` counts *clauses*, not criteria | both |
 | `PlayerAdvancements` | the per-player subscription table and the dirty sets. The only class here with interesting state | server |
-| `TreeNodePosition` | a full tidy-tree layout — three walks, threads, ancestors, shifts — run on the **server**, mutating `DisplayInfo`'s coordinates in place | server |
+| `TreeNodePosition` | a full tidy-tree layout — three walks, threads, ancestors, shifts — run on the **server**, mutating `AdvancementNode`'s coordinates in place | server |
 
 The shared model is `net/minecraft/advancements`, the triggers are in
 `advancements/triggers` and the predicates in `advancements/predicates`
-(with the entity half a level down). All 112 classes ship in both jars — the
+(with the entity half a level down). All 111 classes ship in both jars — the
 *side* column above says where a class does its work, not which jar carries
 it — and `PlayerAdvancements` sits in `net/minecraft/server` beside them.
 `CriteriaTriggers` registers **fifty-eight** triggers into
@@ -69,8 +69,8 @@ sequenceDiagram
     end
 
     rect rgba(0, 0, 0, 0.04)
-    Note over SP,PA: one ServerPlayer.tick
-    SP->>ACM: broadcastChanges
+    Note over SP,PA: the pickup, inside ServerPlayer.doTick, after the levels
+    SP->>ACM: broadcastChanges, from ServerPlayer.take
     ACM->>SP: ContainerListener.slotChanged, on the player's own listener
     SP->>ICT: trigger — count all 43 slots first
     ICT->>ICT: SimpleCriterion<br/>Trigger.trigger
@@ -78,14 +78,17 @@ sequenceDiagram
     ICT->>PA: award, after the sweep
     PA->>PA: unregisterListeners, then the rewards
     PA->>PA: markForVisibilityUpdate — the root
-    SP->>PA: flushDirty, the tick's last statement
+    end
+    rect rgba(0, 0, 0, 0.04)
+    Note over SP,PA: the next tick's ServerPlayer.tick
+    SP->>PA: flushDirty, second to last in the tick
     PA->>PA: updateTreeVisibility — the whole tree
     end
     PA->>CPL: ClientboundUpdate<br/>AdvancementsPacket
     CPL->>CAdv: update — rebuild, reconcile progress, add a toast
 ```
 
-*One stone pickup through the advancement system — everything on the server happens inside the tick that saw the slot change, and the client learns of it in the one packet the tick's last statement sends.*
+*One stone pickup through the advancement system — the award happens inside the pickup, after the levels have ticked, and the one packet that tells the client waits for the next tick's flush.*
 
 The paragraphs below take its arrows in order.
 
@@ -175,8 +178,9 @@ Where the flush sits in the tick is worth pinning down, because it produces
 a real one-tick delay that nobody expects. Inside `ServerPlayer.tick`,
 `AbstractContainerMenu.broadcastChanges` is the fifth statement,
 `CriteriaTriggers.TICK` fires mid-tick, and
-`PlayerAdvancements.flushDirty` is the **last**. So everything awarded
-between those points — a pickup, a kill, an `/advancement grant`, an item
+`PlayerAdvancements.flushDirty` is **second to last**, with only a
+post-effects check after it. So everything awarded
+between those points — a kill, an `/advancement grant`, an item
 granted by another advancement's reward — coalesces into one packet, and so
 does everything that arrived in a packet, because
 `MinecraftServer.processPacketsAndTick` drains the inbound queue before the
@@ -186,16 +190,20 @@ But `ServerPlayer.tick` is not the last thing that happens to a player: it is
 only the first of the two brackets a player is ticked in ([the two-phase
 tick](../player/the-two-phase-tick.md#the-bracket-and-what-survives-it)).
 `ServerGamePacketListenerImpl.tick` calls `ServerPlayer.doTick` during the
-**connection** phase, which in 26.2 runs *after* the levels
+**connection** phase, which runs *after* the levels
 ([the server tick](../server/server-tick.md)) — i.e. after
 `PlayerAdvancements.flushDirty` has already run. `CriteriaTriggers.LOCATION`, which fires there
 every twenty ticks and is what most vanilla biome and structure
-advancements hang on, therefore **always lands in the next tick's packet.**
+advancements hang on, therefore **always lands in the next tick's packet** —
+and so does any award a pickup earns, the stone above included, because
+`ServerPlayer.take` runs the diff there.
 
 ## A criterion's conditions are loot conditions
 
-`ContextAwarePredicate` wraps a list of `LootItemCondition` and evaluates it
-against a `LootContext`, reached through `EntityPredicate.createContext`. So
+Each entity condition a trigger carries — the *player* test every simple
+trigger has, a kill's victim — is one `LootItemCondition`, held in a
+registry holder and evaluated against a `LootContext` reached through
+`EntityPredicate.createContext`. So
 a trigger's conditions are exactly the machinery of
 [contexts and predicates](../items/contexts-and-predicates.md), and that is
 where most descriptions of the system stop.
@@ -207,14 +215,15 @@ reuses.
 | shape | what it generalises | where else it turns up |
 |---|---|---|
 | `MinMaxBounds` | the numeric range, with both a codec **and** a `StringReader` grammar | `3..7` means the same in a predicate, an entity selector and `/random` |
-| `CollectionPredicate` | one generic "N of these match", composing `CollectionContentsPredicate` and `CollectionCountsPredicate` | its only users are the six component predicates in `core/component/predicates` |
+| `CollectionPredicate` | one generic "N of these match", composing `CollectionContentsPredicate` and `CollectionCountsPredicate` | its only users are the seven component predicates in `core/component/predicates` |
 | `EntitySubPredicate` | a per-mob test as a **registry element** instead of a code branch | the twenty-odd small entity predicates are each a record, a codec and nothing else |
 | `DataComponentMatchers` | testing a stack's components without knowing what any of them are | [data components](../foundations/data-components.md#the-readers-and-the-predicates) |
 
 Two details change behaviour rather than shape.
-`EntityPredicate.ADVANCEMENT_CODEC` accepts *either* a condition list or a
-bare entity predicate — though vanilla's own JSON takes the long form every
-time, so the short one exists for pack authors rather than for the game.
+`LootItemCondition.CODEC` accepts *either* the id of a data-pack predicate
+or one inline condition — though vanilla's own advancements take the inline
+form every time, so in a criterion the reference exists for pack authors
+rather than for the game.
 And `EntityPredicate` declares an explicit type-check-first, NBT-last
 ordering for its own sub-tests — a performance invariant hiding inside a
 predicate class.
@@ -223,30 +232,30 @@ predicate class.
 
 The client's half is five classes in
 `net/minecraft/client/gui/screens/advancements` plus `ClientAdvancements`
-over in `client/multiplayer` — about 1,240 lines — and it is the payoff for
+over in `client/multiplayer` — about 1,320 lines — and it is the payoff for
 everything the server did. It does **no tree layout**: it is drawing
 positions a data-pack reload decided, which is why the tree looks the same
 on every client connected to a server.
 
-The layout itself is `TreeNodePosition`, run by `ServerAdvancementManager`
-in the *apply* half of a reload — the half that runs on the main thread,
-once per root, after the JSON has been read on a background one ([the
-resource
+The layout itself is `TreeNodePosition`, run once per root by `AdvancementTree.repositionNodes`
+from `ServerAdvancementManager`'s constructor — which a reload runs on a background worker,
+after `RegistryDataLoader` has read the JSON ([the resource
 system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)).
-It mutates `DisplayInfo` in place and the coordinates ride the packet. A
+It writes each `AdvancementNode`'s coordinates in place, and they ride the packet in
+`ClientboundUpdateAdvancementsPacket.PositionedAdvancement`. A
 root with no `DisplayInfo` is never laid out and never becomes a tab, and a
 display-less node in the middle of a tree is transparent — the layout skips
 it and adopts its children. One wrinkle in an otherwise deterministic
 algorithm: `AdvancementNode.children` is an unordered hash set, so sibling
 order inside a tidy-tree layout is hash-dependent.
 
-`ClientAdvancements` consumes `AdvancementTree.Listener`, and
-`AdvancementTree.setListener` replays every existing root and task at a new
-listener immediately, which is how the screen catches up on open. Each packet is applied by
-`ClientAdvancements.update`: it removes and adds tree nodes, reconciles every
-progress it was sent against that advancement's requirements, and — for each
+`AdvancementsScreen` is a `ClientAdvancements.Listener`, and its `AdvancementsScreen.onAdvancementsUpdated`
+rebuilds every tab from the tree. `ClientAdvancements.setListener` makes that call on a new listener
+at once, which is how the screen catches up on open. Each packet is applied by
+`ClientAdvancements.update`: it removes and adds tree nodes, places each added one at the coordinates
+the packet carries, reconciles every progress it was sent against that advancement's requirements, and — for each
 now done whose display asks for it — adds an `AdvancementToast`, which plays
-a sound only for a challenge.
+a sound only for a challenge. Then it makes the same call, so an open screen rebuilds after every packet.
 `AdvancementsScreen` owns the tab strip; `AdvancementTab` owns one root's
 pan-and-scroll bounds, auto-centres on first render and clamps the drag;
 `AdvancementWidget` scales the server-decided coordinates by a fixed factor,
@@ -286,7 +295,7 @@ predicates](../items/contexts-and-predicates.md#what-reads-a-context) and
 
 **Why does the client show "3/7" if it does not know what the criteria
 are?** Because `AdvancementRequirements` *is* on the wire and
-`AdvancementProgress.update` reconciles against it. `Advancement.read`
+`AdvancementProgress.update` reconciles against it. `Advancement.STREAM_CODEC`
 reconstructs the record with an **empty criteria map** and
 `AdvancementRewards.EMPTY`, so a client cannot know what any criterion
 tests, or that an advancement grants anything at all. And
@@ -315,7 +324,7 @@ one.
 no write on award: `PlayerAdvancements.save` runs from `PlayerList.save`, on
 disconnect, on a save-all, or from the reload above. The definitions come
 from `data/<ns>/advancement/<id>.json` through `Advancement.CODEC` — a
-duplicate id aborts the reload outright — and per-player state is one JSON
+file that fails to decode aborts the reload outright — and per-player state is one JSON
 file at `players/advancements/<uuid>.json`
 (`LevelResource.PLAYER_ADVANCEMENTS_DIR`), data-fixed on load through
 `DataFixTypes.ADVANCEMENTS`.

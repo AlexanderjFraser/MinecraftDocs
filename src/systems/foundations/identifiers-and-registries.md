@@ -1,6 +1,6 @@
 # Identifiers and registries
 
-> Verified against **Minecraft 26.2** · Part II · A player types `/give @s minecraft:diamond_sword`, and the sword reaches their inventory as the number of the line it was registered on.
+> Verified against **Minecraft 26.3** · Part II · A player types `/give @s minecraft:diamond_sword`, and the sword reaches their inventory as the number of the line it was registered on.
 
 A player types `/give @s minecraft:diamond_sword`. The string on the right
 is parsed into an `Identifier`, the identifier is paired with
@@ -64,8 +64,8 @@ sorted list of ids is not grouped by mod.
 A `ResourceKey` is an `Identifier` paired with the `Identifier` of the
 registry it belongs to, and keys are **interned** through a weak map keyed
 by `ResourceKey.InternKey`, so two keys for the same registry and id are
-literally the same object. `Registries` holds the 148 `ResourceKey`s *of
-registries* (`Registries.ITEM`, `Registries.BIOME` …) — 147 distinct
+literally the same object. `Registries` holds the 156 `ResourceKey`s *of
+registries* (`Registries.ITEM`, `Registries.BIOME` …) — 155 distinct
 objects, because two of the keys are one: `Registries.DIMENSION` and
 `Registries.LEVEL_STEM` are both built from the string *dimension*, so
 interning hands back one object under two names and two (unchecked) element
@@ -73,8 +73,8 @@ types — `Registries.LEVEL_STEM` is the data-pack registry the
 `RegistryLayer.DIMENSIONS` layer loads, `Registries.DIMENSION` keys the
 `ServerLevel`s, and the conversion helpers between them are identity
 functions at run time. Five more registry keys are declared by the class
-that owns them rather than here, which is why the catalogue's total is 153
-and this one is 148 ([registries](../../reference/registries.md)). Interning
+that owns them rather than here, which is why the catalogue's total is 161
+and this one is 156 ([registries](../../reference/registries.md)). Interning
 earns its keep only where identity is used: `MappedRegistry.byKey` and
 `MappedRegistry.byLocation` are ordinary hash maps, and what genuinely
 depends on it is `MappedRegistry.registrationInfos`, an identity map, and
@@ -117,19 +117,20 @@ holders — `HolderSet.Named` is a tag, `HolderSet.Direct` a literal list.
 
 What a codec sees is a read-only view. `HolderGetter`, `HolderLookup` and
 `HolderOwner` are those views — and `HolderOwner` exists for exactly one
-question, `HolderOwner.canSerializeIn`: a holder answers whether the context
-asking to serialise it is its own owner, which is why a holder from one
-world refuses to be written by another; `HolderLookup.Provider` is "all the
+question, `HolderOwner.canSerialize`: the context asking to serialise a
+holder answers whether it is that holder's owner, which is why a holder from
+one world refuses to be written by another; `HolderLookup.Provider` is "all the
 registries I may resolve against" and `HolderLookup.RegistryLookup` is one
 of them. `RegistryAccess` is a `HolderLookup.Provider` over a set of
 registries, and `RegistryAccess.Frozen` is a bare marker for the finished
 kind. Every static initialiser writes through `Registry.register`; every
 codec that names a *dynamic* entry — `RegistryFileCodec`,
-`RegistryFixedCodec`, `RegistryCodecs.homogeneousList`, `HolderSetCodec` —
+`RegistryFixedCodec`, `RegistryCodecs.holderSet`, `HolderSetCodec` —
 resolves through a `RegistryOps` ([codecs, NBT and JSON](codecs-nbt-json.md#where-the-registry-context-comes-from));
 and at runtime `MinecraftServer.registryAccess` and
 `ClientPacketListener.registryAccess` are where anything that must resolve a
-key goes.
+key goes, except the server's reloadable registries, which
+`MinecraftServer.reloadableRegistries` holds.
 
 ## Before the game exists
 
@@ -142,8 +143,8 @@ sequenceDiagram
     participant DMR as Defaulted<br/>MappedRegistry
 
     Note over Boot,DMR: the launching thread, before any server or client object exists
-    Boot->>BIR: class init: one empty registry per key, 95 of the 148, each with a loader
-    Note over Boot,Items: FireBlock and ComposterBlock run first, so Items is already initialised
+    Boot->>BIR: class init: one empty registry per key, 95 of the 156, each with a loader
+    Note over Boot,Items: FireBlock and CauldronInteractions run first, so Items is already initialised
     Boot->>Items: class init: registerItem per item, Item.Properties.setId stores the key
     Items->>Item: new Item(properties), which knows its own key
     Item->>DMR: createIntrusiveHolder: a Holder.Reference with a value, no key
@@ -173,7 +174,7 @@ creates every registry empty and records the loader that fills it in
 `BuiltInRegistries.LOADERS`, an insertion-ordered map. `Bootstrap.bootStrap`
 then runs `BuiltInRegistries.createContents` — the loaders in that order.
 By then `Items`, `Blocks` and `EntityTypes` are already initialised:
-`Bootstrap.bootStrap` reaches `FireBlock.bootStrap`, `ComposterBlock.bootStrap`,
+`Bootstrap.bootStrap` reaches `FireBlock.bootStrap`,
 `EntityTypes.PLAYER` and `CauldronInteractions.bootStrap` before it calls
 `BuiltInRegistries.bootStrap`, and each of those touches its catalogue — so
 `BuiltInRegistries.createContents` finds the loaders' values already there rather than
@@ -223,7 +224,7 @@ logged, a `DefaultedRegistry` whose default key is missing throws.
 
 The server keeps its registries as a `LayeredRegistryAccess` in
 `MinecraftServer.registries`, one layer per `RegistryLayer` —
-`RegistryLayer.STATIC`, `RegistryLayer.WORLDGEN`,
+`RegistryLayer.STATIC`, `RegistryLayer.WORLD`,
 `RegistryLayer.DIMENSIONS`, `RegistryLayer.RELOADABLE`, in that order —
 with `MinecraftServer.registryAccess` the flattened view.
 `LayeredRegistryAccess.getAccessForLoading` is everything *before* a layer,
@@ -239,10 +240,10 @@ flowchart TD
     WL["WorldLoader.load, on Util.backgroundExecutor"]:::worker
     RDL["RegistryDataLoader.load, with the lookups<br/>from LayeredRegistryAccess.getAccessForLoading"]:::worker
     T1["one RegistryLoadTask: biome"]:::worker
-    T2["one RegistryLoadTask: configured_carver"]:::worker
-    T3["… one per RegistryDataLoader.RegistryData, 47 of them"]:::worker
+    T2["one RegistryLoadTask: carver"]:::worker
+    T3["… one per RegistryDataLoader.RegistryData, 52 of them"]:::worker
     F["RegistryLoadTask.freezeRegistry binds every promise,<br/>then the RegistryValidator"]:::worker
-    LRA["LayeredRegistryAccess.replaceFrom:<br/>worldgen and dimensions in one call"]:::server
+    LRA["LayeredRegistryAccess.replaceFrom:<br/>world and dimensions in one call"]:::worker
     WL --> RDL
     RDL --> T1
     RDL --> T2
@@ -258,8 +259,8 @@ flowchart TD
 *World load, as a task graph rather than a conversation: one task per
 registry, all on the worker pool, each able to ask any other for an element
 it has not registered yet. The dotted edges are the forward references, and
-the freeze is where they stop being promises. Only the last box is back on
-the thread that called `WorldLoader.load`.*
+the freeze is where they stop being promises. The last box runs on the
+worker pool too, not on the thread that called `WorldLoader.load`.*
 
 Later, a client logs in and reaches the configuration phase, and the server
 sends it what it just built.
@@ -297,7 +298,7 @@ whole exchange is discarded.*
 `WorldLoader.load` runs `RegistryDataLoader.load` on
 `Util.backgroundExecutor`, returning to the main thread for
 resource-manager creation and the final assembly; this is where the
-`RegistryLayer.WORLDGEN`, `RegistryLayer.DIMENSIONS` and
+`RegistryLayer.WORLD`, `RegistryLayer.DIMENSIONS` and
 `RegistryLayer.RELOADABLE` layers are filled. The configuration phase is
 the third moment: `SynchronizeRegistriesTask` sends the dynamic registries
 on the server thread, and the client rebuilds its
@@ -312,11 +313,12 @@ freshly read tags are visible to the worldgen codecs before they are
 applied ([tags](tags.md#the-four-moments-tags-are-loaded)) — so a biome JSON may reference a placed feature
 (same layer) or a sound event (`RegistryLayer.STATIC`) but never a level
 stem (`RegistryLayer.DIMENSIONS`, which loads after). The lists
-`RegistryDataLoader.WORLDGEN_REGISTRIES`,
-`RegistryDataLoader.DIMENSION_REGISTRIES` and
+`RegistryDataLoader.WORLD_REGISTRIES`,
+`RegistryDataLoader.DIMENSION_REGISTRIES`,
+`RegistryDataLoader.RELOADABLE_REGISTRIES` and
 `RegistryDataLoader.SYNCHRONIZED_REGISTRIES` say which keys belong to which
-step and which subset the client is told about. Both worldgen and
-dimensions are installed in a *single* `LayeredRegistryAccess.replaceFrom`
+step and which subset the client is told about. Both the world and the
+dimensions layers are installed in a *single* `LayeredRegistryAccess.replaceFrom`
 call, and the dimensions layer that wins is the world data's, not
 necessarily the one just decoded — a saved world's dimension set survives.
 
@@ -324,11 +326,11 @@ necessarily the one just decoded — a saved world's dimension set survives.
 owning a fresh `MappedRegistry` and a lock-guarded
 `ConcurrentHolderGetter`. `RegistryDataLoader.createContext` hands every
 task's getter to every other, so `Biome.DIRECT_CODEC` decoding on one
-worker can ask for a configured carver that another worker is still
+worker can ask for a carver that another worker is still
 registering — the getter returns an unbound `Holder.Reference`, and the
 reference is bound when that registry freezes. Forward references cost
 nothing; cycles are impossible because layers order the registries.
-Fourteen of the forty-seven dynamic registries also carry a
+Fourteen of the fifty-two world and dimension registries also carry a
 `RegistryValidator` in their `RegistryDataLoader.RegistryData`, run after
 the freeze — thirteen of them entity-variant registries running the same
 check, `RegistryValidator.nonEmpty`, and the fourteenth `Registries.TIMELINE`,
@@ -341,8 +343,8 @@ naming the `KnownPack` it came from and a `Lifecycle`. The rule is
 `KnownPack` is stable, and only an element from a pack with no known-pack
 info is experimental. `KnownPack.isVanilla` is computed on that path and
 then discarded. Anything received over the network is experimental, and
-the whole `RegistryLayer.RELOADABLE` layer is constructed experimental; the
-registry's own lifecycle is the merge of its entries', and that merge is
+the `RegistryLayer.RELOADABLE` layer is read by the same task under the same
+rule; the registry's own lifecycle is the merge of its entries', and that merge is
 what the "experimental features" warning on world open reads.
 
 **The client is told what it does not already have.**
@@ -458,13 +460,14 @@ same static initialisers — but their *tags* do, and dynamic elements do:
 `ClientboundRegistryDataPacket` (one per synchronised registry, entries as
 `RegistrySynchronization.PackedRegistryEntry`) in the configuration phase,
 then `ClientboundUpdateTagsPacket`, which is a **common** packet and arrives
-again mid-play after a server `/reload`; and every registry element,
+again mid-play after a server `/reload`; and a registry element,
 built-in or dynamic, crosses inside other packets as a bare varint id
-resolved against the buffer's registry access. Only one variant shifts that
+resolved against the buffer's registry access, except in the few packets
+that send its key. Only one variant shifts that
 numbering: `ByteBufCodecs.holder` reserves 0 for an inline `Holder.Direct`
 and writes every registry id one higher, where `ByteBufCodecs.holderRegistry`
 — which `Item.STREAM_CODEC` uses — writes the raw id. On disk, every key in
-`RegistryDataLoader.WORLDGEN_REGISTRIES` and
+`RegistryDataLoader.WORLD_REGISTRIES` and
 `RegistryDataLoader.DIMENSION_REGISTRIES` reads
 `data/<namespace>/<registry path>/*.json` (`Registries.elementsDirPath`)
 through `FileToIdConverter.registry` over a `ResourceManager`
@@ -472,8 +475,8 @@ through `FileToIdConverter.registry` over a `ResourceManager`
 `Registries.tagsDirPath` — there is a third path builder,
 `Registries.componentsDirPath`, but it names a *reports* directory the data
 generator writes and nothing in the running game reads — and the reloadable set (loot
-tables, predicates, item modifiers) comes through
-`ReloadableServerRegistries`. Which registry is which kind is
+tables, predicates, item modifiers, recipes, advancements and three more) is
+read the same way, through `ReloadableServerRegistries`. Which registry is which kind is
 [reference/registries](../../reference/registries.md).
 
 > **For a 1.21-era reader.** `Identifier` was *ResourceLocation*, and the

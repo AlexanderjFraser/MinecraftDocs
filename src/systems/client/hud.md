@@ -161,7 +161,7 @@ sequenceDiagram
     participant Hud as Hud
     participant GGE as GuiGraphicsExtractor
 
-    CPL->>LP: hurtTo — sets hurtTime and invulnerableTime
+    CPL->>LP: hurtTo — sets hurtTime and damageCooldownTime
     Note over CPL,GGE: the next frame
     Hud->>Hud: extractPlayerHealth, gated on the game mode
     Hud->>Hud: healthBlinkTime — 20 ticks, or 10 for a heal
@@ -183,8 +183,8 @@ The figure's steps are `Hud.extractPlayerHealth`, which sets
 counter; `Hud.extractHearts`, the one descending pass; and one
 `GuiGraphicsExtractor.blitSprite` per heart, the sprite chosen by
 `Hud.HeartType.getSprite`. `LocalPlayer.hurtTo` is what the packet touched:
-it sets `LivingEntity.hurtTime` and `Entity.invulnerableTime` and nothing on
-`Hud` at all.
+it sets `LivingEntity.hurtTime` and `LivingEntity.damageCooldownTime` and
+nothing on `Hud` at all.
 
 **The shake is seeded from the tick counter**, so it jitters at 20 Hz and is
 identical across two frames of the same tick — and the same seeded stream

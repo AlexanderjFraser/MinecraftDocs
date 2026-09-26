@@ -275,10 +275,10 @@ def loot_context_params() -> str:
         "Loot context parameter sets",
         "Every `ContextKeySet` registered in `LootContextParamSets`, with the keys its "
         "`ContextKeySet.Builder` declared. The set belongs to the **caller**, not to the loot table: "
-        "`ContextMap.Builder.create` throws both on a required key that is absent and on a key the set "
-        "does not declare at all, so this table is the contract each call site has to satisfy. A "
-        "required key can be read with `LootContext.getParameter`, an optional one only with "
-        "`LootContext.getOptionalParameter`. Twelve of these twenty-six sets never roll a `LootTable` at "
+        "`ContextMap.Builder.buildAndValidate` throws both on a required key that is absent and on a key the "
+        "set does not declare at all, so this table is the contract each call site has to satisfy. Every key "
+        "is read the same way, with `LootContext.getOptional`, which answers null for a key that is not "
+        "there. Seventeen of these thirty-one sets never roll a `LootTable` at "
         "all — the engine is older and wider than the loot package. See "
         "[Contexts and predicates](../systems/items/contexts-and-predicates.md).",
     )
@@ -457,7 +457,7 @@ def weapon_helpers() -> str:
         if w and w.group(1) in wrappers:
             rows.append((m.group(1), wrappers[w.group(1)] + f" (`{w.group(1)}`)", w.group(2), w.group(3), w.group(4)))
 
-    out = header("The weapon helpers on `Item.Properties`", "The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. Three of the six tool families need a class of their own because they also do something on right-click, and three are plain `Item`s the helper alone describes. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).")
+    out = header("The weapon helpers on `Item.Properties`", "The seven `Item.Properties` methods that turn a bare item into something you can hit with, what each one installs, and every item built by one. `Item.Properties.tool` is the shared body: `pickaxe`, `axe`, `hoe` and `shovel` are it with a mining tag and a shield-disable time filled in; `sword` and `spear` go their own way. None of the six needs a class of its own: `axe`, `hoe` and `shovel` add `DataComponents.BLOCK_TRANSFORMER`, which the base `Item.useOn` runs on a right-click, so every item a helper builds is a plain `Item`. See [items and stacks](../systems/items/items-and-stacks.md) and [data components](../systems/foundations/data-components.md).")
     out += "| helper | delegates to | components it sets | attributes |\n|---|---|---|---|\n"
     for name in ("tool", "pickaxe", "axe", "hoe", "shovel", "sword", "spear"):
         args, body = bodies[name]

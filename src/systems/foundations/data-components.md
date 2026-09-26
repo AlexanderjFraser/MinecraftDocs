@@ -109,7 +109,7 @@ them to use.
 Two more flags live on the builder. `DataComponentType.Builder.cacheEncoding`
 routes a type's encodes through `EncoderCache` (`DataComponents.ENCODER_CACHE`).
 `DataComponentType.Builder.ignoreSwapAnimation` is set on exactly one type,
-`DataComponents.DAMAGE`, and the renderer that reads it is [items and
+`DataComponents.DAMAGE`, and the first-person hand that reads it is [items and
 stacks](../items/items-and-stacks.md#when-two-stacks-are-the-same-stack)'. Underneath, `DataComponentType.PERSISTENT_CODEC`
 and `DataComponentType.VALUE_MAP_CODEC` are the shared dispatch machinery
 that `DataComponentMap.CODEC` and the predicates are built on.

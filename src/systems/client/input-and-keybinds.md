@@ -1,6 +1,6 @@
 # Input and keybinds
 
-> Verified against **Minecraft 26.2** · Part X · holding sneak: a GLFW callback, five chances to be swallowed, and a key that stays down while you are not touching it.
+> Verified against **Minecraft 26.3** · Part X · holding sneak: an SDL event, five chances to be swallowed, and a key that stays down while you are not touching it.
 
 Turn on toggle sneak and hold the key. `ToggleKeyMapping.setDown` sees the
 press, flips the mapping to *down*, and then swallows the release entirely —
@@ -17,11 +17,12 @@ movement](../player/input-to-movement.md); this page stops at the mapping.
 
 ## A key press is not queued
 
-**GLFW callbacks are not queued.** They are dispatched from inside
-`RenderSystem.pollEvents`, which `Minecraft.run` calls immediately before
-`Minecraft.runTick`; the handlers wrap their bodies in
-`BlockableEventLoop.execute`, but on the game thread that call runs the task
-rather than queueing it — the qualification [the client
+**SDL events are not queued by the game.** `SDLEventHandler.pollEvents`
+drains them from SDL's own queue inside `RenderSystem.pollEvents`, which
+`Minecraft.run` calls immediately before `Minecraft.runTick`; `SDLEventHandler`
+hands the input events to their handlers through `BlockableEventLoop.execute`,
+but on the game thread that call runs the task rather than queueing it — the
+qualification [the client
 loop](the-client-loop.md#where-work-leaves-this-thread-and-where-it-comes-back)
 puts on the same method. Any description of Minecraft input that says a key
 press is "queued onto the client thread" is describing a different game.
@@ -30,12 +31,12 @@ press is "queued onto the client thread" is describing a different game.
 
 | class | what it decides | thread |
 |---|---|---|
-| `KeyboardHandler` | the key, character and pre-edit callbacks, and the gauntlet a press runs | Render thread |
+| `KeyboardHandler` | the key, character and pre-edit handlers, and the gauntlet a press runs | Render thread |
 | `MouseHandler` | motion accumulation, the sensitivity curve, and who is allowed to turn the player | Render thread |
 | `KeyMapping` | whether a mapping is down, and how many clicks are owed | Render thread |
 | `ToggleKeyMapping` | the four mappings that can behave as toggles: sneak, sprint, use, attack | Render thread |
 | `InputConstants` | the key universe, and the string a binding is saved as | Render thread |
-| `InputQuirks` | four platform constants that visibly change behaviour | Render thread |
+| `InputQuirks` | five platform constants that visibly change behaviour | Render thread |
 | `KeyboardInput` | which of the seven movement mappings are down, once per tick | Render thread |
 | `Gui` | the housekeeping at both ends of a screen's life | Render thread |
 
@@ -50,7 +51,7 @@ sequenceDiagram
     participant KI as KeyboardInput
     rect rgba(0, 0, 0, 0.04)
     Note over KH,KI: inside RenderSystem.pollEvents, on this thread
-    KH->>KH: keyPress — the callback, run inline, never queued
+    KH->>KH: keyPress — the SDL key event, run inline, never queued
     KH->>MC: handleGlobalKeyPress — fullscreen, screenshot, friends
     KH->>Screen: keyPressed — a screen that consumes it ends the story
     KH->>KH: Options.<br/>keyDebugModifier down? then handleDebugKeys
@@ -66,7 +67,7 @@ sequenceDiagram
 
 *Five gates, and only the first four are in the top band: the fifth is the
 no-screen-no-overlay test on draining the clicks, inside
-`Minecraft.handleKeybinds`. Everything in that band is one callback — the two
+`Minecraft.handleKeybinds`. Everything in that band is one SDL event — the two
 bands are a tick apart, and nothing between them asked for the key.*
 
 **A key press has five chances to be swallowed before it counts** — the
@@ -97,7 +98,7 @@ overlay.
 `KeyMapping.matches` and `KeyMapping.matchesMouse` are the third way, used
 where no counter is wanted: they test an event against the binding directly,
 which is what screens do, and what `KeyboardHandler.handleDebugKeys` does
-twenty-two times over as it works through the F3 combinations one test at a
+twenty times over as it works through the F3 combinations one test at a
 time. `KeyMapping.same`,
 `KeyMapping.isDefault` and
 `KeyMapping.isUnbound` are what the binding screen asks.
@@ -106,7 +107,7 @@ time. `KeyMapping.same`,
 
 `Options.keyMappings` is the array every mapping is reached through — the
 third of the three shapes [options](options.md#the-three-ways-a-setting-is-stored)
-lists, and the only one that is still a bare public field. Beside it
+lists. Beside it
 `KeyMapping` keeps two static registries of every mapping ever constructed —
 `KeyMapping.ALL` by name, `KeyMapping.MAP` by key — which is how a key code is turned back into the
 mappings that want it. Five static operations walk them. Four of the five are
@@ -119,7 +120,7 @@ has two callers.
 | `KeyMapping.releaseAll` | `Gui.setScreen` ([GUI and screens](gui-and-screens.md#gui-which-is-not-the-hud)) | a screen may swallow a release, and a stuck-held mapping is worse than a lost press |
 | `KeyMapping.restoreToggleStatesOnScreenClosed` | `Gui.setScreen` | put back the toggles that the release above turned off |
 | `KeyMapping.resetToggleKeys` | `LocalPlayer.respawn` | you should not wake up sneaking |
-| `KeyMapping.setAll` | `MouseHandler.grabMouse` | asks the window which keys are physically down and sets each willing mapping to match — only where `InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB` is set |
+| `KeyMapping.setAll` | `MouseHandler.grabMouse` | asks SDL which keys are physically down and sets each willing mapping to match — only where `InputQuirks.RESTORE_KEY_STATE_AFTER_MOUSE_GRAB` is set |
 
 The asymmetry between a swallowed press and a swallowed release is worth
 stating plainly, because it is the reason the first two rows exist. A press a
@@ -129,7 +130,7 @@ screen swallows leaves the mapping down with nothing to clear it.
 ## The mouse: accumulate, apply, discard
 
 `MouseHandler.onMove`, `MouseHandler.onButton`, `MouseHandler.onScroll` and
-`MouseHandler.onDrop` are the callbacks; `MouseHandler.accumulatedDX` and
+`MouseHandler.onDrop` are the handlers; `MouseHandler.accumulatedDX` and
 `MouseHandler.accumulatedDY` are the pending motion; and
 `MouseHandler.handleAccumulatedMovement` applies it — from `Minecraft.runTick`,
 between the sound update and the frame, **once per frame rather than once per
@@ -157,26 +158,27 @@ scaled and offset, so the slowest setting still turns.
 of one edge with `Gui.setScreen`, guarded so the two cannot recurse —
 though only `MouseHandler.releaseMouse` has the single caller;
 `MouseHandler.grabMouse` has five, and on its way it also sets the current
-screen to none. `MouseHandler.isMouseGrabbed` is the state,
-`MouseHandler.setIgnoreFirstMove` suppresses the jump after a resize, and
-`MouseHandler.simulateRightClick` is macOS-only and fires on a
-control-modified left click rather than on a long one, whatever its constant
-is called.
-Double-click is a threshold plus two identities: the two clicks must be
-within a quarter of a second, on the same button, **and** on the same screen
-instance.
+screen to none. `MouseHandler.isMouseGrabbed` is the state and
+`MouseHandler.setIgnoreFirstMove` suppresses the jump after a resize. A
+control-click is a right click only on macOS and only with
+`Options.ctrlClickEmulatesRightClick` on, which it is not by default:
+`MacosUtil.setCtrlClickEmulatesRightClick` hands the setting to SDL as a hint,
+and `MouseHandler` rewrites no click itself. Double-click is a threshold plus
+two identities: the two clicks must be within a quarter of a second, on the
+same button, **and** on the same screen instance.
 
 ## The two debug-key families, and which one is bindable
 
 Debug shortcuts look like one family and are two, which is why some of them
-can be rebound and some cannot. `Options.debugKeys` holds **twenty** ordinary
-`KeyMapping`s, every one of them rebindable and every one of them listed by
-the binding screen; `KeyboardHandler.handleDebugKeys` is where each is tested,
-and it runs twenty-two tests over those twenty because the overlay and modifier
-keys are checked there too. The second family is not mappings at all: a raw
-switch on key codes in `KeyboardHandler.handleChunkDebugKeys`, gated on the
-game's debug flag and bindable to nothing. Several of the *bindable* twenty
-print no debug line of their own and exist only to carry a flag something else
+can be rebound and some cannot. `Options.debugKeys` holds **twenty-one**
+ordinary `KeyMapping`s, every one of them rebindable and every one of them
+listed by the binding screen; `KeyboardHandler.handleDebugKeys` tests twenty
+of them, one `KeyMapping.matches` apiece, and `KeyboardHandler.keyPress` tests
+the twenty-first, the crash key, with the overlay and modifier keys. The
+second family is not mappings at all: a raw switch on key codes in
+`KeyboardHandler.handleChunkDebugKeys`, gated on the game's debug flag and
+bindable to nothing. Several of the *bindable* twenty-one print no debug line
+of their own and exist only to carry a flag something else
 reads — which is the seam between this page and [the
 HUD](hud.md#what-a-debug-line-is-and-who-turns-one-on), whose F3 entry registry
 is what those flags feed.

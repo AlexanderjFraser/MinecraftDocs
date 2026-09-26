@@ -1,10 +1,10 @@
 # The sword swing
 
-> Verified against **Minecraft 26.2** · Part VIII · Left-click on a pig: the client picks a target and sends one integer, and the server rebuilds every part of the hit from scratch.
+> Verified against **Minecraft 26.3** · Part VIII · Left-click on a pig: the client picks a target and sends one integer, and the server rebuilds every part of the hit from scratch.
 
 You put the crosshair on a pig and click. The client has already decided
 what you are looking at — earlier in this same tick — checks a handful of
-reasons not to swing, and sends the smallest packet in melee combat:
+reasons not to swing, and sends a packet with almost nothing in it:
 **`ServerboundAttackPacket` is a record of one int, the entity id.** No
 hand, no sneak flag, no hit position, no damage. Everything else the server
 re-derives: the weapon from your main hand, the geometry from the target's
@@ -96,9 +96,9 @@ rejection; failing the range check is a silent drop.
 The packet is drained from `PacketProcessor` at the **top** of the tick,
 before `MinecraftServer.tickServer` and therefore before any level ticks.
 That ordering matters: `Player.attack` runs before the victim's
-invulnerability counter comes down for the tick ([damage and
+damage cooldown comes down for the tick ([damage and
 death](../entities/damage-and-death.md#ten-ticks-in-which-nothing-shows-and-ten-that-protect-nothing)
-owns `Entity.invulnerableTime` and who decrements it when). Each of the
+owns `LivingEntity.damageCooldownTime` and who decrements it when). Each of the
 resulting feedback packets is written and flushed on its own: the
 connection suspends flushing only across `MinecraftServer.tickChildren`,
 and the attack was handled before that bracket opened.
@@ -124,7 +124,7 @@ sequenceDiagram
     LP->>LP: raycastHitResult — AttackRange first, then the classic pick
     LP->>MPGM: attack, from Minecraft.startAttack
     MPGM->>SGPL: ServerboundAttackPacket — one varint, the entity id
-    LP->>SGPL: ServerboundSwingPacket — from the branches that swing at all
+    LP->>SGPL: ServerboundPunchPacket — no fields, from Minecraft.startAttack
     SGPL->>SGPL: ServerLevel.<br/>getEntityOrPart
     SGPL->>Player: isWithinAttackRange — the reach, plus a 3.0 buffer
     SGPL->>Player: attack — the damage rebuilt from nothing but the id
@@ -156,8 +156,8 @@ distinguishes it is what does *not* touch it: `Player.onAttack` clears the
 attack ticker and leaves the swap ticker alone. Both sides then reset the
 attack ticker **twice** per swing, once inside `Player.attack` and once
 after it — the client in `MultiPlayerGameMode.attack`, the server on the
-swing packet that follows, because `ServerPlayer.swing` resets the ticker
-too.
+punch packet that follows, because `ServerGamePacketListenerImpl.handlePunch`
+resets the ticker too.
 
 ## The damage: one number, two curves, one order
 
@@ -213,7 +213,7 @@ one on the enchantment bonus, both from the same scale read with the same 0.5
 partial tick. And **the item bonus is inside the crit**, because
 `Item.getAttackDamageBonus` is added before the ×1.5 rather than after it.
 One substitution the figure leaves out: while an auto-spin attack is in
-flight the base is `Player.autoSpinAttackDmg`, the riptide number, instead of
+flight the base is `LivingEntity.autoSpinAttackDmg`, the riptide number, instead of
 the attribute.
 
 The gates along the way are as particular as the arithmetic, and the first
@@ -298,7 +298,7 @@ a sound](../client/what-makes-a-sound.md)).
 overrides it, so on the client `Entity.hurtOrSimulate` reports that the hit
 did not land and the entire block after it is skipped: no predicted
 knockback, no sweep, no visual effects, no durability, no exhaustion. The
-exceptions are the eight classes that do override it, and the pattern is the
+exceptions are the nine classes that do override it, and the pattern is the
 answer: **every one of them is something you can hit that is not a mob** — a
 `RemotePlayer`, a vehicle, a hanging thing, an orb ([damage outside
 `LivingEntity`](../../reference/non-living-damage.md) has the roll-call).
@@ -318,7 +318,7 @@ the round trip.
 **How does my client know how badly the pig was hurt?** It does not.
 `ClientboundDamageEventPacket` carries no amount at all — a damage-type
 holder, three entity ids and an optional source position — and the victim's
-red flash, hurt sound and invulnerability window are reconstructed from
+red flash, hurt sound and damage cooldown are reconstructed from
 that ([damage and
 death](../entities/damage-and-death.md#telling-everyone-and-what-a-block-replaces)
 owns the packet). Health bars come from [synched entity
@@ -333,22 +333,22 @@ the *entire* attacker-side knockback is the sprint bonus of 0.5.
 
 **What makes my own arm move?** Your own client does, before the server hears
 about it. Every branch of `Minecraft.startAttack` that swings at all calls
-`LivingEntity.swing`, and `LocalPlayer.swing` overrides it to do two things: set the
-animation state locally through the base method, and send
-`ServerboundSwingPacket`. That is why a miss on an air block still animates,
+`LivingEntity.swing`, which on the client only sets the animation state, and
+the tail of the hit-result switch then sends `ServerboundPunchPacket`, a
+packet with no fields at all. That is why a miss on an air block still animates,
 and why the animation never waits for a round trip. The server's own
-`LivingEntity.swing` then broadcasts `ClientboundAnimatePacket` to your
+`LivingEntity.swing` then broadcasts `ClientboundSwingAnimationPacket` to your
 **trackers** — the players who can see you — and not back to you, because you
 played it a round trip ago.
 
 **Why does my swing look different with a different weapon?** Because swing
-duration is a data component — `ItemStack.getSwingAnimation` returns a
+duration is a data component — `ItemStack.getAttackAnimation` returns a
 `SwingAnimation` — not a constant six ticks;
 `MobEffects.MINING_FATIGUE` stretches it and haste shortens it. The
-animation state itself is `LivingEntity.swinging`,
-`LivingEntity.swingingArm`, `LivingEntity.swingTime` and
-`LivingEntity.attackAnim`, and `ServerGamePacketListenerImpl.handleAnimate`
-is where the server receives yours. Crit particles are the exception to the
+animation state itself is one `LivingEntity.SwingState`, which holds the
+current `LivingEntity.SwingDescription` (hand, animation and length in
+ticks), a tick count and the progress from zero to one, and
+`ServerGamePacketListenerImpl.handlePunch` is where the server receives yours. Crit particles are the exception to the
 never-echoed rule, because they go to the trackers of the **attacker** while
 naming the **victim** — and you are one of your own trackers' subjects.
 
@@ -357,6 +357,15 @@ in damage and neither goes through `Player.attack`: a `PiercingWeapon`
 short-circuits before the hit-result switch, and a `KineticWeapon` is
 reached from item *use* rather than attack. Both are [the
 spear](the-spear.md).
+
+> **For a 1.21-era reader.** *ServerboundSwingPacket* and *LocalPlayer.swing*
+> are gone: after the local `LivingEntity.swing`, `Minecraft.startAttack`
+> sends `ServerboundPunchPacket` itself, and the server passes the swing on as
+> `ClientboundSwingAnimationPacket` rather than as a `ClientboundAnimatePacket`
+> action. The fields *swinging*, *swingingArm*, *swingTime* and *attackAnim*
+> are now one `LivingEntity.SwingState`, and the hurt cooldown that was
+> `Entity.invulnerableTime` is `LivingEntity.damageCooldownTime`; the old name
+> is now a separate timer that a hit does not set.
 
 ## Where to look
 

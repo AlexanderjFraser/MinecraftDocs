@@ -1,6 +1,6 @@
 # VII · Items and inventories
 
-> Verified against **Minecraft 26.2** · Part VII · The things you carry: what a stack is, what happens when you use one, how two machines agree about a chestful of them, and the three engines that make them out of data.
+> Verified against **Minecraft 26.3** · Part VII · The things you carry: what a stack is, what happens when you use one, how two machines agree about a chestful of them, and the three engines that make them out of data.
 
 A block is a position in a grid and an entity is a thing in the world. An
 item is neither: it is a *stack*, and a stack only exists inside something
@@ -89,9 +89,9 @@ four ways one stack is serialised, and [identifiers and
 registries](../foundations/identifiers-and-registries.md#when-a-world-opens) and
 [the resource
 system](../foundations/resource-system.md#reload-the-same-pipeline-on-the-server)
-for where recipes, enchantments and loot tables come from and when. They come from three different places, and
-the difference bites: recipes are a reload listener and loot tables a
-reloadable registry layer, so `/reload` rebuilds both — while enchantments are
+for where recipes, enchantments and loot tables come from and when. They come from two different places, and
+the difference bites: recipes and loot tables are both in the reloadable
+registry layer, so `/reload` rebuilds both — while enchantments are
 a world-load dynamic registry that `/reload` [never re-reads at
 all](enchantments.md#where-the-forty-three-live-and-when-they-are-read).
 
@@ -133,10 +133,11 @@ The first three in order, then the engines in any order you like.
    Standard Galactic gibberish is stable and why an anvil never changes
    what the table is offering.
 7. [Contexts and predicates](contexts-and-predicates.md) — the engine that
-   answers *is this true here*. Twelve of its twenty-six parameter sets
+   answers *is this true here*. Seventeen of its thirty-one parameter sets
    never roll a loot table at all: five of them belong to enchantment
-   effects, and the rest are `/execute if predicate`, entity selectors,
-   advancement triggers and villager trades.
+   effects, five are built for a number or a set of slots, one exists only to
+   validate against, and the rest are `/execute if predicate`, entity
+   selectors, advancement triggers and villager trades.
 8. [Loot tables](loot-tables.md) — the worked example, and the part's last
    lecture. A dungeon chest is genuinely empty on disk, and the first thing to
    *read* it — a hopper will do, and so will breaking it — commits the roll
@@ -150,17 +151,17 @@ and seven is the one Part XIII comes back for.
 
 The part is {{#include ../../generated/part-items.md}} across `world/item`,
 `world/inventory` and `world/level/storage/loot`, and
-{{#include ../../generated/coverage-items.md}}. Most of that is an answer
+{{#include ../../generated/coverage-items.md}}. Much of that is an answer
 rather than a gap: it is the four families each page names once and does not
-enumerate. `world/item`'s ninety-eight remaining classes are one `Item`
-subclass each, kept for a behaviour hook no component can express; the
-twenty-nine menus in `world/inventory` are one machine with different slot
-lists; the forty-three loot functions and twenty loot conditions are one shape
+enumerate. `world/item`'s sixty-seven `Item` subclasses are each kept for a
+behaviour hook no component can express; the
+twenty-eight menus in `world/inventory` are one machine with different slot
+lists; the forty-two loot functions and twenty loot conditions are one shape
 each; and the special crafting recipes are the nine whose output cannot be
 written down.
 
 Four things here are not a family and are explained nowhere: **villager
-trading** (`VillagerTrades` alone is the part's largest class — the loot
+trading** (`VillagerTrades` alone is the part's fifth-largest class — the loot
 machinery a trade *runs on* is covered, the trades themselves are not),
 **brewing**, **the creative tabs**, and **armour identity and trims**. A second
 edition should take them; this one names them and says so.
@@ -173,13 +174,13 @@ methods that make a weapon and the forty-two items built by one; [enchantment
 hooks](../../reference/enchantment-hooks.md) — every `EnchantmentHelper`
 entry point with the classes that call it, which is the enchantment
 system's real interface. [Loot context parameter
-sets](../../reference/loot-context-params.md) — all twenty-six, with the
+sets](../../reference/loot-context-params.md) — all thirty-one, with the
 keys each one requires and allows. Then the catalogue behind the part's hard prerequisite, [data
 components](../../reference/components.md) — every component type with what
 holds it; [packets](../../reference/packets.md) for the container and recipe
 traffic; [registries](../../reference/registries.md) for where each of the
 three engines' elements live; [naming
-drift](../../reference/naming-drift.md) for the loot package's move out of
+drift](../../reference/naming-drift.md) for the predicate library's move out of
 *critereon*; and [diagram lanes](../../reference/lanes.md).
 
 ---

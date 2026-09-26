@@ -1,22 +1,24 @@
 # The window
 
-> Verified against **Minecraft 26.2** · Part XI · before the first frame: the game asks the operating system for a window, and finds out which graphics backend it has by which window survives.
+> Verified against **Minecraft 26.3** · Part XI · before the first frame: the game finds out which graphics backend it has by which device survives, and only then asks the operating system for a window.
 
 The process is a second old. There is no world, no renderer, no resource
-pack and nothing to draw. `GLX._initGlfw` has just brought GLFW up,
-`NativeLibrariesBootstrap` has probed for the GL and Vulkan loaders and
-`MonitorManager` has enumerated the monitors and the video modes each of them
-offers. Now `Minecraft` wants a window — and it cannot ask for one without
-already having decided how the pixels will be drawn. **The window and the
-graphics backend are created together and neither can go first**: an OpenGL
-window and a Vulkan window are made from different GLFW hints, so a Vulkan
-attempt that gets a window and then fails at the device does not get to keep
-the window. It is thrown away with the attempt, and the next candidate starts
-from a fresh one.
+pack and nothing to draw. `RenderSystem.initBackendSystem` has just brought
+SDL up, `NativeLibrariesBootstrap` has probed for the GL and Vulkan loaders
+and `MonitorManager` has enumerated the monitors and the video modes each of
+them offers. Now `Minecraft` wants a window — and it cannot ask for one
+without already having decided how the pixels will be drawn, because an
+OpenGL window and a Vulkan window are asked for with different flags. **So
+the device comes first and the window second**: each candidate backend in
+turn loads its library and tries to build a whole device before the game has
+any window at all — OpenGL's device makes a hidden window of its own to hold
+its context — and only the backend that survives is asked for the window,
+once. A window that fails at that point is not handed to the next candidate;
+it ends the game with a crash report.
 
 That loop is the first half of the page. The second is what the window
-turns into once it has survived one: **this is Part XI's platform layer, not
-just its window** — the six callbacks the operating system may fire, the
+turns into once it exists: **this is Part XI's platform layer, not
+just its window** — the nineteen kinds of event the window answers, the
 three sizes every GUI element is placed against, and `NativeImage`, the CPU
 image type every texture, screenshot, skin and glyph in the game passes
 through on its way to or from a file. They share a package and a role rather
@@ -25,8 +27,8 @@ machine it is running on*.
 
 [The frame](the-frame.md) is the lecture you watch first, and it opens on a
 surface that has already been acquired. This page is what acquired it.
-[Input and keybinds](../client/input-and-keybinds.md) opens on a callback that
-has already fired, and [blaze3d](blaze3d.md) on a `GpuDevice` that already
+[Input and keybinds](../client/input-and-keybinds.md) opens on an event that
+has already arrived, and [blaze3d](blaze3d.md) on a `GpuDevice` that already
 exists. All three of them start here.
 
 ## The cast
@@ -34,51 +36,50 @@ exists. All three of them start here.
 | class | what it decides | thread |
 |---|---|---|
 | `Minecraft` | which backends to try, in which order, and when to give up | Render thread |
-| `Window` | the GLFW handle, the three sizes, and every fullscreen transition | Render thread |
-| `GpuBackend` | the window hints, and whether a failed window is the backend's fault | Render thread |
-| `MonitorManager` | which monitor the window is considered to be on | Render thread |
-| `Monitor` | which `VideoMode` an exclusive fullscreen switch takes | Render thread |
-| `WindowEventHandler` | which of the six operating-system callbacks reach the game | Render thread |
+| `Window` | the SDL window handle, the three sizes, and every fullscreen transition | Render thread |
+| `GpuBackend` | its library, its device, and the flags a window for it is made with | Render thread |
+| `MonitorManager` | which monitors the game knows about, kept current by SDL's display events | Render thread |
+| `Monitor` | which `VideoMode` an exclusive fullscreen switch asks for | Render thread |
+| `WindowEventHandler` | what the window tells the game: size, cursor and fullscreen | Render thread |
 | `FramerateLimitTracker` | what an iconified, idle or menu-bound window is allowed to cost | Render thread |
 | `NativeImage` | the CPU-side pixels between a file and a texture | native memory, closed by its owner |
 
 Two of those rows live outside *com/mojang/blaze3d/platform* and the other
 six in it: `Minecraft` is the game's own, and `GpuBackend` sits in
-*blaze3d/systems* with
+*renderpearl/api* with
 [the façades](blaze3d.md#four-objects-the-game-only-touches-through-a-façade).
 None of the package exists on the server — `server-classes.txt` has no entry
 under *com/mojang/blaze3d* at all — and all of it runs on the Render thread,
 which is [one of the four](../anatomy/anatomy.md#four-threads-worth-memorising).
 
-## Trying backends until one of them makes a window
+## Trying backends until one of them makes a device
 
 The startup path is a retry loop, and it is drawn as a flowchart rather than a
-conversation because the shape *is* the fact: the loop encloses the window and
-the device together. A backend that cannot make a window and a backend that
-cannot make a device fail identically, and both hand the next candidate a
-clean slate.
+conversation because the shape *is* the fact: the loop encloses the device
+and leaves the window outside it. A backend that cannot load its library and
+a backend that cannot make a device fail identically, and both hand the next
+candidate a clean slate.
 
 ```mermaid
 flowchart TD
-    GLX["GLX._initGlfw brings GLFW up, NativeLibrariesBootstrap probes the loaders"]
-    MonM["MonitorManager enumerates the monitors and their VideoModes"]
+    BOOT["NativeLibrariesBootstrap probes the loaders, RenderSystem.initBackendSystem starts SDL"]
+    MonM["MonitorManager asks SDL for displays and modes"]
     MC["Minecraft takes the next candidate from PreferredGraphicsApi.getBackendsToTry"]
-    GB["GpuBackend.setWindowHints — OpenGL and Vulkan want different ones"]
-    Window["a new Window: create the GLFW window, then register the six callbacks"]
-    Q1{"did a window appear?"}
-    ERRS["GpuBackend.handleWindowCreationErrors reads what GLFW complained about"]
-    DEV["GpuBackend.createDevice against the window handle, with the shader source and the debug options"]
+    LIB["GpuBackend.loadLibrary loads the API's library through SDL"]
+    Q1{"did the library load?"}
+    DEV["GpuBackend.createDevice, before the game has a window"]
     Q2{"did a device come back?"}
-    KILL["close the window — its hints are wrong for the next candidate"]
+    UNL["GpuBackend.unloadLibrary, for a clean slate"]
     LEFT{"any candidate left?"}
     BOX["MessageBox.error, and the game never starts"]
     RS["RenderSystem.initRenderer with the device that survived"]
-    DONE["Window.setIcon, Window.setTitle,<br/>Window.setDefaultErrorCallback"]
-    GLX --> MonM --> MC --> GB --> Window --> Q1
-    Q1 -- "no" --> ERRS --> LEFT
+    WIN["the one Window, from GpuBackend.createWindow"]
+    DONE["Window.setIcon, then GpuDevice.createSurface on its handle"]
+    BOOT --> MonM --> MC --> LIB --> Q1
+    Q1 -- "no" --> LEFT
     Q1 -- "yes" --> DEV --> Q2
-    Q2 -- "no" --> KILL --> LEFT
-    Q2 -- "yes" --> RS --> DONE
+    Q2 -- "no" --> UNL --> LEFT
+    Q2 -- "yes" --> RS --> WIN --> DONE
     LEFT -- "yes" --> MC
     LEFT -- "no" --> BOX
 ```
@@ -95,112 +96,135 @@ asking for Vulkan does not always get it.
 What the window is asked for is a `DisplayData`: a size, an optional
 fullscreen size and a fullscreen flag, with `DisplayData.withSize` and
 `DisplayData.withFullscreen` for the transitions that change them later. What
-comes back, if anything comes back, is a `Window` holding a `Window.handle`
-and a `Window.backend` — and never a `GpuDevice`. The window knows which
-backend made it and nothing about what that backend went on to build.
+comes back is a `Window` holding a `Window.handle` — and neither a
+`GpuDevice` nor the backend that made it. The window uses the backend once,
+to be created, and the device meets the window only afterwards, when
+`GpuDevice.createSurface` is handed its handle.
 
-GLFW and STB, reached through LWJGL, are what the package sits on, and it
-calls almost nothing else in the game on its way down. The exceptions are all
-about reporting a failure upward: `Minecraft`, `CrashReport`, and the one
-piece of the dedicated server the client borrows — `ClientShutdownWatchdog`
+SDL and STB, reached through LWJGL, are what the package sits on, and it
+calls almost nothing else in the game on its way down. The exceptions are
+about passing something upward, an event or a failure: `SDLEventHandler`
+hands the input up, and a failure goes to `Minecraft`, `CrashReport`, and the
+one piece of the dedicated server the client borrows — `ClientShutdownWatchdog`
 builds its report with `ServerWatchdog.createWatchdogCrashReport`, which is
-the only *net.minecraft.server* name anything here touches. Above the
+the only *net.minecraft.server.dedicated* name anything here touches. Above the
 package, `Minecraft` drives startup and the two per-frame calls
-below, `KeyboardHandler` and `MouseHandler` take the input callbacks and the
+below, `KeyboardHandler` and `MouseHandler` take the input events and the
 clipboard, `VideoSettingsScreen` drives the fullscreen and video-mode
 controls, and `Screenshot` and `TextureManager` want `NativeImage`. What the
 player's saved choices reach is `Options`: an override width and height, the
 fullscreen flag and video-mode string, exclusive fullscreen, the GUI scale,
 and the graphics-API preference that ordered the loop above. The window's
-*position* is not among them — it is a field the move callback keeps and
+*position* is not among them — it is a field the move event keeps and
 nobody saves.
 
-### How the loop knows why a window did not appear
+### How the loop knows why a device did not appear
 
-`GpuBackend.handleWindowCreationErrors` in that figure reads something, and
-what it reads is a list somebody was holding a pen over. `GLFWErrorScope` is
-a closeable scope that installs an error callback, runs one piece of work and
-puts the previous one back — throwing if anybody else changed it in between —
-and what it usually installs is a `GLFWErrorCapture`, which does nothing but
-collect what GLFW said into a list. The retry loop runs each window creation
-inside one, so a failed attempt comes back with its reasons attached instead
-of with a line in somebody's log. The same pairing is around GLFW's own
-initialisation, the monitor enumeration and the clipboard read: four places
-that expect to fail and want the failure themselves.
+`Minecraft` has to be able to say why every candidate failed, because it may
+have to show the player. A failed attempt arrives as a
+`BackendCreationException`, carrying a message and a
+`BackendCreationException.Reason`, and where the failure is SDL's — a library
+that would not load, a context or a window that would not appear — the
+backend reads *SDL_GetError* on the spot and writes it into the message. The
+loop appends each attempt's name and message to the text `MessageBox.error`
+shows if nobody survives, and keeps one exception in
+`Minecraft.backendCreationException` for the crash report and the telemetry,
+where an OpenGL-missing failure never displaces an earlier one.
 
-The scope is the fourth kind of error-callback swap and the only scoped one.
-The other three are the game's life in order: a boot-crash handler while
-starting, `Window.setDefaultErrorCallback` once running, and a null on close.
-Across all of them `Window.setErrorSection` tags whatever GLFW complains
-about with what the game was busy with — *Pre startup*, *Startup*, *Post
-startup*, *Pre render* — which is why a driver's error message arrives in a
-crash report attached to a phase rather than floating free.
+Errors are read where they happen: the game checks an SDL call's result
+where it makes the call and reads *SDL_GetError* there and then, and what SDL
+logs of its own accord goes to the game's log through `SdlDebug`, which
+`RenderSystem.initBackendSystem` installs before SDL starts.
+`Window.setErrorSection` writes a label for the crash report — *Startup* from the
+constructor, then *Pre render*, *Render* and *Post render* on every pass of
+the loop — which is why a crash report's *Window* category names the phase
+the game was in.
 
-## Six callbacks, and the two of them the game is ever told about
+## Nineteen events, and the six the game is never told about
 
-Once the window exists, `Window`'s constructor registers six GLFW callbacks,
-and they are almost the whole of what the operating system can say to it.
-`WindowEventHandler` — a three-method interface
-that `Minecraft` implements — is the whole of what a window is allowed to say
-back to the game, and the window only ever reaches for two of those three
-methods.
+The window registers nothing with the operating system. At the top of every
+pass of the client loop, `RenderSystem.pollEvents` runs
+`SDLEventHandler.pollEvents`, which drains SDL's queue: the keyboard, mouse
+and drop events it deals with itself, and everything else goes to
+`Window.handleEvent`, which answers nineteen kinds of event and ignores the
+rest. `WindowEventHandler` — a four-method interface that `Minecraft`
+implements — is nearly the whole of what a window says back to the game, and
+the window only ever reaches for three of those four methods.
 
 ```mermaid
 flowchart LR
-    OS["the operating system, through GLFW"]
-    FB["framebuffer size changed"]
-    CE["cursor entered the window"]
-    SZ["window resized"]
-    PS["window moved"]
-    FC["focus gained or lost"]
-    IC["iconified or restored"]
+    SEH["SDLEventHandler.pollEvents drains SDL's queue"]
+    IN["keys, text, mouse, dropped files"]
+    KMH["KeyboardHandler and MouseHandler"]
+    WHE["Window.handleEvent, nineteen kinds of event"]
+    TOLD["pixel size, display, cursor or fullscreen changed"]
     WEH["WindowEventHandler, implemented by Minecraft"]
-    W["a field on the Window, for whoever asks later"]
-    OS --> FB --> WEH
-    OS --> CE --> WEH
-    OS --> SZ --> W
-    OS --> PS --> W
-    OS --> FC --> W
-    OS --> IC --> W
+    IC["minimised, maximised or restored"]
+    MC["Minecraft.invalidateSurfaceConfiguration"]
+    QT["quit, close or terminate requested"]
+    CB["Window.shouldClose, and the close callback"]
+    LOOK["moved, resized, focus gained or lost"]
+    W["a field on the Window, read later"]
+    DS["display added or removed"]
+    MM["the monitors MonitorManager keeps"]
+    SEH --> IN --> KMH
+    SEH --> WHE
+    WHE --> TOLD --> WEH
+    WHE --> IC --> MC
+    IC --> W
+    WHE --> QT --> CB
+    WHE --> LOOK --> W
+    WHE --> DS --> MM
 ```
 
-`WindowEventHandler.framebufferSizeChanged` and
-`WindowEventHandler.cursorEntered` are the two. A window resize, a window
-move, a focus change and an iconify all end in a field — `Window.getX`,
-`Window.getY`, `Window.isFocused` and `Window.isIconified` are what anyone
-asks instead, whenever they get round to it — so four of the six events the
-operating system reports are things the game is never *told*, only things it
-can look up. `Window.isMinimized` is the one that reads like a fifth and is
-not: it is set by the framebuffer callback, which fires with a zero-by-zero
-size when the window goes away, and cleared by the same callback when a real
-size comes back. That is also the whole of what minimising suppresses: the
-frame skips its surface acquisition and otherwise runs in full, and where the
-real saving comes from is [the
-frame](the-frame.md#what-a-minimized-client-actually-stops-doing)'s.
+`WindowEventHandler.framebufferSizeChanged`,
+`WindowEventHandler.cursorEntered` and
+`WindowEventHandler.fullscreenStateChanged` are the three. A new pixel size, a
+move to another display and a change of the display's mode all end in the
+first; the cursor crossing the window's edge, in either direction, in the
+second; and the operating system taking the window into or out of fullscreen
+in the third, which writes the new state back into the fullscreen option. A
+move, a resize, focus gained or lost and a display arriving or leaving end in
+a field or in `MonitorManager` — `Window.getX`, `Window.getY`,
+`Window.getScreenWidth`, `Window.isFocused` and `MonitorManager.getMonitor`
+are what anyone asks instead, whenever they get round to it — so six of the
+nineteen are things the game is never *told*, only things it can look up.
+Minimising reaches the game outside the interface: `Window.isIconified` reads
+a field like the others, but `Window` also calls
+`Minecraft.invalidateSurfaceConfiguration` itself, on the way down and on the
+way back. While the flag is set the frame will not reconfigure its surface,
+and the surface was handed the same flag when `GpuDevice.createSurface` made
+it, which the OpenGL surface uses to refuse an acquire; otherwise the frame
+runs in full, and where the real saving comes from is told in [the
+frame](the-frame.md#what-a-minimized-client-actually-stops-doing).
 
-The third method on the interface is the odd one.
+The fourth method on the interface is the odd one.
 `WindowEventHandler.resizeGui` is never called by `Window` at all: its callers
 are `Minecraft` and `Options`, which is to say the game calling itself when
-the GUI scale option changes. And `WindowEventHandler.framebufferSizeChanged` is not only a
-callback — `Window.updateFullscreenIfChanged` and
-`Window.changeFullscreenVideoMode` both raise it directly, which is how F11
-and a video-mode switch reach the renderer by the same route a dragged window
-corner does.
+the GUI scale option changes. And `WindowEventHandler.framebufferSizeChanged`
+is not only an event's answer — `Window.updateFullscreenIfChanged`,
+`Window.changeFullscreenVideoMode` and `Window.setExclusiveFullscreen` all
+raise it directly, which is how F11 and a video-mode switch reach the renderer
+by the same route a dragged window corner does.
 
-Notice what is *not* among the six: keys, characters, mouse buttons, cursor
-motion and scrolling. Every input callback is registered somewhere else
-entirely, by `KeyboardHandler` and `MouseHandler` — see [input and
+Notice what is *not* among the nineteen: keys, characters, mouse buttons,
+cursor motion, scrolling and dropped files. `SDLEventHandler.pollEvents` takes
+all of those off the queue before the window sees any and hands them to
+`KeyboardHandler` and `MouseHandler` — see [input and
 keybinds](../client/input-and-keybinds.md).
 
-### The seventh, which is not the constructor's
+### The one callback, which is not the constructor's
 
-There is one more, and `Minecraft` adds it after the constructor has run: the
-window-close callback, the one that fires when you click the X rather than
-quitting from the menu. It is registered late because what it does is not the
-window's business at all — it is one of the two places `ClientShutdownWatchdog`
-is armed, and it is the one that catches a client hanging on the close button
-rather than on the way out. That is why the game sometimes leaves a crash
-report behind after you close it. [The two armings and what each may
+The window does hold one callback, and `Minecraft` sets it after the
+constructor has run: the window-close callback, the one that runs when you
+click the X rather than quitting from the menu — the close request is one of
+the nineteen events, and `Window` answers it by setting `Window.shouldClose`
+and running the callback. It is registered late because what it does is not
+the window's business at all — it is one of the two places
+`ClientShutdownWatchdog` is armed, and it is the one that catches a client
+hanging on the close button rather than on the way out. That is why the game
+sometimes leaves a crash report behind after you close it. [The two armings
+and what each may
 do](../client/the-client-loop.md#starting-and-the-three-ways-of-stopping) are
 the client loop's.
 
@@ -229,31 +253,37 @@ place is nearly always code that read one of the three and meant another.
 Two calls, both inside `Minecraft.renderFrame`, both in the *update window*
 profiler zone: `Window.updateFullscreenIfChanged` at the very top of it, and
 immediately after it a reconfigure-and-acquire of the `GpuSurface` — which is
-[Blaze3D](blaze3d.md#how-a-frame-reaches-the-screen)'s object, not the
-window's, and is the whole of the window's involvement in getting a picture
-onto the screen. Everything else the window does is a callback firing.
+*renderpearl*'s object, not the window's (see
+[Blaze3D](blaze3d.md#how-a-frame-reaches-the-screen)), and is the whole of the
+window's involvement in getting a picture onto the screen. Everything else
+the window does is answering an event.
 
 `Window.updateFullscreenIfChanged` is where F11 lands.
-`Window.toggleFullScreen` and `Window.setWindowed` flip the state,
-`Window.isFullscreen` reports it, and `Window.changeFullscreenVideoMode` with
-`Window.getPreferredFullscreenVideoMode` and
+`Window.setFullscreen`, which the fullscreen option calls, and
+`Window.setWindowed` set the request, `WindowEventHandler.fullscreenStateChanged`
+reports the outcome back to the option, and `Window.changeFullscreenVideoMode`
+with `Window.getPreferredFullscreenVideoMode` and
 `Window.setPreferredFullscreenVideoMode` negotiate what exclusive fullscreen
 turns into. Dragging the window to the other monitor is the same machinery
-approached from the other end: `MonitorManager.findBestMonitor` decides which
-monitor a window is on *by overlap*, and `Monitor.getPreferredVidMode` looks
-for the saved preference among the modes this monitor actually offers, taking
-the monitor's current mode when there is no exact match — it never
-approximates. A `Monitor` is a record —
-a name, a handle, its list of `VideoMode`s, the current one and its position —
-and `Window.getRefreshRate` is the number that comes out of the mode.
+approached from the other end: `MonitorManager.findBestMonitor` asks SDL
+which display the window is on, and `Monitor.getPreferredVideoMode` looks for
+the saved preference among the modes this monitor offers, taking the
+monitor's current mode when there is no exact match — the monitor never
+approximates; SDL does, afterwards, when `Window` asks it for the closest mode
+it can set, and an exclusive switch that finds none falls back to borderless.
+A `Monitor` is a record — a name, an SDL display id, its list of
+`VideoMode`s, the current one and its bounds — and
+`Window.getActiveVideoMode`, the mode the window is showing, is where the
+debug screen's refresh rate comes from.
 
-The one thing on this page that runs continuously is
+The one policy on this page that runs continuously is
 `FramerateLimitTracker`, and what it watches is the window: iconification and
-idle time, **not** focus — losing focus is a different mechanism with a
-different effect. What it does with that, and the four limits it substitutes,
-is [the client
+idle time, and focus only in exclusive fullscreen, where an unfocused window
+is throttled as if it were iconified — anywhere else, losing focus is a
+different mechanism with a different effect. What it does with that, and the
+four limits it substitutes, is [the client
 loop](../client/the-client-loop.md#the-frame-cap-is-usually-the-option-and-sometimes-is-not)'s;
-[the frame](the-frame.md#present-swapbuffers-and-which-of-the-two-names-lies)
+[the frame](the-frame.md#blit-submit-and-present)
 is where the limit gets spent.
 
 ## `NativeImage`, the seam between a file and a texture
@@ -293,8 +323,8 @@ driven by a player option on the mouse-settings screen and nothing else, and
 with it clear every request is answered with the default arrow; the other half
 of that problem is the platform's, since `CursorType.createStandardCursor`
 takes a fallback for the shapes a given system does not provide. And
-`TextureUtil`, the largest class in the package and the odd one out because
-nothing about it is a window, is why a mipmapped texture's edges do not bleed:
+`TextureUtil`, the odd one out because nothing about it is a window, is why a
+mipmapped texture's edges do not bleed:
 before `MipmapGenerator` builds a sprite's mip chain it runs one of two
 repairs over it, `TextureUtil.solidify` flooding the nearest opaque colour
 outward into every fully transparent pixel or
@@ -305,31 +335,32 @@ something that was never in the texture into its edges.
 
 The rest of the package is genuinely a list, and the class index is where a
 list belongs: clipboard and IME text, the cursor shapes, the window icon set,
-the macOS and memory-tracking helpers, the remainder of `GLX`, and
-`InputConstants`, the key and mouse-button vocabulary every `KeyMapping` is
-written in. Five more names in it are pipeline state and belong to
-[Blaze3D](blaze3d.md#a-pipeline-is-a-record-not-a-sequence-of-calls), living
-here only by address.
+the macOS and memory-tracking helpers, and `InputConstants`, the key and
+mouse-button vocabulary every `KeyMapping` is written in. `Transparency`,
+which sits here too, is the answer `NativeImage.computeTransparency` gives,
+not pipeline state — that belongs to
+[Blaze3D](blaze3d.md#a-pipeline-is-a-record-not-a-sequence-of-calls), in
+*renderpearl*.
 
-> **For a 1.21-era reader.** The window no longer presents anything:
-> *Window.updateDisplay* and *Window.setVsync* are gone, presentation is
-> [blaze3d](blaze3d.md)'s `GpuSurface` protocol and vsync is a
-> `GpuSurface.PresentMode`. Also gone: *Window.setupGuiState*; and if you are
-> reaching for *ScreenManager*, monitor handling is `MonitorManager`, in the
-> same package and behind the same GLFW callback ([naming
+> **For a 1.21-era reader.** GLFW is gone; SDL3 does its work, and *GLX* went
+> with it. The window no longer presents anything: *Window.updateDisplay* and
+> *Window.setVsync* are gone, presentation is the `GpuSurface` protocol
+> ([blaze3d](blaze3d.md)) and vsync is a `GpuSurface.PresentMode`. Also gone:
+> *Window.setupGuiState*; and if you are reaching for *ScreenManager*, monitor
+> handling is `MonitorManager`, in the same package ([naming
 > drift](../../reference/naming-drift.md#part-xi--rendering)). The constructor
-> now takes a `GpuBackend`, because the window cannot be made without knowing
-> which API will draw into it.
+> now takes the `GpuBackend` that makes the window.
 
 ## Where to look
 
-`Minecraft`'s constructor for the candidate loop and what happens when it runs
-out of candidates. `Window`'s constructor for the order in which a window and
-a backend come into being, then `Window.updateFullscreenIfChanged` for the
-only thing the window does per frame. `MonitorManager.findBestMonitor` and
-`Monitor.getPreferredVidMode` for the fullscreen negotiation. `NativeImage.read`
-and `NativeImage.computeTransparency` for the image type the rest of Part XI
-is built on.
+`Minecraft`'s constructor for the candidate loop, what happens when it runs
+out of candidates, and the one window made after it.
+`SDLEventHandler.pollEvents` and `Window.handleEvent` for where each event
+goes, then `Window.updateFullscreenIfChanged` for the only thing the window
+does per frame. `MonitorManager.findBestMonitor` and
+`Monitor.getPreferredVideoMode` for the fullscreen negotiation.
+`NativeImage.read` and `NativeImage.computeTransparency` for the image type
+the rest of Part XI is built on.
 
 ---
 

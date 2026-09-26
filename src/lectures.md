@@ -318,8 +318,8 @@ owns the system this part only consumes.
 The three structure lectures run *first* in the game and are watched *last*
 here: a structure is decided at `ChunkStatus.STRUCTURE_STARTS`, two statuses
 before the biomes it will stand in exist, and writes no block until
-`ChunkStatus.FEATURES`, three statuses after the noise fill. Keeping them
-together at the end costs three of the earlier pages a forward topic and buys
+`ChunkStatus.FEATURES`, one status after the noise fill. Keeping them
+together at the end costs two of the earlier pages a forward topic and buys
 a whole arc in one place.
 
 1. [Density functions](systems/worldgen/density-functions.md)
@@ -342,7 +342,7 @@ machinery can watch it first.
 
 Part XII assumes Part IV's [chunk generation
 pipeline](systems/world/chunk-generation-pipeline.md), and hard: it is the
-only page that says when any of this runs and what the twelve statuses are,
+only page that says when any of this runs and what the ten statuses are,
 and eight of the ten lectures here name one. It also assumes Part IV's
 [chunk anatomy](systems/world/chunk-anatomy.md) for what is being written
 into and Part IV's [environment attributes and

@@ -50,8 +50,8 @@ and structured data (`tools/page_meta.py`, `tools/md_twins.py`).
 nineteen sessions, V1 and V2 the version, A the standard, B to N the parts, K
 Part XI's figures under pass 7's runbook, O the Reference and the frame, P the
 second reading of every sentence the pass changed, Q the release and the tag
-`release-26.3`. **V1 ran on 2026-09-26** — the tools read 26.3, ninety-one pages say so and
-forty-two, the systems 26.3 reshaped, say 26.2 until V2 — and the rest have not. After it, nothing more is done here except a
+`release-26.3`. **V1 and V2 ran on 2026-09-26** — the tools read 26.3, and every page says
+26.3, the forty-two pages whose systems 26.3 reshaped rewritten by V2 — and the rest have not. After it, nothing more is done here except a
 version pass when the owner asks for one and the corrections readers file,
 until the rebuilt process returns.
 
@@ -215,9 +215,9 @@ before it.
 2026-09-15; the tree is staged at `reference/26.3/` and the tools read one
 constant; sessions V1 (mechanical — the flip, the atlas's mapping given
 `renderpearl`, the regenerated views diffed, every rename resolved, the header
-line on every page) and V2 (the five pages whose systems changed shape,
-rewritten in the smallest true rewrite, with what the part session must re-read
-written into the ledger). (1) **The third fact-check**: pass 4's protocol —
+line on every page) and V2 (the pages whose systems changed shape — five by the
+planning brief's measure, forty-two by V1's — rewritten in the smallest true
+rewrite, with what the part session must re-read written into the ledger). (1) **The third fact-check**: pass 4's protocol —
 one adversarial agent per page with the decompile, given the ledger's entries
 for the page as its opening checklist (1,333 entries; `tools/pass8_queue.py`
 routes them by page and part) — while the session reads the whole part into
@@ -244,9 +244,8 @@ constant and one script; the queues closed rather than carried.
 and is declared where the book says what it skips). The charters this pass
 replaces are archived in the brief's Part 7.
 
-**The owner's part**: confirm the lecture order before session Q; decide after
-V1 whether V2's five rewrites are written in this pass (the brief assumes
-yes); the dashboards.
+**The owner's part**: confirm the lecture order before session Q; the
+dashboards.
 
 ## The version pass — rule 3's re-read (chartered; 26.3 is due and runs first)
 
@@ -273,7 +272,21 @@ day it was called stable. Its steps, each now a command:
    gate and the figure gate against the new tree, the failures by page and
    part. **That is the mechanical half of the pass**: every name that stops
    resolving is a rename or a removal, and the failures name the pages that
-   need re-reading. 26.3: 517 names on 65 pages, 32 in figures.
+   need re-reading. 26.3: 517 names on 65 pages, 32 in figures. **The gate is
+   the smaller half**: V1 and V2 found 26.3 had reshaped forty-two pages, and
+   V2's agents found eight more 26.3 changes on pages V1 had already moved (the
+   hurt cooldown, where the client's movement is sent, the move-simulation
+   type, the feature dispatcher's drains, the atlas count, the first-person
+   hand, two generators' typed prose), all with names that still resolved. What found
+   them was reading each page against the diff of the classes it names. V2
+   built that as a session script, and the next version pass's planning session
+   should build it as a tool with a probe: **the per-page class map** — for every
+   class a page names (backticks and mermaid blocks), its file in both trees
+   and its fate, *identical*, *changed* (with the diff's size), *moved* or
+   *gone*, plus the members the page names that the new file lacks. An
+   identical file cannot have moved a claim resting on it alone; a changed one
+   is where to read. Its one known blindness, to fix: a simple name two files
+   share (`TagEntry`) must be matched by package, not first found.
 3. **Flip** — `git tag pass-8-start` (this time), then
    `python tools/version_pass.py <version> --flip`, which rewrites the one
    constant in `tools/mc_version.py`; every tool reads it. `map_source.py`'s
@@ -332,9 +345,9 @@ understood; recording is after the release.
   wide or an agent that liked the page. Brief per page, evidence for every
   finding, and the close says honestly whether the pass earned its cost.
 - **The version is bigger than a re-read.** 26.3 moved 788 classes and
-  changed the shape of three systems; V2's five rewrites are the largest
-  unchecked writing in the pass, which is why their part sessions (D, L, M)
-  run after them with fresh agents and V2's ledger entries first.
+  reshaped forty-two pages; V2's rewrites are the largest unchecked writing
+  in the pass, which is why every part session runs after them with fresh
+  agents and V2's ledger entries first.
 - **A release lands mid-pass.** 26.4 is unlikely before December; if it
   ships before session Q, a version session runs first and Q waits (R6).
 - **The tools.** Fifteen bugs in pass 4, six of them published; eleven gate
@@ -417,3 +430,13 @@ understood; recording is after the release.
   `renderpearl` and OIT, the reloadable registries, the swing and dig packets, world generation — each
   listed with what changed in [pass9.md](pass9.md) for V2. The owner's decision on V2 is now about 42
   pages. Deployed.
+
+- **2026-09-26, pass 8, session V2 — the version, the systems that changed shape (Opus).** All forty-two pages
+  in one session (the owner named V2 and set no split): **every page says 26.3**, `verify_names.py --current`
+  passes, and no gate reads `reference/26.2` now. One agent per page edited its page with V2's brief, V1's
+  lines as claims and a per-page class map; the session audited every diff against the tree. 681 ledger
+  entries; sixteen false headings corrected with their links; the lane key's rows for three removed classes
+  retired and five added; sixty-four naming-drift rows; two generated views' typed prose corrected in
+  `gen_reference.py`. Found beyond V1's list: eight more 26.3 changes on pages V1 had moved, and two probable
+  upstream bugs written as mechanism (`worldgen/blending`, `blocks/block-breaking`). The class map's design is
+  in the version pass above. Deployed.
